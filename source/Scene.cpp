@@ -16,13 +16,13 @@
 #include "TerrainShader.h"
 #include "ResourceManager.h"
 #include "SoundManager.h"
+#include "PhysicCallbacks.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;
 ObjectPool<DebugSceneNode> debug_node_pool;
 ObjectPool<Area2> area2_pool;
-extern Matrix m1, m2, m3, m4;
 
 //-----------------------------------------------------------------------------
 struct IBOX
@@ -514,7 +514,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 		{
 			Unit& u = **it;
-			ListDrawObjectsUnit(&area, frustum, outside, u);
+			ListDrawObjectsUnit(frustum, outside, u);
 		}
 	}
 
@@ -580,7 +580,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, item.pos.x, item.pos.z, mesh->head.radius);
-				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == &item)
+				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
 				{
 					if(cl_glow)
 					{
@@ -617,7 +617,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, use.pos.x, use.pos.z, mesh->head.radius);
-				if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == &use)
+				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
 				{
 					if(cl_glow)
 					{
@@ -663,7 +663,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, chest.pos.x, chest.pos.z, chest.mesh_inst->mesh->head.radius);
-				if(pc_data.before_player == BP_CHEST && pc_data.before_player_ptr.chest == &chest)
+				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
 				{
 					if(cl_glow)
 					{
@@ -708,7 +708,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, door.pos.x, door.pos.z, door.mesh_inst->mesh->head.radius);
-				if(pc_data.before_player == BP_DOOR && pc_data.before_player_ptr.door == &door)
+				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
 				{
 					if(cl_glow)
 					{
@@ -939,7 +939,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		{
 			const btCollisionObject* cobj = cobjs[i];
 			const btCollisionShape* shape = cobj->getCollisionShape();
-			cobj->getWorldTransform().getOpenGLMatrix(&m3._11);
+			Matrix m_world;
+			cobj->getWorldTransform().getOpenGLMatrix(&m_world._11);
 
 			switch(shape->getShapeType())
 			{
@@ -949,7 +950,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Box;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m3 * game_level->camera.matViewProj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -961,7 +962,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Capsule;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(r, h + r, r) * m3 * game_level->camera.matViewProj;
+					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -972,7 +973,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->type = DebugSceneNode::Cylinder;
 					node->group = DebugSceneNode::Physic;
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m3 * game_level->camera.matViewProj;
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -992,9 +993,15 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 							DebugSceneNode* node = debug_node_pool.Get();
 							node->type = DebugSceneNode::Box;
 							node->group = DebugSceneNode::Physic;
-							compound->getChildTransform(i).getOpenGLMatrix(&m2._11);
-							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m2 * m3 * game_level->camera.matViewProj;
+							Matrix m_child;
+							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * game_level->camera.matViewProj;
 							draw_batch.debug_nodes.push_back(node);
+						}
+						else
+						{
+							// TODO
+							assert(0);
 						}
 					}
 				}
@@ -1005,7 +1012,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
 					node->type = DebugSceneNode::TriMesh;
 					node->group = DebugSceneNode::Physic;
-					node->mat = m3 * game_level->camera.matViewProj;
+					node->mat = m_world * game_level->camera.matViewProj;
 					node->mesh_ptr = (void*)trimesh->getMeshInterface();
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1025,7 +1032,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 }
 
 //=================================================================================================
-void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool outside, Unit& u)
+void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 {
 	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
 		return;
@@ -1048,8 +1055,8 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 	else
 		u.mesh_inst->SetupBones();
 
-	bool selected = (pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == &u)
-		|| (game_state == GS_LEVEL && ((pc_data.action_ready && pc_data.action_ok && pc_data.action_target == u)
+	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
+		|| (game_state == GS_LEVEL && ((pc->data.action_ready && pc->data.action_ok && pc->data.action_target == u)
 		|| (pc->unit->action == A_CAST && pc->unit->action_unit == u)));
 
 	// dodaj scene node
@@ -1066,8 +1073,8 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 	int lights = -1;
 	if(!outside)
 	{
-		assert(area);
-		lights = GatherDrawBatchLights(*area, node, u.pos.x, u.pos.z, u.GetSphereRadius());
+		assert(u.area);
+		lights = GatherDrawBatchLights(*u.area, node, u.pos.x, u.pos.z, u.GetSphereRadius());
 	}
 	node->lights = lights;
 	if(selected)
@@ -1333,6 +1340,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 			node2->flags = 0;
 		}
 
+		Matrix m1;
 		if(w_dloni)
 			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.mesh_inst->mat_bones[point->bone];
 		else
@@ -1764,42 +1772,16 @@ void Game::ListAreas(LevelArea& area)
 	}
 
 	// action area2
-	if(pc_data.action_ready)
+	if(pc->data.action_ready)
 		PrepareAreaPath();
 }
-
-struct BulletRaytestCallback4 : public btCollisionWorld::RayResultCallback
-{
-	BulletRaytestCallback4(Unit* me) : me(me), hit(nullptr)
-	{
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		void* ptr = rayResult.m_collisionObject->getUserPointer();
-		if(me == ptr)
-			return 1.f;
-		if(m_closestHitFraction > rayResult.m_hitFraction)
-		{
-			m_closestHitFraction = rayResult.m_hitFraction;
-			if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT | CG_UNIT_DEAD))
-				hit = reinterpret_cast<Unit*>(ptr);
-			else
-				hit = nullptr;
-		}
-		return 0.f;
-	}
-
-	Unit* me;
-	Unit* hit;
-};
 
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
 	if(!pc->CanUseAction())
 	{
-		pc_data.action_ready = false;
+		pc->data.action_ready = false;
 		sound_mgr->PlaySound2d(sCancel);
 		return;
 	}
@@ -1818,14 +1800,14 @@ void Game::PrepareAreaPath()
 	{
 	case Action::LINE:
 		{
-			float rot = Clip(pc->unit->rot + PI + pc_data.action_rot);
+			float rot = Clip(pc->unit->rot + PI + pc->data.action_rot);
 			const int steps = 10;
 
 			// find max line
 			float t;
 			Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
 			bool ignore_units = IsSet(action.flags, Action::F_IGNORE_UNITS);
-			LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
+			game_level->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 			{
 				int flags = obj->getCollisionFlags();
 				if(IsSet(flags, CG_TERRAIN))
@@ -1891,7 +1873,7 @@ void Game::PrepareAreaPath()
 				area.faces.push_back(3);
 			}
 
-			pc_data.action_ok = true;
+			pc->data.action_ok = true;
 		}
 		break;
 
@@ -1938,8 +1920,8 @@ void Game::PrepareAreaPath()
 			float t, end_t;
 			Vec3 dir_normal(sin(rot), 0, cos(rot));
 			Vec3 dir = dir_normal * range;
-			LineTest(game_level->shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
-			LineTest(game_level->shape_summon, from + dir, -dir, clbk, t, &t_backward);
+			game_level->LineTest(game_level->shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
+			game_level->LineTest(game_level->shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
 			// merge t's to find free spots, we only use last one
 			static vector<pair<float, bool>> t_merged;
@@ -2013,11 +1995,11 @@ void Game::PrepareAreaPath()
 				// no free space
 				t = end_t;
 				area.ok = 0;
-				pc_data.action_ok = false;
+				pc->data.action_ok = false;
 			}
 			else
 			{
-				pc_data.action_ok = true;
+				pc->data.action_ok = true;
 			}
 
 			// build circle
@@ -2033,8 +2015,8 @@ void Game::PrepareAreaPath()
 			}
 
 			// set action
-			if(pc_data.action_ok)
-				pc_data.action_point = area.points[0];
+			if(pc->data.action_ok)
+				pc->data.action_point = area.points[0];
 		}
 		break;
 
@@ -2049,7 +2031,7 @@ void Game::PrepareAreaPath()
 			else
 			{
 				// raytest
-				BulletRaytestCallback4 clbk(pc->unit);
+				RaytestClosestUnitDeadOrAliveCallback clbk(pc->unit);
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();
 				Vec3 to = from + dir * action.area_size.x;
@@ -2059,14 +2041,14 @@ void Game::PrepareAreaPath()
 
 			if(target)
 			{
-				pc_data.action_ok = true;
-				pc_data.action_point = target->pos;
-				pc_data.action_target = target;
+				pc->data.action_ok = true;
+				pc->data.action_point = target->pos;
+				pc->data.action_target = target;
 			}
 			else
 			{
-				pc_data.action_ok = false;
-				pc_data.action_target = nullptr;
+				pc->data.action_ok = false;
+				pc->data.action_target = nullptr;
 			}
 
 			area2_pool.Free(area_ptr);
@@ -3040,7 +3022,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			glow_color = Vec4(1, 1, 1, 1);
 
 		// ustawienia shadera
-		m1 = glow.node->mat * game_level->camera.matViewProj;
+		Matrix m1 = glow.node->mat * game_level->camera.matViewProj;
 		V(eGlow->SetMatrix(hGlowCombined, (D3DXMATRIX*)&m1));
 		V(eGlow->SetVector(hGlowColor, (D3DXVECTOR4*)&glow_color));
 		V(eGlow->CommitChanges());
@@ -3237,14 +3219,14 @@ void Game::DrawSkybox()
 	render->SetNoZWrite(true);
 
 	uint passes;
-	m2 = Matrix::Translation(game_level->camera.center) * game_level->camera.matViewProj;
+	Matrix m1 = Matrix::Translation(game_level->camera.center) * game_level->camera.matViewProj;
 
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(aSkybox->vertex_decl)));
 	V(device->SetStreamSource(0, aSkybox->vb, 0, aSkybox->vertex_size));
 	V(device->SetIndices(aSkybox->ib));
 
 	V(eSkybox->SetTechnique(techSkybox));
-	V(eSkybox->SetMatrix(hSkyboxCombined, (D3DXMATRIX*)&m2));
+	V(eSkybox->SetMatrix(hSkyboxCombined, (D3DXMATRIX*)&m1));
 	V(eSkybox->Begin(&passes, 0));
 	V(eSkybox->BeginPass(0));
 
@@ -3508,8 +3490,8 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		}
 
 		// setup shader
-		m1 = Matrix::Translation(blood.pos);
-		m2 = m1 * game_level->camera.matViewProj;
+		Matrix m1 = Matrix::Translation(blood.pos);
+		Matrix m2 = m1 * game_level->camera.matViewProj;
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m2));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&m1));
 		V(e->SetTexture(super_shader->hTexDiffuse, tKrewSlad[blood.type]->tex));
@@ -3550,7 +3532,7 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 		game_level->camera.matViewInv._41 = it->pos.x;
 		game_level->camera.matViewInv._42 = it->pos.y;
 		game_level->camera.matViewInv._43 = it->pos.z;
-		m1 = Matrix::Scale(it->size) * game_level->camera.matViewInv;
+		Matrix m1 = Matrix::Scale(it->size) * game_level->camera.matViewInv;
 
 		for(int i = 0; i < 4; ++i)
 			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
@@ -3598,7 +3580,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 			V(eMesh->SetTexture(hMeshTex, last_tex));
 		}
 
-		m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.matViewProj;
+		Matrix m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.matViewProj;
 		tint.w = 1.f - e.size / e.sizemax;
 
 		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&m1));
@@ -3658,7 +3640,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			game_level->camera.matViewInv._41 = p.pos.x;
 			game_level->camera.matViewInv._42 = p.pos.y;
 			game_level->camera.matViewInv._43 = p.pos.z;
-			m1 = Matrix::Scale(pe.GetScale(p)) * game_level->camera.matViewInv;
+			Matrix m1 = Matrix::Scale(pe.GetScale(p)) * game_level->camera.matViewInv;
 
 			const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 
@@ -3834,8 +3816,8 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 			game_level->camera.matViewInv._41 = it2->pts.front().x;
 			game_level->camera.matViewInv._42 = it2->pts.front().y;
 			game_level->camera.matViewInv._43 = it2->pts.front().z;
-			m2 = Matrix::Scale(0.1f);
-			m1 = m2 * game_level->camera.matViewInv;
+			const Matrix m_scale = Matrix::Scale(0.1f);
+			Matrix m1 = m_scale * game_level->camera.matViewInv;
 
 			for(int i = 0; i < 2; ++i)
 				prev[i] = Vec3::Transform(pos[i], m1);
@@ -3848,7 +3830,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				game_level->camera.matViewInv._41 = it2->pts[j].x;
 				game_level->camera.matViewInv._42 = it2->pts[j].y;
 				game_level->camera.matViewInv._43 = it2->pts[j].z;
-				m1 = m2 * game_level->camera.matViewInv;
+				m1 = m_scale * game_level->camera.matViewInv;
 
 				for(int i = 0; i < 2; ++i)
 					next[i] = Vec3::Transform(pos[i], m1);
@@ -3953,10 +3935,10 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
 	{
 		const Portal& portal = **it;
-		m2 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
+		Matrix m1 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
 			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
 			* game_level->camera.matViewProj;
-		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m2));
+		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m1));
 		V(eParticle->CommitChanges());
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)));
 	}

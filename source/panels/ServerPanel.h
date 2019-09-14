@@ -37,7 +37,7 @@ public:
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
 	void ExitLobby(VoidF callback = nullptr);
-	void AddMsg(cstring text);
+	void AddMsg(cstring text) { itb.Add(text); }
 	void OnKick(int id);
 	void OnInput(const string& str);
 	void StopStartup();

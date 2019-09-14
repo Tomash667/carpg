@@ -590,13 +590,13 @@ void WorldMapGui::AppendLocationText(Location& loc, string& s)
 	if(game->devmode && Net::IsLocal())
 	{
 		s += " (";
-		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
+		if(loc.type == L_DUNGEON)
 		{
 			InsideLocation* inside = (InsideLocation*)&loc;
 			s += Format("%s, %s, st %d, levels %d, ",
 				g_base_locations[inside->target].name, loc.group->id.c_str(), loc.st, inside->GetLastLevel() + 1);
 		}
-		else if(loc.type == L_FOREST || loc.type == L_CAMP || loc.type == L_CAVE || loc.type == L_MOONWELL)
+		else if(loc.type == L_OUTSIDE || loc.type == L_CAMP || loc.type == L_CAVE)
 			s += Format("%s, st %d, ", loc.group->id.c_str(), loc.st);
 		s += Format("quest 0x%p)", loc.active_quest);
 	}

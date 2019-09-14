@@ -180,7 +180,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	if(!tutorial)
 	{
 		GenerateWorld();
-		quest_mgr->InitQuests(devmode);
+		quest_mgr->InitQuests();
 		world->StartInLocation();
 		if(!sound_mgr->IsMusicDisabled())
 		{
@@ -302,17 +302,8 @@ void Game::CreateServerEvent(int id)
 			return;
 		}
 
-		Net_OnNewGameServer();
+		net->OnNewGameServer();
 	}
-}
-
-//=================================================================================================
-void Game::AddMsg(cstring msg)
-{
-	if(game_gui->server->visible)
-		game_gui->server->AddMsg(msg);
-	else
-		AddMultiMsg(msg);
 }
 
 //=================================================================================================
@@ -843,7 +834,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					RakNetGUID guid;
 					guid.FromString(info.guid.c_str());
 					net->master_server_adr = packet->systemAddress;
-					net->api->StartPunchthrough(&guid);
+					api->StartPunchthrough(&guid);
 				}
 				break;
 			case ID_NAT_TARGET_NOT_CONNECTED:
@@ -851,13 +842,13 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_NAT_CONNECTION_TO_TARGET_LOST:
 			case ID_NAT_PUNCHTHROUGH_FAILED:
 				Warn("NM_CONNECTING(3): Punchthrough failed (%d).", msg_id);
-				net->api->EndPunchthrough();
+				api->EndPunchthrough();
 				EndConnecting(txConnectionFailed);
 				break;
 			case ID_NAT_PUNCHTHROUGH_SUCCEEDED:
 				{
 					Info("NM_CONNECTING(3): Punchthrough succeeded, connecting to server %s.", packet->systemAddress.ToString());
-					net->api->EndPunchthrough();
+					api->EndPunchthrough();
 					net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 					PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
 					net->server = packet->systemAddress;
@@ -892,7 +883,7 @@ void Game::UpdateClientConnectingIp(float dt)
 		if(net_timer <= 0.f)
 		{
 			Warn("NM_CONNECTING(3): Connection to proxy timeout.");
-			net->api->EndPunchthrough();
+			api->EndPunchthrough();
 			EndConnecting(txConnectTimeout);
 		}
 	}
@@ -956,7 +947,7 @@ void Game::UpdateClientTransfer(float dt)
 
 				LoadingStep("");
 				ClearGameVars(true);
-				Net_OnNewGameClient();
+				net->OnNewGameClient();
 
 				fallback_type = FALLBACK::NONE;
 				fallback_t = -0.5f;
@@ -1077,7 +1068,7 @@ void Game::UpdateClientTransfer(float dt)
 				net_state = NetState::Client_ReceivedPlayerData;
 				game_gui->info_box->Show(txLoadingChars);
 				LoadingStep("");
-				if(!ReadPlayerData(reader))
+				if(!net->ReadPlayerData(reader))
 				{
 					Error("NM_TRANSFER: Failed to read player data.");
 					net->peer->DeallocatePacket(packet);
@@ -1123,7 +1114,7 @@ void Game::UpdateClientTransfer(float dt)
 					if(net->mp_quickload)
 					{
 						net->mp_quickload = false;
-						AddMultiMsg(txGameLoaded);
+						game_gui->mp_box->Add(txGameLoaded);
 						game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
 					}
 					net->peer->DeallocatePacket(packet);
@@ -1152,12 +1143,12 @@ void Game::UpdateClientTransfer(float dt)
 					fallback_type = FALLBACK::NONE;
 					fallback_t = -0.5f;
 					game_level->camera.Reset();
-					pc_data.rot_buf = 0.f;
+					pc->data.rot_buf = 0.f;
 					ChangeTitle();
 					if(net->mp_quickload)
 					{
 						net->mp_quickload = false;
-						AddMultiMsg(txGameLoaded);
+						game_gui->mp_box->Add(txGameLoaded);
 						game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
 					}
 					net->peer->DeallocatePacket(packet);
@@ -1311,7 +1302,7 @@ void Game::UpdateServerTransfer(float dt)
 			clear_color = Color::Black;
 			net->prepare_world = true;
 			GenerateWorld();
-			quest_mgr->InitQuests(devmode);
+			quest_mgr->InitQuests();
 			world->StartInLocation();
 			net->prepare_world = false;
 			if(!sound_mgr->IsMusicDisabled())
@@ -1448,7 +1439,7 @@ void Game::UpdateServerTransfer(float dt)
 					c.type = NetChange::HERO_LEAVE;
 					c.unit = unit;
 
-					AddMultiMsg(Format(txMpNPCLeft, unit->hero->name.c_str()));
+					game_gui->mp_box->Add(Format(txMpNPCLeft, unit->hero->name.c_str()));
 					if(game_level->city_ctx)
 						unit->OrderWander();
 					else
@@ -1575,11 +1566,11 @@ void Game::UpdateServerTransfer(float dt)
 				world->SetState(World::State::ON_MAP);
 				net->update_timer = 0.f;
 				SetMusic(MusicType::Travel);
-				ProcessLeftPlayers();
+				net->ProcessLeftPlayers();
 				if(net->mp_quickload)
 				{
 					net->mp_quickload = false;
-					AddMultiMsg(txGameLoaded);
+					game_gui->mp_box->Add(txGameLoaded);
 					game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
 				}
 				game_gui->info_box->CloseDialog();
@@ -1665,7 +1656,7 @@ void Game::UpdateServerTransfer(float dt)
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 						rot = Clip(portal->rot + PI);
 					}
-					else if(game_level->location->type == L_DUNGEON || game_level->location->type == L_CRYPT)
+					else if(game_level->location->type == L_DUNGEON)
 					{
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
@@ -1706,7 +1697,8 @@ void Game::UpdateServerTransfer(float dt)
 				if(net->active_players > 1)
 				{
 					prepared_stream.Reset();
-					net->WriteLevelData(prepared_stream, false);
+					BitStreamWriter f(prepared_stream);
+					net->WriteLevelData(f, false);
 					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 					game_gui->info_box->Show(txWaitingForPlayers);
 				}
@@ -1773,7 +1765,9 @@ void Game::UpdateServerSend(float dt)
 			{
 				Info("NM_SERVER_SEND: Send player data to %s.", info.name.c_str());
 				info.state = PlayerInfo::WAITING_FOR_DATA2;
-				SendPlayerData(info);
+				BitStreamWriter f;
+				net->WritePlayerData(f, info);
+				net->SendServer(f, HIGH_PRIORITY, RELIABLE, info.adr);
 			}
 			else
 			{
@@ -1831,11 +1825,11 @@ void Game::UpdateServerSend(float dt)
 		net->mp_load = false;
 		SetMusic();
 		game_gui->Setup(pc);
-		ProcessLeftPlayers();
+		net->ProcessLeftPlayers();
 		if(net->mp_quickload)
 		{
 			net->mp_quickload = false;
-			AddMultiMsg(txGameLoaded);
+			game_gui->mp_box->Add(txGameLoaded);
 			game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
 		}
 	}
@@ -1907,7 +1901,7 @@ void Game::OnEnterPassword(int id)
 	Info("Password entered.");
 	if(net_state == NetState::Client_WaitingForPasswordProxy)
 	{
-		ConnectionAttemptResult result = net->peer->Connect(net->api->GetApiUrl(), net->api->GetProxyPort(), nullptr, 0);
+		ConnectionAttemptResult result = net->peer->Connect(api->GetApiUrl(), api->GetProxyPort(), nullptr, 0);
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
 			net_state = NetState::Client_ConnectingProxy;
@@ -1974,13 +1968,6 @@ void Game::QuickJoinIp()
 	}
 	else
 		Warn("Can't quick connect to server, invalid ip.");
-}
-
-void Game::AddMultiMsg(cstring _msg)
-{
-	assert(_msg);
-
-	game_gui->mp_box->itb.Add(_msg);
 }
 
 void Game::Quit()
@@ -2181,7 +2168,7 @@ void Game::OnPickServer(int id)
 		}
 		else
 		{
-			ConnectionAttemptResult result = net->peer->Connect(net->api->GetApiUrl(), net->api->GetProxyPort(), nullptr, 0);
+			ConnectionAttemptResult result = net->peer->Connect(api->GetApiUrl(), api->GetProxyPort(), nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
 				net_mode = NM_CONNECTING;

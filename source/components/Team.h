@@ -82,13 +82,15 @@ public:
 	uint RemoveItem(const Item* item, uint count);
 	void SetBandit(bool is_bandit);
 	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
+	bool IsAnyoneTalking() const;
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)
 	Unit* leader;
 	int my_id, leader_id, players_level, free_recruits;
 	bool crazies_attack, // team attacked by crazies on current level
-		is_bandit; // attacked npc, now npc's are aggresive
+		is_bandit, // attacked npc, now npc's are aggresive
+		anyone_talking;
 
 private:
 	bool CheckTeamShareItem(TeamShareItem& tsi);

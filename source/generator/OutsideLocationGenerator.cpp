@@ -206,13 +206,13 @@ void OutsideLocationGenerator::OnEnter()
 	}
 
 	// handle quest event
-	if(outside->active_quest && outside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
+	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
 	{
 		Quest_Event* event = outside->active_quest->GetEvent(game_level->location_index);
 		if(event)
 		{
 			if(!event->done)
-				game->HandleQuestEvent(event);
+				quest_mgr->HandleQuestEvent(event);
 			game_level->event_handler = event->location_event_handler;
 		}
 	}

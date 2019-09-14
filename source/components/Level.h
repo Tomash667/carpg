@@ -68,6 +68,7 @@ public:
 	Electro* FindElectro(int id);
 	bool RemoveTrap(int id);
 	void RemoveUnit(Unit* unit, bool notify = true);
+	void RemoveUnit(UnitData* ud, bool on_leave);
 	// for object rot must be 0, PI/2, PI or PI*3/2
 	ObjectEntity SpawnObjectEntity(LevelArea& area, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
 		Vec3* out_point = nullptr, int variant = -1);
@@ -171,6 +172,14 @@ public:
 	Vec4 GetLightColor() { return Vec4(1, 1, 1, 1); }
 	Vec4 GetLightDir();
 	void SetOutsideParams();
+	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
+	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
+	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
+	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
+		vector<float>* t_list = nullptr, bool use_clbk2 = false, float* end_t = nullptr);
+	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
+	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index

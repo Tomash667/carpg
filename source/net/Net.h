@@ -107,8 +107,6 @@ public:
 	void Init();
 	void LoadLanguage();
 	void LoadData();
-	void WriteNetVars(BitStreamWriter& f);
-	void ReadNetVars(BitStreamReader& f);
 	bool ValidateNick(cstring nick);
 
 	//****************************************************************************
@@ -125,8 +123,8 @@ public:
 	void CancelFastTravel(int mode, int id);
 	void ClearFastTravel();
 	void OnFastTravel(bool accept);
+	void AddServerMsg(cstring msg);
 
-	LobbyApi* api;
 	RakPeerInterface* peer;
 	rvector<PlayerInfo> players; // contains players that left too
 	vector<string*> net_strs;
@@ -139,24 +137,44 @@ public:
 	//****************************************************************************
 public:
 	void InitServer();
-	void OnChangeLevel(int level);
+	void OnNewGameServer();
+	void UpdateServer(float dt);
+	void InterpolatePlayers(float dt);
+	void UpdateFastTravel(float dt);
+	void ServerProcessUnits(vector<Unit*>& units);
+	void UpdateWarpData(float dt);
+	void ProcessLeftPlayers();
+	void RemovePlayer(PlayerInfo& info);
+	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
+	bool CheckMove(Unit& unit, const Vec3& pos);
+	void WriteServerChanges(BitStreamWriter& f);
+	void WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info);
+	void Server_Say(BitStreamReader& f, PlayerInfo& info);
+	void Server_Whisper(BitStreamReader& f, PlayerInfo& info);
+	void ClearChanges();
+	void FilterServerChanges();
+	bool FilterOut(NetChangePlayer& c);
+	void WriteNetVars(BitStreamWriter& f);
+	void WriteWorldData(BitStreamWriter& f);
+	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
+	void WriteLevelData(BitStreamWriter& f, bool loaded_resources);
+	void WritePlayerData(BitStreamWriter& f, PlayerInfo& info);
 	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
+	int GetServerFlags();
 	int GetNewPlayerId();
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void DeleteOldPlayers();
-	void Save(GameWriter& f);
-	void Load(GameReader& f);
-	void InterpolatePlayers(float dt);
 	void KickPlayer(PlayerInfo& info);
-	void FilterServerChanges();
-	bool FilterOut(NetChangePlayer& c);
-	void WriteWorldData(BitStreamWriter& f);
-	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
-	void WriteLevelData(BitStream& stream, bool loaded_resources);
-	int GetServerFlags();
-	void ClearChanges();
-	void UpdateFastTravel(float dt);
+	void OnChangeLevel(int level);
+	void OnLeaveLocation(int where)
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::LEAVE_LOCATION;
+		c.id = where;
+	}
 
 	rvector<PlayerInfo> old_players;
 	uint active_players, max_players;
@@ -164,6 +182,13 @@ public:
 	int last_id;
 	MasterServerState master_server_state;
 	SystemAddress master_server_adr;
+	struct WarpData
+	{
+		Unit* u;
+		int where; // <-1 - get outside the building,  >=0 - get inside the building
+		float timer;
+	};
+	vector<WarpData> warps;
 	bool players_left, server_lan;
 
 	//****************************************************************************
@@ -171,15 +196,26 @@ public:
 	//****************************************************************************
 public:
 	void InitClient();
-	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
+	void OnNewGameClient();
+	void UpdateClient(float dt);
 	void InterpolateUnits(float dt);
+	void WriteClientChanges(BitStreamWriter& f);
+	bool ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server);
+	bool ProcessControlMessageClientForMe(BitStreamReader& f);
+	void Client_Say(BitStreamReader& f);
+	void Client_Whisper(BitStreamReader& f);
+	void Client_ServerSay(BitStreamReader& f);
 	void FilterClientChanges();
 	bool FilterOut(NetChange& c);
+	void ReadNetVars(BitStreamReader& f);
 	bool ReadWorldData(BitStreamReader& f);
 	bool ReadPlayerStartData(BitStreamReader& f);
 	bool ReadLevelData(BitStreamReader& f);
+	bool ReadPlayerData(BitStreamReader& f);
+	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
 
 	SystemAddress server, ping_adr;
+	float interpolate_timer;
 	bool was_client, join_lan;
 
 private:

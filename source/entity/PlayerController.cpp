@@ -18,6 +18,12 @@
 #include "SoundManager.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
+#include "Inventory.h"
+#include "Arena.h"
+#include "Spell.h"
+#include "ParticleSystem.h"
+
+LocalPlayerData PlayerController::data;
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -1605,4 +1611,255 @@ float PlayerController::GetActionPower() const
 {
 	// currently only used by heal spell
 	return 150.f + 5.f * (unit->Get(AttributeId::CHA) - 50.f) + 5.f * unit->Get(SkillId::GODS_MAGIC);
+}
+
+//=================================================================================================
+float PlayerController::GetShootAngle() const
+{
+	const float pt0 = 4.6662526f;
+	return game_level->camera.rot.y - pt0;
+}
+
+//=================================================================================================
+void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type)
+{
+	assert(ptr);
+
+	if(pos.y < unit->pos.y - 0.5f || pos.y > unit->pos.y + 2.f)
+		return;
+
+	float dist = Vec3::Distance2d(unit->pos, pos);
+	if(dist < PICKUP_RANGE && dist < best_dist)
+	{
+		float angle = AngleDiff(Clip(unit->rot + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
+		assert(angle >= 0.f);
+		if(angle < PI / 4)
+		{
+			if(type == BP_CHEST)
+			{
+				Chest* chest = (Chest*)ptr;
+				if(AngleDiff(Clip(chest->rot - PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos))) > PI / 2)
+					return;
+			}
+			else if(type == BP_USABLE)
+			{
+				Usable* use = (Usable*)ptr;
+				auto& bu = *use->base;
+				if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+				{
+					float allowed_dif;
+					switch(bu.limit_rot)
+					{
+					default:
+					case 0:
+						allowed_dif = PI * 2;
+						break;
+					case 1:
+						allowed_dif = PI / 2;
+						break;
+					case 2:
+						allowed_dif = PI / 4;
+						break;
+					}
+					if(AngleDiff(Clip(use->rot - PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos))) > allowed_dif)
+						return;
+				}
+			}
+			dist += angle;
+			if(dist < best_dist && game_level->CanSee(*unit->area, unit->pos, pos, type == BP_DOOR, ptr))
+			{
+				best_dist = dist;
+				data.before_player_ptr.any = ptr;
+				data.before_player = type;
+			}
+		}
+	}
+}
+
+//=================================================================================================
+void PlayerController::UseUsable(Usable* usable, bool after_action)
+{
+	Unit& u = *unit;
+	Usable& use = *usable;
+	BaseUsable& bu = *use.base;
+
+	bool ok = true;
+	if(bu.item)
+	{
+		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
+		{
+			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
+			ok = false;
+		}
+		else if(unit->weapon_state != WS_HIDDEN && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
+		{
+			if(after_action)
+				return;
+			u.HideWeapon();
+			next_action = NA_USE;
+			next_action_data.usable = &use;
+			if(Net::IsClient())
+				Net::PushChange(NetChange::SET_NEXT_ACTION);
+			ok = false;
+		}
+		else
+			u.used_item = bu.item;
+	}
+
+	if(!ok)
+		return;
+
+	if(Net::IsLocal())
+	{
+		u.UseUsable(&use);
+		data.before_player = BP_NONE;
+
+		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+		{
+			// loot container
+			game_gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
+		}
+		else
+		{
+			u.action = A_ANIMATION2;
+			u.animation = ANI_PLAY;
+			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
+			u.mesh_inst->groups[0].speed = 1.f;
+			u.target_pos = u.pos;
+			u.target_pos2 = use.pos;
+			if(use.base->limit_rot == 4)
+				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
+			u.timer = 0.f;
+			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
+			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+		}
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::USE_USABLE;
+			c.unit = &u;
+			c.id = u.usable->id;
+			c.count = USE_USABLE_START;
+		}
+	}
+	else
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::USE_USABLE;
+		c.id = data.before_player_ptr.usable->id;
+		c.count = USE_USABLE_START;
+
+		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+		{
+			action = PlayerAction::LootContainer;
+			action_usable = data.before_player_ptr.usable;
+			chest_trade = &action_usable->container->items;
+		}
+
+		unit->action = A_PREPARE;
+	}
+}
+
+//=================================================================================================
+void PlayerController::CastSpell()
+{
+	Action& action = GetAction();
+	LevelArea& area = *unit->area;
+
+	if(strcmp(action.id, "summon_wolf") == 0)
+	{
+		// despawn old
+		Unit* existing_unit = game_level->FindUnit([&](Unit* u) { return u->summoner == unit; });
+		if(existing_unit)
+		{
+			team->RemoveTeamMember(existing_unit);
+			game_level->RemoveUnit(existing_unit);
+		}
+
+		// spawn new
+		Unit* new_unit = game_level->SpawnUnitNearLocation(area, unit->target_pos, *UnitData::Get("white_wolf_sum"), nullptr, unit->level);
+		if(new_unit)
+		{
+			new_unit->summoner = unit;
+			new_unit->in_arena = unit->in_arena;
+			if(new_unit->in_arena != -1)
+				game->arena->units.push_back(new_unit);
+			team->AddTeamMember(new_unit, HeroType::Visitor);
+			new_unit->order->unit = unit; // follow summoner
+			game->SpawnUnitEffect(*new_unit);
+		}
+	}
+	else if(strcmp(action.id, "heal") == 0)
+	{
+		Spell& spell = *Spell::TryGet("heal");
+		Unit* target = unit->action_unit;
+
+		// check if target is not too far
+		if(target && target->area == unit->area && Vec3::Distance(unit->pos, target->pos) <= action.area_size.x * 1.5f)
+		{
+			// heal target
+			if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
+			{
+				float power = GetActionPower();
+				target->hp += power;
+				if(target->hp > target->hpmax)
+					target->hp = target->hpmax;
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = target;
+				}
+			}
+
+			// particle effect
+			float r = target->GetUnitRadius(),
+				h = target->GetUnitHeight();
+			ParticleEmitter* pe = new ParticleEmitter;
+			pe->tex = spell.tex_particle;
+			pe->emision_interval = 0.01f;
+			pe->life = 0.f;
+			pe->particle_life = 0.5f;
+			pe->emisions = 1;
+			pe->spawn_min = 16;
+			pe->spawn_max = 25;
+			pe->max_particles = 25;
+			pe->pos = target->pos;
+			pe->pos.y += h / 2;
+			pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+			pe->pos_min = Vec3(-r, -h / 2, -r);
+			pe->pos_max = Vec3(r, h / 2, r);
+			pe->size = spell.size_particle;
+			pe->op_size = POP_LINEAR_SHRINK;
+			pe->alpha = 0.9f;
+			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->mode = 1;
+			pe->Init();
+			area.tmp->pes.push_back(pe);
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::HEAL_EFFECT;
+				c.pos = pe->pos;
+			}
+
+			// sound effect
+			if(spell.sound_cast)
+			{
+				Vec3 pos = target->GetCenter();
+				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::SPELL_SOUND;
+					c.spell = &spell;
+					c.pos = pos;
+				}
+			}
+
+			Train(TrainWhat::Cast, 0.f, 0);
+		}
+	}
 }

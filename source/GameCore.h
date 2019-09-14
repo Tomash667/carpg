@@ -230,6 +230,7 @@ typedef pair<UnitData*, int> TmpSpawn;
 //-----------------------------------------------------------------------------
 namespace global
 {
+	extern LobbyApi* api;
 	extern CommandParser* cmdp;
 	extern Game* game;
 	extern GameGui* game_gui;

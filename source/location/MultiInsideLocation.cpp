@@ -49,9 +49,9 @@ void MultiInsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void MultiInsideLocation::Load(GameReader& f, bool local)
 {
-	InsideLocation::Load(f, local, token);
+	InsideLocation::Load(f, local);
 
 	f >> active_level;
 	f >> generated;

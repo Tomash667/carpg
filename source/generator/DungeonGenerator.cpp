@@ -47,7 +47,7 @@ void DungeonGenerator::Generate()
 	settings.devmode = game->devmode;
 	settings.remove_dead_end_corridors = true;
 
-	if(inside->type == L_CRYPT && !inside->HaveDownStairs())
+	if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
 	{
 		// last crypt level
 		Room* room = Room::Get();
@@ -144,7 +144,7 @@ void DungeonGenerator::Generate()
 	lvl.staircase_down_in_wall = settings.stairs_down_in_wall;
 
 	// inna tekstura pokoju w krypcie
-	if(inside->type == L_CRYPT && !inside->HaveDownStairs())
+	if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
 	{
 		Room& r = *lvl.rooms[0];
 		for(int y = 0; y < r.size.y; ++y)

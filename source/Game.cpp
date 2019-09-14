@@ -306,7 +306,7 @@ void Game::OnUpdate(float dt)
 	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
-	net->api->Update();
+	api->Update();
 	script_mgr->UpdateScripts(dt);
 
 	UpdateMusic();
@@ -492,7 +492,7 @@ void Game::OnUpdate(float dt)
 				if(Net::IsLocal())
 				{
 					if(Net::IsOnline())
-						UpdateWarpData(dt);
+						net->UpdateWarpData(dt);
 					game_level->ProcessUnitWarps();
 				}
 				SetupCamera(dt);
@@ -509,7 +509,7 @@ void Game::OnUpdate(float dt)
 					if(Net::IsLocal())
 					{
 						if(Net::IsOnline())
-							UpdateWarpData(dt);
+							net->UpdateWarpData(dt);
 						game_level->ProcessUnitWarps();
 					}
 					SetupCamera(dt);
@@ -1349,7 +1349,7 @@ void Game::PauseGame()
 	paused = !paused;
 	if(Net::IsOnline())
 	{
-		AddMultiMsg(paused ? txGamePaused : txGameResumed);
+		game_gui->mp_box->Add(paused ? txGamePaused : txGameResumed);
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PAUSED;
 		c.id = (paused ? 1 : 0);
@@ -1398,7 +1398,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	game_level->dungeon_level = level;
 	game_level->event_handler = nullptr;
-	pc_data.before_player = BP_NONE;
+	pc->data.before_player = BP_NONE;
 	arena->Reset();
 	game_gui->inventory->lock = nullptr;
 
@@ -1476,7 +1476,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 		loc_gen->Generate();
 	}
-	else if(!Any(l.type, L_DUNGEON, L_CRYPT, L_CAVE))
+	else if(!Any(l.type, L_DUNGEON, L_CAVE))
 		Info("Entering location '%s'.", l.name.c_str());
 
 	if(game_level->location->outside)
@@ -1497,7 +1497,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	l.last_visit = world->GetWorldtime();
 	game_level->CheckIfLocationCleared();
 	game_level->camera.Reset();
-	pc_data.rot_buf = 0.f;
+	pc->data.rot_buf = 0.f;
 	SetMusic();
 
 	if(close_portal)
@@ -1519,7 +1519,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		if(net->active_players > 1)
 		{
 			prepared_stream.Reset();
-			net->WriteLevelData(prepared_stream, loaded_resources);
+			BitStreamWriter f(prepared_stream);
+			net->WriteLevelData(f, loaded_resources);
 			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		}
 		else
@@ -1594,7 +1595,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		if(Net::IsLocal())
 		{
 			// usuñ questowe postacie
-			RemoveQuestUnits(true);
+			quest_mgr->RemoveQuestUnits(true);
 		}
 
 		game_level->ProcessRemoveUnits(true);
@@ -1670,7 +1671,7 @@ void Game::ReportError(int id, cstring text, bool once)
 #ifdef _DEBUG
 	game_gui->messages->AddGameMsg(str, 5.f);
 #endif
-	net->api->Report(id, Format("[%s] %s", mode, text));
+	api->Report(id, Format("[%s] %s", mode, text));
 }
 
 //=================================================================================================

@@ -147,7 +147,7 @@ void World::Update(int days, UpdateMode mode)
 	quest_mgr->Update(days);
 
 	if(Net::IsLocal())
-		game->UpdateQuests(days);
+		quest_mgr->UpdateQuests(days);
 
 	if(mode == UM_TRAVEL)
 		team->Update(1, true);
@@ -203,7 +203,7 @@ void World::SpawnCamps(int days)
 		while(true)
 		{
 			Location* loc = locations[index];
-			if(loc && loc->state != LS_CLEARED && Any(loc->type, L_DUNGEON, L_CRYPT) && loc->group->have_camps)
+			if(loc && loc->state != LS_CLEARED && loc->type == L_DUNGEON && loc->group->have_camps)
 			{
 				CreateCamp(loc->pos, loc->group, 128.f, false);
 				break;
@@ -275,7 +275,7 @@ void World::UpdateLocations()
 			loc->reset = true;
 			if(loc->state == LS_CLEARED)
 				loc->state = LS_ENTERED;
-			if(loc->type == L_DUNGEON || loc->type == L_CRYPT)
+			if(loc->type == L_DUNGEON)
 			{
 				InsideLocation* inside = static_cast<InsideLocation*>(loc);
 				inside->group = g_base_locations[inside->target].GetRandomGroup();
@@ -324,20 +324,18 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 	case L_CITY:
 		{
 			City* city = new City;
-			if(is_village)
-				city->settlement_type = City::SettlementType::Village;
+			if(!is_village)
+				city->target = CITY;
 			return city;
 		}
 	case L_CAVE:
 		return new Cave;
 	case L_CAMP:
 		return new Camp;
-	case L_FOREST:
+	case L_OUTSIDE:
 	case L_ENCOUNTER:
-	case L_MOONWELL:
 		return new OutsideLocation;
 	case L_DUNGEON:
-	case L_CRYPT:
 		{
 			Location* loc;
 			if(levels == -1)
@@ -381,7 +379,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 		return nullptr;
 
 	int levels = -1;
-	if(type == L_DUNGEON || type == L_CRYPT)
+	if(type == L_DUNGEON)
 	{
 		assert(target != -1);
 		BaseLocation& base = g_base_locations[target];
@@ -399,7 +397,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 	loc->pos = pt;
 	loc->type = type;
 
-	if(type == L_DUNGEON || type == L_CRYPT)
+	if(type == L_DUNGEON)
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(loc);
 		inside->target = target;
@@ -435,8 +433,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 			case L_CITY:
 				loc->group = UnitGroup::empty;
 				break;
-			case L_FOREST:
-			case L_MOONWELL:
+			case L_OUTSIDE:
 				loc->group = UnitGroup::Get("forest");
 				break;
 			case L_CAVE:
@@ -556,7 +553,7 @@ void World::RemoveLocation(int index)
 }
 
 //=================================================================================================
-void World::GenerateWorld(int start_location_type, int start_location_target)
+void World::GenerateWorld()
 {
 	world_size = def_world_size;
 	world_bounds = Vec2(world_border, world_size - world_border);
@@ -658,11 +655,9 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 
 	// generate guaranteed locations, one of each type & target
 	static const LOCATION guaranteed[] = {
-		L_MOONWELL,
-		L_FOREST,
+		L_OUTSIDE, L_OUTSIDE,
 		L_CAVE,
-		L_CRYPT, L_CRYPT,
-		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
+		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
 	};
 	AddLocations(countof(guaranteed), [](uint index) { return std::make_pair(guaranteed[index], false); }, 40.f);
 
@@ -672,8 +667,8 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 		L_DUNGEON,
 		L_DUNGEON,
 		L_DUNGEON,
-		L_CRYPT,
-		L_FOREST
+		L_DUNGEON,
+		L_OUTSIDE
 	};
 	AddLocations(120 - locations.size(), [](uint index) { return std::make_pair(locs[Rand() % countof(locs)], false); }, 40.f);
 
@@ -692,8 +687,8 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	CalculateTiles();
 
 	// reveal near locations, generate content
-	bool first_city_gen = true;
-	int index = 0, guaranteed_dungeon = 0, guaranteed_crypt = 0;
+	bool first_city_gen = true, guaranteed_moonwell = true;
+	int index = 0, guaranteed_dungeon = 0;
 	const Vec2& start_pos = locations[start_location]->pos;
 	UnitGroup* forest_group = UnitGroup::Get("forest");
 	UnitGroup* cave_group = UnitGroup::Get("cave");
@@ -705,12 +700,6 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN && Vec2::Distance(start_pos, loc.pos) <= 150.f)
 			loc.state = LS_KNOWN;
-
-		if(start_location_type == loc.type && start_location_target == -1)
-		{
-			start_location = index;
-			start_location_type = -1;
-		}
 
 		switch(loc.type)
 		{
@@ -730,38 +719,18 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 					cb.building = b;
 				}
 				first_city_gen = false;
-
-				if(start_location_type == L_CITY && start_location_target == 1 && city.settlement_type == City::SettlementType::Village)
-				{
-					start_location = index;
-					start_location_type = -1;
-				}
 			}
 			break;
 		case L_DUNGEON:
-		case L_CRYPT:
 			{
 				InsideLocation* inside;
 
 				int target;
-				if(loc.type == L_CRYPT)
+				if(guaranteed_dungeon == -1)
 				{
-					if(guaranteed_crypt == -1)
-						target = (Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT);
-					else if(guaranteed_crypt == 0)
-					{
-						target = HERO_CRYPT;
-						++guaranteed_crypt;
-					}
+					if(Rand() % 4 == 0)
+						target = Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT;
 					else
-					{
-						target = MONSTER_CRYPT;
-						guaranteed_crypt = -1;
-					}
-				}
-				else
-				{
-					if(guaranteed_dungeon == -1)
 					{
 						switch(Rand() % 14)
 						{
@@ -798,41 +767,47 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 							break;
 						}
 					}
-					else
+				}
+				else
+				{
+					switch(guaranteed_dungeon)
 					{
-						switch(guaranteed_dungeon)
-						{
-						default:
-						case 0:
-							target = HUMAN_FORT;
-							break;
-						case 1:
-							target = DWARF_FORT;
-							break;
-						case 2:
-							target = MAGE_TOWER;
-							break;
-						case 3:
-							target = BANDITS_HIDEOUT;
-							break;
-						case 4:
-							target = OLD_TEMPLE;
-							break;
-						case 5:
-							target = VAULT;
-							break;
-						case 6:
-							target = NECROMANCER_BASE;
-							break;
-						case 7:
-							target = LABYRINTH;
-							break;
-						}
-
-						++guaranteed_dungeon;
-						if(target == 8)
-							guaranteed_dungeon = -1;
+					default:
+					case 0:
+						target = HUMAN_FORT;
+						break;
+					case 1:
+						target = DWARF_FORT;
+						break;
+					case 2:
+						target = MAGE_TOWER;
+						break;
+					case 3:
+						target = BANDITS_HIDEOUT;
+						break;
+					case 4:
+						target = OLD_TEMPLE;
+						break;
+					case 5:
+						target = VAULT;
+						break;
+					case 6:
+						target = NECROMANCER_BASE;
+						break;
+					case 7:
+						target = LABYRINTH;
+						break;
+					case 8:
+						target = HERO_CRYPT;
+						break;
+					case 9:
+						target = MONSTER_CRYPT;
+						break;
 					}
+
+					++guaranteed_dungeon;
+					if(target == 10)
+						guaranteed_dungeon = -1;
 				}
 
 				BaseLocation& base = g_base_locations[target];
@@ -866,25 +841,22 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 						st = 3;
 				}
 				inside->st = st;
-
-				if(start_location_type == loc.type && start_location_target == target)
-				{
-					start_location = index;
-					start_location_type = -1;
-				}
 			}
 			break;
 		case L_ENCOUNTER:
 			loc.st = 10;
 			loc.group = UnitGroup::empty;
 			break;
-		case L_MOONWELL:
-			loc.st = 10;
-			loc.group = forest_group;
-			GetTileSt(loc.pos) = 10;
-			break;
-		case L_CAVE:
-		case L_FOREST:
+		case L_OUTSIDE:
+			if(guaranteed_moonwell)
+			{
+				guaranteed_moonwell = false;
+				loc.target = MOONWELL;
+				loc.st = 10;
+				loc.group = forest_group;
+				GetTileSt(loc.pos) = 10;
+			}
+			else
 			{
 				int& st = GetTileSt(loc.pos);
 				if(st < 2)
@@ -892,7 +864,18 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				else if(st > 10)
 					st = 10;
 				loc.st = st;
-				loc.group = loc.type == L_CAVE ? cave_group : forest_group;
+				loc.group = forest_group;
+			}
+			break;
+		case L_CAVE:
+			{
+				int& st = GetTileSt(loc.pos);
+				if(st < 2)
+					st = 2;
+				else if(st > 10)
+					st = 10;
+				loc.st = st;
+				loc.group = cave_group;
 			}
 			break;
 		}
@@ -935,7 +918,7 @@ void World::CalculateTiles()
 			for(uint i = 0; i < locations.size(); ++i)
 			{
 				Location* loc = locations[i];
-				if(!Any(loc->type, L_CITY, L_DUNGEON, L_CRYPT))
+				if(!Any(loc->type, L_CITY, L_DUNGEON))
 					continue;
 				float dist = Vec2::Distance(pos, loc->pos);
 				if(loc->type == L_CITY)
@@ -1045,7 +1028,7 @@ void World::SetLocationImageAndName(Location* l)
 	switch(l->type)
 	{
 	case L_CITY:
-		if(static_cast<City*>(l)->settlement_type == City::SettlementType::Village)
+		if(l->target == VILLAGE)
 		{
 			l->image = LI_VILLAGE;
 			l->name = txVillage;
@@ -1064,21 +1047,30 @@ void World::SetLocationImageAndName(Location* l)
 		l->image = LI_CAMP;
 		l->name = txCamp;
 		return;
-	case L_FOREST:
-		l->image = LI_FOREST;
-		l->name = txForest;
+	case L_OUTSIDE:
+		if(l->target == MOONWELL)
+		{
+			l->image = LI_MOONWELL;
+			l->name = txMoonwell;
+		}
+		else
+		{
+			l->image = LI_FOREST;
+			l->name = txForest;
+		}
 		break;
 	case L_ENCOUNTER:
 		l->image = LI_FOREST;
 		l->name = txRandomEncounter;
 		return;
-	case L_MOONWELL:
-		l->image = LI_MOONWELL;
-		l->name = txMoonwell;
-		return;
 	case L_DUNGEON:
-		switch(static_cast<InsideLocation*>(l)->target)
+		switch(l->target)
 		{
+		case HERO_CRYPT:
+		case MONSTER_CRYPT:
+			l->image = LI_CRYPT;
+			l->name = txCrypt;
+			break;
 		case LABYRINTH:
 			l->image = LI_LABYRINTH;
 			l->name = txLabyrinth;
@@ -1092,10 +1084,6 @@ void World::SetLocationImageAndName(Location* l)
 			l->name = txDungeon;
 			break;
 		}
-		break;
-	case L_CRYPT:
-		l->image = LI_CRYPT;
-		l->name = txCrypt;
 		break;
 	default:
 		assert(0);
@@ -1157,23 +1145,15 @@ void World::Save(GameWriter& f)
 	byte check_id = 0;
 	for(Location* loc : locations)
 	{
-		LOCATION_TOKEN loc_token;
-		if(loc)
-			loc_token = loc->GetToken();
+		if(!loc)
+			f << L_NULL;
 		else
-			loc_token = LT_NULL;
-		f << loc_token;
-
-		if(loc_token != LT_NULL)
 		{
-			if(loc_token == LT_MULTI_DUNGEON)
-			{
-				int levels = static_cast<MultiInsideLocation*>(loc)->levels.size();
-				f << levels;
-			}
+			f << loc->type;
+			if(loc->type == L_DUNGEON)
+				f << loc->GetLastLevel() + 1;
 			loc->Save(f, current == loc);
 		}
-
 		f << check_id;
 		++check_id;
 	}
@@ -1271,50 +1251,100 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	for(Location*& loc : locations)
 	{
 		++index;
-		LOCATION_TOKEN loc_token;
-		f >> loc_token;
 
-		if(loc_token != LT_NULL)
+		if(LOAD_VERSION >= V_DEV)
 		{
-			switch(loc_token)
+			LOCATION type;
+			f >> type;
+
+			if(type != L_NULL)
 			{
-			case LT_OUTSIDE:
-				loc = new OutsideLocation;
-				break;
-			case LT_CITY:
-			case LT_VILLAGE_OLD:
-				loc = new City;
-				break;
-			case LT_CAVE:
-				loc = new Cave;
-				break;
-			case LT_SINGLE_DUNGEON:
-				loc = new SingleInsideLocation;
-				break;
-			case LT_MULTI_DUNGEON:
+				switch(type)
 				{
-					int levels = f.Read<int>();
-					loc = new MultiInsideLocation(levels);
+				case L_OUTSIDE:
+				case L_ENCOUNTER:
+					loc = new OutsideLocation;
+					break;
+				case L_CITY:
+					loc = new City;
+					break;
+				case L_CAVE:
+					loc = new Cave;
+					break;
+				case L_DUNGEON:
+					{
+						int levels = f.Read<int>();
+						if(levels == 1)
+							loc = new SingleInsideLocation;
+						else
+							loc = new MultiInsideLocation(levels);
+					}
+					break;
+				case L_CAMP:
+					loc = new Camp;
+					break;
+				default:
+					assert(0);
+					loc = new OutsideLocation;
+					break;
 				}
-				break;
-			case LT_CAMP:
-				loc = new Camp;
-				break;
-			default:
-				assert(0);
-				loc = new OutsideLocation;
-				break;
+
+				loc->type = type;
+				loc->index = index;
+				loc->Load(f, current_index == index);
 			}
-
-			loc->index = index;
-			loc->Load(f, current_index == index, loc_token);
-
-			const int OLD_ACADEMY = 9;
-			if(LOAD_VERSION < V_0_8 && loc->type == OLD_ACADEMY)
-				academy = loc;
+			else
+				loc = nullptr;
 		}
 		else
-			loc = nullptr;
+		{
+			old::LOCATION_TOKEN loc_token;
+			f >> loc_token;
+
+			if(loc_token != old::LT_NULL)
+			{
+				switch(loc_token)
+				{
+				case old::LT_OUTSIDE:
+					loc = new OutsideLocation;
+					break;
+				case old::LT_CITY:
+				case old::LT_VILLAGE_OLD:
+					loc = new City;
+					break;
+				case old::LT_CAVE:
+					loc = new Cave;
+					break;
+				case old::LT_SINGLE_DUNGEON:
+					loc = new SingleInsideLocation;
+					break;
+				case old::LT_MULTI_DUNGEON:
+					{
+						int levels = f.Read<int>();
+						loc = new MultiInsideLocation(levels);
+					}
+					break;
+				case old::LT_CAMP:
+					loc = new Camp;
+					break;
+				default:
+					assert(0);
+					loc = new OutsideLocation;
+					break;
+				}
+
+				loc->index = index;
+				loc->Load(f, current_index == index);
+
+				// remove old academy
+				if(LOAD_VERSION < V_0_8 && loc->type == L_NULL)
+					academy = loc;
+			}
+			else
+				loc = nullptr;
+		}
+
+
 
 		if(step == 0)
 		{
@@ -1546,16 +1576,16 @@ void World::Write(BitStreamWriter& f)
 
 		Location& loc = *loc_ptr;
 		f.WriteCasted<byte>(loc.type);
-		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
+		if(loc.type == L_DUNGEON)
 			f.WriteCasted<byte>(loc.GetLastLevel() + 1);
 		else if(loc.type == L_CITY)
 		{
 			City& city = (City&)loc;
 			f.WriteCasted<byte>(city.citizens);
 			f.WriteCasted<word>(city.citizens_world);
-			f.WriteCasted<byte>(city.settlement_type);
 		}
 		f.WriteCasted<byte>(loc.state);
+		f.WriteCasted<byte>(loc.target);
 		f << loc.pos;
 		f << loc.name;
 		f.WriteCasted<byte>(loc.image);
@@ -1628,7 +1658,6 @@ bool World::Read(BitStreamReader& f)
 		switch(type)
 		{
 		case L_DUNGEON:
-		case L_CRYPT:
 			{
 				byte levels;
 				f >> levels;
@@ -1652,20 +1681,17 @@ bool World::Read(BitStreamReader& f)
 		case L_CAVE:
 			loc = new Cave;
 			break;
-		case L_FOREST:
+		case L_OUTSIDE:
 		case L_ENCOUNTER:
 		case L_CAMP:
-		case L_MOONWELL:
 			loc = new OutsideLocation;
 			break;
 		case L_CITY:
 			{
 				byte citizens;
 				word world_citizens;
-				byte type;
 				f >> citizens;
 				f >> world_citizens;
-				f >> type;
 				if(!f)
 				{
 					Error("Read world: Broken packet for city location %u.", index);
@@ -1676,7 +1702,6 @@ bool World::Read(BitStreamReader& f)
 				loc = city;
 				city->citizens = citizens;
 				city->citizens_world = world_citizens;
-				city->settlement_type = (City::SettlementType)type;
 			}
 			break;
 		default:
@@ -1687,6 +1712,7 @@ bool World::Read(BitStreamReader& f)
 		// location data
 		loc->index = index;
 		f.ReadCasted<byte>(loc->state);
+		f.ReadCasted<byte>(loc->target);
 		f >> loc->pos;
 		f >> loc->name;
 		f.ReadCasted<byte>(loc->image);
@@ -1824,32 +1850,17 @@ int World::GetRandomCityIndex(int excluded) const
 }
 
 //=================================================================================================
-// Get random 0-settlement, 1-city, 2-village; excluded from used list
-int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
+// Get random settlement excluded from used list
+int World::GetRandomSettlementIndex(const vector<int>& used, int target) const
 {
 	int index = Rand() % settlements;
 
 	while(true)
 	{
-		if(type != 0)
+		if(target != ANY_TARGET && locations[index]->target != target)
 		{
-			City* city = static_cast<City*>(locations[index]);
-			if(type == 1)
-			{
-				if(city->settlement_type == City::SettlementType::Village)
-				{
-					index = (index + 1) % settlements;
-					continue;
-				}
-			}
-			else
-			{
-				if(city->settlement_type == City::SettlementType::City)
-				{
-					index = (index + 1) % settlements;
-					continue;
-				}
-			}
+			index = (index + 1) % settlements;
+			continue;
 		}
 
 		bool ok = true;
@@ -1871,18 +1882,26 @@ int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
 }
 
 //=================================================================================================
-int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
+int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int flags)
 {
 	int best = -1, index = 0;
 	float dist, best_dist;
+	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
+	const bool excluded = IsSet(flags, F_EXCLUDED);
 
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		Location* loc = *it;
-		if(!loc || loc->active_quest || loc->type != type)
+		if(!loc || loc->type != type)
 			continue;
-		if(target != -1 && static_cast<InsideLocation*>(loc)->target != target)
+		if(!allow_active && loc->active_quest)
 			continue;
+		if(target != ANY_TARGET)
+		{
+			bool ok = (loc->target == target);
+			if(ok == excluded)
+				continue;
+		}
 		dist = Vec2::Distance(loc->pos, pos);
 		if(best == -1 || dist < best_dist)
 		{
@@ -1895,17 +1914,30 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
 }
 
 //=================================================================================================
-int World::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target)
+int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags)
 {
 	int best = -1, index = 0;
 	float dist, best_dist;
+	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
+	const bool excluded = IsSet(flags, F_EXCLUDED);
 
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		Location* loc = *it;
-		if(!loc || loc->active_quest || loc->type != type)
+		if(!loc || loc->type != type)
 			continue;
-		if(static_cast<InsideLocation*>(loc)->target == not_target)
+		if(!allow_active && loc->active_quest)
+			continue;
+		bool ok = false;
+		for(int i = 0; i < n_targets; ++i)
+		{
+			if(loc->target == i)
+			{
+				ok = true;
+				break;
+			}
+		}
+		if(ok == excluded)
 			continue;
 		dist = Vec2::Distance(loc->pos, pos);
 		if(best == -1 || dist < best_dist)
@@ -1965,7 +1997,7 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 	{
 		if(!*it)
 			continue;
-		if(!(*it)->active_quest && ((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT))
+		if(!(*it)->active_quest && (*it)->type == L_DUNGEON)
 		{
 			InsideLocation* inside = (InsideLocation*)*it;
 			if((*it)->state == LS_CLEARED || inside->group == group || !inside->group)
@@ -2008,38 +2040,6 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 	}
 
 	return CreateCamp(pos, group, range / 2);
-}
-
-//=================================================================================================
-int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags)
-{
-	assert(flags);
-
-	float best_dist = 999.f;
-	int best_index = -1, index = 0;
-
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
-	{
-		if(*it && IsSet(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
-		{
-			if(target_flags != -1)
-			{
-				if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
-				{
-					if(!IsSet(target_flags, 1 << ((InsideLocation*)(*it))->target))
-						break;
-				}
-			}
-			float dist = Vec2::Distance(pos, (*it)->pos);
-			if(dist < best_dist)
-			{
-				best_dist = dist;
-				best_index = index;
-			}
-		}
-	}
-
-	return best_index;
 }
 
 //=================================================================================================

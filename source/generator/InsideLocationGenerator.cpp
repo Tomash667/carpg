@@ -122,7 +122,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && inside->active_quest->type != Q_SCRIPTED)
+	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER && inside->active_quest->type != Q_SCRIPTED)
 	{
 		Quest_Event* event = inside->active_quest->GetEvent(game_level->location_index);
 		if(event)
@@ -131,7 +131,7 @@ void InsideLocationGenerator::OnEnter()
 			{
 				if(!event->done)
 				{
-					game->HandleQuestEvent(event);
+					quest_mgr->HandleQuestEvent(event);
 
 					// generowanie orków
 					if(game_level->location_index == quest_mgr->quest_orcs2->target_loc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
@@ -189,11 +189,11 @@ void InsideLocationGenerator::OnEnter()
 			Object* o = lvl.FindObject(BaseObject::Get("portal"));
 
 			OutsideLocation* loc = new OutsideLocation;
-			loc->active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
+			loc->active_quest = ACTIVE_QUEST_HOLDER;
 			loc->pos = Vec2(-999, -999);
 			loc->st = 20;
 			loc->name = game->txHiddenPlace;
-			loc->type = L_FOREST;
+			loc->type = L_OUTSIDE;
 			loc->image = LI_FOREST;
 			loc->state = LS_HIDDEN;
 			int loc_id = world->AddLocation(loc);

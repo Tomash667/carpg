@@ -71,6 +71,7 @@
 #include "RenderTarget.h"
 #include "BookPanel.h"
 #include "Engine.h"
+#include "PhysicCallbacks.h"
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -80,9 +81,6 @@ const float ARROW_TIMER = 5.f;
 const float MIN_H = 1.5f; // hardcoded in GetPhysicsPos
 const float TRAIN_KILL_RATIO = 0.1f;
 const int NN = 64;
-const float SMALL_DISTANCE = 0.001f;
-
-Matrix m1, m2, m3, m4;
 
 PlayerAction InventoryModeToActionRequired(InventoryMode imode)
 {
@@ -939,8 +937,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj gracza
-	if(pc_data.wasted_key != Key::None && input->Up(pc_data.wasted_key))
-		pc_data.wasted_key = Key::None;
+	if(pc->data.wasted_key != Key::None && input->Up(pc->data.wasted_key))
+		pc->data.wasted_key = Key::None;
 	Unit* look_target = pc->unit->look_target;
 	if(dialog_context.dialog_mode || look_target || game_gui->inventory->mode > I_INVENTORY)
 	{
@@ -1010,10 +1008,10 @@ void Game::UpdateGame(float dt)
 			}
 		}
 
-		pc_data.before_player = BP_NONE;
-		pc_data.rot_buf = 0.f;
-		pc_data.autowalk = false;
-		pc_data.action_ready = false;
+		pc->data.before_player = BP_NONE;
+		pc->data.rot_buf = 0.f;
+		pc->data.autowalk = false;
+		pc->data.action_ready = false;
 	}
 	else if(!IsBlocking(pc->unit->action) && !pc->unit->HaveEffect(EffectId::Stun))
 	{
@@ -1032,10 +1030,10 @@ void Game::UpdateGame(float dt)
 	}
 	else
 	{
-		pc_data.before_player = BP_NONE;
-		pc_data.rot_buf = 0.f;
-		pc_data.autowalk = false;
-		pc_data.action_ready = false;
+		pc->data.before_player = BP_NONE;
+		pc->data.rot_buf = 0.f;
+		pc->data.autowalk = false;
+		pc->data.action_ready = false;
 	}
 
 	// aktualizuj ai
@@ -1095,7 +1093,7 @@ void Game::UpdateGame(float dt)
 	if(Net::IsLocal())
 	{
 		if(Net::IsOnline())
-			UpdateWarpData(dt);
+			net->UpdateWarpData(dt);
 		game_level->ProcessUnitWarps();
 	}
 
@@ -1271,9 +1269,9 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 	// unit is on ground
 	if(!u.IsStanding())
 	{
-		pc_data.autowalk = false;
-		pc_data.action_ready = false;
-		pc_data.rot_buf = 0.f;
+		pc->data.autowalk = false;
+		pc->data.action_ready = false;
+		pc->data.rot_buf = 0.f;
 		u.TryStandup(dt);
 		return;
 	}
@@ -1281,9 +1279,9 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 	// unit is frozen
 	if(u.frozen >= FROZEN::YES)
 	{
-		pc_data.autowalk = false;
-		pc_data.action_ready = false;
-		pc_data.rot_buf = 0.f;
+		pc->data.autowalk = false;
+		pc->data.action_ready = false;
+		pc->data.rot_buf = 0.f;
 		if(u.frozen == FROZEN::YES)
 			u.animation = ANI_STAND;
 		return;
@@ -1295,10 +1293,10 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, AS_ANIMATION2_USING, AS_ANIMATION2_USING_SOUND))
 		{
 			if(GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE) || GKey.KeyPressedReleaseAllowed(GK_USE))
-				Unit_StopUsingUsable(area, u);
+				u.StopUsingUsable();
 		}
-		pc_data.rot_buf = 0.f;
-		pc_data.action_ready = false;
+		pc->data.rot_buf = 0.f;
+		pc->data.action_ready = false;
 	}
 
 	u.prev_pos = u.pos;
@@ -1343,9 +1341,9 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 		{
 			bool cancel_autowalk = (GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || GKey.KeyDownAllowed(GK_MOVE_BACK));
 			if(cancel_autowalk)
-				pc_data.autowalk = false;
+				pc->data.autowalk = false;
 			else if(GKey.KeyPressedReleaseAllowed(GK_AUTOWALK))
-				pc_data.autowalk = !pc_data.autowalk;
+				pc->data.autowalk = !pc->data.autowalk;
 
 			if(u.run_attack)
 			{
@@ -1361,14 +1359,14 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 					++move;
 				if(GKey.KeyDownAllowed(GK_MOVE_LEFT))
 					--move;
-				if(GKey.KeyDownAllowed(GK_MOVE_FORWARD) || pc_data.autowalk)
+				if(GKey.KeyDownAllowed(GK_MOVE_FORWARD) || pc->data.autowalk)
 					move += 10;
 				if(GKey.KeyDownAllowed(GK_MOVE_BACK))
 					move -= 10;
 			}
 		}
 		else
-			pc_data.autowalk = false;
+			pc->data.autowalk = false;
 
 		if(u.action == A_NONE && !u.talking && GKey.KeyPressedReleaseAllowed(GK_YELL))
 		{
@@ -1381,17 +1379,17 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot && allow_rot)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-			pc_data.rot_buf *= (1.f - dt * 2);
-			pc_data.rot_buf += float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / div;
-			if(pc_data.rot_buf > 0.1f)
-				pc_data.rot_buf = 0.1f;
-			else if(pc_data.rot_buf < -0.1f)
-				pc_data.rot_buf = -0.1f;
+			pc->data.rot_buf *= (1.f - dt * 2);
+			pc->data.rot_buf += float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / div;
+			if(pc->data.rot_buf > 0.1f)
+				pc->data.rot_buf = 0.1f;
+			else if(pc->data.rot_buf < -0.1f)
+				pc->data.rot_buf = -0.1f;
 		}
 		else
-			pc_data.rot_buf = 0.f;
+			pc->data.rot_buf = 0.f;
 
-		const bool rotating = (rotate != 0 || pc_data.rot_buf != 0.f);
+		const bool rotating = (rotate != 0 || pc->data.rot_buf != 0.f);
 
 		u.running = false;
 		if(rotating || move)
@@ -1403,10 +1401,10 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			if(rotating)
 			{
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = Clamp(pc_data.rot_buf, -rot_speed_dt, rot_speed_dt);
+				const float mouse_rot = Clamp(pc->data.rot_buf, -rot_speed_dt, rot_speed_dt);
 				const float val = rot_speed_dt * rotate + mouse_rot;
 
-				pc_data.rot_buf -= mouse_rot;
+				pc->data.rot_buf -= mouse_rot;
 				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
@@ -1489,7 +1487,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 					u.pos += dir;
 					moved = true;
 				}
-				else if(CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
+				else if(game_level->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
 					moved = true;
 
 				if(moved)
@@ -2057,17 +2055,17 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 		return;
 
 	// check what is in front of player
-	pc_data.before_player = BP_NONE;
+	pc->data.before_player = BP_NONE;
 	float dist, best_dist = 3.0f;
 
 	// doors in front of player
 	for(Door* door : area.doors)
 	{
 		if(OR2_EQ(door->state, Door::Open, Door::Closed))
-			PlayerCheckObjectDistance(u, door->pos, door, best_dist, BP_DOOR);
+			pc->CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
 	}
 
-	if(!pc_data.action_ready && u.action != A_CAST)
+	if(!pc->data.action_ready && u.action != A_CAST)
 	{
 		// units in front of player
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
@@ -2079,38 +2077,38 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			dist = Vec3::Distance2d(u.visual_pos, u2.visual_pos);
 
 			if(u2.IsStanding())
-				PlayerCheckObjectDistance(u, u2.visual_pos, &u2, best_dist, BP_UNIT);
+				pc->CheckObjectDistance(u2.visual_pos, &u2, best_dist, BP_UNIT);
 			else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
-				PlayerCheckObjectDistance(u, u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
+				pc->CheckObjectDistance(u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
 		}
 
 		// chests in front of player
 		for(Chest* chest : area.chests)
 		{
 			if(!chest->GetUser())
-				PlayerCheckObjectDistance(u, chest->pos, chest, best_dist, BP_CHEST);
+				pc->CheckObjectDistance(chest->pos, chest, best_dist, BP_CHEST);
 		}
 
 		// ground items in front of player
 		for(GroundItem* ground_item : area.items)
-			PlayerCheckObjectDistance(u, ground_item->pos, ground_item, best_dist, BP_ITEM);
+			pc->CheckObjectDistance(ground_item->pos, ground_item, best_dist, BP_ITEM);
 
 		// usable objects in front of player
 		for(Usable* usable : area.usables)
 		{
 			if(!usable->user)
-				PlayerCheckObjectDistance(u, usable->pos, usable, best_dist, BP_USABLE);
+				pc->CheckObjectDistance(usable->pos, usable, best_dist, BP_USABLE);
 		}
 	}
 
 	// use something in front of player
-	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE
+	if(u.frozen == FROZEN::NO && pc->data.before_player != BP_NONE
 		&& (GKey.KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
 		idle = false;
-		if(pc_data.before_player == BP_UNIT)
+		if(pc->data.before_player == BP_UNIT)
 		{
-			Unit* u2 = pc_data.before_player_ptr.unit;
+			Unit* u2 = pc->data.before_player_ptr.unit;
 
 			// przed graczem jest jakaœ postaæ
 			if(u2->live_state == Unit::DEAD || u2->live_state == Unit::FALL)
@@ -2172,7 +2170,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 					{
 						// rozpocznij rozmowê
 						dialog_context.StartDialog(u2);
-						pc_data.before_player = BP_NONE;
+						pc->data.before_player = BP_NONE;
 					}
 				}
 				else
@@ -2187,7 +2185,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 				}
 			}
 		}
-		else if(pc_data.before_player == BP_CHEST)
+		else if(pc->data.before_player == BP_CHEST)
 		{
 			// pl¹drowanie skrzyni
 			if(pc->unit->action != A_NONE)
@@ -2196,25 +2194,25 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			else if(Net::IsLocal())
 			{
 				// rozpocznij ograbianie skrzyni
-				game_gui->inventory->StartTrade2(I_LOOT_CHEST, pc_data.before_player_ptr.chest);
-				pc_data.before_player_ptr.chest->OpenClose(pc->unit);
+				game_gui->inventory->StartTrade2(I_LOOT_CHEST, pc->data.before_player_ptr.chest);
+				pc->data.before_player_ptr.chest->OpenClose(pc->unit);
 			}
 			else
 			{
 				// wyœlij wiadomoœæ o pl¹drowaniu skrzyni
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
-				c.id = pc_data.before_player_ptr.chest->id;
+				c.id = pc->data.before_player_ptr.chest->id;
 				pc->action = PlayerAction::LootChest;
-				pc->action_chest = pc_data.before_player_ptr.chest;
+				pc->action_chest = pc->data.before_player_ptr.chest;
 				pc->chest_trade = &pc->action_chest->items;
 				pc->unit->action = A_PREPARE;
 			}
 		}
-		else if(pc_data.before_player == BP_DOOR)
+		else if(pc->data.before_player == BP_DOOR)
 		{
 			// otwieranie/zamykanie drzwi
-			Door* door = pc_data.before_player_ptr.door;
+			Door* door = pc->data.before_player_ptr.door;
 			if(door->state == Door::Closed)
 			{
 				// otwieranie drzwi
@@ -2304,10 +2302,10 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 				}
 			}
 		}
-		else if(pc_data.before_player == BP_ITEM)
+		else if(pc->data.before_player == BP_ITEM)
 		{
 			// podnieœ przedmiot
-			GroundItem& item = *pc_data.before_player_ptr.item;
+			GroundItem& item = *pc->data.before_player_ptr.item;
 			if(u.action == A_NONE)
 			{
 				bool up_anim = (item.pos.y > u.pos.y + 0.5f);
@@ -2338,7 +2336,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 					}
 
 					RemoveElement(area.items, &item);
-					pc_data.before_player = BP_NONE;
+					pc->data.before_player = BP_NONE;
 
 					for(Event& event : game_level->location->events)
 					{
@@ -2358,17 +2356,17 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 					c.type = NetChange::PICKUP_ITEM;
 					c.id = item.id;
 
-					pc_data.picking_item = &item;
-					pc_data.picking_item_state = 1;
+					pc->data.picking_item = &item;
+					pc->data.picking_item_state = 1;
 				}
 			}
 		}
 		else if(u.action == A_NONE)
-			PlayerUseUsable(pc_data.before_player_ptr.usable, false);
+			pc->UseUsable(pc->data.before_player_ptr.usable, false);
 	}
 
 	// atak
-	if(u.weapon_state == WS_TAKEN && !pc_data.action_ready)
+	if(u.weapon_state == WS_TAKEN && !pc->data.action_ready)
 	{
 		idle = false;
 		if(u.weapon_taken == W_ONE_HANDED)
@@ -2478,7 +2476,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			}
 			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK))
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, pc_data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, pc->data.wasted_key);
 				if(k != Key::None)
 				{
 					u.action = A_ATTACK;
@@ -2546,7 +2544,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 
 				if(oks != 1)
 				{
-					Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, pc_data.wasted_key);
+					Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, pc->data.wasted_key);
 					if(k != Key::None)
 					{
 						// start blocking
@@ -2589,7 +2587,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			}
 			else if(u.frozen == FROZEN::NO)
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, pc_data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, pc->data.wasted_key);
 				if(k != Key::None)
 				{
 					float speed = u.GetBowAttackSpeed();
@@ -2620,16 +2618,16 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 	}
 
 	// action
-	if(!pc_data.action_ready)
+	if(!pc->data.action_ready)
 	{
 		if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ACTION)
 		{
 			if(pc->CanUseAction())
 			{
-				pc_data.action_ready = true;
-				pc_data.action_ok = false;
-				pc_data.action_rot = 0.f;
-				pc_data.action_target = nullptr;
+				pc->data.action_ready = true;
+				pc->data.action_ok = false;
+				pc->data.action_rot = 0.f;
+				pc->data.action_target = nullptr;
 			}
 			else
 				sound_mgr->PlaySound2d(sCancel);
@@ -2645,45 +2643,45 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			{
 			case 0: // none
 			case 10: // forward
-				pc_data.action_rot = 0.f;
+				pc->data.action_rot = 0.f;
 				break;
 			case -10: // backward
-				pc_data.action_rot = PI;
+				pc->data.action_rot = PI;
 				break;
 			case -1: // left
-				pc_data.action_rot = -PI / 2;
+				pc->data.action_rot = -PI / 2;
 				break;
 			case 1: // right
-				pc_data.action_rot = PI / 2;
+				pc->data.action_rot = PI / 2;
 				break;
 			case 9: // left forward
-				pc_data.action_rot = -PI / 4;
+				pc->data.action_rot = -PI / 4;
 				break;
 			case 11: // right forward
-				pc_data.action_rot = PI / 4;
+				pc->data.action_rot = PI / 4;
 				break;
 			case -11: // left backward
-				pc_data.action_rot = -PI * 3 / 4;
+				pc->data.action_rot = -PI * 3 / 4;
 				break;
 			case -9: // prawy ty³
-				pc_data.action_rot = PI * 3 / 4;
+				pc->data.action_rot = PI * 3 / 4;
 				break;
 			}
 		}
 
-		pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
-		if(pc_data.wasted_key != Key::None)
+		pc->data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
+		if(pc->data.wasted_key != Key::None)
 		{
-			if(pc_data.action_ok)
+			if(pc->data.action_ok)
 				UseAction(pc, false);
 			else
-				pc_data.wasted_key = Key::None;
+				pc->data.wasted_key = Key::None;
 		}
 		else
 		{
-			pc_data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
-			if(pc_data.wasted_key != Key::None)
-				pc_data.action_ready = false;
+			pc->data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
+			if(pc->data.wasted_key != Key::None)
+				pc->data.action_ready = false;
 		}
 	}
 
@@ -2750,8 +2748,8 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos, Uni
 		p->unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 		if(p == pc)
 		{
-			p->unit->target_pos = pc_data.action_point;
-			p->unit->action_unit = pc_data.action_target;
+			p->unit->target_pos = pc->data.action_point;
+			p->unit->action_unit = pc->data.action_target;
 		}
 		else if(Net::IsServer())
 		{
@@ -2770,8 +2768,8 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos, Uni
 		p->unit->run_attack = false;
 		if(Net::IsLocal() || !from_server)
 		{
-			p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
-			action_point = Vec3(pc_data.action_rot, 0, 0);
+			p->unit->use_rot = Clip(pc->data.action_rot + p->unit->rot + PI);
+			action_point = Vec3(pc->data.action_rot, 0, 0);
 		}
 		p->unit->animation = ANI_RUN;
 		p->unit->current_animation = ANI_RUN;
@@ -2797,7 +2795,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos, Uni
 	else if(strcmp(action.id, "summon_wolf") == 0 || strcmp(action.id, "heal") == 0)
 	{
 		if(!from_server)
-			action_point = pc_data.action_point;
+			action_point = pc->data.action_point;
 	}
 
 	if(Net::IsOnline())
@@ -2812,13 +2810,13 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos, Uni
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PLAYER_ACTION;
-			c.unit = pc_data.action_target;
-			c.pos = pc_data.action_point;
+			c.unit = pc->data.action_target;
+			c.pos = pc->data.action_point;
 		}
 	}
 
 	if(p == pc)
-		pc_data.action_ready = false;
+		pc->data.action_ready = false;
 }
 
 //=================================================================================================
@@ -2849,120 +2847,6 @@ void Game::SpawnUnitEffect(Unit& unit)
 	pe->mode = 0;
 	pe->Init();
 	unit.area->tmp->pes.push_back(pe);
-}
-
-//=================================================================================================
-void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type)
-{
-	assert(ptr);
-
-	if(pos.y < u.pos.y - 0.5f || pos.y > u.pos.y + 2.f)
-		return;
-
-	float dist = Vec3::Distance2d(u.pos, pos);
-	if(dist < PICKUP_RANGE && dist < best_dist)
-	{
-		float angle = AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, pos)));
-		assert(angle >= 0.f);
-		if(angle < PI / 4)
-		{
-			if(type == BP_CHEST)
-			{
-				Chest* chest = (Chest*)ptr;
-				if(AngleDiff(Clip(chest->rot - PI / 2), Clip(-Vec3::Angle2d(u.pos, pos))) > PI / 2)
-					return;
-			}
-			else if(type == BP_USABLE)
-			{
-				Usable* use = (Usable*)ptr;
-				auto& bu = *use->base;
-				if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
-				{
-					float allowed_dif;
-					switch(bu.limit_rot)
-					{
-					default:
-					case 0:
-						allowed_dif = PI * 2;
-						break;
-					case 1:
-						allowed_dif = PI / 2;
-						break;
-					case 2:
-						allowed_dif = PI / 4;
-						break;
-					}
-					if(AngleDiff(Clip(use->rot - PI / 2), Clip(-Vec3::Angle2d(u.pos, pos))) > allowed_dif)
-						return;
-				}
-			}
-			dist += angle;
-			if(dist < best_dist && game_level->CanSee(*u.area, u.pos, pos, type == BP_DOOR, ptr))
-			{
-				best_dist = dist;
-				pc_data.before_player_ptr.any = ptr;
-				pc_data.before_player = type;
-			}
-		}
-	}
-}
-
-//=================================================================================================
-int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool* is_small)
-{
-	assert(_radius > 0.f && _me);
-
-	Vec3 new_pos = _pos + _dir;
-	Vec3 gather_pos = _pos + _dir / 2;
-	float gather_radius = _dir.Length() + _radius;
-	game_level->global_col.clear();
-
-	Level::IgnoreObjects ignore = { 0 };
-	Unit* ignored[] = { _me, nullptr };
-	ignore.ignored_units = (const Unit**)ignored;
-	game_level->GatherCollisionObjects(*_me->area, game_level->global_col, gather_pos, gather_radius, &ignore);
-
-	if(game_level->global_col.empty())
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		return 3;
-	}
-
-	// idŸ prosto po x i z
-	if(!game_level->Collide(game_level->global_col, new_pos, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		return 3;
-	}
-
-	// idŸ po x
-	Vec3 new_pos2 = _me->pos;
-	new_pos2.x = new_pos.x;
-	if(!game_level->Collide(game_level->global_col, new_pos2, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
-		_pos = new_pos2;
-		return 1;
-	}
-
-	// idŸ po z
-	new_pos2.x = _me->pos.x;
-	new_pos2.z = new_pos.z;
-	if(!game_level->Collide(game_level->global_col, new_pos2, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
-		_pos = new_pos2;
-		return 2;
-	}
-
-	// nie ma drogi
-	return 0;
 }
 
 //=============================================================================
@@ -3005,7 +2889,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 											game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
-										Net_LeaveLocation(ENTER_FROM_OUTSIDE);
+										net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 								}
 								break;
 							}
@@ -3017,7 +2901,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						if(!team->IsLeader())
 							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(!Net::IsLocal())
-							Net_LeaveLocation(ENTER_FROM_OUTSIDE);
+							net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
 							CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
@@ -3161,7 +3045,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
-						Net_LeaveLocation(ENTER_FROM_UP_LEVEL);
+						net->OnLeaveLocation(ENTER_FROM_UP_LEVEL);
 				}
 				else
 					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -3214,7 +3098,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
-						Net_LeaveLocation(ENTER_FROM_DOWN_LEVEL);
+						net->OnLeaveLocation(ENTER_FROM_DOWN_LEVEL);
 				}
 				else
 					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -3257,7 +3141,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
-							Net_LeaveLocation(ENTER_FROM_PORTAL + index);
+							net->OnLeaveLocation(ENTER_FROM_PORTAL + index);
 					}
 					else
 						game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -3270,7 +3154,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		}
 	}
 
-	if(Net::IsLocal() || &unit != pc->unit || interpolate_timer <= 0.f)
+	if(Net::IsLocal() || &unit != pc->unit || net->interpolate_timer <= 0.f)
 	{
 		unit.visual_pos = unit.pos;
 		unit.changed = true;
@@ -3348,10 +3232,6 @@ uint Game::TestGameData(bool major)
 		// przedmioty postaci
 		if(ud.item_script)
 			ud.item_script->Test(str, errors);
-
-		// czary postaci
-		if(ud.spells)
-			TestUnitSpells(*ud.spells, str, errors);
 
 		// ataki
 		if(ud.frames)
@@ -3521,23 +3401,6 @@ uint Game::TestGameData(bool major)
 	}
 
 	return errors;
-}
-
-//=================================================================================================
-void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _count)
-{
-	for(int i = 0; i < 3; ++i)
-	{
-		if(_spells.name[i])
-		{
-			Spell* spell = Spell::TryGet(_spells.name[i]);
-			if(!spell)
-			{
-				_errors += Format("\tMissing spell '%s'.\n", _spells.name[i]);
-				++_count;
-			}
-		}
-	}
 }
 
 //=================================================================================================
@@ -3766,7 +3629,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 	// oblicz macierz hitbox
 
 	// transformacja postaci
-	m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
+	Matrix m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 
 	if(bone)
 	{
@@ -4041,7 +3904,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					targets.clear();
 					float t;
 					bool in_dash = false;
-					ContactTest(u.cobj, [&](btCollisionObject* obj, bool first)
+					game_level->ContactTest(u.cobj, [&](btCollisionObject* obj, bool first)
 					{
 						if(first)
 						{
@@ -4081,7 +3944,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 							center.y = 0;
 							center.Normalize();
 							center *= dt;
-							LineTest(u.cobj->getCollisionShape(), u.GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
+							game_level->LineTest(u.cobj->getCollisionShape(), u.GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
 							{
 								int flags = obj->getCollisionFlags();
 								if(IsSet(flags, CG_TERRAIN | CG_UNIT))
@@ -4333,7 +4196,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 						//  use usable
 						case NA_USE:
 							if(!pc->next_action_data.usable->user)
-								PlayerUseUsable(pc->next_action_data.usable, true);
+								pc->UseUsable(pc->next_action_data.usable, true);
 							break;
 						// sell equipped item
 						case NA_SELL:
@@ -4404,7 +4267,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 					assert(point);
 
-					m2 = point->mat * u.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
+					Matrix m2 = point->mat * u.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
 
 					b.attack = u.CalculateAttack(&u.GetBow());
 					b.rot = Vec3(PI / 2, u.rot + PI, 0);
@@ -4423,7 +4286,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					if(u.IsPlayer())
 					{
 						if(&u == pc->unit)
-							b.yspeed = PlayerAngleY() * 36;
+							b.yspeed = pc->GetShootAngle() * 36;
 						else
 							b.yspeed = u.player->player_info->yspeed;
 						u.player->Train(TrainWhat::BowStart, 0.f, 0);
@@ -4722,7 +4585,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(Net::IsLocal() && u.animation_state == 0 && u.mesh_inst->GetProgress2() >= u.data->frames->t[F_CAST])
 				{
 					u.animation_state = 1;
-					CastSpell(u);
+					u.CastSpell();
 				}
 				if(u.mesh_inst->frame_end_info2)
 				{
@@ -4736,7 +4599,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(Net::IsLocal() && u.animation_state == 0 && u.mesh_inst->GetProgress() >= u.data->frames->t[F_CAST])
 				{
 					u.animation_state = 1;
-					CastSpell(u);
+					u.CastSpell();
 				}
 				if(u.mesh_inst->frame_end_info)
 				{
@@ -5002,7 +4865,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(u.animation_state == 0)
 				{
 					// dash
-					LineTest(u.cobj->getCollisionShape(), from, dir, [&u](btCollisionObject* obj, bool)
+					game_level->LineTest(u.cobj->getCollisionShape(), from, dir, [&u](btCollisionObject* obj, bool)
 					{
 						int flags = obj->getCollisionFlags();
 						if(IsSet(flags, CG_TERRAIN))
@@ -5017,7 +4880,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					// bull charge, do line test and find targets
 					static vector<Unit*> targets;
 					targets.clear();
-					LineTest(u.cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
+					game_level->LineTest(u.cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
 					{
 						int flags = obj->getCollisionFlags();
 						if(first)
@@ -5090,7 +4953,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 								move_dir.Normalize();
 								move_dir *= len;
 								float t;
-								LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
+								game_level->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
 								if(t == 1.f)
 								{
 									unit->moved = true;
@@ -5108,7 +4971,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 							{
 								float t;
 								Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
-								LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
+								game_level->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
 								if(t == 1.f)
 								{
 									inner_ok = true;
@@ -5241,30 +5104,6 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 	return true;
 }
 
-struct BulletCallback : public btCollisionWorld::ConvexResultCallback
-{
-	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
-	{
-		ClearBit(m_collisionFilterMask, CG_BARRIER);
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
-	{
-		assert(m_closestHitFraction >= convexResult.m_hitFraction);
-
-		if(convexResult.m_hitCollisionObject == ignore)
-			return 1.f;
-
-		m_closestHitFraction = convexResult.m_hitFraction;
-		hitpoint = convexResult.m_hitPointLocal;
-		target = (btCollisionObject*)convexResult.m_hitCollisionObject;
-		return 0.f;
-	}
-
-	btCollisionObject* ignore, *target;
-	btVector3 hitpoint;
-};
-
 void Game::UpdateBullets(LevelArea& area, float dt)
 {
 	bool deletions = false;
@@ -5378,7 +5217,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 				// hit enemy unit
 				if(it->owner && it->owner->IsAlive() && hitted->IsAI())
-					AI_HitReaction(*hitted, it->start_pos);
+					hitted->ai->HitReaction(it->start_pos);
 
 				// calculate modifiers
 				int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
@@ -5550,7 +5389,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				}
 
 				if(hitted->IsAI() && it->owner && it->owner->IsAlive())
-					AI_HitReaction(*hitted, it->start_pos);
+					hitted->ai->HitReaction(it->start_pos);
 
 				float dmg = it->attack;
 				if(it->owner)
@@ -5652,79 +5491,6 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 	if(deletions)
 		RemoveElements(area.tmp->bullets, [](const Bullet& b) { return b.remove; });
-}
-
-Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const
-{
-	if(bullet_speed == 0.f)
-		return target.GetCenter();
-	else
-	{
-		Vec3 vel = target.pos - target.prev_pos;
-		vel *= 60;
-
-		float a = bullet_speed * bullet_speed - vel.Dot2d();
-		float b = -2 * vel.Dot2d(target.pos - me.pos);
-		float c = -(target.pos - me.pos).Dot2d();
-
-		float delta = b * b - 4 * a*c;
-		// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
-		if(delta < 0)
-			return target.GetCenter();
-
-		Vec3 pos = target.pos + ((b + std::sqrt(delta)) / (2 * a)) * Vec3(vel.x, 0, vel.z);
-		pos.y += target.GetUnitHeight() / 2;
-		return pos;
-	}
-}
-
-struct BulletRaytestCallback : public btCollisionWorld::RayResultCallback
-{
-	BulletRaytestCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), clear(true)
-	{
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(OR2_EQ(rayResult.m_collisionObject->getUserPointer(), ignore1, ignore2))
-			return 1.f;
-		clear = false;
-		return 0.f;
-	}
-
-	bool clear;
-	const void* ignore1, *ignore2;
-};
-
-struct BulletRaytestCallback2 : public btCollisionWorld::RayResultCallback
-{
-	BulletRaytestCallback2() : clear(true)
-	{
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
-			return 1.f;
-		clear = false;
-		return 0.f;
-	}
-
-	bool clear;
-};
-
-bool Game::CanShootAtLocation(const Vec3& from, const Vec3& to) const
-{
-	BulletRaytestCallback2 callback;
-	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
-	return callback.clear;
-}
-
-bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const
-{
-	BulletRaytestCallback callback(&me, ptr);
-	phy_world->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
-	return callback.clear;
 }
 
 Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
@@ -5874,7 +5640,8 @@ void Game::ChangeLevel(int where)
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
 		prepared_stream.Reset();
-		net->WriteLevelData(prepared_stream, loaded_resources);
+		BitStreamWriter f(prepared_stream);
+		net->WriteLevelData(f, loaded_resources);
 		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		game_gui->info_box->Show(txWaitingForPlayers);
 	}
@@ -6112,484 +5879,6 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 	}
 
 	return hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT;
-}
-
-void Game::CastSpell(Unit& unit)
-{
-	if(unit.IsPlayer())
-	{
-		CastPlayerSpell(*unit.player);
-		return;
-	}
-
-	LevelArea& area = *unit.area;
-	Spell& spell = *unit.data->spells->spell[unit.attack_id];
-
-	Mesh::Point* point = unit.mesh_inst->mesh->GetPoint(NAMES::point_cast);
-	assert(point);
-
-	if(unit.human_data)
-		unit.mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
-	else
-		unit.mesh_inst->SetupBones();
-
-	m2 = point->mat * unit.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos));
-
-	Vec3 coord = Vec3::TransformZero(m2);
-	float dmg;
-	if(IsSet(spell.flags, Spell::Cleric))
-		dmg = float(spell.dmg + spell.dmg_bonus * (unit.Get(AttributeId::CHA) + unit.Get(SkillId::GODS_MAGIC) - 50));
-	else
-		dmg = float(spell.dmg + spell.dmg_bonus * (unit.CalculateMagicPower() + unit.level));
-
-	if(spell.mana > 0)
-		unit.RemoveMana(spell.mana);
-
-	if(spell.type == Spell::Ball || spell.type == Spell::Point)
-	{
-		int count = 1;
-		if(IsSet(spell.flags, Spell::Triple))
-			count = 3;
-
-		float expected_rot = Clip(-Vec3::Angle2d(coord, unit.target_pos) + PI / 2);
-		float current_rot = Clip(unit.rot + PI);
-		AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
-
-		for(int i = 0; i < count; ++i)
-		{
-			Bullet& b = Add1(area.tmp->bullets);
-
-			b.level = unit.level + unit.CalculateMagicPower();
-			b.backstab = 0.25f;
-			b.pos = coord;
-			b.attack = dmg;
-			b.rot = Vec3(0, current_rot + Random(-0.05f, 0.05f), 0);
-			b.mesh = spell.mesh;
-			b.tex = spell.tex;
-			b.tex_size = spell.size;
-			b.speed = spell.speed;
-			b.timer = spell.range / (spell.speed - 1);
-			b.owner = &unit;
-			b.remove = false;
-			b.trail = nullptr;
-			b.trail2 = nullptr;
-			b.pe = nullptr;
-			b.spell = &spell;
-			b.start_pos = b.pos;
-
-			// ustal z jak¹ si³¹ rzuciæ kul¹
-			if(spell.type == Spell::Ball)
-			{
-				float dist = Vec3::Distance2d(unit.pos, unit.target_pos);
-				float t = dist / spell.speed;
-				float h = (unit.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
-				b.yspeed = h / t + (10.f*t) / 2;
-			}
-			else if(spell.type == Spell::Point)
-			{
-				float dist = Vec3::Distance2d(unit.pos, unit.target_pos);
-				float t = dist / spell.speed;
-				float h = (unit.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
-				b.yspeed = h / t;
-			}
-
-			if(spell.tex_particle)
-			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
-				pe->emision_interval = 0.1f;
-				pe->life = -1;
-				pe->particle_life = 0.5f;
-				pe->emisions = -1;
-				pe->spawn_min = 3;
-				pe->spawn_max = 4;
-				pe->max_particles = 50;
-				pe->pos = b.pos;
-				pe->speed_min = Vec3(-1, -1, -1);
-				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area.tmp->pes.push_back(pe);
-				b.pe = pe;
-			}
-
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CREATE_SPELL_BALL;
-				c.spell = &spell;
-				c.pos = b.start_pos;
-				c.f[0] = b.rot.y;
-				c.f[1] = b.yspeed;
-				c.extra_id = unit.id;
-			}
-		}
-	}
-	else
-	{
-		if(IsSet(spell.flags, Spell::Jump))
-		{
-			Electro* e = new Electro;
-			e->Register();
-			e->hitted.push_back(unit);
-			e->dmg = dmg;
-			e->owner = unit;
-			e->spell = &spell;
-			e->start_pos = unit.pos;
-
-			Vec3 hitpoint;
-			Unit* hitted;
-
-			unit.target_pos.y += Random(-0.5f, 0.5f);
-			Vec3 dir = unit.target_pos - coord;
-			dir.Normalize();
-			Vec3 target = coord + dir * spell.range;
-
-			if(RayTest(coord, target, &unit, hitpoint, hitted))
-			{
-				if(hitted)
-				{
-					// trafiono w cel
-					e->valid = true;
-					e->hitsome = true;
-					e->hitted.push_back(hitted);
-					e->AddLine(coord, hitpoint);
-				}
-				else
-				{
-					// trafienie w obiekt
-					e->valid = false;
-					e->hitsome = true;
-					e->AddLine(coord, hitpoint);
-				}
-			}
-			else
-			{
-				// w nic nie trafiono
-				e->valid = false;
-				e->hitsome = false;
-				e->AddLine(coord, target);
-			}
-
-			area.tmp->electros.push_back(e);
-
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CREATE_ELECTRO;
-				c.e_id = e->id;
-				c.pos = e->lines[0].pts.front();
-				memcpy(c.f, &e->lines[0].pts.back(), sizeof(Vec3));
-			}
-		}
-		else if(IsSet(spell.flags, Spell::Drain))
-		{
-			Vec3 hitpoint;
-			Unit* hitted;
-
-			unit.target_pos.y += Random(-0.5f, 0.5f);
-
-			if(RayTest(coord, unit.target_pos, &unit, hitpoint, hitted) && hitted)
-			{
-				// trafiono w cel
-				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !unit.IsFriend(*hitted))
-				{
-					Drain& drain = Add1(area.tmp->drains);
-					drain.from = hitted;
-					drain.to = &unit;
-
-					GiveDmg(*hitted, dmg, &unit, nullptr, DMG_MAGICAL);
-
-					drain.pe = area.tmp->pes.back();
-					drain.t = 0.f;
-					drain.pe->manual_delete = 1;
-					drain.pe->speed_min = Vec3(-3, 0, -3);
-					drain.pe->speed_max = Vec3(3, 3, 3);
-
-					dmg *= hitted->CalculateMagicResistance();
-					unit.hp += dmg;
-					if(unit.hp > unit.hpmax)
-						unit.hp = unit.hpmax;
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = drain.to;
-
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::CREATE_DRAIN;
-						c2.unit = drain.to;
-					}
-				}
-			}
-		}
-		else if(IsSet(spell.flags, Spell::Raise))
-		{
-			Unit* target = unit.action_unit;
-			if(!target) // pre V_DEV
-			{
-				for(Unit* u : area.units)
-				{
-					if(u->live_state == Unit::DEAD
-						&& !unit.IsEnemy(*u)
-						&& IsSet(u->data->flags, F_UNDEAD)
-						&& Vec3::Distance(unit.target_pos, u->pos) < 0.5f)
-					{
-						target = u;
-						break;
-					}
-				}
-			}
-
-			if(target)
-			{
-				Unit& u2 = *target;
-				u2.hp = u2.hpmax;
-				u2.live_state = Unit::ALIVE;
-				u2.weapon_state = WS_HIDDEN;
-				u2.animation = ANI_STAND;
-				u2.animation_state = 0;
-				u2.weapon_taken = W_NONE;
-				u2.weapon_hiding = W_NONE;
-
-				// za³ó¿ przedmioty / dodaj z³oto
-				u2.ReequipItems();
-
-				// przenieœ fizyke
-				game_level->WarpUnit(u2, u2.pos);
-
-				// resetuj ai
-				u2.ai->Reset();
-
-				// efekt cz¹steczkowy
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
-				pe->emision_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emisions = 1;
-				pe->spawn_min = 16;
-				pe->spawn_max = 25;
-				pe->max_particles = 25;
-				pe->pos = u2.pos;
-				pe->pos.y += u2.GetUnitHeight() / 2;
-				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area.tmp->pes.push_back(pe);
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::RAISE_EFFECT;
-					c.pos = pe->pos;
-
-					NetChange& c2 = Add1(Net::changes);
-					c2.type = NetChange::STAND_UP;
-					c2.unit = &u2;
-
-					NetChange& c3 = Add1(Net::changes);
-					c3.type = NetChange::UPDATE_HP;
-					c3.unit = &u2;
-				}
-			}
-
-			unit.ai->state = AIController::Idle;
-		}
-		else if(IsSet(spell.flags, Spell::Heal))
-		{
-			Unit* target = unit.action_unit;
-			if(!target) // pre V_DEV
-			{
-				for(Unit* u : area.units)
-				{
-					if(!unit.IsEnemy(*u) && !IsSet(u->data->flags, F_UNDEAD)
-						&& !IsSet(u->data->flags2, F2_CONSTRUCT) && Vec3::Distance(unit.target_pos, u->pos) < 0.5f)
-					{
-						target = u;
-						break;
-					}
-				}
-			}
-
-			if(target)
-			{
-				Unit& u2 = *target;
-				u2.hp += dmg;
-				if(u2.hp > u2.hpmax)
-					u2.hp = u2.hpmax;
-
-				// efekt cz¹steczkowy
-				float r = u2.GetUnitRadius(),
-					h = u2.GetUnitHeight();
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
-				pe->emision_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emisions = 1;
-				pe->spawn_min = 16;
-				pe->spawn_max = 25;
-				pe->max_particles = 25;
-				pe->pos = u2.pos;
-				pe->pos.y += h / 2;
-				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-r, -h / 2, -r);
-				pe->pos_max = Vec3(r, h / 2, r);
-				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area.tmp->pes.push_back(pe);
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HEAL_EFFECT;
-					c.pos = pe->pos;
-
-					NetChange& c3 = Add1(Net::changes);
-					c3.type = NetChange::UPDATE_HP;
-					c3.unit = &u2;
-				}
-			}
-
-			unit.ai->state = AIController::Idle;
-		}
-	}
-
-	// dŸwiêk
-	if(spell.sound_cast)
-	{
-		sound_mgr->PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist);
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPELL_SOUND;
-			c.spell = &spell;
-			c.pos = coord;
-		}
-	}
-}
-
-void Game::CastPlayerSpell(PlayerController& player)
-{
-	Action& action = player.GetAction();
-	Unit& unit = *player.unit;
-	LevelArea& area = *unit.area;
-
-	if(strcmp(action.id, "summon_wolf") == 0)
-	{
-		// despawn old
-		Unit* existing_unit = game_level->FindUnit([&](Unit* u) { return u->summoner == player.unit; });
-		if(existing_unit)
-		{
-			team->RemoveTeamMember(existing_unit);
-			game_level->RemoveUnit(existing_unit);
-		}
-
-		// spawn new
-		Unit* new_unit = game_level->SpawnUnitNearLocation(area, unit.target_pos, *UnitData::Get("white_wolf_sum"), nullptr, unit.level);
-		if(new_unit)
-		{
-			new_unit->summoner = &unit;
-			new_unit->in_arena = unit.in_arena;
-			if(new_unit->in_arena != -1)
-				arena->units.push_back(new_unit);
-			team->AddTeamMember(new_unit, HeroType::Visitor);
-			new_unit->order->unit = &unit; // follow summoner
-			SpawnUnitEffect(*new_unit);
-		}
-	}
-	else if(strcmp(action.id, "heal") == 0)
-	{
-		Spell& spell = *Spell::TryGet("heal");
-		Unit* target = unit.action_unit;
-
-		// check if target is not too far
-		if(target && target->area == unit.area && Vec3::Distance(unit.pos, target->pos) <= action.area_size.x * 1.5f)
-		{
-			// heal target
-			if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
-			{
-				float power = player.GetActionPower();
-				target->hp += power;
-				if(target->hp > target->hpmax)
-					target->hp = target->hpmax;
-				if(Net::IsServer())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = target;
-				}
-			}
-
-			// particle effect
-			float r = target->GetUnitRadius(),
-				h = target->GetUnitHeight();
-			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = spell.tex_particle;
-			pe->emision_interval = 0.01f;
-			pe->life = 0.f;
-			pe->particle_life = 0.5f;
-			pe->emisions = 1;
-			pe->spawn_min = 16;
-			pe->spawn_max = 25;
-			pe->max_particles = 25;
-			pe->pos = target->pos;
-			pe->pos.y += h / 2;
-			pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-			pe->pos_min = Vec3(-r, -h / 2, -r);
-			pe->pos_max = Vec3(r, h / 2, r);
-			pe->size = spell.size_particle;
-			pe->op_size = POP_LINEAR_SHRINK;
-			pe->alpha = 0.9f;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->mode = 1;
-			pe->Init();
-			area.tmp->pes.push_back(pe);
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::HEAL_EFFECT;
-				c.pos = pe->pos;
-			}
-
-			// sound effect
-			if(spell.sound_cast)
-			{
-				Vec3 pos = target->GetCenter();
-				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::SPELL_SOUND;
-					c.spell = &spell;
-					c.pos = pos;
-				}
-			}
-
-			player.Train(TrainWhat::Cast, 0.f, 0);
-		}
-	}
 }
 
 void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted)
@@ -7135,164 +6424,6 @@ void Game::PreloadTraps(vector<Trap*>& traps)
 	}
 }
 
-struct BulletRaytestCallback3 : public btCollisionWorld::RayResultCallback
-{
-	explicit BulletRaytestCallback3(Unit* ignore) : ignore(ignore), hitted(nullptr), fraction(1.01f)
-	{
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(!IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
-			return 1.f;
-
-		Unit* unit = reinterpret_cast<Unit*>(rayResult.m_collisionObject->getUserPointer());
-		if(unit == ignore)
-			return 1.f;
-
-		if(rayResult.m_hitFraction < fraction)
-		{
-			hitted = unit;
-			fraction = rayResult.m_hitFraction;
-		}
-
-		return 0.f;
-	}
-
-	Unit* ignore, *hitted;
-	float fraction;
-};
-
-bool Game::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted)
-{
-	BulletRaytestCallback3 callback(ignore);
-	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
-
-	if(callback.hitted)
-	{
-		hitpoint = from + (to - from) * callback.fraction;
-		hitted = callback.hitted;
-		return true;
-	}
-	else
-		return false;
-}
-
-struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
-{
-	delegate<Game::LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
-	vector<float>* t_list;
-	float end_t, closest;
-	bool use_clbk2, end = false;
-
-	ConvexCallback(delegate<Game::LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, vector<float>* t_list, bool use_clbk2) : clbk(clbk), t_list(t_list), use_clbk2(use_clbk2),
-		end(false), end_t(1.f), closest(1.1f)
-	{
-	}
-
-	bool needsCollision(btBroadphaseProxy* proxy0) const override
-	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject, true) == Game::LT_COLLIDE;
-	}
-
-	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
-	{
-		if(use_clbk2)
-		{
-			auto result = clbk((btCollisionObject*)convexResult.m_hitCollisionObject, false);
-			if(result == Game::LT_IGNORE)
-				return m_closestHitFraction;
-			else if(result == Game::LT_END)
-			{
-				if(end_t > convexResult.m_hitFraction)
-				{
-					closest = min(closest, convexResult.m_hitFraction);
-					m_closestHitFraction = convexResult.m_hitFraction;
-					end_t = convexResult.m_hitFraction;
-				}
-				end = true;
-				return 1.f;
-			}
-			else if(end && convexResult.m_hitFraction > end_t)
-				return 1.f;
-		}
-		closest = min(closest, convexResult.m_hitFraction);
-		if(t_list)
-			t_list->push_back(convexResult.m_hitFraction);
-		// return value is unused
-		return 1.f;
-	}
-};
-
-bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
-	vector<float>* t_list, bool use_clbk2, float* end_t)
-{
-	assert(shape->isConvex());
-
-	btTransform t_from, t_to;
-	t_from.setIdentity();
-	t_from.setOrigin(ToVector3(from));
-	//t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
-	t_to.setIdentity();
-	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
-	//t_to.setBasis(t_from.getBasis());
-
-	ConvexCallback callback(clbk, t_list, use_clbk2);
-
-	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
-
-	bool has_hit = (callback.closest <= 1.f);
-	t = min(callback.closest, 1.f);
-	if(end_t)
-	{
-		if(callback.end)
-			*end_t = callback.end_t;
-		else
-			*end_t = 1.f;
-	}
-	return has_hit;
-}
-
-struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
-{
-	btCollisionObject* obj;
-	delegate<bool(btCollisionObject*, bool)> clbk;
-	bool use_clbk2, hit;
-
-	ContactTestCallback(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2) : obj(obj), clbk(clbk), use_clbk2(use_clbk2), hit(false)
-	{
-	}
-
-	bool needsCollision(btBroadphaseProxy* proxy0) const override
-	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject, true);
-	}
-
-	float addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap,
-		int partId1, int index1)
-	{
-		if(use_clbk2)
-		{
-			const btCollisionObject* cobj;
-			if(colObj0Wrap->m_collisionObject == obj)
-				cobj = colObj1Wrap->m_collisionObject;
-			else
-				cobj = colObj0Wrap->m_collisionObject;
-			if(!clbk((btCollisionObject*)cobj, false))
-				return 1.f;
-		}
-		hit = true;
-		return 0.f;
-	}
-};
-
-bool Game::ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2)
-{
-	ContactTestCallback callback(obj, clbk, use_clbk2);
-	phy_world->contactTest(obj, callback);
-	return callback.hit;
-}
-
 void Game::UpdateElectros(LevelArea& area, float dt)
 {
 	LoopAndRemove(area.tmp->electros, [&](Electro* p_electro)
@@ -7326,7 +6457,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				if(!owner->IsFriend(*hitted))
 				{
 					if(hitted->IsAI() && owner->IsAlive())
-						AI_HitReaction(*hitted, electro.start_pos);
+						hitted->ai->HitReaction(electro.start_pos);
 					GiveDmg(*hitted, electro.dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 				}
 
@@ -7399,7 +6530,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 						{
 							Vec3 hitpoint;
 							Unit* new_hitted;
-							if(RayTest(electro.lines.back().pts.back(), it2->first->GetCenter(), hitted, hitpoint, new_hitted))
+							if(game_level->RayTest(electro.lines.back().pts.back(), it2->first->GetCenter(), hitted, hitpoint, new_hitted))
 							{
 								if(new_hitted == it2->first)
 								{
@@ -7561,7 +6692,7 @@ void Game::ClearGameVars(bool new_game)
 	grayout = 0.f;
 	game_level->camera.Reset();
 	game_level->lights_dt = 1.f;
-	pc_data.Reset();
+	pc->data.Reset();
 	script_mgr->Reset();
 	game_level->Reset();
 	pathfinding->SetTarget(nullptr);
@@ -7601,7 +6732,7 @@ void Game::ClearGameVars(bool new_game)
 		game_stats->Reset();
 		team->Reset();
 		dont_wander = false;
-		pc_data.picking_item_state = 0;
+		pc->data.picking_item_state = 0;
 		game_level->is_open = false;
 		game_gui->level_gui->PositionPanels();
 		game_gui->Clear(true, false);
@@ -7610,7 +6741,7 @@ void Game::ClearGameVars(bool new_game)
 		drunk_anim = 0.f;
 		game_level->light_angle = Random(PI * 2);
 		game_level->camera.Reset();
-		pc_data.rot_buf = 0.f;
+		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
 
 #ifdef _DEBUG
@@ -7702,57 +6833,6 @@ Sound* Game::GetItemSound(const Item* item)
 		return sCoins;
 	default:
 		return sItem[7];
-	}
-}
-
-void Game::Unit_StopUsingUsable(LevelArea& area, Unit& u, bool send)
-{
-	u.animation = ANI_STAND;
-	u.animation_state = AS_ANIMATION2_MOVE_TO_ENDPOINT;
-	u.timer = 0.f;
-	u.used_item = nullptr;
-
-	const float unit_radius = u.GetUnitRadius();
-
-	game_level->global_col.clear();
-	Level::IgnoreObjects ignore = { 0 };
-	const Unit* ignore_units[2] = { &u, nullptr };
-	ignore.ignored_units = ignore_units;
-	game_level->GatherCollisionObjects(area, game_level->global_col, u.pos, 2.f + unit_radius, &ignore);
-
-	Vec3 tmp_pos = u.target_pos;
-	bool ok = false;
-	float radius = unit_radius;
-
-	for(int i = 0; i < 20; ++i)
-	{
-		if(!game_level->Collide(game_level->global_col, tmp_pos, unit_radius))
-		{
-			if(i != 0 && area.have_terrain)
-				tmp_pos.y = game_level->terrain->GetH(tmp_pos);
-			u.target_pos = tmp_pos;
-			ok = true;
-			break;
-		}
-
-		tmp_pos = u.target_pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
-
-		if(i < 10)
-			radius += 0.2f;
-	}
-
-	assert(ok);
-
-	if(u.cobj)
-		u.UpdatePhysics(&u.target_pos);
-
-	if(send && Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_USABLE;
-		c.unit = &u;
-		c.id = u.usable->id;
-		c.count = USE_USABLE_STOP;
 	}
 }
 
@@ -7914,10 +6994,10 @@ void Game::LeaveLevel(bool clear)
 	game_gui->CloseAllPanels();
 
 	game_level->camera.Reset();
-	pc_data.rot_buf = 0.f;
+	pc->data.rot_buf = 0.f;
 	dialog_context.dialog_mode = false;
 	game_gui->inventory->mode = I_NONE;
-	pc_data.before_player = BP_NONE;
+	pc->data.before_player = BP_NONE;
 }
 
 void Game::LeaveLevel(LevelArea& area, bool clear)
@@ -7943,7 +7023,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			// if using object, end it and move to free space
 			if(unit.usable)
 			{
-				Unit_StopUsingUsable(area, unit);
+				unit.StopUsingUsable();
 				unit.UseUsable(nullptr);
 				unit.visual_pos = unit.pos = unit.target_pos;
 			}
@@ -8623,10 +7703,10 @@ void Game::DeleteUnit(Unit* unit)
 	{
 		RemoveElement(unit->area->units, unit);
 		game_gui->level_gui->RemoveUnitView(unit);
-		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
-			pc_data.before_player = BP_NONE;
-		if(unit == pc_data.selected_unit)
-			pc_data.selected_unit = nullptr;
+		if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
+			pc->data.before_player = BP_NONE;
+		if(unit == pc->data.selected_unit)
+			pc->data.selected_unit = nullptr;
 		if(Net::IsClient())
 		{
 			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
@@ -8704,12 +7784,6 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit;
 }
 
-float Game::PlayerAngleY()
-{
-	const float pt0 = 4.6662526f;
-	return game_level->camera.rot.y - pt0;
-}
-
 void Game::AttackReaction(Unit& attacked, Unit& attacker)
 {
 	if(attacker.IsPlayer() && attacked.IsAI() && attacked.in_arena == -1 && !attacked.attack_team)
@@ -8756,464 +7830,6 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 			}
 		}
 	}
-}
-
-void Game::GenerateQuestUnits()
-{
-	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::None && game_level->location_index == quest_mgr->quest_sawmill->start_loc)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
-		assert(u);
-		if(u)
-		{
-			quest_mgr->quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
-			quest_mgr->quest_sawmill->hd_lumberjack.Get(*u->human_data);
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_mine->start_loc && quest_mgr->quest_mine->mine_state == Quest_Mine::State::None)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
-		assert(u);
-		if(u)
-		{
-			quest_mgr->quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_bandits->start_loc && quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::None)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
-		assert(u);
-		if(u)
-		{
-			quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_mages->start_loc && quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::None)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
-		assert(u);
-		if(u)
-		{
-			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::GeneratedScholar;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_mages2->mage_loc)
-	{
-		if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
-		{
-			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
-			assert(u);
-			if(u)
-			{
-				quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
-				quest_mgr->quest_mages2->good_mage_name = u->hero->name;
-				if(devmode)
-					Info("Generated quest unit '%s'.", u->GetRealName());
-			}
-		}
-		else if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
-		{
-			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
-			assert(u);
-			if(u)
-			{
-				quest_mgr->quest_mages2->scholar = u;
-				u->hero->know_name = true;
-				u->hero->name = quest_mgr->quest_mages2->good_mage_name;
-				u->ApplyHumanData(quest_mgr->quest_mages2->hd_mage);
-				quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
-				if(devmode)
-					Info("Generated quest unit '%s'.", u->GetRealName());
-			}
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_orcs->start_loc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::None)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
-		assert(u);
-		if(u)
-		{
-			u->OrderAutoTalk();
-			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
-			quest_mgr->quest_orcs2->guard = u;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_goblins->start_loc && quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::None)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
-		assert(u);
-		if(u)
-		{
-			quest_mgr->quest_goblins->nobleman = u;
-			quest_mgr->quest_goblins->hd_nobleman.Get(*u->human_data);
-			quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(game_level->location_index == quest_mgr->quest_evil->start_loc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::None)
-	{
-		CityBuilding* b = game_level->city_ctx->FindBuilding(BuildingGroup::BG_INN);
-		Unit* u = game_level->SpawnUnitNearLocation(*game_level->local_area, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
-		assert(u);
-		if(u)
-		{
-			u->rot = Random(MAX_ANGLE);
-			u->OrderAutoTalk();
-			quest_mgr->quest_evil->cleric = u;
-			quest_mgr->quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(team->is_bandit)
-		return;
-
-	// sawmill quest
-	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
-	{
-		if(quest_mgr->quest_sawmill->days >= 30 && game_level->city_ctx)
-		{
-			quest_mgr->quest_sawmill->days = 29;
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
-			if(u)
-			{
-				quest_mgr->quest_sawmill->messenger = u;
-				u->OrderAutoTalk(true);
-			}
-		}
-	}
-	else if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
-	{
-		int count = quest_mgr->quest_sawmill->days / 30;
-		if(count)
-		{
-			quest_mgr->quest_sawmill->days -= count * 30;
-			team->AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
-		}
-	}
-
-	if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required
-		&& ((quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InBuild && quest_mgr->quest_mine->mine_state == Quest_Mine::State::Shares) // inform player about building mine & give gold
-		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Built // inform player about possible investment
-		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand // inform player about finished mine expanding
-		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
-	{
-		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
-		if(u)
-		{
-			quest_mgr->quest_mine->messenger = u;
-			u->OrderAutoTalk(true);
-		}
-	}
-
-	GenerateQuestUnits2();
-
-	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::GenerateMage && game_level->location_index == quest_mgr->quest_evil->mage_loc)
-	{
-		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
-		assert(u);
-		if(u)
-		{
-			quest_mgr->quest_evil->evil_state = Quest_Evil::State::GeneratedMage;
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(world->GetDay() == 6 && world->GetMonth() == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
-		&& game_level->location_index == quest_mgr->quest_tournament->GetCity() && !quest_mgr->quest_tournament->IsGenerated())
-		quest_mgr->quest_tournament->GenerateUnits();
-}
-
-void Game::GenerateQuestUnits2()
-{
-	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::Counting && quest_mgr->quest_goblins->days <= 0)
-	{
-		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &team->leader->pos, -2, 2.f);
-		if(u)
-		{
-			quest_mgr->quest_goblins->messenger = u;
-			u->OrderAutoTalk(true);
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-
-	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && quest_mgr->quest_goblins->days <= 0)
-	{
-		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("q_gobliny_mag"), &team->leader->pos, 5, 2.f);
-		if(u)
-		{
-			quest_mgr->quest_goblins->messenger = u;
-			quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
-			u->OrderAutoTalk(true);
-			if(devmode)
-				Info("Generated quest unit '%s'.", u->GetRealName());
-		}
-	}
-}
-
-void Game::UpdateQuests(int days)
-{
-	if(team->is_bandit)
-		return;
-
-	RemoveQuestUnits(false);
-
-	int income = 0;
-
-	// sawmill
-	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
-	{
-		quest_mgr->quest_sawmill->days += days;
-		if(quest_mgr->quest_sawmill->days >= 30 && game_level->city_ctx && game_state == GS_LEVEL)
-		{
-			quest_mgr->quest_sawmill->days = 29;
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
-			if(u)
-			{
-				quest_mgr->quest_sawmill->messenger = u;
-				u->OrderAutoTalk(true);
-			}
-		}
-	}
-	else if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
-	{
-		quest_mgr->quest_sawmill->days += days;
-		int count = quest_mgr->quest_sawmill->days / 30;
-		if(count)
-		{
-			quest_mgr->quest_sawmill->days -= count * 30;
-			income += count * Quest_Sawmill::PAYMENT;
-		}
-	}
-
-	// mine
-	if(quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InBuild)
-	{
-		quest_mgr->quest_mine->days += days;
-		if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required)
-		{
-			if(quest_mgr->quest_mine->mine_state == Quest_Mine::State::Shares)
-			{
-				// player invesetd in mine, inform him about finishing
-				if(game_level->city_ctx && game_state == GS_LEVEL)
-				{
-					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
-					if(u)
-					{
-						world->AddNews(Format(txMineBuilt, world->GetLocation(quest_mgr->quest_mine->target_loc)->name.c_str()));
-						quest_mgr->quest_mine->messenger = u;
-						u->OrderAutoTalk(true);
-					}
-				}
-			}
-			else
-			{
-				// player got gold, don't inform him
-				world->AddNews(Format(txMineBuilt, world->GetLocation(quest_mgr->quest_mine->target_loc)->name.c_str()));
-				quest_mgr->quest_mine->mine_state2 = Quest_Mine::State2::Built;
-				quest_mgr->quest_mine->days -= quest_mgr->quest_mine->days_required;
-				quest_mgr->quest_mine->days_required = Random(60, 90);
-				if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required)
-					quest_mgr->quest_mine->days = quest_mgr->quest_mine->days_required - 1;
-			}
-		}
-	}
-	else if(quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Built
-		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand
-		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)
-	{
-		// mine is built/in expand/expanded
-		// count time to news about expanding/finished expanding/found portal
-		quest_mgr->quest_mine->days += days;
-		if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required && game_level->city_ctx && game_state == GS_LEVEL)
-		{
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
-			if(u)
-			{
-				quest_mgr->quest_mine->messenger = u;
-				u->OrderAutoTalk(true);
-			}
-		}
-	}
-
-	// give gold from mine
-	income += quest_mgr->quest_mine->GetIncome(days);
-
-	if(income != 0)
-		team->AddGold(income, nullptr, true);
-
-	quest_mgr->quest_contest->Progress();
-
-	//----------------------------
-	// mages
-	if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::Counting)
-	{
-		quest_mgr->quest_mages2->days -= days;
-		if(quest_mgr->quest_mages2->days <= 0)
-		{
-			// from now golem can be encountered on road
-			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::Encounter;
-		}
-	}
-
-	// orcs
-	if(Any(quest_mgr->quest_orcs2->orcs_state, Quest_Orcs2::State::CompletedJoined, Quest_Orcs2::State::CampCleared, Quest_Orcs2::State::PickedClass))
-	{
-		quest_mgr->quest_orcs2->days -= days;
-		if(quest_mgr->quest_orcs2->days <= 0)
-			quest_mgr->quest_orcs2->orc->OrderAutoTalk();
-	}
-
-	// goblins
-	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::Counting || quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft)
-		quest_mgr->quest_goblins->days -= days;
-
-	// crazies
-	if(quest_mgr->quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
-		quest_mgr->quest_crazies->days -= days;
-
-	quest_mgr->quest_tournament->Progress();
-
-	if(game_level->city_ctx)
-		GenerateQuestUnits2();
-}
-
-void Game::RemoveQuestUnit(UnitData* ud, bool on_leave)
-{
-	assert(ud);
-
-	Unit* unit = game_level->FindUnit([=](Unit* unit)
-	{
-		return unit->data == ud && unit->IsAlive();
-	});
-
-	if(unit)
-		game_level->RemoveUnit(unit, !on_leave);
-}
-
-void Game::RemoveQuestUnits(bool on_leave)
-{
-	if(game_level->city_ctx)
-	{
-		if(quest_mgr->quest_sawmill->messenger)
-		{
-			RemoveQuestUnit(UnitData::Get("poslaniec_tartak"), on_leave);
-			quest_mgr->quest_sawmill->messenger = nullptr;
-		}
-
-		if(quest_mgr->quest_mine->messenger)
-		{
-			RemoveQuestUnit(UnitData::Get("poslaniec_kopalnia"), on_leave);
-			quest_mgr->quest_mine->messenger = nullptr;
-		}
-
-		if(game_level->is_open && game_level->location_index == quest_mgr->quest_sawmill->start_loc && quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
-			&& quest_mgr->quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
-		{
-			Unit* u = game_level->city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
-			if(u && u->IsAlive())
-			{
-				quest_mgr->quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
-				game_level->RemoveUnit(u, !on_leave);
-			}
-		}
-
-		if(quest_mgr->quest_mages2->scholar && quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::ScholarWaits)
-		{
-			RemoveQuestUnit(UnitData::Get("q_magowie_uczony"), on_leave);
-			quest_mgr->quest_mages2->scholar = nullptr;
-			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::Counting;
-			quest_mgr->quest_mages2->days = Random(15, 30);
-		}
-
-		if(quest_mgr->quest_orcs2->guard && quest_mgr->quest_orcs2->orcs_state >= Quest_Orcs2::State::GuardTalked)
-		{
-			RemoveQuestUnit(UnitData::Get("q_orkowie_straznik"), on_leave);
-			quest_mgr->quest_orcs2->guard = nullptr;
-		}
-	}
-
-	if(quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::AgentTalked)
-	{
-		quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::AgentLeft;
-		quest_mgr->quest_bandits->agent = nullptr;
-	}
-
-	if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
-	{
-		quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
-		quest_mgr->quest_mages2->scholar = nullptr;
-	}
-
-	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::MessengerTalked && quest_mgr->quest_goblins->messenger)
-	{
-		RemoveQuestUnit(UnitData::Get("q_gobliny_poslaniec"), on_leave);
-		quest_mgr->quest_goblins->messenger = nullptr;
-	}
-
-	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::GivenBow && quest_mgr->quest_goblins->nobleman)
-	{
-		RemoveQuestUnit(UnitData::Get("q_gobliny_szlachcic"), on_leave);
-		quest_mgr->quest_goblins->nobleman = nullptr;
-		quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::NoblemanLeft;
-		quest_mgr->quest_goblins->days = Random(15, 30);
-	}
-
-	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::MageTalked && quest_mgr->quest_goblins->messenger)
-	{
-		RemoveQuestUnit(UnitData::Get("q_gobliny_mag"), on_leave);
-		quest_mgr->quest_goblins->messenger = nullptr;
-		quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::MageLeft;
-	}
-
-	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
-	{
-		quest_mgr->quest_evil->cleric = nullptr;
-		quest_mgr->quest_evil->evil_state = Quest_Evil::State::ClericLeft;
-	}
-}
-
-// czy ktokolwiek w dru¿ynie rozmawia
-// bêdzie u¿ywane w multiplayer
-bool Game::IsAnyoneTalking() const
-{
-	if(Net::IsLocal())
-	{
-		if(Net::IsOnline())
-		{
-			for(Unit& unit : team->active_members)
-			{
-				if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
-					return true;
-			}
-			return false;
-		}
-		else
-			return dialog_context.dialog_mode;
-	}
-	else
-		return anyone_talking;
 }
 
 void Game::UpdateGame2(float dt)
@@ -9448,9 +8064,9 @@ void Game::UpdateGameNet(float dt)
 		return;
 
 	if(Net::IsServer())
-		UpdateServer(dt);
+		net->UpdateServer(dt);
 	else
-		UpdateClient(dt);
+		net->UpdateClient(dt);
 }
 
 DialogContext* Game::FindDialogContext(Unit* talker)
@@ -9467,90 +8083,6 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 		}
 	}
 	return nullptr;
-}
-
-void Game::PlayerUseUsable(Usable* usable, bool after_action)
-{
-	Unit& u = *pc->unit;
-	Usable& use = *usable;
-	BaseUsable& bu = *use.base;
-
-	bool ok = true;
-	if(bu.item)
-	{
-		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
-		{
-			game_gui->messages->AddGameMsg2(Format(txNeedItem, bu.item->name.c_str()), 2.f);
-			ok = false;
-		}
-		else if(pc->unit->weapon_state != WS_HIDDEN && (bu.item != &pc->unit->GetWeapon() || pc->unit->HaveShield()))
-		{
-			if(after_action)
-				return;
-			u.HideWeapon();
-			pc->next_action = NA_USE;
-			pc->next_action_data.usable = &use;
-			if(Net::IsClient())
-				Net::PushChange(NetChange::SET_NEXT_ACTION);
-			ok = false;
-		}
-		else
-			u.used_item = bu.item;
-	}
-
-	if(!ok)
-		return;
-
-	if(Net::IsLocal())
-	{
-		u.UseUsable(&use);
-		pc_data.before_player = BP_NONE;
-
-		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
-		{
-			// loot container
-			game_gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
-		}
-		else
-		{
-			u.action = A_ANIMATION2;
-			u.animation = ANI_PLAY;
-			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
-			u.mesh_inst->groups[0].speed = 1.f;
-			u.target_pos = u.pos;
-			u.target_pos2 = use.pos;
-			if(use.base->limit_rot == 4)
-				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
-			u.timer = 0.f;
-			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
-		}
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USABLE;
-			c.unit = &u;
-			c.id = u.usable->id;
-			c.count = USE_USABLE_START;
-		}
-	}
-	else
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_USABLE;
-		c.id = pc_data.before_player_ptr.usable->id;
-		c.count = USE_USABLE_START;
-
-		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
-		{
-			pc->action = PlayerAction::LootContainer;
-			pc->action_usable = pc_data.before_player_ptr.usable;
-			pc->chest_trade = &pc->action_usable->container->items;
-		}
-
-		pc->unit->action = A_PREPARE;
-	}
 }
 
 void Game::OnEnterLocation()
@@ -9583,11 +8115,11 @@ void Game::OnEnterLocation()
 				else
 					text = RandomString(txAiVillage);
 				break;
-			case L_MOONWELL:
-				text = txAiMoonwell;
-				break;
-			case L_FOREST:
-				text = txAiForest;
+			case L_OUTSIDE:
+				if(game_level->location->target == MOONWELL)
+					text = txAiMoonwell;
+				else
+					text = txAiForest;
 				break;
 			case L_CAMP:
 				if(game_level->location->state != LS_CLEARED && !game_level->location->group->IsEmpty())
@@ -9726,7 +8258,6 @@ void Game::OnEnterLevel()
 			switch(game_level->location->type)
 			{
 			case L_DUNGEON:
-			case L_CRYPT:
 				{
 					InsideLocation* inside = (InsideLocation*)game_level->location;
 					switch(inside->target)
@@ -9742,7 +8273,7 @@ void Game::OnEnterLevel()
 					case MAGE_TOWER:
 						s = txAiTower;
 						break;
-					case KOPALNIA_POZIOM:
+					case ANCIENT_ARMORY:
 						s = txAiArmory;
 						break;
 					case BANDITS_HIDEOUT:
@@ -9902,8 +8433,8 @@ void Game::OnEnterLevelOrLocation()
 {
 	game_gui->Clear(false, true);
 	game_level->lights_dt = 1.f;
-	pc_data.autowalk = false;
-	pc_data.selected_unit = pc->unit;
+	pc->data.autowalk = false;
+	pc->data.selected_unit = pc->unit;
 	fallback_t = -0.5f;
 	fallback_type = FALLBACK::NONE;
 	if(Net::IsLocal())
@@ -9922,208 +8453,4 @@ void Game::OnEnterLevelOrLocation()
 			e.quest->FireEvent(event);
 		}
 	}
-}
-
-void Game::HandleQuestEvent(Quest_Event* event)
-{
-	assert(event);
-
-	event->done = true;
-
-	Unit* spawned = nullptr, *spawned2 = nullptr;
-	InsideLocationLevel* lvl = nullptr;
-	InsideLocation* inside = nullptr;
-	if(game_level->local_area->area_type == LevelArea::Type::Inside)
-	{
-		inside = (InsideLocation*)game_level->location;
-		lvl = &inside->GetLevelData();
-	}
-
-	// spawn unit
-	if(event->unit_to_spawn)
-	{
-		if(game_level->local_area->area_type == LevelArea::Type::Outside)
-		{
-			if(game_level->location->type == L_CITY)
-				spawned = game_level->SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
-			else
-			{
-				Vec3 pos(0, 0, 0);
-				int count = 0;
-				for(Unit* unit : game_level->local_area->units)
-				{
-					pos += unit->pos;
-					++count;
-				}
-				pos /= (float)count;
-				spawned = game_level->SpawnUnitNearLocation(*game_level->local_area, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
-			}
-		}
-		else
-		{
-			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			spawned = game_level->SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
-		}
-		if(!spawned)
-			throw "Failed to spawn quest unit!";
-		spawned->dont_attack = event->unit_dont_attack;
-		if(event->unit_auto_talk)
-			spawned->OrderAutoTalk();
-		spawned->event_handler = event->unit_event_handler;
-		if(spawned->event_handler && event->send_spawn_event)
-			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
-		if(devmode)
-			Info("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z);
-
-		// mark near units as guards if guarded (only in dungeon)
-		if(IsSet(spawned->data->flags2, F2_GUARDED) && lvl)
-		{
-			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			for(Unit* unit : game_level->local_area->units)
-			{
-				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
-				{
-					unit->dont_attack = spawned->dont_attack;
-					unit->OrderGuard(spawned);
-				}
-			}
-		}
-	}
-
-	// spawn second units (only in dungeon)
-	if(event->unit_to_spawn2 && lvl)
-	{
-		Room* room;
-		if(spawned && event->spawn_2_guard_1)
-			room = lvl->GetRoom(PosToPt(spawned->pos));
-		else
-			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
-		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
-		if(!spawned2)
-			throw "Failed to spawn quest unit 2!";
-		if(devmode)
-			Info("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z);
-		if(spawned && event->spawn_2_guard_1)
-		{
-			spawned2->dont_attack = spawned->dont_attack;
-			spawned2->OrderGuard(spawned);
-		}
-	}
-
-	// spawn item
-	switch(event->spawn_item)
-	{
-	case Quest_Dungeon::Item_DontSpawn:
-		break;
-	case Quest_Dungeon::Item_GiveStrongest:
-		{
-			Unit* best = nullptr;
-			for(Unit* unit : game_level->local_area->units)
-			{
-				if(unit->IsAlive() && unit->IsEnemy(*pc->unit) && (!best || unit->level > best->level))
-					best = unit;
-			}
-			assert(best);
-			if(best)
-			{
-				best->AddItem(event->item_to_give[0], 1, true);
-				if(devmode)
-					Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z);
-			}
-		}
-		break;
-	case Quest_Dungeon::Item_GiveSpawned:
-		assert(spawned);
-		if(spawned)
-		{
-			spawned->AddItem(event->item_to_give[0], 1, true);
-			if(devmode)
-				Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z);
-		}
-		break;
-	case Quest_Dungeon::Item_GiveSpawned2:
-		assert(spawned2);
-		if(spawned2)
-		{
-			spawned2->AddItem(event->item_to_give[0], 1, true);
-			if(devmode)
-				Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->id.c_str(), spawned2->pos.x, spawned2->pos.z);
-		}
-		break;
-	case Quest_Dungeon::Item_OnGround:
-		{
-			GroundItem* item;
-			if(lvl)
-				item = game_level->SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
-			else
-				item = game_level->SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
-			if(devmode)
-				Info("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z);
-		}
-		break;
-	case Quest_Dungeon::Item_InTreasure:
-		if(inside && (inside->type == L_CRYPT || inside->target == LABYRINTH))
-		{
-			Chest* chest = nullptr;
-
-			if(inside->type == L_CRYPT)
-			{
-				Room& room = *lvl->rooms[inside->special_room];
-				LocalVector2<Chest*> chests;
-				for(Chest* chest2 : lvl->chests)
-				{
-					if(room.IsInside(chest2->pos))
-						chests.push_back(chest2);
-				}
-
-				if(!chests.empty())
-					chest = chests.RandomItem();
-			}
-			else
-				chest = RandomItem(lvl->chests);
-
-			assert(chest);
-			if(chest)
-			{
-				chest->AddItem(event->item_to_give[0]);
-				if(devmode)
-					Info("Generated item %s in treasure chest (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z);
-			}
-		}
-		break;
-	case Quest_Dungeon::Item_InChest:
-		{
-			Chest* chest = game_level->local_area->GetRandomFarChest(game_level->GetSpawnPoint());
-			assert(event->item_to_give[0]);
-			if(devmode)
-			{
-				LocalString str = "Addded items (";
-				for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
-				{
-					if(!event->item_to_give[i])
-						break;
-					if(i > 0)
-						str += ", ";
-					chest->AddItem(event->item_to_give[i]);
-					str += event->item_to_give[i]->id;
-				}
-				str += Format(") to chest (%g,%g).", chest->pos.x, chest->pos.z);
-				Info(str.get_ref().c_str());
-			}
-			else
-			{
-				for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
-				{
-					if(!event->item_to_give[i])
-						break;
-					chest->AddItem(event->item_to_give[i]);
-				}
-			}
-			chest->handler = event->chest_event_handler;
-		}
-		break;
-	}
-
-	if(event->callback)
-		event->callback();
 }

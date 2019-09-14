@@ -14,17 +14,13 @@
 // + LevelArea
 enum LOCATION
 {
+	L_NULL,
 	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga
-	L_VILLAGE_OLD, // removed (left for backward compability)
 	L_CAVE, // jaskinia, jakieœ zwierzêta/potwory/ewentualnie bandyci
 	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)
 	L_DUNGEON, // podziemia, ró¿nej g³êbokoœci, posiadaj¹ pomieszczenia o okreœlonym celu (skarbiec, sypialnie itp), zazwyczaj bandyci lub opuszczone
-	L_CRYPT, // krypta, ma dwa cele: skarbiec lub wiêzienie dla nieumar³ych, zazwyczaj s¹ tu nieumarli, czasami przy wejœciu bandyci lub potwory
-	L_FOREST, // las, zazwyczaj pusty, czasem potwory lub bandyci maj¹ tu ma³y obóz
-	L_MOONWELL, // jak las ale ze wzgórzem na œrodku i fontann¹
-	L_ENCOUNTER, // losowe spotkanie na drodze
-	L_MAX,
-	L_NULL
+	L_OUTSIDE, // las, zazwyczaj pusty, czasem potwory lub bandyci maj¹ tu ma³y obóz
+	L_ENCOUNTER // losowe spotkanie na drodze
 };
 
 //-----------------------------------------------------------------------------
@@ -48,16 +44,34 @@ enum LOCATION_IMAGE
 };
 
 //-----------------------------------------------------------------------------
-enum LOCATION_TOKEN : byte
+namespace old
 {
-	LT_NULL,
-	LT_OUTSIDE,
-	LT_CITY,
-	LT_VILLAGE_OLD,
-	LT_CAVE,
-	LT_SINGLE_DUNGEON,
-	LT_MULTI_DUNGEON,
-	LT_CAMP
+	enum LOCATION
+	{
+		L_CITY,
+		L_VILLAGE_OLD,
+		L_CAVE,
+		L_CAMP,
+		L_DUNGEON,
+		L_CRYPT,
+		L_FOREST,
+		L_MOONWELL,
+		L_ENCOUNTER,
+		L_ACADEMY,
+		L_NULL
+	};
+
+	enum LOCATION_TOKEN : byte
+	{
+		LT_NULL,
+		LT_OUTSIDE,
+		LT_CITY,
+		LT_VILLAGE_OLD,
+		LT_CAVE,
+		LT_SINGLE_DUNGEON,
+		LT_MULTI_DUNGEON,
+		LT_CAMP
+	};
 };
 
 //-----------------------------------------------------------------------------
@@ -74,7 +88,8 @@ enum LOCATION_STATE
 
 //-----------------------------------------------------------------------------
 // przypisanie takiego quest do lokacji spowoduje ¿e nie zostanie zajêta przez inny quest
-#define ACTIVE_QUEST_HOLDER 0xFFFFFFFE
+static Quest_Dungeon* const ACTIVE_QUEST_HOLDER = (Quest_Dungeon*)0xFFFFFFFE;
+static constexpr int ANY_TARGET = -1;
 
 //-----------------------------------------------------------------------------
 // struktura opisuj¹ca lokacje na mapie œwiata
@@ -83,6 +98,7 @@ struct Location
 	int index;
 	LOCATION type; // typ lokacji
 	LOCATION_STATE state; // stan lokacji
+	int target;
 	Vec2 pos; // pozycja na mapie œwiata
 	string name; // nazwa lokacji
 	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
@@ -99,7 +115,7 @@ struct Location
 	bool loaded_resources;
 
 	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), group(nullptr),
-		portal(nullptr), dont_clean(false), loaded_resources(false)
+		portal(nullptr), dont_clean(false), loaded_resources(false), target(0)
 	{
 	}
 
@@ -108,13 +124,12 @@ struct Location
 	// virtual functions to implement
 	virtual void Apply(vector<std::reference_wrapper<LevelArea>>& areas) = 0;
 	virtual void Save(GameWriter& f, bool local);
-	virtual void Load(GameReader& f, bool local, LOCATION_TOKEN token);
+	virtual void Load(GameReader& f, bool local);
 	virtual void Write(BitStreamWriter& f) = 0;
 	virtual bool Read(BitStreamReader& f) = 0;
 	virtual bool FindUnit(Unit* unit, int* level = nullptr) = 0;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
 	virtual bool CheckUpdate(int& days_passed, int worldtime);
-	virtual LOCATION_TOKEN GetToken() const { return LT_NULL; }
 	virtual int GetRandomLevel() const { return -1; }
 	virtual int GetLastLevel() const { return 0; }
 	virtual bool RequireLoadingResources(bool* to_set);

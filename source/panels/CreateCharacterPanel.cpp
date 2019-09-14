@@ -669,7 +669,7 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.matViewInv = matView.Inverse();
 
 	game_level->camera.frustum.Set(game_level->camera.matViewProj);
-	game->ListDrawObjectsUnit(nullptr, game_level->camera.frustum, true, *unit);
+	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 

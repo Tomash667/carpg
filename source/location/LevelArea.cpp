@@ -845,7 +845,6 @@ ForLocation::ForLocation(int loc, int level)
 		break;
 	case L_CAVE:
 	case L_DUNGEON:
-	case L_CRYPT:
 		{
 			InsideLocation* inside = static_cast<InsideLocation*>(l);
 			if(inside->IsMultilevel())
@@ -885,8 +884,7 @@ ForLocation::ForLocation(int loc, int level)
 			}
 		}
 		break;
-	case L_FOREST:
-	case L_MOONWELL:
+	case L_OUTSIDE:
 	case L_ENCOUNTER:
 	case L_CAMP:
 		{

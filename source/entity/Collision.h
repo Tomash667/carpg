@@ -54,3 +54,11 @@ struct CameraCollider
 {
 	Box box;
 };
+
+//-----------------------------------------------------------------------------
+enum LINE_TEST_RESULT
+{
+	LT_IGNORE,
+	LT_COLLIDE,
+	LT_END
+};

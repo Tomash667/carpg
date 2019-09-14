@@ -20,6 +20,8 @@ public:
 	uint GetSize() const;
 	BitStream& GetBitStream() const { return bitstream; }
 	void Reset();
+	void WriteItemList(vector<ItemSlot>& items);
+	void WriteItemListTeam(vector<ItemSlot>& items);
 
 	void operator << (const Item& item);
 	void operator << (const Item* item)
@@ -52,6 +54,9 @@ public:
 	uint GetSize() const override;
 	bool SetPos(uint pos) override;
 	BitStream& GetBitStream() const { return bitstream; }
+	int ReadItemAndFind(const Item*& item);
+	bool ReadItemList(vector<ItemSlot>& items);
+	bool ReadItemListTeam(vector<ItemSlot>& items, bool skip = false);
 
 private:
 	BitStream& CreateBitStream(Packet* packet);

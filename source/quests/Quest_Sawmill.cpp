@@ -58,7 +58,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			location_event_handler = this;
 
 			Location& sl = GetStartLocation();
-			target_loc = world->GetClosestLocation(L_FOREST, sl.pos);
+			target_loc = world->GetClosestLocation(L_OUTSIDE, sl.pos, FOREST);
 			Location& tl = GetTargetLocation();
 			at_level = 0;
 			tl.active_quest = this;

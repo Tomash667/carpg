@@ -125,9 +125,9 @@ void PickServerPanel::Update(float dt)
 		else if(!bad_request)
 		{
 			if(timer > 30.f)
-				net->api->GetServers();
+				api->GetServers();
 			else
-				net->api->GetChanges();
+				api->GetChanges();
 			timer = 0;
 		}
 	}
@@ -324,8 +324,8 @@ void PickServerPanel::Show(bool pick_autojoin)
 		lan_mode = false;
 		cb_internet.checked = true;
 		cb_lan.checked = false;
-		net->api->Reset();
-		net->api->GetServers();
+		api->Reset();
+		api->GetServers();
 	}
 
 	bad_request = false;
@@ -365,12 +365,12 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 	this->lan_mode = lan_mode;
 	if(lan_mode)
 	{
-		net->api->Reset();
+		api->Reset();
 		net->peer->Ping("255.255.255.255", (word)net->port, false);
 	}
 	else
 	{
-		net->api->GetServers();
+		api->GetServers();
 		bad_request = false;
 	}
 	net->join_lan = lan_mode;

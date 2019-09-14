@@ -1494,3 +1494,26 @@ Unit* Team::GetNearestTeamMember(const Vec3& pos, float* out_dist)
 		*out_dist = sqrtf(best_dist);
 	return best;
 }
+
+//=================================================================================================
+// czy ktokolwiek w dru¿ynie rozmawia
+// bêdzie u¿ywane w multiplayer
+bool Team::IsAnyoneTalking() const
+{
+	if(Net::IsLocal())
+	{
+		if(Net::IsOnline())
+		{
+			for(Unit& unit : team->active_members)
+			{
+				if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
+					return true;
+			}
+			return false;
+		}
+		else
+			return game->dialog_context.dialog_mode;
+	}
+	else
+		return anyone_talking;
+}

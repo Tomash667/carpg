@@ -20,9 +20,9 @@ void SingleInsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void SingleInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void SingleInsideLocation::Load(GameReader& f, bool local)
 {
-	InsideLocation::Load(f, local, token);
+	InsideLocation::Load(f, local);
 
 	if(last_visit != -1)
 		LoadLevel(f, local);

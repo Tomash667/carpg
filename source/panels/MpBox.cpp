@@ -7,6 +7,7 @@
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "CommandParser.h"
+#include "PlayerController.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)
@@ -79,7 +80,7 @@ void MpBox::Reset()
 void MpBox::OnInput(const string& str)
 {
 	if(str[0] == '/')
-		cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(game, &Game::AddMultiMsg), PS_CHAT);
+		cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(this, &MpBox::Add), PS_CHAT);
 	else
 	{
 		if(Net::IsOnline() && net->active_players != 1)
@@ -96,7 +97,7 @@ void MpBox::OnInput(const string& str)
 		}
 		// add text
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
-		game->AddMultiMsg(s);
+		Add(s);
 		if(game->game_state == GS_LEVEL)
 			game_gui->level_gui->AddSpeechBubble(game->pc->unit, str.c_str());
 	}

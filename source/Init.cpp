@@ -484,7 +484,7 @@ void Game::StartGameMode()
 			break;
 		}
 
-		Net_OnNewGameServer();
+		net->OnNewGameServer();
 		break;
 	case QUICKSTART_JOIN_LAN:
 		if(!player_name.empty())

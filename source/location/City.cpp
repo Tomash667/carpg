@@ -35,7 +35,6 @@ void City::Save(GameWriter& f, bool local)
 
 	f << citizens;
 	f << citizens_world;
-	f << settlement_type;
 	f << flags;
 	f << variant;
 
@@ -76,13 +75,14 @@ void City::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void City::Load(GameReader& f, bool local)
 {
-	OutsideLocation::Load(f, local, token);
+	OutsideLocation::Load(f, local);
 
 	f >> citizens;
 	f >> citizens_world;
-	f >> settlement_type;
+	if(LOAD_VERSION < V_DEV)
+		f >> target;
 	f >> flags;
 	f >> variant;
 

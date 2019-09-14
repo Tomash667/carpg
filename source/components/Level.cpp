@@ -37,6 +37,7 @@
 #include "SpellEffects.h"
 #include "Collision.h"
 #include "LocationHelper.h"
+#include "PhysicCallbacks.h"
 
 Level* global::game_level;
 
@@ -197,7 +198,7 @@ void Level::ProcessUnitWarps()
 		if(warp.unit == game->pc->unit)
 		{
 			camera.Reset();
-			game->pc_data.rot_buf = 0.f;
+			game->pc->data.rot_buf = 0.f;
 
 			if(game->fallback_type == FALLBACK::ARENA)
 			{
@@ -480,6 +481,20 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 }
 
 //=================================================================================================
+void Level::RemoveUnit(UnitData* ud, bool on_leave)
+{
+	assert(ud);
+
+	Unit* unit = FindUnit([=](Unit* unit)
+	{
+		return unit->data == ud && unit->IsAlive();
+	});
+
+	if(unit)
+		RemoveUnit(unit, !on_leave);
+}
+
+//=================================================================================================
 ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
 	int variant)
 {
@@ -618,7 +633,6 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 						variant = 0;
 						break;
 					case L_DUNGEON:
-					case L_CRYPT:
 						variant = Rand() % 2;
 						break;
 					default:
@@ -2825,7 +2839,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 			{
 				trap.tile = pt + DirToPos(dir) * j;
 
-				if(game->CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
+				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
 					Vec3(trap.pos.x, 1.f, trap.pos.z)))
 				{
 					TrapLocation& tr = Add1(possible);
@@ -3875,19 +3889,19 @@ void Level::RevealMinimap()
 //=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && static_cast<City*>(location)->settlement_type == City::SettlementType::City;
+	return location->type == L_CITY && location->target == CITY;
 }
 
 //=================================================================================================
 bool Level::IsVillage()
 {
-	return location->type == L_CITY && static_cast<City*>(location)->settlement_type == City::SettlementType::Village;
+	return location->type == L_CITY && location->target == VILLAGE;
 }
 
 //=================================================================================================
 bool Level::IsTutorial()
 {
-	return location->type == L_DUNGEON && static_cast<InsideLocation*>(location)->target == TUTORIAL_FORT;
+	return location->type == L_DUNGEON && location->target == TUTORIAL_FORT;
 }
 
 //=================================================================================================
@@ -3956,7 +3970,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	is_open = true;
-	game_level->Apply();
+	Apply();
 	game->loc_gen_factory->Get(location)->OnLoad();
 	location->RequireLoadingResources(&loaded_resources);
 
@@ -4139,21 +4153,21 @@ MusicType Level::GetLocationMusic()
 	{
 	case L_CITY:
 		return MusicType::City;
-	case L_CRYPT:
-		return MusicType::Crypt;
 	case L_DUNGEON:
 	case L_CAVE:
-		return MusicType::Dungeon;
-	case L_FOREST:
-	case L_CAMP:
-		if(location_index == quest_mgr->quest_secret->where2)
+		if(Any(location->target, HERO_CRYPT, MONSTER_CRYPT))
+			return MusicType::Crypt;
+		else
+			return MusicType::Dungeon;
+	case L_OUTSIDE:
+		if(location_index == quest_mgr->quest_secret->where2 || location->target == MOONWELL)
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;
+	case L_CAMP:
+		return MusicType::Forest;
 	case L_ENCOUNTER:
 		return MusicType::Travel;
-	case L_MOONWELL:
-		return MusicType::Moonwell;
 	default:
 		assert(0);
 		return MusicType::Dungeon;
@@ -4266,7 +4280,7 @@ Unit* Level::GetMayor()
 	if(!city_ctx)
 		return nullptr;
 	cstring id;
-	if(city_ctx->settlement_type == City::SettlementType::Village)
+	if(city_ctx->target == VILLAGE)
 		id = "soltys";
 	else
 		id = "mayor";
@@ -4307,7 +4321,7 @@ bool Level::IsSafe()
 bool Level::CanFastTravel()
 {
 	if(!location->outside
-		|| !IsSafe() 
+		|| !IsSafe()
 		|| game->arena->mode != Arena::NONE
 		|| quest_mgr->quest_tutorial->in_tutorial
 		|| quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
@@ -4405,4 +4419,133 @@ void Level::SetOutsideParams()
 	fog_params = Vec4(40, 80, 40, 0);
 	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
 	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);
+}
+
+//=================================================================================================
+bool Level::CanShootAtLocation(const Vec3& from, const Vec3& to) const
+{
+	RaytestAnyUnitCallback callback;
+	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
+	return callback.clear;
+}
+
+//=================================================================================================
+bool Level::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const
+{
+	RaytestWithIgnoredCallback callback(&me, ptr);
+	phy_world->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
+	return callback.clear;
+}
+
+//=================================================================================================
+bool Level::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted)
+{
+	RaytestClosestUnitCallback callback(ignore);
+	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
+
+	if(callback.hitted)
+	{
+		hitpoint = from + (to - from) * callback.fraction;
+		hitted = callback.hitted;
+		return true;
+	}
+	else
+		return false;
+}
+
+//=================================================================================================
+bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
+	vector<float>* t_list, bool use_clbk2, float* end_t)
+{
+	assert(shape->isConvex());
+
+	btTransform t_from, t_to;
+	t_from.setIdentity();
+	t_from.setOrigin(ToVector3(from));
+	//t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
+	t_to.setIdentity();
+	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
+	//t_to.setBasis(t_from.getBasis());
+
+	ConvexCallback callback(clbk, t_list, use_clbk2);
+
+	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
+
+	bool has_hit = (callback.closest <= 1.f);
+	t = min(callback.closest, 1.f);
+	if(end_t)
+	{
+		if(callback.end)
+			*end_t = callback.end_t;
+		else
+			*end_t = 1.f;
+	}
+	return has_hit;
+}
+
+//=================================================================================================
+bool Level::ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2)
+{
+	ContactTestCallback callback(obj, clbk, use_clbk2);
+	phy_world->contactTest(obj, callback);
+	return callback.hit;
+}
+
+//=================================================================================================
+int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small)
+{
+	assert(radius > 0.f && me);
+
+	constexpr float SMALL_DISTANCE = 0.001f;
+	Vec3 new_pos = pos + dir;
+	Vec3 gather_pos = pos + dir / 2;
+	float gather_radius = dir.Length() + radius;
+	global_col.clear();
+
+	Level::IgnoreObjects ignore = { 0 };
+	Unit* ignored[] = { me, nullptr };
+	ignore.ignored_units = (const Unit**)ignored;
+	GatherCollisionObjects(*me->area, global_col, gather_pos, gather_radius, &ignore);
+
+	if(global_col.empty())
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
+		pos = new_pos;
+		return 3;
+	}
+
+	// idŸ prosto po x i z
+	if(!Collide(global_col, new_pos, radius))
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
+		pos = new_pos;
+		return 3;
+	}
+
+	// idŸ po x
+	Vec3 new_pos2 = me->pos;
+	new_pos2.x = new_pos.x;
+	if(!Collide(global_col, new_pos2, radius))
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
+		pos = new_pos2;
+		return 1;
+	}
+
+	// idŸ po z
+	new_pos2.x = me->pos.x;
+	new_pos2.z = new_pos.z;
+	if(!Collide(global_col, new_pos2, radius))
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
+		pos = new_pos2;
+		return 2;
+	}
+
+	// nie ma drogi
+	return 0;
 }

@@ -15,7 +15,6 @@
 #include "Settings.h"
 #include "Blood.h"
 #include "BaseObject.h"
-#include "PlayerController.h"
 
 //-----------------------------------------------------------------------------
 // quickstart mode
@@ -158,14 +157,21 @@ public:
 	void PostconfigureGame();
 	void StartGameMode();
 
+	//-----------------------------------------------------------------
+	// DRAWING
+	//-----------------------------------------------------------------
+	void Draw();
+	void ForceRedraw();
 	void ReloadShaders();
 	void ReleaseShaders();
+	void LoadShaders();
+	void SetupShaders();
 	void InitScene();
 	void BuildDungeon();
 	void ChangeDungeonTexWrap();
 	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
-	void ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool outside, Unit& u);
+	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
 	void PrepareAreaPath();
@@ -199,18 +205,32 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-	void SetupConfigVars();
-	MeshInstance* GetBowInstance(Mesh* mesh);
-	DialogContext* FindDialogContext(Unit* talker);
+	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
+	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
+	void SetDungeonParamsAndTextures(BaseLocation& base);
+	void SetDungeonParamsToMeshes();
+
+	//-----------------------------------------------------------------
+	// SOUND & MUSIC
+	//-----------------------------------------------------------------
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
 	void UpdateMusic();
+	Sound* GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
+	Sound* GetItemSound(const Item* item);
+	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
+	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
+	void UpdateAttachedSounds(float dt);
+	void StopAllSounds();
+
+	void SetupConfigVars();
+	MeshInstance* GetBowInstance(Mesh* mesh);
+	DialogContext* FindDialogContext(Unit* talker);
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 	void PauseGame();
-	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
@@ -219,26 +239,16 @@ public:
 	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
-	void LoadShaders();
-	void SetupShaders();
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdatePlayer(float dt, bool allow_rot);
 	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 	void SpawnUnitEffect(Unit& unit);
-	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
-	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 	void UpdateAi(float dt);
-	void CheckAutoTalk(Unit& unit, float dt);
-	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
-	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
-	void SetDungeonParamsAndTextures(BaseLocation& base);
-	void SetDungeonParamsToMeshes();
 	void MoveUnit(Unit& unit, bool warped = false, bool dash = false);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
@@ -264,17 +274,10 @@ public:
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
-	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
-	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
-	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
-	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
-	Sound* GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
-	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f, SaveSlot* slot);
 	void CreateSaveImage();
@@ -283,28 +286,12 @@ public:
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelArea& area, int& err_count);
-	void CastSpell(Unit& unit);
-	void CastPlayerSpell(PlayerController& player);
 	void SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted);
 	void UpdateExplosions(LevelArea& area, float dt);
 	void UpdateTraps(LevelArea& area, float dt);
 	void PreloadTraps(vector<Trap*>& traps);
-	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	enum LINE_TEST_RESULT
-	{
-		LT_IGNORE,
-		LT_COLLIDE,
-		LT_END
-	};
-	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
-		vector<float>* t_list = nullptr, bool use_clbk2 = false, float* end_t = nullptr);
-	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
 	void UpdateElectros(LevelArea& area, float dt);
 	void UpdateDrains(LevelArea& area, float dt);
-	void AI_Shout(LevelArea& area, AIController& ai);
-	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
-	void AI_HitReaction(Unit& unit, const Vec3& pos);
-	void UpdateAttachedSounds(float dt);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -316,15 +303,10 @@ public:
 	void Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
-	Sound* GetItemSound(const Item* item);
-	void Unit_StopUsingUsable(LevelArea& area, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelArea& area, bool clear);
 	void UpdateArea(LevelArea& area, float dt);
-	bool IsAnyoneTalking() const;
-	// this could be a global function
-	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
@@ -340,25 +322,17 @@ public:
 	void VerifyItemResources(const Item* item);
 	void DeleteUnit(Unit* unit);
 	bool WantExitLevel() { return !GKey.KeyDownAllowed(GK_WALK); }
-	float PlayerAngleY();
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	void GenerateQuestUnits();
-	void GenerateQuestUnits2();
-	void UpdateQuests(int days);
-	void RemoveQuestUnit(UnitData* ud, bool on_leave);
-	void RemoveQuestUnits(bool on_leave);
 	void UpdateGame2(float dt);
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
-	void PlayerUseUsable(Usable* u, bool after_action);
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
-	void HandleQuestEvent(Quest_Event* event);
 	void UpdateLights(vector<Light>& lights);
 	void UpdatePostEffects(float dt);
 	// --- cutscene
@@ -390,7 +364,7 @@ public:
 	void UpdateServerSend(float dt);
 	void UpdateServerQuiting(float dt);
 	void QuickJoinIp();
-	void AddMultiMsg(cstring msg);
+	void OnEnterPassword(int id);
 	void Quit();
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
@@ -400,46 +374,6 @@ public:
 	void DoQuit();
 	void RestartGame();
 	void ClearAndExitToMenu(cstring msg);
-
-	//-----------------------------------------------------------------
-	// MULTIPLAYER
-	//-----------------------------------------------------------------
-	void AddServerMsg(cstring msg);
-	void AddMsg(cstring msg);
-	void OnEnterPassword(int id);
-	void ForceRedraw();
-	void SendPlayerData(PlayerInfo& info);
-	bool ReadPlayerData(BitStreamReader& stream);
-	void UpdateServer(float dt);
-	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
-	void WriteServerChanges(BitStreamWriter& f);
-	void WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info);
-	void UpdateClient(float dt);
-	bool ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server);
-	bool ProcessControlMessageClientForMe(BitStreamReader& f);
-	void WriteClientChanges(BitStreamWriter& f);
-	void Client_Say(BitStreamReader& f);
-	void Client_Whisper(BitStreamReader& f);
-	void Client_ServerSay(BitStreamReader& f);
-	void Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet);
-	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
-	void ServerProcessUnits(vector<Unit*>& units);
-	void UpdateWarpData(float dt);
-	void Net_LeaveLocation(int where)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::LEAVE_LOCATION;
-		c.id = where;
-	}
-	void Net_OnNewGameServer();
-	void Net_OnNewGameClient();
-	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
-	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
-	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
-	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	bool CheckMoveNet(Unit& unit, const Vec3& pos);
-	void ProcessLeftPlayers();
-	void RemovePlayer(PlayerInfo& info);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
@@ -463,7 +397,6 @@ public:
 	// GAME
 	//-----------------------------------------------------------------
 	GAME_STATE game_state, prev_game_state;
-	LocalPlayerData pc_data;
 	PlayerController* pc;
 	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene;
 	int death_screen;
@@ -524,16 +457,7 @@ public:
 	float net_timer, mp_timeout;
 	BitStream prepared_stream;
 	int skip_id_counter;
-	struct WarpData
-	{
-		Unit* u;
-		int where; // <-1 - get outside the building,  >=0 - get inside the building
-		float timer;
-	};
-	vector<WarpData> mp_warps;
 	float train_move; // used by client to training by walking
-	bool anyone_talking;
-	float interpolate_timer;
 	bool paused;
 	vector<ItemSlot> chest_trade; // used by clients when trading
 

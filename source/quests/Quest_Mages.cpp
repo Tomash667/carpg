@@ -42,7 +42,7 @@ void Quest_Mages::SetProgress(int prog2)
 			OnStart(game->txQuest[165]);
 
 			Location& sl = GetStartLocation();
-			target_loc = world->GetClosestLocation(L_CRYPT, sl.pos);
+			target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			tl.reset = true;
