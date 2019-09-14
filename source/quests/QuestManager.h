@@ -103,6 +103,7 @@ public:
 	void UpdateQuests(int days);
 	void RemoveQuestUnits(bool on_leave);
 	void HandleQuestEvent(Quest_Event* event);
+	void UpdateQuestsLocal(float dt);
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;

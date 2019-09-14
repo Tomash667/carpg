@@ -226,7 +226,6 @@ public:
 	void StopAllSounds();
 
 	void SetupConfigVars();
-	MeshInstance* GetBowInstance(Mesh* mesh);
 	DialogContext* FindDialogContext(Unit* talker);
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
@@ -242,11 +241,7 @@ public:
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
-	void UpdatePlayer(float dt, bool allow_rot);
-	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
-	void SpawnUnitEffect(Unit& unit);
 	void UpdateAi(float dt);
-	void MoveUnit(Unit& unit, bool warped = false, bool dash = false);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
@@ -321,9 +316,7 @@ public:
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
 	void DeleteUnit(Unit* unit);
-	bool WantExitLevel() { return !GKey.KeyDownAllowed(GK_WALK); }
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	void UpdateGame2(float dt);
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();
@@ -401,7 +394,6 @@ public:
 	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene;
 	int death_screen;
 	float death_fade, game_speed;
-	vector<MeshInstance*> bow_instances;
 	vector<AIController*> ais;
 	uint force_seed, next_seed;
 	ProfilerMode profiler_mode;
@@ -522,8 +514,8 @@ public:
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	RenderTarget* rt_save, *rt_item, *rt_item_rot;
 	Texture tMinimap;
-	TexturePtr tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
-	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
+	TexturePtr tBlack, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
+	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
 	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;

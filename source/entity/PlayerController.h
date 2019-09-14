@@ -243,7 +243,6 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& unit, bool partial = false);
-	void Update(float dt, bool is_local = true);
 private:
 	void InitShortcuts();
 	void Train(SkillId s, float points);
@@ -312,4 +311,9 @@ public:
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	void UseUsable(Usable* u, bool after_action);
 	void CastSpell();
+	void UseAction(bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	void Update(float dt);
+	void UpdateMove(float dt, bool allow_rot);
+	void UpdateCooldown(float dt);
+	bool WantExitLevel();
 };

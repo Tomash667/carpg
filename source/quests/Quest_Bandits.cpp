@@ -390,3 +390,22 @@ bool Quest_Bandits::Load(GameReader& f)
 
 	return true;
 }
+
+//=================================================================================================
+void Quest_Bandits::Update(float dt)
+{
+	if(bandits_state == State::Counting)
+	{
+		timer -= dt;
+		if(timer <= 0.f)
+		{
+			// spawn agent
+			agent = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("agent"), &team->leader->pos, -2, 2.f);
+			if(agent)
+			{
+				bandits_state = State::AgentCome;
+				agent->OrderAutoTalk(true);
+			}
+		}
+	}
+}

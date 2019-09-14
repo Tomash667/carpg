@@ -165,6 +165,12 @@ void Net::UpdateServer(float dt)
 {
 	if(game->game_state == GS_LEVEL)
 	{
+		for(PlayerInfo& info : players)
+		{
+			if(info.left == PlayerInfo::LEFT_NO && !info.pc->is_local)
+				info.pc->UpdateCooldown(dt);
+		}
+
 		InterpolatePlayers(dt);
 		UpdateFastTravel(dt);
 		game->pc->unit->changed = true;
@@ -760,7 +766,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
 							if(!unit.bow_instance)
-								unit.bow_instance = game->GetBowInstance(unit.GetBow().mesh);
+								unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
 							unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
 							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
@@ -2939,7 +2945,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!target && netid != -1)
 						Error("Update server: PLAYER_ACTION, invalid target %d from %s.", netid, info.name.c_str());
 					else
-						game->UseAction(info.pc, false, &pos, target);
+						info.pc->UseAction(false, &pos, target);
 				}
 			}
 			break;

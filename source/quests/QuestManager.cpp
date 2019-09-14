@@ -1764,3 +1764,14 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 	if(event->callback)
 		event->callback();
 }
+
+//=================================================================================================
+void QuestManager::UpdateQuestsLocal(float dt)
+{
+	quest_tournament->Update(dt);
+	quest_contest->Update(dt);
+	quest_bandits->Update(dt);
+	quest_mages2->Update(dt);
+	quest_evil->Update(dt);
+	quest_secret->UpdateFight();
+}

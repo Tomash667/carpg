@@ -74,6 +74,7 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	int GetLocId(int location_id);
+	void Update(float dt);
 
 	Loc loc[3];
 	int closed, mage_loc;

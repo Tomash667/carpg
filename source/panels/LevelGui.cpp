@@ -183,7 +183,7 @@ int LevelGui::DrawFallback()
 	else
 		alpha = int((1.f - game->fallback_t) * 255);
 
-	gui->DrawSpriteFull(game->tCzern, Color::Alpha(alpha));
+	gui->DrawSpriteFull(game->tBlack, Color::Alpha(alpha));
 
 	return alpha;
 }
@@ -717,7 +717,7 @@ void LevelGui::DrawDeathScreen()
 		color = Color::White;
 
 	if((color & 0xFF000000) != 0)
-		gui->DrawSpriteFull(game->tCzern, color);
+		gui->DrawSpriteFull(game->tBlack, color);
 
 	// image & text
 	if(game->death_screen > 1)
@@ -749,7 +749,7 @@ void LevelGui::DrawEndOfGameScreen()
 		color = (int(game->death_fade * 255) << 24) | 0x00FFFFFF;
 	else
 		color = Color::White;
-	gui->DrawSpriteFull(game->tCzern, color);
+	gui->DrawSpriteFull(game->tBlack, color);
 
 	// image
 	Int2 sprite_pos = Center(tEmerytura->GetSize());
