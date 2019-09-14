@@ -105,6 +105,7 @@ public:
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
+	void Update(float dt);
 
 	Talked talked;
 	State mages_state;

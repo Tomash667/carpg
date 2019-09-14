@@ -1051,10 +1051,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_KICK:
 		if(t.Next())
 		{
-			const string& player_name = t.MustGetItem();
-			PlayerInfo* info = net->FindPlayer(player_name);
+			const string& nick = t.MustGetItem();
+			PlayerInfo* info = net->FindPlayer(nick);
 			if(!info)
-				Msg("No player with nick '%s'.", player_name.c_str());
+				Msg("No player with nick '%s'.", nick.c_str());
 			else
 				net->KickPlayer(*info);
 		}
@@ -1073,12 +1073,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Msg("You need to enter leader nick.");
 		else
 		{
-			const string& player_name = t.MustGetText();
-			PlayerInfo* info = net->FindPlayer(player_name);
+			const string& nick = t.MustGetText();
+			PlayerInfo* info = net->FindPlayer(nick);
 			if(!info)
-				Msg("No player with nick '%s'.", player_name.c_str());
+				Msg("No player with nick '%s'.", nick.c_str());
 			else if(team->leader_id == info->id)
-				Msg("Player '%s' is already a leader.", player_name.c_str());
+				Msg("Player '%s' is already a leader.", nick.c_str());
 			else if(!Net::IsServer() && team->leader_id != team->my_id)
 				Msg("You can't change a leader."); // must be current leader or server
 			else
@@ -1208,11 +1208,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_PLAYER_DEVMODE:
 		if(t.Next())
 		{
-			string player_name = t.MustGetText();
+			string nick = t.MustGetText();
 			if(t.Next())
 			{
 				bool b = t.MustGetBool();
-				if(player_name == "all")
+				if(nick == "all")
 				{
 					for(PlayerInfo& info : net->players)
 					{
@@ -1227,9 +1227,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 				else
 				{
-					PlayerInfo* info = net->FindPlayer(player_name);
+					PlayerInfo* info = net->FindPlayer(nick);
 					if(!info)
-						Msg("No player with nick '%s'.", player_name.c_str());
+						Msg("No player with nick '%s'.", nick.c_str());
 					else if(info->devmode != b)
 					{
 						info->devmode = b;
@@ -1241,7 +1241,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 			else
 			{
-				if(player_name == "all")
+				if(nick == "all")
 				{
 					LocalString s = "Players devmode: ";
 					bool any = false;
@@ -1264,11 +1264,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 				else
 				{
-					PlayerInfo* info = net->FindPlayer(player_name);
+					PlayerInfo* info = net->FindPlayer(nick);
 					if(!info)
-						Msg("No player with nick '%s'.", player_name.c_str());
+						Msg("No player with nick '%s'.", nick.c_str());
 					else
-						Msg("Player devmode: %s(%d).", player_name.c_str(), info->devmode ? 1 : 0);
+						Msg("Player devmode: %s(%d).", nick.c_str(), info->devmode ? 1 : 0);
 				}
 			}
 		}
@@ -1745,7 +1745,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_LIST_EFFECTS:
-		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocal())
+		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
 			ListEffects(game->pc->data.selected_unit);
 		else
 		{
@@ -1882,7 +1882,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_LIST_PERKS:
 		if(!game->pc->data.selected_unit->player)
 			Msg("Only players have perks.");
-		else if(Net::IsLocal() || game->pc->data.selected_unit->IsLocal())
+		else if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
 			ListPerks(game->pc->data.selected_unit->player);
 		else
 		{
@@ -1938,7 +1938,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_LIST_STATS:
-		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocal())
+		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
 			ListStats(game->pc->data.selected_unit);
 		else
 		{

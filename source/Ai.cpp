@@ -1472,7 +1472,7 @@ void Game::UpdateAi(float dt)
 												u.action = A_SHOOT;
 												u.animation_state = 1;
 												u.hitted = false;
-												u.bow_instance = GetBowInstance(u.GetBow().mesh);
+												u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
 												u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 												u.bow_instance->groups[0].speed = speed;
 												u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
@@ -1767,7 +1767,7 @@ void Game::UpdateAi(float dt)
 								u.action = A_SHOOT;
 								u.animation_state = 1;
 								u.hitted = false;
-								u.bow_instance = GetBowInstance(u.GetBow().mesh);
+								u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
 								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 								u.bow_instance->groups[0].speed = speed;
 								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
@@ -2597,8 +2597,7 @@ void Game::UpdateAi(float dt)
 
 				if(move != 0 && game_level->CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
 				{
-					MoveUnit(u);
-
+					u.Moved();
 					if(!small && u.animation != ANI_PLAY)
 						u.animation = ANI_WALK_BACK;
 				}
@@ -2837,9 +2836,7 @@ void Game::UpdateAi(float dt)
 
 						if(move_state)
 						{
-							u.changed = true;
-
-							MoveUnit(u);
+							u.Moved();
 
 							if(look_at == LookAtWalk)
 							{

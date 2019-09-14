@@ -34,6 +34,10 @@
 #include "Terrain.h"
 #include "Spell.h"
 #include "ParticleSystem.h"
+#include "CombatHelper.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "Portal.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -56,6 +60,8 @@ Unit::~Unit()
 {
 	if(order)
 		order->Free();
+	if(bow_instance)
+		game_level->FreeBowInstance(bow_instance);
 	delete mesh_inst;
 	delete human_data;
 	delete hero;
@@ -727,10 +733,7 @@ void Unit::HideWeapon()
 		break;
 	case WS_TAKEN:
 		if(action == A_SHOOT)
-		{
-			game->bow_instances.push_back(bow_instance);
-			bow_instance = nullptr;
-		}
+			game_level->FreeBowInstance(bow_instance);
 		mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
 		mesh_inst->groups[1].speed = 1.f;
 		weapon_hiding = weapon_taken;
@@ -878,7 +881,7 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 
 	// rebuild inventory
 	int rebuild_id = -1;
-	if(IsLocal())
+	if(IsLocalPlayer())
 	{
 		if(game_gui->inventory->inv_mine->visible || game_gui->inventory->gp_trade->visible)
 			rebuild_id = 0;
@@ -2175,7 +2178,7 @@ void Unit::Load(GameReader& f, bool local)
 
 		if(action == A_SHOOT)
 		{
-			bow_instance = game->GetBowInstance(GetBow().mesh);
+			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
@@ -2892,7 +2895,7 @@ bool Unit::Read(BitStreamReader& f)
 		// bow animesh instance
 		if(action == A_SHOOT)
 		{
-			bow_instance = game->GetBowInstance(GetBow().mesh);
+			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
@@ -3160,7 +3163,7 @@ void Unit::RemoveQuestItem(int quest_id)
 		{
 			weight -= it->item->weight;
 			items.erase(it);
-			if(IsClient())
+			if(IsOtherPlayer())
 			{
 				NetChangePlayer& c = Add1(player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
@@ -4743,10 +4746,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		return;
 	case A_SHOOT:
 		if(bow_instance)
-		{
-			game->bow_instances.push_back(bow_instance);
-			bow_instance = nullptr;
-		}
+			game_level->FreeBowInstance(bow_instance);
 		action = A_NONE;
 		break;
 	case A_DRINK:
@@ -6643,4 +6643,1483 @@ void Unit::CastSpell()
 			c.pos = coord;
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::Update(float dt)
+{
+	// update effects and mouth moving
+	if(IsAlive())
+	{
+		UpdateEffects(dt);
+
+		if(Net::IsLocal())
+		{
+			// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
+			hurt_timer -= dt;
+			last_bash -= dt;
+
+			if(moved)
+			{
+				// unstuck units after being force moved (by bull charge)
+				static vector<Unit*> targets;
+				targets.clear();
+				float t;
+				bool in_dash = false;
+				game_level->ContactTest(cobj, [&](btCollisionObject* obj, bool first)
+				{
+					if(first)
+					{
+						int flags = obj->getCollisionFlags();
+						if(!IsSet(flags, CG_UNIT))
+							return false;
+						else
+						{
+							if(obj->getUserPointer() == this)
+								return false;
+							return true;
+						}
+					}
+					else
+					{
+						Unit* target = (Unit*)obj->getUserPointer();
+						if(target->action == A_DASH)
+							in_dash = true;
+						targets.push_back(target);
+						return true;
+					}
+				}, true);
+
+				if(!in_dash)
+				{
+					if(targets.empty())
+						moved = false;
+					else
+					{
+						Vec3 center(0, 0, 0);
+						for(auto target : targets)
+						{
+							center += pos - target->pos;
+							target->moved = true;
+						}
+						center /= (float)targets.size();
+						center.y = 0;
+						center.Normalize();
+						center *= dt;
+						game_level->LineTest(cobj->getCollisionShape(), GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
+						{
+							int flags = obj->getCollisionFlags();
+							if(IsSet(flags, CG_TERRAIN | CG_UNIT))
+								return LT_IGNORE;
+							return LT_COLLIDE;
+						}, t);
+						if(t == 1.f)
+						{
+							pos += center;
+							Moved(false, true);
+						}
+					}
+				}
+			}
+			if(IsStanding() && talking)
+			{
+				talk_timer += dt;
+				mesh_inst->need_update = true;
+			}
+		}
+	}
+
+	// zmieñ podstawow¹ animacjê
+	if(animation != current_animation)
+	{
+		changed = true;
+		switch(animation)
+		{
+		case ANI_WALK:
+			mesh_inst->Play(NAMES::ani_move, PLAY_PRIO1 | PLAY_RESTORE, 0);
+			if(!Net::IsClient())
+				mesh_inst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
+			break;
+		case ANI_WALK_BACK:
+			mesh_inst->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1 | PLAY_RESTORE, 0);
+			if(!Net::IsClient())
+				mesh_inst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
+			break;
+		case ANI_RUN:
+			mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_RESTORE, 0);
+			if(!Net::IsClient())
+				mesh_inst->groups[0].speed = GetRunSpeed() / data->run_speed;
+			break;
+		case ANI_LEFT:
+			mesh_inst->Play(NAMES::ani_left, PLAY_PRIO1 | PLAY_RESTORE, 0);
+			if(!Net::IsClient())
+				mesh_inst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
+			break;
+		case ANI_RIGHT:
+			mesh_inst->Play(NAMES::ani_right, PLAY_PRIO1 | PLAY_RESTORE, 0);
+			if(!Net::IsClient())
+				mesh_inst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
+			break;
+		case ANI_STAND:
+			mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			mesh_inst->groups[0].speed = 1.f;
+			break;
+		case ANI_BATTLE:
+			mesh_inst->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
+			mesh_inst->groups[0].speed = 1.f;
+			break;
+		case ANI_BATTLE_BOW:
+			mesh_inst->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
+			mesh_inst->groups[0].speed = 1.f;
+			break;
+		case ANI_DIE:
+			mesh_inst->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+			mesh_inst->groups[0].speed = 1.f;
+			break;
+		case ANI_PLAY:
+			break;
+		case ANI_IDLE:
+			break;
+		case ANI_KNEELS:
+			mesh_inst->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+			mesh_inst->groups[0].speed = 1.f;
+			break;
+		default:
+			assert(0);
+			break;
+		}
+		current_animation = animation;
+	}
+
+	// aktualizuj animacjê
+	mesh_inst->Update(dt);
+
+	// koniec animacji idle
+	if(animation == ANI_IDLE && mesh_inst->frame_end_info)
+	{
+		mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		mesh_inst->groups[0].speed = 1.f;
+		animation = ANI_STAND;
+	}
+
+	// zmieñ stan z umiera na umar³ i stwórz krew (chyba ¿e tylko upad³)
+	if(!IsStanding())
+	{
+		// move corpse that thanks to animation is now not lootable
+		if(Net::IsLocal() && (Any(live_state, Unit::DYING, Unit::FALLING) || action == A_POSITION_CORPSE))
+		{
+			Vec3 pos = GetLootCenter();
+			game_level->global_col.clear();
+			Level::IgnoreObjects ignore = { 0 };
+			ignore.ignore_units = true;
+			ignore.ignore_doors = true;
+			game_level->GatherCollisionObjects(*area, game_level->global_col, pos, 0.25f, &ignore);
+			if(game_level->Collide(game_level->global_col, pos, 0.25f))
+			{
+				Vec3 dir = pos - pos;
+				dir.y = 0;
+				pos += dir * dt * 2;
+				visual_pos = pos;
+				moved = true;
+				action = A_POSITION_CORPSE;
+				changed = true;
+			}
+			else
+				action = A_NONE;
+		}
+
+		if(mesh_inst->frame_end_info)
+		{
+			if(live_state == Unit::DYING)
+			{
+				live_state = Unit::DEAD;
+				game_level->CreateBlood(*area, *this);
+				if(summoner && Net::IsLocal())
+				{
+					team->RemoveTeamMember(this);
+					action = A_DESPAWN;
+					timer = Random(2.5f, 5.f);
+					summoner = nullptr;
+				}
+			}
+			else if(live_state == Unit::FALLING)
+				live_state = Unit::FALL;
+			mesh_inst->frame_end_info = false;
+		}
+		if(action != A_POSITION && action != A_DESPAWN)
+		{
+			UpdateStaminaAction();
+			return;
+		}
+	}
+
+	// aktualizuj akcjê
+	switch(action)
+	{
+	case A_NONE:
+		break;
+	case A_TAKE_WEAPON:
+		if(weapon_state == WS_TAKING)
+		{
+			if(animation_state == 0 && (mesh_inst->GetProgress2() >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->frame_end_info2))
+				animation_state = 1;
+			if(mesh_inst->frame_end_info2)
+			{
+				weapon_state = WS_TAKEN;
+				if(usable)
+				{
+					action = A_ANIMATION2;
+					animation_state = AS_ANIMATION2_USING;
+				}
+				else
+					action = A_NONE;
+				mesh_inst->Deactivate(1);
+				mesh_inst->frame_end_info2 = false;
+			}
+		}
+		else
+		{
+			// chowanie broni
+			if(animation_state == 0 && (mesh_inst->GetProgress2() <= data->frames->t[F_TAKE_WEAPON] || mesh_inst->frame_end_info2))
+				animation_state = 1;
+			if(weapon_taken != W_NONE && (animation_state == 1 || mesh_inst->frame_end_info2))
+			{
+				mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				weapon_state = WS_TAKING;
+				weapon_hiding = W_NONE;
+				mesh_inst->frame_end_info2 = false;
+				animation_state = 0;
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.unit = this;
+					c.id = 0;
+					c.type = NetChange::TAKE_WEAPON;
+				}
+			}
+			else if(mesh_inst->frame_end_info2)
+			{
+				weapon_state = WS_HIDDEN;
+				weapon_hiding = W_NONE;
+				action = A_NONE;
+				mesh_inst->Deactivate(1);
+				mesh_inst->frame_end_info2 = false;
+
+				if(IsLocalPlayer())
+				{
+					switch(player->next_action)
+					{
+					// unequip item
+					case NA_REMOVE:
+						if(slots[player->next_action_data.slot])
+							game_gui->inventory->inv_mine->RemoveSlotItem(player->next_action_data.slot);
+						break;
+					// equip item after unequiping old one
+					case NA_EQUIP:
+					case NA_EQUIP_DRAW:
+						{
+							int index = player->GetNextActionItemIndex();
+							if(index != -1)
+							{
+								game_gui->inventory->inv_mine->EquipSlotItem(index);
+								if(player->next_action == NA_EQUIP_DRAW)
+								{
+									switch(player->next_action_data.item->type)
+									{
+									case IT_WEAPON:
+										player->unit->TakeWeapon(W_ONE_HANDED);
+										break;
+									case IT_SHIELD:
+										if(player->unit->HaveWeapon())
+											player->unit->TakeWeapon(W_ONE_HANDED);
+										break;
+									case IT_BOW:
+										player->unit->TakeWeapon(W_BOW);
+										break;
+									}
+								}
+							}
+						}
+						break;
+					// drop item after hiding it
+					case NA_DROP:
+						if(slots[player->next_action_data.slot])
+							game_gui->inventory->inv_mine->DropSlotItem(player->next_action_data.slot);
+						break;
+					// use consumable
+					case NA_CONSUME:
+						{
+							int index = player->GetNextActionItemIndex();
+							if(index != -1)
+								game_gui->inventory->inv_mine->ConsumeItem(index);
+						}
+						break;
+					//  use usable
+					case NA_USE:
+						if(!player->next_action_data.usable->user)
+							player->UseUsable(player->next_action_data.usable, true);
+						break;
+					// sell equipped item
+					case NA_SELL:
+						if(slots[player->next_action_data.slot])
+							game_gui->inventory->inv_trade_mine->SellSlotItem(player->next_action_data.slot);
+						break;
+					// put equipped item in container
+					case NA_PUT:
+						if(slots[player->next_action_data.slot])
+							game_gui->inventory->inv_trade_mine->PutSlotItem(player->next_action_data.slot);
+						break;
+					// give equipped item
+					case NA_GIVE:
+						if(slots[player->next_action_data.slot])
+							game_gui->inventory->inv_trade_mine->GiveSlotItem(player->next_action_data.slot);
+						break;
+					}
+
+					if(player->next_action != NA_NONE)
+					{
+						player->next_action = NA_NONE;
+						if(Net::IsClient())
+							Net::PushChange(NetChange::SET_NEXT_ACTION);
+					}
+
+					if(action == A_NONE && usable && !usable->container)
+					{
+						action = A_ANIMATION2;
+						animation_state = AS_ANIMATION2_USING;
+					}
+				}
+				else if(Net::IsLocal() && IsAI() && ai->potion != -1)
+				{
+					ConsumeItem(ai->potion);
+					ai->potion = -1;
+				}
+			}
+		}
+		break;
+	case A_SHOOT:
+		stamina_timer = Unit::STAMINA_RESTORE_TIMER;
+		if(!mesh_inst)
+		{
+			// fix na skutek, nie na przyczynê ;(
+			game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), live_state, action, animation,
+				current_animation, animation_state));
+			goto koniec_strzelania;
+		}
+		if(animation_state == 0)
+		{
+			if(mesh_inst->GetProgress2() > 20.f / 40)
+				mesh_inst->groups[1].time = 20.f / 40 * mesh_inst->groups[1].anim->length;
+		}
+		else if(animation_state == 1)
+		{
+			if(Net::IsLocal() && !hitted && mesh_inst->GetProgress2() > 20.f / 40)
+			{
+				hitted = true;
+				Bullet& b = Add1(area->tmp->bullets);
+				b.level = level;
+				b.backstab = GetBackstabMod(&GetBow());
+
+				if(human_data)
+					mesh_inst->SetupBones(&human_data->mat_scale[0]);
+				else
+					mesh_inst->SetupBones();
+
+				Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+				assert(point);
+
+				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+
+				b.attack = CalculateAttack(&GetBow());
+				b.rot = Vec3(PI / 2, rot + PI, 0);
+				b.pos = Vec3::TransformZero(m2);
+				b.mesh = game->aArrow;
+				b.speed = GetArrowSpeed();
+				b.timer = ARROW_TIMER;
+				b.owner = this;
+				b.remove = false;
+				b.pe = nullptr;
+				b.spell = nullptr;
+				b.tex = nullptr;
+				b.poison_attack = 0.f;
+				b.start_pos = b.pos;
+
+				if(IsPlayer())
+				{
+					if(player->is_local)
+						b.yspeed = player->GetShootAngle() * 36;
+					else
+						b.yspeed = player->player_info->yspeed;
+					player->Train(TrainWhat::BowStart, 0.f, 0);
+				}
+				else
+				{
+					b.yspeed = ai->shoot_yspeed;
+					if(ai->state == AIController::Idle && ai->idle_action == AIController::Idle_TrainBow)
+						b.attack = -100.f;
+				}
+
+				// losowe odchylenie
+				int sk = Get(SkillId::BOW);
+				if(IsPlayer())
+					sk += 10;
+				else
+					sk -= 10;
+				if(sk < 50)
+				{
+					int szansa;
+					float odchylenie_x, odchylenie_y;
+					if(sk < 10)
+					{
+						szansa = 100;
+						odchylenie_x = PI / 16;
+						odchylenie_y = 5.f;
+					}
+					else if(sk < 20)
+					{
+						szansa = 80;
+						odchylenie_x = PI / 20;
+						odchylenie_y = 4.f;
+					}
+					else if(sk < 30)
+					{
+						szansa = 60;
+						odchylenie_x = PI / 26;
+						odchylenie_y = 3.f;
+					}
+					else if(sk < 40)
+					{
+						szansa = 40;
+						odchylenie_x = PI / 34;
+						odchylenie_y = 2.f;
+					}
+					else
+					{
+						szansa = 20;
+						odchylenie_x = PI / 48;
+						odchylenie_y = 1.f;
+					}
+
+					if(Rand() % 100 < szansa)
+						b.rot.y += RandomNormalized(odchylenie_x);
+					if(Rand() % 100 < szansa)
+						b.yspeed += RandomNormalized(odchylenie_y);
+				}
+
+				b.rot.y = Clip(b.rot.y);
+
+				TrailParticleEmitter* tpe = new TrailParticleEmitter;
+				tpe->fade = 0.3f;
+				tpe->color1 = Vec4(1, 1, 1, 0.5f);
+				tpe->color2 = Vec4(1, 1, 1, 0);
+				tpe->Init(50);
+				area->tmp->tpes.push_back(tpe);
+				b.trail = tpe;
+
+				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
+				tpe2->fade = 0.3f;
+				tpe2->color1 = Vec4(1, 1, 1, 0.5f);
+				tpe2->color2 = Vec4(1, 1, 1, 0);
+				tpe2->Init(50);
+				area->tmp->tpes.push_back(tpe2);
+				b.trail2 = tpe2;
+
+				sound_mgr->PlaySound3d(game->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::SHOOT_ARROW;
+					c.unit = this;
+					c.pos = b.start_pos;
+					c.f[0] = b.rot.y;
+					c.f[1] = b.yspeed;
+					c.f[2] = b.rot.x;
+					c.extra_f = b.speed;
+				}
+			}
+			if(mesh_inst->GetProgress2() > 20.f / 40)
+				animation_state = 2;
+		}
+		else if(mesh_inst->GetProgress2() > 35.f / 40)
+		{
+			animation_state = 3;
+			if(mesh_inst->frame_end_info2)
+			{
+			koniec_strzelania:
+				mesh_inst->Deactivate(1);
+				mesh_inst->frame_end_info2 = false;
+				action = A_NONE;
+				game_level->FreeBowInstance(bow_instance);
+				if(Net::IsLocal() && IsAI())
+				{
+					float v = 1.f - float(Get(SkillId::BOW)) / 100;
+					ai->next_attack = Random(v / 2, v);
+				}
+				break;
+			}
+		}
+		bow_instance->groups[0].time = min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
+		bow_instance->need_update = true;
+		break;
+	case A_ATTACK:
+		stamina_timer = Unit::STAMINA_RESTORE_TIMER;
+		if(animation_state == 0)
+		{
+			int index = mesh_inst->mesh->head.n_groups == 1 ? 0 : 1;
+			float t = GetAttackFrame(0);
+			float p = mesh_inst->GetProgress(index);
+			if(p > t)
+			{
+				if(Net::IsLocal() && IsAI())
+				{
+					mesh_inst->groups[index].speed = (1.f + GetAttackSpeed()) * GetStaminaAttackSpeedMod();
+					attack_power = 2.f;
+					++animation_state;
+					if(Net::IsOnline())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::ATTACK;
+						c.unit = this;
+						c.id = AID_Attack;
+						c.f[1] = mesh_inst->groups[index].speed;
+					}
+				}
+				else
+					mesh_inst->groups[index].time = t * mesh_inst->groups[index].anim->length;
+			}
+			else if(IsPlayer() && Net::IsLocal())
+			{
+				float dif = p - timer;
+				float stamina_to_remove_total = GetWeapon().GetInfo().stamina / 2;
+				float stamina_used = dif / t * stamina_to_remove_total;
+				timer = p;
+				RemoveStamina(stamina_used);
+			}
+		}
+		else
+		{
+			int index = mesh_inst->mesh->head.n_groups == 1 ? 0 : 1;
+			if(animation_state == 1 && mesh_inst->GetProgress(index) > GetAttackFrame(0))
+			{
+				if(Net::IsLocal() && !hitted && mesh_inst->GetProgress(index) >= GetAttackFrame(1))
+				{
+					Game::ATTACK_RESULT result = game->DoAttack(*area, *this);
+					if(result != Game::ATTACK_NOT_HIT)
+						hitted = true;
+				}
+				if(mesh_inst->GetProgress(index) >= GetAttackFrame(2) || mesh_inst->GetEndResult(index))
+				{
+					// koniec mo¿liwego ataku
+					animation_state = 2;
+					mesh_inst->groups[index].speed = 1.f;
+					run_attack = false;
+				}
+			}
+			if(animation_state == 2 && mesh_inst->GetEndResult(index))
+			{
+				run_attack = false;
+				if(index == 0)
+				{
+					animation = ANI_BATTLE;
+					current_animation = ANI_STAND;
+				}
+				else
+				{
+					mesh_inst->Deactivate(1);
+					mesh_inst->frame_end_info2 = false;
+				}
+				action = A_NONE;
+				if(Net::IsLocal() && IsAI())
+				{
+					float v = 1.f - float(Get(SkillId::ONE_HANDED_WEAPON)) / 100;
+					ai->next_attack = Random(v / 2, v);
+				}
+			}
+		}
+		break;
+	case A_BLOCK:
+		break;
+	case A_BASH:
+		stamina_timer = Unit::STAMINA_RESTORE_TIMER;
+		if(animation_state == 0)
+		{
+			if(mesh_inst->GetProgress2() >= data->frames->t[F_BASH])
+				animation_state = 1;
+		}
+		if(Net::IsLocal() && animation_state == 1 && !hitted)
+		{
+			if(game->DoShieldSmash(*area, *this))
+				hitted = true;
+		}
+		if(mesh_inst->frame_end_info2)
+		{
+			action = A_NONE;
+			mesh_inst->frame_end_info2 = false;
+			mesh_inst->Deactivate(1);
+		}
+		break;
+	case A_DRINK:
+		{
+			float p = mesh_inst->GetProgress2();
+			if(p >= 28.f / 52.f && animation_state == 0)
+			{
+				PlaySound(game->sGulp, Unit::DRINK_SOUND_DIST);
+				animation_state = 1;
+				if(Net::IsLocal())
+					ApplyConsumableEffect(used_item->ToConsumable());
+			}
+			if(p >= 49.f / 52.f && animation_state == 1)
+			{
+				animation_state = 2;
+				used_item = nullptr;
+			}
+			if(mesh_inst->frame_end_info2)
+			{
+				if(usable)
+				{
+					animation_state = AS_ANIMATION2_USING;
+					action = A_ANIMATION2;
+				}
+				else
+					action = A_NONE;
+				mesh_inst->frame_end_info2 = false;
+				mesh_inst->Deactivate(1);
+			}
+		}
+		break;
+	case A_EAT:
+		{
+			float p = mesh_inst->GetProgress2();
+			if(p >= 32.f / 70 && animation_state == 0)
+			{
+				animation_state = 1;
+				PlaySound(game->sEat, Unit::EAT_SOUND_DIST);
+			}
+			if(p >= 48.f / 70 && animation_state == 1)
+			{
+				animation_state = 2;
+				if(Net::IsLocal())
+					ApplyConsumableEffect(used_item->ToConsumable());
+			}
+			if(p >= 60.f / 70 && animation_state == 2)
+			{
+				animation_state = 3;
+				used_item = nullptr;
+			}
+			if(mesh_inst->frame_end_info2)
+			{
+				if(usable)
+				{
+					animation_state = AS_ANIMATION2_USING;
+					action = A_ANIMATION2;
+				}
+				else
+					action = A_NONE;
+				mesh_inst->frame_end_info2 = false;
+				mesh_inst->Deactivate(1);
+			}
+		}
+		break;
+	case A_PAIN:
+		if(mesh_inst->mesh->head.n_groups == 2)
+		{
+			if(mesh_inst->frame_end_info2)
+			{
+				action = A_NONE;
+				mesh_inst->frame_end_info2 = false;
+				mesh_inst->Deactivate(1);
+			}
+		}
+		else if(mesh_inst->frame_end_info)
+		{
+			action = A_NONE;
+			animation = ANI_BATTLE;
+			mesh_inst->frame_end_info = false;
+		}
+		break;
+	case A_CAST:
+		if(mesh_inst->mesh->head.n_groups == 2)
+		{
+			if(Net::IsLocal() && animation_state == 0 && mesh_inst->GetProgress2() >= data->frames->t[F_CAST])
+			{
+				animation_state = 1;
+				CastSpell();
+			}
+			if(mesh_inst->frame_end_info2)
+			{
+				action = A_NONE;
+				mesh_inst->frame_end_info2 = false;
+				mesh_inst->Deactivate(1);
+			}
+		}
+		else
+		{
+			if(Net::IsLocal() && animation_state == 0 && mesh_inst->GetProgress() >= data->frames->t[F_CAST])
+			{
+				animation_state = 1;
+				CastSpell();
+			}
+			if(mesh_inst->frame_end_info)
+			{
+				action = A_NONE;
+				animation = ANI_BATTLE;
+				mesh_inst->frame_end_info = false;
+			}
+		}
+		break;
+	case A_ANIMATION:
+		if(mesh_inst->frame_end_info)
+		{
+			action = A_NONE;
+			animation = ANI_STAND;
+			current_animation = (Animation)-1;
+		}
+		break;
+	case A_ANIMATION2:
+		{
+			bool allow_move = true;
+			if(Net::IsServer())
+			{
+				if(IsOtherPlayer())
+					allow_move = false;
+			}
+			else if(Net::IsClient())
+			{
+				if(!IsPlayer() || !player->is_local)
+					allow_move = false;
+			}
+			if(animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
+			{
+				timer += dt;
+				if(allow_move && timer >= 0.5f)
+				{
+					action = A_NONE;
+					visual_pos = pos = target_pos;
+					changed = true;
+					if(Net::IsOnline())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::USE_USABLE;
+						c.unit = this;
+						c.id = usable->id;
+						c.count = USE_USABLE_END;
+					}
+					if(Net::IsLocal())
+						UseUsable(nullptr);
+					break;
+				}
+
+				if(allow_move)
+				{
+					// przesuñ postaæ
+					visual_pos = pos = Vec3::Lerp(target_pos2, target_pos, timer * 2);
+
+					// obrót
+					float target_rot = Vec3::LookAtAngle(target_pos, usable->pos);
+					float dif = AngleDiff(rot, target_rot);
+					if(NotZero(dif))
+					{
+						const float rot_speed = GetRotationSpeed() * 2 * dt;
+						const float arc = ShortestArc(rot, target_rot);
+
+						if(dif <= rot_speed)
+							rot = target_rot;
+						else
+							rot = Clip(rot + Sign(arc) * rot_speed);
+					}
+
+					changed = true;
+				}
+			}
+			else
+			{
+				BaseUsable& bu = *usable->base;
+
+				if(animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
+				{
+					// odtwarzanie dŸwiêku
+					if(bu.sound)
+					{
+						if(mesh_inst->GetProgress() >= bu.sound_timer)
+						{
+							if(animation_state == AS_ANIMATION2_USING)
+							{
+								animation_state = AS_ANIMATION2_USING_SOUND;
+								sound_mgr->PlaySound3d(bu.sound, GetCenter(), Usable::SOUND_DIST);
+								if(Net::IsServer())
+								{
+									NetChange& c = Add1(Net::changes);
+									c.type = NetChange::USABLE_SOUND;
+									c.unit = this;
+								}
+							}
+						}
+						else if(animation_state == AS_ANIMATION2_USING_SOUND)
+							animation_state = AS_ANIMATION2_USING;
+					}
+				}
+				else if(Net::IsLocal() || IsLocalPlayer())
+				{
+					// ustal docelowy obrót postaci
+					float target_rot;
+					if(bu.limit_rot == 0)
+						target_rot = rot;
+					else if(bu.limit_rot == 1)
+					{
+						float rot1 = Clip(use_rot + PI / 2),
+							dif1 = AngleDiff(rot1, usable->rot),
+							rot2 = Clip(usable->rot + PI),
+							dif2 = AngleDiff(rot1, rot2);
+
+						if(dif1 < dif2)
+							target_rot = usable->rot;
+						else
+							target_rot = rot2;
+					}
+					else if(bu.limit_rot == 2)
+						target_rot = usable->rot;
+					else if(bu.limit_rot == 3)
+					{
+						float rot1 = Clip(use_rot + PI),
+							dif1 = AngleDiff(rot1, usable->rot),
+							rot2 = Clip(usable->rot + PI),
+							dif2 = AngleDiff(rot1, rot2);
+
+						if(dif1 < dif2)
+							target_rot = usable->rot;
+						else
+							target_rot = rot2;
+					}
+					else
+						target_rot = usable->rot + PI;
+					target_rot = Clip(target_rot);
+
+					// obrót w strone obiektu
+					const float dif = AngleDiff(rot, target_rot);
+					const float rot_speed = GetRotationSpeed() * 2;
+					if(allow_move && NotZero(dif))
+					{
+						const float rot_speed_dt = rot_speed * dt;
+						if(dif <= rot_speed_dt)
+							rot = target_rot;
+						else
+						{
+							const float arc = ShortestArc(rot, target_rot);
+							rot = Clip(rot + Sign(arc) * rot_speed_dt);
+						}
+					}
+
+					// czy musi siê obracaæ zanim zacznie siê przesuwaæ?
+					if(dif < rot_speed*0.5f)
+					{
+						timer += dt;
+						if(timer >= 0.5f)
+						{
+							timer = 0.5f;
+							++animation_state;
+						}
+
+						// przesuñ postaæ i fizykê
+						if(allow_move)
+						{
+							visual_pos = pos = Vec3::Lerp(target_pos, target_pos2, timer * 2);
+							changed = true;
+							game_level->global_col.clear();
+							float my_radius = GetUnitRadius();
+							bool ok = true;
+							for(vector<Unit*>::iterator it2 = area->units.begin(), end2 = area->units.end(); it2 != end2; ++it2)
+							{
+								if(this == *it2 || !(*it2)->IsStanding())
+									continue;
+
+								float radius = (*it2)->GetUnitRadius();
+								if(Distance((*it2)->pos.x, (*it2)->pos.z, pos.x, pos.z) <= radius + my_radius)
+								{
+									ok = false;
+									break;
+								}
+							}
+							if(ok)
+								UpdatePhysics();
+						}
+					}
+				}
+			}
+		}
+		break;
+	case A_POSITION:
+		if(Net::IsClient())
+		{
+			if(!IsLocalPlayer())
+				break;
+		}
+		else
+		{
+			if(IsOtherPlayer())
+				break;
+		}
+		timer += dt;
+		if(animation_state == 1)
+		{
+			// obs³uga animacji cierpienia
+			if(mesh_inst->mesh->head.n_groups == 2)
+			{
+				if(mesh_inst->frame_end_info2 || timer >= 0.5f)
+				{
+					mesh_inst->frame_end_info2 = false;
+					mesh_inst->Deactivate(1);
+					animation_state = 2;
+				}
+			}
+			else if(mesh_inst->frame_end_info || timer >= 0.5f)
+			{
+				animation = ANI_BATTLE;
+				mesh_inst->frame_end_info = false;
+				animation_state = 2;
+			}
+		}
+		if(timer >= 0.5f)
+		{
+			action = A_NONE;
+			visual_pos = pos = target_pos;
+
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = this;
+				c.id = usable->id;
+				c.count = USE_USABLE_END;
+			}
+
+			if(Net::IsLocal())
+				UseUsable(nullptr);
+		}
+		else
+			visual_pos = pos = Vec3::Lerp(target_pos2, target_pos, timer * 2);
+		changed = true;
+		break;
+	case A_PICKUP:
+		if(mesh_inst->frame_end_info)
+		{
+			action = A_NONE;
+			animation = ANI_STAND;
+			current_animation = (Animation)-1;
+		}
+		break;
+	case A_DASH:
+		// update unit dash/bull charge
+		{
+			assert(player); // todo
+			float dt_left = min(dt, timer);
+			float t;
+			const float eps = 0.05f;
+			float len = speed * dt_left;
+			Vec3 dir(sin(use_rot)*(len + eps), 0, cos(use_rot)*(len + eps));
+			Vec3 dir_normal = dir.Normalized();
+			bool ok = true;
+			Vec3 from = GetPhysicsPos();
+
+			if(animation_state == 0)
+			{
+				// dash
+				game_level->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool)
+				{
+					int flags = obj->getCollisionFlags();
+					if(IsSet(flags, CG_TERRAIN))
+						return LT_IGNORE;
+					if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
+						return LT_IGNORE;
+					return LT_COLLIDE;
+				}, t);
+			}
+			else
+			{
+				// bull charge, do line test and find targets
+				static vector<Unit*> targets;
+				targets.clear();
+				game_level->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
+				{
+					int flags = obj->getCollisionFlags();
+					if(first)
+					{
+						if(IsSet(flags, CG_TERRAIN))
+							return LT_IGNORE;
+						if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
+							return LT_IGNORE;
+					}
+					else
+					{
+						if(IsSet(obj->getCollisionFlags(), CG_UNIT))
+						{
+							Unit* unit = (Unit*)obj->getUserPointer();
+							targets.push_back(unit);
+							return LT_IGNORE;
+						}
+					}
+					return LT_COLLIDE;
+				}, t, nullptr, true);
+
+				// check all hitted
+				if(Net::IsLocal())
+				{
+					float move_angle = Angle(0, 0, dir.x, dir.z);
+					Vec3 dir_left(sin(use_rot + PI / 2)*len, 0, cos(use_rot + PI / 2)*len);
+					Vec3 dir_right(sin(use_rot - PI / 2)*len, 0, cos(use_rot - PI / 2)*len);
+					for(auto unit : targets)
+					{
+						// deal damage/stun
+						bool move_forward = true;
+						if(!unit->IsFriend(*this))
+						{
+							if(!player->IsHit(unit))
+							{
+								float attack = 100.f + 5.f * Get(AttributeId::STR);
+								float def = unit->CalculateDefense();
+								float dmg = CombatHelper::CalculateDamage(attack, def);
+								game->PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), HIT_SOUND_DIST, true);
+								if(unit->IsPlayer())
+									unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, level);
+								game->GiveDmg(*unit, dmg, this);
+								if(IsPlayer())
+									player->Train(TrainWhat::BullsCharge, 0.f, unit->level);
+								if(!unit->IsAlive())
+									continue;
+								else
+									player->action_targets.push_back(unit);
+							}
+							unit->ApplyStun(1.5f);
+						}
+						else
+							move_forward = false;
+
+						auto unit_clbk = [unit](btCollisionObject* obj, bool)
+						{
+							int flags = obj->getCollisionFlags();
+							if(IsSet(flags, CG_TERRAIN | CG_UNIT))
+								return LT_IGNORE;
+							return LT_COLLIDE;
+						};
+
+						// try to push forward
+						if(move_forward)
+						{
+							Vec3 move_dir = unit->pos - pos;
+							move_dir.y = 0;
+							move_dir.Normalize();
+							move_dir += dir_normal;
+							move_dir.Normalize();
+							move_dir *= len;
+							float t;
+							game_level->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
+							if(t == 1.f)
+							{
+								unit->moved = true;
+								unit->pos += move_dir;
+								Moved(false, true);
+								continue;
+							}
+						}
+
+						// try to push, left or right
+						float angle = Angle(pos.x, pos.z, unit->pos.x, unit->pos.z);
+						float best_dir = ShortestArc(move_angle, angle);
+						bool inner_ok = false;
+						for(int i = 0; i < 2; ++i)
+						{
+							float t;
+							Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
+							game_level->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
+							if(t == 1.f)
+							{
+								inner_ok = true;
+								unit->moved = true;
+								unit->pos += actual_dir;
+								Moved(false, true);
+								break;
+							}
+						}
+						if(!inner_ok)
+							ok = false;
+					}
+				}
+			}
+
+			// move if there is free space
+			float actual_len = (len + eps) * t - eps;
+			if(actual_len > 0 && ok)
+			{
+				pos += Vec3(sin(use_rot), 0, cos(use_rot)) * actual_len;
+				Moved(false, true);
+			}
+
+			// end dash
+			timer -= dt;
+			if(timer <= 0 || t < 1.f || !ok)
+			{
+				if(animation_state == 1)
+				{
+					mesh_inst->Deactivate(1);
+					mesh_inst->groups[1].blend_max = 0.33f;
+				}
+				action = A_NONE;
+				if(Net::IsLocal() || IsLocalPlayer())
+					mesh_inst->groups[0].speed = GetRunSpeed() / data->run_speed;
+			}
+		}
+		break;
+	case A_DESPAWN:
+		timer -= dt;
+		if(timer <= 0.f)
+			game_level->RemoveUnit(this);
+		break;
+	case A_PREPARE:
+		assert(Net::IsClient());
+		break;
+	case A_STAND_UP:
+		if(mesh_inst->frame_end_info)
+		{
+			action = A_NONE;
+			animation = ANI_STAND;
+			current_animation = (Animation)-1;
+		}
+		break;
+	case A_USE_ITEM:
+		if(mesh_inst->frame_end_info2)
+		{
+			if(Net::IsLocal() && IsPlayer())
+			{
+				// magic scroll effect
+				game_gui->messages->AddGameMsg3(player, GMS_TOO_COMPLICATED);
+				ApplyStun(2.5f);
+				RemoveItem(used_item, 1u);
+				used_item = nullptr;
+			}
+			sound_mgr->PlaySound3d(game->sZap, GetCenter(), MAGIC_SCROLL_SOUND_DIST);
+			action = A_NONE;
+			animation = ANI_STAND;
+			current_animation = (Animation)-1;
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	UpdateStaminaAction();
+}
+
+//=============================================================================
+// Ruch jednostki, ustawia pozycje Y dla terenu, opuszczanie lokacji
+//=============================================================================
+void Unit::Moved(bool warped, bool dash)
+{
+	if(game_level->location->outside)
+	{
+		if(area->area_type == LevelArea::Type::Outside)
+		{
+			if(game_level->terrain->IsInside(pos))
+			{
+				game_level->terrain->SetH(pos);
+				if(warped)
+					return;
+				if(IsPlayer() && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
+				{
+					bool allow_exit = false;
+
+					if(game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveExit))
+					{
+						for(vector<EntryPoint>::const_iterator it = game_level->city_ctx->entry_points.begin(), end = game_level->city_ctx->entry_points.end(); it != end; ++it)
+						{
+							if(it->exit_region.IsInside(pos))
+							{
+								if(!team->IsLeader())
+									game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+								else
+								{
+									if(Net::IsLocal())
+									{
+										CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+										if(result == CanLeaveLocationResult::Yes)
+										{
+											allow_exit = true;
+											world->SetTravelDir(pos);
+										}
+										else
+											game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+									}
+									else
+										net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
+								}
+								break;
+							}
+						}
+					}
+					else if(game_level->location_index != quest_mgr->quest_secret->where2
+						&& (pos.x < 33.f || pos.x > 256.f - 33.f || pos.z < 33.f || pos.z > 256.f - 33.f))
+					{
+						if(!team->IsLeader())
+							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+						else if(!Net::IsLocal())
+							net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
+						else
+						{
+							CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+							if(result == CanLeaveLocationResult::Yes)
+							{
+								allow_exit = true;
+								world->SetTravelDir(pos);
+							}
+							else
+								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+						}
+					}
+
+					if(allow_exit)
+					{
+						game->fallback_type = FALLBACK::EXIT;
+						game->fallback_t = -1.f;
+						for(Unit& unit : team->members)
+							unit.frozen = FROZEN::YES;
+						if(Net::IsOnline())
+							Net::PushChange(NetChange::LEAVE_LOCATION);
+					}
+				}
+			}
+			else
+				pos.y = 0.f;
+
+			if(warped)
+				return;
+
+			if(IsPlayer() && game_level->location->type == L_CITY && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
+			{
+				int id = 0;
+				for(vector<InsideBuilding*>::iterator it = game_level->city_ctx->inside_buildings.begin(), end = game_level->city_ctx->inside_buildings.end(); it != end; ++it, ++id)
+				{
+					if((*it)->enter_region.IsInside(pos))
+					{
+						if(Net::IsLocal())
+						{
+							// wejdŸ do budynku
+							game->fallback_type = FALLBACK::ENTER;
+							game->fallback_t = -1.f;
+							game->fallback_1 = id;
+							frozen = FROZEN::YES;
+						}
+						else
+						{
+							// info do serwera
+							game->fallback_type = FALLBACK::WAIT_FOR_WARP;
+							game->fallback_t = -1.f;
+							frozen = FROZEN::YES;
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ENTER_BUILDING;
+							c.id = id;
+						}
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			if(warped)
+				return;
+
+			// jest w budynku
+			// sprawdŸ czy nie wszed³ na wyjœcie (tylko gracz mo¿e opuszczaæ budynek, na razie)
+			InsideBuilding& building = *static_cast<InsideBuilding*>(area);
+
+			if(IsPlayer() && building.exit_region.IsInside(pos) && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
+			{
+				if(Net::IsLocal())
+				{
+					// opuœæ budynek
+					game->fallback_type = FALLBACK::ENTER;
+					game->fallback_t = -1.f;
+					game->fallback_1 = -1;
+					frozen = FROZEN::YES;
+				}
+				else
+				{
+					// info do serwera
+					game->fallback_type = FALLBACK::WAIT_FOR_WARP;
+					game->fallback_t = -1.f;
+					frozen = FROZEN::YES;
+					Net::PushChange(NetChange::EXIT_BUILDING);
+				}
+			}
+		}
+	}
+	else
+	{
+		InsideLocation* inside = (InsideLocation*)game_level->location;
+		InsideLocationLevel& lvl = inside->GetLevelData();
+		Int2 pt = PosToPt(pos);
+
+		if(pt == lvl.staircase_up)
+		{
+			Box2d box;
+			switch(lvl.staircase_up_dir)
+			{
+			case GDIR_DOWN:
+				pos.y = (pos.z - 2.f*lvl.staircase_up.y) / 2;
+				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y + 1.4f, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
+				break;
+			case GDIR_LEFT:
+				pos.y = (pos.x - 2.f*lvl.staircase_up.x) / 2;
+				box = Box2d(2.f*lvl.staircase_up.x + 1.4f, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
+				break;
+			case GDIR_UP:
+				pos.y = (2.f*lvl.staircase_up.y - pos.z) / 2 + 1.f;
+				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*lvl.staircase_up.y + 0.6f);
+				break;
+			case GDIR_RIGHT:
+				pos.y = (2.f*lvl.staircase_up.x - pos.x) / 2 + 1.f;
+				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*lvl.staircase_up.x + 0.6f, 2.f*(lvl.staircase_up.y + 1));
+				break;
+			}
+
+			if(warped)
+				return;
+
+			if(IsPlayer() && player->WantExitLevel() && box.IsInside(pos) && frozen == FROZEN::NO && !dash)
+			{
+				if(team->IsLeader())
+				{
+					if(Net::IsLocal())
+					{
+						CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+						if(result == CanLeaveLocationResult::Yes)
+						{
+							game->fallback_type = FALLBACK::CHANGE_LEVEL;
+							game->fallback_t = -1.f;
+							game->fallback_1 = -1;
+							for(Unit& unit : team->members)
+								unit.frozen = FROZEN::YES;
+							if(Net::IsOnline())
+								Net::PushChange(NetChange::LEAVE_LOCATION);
+						}
+						else
+							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+					}
+					else
+						net->OnLeaveLocation(ENTER_FROM_UP_LEVEL);
+				}
+				else
+					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+			}
+		}
+		else if(pt == lvl.staircase_down)
+		{
+			Box2d box;
+			switch(lvl.staircase_down_dir)
+			{
+			case GDIR_DOWN:
+				pos.y = (pos.z - 2.f*lvl.staircase_down.y)*-1.f;
+				box = Box2d(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y + 1.4f, 2.f*(lvl.staircase_down.x + 1), 2.f*(lvl.staircase_down.y + 1));
+				break;
+			case GDIR_LEFT:
+				pos.y = (pos.x - 2.f*lvl.staircase_down.x)*-1.f;
+				box = Box2d(2.f*lvl.staircase_down.x + 1.4f, 2.f*lvl.staircase_down.y, 2.f*(lvl.staircase_down.x + 1), 2.f*(lvl.staircase_down.y + 1));
+				break;
+			case GDIR_UP:
+				pos.y = (2.f*lvl.staircase_down.y - pos.z)*-1.f - 2.f;
+				box = Box2d(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y, 2.f*(lvl.staircase_down.x + 1), 2.f*lvl.staircase_down.y + 0.6f);
+				break;
+			case GDIR_RIGHT:
+				pos.y = (2.f*lvl.staircase_down.x - pos.x)*-1.f - 2.f;
+				box = Box2d(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y, 2.f*lvl.staircase_down.x + 0.6f, 2.f*(lvl.staircase_down.y + 1));
+				break;
+			}
+
+			if(warped)
+				return;
+
+			if(IsPlayer() && player->WantExitLevel() && box.IsInside(pos) && frozen == FROZEN::NO && !dash)
+			{
+				if(team->IsLeader())
+				{
+					if(Net::IsLocal())
+					{
+						CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+						if(result == CanLeaveLocationResult::Yes)
+						{
+							game->fallback_type = FALLBACK::CHANGE_LEVEL;
+							game->fallback_t = -1.f;
+							game->fallback_1 = +1;
+							for(Unit& unit : team->members)
+								unit.frozen = FROZEN::YES;
+							if(Net::IsOnline())
+								Net::PushChange(NetChange::LEAVE_LOCATION);
+						}
+						else
+							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+					}
+					else
+						net->OnLeaveLocation(ENTER_FROM_DOWN_LEVEL);
+				}
+				else
+					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+			}
+		}
+		else
+			pos.y = 0.f;
+
+		if(warped)
+			return;
+	}
+
+	// obs³uga portali
+	if(frozen == FROZEN::NO && IsPlayer() && player->WantExitLevel() && !dash)
+	{
+		Portal* portal = game_level->location->portal;
+		int index = 0;
+		while(portal)
+		{
+			if(portal->target_loc != -1 && Vec3::Distance2d(pos, portal->pos) < 2.f)
+			{
+				if(CircleToRotatedRectangle(pos.x, pos.z, GetUnitRadius(), portal->pos.x, portal->pos.z, 0.67f, 0.1f, portal->rot))
+				{
+					if(team->IsLeader())
+					{
+						if(Net::IsLocal())
+						{
+							CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+							if(result == CanLeaveLocationResult::Yes)
+							{
+								game->fallback_type = FALLBACK::USE_PORTAL;
+								game->fallback_t = -1.f;
+								game->fallback_1 = index;
+								for(Unit& unit : team->members)
+									unit.frozen = FROZEN::YES;
+								if(Net::IsOnline())
+									Net::PushChange(NetChange::LEAVE_LOCATION);
+							}
+							else
+								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+						}
+						else
+							net->OnLeaveLocation(ENTER_FROM_PORTAL + index);
+					}
+					else
+						game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+
+					break;
+				}
+			}
+			portal = portal->next_portal;
+			++index;
+		}
+	}
+
+	if(Net::IsLocal() || !IsLocalPlayer() || net->interpolate_timer <= 0.f)
+	{
+		visual_pos = pos;
+		changed = true;
+	}
+	UpdatePhysics();
 }

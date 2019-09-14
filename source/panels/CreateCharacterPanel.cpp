@@ -180,11 +180,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 //=================================================================================================
 CreateCharacterPanel::~CreateCharacterPanel()
 {
-	if(unit->bow_instance)
-	{
-		game->bow_instances.push_back(unit->bow_instance);
-		unit->bow_instance = nullptr;
-	}
 	delete unit;
 }
 
@@ -810,7 +805,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->mesh_inst->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
-			unit->bow_instance = game->GetBowInstance(unit->GetBow().mesh);
+			unit->bow_instance = game_level->GetBowInstance(unit->GetBow().mesh);
 			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[0].speed;
 			unit->mesh_inst->frame_end_info = false;
@@ -879,9 +874,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->animation_state = 3;
 			if(unit->mesh_inst->frame_end_info)
 			{
-				assert(unit->bow_instance);
-				game->bow_instances.push_back(unit->bow_instance);
-				unit->bow_instance = nullptr;
+				game_level->FreeBowInstance(unit->bow_instance);
 				unit->mesh_inst->groups[0].speed = 1.f;
 				unit->action = A_NONE;
 				if(Rand() % 2 == 0)
@@ -1590,9 +1583,6 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		unit->SetAnimationAtEnd();
 	}
 	if(unit->bow_instance)
-	{
-		game->bow_instances.push_back(unit->bow_instance);
-		unit->bow_instance = nullptr;
-	}
+		game_level->FreeBowInstance(unit->bow_instance);
 	unit->action = A_NONE;
 }

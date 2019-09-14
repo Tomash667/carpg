@@ -3048,7 +3048,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		}
 		else
 		{
-			V(eGlow->SetTexture(hGlowTex, tCzern->tex));
+			V(eGlow->SetTexture(hGlowTex, tBlack->tex));
 			V(eGlow->CommitChanges());
 			for(int i = 0; i < mesh->head.n_subs; ++i)
 			{
@@ -3646,7 +3646,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		Matrix m2 = m1 * game_level->camera.matViewProj;
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m2));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&m1));
-		V(e->SetTexture(super_shader->hTexDiffuse, tKrewSlad[blood.type]->tex));
+		V(e->SetTexture(super_shader->hTexDiffuse, tBloodSplat[blood.type]->tex));
 
 		// lights
 		if(!outside)

@@ -416,7 +416,6 @@
     <ClCompile Include="entity\Unit.cpp" />
     <ClCompile Include="entity\Usable.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Game2.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="generator\CityGenerator.cpp" />
     <ClCompile Include="generator\DungeonMapGenerator.cpp" />

@@ -50,6 +50,7 @@ public:
 	bool Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	int GetLocationEventHandlerQuestRefid() override { return id; }
+	void Update(float dt);
 
 	State bandits_state;
 	float timer;

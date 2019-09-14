@@ -529,7 +529,7 @@ void Game::AddLoadTasks()
 	// gui textures
 	res_mgr->AddTaskCategory(txLoadGuiTextures);
 	tEquipped = res_mgr->Load<Texture>("equipped.png");
-	tCzern = res_mgr->Load<Texture>("czern.bmp");
+	tBlack = res_mgr->Load<Texture>("czern.bmp");
 	tRip = res_mgr->Load<Texture>("rip.jpg");
 	tPortal = res_mgr->Load<Texture>("dark_portal.png");
 	tWarning = res_mgr->Load<Texture>("warning.png");
@@ -556,19 +556,19 @@ void Game::AddLoadTasks()
 
 	// particles
 	res_mgr->AddTaskCategory(txLoadParticles);
-	tKrew[BLOOD_RED] = res_mgr->Load<Texture>("krew.png");
-	tKrew[BLOOD_GREEN] = res_mgr->Load<Texture>("krew2.png");
-	tKrew[BLOOD_BLACK] = res_mgr->Load<Texture>("krew3.png");
-	tKrew[BLOOD_BONE] = res_mgr->Load<Texture>("iskra.png");
-	tKrew[BLOOD_ROCK] = res_mgr->Load<Texture>("kamien.png");
-	tKrew[BLOOD_IRON] = res_mgr->Load<Texture>("iskra.png");
-	tKrewSlad[BLOOD_RED] = res_mgr->Load<Texture>("krew_slad.png");
-	tKrewSlad[BLOOD_GREEN] = res_mgr->Load<Texture>("krew_slad2.png");
-	tKrewSlad[BLOOD_BLACK] = res_mgr->Load<Texture>("krew_slad3.png");
-	tKrewSlad[BLOOD_BONE] = nullptr;
-	tKrewSlad[BLOOD_ROCK] = nullptr;
-	tKrewSlad[BLOOD_IRON] = nullptr;
-	tIskra = res_mgr->Load<Texture>("iskra.png");
+	tBlood[BLOOD_RED] = res_mgr->Load<Texture>("krew.png");
+	tBlood[BLOOD_GREEN] = res_mgr->Load<Texture>("krew2.png");
+	tBlood[BLOOD_BLACK] = res_mgr->Load<Texture>("krew3.png");
+	tBlood[BLOOD_BONE] = res_mgr->Load<Texture>("iskra.png");
+	tBlood[BLOOD_ROCK] = res_mgr->Load<Texture>("kamien.png");
+	tBlood[BLOOD_IRON] = res_mgr->Load<Texture>("iskra.png");
+	tBloodSplat[BLOOD_RED] = res_mgr->Load<Texture>("krew_slad.png");
+	tBloodSplat[BLOOD_GREEN] = res_mgr->Load<Texture>("krew_slad2.png");
+	tBloodSplat[BLOOD_BLACK] = res_mgr->Load<Texture>("krew_slad3.png");
+	tBloodSplat[BLOOD_BONE] = nullptr;
+	tBloodSplat[BLOOD_ROCK] = nullptr;
+	tBloodSplat[BLOOD_IRON] = nullptr;
+	tSpark = res_mgr->Load<Texture>("iskra.png");
 	tSpawn = res_mgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = res_mgr->Load<Texture>("lighting_line.png");
 

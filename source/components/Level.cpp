@@ -52,6 +52,8 @@ cl_fog(true), cl_lighting(true)
 //=================================================================================================
 Level::~Level()
 {
+	DeleteElements(bow_instances);
+
 	delete terrain;
 	delete terrain_shape;
 	delete dungeon_shape;
@@ -468,7 +470,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 {
 	assert(unit);
 	if(unit->action == A_DESPAWN || (Net::IsClient() && unit->summoner))
-		game->SpawnUnitEffect(*unit);
+		SpawnUnitEffect(*unit);
 	unit->RemoveAllEventHandlers();
 	unit->to_remove = true;
 	to_remove.push_back(unit);
@@ -757,7 +759,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->speed_min = Vec3(-1, 4, -1);
 			pe->speed_max = Vec3(1, 6, 1);
 			pe->mode = 0;
-			pe->tex = game->tKrew[BLOOD_RED];
+			pe->tex = game->tBlood[BLOOD_RED];
 			pe->size = 0.5f;
 			pe->Init();
 			area.tmp->pes.push_back(pe);
@@ -2638,7 +2640,7 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 //=================================================================================================
 void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 {
-	if(!game->tKrewSlad[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
+	if(!game->tBloodSplat[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
 		return;
 
 	Blood& b = Add1(area.bloods);
@@ -2768,7 +2770,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 	}
 
 	unit.pos = tmp_pos;
-	game->MoveUnit(unit, true);
+	unit.Moved(true);
 	unit.visual_pos = unit.pos;
 
 	if(Net::IsOnline())
@@ -4548,4 +4550,52 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 
 	// nie ma drogi
 	return 0;
+}
+
+//=================================================================================================
+void Level::SpawnUnitEffect(Unit& unit)
+{
+	Vec3 real_pos = unit.pos;
+	real_pos.y += 1.f;
+	sound_mgr->PlaySound3d(game->sSummon, real_pos, SPAWN_SOUND_DIST);
+
+	ParticleEmitter* pe = new ParticleEmitter;
+	pe->tex = game->tSpawn;
+	pe->emision_interval = 0.1f;
+	pe->life = 5.f;
+	pe->particle_life = 0.5f;
+	pe->emisions = 5;
+	pe->spawn_min = 10;
+	pe->spawn_max = 15;
+	pe->max_particles = 15 * 5;
+	pe->pos = unit.pos;
+	pe->speed_min = Vec3(-1, 0, -1);
+	pe->speed_max = Vec3(1, 1, 1);
+	pe->pos_min = Vec3(-0.75f, 0, -0.75f);
+	pe->pos_max = Vec3(0.75f, 1.f, 0.75f);
+	pe->size = 0.3f;
+	pe->op_size = POP_LINEAR_SHRINK;
+	pe->alpha = 0.5f;
+	pe->op_alpha = POP_LINEAR_SHRINK;
+	pe->mode = 0;
+	pe->Init();
+	unit.area->tmp->pes.push_back(pe);
+}
+
+//=================================================================================================
+MeshInstance* Level::GetBowInstance(Mesh* mesh)
+{
+	if(bow_instances.empty())
+	{
+		if(!mesh->IsLoaded())
+			res_mgr->LoadInstant(mesh);
+		return new MeshInstance(mesh);
+	}
+	else
+	{
+		MeshInstance* instance = bow_instances.back();
+		bow_instances.pop_back();
+		instance->mesh = mesh;
+		return instance;
+	}
 }

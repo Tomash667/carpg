@@ -271,7 +271,7 @@ void Net::InterpolateUnits(float dt)
 	{
 		for(Unit* unit : area.units)
 		{
-			if(!unit->IsLocal())
+			if(!unit->IsLocalPlayer())
 				unit->interp->Update(dt, unit->visual_pos, unit->rot);
 			if(unit->mesh_inst->mesh->head.n_groups == 1)
 			{
@@ -719,7 +719,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
 						if(!unit.bow_instance)
-							unit.bow_instance = game->GetBowInstance(unit.GetBow().mesh);
+							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
 						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 						unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[group].speed;
 					}
@@ -864,7 +864,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				else if(game->game_state == GS_LEVEL)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = game->tKrew[type];
+					pe->tex = game->tBlood[type];
 					pe->emision_interval = 0.01f;
 					pe->life = 5.f;
 					pe->particle_life = 0.5f;
@@ -1888,7 +1888,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					area.units.push_back(unit);
 					unit->area = &area;
 					if(unit->summoner)
-						game->SpawnUnitEffect(*unit);
+						game_level->SpawnUnitEffect(*unit);
 				}
 				else
 					delete unit;
@@ -2227,7 +2227,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				ParticleEmitter* best_pe = nullptr;
 				for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 				{
-					if(pe->tex == game->tKrew[BLOOD_RED])
+					if(pe->tex == game->tBlood[BLOOD_RED])
 					{
 						float dist = Vec3::Distance(pe->pos, obj->pos);
 						if(dist < best_dist)
@@ -2913,7 +2913,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(unit && unit->player)
 					{
 						if(unit->player != game->pc)
-							game->UseAction(unit->player, true);
+							unit->player->UseAction(true);
 					}
 					else
 						Error("Update client: PLAYER_ACTION, invalid player unit %d.", id);

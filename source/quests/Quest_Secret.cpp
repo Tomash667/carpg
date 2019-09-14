@@ -156,6 +156,9 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 //=================================================================================================
 void Quest_Secret::UpdateFight()
 {
+	if(state != SECRET_FIGHT)
+		return;
+
 	Arena* arena = game->arena;
 	int count[2] = { 0 };
 

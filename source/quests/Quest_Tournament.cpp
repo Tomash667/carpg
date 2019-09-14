@@ -295,6 +295,9 @@ void Quest_Tournament::GenerateUnits()
 //=================================================================================================
 void Quest_Tournament::Update(float dt)
 {
+	if(state == TOURNAMENT_NOT_DONE)
+		return;
+
 	if(game->arena->free && !master->IsAlive())
 	{
 		Clean();

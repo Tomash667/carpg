@@ -411,8 +411,8 @@ struct Unit : public EntityType<Unit>
 	bool IsBetterItem(const Item* item, int* value = nullptr, int* prev_value = nullptr, ITEM_SLOT* target_slot = nullptr) const;
 	float GetItemAiValue(const Item* item) const;
 	bool IsPlayer() const { return (player != nullptr); }
-	bool IsClient() const { return IsPlayer() && !player->IsLocal(); }
-	bool IsLocal() const { return IsPlayer() && player->IsLocal(); }
+	bool IsLocalPlayer() const { return IsPlayer() && player->IsLocal(); }
+	bool IsOtherPlayer() const { return IsPlayer() && !player->IsLocal(); }
 	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
@@ -906,6 +906,8 @@ public:
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
 	void CastSpell();
+	void Update(float dt);
+	void Moved(bool warped = false, bool dash = false);
 };
 
 //-----------------------------------------------------------------------------

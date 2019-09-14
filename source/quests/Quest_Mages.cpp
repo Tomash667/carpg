@@ -11,6 +11,7 @@
 #include "World.h"
 #include "Team.h"
 #include "NameHelper.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -521,4 +522,15 @@ bool Quest_Mages2::Load(GameReader& f)
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void Quest_Mages2::Update(float dt)
+{
+	if(mages_state == State::OldMageJoined && game_level->location_index == target_loc)
+	{
+		timer += dt;
+		if(timer >= 30.f && scholar->GetOrder() != ORDER_AUTO_TALK)
+			scholar->OrderAutoTalk();
+	}
 }
