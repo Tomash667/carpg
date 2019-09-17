@@ -9,7 +9,8 @@
 enum OutsideLocationTarget
 {
 	FOREST,
-	MOONWELL
+	MOONWELL,
+	ACADEMY
 };
 
 //-----------------------------------------------------------------------------

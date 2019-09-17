@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
++ akademia - mo¿na tam rekrutowaæ pocz¹tkuj¹cych bohaterów
 + nowa klasa gracza: kap³an - czar uleczenia
 + mana
 + szybka podró¿ (mo¿e byæ u¿yta przez przywódcê w bezpiecznej lokalizacji by szybko powróciæ na mapê œwiata)

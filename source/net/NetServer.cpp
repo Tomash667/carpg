@@ -4224,8 +4224,6 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 	}
 
 	f.WriteCasted<byte>(0xFF);
-
-	SendServer(f, HIGH_PRIORITY, RELIABLE, info.adr);
 }
 
 //=================================================================================================

@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.12 (???):
 ! cannot load saves from version 0.4.20 or older
++ academy - can recruit beginner heroes there
 + new player class: cleric - healing spell
 + mana
 + fast travel (can be used inside safe locations by team leader to quickly return to map)

@@ -43,8 +43,7 @@ public:
 		V_COUNT,
 		V_COUNTER,
 		V_CITIZENS,
-		V_CITIZENS_WORLD,
-		V_FIRST_CITY
+		V_CITIZENS_WORLD
 	};
 
 	// script variant

@@ -192,6 +192,7 @@ struct SingleInsideLocation;
 
 //-----------------------------------------------------------------------------
 // Location generators
+class AcademyGenerator;
 class CampGenerator;
 class CaveGenerator;
 class CityGenerator;

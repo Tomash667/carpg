@@ -1019,8 +1019,9 @@ void Game::SetGameText()
 	LoadArray(txAiNoHpPot, "aiNoHpPot");
 	LoadArray(txAiCity, "aiCity");
 	LoadArray(txAiVillage, "aiVillage");
-	txAiMoonwell = Str("aiMoonwell");
 	txAiForest = Str("aiForest");
+	txAiMoonwell = Str("aiMoonwell");
+	txAiAcademy = Str("aiAcademy");
 	txAiCampEmpty = Str("aiCampEmpty");
 	txAiCampFull = Str("aiCampFull");
 	txAiFort = Str("aiFort");
@@ -1131,6 +1132,8 @@ void Game::SetGameText()
 	txLearningPoint = Str("learningPoint");
 	txLearningPoints = Str("learningPoints");
 	txNeedLearningPoints = Str("needLearningPoints");
+	txTeamTooBig = Str("teamTooBig");
+	txHeroJoined = Str("heroJoined");
 
 	// dystans / si³a
 	txNear = Str("near");
@@ -6481,10 +6484,19 @@ void Game::OnEnterLocation()
 					text = RandomString(txAiVillage);
 				break;
 			case L_OUTSIDE:
-				if(game_level->location->target == MOONWELL)
-					text = txAiMoonwell;
-				else
+				switch(game_level->location->target)
+				{
+				case FOREST:
+				default:
 					text = txAiForest;
+					break;
+				case MOONWELL:
+					text = txAiMoonwell;
+					break;
+				case ACADEMY:
+					text = txAiAcademy;
+					break;
+				}
 				break;
 			case L_CAMP:
 				if(game_level->location->state != LS_CLEARED && !game_level->location->group->IsEmpty())

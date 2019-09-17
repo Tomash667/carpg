@@ -95,3 +95,39 @@ quest alchemist_apprentice
 		11 "Alchemik w $(city.name) poszukuje specyficzngo rodzaju zió³."
 	}
 }
+
+//=============================================================================
+quest main {
+	dialog trainer {
+		0 "Gratulacje! Ukoñczy³eœ szkolenie w akademii!"
+		1 "Co zamierzasz teraz zrobiæ? Jakieœ plany na przysz³oœæ?"
+		2 "Witaj ponownie $player_name$! Jak mogê ci pomóc?"
+		3 "Rekrutuj bohaterów"
+		4 "Koniec rozmowy"
+		5 "Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
+		6 "Kogo chcesz zrekrutowaæ?"
+		7 "Anuluj"
+	}
+	
+	dialog messenger {
+		0 "$player_name$! Tu jesteœ!"
+		1 "Ukoñczy³eœ to szkolenie w akademii? To dobrze..."
+		2 "Musisz natychmiast wróciæ do $(village.name)."
+		3 "Jest coraz gorzej, musisz porozmawiaæ z so³tysem."
+		4 "Skoro ju¿ tu jesteœ postaraj siê zrekrutowaæ kilka osób do pomocy."
+		5 "Wracam do wioski, udaj siê tam najszybciej jak bêdziesz móg³."
+		6 "To wszystko co mia³em ci do przekazania."
+	}
+	
+	texts {
+		0 "W królestwie Nyrtany wybuch³a nieznana zaraza."
+		1 "Zabija ludzi powoli nie czyni¹c szkody innym rasom i zwierzêtom."
+		2 "Inne kraje zamknê³y granicê by unikn¹æ rozszerzania siê plagi."
+		3 "W twojej wiosce te¿ zarazi³o siê kilka osób, nie wiadomo dlaczego."
+		4 "Uda³eœ siê do akademii bohaterów by przejœæ podstawowe szkolenie."
+		5 "Twoim g³ównym zadaniem jest powstrzymanie zarazy!"
+		6 "Zaraza w wiosce"
+		7 "Rozpoczêto dnia $date$."
+		8 "W $(village.name) zaraza zaczê³a siê coraz bardziej rozprzestrzeniaæ. Muszê tam szybko wróciæ."
+	}
+}

@@ -3891,7 +3891,7 @@ void Level::RevealMinimap()
 //=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && location->target == CITY;
+	return location->type == L_CITY && location->target != VILLAGE;
 }
 
 //=================================================================================================
@@ -4162,7 +4162,7 @@ MusicType Level::GetLocationMusic()
 		else
 			return MusicType::Dungeon;
 	case L_OUTSIDE:
-		if(location_index == quest_mgr->quest_secret->where2 || location->target == MOONWELL)
+		if(location_index == quest_mgr->quest_secret->where2 || Any(location->target, MOONWELL, ACADEMY))
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;

@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "LocationGeneratorFactory.h"
 #include "InsideLocation.h"
+#include "AcademyGenerator.h"
 #include "CampGenerator.h"
 #include "CaveGenerator.h"
 #include "CityGenerator.h"
@@ -21,6 +22,7 @@
 //=================================================================================================
 LocationGeneratorFactory::LocationGeneratorFactory()
 {
+	academy = new AcademyGenerator;
 	camp = new CampGenerator;
 	cave = new CaveGenerator;
 	city = new CityGenerator;
@@ -36,6 +38,7 @@ LocationGeneratorFactory::LocationGeneratorFactory()
 //=================================================================================================
 LocationGeneratorFactory::~LocationGeneratorFactory()
 {
+	delete academy;
 	delete camp;
 	delete cave;
 	delete city;
@@ -73,6 +76,8 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 			loc_gen = secret;
 		else if(loc->target == MOONWELL)
 			loc_gen = moonwell;
+		else if(loc->target == ACADEMY)
+			loc_gen = academy;
 		else
 			loc_gen = forest;
 		break;

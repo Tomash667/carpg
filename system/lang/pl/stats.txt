@@ -46,6 +46,7 @@ otherness = "Innoœæ"
 randomEncounter = "Losowe spotkanie"
 tower = "Wie¿a"
 labyrinth = "Labirynt"
+academy = "Akademia"
 
 [WeaponTypes]
 shortBlade = "Krótkie ostrze"

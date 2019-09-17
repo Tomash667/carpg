@@ -392,20 +392,35 @@ void OutsideLocationGenerator::CreateMinimap()
 		uint* pix = lock[y];
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
-			TERRAIN_TILE t = outside->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size].t;
+			TerrainTile& t = outside->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
 			Color col;
-			if(t == TT_GRASS)
-				col = Color(0, 128, 0);
-			else if(t == TT_ROAD)
-				col = Color(128, 128, 128);
-			else if(t == TT_SAND)
-				col = Color(128, 128, 64);
-			else if(t == TT_GRASS2)
-				col = Color(105, 128, 89);
-			else if(t == TT_GRASS3)
-				col = Color(127, 51, 0);
+			if(t.mode >= TM_BUILDING)
+				col = Color(128, 64, 0);
 			else
-				col = Color(255, 0, 0);
+			{
+				switch(t.t)
+				{
+				case TT_GRASS:
+					col = Color(0, 118, 0);
+					break;
+				case TT_ROAD:
+					col = Color(128, 128, 128);
+					break;
+				case TT_SAND:
+					col = Color(128, 128, 64);
+					break;
+				case TT_GRASS2:
+					col = Color(105, 128, 89);
+					break;
+				case TT_GRASS3:
+					col = Color(32, 64, 32);
+					break;
+				default:
+					col = Color(255, 0, 0);
+					break;
+				}
+			}
+
 			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
 			{
 				col = ((col & 0xFF) / 2) |
@@ -548,5 +563,26 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
 		phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+}
+
+//=================================================================================================
+void OutsideLocationGenerator::SpawnCityPhysics()
+{
+	TerrainTile* tiles = outside->tiles;
+
+	for(int z = 0; z < s; ++z)
+	{
+		for(int x = 0; x < s; ++x)
+		{
+			if(tiles[x + z * OutsideLocation::size].mode == TM_BUILDING_BLOCK)
+			{
+				btCollisionObject* cobj = new btCollisionObject;
+				cobj->setCollisionShape(game_level->shape_block);
+				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+				cobj->getWorldTransform().setOrigin(btVector3(2.f*x + 1.f, terrain->GetH(2.f*x + 1.f, 2.f*x + 1), 2.f*z + 1.f));
+				phy_world->addCollisionObject(cobj, CG_BUILDING);
+			}
+		}
 	}
 }

@@ -9,7 +9,8 @@ struct DialogChoice
 	enum Type
 	{
 		Normal,
-		Perk
+		Perk,
+		Hero
 	};
 
 	int pos, quest_dialog_index;
@@ -74,8 +75,9 @@ struct DialogContext
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);
-	bool LearnPerk(int perk);
 private:
 	void UpdateLoop();
 	bool DoIfOp(int value1, int value2, DialogOp op);
+	bool LearnPerk(int perk);
+	bool RecruitHero(Class* clas);
 };

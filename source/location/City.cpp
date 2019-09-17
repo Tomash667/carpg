@@ -374,9 +374,24 @@ CityBuilding* City::FindBuilding(Building* building)
 }
 
 //=================================================================================================
-void City::GenerateCityBuildings(vector<Building*>& buildings, bool required, bool first_city)
+void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 {
-	BuildingScript* script = BuildingScript::Get(IsVillage() ? "village" : "city");
+	cstring script_name;
+	switch(target)
+	{
+	default:
+	case CITY:
+		script_name = "city";
+		break;
+	case CAPITAL:
+		script_name = "capital";
+		break;
+	case VILLAGE:
+		script_name = "village";
+		break;
+	}
+
+	BuildingScript* script = BuildingScript::Get(script_name);
 	if(variant == -1)
 		variant = Rand() % script->variants.size();
 
@@ -388,7 +403,6 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required, bo
 	script->vars[BuildingScript::V_COUNT] = 1;
 	script->vars[BuildingScript::V_CITIZENS] = citizens;
 	script->vars[BuildingScript::V_CITIZENS_WORLD] = citizens_world;
-	script->vars[BuildingScript::V_FIRST_CITY] = (first_city ? 1 : 0);
 	if(!required)
 		code += script->required_offset;
 
@@ -647,7 +661,7 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 
 	// not required buildings
 	LocalVector2<Building*> buildings;
-	GenerateCityBuildings(buildings.Get(), false, false);
+	GenerateCityBuildings(buildings.Get(), false);
 	tobuild.reserve(tobuild.size() + buildings.size());
 	for(Building* b : buildings)
 		tobuild.push_back(ToBuild(b, false));
