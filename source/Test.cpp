@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
-#include "GlobalGui.h"
 #include "World.h"
 #include "Level.h"
+#include "Gui.h"
 
 static int state, steps;
 static Timer timer;
@@ -12,13 +12,12 @@ static Location* loc;
 
 void UpdateTest()
 {
-	Game& game = Game::Get();
 	float dt = timer.Tick();
 
 	switch(state)
 	{
 	case 0:
-		if(game.game_state == GS_LEVEL && game.input->Pressed(Key::N8))
+		if(game->game_state == GS_LEVEL && input->Pressed(Key::N8))
 		{
 			Info("TEST: Started.");
 			state = 1;
@@ -32,13 +31,13 @@ void UpdateTest()
 			++steps;
 			if(steps >= 10 && Rand() % 3 == 0)
 			{
-				game.Quickload(false);
+				game->Quickload(false);
 				steps = 0;
 				tdt = 10.f;
 			}
 			else if(Rand() % 2 == 0)
 			{
-				game.Quicksave(false);
+				game->Quicksave(false);
 				tdt = 3.f;
 			}
 			state = 2;
@@ -48,10 +47,10 @@ void UpdateTest()
 		tdt -= dt;
 		if(tdt <= 0.f)
 		{
-			Location* cl = W.GetCurrentLocation();
-			if(cl->GetLastLevel() == L.dungeon_level)
+			Location* cl = world->GetCurrentLocation();
+			if(cl->GetLastLevel() == game_level->dungeon_level)
 			{
-				loc = W.GetRandomLocation([](Location* l)
+				loc = world->GetRandomLocation([](Location* l)
 				{
 					return l->state < LS_VISITED && l->type != L_ENCOUNTER;
 				});
@@ -59,18 +58,18 @@ void UpdateTest()
 				{
 					state = 0;
 					Info("TEST: Finished!");
-					global::gui->SimpleDialog("Test finished!", nullptr);
+					gui->SimpleDialog("Test finished!", nullptr);
 				}
 				else
 				{
-					game.ExitToMap();
+					game->ExitToMap();
 					tdt = 2.f;
 					state = 3;
 				}
 			}
 			else
 			{
-				game.ChangeLevel(+1);
+				game->ChangeLevel(+1);
 				tdt = 5.f;
 				state = 1;
 			}
@@ -80,7 +79,7 @@ void UpdateTest()
 		tdt -= dt;
 		if(tdt <= 0.f)
 		{
-			W.Warp(loc->index);
+			world->Warp(loc->index);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -95,7 +94,7 @@ void UpdateTest()
 		tdt -= dt;
 		if(tdt <= 0.f)
 		{
-			game.EnterLocation();
+			game->EnterLocation();
 			tdt = 5.f;
 			state = 1;
 		}

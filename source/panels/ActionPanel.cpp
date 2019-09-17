@@ -1,8 +1,8 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "ActionPanel.h"
+#include "LevelGui.h"
 #include "GameGui.h"
-#include "GlobalGui.h"
 #include "Action.h"
 #include "Language.h"
 #include "ResourceManager.h"
@@ -28,7 +28,7 @@ enum OtherAction
 ActionPanel::ActionPanel()
 {
 	visible = false;
-	tooltip.Init(TooltipGetText(this, &ActionPanel::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &ActionPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -38,10 +38,13 @@ void ActionPanel::LoadLanguage()
 	txActions = s.Get("actions");
 	txCooldown = s.Get("cooldown");
 	txCooldownCharges = s.Get("cooldownCharges");
+	txCost = s.Get("cost");
 	txAbilities = s.Get("abilities");
 	txOther = s.Get("other");
+	txMana = s.Get("mana");
+	txStamina = s.Get("stamina");
 
-	Language::Section s2 = Language::GetSection("GameGui");
+	Language::Section s2 = Language::GetSection("LevelGui");
 	txMeleeWeapon = s2.Get("meleeWeapon");
 	txRangedWeapon = s2.Get("rangedWeapon");
 	txPotion = s2.Get("potion");
@@ -53,11 +56,10 @@ void ActionPanel::LoadLanguage()
 //=================================================================================================
 void ActionPanel::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("item_bar.png", tItemBar);
-	tex_mgr.AddLoadTask("sword-brandish.png", tMelee);
-	tex_mgr.AddLoadTask("bow-arrow.png", tRanged);
-	tex_mgr.AddLoadTask("health-potion.png", tPotion);
+	tItemBar = res_mgr->Load<Texture>("item_bar.png");
+	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
+	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
+	tPotion = res_mgr->Load<Texture>("health-potion.png");
 }
 
 //=================================================================================================
@@ -81,13 +83,13 @@ void ActionPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(gui->fBig, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::font_big, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
 	if(!actions.empty())
 	{
 		images.clear();
-		images.push_back(actions[0]->tex->tex);
+		images.push_back(actions[0]->tex);
 		DrawGroup(txAbilities);
 	}
 
@@ -110,7 +112,7 @@ void ActionPanel::DrawGroup(cstring text)
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
 
-	gui->DrawText(gui->fBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
+	gui->DrawText(GameGui::font_big, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
 	shift_y += 40;
 
 	for(int y = 0; y < count_h; ++y)
@@ -155,7 +157,7 @@ void ActionPanel::Update(float dt)
 		return;
 	}
 
-	if(global::gui->game_gui->IsDragAndDrop())
+	if(game_gui->level_gui->IsDragAndDrop())
 	{
 		tooltip.anything = false;
 		return;
@@ -166,7 +168,7 @@ void ActionPanel::Update(float dt)
 		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
 		{
 			int value = ConvertToShortcutSpecial(drag_and_drop_group, drag_and_drop_index);
-			TEX icon = nullptr;
+			Texture* icon = nullptr;
 			switch(value)
 			{
 			case Shortcut::SPECIAL_MELEE_WEAPON:
@@ -179,10 +181,10 @@ void ActionPanel::Update(float dt)
 				icon = tPotion;
 				break;
 			case Shortcut::SPECIAL_ACTION:
-				icon = actions[0]->tex->tex;
+				icon = actions[0]->tex;
 				break;
 			}
-			global::gui->game_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
+			game_gui->level_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
 			drag_and_drop = false;
 		}
 		if(input->Released(Key::LeftButton))
@@ -205,7 +207,7 @@ void ActionPanel::Update(float dt)
 				if(GKey.PressedRelease((GAME_KEYS)(GK_SHORTCUT1 + i)) && group != G_NONE)
 				{
 					int value = ConvertToShortcutSpecial(group, id);
-					Game::Get().pc->SetShortcut(i, Shortcut::TYPE_SPECIAL, value);
+					game->pc->SetShortcut(i, Shortcut::TYPE_SPECIAL, value);
 				}
 			}
 		}
@@ -250,7 +252,7 @@ void ActionPanel::UpdateGroup(uint count, int group, int& group_result, int& id_
 }
 
 //=================================================================================================
-void ActionPanel::GetTooltip(TooltipController*, int group, int id)
+void ActionPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 {
 	if(group == G_NONE)
 	{
@@ -259,17 +261,7 @@ void ActionPanel::GetTooltip(TooltipController*, int group, int id)
 	}
 
 	if(group == G_ACTION)
-	{
-		Action& action = *actions[id];
-		tooltip.anything = true;
-		tooltip.img = action.tex->tex;
-		tooltip.big_text = action.name;
-		tooltip.text = action.desc;
-		if(action.charges == 1)
-			tooltip.small_text = Format(txCooldown, action.cooldown);
-		else
-			tooltip.small_text = Format(txCooldownCharges, action.cooldown, action.charges, action.recharge);
-	}
+		GetActionTooltip(tooltip);
 	else
 	{
 		tooltip.anything = true;
@@ -292,6 +284,34 @@ void ActionPanel::GetTooltip(TooltipController*, int group, int id)
 			tooltip.text = txPotionDesc;
 			break;
 		}
+	}
+}
+
+//=================================================================================================
+void ActionPanel::GetActionTooltip(TooltipController& tooltip)
+{
+	Action& action = *actions[0];
+	tooltip.anything = true;
+	tooltip.img = action.tex;
+	tooltip.big_text = action.name;
+
+	tooltip.text = action.desc;
+	uint pos = tooltip.text.find("{power}", 0);
+	if(pos != string::npos)
+		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->GetActionPower()));
+
+	if(action.charges == 1)
+		tooltip.small_text = Format(txCooldown, action.cooldown);
+	else
+		tooltip.small_text = Format(txCooldownCharges, action.cooldown, action.charges, action.recharge);
+	if(action.cost > 0.f)
+	{
+		tooltip.small_text += '\n';
+		tooltip.small_text += txCost;
+		if(action.use_mana)
+			tooltip.small_text += Format("$cb%g %s$c-", action.cost, txMana);
+		else
+			tooltip.small_text += Format("$cy%g %s$c-", action.cost, txStamina);
 	}
 }
 

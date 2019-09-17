@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 class BuildingLoader;
+class ClassLoader;
 class DialogLoader;
 class ItemLoader;
 class ObjectLoader;
@@ -19,6 +20,7 @@ public:
 		Objects,
 		Spells,
 		Dialogs,
+		Classes,
 		Units,
 		Buildings,
 		Musics,
@@ -46,6 +48,7 @@ public:
 
 private:
 	BuildingLoader* building_loader;
+	ClassLoader* class_loader;
 	DialogLoader* dialog_loader;
 	ItemLoader* item_loader;
 	ObjectLoader* object_loader;

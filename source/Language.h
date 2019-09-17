@@ -30,6 +30,7 @@ public:
 	static cstring TryGetString(cstring str, bool err = true);
 	static Section GetSection(cstring name);
 	static vector<Map*>& GetLanguages() { return languages; }
+	static uint GetErrors() { return errors; }
 
 	static string prefix;
 
@@ -43,6 +44,7 @@ private:
 	static Sections sections;
 	static vector<Map*> languages;
 	static string tstr;
+	static uint errors;
 };
 
 //-----------------------------------------------------------------------------

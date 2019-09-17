@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 struct InsideLocation : public Location
 {
-	int target, special_room;
+	int special_room;
 	bool from_portal;
 
 	InsideLocation() : Location(false), special_room(-1), from_portal(false)
@@ -16,7 +16,7 @@ struct InsideLocation : public Location
 
 	// from Location
 	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
+	void Load(GameReader& f, bool local) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
 
@@ -28,10 +28,10 @@ struct InsideLocation : public Location
 	// return last level data if it was generated
 	virtual InsideLocationLevel* GetLastLevelData() = 0;
 	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) = 0;
-	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr) = 0;
+	virtual Chest* FindChestWithQuestItem(int quest_id, int& at_level, int* index = nullptr) = 0;
 
 	bool RemoveItemFromChest(const Item* item, int& at_level);
-	bool RemoveQuestItemFromChest(int quest_refid, int& at_level);
+	bool RemoveQuestItemFromChest(int quest_id, int& at_level);
 	Room* FindChaseRoom(const Vec3& _pos)
 	{
 		InsideLocationLevel& lvl = GetLevelData();

@@ -40,7 +40,7 @@ void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_
 	for(int i = 0; i < 100; ++i)
 	{
 		T* item = items[Rand() % items.size()];
-		if(item->value > price_limit || IS_SET(item->flags, exclude_flags))
+		if(item->value > price_limit || IsSet(item->flags, exclude_flags))
 			continue;
 		InsertItemBare(container, item, count);
 		return;
@@ -158,7 +158,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	{
 		if(unit.player->HavePerk(Perk::Asocial))
 			haggle -= 20;
-		if(unit.player->action == PlayerController::Action_Trade
+		if(unit.player->action == PlayerAction::Trade
 			&& unit.player->action_unit->data->id == "alchemist" && unit.player->HavePerk(Perk::AlchemistApprentice))
 			haggle += 20;
 	}
@@ -284,7 +284,7 @@ void ItemHelper::SkipStock(FileReader& f)
 		const string& item_id = f.ReadString1();
 		f.Skip<uint>(); // count
 		if(item_id[0] == '$')
-			f.Skip<int>(); // quest_refid
+			f.Skip<int>(); // quest_id
 	}
 }
 

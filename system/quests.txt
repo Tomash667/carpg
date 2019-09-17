@@ -1,5 +1,5 @@
 //=============================================================================
-// DELIVER RESOURCES
+// DELIVER RESOURCES - random mayor quest
 //=============================================================================
 quest deliver_resources
 {
@@ -163,7 +163,7 @@ quest deliver_resources
 							if(first)
 							{
 								first = false;
-								unit.auto_talk = true;
+								unit.OrderAutoTalk();
 								unit.AddDialog(quest, "bandits");
 							}
 						}
@@ -187,7 +187,7 @@ quest deliver_resources
 }
 
 //=============================================================================
-// DELIVER RESOURCES
+// ALCHEMIST APPRENTICE - unique quest given by alchemist
 //=============================================================================
 quest alchemist_apprentice
 {
@@ -372,8 +372,8 @@ quest alchemist_apprentice
 					Level::SpawnItemRandomly(herb, Random(5, 7));
 					Unit@ enemy = Level::GetNearestEnemy(Team::leader);
 					Unit@ u = Level::SpawnUnitNearLocation(UnitData::Get("xwokloiz"), enemy.pos, 5);
-					u.auto_talk = true;
-					u.OrderEscapeToUnit(Team::leader);
+					u.OrderEscapeToUnit(Team::leader)
+						.ThenAutoTalk();
 					u.AddEventHandler(quest, EVENT_DIE);
 					forest.AddEventHandler(quest, EVENT_PICKUP);
 					quest.RemoveRumor();
@@ -396,8 +396,8 @@ quest alchemist_apprentice
 					if(dist < 2)
 					{
 						e.unit.Talk(TEXT(9), 2);
-						e.unit.OrderLookAt(last_item.pos);
-						e.unit.OrderTimer(1);
+						e.unit.OrderLookAt(last_item.pos)
+							.WithTimer(1);
 						last_pos = last_item.pos;
 					}
 				}
@@ -416,13 +416,13 @@ quest alchemist_apprentice
 						if(progress == P_ALCH_JOINED)
 						{
 							progress = P_ALCH_ALL_PICKED;
-							u.auto_talk = true;
+							u.OrderAutoTalk();
 							u.RemoveEventHandler(quest);
 						}
 						else
 						{
 							progress = P_ALCH_ALL_PICKED_MANUALLY;
-							u.order = ORDER_LEAVE;
+							u.OrderLeave();
 						}
 						quest.AddEntry(TEXT(6));
 						forest.RemoveEventHandler(quest);
@@ -442,7 +442,7 @@ quest alchemist_apprentice
 			switch(progress)
 			{
 			case P_ALCH_ACCEPTED:
-				@forest = World::GetClosestLocation(L_FOREST, city.pos);
+				@forest = World::GetClosestLocation(L_OUTSIDE, city.pos, FOREST);
 				forest.st = 9;
 				forest.reset = true;
 				@forest.active_quest = quest;
@@ -468,7 +468,7 @@ quest alchemist_apprentice
 				pc.unit.AddTeamItem(herb);
 				target.RemoveEventHandler(quest);
 				target.RemoveItem(herb);
-				target.order = ORDER_LEAVE;
+				target.OrderLeave();
 				break;
 			case P_ALCH_FINISHED:
 				{

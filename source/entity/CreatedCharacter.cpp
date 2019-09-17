@@ -15,17 +15,15 @@ struct TakeRatio
 };
 
 //=================================================================================================
-void CreatedCharacter::Clear(Class c)
+void CreatedCharacter::Clear(Class* clas)
 {
-	ClassInfo& info = ClassInfo::classes[(int)c];
-
 	sp_max = StatProfile::MAX_TAGS;
 	perks_max = StatProfile::MAX_PERKS;
 
 	sp = sp_max;
 	perks = perks_max;
 
-	StatProfile& profile = info.unit_data->GetStatProfile();
+	StatProfile& profile = clas->player->GetStatProfile();
 
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
@@ -48,11 +46,11 @@ void CreatedCharacter::Clear(Class c)
 }
 
 //=================================================================================================
-void CreatedCharacter::Random(Class c)
+void CreatedCharacter::Random(Class* clas)
 {
-	Clear(c);
+	Clear(clas);
 
-	StatProfile& profile = ClassInfo::classes[(int)c].unit_data->GetStatProfile();
+	StatProfile& profile = clas->player->GetStatProfile();
 	SubprofileInfo sub = profile.GetRandomSubprofile(&last_sub);
 	StatProfile::Subprofile& subprofile = *profile.subprofiles[sub.index];
 	last_sub = sub;
@@ -122,7 +120,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(IS_SET(sk, 1 << i))
+		if(IsSet(sk, 1 << i))
 		{
 			if(s[i].value < 0)
 			{
@@ -412,22 +410,23 @@ int CreatedCharacter::GetItemLevel(int level, bool poor)
 }
 
 //=================================================================================================
-void WriteCharacterData(BitStreamWriter& f, Class c, const HumanData& hd, const CreatedCharacter& cc)
+void WriteCharacterData(BitStreamWriter& f, Class* clas, const HumanData& hd, const CreatedCharacter& cc)
 {
-	f.WriteCasted<byte>(c);
+	f << clas->id;
 	hd.Write(f);
 	cc.Write(f);
 }
 
 //=================================================================================================
-int ReadCharacterData(BitStreamReader& f, Class& c, HumanData& hd, CreatedCharacter& cc)
+int ReadCharacterData(BitStreamReader& f, Class*& clas, HumanData& hd, CreatedCharacter& cc)
 {
-	f.ReadCasted<byte>(c);
+	const string& class_id = f.ReadString1();
 	if(!f)
 		return 1;
-	if(!ClassInfo::IsPickable(c))
+	clas = Class::TryGet(class_id);
+	if(!clas || !clas->IsPickable())
 		return 2;
-	cc.Clear(c);
+	cc.Clear(clas);
 	int result = 1;
 	if((result = hd.Read(f)) != 0 || (result = cc.Read(f)) != 0)
 		return result;

@@ -87,7 +87,7 @@ public:
 	int tmp_inventory_shift[2];
 	ItemLock lock;
 	TooltipController tooltip;
-	TEX tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU, tTeamItem;
+	TexturePtr tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU, tTeamItem;
 	cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount,
 		txDropNoGold, txDropNotNow, txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txLootingChest,
 		txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount,
@@ -165,17 +165,16 @@ public:
 	Mode mode;
 
 private:
-	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void UpdateGrid(bool mine);
 	void ReadBook(const Item* item, int index);
-	void FormatBox(int group, string& text, string& small_text, TEX& img, bool refresh);
+	void FormatBox(int group, string& text, string& small_text, Texture*& img, bool refresh);
 	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
 	int GetLockIndexAndRelease();
 	int GetLockIndexOrSlotAndRelease();
 	bool HandleLeftClick(const Item* item);
 
 	Inventory& base;
-	Game& game;
 	float rot;
 	const Item* item_visible;
 	const Item* drag_and_drop_item;

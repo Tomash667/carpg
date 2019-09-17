@@ -534,6 +534,10 @@ item a_stamina {
 	name "Amulet energii"
 	desc "+100 do wytrzyma³oœci i przyœpiesza szybkoœæ regeneracji wytrzyma³oœci."
 }
+item a_mana {
+	name "Amulet many"
+	desc "+150 do many i przyœpiesza szybkoœæ regeneracji many."
+}
 item a_warrior {
 	name "Amulet wojownika"
 	desc "+50 do ataku wrêcz, +10 do si³y, +20 do umiejêtnoœci walk¹ jednorêczn¹ broni¹."
@@ -573,6 +577,18 @@ item r_end {
 item r_dex {
 	name "Pierœcieñ zrêcznoœci"
 	desc "+5 do zrêcznoœci."
+}
+item r_int {
+	name "Pierœcien inteligencji"
+	desc "+5 do inteligencji."
+}
+item r_wis {
+	name "Pierœcieñ m¹droœci"
+	desc "+5 do m¹droœci."
+}
+item r_cha {
+	name "Pierœcieñ charyzmy"
+	desc "+5 do charyzmy."
 }
 item r_hp {
 	name "Pierœcieñ zdrowia"
@@ -646,6 +662,18 @@ item r_carry {
 	name "Pierœcieñ tragarza"
 	desc "+50% do udŸwigu."
 }
+item r_gods_magic {
+	name "Pierœcieñ wyznawcy"
+	desc "+10 do umiejêtnoœci boska magia."
+}
+item r_concentration {
+	name "Pierœcieñ koncentracji"
+	desc "+10 do umiejêtnoœci koncentracja."
+}
+item r_mana {
+	name "Pierœcieñ many"
+	desc "+100 do many."
+}
 item r_str2 {
 	name "Wiêkszy pierœcieñ si³y"
 	desc "+15 do si³y."
@@ -657,6 +685,18 @@ item r_end2 {
 item r_dex2 {
 	name "Wiêkszy pierœcieñ zrêcznoœci"
 	desc "+15 do zrêcznoœci."
+}
+item r_int2 {
+	name "Wiêkszy pierœcieñ inteligencji"
+	desc "+15 do inteligencji."
+}
+item r_wis2 {
+	name "Wiêkszy pierœcieñ m¹droœci"
+	desc "+15 do m¹droœci."
+}
+item r_cha2 {
+	name "Wiêkszy pierœcieñ charyzmy"
+	desc "+15 do charyzmy."
 }
 item r_regeneration {
 	name "Pierœcieñ regeneracji"
@@ -670,6 +710,10 @@ item r_poison_resistance {
 	name "Pierœcieñ odpornoœci na trucizny"
 	desc "+50% odpornoœci na trucizny."
 }
+item r_mana_regen {
+	name "Pierœcieñ harmonii"
+	desc "+100% szybkoœci regeneracji many."
+}
 
 //------------------------------------------------------------------------------
 // POTIONS
@@ -682,20 +726,32 @@ item p_nreg2 {
 	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 30 dni kuracji. Wypij j¹ przed odpoczynkiem."
 }
 item p_hp {
-	name "Mikstura lecznicza"
-	desc "Magiczna mikstura, natychmiast leczy 200 punktów zdrowia."
+	name "Mikstura leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 250 punktów zdrowia."
 }
 item p_hp2 {
-	name "Mikstura leczenia"
-	desc "Magiczna mikstura, natychmiast leczy 400 punktów zdrowia."
+	name "Eliksir leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 500 punktów zdrowia."
 }
 item p_hp3 {
-	name "Mikstura zdrowia"
-	desc "Magiczna mikstura, natychmiast leczy 600 punktów zdrowia."
+	name "Ekstrakt leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 1000 punktów zdrowia."
+}
+item p_mp {
+	name "Mikstura many"
+	desc "Magiczna mikstura, natychmiast przywraca 250 punktów many."
+}
+item p_mp2 {
+	name "Eliksir many"
+	desc "Magiczna mikstura, natychmiast przywraca 500 punktów many."
+}
+item p_mp3 {
+	name "Ekstrakt many"
+	desc "Magiczna mikstura, natychmiast przywraca 1000 punktów many."
 }
 item p_reg {
 	name "Mikstura regeneracji"
-	desc "Magiczna mikstura, natychmiast regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
+	desc "Magiczna mikstura, szybko regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
 }
 item p_antidote {
 	name "Antidotum"
@@ -813,6 +869,10 @@ item green_herb {
 item alchemist_herb {
 	name "Ziele alchemiczne"
 	desc "Roœlina o nieznanych ci w³aœciwoœciach alchemicznych."
+}
+item magic_crystal {
+	name "Magiczny kryszta³"
+	desc "Ten kryszta³ jest jadalny. Przywraca 150 punktów many po zjedzeniu."
 }
 
 //------------------------------------------------------------------------------

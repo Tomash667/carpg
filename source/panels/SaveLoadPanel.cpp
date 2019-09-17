@@ -10,7 +10,7 @@
 #include "World.h"
 #include "Level.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GetTextDialog.h"
 #include "GameMenu.h"
 #include "CreateServerPanel.h"
@@ -19,7 +19,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-SaveLoad::SaveLoad(const DialogInfo& info) : GameDialogBox(info), choice(0), tMiniSave(nullptr)
+SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0)
 {
 	size = Int2(610, 400);
 
@@ -64,10 +64,9 @@ void SaveLoad::LoadLanguage()
 //=================================================================================================
 void SaveLoad::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(gui->fBig, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
@@ -92,17 +91,17 @@ void SaveLoad::Draw(ControlDrawData*)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		gui->DrawText(gui->default_font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
+		gui->DrawText(GameGui::font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;
 	}
 
 	// image
-	if(tMiniSave)
+	if(tMiniSave.tex)
 	{
 		Rect r2 = Rect::Create(Int2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), Int2(256, 192));
-		gui->DrawSpriteRect(tMiniSave, r2);
+		gui->DrawSpriteRect(&tMiniSave, r2);
 	}
 }
 
@@ -120,7 +119,7 @@ void SaveLoad::Update(float dt)
 		{
 			if(rect.IsInside(gui->cursor_pos))
 			{
-				gui->cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HOVER;
 				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;
@@ -163,7 +162,7 @@ void SaveLoad::Event(GuiEvent e)
 	{
 		if(e == IdCancel)
 		{
-			N.mp_load = false;
+			net->mp_load = false;
 			gui->CloseDialog(this);
 			return;
 		}
@@ -238,21 +237,26 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 void SaveLoad::SetSaveImage()
 {
 	SaveSlot& slot = slots[choice];
-	SafeRelease(tMiniSave);
+	SafeRelease(tMiniSave.tex);
+	tMiniSave.state = ResourceState::NotLoaded;
 	if(slot.valid)
 	{
 		if(slot.img_size == 0)
 		{
 			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
 			if(io::FileExists(filename))
-				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave));
+			{
+				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave.tex));
+				tMiniSave.state = ResourceState::Loaded;
+			}
 		}
 		else
 		{
 			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
 			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave));
+			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave.tex));
 			buf->Free();
+			tMiniSave.state = ResourceState::Loaded;
 		}
 	}
 }
@@ -273,11 +277,11 @@ void SaveLoad::SetText()
 		s += slot.player_name;
 		exists = true;
 	}
-	if(slot.player_class != Class::INVALID)
+	if(slot.player_class)
 	{
 		if(exists)
 			s += " ";
-		s += ClassInfo::classes[(int)slot.player_class].name;
+		s += slot.player_class->name;
 		exists = true;
 	}
 	if(slot.hardcore)
@@ -310,7 +314,7 @@ void SaveLoad::SetText()
 		s += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
 	if(slot.game_year != -1 && slot.game_month != -1 && slot.game_day != -1)
-		s += Format(txSaveTime, W.GetDate(slot.game_year, slot.game_month, slot.game_day));
+		s += Format(txSaveTime, world->GetDate(slot.game_year, slot.game_month, slot.game_day));
 	if(!slot.location.empty())
 		s += slot.location;
 
@@ -362,19 +366,13 @@ void SaveLoad::LoadSaveSlots()
 					slot.save_date = cfg.GetInt64("save_date");
 					const string& str = cfg.GetString("player_class");
 					if(str == "0")
-						slot.player_class = Class::WARRIOR;
+						slot.player_class = Class::TryGet("warrior");
 					else if(str == "1")
-						slot.player_class = Class::HUNTER;
+						slot.player_class = Class::TryGet("hunter");
 					else if(str == "2")
-						slot.player_class = Class::ROGUE;
+						slot.player_class = Class::TryGet("rogue");
 					else
-					{
-						ClassInfo* ci = ClassInfo::Find(str);
-						if(ci && ci->pickable)
-							slot.player_class = ci->class_id;
-						else
-							slot.player_class = Class::INVALID;
-					}
+						slot.player_class = Class::TryGet(str);
 				}
 				else
 				{
@@ -384,7 +382,7 @@ void SaveLoad::LoadSaveSlots()
 					slot.game_day = -1;
 					slot.game_month = -1;
 					slot.game_year = -1;
-					slot.player_class = Class::INVALID;
+					slot.player_class = nullptr;
 					slot.mp_players.clear();
 					slot.save_date = 0;
 					slot.hardcore = false;
@@ -408,7 +406,7 @@ void SaveLoad::ShowSavePanel()
 //=================================================================================================
 void SaveLoad::ShowLoadPanel()
 {
-	bool online = (N.mp_load || Net::IsServer());
+	bool online = (net->mp_load || Net::IsServer());
 	SetSaveMode(false, online, online ? multi_saves : single_saves);
 	gui->ShowDialog(this);
 }

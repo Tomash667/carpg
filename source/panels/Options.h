@@ -1,14 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "CheckBox.h"
 #include "Button.h"
 #include "ListBox.h"
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
-class Options : public GameDialogBox
+class Options : public DialogBox
 {
 public:
 	enum Id

@@ -19,9 +19,7 @@ int LocationGenerator::GetNumberOfSteps()
 //=================================================================================================
 void LocationGenerator::RespawnUnits()
 {
-	Game& game = Game::Get();
-
-	for(LevelArea& area : L.ForEachArea())
+	for(LevelArea& area : game_level->ForEachArea())
 	{
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 		{
@@ -40,7 +38,7 @@ void LocationGenerator::RespawnUnits()
 			// ai
 			AIController* ai = new AIController;
 			ai->Init(u);
-			game.ais.push_back(ai);
+			game->ais.push_back(ai);
 
 			// refresh stock
 			if(u->data->trader)

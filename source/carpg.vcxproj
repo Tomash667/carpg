@@ -55,18 +55,17 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\CrashRpt\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>
-      </LanguageStandard>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/CrashRpt/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;dbghelp.lib;fmod_vc.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib;../carpglib/external/CrashRpt/lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;dbghelp.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -93,21 +92,22 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\CrashRpt\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/CrashRpt/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;dbghelp.lib;fmod_vc.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib;../carpglib/external/CrashRpt/lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;dbghelp.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -126,9 +126,15 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="components\CommandParser.h" />
+    <ClInclude Include="components\ConsoleCommands.h" />
+    <ClInclude Include="components\FOV.h" />
+    <ClInclude Include="components\GameStats.h" />
+    <ClInclude Include="components\Level.h" />
+    <ClInclude Include="components\Pathfinding.h" />
+    <ClInclude Include="components\Team.h" />
+    <ClInclude Include="components\World.h" />
     <ClInclude Include="ErrorHandler.h" />
-    <ClInclude Include="CommandParser.h" />
-    <ClInclude Include="ConsoleCommands.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
     <ClInclude Include="entity\Encounter.h" />
@@ -143,10 +149,7 @@
     <ClInclude Include="entity\Tile.h" />
     <ClInclude Include="entity\UnitEventHandler.h" />
     <ClInclude Include="events\Arena.h" />
-    <ClInclude Include="FOV.h" />
-    <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameCore.h" />
-    <ClInclude Include="GameStats.h" />
     <ClInclude Include="generator\CampGenerator.h" />
     <ClInclude Include="generator\CaveGenerator.h" />
     <ClInclude Include="generator\DungeonGenerator.h" />
@@ -164,7 +167,7 @@
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
-    <ClInclude Include="Level.h" />
+    <ClInclude Include="helpers\PhysicCallbacks.h" />
     <ClInclude Include="net\BitStreamFunc.h" />
     <ClInclude Include="net\EntityInterpolator.h" />
     <ClInclude Include="net\GamePacket.h" />
@@ -174,9 +177,7 @@
     <ClInclude Include="net\PlayerInfo.h" />
     <ClInclude Include="panels\ActionPanel.h" />
     <ClInclude Include="panels\BookPanel.h" />
-    <ClInclude Include="panels\GameDialogBox.h" />
-    <ClInclude Include="panels\GlobalGui.h" />
-    <ClInclude Include="Pathfinding.h" />
+    <ClInclude Include="panels\GameGui.h" />
     <ClInclude Include="quests\QuestHandler.h" />
     <ClInclude Include="quests\QuestConsts.h" />
     <ClInclude Include="quests\Quest_Artifacts.h" />
@@ -199,6 +200,8 @@
     <ClInclude Include="system\BuildingGroup.h" />
     <ClInclude Include="system\BuildingLoader.h" />
     <ClInclude Include="system\BuildingScript.h" />
+    <ClInclude Include="system\Class.h" />
+    <ClInclude Include="system\ClassLoader.h" />
     <ClInclude Include="system\Content.h" />
     <ClInclude Include="system\ContentLoader.h" />
     <ClInclude Include="entity\AIController.h" />
@@ -247,7 +250,7 @@
     <ClInclude Include="panels\Controls.h" />
     <ClInclude Include="panels\CreateCharacterPanel.h" />
     <ClInclude Include="panels\CreateServerPanel.h" />
-    <ClInclude Include="panels\GameGui.h" />
+    <ClInclude Include="panels\LevelGui.h" />
     <ClInclude Include="panels\GameMenu.h" />
     <ClInclude Include="panels\GameMessages.h" />
     <ClInclude Include="panels\GamePanel.h" />
@@ -279,7 +282,6 @@
     <ClInclude Include="quests\Quest_KillAnimals.h" />
     <ClInclude Include="quests\Quest_LostArtifact.h" />
     <ClInclude Include="quests\Quest_Mages.h" />
-    <ClInclude Include="quests\Quest_Main.h" />
     <ClInclude Include="quests\QuestManager.h" />
     <ClInclude Include="quests\Quest_Mine.h" />
     <ClInclude Include="quests\Quest_Orcs.h" />
@@ -294,12 +296,11 @@
     <ClInclude Include="stats\Attribute.h" />
     <ClInclude Include="stats\BaseLocation.h" />
     <ClInclude Include="stats\BaseTrap.h" />
-    <ClInclude Include="stats\Class.h" />
     <ClInclude Include="stats\Const.h" />
     <ClInclude Include="stats\DamageTypes.h" />
     <ClInclude Include="stats\Effect.h" />
     <ClInclude Include="stats\Material.h" />
-    <ClInclude Include="stats\Music.h" />
+    <ClInclude Include="stats\MusicTrack.h" />
     <ClInclude Include="stats\Perk.h" />
     <ClInclude Include="stats\RoomType.h" />
     <ClInclude Include="stats\Skill.h" />
@@ -313,9 +314,20 @@
     <ClInclude Include="system\ItemScript.h" />
     <ClInclude Include="system\ItemType.h" />
     <ClInclude Include="system\Spell.h" />
+    <ClCompile Include="components\CommandParser.cpp" />
+    <ClCompile Include="components\FOV.cpp" />
+    <ClCompile Include="components\GameStats.cpp" />
+    <ClCompile Include="components\Level.cpp" />
+    <ClCompile Include="components\Pathfinding.cpp" />
+    <ClCompile Include="components\Team.cpp" />
+    <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="net\NetClient.cpp" />
+    <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="system\Class.cpp" />
+    <ClCompile Include="system\ClassLoader.cpp" />
     <ClCompile Include="system\Content.cpp" />
     <ClCompile Include="system\QuestList.cpp" />
     <ClCompile Include="system\QuestLoader.cpp" />
@@ -329,8 +341,6 @@
     <ClInclude Include="system\UnitData.h" />
     <ClInclude Include="system\UnitGroup.h" />
     <ClInclude Include="system\UnitLoader.h" />
-    <ClInclude Include="Team.h" />
-    <ClInclude Include="World.h" />
     <ClInclude Include="Pch.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Version.h" />
@@ -338,7 +348,6 @@
   <ItemGroup>
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Ai.cpp" />
-    <ClCompile Include="CommandParser.cpp" />
     <ClCompile Include="entity\Camera.cpp" />
     <ClCompile Include="entity\ItemContainer.cpp" />
     <ClCompile Include="entity\Portal.cpp" />
@@ -346,7 +355,6 @@
     <ClCompile Include="entity\TerrainTile.cpp" />
     <ClCompile Include="entity\Tile.cpp" />
     <ClCompile Include="events\Arena.cpp" />
-    <ClCompile Include="GameStats.cpp" />
     <ClCompile Include="generator\CampGenerator.cpp" />
     <ClCompile Include="generator\CaveGenerator.cpp" />
     <ClCompile Include="generator\DungeonGenerator.cpp" />
@@ -364,18 +372,16 @@
     <ClCompile Include="helpers\CombatHelper.cpp" />
     <ClCompile Include="helpers\ItemHelper.cpp" />
     <ClCompile Include="helpers\LoadingHandler.cpp" />
-    <ClCompile Include="Level.cpp" />
     <ClCompile Include="location\LevelArea.cpp" />
     <ClCompile Include="net\BitStreamFunc.cpp" />
     <ClCompile Include="net\EntityInterpolator.cpp" />
     <ClCompile Include="net\LobbyApi.cpp" />
-    <ClCompile Include="net\Net2.cpp" />
+    <ClCompile Include="net\Net.cpp" />
     <ClCompile Include="net\NetChange.cpp" />
     <ClCompile Include="net\PlayerInfo.cpp" />
     <ClCompile Include="panels\ActionPanel.cpp" />
     <ClCompile Include="panels\BookPanel.cpp" />
-    <ClCompile Include="panels\GlobalGui.cpp" />
-    <ClCompile Include="Pathfinding.cpp" />
+    <ClCompile Include="panels\GameGui.cpp" />
     <ClCompile Include="quests\Quest_Artifacts.cpp" />
     <ClCompile Include="quests\Quest_Contest.cpp" />
     <ClCompile Include="quests\Quest_Scripted.cpp" />
@@ -409,9 +415,7 @@
     <ClCompile Include="entity\Trap.cpp" />
     <ClCompile Include="entity\Unit.cpp" />
     <ClCompile Include="entity\Usable.cpp" />
-    <ClCompile Include="FOV.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Game2.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="generator\CityGenerator.cpp" />
     <ClCompile Include="generator\DungeonMapGenerator.cpp" />
@@ -429,12 +433,11 @@
     <ClCompile Include="location\OutsideLocation.cpp" />
     <ClCompile Include="location\SingleInsideLocation.cpp" />
     <ClCompile Include="Menu.cpp" />
-    <ClCompile Include="net\Net.cpp" />
     <ClCompile Include="panels\Console.cpp" />
     <ClCompile Include="panels\Controls.cpp" />
     <ClCompile Include="panels\CreateCharacterPanel.cpp" />
     <ClCompile Include="panels\CreateServerPanel.cpp" />
-    <ClCompile Include="panels\GameGui.cpp" />
+    <ClCompile Include="panels\LevelGui.cpp" />
     <ClCompile Include="panels\GameMenu.cpp" />
     <ClCompile Include="panels\GameMessages.cpp" />
     <ClCompile Include="panels\GamePanel.cpp" />
@@ -467,7 +470,6 @@
     <ClCompile Include="quests\Quest_KillAnimals.cpp" />
     <ClCompile Include="quests\Quest_LostArtifact.cpp" />
     <ClCompile Include="quests\Quest_Mages.cpp" />
-    <ClCompile Include="quests\Quest_Main.cpp" />
     <ClCompile Include="quests\QuestManager.cpp" />
     <ClCompile Include="quests\Quest_Mine.cpp" />
     <ClCompile Include="quests\Quest_Orcs.cpp" />
@@ -482,9 +484,8 @@
     <ClCompile Include="stats\Attribute.cpp" />
     <ClCompile Include="stats\BaseLocation.cpp" />
     <ClCompile Include="stats\BaseTrap.cpp" />
-    <ClCompile Include="stats\Class.cpp" />
     <ClCompile Include="stats\Effect.cpp" />
-    <ClCompile Include="stats\Music.cpp" />
+    <ClCompile Include="stats\MusicTrack.cpp" />
     <ClCompile Include="stats\Perk.cpp" />
     <ClCompile Include="stats\Required.cpp" />
     <ClCompile Include="stats\RoomType.cpp" />
@@ -507,9 +508,7 @@
     <ClCompile Include="system\UnitData.cpp" />
     <ClCompile Include="system\UnitGroup.cpp" />
     <ClCompile Include="system\UnitLoader.cpp" />
-    <ClCompile Include="Team.cpp" />
     <ClCompile Include="Test.cpp" />
-    <ClCompile Include="World.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

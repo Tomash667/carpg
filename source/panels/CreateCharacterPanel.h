@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "CheckBox.h"
 #include "Slider.h"
 #include "Class.h"
@@ -16,7 +16,7 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
-class CreateCharacterPanel : public GameDialogBox
+class CreateCharacterPanel : public DialogBox
 {
 public:
 	enum class Group
@@ -48,14 +48,14 @@ public:
 	void Event(GuiEvent e) override;
 	void Init();
 	void Show(bool enter_name);
-	void ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc);
+	void ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc);
 
 	// data
 	CustomButton custom_x, custom_bt[2];
 
 	// results
 	CreatedCharacter cc;
-	Class clas;
+	Class* clas;
 	string player_name;
 	Unit* unit;
 	int hair_color_index, last_hair_color_index;
@@ -82,7 +82,7 @@ private:
 	void UpdateUnit(float dt);
 	void OnChangeClass(int index);
 	cstring GetText(int group, int id);
-	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void ClassChanged();
 	void OnPickSkill(int group, int id);
 	void OnPickPerk(int group, int id);
@@ -128,6 +128,6 @@ private:
 	vector<Perk> available_perks;
 	vector<pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
-	TEX tKlasaCecha;
+	TexturePtr tBox, tPowerBar;
 	RenderTarget* rt_char;
 };

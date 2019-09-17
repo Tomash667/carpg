@@ -1,6 +1,7 @@
 unit base_warrior = "Base warrior"
 unit base_hunter = "Base hunter"
 unit base_rogue = "Base rogue"
+unit base_cleric = "Base cleric"
 unit blacksmith = "Blacksmith"
 unit merchant = "Merchant"
 unit food_seller = "Grocer"
@@ -143,6 +144,7 @@ unit hero_rogue = "Rogue"
 unit hero_tomir {
 	real_name "Tomir"
 }
+unit hero_cleric = "Cleric"
 unit tomashu = "Tomashu"
 unit unk = "Unknown"
 unit crazy_cook = "Crazy cook"

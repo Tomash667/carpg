@@ -177,8 +177,8 @@ void Game::DrawGrass()
 
 	PROFILER_BLOCK("DrawGrass");
 
-	grass_shader->SetCamera(L.camera);
-	grass_shader->SetFog(L.GetFogColor(), L.GetFogParams());
+	grass_shader->SetCamera(game_level->camera);
+	grass_shader->SetFog(game_level->GetFogColor(), game_level->GetFogParams());
 	grass_shader->Begin(max(grass_count[0], grass_count[1]));
 	for(int i = 0; i < 2; ++i)
 	{
@@ -197,9 +197,9 @@ void Game::ListGrass()
 		return;
 
 	PROFILER_BLOCK("ListGrass");
-	OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
+	OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 	Vec3 pos, angle;
-	Vec2 from = L.camera.from.XZ();
+	Vec2 from = game_level->camera.from.XZ();
 	float in_dist = settings.grass_range * settings.grass_range;
 
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
@@ -224,18 +224,18 @@ void Game::ListGrass()
 					{
 						if(outside->tiles[x + y * OutsideLocation::size].mode != TM_NO_GRASS)
 						{
-							if(outside->tiles[x - 1 + y * OutsideLocation::size].t == TT_GRASS &&
-								outside->tiles[x + 1 + y * OutsideLocation::size].t == TT_GRASS &&
-								outside->tiles[x + (y - 1)*OutsideLocation::size].t == TT_GRASS &&
-								outside->tiles[x + (y + 1)*OutsideLocation::size].t == TT_GRASS)
+							if(outside->tiles[x - 1 + y * OutsideLocation::size].t == TT_GRASS
+								&& outside->tiles[x + 1 + y * OutsideLocation::size].t == TT_GRASS
+								&& outside->tiles[x + (y - 1)*OutsideLocation::size].t == TT_GRASS
+								&& outside->tiles[x + (y + 1)*OutsideLocation::size].t == TT_GRASS)
 							{
 								for(int i = 0; i < 6; ++i)
 								{
 									pos = Vec3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
-									L.terrain->GetAngle(pos.x, pos.z, angle);
+									game_level->terrain->GetAngle(pos.x, pos.z, angle);
 									if(angle.y < 0.7f)
 										continue;
-									L.terrain->SetH(pos);
+									game_level->terrain->SetH(pos);
 									part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 								}
 							}
@@ -244,7 +244,7 @@ void Game::ListGrass()
 								for(int i = 0; i < 4; ++i)
 								{
 									pos = Vec3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
-									L.terrain->SetH(pos);
+									game_level->terrain->SetH(pos);
 									part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 								}
 							}
@@ -252,15 +252,15 @@ void Game::ListGrass()
 					}
 					else if(t == TT_FIELD)
 					{
-						if(outside->tiles[x - 1 + y*OutsideLocation::size].mode == TM_FIELD &&
-							outside->tiles[x + 1 + y*OutsideLocation::size].mode == TM_FIELD &&
-							outside->tiles[x + (y - 1)*OutsideLocation::size].mode == TM_FIELD &&
-							outside->tiles[x + (y + 1)*OutsideLocation::size].mode == TM_FIELD)
+						if(outside->tiles[x - 1 + y*OutsideLocation::size].mode == TM_FIELD
+							&& outside->tiles[x + 1 + y*OutsideLocation::size].mode == TM_FIELD
+							&& outside->tiles[x + (y - 1)*OutsideLocation::size].mode == TM_FIELD
+							&& outside->tiles[x + (y + 1)*OutsideLocation::size].mode == TM_FIELD)
 						{
 							for(int i = 0; i < 1; ++i)
 							{
 								pos = Vec3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
-								L.terrain->SetH(pos);
+								game_level->terrain->SetH(pos);
 								part.grass2.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -284,15 +284,14 @@ void Game::ListGrass()
 
 void Game::SetTerrainTextures()
 {
-	TexturePtr tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
-	if(LocationHelper::IsVillage(L.location))
-		tex[2] = tPole;
+	TexturePtr tex[5] = { tGrass, tGrass2, tGrass3, tFootpath, tRoad };
+	if(LocationHelper::IsVillage(game_level->location))
+		tex[2] = tField;
 
-	auto& tex_mgr = ResourceManager::Get<Texture>();
 	for(int i = 0; i < 5; ++i)
-		tex_mgr.AddLoadTask(tex[i]);
+		res_mgr->Load(tex[i]);
 
-	L.terrain->SetTextures(tex);
+	game_level->terrain->SetTextures(tex);
 }
 
 void Game::ClearQuadtree()
@@ -324,10 +323,10 @@ void Game::ClearGrass()
 
 void Game::CalculateQuadtree()
 {
-	if(L.local_area->area_type != LevelArea::Type::Outside)
+	if(game_level->local_area->area_type != LevelArea::Type::Outside)
 		return;
 
-	for(Object* obj : L.local_area->objects)
+	for(Object* obj : game_level->local_area->objects)
 	{
 		auto node = (LevelPart*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
 		node->objects.push_back(QuadObj(obj));
@@ -337,5 +336,5 @@ void Game::CalculateQuadtree()
 void Game::ListQuadtreeNodes()
 {
 	PROFILER_BLOCK("ListQuadtreeNodes");
-	quadtree.List(L.camera.frustum, (QuadTree::Nodes&)level_parts);
+	quadtree.List(game_level->camera.frustum, (QuadTree::Nodes&)level_parts);
 }

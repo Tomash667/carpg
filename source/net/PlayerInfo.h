@@ -12,12 +12,10 @@ struct PlayerInfo
 	enum UPDATE_FLAGS
 	{
 		UF_POISON_DAMAGE = 1 << 0,
-		UF_NET_CHANGES = 1 << 1,
-		UF_GOLD = 1 << 2,
-		UF_ALCOHOL = 1 << 3,
-		UF_STAMINA = 1 << 4,
-		UF_LEARNING_POINTS = 1 << 5,
-		UF_LEVEL = 1 << 6
+		UF_GOLD = 1 << 1,
+		UF_ALCOHOL = 1 << 2,
+		UF_LEARNING_POINTS = 1 << 3,
+		UF_LEVEL = 1 << 4,
 	};
 
 	enum STATE
@@ -44,11 +42,11 @@ struct PlayerInfo
 	string name;
 	PlayerController* pc;
 	Unit* u;
-	Class clas;
+	Class* clas;
 	int id, ack, update_flags;
 	SystemAddress adr;
 	float timer, yspeed;
-	bool ready, devmode, warping, loaded;
+	bool ready, devmode, warping, loaded, fast_travel;
 	HumanData hd;
 	CreatedCharacter cc;
 	vector<string> notes;

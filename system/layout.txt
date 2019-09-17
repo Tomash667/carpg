@@ -1,0 +1,489 @@
+register_font "Florence-Regular.otf"
+
+font "normal" {
+	name "Arial"
+	size 12
+	weight 8
+	tex_size 512
+	outline 2
+}
+
+font "big" {
+	name "Florence Regular"
+	size 28
+	weight 8
+	tex_size 512
+}
+
+font "small" {
+	name "Arial"
+	size 10
+	weight 5
+	tex_size 512
+}
+
+control "Button" {
+	tex {
+		mode ITEM
+		image "button.png"
+		corner 16
+		size 64
+	}
+	tex_hover {
+		mode ITEM
+		image "button_hover.png"
+		corner 16
+		size 64
+	}
+	tex_down {
+		mode ITEM
+		image "button_down.png"
+		corner 16
+		size 64
+	}
+	tex_disabled {
+		mode ITEM
+		image "button_disabled.png"
+		corner 16
+		size 64
+	}
+	font "normal"
+}
+
+control "CheckBox" {
+tex {
+		mode ITEM
+		image "button.png"
+		corner 16
+		size 64
+	}
+	tex_hover {
+		mode ITEM
+		image "button_hover.png"
+		corner 16
+		size 64
+	}
+	tex_down {
+		mode ITEM
+		image "button_down.png"
+		corner 16
+		size 64
+	}
+	tex_disabled {
+		mode ITEM
+		image "button_disabled.png"
+		corner 16
+		size 64
+	}
+	font "normal"
+	tick {
+		mode IMAGE
+		image "ticked.png"
+	}
+}
+
+control "CheckBoxGroup" {
+	background {
+		mode ITEM
+		image "box.png"
+		corner 8
+		size 32
+	}
+	box {
+		mode IMAGE
+		image "checkbox.png"
+		rect {0 0 16 16}
+	}
+	checked {
+		mode IMAGE
+		image "checkbox.png"
+		rect {16 0 32 16}
+	}
+	font "normal"
+	font_color BLACK
+}
+
+control "DialogBox" {
+	background {
+		mode IMAGE
+		image "background.bmp"
+		color {255 255 255 128}
+	}
+	box {
+		mode ITEM
+		image "dialog.png"
+		corner 16
+		size 64
+		color {255 255 255 222}
+	}
+	font "normal"
+}
+
+control "FlowContainer" {
+	box {
+		mode ITEM
+		image "box.png"
+		corner 8
+		size 32
+	}
+	selection {
+		mode COLOR
+		color {0 255 0 128}
+	}
+	font "normal"
+	font_section "big"
+}
+
+control "Grid" {
+	box {
+		mode ITEM
+		image "box.png"
+		corner 8
+		size 32
+	}
+	font "normal"
+}
+
+control "Gui" {
+	cursor "cursor.png"
+	cursor_hover "hand.png"
+	cursor_text "text.png"
+}
+
+control "InputTextBox" {
+	box {
+		mode ITEM
+		image "scrollbar.png"
+		corner 4
+		size 32
+	}
+	font "normal"
+}
+
+control "Label" {
+	font "normal"
+	color BLACK
+}
+
+control "ListBox" {
+	box {
+		mode ITEM
+		image "box.png"
+		corner 8
+		size 32
+	}
+	selection {
+		mode COLOR
+		color {0 255 0 128}
+	}
+	down_arrow "dialog_down.png"
+	font "normal"
+}
+
+control "MenuBar" {
+	background {
+		mode BORDER_COLOR
+		color {245 246 247}
+		border_color {0xA0 0xA0 0xA0}
+	}
+	button {
+		mode COLOR
+		color {245 246 247}
+	}
+	button_hover {
+		mode BORDER_COLOR
+		color {213 231 248}
+		border_color {122 177 232}
+	}
+	button_down {
+		mode BORDER_COLOR
+		color {184 216 249}
+		border_color {98 163 229}
+	}
+	font "normal"
+	padding 4
+	item_padding {10 2}
+	font_color BLACK
+	font_color_hover BLACK
+	font_color_down BLACK
+}
+
+control "MenuList" {
+	box {
+		mode ITEM
+		image "box2.png"
+		corner 8
+		size 32
+	}
+	selection {
+		mode COLOR
+		color {0 148 255 128}
+	}
+	font "normal"
+}
+
+control "MenuStrip" {
+	background {
+		mode BORDER_COLOR
+		color {245 246 247}
+		border_color {0xA0 0xA0 0xA0}
+	}
+	button_hover {
+		mode COLOR
+		color {51 153 255}
+	}
+	font "normal"
+	padding 2
+	item_padding 2
+	font_color_disabled {128 128 128}
+}
+
+control "Notifications" {
+	box {
+		mode ITEM
+		image "dialog.png"
+		corner 16
+		size 64
+		color {255 255 255 222}
+	}
+	button {
+		mode ITEM
+		image "box3.png"
+		corner 8
+		size 32
+	}
+	font "normal"
+	accept "accept.png"
+	cancel "cancel.png"
+}
+
+control "Overlay" {
+	background {
+		mode IMAGE
+		image "background.bmp"
+		color {255 255 255 128}
+	}
+}
+
+control "Panel" {
+	background {
+		mode BORDER_COLOR
+		color {245 246 247}
+		border_color {0xA0 0xA0 0xA0}
+	}
+}
+
+control "PickFileDialog" {
+	box {
+		mode ITEM
+		image "scrollbar.png"
+		corner 4
+		size 32
+	}
+}
+
+control "PickItemDialog" {
+	close_button {
+		mode IMAGE
+		image "close.png"
+	}
+	close_button_hover {
+		mode IMAGE
+		image "close_hover.png"
+	}
+	close_button_down {
+		mode IMAGE
+		image "close_down.png"
+	}
+	close_button_disabled {
+		mode IMAGE
+		image "close_disabled.png"
+	}
+	background {
+		mode IMAGE
+		image "background.bmp"
+		color {255 255 255 128}
+	}
+	box {
+		mode ITEM
+		image "dialog.png"
+		corner 16
+		size 64
+		color {255 255 255 222}
+	}
+	font "normal"
+}
+
+control "Scrollbar" {
+	tex {
+		mode ITEM
+		image "scrollbar.png"
+		corner 4
+		size 32
+	}
+	tex2 {
+		mode ITEM
+		image "scrollbar2.png"
+		corner 4
+		size 32
+	}
+}
+
+control "Slider" {
+	font "normal"
+}
+
+control "SplitPanel" {
+	background {
+		mode BORDER_COLOR
+		color {0xAB 0xAB 0xAB}
+		border_color {0xA0 0xA0 0xA0}
+	}
+	horizontal {
+		mode IMAGE
+		image "split_panel.png"
+		rect {3 2 4 5}
+	}
+	vertical {
+		mode IMAGE
+		image "split_panel.png"
+		rect {11 3 14 4}
+	}
+}
+
+control "TabControl" {
+	background {
+		mode COLOR
+		color {256 256 257}
+	}
+	line {
+		mode BORDER_COLOR
+		color {256 256 257}
+		border_color {0xA0 0xA0 0xA0}
+	}
+	button {
+		mode BORDER_COLOR
+		color {238 238 238}
+		border_color {172 172 172}
+	}
+	button_hover {
+		mode BORDER_COLOR
+		color {238 238 238}
+		border_color {142 176 200}
+	}
+	button_down {
+		mode BORDER_COLOR
+		color {233 243 252}
+		border_color {126 180 234}
+	}
+	font "normal"
+	padding {8 4}
+	padding_active {8 8}
+	close {
+		mode IMAGE
+		image "close_small.png"
+	}
+	close_hover {
+		mode IMAGE
+		image "close_small.png"
+		background_color {51 153 255}
+	}
+	button_prev {
+		mode IMAGE
+		image "tabctrl_arrow.png"
+		rect {0 0 12 16}
+	}
+	button_prev_hover {
+		mode IMAGE
+		image "tabctrl_arrow.png"
+		rect {0 0 12 16}
+		background_color {51 153 255}
+	}
+	button_next {
+		mode IMAGE
+		image "tabctrl_arrow.png"
+		rect {16 0 28 16}
+	}
+	button_next_hover {
+		mode IMAGE
+		image "tabctrl_arrow.png"
+		rect {16 0 28 16}
+		background_color {51 153 255}
+	}
+}
+
+control "TextBox" {
+	background {
+		mode ITEM
+		image "scrollbar.png"
+		corner 4
+		size 32
+	}
+	font "normal"
+}
+
+control "TooltipController" {
+	box {
+		mode ITEM
+		image "dialog.png"
+		corner 16
+		size 64
+		color {255 255 255 222}
+	}
+	font "normal"
+	font_big "big"
+	font_small "small"
+}
+
+control "TreeView" {
+	background {
+		mode ITEM
+		image "box.png"
+		corner 8
+		size 32
+	}
+	button {
+		mode IMAGE
+		image "treeview.png"
+		rect {0 0 16 16}
+	}
+	button_hover {
+		mode IMAGE
+		image "treeview.png"
+		rect {16 0 32 16}
+	}
+	button_down {
+		mode IMAGE
+		image "treeview.png"
+		rect {32 0 48 16}
+	}
+	button_down_hover {
+		mode IMAGE
+		image "treeview.png"
+		rect {48 0 64 16}
+	}
+	font "normal"
+	selected {
+		mode COLOR
+		color {51 153 255}
+	}
+	level_offset 16
+	text_box_background "box2.png"
+	drag_n_drop "drag_n_drop.png"
+}
+
+control "Window" {
+	background {
+		mode BORDER_COLOR
+		color {0xAB 0xAB 0xAB}
+		border_color BLACK
+	}
+	header {
+		mode BORDER_COLOR
+		color {128 128 128}
+		border_color BLACK
+	}
+	font "big"
+	header_height 32
+	padding 2
+}

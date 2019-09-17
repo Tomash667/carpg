@@ -23,13 +23,11 @@ struct MultiInsideLocation : public InsideLocation
 	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
-	void BuildRefidTables() override;
+	void Load(GameReader& f, bool local) override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* unit, int& at_level) override;
 	Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) override;
-	Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr) override;
-	LOCATION_TOKEN GetToken() const override { return LT_MULTI_DUNGEON; }
+	Chest* FindChestWithQuestItem(int quest_id, int& at_level, int* index = nullptr) override;
 	bool CheckUpdate(int& days_passed, int worldtime) override;
 	int GetRandomLevel() const override;
 	int GetLastLevel() const override { return levels.size() - 1; }

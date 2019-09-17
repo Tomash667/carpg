@@ -8,13 +8,6 @@
 InsideLocationLevel::~InsideLocationLevel()
 {
 	delete[] map;
-	DeleteElements(objects);
-	DeleteElements(units);
-	DeleteElements(chests);
-	DeleteElements(doors);
-	DeleteElements(usables);
-	DeleteElements(items);
-	DeleteElements(traps);
 	Room::Free(rooms);
 }
 
@@ -367,10 +360,10 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 
-	return map[pt.x - 1 + pt.y*w].IsWall() ||
-		map[pt.x + 1 + pt.y*w].IsWall() ||
-		map[pt.x + (pt.y - 1)*w].IsWall() ||
-		map[pt.x + (pt.y + 1)*w].IsWall();
+	return map[pt.x - 1 + pt.y*w].IsWall()
+		|| map[pt.x + 1 + pt.y*w].IsWall()
+		|| map[pt.x + (pt.y - 1)*w].IsWall()
+		|| map[pt.x + (pt.y + 1)*w].IsWall();
 }
 
 //=================================================================================================
@@ -395,7 +388,7 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt, int& dir) const
 	int i = Rand() % 4;
 	while(true)
 	{
-		if(IS_SET(kierunek, 1 << i))
+		if(IsSet(kierunek, 1 << i))
 		{
 			dir = i;
 			return true;

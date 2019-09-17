@@ -10,6 +10,7 @@ items mage {
 	}
 	if level 20 {
 		p_hp2
+		p_mp3
 		random 0 1 p_hp
 		chance 25 magic_scroll
 		r_mage
@@ -18,6 +19,7 @@ items mage {
 	}
 	else if level 16 {
 		p_hp2
+		p_mp2
 		chance 10 magic_scroll
 		r_mage
 		chance 75 r_def
@@ -25,6 +27,7 @@ items mage {
 	}
 	else if level 12 {
 		random 1 2 p_hp
+		p_mp2
 		chance 5 magic_scroll
 		r_mage
 		chance 25 r_def
@@ -32,9 +35,11 @@ items mage {
 	}
 	else if level 8 {
 		p_hp
+		p_mp
 		chance 50 r_mage
 	}
 	else {
+		p_mp
 		chance 75 p_hp
 		chance 25 r_mage
 	}
@@ -114,33 +119,34 @@ spells mage {
 // COMMON STAT PROFILES
 //------------------------------------------------------------------------------
 profile cleric {
-	strength 60
-	endurance 60
-	dexterity 45
-	inteligence 50
-	wisdom 70
-	charisma 55
+	strength 50
+	endurance 55
+	dexterity 50
+	inteligence 55
+	wisdom 60
+	charisma 70
 
-	one_handed_weapon 15
+	one_handed_weapon 10
 	short_blade 10
-	long_blade 10
-	axe 10
+	long_blade 5
+	axe 5
 	blunt 15
-	bow 10
+	bow 5
 	shield 10
 	light_armor 10
 	medium_armor 15
-	heavy_armor 10
+	gods_magic 20
+	concentration 15
 	haggle 15
 
 	subprofile cleric {
 		weapon blunt
 		armor {
 			medium_armor 3
-			heavy_armor 2
+			light_armor 2
 		}
+		tag gods_magic
 		tag weapon
-		tag one_handed_weapon
 		tag armor
 		tag shield
 		priority {
@@ -150,13 +156,82 @@ profile cleric {
 			bow 0.5
 		}
 		tags {
-			str 1
-			dex 1
-			melee 1
-			ranged 1
-			def 1
-			stamina 1
+			str 0.9
+			dex 0.75
+			melee 0.9
+			ranged 0.4
+			def 0.9
+			stamina 0.8
 			mage 0
+			mana 1.5
+			cleric 1.5
+		}
+		perk talent charisma
+		perk skill_focus gods_magic
+		items {
+			$-2weapon
+			$-1armor
+			!-2shield
+			chance 50 !-4bow
+			if level 20 {
+				p_hp2
+				random 1 2 p_hp2
+				p_mp3
+				p_mp2
+				a_mana
+				random {r_cha2 r_mana_regen}
+				random {r_cha r_concentration r_mana}
+			}
+			else if level 16 {
+				p_hp2
+				p_hp
+				p_mp2
+				random 1 2 p_mp
+				if chance 50 {
+					a_mana
+				}
+				else {
+					a_stamina
+				}
+				random {r_cha2 r_mana_regen}
+				random {r_cha r_concentration r_mana}
+			}
+			else if level 12 {
+				p_hp2
+				p_mp2
+				p_mp
+				if chance 25 {
+					a_mana
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					random {r_cha2 r_mana_regen}
+				}
+				else {
+					random {r_cha r_concentration r_mana}
+				}
+				if chance 25 {
+					random {r_cha r_concentration r_mana}
+				}
+			}
+			else if level 8 {
+				random 1 2 p_hp
+				random 1 2 p_mp
+				if chance 50 {
+					random {r_cha r_concentration r_mana}
+				}
+				chance 25 a_food
+			}
+			else {
+				p_hp
+				p_mp
+				if chance 10 {
+					random {r_cha r_concentration r_mana}
+				}
+			}
+			random 1 3 !normal_food
 		}
 	}
 }
@@ -203,6 +278,8 @@ profile hunter {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus bow
@@ -288,6 +365,8 @@ profile hunter {
 			def 1.2
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus weapon
@@ -374,6 +453,8 @@ profile hunter {
 			def 1.5
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent endurance
 		perk skill_focus weapon
@@ -473,6 +554,8 @@ profile mage {
 			def 1.5
 			stamina 1
 			mage 3
+			mana 0
+			cleric 0
 		}
 	}
 }
@@ -520,6 +603,8 @@ profile rogue {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus weapon
@@ -604,6 +689,8 @@ profile rogue {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus bow
@@ -711,6 +798,8 @@ profile warrior {
 			def 2
 			stamina 1
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent endurance
 		perk skill_focus armor
@@ -797,6 +886,8 @@ profile warrior {
 			def 1.5
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent strength
 		perk skill_focus weapon
@@ -885,6 +976,8 @@ profile warrior {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent strength
 		perk skill_focus weapon
@@ -1150,6 +1243,16 @@ unit base_rogue : base_player {
 	}
 	gold 100
 	class rogue
+}
+
+unit base_cleric : base_player {
+	profile cleric
+	items {
+		3 p_hp
+		2 p_mp
+	}
+	gold 90
+	class cleric
 }
 
 //------------------------------------------------------------------------------
@@ -1526,12 +1629,13 @@ unit q_gobliny_mag : base_human {
 unit q_zlo_kaplan : base_human {
 	level {5 20}
 	profile cleric
-	flags | {hero ai_stay ai_train specific_name}
+	flags | {hero ai_stay ai_train specific_name fast_learner}
 	items {
 		blunt_morningstar
 		shield_iron
 		am_breastplate_hq
 		p_hp2
+		2 p_mp
 		random 1 3 !normal_food
 	}
 	gold {{50 100}{200 400}}
@@ -2419,14 +2523,31 @@ unit mage : base_human {
 					a_mage
 				}
 			}
+			if chance 50 {
+				if chance 75 {
+					p_mp2
+				}
+				else {
+					p_mp3
+				}
+			}
 		}
 		else if level 9 {
 			chance 10 p_hp
 			chance 3 magic_scroll
 			chance 10 r_mage
+			if chance 40 {
+				if chance 75 {
+					p_mp
+				}
+				else {
+					p_mp2
+				}
+			}
 		}
 		else {
 			chance 5 p_hp
+			chance 25 p_mp
 		}
 		random 1 3 !normal_food
 	}
@@ -2477,7 +2598,7 @@ unit mage_guard : base_human {
 
 unit base_golem {
 	mesh "golem.qmsh"
-	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk}
+	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk construct}
 	stamina 150
 	group mages
 	dmg_type blunt
@@ -2903,6 +3024,17 @@ unit hero_rogue : base_hero {
 }
 
 unit hero_tomir : hero_warrior {
+	flags | fast_learner
+}
+
+unit hero_cleric : base_hero {
+	profile cleric
+	flags | {ai_train contest_50}
+	class cleric
+	spells {
+		non_combat 1
+		{heal 0}
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -3124,6 +3256,14 @@ group heroes {
 	hero_warrior 2
 	hero_hunter 2
 	hero_rogue 2
+	hero_cleric 1
+}
+
+group evil_heroes {
+	hero_mage 1
+	hero_warrior 2
+	hero_hunter 2
+	hero_rogue 2
 }
 
 group tournament {
@@ -3131,6 +3271,7 @@ group tournament {
 	hero_hunter 2
 	hero_rogue 2
 	hero_mage 1
+	hero_cleric 1
 }
 
 group merchant_guards {
@@ -3231,11 +3372,11 @@ group random {
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-// renamed in 0.8
+// renamed in V_0_8
 alias bandit_chief bandit_hegemon
 alias guard_wagon guard2
 alias guard_merchant guard3
-// removed quest units in 0.8 (map to normal units)
+// removed quest units in V_0_8 (map to normal units)
 alias mage mage_q
 alias evil_cleric evil_cleric_q
 alias bandit_chief bandit_hegemon_q

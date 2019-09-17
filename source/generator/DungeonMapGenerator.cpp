@@ -9,8 +9,8 @@
 //=================================================================================================
 void DungeonMapGenerator::Generate(MapSettings& settings, bool recreate)
 {
-	assert(settings.map_w && settings.map_h && settings.room_size.x >= 4 && settings.room_size.y >= settings.room_size.x &&
-		InRange(settings.corridor_chance, 0, 100) && settings.rooms);
+	assert(settings.map_w && settings.map_h && settings.room_size.x >= 4 && settings.room_size.y >= settings.room_size.x
+		&& InRange(settings.corridor_chance, 0, 100) && settings.rooms);
 	assert(settings.corridor_chance == 0 || (settings.corridor_size.x >= 3 && settings.corridor_size.y >= settings.corridor_size.x));
 
 	map_w = settings.map_w;
@@ -532,7 +532,7 @@ void DungeonMapGenerator::AddHoles()
 			Tile& tile = map[x + y * map_w];
 			if(tile.type == EMPTY && Rand() % 100 < settings->bars_chance)
 			{
-				if(!IS_SET(tile.flags, Tile::F_LOW_CEILING))
+				if(!IsSet(tile.flags, Tile::F_LOW_CEILING))
 				{
 					int j = Rand() % 3;
 					if(j == 0)
@@ -856,28 +856,28 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 					// ##
 					// #>
 					if(B(-1, 1) && B(0, 1) && B(-1, 0))
-						choice.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_RIGHT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_RIGHT), false, room));
 				}
 				if(right && top)
 				{
 					// ##
 					// >#
 					if(B(0, 1) && B(1, 1) && B(1, 0))
-						choice.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT), false, room));
 				}
 				if(left && bottom)
 				{
 					// #>
 					// ##
 					if(B(-1, 0) && B(-1, -1) && B(0, -1))
-						choice.push_back(PosDir(x, y, BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
 				}
 				if(right && bottom)
 				{
 					// <#
 					// ##
 					if(B(1, 0) && B(0, -1) && B(1, -1))
-						choice.push_back(PosDir(x, y, BIT(GDIR_LEFT) | BIT(GDIR_UP), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_LEFT) | Bit(GDIR_UP), false, room));
 				}
 				if(left && top && bottom)
 				{
@@ -885,7 +885,7 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 					// #>
 					// #_
 					if(B(-1, 1) && P(0, 1) && B(-1, 0) && B(-1, -1) && P(0, -1))
-						choice.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
 				}
 				if(right && top && bottom)
 				{
@@ -893,21 +893,21 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 					// <#
 					// _#
 					if(P(0, 1) && B(1, 1) && B(1, 0) && P(0, -1) && B(1, -1))
-						choice.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_UP), false, room));
 				}
 				if(top && left && right)
 				{
 					// ###
 					// _>_
 					if(B(-1, 1) && B(0, 1) && B(1, 1) && P(-1, 0) && P(1, 0))
-						choice.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_RIGHT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_RIGHT), false, room));
 				}
 				if(bottom && left && right)
 				{
 					// _>_
 					// ###
 					if(P(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
-						choice.push_back(PosDir(x, y, BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_LEFT) | Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
 				}
 				if(left && right && top && bottom)
 				{
@@ -915,7 +915,7 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 					//  _<_
 					//  ___
 					if(P(-1, -1) && P(0, -1) && P(1, -1) && P(-1, 0) && P(1, 0) && P(-1, 1) && P(0, 1) && P(1, 1))
-						choice.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
 				}
 			}
 			else if((p.type == WALL || p.type == BLOCKADE_WALL) && (x > 0) && (x<int(map_w - 1)) && (y > 0) && (y<int(map_h - 1)))
@@ -924,25 +924,25 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 				// #>_
 				// ##
 				if(B(-1, 1) && B(0, 1) && B(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1))
-					choice.push_back(PosDir(x, y, BIT(GDIR_RIGHT), true, room));
+					choice.push_back(PosDir(x, y, Bit(GDIR_RIGHT), true, room));
 
 				//  ##
 				// _<#
 				//  ##
 				if(B(0, 1) && B(1, 1) && P(-1, 0) && B(1, 0) && B(0, -1) && B(1, -1))
-					choice.push_back(PosDir(x, y, BIT(GDIR_LEFT), true, room));
+					choice.push_back(PosDir(x, y, Bit(GDIR_LEFT), true, room));
 
 				// ###
 				// #>#
 				//  _
 				if(B(-1, 1) && B(0, 1) && B(1, 1) && B(-1, 0) && B(1, 0) && P(0, -1))
-					choice.push_back(PosDir(x, y, BIT(GDIR_DOWN), true, room));
+					choice.push_back(PosDir(x, y, Bit(GDIR_DOWN), true, room));
 
 				//  _
 				// #<#
 				// ###
 				if(P(0, 1) && B(-1, 0) && B(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
-					choice.push_back(PosDir(x, y, BIT(GDIR_UP), true, room));
+					choice.push_back(PosDir(x, y, Bit(GDIR_UP), true, room));
 			}
 		}
 	}
@@ -986,55 +986,55 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 	case 0:
 		assert(0);
 		return false;
-	case BIT(GDIR_DOWN):
+	case Bit(GDIR_DOWN):
 		dir = GDIR_DOWN;
 		break;
-	case BIT(GDIR_LEFT):
+	case Bit(GDIR_LEFT):
 		dir = GDIR_LEFT;
 		break;
-	case BIT(GDIR_UP):
+	case Bit(GDIR_UP):
 		dir = GDIR_UP;
 		break;
-	case BIT(GDIR_RIGHT):
+	case Bit(GDIR_RIGHT):
 		dir = GDIR_RIGHT;
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT):
+	case Bit(GDIR_DOWN) | Bit(GDIR_LEFT):
 		if(Rand() % 2 == 0)
 			dir = GDIR_DOWN;
 		else
 			dir = GDIR_LEFT;
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_UP):
+	case Bit(GDIR_DOWN) | Bit(GDIR_UP):
 		if(Rand() % 2 == 0)
 			dir = GDIR_DOWN;
 		else
 			dir = GDIR_UP;
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_DOWN) | Bit(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
 			dir = GDIR_DOWN;
 		else
 			dir = GDIR_RIGHT;
 		break;
-	case BIT(GDIR_LEFT) | BIT(GDIR_UP):
+	case Bit(GDIR_LEFT) | Bit(GDIR_UP):
 		if(Rand() % 2 == 0)
 			dir = GDIR_LEFT;
 		else
 			dir = GDIR_UP;
 		break;
-	case BIT(GDIR_LEFT) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_LEFT) | Bit(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
 			dir = GDIR_LEFT;
 		else
 			dir = GDIR_RIGHT;
 		break;
-	case BIT(GDIR_UP) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_UP) | Bit(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
 			dir = GDIR_UP;
 		else
 			dir = GDIR_RIGHT;
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP):
+	case Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_UP):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
@@ -1045,7 +1045,7 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 				dir = GDIR_UP;
 		}
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
@@ -1056,7 +1056,7 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 				dir = GDIR_RIGHT;
 		}
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_DOWN) | Bit(GDIR_UP) | Bit(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
@@ -1067,7 +1067,7 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 				dir = GDIR_RIGHT;
 		}
 		break;
-	case BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_LEFT) | Bit(GDIR_UP) | Bit(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
@@ -1078,7 +1078,7 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 				dir = GDIR_RIGHT;
 		}
 		break;
-	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
+	case Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_UP) | Bit(GDIR_RIGHT):
 		dir = (GameDirection)(Rand() % 4);
 		break;
 	default:

@@ -249,7 +249,9 @@ void ItemLoader::InitTokenizer()
 		{ "ranged", TAG_RANGED },
 		{ "def", TAG_DEF },
 		{ "stamina", TAG_STAMINA },
-		{ "mage", TAG_MAGE }
+		{ "mage", TAG_MAGE },
+		{ "mana", TAG_MANA },
+		{ "cleric", TAG_CLERIC }
 		});
 }
 
@@ -305,41 +307,41 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		t.Throw("Id must be unique.");
 
 	// create
-	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_AI_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
+	int req = Bit(P_WEIGHT) | Bit(P_VALUE) | Bit(P_AI_VALUE) | Bit(P_MESH) | Bit(P_TEX) | Bit(P_FLAGS);
 	Ptr<Item> item(nullptr);
 	switch(type)
 	{
 	case IT_WEAPON:
 		item = new Weapon;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_TYPE) | BIT(P_MATERIAL) | BIT(P_DMG_TYPE) | BIT(P_EFFECTS);
+		req |= Bit(P_ATTACK) | Bit(P_REQ_STR) | Bit(P_TYPE) | Bit(P_MATERIAL) | Bit(P_DMG_TYPE) | Bit(P_EFFECTS);
 		break;
 	case IT_BOW:
 		item = new Bow;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_SPEED) | BIT(P_EFFECTS);
+		req |= Bit(P_ATTACK) | Bit(P_REQ_STR) | Bit(P_SPEED) | Bit(P_EFFECTS);
 		break;
 	case IT_SHIELD:
 		item = new Shield;
-		req |= BIT(P_BLOCK) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_EFFECTS);
+		req |= Bit(P_BLOCK) | Bit(P_REQ_STR) | Bit(P_MATERIAL) | Bit(P_EFFECTS);
 		break;
 	case IT_ARMOR:
 		item = new Armor;
-		req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_UNIT_TYPE) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE) | BIT(P_EFFECTS);
+		req |= Bit(P_DEFENSE) | Bit(P_MOBILITY) | Bit(P_REQ_STR) | Bit(P_MATERIAL) | Bit(P_UNIT_TYPE) | Bit(P_TYPE) | Bit(P_TEX_OVERRIDE) | Bit(P_EFFECTS);
 		break;
 	case IT_AMULET:
 		item = new Amulet;
-		req |= BIT(P_EFFECTS) | BIT(P_TAG);
+		req |= Bit(P_EFFECTS) | Bit(P_TAG);
 		break;
 	case IT_RING:
 		item = new Ring;
-		req |= BIT(P_EFFECTS) | BIT(P_TAG);
+		req |= Bit(P_EFFECTS) | Bit(P_TAG);
 		break;
 	case IT_CONSUMABLE:
 		item = new Consumable;
-		req |= BIT(P_TIME) | BIT(P_TYPE) | BIT(P_EFFECTS);
+		req |= Bit(P_TIME) | Bit(P_TYPE) | Bit(P_EFFECTS);
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= BIT(P_SCHEME) | BIT(P_RUNIC);
+		req |= Bit(P_SCHEME) | Bit(P_RUNIC);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -347,7 +349,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_OTHER:
 	default:
 		item = new OtherItem;
-		req |= BIT(P_TYPE);
+		req |= Bit(P_TYPE);
 		break;
 	}
 
@@ -377,7 +379,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	while(!t.IsSymbol('}'))
 	{
 		Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
-		if(!IS_SET(req, BIT(prop)))
+		if(!IsSet(req, Bit(prop)))
 			t.Throw("Can't have property '%s'.", t.GetTokenString().c_str());
 
 		t.Next();
@@ -400,14 +402,14 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				t.Throw("Can't have negative ai value %d.", item->ai_value);
 			break;
 		case P_MESH:
-			if(IS_SET(item->flags, ITEM_TEX_ONLY))
+			if(IsSet(item->flags, ITEM_TEX_ONLY))
 				t.Throw("Can't have mesh, it is texture only item.");
 			item->mesh_id = t.MustGetString();
 			if(item->mesh_id.empty())
 				t.Throw("Empty mesh.");
 			break;
 		case P_TEX:
-			if(!item->mesh_id.empty() && !IS_SET(item->flags, ITEM_TEX_ONLY))
+			if(!item->mesh_id.empty() && !IsSet(item->flags, ITEM_TEX_ONLY))
 				t.Throw("Can't be texture only item, it have mesh.");
 			item->mesh_id = t.MustGetString();
 			if(item->mesh_id.empty())
@@ -661,13 +663,18 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_CONSUMABLE:
 		{
 			Consumable* consumable = static_cast<Consumable*>(item_ptr);
-			if(consumable->cons_type == Potion)
+			if(consumable->cons_type == ConsumableType::Potion)
 			{
 				for(ItemEffect& e : consumable->effects)
 				{
 					if(e.effect == EffectId::Heal && e.power > 0.f)
 					{
-						consumable->is_healing_potion = true;
+						consumable->ai_type = ConsumableAiType::Healing;
+						break;
+					}
+					else if(e.effect == EffectId::RestoreMana && e.power > 0.f)
+					{
+						consumable->ai_type = ConsumableAiType::Mana;
 						break;
 					}
 				}
@@ -922,7 +929,7 @@ void ItemLoader::ParseStock(const string& id)
 					if(stock->script)
 						t.Throw("Stock script already used.");
 					const string& block = t.GetBlock('{', '}', false);
-					stock->script = SM.PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
+					stock->script = script_mgr->PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
 					if(!stock->script)
 						t.Throw("Failed to parse script.");
 					t.Next();
@@ -1024,7 +1031,7 @@ void ItemLoader::ParseBookScheme(const string& id)
 		case BSP_TEXTURE:
 			{
 				const string& str = t.MustGetString();
-				scheme->tex = ResourceManager::Get<Texture>().TryGet(str);
+				scheme->tex = res_mgr->TryGet<Texture>(str);
 				if(!scheme->tex)
 					t.Throw("Missing texture '%s'.", str.c_str());
 				t.Next();

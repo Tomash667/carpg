@@ -1,12 +1,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Const.h"
 #include "Material.h"
 #include "UnitStats.h"
 #include "Blood.h"
 #include "StatProfile.h"
 #include "ArmorUnitType.h"
-#include "Resource.h"
 #include "DamageTypes.h"
 #include "ItemScript.h"
 #include "FrameInfo.h"
@@ -18,12 +18,11 @@
 struct SpellList
 {
 	string id;
-	int level[3];
-	cstring name[3];
-	Spell* spell[3];
+	int level[MAX_SPELLS];
+	Spell* spell[MAX_SPELLS];
 	bool have_non_combat;
 
-	SpellList() : spell(), name(), level(), have_non_combat(false) {}
+	SpellList() : spell(), level(), have_non_combat(false) {}
 
 	static vector<SpellList*> lists;
 	static SpellList* TryGet(Cstring id);
@@ -69,7 +68,7 @@ enum UNIT_FLAGS
 	F_PIERCE_WEAK25 = 1 << 9, // pierce damage weakness 25%
 	F_SLASH_WEAK25 = 1 << 10, // slash damage weakness 25%
 	F_BLUNT_WEAK25 = 1 << 11, // blunt damage weakness 25%
-	F_UNDEAD = 1 << 12, // can be raised as undead, can't use potions
+	F_UNDEAD = 1 << 12, // can be raised as undead, can't use potions, heal don't work
 	F_SLOW = 1 << 13, // don't run
 	F_POISON_ATTACK = 1 << 14, // attack apply poison
 	F_IMMORTAL = 1 << 15, // immortal, can't have less then 1 hp
@@ -101,8 +100,8 @@ enum UNIT_FLAGS2
 	F2_CONTEST = 1 << 3, // joins drinking contest
 	F2_CONTEST_50 = 1 << 4, // 50% to join drinking contest
 	F2_DONT_TALK = 1 << 5, // no idle talk
-	// unused (1 << 6)
-	// unused (1 << 7)
+	F2_CONSTRUCT = 1 << 6, // can't be healed
+	F2_FAST_LEARNER = 1 << 7, // ai hero faster exp gain
 	// unused (1 << 8)
 	F2_OLD = 1 << 9, // have old gray hair
 	F2_MELEE = 1 << 10, // prefers melee combat
@@ -237,14 +236,14 @@ struct UnitData
 	ItemScript* item_script;
 	UNIT_TYPE type;
 	ResourceState state;
-	Class clas;
+	Class* clas;
 	TraderInfo* trader;
 	vector<UnitData*>* upgrade;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(0), hp_lvl(0), stamina(0), attack(0), attack_lvl(0), def(0), def_lvl(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f),
 		run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
-		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(Class::INVALID),
+		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(nullptr),
 		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f)
 	{
 	}

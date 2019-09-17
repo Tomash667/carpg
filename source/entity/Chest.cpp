@@ -4,21 +4,23 @@
 #include "Game.h"
 #include "BitStreamFunc.h"
 #include "Inventory.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "PlayerInfo.h"
 #include "SoundManager.h"
+#include "SaveState.h"
 
 const float Chest::SOUND_DIST = 1.f;
-int Chest::netid_counter;
+EntityType<Chest>::Impl EntityType<Chest>::impl;
 
 //=================================================================================================
 void Chest::Save(FileWriter& f, bool local)
 {
+	f << id;
+
 	ItemContainer::Save(f);
 
 	f << pos;
 	f << rot;
-	f << netid;
 
 	if(local)
 	{
@@ -39,16 +41,22 @@ void Chest::Save(FileWriter& f, bool local)
 //=================================================================================================
 void Chest::Load(FileReader& f, bool local)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
+
 	ItemContainer::Load(f);
 
 	f >> pos;
 	f >> rot;
-	f >> netid;
 	user = nullptr;
+
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
 
 	if(local)
 	{
-		mesh_inst = new MeshInstance(Game::Get().aChest);
+		mesh_inst = new MeshInstance(game->aChest);
 
 		int state = f.Read<int>();
 		if(state != 0)
@@ -64,33 +72,34 @@ void Chest::Load(FileReader& f, bool local)
 	else
 		mesh_inst = nullptr;
 
-	int refid = f.Read<int>();
-	if(refid == -1)
+	int handler_id = f.Read<int>();
+	if(handler_id == -1)
 		handler = nullptr;
 	else
 	{
-		handler = reinterpret_cast<ChestEventHandler*>(refid);
-		Game::Get().load_chest_handler.push_back(this);
+		handler = reinterpret_cast<ChestEventHandler*>(handler_id);
+		game->load_chest_handler.push_back(this);
 	}
 }
 
 //=================================================================================================
 void Chest::Write(BitStreamWriter& f)
 {
+	f << id;
 	f << pos;
 	f << rot;
-	f << netid;
 }
 
 //=================================================================================================
 bool Chest::Read(BitStreamReader& f)
 {
+	f >> id;
 	f >> pos;
 	f >> rot;
-	f >> netid;
 	if(!f)
 		return false;
-	mesh_inst = new MeshInstance(Game::Get().aChest);
+	Register();
+	mesh_inst = new MeshInstance(game->aChest);
 	return true;
 }
 
@@ -102,13 +111,13 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 	if(user && user->IsPlayer())
 	{
 		if(user->player->is_local)
-			Game::Get().gui->inventory->BuildTmpInventory(1);
+			game_gui->inventory->BuildTmpInventory(1);
 		else if(notify)
 		{
 			NetChangePlayer& c = Add1(user->player->player_info->changes);
 			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
 			c.item = item;
-			c.id = netid;
+			c.id = id;
 			c.count = count;
 			c.a = team_count;
 		}
@@ -120,22 +129,21 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 //=================================================================================================
 void Chest::OpenClose(Unit* unit)
 {
-	Game& game = Game::Get();
 	if(unit)
 	{
 		// open chest by unit
 		assert(!user);
 		user = unit;
 		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-		game.sound_mgr->PlaySound3d(game.sChestOpen, GetCenter(), SOUND_DIST);
+		sound_mgr->PlaySound3d(game->sChestOpen, GetCenter(), SOUND_DIST);
 		if(Net::IsLocal() && handler)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_CHEST;
-			c.id = netid;
-			c.count = unit->netid;
+			c.id = id;
+			c.count = unit->id;
 		}
 	}
 	else
@@ -144,12 +152,12 @@ void Chest::OpenClose(Unit* unit)
 		assert(user);
 		user = nullptr;
 		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-		game.sound_mgr->PlaySound3d(game.sChestClose, GetCenter(), SOUND_DIST);
+		sound_mgr->PlaySound3d(game->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_CHEST;
-			c.id = netid;
+			c.id = id;
 			c.count = -1;
 		}
 	}

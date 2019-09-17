@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Const.h"
+
+//-----------------------------------------------------------------------------
 struct ObjP
 {
 	Vec3 pos;
@@ -14,6 +17,14 @@ struct RegionTarget
 	LevelArea* area;
 	Vec3 pos;
 	bool exit;
+};
+
+//-----------------------------------------------------------------------------
+enum class HavePotion
+{
+	No,
+	Check,
+	Yes
 };
 
 //-----------------------------------------------------------------------------
@@ -85,20 +96,21 @@ struct AIController
 		PFS_WALKING_LOCAL
 	};
 
-	Unit* unit, *target, *alert_target, *cast_target;
+	Unit* unit;
 	State state;
+	Entity<Unit> target, alert_target;
 	Vec3 target_last_pos, alert_target_pos, start_pos;
-	bool in_combat, city_wander, goto_inn;
-	float next_attack, timer, ignore, morale, cooldown[3], last_scan, start_rot, loc_timer, shoot_yspeed;
+	bool in_combat, city_wander;
+	float next_attack, timer, ignore, morale, cooldown[MAX_SPELLS], start_rot, loc_timer, shoot_yspeed;
 	Room* escape_room;
-	int have_potion; // czy ai ma miksturke lecznicz¹: 0 - nie ma, 1 - trzeba sprawdziæ, 2 - ma
+	HavePotion have_potion, have_mp_potion;
 	int potion; // miksturka do u¿ycia po schowaniu broni
 	IdleAction idle_action;
 	union IdleData
 	{
 		float rot;
 		Vec3 pos;
-		Unit* unit;
+		Entity<Unit> unit;
 		Usable* usable;
 		ObjP obj;
 		RegionTarget region;
@@ -121,7 +133,10 @@ struct AIController
 	void Reset();
 	float GetMorale() const;
 	bool CanWander() const;
-	bool ValidateTarget(Unit* target);
+	Vec3 PredictTargetPos(const Unit& target, float bullet_speed) const;
+	void Shout();
+	void HitReaction(const Vec3& pos);
+	void DoAttack(Unit* target, bool running = false);
 };
 
 //-----------------------------------------------------------------------------

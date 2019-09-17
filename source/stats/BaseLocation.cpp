@@ -127,7 +127,7 @@ BaseLocation g_base_locations[] = {
 		LocationTexturePack("block01b.jpg", "stone01b.jpg", "block01d.jpg"),
 	"Cave",					Int2(0,0),		52, 0,		0, 0,		0,			Int2(0,0),	Int2(0,0),	BLO_LABYRINTH,	nullptr, nullptr,
 		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.4f,0.4f,0.4f), Vec3(0,0,0), Vec2(16.f,25.f), Vec2(0,0), 25.f, 0,
-		nullptr, 0, 0, 0, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, KOPALNIA_POZIOM,
+		nullptr, 0, 0, 0, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, ANCIENT_ARMORY,
 		LocationTexturePack("rock2.jpg", "rock1.jpg", "rock3.jpg"),
 	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, RoomStr("schody_swiatynia"), nullptr,
 		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
@@ -193,33 +193,32 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 //=================================================================================================
 void BaseLocation::PreloadTextures()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
 	for(uint i=0; i<n_base_locations; ++i)
 	{
 		auto& bl = g_base_locations[i];
 		if(bl.tex.floor.id)
 		{
-			bl.tex.floor.tex = tex_mgr.Get(bl.tex.floor.id);
+			bl.tex.floor.tex = res_mgr->Load<Texture>(bl.tex.floor.id);
 			if(bl.tex.floor.id_normal)
-				bl.tex.floor.tex_normal = tex_mgr.Get(bl.tex.floor.id_normal);
+				bl.tex.floor.tex_normal = res_mgr->Load<Texture>(bl.tex.floor.id_normal);
 			if(bl.tex.floor.id_specular)
-				bl.tex.floor.tex_specular = tex_mgr.Get(bl.tex.floor.id_specular);
+				bl.tex.floor.tex_specular = res_mgr->Load<Texture>(bl.tex.floor.id_specular);
 		}
 		if(bl.tex.wall.id)
 		{
-			bl.tex.wall.tex = tex_mgr.Get(bl.tex.wall.id);
+			bl.tex.wall.tex = res_mgr->Load<Texture>(bl.tex.wall.id);
 			if(bl.tex.wall.id_normal)
-				bl.tex.wall.tex_normal = tex_mgr.Get(bl.tex.wall.id_normal);
+				bl.tex.wall.tex_normal = res_mgr->Load<Texture>(bl.tex.wall.id_normal);
 			if(bl.tex.wall.id_specular)
-				bl.tex.wall.tex_specular = tex_mgr.Get(bl.tex.wall.id_specular);
+				bl.tex.wall.tex_specular = res_mgr->Load<Texture>(bl.tex.wall.id_specular);
 		}
 		if(bl.tex.ceil.id)
 		{
-			bl.tex.ceil.tex = tex_mgr.Get(bl.tex.ceil.id);
+			bl.tex.ceil.tex = res_mgr->Load<Texture>(bl.tex.ceil.id);
 			if(bl.tex.ceil.id_normal)
-				bl.tex.ceil.tex_normal = tex_mgr.Get(bl.tex.ceil.id_normal);
+				bl.tex.ceil.tex_normal = res_mgr->Load<Texture>(bl.tex.ceil.id_normal);
 			if(bl.tex.ceil.id_specular)
-				bl.tex.ceil.tex_specular = tex_mgr.Get(bl.tex.ceil.id_specular);
+				bl.tex.ceil.tex_specular = res_mgr->Load<Texture>(bl.tex.ceil.id_specular);
 		}
 	}
 }

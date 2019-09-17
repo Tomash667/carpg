@@ -57,19 +57,7 @@ void Room::Load(FileReader& f)
 	connected.resize(f.Read<uint>());
 	for(Room*& room : connected)
 		room = reinterpret_cast<Room*>(f.Read<int>());
-	if(LOAD_VERSION >= V_0_5)
-		f >> target;
-	else
-	{
-		int old_target;
-		bool corridor;
-		f >> old_target;
-		f >> corridor;
-		if(old_target == 0)
-			target = (corridor ? RoomTarget::Corridor : RoomTarget::None);
-		else
-			target = (RoomTarget)(old_target + 1);
-	}
+	f >> target;
 	if(LOAD_VERSION >= V_0_11)
 		f >> group;
 }

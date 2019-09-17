@@ -21,22 +21,25 @@
     <ClCompile Include="QmshTmpLoader.cpp" />
     <ClCompile Include="QmshSaver.cpp" />
     <ClCompile Include="Converter.cpp" />
-    <ClCompile Include="..\..\project\source\core\Tokenizer.cpp">
+    <ClCompile Include="..\..\carpglib\source\Tokenizer.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\project\source\core\Containers.cpp">
+    <ClCompile Include="..\..\carpglib\source\Containers.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\project\source\core\CoreMath.cpp">
+    <ClCompile Include="..\..\carpglib\source\CoreMath.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\project\source\core\File.cpp">
+    <ClCompile Include="..\..\carpglib\source\File.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\project\source\core\Logger.cpp">
+    <ClCompile Include="..\..\carpglib\source\Logger.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\project\source\core\Text.cpp">
+    <ClCompile Include="..\..\carpglib\source\Text.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\carpglib\source\Color.cpp">
       <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,25 +56,25 @@
     <ClInclude Include="Converter.h" />
     <ClInclude Include="QmshSaver.h" />
     <ClInclude Include="ConversionData.h" />
-    <ClInclude Include="..\..\project\source\core\Tokenizer.h">
+    <ClInclude Include="..\..\carpglib\source\Tokenizer.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\project\source\core\Containers.h">
+    <ClInclude Include="..\..\carpglib\source\Containers.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\project\source\core\Core.h">
+    <ClInclude Include="..\..\carpglib\source\Core.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\project\source\core\CoreMath.h">
+    <ClInclude Include="..\..\carpglib\source\CoreMath.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\project\source\core\File.h">
+    <ClInclude Include="..\..\carpglib\source\File.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\project\source\core\Logger.h">
+    <ClInclude Include="..\..\carpglib\source\Logger.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\project\source\core\Text.h">
+    <ClInclude Include="..\..\carpglib\source\Text.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
@@ -84,7 +87,7 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\project\source\core\CoreMath.inl">
+    <None Include="..\..\carpglib\source\CoreMath.inl">
       <Filter>core</Filter>
     </None>
   </ItemGroup>

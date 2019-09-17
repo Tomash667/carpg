@@ -17,11 +17,11 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 {
 	EnsureList(lis);
 
-	if(IS_SET(unit.data->flags, F_MAGE))
+	if(IsSet(unit.data->flags, F_MAGE))
 	{
 		for(const Item* item : lis->items)
 		{
-			if(item->type == IT_WEAPON && IS_SET(item->flags, ITEM_MAGE))
+			if(item->type == IT_WEAPON && IsSet(item->flags, ITEM_MAGE))
 				return item;
 		}
 	}
@@ -41,11 +41,11 @@ const Item* UnitHelper::GetBaseArmor(const Unit& unit, const ItemList* lis)
 {
 	EnsureList(lis);
 
-	if(IS_SET(unit.data->flags, F_MAGE))
+	if(IsSet(unit.data->flags, F_MAGE))
 	{
 		for(const Item* item : lis->items)
 		{
-			if(item->type == IT_ARMOR && IS_SET(item->flags, ITEM_MAGE))
+			if(item->type == IT_ARMOR && IsSet(item->flags, ITEM_MAGE))
 				return item;
 		}
 	}

@@ -23,7 +23,7 @@ struct BuffInfo
 {
 	cstring id;
 	string text;
-	TEX img;
+	Texture* img;
 
 	BuffInfo(cstring id) : id(id)
 	{

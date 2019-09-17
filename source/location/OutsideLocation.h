@@ -6,6 +6,13 @@
 #include "TerrainTile.h"
 
 //-----------------------------------------------------------------------------
+enum OutsideLocationTarget
+{
+	FOREST,
+	MOONWELL
+};
+
+//-----------------------------------------------------------------------------
 struct OutsideLocation : public Location, public LevelArea
 {
 	TerrainTile* tiles;
@@ -18,13 +25,11 @@ struct OutsideLocation : public Location, public LevelArea
 	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
+	void Load(GameReader& f, bool local) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
-	void BuildRefidTables() override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;
-	LOCATION_TOKEN GetToken() const override { return LT_OUTSIDE; }
 
 	bool IsInside(int _x, int _y) const
 	{

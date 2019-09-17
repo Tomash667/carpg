@@ -49,9 +49,9 @@ void MultiInsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void MultiInsideLocation::Load(GameReader& f, bool local)
 {
-	InsideLocation::Load(f, local, token);
+	InsideLocation::Load(f, local);
 
 	f >> active_level;
 	f >> generated;
@@ -133,13 +133,6 @@ int MultiInsideLocation::GetRandomLevel() const
 }
 
 //=================================================================================================
-void MultiInsideLocation::BuildRefidTables()
-{
-	for(InsideLocationLevel* level : levels)
-		level->BuildRefidTables();
-}
-
-//=================================================================================================
 bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
 {
 	assert(unit);
@@ -200,13 +193,13 @@ Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, i
 }
 
 //=================================================================================================
-Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_level, int* index)
+Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_id, int& at_level, int* index)
 {
 	if(at_level == -1)
 	{
 		for(int i = 0; i < generated; ++i)
 		{
-			Chest* chest = levels[i]->FindChestWithQuestItem(quest_refid, index);
+			Chest* chest = levels[i]->FindChestWithQuestItem(quest_id, index);
 			if(chest)
 			{
 				at_level = i;
@@ -215,7 +208,7 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_leve
 		}
 	}
 	else if(at_level < generated)
-		return levels[at_level]->FindChestWithQuestItem(quest_refid, index);
+		return levels[at_level]->FindChestWithQuestItem(quest_id, index);
 
 	return nullptr;
 }

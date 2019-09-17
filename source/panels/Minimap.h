@@ -59,6 +59,6 @@ public:
 	City* city;
 
 private:
-	TEX tUnit[5], tStairsDown, tStairsUp, tBag, tBagImportant, tPortal, tChest;
+	TexturePtr tUnit[5], tStairsDown, tStairsUp, tBag, tBagImportant, tPortal, tChest;
 	int minimap_size;
 };

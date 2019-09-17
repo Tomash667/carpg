@@ -14,9 +14,9 @@
 //=================================================================================================
 void Quest_CampNearCity::Start()
 {
-	quest_id = Q_CAMP_NEAR_CITY;
-	type = QuestType::Captain;
-	start_loc = W.GetCurrentLocationIndex();
+	type = Q_CAMP_NEAR_CITY;
+	category = QuestCategory::Captain;
+	start_loc = world->GetCurrentLocationIndex();
 	switch(Rand() % 3)
 	{
 	case 0:
@@ -61,10 +61,10 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			bool is_city = LocationHelper::IsCity(sl);
 
 			OnStart(game->txQuest[is_city ? 57 : 58]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
 			// event
-			target_loc = W.CreateCamp(sl.pos, group);
+			target_loc = world->CreateCamp(sl.pos, group);
 			location_event_handler = this;
 
 			Location& tl = GetTargetLocation();
@@ -73,7 +73,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			tl.st += Random(3, 5);
 			st = tl.st;
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[group->gender ? 62 : 61], Upper(group->name.c_str()), GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
 				is_city ? game->txQuest[63] : game->txQuest[64]));
 		}
@@ -87,7 +87,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[65]);
 		}
 		break;
@@ -97,7 +97,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 			OnUpdate(game->txQuest[66]);
 		}
 		break;
@@ -114,7 +114,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
 	}
@@ -155,7 +155,7 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 //=================================================================================================
 bool Quest_CampNearCity::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -165,7 +165,7 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 	{
 		OnUpdate(game->txQuest[277]);
 		if(ttype == TIMEOUT_CAMP)
-			W.AbadonLocation(&GetTargetLocation());
+			world->AbadonLocation(&GetTargetLocation());
 	}
 
 	return true;
@@ -182,7 +182,7 @@ bool Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
 //=================================================================================================
 bool Quest_CampNearCity::IfNeedTalk(cstring topic) const
 {
-	return strcmp(topic, "camp") == 0 && prog == Progress::ClearedLocation && W.GetCurrentLocationIndex() == start_loc;
+	return strcmp(topic, "camp") == 0 && prog == Progress::ClearedLocation && world->GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================

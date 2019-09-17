@@ -227,7 +227,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 	Tile::SetupFlags(tiles, Int2(size, size));
 
 	// rysuj
-	if(Game::Get().devmode)
+	if(game->devmode)
 		DebugDraw();
 }
 
@@ -365,17 +365,16 @@ void CaveGenerator::DebugDraw()
 //=================================================================================================
 void CaveGenerator::GenerateObjects()
 {
-	Game& game = Game::Get();
 	InsideLocationLevel& lvl = GetLevelData();
 	Cave* cave = (Cave*)inside;
 
 	Object* o = new Object;
-	o->mesh = game.aStairsUp;
+	o->mesh = game->aStairsUp;
 	o->pos = PtToPos(lvl.staircase_up);
 	o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 	o->scale = 1;
 	o->base = nullptr;
-	L.local_area->objects.push_back(o);
+	game_level->local_area->objects.push_back(o);
 
 	// lights
 	for(vector<Int2>::iterator it = cave->holes.begin(), end = cave->holes.end(); it != end; ++it)
@@ -415,7 +414,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = Random(1.f, 2.f);
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + 1.f, 4.f, 2.f*pt.y + 1.f);
-			L.local_area->objects.push_back(o);
+			game_level->local_area->objects.push_back(o);
 			sta.push_back(pt);
 		}
 	}
@@ -434,7 +433,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
-			L.local_area->objects.push_back(o);
+			game_level->local_area->objects.push_back(o);
 		}
 	}
 
@@ -452,7 +451,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
-			L.local_area->objects.push_back(o);
+			game_level->local_area->objects.push_back(o);
 		}
 	}
 
@@ -466,14 +465,14 @@ void CaveGenerator::GenerateObjects()
 			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
 	}
 
-	if(L.location_index == QM.quest_mine->target_loc)
-		QM.quest_mine->GenerateMine(this, true);
+	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
+		quest_mgr->quest_mine->GenerateMine(this, true);
 }
 
 //=================================================================================================
 void CaveGenerator::GenerateUnits()
 {
-	int level = L.GetDifficultyLevel();
+	int level = game_level->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);
 	static vector<Int2> tiles;
@@ -505,7 +504,7 @@ void CaveGenerator::GenerateUnits()
 			++added;
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!L.SpawnUnitNearLocation(*L.local_area, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
+				if(!game_level->SpawnUnitNearLocation(*game_level->local_area, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
 					break;
 			}
 		}
@@ -515,28 +514,29 @@ void CaveGenerator::GenerateUnits()
 //=================================================================================================
 void CaveGenerator::GenerateItems()
 {
-	GenerateMushrooms();
+	GenerateCaveItems();
 }
 
 //=================================================================================================
 int CaveGenerator::HandleUpdate(int days)
 {
 	int update_flags = 0;
-	if(L.location_index == QM.quest_mine->target_loc)
-		update_flags = QM.quest_mine->GenerateMine(this, false);
+	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
+		update_flags = quest_mgr->quest_mine->GenerateMine(this, false);
 	if(days > 0)
-		GenerateMushrooms(min(days, 10));
+		GenerateCaveItems(min(days, 10));
 	return update_flags;
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateMushrooms(int days_since)
+void CaveGenerator::GenerateCaveItems(int days_since)
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	Int2 pt;
 	Vec2 pos;
 	int dir;
 	const Item* shroom = Item::Get("mushroom");
+	const Item* magic_crystal = Item::Get("magic_crystal");
 
 	for(int i = 0; i < days_since * 20; ++i)
 	{
@@ -564,7 +564,7 @@ void CaveGenerator::GenerateMushrooms(int days_since)
 				pos.y += 0.5f;
 				break;
 			}
-			L.SpawnGroundItemInsideRadius(shroom, pos, 0.5f);
+			game_level->SpawnGroundItemInsideRadius(Rand() % 2 == 0 ? shroom : magic_crystal, pos, 0.5f);
 		}
 	}
 }

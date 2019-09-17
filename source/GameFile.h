@@ -17,14 +17,14 @@ public:
 
 	void operator >> (Unit*& unit)
 	{
-		int refid = Read<int>();
-		unit = Unit::GetByRefid(refid);
+		int id = Read<int>();
+		unit = Unit::GetById(id);
 	}
 
 	void operator >> (SmartPtr<Unit>& unit)
 	{
-		int refid = Read<int>();
-		unit = Unit::GetByRefid(refid);
+		int id = Read<int>();
+		unit = Unit::GetById(id);
 	}
 
 	void operator >> (HumanData& hd)
@@ -41,8 +41,8 @@ public:
 
 	void operator >> (Usable*& usable)
 	{
-		int refid = Read<int>();
-		usable = Usable::GetByRefid(refid);
+		int id = Read<int>();
+		usable = Usable::GetById(id);
 	}
 
 	void ReadOptional(const Item*& item)
@@ -73,14 +73,14 @@ public:
 
 	void operator << (Unit* u)
 	{
-		int refid = (u ? u->refid : -1);
-		FileWriter::operator << (refid);
+		int id = (u ? u->id : -1);
+		FileWriter::operator << (id);
 	}
 
 	void operator << (const SmartPtr<Unit>& u)
 	{
-		int refid = (u ? u->refid : -1);
-		FileWriter::operator << (refid);
+		int id = (u ? u->id : -1);
+		FileWriter::operator << (id);
 	}
 
 	void operator << (const HumanData& hd)

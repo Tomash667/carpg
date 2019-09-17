@@ -12,7 +12,7 @@
 #include "AIController.h"
 #include "Language.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "PlayerInfo.h"
 #include "SaveState.h"
@@ -20,17 +20,17 @@
 //=================================================================================================
 void Quest_Contest::InitOnce()
 {
-	QM.RegisterSpecialHandler(this, "contest_start");
-	QM.RegisterSpecialHandler(this, "contest_join");
-	QM.RegisterSpecialHandler(this, "contest_reward");
-	QM.RegisterSpecialIfHandler(this, "contest_done");
-	QM.RegisterSpecialIfHandler(this, "contest_here");
-	QM.RegisterSpecialIfHandler(this, "contest_today");
-	QM.RegisterSpecialIfHandler(this, "contest_in_progress");
-	QM.RegisterSpecialIfHandler(this, "contest_started");
-	QM.RegisterSpecialIfHandler(this, "contest_joined");
-	QM.RegisterSpecialIfHandler(this, "contest_winner");
-	QM.RegisterFormatString(this, "contest_loc");
+	quest_mgr->RegisterSpecialHandler(this, "contest_start");
+	quest_mgr->RegisterSpecialHandler(this, "contest_join");
+	quest_mgr->RegisterSpecialHandler(this, "contest_reward");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_done");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_here");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_today");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_in_progress");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_started");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_joined");
+	quest_mgr->RegisterSpecialIfHandler(this, "contest_winner");
+	quest_mgr->RegisterFormatString(this, "contest_loc");
 }
 
 //=================================================================================================
@@ -50,12 +50,12 @@ void Quest_Contest::LoadLanguage()
 void Quest_Contest::Init()
 {
 	state = CONTEST_NOT_DONE;
-	where = W.GetRandomSettlementIndex();
+	where = world->GetRandomSettlementIndex();
 	units.clear();
 	winner = nullptr;
 	generated = false;
-	year = W.GetYear();
-	rumor = QM.AddQuestRumor(QM.txRumorQ[2]);
+	year = world->GetYear();
+	rumor = quest_mgr->AddQuestRumor(quest_mgr->txRumorQ[2]);
 }
 
 //=================================================================================================
@@ -72,7 +72,7 @@ void Quest_Contest::Save(GameWriter& f)
 		f << time;
 		f << units.size();
 		for(Unit* unit : units)
-			f << unit->refid;
+			f << unit->id;
 	}
 }
 
@@ -93,7 +93,7 @@ void Quest_Contest::Load(GameReader& f)
 		for(Unit*& unit : units)
 			f >> unit;
 	}
-	year = W.GetYear();
+	year = world->GetYear();
 }
 
 //=================================================================================================
@@ -128,7 +128,7 @@ bool Quest_Contest::SpecialIf(DialogContext& ctx, cstring msg)
 	if(strcmp(msg, "contest_done") == 0)
 		return state == CONTEST_DONE;
 	else if(strcmp(msg, "contest_here") == 0)
-		return where == W.GetCurrentLocationIndex();
+		return where == world->GetCurrentLocationIndex();
 	else if(strcmp(msg, "contest_today") == 0)
 		return state == CONTEST_TODAY;
 	else if(strcmp(msg, "contest_in_progress") == 0)
@@ -154,7 +154,7 @@ bool Quest_Contest::SpecialIf(DialogContext& ctx, cstring msg)
 cstring Quest_Contest::FormatString(const string& str)
 {
 	if(str == "contest_loc")
-		return W.GetLocation(where)->name.c_str();
+		return world->GetLocation(where)->name.c_str();
 	return nullptr;
 }
 
@@ -162,8 +162,8 @@ cstring Quest_Contest::FormatString(const string& str)
 void Quest_Contest::Progress()
 {
 	int step; // 0 - before contest, 1 - time for contest, 2 - after contest
-	int month = W.GetMonth();
-	int day = W.GetDay();
+	int month = world->GetMonth();
+	int day = world->GetDay();
 
 	if(month < 8)
 		step = 0;
@@ -185,14 +185,14 @@ void Quest_Contest::Progress()
 		if(state != CONTEST_NOT_DONE)
 		{
 			state = CONTEST_NOT_DONE;
-			where = W.GetRandomSettlementIndex(where);
+			where = world->GetRandomSettlementIndex(where);
 		}
 		generated = false;
 		units.clear();
 		break;
 	case 1:
 		state = CONTEST_TODAY;
-		if(!generated && Game::Get().game_state == GS_LEVEL && L.location_index == where)
+		if(!generated && game->game_state == GS_LEVEL && game_level->location_index == where)
 			SpawnDrunkmans();
 		break;
 	case 2:
@@ -206,12 +206,10 @@ void Quest_Contest::Progress()
 //=================================================================================================
 void Quest_Contest::Update(float dt)
 {
-	Game& game = Game::Get();
-
 	if(Any(state, CONTEST_NOT_DONE, CONTEST_DONE, CONTEST_TODAY))
 		return;
 
-	InsideBuilding* inn = L.city_ctx->FindInn();
+	InsideBuilding* inn = game_level->city_ctx->FindInn();
 	Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 
 	if(!innkeeper.IsAlive())
@@ -225,7 +223,7 @@ void Quest_Contest::Update(float dt)
 			if(u.IsPlayer())
 			{
 				u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
-				if(u.player != game.pc)
+				if(u.player != game->pc)
 				{
 					NetChangePlayer& c = Add1(u.player->player_info->changes);
 					c.type = NetChangePlayer::LOOK_AT;
@@ -251,7 +249,7 @@ void Quest_Contest::Update(float dt)
 			{
 				unit->player->leaving_event = leaving_event;
 				if(leaving_event)
-					game.gui->messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
+					game_gui->messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
 			}
 		}
 
@@ -276,21 +274,21 @@ void Quest_Contest::Update(float dt)
 				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == FROZEN::NO && u.busy == Unit::Busy_No)
 				{
 					bool ok = false;
-					if(IS_SET(u.data->flags2, F2_CONTEST))
+					if(IsSet(u.data->flags2, F2_CONTEST))
 						ok = true;
-					else if(IS_SET(u.data->flags2, F2_CONTEST_50))
+					else if(IsSet(u.data->flags2, F2_CONTEST_50))
 					{
 						if(Rand() % 2 == 0)
 							ok = true;
 					}
-					else if(IS_SET(u.data->flags3, F3_CONTEST_25))
+					else if(IsSet(u.data->flags3, F3_CONTEST_25))
 					{
 						if(Rand() % 4 == 0)
 							ok = true;
 					}
-					else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
+					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE))
 					{
-						if(QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured)
+						if(quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 							ok = true;
 					}
 
@@ -314,21 +312,21 @@ void Quest_Contest::Update(float dt)
 				if(kick || u.area != inn || u.frozen != FROZEN::NO || !u.IsStanding())
 				{
 					if(u.IsPlayer())
-						game.gui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);
+						game_gui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);
 					*it = nullptr;
 					removed = true;
 				}
 				else
 				{
 					u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
-					if(u.IsPlayer() && u.player != game.pc)
+					if(u.IsPlayer() && u.player != game->pc)
 					{
 						NetChangePlayer& c = Add1(u.player->player_info->changes);
 						c.type = NetChangePlayer::LOOK_AT;
-						c.id = innkeeper.netid;
+						c.id = innkeeper.id;
 					}
 					u.busy = Unit::Busy_Yes;
-					u.look_target = &innkeeper;
+					u.look_target = innkeeper;
 					u.event_handler = this;
 				}
 			}
@@ -477,14 +475,14 @@ void Quest_Contest::Update(float dt)
 					state = CONTEST_FINISH;
 					state2 = 0;
 					innkeeper.look_target = units.back();
-					W.AddNews(Format(txContestWinNews, units.back()->GetName()));
+					world->AddNews(Format(txContestWinNews, units.back()->GetName()));
 					innkeeper.Talk(txContestWin);
 				}
 				else
 				{
 					state = CONTEST_FINISH;
 					state2 = 1;
-					W.AddNews(txContestNoWinner);
+					world->AddNews(txContestNoWinner);
 					innkeeper.Talk(txContestNoWinner);
 				}
 			}
@@ -528,7 +526,7 @@ void Quest_Contest::Update(float dt)
 					if(u.IsPlayer())
 					{
 						u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
-						if(u.player != game.pc)
+						if(u.player != game->pc)
 						{
 							NetChangePlayer& c = Add1(u.player->player_info->changes);
 							c.type = NetChangePlayer::LOOK_AT;
@@ -555,7 +553,7 @@ void Quest_Contest::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 		unit->event_handler = nullptr;
 		RemoveElement(units, unit);
 
-		if(Net::IsOnline() && unit->IsPlayer() && unit->player != Game::Get().pc)
+		if(Net::IsOnline() && unit->IsPlayer() && unit->player != game->pc)
 		{
 			NetChangePlayer& c = Add1(unit->player->player_info->changes);
 			c.type = NetChangePlayer::LOOK_AT;
@@ -575,7 +573,7 @@ void Quest_Contest::Cleanup()
 		u.event_handler = nullptr;
 	}
 
-	InsideBuilding* inn = L.city_ctx->FindInn();
+	InsideBuilding* inn = game_level->city_ctx->FindInn();
 	Unit* innkeeper = inn->FindUnit(UnitData::Get("innkeeper"));
 
 	innkeeper->talking = false;
@@ -583,16 +581,16 @@ void Quest_Contest::Cleanup()
 	innkeeper->busy = Unit::Busy_No;
 	state = CONTEST_DONE;
 	units.clear();
-	W.AddNews(txContestNoWinner);
+	world->AddNews(txContestNoWinner);
 }
 
 //=================================================================================================
 void Quest_Contest::SpawnDrunkmans()
 {
-	InsideBuilding* inn = L.city_ctx->FindInn();
+	InsideBuilding* inn = game_level->city_ctx->FindInn();
 	generated = true;
 	UnitData& pijak = *UnitData::Get("pijak");
 	int count = Random(4, 6);
 	for(int i = 0; i < count; ++i)
-		L.SpawnUnitInsideInn(pijak, -2, inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
+		game_level->SpawnUnitInsideInn(pijak, -2, inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
 }

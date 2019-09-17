@@ -15,7 +15,7 @@
 //=================================================================================================
 void SecretLocationGenerator::Generate()
 {
-	QM.quest_secret->state = Quest_Secret::SECRET_GENERATED2;
+	quest_mgr->quest_secret->state = Quest_Secret::SECRET_GENERATED2;
 
 	CreateMap();
 	RandomizeTerrainTexture();
@@ -82,18 +82,18 @@ void SecretLocationGenerator::Generate()
 //=================================================================================================
 void SecretLocationGenerator::GenerateObjects()
 {
-	LevelArea& area = *L.local_area;
+	LevelArea& area = *game_level->local_area;
 
 	Vec3 pos(128.f, 0, 96.f * 2);
 	terrain->SetH(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
-	L.SpawnObjectEntity(area, o, pos, 0);
-	L.ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
+	game_level->SpawnObjectEntity(area, o, pos, 0);
+	game_level->ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
-	L.SpawnObjectEntity(area, BaseObject::Get("portal"), pos, 0);
+	game_level->SpawnObjectEntity(area, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
 	portal->at_level = 0;
@@ -101,10 +101,10 @@ void SecretLocationGenerator::GenerateObjects()
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->target = 0;
-	portal->target_loc = QM.quest_secret->where;
-	L.location->portal = portal;
+	portal->target_loc = quest_mgr->quest_secret->where;
+	game_level->location->portal = portal;
 
-	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)game_level->location)->tiles;
 
 	// trees
 	for(int i = 0; i < 1024; ++i)
@@ -119,7 +119,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
@@ -131,7 +131,7 @@ void SecretLocationGenerator::GenerateObjects()
 				else
 					type = Rand() % 3;
 				OutsideObject& o = trees2[type];
-				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -148,7 +148,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -157,7 +157,7 @@ void SecretLocationGenerator::GenerateObjects()
 //=================================================================================================
 void SecretLocationGenerator::GenerateUnits()
 {
-	LevelArea& area = *L.local_area;
+	LevelArea& area = *game_level->local_area;
 	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
@@ -180,7 +180,7 @@ void SecretLocationGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			L.SpawnUnitNearLocation(area, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			game_level->SpawnUnitNearLocation(area, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}
@@ -198,7 +198,7 @@ void SecretLocationGenerator::GenerateItems()
 //=================================================================================================
 void SecretLocationGenerator::SpawnTeam()
 {
-	L.AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
+	game_level->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
 }
 
 //=================================================================================================

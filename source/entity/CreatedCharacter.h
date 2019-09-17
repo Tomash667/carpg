@@ -55,8 +55,8 @@ struct CreatedCharacter
 	SubprofileInfo last_sub;
 
 	CreatedCharacter() { last_sub.value = 0; }
-	void Clear(Class c);
-	void Random(Class c);
+	void Clear(Class* clas);
+	void Random(Class* clas);
 	void Write(BitStreamWriter& f) const;
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStreamReader& f);
@@ -69,6 +69,6 @@ struct CreatedCharacter
 };
 
 //-----------------------------------------------------------------------------
-void WriteCharacterData(BitStreamWriter& f, Class c, const HumanData& hd, const CreatedCharacter& cc);
+void WriteCharacterData(BitStreamWriter& f, Class* clas, const HumanData& hd, const CreatedCharacter& cc);
 // 0 - ok, 1 - read error, 2 - value error, 3 - validation error
-int ReadCharacterData(BitStreamReader& f, Class& c, HumanData& hd, CreatedCharacter& cc);
+int ReadCharacterData(BitStreamReader& f, Class*& clas, HumanData& hd, CreatedCharacter& cc);

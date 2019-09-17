@@ -16,9 +16,10 @@
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
+#include "OutsideLocation.h"
 
 //=================================================================================================
-void LocationGeneratorFactory::InitOnce()
+LocationGeneratorFactory::LocationGeneratorFactory()
 {
 	camp = new CampGenerator;
 	cave = new CaveGenerator;
@@ -33,13 +34,7 @@ void LocationGeneratorFactory::InitOnce()
 }
 
 //=================================================================================================
-void LocationGeneratorFactory::PostInit()
-{
-	OutsideLocationGenerator::InitOnce();
-}
-
-//=================================================================================================
-void LocationGeneratorFactory::Cleanup()
+LocationGeneratorFactory::~LocationGeneratorFactory()
 {
 	delete camp;
 	delete cave;
@@ -51,8 +46,12 @@ void LocationGeneratorFactory::Cleanup()
 	delete moonwell;
 	delete secret;
 	delete tutorial;
+}
 
-	delete this;
+//=================================================================================================
+void LocationGeneratorFactory::Init()
+{
+	OutsideLocationGenerator::InitOnce();
 }
 
 //=================================================================================================
@@ -69,26 +68,24 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 	case L_ENCOUNTER:
 		loc_gen = encounter;
 		break;
-	case L_FOREST:
-		if(L.location_index == QM.quest_secret->where2)
+	case L_OUTSIDE:
+		if(game_level->location_index == quest_mgr->quest_secret->where2)
 			loc_gen = secret;
+		else if(loc->target == MOONWELL)
+			loc_gen = moonwell;
 		else
 			loc_gen = forest;
 		break;
 	case L_CAMP:
 		loc_gen = camp;
 		break;
-	case L_MOONWELL:
-		loc_gen = moonwell;
-		break;
 	case L_DUNGEON:
-	case L_CRYPT:
 		{
 			InsideLocation* inside = (InsideLocation*)loc;
 			BaseLocation& base = g_base_locations[inside->target];
 			if(inside->target == TUTORIAL_FORT)
 				loc_gen = tutorial;
-			else if(IS_SET(base.options, BLO_LABYRINTH))
+			else if(IsSet(base.options, BLO_LABYRINTH))
 				loc_gen = labyrinth;
 			else
 				loc_gen = dungeon;
@@ -99,7 +96,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 		break;
 	}
 	loc_gen->loc = loc;
-	loc_gen->dungeon_level = L.dungeon_level;
+	loc_gen->dungeon_level = game_level->dungeon_level;
 	loc_gen->first = first;
 	loc_gen->reenter = reenter;
 	loc_gen->Init();

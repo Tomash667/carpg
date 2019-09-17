@@ -8,7 +8,7 @@
 #include "LocationHelper.h"
 #include "QuestManager.h"
 #include "InsideLocation.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "AIController.h"
 #include "Team.h"
 #include "Portal.h"
@@ -17,19 +17,22 @@
 #include "Pathfinding.h"
 #include "ResourceManager.h"
 #include "ParticleSystem.h"
+#include "SoundManager.h"
+#include "LocationGeneratorFactory.h"
+#include "DungeonGenerator.h"
 
 //=================================================================================================
 void Quest_Evil::Init()
 {
-	QM.RegisterSpecialIfHandler(this, "q_zlo_kapitan");
-	QM.RegisterSpecialIfHandler(this, "q_zlo_burmistrz");
+	quest_mgr->RegisterSpecialIfHandler(this, "q_zlo_kapitan");
+	quest_mgr->RegisterSpecialIfHandler(this, "q_zlo_burmistrz");
 }
 
 //=================================================================================================
 void Quest_Evil::Start()
 {
-	type = QuestType::Unique;
-	quest_id = Q_EVIL;
+	category = QuestCategory::Unique;
+	type = Q_EVIL;
 	mage_loc = -1;
 	closed = 0;
 	changed = false;
@@ -41,7 +44,7 @@ void Quest_Evil::Start()
 	told_about_boss = false;
 	evil_state = State::None;
 	cleric = nullptr;
-	QM.AddQuestRumor(refid, Format(QM.txRumorQ[8], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[8], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -78,8 +81,8 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(!QM.RemoveQuestRumor(refid))
-				game->gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
+			if(!quest_mgr->RemoveQuestRumor(id))
+				game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:
@@ -90,9 +93,9 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[233]);
 			// usuñ plotkê
-			QM.RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 			// lokacja
-			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, UnitGroup::empty, false, 1);
+			Location& target = *world->CreateLocation(L_DUNGEON, world->GetWorldPos(), 128.f, OLD_TEMPLE, UnitGroup::empty, false, 1);
 			target.SetKnown();
 			target.st = 8;
 			target.active_quest = this;
@@ -101,7 +104,7 @@ void Quest_Evil::SetProgress(int prog2)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
-			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
@@ -109,37 +112,37 @@ void Quest_Evil::SetProgress(int prog2)
 		// zdarzenie
 		{
 			OnUpdate(game->txQuest[236]);
-			W.AddNews(Format(game->txQuest[237], GetTargetLocationName()));
+			world->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
 		}
 		break;
 	case Progress::TalkedAboutBook:
 		// powiedzia³ o ksiêdze
 		{
-			mage_loc = W.GetRandomSettlementIndex(start_loc);
-			Location& mage = *W.GetLocation(mage_loc);
+			mage_loc = world->GetRandomSettlementIndex(start_loc);
+			Location& mage = *world->GetLocation(mage_loc);
 			OnUpdate(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			evil_state = State::GenerateMage;
-			Team.AddExp(7500);
+			team->AddExp(7500);
 		}
 		break;
 	case Progress::MageToldAboutStolenBook:
 		// mag powiedzia³ ¿e mu zabrali ksiêge
 		{
 			OnUpdate(game->txQuest[239]);
-			W.AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
+			world->AddNews(Format(game->txQuest[240], world->GetLocation(mage_loc)->name.c_str()));
 			DialogContext::current->talker->temporary = true;
 		}
 		break;
 	case Progress::TalkedWithCaptain:
 		// pogadano z kapitanem
 		{
-			OnUpdate(Format(game->txQuest[241], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
+			OnUpdate(Format(game->txQuest[241], LocationHelper::IsCity(world->GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 		}
 		break;
 	case Progress::TalkedWithMayor:
 		// pogadano z burmistrzem
 		{
-			OnUpdate(Format(game->txQuest[242], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
+			OnUpdate(Format(game->txQuest[242], LocationHelper::IsCity(world->GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 		}
 		break;
 	case Progress::GotBook:
@@ -163,7 +166,7 @@ void Quest_Evil::SetProgress(int prog2)
 			} l_info[3] = {
 				L_DUNGEON, OLD_TEMPLE, "evil", 16,
 				L_DUNGEON, NECROMANCER_BASE, "necromancers", 15,
-				L_CRYPT, MONSTER_CRYPT, "undead", 13
+				L_DUNGEON, MONSTER_CRYPT, "undead", 13
 			};
 
 			cstring new_msgs[4];
@@ -172,19 +175,19 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i = 0; i < 3; ++i)
 			{
 				Int2 levels = g_base_locations[l_info[i].target].levels;
-				Location& target = *W.CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, UnitGroup::Get(l_info[i].group), true,
+				Location& target = *world->CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, UnitGroup::Get(l_info[i].group), true,
 					Random(max(levels.x, 2), max(levels.y, 2)));
 				target.st = l_info[i].st;
 				target.SetKnown();
 				target.active_quest = this;
 				loc[i].target_loc = target.index;
-				loc[i].near_loc = W.GetNearestSettlement(target.pos);
+				loc[i].near_loc = world->GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
-				new_msgs[i + 1] = Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
-					GetLocationDirName(W.GetLocation(loc[i].near_loc)->pos, W.GetLocation(loc[i].target_loc)->pos),
-					W.GetLocation(loc[i].near_loc)->name.c_str());
-				W.AddNews(Format(game->txQuest[246], W.GetLocation(loc[i].target_loc)->name.c_str()));
+				new_msgs[i + 1] = Format(game->txQuest[247], world->GetLocation(loc[i].target_loc)->name.c_str(),
+					GetLocationDirName(world->GetLocation(loc[i].near_loc)->pos, world->GetLocation(loc[i].target_loc)->pos),
+					world->GetLocation(loc[i].near_loc)->name.c_str());
+				world->AddNews(Format(game->txQuest[246], world->GetLocation(loc[i].target_loc)->name.c_str()));
 			}
 
 			OnUpdate({ new_msgs[0], new_msgs[1], new_msgs[2], new_msgs[3] });
@@ -198,7 +201,7 @@ void Quest_Evil::SetProgress(int prog2)
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
-			Team.AddTeamMember(&u, true);
+			team->AddTeamMember(&u, HeroType::Free);
 
 			evil_state = State::ClosingPortals;
 		}
@@ -207,7 +210,7 @@ void Quest_Evil::SetProgress(int prog2)
 		// u¿ywane tylko do czyszczenia flagi changed
 		apply = false;
 		changed = false;
-		Team.AddExp(10000);
+		team->AddExp(10000);
 		break;
 	case Progress::AllPortalsClosed:
 		// zamkniêto wszystkie portale
@@ -228,7 +231,7 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::KillBoss;
 			OnUpdate(Format(game->txQuest[248], GetTargetLocationName()));
 			for(int i = 0; i < 3; ++i)
-				W.GetLocation(loc[i].target_loc)->active_quest = nullptr;
+				world->GetLocation(loc[i].target_loc)->active_quest = nullptr;
 		}
 		break;
 	case Progress::KilledBoss:
@@ -241,16 +244,16 @@ void Quest_Evil::SetProgress(int prog2)
 			target.active_quest = nullptr;
 			target.dont_clean = false;
 			BaseObject* base_obj = BaseObject::Get("bloody_altar");
-			Object* obj = L.local_area->FindObject(base_obj);
+			Object* obj = game_level->local_area->FindObject(base_obj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
-			ResourceManager::Get<Mesh>().Load(obj->mesh);
+			res_mgr->Load(obj->mesh);
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* best_pe = nullptr;
-			for(ParticleEmitter* pe : L.local_area->tmp->pes)
+			for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 			{
-				if(pe->tex == game->tKrew[BLOOD_RED])
+				if(pe->tex == game->tBlood[BLOOD_RED])
 				{
 					float dist = Vec3::Distance(pe->pos, obj->pos);
 					if(dist < best_dist)
@@ -263,15 +266,15 @@ void Quest_Evil::SetProgress(int prog2)
 			assert(best_pe);
 			best_pe->destroy = true;
 			// gadanie przez jozana
-			Unit* unit = Team.FindTeamMember("q_zlo_kaplan");
+			Unit* unit = team->FindTeamMember("q_zlo_kaplan");
 			if(unit)
-				unit->StartAutoTalk();
+				unit->OrderAutoTalk();
 
-			QM.EndUniqueQuest();
-			Team.AddExp(30000);
+			quest_mgr->EndUniqueQuest();
+			team->AddExp(30000);
 			evil_state = State::ClericWantTalk;
-			W.AddNews(game->txQuest[250]);
-			Team.AddLearningPoint();
+			world->AddNews(game->txQuest[250]);
+			team->AddLearningPoint();
 
 			if(Net::IsOnline())
 				Net::PushChange(NetChange::CLEAN_ALTAR);
@@ -283,8 +286,8 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
 			Unit& u = *DialogContext::current->talker;
-			Team.RemoveTeamMember(&u);
-			u.SetOrder(ORDER_LEAVE);
+			team->RemoveTeamMember(&u);
+			u.OrderLeave();
 		}
 		break;
 	}
@@ -301,27 +304,27 @@ cstring Quest_Evil::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "mage_loc")
-		return W.GetLocation(mage_loc)->name.c_str();
+		return world->GetLocation(mage_loc)->name.c_str();
 	else if(str == "mage_dir")
-		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(mage_loc)->pos);
+		return GetLocationDirName(GetStartLocation().pos, world->GetLocation(mage_loc)->pos);
 	else if(str == "t1")
-		return W.GetLocation(loc[0].target_loc)->name.c_str();
+		return world->GetLocation(loc[0].target_loc)->name.c_str();
 	else if(str == "t2")
-		return W.GetLocation(loc[1].target_loc)->name.c_str();
+		return world->GetLocation(loc[1].target_loc)->name.c_str();
 	else if(str == "t3")
-		return W.GetLocation(loc[2].target_loc)->name.c_str();
+		return world->GetLocation(loc[2].target_loc)->name.c_str();
 	else if(str == "t1n")
-		return W.GetLocation(loc[0].near_loc)->name.c_str();
+		return world->GetLocation(loc[0].near_loc)->name.c_str();
 	else if(str == "t2n")
-		return W.GetLocation(loc[1].near_loc)->name.c_str();
+		return world->GetLocation(loc[1].near_loc)->name.c_str();
 	else if(str == "t3n")
-		return W.GetLocation(loc[2].near_loc)->name.c_str();
+		return world->GetLocation(loc[2].near_loc)->name.c_str();
 	else if(str == "t1d")
-		return GetLocationDirName(W.GetLocation(loc[0].near_loc)->pos, W.GetLocation(loc[0].target_loc)->pos);
+		return GetLocationDirName(world->GetLocation(loc[0].near_loc)->pos, world->GetLocation(loc[0].target_loc)->pos);
 	else if(str == "t2d")
-		return GetLocationDirName(W.GetLocation(loc[1].near_loc)->pos, W.GetLocation(loc[1].target_loc)->pos);
+		return GetLocationDirName(world->GetLocation(loc[1].near_loc)->pos, world->GetLocation(loc[1].target_loc)->pos);
 	else if(str == "t3d")
-		return GetLocationDirName(W.GetLocation(loc[2].near_loc)->pos, W.GetLocation(loc[2].target_loc)->pos);
+		return GetLocationDirName(world->GetLocation(loc[2].near_loc)->pos, world->GetLocation(loc[2].target_loc)->pos);
 	else if(str == "close_dir")
 	{
 		float best_dist = 999.f;
@@ -330,7 +333,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::PortalClosed)
 			{
-				float dist = Vec2::Distance(W.GetWorldPos(), W.GetLocation(loc[i].target_loc)->pos);
+				float dist = Vec2::Distance(world->GetWorldPos(), world->GetLocation(loc[i].target_loc)->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -339,7 +342,7 @@ cstring Quest_Evil::FormatString(const string& str)
 			}
 		}
 		Loc& l = loc[best_index];
-		return GetLocationDirName(W.GetWorldPos(), W.GetLocation(l.target_loc)->pos);
+		return GetLocationDirName(world->GetWorldPos(), world->GetLocation(l.target_loc)->pos);
 	}
 	else if(str == "close_loc")
 	{
@@ -349,7 +352,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::PortalClosed)
 			{
-				float dist = Vec2::Distance(W.GetWorldPos(), W.GetLocation(loc[i].target_loc)->pos);
+				float dist = Vec2::Distance(world->GetWorldPos(), world->GetLocation(loc[i].target_loc)->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -357,7 +360,7 @@ cstring Quest_Evil::FormatString(const string& str)
 				}
 			}
 		}
-		return W.GetLocation(best_index)->name.c_str();
+		return world->GetLocation(best_index)->name.c_str();
 	}
 	else if(str == "start_loc")
 		return GetStartLocationName();
@@ -391,7 +394,7 @@ bool Quest_Evil::SpecialIf(DialogContext& ctx, cstring msg)
 	{
 		if(prog == Progress::GivenBook)
 		{
-			int d = GetLocId(W.GetCurrentLocationIndex());
+			int d = GetLocId(world->GetCurrentLocationIndex());
 			if(d != -1)
 			{
 				if(loc[d].state != 3)
@@ -400,21 +403,21 @@ bool Quest_Evil::SpecialIf(DialogContext& ctx, cstring msg)
 		}
 		else if(prog == Progress::AllPortalsClosed)
 		{
-			if(W.GetCurrentLocationIndex() == target_loc)
+			if(world->GetCurrentLocationIndex() == target_loc)
 				return true;
 		}
 		return false;
 	}
 	else if(strcmp(msg, "q_zlo_kapitan") == 0)
 	{
-		return W.GetCurrentLocationIndex() == mage_loc
+		return world->GetCurrentLocationIndex() == mage_loc
 			&& evil_state >= State::GeneratedMage
 			&& evil_state < State::ClosingPortals
 			&& InRange((Progress)prog, Progress::MageToldAboutStolenBook, Progress::TalkedWithMayor);
 	}
 	else if(strcmp(msg, "q_zlo_burmistrz") == 0)
 	{
-		return W.GetCurrentLocationIndex() == mage_loc
+		return world->GetCurrentLocationIndex() == mage_loc
 			&& evil_state >= State::GeneratedMage
 			&& evil_state < State::ClosingPortals
 			&& prog == Progress::TalkedWithCaptain;
@@ -508,7 +511,7 @@ bool Quest_Evil::Load(GameReader& f)
 //=================================================================================================
 void Quest_Evil::GenerateBloodyAltar()
 {
-	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
+	InsideLocation* inside = (InsideLocation*)world->GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	// szukaj zwyk³ego o³tarza blisko œrodka
@@ -553,14 +556,14 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->speed_min = Vec3(-1, 4, -1);
 	pe->speed_max = Vec3(1, 6, 1);
 	pe->mode = 0;
-	pe->tex = game->tKrew[BLOOD_RED];
+	pe->tex = game->tBlood[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
 	lvl.tmp->pes.push_back(pe);
 
 	// dodaj krew
 	vector<Int2> path;
-	game->pathfinding->FindPath(lvl, lvl.staircase_up, PosToPt(obj->pos), path);
+	pathfinding->FindPath(lvl, lvl.staircase_up, PosToPt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())
@@ -600,7 +603,7 @@ void Quest_Evil::GenerateBloodyAltar()
 //=================================================================================================
 void Quest_Evil::GeneratePortal()
 {
-	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
+	InsideLocation* inside = (InsideLocation*)world->GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Vec3 center(float(lvl.w), 0, float(lvl.h));
 
@@ -622,9 +625,9 @@ void Quest_Evil::GeneratePortal()
 		room = good_pts.back().first;
 		good_pts.pop_back();
 
-		L.global_col.clear();
-		L.GatherCollisionObjects(lvl, L.global_col, room->Center(), 2.f);
-		if(L.global_col.empty())
+		game_level->global_col.clear();
+		game_level->GatherCollisionObjects(lvl, game_level->global_col, room->Center(), 2.f);
+		if(game_level->global_col.empty())
 			break;
 
 		if(good_pts.empty())
@@ -635,15 +638,15 @@ void Quest_Evil::GeneratePortal()
 	Vec3 portal_pos = room->Center();
 	room->target = RoomTarget::PortalCreate;
 	float rot = PI*Random(0, 3);
-	L.SpawnObjectEntity(lvl, BaseObject::Get("portal"), portal_pos, rot);
+	game_level->SpawnObjectEntity(lvl, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;
 	inside->portal->next_portal = nullptr;
 	inside->portal->rot = rot;
 	inside->portal->pos = portal_pos;
-	inside->portal->at_level = L.dungeon_level;
+	inside->portal->at_level = game_level->dungeon_level;
 
-	int d = GetLocId(W.GetCurrentLocationIndex());
+	int d = GetLocId(world->GetCurrentLocationIndex());
 	loc[d].pos = portal_pos;
 	loc[d].state = Quest_Evil::Loc::State::None;
 
@@ -654,7 +657,7 @@ void Quest_Evil::GeneratePortal()
 //=================================================================================================
 void Quest_Evil::WarpEvilBossToAltar()
 {
-	LevelArea& area = *L.local_area;
+	LevelArea& area = *game_level->local_area;
 
 	// znajdŸ bossa
 	Unit* u = area.FindUnit(UnitData::Get("q_zlo_boss"));
@@ -668,16 +671,16 @@ void Quest_Evil::WarpEvilBossToAltar()
 	{
 		Vec3 warp_pos = o->pos;
 		warp_pos -= Vec3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
-		L.WarpUnit(*u, warp_pos);
+		game_level->WarpUnit(*u, warp_pos);
 		u->ai->start_pos = u->pos;
 
 		for(int i = 0; i < 2; ++i)
 		{
-			Unit* u2 = L.SpawnUnitNearLocation(area, u->pos, *UnitData::Get("zombie_ancient"));
+			Unit* u2 = game_level->SpawnUnitNearLocation(area, u->pos, *UnitData::Get("zombie_ancient"));
 			if(u2)
 			{
 				u2->dont_attack = true;
-				u2->guard_target = u;
+				u2->OrderGuard(u);
 			}
 		}
 	}
@@ -692,4 +695,82 @@ int Quest_Evil::GetLocId(int location_id)
 			return i;
 	}
 	return -1;
+}
+
+//=================================================================================================
+void Quest_Evil::Update(float dt)
+{
+	if(evil_state == State::SpawnedAltar && game_level->location_index == target_loc)
+	{
+		for(Unit& unit : team->members)
+		{
+			if(unit.IsStanding() && unit.IsPlayer() && Vec3::Distance(unit.pos, pos) < 5.f
+				&& game_level->CanSee(*game_level->local_area, unit.pos, pos))
+			{
+				evil_state = State::Summoning;
+				sound_mgr->PlaySound2d(game->sEvil);
+				if(Net::IsOnline())
+					Net::PushChange(NetChange::EVIL_SOUND);
+				SetProgress(Progress::AltarEvent);
+				// spawn undead
+				InsideLocation* inside = (InsideLocation*)game_level->location;
+				inside->group = UnitGroup::Get("undead");
+				DungeonGenerator* gen = (DungeonGenerator*)game->loc_gen_factory->Get(game_level->location);
+				gen->GenerateUnits();
+				break;
+			}
+		}
+	}
+	else if(evil_state == State::ClosingPortals && !game_level->location->outside && game_level->location->GetLastLevel() == game_level->dungeon_level)
+	{
+		int d = GetLocId(game_level->location_index);
+		if(d != -1)
+		{
+			Loc& l = loc[d];
+			if(l.state != 3)
+			{
+				Unit* u = cleric;
+
+				if(u->ai->state == AIController::Idle)
+				{
+					// sprawdŸ czy podszed³ do portalu
+					float dist = Vec3::Distance2d(u->pos, l.pos);
+					if(dist < 5.f)
+					{
+						// podejdŸ
+						u->ai->idle_action = AIController::Idle_Move;
+						u->ai->idle_data.pos = l.pos;
+						u->ai->timer = 1.f;
+						if(u->GetOrder() != ORDER_WAIT)
+							u->OrderWait();
+
+						// zamknij
+						if(dist < 2.f)
+						{
+							timer -= dt;
+							if(timer <= 0.f)
+							{
+								l.state = Loc::State::PortalClosed;
+								u->OrderFollow(team->GetLeader());
+								u->ai->idle_action = AIController::Idle_None;
+								OnUpdate(Format(game->txPortalClosed, game_level->location->name.c_str()));
+								u->OrderAutoTalk();
+								changed = true;
+								++closed;
+								delete game_level->location->portal;
+								game_level->location->portal = nullptr;
+								world->AddNews(Format(game->txPortalClosedNews, game_level->location->name.c_str()));
+								if(Net::IsOnline())
+									Net::PushChange(NetChange::CLOSE_PORTAL);
+							}
+						}
+						else
+							timer = 1.5f;
+					}
+					else if(u->GetOrder() != ORDER_FOLLOW)
+						u->OrderFollow(team->GetLeader());
+				}
+			}
+		}
+	}
 }

@@ -5,9 +5,8 @@
 #include "Object.h"
 
 //-----------------------------------------------------------------------------
-struct Trap
+struct Trap : public EntityType<Trap>
 {
-	int netid;
 	BaseTrap* base;
 	int state;
 	GameDirection dir;
@@ -19,7 +18,6 @@ struct Trap
 	bool trigger; // u¿ywane u klienta w MP
 
 	static const int MIN_SIZE = 31;
-	static int netid_counter;
 
 	Trap() : hitted(nullptr) {}
 	~Trap() { delete hitted; }

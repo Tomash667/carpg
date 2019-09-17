@@ -1,152 +1,191 @@
 #include "Pch.h"
-#include <json.hpp>
 #include "GameCore.h"
 #include "LobbyApi.h"
-#include <slikenet\TCPInterface.h>
-#include <slikenet\HTTPConnection2.h>
-#include <slikenet\NatPunchthroughClient.h>
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "PickServerPanel.h"
 #include "Language.h"
-#include <sstream>
+#include <json.hpp>
+#include <slikenet\NatPunchthroughClient.h>
+#include <curl\curl.h>
 
-cstring LobbyApi::API_URL = "carpglobby.westeurope.cloudapp.azure.com";
-const int LobbyApi::API_PORT = 8080;
-const int LobbyApi::PROXY_PORT = 60481;
+LobbyApi* global::api;
 
 cstring op_names[] = {
 	"NONE",
 	"GET_SERVERS",
 	"GET_CHANGES",
 	"GET_VERSION",
+	"GET_VERSION2",
 	"IGNORE",
 	"REPORT",
 	"GET_CHANGELOG"
 };
 
-LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), current_op(NONE)
+LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), cm(nullptr)
 {
-	tcp = TCPInterface::GetInstance();
-	http = HTTPConnection2::GetInstance();
-	tcp->AttachPlugin(http);
-	tcp->Start(0, 2);
 }
 
 LobbyApi::~LobbyApi()
 {
+	if(cm)
+	{
+		curl_multi_cleanup(cm);
+		curl_global_cleanup();
+	}
+
 	if(np_client)
 		NatPunchthroughClient::DestroyInstance(np_client);
-	TCPInterface::DestroyInstance(tcp);
-	HTTPConnection2::DestroyInstance(http);
+}
+
+void LobbyApi::Init(Config& cfg)
+{
+	lobby_url = cfg.GetString("lobby_url", "carpglobby.westeurope.cloudapp.azure.com");
+	lobby_port = cfg.GetInt("lobby_port", 8080);
+	proxy_port = cfg.GetInt("proxy_port", 60481);
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	cm = curl_multi_init();
+	curl_multi_setopt(cm, CURLMOPT_MAXCONNECTS, MAX_REQUESTS);
 }
 
 void LobbyApi::Update()
 {
-	if(current_op == NONE)
+	if(active_requests.empty())
 		return;
 	UpdateInternal();
 }
 
+static bool IsBinary(CURL* eh)
+{
+	char* ct;
+	curl_easy_getinfo(eh, CURLINFO_CONTENT_TYPE, &ct);
+	return strcmp(ct, "application/octet-stream") == 0;
+}
+
 void LobbyApi::UpdateInternal()
 {
-	Packet* packet;
-	tcp->HasCompletedConnectionAttempt();
-	for(packet = tcp->Receive(); packet; tcp->DeallocatePacket(packet), packet = tcp->Receive())
-		;
-	tcp->HasFailedConnectionAttempt();
-	tcp->HasLostConnection();
+	int still_alive, msgs_left;
+	curl_multi_perform(cm, &still_alive);
 
-	while(http->HasResponse())
+	CURLMsg* msg;
+	while((msg = curl_multi_info_read(cm, &msgs_left)) != nullptr)
 	{
-		HTTPConnection2::Request* request = nullptr;
-		http->GetRawResponse(request);
-		assert(request);
-		Operation received_op = (Operation)(int)request->userData;
-		if(received_op == current_op)
+		CURL* eh = msg->easy_handle;
+		Op* op;
+		int code;
+		curl_easy_getinfo(eh, CURLINFO_RESPONSE_CODE, &code);
+		curl_easy_getinfo(eh, CURLINFO_PRIVATE, &op);
+
+		if(op->status == Status::DISCARD)
 		{
-			int code = request->GetStatusCode();
-			if(code >= 400 || code == 0)
+			// ignore
+		}
+		else if(msg->data.result != CURLE_OK)
+		{
+			Error("LobbyApi: Request failed %d for %s.", msg->data.result, op_names[op->o]);
+			SetStatus(op, false);
+		}
+		else if(code >= 400 || code == 0)
+		{
+			Error("LobbyApi: Bad server response %d for %s.", code, op_names[op->o]);
+			SetStatus(op, false);
+		}
+		else if(op->o == REPORT)
+		{
+			// response not expected
+		}
+		else if(IsBinary(eh))
+		{
+			if(op->o != GET_VERSION2 || op->buf->Size() != 8)
 			{
-				Error("LobbyApi: Bad server response %d for %s.", code, op_names[current_op]);
-				last_request_failed = true;
-				if(current_op == GET_SERVERS || current_op == GET_CHANGES)
-					Game::Get().gui->pick_server->HandleBadRequest();
+				Error("LobbyApi: Binary response for %s.", op_names[op->o]);
+				SetStatus(op, false);
 			}
-			else if(current_op == REPORT)
+			else
 			{
-				// do nothing
-			}
-			else if(request->binaryData)
-			{
-				if(current_op != GET_VERSION || request->contentLength != 8)
-					Error("LobbyApi: Binary response for %s.", code, op_names[current_op]);
+				int* data = (int*)op->buf->Data();
+				if(data[0] != 0x475052CA)
+				{
+					Error("LobbyApi: Invalid binary version sign 0x%p.", data[0]);
+					op->value = -1;
+					SetStatus(op, false);
+				}
 				else
 				{
-					int* data = (int*)request->binaryData;
-					if(data[0] != 0x475052CA)
-					{
-						Error("LobbyApi: Invalid binary version sign 0x%p.", data[0]);
-						Error(request->stringReceived.C_String());
-						version = -1;
-					}
-					else
-						version = (data[1] & 0xFFFFFF);
+					op->value = (data[1] & 0xFFFFFF);
+					SetStatus(op, true);
 				}
 			}
-			else
-			{
-				try
-				{
-					ParseResponse(request->stringReceived.C_String() + request->contentOffset);
-				}
-				catch(const nlohmann::json::parse_error& ex)
-				{
-					Error("LobbyApi: Failed to parse response for %s: %s", op_names[current_op], ex.what());
-					last_request_failed = true;
-				}
-			}
-		}
-		OP_DELETE(request, _FILE_AND_LINE_);
-
-		if(!Any(current_op, GET_VERSION, GET_CHANGELOG))
-		{
-			if(!requests.empty())
-			{
-				DoOperation(requests.front());
-				requests.pop();
-			}
-			else
-				current_op = NONE;
 		}
 		else
-			current_op = NONE;
+		{
+			try
+			{
+				ParseResponse(op);
+			}
+			catch(const nlohmann::json::parse_error& ex)
+			{
+				Error("LobbyApi: Failed to parse response for %s: %s", op_names[op->o], ex.what());
+				SetStatus(op, false);
+			}
+		}
+
+		for(auto it = active_requests.begin(), end = active_requests.end(); it != end; ++it)
+		{
+			if(*it == op)
+			{
+				active_requests.erase(it);
+				if(op->status < Status::KEEP_ALIVE)
+					op->Free();
+				break;
+			}
+		}
+
+		if(!requests.empty())
+		{
+			DoOperation(requests.front());
+			requests.pop();
+		}
+
+		curl_multi_remove_handle(cm, eh);
+		curl_easy_cleanup(eh);
 	}
 }
 
-void LobbyApi::ParseResponse(const char* response)
+void LobbyApi::SetStatus(Op* op, bool ok)
 {
-	auto j = nlohmann::json::parse(response);
+	if(op->status == Status::KEEP_ALIVE)
+		op->status = (ok ? Status::DONE : Status::FAILED);
+	if(!ok && (op->o == GET_SERVERS || op->o == GET_CHANGES))
+		game_gui->pick_server->HandleBadRequest();
+}
+
+void LobbyApi::ParseResponse(Op* op)
+{
+	cstring content = op->buf->AsString();
+
+	auto j = nlohmann::json::parse(content);
 	if(j["ok"] == false)
 	{
 		string& error = j["error"].get_ref<string&>();
-		Error("LobbyApi: Server returned error for method %s: %s", op_names[current_op], error.c_str());
-		last_request_failed = true;
+		Error("LobbyApi: Server returned error for method %s: %s", op_names[op->o], error.c_str());
+		SetStatus(op, false);
 		return;
 	}
 
-	switch(current_op)
+	switch(op->o)
 	{
 	case GET_SERVERS:
-		if(Game::Get().gui->pick_server->HandleGetServers(j))
+		if(game_gui->pick_server->HandleGetServers(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_CHANGES:
-		if(Game::Get().gui->pick_server->HandleGetChanges(j))
+		if(game_gui->pick_server->HandleGetChanges(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_VERSION:
-		version = j["version"].get<int>();
+		op->value = j["version"].get<int>();
 		break;
 	case GET_CHANGELOG:
 		{
@@ -156,75 +195,85 @@ void LobbyApi::ParseResponse(const char* response)
 		}
 		break;
 	}
+
+	SetStatus(op, true);
 }
 
 void LobbyApi::Reset()
 {
 	if(!requests.empty())
 	{
-		std::queue<Op> copy;
+		std::queue<Op*> copy;
 		while(!requests.empty())
 		{
-			if(requests.front().op == REPORT)
-				copy.push(requests.front());
+			Op* op = requests.front();
+			if(op->status >= Status::DONT_DISCARD)
+				copy.push(op);
+			else
+				op->Free();
 			requests.pop();
 		}
 		requests = copy;
 	}
-	if(current_op != NONE)
-		current_op = IGNORE;
+
+	for(Op* op : active_requests)
+	{
+		if(op->status == Status::NONE)
+			op->status = Status::DISCARD;
+	}
 }
 
-void LobbyApi::AddOperation(Op opp)
+LobbyApi::Op* LobbyApi::AddOperation(Operation o)
 {
-	if(opp.op == GET_CHANGES && timestamp == 0)
-		opp.op = GET_SERVERS;
-	if(current_op == NONE)
-		DoOperation(opp);
+	Op* op = Op::Get();
+	op->o = o;
+	op->value = 0;
+	op->str.clear();
+	AddOperation(op);
+	return op;
+}
+
+void LobbyApi::AddOperation(Op* op)
+{
+	if(op->o == GET_CHANGES && timestamp == 0)
+		op->o = GET_SERVERS;
+	if(active_requests.size() < MAX_REQUESTS)
+		DoOperation(op);
 	else
-		requests.push(opp);
+		requests.push(op);
 }
 
-string urlencode(const string &s)
+static size_t WriteMemoryCallback(void* contents, size_t size, size_t nmemb, void* userp)
 {
-	static const char lookup[] = "0123456789abcdef";
-	std::stringstream e;
-	for(int i = 0, ix = s.length(); i < ix; i++)
+	LobbyApi::Op* op = reinterpret_cast<LobbyApi::Op*>(userp);
+
+	if(!op->buf)
 	{
-		const char& c = s[i];
-		if((48 <= c && c <= 57) ||//0-9
-			(65 <= c && c <= 90) ||//abc...xyz
-			(97 <= c && c <= 122) || //ABC...XYZ
-			(c == '-' || c == '_' || c == '.' || c == '~')
-			)
-		{
-			e << c;
-		}
-		else
-		{
-			e << '%';
-			e << lookup[(c & 0xF0) >> 4];
-			e << lookup[(c & 0x0F)];
-		}
+		op->buf = Buffer::Get();
+		op->buf->Clear();
 	}
-	return e.str();
+
+	size_t realsize = size * nmemb;
+	op->buf->Append(contents, realsize);
+	return realsize;
 }
 
-void LobbyApi::DoOperation(Op opp)
+void LobbyApi::DoOperation(Op* op)
 {
-	Operation op = opp.op;
-	current_op = op;
+	CURL* eh = curl_easy_init();
+	cstring url;
 
-	if(op == REPORT)
+	if(op->o == REPORT)
 	{
-		string text = urlencode(*opp.str);
-		cstring url = Format("carpg.pl/reports.php?action=add&id=%d&text=%s&ver=%s", opp.value, text.c_str(), VERSION_STR);
-		http->TransmitRequest(RakString::FormatForGET(url), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+		string text = UrlEncode(op->str);
+		url = Format("carpg.pl/reports.php?action=add&id=%d&text=%s&ver=%s", op->value, text.c_str(), VERSION_STR);
 	}
+	else if(op->o == GET_VERSION2)
+		url = "carpg.pl/carpgdata/wersja";
 	else
 	{
 		cstring path;
-		switch(op)
+		switch(op->o)
 		{
 		default:
 			assert(0);
@@ -241,11 +290,20 @@ void LobbyApi::DoOperation(Op opp)
 			path = Format("/api/version/changelog?lang=%s", Language::prefix.c_str());
 			break;
 		}
-		http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+		if(lobby_port != 80)
+			url = Format("%s:%d%s", lobby_url.c_str(), lobby_port, path);
+		else
+			url = Format("%s%s", lobby_url.c_str(), path);
 	}
 
-	if(opp.str)
-		StringPool.Free(opp.str);
+	curl_easy_setopt(eh, CURLOPT_URL, url);
+	curl_easy_setopt(eh, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+	curl_easy_setopt(eh, CURLOPT_WRITEDATA, op);
+	curl_easy_setopt(eh, CURLOPT_PRIVATE, op);
+	curl_easy_setopt(eh, CURLOPT_TIMEOUT, 4);
+	curl_easy_setopt(eh, CURLOPT_CONNECTTIMEOUT, 4);
+	curl_multi_add_handle(cm, eh);
+	active_requests.push_back(op);
 }
 
 class NatPunchthroughDebugInterface_InfoLogger : public NatPunchthroughDebugInterface
@@ -268,33 +326,30 @@ void LobbyApi::StartPunchthrough(RakNetGUID* target)
 		np_client->SetDebugInterface(&logger);
 	}
 
-	N.peer->AttachPlugin(np_client);
+	net->peer->AttachPlugin(np_client);
 	np_attached = true;
 
 	if(target)
-		np_client->OpenNAT(*target, N.master_server_adr);
+		np_client->OpenNAT(*target, net->master_server_adr);
 	else
-		np_client->FindRouterPortStride(N.master_server_adr);
+		np_client->FindRouterPortStride(net->master_server_adr);
 }
 
 void LobbyApi::EndPunchthrough()
 {
 	if(np_attached)
 	{
-		N.peer->DetachPlugin(np_client);
+		net->peer->DetachPlugin(np_client);
 		np_attached = false;
 	}
 }
 
 int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 {
-	assert(!IsBusy());
-	Timer t;
-	float time = 0;
-	bool primary = true;
-	last_request_failed = false;
-	version = -1;
-	DoOperation({ GET_VERSION,0,nullptr });
+	Op* op = AddOperation(GET_VERSION);
+	op->status = Status::KEEP_ALIVE;
+	Op* op2 = AddOperation(GET_VERSION2);
+	op2->status = Status::KEEP_ALIVE;
 
 	while(true)
 	{
@@ -302,63 +357,43 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 			return -2;
 
 		UpdateInternal();
-		if(version >= 0 || current_op == NONE)
+		if(op->status == Status::DONE || (op->status != Status::KEEP_ALIVE && op2->status != Status::KEEP_ALIVE))
 			break;
 
 		Sleep(30);
-		time += t.Tick();
-		if(time >= 2.f)
-			break;
 	}
 
-	if(version == -1)
+	int version;
+	if(op->status == Status::DONE)
 	{
-		// check secondary server
-		primary = false;
-		current_op = GET_VERSION;
-		last_request_failed = false;
-		time = 0;
-		http->TransmitRequest(RakString::FormatForGET("carpg.pl/carpgdata/wersja"), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)current_op);
-		while(true)
-		{
-			if(cancel_clbk())
-				return -2;
-
-			UpdateInternal();
-			if(version >= 0 || current_op == NONE)
-				break;
-
-			Sleep(30);
-			time += t.Tick();
-			if(time >= 2.f)
-				break;
-		}
+		if(op2->status == Status::DONE && op->value != op2->value)
+			Warn("LobbyApi: Get version mismatch %s - %s.", VersionToString(op->value), VersionToString(op2->value));
+		version = op->value;
 	}
-
-	current_op = NONE;
-	Reset();
-	if(version >= 0)
+	else if(op2->status == Status::DONE)
 	{
-		if(!primary)
-			Warn("LobbyApi: Failed to get version from primary server. Secondary returned %s.", VersionToString(version));
-		return version;
+		Warn("LobbyApi: Failed to get version from primary server. Secondary returned %s.", VersionToString(op2->value));
+		version = op2->value;
 	}
 	else
 	{
 		Error("LobbyApi: Failed to get version.");
-		return -1;
+		version = -1;
 	}
+
+	op->Free();
+	if(op2->status == Status::KEEP_ALIVE)
+		op2->status = Status::DISCARD;
+	else
+		op2->Free();
+	return version;
 }
 
 bool LobbyApi::GetChangelog(string& changelog, delegate<bool()> cancel_clbk)
 {
-	assert(!IsBusy());
-	Timer t;
-	float time = 0;
-	bool ok = true;
 	this->changelog.clear();
-	last_request_failed = false;
-	DoOperation({ GET_CHANGELOG,0,nullptr });
+	Op* op = AddOperation(GET_CHANGELOG);
+	op->status = Status::KEEP_ALIVE;
 
 	while(true)
 	{
@@ -366,33 +401,31 @@ bool LobbyApi::GetChangelog(string& changelog, delegate<bool()> cancel_clbk)
 			return false;
 
 		UpdateInternal();
-		if(last_request_failed)
-		{
-			ok = false;
-			break;
-		}
-		if(current_op == NONE)
+		if(op->status != Status::KEEP_ALIVE)
 			break;
 
 		Sleep(30);
-		time += t.Tick();
-		if(time >= 2.f)
-		{
-			ok = false;
-			break;
-		}
 	}
 
-	current_op = NONE;
-	Reset();
-	if(ok)
+	bool ok;
+	if(op->status == Status::DONE)
+	{
+		ok = true;
 		changelog = this->changelog;
+	}
+	else
+		ok = false;
+
+	op->Free();
 	return ok;
 }
 
 void LobbyApi::Report(int id, cstring text)
 {
-	string* str = StringPool.Get();
-	*str = text;
-	AddOperation({ REPORT, id, str });
+	Op* op = Op::Get();
+	op->o = REPORT;
+	op->status = Status::DONT_DISCARD;
+	op->value = id;
+	op->str = text;
+	AddOperation(op);
 }

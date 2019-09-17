@@ -1,13 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "Button.h"
 #include "SaveSlot.h"
 #include "TextBox.h"
 
 //-----------------------------------------------------------------------------
-class SaveLoad : public GameDialogBox
+class SaveLoad : public DialogBox
 {
 public:
 	enum Id
@@ -38,7 +38,7 @@ private:
 	Button bt[2];
 	int choice;
 	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN;
-	TEX tMiniSave;
+	Texture tMiniSave;
 	string save_input_text, hardcore_savename;
 	bool save_mode, online;
 };

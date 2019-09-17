@@ -9,21 +9,22 @@
 #include "Location.h"
 #include "Language.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "Arena.h"
 #include "AIController.h"
 #include "GroundItem.h"
+#include "OutsideLocation.h"
 
 //=================================================================================================
 void Quest_Secret::InitOnce()
 {
-	QM.RegisterSpecialHandler(this, "secret_attack");
-	QM.RegisterSpecialHandler(this, "secret_reward");
-	QM.RegisterSpecialIfHandler(this, "secret_first_dialog");
-	QM.RegisterSpecialIfHandler(this, "secret_can_fight");
-	QM.RegisterSpecialIfHandler(this, "secret_win");
-	QM.RegisterSpecialIfHandler(this, "secret_can_get_reward");
+	quest_mgr->RegisterSpecialHandler(this, "secret_attack");
+	quest_mgr->RegisterSpecialHandler(this, "secret_reward");
+	quest_mgr->RegisterSpecialIfHandler(this, "secret_first_dialog");
+	quest_mgr->RegisterSpecialIfHandler(this, "secret_can_fight");
+	quest_mgr->RegisterSpecialIfHandler(this, "secret_win");
+	quest_mgr->RegisterSpecialIfHandler(this, "secret_can_get_reward");
 }
 
 //=================================================================================================
@@ -64,14 +65,13 @@ void Quest_Secret::Load(GameReader& f)
 //=================================================================================================
 bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 {
-	Game& game = Game::Get();
 	if(strcmp(msg, "secret_attack") == 0)
 	{
 		state = SECRET_FIGHT;
-		game.arena->units.clear();
+		game->arena->units.clear();
 
 		ctx.talker->in_arena = 1;
-		game.arena->units.push_back(ctx.talker);
+		game->arena->units.push_back(ctx.talker);
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -79,10 +79,10 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 			c.unit = ctx.talker;
 		}
 
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 		{
 			unit.in_arena = 0;
-			game.arena->units.push_back(&unit);
+			game->arena->units.push_back(&unit);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -129,22 +129,22 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(state == SECRET_NONE && W.GetCurrentLocation()->type == L_MOONWELL && item->item->id == "krystal"
+	if(state == SECRET_NONE && world->GetCurrentLocation()->type == L_OUTSIDE && world->GetCurrentLocation()->target == MOONWELL && item->item->id == "krystal"
 		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
-		Game::Get().gui->messages->AddGameMsg(txSecretAppear, 3.f);
+		game_gui->messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
-		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, UnitGroup::Get("challange"), false, 3);
+		Location& l = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, UnitGroup::Get("challange"), false, 3);
 		l.st = 18;
-		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
+		l.active_quest = ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
 		where = l.index;
-		Vec2& cpos = W.GetCurrentLocation()->pos;
+		Vec2& cpos = world->GetCurrentLocation()->pos;
 		Item* note = &GetNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
 		unit.AddItem2(note, 1u, 1u, false);
 		delete item;
-		Team.AddExp(5000);
+		team->AddExp(5000);
 		if(Net::IsOnline())
 			Net::PushChange(NetChange::SECRET_TEXT);
 		return true;
@@ -156,7 +156,10 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 //=================================================================================================
 void Quest_Secret::UpdateFight()
 {
-	Arena* arena = Game::Get().arena;
+	if(state != SECRET_FIGHT)
+		return;
+
+	Arena* arena = game->arena;
 	int count[2] = { 0 };
 
 	for(vector<Unit*>::iterator it = arena->units.begin(), end = arena->units.end(); it != end; ++it)
@@ -212,9 +215,9 @@ void Quest_Secret::UpdateFight()
 		{
 			// gracz wygra³
 			state = SECRET_WIN;
-			arena->units[0]->StartAutoTalk();
-			Team.AddLearningPoint();
-			Team.AddExp(25000);
+			arena->units[0]->OrderAutoTalk();
+			team->AddLearningPoint();
+			team->AddExp(25000);
 		}
 		else
 		{

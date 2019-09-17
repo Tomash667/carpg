@@ -14,12 +14,12 @@
 //=================================================================================================
 void Quest_Wanted::Start()
 {
-	start_loc = W.GetCurrentLocationIndex();
-	quest_id = Q_WANTED;
-	type = QuestType::Captain;
+	start_loc = world->GetCurrentLocationIndex();
+	type = Q_WANTED;
+	category = QuestCategory::Captain;
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
-	clas = ClassInfo::GetRandom();
+	clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
 	target_unit = nullptr;
 	in_location = -1;
 }
@@ -50,18 +50,18 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Started: // zaakceptowano
 		{
 			OnStart(game->txQuest[257]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
-			target_loc = W.GetRandomFreeSettlementIndex(start_loc);
+			target_loc = world->GetRandomFreeSettlementIndex(start_loc);
 			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
 			if(target_loc == -1)
-				target_loc = W.GetRandomSettlementIndex(start_loc);
+				target_loc = world->GetRandomSettlementIndex(start_loc);
 			Location& target = GetTargetLocation();
 			if(!target.active_quest)
 			{
 				target.active_quest = this;
-				unit_to_spawn = &ClassInfo::GetUnitData(clas, crazy);
+				unit_to_spawn = crazy ? clas->crazy : clas->hero;
 				unit_dont_attack = true;
 				unit_event_handler = this;
 				send_spawn_event = true;
@@ -72,12 +72,12 @@ void Quest_Wanted::SetProgress(int prog2)
 			Item::Get("wanted_letter")->CreateCopy(letter);
 			letter.id = "$wanted_letter";
 			letter.name = game->txQuest[258];
-			letter.refid = refid;
+			letter.quest_id = id;
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			// wpis do dziennika
-			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
@@ -99,7 +99,7 @@ void Quest_Wanted::SetProgress(int prog2)
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
 			OnUpdate(Format(game->txQuest[262], unit_name.c_str()));
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
 	case Progress::Finished: // wykonano
@@ -107,7 +107,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 
-			Team.AddReward(level * 100, level * 250);
+			team->AddReward(level * 100, level * 250);
 
 			OnUpdate(Format(game->txQuest[263], unit_name.c_str()));
 		}
@@ -144,7 +144,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 //=================================================================================================
 bool Quest_Wanted::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -178,7 +178,7 @@ bool Quest_Wanted::IfHaveQuestItem() const
 //=================================================================================================
 bool Quest_Wanted::IfNeedTalk(cstring topic) const
 {
-	return prog == Progress::Killed && strcmp(topic, "wanted") == 0 && W.GetCurrentLocationIndex() == start_loc;
+	return prog == Progress::Killed && strcmp(topic, "wanted") == 0 && world->GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================
@@ -190,7 +190,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 		unit->hero->name = unit_name;
 		GetTargetLocation().active_quest = nullptr;
 		target_unit = unit;
-		in_location = W.GetCurrentLocationIndex();
+		in_location = world->GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::DIE:
 		if(!unit->hero->team_member)
@@ -207,7 +207,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 	case UnitEventHandler::KICK:
 		// kicked from team, can be killed now, don't dissapear
 		unit->temporary = false;
-		in_location = W.GetCurrentLocationIndex();
+		in_location = world->GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::LEAVE:
 		if(state == Quest::Failed)
@@ -224,7 +224,7 @@ void Quest_Wanted::Save(GameWriter& f)
 
 	f << level;
 	f << crazy;
-	f << clas;
+	f << clas->id;
 	f << unit_name;
 	f << target_unit;
 	f << in_location;
@@ -237,14 +237,21 @@ bool Quest_Wanted::Load(GameReader& f)
 
 	f >> level;
 	f >> crazy;
-	f >> clas;
+	if(LOAD_VERSION >= V_DEV)
+		clas = Class::TryGet(f.ReadString1());
+	else
+	{
+		int old_clas;
+		f >> old_clas;
+		clas = old::ConvertOldClass(old_clas);
+	}
 	f >> unit_name;
 	f >> target_unit;
 	f >> in_location;
 
 	if(!done)
 	{
-		unit_to_spawn = &ClassInfo::GetUnitData(clas, crazy);
+		unit_to_spawn = crazy ? clas->crazy : clas->hero;
 		unit_dont_attack = true;
 		unit_event_handler = this;
 		send_spawn_event = true;
@@ -256,7 +263,7 @@ bool Quest_Wanted::Load(GameReader& f)
 		Item::Get("wanted_letter")->CreateCopy(letter);
 		letter.id = "$wanted_letter";
 		letter.name = game->txQuest[258];
-		letter.refid = refid;
+		letter.quest_id = id;
 		letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 	}
 

@@ -16,11 +16,10 @@ BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 //=================================================================================================
 void BookPanel::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
-	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
+	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
+	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
 
-	sound = ResourceManager::Get<Sound>().AddLoadTask("page-turn.wav");
+	sound = res_mgr->Load<Sound>("page-turn.wav");
 
 	gui->AddFont("Dwarf Runes.ttf");
 	normal_font = gui->CreateFont("Arial", 16, 800, 512);
@@ -37,19 +36,19 @@ void BookPanel::Draw(ControlDrawData*)
 	Int2 book_size = book->scheme->size * scale;
 	Int2 book_pos = (gui->wnd_size - book_size) / 2;
 	Rect r = Rect::Create(book_pos, book_size);
-	gui->DrawSpriteRect(book->scheme->tex->tex, r);
+	gui->DrawSpriteRect(book->scheme->tex, r);
 
 	// prev page
 	if(current_page != 0)
 	{
-		Int2 arrow_size = GetSize(tArrowL);
+		Int2 arrow_size = tArrowL->GetSize();
 		gui->DrawSpriteRect(tArrowL, Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale));
 	}
 
 	// next page
 	if(current_page != max_page)
 	{
-		Int2 arrow_size = GetSize(tArrowR);
+		Int2 arrow_size = tArrowR->GetSize();
 		gui->DrawSpriteRect(tArrowR, Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale));
 	}
 
@@ -96,7 +95,7 @@ void BookPanel::Update(float dt)
 	// prev page
 	if(current_page != 0)
 	{
-		Int2 arrow_size = GetSize(tArrowL);
+		Int2 arrow_size = tArrowL->GetSize();
 		if(Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale).IsInside(gui->cursor_pos)
 			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(-1);
@@ -105,7 +104,7 @@ void BookPanel::Update(float dt)
 	// next page
 	if(current_page != max_page)
 	{
-		Int2 arrow_size = GetSize(tArrowR);
+		Int2 arrow_size = tArrowR->GetSize();
 		if(Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale).IsInside(gui->cursor_pos)
 			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(+1);
@@ -129,7 +128,7 @@ void BookPanel::Show(const Book* book)
 	Event(GuiEvent_Show);
 	GainFocus();
 
-	Game::Get().sound_mgr->PlaySound2d(sound);
+	sound_mgr->PlaySound2d(sound);
 }
 
 //=================================================================================================
@@ -192,5 +191,5 @@ Font* BookPanel::GetFont()
 void BookPanel::ChangePage(int change)
 {
 	current_page += change;
-	Game::Get().sound_mgr->PlaySound2d(sound);
+	sound_mgr->PlaySound2d(sound);
 }

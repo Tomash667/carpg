@@ -14,9 +14,9 @@
 //=================================================================================================
 void Quest_LostArtifact::Start()
 {
-	quest_id = Q_LOST_ARTIFACT;
-	type = QuestType::Random;
-	start_loc = W.GetCurrentLocationIndex();
+	type = Q_LOST_ARTIFACT;
+	category = QuestCategory::Random;
+	start_loc = world->GetCurrentLocationIndex();
 	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
 }
 
@@ -46,11 +46,11 @@ void Quest_LostArtifact::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			OnStart(game->txQuest[106]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
 			item->CreateCopy(quest_item);
 			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.refid = refid;
+			quest_item.quest_id = id;
 
 			Location& sl = GetStartLocation();
 
@@ -58,9 +58,9 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			spawn_item = Quest_Dungeon::Item_OnGround;
 			item_to_give[0] = &quest_item;
 			if(Rand() % 2 == 0)
-				target_loc = W.GetClosestLocation(L_CRYPT, sl.pos);
+				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
 			else
-				target_loc = W.GetClosestLocationNotTarget(L_DUNGEON, sl.pos, LABYRINTH);
+				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, LABYRINTH, F_EXCLUDED);
 			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 
@@ -96,7 +96,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 
 			DialogContext::current->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), level, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 		}
 		break;
@@ -109,13 +109,13 @@ void Quest_LostArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[115]);
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 		}
 		break;
 	case Progress::Timeout:
@@ -127,7 +127,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[116]);
 			DialogContext::current->talker->temporary = true;
 		}
@@ -145,7 +145,7 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "random_loc")
-		return W.GetRandomSettlement(start_loc)->name.c_str();
+		return world->GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "poziomie")
 	{
 		switch(at_level)
@@ -178,14 +178,14 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 //=================================================================================================
 bool Quest_LostArtifact::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 60;
+	return world->GetWorldtime() - start_time > 60;
 }
 
 //=================================================================================================
 bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		ForLocation(target_loc, at_level)->RemoveQuestGroundItem(refid);
+		ForLocation(target_loc, at_level)->RemoveQuestGroundItem(id);
 
 	OnUpdate(game->txQuest[277]);
 	return true;
@@ -229,7 +229,7 @@ bool Quest_LostArtifact::Load(GameReader& f)
 	{
 		item->CreateCopy(quest_item);
 		quest_item.id = Format("$%s", item->id.c_str());
-		quest_item.refid = refid;
+		quest_item.quest_id = id;
 		spawn_item = Quest_Dungeon::Item_OnGround;
 		item_to_give[0] = &quest_item;
 	}

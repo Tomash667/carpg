@@ -12,10 +12,10 @@
 //=================================================================================================
 void Quest_DeliverLetter::Start()
 {
-	start_loc = W.GetCurrentLocationIndex();
-	end_loc = W.GetRandomSettlementIndex(start_loc);
-	quest_id = Q_DELIVER_LETTER;
-	type = QuestType::Mayor;
+	start_loc = world->GetCurrentLocationIndex();
+	end_loc = world->GetRandomSettlementIndex(start_loc);
+	type = Q_DELIVER_LETTER;
+	category = QuestCategory::Mayor;
 }
 
 //=================================================================================================
@@ -48,17 +48,17 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// give letter to player
 		{
 			OnStart(game->txQuest[2]);
-			QM.quests_timeout2.push_back(this);
+			quest_mgr->quests_timeout2.push_back(this);
 
-			Location& loc = *W.GetLocation(end_loc);
+			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("letter")->CreateCopy(letter);
 			letter.id = "$letter";
 			letter.name = Format(game->txQuest[0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			letter.refid = refid;
+			letter.quest_id = id;
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
-			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[4], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				dir_name[GetLocationDir(loc2.pos, loc.pos)]));
 		}
@@ -68,8 +68,8 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
-			if(W.GetCurrentLocationIndex() == end_loc)
-				DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			if(world->GetCurrentLocationIndex() == end_loc)
+				DialogContext::current->pc->unit->RemoveQuestItem(id);
 
 			OnUpdate(game->txQuest[5]);
 		}
@@ -77,7 +77,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 	case Progress::GotResponse:
 		// given letter, got response
 		{
-			Location& loc = *W.GetLocation(end_loc);
+			Location& loc = *world->GetLocation(end_loc);
 			letter.Rename(Format(game->txQuest[1], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
 
 			OnUpdate(game->txQuest[6]);
@@ -87,13 +87,13 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// given response, end of quest
 		{
 			state = Quest::Completed;
-			Team.AddReward(250, 1000);
+			team->AddReward(250, 1000);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 
 			OnUpdate(game->txQuest[7]);
-			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
 	}
@@ -102,7 +102,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_DeliverLetter::FormatString(const string& str)
 {
-	Location& loc = *W.GetLocation(end_loc);
+	Location& loc = *world->GetLocation(end_loc);
 	if(str == "target_burmistrza")
 		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 	else if(str == "target_locname")
@@ -119,7 +119,7 @@ cstring Quest_DeliverLetter::FormatString(const string& str)
 //=================================================================================================
 bool Quest_DeliverLetter::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -133,9 +133,9 @@ bool Quest_DeliverLetter::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverLetter::IfHaveQuestItem() const
 {
 	if(prog == Progress::Started)
-		return W.GetCurrentLocationIndex() == end_loc;
+		return world->GetCurrentLocationIndex() == end_loc;
 	else
-		return W.GetCurrentLocationIndex() == start_loc && prog == Progress::GotResponse;
+		return world->GetCurrentLocationIndex() == start_loc && prog == Progress::GotResponse;
 }
 
 //=================================================================================================
@@ -163,12 +163,12 @@ bool Quest_DeliverLetter::Load(GameReader& f)
 		f >> end_loc;
 		if(prog >= Progress::Started)
 		{
-			Location& loc = *W.GetLocation(end_loc);
+			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("letter")->CreateCopy(letter);
 			letter.id = "$letter";
 			letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys,
 				loc.name.c_str());
-			letter.refid = refid;
+			letter.quest_id = id;
 		}
 	}
 

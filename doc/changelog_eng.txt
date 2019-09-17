@@ -1,9 +1,41 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.11.1 (???):
+Version 0.12 (???):
+! cannot load saves from version 0.4.20 or older
++ new player class: cleric - healing spell
++ mana
++ fast travel (can be used inside safe locations by team leader to quickly return to map)
++ new skills: gods magic, concentration
++ new feats: strong aura, magic harmony
++ new items: magic crystal, mana potions, 10 magic rings, amulet of mana
++ decreased strength requirments for blunt weapons/axes
++ loading character classes from file
++ update libraries: FMod 1.10.14
++ improved version checking, using libcurl
+- in multiplayer redoing character creation was resetting to standard inventory
+- eating herbs have now correct animation and sounds
+- door sounds was playing very rare when someone else used door in mp
+- crash when player hit by electro spell quits game at same time
+- client crash when loading game with electro effect
+- crash when npc follows player and he quits
+- crash when npc escapes towards player and he quits
+- crash after loading game when npc wants something from player that not exists after loading
+- some spells didn't use magic power to increase damage
+- captive doesn't join arena combat
+- can't give gold to summoned or temporary team members
+- crash on give gold dialog box or kick confirmation when player quit
+- fixed location entrance direction
+- in multiplayer game removing team members don't shuffle order
+- client after exiting multiplayer and starting singleplayer wasn't leader
+
+--------------------------------------------------------------------------------
+Wersja 0.11.1 (2019-08-12):
 - crash on animals encounter [Savagesheep]
 - crash when new player joins loaded multiplayer game [Savagesheep]
+- crash prevention when loading multiplayer game for quest items [Savagesheep]
+- crash when enemy cast drain and misses hitting melee or bow targets [Savagesheep]
+- fixed attacking peaceful orcs cause attack from citizens
 - units collision shape was slightly higher then it should be
 - fixed starting resolution of 800x600
 - running LAN server was visible on list of servers

@@ -6,7 +6,6 @@
 #include "DamageTypes.h"
 #include "ItemType.h"
 #include "ArmorUnitType.h"
-#include "Resource.h"
 #include "Effect.h"
 #include "Skill.h"
 
@@ -107,11 +106,11 @@ struct Item
 	const OtherItem& ToOther() const { return Cast<OtherItem, IT_OTHER>(); }
 	const Book& ToBook() const { return Cast<Book, IT_BOOK>(); }
 
-	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST)); }
-	bool CanBeGenerated() const { return !IS_SET(flags, ITEM_NOT_RANDOM); }
+	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
+	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
 	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
-	bool IsQuest() const { return IS_SET(flags, ITEM_QUEST); }
-	bool IsQuest(int quest_refid) const { return IsQuest() && refid == quest_refid; }
+	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
+	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
 
 	float GetWeight() const { return float(weight) / 10; }
 	float GetWeightValue() const { return float(value) / weight; }
@@ -123,12 +122,11 @@ struct Item
 	void Rename(cstring name);
 
 	string id, mesh_id, name, desc;
-	int weight, value, ai_value, flags, refid;
+	int weight, value, ai_value, flags, quest_id;
 	vector<ItemEffect> effects;
 	ITEM_TYPE type;
 	MeshPtr mesh;
-	TexturePtr tex;
-	TEX icon;
+	TexturePtr tex, icon;
 	ResourceState state;
 
 	static const Item* gold;
@@ -322,6 +320,8 @@ enum ItemTag
 	TAG_DEF,
 	TAG_STAMINA,
 	TAG_MAGE,
+	TAG_MANA,
+	TAG_CLERIC,
 	TAG_MAX
 };
 static_assert(TAG_MAX < 32, "Too many ItemTag!");
@@ -352,22 +352,26 @@ struct Ring : public Item
 
 //-----------------------------------------------------------------------------
 // Eatible item (food, drink, potion)
-enum ConsumableType
+enum class ConsumableType
 {
 	Food,
 	Drink,
 	Herb,
 	Potion
 };
+enum class ConsumableAiType
+{
+	None,
+	Healing,
+	Mana
+};
 struct Consumable : public Item
 {
-	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(Drink), is_healing_potion(false) {}
-
-	bool IsHealingPotion() const { return is_healing_potion; }
+	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
 
 	float time;
 	ConsumableType cons_type;
-	bool is_healing_potion;
+	ConsumableAiType ai_type;
 
 	static vector<Consumable*> consumables;
 };

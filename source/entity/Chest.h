@@ -18,9 +18,8 @@ struct ChestEventHandler
 };
 
 //-----------------------------------------------------------------------------
-struct Chest : public ItemContainer
+struct Chest : public EntityType<Chest>, public ItemContainer
 {
-	int netid;
 	Vec3 pos;
 	float rot;
 	MeshInstance* mesh_inst;
@@ -33,7 +32,6 @@ private:
 public:
 	static const int MIN_SIZE = 20;
 	static const float SOUND_DIST;
-	static int netid_counter;
 
 	Chest() : mesh_inst(nullptr), user(nullptr), handler(nullptr) {}
 	~Chest() { delete mesh_inst; }

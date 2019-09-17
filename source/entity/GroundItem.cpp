@@ -6,26 +6,29 @@
 #include "QuestManager.h"
 #include "BitStreamFunc.h"
 #include "Game.h"
+#include "SaveState.h"
 
-int GroundItem::netid_counter;
-vector<GroundItem*> GroundItem::refid_table;
+EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;
 
 //=================================================================================================
 void GroundItem::Save(FileWriter& f)
 {
+	f << id;
 	f << pos;
 	f << rot;
 	f << count;
 	f << team_count;
 	f << item->id;
 	if(item->id[0] == '$')
-		f << item->refid;
-	f << netid;
+		f << item->quest_id;
 }
 
 //=================================================================================================
 void GroundItem::Load(FileReader& f)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
 	f >> pos;
 	f >> rot;
 	f >> count;
@@ -35,33 +38,35 @@ void GroundItem::Load(FileReader& f)
 		item = Item::Get(item_id);
 	else
 	{
-		int quest_refid = f.Read<int>();
-		QM.AddQuestItemRequest(&item, item_id.c_str(), quest_refid, nullptr);
+		int quest_id = f.Read<int>();
+		quest_mgr->AddQuestItemRequest(&item, item_id.c_str(), quest_id, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
-	f >> netid;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
 }
 
 //=================================================================================================
 void GroundItem::Write(BitStreamWriter& f)
 {
-	f << netid;
+	f << id;
 	f << pos;
 	f << rot;
 	f << count;
 	f << team_count;
 	f << item->id;
 	if(item->IsQuest())
-		f << item->refid;
+		f << item->quest_id;
 }
 
 //=================================================================================================
 bool GroundItem::Read(BitStreamReader& f)
 {
-	f >> netid;
+	f >> id;
 	f >> pos;
 	f >> rot;
 	f >> count;
 	f >> team_count;
-	return f.IsOk() && Game::Get().ReadItemAndFind(f, item) > 0;
+	Register();
+	return f.IsOk() && f.ReadItemAndFind(item) > 0;
 }

@@ -109,15 +109,15 @@ void CampGenerator::GenerateObjects()
 		pts.push_back(pt);
 
 		// campfire
-		if(L.SpawnObjectNearLocation(*L.local_area, Rand() % 5 == 0 ? campfire_off : campfire, pt, Random(MAX_ANGLE)))
+		if(game_level->SpawnObjectNearLocation(*game_level->local_area, Rand() % 5 == 0 ? campfire_off : campfire, pt, Random(MAX_ANGLE)))
 		{
 			for(int j = 0, count = Random(4, 7); j < count; ++j)
 			{
 				float angle = Random(MAX_ANGLE);
 				if(Rand() % 2 == 0)
-					L.SpawnObjectNearLocation(*L.local_area, tent, pt + Vec2(sin(angle), cos(angle))*Random(4.f, 5.5f), pt);
+					game_level->SpawnObjectNearLocation(*game_level->local_area, tent, pt + Vec2(sin(angle), cos(angle))*Random(4.f, 5.5f), pt);
 				else
-					L.SpawnObjectNearLocation(*L.local_area, bedding, pt + Vec2(sin(angle), cos(angle))*Random(3.f, 4.f), pt);
+					game_level->SpawnObjectNearLocation(*game_level->local_area, bedding, pt + Vec2(sin(angle), cos(angle))*Random(3.f, 4.f), pt);
 			}
 		}
 	}
@@ -137,10 +137,10 @@ void CampGenerator::GenerateObjects()
 		if(ok)
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
-			auto e = L.SpawnObjectNearLocation(*L.local_area, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(e.IsChest() && !L.location->group->IsEmpty()) // empty chests for empty camps
+			auto e = game_level->SpawnObjectNearLocation(*game_level->local_area, obj, pt, Random(MAX_ANGLE), 2.f);
+			if(e.IsChest() && !game_level->location->group->IsEmpty()) // empty chests for empty camps
 			{
-				int gold, level = L.location->st;
+				int gold, level = game_level->location->st;
 				Chest* chest = (Chest*)e;
 
 				ItemHelper::GenerateTreasure(level, 5, chest->items, gold, false);
@@ -185,7 +185,7 @@ void CampGenerator::GenerateUnits()
 			Vec3 pos3(pos.x, 0, pos.y);
 			for(TmpUnitGroup::Spawn& spawn : group->Roll(level, 2))
 			{
-				if(!L.SpawnUnitNearLocation(*L.local_area, pos3, *spawn.first, nullptr, spawn.second, 6.f))
+				if(!game_level->SpawnUnitNearLocation(*game_level->local_area, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
 			}
 		}

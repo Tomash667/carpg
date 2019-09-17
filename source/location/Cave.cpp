@@ -17,9 +17,9 @@ void Cave::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void Cave::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void Cave::Load(GameReader& f, bool local)
 {
-	SingleInsideLocation::Load(f, local, token);
+	SingleInsideLocation::Load(f, local);
 
 	if(last_visit != -1)
 	{

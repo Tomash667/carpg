@@ -41,21 +41,21 @@ bool Location::CheckUpdate(int& days_passed, int worldtime)
 //=================================================================================================
 void Location::Save(GameWriter& f, bool)
 {
-	f << type;
 	f << pos;
 	f << name;
 	f << state;
-	int refid;
+	f << target;
+	int quest_id;
 	if(active_quest)
 	{
-		if(active_quest == (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
-			refid = ACTIVE_QUEST_HOLDER;
+		if(active_quest == ACTIVE_QUEST_HOLDER)
+			quest_id = (int)ACTIVE_QUEST_HOLDER;
 		else
-			refid = active_quest->refid;
+			quest_id = active_quest->id;
 	}
 	else
-		refid = -1;
-	f << refid;
+		quest_id = -1;
+	f << quest_id;
 	f << last_visit;
 	f << st;
 	f << outside;
@@ -80,28 +80,64 @@ void Location::Save(GameWriter& f, bool)
 	for(Event& e : events)
 	{
 		f << e.type;
-		f << e.quest->refid;
+		f << e.quest->id;
 	}
 }
 
 //=================================================================================================
-void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
+void Location::Load(GameReader& f, bool)
 {
-	f >> type;
-	if(LOAD_VERSION < V_0_5 && type == L_VILLAGE_OLD)
-		type = L_CITY;
+	if(LOAD_VERSION < V_DEV)
+	{
+		old::LOCATION old_type;
+		f >> old_type;
+		switch(old_type)
+		{
+		case old::L_CITY:
+			type = L_CITY;
+			break;
+		case old::L_CAVE:
+			type = L_CAVE;
+			break;
+		case old::L_CAMP:
+			type = L_CAMP;
+			target = 0;
+			break;
+		case old::L_DUNGEON:
+		case old::L_CRYPT:
+			type = L_DUNGEON;
+			break;
+		case old::L_FOREST:
+			type = L_OUTSIDE;
+			target = FOREST;
+			break;
+		case old::L_MOONWELL:
+			type = L_OUTSIDE;
+			target = MOONWELL;
+			break;
+		case old::L_ENCOUNTER:
+			type = L_ENCOUNTER;
+			target = 0;
+			break;
+		case old::L_ACADEMY:
+			type = L_NULL;
+			break;
+		}
+	}
 	f >> pos;
 	f >> name;
 	f >> state;
-	int refid = f.Read<int>();
-	if(refid == -1)
+	if(LOAD_VERSION >= V_DEV)
+		f >> target;
+	int quest_id = f.Read<int>();
+	if(quest_id == -1)
 		active_quest = nullptr;
-	else if(refid == ACTIVE_QUEST_HOLDER)
-		active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
+	else if(quest_id == (int)ACTIVE_QUEST_HOLDER)
+		active_quest = ACTIVE_QUEST_HOLDER;
 	else
 	{
-		Game::Get().load_location_quest.push_back(this);
-		active_quest = (Quest_Dungeon*)refid;
+		game->load_location_quest.push_back(this);
+		active_quest = (Quest_Dungeon*)quest_id;
 	}
 	f >> last_visit;
 	f >> st;
@@ -110,36 +146,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 	f >> group;
 	f >> dont_clean;
 	f >> seed;
-	if(LOAD_VERSION >= V_0_5)
-		f >> image;
-	else
-	{
-		switch(type)
-		{
-		case L_CITY:
-			image = LI_CITY;
-			break;
-		case L_CAVE:
-			image = LI_CAVE;
-			break;
-		case L_CAMP:
-			image = LI_CAMP;
-			break;
-		default:
-		case L_DUNGEON:
-			image = LI_DUNGEON;
-			break;
-		case L_CRYPT:
-			image = LI_CRYPT;
-			break;
-		case L_FOREST:
-			image = LI_FOREST;
-			break;
-		case L_MOONWELL:
-			image = LI_MOONWELL;
-			break;
-		}
-	}
+	f >> image;
 
 	// portals
 	if(f.Read1())
@@ -171,10 +178,10 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 		events.resize(f.Read<uint>());
 		for(Event& e : events)
 		{
-			int refid;
+			int quest_id;
 			f >> e.type;
-			f >> refid;
-			QM.AddQuestRequest(refid, (Quest**)&e.quest, [&]()
+			f >> quest_id;
+			quest_mgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
 			{
 				EventPtr event;
 				event.source = EventPtr::LOCATION;

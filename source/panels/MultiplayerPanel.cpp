@@ -4,9 +4,10 @@
 #include "Input.h"
 #include "Language.h"
 #include "Game.h"
+#include "GameGui.h"
 
 //=================================================================================================
-MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
+MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : DialogBox(info)
 {
 	size = Int2(344, 380);
 	bts.resize(5);
@@ -67,19 +68,15 @@ void MultiplayerPanel::LoadLanguage()
 //=================================================================================================
 void MultiplayerPanel::Draw(ControlDrawData*)
 {
-	// t³o
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	gui->DrawText(gui->fBig, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst nick
 	r.Top() += 60;
-	gui->DrawText(gui->default_font, txNick, 0, Color::Black, r);
+	gui->DrawText(GameGui::font, txNick, 0, Color::Black, r);
 
 	// textbox
 	textbox.Draw();

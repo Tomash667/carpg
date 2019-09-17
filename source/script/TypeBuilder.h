@@ -189,6 +189,11 @@ public:
 		}
 	}
 
+	void AddObject(cstring decl, void* ptr)
+	{
+		CHECKED(engine->RegisterGlobalProperty(decl, ptr));
+	}
+
 protected:
 	asIScriptEngine* engine;
 };

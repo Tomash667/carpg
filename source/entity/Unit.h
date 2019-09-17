@@ -112,9 +112,11 @@ enum UnitOrder
 	ORDER_LEAVE,
 	ORDER_MOVE,
 	ORDER_LOOK_AT,
-	ORDER_ESCAPE_TO,
-	ORDER_ESCAPE_TO_UNIT,
+	ORDER_ESCAPE_TO, // escape from enemies moving toward point
+	ORDER_ESCAPE_TO_UNIT, // escape from enemies moving toward target
 	ORDER_GOTO_INN,
+	ORDER_GUARD, // stays near target, remove dont_attack when target dont_attack is removed
+	ORDER_AUTO_TALK,
 	ORDER_MAX
 };
 
@@ -126,8 +128,63 @@ struct TraderStock
 };
 
 //-----------------------------------------------------------------------------
+enum MoveType
+{
+	MOVE_RUN,
+	MOVE_WALK,
+	MOVE_RUN_WHEN_NEAR_TEAM
+};
+
+//-----------------------------------------------------------------------------
+struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
+{
+	UnitOrder order;
+	Entity<Unit> unit;
+	float timer;
+	union
+	{
+		struct
+		{
+			Vec3 pos;
+			MoveType move_type;
+		};
+		struct
+		{
+			AutoTalkMode auto_talk;
+			GameDialog* auto_talk_dialog;
+		};
+	};
+	UnitOrderEntry* next;
+
+	UnitOrderEntry() : next(nullptr) {}
+	void OnFree()
+	{
+		if(next)
+		{
+			next->Free();
+			next = nullptr;
+		}
+	}
+	UnitOrderEntry* WithTimer(float t);
+	UnitOrderEntry* ThenWander();
+	UnitOrderEntry* ThenWait();
+	UnitOrderEntry* ThenFollow(Unit* target);
+	UnitOrderEntry* ThenLeave();
+	UnitOrderEntry* ThenMove(const Vec3& pos, MoveType move_type);
+	UnitOrderEntry* ThenLookAt(const Vec3& pos);
+	UnitOrderEntry* ThenEscapeTo(const Vec3& pos);
+	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
+	UnitOrderEntry* ThenGoToInn();
+	UnitOrderEntry* ThenGuard(Unit* target);
+	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog);
+
+private:
+	UnitOrderEntry* NextOrder();
+};
+
+//-----------------------------------------------------------------------------
 // jednostka w grze
-struct Unit
+struct Unit : public EntityType<Unit>
 {
 	enum LiveState
 	{
@@ -175,13 +232,6 @@ struct Unit
 		LOAD
 	};
 
-	enum MoveType
-	{
-		MOVE_RUN,
-		MOVE_WALK,
-		MOVE_RUN_WHEN_NEAR_TEAM
-	};
-
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
@@ -196,9 +246,7 @@ struct Unit
 	static const float PAIN_SOUND_DIST;
 	static const float DIE_SOUND_DIST;
 	static const float YELL_SOUND_DIST;
-	static int netid_counter;
 
-	int netid;
 	LevelArea* area;
 	UnitData* data;
 	PlayerController* player;
@@ -209,8 +257,9 @@ struct Unit
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
-	int refs, animation_state, level, gold, attack_id, refid, in_arena, quest_refid;
+	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
+		raise_timer;
+	int refs, animation_state, level, gold, attack_id, in_arena, quest_id;
 	FROZEN frozen;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
@@ -224,8 +273,7 @@ struct Unit
 	Usable* usable;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	SmartPtr<Unit> look_target;
-	Unit *guard_target, *summoner;
+	Entity<Unit> summoner, look_target, action_unit;
 	int ai_mode;
 	enum Busy
 	{
@@ -238,24 +286,16 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats* stats;
-	AutoTalkMode auto_talk;
-	float auto_talk_timer;
-	GameDialog* auto_talk_dialog;
 	StaminaAction stamina_action;
 	float stamina_timer;
 	TraderStock* stock;
 	vector<QuestDialog> dialogs;
 	vector<Event> events;
-	UnitOrder order;
-	float order_timer;
-	Vec3 order_pos;
-	MoveType order_move_type;
-	Unit* order_unit;
+	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false),
-		order(ORDER_NONE) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -348,8 +388,11 @@ struct Unit
 	}
 	Vec3 GetEyePos() const;
 	float CalculateMaxHp() const;
+	float CalculateMaxMp() const;
+	float GetMpRegen() const;
 	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
+	float GetMpp() const { return mp / mpmax; }
 	float GetStaminap() const { return stamina / stamina_max; }
 	void GetBox(Box& box) const;
 	int GetDmgType() const;
@@ -368,8 +411,8 @@ struct Unit
 	bool IsBetterItem(const Item* item, int* value = nullptr, int* prev_value = nullptr, ITEM_SLOT* target_slot = nullptr) const;
 	float GetItemAiValue(const Item* item) const;
 	bool IsPlayer() const { return (player != nullptr); }
-	bool IsClient() const { return IsPlayer() && !player->IsLocal(); }
-	bool IsLocal() const { return IsPlayer() && player->IsLocal(); }
+	bool IsLocalPlayer() const { return IsPlayer() && player->IsLocal(); }
+	bool IsOtherPlayer() const { return IsPlayer() && !player->IsLocal(); }
 	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
@@ -385,12 +428,13 @@ struct Unit
 	}
 	bool CanRun() const
 	{
-		if(IS_SET(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM) || (action == A_ATTACK && !run_attack))
+		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !run_attack))
 			return false;
 		else
 			return !IsOverloaded();
 	}
-	void RecalculateHp(bool send = false);
+	void RecalculateHp();
+	void RecalculateMp();
 	void RecalculateStamina();
 	bool CanBlock() const
 	{
@@ -457,6 +501,7 @@ struct Unit
 		return pt;
 	}
 	int FindHealingPotion() const;
+	int FindManaPotion() const;
 	float GetAttackRange() const
 	{
 		return data->attack_range;
@@ -473,8 +518,8 @@ public:
 	{
 		return data->type == UNIT_TYPE::HUMAN;
 	}
-	bool HaveQuestItem(int quest_refid);
-	void RemoveQuestItem(int quest_refid);
+	bool HaveQuestItem(int quest_id);
+	void RemoveQuestItem(int quest_id);
 	void RemoveQuestItemS(Quest* quest);
 	bool HaveItem(const Item* item, bool owned = false) const;
 	bool HaveItemEquipped(const Item* item) const;
@@ -510,10 +555,16 @@ public:
 	}
 	bool IsHero() const { return hero != nullptr; }
 	bool IsFollower() const { return hero && hero->team_member; }
-	bool IsFollowing(Unit* u) const { return order == ORDER_FOLLOW && order_unit == u; }
-	bool IsFollowingTeamMember() const { return IsFollower() && order == ORDER_FOLLOW; }
-	Class GetClass() const { return data->clas; }
-	bool CanFollowWarp() const { return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
+	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
+	bool IsFollowingTeamMember() const { return IsFollower() && GetOrder() == ORDER_FOLLOW; }
+	Class* GetClass() const { return data->clas; }
+	bool IsUsingMp() const
+	{
+		if(data->clas)
+			return data->clas->mp_bar;
+		return false;
+	}
+	bool CanFollowWarp() const { return IsHero() && GetOrder() == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
 	{
 		if(IsPlayer())
@@ -523,7 +574,7 @@ public:
 		else
 			return false;
 	}
-	void MakeItemsTeam(bool team);
+	void MakeItemsTeam(bool is_team);
 	void Heal(float heal)
 	{
 		hp += heal;
@@ -537,10 +588,10 @@ public:
 	void HealPoison();
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
-	int FindItem(const Item* item, int quest_refid = -1) const;
+	int FindItem(const Item* item, int quest_id = -1) const;
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
-	int FindQuestItem(int quest_refid) const;
-	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int required_refid = -1);
+	int FindQuestItem(int quest_id) const;
+	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int quest_id = -1);
 	void RemoveItem(int iindex, bool active_location = true);
 	uint RemoveItem(int i_index, uint count);
 	uint RemoveItem(const Item* item, uint count);
@@ -563,11 +614,11 @@ public:
 		if(IsFollower())
 			return hero->melee;
 		else
-			return IS_SET(data->flags2, F2_MELEE);
+			return IsSet(data->flags2, F2_MELEE);
 	}
 	bool IsImmortal() const
 	{
-		if(IS_SET(data->flags, F_IMMORTAL))
+		if(IsSet(data->flags, F_IMMORTAL))
 			return true;
 		else if(IsPlayer())
 			return player->godmode;
@@ -726,20 +777,14 @@ public:
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IS_SET(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;
 
 	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
-	bool CanTalk() const
-	{
-		if(action == A_EAT || action == A_DRINK || action == A_STAND_UP || auto_talk == AutoTalkMode::Leader)
-			return false;
-		else
-			return true;
-	}
-	bool CanAct();
+	bool CanTalk(Unit& unit) const;
+	bool CanAct() const;
 
 	int Get(AttributeId a, StatState* state = nullptr) const;
 	int Get(SkillId s, StatState* state = nullptr, bool skill_bonus = true) const;
@@ -748,6 +793,7 @@ public:
 	void Set(AttributeId a, int value);
 	void Set(SkillId s, int value);
 	void ApplyStat(AttributeId a);
+	void ApplyStat(SkillId s);
 	void CalculateStats();
 	float CalculateMobility(const Armor* armor = nullptr) const;
 	float GetMobilityMod(bool run) const;
@@ -772,9 +818,6 @@ public:
 		return s;
 	}
 
-	void StartAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
-	void SetAutoTalk(bool auto_talk);
-	bool GetAutoTalk() const { return auto_talk != AutoTalkMode::No; }
 	void SetDontAttack(bool dont_attack);
 	bool GetDontAttack() const { return dont_attack; }
 
@@ -790,6 +833,7 @@ public:
 	}
 
 	void UpdateStaminaAction();
+	void RemoveMana(float value);
 	void RemoveStamina(float value);
 	void RemoveStaminaBlock(float value);
 
@@ -812,7 +856,7 @@ public:
 	bool IsDrunkman() const;
 	void PlaySound(Sound* sound, float range);
 	void CreatePhysics(bool position = false);
-	void UpdatePhysics(const Vec3& pos);
+	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
 	void SetWeaponState(bool takes_out, WeaponType type);
 	void UpdateInventory(bool notify = true);
@@ -820,7 +864,7 @@ public:
 	bool IsFriend(Unit& u) const;
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
-	float GetMaxMorale() const { return IS_SET(data->flags, F_COWARD) ? 5.f : 10.f; }
+	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
 	void AddDialog(Quest_Scripted* quest, GameDialog* dialog);
 	void AddDialogS(Quest_Scripted* quest, const string& dialog_id);
 	void RemoveDialog(Quest_Scripted* quest, bool cleanup);
@@ -829,47 +873,41 @@ public:
 	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
 	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
 	void RemoveAllEventHandlers();
-	void OrderEscapeToUnit(Unit* unit);
-	UnitOrder GetOrder() const { return order; }
-	void SetOrder(UnitOrder order);
-	void OrderAttack();
+	UnitOrder GetOrder() const
+	{
+		if(order)
+			return order->order;
+		return ORDER_NONE;
+	}
+private:
+	void OrderReset();
+public:
 	void OrderClear();
-	void OrderFollow(Unit* target);
-	void OrderMove(const Vec3& pos, MoveType move_type);
-	void OrderLookAt(const Vec3& pos);
-	void OrderTimer(float time) { order_timer = time; }
+	void OrderNext();
+	void OrderAttack();
+	UnitOrderEntry* OrderWander();
+	UnitOrderEntry* OrderWait();
+	UnitOrderEntry* OrderFollow(Unit* target);
+	UnitOrderEntry* OrderLeave();
+	UnitOrderEntry* OrderMove(const Vec3& pos, MoveType move_type);
+	UnitOrderEntry* OrderLookAt(const Vec3& pos);
+	UnitOrderEntry* OrderEscapeTo(const Vec3& pos);
+	UnitOrderEntry* OrderEscapeToUnit(Unit* unit);
+	UnitOrderEntry* OrderGoToInn();
+	UnitOrderEntry* OrderGuard(Unit* target);
+	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }
 	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
-
-	//-----------------------------------------------------------------------------
-	static vector<Unit*> refid_table;
-	static vector<pair<Unit**, int>> refid_request;
-
-	// special value for AddRequest to get team leader
-	static const int REFID_LEADER = -2;
-
-	static Unit* GetByRefid(int _refid)
-	{
-		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return nullptr;
-		else
-			return refid_table[_refid];
-	}
-	static void AddRequest(Unit** unit, int refid)
-	{
-		assert(unit && refid != -1);
-		refid_request.push_back(pair<Unit**, int>(unit, refid));
-	}
-	static void AddRefid(Unit* unit)
-	{
-		assert(unit);
-		unit->refid = (int)refid_table.size();
-		refid_table.push_back(unit);
-	}
+	void RotateTo(const Vec3& pos, float dt);
+	void StopUsingUsable(bool send = true);
+	void CheckAutoTalk(float dt);
+	void CastSpell();
+	void Update(float dt);
+	void Moved(bool warped = false, bool dash = false);
 };
 
 //-----------------------------------------------------------------------------

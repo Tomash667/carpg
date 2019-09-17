@@ -28,24 +28,24 @@ void ForestGenerator::Generate()
 //=================================================================================================
 int ForestGenerator::HandleUpdate(int days)
 {
-	if(L.location_index != QM.quest_sawmill->target_loc)
+	if(game_level->location_index != quest_mgr->quest_sawmill->target_loc)
 		return 0;
 
 	// sawmill quest
-	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
-		&& QM.quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
+	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+		&& quest_mgr->quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
 	{
-		QM.quest_sawmill->GenerateSawmill(true);
+		quest_mgr->quest_sawmill->GenerateSawmill(true);
 		have_sawmill = true;
-		L.location->loaded_resources = false;
+		game_level->location->loaded_resources = false;
 		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
 	}
-	else if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
-		&& QM.quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
+	else if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
+		&& quest_mgr->quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
 	{
-		QM.quest_sawmill->GenerateSawmill(false);
+		quest_mgr->quest_sawmill->GenerateSawmill(false);
 		have_sawmill = true;
-		L.location->loaded_resources = false;
+		game_level->location->loaded_resources = false;
 		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
 	}
 	else
@@ -61,9 +61,12 @@ void ForestGenerator::GenerateObjects()
 //=================================================================================================
 void ForestGenerator::GenerateUnits()
 {
-	LevelArea& area = *L.local_area;
+	if(loc->group->IsEmpty())
+		return;
+
+	LevelArea& area = *game_level->local_area;
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
-	const int level = L.GetDifficultyLevel();
+	const int level = game_level->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);
 	static vector<Vec2> poss;
@@ -95,11 +98,11 @@ void ForestGenerator::GenerateUnits()
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
 				int enemy_level = Random(ud_hunter->level.x, min(ud_hunter->level.y, level));
-				L.SpawnUnitNearLocation(area, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
+				game_level->SpawnUnitNearLocation(area, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
 			}
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!L.SpawnUnitNearLocation(area, pos3, *spawn.first, nullptr, spawn.second, 6.f))
+				if(!game_level->SpawnUnitNearLocation(area, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
 			}
 		}

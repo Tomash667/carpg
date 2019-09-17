@@ -8,6 +8,7 @@
 #include "Const.h"
 #include "Team.h"
 
+// pre V_0_10 compatibility
 namespace old
 {
 	enum Mode
@@ -29,7 +30,7 @@ void HeroData::Init(Unit& _unit)
 	on_credit = false;
 	lost_pvp = false;
 	expe = 0;
-	free = false;
+	type = HeroType::Normal;
 	melee = false;
 	phase = false;
 	phase_timer = 0.f;
@@ -37,7 +38,7 @@ void HeroData::Init(Unit& _unit)
 
 	if(!unit->data->real_name.empty())
 		name = unit->data->real_name;
-	else if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
+	else if(!IsSet(unit->data->flags2, F2_SPECIFIC_NAME))
 		NameHelper::GenerateHeroName(*this);
 }
 
@@ -52,7 +53,7 @@ void HeroData::Save(FileWriter& f)
 	f << melee;
 	f << phase;
 	f << phase_timer;
-	f << free;
+	f << type;
 	f << lost_pvp;
 	f << split_gold;
 }
@@ -62,32 +63,34 @@ void HeroData::Load(FileReader& f)
 {
 	f >> name;
 	if(LOAD_VERSION < V_0_7)
-		f.Skip<Class>(); // old class info
+		f.Skip<int>(); // old class info
 	f >> know_name;
 	f >> team_member;
 	if(LOAD_VERSION < V_0_10)
 	{
 		old::Mode mode;
 		f >> mode;
-		if(team_member)
+		if(team_member || mode == old::Leave)
 		{
+			UnitOrderEntry* order = UnitOrderEntry::Get();
 			switch(mode)
 			{
 			case old::Wander:
-				unit->order = ORDER_WANDER;
+				order->order = ORDER_WANDER;
 				break;
 			case old::Wait:
-				unit->order = ORDER_WAIT;
+				order->order = ORDER_WAIT;
 				break;
 			case old::Follow:
-				unit->order = ORDER_FOLLOW;
-				Unit::AddRequest(&unit->order_unit, Unit::REFID_LEADER);
+				order->order = ORDER_FOLLOW;
+				team->GetLeaderRequest(&order->unit);
 				break;
 			case old::Leave:
-				unit->order = ORDER_LEAVE;
+				order->order = ORDER_LEAVE;
 				break;
 			}
-			unit->order_timer = 0.f;
+			order->timer = 0.f;
+			unit->order = order;
 		}
 	}
 	if(LOAD_VERSION < V_0_11)
@@ -97,7 +100,14 @@ void HeroData::Load(FileReader& f)
 	f >> melee;
 	f >> phase;
 	f >> phase_timer;
-	f >> free;
+	if(LOAD_VERSION >= V_DEV)
+		f >> type;
+	else
+	{
+		bool free;
+		f >> free;
+		type = free ? HeroType::Visitor : HeroType::Normal;
+	}
 	if(LOAD_VERSION >= V_0_6)
 		f >> lost_pvp;
 	else
@@ -111,7 +121,7 @@ void HeroData::Load(FileReader& f)
 //=================================================================================================
 int HeroData::JoinCost() const
 {
-	if(IS_SET(unit->data->flags, F_CRAZY))
+	if(IsSet(unit->data->flags, F_CRAZY))
 		return (unit->level - 1) * 100 + Random(50, 150);
 	else
 		return unit->level * 100;
@@ -128,7 +138,7 @@ void HeroData::PassTime(int days, bool travel)
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(L.city_ctx && !travel)
+		if(game_level->city_ctx && !travel)
 			heal *= 2;
 		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
@@ -147,9 +157,9 @@ void HeroData::LevelUp()
 //=================================================================================================
 void HeroData::SetupMelee()
 {
-	if(IS_SET(unit->data->flags2, F2_MELEE))
+	if(IsSet(unit->data->flags2, F2_MELEE))
 		melee = true;
-	else if(IS_SET(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
+	else if(IsSet(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
 		melee = true;
 }
 
@@ -170,7 +180,9 @@ void HeroData::AddExp(int exp)
 //=================================================================================================
 float HeroData::GetExpMod() const
 {
-	int dif = unit->level - Team.players_level;
+	int dif = unit->level - team->players_level;
+	if(IsSet(unit->data->flags2, F2_FAST_LEARNER))
+		--dif;
 	switch(dif)
 	{
 	case 3:

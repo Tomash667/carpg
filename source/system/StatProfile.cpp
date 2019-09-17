@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 vector<StatProfile*> StatProfile::profiles;
 const float StatProfile::Subprofile::default_priorities[IT_MAX_WEARABLE] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
-const float StatProfile::Subprofile::default_tag_priorities[TAG_MAX] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+const float StatProfile::Subprofile::default_tag_priorities[TAG_MAX] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
 
 //=================================================================================================
 StatProfile::Subprofile::Subprofile() : weapon_chance(), weapon_total(0), armor_chance(), armor_total(0), item_script(nullptr)

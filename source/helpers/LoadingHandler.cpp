@@ -5,5 +5,5 @@
 
 void LoadingHandler::Step()
 {
-	Game::Get().LoadingStep();
+	game->LoadingStep();
 }

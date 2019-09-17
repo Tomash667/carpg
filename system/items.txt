@@ -226,7 +226,7 @@ weapon axe_orcish {
 	value 220
 	mesh "topor_orkowy.qmsh"
 	attack 75
-	req_str 75
+	req_str 65
 	type axe
 	material metal
 	dmg_type slash
@@ -237,7 +237,7 @@ weapon axe_crystal {
 	value 1500
 	mesh "topor_krysztalowy.qmsh"
 	attack 105
-	req_str 70
+	req_str 60
 	type axe
 	material crystal
 	dmg_type slash
@@ -249,7 +249,7 @@ weapon axe_giant {
 	value 8000
 	mesh "topor_giganta.qmsh"
 	attack 155
-	req_str 85
+	req_str 70
 	type axe
 	material metal
 	dmg_type slash
@@ -261,7 +261,7 @@ weapon axe_ripper {
 	value 40000
 	mesh "rozpruwacz.qmsh"
 	attack 210
-	req_str 80
+	req_str 75
 	type axe
 	material metal
 	dmg_type {slash pierce}
@@ -273,7 +273,7 @@ weapon blunt_club {
 	value 2
 	mesh "maczuga.qmsh"
 	attack 15
-	req_str 45
+	req_str 40
 	type blunt
 	material wood
 	dmg_type blunt
@@ -284,7 +284,7 @@ weapon blunt_mace {
 	value 12
 	mesh "buzdygan.qmsh"
 	attack 25
-	req_str 65
+	req_str 50
 	type blunt
 	material metal
 	dmg_type blunt
@@ -295,7 +295,7 @@ weapon blunt_orcish {
 	value 75
 	mesh "orkowy_mlot.qmsh"
 	attack 60
-	req_str 70
+	req_str 60
 	type blunt
 	material rock
 	dmg_type blunt
@@ -306,7 +306,7 @@ weapon blunt_orcish_shaman {
 	value 50
 	mesh "ozdobny_orkowy_mlot.qmsh"
 	attack 30
-	req_str 50
+	req_str 40
 	type blunt
 	material rock
 	dmg_type blunt
@@ -318,7 +318,7 @@ weapon blunt_morningstar {
 	value 180
 	mesh "morgensztern.qmsh"
 	attack 80
-	req_str 70
+	req_str 55
 	type blunt
 	material metal
 	dmg_type {blunt pierce}
@@ -329,7 +329,7 @@ weapon blunt_dwarven {
 	value 800
 	mesh "krasnoludzki_mlot.qmsh"
 	attack 110
-	req_str 85
+	req_str 60
 	type blunt
 	material metal
 	dmg_type blunt
@@ -341,7 +341,7 @@ weapon blunt_adamantine {
 	value 4000
 	mesh "adam_buzdygan.qmsh"
 	attack 160
-	req_str 100
+	req_str 60
 	type blunt
 	material metal
 	dmg_type blunt
@@ -353,7 +353,7 @@ weapon blunt_skullsmasher {
 	value 20000
 	mesh "rozlupywacz.qmsh"
 	attack 220
-	req_str 100
+	req_str 70
 	type blunt
 	material metal
 	dmg_type {blunt pierce}
@@ -1584,6 +1584,17 @@ amulet a_stamina : a_gold {
 	tag stamina
 }
 
+amulet a_mana : a_gold {
+	value 1500
+	ai_value 120
+	flags magical
+	effects {
+		mana 150
+		mana_regeneration 0.5
+	}
+	tag mana
+}
+
 amulet a_warrior : a_ruby {
 	value 3000
 	ai_value 150
@@ -1680,6 +1691,34 @@ ring r_dex : r_gold {
 		attribute dex 5
 	}
 	tag dex
+}
+
+ring r_int : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		attribute int 5
+	}
+}
+
+ring r_wis : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		attribute wis 5
+	}
+}
+
+ring r_cha : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		attribute cha 5
+	}
+	tag cleric
 }
 
 ring r_hp : r_gold {
@@ -1860,6 +1899,36 @@ ring r_carry : r_gold {
 	}
 }
 
+ring r_gods_magic : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		skill gods_magic 10
+	}
+	tag cleric
+}
+
+ring r_concentration : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		skill concentration 10
+	}
+	tag mana
+}
+
+ring r_mana : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		mana 100
+	}
+	tag mana
+}
+
 ring r_str2 : r_emerald {
 	value 1500
 	ai_value 110
@@ -1888,6 +1957,34 @@ ring r_dex2 : r_emerald {
 		attribute dex 15
 	}
 	tag dex
+}
+
+ring r_int2 : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		attribute int 15
+	}
+}
+
+ring r_wis2 : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		attribute wis 15
+	}
+}
+
+ring r_cha2 : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		attribute cha 15
+	}
+	tag cleric
 }
 
 ring r_regeneration : r_emerald {
@@ -1920,13 +2017,23 @@ ring r_poison_resistance : r_emerald {
 	tag def
 }
 
+ring r_mana_regen : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		mana_regeneration 1
+	}
+	tag mana
+}
+
 //------------------------------------------------------------------------------
 // CONSUMABLES
 //------------------------------------------------------------------------------
 consumable p_nreg {
 	weight 0.2
 	value 10
-	mesh "naturalny.qmsh"
+	mesh "natural_pot.qmsh"
 	type potion
 	time 10
 	flags ground_mesh
@@ -1938,7 +2045,7 @@ consumable p_nreg {
 consumable p_nreg2 {
 	weight 0.2
 	value 100
-	mesh "naturalny2.qmsh"
+	mesh "natural_pot2.qmsh"
 	type potion
 	time 30
 	flags ground_mesh
@@ -1950,7 +2057,7 @@ consumable p_nreg2 {
 consumable p_hp {
 	weight 0.1
 	value 25
-	mesh "mikstura_hp.qmsh"
+	mesh "hp_pot.qmsh"
 	type potion
 	flags ground_mesh
 	effects {
@@ -1961,7 +2068,7 @@ consumable p_hp {
 consumable p_hp2 {
 	weight 0.1
 	value 100
-	mesh "mikstura_hp2.qmsh"
+	mesh "hp_pot2.qmsh"
 	type potion
 	flags ground_mesh
 	effects {
@@ -1972,7 +2079,7 @@ consumable p_hp2 {
 consumable p_hp3 {
 	weight 0.1
 	value 400
-	mesh "mikstura_hp3.qmsh"
+	mesh "hp_pot3.qmsh"
 	type potion
 	flags ground_mesh
 	effects {
@@ -1980,10 +2087,43 @@ consumable p_hp3 {
 	}
 }
 
+consumable p_mp {
+	weight 0.1
+	value 25
+	mesh "mp_pot.qmsh"
+	type potion
+	flags ground_mesh
+	effects {
+		restore_mana 250
+	}
+}
+
+consumable p_mp2 {
+	weight 0.1
+	value 100
+	mesh "mp_pot2.qmsh"
+	type potion
+	flags ground_mesh
+	effects {
+		restore_mana 500
+	}
+}
+
+consumable p_mp3 {
+	weight 0.1
+	value 400
+	mesh "mp_pot3.qmsh"
+	type potion
+	flags ground_mesh
+	effects {
+		restore_mana 1000
+	}
+}
+
 consumable p_reg {
 	weight 0.1
 	value 250
-	mesh "mikstura_reg.qmsh"
+	mesh "misc_pot.qmsh"
 	type potion
 	time 360
 	flags ground_mesh
@@ -1995,7 +2135,7 @@ consumable p_reg {
 consumable p_antidote {
 	weight 0.1
 	value 50
-	mesh "antidotum.qmsh"
+	mesh "antidote.qmsh"
 	type potion
 	time 30
 	flags ground_mesh
@@ -2008,7 +2148,7 @@ consumable p_antidote {
 consumable p_antimagic {
 	weight 0.2
 	value 200
-	mesh "mikstura_reg.qmsh"
+	mesh "misc_pot.qmsh"
 	type potion
 	time 300
 	flags ground_mesh
@@ -2053,7 +2193,7 @@ consumable p_dex {
 consumable q_magowie_potion {
 	weight 0.1
 	value 150
-	mesh "antidotum.qmsh"
+	mesh "antidote.qmsh"
 	type potion
 	flags {not_shop not_chest not_random not_alchemist ground_mesh hq}
 }
@@ -2061,7 +2201,7 @@ consumable q_magowie_potion {
 consumable water {
 	weight 0.4
 	value 1
-	mesh "woda.qmsh"
+	mesh "water.qmsh"
 	type drink
 	time 10
 	flags {not_alchemist ground_mesh}
@@ -2073,7 +2213,7 @@ consumable water {
 consumable spring_water {
 	weight 0.4
 	value 10
-	mesh "woda.qmsh"
+	mesh "water.qmsh"
 	type drink
 	time 30
 	flags {not_alchemist ground_mesh hq}
@@ -2314,6 +2454,17 @@ consumable alchemist_herb {
 	mesh "woddruff_herb.qmsh"
 	type herb
 	flags {not_shop not_chest not_random not_alchemist ground_mesh alpha}
+}
+
+consumable magic_crystal {
+	weight 0.5
+	value 10
+	mesh "magic_crystal.qmsh"
+	type herb
+	flags {not_merchant ground_mesh}
+	effects {
+		mana 150
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -3387,9 +3538,9 @@ better_items {
 	blunt_orcish blunt_morningstar
 	blunt_morningstar blunt_dwarven
 	blunt_dwarven blunt_adamantine
-	blacksmith_hammer blunt_mace
-	pickaxe blunt_mace
-	frying_pan blunt_mace
+	blacksmith_hammer blunt_orcish
+	pickaxe blunt_orcish
+	frying_pan blunt_orcish
 	wand_1 wand_2
 	wand_2 wand_3
 	
@@ -3462,29 +3613,7 @@ better_items {
 //------------------------------------------------------------------------------
 // ALIASES (new id, old id)
 //------------------------------------------------------------------------------
-// renamed items in 0.5
-alias blacksmith_hammer blunt_blacksmith
-alias water potion_water
-alias water p_water
-alias beer potion_beer
-alias beer p_beer
-alias vodka potion_vodka
-alias vodka p_vodka
-alias spirit potion_spirit
-alias spirit p_spirit
-alias bread f_bread
-alias meat f_meat
-alias raw_meat f_raw_meat
-alias apple f_apple
-alias cheese f_cheese
-alias honeycomb f_honeycomb
-alias rice f_rice
-alias mushroom f_mushroom
-alias emerald vs_emerald
-alias ruby vs_ruby
-alias diamond vs_diamond
-alias krystal vs_krystal
-// renamed in 0.8
+// renamed in V_0_8
 alias sword_semur sword_unique
 alias bow_angel bow_unique
 alias shield_wall shield_unique

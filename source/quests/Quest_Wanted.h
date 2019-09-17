@@ -27,7 +27,7 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	int GetUnitEventHandlerQuestRefid() override { return refid; }
+	int GetUnitEventHandlerQuestRefid() override { return id; }
 	bool IfHaveQuestItem() const override;
 	const Item* GetQuestItem() override { return &letter; }
 	bool IfNeedTalk(cstring topic) const override;
@@ -35,7 +35,7 @@ public:
 private:
 	int level, in_location;
 	bool crazy;
-	Class clas;
+	Class* clas;
 	string unit_name;
 	OtherItem letter;
 	Unit* target_unit;

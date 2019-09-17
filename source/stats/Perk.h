@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+// pre V_0_8 compatibility
 namespace old
 {
 	enum class Perk
@@ -52,8 +53,10 @@ enum class Perk
 	Tough, // (60 end) +hp
 	HardSkin, // (60 end) +10 def
 	Adaptation, // (75 end) poison resistance
-	PerfectHealth, // (100 end) +5 hp reg
+	PerfectHealth, // (90 end) +5 hp reg
 	Energetic, // (60 dex/end) +100 stamina
+	StrongAura, // (60 wis) +X mp
+	ManaHarmony, // (90 wis) +X mp reg
 
 	Max
 };

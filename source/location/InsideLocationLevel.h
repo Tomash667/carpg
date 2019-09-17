@@ -56,7 +56,7 @@ struct InsideLocationLevel : public LevelArea
 	bool IsTileVisible(const Vec3& pos) const
 	{
 		Int2 pt = PosToPt(pos);
-		return IS_SET(map[pt(w)].flags, Tile::F_REVEALED);
+		return IsSet(map[pt(w)].flags, Tile::F_REVEALED);
 	}
 
 	bool IsValidWalkPos(const Vec3& pos, float radius) const

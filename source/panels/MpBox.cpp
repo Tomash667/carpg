@@ -2,11 +2,12 @@
 #include "GameCore.h"
 #include "MpBox.h"
 #include "Game.h"
-#include "GlobalGui.h"
 #include "GameGui.h"
+#include "LevelGui.h"
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "CommandParser.h"
+#include "PlayerController.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)
@@ -19,8 +20,7 @@ MpBox::MpBox() : have_focus(false)
 	itb.pos = Int2(0, 0);
 	itb.global_pos = Int2(100, 50);
 	itb.size = Int2(320, 182);
-	itb.event = InputEvent(this, &MpBox::OnInput);
-	itb.background = &gui->tPix;
+	itb.event = InputTextBox::InputEvent(this, &MpBox::OnInput);
 	itb.background_color = Color(0, 142, 254, 43);
 	itb.Init();
 
@@ -37,7 +37,7 @@ void MpBox::Draw(ControlDrawData*)
 void MpBox::Update(float dt)
 {
 	// hack for mp_box focus
-	focusable = Game::Get().gui->game_gui->CanFocusMpBox();
+	focusable = game_gui->level_gui->CanFocusMpBox();
 
 	bool prev_focus = focus;
 	focus = focusable;
@@ -79,27 +79,26 @@ void MpBox::Reset()
 //=================================================================================================
 void MpBox::OnInput(const string& str)
 {
-	Game& game = Game::Get();
 	if(str[0] == '/')
-		global::cmdp->ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
+		cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(this, &MpBox::Add), PS_CHAT);
 	else
 	{
-		if(Net::IsOnline() && N.active_players != 1)
+		if(Net::IsOnline() && net->active_players != 1)
 		{
 			// send text to server / other players
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(Team.my_id);
+			f.WriteCasted<byte>(team->my_id);
 			f << str;
 			if(Net::IsServer())
-				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
+				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			else
-				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
+				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 		}
 		// add text
-		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());
-		game.AddMultiMsg(s);
-		if(game.game_state == GS_LEVEL)
-			game.gui->game_gui->AddSpeechBubble(game.pc->unit, str.c_str());
+		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
+		Add(s);
+		if(game->game_state == GS_LEVEL)
+			game_gui->level_gui->AddSpeechBubble(game->pc->unit, str.c_str());
 	}
 }

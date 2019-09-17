@@ -7,28 +7,26 @@
 #include "QuestManager.h"
 #include "GameFile.h"
 #include "World.h"
-#include "GlobalGui.h"
 #include "GameGui.h"
+#include "LevelGui.h"
 #include "GameMessages.h"
 
-Game* Quest::game;
-
 //=================================================================================================
-Quest::Quest() : quest_manager(QM), state(Hidden), prog(0), timeout(false)
+Quest::Quest() : state(Hidden), prog(0), timeout(false)
 {
 }
 
 //=================================================================================================
 void Quest::Save(GameWriter& f)
 {
-	f << quest_id;
+	f << type;
 	f << state;
 	f << name;
 	f << prog;
-	f << refid;
+	f << id;
 	f << start_time;
 	f << start_loc;
-	f << type;
+	f << category;
 	f.WriteStringArray<byte, word>(msgs);
 	f << timeout;
 }
@@ -36,14 +34,14 @@ void Quest::Save(GameWriter& f)
 //=================================================================================================
 bool Quest::Load(GameReader& f)
 {
-	// quest_id is read in QuestManager to create this instance
+	// type is read in QuestManager to create this instance
 	f >> state;
 	f >> name;
 	f >> prog;
-	f >> refid;
+	f >> id;
 	f >> start_time;
 	f >> start_loc;
-	f >> type;
+	f >> category;
 	f.ReadStringArray<byte, word>(msgs);
 	f >> timeout;
 
@@ -53,19 +51,19 @@ bool Quest::Load(GameReader& f)
 //=================================================================================================
 void Quest::OnStart(cstring name)
 {
-	start_time = W.GetWorldtime();
+	start_time = world->GetWorldtime();
 	state = Quest::Started;
 	this->name = name;
-	quest_index = quest_manager.quests.size();
-	quest_manager.quests.push_back(this);
-	RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-	game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	quest_index = quest_mgr->quests.size();
+	quest_mgr->quests.push_back(this);
+	RemoveElement<Quest*>(quest_mgr->unaccepted_quests, this);
+	game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::ADD_QUEST;
-		c.id = refid;
+		c.id = id;
 	}
 }
 
@@ -75,13 +73,13 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 	assert(new_msgs.size() > 0u);
 	for(cstring msg : new_msgs)
 		msgs.push_back(msg);
-	game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 
 		NetChange& c = Add1(Net::changes);
-		c.id = refid;
+		c.id = id;
 		c.type = NetChange::UPDATE_QUEST;
 		c.count = new_msgs.size();
 	}
@@ -90,13 +88,13 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 //=================================================================================================
 Location& Quest::GetStartLocation()
 {
-	return *W.GetLocation(start_loc);
+	return *world->GetLocation(start_loc);
 }
 
 //=================================================================================================
 const Location& Quest::GetStartLocation() const
 {
-	return *W.GetLocation(start_loc);
+	return *world->GetLocation(start_loc);
 }
 
 //=================================================================================================
@@ -130,13 +128,13 @@ bool Quest_Dungeon::Load(GameReader& f)
 //=================================================================================================
 Location& Quest_Dungeon::GetTargetLocation()
 {
-	return *W.GetLocation(target_loc);
+	return *world->GetLocation(target_loc);
 }
 
 //=================================================================================================
 const Location& Quest_Dungeon::GetTargetLocation() const
 {
-	return *W.GetLocation(target_loc);
+	return *world->GetLocation(target_loc);
 }
 
 //=================================================================================================
@@ -171,7 +169,7 @@ void Quest_Encounter::RemoveEncounter()
 {
 	if(enc == -1)
 		return;
-	W.RemoveEncounter(enc);
+	world->RemoveEncounter(enc);
 	enc = -1;
 }
 

@@ -16,9 +16,9 @@
 //=================================================================================================
 void Quest_RescueCaptive::Start()
 {
-	quest_id = Q_RESCUE_CAPTIVE;
-	type = QuestType::Captain;
-	start_loc = W.GetCurrentLocationIndex();
+	type = Q_RESCUE_CAPTIVE;
+	category = QuestCategory::Captain;
+	start_loc = world->GetCurrentLocationIndex();
 	switch(Rand() % 4)
 	{
 	case 0:
@@ -64,9 +64,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// received quest
 		{
 			OnStart(game->txQuest[28]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
-			target_loc = W.GetRandomSpawnLocation(W.GetLocation(start_loc)->pos, group);
+			target_loc = world->GetRandomSpawnLocation(world->GetLocation(start_loc)->pos, group);
 
 			Location& loc = GetStartLocation();
 			Location& loc2 = GetTargetLocation();
@@ -81,7 +81,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			send_spawn_event = true;
 			captive = nullptr;
 
-			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), world->GetDate()));
 
 			if(loc2.type == L_CAMP)
 			{
@@ -99,7 +99,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// found captive
 		{
 			OnUpdate(game->txQuest[35]);
-			Team.AddExp(2000);
+			team->AddExp(2000);
 		}
 		break;
 	case Progress::CaptiveDie:
@@ -126,7 +126,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 
 			OnUpdate(game->txQuest[37]);
 			if(captive)
@@ -141,7 +141,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
@@ -150,10 +150,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
-			Team.RemoveTeamMember(captive);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			team->RemoveTeamMember(captive);
 
-			L.RemoveUnit(captive);
+			game_level->RemoveUnit(captive);
 			captive->event_handler = nullptr;
 			OnUpdate(Format(game->txQuest[38], GetStartLocationName()));
 
@@ -189,7 +189,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 
 			OnUpdate(game->txQuest[40]);
 		}
@@ -199,7 +199,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			Team.AddReward(reward / 4, reward * 3 / 2);
+			team->AddReward(reward / 4, reward * 3 / 2);
 			if(captive)
 			{
 				captive->event_handler = nullptr;
@@ -215,22 +215,21 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			}
 
 			OnUpdate(Format(game->txQuest[41], GetStartLocationName()));
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
 	case Progress::CaptiveLeftInCity:
 		// captive was left in city
 		{
 			if(captive->hero->team_member)
-				Team.RemoveTeamMember(captive);
+				team->RemoveTeamMember(captive);
 			captive->dont_attack = false;
-			captive->ai->goto_inn = true;
-			captive->ai->timer = 0.f;
+			captive->OrderGoToInn();
 			captive->temporary = true;
 			captive->event_handler = nullptr;
 			captive = nullptr;
 
-			OnUpdate(Format(game->txQuest[42], L.city_ctx->name.c_str()));
+			OnUpdate(Format(game->txQuest[42], game_level->city_ctx->name.c_str()));
 		}
 		break;
 	}
@@ -263,7 +262,7 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RescueCaptive::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -308,16 +307,16 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 {
 	if(strcmp(topic, "captive") != 0)
 		return false;
-	if(W.GetCurrentLocationIndex() == start_loc)
+	if(world->GetCurrentLocationIndex() == start_loc)
 	{
 		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
-		else if(prog == Progress::FoundCaptive && Team.IsTeamMember(*captive))
+		else if(prog == Progress::FoundCaptive && team->IsTeamMember(*captive))
 			return true;
 		else
 			return false;
 	}
-	else if(W.GetCurrentLocationIndex() == target_loc && prog == Progress::Started)
+	else if(world->GetCurrentLocationIndex() == target_loc && prog == Progress::Started)
 		return true;
 	else
 		return false;

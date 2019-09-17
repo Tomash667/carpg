@@ -12,6 +12,7 @@
 #include "Render.h"
 #include "RenderTarget.h"
 #include "Level.h"
+#include "GameGui.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -34,7 +35,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr), rt_char(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -161,7 +162,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	flow_scroll.total = 100;
 	flow_scroll.part = 10;
 
-	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip));
 
 	flowSkills.size = Int2(198, 235 + 18);
 	flowSkills.pos = Int2(16, 73 - 18);
@@ -179,11 +180,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 //=================================================================================================
 CreateCharacterPanel::~CreateCharacterPanel()
 {
-	if(unit->bow_instance)
-	{
-		game->bow_instances.push_back(unit->bow_instance);
-		unit->bow_instance = nullptr;
-	}
 	delete unit;
 }
 
@@ -231,36 +227,32 @@ void CreateCharacterPanel::LoadLanguage()
 //=================================================================================================
 void CreateCharacterPanel::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
-	tex_mgr.AddLoadTask("close.png", custom_x.tex[Button::NONE]);
-	tex_mgr.AddLoadTask("close_hover.png", custom_x.tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("close_down.png", custom_x.tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("close_disabled.png", custom_x.tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("plus.png", custom_bt[0].tex[Button::NONE]);
-	tex_mgr.AddLoadTask("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("plus_down.png", custom_bt[0].tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("minus.png", custom_bt[1].tex[Button::NONE]);
-	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
+	tBox = res_mgr->Load<Texture>("box.png");
+	tPowerBar = res_mgr->Load<Texture>("klasa_cecha.png");
+	custom_x.tex[Button::NONE] = AreaLayout(res_mgr->Load<Texture>("close.png"));
+	custom_x.tex[Button::HOVER] = AreaLayout(res_mgr->Load<Texture>("close_hover.png"));
+	custom_x.tex[Button::DOWN] = AreaLayout(res_mgr->Load<Texture>("close_down.png"));
+	custom_x.tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("close_disabled.png"));
+	custom_bt[0].tex[Button::NONE] = AreaLayout(res_mgr->Load<Texture>("plus.png"));
+	custom_bt[0].tex[Button::HOVER] = AreaLayout(res_mgr->Load<Texture>("plus_hover.png"));
+	custom_bt[0].tex[Button::DOWN] = AreaLayout(res_mgr->Load<Texture>("plus_down.png"));
+	custom_bt[0].tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("plus_disabled.png"));
+	custom_bt[1].tex[Button::NONE] = AreaLayout(res_mgr->Load<Texture>("minus.png"));
+	custom_bt[1].tex[Button::HOVER] = AreaLayout(res_mgr->Load<Texture>("minus_hover.png"));
+	custom_bt[1].tex[Button::DOWN] = AreaLayout(res_mgr->Load<Texture>("minus_down.png"));
+	custom_bt[1].tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("minus_disabled.png"));
 
-	rt_char = game->render->CreateRenderTarget(Int2(128, 256));
+	rt_char = render->CreateRenderTarget(Int2(128, 256));
 }
 
 //=================================================================================================
 void CreateCharacterPanel::Draw(ControlDrawData*)
 {
-	// background
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// top text
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
-	gui->DrawText(gui->fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
+	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
 	gui->DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
@@ -285,7 +277,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// attribute/skill flow panel
 			Int2 fpos = flow_pos + global_pos;
-			gui->DrawItem(gui->tBox, fpos, flow_size, Color::White, 8, 32);
+			gui->DrawItem(tBox, fpos, flow_size, Color::White, 8, 32);
 			flow_scroll.Draw();
 
 			rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
@@ -299,7 +291,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				if(fi.section)
 				{
 					r.Bottom() = r.Top() + SECTION_H;
-					if(!gui->DrawText(gui->fBig, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(GameGui::font_big, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 				else
@@ -308,10 +300,10 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					{
 						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
-						gui->DrawSprite2(tKlasaCecha, mat, &part, &rect, Color::White);
+						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
-					if(!gui->DrawText(gui->default_font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(GameGui::font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 			}
@@ -332,11 +324,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// left text "Skill points: X/Y"
 			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
-			gui->DrawText(gui->default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
+			gui->DrawText(GameGui::font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
 
 			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
-			gui->DrawText(gui->default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
+			gui->DrawText(GameGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
 			tooltip.Draw();
 		}
@@ -644,8 +636,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	Render* render = game->render;
-	IDirect3DDevice9* device = game->render->GetDevice();
+	IDirect3DDevice9* device = render->GetDevice();
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;
@@ -662,18 +653,18 @@ void CreateCharacterPanel::RenderUnit()
 
 	static vector<Lights> lights;
 
-	L.SetOutsideParams();
+	game_level->SetOutsideParams();
 
 	Matrix matView, matProj;
 	Vec3 from = Vec3(0.f, 2.f, dist);
 	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	L.camera.matViewProj = matView * matProj;
-	L.camera.center = from;
-	L.camera.matViewInv = matView.Inverse();
+	game_level->camera.matViewProj = matView * matProj;
+	game_level->camera.center = from;
+	game_level->camera.matViewInv = matView.Inverse();
 
-	L.camera.frustum.Set(L.camera.matViewProj);
-	game->ListDrawObjectsUnit(nullptr, L.camera.frustum, true, *unit);
+	game_level->camera.frustum.Set(game_level->camera.matViewProj);
+	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 
@@ -814,7 +805,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->mesh_inst->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
-			unit->bow_instance = game->GetBowInstance(unit->GetBow().mesh);
+			unit->bow_instance = game_level->GetBowInstance(unit->GetBow().mesh);
 			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[0].speed;
 			unit->mesh_inst->frame_end_info = false;
@@ -883,9 +874,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->animation_state = 3;
 			if(unit->mesh_inst->frame_end_info)
 			{
-				assert(unit->bow_instance);
-				game->bow_instances.push_back(unit->bow_instance);
-				unit->bow_instance = nullptr;
+				game_level->FreeBowInstance(unit->bow_instance);
 				unit->mesh_inst->groups[0].speed = 1.f;
 				unit->action = A_NONE;
 				if(Rand() % 2 == 0)
@@ -941,10 +930,10 @@ void CreateCharacterPanel::Init()
 {
 	unit->mesh_inst = new MeshInstance(game->aHumanBase);
 
-	for(ClassInfo& ci : ClassInfo::classes)
+	for(Class* clas : Class::classes)
 	{
-		if(ci.IsPickable())
-			lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
+		if(clas->IsPickable())
+			lbClasses.Add(new DefaultGuiElement(clas->name.c_str(), reinterpret_cast<int>(clas), clas->icon));
 	}
 	lbClasses.Sort();
 	lbClasses.Initialize();
@@ -967,7 +956,7 @@ void CreateCharacterPanel::RandomAppearance()
 //=================================================================================================
 void CreateCharacterPanel::Show(bool enter_name)
 {
-	clas = ClassInfo::GetRandomPlayer();
+	clas = Class::GetRandomPlayer();
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	RandomAppearance();
@@ -984,7 +973,7 @@ void CreateCharacterPanel::Show(bool enter_name)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc)
+void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc)
 {
 	this->clas = clas;
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -994,6 +983,7 @@ void CreateCharacterPanel::ShowRedo(Class clas, HumanData& hd, CreatedCharacter&
 	this->cc = cc;
 	RebuildSkillsFlow();
 	RebuildPerksFlow();
+	UpdateInventory();
 
 	reset_skills_perks = false;
 	enter_name = false;
@@ -1031,7 +1021,7 @@ void CreateCharacterPanel::SetCharacter()
 //=================================================================================================
 void CreateCharacterPanel::OnChangeClass(int index)
 {
-	clas = (Class)lbClasses.GetItem()->value;
+	clas = reinterpret_cast<Class*>(lbClasses.GetItem()->value);
 	ClassChanged();
 	reset_skills_perks = true;
 	ResetDoll(false);
@@ -1063,7 +1053,7 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id)
+void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id, bool refresh)
 {
 	TooltipController& tool = *ptr_tool;
 
@@ -1107,7 +1097,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 			PerkInfo& pi = PerkInfo::perks[id];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
-			if(IS_SET(pi.flags, PerkInfo::Flaw))
+			if(IsSet(pi.flags, PerkInfo::Flaw))
 			{
 				tool.text += "\n\n";
 				tool.text += txFlawExtraPerk;
@@ -1123,7 +1113,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
 			taken.GetDesc(tool.small_text);
-			if(IS_SET(pi.flags, PerkInfo::Flaw))
+			if(IsSet(pi.flags, PerkInfo::Flaw))
 			{
 				tool.text += "\n\n";
 				tool.text += txFlawExtraPerk;
@@ -1136,19 +1126,18 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 //=================================================================================================
 void CreateCharacterPanel::ClassChanged()
 {
-	ClassInfo& ci = ClassInfo::classes[(int)clas];
-	unit->data = ci.unit_data;
+	unit->data = clas->player;
 	anim = DA_STAND;
 	t = 1.f;
 	tbClassDesc.Reset();
-	tbClassDesc.SetText(ci.desc.c_str());
+	tbClassDesc.SetText(clas->desc.c_str());
 	tbClassDesc.UpdateScrollbar();
 
 	flow_items.clear();
 
 	int y = 0;
 
-	StatProfile& profile = ci.unit_data->GetStatProfile();
+	StatProfile& profile = clas->player->GetStatProfile();
 	unit->stats->Set(profile);
 	unit->CalculateStats();
 
@@ -1339,7 +1328,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
 	{
 		PerkInfo& perk = PerkInfo::perks[(int)cc.taken_perks[i].perk];
-		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
+		if(IsSet(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
 			*s = cc.taken_perks[i].FormatName();
@@ -1362,7 +1351,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(Perk perk : available_perks)
 		{
 			PerkInfo& info = PerkInfo::perks[(int)perk];
-			bool can_pick = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Flaw));
+			bool can_pick = (cc.perks == 0 && !IsSet(info.flags, PerkInfo::Flaw));
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
 		}
@@ -1398,7 +1387,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
 
 	PickItemDialogParams params;
 	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickAttributeForPerk);
-	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
+	params.get_tooltip = TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip);
 	params.parent = this;
 	params.text = text;
 
@@ -1415,7 +1404,7 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk perk)
 
 	PickItemDialogParams params;
 	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickSkillForPerk);
-	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
+	params.get_tooltip = TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip);
 	params.parent = this;
 	params.text = text;
 
@@ -1594,9 +1583,6 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		unit->SetAnimationAtEnd();
 	}
 	if(unit->bow_instance)
-	{
-		game->bow_instances.push_back(unit->bow_instance);
-		unit->bow_instance = nullptr;
-	}
+		game_level->FreeBowInstance(unit->bow_instance);
 	unit->action = A_NONE;
 }

@@ -2,61 +2,6 @@
 
 //-----------------------------------------------------------------------------
 #include "Container.h"
-#include "Scrollbar.h"
-#include "TooltipController.h"
-
-//-----------------------------------------------------------------------------
-enum class OpenPanel
-{
-	None,
-	Stats,
-	Inventory,
-	Team,
-	Journal,
-	Minimap,
-	Action,
-	Trade,
-	Unknown,
-	Book
-};
-
-//-----------------------------------------------------------------------------
-enum class SideButtonId
-{
-	Menu,
-	Team,
-	Minimap,
-	Journal,
-	Inventory,
-	Action,
-	Stats,
-	Talk,
-	Max
-};
-
-//-----------------------------------------------------------------------------
-struct SpeechBubble
-{
-	string text;
-	Unit* unit;
-	Int2 size;
-	float time, length;
-	int skip_id;
-	Vec3 last_pos;
-	bool visible;
-};
-
-//-----------------------------------------------------------------------------
-struct BuffImage
-{
-	Vec2 pos;
-	TEX tex;
-	int id;
-
-	BuffImage(const Vec2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
-	{
-	}
-};
 
 //-----------------------------------------------------------------------------
 class GameGui : public Container
@@ -64,87 +9,59 @@ class GameGui : public Container
 public:
 	GameGui();
 	~GameGui();
+	void PreInit();
+	void Init();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Update(float dt) override;
-	bool NeedCursor() const override;
-	void Event(GuiEvent e) override;
-	void AddSpeechBubble(Unit* unit, cstring text);
-	void AddSpeechBubble(const Vec3& pos, cstring text);
-	void Reset();
-	bool UpdateChoice(DialogContext& ctx, int choices);
-	void UpdateScrollbar(int choices);
-	bool HavePanelOpen() const;
-	bool CanFocusMpBox() const { return !HavePanelOpen(); }
-	void ClosePanels(bool close_mp_box = false);
-	void GetGamePanels(vector<GamePanel*>& panels);
-	OpenPanel GetOpenPanel();
-	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
-	void PositionPanels();
-	void Save(FileWriter& f) const;
+	void PostInit();
+	void Draw(ControlDrawData*) override;
+	void Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs);
+	void UpdateGui(float dt);
+	void Save(FileWriter& f);
 	void Load(FileReader& f);
-	bool IsMouseInsideDialog() const { return PointInRect(gui->cursor_pos, dialog_pos, dialog_size); }
-	void Setup();
-	void RemoveUnit(Unit* unit);
-	void DrawEndOfGameScreen();
-	void StartDragAndDrop(int type, int value, TEX tex);
-	bool IsDragAndDrop() const { return drag_and_drop == 2; }
+	void Clear(bool reset_mpbox, bool on_enter);
+	void Setup(PlayerController* pc);
+	void OnResize();
+	void OnFocus(bool focus, const Int2& activation_point);
+	void ShowMenu() { gui->ShowDialog((DialogBox*)game_menu); }
+	void ShowOptions() { gui->ShowDialog((DialogBox*)options); }
+	void ShowMultiplayer();
+	void ShowQuitDialog();
+	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
+	void CloseAllPanels(bool close_mp_box = false);
+	void AddMsg(cstring msg);
 
-	Int2 dialog_cursor_pos;
-	bool use_cursor;
+	static FontPtr font, font_small, font_big;
+	Notifications* notifications;
+	// panels
+	LoadScreen* load_screen;
+	LevelGui* level_gui;
+	Inventory* inventory;
+	StatsPanel* stats;
+	TeamPanel* team;
+	Journal* journal;
+	Minimap* minimap;
+	ActionPanel* actions;
+	BookPanel* book;
+	GameMessages* messages;
+	MpBox* mp_box;
+	WorldMapGui* world_map;
+	MainMenu* main_menu;
+	// dialogs
+	Console* console;
+	GameMenu* game_menu;
+	Options* options;
+	SaveLoad* saveload;
+	CreateCharacterPanel* create_character;
+	MultiplayerPanel* multiplayer;
+	CreateServerPanel* create_server;
+	PickServerPanel* pick_server;
+	ServerPanel* server;
+	InfoBox* info_box;
+	Controls* controls;
+	// settings
+	bool cursor_allow_move;
 
 private:
-	struct UnitView
-	{
-		Unit* unit;
-		Vec3 last_pos;
-		float time;
-		bool valid;
-	};
-
-	struct SortedUnitView
-	{
-		Unit* unit;
-		float dist;
-		int alpha;
-		Vec3* last_pos;
-	};
-
-	struct SortedSpeechBubble
-	{
-		SpeechBubble* bubble;
-		float dist;
-		Int2 pt;
-	};
-
-	void DrawFront();
-	void DrawBack();
-	void DrawDeathScreen();
-	void DrawSpeechBubbles();
-	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
-	int GetShortcutIndex();
-	void UpdateSpeechBubbles(float dt);
-	void GetTooltip(TooltipController*, int group, int id);
-	void SortUnits();
-	void UpdatePlayerView(float dt);
-
-	Game& game;
-	TooltipController tooltip;
-	float buff_scale;
-	vector<BuffImage> buff_images;
-	vector<SortedUnitView> sorted_units;
-	float sidebar;
-	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
-	Int2 drag_and_drop_pos;
-	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
-		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped;
-	TEX drag_and_drop_icon;
-	Scrollbar scrollbar;
-	vector<SpeechBubble*> speech_bbs;
-	vector<SortedSpeechBubble> sorted_speech_bbs;
-	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina, txMeleeWeapon, txRangedWeapon, txPotion,
-		txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
-	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
-	vector<UnitView> unit_views;
+	cstring txReallyQuit;
 };

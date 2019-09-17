@@ -118,7 +118,7 @@ void ObjectLoader::InitTokenizer()
 //=================================================================================================
 void ObjectLoader::LoadEntity(int top, const string& id)
 {
-	if(BaseObject::TryGet(id.c_str()))
+	if(BaseObject::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	switch(top)
@@ -158,7 +158,7 @@ void ObjectLoader::ParseObject(const string& id)
 	{
 		t.Next();
 		const string& parent_id = t.MustGetItem();
-		auto parent = BaseObject::TryGet(parent_id.c_str());
+		BaseObject* parent = BaseObject::TryGet(parent_id);
 		if(!parent)
 			t.Throw("Missing parent object '%s'.", parent_id.c_str());
 		t.Next();
@@ -170,7 +170,7 @@ void ObjectLoader::ParseObject(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
-		auto prop = (ObjectProperty)t.MustGetKeywordId(G_OBJECT_PROPERTY);
+		ObjectProperty prop = t.MustGetKeywordId<ObjectProperty>(G_OBJECT_PROPERTY);
 		t.Next();
 
 		ParseObjectProperty(prop, obj);
@@ -252,12 +252,12 @@ void ObjectLoader::ParseUsable(const string& id)
 	{
 		t.Next();
 		const string& parent_id = t.MustGetItem();
-		auto parent_usable = BaseUsable::TryGet(parent_id.c_str());
+		BaseUsable* parent_usable = BaseUsable::TryGet(parent_id.c_str());
 		if(parent_usable)
 			*use = *parent_usable;
 		else
 		{
-			auto parent_obj = BaseObject::TryGet(parent_id.c_str());
+			BaseObject* parent_obj = BaseObject::TryGet(parent_id);
 			if(parent_obj)
 				*use = *parent_obj;
 			else
@@ -273,7 +273,7 @@ void ObjectLoader::ParseUsable(const string& id)
 	{
 		if(t.IsKeywordGroup(G_OBJECT_PROPERTY))
 		{
-			auto prop = (ObjectProperty)t.MustGetKeywordId(G_OBJECT_PROPERTY);
+			ObjectProperty prop = t.MustGetKeywordId<ObjectProperty>(G_OBJECT_PROPERTY);
 			t.Next();
 
 			if(prop == OP_FLAGS)
@@ -289,7 +289,7 @@ void ObjectLoader::ParseUsable(const string& id)
 		}
 		else if(t.IsKeywordGroup(G_USABLE_PROPERTY))
 		{
-			auto prop = (UsableProperty)t.MustGetKeywordId(G_USABLE_PROPERTY);
+			UsableProperty prop = t.MustGetKeywordId<UsableProperty>(G_USABLE_PROPERTY);
 			t.Next();
 
 			switch(prop)
@@ -328,7 +328,7 @@ void ObjectLoader::ParseUsable(const string& id)
 
 	use->flags |= OBJ_USABLE;
 
-	auto u = use.Pin();
+	BaseUsable* u = use.Pin();
 	BaseObject::objs.insert(u);
 	BaseUsable::usables.push_back(u);
 }
@@ -385,7 +385,7 @@ void ObjectLoader::ParseGroup(const string& id)
 		{
 			const string& obj_id = t.GetText();
 			bool is_group = false;
-			auto obj = BaseObject::TryGet(obj_id, &is_group);
+			BaseObject* obj = BaseObject::TryGet(obj_id, &is_group);
 			if(is_group)
 				t.Throw("Can't use group inside group."); // YAGNI
 			if(!obj)
@@ -428,7 +428,7 @@ void ObjectLoader::CalculateCrc()
 		crc.Update(obj->alpha);
 		if(obj->variants)
 		{
-			for(auto& e : obj->variants->entries)
+			for(VariantObject::Entry& e : obj->variants->entries)
 				crc.Update(e.mesh_id);
 		}
 		crc.Update(obj->extra_dist);

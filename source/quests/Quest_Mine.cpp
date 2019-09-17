@@ -18,8 +18,8 @@
 //=================================================================================================
 void Quest_Mine::Start()
 {
-	quest_id = Q_MINE;
-	type = QuestType::Unique;
+	type = Q_MINE;
+	category = QuestCategory::Unique;
 	dungeon_loc = -2;
 	mine_state = State::None;
 	mine_state2 = State2::None;
@@ -28,7 +28,7 @@ void Quest_Mine::Start()
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
-	QM.AddQuestRumor(refid, Format(QM.txRumorQ[1], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -99,14 +99,14 @@ void Quest_Mine::SetProgress(int prog2)
 
 			InitSub();
 
-			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[133], tl.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
 		{
 			OnUpdate(game->txQuest[134]);
-			Team.AddExp(3000);
+			team->AddExp(3000);
 		}
 		break;
 	case Progress::SelectedShares:
@@ -116,14 +116,14 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			QM.RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	case Progress::GotFirstGold:
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[136]);
-			Team.AddReward(PAYMENT);
+			team->AddReward(PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
 			days_required = Random(60, 90);
@@ -139,11 +139,11 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[137]);
-			Team.AddReward(3000);
+			team->AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			QM.RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	case Progress::NeedTalk:
@@ -151,7 +151,7 @@ void Quest_Mine::SetProgress(int prog2)
 			state = Quest::Started;
 			OnUpdate(game->txQuest[138]);
 			mine_state2 = State2::CanExpand;
-			W.AddNews(Format(game->txQuest[139], GetTargetLocationName()));
+			world->AddNews(Format(game->txQuest[139], GetTargetLocationName()));
 		}
 		break;
 	case Progress::Talked:
@@ -163,7 +163,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[141]);
-			QM.EndUniqueQuest();
+			quest_mgr->EndUniqueQuest();
 		}
 		break;
 	case Progress::Invested:
@@ -179,7 +179,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[143]);
-			Team.AddReward(PAYMENT2);
+			team->AddReward(PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
@@ -187,7 +187,7 @@ void Quest_Mine::SetProgress(int prog2)
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
-			W.AddNews(Format(game->txQuest[144], GetTargetLocationName()));
+			world->AddNews(Format(game->txQuest[144], GetTargetLocationName()));
 		}
 		break;
 	case Progress::InfoAboutPortal:
@@ -195,7 +195,7 @@ void Quest_Mine::SetProgress(int prog2)
 			state = Quest::Started;
 			OnUpdate(game->txQuest[145]);
 			mine_state2 = State2::FoundPortal;
-			W.AddNews(Format(game->txQuest[146], GetTargetLocationName()));
+			world->AddNews(Format(game->txQuest[146], GetTargetLocationName()));
 		}
 		break;
 	case Progress::TalkedWithMiner:
@@ -209,9 +209,9 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[148]);
-			QM.EndUniqueQuest();
-			W.AddNews(game->txQuest[149]);
-			Team.AddExp(10000);
+			quest_mgr->EndUniqueQuest();
+			world->AddNews(game->txQuest[149]);
+			team->AddExp(10000);
 		}
 		break;
 	}
@@ -378,7 +378,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		return 0;
 	}
 
-	Cave& cave = *(Cave*)L.location;
+	Cave& cave = *(Cave*)game_level->location;
 	cave.loaded_resources = false;
 	InsideLocationLevel& lvl = cave.GetLevelData();
 	int update_flags = 0;
@@ -433,8 +433,8 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				if(lvl.map[x + y * lvl.w].type == WALL)
 				{
 #define A(xx,yy) lvl.map[x+(xx)+(y+(yy))*lvl.w].type
-					if(Rand() % 2 == 0 && (!IsBlocking2(A(-1, 0)) || !IsBlocking2(A(1, 0)) || !IsBlocking2(A(0, -1)) || !IsBlocking2(A(0, 1))) &&
-						(A(-1, -1) != STAIRS_UP && A(-1, 1) != STAIRS_UP && A(1, -1) != STAIRS_UP && A(1, 1) != STAIRS_UP))
+					if(Rand() % 2 == 0 && (!IsBlocking2(A(-1, 0)) || !IsBlocking2(A(1, 0)) || !IsBlocking2(A(0, -1)) || !IsBlocking2(A(0, 1)))
+						&& (A(-1, -1) != STAIRS_UP && A(-1, 1) != STAIRS_UP && A(1, -1) != STAIRS_UP && A(1, 1) != STAIRS_UP))
 					{
 						new_tiles.push_back(Int2(x, y));
 					}
@@ -732,12 +732,12 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			}
 
 			Door* door = new Door;
+			door->Register();
 			door->pt = end_pt;
 			door->pos = o->pos;
 			door->rot = o->rot.y;
 			door->state = Door::Closed;
 			door->locked = LOCK_MINE;
-			door->netid = Door::netid_counter++;
 			cave.doors.push_back(door);
 		}
 
@@ -766,7 +766,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				break;
 			}
 
-			L.SpawnObjectEntity(cave, torch, pos, Random(MAX_ANGLE));
+			game_level->SpawnObjectEntity(cave, torch, pos, Random(MAX_ANGLE));
 		}
 
 		// portal
@@ -791,12 +791,12 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 
 			// object
 			const Vec3 pos(2.f*pt.x + 5, 0, 2.f*pt.y + 5);
-			L.SpawnObjectEntity(cave, BaseObject::Get("portal"), pos, rot);
+			game_level->SpawnObjectEntity(cave, BaseObject::Get("portal"), pos, rot);
 
 			// destination location
 			SingleInsideLocation* loc = new SingleInsideLocation;
 			loc->active_quest = this;
-			loc->target = KOPALNIA_POZIOM;
+			loc->target = ANCIENT_ARMORY;
 			loc->from_portal = true;
 			loc->name = game->txAncientArmory;
 			loc->pos = Vec2(-999, -999);
@@ -805,7 +805,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
 			loc->state = LS_HIDDEN;
-			int loc_id = W.AddLocation(loc);
+			int loc_id = world->AddLocation(loc);
 			sub.target_loc = dungeon_loc = loc_id;
 
 			// portal info
@@ -821,7 +821,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			loc->portal = new Portal;
 			loc->portal->at_level = 0;
 			loc->portal->target = 0;
-			loc->portal->target_loc = L.location_index;
+			loc->portal->target_loc = game_level->location_index;
 			loc->portal->next_portal = nullptr;
 		}
 	}
@@ -843,7 +843,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			DeleteElements(cave.usables);
 		if(!first)
 		{
-			L.RecreateObjects();
+			game_level->RecreateObjects();
 			update_flags |= LocationGenerator::PREVENT_RECREATE_OBJECTS;
 		}
 
@@ -859,7 +859,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 #undef S
 #define S(xx,yy) lvl.map[x-(xx)+(y+(yy))*lvl.w].type == WALL
 
-				if(lvl.map[x + y * lvl.w].type == EMPTY && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
+				if(lvl.map[x + y * lvl.w].type == EMPTY && Rand() % 3 != 0 && !IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
 				{
 					GameDirection dir = GDIR_INVALID;
 
@@ -917,19 +917,18 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 
 						Level::IgnoreObjects ignore = { 0 };
 						ignore.ignore_blocks = true;
-						L.global_col.clear();
-						L.GatherCollisionObjects(cave, L.global_col, pos, radius, &ignore);
+						game_level->global_col.clear();
+						game_level->GatherCollisionObjects(cave, game_level->global_col, pos, radius, &ignore);
 
 						Box2d box(pos.x - iron_vein->size.x, pos.z - iron_vein->size.y, pos.x + iron_vein->size.x, pos.z + iron_vein->size.y);
 
-						if(!L.Collide(L.global_col, box, 0.f, rot))
+						if(!game_level->Collide(game_level->global_col, box, 0.f, rot))
 						{
 							Usable* u = new Usable;
+							u->Register();
 							u->pos = pos;
 							u->rot = rot;
 							u->base = (Rand() % 10 < gold_chance ? gold_vein : iron_vein);
-							u->user = nullptr;
-							u->netid = Usable::netid_counter++;
 							cave.usables.push_back(u);
 
 							CollisionObject& c = Add1(cave.tmp->colliders);
@@ -955,7 +954,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 							else
 								c.type = CollisionObject::RECTANGLE;
 
-							game->phy_world->addCollisionObject(cobj, CG_OBJECT);
+							phy_world->addCollisionObject(cobj, CG_OBJECT);
 						}
 					}
 #undef P
@@ -983,10 +982,10 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 					cave_gen->GenerateDungeonObject(lvl, *it, rock);
 					break;
 				case 1:
-					L.SpawnObjectEntity(cave, plant, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+					game_level->SpawnObjectEntity(cave, plant, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 					break;
 				case 2:
-					L.SpawnObjectEntity(cave, mushrooms, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+					game_level->SpawnObjectEntity(cave, mushrooms, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 					break;
 				}
 			}
@@ -1008,7 +1007,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			++odl;
 		}
 		pt -= DirToPos(lvl.staircase_up_dir);
-		L.SpawnUnitNearLocation(cave, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
+		game_level->SpawnUnitNearLocation(cave, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
 
 		// miners
 		UnitData& miner = *UnitData::Get("gornik");
@@ -1018,9 +1017,9 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			{
 				Int2 tile = cave.GetRandomTile();
 				const Tile& p = lvl.At(tile);
-				if(p.type == EMPTY && !IS_SET(p.flags, Tile::F_SECOND_TEXTURE))
+				if(p.type == EMPTY && !IsSet(p.flags, Tile::F_SECOND_TEXTURE))
 				{
-					L.SpawnUnitNearLocation(cave, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), miner, nullptr, -2);
+					game_level->SpawnUnitNearLocation(cave, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), miner, nullptr, -2);
 					break;
 				}
 			}
@@ -1043,9 +1042,9 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 					{
 						Int2 tile = cave.GetRandomTile();
 						const Tile& p = lvl.At(tile);
-						if(p.type == EMPTY && !IS_SET(p.flags, Tile::F_SECOND_TEXTURE))
+						if(p.type == EMPTY && !IsSet(p.flags, Tile::F_SECOND_TEXTURE))
 						{
-							L.WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
+							game_level->WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
 							break;
 						}
 					}
@@ -1061,7 +1060,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 					}
 					pt -= DirToPos(lvl.staircase_up_dir);
 
-					L.WarpUnit(*u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+					game_level->WarpUnit(*u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
 				}
 			}
 		}

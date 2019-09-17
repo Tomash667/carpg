@@ -79,7 +79,7 @@ struct DialogScripts
 	~DialogScripts();
 	int AddCode(FUNC f, const string& code);
 	void GetFormattedCode(FUNC f, string& code);
-	void Build();
+	int Build();
 	asIScriptFunction* Get(FUNC f) { return func[f]; }
 	void Set(asITypeInfo* type);
 
@@ -116,6 +116,10 @@ struct GameDialog
 	Text& GetText(int index);
 
 	static GameDialog* TryGet(cstring id);
+	static GameDialog* GetS(const string& id)
+	{
+		return TryGet(id.c_str());
+	}
 	static void Cleanup();
 	static Map dialogs;
 };

@@ -39,11 +39,6 @@ OutsideLocation::~OutsideLocation()
 {
 	delete[] tiles;
 	delete[] h;
-	DeleteElements(objects);
-	DeleteElements(units);
-	DeleteElements(chests);
-	DeleteElements(usables);
-	DeleteElements(items);
 }
 
 //=================================================================================================
@@ -70,9 +65,9 @@ void OutsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void OutsideLocation::Load(GameReader& f, bool local)
 {
-	Location::Load(f, local, token);
+	Location::Load(f, local);
 
 	if(last_visit != -1)
 	{
@@ -87,19 +82,10 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
 		f.Read(tiles, sizeof(TerrainTile)*size*size);
-		if(LOAD_VERSION < V_0_5)
-		{
-			for(int i = 0; i < size*size; ++i)
-			{
-				TerrainTile& tt = tiles[i];
-				if(tt.mode == OLD::TM_BUILDING_NO_PHY)
-					tt.mode = TM_BUILDING;
-			}
-		}
 		f.Read(h, sizeof(float)*size2);
 	}
 
-	if(LOAD_VERSION < V_0_8 && st == 20 && type == L_FOREST)
+	if(LOAD_VERSION < V_0_8 && st == 20 && type == L_OUTSIDE)
 		state = LS_HIDDEN;
 }
 
@@ -108,7 +94,7 @@ void OutsideLocation::Write(BitStreamWriter& f)
 {
 	f.Write((cstring)tiles, sizeof(TerrainTile)*size*size);
 	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
-	f << L.light_angle;
+	f << game_level->light_angle;
 
 	LevelArea::Write(f);
 
@@ -127,7 +113,7 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		h = new float[size22];
 	f.Read((char*)tiles, sizeof(TerrainTile)*size11);
 	f.Read((char*)h, sizeof(float)*size22);
-	f >> L.light_angle;
+	f >> game_level->light_angle;
 	if(!f)
 	{
 		Error("Read level: Broken packet for terrain.");
@@ -138,19 +124,13 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		return false;
 
 	// portals
-	if(!ReadPortals(f, L.dungeon_level))
+	if(!ReadPortals(f, game_level->dungeon_level))
 	{
 		Error("Read level: Broken portals.");
 		return false;
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void OutsideLocation::BuildRefidTables()
-{
-	LevelArea::BuildRefidTables();
 }
 
 //=================================================================================================

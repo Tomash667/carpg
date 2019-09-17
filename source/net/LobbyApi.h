@@ -1,70 +1,88 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Timer.h"
-
-//-----------------------------------------------------------------------------
 #undef IGNORE
 
 //-----------------------------------------------------------------------------
 namespace SLNet
 {
-	class HTTPConnection2;
 	class NatPunchthroughClient;
-	class TCPInterface;
 }
+
+//-----------------------------------------------------------------------------
+typedef void CURLM;
 
 //-----------------------------------------------------------------------------
 class LobbyApi
 {
+public:
 	enum Operation
 	{
 		NONE,
 		GET_SERVERS,
 		GET_CHANGES,
 		GET_VERSION,
+		GET_VERSION2,
 		IGNORE,
 		REPORT,
 		GET_CHANGELOG
 	};
 
-	struct Op
+	enum class Status
 	{
-		Operation op;
-		int value;
-		string* str;
+		NONE,
+		DISCARD,
+		DONT_DISCARD,
+		KEEP_ALIVE,
+		DONE,
+		FAILED
 	};
 
-public:
+	struct Op : public ObjectPoolProxy<Op>
+	{
+		Operation o;
+		int value;
+		string str;
+		Buffer* buf;
+		Status status;
+
+		void OnGet()
+		{
+			buf = nullptr;
+			status = Status::NONE;
+		}
+		void OnFree() { if(buf) buf->Free(); }
+	};
+
 	LobbyApi();
 	~LobbyApi();
+	void Init(Config& cfg);
 	void Update();
 	void Reset();
-	void GetServers() { AddOperation({ GET_SERVERS, 0, nullptr }); }
-	void GetChanges() { AddOperation({ GET_CHANGES, 0, nullptr }); }
-	bool IsBusy() const { return current_op != NONE; }
+	void GetServers() { AddOperation(GET_SERVERS); }
+	void GetChanges() { AddOperation(GET_CHANGES); }
 	int GetVersion(delegate<bool()> cancel_clbk);
 	bool GetChangelog(string& changelog, delegate<bool()> cancel_clbk);
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
 	void Report(int id, cstring text);
-
-	static cstring API_URL;
-	static const int API_PORT;
-	static const int PROXY_PORT;
+	cstring GetApiUrl() const { return lobby_url.c_str(); }
+	int GetProxyPort() const { return proxy_port; }
 
 private:
 	void UpdateInternal();
-	void AddOperation(Op op);
-	void DoOperation(Op op);
-	void ParseResponse(const char* response);
+	void SetStatus(Op* op, bool ok);
+	Op* AddOperation(Operation o);
+	void AddOperation(Op* op);
+	void DoOperation(Op* op);
+	void ParseResponse(Op* op);
 
-	TCPInterface* tcp;
-	HTTPConnection2* http;
+	static const int MAX_REQUESTS = 4;
 	NatPunchthroughClient* np_client;
-	std::queue<Op> requests;
-	Operation current_op;
-	string changelog;
-	int timestamp, version;
-	bool np_attached, last_request_failed;
+	std::queue<Op*> requests;
+	vector<Op*> active_requests;
+	string changelog, lobby_url;
+	int timestamp, lobby_port, proxy_port;
+	bool np_attached;
+	CURLM* cm;
 };

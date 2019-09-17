@@ -19,7 +19,7 @@ public:
 		IdQuit
 	};
 
-	MainMenu(Game* game);
+	MainMenu();
 	void LoadLanguage();
 	void LoadData();
 	void Draw(ControlDrawData* cdd) override;
@@ -46,9 +46,8 @@ private:
 	void OnNewVersion(int id);
 	void CheckVersion();
 
-	Game* game;
 	Button bt[BUTTONS];
-	TEX tBackground, tLogo, tFModLogo;
+	TexturePtr tBackground, tLogo, tFModLogo;
 	CheckVersionStatus check_status;
 	int version_new;
 	string version_text, version_changelog;

@@ -87,6 +87,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// pre V_0_11 compatibility
 namespace old
 {
 	enum SPAWN_GROUP

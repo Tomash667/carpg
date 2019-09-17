@@ -15,20 +15,19 @@
 #include "BaseLocation.h"
 #include "Team.h"
 #include "Quest_Scripted.h"
-#include "Team.h"
 #include "LocationHelper.h"
 #include "Encounter.h"
 #include "UnitGroup.h"
 
 
-ScriptManager SM;
+ScriptManager* global::script_mgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
 
 
 ScriptException::ScriptException(cstring msg)
 {
-	SM.SetException(msg);
+	script_mgr->SetException(msg);
 }
 
 void MessageCallback(const asSMessageInfo* msg, void* param)
@@ -47,7 +46,7 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 		level = Logger::L_INFO;
 		break;
 	}
-	SM.Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
+	script_mgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
 
 
@@ -55,7 +54,14 @@ ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 {
 }
 
-void ScriptManager::InitOnce()
+ScriptManager::~ScriptManager()
+{
+	if(engine)
+		engine->ShutDownAndRelease();
+	DeleteElements(unit_vars);
+}
+
+void ScriptManager::Init()
 {
 	Info("Initializing ScriptManager...");
 
@@ -69,13 +75,6 @@ void ScriptManager::InitOnce()
 	RegisterStdStringUtils(engine);
 	RegisterCommon();
 	RegisterGame();
-}
-
-void ScriptManager::Cleanup()
-{
-	if(engine)
-		engine->ShutDownAndRelease();
-	DeleteElements(unit_vars);
 }
 
 asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
@@ -262,20 +261,20 @@ static void FormatStrGeneric(asIScriptGeneric* gen)
 
 static void ScriptInfo(const string& str)
 {
-	SM.Log(Logger::L_INFO, str.c_str());
+	script_mgr->Log(Logger::L_INFO, str.c_str());
 }
 static void ScriptDevInfo(const string& str)
 {
-	if(Game::Get().devmode)
+	if(game->devmode)
 		Info(str.c_str());
 }
 static void ScriptWarn(const string& str)
 {
-	SM.Log(Logger::L_WARN, str.c_str());
+	script_mgr->Log(Logger::L_WARN, str.c_str());
 }
 static void ScriptError(const string& str)
 {
-	SM.Log(Logger::L_ERROR, str.c_str());
+	script_mgr->Log(Logger::L_ERROR, str.c_str());
 }
 
 string Vec2_ToString(const Vec2& v)
@@ -313,8 +312,10 @@ void ScriptManager::RegisterCommon()
 		.Method("Int2& opAssign(const Int2& in)", asMETHODPR(Int2, operator =, (const Int2&), Int2&))
 		.Method("Int2& opAddAssign(const Int2& in)", asMETHOD(Int2, operator +=))
 		.Method("Int2& opSubAssign(const Int2& in)", asMETHOD(Int2, operator -=))
-		.Method("Int2& opMulAssign(int)", asMETHOD(Int2, operator *=))
-		.Method("Int2& opDivAssign(int)", asMETHOD(Int2, operator /=))
+		.Method("Int2& opMulAssign(int)", asMETHODPR(Int2, operator *=, (int), Int2&))
+		.Method("Int2& opMulAssign(float)", asMETHODPR(Int2, operator *=, (float), Int2&))
+		.Method("Int2& opDivAssign(int)", asMETHODPR(Int2, operator /=, (int), Int2&))
+		.Method("Int2& opDivAssign(float)", asMETHODPR(Int2, operator /=, (float), Int2&))
 		.Method("Int2 opAdd(const Int2& in) const", asMETHODPR(Int2, operator +, (const Int2&) const, Int2))
 		.Method("Int2 opSub(const Int2& in) const", asMETHODPR(Int2, operator -, (const Int2&) const, Int2))
 		.Method("Int2 opMul(int) const", asMETHODPR(Int2, operator *, (int) const, Int2))
@@ -378,6 +379,8 @@ void ScriptManager::RegisterCommon()
 		.Method("Vec4 opSub(const Vec4& in) const", asMETHODPR(Vec4, operator -, (const Vec4&) const, Vec4))
 		.Method("Vec4 opMul(float) const", asMETHODPR(Vec4, operator *, (float) const, Vec4))
 		.Method("Vec4 opDiv(float) const", asMETHODPR(Vec4, operator /, (float) const, Vec4));
+
+	AddFunction("void Sleep(float)", asMETHOD(ScriptManager, ScriptSleep), this);
 }
 
 #include "PlayerInfo.h"
@@ -389,7 +392,7 @@ VarsContainer* p_globals = &globals;
 
 VarsContainer* Unit_GetVars(Unit* unit)
 {
-	return SM.GetVars(unit);
+	return script_mgr->GetVars(unit);
 }
 
 string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
@@ -399,7 +402,7 @@ string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
 
 Location* World_GetRandomCity()
 {
-	return W.GetLocation(W.GetRandomCityIndex());
+	return world->GetLocation(world->GetRandomCityIndex());
 }
 
 Location* World_GetRandomSettlementWithBuilding(const string& building_id)
@@ -407,7 +410,7 @@ Location* World_GetRandomSettlementWithBuilding(const string& building_id)
 	Building* b = Building::TryGet(building_id);
 	if(!b)
 		throw ScriptException("Missing building '%s'.", building_id.c_str());
-	return W.GetRandomSettlement([b](City* city)
+	return world->GetRandomSettlement([b](City* city)
 	{
 		return city->FindBuilding(b) != nullptr;
 	});
@@ -417,7 +420,7 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 {
 	asIScriptEngine* engine = func->GetEngine();
 	asIScriptContext* ctx = engine->RequestContext();
-	Location* target = W.GetRandomSettlementWeighted([=](Location* loc)
+	Location* target = world->GetRandomSettlementWeighted([=](Location* loc)
 	{
 		CHECKED(ctx->Prepare(func));
 		CHECKED(ctx->SetArgObject(0, loc));
@@ -429,9 +432,15 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 	return target;
 }
 
+Location* World_GetClosestLocation2(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
+{
+	int index = world->GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
+	return world->GetLocation(index);
+}
+
 void StockScript_AddItem(const Item* item, uint count)
 {
-	vector<ItemSlot>* stock = SM.GetContext().stock;
+	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	InsertItemBare(*stock, item, count);
@@ -439,7 +448,7 @@ void StockScript_AddItem(const Item* item, uint count)
 
 void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint count)
 {
-	vector<ItemSlot>* stock = SM.GetContext().stock;
+	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	ItemHelper::AddRandomItem(*stock, type, price_limit, flags, count);
@@ -485,10 +494,13 @@ void ScriptManager::RegisterGame()
 		{ "L_CAVE", L_CAVE },
 		{ "L_CAMP", L_CAMP },
 		{ "L_DUNGEON", L_DUNGEON },
-		{ "L_CRYPT", L_CRYPT },
-		{ "L_FOREST", L_FOREST },
-		{ "L_MOONWELL", L_MOONWELL },
+		{ "L_OUTSIDE", L_OUTSIDE },
 		{ "L_ENCOUNTER", L_ENCOUNTER }
+		});
+
+	AddEnum("LOCATION_TARGET", {
+		{ "FOREST", FOREST },
+		{ "MOONWELL", MOONWELL }
 		});
 
 	AddEnum("UNIT_ORDER", {
@@ -498,13 +510,35 @@ void ScriptManager::RegisterGame()
 		{ "ORDER_FOLLOW", ORDER_FOLLOW },
 		{ "ORDER_LEAVE", ORDER_LEAVE },
 		{ "ORDER_MOVE", ORDER_MOVE },
-		{ "ORDER_LOOK_AT", ORDER_LOOK_AT }
+		{ "ORDER_LOOK_AT", ORDER_LOOK_AT },
+		{ "ORDER_ESCAPE_TO", ORDER_ESCAPE_TO },
+		{ "ORDER_ESCAPE_TO_UNIT", ORDER_ESCAPE_TO_UNIT },
+		{ "ORDER_GOTO_INN", ORDER_GOTO_INN },
+		{ "ORDER_GUARD", ORDER_GUARD },
+		{ "ORDER_AUTO_TALK", ORDER_AUTO_TALK }
 		});
 
 	AddEnum("MOVE_TYPE", {
-		{ "MOVE_RUN", Unit::MOVE_RUN },
-		{ "MOVE_WALK", Unit::MOVE_WALK },
-		{ "MOVE_RUN_WHEN_NEAR_TEAM", Unit::MOVE_RUN_WHEN_NEAR_TEAM }
+		{ "MOVE_RUN", MOVE_RUN },
+		{ "MOVE_WALK", MOVE_WALK },
+		{ "MOVE_RUN_WHEN_NEAR_TEAM", MOVE_RUN_WHEN_NEAR_TEAM }
+		});
+
+	AddEnum("LOCATION_IMAGE", {
+		{ "LI_CITY", LI_CITY },
+		{ "LI_VILLAGE", LI_VILLAGE },
+		{ "LI_CAVE", LI_CAVE },
+		{ "LI_CAMP", LI_CAMP },
+		{ "LI_DUNGEON", LI_DUNGEON },
+		{ "LI_CRYPT", LI_CRYPT },
+		{ "LI_FOREST", LI_FOREST },
+		{ "LI_MOONWELL", LI_MOONWELL },
+		{ "LI_TOWER", LI_TOWER },
+		{ "LI_LABYRINTH", LI_LABYRINTH },
+		{ "LI_MINE", LI_MINE },
+		{ "LI_SAWMILL", LI_SAWMILL },
+		{ "LI_DUNGEON2", LI_DUNGEON2 },
+		{ "LI_ACADEMY", LI_ACADEMY }
 		});
 
 	AddType("Var")
@@ -535,7 +569,9 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
-	AddType("Dialog");
+	AddType("Dialog")
+		.WithNamespace()
+		.AddFunction("Dialog@ Get(const string& in)", asFUNCTION(GameDialog::GetS));
 
 	AddType("Quest")
 		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))
@@ -574,6 +610,20 @@ void ScriptManager::RegisterGame()
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
 
+	AddType("UnitOrderBuilder")
+		.Method("UnitOrderBuilder@ WithTimer(float)", asMETHOD(UnitOrderEntry, WithTimer))
+		.Method("UnitOrderBuilder@ ThenWander()", asMETHOD(UnitOrderEntry, ThenWander))
+		.Method("UnitOrderBuilder@ ThenWait()", asMETHOD(UnitOrderEntry, ThenWait))
+		.Method("UnitOrderBuilder@ ThenFollow(Unit@)", asMETHOD(UnitOrderEntry, ThenFollow))
+		.Method("UnitOrderBuilder@ ThenLeave()", asMETHOD(UnitOrderEntry, ThenLeave))
+		.Method("UnitOrderBuilder@ ThenMove(const Vec3& in, MOVE_TYPE)", asMETHOD(UnitOrderEntry, ThenMove))
+		.Method("UnitOrderBuilder@ ThenLookAt(const Vec3& in)", asMETHOD(UnitOrderEntry, ThenLookAt))
+		.Method("UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)", asMETHOD(UnitOrderEntry, ThenEscapeTo))
+		.Method("UnitOrderBuilder@ ThenEscapeToUnit(Unit@)", asMETHOD(UnitOrderEntry, ThenEscapeToUnit))
+		.Method("UnitOrderBuilder@ ThenGoToInn()", asMETHOD(UnitOrderEntry, ThenGoToInn))
+		.Method("UnitOrderBuilder@ ThenGuard(Unit@)", asMETHOD(UnitOrderEntry, ThenGuard))
+		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk));
+
 	ForType("Unit")
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Member("const Player@ player", offsetof(Unit, player))
@@ -584,14 +634,10 @@ void ScriptManager::RegisterGame()
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.Method("const string& get_name()", asMETHOD(Unit, GetNameS))
 		.Method("void set_name(const string& in)", asMETHOD(Unit, SetName))
-		.Method("bool get_auto_talk() const", asMETHOD(Unit, GetAutoTalk))
-		.Method("void set_auto_talk(bool)", asMETHOD(Unit, SetAutoTalk))
 		.Method("bool get_dont_attack() const", asMETHOD(Unit, GetDontAttack))
 		.Method("void set_dont_attack(bool)", asMETHOD(Unit, SetDontAttack))
 		.Method("bool get_known_name() const", asMETHOD(Unit, GetKnownName))
 		.Method("void set_known_name(bool)", asMETHOD(Unit, SetKnownName))
-		.Method("UNIT_ORDER get_order() const", asMETHOD(Unit, GetOrder))
-		.Method("void set_order(UNIT_ORDER)", asMETHOD(Unit, SetOrder))
 		.Method("bool IsTeamMember()", asMETHOD(Unit, IsTeamMember))
 		.Method("bool IsFollowing(Unit@)", asMETHOD(Unit, IsFollowing))
 		.Method("float GetHpp()", asMETHOD(Unit, GetHpp))
@@ -604,15 +650,25 @@ void ScriptManager::RegisterGame()
 		.Method("void RemoveDialog(Quest@)", asMETHOD(Unit, RemoveDialog))
 		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Unit, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Unit, RemoveEventHandlerS))
-		.Method("void OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
-		.Method("void OrderAttack()", asMETHOD(Unit, OrderAttack))
+		.Method("UNIT_ORDER get_order() const", asMETHOD(Unit, GetOrder))
 		.Method("void OrderClear()", asMETHOD(Unit, OrderClear))
-		.Method("void OrderFollow(Unit@)", asMETHOD(Unit, OrderFollow))
-		.Method("void OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
-		.Method("void OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
-		.Method("void OrderTimer(float)", asMETHOD(Unit, OrderTimer))
+		.Method("void OrderNext()", asMETHOD(Unit, OrderNext))
+		.Method("void OrderAttack()", asMETHOD(Unit, OrderAttack))
+		.Method("UnitOrderBuilder@ OrderWander()", asMETHOD(Unit, OrderWander))
+		.Method("UnitOrderBuilder@ OrderWait()", asMETHOD(Unit, OrderWait))
+		.Method("UnitOrderBuilder@ OrderFollow(Unit@)", asMETHOD(Unit, OrderFollow))
+		.Method("UnitOrderBuilder@ OrderLeave()", asMETHOD(Unit, OrderLeave))
+		.Method("UnitOrderBuilder@ OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
+		.Method("UnitOrderBuilder@ OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
+		.Method("UnitOrderBuilder@ OrderEscapeTo(const Vec3& in)", asMETHOD(Unit, OrderEscapeTo))
+		.Method("UnitOrderBuilder@ OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
+		.Method("UnitOrderBuilder@ OrderGoToInn()", asMETHOD(Unit, OrderGoToInn))
+		.Method("UnitOrderBuilder@ OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
+		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null)", asMETHOD(Unit, OrderAutoTalk))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
-		.WithInstance("Unit@ target", &ctx.target);
+		.WithInstance("Unit@ target", &ctx.target)
+		.WithNamespace()
+		.AddFunction("Unit@ Id(int)", asFUNCTION(Unit::GetById));
 
 	ForType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
@@ -626,21 +682,24 @@ void ScriptManager::RegisterGame()
 
 	AddType("UnitGroup")
 		.WithNamespace()
-		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
+		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS))
+		.AddObject("UnitGroup@ empty", &UnitGroup::empty);
 
-	WithNamespace("Team", &Team)
-		.AddFunction("Unit@ get_leader()", asMETHOD(TeamSingleton, GetLeader))
-		.AddFunction("uint get_size()", asMETHOD(TeamSingleton, GetActiveTeamSize))
-		.AddFunction("uint get_max_size()", asMETHOD(TeamSingleton, GetMaxSize))
-		.AddFunction("bool get_bandit()", asMETHOD(TeamSingleton, IsBandit))
-		.AddFunction("void set_bandit(bool)", asMETHOD(TeamSingleton, SetBandit))
-		.AddFunction("bool HaveMember()", asMETHOD(TeamSingleton, HaveOtherActiveTeamMember))
-		.AddFunction("bool HavePcMember()", asMETHOD(TeamSingleton, HaveOtherPlayer))
-		.AddFunction("bool HaveNpcMember()", asMETHOD(TeamSingleton, HaveActiveNpc))
-		.AddFunction("bool HaveItem(Item@)", asMETHOD(TeamSingleton, HaveItem))
-		.AddFunction("void AddGold(uint)", asMETHOD(TeamSingleton, AddGoldS))
-		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(TeamSingleton, AddReward))
-		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(TeamSingleton, RemoveItem));
+	WithNamespace("Team", team)
+		.AddFunction("Unit@ get_leader()", asMETHOD(Team, GetLeader))
+		.AddFunction("uint get_size()", asMETHOD(Team, GetActiveTeamSize))
+		.AddFunction("uint get_max_size()", asMETHOD(Team, GetMaxSize))
+		.AddFunction("bool get_bandit()", asMETHOD(Team, IsBandit))
+		.AddFunction("void set_bandit(bool)", asMETHOD(Team, SetBandit))
+		.AddFunction("bool HaveMember()", asMETHOD(Team, HaveOtherActiveTeamMember))
+		.AddFunction("bool HavePcMember()", asMETHOD(Team, HaveOtherPlayer))
+		.AddFunction("bool HaveNpcMember()", asMETHOD(Team, HaveActiveNpc))
+		.AddFunction("bool HaveItem(Item@)", asMETHOD(Team, HaveItem))
+		.AddFunction("void AddGold(uint)", asMETHOD(Team, AddGoldS))
+		.AddFunction("void AddExp(int)", asMETHOD(Team, AddExpS))
+		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(Team, AddReward))
+		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem))
+		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddTeamMember));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 
@@ -658,6 +717,11 @@ void ScriptManager::RegisterGame()
 		.Member("int st", offsetof(Location, st))
 		.Member("bool reset", offsetof(Location, reset))
 		.Member("Quest@ active_quest", offsetof(Location, active_quest))
+		.Member("UnitGroup@ group", offsetof(Location, group))
+		.Method("const string& get_name() const", asMETHOD(Location, GetName))
+		.Method("void set_name(const string& in)", asMETHOD(Location, SetNameS))
+		.Method("LOCATION_IMAGE get_image() const", asMETHOD(Location, GetImage))
+		.Method("void set_image(LOCATION_IMAGE)", asMETHOD(Location, SetImage))
 		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Location, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Location, RemoveEventHandlerS))
 		.Method("void SetKnown()", asMETHOD(Location, SetKnown))
@@ -676,7 +740,8 @@ void ScriptManager::RegisterGame()
 
 	CHECKED(engine->RegisterFuncdef("float GetLocationCallback(Location@)"));
 
-	WithNamespace("World", &W)
+	WithNamespace("World", world)
+		.AddFunction("Vec2 GetSize()", asMETHOD(World, GetSize))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -686,10 +751,12 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
+		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in)", asMETHOD(World, CreateLocationS))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
-		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void));
+		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void))
+		.AddFunction("void SetStartLocation(Location@)", asMETHOD(World, SetStartLocation));
 
-	WithNamespace("Level", &L)
+	WithNamespace("Level", game_level)
 		.AddFunction("Location@ get_location()", asMETHOD(Level, GetLocation))
 		.AddFunction("bool IsSettlement()", asMETHOD(Level, IsSettlement))
 		.AddFunction("bool IsCity()", asMETHOD(Level, IsCity))
@@ -715,6 +782,13 @@ void ScriptManager::RegisterGame()
 		.Member("Unit@ unit", offsetof(ScriptEvent, unit))
 		.Member("GroundItem@ item", offsetof(ScriptEvent, item));
 
+	WithNamespace("Cutscene", game)
+		.AddFunction("void Start(bool = true)", asMETHOD(Game, CutsceneStart))
+		.AddFunction("void End()", asMETHOD(Game, CutsceneEnd))
+		.AddFunction("void Image(const string& in, float)", asMETHOD(Game, CutsceneImage))
+		.AddFunction("void Text(const string& in, float)", asMETHOD(Game, CutsceneText))
+		.AddFunction("bool ShouldSkip()", asMETHOD(Game, CutsceneShouldSkip));
+
 	AddVarType(Var::Type::Bool, "bool", false);
 	AddVarType(Var::Type::Int, "int", false);
 	AddVarType(Var::Type::Float, "float", false);
@@ -727,7 +801,7 @@ void ScriptManager::RegisterGame()
 	AddVarType(Var::Type::GroundItem, "GroundItem", true);
 }
 
-bool ScriptManager::RunScript(cstring code, bool validate)
+void ScriptManager::RunScript(cstring code)
 {
 	assert(code);
 
@@ -739,94 +813,20 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
-		return false;
-	}
-
-	if(validate)
-	{
-		func->Release();
-		return true;
+		return;
 	}
 
 	// run
 	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
-	if(r >= 0)
-	{
-		last_exception = nullptr;
-		r = tmp_context->Execute();
-	}
-
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
-	{
-		if(r == asEXECUTION_EXCEPTION)
-		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
-			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionFunction()), code);
-		}
-		else
-			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
-	}
-
 	func->Release();
-	engine->ReturnContext(tmp_context);
-
-	return finished;
-}
-
-bool ScriptManager::RunIfScript(cstring code, bool validate)
-{
-	assert(code);
-
-	// compile
-	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
-	cstring packed_code = Format("bool f() { return (%s); }", code);
-	asIScriptFunction* func;
-	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)
 	{
-		Log(Logger::L_ERROR, Format("Failed to parse if script (%d).", r), code);
-		return false;
-	}
-
-	if(validate)
-	{
-		func->Release();
-		return true;
-	}
-
-	// run
-	asIScriptContext* tmp_context = engine->RequestContext();
-	r = tmp_context->Prepare(func);
-	if(r >= 0)
-	{
-		last_exception = nullptr;
-		r = tmp_context->Execute();
-	}
-
-	bool ok;
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
-	{
-		ok = false;
-		if(r == asEXECUTION_EXCEPTION)
-		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
-			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionFunction()), code);
-		}
-		else
-			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
+		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
+		engine->ReturnContext(tmp_context);
 	}
 	else
-		ok = (tmp_context->GetReturnByte() != 0);
-
-	func->Release();
-	engine->ReturnContext(tmp_context);
-
-	return ok;
+		ExecuteScript(tmp_context);
 }
 
 asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
@@ -842,14 +842,14 @@ asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)
 	{
-		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r), code);
+		Log(Logger::L_ERROR, Format("Failed to compile script (%d).", r), code);
 		return nullptr;
 	}
 
 	return func;
 }
 
-bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
+void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
 {
 	// run
 	asIScriptContext* tmp_context = engine->RequestContext();
@@ -862,13 +862,28 @@ bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		{
 			if(clbk)
 				clbk(tmp_context, 0);
-			last_exception = nullptr;
-			r = tmp_context->Execute();
 		}
 	}
 
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
+	if(r < 0)
+	{
+		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
+		engine->ReturnContext(tmp_context);
+		return;
+	}
+
+	last_exception = nullptr;
+	r = tmp_context->Execute();
+
+	if(r == asEXECUTION_SUSPENDED)
+		return;
+
+	if(r == asEXECUTION_FINISHED)
+	{
+		if(clbk)
+			clbk(tmp_context, 1);
+	}
+	else
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
@@ -879,12 +894,8 @@ bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		else
 			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
 	}
-	else if(clbk)
-		clbk(tmp_context, 1);
 
 	engine->ReturnContext(tmp_context);
-
-	return finished;
 }
 
 string& ScriptManager::OpenOutput()
@@ -929,6 +940,12 @@ void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer)
 {
 	assert(decl);
 	CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_CDECL));
+}
+
+void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* obj)
+{
+	assert(decl);
+	CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_THISCALL_ASGLOBAL, obj));
 }
 
 void ScriptManager::AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values)
@@ -999,7 +1016,7 @@ void ScriptManager::Save(FileWriter& f)
 		if(e.second->IsEmpty())
 			continue;
 		++count;
-		f << e.first->refid;
+		f << e.first->id;
 		e.second->Save(f);
 	}
 	if(count > 0)
@@ -1020,8 +1037,8 @@ void ScriptManager::Load(FileReader& f)
 	f >> count;
 	for(uint i = 0; i < count; ++i)
 	{
-		int refid = f.Read<int>();
-		Unit* unit = Unit::refid_table[refid];
+		int id = f.Read<int>();
+		Unit* unit = Unit::GetById(id);
 		VarsContainer* vars = new VarsContainer;
 		vars->Load(f);
 		unit_vars[unit] = vars;
@@ -1055,8 +1072,8 @@ void ScriptManager::AddVarType(Var::Type type, cstring name, bool is_ref)
 
 Var::Type ScriptManager::GetVarType(int type_id)
 {
-	if(IS_SET(type_id, asTYPEID_OBJHANDLE))
-		CLEAR_BIT(type_id, asTYPEID_OBJHANDLE);
+	if(IsSet(type_id, asTYPEID_OBJHANDLE))
+		ClearBit(type_id, asTYPEID_OBJHANDLE);
 	auto it = script_type_infos.find(type_id);
 	assert(it != script_type_infos.end());
 	return it->second.type;
@@ -1064,14 +1081,115 @@ Var::Type ScriptManager::GetVarType(int type_id)
 
 bool ScriptManager::CheckVarType(int type_id, bool is_ref)
 {
-	if(IS_SET(type_id, asTYPEID_OBJHANDLE))
+	if(IsSet(type_id, asTYPEID_OBJHANDLE))
 	{
 		is_ref = true;
-		CLEAR_BIT(type_id, asTYPEID_OBJHANDLE);
+		ClearBit(type_id, asTYPEID_OBJHANDLE);
 	}
 
 	auto it = script_type_infos.find(type_id);
 	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
 		return false;
 	return true;
+}
+
+void ScriptManager::ScriptSleep(float time)
+{
+	if(time <= 0)
+		return;
+
+	asIScriptContext* ctx = asGetActiveContext();
+	ctx->Suspend();
+
+	for(SuspendedScript& ss : suspended_scripts)
+	{
+		if(ss.ctx == ctx)
+		{
+			ss.time = time;
+			return;
+		}
+	}
+
+	SuspendedScript& ss = Add1(suspended_scripts);
+	ss.ctx = ctx;
+	ss.sctx = this->ctx;
+	ss.time = time;
+}
+
+void ScriptManager::UpdateScripts(float dt)
+{
+	LoopAndRemove(suspended_scripts, [&](SuspendedScript& ss)
+	{
+		if(ss.time < 0)
+			return false;
+
+		ss.time -= dt;
+		if(ss.time > 0.f)
+			return false;
+
+		this->ctx = ss.sctx;
+		return ExecuteScript(ss.ctx);
+	});
+}
+
+bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
+{
+	assert(ctx);
+
+	last_exception = nullptr;
+
+	int r = ctx->Execute();
+	if(r == asEXECUTION_SUSPENDED)
+		return false;
+	if(r != asEXECUTION_FINISHED)
+	{
+		if(r == asEXECUTION_EXCEPTION)
+		{
+			cstring msg = last_exception ? last_exception : ctx->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, ctx->GetExceptionFunction()->GetName(),
+				ctx->GetExceptionFunction()));
+		}
+		else
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
+	}
+
+	engine->ReturnContext(ctx);
+	return true;
+}
+
+void ScriptManager::StopAllScripts()
+{
+	for(SuspendedScript& ss : suspended_scripts)
+		engine->ReturnContext(ss.ctx);
+	suspended_scripts.clear();
+}
+
+asIScriptContext* ScriptManager::SuspendScript()
+{
+	asIScriptContext* ctx = asGetActiveContext();
+	if(!ctx)
+		return nullptr;
+
+	ctx->Suspend();
+
+	SuspendedScript& ss = Add1(suspended_scripts);
+	ss.ctx = ctx;
+	ss.sctx = this->ctx;
+	ss.time = -1;
+
+	return ctx;
+}
+
+void ScriptManager::ResumeScript(asIScriptContext* ctx)
+{
+	for(auto it = suspended_scripts.begin(), end = suspended_scripts.end(); it != end; ++it)
+	{
+		if(it->ctx == ctx)
+		{
+			this->ctx = it->sctx;
+			suspended_scripts.erase(it);
+			ExecuteScript(ctx);
+			return;
+		}
+	}
 }

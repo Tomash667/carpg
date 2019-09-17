@@ -122,7 +122,7 @@ Item& Item::operator = (const Item& i)
 			const Consumable& c2 = i.ToConsumable();
 			c.time = c2.time;
 			c.cons_type = c2.cons_type;
-			c.is_healing_potion = c2.is_healing_potion;
+			c.ai_type = c2.ai_type;
 		}
 		break;
 	case IT_BOOK:
@@ -263,8 +263,7 @@ float Item::GetEffectPower(EffectId effect) const
 //=================================================================================================
 void Item::CreateCopy(Item& item) const
 {
-	Game& game = Game::Get();
-	game.PreloadItem(this);
+	game->PreloadItem(this);
 
 	switch(type)
 	{
@@ -279,7 +278,7 @@ void Item::CreateCopy(Item& item) const
 			o.mesh_id = o2.mesh_id;
 			o.name = o2.name;
 			o.other_type = o2.other_type;
-			o.refid = o2.refid;
+			o.quest_id = o2.quest_id;
 			o.tex = o2.tex;
 			o.type = o2.type;
 			o.value = o2.value;
@@ -293,7 +292,7 @@ void Item::CreateCopy(Item& item) const
 		break;
 	}
 
-	if(Net::IsServer() || N.mp_load)
+	if(Net::IsServer() || net->mp_load)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REGISTER_ITEM;
@@ -334,8 +333,8 @@ Item* Item::QuestCopy(Quest* quest, const string& name)
 	Item* item = CreateCopy();
 	item->id = Format("$%s", id.c_str());
 	item->name = name;
-	item->refid = quest->refid;
-	QM.AddQuestItem(item);
+	item->quest_id = quest->id;
+	quest_mgr->AddQuestItem(item);
 	return item;
 }
 

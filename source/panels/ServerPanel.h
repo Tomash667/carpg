@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "Grid.h"
 #include "InputTextBox.h"
 #include "Class.h"
@@ -18,10 +18,11 @@ enum LobbyUpdate
 };
 
 //-----------------------------------------------------------------------------
-class ServerPanel : public GameDialogBox
+class ServerPanel : public DialogBox
 {
 public:
 	explicit ServerPanel(const DialogInfo& info);
+	void Init();
 	void LoadLanguage();
 	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
@@ -36,13 +37,13 @@ public:
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
 	void ExitLobby(VoidF callback = nullptr);
-	void AddMsg(cstring text);
+	void AddMsg(cstring text) { itb.Add(text); }
 	void OnKick(int id);
 	void OnInput(const string& str);
 	void StopStartup();
 	void UseLoadedCharacter(bool have);
 	void CheckAutopick();
-	void PickClass(Class clas, bool ready);
+	void PickClass(Class* clas, bool ready);
 	void AddLobbyUpdate(const Int2& u);
 	void ChangeReady();
 	void CheckReady();
@@ -57,11 +58,14 @@ public:
 	float update_timer, startup_timer;
 	uint max_players, autostart_count;
 	int last_startup_sec, kick_id;
-	Class autopick_class;
+	Class* autopick_class;
 	bool starting, autoready;
 	cstring txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar,
 		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
 		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked, txUnknown,
 		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed, txPlayerDisconnected;
-	TEX tReady, tNotReady;
+
+private:
+	TexturePtr tReady, tNotReady;
+	Class* random_class;
 };

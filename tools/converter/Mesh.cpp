@@ -79,7 +79,7 @@ void Mesh::Load(cstring path)
 		throw Format("Too many bones (%d).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
 		if(head.n_bones == 0)
 			throw "No bones.";
@@ -90,7 +90,7 @@ void Mesh::Load(cstring path)
 		head.points_offset = f.Read<uint>();
 	else
 		head.points_offset = 0;
-	if(!IS_SET(head.flags, F_ANIMATED))
+	if(!IsSet(head.flags, F_ANIMATED))
 		head.n_groups = 0; // fix for old models
 
 	// camera
@@ -113,20 +113,20 @@ void Mesh::Load(cstring path)
 	}
 
 	// vertex size
-	if(IS_SET(head.flags, F_PHYSICS))
+	if(IsSet(head.flags, F_PHYSICS))
 		vertex_size = sizeof(Vec3);
 	else
 	{
-		if(IS_SET(head.flags, F_ANIMATED))
+		if(IsSet(head.flags, F_ANIMATED))
 		{
-			if(IS_SET(head.flags, F_TANGENTS))
+			if(IsSet(head.flags, F_TANGENTS))
 				vertex_size = sizeof(VAnimatedTangent);
 			else
 				vertex_size = sizeof(VAnimated);
 		}
 		else
 		{
-			if(IS_SET(head.flags, F_TANGENTS))
+			if(IsSet(head.flags, F_TANGENTS))
 				vertex_size = sizeof(VTangent);
 			else
 				vertex_size = sizeof(VDefault);
@@ -191,7 +191,7 @@ void Mesh::Load(cstring path)
 			}
 
 			// normalmap
-			if(IS_SET(head.flags, F_TANGENTS))
+			if(IsSet(head.flags, F_TANGENTS))
 			{
 				f.ReadString1(sub.tex_normal);
 				if(!sub.tex_normal.empty())
@@ -222,7 +222,7 @@ void Mesh::Load(cstring path)
 	}
 
 	// animation data
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
 		// bones
 		size = Bone::MIN_SIZE * head.n_bones;
@@ -330,11 +330,11 @@ void Mesh::Load(cstring path)
 		}
 	}
 
-	if(head.version < 21 && IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(head.version < 21 && IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 		LoadBoneGroups(f);
 
 	// splits
-	if(IS_SET(head.flags, F_SPLIT))
+	if(IsSet(head.flags, F_SPLIT))
 	{
 		size = sizeof(Split) * head.n_subs;
 		//if(!f.Ensure(size))
@@ -430,7 +430,7 @@ void Mesh::Save(cstring path)
 		f.Write(sub.specular_hardness);
 
 		// normalmap
-		if(IS_SET(head.flags, F_TANGENTS))
+		if(IsSet(head.flags, F_TANGENTS))
 		{
 			f.WriteString1(sub.tex_normal);
 			if(!sub.tex_normal.empty())
@@ -447,7 +447,7 @@ void Mesh::Save(cstring path)
 	}
 
 	// animation data
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
 		// bones
 		for(byte i = 0; i < head.n_bones; ++i)
@@ -524,7 +524,7 @@ void Mesh::Save(cstring path)
 	}
 
 	// splits
-	if(IS_SET(head.flags, F_SPLIT))
+	if(IsSet(head.flags, F_SPLIT))
 	{
 		f.Write(splits.data(), sizeof(Split) * head.n_subs);
 	}

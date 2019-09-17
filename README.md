@@ -15,7 +15,7 @@ CaRpg is a 3d role playing game somewhat based on Gothic series. Can be played i
 
 Copy game content from latest release and put it inside bin/data folder.
 
-Devel branch uses git submodule to link to [carpglib](https://github.com/Tomash667/carpglib) engine. To download everything use git command:
+CaRpg uses git submodule to link to [carpglib](https://github.com/Tomash667/carpglib) engine. To download everything use git command:
 ```
 git submodule update --init
 ```
@@ -23,11 +23,11 @@ git submodule update --init
 Open solution carpg.sln with Visual Studio 2017 (15.9.X) and use build. All dependencies and game should compile (client_dbg/client_dbg2 are for debugging multiplayer and can be unloaded).
 
 Important branches:
-- **devel** - development branch where all new features are added
+- **dev** - development branch where all new features are added
 - **master** - stable and tested branch where only fixes *should* be added
 
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. 
 
-For details look [here](https://github.com/Tomash667/carpg/blob/devel/CONTRIBUTING.md).
+For details look [here](https://github.com/Tomash667/carpg/blob/dev/CONTRIBUTING.md).

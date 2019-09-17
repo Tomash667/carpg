@@ -45,15 +45,7 @@ void InsideBuilding::Load(GameReader& f, bool local)
 	f >> outside_rot;
 	f >> top;
 	f >> xsphere_radius;
-	if(LOAD_VERSION >= V_0_5)
-		building = Building::Get(f.ReadString1());
-	else
-	{
-		old::BUILDING old_type;
-		f >> old_type;
-		building = old::Convert(old_type);
-	}
-	assert(building != nullptr);
+	building = Building::Get(f.ReadString1());
 	f >> level_shift;
 	f >> region1;
 	f >> region2;
@@ -106,7 +98,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 		return false;
 	}
 	offset = Vec2(512.f*level_shift.x + 256.f, 512.f*level_shift.y + 256.f);
-	L.ProcessBuildingObjects(*this, L.city_ctx, this, building->inside_mesh, nullptr, 0, 0, Vec3(offset.x, 0, offset.y), building, nullptr, true);
+	game_level->ProcessBuildingObjects(*this, game_level->city_ctx, this, building->inside_mesh, nullptr, 0, 0, Vec3(offset.x, 0, offset.y), building, nullptr, true);
 
 	return true;
 }

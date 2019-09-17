@@ -50,14 +50,14 @@ void MoonwellGenerator::Generate()
 //=================================================================================================
 void MoonwellGenerator::GenerateObjects()
 {
-	LevelArea& area = *L.local_area;
+	LevelArea& area = *game_level->local_area;
 	Vec3 pos(128.f, 0, 128.f);
 	terrain->SetH(pos);
 	pos.y -= 0.2f;
-	L.SpawnObjectEntity(area, BaseObject::Get("moonwell"), pos, 0.f);
-	L.SpawnObjectEntity(area, BaseObject::Get("moonwell_phy"), pos, 0.f);
+	game_level->SpawnObjectEntity(area, BaseObject::Get("moonwell"), pos, 0.f);
+	game_level->SpawnObjectEntity(area, BaseObject::Get("moonwell_phy"), pos, 0.f);
 
-	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)game_level->location)->tiles;
 
 	// trees
 	for(int i = 0; i < 1024; ++i)
@@ -71,7 +71,7 @@ void MoonwellGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
@@ -83,7 +83,7 @@ void MoonwellGenerator::GenerateObjects()
 				else
 					type = Rand() % 3;
 				OutsideObject& o = trees2[type];
-				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -99,7 +99,7 @@ void MoonwellGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -109,7 +109,7 @@ void MoonwellGenerator::GenerateObjects()
 void MoonwellGenerator::GenerateUnits()
 {
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
-	const int level = L.GetDifficultyLevel();
+	const int level = game_level->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);
 	static vector<Vec2> poss;
@@ -143,11 +143,11 @@ void MoonwellGenerator::GenerateUnits()
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
 				int enemy_level = Random(ud_hunter->level.x, min(ud_hunter->level.y, level));
-				L.SpawnUnitNearLocation(*outside, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
+				game_level->SpawnUnitNearLocation(*outside, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
 			}
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!L.SpawnUnitNearLocation(*outside, pos3, *spawn.first, nullptr, spawn.second, 6.f))
+				if(!game_level->SpawnUnitNearLocation(*outside, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
 			}
 		}

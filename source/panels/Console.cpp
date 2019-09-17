@@ -7,7 +7,7 @@
 #include "GameKeys.h"
 
 //=================================================================================================
-Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
+Console::Console(const DialogInfo& info) : DialogBox(info), added(false)
 {
 	size = Int2(gui->wnd_size.x, gui->wnd_size.y / 3);
 	itb.parent = this;
@@ -18,15 +18,14 @@ Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 	itb.pos = Int2(0, 0);
 	itb.global_pos = Int2(0, 0);
 	itb.size = Int2(gui->wnd_size.x, gui->wnd_size.y / 3);
-	itb.event = InputEvent(this, &Console::OnInput);
-	itb.background = nullptr;
+	itb.event = InputTextBox::InputEvent(this, &Console::OnInput);
 	itb.Init();
 }
 
 //=================================================================================================
 void Console::LoadData()
 {
-	ResourceManager::Get<Texture>().AddLoadTask("tlo_konsoli.jpg", tBackground);
+	tBackground = res_mgr->Load<Texture>("console_bkg.jpg");
 }
 
 //=================================================================================================
@@ -69,7 +68,7 @@ void Console::Update(float dt)
 					cstring best_cmd_name = nullptr;
 					int best_index = -1, index = 0;
 
-					for(const ConsoleCommand& cmd : global::cmdp->GetCommands())
+					for(const ConsoleCommand& cmd : cmdp->GetCommands())
 					{
 						if(strncmp(cmd.name, s.c_str(), s.length()) == 0)
 						{
@@ -118,5 +117,5 @@ void Console::Event(GuiEvent e)
 //=================================================================================================
 void Console::OnInput(const string& str)
 {
-	global::cmdp->ParseCommand(str, PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
+	cmdp->ParseCommand(str, CommandParser::PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
 }

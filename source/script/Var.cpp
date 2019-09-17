@@ -97,7 +97,7 @@ void VarsContainer::Save(FileWriter& f)
 			f << (e.second->encounter ? e.second->encounter->index : -1);
 			break;
 		case Var::Type::GroundItem:
-			f << (e.second->ground_item ? e.second->ground_item->refid : -1);
+			f << (e.second->ground_item ? e.second->ground_item->id : -1);
 			break;
 		}
 	}
@@ -171,7 +171,7 @@ void VarsContainer::Load(FileReader& f)
 				if(index == -1)
 					v->location = nullptr;
 				else
-					v->location = W.GetLocation(index);
+					v->location = world->GetLocation(index);
 			}
 			break;
 		case Var::Type::Encounter:
@@ -181,14 +181,14 @@ void VarsContainer::Load(FileReader& f)
 				if(index == -1)
 					v->encounter = nullptr;
 				else
-					v->encounter = W.GetEncounter(index);
+					v->encounter = world->GetEncounter(index);
 			}
 			break;
 		case Var::Type::GroundItem:
 			{
-				int refid;
-				f >> refid;
-				v->ground_item = GroundItem::GetByRefid(refid);
+				int id;
+				f >> id;
+				v->ground_item = GroundItem::GetById(id);
 			}
 			break;
 		}

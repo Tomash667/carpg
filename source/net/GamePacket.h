@@ -51,7 +51,7 @@ enum GamePacket : byte
 	{
 		byte - id
 		bool - is ready
-		byte - class
+		string1 - class
 		string1 - nick
 	}
 	*/
@@ -120,7 +120,7 @@ enum GamePacket : byte
 	ID_STATE,
 
 	/* World data sent to all players
-	PrepareWorldData
+	WriteWorldData
 	ReadWorldData
 	Client repond with ID_READY
 	*/
@@ -148,13 +148,13 @@ enum GamePacket : byte
 
 	/* Level data sent to client
 	byte - id
-	PrepareLevelData
+	WriteLevelData
 	ReadLevelData
 	*/
 	ID_LEVEL_DATA,
 
 	/* Player data sent per player
-	SendPlayerData
+	WritePlayerData
 	ReadPlayerData
 	*/
 	ID_PLAYER_DATA,

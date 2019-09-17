@@ -65,8 +65,8 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
-	int GetLocationEventHandlerQuestRefid() override { return refid; }
-	int GetChestEventHandlerQuestRefid() override { return refid; }
+	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetChestEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	int GetIncome(int days_passed);

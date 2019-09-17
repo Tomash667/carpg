@@ -61,7 +61,9 @@ enum class TrainWhat
 
 	Stamina, // player uses stamina [value],
 	BullsCharge, // trains str
-	Dash
+	Dash,
+	Cast,
+	Mana, // player uses mana [value]
 };
 
 //-----------------------------------------------------------------------------
@@ -70,6 +72,31 @@ enum class TrainMode
 	Normal,
 	Tutorial,
 	Potion
+};
+
+//-----------------------------------------------------------------------------
+enum class PlayerAction
+{
+	None,
+	LootUnit,
+	LootChest,
+	Talk,
+	Trade,
+	ShareItems,
+	GiveItems,
+	LootContainer,
+	TalkUsable
+};
+
+//-----------------------------------------------------------------------------
+enum BeforePlayer
+{
+	BP_NONE,
+	BP_UNIT,
+	BP_CHEST,
+	BP_DOOR,
+	BP_ITEM,
+	BP_USABLE
 };
 
 //-----------------------------------------------------------------------------
@@ -112,6 +139,52 @@ struct Shortcut
 };
 
 //-----------------------------------------------------------------------------
+union BeforePlayerPtr
+{
+	Unit* unit;
+	Chest* chest;
+	Door* door;
+	GroundItem* item;
+	Usable* usable;
+	void* any;
+};
+
+//-----------------------------------------------------------------------------
+struct LocalPlayerData
+{
+	BeforePlayer before_player;
+	BeforePlayerPtr before_player_ptr;
+	Unit* selected_unit; // unit marked with 'select' command
+	Entity<Unit> action_target;
+	GroundItem* picking_item;
+	Vec3 action_point;
+	int picking_item_state;
+	float rot_buf, action_rot;
+	Key wasted_key;
+	bool autowalk, action_ready, action_ok;
+
+	void Reset()
+	{
+		before_player = BP_NONE;
+		before_player_ptr.any = nullptr;
+		selected_unit = nullptr;
+		action_target = nullptr;
+		picking_item = nullptr;
+		picking_item_state = 0;
+		rot_buf = 0.f;
+		wasted_key = Key::None;
+		autowalk = false;
+		action_ready = false;
+	}
+	Unit* GetTargetUnit()
+	{
+		if(before_player == BP_UNIT)
+			return before_player_ptr.unit;
+		return nullptr;
+	}
+};
+
+//-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
 	struct StatData
@@ -143,18 +216,7 @@ struct PlayerController : public HeroPlayerCommon
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
-	enum Action
-	{
-		Action_None,
-		Action_LootUnit,
-		Action_LootChest,
-		Action_Talk,
-		Action_Trade,
-		Action_ShareItems,
-		Action_GiveItems,
-		Action_LootContainer,
-		Action_TalkUsable
-	} action;
+	PlayerAction action;
 	union
 	{
 		Unit* action_unit;
@@ -168,8 +230,9 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
-	vector<Unit*> action_targets;
+	vector<Entity<Unit>> action_targets;
 	Shortcut shortcuts[Shortcut::MAX];
+	static LocalPlayerData data;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
 		action_cooldown(0.f), action_charges(0), last_ring(false)
@@ -179,8 +242,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Rest(int days, bool resting, bool travel = false);
 
-	void Init(Unit& _unit, bool partial = false);
-	void Update(float dt, bool is_local = true);
+	void Init(Unit& unit, bool partial = false);
 private:
 	void InitShortcuts();
 	void Train(SkillId s, float points);
@@ -206,29 +268,26 @@ public:
 
 	bool IsTradingWith(Unit* t) const
 	{
-		if(Any(action, Action_LootUnit, Action_Trade, Action_GiveItems, Action_ShareItems))
+		if(Any(action, PlayerAction::LootUnit, PlayerAction::Trade, PlayerAction::GiveItems, PlayerAction::ShareItems))
 			return action_unit == t;
 		else
 			return false;
 	}
 
-	static bool IsTrade(Action a)
+	static bool IsTrade(PlayerAction a)
 	{
-		return Any(a, Action_LootChest, Action_LootUnit, Action_Trade, Action_ShareItems, Action_GiveItems, Action_LootContainer);
+		return Any(a, PlayerAction::LootChest, PlayerAction::LootUnit, PlayerAction::Trade,
+			PlayerAction::ShareItems, PlayerAction::GiveItems, PlayerAction::LootContainer);
 	}
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	::Action& GetAction();
-	bool CanUseAction() const
-	{
-		return action_charges > 0 && action_cooldown <= 0;
-	}
+	Action& GetAction() const;
+	bool CanUseAction() const;
 	bool UseActionCharge();
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
-	void AddItemMessage(uint count);
 	void PayCredit(int count);
 	void UseDays(int count);
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
@@ -247,55 +306,14 @@ public:
 	int GetHealingPotion() const;
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
-};
-
-//-----------------------------------------------------------------------------
-enum BeforePlayer
-{
-	BP_NONE,
-	BP_UNIT,
-	BP_CHEST,
-	BP_DOOR,
-	BP_ITEM,
-	BP_USABLE
-};
-
-//-----------------------------------------------------------------------------
-union BeforePlayerPtr
-{
-	Unit* unit;
-	Chest* chest;
-	Door* door;
-	GroundItem* item;
-	Usable* usable;
-	void* any;
-};
-
-//-----------------------------------------------------------------------------
-struct LocalPlayerData
-{
-	BeforePlayer before_player;
-	BeforePlayerPtr before_player_ptr;
-	Unit* selected_unit, // unit marked with 'select' command
-		*target_unit; // unit in front of player
-	GroundItem* picking_item;
-	Vec3 action_point;
-	int picking_item_state;
-	float rot_buf, action_rot;
-	Key wasted_key;
-	bool autowalk, action_ready, action_ok;
-
-	void Reset()
-	{
-		before_player = BP_NONE;
-		before_player_ptr.any = nullptr;
-		selected_unit = nullptr;
-		target_unit = nullptr;
-		picking_item = nullptr;
-		picking_item_state = 0;
-		rot_buf = 0.f;
-		wasted_key = Key::None;
-		autowalk = false;
-		action_ready = false;
-	}
+	float GetActionPower() const;
+	float GetShootAngle() const;
+	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
+	void UseUsable(Usable* u, bool after_action);
+	void CastSpell();
+	void UseAction(bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	void Update(float dt);
+	void UpdateMove(float dt, bool allow_rot);
+	void UpdateCooldown(float dt);
+	bool WantExitLevel();
 };

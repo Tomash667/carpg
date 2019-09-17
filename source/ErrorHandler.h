@@ -1,4 +1,3 @@
-// error handling, crash reporting, writing stream log
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -28,19 +27,4 @@ inline cstring ToString(CrashMode crash_mode)
 }
 
 //-----------------------------------------------------------------------------
-class ErrorHandler
-{
-public:
-	static ErrorHandler& Get()
-	{
-		return handler;
-	}
-
-	void RegisterHandler(Config& cfg, const string& log_path);
-
-private:
-	ErrorHandler();
-
-	static ErrorHandler handler;
-	CrashMode crash_mode;
-};
+void RegisterErrorHandler(Config& cfg, const string& log_path);

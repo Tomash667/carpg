@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Resource.h"
-
-//-----------------------------------------------------------------------------
 enum BaseLocationId
 {
 	// fort ludzi, 2-3 poziomów, bez pu³apek czy ukrytych przejœæ
@@ -36,7 +33,7 @@ enum BaseLocationId
 	// jaskina
 	CAVE,
 	// koñcowy poziom questu kopalnia
-	KOPALNIA_POZIOM,
+	ANCIENT_ARMORY,
 	// jak HUMAN_FORT ale 100% szansy na drzwi
 	TUTORIAL_FORT,
 	// jak HUMAN_FORT ale z sal¹ tronow¹
@@ -44,8 +41,10 @@ enum BaseLocationId
 	// jak VAULT ale z sal¹ tronow¹
 	THRONE_VAULT,
 	// druga tekstura krypty
-	CRYPT_2_TEXTURE
+	CRYPT_2_TEXTURE,
+	BASE_LOCATION_MAX
 };
+static_assert(BASE_LOCATION_MAX <= 32, "Too many base locations, used as flags!");
 
 //-----------------------------------------------------------------------------
 // Location flags

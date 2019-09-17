@@ -58,7 +58,7 @@ void OutsideLocationGenerator::InitOnce()
 void OutsideLocationGenerator::Init()
 {
 	outside = static_cast<OutsideLocation*>(loc);
-	terrain = L.terrain;
+	terrain = game_level->terrain;
 }
 
 //=================================================================================================
@@ -140,64 +140,53 @@ void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, flo
 //=================================================================================================
 void OutsideLocationGenerator::OnEnter()
 {
-	Game& game = Game::Get();
 	if(!reenter)
 	{
-		L.Apply();
+		game_level->Apply();
 		ApplyTiles();
 	}
 
 	int days;
-	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
+	bool need_reset = outside->CheckUpdate(days, world->GetWorldtime());
 	int update_flags = HandleUpdate(days);
-	if(IS_SET(update_flags, PREVENT_RESET))
+	if(IsSet(update_flags, PREVENT_RESET))
 		need_reset = false;
 
-	L.SetOutsideParams();
+	game_level->SetOutsideParams();
 
-	W.GetOutsideSpawnPoint(team_pos, team_dir);
+	world->GetOutsideSpawnPoint(team_pos, team_dir);
 
 	if(first)
 	{
 		// generate objects
-		game.LoadingStep(game.txGeneratingObjects);
+		game->LoadingStep(game->txGeneratingObjects);
 		GenerateObjects();
 
 		// generate units
-		game.LoadingStep(game.txGeneratingUnits);
+		game->LoadingStep(game->txGeneratingUnits);
 		GenerateUnits();
 
 		// generate items
-		game.LoadingStep(game.txGeneratingItems);
+		game->LoadingStep(game->txGeneratingItems);
 		GenerateItems();
 	}
 	else if(!reenter)
 	{
 		if(days > 0)
-			L.UpdateLocation(days, 100, false);
+			game_level->UpdateLocation(days, 100, false);
 
+		// remove alive units
 		if(need_reset)
-		{
-			// remove alive units
-			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
-			{
-				if((*it)->IsAlive())
-				{
-					delete *it;
-					*it = nullptr;
-				}
-			}
-			RemoveNullElements(outside->units);
-		}
+			LoopAndRemove(outside->units, [](Unit* unit) { return unit->IsAlive(); });
 
 		// recreate colliders
-		game.LoadingStep(game.txGeneratingPhysics);
-		if(!IS_SET(update_flags, PREVENT_RECREATE_OBJECTS))
-			L.RecreateObjects();
+		game->LoadingStep(game->txGeneratingPhysics);
+		if(!IsSet(update_flags, PREVENT_RECREATE_OBJECTS))
+			game_level->RecreateObjects();
 
 		// respawn units
-		game.LoadingStep(game.txGeneratingUnits);
-		if(!IS_SET(update_flags, PREVENT_RESPAWN_UNITS))
+		game->LoadingStep(game->txGeneratingUnits);
+		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
 		if(need_reset)
 			GenerateUnits();
@@ -205,45 +194,45 @@ void OutsideLocationGenerator::OnEnter()
 		if(days > 10)
 			GenerateItems();
 
-		L.OnReenterLevel();
+		game_level->OnReenterLevel();
 	}
 
 	// create colliders
 	if(!reenter)
 	{
-		game.LoadingStep(game.txRecreatingObjects);
-		L.SpawnTerrainCollider();
+		game->LoadingStep(game->txRecreatingObjects);
+		game_level->SpawnTerrainCollider();
 		SpawnOutsideBariers();
 	}
 
 	// handle quest event
-	if(outside->active_quest && outside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && outside->active_quest->quest_id != Q_SCRIPTED)
+	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
 	{
-		Quest_Event* event = outside->active_quest->GetEvent(L.location_index);
+		Quest_Event* event = outside->active_quest->GetEvent(game_level->location_index);
 		if(event)
 		{
 			if(!event->done)
-				game.HandleQuestEvent(event);
-			L.event_handler = event->location_event_handler;
+				quest_mgr->HandleQuestEvent(event);
+			game_level->event_handler = event->location_event_handler;
 		}
 	}
 
 	// generate minimap
-	game.LoadingStep(game.txGeneratingMinimap);
+	game->LoadingStep(game->txGeneratingMinimap);
 	CreateMinimap();
 
 	SpawnTeam();
 
 	// generate guards for bandits quest
-	if(QM.quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && L.location_index == QM.quest_bandits->target_loc)
+	if(quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && game_level->location_index == quest_mgr->quest_bandits->target_loc)
 	{
-		QM.quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
+		quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 		UnitData* ud = UnitData::Get("guard_q_bandyci");
 		int count = Random(4, 5);
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
 		for(int i = 0; i < count; ++i)
 		{
-			Unit* u = L.SpawnUnitNearLocation(*outside, pos, *ud, &Team.leader->pos, 6, 4.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*outside, pos, *ud, &team->leader->pos, 6, 4.f);
 			u->assist = true;
 		}
 	}
@@ -267,19 +256,19 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
-		L.SpawnObjectEntity(area, BaseObject::Get("obelisk"), pos, 0.f);
+		game_level->SpawnObjectEntity(area, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
 		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
-		L.SpawnObjectEntity(area, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
+		game_level->SpawnObjectEntity(area, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
 			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
-			L.SpawnObjectEntity(area, misc[4].obj, pos2, Random(MAX_ANGLE));
+			game_level->SpawnObjectEntity(area, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
 	}
 
@@ -293,7 +282,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(tile == TT_GRASS3)
 		{
@@ -305,7 +294,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			else
 				type = Rand() % 3;
 			OutsideObject& o = trees2[type];
-			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -318,7 +307,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -373,7 +362,7 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 				TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
 				if(type == TT_GRASS || type == TT_GRASS3)
 				{
-					L.SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
+					game_level->SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
 					break;
 				}
 			}
@@ -390,14 +379,13 @@ int OutsideLocationGenerator::HandleUpdate(int days)
 //=================================================================================================
 void OutsideLocationGenerator::SpawnTeam()
 {
-	L.AddPlayerTeam(team_pos, team_dir, reenter, true);
+	game_level->AddPlayerTeam(team_pos, team_dir, reenter, true);
 }
 
 //=================================================================================================
 void OutsideLocationGenerator::CreateMinimap()
 {
-	Game& game = Game::Get();
-	TextureLock lock(game.tMinimap);
+	TextureLock lock(game->tMinimap.tex);
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
@@ -431,22 +419,21 @@ void OutsideLocationGenerator::CreateMinimap()
 		}
 	}
 
-	L.minimap_size = OutsideLocation::size;
+	game_level->minimap_size = OutsideLocation::size;
 }
 
 //=================================================================================================
 void OutsideLocationGenerator::OnLoad()
 {
-	Game& game = Game::Get();
-	L.SetOutsideParams();
-	game.SetTerrainTextures();
+	game_level->SetOutsideParams();
+	game->SetTerrainTextures();
 	ApplyTiles();
 
-	L.RecreateObjects(Net::IsClient());
-	L.SpawnTerrainCollider();
+	game_level->RecreateObjects(Net::IsClient());
+	game_level->SpawnTerrainCollider();
 	SpawnOutsideBariers();
-	game.InitQuadTree();
-	game.CalculateQuadtree();
+	game->InitQuadTree();
+	game->CalculateQuadtree();
 
 	CreateMinimap();
 }
@@ -500,13 +487,13 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		cobj.h = border2;
 
 		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(L.shape_barrier);
+		obj->setCollisionShape(game_level->shape_barrier);
 		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
 		btTransform tr;
 		tr.setIdentity();
 		tr.setOrigin(btVector3(size2, 40.f, border2));
 		obj->setWorldTransform(tr);
-		L.phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// bottom
@@ -518,13 +505,13 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		cobj.h = border2;
 
 		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(L.shape_barrier);
+		obj->setCollisionShape(game_level->shape_barrier);
 		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
 		btTransform tr;
 		tr.setIdentity();
 		tr.setOrigin(btVector3(size2, 40.f, size - border2));
 		obj->setWorldTransform(tr);
-		L.phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// left
@@ -536,13 +523,13 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		cobj.h = size2;
 
 		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(L.shape_barrier);
+		obj->setCollisionShape(game_level->shape_barrier);
 		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
 		btTransform tr;
 		tr.setOrigin(btVector3(border2, 40.f, size2));
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
-		L.phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// right
@@ -554,12 +541,12 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		cobj.h = size2;
 
 		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(L.shape_barrier);
+		obj->setCollisionShape(game_level->shape_barrier);
 		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
 		btTransform tr;
 		tr.setOrigin(btVector3(size - border2, 40.f, size2));
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
-		L.phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 }

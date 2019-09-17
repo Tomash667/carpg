@@ -3,9 +3,10 @@
 #include "Tokenizer.h"
 #include "Content.h"
 #include "Spell.h"
-#include "Music.h"
+#include "MusicTrack.h"
 #include "BitStreamFunc.h"
 #include "BuildingLoader.h"
+#include "ClassLoader.h"
 #include "DialogLoader.h"
 #include "ItemLoader.h"
 #include "ObjectLoader.h"
@@ -20,6 +21,7 @@ static cstring content_id[] = {
 	"objects",
 	"spells",
 	"dialogs",
+	"classes",
 	"units",
 	"buildings",
 	"musics",
@@ -28,8 +30,8 @@ static cstring content_id[] = {
 static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
 
 //=================================================================================================
-Content::Content() : building_loader(new BuildingLoader), dialog_loader(new DialogLoader), item_loader(new ItemLoader), object_loader(new ObjectLoader),
-quest_loader(new QuestLoader), spell_loader(new SpellLoader), unit_loader(new UnitLoader)
+Content::Content() : building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader), item_loader(new ItemLoader),
+object_loader(new ObjectLoader), quest_loader(new QuestLoader), spell_loader(new SpellLoader), unit_loader(new UnitLoader)
 {
 	quest_loader->dialog_loader = dialog_loader;
 }
@@ -57,9 +59,14 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Spells);
 	spell_loader->DoLoading();
 
+	Info("Game: Loading classes.");
+	callback(Id::Classes);
+	class_loader->DoLoading();
+
 	Info("Game: Loading units.");
 	callback(Id::Units);
 	unit_loader->DoLoading();
+	class_loader->ApplyUnits();
 
 	Info("Game: Loading buildings.");
 	callback(Id::Buildings);
@@ -67,7 +74,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 
 	Info("Game: Loading music.");
 	callback(Id::Musics);
-	loaded = Music::Load(errors);
+	loaded = MusicTrack::Load(errors);
 	Info("Game: Loaded music: %u.", loaded);
 
 	Info("Game: Loading quests.");
@@ -77,6 +84,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	unit_loader->ProcessDialogRequests();
 
 	delete building_loader;
+	delete class_loader;
 	delete dialog_loader;
 	delete item_loader;
 	delete object_loader;
@@ -119,8 +127,9 @@ void Content::CleanupContent()
 	DialogLoader::Cleanup();
 	UnitLoader::Cleanup();
 	BuildingLoader::Cleanup();
-	Music::Cleanup();
+	MusicTrack::Cleanup();
 	QuestLoader::Cleanup();
+	ClassLoader::Cleanup();
 }
 
 //=================================================================================================

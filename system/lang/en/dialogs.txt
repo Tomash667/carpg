@@ -1979,4 +1979,11 @@ dialog mage_seller {
 	4 "Ask about strange stone"
 	5 "I can feel the magical aura emanating from this stone, it looks like it is cursed."
 	6 "End dialog"
+	7 "Training"
+	8 "I will help you broaden your horizons. What do you want to know?"
+	9 "$train_lab/int$"
+	10 "$train_lab/wis$"
+	11 "$train_lab/gods_magic$"
+	12 "$train_lab/concentration$"
+	13 "Cancel"
 }

@@ -4,14 +4,14 @@
 #include "ResourceManager.h"
 #include "Engine.h"
 #include "Utility.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void LoadScreen::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tLoadbarBg = tex_mgr.GetLoadedRaw("loadbar_bg.png");
-	tLoadbar = tex_mgr.GetLoadedRaw("loadbar.png");
-	tBackground = tex_mgr.GetLoadedRaw("load_bg.jpg");
+	tLoadbarBg = res_mgr->Load<Texture>("loadbar_bg.png");
+	tLoadbar = res_mgr->Load<Texture>("loadbar.png");
+	tBackground = res_mgr->Load<Texture>("load_bg.jpg");
 }
 
 //=================================================================================================
@@ -21,7 +21,7 @@ void LoadScreen::Draw(ControlDrawData*)
 	gui->DrawSpriteFull(tBackground, Color::White);
 
 	// loadbar background
-	Int2 img_size = GetSize(tLoadbarBg);
+	Int2 img_size = tLoadbarBg->GetSize();
 	Int2 pt((gui->wnd_size.x - img_size.x) / 2, gui->wnd_size.y - img_size.y - 16);
 	gui->DrawSprite(tLoadbarBg, pt);
 
@@ -32,7 +32,7 @@ void LoadScreen::Draw(ControlDrawData*)
 
 	// text
 	Rect r2 = { 32, 0, gui->wnd_size.x - 32, LONG(gui->wnd_size.y - img_size.y - 32) };
-	gui->DrawText(gui->default_font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
+	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
 }
 
 //=================================================================================================
@@ -48,7 +48,7 @@ void LoadScreen::Setup(float min_progress, float max_progress, int steps, cstrin
 		text.clear();
 	progress = min_progress;
 	step = 0;
-	Engine::Get().DoPseudotick();
+	engine->DoPseudotick();
 }
 
 //=================================================================================================
@@ -59,7 +59,7 @@ void LoadScreen::Tick(cstring str)
 	progress = min_progress + (max_progress - min_progress) * step / steps;
 	if(str)
 		text = str;
-	Engine::Get().DoPseudotick();
+	engine->DoPseudotick();
 }
 
 //=================================================================================================

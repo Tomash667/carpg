@@ -26,7 +26,7 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	TEX tLogo;
+	Texture* tLogo;
 	Button bt[6];
 	cstring txSave, txSaveAndExit, txExitToMenuDialog;
 	bool prev_can_save, prev_can_load, prev_hardcore_mode;

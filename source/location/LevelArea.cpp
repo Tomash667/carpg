@@ -11,6 +11,7 @@
 #include "GameFile.h"
 #include "BitStreamFunc.h"
 #include "ParticleSystem.h"
+#include "SaveState.h"
 
 static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
@@ -82,7 +83,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				Unit::AddRefid(unit);
 				unit->Load(f, local);
 				unit->area = this;
 			}
@@ -98,7 +98,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				Usable::AddRefid(usable);
 				usable->Load(f, local);
 			}
 
@@ -120,7 +119,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(GroundItem*& item : items)
 			{
 				item = new GroundItem;
-				GroundItem::AddRefid(item);
 				item->Load(f);
 			}
 
@@ -146,7 +144,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				Unit::AddRefid(unit);
 				unit->Load(f, local);
 				unit->area = this;
 			}
@@ -169,7 +166,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(GroundItem*& item : items)
 			{
 				item = new GroundItem;
-				GroundItem::AddRefid(item);
 				item->Load(f);
 			}
 
@@ -177,7 +173,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				Usable::AddRefid(usable);
 				usable->Load(f, local);
 			}
 
@@ -196,7 +191,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				Unit::AddRefid(unit);
 				unit->Load(f, local);
 				unit->area = this;
 			}
@@ -226,7 +220,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(GroundItem*& item : items)
 			{
 				item = new GroundItem;
-				GroundItem::AddRefid(item);
 				item->Load(f);
 			}
 
@@ -234,7 +227,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				Usable::AddRefid(usable);
 				usable->Load(f, local);
 			}
 
@@ -263,7 +255,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				Unit::AddRefid(unit);
 				unit->Load(f, local);
 				unit->area = this;
 			}
@@ -286,7 +277,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(GroundItem*& item : items)
 			{
 				item = new GroundItem;
-				GroundItem::AddRefid(item);
 				item->Load(f);
 			}
 
@@ -294,7 +284,6 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				Usable::AddRefid(usable);
 				usable->Load(f, local);
 			}
 
@@ -517,6 +506,15 @@ bool LevelArea::Read(BitStreamReader& f)
 	return true;
 }
 
+void LevelArea::Clear()
+{
+	bloods.clear();
+	DeleteElements(objects);
+	DeleteElements(chests);
+	DeleteElements(items);
+	DeleteElements(units);
+}
+
 cstring LevelArea::GetName()
 {
 	switch(area_type)
@@ -527,23 +525,6 @@ cstring LevelArea::GetName()
 		return "Outside";
 	default:
 		return Format("Building%d", area_id);
-	}
-}
-
-void LevelArea::BuildRefidTables()
-{
-	for(Unit* unit : units)
-		Unit::AddRefid(unit);
-	for(Usable* usable : usables)
-		Usable::AddRefid(usable);
-	for(GroundItem* item : items)
-		GroundItem::AddRefid(item);
-	if(tmp)
-	{
-		for(ParticleEmitter* pe : tmp->pes)
-			ParticleEmitter::AddRefid(pe);
-		for(TrailParticleEmitter* tpe : tmp->tpes)
-			TrailParticleEmitter::AddRefid(tpe);
 	}
 }
 
@@ -777,11 +758,11 @@ Chest* LevelArea::FindChestWithItem(const Item* item, int* index)
 }
 
 //=================================================================================================
-Chest* LevelArea::FindChestWithQuestItem(int quest_refid, int* index)
+Chest* LevelArea::FindChestWithQuestItem(int quest_id, int* index)
 {
 	for(Chest* chest : chests)
 	{
-		int idx = chest->FindQuestItem(quest_refid);
+		int idx = chest->FindQuestItem(quest_id);
 		if(idx != -1)
 		{
 			if(index)
@@ -817,8 +798,8 @@ ForLocation::ForLocation(int loc, int level)
 	ctx = LevelAreaContextPool.Get();
 	ctx->entries.clear();
 
-	bool active = (W.GetCurrentLocationIndex() == loc);
-	Location* l = W.GetLocation(loc);
+	bool active = (world->GetCurrentLocationIndex() == loc);
+	Location* l = world->GetLocation(loc);
 	assert(l->last_visit != -1);
 
 	switch(l->type)
@@ -864,7 +845,6 @@ ForLocation::ForLocation(int loc, int level)
 		break;
 	case L_CAVE:
 	case L_DUNGEON:
-	case L_CRYPT:
 		{
 			InsideLocation* inside = static_cast<InsideLocation*>(l);
 			if(inside->IsMultilevel())
@@ -876,7 +856,7 @@ ForLocation::ForLocation(int loc, int level)
 					for(int i = 0; i < multi->generated; ++i)
 					{
 						LevelAreaContext::Entry& e = ctx->entries[i];
-						e.active = (active && L.dungeon_level == i);
+						e.active = (active && game_level->dungeon_level == i);
 						e.area = multi->levels[i];
 						e.level = i;
 						e.loc = loc;
@@ -886,7 +866,7 @@ ForLocation::ForLocation(int loc, int level)
 				{
 					assert(level >= 0 && level < multi->generated);
 					LevelAreaContext::Entry& e = Add1(ctx->entries);
-					e.active = (active && L.dungeon_level == level);
+					e.active = (active && game_level->dungeon_level == level);
 					e.area = multi->levels[level];
 					e.level = level;
 					e.loc = loc;
@@ -904,8 +884,7 @@ ForLocation::ForLocation(int loc, int level)
 			}
 		}
 		break;
-	case L_FOREST:
-	case L_MOONWELL:
+	case L_OUTSIDE:
 	case L_ENCOUNTER:
 	case L_CAMP:
 		{
@@ -931,14 +910,14 @@ ForLocation::~ForLocation()
 }
 
 //=================================================================================================
-GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_refid, LevelAreaContext::Entry** entry, int* item_index)
+GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry, int* item_index)
 {
 	for(LevelAreaContext::Entry& e : entries)
 	{
 		for(int i = 0, len = (int)e.area->items.size(); i < len; ++i)
 		{
 			GroundItem* it = e.area->items[i];
-			if(it->item->IsQuest(quest_refid))
+			if(it->item->IsQuest(quest_id))
 			{
 				if(entry)
 					*entry = &e;
@@ -954,17 +933,16 @@ GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_refid, LevelAreaCont
 
 //=================================================================================================
 // search only alive enemies for now
-Unit* LevelAreaContext::FindUnitWithQuestItem(int quest_refid, LevelAreaContext::Entry** entry, int* unit_index, int* item_iindex)
+Unit* LevelAreaContext::FindUnitWithQuestItem(int quest_id, LevelAreaContext::Entry** entry, int* unit_index, int* item_iindex)
 {
-	Game& game = Game::Get();
 	for(LevelAreaContext::Entry& e : entries)
 	{
 		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
 		{
 			Unit* unit = e.area->units[i];
-			if(unit->IsAlive() && unit->IsEnemy(*game.pc->unit))
+			if(unit->IsAlive() && unit->IsEnemy(*game->pc->unit))
 			{
-				int iindex = unit->FindQuestItem(quest_refid);
+				int iindex = unit->FindQuestItem(quest_id);
 				if(iindex != Unit::INVALID_IINDEX)
 				{
 					if(entry)
@@ -1053,18 +1031,18 @@ Unit* LevelAreaContext::FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::E
 }
 
 //=================================================================================================
-bool LevelAreaContext::RemoveQuestGroundItem(int quest_refid)
+bool LevelAreaContext::RemoveQuestGroundItem(int quest_id)
 {
 	LevelAreaContext::Entry* entry;
 	int index;
-	GroundItem* item = FindQuestGroundItem(quest_refid, &entry, &index);
+	GroundItem* item = FindQuestGroundItem(quest_id, &entry, &index);
 	if(item)
 	{
 		if(entry->active && Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::REMOVE_ITEM;
-			c.id = item->netid;
+			c.id = item->id;
 		}
 		RemoveElementIndex(entry->area->items, index);
 		return true;
@@ -1075,11 +1053,11 @@ bool LevelAreaContext::RemoveQuestGroundItem(int quest_refid)
 
 //=================================================================================================
 // search only alive enemies for now
-bool LevelAreaContext::RemoveQuestItemFromUnit(int quest_refid)
+bool LevelAreaContext::RemoveQuestItemFromUnit(int quest_id)
 {
 	LevelAreaContext::Entry* entry;
 	int item_iindex;
-	Unit* unit = FindUnitWithQuestItem(quest_refid, &entry, nullptr, &item_iindex);
+	Unit* unit = FindUnitWithQuestItem(quest_id, &entry, nullptr, &item_iindex);
 	if(unit)
 	{
 		unit->RemoveItem(item_iindex, entry->active);
@@ -1102,7 +1080,7 @@ bool LevelAreaContext::RemoveUnit(Unit* unit)
 		if(entry->active)
 		{
 			unit->to_remove = true;
-			L.to_remove.push_back(unit);
+			game_level->to_remove.push_back(unit);
 		}
 		else
 			RemoveElementIndex(entry->area->units, unit_index);
@@ -1153,20 +1131,20 @@ void TmpLevelArea::Save(GameWriter& f)
 
 void TmpLevelArea::Load(GameReader& f)
 {
+	const int particle_version = (LOAD_VERSION >= V_DEV ? 1 : 0);
+
 	pes.resize(f.Read<uint>());
 	for(ParticleEmitter*& pe : pes)
 	{
 		pe = new ParticleEmitter;
-		ParticleEmitter::AddRefid(pe);
-		pe->Load(f);
+		pe->Load(f, particle_version);
 	}
 
 	tpes.resize(f.Read<uint>());
 	for(TrailParticleEmitter*& tpe : tpes)
 	{
 		tpe = new TrailParticleEmitter;
-		TrailParticleEmitter::AddRefid(tpe);
-		tpe->Load(f);
+		tpe->Load(f, particle_version);
 	}
 
 	explos.resize(f.Read<uint>());

@@ -18,12 +18,12 @@ bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entr
 //=================================================================================================
 void Quest_SpreadNews::Start()
 {
-	type = QuestType::Mayor;
-	quest_id = Q_SPREAD_NEWS;
-	start_loc = W.GetCurrentLocationIndex();
+	category = QuestCategory::Mayor;
+	type = Q_SPREAD_NEWS;
+	start_loc = world->GetCurrentLocationIndex();
 	Vec2 pos = GetStartLocation().pos;
 	bool sorted = false;
-	const vector<Location*>& locations = W.GetLocations();
+	const vector<Location*>& locations = world->GetLocations();
 	for(uint i = 0, count = locations.size(); i < count; ++i)
 	{
 		if(!locations[i] || locations[i]->type != L_CITY)
@@ -88,13 +88,13 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		// told info to spread by player
 		{
 			OnStart(game->txQuest[213]);
-			QM.quests_timeout2.push_back(this);
+			quest_mgr->quests_timeout2.push_back(this);
 
 			prog = Progress::Started;
 
 			Location& loc = GetStartLocation();
 			bool is_city = LocationHelper::IsCity(loc);
-			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
 		}
 		break;
@@ -104,7 +104,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			uint count = 0;
 			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
-				if(W.GetCurrentLocationIndex() == it->location)
+				if(world->GetCurrentLocationIndex() == it->location)
 				{
 					it->given = true;
 					++count;
@@ -113,7 +113,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 					++count;
 			}
 
-			Location& loc = *W.GetCurrentLocation();
+			Location& loc = *world->GetCurrentLocation();
 			cstring msg = Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
 			if(count == entries.size())
@@ -124,7 +124,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			else
 				OnUpdate(msg);
 
-			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
 	case Progress::Timeout:
@@ -143,7 +143,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			prog = Progress::Finished;
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			Team.AddReward(500, 2000);
+			team->AddReward(500, 2000);
 
 			OnUpdate(game->txQuest[21]);
 		}
@@ -160,7 +160,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 		s.clear();
 		for(uint i = 0, count = entries.size(); i < count; ++i)
 		{
-			s += W.GetLocation(entries[i].location)->name;
+			s += world->GetLocation(entries[i].location)->name;
 			if(i == count - 2)
 				s += game->txQuest[264];
 			else if(i != count - 1)
@@ -180,7 +180,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 //=================================================================================================
 bool Quest_SpreadNews::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 60 && prog < Progress::Deliver;
+	return world->GetWorldtime() - start_time > 60 && prog < Progress::Deliver;
 }
 
 //=================================================================================================
@@ -199,13 +199,13 @@ bool Quest_SpreadNews::IfNeedTalk(cstring topic) const
 		{
 			for(vector<Entry>::const_iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
-				if(it->location == W.GetCurrentLocationIndex())
+				if(it->location == world->GetCurrentLocationIndex())
 					return !it->given;
 			}
 		}
 	}
 	else if(strcmp(topic, "tell_news_end") == 0)
-		return prog == Progress::Deliver && W.GetCurrentLocationIndex() == start_loc;
+		return prog == Progress::Deliver && world->GetCurrentLocationIndex() == start_loc;
 	return false;
 }
 

@@ -14,9 +14,9 @@
 //=================================================================================================
 void Quest_StolenArtifact::Start()
 {
-	quest_id = Q_STOLEN_ARTIFACT;
-	type = QuestType::Random;
-	start_loc = W.GetCurrentLocationIndex();
+	type = Q_STOLEN_ARTIFACT;
+	category = QuestCategory::Random;
+	start_loc = world->GetCurrentLocationIndex();
 	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
 	switch(Rand() % 6)
 	{
@@ -65,10 +65,10 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			OnStart(game->txQuest[86]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
 			Location& sl = GetStartLocation();
-			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
+			target_loc = world->GetRandomSpawnLocation(sl.pos, group);
 			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;
@@ -77,7 +77,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 
 			item->CreateCopy(quest_item);
 			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.refid = refid;
+			quest_item.quest_id = id;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &quest_item;
 			unit_to_spawn = group->GetLeader(tl.st);
@@ -85,7 +85,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 
 			DialogContext::current->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), group->name.c_str(), game->txQuest[group->gender ? 88 : 87],
 				tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 		}
@@ -99,13 +99,13 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 		}
 		break;
 	case Progress::Timeout:
@@ -117,7 +117,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[95]);
 			DialogContext::current->talker->temporary = true;
 		}
@@ -135,7 +135,7 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "random_loc")
-		return W.GetRandomSettlement(start_loc)->name.c_str();
+		return world->GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "Bandyci_ukradli")
 		return Format("%s %s", Upper(group->name.c_str()), game->txQuest[group->gender ? 97 : 96]);
 	else if(str == "Ci_bandyci")
@@ -152,14 +152,14 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 //=================================================================================================
 bool Quest_StolenArtifact::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 60;
+	return world->GetWorldtime() - start_time > 60;
 }
 
 //=================================================================================================
 bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		ForLocation(target_loc, at_level)->RemoveQuestItemFromUnit(refid);
+		ForLocation(target_loc, at_level)->RemoveQuestItemFromUnit(id);
 
 	OnUpdate(game->txQuest[277]);
 	return true;
@@ -205,7 +205,7 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 	{
 		item->CreateCopy(quest_item);
 		quest_item.id = Format("$%s", item->id.c_str());
-		quest_item.refid = refid;
+		quest_item.quest_id = id;
 		spawn_item = Quest_Dungeon::Item_GiveSpawned;
 		item_to_give[0] = &quest_item;
 		unit_to_spawn = group->GetLeader(st);

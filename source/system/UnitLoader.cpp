@@ -33,7 +33,6 @@ enum Group
 	G_SPELL_KEYWORD,
 	G_ITEM_KEYWORD,
 	G_GROUP_KEYWORD,
-	G_CLASS,
 	G_TRADER_KEYWORD,
 	G_ITEM_GROUP,
 	G_CONSUMABLE_GROUP,
@@ -283,6 +282,8 @@ void UnitLoader::InitTokenizer()
 		{ "contest", F2_CONTEST },
 		{ "contest_50", F2_CONTEST_50 },
 		{ "dont_talk", F2_DONT_TALK },
+		{ "construct", F2_CONSTRUCT },
+		{ "fast_learner", F2_FAST_LEARNER },
 		{ "old", F2_OLD },
 		{ "melee", F2_MELEE },
 		{ "melee_50", F2_MELEE_50 },
@@ -410,9 +411,6 @@ void UnitLoader::InitTokenizer()
 		{ "gender", GK_GENDER }
 		});
 
-	for(ClassInfo& clas : ClassInfo::classes)
-		t.AddKeyword(clas.id, (int)clas.class_id, G_CLASS);
-
 	t.AddKeywords(G_TRADER_KEYWORD, {
 		{ "stock", TK_STOCK },
 		{ "groups", TK_GROUPS },
@@ -431,11 +429,11 @@ void UnitLoader::InitTokenizer()
 		{ "book", IT_BOOK }
 		});
 
-	t.AddKeywords(G_CONSUMABLE_GROUP, {
-		{ "food", Food },
-		{ "drink", Drink },
-		{ "potion", Potion },
-		{ "herb", Herb }
+	t.AddEnums<ConsumableType>(G_CONSUMABLE_GROUP, {
+		{ "food", ConsumableType::Food },
+		{ "drink", ConsumableType::Drink },
+		{ "potion", ConsumableType::Potion },
+		{ "herb", ConsumableType::Herb }
 		});
 
 	t.AddKeywords(G_SUBPROFILE_GROUP, {
@@ -459,7 +457,9 @@ void UnitLoader::InitTokenizer()
 		{ "ranged", TAG_RANGED },
 		{ "def", TAG_DEF },
 		{ "stamina", TAG_STAMINA },
-		{ "mage", TAG_MAGE }
+		{ "mage", TAG_MAGE },
+		{ "mana", TAG_MANA },
+		{ "cleric", TAG_CLERIC }
 		});
 }
 
@@ -920,8 +920,13 @@ void UnitLoader::ParseUnit(const string& id)
 			crc.Update(unit->armor_type);
 			break;
 		case P_CLASS:
-			unit->clas = (Class)t.MustGetKeywordId(G_CLASS);
-			crc.Update(unit->clas);
+			{
+				const string& id = t.MustGetItemKeyword();
+				unit->clas = Class::TryGet(id);
+				if(!unit->clas)
+					t.Throw("Invalid unit class '%s'.", id.c_str());
+				crc.Update(unit->clas->id);
+			}
 			break;
 		case P_TRADER:
 			if(unit->trader)
@@ -1007,9 +1012,9 @@ void UnitLoader::ParseUnit(const string& id)
 	}
 
 	// configure
-	if(IS_SET(unit->flags, F_HUMAN))
+	if(IsSet(unit->flags, F_HUMAN))
 		unit->type = UNIT_TYPE::HUMAN;
-	else if(IS_SET(unit->flags, F_HUMANOID))
+	else if(IsSet(unit->flags, F_HUMANOID))
 		unit->type = UNIT_TYPE::HUMANOID;
 	else
 		unit->type = UNIT_TYPE::ANIMAL;
@@ -1212,7 +1217,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 						t.Unexpected();
 						break;
 					}
-					if(IS_SET(set, 1 << type))
+					if(IsSet(set, 1 << type))
 						t.Throw("Subprofile priority already set.");
 					set |= (1 << type);
 					t.Next();
@@ -1275,7 +1280,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				while(!t.IsSymbol('}'))
 				{
 					ItemTag tag = (ItemTag)t.MustGetKeywordId(G_TAG);
-					if(IS_SET(set, 1 << tag))
+					if(IsSet(set, 1 << tag))
 						t.Throw("Subprofile tag priority already set.");
 					set |= (1 << tag);
 					t.Next();
@@ -1779,16 +1784,16 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 			else
 			{
 				// null
-				if(index == 3)
-					t.Throw("Too many spells (max 3 for now).");
+				if(index == MAX_SPELLS)
+					t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
 				++index;
 				crc.Update(0);
 			}
 		}
 		else
 		{
-			if(index == 3)
-				t.Throw("Too many spells (max 3 for now).");
+			if(index == MAX_SPELLS)
+				t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
 			t.AssertSymbol('{');
 			t.Next();
 			const string& spell_id = t.MustGetItemKeyword();
@@ -1819,8 +1824,6 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 //=================================================================================================
 void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 {
-	auto& sound_mgr = ResourceManager::Get().For<Sound>();
-
 	// {
 	t.AssertSymbol('{');
 	t.Next();
@@ -1838,7 +1841,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 			while(!t.IsSymbol('}'))
 			{
 				const string& filename = t.MustGetString();
-				SoundPtr sound = sound_mgr.TryGet(filename);
+				SoundPtr sound = res_mgr->TryGet<Sound>(filename);
 				if(!sound)
 					LoadError("Missing sound '%s'.", filename.c_str());
 				else
@@ -1852,7 +1855,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 		else
 		{
 			const string& filename = t.MustGetString();
-			SoundPtr sound = sound_mgr.TryGet(filename);
+			SoundPtr sound = res_mgr->TryGet<Sound>(filename);
 			if(!sound)
 				LoadError("Missing sound '%s'.", filename.c_str());
 			else

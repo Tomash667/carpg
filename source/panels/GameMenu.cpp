@@ -5,7 +5,7 @@
 #include "Input.h"
 #include "ResourceManager.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "SaveLoadPanel.h"
 
 //=================================================================================================
@@ -38,7 +38,7 @@ void GameMenu::LoadLanguage()
 		bt[i].id = IdReturnToGame + i;
 		bt[i].parent = this;
 		bt[i].text = s.Get(names[i]);
-		bt[i].size = gui->default_font->CalculateSize(bt[i].text) + Int2(24, 24);
+		bt[i].size = GameGui::font->CalculateSize(bt[i].text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, bt[i].size);
 	}
@@ -59,14 +59,13 @@ void GameMenu::LoadLanguage()
 //=================================================================================================
 void GameMenu::LoadData()
 {
-	ResourceManager::Get<Texture>().AddLoadTask("logo_small.png", tLogo);
+	tLogo = res_mgr->Load<Texture>("logo_small.png");
 }
 
 //=================================================================================================
 void GameMenu::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	gui->DrawSprite(tLogo, global_pos + Int2(8, 8));
 
@@ -77,10 +76,9 @@ void GameMenu::Draw(ControlDrawData*)
 //=================================================================================================
 void GameMenu::Update(float dt)
 {
-	Game& game = Game::Get();
-	bool can_save = game.CanSaveGame(),
-		can_load = game.CanLoadGame(),
-		hardcore_mode = game.hardcore_mode;
+	bool can_save = game->CanSaveGame(),
+		can_load = game->CanLoadGame(),
+		hardcore_mode = game->hardcore_mode;
 
 	if(can_save != prev_can_save)
 	{
@@ -125,20 +123,19 @@ void GameMenu::Event(GuiEvent e)
 		visible = false;
 	else if(e >= GuiEvent_Custom)
 	{
-		Game& game = Game::Get();
 		switch((ButtonId)e)
 		{
 		case IdReturnToGame:
 			CloseDialog();
 			break;
 		case IdSaveGame:
-			game.gui->saveload->ShowSavePanel();
+			game_gui->saveload->ShowSavePanel();
 			break;
 		case IdLoadGame:
-			game.gui->saveload->ShowLoadPanel();
+			game_gui->saveload->ShowLoadPanel();
 			break;
 		case IdOptions:
-			game.gui->ShowOptions();
+			game_gui->ShowOptions();
 			break;
 		case IdExit:
 			{
@@ -146,7 +143,7 @@ void GameMenu::Event(GuiEvent e)
 				info.event = [](int id)
 				{
 					if(id == BUTTON_YES)
-						Game::Get().ExitToMenu();
+						game->ExitToMenu();
 				};
 				info.name = "exit_to_menu";
 				info.parent = nullptr;
@@ -159,7 +156,7 @@ void GameMenu::Event(GuiEvent e)
 			}
 			break;
 		case IdQuit:
-			game.gui->ShowQuitDialog();
+			game_gui->ShowQuitDialog();
 			break;
 		}
 	}

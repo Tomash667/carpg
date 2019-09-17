@@ -14,9 +14,9 @@
 //=================================================================================================
 void Quest_KillAnimals::Start()
 {
-	quest_id = Q_KILL_ANIMALS;
-	type = QuestType::Captain;
-	start_loc = W.GetCurrentLocationIndex();
+	type = Q_KILL_ANIMALS;
+	category = QuestCategory::Captain;
+	start_loc = world->GetCurrentLocationIndex();
 }
 
 //=================================================================================================
@@ -46,11 +46,14 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		// player accepted quest
 		{
 			OnStart(game->txQuest[76]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
 			// event
 			Location& sl = GetStartLocation();
-			target_loc = W.GetClosestLocation(Rand() % 2 == 0 ? L_FOREST : L_CAVE, sl.pos);
+			if(Rand() % 2 == 0)
+				target_loc = world->GetClosestLocation(L_CAVE, sl.pos);
+			else
+				target_loc = world->GetClosestLocation(L_OUTSIDE, sl.pos, FOREST);
 			location_event_handler = this;
 			at_level = 0;
 
@@ -61,7 +64,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				tl.st = 5;
 			st = tl.st;
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 		}
 		break;
@@ -74,7 +77,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(Format(game->txQuest[78], GetTargetLocationName()));
 		}
 		break;
@@ -84,7 +87,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			int reward = GetReward();
-			Team.AddReward(2500, reward * 3);
+			team->AddReward(2500, reward * 3);
 			OnUpdate(game->txQuest[79]);
 		}
 		break;
@@ -100,7 +103,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
 	}
@@ -125,7 +128,7 @@ cstring Quest_KillAnimals::FormatString(const string& str)
 //=================================================================================================
 bool Quest_KillAnimals::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -134,7 +137,7 @@ bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 	if(prog == Progress::Started)
 	{
 		OnUpdate(game->txQuest[277]);
-		W.AbadonLocation(&GetTargetLocation());
+		world->AbadonLocation(&GetTargetLocation());
 	}
 
 	return true;
@@ -151,7 +154,7 @@ bool Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
 //=================================================================================================
 bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
 {
-	return strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation && W.GetCurrentLocationIndex() == start_loc;
+	return strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation && world->GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================

@@ -1,13 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "Grid.h"
 #include "CheckBox.h"
 #include "Version.h"
 
 //-----------------------------------------------------------------------------
-class PickServerPanel : public GameDialogBox
+class PickServerPanel : public DialogBox
 {
 public:
 	enum Id
@@ -51,7 +51,7 @@ private:
 	void AddServer(nlohmann::json&);
 	void CheckAutojoin();
 
-	TEX tIcoPassword, tIcoSave;
+	TexturePtr tIcoPassword, tIcoSave;
 	CheckBox cb_internet, cb_lan;
 	float timer;
 	cstring txFailedToGetServers, txInvalidServerVersion;

@@ -5,7 +5,6 @@
 #include "OutsideLocation.h"
 #include "Perlin.h"
 #include "Terrain.h"
-#include "Team.h"
 #include "Level.h"
 #include "World.h"
 #include "Chest.h"
@@ -119,35 +118,34 @@ void EncounterGenerator::Generate()
 //=================================================================================================
 void EncounterGenerator::OnEnter()
 {
-	Game& game = Game::Get();
 	outside->loaded_resources = false;
-	L.Apply();
+	game_level->Apply();
 
 	ApplyTiles();
-	L.SetOutsideParams();
+	game_level->SetOutsideParams();
 
 	// generate objects
-	game.LoadingStep(game.txGeneratingObjects);
+	game->LoadingStep(game->txGeneratingObjects);
 	SpawnForestObjects((enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT) ? 0 : 1);
 
 	// create colliders
-	game.LoadingStep(game.txRecreatingObjects);
-	L.SpawnTerrainCollider();
+	game->LoadingStep(game->txRecreatingObjects);
+	game_level->SpawnTerrainCollider();
 	SpawnOutsideBariers();
 
 	// generate units
-	game.LoadingStep(game.txGeneratingUnits);
+	game->LoadingStep(game->txGeneratingUnits);
 	GameDialog* dialog;
 	Unit* talker;
 	Quest* quest;
 	SpawnEncounterUnits(dialog, talker, quest);
 
 	// generate items
-	game.LoadingStep(game.txGeneratingItems);
+	game->LoadingStep(game->txGeneratingItems);
 	SpawnForestItems(-1);
 
 	// generate minimap
-	game.LoadingStep(game.txGeneratingMinimap);
+	game->LoadingStep(game->txGeneratingMinimap);
 	CreateMinimap();
 
 	// add team
@@ -155,7 +153,7 @@ void EncounterGenerator::OnEnter()
 
 	// auto talk with leader
 	if(dialog)
-		talker->StartAutoTalk(true, dialog);
+		talker->OrderAutoTalk(true, dialog);
 }
 
 //=================================================================================================
@@ -178,8 +176,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		break;
 	}
 
-	LevelArea& area = *L.local_area;
-	EncounterData encounter = W.GetCurrentEncounter();
+	LevelArea& area = *game_level->local_area;
+	EncounterData encounter = world->GetCurrentEncounter();
 	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
 	bool dont_attack = false, back_attack = false, cursed_stone = false;
@@ -241,8 +239,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				group_name2 = "wagon_guards";
 				count2 = Random(2, 3);
 				level2 = Clamp(encounter.st, 5, 6);
-				L.SpawnObjectNearLocation(area, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
-				Chest* chest = L.SpawnObjectNearLocation(area, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
+				game_level->SpawnObjectNearLocation(area, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
+				Chest* chest = game_level->SpawnObjectNearLocation(area, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
 				{
 					int gold;
@@ -250,7 +248,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 					InsertItemBare(chest->items, Item::gold, (uint)gold);
 					SortItems(chest->items);
 				}
-				SM.GetVar("guards_enc_reward") = false;
+				script_mgr->GetVar("guards_enc_reward") = false;
 			}
 			break;
 		case SE_HEROES_VS_ENEMIES:
@@ -298,18 +296,18 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			dont_attack = true;
 			dialog = GameDialog::TryGet("q_crazies");
 			count = 1;
-			QM.quest_crazies->check_stone = true;
+			quest_mgr->quest_crazies->check_stone = true;
 			cursed_stone = true;
 			break;
 		case SE_UNK:
 			group_name = "unk";
 			level = 13;
 			back_attack = true;
-			if(QM.quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
+			if(quest_mgr->quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 			{
-				QM.quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
+				quest_mgr->quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
 				count = 1;
-				QM.quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
+				quest_mgr->quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
 			}
 			else
 			{
@@ -402,14 +400,14 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		dialog = enc->dialog;
 		dont_attack = enc->dont_attack;
 		quest = enc->quest;
-		L.event_handler = enc->location_event_handler;
+		game_level->event_handler = enc->location_event_handler;
 
 		if(enc->scripted)
 		{
 			Quest_Scripted* q = (Quest_Scripted*)quest;
 			ScriptEvent event(EVENT_ENCOUNTER);
 			q->FireEvent(event);
-			W.RemoveEncounter(enc->index);
+			world->RemoveEncounter(enc->index);
 		}
 	}
 
@@ -445,7 +443,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			unit_level = -level;
 		else
 			unit_level = Clamp(essential->level.Random(), level / 2, level);
-		talker = L.SpawnUnitNearLocation(area, spawn_pos, *essential, &look_pt, unit_level, 4.f);
+		talker = game_level->SpawnUnitNearLocation(area, spawn_pos, *essential, &look_pt, unit_level, 4.f);
 		talker->dont_attack = dont_attack;
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--count;
@@ -462,7 +460,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	if(group_name)
 	{
 		UnitGroup* group = UnitGroup::TryGet(group_name);
-		L.SpawnUnitsGroup(area, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
+		game_level->SpawnUnitsGroup(area, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
 		{
 			u->dont_attack = dont_attack;
 			float dist = Vec3::Distance(u->pos, look_pt);
@@ -478,7 +476,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	if(group_name2)
 	{
 		UnitGroup* group = UnitGroup::TryGet(group_name2);
-		L.SpawnUnitsGroup(area, spawn_pos, &look_pt, count2, group, level2,
+		game_level->SpawnUnitsGroup(area, spawn_pos, &look_pt, count2, group, level2,
 			[&](Unit* u) { u->dont_attack = dont_attack; });
 	}
 }
@@ -514,5 +512,5 @@ void EncounterGenerator::SpawnEncounterTeam()
 		break;
 	}
 
-	L.AddPlayerTeam(pos, dir, false, true);
+	game_level->AddPlayerTeam(pos, dir, false, true);
 }

@@ -129,7 +129,7 @@ void ItemScript::Test(string& errors, uint& count)
 				errors += Format("\tIf chance %d.\n", a);
 				++count;
 			}
-			CLEAR_BIT(elsel, BIT(depth));
+			ClearBit(elsel, Bit(depth));
 			++depth;
 			++ps;
 			break;
@@ -140,7 +140,7 @@ void ItemScript::Test(string& errors, uint& count)
 				errors += Format("\tLevel %d.\n", a);
 				++count;
 			}
-			CLEAR_BIT(elsel, BIT(depth));
+			ClearBit(elsel, Bit(depth));
 			++depth;
 			++ps;
 			break;
@@ -152,13 +152,13 @@ void ItemScript::Test(string& errors, uint& count)
 			}
 			else
 			{
-				if(IS_SET(elsel, BIT(depth - 1)))
+				if(IsSet(elsel, Bit(depth - 1)))
 				{
 					errors += "\tNext else.\n";
 					++count;
 				}
 				else
-					SET_BIT(elsel, BIT(depth - 1));
+					SetBit(elsel, Bit(depth - 1));
 			}
 			break;
 		case PS_END_IF:

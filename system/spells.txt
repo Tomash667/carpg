@@ -55,7 +55,8 @@ spell raise {
 	type target
 	flags {raise non_combat}
 	cooldown {10 15}
-	range 15
+	range 2.5
+	move_range 15
 	tex_particle "czarna_iskra.png" 0.1
 	sound_cast "Darkness3.mp3" 1
 }
@@ -106,11 +107,13 @@ spell exploding_skull {
 
 spell heal {
 	type target
-	flags {heal non_combat}
-	dmg 150 + 20
-	cooldown {10 15}
-	range 15
-	tex_particle "heal.png" 0.03
+	flags {heal non_combat cleric}
+	dmg 150 + 5 // 5 points per charisma/gods_magic
+	cooldown 5
+	range 7.5
+	move_range 15
+	mana 100
+	tex_particle "heal_effect.png" 0.1
 	sound_cast "heal.mp3" 1
 }
 

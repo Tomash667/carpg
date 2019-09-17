@@ -534,6 +534,10 @@ item a_stamina {
 	name "Amulet of energy"
 	desc "+100 to stamina and increase regeneration speed of stamina."
 }
+item a_mana {
+	name "Amulet of mana"
+	desc "+150 to mana and increase regeneration speed of mana."
+}
 item a_warrior {
 	name "Amulet of warrior"
 	desc "+50 to melee attack, +10 to strength, +20 to one handed weapon skill."
@@ -573,6 +577,18 @@ item r_end {
 item r_dex {
 	name "Ring of dexterity"
 	desc "+5 to dexterity."
+}
+item r_int {
+	name "Ring of inteligence"
+	desc "+5 to inteligence."
+}
+item r_wis {
+	name "Ring of wisdom"
+	desc "+5 to wisdom."
+}
+item r_cha {
+	name "Ring of charisma"
+	desc "+5 to charisma."
 }
 item r_hp {
 	name "Ring of health"
@@ -646,6 +662,18 @@ item r_carry {
 	name "Ring of porter"
 	desc "+50% to carry capacity."
 }
+item r_gods_magic {
+	name "Ring of beliver"
+	desc "+10 to gods magic skill."
+}
+item r_concentration {
+	name "Ring of concentration"
+	desc "+10 to concentration skill."
+}
+item r_mana {
+	name "Ring of mana"
+	desc "+100 to mana."
+}
 item r_str2 {
 	name "Ring of greater strength"
 	desc "+15 to strength."
@@ -657,6 +685,18 @@ item r_end2 {
 item r_dex2 {
 	name "Ring of greater dexterity"
 	desc "+15 to dexterity."
+}
+item r_int2 {
+	name "Ring of greater inteligence"
+	desc "+15 to inteligence."
+}
+item r_wis2 {
+	name "Ring of greater wisdom"
+	desc "+15 to wisdom."
+}
+item r_cha2 {
+	name "Ring of greater charisma"
+	desc "+15 to charisma."
 }
 item r_regeneration {
 	name "Ring of regeneration"
@@ -670,6 +710,10 @@ item r_poison_resistance {
 	name "Ring of poison resistance"
 	desc "+50% poison resistance."
 }
+item r_mana_regen {
+	name "Ring of harmony"
+	desc "+100% to mana regeneration speed."
+}
 
 //------------------------------------------------------------------------------
 // POTIONS
@@ -682,20 +726,32 @@ item p_nreg2 {
 	desc "It speeds up the natural regeneration. Dose for 30 days of treatment. Drink it before you rest."
 }
 item p_hp {
-	name "Small healing potion"
-	desc "Magic potion, which instantly heals 200 hit points."
+	name "Healing potion"
+	desc "Magic potion, which instantly heals 250 hit points."
 }
 item p_hp2 {
-	name "Healing potion"
-	desc "Magic potion, which instantly heals 400 hit points."
+	name "Healing elixir"
+	desc "Magic potion, which instantly heals 500 hit points."
 }
 item p_hp3 {
-	name "Big healing potion"
-	desc "Magic potion, which instantly heals 600 hit points."
+	name "Healing extract"
+	desc "Magic potion, which instantly heals 1000 hit points."
+}
+item p_mp {
+	name "Mana potion"
+	desc "Magic potion, which instantly recovers 250 mana points."
+}
+item p_mp2 {
+	name "Mana elixir"
+	desc "Magic potion, which instantly recovers 500 mana points."
+}
+item p_mp3 {
+	name "Mana extract"
+	desc "Magic potion, which instantly recovers 1000 mana points."
 }
 item p_reg {
 	name "Regeneration potion"
-	desc "Magic potion, which immediately regenerates wounds. Heals 5 points of health for 6 minutes."
+	desc "Magic potion, which quickly regenerates wounds. Heals 5 points of health for 6 minutes."
 }
 item p_antidote {
 	name "Antidote"
@@ -813,6 +869,10 @@ item green_herb {
 item alchemist_herb {
 	name "Alchemical herb"
 	desc "A plant with unknown alchemical properties."
+}
+item magic_crystal {
+	name "Magic crystal"
+	desc "This crystal is edible. Restores 150 mana points after eating."
 }
 
 //------------------------------------------------------------------------------

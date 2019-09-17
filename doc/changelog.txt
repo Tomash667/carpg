@@ -1,9 +1,41 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Version 0.11.1 (???):
+Wersja 0.12 (???):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
++ nowa klasa gracza: kap³an - czar uleczenia
++ mana
++ szybka podró¿ (mo¿e byæ u¿yta przez przywódcê w bezpiecznej lokalizacji by szybko powróciæ na mapê œwiata)
++ nowe umiejêtnoœci: magia bogów, koncentracja
++ nowe atuty: silna aura, harmonia many
++ nowe przedmioty: magiczny kryszta³, miksturki many, 10 magicznych pierœcieni, amulet many
++ obni¿one wymagania si³y dla broni obuchowych/toporów
++ wczytywanie klas postaci z pliku
++ aktualizacja bibliotek: FMod 1.10.14
++ usprawnione sprawdzanie wersji, wykorzystywanie biblioteki libcurl
+- zmiana postaci w trybie multiplayer resetowa³a ekwipunek postaci
+- jedzenie zió³ ma teraz poprawn¹ animacjê i dŸwiêki
+- dŸwiêk drzwi by³ bardzo rzadko odtwarzany w mp gdy ktoœ inny korzysta³ z drzwi
+- crash gdy gracz trafiony czarem piorun w tej samej chwili wyjdzie z gry
+- crash klienta po wczytaniu gry z efektem pioruna
+- crash gdy npc pod¹¿a za graczem a on wyjdzie z gry
+- crash gdy npc ucieka do gracza a on wyjedzie z gry
+- crash po wczytaniu gry gdy npc chcia³ coœ od gracza którego nie ma po wczytaniu
+- obra¿enia od niektórych czarów by³y Ÿle liczone i nieuwzglêdnia³o magicznej si³y
+- porwany nie do³¹cza do walki na arenie
+- nie mo¿na dawaæ z³ota przywo³anym jednostkom i tymczasowym cz³onkom dru¿yny
+- crash przy oknie dialogowym dawania z³ota/wyrzucania gdy gracz wyjdzie z gry
+- poprawiony k¹t wchodzenia do lokalizacji
+- usuwanie cz³onków dru¿yny w multiplayer nie zmienia kolejnoœci dru¿yny
+- klient po wyjœciu z gry multiplayer i rozpoczêciu singleplayer nie by³ przewódc¹ dru¿yny
+
+--------------------------------------------------------------------------------
+Wersja 0.11.1 (2019-08-12):
 - crash przy spotkaniu zwierz¹t na mapie [Savagesheep]
 - crash gdy nowy gracz do³¹cza do wczytanej gry multiplayer [Savagesheep]
+- zabezpieczenie przed crashem przy wczytywaniu przedmiotów zwi¹zanych z zadaniami w multiplayer [Savagesheep]
+- crash gdy ai nie trafi z czara wyssania krwi i trafi w maneki lub tarczê strzelnicz¹ [Savagesheep]
+- atakowanie przyjaznych orków nie powoduje ju¿ ataku przez ludzi
 - bry³a kolizji jednostek by³ wy¿sza ni¿ powinna
 - startowa rozdzielczoœæ 800x600
 - uruchomiona gra LAN wyœwietla³a siê na liœcie serwerów
@@ -30,7 +62,7 @@ Wersja 0.11 (2019-07-28):
 - naprawione crashe przy u¿yciu opcji nosound i nomusic
 - naprawiony rzadki crash przy generowaniu/wêdrówce [Ampped]
 - wczytywanie zepsutego zapisu a nastêpnie dobrego mo¿e zcrashowaæ grê [Ampped]
-- dodanie zabezpieczenia przed cr	ashem w ekwipunku [Ampped/jakee248]
+- dodanie zabezpieczenia przed crashem w ekwipunku [Ampped/jakee248]
 - efekt leczenia zaklêcia wyssania krwii ignorowa³ odpornoœæ na czary celu
 - losowe obozy siê nie generowa³y
 - crash po wejœciu do podziemi w zadaniu z bandytami [Ampped]

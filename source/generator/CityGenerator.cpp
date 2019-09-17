@@ -64,7 +64,8 @@ void CityGenerator::SetRoadSize(int _road_size, int _road_part)
 }
 
 //=================================================================================================
-void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads)
+void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points,
+	int& gates, bool fill_roads)
 {
 	memset(tiles, 0, sizeof(TerrainTile)*w*h);
 
@@ -827,11 +828,11 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				}
 			}
 
-			if(IS_SET(build_it->building->flags, Building::FAVOR_CENTER))
+			if(IsSet(build_it->building->flags, Building::FAVOR_CENTER))
 				range = Int2::Distance(centrum, it->pt);
 			else
 				range = 0;
-			if(IS_SET(build_it->building->flags, Building::FAVOR_ROAD))
+			if(IsSet(build_it->building->flags, Building::FAVOR_ROAD))
 				range += max(0, best_length - 1);
 			else
 				range += max(0, best_length - 5);
@@ -1573,7 +1574,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 	}
 
 	// tiles under gates
-	if(IS_SET(gates, GATE_SOUTH))
+	if(IsSet(gates, GATE_SOUTH))
 	{
 		tiles[w / 2 - 1 + int(0.15f*w)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + int(0.15f*w)*w].Set(TT_ROAD, TM_ROAD);
@@ -1582,7 +1583,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[w / 2 + (int(0.15f*w) + 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + 1 + (int(0.15f*w) + 1)*w].Set(TT_ROAD, TM_ROAD);
 	}
-	if(IS_SET(gates, GATE_WEST))
+	if(IsSet(gates, GATE_WEST))
 	{
 		tiles[int(0.15f*w) + (w / 2 - 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[int(0.15f*w) + (w / 2)*w].Set(TT_ROAD, TM_ROAD);
@@ -1591,7 +1592,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[int(0.15f*w) + 1 + (w / 2)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[int(0.15f*w) + 1 + (w / 2 + 1)*w].Set(TT_ROAD, TM_ROAD);
 	}
-	if(IS_SET(gates, GATE_NORTH))
+	if(IsSet(gates, GATE_NORTH))
 	{
 		tiles[w / 2 - 1 + int(0.85f*w)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + int(0.85f*w)*w].Set(TT_ROAD, TM_ROAD);
@@ -1600,7 +1601,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[w / 2 + (int(0.85f*w) - 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + 1 + (int(0.85f*w) - 1)*w].Set(TT_ROAD, TM_ROAD);
 	}
-	if(IS_SET(gates, GATE_EAST))
+	if(IsSet(gates, GATE_EAST))
 	{
 		tiles[int(0.85f*w) + (w / 2 - 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[int(0.85f*w) + (w / 2)*w].Set(TT_ROAD, TM_ROAD);
@@ -1672,11 +1673,11 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		Road2& r = roads[index];
 
 		int choices = 0;
-		if(!IS_SET(r.flags, ROAD_START_CHECKED))
+		if(!IsSet(r.flags, ROAD_START_CHECKED))
 			choice[choices++] = RT_START;
-		if(!IS_SET(r.flags, ROAD_MID_CHECKED))
+		if(!IsSet(r.flags, ROAD_MID_CHECKED))
 			choice[choices++] = RT_MID;
-		if(!IS_SET(r.flags, ROAD_END_CHECKED))
+		if(!IsSet(r.flags, ROAD_END_CHECKED))
 			choice[choices++] = RT_END;
 		if(choices == 0)
 			continue;
@@ -1684,7 +1685,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		const int type = choice[Rand() % choices];
 
 		Int2 pt;
-		const bool horizontal = IS_SET(r.flags, ROAD_HORIZONTAL);
+		const bool horizontal = IsSet(r.flags, ROAD_HORIZONTAL);
 
 		if(type == RT_MID)
 		{
@@ -1745,7 +1746,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		}
 
 		GameDirection dir = (GameDirection)get_choice_pop(choice, choices);
-		const bool all_done = IS_ALL_SET(r.flags, ROAD_ALL_CHECKED);
+		const bool all_done = IsAllSet(r.flags, ROAD_ALL_CHECKED);
 		bool try_dual;
 		if(MakeAndFillRoad(pt, dir, index))
 			try_dual = ((Rand() % ROAD_DUAL_CHANCE) == 0);
@@ -1882,7 +1883,7 @@ void CityGenerator::FillRoad(const Int2& pt, GameDirection dir, int dist)
 		maxx = end_pt.x,
 		maxy = end_pt.y;
 
-	if(IS_SET(road.flags, ROAD_HORIZONTAL))
+	if(IsSet(road.flags, ROAD_HORIZONTAL))
 	{
 		--minx;
 		++maxx;
@@ -2043,7 +2044,7 @@ int CityGenerator::GetNumberOfSteps()
 	else if(!reenter)
 	{
 		steps += 2; // txGeneratingUnits, txGeneratingPhysics
-		if(loc->last_visit != W.GetWorldtime())
+		if(loc->last_visit != world->GetWorldtime())
 			++steps; // txGeneratingItems
 	}
 	if(!reenter)
@@ -2058,7 +2059,7 @@ void CityGenerator::Generate()
 	if(village)
 	{
 		Info("Generating village map.");
-		CLEAR_BIT(city->flags, City::HaveExit);
+		ClearBit(city->flags, City::HaveExit);
 	}
 	else
 		Info("Generating city map.");
@@ -2208,34 +2209,33 @@ void CityGenerator::Generate()
 //=================================================================================================
 void CityGenerator::OnEnter()
 {
-	Game& game = Game::Get();
-	game.arena->free = true;
+	game->arena->free = true;
 
 	if(!reenter)
 	{
-		L.Apply();
+		game_level->Apply();
 		ApplyTiles();
 	}
 
-	L.SetOutsideParams();
+	game_level->SetOutsideParams();
 
 	if(first)
 	{
 		// generate buildings
-		game.LoadingStep(game.txGeneratingBuildings);
+		game->LoadingStep(game->txGeneratingBuildings);
 		SpawnBuildings();
 
 		// generate objects
-		game.LoadingStep(game.txGeneratingObjects);
+		game->LoadingStep(game->txGeneratingObjects);
 		SpawnObjects();
 
 		// generate units
-		game.LoadingStep(game.txGeneratingUnits);
+		game->LoadingStep(game->txGeneratingUnits);
 		SpawnUnits();
 		SpawnTemporaryUnits();
 
 		// generate items
-		game.LoadingStep(game.txGeneratingItems);
+		game->LoadingStep(game->txGeneratingItems);
 		GeneratePickableItems();
 		if(city->IsVillage())
 			SpawnForestItems(-2);
@@ -2248,18 +2248,18 @@ void CityGenerator::OnEnter()
 
 		// remove blood/corpses
 		int days;
-		city->CheckUpdate(days, W.GetWorldtime());
+		city->CheckUpdate(days, world->GetWorldtime());
 		if(days > 0)
-			L.UpdateLocation(days, 100, false);
+			game_level->UpdateLocation(days, 100, false);
 
 		// recreate units
-		game.LoadingStep(game.txGeneratingUnits);
+		game->LoadingStep(game->txGeneratingUnits);
 		RespawnUnits();
 		RepositionUnits();
 
 		// recreate physics
-		game.LoadingStep(game.txGeneratingPhysics);
-		L.RecreateObjects();
+		game->LoadingStep(game->txGeneratingPhysics);
+		game_level->RecreateObjects();
 		RespawnBuildingPhysics();
 
 		if(city->reset)
@@ -2271,7 +2271,7 @@ void CityGenerator::OnEnter()
 		// generate items
 		if(days > 0)
 		{
-			game.LoadingStep(game.txGeneratingItems);
+			game->LoadingStep(game->txGeneratingItems);
 			if(days >= 10)
 			{
 				GeneratePickableItems();
@@ -2280,14 +2280,14 @@ void CityGenerator::OnEnter()
 			}
 		}
 
-		L.OnReenterLevel();
+		game_level->OnReenterLevel();
 	}
 
 	if(!reenter)
 	{
 		// create colliders
-		game.LoadingStep(game.txRecreatingObjects);
-		L.SpawnTerrainCollider();
+		game->LoadingStep(game->txRecreatingObjects);
+		game_level->SpawnTerrainCollider();
 		SpawnCityPhysics();
 		SpawnOutsideBariers();
 		for(InsideBuilding* b : city->inside_buildings)
@@ -2298,33 +2298,33 @@ void CityGenerator::OnEnter()
 	}
 
 	// spawn quest units
-	if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done
-		&& L.location->active_quest->quest_id != Q_SCRIPTED)
-		game.HandleQuestEvent(L.location->active_quest);
+	if(game_level->location->active_quest && game_level->location->active_quest != ACTIVE_QUEST_HOLDER && !game_level->location->active_quest->done
+		&& game_level->location->active_quest->type != Q_SCRIPTED)
+		quest_mgr->HandleQuestEvent(game_level->location->active_quest);
 
 	// generate minimap
-	game.LoadingStep(game.txGeneratingMinimap);
+	game->LoadingStep(game->txGeneratingMinimap);
 	CreateMinimap();
 
 	// dodaj gracza i jego dru¿ynê
 	Vec3 spawn_pos;
 	float spawn_dir;
 	city->GetEntry(spawn_pos, spawn_dir);
-	L.AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
+	game_level->AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
 
 	if(!reenter)
-		game.GenerateQuestUnits();
+		quest_mgr->GenerateQuestUnits(true);
 
-	for(Unit& unit : Team.members)
+	for(Unit& unit : team->members)
 	{
 		if(unit.IsHero())
 			unit.hero->lost_pvp = false;
 	}
 
-	Team.CheckTeamItemShares();
+	team->CheckTeamItemShares();
 
-	Quest_Contest* contest = QM.quest_contest;
-	if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
+	Quest_Contest* contest = quest_mgr->quest_contest;
+	if(!contest->generated && game_level->location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
 		contest->SpawnDrunkmans();
 }
 
@@ -2378,55 +2378,55 @@ void CityGenerator::SpawnBuildings()
 		for(int i = mur1; i < mur2; i += 3)
 		{
 			// north
-			if(!IS_SET(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
+			if(!IsSet(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
+				game_level->SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 
 			// south
-			if(!IS_SET(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
+			if(!IsSet(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
+				game_level->SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 
 			// west
-			if(!IS_SET(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(area, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
+			if(!IsSet(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
+				game_level->SpawnObjectEntity(area, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
 
 			// east
-			if(!IS_SET(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(area, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
+			if(!IsSet(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
+				game_level->SpawnObjectEntity(area, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
 		}
 
 		// towers
 		// north east
-		L.SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
+		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 		// south east
-		L.SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI / 2);
+		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI / 2);
 		// south west
-		L.SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
+		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 		// north west
-		L.SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
+		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
 
 		// gates
-		if(IS_SET(city->gates, GATE_NORTH))
+		if(IsSet(city->gates, GATE_NORTH))
 		{
-			L.SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
-			L.SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
+			game_level->SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
+			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
 		}
 
-		if(IS_SET(city->gates, GATE_SOUTH))
+		if(IsSet(city->gates, GATE_SOUTH))
 		{
-			L.SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
-			L.SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
+			game_level->SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
+			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
 		}
 
-		if(IS_SET(city->gates, GATE_WEST))
+		if(IsSet(city->gates, GATE_WEST))
 		{
-			L.SpawnObjectEntity(area, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
-			L.SpawnObjectEntity(area, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
+			game_level->SpawnObjectEntity(area, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
+			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
 		}
 
-		if(IS_SET(city->gates, GATE_EAST))
+		if(IsSet(city->gates, GATE_EAST))
 		{
-			L.SpawnObjectEntity(area, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
-			L.SpawnObjectEntity(area, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
+			game_level->SpawnObjectEntity(area, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
+			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
 		}
 	}
 
@@ -2434,7 +2434,7 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		L.ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
+		game_level->ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), b, &*it);
 	}
 }
@@ -2468,7 +2468,7 @@ void CityGenerator::SpawnObjects()
 	{
 		Vec3 pos = PtToPos(well_pt);
 		terrain->SetH(pos);
-		L.SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
+		game_level->SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
 	TerrainTile* tiles = city->tiles;
@@ -2476,20 +2476,20 @@ void CityGenerator::SpawnObjects()
 	for(int i = 0; i < 512; ++i)
 	{
 		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(tiles[pt.x + pt.y*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x - 1 + pt.y*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x + 1 + pt.y*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x - 1 + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x - 1 + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x + 1 + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL &&
-			tiles[pt.x + 1 + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL)
+		if(tiles[pt.x + pt.y*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x - 1 + pt.y*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x + 1 + pt.y*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x - 1 + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x - 1 + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x + 1 + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL
+			&& tiles[pt.x + 1 + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL)
 		{
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = outside_objects[Rand() % n_outside_objects];
-			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -2497,7 +2497,6 @@ void CityGenerator::SpawnObjects()
 //=================================================================================================
 void CityGenerator::SpawnUnits()
 {
-	Game& game = Game::Get();
 	LevelArea& area = *city;
 
 	for(CityBuilding& b : city->buildings)
@@ -2506,7 +2505,7 @@ void CityGenerator::SpawnUnits()
 		if(!ud)
 			continue;
 
-		Unit* u = game.CreateUnit(*ud, -2);
+		Unit* u = game->CreateUnit(*ud, -2);
 		u->area = city;
 
 		switch(b.rot)
@@ -2527,7 +2526,7 @@ void CityGenerator::SpawnUnits()
 
 		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
 		terrain->SetH(u->pos);
-		u->UpdatePhysics(u->pos);
+		u->UpdatePhysics();
 		u->visual_pos = u->pos;
 
 		if(b.building->group == BuildingGroup::BG_ARENA)
@@ -2537,7 +2536,7 @@ void CityGenerator::SpawnUnits()
 
 		AIController* ai = new AIController;
 		ai->Init(u);
-		game.ais.push_back(ai);
+		game->ais.push_back(ai);
 	}
 
 	UnitData* dweller = UnitData::Get(city->IsVillage() ? "villager" : "citizen");
@@ -2545,7 +2544,7 @@ void CityGenerator::SpawnUnits()
 	// pijacy w karczmie
 	for(int i = 0, count = Random(1, city->citizens / 3); i < count; ++i)
 	{
-		if(!L.SpawnUnitInsideInn(*dweller, -2))
+		if(!game_level->SpawnUnitInsideInn(*dweller, -2))
 			break;
 	}
 
@@ -2560,7 +2559,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				L.SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
+				game_level->SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2575,7 +2574,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				L.SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
+				game_level->SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2591,7 +2590,7 @@ void CityGenerator::SpawnTemporaryUnits()
 	// heroes
 	uint count;
 	Int2 level;
-	if(W.CheckFirstCity())
+	if(world->CheckFirstCity())
 	{
 		count = 4;
 		level = Int2(5, 8);
@@ -2604,17 +2603,17 @@ void CityGenerator::SpawnTemporaryUnits()
 
 	for(uint i = 0; i < count; ++i)
 	{
-		UnitData& ud = ClassInfo::GetRandomData();
+		UnitData& ud = *Class::GetRandomHeroData();
 
 		if(Rand() % 2 == 0 || !training_grounds)
 		{
 			// inside inn
-			L.SpawnUnitInsideInn(ud, level.Random(), inn, true);
+			game_level->SpawnUnitInsideInn(ud, level.Random(), inn, true);
 		}
 		else
 		{
 			// on training grounds
-			Unit* u = L.SpawnUnitNearLocation(*city, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+			Unit* u = game_level->SpawnUnitNearLocation(*city, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
 				level.Random(), 8.f);
 			if(u)
 				u->temporary = true;
@@ -2623,25 +2622,14 @@ void CityGenerator::SpawnTemporaryUnits()
 
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city->IsVillage() || Rand() % 2 == 0)
-		L.SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, Level::SU_TEMPORARY);
+		game_level->SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, Level::SU_TEMPORARY);
 }
 
 //=================================================================================================
 void CityGenerator::RemoveTemporaryUnits()
 {
-	for(LevelArea& area : L.ForEachArea())
-	{
-		LoopAndRemove(area.units, [](Unit* u)
-		{
-			if(u->temporary)
-			{
-				delete u;
-				return true;
-			}
-			else
-				return false;
-		});
-	}
+	for(LevelArea& area : game_level->ForEachArea())
+		DeleteElements(area.units, [](Unit* u) {return u->temporary; });
 }
 
 //=================================================================================================
@@ -2656,25 +2644,19 @@ void CityGenerator::RepositionUnits()
 	else
 		citizen = UnitData::Get("citizen");
 	UnitData* guard = UnitData::Get("guard_move");
-	InsideBuilding* inn = city->FindInn();
 
 	for(vector<Unit*>::iterator it = city->units.begin(), end = city->units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
-		if(u.IsAlive() && u.IsAI())
+		if(u.IsAlive() && u.IsAI() && u.data == citizen || u.data == guard)
 		{
-			if(u.ai->goto_inn)
-				L.WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), u.GetUnitRadius(), u.pos);
-			else if(u.data == citizen || u.data == guard)
+			for(int j = 0; j < 50; ++j)
 			{
-				for(int j = 0; j < 50; ++j)
+				Int2 pt(Random(a, b), Random(a, b));
+				if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 				{
-					Int2 pt(Random(a, b), Random(a, b));
-					if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
-					{
-						L.WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
-						break;
-					}
+					game_level->WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+					break;
 				}
 			}
 		}
@@ -2687,7 +2669,7 @@ void CityGenerator::GeneratePickableItems()
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
 
-	// piwa w karczmie
+	// alcohol in inn
 	InsideBuilding& inn = *city->FindInn();
 	const Item* beer = Item::Get("beer");
 	const Item* vodka = Item::Get("vodka");
@@ -2698,29 +2680,29 @@ void CityGenerator::GeneratePickableItems()
 		Object& obj = **it;
 		if(obj.base == table)
 		{
-			L.PickableItemBegin(inn, obj);
+			game_level->PickableItemBegin(inn, obj);
 			if(Rand() % 2 == 0)
 			{
-				L.PickableItemAdd(beer);
+				game_level->PickableItemAdd(beer);
 				if(Rand() % 4 == 0)
-					L.PickableItemAdd(beer);
+					game_level->PickableItemAdd(beer);
 			}
 			if(Rand() % 3 == 0)
-				L.PickableItemAdd(plate);
+				game_level->PickableItemAdd(plate);
 			if(Rand() % 3 == 0)
-				L.PickableItemAdd(cup);
+				game_level->PickableItemAdd(cup);
 		}
 		else if(obj.base == shelves)
 		{
-			L.PickableItemBegin(inn, obj);
+			game_level->PickableItemBegin(inn, obj);
 			for(int i = 0, count = Random(3, 5); i < count; ++i)
-				L.PickableItemAdd(beer);
+				game_level->PickableItemAdd(beer);
 			for(int i = 0, count = Random(1, 3); i < count; ++i)
-				L.PickableItemAdd(vodka);
+				game_level->PickableItemAdd(vodka);
 		}
 	}
 
-	// jedzenie w sklepie
+	// food in food shop
 	CityBuilding* food = city->FindBuilding(BuildingGroup::BG_FOOD_SELLER);
 	if(food)
 	{
@@ -2743,13 +2725,13 @@ void CityGenerator::GeneratePickableItems()
 		if(found_obj)
 		{
 			const ItemList* lis = ItemList::Get("food_and_drink").lis;
-			L.PickableItemBegin(*city, *found_obj);
+			game_level->PickableItemBegin(*city, *found_obj);
 			for(int i = 0; i < 20; ++i)
-				L.PickableItemAdd(lis->Get());
+				game_level->PickableItemAdd(lis->Get());
 		}
 	}
 
-	// miksturki u alchemika
+	// potions in alchemy shop
 	CityBuilding* alch = city->FindBuilding(BuildingGroup::BG_ALCHEMIST);
 	if(alch)
 	{
@@ -2771,15 +2753,17 @@ void CityGenerator::GeneratePickableItems()
 
 		if(found_obj)
 		{
-			L.PickableItemBegin(*city, *found_obj);
+			game_level->PickableItemBegin(*city, *found_obj);
 			const Item* heal_pot = Item::Get("p_hp");
-			L.PickableItemAdd(heal_pot);
+			game_level->PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
-				L.PickableItemAdd(heal_pot);
+				game_level->PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
-				L.PickableItemAdd(Item::Get("p_nreg"));
+				game_level->PickableItemAdd(Item::Get("p_nreg"));
 			if(Rand() % 2 == 0)
-				L.PickableItemAdd(Item::Get("healing_herb"));
+				game_level->PickableItemAdd(Item::Get("healing_herb"));
+			if(Rand() % 2 == 0)
+				game_level->PickableItemAdd(Item::Get("p_mp"));
 		}
 	}
 }
@@ -2787,8 +2771,7 @@ void CityGenerator::GeneratePickableItems()
 //=================================================================================================
 void CityGenerator::CreateMinimap()
 {
-	Game& game = Game::Get();
-	TextureLock lock(game.tMinimap);
+	TextureLock lock(game->tMinimap.tex);
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
@@ -2875,24 +2858,23 @@ void CityGenerator::CreateMinimap()
 		}
 	}
 
-	L.minimap_size = OutsideLocation::size;
+	game_level->minimap_size = OutsideLocation::size;
 }
 
 //=================================================================================================
 void CityGenerator::OnLoad()
 {
-	Game& game = Game::Get();
-	L.SetOutsideParams();
-	game.SetTerrainTextures();
+	game_level->SetOutsideParams();
+	game->SetTerrainTextures();
 	ApplyTiles();
 
-	L.RecreateObjects(Net::IsClient());
-	L.SpawnTerrainCollider();
+	game_level->RecreateObjects(Net::IsClient());
+	game_level->SpawnTerrainCollider();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();
 	SpawnOutsideBariers();
-	game.InitQuadTree();
-	game.CalculateQuadtree();
+	game->InitQuadTree();
+	game->CalculateQuadtree();
 
 	CreateMinimap();
 }
@@ -2909,10 +2891,10 @@ void CityGenerator::SpawnCityPhysics()
 			if(tiles[x + z * OutsideLocation::size].mode == TM_BUILDING_BLOCK)
 			{
 				btCollisionObject* cobj = new btCollisionObject;
-				cobj->setCollisionShape(L.shape_block);
+				cobj->setCollisionShape(game_level->shape_block);
 				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 				cobj->getWorldTransform().setOrigin(btVector3(2.f*x + 1.f, terrain->GetH(2.f*x + 1.f, 2.f*x + 1), 2.f*z + 1.f));
-				L.phy_world->addCollisionObject(cobj, CG_BUILDING);
+				phy_world->addCollisionObject(cobj, CG_BUILDING);
 			}
 		}
 	}
@@ -2924,13 +2906,13 @@ void CityGenerator::RespawnBuildingPhysics()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		L.ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
+		game_level->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
 	}
 
 	for(vector<InsideBuilding*>::iterator it = city->inside_buildings.begin(), end = city->inside_buildings.end(); it != end; ++it)
 	{
-		L.ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
+		game_level->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
 			nullptr, true);
 	}
 }

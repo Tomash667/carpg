@@ -15,7 +15,7 @@ enum LockId
 };
 
 //-----------------------------------------------------------------------------
-struct Door
+struct Door : public EntityType<Door>
 {
 	enum State
 	{
@@ -35,9 +35,7 @@ struct Door
 	static const float UNLOCK_SOUND_DIST;
 	static const float BLOCKED_SOUND_DIST;
 	static const int MIN_SIZE = 31;
-	static int netid_counter;
 
-	int netid;
 	Vec3 pos;
 	float rot;
 	Int2 pt;
