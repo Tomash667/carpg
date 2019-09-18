@@ -19,11 +19,9 @@
 #include "Encounter.h"
 #include "UnitGroup.h"
 
-
 ScriptManager* global::script_mgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
-
 
 ScriptException::ScriptException(cstring msg)
 {
@@ -48,7 +46,6 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 	}
 	script_mgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
-
 
 ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 {

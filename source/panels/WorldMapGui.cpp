@@ -384,7 +384,7 @@ void WorldMapGui::Update(float dt)
 		float dist = 17.f;
 		int index;
 
-		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom+offset * float(world->world_size) / MAP_IMG_SIZE;
+		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom + offset * float(world->world_size) / MAP_IMG_SIZE;
 		c_pos.y = float(world->world_size) - c_pos.y;
 		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < world->world_size && c_pos.y < world->world_size && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3)
 		{

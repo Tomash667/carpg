@@ -85,7 +85,6 @@ void Room::Read(BitStreamReader& f)
 	f.ReadCasted<byte>(target);
 }
 
-
 //=================================================================================================
 bool RoomGroup::IsConnected(int group_index) const
 {

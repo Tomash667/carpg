@@ -250,6 +250,7 @@ void DialogContext::Update(float dt)
 	ctx.target = nullptr;
 }
 
+//=================================================================================================
 void DialogContext::UpdateLoop()
 {
 	bool cmp_result = false;
@@ -337,6 +338,18 @@ void DialogContext::UpdateLoop()
 					dialog = quest_dialogs[0].dialog;
 					dialog_quest = (Quest*)quest_dialogs[0].quest;
 					quest_dialog_index = 0;
+				}
+			}
+			else
+			{
+				if(quest_dialogs.empty())
+					quest_dialog_index = -1;
+				else
+				{
+					quest_dialog_index = 0;
+					prev.push_back({ this->dialog, dialog_quest, -1 });
+					dialog = quest_dialogs[0].dialog;
+					dialog_quest = (Quest*)quest_dialogs[0].quest;
 				}
 			}
 			dialog_pos = -1;

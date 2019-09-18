@@ -114,7 +114,7 @@ namespace FOV
 	{
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return;
-		Tile& p = mapa[x + y*w];
+		Tile& p = mapa[x + y * w];
 		if(!IsSet(p.flags, Tile::F_REVEALED))
 			reveal->push_back(Int2(x, w - y - 1));
 	}
@@ -128,10 +128,8 @@ namespace FOV
 	{
 		Int2 adjustedPos(pos.x*quadrant.x + source.x, pos.y*quadrant.y + source.y);
 		bool result = isBlocked(adjustedPos.x, adjustedPos.y);
-		if((quadrant.x * quadrant.y == 1
-			&& pos.x == 0 && pos.y != 0)
-			|| (quadrant.x * quadrant.y == -1
-				&& pos.y == 0 && pos.x != 0)
+		if((quadrant.x * quadrant.y == 1 && pos.x == 0 && pos.y != 0)
+			|| (quadrant.x * quadrant.y == -1 && pos.y == 0 && pos.x != 0)
 			|| doesPermissiveVisit(pos.x*quadrant.x, pos.y*quadrant.y))
 		{
 			return result;
@@ -150,8 +148,7 @@ namespace FOV
 		// extremity, remove the field of view.
 		if(currentField->shallow.doesContain(currentField->steep.near)
 			&& currentField->shallow.doesContain(currentField->steep.far)
-			&& (currentField->shallow.doesContain(Int2(0, 1))
-				|| currentField->shallow.doesContain(Int2(1, 0))))
+			&& (currentField->shallow.doesContain(Int2(0, 1)) || currentField->shallow.doesContain(Int2(1, 0))))
 		{
 			result = activeFields.erase(currentField);
 		}

@@ -119,6 +119,12 @@ quest main {
 		6 "To wszystko co mia³em ci do przekazania."
 	}
 	
+	dialog soltys {
+		0 "Dobrze ¿e przyszed³eœ $player_name$. Musimy porozmawiaæ o zarazie..."
+		1 "Zaraza"
+		2 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+	}
+	
 	texts {
 		0 "W królestwie Nyrtany wybuch³a nieznana zaraza."
 		1 "Zabija ludzi powoli nie czyni¹c szkody innym rasom i zwierzêtom."

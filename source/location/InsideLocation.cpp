@@ -44,7 +44,7 @@ void InsideLocation::Write(BitStreamWriter& f)
 	// map
 	f.WriteCasted<byte>(lvl.w);
 	f.Write((cstring)lvl.map, sizeof(Tile)*lvl.w*lvl.h);
-	
+
 	// rooms
 	f.WriteCasted<byte>(lvl.rooms.size());
 	for(Room* room : lvl.rooms)

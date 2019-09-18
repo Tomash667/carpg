@@ -104,7 +104,7 @@ void OutsideLocation::Write(BitStreamWriter& f)
 //=================================================================================================
 bool OutsideLocation::Read(BitStreamReader& f)
 {
-	int size11 = size*size;
+	int size11 = size * size;
 	int size22 = size + 1;
 	size22 *= size22;
 	if(!tiles)

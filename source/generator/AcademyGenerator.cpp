@@ -28,7 +28,7 @@ void AcademyGenerator::Generate()
 
 	// randomize height
 	terrain->SetHeightMap(outside->h);
-	terrain->RandomizeHeight(0.f, 5.f);
+	terrain->RandomizeHeight(0.f, 3.f);
 	float* h = terrain->GetHeightMap();
 
 	for(uint y = 0; y < s; ++y)

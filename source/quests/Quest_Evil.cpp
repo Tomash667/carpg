@@ -637,7 +637,7 @@ void Quest_Evil::GeneratePortal()
 
 	Vec3 portal_pos = room->Center();
 	room->target = RoomTarget::PortalCreate;
-	float rot = PI*Random(0, 3);
+	float rot = PI * Random(0, 3);
 	game_level->SpawnObjectEntity(lvl, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;

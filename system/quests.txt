@@ -546,6 +546,17 @@ quest main
 		talk 6
 		end
 	}
+	
+	dialog soltys {
+		if once
+			talk 0
+		choice 1
+		{
+			talk 2
+			restart
+		}
+		end
+	}
 
 	code {
 		Location@ village;
@@ -564,18 +575,26 @@ quest main
 			if(e.event == EVENT_ENTER)
 			{
 				e.location.RemoveEventHandler(quest);
-				Unit@ u = Level::FindUnit(UnitData::Get("q_main_academy"));
-				Team::Warp(u.pos - Vec3(0,0,1.5), u.pos);
-				if(!Cutscene::ShouldSkip())
+				if(progress == P_MAIN_NONE)
 				{
-					Cutscene::Start();
-					Cutscene::Image("cutscene_plague.jpg", 23);
-					Cutscene::Image("cutscene_academy.jpg", 11);
-					for(int i=0; i<6; ++i)
-						Cutscene::Text(TEXT(i), 5);
-					Cutscene::End();
+					Unit@ u = Level::FindUnit(UnitData::Get("q_main_academy"));
+					Team::Warp(u.pos - Vec3(0,0,1.5), u.pos);
+					if(!Cutscene::ShouldSkip())
+					{
+						Cutscene::Start();
+						Cutscene::Image("cutscene_plague.jpg", 23);
+						Cutscene::Image("cutscene_academy.jpg", 11);
+						for(int i=0; i<6; ++i)
+							Cutscene::Text(TEXT(i), 5);
+						Cutscene::End();
+					}
+					u.OrderAutoTalk(true);
 				}
-				u.OrderAutoTalk(true);
+				else
+				{
+					Unit@ u = Level::FindUnit(UnitData::Get("soltys"));
+					u.AddDialog(quest, "soltys");
+				}
 			}
 		}
 		
@@ -593,6 +612,7 @@ quest main
 			case P_MAIN_START:
 				{
 					@village = World::GetClosestLocation(L_CITY, World::pos, VILLAGE);
+					village.AddEventHandler(quest, EVENT_ENTER);
 					target.OrderLeave();
 					quest.SetStarted(TEXT(6));
 					quest.AddEntry(TEXT(7));

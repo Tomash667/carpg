@@ -5,7 +5,6 @@
 
 std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> UnitStats::shared_stats;
 
-
 //=================================================================================================
 void StatInfo::Mod(int value)
 {
@@ -40,7 +39,6 @@ StatState StatInfo::GetState()
 			return StatState::NEGATIVE;
 	}
 }
-
 
 //=================================================================================================
 void UnitStats::Set(StatProfile& profile)

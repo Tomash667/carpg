@@ -14,7 +14,6 @@
 #include "Texture.h"
 #include "Game.h"
 
-
 const uint OutsideLocationGenerator::s = OutsideLocation::size;
 
 OutsideObject OutsideLocationGenerator::trees[] = {
@@ -41,7 +40,6 @@ OutsideObject OutsideLocationGenerator::misc[] = {
 	"fern", nullptr, Vec2(1,2)
 };
 const uint OutsideLocationGenerator::n_misc = countof(misc);
-
 
 //=================================================================================================
 void OutsideLocationGenerator::InitOnce()
@@ -196,6 +194,8 @@ void OutsideLocationGenerator::OnEnter()
 
 		game_level->OnReenterLevel();
 	}
+	else
+		OnReenter();
 
 	// create colliders
 	if(!reenter)

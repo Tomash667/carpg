@@ -2844,7 +2844,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						c.pos.y = pos.y;
 					}
 				}
-
 			}
 			break;
 		// player used cheat 'hurt'

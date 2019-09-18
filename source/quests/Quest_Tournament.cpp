@@ -558,8 +558,7 @@ void Quest_Tournament::Update(float dt)
 				if(master->CanAct())
 				{
 					if(other_fighter->to_remove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f
-							|| other_fighter->area == arena))
+						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f || other_fighter->area == arena))
 					{
 						// second unit left too
 						Talk(Format(txTour[13], other_fighter->GetRealName()));

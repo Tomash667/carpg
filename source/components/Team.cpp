@@ -20,7 +20,6 @@
 #include "Level.h"
 #include "EntityInterpolator.h"
 
-
 Team* global::team;
 
 //-----------------------------------------------------------------------------
@@ -58,7 +57,6 @@ bool UniqueTeamShares(const Team::TeamShareItem& t1, const Team::TeamShareItem& 
 {
 	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item && t1.priority == t2.priority;
 }
-
 
 void Team::AddTeamMember(Unit* unit, HeroType type)
 {

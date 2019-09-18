@@ -86,7 +86,6 @@ void PerkInfo::Validate(uint& err)
 	}
 }
 
-
 //=================================================================================================
 bool PerkContext::HavePerk(Perk perk)
 {
@@ -221,7 +220,6 @@ void PerkContext::RemoveRequired(AttributeId a)
 	if(cc)
 		cc->a[(int)a].required--;
 }
-
 
 //=================================================================================================
 void TakenPerk::LoadText()

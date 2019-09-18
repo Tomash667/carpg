@@ -37,8 +37,8 @@ void MoonwellGenerator::Generate()
 	}
 
 	// no grass under moon well
-	for(int i=0; i<2; ++i)
-		for(int j=0; j<2; ++j)
+	for(int i = 0; i < 2; ++i)
+		for(int j = 0; j < 2; ++j)
 			outside->tiles[63 + i + (63 + j) * s].mode = TM_NO_GRASS;
 
 	terrain->RoundHeight();

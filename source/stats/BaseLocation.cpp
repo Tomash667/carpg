@@ -193,7 +193,7 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 //=================================================================================================
 void BaseLocation::PreloadTextures()
 {
-	for(uint i=0; i<n_base_locations; ++i)
+	for(uint i = 0; i < n_base_locations; ++i)
 	{
 		auto& bl = g_base_locations[i];
 		if(bl.tex.floor.id)

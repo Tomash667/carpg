@@ -27,7 +27,6 @@
 #include "GameGui.h"
 #include "WorldMapGui.h"
 
-
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
@@ -43,7 +42,6 @@ namespace old
 	const int def_world_size = 600;
 }
 
-
 //-----------------------------------------------------------------------------
 // used temporary before deciding how many levels location should have (and use Single or MultiInsideLocation)
 struct TmpLocation : public Location
@@ -56,7 +54,6 @@ struct TmpLocation : public Location
 	bool FindUnit(Unit*, int*) override { return false; }
 	Unit* FindUnit(UnitData*, int&) override { return nullptr; }
 };
-
 
 //=================================================================================================
 void World::LoadLanguage()
@@ -1353,8 +1350,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			else
 				loc = nullptr;
 		}
-
-
 
 		if(step == 0)
 		{

@@ -2108,7 +2108,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 					if(*u == *it)
 						goto ignore_unit;
 					++u;
-				} while(1);
+				}
+				while(1);
 
 				radius = (*it)->GetUnitRadius();
 				pos = (*it)->GetColliderPos();
@@ -2178,7 +2179,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 							break;
 						else
 							++objs;
-					} while(1);
+					}
+					while(1);
 				}
 
 				if(it->type == CollisionObject::RECTANGLE)
@@ -2317,7 +2319,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 					if(*u == *it)
 						goto ignore_unit;
 					++u;
-				} while(1);
+				}
+				while(1);
 
 				radius = (*it)->GetUnitRadius();
 				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
@@ -2385,7 +2388,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 							break;
 						else
 							++objs;
-					} while(1);
+					}
+					while(1);
 				}
 
 				if(it->type == CollisionObject::RECTANGLE)

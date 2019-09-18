@@ -21,9 +21,8 @@ void LocationGenerator::RespawnUnits()
 {
 	for(LevelArea& area : game_level->ForEachArea())
 	{
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+		for(Unit* u : area.units)
 		{
-			Unit* u = *it;
 			if(u->player)
 				continue;
 
@@ -43,6 +42,22 @@ void LocationGenerator::RespawnUnits()
 			// refresh stock
 			if(u->data->trader)
 				u->RefreshStock();
+		}
+	}
+}
+
+//=================================================================================================
+void LocationGenerator::OnReenter()
+{
+	for(LevelArea& area : game_level->ForEachArea())
+	{
+		for(Unit* u : area.units)
+		{
+			if(u->talking)
+			{
+				u->talking = false;
+				u->mesh_inst->need_update = true;
+			}
 		}
 	}
 }
