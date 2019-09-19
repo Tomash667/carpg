@@ -152,6 +152,8 @@ unit xwokloiz {
 	name "Alchemist apprentice"
 	real_name "Luke Herbalist"
 }
+unit q_main_academy = "Academy teacher"
+unit q_main_messenger = "Messenger"
 
 unit_group orcs {
 	name "orcs"

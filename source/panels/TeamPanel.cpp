@@ -281,7 +281,6 @@ void TeamPanel::Update(float dt)
 		}
 	}
 
-
 	// enable change leader button if player is leader
 	if(Net::IsClient())
 	{

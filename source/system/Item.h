@@ -424,7 +424,6 @@ struct Book : public Item
 	static const Item* GetRandom();
 };
 
-
 //-----------------------------------------------------------------------------
 // Item lists
 struct ItemList

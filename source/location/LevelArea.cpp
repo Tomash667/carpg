@@ -786,7 +786,6 @@ Door* LevelArea::FindDoor(const Int2& pt)
 	return nullptr;
 }
 
-
 //=================================================================================================
 // Get area levels for selected location and level (in multilevel dungeon not generated levels are ignored for -1)
 // Level have special meaning here
@@ -1089,7 +1088,6 @@ bool LevelAreaContext::RemoveUnit(Unit* unit)
 	else
 		return false;
 }
-
 
 void TmpLevelArea::Clear()
 {

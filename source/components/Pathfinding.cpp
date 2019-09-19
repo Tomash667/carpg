@@ -718,7 +718,8 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
 			path.push_back(Int2(p.x + minx, p.y + miny));
 			p = a_map[p(w)].prev;
-		} while(p != target_rel);
+		}
+		while(p != target_rel);
 	}
 	else
 	{
@@ -732,7 +733,8 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 		{
 			path.push_back(Int2(p.x + minx, p.y + miny));
 			p = a_map[p(w)].prev;
-		} while(p != target_rel);
+		}
+		while(p != target_rel);
 	}
 
 	path.push_back(target_tile);

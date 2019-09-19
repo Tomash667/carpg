@@ -3,6 +3,8 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.12 (???):
 ! cannot load saves from version 0.4.20 or older
++ academy - can recruit beginner heroes there
++ start of storyline
 + new player class: cleric - healing spell
 + mana
 + fast travel (can be used inside safe locations by team leader to quickly return to map)
@@ -28,6 +30,7 @@ Version 0.12 (???):
 - fixed location entrance direction
 - in multiplayer game removing team members don't shuffle order
 - client after exiting multiplayer and starting singleplayer wasn't leader
+- units rotation that stay in single place could change after leaving location
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

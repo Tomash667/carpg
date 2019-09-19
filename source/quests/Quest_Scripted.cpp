@@ -419,6 +419,8 @@ cstring Quest_Scripted::FormatString(const string& str)
 		assert(talker->IsHero());
 		return talker->hero->name.c_str();
 	}
+	else if(str == "player_name")
+		return DialogContext::current->pc->name.c_str();
 	else
 	{
 		assert(0);

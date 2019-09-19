@@ -77,7 +77,6 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 	game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
-
 		NetChange& c = Add1(Net::changes);
 		c.id = id;
 		c.type = NetChange::UPDATE_QUEST;

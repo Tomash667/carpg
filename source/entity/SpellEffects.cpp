@@ -73,7 +73,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to)
 
 	for(int i = 1; i < steps; ++i)
 	{
-		Vec3 p = from + step*(float(i) + Random(-0.25f, 0.25f));
+		Vec3 p = from + step * (float(i) + Random(-0.25f, 0.25f));
 		Vec3 r = Vec3::Random(Vec3(-0.3f, -0.3f, -0.3f), Vec3(0.3f, 0.3f, 0.3f));
 		prev_off = (r + prev_off) / 2;
 		line.pts.push_back(p + prev_off);

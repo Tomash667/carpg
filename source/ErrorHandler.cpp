@@ -52,7 +52,7 @@ void RegisterErrorHandler(Config& cfg, const string& log_path)
 			{ "normal", CrashMode::Normal },
 			{ "dataseg", CrashMode::DataSeg },
 			{ "full", CrashMode::Full }
-		});
+			});
 		if(result != Config::GET_OK)
 		{
 			crash_mode = CrashMode::Normal;

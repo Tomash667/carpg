@@ -65,7 +65,8 @@ void NameHelper::GenerateHeroName(Class* clas, bool crazy, string& hero_name)
 			do
 			{
 				who = RandomItem(name_random).c_str();
-			} while(who[strlen(who) - 1] == txNameSonOfInvalid[0]);
+			}
+			while(who[strlen(who) - 1] == txNameSonOfInvalid[0]);
 		}
 		else
 			who = RandomItem(name_random).c_str();

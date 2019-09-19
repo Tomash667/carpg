@@ -1019,8 +1019,9 @@ void Game::SetGameText()
 	LoadArray(txAiNoHpPot, "aiNoHpPot");
 	LoadArray(txAiCity, "aiCity");
 	LoadArray(txAiVillage, "aiVillage");
-	txAiMoonwell = Str("aiMoonwell");
 	txAiForest = Str("aiForest");
+	txAiMoonwell = Str("aiMoonwell");
+	txAiAcademy = Str("aiAcademy");
 	txAiCampEmpty = Str("aiCampEmpty");
 	txAiCampFull = Str("aiCampFull");
 	txAiFort = Str("aiFort");
@@ -1131,6 +1132,8 @@ void Game::SetGameText()
 	txLearningPoint = Str("learningPoint");
 	txLearningPoints = Str("learningPoints");
 	txNeedLearningPoints = Str("needLearningPoints");
+	txTeamTooBig = Str("teamTooBig");
+	txHeroJoined = Str("heroJoined");
 
 	// dystans / si³a
 	txNear = Str("near");
@@ -5563,20 +5566,28 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 							game_level->CreateBlood(area, unit, true);
 						}
 
-						// warp to inn if unit wanted to go there
-						if(order == ORDER_GOTO_INN && unit.IsAlive())
+						if(unit.IsAlive())
 						{
-							unit.OrderNext();
-							if(game_level->city_ctx)
+							// warp to inn if unit wanted to go there
+							if(order == ORDER_GOTO_INN)
 							{
-								InsideBuilding* inn = game_level->city_ctx->FindInn();
-								game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-								unit.visual_pos = unit.pos;
-								unit.area = inn;
-								inn->units.push_back(&unit);
-								return true;
+								unit.OrderNext();
+								if(game_level->city_ctx)
+								{
+									InsideBuilding* inn = game_level->city_ctx->FindInn();
+									game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+									unit.visual_pos = unit.pos;
+									unit.area = inn;
+									inn->units.push_back(&unit);
+									return true;
+								}
 							}
+
+							// reset units rotation to don't stay back to shop counter
+							if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
+								unit.rot = unit.ai->start_rot;
 						}
+
 						delete unit.mesh_inst;
 						unit.mesh_inst = nullptr;
 						delete unit.ai;
@@ -6481,10 +6492,19 @@ void Game::OnEnterLocation()
 					text = RandomString(txAiVillage);
 				break;
 			case L_OUTSIDE:
-				if(game_level->location->target == MOONWELL)
-					text = txAiMoonwell;
-				else
+				switch(game_level->location->target)
+				{
+				case FOREST:
+				default:
 					text = txAiForest;
+					break;
+				case MOONWELL:
+					text = txAiMoonwell;
+					break;
+				case ACADEMY:
+					text = txAiAcademy;
+					break;
+				}
 				break;
 			case L_CAMP:
 				if(game_level->location->state != LS_CLEARED && !game_level->location->group->IsEmpty())

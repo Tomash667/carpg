@@ -3,6 +3,8 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
++ akademia - mo¿na tam rekrutowaæ pocz¹tkuj¹cych bohaterów
++ zal¹¿ek fabu³y
 + nowa klasa gracza: kap³an - czar uleczenia
 + mana
 + szybka podró¿ (mo¿e byæ u¿yta przez przywódcê w bezpiecznej lokalizacji by szybko powróciæ na mapê œwiata)
@@ -28,6 +30,7 @@ Wersja 0.12 (???):
 - poprawiony k¹t wchodzenia do lokalizacji
 - usuwanie cz³onków dru¿yny w multiplayer nie zmienia kolejnoœci dru¿yny
 - klient po wyjœciu z gry multiplayer i rozpoczêciu singleplayer nie by³ przewódc¹ dru¿yny
+- obrót jednostek które stoj¹ w miejscu zmienia³ siê w trakcie opuszczania lokalizacji
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

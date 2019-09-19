@@ -181,7 +181,7 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "object", R_OBJECT },
 		{ "usable", R_USABLE },
 		{ "quest_list", R_QUEST_LIST }
-	});
+		});
 
 	try
 	{

@@ -408,6 +408,26 @@ building mages_tower {
 //================================================================================
 // Building script
 //================================================================================
+building_script capital {
+	city_hall
+	shuffle start
+		arena
+		merchant
+		food_seller
+		blacksmith
+		alchemist
+		inn
+		training_grounds
+		mages_tower
+	shuffle end
+	barracks
+	set citizens = 15
+	set citizens_world = citizens * 300 + random(100,299)
+	required off
+	set count = citizens * 3
+	group house
+}
+
 building_script city {
 	city_hall
 	shuffle start
@@ -418,17 +438,13 @@ building_script city {
 		alchemist
 		inn
 		training_grounds
-		if first_city == 1
+		if rand 2
 			mages_tower
-		else
-			if rand 2
-				mages_tower
-			endif
 		endif
 	shuffle end
 	barracks
 	set citizens = random(12,15)
-	set citizens_world = citizens * 200 + random(0,199) + 100
+	set citizens_world = citizens * 200 + random(100,299)
 	required off
 	set count = citizens * 3
 	group house

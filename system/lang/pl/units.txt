@@ -152,6 +152,8 @@ unit xwokloiz {
 	name "Uczeñ alchemika"
 	real_name "£ukasz Zió³koski"
 }
+unit q_main_academy = "Nauczyciel z akademii"
+unit q_main_messenger = "Pos³aniec"
 
 unit_group orcs {
 	name "orkowie"

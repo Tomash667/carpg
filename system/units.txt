@@ -3114,6 +3114,14 @@ unit xwokloiz : base_human {
 	dialog "alchemist_apprentice/xwokloiz"
 }
 
+unit q_main_academy : trainer {
+	dialog "main/trainer"
+}
+
+unit q_main_messenger : messenger {
+	dialog "main/messenger"
+}
+
 //------------------------------------------------------------------------------
 // Unit groups
 //------------------------------------------------------------------------------

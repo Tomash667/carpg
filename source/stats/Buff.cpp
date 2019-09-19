@@ -18,7 +18,7 @@ BuffInfo BuffInfo::info[] = {
 
 void BuffInfo::LoadImages()
 {
-	for(int i=0; i<BUFF_COUNT; ++i)
+	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		BuffInfo& buff = info[i];
 		cstring path = Format("%s.png", buff.id);
@@ -29,7 +29,7 @@ void BuffInfo::LoadImages()
 void BuffInfo::LoadText()
 {
 	Language::Section& s = Language::GetSection("Buffs");
-	for(int i=0; i<BUFF_COUNT; ++i)
+	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		auto& buff = info[i];
 		buff.text = s.Get(buff.id);

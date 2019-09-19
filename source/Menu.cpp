@@ -1800,8 +1800,8 @@ void Game::UpdateServerSend(float dt)
 			}
 			else
 				ok = false;
-			}
 		}
+	}
 	if(ok)
 	{
 		if(net->active_players > 1)

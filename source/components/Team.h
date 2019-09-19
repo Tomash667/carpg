@@ -83,6 +83,7 @@ public:
 	void SetBandit(bool is_bandit);
 	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
 	bool IsAnyoneTalking() const;
+	void Warp(const Vec3& pos, const Vec3& look_at);
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)

@@ -36,7 +36,6 @@ class TypeBuilder
 public:
 	TypeBuilder(cstring name, asIScriptEngine* engine) : name(name), engine(engine)
 	{
-
 	}
 
 	TypeBuilder& Constructor(cstring decl, const asSFuncPtr& funcPointer)
@@ -122,7 +121,6 @@ class SpecificTypeBuilder : public TypeBuilder
 public:
 	SpecificTypeBuilder(cstring name, asIScriptEngine* engine) : TypeBuilder(name, engine)
 	{
-
 	}
 
 	SpecificTypeBuilder<T>& Constructor(cstring decl, const asSFuncPtr& funcPointer)

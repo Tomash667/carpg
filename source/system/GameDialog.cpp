@@ -7,7 +7,6 @@
 GameDialog::Map GameDialog::dialogs;
 DialogScripts DialogScripts::global;
 
-
 //=================================================================================================
 int DialogScripts::AddCode(FUNC f, const string& code)
 {
@@ -107,7 +106,6 @@ void DialogScripts::Set(asITypeInfo* type)
 	func[F_IF_SCRIPT] = type->GetMethodByDecl("bool _if_script(int)");
 	func[F_FORMAT] = type->GetMethodByDecl("string _format(int)");
 }
-
 
 //=================================================================================================
 GameDialog::Text& GameDialog::GetText(int index)

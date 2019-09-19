@@ -19,11 +19,9 @@
 #include "Encounter.h"
 #include "UnitGroup.h"
 
-
 ScriptManager* global::script_mgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
-
 
 ScriptException::ScriptException(cstring msg)
 {
@@ -48,7 +46,6 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 	}
 	script_mgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
-
 
 ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 {
@@ -500,7 +497,11 @@ void ScriptManager::RegisterGame()
 
 	AddEnum("LOCATION_TARGET", {
 		{ "FOREST", FOREST },
-		{ "MOONWELL", MOONWELL }
+		{ "MOONWELL", MOONWELL },
+		{ "ACADEMY", ACADEMY },
+		{ "VILLAGE", VILLAGE },
+		{ "CITY", CITY },
+		{ "CAPITAL", CAPITAL }
 		});
 
 	AddEnum("UNIT_ORDER", {
@@ -538,7 +539,8 @@ void ScriptManager::RegisterGame()
 		{ "LI_MINE", LI_MINE },
 		{ "LI_SAWMILL", LI_SAWMILL },
 		{ "LI_DUNGEON2", LI_DUNGEON2 },
-		{ "LI_ACADEMY", LI_ACADEMY }
+		{ "LI_ACADEMY", LI_ACADEMY },
+		{ "LI_CAPITAL", LI_CAPITAL }
 		});
 
 	AddType("Var")
@@ -666,6 +668,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
 		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null)", asMETHOD(Unit, OrderAutoTalk))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
+		.Method("void RotateTo(const Vec3& in)", asMETHODPR(Unit, RotateTo, (const Vec3&), void))
 		.WithInstance("Unit@ target", &ctx.target)
 		.WithNamespace()
 		.AddFunction("Unit@ Id(int)", asFUNCTION(Unit::GetById));
@@ -699,7 +702,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void AddExp(int)", asMETHOD(Team, AddExpS))
 		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(Team, AddReward))
 		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem))
-		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddTeamMember));
+		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddTeamMember))
+		.AddFunction("void Warp(const Vec3& in, const Vec3& in)", asMETHOD(Team, Warp));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 
@@ -741,7 +745,8 @@ void ScriptManager::RegisterGame()
 	CHECKED(engine->RegisterFuncdef("float GetLocationCallback(Location@)"));
 
 	WithNamespace("World", world)
-		.AddFunction("Vec2 GetSize()", asMETHOD(World, GetSize))
+		.AddFunction("Vec2 get_size()", asMETHOD(World, GetSize))
+		.AddFunction("Vec2 get_pos()", asMETHOD(World, GetPos))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -751,7 +756,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
-		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in)", asMETHOD(World, CreateLocationS))
+		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = 0)", asMETHOD(World, CreateLocationS))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void))
 		.AddFunction("void SetStartLocation(Location@)", asMETHOD(World, SetStartLocation));
@@ -768,7 +773,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ FindItem(Item@)", asMETHOD(Level, FindItem))
 		.AddFunction("GroundItem@ FindNearestItem(Item@, const Vec3& in)", asMETHOD(Level, FindNearestItem))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
-		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float)", asMETHOD(Level, SpawnUnitNearLocationS))
+		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2)", asMETHOD(Level, SpawnUnitNearLocationS))
 		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor));
 

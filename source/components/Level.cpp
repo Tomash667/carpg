@@ -2108,7 +2108,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 					if(*u == *it)
 						goto ignore_unit;
 					++u;
-				} while(1);
+				}
+				while(1);
 
 				radius = (*it)->GetUnitRadius();
 				pos = (*it)->GetColliderPos();
@@ -2178,7 +2179,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 							break;
 						else
 							++objs;
-					} while(1);
+					}
+					while(1);
 				}
 
 				if(it->type == CollisionObject::RECTANGLE)
@@ -2317,7 +2319,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 					if(*u == *it)
 						goto ignore_unit;
 					++u;
-				} while(1);
+				}
+				while(1);
 
 				radius = (*it)->GetUnitRadius();
 				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
@@ -2385,7 +2388,8 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& _ob
 							break;
 						else
 							++objs;
-					} while(1);
+					}
+					while(1);
 				}
 
 				if(it->type == CollisionObject::RECTANGLE)
@@ -3891,7 +3895,7 @@ void Level::RevealMinimap()
 //=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && location->target == CITY;
+	return location->type == L_CITY && location->target != VILLAGE;
 }
 
 //=================================================================================================
@@ -4162,7 +4166,7 @@ MusicType Level::GetLocationMusic()
 		else
 			return MusicType::Dungeon;
 	case L_OUTSIDE:
-		if(location_index == quest_mgr->quest_secret->where2 || location->target == MOONWELL)
+		if(location_index == quest_mgr->quest_secret->where2 || Any(location->target, MOONWELL, ACADEMY))
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;

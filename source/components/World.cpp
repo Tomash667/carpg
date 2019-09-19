@@ -27,7 +27,6 @@
 #include "GameGui.h"
 #include "WorldMapGui.h"
 
-
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
@@ -43,7 +42,6 @@ namespace old
 	const int def_world_size = 600;
 }
 
-
 //-----------------------------------------------------------------------------
 // used temporary before deciding how many levels location should have (and use Single or MultiInsideLocation)
 struct TmpLocation : public Location
@@ -51,12 +49,11 @@ struct TmpLocation : public Location
 	TmpLocation() : Location(false) {}
 
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override {}
-	void Write(BitStreamWriter& f) override  {}
+	void Write(BitStreamWriter& f) override {}
 	bool Read(BitStreamReader& f) override { return false; }
 	bool FindUnit(Unit*, int*) override { return false; }
 	Unit* FindUnit(UnitData*, int&) override { return nullptr; }
 };
-
 
 //=================================================================================================
 void World::LoadLanguage()
@@ -92,6 +89,7 @@ void World::LoadLanguage()
 	txRandomEncounter = s.Get("randomEncounter");
 	txTower = s.Get("tower");
 	txLabyrinth = s.Get("labyrinth");
+	txAcademy = s.Get("academy");
 }
 
 //=================================================================================================
@@ -118,7 +116,6 @@ void World::OnNewGame()
 	day = 0;
 	month = 0;
 	worldtime = 0;
-	first_city = true;
 	day_timer = 0.f;
 }
 
@@ -317,15 +314,14 @@ int World::CreateCamp(const Vec2& pos, UnitGroup* group, float range, bool allow
 }
 
 //=================================================================================================
-Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
+Location* World::CreateLocation(LOCATION type, int levels, int city_target)
 {
 	switch(type)
 	{
 	case L_CITY:
 		{
 			City* city = new City;
-			if(!is_village)
-				city->target = CITY;
+			city->target = city_target;
 			return city;
 		}
 	case L_CAVE:
@@ -396,11 +392,11 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 	Location* loc = CreateLocation(type, levels);
 	loc->pos = pt;
 	loc->type = type;
+	loc->target = target;
 
 	if(type == L_DUNGEON)
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(loc);
-		inside->target = target;
 		inside->group = group;
 		if(inside->group == UnitGroup::random)
 			inside->group = g_base_locations[target].GetRandomGroup();
@@ -475,9 +471,9 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 			if(!ok)
 				continue;
 
-			auto type = clbk(i);
-			Location* l = CreateLocation(type.first, -1, type.second);
-			l->type = type.first;
+			LOCATION type = clbk(i);
+			Location* l = CreateLocation(type, -1);
+			l->type = type;
 			l->pos = pt;
 			l->state = LS_UNKNOWN;
 			l->index = locations.size();
@@ -558,9 +554,9 @@ void World::GenerateWorld()
 	world_size = def_world_size;
 	world_bounds = Vec2(world_border, world_size - world_border);
 
-	// create first city
+	// create capital
 	Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
-	CreateCity(pos, false);
+	CreateCity(pos, CAPITAL);
 
 	// create more cities
 	for(uint i = 0, count = Random(3u, 4u); i < count; ++i)
@@ -585,7 +581,7 @@ void World::GenerateWorld()
 			}
 			if(ok)
 			{
-				CreateCity(pos, false);
+				CreateCity(pos, CITY);
 				break;
 			}
 		}
@@ -618,7 +614,7 @@ void World::GenerateWorld()
 			}
 			if(ok)
 			{
-				CreateCity(pos, true);
+				CreateCity(pos, VILLAGE);
 				break;
 			}
 		}
@@ -642,7 +638,7 @@ void World::GenerateWorld()
 			}
 			if(ok)
 			{
-				CreateCity(pos, true);
+				CreateCity(pos, VILLAGE);
 				break;
 			}
 		}
@@ -659,7 +655,7 @@ void World::GenerateWorld()
 		L_CAVE,
 		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
 	};
-	AddLocations(countof(guaranteed), [](uint index) { return std::make_pair(guaranteed[index], false); }, 40.f);
+	AddLocations(countof(guaranteed), [](uint index) { return guaranteed[index]; }, 40.f);
 
 	// generate other locations
 	static const LOCATION locs[] = {
@@ -670,7 +666,7 @@ void World::GenerateWorld()
 		L_DUNGEON,
 		L_OUTSIDE
 	};
-	AddLocations(120 - locations.size(), [](uint index) { return std::make_pair(locs[Rand() % countof(locs)], false); }, 40.f);
+	AddLocations(120 - locations.size(), [](uint index) { return locs[Rand() % countof(locs)]; }, 40.f);
 
 	// create location for random encounter
 	{
@@ -687,7 +683,7 @@ void World::GenerateWorld()
 	CalculateTiles();
 
 	// reveal near locations, generate content
-	bool first_city_gen = true, guaranteed_moonwell = true;
+	bool guaranteed_moonwell = true;
 	int index = 0, guaranteed_dungeon = 0;
 	const Vec2& start_pos = locations[start_location]->pos;
 	UnitGroup* forest_group = UnitGroup::Get("forest");
@@ -711,14 +707,13 @@ void World::GenerateWorld()
 				city.st = 1;
 				city.group = UnitGroup::empty;
 				LocalVector2<Building*> buildings;
-				city.GenerateCityBuildings(buildings.Get(), true, first_city_gen);
+				city.GenerateCityBuildings(buildings.Get(), true);
 				city.buildings.reserve(buildings.size());
 				for(Building* b : buildings)
 				{
 					CityBuilding& cb = Add1(city.buildings);
 					cb.building = b;
 				}
-				first_city_gen = false;
 			}
 			break;
 		case L_DUNGEON:
@@ -1011,9 +1006,9 @@ void World::SmoothTiles()
 }
 
 //=================================================================================================
-void World::CreateCity(const Vec2& pos, bool village)
+void World::CreateCity(const Vec2& pos, int target)
 {
-	Location* l = CreateLocation(L_CITY, -1, village);
+	Location* l = CreateLocation(L_CITY, -1, target);
 	l->type = L_CITY;
 	l->pos = pos;
 	l->state = LS_UNKNOWN;
@@ -1028,15 +1023,21 @@ void World::SetLocationImageAndName(Location* l)
 	switch(l->type)
 	{
 	case L_CITY:
-		if(l->target == VILLAGE)
+		switch(l->target)
 		{
+		case VILLAGE:
 			l->image = LI_VILLAGE;
 			l->name = txVillage;
-		}
-		else
-		{
+			break;
+		default:
+		case CITY:
 			l->image = LI_CITY;
 			l->name = txCity;
+			break;
+		case CAPITAL:
+			l->image = LI_CAPITAL;
+			l->name = txCity;
+			break;
 		}
 		break;
 	case L_CAVE:
@@ -1048,15 +1049,20 @@ void World::SetLocationImageAndName(Location* l)
 		l->name = txCamp;
 		return;
 	case L_OUTSIDE:
-		if(l->target == MOONWELL)
+		switch(l->target)
 		{
+		case MOONWELL:
 			l->image = LI_MOONWELL;
 			l->name = txMoonwell;
-		}
-		else
-		{
+			return;
+		case ACADEMY:
+			l->image = LI_ACADEMY;
+			l->name = txAcademy;
+			return;
+		default:
 			l->image = LI_FOREST;
 			l->name = txForest;
+			break;
 		}
 		break;
 	case L_ENCOUNTER:
@@ -1102,7 +1108,8 @@ void World::SetLocationImageAndName(Location* l)
 		do
 		{
 			s2 = RandomItem(txLocationEnd).c_str();
-		} while(_stricmp(s1, s2) == 0);
+		}
+		while(_stricmp(s1, s2) == 0);
 		l->name += s1;
 		if(l->name[l->name.length() - 1] == s2[0])
 			l->name += (s2 + 1);
@@ -1208,7 +1215,6 @@ void World::Save(GameWriter& f)
 		f.WriteString2(n->text);
 	}
 
-	f << first_city;
 	f << boss_levels;
 	f << tomir_spawned;
 }
@@ -1227,7 +1233,8 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
-	f >> first_city;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<bool>(); // old first_city
 	f >> boss_levels;
 	f >> tomir_spawned;
 }
@@ -1343,8 +1350,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			else
 				loc = nullptr;
 		}
-
-
 
 		if(step == 0)
 		{
@@ -1552,7 +1557,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		LoadNews(f);
 	else if(part == 3)
 	{
-		f >> first_city;
+		f.Skip<bool>(); // old first_city
 		f >> boss_levels;
 		locations[encounter_loc]->state = LS_HIDDEN;
 	}
@@ -1965,7 +1970,7 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 		bool valid = true;
 		for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 		{
-			if(*it && Vec2::Distance(pt, (*it)->pos) < 24)
+			if(*it && Vec2::Distance(pt, (*it)->pos) < 32)
 			{
 				valid = false;
 				break;
@@ -2053,7 +2058,8 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 		if(pred(loc))
 			return loc;
 		index = (index + 1) % settlements;
-	} while(index != start_index);
+	}
+	while(index != start_index);
 	return nullptr;
 }
 
@@ -2080,7 +2086,8 @@ Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
 			best_index = index;
 		}
 		index = (index + 1) % settlements;
-	} while(index != start_index);
+	}
+	while(index != start_index);
 	return (best_index != -1 ? locations[best_index] : nullptr);
 }
 
@@ -2746,17 +2753,6 @@ bool World::IsBossLevel(const Int2& pos) const
 	{
 		if(boss_pos == pos)
 			return true;
-	}
-	return false;
-}
-
-//=================================================================================================
-bool World::CheckFirstCity()
-{
-	if(first_city)
-	{
-		first_city = false;
-		return true;
 	}
 	return false;
 }

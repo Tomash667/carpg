@@ -1669,7 +1669,8 @@ int Unit::GetRandomAttack() const
 			int n = Rand() % data->frames->attacks;
 			if(IsSet(data->frames->extra->e[n].flags, a))
 				return n;
-		} while(1);
+		}
+		while(1);
 	}
 	else
 		return Rand() % data->frames->attacks;
@@ -5824,7 +5825,7 @@ UnitOrderEntry* Unit::OrderFollow(Unit* target)
 {
 	assert(target);
 	OrderReset();
-	order->order = ORDER_WAIT;
+	order->order = ORDER_FOLLOW;
 	order->unit = target;
 	return order;
 }
@@ -5995,7 +5996,15 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
 			rot = Clip(rot + d);
 		}
+		changed = true;
 	}
+}
+
+//=================================================================================================
+void Unit::RotateTo(const Vec3& pos)
+{
+	rot = Vec3::LookAtAngle(this->pos, pos);
+	changed = true;
 }
 
 UnitOrderEntry* UnitOrderEntry::NextOrder()

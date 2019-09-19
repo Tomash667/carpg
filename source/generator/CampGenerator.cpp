@@ -10,7 +10,6 @@
 #include "ItemHelper.h"
 #include "BaseObject.h"
 
-
 cstring camp_objs[] = {
 	"barrel",
 	"barrels",
@@ -30,7 +29,6 @@ cstring camp_objs[] = {
 };
 const uint n_camp_objs = countof(camp_objs);
 BaseObject* camp_objs_ptrs[n_camp_objs];
-
 
 //=================================================================================================
 void CampGenerator::Generate()

@@ -219,7 +219,7 @@ void Game::ListGrass()
 			{
 				for(int x = minx; x < maxx; ++x)
 				{
-					TERRAIN_TILE t = outside->tiles[x + y*OutsideLocation::size].t;
+					TERRAIN_TILE t = outside->tiles[x + y * OutsideLocation::size].t;
 					if(t == TT_GRASS)
 					{
 						if(outside->tiles[x + y * OutsideLocation::size].mode != TM_NO_GRASS)
@@ -252,8 +252,8 @@ void Game::ListGrass()
 					}
 					else if(t == TT_FIELD)
 					{
-						if(outside->tiles[x - 1 + y*OutsideLocation::size].mode == TM_FIELD
-							&& outside->tiles[x + 1 + y*OutsideLocation::size].mode == TM_FIELD
+						if(outside->tiles[x - 1 + y * OutsideLocation::size].mode == TM_FIELD
+							&& outside->tiles[x + 1 + y * OutsideLocation::size].mode == TM_FIELD
 							&& outside->tiles[x + (y - 1)*OutsideLocation::size].mode == TM_FIELD
 							&& outside->tiles[x + (y + 1)*OutsideLocation::size].mode == TM_FIELD)
 						{

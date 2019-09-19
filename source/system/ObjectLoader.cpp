@@ -281,7 +281,7 @@ void ObjectLoader::ParseUsable(const string& id)
 				t.ParseFlags({
 					{ &use->flags, G_OBJECT_FLAGS },
 					{ &use->use_flags, G_USABLE_FLAGS }
-				});
+					});
 				t.Next();
 			}
 			else
