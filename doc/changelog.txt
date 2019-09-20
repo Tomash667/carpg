@@ -15,6 +15,8 @@ Wersja 0.12 (???):
 + wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
 + usprawnione sprawdzanie wersji, wykorzystywanie biblioteki libcurl
+- crash gdy magowie zabij¹ na arenie przez barierkê jednego z widzów [Ampped]
+- crash gdy gobliny zabieraj¹ stary ³uk [Ampped]
 - zmiana postaci w trybie multiplayer resetowa³a ekwipunek postaci
 - jedzenie zió³ ma teraz poprawn¹ animacjê i dŸwiêki
 - dŸwiêk drzwi by³ bardzo rzadko odtwarzany w mp gdy ktoœ inny korzysta³ z drzwi

@@ -15,6 +15,8 @@ Version 0.12 (???):
 + loading character classes from file
 + update libraries: FMod 1.10.14
 + improved version checking, using libcurl
+- crash when mages at arena kill spectator [Ampped]
+- crash when goblins steal old bow [Ampped]
 - in multiplayer redoing character creation was resetting to standard inventory
 - eating herbs have now correct animation and sounds
 - door sounds was playing very rare when someone else used door in mp

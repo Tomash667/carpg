@@ -1332,7 +1332,7 @@ void PlayerController::UseDays(int count)
 }
 
 //=================================================================================================
-void PlayerController::StartDialog(Unit* talker, GameDialog* dialog)
+void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 {
 	assert(talker);
 
@@ -1346,7 +1346,7 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog)
 		c.id = talker->id;
 	}
 
-	ctx.StartDialog(talker, dialog);
+	ctx.StartDialog(talker, dialog, quest);
 }
 
 //=================================================================================================

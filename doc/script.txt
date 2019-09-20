@@ -108,7 +108,7 @@ UnitOrderBuilder - used to set multiple unit orders one after another (for examp
 	UnitOrderBuilder@ ThenEscapeToUnit(Unit@)
 	UnitOrderBuilder@ ThenGoToInn()
 	UnitOrderBuilder@ ThenGuard(Unit@)
-	UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null)
+	UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null, Quest@=null)
 
 Unit type:
 	const Vec3 pos
@@ -145,7 +145,7 @@ Unit type:
 	UnitOrderBuilder@ OrderEscapeToUnit(Unit@) - order unit to escape to unit (will ignore enemies).
 	UnitOrderBuilder@ OrderGoToInn() - order unit to go to inn.
 	UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
-	UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null) - start dialog when close to player or leader, can use default dialog or selected.
+	UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
 	void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 	void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 Globals:

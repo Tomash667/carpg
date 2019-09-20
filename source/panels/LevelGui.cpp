@@ -29,6 +29,7 @@
 #include "Quest_Tutorial.h"
 #include "PlayerInfo.h"
 #include "Engine.h"
+#include "Quest.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.1f;
@@ -264,6 +265,15 @@ void LevelGui::DrawFront()
 					case ORDER_ESCAPE_TO_UNIT:
 						if(Unit* unit = u.order->unit)
 							str += Format(" %s(%d)", unit->data->id.c_str(), unit->id);
+						break;
+					case ORDER_AUTO_TALK:
+						str += u.order->auto_talk == AutoTalkMode::Leader ? " leader" : " normal";
+						if(u.order->auto_talk_dialog)
+						{
+							str += Format(",%s", u.order->auto_talk_dialog->id.c_str());
+							if(u.order->auto_talk_quest)
+								str += Format(",%d", u.order->auto_talk_quest->id);
+						}
 						break;
 					}
 				}
