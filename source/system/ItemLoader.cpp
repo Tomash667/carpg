@@ -530,7 +530,8 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 					{
 						tex_o.push_back(TexId(t.MustGetString().c_str()));
 						t.Next();
-					} while(!t.IsSymbol('}'));
+					}
+					while(!t.IsSymbol('}'));
 				}
 				else
 					tex_o.push_back(TexId(t.MustGetString().c_str()));

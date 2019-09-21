@@ -185,7 +185,7 @@ dialog mayor
 	}
 	choice 7
 	{
-		special "burmistrz_quest"
+		special "mayor_quest"
 		restart
 	}
 	choice 8
@@ -480,7 +480,7 @@ dialog guard_captain
 			talk 11
 			restart
 		}
-		special "dowodca_quest"
+		special "captain_quest"
 		restart
 	}
 	choice 12
@@ -1686,13 +1686,13 @@ dialog traveler
 	if special "dont_have_quest"
 	{
 		talk 0
-		special "przedmiot_quest"
+		special "item_quest"
 		end
 	}
 	if special "have_unaccepted_quest"
 	{
 		talk 1
-		special "przedmiot_quest"
+		special "item_quest"
 		end
 	}
 	if special "have_completed_quest"

@@ -13,7 +13,7 @@ public:
 	explicit GameReader(cstring filename) : FileReader(filename) {}
 	explicit GameReader(const FileReader& f) : FileReader(f.GetHandle()) {}
 
-	using FileReader::operator >> ;
+	using FileReader::operator >>;
 
 	void operator >> (Unit*& unit)
 	{

@@ -95,3 +95,45 @@ quest alchemist_apprentice
 		11 "The alchemist in $(city.name) is looking for a specific type of herbs."
 	}
 }
+
+//=============================================================================
+quest main {
+	dialog trainer {
+		0 "Congratulations! You completed training at the academy!"
+		1 "What are you going to do now? Any plans for the future?"
+		2 "Welcome back $player_name$! How can I help you?"
+		3 "Recruit heroes"
+		4 "End dialog"
+		5 "Your team is already numerous enough."
+		6 "Who do you want to recruit?"
+		7 "Cancel"
+	}
+	
+	dialog messenger {
+		0 "$player_name$! Here you are!"
+		1 "Did you finish this training at the academy? That's good..."
+		2 "You must immediately return to the $(village.name)."
+		3 "It's getting worse, you need to talk to the village mayor."
+		4 "Since you are here, try to recruit a few people to help you."
+		5 "I'm going back to the village, go there as soon as you can."
+		6 "That's all I had to tell you."
+	}
+	
+	dialog soltys {
+		0 "It's good that you came $player_name$. We need to talk about the plague..."
+		1 "Plague"
+		2 "(This is the end of the main plot for this version. In the meantime try to complete 9 unique quests)"
+	}
+	
+	texts {
+		0 "An unknown plague broke out in the kingdom of Nyrtana."
+		1 "It slowly kills people without harming other races and animals."
+		2 "Other countries have closed the border to avoid the spread of the disease."
+		3 "A few people got infected in your village as well, it is not known why."
+		4 "You went to the heroes' academy to undergo basic training."
+		5 "Your main task is to stop the plague!"
+		6 "Plague in village"
+		7 "Started at $date$."
+		8 "In $(village.name), the plague began to spread more and more. I have to get back there quickly."
+	}
+}

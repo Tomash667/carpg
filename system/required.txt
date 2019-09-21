@@ -367,7 +367,11 @@ building cottage2
 building cottage3
 building village_inn
 building village_hall_old
-// required building script 
+// required building script
+building_script capital {
+	inn
+	arena
+}
 building_script city {
 	inn
 	arena

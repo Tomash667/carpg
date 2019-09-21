@@ -152,6 +152,7 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 		{
 			AutoTalkMode auto_talk;
 			GameDialog* auto_talk_dialog;
+			Quest* auto_talk_quest;
 		};
 	};
 	UnitOrderEntry* next;
@@ -176,7 +177,7 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
 	UnitOrderEntry* ThenGoToInn();
 	UnitOrderEntry* ThenGuard(Unit* target);
-	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog);
+	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest);
 
 private:
 	UnitOrderEntry* NextOrder();
@@ -861,7 +862,7 @@ public:
 	void SetWeaponState(bool takes_out, WeaponType type);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
-	bool IsFriend(Unit& u) const;
+	bool IsFriend(Unit& u, bool check_arena_attack = false) const;
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
@@ -895,7 +896,7 @@ public:
 	UnitOrderEntry* OrderEscapeToUnit(Unit* unit);
 	UnitOrderEntry* OrderGoToInn();
 	UnitOrderEntry* OrderGuard(Unit* target);
-	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
+	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }
@@ -903,6 +904,7 @@ public:
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 	void RotateTo(const Vec3& pos, float dt);
+	void RotateTo(const Vec3& pos);
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
 	void CastSpell();

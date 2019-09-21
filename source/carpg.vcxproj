@@ -150,6 +150,7 @@
     <ClInclude Include="entity\UnitEventHandler.h" />
     <ClInclude Include="events\Arena.h" />
     <ClInclude Include="GameCore.h" />
+    <ClInclude Include="generator\AcademyGenerator.h" />
     <ClInclude Include="generator\CampGenerator.h" />
     <ClInclude Include="generator\CaveGenerator.h" />
     <ClInclude Include="generator\DungeonGenerator.h" />
@@ -325,6 +326,7 @@
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="net\NetClient.cpp" />
     <ClCompile Include="net\NetServer.cpp" />
+    <ClCompile Include="generator\AcademyGenerator.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />

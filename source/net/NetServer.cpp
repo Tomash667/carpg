@@ -2844,7 +2844,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						c.pos.y = pos.y;
 					}
 				}
-
 			}
 			break;
 		// player used cheat 'hurt'
@@ -4224,8 +4223,6 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 	}
 
 	f.WriteCasted<byte>(0xFF);
-
-	SendServer(f, HIGH_PRIORITY, RELIABLE, info.adr);
 }
 
 //=================================================================================================

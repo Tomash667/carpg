@@ -297,7 +297,8 @@ void BuildingLoader::ParseBuilding(const string& id)
 						Side side = (Side)t.MustGetKeywordId(G_SIDE);
 						t.Next();
 						t.Parse(building->shift[(int)side]);
-					} while(t.IsKeywordGroup(G_SIDE));
+					}
+					while(t.IsKeywordGroup(G_SIDE));
 				}
 				else if(t.IsInt())
 				{
@@ -854,7 +855,7 @@ void BuildingLoader::CalculateCrc()
 						uint count = (uint)*data;
 						crc.Update(count);
 						++data;
-						for(uint i = 0; i<count; ++i)
+						for(uint i = 0; i < count; ++i)
 						{
 							int type = *data;
 							crc.Update(type);

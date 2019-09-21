@@ -300,8 +300,10 @@ void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stair
 				else
 					break;
 			}
-		} while(1);
-	} while(1);
+		}
+		while(1);
+	}
+	while(1);
 }
 
 //=================================================================================================

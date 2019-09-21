@@ -588,6 +588,9 @@
     <ClCompile Include="net\Net.cpp">
       <Filter>net</Filter>
     </ClCompile>
+    <ClCompile Include="generator\AcademyGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1170,6 +1173,9 @@
     </ClInclude>
     <ClInclude Include="helpers\PhysicCallbacks.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\AcademyGenerator.h">
+      <Filter>generator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

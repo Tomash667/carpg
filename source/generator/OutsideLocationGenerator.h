@@ -24,6 +24,7 @@ protected:
 	void RandomizeHeight(int octaves, float frequency, float hmin, float hmax);
 	void ApplyTiles();
 	void SpawnOutsideBariers();
+	void SpawnCityPhysics();
 
 	static const uint s;
 	static OutsideObject trees[];

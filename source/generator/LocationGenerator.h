@@ -24,6 +24,7 @@ public:
 	virtual void OnLoad() = 0;
 	virtual int HandleUpdate(int days) { return 0; }
 	void RespawnUnits();
+	void OnReenter();
 
 	Location* loc;
 	int dungeon_level;

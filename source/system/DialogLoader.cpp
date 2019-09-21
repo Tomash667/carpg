@@ -76,7 +76,7 @@ void DialogLoader::InitTokenizer()
 	t.AddKeywords(G_TOP, {
 		{ "dialog", T_DIALOG },
 		{ "globals", T_GLOBALS }
-	});
+		});
 
 	t.AddKeywords(G_KEYWORD, {
 		{ "choice", K_CHOICE },
@@ -112,7 +112,7 @@ void DialogLoader::InitTokenizer()
 		{ "script", K_SCRIPT },
 		{ "between", K_BETWEEN },
 		{ "and", K_AND }
-	});
+		});
 }
 
 //=================================================================================================

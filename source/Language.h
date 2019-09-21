@@ -54,7 +54,7 @@ inline cstring Str(cstring str)
 	return s ? s : "";
 }
 template<int N>
-inline void LoadArray(cstring (&var)[N], cstring str)
+inline void LoadArray(cstring(&var)[N], cstring str)
 {
 	for(uint i = 0; i < N; ++i)
 		var[i] = Str(Format("%s%u", str, i));

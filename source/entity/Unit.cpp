@@ -1669,7 +1669,8 @@ int Unit::GetRandomAttack() const
 			int n = Rand() % data->frames->attacks;
 			if(IsSet(data->frames->extra->e[n].flags, a))
 				return n;
-		} while(1);
+		}
+		while(1);
 	}
 	else
 		return Rand() % data->frames->attacks;
@@ -1859,7 +1860,13 @@ void Unit::Save(GameWriter& f, bool local)
 			break;
 		case ORDER_AUTO_TALK:
 			f << current_order->auto_talk;
-			f << (current_order->auto_talk_dialog ? current_order->auto_talk_dialog->id.c_str() : "");
+			if(current_order->auto_talk_dialog)
+			{
+				f << current_order->auto_talk_dialog->id;
+				f << (current_order->auto_talk_quest ? current_order->auto_talk_quest->id : -1);
+			}
+			else
+				f.Write0();
 			break;
 		}
 		current_order = current_order->next;
@@ -2329,9 +2336,17 @@ void Unit::Load(GameReader& f, bool local)
 				case ORDER_AUTO_TALK:
 					f >> current_order->auto_talk;
 					if(const string& dialog_id = f.ReadString1(); !dialog_id.empty())
+					{
 						current_order->auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
+						int quest_id;
+						f >> quest_id;
+						quest_mgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
+					}
 					else
+					{
 						current_order->auto_talk_dialog = nullptr;
+						current_order->auto_talk_quest = nullptr;
+					}
 					break;
 				}
 			}
@@ -2394,6 +2409,7 @@ void Unit::Load(GameReader& f, bool local)
 		order->timer = old_auto_talk_timer;
 		order->auto_talk = old_auto_talk;
 		order->auto_talk_dialog = old_auto_talk_dialog;
+		order->auto_talk_quest = nullptr;
 	}
 
 	if(f.Read1())
@@ -5572,7 +5588,7 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 }
 
 //=================================================================================================
-bool Unit::IsFriend(Unit& u) const
+bool Unit::IsFriend(Unit& u, bool check_arena_attack) const
 {
 	if(in_arena == -1 && u.in_arena == -1)
 	{
@@ -5596,7 +5612,15 @@ bool Unit::IsFriend(Unit& u) const
 			return (data->group == u.data->group);
 	}
 	else
+	{
+		if(check_arena_attack)
+		{
+			// prevent attacking viewers when on arena
+			if(in_arena == -1 || u.in_arena == -1)
+				return true;
+		}
 		return in_arena == u.in_arena;
+	}
 }
 
 //=================================================================================================
@@ -5824,7 +5848,7 @@ UnitOrderEntry* Unit::OrderFollow(Unit* target)
 {
 	assert(target);
 	OrderReset();
-	order->order = ORDER_WAIT;
+	order->order = ORDER_FOLLOW;
 	order->unit = target;
 	return order;
 }
@@ -5905,8 +5929,11 @@ UnitOrderEntry* Unit::OrderGuard(Unit* target)
 }
 
 //=================================================================================================
-UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
+UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog, Quest* quest)
 {
+	if(quest)
+		assert(dialog);
+
 	OrderReset();
 	order->order = ORDER_AUTO_TALK;
 	if(!leader)
@@ -5920,6 +5947,7 @@ UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
 		order->timer = 0.f;
 	}
 	order->auto_talk_dialog = dialog;
+	order->auto_talk_quest = quest;
 	return order;
 }
 
@@ -5995,7 +6023,15 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
 			rot = Clip(rot + d);
 		}
+		changed = true;
 	}
+}
+
+//=================================================================================================
+void Unit::RotateTo(const Vec3& pos)
+{
+	rot = Vec3::LookAtAngle(this->pos, pos);
+	changed = true;
 }
 
 UnitOrderEntry* UnitOrderEntry::NextOrder()
@@ -6092,8 +6128,11 @@ UnitOrderEntry* UnitOrderEntry::ThenGuard(Unit* target)
 	return o;
 }
 
-UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog)
+UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest)
 {
+	if(quest)
+		assert(dialog);
+
 	UnitOrderEntry* o = NextOrder();
 	o->order = ORDER_AUTO_TALK;
 	if(!leader)
@@ -6107,6 +6146,7 @@ UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog)
 		o->timer = 0.f;
 	}
 	o->auto_talk_dialog = dialog;
+	o->auto_talk_quest = quest;
 	return o;
 }
 
@@ -6257,7 +6297,7 @@ void Unit::CheckAutoTalk(float dt)
 		}
 		else
 		{
-			talk_player->StartDialog(this, order->auto_talk_dialog);
+			talk_player->StartDialog(this, order->auto_talk_dialog, order->auto_talk_quest);
 			OrderClear();
 		}
 	}
@@ -6454,7 +6494,7 @@ void Unit::CastSpell()
 			if(game_level->RayTest(coord, target_pos, this, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
-				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted))
+				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
 				{
 					Drain& drain = Add1(area->tmp->drains);
 					drain.from = hitted;
@@ -7668,11 +7708,11 @@ void Unit::Update(float dt)
 					float move_angle = Angle(0, 0, dir.x, dir.z);
 					Vec3 dir_left(sin(use_rot + PI / 2)*len, 0, cos(use_rot + PI / 2)*len);
 					Vec3 dir_right(sin(use_rot - PI / 2)*len, 0, cos(use_rot - PI / 2)*len);
-					for(auto unit : targets)
+					for(Unit* unit : targets)
 					{
 						// deal damage/stun
 						bool move_forward = true;
-						if(!unit->IsFriend(*this))
+						if(!unit->IsFriend(*this, true))
 						{
 							if(!player->IsHit(unit))
 							{
@@ -7718,7 +7758,7 @@ void Unit::Update(float dt)
 							{
 								unit->moved = true;
 								unit->pos += move_dir;
-								Moved(false, true);
+								unit->Moved(false, true);
 								continue;
 							}
 						}
@@ -7737,7 +7777,7 @@ void Unit::Update(float dt)
 								inner_ok = true;
 								unit->moved = true;
 								unit->pos += actual_dir;
-								Moved(false, true);
+								unit->Moved(false, true);
 								break;
 							}
 						}

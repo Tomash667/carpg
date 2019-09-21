@@ -133,7 +133,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 					return true;
 
 				--tries2;
-			} while(tries2 > 0);
+			}
+			while(tries2 > 0);
 			break;
 		case GDIR_LEFT:
 			// prawa œciana, obj <
@@ -146,7 +147,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 					return true;
 
 				--tries2;
-			} while(tries2 > 0);
+			}
+			while(tries2 > 0);
 			break;
 		case GDIR_DOWN:
 			// dolna œciana, obj /|
@@ -159,7 +161,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 					return true;
 
 				--tries2;
-			} while(tries2 > 0);
+			}
+			while(tries2 > 0);
 			break;
 		case GDIR_RIGHT:
 			// lewa œciana, obj >
@@ -172,13 +175,15 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 					return true;
 
 				--tries2;
-			} while(tries2 > 0);
+			}
+			while(tries2 > 0);
 			break;
 		}
 
 		++tries;
 		rot = (GameDirection)((rot + 1) % 4);
-	} while(tries <= 3);
+	}
+	while(tries <= 3);
 
 	return false;
 }

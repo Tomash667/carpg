@@ -76,6 +76,7 @@ void WorldMapGui::LoadData()
 	tMapIcon[LI_SAWMILL] = res_mgr->Load<Texture>("sawmill.png");
 	tMapIcon[LI_DUNGEON2] = res_mgr->Load<Texture>("dungeon2.png");
 	tMapIcon[LI_ACADEMY] = res_mgr->Load<Texture>("academy.png");
+	tMapIcon[LI_CAPITAL] = res_mgr->Load<Texture>("capital.png");
 	tWorldMap = res_mgr->Load<Texture>("worldmap.jpg");
 	tSelected[0] = res_mgr->Load<Texture>("selected.png");
 	tSelected[1] = res_mgr->Load<Texture>("selected2.png");
@@ -383,7 +384,7 @@ void WorldMapGui::Update(float dt)
 		float dist = 17.f;
 		int index;
 
-		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom+offset * float(world->world_size) / MAP_IMG_SIZE;
+		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom + offset * float(world->world_size) / MAP_IMG_SIZE;
 		c_pos.y = float(world->world_size) - c_pos.y;
 		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < world->world_size && c_pos.y < world->world_size && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3)
 		{

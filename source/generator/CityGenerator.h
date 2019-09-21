@@ -146,7 +146,6 @@ private:
 	void GeneratePickableItems();
 	void CreateMinimap() override;
 	void OnLoad() override;
-	void SpawnCityPhysics();
 	void RespawnBuildingPhysics();
 
 	City* city;

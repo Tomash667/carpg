@@ -17,7 +17,8 @@
 #include "GameMessages.h"
 #include "ItemHelper.h"
 #include "PlayerInfo.h"
-
+#include "Level.h"
+#include "EntityInterpolator.h"
 
 Team* global::team;
 
@@ -56,7 +57,6 @@ bool UniqueTeamShares(const Team::TeamShareItem& t1, const Team::TeamShareItem& 
 {
 	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item && t1.priority == t2.priority;
 }
-
 
 void Team::AddTeamMember(Unit* unit, HeroType type)
 {
@@ -1516,4 +1516,28 @@ bool Team::IsAnyoneTalking() const
 	}
 	else
 		return anyone_talking;
+}
+
+//=================================================================================================
+void Team::Warp(const Vec3& pos, const Vec3& look_at)
+{
+	// first warp leader to be in front
+	game_level->WarpNearLocation(*game_level->local_area, *leader, pos, 2.f, true, 20);
+	leader->visual_pos = leader->pos;
+	leader->rot = Vec3::LookAtAngle(leader->pos, look_at);
+	if(leader->interp)
+		leader->interp->Reset(leader->pos, leader->rot);
+
+	Vec3 dir = (pos - look_at).Normalized();
+	Vec3 target_pos = pos + dir * 2;
+	for(Unit& unit : members)
+	{
+		if(&unit == leader)
+			continue;
+		game_level->WarpNearLocation(*game_level->local_area, unit, target_pos, 2.f, true, 20);
+		unit.visual_pos = unit.pos;
+		unit.rot = Vec3::LookAtAngle(unit.pos, look_at);
+		if(unit.interp)
+			unit.interp->Reset(unit.pos, unit.rot);
+	}
 }

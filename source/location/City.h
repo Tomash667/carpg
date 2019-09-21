@@ -11,7 +11,8 @@
 enum CityTarget
 {
 	VILLAGE,
-	CITY
+	CITY,
+	CAPITAL
 };
 
 //-----------------------------------------------------------------------------
@@ -76,7 +77,7 @@ struct City : public OutsideLocation
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;
 
-	void GenerateCityBuildings(vector<Building*>& buildings, bool required, bool first_city);
+	void GenerateCityBuildings(vector<Building*>& buildings, bool required);
 	void PrepareCityBuildings(vector<ToBuild>& tobuild);
 	bool IsInsideCity(const Vec3& _pos);
 	InsideBuilding* FindInsideBuilding(Building* building);

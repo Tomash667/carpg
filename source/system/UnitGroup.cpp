@@ -97,7 +97,6 @@ UnitGroup* UnitGroup::TryGet(Cstring id)
 	return nullptr;
 }
 
-
 //=================================================================================================
 void TmpUnitGroup::ReleaseS()
 {
@@ -193,7 +192,7 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 		return spawn;
 
 	int points = level * count + Random(-level / 2, level / 2);
-	while(points > 0 && spawn.size() < (uint)count *2)
+	while(points > 0 && spawn.size() < (uint)count * 2)
 	{
 		int x = Rand() % total_weight, y = 0;
 		for(UnitGroup::Entry& entry : entries)
@@ -274,7 +273,6 @@ TmpUnitGroup* TmpUnitGroup::GetInstanceS()
 	return group;
 }
 
-
 //=================================================================================================
 TmpUnitGroupList::~TmpUnitGroupList()
 {
@@ -331,7 +329,6 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroupList::Roll(int level, int count)
 {
 	return RandomItem(groups)->Roll(level, count);
 }
-
 
 //=================================================================================================
 UnitGroup* old::OldToNew(SPAWN_GROUP spawn)

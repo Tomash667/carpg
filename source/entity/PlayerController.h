@@ -290,7 +290,7 @@ public:
 	int GetNextActionItemIndex() const;
 	void PayCredit(int count);
 	void UseDays(int count);
-	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
+	void StartDialog(Unit* talker, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 
 	// perks
 	bool HavePerk(Perk perk, int value = -1);

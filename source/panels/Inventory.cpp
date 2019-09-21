@@ -31,7 +31,6 @@ last_index to tutaj t_index
 const int INDEX_GOLD = -2;
 const int INDEX_CARRY = -3;
 
-
 //=================================================================================================
 Inventory::~Inventory()
 {
@@ -375,7 +374,6 @@ void Inventory::BuildTmpInventory(int index)
 	for(int i = 0, count = (int)items->size(); i < count; ++i)
 		ids.push_back(i);
 }
-
 
 //=================================================================================================
 InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr), i_items(nullptr), for_unit(false), tex_replaced(false)

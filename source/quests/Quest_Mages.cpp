@@ -292,7 +292,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			do
 			{
 				NameHelper::GenerateHeroName(Class::TryGet("mage"), false, evil_mage_name);
-			} while(good_mage_name == evil_mage_name);
+			}
+			while(good_mage_name == evil_mage_name);
 			done = false;
 			unit_event_handler = this;
 			unit_auto_talk = true;

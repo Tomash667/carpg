@@ -156,7 +156,6 @@ enum SubprofileKeyword
 	SPK_TAGS
 };
 
-
 //=================================================================================================
 void UnitLoader::DoLoading()
 {
@@ -1512,7 +1511,8 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 						AddItem(script);
 						t.Next();
 						++count;
-					} while(!t.IsSymbol('}'));
+					}
+					while(!t.IsSymbol('}'));
 
 					if(count < 2)
 						t.Throw("Invalid one of many count %d.", count);
@@ -1813,7 +1813,8 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 			++index;
 		}
 		t.Next();
-	} while(!t.IsSymbol('}'));
+	}
+	while(!t.IsSymbol('}'));
 
 	if(list->spell[0] == nullptr && list->spell[1] == nullptr && list->spell[2] == nullptr)
 		t.Throw("Empty spell list.");
@@ -1914,7 +1915,8 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 
 				frames->extra->e.push_back({ start, end, flags });
 				t.Next();
-			} while(!t.IsSymbol('}'));
+			}
+			while(!t.IsSymbol('}'));
 			frames->attacks = frames->extra->e.size();
 			crc.Update(frames->attacks);
 			break;
@@ -1959,7 +1961,8 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 					++index;
 					++frames->attacks;
 					t.Next();
-				} while(!t.IsSymbol('}'));
+				}
+				while(!t.IsSymbol('}'));
 			}
 			break;
 		case FK_CAST:
@@ -2023,7 +2026,8 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 			any = true;
 		}
 		t.Next();
-	} while(!t.IsSymbol('}'));
+	}
+	while(!t.IsSymbol('}'));
 
 	if(!any)
 		t.Throw("Texture pack without textures.");
@@ -2044,7 +2048,8 @@ void UnitLoader::ParseIdles(Ptr<IdlePack>& pack)
 		pack->anims.push_back(s);
 		crc.Update(s);
 		t.Next();
-	} while(!t.IsSymbol('}'));
+	}
+	while(!t.IsSymbol('}'));
 
 	IdlePack::packs.push_back(pack.Pin());
 }

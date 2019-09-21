@@ -13,6 +13,7 @@ public:
 	LocationGenerator* Get(Location* loc, bool first = false, bool reenter = false);
 
 private:
+	AcademyGenerator* academy;
 	CampGenerator* camp;
 	CaveGenerator* cave;
 	CityGenerator* city;

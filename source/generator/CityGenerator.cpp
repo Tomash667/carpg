@@ -2282,6 +2282,8 @@ void CityGenerator::OnEnter()
 
 		game_level->OnReenterLevel();
 	}
+	else
+		OnReenter();
 
 	if(!reenter)
 	{
@@ -2567,7 +2569,21 @@ void CityGenerator::SpawnUnits()
 
 	// stra¿nicy
 	UnitData* guard = UnitData::Get("guard_move");
-	for(int i = 0, count = city->IsVillage() ? 3 : 6; i < count; ++i)
+	uint guard_count;
+	switch(city->target)
+	{
+	case VILLAGE:
+		guard_count = 3;
+		break;
+	default:
+	case CITY:
+		guard_count = 6;
+		break;
+	case CAPITAL:
+		guard_count = 9;
+		break;
+	}
+	for(uint i = 0; i < guard_count; ++i)
 	{
 		for(int j = 0; j < 50; ++j)
 		{
@@ -2590,15 +2606,20 @@ void CityGenerator::SpawnTemporaryUnits()
 	// heroes
 	uint count;
 	Int2 level;
-	if(world->CheckFirstCity())
+	switch(city->target)
 	{
-		count = 4;
-		level = Int2(5, 8);
-	}
-	else
-	{
-		count = Random(1u, 4u);
+	case VILLAGE:
+		count = Random(1u, 2u);
 		level = Int2(5, 15);
+		break;
+	case CITY:
+		count = Random(1u, 4u);
+		level = Int2(6, 15);
+		break;
+	case CAPITAL:
+		count = 4u;
+		level = Int2(8, 15);
+		break;
 	}
 
 	for(uint i = 0; i < count; ++i)
@@ -2877,27 +2898,6 @@ void CityGenerator::OnLoad()
 	game->CalculateQuadtree();
 
 	CreateMinimap();
-}
-
-//=================================================================================================
-void CityGenerator::SpawnCityPhysics()
-{
-	TerrainTile* tiles = city->tiles;
-
-	for(int z = 0; z < City::size; ++z)
-	{
-		for(int x = 0; x < City::size; ++x)
-		{
-			if(tiles[x + z * OutsideLocation::size].mode == TM_BUILDING_BLOCK)
-			{
-				btCollisionObject* cobj = new btCollisionObject;
-				cobj->setCollisionShape(game_level->shape_block);
-				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-				cobj->getWorldTransform().setOrigin(btVector3(2.f*x + 1.f, terrain->GetH(2.f*x + 1.f, 2.f*x + 1), 2.f*z + 1.f));
-				phy_world->addCollisionObject(cobj, CG_BUILDING);
-			}
-		}
-	}
 }
 
 //=================================================================================================

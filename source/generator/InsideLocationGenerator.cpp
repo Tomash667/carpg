@@ -120,6 +120,8 @@ void InsideLocationGenerator::OnEnter()
 		if(need_reset)
 			GenerateUnits();
 	}
+	else
+		OnReenter();
 
 	// questowe rzeczy
 	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER && inside->active_quest->type != Q_SCRIPTED)
@@ -1246,7 +1248,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// open doors between rooms
-	for(uint i=0; i<depth; ++i)
+	for(uint i = 0; i < depth; ++i)
 	{
 		pair<Room*, Room*> connected = lvl.GetConnectingRooms(groups[i], groups[i + 1]);
 		Room& a = *connected.first,

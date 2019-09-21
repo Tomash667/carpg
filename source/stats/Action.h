@@ -32,7 +32,7 @@ struct Action
 	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size, cstring sound_id, float sound_dist, int flags,
 		float cost, bool use_mana, bool use_cast) :
 		id(id), cooldown(cooldown), recharge(recharge), charges(charges), tex(nullptr), area(area), area_size(area_size), sound_id(sound_id), sound(nullptr),
-		sound_dist(sound_dist), flags(flags),cost(cost), use_mana(use_mana), use_cast(use_cast)
+		sound_dist(sound_dist), flags(flags), cost(cost), use_mana(use_mana), use_cast(use_cast)
 	{
 	}
 

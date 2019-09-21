@@ -122,7 +122,7 @@ uint MusicTrack::Load(uint& errors)
 		{ "travel", MusicType::Travel },
 		{ "moonwell", MusicType::Moonwell },
 		{ "death", MusicType::Death }
-	});
+		});
 
 	Ptr<MusicTrack> track(nullptr);
 

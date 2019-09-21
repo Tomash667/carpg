@@ -46,6 +46,7 @@ otherness = "Otherness"
 randomEncounter = "Random encounter"
 tower = "Tower"
 labyrinth = "Labyrinth"
+academy = "Academy"
 
 [WeaponTypes]
 shortBlade = "Short blade"

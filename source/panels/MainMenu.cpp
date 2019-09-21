@@ -79,8 +79,11 @@ void MainMenu::Draw(ControlDrawData*)
 {
 	gui->DrawSpriteFull(tBackground, Color::White);
 	gui->DrawSprite(tLogo, Int2(gui->wnd_size.x - 512 - 16, 16));
-	gui->DrawSpriteRect(tFModLogo, Rect(int(gui->wnd_size.x - 562.f * gui->wnd_size.x / 1920), int(gui->wnd_size.y - 185.f * gui->wnd_size.y / 1080),
-		int(gui->wnd_size.x - 50.f * gui->wnd_size.x / 1920), int(gui->wnd_size.y - 50.f * gui->wnd_size.y / 1080)), Color::Alpha(250));
+	gui->DrawSpriteRect(tFModLogo, Rect(
+		int(gui->wnd_size.x - (512.f * 0.6f + 50.f) * gui->wnd_size.x / 1920),
+		int(gui->wnd_size.y - (135.f * 0.6f + 50.f) * gui->wnd_size.y / 1080),
+		int(gui->wnd_size.x - 50.f * gui->wnd_size.x / 1920),
+		int(gui->wnd_size.y - 50.f * gui->wnd_size.y / 1080)), Color::Alpha(250));
 
 	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
 	r.Top() = r.Bottom() - 64;

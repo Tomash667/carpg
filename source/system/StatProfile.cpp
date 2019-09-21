@@ -133,7 +133,6 @@ SubprofileInfo StatProfile::GetRandomSubprofile(SubprofileInfo* prev)
 	return s;
 }
 
-
 //=================================================================================================
 SkillId SubprofileInfo::GetSkill(SkillId skill) const
 {

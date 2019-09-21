@@ -660,7 +660,6 @@ void QuestManager::Load(GameReader& f)
 	LoadQuests(f, quests);
 	LoadQuests(f, unaccepted_quests);
 
-
 	// get quest pointers
 	quest_sawmill = static_cast<Quest_Sawmill*>(FindQuest(Q_SAWMILL));
 	quest_mine = static_cast<Quest_Mine*>(FindQuest(Q_MINE));

@@ -96,7 +96,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->group = UnitGroup::Get("bandits");
 			e->location_event_handler = nullptr;
 			e->pos = (sl.pos + other.pos) / 2;
-			e->quest = reinterpret_cast<Quest_Encounter*>(this);
+			e->quest = this;
 			e->chance = 60;
 			e->text = game->txQuest[11];
 			e->timed = false;
@@ -120,7 +120,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->group = UnitGroup::Get("bandits");
 			e->location_event_handler = nullptr;
 			e->pos = (sl.pos + other.pos) / 2;
-			e->quest = reinterpret_cast<Quest_Encounter*>(this);
+			e->quest = this;
 			e->chance = 60;
 			e->text = game->txQuest[11];
 			e->timed = false;
@@ -363,7 +363,7 @@ bool Quest_Bandits::Load(GameReader& f)
 		e->group = UnitGroup::Get("bandits");
 		e->location_event_handler = nullptr;
 		e->pos = (GetStartLocation().pos + world->GetLocation(other_loc)->pos) / 2;
-		e->quest = reinterpret_cast<Quest_Encounter*>(this);
+		e->quest = this;
 		e->chance = 60;
 		e->text = game->txQuest[11];
 		e->timed = false;

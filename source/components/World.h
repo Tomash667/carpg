@@ -82,17 +82,17 @@ public:
 	void StartInLocation();
 	void CalculateTiles();
 	void SmoothTiles();
-	void CreateCity(const Vec2& pos, bool village);
+	void CreateCity(const Vec2& pos, int target);
 	void SetLocationImageAndName(Location* l);
 	int CreateCamp(const Vec2& pos, UnitGroup* group, float range = 64.f, bool allow_exact = true);
 private:
-	typedef pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
+	typedef LOCATION(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
-	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
+	Location* CreateLocation(LOCATION type, int levels = -1, int city_target = -1);
 public:
 	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, UnitGroup* group = UnitGroup::random,
 		bool allow_exact = true, int dungeon_levels = -1);
-	Location* CreateLocationS(LOCATION type, const Vec2& pos) { return CreateLocation(type, pos); }
+	Location* CreateLocationS(LOCATION type, const Vec2& pos, int target = 0) { return CreateLocation(type, pos, 64.f, target); }
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(int index);
@@ -131,9 +131,9 @@ public:
 	{
 		return GetClosestLocation(type, pos, targets.begin(), targets.size(), flags);
 	}
-	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = ANY_TARGET, int flags = 0)
+	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = ANY_TARGET)
 	{
-		return locations[GetClosestLocation(type, pos, target, flags)];
+		return locations[GetClosestLocation(type, pos, target)];
 	}
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
@@ -143,6 +143,7 @@ public:
 	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
 	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
+	Vec2 GetPos() const { return world_pos; }
 	Location* GetRandomLocation(delegate<bool(Location*)> pred);
 
 	// travel
@@ -180,7 +181,6 @@ public:
 	bool IsBossLevel(const Int2& pos = Int2::Zero) const;
 
 	// misc
-	bool CheckFirstCity();
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	void VerifyObjects();
 	void VerifyObjects(vector<Object*>& objects, int& errors);
@@ -221,9 +221,8 @@ private:
 	vector<News*> news;
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
 		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncEnemiesCombat;
-	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth;
-	bool first_city, // spawn more low level heroes in first city
-		boss_level_mp, // used by clients instead boss_levels
+	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy;
+	bool boss_level_mp, // used by clients instead boss_levels
 		tomir_spawned,
 		travel_first_frame;
 

@@ -33,7 +33,7 @@
 DialogContext* DialogContext::current;
 
 //=================================================================================================
-void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
+void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 {
 	assert(!dialog_mode);
 
@@ -41,6 +41,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	if(talker && !dialog && talker->GetOrder() == ORDER_AUTO_TALK)
 	{
 		dialog = talker->order->auto_talk_dialog;
+		quest = talker->order->auto_talk_quest;
 		talker->OrderNext();
 	}
 
@@ -50,7 +51,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	show_choices = false;
 	dialog_text = nullptr;
 	dialog_once = true;
-	dialog_quest = nullptr;
+	dialog_quest = quest;
 	dialog_skip = -1;
 	dialog_esc = -1;
 	this->talker = talker;
@@ -156,8 +157,11 @@ void DialogContext::Update(float dt)
 			}
 
 			show_choices = false;
-			if(choice.type == DialogChoice::Normal)
+
+			bool use_return = false;
+			switch(choice.type)
 			{
+			case DialogChoice::Normal:
 				if(choice.quest_dialog_index != -1)
 				{
 					prev.push_back({ this->dialog, dialog_quest, -1 });
@@ -166,19 +170,20 @@ void DialogContext::Update(float dt)
 					dialog = quest_dialogs[quest_dialog_index].dialog;
 				}
 				dialog_pos = choice.pos;
-				ClearChoices();
-				choice_selected = -1;
-				dialog_esc = -1;
+				break;
+			case DialogChoice::Perk:
+				use_return = LearnPerk(choice.pos);
+				break;
+			case DialogChoice::Hero:
+				use_return = RecruitHero((Class*)choice.pos);
+				break;
 			}
-			else
-			{
-				bool ok = LearnPerk(choice.pos);
-				ClearChoices();
-				choice_selected = -1;
-				dialog_esc = -1;
-				if(ok)
-					return;
-			}
+
+			ClearChoices();
+			choice_selected = -1;
+			dialog_esc = -1;
+			if(use_return)
+				return;
 		}
 		else
 			return;
@@ -246,6 +251,7 @@ void DialogContext::Update(float dt)
 	ctx.target = nullptr;
 }
 
+//=================================================================================================
 void DialogContext::UpdateLoop()
 {
 	bool cmp_result = false;
@@ -333,6 +339,18 @@ void DialogContext::UpdateLoop()
 					dialog = quest_dialogs[0].dialog;
 					dialog_quest = (Quest*)quest_dialogs[0].quest;
 					quest_dialog_index = 0;
+				}
+			}
+			else
+			{
+				if(quest_dialogs.empty())
+					quest_dialog_index = -1;
+				else
+				{
+					quest_dialog_index = 0;
+					prev.push_back({ this->dialog, dialog_quest, -1 });
+					dialog = quest_dialogs[0].dialog;
+					dialog_quest = (Quest*)quest_dialogs[0].quest;
 				}
 			}
 			dialog_pos = -1;
@@ -761,7 +779,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	if(quest_mgr->HandleSpecial(*this, msg, result))
 		return result;
 
-	if(strcmp(msg, "burmistrz_quest") == 0)
+	if(strcmp(msg, "mayor_quest") == 0)
 	{
 		bool have_quest = true;
 		if(game_level->city_ctx->quest_mayor == CityQuestState::Failed)
@@ -825,7 +843,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			return true;
 		}
 	}
-	else if(strcmp(msg, "dowodca_quest") == 0)
+	else if(strcmp(msg, "captain_quest") == 0)
 	{
 		bool have_quest = true;
 		if(game_level->city_ctx->quest_captain == CityQuestState::Failed)
@@ -889,7 +907,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			return true;
 		}
 	}
-	else if(strcmp(msg, "przedmiot_quest") == 0)
+	else if(strcmp(msg, "item_quest") == 0)
 	{
 		if(talker->quest_id == -1)
 		{
@@ -1486,6 +1504,26 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			choices.push_back(choice);
 		}
 	}
+	else if(strcmp(msg, "select_hero") == 0)
+	{
+		LocalVector<Class*> available;
+		for(Class* clas : Class::classes)
+		{
+			if(clas->hero)
+				available->push_back(clas);
+		}
+		std::sort(available->begin(), available->end(), [](const Class* c1, const Class* c2)
+		{
+			return c1->name < c2->name;
+		});
+		for(Class* clas : available)
+		{
+			DialogChoice choice((int)clas, clas->name.c_str(), quest_dialog_index);
+			choice.type = DialogChoice::Hero;
+			choice.talk_msg = clas->name.c_str();
+			choices.push_back(choice);
+		}
+	}
 	else
 	{
 		Warn("DTF_SPECIAL: %s", msg);
@@ -1698,7 +1736,7 @@ bool DialogContext::DoIfOp(int value1, int value2, DialogOp op)
 	case OP_BETWEEN:
 		return value1 >= (value2 & 0xFFFF) && value1 <= (int)((value2 & 0xFFFF0000) >> 16);
 	case OP_NOT_BETWEEN:
-		return value1 < (value2 & 0xFFFF) || value1 > (int)((value2 & 0xFFFF0000) >> 16);
+		return value1 < (value2 & 0xFFFF) || value1 >(int)((value2 & 0xFFFF0000) >> 16);
 	}
 }
 
@@ -1746,6 +1784,25 @@ bool DialogContext::LearnPerk(int perk)
 		pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 	}
 
+	force_end = true;
+	return true;
+}
+
+//=================================================================================================
+bool DialogContext::RecruitHero(Class* clas)
+{
+	if(team->GetActiveTeamSize() >= 4u)
+	{
+		DialogTalk(game->txTeamTooBig);
+		force_end = true;
+		return false;
+	}
+
+	Unit* u = game_level->SpawnUnitNearLocation(*talker->area, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
+	u->rot = 0.f;
+	u->SetKnownName(true);
+	team->AddTeamMember(u, HeroType::Normal);
+	DialogTalk(Format(game->txHeroJoined, u->GetName()));
 	force_end = true;
 	return true;
 }
