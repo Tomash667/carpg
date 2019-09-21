@@ -33,6 +33,7 @@ Wersja 0.12 (???):
 - usuwanie cz³onków dru¿yny w multiplayer nie zmienia kolejnoœci dru¿yny
 - klient po wyjœciu z gry multiplayer i rozpoczêciu singleplayer nie by³ przewódc¹ dru¿yny
 - obrót jednostek które stoj¹ w miejscu zmienia³ siê w trakcie opuszczania lokalizacji
+- brakuj¹ca tekstura czarnego pancerza
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

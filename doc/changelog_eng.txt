@@ -33,6 +33,7 @@ Version 0.12 (???):
 - in multiplayer game removing team members don't shuffle order
 - client after exiting multiplayer and starting singleplayer wasn't leader
 - units rotation that stay in single place could change after leaving location
+- black armor missing texture
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

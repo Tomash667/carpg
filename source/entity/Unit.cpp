@@ -7708,7 +7708,7 @@ void Unit::Update(float dt)
 					float move_angle = Angle(0, 0, dir.x, dir.z);
 					Vec3 dir_left(sin(use_rot + PI / 2)*len, 0, cos(use_rot + PI / 2)*len);
 					Vec3 dir_right(sin(use_rot - PI / 2)*len, 0, cos(use_rot - PI / 2)*len);
-					for(auto unit : targets)
+					for(Unit* unit : targets)
 					{
 						// deal damage/stun
 						bool move_forward = true;
@@ -7758,7 +7758,7 @@ void Unit::Update(float dt)
 							{
 								unit->moved = true;
 								unit->pos += move_dir;
-								Moved(false, true);
+								unit->Moved(false, true);
 								continue;
 							}
 						}
@@ -7777,7 +7777,7 @@ void Unit::Update(float dt)
 								inner_ok = true;
 								unit->moved = true;
 								unit->pos += actual_dir;
-								Moved(false, true);
+								unit->Moved(false, true);
 								break;
 							}
 						}
