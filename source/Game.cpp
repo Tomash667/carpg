@@ -1017,6 +1017,7 @@ void Game::SetGameText()
 {
 	// ai
 	LoadArray(txAiNoHpPot, "aiNoHpPot");
+	LoadArray(txAiNoMpPot, "aiNoMpPot");
 	LoadArray(txAiCity, "aiCity");
 	LoadArray(txAiVillage, "aiVillage");
 	txAiForest = Str("aiForest");

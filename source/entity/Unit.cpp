@@ -4461,14 +4461,12 @@ void Unit::RemoveMana(float value)
 {
 	mp -= value;
 	if(player && Net::IsLocal())
-	{
 		player->Train(TrainWhat::Mana, value, 0);
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_MP;
-			c.unit = this;
-		}
+	if(Net::IsServer() && IsTeamMember())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::UPDATE_MP;
+		c.unit = this;
 	}
 }
 
@@ -4480,14 +4478,12 @@ void Unit::RemoveStamina(float value)
 		stamina = -stamina_max / 2;
 	stamina_timer = STAMINA_RESTORE_TIMER;
 	if(player && Net::IsLocal())
-	{
 		player->Train(TrainWhat::Stamina, value, 0);
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_STAMINA;
-			c.unit = this;
-		}
+	if(Net::IsServer() && IsTeamMember())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::UPDATE_STAMINA;
+		c.unit = this;
 	}
 }
 

@@ -304,6 +304,8 @@ bool AIController::CheckPotion(bool in_combat)
 				int index = unit->FindManaPotion();
 				if(index == -1)
 				{
+					if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
+						unit->Talk(RandomString(game->txAiNoMpPot));
 					have_mp_potion = HavePotion::No;
 					return false;
 				}

@@ -1,6 +1,8 @@
 // ai talking
 aiNoHpPot0 = "Cholera! Nie mam ju¿ miksturek leczniczych."
 aiNoHpPot1 = "Nie mam ju¿ miksturek leczniczych."
+aiNoMpPot0 = "Nie mam ju¿ miksturek many."
+aiNoMpPot1 = "Musimy uwa¿aæ, skoñczy³y mi siê miksturki many."
 aiJoinTour0 = "Wezmê udzia³ w zawodach, mo¿e uda mi siê wygraæ."
 aiJoinTour1 = "To ja te¿ siê zapiszê!"
 aiJoinTour2 = "Te¿ biorê udzia³!"

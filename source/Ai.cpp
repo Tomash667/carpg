@@ -2347,32 +2347,11 @@ void Game::UpdateAi(float dt)
 				if(Unit* target = ai.target)
 				{
 					Spell& s = *u.data->spells->spell[u.attack_id];
+					bool ok = true;
 					if(target == &u)
 					{
 						move_type = DontMove;
 						look_at = DontLook;
-
-						if(u.action == A_NONE)
-						{
-							ai.cooldown[u.attack_id] = s.cooldown.Random();
-							u.action = A_CAST;
-							u.animation_state = 0;
-							u.target_pos = u.pos;
-							u.action_unit = u;
-
-							if(u.mesh_inst->mesh->head.n_groups == 2)
-							{
-								u.mesh_inst->frame_end_info2 = false;
-								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-							}
-							else
-							{
-								u.mesh_inst->frame_end_info = false;
-								u.animation = ANI_PLAY;
-								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-								u.mesh_inst->groups[0].speed = 1.f;
-							}
-						}
 					}
 					else
 					{
@@ -2382,41 +2361,51 @@ void Game::UpdateAi(float dt)
 						target_pos = look_pos = target->pos;
 
 						if(Vec3::Distance(u.pos, target_pos) <= s.range)
-						{
 							move_type = DontMove;
-
-							if(u.action == A_NONE)
-							{
-								ai.cooldown[u.attack_id] = s.cooldown.Random();
-								u.action = A_CAST;
-								u.animation_state = 0;
-								u.target_pos = target_pos;
-								u.action_unit = target;
-
-								if(u.mesh_inst->mesh->head.n_groups == 2)
-								{
-									u.mesh_inst->frame_end_info2 = false;
-									u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-								}
-								else
-								{
-									u.mesh_inst->frame_end_info = false;
-									u.animation = ANI_PLAY;
-									u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-									u.mesh_inst->groups[0].speed = 1.f;
-								}
-							}
-						}
 						else
 						{
+							ok = false;
+
 							// fix for Jozan getting stuck when trying to heal someone
 							if(u.IsHero())
 								try_phase = true;
 						}
+					}
 
+					if(ok && u.action == A_NONE)
+					{
+						ai.cooldown[u.attack_id] = s.cooldown.Random();
+						u.action = A_CAST;
+						u.animation_state = 0;
+						u.target_pos = target->pos;
+						u.action_unit = target;
 						if(u.action == A_CAST)
 							u.target_pos = target_pos;
+
+						if(u.mesh_inst->mesh->head.n_groups == 2)
+						{
+							u.mesh_inst->frame_end_info2 = false;
+							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+						}
+						else
+						{
+							u.mesh_inst->frame_end_info = false;
+							u.animation = ANI_PLAY;
+							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.mesh_inst->groups[0].speed = 1.f;
+						}
+
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CAST_SPELL;
+							c.unit = &u;
+							c.id = u.attack_id;
+						}
 					}
+
+					if(u.action == A_CAST)
+						u.target_pos = target_pos;
 				}
 				else
 				{

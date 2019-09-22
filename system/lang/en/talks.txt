@@ -1,6 +1,8 @@
 // ai talking
 aiNoHpPot0 = "Shit! No more healing potions."
 aiNoHpPot1 = "I used all my healing potions."
+aiNoMpPot0 = "I used all my mana potions."
+aiNoMpPot1 = "We need to be careful, I have no more mana potions."
 aiJoinTour0 = "I will take part in the tournament, maybe I can win."
 aiJoinTour1 = "Then I'll sign too."
 aiJoinTour2 = "I'm going too!"

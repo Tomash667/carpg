@@ -874,10 +874,12 @@ void LevelGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha
 		hpp = max(unit.GetHpp(), 0.f);
 
 	// background
-	Rect bkg_rect = { r.Left() - 1, r.Top() - 1,r.Right() + 1,r.Bottom() + 1 };
+	Rect bkg_rect = { r.Left() - 1, r.Top() - 1, r.Right() + 1, r.Bottom() + 1 };
 	if(hpp >= 0.f)
 	{
-		bkg_rect.p2.y += 7;
+		bkg_rect.p2.y += 4;
+		if(unit.IsTeamMember())
+			bkg_rect.p2.y += 3;
 		if(unit.IsUsingMp())
 			bkg_rect.p2.y += 3;
 	}
