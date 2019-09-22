@@ -1,0 +1,3 @@
++ upgrade toolset version to vs 2017
++ using __BITSTREAM_NATIVE_END
++ temporary fix for reconnecting after invalid password

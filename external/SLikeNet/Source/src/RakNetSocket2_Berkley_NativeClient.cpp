@@ -24,6 +24,7 @@
 #if !defined(WINDOWS_STORE_RT)
 
 #include "slikenet/Itoa.h"
+#include "slikenet/WSAStartupSingleton.h" // used for WSAStartupSingleton
 
 // Shared on most platforms, but excluded from the listed
 
@@ -78,7 +79,10 @@ void DomainNameToIP_Berkley_IPV4( const char *domainName, char ip[65] )
 {
 	// Use inet_addr instead? What is the difference?
 	struct addrinfo *addressinfo = NULL;
+	// needed for getaddrinfo
+	WSAStartupSingleton::AddRef();
 	int error = getaddrinfo(domainName, NULL, NULL, &addressinfo);
+	WSAStartupSingleton::Deref();
 
 	if ( error != 0 || addressinfo == 0 )
 	{

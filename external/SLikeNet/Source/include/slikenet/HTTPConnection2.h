@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  RakNet License.txt file in the licenses directory of this source tree. An additional grant
+ *  RakNet License.txt file in the licenses directory of this source tree. An additional grant 
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
@@ -47,32 +47,6 @@ public:
 	// GetInstance() and DestroyInstance(instance*)
 	STATIC_FACTORY_DECLARATIONS(HTTPConnection2)
 
-	struct Request
-	{
-		RakString stringToTransmit;
-		RakString stringReceived;
-		RakString host;
-		SystemAddress hostEstimatedAddress;
-		SystemAddress hostCompletedAddress;
-		unsigned short port;
-		bool useSSL;
-		ptrdiff_t contentOffset;
-		int contentLength;
-		int ipVersion;
-		void *userData;
-		bool chunked;
-		size_t thisChunkSize;
-		size_t bytesReadForThisChunk;
-		byte* binaryData;
-		int binaryLength;
-
-		~Request()
-		{
-			OP_DELETE_ARRAY(binaryData, _FILE_AND_LINE_);
-		}
-		int GetStatusCode() const;
-	};
-
     HTTPConnection2();
     virtual ~HTTPConnection2();
 
@@ -102,16 +76,29 @@ public:
 	bool GetResponse( RakString &stringTransmitted, RakString &hostTransmitted, RakString &responseReceived, SystemAddress &hostReceived, ptrdiff_t &contentOffset, void **userData );
 	bool GetResponse( RakString &stringTransmitted, RakString &hostTransmitted, RakString &responseReceived, SystemAddress &hostReceived, ptrdiff_t &contentOffset );
 
-	/// \brief Check for and return a response from a prior call to TransmitRequest()
-	/// \param[out] request Raw request, must be deleted after processing
-	/// \return true if there was a response. false if not.
-	bool GetRawResponse(Request*& request);
-
 	/// \brief Return if any requests are pending
 	bool IsBusy(void) const;
 
 	/// \brief Return if any requests are waiting to be read by the user
 	bool HasResponse(void) const;
+
+	struct Request
+	{
+		RakString stringToTransmit;
+		RakString stringReceived;
+		RakString host;
+		SystemAddress hostEstimatedAddress;
+		SystemAddress hostCompletedAddress;
+		unsigned short port;
+		bool useSSL;
+		ptrdiff_t contentOffset;
+		int contentLength;
+		int ipVersion;
+		void *userData;
+		bool chunked;
+		size_t thisChunkSize;
+		size_t bytesReadForThisChunk;
+	};
 
 	/// \internal
 	virtual PluginReceiveResult OnReceive(Packet *packet);

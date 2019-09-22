@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Copyright (c) 2016-2019, SLikeSoft UG (haftungsbeschränkt)
  *
  *  This source code is licensed under the MIT-style license found in the
  *  license.txt file in the root directory of this source tree.
@@ -15,7 +15,7 @@
 #include <cerrno>		// for errno
 #include <cstdio>		// for FILE, fopen, vsnprintf
 #include <cstdlib>		// for mbstowcs
-#include <cstring>		// for strcat, strcpy, strncat, strncpy
+#include <cstring>		// for strcat, strcpy, strerror, strncat, strncpy
 #include <cstdarg>		// for va_start, va_end, va_list
 #include <ctime>		// for localtime, time_t
 #include <cwchar>		// for wcscat, wcscpy, wcslen
@@ -169,6 +169,17 @@ errno_t strcpy_s(char* strDestination, size_t numberOfElements, const char *strS
 
 	(void)strcpy(strDestination, strSource);
 	return 0;
+}
+
+errno_t strerror_s(char* buffer, size_t numberOfElements, int errnum)
+{
+	// check valid parameters
+	if ((buffer == nullptr) || (numberOfElements == 0)) {
+		return 22; // error: EINVAL
+	}
+
+	const char *errorMessage = strerror(errnum);
+	return strcpy_s(buffer, numberOfElements, errorMessage);
 }
 
 errno_t strncat_s(char *strDest, size_t numberOfElements, const char *strSource, size_t count)
