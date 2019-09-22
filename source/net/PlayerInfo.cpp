@@ -29,26 +29,12 @@ void PlayerInfo::Load(FileReader& f)
 		f.Skip<int>(); // old class
 	f >> id;
 	f >> devmode;
-	int old_left;
-	if(LOAD_VERSION < V_0_5_1)
-	{
-		bool left;
-		f >> left;
-		old_left = (left ? 1 : 0);
-	}
-	else
-		old_left = -1;
 	hd.Load(f);
 	int unit_id;
 	f >> unit_id;
 	u = Unit::GetById(unit_id);
 	clas = u->GetClass();
 	f.ReadStringArray<int, word>(notes);
-	if(LOAD_VERSION < V_0_5_1)
-		f >> left;
-	if(old_left == 0 || old_left == -1)
-		left = LEFT_NO;
-	loaded = false;
 }
 
 //=================================================================================================

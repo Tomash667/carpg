@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.13 (???):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.12 (2019-09-22):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
 + akademia - mo¿na tam rekrutowaæ pocz¹tkuj¹cych bohaterów
