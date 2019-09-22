@@ -26,7 +26,7 @@ void GroundItem::Save(FileWriter& f)
 //=================================================================================================
 void GroundItem::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 	f >> pos;
@@ -42,7 +42,7 @@ void GroundItem::Load(FileReader& f)
 		quest_mgr->AddQuestItemRequest(&item, item_id.c_str(), quest_id, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 }
 

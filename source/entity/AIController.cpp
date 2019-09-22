@@ -158,7 +158,7 @@ void AIController::Load(GameReader& f)
 	f >> timer;
 	f >> ignore;
 	f >> morale;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<float>(); // old last_scan
 	f >> start_rot;
 	if(unit->data->spells)
@@ -179,10 +179,10 @@ void AIController::Load(GameReader& f)
 		else
 			escape_room = nullptr;
 	}
-	else if(state == AIController::Cast && LOAD_VERSION < V_DEV)
+	else if(state == AIController::Cast && LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old cast_target
 	f >> have_potion;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> have_mp_potion;
 	else
 		have_mp_potion = HavePotion::Check;
@@ -253,7 +253,7 @@ void AIController::Load(GameReader& f)
 	f >> city_wander;
 	f >> loc_timer;
 	f >> shoot_yspeed;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 	{
 		bool goto_inn;
 		f >> goto_inn;

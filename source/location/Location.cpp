@@ -87,7 +87,7 @@ void Location::Save(GameWriter& f, bool)
 //=================================================================================================
 void Location::Load(GameReader& f, bool)
 {
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 	{
 		old::LOCATION old_type;
 		f >> old_type;
@@ -127,7 +127,7 @@ void Location::Load(GameReader& f, bool)
 	f >> pos;
 	f >> name;
 	f >> state;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> target;
 	int quest_id = f.Read<int>();
 	if(quest_id == -1)

@@ -1911,7 +1911,7 @@ void Unit::Load(GameReader& f, bool local)
 {
 	human_data = nullptr;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 	data = UnitData::Get(f.ReadString1());
@@ -1964,7 +1964,7 @@ void Unit::Load(GameReader& f, bool local)
 	f >> rot;
 	f >> hp;
 	f >> hpmax;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 	{
 		f >> mp;
 		f >> mpmax;
@@ -2051,7 +2051,7 @@ void Unit::Load(GameReader& f, bool local)
 	AutoTalkMode old_auto_talk = AutoTalkMode::No;
 	GameDialog* old_auto_talk_dialog = nullptr;
 	float old_auto_talk_timer = 0;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 	{
 		// old auto talk
 		f >> old_auto_talk;
@@ -2067,7 +2067,7 @@ void Unit::Load(GameReader& f, bool local)
 
 	f >> dont_attack;
 	f >> attack_team;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 	int unit_event_handler_quest_id = f.Read<int>();
 	if(unit_event_handler_quest_id == -2)
@@ -2086,7 +2086,7 @@ void Unit::Load(GameReader& f, bool local)
 		RecalculateWeight();
 
 	Entity<Unit> guard_target;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f >> guard_target;
 	f >> summoner;
 
@@ -2163,7 +2163,7 @@ void Unit::Load(GameReader& f, bool local)
 				use_rot = 0.f;
 			break;
 		case A_CAST:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_12)
 				f >> action_unit;
 			break;
 		}
@@ -2293,7 +2293,7 @@ void Unit::Load(GameReader& f, bool local)
 		}
 
 		// orders
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_12)
 		{
 			UnitOrderEntry* current_order = nullptr;
 			while(f.Read1())
@@ -2431,7 +2431,7 @@ void Unit::Load(GameReader& f, bool local)
 		hero = new HeroData;
 		hero->unit = this;
 		hero->Load(f);
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_12)
 		{
 			if(hero->team_member && hero->type == HeroType::Visitor &&
 				(data->id == "q_zlo_kaplan" || data->id == "q_magowie_stary" || strncmp(data->id.c_str(), "q_orkowie_gorush", 16) == 0))
@@ -2495,7 +2495,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// compatibility
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		mp = mpmax = CalculateMaxMp();
 
 	CalculateLoad();
@@ -6529,7 +6529,7 @@ void Unit::CastSpell()
 		else if(IsSet(spell.flags, Spell::Raise))
 		{
 			Unit* target = action_unit;
-			if(!target) // pre V_DEV
+			if(!target) // pre V_0_12
 			{
 				for(Unit* u : area->units)
 				{
@@ -6609,7 +6609,7 @@ void Unit::CastSpell()
 		else if(IsSet(spell.flags, Spell::Heal))
 		{
 			Unit* target = action_unit;
-			if(!target) // pre V_DEV
+			if(!target) // pre V_0_12
 			{
 				for(Unit* u : area->units)
 				{
@@ -6848,15 +6848,15 @@ void Unit::Update(float dt)
 		// move corpse that thanks to animation is now not lootable
 		if(Net::IsLocal() && (Any(live_state, Unit::DYING, Unit::FALLING) || action == A_POSITION_CORPSE))
 		{
-			Vec3 pos = GetLootCenter();
+			Vec3 center = GetLootCenter();
 			game_level->global_col.clear();
 			Level::IgnoreObjects ignore = { 0 };
 			ignore.ignore_units = true;
 			ignore.ignore_doors = true;
-			game_level->GatherCollisionObjects(*area, game_level->global_col, pos, 0.25f, &ignore);
-			if(game_level->Collide(game_level->global_col, pos, 0.25f))
+			game_level->GatherCollisionObjects(*area, game_level->global_col, center, 0.25f, &ignore);
+			if(game_level->Collide(game_level->global_col, center, 0.25f))
 			{
-				Vec3 dir = pos - pos;
+				Vec3 dir = pos - center;
 				dir.y = 0;
 				pos += dir * dt * 2;
 				visual_pos = pos;

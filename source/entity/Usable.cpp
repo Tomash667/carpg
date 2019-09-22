@@ -48,7 +48,7 @@ void Usable::Save(FileWriter& f, bool local)
 //=================================================================================================
 void Usable::Load(FileReader& f, bool local)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 
@@ -96,7 +96,7 @@ void Usable::Load(FileReader& f, bool local)
 		base = BaseUsable::Get(f.ReadString1());
 	f >> pos;
 	f >> rot;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 	if(base->variants)
 		f >> variant;

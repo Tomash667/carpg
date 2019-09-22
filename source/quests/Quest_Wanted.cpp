@@ -237,7 +237,7 @@ bool Quest_Wanted::Load(GameReader& f)
 
 	f >> level;
 	f >> crazy;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		clas = Class::TryGet(f.ReadString1());
 	else
 	{

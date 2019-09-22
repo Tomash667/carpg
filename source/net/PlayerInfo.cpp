@@ -25,7 +25,7 @@ void PlayerInfo::Save(FileWriter& f)
 void PlayerInfo::Load(FileReader& f)
 {
 	f >> name;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old class
 	f >> id;
 	f >> devmode;

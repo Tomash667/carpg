@@ -1241,7 +1241,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
 	f >> boss_levels;
 	f >> tomir_spawned;
@@ -1267,7 +1267,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	{
 		++index;
 
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_12)
 		{
 			LOCATION type;
 			f >> type;
