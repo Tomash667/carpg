@@ -682,10 +682,9 @@ void World::GenerateWorld()
 
 	CalculateTiles();
 
-	// reveal near locations, generate content
+	// generate locations content
 	bool guaranteed_moonwell = true;
 	int index = 0, guaranteed_dungeon = 0;
-	const Vec2& start_pos = locations[start_location]->pos;
 	UnitGroup* forest_group = UnitGroup::Get("forest");
 	UnitGroup* cave_group = UnitGroup::Get("cave");
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
@@ -694,9 +693,6 @@ void World::GenerateWorld()
 			continue;
 
 		Location& loc = **it;
-		if(loc.state == LS_UNKNOWN && Vec2::Distance(start_pos, loc.pos) <= 150.f)
-			loc.state = LS_KNOWN;
-
 		switch(loc.type)
 		{
 		case L_CITY:
@@ -894,6 +890,18 @@ void World::StartInLocation()
 	world_pos = current_location->pos;
 	game_level->location_index = current_location_index;
 	game_level->location = current_location;
+
+	// reveal near locations
+	const Vec2& start_pos = start_location->pos;
+	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+	{
+		if(!*it)
+			continue;
+
+		Location& loc = **it;
+		if(loc.state == LS_UNKNOWN && Vec2::Distance(start_pos, loc.pos) <= 150.f)
+			loc.state = LS_KNOWN;
+	}
 }
 
 //=================================================================================================
@@ -1233,7 +1241,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
 	f >> boss_levels;
 	f >> tomir_spawned;
@@ -1259,7 +1267,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	{
 		++index;
 
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_12)
 		{
 			LOCATION type;
 			f >> type;

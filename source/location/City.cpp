@@ -81,7 +81,7 @@ void City::Load(GameReader& f, bool local)
 
 	f >> citizens;
 	f >> citizens_world;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f >> target;
 	f >> flags;
 	f >> variant;

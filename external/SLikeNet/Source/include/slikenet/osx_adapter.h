@@ -24,6 +24,7 @@ errno_t mbstowcs_s(size_t *pReturnValue, wchar_t *wcstr, size_t sizeInWords, con
 int sprintf_s(char *buffer, size_t sizeOfBuffer, const char *format, ...);
 errno_t strcat_s(char *strDestination, size_t numberOfElements, const char *strSource);
 errno_t strcpy_s(char* strDestination, size_t numberOfElements, const char *strSource);
+errno_t strerror_s(char* buffer, size_t numberOfElements, int errnum);
 errno_t strncat_s(char *strDest, size_t numberOfElements, const char *strSource, size_t count);
 errno_t strncpy_s(char *strDest, size_t numberOfElements, const char *strSource, size_t count);
 int vsnprintf_s(char *buffer, size_t sizeOfBuffer, size_t count, const char *format, va_list argptr);
@@ -54,6 +55,11 @@ template<size_t BufferSize> errno_t strcat_s(char (&strDestination)[BufferSize],
 template<size_t BufferSize> errno_t strcpy_s(char (&strDestination)[BufferSize], const char* strSource)
 {
 	return strcpy_s(strDestination, BufferSize, strSource);
+}
+
+template<size_t BufferSize> errno_t strerror_s(char(&buffer)[BufferSize], int errnum)
+{
+	return strerror_s(buffer, BufferSize, errnum);
 }
 
 template<size_t BufferSize> errno_t strncat_s(char(&strDest)[BufferSize], const char *strSource, size_t count)

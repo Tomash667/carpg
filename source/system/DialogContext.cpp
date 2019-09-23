@@ -33,7 +33,7 @@
 DialogContext* DialogContext::current;
 
 //=================================================================================================
-void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
+void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 {
 	assert(!dialog_mode);
 
@@ -41,6 +41,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	if(talker && !dialog && talker->GetOrder() == ORDER_AUTO_TALK)
 	{
 		dialog = talker->order->auto_talk_dialog;
+		quest = talker->order->auto_talk_quest;
 		talker->OrderNext();
 	}
 
@@ -50,7 +51,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	show_choices = false;
 	dialog_text = nullptr;
 	dialog_once = true;
-	dialog_quest = nullptr;
+	dialog_quest = quest;
 	dialog_skip = -1;
 	dialog_esc = -1;
 	this->talker = talker;

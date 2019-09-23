@@ -2212,6 +2212,14 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	// dodaj
 	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
+	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
+	{
+		const Consumable& pot = item->ToConsumable();
+		if(pot.ai_type == ConsumableAiType::Healing)
+			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
+		else if(pot.ai_type == ConsumableAiType::Mana)
+			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
+	}
 	// usuñ
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -2236,14 +2244,6 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		c.id = index;
 		c.count = count;
 	}
-	else if(item->type == IT_CONSUMABLE)
-	{
-		const Consumable& pot = slot.item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
-			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
-			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
-	}
 }
 
 //=================================================================================================
@@ -2257,6 +2257,14 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	// dodaj
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
+	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
+	{
+		const Consumable& pot = item->ToConsumable();
+		if(pot.ai_type == ConsumableAiType::Healing)
+			unit->ai->have_potion = HavePotion::Check;
+		else if(pot.ai_type == ConsumableAiType::Mana)
+			unit->ai->have_mp_potion = HavePotion::Check;
+	}
 	// usuñ
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -2280,14 +2288,6 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
 		c.count = count;
-	}
-	else if(item->type == IT_CONSUMABLE)
-	{
-		const Consumable& pot = slot.item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
-			unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
-			unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 }
 
@@ -2400,6 +2400,14 @@ void InventoryPanel::GivePotion(int index, uint count)
 	// dodaj
 	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
 		UpdateGrid(false);
+	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
+	{
+		const Consumable& pot = slot.item->ToConsumable();
+		if(pot.ai_type == ConsumableAiType::Healing)
+			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
+		else if(pot.ai_type == ConsumableAiType::Mana)
+			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
+	}
 	// usuñ
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -2423,14 +2431,6 @@ void InventoryPanel::GivePotion(int index, uint count)
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.count = count;
-	}
-	else
-	{
-		const Consumable& pot = slot.item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
-			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
-			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 }
 

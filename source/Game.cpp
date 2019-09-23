@@ -1017,6 +1017,7 @@ void Game::SetGameText()
 {
 	// ai
 	LoadArray(txAiNoHpPot, "aiNoHpPot");
+	LoadArray(txAiNoMpPot, "aiNoMpPot");
 	LoadArray(txAiCity, "aiCity");
 	LoadArray(txAiVillage, "aiVillage");
 	txAiForest = Str("aiForest");
@@ -3323,7 +3324,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 	// szukaj kolizji
 	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
-		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it))
+		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
 			continue;
 
 		Box box2;
@@ -3695,7 +3696,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 			if(!it->spell)
 			{
-				if(it->owner && it->owner->IsFriend(*hitted) || it->attack < -50.f)
+				if(it->owner && it->owner->IsFriend(*hitted, true) || it->attack < -50.f)
 				{
 					// friendly fire
 					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
@@ -3865,7 +3866,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 			else
 			{
 				// trafienie w postaæ z czara
-				if(it->owner && it->owner->IsFriend(*hitted))
+				if(it->owner && it->owner->IsFriend(*hitted, true))
 				{
 					// frendly fire
 					SpellHitEffect(area, *it, hitpoint, hitted);
@@ -4464,7 +4465,7 @@ void Game::UpdateExplosions(LevelArea& area, float dt)
 			float dmg = explo.dmg * Lerp(1.f, 0.1f, explo.size / explo.sizemax);
 			for(Unit* unit : area.units)
 			{
-				if(!unit->IsAlive() || (owner && owner->IsFriend(*unit)))
+				if(!unit->IsAlive() || (owner && owner->IsFriend(*unit, true)))
 					continue;
 
 				if(!IsInside(explo.hitted, unit))
@@ -4955,7 +4956,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				}
 
 				// deal damage
-				if(!owner->IsFriend(*hitted))
+				if(!owner->IsFriend(*hitted, true))
 				{
 					if(hitted->IsAI() && owner->IsAlive())
 						hitted->ai->HitReaction(electro.start_pos);

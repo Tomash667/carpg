@@ -106,7 +106,7 @@ void Electro::Save(FileWriter& f)
 //=================================================================================================
 void Electro::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 	lines.resize(f.Read<uint>());

@@ -1,7 +1,13 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.12 (???):
+Wersja 0.13 (???):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5 lub starszej
++ aktualizacja do Visual Studio 2019
++ aktualizacja bibliotek: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+
+--------------------------------------------------------------------------------
+Wersja 0.12 (2019-09-22):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
 + akademia - mo¿na tam rekrutowaæ pocz¹tkuj¹cych bohaterów
 + zal¹¿ek fabu³y
@@ -15,6 +21,8 @@ Wersja 0.12 (???):
 + wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
 + usprawnione sprawdzanie wersji, wykorzystywanie biblioteki libcurl
+- crash gdy magowie zabij¹ na arenie przez barierkê jednego z widzów [Ampped]
+- crash gdy gobliny zabieraj¹ stary ³uk [Ampped]
 - zmiana postaci w trybie multiplayer resetowa³a ekwipunek postaci
 - jedzenie zió³ ma teraz poprawn¹ animacjê i dŸwiêki
 - dŸwiêk drzwi by³ bardzo rzadko odtwarzany w mp gdy ktoœ inny korzysta³ z drzwi
@@ -31,6 +39,7 @@ Wersja 0.12 (???):
 - usuwanie cz³onków dru¿yny w multiplayer nie zmienia kolejnoœci dru¿yny
 - klient po wyjœciu z gry multiplayer i rozpoczêciu singleplayer nie by³ przewódc¹ dru¿yny
 - obrót jednostek które stoj¹ w miejscu zmienia³ siê w trakcie opuszczania lokalizacji
+- brakuj¹ca tekstura czarnego pancerza
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

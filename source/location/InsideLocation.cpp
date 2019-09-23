@@ -21,7 +21,7 @@ void InsideLocation::Load(GameReader& f, bool local)
 {
 	Location::Load(f, local);
 
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f >> target;
 	f >> special_room;
 	f >> from_portal;

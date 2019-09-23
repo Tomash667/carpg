@@ -41,7 +41,7 @@ void Chest::Save(FileWriter& f, bool local)
 //=================================================================================================
 void Chest::Load(FileReader& f, bool local)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 
@@ -51,7 +51,7 @@ void Chest::Load(FileReader& f, bool local)
 	f >> rot;
 	user = nullptr;
 
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 
 	if(local)

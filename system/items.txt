@@ -1210,6 +1210,7 @@ armor ah_black_armor {
 	weight 30
 	value 30000
 	mesh "plate_armor.qmsh"
+	tex_override "black_armor.jpg"
 	type heavy
 	unit_type human
 	material metal

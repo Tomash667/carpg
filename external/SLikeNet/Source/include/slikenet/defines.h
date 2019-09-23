@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  RakNet License.txt file in the licenses directory of this source tree. An additional grant
+ *  RakNet License.txt file in the licenses directory of this source tree. An additional grant 
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
@@ -34,14 +34,20 @@
 #endif
 
 // Define _FILE_AND_LINE_ to "",0 if you want to strip out file and line info for memory tracking from the EXE
+// SWIG: This macro must be excluded from generating C# wrappers/interfaces since SWIG would try to handle the
+//       macro as a constant definition and fail to convert it, issuing the following warning:
+//       "warning 305: Bad constant value (ignored)." - see SLNET-227 for details
+//       Since this is not a constant definition at all, the correct solution is to exclude this macro therefore.
 #ifndef _FILE_AND_LINE_
+#ifndef SWIG
 #ifdef _RETAIL
 // retail builds do not contain source-code related information in order to reduce the overall EXE size
 #define _FILE_AND_LINE_ "",0
 #else
 #define _FILE_AND_LINE_ __FILE__,__LINE__
-#endif
-#endif
+#endif // _RETAIL
+#endif // SWIG
+#endif // _FILE_AND_LINE_
 
 /// Define RAKNET_COMPATIBILITY to enable API compatibility with RakNet.
 /// This allows you to keep existing code which was compatible with RakNet 4.082 unmodified and
@@ -67,7 +73,7 @@
 #endif
 
 /// Uncomment to use RakMemoryOverride for custom memory tracking
-/// See memoryoverride.h.
+/// See memoryoverride.h. 
 #ifndef _USE_RAK_MEMORY_OVERRIDE
 #define _USE_RAK_MEMORY_OVERRIDE 0
 #endif
@@ -75,7 +81,7 @@
 /// If defined, OpenSSL is enabled for the class TCPInterface
 /// This is necessary to use the SendEmail class with Google POP servers
 /// Note that OpenSSL carries its own license restrictions that you should be aware of. If you don't agree, don't enable this define
-/// This also requires that you enable header search paths to DependentExtensions\openssl-1.0.0d
+/// This also requires that you enable header search paths to DependentExtensions/openssl-1.0.0d/include
 // #define OPEN_SSL_CLIENT_SUPPORT
 #ifndef OPEN_SSL_CLIENT_SUPPORT
 #define OPEN_SSL_CLIENT_SUPPORT 0
@@ -111,7 +117,7 @@
 #if defined(_DEBUG)
 #define RakAssert(x) assert(x);
 #else
-#define RakAssert(x)
+#define RakAssert(x) 
 #endif
 #endif
 #endif

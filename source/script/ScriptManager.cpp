@@ -624,7 +624,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ ThenEscapeToUnit(Unit@)", asMETHOD(UnitOrderEntry, ThenEscapeToUnit))
 		.Method("UnitOrderBuilder@ ThenGoToInn()", asMETHOD(UnitOrderEntry, ThenGoToInn))
 		.Method("UnitOrderBuilder@ ThenGuard(Unit@)", asMETHOD(UnitOrderEntry, ThenGuard))
-		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk));
+		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null, Quest@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk));
 
 	ForType("Unit")
 		.Member("const Vec3 pos", offsetof(Unit, pos))
@@ -666,7 +666,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
 		.Method("UnitOrderBuilder@ OrderGoToInn()", asMETHOD(Unit, OrderGoToInn))
 		.Method("UnitOrderBuilder@ OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
-		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null)", asMETHOD(Unit, OrderAutoTalk))
+		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(Unit, OrderAutoTalk))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
 		.Method("void RotateTo(const Vec3& in)", asMETHODPR(Unit, RotateTo, (const Vec3&), void))
 		.WithInstance("Unit@ target", &ctx.target)

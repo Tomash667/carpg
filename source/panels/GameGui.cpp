@@ -40,6 +40,7 @@
 
 GameGui* global::game_gui;
 FontPtr GameGui::font, GameGui::font_small, GameGui::font_big;
+extern string g_system_dir;
 
 //=================================================================================================
 GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
@@ -96,7 +97,7 @@ void GameGui::Init()
 {
 	// layout
 	LayoutLoader* loader = new LayoutLoader(gui);
-	Layout* layout = loader->LoadFromFile("../system/layout.txt");
+	Layout* layout = loader->LoadFromFile(Format("%s/layout.txt", g_system_dir.c_str()));
 	font = loader->GetFont("normal");
 	font_small = loader->GetFont("small");
 	font_big = loader->GetFont("big");

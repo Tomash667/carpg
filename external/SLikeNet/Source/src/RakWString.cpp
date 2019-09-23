@@ -436,6 +436,13 @@ bool RakWString::Deserialize(wchar_t *str, size_t strLength, BitStream *bs)
 	return true;
 }
 
+const SLNet::RakWString operator+(const SLNet::RakWString &lhs, const SLNet::RakWString &rhs)
+{
+	SLNet::RakWString returnvalue(lhs);
+	returnvalue += rhs;
+	return returnvalue;
+}
+
 /*
 SLNet::BitStream bsTest;
 SLNet::RakWString testString("cat"), testString2;

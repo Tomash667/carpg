@@ -674,7 +674,7 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// ids
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 	{
 		f >> ParticleEmitter::impl.id_counter;
 		f >> TrailParticleEmitter::impl.id_counter;

@@ -52,6 +52,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	unit->stats = new UnitStats;
 	unit->stats->fixed = false;
 	unit->stats->subprofile.value = 0;
+	unit->stamina = unit->stamina_max = 100.f;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;

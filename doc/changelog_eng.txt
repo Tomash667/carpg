@@ -1,7 +1,13 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.12 (???):
+Version 0.13 (???):
+! cannot load saves from version 0.5 or older
++ updated to Visual Studio 2019
++ update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+
+--------------------------------------------------------------------------------
+Version 0.12 (2019-09-22):
 ! cannot load saves from version 0.4.20 or older
 + academy - can recruit beginner heroes there
 + start of storyline
@@ -15,6 +21,8 @@ Version 0.12 (???):
 + loading character classes from file
 + update libraries: FMod 1.10.14
 + improved version checking, using libcurl
+- crash when mages at arena kill spectator [Ampped]
+- crash when goblins steal old bow [Ampped]
 - in multiplayer redoing character creation was resetting to standard inventory
 - eating herbs have now correct animation and sounds
 - door sounds was playing very rare when someone else used door in mp
@@ -31,6 +39,7 @@ Version 0.12 (???):
 - in multiplayer game removing team members don't shuffle order
 - client after exiting multiplayer and starting singleplayer wasn't leader
 - units rotation that stay in single place could change after leaving location
+- black armor missing texture
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

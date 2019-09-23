@@ -1860,7 +1860,13 @@ void Unit::Save(GameWriter& f, bool local)
 			break;
 		case ORDER_AUTO_TALK:
 			f << current_order->auto_talk;
-			f << (current_order->auto_talk_dialog ? current_order->auto_talk_dialog->id.c_str() : "");
+			if(current_order->auto_talk_dialog)
+			{
+				f << current_order->auto_talk_dialog->id;
+				f << (current_order->auto_talk_quest ? current_order->auto_talk_quest->id : -1);
+			}
+			else
+				f.Write0();
 			break;
 		}
 		current_order = current_order->next;
@@ -1905,7 +1911,7 @@ void Unit::Load(GameReader& f, bool local)
 {
 	human_data = nullptr;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 	data = UnitData::Get(f.ReadString1());
@@ -1958,7 +1964,7 @@ void Unit::Load(GameReader& f, bool local)
 	f >> rot;
 	f >> hp;
 	f >> hpmax;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 	{
 		f >> mp;
 		f >> mpmax;
@@ -2045,7 +2051,7 @@ void Unit::Load(GameReader& f, bool local)
 	AutoTalkMode old_auto_talk = AutoTalkMode::No;
 	GameDialog* old_auto_talk_dialog = nullptr;
 	float old_auto_talk_timer = 0;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 	{
 		// old auto talk
 		f >> old_auto_talk;
@@ -2061,7 +2067,7 @@ void Unit::Load(GameReader& f, bool local)
 
 	f >> dont_attack;
 	f >> attack_team;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 	int unit_event_handler_quest_id = f.Read<int>();
 	if(unit_event_handler_quest_id == -2)
@@ -2080,7 +2086,7 @@ void Unit::Load(GameReader& f, bool local)
 		RecalculateWeight();
 
 	Entity<Unit> guard_target;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f >> guard_target;
 	f >> summoner;
 
@@ -2157,7 +2163,7 @@ void Unit::Load(GameReader& f, bool local)
 				use_rot = 0.f;
 			break;
 		case A_CAST:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_12)
 				f >> action_unit;
 			break;
 		}
@@ -2287,7 +2293,7 @@ void Unit::Load(GameReader& f, bool local)
 		}
 
 		// orders
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_12)
 		{
 			UnitOrderEntry* current_order = nullptr;
 			while(f.Read1())
@@ -2330,9 +2336,17 @@ void Unit::Load(GameReader& f, bool local)
 				case ORDER_AUTO_TALK:
 					f >> current_order->auto_talk;
 					if(const string& dialog_id = f.ReadString1(); !dialog_id.empty())
+					{
 						current_order->auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
+						int quest_id;
+						f >> quest_id;
+						quest_mgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
+					}
 					else
+					{
 						current_order->auto_talk_dialog = nullptr;
+						current_order->auto_talk_quest = nullptr;
+					}
 					break;
 				}
 			}
@@ -2395,6 +2409,7 @@ void Unit::Load(GameReader& f, bool local)
 		order->timer = old_auto_talk_timer;
 		order->auto_talk = old_auto_talk;
 		order->auto_talk_dialog = old_auto_talk_dialog;
+		order->auto_talk_quest = nullptr;
 	}
 
 	if(f.Read1())
@@ -2416,7 +2431,7 @@ void Unit::Load(GameReader& f, bool local)
 		hero = new HeroData;
 		hero->unit = this;
 		hero->Load(f);
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_12)
 		{
 			if(hero->team_member && hero->type == HeroType::Visitor &&
 				(data->id == "q_zlo_kaplan" || data->id == "q_magowie_stary" || strncmp(data->id.c_str(), "q_orkowie_gorush", 16) == 0))
@@ -2480,7 +2495,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// compatibility
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		mp = mpmax = CalculateMaxMp();
 
 	CalculateLoad();
@@ -4446,14 +4461,12 @@ void Unit::RemoveMana(float value)
 {
 	mp -= value;
 	if(player && Net::IsLocal())
-	{
 		player->Train(TrainWhat::Mana, value, 0);
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_MP;
-			c.unit = this;
-		}
+	if(Net::IsServer() && IsTeamMember())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::UPDATE_MP;
+		c.unit = this;
 	}
 }
 
@@ -4465,14 +4478,12 @@ void Unit::RemoveStamina(float value)
 		stamina = -stamina_max / 2;
 	stamina_timer = STAMINA_RESTORE_TIMER;
 	if(player && Net::IsLocal())
-	{
 		player->Train(TrainWhat::Stamina, value, 0);
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_STAMINA;
-			c.unit = this;
-		}
+	if(Net::IsServer() && IsTeamMember())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::UPDATE_STAMINA;
+		c.unit = this;
 	}
 }
 
@@ -5573,7 +5584,7 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 }
 
 //=================================================================================================
-bool Unit::IsFriend(Unit& u) const
+bool Unit::IsFriend(Unit& u, bool check_arena_attack) const
 {
 	if(in_arena == -1 && u.in_arena == -1)
 	{
@@ -5597,7 +5608,15 @@ bool Unit::IsFriend(Unit& u) const
 			return (data->group == u.data->group);
 	}
 	else
+	{
+		if(check_arena_attack)
+		{
+			// prevent attacking viewers when on arena
+			if(in_arena == -1 || u.in_arena == -1)
+				return true;
+		}
 		return in_arena == u.in_arena;
+	}
 }
 
 //=================================================================================================
@@ -5906,8 +5925,11 @@ UnitOrderEntry* Unit::OrderGuard(Unit* target)
 }
 
 //=================================================================================================
-UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
+UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog, Quest* quest)
 {
+	if(quest)
+		assert(dialog);
+
 	OrderReset();
 	order->order = ORDER_AUTO_TALK;
 	if(!leader)
@@ -5921,6 +5943,7 @@ UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
 		order->timer = 0.f;
 	}
 	order->auto_talk_dialog = dialog;
+	order->auto_talk_quest = quest;
 	return order;
 }
 
@@ -6101,8 +6124,11 @@ UnitOrderEntry* UnitOrderEntry::ThenGuard(Unit* target)
 	return o;
 }
 
-UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog)
+UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest)
 {
+	if(quest)
+		assert(dialog);
+
 	UnitOrderEntry* o = NextOrder();
 	o->order = ORDER_AUTO_TALK;
 	if(!leader)
@@ -6116,6 +6142,7 @@ UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog)
 		o->timer = 0.f;
 	}
 	o->auto_talk_dialog = dialog;
+	o->auto_talk_quest = quest;
 	return o;
 }
 
@@ -6266,7 +6293,7 @@ void Unit::CheckAutoTalk(float dt)
 		}
 		else
 		{
-			talk_player->StartDialog(this, order->auto_talk_dialog);
+			talk_player->StartDialog(this, order->auto_talk_dialog, order->auto_talk_quest);
 			OrderClear();
 		}
 	}
@@ -6463,7 +6490,7 @@ void Unit::CastSpell()
 			if(game_level->RayTest(coord, target_pos, this, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
-				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted))
+				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
 				{
 					Drain& drain = Add1(area->tmp->drains);
 					drain.from = hitted;
@@ -6498,7 +6525,7 @@ void Unit::CastSpell()
 		else if(IsSet(spell.flags, Spell::Raise))
 		{
 			Unit* target = action_unit;
-			if(!target) // pre V_DEV
+			if(!target) // pre V_0_12
 			{
 				for(Unit* u : area->units)
 				{
@@ -6578,7 +6605,7 @@ void Unit::CastSpell()
 		else if(IsSet(spell.flags, Spell::Heal))
 		{
 			Unit* target = action_unit;
-			if(!target) // pre V_DEV
+			if(!target) // pre V_0_12
 			{
 				for(Unit* u : area->units)
 				{
@@ -6817,15 +6844,15 @@ void Unit::Update(float dt)
 		// move corpse that thanks to animation is now not lootable
 		if(Net::IsLocal() && (Any(live_state, Unit::DYING, Unit::FALLING) || action == A_POSITION_CORPSE))
 		{
-			Vec3 pos = GetLootCenter();
+			Vec3 center = GetLootCenter();
 			game_level->global_col.clear();
 			Level::IgnoreObjects ignore = { 0 };
 			ignore.ignore_units = true;
 			ignore.ignore_doors = true;
-			game_level->GatherCollisionObjects(*area, game_level->global_col, pos, 0.25f, &ignore);
-			if(game_level->Collide(game_level->global_col, pos, 0.25f))
+			game_level->GatherCollisionObjects(*area, game_level->global_col, center, 0.25f, &ignore);
+			if(game_level->Collide(game_level->global_col, center, 0.25f))
 			{
-				Vec3 dir = pos - pos;
+				Vec3 dir = pos - center;
 				dir.y = 0;
 				pos += dir * dt * 2;
 				visual_pos = pos;
@@ -7677,11 +7704,11 @@ void Unit::Update(float dt)
 					float move_angle = Angle(0, 0, dir.x, dir.z);
 					Vec3 dir_left(sin(use_rot + PI / 2)*len, 0, cos(use_rot + PI / 2)*len);
 					Vec3 dir_right(sin(use_rot - PI / 2)*len, 0, cos(use_rot - PI / 2)*len);
-					for(auto unit : targets)
+					for(Unit* unit : targets)
 					{
 						// deal damage/stun
 						bool move_forward = true;
-						if(!unit->IsFriend(*this))
+						if(!unit->IsFriend(*this, true))
 						{
 							if(!player->IsHit(unit))
 							{
@@ -7727,7 +7754,7 @@ void Unit::Update(float dt)
 							{
 								unit->moved = true;
 								unit->pos += move_dir;
-								Moved(false, true);
+								unit->Moved(false, true);
 								continue;
 							}
 						}
@@ -7746,7 +7773,7 @@ void Unit::Update(float dt)
 								inner_ok = true;
 								unit->moved = true;
 								unit->pos += actual_dir;
-								Moved(false, true);
+								unit->Moved(false, true);
 								break;
 							}
 						}

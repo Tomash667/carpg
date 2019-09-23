@@ -65,7 +65,7 @@ struct DialogContext
 	static DialogContext* current;
 
 	~DialogContext() { ClearChoices(); }
-	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
+	void StartDialog(Unit* talker, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 	void StartNextDialog(GameDialog* dialog, Quest* quest = nullptr);
 	void Update(float dt);
 	void EndDialog();

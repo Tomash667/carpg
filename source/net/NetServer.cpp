@@ -4283,7 +4283,7 @@ void Net::Load(GameReader& f)
 		old_players.ptrs[i] = new PlayerInfo;
 		old_players.ptrs[i]->Load(f);
 	}
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip(sizeof(int) * 7); // old netid_counters
 	f >> mp_use_interp;
 	f >> mp_interp;

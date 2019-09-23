@@ -33,7 +33,7 @@ void Door::Save(FileWriter& f, bool local)
 //=================================================================================================
 void Door::Load(FileReader& f, bool local)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 
@@ -42,7 +42,7 @@ void Door::Load(FileReader& f, bool local)
 	f >> pt;
 	f >> locked;
 	f >> state;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 	f >> door2;
 
