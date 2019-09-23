@@ -28,7 +28,7 @@ void BuffInfo::LoadImages()
 
 void BuffInfo::LoadText()
 {
-	Language::Section& s = Language::GetSection("Buffs");
+	Language::Section s = Language::GetSection("Buffs");
 	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		auto& buff = info[i];

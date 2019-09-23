@@ -17,7 +17,7 @@ GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true
 //=================================================================================================
 void GameMenu::LoadLanguage()
 {
-	Language::Section& s = Language::GetSection("GameMenu");
+	Language::Section s = Language::GetSection("GameMenu");
 	txSave = s.Get("saveGame");
 	txSaveAndExit = s.Get("saveAndExit");
 	txExitToMenuDialog = s.Get("exitToMenuDialog");
