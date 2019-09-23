@@ -40,9 +40,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpglib", "carpglib\carpgl
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA} = {54AE91C7-48D4-9C49-A5B1-0CED554CADFA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "carpglib\external\Bullet\build\vs2015\LinearMath.vcxproj", "{58D08522-C69F-904C-A7ED-733DA229F1BA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "carpglib\external\Bullet\build\LinearMath.vcxproj", "{58D08522-C69F-904C-A7ED-733DA229F1BA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "carpglib\external\Bullet\build\vs2015\BulletCollision.vcxproj", "{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "carpglib\external\Bullet\build\BulletCollision.vcxproj", "{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{58D08522-C69F-904C-A7ED-733DA229F1BA} = {58D08522-C69F-904C-A7ED-733DA229F1BA}
 	EndProjectSection
