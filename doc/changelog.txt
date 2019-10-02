@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Fixes:
+- crash przy wchodzeniu do lokalizacji jeœli przy wychodzeniu z poprzedniej cz³onkowie dru¿yny jedli/pili [Anonymous]
+
+--------------------------------------------------------------------------------
 Wersja 0.12 (2019-09-22):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
 + akademia - mo¿na tam rekrutowaæ pocz¹tkuj¹cych bohaterów

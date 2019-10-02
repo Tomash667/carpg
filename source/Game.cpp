@@ -5509,6 +5509,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		{
 			Unit& unit = *p_unit;
 
+			unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+
 			// physics
 			if(unit.cobj)
 			{
@@ -5519,18 +5521,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			// speech bubble
 			unit.bubble = nullptr;
 			unit.talking = false;
-
-			// if using object, end it and move to free space
-			if(unit.usable)
-			{
-				unit.StopUsingUsable();
-				unit.UseUsable(nullptr);
-				unit.visual_pos = unit.pos = unit.target_pos;
-			}
-
-			unit.used_item = nullptr;
-			if(unit.bow_instance)
-				game_level->FreeBowInstance(unit.bow_instance);
 
 			// mesh
 			if(unit.IsAI())
@@ -5544,7 +5534,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 					}
 					if(unit.GetOrder() != ORDER_FOLLOW)
 						unit.OrderFollow(team->GetLeader());
-					unit.talking = false;
 					unit.mesh_inst->need_update = true;
 					unit.ai->Reset();
 					return true;

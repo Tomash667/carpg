@@ -321,6 +321,7 @@ struct Unit : public EntityType<Unit>
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
 	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
 	void ConsumeItemAnim(const Consumable& cons);
+	void ConsumeItemS(const Item* item);
 	void UseItem(int index);
 	void HideWeapon();
 	void TakeWeapon(WeaponType type);
@@ -846,7 +847,8 @@ public:
 	{
 		NORMAL,
 		FALL,
-		INSTANT
+		INSTANT,
+		ON_LEAVE
 	};
 	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
 	void Fall();

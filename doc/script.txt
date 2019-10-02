@@ -128,6 +128,7 @@ Unit type:
 	uint RemoveItem(const string& in item_id, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
 	uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
 	void RemoveQuestItem(Quest@) - remove 1 quest item from unit inventory.
+	void ConsumeItem(Item@) - unit consume item (food or drink) if not busy.
 	void AddDialog(Quest@, const string& in dialog_id) - add quest dialog to unit.
 	void RemoveDialog(Quest@) - remove quest dialog from unit.
 	void AddEventHandler(Quest@, EventType) - add event to unit.
