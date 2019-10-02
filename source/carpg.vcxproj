@@ -60,6 +60,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
@@ -100,6 +101,7 @@
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>

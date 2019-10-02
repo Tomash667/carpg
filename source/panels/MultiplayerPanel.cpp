@@ -51,7 +51,7 @@ MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : DialogBox(info)
 //=================================================================================================
 void MultiplayerPanel::LoadLanguage()
 {
-	Language::Section& s = Language::GetSection("MultiplayerPanel");
+	Language::Section s = Language::GetSection("MultiplayerPanel");
 
 	txMultiplayerGame = s.Get("multiplayerGame");
 	txNick = s.Get("nick");

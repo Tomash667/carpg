@@ -64,7 +64,7 @@ TeamPanel::TeamPanel()
 //=================================================================================================
 void TeamPanel::LoadLanguage()
 {
-	Language::Section& s = Language::GetSection("TeamPanel");
+	Language::Section s = Language::GetSection("TeamPanel");
 
 	bt[Bt_FastTravel].text = s.Get("fastTravel");
 	bt[Bt_GiveGold].text = s.Get("giveGold");
@@ -149,9 +149,9 @@ void TeamPanel::Draw(ControlDrawData*)
 		if(clas)
 		{
 			Texture* t = clas->icon;
-			Int2 img_size;
+			Int2 img_size, new_size(32, 32);
 			Vec2 scale;
-			t->ResizeImage(Int2(32, 32), img_size, scale);
+			t->ResizeImage(new_size, img_size, scale);
 			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
 			gui->DrawSprite2(t, mat, nullptr, &rect, Color::White);
 		}

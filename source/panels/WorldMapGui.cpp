@@ -45,7 +45,7 @@ WorldMapGui::WorldMapGui() : zoom(1.2f), offset(0.f, 0.f), follow(false)
 //=================================================================================================
 void WorldMapGui::LoadLanguage()
 {
-	Language::Section& s = Language::GetSection("WorldMap");
+	Language::Section s = Language::GetSection("WorldMap");
 	txWorldDate = s.Get("worldDate");
 	txCurrentLoc = s.Get("currentLoc");
 	txCitizens = s.Get("citizens");
@@ -132,7 +132,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
-		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? 0x70707070 : Color::White);
+		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? Color(0x70707070) : Color::White);
 	}
 
 	// encounter locations

@@ -302,7 +302,7 @@ Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
 //=================================================================================================
 void Controls::LoadLanguage()
 {
-	Language::Section& s = Language::GetSection("Controls");
+	Language::Section s = Language::GetSection("Controls");
 
 	bts[0].text = s.Get("resetKeys");
 	bts[1].text = gui->txOk;
@@ -431,7 +431,7 @@ void Controls::GetCell(int item, int column, Cell& cell)
 //=================================================================================================
 void Controls::InitKeyText()
 {
-	Language::Section& s = Language::GetSection("Keys");
+	Language::Section s = Language::GetSection("Keys");
 	for(int i = 0; i < n_texts; ++i)
 	{
 		if(IsSet(in_text[i], 0x02))

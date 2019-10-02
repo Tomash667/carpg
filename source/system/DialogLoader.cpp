@@ -121,7 +121,7 @@ void DialogLoader::LoadEntity(int top, const string& id)
 	if(top == T_DIALOG)
 	{
 		GameDialog* dialog = LoadDialog(id);
-		pair<GameDialog::Map::iterator, bool>& result = GameDialog::dialogs.insert(pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
+		pair<GameDialog::Map::iterator, bool> result = GameDialog::dialogs.insert(pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
 		if(!result.second)
 		{
 			delete dialog;
@@ -345,11 +345,11 @@ DialogLoader::Node* DialogLoader::ParseIf()
 	node->node_op = NodeOp::If;
 	t.Next();
 
-	bool not = false;
+	bool negate = false;
 	if(t.IsKeyword(K_NOT, G_KEYWORD))
 	{
 		t.Next();
-		not = true;
+		negate = true;
 	}
 
 	Keyword k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
@@ -479,7 +479,7 @@ DialogLoader::Node* DialogLoader::ParseIf()
 		break;
 	}
 
-	if(not)
+	if(negate)
 		node->op = GetNegatedOp(node->op);
 
 	node->childs.push_back(ParseBlock());

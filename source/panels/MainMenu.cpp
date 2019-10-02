@@ -22,7 +22,7 @@ MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(gam
 //=================================================================================================
 void MainMenu::LoadLanguage()
 {
-	Language::Section& s = Language::GetSection("MainMenu");
+	Language::Section s = Language::GetSection("MainMenu");
 	txInfoText = s.Get("infoText");
 	txVersion = s.Get("version");
 	txCheckingVersion = s.Get("checkingVersion");

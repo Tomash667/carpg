@@ -11,7 +11,7 @@ public:
 	{
 		Section(Map& lm, cstring name) : lm(lm), name(name) {}
 		cstring Get(cstring str);
-		Section& operator = (Section& s)
+		Section& operator = (const Section& s)
 		{
 			lm = s.lm;
 			name = s.name;

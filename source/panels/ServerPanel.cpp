@@ -1320,7 +1320,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == team->leader_id ? 0xFFFFD700 : Color::Black);
+		cell.text_color->color = (info.id == team->leader_id ? Color(0xFFFFD700) : Color::Black);
 	}
 	else
 		cell.text = (info.clas ? info.clas->name.c_str() : txNone);
