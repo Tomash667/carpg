@@ -165,7 +165,8 @@ void City::Write(BitStreamWriter& f)
 //=================================================================================================
 bool City::Read(BitStreamReader& f)
 {
-	OutsideLocation::Read(f);
+	if(!OutsideLocation::Read(f))
+		return false;
 
 	// entry points
 	const int ENTRY_POINT_MIN_SIZE = 20;
