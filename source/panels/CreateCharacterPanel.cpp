@@ -652,7 +652,8 @@ void CreateCharacterPanel::RenderUnit()
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	static vector<Lights> lights;
+	FIXME;
+	/*static vector<Lights> lights;
 
 	game_level->SetOutsideParams();
 
@@ -667,7 +668,7 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.frustum.Set(game_level->camera.matViewProj);
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
-	game->draw_batch.Clear();
+	game->draw_batch.Clear();*/
 
 	// end rendering
 	V(device->EndScene());

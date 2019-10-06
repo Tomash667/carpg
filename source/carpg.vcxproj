@@ -136,6 +136,7 @@
     <ClInclude Include="components\Pathfinding.h" />
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
+    <ClInclude Include="entity\EffectArea.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -210,7 +211,7 @@
     <ClInclude Include="entity\AIController.h" />
     <ClInclude Include="entity\Blood.h" />
     <ClInclude Include="entity\Bullet.h" />
-    <ClInclude Include="entity\Camera.h" />
+    <ClInclude Include="entity\GameCamera.h" />
     <ClInclude Include="entity\Chest.h" />
     <ClInclude Include="entity\CreatedCharacter.h" />
     <ClInclude Include="entity\Door.h" />
@@ -222,7 +223,7 @@
     <ClInclude Include="entity\Light.h" />
     <ClInclude Include="entity\Object.h" />
     <ClInclude Include="entity\PlayerController.h" />
-    <ClInclude Include="entity\SceneNode.h" />
+    <ClInclude Include="entity\SceneNodeOldXX.h" />
     <ClInclude Include="entity\SpellEffects.h" />
     <ClInclude Include="entity\Trap.h" />
     <ClInclude Include="entity\Unit.h" />
@@ -352,7 +353,7 @@
   <ItemGroup>
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Ai.cpp" />
-    <ClCompile Include="entity\Camera.cpp" />
+    <ClCompile Include="entity\GameCamera.cpp" />
     <ClCompile Include="entity\ItemContainer.cpp" />
     <ClCompile Include="entity\Portal.cpp" />
     <ClCompile Include="entity\Room.cpp" />

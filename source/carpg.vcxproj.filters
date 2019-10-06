@@ -400,9 +400,6 @@
     <ClCompile Include="entity\Portal.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="entity\Camera.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
     <ClCompile Include="net\EntityInterpolator.cpp">
       <Filter>net</Filter>
     </ClCompile>
@@ -591,6 +588,9 @@
     <ClCompile Include="generator\AcademyGenerator.cpp">
       <Filter>generator</Filter>
     </ClCompile>
+    <ClCompile Include="entity\GameCamera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -624,9 +624,6 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\PlayerController.h">
-      <Filter>entity</Filter>
-    </ClInclude>
-    <ClInclude Include="entity\SceneNode.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\SpellEffects.h">
@@ -835,9 +832,6 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />
-    <ClInclude Include="entity\Camera.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="location\LevelArea.h">
       <Filter>location</Filter>
     </ClInclude>
@@ -1175,6 +1169,15 @@
     </ClInclude>
     <ClInclude Include="generator\AcademyGenerator.h">
       <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\GameCamera.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\SceneNodeOldXX.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\EffectArea.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

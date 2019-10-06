@@ -130,7 +130,8 @@ Game::~Game()
 }
 
 //=================================================================================================
-void Game::OnDraw()
+FIXME;
+/*void Game::OnDraw()
 {
 	if(profiler_mode == ProfilerMode::Rendering)
 		Profiler::g_profiler.Start();
@@ -140,7 +141,7 @@ void Game::OnDraw()
 	DrawGame(nullptr);
 
 	Profiler::g_profiler.End();
-}
+}*/
 
 //=================================================================================================
 void Game::Draw()
@@ -159,13 +160,15 @@ void Game::Draw()
 		outside = true;
 
 	ListDrawObjects(area, game_level->camera.frustum, outside);
-	DrawScene(outside);
+	//DrawScene(outside);
+	FIXME;
 }
 
 //=================================================================================================
 void Game::DrawGame(RenderTarget* target)
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 
 	if(post_effects.empty() || !ePostFx)
 	{
@@ -309,7 +312,7 @@ void Game::DrawGame(RenderTarget* target)
 
 			index_surf = (index_surf + 1) % 3;
 		}
-	}
+	}*/
 }
 
 //=================================================================================================
@@ -703,7 +706,8 @@ void Game::OnReset()
 //=================================================================================================
 void Game::TakeScreenshot(bool no_gui)
 {
-	if(no_gui)
+	FIXME;
+	/*if(no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
@@ -711,7 +715,7 @@ void Game::TakeScreenshot(bool no_gui)
 		draw_flags = old_flags;
 	}
 	else
-		render->Draw(false);
+		render->Draw(false);*/
 
 	SURFACE back_buffer;
 	HRESULT hr = render->GetDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
@@ -909,7 +913,8 @@ void Game::OnCleanup()
 	for(Texture* tex : over_item_textures)
 		delete tex;
 
-	draw_batch.Clear();
+	FIXME;
+	//draw_batch.Clear();
 
 	Language::Cleanup();
 }
@@ -1898,7 +1903,7 @@ void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 	Matrix matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
-	LightData ld;
+	/*LightData ld;
 	ld.pos = mesh.head.cam_pos;
 	ld.color = Vec3(1, 1, 1);
 	ld.range = 10.f;
@@ -1932,7 +1937,8 @@ void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 	V(eMesh->End());
 	V(device->EndScene());
 
-	render->SetTarget(nullptr);
+	render->SetTarget(nullptr);*/
+	FIXME;
 }
 
 //=================================================================================================
@@ -1940,20 +1946,20 @@ void Game::SetupCamera(float dt)
 {
 	Unit* target = pc->unit;
 	LevelArea& area = *target->area;
+	GameCamera& camera = game_level->camera;
 
 	float rotX;
-	if(game_level->camera.free_rot)
-		rotX = game_level->camera.real_rot.x;
+	if(camera.free_rot)
+		rotX = camera.real_rot.x;
 	else
 		rotX = target->rot;
 
-	game_level->camera.UpdateRot(dt, Vec2(rotX, game_level->camera.real_rot.y));
+	camera.UpdateRot(dt, Vec2(rotX, camera.real_rot.y));
 
-	Matrix mat, matProj, matView;
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
-	Vec3 dist(0, -game_level->camera.tmp_dist, 0);
+	Vec3 dist(0, -camera.tmp_dist, 0);
 
-	mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
+	Matrix mat = Matrix::Rotation(camera.rot.y, camera.rot.x, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!
@@ -2222,18 +2228,18 @@ void Game::SetupCamera(float dt)
 		real_dist = 0.01f;
 	Vec3 from = to + dist.Normalize() * real_dist;
 
-	game_level->camera.Update(dt, from, to);
+	camera.Update(dt, from, to);
 
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	matView = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
-	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
-	game_level->camera.matViewProj = matView * matProj;
-	game_level->camera.matViewInv = matView.Inverse();
-	game_level->camera.center = game_level->camera.from;
-	game_level->camera.frustum.Set(game_level->camera.matViewProj);
+	camera.mat_view = Matrix::CreateLookAt(camera.from, camera.to);
+	camera.mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
+		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, camera.draw_range);
+	camera.mat_view_proj = camera.mat_view * camera.mat_proj;
+	camera.mat_view_inv = camera.mat_view.Inverse();
+	camera.center = camera.from;
+	camera.frustum.Set(camera.mat_view_proj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
@@ -5259,7 +5265,8 @@ void Game::ClearGame()
 	Info("Clearing game.");
 
 	EntitySystem::clear = true;
-	draw_batch.Clear();
+	FIXME;
+	//draw_batch.Clear();
 	script_mgr->StopAllScripts();
 
 	LeaveLocation(true, false);
@@ -5336,12 +5343,13 @@ Sound* Game::GetItemSound(const Item* item)
 	}
 }
 
-void ApplyTexturePackToSubmesh(Mesh::Submesh& sub, TexturePack& tp)
-{
-	sub.tex = tp.diffuse;
-	sub.tex_normal = tp.normal;
-	sub.tex_specular = tp.specular;
-}
+FIXME;
+//void ApplyTexturePackToSubmesh(Mesh::Submesh& sub, TexturePack& tp)
+//{
+//	sub.tex = tp.diffuse;
+//	sub.tex_normal = tp.normal;
+//	sub.tex_specular = tp.specular;
+//}
 
 void ApplyDungeonLightToMesh(Mesh& mesh)
 {
@@ -5353,7 +5361,8 @@ void ApplyDungeonLightToMesh(Mesh& mesh)
 	}
 }
 
-void Game::ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex)
+FIXME;
+/*void Game::ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex)
 {
 	ApplyLocationTexturePack(floor, tex.floor, tFloorBase);
 	ApplyLocationTexturePack(wall, tex.wall, tWallBase);
@@ -5376,7 +5385,7 @@ void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entr
 		res_mgr->Load(pack.normal);
 	if(pack.specular)
 		res_mgr->Load(pack.specular);
-}
+}*/
 
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
@@ -5388,7 +5397,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	clear_color_next = Color(int(game_level->fog_color.x * 255), int(game_level->fog_color.y * 255), int(game_level->fog_color.z * 255));
 
 	// tekstury podziemi
-	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
+	/*ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
 
 	// druga tekstura
 	if(base.tex2 != -1)
@@ -5409,13 +5418,15 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	{
 		dungeon_tex_wrap = new_tex_wrap;
 		ChangeDungeonTexWrap();
-	}
+	}*/
+	FIXME;
 }
 
 void Game::SetDungeonParamsToMeshes()
 {
 	// tekstury schodów / pu³apek
-	ApplyTexturePackToSubmesh(aStairsDown->subs[0], tFloor[0]);
+	FIXME;
+	/*ApplyTexturePackToSubmesh(aStairsDown->subs[0], tFloor[0]);
 	ApplyTexturePackToSubmesh(aStairsDown->subs[2], tWall[0]);
 	ApplyTexturePackToSubmesh(aStairsDown2->subs[0], tFloor[0]);
 	ApplyTexturePackToSubmesh(aStairsDown2->subs[2], tWall[0]);
@@ -5441,7 +5452,7 @@ void Game::SetDungeonParamsToMeshes()
 	}
 
 	// druga tekstura
-	ApplyTexturePackToSubmesh(aDoorWall2->subs[0], tWall[1]);
+	ApplyTexturePackToSubmesh(aDoorWall2->subs[0], tWall[1]);*/
 }
 
 void Game::EnterLevel(LocationGenerator* loc_gen)

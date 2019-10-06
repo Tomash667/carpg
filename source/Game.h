@@ -9,7 +9,6 @@
 #include "DialogContext.h"
 #include "BaseLocation.h"
 #include "GameKeys.h"
-#include "SceneNode.h"
 #include "QuadTree.h"
 #include "MusicTrack.h"
 #include "Settings.h"
@@ -114,7 +113,6 @@ public:
 	~Game();
 
 	void OnCleanup() override;
-	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
 	void OnUpdate(float dt) override;
@@ -174,9 +172,10 @@ public:
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
-	void PrepareAreaPath();
-	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
-	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
+	FIXME;
+	/*void PrepareAreaPath();
+	void PrepareAreaPathCircle(EffectArea& area, float radius, float range, float rot);
+	void PrepareAreaPathCircle(EffectArea& area, const Vec3& pos, float radius);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
@@ -194,8 +193,8 @@ public:
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 	void DrawLightings(const vector<Electro*>& electros);
 	void DrawStunEffects(const vector<StunEffect>& stuns);
-	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
-	void DrawPortals(const vector<Portal*>& portals);
+	void DrawAreas(const vector<Area>& areas, float range, const vector<EffectArea*>& areas2);
+	void DrawPortals(const vector<Portal*>& portals);*/
 	void UvModChanged();
 	void InitQuadTree();
 	void DrawGrass();
@@ -205,8 +204,9 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
-	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
+	FIXME;
+	//void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
+	//void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void SetDungeonParamsToMeshes();
 
@@ -383,7 +383,6 @@ public:
 	Arena* arena;
 	DebugDrawer* debug_drawer;
 	GrassShader* grass_shader;
-	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
 	//-----------------------------------------------------------------
@@ -473,7 +472,8 @@ public:
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
 	bool cl_normalmap, cl_specularmap, cl_glow;
-	DrawBatch draw_batch;
+	FIXME;
+	//DrawBatch draw_batch;
 	VDefault blood_v[4];
 	VParticle billboard_v[4];
 	Vec3 billboard_ext[4];
@@ -516,7 +516,8 @@ public:
 	Texture tMinimap;
 	TexturePtr tBlack, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn;
-	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
+	FIXME;
+	//TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
 	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
 	D3DXHANDLE hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,

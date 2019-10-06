@@ -19,6 +19,9 @@
 #include "PhysicCallbacks.h"
 #include "DirectX.h"
 
+FIXME;
+#if 0
+
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;
 ObjectPool<DebugSceneNode> debug_node_pool;
@@ -4007,3 +4010,12 @@ void Game::UvModChanged()
 	game_level->terrain->uv_mod = uv_mod;
 	game_level->terrain->RebuildUv();
 }
+#endif
+
+FIXME;
+void Game::UvModChanged() {}
+void Game::BuildDungeon() {}
+void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside) {}
+void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u) {}
+void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum) {}
+void Game::InitScene() {}

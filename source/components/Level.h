@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "LevelArea.h"
 #include "ObjectEntity.h"
-#include "Camera.h"
+#include "GameCamera.h"
 
 //-----------------------------------------------------------------------------
 enum EnterFrom
@@ -193,7 +193,7 @@ public:
 	int location_index; // same as world->current_location_index
 	int dungeon_level;
 	bool reenter;
-	Camera camera;
+	GameCamera camera;
 	Vec4 fog_color, fog_params, ambient_color;
 	bool cl_fog, cl_lighting;
 	float lights_dt;

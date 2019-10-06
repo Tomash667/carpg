@@ -1,16 +1,16 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "CameraBase.h"
+#include "Camera.h"
 
 //-----------------------------------------------------------------------------
-struct Camera : public CameraBase
+struct GameCamera : public Camera
 {
-	Vec3 from, to, center, real_from, real_to;
+	Vec3 center, real_from, real_to;
 	Vec2 rot, real_rot;
-	Matrix matViewInv;
+	Matrix mat_view_inv;
 	float dist, tmp_dist, draw_range, springiness, d;
-	FrustumPlanes frustum, frustum2;
+	FrustumPlanes frustum;
 	Key free_rot_key;
 	bool free_rot;
 
@@ -18,7 +18,7 @@ private:
 	int reset;
 
 public:
-	Camera(float springiness = 40.f);
+	GameCamera(float springiness = 40.f);
 
 	void Reset();
 	void UpdateRot(float dt, const Vec2& new_rot);

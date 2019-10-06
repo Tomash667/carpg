@@ -40,6 +40,7 @@
 #include "Notifications.h"
 #include "GameStats.h"
 #include "Team.h"
+#include "MeshInstance.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -362,16 +363,16 @@ void Game::PostconfigureGame()
 	io::CreateDirectory("saves/multi");
 
 	// copy first dungeon texture to second
-	tFloor[1] = tFloorBase;
+	FIXME;
+	/*tFloor[1] = tFloorBase;
 	tCeil[1] = tCeilBase;
-	tWall[1] = tWallBase;
+	tWall[1] = tWallBase;*/
 
 	ItemScript::Init();
 
 	// shaders
 	debug_drawer = new DebugDrawer(render);
 	grass_shader = new GrassShader(render);
-	super_shader = new SuperShader(render);
 	terrain_shader = new TerrainShader(render);
 	debug_drawer->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
@@ -543,7 +544,8 @@ void Game::AddLoadTasks()
 	tRoad = res_mgr->Load<Texture>("droga.jpg");
 	tFootpath = res_mgr->Load<Texture>("ziemia.jpg");
 	tField = res_mgr->Load<Texture>("pole.jpg");
-	tFloorBase.diffuse = res_mgr->Load<Texture>("droga.jpg");
+	FIXME;
+	/*tFloorBase.diffuse = res_mgr->Load<Texture>("droga.jpg");
 	tFloorBase.normal = nullptr;
 	tFloorBase.specular = nullptr;
 	tWallBase.diffuse = res_mgr->Load<Texture>("sciana.jpg");
@@ -551,7 +553,7 @@ void Game::AddLoadTasks()
 	tWallBase.specular = res_mgr->Load<Texture>("sciana_spec.jpg");
 	tCeilBase.diffuse = res_mgr->Load<Texture>("sufit.jpg");
 	tCeilBase.normal = nullptr;
-	tCeilBase.specular = nullptr;
+	tCeilBase.specular = nullptr;*/
 	BaseLocation::PreloadTextures();
 
 	// particles

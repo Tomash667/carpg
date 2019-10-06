@@ -257,19 +257,6 @@ void GameGui::PostInit()
 }
 
 //=================================================================================================
-void GameGui::Draw(ControlDrawData*)
-{
-	Container::Draw();
-}
-
-//=================================================================================================
-void GameGui::Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs)
-{
-	gui->mViewProj = mat_view_proj;
-	gui->Draw(draw_gui, draw_dialogs);
-}
-
-//=================================================================================================
 void GameGui::UpdateGui(float dt)
 {
 	gui->Update(dt, cursor_allow_move ? game->settings.mouse_sensitivity_f : -1.f);

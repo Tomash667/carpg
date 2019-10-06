@@ -8,6 +8,7 @@
 #include <Texture.h>
 #include <Key.h>
 #include <Entity.h>
+#include <Mesh.h>
 #include <WindowsIncludes.h>
 #define far
 #define IN
@@ -96,7 +97,6 @@ struct Building;
 struct BuildingGroup;
 struct BuildingScript;
 struct Bullet;
-struct Camera;
 struct CameraCollider;
 struct Chest;
 struct CityBuilding;
@@ -114,6 +114,7 @@ struct Encounter;
 struct EntityInterpolator;
 struct Explo;
 struct FrameInfo;
+struct GameCamera;
 struct GameDialog;
 struct GroundItem;
 struct HeroData;
