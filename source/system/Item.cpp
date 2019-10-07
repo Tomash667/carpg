@@ -44,7 +44,8 @@ vector<const Item*> items_to_add;
 Item& Item::operator = (const Item& i)
 {
 	assert(type == i.type);
-	mesh_id = i.mesh_id;
+	mesh = i.mesh;
+	tex = i.tex;
 	weight = i.weight;
 	value = i.value;
 	flags = i.flags;
@@ -275,7 +276,8 @@ void Item::CreateCopy(Item& item) const
 			o.desc = o2.desc;
 			o.flags = o2.flags;
 			o.id = o2.id;
-			o.mesh_id = o2.mesh_id;
+			o.mesh = o2.mesh;
+			o.tex = o2.tex;
 			o.name = o2.name;
 			o.other_type = o2.other_type;
 			o.quest_id = o2.quest_id;
@@ -368,12 +370,6 @@ void Item::Validate(uint& err)
 		{
 			++err;
 			Error("Test: Missing book '%s' text.", item.id.c_str());
-		}
-
-		if(item.mesh_id.empty())
-		{
-			++err;
-			Error("Test: Missing item '%s' mesh/texture.", item.id.c_str());
 		}
 	}
 }

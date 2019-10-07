@@ -17,6 +17,7 @@
 #include "ItemHelper.h"
 #include "PlayerInfo.h"
 #include "RenderTarget.h"
+#include "GameResources.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -498,7 +499,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 		{
 			// temporary fix
 			game->ReportError(12, Format("Null item icon '%s'", item->id.c_str()));
-			game->GenerateItemImageImpl(const_cast<Item&>(*item));
+			game_res->GenerateItemIcon(const_cast<Item&>(*item));
 		}
 		gui->DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
 
@@ -665,7 +666,7 @@ void InventoryPanel::Update(float dt)
 	}
 	if(item_visible)
 	{
-		game->DrawItemImage(*item_visible, game->rt_item_rot, rot);
+		game_res->DrawItemIcon(*item_visible, game->rt_item_rot, rot);
 		rot += PI * dt / 2;
 	}
 

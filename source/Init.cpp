@@ -41,9 +41,9 @@
 #include "GameStats.h"
 #include "Team.h"
 #include "MeshInstance.h"
+#include "GameResources.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
-extern const int ITEM_IMAGE_SIZE;
 extern string g_system_dir;
 
 //=================================================================================================
@@ -56,6 +56,7 @@ void Game::BeforeInit()
 	game_stats = new GameStats;
 	game_gui = new GameGui;
 	game_level = new Level;
+	game_res = new GameResources;
 	loc_gen_factory = new LocationGeneratorFactory;
 	net = new Net;
 	pathfinding = new Pathfinding;
@@ -114,30 +115,7 @@ void Game::PreconfigureGame()
 
 	PreloadLanguage();
 	PreloadData();
-	CreatePlaceholderResources();
 	res_mgr->SetProgressCallback(ProgressCallback(game_gui->load_screen, &LoadScreen::SetProgressCallback));
-}
-
-//=================================================================================================
-// Create placeholder resources (missing texture).
-//=================================================================================================
-void Game::CreatePlaceholderResources()
-{
-	TEX tex = render->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
-	TextureLock lock(tex);
-	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
-	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
-	{
-		uint* pix = lock[y];
-		for(int x = 0; x < ITEM_IMAGE_SIZE; ++x)
-		{
-			*pix = col[(x >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) % 2];
-			++pix;
-		}
-	}
-
-	missing_item_texture.tex = tex;
-	missing_item_texture.state = ResourceState::Loaded;
 }
 
 //=================================================================================================
@@ -196,6 +174,7 @@ void Game::LoadSystem()
 	game_gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
 	AddFilesystem();
+	game_res->Init();
 	arena->Init();
 	game_gui->Init();
 	net->Init();
@@ -914,7 +893,8 @@ void Game::LoadItemsData()
 		}
 	}
 
-	for(auto it : Item::items)
+	FIXME;
+	/*for(auto it : Item::items)
 	{
 		Item& item = *it.second;
 
@@ -939,7 +919,7 @@ void Game::LoadItemsData()
 				++load_errors;
 			}
 		}
-	}
+	}*/
 
 	// preload hardcoded items
 	PreloadItem(Item::Get("beer"));

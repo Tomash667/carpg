@@ -591,6 +591,9 @@
     <ClCompile Include="entity\GameCamera.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="components\GameResources.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1178,6 +1181,9 @@
     </ClInclude>
     <ClInclude Include="entity\EffectArea.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="components\GameResources.h">
+      <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
