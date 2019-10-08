@@ -30,11 +30,11 @@
 #include "PlayerInfo.h"
 #include "Engine.h"
 #include "Quest.h"
+#include "GameResources.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.1f;
 const float UNIT_VIEW_B = 0.2f;
-extern const int ITEM_IMAGE_SIZE;
 
 cstring order_str[ORDER_MAX] = {
 	"NONE",
@@ -532,7 +532,7 @@ void LevelGui::DrawFront()
 		else if(shortcut.type == Shortcut::TYPE_ITEM)
 		{
 			icon = shortcut.item->icon;
-			icon_size = ITEM_IMAGE_SIZE;
+			icon_size = GameResources::ITEM_IMAGE_SIZE;
 			if(shortcut.item->IsWearable())
 			{
 				if(pc.unit->HaveItemEquipped(shortcut.item))

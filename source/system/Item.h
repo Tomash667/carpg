@@ -121,7 +121,7 @@ struct Item
 	Item* QuestCopy(Quest* quest, const string& name);
 	void Rename(cstring name);
 
-	string id, mesh_id, name, desc;
+	string id, name, desc;
 	int weight, value, ai_value, flags, quest_id;
 	vector<ItemEffect> effects;
 	ITEM_TYPE type;
@@ -291,12 +291,12 @@ struct Armor : public Item
 {
 	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
-	const TexId* GetTextureOverride() const
+	const TexOverride* GetTextureOverride() const
 	{
 		if(tex_override.empty())
 			return nullptr;
 		else
-			return &tex_override[0];
+			return tex_override.data();
 	}
 	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
 
@@ -304,7 +304,7 @@ struct Armor : public Item
 	MATERIAL_TYPE material;
 	ARMOR_TYPE armor_type;
 	ArmorUnitType armor_unit_type;
-	vector<TexId> tex_override;
+	vector<TexOverride> tex_override;
 
 	static vector<Armor*> armors;
 };

@@ -3,8 +3,9 @@
 #include "ItemLoader.h"
 #include "Item.h"
 #include "Stock.h"
-#include "ResourceManager.h"
 #include "ScriptManager.h"
+#include <ResourceManager.h>
+#include <Mesh.h>
 
 //-----------------------------------------------------------------------------
 enum Group
@@ -402,19 +403,26 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				t.Throw("Can't have negative ai value %d.", item->ai_value);
 			break;
 		case P_MESH:
-			if(IsSet(item->flags, ITEM_TEX_ONLY))
-				t.Throw("Can't have mesh, it is texture only item.");
-			item->mesh_id = t.MustGetString();
-			if(item->mesh_id.empty())
-				t.Throw("Empty mesh.");
+			{
+				if(IsSet(item->flags, ITEM_TEX_ONLY))
+					t.Throw("Can't have mesh, it is texture only item.");
+				const string& mesh_id = t.MustGetString();
+				item->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(!item->mesh)
+					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+			}
 			break;
 		case P_TEX:
-			if(!item->mesh_id.empty() && !IsSet(item->flags, ITEM_TEX_ONLY))
-				t.Throw("Can't be texture only item, it have mesh.");
-			item->mesh_id = t.MustGetString();
-			if(item->mesh_id.empty())
-				t.Throw("Empty texture.");
-			item->flags |= ITEM_TEX_ONLY;
+			{
+				if(item->mesh)
+					t.Throw("Can't be texture only item, it have mesh.");
+				const string& tex_id = t.MustGetString();
+				item->tex = res_mgr->TryGet<Texture>(tex_id);
+				if(!item->tex)
+					LoadError("Missing texture '%s'.", tex_id.c_str());
+				else
+					item->flags |= ITEM_TEX_ONLY;
+			}
 			break;
 		case P_ATTACK:
 			{
@@ -522,19 +530,31 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_TEX_OVERRIDE:
 			{
-				vector<TexId>& tex_o = item->ToArmor().tex_override;
+				vector<TexOverride>& tex_o = item->ToArmor().tex_override;
 				if(t.IsSymbol('{'))
 				{
 					t.Next();
 					do
 					{
-						tex_o.push_back(TexId(t.MustGetString().c_str()));
+						const string& tex_id = t.MustGetString();
+						Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+						if(tex)
+							tex_o.push_back(TexOverride(tex));
+						else
+							LoadError("Missing texture override '%s'.", tex_id.c_str());
 						t.Next();
 					}
 					while(!t.IsSymbol('}'));
 				}
 				else
-					tex_o.push_back(TexId(t.MustGetString().c_str()));
+				{
+					const string& tex_id = t.MustGetString();
+					Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+					if(tex)
+						tex_o.push_back(TexOverride(tex));
+					else
+						LoadError("Missing texture override '%s'.", tex_id.c_str());
+				}
 			}
 			break;
 		case P_TIME:
@@ -635,8 +655,8 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		t.Next();
 	}
 
-	if(item->mesh_id.empty())
-		t.Throw("No mesh/texture.");
+	if(!item->mesh && !item->tex)
+		LoadError("No mesh/texture.");
 
 	Item* item_ptr = item.Pin();
 	Item::items.insert(it, ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
@@ -1176,7 +1196,10 @@ void ItemLoader::CalculateCrc()
 		crc.Update(item->id);
 		crc.Update(item->value);
 		crc.Update(item->ai_value);
-		crc.Update(item->mesh_id);
+		if(item->mesh)
+			crc.Update(item->mesh->filename);
+		else if(item->tex)
+			crc.Update(item->tex->filename);
 		crc.Update(item->weight);
 		crc.Update(item->value);
 		crc.Update(item->flags);
@@ -1227,8 +1250,8 @@ void ItemLoader::CalculateCrc()
 				crc.Update(a.armor_type);
 				crc.Update(a.armor_unit_type);
 				crc.Update(a.tex_override.size());
-				for(TexId t : a.tex_override)
-					crc.Update(t.id);
+				for(TexOverride& tex_o : a.tex_override)
+					crc.Update(tex_o.diffuse ? tex_o.diffuse->filename : "");
 			}
 			break;
 		case IT_AMULET:

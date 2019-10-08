@@ -67,7 +67,7 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 void UnitData::CopyFrom(UnitData& ud)
 {
 	parent = &ud;
-	mesh_id = ud.mesh_id;
+	mesh = ud.mesh;
 	mat = ud.mat;
 	level = ud.level;
 	stat_profile = ud.stat_profile;

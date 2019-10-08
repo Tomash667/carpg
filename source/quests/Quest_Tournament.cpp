@@ -390,7 +390,7 @@ void Quest_Tournament::Update(float dt)
 				}
 				else
 				{
-					// not enought units
+					// not enough units
 					state2 = 5;
 					Talk(txTour[22]);
 				}

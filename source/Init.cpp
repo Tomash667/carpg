@@ -40,9 +40,9 @@
 #include "Notifications.h"
 #include "GameStats.h"
 #include "Team.h"
+#include "GameResources.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
-extern const int ITEM_IMAGE_SIZE;
 extern string g_system_dir;
 
 //=================================================================================================
@@ -52,9 +52,10 @@ void Game::BeforeInit()
 
 	arena = new Arena;
 	cmdp = new CommandParser;
-	game_stats = new GameStats;
 	game_gui = new GameGui;
 	game_level = new Level;
+	game_res = new GameResources;
+	game_stats = new GameStats;
 	loc_gen_factory = new LocationGeneratorFactory;
 	net = new Net;
 	pathfinding = new Pathfinding;
@@ -113,30 +114,7 @@ void Game::PreconfigureGame()
 
 	PreloadLanguage();
 	PreloadData();
-	CreatePlaceholderResources();
 	res_mgr->SetProgressCallback(ProgressCallback(game_gui->load_screen, &LoadScreen::SetProgressCallback));
-}
-
-//=================================================================================================
-// Create placeholder resources (missing texture).
-//=================================================================================================
-void Game::CreatePlaceholderResources()
-{
-	TEX tex = render->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
-	TextureLock lock(tex);
-	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
-	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
-	{
-		uint* pix = lock[y];
-		for(int x = 0; x < ITEM_IMAGE_SIZE; ++x)
-		{
-			*pix = col[(x >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) % 2];
-			++pix;
-		}
-	}
-
-	missing_item_texture.tex = tex;
-	missing_item_texture.state = ResourceState::Loaded;
 }
 
 //=================================================================================================
@@ -197,6 +175,7 @@ void Game::LoadSystem()
 	AddFilesystem();
 	arena->Init();
 	game_gui->Init();
+	game_res->Init();
 	net->Init();
 	quest_mgr->Init();
 	script_mgr->Init();
@@ -524,6 +503,8 @@ void Game::AddLoadTasks()
 {
 	game_gui->load_screen->Tick(txPreloadAssets);
 
+	game_res->LoadData();
+
 	bool nomusic = sound_mgr->IsMusicDisabled();
 
 	// gui textures
@@ -597,7 +578,6 @@ void Game::AddLoadTasks()
 	aSpellball = res_mgr->Load<Mesh>("spellball.qmsh");
 	aDoor = res_mgr->Load<Mesh>("drzwi.qmsh");
 	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
-	aHumanBase = res_mgr->Load<Mesh>("human.qmsh");
 	aHair[0] = res_mgr->Load<Mesh>("hair1.qmsh");
 	aHair[1] = res_mgr->Load<Mesh>("hair2.qmsh");
 	aHair[2] = res_mgr->Load<Mesh>("hair3.qmsh");
@@ -616,16 +596,10 @@ void Game::AddLoadTasks()
 	// preload buildings
 	for(Building* b : Building::buildings)
 	{
-		if(!b->mesh_id.empty())
-		{
-			b->mesh = res_mgr->Get<Mesh>(b->mesh_id);
+		if(b->mesh)
 			res_mgr->LoadMeshMetadata(b->mesh);
-		}
-		if(!b->inside_mesh_id.empty())
-		{
-			b->inside_mesh = res_mgr->Get<Mesh>(b->inside_mesh_id);
+		if(b->inside_mesh)
 			res_mgr->LoadMeshMetadata(b->inside_mesh);
-		}
 	}
 
 	// preload traps
@@ -663,18 +637,18 @@ void Game::AddLoadTasks()
 	{
 		Spell& spell = *spell_ptr;
 
-		if(!spell.sound_cast_id.empty())
-			spell.sound_cast = res_mgr->Load<Sound>(spell.sound_cast_id);
-		if(!spell.sound_hit_id.empty())
-			spell.sound_hit = res_mgr->Load<Sound>(spell.sound_hit_id);
-		if(!spell.tex_id.empty())
-			spell.tex = res_mgr->Load<Texture>(spell.tex_id);
-		if(!spell.tex_particle_id.empty())
-			spell.tex_particle = res_mgr->Load<Texture>(spell.tex_particle_id);
-		if(!spell.tex_explode_id.empty())
-			spell.tex_explode = res_mgr->Load<Texture>(spell.tex_explode_id);
-		if(!spell.mesh_id.empty())
-			spell.mesh = res_mgr->Load<Mesh>(spell.mesh_id);
+		if(spell.sound_cast)
+			res_mgr->Load(spell.sound_cast);
+		if(spell.sound_hit)
+			res_mgr->Load(spell.sound_hit);
+		if(spell.tex)
+			res_mgr->Load(spell.tex);
+		if(spell.tex_particle)
+			res_mgr->Load(spell.tex_particle);
+		if(spell.tex_explode)
+			res_mgr->Load(spell.tex_explode);
+		if(spell.mesh)
+			res_mgr->Load(spell.mesh);
 
 		if(spell.type == Spell::Ball || spell.type == Spell::Point)
 			spell.shape = new btSphereShape(spell.size);
@@ -683,61 +657,14 @@ void Game::AddLoadTasks()
 	// preload objects
 	for(BaseObject* p_obj : BaseObject::objs)
 	{
-		auto& obj = *p_obj;
+		BaseObject& obj = *p_obj;
 		if(obj.variants)
-		{
-			VariantObject& vo = *obj.variants;
-			if(!vo.loaded)
-			{
-				for(uint i = 0; i < vo.entries.size(); ++i)
-					vo.entries[i].mesh = res_mgr->Get<Mesh>(vo.entries[i].mesh_id);
-				vo.loaded = true;
-			}
 			SetupObject(obj);
-		}
-		else if(!obj.mesh_id.empty())
+		else if(obj.mesh)
 		{
-			obj.mesh = res_mgr->Get<Mesh>(obj.mesh_id);
 			if(!IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
 				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
 			SetupObject(obj);
-		}
-		else
-		{
-			obj.mesh = nullptr;
-			obj.matrix = nullptr;
-		}
-
-		if(obj.IsUsable())
-		{
-			BaseUsable& bu = *(BaseUsable*)p_obj;
-			if(!bu.sound_id.empty())
-				bu.sound = res_mgr->Get<Sound>(bu.sound_id);
-			if(!bu.item_id.empty())
-				bu.item = Item::Get(bu.item_id);
-		}
-	}
-
-	// preload units
-	for(UnitData* ud_ptr : UnitData::units)
-	{
-		UnitData& ud = *ud_ptr;
-
-		// model
-		if(!ud.mesh_id.empty())
-			ud.mesh = res_mgr->Get<Mesh>(ud.mesh_id);
-		else
-			ud.mesh = aHumanBase;
-
-		// textures
-		if(ud.tex && !ud.tex->inited)
-		{
-			ud.tex->inited = true;
-			for(TexId& ti : ud.tex->textures)
-			{
-				if(!ti.id.empty())
-					ti.tex = res_mgr->Load<Texture>(ti.id);
-			}
 		}
 	}
 
@@ -804,19 +731,19 @@ void Game::SetupObject(BaseObject& obj)
 	{
 		if(obj.variants)
 		{
-			VariantObject& vo = *obj.variants;
-			for(uint i = 0; i < vo.entries.size(); ++i)
-				res_mgr->Load(vo.entries[i].mesh);
+			for(Mesh* mesh : obj.variants->meshes)
+				res_mgr->Load(mesh);
 		}
-		else if(!obj.mesh_id.empty())
+		else if(obj.mesh)
 			res_mgr->Load(obj.mesh);
 	}
 
 	if(obj.variants)
 	{
 		assert(!IsSet(obj.flags, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
-		res_mgr->LoadMeshMetadata(obj.variants->entries[0].mesh);
-		point = obj.variants->entries[0].mesh->FindPoint("hit");
+		Mesh* mesh = obj.variants->meshes[0];
+		res_mgr->LoadMeshMetadata(mesh);
+		point = mesh->FindPoint("hit");
 	}
 	else
 	{
@@ -899,46 +826,6 @@ void Game::SetupObject(BaseObject& obj)
 //=================================================================================================
 void Game::LoadItemsData()
 {
-	for(Armor* armor : Armor::armors)
-	{
-		Armor& a = *armor;
-		if(!a.tex_override.empty())
-		{
-			for(TexId& ti : a.tex_override)
-			{
-				if(!ti.id.empty())
-					ti.tex = res_mgr->Load<Texture>(ti.id);
-			}
-		}
-	}
-
-	for(auto it : Item::items)
-	{
-		Item& item = *it.second;
-
-		if(IsSet(item.flags, ITEM_TEX_ONLY))
-		{
-			item.tex = res_mgr->TryGet<Texture>(item.mesh_id);
-			if(!item.tex)
-			{
-				item.icon = &missing_item_texture;
-				Warn("Missing item texture '%s'.", item.mesh_id.c_str());
-				++load_errors;
-			}
-		}
-		else
-		{
-			item.mesh = res_mgr->TryGet<Mesh>(item.mesh_id);
-			if(!item.mesh)
-			{
-				item.icon = &missing_item_texture;
-				item.flags &= ~ITEM_GROUND_MESH;
-				Warn("Missing item mesh '%s'.", item.mesh_id.c_str());
-				++load_errors;
-			}
-		}
-	}
-
 	// preload hardcoded items
 	PreloadItem(Item::Get("beer"));
 	PreloadItem(Item::Get("vodka"));

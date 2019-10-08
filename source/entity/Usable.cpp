@@ -165,8 +165,8 @@ Mesh* Usable::GetMesh() const
 {
 	if(base->variants)
 	{
-		assert(InRange(variant, 0, (int)base->variants->entries.size()));
-		return base->variants->entries[variant].mesh;
+		assert(InRange(variant, 0, (int)base->variants->meshes.size()));
+		return base->variants->meshes[variant];
 	}
 	else
 		return base->mesh;

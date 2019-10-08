@@ -26,7 +26,7 @@ struct Spell
 		Cleric = 1 << 9, // uses charisma/gods magic instead of magic power/level
 	};
 
-	string id, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;
+	string id;
 	SoundPtr sound_cast, sound_hit;
 	TexturePtr tex, tex_particle, tex_explode;
 	Vec2 cooldown;

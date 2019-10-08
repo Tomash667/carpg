@@ -5,6 +5,8 @@
 #include "Building.h"
 #include "BuildingScript.h"
 #include "UnitData.h"
+#include <ResourceManager.h>
+#include <Mesh.h>
 
 enum Group
 {
@@ -197,12 +199,22 @@ void BuildingLoader::ParseBuilding(const string& id)
 		switch(prop)
 		{
 		case BK_MESH:
-			building->mesh_id = t.MustGetString();
-			t.Next();
+			{
+				const string& mesh_id = t.MustGetString();
+				building->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(!building->mesh)
+					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+				t.Next();
+			}
 			break;
 		case BK_INSIDE_MESH:
-			building->inside_mesh_id = t.MustGetString();
-			t.Next();
+			{
+				const string& mesh_id = t.MustGetString();
+				building->inside_mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(!building->inside_mesh)
+					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+				t.Next();
+			}
 			break;
 		case BK_FLAGS:
 			t.ParseFlags(G_BUILDING_FLAGS, building->flags);
@@ -324,7 +336,7 @@ void BuildingLoader::ParseBuilding(const string& id)
 		}
 	}
 
-	if(building->mesh_id.empty())
+	if(!building->mesh)
 		t.Throw("Building '%s' is missing mesh.", building->id.c_str());
 	if(building->scheme.empty())
 		t.Throw("Building '%s' is missing scheme.", building->id.c_str());
@@ -812,12 +824,13 @@ void BuildingLoader::CalculateCrc()
 	for(auto building : Building::buildings)
 	{
 		crc.Update(building->id);
-		crc.Update(building->mesh_id);
-		crc.Update(building->inside_mesh_id);
+		crc.Update(building->mesh->filename);
 		crc.Update(building->size);
 		crc.Update(building->shift);
 		crc.Update(building->scheme);
 		crc.Update(building->flags);
+		if(building->inside_mesh)
+			crc.Update(building->inside_mesh->filename);
 		if(building->group)
 			crc.Update(building->group->id);
 		if(building->unit)

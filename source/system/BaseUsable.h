@@ -15,7 +15,7 @@ struct BaseUsable : public BaseObject
 		IS_BENCH = 1 << 3, // hardcoded to use variant in city
 	};
 
-	string anim, item_id, sound_id, name;
+	string anim, name;
 	float sound_timer;
 	const Item* item;
 	SoundPtr sound;
@@ -40,7 +40,7 @@ struct BaseUsable : public BaseObject
 
 	BaseUsable& operator = (BaseObject& o)
 	{
-		mesh_id = o.mesh_id;
+		mesh = o.mesh;
 		type = o.type;
 		r = o.r;
 		h = o.h;
@@ -56,8 +56,8 @@ struct BaseUsable : public BaseObject
 	{
 		*this = (BaseObject&)u;
 		anim = u.anim;
-		item_id = u.item_id;
-		sound_id = u.sound_id;
+		item = u.item;
+		sound = u.sound;
 		sound_timer = u.sound_timer;
 		limit_rot = u.limit_rot;
 		use_flags = u.use_flags;

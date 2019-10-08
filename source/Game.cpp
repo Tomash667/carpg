@@ -76,6 +76,7 @@
 #include "Language.h"
 #include "CommandParser.h"
 #include "Controls.h"
+#include "GameResources.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -83,7 +84,6 @@ CustomCollisionWorld* global::phy_world;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
-extern const int ITEM_IMAGE_SIZE = 64;
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -103,9 +103,9 @@ const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 Game::Game() : vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
 draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
 dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
-paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f),
-cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG),
-game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
+paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
+cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD),
+default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -873,9 +873,10 @@ void Game::OnCleanup()
 
 	delete arena;
 	delete cmdp;
-	delete game_stats;
 	delete game_gui;
 	delete game_level;
+	delete game_res;
+	delete game_stats;
 	delete loc_gen_factory;
 	delete net;
 	delete pathfinding;
@@ -902,12 +903,6 @@ void Game::OnCleanup()
 		SafeRelease(sPostEffect[i]);
 		SafeRelease(tPostEffect[i]);
 	}
-
-	// item textures
-	for(auto& item : item_texture_map)
-		delete item.second;
-	for(Texture* tex : over_item_textures)
-		delete tex;
 
 	draw_batch.Clear();
 
@@ -973,7 +968,6 @@ void Game::CreateTextures()
 void Game::CreateRenderTargets()
 {
 	rt_save = render->CreateRenderTarget(Int2(256, 256));
-	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 	rt_item_rot = render->CreateRenderTarget(Int2(128, 128));
 }
 
@@ -1798,141 +1792,6 @@ void Game::CutsceneEnded(bool cancel)
 bool Game::CutsceneShouldSkip()
 {
 	return cfg.GetBool("skip_cutscene");
-}
-
-//=================================================================================================
-void Game::GenerateItemImage(TaskData& task_data)
-{
-	Item& item = *(Item*)task_data.ptr;
-	GenerateItemImageImpl(item);
-}
-
-//=================================================================================================
-void Game::GenerateItemImageImpl(Item& item)
-{
-	item.state = ResourceState::Loaded;
-
-	// if item use image, set it as icon
-	if(item.tex)
-	{
-		item.icon = item.tex;
-		return;
-	}
-
-	// try to find icon using same mesh
-	bool use_tex_override = false;
-	if(item.type == IT_ARMOR)
-		use_tex_override = !item.ToArmor().tex_override.empty();
-	ItemTextureMap::iterator it;
-	if(!use_tex_override)
-	{
-		it = item_texture_map.lower_bound(item.mesh);
-		if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item.mesh, it->first)))
-		{
-			item.icon = it->second;
-			return;
-		}
-	}
-	else
-		it = item_texture_map.end();
-
-	Texture* t = TryGenerateItemImage(item);
-	item.icon = t;
-	if(it != item_texture_map.end())
-		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
-	else
-		over_item_textures.push_back(t);
-}
-
-//=================================================================================================
-Texture* Game::TryGenerateItemImage(const Item& item)
-{
-	while(true)
-	{
-		DrawItemImage(item, rt_item, 0.f);
-		Texture* tex = render->CopyToTexture(rt_item);
-		if(tex)
-			return tex;
-	}
-}
-
-//=================================================================================================
-void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-
-	if(IsSet(ITEM_ALPHA, item.flags))
-	{
-		render->SetAlphaBlend(true);
-		render->SetNoZWrite(true);
-	}
-	else
-	{
-		render->SetAlphaBlend(false);
-		render->SetNoZWrite(false);
-	}
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetTarget(target);
-
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
-
-	Mesh& mesh = *item.mesh;
-	const TexId* tex_override = nullptr;
-	if(item.type == IT_ARMOR)
-	{
-		tex_override = item.ToArmor().GetTextureOverride();
-		if(tex_override)
-		{
-			assert(item.ToArmor().tex_override.size() == mesh.head.n_subs);
-		}
-	}
-
-	Matrix matWorld;
-	Mesh::Point* point = mesh.FindPoint("cam_rot");
-	if(point)
-		matWorld = Matrix::CreateFromAxisAngle(point->rot, rot);
-	else
-		matWorld = Matrix::RotationY(rot);
-	Matrix matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
-		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
-
-	LightData ld;
-	ld.pos = mesh.head.cam_pos;
-	ld.color = Vec3(1, 1, 1);
-	ld.range = 10.f;
-
-	V(eMesh->SetTechnique(techMesh));
-	V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matWorld*matView*matProj)));
-	V(eMesh->SetMatrix(hMeshWorld, (D3DXMATRIX*)&matWorld));
-	V(eMesh->SetVector(hMeshFogColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(eMesh->SetVector(hMeshFogParam, (D3DXVECTOR4*)&Vec4(25.f, 50.f, 25.f, 0)));
-	V(eMesh->SetVector(hMeshAmbientColor, (D3DXVECTOR4*)&Vec4(0.5f, 0.5f, 0.5f, 1)));
-	V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(eMesh->SetRawValue(hMeshLights, &ld, 0, sizeof(LightData)));
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-
-	uint passes;
-	V(eMesh->Begin(&passes, 0));
-	V(eMesh->BeginPass(0));
-
-	for(int i = 0; i < mesh.head.n_subs; ++i)
-	{
-		const Mesh::Submesh& sub = mesh.subs[i];
-		V(eMesh->SetTexture(hMeshTex, mesh.GetTexture(i, tex_override)));
-		V(eMesh->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-	}
-
-	V(eMesh->EndPass());
-	V(eMesh->End());
-	V(device->EndScene());
-
-	render->SetTarget(nullptr);
 }
 
 //=================================================================================================
@@ -2844,7 +2703,7 @@ uint Game::TestGameData(bool major)
 		const Weapon& w = *weapon;
 		if(!w.mesh)
 		{
-			Error("Test: Weapon %s: missing mesh %s.", w.id.c_str(), w.mesh_id.c_str());
+			Error("Test: Weapon %s: missing mesh.", w.id.c_str());
 			++errors;
 		}
 		else
@@ -2853,12 +2712,12 @@ uint Game::TestGameData(bool major)
 			Mesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				Error("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str());
+				Error("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh->filename);
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh_id.c_str());
+				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh->filename);
 				++errors;
 			}
 		}
@@ -2870,7 +2729,7 @@ uint Game::TestGameData(bool major)
 		const Shield& s = *shield;
 		if(!s.mesh)
 		{
-			Error("Test: Shield %s: missing mesh %s.", s.id.c_str(), s.mesh_id.c_str());
+			Error("Test: Shield %s: missing mesh.", s.id.c_str());
 			++errors;
 		}
 		else
@@ -2879,12 +2738,12 @@ uint Game::TestGameData(bool major)
 			Mesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				Error("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str());
+				Error("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh->filename);
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh_id.c_str());
+				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh->filename);
 				++errors;
 			}
 		}
@@ -2956,111 +2815,95 @@ uint Game::TestGameData(bool major)
 		}
 
 		// model postaci
-		if(ud.mesh_id.empty())
+		if(major)
 		{
-			if(!IsSet(ud.flags, F_HUMAN))
+			Mesh& mesh = *ud.mesh;
+			res_mgr->Load(&mesh);
+
+			for(uint i = 0; i < NAMES::n_ani_base; ++i)
 			{
-				str += "\tNo mesh!\n";
-				++errors;
-			}
-		}
-		else if(major)
-		{
-			if(!ud.mesh)
-			{
-				str += Format("\tMissing mesh %s.\n", ud.mesh_id.c_str());
-				++errors;
-			}
-			else
-			{
-				Mesh& mesh = *ud.mesh;
-				res_mgr->Load(&mesh);
-
-				for(uint i = 0; i < NAMES::n_ani_base; ++i)
+				if(!mesh.GetAnimation(NAMES::ani_base[i]))
 				{
-					if(!mesh.GetAnimation(NAMES::ani_base[i]))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
-						++errors;
-					}
-				}
-
-				if(!IsSet(ud.flags, F_SLOW))
-				{
-					if(!mesh.GetAnimation(NAMES::ani_run))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
-						++errors;
-					}
-				}
-
-				if(!IsSet(ud.flags, F_DONT_SUFFER))
-				{
-					if(!mesh.GetAnimation(NAMES::ani_hurt))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
-						++errors;
-					}
-				}
-
-				if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
-				{
-					for(uint i = 0; i < NAMES::n_points; ++i)
-					{
-						if(!mesh.GetPoint(NAMES::points[i]))
-						{
-							str += Format("\tMissing attachment point '%s'.\n", NAMES::points[i]);
-							++errors;
-						}
-					}
-
-					for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
-					{
-						if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
-						{
-							str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
-							++errors;
-						}
-					}
-				}
-
-				// animacje ataków
-				if(ud.frames)
-				{
-					if(ud.frames->attacks > NAMES::max_attacks)
-					{
-						str += Format("\tToo many attacks (%d)!\n", ud.frames->attacks);
-						++errors;
-					}
-					for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
-					{
-						if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
-						{
-							str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
-							++errors;
-						}
-					}
-				}
-
-				// animacje idle
-				if(ud.idles)
-				{
-					for(const string& s : ud.idles->anims)
-					{
-						if(!mesh.GetAnimation(s.c_str()))
-						{
-							str += Format("\tMissing animation '%s'.\n", s.c_str());
-							++errors;
-						}
-					}
-				}
-
-				// punkt czaru
-				if(ud.spells && !mesh.GetPoint(NAMES::point_cast))
-				{
-					str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
+					str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
 					++errors;
 				}
+			}
+
+			if(!IsSet(ud.flags, F_SLOW))
+			{
+				if(!mesh.GetAnimation(NAMES::ani_run))
+				{
+					str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
+					++errors;
+				}
+			}
+
+			if(!IsSet(ud.flags, F_DONT_SUFFER))
+			{
+				if(!mesh.GetAnimation(NAMES::ani_hurt))
+				{
+					str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
+					++errors;
+				}
+			}
+
+			if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
+			{
+				for(uint i = 0; i < NAMES::n_points; ++i)
+				{
+					if(!mesh.GetPoint(NAMES::points[i]))
+					{
+						str += Format("\tMissing attachment point '%s'.\n", NAMES::points[i]);
+						++errors;
+					}
+				}
+
+				for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
+				{
+					if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
+					{
+						str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
+						++errors;
+					}
+				}
+			}
+
+			// animacje ataków
+			if(ud.frames)
+			{
+				if(ud.frames->attacks > NAMES::max_attacks)
+				{
+					str += Format("\tToo many attacks (%d)!\n", ud.frames->attacks);
+					++errors;
+				}
+				for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
+				{
+					if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
+					{
+						str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
+						++errors;
+					}
+				}
+			}
+
+			// animacje idle
+			if(ud.idles)
+			{
+				for(const string& s : ud.idles->anims)
+				{
+					if(!mesh.GetAnimation(s.c_str()))
+					{
+						str += Format("\tMissing animation '%s'.\n", s.c_str());
+						++errors;
+					}
+				}
+			}
+
+			// punkt czaru
+			if(ud.spells && !mesh.GetPoint(NAMES::point_cast))
+			{
+				str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
+				++errors;
 			}
 		}
 
@@ -5980,8 +5823,8 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 		{
 			if(base->variants)
 			{
-				for(uint i = 0; i < base->variants->entries.size(); ++i)
-					res_mgr->Load(base->variants->entries[i].mesh);
+				for(Mesh* mesh : base->variants->meshes)
+					res_mgr->Load(mesh);
 			}
 			else
 				res_mgr->Load(base->mesh);
@@ -6031,10 +5874,10 @@ void Game::PreloadUnit(Unit* unit)
 
 	if(data.tex)
 	{
-		for(TexId& ti : data.tex->textures)
+		for(TexOverride& tex_o : data.tex->textures)
 		{
-			if(ti.tex)
-				res_mgr->Load(ti.tex);
+			if(tex_o.diffuse)
+				res_mgr->Load(tex_o.diffuse);
 		}
 	}
 
@@ -6062,10 +5905,10 @@ void Game::PreloadItem(const Item* p_item)
 				Armor& armor = item.ToArmor();
 				if(!armor.tex_override.empty())
 				{
-					for(TexId& ti : armor.tex_override)
+					for(TexOverride& tex_o : armor.tex_override)
 					{
-						if(!ti.id.empty())
-							ti.tex = res_mgr->Load<Texture>(ti.id);
+						if(tex_o.diffuse)
+							res_mgr->Load(tex_o.diffuse);
 					}
 				}
 			}
@@ -6075,11 +5918,11 @@ void Game::PreloadItem(const Item* p_item)
 				res_mgr->Load(book.scheme->tex);
 			}
 
-			if(item.tex)
-				res_mgr->Load(item.tex);
-			else
+			if(item.mesh)
 				res_mgr->Load(item.mesh);
-			res_mgr->AddTask(&item, TaskCallback(this, &Game::GenerateItemImage));
+			else if(item.tex)
+				res_mgr->Load(item.tex);
+			res_mgr->AddTask(&item, TaskCallback(game_res, &GameResources::GenerateItemIconTask));
 
 			item.state = ResourceState::Loading;
 		}
@@ -6092,10 +5935,10 @@ void Game::PreloadItem(const Item* p_item)
 			Armor& armor = item.ToArmor();
 			if(!armor.tex_override.empty())
 			{
-				for(TexId& ti : armor.tex_override)
+				for(TexOverride& tex_o : armor.tex_override)
 				{
-					if(!ti.id.empty())
-						res_mgr->Load(ti.tex);
+					if(tex_o.diffuse)
+						res_mgr->Load(tex_o.diffuse);
 				}
 			}
 		}
@@ -6105,18 +5948,11 @@ void Game::PreloadItem(const Item* p_item)
 			res_mgr->Load(book.scheme->tex);
 		}
 
-		if(item.tex)
-		{
-			res_mgr->Load(item.tex);
-			item.icon = item.tex;
-		}
-		else
-		{
+		if(item.mesh)
 			res_mgr->Load(item.mesh);
-			TaskData task;
-			task.ptr = &item;
-			GenerateItemImage(task);
-		}
+		else if(item.tex)
+			res_mgr->Load(item.tex);
+		game_res->GenerateItemIcon(item);
 
 		item.state = ResourceState::Loaded;
 	}
@@ -6171,10 +6007,10 @@ void Game::VerifyUnitResources(Unit* unit)
 	}
 	if(unit->data->tex)
 	{
-		for(auto& tex : unit->data->tex->textures)
+		for(TexOverride& tex_o : unit->data->tex->textures)
 		{
-			if(tex.tex)
-				assert(tex.tex->IsLoaded());
+			if(tex_o.diffuse)
+				assert(tex_o.diffuse->IsLoaded());
 		}
 	}
 

@@ -4527,10 +4527,10 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 				if(data->tex)
 				{
-					for(TexId& texid : data->tex->textures)
+					for(TexOverride& tex_o : data->tex->textures)
 					{
-						if(texid.tex)
-							res_mgr->Load(texid.tex);
+						if(tex_o.diffuse)
+							res_mgr->Load(tex_o.diffuse);
 					}
 				}
 				data->state = ResourceState::Loading;
@@ -4554,10 +4554,10 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			}
 			if(data->tex)
 			{
-				for(TexId& texid : data->tex->textures)
+				for(TexOverride& tex_o : data->tex->textures)
 				{
-					if(texid.tex)
-						res_mgr->Load(texid.tex);
+					if(tex_o.diffuse)
+						res_mgr->Load(tex_o.diffuse);
 				}
 			}
 			data->state = ResourceState::Loaded;

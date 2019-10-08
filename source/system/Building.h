@@ -21,7 +21,7 @@ struct Building
 		LIST = 1 << 3
 	};
 
-	string id, mesh_id, inside_mesh_id, name;
+	string id, name;
 	Int2 size, shift[4];
 	vector<TileScheme> scheme;
 	int flags;

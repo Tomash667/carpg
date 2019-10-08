@@ -3,6 +3,9 @@
 #include "ObjectLoader.h"
 #include "BaseUsable.h"
 #include "GameDialog.h"
+#include "Item.h"
+#include <ResourceManager.h>
+#include <Mesh.h>
 
 static vector<VariantObject*> variant_objects;
 
@@ -185,8 +188,13 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 	switch(prop)
 	{
 	case OP_MESH:
-		obj->mesh_id = t.MustGetString();
-		t.Next();
+		{
+			const string& mesh_id = t.MustGetString();
+			obj->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+			if(!obj->mesh)
+				LoadError("Missing mesh '%s'.", mesh_id.c_str());
+			t.Next();
+		}
 		break;
 	case OP_CYLINDER:
 		t.AssertSymbol('{');
@@ -220,15 +228,19 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 			t.AssertSymbol('{');
 			t.Next();
 			obj->variants = new VariantObject;
-			obj->variants->loaded = false;
 			variant_objects.push_back(obj->variants);
 			while(!t.IsSymbol('}'))
 			{
-				obj->variants->entries.push_back({ t.MustGetString(), nullptr });
+				const string& mesh_id = t.MustGetString();
+				Mesh* mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(mesh)
+					obj->variants->meshes.push_back(mesh);
+				else
+					LoadError("Missing variant mesh '%s'.", mesh_id.c_str());
 				t.Next();
 			}
-			if(obj->variants->entries.size() < 2u)
-				t.Throw("Variant with not enought meshes.");
+			if(obj->variants->meshes.size() < 2u)
+				t.Throw("Variant with not enough meshes.");
 			t.Next();
 		}
 		break;
@@ -295,24 +307,34 @@ void ObjectLoader::ParseUsable(const string& id)
 			switch(prop)
 			{
 			case UP_REQUIRED_ITEM:
-				use->item_id = t.MustGetItem();
-				t.Next();
+				{
+					const string& item_id = t.MustGetItem();
+					use->item = Item::TryGet(item_id);
+					if(!use->item)
+						LoadError("Missing item '%s'.", item_id.c_str());
+					t.Next();
+				}
 				break;
 			case UP_ANIMATION:
 				use->anim = t.MustGetString();
 				t.Next();
 				break;
 			case UP_ANIMATION_SOUND:
-				t.AssertSymbol('{');
-				t.Next();
-				use->sound_id = t.MustGetString();
-				t.Next();
-				use->sound_timer = t.MustGetFloat();
-				if(!InRange(use->sound_timer, 0.f, 1.f))
-					t.Throw("Invalid animation sound timer.");
-				t.Next();
-				t.AssertSymbol('}');
-				t.Next();
+				{
+					t.AssertSymbol('{');
+					t.Next();
+					const string& sound_id = t.MustGetString();
+					use->sound = res_mgr->TryGet<Sound>(sound_id);
+					if(!use->sound)
+						LoadError("Missing sound '%s'.", sound_id.c_str());
+					t.Next();
+					use->sound_timer = t.MustGetFloat();
+					if(!InRange(use->sound_timer, 0.f, 1.f))
+						LoadError("Invalid animation sound timer.");
+					t.Next();
+					t.AssertSymbol('}');
+					t.Next();
+				}
 				break;
 			case UP_LIMIT_ROT:
 				use->limit_rot = t.MustGetInt();
@@ -416,7 +438,8 @@ void ObjectLoader::CalculateCrc()
 	for(BaseObject* obj : BaseObject::objs)
 	{
 		crc.Update(obj->id);
-		crc.Update(obj->mesh_id);
+		if(obj->mesh)
+			crc.Update(obj->mesh->filename);
 		crc.Update(obj->type);
 		if(obj->type == OBJ_CYLINDER)
 		{
@@ -428,8 +451,8 @@ void ObjectLoader::CalculateCrc()
 		crc.Update(obj->alpha);
 		if(obj->variants)
 		{
-			for(VariantObject::Entry& e : obj->variants->entries)
-				crc.Update(e.mesh_id);
+			for(Mesh* mesh : obj->variants->meshes)
+				crc.Update(mesh->filename);
 		}
 		crc.Update(obj->extra_dist);
 
@@ -437,8 +460,10 @@ void ObjectLoader::CalculateCrc()
 		{
 			BaseUsable* use = static_cast<BaseUsable*>(obj);
 			crc.Update(use->anim);
-			crc.Update(use->item_id);
-			crc.Update(use->sound_id);
+			if(use->item)
+				crc.Update(use->item->id);
+			if(use->sound)
+				crc.Update(use->sound->filename);
 			crc.Update(use->sound_timer);
 			crc.Update(use->limit_rot);
 			crc.Update(use->use_flags);

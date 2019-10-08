@@ -98,8 +98,6 @@ struct PostEffect
 	Vec4 skill;
 };
 
-typedef std::map<Mesh*, Texture*> ItemTextureMap;
-
 enum class ProfilerMode
 {
 	Disabled,
@@ -137,7 +135,6 @@ public:
 	bool OnInit() override;
 	void PreconfigureGame();
 	void PreloadLanguage();
-	void CreatePlaceholderResources();
 
 	// loading system
 	void LoadSystem();
@@ -232,10 +229,6 @@ public:
 	void PauseGame();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void GenerateItemImage(TaskData& task_data);
-	void GenerateItemImageImpl(Item& item);
-	Texture* TryGenerateItemImage(const Item& item);
-	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void TakeScreenshot(bool no_gui = false);
@@ -398,10 +391,7 @@ public:
 	uint force_seed, next_seed;
 	ProfilerMode profiler_mode;
 	int start_version;
-	ItemTextureMap item_texture_map;
-	vector<Texture*> over_item_textures;
 	uint load_errors, load_warnings;
-	Texture missing_item_texture;
 	std::set<const Item*> items_load;
 	bool hardcore_mode, hardcore_option, check_updates, skip_tutorial;
 	// quickstart
@@ -508,11 +498,11 @@ public:
 	//-----------------------------------------------------------------
 	// RESOURCES
 	//-----------------------------------------------------------------
-	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
+	MeshPtr aHair[5], aBeard[5], aMustache[2], aEyebrows;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
-	RenderTarget* rt_save, *rt_item, *rt_item_rot;
+	RenderTarget* rt_save, *rt_item_rot;
 	Texture tMinimap;
 	TexturePtr tBlack, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn;

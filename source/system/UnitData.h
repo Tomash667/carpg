@@ -191,7 +191,7 @@ struct IdlePack
 struct TexPack
 {
 	string id;
-	vector<TexId> textures;
+	vector<TexOverride> textures;
 	bool inited;
 
 	TexPack() : inited(false) {}
@@ -215,7 +215,7 @@ struct TraderInfo
 // Dane postaci
 struct UnitData
 {
-	string id, mesh_id, name, real_name;
+	string id, name, real_name;
 	UnitData* parent;
 	MeshPtr mesh;
 	MATERIAL_TYPE mat;
@@ -255,7 +255,7 @@ struct UnitData
 
 	float GetRadius() const { return width; }
 	StatProfile& GetStatProfile() const { return *stat_profile; }
-	const TexId* GetTextureOverride() const
+	const TexOverride* GetTextureOverride() const
 	{
 		if(!tex)
 			return nullptr;

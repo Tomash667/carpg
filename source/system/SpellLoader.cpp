@@ -2,6 +2,8 @@
 #include "GameCore.h"
 #include "SpellLoader.h"
 #include "Spell.h"
+#include <ResourceManager.h>
+#include <Mesh.h>
 
 enum Group
 {
@@ -184,71 +186,89 @@ void SpellLoader::ParseSpell(const string& id)
 			t.Next();
 			break;
 		case K_MESH:
-			spell->mesh_id = t.MustGetString();
-			if(spell->mesh_id.empty())
-				t.Throw("Empty mesh.");
-			crc.Update(spell->mesh_id);
-			t.Next();
-			spell->size = t.MustGetFloat();
-			if(spell->size <= 0.f)
-				t.Throw("Invalid mesh size %g.", spell->size);
-			crc.Update(spell->size);
-			t.Next();
+			{
+				const string& mesh_id = t.MustGetString();
+				spell->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(!spell->mesh)
+					t.Throw("Missing mesh '%s'.", mesh_id.c_str());
+				crc.Update(mesh_id);
+				t.Next();
+				spell->size = t.MustGetFloat();
+				if(spell->size <= 0.f)
+					t.Throw("Invalid mesh size %g.", spell->size);
+				crc.Update(spell->size);
+				t.Next();
+			}
 			break;
 		case K_TEX:
-			spell->tex_id = t.MustGetString();
-			if(spell->tex_id.empty())
-				t.Throw("Empty texture.");
-			crc.Update(spell->tex_id);
-			t.Next();
-			spell->size = t.MustGetFloat();
-			if(spell->size <= 0.f)
-				t.Throw("Invalid texture size %g.", spell->size);
-			crc.Update(spell->size);
-			t.Next();
+			{
+				const string& tex_id = t.MustGetString();
+				spell->tex = res_mgr->TryGet<Texture>(tex_id);
+				if(!spell->tex)
+					t.Throw("Missing texture '%s'.", tex_id.c_str());
+				crc.Update(tex_id);
+				t.Next();
+				spell->size = t.MustGetFloat();
+				if(spell->size <= 0.f)
+					t.Throw("Invalid texture size %g.", spell->size);
+				crc.Update(spell->size);
+				t.Next();
+			}
 			break;
 		case K_TEX_PARTICLE:
-			spell->tex_particle_id = t.MustGetString();
-			if(spell->tex_particle_id.empty())
-				t.Throw("Empty particle texture.");
-			crc.Update(spell->tex_particle_id);
-			t.Next();
-			spell->size_particle = t.MustGetFloat();
-			if(spell->size_particle <= 0.f)
-				t.Throw("Invalid particle texture size %g.", spell->size_particle);
-			crc.Update(spell->size_particle);
-			t.Next();
+			{
+				const string& tex_id = t.MustGetString();
+				spell->tex_particle = res_mgr->TryGet<Texture>(tex_id);
+				if(!spell->tex_particle)
+					t.Throw("Missing texture '%s'.", tex_id.c_str());
+				crc.Update(tex_id);
+				t.Next();
+				spell->size_particle = t.MustGetFloat();
+				if(spell->size_particle <= 0.f)
+					t.Throw("Invalid particle texture size %g.", spell->size_particle);
+				crc.Update(spell->size_particle);
+				t.Next();
+			}
 			break;
 		case K_TEX_EXPLODE:
-			spell->tex_explode_id = t.MustGetString();
-			if(spell->tex_explode_id.empty())
-				t.Throw("Empty explode texture.");
-			crc.Update(spell->tex_explode_id);
-			t.Next();
+			{
+				const string& tex_id = t.MustGetString();
+				spell->tex_explode = res_mgr->TryGet<Texture>(tex_id);
+				if(!spell->tex_explode)
+					t.Throw("Missing texture '%s'.", tex_id.c_str());
+				crc.Update(tex_id);
+				t.Next();
+			}
 			break;
 		case K_SOUND_CAST:
-			spell->sound_cast_id = t.MustGetString();
-			if(spell->sound_cast_id.empty())
-				t.Throw("Empty cast sound.");
-			crc.Update(spell->sound_cast_id);
-			t.Next();
-			spell->sound_cast_dist = t.MustGetFloat();
-			if(spell->sound_cast_dist <= 0.f)
-				t.Throw("Invalid cast sound distance %g.", spell->sound_cast_dist);
-			crc.Update(spell->sound_cast_dist);
-			t.Next();
+			{
+				const string& sound_id = t.MustGetString();
+				spell->sound_cast = res_mgr->TryGet<Sound>(sound_id);
+				if(!spell->sound_cast)
+					t.Throw("Missing sound '%s'.", sound_id.c_str());
+				crc.Update(sound_id);
+				t.Next();
+				spell->sound_cast_dist = t.MustGetFloat();
+				if(spell->sound_cast_dist <= 0.f)
+					t.Throw("Invalid cast sound distance %g.", spell->sound_cast_dist);
+				crc.Update(spell->sound_cast_dist);
+				t.Next();
+			}
 			break;
 		case K_SOUND_HIT:
-			spell->sound_hit_id = t.MustGetString();
-			if(spell->sound_hit_id.empty())
-				t.Throw("Empty hit sound.");
-			crc.Update(spell->sound_hit_id);
-			t.Next();
-			spell->sound_hit_dist = t.MustGetFloat();
-			if(spell->sound_hit_dist <= 0.f)
-				t.Throw("Invalid hit sound distance %g}.", spell->sound_hit_dist);
-			crc.Update(spell->sound_hit_dist);
-			t.Next();
+			{
+				const string& sound_id = t.MustGetString();
+				spell->sound_hit = res_mgr->TryGet<Sound>(sound_id);
+				if(!spell->sound_hit)
+					t.Throw("Missing sound '%s'.", sound_id.c_str());
+				crc.Update(sound_id);
+				t.Next();
+				spell->sound_hit_dist = t.MustGetFloat();
+				if(spell->sound_hit_dist <= 0.f)
+					t.Throw("Invalid hit sound distance %g}.", spell->sound_hit_dist);
+				crc.Update(spell->sound_hit_dist);
+				t.Next();
+			}
 			break;
 		case K_MANA:
 			spell->mana = t.MustGetFloat();

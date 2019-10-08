@@ -52,6 +52,7 @@ class GameMessages;
 class GamePanel;
 class GamePanelContainer;
 class GameReader;
+class GameResources;
 class GameStats;
 class GameWriter;
 class InfoBox;
@@ -235,6 +236,7 @@ namespace global
 	extern CommandParser* cmdp;
 	extern Game* game;
 	extern GameGui* game_gui;
+	extern GameResources* game_res;
 	extern GameStats* game_stats;
 	extern Level* game_level;
 	extern Net* net;
