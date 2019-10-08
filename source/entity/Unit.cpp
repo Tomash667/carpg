@@ -4527,11 +4527,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 				if(data->tex)
 				{
-					for(TexId& texid : data->tex->textures)
-					{
-						if(texid.tex)
-							res_mgr->Load(texid.tex);
-					}
+					for(TexOverride& tex_o : data->tex->textures)
+						tex_o.Load();
 				}
 				data->state = ResourceState::Loading;
 				res_mgr->AddTask(this, TaskCallback([](TaskData& td)
@@ -4554,11 +4551,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			}
 			if(data->tex)
 			{
-				for(TexId& texid : data->tex->textures)
-				{
-					if(texid.tex)
-						res_mgr->Load(texid.tex);
-				}
+				for(TexOverride& tex_o : data->tex->textures)
+					tex_o.Load();
 			}
 			data->state = ResourceState::Loaded;
 		}

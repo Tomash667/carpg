@@ -7,12 +7,14 @@
 #include "Language.h"
 #include "PickItemDialog.h"
 #include "ResourceManager.h"
-#include "DirectX.h"
 #include "Unit.h"
 #include "Render.h"
 #include "RenderTarget.h"
 #include "Level.h"
 #include "GameGui.h"
+#include "GameResources.h"
+#include <Scene.h>
+#include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -35,9 +37,25 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr), scene(nullptr)
 {
 	size = Int2(600, 500);
+
+	scene = new Scene;
+	scene->clear_color = Color::None;
+	scene->ambient_color = Color(128, 128, 128, 255);
+	scene->use_dir_light = true;
+	scene->light_color = Color::White;
+	scene->light_dir = Vec3(5, 5, 5).Normalized(); FIXME;
+	scene_mgr->AddScene(scene);
+
+	camera = new Camera;
+	camera->fov = PI / 4;
+	camera->aspect = 0.5f;
+	camera->zmin = 1.f;
+	camera->zmax = 5.f;
+	scene_mgr->AddCamera(camera);
+
 	unit = new Unit;
 	unit->human_data = new Human;
 	unit->player = nullptr;
@@ -637,43 +655,23 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	IDirect3DDevice9* device = render->GetDevice();
-	HRESULT hr = device->TestCooperativeLevel();
-	if(hr != D3D_OK)
-		return;
+	camera->from = Vec3(0.f, 2.f, dist);
+	camera->to = Vec3(0.f, 1.f, 0.f);
+	camera->changed = true;
 
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(false);
-	render->SetTarget(rt_char);
+	scene_mgr->Draw(rt_char, scene, camera);
 
-	// start rendering
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
+
 
 	FIXME;
 	/*static vector<Lights> lights;
 
 	game_level->SetOutsideParams();
 
-	Matrix matView, matProj;
-	Vec3 from = Vec3(0.f, 2.f, dist);
-	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
-	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	game_level->camera.matViewProj = matView * matProj;
-	game_level->camera.center = from;
-	game_level->camera.matViewInv = matView.Inverse();
 
-	game_level->camera.frustum.Set(game_level->camera.matViewProj);
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();*/
-
-	// end rendering
-	V(device->EndScene());
-
-	render->SetTarget(nullptr);
 }
 
 //=================================================================================================
@@ -930,7 +928,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
-	unit->mesh_inst = new MeshInstance(game->aHumanBase);
+	unit->mesh_inst = new MeshInstance(game_res->mesh_human);
 
 	for(Class* clas : Class::classes)
 	{
@@ -951,7 +949,7 @@ void CreateCharacterPanel::RandomAppearance()
 	hair_color_index = Rand() % n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(game->aHumanBase);
+	u.human_data->ApplyScale(game_res->mesh_human);
 	SetControls();
 }
 

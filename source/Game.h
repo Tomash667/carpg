@@ -498,7 +498,7 @@ public:
 	//-----------------------------------------------------------------
 	// RESOURCES
 	//-----------------------------------------------------------------
-	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
+	MeshPtr aHair[5], aBeard[5], aMustache[2], aEyebrows;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;

@@ -11,6 +11,7 @@
 #include "Stock.h"
 #include "Content.h"
 #include "QuestScheme.h"
+#include "GameResources.h"
 
 enum Group
 {
@@ -605,8 +606,14 @@ void UnitLoader::ParseUnit(const string& id)
 		switch(p)
 		{
 		case P_MESH:
-			unit->mesh_id = t.MustGetString();
-			crc.Update(unit->mesh_id);
+			{
+				const string& mesh_id = t.MustGetString();
+				unit->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(!unit->mesh)
+					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+				else
+					crc.Update(mesh_id);
+			}
 			break;
 		case P_MAT:
 			unit->mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
@@ -1018,14 +1025,16 @@ void UnitLoader::ParseUnit(const string& id)
 	else
 		unit->type = UNIT_TYPE::ANIMAL;
 
-	if(unit->mesh_id.empty())
+	if(!unit->mesh)
 	{
 		if(unit->type != UNIT_TYPE::HUMAN)
 			t.Throw("Unit without mesh.");
+		else
+			unit->mesh = game_res->mesh_human;
 	}
 	else
 	{
-		if(unit->type == UNIT_TYPE::HUMAN)
+		if(unit->type == UNIT_TYPE::HUMAN && unit->mesh != game_res->mesh_human)
 			t.Throw("Human unit with custom mesh.");
 	}
 
@@ -2015,14 +2024,20 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 	{
 		if(t.IsKeywordGroup(G_NULL))
 		{
-			pack->textures.push_back(TexId(nullptr));
+			pack->textures.push_back(TexOverride());
 			crc.Update(0);
 		}
 		else
 		{
-			const string& s = t.MustGetString();
-			pack->textures.push_back(TexId(s));
-			crc.Update(s);
+			const string& tex_id = t.MustGetString();
+			Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+			if(tex)
+			{
+				pack->textures.push_back(TexOverride(tex));
+				crc.Update(tex_id);
+			}
+			else
+				LoadError("Missing texture override '%s'.", tex_id.c_str());
 			any = true;
 		}
 		t.Next();

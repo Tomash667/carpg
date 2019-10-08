@@ -25,13 +25,20 @@ GameResources::~GameResources()
 
 void GameResources::Init()
 {
+	CreateMissingTexture();
+	CreateItemScene();
+	GetResources();
+}
+
+void GameResources::CreateMissingTexture()
+{
 	TEX tex = render->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 	TextureLock lock(tex);
 	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
-	for (int y = 0; y < ITEM_IMAGE_SIZE; ++y)
+	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
 	{
 		uint* pix = lock[y];
-		for (int x = 0; x < ITEM_IMAGE_SIZE; ++x)
+		for(int x = 0; x < ITEM_IMAGE_SIZE; ++x)
 		{
 			*pix = col[(x >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) % 2];
 			++pix;
@@ -40,21 +47,27 @@ void GameResources::Init()
 
 	missing_item_texture.tex = tex;
 	missing_item_texture.state = ResourceState::Loaded;
+}
 
+void GameResources::CreateItemScene()
+{
 	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 
 	scene = new Scene;
+	scene->clear_color = Color::None;
 	scene->use_point_light = true;
 	scene->ambient_color = Color(128, 128, 128);
 	scene->use_fog = true;
 	scene->fog_color = Color::White;
 	scene->fog_range = Vec2(25.f, 50.f);
+	scene_mgr->AddScene(scene);
 
 	camera = new Camera;
 	camera->fov = PI / 4;
 	camera->aspect = 1.f;
 	camera->zmin = 0.1f;
 	camera->zmax = 25.f;
+	scene_mgr->AddCamera(camera);
 
 	node = SceneNode::Get();
 	scene->Add(node);
@@ -62,6 +75,16 @@ void GameResources::Init()
 	light = SceneNode::Get();
 	light->SetLight(10.f);
 	scene->Add(light);
+}
+
+void GameResources::GetResources()
+{
+	mesh_human = res_mgr->Get<Mesh>("human.qmsh");
+}
+
+void GameResources::LoadData()
+{
+	res_mgr->Load(mesh_human);
 }
 
 void GameResources::GenerateItemIconTask(TaskData& task_data)
@@ -137,6 +160,14 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		node->rot = Vec3::FromAxisAngle(point->rot, rot);
 	else
 		node->rot.y = rot;
+	if(item.type == IT_ARMOR && !item.ToArmor().tex_override.empty())
+	{
+		if(const Armor& armor = item.ToArmor(); !armor.tex_override.empty())
+		{
+			assert(armor.tex_override.size() == mesh.head.n_subs);
+			node->tex = armor.tex_override.data();
+		}
+	}
 
 	scene_mgr->Draw(target, scene, camera);
 
@@ -150,18 +181,5 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	{
 		render->SetAlphaBlend(false);
 		render->SetNoZWrite(false);
-	}
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetTarget(target);
-
-	const TexId* tex_override = nullptr;
-	if(item.type == IT_ARMOR)
-	{
-		tex_override = item.ToArmor().GetTextureOverride();
-		if(tex_override)
-		{
-			assert(item.ToArmor().tex_override.size() == mesh.head.n_subs);
-		}
 	}*/
 }

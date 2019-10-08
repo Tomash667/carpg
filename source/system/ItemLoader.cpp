@@ -528,19 +528,31 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_TEX_OVERRIDE:
 			{
-				vector<TexId>& tex_o = item->ToArmor().tex_override;
+				vector<TexOverride>& tex_o = item->ToArmor().tex_override;
 				if(t.IsSymbol('{'))
 				{
 					t.Next();
 					do
 					{
-						tex_o.push_back(TexId(t.MustGetString().c_str()));
+						const string& tex_id = t.MustGetString();
+						Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+						if(!tex)
+							LoadError("Missing override texture '%s'.", tex_id.c_str());
+						else
+							tex_o.push_back(TexOverride(tex));
 						t.Next();
 					}
 					while(!t.IsSymbol('}'));
 				}
 				else
-					tex_o.push_back(TexId(t.MustGetString().c_str()));
+				{
+					const string& tex_id = t.MustGetString();
+					Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+					if(!tex)
+						LoadError("Missing override texture '%s'.", tex_id.c_str());
+					else
+						tex_o.push_back(TexOverride(tex));
+				}
 			}
 			break;
 		case P_TIME:
@@ -1236,8 +1248,8 @@ void ItemLoader::CalculateCrc()
 				crc.Update(a.armor_type);
 				crc.Update(a.armor_unit_type);
 				crc.Update(a.tex_override.size());
-				for(TexId t : a.tex_override)
-					crc.Update(t.id);
+				for(TexOverride t : a.tex_override)
+					crc.Update(t.diffuse->filename);
 			}
 			break;
 		case IT_AMULET:

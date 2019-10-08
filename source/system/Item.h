@@ -290,21 +290,13 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 struct Armor : public Item
 {
 	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
-
-	const TexId* GetTextureOverride() const
-	{
-		if(tex_override.empty())
-			return nullptr;
-		else
-			return &tex_override[0];
-	}
 	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;
 	ARMOR_TYPE armor_type;
 	ArmorUnitType armor_unit_type;
-	vector<TexId> tex_override;
+	vector<TexOverride> tex_override;
 
 	static vector<Armor*> armors;
 };

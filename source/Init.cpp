@@ -506,6 +506,8 @@ void Game::AddLoadTasks()
 
 	bool nomusic = sound_mgr->IsMusicDisabled();
 
+	game_res->LoadData();
+
 	// gui textures
 	res_mgr->AddTaskCategory(txLoadGuiTextures);
 	tEquipped = res_mgr->Load<Texture>("equipped.png");
@@ -578,7 +580,6 @@ void Game::AddLoadTasks()
 	aSpellball = res_mgr->Load<Mesh>("spellball.qmsh");
 	aDoor = res_mgr->Load<Mesh>("drzwi.qmsh");
 	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
-	aHumanBase = res_mgr->Load<Mesh>("human.qmsh");
 	aHair[0] = res_mgr->Load<Mesh>("hair1.qmsh");
 	aHair[1] = res_mgr->Load<Mesh>("hair2.qmsh");
 	aHair[2] = res_mgr->Load<Mesh>("hair3.qmsh");
@@ -696,29 +697,6 @@ void Game::AddLoadTasks()
 				bu.sound = res_mgr->Get<Sound>(bu.sound_id);
 			if(!bu.item_id.empty())
 				bu.item = Item::Get(bu.item_id);
-		}
-	}
-
-	// preload units
-	for(UnitData* ud_ptr : UnitData::units)
-	{
-		UnitData& ud = *ud_ptr;
-
-		// model
-		if(!ud.mesh_id.empty())
-			ud.mesh = res_mgr->Get<Mesh>(ud.mesh_id);
-		else
-			ud.mesh = aHumanBase;
-
-		// textures
-		if(ud.tex && !ud.tex->inited)
-		{
-			ud.tex->inited = true;
-			for(TexId& ti : ud.tex->textures)
-			{
-				if(!ti.id.empty())
-					ti.tex = res_mgr->Load<Texture>(ti.id);
-			}
 		}
 	}
 
@@ -880,47 +858,6 @@ void Game::SetupObject(BaseObject& obj)
 //=================================================================================================
 void Game::LoadItemsData()
 {
-	for(Armor* armor : Armor::armors)
-	{
-		Armor& a = *armor;
-		if(!a.tex_override.empty())
-		{
-			for(TexId& ti : a.tex_override)
-			{
-				if(!ti.id.empty())
-					ti.tex = res_mgr->Load<Texture>(ti.id);
-			}
-		}
-	}
-
-	FIXME;
-	/*for(auto it : Item::items)
-	{
-		Item& item = *it.second;
-
-		if(IsSet(item.flags, ITEM_TEX_ONLY))
-		{
-			item.tex = res_mgr->TryGet<Texture>(item.mesh_id);
-			if(!item.tex)
-			{
-				item.icon = &missing_item_texture;
-				Warn("Missing item texture '%s'.", item.mesh_id.c_str());
-				++load_errors;
-			}
-		}
-		else
-		{
-			item.mesh = res_mgr->TryGet<Mesh>(item.mesh_id);
-			if(!item.mesh)
-			{
-				item.icon = &missing_item_texture;
-				item.flags &= ~ITEM_GROUND_MESH;
-				Warn("Missing item mesh '%s'.", item.mesh_id.c_str());
-				++load_errors;
-			}
-		}
-	}*/
-
 	// preload hardcoded items
 	PreloadItem(Item::Get("beer"));
 	PreloadItem(Item::Get("vodka"));

@@ -130,4 +130,6 @@ private:
 	const Item* items[SLOT_MAX];
 	TexturePtr tBox, tPowerBar;
 	RenderTarget* rt_char;
+	Scene* scene;
+	Camera* camera;
 };

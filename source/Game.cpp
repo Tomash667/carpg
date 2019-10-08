@@ -2811,111 +2811,95 @@ uint Game::TestGameData(bool major)
 		}
 
 		// model postaci
-		if(ud.mesh_id.empty())
+		if(major)
 		{
-			if(!IsSet(ud.flags, F_HUMAN))
+			Mesh& mesh = *ud.mesh;
+			res_mgr->Load(&mesh);
+
+			for(uint i = 0; i < NAMES::n_ani_base; ++i)
 			{
-				str += "\tNo mesh!\n";
-				++errors;
-			}
-		}
-		else if(major)
-		{
-			if(!ud.mesh)
-			{
-				str += Format("\tMissing mesh %s.\n", ud.mesh_id.c_str());
-				++errors;
-			}
-			else
-			{
-				Mesh& mesh = *ud.mesh;
-				res_mgr->Load(&mesh);
-
-				for(uint i = 0; i < NAMES::n_ani_base; ++i)
+				if(!mesh.GetAnimation(NAMES::ani_base[i]))
 				{
-					if(!mesh.GetAnimation(NAMES::ani_base[i]))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
-						++errors;
-					}
-				}
-
-				if(!IsSet(ud.flags, F_SLOW))
-				{
-					if(!mesh.GetAnimation(NAMES::ani_run))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
-						++errors;
-					}
-				}
-
-				if(!IsSet(ud.flags, F_DONT_SUFFER))
-				{
-					if(!mesh.GetAnimation(NAMES::ani_hurt))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
-						++errors;
-					}
-				}
-
-				if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
-				{
-					for(uint i = 0; i < NAMES::n_points; ++i)
-					{
-						if(!mesh.GetPoint(NAMES::points[i]))
-						{
-							str += Format("\tMissing attachment point '%s'.\n", NAMES::points[i]);
-							++errors;
-						}
-					}
-
-					for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
-					{
-						if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
-						{
-							str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
-							++errors;
-						}
-					}
-				}
-
-				// animacje ataków
-				if(ud.frames)
-				{
-					if(ud.frames->attacks > NAMES::max_attacks)
-					{
-						str += Format("\tToo many attacks (%d)!\n", ud.frames->attacks);
-						++errors;
-					}
-					for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
-					{
-						if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
-						{
-							str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
-							++errors;
-						}
-					}
-				}
-
-				// animacje idle
-				if(ud.idles)
-				{
-					for(const string& s : ud.idles->anims)
-					{
-						if(!mesh.GetAnimation(s.c_str()))
-						{
-							str += Format("\tMissing animation '%s'.\n", s.c_str());
-							++errors;
-						}
-					}
-				}
-
-				// punkt czaru
-				if(ud.spells && !mesh.GetPoint(NAMES::point_cast))
-				{
-					str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
+					str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
 					++errors;
 				}
+			}
+
+			if(!IsSet(ud.flags, F_SLOW))
+			{
+				if(!mesh.GetAnimation(NAMES::ani_run))
+				{
+					str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
+					++errors;
+				}
+			}
+
+			if(!IsSet(ud.flags, F_DONT_SUFFER))
+			{
+				if(!mesh.GetAnimation(NAMES::ani_hurt))
+				{
+					str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
+					++errors;
+				}
+			}
+
+			if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
+			{
+				for(uint i = 0; i < NAMES::n_points; ++i)
+				{
+					if(!mesh.GetPoint(NAMES::points[i]))
+					{
+						str += Format("\tMissing attachment point '%s'.\n", NAMES::points[i]);
+						++errors;
+					}
+				}
+
+				for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
+				{
+					if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
+					{
+						str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
+						++errors;
+					}
+				}
+			}
+
+			// animacje ataków
+			if(ud.frames)
+			{
+				if(ud.frames->attacks > NAMES::max_attacks)
+				{
+					str += Format("\tToo many attacks (%d)!\n", ud.frames->attacks);
+					++errors;
+				}
+				for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
+				{
+					if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
+					{
+						str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
+						++errors;
+					}
+				}
+			}
+
+			// animacje idle
+			if(ud.idles)
+			{
+				for(const string& s : ud.idles->anims)
+				{
+					if(!mesh.GetAnimation(s.c_str()))
+					{
+						str += Format("\tMissing animation '%s'.\n", s.c_str());
+						++errors;
+					}
+				}
+			}
+
+			// punkt czaru
+			if(ud.spells && !mesh.GetPoint(NAMES::point_cast))
+			{
+				str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
+				++errors;
 			}
 		}
 
@@ -5891,11 +5875,8 @@ void Game::PreloadUnit(Unit* unit)
 
 	if(data.tex)
 	{
-		for(TexId& ti : data.tex->textures)
-		{
-			if(ti.tex)
-				res_mgr->Load(ti.tex);
-		}
+		for(TexOverride& tex_o : data.tex->textures)
+			tex_o.Load();
 	}
 
 	data.state = ResourceState::Loaded;
@@ -5922,11 +5903,8 @@ void Game::PreloadItem(const Item* p_item)
 				Armor& armor = item.ToArmor();
 				if(!armor.tex_override.empty())
 				{
-					for(TexId& ti : armor.tex_override)
-					{
-						if(!ti.id.empty())
-							ti.tex = res_mgr->Load<Texture>(ti.id);
-					}
+					for(TexOverride& tex_o : armor.tex_override)
+						tex_o.Load();
 				}
 			}
 			else if(item.type == IT_BOOK)
@@ -5935,13 +5913,11 @@ void Game::PreloadItem(const Item* p_item)
 				res_mgr->Load(book.scheme->tex);
 			}
 
-			if (item.tex || item.mesh)
-			{
-				if (item.tex)
-					res_mgr->Load(item.tex);
-				else
-					res_mgr->Load(item.mesh);
-			}
+			if (item.tex)
+				res_mgr->Load(item.tex);
+			else if(item.mesh)
+				res_mgr->Load(item.mesh);
+
 			res_mgr->AddTask(&item, TaskCallback(game_res, &GameResources::GenerateItemIconTask));
 			item.state = ResourceState::Loading;
 		}
@@ -5954,11 +5930,8 @@ void Game::PreloadItem(const Item* p_item)
 			Armor& armor = item.ToArmor();
 			if(!armor.tex_override.empty())
 			{
-				for(TexId& ti : armor.tex_override)
-				{
-					if(!ti.id.empty())
-						res_mgr->Load(ti.tex);
-				}
+				for(TexOverride& tex_o : armor.tex_override)
+					tex_o.Load();
 			}
 		}
 		else if(item.type == IT_BOOK)
@@ -6026,11 +5999,8 @@ void Game::VerifyUnitResources(Unit* unit)
 	}
 	if(unit->data->tex)
 	{
-		for(auto& tex : unit->data->tex->textures)
-		{
-			if(tex.tex)
-				assert(tex.tex->IsLoaded());
-		}
+		for(TexOverride& tex_o : unit->data->tex->textures)
+			assert(tex_o.IsLoaded());
 	}
 
 	for(int i = 0; i < SLOT_MAX; ++i)
