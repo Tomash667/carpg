@@ -588,11 +588,11 @@
     <ClCompile Include="generator\AcademyGenerator.cpp">
       <Filter>generator</Filter>
     </ClCompile>
-    <ClCompile Include="entity\GameCamera.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
     <ClCompile Include="components\GameResources.cpp">
       <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\GameCamera.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1173,6 +1173,9 @@
     <ClInclude Include="generator\AcademyGenerator.h">
       <Filter>generator</Filter>
     </ClInclude>
+    <ClInclude Include="components\GameResources.h">
+      <Filter>components</Filter>
+    </ClInclude>
     <ClInclude Include="entity\GameCamera.h">
       <Filter>entity</Filter>
     </ClInclude>
@@ -1181,9 +1184,6 @@
     </ClInclude>
     <ClInclude Include="entity\EffectArea.h">
       <Filter>entity</Filter>
-    </ClInclude>
-    <ClInclude Include="components\GameResources.h">
-      <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -643,7 +643,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 					}
 				}
 				else
-					variant = Random<int>(base->variants->entries.size() - 1);
+					variant = Random<int>(base->variants->meshes.size() - 1);
 			}
 		}
 		u->variant = variant;

@@ -5,7 +5,6 @@ class GameResources
 public:
 	static constexpr int ITEM_IMAGE_SIZE = 64;
 
-	GameResources();
 	~GameResources();
 	void Init();
 	void LoadData();

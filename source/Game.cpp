@@ -84,7 +84,6 @@ CustomCollisionWorld* global::phy_world;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
-extern const int ITEM_IMAGE_SIZE = 64;
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -878,10 +877,11 @@ void Game::OnCleanup()
 
 	delete arena;
 	delete cmdp;
-	delete game_stats;
 	delete game_gui;
 	delete game_res;
 	delete game_level;
+	delete game_res;
+	delete game_stats;
 	delete loc_gen_factory;
 	delete net;
 	delete pathfinding;
@@ -5824,8 +5824,8 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 		{
 			if(base->variants)
 			{
-				for(uint i = 0; i < base->variants->entries.size(); ++i)
-					res_mgr->Load(base->variants->entries[i].mesh);
+				for(Mesh* mesh : base->variants->meshes)
+					res_mgr->Load(mesh);
 			}
 			else
 				res_mgr->Load(base->mesh);
@@ -5913,10 +5913,11 @@ void Game::PreloadItem(const Item* p_item)
 				res_mgr->Load(book.scheme->tex);
 			}
 
-			if (item.tex)
-				res_mgr->Load(item.tex);
-			else if(item.mesh)
+			if(item.mesh)
 				res_mgr->Load(item.mesh);
+			else if(item.tex)
+				res_mgr->Load(item.tex);
+			res_mgr->AddTask(&item, TaskCallback(game_res, &GameResources::GenerateItemIconTask));
 
 			res_mgr->AddTask(&item, TaskCallback(game_res, &GameResources::GenerateItemIconTask));
 			item.state = ResourceState::Loading;
@@ -5940,10 +5941,11 @@ void Game::PreloadItem(const Item* p_item)
 			res_mgr->Load(book.scheme->tex);
 		}
 
-		if(item.tex)
-			res_mgr->Load(item.tex);
-		else if(item.mesh)
+		if(item.mesh)
 			res_mgr->Load(item.mesh);
+		else if(item.tex)
+			res_mgr->Load(item.tex);
+		game_res->GenerateItemIcon(item);
 
 		game_res->GenerateItemIcon(item);
 		item.state = ResourceState::Loaded;

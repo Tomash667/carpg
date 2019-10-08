@@ -12,6 +12,7 @@
 #include "Content.h"
 #include "QuestScheme.h"
 #include "GameResources.h"
+#include <Mesh.h>
 
 enum Group
 {
@@ -609,10 +610,10 @@ void UnitLoader::ParseUnit(const string& id)
 			{
 				const string& mesh_id = t.MustGetString();
 				unit->mesh = res_mgr->TryGet<Mesh>(mesh_id);
-				if(!unit->mesh)
-					LoadError("Missing mesh '%s'.", mesh_id.c_str());
-				else
+				if(unit->mesh)
 					crc.Update(mesh_id);
+				else
+					LoadError("Missing mesh '%s'.", mesh_id.c_str());
 			}
 			break;
 		case P_MAT:

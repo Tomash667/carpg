@@ -11,10 +11,7 @@
 
 GameResources* global::game_res;
 
-GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)
-{
-}
-
+//=================================================================================================
 GameResources::~GameResources()
 {
 	for(auto& item : item_texture_map)
@@ -23,6 +20,7 @@ GameResources::~GameResources()
 		delete tex;
 }
 
+//=================================================================================================
 void GameResources::Init()
 {
 	CreateMissingTexture();
@@ -30,6 +28,7 @@ void GameResources::Init()
 	GetResources();
 }
 
+//=================================================================================================
 void GameResources::CreateMissingTexture()
 {
 	TEX tex = render->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
@@ -49,6 +48,7 @@ void GameResources::CreateMissingTexture()
 	missing_item_texture.state = ResourceState::Loaded;
 }
 
+//=================================================================================================
 void GameResources::CreateItemScene()
 {
 	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
@@ -77,29 +77,35 @@ void GameResources::CreateItemScene()
 	scene->Add(light);
 }
 
+//=================================================================================================
 void GameResources::GetResources()
 {
 	mesh_human = res_mgr->Get<Mesh>("human.qmsh");
 }
 
+//=================================================================================================
 void GameResources::LoadData()
 {
 	res_mgr->Load(mesh_human);
 }
 
+//=================================================================================================
 void GameResources::GenerateItemIconTask(TaskData& task_data)
 {
 	Item& item = *(Item*)task_data.ptr;
 	GenerateItemIcon(item);
 }
 
+//=================================================================================================
 void GameResources::GenerateItemIcon(Item& item)
 {
 	item.state = ResourceState::Loaded;
 
-	if(item.mesh == nullptr && item.tex == nullptr)
+	// use missing texture if no mesh/texture
+	if(!item.mesh && !item.tex)
 	{
 		item.icon = &missing_item_texture;
+		item.flags &= ~ITEM_GROUND_MESH;
 		return;
 	}
 

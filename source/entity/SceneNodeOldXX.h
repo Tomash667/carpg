@@ -29,7 +29,7 @@ struct SceneNode
 	};
 	MeshInstance* parent_mesh_inst;
 	int flags, lights, subs;
-	const TexId* tex_override;
+	const TexOverride* tex_override;
 	Vec4 tint;
 	bool billboard;
 

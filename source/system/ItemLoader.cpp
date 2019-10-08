@@ -3,8 +3,9 @@
 #include "ItemLoader.h"
 #include "Item.h"
 #include "Stock.h"
-#include "ResourceManager.h"
 #include "ScriptManager.h"
+#include <ResourceManager.h>
+#include <Mesh.h>
 
 //-----------------------------------------------------------------------------
 enum Group
@@ -403,7 +404,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_MESH:
 			{
-				if (IsSet(item->flags, ITEM_TEX_ONLY))
+				if(IsSet(item->flags, ITEM_TEX_ONLY))
 					t.Throw("Can't have mesh, it is texture only item.");
 				const string& mesh_id = t.MustGetString();
 				item->mesh = res_mgr->TryGet<Mesh>(mesh_id);
@@ -413,13 +414,14 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_TEX:
 			{
-				if(item->mesh && !IsSet(item->flags, ITEM_TEX_ONLY))
+				if(item->mesh)
 					t.Throw("Can't be texture only item, it have mesh.");
 				const string& tex_id = t.MustGetString();
 				item->tex = res_mgr->TryGet<Texture>(tex_id);
 				if(!item->tex)
 					LoadError("Missing texture '%s'.", tex_id.c_str());
-				item->flags |= ITEM_TEX_ONLY;
+				else
+					item->flags |= ITEM_TEX_ONLY;
 			}
 			break;
 		case P_ATTACK:
@@ -536,10 +538,10 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 					{
 						const string& tex_id = t.MustGetString();
 						Texture* tex = res_mgr->TryGet<Texture>(tex_id);
-						if(!tex)
-							LoadError("Missing override texture '%s'.", tex_id.c_str());
-						else
+						if(tex)
 							tex_o.push_back(TexOverride(tex));
+						else
+							LoadError("Missing texture override '%s'.", tex_id.c_str());
 						t.Next();
 					}
 					while(!t.IsSymbol('}'));
@@ -548,10 +550,10 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				{
 					const string& tex_id = t.MustGetString();
 					Texture* tex = res_mgr->TryGet<Texture>(tex_id);
-					if(!tex)
-						LoadError("Missing override texture '%s'.", tex_id.c_str());
-					else
+					if(tex)
 						tex_o.push_back(TexOverride(tex));
+					else
+						LoadError("Missing texture override '%s'.", tex_id.c_str());
 				}
 			}
 			break;
@@ -1248,8 +1250,8 @@ void ItemLoader::CalculateCrc()
 				crc.Update(a.armor_type);
 				crc.Update(a.armor_unit_type);
 				crc.Update(a.tex_override.size());
-				for(TexOverride t : a.tex_override)
-					crc.Update(t.diffuse->filename);
+				for(TexOverride& tex_o : a.tex_override)
+					crc.Update(tex_o.diffuse ? tex_o.diffuse->filename : "");
 			}
 			break;
 		case IT_AMULET:

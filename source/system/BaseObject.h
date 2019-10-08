@@ -42,13 +42,7 @@ enum OBJ_FLAGS
 //-----------------------------------------------------------------------------
 struct VariantObject
 {
-	struct Entry
-	{
-		string mesh_id;
-		Mesh* mesh;
-	};
-	vector<Entry> entries;
-	bool loaded;
+	vector<Mesh*> meshes;
 };
 
 //-----------------------------------------------------------------------------
@@ -95,7 +89,7 @@ struct ObjectGroup
 // Base object
 struct BaseObject
 {
-	string id, mesh_id;
+	string id;
 	Mesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
@@ -116,7 +110,7 @@ struct BaseObject
 
 	BaseObject& operator = (BaseObject& o)
 	{
-		mesh_id = o.mesh_id;
+		mesh = o.mesh;
 		type = o.type;
 		r = o.r;
 		h = o.h;
