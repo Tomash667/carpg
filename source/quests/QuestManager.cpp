@@ -1251,7 +1251,6 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			assert(u);
 			if(u)
 			{
-				u->rot = Random(MAX_ANGLE);
 				u->OrderAutoTalk();
 				quest_evil->cleric = u;
 				quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
