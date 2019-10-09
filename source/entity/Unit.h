@@ -12,6 +12,7 @@
 #include "Effect.h"
 #include "Buff.h"
 #include "Event.h"
+#include <SceneNode.h>
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -254,11 +255,11 @@ struct Unit : public EntityType<Unit>
 	AIController* ai;
 	HeroData* hero;
 	Human* human_data;
-	MeshInstance* mesh_inst;
+	SceneNode* node;
 	Animation animation, current_animation;
 	LiveState live_state;
-	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
+	Vec3 pos, prev_pos, target_pos, target_pos2;
+	float roty, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
 		raise_timer;
 	int refs, animation_state, level, gold, attack_id, in_arena, quest_id;
 	FROZEN frozen;
@@ -295,7 +296,7 @@ struct Unit : public EntityType<Unit>
 	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
+	Unit() : node(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
 		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
@@ -362,13 +363,13 @@ struct Unit : public EntityType<Unit>
 	}
 	Vec3 GetHeadPoint() const
 	{
-		Vec3 pt = visual_pos;
+		Vec3 pt = node->pos;
 		pt.y += GetUnitHeight() * 1.1f;
 		return pt;
 	}
 	Vec3 GetHeadSoundPos() const
 	{
-		Vec3 pt = visual_pos;
+		Vec3 pt = node->pos;
 		pt.y += GetUnitHeight() * 0.9f;
 		return pt;
 	}
@@ -377,7 +378,7 @@ struct Unit : public EntityType<Unit>
 		Vec3 pt;
 		if(IsStanding())
 		{
-			pt = visual_pos;
+			pt = node->pos;
 			pt.y += GetUnitHeight();
 		}
 		else
@@ -469,9 +470,9 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetFrontPos() const
 	{
 		return Vec3(
-			pos.x + sin(rot + PI) * 2,
+			pos.x + sin(roty + PI) * 2,
 			pos.y,
-			pos.z + cos(rot + PI) * 2);
+			pos.z + cos(roty + PI) * 2);
 	}
 	MATERIAL_TYPE GetWeaponMaterial() const
 	{
@@ -900,7 +901,7 @@ public:
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }
-	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
+	float GetBlockMod() const { return action == A_BLOCK ? node->mesh_inst->groups[1].GetBlendT() : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 	void RotateTo(const Vec3& pos, float dt);

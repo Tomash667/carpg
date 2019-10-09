@@ -172,17 +172,18 @@ void Game::UpdateAi(float dt)
 			if(Unit* look_target = u.look_target; look_target)
 			{
 				float dir = Vec3::LookAtAngle(u.pos, look_target->pos);
-				if(!Equal(u.rot, dir))
+				if(!Equal(u.roty, dir))
 				{
 					const float rot_speed = 3.f*dt;
-					const float rot_diff = AngleDiff(u.rot, dir);
+					const float rot_diff = AngleDiff(u.roty, dir);
 					if(rot_diff < rot_speed)
-						u.rot = dir;
+						u.roty = dir;
 					else
 					{
-						const float d = Sign(ShortestArc(u.rot, dir)) * rot_speed;
-						u.rot = Clip(u.rot + d);
+						const float d = Sign(ShortestArc(u.roty, dir)) * rot_speed;
+						u.roty = Clip(u.roty + d);
 					}
+					u.node->rot.y = u.roty;
 					u.changed = true;
 				}
 			}
@@ -216,8 +217,8 @@ void Game::UpdateAi(float dt)
 			if(u.action == A_BLOCK)
 			{
 				u.action = A_NONE;
-				u.mesh_inst->frame_end_info2 = false;
-				u.mesh_inst->Deactivate(1);
+				u.node->mesh_inst->frame_end_info2 = false;
+				u.node->mesh_inst->Deactivate(1);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -335,7 +336,7 @@ void Game::UpdateAi(float dt)
 						{
 							// someone else alert him with enemy alert shout
 							u.talking = false;
-							u.mesh_inst->need_update = true;
+							u.node->mesh_inst->need_update = true;
 							ai.in_combat = true;
 							ai.target = alert_target;
 							ai.target_last_pos = ai.alert_target_pos;
@@ -354,7 +355,7 @@ void Game::UpdateAi(float dt)
 						{
 							// enemy noticed - start the fight
 							u.talking = false;
-							u.mesh_inst->need_update = true;
+							u.node->mesh_inst->need_update = true;
 							ai.in_combat = true;
 							ai.target = enemy;
 							ai.target_last_pos = enemy->pos;
@@ -424,8 +425,8 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_BLOCK)
 					{
 						u.action = A_NONE;
-						u.mesh_inst->frame_end_info2 = false;
-						u.mesh_inst->Deactivate(1);
+						u.node->mesh_inst->frame_end_info2 = false;
+						u.node->mesh_inst->Deactivate(1);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -726,7 +727,7 @@ void Game::UpdateAi(float dt)
 							{
 								// no altar - stay in place
 								ai.idle_action = AIController::Idle_Animation;
-								ai.idle_data.rot = u.rot;
+								ai.idle_data.rot = u.roty;
 								ai.timer = 120.f;
 							}
 						}
@@ -734,7 +735,7 @@ void Game::UpdateAi(float dt)
 						{
 							// stop looking at the person, go look somewhere else
 							ai.idle_action = AIController::Idle_Rot;
-							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.roty, ai.start_rot) > PI / 4)
 								ai.idle_data.rot = ai.start_rot;
 							else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 								ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
@@ -745,7 +746,7 @@ void Game::UpdateAi(float dt)
 						else if(ai.idle_action == AIController::Idle_Chat)
 						{
 							u.talking = false;
-							u.mesh_inst->need_update = true;
+							u.node->mesh_inst->need_update = true;
 							ai.idle_action = AIController::Idle_None;
 						}
 						else if(ai.idle_action == AIController::Idle_Use)
@@ -1056,15 +1057,15 @@ void Game::UpdateAi(float dt)
 										break;
 									}
 								}
-								// nothing to use, play animation
+							// nothing to use, play animation
 							case AI_ANIMATION:
 								{
 									int id = Rand() % u.data->idles->anims.size();
 									ai.timer = Random(2.f, 5.f);
 									ai.idle_action = AIController::Idle_Animation;
-									u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
-									u.mesh_inst->groups[0].speed = 1.f;
-									u.mesh_inst->frame_end_info = false;
+									u.node->mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
+									u.node->mesh_inst->groups[0].speed = 1.f;
+									u.node->mesh_inst->frame_end_info = false;
 									u.animation = ANI_IDLE;
 									if(Net::IsOnline())
 									{
@@ -1106,7 +1107,7 @@ void Game::UpdateAi(float dt)
 							case AI_ROTATE:
 								ai.timer = Random(2.f, 5.f);
 								ai.idle_action = AIController::Idle_Rot;
-								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.roty, ai.start_rot) > PI / 4)
 									ai.idle_data.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1187,7 +1188,7 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_Animation:
 							break;
 						case AIController::Idle_Rot:
-							if(Equal(u.rot, ai.idle_data.rot))
+							if(Equal(u.roty, ai.idle_data.rot))
 								ai.idle_action = AIController::Idle_None;
 							else
 							{
@@ -1223,7 +1224,7 @@ void Game::UpdateAi(float dt)
 							{
 								// stop looking
 								ai.idle_action = AIController::Idle_Rot;
-								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.roty, ai.start_rot) > PI / 4)
 									ai.idle_data.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1250,8 +1251,8 @@ void Game::UpdateAi(float dt)
 										if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 										{
 											ani = Rand() % 2 + 1;
-											u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-											u.mesh_inst->groups[0].speed = 1.f;
+											u.node->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+											u.node->mesh_inst->groups[0].speed = 1.f;
 											u.animation = ANI_PLAY;
 											u.action = A_ANIMATION;
 										}
@@ -1348,7 +1349,7 @@ void Game::UpdateAi(float dt)
 									ai.idle_action = AIController::Idle_None;
 								else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 								{
-									if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
+									if(AngleDiff(Clip(u.roty + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 									{
 										BaseUsable& base = *use.base;
 										const Item* needed_item = base.item;
@@ -1360,11 +1361,11 @@ void Game::UpdateAi(float dt)
 											if(use.base == chair && IsSet(u.data->flags, F_AI_CLERK))
 											{
 												read_papers = true;
-												u.mesh_inst->Play("czyta_papiery", PLAY_PRIO3, 0);
+												u.node->mesh_inst->Play("czyta_papiery", PLAY_PRIO3, 0);
 											}
 											else
-												u.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
-											u.mesh_inst->groups[0].speed = 1.f;
+												u.node->mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
+											u.node->mesh_inst->groups[0].speed = 1.f;
 											u.UseUsable(&use);
 											u.target_pos = u.pos;
 											u.target_pos2 = use.pos;
@@ -1447,14 +1448,14 @@ void Game::UpdateAi(float dt)
 								{
 									u.TakeWeapon(W_BOW);
 									float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
-									if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
+									if(AngleDiff(u.roty, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
 										&& u.GetStaminap() >= 0.25f && u.frozen == FROZEN::NO
 										&& game_level->CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 									{
 										// bow shooting
 										float speed = u.GetBowAttackSpeed();
-										u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-										u.mesh_inst->groups[1].speed = speed;
+										u.node->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+										u.node->mesh_inst->groups[1].speed = speed;
 										u.action = A_SHOOT;
 										u.animation_state = 1;
 										u.hitted = false;
@@ -1683,17 +1684,17 @@ void Game::UpdateAi(float dt)
 										u.animation_state = 0;
 										u.action_unit = nullptr;
 
-										if(u.mesh_inst->mesh->head.n_groups == 2)
+										if(u.node->mesh_inst->mesh->head.n_groups == 2)
 										{
-											u.mesh_inst->frame_end_info2 = false;
-											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+											u.node->mesh_inst->frame_end_info2 = false;
+											u.node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 										}
 										else
 										{
-											u.mesh_inst->frame_end_info = false;
 											u.animation = ANI_PLAY;
-											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-											u.mesh_inst->groups[0].speed = 1.f;
+											u.node->mesh_inst->frame_end_info = false;
+											u.node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+											u.node->mesh_inst->groups[0].speed = 1.f;
 										}
 
 										if(Net::IsOnline())
@@ -1746,8 +1747,8 @@ void Game::UpdateAi(float dt)
 							{
 								// bowshot
 								float speed = u.GetBowAttackSpeed();
-								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-								u.mesh_inst->groups[1].speed = speed;
+								u.node->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+								u.node->mesh_inst->groups[1].speed = speed;
 								u.action = A_SHOOT;
 								u.animation_state = 1;
 								u.hitted = false;
@@ -1840,8 +1841,8 @@ void Game::UpdateAi(float dt)
 									ai.timer = BLOCK_TIMER;
 									ai.ignore = 0.f;
 									u.action = A_BLOCK;
-									u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-									u.mesh_inst->groups[1].blend_max = speed;
+									u.node->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+									u.node->mesh_inst->groups[1].blend_max = speed;
 									u.animation_state = 0;
 
 									if(Net::IsOnline())
@@ -2234,16 +2235,16 @@ void Game::UpdateAi(float dt)
 						target_pos = top->pos;
 
 						// hit with shield
-						if(best_dist <= u.GetAttackRange() && !u.mesh_inst->groups[1].IsBlending() && ai.ignore <= 0.f)
+						if(best_dist <= u.GetAttackRange() && !u.node->mesh_inst->groups[1].IsBlending() && ai.ignore <= 0.f)
 						{
 							if(Rand() % 2 == 0)
 							{
 								float speed = u.GetBashSpeed();
 								u.action = A_BASH;
 								u.animation_state = 0;
-								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-								u.mesh_inst->groups[1].speed = speed;
-								u.mesh_inst->frame_end_info2 = false;
+								u.node->mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+								u.node->mesh_inst->groups[1].speed = speed;
+								u.node->mesh_inst->frame_end_info2 = false;
 								u.hitted = false;
 								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
 
@@ -2265,8 +2266,8 @@ void Game::UpdateAi(float dt)
 					{
 						// no hits to block or time expiration
 						u.action = A_NONE;
-						u.mesh_inst->frame_end_info2 = false;
-						u.mesh_inst->Deactivate(1);
+						u.node->mesh_inst->frame_end_info2 = false;
+						u.node->mesh_inst->Deactivate(1);
 						ai.state = AIController::Fighting;
 						ai.timer = 0.f;
 						ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
@@ -2382,17 +2383,17 @@ void Game::UpdateAi(float dt)
 						if(u.action == A_CAST)
 							u.target_pos = target_pos;
 
-						if(u.mesh_inst->mesh->head.n_groups == 2)
+						if(u.node->mesh_inst->mesh->head.n_groups == 2)
 						{
-							u.mesh_inst->frame_end_info2 = false;
-							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							u.node->mesh_inst->frame_end_info2 = false;
+							u.node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						}
 						else
 						{
-							u.mesh_inst->frame_end_info = false;
-							u.animation = ANI_PLAY;
-							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-							u.mesh_inst->groups[0].speed = 1.f;
+							u.node->mesh_inst->frame_end_info = false;
+							u.node->animation = ANI_PLAY;
+							u.node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.node->mesh_inst->groups[0].speed = 1.f;
 						}
 
 						if(Net::IsOnline())
@@ -2538,7 +2539,7 @@ void Game::UpdateAi(float dt)
 				}
 				else if(run_type == WalkIfNear2 && look_at != LookAtWalk)
 				{
-					if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
+					if(AngleDiff(u.roty, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
 						move = 0;
 					else
 						move = 1;
@@ -2892,12 +2893,12 @@ void Game::UpdateAi(float dt)
 
 			// look at the target
 			float dir = Vec3::LookAtAngle(u.pos, look_pt),
-				dif = AngleDiff(u.rot, dir);
+				dif = AngleDiff(u.roty, dir);
 
 			if(NotZero(dif))
 			{
 				const float rot_speed = u.GetRotationSpeed() * dt;
-				const float arc = ShortestArc(u.rot, dir);
+				const float arc = ShortestArc(u.roty, dir);
 
 				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
 				{
@@ -2909,23 +2910,24 @@ void Game::UpdateAi(float dt)
 
 				if(dif <= rot_speed)
 				{
-					u.rot = dir;
+					u.roty = dir;
 					if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
 						u.OrderClear();
 				}
 				else
-					u.rot = Clip(u.rot + Sign(arc) * rot_speed);
+					u.roty = Clip(u.roty + Sign(arc) * rot_speed);
+				u.node->rot.y = u.roty;
 
 				u.changed = true;
 			}
 		}
 		else if(look_at == LookAtAngle)
 		{
-			float dif = AngleDiff(u.rot, look_pos.x);
+			float dif = AngleDiff(u.roty, look_pos.x);
 			if(NotZero(dif))
 			{
 				const float rot_speed = u.GetRotationSpeed() * dt;
-				const float arc = ShortestArc(u.rot, look_pos.x);
+				const float arc = ShortestArc(u.roty, look_pos.x);
 
 				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
 				{
@@ -2936,10 +2938,10 @@ void Game::UpdateAi(float dt)
 				}
 
 				if(dif <= rot_speed)
-					u.rot = look_pos.x;
+					u.roty = look_pos.x;
 				else
-					u.rot = Clip(u.rot + Sign(arc) * rot_speed);
-
+					u.roty = Clip(u.roty + Sign(arc) * rot_speed);
+				u.node->rot.y = u.roty;
 				u.changed = true;
 			}
 		}

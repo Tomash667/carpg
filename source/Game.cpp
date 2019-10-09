@@ -335,7 +335,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
-		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
+		int bone = u->node->mesh_inst->mesh->GetBone("usta")->id;
 		static Matrix mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) *mat[bone];
@@ -1811,7 +1811,7 @@ void Game::SetupCamera(float dt)
 	if(camera.free_rot)
 		rotX = camera.real_rot.x;
 	else
-		rotX = target->rot;
+		rotX = target->roty;
 
 	camera.UpdateRot(dt, Vec2(rotX, camera.real_rot.y));
 
@@ -2101,7 +2101,7 @@ void Game::SetupCamera(float dt)
 	camera.frustum.Set(camera.mat_view_proj);
 
 	// centrum dŸwiêku 3d
-	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
+	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->roty + PI), 0, cos(target->roty + PI)));
 }
 
 //=================================================================================================
@@ -2283,7 +2283,8 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
-						pc->unit->rot = DirToRot(lvl.staircase_up_dir);
+						pc->unit->roty = DirToRot(lvl.staircase_up_dir);
+						pc->unit->node->rot.y = pc->unit->roty;
 						game_level->WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
@@ -2319,7 +2320,8 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
-						pc->unit->rot = DirToRot(lvl.staircase_down_dir);
+						pc->unit->roty = DirToRot(lvl.staircase_down_dir);
+						pc->unit->node->rot.y = pc->unit->roty;
 						game_level->WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
@@ -2402,7 +2404,7 @@ void Game::UpdateGame(float dt)
 					game_level->camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
 					if(game_level->camera.free_rot_key != Key::None)
 					{
-						game_level->camera.real_rot.x = Clip(pc->unit->rot + PI);
+						game_level->camera.real_rot.x = Clip(pc->unit->roty + PI);
 						game_level->camera.free_rot = true;
 					}
 				}
@@ -2926,7 +2928,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->data = &base;
 	u->human_data = nullptr;
 	u->pos = Vec3(0, 0, 0);
-	u->rot = 0.f;
+	u->roty = 0.f;
 	u->used_item = nullptr;
 	u->live_state = Unit::ALIVE;
 	for(int i = 0; i < SLOT_MAX; ++i)
