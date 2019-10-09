@@ -1412,7 +1412,7 @@ void Game::UpdateServerTransfer(float dt)
 			u->player->dialog_ctx->dialog_mode = false;
 			u->player->dialog_ctx->pc = u->player;
 			u->interp = EntityInterpolator::Pool.Get();
-			u->interp->Reset(u->pos, u->roty);
+			u->interp->Reset(u->pos, u->rot);
 		}
 		team->CalculatePlayersLevel();
 
@@ -1637,9 +1637,9 @@ void Game::UpdateServerTransfer(float dt)
 							game_level->local_area->units.push_back(info.u);
 							info.u->area = game_level->local_area;
 							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, 4.f, false, 20);
-							info.u->roty = Vec3::LookAtAngle(info.u->pos, pos);
-							info.u->node->rot.y = info.u->roty;
-							info.u->interp->Reset(info.u->pos, info.u->roty);
+							info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
+							info.u->node->rot.y = info.u->rot;
+							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
 					}
 				}
@@ -1683,9 +1683,9 @@ void Game::UpdateServerTransfer(float dt)
 							game_level->local_area->units.push_back(info.u);
 							info.u->area = game_level->local_area;
 							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, game_level->location->outside ? 4.f : 2.f, false, 20);
-							info.u->roty = rot;
+							info.u->rot = rot;
 							info.u->node->rot.y = rot;
-							info.u->interp->Reset(info.u->pos, info.u->roty);
+							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
 					}
 				}

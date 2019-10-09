@@ -259,7 +259,7 @@ struct Unit : public EntityType<Unit>
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, prev_pos, target_pos, target_pos2;
-	float roty, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
+	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
 		raise_timer;
 	int refs, animation_state, level, gold, attack_id, in_arena, quest_id;
 	FROZEN frozen;
@@ -470,9 +470,9 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetFrontPos() const
 	{
 		return Vec3(
-			pos.x + sin(roty + PI) * 2,
+			pos.x + sin(rot + PI) * 2,
 			pos.y,
-			pos.z + cos(roty + PI) * 2);
+			pos.z + cos(rot + PI) * 2);
 	}
 	MATERIAL_TYPE GetWeaponMaterial() const
 	{

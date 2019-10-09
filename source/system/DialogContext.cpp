@@ -1799,7 +1799,7 @@ bool DialogContext::RecruitHero(Class* clas)
 	}
 
 	Unit* u = game_level->SpawnUnitNearLocation(*talker->area, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
-	u->roty = 0.f;
+	u->rot = 0.f;
 	u->node->rot.y = 0.f;
 	u->SetKnownName(true);
 	team->AddTeamMember(u, HeroType::Normal);

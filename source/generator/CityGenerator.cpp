@@ -2513,16 +2513,16 @@ void CityGenerator::SpawnUnits()
 		switch(b.rot)
 		{
 		case GDIR_DOWN:
-			u->node->rot.y = u->roty = 0.f;
+			u->node->rot.y = u->rot = 0.f;
 			break;
 		case GDIR_LEFT:
-			u->node->rot.y = u->roty = PI / 2;
+			u->node->rot.y = u->rot = PI / 2;
 			break;
 		case GDIR_UP:
-			u->node->rot.y = u->roty = PI;
+			u->node->rot.y = u->rot = PI;
 			break;
 		case GDIR_RIGHT:
-			u->node->rot.y = u->roty = PI * 3 / 2;
+			u->node->rot.y = u->rot = PI * 3 / 2;
 			break;
 		}
 

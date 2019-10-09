@@ -231,7 +231,7 @@ void TutorialLocationGenerator::OnEnter()
 					case 3:
 						{
 							Unit* u = game_level->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
-							u->node->rot.y = u->roty = PI;
+							u->node->rot.y = u->rot = PI;
 							u->event_handler = &quest;
 						}
 						break;
@@ -252,7 +252,7 @@ void TutorialLocationGenerator::OnEnter()
 					case 6:
 						{
 							Unit* u = game_level->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
-							u->node->rot.y = u->roty = PI;
+							u->node->rot.y = u->rot = PI;
 						}
 						break;
 					default:

@@ -172,18 +172,18 @@ void Game::UpdateAi(float dt)
 			if(Unit* look_target = u.look_target; look_target)
 			{
 				float dir = Vec3::LookAtAngle(u.pos, look_target->pos);
-				if(!Equal(u.roty, dir))
+				if(!Equal(u.rot, dir))
 				{
 					const float rot_speed = 3.f*dt;
-					const float rot_diff = AngleDiff(u.roty, dir);
+					const float rot_diff = AngleDiff(u.rot, dir);
 					if(rot_diff < rot_speed)
-						u.roty = dir;
+						u.rot = dir;
 					else
 					{
-						const float d = Sign(ShortestArc(u.roty, dir)) * rot_speed;
-						u.roty = Clip(u.roty + d);
+						const float d = Sign(ShortestArc(u.rot, dir)) * rot_speed;
+						u.rot = Clip(u.rot + d);
 					}
-					u.node->rot.y = u.roty;
+					u.node->rot.y = u.rot;
 					u.changed = true;
 				}
 			}
@@ -727,7 +727,7 @@ void Game::UpdateAi(float dt)
 							{
 								// no altar - stay in place
 								ai.idle_action = AIController::Idle_Animation;
-								ai.idle_data.rot = u.roty;
+								ai.idle_data.rot = u.rot;
 								ai.timer = 120.f;
 							}
 						}
@@ -735,7 +735,7 @@ void Game::UpdateAi(float dt)
 						{
 							// stop looking at the person, go look somewhere else
 							ai.idle_action = AIController::Idle_Rot;
-							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.roty, ai.start_rot) > PI / 4)
+							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 								ai.idle_data.rot = ai.start_rot;
 							else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 								ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1107,7 +1107,7 @@ void Game::UpdateAi(float dt)
 							case AI_ROTATE:
 								ai.timer = Random(2.f, 5.f);
 								ai.idle_action = AIController::Idle_Rot;
-								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.roty, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 									ai.idle_data.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1188,7 +1188,7 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_Animation:
 							break;
 						case AIController::Idle_Rot:
-							if(Equal(u.roty, ai.idle_data.rot))
+							if(Equal(u.rot, ai.idle_data.rot))
 								ai.idle_action = AIController::Idle_None;
 							else
 							{
@@ -1224,7 +1224,7 @@ void Game::UpdateAi(float dt)
 							{
 								// stop looking
 								ai.idle_action = AIController::Idle_Rot;
-								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.roty, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 									ai.idle_data.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1349,7 +1349,7 @@ void Game::UpdateAi(float dt)
 									ai.idle_action = AIController::Idle_None;
 								else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 								{
-									if(AngleDiff(Clip(u.roty + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
+									if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 									{
 										BaseUsable& base = *use.base;
 										const Item* needed_item = base.item;
@@ -1448,7 +1448,7 @@ void Game::UpdateAi(float dt)
 								{
 									u.TakeWeapon(W_BOW);
 									float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
-									if(AngleDiff(u.roty, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
+									if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
 										&& u.GetStaminap() >= 0.25f && u.frozen == FROZEN::NO
 										&& game_level->CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 									{
@@ -2539,7 +2539,7 @@ void Game::UpdateAi(float dt)
 				}
 				else if(run_type == WalkIfNear2 && look_at != LookAtWalk)
 				{
-					if(AngleDiff(u.roty, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
+					if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
 						move = 0;
 					else
 						move = 1;
@@ -2893,12 +2893,12 @@ void Game::UpdateAi(float dt)
 
 			// look at the target
 			float dir = Vec3::LookAtAngle(u.pos, look_pt),
-				dif = AngleDiff(u.roty, dir);
+				dif = AngleDiff(u.rot, dir);
 
 			if(NotZero(dif))
 			{
 				const float rot_speed = u.GetRotationSpeed() * dt;
-				const float arc = ShortestArc(u.roty, dir);
+				const float arc = ShortestArc(u.rot, dir);
 
 				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
 				{
@@ -2910,24 +2910,24 @@ void Game::UpdateAi(float dt)
 
 				if(dif <= rot_speed)
 				{
-					u.roty = dir;
+					u.rot = dir;
 					if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
 						u.OrderClear();
 				}
 				else
-					u.roty = Clip(u.roty + Sign(arc) * rot_speed);
-				u.node->rot.y = u.roty;
+					u.rot = Clip(u.rot + Sign(arc) * rot_speed);
+				u.node->rot.y = u.rot;
 
 				u.changed = true;
 			}
 		}
 		else if(look_at == LookAtAngle)
 		{
-			float dif = AngleDiff(u.roty, look_pos.x);
+			float dif = AngleDiff(u.rot, look_pos.x);
 			if(NotZero(dif))
 			{
 				const float rot_speed = u.GetRotationSpeed() * dt;
-				const float arc = ShortestArc(u.roty, look_pos.x);
+				const float arc = ShortestArc(u.rot, look_pos.x);
 
 				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
 				{
@@ -2938,10 +2938,10 @@ void Game::UpdateAi(float dt)
 				}
 
 				if(dif <= rot_speed)
-					u.roty = look_pos.x;
+					u.rot = look_pos.x;
 				else
-					u.roty = Clip(u.roty + Sign(arc) * rot_speed);
-				u.node->rot.y = u.roty;
+					u.rot = Clip(u.rot + Sign(arc) * rot_speed);
+				u.node->rot.y = u.rot;
 				u.changed = true;
 			}
 		}

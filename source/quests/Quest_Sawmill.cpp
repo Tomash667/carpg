@@ -258,7 +258,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 
 		// artur drwal
 		Unit* u = game_level->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
-		u->node->rot.y = u->roty = rot;
+		u->node->rot.y = u->rot = rot;
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
 

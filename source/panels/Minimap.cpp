@@ -110,7 +110,7 @@ void Minimap::Draw(ControlDrawData*)
 	// team members
 	for(Unit& unit : team->members)
 	{
-		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.roty, &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
+		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.rot, &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
 		gui->DrawSpriteTransform(tUnit[&unit == game->pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
 	}
 
@@ -120,7 +120,7 @@ void Minimap::Draw(ControlDrawData*)
 		Unit& u = **it;
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), u.roty, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), u.rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
 			gui->DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game->pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
 		}
 	}

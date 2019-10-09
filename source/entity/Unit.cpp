@@ -335,8 +335,8 @@ bool Unit::DropItem(int index)
 		else
 			item->team_count = 0;
 		item->pos = pos;
-		item->pos.x -= sin(roty)*0.25f;
-		item->pos.z -= cos(roty)*0.25f;
+		item->pos.x -= sin(rot)*0.25f;
+		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		if(s.count == 0)
 		{
@@ -395,8 +395,8 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->count = 1;
 		item->team_count = 0;
 		item->pos = pos;
-		item->pos.x -= sin(roty)*0.25f;
-		item->pos.z -= cos(roty)*0.25f;
+		item->pos.x -= sin(rot)*0.25f;
+		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		item2 = nullptr;
 		game_level->AddGroundItem(*area, item);
@@ -454,8 +454,8 @@ bool Unit::DropItems(int index, uint count)
 		item->team_count = min(count, s.team_count);
 		s.team_count -= item->team_count;
 		item->pos = pos;
-		item->pos.x -= sin(roty)*0.25f;
-		item->pos.z -= cos(roty)*0.25f;
+		item->pos.x -= sin(rot)*0.25f;
+		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		if(s.count == 0)
 		{
@@ -1505,7 +1505,7 @@ Vec3 Unit::GetLootCenter() const
 
 	const Mesh::Point& point = *point2;
 	Matrix matBone = point.mat * node->mesh_inst->mat_bones[point.bone];
-	matBone = matBone * (Matrix::RotationY(roty) * Matrix::Translation(node->pos));
+	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(node->pos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
 }
@@ -1719,7 +1719,7 @@ void Unit::Save(GameWriter& f, bool local)
 
 	f << live_state;
 	f << pos;
-	f << roty;
+	f << rot;
 	f << hp;
 	f << hpmax;
 	f << mp;
@@ -1962,7 +1962,7 @@ void Unit::Load(GameReader& f, bool local)
 	// stats
 	f >> live_state;
 	f >> pos;
-	f >> roty;
+	f >> rot;
 	f >> hp;
 	f >> hpmax;
 	if(LOAD_VERSION >= V_0_12)
@@ -2570,7 +2570,7 @@ void Unit::Write(BitStreamWriter& f)
 	}
 	f.WriteCasted<byte>(live_state);
 	f << pos;
-	f << roty;
+	f << rot;
 	f << GetHpp();
 	if(IsTeamMember())
 	{
@@ -2740,7 +2740,7 @@ bool Unit::Read(BitStreamReader& f)
 	stamina_max = 1.f;
 	f.ReadCasted<byte>(live_state);
 	f >> pos;
-	f >> roty;
+	f >> rot;
 	f >> hp;
 	if(f.Read1())
 	{
@@ -2861,7 +2861,7 @@ bool Unit::Read(BitStreamReader& f)
 	to_remove = false;
 	bubble = nullptr;
 	interp = EntityInterpolator::Pool.Get();
-	interp->Reset(pos, roty);
+	interp->Reset(pos, rot);
 	animation_state = 0;
 
 	if(net->mp_load || game_level->reenter)
@@ -3720,7 +3720,7 @@ Vec3 Unit::GetEyePos() const
 {
 	const Mesh::Point& point = *node->mesh_inst->mesh->GetPoint("oczy");
 	Matrix matBone = point.mat * node->mesh_inst->mat_bones[point.bone];
-	matBone = matBone * (Matrix::RotationY(roty) * Matrix::Translation(pos));
+	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
 }
@@ -5256,8 +5256,8 @@ void Unit::DropGold(int count)
 		item->count = count;
 		item->team_count = 0;
 		item->pos = pos;
-		item->pos.x -= sin(roty)*0.25f;
-		item->pos.z -= cos(roty)*0.25f;
+		item->pos.x -= sin(rot)*0.25f;
+		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		game_level->AddGroundItem(*area, item);
 
@@ -6002,22 +6002,22 @@ float Unit::GetStaminaAttackSpeedMod() const
 void Unit::RotateTo(const Vec3& pos, float dt)
 {
 	float dir = Vec3::LookAtAngle(this->pos, pos);
-	if(!Equal(roty, dir))
+	if(!Equal(rot, dir))
 	{
 		const float rot_speed = GetRotationSpeed() * dt;
-		const float rot_diff = AngleDiff(roty, dir);
-		if(ShortestArc(roty, dir) > 0.f)
+		const float rot_diff = AngleDiff(rot, dir);
+		if(ShortestArc(rot, dir) > 0.f)
 			animation = ANI_RIGHT;
 		else
 			animation = ANI_LEFT;
 		if(rot_diff < rot_speed)
-			roty = dir;
+			rot = dir;
 		else
 		{
-			const float d = Sign(ShortestArc(roty, dir)) * rot_speed;
-			roty = Clip(roty + d);
+			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
+			rot = Clip(rot + d);
 		}
-		node->rot.y = roty;
+		node->rot.y = rot;
 		changed = true;
 	}
 }
@@ -6025,8 +6025,8 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 //=================================================================================================
 void Unit::RotateTo(const Vec3& pos)
 {
-	roty = Vec3::LookAtAngle(this->pos, pos);
-	node->rot.y = roty;
+	rot = Vec3::LookAtAngle(this->pos, pos);
+	node->rot.y = rot;
 	changed = true;
 }
 
@@ -6325,7 +6325,7 @@ void Unit::CastSpell()
 	else
 		node->mesh_inst->SetupBones();
 
-	Matrix m = point->mat * node->mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(roty) * Matrix::Translation(pos));
+	Matrix m = point->mat * node->mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
 	Vec3 coord = Vec3::TransformZero(m);
 	float dmg;
@@ -6344,7 +6344,7 @@ void Unit::CastSpell()
 			count = 3;
 
 		float expected_rot = Clip(-Vec3::Angle2d(coord, target_pos) + PI / 2);
-		float current_rot = Clip(roty + PI);
+		float current_rot = Clip(rot + PI);
 		AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
 
 		for(int i = 0; i < count; ++i)
@@ -7067,10 +7067,10 @@ void Unit::Update(float dt)
 				Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 				assert(point);
 
-				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(roty) * Matrix::Translation(pos));
+				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
 				b.attack = CalculateAttack(&GetBow());
-				b.rot = Vec3(PI / 2, roty + PI, 0);
+				b.rot = Vec3(PI / 2, rot + PI, 0);
 				b.pos = Vec3::TransformZero(m2);
 				b.mesh = game->aArrow;
 				b.speed = GetArrowSpeed();
@@ -7456,17 +7456,17 @@ void Unit::Update(float dt)
 
 					// obrót
 					float target_rot = Vec3::LookAtAngle(target_pos, usable->pos);
-					float dif = AngleDiff(roty, target_rot);
+					float dif = AngleDiff(rot, target_rot);
 					if(NotZero(dif))
 					{
 						const float rot_speed = GetRotationSpeed() * 2 * dt;
-						const float arc = ShortestArc(roty, target_rot);
+						const float arc = ShortestArc(rot, target_rot);
 
 						if(dif <= rot_speed)
-							roty = target_rot;
+							rot = target_rot;
 						else
-							roty = Clip(roty + Sign(arc) * rot_speed);
-						node->rot.y = roty;
+							rot = Clip(rot + Sign(arc) * rot_speed);
+						node->rot.y = rot;
 					}
 
 					changed = true;
@@ -7504,7 +7504,7 @@ void Unit::Update(float dt)
 					// ustal docelowy obrót postaci
 					float target_rot;
 					if(bu.limit_rot == 0)
-						target_rot = roty;
+						target_rot = rot;
 					else if(bu.limit_rot == 1)
 					{
 						float rot1 = Clip(use_rot + PI / 2),
@@ -7536,19 +7536,19 @@ void Unit::Update(float dt)
 					target_rot = Clip(target_rot);
 
 					// obrót w strone obiektu
-					const float dif = AngleDiff(roty, target_rot);
+					const float dif = AngleDiff(rot, target_rot);
 					const float rot_speed = GetRotationSpeed() * 2;
 					if(allow_move && NotZero(dif))
 					{
 						const float rot_speed_dt = rot_speed * dt;
 						if(dif <= rot_speed_dt)
-							roty = target_rot;
+							rot = target_rot;
 						else
 						{
-							const float arc = ShortestArc(roty, target_rot);
-							roty = Clip(roty + Sign(arc) * rot_speed_dt);
+							const float arc = ShortestArc(rot, target_rot);
+							rot = Clip(rot + Sign(arc) * rot_speed_dt);
 						}
-						node->rot.y = roty;
+						node->rot.y = rot;
 					}
 
 					// czy musi siê obracaæ zanim zacznie siê przesuwaæ?

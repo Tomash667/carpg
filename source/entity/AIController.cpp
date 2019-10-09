@@ -33,7 +33,7 @@ void AIController::Init(Unit* unit)
 	escape_room = nullptr;
 	idle_action = Idle_None;
 	start_pos = unit->pos;
-	start_rot = unit->roty;
+	start_rot = unit->rot;
 	loc_timer = 0.f;
 	timer = 0.f;
 	change_ai_mode = false;

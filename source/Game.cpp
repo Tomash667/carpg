@@ -1811,7 +1811,7 @@ void Game::SetupCamera(float dt)
 	if(camera.free_rot)
 		rotX = camera.real_rot.x;
 	else
-		rotX = target->roty;
+		rotX = target->rot;
 
 	camera.UpdateRot(dt, Vec2(rotX, camera.real_rot.y));
 
@@ -2101,7 +2101,7 @@ void Game::SetupCamera(float dt)
 	camera.frustum.Set(camera.mat_view_proj);
 
 	// centrum dŸwiêku 3d
-	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->roty + PI), 0, cos(target->roty + PI)));
+	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
 }
 
 //=================================================================================================
@@ -2283,8 +2283,8 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
-						pc->unit->roty = DirToRot(lvl.staircase_up_dir);
-						pc->unit->node->rot.y = pc->unit->roty;
+						pc->unit->rot = DirToRot(lvl.staircase_up_dir);
+						pc->unit->node->rot.y = pc->unit->rot;
 						game_level->WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
@@ -2320,8 +2320,8 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
-						pc->unit->roty = DirToRot(lvl.staircase_down_dir);
-						pc->unit->node->rot.y = pc->unit->roty;
+						pc->unit->rot = DirToRot(lvl.staircase_down_dir);
+						pc->unit->node->rot.y = pc->unit->rot;
 						game_level->WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
@@ -2404,7 +2404,7 @@ void Game::UpdateGame(float dt)
 					game_level->camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
 					if(game_level->camera.free_rot_key != Key::None)
 					{
-						game_level->camera.real_rot.x = Clip(pc->unit->roty + PI);
+						game_level->camera.real_rot.x = Clip(pc->unit->rot + PI);
 						game_level->camera.free_rot = true;
 					}
 				}
@@ -2928,7 +2928,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->data = &base;
 	u->human_data = nullptr;
 	u->pos = Vec3(0, 0, 0);
-	u->roty = 0.f;
+	u->rot = 0.f;
 	u->used_item = nullptr;
 	u->live_state = Unit::ALIVE;
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -3138,7 +3138,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 	// oblicz macierz hitbox
 
 	// transformacja postaci
-	Matrix m1 = Matrix::RotationY(unit.roty) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
+	Matrix m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 
 	if(bone)
 	{
@@ -3540,7 +3540,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				if(it->owner && it->owner->IsFriend(*hitted, true) || it->attack < -50.f)
 				{
 					// friendly fire
-					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->roty) < PI * 2 / 5)
+					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
 						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -3575,7 +3575,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					m += 0.1f;
 
 				// backstab bonus damage
-				float angle_dif = AngleDiff(it->rot.y, hitted->roty);
+				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float backstab_mod = it->backstab;
 				if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
 					backstab_mod /= 2;
@@ -3713,7 +3713,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					SpellHitEffect(area, *it, hitpoint, hitted);
 
 					// dŸwiêk trafienia w postaæ
-					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->roty) < PI * 2 / 5)
+					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
 						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -3737,7 +3737,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				float dmg = it->attack;
 				if(it->owner)
 					dmg += it->owner->level * it->spell->dmg_bonus;
-				float angle_dif = AngleDiff(it->rot.y, hitted->roty);
+				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float base_dmg = dmg;
 
 				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
@@ -3857,7 +3857,7 @@ Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* 
 	}
 
 	if(rot)
-		u->node->rot.y = u->roty = *rot;
+		u->node->rot.y = u->rot = *rot;
 
 	AIController* a = new AIController;
 	a->Init(u);
@@ -4084,7 +4084,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 		m += 0.1f;
 
 	// backstab bonus
-	float angle_dif = AngleDiff(Clip(attacker.roty + PI), hitted.roty);
+	float angle_dif = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
 	float backstab_mod = attacker.GetBackstabMod(bash ? attacker.slots[SLOT_SHIELD] : attacker.slots[SLOT_WEAPON]);
 	if(IsSet(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
@@ -5432,7 +5432,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 
 							// reset units rotation to don't stay back to shop counter
 							if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
-								unit.node->rot.y = unit.roty = unit.ai->start_rot;
+								unit.node->rot.y = unit.rot = unit.ai->start_rot;
 						}
 
 						unit.node->Free();

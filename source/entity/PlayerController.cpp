@@ -1618,7 +1618,7 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 	float dist = Vec3::Distance2d(unit->pos, pos);
 	if(dist < PICKUP_RANGE && dist < best_dist)
 	{
-		float angle = AngleDiff(Clip(unit->roty + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
+		float angle = AngleDiff(Clip(unit->rot + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
 		assert(angle >= 0.f);
 		if(angle < PI / 4)
 		{
@@ -1903,7 +1903,7 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 		unit->run_attack = false;
 		if(Net::IsLocal() || !from_server)
 		{
-			unit->use_rot = Clip(data.action_rot + unit->roty + PI);
+			unit->use_rot = Clip(data.action_rot + unit->rot + PI);
 			action_point = Vec3(data.action_rot, 0, 0);
 		}
 		unit->animation = ANI_RUN;
@@ -2223,7 +2223,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				const float val = rot_speed_dt * rotate + mouse_rot;
 
 				data.rot_buf -= mouse_rot;
-				u.node->rot.y = u.roty = Clip(u.roty + Clamp(val, -rot_speed_dt, rot_speed_dt));
+				u.node->rot.y = u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
 					u.animation = ANI_RIGHT;
@@ -2234,7 +2234,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(move)
 			{
 				// ustal k¹t i szybkoœæ ruchu
-				float angle = u.roty;
+				float angle = u.rot;
 				bool run = always_run;
 				if(!u.run_attack)
 				{
