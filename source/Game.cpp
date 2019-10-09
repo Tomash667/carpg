@@ -880,7 +880,6 @@ void Game::OnCleanup()
 	delete game_gui;
 	delete game_res;
 	delete game_level;
-	delete game_res;
 	delete game_stats;
 	delete loc_gen_factory;
 	delete net;

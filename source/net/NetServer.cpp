@@ -289,7 +289,10 @@ void Net::InterpolatePlayers(float dt)
 	for(PlayerInfo& info : players)
 	{
 		if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
+		{
 			info.u->interp->Update(dt, info.u->node->pos, info.u->rot);
+			info.u->node->rot.y = info.u->rot;
+		}
 	}
 }
 

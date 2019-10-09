@@ -911,6 +911,7 @@ public:
 	void CastSpell();
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
+	void ChangeSlotItem(ITEM_SLOT slot, const Item* item);
 };
 
 //-----------------------------------------------------------------------------

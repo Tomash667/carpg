@@ -273,7 +273,10 @@ void Net::InterpolateUnits(float dt)
 		for(Unit* unit : area.units)
 		{
 			if(!unit->IsLocalPlayer())
+			{
 				unit->interp->Update(dt, unit->node->pos, unit->rot);
+				unit->node->rot.y = unit->rot;
+			}
 			if(unit->node->mesh->head.n_groups == 1)
 			{
 				if(!unit->node->mesh_inst->groups[0].anim)

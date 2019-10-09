@@ -63,7 +63,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	unit->hero = nullptr;
 	unit->used_item = nullptr;
 	unit->weapon_state = WS_HIDDEN;
-	unit->node->pos = unit->pos = Vec3(0, 0, 0);
+	unit->pos = Vec3::Zero;
 	unit->rot = 0.f;
 	unit->fake_unit = true;
 	unit->action = A_NONE;
@@ -929,7 +929,9 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
+	unit->data = Class::GetRandomPlayer()->player;
 	unit->CreateMesh(Unit::CREATE_MESH::NORMAL);
+	scene->Add(unit->node);
 
 	for(Class* clas : Class::classes)
 	{
@@ -1548,14 +1550,9 @@ void CreateCharacterPanel::UpdateInventory()
 		return;
 
 	for(int i = 0; i < SLOT_MAX; ++i)
-	{
-		if(items[i])
-			game->PreloadItem(items[i]);
-		unit->slots[i] = items[i];
-	}
+		unit->ChangeSlotItem((ITEM_SLOT)i, items[i]);
 
 	bool reset = false;
-
 	if((anim == DA_SHOW_BOW || anim == DA_HIDE_BOW || anim == DA_SHOOT) && !items[SLOT_BOW])
 		reset = true;
 	if(anim == DA_BLOCK && !items[SLOT_SHIELD])

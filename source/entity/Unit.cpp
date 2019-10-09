@@ -62,8 +62,6 @@ Unit::~Unit()
 		order->Free();
 	if(bow_instance)
 		game_level->FreeBowInstance(bow_instance);
-	if(node)
-		node->Free();
 	delete human_data;
 	delete hero;
 	delete player;
@@ -8162,4 +8160,30 @@ void Unit::Moved(bool warped, bool dash)
 		changed = true;
 	}
 	UpdatePhysics();
+}
+
+void Unit::ChangeSlotItem(ITEM_SLOT slot, const Item* item)
+{
+	if(slot != SLOT_WEAPON)
+		return;
+
+	slots[slot] = item;
+	SceneNode* child_node = node->GetChild(slot);
+	if(item)
+	{
+		if(!child_node)
+		{
+			child_node = SceneNode::Get();
+			child_node->id = slot;
+			child_node->SetMesh(item->mesh);
+			node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_hidden_weapon));
+		}
+		else
+		{
+			child_node->SetMesh(item->mesh);
+			child_node->visible = true;
+		}
+	}
+	else if(child_node)
+		child_node->visible = false;
 }
