@@ -236,7 +236,7 @@ void LevelGui::DrawFront()
 		for(auto& it : sorted_units)
 		{
 			Unit& u = *it.unit;
-			Vec3 text_pos = u.visual_pos;
+			Vec3 text_pos = u.node->pos;
 			text_pos.y += u.GetUnitHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
@@ -684,7 +684,7 @@ void LevelGui::DrawBack()
 		if(game->devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
-				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(engine->GetFps()));
+				FLT100(u.roty), dir_name_short[AngleToDir(Clip(u.roty))], FLT10(engine->GetFps()));
 		}
 		else
 			text = Format("Fps: %g", FLT10(engine->GetFps()));
@@ -788,7 +788,7 @@ void LevelGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > 20.f || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game->pc->unit->node->pos, pos) > 20.f || !game_level->CanSee(area, game->pc->unit->node->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
@@ -1234,14 +1234,7 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 				{
 					sb.unit->talking = false;
 					sb.unit->bubble = nullptr;
-					// fix na crash, powody dla których ani jest NULLem nie s¹ znane :S
-					if(!sb.unit->mesh_inst)
-					{
-						game->ReportError(9, Format("Speech bubble for unit without mesh_inst (unit %s, text \"%.100s\").",
-							sb.unit->GetRealName(), sb.text.c_str()));
-					}
-					else
-						sb.unit->mesh_inst->need_update = true;
+					sb.unit->node->mesh_inst->need_update = true;
 				}
 				SpeechBubblePool.Free(*it);
 				*it = nullptr;
@@ -1860,8 +1853,8 @@ void LevelGui::UpdatePlayerView(float dt)
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
-			if(dist < ALERT_RANGE && game_level->camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game_level->CanSee(u, u2))
+			float dist = Vec3::Distance(u.node->pos, u2.node->pos);
+			if(dist < ALERT_RANGE && game_level->camera.frustum.SphereToFrustum(u2.node->pos, u2.GetSphereRadius()) && game_level->CanSee(u, u2))
 				AddUnitView(&u2);
 		}
 	}

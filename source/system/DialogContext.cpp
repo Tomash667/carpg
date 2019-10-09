@@ -1689,8 +1689,8 @@ void DialogContext::DialogTalk(cstring msg)
 	if(!talker->usable && talker->data->type == UNIT_TYPE::HUMAN && talker->action == A_NONE && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
-		talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-		talker->mesh_inst->groups[0].speed = 1.f;
+		talker->node->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		talker->node->mesh_inst->groups[0].speed = 1.f;
 		talker->animation = ANI_PLAY;
 		talker->action = A_ANIMATION;
 	}
@@ -1799,7 +1799,8 @@ bool DialogContext::RecruitHero(Class* clas)
 	}
 
 	Unit* u = game_level->SpawnUnitNearLocation(*talker->area, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
-	u->rot = 0.f;
+	u->roty = 0.f;
+	u->node->rot.y = 0.f;
 	u->SetKnownName(true);
 	team->AddTeamMember(u, HeroType::Normal);
 	DialogTalk(Format(game->txHeroJoined, u->GetName()));

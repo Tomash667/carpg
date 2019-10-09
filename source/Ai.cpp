@@ -2391,9 +2391,9 @@ void Game::UpdateAi(float dt)
 						else
 						{
 							u.node->mesh_inst->frame_end_info = false;
-							u.node->animation = ANI_PLAY;
 							u.node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
 							u.node->mesh_inst->groups[0].speed = 1.f;
+							u.animation = ANI_PLAY;
 						}
 
 						if(Net::IsOnline())

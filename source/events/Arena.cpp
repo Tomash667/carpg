@@ -204,7 +204,7 @@ void Arena::Clean()
 		if(u.IsAI())
 			u.ai->Reset();
 		game_level->WarpUnit(u, arena->outside_spawn);
-		u.rot = arena->outside_rot;
+		u.node->rot.y = u.roty = arena->outside_rot;
 	}
 	RemoveArenaViewers();
 	free = true;
@@ -377,7 +377,7 @@ void Arena::StartArenaCombat(int level)
 		Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region2, *spawn.first, spawn.second);
 		if(u)
 		{
-			u->rot = 0.f;
+			u->node->rot.y = u->roty = 0.f;
 			u->in_arena = 1;
 			u->frozen = FROZEN::YES;
 			units.push_back(u);
@@ -703,8 +703,8 @@ void Arena::Update(float dt)
 					{
 						unit->HealPoison();
 						unit->live_state = Unit::ALIVE;
-						unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->node->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+						unit->node->mesh_inst->groups[0].speed = 1.f;
 						unit->action = A_ANIMATION;
 						unit->animation = ANI_PLAY;
 						if(unit->IsAI())
@@ -737,8 +737,8 @@ void Arena::Update(float dt)
 					{
 						unit->HealPoison();
 						unit->live_state = Unit::ALIVE;
-						unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->node->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+						unit->node->mesh_inst->groups[0].speed = 1.f;
 						unit->action = A_ANIMATION;
 						unit->animation = ANI_PLAY;
 						if(unit->IsAI())
@@ -921,7 +921,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 				Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region2, *unit.unit, unit.level);
 				if(u)
 				{
-					u->rot = 0.f;
+					u->node->rot.y = u->roty = 0.f;
 					u->in_arena = 1;
 				}
 			}
@@ -930,7 +930,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 				Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region1, *unit.unit, unit.level);
 				if(u)
 				{
-					u->rot = PI;
+					u->node->rot.y = u->roty = PI;
 					u->in_arena = 0;
 				}
 			}

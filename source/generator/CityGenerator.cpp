@@ -2513,23 +2513,23 @@ void CityGenerator::SpawnUnits()
 		switch(b.rot)
 		{
 		case GDIR_DOWN:
-			u->rot = 0.f;
+			u->node->rot.y = u->roty = 0.f;
 			break;
 		case GDIR_LEFT:
-			u->rot = PI / 2;
+			u->node->rot.y = u->roty = PI / 2;
 			break;
 		case GDIR_UP:
-			u->rot = PI;
+			u->node->rot.y = u->roty = PI;
 			break;
 		case GDIR_RIGHT:
-			u->rot = PI * 3 / 2;
+			u->node->rot.y = u->roty = PI * 3 / 2;
 			break;
 		}
 
 		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
 		terrain->SetH(u->pos);
 		u->UpdatePhysics();
-		u->visual_pos = u->pos;
+		u->node->pos = u->pos;
 
 		if(b.building->group == BuildingGroup::BG_ARENA)
 			city->arena_pos = u->pos;

@@ -1523,10 +1523,10 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 {
 	// first warp leader to be in front
 	game_level->WarpNearLocation(*game_level->local_area, *leader, pos, 2.f, true, 20);
-	leader->visual_pos = leader->pos;
-	leader->rot = Vec3::LookAtAngle(leader->pos, look_at);
+	leader->node->pos = leader->pos;
+	leader->node->rot.y = leader->roty = Vec3::LookAtAngle(leader->pos, look_at);
 	if(leader->interp)
-		leader->interp->Reset(leader->pos, leader->rot);
+		leader->interp->Reset(leader->pos, leader->roty);
 
 	Vec3 dir = (pos - look_at).Normalized();
 	Vec3 target_pos = pos + dir * 2;
@@ -1535,9 +1535,9 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 		if(&unit == leader)
 			continue;
 		game_level->WarpNearLocation(*game_level->local_area, unit, target_pos, 2.f, true, 20);
-		unit.visual_pos = unit.pos;
-		unit.rot = Vec3::LookAtAngle(unit.pos, look_at);
+		unit.node->pos = unit.pos;
+		unit.node->rot.y = unit.roty = Vec3::LookAtAngle(unit.pos, look_at);
 		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.rot);
+			unit.interp->Reset(unit.pos, unit.roty);
 	}
 }

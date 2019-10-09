@@ -3092,27 +3092,27 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	return u;
 }
 
+// atak broni¹ lub naturalny
 bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint)
 {
-	// atak broni¹ lub naturalny
-
 	Mesh::Point* hitbox, *point;
+	Mesh& mesh = *unit.node->mesh;
 
-	if(unit.mesh_inst->mesh->head.n_groups > 1)
+	if(mesh.head.n_groups > 1)
 	{
-		Mesh* mesh = unit.GetWeapon().mesh;
-		if(!mesh)
+		Mesh* weapon_mesh = unit.GetWeapon().mesh;
+		if(!weapon_mesh)
 			return false;
-		hitbox = mesh->FindPoint("hit");
-		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+		hitbox = weapon_mesh->FindPoint("hit");
+		point = mesh.GetPoint(NAMES::point_weapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.attack_id + 1));
+		hitbox = mesh.GetPoint(Format("hitbox%d", unit.attack_id + 1));
 		if(!hitbox)
-			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
+			hitbox = mesh.FindPoint("hitbox");
 	}
 
 	assert(hitbox);
@@ -3131,23 +3131,23 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 
 	// ustaw koœci
 	if(unit.human_data)
-		unit.mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
+		unit.node->mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
 	else
-		unit.mesh_inst->SetupBones();
+		unit.node->mesh_inst->SetupBones();
 
 	// oblicz macierz hitbox
 
 	// transformacja postaci
-	Matrix m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
+	Matrix m1 = Matrix::RotationY(unit.roty) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 
 	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
-		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
+		m1 = hitbox.mat * (bone->mat * unit.node->mesh_inst->mat_bones[bone->bone] * m1);
 	}
 	else
 	{
-		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
+		m1 = hitbox.mat * unit.node->mesh_inst->mat_bones[hitbox.bone] * m1;
 	}
 
 	// a - hitbox broni, b - hitbox postaci
@@ -3406,7 +3406,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 	if(!mesh)
 		return false;
 
-	if(!CheckForHit(area, attacker, hitted, *mesh->FindPoint("hit"), attacker.mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
+	if(!CheckForHit(area, attacker, hitted, *mesh->FindPoint("hit"), attacker.node->mesh->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
 	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
@@ -3420,17 +3420,17 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 		else
 			hitted->animation_state = 1;
 
-		if(hitted->mesh_inst->mesh->head.n_groups == 2)
+		if(hitted->node->mesh->head.n_groups == 2)
 		{
-			hitted->mesh_inst->frame_end_info2 = false;
-			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-			hitted->mesh_inst->groups[1].speed = 1.f;
+			hitted->node->mesh_inst->frame_end_info2 = false;
+			hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+			hitted->node->mesh_inst->groups[1].speed = 1.f;
 		}
 		else
 		{
-			hitted->mesh_inst->frame_end_info = false;
-			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-			hitted->mesh_inst->groups[0].speed = 1.f;
+			hitted->node->mesh_inst->frame_end_info = false;
+			hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+			hitted->node->mesh_inst->groups[0].speed = 1.f;
 			hitted->animation = ANI_PLAY;
 		}
 
@@ -3540,7 +3540,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				if(it->owner && it->owner->IsFriend(*hitted, true) || it->attack < -50.f)
 				{
 					// friendly fire
-					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->roty) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
 						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -3575,7 +3575,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					m += 0.1f;
 
 				// backstab bonus damage
-				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
+				float angle_dif = AngleDiff(it->rot.y, hitted->roty);
 				float backstab_mod = it->backstab;
 				if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
 					backstab_mod /= 2;
@@ -3620,16 +3620,16 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 							else
 								hitted->animation_state = 1;
 
-							if(hitted->mesh_inst->mesh->head.n_groups == 2)
+							if(hitted->node->mesh->head.n_groups == 2)
 							{
-								hitted->mesh_inst->frame_end_info2 = false;
-								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+								hitted->node->mesh_inst->frame_end_info2 = false;
+								hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 							}
 							else
 							{
-								hitted->mesh_inst->frame_end_info = false;
-								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-								hitted->mesh_inst->groups[0].speed = 1.f;
+								hitted->node->mesh_inst->frame_end_info = false;
+								hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+								hitted->node->mesh_inst->groups[0].speed = 1.f;
 								hitted->animation = ANI_PLAY;
 							}
 						}
@@ -3713,7 +3713,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					SpellHitEffect(area, *it, hitpoint, hitted);
 
 					// dŸwiêk trafienia w postaæ
-					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->roty) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
 						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -3737,7 +3737,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				float dmg = it->attack;
 				if(it->owner)
 					dmg += it->owner->level * it->spell->dmg_bonus;
-				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
+				float angle_dif = AngleDiff(it->rot.y, hitted->roty);
 				float base_dmg = dmg;
 
 				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
@@ -3853,11 +3853,11 @@ Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* 
 		else
 			u->pos = *pos;
 		u->UpdatePhysics();
-		u->visual_pos = u->pos;
+		u->node->pos = u->pos;
 	}
 
 	if(rot)
-		u->rot = *rot;
+		u->node->rot.y = u->roty = *rot;
 
 	AIController* a = new AIController;
 	a->Init(u);
@@ -4084,7 +4084,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 		m += 0.1f;
 
 	// backstab bonus
-	float angle_dif = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
+	float angle_dif = AngleDiff(Clip(attacker.roty + PI), hitted.roty);
 	float backstab_mod = attacker.GetBackstabMod(bash ? attacker.slots[SLOT_SHIELD] : attacker.slots[SLOT_WEAPON]);
 	if(IsSet(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
@@ -4135,16 +4135,16 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 				else
 					hitted.animation_state = 1;
 
-				if(hitted.mesh_inst->mesh->head.n_groups == 2)
+				if(hitted.node->mesh->head.n_groups == 2)
 				{
-					hitted.mesh_inst->frame_end_info2 = false;
-					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+					hitted.node->mesh_inst->frame_end_info2 = false;
+					hitted.node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				}
 				else
 				{
-					hitted.mesh_inst->frame_end_info = false;
-					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-					hitted.mesh_inst->groups[0].speed = 1.f;
+					hitted.node->mesh_inst->frame_end_info = false;
+					hitted.node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.node->mesh_inst->groups[0].speed = 1.f;
 					hitted.animation = ANI_PLAY;
 				}
 			}
@@ -5371,7 +5371,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			{
 				unit.StopUsingUsable();
 				unit.UseUsable(nullptr);
-				unit.visual_pos = unit.pos = unit.target_pos;
+				unit.node->pos = unit.pos = unit.target_pos;
 			}
 
 			unit.used_item = nullptr;
@@ -5391,7 +5391,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 					if(unit.GetOrder() != ORDER_FOLLOW)
 						unit.OrderFollow(team->GetLeader());
 					unit.talking = false;
-					unit.mesh_inst->need_update = true;
+					unit.node->mesh_inst->need_update = true;
 					unit.ai->Reset();
 					return true;
 				}
@@ -5409,7 +5409,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 						if(unit.live_state == Unit::DYING)
 						{
 							unit.live_state = Unit::DEAD;
-							unit.mesh_inst->SetToEnd();
+							unit.node->mesh_inst->SetToEnd();
 							game_level->CreateBlood(area, unit, true);
 						}
 
@@ -5423,7 +5423,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 								{
 									InsideBuilding* inn = game_level->city_ctx->FindInn();
 									game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-									unit.visual_pos = unit.pos;
+									unit.node->pos = unit.pos;
 									unit.area = inn;
 									inn->units.push_back(&unit);
 									return true;
@@ -5432,11 +5432,11 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 
 							// reset units rotation to don't stay back to shop counter
 							if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
-								unit.rot = unit.ai->start_rot;
+								unit.node->rot.y = unit.roty = unit.ai->start_rot;
 						}
 
-						delete unit.mesh_inst;
-						unit.mesh_inst = nullptr;
+						unit.node->Free();
+						unit.node = nullptr;
 						delete unit.ai;
 						unit.ai = nullptr;
 						unit.EndEffects();
@@ -5447,7 +5447,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			else
 			{
 				unit.talking = false;
-				unit.mesh_inst->need_update = true;
+				unit.node->mesh_inst->need_update = true;
 				unit.usable = nullptr;
 				return true;
 			}

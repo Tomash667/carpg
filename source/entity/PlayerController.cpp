@@ -1618,7 +1618,7 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 	float dist = Vec3::Distance2d(unit->pos, pos);
 	if(dist < PICKUP_RANGE && dist < best_dist)
 	{
-		float angle = AngleDiff(Clip(unit->rot + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
+		float angle = AngleDiff(Clip(unit->roty + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
 		assert(angle >= 0.f);
 		if(angle < PI / 4)
 		{
@@ -1710,8 +1710,8 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 		{
 			u.action = A_ANIMATION2;
 			u.animation = ANI_PLAY;
-			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
-			u.mesh_inst->groups[0].speed = 1.f;
+			u.node->mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
+			u.node->mesh_inst->groups[0].speed = 1.f;
 			u.target_pos = u.pos;
 			u.target_pos2 = use.pos;
 			if(use.base->limit_rot == 4)
@@ -1879,8 +1879,8 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 		unit->action = A_CAST;
 		unit->attack_id = -1;
 		unit->animation_state = 0;
-		unit->mesh_inst->frame_end_info2 = false;
-		unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+		unit->node->mesh_inst->frame_end_info2 = false;
+		unit->node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 		if(is_local)
 		{
 			unit->target_pos = data.action_point;
@@ -1903,28 +1903,28 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 		unit->run_attack = false;
 		if(Net::IsLocal() || !from_server)
 		{
-			unit->use_rot = Clip(data.action_rot + unit->rot + PI);
+			unit->use_rot = Clip(data.action_rot + unit->roty + PI);
 			action_point = Vec3(data.action_rot, 0, 0);
 		}
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
-		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		unit->node->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 		if(dash)
 		{
 			unit->animation_state = 0;
 			unit->timer = 0.33f;
 			unit->speed = action.area_size.x / 0.33f;
-			unit->mesh_inst->groups[0].speed = 3.f;
+			unit->node->mesh_inst->groups[0].speed = 3.f;
 		}
 		else
 		{
 			unit->animation_state = 1;
 			unit->timer = 0.5f;
 			unit->speed = action.area_size.x / 0.5f;
-			unit->mesh_inst->groups[0].speed = 2.5f;
+			unit->node->mesh_inst->groups[0].speed = 2.5f;
+			unit->node->mesh_inst->groups[1].blend_max = 0.1f;
+			unit->node->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 			action_targets.clear();
-			unit->mesh_inst->groups[1].blend_max = 0.1f;
-			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
 	}
 	else if(strcmp(action.id, "summon_wolf") == 0 || strcmp(action.id, "heal") == 0)
@@ -2223,7 +2223,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				const float val = rot_speed_dt * rotate + mouse_rot;
 
 				data.rot_buf -= mouse_rot;
-				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
+				u.node->rot.y = u.roty = Clip(u.roty + Clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
 					u.animation = ANI_RIGHT;
@@ -2234,7 +2234,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(move)
 			{
 				// ustal k¹t i szybkoœæ ruchu
-				float angle = u.rot;
+				float angle = u.roty;
 				bool run = always_run;
 				if(!u.run_attack)
 				{
@@ -2486,7 +2486,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 					case WS_HIDDEN:
 						// broñ jest schowana, zacznij wyjmowaæ
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+						u.node->mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 						u.weapon_taken = weapon;
 						u.animation_state = 0;
 						u.weapon_state = WS_TAKING;
@@ -2502,7 +2502,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							u.weapon_hiding = W_NONE;
 							last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKEN;
-							u.mesh_inst->Deactivate(1);
+							u.node->mesh_inst->Deactivate(1);
 						}
 						else
 						{
@@ -2512,7 +2512,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKING;
 							u.animation_state = 0;
-							ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+							ClearBit(u.node->mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKING:
@@ -2523,7 +2523,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							u.action = A_NONE;
 							u.weapon_taken = W_NONE;
 							u.weapon_state = WS_HIDDEN;
-							u.mesh_inst->Deactivate(1);
+							u.node->mesh_inst->Deactivate(1);
 						}
 						else
 						{
@@ -2532,14 +2532,14 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							u.weapon_taken = W_NONE;
 							u.weapon_state = WS_HIDING;
 							u.animation_state = 0;
-							SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+							SetBit(u.node->mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKEN:
 						// broñ jest wyjêta, zacznij chowaæ
 						if(u.action == A_SHOOT)
 							game_level->FreeBowInstance(u.bow_instance);
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+						u.node->mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 						u.weapon_hiding = weapon;
 						u.weapon_taken = W_NONE;
 						u.weapon_state = WS_HIDING;
@@ -2569,7 +2569,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(u.weapon_state == WS_HIDDEN)
 			{
 				// broñ schowana, zacznij wyjmowaæ
-				u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
+				u.node->mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
 				u.weapon_taken = last_weapon = W_ONE_HANDED;
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
@@ -2602,7 +2602,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.weapon_hiding = W_NONE;
 						last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
-						u.mesh_inst->Deactivate(1);
+						u.node->mesh_inst->Deactivate(1);
 					}
 					else
 					{
@@ -2612,7 +2612,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						ClearBit(u.node->mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 
 					if(Net::IsOnline())
@@ -2645,7 +2645,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(u.animation_state == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
+						u.node->mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
 						last_weapon = u.weapon_taken = W_ONE_HANDED;
 					}
 					else
@@ -2655,7 +2655,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.weapon_hiding = W_BOW;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						SetBit(u.node->mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 
@@ -2686,8 +2686,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
-					u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					u.mesh_inst->groups[1].speed = 1.f;
+					u.node->mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
+					u.node->mesh_inst->groups[1].speed = 1.f;
 
 					if(next_action != NA_NONE)
 					{
@@ -2716,7 +2716,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
-				u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
+				u.node->mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
 
 				if(next_action != NA_NONE)
 				{
@@ -2746,7 +2746,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.weapon_hiding = W_NONE;
 						last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
-						u.mesh_inst->Deactivate(1);
+						u.node->mesh_inst->Deactivate(1);
 					}
 					else
 					{
@@ -2756,7 +2756,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						ClearBit(u.node->mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				else
@@ -2790,7 +2790,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
 						last_weapon = u.weapon_taken = W_BOW;
-						u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
+						u.node->mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 					else
 					{
@@ -2799,7 +2799,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.weapon_hiding = W_ONE_HANDED;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						SetBit(u.node->mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 
@@ -2823,8 +2823,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				// broñ wyjêta
 				if(u.weapon_taken == W_ONE_HANDED)
 				{
-					u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					u.mesh_inst->groups[1].speed = 1.f;
+					u.node->mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
+					u.node->mesh_inst->groups[1].speed = 1.f;
 					last_weapon = u.weapon_taken = W_BOW;
 					u.weapon_hiding = W_ONE_HANDED;
 					u.weapon_state = WS_HIDING;
@@ -2886,10 +2886,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(&u == &u2 || u2.to_remove)
 				continue;
 
-			dist = Vec3::Distance2d(u.visual_pos, u2.visual_pos);
+			dist = Vec3::Distance2d(u.node->pos, u2.node->pos);
 
 			if(u2.IsStanding())
-				CheckObjectDistance(u2.visual_pos, &u2, best_dist, BP_UNIT);
+				CheckObjectDistance(u2.node->pos, &u2, best_dist, BP_UNIT);
 			else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
 				CheckObjectDistance(u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
 		}
@@ -3124,9 +3124,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-				u.mesh_inst->groups[0].speed = 1.f;
-				u.mesh_inst->frame_end_info = false;
+				u.node->mesh_inst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.node->mesh_inst->groups[0].speed = 1.f;
+				u.node->mesh_inst->frame_end_info = false;
 
 				if(Net::IsLocal())
 				{
@@ -3190,9 +3190,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(GKey.KeyUpAllowed(action_key))
 					{
 						// release attack
-						u.attack_power = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
+						const float speed = (u.attack_power + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
+						u.attack_power = u.node->mesh_inst->groups[1].time / u.GetAttackFrame(0);
 						u.animation_state = 1;
-						u.mesh_inst->groups[1].speed = (u.attack_power + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
+						u.node->mesh_inst->groups[1].speed = speed;
 						u.attack_power += 1.f;
 
 						if(Net::IsOnline())
@@ -3201,7 +3202,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							c.type = NetChange::ATTACK;
 							c.unit = unit;
 							c.id = AID_Attack;
-							c.f[1] = u.mesh_inst->groups[1].speed;
+							c.f[1] = speed;
 						}
 
 						if(Net::IsLocal())
@@ -3214,10 +3215,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(k != Key::None)
 					{
 						// prepare next attack
+						const float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
 						u.action = A_ATTACK;
 						u.attack_id = u.GetRandomAttack();
-						u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-						u.mesh_inst->groups[1].speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
+						u.node->mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+						u.node->mesh_inst->groups[1].speed = speed;
 						action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
@@ -3230,7 +3232,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							c.type = NetChange::ATTACK;
 							c.unit = unit;
 							c.id = AID_PrepareAttack;
-							c.f[1] = u.mesh_inst->groups[1].speed;
+							c.f[1] = speed;
 						}
 
 						if(Net::IsLocal())
@@ -3244,8 +3246,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					// stop blocking
 					u.action = A_NONE;
-					u.mesh_inst->frame_end_info2 = false;
-					u.mesh_inst->Deactivate(1);
+					u.node->mesh_inst->frame_end_info2 = false;
+					u.node->mesh_inst->Deactivate(1);
 
 					if(Net::IsOnline())
 					{
@@ -3256,7 +3258,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
+				else if(!u.node->mesh_inst->groups[1].IsBlending() && u.HaveShield())
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE))
 					{
@@ -3264,9 +3266,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						float speed = u.GetBashSpeed();
 						u.action = A_BASH;
 						u.animation_state = 0;
-						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-						u.mesh_inst->groups[1].speed = speed;
-						u.mesh_inst->frame_end_info2 = false;
+						u.node->mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+						u.node->mesh_inst->groups[1].speed = speed;
+						u.node->mesh_inst->frame_end_info2 = false;
 						u.hitted = false;
 
 						if(Net::IsOnline())
@@ -3293,12 +3295,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
-					u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+					u.node->mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 					if(u.running)
 					{
 						// running attack
 						float speed = u.GetAttackSpeed() * u.GetStaminaAttackSpeedMod();
-						u.mesh_inst->groups[1].speed = speed;
+						u.node->mesh_inst->groups[1].speed = speed;
 						u.animation_state = 1;
 						u.run_attack = true;
 						u.attack_power = 1.5f;
@@ -3322,7 +3324,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 						// prepare attack
 						float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
-						u.mesh_inst->groups[1].speed = speed;
+						u.node->mesh_inst->groups[1].speed = speed;
 						action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
@@ -3360,9 +3362,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(k != Key::None)
 					{
 						// start blocking
+						const float blend_speed = (oks == 2 ? 0.33f : u.GetBlockSpeed());
 						u.action = A_BLOCK;
-						u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-						u.mesh_inst->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
+						u.node->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+						u.node->mesh_inst->groups[1].blend_max = blend_speed;
 						action_key = k;
 						u.animation_state = 0;
 
@@ -3372,7 +3375,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							c.type = NetChange::ATTACK;
 							c.unit = unit;
 							c.id = AID_Block;
-							c.f[1] = u.mesh_inst->groups[1].blend_max;
+							c.f[1] = blend_speed;
 						}
 					}
 				}
@@ -3403,8 +3406,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				if(k != Key::None)
 				{
 					float speed = u.GetBowAttackSpeed();
-					u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-					u.mesh_inst->groups[1].speed = speed;
+					u.node->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+					u.node->mesh_inst->groups[1].speed = speed;
 					u.action = A_SHOOT;
 					u.animation_state = 0;
 					u.hitted = false;
@@ -3509,9 +3512,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			{
 				int id = Rand() % u.data->idles->anims.size();
 				idle_timer = Random(0.f, 0.5f);
-				u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
-				u.mesh_inst->groups[0].speed = 1.f;
-				u.mesh_inst->frame_end_info = false;
+				u.node->mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
+				u.node->mesh_inst->groups[0].speed = 1.f;
+				u.node->mesh_inst->frame_end_info = false;
 				u.animation = ANI_IDLE;
 
 				if(Net::IsOnline())

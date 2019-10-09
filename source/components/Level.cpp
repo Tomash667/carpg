@@ -158,7 +158,7 @@ void Level::ProcessUnitWarps()
 			InsideBuilding& building = *static_cast<InsideBuilding*>(warp.unit->area);
 			RemoveElement(building.units, warp.unit);
 			warp.unit->area = local_area;
-			warp.unit->rot = building.outside_rot;
+			warp.unit->node->rot.y = warp.unit->roty = building.outside_rot;
 			WarpUnit(*warp.unit, building.outside_spawn);
 			local_area->units.push_back(warp.unit);
 		}
@@ -173,14 +173,14 @@ void Level::ProcessUnitWarps()
 			{
 				// failed to warp to arena, spawn outside of arena
 				warp.unit->area = local_area;
-				warp.unit->rot = building.outside_rot;
+				warp.unit->node->rot.y = warp.unit->roty = building.outside_rot;
 				WarpUnit(*warp.unit, building.outside_spawn);
 				local_area->units.push_back(warp.unit);
 				RemoveElement(game->arena->units, warp.unit);
 			}
 			else
 			{
-				warp.unit->rot = (warp.unit->in_arena == 0 ? PI : 0);
+				warp.unit->node->rot.y = warp.unit->roty = (warp.unit->in_arena == 0 ? PI : 0);
 				WarpUnit(*warp.unit, pos);
 				building.units.push_back(warp.unit);
 				warped_to_arena = true;
@@ -192,7 +192,7 @@ void Level::ProcessUnitWarps()
 			InsideBuilding& building = *city_ctx->inside_buildings[warp.where];
 			RemoveElement(warp.unit->area->units, warp.unit);
 			warp.unit->area = &building;
-			warp.unit->rot = PI;
+			warp.unit->node->rot.y = warp.unit->roty = PI;
 			WarpUnit(*warp.unit, building.inside_spawn);
 			building.units.push_back(warp.unit);
 		}
@@ -251,8 +251,8 @@ void Level::ProcessUnitWarps()
 			pt2 = ((building.region1.Midpoint() + building.region2.Midpoint()) / 2).XZ();
 		}
 
-		for(vector<Unit*>::iterator it = game->arena->units.begin(), end = game->arena->units.end(); it != end; ++it)
-			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->in_arena == 0 ? pt2 : pt1);
+		for(Unit* unit : game->arena->units)
+			unit->node->rot.y = unit->roty = Vec3::LookAtAngle(unit->pos, unit->in_arena == 0 ? pt2 : pt1);
 	}
 }
 
@@ -1353,10 +1353,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				{
 					Unit* u = SpawnUnitNearLocation(area, pos, *ud, nullptr, -2);
 					if(u)
-					{
-						u->rot = Clip(pt.rot.y + rot);
-						u->ai->start_rot = u->rot;
-					}
+						u->ai->start_rot = u->node->rot.y = u->roty = Clip(pt.rot.y + rot);
 				}
 			}
 		}
@@ -2649,9 +2646,9 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 
 	Blood& b = Add1(area.bloods);
 	if(u.human_data)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
+		u.node->mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
 	else
-		u.mesh_inst->SetupBones();
+		u.node->mesh_inst->SetupBones();
 	b.pos = u.GetLootCenter();
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);
@@ -2719,12 +2716,12 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	if(unit.cobj)
 		unit.UpdatePhysics();
 
-	unit.visual_pos = unit.pos;
+	unit.node->pos = unit.pos;
 
 	if(Net::IsOnline())
 	{
 		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.rot);
+			unit.interp->Reset(unit.pos, unit.roty);
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::WARP;
 		c.unit = &unit;
@@ -2775,12 +2772,12 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 
 	unit.pos = tmp_pos;
 	unit.Moved(true);
-	unit.visual_pos = unit.pos;
+	unit.node->pos = unit.pos;
 
 	if(Net::IsOnline())
 	{
 		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.rot);
+			unit.interp->Reset(unit.pos, unit.roty);
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::WARP;
 		c.unit = &unit;
@@ -3794,10 +3791,10 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 		else if(unit.weapon_state == WS_TAKING)
 			unit.weapon_state = WS_TAKEN;
 
-		unit.rot = rot;
+		unit.node->rot.y = unit.roty = rot;
 		unit.animation = unit.current_animation = ANI_STAND;
-		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-		unit.mesh_inst->groups[0].speed = 1.f;
+		unit.node->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		unit.node->mesh_inst->groups[0].speed = 1.f;
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
 		if(unit.area && unit.area->area_type == LevelArea::Type::Building && reenter)
@@ -3817,13 +3814,13 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 		}
 
 		WarpNearLocation(*local_area, unit, pos, city_ctx ? 4.f : 2.f, true, 20);
-		unit.visual_pos = unit.pos;
+		unit.node->pos = unit.pos;
 
 		if(!location->outside)
 			FOV::DungeonReveal(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)), minimap_reveal);
 
 		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.rot);
+			unit.interp->Reset(unit.pos, unit.roty);
 	}
 }
 

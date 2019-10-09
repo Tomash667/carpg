@@ -56,7 +56,7 @@ void LocationGenerator::OnReenter()
 			if(u->talking)
 			{
 				u->talking = false;
-				u->mesh_inst->need_update = true;
+				u->node->mesh_inst->need_update = true;
 			}
 		}
 	}

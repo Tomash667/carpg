@@ -33,7 +33,7 @@ void AIController::Init(Unit* unit)
 	escape_room = nullptr;
 	idle_action = Idle_None;
 	start_pos = unit->pos;
-	start_rot = unit->rot;
+	start_rot = unit->roty;
 	loc_timer = 0.f;
 	timer = 0.f;
 	change_ai_mode = false;
@@ -490,7 +490,7 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->mesh_inst->mesh->head.n_groups == 1 || unit->weapon_state == WS_TAKEN) && next_attack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->node->mesh->head.n_groups == 1 || unit->weapon_state == WS_TAKEN) && next_attack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -526,15 +526,15 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	float speed = (do_power_attack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
 
-	if(unit->mesh_inst->mesh->head.n_groups > 1)
+	if(unit->node->mesh->head.n_groups > 1)
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-		unit->mesh_inst->groups[1].speed = speed;
+		unit->node->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+		unit->node->mesh_inst->groups[1].speed = speed;
 	}
 	else
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
-		unit->mesh_inst->groups[0].speed = speed;
+		unit->node->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
+		unit->node->mesh_inst->groups[0].speed = speed;
 		unit->animation = ANI_PLAY;
 	}
 	unit->animation_state = (do_power_attack ? 0 : 1);
