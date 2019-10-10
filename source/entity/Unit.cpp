@@ -637,6 +637,16 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 }
 
 //=================================================================================================
+void Unit::ConsumeItemS(const Item* item)
+{
+	if(!item || item->type != IT_CONSUMABLE)
+		return;
+	if(action != A_NONE && action != A_ANIMATION2)
+		return;
+	ConsumeItem(item->ToConsumable());
+}
+
+//=================================================================================================
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
 	cstring anim_name;
@@ -4771,7 +4781,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		}
 		else
 			used_item = nullptr;
-		mesh_inst->Deactivate(1);
+		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
+			mesh_inst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_EAT:
@@ -4784,7 +4795,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		}
 		else
 			used_item = nullptr;
-		mesh_inst->Deactivate(1);
+		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
+			mesh_inst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
@@ -4815,19 +4827,30 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		action = A_NONE;
 		break;
 	case A_BLOCK:
-		mesh_inst->Deactivate(1);
+		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
+			mesh_inst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_DASH:
 		if(animation_state == 1)
 		{
-			mesh_inst->Deactivate(1);
+			if(mode != BREAK_ACTION_MODE::ON_LEAVE)
+				mesh_inst->Deactivate(1);
 			mesh_inst->groups[1].blend_max = 0.33f;
 		}
 		break;
 	}
 
-	if(usable && !(player && player->action == PlayerAction::LootContainer))
+	if(mode == BREAK_ACTION_MODE::ON_LEAVE)
+	{
+		if(usable)
+		{
+			StopUsingUsable();
+			UseUsable(nullptr);
+			visual_pos = pos = target_pos;
+		}
+	}
+	else if(usable && !(player && player->action == PlayerAction::LootContainer))
 	{
 		if(mode == BREAK_ACTION_MODE::INSTANT)
 		{
@@ -4869,6 +4892,9 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	mesh_inst->frame_end_info = false;
 	mesh_inst->frame_end_info2 = false;
 	run_attack = false;
+
+	if(mode == BREAK_ACTION_MODE::ON_LEAVE)
+		return;
 
 	if(IsPlayer())
 	{
@@ -7096,7 +7122,7 @@ void Unit::Update(float dt)
 						b.attack = -100.f;
 				}
 
-				// losowe odchylenie
+				// random variation
 				int sk = Get(SkillId::BOW);
 				if(IsPlayer())
 					sk += 10;
@@ -7104,43 +7130,43 @@ void Unit::Update(float dt)
 					sk -= 10;
 				if(sk < 50)
 				{
-					int szansa;
-					float odchylenie_x, odchylenie_y;
+					int chance;
+					float variation_x, variation_y;
 					if(sk < 10)
 					{
-						szansa = 100;
-						odchylenie_x = PI / 16;
-						odchylenie_y = 5.f;
+						chance = 100;
+						variation_x = PI / 16;
+						variation_y = 5.f;
 					}
 					else if(sk < 20)
 					{
-						szansa = 80;
-						odchylenie_x = PI / 20;
-						odchylenie_y = 4.f;
+						chance = 80;
+						variation_x = PI / 20;
+						variation_y = 4.f;
 					}
 					else if(sk < 30)
 					{
-						szansa = 60;
-						odchylenie_x = PI / 26;
-						odchylenie_y = 3.f;
+						chance = 60;
+						variation_x = PI / 26;
+						variation_y = 3.f;
 					}
 					else if(sk < 40)
 					{
-						szansa = 40;
-						odchylenie_x = PI / 34;
-						odchylenie_y = 2.f;
+						chance = 40;
+						variation_x = PI / 34;
+						variation_y = 2.f;
 					}
 					else
 					{
-						szansa = 20;
-						odchylenie_x = PI / 48;
-						odchylenie_y = 1.f;
+						chance = 20;
+						variation_x = PI / 48;
+						variation_y = 1.f;
 					}
 
-					if(Rand() % 100 < szansa)
-						b.rot.y += RandomNormalized(odchylenie_x);
-					if(Rand() % 100 < szansa)
-						b.yspeed += RandomNormalized(odchylenie_y);
+					if(Rand() % 100 < chance)
+						b.rot.y += RandomNormalized(variation_x);
+					if(Rand() % 100 < chance)
+						b.yspeed += RandomNormalized(variation_y);
 				}
 
 				b.rot.y = Clip(b.rot.y);

@@ -12,6 +12,7 @@
 #include "ServerPanel.h"
 #include "GameMessages.h"
 #include "MpBox.h"
+#include "PacketLogger.h"
 
 Net* global::net;
 vector<NetChange> Net::changes;
@@ -19,7 +20,7 @@ Net::Mode Net::mode;
 const int CLOSE_PEER_TIMER = 1000; // ms
 
 //=================================================================================================
-Net::Net() : peer(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
+Net::Net() : peer(nullptr), packet_logger(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
 }
 
@@ -31,6 +32,7 @@ Net::~Net()
 	if(peer)
 		RakPeerInterface::DestroyInstance(peer);
 	delete api;
+	delete packet_logger;
 }
 
 //=================================================================================================
@@ -116,6 +118,23 @@ PlayerInfo* Net::TryGetPlayer(int id)
 		}
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+void Net::OpenPeer()
+{
+	if(peer)
+		return;
+
+	peer = RakPeerInterface::GetInstance();
+#ifdef TEST_LAG
+	peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
+#endif
+	if(game->cfg.GetBool("packet_logger"))
+	{
+		packet_logger = new PacketLogger;
+		peer->AttachPlugin(packet_logger);
+	}
 }
 
 //=================================================================================================

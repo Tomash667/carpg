@@ -591,6 +591,9 @@
     <ClCompile Include="generator\AcademyGenerator.cpp">
       <Filter>generator</Filter>
     </ClCompile>
+    <ClCompile Include="net\PacketLogger.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
     <ClCompile Include="components\GameResources.cpp">
       <Filter>components</Filter>
     </ClCompile>
@@ -1178,6 +1181,9 @@
     </ClInclude>
     <ClInclude Include="generator\AcademyGenerator.h">
       <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="net\PacketLogger.h">
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="components\GameResources.h">
       <Filter>components</Filter>

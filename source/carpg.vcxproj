@@ -178,6 +178,7 @@
     <ClInclude Include="net\LobbyApi.h" />
     <ClInclude Include="net\NetChange.h" />
     <ClInclude Include="net\NetChangePlayer.h" />
+    <ClInclude Include="net\PacketLogger.h" />
     <ClInclude Include="net\PlayerInfo.h" />
     <ClInclude Include="panels\ActionPanel.h" />
     <ClInclude Include="panels\BookPanel.h" />
@@ -331,6 +332,7 @@
     <ClCompile Include="net\NetClient.cpp" />
     <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="generator\AcademyGenerator.cpp" />
+    <ClCompile Include="net\PacketLogger.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />
