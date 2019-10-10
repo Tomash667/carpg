@@ -6,6 +6,9 @@
 #include "NetChangePlayer.h"
 
 //-----------------------------------------------------------------------------
+class PacketLogger;
+
+//-----------------------------------------------------------------------------
 enum AttackId
 {
 	AID_Attack,
@@ -117,6 +120,7 @@ public:
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
+	void OpenPeer();
 	void ClosePeer(bool wait = false, bool check_was_client = false);
 	bool IsFastTravel() const { return fast_travel; }
 	void StartFastTravel(int who);
@@ -128,6 +132,7 @@ public:
 	RakPeerInterface* peer;
 	rvector<PlayerInfo> players; // contains players that left too
 	vector<string*> net_strs;
+	PacketLogger* packet_logger;
 	float update_timer, mp_interp;
 	int port;
 	bool mp_load, mp_load_worldmap, mp_use_interp, prepare_world, mp_quickload;
