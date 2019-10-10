@@ -9,6 +9,8 @@
 /paks/out
 /paks/pdb
 
+/tools/extractor/Debug
+/tools/extractor/Release
 /tools/paker/Debug
 /tools/paker/Release
 /tools/text_comparer/Debug

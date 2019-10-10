@@ -47,13 +47,7 @@ void Net::InitServer()
 {
 	Info("Creating server (port %d)...", port);
 
-	if(!peer)
-	{
-		peer = RakPeerInterface::GetInstance();
-#ifdef TEST_LAG
-		peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
-#endif
-	}
+	OpenPeer();
 
 	uint max_connections = max_players - 1;
 	if(!server_lan)

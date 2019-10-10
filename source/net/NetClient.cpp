@@ -46,13 +46,7 @@ void Net::InitClient()
 {
 	Info("Initlializing client...");
 
-	if(!peer)
-	{
-		peer = RakPeerInterface::GetInstance();
-#ifdef TEST_LAG
-		peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
-#endif
-	}
+	OpenPeer();
 
 	SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
