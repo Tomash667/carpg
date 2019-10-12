@@ -1029,13 +1029,13 @@ void UnitLoader::ParseUnit(const string& id)
 	if(!unit->mesh)
 	{
 		if(unit->type == UNIT_TYPE::HUMAN)
-			unit->mesh = game_res->mesh_human;
+			unit->mesh = game_res->aHuman;
 		else
 			t.Throw("Unit without mesh.");
 	}
 	else
 	{
-		if(unit->type == UNIT_TYPE::HUMAN && unit->mesh != game_res->mesh_human)
+		if(unit->type == UNIT_TYPE::HUMAN && unit->mesh != game_res->aHuman)
 			t.Throw("Human unit with custom mesh.");
 	}
 

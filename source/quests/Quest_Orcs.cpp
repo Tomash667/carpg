@@ -14,6 +14,7 @@
 #include "World.h"
 #include "Level.h"
 #include "ItemHelper.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Orcs::Init()
@@ -698,10 +699,10 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	for(const Item* item : orc->slots)
 	{
 		if(item)
-			game->PreloadItem(item);
+			game_res->PreloadItem(item);
 	}
 	for(ItemSlot& slot : orc->items)
-		game->PreloadItem(slot.item);
+		game_res->PreloadItem(slot.item);
 	orc->MakeItemsTeam(false);
 	orc->UpdateInventory();
 

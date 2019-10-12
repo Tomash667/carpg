@@ -428,7 +428,6 @@
     <ClCompile Include="generator\CityGenerator.cpp" />
     <ClCompile Include="generator\DungeonMapGenerator.cpp" />
     <ClCompile Include="helpers\UnitHelper.cpp" />
-    <ClCompile Include="Init.cpp" />
     <ClCompile Include="Language.cpp" />
     <ClCompile Include="location\Camp.cpp" />
     <ClCompile Include="location\Cave.cpp" />

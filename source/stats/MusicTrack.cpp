@@ -205,34 +205,6 @@ uint MusicTrack::Load(uint& errors)
 }
 
 //=================================================================================================
-void Game::LoadMusic(MusicType type, bool new_load_screen, bool instant)
-{
-	bool first = true;
-
-	for(MusicTrack* track : MusicTrack::tracks)
-	{
-		if(track->type == type)
-		{
-			if(first)
-			{
-				if(track->music->IsLoaded())
-				{
-					// music for this type is loaded
-					return;
-				}
-				if(new_load_screen)
-					res_mgr->AddTaskCategory(txLoadMusic);
-				first = false;
-			}
-			if(instant)
-				res_mgr->LoadInstant(track->music);
-			else
-				res_mgr->Load(track->music);
-		}
-	}
-}
-
-//=================================================================================================
 void MusicTrack::Cleanup()
 {
 	DeleteElements(MusicTrack::tracks);

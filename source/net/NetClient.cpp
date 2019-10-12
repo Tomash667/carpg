@@ -40,6 +40,7 @@
 #include "GameStats.h"
 #include "Arena.h"
 #include "CommandParser.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Net::InitClient()
@@ -602,7 +603,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						if(item)
-							game->PreloadItem(item);
+							game_res->PreloadItem(item);
 						target->slots[type] = item;
 					}
 				}
@@ -682,7 +683,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
@@ -695,7 +696,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 0;
 						unit.hitted = false;
@@ -707,7 +708,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit.animation_state = 1;
 					else
 					{
-						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
@@ -721,9 +722,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				case AID_Block:
 					{
 						unit.action = A_BLOCK;
-						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
-						unit.mesh_inst->groups[1].speed = 1.f;
-						unit.mesh_inst->groups[1].blend_max = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
+						unit.mesh_inst->groups[group].blend_max = attack_speed;
 						unit.animation_state = 0;
 					}
 					break;
@@ -731,9 +731,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					{
 						unit.action = A_BASH;
 						unit.animation_state = 0;
-						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
-						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.mesh_inst->frame_end_info2 = false;
+						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.hitted = false;
 					}
 					break;
@@ -745,7 +744,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
 						unit.run_attack = true;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
@@ -754,9 +753,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				case AID_StopBlock:
 					{
 						unit.action = A_NONE;
-						unit.mesh_inst->frame_end_info2 = false;
 						unit.mesh_inst->Deactivate(group);
-						unit.mesh_inst->groups[1].speed = 1.f;
 					}
 					break;
 				}
@@ -858,7 +855,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				else if(game->game_state == GS_LEVEL)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = game->tBlood[type];
+					pe->tex = game_res->tBlood[type];
 					pe->emision_interval = 0.01f;
 					pe->life = 5.f;
 					pe->particle_life = 0.5f;
@@ -972,8 +969,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					{
 						unit->action = A_ANIMATION;
 						unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -991,7 +986,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					delete item;
 				else
 				{
-					game->PreloadItem(item->item);
+					game_res->PreloadItem(item->item);
 					game_level->GetArea(item->pos).items.push_back(item);
 				}
 			}
@@ -1015,8 +1010,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
 						unit->mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -1067,7 +1060,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						Error("Update client: CONSUME_ITEM, %s is not consumable.", item->id.c_str());
 					else if(unit != pc.unit || force)
 					{
-						game->PreloadItem(item);
+						game_res->PreloadItem(item);
 						unit->ConsumeItem(item->ToConsumable(), false, false);
 					}
 				}
@@ -1084,7 +1077,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(!f)
 					Error("Update client: Broken HIT_SOUND.");
 				else if(game->game_state == GS_LEVEL)
-					sound_mgr->PlaySound3d(game->GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
 			}
 			break;
 		// unit get stunned
@@ -1109,15 +1102,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 							unit->animation_state = 1;
 
 						if(unit->mesh_inst->mesh->head.n_groups == 2)
-						{
-							unit->mesh_inst->frame_end_info2 = false;
 							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-						}
 						else
 						{
-							unit->mesh_inst->frame_end_info = false;
 							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -1156,7 +1144,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					LevelArea& area = game_level->GetArea(pos);
 
 					Bullet& b = Add1(area.tmp->bullets);
-					b.mesh = game->aArrow;
+					b.mesh = game_res->aArrow;
 					b.pos = pos;
 					b.start_pos = pos;
 					b.rot = Vec3(rotX, rotY, 0);
@@ -1187,7 +1175,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					area.tmp->tpes.push_back(tpe2);
 					b.trail2 = tpe2;
 
-					sound_mgr->PlaySound3d(game->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -1249,8 +1237,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						unit->mesh_inst->Play(unit->data->idles->anims[animation_index].c_str(), PLAY_ONCE, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->mesh_inst->frame_end_info = false;
 						unit->animation = ANI_IDLE;
 					}
 				}
@@ -1284,7 +1270,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(animation != 0)
 						{
 							unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -1465,7 +1450,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 							pc.unit->HealPoison();
 							pc.unit->live_state = Unit::ALIVE;
 							pc.unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							pc.unit->mesh_inst->groups[0].speed = 1.f;
 							pc.unit->action = A_ANIMATION;
 							pc.unit->animation = ANI_PLAY;
 						}
@@ -1724,7 +1708,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit->action = A_ANIMATION2;
 						unit->animation = ANI_PLAY;
 						unit->mesh_inst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
 						unit->target_pos = unit->pos;
 						unit->target_pos2 = usable->pos;
 						if(base.limit_rot == 4)
@@ -1735,7 +1718,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit->used_item = base.item;
 						if(unit->used_item)
 						{
-							game->PreloadItem(unit->used_item);
+							game_res->PreloadItem(unit->used_item);
 							unit->weapon_taken = W_NONE;
 							unit->weapon_state = WS_HIDDEN;
 						}
@@ -1925,11 +1908,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				{
 					Sound* sound;
 					if(type == 0)
-						sound = game->sArenaFight;
+						sound = game_res->sArenaFight;
 					else if(type == 1)
-						sound = game->sArenaWin;
+						sound = game_res->sArenaWin;
 					else
-						sound = game->sArenaLost;
+						sound = game_res->sArenaLost;
 					sound_mgr->PlaySound2d(sound);
 				}
 			}
@@ -2022,19 +2005,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 							{
 								door->state = Door::Closing;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening)
 							{
 								door->state = Door::Closing2;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening2)
 							{
 								door->state = Door::Closing;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -2047,21 +2027,18 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening2;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing2)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -2071,9 +2048,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						{
 							Sound* sound;
 							if(is_closing && Rand() % 2 == 0)
-								sound = game->sDoorClose;
+								sound = game_res->sDoorClose;
 							else
-								sound = game->sDoor[Rand() % 3];
+								sound = game_res->sDoor[Rand() % 3];
 							sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
 						}
 					}
@@ -2153,7 +2130,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 			break;
 		// play evil sound
 		case NetChange::EVIL_SOUND:
-			sound_mgr->PlaySound2d(game->sEvil);
+			sound_mgr->PlaySound2d(game_res->sEvil);
 			break;
 		// start encounter on world map
 		case NetChange::ENCOUNTER:
@@ -2221,7 +2198,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				ParticleEmitter* best_pe = nullptr;
 				for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 				{
-					if(pe->tex == game->tBlood[BLOOD_RED])
+					if(pe->tex == game_res->tBlood[BLOOD_RED])
 					{
 						float dist = Vec3::Distance(pe->pos, obj->pos);
 						if(dist < best_dist)
@@ -2359,16 +2336,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit->animation_state = 0;
 
 						if(unit->mesh_inst->mesh->head.n_groups == 2)
-						{
-							unit->mesh_inst->frame_end_info2 = false;
 							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-						}
 						else
 						{
-							unit->mesh_inst->frame_end_info = false;
 							unit->animation = ANI_PLAY;
 							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -2953,7 +2925,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						unit->action = A_USE_ITEM;
-						unit->mesh_inst->frame_end_info2 = false;
 						unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 				}
@@ -3210,7 +3181,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				{
 					pc.unit->AddItem2(pc.data.picking_item->item, (uint)count, (uint)team_count, false);
 					if(pc.data.picking_item->item->type == IT_GOLD)
-						sound_mgr->PlaySound2d(game->sCoins);
+						sound_mgr->PlaySound2d(game_res->sCoins);
 					if(pc.data.picking_item_state == 2)
 						delete pc.data.picking_item;
 					pc.data.picking_item_state = 0;
@@ -3435,7 +3406,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", id);
 					else
 					{
-						game->PreloadItem(item);
+						game_res->PreloadItem(item);
 						chest->AddItem(item, (uint)count, (uint)team_count, false);
 					}
 				}
@@ -3740,7 +3711,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else
 					{
 						game_gui->mp_box->Add(Format(game->txReceivedGold, count, info->name.c_str()));
-						sound_mgr->PlaySound2d(game->sCoins);
+						sound_mgr->PlaySound2d(game_res->sCoins);
 					}
 				}
 			}
@@ -3995,7 +3966,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(!f)
 					Error("Update single client: Broken SOUND.");
 				else if(id == 0)
-					sound_mgr->PlaySound2d(game->sCoins);
+					sound_mgr->PlaySound2d(game_res->sCoins);
 			}
 			break;
 		default:
@@ -4226,12 +4197,7 @@ bool Net::ReadWorldData(BitStreamReader& f)
 	}
 
 	// load music
-	if(!sound_mgr->IsMusicDisabled())
-	{
-		game->LoadMusic(MusicType::Boss, false);
-		game->LoadMusic(MusicType::Death, false);
-		game->LoadMusic(MusicType::Travel, false);
-	}
+	game_res->LoadCommonMusic();
 
 	return true;
 }

@@ -38,6 +38,7 @@
 #include "Collision.h"
 #include "LocationHelper.h"
 #include "PhysicCallbacks.h"
+#include "GameResources.h"
 
 Level* global::game_level;
 
@@ -124,7 +125,7 @@ void Level::Init()
 	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
 
-	Mesh::Point* point = game->aArrow->FindPoint("Empty");
+	Mesh::Point* point = game_res->aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
 	shape_arrow = new btBoxShape(ToVector3(point->size));
 }
@@ -759,7 +760,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->speed_min = Vec3(-1, 4, -1);
 			pe->speed_max = Vec3(1, 6, 1);
 			pe->mode = 0;
-			pe->tex = game->tBlood[BLOOD_RED];
+			pe->tex = game_res->tBlood[BLOOD_RED];
 			pe->size = 0.5f;
 			pe->Init();
 			area.tmp->pes.push_back(pe);
@@ -1278,7 +1279,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
-					door->mesh_inst = new MeshInstance(door->door2 ? game->aDoor2 : game->aDoor);
+					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
@@ -2644,7 +2645,7 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 //=================================================================================================
 void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 {
-	if(!game->tBloodSplat[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
+	if(!game_res->tBloodSplat[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
 		return;
 
 	Blood& b = Add1(area.bloods);
@@ -3077,7 +3078,7 @@ void Level::OnReenterLevel()
 		{
 			Chest& chest = **it;
 
-			chest.mesh_inst = new MeshInstance(game->aChest);
+			chest.mesh_inst = new MeshInstance(game_res->aChest);
 		}
 
 		// odtwórz drzwi
@@ -3086,7 +3087,7 @@ void Level::OnReenterLevel()
 			Door& door = **it;
 
 			// animowany model
-			door.mesh_inst = new MeshInstance(door.door2 ? game->aDoor2 : game->aDoor);
+			door.mesh_inst = new MeshInstance(door.door2 ? game_res->aDoor2 : game_res->aDoor);
 			door.mesh_inst->groups[0].speed = 2.f;
 
 			// fizyka
@@ -3797,7 +3798,6 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 		unit.rot = rot;
 		unit.animation = unit.current_animation = ANI_STAND;
 		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-		unit.mesh_inst->groups[0].speed = 1.f;
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
 		if(unit.area && unit.area->area_type == LevelArea::Type::Building && reenter)
@@ -3991,8 +3991,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Broken music.");
 		return false;
 	}
-	if(!sound_mgr->IsMusicDisabled())
-		game->LoadMusic(music, false, true);
+	game_res->LoadMusic(music, false, true);
 	if(world->IsBossLevel())
 		game->SetMusic();
 	else
@@ -4031,7 +4030,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			if(spell_id.empty())
 			{
 				bullet.spell = nullptr;
-				bullet.mesh = game->aArrow;
+				bullet.mesh = game_res->aArrow;
 				bullet.pe = nullptr;
 				bullet.remove = false;
 				bullet.tex = nullptr;
@@ -4561,10 +4560,10 @@ void Level::SpawnUnitEffect(Unit& unit)
 {
 	Vec3 real_pos = unit.pos;
 	real_pos.y += 1.f;
-	sound_mgr->PlaySound3d(game->sSummon, real_pos, SPAWN_SOUND_DIST);
+	sound_mgr->PlaySound3d(game_res->sSummon, real_pos, SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = game->tSpawn;
+	pe->tex = game_res->tSpawn;
 	pe->emision_interval = 0.1f;
 	pe->life = 5.f;
 	pe->particle_life = 0.5f;

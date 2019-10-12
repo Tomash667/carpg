@@ -536,7 +536,6 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameFile.cpp" />
-    <ClCompile Include="Init.cpp" />
     <ClCompile Include="Language.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="QuadTreeAndGrass.cpp" />

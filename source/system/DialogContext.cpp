@@ -1690,7 +1690,6 @@ void DialogContext::DialogTalk(cstring msg)
 	{
 		ani = Rand() % 2 + 1;
 		talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-		talker->mesh_inst->groups[0].speed = 1.f;
 		talker->animation = ANI_PLAY;
 		talker->action = A_ANIMATION;
 	}

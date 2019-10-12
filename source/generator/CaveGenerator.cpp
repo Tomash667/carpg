@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "Quest_Mine.h"
 #include "UnitGroup.h"
+#include "GameResources.h"
 #include "Game.h"
 
 //=================================================================================================
@@ -371,7 +372,7 @@ void CaveGenerator::GenerateObjects()
 	Cave* cave = (Cave*)inside;
 
 	Object* o = new Object;
-	o->mesh = game->aStairsUp;
+	o->mesh = game_res->aStairsUp;
 	o->pos = PtToPos(lvl.staircase_up);
 	o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 	o->scale = 1;

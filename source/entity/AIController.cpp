@@ -528,12 +528,12 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	if(unit->mesh_inst->mesh->head.n_groups > 1)
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
 		unit->mesh_inst->groups[1].speed = speed;
 	}
 	else
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
+		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE, 0);
 		unit->mesh_inst->groups[0].speed = speed;
 		unit->animation = ANI_PLAY;
 	}

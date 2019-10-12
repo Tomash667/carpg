@@ -19,6 +19,7 @@
 #include "ParticleSystem.h"
 #include "Game.h"
 #include "GameGui.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Tutorial::LoadLanguage()
@@ -46,7 +47,7 @@ void Quest_Tutorial::Start()
 	// ekwipunek
 	game->pc->unit->ClearInventory();
 	auto item = Item::Get("al_clothes");
-	game->PreloadItem(item);
+	game_res->PreloadItem(item);
 	game->pc->unit->slots[SLOT_ARMOR] = item;
 	game->pc->unit->weight += game->pc->unit->slots[SLOT_ARMOR]->weight;
 	game->pc->unit->gold = 10;

@@ -130,17 +130,6 @@ struct Lights
 };
 
 //-----------------------------------------------------------------------------
-struct TexturePack
-{
-	TexturePtr diffuse, normal, specular;
-
-	int GetIndex() const
-	{
-		return (normal ? 2 : 0) + (specular ? 1 : 0);
-	}
-};
-
-//-----------------------------------------------------------------------------
 struct DungeonPart
 {
 	enum Flags
@@ -149,7 +138,7 @@ struct DungeonPart
 		F_NORMAL = 1 << 2
 	};
 	int lights, start_index, primitive_count, matrix;
-	TexturePack* tp;
+	TexOverride* tex_o;
 };
 
 //-----------------------------------------------------------------------------

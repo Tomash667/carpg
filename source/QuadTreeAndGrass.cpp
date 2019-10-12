@@ -9,6 +9,7 @@
 #include "Render.h"
 #include "GrassShader.h"
 #include "Object.h"
+#include "GameResources.h"
 #include "DirectX.h"
 
 enum QuadPartType
@@ -284,9 +285,9 @@ void Game::ListGrass()
 
 void Game::SetTerrainTextures()
 {
-	TexturePtr tex[5] = { tGrass, tGrass2, tGrass3, tFootpath, tRoad };
+	TexturePtr tex[5] = { game_res->tGrass, game_res->tGrass2, game_res->tGrass3, game_res->tFootpath, game_res->tRoad };
 	if(LocationHelper::IsVillage(game_level->location))
-		tex[2] = tField;
+		tex[2] = game_res->tField;
 
 	for(int i = 0; i < 5; ++i)
 		res_mgr->Load(tex[i]);

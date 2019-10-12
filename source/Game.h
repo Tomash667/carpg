@@ -111,6 +111,7 @@ public:
 	Game();
 	~Game();
 
+	bool OnInit() override;
 	void OnCleanup() override;
 	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
@@ -127,16 +128,12 @@ public:
 	void ClearPointers();
 	void CreateTextures();
 	void CreateRenderTargets();
-	void PreloadData();
 	void ReportError(int id, cstring text, bool once = false);
 
-	// initialization
-	void BeforeInit();
-	bool OnInit() override;
+	// initialization & loading
 	void PreconfigureGame();
 	void PreloadLanguage();
-
-	// loading system
+	void PreloadData();
 	void LoadSystem();
 	void AddFilesystem();
 	void LoadDatafiles();
@@ -145,12 +142,7 @@ public:
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
-
-	// loading data
 	void LoadData();
-	void AddLoadTasks();
-
-	// after loading data
 	void PostconfigureGame();
 	void StartGameMode();
 
@@ -202,21 +194,18 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
-	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
+	void ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex);
+	void ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void SetDungeonParamsToMeshes();
 
 	//-----------------------------------------------------------------
 	// SOUND & MUSIC
 	//-----------------------------------------------------------------
-	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
 	void UpdateMusic();
-	Sound* GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	Sound* GetItemSound(const Item* item);
 	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
 	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	void UpdateAttachedSounds(float dt);
@@ -229,7 +218,6 @@ public:
 	void PauseGame();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
@@ -262,7 +250,6 @@ public:
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
-	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
@@ -304,7 +291,6 @@ public:
 	void PreloadUnits(vector<Unit*>& units);
 	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
-	void PreloadItem(const Item* item);
 	void VerifyResources();
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
@@ -460,6 +446,7 @@ public:
 	VB vbFullscreen;
 	vector<PostEffect> post_effects;
 	// scene
+	VB vbParticle;
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
 	bool cl_normalmap, cl_specularmap, cl_glow;
@@ -498,29 +485,17 @@ public:
 	//-----------------------------------------------------------------
 	// RESOURCES
 	//-----------------------------------------------------------------
-	MeshPtr aHair[5], aBeard[5], aMustache[2], aEyebrows;
-	MeshPtr aBox, aCylinder, aSphere, aCapsule;
-	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
-	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	RenderTarget* rt_save, *rt_item_rot;
 	Texture tMinimap;
-	TexturePtr tBlack, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
-	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn;
-	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
 	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
 	D3DXHANDLE hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
 		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange, hPostTex, hPostPower, hPostSkill,
 		hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
-	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
-		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
-	VB vbParticle;
-	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS
 	//-----------------------------------------------------------------
-	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
 		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests, txLoadingClasses;
 	cstring txAiNoHpPot[2], txAiNoMpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort,

@@ -304,7 +304,7 @@ void ItemLoader::Finalize()
 void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 {
 	ItemsMap::iterator it = Item::items.lower_bound(id.c_str());
-	if(it != Item::items.end() && !(Item::items.key_comp()(id.c_str(), it->first)))
+	if(it != Item::items.end() && id == it->first)
 		t.Throw("Id must be unique.");
 
 	// create

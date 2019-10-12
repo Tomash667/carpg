@@ -182,7 +182,6 @@ void Quest_Secret::UpdateFight()
 				unit->HealPoison();
 				unit->live_state = Unit::ALIVE;
 				unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-				unit->mesh_inst->groups[0].speed = 1.f;
 				unit->action = A_ANIMATION;
 				unit->animation = ANI_PLAY;
 				if(unit->IsAI())

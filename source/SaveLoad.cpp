@@ -46,6 +46,7 @@
 #include "BitStreamFunc.h"
 #include "InfoBox.h"
 #include "CommandParser.h"
+#include "GameResources.h"
 
 enum SaveFlags
 {
@@ -253,7 +254,6 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		game_gui->game_menu->CloseDialog();
 		game_gui->world_map->Hide();
 	}
-	LoadingStart(9);
 
 	try
 	{
@@ -584,6 +584,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 //=================================================================================================
 void Game::LoadGame(GameReader& f)
 {
+	LoadingStart(8);
 	ClearGame();
 	ClearGameVars(false);
 	StopAllSounds();
@@ -939,14 +940,7 @@ void Game::LoadGame(GameReader& f)
 	if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
 		throw "Missing EOS.";
 
-	// load music
-	LoadingStep(txLoadMusic);
-	if(!sound_mgr->IsMusicDisabled())
-	{
-		LoadMusic(MusicType::Boss, false);
-		LoadMusic(MusicType::Death, false);
-		LoadMusic(MusicType::Travel, false);
-	}
+	game_res->LoadCommonMusic();
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
 	if(!net->mp_quickload)
