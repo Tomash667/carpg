@@ -77,6 +77,13 @@
 #include "CommandParser.h"
 #include "Controls.h"
 #include "GameResources.h"
+#include "NameHelper.h"
+#include "GrassShader.h"
+#include "TerrainShader.h"
+#include "Notifications.h"
+#include "GameGui.h"
+#include "CreateServerPanel.h"
+#include "PickServerPanel.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -84,6 +91,7 @@ CustomCollisionWorld* global::phy_world;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
+void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -120,13 +128,495 @@ default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot:
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
 	SetupConfigVars();
-	BeforeInit();
+
+	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
+
+	arena = new Arena;
+	cmdp = new CommandParser;
+	game_gui = new GameGui;
+	game_level = new Level;
+	game_res = new GameResources;
+	game_stats = new GameStats;
+	loc_gen_factory = new LocationGeneratorFactory;
+	net = new Net;
+	pathfinding = new Pathfinding;
+	quest_mgr = new QuestManager;
+	script_mgr = new ScriptManager;
+	team = new Team;
+	world = new World;
 }
 
 //=================================================================================================
 Game::~Game()
 {
 	delete engine;
+}
+
+//=================================================================================================
+// Initialize game and show loadscreen.
+//=================================================================================================
+bool Game::OnInit()
+{
+	Info("Game: Initializing game.");
+	game_state = GS_LOAD_MENU;
+
+	try
+	{
+		// set everything needed to show loadscreen
+		PreconfigureGame();
+
+		// STEP 1 - load game system (units/items/etc)
+		LoadSystem();
+
+		// STEP 2 - load game content (meshes/textures/music/etc)
+		LoadData();
+
+		// configure game after loading and enter menu state
+		PostconfigureGame();
+
+		Info("Game: Game initialized.");
+		return true;
+	}
+	catch(cstring err)
+	{
+		engine->ShowError(Format("Game: Failed to initialize game: %s", err), Logger::L_FATAL);
+		return false;
+	}
+}
+
+//=================================================================================================
+// Preconfigure game vars.
+//=================================================================================================
+void Game::PreconfigureGame()
+{
+	Info("Game: Preconfiguring game.");
+
+	phy_world = engine->GetPhysicsWorld();
+	engine->UnlockCursor(false);
+
+	// set animesh callback
+	MeshInstance::Predraw = HumanPredraw;
+
+	game_gui->PreInit();
+
+	PreloadLanguage();
+	PreloadData();
+	res_mgr->SetProgressCallback(ProgressCallback(game_gui->load_screen, &LoadScreen::SetProgressCallback));
+}
+
+//=================================================================================================
+// Load language strings showed on load screen.
+//=================================================================================================
+void Game::PreloadLanguage()
+{
+	Language::LoadFile("preload.txt");
+
+	txCreatingListOfFiles = Str("creatingListOfFiles");
+	txConfiguringGame = Str("configuringGame");
+	txLoadingItems = Str("loadingItems");
+	txLoadingObjects = Str("loadingObjects");
+	txLoadingSpells = Str("loadingSpells");
+	txLoadingClasses = Str("loadingClasses");
+	txLoadingUnits = Str("loadingUnits");
+	txLoadingMusics = Str("loadingMusics");
+	txLoadingBuildings = Str("loadingBuildings");
+	txLoadingRequires = Str("loadingRequires");
+	txLoadingShaders = Str("loadingShaders");
+	txLoadingDialogs = Str("loadingDialogs");
+	txLoadingQuests = Str("loadingQuests");
+	txLoadingLanguageFiles = Str("loadingLanguageFiles");
+	txPreloadAssets = Str("preloadAssets");
+}
+
+//=================================================================================================
+// Load data used by loadscreen.
+//=================================================================================================
+void Game::PreloadData()
+{
+	res_mgr->AddDir("data/preload");
+
+	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 512, 2);
+
+	// loadscreen textures
+	game_gui->load_screen->LoadData();
+
+	// intro music
+	if(!sound_mgr->IsMusicDisabled())
+	{
+		Ptr<MusicTrack> track;
+		track->music = res_mgr->Load<Music>("Intro.ogg");
+		track->type = MusicType::Intro;
+		MusicTrack::tracks.push_back(track.Pin());
+		SetMusic(MusicType::Intro);
+	}
+}
+
+//=================================================================================================
+// Load system.
+//=================================================================================================
+void Game::LoadSystem()
+{
+	Info("Game: Loading system.");
+	game_gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+
+	AddFilesystem();
+	arena->Init();
+	game_gui->Init();
+	game_res->Init();
+	net->Init();
+	quest_mgr->Init();
+	script_mgr->Init();
+	game_gui->main_menu->UpdateCheckVersion();
+	LoadDatafiles();
+	LoadLanguageFiles();
+	game_gui->server->Init();
+	game_gui->load_screen->Tick(txLoadingShaders);
+	LoadShaders();
+	ConfigureGame();
+}
+
+//=================================================================================================
+// Add filesystem.
+//=================================================================================================
+void Game::AddFilesystem()
+{
+	Info("Game: Creating list of files.");
+	res_mgr->AddDir("data");
+	res_mgr->AddPak("data/data.pak", "KrystaliceFire");
+}
+
+//=================================================================================================
+// Load datafiles (items/units/etc).
+//=================================================================================================
+void Game::LoadDatafiles()
+{
+	Info("Game: Loading system.");
+	load_errors = 0;
+	load_warnings = 0;
+
+	// content
+	content.system_dir = g_system_dir;
+	content.LoadContent([this](Content::Id id)
+		{
+			switch(id)
+			{
+			case Content::Id::Items:
+				game_gui->load_screen->Tick(txLoadingItems);
+				break;
+			case Content::Id::Objects:
+				game_gui->load_screen->Tick(txLoadingObjects);
+				break;
+			case Content::Id::Spells:
+				game_gui->load_screen->Tick(txLoadingSpells);
+				break;
+			case Content::Id::Dialogs:
+				game_gui->load_screen->Tick(txLoadingDialogs);
+				break;
+			case Content::Id::Units:
+				game_gui->load_screen->Tick(txLoadingUnits);
+				break;
+			case Content::Id::Buildings:
+				game_gui->load_screen->Tick(txLoadingBuildings);
+				break;
+			case Content::Id::Musics:
+				game_gui->load_screen->Tick(txLoadingMusics);
+				break;
+			case Content::Id::Quests:
+				game_gui->load_screen->Tick(txLoadingQuests);
+				break;
+			case Content::Id::Classes:
+				game_gui->load_screen->Tick(txLoadingClasses);
+				break;
+			}
+		});
+
+	// required
+	game_gui->load_screen->Tick(txLoadingRequires);
+	LoadRequiredStats(load_errors);
+}
+
+//=================================================================================================
+// Load language files.
+//=================================================================================================
+void Game::LoadLanguageFiles()
+{
+	Info("Game: Loading language files.");
+	game_gui->load_screen->Tick(txLoadingLanguageFiles);
+
+	Language::LoadLanguageFiles();
+
+	txHaveErrors = Str("haveErrors");
+	SetGameCommonText();
+	SetItemStatsText();
+	NameHelper::SetHeroNames();
+	SetGameText();
+	SetStatsText();
+	arena->LoadLanguage();
+	game_gui->LoadLanguage();
+	game_level->LoadLanguage();
+	game_res->LoadLanguage();
+	net->LoadLanguage();
+	quest_mgr->LoadLanguage();
+	world->LoadLanguage();
+
+	uint language_errors = Language::GetErrors();
+	if(language_errors != 0)
+	{
+		Error("Game: %u language errors.", language_errors);
+		load_warnings += language_errors;
+	}
+}
+
+//=================================================================================================
+// Initialize everything needed by game before loading content.
+//=================================================================================================
+void Game::ConfigureGame()
+{
+	Info("Game: Configuring game.");
+	game_gui->load_screen->Tick(txConfiguringGame);
+
+	InitScene();
+	cmdp->AddCommands();
+	settings.ResetGameKeys();
+	settings.LoadGameKeys(cfg);
+	load_errors += BaseLocation::SetRoomPointers();
+
+	CreateTextures();
+	CreateRenderTargets();
+}
+
+//=================================================================================================
+// Load game data.
+//=================================================================================================
+void Game::LoadData()
+{
+	Info("Game: Loading data.");
+
+	res_mgr->PrepareLoadScreen(0.33f);
+	game_gui->load_screen->Tick(txPreloadAssets);
+	game_res->LoadData();
+	res_mgr->StartLoadScreen();
+}
+
+//=================================================================================================
+// Configure game after loading content.
+//=================================================================================================
+void Game::PostconfigureGame()
+{
+	Info("Game: Postconfiguring game.");
+
+	engine->LockCursor();
+	game_gui->PostInit();
+	game_level->Init();
+	loc_gen_factory->Init();
+	world->Init();
+	quest_mgr->InitLists();
+
+	// create save folders
+	io::CreateDirectory("saves");
+	io::CreateDirectory("saves/single");
+	io::CreateDirectory("saves/multi");
+
+	ItemScript::Init();
+
+	// shaders
+	render->RegisterShader(debug_drawer = new DebugDrawer);
+	render->RegisterShader(grass_shader = new GrassShader);
+	render->RegisterShader(terrain_shader = new TerrainShader);
+	debug_drawer->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
+
+	// test & validate game data (in debug always check some things)
+	if(testing)
+		ValidateGameData(true);
+#ifdef _DEBUG
+	else
+		ValidateGameData(false);
+#endif
+
+	// show errors notification
+	bool start_game_mode = true;
+	load_errors += content.errors;
+	load_warnings += content.warnings;
+	if(load_errors > 0 || load_warnings > 0)
+	{
+		// show message in release, notification in debug
+		if(load_errors > 0)
+			Error("Game: %u loading errors, %u warnings.", load_errors, load_warnings);
+		else
+			Warn("Game: %u loading warnings.", load_warnings);
+		Texture* img = (load_errors > 0 ? game_res->tError : game_res->tWarning);
+		cstring text = Format(txHaveErrors, load_errors, load_warnings);
+#ifdef _DEBUG
+		game_gui->notifications->Add(text, img, 5.f);
+#else
+		DialogInfo info;
+		info.name = "have_errors";
+		info.text = text;
+		info.type = DIALOG_OK;
+		info.img = img;
+		info.event = [this](int result) { StartGameMode(); };
+		info.parent = game_gui->main_menu;
+		info.order = ORDER_TOPMOST;
+		info.pause = false;
+		info.auto_wrap = true;
+		gui->ShowDialog(info);
+		start_game_mode = false;
+#endif
+	}
+
+	// save config
+	cfg.Add("adapter", render->GetAdapter());
+	cfg.Add("resolution", engine->GetWindowSize());
+	cfg.Add("refresh", render->GetRefreshRate());
+	SaveCfg();
+
+	// end load screen, show menu
+	clear_color = Color::Black;
+	game_state = GS_MAIN_MENU;
+	game_gui->load_screen->visible = false;
+	game_gui->main_menu->visible = true;
+	if(music_type != MusicType::Intro)
+		SetMusic(MusicType::Title);
+
+	// start game mode if selected quickmode
+	if(start_game_mode)
+		StartGameMode();
+}
+
+//=================================================================================================
+// Start quickmode if selected in config.
+//=================================================================================================
+void Game::StartGameMode()
+{
+	switch(quickstart)
+	{
+	case QUICKSTART_NONE:
+		break;
+	case QUICKSTART_SINGLE:
+		StartQuickGame();
+		break;
+	case QUICKSTART_HOST:
+	case QUICKSTART_LOAD_MP:
+		if(player_name.empty())
+		{
+			Warn("Quickstart: Can't create server, no player nick.");
+			break;
+		}
+		if(net->server_name.empty())
+		{
+			Warn("Quickstart: Can't create server, no server name.");
+			break;
+		}
+
+		if(quickstart == QUICKSTART_LOAD_MP)
+		{
+			net->mp_load = true;
+			net->mp_quickload = false;
+			if(TryLoadGame(quickstart_slot, false, false))
+			{
+				game_gui->create_server->CloseDialog();
+				game_gui->server->autoready = true;
+			}
+			else
+			{
+				Error("Multiplayer quickload failed.");
+				break;
+			}
+		}
+
+		try
+		{
+			net->InitServer();
+		}
+		catch(cstring err)
+		{
+			gui->SimpleDialog(err, nullptr);
+			break;
+		}
+
+		net->OnNewGameServer();
+		break;
+	case QUICKSTART_JOIN_LAN:
+		if(!player_name.empty())
+		{
+			game_gui->server->autoready = true;
+			game_gui->pick_server->Show(true);
+		}
+		else
+			Warn("Quickstart: Can't join server, no player nick.");
+		break;
+	case QUICKSTART_JOIN_IP:
+		if(!player_name.empty())
+		{
+			if(!server_ip.empty())
+			{
+				game_gui->server->autoready = true;
+				QuickJoinIp();
+			}
+			else
+				Warn("Quickstart: Can't join server, no server ip.");
+		}
+		else
+			Warn("Quickstart: Can't join server, no player nick.");
+		break;
+	case QUICKSTART_LOAD:
+		if(!TryLoadGame(quickstart_slot, false, false))
+			Error("Quickload failed.");
+		break;
+	default:
+		assert(0);
+		break;
+	}
+}
+
+//=================================================================================================
+void Game::OnCleanup()
+{
+	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
+		ClearGame();
+
+	if(game_gui && game_gui->main_menu)
+		game_gui->main_menu->ShutdownThread();
+
+	content.CleanupContent();
+
+	delete arena;
+	delete cmdp;
+	delete game_gui;
+	delete game_level;
+	delete game_res;
+	delete game_stats;
+	delete loc_gen_factory;
+	delete net;
+	delete pathfinding;
+	delete quest_mgr;
+	delete script_mgr;
+	delete team;
+	delete world;
+
+	ClearQuadtree();
+
+	// shadery
+	ReleaseShaders();
+
+	// bufory wierzcho³ków i indeksy
+	SafeRelease(vbParticle);
+	SafeRelease(vbDungeon);
+	SafeRelease(ibDungeon);
+	SafeRelease(vbFullscreen);
+
+	// tekstury render target, powierzchnie
+	SafeRelease(tMinimap.tex);
+	for(int i = 0; i < 3; ++i)
+	{
+		SafeRelease(sPostEffect[i]);
+		SafeRelease(tPostEffect[i]);
+	}
+
+	FIXME;
+	//draw_batch.Clear();
+
+	Language::Cleanup();
 }
 
 //=================================================================================================
@@ -857,61 +1347,6 @@ void Game::ClearPointers()
 		sPostEffect[i] = nullptr;
 		tPostEffect[i] = nullptr;
 	}
-
-	// vertex data
-	vdStairsUp = nullptr;
-	vdStairsDown = nullptr;
-	vdDoorHole = nullptr;
-}
-
-//=================================================================================================
-void Game::OnCleanup()
-{
-	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
-		ClearGame();
-
-	if(game_gui && game_gui->main_menu)
-		game_gui->main_menu->ShutdownThread();
-
-	content.CleanupContent();
-
-	delete arena;
-	delete cmdp;
-	delete game_gui;
-	delete game_res;
-	delete game_level;
-	delete game_stats;
-	delete loc_gen_factory;
-	delete net;
-	delete pathfinding;
-	delete quest_mgr;
-	delete script_mgr;
-	delete team;
-	delete world;
-
-	ClearQuadtree();
-
-	// shadery
-	ReleaseShaders();
-
-	// bufory wierzcho³ków i indeksy
-	SafeRelease(vbParticle);
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
-	SafeRelease(vbFullscreen);
-
-	// tekstury render target, powierzchnie
-	SafeRelease(tMinimap.tex);
-	for(int i = 0; i < 3; ++i)
-	{
-		SafeRelease(sPostEffect[i]);
-		SafeRelease(tPostEffect[i]);
-	}
-
-	FIXME;
-	//draw_batch.Clear();
-
-	Language::Cleanup();
 }
 
 //=================================================================================================
@@ -1898,13 +2333,13 @@ void Game::SetupCamera(float dt)
 				}
 				if(p.type == STAIRS_UP)
 				{
-					if(vdStairsUp->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
+					if(game_res->vdStairsUp->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == STAIRS_DOWN)
 				{
 					if(!lvl.staircase_down_in_wall
-						&& vdStairsDown->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
+						&& game_res->vdStairsDown->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
@@ -1939,7 +2374,7 @@ void Game::SetupCamera(float dt)
 							pos.x -= 0.8229f;
 					}
 
-					if(vdDoorHole->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
+					if(game_res->vdDoorHole->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
 						min_tout = tout;
 
 					Door* door = area.FindDoor(Int2(x, z));
@@ -2026,7 +2461,7 @@ void Game::SetupCamera(float dt)
 					min_tout = tout;
 			}
 
-			if(vdDoorHole->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
+			if(game_res->vdDoorHole->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
 				min_tout = tout;
 		}
 	}
@@ -2999,10 +3434,10 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			for(auto slot : u->slots)
 			{
 				if(slot)
-					PreloadItem(slot);
+					game_res->PreloadItem(slot);
 			}
 			for(auto& slot : u->items)
-				PreloadItem(slot.item);
+				game_res->PreloadItem(slot.item);
 		}
 	}
 	if(base.trader && !test_unit)
@@ -3013,7 +3448,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		if(!game_level->entering)
 		{
 			for(ItemSlot& slot : u->stock->items)
-				PreloadItem(slot.item);
+				game_res->PreloadItem(slot.item);
 		}
 	}
 
@@ -3195,7 +3630,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 				unit.hitted = true;
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = tSpark;
+				pe->tex = game_res->tSpark;
 				pe->emision_interval = 0.01f;
 				pe->life = 5.f;
 				pe->particle_life = 0.5f;
@@ -3216,7 +3651,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 				pe->Init();
 				area.tmp->pes.push_back(pe);
 
-				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{
@@ -3281,7 +3716,7 @@ void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, in
 	if(!IsSet(dmg_flags, DMG_NO_BLOOD))
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = tBlood[taker.data->blood];
+		pe->tex = game_res->tBlood[taker.data->blood];
 		pe->emision_interval = 0.01f;
 		pe->life = 5.f;
 		pe->particle_life = 0.5f;
@@ -3421,15 +3856,11 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 
 		if(hitted->node->mesh->head.n_groups == 2)
 		{
-			hitted->node->mesh_inst->frame_end_info2 = false;
 			hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-			hitted->node->mesh_inst->groups[1].speed = 1.f;
 		}
 		else
 		{
-			hitted->node->mesh_inst->frame_end_info = false;
 			hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-			hitted->node->mesh_inst->groups[0].speed = 1.f;
 			hitted->animation = ANI_PLAY;
 		}
 
@@ -3542,7 +3973,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
+						sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -3587,7 +4018,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				{
 					// play sound
 					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -3620,15 +4051,10 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 								hitted->animation_state = 1;
 
 							if(hitted->node->mesh->head.n_groups == 2)
-							{
-								hitted->node->mesh_inst->frame_end_info2 = false;
 								hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-							}
 							else
 							{
-								hitted->node->mesh_inst->frame_end_info = false;
 								hitted->node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-								hitted->node->mesh_inst->groups[0].speed = 1.f;
 								hitted->animation = ANI_PLAY;
 							}
 						}
@@ -3715,7 +4141,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
+						sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -3788,10 +4214,10 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 			// trafiono w obiekt
 			if(!it->spell)
 			{
-				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, ARROW_HIT_SOUND_DIST);
+				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, ARROW_HIT_SOUND_DIST);
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = tSpark;
+				pe->tex = game_res->tSpark;
 				pe->emision_interval = 0.01f;
 				pe->life = 5.f;
 				pe->particle_life = 0.5f;
@@ -4021,31 +4447,6 @@ void Game::ExitToMap()
 	game_gui->level_gui->visible = false;
 }
 
-Sound* Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
-{
-	switch(trafiony)
-	{
-	case MAT_BODY:
-		return sBody[Rand() % 5];
-	case MAT_BONE:
-		return sBone;
-	case MAT_CLOTH:
-	case MAT_SKIN:
-		return sSkin;
-	case MAT_IRON:
-		return sMetal;
-	case MAT_WOOD:
-		return sWood;
-	case MAT_ROCK:
-		return sRock;
-	case MAT_CRYSTAL:
-		return sCrystal;
-	default:
-		assert(0);
-		return nullptr;
-	}
-}
-
 void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 {
 	assert(sound);
@@ -4106,7 +4507,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 			c.id = weapon_mat;
 			c.count = hitted_mat;
 		}
-		sound_mgr->PlaySound3d(GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
+		sound_mgr->PlaySound3d(game_res->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
 
 		// train blocking
 		if(hitted.IsPlayer())
@@ -4135,15 +4536,10 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 					hitted.animation_state = 1;
 
 				if(hitted.node->mesh->head.n_groups == 2)
-				{
-					hitted.node->mesh_inst->frame_end_info2 = false;
 					hitted.node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-				}
 				else
 				{
-					hitted.node->mesh_inst->frame_end_info = false;
 					hitted.node->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-					hitted.node->mesh_inst->groups[0].speed = 1.f;
 					hitted.animation = ANI_PLAY;
 				}
 			}
@@ -4462,7 +4858,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 								float dmg = CombatHelper::CalculateDamage(attack, def);
 
 								// dŸwiêk trafienia
-								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), HIT_SOUND_DIST);
+								sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), HIT_SOUND_DIST);
 
 								// train player armor skill
 								if(unit->IsPlayer())
@@ -4586,7 +4982,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 						b.level = 4;
 						b.backstab = 0.25f;
 						b.attack = float(trap.base->attack);
-						b.mesh = aArrow;
+						b.mesh = game_res->aArrow;
 						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*DirToPos(trap.dir).x,
 							Random(0.5f, 1.5f),
 							2.f*trap.tile.y + trap.pos.z - float(int(trap.pos.z / 2) * 2) + Random(-trap.base->h, trap.base->h) - 1.2f*DirToPos(trap.dir).y);
@@ -4619,7 +5015,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 						area.tmp->tpes.push_back(tpe2);
 						b.trail2 = tpe2;
 
-						sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
+						sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
 
 						if(Net::IsServer())
 						{
@@ -5139,51 +5535,12 @@ void Game::ClearGame()
 	EntitySystem::clear = false;
 }
 
-Sound* Game::GetItemSound(const Item* item)
+void ApplyTextureOverrideToSubmesh(Mesh::Submesh& sub, TexOverride& tex_o)
 {
-	assert(item);
-
-	switch(item->type)
-	{
-	case IT_WEAPON:
-		return sItem[6];
-	case IT_BOW:
-		return sItem[4];
-	case IT_SHIELD:
-		return sItem[5];
-	case IT_ARMOR:
-		if(item->ToArmor().armor_type != AT_LIGHT)
-			return sItem[2];
-		else
-			return sItem[1];
-	case IT_AMULET:
-		return sItem[8];
-	case IT_RING:
-		return sItem[9];
-	case IT_CONSUMABLE:
-		if(Any(item->ToConsumable().cons_type, ConsumableType::Food, ConsumableType::Herb))
-			return sItem[7];
-		else
-			return sItem[0];
-	case IT_OTHER:
-		if(IsSet(item->flags, ITEM_CRYSTAL_SOUND))
-			return sItem[3];
-		else
-			return sItem[7];
-	case IT_GOLD:
-		return sCoins;
-	default:
-		return sItem[7];
-	}
+	sub.tex = tex_o.diffuse;
+	sub.tex_normal = tex_o.normal;
+	sub.tex_specular = tex_o.specular;
 }
-
-FIXME;
-//void ApplyTexturePackToSubmesh(Mesh::Submesh& sub, TexturePack& tp)
-//{
-//	sub.tex = tp.diffuse;
-//	sub.tex_normal = tp.normal;
-//	sub.tex_specular = tp.specular;
-//}
 
 void ApplyDungeonLightToMesh(Mesh& mesh)
 {
@@ -5196,29 +5553,29 @@ void ApplyDungeonLightToMesh(Mesh& mesh)
 }
 
 FIXME;
-/*void Game::ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex)
+/*void Game::ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex)
 {
-	ApplyLocationTexturePack(floor, tex.floor, tFloorBase);
-	ApplyLocationTexturePack(wall, tex.wall, tWallBase);
-	ApplyLocationTexturePack(ceil, tex.ceil, tCeilBase);
+	ApplyLocationTextureOverride(floor, tex.floor, game_res->tFloorBase);
+	ApplyLocationTextureOverride(wall, tex.wall, game_res->tWallBase);
+	ApplyLocationTextureOverride(ceil, tex.ceil, game_res->tCeilBase);
 }
 
-void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def)
+void Game::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def)
 {
 	if(e.tex)
 	{
-		pack.diffuse = e.tex;
-		pack.normal = e.tex_normal;
-		pack.specular = e.tex_specular;
+		tex_o.diffuse = e.tex;
+		tex_o.normal = e.tex_normal;
+		tex_o.specular = e.tex_specular;
 	}
 	else
-		pack = pack_def;
+		tex_o = tex_o_def;
 
-	res_mgr->Load(pack.diffuse);
-	if(pack.normal)
-		res_mgr->Load(pack.normal);
-	if(pack.specular)
-		res_mgr->Load(pack.specular);
+	res_mgr->Load(tex_o.diffuse);
+	if(tex_o.normal)
+		res_mgr->Load(tex_o.normal);
+	if(tex_o.specular)
+		res_mgr->Load(tex_o.specular);
 }*/
 
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
@@ -5231,19 +5588,20 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	clear_color_next = Color(int(game_level->fog_color.x * 255), int(game_level->fog_color.y * 255), int(game_level->fog_color.z * 255));
 
 	// tekstury podziemi
-	/*ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
+	FIXME;
+	/*ApplyLocationTextureOverride(game_res->tFloor[0], game_res->tWall[0], game_res->tCeil[0], base.tex);
 
 	// druga tekstura
 	if(base.tex2 != -1)
 	{
 		BaseLocation& base2 = g_base_locations[base.tex2];
-		ApplyLocationTexturePack(tFloor[1], tWall[1], tCeil[1], base2.tex);
+		ApplyLocationTextureOverride(game_res->tFloor[1], game_res->tWall[1], game_res->tCeil[1], base2.tex);
 	}
 	else
 	{
-		tFloor[1] = tFloor[0];
-		tCeil[1] = tCeil[0];
-		tWall[1] = tWall[0];
+		game_res->tFloor[1] = game_res->tFloor[0];
+		game_res->tCeil[1] = game_res->tCeil[0];
+		game_res->tWall[1] = game_res->tWall[0];
 	}
 
 	// ustawienia uv podziemi
@@ -5260,33 +5618,33 @@ void Game::SetDungeonParamsToMeshes()
 {
 	// tekstury schodów / pu³apek
 	FIXME;
-	/*ApplyTexturePackToSubmesh(aStairsDown->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aStairsDown->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aStairsDown2->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aStairsDown2->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aStairsUp->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aStairsUp->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aDoorWall->subs[0], tWall[0]);
-	ApplyDungeonLightToMesh(*aStairsDown);
-	ApplyDungeonLightToMesh(*aStairsDown2);
-	ApplyDungeonLightToMesh(*aStairsUp);
-	ApplyDungeonLightToMesh(*aDoorWall);
-	ApplyDungeonLightToMesh(*aDoorWall2);
+	/*ApplyTextureOverrideToSubmesh(game_res->aStairsDown->subs[0], game_res->tFloor[0]);
+	ApplyTextureOverrideToSubmesh(game_res->aStairsDown->subs[2], game_res->tWall[0]);
+	ApplyTextureOverrideToSubmesh(game_res->aStairsDown2->subs[0], game_res->tFloor[0]);
+	ApplyTextureOverrideToSubmesh(game_res->aStairsDown2->subs[2], game_res->tWall[0]);
+	ApplyTextureOverrideToSubmesh(game_res->aStairsUp->subs[0], game_res->tFloor[0]);
+	ApplyTextureOverrideToSubmesh(game_res->aStairsUp->subs[2], game_res->tWall[0]);
+	ApplyTextureOverrideToSubmesh(game_res->aDoorWall->subs[0], game_res->tWall[0]);
+	ApplyDungeonLightToMesh(*game_res->aStairsDown);
+	ApplyDungeonLightToMesh(*game_res->aStairsDown2);
+	ApplyDungeonLightToMesh(*game_res->aStairsUp);
+	ApplyDungeonLightToMesh(*game_res->aDoorWall);
+	ApplyDungeonLightToMesh(*game_res->aDoorWall2);
 
 	// apply texture/lighting to trap to make it same texture as dungeon
 	if(BaseTrap::traps[TRAP_ARROW].mesh->state == ResourceState::Loaded)
 	{
-		ApplyTexturePackToSubmesh(BaseTrap::traps[TRAP_ARROW].mesh->subs[0], tFloor[0]);
+		ApplyTextureOverrideToSubmesh(BaseTrap::traps[TRAP_ARROW].mesh->subs[0], game_res->tFloor[0]);
 		ApplyDungeonLightToMesh(*BaseTrap::traps[TRAP_ARROW].mesh);
 	}
 	if(BaseTrap::traps[TRAP_POISON].mesh->state == ResourceState::Loaded)
 	{
-		ApplyTexturePackToSubmesh(BaseTrap::traps[TRAP_POISON].mesh->subs[0], tFloor[0]);
+		ApplyTextureOverrideToSubmesh(BaseTrap::traps[TRAP_POISON].mesh->subs[0], game_res->tFloor[0]);
 		ApplyDungeonLightToMesh(*BaseTrap::traps[TRAP_POISON].mesh);
 	}
 
 	// druga tekstura
-	ApplyTexturePackToSubmesh(aDoorWall2->subs[0], tWall[1]);*/
+	ApplyTextureOverrideToSubmesh(game_res->aDoorWall2->subs[0], game_res->tWall[1]);*/
 }
 
 void Game::EnterLevel(LocationGenerator* loc_gen)
@@ -5533,23 +5891,25 @@ void Game::UpdateArea(LevelArea& area, float dt)
 		door.mesh_inst->Update(dt);
 		if(door.state == Door::Opening || door.state == Door::Opening2)
 		{
+			bool done = door.mesh_inst->IsEnded();
 			if(door.state == Door::Opening)
 			{
-				if(door.mesh_inst->frame_end_info || door.mesh_inst->GetProgress() >= 0.25f)
+				if(done || door.mesh_inst->GetProgress() >= 0.25f)
 				{
 					door.state = Door::Opening2;
 					btVector3& pos = door.phy->getWorldTransform().getOrigin();
 					pos.setY(pos.y() - 100.f);
 				}
 			}
-			if(door.mesh_inst->frame_end_info)
+			if(done)
 				door.state = Door::Open;
 		}
 		else if(door.state == Door::Closing || door.state == Door::Closing2)
 		{
+			bool done = door.mesh_inst->IsEnded();
 			if(door.state == Door::Closing)
 			{
-				if(door.mesh_inst->frame_end_info || door.mesh_inst->GetProgress() <= 0.25f)
+				if(done || door.mesh_inst->GetProgress() <= 0.25f)
 				{
 					bool blocking = false;
 
@@ -5570,7 +5930,7 @@ void Game::UpdateArea(LevelArea& area, float dt)
 					}
 				}
 			}
-			if(door.mesh_inst->frame_end_info)
+			if(done)
 			{
 				if(door.state == Door::Closing2)
 					door.state = Door::Closed;
@@ -5579,9 +5939,8 @@ void Game::UpdateArea(LevelArea& area, float dt)
 					// nie mo¿na zamknaæ drzwi bo coœ blokuje
 					door.state = Door::Opening2;
 					door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
-					door.mesh_inst->frame_end_info = false;
 					// mo¿na by daæ lepszy punkt dŸwiêku
-					sound_mgr->PlaySound3d(sDoorBudge, door.pos, Door::BLOCKED_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->sDoorBudge, door.pos, Door::BLOCKED_SOUND_DIST);
 				}
 			}
 		}
@@ -5609,9 +5968,9 @@ void Game::UpdateArea(LevelArea& area, float dt)
 void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, float range, bool dmg)
 {
 	// sounds
-	sound_mgr->PlaySound3d(GetMaterialSound(mat2, mat), hitpoint, range);
+	sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, range);
 	if(mat != MAT_BODY && dmg)
-		sound_mgr->PlaySound3d(GetMaterialSound(mat2, MAT_BODY), hitpoint, range);
+		sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, range);
 
 	if(Net::IsOnline())
 	{
@@ -5759,8 +6118,7 @@ void Game::PreloadResources(bool worldmap)
 		if(game_level->location->RequireLoadingResources(&new_value) == false)
 		{
 			// load music
-			if(!sound_mgr->IsMusicDisabled())
-				LoadMusic(game_level->GetLocationMusic(), false);
+			game_res->LoadMusic(game_level->GetLocationMusic(), false);
 
 			// load objects
 			for(Object* obj : game_level->local_area->objects)
@@ -5802,7 +6160,7 @@ void Game::PreloadResources(bool worldmap)
 	}
 
 	for(const Item* item : items_load)
-		PreloadItem(item);
+		game_res->PreloadItem(item);
 }
 
 void Game::PreloadUsables(vector<Usable*>& usables)
@@ -5876,70 +6234,6 @@ void Game::PreloadItems(vector<ItemSlot>& items)
 {
 	for(auto& slot : items)
 		items_load.insert(slot.item);
-}
-
-void Game::PreloadItem(const Item* p_item)
-{
-	Item& item = *(Item*)p_item;
-	if(item.state == ResourceState::Loaded)
-		return;
-
-	if(res_mgr->IsLoadScreen())
-	{
-		if(item.state != ResourceState::Loading)
-		{
-			if(item.type == IT_ARMOR)
-			{
-				Armor& armor = item.ToArmor();
-				if(!armor.tex_override.empty())
-				{
-					for(TexOverride& tex_o : armor.tex_override)
-						tex_o.Load();
-				}
-			}
-			else if(item.type == IT_BOOK)
-			{
-				Book& book = item.ToBook();
-				res_mgr->Load(book.scheme->tex);
-			}
-
-			if(item.mesh)
-				res_mgr->Load(item.mesh);
-			else if(item.tex)
-				res_mgr->Load(item.tex);
-			res_mgr->AddTask(&item, TaskCallback(game_res, &GameResources::GenerateItemIconTask));
-
-			res_mgr->AddTask(&item, TaskCallback(game_res, &GameResources::GenerateItemIconTask));
-			item.state = ResourceState::Loading;
-		}
-	}
-	else
-	{
-		// instant loading
-		if(item.type == IT_ARMOR)
-		{
-			Armor& armor = item.ToArmor();
-			if(!armor.tex_override.empty())
-			{
-				for(TexOverride& tex_o : armor.tex_override)
-					tex_o.Load();
-			}
-		}
-		else if(item.type == IT_BOOK)
-		{
-			Book& book = item.ToBook();
-			res_mgr->Load(book.scheme->tex);
-		}
-
-		if(item.mesh)
-			res_mgr->Load(item.mesh);
-		else if(item.tex)
-			res_mgr->Load(item.tex);
-		game_res->GenerateItemIcon(item);
-
-		game_res->GenerateItemIcon(item);
-		item.state = ResourceState::Loaded;
-	}
 }
 
 void Game::VerifyResources()

@@ -13,6 +13,7 @@
 #include "ResourceManager.h"
 #include "PlayerInfo.h"
 #include "Level.h"
+#include "GameResources.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -434,7 +435,7 @@ void TeamPanel::OnPayCredit(int id)
 		else
 			SimpleDialog(Format(txPaidCreditPart, count, game->pc->credit - count));
 		game->pc->unit->gold -= count;
-		sound_mgr->PlaySound2d(game->sCoins);
+		sound_mgr->PlaySound2d(game_res->sCoins);
 		if(Net::IsLocal())
 			game->pc->PayCredit(count);
 		else
@@ -540,7 +541,7 @@ void TeamPanel::OnGiveGold(int id)
 	else
 	{
 		game->pc->unit->gold -= counter;
-		sound_mgr->PlaySound2d(game->sCoins);
+		sound_mgr->PlaySound2d(game_res->sCoins);
 		if(Net::IsLocal())
 		{
 			target->gold += counter;

@@ -4,7 +4,7 @@
 #include "Item.h"
 #include "ItemSlot.h"
 #include "QuestManager.h"
-#include "Game.h"
+#include "GameResources.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
@@ -206,7 +206,7 @@ bool BitStreamReader::ReadItemList(vector<ItemSlot>& items)
 		operator >> (slot.count);
 		if(!IsOk())
 			return false;
-		game->PreloadItem(slot.item);
+		game_res->PreloadItem(slot.item);
 		slot.team_count = 0;
 	}
 
@@ -232,7 +232,7 @@ bool BitStreamReader::ReadItemListTeam(vector<ItemSlot>& items, bool skip)
 		if(!IsOk())
 			return false;
 		if(!skip)
-			game->PreloadItem(slot.item);
+			game_res->PreloadItem(slot.item);
 	}
 
 	return true;

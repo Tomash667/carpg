@@ -4,7 +4,7 @@
 #include "Crc.h"
 #include "ResourceManager.h"
 #include "Net.h"
-#include "Game.h"
+#include "GameResources.h"
 #include "ScriptException.h"
 #include "Quest.h"
 #include "QuestManager.h"
@@ -264,7 +264,7 @@ float Item::GetEffectPower(EffectId effect) const
 //=================================================================================================
 void Item::CreateCopy(Item& item) const
 {
-	game->PreloadItem(this);
+	game_res->PreloadItem(this);
 
 	switch(type)
 	{

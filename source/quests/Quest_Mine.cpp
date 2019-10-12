@@ -14,6 +14,7 @@
 #include "Portal.h"
 #include "AIController.h"
 #include "Team.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Mine::Start()
@@ -691,7 +692,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		// doors
 		{
 			Object* o = new Object;
-			o->mesh = game->aDoorWall;
+			o->mesh = game_res->aDoorWall;
 			o->pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
 			o->scale = 1;
 			o->base = nullptr;

@@ -20,6 +20,7 @@
 #include "SoundManager.h"
 #include "LocationGeneratorFactory.h"
 #include "DungeonGenerator.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Evil::Init()
@@ -253,7 +254,7 @@ void Quest_Evil::SetProgress(int prog2)
 			ParticleEmitter* best_pe = nullptr;
 			for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 			{
-				if(pe->tex == game->tBlood[BLOOD_RED])
+				if(pe->tex == game_res->tBlood[BLOOD_RED])
 				{
 					float dist = Vec3::Distance(pe->pos, obj->pos);
 					if(dist < best_dist)
@@ -556,7 +557,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->speed_min = Vec3(-1, 4, -1);
 	pe->speed_max = Vec3(1, 6, 1);
 	pe->mode = 0;
-	pe->tex = game->tBlood[BLOOD_RED];
+	pe->tex = game_res->tBlood[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
 	lvl.tmp->pes.push_back(pe);
@@ -708,7 +709,7 @@ void Quest_Evil::Update(float dt)
 				&& game_level->CanSee(*game_level->local_area, unit.pos, pos))
 			{
 				evil_state = State::Summoning;
-				sound_mgr->PlaySound2d(game->sEvil);
+				sound_mgr->PlaySound2d(game_res->sEvil);
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::EVIL_SOUND);
 				SetProgress(Progress::AltarEvent);

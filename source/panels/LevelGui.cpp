@@ -143,6 +143,8 @@ void LevelGui::LoadData()
 	tEquipped = res_mgr->Load<Texture>("equipped.png");
 	tDialog = res_mgr->Load<Texture>("dialog.png");
 	tShortcutAction = res_mgr->Load<Texture>("shortcut_action.png");
+	tRip = res_mgr->Load<Texture>("rip.jpg");
+	tBlack = res_mgr->Load<Texture>("czern.bmp");
 
 	BuffInfo::LoadImages();
 }
@@ -184,7 +186,7 @@ int LevelGui::DrawFallback()
 	else
 		alpha = int((1.f - game->fallback_t) * 255);
 
-	gui->DrawSpriteFull(game->tBlack, Color::Alpha(alpha));
+	gui->DrawSpriteFull(tBlack, Color::Alpha(alpha));
 
 	return alpha;
 }
@@ -367,7 +369,7 @@ void LevelGui::DrawFront()
 			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
 			else
-				mesh = game->aBag;
+				mesh = game_res->aBag;
 			Vec3 text_pos = item.pos;
 			text_pos.y += mesh->head.bbox.v2.y;
 			cstring text;
@@ -412,7 +414,7 @@ void LevelGui::DrawFront()
 					r_img.Top() = r.Top();
 				else if(r_img.Bottom() > r.Bottom())
 					r_img.Bottom() = r.Bottom();
-				gui->DrawSpriteRect(game->tEquipped, r_img, 0xAAFFFFFF);
+				gui->DrawSpriteRect(tEquipped, r_img, 0xAAFFFFFF);
 			}
 
 			// text
@@ -727,7 +729,7 @@ void LevelGui::DrawDeathScreen()
 		color = Color::White;
 
 	if((color & 0xFF000000) != 0)
-		gui->DrawSpriteFull(game->tBlack, color);
+		gui->DrawSpriteFull(tBlack, color);
 
 	// image & text
 	if(game->death_screen > 1)
@@ -739,8 +741,8 @@ void LevelGui::DrawDeathScreen()
 
 		if((color & 0xFF000000) != 0)
 		{
-			Int2 img_size = game->tRip->GetSize();
-			gui->DrawSprite(game->tRip, Center(img_size), color);
+			Int2 img_size = tRip->GetSize();
+			gui->DrawSprite(tRip, Center(img_size), color);
 
 			cstring text = Format(game->death_solo ? txDeathAlone : txDeath, game->pc->kills, game_stats->total_kills - game->pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game->death_screen == 3 ? txPressEsc : "\n");
@@ -759,7 +761,7 @@ void LevelGui::DrawEndOfGameScreen()
 		color = (int(game->death_fade * 255) << 24) | 0x00FFFFFF;
 	else
 		color = Color::White;
-	gui->DrawSpriteFull(game->tBlack, color);
+	gui->DrawSpriteFull(tBlack, color);
 
 	// image
 	Int2 sprite_pos = Center(tEmerytura->GetSize());

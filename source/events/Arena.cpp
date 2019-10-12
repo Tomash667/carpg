@@ -17,6 +17,7 @@
 #include "UnitGroup.h"
 #include "SoundManager.h"
 #include "PlayerInfo.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Arena::Init()
@@ -550,7 +551,7 @@ void Arena::Update(float dt)
 		if(timer >= 2.f)
 		{
 			if(game_level->GetArena() == game->pc->unit->area)
-				sound_mgr->PlaySound2d(game->sArenaFight);
+				sound_mgr->PlaySound2d(game_res->sArenaFight);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -623,7 +624,7 @@ void Arena::Update(float dt)
 			}
 
 			if(game_level->GetArena() == game->pc->unit->area)
-				sound_mgr->PlaySound2d(victory_sound ? game->sArenaWin : game->sArenaLost);
+				sound_mgr->PlaySound2d(victory_sound ? game_res->sArenaWin : game_res->sArenaLost);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -704,7 +705,6 @@ void Arena::Update(float dt)
 						unit->HealPoison();
 						unit->live_state = Unit::ALIVE;
 						unit->node->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-						unit->node->mesh_inst->groups[0].speed = 1.f;
 						unit->action = A_ANIMATION;
 						unit->animation = ANI_PLAY;
 						if(unit->IsAI())
@@ -738,7 +738,6 @@ void Arena::Update(float dt)
 						unit->HealPoison();
 						unit->live_state = Unit::ALIVE;
 						unit->node->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-						unit->node->mesh_inst->groups[0].speed = 1.f;
 						unit->action = A_ANIMATION;
 						unit->animation = ANI_PLAY;
 						if(unit->IsAI())

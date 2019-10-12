@@ -1046,7 +1046,7 @@ void InventoryPanel::Update(float dt)
 					slots[slot_type] = nullptr;
 					base.BuildTmpInventory(1);
 					// dŸwiêk
-					sound_mgr->PlaySound2d(game->GetItemSound(item));
+					sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 					// komunikat
 					if(Net::IsOnline())
 					{
@@ -1348,8 +1348,8 @@ void InventoryPanel::Event(GuiEvent e)
 			{
 				if(unit_slots[i])
 				{
-					Sound* s = game->GetItemSound(unit_slots[i]);
-					if(s == game->sCoins)
+					Sound* s = game_res->GetItemSound(unit_slots[i]);
+					if(s == game_res->sCoins)
 						gold = true;
 					else
 					{
@@ -1402,7 +1402,7 @@ void InventoryPanel::Event(GuiEvent e)
 			{
 				InsertItemBare(itms, it->item, it->count, it->team_count);
 				game->pc->unit->weight += it->item->weight * it->count;
-				Sound* s = game->GetItemSound(it->item);
+				Sound* s = game_res->GetItemSound(it->item);
 				for(int i = 0; i < 3; ++i)
 				{
 					if(sound[i] == s)
@@ -1431,7 +1431,7 @@ void InventoryPanel::Event(GuiEvent e)
 				sound_mgr->PlaySound2d(sound[i]);
 		}
 		if(gold)
-			sound_mgr->PlaySound2d(game->sCoins);
+			sound_mgr->PlaySound2d(game_res->sCoins);
 
 		// close inventory
 		if(changes)
@@ -1446,7 +1446,7 @@ void InventoryPanel::Event(GuiEvent e)
 void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
-	sound_mgr->PlaySound2d(game->GetItemSound(item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 	if(Net::IsLocal())
 		unit->RemoveItemEffects(item, slot);
 	unit->AddItem(item, 1, false);
@@ -1478,7 +1478,7 @@ void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 //=================================================================================================
 void InventoryPanel::DropSlotItem(ITEM_SLOT slot)
 {
-	sound_mgr->PlaySound2d(game->GetItemSound(slots[slot]));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slots[slot]));
 	unit->DropItem(slot);
 	base.BuildTmpInventory(0);
 	UpdateScrollbar();
@@ -1517,7 +1517,7 @@ void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 	}
 
 	// play sound
-	sound_mgr->PlaySound2d(game->GetItemSound(item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 
 	if(slots[slot])
 	{
@@ -1813,8 +1813,8 @@ void InventoryPanel::BuyItem(int index, uint count)
 	else
 	{
 		// dŸwiêk
-		sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
-		sound_mgr->PlaySound2d(game->sCoins);
+		sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+		sound_mgr->PlaySound2d(game_res->sCoins);
 		// usuñ z³oto
 		game->pc->unit->gold -= price;
 		if(Net::IsLocal())
@@ -1853,8 +1853,8 @@ void InventoryPanel::SellItem(int index, uint count)
 	uint normal_count = count - team_count;
 
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
-	sound_mgr->PlaySound2d(game->sCoins);
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	sound_mgr->PlaySound2d(game_res->sCoins);
 	// dodaj z³oto
 	if(Net::IsLocal())
 	{
@@ -1900,8 +1900,8 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	const Item* item = slots[slot];
 
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(item));
-	sound_mgr->PlaySound2d(game->sCoins);
+	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
+	sound_mgr->PlaySound2d(game_res->sCoins);
 	// dodaj z³oto
 	int price = ItemHelper::GetItemPrice(item, *game->pc->unit, false);
 	unit->gold += price;
@@ -1955,7 +1955,7 @@ void InventoryPanel::OnPutGold(int id)
 		// usuñ
 		unit->gold -= counter;
 		// dŸwiêk
-		sound_mgr->PlaySound2d(game->sCoins);
+		sound_mgr->PlaySound2d(game_res->sCoins);
 		if(!Net::IsLocal())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1979,7 +1979,7 @@ void InventoryPanel::LootItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// dodaj
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
@@ -2048,7 +2048,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	uint team_count = min(count, slot.team_count);
 
 	// play sound
-	sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 
 	// add to container
 	if(base.mode == I_LOOT_BODY)
@@ -2103,7 +2103,7 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 		base.tooltip.Clear();
 
 	// play sound
-	sound_mgr->PlaySound2d(game->GetItemSound(item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 
 	// add to container
 	if(base.mode == I_LOOT_BODY)
@@ -2156,7 +2156,7 @@ void InventoryPanel::OnGiveGold(int id)
 		}
 
 		game->pc->unit->gold -= counter;
-		sound_mgr->PlaySound2d(game->sCoins);
+		sound_mgr->PlaySound2d(game_res->sCoins);
 		Unit* u = game->pc->action_unit;
 		if(Net::IsLocal())
 		{
@@ -2209,7 +2209,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// dodaj
 	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
@@ -2254,7 +2254,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// dodaj
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
@@ -2334,7 +2334,7 @@ void InventoryPanel::OnGiveItem(int id)
 			return;
 		t->gold -= price;
 		unit->gold += price;
-		sound_mgr->PlaySound2d(game->sCoins);
+		sound_mgr->PlaySound2d(game_res->sCoins);
 		break;
 	case 2: // give item for free
 		break;
@@ -2342,7 +2342,7 @@ void InventoryPanel::OnGiveItem(int id)
 	t->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 	// usuñ
 	unit->weight -= item->weight;
 	if(slot)
@@ -2397,7 +2397,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	sound_mgr->PlaySound2d(game->GetItemSound(slot.item));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// dodaj
 	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
 		UpdateGrid(false);

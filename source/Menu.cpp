@@ -40,6 +40,7 @@
 #include "Render.h"
 #include "GameMessages.h"
 #include "Engine.h"
+#include "GameResources.h"
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -182,12 +183,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 		GenerateWorld();
 		quest_mgr->InitQuests();
 		world->StartInLocation();
-		if(!sound_mgr->IsMusicDisabled())
-		{
-			LoadMusic(MusicType::Boss, false);
-			LoadMusic(MusicType::Death, false);
-			LoadMusic(MusicType::Travel, false);
-		}
+		game_res->LoadCommonMusic();
 		EnterLocation();
 	}
 }
@@ -1305,12 +1301,7 @@ void Game::UpdateServerTransfer(float dt)
 			quest_mgr->InitQuests();
 			world->StartInLocation();
 			net->prepare_world = false;
-			if(!sound_mgr->IsMusicDisabled())
-			{
-				LoadMusic(MusicType::Boss, false);
-				LoadMusic(MusicType::Death, false);
-				LoadMusic(MusicType::Travel, false);
-			}
+			game_res->LoadCommonMusic();
 		}
 
 		net_state = NetState::Server_Initialized;

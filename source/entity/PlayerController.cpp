@@ -29,6 +29,7 @@
 #include "GroundItem.h"
 #include "ScriptManager.h"
 #include "Quest_Scripted.h"
+#include "GameResources.h"
 
 LocalPlayerData PlayerController::data;
 
@@ -1711,7 +1712,6 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 			u.action = A_ANIMATION2;
 			u.animation = ANI_PLAY;
 			u.node->mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
-			u.node->mesh_inst->groups[0].speed = 1.f;
 			u.target_pos = u.pos;
 			u.target_pos2 = use.pos;
 			if(use.base->limit_rot == 4)
@@ -1879,7 +1879,6 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 		unit->action = A_CAST;
 		unit->attack_id = -1;
 		unit->animation_state = 0;
-		unit->node->mesh_inst->frame_end_info2 = false;
 		unit->node->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 		if(is_local)
 		{
@@ -2687,7 +2686,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
 					u.node->mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					u.node->mesh_inst->groups[1].speed = 1.f;
 
 					if(next_action != NA_NONE)
 					{
@@ -2824,7 +2822,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				if(u.weapon_taken == W_ONE_HANDED)
 				{
 					u.node->mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					u.node->mesh_inst->groups[1].speed = 1.f;
 					last_weapon = u.weapon_taken = W_BOW;
 					u.weapon_hiding = W_ONE_HANDED;
 					u.weapon_state = WS_HIDING;
@@ -3034,9 +3031,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						game_level->minimap_opened_doors = true;
 					door->state = Door::Opening;
 					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-					door->mesh_inst->frame_end_info = false;
 					if(Rand() % 2 == 0)
-						sound_mgr->PlaySound3d(game->sDoor[Rand() % 3], door->GetCenter(), Door::SOUND_DIST);
+						sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], door->GetCenter(), Door::SOUND_DIST);
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -3065,16 +3061,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					Vec3 center = door->GetCenter();
 					if(key && unit->HaveItem(Item::Get(key)))
 					{
-						sound_mgr->PlaySound3d(game->sUnlock, center, Door::UNLOCK_SOUND_DIST);
+						sound_mgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
 						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
 						if(!game_level->location->outside)
 							game_level->minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
 						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-						door->mesh_inst->frame_end_info = false;
 						if(Rand() % 2 == 0)
-							sound_mgr->PlaySound3d(game->sDoor[Rand() % 3], center, Door::SOUND_DIST);
+							sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], center, Door::SOUND_DIST);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -3086,7 +3081,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					else
 					{
 						game_gui->messages->AddGameMsg3(GMS_NEED_KEY);
-						sound_mgr->PlaySound3d(game->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
+						sound_mgr->PlaySound3d(game_res->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
 					}
 				}
 			}
@@ -3095,14 +3090,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				// zamykanie drzwi
 				door->state = Door::Closing;
 				door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-				door->mesh_inst->frame_end_info = false;
 				if(Rand() % 2 == 0)
 				{
 					Sound* sound;
 					if(Rand() % 2 == 0)
-						sound = game->sDoorClose;
+						sound = game_res->sDoorClose;
 					else
-						sound = game->sDoor[Rand() % 3];
+						sound = game_res->sDoor[Rand() % 3];
 					sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
 				}
 				if(Net::IsOnline())
@@ -3125,15 +3119,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
 				u.node->mesh_inst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-				u.node->mesh_inst->groups[0].speed = 1.f;
-				u.node->mesh_inst->frame_end_info = false;
 
 				if(Net::IsLocal())
 				{
 					u.AddItem2(item.item, item.count, item.team_count, false);
 
 					if(item.item->type == IT_GOLD)
-						sound_mgr->PlaySound2d(game->sCoins);
+						sound_mgr->PlaySound2d(game_res->sCoins);
 
 					if(Net::IsOnline())
 					{
@@ -3190,10 +3182,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(GKey.KeyUpAllowed(action_key))
 					{
 						// release attack
-						const float speed = (u.attack_power + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
 						u.attack_power = u.node->mesh_inst->groups[1].time / u.GetAttackFrame(0);
-						u.animation_state = 1;
+						const float speed = (u.attack_power + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
 						u.node->mesh_inst->groups[1].speed = speed;
+						u.animation_state = 1;
 						u.attack_power += 1.f;
 
 						if(Net::IsOnline())
@@ -3218,7 +3210,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						const float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
 						u.action = A_ATTACK;
 						u.attack_id = u.GetRandomAttack();
-						u.node->mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+						u.node->mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
 						u.node->mesh_inst->groups[1].speed = speed;
 						action_key = k;
 						u.animation_state = 0;
@@ -3246,7 +3238,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					// stop blocking
 					u.action = A_NONE;
-					u.node->mesh_inst->frame_end_info2 = false;
 					u.node->mesh_inst->Deactivate(1);
 
 					if(Net::IsOnline())
@@ -3266,9 +3257,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						float speed = u.GetBashSpeed();
 						u.action = A_BASH;
 						u.animation_state = 0;
-						u.node->mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+						u.node->mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 						u.node->mesh_inst->groups[1].speed = speed;
-						u.node->mesh_inst->frame_end_info2 = false;
 						u.hitted = false;
 
 						if(Net::IsOnline())
@@ -3295,7 +3285,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
-					u.node->mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+					u.node->mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
 					if(u.running)
 					{
 						// running attack
@@ -3362,10 +3352,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(k != Key::None)
 					{
 						// start blocking
-						const float blend_speed = (oks == 2 ? 0.33f : u.GetBlockSpeed());
+						const float blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
 						u.action = A_BLOCK;
-						u.node->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-						u.node->mesh_inst->groups[1].blend_max = blend_speed;
+						u.node->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+						u.node->mesh_inst->groups[1].blend_max = blend_max;
 						action_key = k;
 						u.animation_state = 0;
 
@@ -3375,7 +3365,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							c.type = NetChange::ATTACK;
 							c.unit = unit;
 							c.id = AID_Block;
-							c.f[1] = blend_speed;
+							c.f[1] = blend_max;
 						}
 					}
 				}
@@ -3406,14 +3396,14 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				if(k != Key::None)
 				{
 					float speed = u.GetBowAttackSpeed();
-					u.node->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+					u.node->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 					u.node->mesh_inst->groups[1].speed = speed;
 					u.action = A_SHOOT;
 					u.animation_state = 0;
 					u.hitted = false;
 					action_key = k;
 					u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
+					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 					u.bow_instance->groups[0].speed = speed;
 
 					if(Net::IsOnline())
@@ -3445,7 +3435,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				data.action_target = nullptr;
 			}
 			else
-				sound_mgr->PlaySound2d(game->sCancel);
+				sound_mgr->PlaySound2d(game_res->sCancel);
 		}
 	}
 	else
@@ -3513,8 +3503,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				int id = Rand() % u.data->idles->anims.size();
 				idle_timer = Random(0.f, 0.5f);
 				u.node->mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
-				u.node->mesh_inst->groups[0].speed = 1.f;
-				u.node->mesh_inst->frame_end_info = false;
 				u.animation = ANI_IDLE;
 
 				if(Net::IsOnline())

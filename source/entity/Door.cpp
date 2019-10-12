@@ -1,11 +1,11 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Door.h"
-#include "Game.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 #include "Collision.h"
 #include "Level.h"
+#include "GameResources.h"
 
 EntityType<Door>::Impl EntityType<Door>::impl;
 const float Door::WIDTH = 0.842f;
@@ -48,8 +48,8 @@ void Door::Load(FileReader& f, bool local)
 
 	if(local)
 	{
-		mesh_inst = new MeshInstance(door2 ? game->aDoor2 : game->aDoor);
-		mesh_inst->Load(f);
+		mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
+		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game_level->shape_door);
@@ -104,7 +104,7 @@ bool Door::Read(BitStreamReader& f)
 		return false;
 	}
 
-	mesh_inst = new MeshInstance(door2 ? game->aDoor2 : game->aDoor);
+	mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 	mesh_inst->groups[0].speed = 2.f;
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
