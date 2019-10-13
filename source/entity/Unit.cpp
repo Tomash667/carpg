@@ -8135,17 +8135,25 @@ void Unit::Moved(bool warped, bool dash)
 
 void Unit::ChangeSlotItem(ITEM_SLOT slot, const Item* item)
 {
-	if(slot != SLOT_WEAPON)
-		return;
-
 	slots[slot] = item;
-	SceneNode* child_node = node->GetChild(slot);
+
+	NodeId node_id;
+	switch(slot)
+	{
+	case SLOT_WEAPON:
+		node_id = NodeId::Weapon;
+		break;
+	default:
+		return;
+	}
+
+	SceneNode* child_node = node->GetChild((int)node_id);
 	if(item)
 	{
 		if(!child_node)
 		{
 			child_node = SceneNode::Get();
-			child_node->id = slot;
+			child_node->id = (int)node_id;
 			child_node->SetMesh(item->mesh);
 			node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_hidden_weapon));
 		}

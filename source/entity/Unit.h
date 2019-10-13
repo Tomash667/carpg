@@ -234,6 +234,16 @@ struct Unit : public EntityType<Unit>
 		LOAD
 	};
 
+	enum class NodeId
+	{
+		None,
+		Weapon,
+		Shield,
+		Bow,
+		Armor,
+		Hair
+	};
+
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
