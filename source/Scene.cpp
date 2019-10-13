@@ -1129,9 +1129,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	switch(u.weapon_state)
 	{
-	case WS_HIDDEN:
+	case WeaponState::Hidden:
 		break;
-	case WS_TAKEN:
+	case WeaponState::Taken:
 		if(u.weapon_taken == W_BOW)
 		{
 			if(u.action == A_SHOOT)
@@ -1145,7 +1145,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		else if(u.weapon_taken == W_ONE_HANDED)
 			w_dloni = true;
 		break;
-	case WS_TAKING:
+	case WeaponState::Taking:
 		if(u.animation_state == 1)
 		{
 			if(u.weapon_taken == W_BOW)
@@ -1154,7 +1154,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				w_dloni = true;
 		}
 		break;
-	case WS_HIDING:
+	case WeaponState::Hiding:
 		if(u.animation_state == 0)
 		{
 			if(u.weapon_hiding == W_BOW)
@@ -1214,7 +1214,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		AddOrSplitSceneNode(node2);
 
 		// hitbox broni
-		if(draw_hitbox && u.weapon_state == WS_TAKEN && u.weapon_taken == W_ONE_HANDED)
+		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
 		{
 			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -1258,7 +1258,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		AddOrSplitSceneNode(node2);
 
 		// hitbox tarczy
-		if(draw_hitbox && u.weapon_state == WS_TAKEN && u.weapon_taken == W_ONE_HANDED)
+		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
 		{
 			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -1308,16 +1308,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 		switch(u.weapon_state)
 		{
-		case WS_HIDING:
+		case WeaponState::Hiding:
 			w_dloni = (u.weapon_hiding == W_BOW && u.animation_state == 0);
 			break;
-		case WS_HIDDEN:
+		case WeaponState::Hidden:
 			w_dloni = false;
 			break;
-		case WS_TAKING:
+		case WeaponState::Taking:
 			w_dloni = (u.weapon_taken == W_BOW && u.animation_state == 1);
 			break;
-		case WS_TAKEN:
+		case WeaponState::Taken:
 			w_dloni = (u.weapon_taken == W_BOW);
 			break;
 		}

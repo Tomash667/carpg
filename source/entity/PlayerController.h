@@ -316,4 +316,5 @@ public:
 	void UpdateMove(float dt, bool allow_rot);
 	void UpdateCooldown(float dt);
 	bool WantExitLevel();
+	void ClearNextAction();
 };

@@ -490,7 +490,7 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->mesh_inst->mesh->head.n_groups == 1 || unit->weapon_state == WS_TAKEN) && next_attack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->mesh_inst->mesh->head.n_groups == 1 || unit->weapon_state == WeaponState::Taken) && next_attack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)

@@ -399,10 +399,9 @@ void Game::UpdateAi(float dt)
 					}
 
 					// fix bug of unkown origin. occurs after arena fight, affecting loosers
-					if(u.weapon_state == WS_HIDING && u.action == A_NONE)
+					if(u.weapon_state == WeaponState::Hiding && u.action == A_NONE)
 					{
-						assert(0);
-						u.weapon_state = WS_HIDDEN;
+						u.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 						ai.potion = -1;
 						ReportError(8, Format("Unit %s was hiding weapon without action.", u.GetRealName()));
 					}
@@ -699,7 +698,7 @@ void Game::UpdateAi(float dt)
 
 					if(u.action == A_NONE && ai.timer <= 0.f)
 					{
-						if(Any(ai.idle_action, AIController::Idle_TrainCombat, AIController::Idle_TrainBow) && u.weapon_state != WS_HIDDEN)
+						if(Any(ai.idle_action, AIController::Idle_TrainCombat, AIController::Idle_TrainBow) && u.weapon_state != WeaponState::Hidden)
 						{
 							if(u.action == A_NONE)
 							{
@@ -2458,7 +2457,7 @@ void Game::UpdateAi(float dt)
 		// animation
 		if(u.animation != ANI_PLAY && u.animation != ANI_KNEELS)
 		{
-			if(ai.in_combat || ((ai.idle_action == AIController::Idle_TrainBow || ai.idle_action == AIController::Idle_TrainCombat) && u.weapon_state == WS_TAKEN))
+			if(ai.in_combat || ((ai.idle_action == AIController::Idle_TrainBow || ai.idle_action == AIController::Idle_TrainCombat) && u.weapon_state == WeaponState::Taken))
 			{
 				if(u.IsHoldingBow())
 					u.animation = ANI_BATTLE_BOW;

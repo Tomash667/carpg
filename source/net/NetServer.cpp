@@ -678,18 +678,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(!f)
 					Error("Update server: Broken TAKE_WEAPON from %s.", info.name.c_str());
 				else if(game->game_state == GS_LEVEL)
-				{
-					unit.mesh_inst->groups[1].speed = 1.f;
-					unit.SetWeaponState(!hide, weapon_type);
-					// send to other players
-					if(active_players > 2)
-					{
-						NetChange& c = Add1(changes);
-						c.unit = &unit;
-						c.type = NetChange::TAKE_WEAPON;
-						c.id = (hide ? 1 : 0);
-					}
-				}
+					unit.SetWeaponState(!hide, weapon_type, true);
 			}
 			break;
 		// player attacks
@@ -705,11 +694,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Broken ATTACK from %s.", info.name.c_str());
 				else if(game->game_state == GS_LEVEL)
 				{
-					byte type = (typeflags & 0xF);
-
-					// force taken weapon in hand
-					unit.weapon_state = WS_TAKEN;
-
+					const byte type = (typeflags & 0xF);
+					bool is_bow = false;
 					switch(type)
 					{
 					case AID_Attack:
@@ -751,6 +737,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						break;
 					case AID_Shoot:
 					case AID_StartShoot:
+						is_bow = true;
 						if(unit.action == A_SHOOT && unit.animation_state == 0)
 							unit.animation_state = 1;
 						else
@@ -811,6 +798,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						break;
 					}
+
+					unit.SetWeaponStateInstant(WeaponState::Taken, is_bow ? W_BOW : W_ONE_HANDED);
 
 					// send to other players
 					if(active_players > 2)
@@ -1742,10 +1731,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.use_rot = Vec3::LookAtAngle(unit.pos, usable->pos);
 							unit.used_item = base.item;
 							if(unit.used_item)
-							{
-								unit.weapon_taken = W_NONE;
-								unit.weapon_state = WS_HIDDEN;
-							}
+								unit.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 						}
 						else
 						{

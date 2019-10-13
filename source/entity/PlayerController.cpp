@@ -1679,7 +1679,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
-		else if(unit->weapon_state != WS_HIDDEN && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
+		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
 		{
 			if(after_action)
 				return;
@@ -2195,7 +2195,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot && allow_rot)
 		{
-			int div = (unit->action == A_SHOOT ? 800 : 400);
+			int div = (u.action == A_SHOOT ? 800 : 400);
 			data.rot_buf *= (1.f - dt * 2);
 			data.rot_buf += float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / div;
 			if(data.rot_buf > 0.1f)
@@ -2351,7 +2351,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				const Item* item = reinterpret_cast<const Item*>(shortcut.value);
 				if(item->IsWearable())
 				{
-					if(unit->HaveItemEquipped(item))
+					if(u.HaveItemEquipped(item))
 					{
 						if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 						{
@@ -2364,26 +2364,32 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							shortcut.value = Shortcut::SPECIAL_RANGED_WEAPON;
 						}
 					}
-					else if(unit->CanWear(item))
+					else if(u.CanWear(item))
 					{
 						bool ignore_team = !team->HaveOtherActiveTeamMember();
-						int i_index = unit->FindItem([=](const ItemSlot& slot)
+						int i_index = u.FindItem([=](const ItemSlot& slot)
 						{
 							return slot.item == item && (slot.team_count == 0u || ignore_team);
 						});
 						if(i_index != Unit::INVALID_IINDEX)
 						{
 							ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
-							if(unit->SlotRequireHideWeapon(slot_type))
+							bool ok = true;
+							if(u.SlotRequireHideWeapon(slot_type))
 							{
-								unit->HideWeapon();
-								next_action = NA_EQUIP_DRAW;
-								next_action_data.item = item;
-								next_action_data.index = i_index;
-								if(Net::IsClient())
-									Net::PushChange(NetChange::SET_NEXT_ACTION);
+								u.HideWeapon();
+								if(u.action == A_TAKE_WEAPON)
+								{
+									ok = false;
+									next_action = NA_EQUIP_DRAW;
+									next_action_data.item = item;
+									next_action_data.index = i_index;
+									if(Net::IsClient())
+										Net::PushChange(NetChange::SET_NEXT_ACTION);
+								}
 							}
-							else
+
+							if(ok)
 							{
 								game_gui->inventory->inv_mine->EquipSlotItem(slot_type, i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
@@ -2402,19 +2408,19 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 				else if(item->type == IT_CONSUMABLE)
 				{
-					int i_index = unit->FindItem(item);
+					int i_index = u.FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
 						game_gui->inventory->inv_mine->ConsumeItem(i_index);
 				}
 				else if(item->type == IT_BOOK)
 				{
-					int i_index = unit->FindItem(item);
+					int i_index = u.FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
 					{
 						if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
 						{
-							if(!unit->usable) // can't use when sitting
-								unit->UseItem(i_index);
+							if(!u.usable) // can't use when sitting
+								u.UseItem(i_index);
 						}
 						else
 						{
@@ -2435,14 +2441,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
 		{
-			idle = false;
-			if(u.weapon_state == WS_TAKEN || u.weapon_state == WS_TAKING)
+			if(Any(u.weapon_state, WeaponState::Taken, WeaponState::Taking))
+			{
 				u.HideWeapon();
+				idle = false;
+			}
 			else
 			{
+				// decide which weapon to take out
 				WeaponType weapon = last_weapon;
-
-				// ustal któr¹ broñ wyj¹œæ
 				if(weapon == W_NONE)
 				{
 					if(u.HaveWeapon())
@@ -2471,378 +2478,35 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 
-				if(weapon != W_NONE)
-				{
-					last_weapon = weapon;
-					if(next_action != NA_NONE)
-					{
-						next_action = NA_NONE;
-						if(Net::IsClient())
-							Net::PushChange(NetChange::SET_NEXT_ACTION);
-					}
-
-					switch(u.weapon_state)
-					{
-					case WS_HIDDEN:
-						// broñ jest schowana, zacznij wyjmowaæ
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-						u.weapon_taken = weapon;
-						u.animation_state = 0;
-						u.weapon_state = WS_TAKING;
-						u.action = A_TAKE_WEAPON;
-						break;
-					case WS_HIDING:
-						// broñ jest chowana, anuluj chowanie
-						if(u.animation_state == 0)
-						{
-							// jeszcze nie schowa³ broni za pas, wy³¹cz grupê
-							u.action = A_NONE;
-							u.weapon_taken = u.weapon_hiding;
-							u.weapon_hiding = W_NONE;
-							last_weapon = u.weapon_taken;
-							u.weapon_state = WS_TAKEN;
-							u.mesh_inst->Deactivate(1);
-						}
-						else
-						{
-							// schowa³ broñ za pas, zacznij wyci¹gaæ
-							u.weapon_taken = u.weapon_hiding;
-							u.weapon_hiding = W_NONE;
-							last_weapon = u.weapon_taken;
-							u.weapon_state = WS_TAKING;
-							u.animation_state = 0;
-							ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-						}
-						break;
-					case WS_TAKING:
-						// wyjmuje broñ, anuluj wyjmowanie
-						if(u.animation_state == 0)
-						{
-							// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
-							u.action = A_NONE;
-							u.weapon_taken = W_NONE;
-							u.weapon_state = WS_HIDDEN;
-							u.mesh_inst->Deactivate(1);
-						}
-						else
-						{
-							// wyj¹³ broñ z pasa, zacznij chowaæ
-							u.weapon_hiding = u.weapon_taken;
-							u.weapon_taken = W_NONE;
-							u.weapon_state = WS_HIDING;
-							u.animation_state = 0;
-							SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-						}
-						break;
-					case WS_TAKEN:
-						// broñ jest wyjêta, zacznij chowaæ
-						if(u.action == A_SHOOT)
-							game_level->FreeBowInstance(u.bow_instance);
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
-						u.weapon_hiding = weapon;
-						u.weapon_taken = W_NONE;
-						u.weapon_state = WS_HIDING;
-						u.action = A_TAKE_WEAPON;
-						u.animation_state = 0;
-						break;
-					}
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.unit = unit;
-						c.id = ((u.weapon_state == WS_HIDDEN || u.weapon_state == WS_HIDING) ? 1 : 0);
-						c.type = NetChange::TAKE_WEAPON;
-					}
-				}
+				if(weapon == W_NONE)
+					game_gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
 				else
 				{
-					// komunikat o braku broni
-					game_gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
+					last_weapon = weapon;
+					if(u.SetWeaponState(true, weapon, true))
+					{
+						idle = false;
+						ClearNextAction();
+					}
 				}
 			}
 		}
 		else if(u.HaveWeapon() && (shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_MELEE_WEAPON))
 		{
-			idle = false;
-			if(u.weapon_state == WS_HIDDEN)
+			if(u.SetWeaponState(true, W_ONE_HANDED, true))
 			{
-				// broñ schowana, zacznij wyjmowaæ
-				u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
-				u.weapon_taken = last_weapon = W_ONE_HANDED;
-				u.weapon_state = WS_TAKING;
-				u.action = A_TAKE_WEAPON;
-				u.animation_state = 0;
-				if(next_action != NA_NONE)
-				{
-					next_action = NA_NONE;
-					if(Net::IsClient())
-						Net::PushChange(NetChange::SET_NEXT_ACTION);
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.unit = unit;
-					c.id = 0;
-					c.type = NetChange::TAKE_WEAPON;
-				}
-			}
-			else if(u.weapon_state == WS_HIDING)
-			{
-				// chowa broñ
-				if(u.weapon_hiding == W_ONE_HANDED)
-				{
-					if(u.animation_state == 0)
-					{
-						// jeszcze nie schowa³ broni za pas, wy³¹cz grupê
-						u.action = A_NONE;
-						u.weapon_taken = u.weapon_hiding;
-						u.weapon_hiding = W_NONE;
-						last_weapon = u.weapon_taken;
-						u.weapon_state = WS_TAKEN;
-						u.mesh_inst->Deactivate(1);
-					}
-					else
-					{
-						// schowa³ broñ za pas, zacznij wyci¹gaæ
-						u.weapon_taken = u.weapon_hiding;
-						u.weapon_hiding = W_NONE;
-						last_weapon = u.weapon_taken;
-						u.weapon_state = WS_TAKING;
-						u.animation_state = 0;
-						ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-					}
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.unit = unit;
-						c.id = 0;
-						c.type = NetChange::TAKE_WEAPON;
-					}
-				}
-				else
-				{
-					// chowa ³uk, dodaj info ¿eby wyj¹³ broñ
-					u.weapon_taken = W_ONE_HANDED;
-				}
-
-				if(next_action != NA_NONE)
-				{
-					next_action = NA_NONE;
-					if(Net::IsClient())
-						Net::PushChange(NetChange::SET_NEXT_ACTION);
-				}
-			}
-			else if(u.weapon_state == WS_TAKING)
-			{
-				// wyjmuje broñ
-				if(u.weapon_taken == W_BOW)
-				{
-					// wyjmuje ³uk
-					if(u.animation_state == 0)
-					{
-						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
-						last_weapon = u.weapon_taken = W_ONE_HANDED;
-					}
-					else
-					{
-						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						last_weapon = u.weapon_taken = W_ONE_HANDED;
-						u.weapon_hiding = W_BOW;
-						u.weapon_state = WS_HIDING;
-						u.animation_state = 0;
-						SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-					}
-				}
-
-				if(next_action != NA_NONE)
-				{
-					next_action = NA_NONE;
-					if(Net::IsClient())
-						Net::PushChange(NetChange::SET_NEXT_ACTION);
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.unit = unit;
-					c.id = (u.weapon_state == WS_HIDING ? 1 : 0);
-					c.type = NetChange::TAKE_WEAPON;
-				}
-			}
-			else
-			{
-				// broñ wyjêta
-				if(u.weapon_taken == W_BOW)
-				{
-					if(u.action == A_SHOOT)
-						game_level->FreeBowInstance(u.bow_instance);
-					last_weapon = u.weapon_taken = W_ONE_HANDED;
-					u.weapon_hiding = W_BOW;
-					u.weapon_state = WS_HIDING;
-					u.animation_state = 0;
-					u.action = A_TAKE_WEAPON;
-					u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-
-					if(next_action != NA_NONE)
-					{
-						next_action = NA_NONE;
-						if(Net::IsClient())
-							Net::PushChange(NetChange::SET_NEXT_ACTION);
-					}
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.unit = unit;
-						c.id = 1;
-						c.type = NetChange::TAKE_WEAPON;
-					}
-				}
+				last_weapon = W_ONE_HANDED;
+				idle = false;
+				ClearNextAction();
 			}
 		}
 		else if(u.HaveBow() && (shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_RANGED_WEAPON))
 		{
-			idle = false;
-			if(u.weapon_state == WS_HIDDEN)
+			if(u.SetWeaponState(true, W_BOW, true))
 			{
-				// broñ schowana, zacznij wyjmowaæ
-				u.weapon_taken = last_weapon = W_BOW;
-				u.weapon_state = WS_TAKING;
-				u.action = A_TAKE_WEAPON;
-				u.animation_state = 0;
-				u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
-
-				if(next_action != NA_NONE)
-				{
-					next_action = NA_NONE;
-					if(Net::IsClient())
-						Net::PushChange(NetChange::SET_NEXT_ACTION);
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.unit = unit;
-					c.id = 0;
-					c.type = NetChange::TAKE_WEAPON;
-				}
-			}
-			else if(u.weapon_state == WS_HIDING)
-			{
-				// chowa
-				if(u.weapon_hiding == W_BOW)
-				{
-					if(u.animation_state == 0)
-					{
-						// jeszcze nie schowa³ ³uku, wy³¹cz grupê
-						u.action = A_NONE;
-						u.weapon_taken = u.weapon_hiding;
-						u.weapon_hiding = W_NONE;
-						last_weapon = u.weapon_taken;
-						u.weapon_state = WS_TAKEN;
-						u.mesh_inst->Deactivate(1);
-					}
-					else
-					{
-						// schowa³ ³uk, zacznij wyci¹gaæ
-						u.weapon_taken = u.weapon_hiding;
-						u.weapon_hiding = W_NONE;
-						last_weapon = u.weapon_taken;
-						u.weapon_state = WS_TAKING;
-						u.animation_state = 0;
-						ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-					}
-				}
-				else
-				{
-					// chowa broñ, dodaj info ¿eby wyj¹³ broñ
-					u.weapon_taken = W_BOW;
-				}
-
-				if(next_action != NA_NONE)
-				{
-					next_action = NA_NONE;
-					if(Net::IsClient())
-						Net::PushChange(NetChange::SET_NEXT_ACTION);
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.unit = unit;
-					c.id = 0;
-					c.type = NetChange::TAKE_WEAPON;
-				}
-			}
-			else if(u.weapon_state == WS_TAKING)
-			{
-				// wyjmuje broñ
-				if(u.weapon_taken == W_ONE_HANDED)
-				{
-					// wyjmuje broñ
-					if(u.animation_state == 0)
-					{
-						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						last_weapon = u.weapon_taken = W_BOW;
-						u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
-					}
-					else
-					{
-						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						last_weapon = u.weapon_taken = W_BOW;
-						u.weapon_hiding = W_ONE_HANDED;
-						u.weapon_state = WS_HIDING;
-						u.animation_state = 0;
-						SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-					}
-				}
-
-				if(next_action != NA_NONE)
-				{
-					next_action = NA_NONE;
-					if(Net::IsClient())
-						Net::PushChange(NetChange::SET_NEXT_ACTION);
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.unit = unit;
-					c.id = (u.weapon_state == WS_HIDING ? 1 : 0);
-					c.type = NetChange::TAKE_WEAPON;
-				}
-			}
-			else
-			{
-				// broñ wyjêta
-				if(u.weapon_taken == W_ONE_HANDED)
-				{
-					u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					last_weapon = u.weapon_taken = W_BOW;
-					u.weapon_hiding = W_ONE_HANDED;
-					u.weapon_state = WS_HIDING;
-					u.animation_state = 0;
-					u.action = A_TAKE_WEAPON;
-
-					if(next_action != NA_NONE)
-					{
-						next_action = NA_NONE;
-						if(Net::IsClient())
-							Net::PushChange(NetChange::SET_NEXT_ACTION);
-					}
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.unit = unit;
-						c.id = 1;
-						c.type = NetChange::TAKE_WEAPON;
-					}
-				}
+				last_weapon = W_BOW;
+				idle = false;
+				ClearNextAction();
 			}
 		}
 
@@ -2997,7 +2661,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		else if(data.before_player == BP_CHEST)
 		{
 			// pl¹drowanie skrzyni
-			if(unit->action != A_NONE)
+			if(u.action != A_NONE)
 			{
 			}
 			else if(Net::IsLocal())
@@ -3015,7 +2679,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				action = PlayerAction::LootChest;
 				action_chest = data.before_player_ptr.chest;
 				chest_trade = &action_chest->items;
-				unit->action = A_PREPARE;
+				u.action = A_PREPARE;
 			}
 		}
 		else if(data.before_player == BP_DOOR)
@@ -3059,7 +2723,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 
 					Vec3 center = door->GetCenter();
-					if(key && unit->HaveItem(Item::Get(key)))
+					if(key && u.HaveItem(Item::Get(key)))
 					{
 						sound_mgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
 						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
@@ -3170,7 +2834,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// atak
-	if(u.weapon_state == WS_TAKEN && !data.action_ready)
+	if(u.weapon_state == WeaponState::Taken && !data.action_ready)
 	{
 		idle = false;
 		if(u.weapon_taken == W_ONE_HANDED)
@@ -3547,4 +3211,15 @@ void PlayerController::UpdateCooldown(float dt)
 bool PlayerController::WantExitLevel()
 {
 	return !GKey.KeyDownAllowed(GK_WALK);
+}
+
+//=================================================================================================
+void PlayerController::ClearNextAction()
+{
+	if(next_action != NA_NONE)
+	{
+		next_action = NA_NONE;
+		if(Net::IsClient())
+			Net::PushChange(NetChange::SET_NEXT_ACTION);
+	}
 }

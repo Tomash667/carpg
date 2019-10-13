@@ -512,7 +512,7 @@ int Unit::ConsumeItem(int index)
 	// jeœli coœ robi to nie mo¿e u¿yæ
 	if(action != A_NONE && !(animation_state == 0 && Any(action, A_ATTACK, A_SHOOT)))
 	{
-		if(action == A_TAKE_WEAPON && weapon_state == WS_HIDING)
+		if(action == A_TAKE_WEAPON && weapon_state == WeaponState::Hiding)
 		{
 			// jeœli chowa broñ to u¿yj miksturki jak schowa
 			if(IsPlayer())
@@ -529,9 +529,7 @@ int Unit::ConsumeItem(int index)
 				else
 				{
 					action = A_NONE;
-					weapon_state = WS_HIDDEN;
-					weapon_taken = W_NONE;
-					weapon_hiding = W_NONE;
+					SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 				}
 			}
 			else
@@ -545,7 +543,7 @@ int Unit::ConsumeItem(int index)
 	}
 
 	// jeœli broñ jest wyjêta to schowaj
-	if(weapon_state != WS_HIDDEN)
+	if(weapon_state != WeaponState::Hidden)
 	{
 		HideWeapon();
 		if(IsPlayer())
@@ -612,7 +610,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 			return;
 		}
 		else
-			weapon_state = WS_HIDDEN;
+			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	}
 
 	used_item_is_team = true;
@@ -706,89 +704,14 @@ void Unit::UseItem(int index)
 }
 
 //=================================================================================================
-void Unit::HideWeapon()
-{
-	switch(weapon_state)
-	{
-	case WS_HIDDEN:
-		return;
-	case WS_HIDING:
-		// anuluje wyci¹ganie nastêpnej broni po schowaniu tej
-		weapon_taken = W_NONE;
-		return;
-	case WS_TAKING:
-		if(animation_state == 0)
-		{
-			// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
-			action = A_NONE;
-			weapon_taken = W_NONE;
-			weapon_state = WS_HIDDEN;
-			mesh_inst->Deactivate(1);
-		}
-		else
-		{
-			// wyj¹³ broñ z pasa, zacznij chowaæ
-			weapon_hiding = weapon_taken;
-			weapon_taken = W_NONE;
-			weapon_state = WS_HIDING;
-			animation_state = 0;
-			SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-		}
-		break;
-	case WS_TAKEN:
-		if(action == A_SHOOT)
-			game_level->FreeBowInstance(bow_instance);
-		mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
-		weapon_hiding = weapon_taken;
-		weapon_taken = W_NONE;
-		animation_state = 0;
-		action = A_TAKE_WEAPON;
-		weapon_state = WS_HIDING;
-		break;
-	}
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TAKE_WEAPON;
-		c.unit = this;
-		c.id = 1;
-	}
-}
-
-//=================================================================================================
 void Unit::TakeWeapon(WeaponType type)
 {
 	assert(type == W_ONE_HANDED || type == W_BOW);
 
-	if(action != A_NONE)
+	if(action != A_NONE || weapon_taken == type)
 		return;
 
-	if(weapon_taken == type)
-		return;
-
-	if(weapon_taken == W_NONE)
-	{
-		mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
-		weapon_hiding = W_NONE;
-		weapon_taken = type;
-		animation_state = 0;
-		action = A_TAKE_WEAPON;
-		weapon_state = WS_TAKING;
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::TAKE_WEAPON;
-			c.unit = this;
-			c.id = 0;
-		}
-	}
-	else
-	{
-		HideWeapon();
-		weapon_taken = type;
-	}
+	SetWeaponState(true, type, true);
 }
 
 //=================================================================================================
@@ -2205,7 +2128,7 @@ void Unit::Load(GameReader& f, bool local)
 		ai = nullptr;
 		usable = nullptr;
 		used_item = nullptr;
-		weapon_state = WS_HIDDEN;
+		weapon_state = WeaponState::Hidden;
 		weapon_taken = W_NONE;
 		weapon_hiding = W_NONE;
 		frozen = FROZEN::NO;
@@ -2456,12 +2379,10 @@ void Unit::Load(GameReader& f, bool local)
 		cobj = nullptr;
 
 	// zabezpieczenie
-	if(((weapon_state == WS_TAKEN || weapon_state == WS_TAKING) && weapon_taken == W_NONE)
-		|| (weapon_state == WS_HIDING && weapon_hiding == W_NONE))
+	if((Any(weapon_state, WeaponState::Taken, WeaponState::Taking) && weapon_taken == W_NONE)
+		|| (weapon_state == WeaponState::Hiding && weapon_hiding == W_NONE))
 	{
-		weapon_state = WS_HIDDEN;
-		weapon_taken = W_NONE;
-		weapon_hiding = W_NONE;
+		SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 		Warn("Unit '%s' had broken weapon state.", data->id.c_str());
 	}
 
@@ -2848,7 +2769,7 @@ bool Unit::Read(BitStreamReader& f)
 	action = A_NONE;
 	weapon_taken = W_NONE;
 	weapon_hiding = W_NONE;
-	weapon_state = WS_HIDDEN;
+	weapon_state = WeaponState::Hidden;
 	talking = false;
 	busy = Busy_No;
 	frozen = FROZEN::NO;
@@ -3230,13 +3151,27 @@ bool Unit::HaveItemEquipped(const Item* item) const
 //=================================================================================================
 bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
 {
+	WeaponType type;
 	switch(slot)
 	{
 	case SLOT_WEAPON:
 	case SLOT_SHIELD:
-		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED;
+		type = W_ONE_HANDED;
+		break;
 	case SLOT_BOW:
-		return weapon_state == WS_TAKEN && weapon_taken == W_BOW;
+		type = W_BOW;
+		break;
+	default:
+		return false;
+	}
+
+	switch(weapon_state)
+	{
+	case WeaponState::Taken:
+	case WeaponState::Taking:
+		return weapon_taken == type;
+	case WeaponState::Hiding:
+		return weapon_hiding == type;
 	default:
 		return false;
 	}
@@ -3649,9 +3584,7 @@ void Unit::ClearInventory()
 	for(int i = 0; i < SLOT_MAX; ++i)
 		slots[i] = nullptr;
 	weight = 0;
-	weapon_taken = W_NONE;
-	weapon_hiding = W_NONE;
-	weapon_state = WS_HIDDEN;
+	SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	if(player)
 		player->last_weapon = W_NONE;
 }
@@ -4790,30 +4723,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
-		if(weapon_state == WS_HIDING)
-		{
-			if(animation_state == 0)
-			{
-				weapon_state = WS_TAKEN;
-				weapon_taken = weapon_hiding;
-				weapon_hiding = W_NONE;
-			}
-			else
-			{
-				weapon_state = WS_HIDDEN;
-				weapon_taken = weapon_hiding = W_NONE;
-			}
-		}
-		else
-		{
-			if(animation_state == 0)
-			{
-				weapon_state = WS_HIDDEN;
-				weapon_taken = W_NONE;
-			}
-			else
-				weapon_state = WS_TAKEN;
-		}
+		SetTakeHideWeaponAnimationToEnd(false, true);
 		action = A_NONE;
 		break;
 	case A_BLOCK:
@@ -4853,11 +4763,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			const Item* prev_used_item = used_item;
 			StopUsingUsable(mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
-			{
-				weapon_state = WS_TAKEN;
-				weapon_taken = W_ONE_HANDED;
-				weapon_hiding = W_NONE;
-			}
+				SetWeaponStateInstant(WeaponState::Taken, W_ONE_HANDED);
 			else if(mode == BREAK_ACTION_MODE::FALL)
 				used_item = prev_used_item;
 			action = A_POSITION;
@@ -5363,21 +5269,21 @@ Sound* Unit::GetSound(SOUND_ID sound_id) const
 }
 
 //=================================================================================================
-void Unit::SetWeaponState(bool takes_out, WeaponType type)
+bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 {
 	if(takes_out)
 	{
 		switch(weapon_state)
 		{
-		case WS_HIDDEN:
+		case WeaponState::Hidden:
 			// wyjmij bron
 			mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 			action = A_TAKE_WEAPON;
 			weapon_taken = type;
-			weapon_state = WS_TAKING;
+			weapon_state = WeaponState::Taking;
 			animation_state = 0;
 			break;
-		case WS_HIDING:
+		case WeaponState::Hiding:
 			if(weapon_hiding == type)
 			{
 				if(animation_state == 0)
@@ -5386,7 +5292,7 @@ void Unit::SetWeaponState(bool takes_out, WeaponType type)
 					action = A_NONE;
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
-					weapon_state = WS_TAKEN;
+					weapon_state = WeaponState::Taken;
 					mesh_inst->Deactivate(1);
 				}
 				else
@@ -5394,35 +5300,61 @@ void Unit::SetWeaponState(bool takes_out, WeaponType type)
 					// schowa³ broñ, zacznij wyci¹gaæ
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
-					weapon_state = WS_TAKING;
+					weapon_state = WeaponState::Taking;
 					ClearBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 				}
 			}
 			else
 			{
-				// chowa broñ, zacznij wyci¹gaæ
-				mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				action = A_TAKE_WEAPON;
-				weapon_taken = type;
-				weapon_hiding = W_NONE;
-				weapon_state = WS_TAKING;
-				animation_state = 0;
+				if(animation_state == 1)
+				{
+					// unit is hiding weapon & animation almost ended, start taking out weapon
+					mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+					action = A_TAKE_WEAPON;
+					weapon_taken = type;
+					weapon_hiding = W_NONE;
+					weapon_state = WeaponState::Taking;
+					animation_state = 0;
+				}
+				else
+				{
+					// set next weapon to take out
+					weapon_taken = type;
+				}
 			}
 			break;
-		case WS_TAKING:
-		case WS_TAKEN:
-			if(weapon_taken != type)
+		case WeaponState::Taking:
+			if(weapon_taken == type)
+				return false;
+			if(animation_state == 0)
 			{
-				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
-				// lub
-				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
+				// jeszcze nie wyj¹³ broni, zacznij wyjmowaæ inn¹
 				mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				action = A_TAKE_WEAPON;
-				weapon_taken = type;
+				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
-				weapon_state = WS_TAKING;
-				animation_state = 0;
 			}
+			else
+			{
+				// wyj¹³ broñ z pasa, zacznij chowaæ
+				weapon_state = WeaponState::Hiding;
+				weapon_hiding = weapon_taken;
+				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+			}
+			weapon_taken = type;
+			animation_state = 0;
+			break;
+		case WeaponState::Taken:
+			if(weapon_taken == type)
+				return false;
+			// hide previous weapon
+			if(action == A_SHOOT)
+				game_level->FreeBowInstance(bow_instance);
+			mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
+			action = A_TAKE_WEAPON;
+			weapon_state = WeaponState::Hiding;
+			weapon_hiding = weapon_taken;
+			weapon_taken = type;
+			animation_state = 0;
 			break;
 		}
 	}
@@ -5430,23 +5362,24 @@ void Unit::SetWeaponState(bool takes_out, WeaponType type)
 	{
 		switch(weapon_state)
 		{
-		case WS_HIDDEN:
+		case WeaponState::Hidden:
 			// schowana to schowana, nie ma co sprawdzaæ czy to ta
+			return false;
+		case WeaponState::Hiding:
+			if(type == W_NONE)
+				weapon_taken = W_NONE;
+			if(weapon_hiding == type || type == W_NONE)
+				return false;
+			// chowa z³¹ broñ, zamieñ
+			weapon_hiding = type;
 			break;
-		case WS_HIDING:
-			if(weapon_hiding != type)
-			{
-				// chowa z³¹ broñ, zamieñ
-				weapon_hiding = type;
-			}
-			break;
-		case WS_TAKING:
+		case WeaponState::Taking:
 			if(animation_state == 0)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				action = A_NONE;
 				weapon_taken = W_NONE;
-				weapon_state = WS_HIDDEN;
+				weapon_state = WeaponState::Hidden;
 				mesh_inst->Deactivate(1);
 			}
 			else
@@ -5454,22 +5387,64 @@ void Unit::SetWeaponState(bool takes_out, WeaponType type)
 				// wyj¹³ broñ z pasa, zacznij chowaæ
 				weapon_hiding = weapon_taken;
 				weapon_taken = W_NONE;
-				weapon_state = WS_HIDING;
+				weapon_state = WeaponState::Hiding;
 				animation_state = 0;
 				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 			}
 			break;
-		case WS_TAKEN:
+		case WeaponState::Taken:
 			// zacznij chowaæ
-			mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
-			weapon_hiding = type;
+			if(action == A_SHOOT)
+				game_level->FreeBowInstance(bow_instance);
+			mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+			weapon_hiding = weapon_taken;
 			weapon_taken = W_NONE;
-			weapon_state = WS_HIDING;
+			weapon_state = WeaponState::Hiding;
 			action = A_TAKE_WEAPON;
 			animation_state = 0;
 			break;
 		}
 	}
+
+	if(send && Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::TAKE_WEAPON;
+		c.unit = this;
+		c.id = takes_out ? 0 : 1;
+	}
+
+	return true;
+}
+
+//=============================================================================
+void Unit::SetWeaponStateInstant(WeaponState weapon_state, WeaponType type)
+{
+	this->weapon_state = weapon_state;
+	this->weapon_taken = type;
+	weapon_hiding = W_NONE;
+}
+
+//=============================================================================
+void Unit::SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action)
+{
+	if(hide || weapon_state == WeaponState::Hiding)
+	{
+		if(break_action && animation_state == 0)
+			SetWeaponStateInstant(WeaponState::Taken, weapon_hiding);
+		else
+			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+	}
+	else if(weapon_state == WeaponState::Taking)
+	{
+		if(break_action && animation_state == 0)
+			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+		else
+			SetWeaponStateInstant(WeaponState::Taken, weapon_taken);
+		weapon_state = WeaponState::Taken;
+	}
+	if(action == A_TAKE_WEAPON)
+		action = A_NONE;
 }
 
 //=================================================================================================
@@ -6553,11 +6528,9 @@ void Unit::CastSpell()
 				Unit& u2 = *target;
 				u2.hp = u2.hpmax;
 				u2.live_state = ALIVE;
-				u2.weapon_state = WS_HIDDEN;
+				u2.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 				u2.animation = ANI_STAND;
 				u2.animation_state = 0;
-				u2.weapon_taken = W_NONE;
-				u2.weapon_hiding = W_NONE;
 
 				// za³ó¿ przedmioty / dodaj z³oto
 				u2.ReequipItems();
@@ -6897,13 +6870,13 @@ void Unit::Update(float dt)
 	case A_NONE:
 		break;
 	case A_TAKE_WEAPON:
-		if(weapon_state == WS_TAKING)
+		if(weapon_state == WeaponState::Taking)
 		{
 			if(animation_state == 0 && (mesh_inst->GetProgress2() >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
 				animation_state = 1;
 			if(mesh_inst->IsEnded(1))
 			{
-				weapon_state = WS_TAKEN;
+				weapon_state = WeaponState::Taken;
 				if(usable)
 				{
 					action = A_ANIMATION2;
@@ -6922,7 +6895,7 @@ void Unit::Update(float dt)
 			if(weapon_taken != W_NONE && (animation_state == 1 || mesh_inst->IsEnded(1)))
 			{
 				mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				weapon_state = WS_TAKING;
+				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
 				animation_state = 0;
 
@@ -6936,7 +6909,7 @@ void Unit::Update(float dt)
 			}
 			else if(mesh_inst->IsEnded(1))
 			{
-				weapon_state = WS_HIDDEN;
+				weapon_state = WeaponState::Hidden;
 				weapon_hiding = W_NONE;
 				action = A_NONE;
 				mesh_inst->Deactivate(1);
@@ -7012,12 +6985,7 @@ void Unit::Update(float dt)
 						break;
 					}
 
-					if(player->next_action != NA_NONE)
-					{
-						player->next_action = NA_NONE;
-						if(Net::IsClient())
-							Net::PushChange(NetChange::SET_NEXT_ACTION);
-					}
+					player->ClearNextAction();
 
 					if(action == A_NONE && usable && !usable->container)
 					{
@@ -7025,7 +6993,7 @@ void Unit::Update(float dt)
 						animation_state = AS_ANIMATION2_USING;
 					}
 				}
-				else if(Net::IsLocal() && IsAI() && ai->potion != -1)
+				else if(Net::IsLocal() && !fake_unit && IsAI() && ai->potion != -1)
 				{
 					ConsumeItem(ai->potion);
 					ai->potion = -1;
@@ -7042,7 +7010,17 @@ void Unit::Update(float dt)
 				current_animation, animation_state));
 			goto koniec_strzelania;
 		}
-		if(animation_state == 0)
+		if(fake_unit)
+		{
+			if(mesh_inst->IsEnded(1))
+			{
+				mesh_inst->Deactivate(1);
+				action = A_NONE;
+				game_level->FreeBowInstance(bow_instance);
+				break;
+			}
+		}
+		else if(animation_state == 0)
 		{
 			if(mesh_inst->GetProgress2() > 20.f / 40)
 				mesh_inst->groups[1].time = 20.f / 40 * mesh_inst->groups[1].anim->length;
@@ -7199,7 +7177,16 @@ void Unit::Update(float dt)
 		break;
 	case A_ATTACK:
 		stamina_timer = STAMINA_RESTORE_TIMER;
-		if(animation_state == 0)
+		if(fake_unit)
+		{
+			if(mesh_inst->IsEnded(1))
+			{
+				animation = ANI_BATTLE;
+				current_animation = ANI_STAND;
+				action = A_NONE;
+			}
+		}
+		else if(animation_state == 0)
 		{
 			int index = mesh_inst->mesh->head.n_groups == 1 ? 0 : 1;
 			float t = GetAttackFrame(0);

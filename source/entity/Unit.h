@@ -74,12 +74,12 @@ inline bool IsBlocking(ACTION a)
 }
 
 //-----------------------------------------------------------------------------
-enum WeaponState
+enum class WeaponState
 {
-	WS_HIDDEN,
-	WS_HIDING,
-	WS_TAKING,
-	WS_TAKEN
+	Hidden,
+	Hiding,
+	Taking,
+	Taken
 };
 
 //-----------------------------------------------------------------------------
@@ -323,7 +323,7 @@ struct Unit : public EntityType<Unit>
 	void ConsumeItemAnim(const Consumable& cons);
 	void ConsumeItemS(const Item* item);
 	void UseItem(int index);
-	void HideWeapon();
+	void HideWeapon() { SetWeaponState(false, W_NONE, true); }
 	void TakeWeapon(WeaponType type);
 	float GetSphereRadius() const
 	{
@@ -403,7 +403,7 @@ struct Unit : public EntityType<Unit>
 		if(data->type == UNIT_TYPE::ANIMAL)
 			return false;
 		else
-			return (weapon_state == WS_HIDDEN);
+			return weapon_state == WeaponState::Hidden;
 	}
 	Vec3 GetLootCenter() const;
 
@@ -440,22 +440,20 @@ struct Unit : public EntityType<Unit>
 	void RecalculateStamina();
 	bool CanBlock() const
 	{
-		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
+		return weapon_state == WeaponState::Taken && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
 
 	WeaponType GetHoldWeapon() const
 	{
 		switch(weapon_state)
 		{
-		case WS_TAKEN:
-		case WS_TAKING:
+		case WeaponState::Taken:
+		case WeaponState::Taking:
 			return weapon_taken;
-		case WS_HIDING:
+		case WeaponState::Hiding:
 			return weapon_hiding;
-		case WS_HIDDEN:
-			return W_NONE;
+		case WeaponState::Hidden:
 		default:
-			assert(0);
 			return W_NONE;
 		}
 	}
@@ -861,7 +859,9 @@ public:
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
-	void SetWeaponState(bool takes_out, WeaponType type);
+	bool SetWeaponState(bool takes_out, WeaponType type, bool send);
+	void SetWeaponStateInstant(WeaponState weapon_state, WeaponType type);
+	void SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u, bool check_arena_attack = false) const;
