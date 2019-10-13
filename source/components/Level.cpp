@@ -3781,17 +3781,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 				game->ais.push_back(unit.ai);
 		}
 
-		if(hide_weapon || unit.weapon_state == WS_HIDING)
-		{
-			unit.weapon_state = WS_HIDDEN;
-			unit.weapon_taken = W_NONE;
-			unit.weapon_hiding = W_NONE;
-			if(unit.action == A_TAKE_WEAPON)
-				unit.action = A_NONE;
-		}
-		else if(unit.weapon_state == WS_TAKING)
-			unit.weapon_state = WS_TAKEN;
-
+		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
 		unit.node->rot.y = unit.rot = rot;
 		unit.animation = unit.current_animation = ANI_STAND;
 		unit.node->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);

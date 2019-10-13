@@ -211,7 +211,7 @@ void LevelGui::DrawFront()
 	PlayerController& pc = *game->pc;
 
 	// crosshair
-	if((pc.unit->weapon_state == WS_TAKEN && pc.unit->weapon_taken == W_BOW)
+	if((pc.unit->weapon_state == WeaponState::Taken && pc.unit->weapon_taken == W_BOW)
 		|| (game->pc->data.action_ready && pc.GetAction().area == Action::TARGET))
 		gui->DrawSprite(tCrosshair, Center(32, 32));
 

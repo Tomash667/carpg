@@ -630,11 +630,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(!unit)
 						Error("Update client: TAKE_WEAPON, missing unit %d.", id);
 					else if(unit != pc.unit)
-					{
-						if(unit->node->mesh->head.n_groups > 1)
-							unit->node->mesh_inst->groups[1].speed = 1.f;
-						unit->SetWeaponState(!hide, type);
-					}
+						unit->SetWeaponState(!hide, type, false);
 				}
 			}
 			break;
@@ -670,8 +666,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				Unit& unit = *unit_ptr;
 				byte type = (typeflags & 0xF);
 				int group = unit.node->mesh->head.n_groups - 1;
-				unit.weapon_state = WS_TAKEN;
 
+				bool is_bow = false;
 				switch(type)
 				{
 				case AID_Attack:
@@ -708,6 +704,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					break;
 				case AID_Shoot:
 				case AID_StartShoot:
+					is_bow = true;
 					if(unit.action == A_SHOOT && unit.animation_state == 0)
 						unit.animation_state = 1;
 					else
@@ -761,6 +758,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					}
 					break;
 				}
+
+				unit.SetWeaponStateInstant(WeaponState::Taken, is_bow ? W_BOW : W_ONE_HANDED);
 			}
 			break;
 		// change of game flags
@@ -1722,8 +1721,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit->used_item)
 						{
 							game_res->PreloadItem(unit->used_item);
-							unit->weapon_taken = W_NONE;
-							unit->weapon_state = WS_HIDDEN;
+							unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 						}
 					}
 					else

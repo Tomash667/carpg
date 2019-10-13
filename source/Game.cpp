@@ -3370,7 +3370,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->action = A_NONE;
 	u->weapon_taken = W_NONE;
 	u->weapon_hiding = W_NONE;
-	u->weapon_state = WS_HIDDEN;
+	u->weapon_state = WeaponState::Hidden;
 	if(level == -2)
 		u->level = base.level.Random();
 	else if(level == -3)
