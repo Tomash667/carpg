@@ -4326,16 +4326,21 @@ bool Level::IsSafe()
 //=================================================================================================
 bool Level::CanFastTravel()
 {
-	if(!location->outside
-		|| !IsSafe()
-		|| game->arena->mode != Arena::NONE
-		|| quest_mgr->quest_tutorial->in_tutorial
-		|| quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
-		|| quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-		return false;
+	if(Net::IsLocal())
+	{
+		if(!location->outside
+			|| !IsSafe()
+			|| game->arena->mode != Arena::NONE
+			|| quest_mgr->quest_tutorial->in_tutorial
+			|| quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
+			|| quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			return false;
 
-	CanLeaveLocationResult result = CanLeaveLocation(*team->leader, false);
-	return result == CanLeaveLocationResult::Yes;
+		CanLeaveLocationResult result = CanLeaveLocation(*team->leader, false);
+		return result == CanLeaveLocationResult::Yes;
+	}
+	else
+		return can_fast_travel;
 }
 
 //=================================================================================================

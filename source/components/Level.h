@@ -218,7 +218,8 @@ public:
 	int enter_from; // from where team entered level (used when spawning new player in MP)
 	float light_angle; // random angle used for lighting in outside locations
 	bool is_open, // is location loaded, team is inside or is on world map and can reenter
-		entering; // true when entering location/generating/spawning unit, false when finished
+		entering, // true when entering location/generating/spawning unit, false when finished
+		can_fast_travel; // used by MP clients
 	vector<Unit*> to_remove;
 	vector<CollisionObject> global_col;
 	vector<Unit*> blood_to_spawn;

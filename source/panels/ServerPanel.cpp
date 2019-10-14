@@ -17,9 +17,10 @@
 #include "LobbyApi.h"
 #include "CommandParser.h"
 
+FIXME;
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
-const int STARTUP_TIMER = 1;
+const int STARTUP_TIMER = 3;
 #else
 const int STARTUP_TIMER = 3;
 #endif
@@ -1057,6 +1058,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			if(net->master_server_state == MasterServerState::Connected)
 				net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 			net->master_server_state = MasterServerState::NotConnected;
+			net->master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
 			api->EndPunchthrough();
 			// change server status
 			Info("ServerPanel: Starting game.");
@@ -1082,30 +1084,26 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			});
 			CloseDialog();
 			game_gui->info_box->Show(txStartingGame);
+			BitStreamWriter f;
+			f << ID_STARTUP;
+			f << (byte)(net->mp_load && !game_level->is_open ? 1 : 0);
+			net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			return;
 		}
 		else if(sec != last_startup_sec)
 		{
 			last_startup_sec = sec;
 			d = sec;
 		}
+
 		if(d != -1)
 		{
 			Info("ServerPanel: Starting in %d...", d);
 			AddMsg(Format(txStartingIn, d));
-			byte b[2];
-			if(d == 0)
-			{
-				b[0] = ID_STARTUP;
-				b[1] = (net->mp_load && !game_level->is_open ? 1 : 0);
-			}
-			else
-			{
-				b[0] = ID_TIMER;
-				b[1] = (byte)d;
-			}
-			net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, net->master_server_adr, true);
-			if(d == 0)
-				net->master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
+			BitStreamWriter f;
+			f << ID_TIMER;
+			f << (byte)d;
+			net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE, 0, net->master_server_adr, true);
 		}
 	}
 }
