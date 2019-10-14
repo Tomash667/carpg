@@ -402,7 +402,7 @@ void Game::UpdateAi(float dt)
 					// fix bug of unkown origin. occurs after arena fight, affecting loosers
 					if(u.weapon_state == WeaponState::Hiding && u.action == A_NONE)
 					{
-						u.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+						u.SetWeaponStateInstant(false);
 						ai.potion = -1;
 						ReportError(8, Format("Unit %s was hiding weapon without action.", u.GetRealName()));
 					}

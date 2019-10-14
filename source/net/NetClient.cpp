@@ -759,7 +759,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					break;
 				}
 
-				unit.SetWeaponStateInstant(WeaponState::Taken, is_bow ? W_BOW : W_ONE_HANDED);
+				unit.SetWeaponStateInstant(true, is_bow ? W_BOW : W_ONE_HANDED);
 			}
 			break;
 		// change of game flags
@@ -1721,7 +1721,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit->used_item)
 						{
 							game_res->PreloadItem(unit->used_item);
-							unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+							unit->SetWeaponStateInstant(false);
 						}
 					}
 					else

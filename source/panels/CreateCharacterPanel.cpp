@@ -73,6 +73,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	unit->stamina = unit->stamina_max = 100.f;
 	unit->usable = nullptr;
 	unit->live_state = Unit::ALIVE;
+	for(int i = 0; i < SLOT_MAX; ++i)
+		unit->slots[i] = nullptr;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
@@ -620,18 +622,22 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdHair:
 			unit->human_data->hair = slider[0].val - 1;
 			slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
+			unit->UpdateHumanAppearance();
 			break;
 		case IdMustache:
 			unit->human_data->mustache = slider[1].val - 1;
 			slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
+			unit->UpdateHumanAppearance();
 			break;
 		case IdBeard:
 			unit->human_data->beard = slider[2].val - 1;
 			slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
+			unit->UpdateHumanAppearance();
 			break;
 		case IdColor:
 			unit->human_data->hair_color = g_hair_colors[slider[3].val];
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
+			unit->UpdateHumanAppearance();
 			break;
 		case IdSize:
 			unit->human_data->height = Lerp(0.9f, 1.1f, float(slider[4].val) / 100);
@@ -901,6 +907,7 @@ void CreateCharacterPanel::RandomAppearance()
 	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(game_res->aHuman);
+	u.UpdateHumanAppearance();
 	SetControls();
 }
 
@@ -1081,7 +1088,7 @@ void CreateCharacterPanel::ClassChanged()
 	anim = DA_STAND;
 	unit->data = clas->player;
 	unit->animation = ANI_STAND;
-	unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+	unit->SetWeaponStateInstant(false);
 	t = 1.f;
 	tbClassDesc.Reset();
 	tbClassDesc.SetText(clas->desc.c_str());
@@ -1512,7 +1519,7 @@ void CreateCharacterPanel::UpdateInventory()
 	if(reset)
 	{
 		anim = DA_STAND;
-		unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+		unit->SetWeaponStateInstant(false);
 		t = 0.25f;
 	}
 }
@@ -1521,7 +1528,7 @@ void CreateCharacterPanel::UpdateInventory()
 void CreateCharacterPanel::ResetDoll(bool instant)
 {
 	anim = DA_STAND;
-	unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+	unit->SetWeaponStateInstant(false);
 	if(instant)
 	{
 		UpdateUnit(0.f);

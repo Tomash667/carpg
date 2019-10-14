@@ -241,7 +241,10 @@ struct Unit : public EntityType<Unit>
 		Shield,
 		Bow,
 		Armor,
-		Hair
+		Hair,
+		Eyebrows,
+		Beard,
+		Mustache
 	};
 
 	static const int MIN_SIZE = 36;
@@ -871,7 +874,7 @@ public:
 	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
 	bool SetWeaponState(bool takes_out, WeaponType type, bool send);
-	void SetWeaponStateInstant(WeaponState weapon_state, WeaponType type);
+	void SetWeaponStateInstant(bool taken_out, WeaponType type = W_NONE);
 	void SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
@@ -924,6 +927,7 @@ public:
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
 	void ChangeSlotItem(ITEM_SLOT slot, const Item* item);
+	void UpdateHumanAppearance();
 };
 
 //-----------------------------------------------------------------------------

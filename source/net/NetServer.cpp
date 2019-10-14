@@ -801,7 +801,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						break;
 					}
 
-					unit.SetWeaponStateInstant(WeaponState::Taken, is_bow ? W_BOW : W_ONE_HANDED);
+					unit.SetWeaponStateInstant(true, is_bow ? W_BOW : W_ONE_HANDED);
 
 					// send to other players
 					if(active_players > 2)
@@ -1733,7 +1733,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.use_rot = Vec3::LookAtAngle(unit.pos, usable->pos);
 							unit.used_item = base.item;
 							if(unit.used_item)
-								unit.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+								unit.SetWeaponStateInstant(false);
 						}
 						else
 						{

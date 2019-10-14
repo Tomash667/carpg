@@ -528,7 +528,7 @@ int Unit::ConsumeItem(int index)
 				else
 				{
 					action = A_NONE;
-					SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+					SetWeaponStateInstant(false);
 				}
 			}
 			else
@@ -609,7 +609,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 			return;
 		}
 		else
-			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+			SetWeaponStateInstant(false);
 	}
 
 	used_item_is_team = true;
@@ -2380,7 +2380,7 @@ void Unit::Load(GameReader& f, bool local)
 	if((Any(weapon_state, WeaponState::Taken, WeaponState::Taking) && weapon_taken == W_NONE)
 		|| (weapon_state == WeaponState::Hiding && weapon_hiding == W_NONE))
 	{
-		SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+		SetWeaponStateInstant(false);
 		Warn("Unit '%s' had broken weapon state.", data->id.c_str());
 	}
 
@@ -3582,7 +3582,7 @@ void Unit::ClearInventory()
 	for(int i = 0; i < SLOT_MAX; ++i)
 		slots[i] = nullptr;
 	weight = 0;
-	SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+	SetWeaponStateInstant(false);
 	if(player)
 		player->last_weapon = W_NONE;
 }
@@ -4759,7 +4759,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			const Item* prev_used_item = used_item;
 			StopUsingUsable(mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
-				SetWeaponStateInstant(WeaponState::Taken, W_ONE_HANDED);
+				SetWeaponStateInstant(true, W_ONE_HANDED);
 			else if(mode == BREAK_ACTION_MODE::FALL)
 				used_item = prev_used_item;
 			action = A_POSITION;
@@ -5414,10 +5414,66 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 }
 
 //=============================================================================
-void Unit::SetWeaponStateInstant(WeaponState weapon_state, WeaponType type)
+void Unit::SetWeaponStateInstant(bool taken_out, WeaponType type)
 {
-	this->weapon_state = weapon_state;
-	this->weapon_taken = type;
+	if(taken_out)
+	{
+		if(type == W_ONE_HANDED)
+		{
+			SceneNode* child_node = node->GetChild((int)NodeId::Weapon);
+			child_node->point = node->mesh->GetPoint(NAMES::point_weapon);
+			if(HaveShield())
+			{
+				child_node = node->GetChild((int)NodeId::Shield);
+				child_node->point = node->mesh->GetPoint(NAMES::point_shield);
+			}
+			if(HaveBow())
+			{
+				child_node = node->GetChild((int)NodeId::Bow);
+				child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+				child_node->rot.z = 0;
+			}
+		}
+		else
+		{
+			SceneNode* child_node = node->GetChild((int)NodeId::Bow);
+			child_node->point = node->mesh->GetPoint(NAMES::point_bow);
+			child_node->rot.z = -PI / 2;
+			if(HaveWeapon())
+			{
+				child_node = node->GetChild((int)NodeId::Weapon);
+				child_node->point = node->mesh->GetPoint(NAMES::point_hidden_weapon);
+			}
+			if(HaveShield())
+			{
+				child_node = node->GetChild((int)NodeId::Shield);
+				child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+			}
+		}
+		weapon_state = WeaponState::Taken;
+		weapon_taken = type;
+	}
+	else
+	{
+		if(HaveWeapon())
+		{
+			SceneNode* child_node = node->GetChild((int)NodeId::Weapon);
+			child_node->point = node->mesh->GetPoint(NAMES::point_hidden_weapon);
+		}
+		if(HaveBow())
+		{
+			SceneNode* child_node = node->GetChild((int)NodeId::Bow);
+			child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+			child_node->rot.z = 0;
+		}
+		if(HaveShield())
+		{
+			SceneNode* child_node = node->GetChild((int)NodeId::Shield);
+			child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+		}
+		weapon_state = WeaponState::Hidden;
+		weapon_taken = W_NONE;
+	}
 	weapon_hiding = W_NONE;
 }
 
@@ -5427,17 +5483,16 @@ void Unit::SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action)
 	if(hide || weapon_state == WeaponState::Hiding)
 	{
 		if(break_action && animation_state == 0)
-			SetWeaponStateInstant(WeaponState::Taken, weapon_hiding);
+			SetWeaponStateInstant(true, weapon_hiding);
 		else
-			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+			SetWeaponStateInstant(false);
 	}
 	else if(weapon_state == WeaponState::Taking)
 	{
 		if(break_action && animation_state == 0)
-			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+			SetWeaponStateInstant(false);
 		else
-			SetWeaponStateInstant(WeaponState::Taken, weapon_taken);
-		weapon_state = WeaponState::Taken;
+			SetWeaponStateInstant(true, weapon_taken);
 	}
 	if(action == A_TAKE_WEAPON)
 		action = A_NONE;
@@ -6526,7 +6581,7 @@ void Unit::CastSpell()
 				Unit& u2 = *target;
 				u2.hp = u2.hpmax;
 				u2.live_state = ALIVE;
-				u2.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+				u2.SetWeaponStateInstant(false);
 				u2.animation = ANI_STAND;
 				u2.animation_state = 0;
 
@@ -6872,8 +6927,26 @@ void Unit::Update(float dt)
 	case A_TAKE_WEAPON:
 		if(weapon_state == WeaponState::Taking)
 		{
-			if(animation_state == 0 && (mesh_inst->GetProgress2() >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			if(animation_state == 0 && (mesh_inst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			{
+				if(weapon_taken == W_ONE_HANDED)
+				{
+					SceneNode* child_node = node->GetChild((int)NodeId::Weapon);
+					child_node->point = node->mesh->GetPoint(NAMES::point_weapon);
+					if(HaveShield())
+					{
+						child_node = node->GetChild((int)NodeId::Shield);
+						child_node->point = node->mesh->GetPoint(NAMES::point_shield);
+					}
+				}
+				else
+				{
+					SceneNode* child_node = node->GetChild((int)NodeId::Bow);
+					child_node->point = node->mesh->GetPoint(NAMES::point_bow);
+					child_node->rot.z = -PI / 2;
+				}
 				animation_state = 1;
+			}
 			if(mesh_inst->IsEnded(1))
 			{
 				weapon_state = WeaponState::Taken;
@@ -6889,11 +6962,29 @@ void Unit::Update(float dt)
 		}
 		else
 		{
-			// chowanie broni
-			if(animation_state == 0 && (mesh_inst->GetProgress2() <= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			if(animation_state == 0 && (mesh_inst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			{
+				if(weapon_hiding == W_ONE_HANDED)
+				{
+					SceneNode* child_node = node->GetChild((int)NodeId::Weapon);
+					child_node->point = node->mesh->GetPoint(NAMES::point_hidden_weapon);
+					if(HaveShield())
+					{
+						child_node = node->GetChild((int)NodeId::Shield);
+						child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+					}
+				}
+				else
+				{
+					SceneNode* child_node = node->GetChild((int)NodeId::Bow);
+					child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+					child_node->rot.z = 0;
+				}
 				animation_state = 1;
+			}
 			if(weapon_taken != W_NONE && (animation_state == 1 || mesh_inst->IsEnded(1)))
 			{
+				// weapon hidden, start taking out next weapon
 				mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
@@ -7022,12 +7113,12 @@ void Unit::Update(float dt)
 		}
 		else if(animation_state == 0)
 		{
-			if(mesh_inst->GetProgress2() > 20.f / 40)
+			if(mesh_inst->GetProgress(1) > 20.f / 40)
 				mesh_inst->groups[1].time = 20.f / 40 * mesh_inst->groups[1].anim->length;
 		}
 		else if(animation_state == 1)
 		{
-			if(Net::IsLocal() && !hitted && mesh_inst->GetProgress2() > 20.f / 40)
+			if(Net::IsLocal() && !hitted && mesh_inst->GetProgress(1) > 20.f / 40)
 			{
 				hitted = true;
 				Bullet& b = Add1(area->tmp->bullets);
@@ -7152,10 +7243,10 @@ void Unit::Update(float dt)
 					c.extra_f = b.speed;
 				}
 			}
-			if(mesh_inst->GetProgress2() > 20.f / 40)
+			if(mesh_inst->GetProgress(1) > 20.f / 40)
 				animation_state = 2;
 		}
-		else if(mesh_inst->GetProgress2() > 35.f / 40)
+		else if(mesh_inst->GetProgress(1) > 35.f / 40)
 		{
 			animation_state = 3;
 			if(mesh_inst->IsEnded(1))
@@ -7264,7 +7355,7 @@ void Unit::Update(float dt)
 		stamina_timer = STAMINA_RESTORE_TIMER;
 		if(animation_state == 0)
 		{
-			if(mesh_inst->GetProgress2() >= data->frames->t[F_BASH])
+			if(mesh_inst->GetProgress(1) >= data->frames->t[F_BASH])
 				animation_state = 1;
 		}
 		if(Net::IsLocal() && animation_state == 1 && !hitted)
@@ -7280,7 +7371,7 @@ void Unit::Update(float dt)
 		break;
 	case A_DRINK:
 		{
-			float p = mesh_inst->GetProgress2();
+			float p = mesh_inst->GetProgress(1);
 			if(p >= 28.f / 52.f && animation_state == 0)
 			{
 				PlaySound(game_res->sGulp, DRINK_SOUND_DIST);
@@ -7308,7 +7399,7 @@ void Unit::Update(float dt)
 		break;
 	case A_EAT:
 		{
-			float p = mesh_inst->GetProgress2();
+			float p = mesh_inst->GetProgress(1);
 			if(p >= 32.f / 70 && animation_state == 0)
 			{
 				animation_state = 1;
@@ -7356,7 +7447,7 @@ void Unit::Update(float dt)
 	case A_CAST:
 		if(mesh_inst->mesh->head.n_groups == 2)
 		{
-			if(Net::IsLocal() && animation_state == 0 && mesh_inst->GetProgress2() >= data->frames->t[F_CAST])
+			if(Net::IsLocal() && animation_state == 0 && mesh_inst->GetProgress(1) >= data->frames->t[F_CAST])
 			{
 				animation_state = 1;
 				CastSpell();
@@ -8143,6 +8234,15 @@ void Unit::ChangeSlotItem(ITEM_SLOT slot, const Item* item)
 	case SLOT_WEAPON:
 		node_id = NodeId::Weapon;
 		break;
+	case SLOT_BOW:
+		node_id = NodeId::Bow;
+		break;
+	case SLOT_SHIELD:
+		node_id = NodeId::Shield;
+		break;
+	case SLOT_ARMOR:
+		node_id = NodeId::Armor;
+		break;
 	default:
 		return;
 	}
@@ -8155,13 +8255,123 @@ void Unit::ChangeSlotItem(ITEM_SLOT slot, const Item* item)
 			child_node = SceneNode::Get();
 			child_node->id = (int)node_id;
 			child_node->SetMesh(item->mesh);
-			node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_hidden_weapon));
+			switch(node_id)
+			{
+			case NodeId::Weapon:
+				if(weapon_state == WeaponState::Taken && weapon_taken == W_ONE_HANDED)
+					node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_weapon));
+				else
+					node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_hidden_weapon));
+				break;
+			case NodeId::Bow:
+				if(weapon_state == WeaponState::Taken && weapon_taken == W_ONE_HANDED)
+					node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_bow));
+				else
+					node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_shield_hidden));
+				break;
+			case NodeId::Shield:
+				if(weapon_state == WeaponState::Taken && weapon_taken == W_ONE_HANDED)
+					node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_shield));
+				else
+					node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_shield_hidden));
+				break;
+			case NodeId::Armor:
+				node->AddChild(child_node, nullptr, true);
+				break;
+			}
 		}
 		else
 		{
 			child_node->SetMesh(item->mesh);
 			child_node->visible = true;
 		}
+
+		// don't draw body under armor
+		if(node_id == NodeId::Armor)
+			node->subs = Bit(1) | Bit(2);
+		else if(node_id == NodeId::Bow)
+		{
+			if(weapon_state == WeaponState::Taken && weapon_taken == W_BOW)
+				child_node->rot.z = -PI / 2;
+			else
+				child_node->rot.z = 0;
+		}
+	}
+	else if(child_node)
+	{
+		child_node->visible = false;
+		// draw body
+		if(node_id == NodeId::Armor)
+			node->subs = -1;
+	}
+}
+
+void Unit::UpdateHumanAppearance()
+{
+	// eyebrows
+	SceneNode* child_node = node->GetChild((int)NodeId::Eyebrows);
+	if(!child_node)
+	{
+		child_node = SceneNode::Get();
+		child_node->id = (int)NodeId::Eyebrows;
+		child_node->SetMesh(game_res->aEyebrows);
+		node->AddChild(child_node, nullptr, true);
+	}
+	child_node->tint = human_data->hair_color;
+
+	// hair
+	child_node = node->GetChild((int)NodeId::Hair);
+	if(human_data->hair != -1)
+	{
+		Mesh* mesh = game_res->aHair[human_data->hair];
+		if(!child_node)
+		{
+			child_node = SceneNode::Get();
+			child_node->id = (int)NodeId::Hair;
+			child_node->SetMesh(mesh);
+			node->AddChild(child_node, nullptr, true);
+		}
+		child_node->SetMesh(mesh);
+		child_node->tint = human_data->hair_color;
+		child_node->visible = true;
+	}
+	else if(child_node)
+		child_node->visible = false;
+
+	// beard
+	child_node = node->GetChild((int)NodeId::Beard);
+	if(human_data->beard != -1)
+	{
+		Mesh* mesh = game_res->aBeard[human_data->beard];
+		if(!child_node)
+		{
+			child_node = SceneNode::Get();
+			child_node->id = (int)NodeId::Beard;
+			child_node->SetMesh(mesh);
+			node->AddChild(child_node, nullptr, true);
+		}
+		child_node->SetMesh(mesh);
+		child_node->tint = human_data->hair_color;
+		child_node->visible = true;
+	}
+	else if(child_node)
+		child_node->visible = false;
+
+	// mustache
+	child_node = node->GetChild((int)NodeId::Mustache);
+	if(human_data->mustache != -1 && (human_data->beard == -1 || !g_beard_and_mustache[human_data->beard]))
+	{
+		Mesh* mesh = game_res->aHair[human_data->mustache];
+		if(!child_node)
+		{
+			child_node = SceneNode::Get();
+			child_node->id = (int)NodeId::Mustache;
+			child_node->SetMesh(mesh);
+			node->AddChild(child_node, nullptr, true);
+		}
+		child_node->SetMesh(mesh);
+		child_node->tint = human_data->hair_color;
+		child_node->visible = true;
 	}
 	else if(child_node)
 		child_node->visible = false;
