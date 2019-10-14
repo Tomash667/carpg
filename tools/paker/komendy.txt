@@ -1,6 +1,7 @@
 paker [prze³¹czniki] wersja [...]
 
 Prze³¹czniki:
+-help - pomoc
 -nozip - nie tworzy zipa
 -normal - tworzy pak
 -patch - tworzy patch

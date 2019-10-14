@@ -5845,7 +5845,18 @@ void Game::LoadResources(cstring text, bool worldmap)
 	if(res_mgr->HaveTasks())
 	{
 		Info("Loading new resources (%d).", res_mgr->GetLoadTasksCount());
-		res_mgr->StartLoadScreen(txLoadingResources);
+		loading_resources = true;
+		loading_dt = 0;
+		loading_t.Reset();
+		try
+		{
+			res_mgr->StartLoadScreen(txLoadingResources);
+		}
+		catch(...)
+		{
+			loading_resources = false;
+			throw;
+		}
 
 		// apply mesh instance for newly loaded meshes
 		for(auto& unit_mesh : units_mesh_load)

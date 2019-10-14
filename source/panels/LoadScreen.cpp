@@ -1,10 +1,9 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "LoadScreen.h"
-#include "ResourceManager.h"
-#include "Engine.h"
-#include "Utility.h"
 #include "GameGui.h"
+#include <ResourceManager.h>
+#include <Engine.h>
 
 //=================================================================================================
 void LoadScreen::LoadData()
@@ -60,12 +59,4 @@ void LoadScreen::Tick(cstring str)
 	if(str)
 		text = str;
 	engine->DoPseudotick();
-}
-
-//=================================================================================================
-void LoadScreen::SetProgressCallback(float progress, cstring str)
-{
-	SetProgressOptional(progress, str);
-	if(progress >= 0.5f)
-		utility::IncrementDelayLock();
 }

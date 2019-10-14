@@ -2,7 +2,9 @@ Changelog
 
 --------------------------------------------------------------------------------
 Fixes:
++ logowanie pakietów MP
 - crash when entering location when on leaving location team members was eating/drinking [Anonymous]
+- longer waiting for clients that are slowly loading game [Leinnan]
 
 --------------------------------------------------------------------------------
 Version 0.12 (2019-09-22):

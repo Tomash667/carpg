@@ -114,7 +114,7 @@ void Game::PreconfigureGame()
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
-	res_mgr->SetProgressCallback(ProgressCallback(game_gui->load_screen, &LoadScreen::SetProgressCallback));
+	res_mgr->SetProgressCallback(ProgressCallback(this, &Game::OnLoadProgress));
 }
 
 //=================================================================================================
