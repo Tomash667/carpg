@@ -241,6 +241,7 @@ struct Unit : public EntityType<Unit>
 		Shield,
 		Bow,
 		Armor,
+		HandItem,
 		Hair,
 		Eyebrows,
 		Beard,

@@ -5432,6 +5432,8 @@ void Unit::SetWeaponStateInstant(bool taken_out, WeaponType type)
 				child_node = node->GetChild((int)NodeId::Bow);
 				child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
 				child_node->rot.z = 0;
+				child_node = node->GetChild((int)NodeId::HandItem);
+				child_node->visible = false;
 			}
 		}
 		else
@@ -5439,6 +5441,9 @@ void Unit::SetWeaponStateInstant(bool taken_out, WeaponType type)
 			SceneNode* child_node = node->GetChild((int)NodeId::Bow);
 			child_node->point = node->mesh->GetPoint(NAMES::point_bow);
 			child_node->rot.z = -PI / 2;
+			child_node = node->GetChild((int)NodeId::HandItem);
+			child_node->SetMesh(game_res->aArrow);
+			child_node->visible = false;
 			if(HaveWeapon())
 			{
 				child_node = node->GetChild((int)NodeId::Weapon);
@@ -5465,6 +5470,8 @@ void Unit::SetWeaponStateInstant(bool taken_out, WeaponType type)
 			SceneNode* child_node = node->GetChild((int)NodeId::Bow);
 			child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
 			child_node->rot.z = 0;
+			child_node = node->GetChild((int)NodeId::HandItem);
+			child_node->visible = false;
 		}
 		if(HaveShield())
 		{
@@ -6944,6 +6951,9 @@ void Unit::Update(float dt)
 					SceneNode* child_node = node->GetChild((int)NodeId::Bow);
 					child_node->point = node->mesh->GetPoint(NAMES::point_bow);
 					child_node->rot.z = -PI / 2;
+					child_node = node->GetChild((int)NodeId::HandItem);
+					child_node->SetMesh(game_res->aArrow);
+					child_node->visible = true;
 				}
 				animation_state = 1;
 			}
@@ -6979,6 +6989,8 @@ void Unit::Update(float dt)
 					SceneNode* child_node = node->GetChild((int)NodeId::Bow);
 					child_node->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
 					child_node->rot.z = 0;
+					child_node = node->GetChild((int)NodeId::HandItem);
+					child_node->visible = false;
 				}
 				animation_state = 1;
 			}
@@ -8295,6 +8307,16 @@ void Unit::ChangeSlotItem(ITEM_SLOT slot, const Item* item)
 				child_node->rot.z = -PI / 2;
 			else
 				child_node->rot.z = 0;
+
+			child_node = node->GetChild((int)NodeId::HandItem);
+			if(!child_node)
+			{
+				child_node = SceneNode::Get();
+				child_node->id = (int)NodeId::HandItem;
+				child_node->SetMesh(game_res->aArrow);
+				child_node->visible = false;
+				node->AddChild(child_node, node->mesh->GetPoint(NAMES::point_weapon));
+			}
 		}
 	}
 	else if(child_node)

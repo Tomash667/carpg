@@ -7,6 +7,7 @@ struct GroundItem : public EntityType<GroundItem>
 	uint count, team_count;
 	Vec3 pos;
 	float rot;
+	SceneNode* node;
 
 	static const int MIN_SIZE = 23;
 
