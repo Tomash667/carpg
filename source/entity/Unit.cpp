@@ -3239,13 +3239,27 @@ bool Unit::HaveItemEquipped(const Item* item) const
 //=================================================================================================
 bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
 {
+	WeaponType type;
 	switch(slot)
 	{
 	case SLOT_WEAPON:
 	case SLOT_SHIELD:
-		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED;
+		type = W_ONE_HANDED;
+		break;
 	case SLOT_BOW:
-		return weapon_state == WS_TAKEN && weapon_taken == W_BOW;
+		type = W_BOW;
+		break;
+	default:
+		return false;
+	}
+
+	switch(weapon_state)
+	{
+	case WS_TAKEN:
+	case WS_TAKING:
+		return weapon_taken == type;
+	case WS_HIDING:
+		return weapon_hiding == type;
 	default:
 		return false;
 	}

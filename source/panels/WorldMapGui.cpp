@@ -439,15 +439,9 @@ void WorldMapGui::Update(float dt)
 				{
 					if(team->IsLeader())
 					{
-						world->Warp(picked_location);
+						world->Warp(picked_location, true);
 						follow = true;
 						tracking = -1;
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHEAT_TRAVEL;
-							c.id = picked_location;
-						}
 					}
 					else
 						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
@@ -475,16 +469,9 @@ void WorldMapGui::Update(float dt)
 				{
 					if(team->IsLeader())
 					{
-						world->WarpPos(c_pos);
+						world->WarpPos(c_pos, true);
 						follow = true;
 						tracking = -1;
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHEAT_TRAVEL_POS;
-							c.pos.x = c_pos.x;
-							c.pos.y = c_pos.y;
-						}
 					}
 					else
 						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);

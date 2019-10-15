@@ -2,10 +2,11 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Fixes:
-+ MP packet logger
++ logowanie pakietów MP
 - crash przy wchodzeniu do lokalizacji jeœli przy wychodzeniu z poprzedniej cz³onkowie dru¿yny jedli/pili [Anonymous]
 - d³u¿sze czekanie na klientów u których gra powoli siê ³aduje [Leinnan]
 - nieprawid³owe ustalanie kiedy mo¿liwa jest szybka podró¿ u klienta
+- poprawki do animacja wyjmowania/chowania broni
 
 --------------------------------------------------------------------------------
 Wersja 0.12 (2019-09-22):

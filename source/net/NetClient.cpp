@@ -2818,7 +2818,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->Warp(location_index);
+					world->Warp(location_index, false);
 					game_gui->world_map->StartTravel();
 				}
 			}
@@ -2832,7 +2832,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CHEAT_TRAVEL_POS.");
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->WarpPos(pos);
+					world->WarpPos(pos, false);
 					game_gui->world_map->StartTravel();
 				}
 			}

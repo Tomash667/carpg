@@ -2,10 +2,11 @@ Changelog
 
 --------------------------------------------------------------------------------
 Fixes:
-+ logowanie pakietów MP
++ MP packet logger
 - crash when entering location when on leaving location team members was eating/drinking [Anonymous]
 - longer waiting for clients that are slowly loading game [Leinnan]
 - invalid calculations of when fast travel is available for clients
+- improved take out/hide weapon animation
 
 --------------------------------------------------------------------------------
 Version 0.12 (2019-09-22):
