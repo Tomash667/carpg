@@ -5282,6 +5282,8 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			weapon_taken = type;
 			weapon_state = WeaponState::Taking;
 			animation_state = 0;
+			if(IsPlayer())
+				player->last_weapon = type;
 			break;
 		case WeaponState::Hiding:
 			if(weapon_hiding == type)
@@ -5289,19 +5291,22 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				if(animation_state == 0)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
+					mesh_inst->Deactivate(1);
 					action = A_NONE;
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taken;
-					mesh_inst->Deactivate(1);
 				}
 				else
 				{
 					// schowa³ broñ, zacznij wyci¹gaæ
+					mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taking;
-					ClearBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+					animation_state = 0;
+					if(IsPlayer())
+						player->last_weapon = type;
 				}
 			}
 			else
@@ -5315,6 +5320,8 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taking;
 					animation_state = 0;
+					if(IsPlayer())
+						player->last_weapon = type;
 				}
 				else
 				{
@@ -5332,13 +5339,15 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
+				if(IsPlayer())
+					player->last_weapon = type;
 			}
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
+				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 				weapon_state = WeaponState::Hiding;
 				weapon_hiding = weapon_taken;
-				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 			}
 			weapon_taken = type;
 			animation_state = 0;
@@ -5377,19 +5386,19 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			if(animation_state == 0)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
+				mesh_inst->Deactivate(1);
 				action = A_NONE;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hidden;
-				mesh_inst->Deactivate(1);
 			}
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
+				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 				weapon_hiding = weapon_taken;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hiding;
 				animation_state = 0;
-				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 			}
 			break;
 		case WeaponState::Taken:
@@ -5441,7 +5450,6 @@ void Unit::SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action)
 			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 		else
 			SetWeaponStateInstant(WeaponState::Taken, weapon_taken);
-		weapon_state = WeaponState::Taken;
 	}
 	if(action == A_TAKE_WEAPON)
 		action = A_NONE;
@@ -6898,6 +6906,8 @@ void Unit::Update(float dt)
 				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
 				animation_state = 0;
+				if(IsPlayer())
+					player->last_weapon = weapon_taken;
 
 				if(Net::IsOnline())
 				{

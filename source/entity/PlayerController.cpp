@@ -2482,7 +2482,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					game_gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
 				else
 				{
-					last_weapon = weapon;
 					if(u.SetWeaponState(true, weapon, true))
 					{
 						idle = false;
@@ -2495,7 +2494,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			if(u.SetWeaponState(true, W_ONE_HANDED, true))
 			{
-				last_weapon = W_ONE_HANDED;
 				idle = false;
 				ClearNextAction();
 			}
@@ -2504,7 +2502,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			if(u.SetWeaponState(true, W_BOW, true))
 			{
-				last_weapon = W_BOW;
 				idle = false;
 				ClearNextAction();
 			}

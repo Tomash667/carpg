@@ -700,7 +700,10 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			if(Rand() % 2 == 0)
 				anim = DA_ATTACK;
 			else
+			{
 				anim = DA_BATTLE_MODE;
+				unit->mesh_inst->Deactivate(1);
+			}
 			break;
 		case DA_BATTLE_MODE:
 			if(unit->weapon_taken == W_ONE_HANDED)
@@ -757,7 +760,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			break;
 		case DA_BLOCK:
-			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 0);
+			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 1);
 			t = 1.f;
 			break;
 		case DA_BATTLE_MODE:
@@ -1525,6 +1528,7 @@ void CreateCharacterPanel::UpdateInventory()
 void CreateCharacterPanel::ResetDoll(bool instant)
 {
 	anim = DA_STAND;
+	unit->mesh_inst->Deactivate(1);
 	unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	if(instant)
 	{
