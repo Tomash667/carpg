@@ -116,6 +116,7 @@ void Net::OnNewGameServer()
 	update_timer = 0.f;
 	game->arena->Reset();
 	team->anyone_talking = false;
+	game_level->can_fast_travel = false;
 	warps.clear();
 	if(!mp_load)
 		changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items
@@ -220,10 +221,15 @@ void Net::UpdateServer(float dt)
 	update_timer += dt;
 	if(update_timer >= TICK && active_players > 1)
 	{
-		bool last_anyone_talking = team->anyone_talking;
-		team->anyone_talking = team->IsAnyoneTalking();
-		if(last_anyone_talking != team->anyone_talking)
-			PushChange(NetChange::CHANGE_FLAGS);
+		if(game->game_state == GS_LEVEL)
+		{
+			bool last_anyone_talking = team->anyone_talking;
+			bool last_can_fast_travel = game_level->can_fast_travel;
+			team->anyone_talking = team->IsAnyoneTalking();
+			game_level->can_fast_travel = game_level->CanFastTravel();
+			if(last_anyone_talking != team->anyone_talking || last_can_fast_travel != game_level->can_fast_travel)
+				PushChange(NetChange::CHANGE_FLAGS);
+		}
 
 		update_timer = 0;
 		BitStreamWriter f;
@@ -2382,7 +2388,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: TRAVEL from %s, player is not leader.", info.name.c_str());
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->Travel(loc, true);
+					world->Travel(loc, false);
 					game_gui->world_map->StartTravel();
 				}
 			}
@@ -2398,7 +2404,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: TRAVEL_POS from %s, player is not leader.", info.name.c_str());
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->TravelPos(pos, true);
+					world->TravelPos(pos, false);
 					game_gui->world_map->StartTravel();
 				}
 			}
@@ -2770,16 +2776,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->Warp(location_index);
+					world->Warp(location_index, false);
 					game_gui->world_map->StartTravel();
-
-					// inform other players
-					if(active_players > 2)
-					{
-						NetChange& c = Add1(changes);
-						c.type = NetChange::CHEAT_TRAVEL;
-						c.id = location_index;
-					}
 				}
 			}
 			break;
@@ -2796,17 +2794,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: CHEAT_TRAVEL_POS from %s, player is not leader.", info.name.c_str());
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->WarpPos(pos);
+					world->WarpPos(pos, false);
 					game_gui->world_map->StartTravel();
-
-					// inform other players
-					if(active_players > 2)
-					{
-						NetChange& c = Add1(changes);
-						c.type = NetChange::CHEAT_TRAVEL_POS;
-						c.pos.x = pos.x;
-						c.pos.y = pos.y;
-					}
 				}
 			}
 			break;
@@ -3335,11 +3324,13 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			{
 				byte b = 0;
 				if(team->is_bandit)
-					b |= 0x01;
+					b |= F_IS_BANDIT;
 				if(team->crazies_attack)
-					b |= 0x02;
+					b |= F_CRAZIES_ATTACKING;
 				if(team->anyone_talking)
-					b |= 0x04;
+					b |= F_ANYONE_TALKING;
+				if(game_level->can_fast_travel)
+					b |= F_CAN_FAST_TRAVEL;
 				f << b;
 			}
 			break;

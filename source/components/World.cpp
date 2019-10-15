@@ -2148,7 +2148,7 @@ void World::StartEncounter()
 }
 
 //=================================================================================================
-void World::Travel(int index, bool send)
+void World::Travel(int index, bool order)
 {
 	if(state == State::TRAVEL)
 		return;
@@ -2174,7 +2174,7 @@ void World::Travel(int index, bool send)
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
-	if(Net::IsOnline() && send)
+	if(Net::IsServer() || (Net::IsClient() && order))
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TRAVEL;
@@ -2183,7 +2183,7 @@ void World::Travel(int index, bool send)
 }
 
 //=================================================================================================
-void World::TravelPos(const Vec2& pos, bool send)
+void World::TravelPos(const Vec2& pos, bool order)
 {
 	if(state == State::TRAVEL)
 		return;
@@ -2209,7 +2209,7 @@ void World::TravelPos(const Vec2& pos, bool send)
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
-	if(Net::IsOnline() && send)
+	if(Net::IsServer() || (Net::IsClient() && order))
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TRAVEL_POS;
@@ -2492,13 +2492,14 @@ void World::EndTravel()
 }
 
 //=================================================================================================
-void World::Warp(int index)
+void World::Warp(int index, bool order)
 {
 	if(game_level->is_open)
 	{
 		game->LeaveLocation(false, false);
 		game_level->is_open = false;
 	}
+
 	current_location_index = index;
 	current_location = locations[current_location_index];
 	game_level->location_index = current_location_index;
@@ -2506,21 +2507,37 @@ void World::Warp(int index)
 	Location& loc = *current_location;
 	loc.SetVisited();
 	world_pos = loc.pos;
+
+	if(Net::IsServer() || (Net::IsClient() && order))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHEAT_TRAVEL;
+		c.id = index;
+	}
 }
 
 //=================================================================================================
-void World::WarpPos(const Vec2& pos)
+void World::WarpPos(const Vec2& pos, bool order)
 {
 	if(game_level->is_open)
 	{
 		game->LeaveLocation(false, false);
 		game_level->is_open = false;
 	}
+
 	world_pos = pos;
 	current_location_index = -1;
 	current_location = nullptr;
 	game_level->location_index = -1;
 	game_level->location = nullptr;
+
+	if(Net::IsServer() || (Net::IsClient() && order))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHEAT_TRAVEL_POS;
+		c.pos.x = pos.x;
+		c.pos.y = pos.y;
+	}
 }
 
 //=================================================================================================

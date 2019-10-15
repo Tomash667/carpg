@@ -12,7 +12,6 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Setup(float min_progress, float max_progress, int steps, cstring str);
 	void Tick(cstring str);
-	void SetProgressCallback(float progress, cstring str);
 
 	void SetProgress(float _progress)
 	{

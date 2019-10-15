@@ -72,6 +72,7 @@ void Net::OnNewGameClient()
 	game->devmode = game->default_devmode;
 	game->train_move = 0.f;
 	team->anyone_talking = false;
+	game_level->can_fast_travel = false;
 	interpolate_timer = 0.f;
 	changes.clear();
 	if(!net_strs.empty())
@@ -767,9 +768,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CHANGE_FLAGS.");
 				else
 				{
-					team->is_bandit = IsSet(flags, 0x01);
-					team->crazies_attack = IsSet(flags, 0x02);
-					team->anyone_talking = IsSet(flags, 0x04);
+					team->is_bandit = IsSet(flags, F_IS_BANDIT);
+					team->crazies_attack = IsSet(flags, F_CRAZIES_ATTACKING);
+					team->anyone_talking = IsSet(flags, F_ANYONE_TALKING);
+					game_level->can_fast_travel = IsSet(flags, F_CAN_FAST_TRAVEL);
 				}
 			}
 			break;
@@ -2786,7 +2788,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->Warp(location_index);
+					world->Warp(location_index, false);
 					game_gui->world_map->StartTravel();
 				}
 			}
@@ -2800,7 +2802,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CHEAT_TRAVEL_POS.");
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->WarpPos(pos);
+					world->WarpPos(pos, false);
 					game_gui->world_map->StartTravel();
 				}
 			}

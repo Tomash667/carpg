@@ -63,8 +63,8 @@ public:
 	void ExitToMap();
 	void ChangeLevel(int index, bool encounter);
 	void StartInLocation(Location* loc);
-	void Warp(int index);
-	void WarpPos(const Vec2& pos);
+	void Warp(int index, bool order);
+	void WarpPos(const Vec2& pos, bool order);
 	void Reveal();
 
 	// save/load
@@ -146,8 +146,8 @@ public:
 	Vec2 GetPos() const { return world_pos; }
 
 	// travel
-	void Travel(int index, bool send);
-	void TravelPos(const Vec2& pos, bool send);
+	void Travel(int index, bool order);
+	void TravelPos(const Vec2& pos, bool order);
 	void UpdateTravel(float dt);
 	void StopTravel(const Vec2& pos, bool send);
 	void EndTravel();

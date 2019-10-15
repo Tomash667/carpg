@@ -346,6 +346,7 @@ public:
 	void DoQuit();
 	void RestartGame();
 	void ClearAndExitToMenu(cstring msg);
+	void OnLoadProgress(float progress, cstring str);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
@@ -398,7 +399,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
-	bool loading_first_step;
+	bool loading_first_step, loading_resources;
 	// used temporary at loading
 	vector<AIController*> ai_bow_targets;
 	vector<Location*> load_location_quest;

@@ -21,6 +21,16 @@ enum FAST_TRAVEL
 };
 
 //-----------------------------------------------------------------------------
+enum NetGameFlags
+{
+	F_IS_BANDIT = 1 << 0,
+	F_CRAZIES_ATTACKING = 1 << 1,
+	F_ANYONE_TALKING = 1 << 2,
+	F_CAN_FAST_TRAVEL = 1 << 3
+	// max 8
+};
+
+//-----------------------------------------------------------------------------
 class NetChangeWriter
 {
 public:

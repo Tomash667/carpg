@@ -294,6 +294,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* nick - nick in multiplayer game
 	* nomusic (true [false]) - don't load music, can't turn it on
 	* nosound (true [false]) - don't load sound, can't turn it on
+	* packet_logger (true [false]) - logging MP packets
 	* play_music ([true] false) - play music
 	* play_sound ([true] false) - play sound
 	* port ([37557]) - port in multiplayer

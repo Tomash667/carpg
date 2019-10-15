@@ -40,6 +40,7 @@
 #include "Render.h"
 #include "GameMessages.h"
 #include "Engine.h"
+#include "Utility.h"
 #include "GameResources.h"
 
 // consts
@@ -1766,6 +1767,13 @@ void Game::UpdateServerSend(float dt)
 				info.state = PlayerInfo::IN_GAME;
 			}
 			break;
+		case ID_PROGRESS:
+			if(info.state == PlayerInfo::WAITING_FOR_DATA2 && info.left == PlayerInfo::LEFT_NO)
+			{
+				info.timer = 5.f;
+				Info("NM_SERVER_SEND: Update progress from %s.", info.name.c_str());
+			}
+			break;
 		case ID_CONTROL:
 			break;
 		default:
@@ -2229,4 +2237,22 @@ void Game::ClearAndExitToMenu(cstring msg)
 	net->ClosePeer(false, true);
 	ExitToMenu();
 	gui->SimpleDialog(msg, game_gui->main_menu);
+}
+
+void Game::OnLoadProgress(float progress, cstring str)
+{
+	game_gui->load_screen->SetProgressOptional(progress, str);
+	if(progress >= 0.5f)
+		utility::IncrementDelayLock();
+	if(Net::IsClient() && loading_resources)
+	{
+		loading_dt += loading_t.Tick();
+		if(loading_dt >= 2.5f)
+		{
+			BitStreamWriter f;
+			f << ID_PROGRESS;
+			net->SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
+			loading_dt = 0;
+		}
+	}
 }

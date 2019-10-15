@@ -6,11 +6,14 @@ Version 0.13 (???):
 + optimisations
 + updated to Visual Studio 2019
 + update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
-- improved take out/hide weapon animation, remember last used weapon
 
 --------------------------------------------------------------------------------
 Fixes:
++ MP packet logger
 - crash when entering location when on leaving location team members was eating/drinking [Anonymous]
+- longer waiting for clients that are slowly loading game [Leinnan]
+- invalid calculations of when fast travel is available for clients
+- improved take out/hide weapon animation
 
 --------------------------------------------------------------------------------
 Version 0.12 (2019-09-22):
