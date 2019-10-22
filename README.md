@@ -32,3 +32,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 For details look [here](https://github.com/Tomash667/carpg/blob/dev/CONTRIBUTING.md).
 
+thank you
