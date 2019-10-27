@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Fixes:
+Wersja 0.12.2 (2019-10-27):
 + logowanie pakietów MP
 - crash przy wchodzeniu do lokalizacji jeœli przy wychodzeniu z poprzedniej cz³onkowie dru¿yny jedli/pili [Anonymous]
 - d³u¿sze czekanie na klientów u których gra powoli siê ³aduje [Leinnan]

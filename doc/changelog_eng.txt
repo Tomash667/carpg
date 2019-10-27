@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Fixes:
+Version 0.12.2 (2019-10-27):
 + MP packet logger
 - crash when entering location when on leaving location team members was eating/drinking [Anonymous]
 - longer waiting for clients that are slowly loading game [Leinnan]
