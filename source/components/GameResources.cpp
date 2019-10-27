@@ -11,11 +11,12 @@
 #include "Game.h"
 #include "GameGui.h"
 #include "Level.h"
+#include "SuperShader.h"
 #include <ResourceManager.h>
 #include <SoundManager.h>
 #include <Mesh.h>
 #include <Render.h>
-#include <DirectX.h>
+#include "DirectX.h"
 
 GameResources* global::game_res;
 
@@ -591,15 +592,16 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	ld.color = Vec3(1, 1, 1);
 	ld.range = 10.f;
 
-	ID3DXEffect* effect = game->eMesh;
-	V(effect->SetTechnique(game->techMesh));
-	V(effect->SetMatrix(game->hMeshCombined, (D3DXMATRIX*)&(matWorld * matView * matProj)));
-	V(effect->SetMatrix(game->hMeshWorld, (D3DXMATRIX*)&matWorld));
-	V(effect->SetVector(game->hMeshFogColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(effect->SetVector(game->hMeshFogParam, (D3DXVECTOR4*)&Vec4(25.f, 50.f, 25.f, 0)));
-	V(effect->SetVector(game->hMeshAmbientColor, (D3DXVECTOR4*)&Vec4(0.5f, 0.5f, 0.5f, 1)));
-	V(effect->SetVector(game->hMeshTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(effect->SetRawValue(game->hMeshLights, &ld, 0, sizeof(LightData)));
+	SuperShader* shader = game->super_shader;
+	ID3DXEffect* effect = shader->GetShader(shader->GetShaderId(false, IsSet(mesh.head.flags, Mesh::F_TANGENTS), false, false, false, true, false));
+	D3DXHANDLE tech;
+	V(effect->FindNextValidTechnique(nullptr, &tech));
+	V(effect->SetTechnique(tech));
+	V(effect->SetMatrix(shader->hMatCombined, (D3DXMATRIX*)&(matWorld * matView * matProj)));
+	V(effect->SetMatrix(shader->hMatWorld, (D3DXMATRIX*)&matWorld));
+	V(effect->SetVector(shader->hAmbientColor, (D3DXVECTOR4*)&Vec4(0.5f, 0.5f, 0.5f, 1)));
+	V(effect->SetVector(shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(effect->SetRawValue(shader->hLights, &ld, 0, sizeof(LightData)));
 
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
 	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
@@ -612,7 +614,7 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	for(int i = 0; i < mesh.head.n_subs; ++i)
 	{
 		const Mesh::Submesh& sub = mesh.subs[i];
-		V(effect->SetTexture(game->hMeshTex, mesh.GetTexture(i, tex_override)));
+		V(effect->SetTexture(shader->hTexDiffuse, mesh.GetTexture(i, tex_override)));
 		V(effect->CommitChanges());
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}

@@ -10,6 +10,7 @@
 #include <Engine.h>
 #include <Render.h>
 #include <SoundManager.h>
+#include <AppEntry.h>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -335,13 +336,16 @@ bool RunInstallScripts()
 }
 
 //=================================================================================================
-void LoadSystemDir()
+void LoadResourcesConfig()
 {
 	g_system_dir = "system";
 
 	Config cfg;
 	if(cfg.Load("resource.cfg") == Config::OK)
+	{
 		g_system_dir = cfg.GetString("system", "system");
+		render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
+	}
 }
 
 //=================================================================================================
@@ -487,19 +491,7 @@ void LoadConfiguration(char* lpCmdLine)
 	if(console == None)
 		console = cfg.GetBool3("console", False);
 	if(console == True)
-	{
 		have_console = true;
-
-		// console
-		AllocConsole();
-		freopen("CONIN$", "r", stdin);
-		freopen("CONOUT$", "w", stdout);
-		freopen("CONOUT$", "w", stderr);
-
-		// console polish diacritics (temporary solution)
-		SetConsoleCP(1250);
-		SetConsoleOutputCP(1250);
-	}
 
 	setlocale(LC_COLLATE, "");
 	setlocale(LC_CTYPE, "");
@@ -693,7 +685,7 @@ void LoadConfiguration(char* lpCmdLine)
 //=================================================================================================
 // main program function
 //=================================================================================================
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int AppEntry(char* lpCmdLine)
 {
 #ifdef _DEBUG
 	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
@@ -724,11 +716,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Info("Build type: %s", build_type);
 	}
 	LogProcessorFeatures();
-	LoadSystemDir();
 
 	// settings
 	Ptr<Game> game;
 	global::game = game.Get();
+	LoadResourcesConfig();
 	LoadConfiguration(lpCmdLine);
 
 	// instalation scripts

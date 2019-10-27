@@ -18,6 +18,12 @@
 #include "SoundManager.h"
 #include "PhysicCallbacks.h"
 #include "GameResources.h"
+#include "ParticleShader.h"
+#include "GlowShader.h"
+#include "PostfxShader.h"
+#include "BasicShader.h"
+#include "SkyboxShader.h"
+#include "Pathfinding.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -1532,7 +1538,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	else
 	{
 		node->billboard = true;
-		node->mat = Matrix::CreateLookAt(o.pos, game_level->camera.center);
+		node->mat = Matrix::CreateLookAt(o.pos, game_level->camera.from);
 	}
 
 	node->mesh = o.mesh;
@@ -2886,6 +2892,11 @@ void Game::DrawScene(bool outside)
 	// debug nodes
 	if(!draw_batch.debug_nodes.empty())
 		DrawDebugNodes(draw_batch.debug_nodes);
+	if(pathfinding->IsDebugDraw())
+	{
+		basic_shader->Prepare(game_level->camera);
+		pathfinding->Draw(basic_shader);
+	}
 
 	// krew
 	if(!draw_batch.bloods.empty())
@@ -2926,11 +2937,12 @@ void Game::DrawScene(bool outside)
 
 //=================================================================================================
 // nie zoptymalizowane, póki co wyœwietla jeden obiekt (lub kilka ale dobrze posortowanych w przypadku postaci z przedmiotami)
-void Game::DrawGlowingNodes(bool use_postfx)
+void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 {
 	PROFILER_BLOCK("DrawGlowingNodes");
 
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = glow_shader->effect;
 
 	// ustaw flagi renderowania
 	render->SetAlphaBlend(false);
@@ -2958,9 +2970,8 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	Mesh* mesh;
 	uint passes;
 
-	for(vector<GlowNode>::iterator it = draw_batch.glow_nodes.begin(), end = draw_batch.glow_nodes.end(); it != end; ++it)
+	for(const GlowNode& glow : glow_nodes)
 	{
-		GlowNode& glow = *it;
 		render->SetAlphaTest(glow.alpha);
 
 		// animowany czy nie?
@@ -2970,24 +2981,24 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			{
 				if(prev_mode != -1)
 				{
-					V(eGlow->EndPass());
-					V(eGlow->End());
+					V(effect->EndPass());
+					V(effect->End());
 				}
 				prev_mode = 1;
-				V(eGlow->SetTechnique(techGlowAni));
-				V(eGlow->Begin(&passes, 0));
-				V(eGlow->BeginPass(0));
+				V(effect->SetTechnique(glow_shader->techGlowAni));
+				V(effect->Begin(&passes, 0));
+				V(effect->BeginPass(0));
 			}
 			if(!glow.node->parent_mesh_inst)
 			{
 				vector<Matrix>& mat_bones = glow.node->mesh_inst->mat_bones;
-				V(eGlow->SetMatrixArray(hGlowBones, (D3DXMATRIX*)&mat_bones[0], mat_bones.size()));
+				V(effect->SetMatrixArray(glow_shader->hMatBones, (D3DXMATRIX*)&mat_bones[0], mat_bones.size()));
 				mesh = glow.node->mesh_inst->mesh;
 			}
 			else
 			{
 				vector<Matrix>& mat_bones = glow.node->parent_mesh_inst->mat_bones;
-				V(eGlow->SetMatrixArray(hGlowBones, (D3DXMATRIX*)&mat_bones[0], mat_bones.size()));
+				V(effect->SetMatrixArray(glow_shader->hMatBones, (D3DXMATRIX*)&mat_bones[0], mat_bones.size()));
 				mesh = glow.node->mesh;
 			}
 		}
@@ -2997,13 +3008,13 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			{
 				if(prev_mode != -1)
 				{
-					V(eGlow->EndPass());
-					V(eGlow->End());
+					V(effect->EndPass());
+					V(effect->End());
 				}
 				prev_mode = 0;
-				V(eGlow->SetTechnique(techGlowMesh));
-				V(eGlow->Begin(&passes, 0));
-				V(eGlow->BeginPass(0));
+				V(effect->SetTechnique(glow_shader->techGlowMesh));
+				V(effect->Begin(&passes, 0));
+				V(effect->BeginPass(0));
 			}
 			mesh = glow.node->mesh;
 		}
@@ -3024,9 +3035,9 @@ void Game::DrawGlowingNodes(bool use_postfx)
 
 		// ustawienia shadera
 		Matrix m1 = glow.node->mat * game_level->camera.matViewProj;
-		V(eGlow->SetMatrix(hGlowCombined, (D3DXMATRIX*)&m1));
-		V(eGlow->SetVector(hGlowColor, (D3DXVECTOR4*)&glow_color));
-		V(eGlow->CommitChanges());
+		V(effect->SetMatrix(glow_shader->hMatCombined, (D3DXMATRIX*)&m1));
+		V(effect->SetVector(glow_shader->hColor, (D3DXVECTOR4*)&glow_color));
+		V(effect->CommitChanges());
 
 		// ustawienia modelu
 		V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
@@ -3041,16 +3052,16 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			{
 				if(i == 0 || glow.type != GlowNode::Door)
 				{
-					V(eGlow->SetTexture(hGlowTex, mesh->subs[i].tex->tex));
-					V(eGlow->CommitChanges());
+					V(effect->SetTexture(glow_shader->hTex, mesh->subs[i].tex->tex));
+					V(effect->CommitChanges());
 					V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
 				}
 			}
 		}
 		else
 		{
-			V(eGlow->SetTexture(hGlowTex, game_res->tBlack->tex));
-			V(eGlow->CommitChanges());
+			V(effect->SetTexture(glow_shader->hTex, game_res->tBlack->tex));
+			V(effect->CommitChanges());
 			for(int i = 0; i < mesh->head.n_subs; ++i)
 			{
 				if(i == 0 || glow.type != GlowNode::Door)
@@ -3059,8 +3070,8 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		}
 	}
 
-	V(eGlow->EndPass());
-	V(eGlow->End());
+	V(effect->EndPass());
+	V(effect->End());
 	V(device->EndScene());
 
 	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
@@ -3069,6 +3080,8 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	//======================================================================
 	// w teksturze s¹ teraz wyrenderowane obiekty z kolorem glow
 	// trzeba rozmyæ teksturê, napierw po X
+	effect = postfx_shader->effect;
+
 	TEX tex;
 	if(!render->IsMultisamplingEnabled())
 	{
@@ -3089,15 +3102,14 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
 
 	// ustawienia shadera
-	D3DXHANDLE tech = ePostFx->GetTechniqueByName("BlurX");
-	V(ePostFx->SetTechnique(tech));
-	V(ePostFx->SetTexture(hPostTex, tex));
+	V(effect->SetTechnique(postfx_shader->techBlurX));
+	V(effect->SetTexture(postfx_shader->hTex, tex));
 	// chcê ¿eby rozmiar efektu by³ % taki sam w ka¿dej rozdzielczoœci (ju¿ tak nie jest)
 	const float base_range = 2.5f;
 	const float range_x = (base_range / 1024.f);// *(wnd_size.x/1024.f);
 	const float range_y = (base_range / 768.f);// *(wnd_size.x/768.f);
-	V(ePostFx->SetVector(hPostSkill, (D3DXVECTOR4*)&Vec4(range_x, range_y, 0, 0)));
-	V(ePostFx->SetFloat(hPostPower, 1));
+	V(effect->SetVector(postfx_shader->hSkill, (D3DXVECTOR4*)&Vec4(range_x, range_y, 0, 0)));
+	V(effect->SetFloat(postfx_shader->hPower, 1));
 
 	// ustawienia modelu
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
@@ -3105,11 +3117,11 @@ void Game::DrawGlowingNodes(bool use_postfx)
 
 	// renderowanie
 	V(device->BeginScene());
-	V(ePostFx->Begin(&passes, 0));
-	V(ePostFx->BeginPass(0));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(ePostFx->EndPass());
-	V(ePostFx->End());
+	V(effect->EndPass());
+	V(effect->End());
 	V(device->EndScene());
 
 	//======================================================================
@@ -3132,17 +3144,16 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	V(device->SetRenderTarget(0, render_surface));
 
 	// ustawienia shadera
-	tech = ePostFx->GetTechniqueByName("BlurY");
-	V(ePostFx->SetTechnique(tech));
-	V(ePostFx->SetTexture(hPostTex, tex));
+	V(effect->SetTechnique(postfx_shader->techBlurY));
+	V(effect->SetTexture(postfx_shader->hTex, tex));
 
 	// renderowanie
 	V(device->BeginScene());
-	V(ePostFx->Begin(&passes, 0));
-	V(ePostFx->BeginPass(0));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(ePostFx->EndPass());
-	V(ePostFx->End());
+	V(effect->EndPass());
+	V(effect->End());
 	V(device->EndScene());
 
 	//======================================================================
@@ -3190,16 +3201,15 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 
 	// ustawienia shadera
-	tech = ePostFx->GetTechniqueByName("Empty");
-	V(ePostFx->SetTexture(hPostTex, tex));
+	V(effect->SetTexture(postfx_shader->hTex, tex));
 
 	// renderowanie
 	V(device->BeginScene());
-	V(ePostFx->Begin(&passes, 0));
-	V(ePostFx->BeginPass(0));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(ePostFx->EndPass());
-	V(ePostFx->End());
+	V(effect->EndPass());
+	V(effect->End());
 	V(device->EndScene());
 
 	// przywróæ ustawienia
@@ -3214,6 +3224,7 @@ void Game::DrawSkybox()
 {
 	IDirect3DDevice9* device = render->GetDevice();
 	Mesh& mesh = *game_res->aSkybox;
+	ID3DXEffect* effect = skybox_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(false);
@@ -3221,26 +3232,26 @@ void Game::DrawSkybox()
 	render->SetNoZWrite(true);
 
 	uint passes;
-	Matrix m1 = Matrix::Translation(game_level->camera.center) * game_level->camera.matViewProj;
+	Matrix m1 = Matrix::Translation(game_level->camera.from) * game_level->camera.matViewProj;
 
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
 	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
 	V(device->SetIndices(mesh.ib));
 
-	V(eSkybox->SetTechnique(techSkybox));
-	V(eSkybox->SetMatrix(hSkyboxCombined, (D3DXMATRIX*)&m1));
-	V(eSkybox->Begin(&passes, 0));
-	V(eSkybox->BeginPass(0));
+	V(effect->SetTechnique(skybox_shader->tech));
+	V(effect->SetMatrix(skybox_shader->hMatCombined, (D3DXMATRIX*)&m1));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	for(vector<Mesh::Submesh>::iterator it = mesh.subs.begin(), end = mesh.subs.end(); it != end; ++it)
 	{
-		V(eSkybox->SetTexture(hSkyboxTex, it->tex->tex));
-		V(eSkybox->CommitChanges());
+		V(effect->SetTexture(skybox_shader->hTex, it->tex->tex));
+		V(effect->CommitChanges());
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, it->min_ind, it->n_ind, it->first * 3, it->tris));
 	}
 
-	V(eSkybox->EndPass());
-	V(eSkybox->End());
+	V(effect->EndPass());
+	V(effect->End());
 }
 
 //=================================================================================================
@@ -3295,7 +3306,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&game_level->GetAmbientColor()));
 				V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&game_level->GetFogColor()));
 				V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&game_level->GetFogParams()));
-				V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.center));
+				V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.from));
 				V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 				V(e->SetFloat(super_shader->hSpecularIntensity, 0.2f));
 				V(e->SetFloat(super_shader->hSpecularHardness, 10));
@@ -3350,7 +3361,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&ambientColor));
 	V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&fogColor));
 	V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&fogParams));
-	V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.center));
+	V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.from));
 	if(outside)
 	{
 		V(e->SetVector(super_shader->hLightDir, (D3DXVECTOR4*)&lightDir));
@@ -3502,6 +3513,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = basic_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(false);
@@ -3512,9 +3524,9 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
 
 	uint passes;
-	V(eMesh->SetTechnique(techMeshSimple2));
-	V(eMesh->Begin(&passes, 0));
-	V(eMesh->BeginPass(0));
+	V(effect->SetTechnique(basic_shader->techSimple));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	static Mesh* meshes[DebugSceneNode::MaxType] = {
 		game_res->aBox,
@@ -3535,8 +3547,8 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	{
 		const DebugSceneNode& node = **it;
 
-		V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&colors[node.group]));
-		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&node.mat));
+		V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[node.group]));
+		V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&node.mat));
 
 		if(node.type == DebugSceneNode::TriMesh)
 		{
@@ -3544,7 +3556,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 			// currently only dungeon mesh is supported here
 			assert(mesh == game_level->dungeon_shape_data);
 			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
-			V(eMesh->CommitChanges());
+			V(effect->CommitChanges());
 
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, game_level->dungeon_shape_pos.size(), game_level->dungeon_shape_index.size() / 3, game_level->dungeon_shape_index.data(),
 				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));
@@ -3555,15 +3567,15 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
 			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 			V(device->SetIndices(mesh->ib));
-			V(eMesh->CommitChanges());
+			V(effect->CommitChanges());
 
 			for(int i = 0; i < mesh->head.n_subs; ++i)
 				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
 		}
 	}
 
-	V(eMesh->EndPass());
-	V(eMesh->End());
+	V(effect->EndPass());
+	V(effect->End());
 
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
 	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
@@ -3588,7 +3600,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	V(e->Begin(&passes, 0));
 	V(e->BeginPass(0));
 
-	for(vector<Blood*>::const_iterator it = draw_batch.bloods.begin(), end = draw_batch.bloods.end(); it != end; ++it)
+	for(vector<Blood*>::const_iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
 	{
 		const Blood& blood = **it;
 
@@ -3667,6 +3679,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 void Game::DrawBillboards(const vector<Billboard>& billboards)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = particle_shader->effect;
 
 	render->SetAlphaBlend(true);
 	render->SetAlphaTest(false);
@@ -3676,10 +3689,10 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
-	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(eParticle->Begin(&passes, 0));
-	V(eParticle->BeginPass(0));
+	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
 	{
@@ -3691,22 +3704,24 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 		for(int i = 0; i < 4; ++i)
 			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
 
-		V(eParticle->SetTexture(hParticleTex, it->tex));
-		V(eParticle->CommitChanges());
+		V(effect->SetTexture(particle_shader->hTex, it->tex));
+		V(effect->CommitChanges());
 
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, billboard_v, sizeof(VParticle)));
 	}
 
-	V(eParticle->EndPass());
-	V(eParticle->End());
+	V(effect->EndPass());
+	V(effect->End());
 }
 
 //=================================================================================================
 void Game::DrawExplosions(const vector<Explo*>& explos)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = super_shader->GetShader(0);
 	Mesh& mesh = *game_res->aSpellball;
 	Mesh::Submesh& sub = mesh.subs[0];
+	assert(mesh.subs.size() == 1u);
 
 	render->SetAlphaBlend(true);
 	render->SetAlphaTest(false);
@@ -3717,10 +3732,12 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
 	V(device->SetIndices(mesh.ib));
 
+	D3DXHANDLE tech;
 	uint passes;
-	V(eMesh->SetTechnique(techMeshExplo));
-	V(eMesh->Begin(&passes, 0));
-	V(eMesh->BeginPass(0));
+	V(effect->FindNextValidTechnique(nullptr, &tech));
+	V(effect->SetTechnique(tech));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	Vec4 tint(1, 1, 1, 1);
 	TEX last_tex = nullptr;
@@ -3732,27 +3749,28 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 		if(e.tex->tex != last_tex)
 		{
 			last_tex = e.tex->tex;
-			V(eMesh->SetTexture(hMeshTex, last_tex));
+			V(effect->SetTexture(super_shader->hTexDiffuse, last_tex));
 		}
 
 		Matrix m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.matViewProj;
 		tint.w = 1.f - e.size / e.sizemax;
 
-		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&m1));
-		V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&tint));
-		V(eMesh->CommitChanges());
+		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
+		V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&tint));
+		V(effect->CommitChanges());
 
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
 
-	V(eMesh->EndPass());
-	V(eMesh->End());
+	V(effect->EndPass());
+	V(effect->End());
 }
 
 //=================================================================================================
 void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = particle_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
@@ -3762,10 +3780,10 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
-	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(eParticle->Begin(&passes, 0));
-	V(eParticle->BeginPass(0));
+	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
 	{
@@ -3845,14 +3863,14 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			break;
 		}
 
-		V(eParticle->SetTexture(hParticleTex, pe.tex->tex));
-		V(eParticle->CommitChanges());
+		V(effect->SetTexture(particle_shader->hTex, pe.tex->tex));
+		V(effect->CommitChanges());
 
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive * 2));
 	}
 
-	V(eParticle->EndPass());
-	V(eParticle->End());
+	V(effect->EndPass());
+	V(effect->End());
 
 	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
@@ -3863,6 +3881,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = particle_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
@@ -3872,10 +3891,10 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_COLOR)));
 
 	uint passes;
-	V(eParticle->SetTechnique(techTrail));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(eParticle->Begin(&passes, 0));
-	V(eParticle->BeginPass(0));
+	V(effect->SetTechnique(particle_shader->techTrail));
+	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	VColor v[4];
 
@@ -3918,14 +3937,15 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 		}
 	}
 
-	V(eParticle->EndPass());
-	V(eParticle->End());
+	V(effect->EndPass());
+	V(effect->End());
 }
 
 //=================================================================================================
 void Game::DrawLightings(const vector<Electro*>& electros)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = particle_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
@@ -3936,11 +3956,11 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
-	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetTexture(hParticleTex, game_res->tLightingLine->tex));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(eParticle->Begin(&passes, 0));
-	V(eParticle->BeginPass(0));
+	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetTexture(particle_shader->hTex, game_res->tLightingLine->tex));
+	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	const Vec4 color(0.2f, 0.2f, 1.f, 1.f);
 
@@ -4011,8 +4031,8 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 		}
 	}
 
-	V(eParticle->EndPass());
-	V(eParticle->End());
+	V(effect->EndPass());
+	V(effect->End());
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }
@@ -4021,6 +4041,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = super_shader->GetShader(0);
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
@@ -4028,42 +4049,32 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 	render->SetNoZWrite(true);
 
 	const Mesh& mesh = *game_res->aStun;
-
-	V(eMesh->SetTechnique(techMeshDir));
-	V(eMesh->SetVector(hMeshFogColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(eMesh->SetVector(hMeshFogParam, (D3DXVECTOR4*)&Vec4(250.f, 500.f, 250.f, 0)));
-	V(eMesh->SetVector(hMeshAmbientColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(eMesh->SetVector(hMeshLightDir, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(eMesh->SetVector(hMeshLightColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	const Mesh::Submesh& sub = mesh.subs[0];
+	assert(mesh.subs.size() == 1u);
 
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
 	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
 	V(device->SetIndices(mesh.ib));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 
+	D3DXHANDLE tech;
 	uint passes;
-	V(eMesh->Begin(&passes, 0));
-	V(eMesh->BeginPass(0));
+	V(effect->FindNextValidTechnique(nullptr, &tech));
+	V(effect->SetTechnique(tech));
+	V(effect->SetTexture(super_shader->hTexDiffuse, sub.tex->tex));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
-	Matrix matWorld;
-	for(auto& stun : stuns)
+	for(const StunEffect& stun : stuns)
 	{
-		matWorld = Matrix::RotationY(stun.time * 3) * Matrix::Translation(stun.pos);
-		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matWorld * game_level->camera.matViewProj)));
-		V(eMesh->SetMatrix(hMeshWorld, (D3DXMATRIX*)&matWorld));
-
-		for(int i = 0; i < mesh.head.n_subs; ++i)
-		{
-			const Mesh::Submesh& sub = mesh.subs[i];
-			V(eMesh->SetTexture(hMeshTex, sub.tex->tex));
-			V(eMesh->CommitChanges());
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-		}
+		Matrix matWorld = Matrix::RotationY(stun.time * 3) * Matrix::Translation(stun.pos);
+		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&(matWorld * game_level->camera.matViewProj)));
+		V(effect->CommitChanges());
+		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
 
-	V(eMesh->EndPass());
-	V(eMesh->End());
+	V(effect->EndPass());
+	V(effect->End());
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }
@@ -4072,6 +4083,7 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 void Game::DrawPortals(const vector<Portal*>& portals)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = particle_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
@@ -4080,11 +4092,11 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 
 	uint passes;
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetTexture(hParticleTex, game_res->tPortal->tex));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(eParticle->Begin(&passes, 0));
-	V(eParticle->BeginPass(0));
+	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetTexture(particle_shader->hTex, game_res->tPortal->tex));
+	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
 	{
@@ -4092,19 +4104,20 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 		Matrix m1 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
 			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
 			* game_level->camera.matViewProj;
-		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m1));
-		V(eParticle->CommitChanges());
+		V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&m1));
+		V(effect->CommitChanges());
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)));
 	}
 
-	V(eParticle->EndPass());
-	V(eParticle->End());
+	V(effect->EndPass());
+	V(effect->End());
 }
 
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
 	IDirect3DDevice9* device = render->GetDevice();
+	ID3DXEffect* effect = basic_shader->effect;
 
 	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
@@ -4113,28 +4126,28 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 
-	V(eArea->SetTechnique(techArea));
-	V(eArea->SetMatrix(hAreaCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
+	V(effect->SetTechnique(basic_shader->techArea));
+	V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
 	Vec4 playerPos(pc->unit->pos, 1.f);
 	playerPos.y += 0.75f;
-	V(eArea->SetVector(hAreaPlayerPos, (D3DXVECTOR4*)&playerPos));
-	V(eArea->SetFloat(hAreaRange, range));
+	V(effect->SetVector(basic_shader->hPlayerPos, (D3DXVECTOR4*)&playerPos));
+	V(effect->SetFloat(basic_shader->hRange, range));
 	uint passes;
-	V(eArea->Begin(&passes, 0));
-	V(eArea->BeginPass(0));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	for(const Area& area : areas)
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (const void*)&area.v[0], sizeof(Vec3)));
 
-	V(eArea->EndPass());
-	V(eArea->End());
+	V(effect->EndPass());
+	V(effect->End());
 
 	if(!areas2.empty())
 	{
-		V(eArea->Begin(&passes, 0));
-		V(eArea->BeginPass(0));
-		V(eArea->SetFloat(hAreaRange, 100.f));
+		V(effect->Begin(&passes, 0));
+		V(effect->BeginPass(0));
+		V(effect->SetFloat(basic_shader->hRange, 100.f));
 
 		static const Vec4 colors[3] = {
 			Vec4(1, 0, 0, 0.5f),
@@ -4144,14 +4157,14 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 
 		for(auto* area2 : areas2)
 		{
-			V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&colors[area2->ok]));
-			V(eArea->CommitChanges());
+			V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[area2->ok]));
+			V(effect->CommitChanges());
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
 				area2->points.data(), sizeof(Vec3)));
 		}
 
-		V(eArea->EndPass());
-		V(eArea->End());
+		V(effect->EndPass());
+		V(effect->End());
 	}
 }
 

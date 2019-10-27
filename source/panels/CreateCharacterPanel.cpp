@@ -664,7 +664,7 @@ void CreateCharacterPanel::RenderUnit()
 	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
 	game_level->camera.matViewProj = matView * matProj;
-	game_level->camera.center = from;
+	game_level->camera.from = from;
 	game_level->camera.matViewInv = matView.Inverse();
 
 	game_level->camera.frustum.Set(game_level->camera.matViewProj);

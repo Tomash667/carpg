@@ -6880,7 +6880,7 @@ void Unit::Update(float dt)
 	case A_TAKE_WEAPON:
 		if(weapon_state == WeaponState::Taking)
 		{
-			if(animation_state == 0 && (mesh_inst->GetProgress2() >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			if(animation_state == 0 && (mesh_inst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
 				animation_state = 1;
 			if(mesh_inst->IsEnded(1))
 			{
@@ -6898,7 +6898,7 @@ void Unit::Update(float dt)
 		else
 		{
 			// chowanie broni
-			if(animation_state == 0 && (mesh_inst->GetProgress2() <= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			if(animation_state == 0 && (mesh_inst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
 				animation_state = 1;
 			if(weapon_taken != W_NONE && (animation_state == 1 || mesh_inst->IsEnded(1)))
 			{
@@ -7032,12 +7032,12 @@ void Unit::Update(float dt)
 		}
 		else if(animation_state == 0)
 		{
-			if(mesh_inst->GetProgress2() > 20.f / 40)
+			if(mesh_inst->GetProgress(1) > 20.f / 40)
 				mesh_inst->groups[1].time = 20.f / 40 * mesh_inst->groups[1].anim->length;
 		}
 		else if(animation_state == 1)
 		{
-			if(Net::IsLocal() && !hitted && mesh_inst->GetProgress2() > 20.f / 40)
+			if(Net::IsLocal() && !hitted && mesh_inst->GetProgress(1) > 20.f / 40)
 			{
 				hitted = true;
 				Bullet& b = Add1(area->tmp->bullets);
@@ -7162,10 +7162,10 @@ void Unit::Update(float dt)
 					c.extra_f = b.speed;
 				}
 			}
-			if(mesh_inst->GetProgress2() > 20.f / 40)
+			if(mesh_inst->GetProgress(1) > 20.f / 40)
 				animation_state = 2;
 		}
-		else if(mesh_inst->GetProgress2() > 35.f / 40)
+		else if(mesh_inst->GetProgress(1) > 35.f / 40)
 		{
 			animation_state = 3;
 			if(mesh_inst->IsEnded(1))
@@ -7274,7 +7274,7 @@ void Unit::Update(float dt)
 		stamina_timer = STAMINA_RESTORE_TIMER;
 		if(animation_state == 0)
 		{
-			if(mesh_inst->GetProgress2() >= data->frames->t[F_BASH])
+			if(mesh_inst->GetProgress(1) >= data->frames->t[F_BASH])
 				animation_state = 1;
 		}
 		if(Net::IsLocal() && animation_state == 1 && !hitted)
@@ -7290,7 +7290,7 @@ void Unit::Update(float dt)
 		break;
 	case A_DRINK:
 		{
-			float p = mesh_inst->GetProgress2();
+			float p = mesh_inst->GetProgress(1);
 			if(p >= 28.f / 52.f && animation_state == 0)
 			{
 				PlaySound(game_res->sGulp, DRINK_SOUND_DIST);
@@ -7318,7 +7318,7 @@ void Unit::Update(float dt)
 		break;
 	case A_EAT:
 		{
-			float p = mesh_inst->GetProgress2();
+			float p = mesh_inst->GetProgress(1);
 			if(p >= 32.f / 70 && animation_state == 0)
 			{
 				animation_state = 1;
@@ -7366,7 +7366,7 @@ void Unit::Update(float dt)
 	case A_CAST:
 		if(mesh_inst->mesh->head.n_groups == 2)
 		{
-			if(Net::IsLocal() && animation_state == 0 && mesh_inst->GetProgress2() >= data->frames->t[F_CAST])
+			if(Net::IsLocal() && animation_state == 0 && mesh_inst->GetProgress(1) >= data->frames->t[F_CAST])
 			{
 				animation_state = 1;
 				CastSpell();

@@ -53,7 +53,6 @@ pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cur
 //=================================================================================================
 GameGui::~GameGui()
 {
-	gui->OnClean();
 	delete load_screen;
 	delete level_gui;
 	delete inventory;

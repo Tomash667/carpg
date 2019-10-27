@@ -69,7 +69,7 @@
 #include "Engine.h"
 #include "PhysicCallbacks.h"
 #include "SaveSlot.h"
-#include "DebugDrawer.h"
+#include "BasicShader.h"
 #include "LobbyApi.h"
 #include "ServerPanel.h"
 #include "GameMenu.h"
@@ -85,6 +85,10 @@
 #include "GameGui.h"
 #include "CreateServerPanel.h"
 #include "PickServerPanel.h"
+#include "ParticleShader.h"
+#include "GlowShader.h"
+#include "PostfxShader.h"
+#include "SkyboxShader.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -124,7 +128,18 @@ default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot:
 
 	dialog_context.is_local = true;
 
-	ClearPointers();
+	// bufory wierzcho³ków i indeksy
+	vbParticle = nullptr;
+	vbDungeon = nullptr;
+	ibDungeon = nullptr;
+	vbFullscreen = nullptr;
+
+	// tekstury render target, powierzchnie
+	for(int i = 0; i < 3; ++i)
+	{
+		sPostEffect[i] = nullptr;
+		tPostEffect[i] = nullptr;
+	}
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
@@ -273,7 +288,6 @@ void Game::LoadSystem()
 	LoadLanguageFiles();
 	game_gui->server->Init();
 	game_gui->load_screen->Tick(txLoadingShaders);
-	LoadShaders();
 	ConfigureGame();
 }
 
@@ -383,6 +397,16 @@ void Game::ConfigureGame()
 	settings.LoadGameKeys(cfg);
 	load_errors += BaseLocation::SetRoomPointers();
 
+	// shaders
+	render->RegisterShader(basic_shader = new BasicShader);
+	render->RegisterShader(grass_shader = new GrassShader);
+	render->RegisterShader(glow_shader = new GlowShader);
+	render->RegisterShader(particle_shader = new ParticleShader);
+	render->RegisterShader(postfx_shader = new PostfxShader);
+	render->RegisterShader(skybox_shader = new SkyboxShader);
+	render->RegisterShader(super_shader = new SuperShader);
+	render->RegisterShader(terrain_shader = new TerrainShader);
+
 	CreateTextures();
 	CreateRenderTargets();
 }
@@ -420,13 +444,6 @@ void Game::PostconfigureGame()
 	io::CreateDirectory("saves/multi");
 
 	ItemScript::Init();
-
-	// shaders
-	render->RegisterShader(debug_drawer = new DebugDrawer);
-	render->RegisterShader(grass_shader = new GrassShader);
-	render->RegisterShader(super_shader = new SuperShader);
-	render->RegisterShader(terrain_shader = new TerrainShader);
-	debug_drawer->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
 	// test & validate game data (in debug always check some things)
 	if(testing)
@@ -599,9 +616,6 @@ void Game::OnCleanup()
 
 	ClearQuadtree();
 
-	// shadery
-	ReleaseShaders();
-
 	// bufory wierzcho³ków i indeksy
 	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
@@ -659,7 +673,7 @@ void Game::DrawGame(RenderTarget* target)
 {
 	IDirect3DDevice9* device = render->GetDevice();
 
-	if(post_effects.empty() || !ePostFx)
+	if(post_effects.empty() || !postfx_shader->effect)
 	{
 		if(target)
 			render->SetTarget(target);
@@ -675,12 +689,9 @@ void Game::DrawGame(RenderTarget* target)
 			if(!draw_batch.glow_nodes.empty())
 			{
 				V(device->EndScene());
-				DrawGlowingNodes(false);
+				DrawGlowingNodes(draw_batch.glow_nodes, false);
 				V(device->BeginScene());
 			}
-
-			// debug draw
-			debug_drawer->Draw();
 		}
 
 		// draw gui
@@ -692,6 +703,8 @@ void Game::DrawGame(RenderTarget* target)
 	}
 	else
 	{
+		ID3DXEffect* effect = postfx_shader->effect;
+
 		// render scene to texture
 		SURFACE sPost;
 		if(!render->IsMultisamplingEnabled())
@@ -708,10 +721,7 @@ void Game::DrawGame(RenderTarget* target)
 			Draw();
 			V(device->EndScene());
 			if(!draw_batch.glow_nodes.empty())
-				DrawGlowingNodes(true);
-
-			// debug draw
-			debug_drawer->Draw();
+				DrawGlowingNodes(draw_batch.glow_nodes, true);
 		}
 
 		PROFILER_BLOCK("PostEffects");
@@ -764,16 +774,16 @@ void Game::DrawGame(RenderTarget* target)
 			V(device->SetRenderTarget(0, surf));
 			V(device->BeginScene());
 
-			V(ePostFx->SetTechnique(it->tech));
-			V(ePostFx->SetTexture(hPostTex, t));
-			V(ePostFx->SetFloat(hPostPower, it->power));
-			V(ePostFx->SetVector(hPostSkill, (D3DXVECTOR4*)&it->skill));
+			V(effect->SetTechnique(it->tech));
+			V(effect->SetTexture(postfx_shader->hTex, t));
+			V(effect->SetFloat(postfx_shader->hPower, it->power));
+			V(effect->SetVector(postfx_shader->hSkill, (D3DXVECTOR4*)&it->skill));
 
-			V(ePostFx->Begin(&passes, 0));
-			V(ePostFx->BeginPass(0));
+			V(effect->Begin(&passes, 0));
+			V(effect->BeginPass(0));
 			V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-			V(ePostFx->EndPass());
-			V(ePostFx->End());
+			V(effect->EndPass());
+			V(effect->End());
 
 			if(it + 1 == end)
 				game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
@@ -801,16 +811,6 @@ void Game::DrawGame(RenderTarget* target)
 
 			index_surf = (index_surf + 1) % 3;
 		}
-	}
-}
-
-//=================================================================================================
-void Game::OnDebugDraw(DebugDrawer* dd)
-{
-	if(pathfinding->IsDebugDraw())
-	{
-		dd->SetCamera(game_level->camera);
-		pathfinding->Draw(dd);
 	}
 }
 
@@ -1139,19 +1139,6 @@ bool Game::Start()
 //=================================================================================================
 void Game::OnReload()
 {
-	if(eMesh)
-		V(eMesh->OnResetDevice());
-	if(eParticle)
-		V(eParticle->OnResetDevice());
-	if(eSkybox)
-		V(eSkybox->OnResetDevice());
-	if(eArea)
-		V(eArea->OnResetDevice());
-	if(ePostFx)
-		V(ePostFx->OnResetDevice());
-	if(eGlow)
-		V(eGlow->OnResetDevice());
-
 	CreateTextures();
 	BuildDungeon();
 	// rebuild minimap texture
@@ -1166,19 +1153,6 @@ void Game::OnReset()
 {
 	if(game_gui && game_gui->inventory)
 		game_gui->inventory->OnReset();
-
-	if(eMesh)
-		V(eMesh->OnLostDevice());
-	if(eParticle)
-		V(eParticle->OnLostDevice());
-	if(eSkybox)
-		V(eSkybox->OnLostDevice());
-	if(eArea)
-		V(eArea->OnLostDevice());
-	if(ePostFx)
-		V(ePostFx->OnLostDevice());
-	if(eGlow)
-		V(eGlow->OnLostDevice());
 
 	SafeRelease(tMinimap.tex);
 	for(int i = 0; i < 3; ++i)
@@ -1319,32 +1293,6 @@ void Game::SaveCfg()
 {
 	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
 		Error("Failed to save configuration file '%s'!", cfg_file.c_str());
-}
-
-//=================================================================================================
-// to mog³o by byæ w konstruktorze ale za du¿o tego
-void Game::ClearPointers()
-{
-	// shadery
-	eMesh = nullptr;
-	eParticle = nullptr;
-	eSkybox = nullptr;
-	eArea = nullptr;
-	ePostFx = nullptr;
-	eGlow = nullptr;
-
-	// bufory wierzcho³ków i indeksy
-	vbParticle = nullptr;
-	vbDungeon = nullptr;
-	ibDungeon = nullptr;
-	vbFullscreen = nullptr;
-
-	// tekstury render target, powierzchnie
-	for(int i = 0; i < 3; ++i)
-	{
-		sPostEffect[i] = nullptr;
-		tPostEffect[i] = nullptr;
-	}
 }
 
 //=================================================================================================
@@ -1688,7 +1636,7 @@ void Game::UpdatePostEffects(float dt)
 	if(grayout > 0.f)
 	{
 		PostEffect& e = Add1(post_effects);
-		e.tech = ePostFx->GetTechniqueByName("Monochrome");
+		e.tech = postfx_shader->techMonochrome;
 		e.power = grayout;
 	}
 
@@ -1702,8 +1650,8 @@ void Game::UpdatePostEffects(float dt)
 		e2 = &*(post_effects.end() - 1);
 
 		e->id = e2->id = 0;
-		e->tech = ePostFx->GetTechniqueByName("BlurX");
-		e2->tech = ePostFx->GetTechniqueByName("BlurY");
+		e->tech = postfx_shader->techBlurX;
+		e2->tech = postfx_shader->techBlurY;
 		// 0.1-0.5 - 1
 		// 1 - 2
 		float mod;
@@ -1716,48 +1664,6 @@ void Game::UpdatePostEffects(float dt)
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;
 	}
-}
-
-//=================================================================================================
-void Game::ReloadShaders()
-{
-	Info("Reloading shaders...");
-
-	ReleaseShaders();
-
-	try
-	{
-		eMesh = render->CompileShader("mesh.fx");
-		eParticle = render->CompileShader("particle.fx");
-		eSkybox = render->CompileShader("skybox.fx");
-		eArea = render->CompileShader("area.fx");
-		ePostFx = render->CompileShader("post.fx");
-		eGlow = render->CompileShader("glow.fx");
-
-		for(ShaderHandler* shader : render->GetShaders())
-			shader->OnInit();
-	}
-	catch(cstring err)
-	{
-		engine->FatalError(Format("Failed to reload shaders.\n%s", err));
-		return;
-	}
-
-	SetupShaders();
-}
-
-//=================================================================================================
-void Game::ReleaseShaders()
-{
-	SafeRelease(eMesh);
-	SafeRelease(eParticle);
-	SafeRelease(eSkybox);
-	SafeRelease(eArea);
-	SafeRelease(ePostFx);
-	SafeRelease(eGlow);
-
-	for(ShaderHandler* shader : render->GetShaders())
-		shader->OnRelease();
 }
 
 //=================================================================================================
@@ -2529,82 +2435,10 @@ void Game::SetupCamera(float dt)
 		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
 	game_level->camera.matViewProj = matView * matProj;
 	game_level->camera.matViewInv = matView.Inverse();
-	game_level->camera.center = game_level->camera.from;
 	game_level->camera.frustum.Set(game_level->camera.matViewProj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
-}
-
-//=================================================================================================
-void Game::LoadShaders()
-{
-	Info("Loading shaders.");
-
-	eMesh = render->CompileShader("mesh.fx");
-	eParticle = render->CompileShader("particle.fx");
-	eSkybox = render->CompileShader("skybox.fx");
-	eArea = render->CompileShader("area.fx");
-	ePostFx = render->CompileShader("post.fx");
-	eGlow = render->CompileShader("glow.fx");
-
-	SetupShaders();
-}
-
-//=================================================================================================
-void Game::SetupShaders()
-{
-	techMesh = eMesh->GetTechniqueByName("mesh");
-	techMeshDir = eMesh->GetTechniqueByName("mesh_dir");
-	techMeshSimple = eMesh->GetTechniqueByName("mesh_simple");
-	techMeshSimple2 = eMesh->GetTechniqueByName("mesh_simple2");
-	techMeshExplo = eMesh->GetTechniqueByName("mesh_explo");
-	techParticle = eParticle->GetTechniqueByName("particle");
-	techTrail = eParticle->GetTechniqueByName("trail");
-	techSkybox = eSkybox->GetTechniqueByName("skybox");
-	techArea = eArea->GetTechniqueByName("area");
-	techGlowMesh = eGlow->GetTechniqueByName("mesh");
-	techGlowAni = eGlow->GetTechniqueByName("ani");
-	assert(techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle && techTrail && techSkybox && techArea
-		&& techGlowMesh && techGlowAni);
-
-	hMeshCombined = eMesh->GetParameterByName(nullptr, "matCombined");
-	hMeshWorld = eMesh->GetParameterByName(nullptr, "matWorld");
-	hMeshTex = eMesh->GetParameterByName(nullptr, "texDiffuse");
-	hMeshFogColor = eMesh->GetParameterByName(nullptr, "fogColor");
-	hMeshFogParam = eMesh->GetParameterByName(nullptr, "fogParam");
-	hMeshTint = eMesh->GetParameterByName(nullptr, "tint");
-	hMeshAmbientColor = eMesh->GetParameterByName(nullptr, "ambientColor");
-	hMeshLightDir = eMesh->GetParameterByName(nullptr, "lightDir");
-	hMeshLightColor = eMesh->GetParameterByName(nullptr, "lightColor");
-	hMeshLights = eMesh->GetParameterByName(nullptr, "lights");
-	assert(hMeshCombined && hMeshWorld && hMeshTex && hMeshFogColor && hMeshFogParam && hMeshTint && hMeshAmbientColor && hMeshLightDir && hMeshLightColor
-		&& hMeshLights);
-
-	hParticleCombined = eParticle->GetParameterByName(nullptr, "matCombined");
-	hParticleTex = eParticle->GetParameterByName(nullptr, "tex0");
-	assert(hParticleCombined && hParticleTex);
-
-	hSkyboxCombined = eSkybox->GetParameterByName(nullptr, "matCombined");
-	hSkyboxTex = eSkybox->GetParameterByName(nullptr, "tex0");
-	assert(hSkyboxCombined && hSkyboxTex);
-
-	hAreaCombined = eArea->GetParameterByName(nullptr, "matCombined");
-	hAreaColor = eArea->GetParameterByName(nullptr, "color");
-	hAreaPlayerPos = eArea->GetParameterByName(nullptr, "playerPos");
-	hAreaRange = eArea->GetParameterByName(nullptr, "range");
-	assert(hAreaCombined && hAreaColor && hAreaPlayerPos && hAreaRange);
-
-	hPostTex = ePostFx->GetParameterByName(nullptr, "t0");
-	hPostPower = ePostFx->GetParameterByName(nullptr, "power");
-	hPostSkill = ePostFx->GetParameterByName(nullptr, "skill");
-	assert(hPostTex && hPostPower && hPostSkill);
-
-	hGlowCombined = eGlow->GetParameterByName(nullptr, "matCombined");
-	hGlowBones = eGlow->GetParameterByName(nullptr, "matBones");
-	hGlowColor = eGlow->GetParameterByName(nullptr, "color");
-	hGlowTex = eGlow->GetParameterByName(nullptr, "texDiffuse");
-	assert(hGlowCombined && hGlowBones && hGlowColor && hGlowTex);
 }
 
 //=================================================================================================

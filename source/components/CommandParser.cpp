@@ -1444,7 +1444,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_RELOAD_SHADERS:
-		game->ReloadShaders();
+		render->ReloadShaders();
 		if(engine->IsShutdown())
 			return;
 		break;
@@ -2014,7 +2014,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				render->SetShaderVersion(value);
 				Msg("shader_version: %d", value);
-				game->ReloadShaders();
+				render->ReloadShaders();
 			}
 		}
 		break;

@@ -115,7 +115,6 @@ public:
 	void OnCleanup() override;
 	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
-	void OnDebugDraw(DebugDrawer* dd);
 	void OnUpdate(float dt) override;
 	void OnReload() override;
 	void OnReset() override;
@@ -125,7 +124,6 @@ public:
 	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
-	void ClearPointers();
 	void CreateTextures();
 	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
@@ -151,10 +149,6 @@ public:
 	//-----------------------------------------------------------------
 	void Draw();
 	void ForceRedraw();
-	void ReloadShaders();
-	void ReleaseShaders();
-	void LoadShaders();
-	void SetupShaders();
 	void InitScene();
 	void BuildDungeon();
 	void ChangeDungeonTexWrap();
@@ -170,7 +164,7 @@ public:
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
-	void DrawGlowingNodes(bool use_postfx);
+	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawSkybox();
 	void DrawTerrain(const vector<uint>& parts);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
@@ -361,8 +355,12 @@ public:
 	//-----------------------------------------------------------------
 	LocationGeneratorFactory* loc_gen_factory;
 	Arena* arena;
-	DebugDrawer* debug_drawer;
+	BasicShader* basic_shader;
+	GlowShader* glow_shader;
 	GrassShader* grass_shader;
+	ParticleShader* particle_shader;
+	PostfxShader* postfx_shader;
+	SkyboxShader* skybox_shader;
 	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
@@ -488,11 +486,6 @@ public:
 	//-----------------------------------------------------------------
 	RenderTarget* rt_save, *rt_item_rot;
 	Texture tMinimap;
-	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
-	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
-	D3DXHANDLE hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
-		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange, hPostTex, hPostPower, hPostSkill,
-		hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS
