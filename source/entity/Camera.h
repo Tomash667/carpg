@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 struct Camera : public CameraBase
 {
-	Vec3 from, to, real_from, real_to;
+	Vec3 real_from, real_to;
 	Vec2 rot, real_rot;
 	float dist, tmp_dist, draw_range, springiness, d;
 	FrustumPlanes frustum;

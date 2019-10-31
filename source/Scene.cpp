@@ -2779,7 +2779,7 @@ void Game::DrawScene(bool outside)
 
 	// niebo
 	if(outside && IsSet(draw_flags, DF_SKYBOX))
-		DrawSkybox();
+		skybox_shader->Draw(*game_res->aSkybox, game_level->camera);
 
 	// teren
 	if(!draw_batch.terrain_parts.empty())
@@ -3135,41 +3135,6 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	V(device->SetRenderState(D3DRS_STENCILENABLE, FALSE));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
-
-//=================================================================================================
-void Game::DrawSkybox()
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	Mesh& mesh = *game_res->aSkybox;
-	ID3DXEffect* effect = skybox_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(true);
-
-	uint passes;
-	Matrix m1 = Matrix::Translation(game_level->camera.from) * game_level->camera.mat_view_proj;
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-
-	V(effect->SetTechnique(skybox_shader->tech));
-	V(effect->SetMatrix(skybox_shader->hMatCombined, (D3DXMATRIX*)&m1));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<Mesh::Submesh>::iterator it = mesh.subs.begin(), end = mesh.subs.end(); it != end; ++it)
-	{
-		V(effect->SetTexture(skybox_shader->hTex, it->tex->tex));
-		V(effect->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, it->min_ind, it->n_ind, it->first * 3, it->tris));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
 }
 
 //=================================================================================================

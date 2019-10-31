@@ -157,7 +157,6 @@ public:
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
-	void DrawSkybox();
 	void DrawTerrain(const vector<uint>& parts);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
