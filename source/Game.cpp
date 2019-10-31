@@ -252,7 +252,7 @@ void Game::PreloadData()
 {
 	res_mgr->AddDir("data/preload");
 
-	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 512, 2);
+	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 2);
 
 	// loadscreen textures
 	game_gui->load_screen->LoadData();

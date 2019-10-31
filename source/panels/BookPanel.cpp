@@ -22,8 +22,8 @@ void BookPanel::LoadData()
 	sound = res_mgr->Load<Sound>("page-turn.wav");
 
 	gui->AddFont("Dwarf Runes.ttf");
-	normal_font = gui->CreateFont("Arial", 16, 800, 512);
-	runic_font = gui->CreateFont("Dwarf Runes", 16, 800, 512);
+	normal_font = gui->CreateFont("Arial", 16, 800);
+	runic_font = gui->CreateFont("Dwarf Runes", 16, 800);
 }
 
 //=================================================================================================

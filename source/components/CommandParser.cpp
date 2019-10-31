@@ -409,7 +409,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		Msg("CaRpg version " VERSION_STR ", built %s.", utility::GetCompileTime().c_str());
 		break;
 	case CMD_QUIT:
-		if(t.Next() && t.IsInt() && t.GetInt() == 1)
+		if(t.Next() && t.IsInt(1))
 			exit(0);
 		else
 			game->Quit();
@@ -1412,7 +1412,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_FALL:
 		{
 			Unit* u;
-			if(t.Next() && t.GetInt() == 1)
+			if(t.Next() && t.IsInt(1))
 				u = game->pc->unit;
 			else if(Unit* target = game->pc->data.GetTargetUnit())
 				u = target;
@@ -1495,7 +1495,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					break;
 			}
 			Unit* u;
-			if(t.Next() && t.GetInt() == 1)
+			if(t.Next() && t.IsInt(1))
 				u = game->pc->unit;
 			else if(Unit* target = game->pc->data.GetTargetUnit())
 				u = target;

@@ -161,7 +161,7 @@ public:
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
-	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
+	void AddSceneNode(SceneNode* node);
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
@@ -436,6 +436,7 @@ public:
 	int particle_count;
 	VB vbDungeon;
 	IB ibDungeon;
+	TEX tex_empty_normal_map, tex_empty_specular_map;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
 	float portal_anim, drunk_anim, grayout;

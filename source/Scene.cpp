@@ -152,6 +152,9 @@ void Game::InitScene()
 
 	if(!vbDungeon)
 		BuildDungeon();
+
+	tex_empty_normal_map = render->CreateTexture(Int2(1, 1), &Color(128, 128, 255));
+	tex_empty_specular_map = render->CreateTexture(Int2(1, 1), &Color::None);
 }
 
 //=================================================================================================
@@ -600,7 +603,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					else
 						node->tint = Vec4(2, 2, 2, 1);
 				}
-				AddOrSplitSceneNode(node);
+				AddSceneNode(node);
 			}
 		}
 	}
@@ -637,7 +640,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					else
 						node->tint = Vec4(2, 2, 2, 1);
 				}
-				AddOrSplitSceneNode(node);
+				AddSceneNode(node);
 			}
 		}
 	}
@@ -683,7 +686,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					else
 						node->tint = Vec4(2, 2, 2, 1);
 				}
-				AddOrSplitSceneNode(node);
+				AddSceneNode(node);
 			}
 		}
 	}
@@ -728,7 +731,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					else
 						node->tint = Vec4(2, 2, 2, 1);
 				}
-				AddOrSplitSceneNode(node);
+				AddSceneNode(node);
 			}
 		}
 	}
@@ -766,7 +769,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->tex_override = nullptr;
 					if(!outside)
 						node->lights = GatherDrawBatchLights(area, node, bullet.pos.x, bullet.pos.z, bullet.mesh->head.radius);
-					AddOrSplitSceneNode(node);
+					AddSceneNode(node);
 				}
 			}
 			else
@@ -805,7 +808,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, trap.obj.pos.x, trap.obj.pos.z, trap.obj.mesh->head.radius);
-				AddOrSplitSceneNode(node);
+				AddSceneNode(node);
 			}
 			if(trap.base->type == TRAP_SPEAR && InRange(trap.state, 2, 4) && frustum.SphereToFrustum(trap.obj2.pos, trap.obj2.mesh->head.radius))
 			{
@@ -824,7 +827,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, trap.obj2.pos.x, trap.obj2.pos.z, trap.obj2.mesh->head.radius);
-				AddOrSplitSceneNode(node);
+				AddSceneNode(node);
 			}
 		}
 	}
@@ -1097,7 +1100,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		else
 			node->tint = Vec4(2, 2, 2, 1);
 	}
-	AddOrSplitSceneNode(node, (u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().mesh) ? 1 : 0);
+	AddSceneNode(node);
+	if(u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().mesh)
+		node->subs = Bit(1) | Bit(2);
 
 	// pancerz
 	if(u.HaveArmor() && u.GetArmor().mesh)
@@ -1125,7 +1130,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
 		}
-		AddOrSplitSceneNode(node2);
+		AddSceneNode(node2);
 	}
 
 	// przedmiot w d³oni
@@ -1217,7 +1222,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
 		}
-		AddOrSplitSceneNode(node2);
+		AddSceneNode(node2);
 
 		// hitbox broni
 		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
@@ -1261,7 +1266,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
 		}
-		AddOrSplitSceneNode(node2);
+		AddSceneNode(node2);
 
 		// hitbox tarczy
 		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
@@ -1304,7 +1309,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
 		}
-		AddOrSplitSceneNode(node2);
+		AddSceneNode(node2);
 	}
 
 	// ³uk
@@ -1369,7 +1374,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
 		}
-		AddOrSplitSceneNode(node2);
+		AddSceneNode(node2);
 	}
 
 	// w³osy/broda/brwi u ludzi
@@ -1404,7 +1409,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				node2->tint.z *= 2;
 			}
 		}
-		AddOrSplitSceneNode(node2);
+		AddSceneNode(node2);
 
 		// w³osy
 		if(h.hair != -1)
@@ -1435,7 +1440,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 					node3->tint.z *= 2;
 				}
 			}
-			AddOrSplitSceneNode(node3);
+			AddSceneNode(node3);
 		}
 
 		// broda
@@ -1467,7 +1472,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 					node3->tint.z *= 2;
 				}
 			}
-			AddOrSplitSceneNode(node3);
+			AddSceneNode(node3);
 		}
 
 		// w¹sy
@@ -1499,7 +1504,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 					node3->tint.z *= 2;
 				}
 			}
-			AddOrSplitSceneNode(node3);
+			AddSceneNode(node3);
 		}
 	}
 
@@ -1555,7 +1560,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	{
 		if(area.area_type != LevelArea::Type::Outside)
 			node->lights = GatherDrawBatchLights(area, node, o.pos.x, o.pos.z, o.GetRadius());
-		AddOrSplitSceneNode(node);
+		AddSceneNode(node);
 	}
 	else
 	{
@@ -2518,84 +2523,21 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 }
 
 //=================================================================================================
-void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
+void Game::AddSceneNode(SceneNode* node)
 {
 	assert(node && node->GetMesh().head.n_subs < 31);
 
 	const Mesh& mesh = node->GetMesh();
-	assert(mesh.state == ResourceState::Loaded);
+	if(mesh.state != ResourceState::Loaded)
+		res_mgr->LoadInstant(const_cast<Mesh*>(&mesh));
 	if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 		node->flags |= SceneNode::F_BINORMALS;
-	if(mesh.head.n_subs == 1)
-	{
-		node->subs = 0x7FFFFFFF;
-		if(cl_normalmap && mesh.subs[0].tex_normal)
-			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(cl_specularmap && mesh.subs[0].tex_specular)
-			node->flags |= SceneNode::F_SPECULAR_MAP;
-		draw_batch.nodes.push_back(node);
-	}
-	else
-	{
-		enum Split
-		{
-			SplitDefault,
-			SplitNormal,
-			SplitSpecular,
-			SplitNormalSpecular
-		};
-
-		int splits[4] = { 0 };
-		for(word i = 0, count = mesh.head.n_subs; i < count; ++i)
-		{
-			const int shift = 1 << i;
-			if(!IsSet(exclude_subs, shift))
-				splits[(cl_normalmap && mesh.subs[i].tex_normal) + (cl_specularmap && mesh.subs[i].tex_specular) * 2] |= shift;
-		}
-
-		int split_count = 0, first = -1;
-		for(int i = 0; i < 4; ++i)
-		{
-			if(splits[i])
-			{
-				++split_count;
-				if(first == -1)
-					first = i;
-			}
-		}
-
-		if(split_count != 1)
-		{
-			for(int i = first + 1; i < 4; ++i)
-			{
-				if(splits[i])
-				{
-					SceneNode* node2 = node_pool.Get();
-					node2->billboard = node->billboard;
-					node2->mesh_inst = node->mesh_inst;
-					node2->mat = node->mat;
-					node2->flags = node->flags;
-					node2->parent_mesh_inst = nullptr;
-					node2->subs = splits[i];
-					node2->tint = node->tint;
-					node2->lights = node->lights;
-					node2->tex_override = node->tex_override;
-					if(IsSet(i, SplitNormal))
-						node2->flags |= SceneNode::F_NORMAL_MAP;
-					if(IsSet(i, SplitSpecular))
-						node2->flags |= SceneNode::F_SPECULAR_MAP;
-					draw_batch.nodes.push_back(node2);
-				}
-			}
-		}
-
-		if(IsSet(first, SplitNormal))
-			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(IsSet(first, SplitSpecular))
-			node->flags |= SceneNode::F_SPECULAR_MAP;
-		node->subs = splits[first];
-		draw_batch.nodes.push_back(node);
-	}
+	if(cl_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
+		node->flags |= SceneNode::F_NORMAL_MAP;
+	if(cl_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
+		node->flags |= SceneNode::F_SPECULAR_MAP;
+	node->subs = 0x7FFFFFFF;
+	draw_batch.nodes.push_back(node);
 }
 
 //=================================================================================================
@@ -3399,8 +3341,8 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				IsSet(node->flags, SceneNode::F_ANIMATED),
 				IsSet(node->flags, SceneNode::F_BINORMALS),
 				game_level->cl_fog,
-				cl_specularmap && IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
-				cl_normalmap && IsSet(node->flags, SceneNode::F_NORMAL_MAP),
+				IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
+				IsSet(node->flags, SceneNode::F_NORMAL_MAP),
 				game_level->cl_lighting && !outside,
 				game_level->cl_lighting && outside));
 			D3DXHANDLE tech;
@@ -3452,10 +3394,16 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 				// tekstura
 				V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
-				if(cl_normalmap && IsSet(current_flags, SceneNode::F_NORMAL_MAP))
-					V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
-				if(cl_specularmap && IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
-					V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
+				if(IsSet(current_flags, SceneNode::F_NORMAL_MAP))
+				{
+					TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+					V(e->SetTexture(super_shader->hTexNormal, tex));
+				}
+				if(IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
+				{
+					TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+					V(e->SetTexture(super_shader->hTexSpecular, tex));
+				}
 
 				// ustawienia œwiat³a
 				V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
@@ -3480,10 +3428,16 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 			// tekstura
 			V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(index, node->tex_override)));
-			if(cl_normalmap && IsSet(current_flags, SceneNode::F_NORMAL_MAP))
-				V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
-			if(cl_specularmap && IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
-				V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
+			if(IsSet(current_flags, SceneNode::F_NORMAL_MAP))
+			{
+				TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+				V(e->SetTexture(super_shader->hTexNormal, tex));
+			}
+			if(IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
+			{
+				TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+				V(e->SetTexture(super_shader->hTexSpecular, tex));
+			}
 
 			// ustawienia œwiat³a
 			V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
