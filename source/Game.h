@@ -165,8 +165,6 @@ public:
 	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
 	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawExplosions(const vector<Explo*>& explos);
-	void DrawParticles(const vector<ParticleEmitter*>& pes);
-	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 	void DrawLightings(const vector<Electro*>& electros);
 	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);

@@ -2826,13 +2826,15 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.explos.empty())
 		DrawExplosions(draw_batch.explos);
 
-	// trail particles
-	if(draw_batch.tpes)
-		DrawTrailParticles(*draw_batch.tpes);
-
-	// cz¹steczki
-	if(!draw_batch.pes.empty())
-		DrawParticles(draw_batch.pes);
+	// particles
+	if(!draw_batch.pes.empty() || draw_batch.tpes)
+	{
+		particle_shader->Prepare(game_level->camera);
+		if(draw_batch.tpes)
+			particle_shader->DrawTrailParticles(*draw_batch.tpes);
+		if(!draw_batch.pes.empty())
+			particle_shader->DrawParticles(draw_batch.pes);
+	}
 
 	// electros
 	if(draw_batch.electros)
@@ -3688,77 +3690,6 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 		V(effect->CommitChanges());
 
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-}
-
-//=================================================================================================
-void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
-{
-	particle_shader->Prepare(game_level->camera);
-	particle_shader->DrawParticles(pes);
-}
-
-//=================================================================================================
-void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_COLOR)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->techTrail));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	VColor v[4];
-
-	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
-	{
-		const TrailParticleEmitter& tp = **it;
-
-		if(tp.alive < 2)
-			continue;
-
-		int id = tp.first;
-		const TrailParticle* prev = &tp.parts[id];
-		id = prev->next;
-
-		if(id < 0 || id >= (int)tp.parts.size() || !tp.parts[id].exists)
-		{
-			ReportError(6, Format("Trail particle emitter error, id = %d!", id));
-			const_cast<TrailParticleEmitter&>(tp).alive = false;
-			continue;
-		}
-
-		while(id != -1)
-		{
-			const TrailParticle& p = tp.parts[id];
-
-			v[0].pos = prev->pt1;
-			v[1].pos = prev->pt2;
-			v[2].pos = p.pt1; // !!! tu siê czasami crashuje, p jest z³ym adresem, wiêc pewnie id te¿ jest z³e
-			v[3].pos = p.pt2;
-
-			v[0].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
-			v[1].color = v[0].color;
-			v[2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
-			v[3].color = v[2].color;
-
-			V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VColor)));
-
-			prev = &p;
-			id = prev->next;
-		}
 	}
 
 	V(effect->EndPass());
