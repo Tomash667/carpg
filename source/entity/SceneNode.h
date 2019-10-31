@@ -4,11 +4,10 @@
 #include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
-const int SPLIT_INDEX = 1 << 31;
-
-//-----------------------------------------------------------------------------
 struct SceneNode
 {
+	static constexpr int SPLIT_INDEX = 1 << 31;
+
 	enum Flags
 	{
 		F_CUSTOM = 1 << 0,

@@ -659,15 +659,14 @@ void CreateCharacterPanel::RenderUnit()
 
 	game_level->SetOutsideParams();
 
-	Matrix matView, matProj;
 	Vec3 from = Vec3(0.f, 2.f, dist);
-	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
-	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	game_level->camera.matViewProj = matView * matProj;
+	Matrix mat_view = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
+	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
+	game_level->camera.mat_view_proj = mat_view * mat_proj;
 	game_level->camera.from = from;
-	game_level->camera.matViewInv = matView.Inverse();
+	game_level->camera.mat_view_inv = mat_view.Inverse();
+	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
-	game_level->camera.frustum.Set(game_level->camera.matViewProj);
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();

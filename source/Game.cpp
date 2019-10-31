@@ -113,10 +113,10 @@ const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 
 //=================================================================================================
-Game::Game() : vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
-draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
-dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
-paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
+Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
+draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
+check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
+draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD),
 default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
 {
@@ -129,7 +129,6 @@ default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot:
 	dialog_context.is_local = true;
 
 	// bufory wierzcho³ków i indeksy
-	vbParticle = nullptr;
 	vbDungeon = nullptr;
 	ibDungeon = nullptr;
 	vbFullscreen = nullptr;
@@ -617,7 +616,6 @@ void Game::OnCleanup()
 	ClearQuadtree();
 
 	// bufory wierzcho³ków i indeksy
-	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 	SafeRelease(vbFullscreen);
@@ -698,7 +696,7 @@ void Game::DrawGame(RenderTarget* target)
 		}
 
 		// draw gui
-		game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+		game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 		if(target)
@@ -789,7 +787,7 @@ void Game::DrawGame(RenderTarget* target)
 			V(effect->End());
 
 			if(it + 1 == end)
-				game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+				game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 			V(device->EndScene());
 
@@ -1164,7 +1162,6 @@ void Game::OnReset()
 		SafeRelease(tPostEffect[i]);
 	}
 	SafeRelease(vbFullscreen);
-	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 }
@@ -2151,11 +2148,10 @@ void Game::SetupCamera(float dt)
 
 	game_level->camera.UpdateRot(dt, Vec2(rotX, game_level->camera.real_rot.y));
 
-	Matrix mat, matProj, matView;
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
 	Vec3 dist(0, -game_level->camera.tmp_dist, 0);
 
-	mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
+	Matrix mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!
@@ -2429,12 +2425,12 @@ void Game::SetupCamera(float dt)
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	matView = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
-	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
+	Matrix mat_view = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
+	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
 		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
-	game_level->camera.matViewProj = matView * matProj;
-	game_level->camera.matViewInv = matView.Inverse();
-	game_level->camera.frustum.Set(game_level->camera.matViewProj);
+	game_level->camera.mat_view_proj = mat_view * mat_proj;
+	game_level->camera.mat_view_inv = mat_view.Inverse();
+	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
