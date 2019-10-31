@@ -673,7 +673,10 @@ void Game::DrawGame(RenderTarget* target)
 {
 	IDirect3DDevice9* device = render->GetDevice();
 
-	if(post_effects.empty() || !postfx_shader->effect)
+	vector<PostEffect> post_effects;
+	GetPostEffects(post_effects);
+
+	if(post_effects.empty())
 	{
 		if(target)
 			render->SetTarget(target);
@@ -1622,25 +1625,21 @@ void Game::UpdateLights(vector<Light>& lights)
 }
 
 //=================================================================================================
-void Game::UpdatePostEffects(float dt)
+void Game::GetPostEffects(vector<PostEffect>& post_effects)
 {
 	post_effects.clear();
-	if(!cl_postfx || game_state != GS_LEVEL)
+	if(!cl_postfx || game_state != GS_LEVEL || !postfx_shader->effect)
 		return;
 
-	// szarzenie
-	if(pc->unit->IsAlive())
-		grayout = max(grayout - dt, 0.f);
-	else
-		grayout = min(grayout + dt, 1.f);
-	if(grayout > 0.f)
+	// gray effect
+	if(pc->data.grayout > 0.f)
 	{
 		PostEffect& e = Add1(post_effects);
 		e.tech = postfx_shader->techMonochrome;
-		e.power = grayout;
+		e.power = pc->data.grayout;
 	}
 
-	// upicie
+	// drunk effect
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
@@ -2480,7 +2479,6 @@ void Game::UpdateGame(float dt)
 		quest_mgr->quest_tutorial->Update();
 
 	drunk_anim = Clip(drunk_anim + dt);
-	UpdatePostEffects(dt);
 
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
@@ -2528,11 +2526,6 @@ void Game::UpdateGame(float dt)
 
 		gui->SimpleDialog(Format(text, pc->kills, game_stats->total_kills - pc->kills), nullptr);
 	}
-
-	// licznik otrzymanych obra¿eñ
-	pc->last_dmg = 0.f;
-	if(Net::IsLocal())
-		pc->last_dmg_poison = 0.f;
 
 	if(devmode && GKey.AllowKeyboard())
 	{
@@ -5266,8 +5259,6 @@ void Game::ClearGameVars(bool new_game)
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
 	game_gui->world_map->picked_location = -1;
-	post_effects.clear();
-	grayout = 0.f;
 	game_level->camera.Reset();
 	game_level->lights_dt = 1.f;
 	pc->data.Reset();

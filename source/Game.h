@@ -90,14 +90,6 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
-struct PostEffect
-{
-	int id;
-	D3DXHANDLE tech;
-	float power;
-	Vec4 skill;
-};
-
 enum class ProfilerMode
 {
 	Disabled,
@@ -300,7 +292,7 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void UpdateLights(vector<Light>& lights);
-	void UpdatePostEffects(float dt);
+	void GetPostEffects(vector<PostEffect>& post_effects);
 	// --- cutscene
 	void CutsceneStart(bool instant);
 	void CutsceneImage(const string& image, float time);
@@ -439,12 +431,11 @@ public:
 	TEX tex_empty_normal_map, tex_empty_specular_map;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
-	float portal_anim, drunk_anim, grayout;
+	float portal_anim, drunk_anim;
 	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
 	SURFACE sPostEffect[3];
 	TEX tPostEffect[3];
 	VB vbFullscreen;
-	vector<PostEffect> post_effects;
 	// scene
 	VB vbParticle;
 	Color clear_color, clear_color_next;

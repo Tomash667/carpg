@@ -1956,6 +1956,16 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
+	// licznik otrzymanych obra¿eñ
+	last_dmg = 0.f;
+	if(Net::IsLocal())
+		last_dmg_poison = 0.f;
+
+	if(unit->IsAlive())
+		data.grayout = max(data.grayout - dt, 0.f);
+	else
+		data.grayout = min(data.grayout + dt, 1.f);
+
 	if(data.wasted_key != Key::None && input->Up(data.wasted_key))
 		data.wasted_key = Key::None;
 
