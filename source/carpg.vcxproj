@@ -224,7 +224,7 @@
     <ClInclude Include="entity\Light.h" />
     <ClInclude Include="entity\Object.h" />
     <ClInclude Include="entity\PlayerController.h" />
-    <ClInclude Include="entity\SceneNode.h" />
+    <ClInclude Include="entity\DrawItems.h" />
     <ClInclude Include="entity\SpellEffects.h" />
     <ClInclude Include="entity\Trap.h" />
     <ClInclude Include="entity\Unit.h" />

@@ -6,7 +6,7 @@
 #include "Building.h"
 #include "BaseTrap.h"
 #include "Spell.h"
-#include "SceneNode.h"
+#include "DrawItems.h"
 #include "Language.h"
 #include "Game.h"
 #include "GameGui.h"

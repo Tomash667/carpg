@@ -9,7 +9,7 @@
 #include "DialogContext.h"
 #include "BaseLocation.h"
 #include "GameKeys.h"
-#include "SceneNode.h"
+#include "DrawItems.h"
 #include "QuadTree.h"
 #include "MusicTrack.h"
 #include "Settings.h"

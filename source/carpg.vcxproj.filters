@@ -631,9 +631,6 @@
     <ClInclude Include="entity\PlayerController.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="entity\SceneNode.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="entity\SpellEffects.h">
       <Filter>entity</Filter>
     </ClInclude>
@@ -1186,6 +1183,9 @@
     </ClInclude>
     <ClInclude Include="components\GameResources.h">
       <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\DrawItems.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
