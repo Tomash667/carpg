@@ -428,7 +428,6 @@ public:
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
 	float portal_anim, drunk_anim;
-	VB vbFullscreen;
 	// scene
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;

@@ -131,7 +131,6 @@ default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot:
 	// bufory wierzcho³ków i indeksy
 	vbDungeon = nullptr;
 	ibDungeon = nullptr;
-	vbFullscreen = nullptr;
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
@@ -611,11 +610,10 @@ void Game::OnCleanup()
 	// bufory wierzcho³ków i indeksy
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
-	SafeRelease(vbFullscreen);
 
 	// tekstury render target, powierzchnie
 	SafeRelease(tMinimap.tex);
-	
+
 	draw_batch.Clear();
 
 	Language::Cleanup();
@@ -732,7 +730,7 @@ void Game::DrawGame(RenderTarget* target)
 
 		// post effects
 		V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-		V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
+		V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
 		render->SetAlphaTest(false);
 		render->SetAlphaBlend(false);
 		render->SetNoCulling(false);
@@ -1144,7 +1142,6 @@ void Game::OnReset()
 		game_gui->inventory->OnReset();
 
 	SafeRelease(tMinimap.tex);
-	SafeRelease(vbFullscreen);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 }
@@ -1285,31 +1282,9 @@ void Game::CreateTextures()
 		return;
 
 	IDirect3DDevice9* device = render->GetDevice();
-	const Int2& wnd_size = engine->GetWindowSize();
 
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap.tex, nullptr));
 	tMinimap.state = ResourceState::Loaded;
-
-	// fullscreen vertexbuffer
-	VTex* v;
-	V(device->CreateVertexBuffer(sizeof(VTex) * 6, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbFullscreen, nullptr));
-	V(vbFullscreen->Lock(0, sizeof(VTex) * 6, (void**)&v, 0));
-
-	// coœ mi siê obi³o o uszy z tym pó³ teksela przy renderowaniu
-	// ale szczegó³ów nie znam
-	const float u_start = 0.5f / wnd_size.x;
-	const float u_end = 1.f + 0.5f / wnd_size.x;
-	const float v_start = 0.5f / wnd_size.y;
-	const float v_end = 1.f + 0.5f / wnd_size.y;
-
-	v[0] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
-	v[1] = VTex(1.f, 1.f, 0.f, u_end, v_start);
-	v[2] = VTex(1.f, -1.f, 0.f, u_end, v_end);
-	v[3] = VTex(1.f, -1.f, 0.f, u_end, v_end);
-	v[4] = VTex(-1.f, -1.f, 0.f, u_start, v_end);
-	v[5] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
-
-	V(vbFullscreen->Unlock());
 }
 
 //=================================================================================================

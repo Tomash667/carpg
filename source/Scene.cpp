@@ -3031,7 +3031,7 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 
 	// ustawienia modelu
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-	V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
+	V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
 
 	// renderowanie
 	V(device->BeginScene());
