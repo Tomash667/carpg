@@ -87,6 +87,7 @@ struct StunEffect
 struct DrawBatch
 {
 	vector<SceneNode*> nodes;
+	vector<SceneNodeGroup> groups;
 	vector<DebugSceneNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
 	vector<uint> terrain_parts;
