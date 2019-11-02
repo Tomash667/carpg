@@ -428,9 +428,6 @@ public:
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
 	float portal_anim, drunk_anim;
-	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
-	SURFACE sPostEffect[3];
-	TEX tPostEffect[3];
 	VB vbFullscreen;
 	// scene
 	Color clear_color, clear_color_next;

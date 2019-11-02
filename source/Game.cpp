@@ -133,13 +133,6 @@ default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot:
 	ibDungeon = nullptr;
 	vbFullscreen = nullptr;
 
-	// tekstury render target, powierzchnie
-	for(int i = 0; i < 3; ++i)
-	{
-		sPostEffect[i] = nullptr;
-		tPostEffect[i] = nullptr;
-	}
-
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
 	SetupConfigVars();
@@ -622,12 +615,7 @@ void Game::OnCleanup()
 
 	// tekstury render target, powierzchnie
 	SafeRelease(tMinimap.tex);
-	for(int i = 0; i < 3; ++i)
-	{
-		SafeRelease(sPostEffect[i]);
-		SafeRelease(tPostEffect[i]);
-	}
-
+	
 	draw_batch.Clear();
 
 	Language::Cleanup();
@@ -709,9 +697,9 @@ void Game::DrawGame(RenderTarget* target)
 		// render scene to texture
 		SURFACE sPost;
 		if(!render->IsMultisamplingEnabled())
-			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
+			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &sPost));
 		else
-			sPost = sPostEffect[2];
+			sPost = postfx_shader->surf[2];
 
 		V(device->SetRenderTarget(0, sPost));
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
@@ -731,15 +719,15 @@ void Game::DrawGame(RenderTarget* target)
 		if(!render->IsMultisamplingEnabled())
 		{
 			sPost->Release();
-			t = tPostEffect[2];
+			t = postfx_shader->tex[2];
 		}
 		else
 		{
 			SURFACE surf2;
-			V(tPostEffect[0]->GetSurfaceLevel(0, &surf2));
+			V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
 			V(device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE));
 			surf2->Release();
-			t = tPostEffect[0];
+			t = postfx_shader->tex[0];
 		}
 
 		// post effects
@@ -767,9 +755,9 @@ void Game::DrawGame(RenderTarget* target)
 			{
 				// using next pass
 				if(!render->IsMultisamplingEnabled())
-					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
+					V(postfx_shader->tex[index_surf]->GetSurfaceLevel(0, &surf));
 				else
-					surf = sPostEffect[index_surf];
+					surf = postfx_shader->surf[index_surf];
 			}
 
 			V(device->SetRenderTarget(0, surf));
@@ -799,15 +787,15 @@ void Game::DrawGame(RenderTarget* target)
 			else if(!render->IsMultisamplingEnabled())
 			{
 				surf->Release();
-				t = tPostEffect[index_surf];
+				t = postfx_shader->tex[index_surf];
 			}
 			else
 			{
 				SURFACE surf2;
-				V(tPostEffect[0]->GetSurfaceLevel(0, &surf2));
+				V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
 				V(device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE));
 				surf2->Release();
-				t = tPostEffect[0];
+				t = postfx_shader->tex[0];
 			}
 
 			index_surf = (index_surf + 1) % 3;
@@ -1156,11 +1144,6 @@ void Game::OnReset()
 		game_gui->inventory->OnReset();
 
 	SafeRelease(tMinimap.tex);
-	for(int i = 0; i < 3; ++i)
-	{
-		SafeRelease(sPostEffect[i]);
-		SafeRelease(tPostEffect[i]);
-	}
 	SafeRelease(vbFullscreen);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
@@ -1306,27 +1289,6 @@ void Game::CreateTextures()
 
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap.tex, nullptr));
 	tMinimap.state = ResourceState::Loaded;
-
-	int ms, msq;
-	render->GetMultisampling(ms, msq);
-	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
-	if(ms != D3DMULTISAMPLE_NONE)
-	{
-		for(int i = 0; i < 3; ++i)
-		{
-			V(device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr));
-			tPostEffect[i] = nullptr;
-		}
-		V(device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[0], nullptr));
-	}
-	else
-	{
-		for(int i = 0; i < 3; ++i)
-		{
-			V(device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[i], nullptr));
-			sPostEffect[i] = nullptr;
-		}
-	}
 
 	// fullscreen vertexbuffer
 	VTex* v;

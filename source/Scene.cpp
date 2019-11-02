@@ -2875,9 +2875,9 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	// ustaw render target
 	SURFACE render_surface;
 	if(!render->IsMultisamplingEnabled())
-		V(tPostEffect[0]->GetSurfaceLevel(0, &render_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
 	else
-		render_surface = sPostEffect[0];
+		render_surface = postfx_shader->surf[0];
 	V(device->SetRenderTarget(0, render_surface));
 	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
 	V(device->BeginScene());
@@ -3004,17 +3004,17 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
-		V(tPostEffect[1]->GetSurfaceLevel(0, &render_surface));
-		tex = tPostEffect[0];
+		V(postfx_shader->tex[1]->GetSurfaceLevel(0, &render_surface));
+		tex = postfx_shader->tex[0];
 	}
 	else
 	{
 		SURFACE tex_surface;
-		V(tPostEffect[0]->GetSurfaceLevel(0, &tex_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
 		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
 		tex_surface->Release();
-		tex = tPostEffect[0];
-		render_surface = sPostEffect[1];
+		tex = postfx_shader->tex[0];
+		render_surface = postfx_shader->surf[1];
 	}
 	V(device->SetRenderTarget(0, render_surface));
 	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
@@ -3047,17 +3047,17 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
-		V(tPostEffect[0]->GetSurfaceLevel(0, &render_surface));
-		tex = tPostEffect[1];
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
+		tex = postfx_shader->tex[1];
 	}
 	else
 	{
 		SURFACE tex_surface;
-		V(tPostEffect[0]->GetSurfaceLevel(0, &tex_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
 		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
 		tex_surface->Release();
-		tex = tPostEffect[0];
-		render_surface = sPostEffect[0];
+		tex = postfx_shader->tex[0];
+		render_surface = postfx_shader->surf[0];
 	}
 	V(device->SetRenderTarget(0, render_surface));
 
@@ -3080,15 +3080,15 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
-		tex = tPostEffect[1];
+		tex = postfx_shader->tex[1];
 	}
 	else
 	{
 		SURFACE tex_surface;
-		V(tPostEffect[0]->GetSurfaceLevel(0, &tex_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
 		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
 		tex_surface->Release();
-		tex = tPostEffect[0];
+		tex = postfx_shader->tex[0];
 	}
 	if(!use_postfx)
 	{
@@ -3100,11 +3100,11 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	{
 		if(!render->IsMultisamplingEnabled())
 		{
-			V(tPostEffect[2]->GetSurfaceLevel(0, &render_surface));
+			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &render_surface));
 			render_surface->Release();
 		}
 		else
-			render_surface = sPostEffect[2];
+			render_surface = postfx_shader->surf[2];
 		V(device->SetRenderTarget(0, render_surface));
 	}
 
