@@ -702,8 +702,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->emisions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particle_life = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
@@ -748,8 +748,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->emisions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particle_life = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
@@ -774,8 +774,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->emisions = -1;
 			pe->life = -1;
 			pe->max_particles = 500;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particle_life = 3.f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
@@ -4078,9 +4078,9 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					tmp_area.pes.push_back(pe);
@@ -4572,9 +4572,9 @@ void Level::SpawnUnitEffect(Unit& unit)
 	pe->pos_min = Vec3(-0.75f, 0, -0.75f);
 	pe->pos_max = Vec3(0.75f, 1.f, 0.75f);
 	pe->size = 0.3f;
-	pe->op_size = POP_LINEAR_SHRINK;
+	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->alpha = 0.5f;
-	pe->op_alpha = POP_LINEAR_SHRINK;
+	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->mode = 0;
 	pe->Init();
 	unit.area->tmp->pes.push_back(pe);

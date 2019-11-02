@@ -870,9 +870,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 					pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 					pe->size = 0.3f;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 0.9f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
 					game_level->GetArea(pos).tmp->pes.push_back(pe);
@@ -2419,9 +2419,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -2565,9 +2565,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						pe->pos_min = Vec3(-spell->size, -spell->size, -spell->size);
 						pe->pos_max = Vec3(spell->size, spell->size, spell->size);
 						pe->size = spell->size_particle;
-						pe->op_size = POP_LINEAR_SHRINK;
+						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
-						pe->op_alpha = POP_LINEAR_SHRINK;
+						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->mode = 1;
 						pe->Init();
 
@@ -2602,9 +2602,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 
@@ -2638,9 +2638,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 

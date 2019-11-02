@@ -3473,9 +3473,9 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 				pe->size = 0.3f;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
 				area.tmp->pes.push_back(pe);
@@ -3565,9 +3565,9 @@ void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, in
 		pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 		pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 		pe->size = 0.3f;
-		pe->op_size = POP_LINEAR_SHRINK;
+		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->alpha = 0.9f;
-		pe->op_alpha = POP_LINEAR_SHRINK;
+		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->mode = 0;
 		pe->Init();
 		taker.area->tmp->pes.push_back(pe);
@@ -4060,9 +4060,9 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 				pe->size = 0.3f;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
 				area.tmp->pes.push_back(pe);
@@ -4474,9 +4474,9 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 		pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 		pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 		pe->size = spell.size / 2;
-		pe->op_size = POP_LINEAR_SHRINK;
+		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->alpha = 1.f;
-		pe->op_alpha = POP_LINEAR_SHRINK;
+		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->mode = 1;
 		pe->Init();
 		area.tmp->pes.push_back(pe);
@@ -5050,9 +5050,9 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
 					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
 					pe->size = electro.spell->size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -5171,9 +5171,9 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
 					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
 					pe->size = electro.spell->size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -5210,7 +5210,7 @@ void Game::UpdateDrains(LevelArea& area, float dt)
 		}
 
 		Vec3 center = drain.to->GetCenter();
-		for(Particle& p : drain.pe->particles)
+		for(ParticleEmitter::Particle& p : drain.pe->particles)
 			p.pos = Vec3::Lerp(p.pos, center, drain.t / 1.5f);
 
 		return false;

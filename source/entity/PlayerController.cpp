@@ -1819,9 +1819,9 @@ void PlayerController::CastSpell()
 			pe->pos_min = Vec3(-r, -h / 2, -r);
 			pe->pos_max = Vec3(r, h / 2, r);
 			pe->size = spell.size_particle;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
-			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
 			area.tmp->pes.push_back(pe);
