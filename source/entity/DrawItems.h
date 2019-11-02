@@ -1,32 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "SceneNode.h"
-
-//-----------------------------------------------------------------------------
-struct DebugSceneNode
-{
-	enum Type
-	{
-		Box,
-		Cylinder,
-		Sphere,
-		Capsule,
-		TriMesh,
-		MaxType
-	} type;
-	enum Group
-	{
-		Hitbox,
-		UnitRadius,
-		ParticleRadius,
-		Collider,
-		Physic,
-		MaxGroup
-	} group;
-	Matrix mat;
-	void* mesh_ptr;
-};
+#include <SceneNode.h>
+#include <DebugSceneNode.h>
 
 //-----------------------------------------------------------------------------
 struct GlowNode

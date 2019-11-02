@@ -858,7 +858,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* debug_node = debug_node_pool.Get();
 					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
 					debug_node->type = DebugSceneNode::Sphere;
-					debug_node->group = DebugSceneNode::ParticleRadius;
+					debug_node->color = Color(0, 255, 0);
 					draw_batch.debug_nodes.push_back(debug_node);
 				}
 			}
@@ -932,7 +932,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 				DebugSceneNode* node = debug_node_pool.Get();
 				node->type = type;
-				node->group = DebugSceneNode::Collider;
+				node->color = Color(153, 217, 164);
 				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
 			}
@@ -959,7 +959,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btBoxShape* box = (const btBoxShape*)shape;
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Box;
-					node->group = DebugSceneNode::Physic;
+					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -971,7 +971,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					float h = capsule->getHalfHeight();
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Capsule;
-					node->group = DebugSceneNode::Physic;
+					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -981,7 +981,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btCylinderShape* cylinder = (const btCylinderShape*)shape;
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Cylinder;
-					node->group = DebugSceneNode::Physic;
+					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
 					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -1002,7 +1002,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 							btBoxShape* box = (btBoxShape*)child;
 							DebugSceneNode* node = debug_node_pool.Get();
 							node->type = DebugSceneNode::Box;
-							node->group = DebugSceneNode::Physic;
+							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
 							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * game_level->camera.mat_view_proj;
@@ -1021,7 +1021,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
 					node->type = DebugSceneNode::TriMesh;
-					node->group = DebugSceneNode::Physic;
+					node->color = Color(163, 73, 164);
 					node->mat = m_world * game_level->camera.mat_view_proj;
 					node->mesh_ptr = (void*)trimesh->getMeshInterface();
 					draw_batch.debug_nodes.push_back(node);
@@ -1233,7 +1233,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			DebugSceneNode* debug_node = debug_node_pool.Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
 			debug_node->type = DebugSceneNode::Box;
-			debug_node->group = DebugSceneNode::Hitbox;
+			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
 	}
@@ -1277,7 +1277,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			DebugSceneNode* debug_node = debug_node_pool.Get();
 			node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
 			debug_node->type = DebugSceneNode::Box;
-			debug_node->group = DebugSceneNode::Hitbox;
+			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
 	}
@@ -1515,7 +1515,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		DebugSceneNode* debug_node = debug_node_pool.Get();
 		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
 		debug_node->type = DebugSceneNode::Cylinder;
-		debug_node->group = DebugSceneNode::UnitRadius;
+		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
 	if(draw_hitbox)
@@ -1526,7 +1526,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		DebugSceneNode* debug_node = debug_node_pool.Get();
 		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
 		debug_node->type = DebugSceneNode::Box;
-		debug_node->group = DebugSceneNode::Hitbox;
+		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
 }
@@ -3430,19 +3430,12 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		game_res->aCapsule
 	};
 
-	static Vec4 colors[DebugSceneNode::MaxGroup] = {
-		Vec4(0,0,0,1),
-		Vec4(1,1,1,1),
-		Vec4(0,1,0,1),
-		Vec4(153.f / 255,217.f / 255,164.f / 234,1.f),
-		Vec4(163.f / 255,73.f / 255,164.f / 255,1.f)
-	};
-
 	for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 	{
 		const DebugSceneNode& node = **it;
+		Vec4 color = node.color;
 
-		V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[node.group]));
+		V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&color));
 		V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&node.mat));
 
 		if(node.type == DebugSceneNode::TriMesh)
