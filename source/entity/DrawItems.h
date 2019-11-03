@@ -77,16 +77,9 @@ struct NodeMatrix
 };
 
 //-----------------------------------------------------------------------------
-struct StunEffect
-{
-	Vec3 pos;
-	float time;
-};
-
-//-----------------------------------------------------------------------------
 struct DrawBatch
 {
-	vector<SceneNode*> nodes;
+	vector<SceneNode*> nodes, alpha_nodes;
 	vector<SceneNodeGroup> groups;
 	vector<DebugSceneNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
@@ -104,7 +97,6 @@ struct DrawBatch
 	vector<Lights> lights;
 	vector<DungeonPart> dungeon_parts;
 	vector<NodeMatrix> matrices;
-	vector<StunEffect> stuns;
 
 	void Clear();
 };

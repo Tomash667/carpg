@@ -160,13 +160,13 @@ public:
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawTerrain(const vector<uint>& parts);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
-	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
+	void DrawSceneNodes(const vector<SceneNodeGroup>& groups, const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
+	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
 	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawExplosions(const vector<Explo*>& explos);
 	void DrawLightings(const vector<Electro*>& electros);
-	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
 	void UvModChanged();

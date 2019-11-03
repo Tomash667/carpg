@@ -668,7 +668,8 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
-	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
+	game->ProcessNodes();
+	game->DrawSceneNodes(game->draw_batch.groups, game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 
 	// end rendering

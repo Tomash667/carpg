@@ -84,7 +84,9 @@ struct IBOX
 void DrawBatch::Clear()
 {
 	node_pool.Free(nodes);
+	node_pool.Free(alpha_nodes);
 	debug_node_pool.Free(debug_nodes);
+	groups.clear();
 	glow_nodes.clear();
 	terrain_parts.clear();
 	bloods.clear();
@@ -97,7 +99,6 @@ void DrawBatch::Clear()
 	lights.clear();
 	dungeon_parts.clear();
 	matrices.clear();
-	stuns.clear();
 
 	// empty lights
 	Lights& l = Add1(lights);
@@ -1047,9 +1048,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		Effect* effect = u.FindEffect(EffectId::Stun);
 		if(effect)
 		{
-			StunEffect& stun = Add1(draw_batch.stuns);
-			stun.pos = u.GetHeadPoint();
-			stun.time = effect->time;
+			SceneNode* node = node_pool.Get();
+			node->billboard = false;
+			node->pos = u.GetHeadPoint();
+			node->mat = Matrix::RotationY(effect->time * 3) * Matrix::Translation(node->pos);
+			node->mesh = game_res->aStun;
+			node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND;
+			node->tex_override = nullptr;
+			node->parent_mesh_inst = nullptr;
+			node->tint = Vec4::One;
+			AddSceneNode(node);
 		}
 	}
 
@@ -1620,6 +1628,12 @@ void Game::ProcessNodes()
 		++index;
 	}
 	draw_batch.groups.back().end = index - 1;
+
+	// sort alpha nodes
+	std::sort(draw_batch.alpha_nodes.begin(), draw_batch.alpha_nodes.end(), [](const SceneNode* node1, const SceneNode* node2)
+	{
+		return node1->dist > node2->dist;
+	});
 }
 
 //=================================================================================================
@@ -2534,7 +2548,14 @@ void Game::AddSceneNode(SceneNode* node)
 	if(cl_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 		node->flags |= SceneNode::F_SPECULAR_MAP;
 	node->subs = 0x7FFFFFFF;
-	draw_batch.nodes.push_back(node);
+
+	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))
+	{
+		node->dist = Vec3::DistanceSquared(node->pos, game_level->camera.from);
+		draw_batch.alpha_nodes.push_back(node);
+	}
+	else
+		draw_batch.nodes.push_back(node);
 }
 
 //=================================================================================================
@@ -2822,7 +2843,7 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.nodes.empty())
 	{
 		PROFILER_BLOCK("DrawSceneNodes");
-		DrawSceneNodes(draw_batch.nodes, draw_batch.lights, outside);
+		DrawSceneNodes(draw_batch.groups, draw_batch.nodes, draw_batch.lights, outside);
 	}
 
 	// trawa
@@ -2863,9 +2884,9 @@ void Game::DrawScene(bool outside)
 	if(draw_batch.electros)
 		DrawLightings(*draw_batch.electros);
 
-	// stun effects
-	if(!draw_batch.stuns.empty())
-		DrawStunEffects(draw_batch.stuns);
+	// alpha nodes
+	if(!draw_batch.alpha_nodes.empty())
+		DrawAlphaSceneNodes(draw_batch.alpha_nodes, draw_batch.lights, outside);
 
 	// portale
 	if(!draw_batch.portals.empty())
@@ -3250,7 +3271,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 }
 
 //=================================================================================================
-void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside)
+void Game::DrawSceneNodes(const vector<SceneNodeGroup>& groups, const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside)
 {
 	IDirect3DDevice9* device = render->GetDevice();
 
@@ -3277,20 +3298,21 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	// for each group
 	uint passes;
 	const Mesh* prev_mesh = nullptr;
-	for(SceneNodeGroup& group : draw_batch.groups)
+	for(const SceneNodeGroup& group : groups)
 	{
 		const bool animated = IsSet(group.flags, SceneNode::F_ANIMATED);
 		const bool normal_map = IsSet(group.flags, SceneNode::F_NORMAL_MAP);
 		const bool specular_map = IsSet(group.flags, SceneNode::F_SPECULAR_MAP);
+		const bool use_lighting = game_level->cl_lighting && !IsSet(group.flags, SceneNode::F_NO_LIGHTING);
 
 		effect = super_shader->GetShader(super_shader->GetShaderId(
 			animated,
 			IsSet(group.flags, SceneNode::F_BINORMALS),
-			game_level->cl_fog,
+			game_level->cl_fog && use_lighting,
 			specular_map,
 			normal_map,
-			game_level->cl_lighting && !outside,
-			game_level->cl_lighting && outside));
+			use_lighting && !outside,
+			use_lighting && outside));
 		D3DXHANDLE tech;
 		V(effect->FindNextValidTechnique(nullptr, &tech));
 		V(effect->SetTechnique(tech));
@@ -3338,7 +3360,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			}
 
 			// œwiat³a
-			if(!outside)
+			if(!outside && use_lighting)
 				V(effect->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
 
 			// renderowanie
@@ -3404,6 +3426,151 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		V(effect->EndPass());
 		V(effect->End());
 	}
+}
+
+//=================================================================================================
+void Game::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside)
+{
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaBlend(true);
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+
+	Vec4 fogColor = game_level->GetFogColor();
+	Vec4 fogParams = game_level->GetFogParams();
+	Vec4 lightDir = game_level->GetLightDir();
+	Vec4 lightColor = game_level->GetLightColor();
+	Vec4 ambientColor = game_level->GetAmbientColor();
+
+	// setup effect
+	ID3DXEffect* effect = super_shader->GetEffect();
+	V(effect->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&ambientColor));
+	V(effect->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&fogColor));
+	V(effect->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&fogParams));
+	V(effect->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.from));
+	if(outside)
+	{
+		V(effect->SetVector(super_shader->hLightDir, (D3DXVECTOR4*)&lightDir));
+		V(effect->SetVector(super_shader->hLightColor, (D3DXVECTOR4*)&lightColor));
+	}
+
+	// for each group
+	const Mesh* prev_mesh = nullptr;
+	uint last_id = -1;
+	bool open = false;
+	for(const SceneNode* node : nodes)
+	{
+		const bool animated = IsSet(node->flags, SceneNode::F_ANIMATED);
+		const bool normal_map = IsSet(node->flags, SceneNode::F_NORMAL_MAP);
+		const bool specular_map = IsSet(node->flags, SceneNode::F_SPECULAR_MAP);
+		const bool use_lighting = game_level->cl_lighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
+
+		uint id = super_shader->GetShaderId(
+			animated,
+			IsSet(node->flags, SceneNode::F_BINORMALS),
+			game_level->cl_fog && use_lighting,
+			specular_map,
+			normal_map,
+			use_lighting && !outside,
+			use_lighting && outside);
+		if(id != last_id)
+		{
+			if(open)
+			{
+				effect->EndPass();
+				effect->End();
+			}
+
+			render->SetNoZWrite(IsSet(node->flags, SceneNode::F_NO_ZWRITE));
+			render->SetNoCulling(IsSet(node->flags, SceneNode::F_NO_CULLING));
+			render->SetAlphaTest(IsSet(node->flags, SceneNode::F_ALPHA_TEST));
+
+			effect = super_shader->GetShader(id);
+			D3DXHANDLE tech;
+			uint passes;
+			V(effect->FindNextValidTechnique(nullptr, &tech));
+			V(effect->SetTechnique(tech));
+			effect->Begin(&passes, 0);
+			effect->BeginPass(0);
+
+			open = true;
+		}
+
+		const Mesh& mesh = node->GetMesh();
+		if(!mesh.IsLoaded())
+		{
+			ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
+			res_mgr->Load(const_cast<Mesh*>(&mesh));
+			break;
+		}
+
+		// ustaw parametry shadera
+		Matrix m1;
+		if(!node->billboard)
+			m1 = node->mat * game_level->camera.mat_view_proj;
+		else
+			m1 = node->mat.Inverse() * game_level->camera.mat_view_proj;
+		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
+		V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
+		V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
+		if(animated)
+		{
+			const MeshInstance& mesh_inst = node->GetMeshInstance();
+			V(effect->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)&mesh_inst.mat_bones[0], mesh_inst.mat_bones.size()));
+		}
+
+		// ustaw model
+		if(prev_mesh != &mesh)
+		{
+			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
+			V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
+			V(device->SetIndices(mesh.ib));
+			prev_mesh = &mesh;
+		}
+
+		// œwiat³a
+		if(!outside)
+			V(effect->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
+
+		// renderowanie
+		assert(!IsSet(node->subs, SceneNode::SPLIT_INDEX)); // yagni
+		for(int i = 0; i < mesh.head.n_subs; ++i)
+		{
+			if(!IsSet(node->subs, 1 << i))
+				continue;
+
+			const Mesh::Submesh& sub = mesh.subs[i];
+
+			// tekstura
+			V(effect->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
+			if(normal_map)
+			{
+				TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+				V(effect->SetTexture(super_shader->hTexNormal, tex));
+			}
+			if(specular_map)
+			{
+				TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+				V(effect->SetTexture(super_shader->hTexSpecular, tex));
+			}
+
+			// ustawienia œwiat³a
+			V(effect->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
+			V(effect->SetFloat(super_shader->hSpecularIntensity, sub.specular_intensity));
+			V(effect->SetFloat(super_shader->hSpecularHardness, (float)sub.specular_hardness));
+
+			V(effect->CommitChanges());
+			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
+		}
+	}
+
+	if(open)
+	{
+		effect->EndPass();
+		effect->End();
+	}
+
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }
 
 //=================================================================================================
@@ -3744,48 +3911,6 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				prev[1] = next[1];
 			}
 		}
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
-
-//=================================================================================================
-void Game::DrawStunEffects(const vector<StunEffect>& stuns)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = super_shader->GetShader(0);
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	const Mesh& mesh = *game_res->aStun;
-	const Mesh::Submesh& sub = mesh.subs[0];
-	assert(mesh.subs.size() == 1u);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-
-	D3DXHANDLE tech;
-	uint passes;
-	V(effect->FindNextValidTechnique(nullptr, &tech));
-	V(effect->SetTechnique(tech));
-	V(effect->SetTexture(super_shader->hTexDiffuse, sub.tex->tex));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(const StunEffect& stun : stuns)
-	{
-		Matrix matWorld = Matrix::RotationY(stun.time * 3) * Matrix::Translation(stun.pos);
-		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*) & (matWorld * game_level->camera.mat_view_proj)));
-		V(effect->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
 
 	V(effect->EndPass());
