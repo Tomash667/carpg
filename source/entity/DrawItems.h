@@ -90,7 +90,6 @@ struct DrawBatch
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*>* tpes;
 	vector<Electro*>* electros;
-	vector<Portal*> portals;
 	vector<Area> areas;
 	float area_range;
 	vector<Area2*> areas2;

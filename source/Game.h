@@ -168,7 +168,6 @@ public:
 	void DrawExplosions(const vector<Explo*>& explos);
 	void DrawLightings(const vector<Electro*>& electros);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
-	void DrawPortals(const vector<Portal*>& portals);
 	void UvModChanged();
 	void InitQuadTree();
 	void DrawGrass();

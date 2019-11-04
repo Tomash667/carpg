@@ -95,7 +95,6 @@ void DrawBatch::Clear()
 	pes.clear();
 	areas.clear();
 	area2_pool.Free(areas2);
-	portals.clear();
 	lights.clear();
 	dungeon_parts.clear();
 	matrices.clear();
@@ -886,7 +885,18 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		while(portal)
 		{
 			if(game_level->location->outside || game_level->dungeon_level == portal->at_level)
-				draw_batch.portals.push_back(portal);
+			{
+				SceneNode* node = node_pool.Get();
+				node->billboard = false;
+				node->pos = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
+				node->mat = Matrix::Rotation(0, portal->rot, -portal_anim * PI * 2) * Matrix::Translation(node->pos);
+				node->mesh = game_res->aPortal;
+				node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
+				node->tex_override = nullptr;
+				node->parent_mesh_inst = nullptr;
+				node->tint = Vec4::One;
+				AddSceneNode(node);
+			}
 			portal = portal->next_portal;
 		}
 	}
@@ -1053,7 +1063,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node->pos = u.GetHeadPoint();
 			node->mat = Matrix::RotationY(effect->time * 3) * Matrix::Translation(node->pos);
 			node->mesh = game_res->aStun;
-			node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND;
+			node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->tex_override = nullptr;
 			node->parent_mesh_inst = nullptr;
 			node->tint = Vec4::One;
@@ -2888,10 +2898,6 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.alpha_nodes.empty())
 		DrawAlphaSceneNodes(draw_batch.alpha_nodes, draw_batch.lights, outside);
 
-	// portale
-	if(!draw_batch.portals.empty())
-		DrawPortals(draw_batch.portals);
-
 	// obszary
 	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())
 		DrawAreas(draw_batch.areas, draw_batch.area_range, draw_batch.areas2);
@@ -3917,40 +3923,6 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	V(effect->End());
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
-
-//=================================================================================================
-void Game::DrawPortals(const vector<Portal*>& portals)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
-
-	uint passes;
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-	V(effect->SetTechnique(particle_shader->techParticle));
-	V(effect->SetTexture(particle_shader->hTex, game_res->tPortal->tex));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
-	{
-		const Portal& portal = **it;
-		Matrix m1 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
-			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
-			* game_level->camera.mat_view_proj;
-		V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&m1));
-		V(effect->CommitChanges());
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
 }
 
 //=================================================================================================
