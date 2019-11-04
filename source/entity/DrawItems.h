@@ -86,7 +86,6 @@ struct DrawBatch
 	vector<uint> terrain_parts;
 	vector<Blood*> bloods;
 	vector<Billboard> billboards;
-	vector<Explo*> explos;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*>* tpes;
 	vector<Electro*>* electros;

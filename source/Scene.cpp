@@ -91,7 +91,6 @@ void DrawBatch::Clear()
 	terrain_parts.clear();
 	bloods.clear();
 	billboards.clear();
-	explos.clear();
 	pes.clear();
 	areas.clear();
 	area2_pool.Free(areas2);
@@ -136,19 +135,6 @@ void Game::InitScene()
 	billboard_ext[1] = Vec3(-1, 1, 0);
 	billboard_ext[2] = Vec3(1, -1, 0);
 	billboard_ext[3] = Vec3(1, 1, 0);
-
-	portal_v[0].pos = Vec3(-0.67f, -0.67f, 0);
-	portal_v[1].pos = Vec3(-0.67f, 0.67f, 0);
-	portal_v[2].pos = Vec3(0.67f, -0.67f, 0);
-	portal_v[3].pos = Vec3(0.67f, 0.67f, 0);
-	portal_v[0].tex = Vec2(0, 0);
-	portal_v[1].tex = Vec2(0, 1);
-	portal_v[2].tex = Vec2(1, 0);
-	portal_v[3].tex = Vec2(1, 1);
-	portal_v[0].color = Vec4(1, 1, 1, 0.5f);
-	portal_v[1].color = Vec4(1, 1, 1, 0.5f);
-	portal_v[2].color = Vec4(1, 1, 1, 0.5f);
-	portal_v[3].color = Vec4(1, 1, 1, 0.5f);
 
 	if(!vbDungeon)
 		BuildDungeon();
@@ -839,7 +825,18 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		{
 			Explo& explo = **it;
 			if(frustum.SphereToFrustum(explo.pos, explo.size))
-				draw_batch.explos.push_back(&explo);
+			{
+				SceneNode* node = node_pool.Get();
+				node->billboard = false;
+				node->pos = explo.pos;
+				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
+				node->mesh = game_res->aSpellball;
+				node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
+				node->tex_override = nullptr;
+				node->parent_mesh_inst = nullptr;
+				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
+				AddSceneNode(node);
+			}
 		}
 	}
 
@@ -2876,10 +2873,6 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.billboards.empty())
 		DrawBillboards(draw_batch.billboards);
 
-	// eksplozje
-	if(!draw_batch.explos.empty())
-		DrawExplosions(draw_batch.explos);
-
 	// particles
 	if(!draw_batch.pes.empty() || draw_batch.tpes)
 	{
@@ -3771,58 +3764,6 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 		V(effect->CommitChanges());
 
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, billboard_v, sizeof(VParticle)));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-}
-
-//=================================================================================================
-void Game::DrawExplosions(const vector<Explo*>& explos)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = super_shader->GetShader(0);
-	Mesh& mesh = *game_res->aSpellball;
-	Mesh::Submesh& sub = mesh.subs[0];
-	assert(mesh.subs.size() == 1u);
-
-	render->SetAlphaBlend(true);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(true);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration((mesh.vertex_decl))));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-
-	D3DXHANDLE tech;
-	uint passes;
-	V(effect->FindNextValidTechnique(nullptr, &tech));
-	V(effect->SetTechnique(tech));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	Vec4 tint(1, 1, 1, 1);
-	TEX last_tex = nullptr;
-
-	for(vector<Explo*>::const_iterator it = explos.begin(), end = explos.end(); it != end; ++it)
-	{
-		const Explo& e = **it;
-
-		if(e.tex->tex != last_tex)
-		{
-			last_tex = e.tex->tex;
-			V(effect->SetTexture(super_shader->hTexDiffuse, last_tex));
-		}
-
-		Matrix m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.mat_view_proj;
-		tint.w = 1.f - e.size / e.sizemax;
-
-		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
-		V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&tint));
-		V(effect->CommitChanges());
-
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
 
 	V(effect->EndPass());
