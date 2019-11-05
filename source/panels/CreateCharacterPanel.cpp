@@ -259,7 +259,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	gui->DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
+	gui->DrawSprite(rt_char, Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
