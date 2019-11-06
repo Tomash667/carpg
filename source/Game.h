@@ -116,7 +116,6 @@ public:
 	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
-	void CreateTextures();
 	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
 
@@ -466,7 +465,7 @@ public:
 	// RESOURCES
 	//-----------------------------------------------------------------
 	RenderTarget* rt_save, *rt_item_rot;
-	Texture tMinimap;
+	Texture* tMinimap;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS

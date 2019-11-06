@@ -398,7 +398,7 @@ void Game::ConfigureGame()
 	render->RegisterShader(super_shader = new SuperShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
-	CreateTextures();
+	tMinimap = render->CreateDynamicTexture(Int2(128, 128));
 	CreateRenderTargets();
 }
 
@@ -610,9 +610,6 @@ void Game::OnCleanup()
 	// bufory wierzcho³ków i indeksy
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
-
-	// tekstury render target, powierzchnie
-	SafeRelease(tMinimap.tex);
 
 	draw_batch.Clear();
 
@@ -1126,7 +1123,6 @@ bool Game::Start()
 //=================================================================================================
 void Game::OnReload()
 {
-	CreateTextures();
 	BuildDungeon();
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
@@ -1141,7 +1137,6 @@ void Game::OnReset()
 	if(game_gui && game_gui->inventory)
 		game_gui->inventory->OnReset();
 
-	SafeRelease(tMinimap.tex);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 }
@@ -1273,18 +1268,6 @@ void Game::SaveCfg()
 {
 	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
 		Error("Failed to save configuration file '%s'!", cfg_file.c_str());
-}
-
-//=================================================================================================
-void Game::CreateTextures()
-{
-	if(tMinimap.tex)
-		return;
-
-	IDirect3DDevice9* device = render->GetDevice();
-
-	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap.tex, nullptr));
-	tMinimap.state = ResourceState::Loaded;
 }
 
 //=================================================================================================

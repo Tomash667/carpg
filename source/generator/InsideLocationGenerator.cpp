@@ -1067,7 +1067,7 @@ void InsideLocationGenerator::RespawnTraps()
 void InsideLocationGenerator::CreateMinimap()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 
 	for(int y = 0; y < lvl.h; ++y)
 	{

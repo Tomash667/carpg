@@ -9,6 +9,7 @@
 #include "Level.h"
 #include "ResourceManager.h"
 #include "GameGui.h"
+#include "Render.h"
 
 enum UnitType
 {
@@ -50,7 +51,7 @@ void Minimap::Draw(ControlDrawData*)
 	// map texture
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	Rect r_part = { 0, 0, minimap_size, minimap_size };
-	gui->DrawSpriteRectPart(&game->tMinimap, r, r_part, Color::Alpha(140));
+	gui->DrawSpriteRectPart(game->tMinimap, r, r_part, Color::Alpha(140));
 
 	// stairs
 	if(type == L_DUNGEON || type == L_CAVE)

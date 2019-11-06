@@ -3832,7 +3832,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
