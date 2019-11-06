@@ -3434,7 +3434,7 @@ void Game::UpdateParticles(LevelArea& area, float dt)
 
 	LoopAndRemove(area.tmp->tpes, [dt](TrailParticleEmitter* tpe)
 	{
-		if(tpe->Update(dt, nullptr, nullptr))
+		if(tpe->Update(dt, nullptr))
 		{
 			delete tpe;
 			return true;
@@ -3642,21 +3642,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		if(it->pe)
 			it->pe->pos = it->pos;
 		if(it->trail)
-		{
-			Vec3 pt1 = it->pos;
-			pt1.y += 0.05f;
-			Vec3 pt2 = it->pos;
-			pt2.y -= 0.05f;
-			it->trail->Update(0, &pt1, &pt2);
-
-			pt1 = it->pos;
-			pt1.x += sin(it->rot.y + PI / 2)*0.05f;
-			pt1.z += cos(it->rot.y + PI / 2)*0.05f;
-			pt2 = it->pos;
-			pt2.x -= sin(it->rot.y + PI / 2)*0.05f;
-			pt2.z -= cos(it->rot.y + PI / 2)*0.05f;
-			it->trail2->Update(0, &pt1, &pt2);
-		}
+			it->trail->Update(0, &it->pos);
 
 		// remove bullet on timeout
 		if((it->timer -= dt) <= 0.f)
@@ -3665,10 +3651,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 			it->remove = true;
 			deletions = true;
 			if(it->trail)
-			{
 				it->trail->destroy = true;
-				it->trail2->destroy = true;
-			}
 			if(it->pe)
 				it->pe->destroy = true;
 			continue;
@@ -3702,10 +3685,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		it->remove = true;
 		deletions = true;
 		if(it->trail)
-		{
 			it->trail->destroy = true;
-			it->trail2->destroy = true;
-		}
 		if(it->pe)
 			it->pe->destroy = true;
 
@@ -4750,19 +4730,12 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 						TrailParticleEmitter* tpe = new TrailParticleEmitter;
 						tpe->fade = 0.3f;
+						tpe->width = 0.1f;
 						tpe->color1 = Vec4(1, 1, 1, 0.5f);
 						tpe->color2 = Vec4(1, 1, 1, 0);
 						tpe->Init(50);
 						area.tmp->tpes.push_back(tpe);
 						b.trail = tpe;
-
-						TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-						tpe2->fade = 0.3f;
-						tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-						tpe2->color2 = Vec4(1, 1, 1, 0);
-						tpe2->Init(50);
-						area.tmp->tpes.push_back(tpe2);
-						b.trail2 = tpe2;
 
 						sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
 

@@ -33,7 +33,6 @@ void Bullet::Save(FileWriter& f)
 	else
 		f.Write0();
 	f << (trail ? trail->id : -1);
-	f << (trail2 ? trail2->id : -1);
 	f << (pe ? pe->id : -1);
 	f << remove;
 	f << backstab;
@@ -73,7 +72,12 @@ void Bullet::Load(FileReader& f)
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
-	trail2 = TrailParticleEmitter::GetById(f.Read<int>());
+	if(LOAD_VERSION < V_DEV)
+	{
+		TrailParticleEmitter* old_trail = TrailParticleEmitter::GetById(f.Read<int>());
+		if(old_trail)
+			old_trail->destroy = true;
+	}
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> remove;
 	f >> level;

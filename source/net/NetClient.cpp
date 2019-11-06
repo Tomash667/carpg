@@ -1162,19 +1162,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
+					tpe->width = 0.1f;
 					tpe->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe->color2 = Vec4(1, 1, 1, 0);
 					tpe->Init(50);
 					area.tmp->tpes.push_back(tpe);
 					b.trail = tpe;
-
-					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-					tpe2->fade = 0.3f;
-					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe2->color2 = Vec4(1, 1, 1, 0);
-					tpe2->Init(50);
-					area.tmp->tpes.push_back(tpe2);
-					b.trail2 = tpe2;
 
 					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
 				}
@@ -2395,7 +2388,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				b.timer = spell.range / (spell.speed - 1);
 				b.remove = false;
 				b.trail = nullptr;
-				b.trail2 = nullptr;
 				b.pe = nullptr;
 				b.spell = &spell;
 				b.start_pos = b.pos;
