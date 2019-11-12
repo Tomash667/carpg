@@ -233,8 +233,8 @@ void SpellLoader::ParseSpell(const string& id)
 		case K_TEX_EXPLODE:
 			{
 				const string& tex_id = t.MustGetString();
-				spell->tex_explode = res_mgr->TryGet<Texture>(tex_id);
-				if(!spell->tex_explode)
+				spell->tex_explode.diffuse = res_mgr->TryGet<Texture>(tex_id);
+				if(!spell->tex_explode.diffuse)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
 				t.Next();
@@ -280,7 +280,7 @@ void SpellLoader::ParseSpell(const string& id)
 		case K_MOVE_RANGE:
 			spell->move_range = t.MustGetFloat();
 			if(spell->move_range < 0.f)
-				t.Throw("Negative nove range %g.", spell->move_range);
+				t.Throw("Negative move range %g.", spell->move_range);
 			crc.Update(spell->move_range);
 			t.Next();
 			break;
@@ -289,6 +289,8 @@ void SpellLoader::ParseSpell(const string& id)
 
 	if(Any(spell->type, Spell::Point, Spell::Ball) && spell->speed == 0.f)
 		LoadWarning("Invalid spell speed.");
+	if(IsSet(spell->flags, Spell::Explode) && !spell->tex_explode.diffuse)
+		t.Throw("Missing explosion texture.");
 
 	Spell::spells.push_back(spell.Pin());
 }

@@ -1280,7 +1280,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
 					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
-					door->mesh_inst->groups[0].speed = 2.f;
+					door->mesh_inst->base_speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -3088,7 +3088,7 @@ void Level::OnReenterLevel()
 
 			// animowany model
 			door.mesh_inst = new MeshInstance(door.door2 ? game_res->aDoor2 : game_res->aDoor);
-			door.mesh_inst->groups[0].speed = 2.f;
+			door.mesh_inst->base_speed = 2.f;
 
 			// fizyka
 			door.phy = new btCollisionObject;

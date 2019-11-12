@@ -155,7 +155,7 @@ void GameResources::LoadData()
 	aDoor = res_mgr->Load<Mesh>("drzwi.qmsh");
 	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
 	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
-	aPortal = res_mgr->Load<Mesh>("portal.qmsh");
+	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();
@@ -277,8 +277,8 @@ void GameResources::PreloadSpells()
 			res_mgr->Load(spell.tex);
 		if(spell.tex_particle)
 			res_mgr->Load(spell.tex_particle);
-		if(spell.tex_explode)
-			res_mgr->Load(spell.tex_explode);
+		if(spell.tex_explode.diffuse)
+			res_mgr->Load(spell.tex_explode.diffuse);
 		if(spell.mesh)
 			res_mgr->Load(spell.mesh);
 

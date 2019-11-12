@@ -441,7 +441,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->rot = o->rot.y;
 					door->state = Door::Closed;
 					door->mesh_inst = new MeshInstance(game_res->aDoor);
-					door->mesh_inst->groups[0].speed = 2.f;
+					door->mesh_inst->base_speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(game_level->shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);

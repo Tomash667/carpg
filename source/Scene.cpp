@@ -24,6 +24,7 @@
 #include "BasicShader.h"
 #include "SkyboxShader.h"
 #include "Pathfinding.h"
+#include "Spell.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -832,7 +833,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
 				node->mesh = game_res->aSpellball;
 				node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-				node->tex_override = nullptr;
+				node->tex_override = &explo.spell->tex_explode;
 				node->parent_mesh_inst = nullptr;
 				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
 				AddSceneNode(node);
@@ -3528,7 +3529,7 @@ void Game::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lig
 		}
 
 		// œwiat³a
-		if(!outside)
+		if(use_lighting && !outside)
 			V(effect->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// renderowanie

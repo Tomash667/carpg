@@ -2083,7 +2083,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				explo->pos = pos;
 				explo->size = 0.f;
 				explo->sizemax = 2.f;
-				explo->tex = spell.tex_explode;
+				explo->spell = spell_ptr;
 
 				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
 

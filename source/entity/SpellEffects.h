@@ -7,7 +7,7 @@ struct Explo
 	Entity<Unit> owner;
 	Vec3 pos;
 	float size, sizemax, dmg;
-	TexturePtr tex;
+	Spell* spell;
 	vector<Entity<Unit>> hitted;
 
 	static const int MIN_SIZE = 21;

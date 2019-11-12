@@ -20,7 +20,7 @@ void Explo::Save(FileWriter& f)
 	f << dmg;
 	f << hitted;
 	f << owner;
-	f << tex->filename;
+	f << spell->id;
 }
 
 //=================================================================================================
@@ -32,13 +32,27 @@ void Explo::Load(FileReader& f)
 	f >> dmg;
 	f >> hitted;
 	f >> owner;
-	tex = res_mgr->Load<Texture>(f.ReadString1());
+
+	const string& spell_id = f.ReadString1();
+	if(LOAD_VERSION >= V_DEV)
+		spell = Spell::TryGet(spell_id);
+	else
+	{
+		for(Spell* s : Spell::spells)
+		{
+			if(s->tex_explode.diffuse && s->tex_explode.diffuse->filename == spell_id)
+			{
+				spell = s;
+				break;
+			}
+		}
+	}
 }
 
 //=================================================================================================
 void Explo::Write(BitStreamWriter& f)
 {
-	f << tex->filename;
+	f << spell->id;
 	f << pos;
 	f << size;
 	f << sizemax;
@@ -47,13 +61,13 @@ void Explo::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Explo::Read(BitStreamReader& f)
 {
-	const string& tex_id = f.ReadString1();
+	const string& spell_id = f.ReadString1();
 	f >> pos;
 	f >> size;
 	f >> sizemax;
 	if(!f)
 		return false;
-	tex = res_mgr->Load<Texture>(tex_id);
+	spell = Spell::TryGet(spell_id);
 	return true;
 }
 

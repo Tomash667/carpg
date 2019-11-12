@@ -50,6 +50,7 @@ void Door::Load(FileReader& f, bool local)
 	{
 		mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
+		mesh_inst->base_speed = 2.f;
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game_level->shape_door);
@@ -105,7 +106,7 @@ bool Door::Read(BitStreamReader& f)
 	}
 
 	mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-	mesh_inst->groups[0].speed = 2.f;
+	mesh_inst->base_speed = 2.f;
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
