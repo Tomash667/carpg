@@ -1127,16 +1127,11 @@ void Game::OnReload()
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
 		loc_gen_factory->Get(game_level->location)->CreateMinimap();
-	if(game_gui && game_gui->inventory)
-		game_gui->inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
-	if(game_gui && game_gui->inventory)
-		game_gui->inventory->OnReset();
-
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 }

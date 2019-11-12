@@ -70,8 +70,6 @@ public:
 	void InitOnce();
 	void LoadLanguage();
 	void LoadData();
-	void OnReset();
-	void OnReload();
 	void Setup(PlayerController* pc);
 	void StartTrade(InventoryMode mode, Unit& unit);
 	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit = nullptr);

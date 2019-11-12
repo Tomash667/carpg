@@ -3746,7 +3746,7 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
-	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetTechnique(particle_shader->tech));
 	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
@@ -3786,7 +3786,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
-	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetTechnique(particle_shader->tech));
 	V(effect->SetTexture(particle_shader->hTex, game_res->tLightingLine->tex));
 	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
 	V(effect->Begin(&passes, 0));
