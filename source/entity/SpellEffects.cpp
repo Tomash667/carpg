@@ -75,9 +75,16 @@ bool Explo::Read(BitStreamReader& f)
 void Electro::AddLine(const Vec3& from, const Vec3& to)
 {
 	Line& line = Add1(lines);
-
+	line.from = from;
+	line.to = to;
 	line.t = 0.f;
-	line.pts.push_back(from);
+	line.trail = nullptr;
+}
+
+//=================================================================================================
+void Electro::GenerateTrailParticle(Line& line)
+{
+/*	line.pts.push_back(from);
 
 	int steps = int(Vec3::Distance(from, to) * 10);
 
@@ -94,7 +101,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to)
 	}
 
 	line.pts.push_back(to);
-}
+}*/
 
 //=================================================================================================
 void Electro::Save(FileWriter& f)
@@ -103,7 +110,8 @@ void Electro::Save(FileWriter& f)
 	f << lines.size();
 	for(Line& line : lines)
 	{
-		f.WriteVector4(line.pts);
+		f << line.from;
+		f << line.to;
 		f << line.t;
 	}
 	f << hitted.size();
@@ -124,10 +132,21 @@ void Electro::Load(FileReader& f)
 		f >> id;
 	Register();
 	lines.resize(f.Read<uint>());
-	for(Line& line : lines)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		f.ReadVector4(line.pts);
-		f >> line.t;
+
+	}
+	else
+	{
+		vector<Vec3> pts;
+		for(Line& line : lines)
+		{
+			f.ReadVector4(pts);
+			line.from = pts.front();
+			line.to = pts.back();
+			f >> line.t;
+			if(line.t < 0.5f)
+		}
 	}
 	hitted.resize(f.Read<uint>());
 	for(Entity<Unit>& unit : hitted)
@@ -151,8 +170,8 @@ void Electro::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(lines.size());
 	for(Line& line : lines)
 	{
-		f << line.pts.front();
-		f << line.pts.back();
+		f << line.from;
+		f << line.to;
 		f << line.t;
 	}
 }
@@ -165,9 +184,10 @@ bool Electro::Read(BitStreamReader& f)
 
 	byte count;
 	f >> count;
-	if(!f.Ensure(count * LINE_MIN_SIZE))
+	if(!f.Ensure(count * Line::SIZE))
 		return false;
 	lines.reserve(count);
+
 	Vec3 from, to;
 	float t;
 	for(byte i = 0; i < count; ++i)

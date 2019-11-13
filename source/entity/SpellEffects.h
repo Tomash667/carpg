@@ -23,8 +23,11 @@ struct Electro : public EntityType<Electro>
 {
 	struct Line
 	{
-		vector<Vec3> pts;
-		float t;
+		TrailParticleEmitter* trail;
+		Vec3 from, to;
+		float t; // 0.0 -> 0.25 animation -> 0.5 removed
+
+		static const int SIZE = sizeof(Vec3) * 2 + sizeof(float);
 	};
 
 	Spell* spell;
@@ -36,9 +39,9 @@ struct Electro : public EntityType<Electro>
 	Vec3 start_pos;
 
 	static const int MIN_SIZE = 5;
-	static const int LINE_MIN_SIZE = 28;
 
 	void AddLine(const Vec3& from, const Vec3& to);
+	void GenerateTrailParticle(Line& line);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void Write(BitStreamWriter& f);
