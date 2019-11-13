@@ -6483,8 +6483,7 @@ void Unit::CastSpell()
 				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
 				{
 					Drain& drain = Add1(area->tmp->drains);
-					drain.from = hitted;
-					drain.to = this;
+					drain.target = this;
 
 					game->GiveDmg(*hitted, dmg, this, nullptr, Game::DMG_MAGICAL);
 
@@ -6503,11 +6502,11 @@ void Unit::CastSpell()
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::UPDATE_HP;
-						c.unit = drain.to;
+						c.unit = drain.target;
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::CREATE_DRAIN;
-						c2.unit = drain.to;
+						c2.unit = drain.target;
 					}
 				}
 			}

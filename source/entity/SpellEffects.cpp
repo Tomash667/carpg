@@ -187,8 +187,7 @@ bool Electro::Read(BitStreamReader& f)
 //=================================================================================================
 void Drain::Save(FileWriter& f)
 {
-	f << from->id;
-	f << to->id;
+	f << target->id;
 	f << pe->id;
 	f << t;
 }
@@ -196,8 +195,9 @@ void Drain::Save(FileWriter& f)
 //=================================================================================================
 void Drain::Load(FileReader& f)
 {
-	from = Unit::GetById(f.Read<int>());
-	to = Unit::GetById(f.Read<int>());
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old from
+	target = Unit::GetById(f.Read<int>());
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> t;
 }

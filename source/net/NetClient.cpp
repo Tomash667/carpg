@@ -2467,8 +2467,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						else
 						{
 							Drain& drain = Add1(tmp_area.drains);
-							drain.from = nullptr;
-							drain.to = unit;
+							drain.target = unit;
 							drain.pe = tmp_area.pes.back();
 							drain.t = 0.f;
 							drain.pe->manual_delete = 1;

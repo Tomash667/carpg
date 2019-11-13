@@ -5097,7 +5097,7 @@ void Game::UpdateDrains(LevelArea& area, float dt)
 			return true;
 		}
 
-		Vec3 center = drain.to->GetCenter();
+		Vec3 center = drain.target->GetCenter();
 		for(ParticleEmitter::Particle& p : drain.pe->particles)
 			p.pos = Vec3::Lerp(p.pos, center, drain.t / 1.5f);
 
