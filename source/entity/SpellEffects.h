@@ -40,8 +40,10 @@ struct Electro : public EntityType<Electro>
 
 	static const int MIN_SIZE = 5;
 
-	void AddLine(const Vec3& from, const Vec3& to);
-	void GenerateTrailParticle(Line& line);
+	~Electro();
+	void AddLine(const Vec3& from, const Vec3& to, float t = 0);
+	void Update(float dt);
+	void UpdateColor(Line& line);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void Write(BitStreamWriter& f);

@@ -6466,8 +6466,8 @@ void Unit::CastSpell()
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_ELECTRO;
 				c.e_id = e->id;
-				c.pos = e->lines[0].pts.front();
-				memcpy(c.f, &e->lines[0].pts.back(), sizeof(Vec3));
+				c.pos = e->lines[0].from;
+				memcpy(c.f, &e->lines[0].to, sizeof(Vec3));
 			}
 		}
 		else if(IsSet(spell.flags, Spell::Drain))
@@ -7132,7 +7132,6 @@ void Unit::Update(float dt)
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
-				tpe->width = 0.1f;
 				tpe->color1 = Vec4(1, 1, 1, 0.5f);
 				tpe->color2 = Vec4(1, 1, 1, 0);
 				tpe->Init(50);

@@ -4028,7 +4028,6 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
-				tpe->width = 0.1f;
 				tpe->color1 = Vec4(1, 1, 1, 0.5f);
 				tpe->color2 = Vec4(1, 1, 1, 0);
 				tpe->Init(50);

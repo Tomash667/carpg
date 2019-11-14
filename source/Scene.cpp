@@ -870,12 +870,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	else
 		draw_batch.tpes = nullptr;
 
-	// electros
-	if(IsSet(draw_flags, DF_LIGHTINGS) && !tmp_area.electros.empty())
-		draw_batch.electros = &tmp_area.electros;
-	else
-		draw_batch.electros = nullptr;
-
 	// portals
 	if(IsSet(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
 	{
@@ -2884,10 +2878,6 @@ void Game::DrawScene(bool outside)
 			particle_shader->DrawParticles(draw_batch.pes);
 	}
 
-	// electros
-	if(draw_batch.electros)
-		DrawLightings(*draw_batch.electros);
-
 	// alpha nodes
 	if(!draw_batch.alpha_nodes.empty())
 		DrawAlphaSceneNodes(draw_batch.alpha_nodes, draw_batch.lights, outside);
@@ -3769,102 +3759,6 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 
 	V(effect->EndPass());
 	V(effect->End());
-}
-
-//=================================================================================================
-void Game::DrawLightings(const vector<Electro*>& electros)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->tech));
-	V(effect->SetTexture(particle_shader->hTex, game_res->tLightingLine->tex));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	const Vec4 color(0.2f, 0.2f, 1.f, 1.f);
-
-	Matrix matPart;
-	VParticle v[4] = {
-		Vec3(-1,-1,0), Vec2(0,0), color,
-		Vec3(-1, 1,0), Vec2(0,1), color,
-		Vec3(1,-1,0), Vec2(1,0), color,
-		Vec3(1, 1,0), Vec2(1,1), color
-	};
-
-	const Vec3 pos[2] = {
-		Vec3(0,-1,0),
-		Vec3(0, 1,0)
-	};
-
-	Vec3 prev[2], next[2];
-
-	for(vector<Electro*>::const_iterator it = electros.begin(), end = electros.end(); it != end; ++it)
-	{
-		for(vector<Electro::Line>::iterator it2 = (*it)->lines.begin(), end2 = (*it)->lines.end(); it2 != end2; ++it2)
-		{
-			if(it2->t >= 0.5f)
-				continue;
-
-			// startowy punkt
-			game_level->camera.mat_view_inv._41 = it2->pts.front().x;
-			game_level->camera.mat_view_inv._42 = it2->pts.front().y;
-			game_level->camera.mat_view_inv._43 = it2->pts.front().z;
-			const Matrix m_scale = Matrix::Scale(0.1f);
-			Matrix m1 = m_scale * game_level->camera.mat_view_inv;
-
-			for(int i = 0; i < 2; ++i)
-				prev[i] = Vec3::Transform(pos[i], m1);
-
-			const int count = int(it2->pts.size());
-
-			for(int j = 1; j < count; ++j)
-			{
-				// nastêpny punkt
-				game_level->camera.mat_view_inv._41 = it2->pts[j].x;
-				game_level->camera.mat_view_inv._42 = it2->pts[j].y;
-				game_level->camera.mat_view_inv._43 = it2->pts[j].z;
-				m1 = m_scale * game_level->camera.mat_view_inv;
-
-				for(int i = 0; i < 2; ++i)
-					next[i] = Vec3::Transform(pos[i], m1);
-
-				// œrodek
-				v[0].pos = prev[0];
-				v[1].pos = prev[1];
-				v[2].pos = next[0];
-				v[3].pos = next[1];
-
-				float a = float(count - min(count, (int)abs(j - count * (it2->t / 0.25f)))) / count;
-				float b = min(0.5f, a * a);
-
-				for(int i = 0; i < 4; ++i)
-					v[i].color.w = b;
-
-				// rysuj
-				V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VParticle)));
-
-				// dalej
-				prev[0] = next[0];
-				prev[1] = next[1];
-			}
-		}
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }
 
 //=================================================================================================

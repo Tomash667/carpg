@@ -88,7 +88,6 @@ struct DrawBatch
 	vector<Billboard> billboards;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*>* tpes;
-	vector<Electro*>* electros;
 	vector<Area> areas;
 	float area_range;
 	vector<Area2*> areas2;
