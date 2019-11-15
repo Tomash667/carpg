@@ -9,6 +9,7 @@
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 #include "GameResources.h"
+#include "LevelArea.h"
 
 EntityType<Electro>::Impl EntityType<Electro>::impl;
 
@@ -129,6 +130,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		trail->parts[steps].pt = line.to;
 		trail->parts[steps].t = 0;
 
+		area->tmp->tpes.push_back(trail);
 		line.trail = trail;
 		UpdateColor(line);
 	}

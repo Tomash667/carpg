@@ -73,7 +73,10 @@ void LevelArea::Save(GameWriter& f)
 void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibility)
 {
 	if(local && !tmp)
+	{
 		tmp = TmpLevelArea::Get();
+		tmp->area = this;
+	}
 
 	switch(compatibility)
 	{
@@ -341,7 +344,10 @@ void LevelArea::Write(BitStreamWriter& f)
 bool LevelArea::Read(BitStreamReader& f)
 {
 	if(!tmp)
+	{
 		tmp = TmpLevelArea::Get();
+		tmp->area = this;
+	}
 
 	// units
 	uint count;
@@ -1156,6 +1162,7 @@ void TmpLevelArea::Load(GameReader& f)
 	for(Electro*& electro : electros)
 	{
 		electro = new Electro;
+		electro->area = area;
 		electro->Load(f);
 	}
 

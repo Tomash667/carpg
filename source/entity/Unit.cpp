@@ -6419,6 +6419,7 @@ void Unit::CastSpell()
 		{
 			Electro* e = new Electro;
 			e->Register();
+			e->area = area;
 			e->hitted.push_back(this);
 			e->dmg = dmg;
 			e->owner = this;

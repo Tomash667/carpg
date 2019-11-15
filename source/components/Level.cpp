@@ -286,7 +286,10 @@ void Level::Apply()
 	for(LevelArea& area : areas)
 	{
 		if(!area.tmp)
+		{
 			area.tmp = TmpLevelArea::Get();
+			area.tmp->area = &area;
+		}
 	}
 }
 
@@ -1187,6 +1190,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
 					inside->tmp = TmpLevelArea::Get();
+					inside->tmp->area = inside;
 					inside->level_shift = city->inside_offset;
 					inside->offset = Vec2(512.f*city->inside_offset.x + 256.f, 512.f*city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
@@ -4121,6 +4125,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		for(Electro*& electro : tmp_area.electros)
 		{
 			electro = new Electro;
+			electro->area = &area;
 			if(!electro->Read(f))
 			{
 				Error("Read level: Broken electro.");

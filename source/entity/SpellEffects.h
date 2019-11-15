@@ -30,6 +30,7 @@ struct Electro : public EntityType<Electro>
 		static const int SIZE = sizeof(Vec3) * 2 + sizeof(float);
 	};
 
+	LevelArea* area;
 	Spell* spell;
 	Entity<Unit> owner;
 	vector<Line> lines;

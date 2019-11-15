@@ -2489,14 +2489,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CREATE_ELECTRO.");
 				else if(game->game_state == GS_LEVEL)
 				{
+					LevelArea& area = game_level->GetArea(p1);
 					Electro* e = new Electro;
 					e->id = id;
+					e->area = &area;
 					e->Register();
 					e->spell = Spell::TryGet("thunder_bolt");
 					e->start_pos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					game_level->GetArea(p1).tmp->electros.push_back(e);
+					area.tmp->electros.push_back(e);
 				}
 			}
 			break;
