@@ -139,9 +139,6 @@ void Game::InitScene()
 
 	if(!vbDungeon)
 		BuildDungeon();
-
-	tex_empty_normal_map = render->CreateTexture(Int2(1, 1), &Color(128, 128, 255));
-	tex_empty_specular_map = render->CreateTexture(Int2(1, 1), &Color::None);
 }
 
 //=================================================================================================
@@ -3367,12 +3364,12 @@ void Game::DrawSceneNodes(const vector<SceneNodeGroup>& groups, const vector<Sce
 					V(effect->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
 					if(normal_map)
 					{
-						TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+						TEX tex = sub.tex_normal ? sub.tex_normal->tex : super_shader->tex_empty_normal_map;
 						V(effect->SetTexture(super_shader->hTexNormal, tex));
 					}
 					if(specular_map)
 					{
-						TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+						TEX tex = sub.tex_specular ? sub.tex_specular->tex : super_shader->tex_empty_specular_map;
 						V(effect->SetTexture(super_shader->hTexSpecular, tex));
 					}
 
@@ -3394,12 +3391,12 @@ void Game::DrawSceneNodes(const vector<SceneNodeGroup>& groups, const vector<Sce
 				V(effect->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(index, node->tex_override)));
 				if(normal_map)
 				{
-					TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+					TEX tex = sub.tex_normal ? sub.tex_normal->tex : super_shader->tex_empty_normal_map;
 					V(effect->SetTexture(super_shader->hTexNormal, tex));
 				}
 				if(specular_map)
 				{
-					TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+					TEX tex = sub.tex_specular ? sub.tex_specular->tex : super_shader->tex_empty_specular_map;
 					V(effect->SetTexture(super_shader->hTexSpecular, tex));
 				}
 
@@ -3535,12 +3532,12 @@ void Game::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lig
 			V(effect->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
 			if(normal_map)
 			{
-				TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+				TEX tex = sub.tex_normal ? sub.tex_normal->tex : super_shader->tex_empty_normal_map;
 				V(effect->SetTexture(super_shader->hTexNormal, tex));
 			}
 			if(specular_map)
 			{
-				TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+				TEX tex = sub.tex_specular ? sub.tex_specular->tex : super_shader->tex_empty_specular_map;
 				V(effect->SetTexture(super_shader->hTexSpecular, tex));
 			}
 

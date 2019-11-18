@@ -421,7 +421,6 @@ public:
 	Matrix mat;
 	VB vbDungeon;
 	IB ibDungeon;
-	TEX tex_empty_normal_map, tex_empty_specular_map;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
 	float portal_anim, drunk_anim;
