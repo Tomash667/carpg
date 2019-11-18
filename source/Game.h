@@ -427,7 +427,7 @@ public:
 	// scene
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
-	bool cl_normalmap, cl_specularmap, cl_glow;
+	bool cl_glow;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
 	VParticle billboard_v[4];

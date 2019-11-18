@@ -9,6 +9,7 @@
 #include "SoundManager.h"
 #include "Render.h"
 #include "Engine.h"
+#include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
@@ -404,10 +405,10 @@ void Options::Event(GuiEvent e)
 			game->cl_glow = check[1].checked;
 			break;
 		case IdNormal:
-			game->cl_normalmap = check[2].checked;
+			scene_mgr->use_normalmap = check[2].checked;
 			break;
 		case IdSpecular:
-			game->cl_specularmap = check[3].checked;
+			scene_mgr->use_specularmap = check[3].checked;
 			break;
 		case IdVsync:
 			render->SetVsync(!render->IsVsyncEnabled());
@@ -421,8 +422,8 @@ void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
 	check[1].checked = game->cl_glow;
-	check[2].checked = game->cl_normalmap;
-	check[3].checked = game->cl_specularmap;
+	check[2].checked = scene_mgr->use_normalmap;
+	check[3].checked = scene_mgr->use_specularmap;
 	check[4].checked = render->IsVsyncEnabled();
 
 	Res& re = *res.GetItemCast<Res>();

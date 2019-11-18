@@ -195,7 +195,6 @@ public:
 	bool reenter;
 	Camera camera;
 	Vec4 fog_color, fog_params, ambient_color;
-	bool cl_fog, cl_lighting;
 	float lights_dt;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;

@@ -39,13 +39,13 @@
 #include "LocationHelper.h"
 #include "PhysicCallbacks.h"
 #include "GameResources.h"
+#include "SceneManager.h"
 
 Level* global::game_level;
 
 //=================================================================================================
 Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
-shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
-cl_fog(true), cl_lighting(true)
+shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr)
 {
 	camera.draw_range = 80.f;
 }
@@ -4385,7 +4385,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 //=================================================================================================
 Vec4 Level::GetFogParams()
 {
-	if(cl_fog)
+	if(scene_mgr->use_fog)
 		return fog_params;
 	else
 		return Vec4(camera.draw_range, camera.draw_range + 1, 1, 0);
@@ -4394,7 +4394,7 @@ Vec4 Level::GetFogParams()
 //=================================================================================================
 Vec4 Level::GetAmbientColor()
 {
-	if(!cl_lighting)
+	if(!scene_mgr->use_lighting)
 		return Vec4(1, 1, 1, 1);
 	return ambient_color;
 }

@@ -10,6 +10,7 @@
 #include <Engine.h>
 #include <Render.h>
 #include <SoundManager.h>
+#include <SceneManager.h>
 #include <AppEntry.h>
 
 //-----------------------------------------------------------------------------
@@ -610,8 +611,8 @@ void LoadConfiguration(char* lpCmdLine)
 
 	// miscellaneous
 	game->cl_postfx = cfg.GetBool("cl_postfx", true);
-	game->cl_normalmap = cfg.GetBool("cl_normalmap", true);
-	game->cl_specularmap = cfg.GetBool("cl_specularmap", true);
+	scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
+	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
 	game->cl_glow = cfg.GetBool("cl_glow", true);
 	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));

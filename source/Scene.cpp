@@ -25,6 +25,7 @@
 #include "SkyboxShader.h"
 #include "Pathfinding.h"
 #include "Spell.h"
+#include "SceneManager.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -1586,9 +1587,9 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 				node2->tint = node->tint;
 				node2->lights = node->lights;
 				node2->tex_override = node->tex_override;
-				if(cl_normalmap && mesh.subs[i].tex_normal)
+				if(scene_mgr->use_normalmap && mesh.subs[i].tex_normal)
 					node2->flags |= SceneNode::F_NORMAL_MAP;
-				if(cl_specularmap && mesh.subs[i].tex_specular)
+				if(scene_mgr->use_specularmap && mesh.subs[i].tex_specular)
 					node2->flags |= SceneNode::F_SPECULAR_MAP;
 				if(area.area_type != LevelArea::Type::Outside)
 					node2->lights = GatherDrawBatchLights(area, node2, pos.x, pos.z, radius, i);
@@ -2542,9 +2543,9 @@ void Game::AddSceneNode(SceneNode* node)
 		res_mgr->LoadInstant(const_cast<Mesh*>(&mesh));
 	if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 		node->flags |= SceneNode::F_BINORMALS;
-	if(cl_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
+	if(scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 		node->flags |= SceneNode::F_NORMAL_MAP;
-	if(cl_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
+	if(scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 		node->flags |= SceneNode::F_SPECULAR_MAP;
 	node->subs = 0x7FFFFFFF;
 
@@ -3211,8 +3212,8 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V(e->EndPass());
 				V(e->End());
 			}
-			e = super_shader->GetShader(super_shader->GetShaderId(false, true, game_level->cl_fog, cl_specularmap && dp.tex_o->specular != nullptr,
-				cl_normalmap && dp.tex_o->normal != nullptr, game_level->cl_lighting, false));
+			e = super_shader->GetShader(super_shader->GetShaderId(false, true, scene_mgr->use_fog, scene_mgr->use_specularmap && dp.tex_o->specular != nullptr,
+				scene_mgr->use_normalmap && dp.tex_o->normal != nullptr, scene_mgr->use_lighting, false));
 			if(first)
 			{
 				first = false;
@@ -3234,9 +3235,9 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 		{
 			last_override = dp.tex_o;
 			V(e->SetTexture(super_shader->hTexDiffuse, last_override->diffuse->tex));
-			if(cl_normalmap && last_override->normal)
+			if(scene_mgr->use_normalmap && last_override->normal)
 				V(e->SetTexture(super_shader->hTexNormal, last_override->normal->tex));
-			if(cl_specularmap && last_override->specular)
+			if(scene_mgr->use_specularmap && last_override->specular)
 				V(e->SetTexture(super_shader->hTexSpecular, last_override->specular->tex));
 		}
 
@@ -3290,12 +3291,12 @@ void Game::DrawSceneNodes(const vector<SceneNodeGroup>& groups, const vector<Sce
 		const bool animated = IsSet(group.flags, SceneNode::F_ANIMATED);
 		const bool normal_map = IsSet(group.flags, SceneNode::F_NORMAL_MAP);
 		const bool specular_map = IsSet(group.flags, SceneNode::F_SPECULAR_MAP);
-		const bool use_lighting = game_level->cl_lighting && !IsSet(group.flags, SceneNode::F_NO_LIGHTING);
+		const bool use_lighting = scene_mgr->use_lighting && !IsSet(group.flags, SceneNode::F_NO_LIGHTING);
 
 		effect = super_shader->GetShader(super_shader->GetShaderId(
 			animated,
 			IsSet(group.flags, SceneNode::F_BINORMALS),
-			game_level->cl_fog && use_lighting,
+			scene_mgr->use_fog && use_lighting,
 			specular_map,
 			normal_map,
 			use_lighting && !outside,
@@ -3450,12 +3451,12 @@ void Game::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lig
 		const bool animated = IsSet(node->flags, SceneNode::F_ANIMATED);
 		const bool normal_map = IsSet(node->flags, SceneNode::F_NORMAL_MAP);
 		const bool specular_map = IsSet(node->flags, SceneNode::F_SPECULAR_MAP);
-		const bool use_lighting = game_level->cl_lighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
+		const bool use_lighting = scene_mgr->use_lighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
 
 		uint id = super_shader->GetShaderId(
 			animated,
 			IsSet(node->flags, SceneNode::F_BINORMALS),
-			game_level->cl_fog && use_lighting,
+			scene_mgr->use_fog && use_lighting,
 			specular_map,
 			normal_map,
 			use_lighting && !outside,
@@ -3636,7 +3637,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	render->SetNoZWrite(true);
 
 	ID3DXEffect* e = super_shader->GetShader(
-		super_shader->GetShaderId(false, false, game_level->cl_fog, false, false, !outside && game_level->cl_lighting, outside && game_level->cl_lighting));
+		super_shader->GetShaderId(false, false, scene_mgr->use_fog, false, false, !outside && scene_mgr->use_lighting, outside && scene_mgr->use_lighting));
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_DEFAULT)));
 	V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
