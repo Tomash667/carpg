@@ -98,8 +98,10 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 
 		TrailParticleEmitter* trail = new TrailParticleEmitter;
 		trail->Init(steps + 1);
+		trail->manual = true;
 		trail->first = 0;
 		trail->last = steps + 1;
+		trail->alive = steps + 1;
 		trail->tex = game_res->tLightingLine;
 		trail->fade = 0.25f;
 		trail->color1 = Vec4(0.2f, 0.2f, 1.f, 0.5f);
@@ -274,7 +276,7 @@ bool Electro::Read(BitStreamReader& f)
 //=================================================================================================
 void Drain::Save(FileWriter& f)
 {
-	f << target->id;
+	f << target;
 	f << pe->id;
 	f << t;
 }
@@ -284,7 +286,7 @@ void Drain::Load(FileReader& f)
 {
 	if(LOAD_VERSION < V_DEV)
 		f.Skip<int>(); // old from
-	target = Unit::GetById(f.Read<int>());
+	f >> target;
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> t;
 }

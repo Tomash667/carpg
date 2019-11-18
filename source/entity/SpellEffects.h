@@ -54,7 +54,7 @@ struct Electro : public EntityType<Electro>
 //-----------------------------------------------------------------------------
 struct Drain
 {
-	Unit* target;
+	Entity<Unit> target;
 	ParticleEmitter* pe;
 	float t;
 

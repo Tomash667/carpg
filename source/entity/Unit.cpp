@@ -6503,11 +6503,11 @@ void Unit::CastSpell()
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::UPDATE_HP;
-						c.unit = drain.target;
+						c.unit = this;
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::CREATE_DRAIN;
-						c2.unit = drain.target;
+						c2.unit = this;
 					}
 				}
 			}
