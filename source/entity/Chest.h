@@ -22,7 +22,7 @@ struct Chest : public EntityType<Chest>, public ItemContainer
 {
 	Vec3 pos;
 	float rot;
-	MeshInstance* mesh_inst;
+	SceneNode* node;
 	ChestEventHandler* handler;
 
 private:
@@ -33,9 +33,8 @@ public:
 	static const int MIN_SIZE = 20;
 	static const float SOUND_DIST;
 
-	Chest() : mesh_inst(nullptr), user(nullptr), handler(nullptr) {}
-	~Chest() { delete mesh_inst; }
-
+	Chest() : node(nullptr), user(nullptr), handler(nullptr) {}
+	void CreateNode(Scene* scene);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

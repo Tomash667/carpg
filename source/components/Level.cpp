@@ -666,9 +666,9 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		// chest
 		Chest* chest = new Chest;
 		chest->Register();
-		chest->mesh_inst = new MeshInstance(base->mesh);
 		chest->rot = rot;
 		chest->pos = pos;
+		chest->CreateNode(area.scene);
 		area.chests.push_back(chest);
 
 		SpawnObjectExtras(area, base, pos, rot, nullptr, scale, flags);
@@ -3087,14 +3087,6 @@ void Level::OnReenterLevel()
 {
 	for(LevelArea& area : ForEachArea())
 	{
-		// odtwórz skrzynie
-		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-		{
-			Chest& chest = **it;
-
-			chest.mesh_inst = new MeshInstance(game_res->aChest);
-		}
-
 		// odtwórz drzwi
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{

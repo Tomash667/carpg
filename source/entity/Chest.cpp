@@ -10,9 +10,23 @@
 #include "SoundManager.h"
 #include "SaveState.h"
 #include "GameResources.h"
+#include <Scene.h>
+#include "LevelArea.h"
 
 const float Chest::SOUND_DIST = 1.f;
 EntityType<Chest>::Impl EntityType<Chest>::impl;
+
+//=================================================================================================
+void Chest::CreateNode(Scene* scene)
+{
+	node = SceneNode::Get();
+	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
+	node->mesh = game_res->aChest;
+	node->mesh_inst = new MeshInstance(node->mesh);
+	node->flags = SceneNode::F_ANIMATED;
+	node->tmp = false;
+	scene->Add(node);
+}
 
 //=================================================================================================
 void Chest::Save(GameWriter& f)
@@ -26,7 +40,7 @@ void Chest::Save(GameWriter& f)
 
 	if(f.is_local)
 	{
-		MeshInstance::Group& group = mesh_inst->groups[0];
+		MeshInstance::Group& group = node->mesh_inst->groups[0];
 		if(group.IsPlaying())
 		{
 			f << group.state;
@@ -58,26 +72,21 @@ void Chest::Load(GameReader& f)
 
 	if(f.is_local)
 	{
-		mesh_inst = new MeshInstance(game_res->aChest);
-
+		CreateNode(f.area->scene);
 		int state = f.Read<int>();
 		if(state != 0)
 		{
-			MeshInstance::Group& group = mesh_inst->groups[0];
-			group.anim = &mesh_inst->mesh->anims[0];
+			MeshInstance::Group& group = node->mesh_inst->groups[0];
+			group.anim = &node->mesh_inst->mesh->anims[0];
 			group.state = state;
 			group.used_group = 0;
 			f >> group.time;
 			f >> group.blend_time;
 		}
 	}
-	else
-		mesh_inst = nullptr;
 
 	int handler_id = f.Read<int>();
-	if(handler_id == -1)
-		handler = nullptr;
-	else
+	if(handler_id != -1)
 	{
 		handler = reinterpret_cast<ChestEventHandler*>(handler_id);
 		game->load_chest_handler.push_back(this);
@@ -101,7 +110,7 @@ bool Chest::Read(BitStreamReader& f)
 	if(!f)
 		return false;
 	Register();
-	mesh_inst = new MeshInstance(game_res->aChest);
+	CreateNode(f.area->scene);
 	return true;
 }
 
@@ -136,7 +145,7 @@ void Chest::OpenClose(Unit* unit)
 		// open chest by unit
 		assert(!user);
 		user = unit;
-		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+		node->mesh_inst->Play(&node->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 		sound_mgr->PlaySound3d(game_res->sChestOpen, GetCenter(), SOUND_DIST);
 		if(Net::IsLocal() && handler)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
@@ -153,7 +162,7 @@ void Chest::OpenClose(Unit* unit)
 		// close chest
 		assert(user);
 		user = nullptr;
-		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+		node->mesh_inst->Play(&node->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		sound_mgr->PlaySound3d(game_res->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{

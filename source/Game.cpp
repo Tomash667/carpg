@@ -5555,13 +5555,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 
 	if(Net::IsLocal() && !net->was_client)
 	{
-		// remove chest meshes
-		for(Chest* chest : area.chests)
-		{
-			delete chest->mesh_inst;
-			chest->mesh_inst = nullptr;
-		}
-
 		// remove door meshes
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
@@ -5604,8 +5597,8 @@ void Game::UpdateArea(LevelArea& area, float dt)
 		UpdateLights(area.lights);
 
 	// update chests
-	for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-		(*it)->mesh_inst->Update(dt);
+	for(Chest* chest : area.chests)
+		chest->node->mesh_inst->Update(dt);
 
 	// update doors
 	for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
