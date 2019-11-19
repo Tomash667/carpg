@@ -105,7 +105,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		trail->tex = game_res->tLightingLine;
 		trail->fade = 0.25f;
 		trail->color1 = Vec4(0.2f, 0.2f, 1.f, 0.5f);
-		trail->color2 = Vec4(0.2f, 0.2f, 1.f, 0.f);
+		trail->color2 = Vec4(0.2f, 0.2f, 1.f, 0.5f); FIXME;
 
 		const Vec3 dir = line.to - line.from;
 		const Vec3 step = dir / float(steps);

@@ -65,7 +65,7 @@ spell thunder_bolt {
 	type ray
 	flags jump
 	dmg 150 + 15
-	cooldown {7.5 12.5}
+	//cooldown {7.5 12.5}
 	range 50
 	tex_particle "iskra.png" 0.03
 	sound_cast "lighting_bolt.mp3" 3
