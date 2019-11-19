@@ -74,6 +74,7 @@ void LevelArea::Save(GameWriter& f)
 //=================================================================================================
 void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 {
+	f.area = this;
 	if(f.is_local && !is_active)
 	{
 		is_active = true;
@@ -303,8 +304,6 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 
 	if(tmp && Any(compatibility, old::LoadCompatibility::None, old::LoadCompatibility::InsideBuilding))
 		tmp->Load(f);
-
-	CreateNodes();
 }
 
 //=================================================================================================
@@ -351,6 +350,7 @@ void LevelArea::Write(BitStreamWriter& f)
 //=================================================================================================
 bool LevelArea::Read(BitStreamReader& f)
 {
+	f.area = this;
 	if(!is_active)
 	{
 		is_active = true;
@@ -518,8 +518,6 @@ bool LevelArea::Read(BitStreamReader& f)
 		Error("Read area: Broken light.");
 		return false;
 	}
-
-	CreateNodes();
 
 	return true;
 }
@@ -818,7 +816,7 @@ Door* LevelArea::FindDoor(const Int2& pt)
 void LevelArea::CreateNodes()
 {
 	for(GroundItem* item : items)
-		scene->Add(item->CreateNode());
+		item->CreateNode(scene);
 }
 
 //=================================================================================================

@@ -235,8 +235,8 @@ void InsideLocationGenerator::OnEnter()
 					item->item = kartka;
 					item->pos = o->pos;
 					item->rot = Random(MAX_ANGLE);
+					item->CreateNode(lvl.scene);
 					lvl.items.push_back(item);
-					lvl.scene->Add(item->CreateNode());
 				}
 				else
 					game_level->SpawnGroundItemInsideRoom(r, kartka);

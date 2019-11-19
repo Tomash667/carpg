@@ -58,6 +58,8 @@ public:
 	bool ReadItemList(vector<ItemSlot>& items);
 	bool ReadItemListTeam(vector<ItemSlot>& items, bool skip = false);
 
+	LevelArea* area;
+
 private:
 	BitStream& CreateBitStream(Packet* packet);
 

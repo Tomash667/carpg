@@ -6,14 +6,17 @@
 #include "QuestManager.h"
 #include "BitStreamFunc.h"
 #include "Game.h"
+#include "GameFile.h"
 #include "SaveState.h"
 #include <SceneNode.h>
+#include <Scene.h>
 #include "GameResources.h"
+#include "LevelArea.h"
 
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;
 
 //=================================================================================================
-SceneNode* GroundItem::CreateNode()
+void GroundItem::CreateNode(Scene* scene)
 {
 	node = SceneNode::Get();
 	node->pos = pos;
@@ -28,11 +31,11 @@ SceneNode* GroundItem::CreateNode()
 	node->mesh_inst = nullptr;
 	node->flags = IsSet(item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
 	node->tmp = false;
-	return node;
+	scene->Add(node);
 }
 
 //=================================================================================================
-void GroundItem::Save(FileWriter& f)
+void GroundItem::Save(GameWriter& f)
 {
 	f << id;
 	f << pos;
@@ -45,7 +48,7 @@ void GroundItem::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void GroundItem::Load(FileReader& f)
+void GroundItem::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
@@ -65,6 +68,8 @@ void GroundItem::Load(FileReader& f)
 	}
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
+	if(f.is_local)
+		CreateNode(f.area->scene);
 }
 
 //=================================================================================================
@@ -89,5 +94,10 @@ bool GroundItem::Read(BitStreamReader& f)
 	f >> count;
 	f >> team_count;
 	Register();
-	return f.IsOk() && f.ReadItemAndFind(item) > 0;
+	if(f.ReadItemAndFind(item) > 0)
+	{
+		CreateNode(f.area->scene);
+		return true;
+	}
+	return false;
 }

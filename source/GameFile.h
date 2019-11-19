@@ -56,6 +56,7 @@ public:
 
 	void operator >> (UnitGroup*& group);
 
+	LevelArea* area;
 	bool is_local;
 };
 

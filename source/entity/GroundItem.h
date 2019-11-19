@@ -11,9 +11,9 @@ struct GroundItem : public EntityType<GroundItem>
 
 	static const int MIN_SIZE = 23;
 
-	SceneNode* CreateNode();
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void CreateNode(Scene* scene);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 };
