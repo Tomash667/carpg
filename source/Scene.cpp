@@ -25,8 +25,9 @@
 #include "SkyboxShader.h"
 #include "Pathfinding.h"
 #include "Spell.h"
-#include "SceneManager.h"
-#include "DirectX.h"
+#include <SceneManager.h>
+#include <Scene.h>
+#include <DirectX.h>
 
 //-----------------------------------------------------------------------------
 ObjectPool<Area2> area2_pool;
@@ -84,6 +85,7 @@ struct IBOX
 void DrawBatch::Clear()
 {
 	nodes.Clear();
+	highlighted.clear();
 	DebugSceneNode::Free(debug_nodes);
 	glow_nodes.clear();
 	terrain_parts.clear();
@@ -481,6 +483,17 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		FillDrawBatchDungeonParts(frustum);
 	}
 
+	// new scene nodes
+	for(SceneNode* node : area.scene->nodes)
+	{
+		if(frustum.SphereToFrustum(node->pos, node->mesh->head.radius))
+		{
+			if(!outside)
+				node->lights = GatherDrawBatchLights(area, node, node->pos.x, node->pos.z, node->mesh->head.radius);
+			draw_batch.nodes.Add(node);
+		}
+	}
+
 	// units
 	if(IsSet(draw_flags, DF_UNITS))
 	{
@@ -515,57 +528,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				const Object& o = **it;
 				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
 					AddObjectToDrawBatch(area, o, frustum);
-			}
-		}
-	}
-
-	// items
-	if(IsSet(draw_flags, DF_ITEMS))
-	{
-		PROFILER_BLOCK("Ground items");
-		Vec3 pos;
-		for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
-		{
-			GroundItem& item = **it;
-			if(!item.item)
-			{
-				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
-					item.pos.x, item.pos.y, item.pos.z, item.count, item.team_count));
-				area.items.erase(it);
-				break;
-			}
-			Mesh* mesh;
-			pos = item.pos;
-			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
-			{
-				mesh = item.item->mesh;
-				pos.y -= mesh->head.bbox.v1.y;
-			}
-			else
-				mesh = game_res->aBag;
-			if(frustum.SphereToFrustum(item.pos, mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->mat = Matrix::RotationY(item.rot) * Matrix::Translation(pos);
-				node->mesh = mesh;
-				node->mesh_inst = nullptr;
-				node->flags = IsSet(item.item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
-				if(!outside)
-					node->lights = GatherDrawBatchLights(area, node, item.pos.x, item.pos.z, mesh->head.radius);
-				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
-				{
-					if(cl_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.type = GlowNode::Item;
-						glow.ptr = &item;
-						glow.alpha = IsSet(item.item->flags, ITEM_ALPHA);
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.nodes.Add(node);
 			}
 		}
 	}
@@ -991,6 +953,25 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			default:
 				break;
 			}
+		}
+	}
+
+	// new glow nodes
+	if(pc->data.before_player == BP_ITEM)
+	{
+		GroundItem* item = pc->data.before_player_ptr.item;
+		if(cl_glow)
+		{
+			GlowNode& glow = Add1(draw_batch.glow_nodes);
+			glow.node = item->node;
+			glow.type = GlowNode::Item;
+			glow.ptr = item;
+			glow.alpha = IsSet(item->item->flags, ITEM_ALPHA);
+		}
+		else
+		{
+			item->node->tint = Vec4(2, 2, 2, 1);
+			draw_batch.highlighted.push_back(item->node);
 		}
 	}
 
@@ -2751,6 +2732,9 @@ void Game::DrawScene(bool outside)
 	// obszary
 	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())
 		DrawAreas(draw_batch.areas, draw_batch.area_range, draw_batch.areas2);
+
+	for(SceneNode* node : draw_batch.highlighted)
+		node->tint = Vec4::One;
 }
 
 //=================================================================================================

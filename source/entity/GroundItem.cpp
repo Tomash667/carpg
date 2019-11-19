@@ -27,6 +27,7 @@ SceneNode* GroundItem::CreateNode()
 	node->mat = Matrix::RotationY(rot) * Matrix::Translation(node->pos);
 	node->mesh_inst = nullptr;
 	node->flags = IsSet(item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
+	node->tmp = false;
 	return node;
 }
 

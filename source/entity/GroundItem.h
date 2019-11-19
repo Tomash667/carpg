@@ -11,9 +11,6 @@ struct GroundItem : public EntityType<GroundItem>
 
 	static const int MIN_SIZE = 23;
 
-	FIXME;
-	~GroundItem() = delete;
-
 	SceneNode* CreateNode();
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

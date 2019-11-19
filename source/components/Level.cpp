@@ -290,6 +290,7 @@ void Level::Apply()
 	{
 		area.is_active = true;
 		area.scene = Scene::Get();
+		area.CreateNodes();
 		area.tmp = TmpLevelArea::Get();
 		area.tmp->area = &area;
 	}
@@ -1669,7 +1670,7 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 	if(area.area_type == LevelArea::Type::Outside)
 		terrain->SetH(item->pos);
 	area.items.push_back(item);
-	area.scene->nodes.push_back(item->CreateNode());
+	area.scene->Add(item->CreateNode());
 
 	if(Net::IsOnline())
 	{
@@ -1734,7 +1735,7 @@ GroundItem* Level::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 			gi->pos = pos;
 			gi->item = item;
 			local_area->items.push_back(gi);
-			local_area->scene->nodes.push_back(gi->CreateNode());
+			local_area->scene->Add(gi->CreateNode());
 			return gi;
 		}
 	}
@@ -1776,7 +1777,7 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 				terrain->SetH(gi->pos);
 			gi->item = item;
 			local_area->items.push_back(gi);
-			local_area->scene->nodes.push_back(gi->CreateNode());
+			local_area->scene->Add(gi->CreateNode());
 			return gi;
 		}
 	}
@@ -1814,7 +1815,7 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 				terrain->SetH(gi->pos);
 			gi->item = item;
 			local_area->items.push_back(gi);
-			local_area->scene->nodes.push_back(gi->CreateNode());
+			local_area->scene->Add(gi->CreateNode());
 			return gi;
 		}
 	}
@@ -1865,7 +1866,7 @@ void Level::PickableItemAdd(const Item* item)
 				c = cos(rot);
 			gi->pos = Vec3(pos.x*c + pos.z*s, pos.y, -pos.x*s + pos.z*c) + pickable_obj->pos;
 			pickable_area->items.push_back(gi);
-			pickable_area->scene->nodes.push_back(gi->CreateNode());
+			pickable_area->scene->Add(gi->CreateNode());
 
 			break;
 		}

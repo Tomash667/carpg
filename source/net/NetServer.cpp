@@ -982,6 +982,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 				}
 
+				item->node->Remove();
 				delete item;
 			}
 			break;

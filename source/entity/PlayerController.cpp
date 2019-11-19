@@ -2823,6 +2823,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 					}
 
+					item.node->Remove();
 					delete &item;
 				}
 				else

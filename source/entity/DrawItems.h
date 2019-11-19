@@ -72,6 +72,7 @@ struct NodeMatrix
 struct DrawBatch
 {
 	SceneNodeBatch nodes;
+	vector<SceneNode*> highlighted;
 	vector<DebugSceneNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
 	vector<uint> terrain_parts;
