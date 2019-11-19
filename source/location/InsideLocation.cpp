@@ -8,18 +8,18 @@
 #include "BaseLocation.h"
 
 //=================================================================================================
-void InsideLocation::Save(GameWriter& f, bool local)
+void InsideLocation::Save(GameWriter& f)
 {
-	Location::Save(f, local);
+	Location::Save(f);
 
 	f << special_room;
 	f << from_portal;
 }
 
 //=================================================================================================
-void InsideLocation::Load(GameReader& f, bool local)
+void InsideLocation::Load(GameReader& f)
 {
-	Location::Load(f, local);
+	Location::Load(f);
 
 	if(LOAD_VERSION < V_0_12)
 		f >> target;

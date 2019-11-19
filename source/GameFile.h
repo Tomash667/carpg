@@ -55,6 +55,8 @@ public:
 	}
 
 	void operator >> (UnitGroup*& group);
+
+	bool is_local;
 };
 
 //-----------------------------------------------------------------------------
@@ -108,4 +110,6 @@ public:
 	{
 		WriteString1(group->id);
 	}
+
+	bool is_local;
 };

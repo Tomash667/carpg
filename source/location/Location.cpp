@@ -39,7 +39,7 @@ bool Location::CheckUpdate(int& days_passed, int worldtime)
 }
 
 //=================================================================================================
-void Location::Save(GameWriter& f, bool)
+void Location::Save(GameWriter& f)
 {
 	f << pos;
 	f << name;
@@ -85,7 +85,7 @@ void Location::Save(GameWriter& f, bool)
 }
 
 //=================================================================================================
-void Location::Load(GameReader& f, bool)
+void Location::Load(GameReader& f)
 {
 	if(LOAD_VERSION < V_0_12)
 	{

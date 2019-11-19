@@ -63,7 +63,7 @@ struct LevelArea
 		have_terrain(have_terrain), scene(nullptr), tmp(nullptr), is_active(false) {}
 	~LevelArea();
 	void Save(GameWriter& f);
-	void Load(GameReader& f, bool local, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
+	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	void Clear();

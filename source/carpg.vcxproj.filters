@@ -944,9 +944,6 @@
     <ClInclude Include="entity\Blood.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="entity\BloodType.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="net\PlayerInfo.h">
       <Filter>net</Filter>
     </ClInclude>
@@ -1186,6 +1183,9 @@
     </ClInclude>
     <ClInclude Include="entity\DrawItems.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\BloodType.h">
+      <Filter>stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -43,8 +43,8 @@ struct InsideLocationLevel : public LevelArea
 	Room* GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* index, int* group);
 	pair<Room*, Room*> GetConnectingRooms(RoomGroup* group1, RoomGroup* group2);
 
-	void SaveLevel(GameWriter& f, bool local);
-	void LoadLevel(GameReader& f, bool local);
+	void SaveLevel(GameWriter& f);
+	void LoadLevel(GameReader& f);
 
 	Tile& At(const Int2& pt)
 	{

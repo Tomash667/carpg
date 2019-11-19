@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Chest.h"
 #include "Game.h"
+#include "GameFile.h"
 #include "BitStreamFunc.h"
 #include "Inventory.h"
 #include "GameGui.h"
@@ -14,7 +15,7 @@ const float Chest::SOUND_DIST = 1.f;
 EntityType<Chest>::Impl EntityType<Chest>::impl;
 
 //=================================================================================================
-void Chest::Save(FileWriter& f, bool local)
+void Chest::Save(GameWriter& f)
 {
 	f << id;
 
@@ -23,7 +24,7 @@ void Chest::Save(FileWriter& f, bool local)
 	f << pos;
 	f << rot;
 
-	if(local)
+	if(f.is_local)
 	{
 		MeshInstance::Group& group = mesh_inst->groups[0];
 		if(group.IsPlaying())
@@ -40,7 +41,7 @@ void Chest::Save(FileWriter& f, bool local)
 }
 
 //=================================================================================================
-void Chest::Load(FileReader& f, bool local)
+void Chest::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
@@ -55,7 +56,7 @@ void Chest::Load(FileReader& f, bool local)
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 
-	if(local)
+	if(f.is_local)
 	{
 		mesh_inst = new MeshInstance(game_res->aChest);
 

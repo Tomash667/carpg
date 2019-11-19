@@ -1164,10 +1164,11 @@ void World::Save(GameWriter& f)
 			f << L_NULL;
 		else
 		{
+			f.is_local = current == loc;
 			f << loc->type;
 			if(loc->type == L_DUNGEON)
 				f << loc->GetLastLevel() + 1;
-			loc->Save(f, current == loc);
+			loc->Save(f);
 		}
 		f << check_id;
 		++check_id;
@@ -1304,9 +1305,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
+				f.is_local = current_index == index;
 				loc->type = type;
 				loc->index = index;
-				loc->Load(f, current_index == index);
+				loc->Load(f);
 			}
 			else
 				loc = nullptr;
@@ -1348,8 +1350,9 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
+				f.is_local = current_index == index;
 				loc->index = index;
-				loc->Load(f, current_index == index);
+				loc->Load(f);
 
 				// remove old academy
 				if(LOAD_VERSION < V_0_8 && loc->type == L_NULL)

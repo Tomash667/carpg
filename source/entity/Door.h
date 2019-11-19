@@ -47,23 +47,12 @@ struct Door : public EntityType<Door>
 	MeshInstance* mesh_inst;
 	btCollisionObject* phy;
 
-	Door() : door2(false), mesh_inst(nullptr)
-	{
-	}
-	~Door()
-	{
-		delete mesh_inst;
-	}
-	bool IsBlocking() const
-	{
-		return state == Closed || state == Opening || state == Closing2;
-	}
-	bool IsBlockingView() const
-	{
-		return state == Closed;
-	}
-	void Save(FileWriter& f, bool local);
-	void Load(FileReader& f, bool local);
+	Door() : door2(false), mesh_inst(nullptr) {}
+	~Door() { delete mesh_inst; }
+	bool IsBlocking() const { return Any(state, Closed, Opening, Closing2); }
+	bool IsBlockingView() const { return state == Closed; }
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	Vec3 GetCenter() const

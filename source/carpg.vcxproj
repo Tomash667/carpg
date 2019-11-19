@@ -138,7 +138,6 @@
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
     <ClInclude Include="ErrorHandler.h" />
-    <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
     <ClInclude Include="entity\Encounter.h" />
     <ClInclude Include="entity\ItemContainer.h" />
@@ -197,6 +196,7 @@
     <ClInclude Include="script\Var.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="stats\Action.h" />
+    <ClInclude Include="stats\BloodType.h" />
     <ClInclude Include="stats\Buff.h" />
     <ClInclude Include="stats\Event.h" />
     <ClInclude Include="system\BaseObject.h" />

@@ -124,8 +124,8 @@ struct Location
 
 	// virtual functions to implement
 	virtual void Apply(vector<std::reference_wrapper<LevelArea>>& areas) = 0;
-	virtual void Save(GameWriter& f, bool local);
-	virtual void Load(GameReader& f, bool local);
+	virtual void Save(GameWriter& f);
+	virtual void Load(GameReader& f);
 	virtual void Write(BitStreamWriter& f) = 0;
 	virtual bool Read(BitStreamReader& f) = 0;
 	virtual bool FindUnit(Unit* unit, int* level = nullptr) = 0;

@@ -16,6 +16,7 @@
 
 static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
+//=================================================================================================
 LevelArea::~LevelArea()
 {
 	DeleteElements(units);
@@ -27,13 +28,12 @@ LevelArea::~LevelArea()
 	DeleteElements(traps);
 }
 
+//=================================================================================================
 void LevelArea::Save(GameWriter& f)
 {
-	bool local = (tmp != nullptr);
-
 	f << units.size();
 	for(Unit* unit : units)
-		unit->Save(f, local);
+		unit->Save(f);
 
 	f << objects.size();
 	for(Object* object : objects)
@@ -41,15 +41,15 @@ void LevelArea::Save(GameWriter& f)
 
 	f << usables.size();
 	for(Usable* usable : usables)
-		usable->Save(f, local);
+		usable->Save(f);
 
 	f << doors.size();
 	for(Door* door : doors)
-		door->Save(f, local);
+		door->Save(f);
 
 	f << chests.size();
 	for(Chest* chest : chests)
-		chest->Save(f, local);
+		chest->Save(f);
 
 	f << items.size();
 	for(GroundItem* item : items)
@@ -57,7 +57,7 @@ void LevelArea::Save(GameWriter& f)
 
 	f << traps.size();
 	for(Trap* trap : traps)
-		trap->Save(f, local);
+		trap->Save(f);
 
 	f << bloods.size();
 	for(Blood& blood : bloods)
@@ -71,9 +71,10 @@ void LevelArea::Save(GameWriter& f)
 		tmp->Save(f);
 }
 
-void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibility)
+//=================================================================================================
+void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 {
-	if(local && !is_active)
+	if(f.is_local && !is_active)
 	{
 		is_active = true;
 		scene = Scene::Get();
@@ -89,7 +90,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				unit->Load(f, local);
+				unit->Load(f);
 				unit->area = this;
 			}
 
@@ -104,21 +105,21 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				usable->Load(f, local);
+				usable->Load(f);
 			}
 
 			doors.resize(f.Read<uint>());
 			for(Door*& door : doors)
 			{
 				door = new Door;
-				door->Load(f, local);
+				door->Load(f);
 			}
 
 			chests.resize(f.Read<uint>());
 			for(Chest*& chest : chests)
 			{
 				chest = new Chest;
-				chest->Load(f, local);
+				chest->Load(f);
 			}
 
 			items.resize(f.Read<uint>());
@@ -132,7 +133,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Trap*& trap : traps)
 			{
 				trap = new Trap;
-				trap->Load(f, local);
+				trap->Load(f);
 			}
 
 			bloods.resize(f.Read<uint>());
@@ -150,7 +151,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				unit->Load(f, local);
+				unit->Load(f);
 				unit->area = this;
 			}
 
@@ -158,7 +159,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Door*& door : doors)
 			{
 				door = new Door;
-				door->Load(f, local);
+				door->Load(f);
 			}
 
 			objects.resize(f.Read<uint>());
@@ -179,7 +180,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				usable->Load(f, local);
+				usable->Load(f);
 			}
 
 			bloods.resize(f.Read<uint>());
@@ -197,7 +198,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				unit->Load(f, local);
+				unit->Load(f);
 				unit->area = this;
 			}
 
@@ -205,7 +206,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Chest*& chest : chests)
 			{
 				chest = new Chest;
-				chest->Load(f, local);
+				chest->Load(f);
 			}
 
 			objects.resize(f.Read<uint>());
@@ -219,7 +220,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Door*& door : doors)
 			{
 				door = new Door;
-				door->Load(f, local);
+				door->Load(f);
 			}
 
 			items.resize(f.Read<int>());
@@ -233,7 +234,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				usable->Load(f, local);
+				usable->Load(f);
 			}
 
 			bloods.resize(f.Read<uint>());
@@ -251,7 +252,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Trap*& trap : traps)
 			{
 				trap = new Trap;
-				trap->Load(f, local);
+				trap->Load(f);
 			}
 		}
 		break;
@@ -261,7 +262,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Unit*& unit : units)
 			{
 				unit = new Unit;
-				unit->Load(f, local);
+				unit->Load(f);
 				unit->area = this;
 			}
 
@@ -276,7 +277,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Chest*& chest : chests)
 			{
 				chest = new Chest;
-				chest->Load(f, local);
+				chest->Load(f);
 			}
 
 			items.resize(f.Read<uint>());
@@ -290,7 +291,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 			for(Usable*& usable : usables)
 			{
 				usable = new Usable;
-				usable->Load(f, local);
+				usable->Load(f);
 			}
 
 			bloods.resize(f.Read<uint>());
@@ -306,6 +307,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 	CreateNodes();
 }
 
+//=================================================================================================
 void LevelArea::Write(BitStreamWriter& f)
 {
 	// units
@@ -346,6 +348,7 @@ void LevelArea::Write(BitStreamWriter& f)
 		light.Write(f);
 }
 
+//=================================================================================================
 bool LevelArea::Read(BitStreamReader& f)
 {
 	if(!is_active)
@@ -521,6 +524,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	return true;
 }
 
+//=================================================================================================
 void LevelArea::Clear()
 {
 	bloods.clear();
@@ -530,6 +534,7 @@ void LevelArea::Clear()
 	DeleteElements(units);
 }
 
+//=================================================================================================
 cstring LevelArea::GetName()
 {
 	switch(area_type)
@@ -543,6 +548,7 @@ cstring LevelArea::GetName()
 	}
 }
 
+//=================================================================================================
 Unit* LevelArea::FindUnit(UnitData* ud)
 {
 	assert(ud);
@@ -556,6 +562,7 @@ Unit* LevelArea::FindUnit(UnitData* ud)
 	return nullptr;
 }
 
+//=================================================================================================
 Usable* LevelArea::FindUsable(BaseUsable* base)
 {
 	assert(base);
@@ -569,6 +576,7 @@ Usable* LevelArea::FindUsable(BaseUsable* base)
 	return nullptr;
 }
 
+//=================================================================================================
 bool LevelArea::RemoveItem(const Item* item)
 {
 	assert(item);
@@ -646,6 +654,7 @@ bool LevelArea::RemoveGroundItem(const Item* item)
 	return false;
 }
 
+//=================================================================================================
 bool LevelArea::FindItemInChest(const Item* item, Chest** chest, int* slot)
 {
 	assert(item);
@@ -666,6 +675,7 @@ bool LevelArea::FindItemInChest(const Item* item, Chest** chest, int* slot)
 	return false;
 }
 
+//=================================================================================================
 Object* LevelArea::FindObject(BaseObject* base_obj)
 {
 	assert(base_obj);
@@ -679,6 +689,7 @@ Object* LevelArea::FindObject(BaseObject* base_obj)
 	return nullptr;
 }
 
+//=================================================================================================
 Chest* LevelArea::FindChestInRoom(const Room& p)
 {
 	for(Chest* chest : chests)
@@ -690,6 +701,7 @@ Chest* LevelArea::FindChestInRoom(const Room& p)
 	return nullptr;
 }
 
+//=================================================================================================
 Chest* LevelArea::GetRandomFarChest(const Int2& pt)
 {
 	vector<pair<Chest*, float>> far_chests;
@@ -740,6 +752,7 @@ Chest* LevelArea::GetRandomFarChest(const Int2& pt)
 	return far_chests[index].first;
 }
 
+//=================================================================================================
 bool LevelArea::HaveUnit(Unit* unit)
 {
 	assert(unit);
@@ -1111,6 +1124,7 @@ bool LevelAreaContext::RemoveUnit(Unit* unit)
 		return false;
 }
 
+//=================================================================================================
 void TmpLevelArea::Clear()
 {
 	DeleteElements(explos);
@@ -1122,6 +1136,7 @@ void TmpLevelArea::Clear()
 	DeleteElements(tpes);
 }
 
+//=================================================================================================
 void TmpLevelArea::Save(GameWriter& f)
 {
 	f << pes.size();
@@ -1149,6 +1164,7 @@ void TmpLevelArea::Save(GameWriter& f)
 		bullet.Save(f);
 }
 
+//=================================================================================================
 void TmpLevelArea::Load(GameReader& f)
 {
 	const int particle_version = (LOAD_VERSION >= V_0_12 ? 1 : 0);

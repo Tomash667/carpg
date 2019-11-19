@@ -1601,7 +1601,7 @@ int Unit::GetRandomAttack() const
 }
 
 //=================================================================================================
-void Unit::Save(GameWriter& f, bool local)
+void Unit::Save(GameWriter& f)
 {
 	f << id;
 	f << data->id;
@@ -1625,7 +1625,7 @@ void Unit::Save(GameWriter& f, bool local)
 	}
 	if(stock)
 	{
-		if(local || world->GetWorldtime() - stock->date < 10)
+		if(f.is_local || world->GetWorldtime() - stock->date < 10)
 		{
 			f.Write1();
 			SaveStock(f);
@@ -1678,7 +1678,7 @@ void Unit::Save(GameWriter& f, bool local)
 	else
 		f.Write0();
 
-	if(local)
+	if(f.is_local)
 	{
 		mesh_inst->Save(f);
 		f << animation;
@@ -1831,7 +1831,7 @@ void Unit::SaveStock(GameWriter& f)
 }
 
 //=================================================================================================
-void Unit::Load(GameReader& f, bool local)
+void Unit::Load(GameReader& f)
 {
 	human_data = nullptr;
 
@@ -2047,7 +2047,7 @@ void Unit::Load(GameReader& f, bool local)
 		human_data = nullptr;
 	}
 
-	if(local)
+	if(f.is_local)
 	{
 		CreateMesh(CREATE_MESH::LOAD);
 		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
@@ -2347,7 +2347,7 @@ void Unit::Load(GameReader& f, bool local)
 	else
 		player = nullptr;
 
-	if(local && human_data)
+	if(f.is_local && human_data)
 		human_data->ApplyScale(mesh_inst->mesh);
 
 	if(IsSet(data->flags, F_HERO))
@@ -2373,7 +2373,7 @@ void Unit::Load(GameReader& f, bool local)
 	frozen = FROZEN::NO;
 
 	// fizyka
-	if(local)
+	if(f.is_local)
 		CreatePhysics(true);
 	else
 		cobj = nullptr;

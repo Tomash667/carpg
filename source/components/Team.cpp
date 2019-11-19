@@ -451,9 +451,10 @@ void Team::Save(GameWriter& f)
 
 void Team::SaveOnWorldmap(GameWriter& f)
 {
+	f.is_local = false;
 	f << GetTeamSize();
 	for(Unit& unit : members)
-		unit.Save(f, false);
+		unit.Save(f);
 }
 
 void Team::Update(int days, bool travel)

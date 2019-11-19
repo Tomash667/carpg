@@ -15,8 +15,8 @@ struct InsideBuilding final : public LevelArea
 	Int2 level_shift;
 
 	InsideBuilding(int area_id) : LevelArea(LevelArea::Type::Building, area_id, false) {}
-	void Save(GameWriter& f, bool local);
-	void Load(GameReader& f, bool local);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 };

@@ -20,9 +20,8 @@ struct Usable : EntityType<Usable>
 
 	Usable() : variant(-1), container(nullptr) {}
 	~Usable() { delete container; }
-
-	void Save(FileWriter& f, bool local);
-	void Load(FileReader& f, bool local);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;
 	bool Read(BitStreamReader& f);
 	Mesh* GetMesh() const;

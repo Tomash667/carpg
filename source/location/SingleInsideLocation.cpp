@@ -11,21 +11,21 @@ void SingleInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& area
 }
 
 //=================================================================================================
-void SingleInsideLocation::Save(GameWriter& f, bool local)
+void SingleInsideLocation::Save(GameWriter& f)
 {
-	InsideLocation::Save(f, local);
+	InsideLocation::Save(f);
 
 	if(last_visit != -1)
-		SaveLevel(f, local);
+		SaveLevel(f);
 }
 
 //=================================================================================================
-void SingleInsideLocation::Load(GameReader& f, bool local)
+void SingleInsideLocation::Load(GameReader& f)
 {
-	InsideLocation::Load(f, local);
+	InsideLocation::Load(f);
 
 	if(last_visit != -1)
-		LoadLevel(f, local);
+		LoadLevel(f);
 }
 
 //=================================================================================================

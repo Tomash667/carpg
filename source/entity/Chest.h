@@ -36,8 +36,8 @@ public:
 	Chest() : mesh_inst(nullptr), user(nullptr), handler(nullptr) {}
 	~Chest() { delete mesh_inst; }
 
-	void Save(FileWriter& f, bool local);
-	void Load(FileReader& f, bool local);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	Vec3 GetCenter() const

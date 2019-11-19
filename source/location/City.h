@@ -63,20 +63,15 @@ struct City : public OutsideLocation
 	vector<EntryPoint> entry_points;
 
 	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
-		inside_offset(1, 0), arena_time(-1), flags(HaveExit), variant(-1)
-	{
-	}
+		inside_offset(1, 0), arena_time(-1), flags(HaveExit), variant(-1) {}
 	~City();
-
-	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
-	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local) override;
+	void Save(GameWriter& f) override;
+	void Load(GameReader& f) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;
-
 	void GenerateCityBuildings(vector<Building*>& buildings, bool required);
 	void PrepareCityBuildings(vector<ToBuild>& tobuild);
 	bool IsInsideCity(const Vec3& _pos);

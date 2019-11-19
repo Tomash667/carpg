@@ -5,9 +5,9 @@
 #include "GameFile.h"
 
 //=================================================================================================
-void Cave::Save(GameWriter& f, bool local)
+void Cave::Save(GameWriter& f)
 {
-	SingleInsideLocation::Save(f, local);
+	SingleInsideLocation::Save(f);
 
 	if(last_visit != -1)
 	{
@@ -17,9 +17,9 @@ void Cave::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void Cave::Load(GameReader& f, bool local)
+void Cave::Load(GameReader& f)
 {
-	SingleInsideLocation::Load(f, local);
+	SingleInsideLocation::Load(f);
 
 	if(last_visit != -1)
 	{

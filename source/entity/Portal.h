@@ -14,9 +14,5 @@ struct Portal
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
-
-	Vec3 GetSpawnPos() const
-	{
-		return pos + Vec3(sin(rot) * 2, 0, cos(rot) * 2);
-	}
+	Vec3 GetSpawnPos() const { return pos + Vec3(sin(rot) * 2, 0, cos(rot) * 2); }
 };

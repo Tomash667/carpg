@@ -488,9 +488,9 @@ struct Unit : public EntityType<Unit>
 	}
 	float GetAttackFrame(int frame) const;
 	int GetRandomAttack() const;
-	void Save(GameWriter& f, bool local);
+	void Save(GameWriter& f);
 	void SaveStock(GameWriter& f);
-	void Load(GameReader& f, bool local);
+	void Load(GameReader& f);
 	void LoadStock(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);

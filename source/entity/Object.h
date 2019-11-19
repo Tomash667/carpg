@@ -16,14 +16,8 @@ struct Object
 
 	static const int MIN_SIZE = 29;
 
-	Object() : require_split(false)
-	{
-	}
-
-	float GetRadius() const
-	{
-		return mesh->head.radius * scale;
-	}
+	Object() : require_split(false) {}
+	float GetRadius() const { return mesh->head.radius * scale; }
 	// -1 - nie, 0 - tak, 1 - tak i bez cullingu
 	int RequireAlphaTest() const
 	{

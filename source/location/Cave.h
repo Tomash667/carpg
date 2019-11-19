@@ -11,17 +11,8 @@ struct Cave : public SingleInsideLocation
 	vector<Int2> holes;
 	Rect ext;
 
-	Cave()
-	{
-		target = CAVE;
-	}
-
-	// from Location
-	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local) override;
-
-	Int2 GetRandomTile() const
-	{
-		return ext.Random();
-	}
+	Cave() { target = CAVE; }
+	void Save(GameWriter& f) override;
+	void Load(GameReader& f) override;
+	Int2 GetRandomTile() const { return ext.Random(); }
 };

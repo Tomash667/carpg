@@ -189,7 +189,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 }
 
 //=================================================================================================
-void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
+void InsideLocationLevel::SaveLevel(GameWriter& f)
 {
 	f << w;
 	f << h;
@@ -215,7 +215,7 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
+void InsideLocationLevel::LoadLevel(GameReader& f)
 {
 	f >> w;
 	f >> h;
@@ -224,7 +224,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 
 	if(LOAD_VERSION >= V_0_11)
 	{
-		LevelArea::Load(f, local);
+		LevelArea::Load(f);
 
 		// rooms
 		rooms.resize(f.Read<uint>());
@@ -252,7 +252,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	}
 	else
 	{
-		LevelArea::Load(f, local, old::LoadCompatibility::InsideLocationLevel);
+		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevel);
 
 		// rooms
 		rooms.resize(f.Read<uint>());
@@ -292,7 +292,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 		}
 		RoomGroup::SetRoomGroupConnections(groups, rooms);
 
-		LevelArea::Load(f, local, old::LoadCompatibility::InsideLocationLevelTraps);
+		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
 
 	f >> staircase_up;

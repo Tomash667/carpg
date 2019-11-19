@@ -4,17 +4,17 @@
 #include "GameFile.h"
 
 //=================================================================================================
-void Camp::Save(GameWriter& f, bool local)
+void Camp::Save(GameWriter& f)
 {
-	OutsideLocation::Save(f, local);
+	OutsideLocation::Save(f);
 
 	f << create_time;
 }
 
 //=================================================================================================
-void Camp::Load(GameReader& f, bool local)
+void Camp::Load(GameReader& f)
 {
-	OutsideLocation::Load(f, local);
+	OutsideLocation::Load(f);
 
 	f >> create_time;
 }

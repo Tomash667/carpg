@@ -732,11 +732,12 @@ void Game::LoadGame(GameReader& f)
 	{
 		location_event_handler_quest_id = -1;
 		// load team
+		f.is_local = false;
 		f >> count;
 		for(uint i = 0; i < count; ++i)
 		{
 			Unit* u = new Unit;
-			u->Load(f, false);
+			u->Load(f);
 			u->area = nullptr;
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
