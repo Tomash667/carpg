@@ -18,6 +18,7 @@
 #include "Team.h"
 #include "Pathfinding.h"
 #include "GameResources.h"
+#include <Scene.h>
 
 // don't spawn objects near other objects to not block path
 const float EXTRA_RADIUS = 0.8f;
@@ -235,6 +236,7 @@ void InsideLocationGenerator::OnEnter()
 					item->pos = o->pos;
 					item->rot = Random(MAX_ANGLE);
 					lvl.items.push_back(item);
+					lvl.scene->nodes.push_back(item->CreateNode());
 				}
 				else
 					game_level->SpawnGroundItemInsideRoom(r, kartka);

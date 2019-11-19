@@ -39,7 +39,8 @@
 #include "LocationHelper.h"
 #include "PhysicCallbacks.h"
 #include "GameResources.h"
-#include "SceneManager.h"
+#include <SceneManager.h>
+#include <Scene.h>
 
 Level* global::game_level;
 
@@ -283,13 +284,14 @@ void Level::Apply()
 	areas.clear();
 	location->Apply(areas);
 	local_area = &areas[0].get();
+	if(local_area->is_active)
+		return;
 	for(LevelArea& area : areas)
 	{
-		if(!area.tmp)
-		{
-			area.tmp = TmpLevelArea::Get();
-			area.tmp->area = &area;
-		}
+		area.is_active = true;
+		area.scene = Scene::Get();
+		area.tmp = TmpLevelArea::Get();
+		area.tmp->area = &area;
 	}
 }
 
@@ -1189,6 +1191,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					assert(!inside);
 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
+					inside->is_active = true;
+					inside->scene = Scene::Get();
 					inside->tmp = TmpLevelArea::Get();
 					inside->tmp->area = inside;
 					inside->level_shift = city->inside_offset;
@@ -1665,6 +1669,7 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 	if(area.area_type == LevelArea::Type::Outside)
 		terrain->SetH(item->pos);
 	area.items.push_back(item);
+	area.scene->nodes.push_back(item->CreateNode());
 
 	if(Net::IsOnline())
 	{
@@ -1729,6 +1734,7 @@ GroundItem* Level::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 			gi->pos = pos;
 			gi->item = item;
 			local_area->items.push_back(gi);
+			local_area->scene->nodes.push_back(gi->CreateNode());
 			return gi;
 		}
 	}
@@ -1770,6 +1776,7 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 				terrain->SetH(gi->pos);
 			gi->item = item;
 			local_area->items.push_back(gi);
+			local_area->scene->nodes.push_back(gi->CreateNode());
 			return gi;
 		}
 	}
@@ -1807,6 +1814,7 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 				terrain->SetH(gi->pos);
 			gi->item = item;
 			local_area->items.push_back(gi);
+			local_area->scene->nodes.push_back(gi->CreateNode());
 			return gi;
 		}
 	}
@@ -1857,6 +1865,7 @@ void Level::PickableItemAdd(const Item* item)
 				c = cos(rot);
 			gi->pos = Vec3(pos.x*c + pos.z*s, pos.y, -pos.x*s + pos.z*c) + pickable_obj->pos;
 			pickable_area->items.push_back(gi);
+			pickable_area->scene->nodes.push_back(gi->CreateNode());
 
 			break;
 		}

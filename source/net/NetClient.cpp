@@ -41,6 +41,7 @@
 #include "Arena.h"
 #include "CommandParser.h"
 #include "GameResources.h"
+#include <Scene.h>
 
 //=================================================================================================
 void Net::InitClient()
@@ -988,7 +989,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				else
 				{
 					game_res->PreloadItem(item->item);
-					game_level->GetArea(item->pos).items.push_back(item);
+					game_level->AddGroundItem(game_level->GetArea(item->pos), item);
 				}
 			}
 			break;

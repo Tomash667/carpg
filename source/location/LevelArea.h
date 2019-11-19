@@ -43,6 +43,7 @@ struct LevelArea
 
 	const int area_id; // -1 outside, 0+ building or dungeon level
 	const Type area_type;
+	Scene* scene;
 	TmpLevelArea* tmp;
 	vector<Unit*> units;
 	vector<Object*> objects;
@@ -56,8 +57,10 @@ struct LevelArea
 	vector<LightMask> masks;
 	Int2 mine, maxe;
 	const bool have_terrain;
+	bool is_active;
 
-	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id), have_terrain(have_terrain), tmp(nullptr) {}
+	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id),
+		have_terrain(have_terrain), scene(nullptr), tmp(nullptr), is_active(false) {}
 	~LevelArea();
 	void Save(GameWriter& f);
 	void Load(GameReader& f, bool local, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
@@ -78,6 +81,7 @@ struct LevelArea
 	Chest* FindChestWithItem(const Item* item, int* index);
 	Chest* FindChestWithQuestItem(int quest_id, int* index);
 	Door* FindDoor(const Int2& pt);
+	void CreateNodes();
 };
 
 //-----------------------------------------------------------------------------

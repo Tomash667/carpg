@@ -90,6 +90,7 @@
 #include "PostfxShader.h"
 #include "SkyboxShader.h"
 #include "SceneManager.h"
+#include <Scene.h>
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -5395,6 +5396,8 @@ void Game::LeaveLevel(bool clear)
 		for(LevelArea& area : game_level->ForEachArea())
 		{
 			LeaveLevel(area, clear);
+			area.is_active = false;
+			area.scene->Free();
 			area.tmp->Free();
 			area.tmp = nullptr;
 		}

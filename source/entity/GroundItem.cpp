@@ -7,8 +7,28 @@
 #include "BitStreamFunc.h"
 #include "Game.h"
 #include "SaveState.h"
+#include <SceneNode.h>
+#include "GameResources.h"
 
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;
+
+//=================================================================================================
+SceneNode* GroundItem::CreateNode()
+{
+	node = SceneNode::Get();
+	node->pos = pos;
+	if(IsSet(item->flags, ITEM_GROUND_MESH))
+	{
+		node->mesh = item->mesh;
+		node->pos.y -= item->mesh->head.bbox.v1.y;
+	}
+	else
+		node->mesh = game_res->aBag;
+	node->mat = Matrix::RotationY(rot) * Matrix::Translation(node->pos);
+	node->mesh_inst = nullptr;
+	node->flags = IsSet(item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
+	return node;
+}
 
 //=================================================================================================
 void GroundItem::Save(FileWriter& f)

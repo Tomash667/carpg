@@ -12,6 +12,7 @@
 #include "BitStreamFunc.h"
 #include "ParticleSystem.h"
 #include "SaveState.h"
+#include <Scene.h>
 
 static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
@@ -72,8 +73,10 @@ void LevelArea::Save(GameWriter& f)
 
 void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibility)
 {
-	if(local && !tmp)
+	if(local && !is_active)
 	{
+		is_active = true;
+		scene = Scene::Get();
 		tmp = TmpLevelArea::Get();
 		tmp->area = this;
 	}
@@ -343,8 +346,10 @@ void LevelArea::Write(BitStreamWriter& f)
 
 bool LevelArea::Read(BitStreamReader& f)
 {
-	if(!tmp)
+	if(!is_active)
 	{
+		is_active = true;
+		scene = Scene::Get();
 		tmp = TmpLevelArea::Get();
 		tmp->area = this;
 	}
@@ -790,6 +795,13 @@ Door* LevelArea::FindDoor(const Int2& pt)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+void LevelArea::CreateNodes()
+{
+	for(GroundItem* item : items)
+		scene->nodes.push_back(item->CreateNode());
 }
 
 //=================================================================================================
