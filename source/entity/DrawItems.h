@@ -71,8 +71,7 @@ struct NodeMatrix
 //-----------------------------------------------------------------------------
 struct DrawBatch
 {
-	vector<SceneNode*> nodes, alpha_nodes;
-	vector<SceneNodeGroup> groups;
+	SceneNodeBatch nodes;
 	vector<DebugSceneNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
 	vector<uint> terrain_parts;
