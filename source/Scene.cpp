@@ -120,24 +120,6 @@ void Game::InitScene()
 	for(int i = 0; i < 4; ++i)
 		blood_v[i].pos.y = 0.f;
 
-	billboard_v[0].pos = Vec3(-1, -1, 0);
-	billboard_v[0].tex = Vec2(0, 0);
-	billboard_v[0].color = Vec4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[1].pos = Vec3(-1, 1, 0);
-	billboard_v[1].tex = Vec2(0, 1);
-	billboard_v[1].color = Vec4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[2].pos = Vec3(1, -1, 0);
-	billboard_v[2].tex = Vec2(1, 0);
-	billboard_v[2].color = Vec4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[3].pos = Vec3(1, 1, 0);
-	billboard_v[3].tex = Vec2(1, 1);
-	billboard_v[3].color = Vec4(1.f, 1.f, 1.f, 1.f);
-
-	billboard_ext[0] = Vec3(-1, -1, 0);
-	billboard_ext[1] = Vec3(-1, 1, 0);
-	billboard_ext[2] = Vec3(1, -1, 0);
-	billboard_ext[3] = Vec3(1, 1, 0);
-
 	if(!vbDungeon)
 		BuildDungeon();
 }
@@ -2874,14 +2856,12 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.bloods.empty())
 		DrawBloods(outside, draw_batch.bloods, draw_batch.lights);
 
-	// billboardy
-	if(!draw_batch.billboards.empty())
-		DrawBillboards(draw_batch.billboards);
-
 	// particles
-	if(!draw_batch.pes.empty() || draw_batch.tpes)
+	if(!draw_batch.billboards.empty() || !draw_batch.pes.empty() || draw_batch.tpes)
 	{
 		particle_shader->Begin(game_level->camera);
+		if(!draw_batch.billboards.empty())
+			particle_shader->DrawBillboards(draw_batch.billboards);
 		if(draw_batch.tpes)
 			particle_shader->DrawTrailParticles(*draw_batch.tpes);
 		if(!draw_batch.pes.empty())
@@ -3722,45 +3702,6 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 
 	V(e->EndPass());
 	V(e->End());
-}
-
-//=================================================================================================
-void Game::DrawBillboards(const vector<Billboard>& billboards)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaBlend(true);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->tech));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
-	{
-		game_level->camera.mat_view_inv._41 = it->pos.x;
-		game_level->camera.mat_view_inv._42 = it->pos.y;
-		game_level->camera.mat_view_inv._43 = it->pos.z;
-		Matrix m1 = Matrix::Scale(it->size) * game_level->camera.mat_view_inv;
-
-		for(int i = 0; i < 4; ++i)
-			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
-
-		V(effect->SetTexture(particle_shader->hTex, it->tex));
-		V(effect->CommitChanges());
-
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, billboard_v, sizeof(VParticle)));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
 }
 
 //=================================================================================================

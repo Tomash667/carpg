@@ -163,7 +163,6 @@ public:
 	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
-	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
 	void InitQuadTree();
@@ -430,8 +429,6 @@ public:
 	bool cl_glow;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
-	VParticle billboard_v[4];
-	Vec3 billboard_ext[4];
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;
