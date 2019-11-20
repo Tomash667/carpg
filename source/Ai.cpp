@@ -2592,32 +2592,14 @@ void Game::UpdateAi(float dt)
 					ai.pf_state = AIController::PFS_GLOBAL_NOT_USED;
 				}
 
-				// door opening
+				// open doors when ai moves next to them
 				if(!IsSet(u.data->flags, F_DONT_OPEN))
 				{
 					for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 					{
 						Door& door = **it;
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
-						{
-							// doors get opened automatically when AI moves next to them
-							if(!game_level->location->outside)
-								game_level->minimap_opened_doors = true;
-							door.state = Door::Opening;
-							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-
-							// play sound
-							if(Rand() % 2 == 0)
-								sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], door.GetCenter(), Door::SOUND_DIST);
-
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::USE_DOOR;
-								c.id = door.id;
-								c.count = 0;
-							}
-						}
+							door.Open();
 					}
 				}
 

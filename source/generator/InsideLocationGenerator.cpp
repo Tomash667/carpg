@@ -459,7 +459,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						door->locked = LOCK_ORCS;
 					else if(Rand() % 100 < base.door_open)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
@@ -1274,7 +1274,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					Door* door = lvl.FindDoor(Int2(x, y));
 					if(door && door->state == Door::Closed)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
@@ -1409,7 +1409,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 					Door* door = lvl.FindDoor(*it2);
 					if(door && door->state == Door::Closed)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);

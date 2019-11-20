@@ -5562,7 +5562,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			if(door.state == Door::Closing || door.state == Door::Closing2)
 				door.state = Door::Closed;
 			else if(door.state == Door::Opening || door.state == Door::Opening2)
-				door.state = Door::Open;
+				door.state = Door::Opened;
 			delete door.mesh_inst;
 			door.mesh_inst = nullptr;
 		}
@@ -5618,7 +5618,7 @@ void Game::UpdateArea(LevelArea& area, float dt)
 				}
 			}
 			if(done)
-				door.state = Door::Open;
+				door.state = Door::Opened;
 		}
 		else if(door.state == Door::Closing || door.state == Door::Closing2)
 		{

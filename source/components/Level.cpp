@@ -1286,7 +1286,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->Register();
 					door->pos = pos;
 					door->rot = Clip(pt.rot.y + rot);
-					door->state = Door::Open;
+					door->state = Door::Opened;
 					door->door2 = (token == "door2");
 					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
 					door->mesh_inst->base_speed = 2.f;
@@ -3037,7 +3037,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 			if(door.locked == 0)
 			{
 				if(Rand() % 100 < open_chance)
-					door.state = Door::Open;
+					door.state = Door::Opened;
 				else
 					door.state = Door::Closed;
 			}
@@ -3108,7 +3108,7 @@ void Level::OnReenterLevel()
 			phy_world->addCollisionObject(door.phy, CG_DOOR);
 
 			// czy otwarte
-			if(door.state == Door::Open)
+			if(door.state == Door::Opened)
 			{
 				btVector3& pos = door.phy->getWorldTransform().getOrigin();
 				pos.setY(pos.y() - 100.f);
