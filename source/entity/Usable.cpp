@@ -8,6 +8,8 @@
 #include "BitStreamFunc.h"
 #include "ItemContainer.h"
 #include "Net.h"
+#include "LevelArea.h"
+#include <Scene.h>
 
 // pre V_0_6_2 compatibility
 namespace old
@@ -30,6 +32,17 @@ namespace old
 
 const float Usable::SOUND_DIST = 1.5f;
 EntityType<Usable>::Impl EntityType<Usable>::impl;
+
+//=================================================================================================
+void Usable::CreateNode(Scene* scene)
+{
+	node = SceneNode::Get();
+	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
+	node->mesh = base->mesh;
+	node->flags = 0;
+	node->tmp = false;
+	scene->Add(node);
+}
 
 //=================================================================================================
 void Usable::Save(GameWriter& f)
@@ -122,6 +135,7 @@ void Usable::Load(GameReader& f)
 			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
 		}
+		CreateNode(f.area->scene);
 	}
 	else
 		user = nullptr;
@@ -158,6 +172,7 @@ bool Usable::Read(BitStreamReader& f)
 	Register();
 	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 		container = new ItemContainer;
+	CreateNode(f.area->scene);
 	return true;
 }
 

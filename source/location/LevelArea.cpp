@@ -819,6 +819,8 @@ void LevelArea::CreateNodes()
 		item->CreateNode(scene);
 	for(Chest* chest : chests)
 		chest->CreateNode(scene);
+	for(Usable* usable : usables)
+		usable->CreateNode(scene);
 }
 
 //=================================================================================================

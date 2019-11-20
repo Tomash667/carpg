@@ -532,40 +532,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// usable objects
-	if(IsSet(draw_flags, DF_USABLES))
-	{
-		PROFILER_BLOCK("Usables");
-		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
-		{
-			Usable& use = **it;
-			Mesh* mesh = use.GetMesh();
-			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-				node->mesh = mesh;
-				node->flags = 0;
-				if(!outside)
-					node->lights = GatherDrawBatchLights(area, node, use.pos.x, use.pos.z, mesh->head.radius);
-				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
-				{
-					if(cl_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.type = GlowNode::Usable;
-						glow.ptr = &use;
-						glow.alpha = false;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.nodes.Add(node);
-			}
-		}
-	}
-
 	// doors
 	if(IsSet(draw_flags, DF_USABLES))
 	{
@@ -905,41 +871,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// new glow nodes
-	if(pc->data.before_player == BP_ITEM)
-	{
-		GroundItem* item = pc->data.before_player_ptr.item;
-		if(cl_glow)
-		{
-			GlowNode& glow = Add1(draw_batch.glow_nodes);
-			glow.node = item->node;
-			glow.type = GlowNode::Item;
-			glow.ptr = item;
-			glow.alpha = IsSet(item->item->flags, ITEM_ALPHA);
-		}
-		else
-		{
-			item->node->tint = Vec4(2, 2, 2, 1);
-			draw_batch.highlighted.push_back(item->node);
-		}
-	}
-	else if(pc->data.before_player == BP_CHEST)
-	{
-		Chest* chest = pc->data.before_player_ptr.chest;
-		if(cl_glow)
-		{
-			GlowNode& glow = Add1(draw_batch.glow_nodes);
-			glow.node = chest->node;
-			glow.type = GlowNode::Chest;
-			glow.ptr = chest;
-			glow.alpha = 0;
-		}
-		else
-		{
-			chest->node->tint = Vec4(2, 2, 2, 1);
-			draw_batch.highlighted.push_back(chest->node);
-		}
-	}
+	ListGlowNodes();
 
 	draw_batch.nodes.Process();
 }
@@ -1410,6 +1342,66 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		debug_node->type = DebugSceneNode::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
+	}
+}
+
+//=================================================================================================
+void Game::ListGlowNodes()
+{
+	if(pc->data.before_player == BP_NONE)
+		return;
+
+	GlowNode::Type type;
+	SceneNode* node;
+	void* ptr;
+	bool alpha = false;
+
+	switch(pc->data.before_player)
+	{
+	case BP_ITEM:
+		{
+			GroundItem* item = pc->data.before_player_ptr.item;
+			type = GlowNode::Item;
+			node = item->node;
+			ptr = item;
+			alpha = IsSet(item->item->flags, ITEM_ALPHA);
+		}
+		break;
+	case BP_CHEST:
+		{
+			Chest* chest = pc->data.before_player_ptr.chest;
+			type = GlowNode::Chest;
+			node = chest->node;
+			ptr = chest;
+		}
+		break;
+	case BP_USABLE:
+		{
+			Usable* usable = pc->data.before_player_ptr.usable;
+			type = GlowNode::Usable;
+			node = usable->node;
+			ptr = usable;
+		}
+		break;
+	default:
+		return;
+	}
+
+	if(type != GlowNode::Unit)
+	{
+		if(cl_glow)
+		{
+			GlowNode& glow = Add1(draw_batch.glow_nodes);
+			glow.node = node;
+			glow.type = type;
+			glow.ptr = ptr;
+			glow.alpha = alpha;
+		}
+		else
+		{
+			node->tint = Vec4(2, 2, 2, 1);
+			draw_batch.highlighted.push_back(node);
+		}
 	}
 }
 

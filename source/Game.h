@@ -146,6 +146,7 @@ public:
 	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
+	void ListGlowNodes();
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
 	void PrepareAreaPath();
