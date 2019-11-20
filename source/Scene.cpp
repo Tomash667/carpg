@@ -532,48 +532,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// doors
-	if(IsSet(draw_flags, DF_USABLES))
-	{
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-			if(frustum.SphereToFrustum(door.pos, door.mesh_inst->mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
-				if(!door.mesh_inst->groups[0].anim || door.mesh_inst->groups[0].time == 0.f)
-				{
-					node->mesh = door.mesh_inst->mesh;
-					node->flags = 0;
-				}
-				else
-				{
-					door.mesh_inst->SetupBones();
-					node->mesh = door.mesh_inst->mesh;
-					node->mesh_inst = door.mesh_inst;
-					node->flags = SceneNode::F_ANIMATED;
-				}
-				if(!outside)
-					node->lights = GatherDrawBatchLights(area, node, door.pos.x, door.pos.z, door.mesh_inst->mesh->head.radius);
-				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
-				{
-					if(cl_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.type = GlowNode::Door;
-						glow.ptr = &door;
-						glow.alpha = false;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.nodes.Add(node);
-			}
-		}
-	}
-
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
 	{
@@ -1381,6 +1339,14 @@ void Game::ListGlowNodes()
 			type = GlowNode::Usable;
 			node = usable->node;
 			ptr = usable;
+		}
+		break;
+	case BP_DOOR:
+		{
+			Door* door = pc->data.before_player_ptr.door;
+			type = GlowNode::Door;
+			node = door->node;
+			ptr = door;
 		}
 		break;
 	default:

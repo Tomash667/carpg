@@ -10,6 +10,7 @@
 #include "Location.h"
 #include "SoundManager.h"
 #include "Net.h"
+#include <Scene.h>
 
 EntityType<Door>::Impl EntityType<Door>::impl;
 const float Door::WIDTH = 0.842f;
@@ -18,6 +19,19 @@ const float Door::HEIGHT = 1.319f;
 const float Door::SOUND_DIST = 1.f;
 const float Door::UNLOCK_SOUND_DIST = 0.5f;
 const float Door::BLOCKED_SOUND_DIST = 1.f;
+
+//=================================================================================================
+void Door::CreateNode(Scene* scene)
+{
+	node = SceneNode::Get();
+	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
+	node->mesh = door2 ? game_res->aDoor2 : game_res->aDoor;
+	node->mesh_inst = new MeshInstance(node->mesh);
+	node->mesh_inst->base_speed = 2.f;
+	node->flags = SceneNode::F_ANIMATED;
+	node->tmp = true;
+	scene->Add(node);
+}
 
 //=================================================================================================
 void Door::Save(GameWriter& f)
@@ -31,7 +45,7 @@ void Door::Save(GameWriter& f)
 	f << door2;
 
 	if(f.is_local)
-		mesh_inst->Save(f);
+		node->mesh_inst->Save(f);
 }
 
 //=================================================================================================
@@ -52,9 +66,8 @@ void Door::Load(GameReader& f)
 
 	if(f.is_local)
 	{
-		mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
-		mesh_inst->base_speed = 2.f;
+		CreateNode(f.area->scene);
+		node->mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game_level->shape_door);
@@ -71,11 +84,9 @@ void Door::Load(GameReader& f)
 		{
 			btVector3& poss = phy->getWorldTransform().getOrigin();
 			poss.setY(poss.y() - 100.f);
-			mesh_inst->SetToEnd(mesh_inst->mesh->anims[0].name.c_str());
+			node->mesh_inst->SetToEnd(mesh_inst->mesh->anims);
 		}
 	}
-	else
-		mesh_inst = nullptr;
 }
 
 //=================================================================================================
@@ -109,8 +120,8 @@ bool Door::Read(BitStreamReader& f)
 		return false;
 	}
 
-	mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-	mesh_inst->base_speed = 2.f;
+	CreateNode(f.area->scene);
+
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -126,7 +137,7 @@ bool Door::Read(BitStreamReader& f)
 	{
 		btVector3& pos = phy->getWorldTransform().getOrigin();
 		pos.setY(pos.y() - 100.f);
-		mesh_inst->SetToEnd(mesh_inst->mesh->anims[0].name.c_str());
+		node->mesh_inst->SetToEnd(node->mesh_inst->mesh->anims[0]);
 	}
 
 	Register();
@@ -140,7 +151,7 @@ void Door::Open()
 		game_level->minimap_opened_doors = true;
 	state = Opening;
 	locked = LOCK_NONE;
-	mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+	node->mesh_inst->Play(&node->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 	if(Rand() % 2 == 0)
 		sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], GetCenter(), SOUND_DIST);
 	if(Net::IsOnline())
@@ -156,7 +167,7 @@ void Door::Open()
 void Door::Close()
 {
 	state = Closing;
-	mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+	node->mesh_inst->Play(&node->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 	if(Rand() % 2 == 0)
 	{
 		Sound* sound;

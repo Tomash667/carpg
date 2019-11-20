@@ -44,13 +44,13 @@ struct Door : public EntityType<Door>
 
 	// lokalne zmienne
 	State state;
-	MeshInstance* mesh_inst;
+	SceneNode* node;
 	btCollisionObject* phy;
 
-	Door() : door2(false), mesh_inst(nullptr) {}
-	~Door() { delete mesh_inst; }
+	Door() : door2(false), node(nullptr) {}
 	bool IsBlocking() const { return Any(state, Closed, Opening, Closing2); }
 	bool IsBlockingView() const { return state == Closed; }
+	void CreateNode(Scene* scene);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

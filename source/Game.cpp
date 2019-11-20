@@ -5563,8 +5563,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				door.state = Door::Closed;
 			else if(door.state == Door::Opening || door.state == Door::Opening2)
 				door.state = Door::Opened;
-			delete door.mesh_inst;
-			door.mesh_inst = nullptr;
 		}
 	}
 	else
@@ -5604,13 +5602,13 @@ void Game::UpdateArea(LevelArea& area, float dt)
 	for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 	{
 		Door& door = **it;
-		door.mesh_inst->Update(dt);
+		door.node->mesh_inst->Update(dt);
 		if(door.state == Door::Opening || door.state == Door::Opening2)
 		{
-			bool done = door.mesh_inst->IsEnded();
+			bool done = door.node->mesh_inst->IsEnded();
 			if(door.state == Door::Opening)
 			{
-				if(done || door.mesh_inst->GetProgress() >= 0.25f)
+				if(done || door.node->mesh_inst->GetProgress() >= 0.25f)
 				{
 					door.state = Door::Opening2;
 					btVector3& pos = door.phy->getWorldTransform().getOrigin();
@@ -5622,10 +5620,10 @@ void Game::UpdateArea(LevelArea& area, float dt)
 		}
 		else if(door.state == Door::Closing || door.state == Door::Closing2)
 		{
-			bool done = door.mesh_inst->IsEnded();
+			bool done = door.node->mesh_inst->IsEnded();
 			if(door.state == Door::Closing)
 			{
-				if(done || door.mesh_inst->GetProgress() <= 0.25f)
+				if(done || door.node->mesh_inst->GetProgress() <= 0.25f)
 				{
 					bool blocking = false;
 
@@ -5654,7 +5652,7 @@ void Game::UpdateArea(LevelArea& area, float dt)
 				{
 					// nie mo¿na zamknaæ drzwi bo coœ blokuje
 					door.state = Door::Opening2;
-					door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
+					door.node->mesh_inst->Play(&door.node->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
 					// mo¿na by daæ lepszy punkt dŸwiêku
 					sound_mgr->PlaySound3d(game_res->sDoorBudge, door.pos, Door::BLOCKED_SOUND_DIST);
 				}

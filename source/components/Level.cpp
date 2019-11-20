@@ -1288,8 +1288,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Opened;
 					door->door2 = (token == "door2");
-					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
-					door->mesh_inst->base_speed = 2.f;
+					door->CreateNode(area.scene);
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -1312,7 +1311,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					{
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
+						door->node->mesh_inst->SetToEnd(door->node->mesh_inst->mesh->anims[0]);
 					}
 
 					area.doors.push_back(door);
@@ -3091,10 +3090,6 @@ void Level::OnReenterLevel()
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
-
-			// animowany model
-			door.mesh_inst = new MeshInstance(door.door2 ? game_res->aDoor2 : game_res->aDoor);
-			door.mesh_inst->base_speed = 2.f;
 
 			// fizyka
 			door.phy = new btCollisionObject;
