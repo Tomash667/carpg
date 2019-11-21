@@ -2968,7 +2968,7 @@ void Game::DrawSceneNodes(const SceneNodeBatch& batch, const vector<Lights>& lig
 
 		effect = super_shader->GetShader(super_shader->GetShaderId(
 			animated,
-			IsSet(group.flags, SceneNode::F_BINORMALS),
+			IsSet(group.flags, SceneNode::F_TANGENTS),
 			scene_mgr->use_fog && use_lighting,
 			specular_map,
 			normal_map,
@@ -3128,7 +3128,7 @@ void Game::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lig
 
 		uint id = super_shader->GetShaderId(
 			animated,
-			IsSet(node->flags, SceneNode::F_BINORMALS),
+			IsSet(node->flags, SceneNode::F_TANGENTS),
 			scene_mgr->use_fog && use_lighting,
 			specular_map,
 			normal_map,
