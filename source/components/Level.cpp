@@ -519,6 +519,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		o->pos = pos;
 		o->scale = 1;
 		o->base = table;
+		o->CreateNode(area.scene);
 		area.objects.push_back(o);
 		SpawnObjectExtras(area, table, pos, rot, o);
 
@@ -561,6 +562,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			u->base = stool;
 			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
+			u->CreateNode(area.scene);
 			area.usables.push_back(u);
 
 			SpawnObjectExtras(area, stool, u->pos, u->rot, u);
@@ -593,6 +595,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		o->pos = pos;
 		o->scale = scale;
 		o->base = base;
+		o->CreateNode(area.scene);
 		area.objects.push_back(o);
 
 		ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, rot, roti, pos, nullptr, nullptr, false, out_point);
@@ -653,6 +656,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			}
 		}
 		u->variant = variant;
+		u->CreateNode(area.scene);
 
 		area.usables.push_back(u);
 
@@ -683,6 +687,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		o->pos = pos;
 		o->scale = scale;
 		o->base = base;
+		o->CreateNode(area.scene);
 		area.objects.push_back(o);
 
 		SpawnObjectExtras(area, base, pos, rot, o, scale, flags);
@@ -1244,6 +1249,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 						o->rot = Vec3(0, 0, 0);
 						o->scale = 1.f;
 						o->require_split = true;
+						o->CreateNode(inside->scene);
 						inside->objects.push_back(o);
 
 						ProcessBuildingObjects(*inside, city, inside, inside_mesh, nullptr, 0.f, 0, o->pos, nullptr, nullptr);

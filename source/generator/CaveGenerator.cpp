@@ -377,6 +377,7 @@ void CaveGenerator::GenerateObjects()
 	o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 	o->scale = 1;
 	o->base = nullptr;
+	o->CreateNode(cave->scene);
 	game_level->local_area->objects.push_back(o);
 
 	// lights
@@ -417,6 +418,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = Random(1.f, 2.f);
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + 1.f, 4.f, 2.f*pt.y + 1.f);
+			o->CreateNode(cave->scene);
 			game_level->local_area->objects.push_back(o);
 			sta.push_back(pt);
 		}
@@ -436,6 +438,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+			o->CreateNode(cave->scene);
 			game_level->local_area->objects.push_back(o);
 		}
 	}
@@ -454,6 +457,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+			o->CreateNode(cave->scene);
 			game_level->local_area->objects.push_back(o);
 		}
 	}

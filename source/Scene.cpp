@@ -505,33 +505,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// objects
-	if(IsSet(draw_flags, DF_OBJECTS))
-	{
-		PROFILER_BLOCK("Objects");
-		if(area.area_type == LevelArea::Type::Outside)
-		{
-			for(LevelPart* part : level_parts)
-			{
-				for(QuadObj& obj : part->objects)
-				{
-					const Object& o = *obj.obj;
-					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-						AddObjectToDrawBatch(area, o, frustum);
-				}
-			}
-		}
-		else
-		{
-			for(vector<Object*>::iterator it = area.objects.begin(), end = area.objects.end(); it != end; ++it)
-			{
-				const Object& o = **it;
-				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-					AddObjectToDrawBatch(area, o, frustum);
-			}
-		}
-	}
-
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
 	{
@@ -1368,63 +1341,6 @@ void Game::ListGlowNodes()
 			node->tint = Vec4(2, 2, 2, 1);
 			draw_batch.highlighted.push_back(node);
 		}
-	}
-}
-
-//=================================================================================================
-void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum)
-{
-	SceneNode* node = SceneNode::Get();
-	if(o.IsBillboard())
-	{
-		node->billboard = true;
-		node->mat = Matrix::CreateLookAt(o.pos, game_level->camera.from);
-	}
-	else
-		node->mat = Matrix::Transform(o.pos, o.rot, o.scale);
-	node->mesh = o.mesh;
-	int alpha = o.RequireAlphaTest();
-	if(alpha == -1)
-		node->flags = 0;
-	else if(alpha == 0)
-		node->flags = SceneNode::F_ALPHA_TEST;
-	else
-		node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
-	if(!IsSet(o.mesh->head.flags, Mesh::F_SPLIT))
-	{
-		if(area.area_type != LevelArea::Type::Outside)
-			node->lights = GatherDrawBatchLights(area, node, o.pos.x, o.pos.z, o.GetRadius());
-		draw_batch.nodes.Add(node);
-	}
-	else
-	{
-		const Mesh& mesh = *o.mesh;
-		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-			node->flags |= SceneNode::F_BINORMALS;
-
-		// for simplicity original node in unused and freed at end
-		for(int i = 0; i < mesh.head.n_subs; ++i)
-		{
-			Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
-			const float radius = mesh.splits[i].radius * o.scale;
-			if(frustum.SphereToFrustum(pos, radius))
-			{
-				SceneNode* node2 = SceneNode::Get();
-				node2->mesh = node->mesh;
-				node2->mat = node->mat;
-				node2->flags = node->flags;
-				node2->subs = SceneNode::SPLIT_INDEX | i;
-				node2->lights = node->lights;
-				if(scene_mgr->use_normalmap && mesh.subs[i].tex_normal)
-					node2->flags |= SceneNode::F_NORMAL_MAP;
-				if(scene_mgr->use_specularmap && mesh.subs[i].tex_specular)
-					node2->flags |= SceneNode::F_SPECULAR_MAP;
-				if(area.area_type != LevelArea::Type::Outside)
-					node2->lights = GatherDrawBatchLights(area, node2, pos.x, pos.z, radius, i);
-				draw_batch.nodes.Add(node2);
-			}
-		}
-		node->Free();
 	}
 }
 

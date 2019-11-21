@@ -147,7 +147,6 @@ public:
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void ListGlowNodes();
-	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);

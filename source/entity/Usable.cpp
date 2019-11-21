@@ -38,7 +38,7 @@ void Usable::CreateNode(Scene* scene)
 {
 	node = SceneNode::Get();
 	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
-	node->mesh = base->mesh;
+	node->mesh = GetMesh();
 	node->flags = 0;
 	node->tmp = false;
 	scene->Add(node);

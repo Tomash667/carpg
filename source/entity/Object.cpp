@@ -1,12 +1,34 @@
 #include "Pch.h"
 #include "GameCore.h"
+#include "GameFile.h"
 #include "Object.h"
 #include "SaveState.h"
 #include "ResourceManager.h"
 #include "BitStreamFunc.h"
+#include "LevelArea.h"
+#include <Scene.h>
 
 //=================================================================================================
-void Object::Save(FileWriter& f)
+void Object::CreateNode(Scene* scene)
+{
+	node = SceneNode::Get();
+	node->pos = pos;
+	if(IsBillboard())
+		node->billboard = true;
+	else
+		node->mat = Matrix::Transform(pos, rot, scale);
+	node->mesh = mesh;
+	int alpha = RequireAlphaTest();
+	if(alpha == 0)
+		node->flags = SceneNode::F_ALPHA_TEST;
+	else if(alpha == 1)
+		node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+	node->tmp = false;
+	scene->Add(node);
+}
+
+//=================================================================================================
+void Object::Save(GameWriter& f)
 {
 	f << pos;
 	f << rot;
@@ -22,7 +44,7 @@ void Object::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Object::Load(FileReader& f)
+void Object::Load(GameReader& f)
 {
 	f >> pos;
 	f >> rot;
@@ -39,6 +61,8 @@ void Object::Load(FileReader& f)
 		base = nullptr;
 		mesh = res_mgr->Load<Mesh>(f.ReadString1());
 	}
+	if(f.is_local)
+		CreateNode(f.area->scene);
 }
 
 //=================================================================================================
@@ -85,5 +109,6 @@ bool Object::Read(BitStreamReader& f)
 		mesh = res_mgr->Load<Mesh>(mesh_id);
 		base = nullptr;
 	}
+	CreateNode(f.area->scene);
 	return true;
 }

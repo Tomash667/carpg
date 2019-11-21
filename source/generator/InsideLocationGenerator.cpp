@@ -352,6 +352,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
+		o->CreateNode(lvl.scene);
 		lvl.objects.push_back(o);
 	}
 	else
@@ -366,6 +367,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		o->rot = Vec3(0, DirToRot(lvl.staircase_down_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
+		o->CreateNode(lvl.scene);
 		lvl.objects.push_back(o);
 	}
 
@@ -383,6 +385,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				o->pos = Vec3(float(x * 2), 0, float(y * 2));
 				o->scale = 1;
 				o->base = nullptr;
+				o->CreateNode(lvl.scene);
 				lvl.objects.push_back(o);
 			}
 			if(p == BARS || p == BARS_CEILING)
@@ -393,6 +396,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				o->pos = Vec3(float(x * 2), 4, float(y * 2));
 				o->scale = 1;
 				o->base = nullptr;
+				o->CreateNode(lvl.scene);
 				lvl.objects.push_back(o);
 			}
 			if(p == DOORS)
@@ -404,6 +408,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o->scale = 1;
 				o->base = nullptr;
+				o->CreateNode(lvl.scene);
 				lvl.objects.push_back(o);
 
 				if(IsBlocking(lvl.map[x - 1 + y * lvl.w].type))

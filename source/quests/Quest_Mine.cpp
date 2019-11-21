@@ -696,6 +696,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			o->pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
 			o->scale = 1;
 			o->base = nullptr;
+			o->CreateNode(cave.scene);
 			cave.objects.push_back(o);
 
 			// hack :3
@@ -930,6 +931,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 							u->pos = pos;
 							u->rot = rot;
 							u->base = (Rand() % 10 < gold_chance ? gold_vein : iron_vein);
+							u->CreateNode(cave.scene);
 							cave.usables.push_back(u);
 
 							CollisionObject& c = Add1(cave.tmp->colliders);

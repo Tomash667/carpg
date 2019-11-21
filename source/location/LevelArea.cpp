@@ -823,6 +823,8 @@ void LevelArea::RecreateNodes()
 		usable->CreateNode(scene);
 	for(Door* door : doors)
 		door->CreateNode(scene);
+	for(Object* object : objects)
+		object->CreateNode(scene);
 }
 
 //=================================================================================================

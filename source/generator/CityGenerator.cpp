@@ -2364,6 +2364,7 @@ void CityGenerator::SpawnBuildings()
 		o->scale = 1.f;
 		o->base = nullptr;
 		o->mesh = it->building->mesh;
+		o->CreateNode(area.scene);
 		area.objects.push_back(o);
 	}
 

@@ -182,6 +182,7 @@ void AcademyGenerator::SpawnBuilding(bool first)
 		o->scale = 1.f;
 		o->base = nullptr;
 		o->mesh = building->mesh;
+		o->CreateNode(outside->scene);
 		outside->objects.push_back(o);
 	}
 
