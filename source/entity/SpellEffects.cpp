@@ -161,8 +161,17 @@ void Electro::UpdateColor(Line& line)
 {
 	for(int i = 0, count = (int)line.trail->parts.size(); i < count; ++i)
 	{
-		float a = float(count - min(count, (int)abs(i - count * (line.t / 0.25f)))) / count;
-		float b = 1.f - Clamp(a * a / 2, 0.f, 1.f);
+		float fi = float(i) / count;
+		//float a = float(count - min(count, (int)abs(i - count * (line.t / 0.25f)))) / count;
+		//float b = 1.f - Clamp(a * a / 2, 0.f, 1.f);
+		elementy 0->i
+
+			t 0->0.25->0.5
+			t = 0
+			i = 0; x = 1
+			i = 0.25imax x = 0
+
+		FIXME;
 		line.trail->parts[i].t = b;
 	}
 }

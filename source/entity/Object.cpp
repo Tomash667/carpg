@@ -21,6 +21,7 @@ void Object::CreateNode(Scene* scene)
 		node->type = SceneNode::NORMAL;
 	}
 	node->mesh = mesh;
+	node->flags = 0;
 	int alpha = RequireAlphaTest();
 	if(alpha == 0)
 		node->flags = SceneNode::F_ALPHA_TEST;
