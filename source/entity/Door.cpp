@@ -30,7 +30,7 @@ void Door::CreateNode(Scene* scene)
 	node->mesh_inst = new MeshInstance(node->mesh);
 	node->mesh_inst->base_speed = 2.f;
 	node->flags = SceneNode::F_ANIMATED;
-	node->tmp = true;
+	node->type = SceneNode::NORMAL;
 	scene->Add(node);
 
 	// physics

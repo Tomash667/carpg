@@ -29,7 +29,7 @@ void GroundItem::CreateNode(Scene* scene)
 		node->mesh = game_res->aBag;
 	node->mat = Matrix::RotationY(rot) * Matrix::Translation(node->pos);
 	node->flags = IsSet(item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
-	node->tmp = false;
+	node->type = SceneNode::NORMAL;
 	scene->Add(node);
 }
 

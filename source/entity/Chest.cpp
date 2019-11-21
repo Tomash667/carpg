@@ -24,7 +24,7 @@ void Chest::CreateNode(Scene* scene)
 	node->mesh = game_res->aChest;
 	node->mesh_inst = new MeshInstance(node->mesh);
 	node->flags = SceneNode::F_ANIMATED;
-	node->tmp = false;
+	node->type = SceneNode::NORMAL;
 	scene->Add(node);
 }
 

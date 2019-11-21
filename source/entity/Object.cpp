@@ -14,16 +14,18 @@ void Object::CreateNode(Scene* scene)
 	node = SceneNode::Get();
 	node->pos = pos;
 	if(IsBillboard())
-		node->billboard = true;
+		node->type = SceneNode::BILLBOARD;
 	else
+	{
 		node->mat = Matrix::Transform(pos, rot, scale);
+		node->type = SceneNode::NORMAL;
+	}
 	node->mesh = mesh;
 	int alpha = RequireAlphaTest();
 	if(alpha == 0)
 		node->flags = SceneNode::F_ALPHA_TEST;
 	else if(alpha == 1)
 		node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
-	node->tmp = false;
 	scene->Add(node);
 }
 

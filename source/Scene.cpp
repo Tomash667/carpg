@@ -3001,10 +3001,10 @@ void Game::DrawSceneNodes(const SceneNodeBatch& batch, const vector<Lights>& lig
 
 			// ustaw parametry shadera
 			Matrix m1;
-			if(!node->billboard)
-				m1 = node->mat * game_level->camera.mat_view_proj;
-			else
+			if(node->type == SceneNode::BILLBOARD)
 				m1 = node->mat.Inverse() * game_level->camera.mat_view_proj;
+			else
+				m1 = node->mat * game_level->camera.mat_view_proj;
 			V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
 			V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
 			V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
@@ -3170,10 +3170,10 @@ void Game::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lig
 
 		// ustaw parametry shadera
 		Matrix m1;
-		if(!node->billboard)
-			m1 = node->mat * game_level->camera.mat_view_proj;
-		else
+		if(node->type == SceneNode::BILLBOARD)
 			m1 = node->mat.Inverse() * game_level->camera.mat_view_proj;
+		else
+			m1 = node->mat * game_level->camera.mat_view_proj;
 		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
 		V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
 		V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
