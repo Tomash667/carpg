@@ -804,7 +804,7 @@ public:
 	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
-		human_data->ApplyScale(data->mesh);
+		human_data->ApplyScale(mesh_inst);
 	}
 
 	int ItemsToSellWeight() const;

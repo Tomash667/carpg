@@ -829,10 +829,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	}
 
 	// ustaw koœci
-	if(u.data->type == UNIT_TYPE::HUMAN)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
-	else
-		u.mesh_inst->SetupBones();
+	u.mesh_inst->SetupBones();
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
 		|| (game_state == GS_LEVEL && ((pc->data.action_ready && pc->data.action_ok && pc->data.action_target == u)

@@ -3310,10 +3310,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 	assert(hitted && hitbox.IsBox());
 
 	// ustaw koœci
-	if(unit.human_data)
-		unit.mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
-	else
-		unit.mesh_inst->SetupBones();
+	unit.mesh_inst->SetupBones();
 
 	// oblicz macierz hitbox
 

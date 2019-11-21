@@ -2348,7 +2348,7 @@ void Unit::Load(GameReader& f)
 		player = nullptr;
 
 	if(f.is_local && human_data)
-		human_data->ApplyScale(mesh_inst->mesh);
+		human_data->ApplyScale(mesh_inst);
 
 	if(IsSet(data->flags, F_HERO))
 	{
@@ -4314,11 +4314,10 @@ int Unit::ItemsToSellWeight() const
 //=================================================================================================
 void Unit::SetAnimationAtEnd(cstring anim_name)
 {
-	auto mat_scale = (human_data ? human_data->mat_scale.data() : nullptr);
 	if(anim_name)
-		mesh_inst->SetToEnd(anim_name, mat_scale);
+		mesh_inst->SetToEnd(anim_name);
 	else
-		mesh_inst->SetToEnd(mat_scale);
+		mesh_inst->SetToEnd();
 }
 
 //=================================================================================================
@@ -4523,7 +4522,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(mesh_inst->mesh->head.n_groups > 1)
 				mesh_inst->groups[1].state = 0;
 			if(human_data)
-				human_data->ApplyScale(mesh_inst->mesh);
+				human_data->ApplyScale(mesh_inst);
 		}
 		else
 		{
@@ -6311,10 +6310,7 @@ void Unit::CastSpell()
 	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
 	assert(point);
 
-	if(human_data)
-		mesh_inst->SetupBones(&human_data->mat_scale[0]);
-	else
-		mesh_inst->SetupBones();
+	mesh_inst->SetupBones();
 
 	Matrix m = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
@@ -7043,10 +7039,7 @@ void Unit::Update(float dt)
 				b.level = level;
 				b.backstab = GetBackstabMod(&GetBow());
 
-				if(human_data)
-					mesh_inst->SetupBones(&human_data->mat_scale[0]);
-				else
-					mesh_inst->SetupBones();
+				mesh_inst->SetupBones();
 
 				Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 				assert(point);

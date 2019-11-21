@@ -619,7 +619,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdSize:
 			unit->human_data->height = Lerp(0.9f, 1.1f, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-			unit->human_data->ApplyScale(unit->mesh_inst->mesh);
+			unit->human_data->ApplyScale(unit->mesh_inst);
 			unit->mesh_inst->need_update = true;
 			break;
 		case IdRandomSet:
@@ -902,7 +902,7 @@ void CreateCharacterPanel::RandomAppearance()
 	hair_color_index = Rand() % n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(game_res->aHuman);
+	u.human_data->ApplyScale(u.mesh_inst);
 	SetControls();
 }
 

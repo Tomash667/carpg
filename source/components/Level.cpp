@@ -2649,10 +2649,7 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 		return;
 
 	Blood& b = Add1(area.bloods);
-	if(u.human_data)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
-	else
-		u.mesh_inst->SetupBones();
+	u.mesh_inst->SetupBones();
 	b.pos = u.GetLootCenter();
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);

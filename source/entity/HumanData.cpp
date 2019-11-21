@@ -2,7 +2,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "HumanData.h"
-#include "Mesh.h"
+#include "MeshInstance.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 
@@ -51,15 +51,16 @@ Vec2 Human::GetScale()
 //=================================================================================================
 // Ustawienie macierzy na podstawie wysokoœci i wagi
 //=================================================================================================
-void Human::ApplyScale(Mesh* mesh)
+void Human::ApplyScale(MeshInstance* mesh_inst)
 {
-	assert(mesh);
+	assert(mesh_inst);
 
-	mat_scale.resize(mesh->head.n_bones);
+	mat_scale.resize(mesh_inst->mesh->head.n_bones);
+	mesh_inst->mat_scale = mat_scale.data();
 
 	Vec2 scale = GetScale();
 	Matrix m = Matrix::Scale(scale.x, scale.y, scale.x);
-	for(int i = 0; i < mesh->head.n_bones; ++i)
+	for(int i = 0; i < mesh_inst->mesh->head.n_bones; ++i)
 		mat_scale[i] = m;
 
 	scale.x = (scale.x + 1) / 2;
