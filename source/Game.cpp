@@ -5652,7 +5652,7 @@ void Game::UpdateArea(LevelArea& area, float dt)
 				{
 					// nie mo¿na zamknaæ drzwi bo coœ blokuje
 					door.state = Door::Opening2;
-					door.node->mesh_inst->Play(&door.node->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
+					door.node->mesh_inst->Play(&door.node->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
 					// mo¿na by daæ lepszy punkt dŸwiêku
 					sound_mgr->PlaySound3d(game_res->sDoorBudge, door.pos, Door::BLOCKED_SOUND_DIST);
 				}

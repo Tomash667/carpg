@@ -813,7 +813,7 @@ Door* LevelArea::FindDoor(const Int2& pt)
 }
 
 //=================================================================================================
-void LevelArea::CreateNodes()
+void LevelArea::RecreateNodes()
 {
 	for(GroundItem* item : items)
 		item->CreateNode(scene);
@@ -821,6 +821,8 @@ void LevelArea::CreateNodes()
 		chest->CreateNode(scene);
 	for(Usable* usable : usables)
 		usable->CreateNode(scene);
+	for(Door* door : doors)
+		door->CreateNode(scene);
 }
 
 //=================================================================================================

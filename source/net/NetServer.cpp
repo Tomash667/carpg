@@ -2321,17 +2321,17 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(door->state == Door::Opened)
 					{
 						door->state = Door::Closing;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+						door->node->mesh_inst->Play(&door->node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 					}
 					else if(door->state == Door::Opening)
 					{
 						door->state = Door::Closing2;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						door->node->mesh_inst->Play(&door->node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 					}
 					else if(door->state == Door::Opening2)
 					{
 						door->state = Door::Closing;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						door->node->mesh_inst->Play(&door->node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 					}
 					else
 						ok = false;
@@ -2343,19 +2343,19 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+						door->node->mesh_inst->Play(&door->node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 					}
 					else if(door->state == Door::Closing)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening2;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						door->node->mesh_inst->Play(&door->node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					}
 					else if(door->state == Door::Closing2)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						door->node->mesh_inst->Play(&door->node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					}
 					else
 						ok = false;

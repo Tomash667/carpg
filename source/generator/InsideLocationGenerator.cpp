@@ -108,7 +108,7 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game_level->OnReenterLevel();
+		game_level->OnRevisitLevel();
 
 		// odtwórz jednostki
 		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
@@ -442,28 +442,12 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->pos = o->pos;
 					door->rot = o->rot.y;
 					door->state = Door::Closed;
-					door->mesh_inst = new MeshInstance(game_res->aDoor);
-					door->mesh_inst->base_speed = 2.f;
-					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(game_level->shape_door);
-					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-					btTransform& tr = door->phy->getWorldTransform();
-					Vec3 pos = door->pos;
-					pos.y += Door::HEIGHT;
-					tr.setOrigin(ToVector3(pos));
-					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					phy_world->addCollisionObject(door->phy, CG_DOOR);
-
 					if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 						door->locked = LOCK_ORCS;
 					else if(Rand() % 100 < base.door_open)
-					{
 						door->state = Door::Opened;
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
-					}
+					door->CreateNode(lvl.scene);
 				}
 				else
 					lvl.map[x + y * lvl.w].type = HOLE_FOR_DOORS;
@@ -1277,7 +1261,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
+						door->node->mesh_inst->SetToEnd(&door->node->mesh->anims[0]);
 					}
 				}
 			}
@@ -1412,7 +1396,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
+						door->node->mesh_inst->SetToEnd(&door->node->mesh->anims[0]);
 					}
 				}
 			}

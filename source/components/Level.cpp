@@ -290,7 +290,6 @@ void Level::Apply()
 	{
 		area.is_active = true;
 		area.scene = Scene::Get();
-		area.CreateNodes();
 		area.tmp = TmpLevelArea::Get();
 		area.tmp->area = &area;
 	}
@@ -1288,32 +1287,14 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Opened;
 					door->door2 = (token == "door2");
-					door->CreateNode(area.scene);
-					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(shape_door);
-					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-
-					btTransform& tr = door->phy->getWorldTransform();
-					Vec3 pos = door->pos;
-					pos.y += Door::HEIGHT;
-					tr.setOrigin(ToVector3(pos));
-					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					phy_world->addCollisionObject(door->phy, CG_DOOR);
-
 					if(token != "door") // door2 are closed now, this is intended
 					{
 						door->state = Door::Closed;
 						if(token == "doorl")
 							door->locked = 1;
 					}
-					else
-					{
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->node->mesh_inst->SetToEnd(door->node->mesh_inst->mesh->anims[0]);
-					}
-
+					door->CreateNode(area.scene);
 					area.doors.push_back(door);
 				}
 				else if(token == "arena")
@@ -3082,35 +3063,10 @@ int Level::GetChestDifficultyLevel() const
 }
 
 //=================================================================================================
-void Level::OnReenterLevel()
+void Level::OnRevisitLevel()
 {
 	for(LevelArea& area : ForEachArea())
-	{
-		// odtwórz drzwi
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-
-			// fizyka
-			door.phy = new btCollisionObject;
-			door.phy->setCollisionShape(shape_door);
-			door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
-			btTransform& tr = door.phy->getWorldTransform();
-			Vec3 pos = door.pos;
-			pos.y += Door::HEIGHT;
-			tr.setOrigin(ToVector3(pos));
-			tr.setRotation(btQuaternion(door.rot, 0, 0));
-			phy_world->addCollisionObject(door.phy, CG_DOOR);
-
-			// czy otwarte
-			if(door.state == Door::Opened)
-			{
-				btVector3& pos = door.phy->getWorldTransform().getOrigin();
-				pos.setY(pos.y() - 100.f);
-				door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
-			}
-		}
-	}
+		area.RecreateNodes();
 }
 
 //=================================================================================================

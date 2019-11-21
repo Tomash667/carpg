@@ -130,7 +130,7 @@ public:
 	void UpdateLocation(int days, int open_chance, bool reset);
 	int GetDifficultyLevel() const;
 	int GetChestDifficultyLevel() const;
-	void OnReenterLevel();
+	void OnRevisitLevel();
 	bool HaveArena();
 	InsideBuilding* GetArena();
 	cstring GetCurrentLocationText();

@@ -2280,7 +2280,7 @@ void CityGenerator::OnEnter()
 			}
 		}
 
-		game_level->OnReenterLevel();
+		game_level->OnRevisitLevel();
 	}
 	else
 		OnReenter();
