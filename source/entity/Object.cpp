@@ -20,8 +20,7 @@ void Object::CreateNode(Scene* scene)
 		node->mat = Matrix::Transform(pos, rot, scale);
 		node->type = SceneNode::NORMAL;
 	}
-	node->mesh = mesh;
-	node->flags = 0;
+	node->SetMesh(mesh);
 	int alpha = RequireAlphaTest();
 	if(alpha == 0)
 		node->flags = SceneNode::F_ALPHA_TEST;

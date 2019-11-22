@@ -26,8 +26,7 @@ void Door::CreateNode(Scene* scene)
 	// scene node
 	node = SceneNode::Get();
 	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
-	node->mesh = door2 ? game_res->aDoor2 : game_res->aDoor;
-	node->mesh_inst = new MeshInstance(node->mesh);
+	node->SetMeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 	node->mesh_inst->base_speed = 2.f;
 	node->flags = SceneNode::F_ANIMATED;
 	node->type = SceneNode::NORMAL;

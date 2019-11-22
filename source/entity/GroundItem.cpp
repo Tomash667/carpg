@@ -22,13 +22,14 @@ void GroundItem::CreateNode(Scene* scene)
 	node->pos = pos;
 	if(IsSet(item->flags, ITEM_GROUND_MESH))
 	{
-		node->mesh = item->mesh;
+		node->SetMesh(item->mesh);
 		node->pos.y -= item->mesh->head.bbox.v1.y;
 	}
 	else
-		node->mesh = game_res->aBag;
+		node->SetMesh(game_res->aBag);
+	if(IsSet(item->flags, ITEM_ALPHA))
+		node->flags |= SceneNode::F_ALPHA_TEST;
 	node->mat = Matrix::RotationY(rot) * Matrix::Translation(node->pos);
-	node->flags = IsSet(item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
 	node->type = SceneNode::NORMAL;
 	scene->Add(node);
 }

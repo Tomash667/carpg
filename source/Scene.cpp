@@ -531,8 +531,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					SceneNode* node = SceneNode::Get();
 					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
-					node->mesh = bullet.mesh;
-					node->flags = 0;
+					node->SetMesh(bullet.mesh);
 					if(!outside)
 						node->lights = GatherDrawBatchLights(area, node, bullet.pos.x, bullet.pos.z, bullet.mesh->head.radius);
 					draw_batch.nodes.Add(node);
@@ -561,14 +560,12 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 				SceneNode* node = SceneNode::Get();
 				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
-				node->mesh = trap.obj.mesh;
+				node->SetMesh(trap.obj.mesh);
 				int alpha = trap.obj.RequireAlphaTest();
-				if(alpha == -1)
-					node->flags = 0;
-				else if(alpha == 0)
-					node->flags = SceneNode::F_ALPHA_TEST;
-				else
-					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+				if(alpha == 0)
+					node->flags |= SceneNode::F_ALPHA_TEST;
+				else if(alpha == 1)
+					node->flags |= SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, trap.obj.pos.x, trap.obj.pos.z, trap.obj.mesh->head.radius);
 				draw_batch.nodes.Add(node);
@@ -577,14 +574,12 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 				SceneNode* node = SceneNode::Get();
 				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
-				node->mesh = trap.obj2.mesh;
+				node->SetMesh(trap.obj2.mesh);
 				int alpha = trap.obj2.RequireAlphaTest();
-				if(alpha == -1)
-					node->flags = 0;
-				else if(alpha == 0)
-					node->flags = SceneNode::F_ALPHA_TEST;
-				else
-					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+				if(alpha == 0)
+					node->flags |= SceneNode::F_ALPHA_TEST;
+				else if(alpha == 1)
+					node->flags |= SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
 				if(!outside)
 					node->lights = GatherDrawBatchLights(area, node, trap.obj2.pos.x, trap.obj2.pos.z, trap.obj2.mesh->head.radius);
 				draw_batch.nodes.Add(node);
@@ -603,8 +598,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->pos = explo.pos;
 				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
-				node->mesh = game_res->aSpellball;
-				node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
+				node->SetMesh(game_res->aSpellball);
+				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
 				node->tex_override = &explo.spell->tex_explode;
 				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
 				draw_batch.nodes.Add(node);
@@ -652,8 +647,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->pos = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
 				node->mat = Matrix::Rotation(0, portal->rot, -portal_anim * PI * 2) * Matrix::Translation(node->pos);
-				node->mesh = game_res->aPortal;
-				node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
+				node->SetMesh(game_res->aPortal);
+				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
 				draw_batch.nodes.Add(node);
 			}
 			portal = portal->next_portal;
@@ -822,8 +817,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			SceneNode* node = SceneNode::Get();
 			node->pos = u.GetHeadPoint();
 			node->mat = Matrix::RotationY(effect->time * 3) * Matrix::Translation(node->pos);
-			node->mesh = game_res->aStun;
-			node->flags = SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
+			node->SetMesh(game_res->aStun);
+			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			draw_batch.nodes.Add(node);
 		}
 	}
@@ -838,9 +833,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	// dodaj scene node
 	SceneNode* node = SceneNode::Get();
 	node->mat = Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
-	node->mesh = u.mesh_inst->mesh;
-	node->mesh_inst = u.mesh_inst;
-	node->flags = SceneNode::F_ANIMATED;
+	node->SetMeshInstance(u.mesh_inst);
 	node->tex_override = u.data->GetTextureOverride();
 
 	// ustawienia œwiat³a
@@ -873,10 +866,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	{
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = SceneNode::Get();
-		node2->mesh = armor.mesh;
-		node2->mesh_inst = u.mesh_inst;
+		node2->SetMesh(armor.mesh);
+		node2->SetParentMeshInstance(u.mesh_inst);
 		node2->mat = node->mat;
-		node2->flags = SceneNode::F_ANIMATED;
 		node2->tex_override = armor.GetTextureOverride();
 		node2->lights = lights;
 		if(selected)
@@ -897,8 +889,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	// przedmiot w d³oni
 	Mesh* right_hand_item = nullptr;
-	int right_hand_item_flags = 0;
-	bool w_dloni = false;
+	bool in_hand = false;
 
 	switch(u.weapon_state)
 	{
@@ -916,7 +907,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				right_hand_item = game_res->aArrow;
 		}
 		else if(u.weapon_taken == W_ONE_HANDED)
-			w_dloni = true;
+			in_hand = true;
 		break;
 	case WeaponState::Taking:
 		if(u.animation_state == 1)
@@ -924,7 +915,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			if(u.weapon_taken == W_BOW)
 				right_hand_item = game_res->aArrow;
 			else
-				w_dloni = true;
+				in_hand = true;
 		}
 		break;
 	case WeaponState::Hiding:
@@ -933,16 +924,17 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			if(u.weapon_hiding == W_BOW)
 				right_hand_item = game_res->aArrow;
 			else
-				w_dloni = true;
+				in_hand = true;
 		}
 		break;
 	}
 
+	bool right_hand_item_alpha = false;
 	if(u.used_item && u.action != A_USE_ITEM)
 	{
 		right_hand_item = u.used_item->mesh;
 		if(IsSet(u.used_item->flags, ITEM_ALPHA))
-			right_hand_item_flags = SceneNode::F_ALPHA_TEST;
+			right_hand_item_alpha = true;
 	}
 
 	Matrix mat_scale;
@@ -960,13 +952,12 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	Mesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(w_dloni ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->mesh = mesh;
-		node2->flags = 0;
+		node2->SetMesh(mesh);
 		node2->lights = lights;
 		if(selected)
 		{
@@ -1001,13 +992,12 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(w_dloni ? NAMES::point_shield : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->mesh = shield;
-		node2->flags = 0;
+		node2->SetMesh(shield);
 		node2->lights = lights;
 		if(selected)
 		{
@@ -1046,8 +1036,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->mesh = right_hand_item;
-		node2->flags = right_hand_item_flags;
+		node2->SetMesh(right_hand_item);
+		if(right_hand_item_alpha)
+			node2->flags |= SceneNode::F_ALPHA_TEST;
 		node2->lights = lights;
 		if(selected)
 		{
@@ -1057,7 +1048,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = IsSet(right_hand_item_flags, SceneNode::F_ALPHA_TEST);
+				glow.alpha = right_hand_item_alpha;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1068,44 +1059,39 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	// ³uk
 	if(u.HaveBow())
 	{
-		bool w_dloni;
+		bool in_hand;
 
 		switch(u.weapon_state)
 		{
 		case WeaponState::Hiding:
-			w_dloni = (u.weapon_hiding == W_BOW && u.animation_state == 0);
+			in_hand = (u.weapon_hiding == W_BOW && u.animation_state == 0);
 			break;
 		case WeaponState::Hidden:
-			w_dloni = false;
+			in_hand = false;
 			break;
 		case WeaponState::Taking:
-			w_dloni = (u.weapon_taken == W_BOW && u.animation_state == 1);
+			in_hand = (u.weapon_taken == W_BOW && u.animation_state == 1);
 			break;
 		case WeaponState::Taken:
-			w_dloni = (u.weapon_taken == W_BOW);
+			in_hand = (u.weapon_taken == W_BOW);
 			break;
 		}
 
 		SceneNode* node2 = SceneNode::Get();
 
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(w_dloni ? NAMES::point_bow : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
 		assert(point);
 
 		if(u.action == A_SHOOT)
 		{
 			u.bow_instance->SetupBones();
-			node2->mesh = u.bow_instance->mesh;
-			node2->mesh_inst = u.bow_instance;
-			node2->flags = SceneNode::F_ANIMATED;
+			node2->SetMeshInstance(u.bow_instance);
 		}
 		else
-		{
-			node2->mesh = u.GetBow().mesh;
-			node2->flags = 0;
-		}
+			node2->SetMesh(u.GetBow().mesh);
 
 		Matrix m1;
-		if(w_dloni)
+		if(in_hand)
 			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.mesh_inst->mat_bones[point->bone];
 		else
 			m1 = point->mat * u.mesh_inst->mat_bones[point->bone];
@@ -1134,9 +1120,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 		// brwi
 		SceneNode* node2 = SceneNode::Get();
-		node2->mesh = game_res->aEyebrows;
-		node2->mesh_inst = node->mesh_inst;
-		node2->flags = SceneNode::F_ANIMATED;
+		node2->SetMesh(game_res->aEyebrows);
+		node2->SetParentMeshInstance(node->mesh_inst);
 		node2->mat = node->mat;
 		node2->tint = h.hair_color;
 		node2->lights = lights;
@@ -1163,9 +1148,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(h.hair != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->mesh = game_res->aHair[h.hair];
-			node3->mesh_inst = node->mesh_inst;
-			node3->flags = SceneNode::F_ANIMATED;
+			node3->SetMesh(game_res->aHair[h.hair]);
+			node3->SetParentMeshInstance(node->mesh_inst);
 			node3->mat = node->mat;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
@@ -1193,9 +1177,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(h.beard != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->mesh = game_res->aBeard[h.beard];
-			node3->mesh_inst = node->mesh_inst;
-			node3->flags = SceneNode::F_ANIMATED;
+			node3->SetMesh(game_res->aBeard[h.beard]);
+			node3->SetParentMeshInstance(node->mesh_inst);
 			node3->mat = node->mat;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
@@ -1223,9 +1206,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(h.mustache != -1 && (h.beard == -1 || !g_beard_and_mustache[h.beard]))
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->mesh = game_res->aMustache[h.mustache];
-			node3->mesh_inst = node->mesh_inst;
-			node3->flags = SceneNode::F_ANIMATED;
+			node3->SetMesh(game_res->aMustache[h.mustache]);
+			node3->SetParentMeshInstance(node->mesh_inst);
 			node3->mat = node->mat;
 			node3->tint = h.hair_color;
 			node3->lights = lights;

@@ -21,9 +21,7 @@ void Chest::CreateNode(Scene* scene)
 {
 	node = SceneNode::Get();
 	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
-	node->mesh = game_res->aChest;
-	node->mesh_inst = new MeshInstance(node->mesh);
-	node->flags = SceneNode::F_ANIMATED;
+	node->SetMeshInstance(game_res->aChest);
 	node->type = SceneNode::NORMAL;
 	scene->Add(node);
 }
