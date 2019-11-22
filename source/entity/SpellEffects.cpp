@@ -104,8 +104,8 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		trail->alive = steps + 1;
 		trail->tex = game_res->tLightingLine;
 		trail->fade = 0.25f;
-		trail->color1 = Vec4(0.2f, 0.2f, 1.f, 0.f);
-		trail->color2 = Vec4(0.2f, 0.2f, 1.f, 0.5f);
+		trail->color1 = Vec4(0.2f, 0.2f, 1.f, 0.5f);
+		trail->color2 = Vec4(0.2f, 0.2f, 1.f, 0);
 
 		const Vec3 dir = line.to - line.from;
 		const Vec3 step = dir / float(steps);
@@ -160,7 +160,7 @@ void Electro::Update(float dt)
 void Electro::UpdateColor(Line& line)
 {
 	const float t = line.t * 4;
-	const float r = 0.25f;
+	const float r = 0.5f;
 	for(int i = 0, count = (int)line.trail->parts.size(); i < count; ++i)
 	{
 		const float x = float(i) / count;
@@ -169,7 +169,7 @@ void Electro::UpdateColor(Line& line)
 		if(d <= r / 2)
 			a = 1.f;
 		else if(d < r)
-			a = 1.f - (d - 0.5f) * 2;
+			a = 1.f - (d - r / 2) / (r / 2);
 		else
 			a = 0.f;
 		line.trail->parts[i].t = a;
