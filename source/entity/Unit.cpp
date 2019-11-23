@@ -2112,7 +2112,7 @@ void Unit::Load(GameReader& f)
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = mesh_inst->groups[1].time;
+			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
 		}
 
 		f >> last_bash;
@@ -2836,7 +2836,7 @@ bool Unit::Read(BitStreamReader& f)
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = mesh_inst->groups[1].time;
+			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
 		}
 	}
 	else

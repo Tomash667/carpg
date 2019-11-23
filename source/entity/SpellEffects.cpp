@@ -220,7 +220,9 @@ void Electro::Load(FileReader& f)
 	{
 		vector<Vec3> pts;
 		float t;
-		for(uint i = 0, count = lines.size(); i < count; ++i)
+		uint count;
+		f >> count;
+		for(uint i = 0; i < count; ++i)
 		{
 			f.ReadVector4(pts);
 			f >> t;
