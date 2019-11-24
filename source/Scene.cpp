@@ -544,7 +544,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					Billboard& bb = Add1(draw_batch.billboards);
 					bb.pos = it->pos;
 					bb.size = it->tex_size;
-					bb.tex = it->tex->tex;
+					bb.tex = it->tex;
 				}
 			}
 		}
