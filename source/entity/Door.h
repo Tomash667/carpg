@@ -22,7 +22,7 @@ struct Door : public EntityType<Door>
 		Closed,
 		Opening,
 		Opening2,
-		Open,
+		Opened,
 		Closing,
 		Closing2,
 		Max
@@ -72,4 +72,6 @@ struct Door : public EntityType<Door>
 		p.y += 1.5f;
 		return p;
 	}
+	void Open();
+	void Close();
 };

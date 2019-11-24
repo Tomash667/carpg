@@ -10,7 +10,7 @@ struct Bullet
 	float speed, timer, attack, tex_size, yspeed, poison_attack, backstab;
 	int level;
 	TexturePtr tex;
-	TrailParticleEmitter* trail, *trail2;
+	TrailParticleEmitter* trail;
 	ParticleEmitter* pe;
 	bool remove;
 

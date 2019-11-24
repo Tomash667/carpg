@@ -4,17 +4,16 @@
 #include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
-const int SPLIT_INDEX = 1 << 31;
-
-//-----------------------------------------------------------------------------
 struct SceneNode
 {
+	static constexpr int SPLIT_INDEX = 1 << 31;
+
 	enum Flags
 	{
 		F_CUSTOM = 1 << 0,
 		F_ANIMATED = 1 << 1,
 		F_SPECULAR_MAP = 1 << 2,
-		F_BINORMALS = 1 << 3,
+		F_TANGENTS = 1 << 3,
 		F_NORMAL_MAP = 1 << 4,
 		F_NO_ZWRITE = 1 << 5,
 		F_NO_CULLING = 1 << 6,
@@ -93,14 +92,6 @@ struct GlowNode
 };
 
 //-----------------------------------------------------------------------------
-struct Billboard
-{
-	TEX tex;
-	Vec3 pos;
-	float size;
-};
-
-//-----------------------------------------------------------------------------
 struct Area
 {
 	Vec3 v[4];
@@ -167,7 +158,6 @@ struct DrawBatch
 	vector<Explo*> explos;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*>* tpes;
-	vector<Electro*>* electros;
 	vector<Portal*> portals;
 	vector<Area> areas;
 	float area_range;

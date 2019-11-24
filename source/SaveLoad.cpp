@@ -472,8 +472,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << game_level->cl_fog;
-	f << game_level->cl_lighting;
+	f << game->use_fog;
+	f << game->use_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -780,8 +780,8 @@ void Game::LoadGame(GameReader& f)
 	noai = true;
 #endif
 	f >> dont_wander;
-	f >> game_level->cl_fog;
-	f >> game_level->cl_lighting;
+	f >> game->use_fog;
+	f >> game->use_lighting;
 	f >> draw_particle_sphere;
 	f >> draw_unit_radius;
 	f >> draw_hitbox;
@@ -977,14 +977,14 @@ bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
 		{
 			Warn("Missing quicksave.");
 			if(from_console)
-				cmdp->Msg("Missing quicksave.");
+				game_gui->console->AddMsg("Missing quicksave.");
 			return false;
 		}
 
 		cstring msg = Format("Failed to load game: %s", ex.msg);
 		Error(msg);
 		if(from_console)
-			cmdp->Msg(msg);
+			game_gui->console->AddMsg(msg);
 		else
 		{
 			cstring dialog_text;

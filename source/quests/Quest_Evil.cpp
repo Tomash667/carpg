@@ -545,8 +545,8 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->emisions = -1;
 	pe->life = -1;
 	pe->max_particles = 50;
-	pe->op_alpha = POP_LINEAR_SHRINK;
-	pe->op_size = POP_LINEAR_SHRINK;
+	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->particle_life = 0.5f;
 	pe->pos = obj->pos;
 	pe->pos.y += obj->base->centery;

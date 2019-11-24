@@ -401,13 +401,13 @@ void Options::Event(GuiEvent e)
 			gui->ShowDialog((DialogBox*)game_gui->controls);
 			break;
 		case IdGlow:
-			game->cl_glow = check[1].checked;
+			game->use_glow = check[1].checked;
 			break;
 		case IdNormal:
-			game->cl_normalmap = check[2].checked;
+			game->use_normalmap = check[2].checked;
 			break;
 		case IdSpecular:
-			game->cl_specularmap = check[3].checked;
+			game->use_specularmap = check[3].checked;
 			break;
 		case IdVsync:
 			render->SetVsync(!render->IsVsyncEnabled());
@@ -420,9 +420,9 @@ void Options::Event(GuiEvent e)
 void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
-	check[1].checked = game->cl_glow;
-	check[2].checked = game->cl_normalmap;
-	check[3].checked = game->cl_specularmap;
+	check[1].checked = game->use_glow;
+	check[2].checked = game->use_normalmap;
+	check[3].checked = game->use_specularmap;
 	check[4].checked = render->IsVsyncEnabled();
 
 	Res& re = *res.GetItemCast<Res>();

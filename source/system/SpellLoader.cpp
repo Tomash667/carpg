@@ -280,7 +280,7 @@ void SpellLoader::ParseSpell(const string& id)
 		case K_MOVE_RANGE:
 			spell->move_range = t.MustGetFloat();
 			if(spell->move_range < 0.f)
-				t.Throw("Negative nove range %g.", spell->move_range);
+				t.Throw("Negative move range %g.", spell->move_range);
 			crc.Update(spell->move_range);
 			t.Next();
 			break;

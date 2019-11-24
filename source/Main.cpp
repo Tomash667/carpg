@@ -609,10 +609,10 @@ void LoadConfiguration(char* lpCmdLine)
 	render->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
-	game->cl_postfx = cfg.GetBool("cl_postfx", true);
-	game->cl_normalmap = cfg.GetBool("cl_normalmap", true);
-	game->cl_specularmap = cfg.GetBool("cl_specularmap", true);
-	game->cl_glow = cfg.GetBool("cl_glow", true);
+	game->use_postfx = cfg.GetBool("use_postfx", "cl_postfx", true);
+	game->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
+	game->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
+	game->use_glow = cfg.GetBool("cl_glow", true);
 	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));
 	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);

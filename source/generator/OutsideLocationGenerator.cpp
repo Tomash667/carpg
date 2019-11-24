@@ -192,7 +192,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(days > 10)
 			GenerateItems();
 
-		game_level->OnReenterLevel();
+		game_level->OnRevisitLevel();
 	}
 	else
 		OnReenter();
@@ -385,7 +385,7 @@ void OutsideLocationGenerator::SpawnTeam()
 //=================================================================================================
 void OutsideLocationGenerator::CreateMinimap()
 {
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{

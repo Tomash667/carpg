@@ -113,12 +113,13 @@ const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 
 //=================================================================================================
-Game::Game() : vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
-draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
-dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
-paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
-cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD),
-default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
+Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
+draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
+check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
+draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
+profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine), use_fog(true), use_lighting(true), use_normalmap(true),
+use_specularmap(true)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -129,17 +130,8 @@ default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot:
 	dialog_context.is_local = true;
 
 	// bufory wierzcho³ków i indeksy
-	vbParticle = nullptr;
 	vbDungeon = nullptr;
 	ibDungeon = nullptr;
-	vbFullscreen = nullptr;
-
-	// tekstury render target, powierzchnie
-	for(int i = 0; i < 3; ++i)
-	{
-		sPostEffect[i] = nullptr;
-		tPostEffect[i] = nullptr;
-	}
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
@@ -407,7 +399,7 @@ void Game::ConfigureGame()
 	render->RegisterShader(super_shader = new SuperShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
-	CreateTextures();
+	tMinimap = render->CreateDynamicTexture(Int2(128, 128));
 	CreateRenderTargets();
 }
 
@@ -617,18 +609,8 @@ void Game::OnCleanup()
 	ClearQuadtree();
 
 	// bufory wierzcho³ków i indeksy
-	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
-	SafeRelease(vbFullscreen);
-
-	// tekstury render target, powierzchnie
-	SafeRelease(tMinimap.tex);
-	for(int i = 0; i < 3; ++i)
-	{
-		SafeRelease(sPostEffect[i]);
-		SafeRelease(tPostEffect[i]);
-	}
 
 	draw_batch.Clear();
 
@@ -673,7 +655,10 @@ void Game::DrawGame(RenderTarget* target)
 {
 	IDirect3DDevice9* device = render->GetDevice();
 
-	if(post_effects.empty() || !postfx_shader->effect)
+	vector<PostEffect> post_effects;
+	GetPostEffects(post_effects);
+
+	if(post_effects.empty())
 	{
 		if(target)
 			render->SetTarget(target);
@@ -695,7 +680,7 @@ void Game::DrawGame(RenderTarget* target)
 		}
 
 		// draw gui
-		game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+		game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 		if(target)
@@ -708,9 +693,9 @@ void Game::DrawGame(RenderTarget* target)
 		// render scene to texture
 		SURFACE sPost;
 		if(!render->IsMultisamplingEnabled())
-			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
+			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &sPost));
 		else
-			sPost = sPostEffect[2];
+			sPost = postfx_shader->surf[2];
 
 		V(device->SetRenderTarget(0, sPost));
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
@@ -730,20 +715,20 @@ void Game::DrawGame(RenderTarget* target)
 		if(!render->IsMultisamplingEnabled())
 		{
 			sPost->Release();
-			t = tPostEffect[2];
+			t = postfx_shader->tex[2];
 		}
 		else
 		{
 			SURFACE surf2;
-			V(tPostEffect[0]->GetSurfaceLevel(0, &surf2));
+			V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
 			V(device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE));
 			surf2->Release();
-			t = tPostEffect[0];
+			t = postfx_shader->tex[0];
 		}
 
 		// post effects
 		V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-		V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
+		V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
 		render->SetAlphaTest(false);
 		render->SetAlphaBlend(false);
 		render->SetNoCulling(false);
@@ -766,9 +751,9 @@ void Game::DrawGame(RenderTarget* target)
 			{
 				// using next pass
 				if(!render->IsMultisamplingEnabled())
-					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
+					V(postfx_shader->tex[index_surf]->GetSurfaceLevel(0, &surf));
 				else
-					surf = sPostEffect[index_surf];
+					surf = postfx_shader->surf[index_surf];
 			}
 
 			V(device->SetRenderTarget(0, surf));
@@ -786,7 +771,7 @@ void Game::DrawGame(RenderTarget* target)
 			V(effect->End());
 
 			if(it + 1 == end)
-				game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+				game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 			V(device->EndScene());
 
@@ -798,15 +783,15 @@ void Game::DrawGame(RenderTarget* target)
 			else if(!render->IsMultisamplingEnabled())
 			{
 				surf->Release();
-				t = tPostEffect[index_surf];
+				t = postfx_shader->tex[index_surf];
 			}
 			else
 			{
 				SURFACE surf2;
-				V(tPostEffect[0]->GetSurfaceLevel(0, &surf2));
+				V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
 				V(device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE));
 				surf2->Release();
-				t = tPostEffect[0];
+				t = postfx_shader->tex[0];
 			}
 
 			index_surf = (index_surf + 1) % 3;
@@ -1139,29 +1124,15 @@ bool Game::Start()
 //=================================================================================================
 void Game::OnReload()
 {
-	CreateTextures();
 	BuildDungeon();
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
 		loc_gen_factory->Get(game_level->location)->CreateMinimap();
-	if(game_gui && game_gui->inventory)
-		game_gui->inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
-	if(game_gui && game_gui->inventory)
-		game_gui->inventory->OnReset();
-
-	SafeRelease(tMinimap.tex);
-	for(int i = 0; i < 3; ++i)
-	{
-		SafeRelease(sPostEffect[i]);
-		SafeRelease(tPostEffect[i]);
-	}
-	SafeRelease(vbFullscreen);
-	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 }
@@ -1293,61 +1264,6 @@ void Game::SaveCfg()
 {
 	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
 		Error("Failed to save configuration file '%s'!", cfg_file.c_str());
-}
-
-//=================================================================================================
-void Game::CreateTextures()
-{
-	if(tMinimap.tex)
-		return;
-
-	IDirect3DDevice9* device = render->GetDevice();
-	const Int2& wnd_size = engine->GetWindowSize();
-
-	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap.tex, nullptr));
-	tMinimap.state = ResourceState::Loaded;
-
-	int ms, msq;
-	render->GetMultisampling(ms, msq);
-	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
-	if(ms != D3DMULTISAMPLE_NONE)
-	{
-		for(int i = 0; i < 3; ++i)
-		{
-			V(device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr));
-			tPostEffect[i] = nullptr;
-		}
-		V(device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[0], nullptr));
-	}
-	else
-	{
-		for(int i = 0; i < 3; ++i)
-		{
-			V(device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[i], nullptr));
-			sPostEffect[i] = nullptr;
-		}
-	}
-
-	// fullscreen vertexbuffer
-	VTex* v;
-	V(device->CreateVertexBuffer(sizeof(VTex) * 6, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbFullscreen, nullptr));
-	V(vbFullscreen->Lock(0, sizeof(VTex) * 6, (void**)&v, 0));
-
-	// coœ mi siê obi³o o uszy z tym pó³ teksela przy renderowaniu
-	// ale szczegó³ów nie znam
-	const float u_start = 0.5f / wnd_size.x;
-	const float u_end = 1.f + 0.5f / wnd_size.x;
-	const float v_start = 0.5f / wnd_size.y;
-	const float v_end = 1.f + 0.5f / wnd_size.y;
-
-	v[0] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
-	v[1] = VTex(1.f, 1.f, 0.f, u_end, v_start);
-	v[2] = VTex(1.f, -1.f, 0.f, u_end, v_end);
-	v[3] = VTex(1.f, -1.f, 0.f, u_end, v_end);
-	v[4] = VTex(-1.f, -1.f, 0.f, u_start, v_end);
-	v[5] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
-
-	V(vbFullscreen->Unlock());
 }
 
 //=================================================================================================
@@ -1622,25 +1538,21 @@ void Game::UpdateLights(vector<Light>& lights)
 }
 
 //=================================================================================================
-void Game::UpdatePostEffects(float dt)
+void Game::GetPostEffects(vector<PostEffect>& post_effects)
 {
 	post_effects.clear();
-	if(!cl_postfx || game_state != GS_LEVEL)
+	if(!use_postfx || game_state != GS_LEVEL || !postfx_shader->effect)
 		return;
 
-	// szarzenie
-	if(pc->unit->IsAlive())
-		grayout = max(grayout - dt, 0.f);
-	else
-		grayout = min(grayout + dt, 1.f);
-	if(grayout > 0.f)
+	// gray effect
+	if(pc->data.grayout > 0.f)
 	{
 		PostEffect& e = Add1(post_effects);
 		e.tech = postfx_shader->techMonochrome;
-		e.power = grayout;
+		e.power = pc->data.grayout;
 	}
 
-	// upicie
+	// drunk effect
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
@@ -2152,11 +2064,10 @@ void Game::SetupCamera(float dt)
 
 	game_level->camera.UpdateRot(dt, Vec2(rotX, game_level->camera.real_rot.y));
 
-	Matrix mat, matProj, matView;
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
 	Vec3 dist(0, -game_level->camera.tmp_dist, 0);
 
-	mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
+	Matrix mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!
@@ -2430,12 +2341,12 @@ void Game::SetupCamera(float dt)
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	matView = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
-	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
+	Matrix mat_view = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
+	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
 		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
-	game_level->camera.matViewProj = matView * matProj;
-	game_level->camera.matViewInv = matView.Inverse();
-	game_level->camera.frustum.Set(game_level->camera.matViewProj);
+	game_level->camera.mat_view_proj = mat_view * mat_proj;
+	game_level->camera.mat_view_inv = mat_view.Inverse();
+	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
@@ -2480,7 +2391,6 @@ void Game::UpdateGame(float dt)
 		quest_mgr->quest_tutorial->Update();
 
 	drunk_anim = Clip(drunk_anim + dt);
-	UpdatePostEffects(dt);
 
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
@@ -2528,11 +2438,6 @@ void Game::UpdateGame(float dt)
 
 		gui->SimpleDialog(Format(text, pc->kills, game_stats->total_kills - pc->kills), nullptr);
 	}
-
-	// licznik otrzymanych obra¿eñ
-	pc->last_dmg = 0.f;
-	if(Net::IsLocal())
-		pc->last_dmg_poison = 0.f;
 
 	if(devmode && GKey.AllowKeyboard())
 	{
@@ -3404,10 +3309,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 	assert(hitted && hitbox.IsBox());
 
 	// ustaw koœci
-	if(unit.human_data)
-		unit.mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
-	else
-		unit.mesh_inst->SetupBones();
+	unit.mesh_inst->SetupBones();
 
 	// oblicz macierz hitbox
 
@@ -3484,9 +3386,9 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 				pe->size = 0.3f;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
 				area.tmp->pes.push_back(pe);
@@ -3525,7 +3427,7 @@ void Game::UpdateParticles(LevelArea& area, float dt)
 
 	LoopAndRemove(area.tmp->tpes, [dt](TrailParticleEmitter* tpe)
 	{
-		if(tpe->Update(dt, nullptr, nullptr))
+		if(tpe->Update(dt, nullptr))
 		{
 			delete tpe;
 			return true;
@@ -3576,9 +3478,9 @@ void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, in
 		pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 		pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 		pe->size = 0.3f;
-		pe->op_size = POP_LINEAR_SHRINK;
+		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->alpha = 0.9f;
-		pe->op_alpha = POP_LINEAR_SHRINK;
+		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->mode = 0;
 		pe->Init();
 		taker.area->tmp->pes.push_back(pe);
@@ -3733,21 +3635,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		if(it->pe)
 			it->pe->pos = it->pos;
 		if(it->trail)
-		{
-			Vec3 pt1 = it->pos;
-			pt1.y += 0.05f;
-			Vec3 pt2 = it->pos;
-			pt2.y -= 0.05f;
-			it->trail->Update(0, &pt1, &pt2);
-
-			pt1 = it->pos;
-			pt1.x += sin(it->rot.y + PI / 2)*0.05f;
-			pt1.z += cos(it->rot.y + PI / 2)*0.05f;
-			pt2 = it->pos;
-			pt2.x -= sin(it->rot.y + PI / 2)*0.05f;
-			pt2.z -= cos(it->rot.y + PI / 2)*0.05f;
-			it->trail2->Update(0, &pt1, &pt2);
-		}
+			it->trail->Update(0, &it->pos);
 
 		// remove bullet on timeout
 		if((it->timer -= dt) <= 0.f)
@@ -3756,10 +3644,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 			it->remove = true;
 			deletions = true;
 			if(it->trail)
-			{
 				it->trail->destroy = true;
-				it->trail2->destroy = true;
-			}
 			if(it->pe)
 				it->pe->destroy = true;
 			continue;
@@ -3793,10 +3678,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		it->remove = true;
 		deletions = true;
 		if(it->trail)
-		{
 			it->trail->destroy = true;
-			it->trail2->destroy = true;
-		}
 		if(it->pe)
 			it->pe->destroy = true;
 
@@ -4071,9 +3953,9 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 				pe->size = 0.3f;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
 				area.tmp->pes.push_back(pe);
@@ -4485,9 +4367,9 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 		pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 		pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 		pe->size = spell.size / 2;
-		pe->op_size = POP_LINEAR_SHRINK;
+		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->alpha = 1.f;
-		pe->op_alpha = POP_LINEAR_SHRINK;
+		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->mode = 1;
 		pe->Init();
 		area.tmp->pes.push_back(pe);
@@ -4847,14 +4729,6 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 						area.tmp->tpes.push_back(tpe);
 						b.trail = tpe;
 
-						TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-						tpe2->fade = 0.3f;
-						tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-						tpe2->color2 = Vec4(1, 1, 1, 0);
-						tpe2->Init(50);
-						area.tmp->tpes.push_back(tpe2);
-						b.trail2 = tpe2;
-
 						sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
 
 						if(Net::IsServer())
@@ -5007,9 +4881,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 	LoopAndRemove(area.tmp->electros, [&](Electro* p_electro)
 	{
 		Electro& electro = *p_electro;
-
-		for(Electro::Line& line : electro.lines)
-			line.t += dt;
+		electro.Update(dt);
 
 		if(!Net::IsLocal())
 		{
@@ -5031,6 +4903,8 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					return false;
 				}
 
+				const Vec3 target_pos = electro.lines.back().to;
+
 				// deal damage
 				if(!owner->IsFriend(*hitted, true))
 				{
@@ -5041,7 +4915,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 
 				// play sound
 				if(electro.spell->sound_hit)
-					sound_mgr->PlaySound3d(electro.spell->sound_hit, electro.lines.back().pts.back(), electro.spell->sound_hit_dist);
+					sound_mgr->PlaySound3d(electro.spell->sound_hit, target_pos, electro.spell->sound_hit_dist);
 
 				// add particles
 				if(electro.spell->tex_particle)
@@ -5055,15 +4929,15 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->spawn_min = 8;
 					pe->spawn_max = 12;
 					pe->max_particles = 12;
-					pe->pos = electro.lines.back().pts.back();
+					pe->pos = target_pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
 					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
 					pe->size = electro.spell->size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -5073,7 +4947,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ELECTRO_HIT;
-					c.pos = electro.lines.back().pts.back();
+					c.pos = target_pos;
 				}
 
 				if(electro.dmg >= 10.f)
@@ -5108,7 +4982,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 						{
 							Vec3 hitpoint;
 							Unit* new_hitted;
-							if(game_level->RayTest(electro.lines.back().pts.back(), it2->first->GetCenter(), hitted, hitpoint, new_hitted))
+							if(game_level->RayTest(target_pos, it2->first->GetCenter(), hitted, hitpoint, new_hitted))
 							{
 								if(new_hitted == it2->first)
 								{
@@ -5125,7 +4999,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 							electro.dmg = min(electro.dmg / 2, Lerp(electro.dmg, electro.dmg / 5, dist / 5));
 							electro.valid = true;
 							electro.hitted.push_back(target);
-							Vec3 from = electro.lines.back().pts.back();
+							Vec3 from = electro.lines.back().to;
 							Vec3 to = target->GetCenter();
 							electro.AddLine(from, to);
 
@@ -5159,10 +5033,11 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 		{
 			if(electro.hitsome && electro.lines.back().t >= 0.25f)
 			{
+				const Vec3 target_pos = electro.lines.back().to;
 				electro.hitsome = false;
 
 				if(electro.spell->sound_hit)
-					sound_mgr->PlaySound3d(electro.spell->sound_hit, electro.lines.back().pts.back(), electro.spell->sound_hit_dist);
+					sound_mgr->PlaySound3d(electro.spell->sound_hit, target_pos, electro.spell->sound_hit_dist);
 
 				// cz¹steczki
 				if(electro.spell->tex_particle)
@@ -5176,15 +5051,15 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->spawn_min = 8;
 					pe->spawn_max = 12;
 					pe->max_particles = 12;
-					pe->pos = electro.lines.back().pts.back();
+					pe->pos = target_pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
 					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
 					pe->size = electro.spell->size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -5194,7 +5069,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ELECTRO_HIT;
-					c.pos = electro.lines.back().pts.back();
+					c.pos = target_pos;
 				}
 			}
 			if(electro.lines.back().t >= 0.5f)
@@ -5220,11 +5095,20 @@ void Game::UpdateDrains(LevelArea& area, float dt)
 			return true;
 		}
 
-		Vec3 center = drain.to->GetCenter();
-		for(Particle& p : drain.pe->particles)
-			p.pos = Vec3::Lerp(p.pos, center, drain.t / 1.5f);
+		if(Unit* target = drain.target)
+		{
+			Vec3 center = target->GetCenter();
+			for(ParticleEmitter::Particle& p : drain.pe->particles)
+				p.pos = Vec3::Lerp(p.pos, center, drain.t / 1.5f);
 
-		return false;
+			return false;
+		}
+		else
+		{
+			drain.pe->time = 0.3f;
+			drain.pe->manual_delete = 0;
+			return true;
+		}
 	});
 }
 
@@ -5266,8 +5150,6 @@ void Game::ClearGameVars(bool new_game)
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
 	game_gui->world_map->picked_location = -1;
-	post_effects.clear();
-	grayout = 0.f;
 	game_level->camera.Reset();
 	game_level->lights_dt = 1.f;
 	pc->data.Reset();
@@ -5293,8 +5175,8 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		game_level->cl_fog = true;
-		game_level->cl_lighting = true;
+		use_fog = true;
+		use_lighting = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
@@ -5681,7 +5563,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			if(door.state == Door::Closing || door.state == Door::Closing2)
 				door.state = Door::Closed;
 			else if(door.state == Door::Opening || door.state == Door::Opening2)
-				door.state = Door::Open;
+				door.state = Door::Opened;
 			delete door.mesh_inst;
 			door.mesh_inst = nullptr;
 		}
@@ -5737,7 +5619,7 @@ void Game::UpdateArea(LevelArea& area, float dt)
 				}
 			}
 			if(done)
-				door.state = Door::Open;
+				door.state = Door::Opened;
 		}
 		else if(door.state == Door::Closing || door.state == Door::Closing2)
 		{

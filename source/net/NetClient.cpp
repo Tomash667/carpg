@@ -870,9 +870,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 					pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 					pe->size = 0.3f;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 0.9f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
 					game_level->GetArea(pos).tmp->pes.push_back(pe);
@@ -1167,14 +1167,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					tpe->Init(50);
 					area.tmp->tpes.push_back(tpe);
 					b.trail = tpe;
-
-					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-					tpe2->fade = 0.3f;
-					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe2->color2 = Vec4(1, 1, 1, 0);
-					tpe2->Init(50);
-					area.tmp->tpes.push_back(tpe2);
-					b.trail2 = tpe2;
 
 					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
 				}
@@ -2001,7 +1993,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(is_closing)
 						{
 							// closing door
-							if(door->state == Door::Open)
+							if(door->state == Door::Opened)
 							{
 								door->state = Door::Closing;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
@@ -2395,7 +2387,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				b.timer = spell.range / (spell.speed - 1);
 				b.remove = false;
 				b.trail = nullptr;
-				b.trail2 = nullptr;
 				b.pe = nullptr;
 				b.spell = &spell;
 				b.start_pos = b.pos;
@@ -2419,9 +2410,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -2475,8 +2466,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						else
 						{
 							Drain& drain = Add1(tmp_area.drains);
-							drain.from = nullptr;
-							drain.to = unit;
+							drain.target = unit;
 							drain.pe = tmp_area.pes.back();
 							drain.t = 0.f;
 							drain.pe->manual_delete = 1;
@@ -2499,14 +2489,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CREATE_ELECTRO.");
 				else if(game->game_state == GS_LEVEL)
 				{
+					LevelArea& area = game_level->GetArea(p1);
 					Electro* e = new Electro;
 					e->id = id;
+					e->area = &area;
 					e->Register();
 					e->spell = Spell::TryGet("thunder_bolt");
 					e->start_pos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					game_level->GetArea(p1).tmp->electros.push_back(e);
+					area.tmp->electros.push_back(e);
 				}
 			}
 			break;
@@ -2526,7 +2518,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						Error("Update client: UPDATE_ELECTRO, missing electro %d.", id);
 					else
 					{
-						Vec3 from = e->lines.back().pts.back();
+						Vec3 from = e->lines.back().to;
 						e->AddLine(from, pos);
 					}
 				}
@@ -2565,9 +2557,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						pe->pos_min = Vec3(-spell->size, -spell->size, -spell->size);
 						pe->pos_max = Vec3(spell->size, spell->size, spell->size);
 						pe->size = spell->size_particle;
-						pe->op_size = POP_LINEAR_SHRINK;
+						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
-						pe->op_alpha = POP_LINEAR_SHRINK;
+						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->mode = 1;
 						pe->Init();
 
@@ -2602,9 +2594,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 
@@ -2638,9 +2630,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 

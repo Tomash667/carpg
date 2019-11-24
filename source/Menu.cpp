@@ -59,9 +59,9 @@ bool Game::CanShowMenu()
 void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
-	cfg.Add("cl_glow", cl_glow);
-	cfg.Add("cl_normalmap", cl_normalmap);
-	cfg.Add("cl_specularmap", cl_specularmap);
+	cfg.Add("use_glow", use_glow);
+	cfg.Add("use_normalmap", use_normalmap);
+	cfg.Add("use_specularmap", use_specularmap);
 	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);

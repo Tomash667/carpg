@@ -107,7 +107,7 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game_level->OnReenterLevel();
+		game_level->OnRevisitLevel();
 
 		// odtwórz jednostki
 		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
@@ -441,7 +441,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->rot = o->rot.y;
 					door->state = Door::Closed;
 					door->mesh_inst = new MeshInstance(game_res->aDoor);
-					door->mesh_inst->groups[0].speed = 2.f;
+					door->mesh_inst->base_speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(game_level->shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -457,7 +457,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						door->locked = LOCK_ORCS;
 					else if(Rand() % 100 < base.door_open)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
@@ -1067,7 +1067,7 @@ void InsideLocationGenerator::RespawnTraps()
 void InsideLocationGenerator::CreateMinimap()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 
 	for(int y = 0; y < lvl.h; ++y)
 	{
@@ -1272,7 +1272,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					Door* door = lvl.FindDoor(Int2(x, y));
 					if(door && door->state == Door::Closed)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
@@ -1407,7 +1407,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 					Door* door = lvl.FindDoor(*it2);
 					if(door && door->state == Door::Closed)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);

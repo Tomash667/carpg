@@ -44,8 +44,7 @@ Level* global::game_level;
 
 //=================================================================================================
 Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
-shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
-cl_fog(true), cl_lighting(true)
+shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr)
 {
 	camera.draw_range = 80.f;
 }
@@ -286,7 +285,10 @@ void Level::Apply()
 	for(LevelArea& area : areas)
 	{
 		if(!area.tmp)
+		{
 			area.tmp = TmpLevelArea::Get();
+			area.tmp->area = &area;
+		}
 	}
 }
 
@@ -702,8 +704,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->emisions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particle_life = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
@@ -748,8 +750,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->emisions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particle_life = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
@@ -774,8 +776,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->emisions = -1;
 			pe->life = -1;
 			pe->max_particles = 500;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particle_life = 3.f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
@@ -1187,6 +1189,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
 					inside->tmp = TmpLevelArea::Get();
+					inside->tmp->area = inside;
 					inside->level_shift = city->inside_offset;
 					inside->offset = Vec2(512.f*city->inside_offset.x + 256.f, 512.f*city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
@@ -1277,10 +1280,10 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->Register();
 					door->pos = pos;
 					door->rot = Clip(pt.rot.y + rot);
-					door->state = Door::Open;
+					door->state = Door::Opened;
 					door->door2 = (token == "door2");
 					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
-					door->mesh_inst->groups[0].speed = 2.f;
+					door->mesh_inst->base_speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -2649,10 +2652,7 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 		return;
 
 	Blood& b = Add1(area.bloods);
-	if(u.human_data)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
-	else
-		u.mesh_inst->SetupBones();
+	u.mesh_inst->SetupBones();
 	b.pos = u.GetLootCenter();
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);
@@ -3023,7 +3023,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 			if(door.locked == 0)
 			{
 				if(Rand() % 100 < open_chance)
-					door.state = Door::Open;
+					door.state = Door::Opened;
 				else
 					door.state = Door::Closed;
 			}
@@ -3069,7 +3069,7 @@ int Level::GetChestDifficultyLevel() const
 }
 
 //=================================================================================================
-void Level::OnReenterLevel()
+void Level::OnRevisitLevel()
 {
 	for(LevelArea& area : ForEachArea())
 	{
@@ -3088,7 +3088,7 @@ void Level::OnReenterLevel()
 
 			// animowany model
 			door.mesh_inst = new MeshInstance(door.door2 ? game_res->aDoor2 : game_res->aDoor);
-			door.mesh_inst->groups[0].speed = 2.f;
+			door.mesh_inst->base_speed = 2.f;
 
 			// fizyka
 			door.phy = new btCollisionObject;
@@ -3102,7 +3102,7 @@ void Level::OnReenterLevel()
 			phy_world->addCollisionObject(door.phy, CG_DOOR);
 
 			// czy otwarte
-			if(door.state == Door::Open)
+			if(door.state == Door::Opened)
 			{
 				btVector3& pos = door.phy->getWorldTransform().getOrigin();
 				pos.setY(pos.y() - 100.f);
@@ -3832,7 +3832,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
@@ -4033,14 +4033,6 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				tpe->Init(50);
 				tmp_area.tpes.push_back(tpe);
 				bullet.trail = tpe;
-
-				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-				tpe2->fade = 0.3f;
-				tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe2->color2 = Vec4(1, 1, 1, 0);
-				tpe2->Init(50);
-				tmp_area.tpes.push_back(tpe2);
-				bullet.trail2 = tpe2;
 			}
 			else
 			{
@@ -4058,7 +4050,6 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				bullet.tex_size = spell.size;
 				bullet.remove = false;
 				bullet.trail = nullptr;
-				bullet.trail2 = nullptr;
 				bullet.pe = nullptr;
 
 				if(spell.tex_particle)
@@ -4078,9 +4069,9 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					tmp_area.pes.push_back(pe);
@@ -4130,6 +4121,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		for(Electro*& electro : tmp_area.electros)
 		{
 			electro = new Electro;
+			electro->area = &area;
 			if(!electro->Read(f))
 			{
 				Error("Read level: Broken electro.");
@@ -4389,7 +4381,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 //=================================================================================================
 Vec4 Level::GetFogParams()
 {
-	if(cl_fog)
+	if(game->use_fog)
 		return fog_params;
 	else
 		return Vec4(camera.draw_range, camera.draw_range + 1, 1, 0);
@@ -4398,7 +4390,7 @@ Vec4 Level::GetFogParams()
 //=================================================================================================
 Vec4 Level::GetAmbientColor()
 {
-	if(!cl_lighting)
+	if(!game->use_lighting)
 		return Vec4(1, 1, 1, 1);
 	return ambient_color;
 }
@@ -4572,9 +4564,9 @@ void Level::SpawnUnitEffect(Unit& unit)
 	pe->pos_min = Vec3(-0.75f, 0, -0.75f);
 	pe->pos_max = Vec3(0.75f, 1.f, 0.75f);
 	pe->size = 0.3f;
-	pe->op_size = POP_LINEAR_SHRINK;
+	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->alpha = 0.5f;
-	pe->op_alpha = POP_LINEAR_SHRINK;
+	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->mode = 0;
 	pe->Init();
 	unit.area->tmp->pes.push_back(pe);

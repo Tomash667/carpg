@@ -259,7 +259,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	gui->DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
+	gui->DrawSprite(rt_char, Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -619,7 +619,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdSize:
 			unit->human_data->height = Lerp(0.9f, 1.1f, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-			unit->human_data->ApplyScale(unit->mesh_inst->mesh);
+			unit->human_data->ApplyScale(unit->mesh_inst);
 			unit->mesh_inst->need_update = true;
 			break;
 		case IdRandomSet:
@@ -659,15 +659,14 @@ void CreateCharacterPanel::RenderUnit()
 
 	game_level->SetOutsideParams();
 
-	Matrix matView, matProj;
 	Vec3 from = Vec3(0.f, 2.f, dist);
-	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
-	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	game_level->camera.matViewProj = matView * matProj;
+	Matrix mat_view = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
+	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
+	game_level->camera.mat_view_proj = mat_view * mat_proj;
 	game_level->camera.from = from;
-	game_level->camera.matViewInv = matView.Inverse();
+	game_level->camera.mat_view_inv = mat_view.Inverse();
+	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
-	game_level->camera.frustum.Set(game_level->camera.matViewProj);
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
@@ -902,7 +901,7 @@ void CreateCharacterPanel::RandomAppearance()
 	hair_color_index = Rand() % n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(game_res->aHuman);
+	u.human_data->ApplyScale(u.mesh_inst);
 	SetControls();
 }
 

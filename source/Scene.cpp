@@ -119,24 +119,6 @@ void Game::InitScene()
 	for(int i = 0; i < 4; ++i)
 		blood_v[i].pos.y = 0.f;
 
-	billboard_v[0].pos = Vec3(-1, -1, 0);
-	billboard_v[0].tex = Vec2(0, 0);
-	billboard_v[0].color = Vec4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[1].pos = Vec3(-1, 1, 0);
-	billboard_v[1].tex = Vec2(0, 1);
-	billboard_v[1].color = Vec4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[2].pos = Vec3(1, -1, 0);
-	billboard_v[2].tex = Vec2(1, 0);
-	billboard_v[2].color = Vec4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[3].pos = Vec3(1, 1, 0);
-	billboard_v[3].tex = Vec2(1, 1);
-	billboard_v[3].color = Vec4(1.f, 1.f, 1.f, 1.f);
-
-	billboard_ext[0] = Vec3(-1, -1, 0);
-	billboard_ext[1] = Vec3(-1, 1, 0);
-	billboard_ext[2] = Vec3(1, -1, 0);
-	billboard_ext[3] = Vec3(1, 1, 0);
-
 	portal_v[0].pos = Vec3(-0.67f, -0.67f, 0);
 	portal_v[1].pos = Vec3(-0.67f, 0.67f, 0);
 	portal_v[2].pos = Vec3(0.67f, -0.67f, 0);
@@ -152,9 +134,6 @@ void Game::InitScene()
 
 	if(!vbDungeon)
 		BuildDungeon();
-
-	tex_empty_normal_map = render->CreateTexture(Int2(1, 1), &Color(128, 128, 255));
-	tex_empty_specular_map = render->CreateTexture(Int2(1, 1), &Color::None);
 }
 
 //=================================================================================================
@@ -592,7 +571,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->lights = GatherDrawBatchLights(area, node, item.pos.x, item.pos.z, mesh->head.radius);
 				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
 				{
-					if(cl_glow)
+					if(use_glow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -629,7 +608,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->lights = GatherDrawBatchLights(area, node, use.pos.x, use.pos.z, mesh->head.radius);
 				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
 				{
-					if(cl_glow)
+					if(use_glow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -675,7 +654,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->lights = GatherDrawBatchLights(area, node, chest.pos.x, chest.pos.z, chest.mesh_inst->mesh->head.radius);
 				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
 				{
-					if(cl_glow)
+					if(use_glow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -720,7 +699,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->lights = GatherDrawBatchLights(area, node, door.pos.x, door.pos.z, door.mesh_inst->mesh->head.radius);
 				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
 				{
-					if(cl_glow)
+					if(use_glow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -779,7 +758,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					Billboard& bb = Add1(draw_batch.billboards);
 					bb.pos = it->pos;
 					bb.size = it->tex_size;
-					bb.tex = it->tex->tex;
+					bb.tex = it->tex;
 				}
 			}
 		}
@@ -856,7 +835,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				if(draw_particle_sphere)
 				{
 					DebugSceneNode* debug_node = debug_node_pool.Get();
-					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.matViewProj;
+					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
 					debug_node->type = DebugSceneNode::Sphere;
 					debug_node->group = DebugSceneNode::ParticleRadius;
 					draw_batch.debug_nodes.push_back(debug_node);
@@ -871,12 +850,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 	else
 		draw_batch.tpes = nullptr;
-
-	// electros
-	if(IsSet(draw_flags, DF_LIGHTINGS) && !tmp_area.electros.empty())
-		draw_batch.electros = &tmp_area.electros;
-	else
-		draw_batch.electros = nullptr;
 
 	// portals
 	if(IsSet(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
@@ -933,7 +906,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				DebugSceneNode* node = debug_node_pool.Get();
 				node->type = type;
 				node->group = DebugSceneNode::Collider;
-				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.matViewProj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}
@@ -960,7 +933,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Box;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.matViewProj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -972,7 +945,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Capsule;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.matViewProj;
+					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -983,7 +956,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->type = DebugSceneNode::Cylinder;
 					node->group = DebugSceneNode::Physic;
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.matViewProj;
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -1005,7 +978,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 							node->group = DebugSceneNode::Physic;
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
-							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * game_level->camera.matViewProj;
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * game_level->camera.mat_view_proj;
 							draw_batch.debug_nodes.push_back(node);
 						}
 						else
@@ -1022,7 +995,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
 					node->type = DebugSceneNode::TriMesh;
 					node->group = DebugSceneNode::Physic;
-					node->mat = m_world * game_level->camera.matViewProj;
+					node->mat = m_world * game_level->camera.mat_view_proj;
 					node->mesh_ptr = (void*)trimesh->getMeshInterface();
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1060,10 +1033,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	}
 
 	// ustaw koœci
-	if(u.data->type == UNIT_TYPE::HUMAN)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
-	else
-		u.mesh_inst->SetupBones();
+	u.mesh_inst->SetupBones();
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
 		|| (game_state == GS_LEVEL && ((pc->data.action_ready && pc->data.action_ok && pc->data.action_target == u)
@@ -1089,7 +1059,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	node->lights = lights;
 	if(selected)
 	{
-		if(cl_glow)
+		if(use_glow)
 		{
 			GlowNode& glow = Add1(draw_batch.glow_nodes);
 			glow.node = node;
@@ -1119,7 +1089,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->lights = lights;
 		if(selected)
 		{
-			if(cl_glow)
+			if(use_glow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -1211,7 +1181,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->lights = lights;
 		if(selected)
 		{
-			if(cl_glow)
+			if(use_glow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -1231,7 +1201,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
-			debug_node->mat = box->mat * node2->mat * game_level->camera.matViewProj;
+			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
 			debug_node->type = DebugSceneNode::Box;
 			debug_node->group = DebugSceneNode::Hitbox;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -1255,7 +1225,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->lights = lights;
 		if(selected)
 		{
-			if(cl_glow)
+			if(use_glow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -1275,7 +1245,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
-			node->mat = box->mat * node2->mat * game_level->camera.matViewProj;
+			node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
 			debug_node->type = DebugSceneNode::Box;
 			debug_node->group = DebugSceneNode::Hitbox;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -1298,7 +1268,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->lights = lights;
 		if(selected)
 		{
-			if(cl_glow)
+			if(use_glow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -1363,7 +1333,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->lights = lights;
 		if(selected)
 		{
-			if(cl_glow)
+			if(use_glow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -1394,7 +1364,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->lights = lights;
 		if(selected)
 		{
-			if(cl_glow)
+			if(use_glow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -1425,7 +1395,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node3->lights = lights;
 			if(selected)
 			{
-				if(cl_glow)
+				if(use_glow)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
@@ -1457,7 +1427,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node3->lights = lights;
 			if(selected)
 			{
-				if(cl_glow)
+				if(use_glow)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
@@ -1489,7 +1459,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node3->lights = lights;
 			if(selected)
 			{
-				if(cl_glow)
+				if(use_glow)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
@@ -1513,7 +1483,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	{
 		float h = u.GetUnitHeight() / 2;
 		DebugSceneNode* debug_node = debug_node_pool.Get();
-		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.matViewProj;
+		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
 		debug_node->type = DebugSceneNode::Cylinder;
 		debug_node->group = DebugSceneNode::UnitRadius;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1524,7 +1494,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		Box box;
 		u.GetBox(box);
 		DebugSceneNode* debug_node = debug_node_pool.Get();
-		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.matViewProj;
+		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
 		debug_node->type = DebugSceneNode::Box;
 		debug_node->group = DebugSceneNode::Hitbox;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1566,25 +1536,10 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	{
 		const Mesh& mesh = node->GetMesh();
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-			node->flags |= SceneNode::F_BINORMALS;
-
-		//#define DEBUG_SPLITS
-#ifdef DEBUG_SPLITS
-		static int req = 33;
-		if(input->PressedRelease('8'))
-		{
-			++req;
-			if(req == mesh.head.n_subs)
-				req = 0;
-		}
-#endif
+			node->flags |= SceneNode::F_TANGENTS;
 
 		// for simplicity original node in unused and freed at end
-#ifndef DEBUG_SPLITS
 		for(int i = 0; i < mesh.head.n_subs; ++i)
-#else
-		int i = req;
-#endif
 		{
 			Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
 			const float radius = mesh.splits[i].radius*o.scale;
@@ -1596,29 +1551,18 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 				node2->mat = node->mat;
 				node2->flags = node->flags;
 				node2->parent_mesh_inst = nullptr;
-				node2->subs = SPLIT_INDEX | i;
+				node2->subs = SceneNode::SPLIT_INDEX | i;
 				node2->tint = node->tint;
 				node2->lights = node->lights;
 				node2->tex_override = node->tex_override;
-				if(cl_normalmap && mesh.subs[i].tex_normal)
+				if(use_normalmap && mesh.subs[i].tex_normal)
 					node2->flags |= SceneNode::F_NORMAL_MAP;
-				if(cl_specularmap && mesh.subs[i].tex_specular)
+				if(use_specularmap && mesh.subs[i].tex_specular)
 					node2->flags |= SceneNode::F_SPECULAR_MAP;
 				if(area.area_type != LevelArea::Type::Outside)
 					node2->lights = GatherDrawBatchLights(area, node2, pos.x, pos.z, radius, i);
 				draw_batch.nodes.push_back(node2);
 			}
-
-#ifdef DEBUG_SPLITS
-			DebugSceneNode* debug = debug_node_pool.Get();
-			debug->type = DebugSceneNode::Sphere;
-			debug->group = DebugSceneNode::Physic;
-			D3DXMatrixScaling(&m1, radius * 2);
-			D3DXMatrixTranslation(&m2, pos);
-			D3DXMatrixMultiply(&m3, &m1, &m2);
-			D3DXMatrixMultiply(&debug->mat, &m3, &game_level->camera.matViewProj);
-			draw_batch.debug_nodes.push_back(debug);
-#endif
 		}
 
 		node_pool.Free(node);
@@ -2244,7 +2188,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
 					m.matWorld = Matrix::Translation(2.f*(room->pos.x + x), 0, 2.f*(room->pos.y + y));
-					m.matCombined = m.matWorld * game_level->camera.matViewProj;
+					m.matCombined = m.matWorld * game_level->camera.mat_view_proj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -2430,7 +2374,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			int matrix_id = draw_batch.matrices.size();
 			NodeMatrix& m = Add1(draw_batch.matrices);
 			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
-			m.matCombined = m.matWorld * game_level->camera.matViewProj;
+			m.matCombined = m.matWorld * game_level->camera.mat_view_proj;
 
 			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -2531,10 +2475,10 @@ void Game::AddSceneNode(SceneNode* node)
 	if(mesh.state != ResourceState::Loaded)
 		res_mgr->LoadInstant(const_cast<Mesh*>(&mesh));
 	if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-		node->flags |= SceneNode::F_BINORMALS;
-	if(cl_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
+		node->flags |= SceneNode::F_TANGENTS;
+	if(use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 		node->flags |= SceneNode::F_NORMAL_MAP;
-	if(cl_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
+	if(use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 		node->flags |= SceneNode::F_SPECULAR_MAP;
 	node->subs = 0x7FFFFFFF;
 	draw_batch.nodes.push_back(node);
@@ -2805,7 +2749,7 @@ void Game::DrawScene(bool outside)
 
 	// niebo
 	if(outside && IsSet(draw_flags, DF_SKYBOX))
-		DrawSkybox();
+		skybox_shader->Draw(*game_res->aSkybox, game_level->camera);
 
 	// teren
 	if(!draw_batch.terrain_parts.empty())
@@ -2844,25 +2788,22 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.bloods.empty())
 		DrawBloods(outside, draw_batch.bloods, draw_batch.lights);
 
-	// billboardy
-	if(!draw_batch.billboards.empty())
-		DrawBillboards(draw_batch.billboards);
-
 	// eksplozje
 	if(!draw_batch.explos.empty())
 		DrawExplosions(draw_batch.explos);
 
-	// trail particles
-	if(draw_batch.tpes)
-		DrawTrailParticles(*draw_batch.tpes);
-
-	// cz¹steczki
-	if(!draw_batch.pes.empty())
-		DrawParticles(draw_batch.pes);
-
-	// electros
-	if(draw_batch.electros)
-		DrawLightings(*draw_batch.electros);
+	// particles
+	if(!draw_batch.billboards.empty() || !draw_batch.pes.empty() || draw_batch.tpes)
+	{
+		particle_shader->Begin(game_level->camera);
+		if(!draw_batch.billboards.empty())
+			particle_shader->DrawBillboards(draw_batch.billboards);
+		if(draw_batch.tpes)
+			particle_shader->DrawTrailParticles(*draw_batch.tpes);
+		if(!draw_batch.pes.empty())
+			particle_shader->DrawParticles(draw_batch.pes);
+		particle_shader->End();
+	}
 
 	// stun effects
 	if(!draw_batch.stuns.empty())
@@ -2899,9 +2840,9 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	// ustaw render target
 	SURFACE render_surface;
 	if(!render->IsMultisamplingEnabled())
-		V(tPostEffect[0]->GetSurfaceLevel(0, &render_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
 	else
-		render_surface = sPostEffect[0];
+		render_surface = postfx_shader->surf[0];
 	V(device->SetRenderTarget(0, render_surface));
 	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
 	V(device->BeginScene());
@@ -2976,7 +2917,7 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 			glow_color = Vec4(1, 1, 1, 1);
 
 		// ustawienia shadera
-		Matrix m1 = glow.node->mat * game_level->camera.matViewProj;
+		Matrix m1 = glow.node->mat * game_level->camera.mat_view_proj;
 		V(effect->SetMatrix(glow_shader->hMatCombined, (D3DXMATRIX*)&m1));
 		V(effect->SetVector(glow_shader->hColor, (D3DXVECTOR4*)&glow_color));
 		V(effect->CommitChanges());
@@ -3028,17 +2969,17 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
-		V(tPostEffect[1]->GetSurfaceLevel(0, &render_surface));
-		tex = tPostEffect[0];
+		V(postfx_shader->tex[1]->GetSurfaceLevel(0, &render_surface));
+		tex = postfx_shader->tex[0];
 	}
 	else
 	{
 		SURFACE tex_surface;
-		V(tPostEffect[0]->GetSurfaceLevel(0, &tex_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
 		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
 		tex_surface->Release();
-		tex = tPostEffect[0];
-		render_surface = sPostEffect[1];
+		tex = postfx_shader->tex[0];
+		render_surface = postfx_shader->surf[1];
 	}
 	V(device->SetRenderTarget(0, render_surface));
 	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
@@ -3055,7 +2996,7 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 
 	// ustawienia modelu
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-	V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
+	V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
 
 	// renderowanie
 	V(device->BeginScene());
@@ -3071,17 +3012,17 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
-		V(tPostEffect[0]->GetSurfaceLevel(0, &render_surface));
-		tex = tPostEffect[1];
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
+		tex = postfx_shader->tex[1];
 	}
 	else
 	{
 		SURFACE tex_surface;
-		V(tPostEffect[0]->GetSurfaceLevel(0, &tex_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
 		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
 		tex_surface->Release();
-		tex = tPostEffect[0];
-		render_surface = sPostEffect[0];
+		tex = postfx_shader->tex[0];
+		render_surface = postfx_shader->surf[0];
 	}
 	V(device->SetRenderTarget(0, render_surface));
 
@@ -3104,15 +3045,15 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
-		tex = tPostEffect[1];
+		tex = postfx_shader->tex[1];
 	}
 	else
 	{
 		SURFACE tex_surface;
-		V(tPostEffect[0]->GetSurfaceLevel(0, &tex_surface));
+		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
 		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
 		tex_surface->Release();
-		tex = tPostEffect[0];
+		tex = postfx_shader->tex[0];
 	}
 	if(!use_postfx)
 	{
@@ -3124,11 +3065,11 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	{
 		if(!render->IsMultisamplingEnabled())
 		{
-			V(tPostEffect[2]->GetSurfaceLevel(0, &render_surface));
+			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &render_surface));
 			render_surface->Release();
 		}
 		else
-			render_surface = sPostEffect[2];
+			render_surface = postfx_shader->surf[2];
 		V(device->SetRenderTarget(0, render_surface));
 	}
 
@@ -3159,41 +3100,6 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	V(device->SetRenderState(D3DRS_STENCILENABLE, FALSE));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
-
-//=================================================================================================
-void Game::DrawSkybox()
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	Mesh& mesh = *game_res->aSkybox;
-	ID3DXEffect* effect = skybox_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(true);
-
-	uint passes;
-	Matrix m1 = Matrix::Translation(game_level->camera.from) * game_level->camera.matViewProj;
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-
-	V(effect->SetTechnique(skybox_shader->tech));
-	V(effect->SetMatrix(skybox_shader->hMatCombined, (D3DXMATRIX*)&m1));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<Mesh::Submesh>::iterator it = mesh.subs.begin(), end = mesh.subs.end(); it != end; ++it)
-	{
-		V(effect->SetTexture(skybox_shader->hTex, it->tex->tex));
-		V(effect->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, it->min_ind, it->n_ind, it->first * 3, it->tris));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
 }
 
 //=================================================================================================
@@ -3239,8 +3145,8 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V(e->EndPass());
 				V(e->End());
 			}
-			e = super_shader->GetShader(super_shader->GetShaderId(false, true, game_level->cl_fog, cl_specularmap && dp.tex_o->specular != nullptr,
-				cl_normalmap && dp.tex_o->normal != nullptr, game_level->cl_lighting, false));
+			e = super_shader->GetShader(super_shader->GetShaderId(false, true, use_fog, use_specularmap && dp.tex_o->specular != nullptr,
+				use_normalmap && dp.tex_o->normal != nullptr, use_lighting, false));
 			if(first)
 			{
 				first = false;
@@ -3262,9 +3168,9 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 		{
 			last_override = dp.tex_o;
 			V(e->SetTexture(super_shader->hTexDiffuse, last_override->diffuse->tex));
-			if(cl_normalmap && last_override->normal)
+			if(use_normalmap && last_override->normal)
 				V(e->SetTexture(super_shader->hTexNormal, last_override->normal->tex));
-			if(cl_specularmap && last_override->specular)
+			if(use_specularmap && last_override->specular)
 				V(e->SetTexture(super_shader->hTexSpecular, last_override->specular->tex));
 		}
 
@@ -3339,12 +3245,12 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			current_flags = node->flags;
 			e = super_shader->GetShader(super_shader->GetShaderId(
 				IsSet(node->flags, SceneNode::F_ANIMATED),
-				IsSet(node->flags, SceneNode::F_BINORMALS),
-				game_level->cl_fog,
+				IsSet(node->flags, SceneNode::F_TANGENTS),
+				use_fog,
 				IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
 				IsSet(node->flags, SceneNode::F_NORMAL_MAP),
-				game_level->cl_lighting && !outside,
-				game_level->cl_lighting && outside));
+				use_lighting && !outside,
+				use_lighting && outside));
 			D3DXHANDLE tech;
 			V(e->FindNextValidTechnique(nullptr, &tech));
 			V(e->SetTechnique(tech));
@@ -3357,9 +3263,9 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		// ustaw parametry shadera
 		Matrix m1;
 		if(!node->billboard)
-			m1 = node->mat * game_level->camera.matViewProj;
+			m1 = node->mat * game_level->camera.mat_view_proj;
 		else
-			m1 = node->mat.Inverse() * game_level->camera.matViewProj;
+			m1 = node->mat.Inverse() * game_level->camera.mat_view_proj;
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
 		V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
@@ -3383,7 +3289,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			V(e->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// renderowanie
-		if(!IsSet(node->subs, SPLIT_INDEX))
+		if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
 		{
 			for(int i = 0; i < mesh.head.n_subs; ++i)
 			{
@@ -3396,12 +3302,12 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
 				if(IsSet(current_flags, SceneNode::F_NORMAL_MAP))
 				{
-					TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+					TEX tex = sub.tex_normal ? sub.tex_normal->tex : super_shader->tex_empty_normal_map;
 					V(e->SetTexture(super_shader->hTexNormal, tex));
 				}
 				if(IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
 				{
-					TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+					TEX tex = sub.tex_specular ? sub.tex_specular->tex : super_shader->tex_empty_specular_map;
 					V(e->SetTexture(super_shader->hTexSpecular, tex));
 				}
 
@@ -3423,19 +3329,19 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		}
 		else
 		{
-			int index = (node->subs & ~SPLIT_INDEX);
+			int index = (node->subs & ~SceneNode::SPLIT_INDEX);
 			const Mesh::Submesh& sub = mesh.subs[index];
 
 			// tekstura
 			V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(index, node->tex_override)));
 			if(IsSet(current_flags, SceneNode::F_NORMAL_MAP))
 			{
-				TEX tex = sub.tex_normal ? sub.tex_normal->tex : tex_empty_normal_map;
+				TEX tex = sub.tex_normal ? sub.tex_normal->tex : super_shader->tex_empty_normal_map;
 				V(e->SetTexture(super_shader->hTexNormal, tex));
 			}
 			if(IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
 			{
-				TEX tex = sub.tex_specular ? sub.tex_specular->tex : tex_empty_specular_map;
+				TEX tex = sub.tex_specular ? sub.tex_specular->tex : super_shader->tex_empty_specular_map;
 				V(e->SetTexture(super_shader->hTexSpecular, tex));
 			}
 
@@ -3546,7 +3452,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	render->SetNoZWrite(true);
 
 	ID3DXEffect* e = super_shader->GetShader(
-		super_shader->GetShaderId(false, false, game_level->cl_fog, false, false, !outside && game_level->cl_lighting, outside && game_level->cl_lighting));
+		super_shader->GetShaderId(false, false, use_fog, false, false, !outside && use_lighting, outside && use_lighting));
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_DEFAULT)));
 	V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
@@ -3611,7 +3517,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 
 		// setup shader
 		Matrix m1 = Matrix::Translation(blood.pos);
-		Matrix m2 = m1 * game_level->camera.matViewProj;
+		Matrix m2 = m1 * game_level->camera.mat_view_proj;
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m2));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&m1));
 		V(e->SetTexture(super_shader->hTexDiffuse, game_res->tBloodSplat[blood.type]->tex));
@@ -3627,45 +3533,6 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 
 	V(e->EndPass());
 	V(e->End());
-}
-
-//=================================================================================================
-void Game::DrawBillboards(const vector<Billboard>& billboards)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaBlend(true);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->techParticle));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
-	{
-		game_level->camera.matViewInv._41 = it->pos.x;
-		game_level->camera.matViewInv._42 = it->pos.y;
-		game_level->camera.matViewInv._43 = it->pos.z;
-		Matrix m1 = Matrix::Scale(it->size) * game_level->camera.matViewInv;
-
-		for(int i = 0; i < 4; ++i)
-			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
-
-		V(effect->SetTexture(particle_shader->hTex, it->tex));
-		V(effect->CommitChanges());
-
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, billboard_v, sizeof(VParticle)));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
 }
 
 //=================================================================================================
@@ -3706,7 +3573,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 			V(effect->SetTexture(super_shader->hTexDiffuse, last_tex));
 		}
 
-		Matrix m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.matViewProj;
+		Matrix m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.mat_view_proj;
 		tint.w = 1.f - e.size / e.sizemax;
 
 		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
@@ -3718,277 +3585,6 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 
 	V(effect->EndPass());
 	V(effect->End());
-}
-
-//=================================================================================================
-void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->techParticle));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
-	{
-		const ParticleEmitter& pe = **it;
-
-		// stwórz vertex buffer na cz¹steczki jeœli nie ma wystarczaj¹co du¿ego
-		if(!vbParticle || particle_count < pe.alive)
-		{
-			if(vbParticle)
-				vbParticle->Release();
-			V(device->CreateVertexBuffer(sizeof(VParticle)*pe.alive * 6, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbParticle, nullptr));
-			particle_count = pe.alive;
-		}
-		V(device->SetStreamSource(0, vbParticle, 0, sizeof(VParticle)));
-
-		// wype³nij vertex buffer
-		VParticle* v;
-		V(vbParticle->Lock(0, sizeof(VParticle)*pe.alive * 6, (void**)&v, D3DLOCK_DISCARD));
-		int idx = 0;
-		for(vector<Particle>::const_iterator it2 = pe.particles.begin(), end2 = pe.particles.end(); it2 != end2; ++it2)
-		{
-			const Particle& p = *it2;
-			if(!p.exists)
-				continue;
-
-			game_level->camera.matViewInv._41 = p.pos.x;
-			game_level->camera.matViewInv._42 = p.pos.y;
-			game_level->camera.matViewInv._43 = p.pos.z;
-			Matrix m1 = Matrix::Scale(pe.GetScale(p)) * game_level->camera.matViewInv;
-
-			const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
-
-			v[idx].pos = Vec3::Transform(Vec3(-1, -1, 0), m1);
-			v[idx].tex = Vec2(0, 0);
-			v[idx].color = color;
-
-			v[idx + 1].pos = Vec3::Transform(Vec3(-1, 1, 0), m1);
-			v[idx + 1].tex = Vec2(0, 1);
-			v[idx + 1].color = color;
-
-			v[idx + 2].pos = Vec3::Transform(Vec3(1, -1, 0), m1);
-			v[idx + 2].tex = Vec2(1, 0);
-			v[idx + 2].color = color;
-
-			v[idx + 3] = v[idx + 1];
-
-			v[idx + 4].pos = Vec3::Transform(Vec3(1, 1, 0), m1);
-			v[idx + 4].tex = Vec2(1, 1);
-			v[idx + 4].color = color;
-
-			v[idx + 5] = v[idx + 2];
-
-			idx += 6;
-		}
-
-		V(vbParticle->Unlock());
-
-		switch(pe.mode)
-		{
-		case 0:
-			V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-			V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-			V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-			break;
-		case 1:
-			V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-			V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-			V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-			break;
-		case 2:
-			V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT));
-			V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-			V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-			break;
-		default:
-			assert(0);
-			break;
-		}
-
-		V(effect->SetTexture(particle_shader->hTex, pe.tex->tex));
-		V(effect->CommitChanges());
-
-		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive * 2));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
-
-//=================================================================================================
-void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_COLOR)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->techTrail));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	VColor v[4];
-
-	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
-	{
-		const TrailParticleEmitter& tp = **it;
-
-		if(tp.alive < 2)
-			continue;
-
-		int id = tp.first;
-		const TrailParticle* prev = &tp.parts[id];
-		id = prev->next;
-
-		if(id < 0 || id >= (int)tp.parts.size() || !tp.parts[id].exists)
-		{
-			ReportError(6, Format("Trail particle emitter error, id = %d!", id));
-			const_cast<TrailParticleEmitter&>(tp).alive = false;
-			continue;
-		}
-
-		while(id != -1)
-		{
-			const TrailParticle& p = tp.parts[id];
-
-			v[0].pos = prev->pt1;
-			v[1].pos = prev->pt2;
-			v[2].pos = p.pt1; // !!! tu siê czasami crashuje, p jest z³ym adresem, wiêc pewnie id te¿ jest z³e
-			v[3].pos = p.pt2;
-
-			v[0].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
-			v[1].color = v[0].color;
-			v[2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
-			v[3].color = v[2].color;
-
-			V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VColor)));
-
-			prev = &p;
-			id = prev->next;
-		}
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-}
-
-//=================================================================================================
-void Game::DrawLightings(const vector<Electro*>& electros)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = particle_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-
-	uint passes;
-	V(effect->SetTechnique(particle_shader->techParticle));
-	V(effect->SetTexture(particle_shader->hTex, game_res->tLightingLine->tex));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	const Vec4 color(0.2f, 0.2f, 1.f, 1.f);
-
-	Matrix matPart;
-	VParticle v[4] = {
-		Vec3(-1,-1,0), Vec2(0,0), color,
-		Vec3(-1, 1,0), Vec2(0,1), color,
-		Vec3(1,-1,0), Vec2(1,0), color,
-		Vec3(1, 1,0), Vec2(1,1), color
-	};
-
-	const Vec3 pos[2] = {
-		Vec3(0,-1,0),
-		Vec3(0, 1,0)
-	};
-
-	Vec3 prev[2], next[2];
-
-	for(vector<Electro*>::const_iterator it = electros.begin(), end = electros.end(); it != end; ++it)
-	{
-		for(vector<Electro::Line>::iterator it2 = (*it)->lines.begin(), end2 = (*it)->lines.end(); it2 != end2; ++it2)
-		{
-			if(it2->t >= 0.5f)
-				continue;
-
-			// startowy punkt
-			game_level->camera.matViewInv._41 = it2->pts.front().x;
-			game_level->camera.matViewInv._42 = it2->pts.front().y;
-			game_level->camera.matViewInv._43 = it2->pts.front().z;
-			const Matrix m_scale = Matrix::Scale(0.1f);
-			Matrix m1 = m_scale * game_level->camera.matViewInv;
-
-			for(int i = 0; i < 2; ++i)
-				prev[i] = Vec3::Transform(pos[i], m1);
-
-			const int count = int(it2->pts.size());
-
-			for(int j = 1; j < count; ++j)
-			{
-				// nastêpny punkt
-				game_level->camera.matViewInv._41 = it2->pts[j].x;
-				game_level->camera.matViewInv._42 = it2->pts[j].y;
-				game_level->camera.matViewInv._43 = it2->pts[j].z;
-				m1 = m_scale * game_level->camera.matViewInv;
-
-				for(int i = 0; i < 2; ++i)
-					next[i] = Vec3::Transform(pos[i], m1);
-
-				// œrodek
-				v[0].pos = prev[0];
-				v[1].pos = prev[1];
-				v[2].pos = next[0];
-				v[3].pos = next[1];
-
-				float a = float(count - min(count, (int)abs(j - count * (it2->t / 0.25f)))) / count;
-				float b = min(0.5f, a * a);
-
-				for(int i = 0; i < 4; ++i)
-					v[i].color.w = b;
-
-				// rysuj
-				V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VParticle)));
-
-				// dalej
-				prev[0] = next[0];
-				prev[1] = next[1];
-			}
-		}
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }
 
 //=================================================================================================
@@ -4022,7 +3618,7 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 	for(const StunEffect& stun : stuns)
 	{
 		Matrix matWorld = Matrix::RotationY(stun.time * 3) * Matrix::Translation(stun.pos);
-		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&(matWorld * game_level->camera.matViewProj)));
+		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&(matWorld * game_level->camera.mat_view_proj)));
 		V(effect->CommitChanges());
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
@@ -4046,9 +3642,9 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 
 	uint passes;
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
-	V(effect->SetTechnique(particle_shader->techParticle));
+	V(effect->SetTechnique(particle_shader->tech));
 	V(effect->SetTexture(particle_shader->hTex, game_res->tPortal->tex));
-	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
@@ -4057,7 +3653,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 		const Portal& portal = **it;
 		Matrix m1 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
 			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
-			* game_level->camera.matViewProj;
+			* game_level->camera.mat_view_proj;
 		V(effect->SetMatrix(particle_shader->hMatCombined, (D3DXMATRIX*)&m1));
 		V(effect->CommitChanges());
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)));
@@ -4081,7 +3677,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 
 	V(effect->SetTechnique(basic_shader->techArea));
-	V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
+	V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
 	V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
 	Vec4 playerPos(pc->unit->pos, 1.f);
 	playerPos.y += 0.75f;

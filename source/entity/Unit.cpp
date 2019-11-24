@@ -2112,7 +2112,7 @@ void Unit::Load(GameReader& f, bool local)
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = mesh_inst->groups[1].time;
+			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
 		}
 
 		f >> last_bash;
@@ -2348,7 +2348,7 @@ void Unit::Load(GameReader& f, bool local)
 		player = nullptr;
 
 	if(local && human_data)
-		human_data->ApplyScale(mesh_inst->mesh);
+		human_data->ApplyScale(mesh_inst);
 
 	if(IsSet(data->flags, F_HERO))
 	{
@@ -2836,7 +2836,7 @@ bool Unit::Read(BitStreamReader& f)
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = mesh_inst->groups[1].time;
+			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
 		}
 	}
 	else
@@ -4314,11 +4314,10 @@ int Unit::ItemsToSellWeight() const
 //=================================================================================================
 void Unit::SetAnimationAtEnd(cstring anim_name)
 {
-	auto mat_scale = (human_data ? human_data->mat_scale.data() : nullptr);
 	if(anim_name)
-		mesh_inst->SetToEnd(anim_name, mat_scale);
+		mesh_inst->SetToEnd(anim_name);
 	else
-		mesh_inst->SetToEnd(mat_scale);
+		mesh_inst->SetToEnd();
 }
 
 //=================================================================================================
@@ -4523,7 +4522,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(mesh_inst->mesh->head.n_groups > 1)
 				mesh_inst->groups[1].state = 0;
 			if(human_data)
-				human_data->ApplyScale(mesh_inst->mesh);
+				human_data->ApplyScale(mesh_inst);
 		}
 		else
 		{
@@ -6311,10 +6310,7 @@ void Unit::CastSpell()
 	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
 	assert(point);
 
-	if(human_data)
-		mesh_inst->SetupBones(&human_data->mat_scale[0]);
-	else
-		mesh_inst->SetupBones();
+	mesh_inst->SetupBones();
 
 	Matrix m = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
@@ -6355,7 +6351,6 @@ void Unit::CastSpell()
 			b.owner = this;
 			b.remove = false;
 			b.trail = nullptr;
-			b.trail2 = nullptr;
 			b.pe = nullptr;
 			b.spell = &spell;
 			b.start_pos = b.pos;
@@ -6393,9 +6388,9 @@ void Unit::CastSpell()
 				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 1;
 				pe->Init();
 				area->tmp->pes.push_back(pe);
@@ -6420,6 +6415,7 @@ void Unit::CastSpell()
 		{
 			Electro* e = new Electro;
 			e->Register();
+			e->area = area;
 			e->hitted.push_back(this);
 			e->dmg = dmg;
 			e->owner = this;
@@ -6467,8 +6463,8 @@ void Unit::CastSpell()
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_ELECTRO;
 				c.e_id = e->id;
-				c.pos = e->lines[0].pts.front();
-				memcpy(c.f, &e->lines[0].pts.back(), sizeof(Vec3));
+				c.pos = e->lines[0].from;
+				memcpy(c.f, &e->lines[0].to, sizeof(Vec3));
 			}
 		}
 		else if(IsSet(spell.flags, Spell::Drain))
@@ -6484,8 +6480,7 @@ void Unit::CastSpell()
 				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
 				{
 					Drain& drain = Add1(area->tmp->drains);
-					drain.from = hitted;
-					drain.to = this;
+					drain.target = this;
 
 					game->GiveDmg(*hitted, dmg, this, nullptr, Game::DMG_MAGICAL);
 
@@ -6504,11 +6499,11 @@ void Unit::CastSpell()
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::UPDATE_HP;
-						c.unit = drain.to;
+						c.unit = this;
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::CREATE_DRAIN;
-						c2.unit = drain.to;
+						c2.unit = this;
 					}
 				}
 			}
@@ -6566,9 +6561,9 @@ void Unit::CastSpell()
 				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
 				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 1;
 				pe->Init();
 				area->tmp->pes.push_back(pe);
@@ -6633,9 +6628,9 @@ void Unit::CastSpell()
 				pe->pos_min = Vec3(-r, -h / 2, -r);
 				pe->pos_max = Vec3(r, h / 2, r);
 				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 1;
 				pe->Init();
 				area->tmp->pes.push_back(pe);
@@ -7044,10 +7039,7 @@ void Unit::Update(float dt)
 				b.level = level;
 				b.backstab = GetBackstabMod(&GetBow());
 
-				if(human_data)
-					mesh_inst->SetupBones(&human_data->mat_scale[0]);
-				else
-					mesh_inst->SetupBones();
+				mesh_inst->SetupBones();
 
 				Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 				assert(point);
@@ -7139,14 +7131,6 @@ void Unit::Update(float dt)
 				tpe->Init(50);
 				area->tmp->tpes.push_back(tpe);
 				b.trail = tpe;
-
-				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-				tpe2->fade = 0.3f;
-				tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe2->color2 = Vec4(1, 1, 1, 0);
-				tpe2->Init(50);
-				area->tmp->tpes.push_back(tpe2);
-				b.trail2 = tpe2;
 
 				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
 

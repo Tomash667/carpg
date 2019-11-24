@@ -1819,9 +1819,9 @@ void PlayerController::CastSpell()
 			pe->pos_min = Vec3(-r, -h / 2, -r);
 			pe->pos_max = Vec3(r, h / 2, r);
 			pe->size = spell.size_particle;
-			pe->op_size = POP_LINEAR_SHRINK;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
-			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
 			area.tmp->pes.push_back(pe);
@@ -1956,6 +1956,16 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
+	// licznik otrzymanych obra¿eñ
+	last_dmg = 0.f;
+	if(Net::IsLocal())
+		last_dmg_poison = 0.f;
+
+	if(unit->IsAlive())
+		data.grayout = max(data.grayout - dt, 0.f);
+	else
+		data.grayout = min(data.grayout + dt, 1.f);
+
 	if(data.wasted_key != Key::None && input->Up(data.wasted_key))
 		data.wasted_key = Key::None;
 
@@ -2531,7 +2541,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	// doors in front of player
 	for(Door* door : area.doors)
 	{
-		if(OR2_EQ(door->state, Door::Open, Door::Closed))
+		if(OR2_EQ(door->state, Door::Opened, Door::Closed))
 			CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
 	}
 
@@ -2687,21 +2697,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			{
 				// otwieranie drzwi
 				if(door->locked == LOCK_NONE)
-				{
-					if(!game_level->location->outside)
-						game_level->minimap_opened_doors = true;
-					door->state = Door::Opening;
-					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-					if(Rand() % 2 == 0)
-						sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], door->GetCenter(), Door::SOUND_DIST);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::USE_DOOR;
-						c.id = door->id;
-						c.count = 0;
-					}
-				}
+					door->Open();
 				else
 				{
 					cstring key;
@@ -2724,20 +2720,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 						sound_mgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
 						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
-						if(!game_level->location->outside)
-							game_level->minimap_opened_doors = true;
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-						if(Rand() % 2 == 0)
-							sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], center, Door::SOUND_DIST);
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::USE_DOOR;
-							c.id = door->id;
-							c.count = 0;
-						}
+						door->Open();
 					}
 					else
 					{
@@ -2747,27 +2730,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 			}
 			else
-			{
-				// zamykanie drzwi
-				door->state = Door::Closing;
-				door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-				if(Rand() % 2 == 0)
-				{
-					Sound* sound;
-					if(Rand() % 2 == 0)
-						sound = game_res->sDoorClose;
-					else
-						sound = game_res->sDoor[Rand() % 3];
-					sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
-				}
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_DOOR;
-					c.id = door->id;
-					c.count = 1;
-				}
-			}
+				door->Close();
 		}
 		else if(data.before_player == BP_ITEM)
 		{

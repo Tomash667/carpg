@@ -2317,7 +2317,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(is_closing)
 				{
 					// closing door
-					if(door->state == Door::Open)
+					if(door->state == Door::Opened)
 					{
 						door->state = Door::Closing;
 						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);

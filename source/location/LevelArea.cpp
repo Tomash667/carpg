@@ -73,7 +73,10 @@ void LevelArea::Save(GameWriter& f)
 void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibility)
 {
 	if(local && !tmp)
+	{
 		tmp = TmpLevelArea::Get();
+		tmp->area = this;
+	}
 
 	switch(compatibility)
 	{
@@ -341,7 +344,10 @@ void LevelArea::Write(BitStreamWriter& f)
 bool LevelArea::Read(BitStreamReader& f)
 {
 	if(!tmp)
+	{
 		tmp = TmpLevelArea::Get();
+		tmp->area = this;
+	}
 
 	// units
 	uint count;
@@ -1129,7 +1135,7 @@ void TmpLevelArea::Save(GameWriter& f)
 
 void TmpLevelArea::Load(GameReader& f)
 {
-	const int particle_version = (LOAD_VERSION >= V_0_12 ? 1 : 0);
+	const int particle_version = (LOAD_VERSION >= V_DEV ? 2 : (LOAD_VERSION >= V_0_12 ? 1 : 0));
 
 	pes.resize(f.Read<uint>());
 	for(ParticleEmitter*& pe : pes)
@@ -1156,6 +1162,7 @@ void TmpLevelArea::Load(GameReader& f)
 	for(Electro*& electro : electros)
 	{
 		electro = new Electro;
+		electro->area = area;
 		electro->Load(f);
 	}
 

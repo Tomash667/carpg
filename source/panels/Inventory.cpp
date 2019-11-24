@@ -130,60 +130,6 @@ void Inventory::LoadData()
 }
 
 //=================================================================================================
-void Inventory::OnReset()
-{
-	RenderTarget* target = game->rt_item_rot;
-	if(!target)
-		return;
-	Texture* tex = target->GetTexture();
-	if(inv_mine->visible)
-	{
-		if(tooltip.img == tex)
-		{
-			tooltip.img = nullptr;
-			inv_mine->tex_replaced = true;
-		}
-	}
-	else if(inv_trade_mine->visible)
-	{
-		if(inv_trade_mine->box_img == tex)
-		{
-			inv_trade_mine->box_img = nullptr;
-			inv_trade_mine->tex_replaced = true;
-		}
-		if(inv_trade_other->box_img == tex)
-		{
-			inv_trade_other->box_img = nullptr;
-			inv_trade_other->tex_replaced = true;
-		}
-	}
-}
-
-//=================================================================================================
-void Inventory::OnReload()
-{
-	RenderTarget* target = game->rt_item_rot;
-	if(!target)
-		return;
-	Texture* tex = target->GetTexture();
-	if(inv_mine->tex_replaced)
-	{
-		tooltip.img = tex;
-		inv_mine->tex_replaced = false;
-	}
-	if(inv_trade_mine->tex_replaced)
-	{
-		inv_trade_mine->box_img = tex;
-		inv_trade_mine->tex_replaced = false;
-	}
-	if(inv_trade_other->tex_replaced)
-	{
-		inv_trade_other->box_img = tex;
-		inv_trade_other->tex_replaced = false;
-	}
-}
-
-//=================================================================================================
 void Inventory::Setup(PlayerController* pc)
 {
 	inv_trade_mine->i_items = inv_mine->i_items = &tmp_inventory[0];
@@ -1677,7 +1623,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, Text
 
 		if(item->mesh)
 		{
-			img = game->rt_item_rot->GetTexture();
+			img = game->rt_item_rot;
 			if(!refresh)
 				rot = 0.f;
 			item_visible = item;

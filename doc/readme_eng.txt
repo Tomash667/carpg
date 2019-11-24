@@ -183,7 +183,7 @@ Available commands:
 	add_learning_points - add learning point to selected unit [count - default 1].
 	add_team_item - add team item to player inventory (add_team_item id [count]).
 	arena - spawns enemies on arena (example arena 3 rat vs 2 wolf).
-	break_action - break unit current action ('break 1' targets self)
+	break_action - break unit current action ('break 1' targets self).
 	citizen - citizens/crazies don't attack player or his team.
 	clean_level - remove all corpses and blood from level (clean_level [building_id]).
 	clear - clear text.
@@ -198,22 +198,20 @@ Available commands:
 	draw_phy - draw physical colliders (draw_phy 0/1).
 	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
 	exit - exit to menu.
-	fall - unit fall on ground for some time ('fall 1' targets self)
-	fog - draw fog (fog 0/1).
-	force_quest - force next random quest to select (use list quest or none/reset)
+	fall - unit fall on ground for some time ('fall 1' targets self).
+	force_quest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
 	grass_range - grass draw range (grass_range 0-100).
 	heal - heal player.
 	heal_unit - heal unit in front of player.
 	help - display information about command (help [command]).
-	hurt - deal 100 damage to unit ('hurt 1' targets self)
+	hurt - deal 100 damage to unit ('hurt 1' targets self).
 	invisible - ai can't see player (invisible 0/1).
 	kick - kick player from server (kick nick).
 	kill - kill unit in front of player.
 	killall - kills all enemy units in current level, with 1 it kills allies too, with 2 kill inside buildings (killall [1/2]).
 	leader - change team leader (leader nick).
-	lighting - use lighting (lighting 0/1).
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
 	list_effects - display selected unit effects.
 	list_perks - display selected unit perks.
@@ -264,6 +262,8 @@ Available commands:
 	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
 	tile_info - write current terrain tile info to console.
+	use_fog - draw fog (use_fog 0/1).
+	use_lighting - use lighting (use_lighting 0/1).
 	version - displays game version.
 	w - send private message to player, short from whisper (w nick msg).
 	warp - move player into building (warp inn/arena/hall).

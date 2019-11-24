@@ -90,14 +90,6 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
-struct PostEffect
-{
-	int id;
-	D3DXHANDLE tech;
-	float power;
-	Vec4 skill;
-};
-
 enum class ProfilerMode
 {
 	Disabled,
@@ -124,7 +116,6 @@ public:
 	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
-	void CreateTextures();
 	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
 
@@ -165,17 +156,12 @@ public:
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
-	void DrawSkybox();
 	void DrawTerrain(const vector<uint>& parts);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
-	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawExplosions(const vector<Explo*>& explos);
-	void DrawParticles(const vector<ParticleEmitter*>& pes);
-	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
-	void DrawLightings(const vector<Electro*>& electros);
 	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
@@ -300,7 +286,7 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void UpdateLights(vector<Light>& lights);
-	void UpdatePostEffects(float dt);
+	void GetPostEffects(vector<PostEffect>& post_effects);
 	// --- cutscene
 	void CutsceneStart(bool instant);
 	void CutsceneImage(const string& image, float time);
@@ -433,27 +419,17 @@ public:
 	//-----------------------------------------------------------------
 	int draw_flags;
 	Matrix mat;
-	int particle_count;
 	VB vbDungeon;
 	IB ibDungeon;
-	TEX tex_empty_normal_map, tex_empty_specular_map;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
-	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
-	float portal_anim, drunk_anim, grayout;
-	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
-	SURFACE sPostEffect[3];
-	TEX tPostEffect[3];
-	VB vbFullscreen;
-	vector<PostEffect> post_effects;
+	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
+	float portal_anim, drunk_anim;
 	// scene
-	VB vbParticle;
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
-	bool cl_normalmap, cl_specularmap, cl_glow;
+	bool use_glow, use_fog, use_lighting, use_specularmap, use_normalmap, use_postfx;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
-	VParticle billboard_v[4];
-	Vec3 billboard_ext[4];
 	VParticle portal_v[4];
 	int uv_mod;
 	QuadTree quadtree;
@@ -486,7 +462,7 @@ public:
 	// RESOURCES
 	//-----------------------------------------------------------------
 	RenderTarget* rt_save, *rt_item_rot;
-	Texture tMinimap;
+	Texture* tMinimap;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS
