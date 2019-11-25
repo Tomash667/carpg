@@ -56,20 +56,20 @@ axe = "Topór"
 []
 
 //------------------------------------------------------------------------------
-// ACTIONS
-action "bull_charge" {
+// ABILITIES
+ability "bull_charge" {
 	name "Bycza szar¿a"
 	desc "Przemieszczasz siê do przodu og³uszaj¹c wszystkich po drodze i zadaj¹c im obra¿enia."
 }
-action "dash" {
+ability "dash" {
 	name "Zryw"
 	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada trzy ³adunki."
 }
-action "heal" {
+ability "heal" {
 	name "Uzdrowienie"
 	desc "Przywraca $cg{power} punktów ¿ycia$c- celowi."
 }
-action "summon_wolf" {
+ability "summon_wolf" {
 	name "Zwierzêcy sojusznik"
 	desc "Przywo³uje wilka który pomaga ci w walce dopóki nie zginie."
 }

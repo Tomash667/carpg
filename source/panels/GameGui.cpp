@@ -11,7 +11,7 @@
 #include "TeamPanel.h"
 #include "Journal.h"
 #include "Minimap.h"
-#include "ActionPanel.h"
+#include "AbilityPanel.h"
 #include "BookPanel.h"
 #include "WorldMapGui.h"
 #include "MainMenu.h"
@@ -44,7 +44,7 @@ extern string g_system_dir;
 
 //=================================================================================================
 GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
-journal(nullptr), minimap(nullptr), actions(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
+journal(nullptr), minimap(nullptr), ability(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
 console(nullptr), game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr),
 pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
 {
@@ -60,7 +60,7 @@ GameGui::~GameGui()
 	delete team;
 	delete journal;
 	delete minimap;
-	delete actions;
+	delete ability;
 	delete book;
 	delete messages;
 	delete mp_box;
@@ -127,8 +127,8 @@ void GameGui::Init()
 	minimap = new Minimap;
 	level_gui->Add(minimap);
 
-	actions = new ActionPanel;
-	level_gui->Add(actions);
+	ability = new AbilityPanel;
+	level_gui->Add(ability);
 
 	book = new BookPanel;
 	level_gui->Add(book);
@@ -205,7 +205,7 @@ void GameGui::LoadLanguage()
 
 	txReallyQuit = Str("reallyQuit");
 
-	actions->LoadLanguage();
+	ability->LoadLanguage();
 	controls->LoadLanguage();
 	create_character->LoadLanguage();
 	create_server->LoadLanguage();
@@ -231,7 +231,7 @@ void GameGui::LoadData()
 	GamePanel::tBackground = res_mgr->Load<Texture>("game_panel.png");
 	GamePanel::tDialog = res_mgr->Load<Texture>("dialog.png");
 
-	actions->LoadData();
+	ability->LoadData();
 	book->LoadData();
 	console->LoadData();
 	create_character->LoadData();

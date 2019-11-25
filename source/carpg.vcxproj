@@ -180,7 +180,7 @@
     <ClInclude Include="net\NetChangePlayer.h" />
     <ClInclude Include="net\PacketLogger.h" />
     <ClInclude Include="net\PlayerInfo.h" />
-    <ClInclude Include="panels\ActionPanel.h" />
+    <ClInclude Include="panels\AbilityPanel.h" />
     <ClInclude Include="panels\BookPanel.h" />
     <ClInclude Include="panels\GameGui.h" />
     <ClInclude Include="quests\QuestHandler.h" />
@@ -196,7 +196,6 @@
     <ClInclude Include="script\ScriptManager.h" />
     <ClInclude Include="script\Var.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="stats\Action.h" />
     <ClInclude Include="stats\Buff.h" />
     <ClInclude Include="stats\Event.h" />
     <ClInclude Include="system\BaseObject.h" />
@@ -318,7 +317,7 @@
     <ClInclude Include="system\ItemLoader.h" />
     <ClInclude Include="system\ItemScript.h" />
     <ClInclude Include="system\ItemType.h" />
-    <ClInclude Include="system\Spell.h" />
+    <ClInclude Include="system\Ability.h" />
     <ClCompile Include="components\CommandParser.cpp" />
     <ClCompile Include="components\FOV.cpp" />
     <ClCompile Include="components\GameResources.cpp" />
@@ -343,7 +342,7 @@
     <ClInclude Include="system\QuestList.h" />
     <ClInclude Include="system\QuestLoader.h" />
     <ClInclude Include="system\QuestScheme.h" />
-    <ClInclude Include="system\SpellLoader.h" />
+    <ClInclude Include="system\AbilityLoader.h" />
     <ClInclude Include="system\StatProfile.h" />
     <ClInclude Include="system\Stock.h" />
     <ClInclude Include="system\UnitData.h" />
@@ -387,7 +386,7 @@
     <ClCompile Include="net\Net.cpp" />
     <ClCompile Include="net\NetChange.cpp" />
     <ClCompile Include="net\PlayerInfo.cpp" />
-    <ClCompile Include="panels\ActionPanel.cpp" />
+    <ClCompile Include="panels\AbilityPanel.cpp" />
     <ClCompile Include="panels\BookPanel.cpp" />
     <ClCompile Include="panels\GameGui.cpp" />
     <ClCompile Include="quests\Quest_Artifacts.cpp" />
@@ -398,7 +397,6 @@
     <ClCompile Include="quests\Quest_Tutorial.cpp" />
     <ClCompile Include="script\ScriptManager.cpp" />
     <ClCompile Include="script\Var.cpp" />
-    <ClCompile Include="stats\Action.cpp" />
     <ClCompile Include="stats\Buff.cpp" />
     <ClCompile Include="system\BaseObject.cpp" />
     <ClCompile Include="system\BaseUsable.cpp" />
@@ -507,8 +505,8 @@
     <ClCompile Include="system\ItemLoader.cpp" />
     <ClCompile Include="system\ItemScript.cpp" />
     <ClCompile Include="system\ObjectLoader.cpp" />
-    <ClCompile Include="system\Spell.cpp" />
-    <ClCompile Include="system\SpellLoader.cpp" />
+    <ClCompile Include="system\Ability.cpp" />
+    <ClCompile Include="system\AbilityLoader.cpp" />
     <ClCompile Include="system\QuestScheme.cpp" />
     <ClCompile Include="system\StatProfile.cpp" />
     <ClCompile Include="system\Stock.cpp" />

@@ -1,17 +1,17 @@
 #include "Pch.h"
 #include "GameCore.h"
-#include "Spell.h"
+#include "Ability.h"
 
-vector<Spell*> Spell::spells;
-vector<pair<string, Spell*>> Spell::aliases;
+vector<Ability*> Ability::abilities;
+vector<pair<string, Ability*>> Ability::aliases;
 
 //=================================================================================================
-Spell* Spell::TryGet(Cstring id)
+Ability* Ability::TryGet(Cstring id)
 {
-	for(Spell* s : spells)
+	for(Ability* a : abilities)
 	{
-		if(s->id == id)
-			return s;
+		if(a->id == id)
+			return a;
 	}
 
 	for(auto& alias : aliases)

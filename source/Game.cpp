@@ -30,9 +30,9 @@
 #include "MpBox.h"
 #include "GameMessages.h"
 #include "AIController.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Team.h"
-#include "Action.h"
+#include "Ability.h"
 #include "ItemContainer.h"
 #include "Stock.h"
 #include "UnitGroup.h"
@@ -224,7 +224,7 @@ void Game::PreloadLanguage()
 	txConfiguringGame = Str("configuringGame");
 	txLoadingItems = Str("loadingItems");
 	txLoadingObjects = Str("loadingObjects");
-	txLoadingSpells = Str("loadingSpells");
+	txLoadingAbilities = Str("loadingAbilities");
 	txLoadingClasses = Str("loadingClasses");
 	txLoadingUnits = Str("loadingUnits");
 	txLoadingMusics = Str("loadingMusics");
@@ -314,8 +314,8 @@ void Game::LoadDatafiles()
 			case Content::Id::Objects:
 				game_gui->load_screen->Tick(txLoadingObjects);
 				break;
-			case Content::Id::Spells:
-				game_gui->load_screen->Tick(txLoadingSpells);
+			case Content::Id::Abilities:
+				game_gui->load_screen->Tick(txLoadingAbilities);
 				break;
 			case Content::Id::Dialogs:
 				game_gui->load_screen->Tick(txLoadingDialogs);
@@ -914,8 +914,8 @@ void Game::OnUpdate(float dt)
 			to_open = OpenPanel::Journal;
 		else if(GKey.PressedRelease(GK_MINIMAP))
 			to_open = OpenPanel::Minimap;
-		else if(GKey.PressedRelease(GK_ACTION_PANEL))
-			to_open = OpenPanel::Action;
+		else if(GKey.PressedRelease(GK_ABILITY_PANEL))
+			to_open = OpenPanel::Ability;
 		else if(open == OpenPanel::Trade && input->PressedRelease(Key::Escape))
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
@@ -934,7 +934,7 @@ void Game::OnUpdate(float dt)
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
-		case OpenPanel::Action:
+		case OpenPanel::Ability:
 		case OpenPanel::Journal:
 		case OpenPanel::Book:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
@@ -988,7 +988,7 @@ void Game::OnUpdate(float dt)
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
-		case OpenPanel::Action:
+		case OpenPanel::Ability:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Journal:
@@ -3077,7 +3077,7 @@ uint Game::TestGameData(bool major)
 			}
 
 			// punkt czaru
-			if(ud.spells && !mesh.GetPoint(NAMES::point_cast))
+			if(ud.abilities && !mesh.GetPoint(NAMES::point_cast))
 			{
 				str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
 				++errors;
@@ -3628,7 +3628,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		// update position
 		Vec3 prev_pos = it->pos;
 		it->pos += Vec3(sin(it->rot.y)*it->speed, it->yspeed, cos(it->rot.y)*it->speed) * dt;
-		if(it->spell && it->spell->type == Spell::Ball)
+		if(it->ability && it->ability->type == Ability::Ball)
 			it->yspeed -= 10.f*dt;
 
 		// update particles
@@ -3652,10 +3652,10 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 		// do contact test
 		btCollisionShape* shape;
-		if(!it->spell)
+		if(!it->ability)
 			shape = game_level->shape_arrow;
 		else
-			shape = it->spell->shape;
+			shape = it->ability->shape;
 		assert(shape->isConvex());
 
 		btTransform tr_from, tr_to;
@@ -3687,7 +3687,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 			if(!Net::IsLocal())
 				continue;
 
-			if(!it->spell)
+			if(!it->ability)
 			{
 				if(it->owner && it->owner->IsFriend(*hitted, true) || it->attack < -50.f)
 				{
@@ -3883,7 +3883,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 				float dmg = it->attack;
 				if(it->owner)
-					dmg += it->owner->level * it->spell->dmg_bonus;
+					dmg += it->owner->level * it->ability->dmg_bonus;
 				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float base_dmg = dmg;
 
@@ -3908,10 +3908,10 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					}
 				}
 
-				GiveDmg(*hitted, dmg, it->owner, &hitpoint, !IsSet(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
+				GiveDmg(*hitted, dmg, it->owner, &hitpoint, !IsSet(it->ability->flags, Ability::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
-				if(IsSet(it->spell->flags, Spell::Poison))
+				if(IsSet(it->ability->flags, Ability::Poison))
 				{
 					float poison_res = hitted->GetPoisonResistance();
 					if(poison_res > 0.f)
@@ -3934,7 +3934,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		else
 		{
 			// trafiono w obiekt
-			if(!it->spell)
+			if(!it->ability)
 			{
 				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, ARROW_HIT_SOUND_DIST);
 
@@ -4343,17 +4343,17 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 
 void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted)
 {
-	Spell& spell = *bullet.spell;
+	Ability& ability = *bullet.ability;
 
 	// dŸwiêk
-	if(spell.sound_hit)
-		sound_mgr->PlaySound3d(spell.sound_hit, pos, spell.sound_hit_dist);
+	if(ability.sound_hit)
+		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
 
 	// cz¹steczki
-	if(spell.tex_particle && spell.type == Spell::Ball)
+	if(ability.tex_particle && ability.type == Ability::Ball)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = spell.tex_particle;
+		pe->tex = ability.tex_particle;
 		pe->emision_interval = 0.01f;
 		pe->life = 0.f;
 		pe->particle_life = 0.5f;
@@ -4364,9 +4364,9 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 		pe->pos = pos;
 		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-		pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-		pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-		pe->size = spell.size / 2;
+		pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+		pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+		pe->size = ability.size / 2;
 		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->alpha = 1.f;
 		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -4376,16 +4376,16 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 	}
 
 	// wybuch
-	if(Net::IsLocal() && spell.tex_explode && IsSet(spell.flags, Spell::Explode))
+	if(Net::IsLocal() && ability.tex_explode && IsSet(ability.flags, Ability::Explode))
 	{
 		Explo* explo = new Explo;
-		explo->dmg = (float)spell.dmg;
+		explo->dmg = (float)ability.dmg;
 		if(bullet.owner)
-			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * spell.dmg_bonus);
+			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
 		explo->size = 0.f;
-		explo->sizemax = spell.explode_range;
+		explo->sizemax = ability.explode_range;
 		explo->pos = pos;
-		explo->tex = spell.tex_explode;
+		explo->tex = ability.tex_explode;
 		explo->owner = bullet.owner;
 		if(hitted)
 			explo->hitted.push_back(hitted);
@@ -4395,7 +4395,7 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CREATE_EXPLOSION;
-			c.spell = &spell;
+			c.ability = &ability;
 			c.pos = explo->pos;
 		}
 	}
@@ -4714,7 +4714,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 						b.pe = nullptr;
 						b.remove = false;
 						b.speed = TRAP_ARROW_SPEED;
-						b.spell = nullptr;
+						b.ability = nullptr;
 						b.tex = nullptr;
 						b.tex_size = 0.f;
 						b.timer = ARROW_TIMER;
@@ -4813,7 +4813,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 				if(trigger)
 				{
-					Spell* fireball = Spell::TryGet("fireball");
+					Ability* fireball = Ability::TryGet("fireball");
 
 					Explo* explo = new Explo;
 					explo->pos = trap.pos;
@@ -4831,7 +4831,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CREATE_EXPLOSION;
-						c.spell = fireball;
+						c.ability = fireball;
 						c.pos = explo->pos;
 
 						NetChange& c2 = Add1(Net::changes);
@@ -4914,14 +4914,14 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				}
 
 				// play sound
-				if(electro.spell->sound_hit)
-					sound_mgr->PlaySound3d(electro.spell->sound_hit, target_pos, electro.spell->sound_hit_dist);
+				if(electro.ability->sound_hit)
+					sound_mgr->PlaySound3d(electro.ability->sound_hit, target_pos, electro.ability->sound_hit_dist);
 
 				// add particles
-				if(electro.spell->tex_particle)
+				if(electro.ability->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = electro.spell->tex_particle;
+					pe->tex = electro.ability->tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -4932,9 +4932,9 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->pos = target_pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
-					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
-					pe->size = electro.spell->size_particle;
+					pe->pos_min = Vec3(-electro.ability->size, -electro.ability->size, -electro.ability->size);
+					pe->pos_max = Vec3(electro.ability->size, electro.ability->size, electro.ability->size);
+					pe->size = electro.ability->size_particle;
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -5036,14 +5036,14 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				const Vec3 target_pos = electro.lines.back().to;
 				electro.hitsome = false;
 
-				if(electro.spell->sound_hit)
-					sound_mgr->PlaySound3d(electro.spell->sound_hit, target_pos, electro.spell->sound_hit_dist);
+				if(electro.ability->sound_hit)
+					sound_mgr->PlaySound3d(electro.ability->sound_hit, target_pos, electro.ability->sound_hit_dist);
 
 				// cz¹steczki
-				if(electro.spell->tex_particle)
+				if(electro.ability->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = electro.spell->tex_particle;
+					pe->tex = electro.ability->tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -5054,9 +5054,9 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->pos = target_pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
-					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
-					pe->size = electro.spell->size_particle;
+					pe->pos_min = Vec3(-electro.ability->size, -electro.ability->size, -electro.ability->size);
+					pe->pos_max = Vec3(electro.ability->size, electro.ability->size, electro.ability->size);
+					pe->size = electro.ability->size_particle;
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;

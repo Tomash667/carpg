@@ -61,7 +61,7 @@ osoby. Oczekuj zmian na lepsze!
 	E - obrót w prawo
 	1 - wybierz broñ do walki wrêcz i tarcze
 	2 - wybierz broñ dystansow¹
-	3 - u¿yj akcji
+	3 - u¿yj zdolnoœci
 	4 - wypij najlepsz¹ miksturkê zdrowia
 	F - automatyczny ruch do przodu
 	Caps Lock - prze³¹cz bieganie/chodzenie
@@ -109,9 +109,9 @@ osoby. Oczekuj zmian na lepsze!
 	przydatne przeciwko odpornym wrogom którym normalnym atakiem zadajesz ma³o
 	lub nic. Atak w biegu jest jak 0.25 potê¿nego ataku ale nie mo¿esz siê
 	zatrzymaæ.
-* Akcje - Aby u¿yæ akcji wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
-	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ akcji,
-	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia akcji w
+* Zdolnoœci - Aby u¿yæ zdolnoœci wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
+	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ zdolnoœci,
+	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia zdolnoœci w
 	tym miejscu.
 * Wytrzyma³oœæ - Atakowanie zu¿ywa wytrzyma³oœæ, gdy siê skoñczy nie mo¿esz
 	biegaæ ani atakowaæ. Blokowanie ciosów te¿ zu¿ywa wytrzyma³oœæ i gdy siê

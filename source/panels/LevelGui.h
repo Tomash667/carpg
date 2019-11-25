@@ -14,7 +14,7 @@ enum class OpenPanel
 	Team,
 	Journal,
 	Minimap,
-	Action,
+	Ability,
 	Trade,
 	Unknown,
 	Book
@@ -28,7 +28,7 @@ enum class SideButtonId
 	Minimap,
 	Journal,
 	Inventory,
-	Action,
+	Ability,
 	Stats,
 	Talk,
 	Max

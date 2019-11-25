@@ -3,7 +3,7 @@
 #include "ClassLoader.h"
 #include "Class.h"
 #include "ResourceManager.h"
-#include "Action.h"
+#include "Ability.h"
 #include "UnitData.h"
 
 enum Group
@@ -18,7 +18,7 @@ enum Keyword
 	K_HERO,
 	K_CRAZY,
 	K_ICON,
-	K_ACTION,
+	K_ABILITY,
 	K_MP_BAR,
 	K_LEVEL,
 	K_POTIONS
@@ -46,7 +46,7 @@ void ClassLoader::InitTokenizer()
 		{ "hero", K_HERO },
 		{ "crazy", K_CRAZY },
 		{ "icon", K_ICON },
-		{ "action", K_ACTION },
+		{ "ability", K_ABILITY },
 		{ "mp_bar", K_MP_BAR },
 		{ "level", K_LEVEL },
 		{ "potions", K_POTIONS }
@@ -92,12 +92,12 @@ void ClassLoader::LoadEntity(int top, const string& id)
 				t.Next();
 			}
 			break;
-		case K_ACTION:
+		case K_ABILITY:
 			{
-				const string& action_id = t.MustGetItem();
-				clas->action = Action::Find(action_id);
-				if(!clas->action)
-					LoadError("Missing action '%s'.", action_id.c_str());
+				const string& id = t.MustGetItem();
+				clas->ability = Ability::TryGet(id);
+				if(!clas->ability)
+					LoadError("Missing ability '%s'.", id.c_str());
 				t.Next();
 			}
 			break;

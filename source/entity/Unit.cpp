@@ -32,7 +32,7 @@
 #include "LevelGui.h"
 #include "ScriptManager.h"
 #include "Terrain.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ParticleSystem.h"
 #include "CombatHelper.h"
 #include "City.h"
@@ -4792,7 +4792,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		player->next_action = NA_NONE;
 		if(player->is_local)
 		{
-			player->data.action_ready = false;
+			player->data.ability_ready = false;
 			game_gui->inventory->lock = nullptr;
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
@@ -6301,11 +6301,11 @@ void Unit::CastSpell()
 {
 	if(IsPlayer())
 	{
-		player->CastSpell();
+		player->UseAbility();
 		return;
 	}
 
-	Spell& spell = *data->spells->spell[attack_id];
+	Ability& ability = *data->abilities->ability[attack_id];
 
 	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
 	assert(point);
@@ -6316,18 +6316,18 @@ void Unit::CastSpell()
 
 	Vec3 coord = Vec3::TransformZero(m);
 	float dmg;
-	if(IsSet(spell.flags, Spell::Cleric))
-		dmg = float(spell.dmg + spell.dmg_bonus * (Get(AttributeId::CHA) + Get(SkillId::GODS_MAGIC) - 50));
+	if(IsSet(ability.flags, Ability::Cleric))
+		dmg = float(ability.dmg + ability.dmg_bonus * (Get(AttributeId::CHA) + Get(SkillId::GODS_MAGIC) - 50));
 	else
-		dmg = float(spell.dmg + spell.dmg_bonus * (CalculateMagicPower() + level));
+		dmg = float(ability.dmg + ability.dmg_bonus * (CalculateMagicPower() + level));
 
-	if(spell.mana > 0)
-		RemoveMana(spell.mana);
+	if(ability.mana > 0)
+		RemoveMana(ability.mana);
 
-	if(spell.type == Spell::Ball || spell.type == Spell::Point)
+	if(ability.type == Ability::Ball || ability.type == Ability::Point)
 	{
 		int count = 1;
-		if(IsSet(spell.flags, Spell::Triple))
+		if(IsSet(ability.flags, Ability::Triple))
 			count = 3;
 
 		float expected_rot = Clip(-Vec3::Angle2d(coord, target_pos) + PI / 2);
@@ -6343,38 +6343,38 @@ void Unit::CastSpell()
 			b.pos = coord;
 			b.attack = dmg;
 			b.rot = Vec3(0, current_rot + Random(-0.05f, 0.05f), 0);
-			b.mesh = spell.mesh;
-			b.tex = spell.tex;
-			b.tex_size = spell.size;
-			b.speed = spell.speed;
-			b.timer = spell.range / (spell.speed - 1);
+			b.mesh = ability.mesh;
+			b.tex = ability.tex;
+			b.tex_size = ability.size;
+			b.speed = ability.speed;
+			b.timer = ability.range / (ability.speed - 1);
 			b.owner = this;
 			b.remove = false;
 			b.trail = nullptr;
 			b.pe = nullptr;
-			b.spell = &spell;
+			b.ability = &ability;
 			b.start_pos = b.pos;
 
 			// ustal z jak¹ si³¹ rzuciæ kul¹
-			if(spell.type == Spell::Ball)
+			if(ability.type == Ability::Ball)
 			{
 				float dist = Vec3::Distance2d(pos, target_pos);
-				float t = dist / spell.speed;
+				float t = dist / ability.speed;
 				float h = (target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
 				b.yspeed = h / t + (10.f*t) / 2;
 			}
-			else if(spell.type == Spell::Point)
+			else if(ability.type == Ability::Point)
 			{
 				float dist = Vec3::Distance2d(pos, target_pos);
-				float t = dist / spell.speed;
+				float t = dist / ability.speed;
 				float h = (target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
 				b.yspeed = h / t;
 			}
 
-			if(spell.tex_particle)
+			if(ability.tex_particle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
+				pe->tex = ability.tex_particle;
 				pe->emision_interval = 0.1f;
 				pe->life = -1;
 				pe->particle_life = 0.5f;
@@ -6385,9 +6385,9 @@ void Unit::CastSpell()
 				pe->pos = b.pos;
 				pe->speed_min = Vec3(-1, -1, -1);
 				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-				pe->size = spell.size_particle;
+				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+				pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+				pe->size = ability.size_particle;
 				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
 				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -6401,7 +6401,7 @@ void Unit::CastSpell()
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_SPELL_BALL;
-				c.spell = &spell;
+				c.ability = &ability;
 				c.pos = b.start_pos;
 				c.f[0] = b.rot.y;
 				c.f[1] = b.yspeed;
@@ -6411,7 +6411,7 @@ void Unit::CastSpell()
 	}
 	else
 	{
-		if(IsSet(spell.flags, Spell::Jump))
+		if(IsSet(ability.flags, Ability::Jump))
 		{
 			Electro* e = new Electro;
 			e->Register();
@@ -6419,7 +6419,7 @@ void Unit::CastSpell()
 			e->hitted.push_back(this);
 			e->dmg = dmg;
 			e->owner = this;
-			e->spell = &spell;
+			e->ability = &ability;
 			e->start_pos = pos;
 
 			Vec3 hitpoint;
@@ -6428,7 +6428,7 @@ void Unit::CastSpell()
 			target_pos.y += Random(-0.5f, 0.5f);
 			Vec3 dir = target_pos - coord;
 			dir.Normalize();
-			Vec3 target = coord + dir * spell.range;
+			Vec3 target = coord + dir * ability.range;
 
 			if(game_level->RayTest(coord, target, this, hitpoint, hitted))
 			{
@@ -6467,7 +6467,7 @@ void Unit::CastSpell()
 				memcpy(c.f, &e->lines[0].to, sizeof(Vec3));
 			}
 		}
-		else if(IsSet(spell.flags, Spell::Drain))
+		else if(IsSet(ability.flags, Ability::Drain))
 		{
 			Vec3 hitpoint;
 			Unit* hitted;
@@ -6508,7 +6508,7 @@ void Unit::CastSpell()
 				}
 			}
 		}
-		else if(IsSet(spell.flags, Spell::Raise))
+		else if(IsSet(ability.flags, Ability::Raise))
 		{
 			Unit* target = action_unit;
 			if(!target) // pre V_0_12
@@ -6546,7 +6546,7 @@ void Unit::CastSpell()
 
 				// efekt cz¹steczkowy
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
+				pe->tex = ability.tex_particle;
 				pe->emision_interval = 0.01f;
 				pe->life = 0.f;
 				pe->particle_life = 0.5f;
@@ -6558,9 +6558,9 @@ void Unit::CastSpell()
 				pe->pos.y += u2.GetUnitHeight() / 2;
 				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-				pe->size = spell.size_particle;
+				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+				pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+				pe->size = ability.size_particle;
 				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
 				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -6586,7 +6586,7 @@ void Unit::CastSpell()
 
 			ai->state = AIController::Idle;
 		}
-		else if(IsSet(spell.flags, Spell::Heal))
+		else if(IsSet(ability.flags, Ability::Heal))
 		{
 			Unit* target = action_unit;
 			if(!target) // pre V_0_12
@@ -6613,7 +6613,7 @@ void Unit::CastSpell()
 				float r = u2.GetUnitRadius(),
 					h = u2.GetUnitHeight();
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
+				pe->tex = ability.tex_particle;
 				pe->emision_interval = 0.01f;
 				pe->life = 0.f;
 				pe->particle_life = 0.5f;
@@ -6627,7 +6627,7 @@ void Unit::CastSpell()
 				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 				pe->pos_min = Vec3(-r, -h / 2, -r);
 				pe->pos_max = Vec3(r, h / 2, r);
-				pe->size = spell.size_particle;
+				pe->size = ability.size_particle;
 				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
 				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -6652,14 +6652,14 @@ void Unit::CastSpell()
 	}
 
 	// dŸwiêk
-	if(spell.sound_cast)
+	if(ability.sound_cast)
 	{
-		sound_mgr->PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist);
+		sound_mgr->PlaySound3d(ability.sound_cast, coord, ability.sound_cast_dist);
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
-			c.spell = &spell;
+			c.ability = &ability;
 			c.pos = coord;
 		}
 	}
@@ -7055,7 +7055,7 @@ void Unit::Update(float dt)
 				b.owner = this;
 				b.remove = false;
 				b.pe = nullptr;
-				b.spell = nullptr;
+				b.ability = nullptr;
 				b.tex = nullptr;
 				b.poison_attack = 0.f;
 				b.start_pos = b.pos;

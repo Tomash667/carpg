@@ -1,6 +1,6 @@
-// This file contains list of spells
+// This file contains list of abilities
 //------------------------------------------------------------------------------
-spell magic_bolt {
+ability magic_bolt {
 	type point
 	dmg 30 + 4
 	range 50
@@ -11,7 +11,7 @@ spell magic_bolt {
 	sound_hit "punch1.wav" 1
 }
 
-spell xmagic_bolt {
+ability xmagic_bolt {
 	type point
 	flags triple
 	dmg 20 + 3
@@ -23,7 +23,7 @@ spell xmagic_bolt {
 	sound_hit "punch1.wav" 1
 }
 
-spell fireball {
+ability fireball {
 	type point
 	flags explode
 	dmg 130 + 12
@@ -38,7 +38,7 @@ spell fireball {
 	sound_hit "explode.mp3" 3
 }
 
-spell spit_poison {
+ability spit_poison {
 	type ball
 	flags poison
 	dmg 75
@@ -51,7 +51,7 @@ spell spit_poison {
 	sound_hit "splash2.mp3" 1
 }
 
-spell raise {
+ability raise {
 	type target
 	flags {raise non_combat}
 	cooldown {10 15}
@@ -61,7 +61,7 @@ spell raise {
 	sound_cast "Darkness3.mp3" 1
 }
 
-spell thunder_bolt {
+ability thunder_bolt {
 	type ray
 	flags jump
 	dmg 150 + 15
@@ -72,7 +72,7 @@ spell thunder_bolt {
 	sound_hit "zap.mp3" 1
 }
 
-spell drain {
+ability drain {
 	type ray
 	flags {drain hold}
 	dmg 50 + 5
@@ -81,7 +81,7 @@ spell drain {
 	sound_cast "suck.mp3" 1
 }
 
-spell drain2 {
+ability drain2 {
 	type ray
 	flags {drain hold}
 	dmg 80 + 8
@@ -90,7 +90,7 @@ spell drain2 {
 	sound_cast "suck.mp3" 1
 }
 
-spell exploding_skull {
+ability exploding_skull {
 	type point
 	flags explode
 	dmg 140 + 13
@@ -105,9 +105,9 @@ spell exploding_skull {
 	sound_hit "explode.mp3" 3
 }
 
-spell heal {
+ability heal {
 	type target
-	flags {heal non_combat cleric}
+	flags {heal non_combat cleric use_cast}
 	dmg 150 + 5 // 5 points per charisma/gods_magic
 	cooldown 5
 	range 7.5
@@ -115,9 +115,10 @@ spell heal {
 	mana 100
 	tex_particle "heal_effect.png" 0.1
 	sound_cast "heal.mp3" 1
+	icon
 }
 
-spell mystic_ball {
+ability mystic_ball {
 	type point
 	flags explode
 	dmg 400
@@ -130,6 +131,38 @@ spell mystic_ball {
 	tex_explode "rainbow.jpg"
 	sound_cast "rlaunch.mp3" 1
 	sound_hit "explode.mp3" 3
+}
+
+ability bull_charge {
+	type charge
+	flags ignore_units
+	cooldown 20
+	range 5
+	width 0.6
+	stamina 100
+	sound_cast "charge.wav" 2
+	icon
+}
+
+ability dash {
+	type charge
+	flags pick_dir
+	recharge 5
+	charges 3
+	range 7.5
+	width 0.25
+	stamina 25
+	sound_cast "dash.wav" 0.5
+	icon
+}
+
+ability summon_wolf {
+	type summon
+	flags use_cast
+	cooldown 60
+	range 10
+	width 1.5
+	icon
 }
 
 //------------------------------------------------------------------------------

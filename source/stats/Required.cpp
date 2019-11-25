@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "BuildingGroup.h"
 #include "Building.h"
 #include "BuildingScript.h"
@@ -21,7 +21,7 @@ enum RequiredType
 	R_STOCK,
 	R_UNIT,
 	R_GROUP,
-	R_SPELL,
+	R_ABILITY,
 	R_DIALOG,
 	R_BUILDING_GROUP,
 	R_BUILDING,
@@ -173,7 +173,7 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
 		{ "group", R_GROUP },
-		{ "spell", R_SPELL },
+		{ "ability", R_ABILITY },
 		{ "dialog", R_DIALOG },
 		{ "building_group", R_BUILDING_GROUP },
 		{ "building", R_BUILDING },
@@ -302,12 +302,12 @@ bool Game::LoadRequiredStats(uint& errors)
 						}
 					}
 					break;
-				case R_SPELL:
+				case R_ABILITY:
 					{
-						Spell* spell = Spell::TryGet(str);
-						if(!spell)
+						Ability* ability = Ability::TryGet(str);
+						if(!ability)
 						{
-							Error("Missing required spell '%s'.", str.c_str());
+							Error("Missing required ability '%s'.", str.c_str());
 							++errors;
 						}
 					}

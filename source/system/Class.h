@@ -32,11 +32,11 @@ struct Class
 	vector<LevelEntry> level;
 	Texture* icon;
 	UnitData* player, *hero, *crazy;
-	Action* action;
+	Ability* ability;
 	vector<PotionEntry> potions;
 	bool mp_bar;
 
-	Class() : icon(nullptr), player(nullptr), hero(nullptr), crazy(nullptr), action(nullptr), mp_bar(false)
+	Class() : icon(nullptr), player(nullptr), hero(nullptr), crazy(nullptr), ability(nullptr), mp_bar(false)
 	{
 	}
 	bool IsPickable() const { return player != nullptr; }

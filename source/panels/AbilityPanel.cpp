@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include "GameCore.h"
-#include "ActionPanel.h"
+#include "AbilityPanel.h"
 #include "LevelGui.h"
 #include "GameGui.h"
-#include "Action.h"
+#include "Ability.h"
 #include "Language.h"
 #include "ResourceManager.h"
 #include "GameKeys.h"
@@ -25,17 +25,17 @@ enum OtherAction
 };
 
 //=================================================================================================
-ActionPanel::ActionPanel()
+AbilityPanel::AbilityPanel()
 {
 	visible = false;
-	tooltip.Init(TooltipController::Callback(this, &ActionPanel::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &AbilityPanel::GetTooltip));
 }
 
 //=================================================================================================
-void ActionPanel::LoadLanguage()
+void AbilityPanel::LoadLanguage()
 {
-	Language::Section s = Language::GetSection("ActionPanel");
-	txActions = s.Get("actions");
+	Language::Section s = Language::GetSection("AbilityPanel");
+	txTitle = s.Get("title");
 	txCooldown = s.Get("cooldown");
 	txCooldownCharges = s.Get("cooldownCharges");
 	txCost = s.Get("cost");
@@ -54,7 +54,7 @@ void ActionPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void ActionPanel::LoadData()
+void AbilityPanel::LoadData()
 {
 	tItemBar = res_mgr->Load<Texture>("item_bar.png");
 	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
@@ -63,33 +63,33 @@ void ActionPanel::LoadData()
 }
 
 //=================================================================================================
-void ActionPanel::Init(Action* action)
+void AbilityPanel::Init(Ability* ability)
 {
-	actions.clear();
-	if(action)
-		actions.push_back(action);
+	abilities.clear();
+	if(ability)
+		abilities.push_back(ability);
 }
 
 //=================================================================================================
-void ActionPanel::Draw(ControlDrawData*)
+void AbilityPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
 	grid_offset = 0;
 
-	// capition
+	// title
 	Rect rect = {
 		pos.x + 8,
 		pos.y + 8,
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
-	if(!actions.empty())
+	if(!abilities.empty())
 	{
 		images.clear();
-		images.push_back(actions[0]->tex);
+		images.push_back(abilities[0]->tex_icon);
 		DrawGroup(txAbilities);
 	}
 
@@ -105,7 +105,7 @@ void ActionPanel::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
-void ActionPanel::DrawGroup(cstring text)
+void AbilityPanel::DrawGroup(cstring text)
 {
 	int count_w = (size.x - 48) / 63;
 	int count_h = images.size() / count_w + 1;
@@ -135,7 +135,7 @@ void ActionPanel::DrawGroup(cstring text)
 }
 
 //=================================================================================================
-void ActionPanel::Event(GuiEvent e)
+void AbilityPanel::Event(GuiEvent e)
 {
 	GamePanel::Event(e);
 
@@ -147,7 +147,7 @@ void ActionPanel::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void ActionPanel::Update(float dt)
+void AbilityPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
@@ -180,8 +180,8 @@ void ActionPanel::Update(float dt)
 			case Shortcut::SPECIAL_HEALING_POTION:
 				icon = tPotion;
 				break;
-			case Shortcut::SPECIAL_ACTION:
-				icon = actions[0]->tex;
+			case Shortcut::SPECIAL_ABILITY:
+				icon = abilities[0]->tex;
 				break;
 			}
 			game_gui->level_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
@@ -193,7 +193,7 @@ void ActionPanel::Update(float dt)
 
 	int group = G_NONE, id = -1;
 	grid_offset = 0;
-	if(!actions.empty())
+	if(!abilities.empty())
 		UpdateGroup(1, G_ACTION, group, id);
 	UpdateGroup(3, G_OTHER, group, id);
 	tooltip.UpdateTooltip(dt, group, id);
@@ -218,7 +218,7 @@ void ActionPanel::Update(float dt)
 }
 
 //=================================================================================================
-void ActionPanel::UpdateGroup(uint count, int group, int& group_result, int& id_result)
+void AbilityPanel::UpdateGroup(uint count, int group, int& group_result, int& id_result)
 {
 	int count_w = (size.x - 48) / 63;
 	int count_h = count / count_w + 1;
@@ -252,7 +252,7 @@ void ActionPanel::UpdateGroup(uint count, int group, int& group_result, int& id_
 }
 
 //=================================================================================================
-void ActionPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
+void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 {
 	if(group == G_NONE)
 	{
@@ -288,38 +288,42 @@ void ActionPanel::GetTooltip(TooltipController*, int group, int id, bool refresh
 }
 
 //=================================================================================================
-void ActionPanel::GetActionTooltip(TooltipController& tooltip)
+void AbilityPanel::GetActionTooltip(TooltipController& tooltip)
 {
-	Action& action = *actions[0];
+	Ability& ability = *abilities[0];
 	tooltip.anything = true;
-	tooltip.img = action.tex;
-	tooltip.big_text = action.name;
+	tooltip.img = ability.tex_icon;
+	tooltip.big_text = ability.name;
 
-	tooltip.text = action.desc;
+	tooltip.text = ability.desc;
 	uint pos = tooltip.text.find("{power}", 0);
 	if(pos != string::npos)
 		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->GetActionPower()));
 
-	if(action.charges == 1)
-		tooltip.small_text = Format(txCooldown, action.cooldown);
+	if(ability.charges == 1)
+		tooltip.small_text = Format(txCooldown, ability.cooldown.x);
 	else
-		tooltip.small_text = Format(txCooldownCharges, action.cooldown, action.charges, action.recharge);
-	if(action.cost > 0.f)
+		tooltip.small_text = Format(txCooldownCharges, ability.cooldown.x, ability.charges, ability.recharge);
+	if(ability.mana > 0.f || ability.stamina > 0.f)
 	{
 		tooltip.small_text += '\n';
 		tooltip.small_text += txCost;
-		if(action.use_mana)
-			tooltip.small_text += Format("$cb%g %s$c-", action.cost, txMana);
-		else
-			tooltip.small_text += Format("$cy%g %s$c-", action.cost, txStamina);
+		if(ability.mana > 0.f)
+			tooltip.small_text += Format("$cb%g %s$c-", ability.mana, txMana);
+		if(ability.stamina > 0.f)
+		{
+			if(ability.mana > 0.f)
+				tooltip.small_text += ", ";
+			tooltip.small_text += Format("$cy%g %s$c-", ability.stamina, txStamina);
+		}
 	}
 }
 
 //=================================================================================================
-int ActionPanel::ConvertToShortcutSpecial(int group, int id)
+int AbilityPanel::ConvertToShortcutSpecial(int group, int id)
 {
 	if(group == G_ACTION)
-		return Shortcut::SPECIAL_ACTION;
+		return Shortcut::SPECIAL_ABILITY;
 	else
 	{
 		assert(group == G_OTHER);

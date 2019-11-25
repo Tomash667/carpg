@@ -34,7 +34,7 @@ class asIScriptModule;
 class asITypeInfo;
 
 //-----------------------------------------------------------------------------
-class ActionPanel;
+class AbilityPanel;
 class Arena;
 class BitStreamReader;
 class BitStreamWriter;
@@ -84,7 +84,8 @@ class World;
 class WorldMapGui;
 
 //-----------------------------------------------------------------------------
-struct Action;
+struct Ability;
+struct AbilityList;
 struct AIController;
 struct Amulet;
 struct Armor;
@@ -159,8 +160,6 @@ struct ScriptEvent;
 struct Shield;
 struct SoundPack;
 struct SpeechBubble;
-struct Spell;
-struct SpellList;
 struct StatProfile;
 struct Stock;
 struct TerrainTile;

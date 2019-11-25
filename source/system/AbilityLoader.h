@@ -4,7 +4,7 @@
 #include "ContentLoader.h"
 
 //-----------------------------------------------------------------------------
-class SpellLoader : public ContentLoader
+class AbilityLoader : public ContentLoader
 {
 	friend class Content;
 
@@ -12,7 +12,7 @@ class SpellLoader : public ContentLoader
 	static void Cleanup();
 	void InitTokenizer() override;
 	void LoadEntity(int top, const string& id) override;
-	void ParseSpell(const string& id);
+	void ParseAbility(const string& id);
 	void ParseAlias(const string& id);
 	void Finalize() override;
 };

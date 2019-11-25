@@ -41,7 +41,7 @@ public:
 	TeamPanel* team;
 	Journal* journal;
 	Minimap* minimap;
-	ActionPanel* actions;
+	AbilityPanel* ability;
 	BookPanel* book;
 	GameMessages* messages;
 	MpBox* mp_box;

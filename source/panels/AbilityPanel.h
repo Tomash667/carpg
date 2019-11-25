@@ -5,16 +5,16 @@
 #include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
-class ActionPanel : public GamePanel
+class AbilityPanel : public GamePanel
 {
 public:
-	ActionPanel();
+	AbilityPanel();
 	void LoadLanguage();
 	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
-	void Init(Action* action);
+	void Init(Ability* ability);
 	void GetActionTooltip(TooltipController& tooltip);
 
 private:
@@ -24,9 +24,9 @@ private:
 	int ConvertToShortcutSpecial(int group, int id);
 
 	TooltipController tooltip;
-	vector<Action*> actions;
+	vector<Ability*> abilities;
 	vector<Texture*> images;
-	cstring txActions, txCooldown, txCooldownCharges, txCost, txAbilities, txOther, txMana, txStamina;
+	cstring txTitle, txCooldown, txCooldownCharges, txCost, txAbilities, txOther, txMana, txStamina;
 	cstring txMeleeWeapon, txRangedWeapon, txPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
 	TexturePtr tItemBar, tMelee, tRanged, tPotion;
 	Int2 drag_and_drop_pos;

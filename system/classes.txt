@@ -10,7 +10,7 @@ class cleric {
 	player base_cleric
 	hero hero_cleric
 	icon "icon_cleric.png"
-	action heal
+	ability heal
 	mp_bar 1
 	level {
 		str 1
@@ -68,7 +68,7 @@ class hunter {
 	hero hero_hunter
 	crazy crazy_hunter
 	icon "icon_hunter.png"
-	action summon_wolf
+	ability summon_wolf
 	level {
 		str 1
 		end 1
@@ -148,7 +148,7 @@ class rogue {
 	hero hero_rogue
 	crazy crazy_rogue
 	icon "icon_rogue.png"
-	action dash
+	ability dash
 	level {
 		str 1
 		end 1
@@ -190,7 +190,7 @@ class warrior {
 	hero hero_warrior
 	crazy crazy_warrior
 	icon "icon_warrior.png"
-	action bull_charge
+	ability bull_charge
 	level {
 		str 1
 		end 1.1

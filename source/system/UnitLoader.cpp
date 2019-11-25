@@ -6,7 +6,7 @@
 #include "GameDialog.h"
 #include "ItemScript.h"
 #include "Item.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ResourceManager.h"
 #include "Stock.h"
 #include "Content.h"
@@ -32,7 +32,7 @@ enum Group
 	G_FRAME_KEYWORD,
 	G_WEAPON_FLAG,
 	G_NULL,
-	G_SPELL_KEYWORD,
+	G_ABILITY_KEYWORD,
 	G_ITEM_KEYWORD,
 	G_GROUP_KEYWORD,
 	G_TRADER_KEYWORD,
@@ -48,7 +48,7 @@ enum UnitDataType
 	T_UNIT,
 	T_PROFILE,
 	T_ITEMS,
-	T_SPELLS,
+	T_ABILITIES,
 	T_SOUNDS,
 	T_FRAMES,
 	T_TEX,
@@ -69,7 +69,7 @@ enum Property
 	P_ATTACK,
 	P_DEF,
 	P_ITEMS,
-	P_SPELLS,
+	P_ABILITIES,
 	P_GOLD,
 	P_DIALOG,
 	P_GROUP,
@@ -109,10 +109,10 @@ enum ItemKeyword
 	IK_LEVEL
 };
 
-enum SpellKeyword
+enum AbilityKeyword
 {
-	SK_NON_COMBAT,
-	SK_NULL
+	AK_NON_COMBAT,
+	AK_NULL
 };
 
 enum GroupKeyword
@@ -169,7 +169,7 @@ void UnitLoader::Cleanup()
 {
 	DeleteElements(StatProfile::profiles);
 	DeleteElements(ItemScript::scripts);
-	DeleteElements(SpellList::lists);
+	DeleteElements(AbilityList::lists);
 	DeleteElements(SoundPack::packs);
 	DeleteElements(IdlePack::packs);
 	DeleteElements(TexPack::packs);
@@ -188,7 +188,7 @@ void UnitLoader::InitTokenizer()
 		{ "unit", T_UNIT },
 		{ "items", T_ITEMS },
 		{ "profile", T_PROFILE },
-		{ "spells", T_SPELLS },
+		{ "abilities", T_ABILITIES },
 		{ "sounds", T_SOUNDS },
 		{ "frames", T_FRAMES },
 		{ "tex", T_TEX },
@@ -208,7 +208,7 @@ void UnitLoader::InitTokenizer()
 		{ "attack", P_ATTACK },
 		{ "def", P_DEF },
 		{ "items", P_ITEMS },
-		{ "spells", P_SPELLS },
+		{ "abilities", P_ABILITIES },
 		{ "gold", P_GOLD },
 		{ "dialog", P_DIALOG },
 		{ "group", P_GROUP },
@@ -387,9 +387,9 @@ void UnitLoader::InitTokenizer()
 
 	t.AddKeyword("null", 0, G_NULL);
 
-	t.AddKeywords(G_SPELL_KEYWORD, {
-		{ "non_combat", SK_NON_COMBAT },
-		{ "null", SK_NULL }
+	t.AddKeywords(G_ABILITY_KEYWORD, {
+		{ "non_combat", AK_NON_COMBAT },
+		{ "null", AK_NULL }
 		});
 
 	t.AddKeywords(G_ITEM_KEYWORD, {
@@ -495,14 +495,14 @@ void UnitLoader::LoadEntity(int top, const string& id)
 			ParseItems(script);
 		}
 		break;
-	case T_SPELLS:
+	case T_ABILITIES:
 		{
-			if(SpellList::TryGet(id))
+			if(AbilityList::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<SpellList> list;
+			Ptr<AbilityList> list;
 			list->id = id;
 			t.Next();
-			ParseSpells(list);
+			ParseAbilities(list);
 		}
 		break;
 	case T_SOUNDS:
@@ -732,19 +732,19 @@ void UnitLoader::ParseUnit(const string& id)
 					crc.Update0();
 			}
 			break;
-		case P_SPELLS:
+		case P_ABILITIES:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<SpellList> spells;
-				unit->spells = spells.Get();
-				ParseSpells(spells);
+				Ptr<AbilityList> abilities;
+				unit->abilities = abilities.Get();
+				ParseAbilities(abilities);
 			}
 			else
 			{
 				const string& id = t.MustGetItemKeyword();
-				unit->spells = SpellList::TryGet(id);
-				if(!unit->spells)
-					t.Throw("Missing spell list '%s'.", id.c_str());
+				unit->abilities = AbilityList::TryGet(id);
+				if(!unit->abilities)
+					t.Throw("Missing ability list '%s'.", id.c_str());
 				crc.Update(id);
 			}
 			break;
@@ -1771,7 +1771,7 @@ void UnitLoader::AddItem(ItemScript* script)
 }
 
 //=================================================================================================
-void UnitLoader::ParseSpells(Ptr<SpellList>& list)
+void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 {
 	// {
 	t.AssertSymbol('{');
@@ -1781,10 +1781,10 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 
 	do
 	{
-		if(t.IsKeywordGroup(G_SPELL_KEYWORD))
+		if(t.IsKeywordGroup(G_ABILITY_KEYWORD))
 		{
-			SpellKeyword k = (SpellKeyword)t.GetKeywordId(G_SPELL_KEYWORD);
-			if(k == SK_NON_COMBAT)
+			AbilityKeyword k = (AbilityKeyword)t.GetKeywordId(G_ABILITY_KEYWORD);
+			if(k == AK_NON_COMBAT)
 			{
 				// non_combat
 				t.Next();
@@ -1794,31 +1794,31 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 			else
 			{
 				// null
-				if(index == MAX_SPELLS)
-					t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
+				if(index == MAX_ABILITIES)
+					t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 				++index;
 				crc.Update(0);
 			}
 		}
 		else
 		{
-			if(index == MAX_SPELLS)
-				t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
+			if(index == MAX_ABILITIES)
+				t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 			t.AssertSymbol('{');
 			t.Next();
 			const string& spell_id = t.MustGetItemKeyword();
-			Spell* spell = Spell::TryGet(spell_id.c_str());
-			if(!spell)
-				t.Throw("Missing spell '%s'.", spell_id.c_str());
+			Ability* ability = Ability::TryGet(spell_id.c_str());
+			if(!ability)
+				t.Throw("Missing ability '%s'.", spell_id.c_str());
 			t.Next();
 			int lvl = t.MustGetInt();
 			if(lvl < 0)
-				t.Throw("Invalid spell level %d.", lvl);
+				t.Throw("Invalid ability level %d.", lvl);
 			t.Next();
 			t.AssertSymbol('}');
-			list->spell[index] = spell;
+			list->ability[index] = ability;
 			list->level[index] = lvl;
-			crc.Update(spell->id);
+			crc.Update(ability->id);
 			crc.Update(lvl);
 			++index;
 		}
@@ -1826,10 +1826,10 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 	}
 	while(!t.IsSymbol('}'));
 
-	if(list->spell[0] == nullptr && list->spell[1] == nullptr && list->spell[2] == nullptr)
-		t.Throw("Empty spell list.");
+	if(list->ability[0] == nullptr && list->ability[1] == nullptr && list->ability[2] == nullptr)
+		t.Throw("Empty ability list.");
 
-	SpellList::lists.push_back(list.Pin());
+	AbilityList::lists.push_back(list.Pin());
 }
 
 //=================================================================================================

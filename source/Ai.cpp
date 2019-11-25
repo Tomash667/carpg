@@ -6,7 +6,7 @@
 #include "City.h"
 #include "InsideLocation.h"
 #include "LevelGui.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Team.h"
 #include "SoundManager.h"
 #include "Profiler.h"
@@ -155,9 +155,9 @@ void Game::UpdateAi(float dt)
 		ai.ignore -= dt;
 		ai.pf_timer -= dt;
 		ai.morale = Min(ai.morale + dt, u.GetMaxMorale());
-		if(u.data->spells)
+		if(u.data->abilities)
 		{
-			for(int i = 0; i < MAX_SPELLS; ++i)
+			for(int i = 0; i < MAX_ABILITIES; ++i)
 				ai.cooldown[i] -= dt;
 		}
 
@@ -246,25 +246,25 @@ void Game::UpdateAi(float dt)
 		bool try_phase = false;
 
 		// casting of non combat spells
-		if(u.data->spells && u.data->spells->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
+		if(u.data->abilities && u.data->abilities->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
 			&& u.busy == Unit::Busy_No)
 		{
-			for(int i = 0; i < MAX_SPELLS; ++i)
+			for(int i = 0; i < MAX_ABILITIES; ++i)
 			{
-				Spell* spell = u.data->spells->spell[i];
-				if(spell && IsSet(spell->flags, Spell::NonCombat)
-					&& u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f
-					&& (spell->mana <= 0 || u.mp >= spell->mana))
+				Ability* ability = u.data->abilities->ability[i];
+				if(ability && IsSet(ability->flags, Ability::NonCombat)
+					&& u.level >= u.data->abilities->level[i] && ai.cooldown[i] <= 0.f
+					&& (ability->mana <= 0 || u.mp >= ability->mana))
 				{
-					float spell_range = spell->move_range,
+					float spell_range = ability->move_range,
 						best_prio = -999.f, dist;
 					Unit* spell_target = nullptr;
 
 					// if near enemies, cast only on near targets
 					if(best_dist < 3.f)
-						spell_range = spell->range;
+						spell_range = ability->range;
 
-					if(IsSet(spell->flags, Spell::Raise))
+					if(IsSet(ability->flags, Ability::Raise))
 					{
 						// raise undead spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -1643,23 +1643,23 @@ void Game::UpdateAi(float dt)
 							u.TakeWeapon(weapon);
 					}
 
-					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
+					if(u.data->abilities && u.action == A_NONE && u.frozen == FROZEN::NO)
 					{
 						// spellcasting
-						for(int i = MAX_SPELLS - 1; i >= 0; --i)
+						for(int i = MAX_ABILITIES - 1; i >= 0; --i)
 						{
-							if(u.data->spells->spell[i] && u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f)
+							if(u.data->abilities->ability[i] && u.level >= u.data->abilities->level[i] && ai.cooldown[i] <= 0.f)
 							{
-								Spell& s = *u.data->spells->spell[i];
+								Ability& ability = *u.data->abilities->ability[i];
 
-								if(IsSet(s.flags, Spell::NonCombat))
+								if(IsSet(ability.flags, Ability::NonCombat))
 									continue;
 
-								if(best_dist < s.range)
+								if(best_dist < ability.range)
 								{
 									bool ok = true;
 
-									if(IsSet(s.flags, Spell::Drain))
+									if(IsSet(ability.flags, Ability::Drain))
 									{
 										// can't cast drain blood on bloodless units
 										if(IsSet(enemy->data->flags2, F2_BLOODLESS))
@@ -1671,7 +1671,7 @@ void Game::UpdateAi(float dt)
 
 									if(ok)
 									{
-										ai.cooldown[i] = u.data->spells->spell[i]->cooldown.Random();
+										ai.cooldown[i] = u.data->abilities->ability[i]->cooldown.Random();
 										u.action = A_CAST;
 										u.attack_id = i;
 										u.animation_state = 0;
@@ -1710,7 +1710,7 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_CAST)
 					{
 						// spellshot
-						look_pos = ai.PredictTargetPos(*enemy, u.data->spells->spell[u.attack_id]->speed);
+						look_pos = ai.PredictTargetPos(*enemy, u.data->abilities->ability[u.attack_id]->speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
 					}
@@ -2304,7 +2304,7 @@ void Game::UpdateAi(float dt)
 						else if(u.action == A_CAST)
 						{
 							// cast a spell
-							look_pos = ai.PredictTargetPos(*top, u.data->spells->spell[u.attack_id]->speed);
+							look_pos = ai.PredictTargetPos(*top, u.data->abilities->ability[u.attack_id]->speed);
 							look_at = LookAtPoint;
 							u.target_pos = look_pos;
 						}
@@ -2333,7 +2333,7 @@ void Game::UpdateAi(float dt)
 			case AIController::Cast:
 				if(Unit* target = ai.target)
 				{
-					Spell& s = *u.data->spells->spell[u.attack_id];
+					Ability& ability = *u.data->abilities->ability[u.attack_id];
 					bool ok = true;
 					if(target == &u)
 					{
@@ -2347,7 +2347,7 @@ void Game::UpdateAi(float dt)
 						look_at = LookAtPoint;
 						target_pos = look_pos = target->pos;
 
-						if(Vec3::Distance(u.pos, target_pos) <= s.range)
+						if(Vec3::Distance(u.pos, target_pos) <= ability.range)
 							move_type = DontMove;
 						else
 						{
@@ -2361,7 +2361,7 @@ void Game::UpdateAi(float dt)
 
 					if(ok && u.action == A_NONE)
 					{
-						ai.cooldown[u.attack_id] = s.cooldown.Random();
+						ai.cooldown[u.attack_id] = ability.cooldown.Random();
 						u.action = A_CAST;
 						u.animation_state = 0;
 						u.target_pos = target->pos;

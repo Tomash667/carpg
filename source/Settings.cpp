@@ -22,7 +22,7 @@ void Settings::InitGameKeys()
 	GKey[GK_STATS].id = "keyStats";
 	GKey[GK_INVENTORY].id = "keyInventory";
 	GKey[GK_TEAM_PANEL].id = "keyTeam";
-	GKey[GK_ACTION_PANEL].id = "keyActions";
+	GKey[GK_ABILITY_PANEL].id = "keyAbility";
 	GKey[GK_JOURNAL].id = "keyGameJournal";
 	GKey[GK_MINIMAP].id = "keyMinimap";
 	GKey[GK_QUICKSAVE].id = "keyQuicksave";
@@ -70,7 +70,7 @@ void Settings::ResetGameKeys()
 	GKey[GK_STATS].Set(Key::C);
 	GKey[GK_INVENTORY].Set(Key::I);
 	GKey[GK_TEAM_PANEL].Set(Key::T);
-	GKey[GK_ACTION_PANEL].Set(Key::K);
+	GKey[GK_ABILITY_PANEL].Set(Key::K);
 	GKey[GK_JOURNAL].Set(Key::J);
 	GKey[GK_MINIMAP].Set(Key::M);
 	GKey[GK_QUICKSAVE].Set(Key::F5);
@@ -111,6 +111,9 @@ void Settings::SaveGameKeys(Config& cfg)
 //=================================================================================================
 void Settings::LoadGameKeys(Config& cfg)
 {
+	cfg.Rename("keyActions0", "keyAbility0");
+	cfg.Rename("keyActions1", "keyAbility1");
+
 	for(int i = 0; i < GK_MAX; ++i)
 	{
 		GameKey& k = GKey[i];

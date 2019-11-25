@@ -56,20 +56,20 @@ axe = "Axe"
 []
 
 //------------------------------------------------------------------------------
-// ACTIONS
-action "bull_charge" {
+// ABILITIES
+ability "bull_charge" {
 	name "Bull's charge"
 	desc "You move forward stunning all enemies in your path and dealing damage to them."
 }
-action "dash" {
+ability "dash" {
 	name "Dash"
 	desc "You move fast in a selected direction. Has three charges."
 }
-action "heal" {
+ability "heal" {
 	name "Heal"
 	desc "Restore $cg{power} health points$c- to the target."
 }
-action "summon_wolf" {
+ability "summon_wolf" {
 	name "Animal ally"
 	desc "You summon a wolf that will help you in combat until it is killed."
 }

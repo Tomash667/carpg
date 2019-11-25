@@ -3,7 +3,7 @@
 #include "GameCore.h"
 #include "SpellEffects.h"
 #include "Unit.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
 #include "SaveState.h"
@@ -179,7 +179,7 @@ void Electro::Save(FileWriter& f)
 		f << unit;
 	f << dmg;
 	f << owner;
-	f << spell->id;
+	f << ability->id;
 	f << valid;
 	f << hitsome;
 	f << start_pos;
@@ -220,10 +220,10 @@ void Electro::Load(FileReader& f)
 		f >> unit;
 	f >> dmg;
 	f >> owner;
-	const string& spell_id = f.ReadString1();
-	spell = Spell::TryGet(spell_id);
-	if(!spell)
-		throw Format("Missing spell '%s' for electro.", spell_id.c_str());
+	const string& ability_id = f.ReadString1();
+	ability = Ability::TryGet(ability_id);
+	if(!ability)
+		throw Format("Missing ability '%s' for electro.", ability_id.c_str());
 	f >> valid;
 	f >> hitsome;
 	f >> start_pos;
@@ -233,7 +233,7 @@ void Electro::Load(FileReader& f)
 void Electro::Write(BitStreamWriter& f)
 {
 	f << id;
-	f << spell->id;
+	f << ability->id;
 	f.WriteCasted<byte>(lines.size());
 	for(Line& line : lines)
 	{
@@ -247,7 +247,7 @@ void Electro::Write(BitStreamWriter& f)
 bool Electro::Read(BitStreamReader& f)
 {
 	f >> id;
-	spell = Spell::TryGet(f.ReadString1());
+	ability = Ability::TryGet(f.ReadString1());
 
 	byte count;
 	f >> count;

@@ -16,8 +16,8 @@
 #include "Door.h"
 #include "Team.h"
 #include "Class.h"
-#include "Action.h"
-#include "ActionPanel.h"
+#include "Ability.h"
+#include "AbilityPanel.h"
 #include "BookPanel.h"
 #include "Profiler.h"
 #include "GameStats.h"
@@ -129,7 +129,7 @@ void LevelGui::LoadData()
 	tSideButton[(int)SideButtonId::Minimap] = res_mgr->Load<Texture>("bt_minimap.png");
 	tSideButton[(int)SideButtonId::Journal] = res_mgr->Load<Texture>("bt_journal.png");
 	tSideButton[(int)SideButtonId::Inventory] = res_mgr->Load<Texture>("bt_inventory.png");
-	tSideButton[(int)SideButtonId::Action] = res_mgr->Load<Texture>("bt_action.png");
+	tSideButton[(int)SideButtonId::Ability] = res_mgr->Load<Texture>("bt_action.png");
 	tSideButton[(int)SideButtonId::Stats] = res_mgr->Load<Texture>("bt_stats.png");
 	tSideButton[(int)SideButtonId::Talk] = res_mgr->Load<Texture>("bt_talk.png");
 	tMinihp = res_mgr->Load<Texture>("minihp.png");
@@ -212,7 +212,7 @@ void LevelGui::DrawFront()
 
 	// crosshair
 	if((pc.unit->weapon_state == WeaponState::Taken && pc.unit->weapon_taken == W_BOW)
-		|| (game->pc->data.action_ready && pc.GetAction().area == Action::TARGET))
+		|| (game->pc->data.ability_ready && pc.GetAbility().type == Ability::Target))
 		gui->DrawSprite(tCrosshair, Center(32, 32));
 
 	// taking damage layer (red screen)
@@ -509,7 +509,7 @@ void LevelGui::DrawFront()
 
 		Texture* icon = nullptr;
 		int count = 0, icon_size = 128;
-		bool enabled = true, is_action = false, equipped = false;
+		bool enabled = true, is_ability = false, equipped = false;
 		if(shortcut.type == Shortcut::TYPE_SPECIAL)
 		{
 			switch(shortcut.value)
@@ -522,8 +522,8 @@ void LevelGui::DrawFront()
 				icon = tRanged;
 				enabled = pc.unit->HaveBow();
 				break;
-			case Shortcut::SPECIAL_ACTION:
-				is_action = true;
+			case Shortcut::SPECIAL_ABILITY:
+				is_ability = true;
 				break;
 			case Shortcut::SPECIAL_HEALING_POTION:
 				icon = tPotion;
@@ -576,41 +576,36 @@ void LevelGui::DrawFront()
 				gui->UseGrayscale(false);
 			}
 		}
-		else if(is_action)
+		else if(is_ability)
 		{
-			Action& action = pc.GetAction();
+			Ability& ability = pc.GetAbility();
 			float charge;
-			if(pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
+			if(pc.ability_charges > 0 || pc.ability_cooldown >= pc.ability_recharge)
 			{
-				if(action.cooldown == 0)
+				if(ability.cooldown.x == 0)
 					charge = 0.f;
 				else
-					charge = pc.action_cooldown / action.cooldown;
+					charge = pc.ability_cooldown / ability.cooldown.x;
 			}
 			else
-				charge = pc.action_recharge / action.recharge;
+				charge = pc.ability_recharge / ability.recharge;
 
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
-				drag_and_drop_icon = action.tex;
+				drag_and_drop_icon = ability.tex_icon;
 
-			bool can_use;
-			if(action.use_mana)
-				can_use = pc.unit->mp >= action.cost;
-			else
-				can_use = pc.unit->stamina >= action.cost;
-			if(can_use)
+			if(pc.unit->mp >= ability.mana && pc.unit->stamina >= ability.stamina)
 			{
 				if(charge == 0.f)
-					gui->DrawSprite2(action.tex, mat);
+					gui->DrawSprite2(ability.tex_icon, mat);
 				else
 				{
 					gui->UseGrayscale(true);
-					gui->DrawSprite2(action.tex, mat);
+					gui->DrawSprite2(ability.tex_icon, mat);
 					gui->UseGrayscale(false);
 					if(charge < 1.f)
 					{
 						Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-						gui->DrawSprite2(action.tex, mat, &part);
+						gui->DrawSprite2(ability.tex_icon, mat, &part);
 					}
 					gui->DrawSprite2(tActionCooldown, mat);
 				}
@@ -618,16 +613,16 @@ void LevelGui::DrawFront()
 			else
 			{
 				gui->UseGrayscale(true);
-				gui->DrawSprite2(action.tex, mat);
+				gui->DrawSprite2(ability.tex_icon, mat);
 				gui->UseGrayscale(false);
 			}
 
 			// charges
-			if(action.charges > 1)
-				gui->DrawText(GameGui::font_small, Format("%d/%d", pc.action_charges, action.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+			if(ability.charges > 1)
+				gui->DrawText(GameGui::font_small, Format("%d/%d", pc.ability_charges, ability.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
 
-			// readied action
-			if(game->pc->data.action_ready)
+			// readied ability
+			if(game->pc->data.ability_ready)
 			{
 				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
 				gui->DrawSprite2(tShortcutAction, mat);
@@ -996,7 +991,7 @@ void LevelGui::Update(float dt)
 	sidebar_state[(int)SideButtonId::Stats] = (game_gui->stats->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Team] = (game_gui->team->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Minimap] = (game_gui->minimap->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Action] = (game_gui->actions->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Ability] = (game_gui->ability->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Talk] = 0;
 	sidebar_state[(int)SideButtonId::Menu] = 0;
 
@@ -1169,8 +1164,8 @@ void LevelGui::Update(float dt)
 					case SideButtonId::Inventory:
 						ShowPanel(OpenPanel::Inventory);
 						break;
-					case SideButtonId::Action:
-						ShowPanel(OpenPanel::Action);
+					case SideButtonId::Ability:
+						ShowPanel(OpenPanel::Ability);
 						break;
 					case SideButtonId::Stats:
 						ShowPanel(OpenPanel::Stats);
@@ -1501,8 +1496,8 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			case SideButtonId::Inventory:
 				gk = GK_INVENTORY;
 				break;
-			case SideButtonId::Action:
-				gk = GK_ACTION_PANEL;
+			case SideButtonId::Ability:
+				gk = GK_ABILITY_PANEL;
 				break;
 			case SideButtonId::Stats:
 				gk = GK_STATS;
@@ -1562,8 +1557,8 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 					title = txRangedWeapon;
 					desc = txRangedWeaponDesc;
 					break;
-				case Shortcut::SPECIAL_ACTION:
-					game_gui->actions->GetActionTooltip(tooltip);
+				case Shortcut::SPECIAL_ABILITY:
+					game_gui->ability->GetActionTooltip(tooltip);
 					tooltip.small_text = Format("%s\n%s", tooltip.text.c_str(), tooltip.small_text.c_str());
 					tooltip.text = tooltip.big_text;
 					tooltip.big_text.clear();
@@ -1581,7 +1576,7 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 				desc = shortcut.item->desc.c_str();
 			}
 			const GameKey& gk = GKey[GK_SHORTCUT1 + id];
-			if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ACTION)
+			if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ABILITY)
 			{
 				if(gk[0] != Key::None)
 					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->key_text[(int)gk[0]]);
@@ -1610,7 +1605,7 @@ bool LevelGui::HavePanelOpen() const
 		|| game_gui->team->visible
 		|| game_gui->journal->visible
 		|| game_gui->minimap->visible
-		|| game_gui->actions->visible;
+		|| game_gui->ability->visible;
 }
 
 //=================================================================================================
@@ -1630,8 +1625,8 @@ void LevelGui::ClosePanels(bool close_mp_box)
 		game_gui->inventory->gp_trade->Hide();
 	if(close_mp_box && game_gui->mp_box->visible)
 		game_gui->mp_box->visible = false;
-	if(game_gui->actions->visible)
-		game_gui->actions->Hide();
+	if(game_gui->ability->visible)
+		game_gui->ability->Hide();
 	if(game_gui->book->visible)
 		game_gui->book->Hide();
 }
@@ -1647,7 +1642,7 @@ void LevelGui::GetGamePanels(vector<GamePanel*>& panels)
 	panels.push_back(game_gui->inventory->inv_trade_mine);
 	panels.push_back(game_gui->inventory->inv_trade_other);
 	panels.push_back(game_gui->mp_box);
-	panels.push_back(game_gui->actions);
+	panels.push_back(game_gui->ability);
 }
 
 //=================================================================================================
@@ -1665,8 +1660,8 @@ OpenPanel LevelGui::GetOpenPanel()
 		return OpenPanel::Minimap;
 	else if(game_gui->inventory->gp_trade->visible)
 		return OpenPanel::Trade;
-	else if(game_gui->actions->visible)
-		return OpenPanel::Action;
+	else if(game_gui->ability->visible)
+		return OpenPanel::Ability;
 	else if(game_gui->book->visible)
 		return OpenPanel::Book;
 	else
@@ -1703,8 +1698,8 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		game->OnCloseInventory();
 		game_gui->inventory->gp_trade->Hide();
 		break;
-	case OpenPanel::Action:
-		game_gui->actions->Hide();
+	case OpenPanel::Ability:
+		game_gui->ability->Hide();
 		break;
 	case OpenPanel::Book:
 		game_gui->book->Hide();
@@ -1731,8 +1726,8 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		case OpenPanel::Minimap:
 			game_gui->minimap->Show();
 			break;
-		case OpenPanel::Action:
-			game_gui->actions->Show();
+		case OpenPanel::Ability:
+			game_gui->ability->Show();
 			break;
 		}
 	}
@@ -1764,8 +1759,8 @@ void LevelGui::PositionPanels()
 	game_gui->journal->global_pos = game_gui->journal->pos = game_gui->minimap->pos;
 	game_gui->mp_box->size = Int2((gui->wnd_size.x - 32) / 2, (gui->wnd_size.y - 64) / 4);
 	game_gui->mp_box->global_pos = game_gui->mp_box->pos = Int2(gui->wnd_size.x - pos.x - game_gui->mp_box->size.x, gui->wnd_size.y - pos.x - game_gui->mp_box->size.y);
-	game_gui->actions->global_pos = game_gui->actions->pos = pos;
-	game_gui->actions->size = size;
+	game_gui->ability->global_pos = game_gui->ability->pos = pos;
+	game_gui->ability->size = size;
 
 	LocalVector<GamePanel*> panels;
 	GetGamePanels(panels);
@@ -1816,12 +1811,12 @@ void LevelGui::Load(FileReader& f)
 //=================================================================================================
 void LevelGui::Setup()
 {
-	Action* action;
+	Ability* ability;
 	if(quest_mgr->quest_tutorial->in_tutorial)
-		action = nullptr;
+		ability = nullptr;
 	else
-		action = &game->pc->GetAction();
-	game_gui->actions->Init(action);
+		ability = &game->pc->GetAbility();
+	game_gui->ability->Init(ability);
 }
 
 //=================================================================================================
@@ -1869,7 +1864,7 @@ void LevelGui::UpdatePlayerView(float dt)
 	}
 
 	// extra units
-	if(game->pc->data.action_ready && game->pc->data.action_ok)
+	if(game->pc->data.ability_ready && game->pc->data.ability_ok)
 	{
 		if(Unit* target = game->pc->data.action_target; target && target != &u)
 			AddUnitView(target);

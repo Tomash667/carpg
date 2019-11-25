@@ -61,7 +61,7 @@ people. Expect changes for the better!
 	E - rotate right
 	1 - equip melee weapon and shield
 	2 - equip ranged weapon
-	3 - use action
+	3 - use ability
 	4 - drink best healing potion
 	F - auto walk forward
 	Caps Lock - toggle run/walk
@@ -108,9 +108,9 @@ people. Expect changes for the better!
 	that it will be stronger. This is useful against resistant enemies which
 	attack normal asking little or nothing. Attack on the run is like 0.25 of
 	powerful attack but you cannot stop.
-* Actions - Use action by pressing key 3 (by default), it will draw area of effect
-	used by this action. Press left mouse button to use, right to cancel. Red
-	area means that action can be used in this place.
+* Abilities - Use ability by pressing key 3 (by default), it will draw area of effect
+	used by this ability. Press left mouse button to use, right to cancel. Red
+	area means that ability can be used in this place.
 * Stamina - Attacking uses stamina, if you run out of stamina you can't run or
 	attack. Blocking uses stamina too, and if you loss all stamina block is
 	broken. Stop attacking to restore stamina, not walking restore it faster.
@@ -236,7 +236,7 @@ Available commands:
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue]).
 	ready - set player as ready/unready.
-	refresh_cooldown - refresh action cooldown/charges.
+	refresh_cooldown - refresh ability cooldown/charges.
 	reload_shaders - reload shaders.
 	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
@@ -244,7 +244,6 @@ Available commands:
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.
-	refresh_cooldown - refresh action cooldown/charges.
 	s - send message to all players, short from say (say msg).
 	save - save game (save 1-10 [text] or name).
 	say - send message to all players (say msg).

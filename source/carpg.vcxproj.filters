@@ -55,9 +55,6 @@
     <Filter Include="system\dialogs">
       <UniqueIdentifier>{4fa50a58-faa4-4845-82e7-383202a0bd2b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="system\spells">
-      <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="resource">
       <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
     </Filter>
@@ -66,6 +63,9 @@
     </Filter>
     <Filter Include="system\classes">
       <UniqueIdentifier>{36e9d514-c76f-4a1d-a204-97a28e33e7d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\abilities">
+      <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -315,12 +315,6 @@
     <ClCompile Include="entity\Usable.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="stats\Action.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
-    <ClCompile Include="panels\ActionPanel.cpp">
-      <Filter>panels</Filter>
-    </ClCompile>
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="panels\BookPanel.cpp">
       <Filter>panels</Filter>
@@ -505,12 +499,6 @@
     <ClCompile Include="quests\Quest_Artifacts.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="system\Spell.cpp">
-      <Filter>system\spells</Filter>
-    </ClCompile>
-    <ClCompile Include="system\SpellLoader.cpp">
-      <Filter>system\spells</Filter>
-    </ClCompile>
     <ClCompile Include="quests\Quest_Scripted.cpp">
       <Filter>quests</Filter>
     </ClCompile>
@@ -595,6 +583,15 @@
     </ClCompile>
     <ClCompile Include="components\GameResources.cpp">
       <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\AbilityPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="system\AbilityLoader.cpp">
+      <Filter>system\abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Ability.cpp">
+      <Filter>system\abilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -877,12 +874,6 @@
     <ClInclude Include="entity\Usable.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="stats\Action.h">
-      <Filter>stats</Filter>
-    </ClInclude>
-    <ClInclude Include="panels\ActionPanel.h">
-      <Filter>panels</Filter>
-    </ClInclude>
     <ClInclude Include="Utility.h" />
     <ClInclude Include="net\GamePacket.h">
       <Filter>net</Filter>
@@ -1082,9 +1073,6 @@
     <ClInclude Include="quests\Quest_Artifacts.h">
       <Filter>quests</Filter>
     </ClInclude>
-    <ClInclude Include="system\Spell.h">
-      <Filter>system\spells</Filter>
-    </ClInclude>
     <ClInclude Include="quests\Quest_Scripted.h">
       <Filter>quests</Filter>
     </ClInclude>
@@ -1117,9 +1105,6 @@
     </ClInclude>
     <ClInclude Include="system\QuestList.h">
       <Filter>system\quests</Filter>
-    </ClInclude>
-    <ClInclude Include="system\SpellLoader.h">
-      <Filter>system\spells</Filter>
     </ClInclude>
     <ClInclude Include="generator\DungeonMapGenerator.h">
       <Filter>generator</Filter>
@@ -1186,6 +1171,15 @@
     </ClInclude>
     <ClInclude Include="components\GameResources.h">
       <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\AbilityPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="system\AbilityLoader.h">
+      <Filter>system\abilities</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Ability.h">
+      <Filter>system\abilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,10 +2,10 @@
 #include "GameCore.h"
 #include "GameResources.h"
 #include "Item.h"
-#include "Action.h"
+#include "Ability.h"
 #include "Building.h"
 #include "BaseTrap.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "SceneNode.h"
 #include "Language.h"
 #include "Game.h"
@@ -77,7 +77,6 @@ void GameResources::LoadData()
 	tPortal = res_mgr->Load<Texture>("dark_portal.png");
 	tWarning = res_mgr->Load<Texture>("warning.png");
 	tError = res_mgr->Load<Texture>("error.png");
-	Action::LoadData();
 	game_gui->LoadData();
 	net->LoadData();
 
@@ -159,7 +158,7 @@ void GameResources::LoadData()
 
 	PreloadBuildings();
 	PreloadTraps();
-	PreloadSpells();
+	PreloadAbilities();
 	PreloadObjects();
 	PreloadItems();
 
@@ -263,27 +262,29 @@ void GameResources::PreloadTraps()
 }
 
 //=================================================================================================
-void GameResources::PreloadSpells()
+void GameResources::PreloadAbilities()
 {
-	for(Spell* spell_ptr : Spell::spells)
+	for(Ability* ability_ptr : Ability::abilities)
 	{
-		Spell& spell = *spell_ptr;
+		Ability& ability = *ability_ptr;
 
-		if(spell.sound_cast)
-			res_mgr->Load(spell.sound_cast);
-		if(spell.sound_hit)
-			res_mgr->Load(spell.sound_hit);
-		if(spell.tex)
-			res_mgr->Load(spell.tex);
-		if(spell.tex_particle)
-			res_mgr->Load(spell.tex_particle);
-		if(spell.tex_explode)
-			res_mgr->Load(spell.tex_explode);
-		if(spell.mesh)
-			res_mgr->Load(spell.mesh);
+		if(ability.sound_cast)
+			res_mgr->Load(ability.sound_cast);
+		if(ability.sound_hit)
+			res_mgr->Load(ability.sound_hit);
+		if(ability.tex)
+			res_mgr->Load(ability.tex);
+		if(ability.tex_particle)
+			res_mgr->Load(ability.tex_particle);
+		if(ability.tex_explode)
+			res_mgr->Load(ability.tex_explode);
+		if(ability.tex_icon)
+			res_mgr->Load(ability.tex_icon);
+		if(ability.mesh)
+			res_mgr->Load(ability.mesh);
 
-		if(spell.type == Spell::Ball || spell.type == Spell::Point)
-			spell.shape = new btSphereShape(spell.size);
+		if(ability.type == Ability::Ball || ability.type == Ability::Point)
+			ability.shape = new btSphereShape(ability.size);
 	}
 }
 

@@ -31,7 +31,7 @@ struct Electro : public EntityType<Electro>
 	};
 
 	LevelArea* area;
-	Spell* spell;
+	Ability* ability;
 	Entity<Unit> owner;
 	vector<Line> lines;
 	vector<Entity<Unit>> hitted;

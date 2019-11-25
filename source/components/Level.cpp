@@ -25,7 +25,7 @@
 #include "Texture.h"
 #include "PlayerInfo.h"
 #include "BitStreamFunc.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
 #include "Quest_Tutorial.h"
@@ -3937,8 +3937,8 @@ void Level::Write(BitStreamWriter& f)
 			f << bullet.yspeed;
 			f << bullet.timer;
 			f << (bullet.owner ? bullet.owner->id : -1);
-			if(bullet.spell)
-				f << bullet.spell->id;
+			if(bullet.ability)
+				f << bullet.ability->id;
 			else
 				f.Write0();
 		}
@@ -4011,15 +4011,15 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			f >> bullet.yspeed;
 			f >> bullet.timer;
 			int unit_id = f.Read<int>();
-			const string& spell_id = f.ReadString1();
+			const string& ability_id = f.ReadString1();
 			if(!f)
 			{
 				Error("Read level: Broken bullet.");
 				return false;
 			}
-			if(spell_id.empty())
+			if(ability_id.empty())
 			{
-				bullet.spell = nullptr;
+				bullet.ability = nullptr;
 				bullet.mesh = game_res->aArrow;
 				bullet.pe = nullptr;
 				bullet.remove = false;
@@ -4036,26 +4036,26 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			}
 			else
 			{
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
+				Ability* ability_ptr = Ability::TryGet(ability_id);
+				if(!ability_ptr)
 				{
-					Error("Read level: Missing spell '%s'.", spell_id.c_str());
+					Error("Read level: Missing ability '%s'.", ability_id.c_str());
 					return false;
 				}
 
-				Spell& spell = *spell_ptr;
-				bullet.spell = &spell;
-				bullet.mesh = spell.mesh;
-				bullet.tex = spell.tex;
-				bullet.tex_size = spell.size;
+				Ability& ability = *ability_ptr;
+				bullet.ability = &ability;
+				bullet.mesh = ability.mesh;
+				bullet.tex = ability.tex;
+				bullet.tex_size = ability.size;
 				bullet.remove = false;
 				bullet.trail = nullptr;
 				bullet.pe = nullptr;
 
-				if(spell.tex_particle)
+				if(ability.tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
@@ -4066,9 +4066,9 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 					pe->pos = bullet.pos;
 					pe->speed_min = Vec3(-1, -1, -1);
 					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;

@@ -73,7 +73,7 @@ void AIController::Save(GameWriter& f)
 	f << ignore;
 	f << morale;
 	f << start_rot;
-	if(unit->data->spells)
+	if(unit->data->abilities)
 		f << cooldown;
 	if(state == AIController::Escape)
 		f << (escape_room ? escape_room->index : -1);
@@ -161,7 +161,7 @@ void AIController::Load(GameReader& f)
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<float>(); // old last_scan
 	f >> start_rot;
-	if(unit->data->spells)
+	if(unit->data->abilities)
 		f >> cooldown;
 	if(state == AIController::Escape)
 	{

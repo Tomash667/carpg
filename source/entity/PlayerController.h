@@ -125,7 +125,7 @@ struct Shortcut
 	{
 		SPECIAL_MELEE_WEAPON,
 		SPECIAL_RANGED_WEAPON,
-		SPECIAL_ACTION,
+		SPECIAL_ABILITY,
 		SPECIAL_HEALING_POTION
 	};
 
@@ -161,7 +161,7 @@ struct LocalPlayerData
 	int picking_item_state;
 	float rot_buf, action_rot, grayout;
 	Key wasted_key;
-	bool autowalk, action_ready, action_ok;
+	bool autowalk, ability_ready, ability_ok;
 
 	void Reset()
 	{
@@ -175,7 +175,7 @@ struct LocalPlayerData
 		grayout = 0.f;
 		wasted_key = Key::None;
 		autowalk = false;
-		action_ready = false;
+		ability_ready = false;
 	}
 	Unit* GetTargetUnit()
 	{
@@ -199,7 +199,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 
 	PlayerInfo* player_info;
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, ability_recharge, ability_cooldown;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	Key action_key;
 	NextAction next_action;
@@ -215,7 +215,7 @@ struct PlayerController : public HeroPlayerCommon
 	} next_action_data;
 	WeaponType last_weapon;
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
-	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
+	int id, free_days, ability_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
 	PlayerAction action;
 	union
@@ -235,8 +235,8 @@ struct PlayerController : public HeroPlayerCommon
 	Shortcut shortcuts[Shortcut::MAX];
 	static LocalPlayerData data;
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
-		action_cooldown(0.f), action_charges(0), last_ring(false)
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), ability_recharge(0.f),
+		ability_cooldown(0.f), ability_charges(0), last_ring(false)
 	{
 	}
 	~PlayerController();
@@ -283,8 +283,8 @@ public:
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	Action& GetAction() const;
-	bool CanUseAction() const;
+	Ability& GetAbility() const;
+	bool CanUseAbility() const;
 	bool UseActionCharge();
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
@@ -311,8 +311,8 @@ public:
 	float GetShootAngle() const;
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	void UseUsable(Usable* u, bool after_action);
-	void CastSpell();
-	void UseAction(bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	void UseAbility();
+	void UseAbility(bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 	void Update(float dt);
 	void UpdateMove(float dt, bool allow_rot);
 	void UpdateCooldown(float dt);

@@ -223,7 +223,7 @@ struct NetChange
 		const Item* base_item;
 		UnitData* base_unit;
 		int e_id;
-		Spell* spell;
+		Ability* ability;
 		CMD cmd;
 		Usable* usable;
 	};

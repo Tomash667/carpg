@@ -37,7 +37,7 @@ private:
 	void CreateMissingTexture();
 	void PreloadBuildings();
 	void PreloadTraps();
-	void PreloadSpells();
+	void PreloadAbilities();
 	void PreloadObjects();
 	void PreloadItems();
 

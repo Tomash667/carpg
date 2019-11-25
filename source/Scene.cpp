@@ -4,7 +4,7 @@
 #include "Terrain.h"
 #include "City.h"
 #include "InsideLocation.h"
-#include "Action.h"
+#include "Ability.h"
 #include "Profiler.h"
 #include "Portal.h"
 #include "Level.h"
@@ -1036,7 +1036,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	u.mesh_inst->SetupBones();
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
-		|| (game_state == GS_LEVEL && ((pc->data.action_ready && pc->data.action_ok && pc->data.action_target == u)
+		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.action_target == u)
 		|| (pc->unit->action == A_CAST && pc->unit->action_unit == u)));
 
 	// dodaj scene node
@@ -1728,21 +1728,21 @@ void Game::ListAreas(LevelArea& area)
 	}
 
 	// action area2
-	if(pc->data.action_ready)
+	if(pc->data.ability_ready)
 		PrepareAreaPath();
 }
 
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	if(!pc->CanUseAction())
+	if(!pc->CanUseAbility())
 	{
-		pc->data.action_ready = false;
+		pc->data.ability_ready = false;
 		sound_mgr->PlaySound2d(game_res->sCancel);
 		return;
 	}
 
-	Action& action = pc->GetAction();
+	Ability& ability = pc->GetAbility();
 	Area2* area_ptr = area2_pool.Get();
 	Area2& area = *area_ptr;
 	area.ok = 2;
@@ -1752,17 +1752,17 @@ void Game::PrepareAreaPath()
 	const Vec3& pos = pc->unit->pos;
 	Vec3 from = pc->unit->GetPhysicsPos();
 
-	switch(action.area)
+	switch(ability.type)
 	{
-	case Action::LINE:
+	case Ability::Charge:
 		{
 			float rot = Clip(pc->unit->rot + PI + pc->data.action_rot);
 			const int steps = 10;
 
 			// find max line
 			float t;
-			Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
-			bool ignore_units = IsSet(action.flags, Action::F_IGNORE_UNITS);
+			Vec3 dir(sin(rot)*ability.range, 0, cos(rot)*ability.range);
+			bool ignore_units = IsSet(ability.flags, Ability::IgnoreUnits);
 			game_level->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 			{
 				int flags = obj->getCollisionFlags();
@@ -1773,7 +1773,7 @@ void Game::PrepareAreaPath()
 				return LT_COLLIDE;
 			}, t);
 
-			float len = action.area_size.x * t;
+			float len = ability.range * t;
 
 			if(game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 			{
@@ -1790,8 +1790,8 @@ void Game::PrepareAreaPath()
 				for(int i = 0; i < steps; ++i)
 				{
 					float current_h = game_level->terrain->GetH(active_pos) + h;
-					area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
-					area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
+					area.points.push_back(Vec3::Transform(Vec3(-ability.width, current_h, active_step), mat) + unit_offset);
+					area.points.push_back(Vec3::Transform(Vec3(+ability.width, current_h, active_step), mat) + unit_offset);
 
 					active_pos += step;
 					active_step += len_step;
@@ -1811,10 +1811,10 @@ void Game::PrepareAreaPath()
 			{
 				// build line on flat terrain
 				area.points.resize(4);
-				area.points[0] = Vec3(-action.area_size.y, h, 0);
-				area.points[1] = Vec3(-action.area_size.y, h, len);
-				area.points[2] = Vec3(action.area_size.y, h, 0);
-				area.points[3] = Vec3(action.area_size.y, h, len);
+				area.points[0] = Vec3(-ability.width, h, 0);
+				area.points[1] = Vec3(-ability.width, h, len);
+				area.points[2] = Vec3(ability.width, h, 0);
+				area.points[3] = Vec3(ability.width, h, len);
 
 				Matrix mat = Matrix::RotationY(rot);
 				for(int i = 0; i < 4; ++i)
@@ -1829,21 +1829,21 @@ void Game::PrepareAreaPath()
 				area.faces.push_back(3);
 			}
 
-			pc->data.action_ok = true;
+			pc->data.ability_ok = true;
 		}
 		break;
 
-	case Action::POINT:
+	case Ability::Summon:
 		{
 			const float cam_max = 4.63034153f;
 			const float cam_min = 4.08159288f;
-			const float radius = action.area_size.x / 2;
+			const float radius = ability.width / 2;
 			const float unit_r = pc->unit->GetUnitRadius();
 
-			float range = (Clamp(game_level->camera.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y;
+			float range = (Clamp(game_level->camera.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * ability.range;
 			if(range < radius + unit_r)
 				range = radius + unit_r;
-			const float min_t = action.area_size.x / range / 2;
+			const float min_t = ability.width / range / 2;
 			float rot = Clip(pc->unit->rot + PI);
 			static vector<float> t_forward;
 			static vector<float> t_backward;
@@ -1951,11 +1951,11 @@ void Game::PrepareAreaPath()
 				// no free space
 				t = end_t;
 				area.ok = 0;
-				pc->data.action_ok = false;
+				pc->data.ability_ok = false;
 			}
 			else
 			{
-				pc->data.action_ok = true;
+				pc->data.ability_ok = true;
 			}
 
 			// build circle
@@ -1970,13 +1970,13 @@ void Game::PrepareAreaPath()
 				draw_batch.areas2.push_back(y_area);
 			}
 
-			// set action
-			if(pc->data.action_ok)
+			// set ability
+			if(pc->data.ability_ok)
 				pc->data.action_point = area.points[0];
 		}
 		break;
 
-	case Action::TARGET:
+	case Ability::Target:
 		{
 			Unit* target;
 			if(GKey.KeyDownAllowed(GK_MOVE_BACK))
@@ -1990,20 +1990,20 @@ void Game::PrepareAreaPath()
 				RaytestClosestUnitDeadOrAliveCallback clbk(pc->unit);
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();
-				Vec3 to = from + dir * action.area_size.x;
+				Vec3 to = from + dir * ability.range;
 				phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
 				target = clbk.hit;
 			}
 
 			if(target)
 			{
-				pc->data.action_ok = true;
+				pc->data.ability_ok = true;
 				pc->data.action_point = target->pos;
 				pc->data.action_target = target;
 			}
 			else
 			{
-				pc->data.action_ok = false;
+				pc->data.ability_ok = false;
 				pc->data.action_target = nullptr;
 			}
 

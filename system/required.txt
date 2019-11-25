@@ -234,12 +234,12 @@ group list arena_hard
 group list random
 
 //------------------------------------------------------------------------------
-// Required spells
+// Required abilities
 //------------------------------------------------------------------------------
-spell thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net
-spell raise // hardcoded spell effect in net
-spell heal // hardcoded spell effect in net
-spell fireball // hardcoded to cast for fire rune
+ability thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net
+ability raise // hardcoded spell effect in net
+ability heal // hardcoded spell effect in net
+ability fireball // hardcoded to cast for fire rune
 
 //------------------------------------------------------------------------------
 // Required dialogs

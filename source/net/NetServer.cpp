@@ -9,7 +9,7 @@
 #include "InsideLocationLevel.h"
 #include "Level.h"
 #include "GroundItem.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "PlayerInfo.h"
 #include "AIController.h"
 #include "QuestManager.h"
@@ -2897,7 +2897,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!target && netid != -1)
 						Error("Update server: PLAYER_ACTION, invalid target %d from %s.", netid, info.name.c_str());
 					else
-						info.pc->UseAction(false, &pos, target);
+						info.pc->UseAbility(false, &pos, target);
 				}
 			}
 			break;
@@ -3565,7 +3565,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << (c.count != 0);
 			break;
 		case NetChange::CREATE_EXPLOSION:
-			f << c.spell->id;
+			f << c.ability->id;
 			f << c.pos;
 			break;
 		case NetChange::ENCOUNTER:
@@ -3595,14 +3595,14 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->data->id;
 			break;
 		case NetChange::CREATE_SPELL_BALL:
-			f << c.spell->id;
+			f << c.ability->id;
 			f << c.pos;
 			f << c.f[0];
 			f << c.f[1];
 			f << c.extra_id;
 			break;
 		case NetChange::SPELL_SOUND:
-			f << c.spell->id;
+			f << c.ability->id;
 			f << c.pos;
 			break;
 		case NetChange::CREATE_ELECTRO:

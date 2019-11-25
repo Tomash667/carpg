@@ -7,7 +7,7 @@
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 #include "Class.h"
-#include "Action.h"
+#include "Ability.h"
 #include "Level.h"
 #include "GameGui.h"
 #include "GameMessages.h"
@@ -20,7 +20,7 @@
 #include "Quest_Tutorial.h"
 #include "Inventory.h"
 #include "Arena.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ParticleSystem.h"
 #include "FOV.h"
 #include "LevelGui.h"
@@ -106,7 +106,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 			attrib[i].train_part = 0;
 		}
 
-		action_charges = GetAction().charges;
+		ability_charges = GetAbility().charges;
 		learning_points = 0;
 		exp = 0;
 		exp_level = 0;
@@ -128,7 +128,7 @@ void PlayerController::InitShortcuts()
 	shortcuts[1].type = Shortcut::TYPE_SPECIAL;
 	shortcuts[1].value = Shortcut::SPECIAL_RANGED_WEAPON;
 	shortcuts[2].type = Shortcut::TYPE_SPECIAL;
-	shortcuts[2].value = Shortcut::SPECIAL_ACTION;
+	shortcuts[2].value = Shortcut::SPECIAL_ABILITY;
 	shortcuts[3].type = Shortcut::TYPE_SPECIAL;
 	shortcuts[3].value = Shortcut::SPECIAL_HEALING_POTION;
 }
@@ -298,10 +298,10 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	dmgc = 0;
 	poison_dmgc = 0;
 
-	// reset action
-	action_cooldown = 0;
-	action_recharge = 0;
-	action_charges = GetAction().charges;
+	// reset ability
+	ability_cooldown = 0;
+	ability_recharge = 0;
+	ability_charges = GetAbility().charges;
 }
 
 //=================================================================================================
@@ -380,9 +380,9 @@ void PlayerController::Save(FileWriter& f)
 		f << (byte)tp.perk;
 		f << tp.value;
 	}
-	f << action_cooldown;
-	f << action_recharge;
-	f << (byte)action_charges;
+	f << ability_cooldown;
+	f << ability_recharge;
+	f << (byte)ability_charges;
 	if(unit->action == A_DASH && unit->animation_state == 1)
 	{
 		f << action_targets.size();
@@ -592,9 +592,9 @@ void PlayerController::Load(FileReader& f)
 			return false;
 		});
 	}
-	f >> action_cooldown;
-	f >> action_recharge;
-	action_charges = f.Read<byte>();
+	f >> ability_cooldown;
+	f >> ability_recharge;
+	ability_charges = f.Read<byte>();
 	if(unit->action == A_DASH && unit->animation_state == 1)
 	{
 		uint count;
@@ -1106,9 +1106,9 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f.WriteCasted<byte>(perk.perk);
 		f << perk.value;
 	}
-	f << action_cooldown;
-	f << action_recharge;
-	f << action_charges;
+	f << ability_cooldown;
+	f << ability_recharge;
+	f << ability_charges;
 	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
@@ -1171,9 +1171,9 @@ bool PlayerController::Read(BitStreamReader& f)
 		f.ReadCasted<byte>(perk.perk);
 		f >> perk.value;
 	}
-	f >> action_cooldown;
-	f >> action_recharge;
-	f >> action_charges;
+	f >> ability_cooldown;
+	f >> ability_recharge;
+	f >> ability_charges;
 	f.ReadCasted<byte>(next_action);
 	if(!f)
 		return false;
@@ -1223,54 +1223,55 @@ bool PlayerController::IsLeader() const
 }
 
 //=================================================================================================
-Action& PlayerController::GetAction() const
+Ability& PlayerController::GetAbility() const
 {
-	Action* action = unit->GetClass()->action;
-	assert(action);
-	return *action;
+	Ability* ability = unit->GetClass()->ability;
+	assert(ability);
+	return *ability;
 }
 
 //=================================================================================================
-bool PlayerController::CanUseAction() const
+bool PlayerController::CanUseAbility() const
 {
-	if(action_charges == 0 || action_cooldown > 0)
+	if(ability_charges == 0 || ability_cooldown > 0)
 		return false;
 	if(quest_mgr->quest_tutorial->in_tutorial)
 		return false;
-	Action& action = GetAction();
+	Ability& ability = GetAbility();
 	if(unit->action != A_NONE)
 	{
 		if(!Any(unit->action, A_ATTACK, A_BLOCK, A_BASH))
 			return false;
-		if(action.use_cast)
+		if(IsSet(ability.flags, Ability::UseCast))
 			return false;
 	}
-	if(action.use_mana)
-		return unit->mp >= action.cost;
-	else
-		return unit->stamina >= action.cost;
+	if(ability.mana > unit->mp)
+		return false;
+	if(ability.stamina > unit->stamina)
+		return false;
+	return true;
 }
 
 //=================================================================================================
 bool PlayerController::UseActionCharge()
 {
-	if(action_charges == 0 || action_cooldown > 0)
+	if(ability_charges == 0 || ability_cooldown > 0)
 		return false;
-	Action& action = GetAction();
-	--action_charges;
-	action_cooldown = action.cooldown;
-	if(action_recharge == 0)
-		action_recharge = action.recharge;
+	Ability& ability = GetAbility();
+	--ability_charges;
+	ability_cooldown = ability.cooldown.x;
+	if(ability_recharge == 0)
+		ability_recharge = ability.recharge;
 	return true;
 }
 
 //=================================================================================================
 void PlayerController::RefreshCooldown()
 {
-	auto& action = GetAction();
-	action_cooldown = 0;
-	action_recharge = 0;
-	action_charges = action.charges;
+	Ability& ability = GetAbility();
+	ability_cooldown = 0;
+	ability_recharge = 0;
+	ability_charges = ability.charges;
 }
 
 //=================================================================================================
@@ -1749,12 +1750,12 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 }
 
 //=================================================================================================
-void PlayerController::CastSpell()
+void PlayerController::UseAbility()
 {
-	Action& action = GetAction();
+	Ability& ability = GetAbility();
 	LevelArea& area = *unit->area;
 
-	if(strcmp(action.id, "summon_wolf") == 0)
+	if(ability.id == "summon_wolf")
 	{
 		// despawn old
 		Unit* existing_unit = game_level->FindUnit([&](Unit* u) { return u->summoner == unit; });
@@ -1777,13 +1778,12 @@ void PlayerController::CastSpell()
 			game_level->SpawnUnitEffect(*new_unit);
 		}
 	}
-	else if(strcmp(action.id, "heal") == 0)
+	else if(ability.id == "heal")
 	{
-		Spell& spell = *Spell::TryGet("heal");
 		Unit* target = unit->action_unit;
 
 		// check if target is not too far
-		if(target && target->area == unit->area && Vec3::Distance(unit->pos, target->pos) <= action.area_size.x * 1.5f)
+		if(target && target->area == unit->area && Vec3::Distance(unit->pos, target->pos) <= ability.range * 1.5f)
 		{
 			// heal target
 			if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
@@ -1804,7 +1804,7 @@ void PlayerController::CastSpell()
 			float r = target->GetUnitRadius(),
 				h = target->GetUnitHeight();
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = spell.tex_particle;
+			pe->tex = ability.tex_particle;
 			pe->emision_interval = 0.01f;
 			pe->life = 0.f;
 			pe->particle_life = 0.5f;
@@ -1818,7 +1818,7 @@ void PlayerController::CastSpell()
 			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 			pe->pos_min = Vec3(-r, -h / 2, -r);
 			pe->pos_max = Vec3(r, h / 2, r);
-			pe->size = spell.size_particle;
+			pe->size = ability.size_particle;
 			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -1833,15 +1833,15 @@ void PlayerController::CastSpell()
 			}
 
 			// sound effect
-			if(spell.sound_cast)
+			if(ability.sound_cast)
 			{
 				Vec3 pos = target->GetCenter();
-				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
+				sound_mgr->PlaySound3d(ability.sound_cast, pos, ability.sound_cast_dist);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::SPELL_SOUND;
-					c.spell = &spell;
+					c.ability = &ability;
 					c.pos = pos;
 				}
 			}
@@ -1852,28 +1852,25 @@ void PlayerController::CastSpell()
 }
 
 //=================================================================================================
-void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target)
+void PlayerController::UseAbility(bool from_server, const Vec3* pos, Unit* target)
 {
 	if(is_local && from_server)
 		return;
 
-	Action& action = GetAction();
-	if(action.sound)
-		game->PlayAttachedSound(*unit, action.sound, action.sound_dist);
+	Ability& ability = GetAbility();
+	if(ability.sound_cast)
+		game->PlayAttachedSound(*unit, ability.sound_cast, ability.sound_cast_dist);
 
 	if(!from_server)
 	{
 		UseActionCharge();
-		if(action.cost > 0)
-		{
-			if(action.use_mana)
-				unit->RemoveMana(action.cost);
-			else
-				unit->RemoveStamina(action.cost);
-		}
+		if(ability.mana > 0.f)
+			unit->RemoveMana(ability.mana);
+		if(ability.stamina > 0.f)
+			unit->RemoveStamina(ability.stamina);
 	}
 
-	if(action.use_cast)
+	if(IsSet(ability.flags, Ability::UseCast))
 	{
 		// cast animation
 		unit->action = A_CAST;
@@ -1893,9 +1890,9 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 	}
 
 	Vec3 action_point;
-	if(strcmp(action.id, "dash") == 0 || strcmp(action.id, "bull_charge") == 0)
+	if(ability.id == "dash" || ability.id == "bull_charge")
 	{
-		bool dash = (strcmp(action.id, "dash") == 0);
+		const bool dash = (ability.id == "dash");
 		if(dash && Net::IsLocal())
 			Train(TrainWhat::Dash, 0.f, 0);
 		unit->action = A_DASH;
@@ -1912,21 +1909,21 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 		{
 			unit->animation_state = 0;
 			unit->timer = 0.33f;
-			unit->speed = action.area_size.x / 0.33f;
+			unit->speed = ability.range / 0.33f;
 			unit->mesh_inst->groups[0].speed = 3.f;
 		}
 		else
 		{
 			unit->animation_state = 1;
 			unit->timer = 0.5f;
-			unit->speed = action.area_size.x / 0.5f;
+			unit->speed = ability.range / 0.5f;
 			unit->mesh_inst->groups[0].speed = 2.5f;
 			action_targets.clear();
 			unit->mesh_inst->groups[1].blend_max = 0.1f;
 			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
 	}
-	else if(strcmp(action.id, "summon_wolf") == 0 || strcmp(action.id, "heal") == 0)
+	else if(ability.id == "summon_wolf" || ability.id ==  "heal")
 	{
 		if(!from_server)
 			action_point = data.action_point;
@@ -1950,7 +1947,7 @@ void PlayerController::UseAction(bool from_server, const Vec3* pos, Unit* target
 	}
 
 	if(is_local)
-		data.action_ready = false;
+		data.ability_ready = false;
 }
 
 //=================================================================================================
@@ -2041,7 +2038,7 @@ void PlayerController::Update(float dt)
 		data.before_player = BP_NONE;
 		data.rot_buf = 0.f;
 		data.autowalk = false;
-		data.action_ready = false;
+		data.ability_ready = false;
 	}
 	else if(!IsBlocking(unit->action) && !unit->HaveEffect(EffectId::Stun))
 	{
@@ -2063,7 +2060,7 @@ void PlayerController::Update(float dt)
 		data.before_player = BP_NONE;
 		data.rot_buf = 0.f;
 		data.autowalk = false;
-		data.action_ready = false;
+		data.ability_ready = false;
 	}
 
 	UpdateCooldown(dt);
@@ -2097,7 +2094,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(!u.IsStanding())
 	{
 		data.autowalk = false;
-		data.action_ready = false;
+		data.ability_ready = false;
 		data.rot_buf = 0.f;
 		u.TryStandup(dt);
 		return;
@@ -2107,7 +2104,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(u.frozen >= FROZEN::YES)
 	{
 		data.autowalk = false;
-		data.action_ready = false;
+		data.ability_ready = false;
 		data.rot_buf = 0.f;
 		if(u.frozen == FROZEN::YES)
 			u.animation = ANI_STAND;
@@ -2123,7 +2120,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.StopUsingUsable();
 		}
 		data.rot_buf = 0.f;
-		data.action_ready = false;
+		data.ability_ready = false;
 	}
 
 	u.prev_pos = u.pos;
@@ -2545,7 +2542,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
 	}
 
-	if(!data.action_ready && u.action != A_CAST)
+	if(!data.ability_ready && u.action != A_CAST)
 	{
 		// units in front of player
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
@@ -2794,7 +2791,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// atak
-	if(u.weapon_state == WeaponState::Taken && !data.action_ready)
+	if(u.weapon_state == WeaponState::Taken && !data.ability_ready)
 	{
 		idle = false;
 		if(u.weapon_taken == W_ONE_HANDED)
@@ -3046,15 +3043,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 	}
 
-	// action
-	if(!data.action_ready)
+	// ability
+	if(!data.ability_ready)
 	{
-		if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ACTION)
+		if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ABILITY)
 		{
-			if(CanUseAction())
+			if(CanUseAbility())
 			{
-				data.action_ready = true;
-				data.action_ok = false;
+				data.ability_ready = true;
+				data.ability_ok = false;
 				data.action_rot = 0.f;
 				data.action_target = nullptr;
 			}
@@ -3064,8 +3061,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 	else
 	{
-		auto& action = GetAction();
-		if(action.area == Action::LINE && IsSet(action.flags, Action::F_PICK_DIR))
+		Ability& ability = GetAbility();
+		if(ability.type == Ability::Charge && IsSet(ability.flags, Ability::PickDir))
 		{
 			// adjust action dir
 			switch(move)
@@ -3101,8 +3098,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
 		if(data.wasted_key != Key::None)
 		{
-			if(data.action_ok)
-				UseAction(false);
+			if(data.ability_ok)
+				UseAbility(false);
 			else
 				data.wasted_key = Key::None;
 		}
@@ -3110,7 +3107,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
 			if(data.wasted_key != Key::None)
-				data.action_ready = false;
+				data.ability_ready = false;
 		}
 	}
 
@@ -3146,23 +3143,23 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 //=================================================================================================
 void PlayerController::UpdateCooldown(float dt)
 {
-	Action& action = GetAction();
-	if(action_cooldown != 0)
+	Ability& ability = GetAbility();
+	if(ability_cooldown != 0)
 	{
-		action_cooldown -= dt;
-		if(action_cooldown < 0)
-			action_cooldown = 0.f;
+		ability_cooldown -= dt;
+		if(ability_cooldown < 0)
+			ability_cooldown = 0.f;
 	}
-	if(action_recharge != 0)
+	if(ability_recharge != 0)
 	{
-		action_recharge -= dt;
-		if(action_recharge < 0)
+		ability_recharge -= dt;
+		if(ability_recharge < 0)
 		{
-			++action_charges;
-			if(action_charges == action.charges)
-				action_recharge = 0;
+			++ability_charges;
+			if(ability_charges == ability.charges)
+				ability_recharge = 0;
 			else
-				action_recharge += action.recharge;
+				ability_recharge += ability.recharge;
 		}
 	}
 }

@@ -22,7 +22,7 @@
 #include "GameMessages.h"
 #include "LoadScreen.h"
 #include "AIController.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Team.h"
 #include "Journal.h"
 #include "SoundManager.h"

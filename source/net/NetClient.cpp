@@ -6,7 +6,7 @@
 #include "Level.h"
 #include "GroundItem.h"
 #include "Door.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Trap.h"
 #include "Object.h"
 #include "Portal.h"
@@ -1154,7 +1154,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					b.pe = nullptr;
 					b.remove = false;
 					b.speed = speed;
-					b.spell = nullptr;
+					b.ability = nullptr;
 					b.tex = nullptr;
 					b.tex_size = 0.f;
 					b.timer = ARROW_TIMER;
@@ -2053,7 +2053,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::CREATE_EXPLOSION:
 			{
 				Vec3 pos;
-				const string& spell_id = f.ReadString1();
+				const string& ability_id = f.ReadString1();
 				f >> pos;
 				if(!f)
 				{
@@ -2064,17 +2064,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
+				Ability* ability_ptr = Ability::TryGet(ability_id);
+				if(!ability_ptr)
 				{
-					Error("Update client: CREATE_EXPLOSION, missing spell '%s'.", spell_id.c_str());
+					Error("Update client: CREATE_EXPLOSION, missing ability '%s'.", ability_id.c_str());
 					break;
 				}
 
-				Spell& spell = *spell_ptr;
-				if(!IsSet(spell.flags, Spell::Explode))
+				Ability& ability = *ability_ptr;
+				if(!IsSet(ability.flags, Ability::Explode))
 				{
-					Error("Update client: CREATE_EXPLOSION, spell '%s' is not explosion.", spell_id.c_str());
+					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability_id.c_str());
 					break;
 				}
 
@@ -2082,9 +2082,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				explo->pos = pos;
 				explo->size = 0.f;
 				explo->sizemax = 2.f;
-				explo->tex = spell.tex_explode;
+				explo->tex = ability.tex_explode;
 
-				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
+				sound_mgr->PlaySound3d(ability.sound_hit, explo->pos, ability.sound_hit_dist);
 
 				game_level->GetArea(pos).tmp->explos.push_back(explo);
 			}
@@ -2344,7 +2344,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				int id;
 				Vec3 pos;
 				float rotY, speedY;
-				const string& spell_id = f.ReadString1();
+				const string& ability_id = f.ReadString1();
 				f >> pos;
 				f >> rotY;
 				f >> speedY;
@@ -2358,10 +2358,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
+				Ability* ability_ptr = Ability::TryGet(ability_id);
+				if(!ability_ptr)
 				{
-					Error("Update client: CREATE_SPELL_BALL, missing spell '%s'.", spell_id.c_str());
+					Error("Update client: CREATE_SPELL_BALL, missing ability '%s'.", ability_id.c_str());
 					break;
 				}
 
@@ -2373,30 +2373,30 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						Error("Update client: CREATE_SPELL_BALL, missing unit %d.", id);
 				}
 
-				Spell& spell = *spell_ptr;
+				Ability& ability = *ability_ptr;
 				LevelArea& area = game_level->GetArea(pos);
 
 				Bullet& b = Add1(area.tmp->bullets);
 
 				b.pos = pos;
 				b.rot = Vec3(0, rotY, 0);
-				b.mesh = spell.mesh;
-				b.tex = spell.tex;
-				b.tex_size = spell.size;
-				b.speed = spell.speed;
-				b.timer = spell.range / (spell.speed - 1);
+				b.mesh = ability.mesh;
+				b.tex = ability.tex;
+				b.tex_size = ability.size;
+				b.speed = ability.speed;
+				b.timer = ability.range / (ability.speed - 1);
 				b.remove = false;
 				b.trail = nullptr;
 				b.pe = nullptr;
-				b.spell = &spell;
+				b.ability = &ability;
 				b.start_pos = b.pos;
 				b.owner = unit;
 				b.yspeed = speedY;
 
-				if(spell.tex_particle)
+				if(ability.tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
@@ -2407,9 +2407,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos = b.pos;
 					pe->speed_min = Vec3(-1, -1, -1);
 					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -2424,7 +2424,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::SPELL_SOUND:
 			{
 				Vec3 pos;
-				const string& spell_id = f.ReadString1();
+				const string& ability_id = f.ReadString1();
 				f >> pos;
 				if(!f)
 				{
@@ -2435,15 +2435,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
+				Ability* ability_ptr = Ability::TryGet(ability_id);
+				if(!ability_ptr)
 				{
-					Error("Update client: SPELL_SOUND, missing spell '%s'.", spell_id.c_str());
+					Error("Update client: SPELL_SOUND, missing ability '%s'.", ability_id.c_str());
 					break;
 				}
 
-				Spell& spell = *spell_ptr;
-				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
+				Ability& ability = *ability_ptr;
+				sound_mgr->PlaySound3d(ability.sound_cast, pos, ability.sound_cast_dist);
 			}
 			break;
 		// drain blood effect
@@ -2494,7 +2494,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					e->id = id;
 					e->area = &area;
 					e->Register();
-					e->spell = Spell::TryGet("thunder_bolt");
+					e->ability = Ability::TryGet("thunder_bolt");
 					e->start_pos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
@@ -2533,17 +2533,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken ELECTRO_HIT.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					Spell* spell = Spell::TryGet("thunder_bolt");
+					Ability* ability = Ability::TryGet("thunder_bolt");
 
 					// sound
-					if(spell->sound_hit)
-						sound_mgr->PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist);
+					if(ability->sound_hit)
+						sound_mgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
 
 					// particles
-					if(spell->tex_particle)
+					if(ability->tex_particle)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = spell->tex_particle;
+						pe->tex = ability->tex_particle;
 						pe->emision_interval = 0.01f;
 						pe->life = 0.f;
 						pe->particle_life = 0.5f;
@@ -2554,9 +2554,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						pe->pos = pos;
 						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-spell->size, -spell->size, -spell->size);
-						pe->pos_max = Vec3(spell->size, spell->size, spell->size);
-						pe->size = spell->size_particle;
+						pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
+						pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+						pe->size = ability->size_particle;
 						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
 						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -2577,10 +2577,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken RAISE_EFFECT.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					Spell& spell = *Spell::TryGet("raise");
+					Ability& ability = *Ability::TryGet("raise");
 
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -2591,9 +2591,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos = pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -2613,10 +2613,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken HEAL_EFFECT.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					Spell& spell = *Spell::TryGet("heal");
+					Ability& ability = *Ability::TryGet("heal");
 
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -2627,9 +2627,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos = pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -2871,7 +2871,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(unit && unit->player)
 					{
 						if(unit->player != game->pc)
-							unit->player->UseAction(true);
+							unit->player->UseAbility(true);
 					}
 					else
 						Error("Update client: PLAYER_ACTION, invalid player unit %d.", id);

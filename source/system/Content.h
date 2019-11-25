@@ -1,13 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+class AbilityLoader;
 class BuildingLoader;
 class ClassLoader;
 class DialogLoader;
 class ItemLoader;
 class ObjectLoader;
 class QuestLoader;
-class SpellLoader;
 class UnitLoader;
 
 //-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ public:
 	{
 		Items,
 		Objects,
-		Spells,
+		Abilities,
 		Dialogs,
 		Classes,
 		Units,
@@ -47,13 +47,13 @@ public:
 	bool require_update;
 
 private:
+	AbilityLoader* ability_loader;
 	BuildingLoader* building_loader;
 	ClassLoader* class_loader;
 	DialogLoader* dialog_loader;
 	ItemLoader* item_loader;
 	ObjectLoader* object_loader;
 	QuestLoader* quest_loader;
-	SpellLoader* spell_loader;
 	UnitLoader* unit_loader;
 };
 

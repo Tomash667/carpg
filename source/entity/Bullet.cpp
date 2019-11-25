@@ -5,7 +5,7 @@
 #include "ResourceManager.h"
 #include "Mesh.h"
 #include "Unit.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ParticleSystem.h"
 
 //=================================================================================================
@@ -24,8 +24,8 @@ void Bullet::Save(FileWriter& f)
 	f << yspeed;
 	f << poison_attack;
 	f << (owner ? owner->id : -1);
-	if(spell)
-		f << spell->id;
+	if(ability)
+		f << ability->id;
 	else
 		f.Write0();
 	if(tex)
@@ -57,15 +57,15 @@ void Bullet::Load(FileReader& f)
 	f >> yspeed;
 	f >> poison_attack;
 	owner = Unit::GetById(f.Read<int>());
-	const string& spell_id = f.ReadString1();
-	if(!spell_id.empty())
+	const string& ability_id = f.ReadString1();
+	if(!ability_id.empty())
 	{
-		spell = Spell::TryGet(spell_id);
-		if(!spell)
-			throw Format("Missing spell '%s' for bullet.", spell_id.c_str());
+		ability = Ability::TryGet(ability_id);
+		if(!ability)
+			throw Format("Missing ability '%s' for bullet.", ability_id.c_str());
 	}
 	else
-		spell = nullptr;
+		ability = nullptr;
 	const string& tex_name = f.ReadString1();
 	if(!tex_name.empty())
 		tex = res_mgr->Load<Texture>(tex_name);
