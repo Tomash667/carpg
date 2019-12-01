@@ -251,7 +251,7 @@ void LevelGui::DrawFront()
 					AIController& ai = *u.ai;
 					UnitOrder order = u.GetOrder();
 					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
-						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.idle_action]) : "",
+						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.st.idle.action]) : "",
 						ai.timer, ai.loc_timer, order_str[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
 						str += Format(" %.2f", u.order->timer);
@@ -1871,7 +1871,7 @@ void LevelGui::UpdatePlayerView(float dt)
 	}
 	if(u.action == A_CAST)
 	{
-		if(Unit* target = u.action_unit; target && target != &u)
+		if(Unit* target = u.act.cast.target; target && target != &u)
 			AddUnitView(target);
 	}
 

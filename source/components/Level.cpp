@@ -3800,7 +3800,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 		if(unit.IsAI())
 		{
 			unit.ai->state = AIController::Idle;
-			unit.ai->idle_action = AIController::Idle_None;
+			unit.ai->st.idle.action = AIController::Idle_None;
 			unit.ai->target = nullptr;
 			unit.ai->alert_target = nullptr;
 			unit.ai->timer = Random(2.f, 5.f);

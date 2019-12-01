@@ -1522,10 +1522,10 @@ void PlayerController::Yell()
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !unit->IsEnemy(u2) && !unit->IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
 			&& u2.ai->state == AIController::Idle && !IsSet(u2.data->flags, F_AI_STAY)
-			&& Any(u2.ai->idle_action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
+			&& Any(u2.ai->st.idle.action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
 		{
-			u2.ai->idle_action = AIController::Idle_MoveAway;
-			u2.ai->idle_data.unit = unit;
+			u2.ai->st.idle.action = AIController::Idle_MoveAway;
+			u2.ai->st.idle.unit = unit;
 			u2.ai->timer = Random(3.f, 5.f);
 		}
 	}
@@ -1710,7 +1710,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 		}
 		else
 		{
-			u.action = A_ANIMATION2;
+			u.action = A_USE_USABLE;
 			u.animation = ANI_PLAY;
 			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
 			u.target_pos = u.pos;
@@ -1718,8 +1718,8 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 			if(use.base->limit_rot == 4)
 				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 			u.timer = 0.f;
-			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+			u.animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
+			u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 		}
 
 		if(Net::IsOnline())
@@ -1780,7 +1780,7 @@ void PlayerController::UseAbility()
 	}
 	else if(ability.id == "heal")
 	{
-		Unit* target = unit->action_unit;
+		Unit* target = unit->act.cast.target;
 
 		// check if target is not too far
 		if(target && target->area == unit->area && Vec3::Distance(unit->pos, target->pos) <= ability.range * 1.5f)
@@ -1874,18 +1874,18 @@ void PlayerController::UseAbility(bool from_server, const Vec3* pos, Unit* targe
 	{
 		// cast animation
 		unit->action = A_CAST;
-		unit->attack_id = -1;
+		unit->act.cast.ability = &ability;
 		unit->animation_state = 0;
 		unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 		if(is_local)
 		{
 			unit->target_pos = data.action_point;
-			unit->action_unit = data.action_target;
+			unit->act.cast.target = data.action_target;
 		}
 		else if(Net::IsServer())
 		{
 			unit->target_pos = *pos;
-			unit->action_unit = target;
+			unit->act.cast.target = target;
 		}
 	}
 
@@ -1896,10 +1896,9 @@ void PlayerController::UseAbility(bool from_server, const Vec3* pos, Unit* targe
 		if(dash && Net::IsLocal())
 			Train(TrainWhat::Dash, 0.f, 0);
 		unit->action = A_DASH;
-		unit->run_attack = false;
 		if(Net::IsLocal() || !from_server)
 		{
-			unit->use_rot = Clip(data.action_rot + unit->rot + PI);
+			unit->act.dash.rot = Clip(data.action_rot + unit->rot + PI);
 			action_point = Vec3(data.action_rot, 0, 0);
 		}
 		unit->animation = ANI_RUN;
@@ -2043,10 +2042,10 @@ void PlayerController::Update(float dt)
 	else if(!IsBlocking(unit->action) && !unit->HaveEffect(EffectId::Stun))
 	{
 		bool allow_rot = true;
-		if(unit->action == A_CAST && unit->action_unit != unit)
+		if(unit->action == A_CAST && unit->act.cast.target != unit)
 		{
 			Vec3 pos;
-			if(Unit* target = unit->action_unit)
+			if(Unit* target = unit->act.cast.target)
 				pos = target->pos;
 			else
 				pos = unit->target_pos;
@@ -2114,7 +2113,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	// using usable
 	if(u.usable)
 	{
-		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, AS_ANIMATION2_USING, AS_ANIMATION2_USING_SOUND))
+		if(u.action == A_USE_USABLE && OR2_EQ(u.animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND))
 		{
 			if(GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE) || GKey.KeyPressedReleaseAllowed(GK_USE))
 				u.StopUsingUsable();
@@ -2169,7 +2168,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			else if(GKey.KeyPressedReleaseAllowed(GK_AUTOWALK))
 				data.autowalk = !data.autowalk;
 
-			if(u.run_attack)
+			if(u.action == A_ATTACK && u.act.attack.run)
 			{
 				move = 10;
 				if(GKey.KeyDownAllowed(GK_MOVE_RIGHT))
@@ -2242,15 +2241,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				// ustal k¹t i szybkoœæ ruchu
 				float angle = u.rot;
 				bool run = always_run;
-				if(!u.run_attack)
+				if(u.action == A_ATTACK && u.act.attack.run)
+					run = true;
+				else
 				{
 					if(GKey.KeyDownAllowed(GK_WALK))
 						run = !run;
 					if(!u.CanRun())
 						run = false;
 				}
-				else
-					run = true;
 
 				switch(move)
 				{
@@ -2803,11 +2802,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(GKey.KeyUpAllowed(action_key))
 					{
 						// release attack
-						u.attack_power = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
-						float speed = (u.attack_power + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
+						const float ratio = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
+						const float speed = (ratio + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
 						u.mesh_inst->groups[1].speed = speed;
 						u.animation_state = 1;
-						u.attack_power += 1.f;
+						u.act.attack.power = ratio + 1.f;
 
 						if(Net::IsOnline())
 						{
@@ -2830,12 +2829,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						// prepare next attack
 						float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
 						u.action = A_ATTACK;
-						u.attack_id = u.GetRandomAttack();
-						u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
+						u.act.attack.index = u.GetRandomAttack();
+						u.act.attack.run = false;
+						u.mesh_inst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						u.mesh_inst->groups[1].speed = speed;
 						action_key = k;
 						u.animation_state = 0;
-						u.run_attack = false;
 						u.hitted = false;
 						u.timer = 0.f;
 
@@ -2905,16 +2904,16 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				if(k != Key::None)
 				{
 					u.action = A_ATTACK;
-					u.attack_id = u.GetRandomAttack();
-					u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
+					u.act.attack.index = u.GetRandomAttack();
+					u.mesh_inst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 					if(u.running)
 					{
 						// running attack
 						float speed = u.GetAttackSpeed() * u.GetStaminaAttackSpeedMod();
 						u.mesh_inst->groups[1].speed = speed;
 						u.animation_state = 1;
-						u.run_attack = true;
-						u.attack_power = 1.5f;
+						u.act.attack.run = true;
+						u.act.attack.power = 1.5f;
 
 						if(Net::IsOnline())
 						{
@@ -2938,7 +2937,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.mesh_inst->groups[1].speed = speed;
 						action_key = k;
 						u.animation_state = 0;
-						u.run_attack = false;
+						u.act.attack.run = false;
 						u.timer = 0.f;
 
 						if(Net::IsOnline())
@@ -2956,12 +2955,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.hitted = false;
 				}
 			}
-			if(u.frozen == FROZEN::NO && u.HaveShield() && !u.run_attack && (u.action == A_NONE || u.action == A_ATTACK))
+			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE || (u.action == A_ATTACK && !u.act.attack.run)))
 			{
 				int oks = 0;
 				if(u.action == A_ATTACK)
 				{
-					if(u.attack_power > 1.5f && u.animation_state == 1)
+					if(u.animation_state == 1 && u.act.attack.power > 1.5f)
 						oks = 1;
 					else
 						oks = 2;

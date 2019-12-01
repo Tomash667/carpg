@@ -752,8 +752,9 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		{
 		case DA_ATTACK:
 			unit->action = A_ATTACK;
-			unit->attack_id = unit->GetRandomAttack();
-			unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
+			unit->act.attack.index = unit->GetRandomAttack();
+			unit->act.attack.run = false;
+			unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 			unit->mesh_inst->groups[1].speed = unit->GetAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;

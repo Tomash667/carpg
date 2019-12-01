@@ -874,7 +874,7 @@ void Game::LoadGame(GameReader& f)
 			{
 				if(obj->base == bow_target)
 				{
-					dist = Vec3::Distance(obj->pos, ai.idle_data.pos);
+					dist = Vec3::Distance(obj->pos, ai.st.idle.pos);
 					if(!ptr || dist < best_dist)
 					{
 						ptr = obj;
@@ -883,7 +883,7 @@ void Game::LoadGame(GameReader& f)
 				}
 			}
 			assert(ptr);
-			ai.idle_data.obj.ptr = ptr;
+			ai.st.idle.obj.ptr = ptr;
 		}
 	}
 

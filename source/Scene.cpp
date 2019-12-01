@@ -1037,7 +1037,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
 		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.action_target == u)
-		|| (pc->unit->action == A_CAST && pc->unit->action_unit == u)));
+		|| (pc->unit->action == A_CAST && pc->unit->act.cast.target == u)));
 
 	// dodaj scene node
 	SceneNode* node = node_pool.Get();

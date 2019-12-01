@@ -707,19 +707,20 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_Attack:
 						if(unit.action == A_ATTACK && unit.animation_state == 0)
 						{
-							unit.attack_power = unit.mesh_inst->groups[1].time / unit.GetAttackFrame(0);
+							const float ratio = unit.mesh_inst->groups[1].time / unit.GetAttackFrame(0);
 							unit.animation_state = 1;
-							unit.mesh_inst->groups[1].speed = (unit.attack_power + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
-							unit.attack_power += 1.f;
+							unit.mesh_inst->groups[1].speed = (ratio + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
+							unit.act.attack.power = ratio + 1.f;
 						}
 						else
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
-							unit.attack_id = ((typeflags & 0xF0) >> 4);
-							unit.attack_power = 1.f;
-							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.f;
+							unit.act.attack.run = false;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
@@ -731,9 +732,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
-							unit.attack_id = ((typeflags & 0xF0) >> 4);
-							unit.attack_power = 1.f;
-							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.f;
+							unit.act.attack.run = false;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 0;
 							unit.hitted = false;
@@ -787,10 +789,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
-							unit.attack_id = ((typeflags & 0xF0) >> 4);
-							unit.attack_power = 1.5f;
-							unit.run_attack = true;
-							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.5f;
+							unit.act.attack.run = true;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
@@ -1725,7 +1727,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						BaseUsable& base = *usable->base;
 						if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 						{
-							unit.action = A_ANIMATION2;
+							unit.action = A_USE_USABLE;
 							unit.animation = ANI_PLAY;
 							unit.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 							unit.target_pos = unit.pos;
@@ -1733,8 +1735,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(usable->base->limit_rot == 4)
 								unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 							unit.timer = 0.f;
-							unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-							unit.use_rot = Vec3::LookAtAngle(unit.pos, usable->pos);
+							unit.animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
+							unit.act.use_usable.rot = Vec3::LookAtAngle(unit.pos, usable->pos);
 							unit.used_item = base.item;
 							if(unit.used_item)
 								unit.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
@@ -3315,7 +3317,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				Unit&u = *c.unit;
 				f << u.id;
 				byte b = (byte)c.id;
-				b |= ((u.attack_id & 0xF) << 4);
+				b |= ((u.act.attack.index & 0xF) << 4);
 				f << b;
 				f << c.f[1];
 			}
@@ -3362,6 +3364,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::BREAK_ACTION:
 		case NetChange::PLAYER_ACTION:
 		case NetChange::USE_ITEM:
+		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			break;
 		case NetChange::TELL_NAME:
@@ -3371,7 +3374,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				f << c.unit->hero->name;
 			break;
 		case NetChange::UNIT_SOUND:
-		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			f.WriteCasted<byte>(c.id);
 			break;
@@ -4164,16 +4166,15 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 	// multiplayer load data
 	if(mp_load)
 	{
-		int flags = 0;
-		if(unit.run_attack)
-			flags |= 0x01;
-		if(unit.used_item_is_team)
-			flags |= 0x02;
-		f << unit.attack_power;
+		f << unit.used_item_is_team;
 		f << unit.raise_timer;
-		if(unit.action == A_CAST)
-			f << unit.action_unit;
-		f.WriteCasted<byte>(flags);
+		if(unit.action == A_ATTACK)
+		{
+			f << unit.act.attack.power;
+			f << unit.act.attack.run;
+		}
+		else if(unit.action == A_CAST)
+			f << unit.act.cast.target;
 	}
 
 	f.WriteCasted<byte>(0xFF);

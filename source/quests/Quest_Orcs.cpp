@@ -469,8 +469,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			assert(throne);
 			if(throne)
 			{
-				orc->ai->idle_action = AIController::Idle_WalkUse;
-				orc->ai->idle_data.usable = throne;
+				orc->ai->st.idle.action = AIController::Idle_WalkUse;
+				orc->ai->st.idle.usable = throne;
 				orc->ai->timer = 9999.f;
 			}
 			orc = nullptr;

@@ -155,7 +155,7 @@ struct NetChange
 		CHANGE_UNIT_BASE, // change unit base type [int(id)-unit, string1(unit.data.id)-base unit]
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
-		CAST_SPELL, // unit casts spell [int(id)-unit, byte(id)-attack id]
+		CAST_SPELL, // unit cast spell animation [int(id)-unit]
 		CREATE_SPELL_BALL, // create ball - spell effect [string1(spell->id), Vec3(pos), float(f[0])-rotY, float(f[1])-speedY), int(extra_id)-owner id]
 		SPELL_SOUND, // play spell sound [string1(spell->id), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(id)-unit that sucks blood]

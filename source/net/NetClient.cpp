@@ -319,7 +319,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::ATTACK:
 			{
 				byte b = (byte)c.id;
-				b |= ((pc.unit->attack_id & 0xF) << 4);
+				b |= ((pc.unit->act.attack.index & 0xF) << 4);
 				f << b;
 				f << c.f[1];
 				if(c.id == 2)
@@ -678,9 +678,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0) >> 4);
-						unit.attack_power = 1.f;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, group);
+						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+						unit.act.attack.power = 1.f;
+						unit.act.attack.run = false;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
@@ -691,9 +692,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0) >> 4);
-						unit.attack_power = 1.f;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, group);
+						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+						unit.act.attack.power = 1.f;
+						unit.act.attack.run = false;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 0;
 						unit.hitted = false;
@@ -739,10 +741,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0) >> 4);
-						unit.attack_power = 1.5f;
-						unit.run_attack = true;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE, group);
+						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+						unit.act.attack.power = 1.5f;
+						unit.act.attack.run = true;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
@@ -1698,7 +1700,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				{
 					if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 					{
-						unit->action = A_ANIMATION2;
+						unit->action = A_USE_USABLE;
 						unit->animation = ANI_PLAY;
 						unit->mesh_inst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
 						unit->target_pos = unit->pos;
@@ -1706,8 +1708,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(base.limit_rot == 4)
 							unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit->timer = 0.f;
-						unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit->use_rot = Vec3::LookAtAngle(unit->pos, usable->pos);
+						unit->animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
+						unit->act.use_usable.rot = Vec3::LookAtAngle(unit->pos, usable->pos);
 						unit->used_item = base.item;
 						if(unit->used_item)
 						{
@@ -2307,13 +2309,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				}
 			}
 			break;
-		// unit casts spell
+		// unit cast spell animation
 		case NetChange::CAST_SPELL:
 			{
 				int id;
-				byte attack_id;
 				f >> id;
-				f >> attack_id;
 				if(!f)
 					Error("Update client: Broken CAST_SPELL.");
 				else if(game->game_state == GS_LEVEL)
@@ -2324,9 +2324,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						unit->action = A_CAST;
-						unit->attack_id = attack_id;
 						unit->animation_state = 0;
-
 						if(unit->mesh_inst->mesh->head.n_groups == 2)
 							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						else
@@ -4367,8 +4365,6 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	}
 
 	unit->prev_speed = 0.f;
-	unit->run_attack = false;
-
 	unit->weight = 0;
 	unit->CalculateLoad();
 	unit->RecalculateWeight();
@@ -4427,19 +4423,20 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	// multiplayer load data
 	if(mp_load)
 	{
-		byte flags;
-		f >> unit->attack_power;
+		f >> unit->used_item_is_team;
 		f >> unit->raise_timer;
-		if(unit->action == A_CAST)
-			f >> unit->action_unit;
-		f >> flags;
+		if(unit->action == A_ATTACK)
+		{
+			f >> unit->act.attack.power;
+			f >> unit->act.attack.run;
+		}
+		else if(unit->action == A_CAST)
+			f >> unit->act.cast.target;
 		if(!f)
 		{
 			Error("Read player data: Broken multiplayer data.");
 			return false;
 		}
-		unit->run_attack = IsSet(flags, 0x01);
-		unit->used_item_is_team = IsSet(flags, 0x02);
 	}
 
 	// checksum

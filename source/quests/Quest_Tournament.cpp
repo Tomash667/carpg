@@ -327,8 +327,8 @@ void Quest_Tournament::Update(float dt)
 			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dont_attack && ShouldJoin(unit))
 			{
 				unit.busy = Unit::Busy_Tournament;
-				unit.ai->idle_action = AIController::Idle_Move;
-				unit.ai->idle_data.pos = walk_pt;
+				unit.ai->st.idle.action = AIController::Idle_Move;
+				unit.ai->st.idle.pos = walk_pt;
 				unit.ai->timer = Random(5.f, 10.f);
 
 				unit.Talk(RandomString(txAiJoinTour));
@@ -707,7 +707,7 @@ void Quest_Tournament::Update(float dt)
 
 					Talk(Format(txTour[21], winner->GetRealName()));
 					master->busy = Unit::Busy_No;
-					master->ai->idle_action = AIController::Idle_None;
+					master->ai->st.idle.action = AIController::Idle_None;
 				}
 				else if(state3 == 1)
 				{
@@ -715,7 +715,7 @@ void Quest_Tournament::Update(float dt)
 					if(winner && winner->IsHero())
 					{
 						winner->look_target = nullptr;
-						winner->ai->idle_action = AIController::Idle_None;
+						winner->ai->st.idle.action = AIController::Idle_None;
 						winner->busy = Unit::Busy_No;
 					}
 					master->look_target = nullptr;

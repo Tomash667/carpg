@@ -739,8 +739,8 @@ void Quest_Evil::Update(float dt)
 					if(dist < 5.f)
 					{
 						// podejdŸ
-						u->ai->idle_action = AIController::Idle_Move;
-						u->ai->idle_data.pos = l.pos;
+						u->ai->st.idle.action = AIController::Idle_Move;
+						u->ai->st.idle.pos = l.pos;
 						u->ai->timer = 1.f;
 						if(u->GetOrder() != ORDER_WAIT)
 							u->OrderWait();
@@ -753,7 +753,7 @@ void Quest_Evil::Update(float dt)
 							{
 								l.state = Loc::State::PortalClosed;
 								u->OrderFollow(team->GetLeader());
-								u->ai->idle_action = AIController::Idle_None;
+								u->ai->st.idle.action = AIController::Idle_None;
 								OnUpdate(Format(game->txPortalClosed, game_level->location->name.c_str()));
 								u->OrderAutoTalk();
 								changed = true;

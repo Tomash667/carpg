@@ -46,7 +46,7 @@ enum ACTION
 	A_PAIN,
 	A_CAST,
 	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
-	A_ANIMATION2, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
+	A_USE_USABLE, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
@@ -62,10 +62,10 @@ enum AnimationState
 {
 	AS_NONE = 0,
 
-	AS_ANIMATION2_MOVE_TO_OBJECT = 0,
-	AS_ANIMATION2_USING = 1,
-	AS_ANIMATION2_USING_SOUND = 2,
-	AS_ANIMATION2_MOVE_TO_ENDPOINT = 3
+	AS_USE_USABLE_MOVE_TO_OBJECT = 0,
+	AS_USE_USABLE_USING = 1,
+	AS_USE_USABLE_USING_SOUND = 2,
+	AS_USE_USABLE_MOVE_TO_ENDPOINT = 3
 };
 
 inline bool IsBlocking(ACTION a)
@@ -258,24 +258,44 @@ struct Unit : public EntityType<Unit>
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
-		raise_timer;
-	int refs, animation_state, level, gold, attack_id, in_arena, quest_id;
+	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, last_bash, alcohol, raise_timer, stamina_timer;
+	int refs, animation_state, level, gold, in_arena, quest_id, ai_mode;
 	FROZEN frozen;
 	ACTION action;
+	union ActionData
+	{
+		ActionData() {}
+		struct AttackAction
+		{
+			int index;
+			float power;
+			bool run;
+		} attack;
+		struct CastAction
+		{
+			Ability* ability;
+			Entity<Unit> target;
+		} cast;
+		struct DashAction
+		{
+			float rot;
+		} dash;
+		struct UseUsableAction
+		{
+			float rot;
+		} use_usable;
+	} act;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
 	MeshInstance* bow_instance;
 	const Item* used_item;
-	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
+	bool hitted, talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	Entity<Unit> summoner, look_target, action_unit;
-	int ai_mode;
+	Entity<Unit> summoner, look_target;
 	enum Busy
 	{
 		Busy_No,
@@ -288,7 +308,6 @@ struct Unit : public EntityType<Unit>
 	EntityInterpolator* interp;
 	UnitStats* stats;
 	StaminaAction stamina_action;
-	float stamina_timer;
 	TraderStock* stock;
 	vector<QuestDialog> dialogs;
 	vector<Event> events;
@@ -329,21 +348,21 @@ struct Unit : public EntityType<Unit>
 	{
 		float radius = data->mesh->head.radius;
 		if(data->type == UNIT_TYPE::HUMAN)
-			radius *= ((human_data->height - 1)*0.2f + 1.f);
+			radius *= ((human_data->height - 1) * 0.2f + 1.f);
 		return radius;
 	}
 	float GetUnitRadius() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 0.3f * ((human_data->height - 1)*0.2f + 1.f);
+			return 0.3f * ((human_data->height - 1) * 0.2f + 1.f);
 		else
 			return data->width;
 	}
 	Vec3 GetColliderPos() const
 	{
-		if(action != A_ANIMATION2)
+		if(action != A_USE_USABLE)
 			return pos;
-		else if(animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
+		else if(animation_state == AS_USE_USABLE_MOVE_TO_ENDPOINT)
 			return target_pos;
 		else
 			return target_pos2;
@@ -351,7 +370,7 @@ struct Unit : public EntityType<Unit>
 	float GetUnitHeight() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
+			return 1.73f * ((human_data->height - 1) * 0.2f + 1.f);
 		else
 			return data->mesh->head.bbox.SizeY();
 	}
@@ -430,7 +449,7 @@ struct Unit : public EntityType<Unit>
 	}
 	bool CanRun() const
 	{
-		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !run_attack))
+		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !act.attack.run))
 			return false;
 		else
 			return !IsOverloaded();
@@ -769,7 +788,7 @@ public:
 	bool CanTake(const Item* item, uint count = 1) const
 	{
 		assert(item && count);
-		return weight + item->weight*(int)count <= weight_max;
+		return weight + item->weight * (int)count <= weight_max;
 	}
 	const Item* GetIIndexItem(int i_index) const;
 
@@ -777,7 +796,7 @@ public:
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
+		return action == A_USE_USABLE && animation_state == AS_USE_USABLE_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;
