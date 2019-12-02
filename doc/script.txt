@@ -56,6 +56,10 @@ Static methods:
 GroundItem type:
 	Vec3 pos - readonly
 	Item@ base - readonly
+	
+Ability type.
+Static methods:
+	Ability@ Get(const string& in id) - return ability by id.
 
 UnitData type:
 Static methods:
@@ -159,6 +163,8 @@ Player type:
 	const string name
 	bool IsLeader() - return true if player is leader.
 	bool HavePerk(const string& in perk) - return true if player have this perk.
+	bool AddAbility(Ability@) - add ability, return true if not already added.
+	bool RemoveAbility(Ability@) - remove ability, return true if removed.
 Globals:
 	Player@ pc
 

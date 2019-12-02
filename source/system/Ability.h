@@ -52,4 +52,8 @@ struct Ability
 	static vector<Ability*> abilities;
 	static vector<pair<string, Ability*>> aliases;
 	static Ability* TryGet(Cstring id);
+	static Ability* GetS(const string& id)
+	{
+		return TryGet(id);
+	}
 };

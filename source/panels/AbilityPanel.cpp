@@ -63,11 +63,11 @@ void AbilityPanel::LoadData()
 }
 
 //=================================================================================================
-void AbilityPanel::Init(Ability* ability)
+void AbilityPanel::Refresh()
 {
 	abilities.clear();
-	if(ability)
-		abilities.push_back(ability);
+	for(PlayerAbility& ab : game->pc->abilities)
+		abilities.push_back(ab.ability);
 }
 
 //=================================================================================================
@@ -89,7 +89,8 @@ void AbilityPanel::Draw(ControlDrawData*)
 	if(!abilities.empty())
 	{
 		images.clear();
-		images.push_back(abilities[0]->tex_icon);
+		for(Ability* ability : abilities)
+			images.push_back(ability->tex_icon);
 		DrawGroup(txAbilities);
 	}
 
@@ -167,24 +168,29 @@ void AbilityPanel::Update(float dt)
 	{
 		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
 		{
-			int value = ConvertToShortcutSpecial(drag_and_drop_group, drag_and_drop_index);
+			pair<int, int> shortcut = ConvertToShortcut(drag_and_drop_group, drag_and_drop_index);
 			Texture* icon = nullptr;
-			switch(value)
+			if(shortcut.first == Shortcut::TYPE_ABILITY)
 			{
-			case Shortcut::SPECIAL_MELEE_WEAPON:
-				icon = tMelee;
-				break;
-			case Shortcut::SPECIAL_RANGED_WEAPON:
-				icon = tRanged;
-				break;
-			case Shortcut::SPECIAL_HEALING_POTION:
-				icon = tPotion;
-				break;
-			case Shortcut::SPECIAL_ABILITY:
-				icon = abilities[0]->tex;
-				break;
+				Ability* ability = reinterpret_cast<Ability*>(shortcut.second);
+				icon = ability->tex_icon;
 			}
-			game_gui->level_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
+			else
+			{
+				switch(shortcut.second)
+				{
+				case Shortcut::SPECIAL_MELEE_WEAPON:
+					icon = tMelee;
+					break;
+				case Shortcut::SPECIAL_RANGED_WEAPON:
+					icon = tRanged;
+					break;
+				case Shortcut::SPECIAL_HEALING_POTION:
+					icon = tPotion;
+					break;
+				}
+			}
+			game_gui->level_gui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
 			drag_and_drop = false;
 		}
 		if(input->Released(Key::LeftButton))
@@ -194,7 +200,7 @@ void AbilityPanel::Update(float dt)
 	int group = G_NONE, id = -1;
 	grid_offset = 0;
 	if(!abilities.empty())
-		UpdateGroup(1, G_ACTION, group, id);
+		UpdateGroup(abilities.size(), G_ACTION, group, id);
 	UpdateGroup(3, G_OTHER, group, id);
 	tooltip.UpdateTooltip(dt, group, id);
 
@@ -206,8 +212,8 @@ void AbilityPanel::Update(float dt)
 			{
 				if(GKey.PressedRelease((GAME_KEYS)(GK_SHORTCUT1 + i)) && group != G_NONE)
 				{
-					int value = ConvertToShortcutSpecial(group, id);
-					game->pc->SetShortcut(i, Shortcut::TYPE_SPECIAL, value);
+					pair<int, int> shortcut = ConvertToShortcut(group, id);
+					game->pc->SetShortcut(i, (Shortcut::Type)shortcut.first, shortcut.second);
 				}
 			}
 		}
@@ -261,7 +267,10 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 	}
 
 	if(group == G_ACTION)
-		GetActionTooltip(tooltip);
+	{
+		Ability& ability = *abilities[id];
+		GetAbilityTooltip(tooltip, ability);
+	}
 	else
 	{
 		tooltip.anything = true;
@@ -288,9 +297,8 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 }
 
 //=================================================================================================
-void AbilityPanel::GetActionTooltip(TooltipController& tooltip)
+void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& ability)
 {
-	Ability& ability = *abilities[0];
 	tooltip.anything = true;
 	tooltip.img = ability.tex_icon;
 	tooltip.big_text = ability.name;
@@ -320,23 +328,32 @@ void AbilityPanel::GetActionTooltip(TooltipController& tooltip)
 }
 
 //=================================================================================================
-int AbilityPanel::ConvertToShortcutSpecial(int group, int id)
+pair<int, int> AbilityPanel::ConvertToShortcut(int group, int id)
 {
+	pair<int, int> shortcut;
 	if(group == G_ACTION)
-		return Shortcut::SPECIAL_ABILITY;
+	{
+		shortcut.first = Shortcut::TYPE_ABILITY;
+		shortcut.second = reinterpret_cast<int>(abilities[id]);
+	}
 	else
 	{
 		assert(group == G_OTHER);
+		shortcut.first = Shortcut::TYPE_SPECIAL;
 		switch(id)
 		{
 		default:
 			assert(0);
 		case O_MELEE_WEAPON:
-			return Shortcut::SPECIAL_MELEE_WEAPON;
+			shortcut.second = Shortcut::SPECIAL_MELEE_WEAPON;
+			break;
 		case O_RANGED_WEAPON:
-			return Shortcut::SPECIAL_RANGED_WEAPON;
+			shortcut.second = Shortcut::SPECIAL_RANGED_WEAPON;
+			break;
 		case O_POTION:
-			return Shortcut::SPECIAL_HEALING_POTION;
+			shortcut.second = Shortcut::SPECIAL_HEALING_POTION;
+			break;
 		}
 	}
+	return shortcut;
 }

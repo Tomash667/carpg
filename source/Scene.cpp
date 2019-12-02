@@ -1735,14 +1735,14 @@ void Game::ListAreas(LevelArea& area)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	if(!pc->CanUseAbility())
+	if(!pc->CanUseAbility(pc->data.ability_ready))
 	{
-		pc->data.ability_ready = false;
+		pc->data.ability_ready = nullptr;
 		sound_mgr->PlaySound2d(game_res->sCancel);
 		return;
 	}
 
-	Ability& ability = pc->GetAbility();
+	Ability& ability = *pc->data.ability_ready;
 	Area2* area_ptr = area2_pool.Get();
 	Area2& area = *area_ptr;
 	area.ok = 2;

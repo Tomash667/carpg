@@ -1,11 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Item;
-struct PlayerController;
-struct Unit;
-
-//-----------------------------------------------------------------------------
 struct NetChangePlayer
 {
 	enum TYPE
@@ -55,6 +50,8 @@ struct NetChangePlayer
 		ON_REST, // player is resting [byte(count)-days]
 		GAME_MESSAGE_FORMATTED, // add formatted message [int(id)-game message id, int(a)-subtype, int(count)-value]
 		SOUND, // play sound [int(id)-sound id (0-gold)]
+		ADD_ABILITY, // add ability to player [string1(ability->id)]
+		REMOVE_ABILITY, // remove ability from player [string1(ability->id)]
 
 		MAX
 	} type;
@@ -64,6 +61,7 @@ struct NetChangePlayer
 		int a;
 		Unit* unit;
 		string* str;
+		Ability* ability;
 		struct
 		{
 			short a1, a2;

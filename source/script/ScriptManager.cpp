@@ -18,6 +18,7 @@
 #include "LocationHelper.h"
 #include "Encounter.h"
 #include "UnitGroup.h"
+#include "Ability.h"
 
 ScriptManager* global::script_mgr;
 static std::map<int, asIScriptFunction*> tostring_map;
@@ -608,6 +609,10 @@ void ScriptManager::RegisterGame()
 		.Member("const Vec3 pos", offsetof(GroundItem, pos))
 		.Member("const Item@ base", offsetof(GroundItem, item));
 
+	AddType("Ability")
+		.WithNamespace()
+		.AddFunction("Ability@ Get(const string& in)", asFUNCTION(Ability::GetS));
+
 	AddType("UnitData")
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
@@ -679,6 +684,8 @@ void ScriptManager::RegisterGame()
 		.Member("const string name", offsetof(PlayerController, name))
 		.Method("bool HavePerk(const string& in)", asMETHOD(PlayerController, HavePerkS))
 		.Method("bool IsLeader()", asMETHOD(PlayerController, IsLeader))
+		.Method("bool AddAbility(Ability@)", asMETHOD(PlayerController, AddAbility))
+		.Method("bool RemoveAbility(Ability@)", asMETHOD(PlayerController, RemoveAbility))
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	ForType("Hero")

@@ -2884,22 +2884,32 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used action
-		case NetChange::PLAYER_ACTION:
+		// player used ability
+		case NetChange::PLAYER_ABILITY:
 			{
 				int netid;
 				Vec3 pos;
 				f >> netid;
 				f >> pos;
+				const string& ability_id = f.ReadString1();
 				if(!f)
-					Error("Update server: Broken PLAYER_ACTION from %s.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
+				{
+					Error("Update server: Broken PLAYER_ABILITY from %s.", info.name.c_str());
+					break;
+				}
+				Ability* ability = Ability::TryGet(ability_id);
+				if(!ability)
+				{
+					Error("Update server: PLAYER_ABILITY, invalid ability '%s'.", ability_id.c_str());
+					break;
+				}
+				if(game->game_state == GS_LEVEL)
 				{
 					Unit* target = game_level->FindUnit(netid);
 					if(!target && netid != -1)
-						Error("Update server: PLAYER_ACTION, invalid target %d from %s.", netid, info.name.c_str());
+						Error("Update server: PLAYER_ABILITY, invalid target %d from %s.", netid, info.name.c_str());
 					else
-						info.pc->UseAbility(false, &pos, target);
+						info.pc->UseAbility(ability, false, &pos, target);
 				}
 			}
 			break;
@@ -3144,23 +3154,47 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				Shortcut::Type type;
 				f.ReadCasted<byte>(index);
 				f.ReadCasted<byte>(type);
-				if(type == Shortcut::TYPE_SPECIAL)
-					f.ReadCasted<byte>(value);
-				else if(type == Shortcut::TYPE_ITEM)
+				bool ok = true;
+				switch(type)
 				{
-					const string& item_id = f.ReadString1();
-					if(f)
+				case Shortcut::TYPE_NONE:
+					value = 0;
+					break;
+				case Shortcut::TYPE_SPECIAL:
+					f.ReadCasted<byte>(value);
+					break;
+				case Shortcut::TYPE_ITEM:
 					{
+						const string& item_id = f.ReadString1();
+						if(!f)
+							break;
 						value = (int)Item::TryGet(item_id);
 						if(value == 0)
 						{
 							Error("Update server: SET_SHORTCUT invalid item '%s' from %s.", item_id.c_str(), info.name.c_str());
-							break;
+							ok = false;
 						}
 					}
+					break;
+				case Shortcut::TYPE_ABILITY:
+					{
+						const string& ability_id = f.ReadString1();
+						if(!f)
+							break;
+						value = (int)Ability::TryGet(ability_id);
+						if(value == 0)
+						{
+							Error("Update server: SET_SHORTCUT invalid ability '%s' from %s.", ability_id.c_str(), info.name.c_str());
+							ok = false;
+						}
+					}
+					break;
+				default:
+					ok = false;
+					break;
 				}
-				else
-					value = 0;
+				if(!ok)
+					break;
 				if(!f)
 					Error("Update server: Broken SET_SHORTCUT from %s.", info.name.c_str());
 				else if(index < 0 || index >= Shortcut::MAX)
@@ -3362,7 +3396,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
-		case NetChange::PLAYER_ACTION:
 		case NetChange::USE_ITEM:
 		case NetChange::CAST_SPELL:
 			f << c.unit->id;
@@ -3599,8 +3632,8 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CREATE_SPELL_BALL:
 			f << c.ability->id;
 			f << c.pos;
-			f << c.f[0];
-			f << c.f[1];
+			f << c.rot_y;
+			f << c.speed_y;
 			f << c.extra_id;
 			break;
 		case NetChange::SPELL_SOUND:
@@ -3680,6 +3713,10 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << *c.str;
 			f << c.f[0];
 			StringPool.Free(c.str);
+			break;
+		case NetChange::PLAYER_ABILITY:
+			f << c.unit->id;
+			f << c.ability->id;
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -3893,6 +3930,10 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::SOUND:
 			f << c.id;
 			break;
+		case NetChangePlayer::ADD_ABILITY:
+		case NetChangePlayer::REMOVE_ABILITY:
+			f << c.ability->id;
+			break;
 		default:
 			Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 			assert(0);
@@ -4046,6 +4087,8 @@ bool Net::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::RUN_SCRIPT_RESULT:
 	case NetChangePlayer::GENERIC_CMD_RESPONSE:
 	case NetChangePlayer::GAME_MESSAGE_FORMATTED:
+	case NetChangePlayer::ADD_ABILITY:
+	case NetChangePlayer::REMOVE_ABILITY:
 		return false;
 	default:
 		return true;

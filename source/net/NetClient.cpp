@@ -443,9 +443,10 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::PUT_GOLD:
 			f << c.count;
 			break;
-		case NetChange::PLAYER_ACTION:
+		case NetChange::PLAYER_ABILITY:
 			f << (c.unit ? c.unit->id : -1);
 			f << c.pos;
+			f << c.ability->id;
 			break;
 		case NetChange::CHEAT_STUN:
 			f << c.unit->id;
@@ -503,10 +504,18 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 				const Shortcut& shortcut = pc.shortcuts[c.id];
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(shortcut.type);
-				if(shortcut.type == Shortcut::TYPE_SPECIAL)
+				switch(shortcut.type)
+				{
+				case Shortcut::TYPE_SPECIAL:
 					f.WriteCasted<byte>(shortcut.value);
-				else if(shortcut.type == Shortcut::TYPE_ITEM)
+					break;
+				case Shortcut::TYPE_ITEM:
 					f << shortcut.item->id;
+					break;
+				case Shortcut::TYPE_ABILITY:
+					f << shortcut.ability->id;
+					break;
+				}
 			}
 			break;
 		default:
@@ -2856,23 +2865,33 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				}
 			}
 			break;
-		// player used action
-		case NetChange::PLAYER_ACTION:
+		// player used ability
+		case NetChange::PLAYER_ABILITY:
 			{
 				int id;
 				f >> id;
+				const string& ability_id = f.ReadString1();
 				if(!f)
-					Error("Update client: Broken PLAYER_ACTION.");
-				else if(game->game_state == GS_LEVEL)
+				{
+					Error("Update client: Broken PLAYER_ABILITY.");
+					break;
+				}
+				Ability* ability = Ability::TryGet(ability_id);
+				if(!ability)
+				{
+					Error("Update client: PLAYER_ABILITY, invalid ability '%s'.", ability_id.c_str());
+					break;
+				}
+				if(game->game_state == GS_LEVEL)
 				{
 					Unit* unit = game_level->FindUnit(id);
 					if(unit && unit->player)
 					{
 						if(unit->player != game->pc)
-							unit->player->UseAbility(true);
+							unit->player->UseAbility(ability, true);
 					}
 					else
-						Error("Update client: PLAYER_ACTION, invalid player unit %d.", id);
+						Error("Update client: PLAYER_ABILITY, invalid player unit %d.", id);
 				}
 			}
 			break;
@@ -3959,6 +3978,39 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					sound_mgr->PlaySound2d(game_res->sCoins);
 			}
 			break;
+		// add ability to player
+		case NetChangePlayer::ADD_ABILITY:
+			{
+				const string& ability_id = f.ReadString1();
+				if(!f)
+				{
+					Error("Update single client: Broken ADD_ABILITY.");
+					break;
+				}
+				Ability* ability = Ability::TryGet(ability_id);
+				if(!ability)
+					Error("Update single client: ADD_ABILITY, invalid ability '%s'.", ability_id.c_str());
+				else
+					pc.AddAbility(ability);
+			}
+			break;
+		// remove ability from player
+		case NetChangePlayer::REMOVE_ABILITY:
+			{
+				const string& ability_id = f.ReadString1();
+				if(!f)
+				{
+					Error("Update single client: Broken REMOVE_ABILITY.");
+					break;
+				}
+				Ability* ability = Ability::TryGet(ability_id);
+				if(!ability)
+					Error("Update single client: REMOVE_ABILITY, invalid ability '%s'.", ability_id.c_str());
+				else
+					pc.RemoveAbility(ability);
+			}
+			break;
+			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);
 			break;
@@ -4321,7 +4373,6 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game->pc = unit->player;
 	game->pc->player_info = &info;
 	info.pc = game->pc;
-	game_gui->level_gui->Setup();
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)

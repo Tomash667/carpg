@@ -42,6 +42,7 @@
 #include "Engine.h"
 #include "Utility.h"
 #include "GameResources.h"
+#include "AbilityPanel.h"
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -143,9 +144,9 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	u->player = new PlayerController;
 	pc = u->player;
 	pc->id = 0;
+	pc->is_local = true;
 	pc->Init(*u);
 	pc->name = name;
-	pc->is_local = true;
 	pc->unit->RecalculateWeight();
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
@@ -161,6 +162,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	team->CalculatePlayersLevel();
 	game_gui->Setup(pc);
+	game_gui->ability->Refresh();
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
@@ -173,7 +175,6 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 		--team->free_recruits;
 		npc->hero->SetupMelee();
 	}
-	game_gui->level_gui->Setup();
 
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
@@ -1395,6 +1396,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player->dialog_ctx = &dialog_context;
 				u->player->dialog_ctx->is_local = true;
 				u->player->is_local = true;
+				game_gui->ability->Refresh();
 			}
 			else
 			{

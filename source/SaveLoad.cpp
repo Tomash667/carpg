@@ -47,6 +47,7 @@
 #include "InfoBox.h"
 #include "CommandParser.h"
 #include "GameResources.h"
+#include "AbilityPanel.h"
 
 enum SaveFlags
 {
@@ -916,11 +917,11 @@ void Game::LoadGame(GameReader& f)
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	game_gui->inventory->mode = I_NONE;
+	game_gui->ability->Refresh();
 	pc->data.before_player = BP_NONE;
 	pc->data.selected_unit = pc->unit;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
-	game_gui->level_gui->Setup();
 
 	if(net->mp_load)
 	{

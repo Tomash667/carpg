@@ -25,8 +25,6 @@
 #include "GroundItem.h"
 #include "ResourceManager.h"
 #include "GameGui.h"
-#include "QuestManager.h"
-#include "Quest_Tutorial.h"
 #include "PlayerInfo.h"
 #include "Engine.h"
 #include "Quest.h"
@@ -212,7 +210,7 @@ void LevelGui::DrawFront()
 
 	// crosshair
 	if((pc.unit->weapon_state == WeaponState::Taken && pc.unit->weapon_taken == W_BOW)
-		|| (game->pc->data.ability_ready && pc.GetAbility().type == Ability::Target))
+		|| (pc.data.ability_ready && pc.data.ability_ready->type == Ability::Target))
 		gui->DrawSprite(tCrosshair, Center(32, 32));
 
 	// taking damage layer (red screen)
@@ -509,7 +507,8 @@ void LevelGui::DrawFront()
 
 		Texture* icon = nullptr;
 		int count = 0, icon_size = 128;
-		bool enabled = true, is_ability = false, equipped = false;
+		Ability* ability = nullptr;
+		bool enabled = true, equipped = false;
 		if(shortcut.type == Shortcut::TYPE_SPECIAL)
 		{
 			switch(shortcut.value)
@@ -521,9 +520,6 @@ void LevelGui::DrawFront()
 			case Shortcut::SPECIAL_RANGED_WEAPON:
 				icon = tRanged;
 				enabled = pc.unit->HaveBow();
-				break;
-			case Shortcut::SPECIAL_ABILITY:
-				is_ability = true;
 				break;
 			case Shortcut::SPECIAL_HEALING_POTION:
 				icon = tPotion;
@@ -553,6 +549,8 @@ void LevelGui::DrawFront()
 			else
 				enabled = pc.unit->HaveItem(shortcut.item);
 		}
+		else if(shortcut.type == Shortcut::TYPE_ABILITY)
+			ability = shortcut.ability;
 
 		float scale2 = float(img_size - 2) / icon_size;
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale2, scale2), nullptr, 0.f, &Vec2(float(spos.x + 1), float(spos.y + 1)));
@@ -576,36 +574,36 @@ void LevelGui::DrawFront()
 				gui->UseGrayscale(false);
 			}
 		}
-		else if(is_ability)
+		else if(ability)
 		{
-			Ability& ability = pc.GetAbility();
+			const PlayerAbility& ab = pc.GetAbility(ability);
 			float charge;
-			if(pc.ability_charges > 0 || pc.ability_cooldown >= pc.ability_recharge)
+			if(ab.charges > 0 || ab.cooldown >= ab.recharge)
 			{
-				if(ability.cooldown.x == 0)
+				if(ability->cooldown.x == 0)
 					charge = 0.f;
 				else
-					charge = pc.ability_cooldown / ability.cooldown.x;
+					charge = ab.cooldown / ability->cooldown.x;
 			}
 			else
-				charge = pc.ability_recharge / ability.recharge;
+				charge = ab.recharge / ability->recharge;
 
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
-				drag_and_drop_icon = ability.tex_icon;
+				drag_and_drop_icon = ability->tex_icon;
 
-			if(pc.unit->mp >= ability.mana && pc.unit->stamina >= ability.stamina)
+			if(pc.unit->mp >= ability->mana && pc.unit->stamina >= ability->stamina)
 			{
 				if(charge == 0.f)
-					gui->DrawSprite2(ability.tex_icon, mat);
+					gui->DrawSprite2(ability->tex_icon, mat);
 				else
 				{
 					gui->UseGrayscale(true);
-					gui->DrawSprite2(ability.tex_icon, mat);
+					gui->DrawSprite2(ability->tex_icon, mat);
 					gui->UseGrayscale(false);
 					if(charge < 1.f)
 					{
 						Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-						gui->DrawSprite2(ability.tex_icon, mat, &part);
+						gui->DrawSprite2(ability->tex_icon, mat, &part);
 					}
 					gui->DrawSprite2(tActionCooldown, mat);
 				}
@@ -613,16 +611,16 @@ void LevelGui::DrawFront()
 			else
 			{
 				gui->UseGrayscale(true);
-				gui->DrawSprite2(ability.tex_icon, mat);
+				gui->DrawSprite2(ability->tex_icon, mat);
 				gui->UseGrayscale(false);
 			}
 
 			// charges
-			if(ability.charges > 1)
-				gui->DrawText(GameGui::font_small, Format("%d/%d", pc.ability_charges, ability.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+			if(ability->charges > 1)
+				gui->DrawText(GameGui::font_small, Format("%d/%d", ab.charges, ability->charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
 
 			// readied ability
-			if(game->pc->data.ability_ready)
+			if(game->pc->data.ability_ready == ability)
 			{
 				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
 				gui->DrawSprite2(tShortcutAction, mat);
@@ -1557,26 +1555,28 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 					title = txRangedWeapon;
 					desc = txRangedWeaponDesc;
 					break;
-				case Shortcut::SPECIAL_ABILITY:
-					game_gui->ability->GetActionTooltip(tooltip);
-					tooltip.small_text = Format("%s\n%s", tooltip.text.c_str(), tooltip.small_text.c_str());
-					tooltip.text = tooltip.big_text;
-					tooltip.big_text.clear();
-					tooltip.img = nullptr;
-					break;
 				case Shortcut::SPECIAL_HEALING_POTION:
 					title = txPotion;
 					desc = txPotionDesc;
 					break;
 				}
 			}
-			else
+			else if(shortcut.type == Shortcut::TYPE_ITEM)
 			{
 				title = shortcut.item->name.c_str();
 				desc = shortcut.item->desc.c_str();
 			}
+			else if(shortcut.type == Shortcut::TYPE_ABILITY)
+			{
+				game_gui->ability->GetAbilityTooltip(tooltip, *shortcut.ability);
+				tooltip.small_text = Format("%s\n%s", tooltip.text.c_str(), tooltip.small_text.c_str());
+				tooltip.text = tooltip.big_text;
+				tooltip.big_text.clear();
+				tooltip.img = nullptr;
+			}
+
 			const GameKey& gk = GKey[GK_SHORTCUT1 + id];
-			if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ABILITY)
+			if(shortcut.type == Shortcut::TYPE_ABILITY)
 			{
 				if(gk[0] != Key::None)
 					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->key_text[(int)gk[0]]);
@@ -1806,17 +1806,6 @@ void LevelGui::Load(FileReader& f)
 		f >> sb.visible;
 		f >> sb.last_pos;
 	}
-}
-
-//=================================================================================================
-void LevelGui::Setup()
-{
-	Ability* ability;
-	if(quest_mgr->quest_tutorial->in_tutorial)
-		ability = nullptr;
-	else
-		ability = &game->pc->GetAbility();
-	game_gui->ability->Init(ability);
 }
 
 //=================================================================================================

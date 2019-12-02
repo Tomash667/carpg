@@ -85,7 +85,6 @@ public:
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(gui->cursor_pos, dialog_pos, dialog_size); }
-	void Setup();
 	void RemoveUnitView(Unit* unit);
 	void DrawEndOfGameScreen();
 	void StartDragAndDrop(int type, int value, Texture* tex);

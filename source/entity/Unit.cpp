@@ -4840,7 +4840,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		player->next_action = NA_NONE;
 		if(player->is_local)
 		{
-			player->data.ability_ready = false;
+			player->data.ability_ready = nullptr;
 			game_gui->inventory->lock = nullptr;
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
@@ -6347,13 +6347,13 @@ void Unit::CheckAutoTalk(float dt)
 //=================================================================================================
 void Unit::CastSpell()
 {
+	Ability& ability = *act.cast.ability;
+
 	if(IsPlayer())
 	{
-		player->UseAbility();
+		player->CastAbility(&ability);
 		return;
 	}
-
-	Ability& ability = *act.cast.ability;
 
 	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
 	assert(point);
@@ -6451,8 +6451,8 @@ void Unit::CastSpell()
 				c.type = NetChange::CREATE_SPELL_BALL;
 				c.ability = &ability;
 				c.pos = b.start_pos;
-				c.f[0] = b.rot.y;
-				c.f[1] = b.yspeed;
+				c.rot_y = b.rot.y;
+				c.speed_y = b.yspeed;
 				c.extra_id = id;
 			}
 		}

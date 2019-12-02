@@ -110,6 +110,14 @@ inline int GetRequiredSkillPoints(int level)
 }
 
 //-----------------------------------------------------------------------------
+struct PlayerAbility
+{
+	Ability* ability;
+	float recharge, cooldown;
+	int charges;
+};
+
+//-----------------------------------------------------------------------------
 struct Shortcut
 {
 	static const uint MAX = 10;
@@ -118,14 +126,15 @@ struct Shortcut
 	{
 		TYPE_NONE,
 		TYPE_SPECIAL,
-		TYPE_ITEM
+		TYPE_ITEM,
+		TYPE_ABILITY
 	};
 
 	enum Special
 	{
 		SPECIAL_MELEE_WEAPON,
 		SPECIAL_RANGED_WEAPON,
-		SPECIAL_ABILITY,
+		SPECIAL_ABILITY_OLD, // removed in V_DEV
 		SPECIAL_HEALING_POTION
 	};
 
@@ -134,6 +143,7 @@ struct Shortcut
 	{
 		int value;
 		const Item* item;
+		Ability* ability;
 	};
 	bool trigger;
 };
@@ -161,7 +171,8 @@ struct LocalPlayerData
 	int picking_item_state;
 	float rot_buf, action_rot, grayout;
 	Key wasted_key;
-	bool autowalk, ability_ready, ability_ok;
+	Ability* ability_ready;
+	bool autowalk, ability_ok;
 
 	void Reset()
 	{
@@ -175,7 +186,7 @@ struct LocalPlayerData
 		grayout = 0.f;
 		wasted_key = Key::None;
 		autowalk = false;
-		ability_ready = false;
+		ability_ready = nullptr;
 	}
 	Unit* GetTargetUnit()
 	{
@@ -199,7 +210,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 
 	PlayerInfo* player_info;
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, ability_recharge, ability_cooldown;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	Key action_key;
 	NextAction next_action;
@@ -215,7 +226,7 @@ struct PlayerController : public HeroPlayerCommon
 	} next_action_data;
 	WeaponType last_weapon;
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
-	int id, free_days, ability_charges, learning_points, exp, exp_need, exp_level;
+	int id, free_days, learning_points, exp, exp_need, exp_level;
 	//----------------------
 	PlayerAction action;
 	union
@@ -233,12 +244,10 @@ struct PlayerController : public HeroPlayerCommon
 	vector<TakenPerk> perks;
 	vector<Entity<Unit>> action_targets;
 	Shortcut shortcuts[Shortcut::MAX];
+	vector<PlayerAbility> abilities;
 	static LocalPlayerData data;
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), ability_recharge(0.f),
-		ability_cooldown(0.f), ability_charges(0), last_ring(false)
-	{
-	}
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
 	~PlayerController();
 
 	void Rest(int days, bool resting, bool travel = false);
@@ -283,10 +292,6 @@ public:
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	Ability& GetAbility() const;
-	bool CanUseAbility() const;
-	bool UseActionCharge();
-	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
 	void PayCredit(int count);
@@ -298,6 +303,17 @@ public:
 	bool HavePerkS(const string& perk_id);
 	bool AddPerk(Perk perk, int value);
 	bool RemovePerk(Perk perk, int value);
+
+	// abilities
+	bool AddAbility(Ability* ability);
+	bool RemoveAbility(Ability* ability);
+	PlayerAbility& GetAbility(Ability* ability);
+	const PlayerAbility& GetAbility(Ability* ability) const;
+	bool CanUseAbility(Ability* ability) const;
+	void UpdateCooldown(float dt);
+	void RefreshCooldown();
+	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	void CastAbility(Ability* ability);
 
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp);
@@ -311,11 +327,8 @@ public:
 	float GetShootAngle() const;
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	void UseUsable(Usable* u, bool after_action);
-	void UseAbility();
-	void UseAbility(bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 	void Update(float dt);
 	void UpdateMove(float dt, bool allow_rot);
-	void UpdateCooldown(float dt);
 	bool WantExitLevel();
 	void ClearNextAction();
 };

@@ -141,7 +141,7 @@ struct NetChange
 		END_TRAVEL, // leader finished travel []
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, int-year]
 		USE_DOOR, // someone open/close door [int(id)-door, bool(count)-is closing]
-		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
+		CREATE_EXPLOSION, // create explosion effect [string1(ability->id), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap]
 		EVIL_SOUND, // play evil sound []
@@ -156,8 +156,8 @@ struct NetChange
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit cast spell animation [int(id)-unit]
-		CREATE_SPELL_BALL, // create ball - spell effect [string1(spell->id), Vec3(pos), float(f[0])-rotY, float(f[1])-speedY), int(extra_id)-owner id]
-		SPELL_SOUND, // play spell sound [string1(spell->id), Vec3(pos)]
+		CREATE_SPELL_BALL, // create ball - spell effect [string1(ability->id), Vec3(pos), float(rot_y), float(speed_y), int(extra_id)-owner id]
+		SPELL_SOUND, // play spell sound [string1(ability->id), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(id)-unit that sucks blood]
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro), Vec3(pos), Vec3(f)-pos2]
 		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro, Vec3(pos)]
@@ -192,7 +192,7 @@ struct NetChange
 		BREAK_ACTION, // break unit action [int(id)-unit]
 		STUN, // unit stun - not shield bash [int(id)-unit, f[0]-length]
 		CHEAT_STUN, // player used cheat 'stun' [int(id)-unit, f[0]-length]
-		PLAYER_ACTION, // player unit is using action SERVER[int(id)-unit] / CLIENT[int(id)-unit, Vec3-pos/data]
+		PLAYER_ABILITY, // player unit is using ability SERVER[int(id)-unit, string1(ability->id)] / CLIENT[int(id)-unit, Vec3-pos/data, string1(ability->id)]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
 		RUN_SCRIPT, // run script [string(str)-code, int(id)-target unit]
@@ -223,7 +223,6 @@ struct NetChange
 		const Item* base_item;
 		UnitData* base_unit;
 		int e_id;
-		Ability* ability;
 		CMD cmd;
 		Usable* usable;
 	};
@@ -241,6 +240,12 @@ struct NetChange
 		float f[3];
 		POD::Vec3 vec3;
 		const Item* item2;
+		struct
+		{
+			Ability* ability;
+			float rot_y;
+			float speed_y;
+		};
 	};
 	Vec3 pos;
 	union
