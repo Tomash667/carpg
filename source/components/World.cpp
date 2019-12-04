@@ -702,7 +702,7 @@ void World::GenerateWorld()
 				city.citizens_world = 0;
 				city.st = 1;
 				city.group = UnitGroup::empty;
-				LocalVector2<Building*> buildings;
+				LocalVector<Building*> buildings;
 				city.GenerateCityBuildings(buildings.Get(), true);
 				city.buildings.reserve(buildings.size());
 				for(Building* b : buildings)

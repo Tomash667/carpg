@@ -2,7 +2,6 @@
 #include "GameCore.h"
 #include "Journal.h"
 #include "Input.h"
-#include "Game.h"
 #include "GetTextDialog.h"
 #include "Language.h"
 #include "GameKeys.h"
@@ -13,6 +12,7 @@
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "SoundManager.h"
+#include "Net.h"
 
 //=================================================================================================
 Journal::Journal() : mode(Quests)

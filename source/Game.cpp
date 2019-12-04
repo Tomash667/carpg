@@ -335,12 +335,11 @@ void Game::LoadDatafiles()
 			case Content::Id::Classes:
 				game_gui->load_screen->Tick(txLoadingClasses);
 				break;
+			case Content::Id::Required:
+				game_gui->load_screen->Tick(txLoadingRequires);
+				break;
 			}
 		});
-
-	// required
-	game_gui->load_screen->Tick(txLoadingRequires);
-	LoadRequiredStats(load_errors);
 }
 
 //=================================================================================================
@@ -894,70 +893,32 @@ void Game::OnUpdate(float dt)
 		// pause/resume game
 		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
 			PauseGame();
-	}
 
-	// handle panels
-	if(gui->HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode && !cutscene)
-	{
-		OpenPanel open = game_gui->level_gui->GetOpenPanel(),
-			to_open = OpenPanel::None;
-
-		if(GKey.PressedRelease(GK_STATS))
-			to_open = OpenPanel::Stats;
-		else if(GKey.PressedRelease(GK_INVENTORY))
-			to_open = OpenPanel::Inventory;
-		else if(GKey.PressedRelease(GK_TEAM_PANEL))
-			to_open = OpenPanel::Team;
-		else if(GKey.PressedRelease(GK_JOURNAL))
-			to_open = OpenPanel::Journal;
-		else if(GKey.PressedRelease(GK_MINIMAP))
-			to_open = OpenPanel::Minimap;
-		else if(GKey.PressedRelease(GK_ABILITY_PANEL))
-			to_open = OpenPanel::Ability;
-		else if(open == OpenPanel::Trade && input->PressedRelease(Key::Escape))
-			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
-
-		if(to_open != OpenPanel::None)
-			game_gui->level_gui->ShowPanel(to_open, open);
-
-		switch(open)
+		if(!cutscene)
 		{
-		case OpenPanel::None:
-		case OpenPanel::Minimap:
-		default:
-			if(game_gui->level_gui->use_cursor)
-				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
-			break;
-		case OpenPanel::Stats:
-		case OpenPanel::Inventory:
-		case OpenPanel::Team:
-		case OpenPanel::Trade:
-		case OpenPanel::Ability:
-		case OpenPanel::Journal:
-		case OpenPanel::Book:
-			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
-			break;
+			// quicksave, quickload
+			bool console_open = gui->HaveTopDialog("console");
+			bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
+			if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
+				Quicksave(console_open);
+			if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
+				Quickload(console_open);
+
+			// mp box
+			if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+				game_gui->mp_box->visible = !game_gui->mp_box->visible;
+
+			// open/close mp box
+			if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
+			{
+				game_gui->mp_box->itb.focus = true;
+				game_gui->mp_box->Event(GuiEvent_GainFocus);
+				game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
+			}
 		}
 	}
 
-	if(!cutscene)
-	{
-		// quicksave, quickload
-		bool console_open = gui->HaveTopDialog("console");
-		bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
-		if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
-			Quicksave(console_open);
-		if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
-			Quickload(console_open);
-
-		// mp box
-		if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-			game_gui->mp_box->visible = !game_gui->mp_box->visible;
-	}
-
-	// update game_gui
+	// update game gui
 	game_gui->UpdateGui(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
@@ -970,34 +931,6 @@ void Game::OnUpdate(float dt)
 		engine->Shutdown();
 		return;
 	}
-
-	// handle blocking input by game_gui
-	if(gui->HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
-	{
-		switch(game_gui->level_gui->GetOpenPanel())
-		{
-		case OpenPanel::None:
-		case OpenPanel::Minimap:
-		default:
-			if(game_gui->level_gui->use_cursor)
-				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
-			break;
-		case OpenPanel::Stats:
-		case OpenPanel::Inventory:
-		case OpenPanel::Team:
-		case OpenPanel::Trade:
-		case OpenPanel::Ability:
-			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
-			break;
-		case OpenPanel::Journal:
-			GKey.allow_input = GameKeys::ALLOW_NONE;
-			break;
-		}
-	}
-	else
-		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// open game menu
 	if(GKey.AllowKeyboard() && CanShowMenu() && !cutscene && input->PressedRelease(Key::Escape))
@@ -1059,14 +992,6 @@ void Game::OnUpdate(float dt)
 			UpdateFallback(dt);
 		if(Net::IsOnline())
 			UpdateGameNet(dt);
-	}
-
-	// open/close mp box
-	if(!cutscene && GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
-	{
-		game_gui->mp_box->itb.focus = true;
-		game_gui->mp_box->Event(GuiEvent_GainFocus);
-		game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
 	Profiler::g_profiler.End();

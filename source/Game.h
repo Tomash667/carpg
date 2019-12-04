@@ -126,7 +126,6 @@ public:
 	void LoadSystem();
 	void AddFilesystem();
 	void LoadDatafiles();
-	bool LoadRequiredStats(uint& errors);
 	void LoadLanguageFiles();
 	void SetGameText();
 	void SetStatsText();

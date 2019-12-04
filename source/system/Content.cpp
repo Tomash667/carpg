@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "Tokenizer.h"
 #include "Content.h"
-#include "Ability.h"
+#include "AbilityLoader.h"
 #include "MusicTrack.h"
 #include "BitStreamFunc.h"
 #include "BuildingLoader.h"
@@ -11,7 +11,7 @@
 #include "ItemLoader.h"
 #include "ObjectLoader.h"
 #include "QuestLoader.h"
-#include "AbilityLoader.h"
+#include "RequiredLoader.h"
 #include "UnitLoader.h"
 
 //-----------------------------------------------------------------------------
@@ -25,13 +25,14 @@ static cstring content_id[] = {
 	"units",
 	"buildings",
 	"musics",
-	"quests"
+	"quests",
+	"required"
 };
 static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
 
 //=================================================================================================
-Content::Content() : building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader), item_loader(new ItemLoader),
-object_loader(new ObjectLoader), quest_loader(new QuestLoader), ability_loader(new AbilityLoader), unit_loader(new UnitLoader)
+Content::Content() : ability_loader(new AbilityLoader), building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader),
+item_loader(new ItemLoader), object_loader(new ObjectLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader), unit_loader(new UnitLoader)
 {
 	quest_loader->dialog_loader = dialog_loader;
 }
@@ -80,8 +81,10 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	Info("Game: Loading quests.");
 	callback(Id::Quests);
 	quest_loader->DoLoading();
-
 	unit_loader->ProcessDialogRequests();
+
+	callback(Id::Required);
+	required_loader->DoLoading();
 
 	delete ability_loader;
 	delete building_loader;
@@ -90,6 +93,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	delete item_loader;
 	delete object_loader;
 	delete quest_loader;
+	delete required_loader;
 	delete unit_loader;
 }
 

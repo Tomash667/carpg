@@ -1280,7 +1280,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			available_perks.push_back(perk.perk_id);
 	}
 	taken_perks.clear();
-	LocalVector2<string*> strs;
+	LocalVector<string*> strs;
 	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
 	{
 		PerkInfo& perk = PerkInfo::perks[(int)cc.taken_perks[i].perk];

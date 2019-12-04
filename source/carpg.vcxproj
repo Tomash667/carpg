@@ -343,6 +343,7 @@
     <ClInclude Include="system\QuestLoader.h" />
     <ClInclude Include="system\QuestScheme.h" />
     <ClInclude Include="system\AbilityLoader.h" />
+    <ClInclude Include="system\RequiredLoader.h" />
     <ClInclude Include="system\StatProfile.h" />
     <ClInclude Include="system\Stock.h" />
     <ClInclude Include="system\UnitData.h" />
@@ -492,7 +493,6 @@
     <ClCompile Include="stats\Effect.cpp" />
     <ClCompile Include="stats\MusicTrack.cpp" />
     <ClCompile Include="stats\Perk.cpp" />
-    <ClCompile Include="stats\Required.cpp" />
     <ClCompile Include="stats\RoomType.cpp" />
     <ClCompile Include="stats\Skill.cpp" />
     <ClCompile Include="stats\UnitStats.cpp" />
@@ -508,6 +508,7 @@
     <ClCompile Include="system\Ability.cpp" />
     <ClCompile Include="system\AbilityLoader.cpp" />
     <ClCompile Include="system\QuestScheme.cpp" />
+    <ClCompile Include="system\RequiredLoader.cpp" />
     <ClCompile Include="system\StatProfile.cpp" />
     <ClCompile Include="system\Stock.cpp" />
     <ClCompile Include="system\UnitData.cpp" />

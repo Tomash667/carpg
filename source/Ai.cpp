@@ -1030,7 +1030,7 @@ void Game::UpdateAi(float dt)
 								break;
 							case AI_USE:
 								{
-									LocalVector2<Usable*> uses;
+									LocalVector<Usable*> uses;
 									for(vector<Usable*>::iterator it2 = area.usables.begin(), end2 = area.usables.end(); it2 != end2; ++it2)
 									{
 										Usable& use = **it2;

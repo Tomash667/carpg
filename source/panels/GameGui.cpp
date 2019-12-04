@@ -271,7 +271,81 @@ void GameGui::Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs
 //=================================================================================================
 void GameGui::UpdateGui(float dt)
 {
+	// handle panels
+	if(gui->HaveDialog() || (mp_box->visible && mp_box->itb.focus))
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game->game_state == GS_LEVEL && game->death_screen == 0 && !game->dialog_context.dialog_mode && !game->cutscene)
+	{
+		OpenPanel open = level_gui->GetOpenPanel(),
+			to_open = OpenPanel::None;
+
+		if(GKey.PressedRelease(GK_STATS))
+			to_open = OpenPanel::Stats;
+		else if(GKey.PressedRelease(GK_INVENTORY))
+			to_open = OpenPanel::Inventory;
+		else if(GKey.PressedRelease(GK_TEAM_PANEL))
+			to_open = OpenPanel::Team;
+		else if(GKey.PressedRelease(GK_JOURNAL))
+			to_open = OpenPanel::Journal;
+		else if(GKey.PressedRelease(GK_MINIMAP))
+			to_open = OpenPanel::Minimap;
+		else if(GKey.PressedRelease(GK_ABILITY_PANEL))
+			to_open = OpenPanel::Ability;
+		else if(open == OpenPanel::Trade && input->PressedRelease(Key::Escape))
+			to_open = OpenPanel::Trade; // ShowPanel will hide when already opened
+
+		if(to_open != OpenPanel::None)
+			level_gui->ShowPanel(to_open, open);
+
+		switch(open)
+		{
+		case OpenPanel::None:
+		case OpenPanel::Minimap:
+		default:
+			if(level_gui->use_cursor)
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Stats:
+		case OpenPanel::Inventory:
+		case OpenPanel::Team:
+		case OpenPanel::Trade:
+		case OpenPanel::Ability:
+		case OpenPanel::Journal:
+		case OpenPanel::Book:
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			break;
+		}
+	}
+
 	gui->Update(dt, cursor_allow_move ? game->settings.mouse_sensitivity_f : -1.f);
+
+	// handle blocking input by gui
+	if(gui->HaveDialog() || (mp_box->visible && mp_box->itb.focus))
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game->game_state == GS_LEVEL && game->death_screen == 0 && !game->dialog_context.dialog_mode)
+	{
+		switch(level_gui->GetOpenPanel())
+		{
+		case OpenPanel::None:
+		case OpenPanel::Minimap:
+		default:
+			if(level_gui->use_cursor)
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Stats:
+		case OpenPanel::Inventory:
+		case OpenPanel::Team:
+		case OpenPanel::Trade:
+		case OpenPanel::Ability:
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Journal:
+			GKey.allow_input = GameKeys::ALLOW_NONE;
+			break;
+		}
+	}
+	else
+		GKey.allow_input = GameKeys::ALLOW_INPUT;
 }
 
 //=================================================================================================

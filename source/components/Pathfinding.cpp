@@ -4,7 +4,6 @@
 #include "Level.h"
 #include "OutsideLocation.h"
 #include "InsideLocation.h"
-#include "Game.h"
 #include "Terrain.h"
 #include "BasicShader.h"
 

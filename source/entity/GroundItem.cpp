@@ -5,7 +5,6 @@
 #include "QuestConsts.h"
 #include "QuestManager.h"
 #include "BitStreamFunc.h"
-#include "Game.h"
 #include "SaveState.h"
 
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;

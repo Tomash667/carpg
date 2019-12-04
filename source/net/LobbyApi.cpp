@@ -1,10 +1,11 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "LobbyApi.h"
-#include "Game.h"
 #include "GameGui.h"
 #include "PickServerPanel.h"
 #include "Language.h"
+#include "Net.h"
+#include <Config.h>
 #include <json.hpp>
 #include <slikenet\NatPunchthroughClient.h>
 #include <curl\curl.h>

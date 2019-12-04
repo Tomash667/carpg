@@ -67,6 +67,9 @@
     <Filter Include="system\abilities">
       <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system\required">
+      <UniqueIdentifier>{99d81813-979a-407e-948e-fb8ad7c1dccb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -293,9 +296,6 @@
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="entity\Light.cpp">
       <Filter>entity</Filter>
-    </ClCompile>
-    <ClCompile Include="stats\Required.cpp">
-      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
@@ -592,6 +592,9 @@
     </ClCompile>
     <ClCompile Include="system\Ability.cpp">
       <Filter>system\abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="system\RequiredLoader.cpp">
+      <Filter>system\required</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1180,6 +1183,9 @@
     </ClInclude>
     <ClInclude Include="system\Ability.h">
       <Filter>system\abilities</Filter>
+    </ClInclude>
+    <ClInclude Include="system\RequiredLoader.h">
+      <Filter>system\required</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

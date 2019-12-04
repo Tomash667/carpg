@@ -8,6 +8,7 @@ class DialogLoader;
 class ItemLoader;
 class ObjectLoader;
 class QuestLoader;
+class RequiredLoader;
 class UnitLoader;
 
 //-----------------------------------------------------------------------------
@@ -25,6 +26,7 @@ public:
 		Buildings,
 		Musics,
 		Quests,
+		Required,
 
 		Max
 	};
@@ -54,6 +56,7 @@ private:
 	ItemLoader* item_loader;
 	ObjectLoader* object_loader;
 	QuestLoader* quest_loader;
+	RequiredLoader* required_loader;
 	UnitLoader* unit_loader;
 };
 

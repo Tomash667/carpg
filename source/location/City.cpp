@@ -661,7 +661,7 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 	buildings.clear();
 
 	// not required buildings
-	LocalVector2<Building*> buildings;
+	LocalVector<Building*> buildings;
 	GenerateCityBuildings(buildings.Get(), false);
 	tobuild.reserve(tobuild.size() + buildings.size());
 	for(Building* b : buildings)

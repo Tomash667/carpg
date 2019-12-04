@@ -4,7 +4,6 @@
 #include "QuestScheme.h"
 #include "ScriptManager.h"
 #include "World.h"
-#include "Game.h"
 #include "Journal.h"
 #include "GameGui.h"
 #include "GameMessages.h"
@@ -13,6 +12,8 @@
 #include "City.h"
 #include "Encounter.h"
 #include "GroundItem.h"
+#include "Net.h"
+#include "DialogContext.h"
 #include <angelscript.h>
 #pragma warning(error: 4062)
 

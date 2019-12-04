@@ -497,7 +497,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Msg("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
 		else if(t.IsSymbol('?'))
 		{
-			LocalVector2<AttributeId> attribs;
+			LocalVector<AttributeId> attribs;
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
 				attribs.push_back((AttributeId)i);
 			std::sort(attribs.begin(), attribs.end(),
@@ -505,7 +505,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				return strcmp(Attribute::attributes[(int)a1].id, Attribute::attributes[(int)a2].id) < 0;
 			});
-			LocalVector2<SkillId> skills;
+			LocalVector<SkillId> skills;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 				skills.push_back((SkillId)i);
 			std::sort(skills.begin(), skills.end(),
@@ -1123,7 +1123,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				if(t.IsSymbol('?'))
 				{
-					LocalVector2<Class*> classes;
+					LocalVector<Class*> classes;
 					for(Class* clas : Class::classes)
 					{
 						if(clas->IsPickable())
@@ -2771,7 +2771,7 @@ void CommandParser::CmdList(Tokenizer& t)
 	{
 	case LIST_ITEM:
 		{
-			LocalVector2<const Item*> items;
+			LocalVector<const Item*> items;
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
@@ -2806,7 +2806,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_ITEM_NAME:
 		{
-			LocalVector2<const Item*> items;
+			LocalVector<const Item*> items;
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
@@ -2841,7 +2841,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_UNIT:
 		{
-			LocalVector2<UnitData*> units;
+			LocalVector<UnitData*> units;
 			for(auto unit : UnitData::units)
 			{
 				if(!IsSet(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
@@ -2875,7 +2875,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_UNIT_NAME:
 		{
-			LocalVector2<UnitData*> units;
+			LocalVector<UnitData*> units;
 			for(auto unit : UnitData::units)
 			{
 				if(!IsSet(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
@@ -2909,7 +2909,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_QUEST:
 		{
-			LocalVector2<const QuestInfo*> quests;
+			LocalVector<const QuestInfo*> quests;
 			for(auto& info : quest_mgr->GetQuestInfos())
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
@@ -2950,7 +2950,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_EFFECT:
 		{
-			LocalVector2<const EffectInfo*> effects;
+			LocalVector<const EffectInfo*> effects;
 			for(EffectInfo& info : EffectInfo::effects)
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)
@@ -2984,7 +2984,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_PERK:
 		{
-			LocalVector2<const PerkInfo*> perks;
+			LocalVector<const PerkInfo*> perks;
 			for(PerkInfo& info : PerkInfo::perks)
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)

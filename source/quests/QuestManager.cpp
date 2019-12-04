@@ -1706,7 +1706,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 			else
 			{
 				Room& room = *lvl->rooms[inside->special_room];
-				LocalVector2<Chest*> chests;
+				LocalVector<Chest*> chests;
 				for(Chest* chest2 : lvl->chests)
 				{
 					if(room.IsInside(chest2->pos))

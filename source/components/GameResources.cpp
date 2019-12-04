@@ -344,7 +344,7 @@ void GameResources::PreloadObjects()
 
 				if(IsSet(obj.flags, OBJ_MULTI_PHYSICS))
 				{
-					LocalVector2<Mesh::Point*> points;
+					LocalVector<Mesh::Point*> points;
 					Mesh::Point* prev_point = point;
 
 					while(true)

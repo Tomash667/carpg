@@ -198,7 +198,7 @@ void StatsPanel::SetText()
 
 	// feats
 	perks.clear();
-	LocalVector2<string*> strs;
+	LocalVector<string*> strs;
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
 		PerkInfo& perk = PerkInfo::perks[(int)pc->perks[i].perk];
