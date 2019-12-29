@@ -47,7 +47,7 @@ struct IBOX
 	}
 	bool IsVisible(const FrustumPlanes& f) const
 	{
-		Box box(2.f*x, l, 2.f*y, 2.f*(x + s), t, 2.f*(y + s));
+		Box box(2.f * x, l, 2.f * y, 2.f * (x + s), t, 2.f * (y + s));
 		return f.BoxToFrustum(box);
 	}
 	IBOX GetLeftTop() const
@@ -1036,8 +1036,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	u.mesh_inst->SetupBones();
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
-		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.action_target == u)
-		|| (pc->unit->action == A_CAST && pc->unit->act.cast.target == u)));
+		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.ability_target == u)
+			|| (pc->unit->action == A_CAST && pc->unit->act.cast.target == u)));
 
 	// dodaj scene node
 	SceneNode* node = node_pool.Get();
@@ -1117,7 +1117,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		{
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state != 2)
+				if(u.animation_state != AS_SHOOT_SHOT)
 					right_hand_item = game_res->aArrow;
 			}
 			else
@@ -1127,7 +1127,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			w_dloni = true;
 		break;
 	case WeaponState::Taking:
-		if(u.animation_state == 1)
+		if(u.animation_state == AS_TAKE_WEAPON_MOVED)
 		{
 			if(u.weapon_taken == W_BOW)
 				right_hand_item = game_res->aArrow;
@@ -1136,7 +1136,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 		break;
 	case WeaponState::Hiding:
-		if(u.animation_state == 0)
+		if(u.animation_state == AS_TAKE_WEAPON_START)
 		{
 			if(u.weapon_hiding == W_BOW)
 				right_hand_item = game_res->aArrow;
@@ -1290,13 +1290,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		switch(u.weapon_state)
 		{
 		case WeaponState::Hiding:
-			w_dloni = (u.weapon_hiding == W_BOW && u.animation_state == 0);
+			w_dloni = (u.weapon_hiding == W_BOW && u.animation_state == AS_TAKE_WEAPON_START);
 			break;
 		case WeaponState::Hidden:
 			w_dloni = false;
 			break;
 		case WeaponState::Taking:
-			w_dloni = (u.weapon_taken == W_BOW && u.animation_state == 1);
+			w_dloni = (u.weapon_taken == W_BOW && u.animation_state == AS_TAKE_WEAPON_MOVED);
 			break;
 		case WeaponState::Taken:
 			w_dloni = (u.weapon_taken == W_BOW);
@@ -1542,7 +1542,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 		for(int i = 0; i < mesh.head.n_subs; ++i)
 		{
 			Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
-			const float radius = mesh.splits[i].radius*o.scale;
+			const float radius = mesh.splits[i].radius * o.scale;
 			if(frustum.SphereToFrustum(pos, radius))
 			{
 				SceneNode* node2 = node_pool.Get();
@@ -1730,38 +1730,64 @@ void Game::ListAreas(LevelArea& area)
 	// action area2
 	if(pc->data.ability_ready)
 		PrepareAreaPath();
+	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray))
+		pc->unit->target_pos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
+	else if(pc->unit->weapon_state == WeaponState::Taken
+		&& ((pc->unit->weapon_taken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
+			|| (pc->unit->weapon_taken == W_ONE_HANDED && IsSet(pc->unit->GetWeapon().flags, ITEM_WAND)
+				&& Any(pc->unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH))))
+		pc->unit->target_pos = pc->RaytestTarget(50.f);
+
+	if(draw_hitbox && pc->ShouldUseRaytest())
+	{
+		Vec3 pos;
+		if(pc->data.ability_ready)
+			pos = pc->data.ability_point;
+		else
+			pos = pc->unit->target_pos;
+		DebugSceneNode* node = debug_node_pool.Get();
+		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * game_level->camera.mat_view_proj;
+		node->type = DebugSceneNode::Sphere;
+		node->group = DebugSceneNode::ParticleRadius;
+		draw_batch.debug_nodes.push_back(node);
+	}
 }
 
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	if(!pc->CanUseAbility(pc->data.ability_ready))
+	PlayerController::CanUseAbilityResult result = pc->CanUseAbility(pc->data.ability_ready);
+	if(result != PlayerController::CanUseAbilityResult::Yes)
 	{
-		pc->data.ability_ready = nullptr;
-		sound_mgr->PlaySound2d(game_res->sCancel);
+		if(!(result == PlayerController::CanUseAbilityResult::TakeWand && pc->unit->action == A_TAKE_WEAPON && pc->unit->weapon_taken == W_ONE_HANDED))
+		{
+			pc->data.ability_ready = nullptr;
+			sound_mgr->PlaySound2d(game_res->sCancel);
+		}
 		return;
 	}
 
+	if(pc->unit->action == A_CAST && pc->unit->animation_state == AS_CAST_ANIMATION)
+		return;
+
 	Ability& ability = *pc->data.ability_ready;
-	Area2* area_ptr = area2_pool.Get();
-	Area2& area = *area_ptr;
-	area.ok = 2;
-	draw_batch.areas2.push_back(area_ptr);
-
-	const float h = 0.06f;
-	const Vec3& pos = pc->unit->pos;
-	Vec3 from = pc->unit->GetPhysicsPos();
-
 	switch(ability.type)
 	{
 	case Ability::Charge:
 		{
-			float rot = Clip(pc->unit->rot + PI + pc->data.action_rot);
+			Area2* area_ptr = area2_pool.Get();
+			Area2& area = *area_ptr;
+			area.ok = 2;
+			draw_batch.areas2.push_back(area_ptr);
+
+			const Vec3 from = pc->unit->GetPhysicsPos();
+			const float h = 0.06f;
+			const float rot = Clip(pc->unit->rot + PI + pc->data.ability_rot);
 			const int steps = 10;
 
 			// find max line
 			float t;
-			Vec3 dir(sin(rot)*ability.range, 0, cos(rot)*ability.range);
+			Vec3 dir(sin(rot) * ability.range, 0, cos(rot) * ability.range);
 			bool ignore_units = IsSet(ability.flags, Ability::IgnoreUnits);
 			game_level->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 			{
@@ -1781,7 +1807,7 @@ void Game::PrepareAreaPath()
 				area.points.clear();
 				area.faces.clear();
 
-				Vec3 active_pos = pos;
+				Vec3 active_pos = pc->unit->pos;
 				Vec3 step = dir * t / (float)steps;
 				Vec3 unit_offset(pc->unit->pos.x, 0, pc->unit->pos.z);
 				float len_step = len / steps;
@@ -1835,6 +1861,12 @@ void Game::PrepareAreaPath()
 
 	case Ability::Summon:
 		{
+			Area2* area_ptr = area2_pool.Get();
+			Area2& area = *area_ptr;
+			area.ok = 2;
+			draw_batch.areas2.push_back(area_ptr);
+
+			const Vec3 from = pc->unit->GetPhysicsPos();
 			const float cam_max = 4.63034153f;
 			const float cam_min = 4.08159288f;
 			const float radius = ability.width / 2;
@@ -1972,7 +2004,7 @@ void Game::PrepareAreaPath()
 
 			// set ability
 			if(pc->data.ability_ok)
-				pc->data.action_point = area.points[0];
+				pc->data.ability_point = area.points[0];
 		}
 		break;
 
@@ -1987,10 +2019,11 @@ void Game::PrepareAreaPath()
 			else
 			{
 				// raytest
+				const float range = ability.range + game_level->camera.dist;
 				RaytestClosestUnitDeadOrAliveCallback clbk(pc->unit);
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();
-				Vec3 to = from + dir * ability.range;
+				Vec3 to = from + dir * range;
 				phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
 				target = clbk.hit;
 			}
@@ -1998,18 +2031,22 @@ void Game::PrepareAreaPath()
 			if(target)
 			{
 				pc->data.ability_ok = true;
-				pc->data.action_point = target->pos;
-				pc->data.action_target = target;
+				pc->data.ability_point = target->pos;
+				pc->data.ability_target = target;
 			}
 			else
 			{
 				pc->data.ability_ok = false;
-				pc->data.action_target = nullptr;
+				pc->data.ability_target = nullptr;
 			}
-
-			area2_pool.Free(area_ptr);
-			draw_batch.areas2.clear();
 		}
+		break;
+
+	case Ability::Ray:
+	case Ability::Point:
+		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
+		pc->data.ability_ok = true;
+		pc->data.ability_target = nullptr;
 		break;
 	}
 }
@@ -2025,7 +2062,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 	float angle = 0;
 	for(int i = 0; i < circle_points; ++i)
 	{
-		area.points[i + 1] = Vec3(sin(angle)*radius, h, cos(angle)*radius + range);
+		area.points[i + 1] = Vec3(sin(angle) * radius, h, cos(angle) * radius + range);
 		angle += (PI * 2) / circle_points;
 	}
 
@@ -2058,7 +2095,7 @@ void Game::PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius)
 	float angle = 0;
 	for(int i = 0; i < circle_points; ++i)
 	{
-		area.points[i + 1] = pos + Vec3(sin(angle)*radius, h, cos(angle)*radius);
+		area.points[i + 1] = pos + Vec3(sin(angle) * radius, h, cos(angle) * radius);
 		angle += (PI * 2) / circle_points;
 	}
 
@@ -2119,7 +2156,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 				for(int x = 0; x < room->size.x; ++x)
 				{
 					// czy coœ jest na tym polu
-					Tile& tile = lvl.map[(x + room->pos.x) + (y + room->pos.y)*lvl.w];
+					Tile& tile = lvl.map[(x + room->pos.x) + (y + room->pos.y) * lvl.w];
 					if(tile.room != room->index || tile.flags == 0 || tile.flags == Tile::F_REVEALED)
 						continue;
 
@@ -2127,8 +2164,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					range[0] = range[1] = range[2] = game_level->camera.draw_range;
 					light[0] = light[1] = light[2] = nullptr;
 
-					float dx = 2.f*(room->pos.x + x) + 1.f;
-					float dz = 2.f*(room->pos.y + y) + 1.f;
+					float dx = 2.f * (room->pos.x + x) + 1.f;
+					float dz = 2.f * (room->pos.y + y) + 1.f;
 
 					for(vector<Light*>::iterator it2 = lights.begin(), end2 = lights.end(); it2 != end2; ++it2)
 					{
@@ -2187,7 +2224,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					// ustaw macierze
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
-					m.matWorld = Matrix::Translation(2.f*(room->pos.x + x), 0, 2.f*(room->pos.y + y));
+					m.matWorld = Matrix::Translation(2.f * (room->pos.x + x), 0, 2.f * (room->pos.y + y));
 					m.matCombined = m.matWorld * game_level->camera.mat_view_proj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
@@ -2302,19 +2339,19 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		// dla ka¿dego pola
 		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
-			Tile& tile = lvl.map[it->x + it->y*lvl.w];
+			Tile& tile = lvl.map[it->x + it->y * lvl.w];
 			if(tile.flags == 0 || tile.flags == Tile::F_REVEALED)
 				continue;
 
-			Box box(2.f*it->x, -4.f, 2.f*it->y, 2.f*(it->x + 1), 8.f, 2.f*(it->y + 1));
+			Box box(2.f * it->x, -4.f, 2.f * it->y, 2.f * (it->x + 1), 8.f, 2.f * (it->y + 1));
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
 			range[0] = range[1] = range[2] = game_level->camera.draw_range;
 			light[0] = light[1] = light[2] = nullptr;
 
-			float dx = 2.f*it->x + 1.f;
-			float dz = 2.f*it->y + 1.f;
+			float dx = 2.f * it->x + 1.f;
+			float dz = 2.f * it->y + 1.f;
 
 			for(vector<Light>::iterator it2 = lvl.lights.begin(), end2 = lvl.lights.end(); it2 != end2; ++it2)
 			{
@@ -2373,7 +2410,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			// ustaw macierze
 			int matrix_id = draw_batch.matrices.size();
 			NodeMatrix& m = Add1(draw_batch.matrices);
-			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
+			m.matWorld = Matrix::Translation(2.f * it->x, 0, 2.f * it->y);
 			m.matCombined = m.matWorld * game_level->camera.mat_view_proj;
 
 			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);

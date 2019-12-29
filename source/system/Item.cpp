@@ -375,7 +375,7 @@ void Item::Validate(uint& err)
 }
 
 //=================================================================================================
-const Item* StartItem::GetStartItem(SkillId skill, int value)
+const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 {
 	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
@@ -383,17 +383,46 @@ const Item* StartItem::GetStartItem(SkillId skill, int value)
 		return nullptr;
 	const Item* best = nullptr;
 	int best_value = -2;
+	if(mage)
+	{
+		auto start_it = it;
+		while(true)
+		{
+			if(it->mage)
+			{
+				if(it->value == HEIRLOOM)
+				{
+					if(value == HEIRLOOM)
+						return it->item;
+				}
+				else if(it->value > best_value && it->value <= value)
+				{
+					best = it->item;
+					best_value = it->value;
+				}
+			}
+			++it;
+			if(it == StartItem::start_items.end() || it->skill != skill)
+				break;
+		}
+		if(best)
+			return best;
+		it = start_it;
+	}
 	while(true)
 	{
-		if(it->value == HEIRLOOM)
+		if(!it->mage)
 		{
-			if(value == HEIRLOOM)
-				return it->item;
-		}
-		else if(it->value > best_value && it->value <= value)
-		{
-			best = it->item;
-			best_value = it->value;
+			if(it->value == HEIRLOOM)
+			{
+				if(value == HEIRLOOM)
+					return it->item;
+			}
+			else if(it->value > best_value && it->value <= value)
+			{
+				best = it->item;
+				best_value = it->value;
+			}
 		}
 		++it;
 		if(it == StartItem::start_items.end() || it->skill != skill)

@@ -147,17 +147,21 @@ item frying_pan {
 
 //------------------------------------------------------------------------------
 // WANDS
-item wand_1 {
+item wand_novice {
 	name "Novice wand"
+	desc "A magic wand that slightly increases damage from magic."
+}
+item wand_adept {
+	name "Adept wand"
 	desc "A magic wand that increases damage from magic."
 }
-item wand_2 {
-	name "Adept wand"
-	desc "A magic wand that increases magic damage and accelerates regeneration of mana."
-}
-item wand_3 {
+item wand_expert {
 	name "Expert wand"
-	desc "A magic wand that significantly increases magic damage and mana regeneration rate."
+	desc "A magic wand that significantly increases damage from magic."
+}
+item wand_master {
+	name "Master wand"
+	desc "A magic wand that greatly increases damage from magic."
 }
 
 //------------------------------------------------------------------------------
@@ -485,15 +489,15 @@ item al_mage {
 }
 item al_mage2 {
 	name "Mage robe"
-	desc "Clothes of an advanced mage. The magic makes it more durable than what its material would suggest."
+	desc "Clothes of an advanced mage. The magic makes it more durable than what its material would suggest.\nIncrease mana and magic damage."
 }
 item al_mage3 {
 	name "Battle mage robe"
-	desc "Robe of a battle mage. Almost doesn't limits movement and provides a good protection thanks to the magic that it is imbued in."
+	desc "Robe of a battle mage. Almost doesn't limits movement and provides a good protection thanks to the magic that it is imbued in.\nIncrease mana and magic damage."
 }
 item al_mage4 {
 	name "Archmage robe"
-	desc "Very good magic robe used by archmages."
+	desc "Very good magic robe used by archmages.\nIncrease mana and magic damage."
 }
 item al_necromancer {
 	name "Necromancer robe"
@@ -669,6 +673,10 @@ item r_gods_magic {
 item r_concentration {
 	name "Ring of concentration"
 	desc "+10 to concentration skill."
+}
+item r_mystic_magic {
+	name "Ring of mysticity"
+	desc "+10 to mystic magic skill."
 }
 item r_mana {
 	name "Ring of mana"

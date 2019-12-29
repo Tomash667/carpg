@@ -9,7 +9,8 @@
 enum Group
 {
 	G_CLASS,
-	G_KEYWORD
+	G_KEYWORD,
+	G_FLAGS
 };
 
 enum Keyword
@@ -19,7 +20,7 @@ enum Keyword
 	K_CRAZY,
 	K_ICON,
 	K_ABILITY,
-	K_MP_BAR,
+	K_FLAGS,
 	K_LEVEL,
 	K_POTIONS
 };
@@ -47,9 +48,14 @@ void ClassLoader::InitTokenizer()
 		{ "crazy", K_CRAZY },
 		{ "icon", K_ICON },
 		{ "ability", K_ABILITY },
-		{ "mp_bar", K_MP_BAR },
+		{ "flags", K_FLAGS },
 		{ "level", K_LEVEL },
 		{ "potions", K_POTIONS }
+		});
+
+	t.AddKeywords(G_FLAGS, {
+		{ "mp_bar", Class::F_MP_BAR },
+		{ "mage_items", Class::F_MAGE_ITEMS }
 		});
 }
 
@@ -95,14 +101,14 @@ void ClassLoader::LoadEntity(int top, const string& id)
 		case K_ABILITY:
 			{
 				const string& id = t.MustGetItem();
-				clas->ability = Ability::TryGet(id);
+				clas->ability = Ability::Get(id);
 				if(!clas->ability)
 					LoadError("Missing ability '%s'.", id.c_str());
 				t.Next();
 			}
 			break;
-		case K_MP_BAR:
-			clas->mp_bar = t.MustGetBool();
+		case K_FLAGS:
+			t.ParseFlags(G_FLAGS, clas->flags);
 			t.Next();
 			break;
 		case K_LEVEL:

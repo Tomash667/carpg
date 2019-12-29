@@ -57,6 +57,7 @@ enum class Perk
 	Energetic, // (60 dex/end) +100 stamina
 	StrongAura, // (60 wis) +X mp
 	ManaHarmony, // (90 wis) +X mp reg
+	MagicAdept, // (60 int) +magic power
 
 	Max
 };

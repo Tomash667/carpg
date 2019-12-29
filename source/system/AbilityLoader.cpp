@@ -2,6 +2,8 @@
 #include "GameCore.h"
 #include "AbilityLoader.h"
 #include "Ability.h"
+#include "GameResources.h"
+#include "UnitData.h"
 #include <ResourceManager.h>
 #include <Mesh.h>
 
@@ -10,7 +12,8 @@ enum Group
 	G_TOP,
 	G_KEYWORD,
 	G_TYPE,
-	G_FLAG
+	G_FLAG,
+	G_EFFECT
 };
 
 enum TopKeyword
@@ -40,12 +43,18 @@ enum Keyword
 	K_CHARGES,
 	K_RECHARGE,
 	K_WIDTH,
-	K_STAMINA
+	K_STAMINA,
+	K_UNIT,
+	K_EFFECT,
+	K_LEARNING_POINTS,
+	K_SKILL,
+	K_LEVEL
 };
 
 //=================================================================================================
 void AbilityLoader::DoLoading()
 {
+	tPlaceholder = game_res->CreatePlaceholderTexture(Int2(128, 128));
 	Load("abilities.txt", G_TOP);
 }
 
@@ -83,7 +92,12 @@ void AbilityLoader::InitTokenizer()
 		{ "charges", K_CHARGES },
 		{ "recharge", K_RECHARGE },
 		{ "width", K_WIDTH },
-		{ "stamina", K_STAMINA }
+		{ "stamina", K_STAMINA },
+		{ "unit", K_UNIT },
+		{ "effect", K_EFFECT },
+		{ "learning_points", K_LEARNING_POINTS },
+		{ "skill", K_SKILL },
+		{ "level", K_LEVEL }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -95,20 +109,25 @@ void AbilityLoader::InitTokenizer()
 		{ "summon", Ability::Summon }
 		});
 
+	t.AddKeywords(G_EFFECT, {
+		{ "heal", Ability::Heal },
+		{ "raise", Ability::Raise },
+		{ "drain", Ability::Drain },
+		{ "electro", Ability::Electro },
+		{ "stun", Ability::Stun }
+		});
+
 	t.AddKeywords(G_FLAG, {
 		{ "explode", Ability::Explode },
 		{ "poison", Ability::Poison },
-		{ "raise", Ability::Raise },
-		{ "jump", Ability::Jump },
-		{ "drain", Ability::Drain },
-		{ "hold", Ability::Hold },
 		{ "triple", Ability::Triple },
-		{ "heal", Ability::Heal },
 		{ "non_combat", Ability::NonCombat },
 		{ "cleric", Ability::Cleric },
 		{ "ignore_units", Ability::IgnoreUnits },
 		{ "pick_dir", Ability::PickDir },
-		{ "use_cast", Ability::UseCast }
+		{ "use_cast", Ability::UseCast },
+		{ "mage", Ability::Mage },
+		{ "strength", Ability::Strength }
 		});
 }
 
@@ -129,12 +148,20 @@ void AbilityLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void AbilityLoader::ParseAbility(const string& id)
 {
-	if(Ability::TryGet(id))
-		t.Throw("Id must be unique.");
+	uint hash = Hash(id);
+	Ability* existing_ability = Ability::Get(hash);
+	if(existing_ability)
+	{
+		if(existing_ability->id == id)
+			t.Throw("Id must be unique.");
+		else
+			t.Throw("Id hash collision.");
+	}
 
 	Ptr<Ability> ability;
+	ability->hash = hash;
 	ability->id = id;
-	crc.Update(ability->id);
+	crc.Update(id);
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -328,6 +355,31 @@ void AbilityLoader::ParseAbility(const string& id)
 			crc.Update(ability->stamina);
 			t.Next();
 			break;
+		case K_UNIT:
+			ability->unit_id = t.MustGetItem();
+			crc.Update(ability->unit_id);
+			t.Next();
+			break;
+		case K_EFFECT:
+			ability->effect = (Ability::Effect)t.MustGetKeywordId(G_EFFECT);
+			crc.Update(ability->effect);
+			t.Next();
+			break;
+		case K_LEARNING_POINTS:
+			ability->learning_points = t.MustGetInt();
+			crc.Update(ability->learning_points);
+			t.Next();
+			break;
+		case K_SKILL:
+			ability->skill = t.MustGetInt();
+			crc.Update(ability->skill);
+			t.Next();
+			break;
+		case K_LEVEL:
+			ability->level = t.MustGetInt();
+			crc.Update(ability->level);
+			t.Next();
+			break;
 		}
 	}
 
@@ -336,24 +388,27 @@ void AbilityLoader::ParseAbility(const string& id)
 
 	if(ability->recharge == 0)
 		ability->recharge = ability->cooldown.x;
+	if(!ability->tex_icon)
+		ability->tex_icon = tPlaceholder;
 
+	Ability::hash_abilities[hash] = ability;
 	Ability::abilities.push_back(ability.Pin());
 }
 
 //=================================================================================================
 void AbilityLoader::ParseAlias(const string& id)
 {
-	Ability* ability = Ability::TryGet(id);
+	Ability* ability = Ability::Get(id);
 	if(!ability)
 		t.Throw("Missing ability '%s'.", id.c_str());
 	t.Next();
 
 	const string& alias_id = t.MustGetItemKeyword();
-	Ability* alias = Ability::TryGet(alias_id);
-	if(alias)
+	uint hash = Hash(alias_id);
+	if(Ability::Get(hash))
 		t.Throw("Alias or ability already exists.");
 
-	Ability::aliases.push_back(pair<string, Ability*>(alias_id, ability));
+	Ability::hash_abilities[hash] = ability;
 }
 
 //=================================================================================================
@@ -362,4 +417,20 @@ void AbilityLoader::Finalize()
 	content.crc[(int)Content::Id::Abilities] = crc.Get();
 
 	Info("Loaded abilities (%u) - crc %p.", Ability::abilities.size(), content.crc[(int)Content::Id::Abilities]);
+}
+
+//=================================================================================================
+void AbilityLoader::ApplyUnits()
+{
+	for(Ability* ability : Ability::abilities)
+	{
+		if(ability->unit_id.empty())
+			continue;
+		ability->unit = UnitData::TryGet(ability->unit_id);
+		if(!ability->unit)
+		{
+			SetLocalId(ability->id);
+			LoadError("Missing unit '%s'.", ability->unit_id.c_str());
+		}
+	}
 }

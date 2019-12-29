@@ -78,7 +78,7 @@ void AIController::Save(GameWriter& f)
 	switch(state)
 	{
 	case Cast:
-		f << st.cast.ability->id;
+		f << st.cast.ability->hash;
 		break;
 	case Escape:
 		f << (st.escape.room ? st.escape.room->index : -1);
@@ -134,7 +134,6 @@ void AIController::Save(GameWriter& f)
 	f << potion;
 	f << city_wander;
 	f << loc_timer;
-	f << shoot_yspeed;
 }
 
 //=================================================================================================
@@ -179,7 +178,7 @@ void AIController::Load(GameReader& f)
 	{
 	case Cast:
 		if(LOAD_VERSION >= V_DEV)
-			st.cast.ability = Ability::TryGet(f.ReadString1());
+			st.cast.ability = Ability::Get(f.Read<uint>());
 		else
 		{
 			st.cast.ability = unit->data->abilities->ability[unit->ai_mode];
@@ -225,7 +224,8 @@ void AIController::Load(GameReader& f)
 	}
 	f >> city_wander;
 	f >> loc_timer;
-	f >> shoot_yspeed;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<float>(); // old shoot_yspeed
 	if(LOAD_VERSION < V_0_12)
 	{
 		bool goto_inn;
@@ -336,7 +336,7 @@ bool AIController::CheckPotion(bool in_combat)
 	if(have_mp_potion != HavePotion::No)
 	{
 		Class* clas = unit->GetClass();
-		if(!clas || !clas->mp_bar)
+		if(!clas || !IsSet(clas->flags, Class::F_MP_BAR))
 			have_mp_potion = HavePotion::No;
 		else
 		{
@@ -581,8 +581,8 @@ void AIController::DoAttack(Unit* target, bool running)
 		unit->mesh_inst->groups[0].speed = speed;
 		unit->animation = ANI_PLAY;
 	}
-	unit->animation_state = (do_power_attack ? 0 : 1);
-	unit->hitted = !target;
+	unit->animation_state = (do_power_attack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
+	unit->act.attack.hitted = !target;
 
 	if(Net::IsOnline())
 	{

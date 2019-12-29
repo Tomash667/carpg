@@ -456,7 +456,14 @@ void Controls::SelectCell(int item, int column, int button)
 		game_gui->cursor_allow_move = false;
 	}
 	else
-		GKey[item][column - 1] = Key::None;
+	{
+		Key& key = GKey[item][column - 1];
+		if(key != Key::None)
+		{
+			key = Key::None;
+			changed = true;
+		}
+	}
 }
 
 //=================================================================================================

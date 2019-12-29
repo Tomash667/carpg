@@ -37,7 +37,9 @@ enum GMS
 	GMS_GAME_LOADED,
 	GMS_GOLD_ADDED,
 	GMS_QUEST_COMPLETED_GOLD,
-	GMS_ADDED_ITEMS
+	GMS_ADDED_ITEMS,
+	GMS_NEED_WAND,
+	GMS_LEARNED_ABILITY
 };
 
 //-----------------------------------------------------------------------------
@@ -76,7 +78,7 @@ private:
 	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
 		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
 		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
-		txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems;
+		txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility;
 public:
 	Sound* snd_scribble;
 };

@@ -62,6 +62,39 @@ enum AnimationState
 {
 	AS_NONE = 0,
 
+	AS_ATTACK_PREPARE = 0,
+	AS_ATTACK_CAN_HIT = 1,
+	AS_ATTACK_FINISHED = 2,
+
+	AS_BASH_ANIMATION = 0,
+	AS_BASH_CAN_HIT = 1,
+	AS_BASH_HITTED = 2,
+
+	AS_CAST_ANIMATION = 0,
+	AS_CAST_CASTED = 1,
+	AS_CAST_TRIGGER = 2,
+
+	AS_DRINK_START = 0,
+	AS_DRINK_EFFECT = 1,
+	AS_DRINK_END = 2,
+
+	AS_EAT_START = 0,
+	AS_EAT_SOUND = 1,
+	AS_EAT_EFFECT = 2,
+	AS_EAT_END = 3,
+
+	AS_POSITION_NORMAL = 0,
+	AS_POSITION_HURT = 1,
+	AS_POSITION_HURT_END = 2,
+
+	AS_SHOOT_PREPARE = 0,
+	AS_SHOOT_CAN = 1,
+	AS_SHOOT_SHOT = 2,
+	AS_SHOOT_FINISHED = 3,
+
+	AS_TAKE_WEAPON_START = 0,
+	AS_TAKE_WEAPON_MOVED = 1,
+
 	AS_USE_USABLE_MOVE_TO_OBJECT = 0,
 	AS_USE_USABLE_USING = 1,
 	AS_USE_USABLE_USING_SOUND = 2,
@@ -269,7 +302,7 @@ struct Unit : public EntityType<Unit>
 		{
 			int index;
 			float power;
-			bool run;
+			bool run, hitted;
 		} attack;
 		struct CastAction
 		{
@@ -278,6 +311,7 @@ struct Unit : public EntityType<Unit>
 		} cast;
 		struct DashAction
 		{
+			Ability* ability;
 			float rot;
 		} dash;
 		struct UseUsableAction
@@ -290,7 +324,7 @@ struct Unit : public EntityType<Unit>
 	MeshInstance* bow_instance;
 	const Item* used_item;
 	vector<Effect> effects;
-	bool hitted, talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
+	bool talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
@@ -580,8 +614,8 @@ public:
 	bool IsUsingMp() const
 	{
 		if(data->clas)
-			return data->clas->mp_bar;
-		return false;
+			return IsSet(data->clas->flags, Class::F_MP_BAR);
+		return IsSet(data->flags2, F2_MP_BAR);
 	}
 	bool CanFollowWarp() const { return IsHero() && GetOrder() == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
@@ -658,7 +692,7 @@ public:
 	void SetKnownName(bool known);
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
-	float GetBlockSpeed() const;
+	float GetBlockSpeed() const { return 0.1f; }
 
 	float CalculateMagicResistance() const;
 	float GetPoisonResistance() const;
@@ -920,14 +954,15 @@ public:
 	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
-	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }
-	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
+	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
+	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 	void RotateTo(const Vec3& pos, float dt);
 	void RotateTo(const Vec3& pos);
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
+	float GetAbilityPower(Ability& ability) const;
 	void CastSpell();
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);

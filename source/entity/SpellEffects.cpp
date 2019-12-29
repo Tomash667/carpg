@@ -179,7 +179,7 @@ void Electro::Save(FileWriter& f)
 		f << unit;
 	f << dmg;
 	f << owner;
-	f << ability->id;
+	f << ability->hash;
 	f << valid;
 	f << hitsome;
 	f << start_pos;
@@ -220,10 +220,20 @@ void Electro::Load(FileReader& f)
 		f >> unit;
 	f >> dmg;
 	f >> owner;
-	const string& ability_id = f.ReadString1();
-	ability = Ability::TryGet(ability_id);
-	if(!ability)
-		throw Format("Missing ability '%s' for electro.", ability_id.c_str());
+	if(LOAD_VERSION >= V_DEV)
+	{
+		uint ability_hash = f.Read<uint>();
+		ability = Ability::Get(ability_hash);
+		if(!ability)
+			throw Format("Missing ability %u for electro.", ability_hash);
+	}
+	else
+	{
+		const string& ability_id = f.ReadString1();
+		ability = Ability::Get(ability_id);
+		if(!ability)
+			throw Format("Missing ability '%s' for electro.", ability_id.c_str());
+	}
 	f >> valid;
 	f >> hitsome;
 	f >> start_pos;
@@ -233,7 +243,7 @@ void Electro::Load(FileReader& f)
 void Electro::Write(BitStreamWriter& f)
 {
 	f << id;
-	f << ability->id;
+	f << ability->hash;
 	f.WriteCasted<byte>(lines.size());
 	for(Line& line : lines)
 	{
@@ -247,7 +257,7 @@ void Electro::Write(BitStreamWriter& f)
 bool Electro::Read(BitStreamReader& f)
 {
 	f >> id;
-	ability = Ability::TryGet(f.ReadString1());
+	ability = Ability::Get(f.Read<uint>());
 
 	byte count;
 	f >> count;

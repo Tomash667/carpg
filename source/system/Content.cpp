@@ -38,6 +38,28 @@ item_loader(new ItemLoader), object_loader(new ObjectLoader), quest_loader(new Q
 }
 
 //=================================================================================================
+Content::~Content()
+{
+	if(building_loader)
+		Cleanup();
+}
+
+//=================================================================================================
+void Content::Cleanup()
+{
+	delete ability_loader;
+	delete building_loader;
+	delete class_loader;
+	delete dialog_loader;
+	delete item_loader;
+	delete object_loader;
+	delete quest_loader;
+	delete required_loader;
+	delete unit_loader;
+	building_loader = nullptr;
+}
+
+//=================================================================================================
 void Content::LoadContent(delegate<void(Id)> callback)
 {
 	uint loaded;
@@ -68,6 +90,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Units);
 	unit_loader->DoLoading();
 	class_loader->ApplyUnits();
+	ability_loader->ApplyUnits();
 
 	Info("Game: Loading buildings.");
 	callback(Id::Buildings);
@@ -86,15 +109,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Required);
 	required_loader->DoLoading();
 
-	delete ability_loader;
-	delete building_loader;
-	delete class_loader;
-	delete dialog_loader;
-	delete item_loader;
-	delete object_loader;
-	delete quest_loader;
-	delete required_loader;
-	delete unit_loader;
+	Cleanup();
 }
 
 //=================================================================================================

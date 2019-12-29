@@ -32,6 +32,8 @@ public:
 	};
 
 	Content();
+	~Content();
+	void Cleanup();
 	void LoadContent(delegate<void(Id)> callback);
 	void LoadVersion();
 	void CleanupContent();

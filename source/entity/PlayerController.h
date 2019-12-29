@@ -62,7 +62,8 @@ enum class TrainWhat
 	Stamina, // player uses stamina [value],
 	BullsCharge, // trains str
 	Dash,
-	Cast,
+	CastCleric, // player cast cleric spell [value]
+	CastMage, // player cast mage spell [value]
 	Mana, // player uses mana [value]
 };
 
@@ -165,11 +166,11 @@ struct LocalPlayerData
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
 	Unit* selected_unit; // unit marked with 'select' command
-	Entity<Unit> action_target;
+	Entity<Unit> ability_target;
 	GroundItem* picking_item;
-	Vec3 action_point;
+	Vec3 ability_point;
 	int picking_item_state;
-	float rot_buf, action_rot, grayout;
+	float rot_buf, ability_rot, grayout, range_ratio;
 	Key wasted_key;
 	Ability* ability_ready;
 	bool autowalk, ability_ok;
@@ -179,7 +180,7 @@ struct LocalPlayerData
 		before_player = BP_NONE;
 		before_player_ptr.any = nullptr;
 		selected_unit = nullptr;
-		action_target = nullptr;
+		ability_target = nullptr;
 		picking_item = nullptr;
 		picking_item_state = 0;
 		rot_buf = 0.f;
@@ -242,7 +243,7 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
-	vector<Entity<Unit>> action_targets;
+	vector<Entity<Unit>> ability_targets;
 	Shortcut shortcuts[Shortcut::MAX];
 	vector<PlayerAbility> abilities;
 	static LocalPlayerData data;
@@ -305,15 +306,22 @@ public:
 	bool RemovePerk(Perk perk, int value);
 
 	// abilities
+	bool HaveAbility(Ability* ability) const;
 	bool AddAbility(Ability* ability);
 	bool RemoveAbility(Ability* ability);
-	PlayerAbility& GetAbility(Ability* ability);
-	const PlayerAbility& GetAbility(Ability* ability) const;
-	bool CanUseAbility(Ability* ability) const;
+	PlayerAbility* GetAbility(Ability* ability);
+	const PlayerAbility* GetAbility(Ability* ability) const;
+	enum class CanUseAbilityResult
+	{
+		Yes,
+		No,
+		NeedWand,
+		TakeWand
+	};
+	CanUseAbilityResult CanUseAbility(Ability* ability) const;
 	void UpdateCooldown(float dt);
 	void RefreshCooldown();
 	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
-	void CastAbility(Ability* ability);
 
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp);
@@ -323,12 +331,12 @@ public:
 	int GetHealingPotion() const;
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
-	float GetActionPower() const;
-	float GetShootAngle() const;
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	void UseUsable(Usable* u, bool after_action);
 	void Update(float dt);
 	void UpdateMove(float dt, bool allow_rot);
 	bool WantExitLevel();
 	void ClearNextAction();
+	Vec3 RaytestTarget(float range);
+	bool ShouldUseRaytest() const;
 };

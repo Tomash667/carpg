@@ -115,6 +115,12 @@ abilities mage {
 	{thunder_bolt 12}
 }
 
+abilities mage_hero {
+	{magic_bolt 0}
+	{fireball 0}
+	{thunder_bolt 10}
+}
+
 //------------------------------------------------------------------------------
 // COMMON STAT PROFILES
 //------------------------------------------------------------------------------
@@ -180,7 +186,7 @@ profile cleric {
 				p_mp2
 				a_mana
 				random {r_cha2 r_mana_regen}
-				random {r_cha r_concentration r_mana}
+				random {r_cha r_concentration r_mana r_gods_magic}
 			}
 			else if level 16 {
 				p_hp2
@@ -194,7 +200,7 @@ profile cleric {
 					a_stamina
 				}
 				random {r_cha2 r_mana_regen}
-				random {r_cha r_concentration r_mana}
+				random {r_cha r_concentration r_mana r_gods_magic}
 			}
 			else if level 12 {
 				p_hp2
@@ -210,17 +216,17 @@ profile cleric {
 					random {r_cha2 r_mana_regen}
 				}
 				else {
-					random {r_cha r_concentration r_mana}
+					random {r_cha r_concentration r_mana r_gods_magic}
 				}
 				if chance 25 {
-					random {r_cha r_concentration r_mana}
+					random {r_cha r_concentration r_mana r_gods_magic}
 				}
 			}
 			else if level 8 {
 				random 1 2 p_hp
 				random 1 2 p_mp
 				if chance 50 {
-					random {r_cha r_concentration r_mana}
+					random {r_cha r_concentration r_mana r_gods_magic}
 				}
 				chance 25 a_food
 			}
@@ -228,7 +234,7 @@ profile cleric {
 				p_hp
 				p_mp
 				if chance 10 {
-					random {r_cha r_concentration r_mana}
+					random {r_cha r_concentration r_mana r_gods_magic}
 				}
 			}
 			random 1 3 !normal_food
@@ -520,11 +526,11 @@ profile hunter {
 }
 
 profile mage {
-	strength 40
+	strength 45
 	endurance 50
 	dexterity 50
 	inteligence 70
-	wisdom 50
+	wisdom 60
 	charisma 50
 
 	one_handed_weapon 5
@@ -536,14 +542,20 @@ profile mage {
 	shield 0
 	light_armor 10
 	haggle 0
+	concentration 15
+	mystic_magic 20
 
 	subprofile mage {
-		weapon short_blade
+		weapon blunt
 		armor light_armor
+		tag mystic_magic
+		tag concentration
+		tag armor
+		tag one_handed_weapon
 		priority {
 			weapon 1
 			armor 1
-			shield 0.5
+			shield 0.25
 			bow 0
 		}
 		tags {
@@ -553,9 +565,75 @@ profile mage {
 			ranged 0
 			def 1.5
 			stamina 1
-			mage 3
-			mana 0
+			mage 2
+			mana 1.5
 			cleric 0
+		}
+		perk talent inteligence
+		perk skill_focus mystic_magic
+		items {
+			!wand
+			!mage_armor
+			chance 50 !-4shield
+			if level 20 {
+				p_hp2
+				random 1 2 p_hp2
+				p_mp3
+				p_mp2
+				a_mana
+				random {r_int2 r_mana_regen}
+				random {r_int r_concentration r_mana r_mystic_magic}
+			}
+			else if level 16 {
+				p_hp2
+				p_hp
+				p_mp2
+				random 1 2 p_mp
+				if chance 50 {
+					a_mana
+				}
+				else {
+					a_stamina
+				}
+				random {r_int2 r_mana_regen}
+				random {r_int r_concentration r_mana r_mystic_magic}
+			}
+			else if level 12 {
+				p_hp2
+				p_mp2
+				p_mp
+				if chance 25 {
+					a_mana
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					random {r_int2 r_mana_regen}
+				}
+				else {
+					random {r_int r_concentration r_mana r_mystic_magic}
+				}
+				if chance 25 {
+					random {r_int r_concentration r_mana r_mystic_magic}
+				}
+			}
+			else if level 8 {
+				random 1 2 p_hp
+				random 1 2 p_mp
+				if chance 50 {
+					random {r_int r_concentration r_mana r_mystic_magic}
+				}
+				chance 25 a_food
+			}
+			else {
+				p_hp
+				p_mp
+				if chance 10 {
+					random {r_int r_concentration r_mana r_mystic_magic}
+				}
+			}
+			random 1 3 !normal_food
 		}
 	}
 }
@@ -1140,6 +1218,8 @@ profile ai_shaman {
 	light_armor 25
 	medium_armor 25
 	heavy_armor 25
+	mystic_magic 15
+	concentration 15
 }
 
 profile ai_mage {
@@ -1160,6 +1240,8 @@ profile ai_mage {
 	light_armor 10
 	medium_armor 10
 	heavy_armor 10
+	mystic_magic 20
+	concentration 20
 }
 
 //------------------------------------------------------------------------------
@@ -1253,6 +1335,16 @@ unit base_cleric : base_player {
 	}
 	gold 90
 	class cleric
+}
+
+unit base_mage : base_player {
+	profile mage
+	items {
+		2 p_hp
+		3 p_mp
+	}
+	gold 50
+	class mage
 }
 
 //------------------------------------------------------------------------------
@@ -1418,7 +1510,7 @@ unit innkeeper : merchant {
 unit mage_seller : base_human {
 	level 10
 	profile ai_mage
-	flags | {ai_stay ai_guard dont_eat limited_rot mage}
+	flags | {ai_stay ai_guard dont_eat limited_rot mage mp_bar}
 	items mage
 	trader {
 		stock mage_seller
@@ -1619,7 +1711,7 @@ unit q_gobliny_poslaniec : messenger {
 unit q_gobliny_mag : base_human {
 	level 10
 	profile ai_mage
-	flags | mage
+	flags | {mage mp_bar}
 	items mage
 	gold {100 200}
 	abilities mage
@@ -1650,7 +1742,7 @@ unit q_zlo_kaplan : base_human {
 unit q_zlo_mag : base_human {
 	level 10
 	profile ai_mage
-	flags | mage
+	flags | {mage mp_bar}
 	items mage
 	gold {100 200}
 	abilities mage
@@ -1887,6 +1979,7 @@ unit q_orkowie_gorush_szaman : base_gorush {
 		random 3 5 !orc_food
 		r_mage
 	}
+	profile ai_shaman
 	abilities orc_shaman
 	tex {
 		"ork_szaman.jpg"
@@ -2020,7 +2113,7 @@ unit orc_shaman : base_orc {
 	level {8 10}
 	profile ai_shaman
 	def 60
-	flags | mage
+	flags | {mage mp_bar}
 	items {
 		al_orc_shaman
 		blunt_orcish_shaman
@@ -2209,15 +2302,16 @@ unit skeleton_fighter : base_skeleton {
 
 unit skeleton_mage : base_skeleton {
 	level 7
-	flags | mage
+	flags | {mage mp_bar}
 	hp 600
+	mp 150
 	attack 60 // 70
 	def 140
+	spell_power 140
 	items {
-		wand_1
+		wand_novice
 	}
 	abilities {
-		non_combat 1
 		{magic_bolt 0}
 		{fireball 0}
 	}
@@ -2226,7 +2320,7 @@ unit skeleton_mage : base_skeleton {
 unit necromancer : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | {mage gray_hair}
+	flags | {mage gray_hair mp_bar}
 	items {
 		al_necromancer
 		!wand
@@ -2251,13 +2345,13 @@ unit necromancer : base_human {
 unit necromancer2 : necromancer {
 	level {9 12}
 	gold {{90 180}{120 240}}
-	upgrade necromancer // ver 0.8
+	upgrade necromancer // V_0_8
 }
 
 unit necromancer3 : necromancer {
 	level {13 15}
 	gold {{130 260}{150 300}}
-	upgrade necromancer // ver 0.8
+	upgrade necromancer // V_0_8
 }
 
 unit base_undead : base_human {
@@ -2332,7 +2426,7 @@ unit evil_cleric2 : evil_cleric {
 		random 1 3 raw_meat
 	}
 	gold {{130 260}{160 320}}
-	upgrade evil_cleric // ver 0.8
+	upgrade evil_cleric // V_0_8
 }
 
 unit q_zlo_boss : base_human {
@@ -2508,7 +2602,7 @@ unit q_bandyci_szef : base_bandit {
 unit mage : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | mage
+	flags | {mage mp_bar}
 	items {
 		!wand
 		!mage_armor
@@ -2560,13 +2654,13 @@ unit mage : base_human {
 unit mage2 : mage {
 	level {9 12}
 	gold {{90 180}{120 240}}
-	upgrade mage // ver 0.8
+	upgrade mage // V_0_8
 }
 
 unit mage3 : mage {
 	level {13 15}
 	gold {{130 260}{150 300}}
-	upgrade mage // ver 0.8
+	upgrade mage // V_0_8
 }
 
 unit mage_guard : base_human {
@@ -2673,7 +2767,7 @@ unit q_magowie_golem : golem_stone {
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
-	flags | {mage old boss guarded}
+	flags | {mage old boss guarded mp_bar}
 	hp 1440
 	def 150
 	items {
@@ -2950,7 +3044,7 @@ unit crazy_mage : base_crazy {
 	profile mage
 	flags | {mage contest_25}
 	items mage
-	abilities mage
+	abilities mage_hero
 	class mage
 }
 
@@ -3001,7 +3095,7 @@ unit hero_mage : base_hero {
 	profile mage
 	flags | {mage contest_25}
 	items mage
-	abilities mage
+	abilities mage_hero
 	class mage
 }
 

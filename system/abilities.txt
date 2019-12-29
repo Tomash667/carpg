@@ -2,9 +2,11 @@
 //------------------------------------------------------------------------------
 ability magic_bolt {
 	type point
-	dmg 30 + 4
+	flags {use_cast mage}
+	level 0
+	dmg 25 + 5
 	range 50
-	speed 15
+	speed 20
 	tex "mp.png" 0.05
 	tex_particle "mpp.png" 0.02
 	sound_cast "flaunch.wav" 0.5
@@ -13,10 +15,10 @@ ability magic_bolt {
 
 ability xmagic_bolt {
 	type point
-	flags triple
-	dmg 20 + 3
+	flags {use_cast mage triple}
+	dmg 20 + 5
 	range 50
-	speed 15
+	speed 20
 	tex "xmp.png" 0.05
 	tex_particle "xmpp.png" 0.02
 	sound_cast "flaunch.wav" 0.5
@@ -25,17 +27,22 @@ ability xmagic_bolt {
 
 ability fireball {
 	type point
-	flags explode
+	flags {use_cast mage explode}
+	level 5
 	dmg 130 + 12
 	cooldown {2.5 5}
 	range 50
-	speed 8
+	speed 15
 	explode_range 2
+	mana 75
 	tex "flare.png" 0.2
 	tex_particle "flare.png" 0.075
 	tex_explode "explosion.jpg"
 	sound_cast "rlaunch.mp3" 1
 	sound_hit "explode.mp3" 3
+	icon
+	learning_points 2
+	skill 20
 }
 
 ability spit_poison {
@@ -53,7 +60,8 @@ ability spit_poison {
 
 ability raise {
 	type target
-	flags {raise non_combat}
+	effect raise
+	flags {use_cast non_combat}
 	cooldown {10 15}
 	range 2.5
 	move_range 15
@@ -63,18 +71,24 @@ ability raise {
 
 ability thunder_bolt {
 	type ray
-	flags jump
+	effect electro
+	level 10
+	flags {use_cast mage}
 	dmg 150 + 15
 	cooldown {7.5 12.5}
 	range 50
+	mana 200
 	tex_particle "iskra.png" 0.03
 	sound_cast "lighting_bolt.mp3" 3
 	sound_hit "zap.mp3" 1
+	icon
+	learning_points 5
+	skill 50
 }
 
 ability drain {
 	type ray
-	flags {drain hold}
+	effect drain
 	dmg 50 + 5
 	cooldown {2.5 5}
 	range 5
@@ -83,7 +97,7 @@ ability drain {
 
 ability drain2 {
 	type ray
-	flags {drain hold}
+	effect drain
 	dmg 80 + 8
 	cooldown {3.5 6}
 	range 6
@@ -92,11 +106,11 @@ ability drain2 {
 
 ability exploding_skull {
 	type point
-	flags explode
+	flags {use_cast explode}
 	dmg 140 + 13
 	cooldown {5 10}
 	range 40
-	speed 7.5
+	speed 12
 	explode_range 2.5
 	mesh "czaszka.qmsh" 0.13
 	tex_particle "flare.png" 0.075
@@ -107,8 +121,9 @@ ability exploding_skull {
 
 ability heal {
 	type target
-	flags {heal non_combat cleric use_cast}
-	dmg 150 + 5 // 5 points per charisma/gods_magic
+	effect heal
+	flags {non_combat cleric use_cast}
+	dmg 50 + 5 // 5 points per charisma/gods_magic
 	cooldown 5
 	range 7.5
 	move_range 15
@@ -120,7 +135,7 @@ ability heal {
 
 ability mystic_ball {
 	type point
-	flags explode
+	flags {use_cast explode}
 	dmg 400
 	cooldown 10
 	range 50
@@ -135,7 +150,9 @@ ability mystic_ball {
 
 ability bull_charge {
 	type charge
-	flags ignore_units
+	effect stun
+	flags {strength ignore_units}
+	dmg 100 + 5 // 5 * strength
 	cooldown 20
 	range 5
 	width 0.6
@@ -158,6 +175,7 @@ ability dash {
 
 ability summon_wolf {
 	type summon
+	unit white_wolf_sum
 	flags use_cast
 	cooldown 60
 	range 10
@@ -167,4 +185,4 @@ ability summon_wolf {
 
 //------------------------------------------------------------------------------
 // Alias for old typo
-alias spit_poison split_poison // fixed in 0.5
+alias spit_poison split_poison // V_0_5

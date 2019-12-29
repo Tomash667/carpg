@@ -32,6 +32,7 @@ protected:
 	}
 	cstring FormatLanguagePath(cstring filename);
 	void SetLocalId(const string& id) { local_id = id; }
+	bool IsPrefix(cstring prefix);
 
 	Tokenizer t;
 	Crc crc;

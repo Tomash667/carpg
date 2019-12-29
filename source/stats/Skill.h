@@ -77,13 +77,14 @@ struct Skill
 	SkillGroupId group;
 	AttributeId attrib, attrib2;
 	SkillType type;
+	bool locked; // can't learn from trainer
 
 	static const int MIN = 0;
 	static const int MAX = 255;
 	static const int TAG_BONUS = 10;
 
-	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillType type = SkillType::NONE) :
-		skill_id(skill_id), id(id), group(group), attrib(attrib), attrib2(attrib2), type(type)
+	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillType type = SkillType::NONE, bool locked = false) :
+		skill_id(skill_id), id(id), group(group), attrib(attrib), attrib2(attrib2), type(type), locked(locked)
 	{
 	}
 

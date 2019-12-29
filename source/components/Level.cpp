@@ -3938,7 +3938,7 @@ void Level::Write(BitStreamWriter& f)
 			f << bullet.timer;
 			f << (bullet.owner ? bullet.owner->id : -1);
 			if(bullet.ability)
-				f << bullet.ability->id;
+				f << bullet.ability->hash;
 			else
 				f.Write0();
 		}
@@ -4011,13 +4011,13 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			f >> bullet.yspeed;
 			f >> bullet.timer;
 			int unit_id = f.Read<int>();
-			const string& ability_id = f.ReadString1();
+			uint ability_hash = f.Read<uint>();
 			if(!f)
 			{
 				Error("Read level: Broken bullet.");
 				return false;
 			}
-			if(ability_id.empty())
+			if(ability_hash == 0)
 			{
 				bullet.ability = nullptr;
 				bullet.mesh = game_res->aArrow;
@@ -4036,10 +4036,10 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			}
 			else
 			{
-				Ability* ability_ptr = Ability::TryGet(ability_id);
+				Ability* ability_ptr = Ability::Get(ability_hash);
 				if(!ability_ptr)
 				{
-					Error("Read level: Missing ability '%s'.", ability_id.c_str());
+					Error("Read level: Missing ability '%u'.", ability_hash);
 					return false;
 				}
 

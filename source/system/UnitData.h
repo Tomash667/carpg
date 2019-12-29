@@ -102,7 +102,7 @@ enum UNIT_FLAGS2
 	F2_DONT_TALK = 1 << 5, // no idle talk
 	F2_CONSTRUCT = 1 << 6, // can't be healed
 	F2_FAST_LEARNER = 1 << 7, // ai hero faster exp gain
-	// unused (1 << 8)
+	F2_MP_BAR = 1 << 8, // debug - show mana bar
 	F2_OLD = 1 << 9, // have old gray hair
 	F2_MELEE = 1 << 10, // prefers melee combat
 	F2_MELEE_50 = 1 << 11, // 50% prefers melee combat (randomly selected when spawned)
@@ -221,7 +221,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
-	int hp, hp_lvl, stamina, attack, attack_lvl, def, def_lvl, dmg_type, flags, flags2, flags3;
+	int hp, hp_lvl, mp, mp_lvl, stamina, attack, attack_lvl, def, def_lvl, spell_power, dmg_type, flags, flags2, flags3;
 	AbilityList* abilities;
 	Int2 gold, gold2;
 	GameDialog* dialog;
@@ -244,7 +244,7 @@ struct UnitData
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), abilities(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f),
 		run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(nullptr),
-		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f)
+		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0)
 	{
 	}
 	~UnitData()

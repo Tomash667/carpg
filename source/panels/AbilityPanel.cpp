@@ -8,6 +8,7 @@
 #include "ResourceManager.h"
 #include "GameKeys.h"
 #include "PlayerController.h"
+#include "Unit.h"
 #include "Game.h"
 
 enum TooltipGroup
@@ -306,7 +307,7 @@ void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& abilit
 	tooltip.text = ability.desc;
 	uint pos = tooltip.text.find("{power}", 0);
 	if(pos != string::npos)
-		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->GetActionPower()));
+		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->unit->GetAbilityPower(ability)));
 
 	if(ability.charges == 1)
 		tooltip.small_text = Format(txCooldown, ability.cooldown.x);

@@ -13,6 +13,7 @@ public:
 	void Init();
 	void LoadLanguage();
 	void LoadData();
+	Texture* CreatePlaceholderTexture(const Int2& size);
 	void GenerateItemIconTask(TaskData& task_data);
 	void GenerateItemIcon(Item& item);
 	void DrawItemIcon(const Item& item, RenderTarget* target, float rot);
@@ -34,7 +35,6 @@ public:
 		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
 
 private:
-	void CreateMissingTexture();
 	void PreloadBuildings();
 	void PreloadTraps();
 	void PreloadAbilities();
@@ -45,6 +45,6 @@ private:
 	ItemTextureMap item_texture_map;
 	vector<Texture*> over_item_textures;
 	RenderTarget* rt_item;
-	Texture missing_item_texture;
+	Texture* missing_item_texture;
 	cstring txLoadGuiTextures, txLoadTerrainTextures, txLoadParticles, txLoadModels, txLoadSounds, txLoadMusic;
 };

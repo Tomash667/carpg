@@ -34,27 +34,38 @@ void GameResources::Init()
 {
 	aHuman = res_mgr->Load<Mesh>("human.qmsh");
 	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
-	CreateMissingTexture();
+	missing_item_texture =CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 }
 
 //=================================================================================================
-void GameResources::CreateMissingTexture()
+Texture* GameResources::CreatePlaceholderTexture(const Int2& size)
 {
-	TEX tex = render->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
-	TextureLock lock(tex);
+	cstring name = Format("placeholder;%d;%d", size.x, size.y);
+	Texture* tex = res_mgr->TryGet<Texture>(name);
+	if(tex)
+		return tex;
+
+	TEX t = render->CreateTexture(size);
+	TextureLock lock(t);
 	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
-	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
+	for(int y = 0; y < size.y; ++y)
 	{
 		uint* pix = lock[y];
-		for(int x = 0; x < ITEM_IMAGE_SIZE; ++x)
+		for(int x = 0; x < size.x; ++x)
 		{
-			*pix = col[(x >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) % 2];
+			*pix = col[(x >= size.x / 2 ? 1 : 0) + (y >= size.y / 2 ? 1 : 0) % 2];
 			++pix;
 		}
 	}
 
-	missing_item_texture.tex = tex;
-	missing_item_texture.state = ResourceState::Loaded;
+	tex = new Texture;
+	tex->path = name;
+	tex->filename = tex->path.c_str();
+	tex->tex = t;
+	tex->state = ResourceState::Loaded;
+	res_mgr->AddResource(tex);
+
+	return tex;
 }
 
 //=================================================================================================
@@ -264,9 +275,9 @@ void GameResources::PreloadTraps()
 //=================================================================================================
 void GameResources::PreloadAbilities()
 {
-	for(Ability* ability_ptr : Ability::abilities)
+	for(Ability* ptr_ability : Ability::abilities)
 	{
-		Ability& ability = *ability_ptr;
+		Ability& ability = *ptr_ability;
 
 		if(ability.sound_cast)
 			res_mgr->Load(ability.sound_cast);
@@ -502,7 +513,7 @@ void GameResources::GenerateItemIcon(Item& item)
 	// use missing texture if no mesh/texture
 	if(!item.mesh && !item.tex)
 	{
-		item.icon = &missing_item_texture;
+		item.icon = missing_item_texture;
 		item.flags &= ~ITEM_GROUND_MESH;
 		return;
 	}

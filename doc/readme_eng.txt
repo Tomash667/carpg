@@ -50,26 +50,25 @@ people. Expect changes for the better!
 	Ctrl + U - unlock cursor in windowed mode
 	~ - console
 3.2. In game
-	Z / left mouse button - use, attack, loot, talk
-	R - use, loot, talk with while holding weapon
-	X / right mouse button - block
-	W / up arrow - move forward
-	S / down arrow - move backward
-	A / left arrow - move left
-	D / right arrow - move right
-	Q - rotate left
-	E - rotate right
-	1 - equip melee weapon and shield
-	2 - equip ranged weapon
-	3 - use ability
-	4 - drink best healing potion
+	left mouse button - use, attack, loot, talk
+	Z / 4 mouse button - secondary attack
+	E - use, loot, talk with while holding weapon
+	right mouse button - block
+	W - move forward
+	S - move backward
+	A - move left
+	D - move right
+	1..0 - ability/item shortcuts
 	F - auto walk forward
 	Caps Lock - toggle run/walk
 	Y - yell
-	TAB - character screen, team, inventory
+	C - character screen
+	I - inventory
+	T - team
+	K - abilities
 	J - journal
 	M - minimap
-	N - talk box
+	Tab - talk box
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
 	F2 - show/hide fps
@@ -110,7 +109,8 @@ people. Expect changes for the better!
 	powerful attack but you cannot stop.
 * Abilities - Use ability by pressing key 3 (by default), it will draw area of effect
 	used by this ability. Press left mouse button to use, right to cancel. Red
-	area means that ability can be used in this place.
+	area means that ability can be used in this place. Some spells can be cast on
+	yourself by holding walk back, player will be highlighted.
 * Stamina - Attacking uses stamina, if you run out of stamina you can't run or
 	attack. Blocking uses stamina too, and if you loss all stamina block is
 	broken. Stop attacking to restore stamina, not walking restore it faster.

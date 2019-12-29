@@ -21,7 +21,7 @@ enum ITEM_FLAGS
 	ITEM_NOT_ALCHEMIST = 1 << 2,
 	ITEM_QUEST = 1 << 3,
 	ITEM_NOT_BLACKSMITH = 1 << 4,
-	ITEM_MAGE = 1 << 5,
+	ITEM_MAGE = 1 << 5, // equipped by mages, allow casting spells
 	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
 	ITEM_GROUND_MESH = 1 << 7, // when on ground is displayed as mesh not as bag
 	ITEM_CRYSTAL_SOUND = 1 << 8,
@@ -33,7 +33,8 @@ enum ITEM_FLAGS
 	ITEM_MAGICAL = 1 << 14, // magic quality item icon
 	ITEM_UNIQUE = 1 << 15, // unique quality item icon
 	ITEM_ALPHA = 1 << 16, // item require alpha test
-	ITEM_MAGIC_SCROLL = 1 << 17
+	ITEM_MAGIC_SCROLL = 1 << 17,
+	ITEM_WAND = 1 << 18, // cast magic bolts instead of attacking
 };
 
 //-----------------------------------------------------------------------------
@@ -533,11 +534,12 @@ struct StartItem
 	SkillId skill;
 	const Item* item;
 	int value;
+	bool mage;
 
-	StartItem(SkillId skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
+	StartItem(SkillId skill, const Item* item = nullptr, int value = 0, bool mage = false) : skill(skill), item(item), value(value), mage(mage) {}
 
 	static vector<StartItem> start_items;
-	static const Item* GetStartItem(SkillId skill, int value);
+	static const Item* GetStartItem(SkillId skill, int value, bool mage);
 };
 
 //-----------------------------------------------------------------------------

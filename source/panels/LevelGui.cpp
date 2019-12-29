@@ -209,9 +209,13 @@ void LevelGui::DrawFront()
 	PlayerController& pc = *game->pc;
 
 	// crosshair
-	if((pc.unit->weapon_state == WeaponState::Taken && pc.unit->weapon_taken == W_BOW)
-		|| (pc.data.ability_ready && pc.data.ability_ready->type == Ability::Target))
-		gui->DrawSprite(tCrosshair, Center(32, 32));
+	if(pc.ShouldUseRaytest())
+	{
+		float scale = (1.f - pc.data.range_ratio) + 0.5f;
+		Matrix mat = Matrix::Transform2D(&Vec2(16, 16), 0, &Vec2(scale, scale), nullptr, 0,
+			&Vec2(0.5f * gui->wnd_size.x - 16.f, 0.5f * gui->wnd_size.y - 16.f));
+		gui->DrawSprite2(tCrosshair, mat);
+	}
 
 	// taking damage layer (red screen)
 	if(pc.dmgc > 0.f)
@@ -576,17 +580,22 @@ void LevelGui::DrawFront()
 		}
 		else if(ability)
 		{
-			const PlayerAbility& ab = pc.GetAbility(ability);
+			const PlayerAbility* ab = pc.GetAbility(ability);
 			float charge;
-			if(ab.charges > 0 || ab.cooldown >= ab.recharge)
+			if(ab)
 			{
-				if(ability->cooldown.x == 0)
-					charge = 0.f;
+				if(ab->charges > 0 || ab->cooldown >= ab->recharge)
+				{
+					if(ability->cooldown.x == 0)
+						charge = 0.f;
+					else
+						charge = ab->cooldown / ability->cooldown.x;
+				}
 				else
-					charge = ab.cooldown / ability->cooldown.x;
+					charge = ab->recharge / ability->recharge;
 			}
 			else
-				charge = ab.recharge / ability->recharge;
+				charge = 0.f;
 
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
 				drag_and_drop_icon = ability->tex_icon;
@@ -616,8 +625,8 @@ void LevelGui::DrawFront()
 			}
 
 			// charges
-			if(ability->charges > 1)
-				gui->DrawText(GameGui::font_small, Format("%d/%d", ab.charges, ability->charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+			if(ab && ability->charges > 1)
+				gui->DrawText(GameGui::font_small, Format("%d/%d", ab->charges, ability->charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
 
 			// readied ability
 			if(game->pc->data.ability_ready == ability)
@@ -1855,7 +1864,7 @@ void LevelGui::UpdatePlayerView(float dt)
 	// extra units
 	if(game->pc->data.ability_ready && game->pc->data.ability_ok)
 	{
-		if(Unit* target = game->pc->data.action_target; target && target != &u)
+		if(Unit* target = game->pc->data.ability_target; target && target != &u)
 			AddUnitView(target);
 	}
 	if(u.action == A_CAST)

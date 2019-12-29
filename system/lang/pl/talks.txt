@@ -279,6 +279,9 @@ learningPoints = "punkty nauki"
 needLearningPoints = "Nie masz doœæ doœwiadczenia ¿ebym móg³ ciê tego nauczyæ."
 teamTooBig = "Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
 heroJoined = "WeŸ ze sob¹ %s, pomo¿e ci w czekaj¹cych ciê wyzwaniach."
+cantLearnAbility = "Nie jesteœ gotowy by siê tego nauczyæ. Wróæ gdy siê podszkolisz."
+spell = "Zaklêcie"
+cantLearnSkill = "Brakuje ci podstaw ¿eby siê szkoliæ w tej umiejêtnoœci."
 
 // yelling
 yell0 = "Z drogi!"

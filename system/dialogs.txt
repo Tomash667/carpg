@@ -4299,6 +4299,18 @@ dialog mage_seller
 	choice 7
 	{
 		talk 8
+		if script "!pc.HaveAbility(Ability::Get(\"fireball\"))"
+			choice 15
+			{
+				special "train/fireball"
+				end
+			}
+		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
+			choice 16
+			{
+				special "train/thunder_bolt"
+				end
+			}
 		choice 9
 		{
 			special "train/int"
@@ -4307,6 +4319,11 @@ dialog mage_seller
 		choice 10
 		{
 			special "train/wis"
+			end
+		}
+		choice 14
+		{
+			special "train/mystic_magic"
 			end
 		}
 		choice 11

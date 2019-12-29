@@ -3,22 +3,13 @@
 #include "Ability.h"
 
 vector<Ability*> Ability::abilities;
-vector<pair<string, Ability*>> Ability::aliases;
+std::map<uint, Ability*> Ability::hash_abilities;
 
 //=================================================================================================
-Ability* Ability::TryGet(Cstring id)
+Ability* Ability::Get(uint hash)
 {
-	for(Ability* a : abilities)
-	{
-		if(a->id == id)
-			return a;
-	}
-
-	for(auto& alias : aliases)
-	{
-		if(alias.first == id)
-			return alias.second;
-	}
-
+	auto it = hash_abilities.find(hash);
+	if(it != hash_abilities.end())
+		return it->second;
 	return nullptr;
 }

@@ -752,11 +752,11 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		{
 		case DA_ATTACK:
 			unit->action = A_ATTACK;
+			unit->animation_state = AS_ATTACK_PREPARE;
 			unit->act.attack.index = unit->GetRandomAttack();
 			unit->act.attack.run = false;
 			unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 			unit->mesh_inst->groups[1].speed = unit->GetAttackSpeed();
-			unit->animation_state = 0;
 			t = 100.f;
 			break;
 		case DA_BLOCK:
@@ -796,11 +796,11 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_SHOOT:
 			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 			unit->mesh_inst->groups[1].speed = unit->GetBowAttackSpeed();
-			unit->animation_state = 0;
+			unit->action = A_SHOOT;
+			unit->animation_state = AS_SHOOT_PREPARE;
 			unit->bow_instance = game_level->GetBowInstance(unit->GetBow().mesh);
 			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[1].speed;
-			unit->action = A_SHOOT;
 			t = 100.f;
 			break;
 		case DA_SHOW_WEAPON:

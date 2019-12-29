@@ -74,12 +74,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		break;
 	case R_LIST:
 		{
-			bool leveled = false;
-			if(t.IsItem("leveled"))
-			{
-				leveled = true;
-				t.Next();
-			}
+			const bool leveled = IsPrefix("leveled");
 			ItemListResult result = ItemList::TryGet(id.c_str());
 			if(!result.lis)
 			{
@@ -167,7 +162,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		break;
 	case R_ABILITY:
 		{
-			Ability* ability = Ability::TryGet(id);
+			Ability* ability = Ability::Get(id);
 			if(!ability)
 			{
 				Error("Missing required ability '%s'.", id.c_str());
@@ -254,13 +249,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		break;
 	case R_QUEST_LIST:
 		{
-			bool not_none = false;
-			if(t.IsItem("not_none"))
-			{
-				not_none = true;
-				t.Next();
-			}
-
+			const bool not_none = IsPrefix("not_none");
 			QuestList* list = QuestList::TryGet(id);
 			if(!list)
 			{

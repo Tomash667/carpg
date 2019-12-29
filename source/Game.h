@@ -53,7 +53,7 @@ static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
 enum class FALLBACK
 {
 	NO = -1,
-	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk), fallback_2 (skill/attrib id)
+	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), fallback_2 (skill/attrib id)
 	REST, // fallback_1 (days)
 	ARENA,
 	ENTER, // fallback_1 (inside building index)
@@ -212,6 +212,7 @@ public:
 	enum ATTACK_RESULT
 	{
 		ATTACK_NOT_HIT,
+		ATTACK_OBJECT,
 		ATTACK_BLOCKED,
 		ATTACK_NO_DAMAGE,
 		ATTACK_HIT,
@@ -483,7 +484,8 @@ public:
 	cstring txRumor[29], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
 		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
-		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined;
+		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined,
+		txCantLearnAbility, txSpell, txCantLearnSkill;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
 		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[279], txForMayor, txForSoltys;

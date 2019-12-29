@@ -162,6 +162,7 @@ Player type:
 	Unit@ unit - unit player.
 	const string name
 	bool IsLeader() - return true if player is leader.
+	bool HaveAbility(Ability@) - return true if player have this ability.
 	bool HavePerk(const string& in perk) - return true if player have this perk.
 	bool AddAbility(Ability@) - add ability, return true if not already added.
 	bool RemoveAbility(Ability@) - remove ability, return true if removed.

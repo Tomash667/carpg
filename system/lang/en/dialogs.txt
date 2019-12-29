@@ -1986,4 +1986,7 @@ dialog mage_seller {
 	11 "$train_lab/gods_magic$"
 	12 "$train_lab/concentration$"
 	13 "Cancel"
+	14 "$train_lab/mystic_magic$"
+	15 "$train_lab/fireball$"
+	16 "$train_lab/thunder_bolt$"
 }

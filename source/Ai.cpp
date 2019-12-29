@@ -254,7 +254,8 @@ void Game::UpdateAi(float dt)
 				Ability* ability = u.data->abilities->ability[i];
 				if(ability && IsSet(ability->flags, Ability::NonCombat)
 					&& u.level >= u.data->abilities->level[i] && ai.cooldown[i] <= 0.f
-					&& (ability->mana <= 0 || u.mp >= ability->mana))
+					&& u.mp >= ability->mana
+					&& u.stamina >= ability->stamina)
 				{
 					float spell_range = ability->move_range,
 						best_prio = -999.f, dist;
@@ -264,7 +265,7 @@ void Game::UpdateAi(float dt)
 					if(best_dist < 3.f)
 						spell_range = ability->range;
 
-					if(IsSet(ability->flags, Ability::Raise))
+					if(ability->effect == Ability::Raise)
 					{
 						// raise undead spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -282,7 +283,7 @@ void Game::UpdateAi(float dt)
 							}
 						}
 					}
-					else
+					else if(ability->effect == Ability::Heal)
 					{
 						// healing spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -783,26 +784,23 @@ void Game::UpdateAi(float dt)
 						{
 							if(u.usable)
 							{
-								if(u.animation_state != 0)
+								int what;
+								if(u.IsDrunkman())
+									what = Rand() % 2;
+								else
+									what = 1;
+								switch(what)
 								{
-									int what;
-									if(u.IsDrunkman())
-										what = Rand() % 2;
-									else
-										what = 1;
-									switch(what)
-									{
-									case 0: // drink
-										u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
-										ai.timer = Random(10.f, 15.f);
-										break;
-									case 1: // eat
-										u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
-										ai.timer = Random(10.f, 15.f);
-										break;
-									}
-									ai.st.idle.action = AIController::Idle_Use;
+								case 0: // drink
+									u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
+									ai.timer = Random(10.f, 15.f);
+									break;
+								case 1: // eat
+									u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
+									ai.timer = Random(10.f, 15.f);
+									break;
 								}
+								ai.st.idle.action = AIController::Idle_Use;
 							}
 							else
 							{
@@ -1450,8 +1448,9 @@ void Game::UpdateAi(float dt)
 										u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 										u.mesh_inst->groups[1].speed = speed;
 										u.action = A_SHOOT;
-										u.animation_state = 1;
-										u.hitted = false;
+										u.target_pos = ai.st.idle.obj.pos;
+										u.target_pos.y += 1.27f;
+										u.animation_state = AS_SHOOT_CAN;
 										u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
 										u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 										u.bow_instance->groups[0].speed = speed;
@@ -1469,8 +1468,6 @@ void Game::UpdateAi(float dt)
 									look_at = LookAtPoint;
 									look_pos = ai.st.idle.obj.pos;
 									ai.in_combat = true;
-									if(u.action == A_SHOOT)
-										ai.shoot_yspeed = (ai.st.idle.obj.pos.y - u.pos.y) / (Vec3::Distance(u.pos, ai.st.idle.obj.pos) / u.GetArrowSpeed());
 								}
 								else
 								{
@@ -1643,7 +1640,7 @@ void Game::UpdateAi(float dt)
 							u.TakeWeapon(weapon);
 					}
 
-					if(u.data->abilities && u.action == A_NONE && u.frozen == FROZEN::NO)
+					if(u.data->abilities && u.action == A_NONE && u.frozen == FROZEN::NO && ai.next_attack <= 0.f)
 					{
 						// spellcasting
 						for(int i = MAX_ABILITIES - 1; i >= 0; --i)
@@ -1652,48 +1649,43 @@ void Game::UpdateAi(float dt)
 							{
 								Ability& ability = *u.data->abilities->ability[i];
 
-								if(IsSet(ability.flags, Ability::NonCombat))
+								if(IsSet(ability.flags, Ability::NonCombat)
+									|| ability.mana > u.mp
+									|| ability.stamina > u.stamina)
 									continue;
 
-								if(best_dist < ability.range)
+								if(best_dist < ability.range
+									// can't cast drain blood on bloodless units
+									&& !(ability.effect == Ability::Drain && IsSet(enemy->data->flags2, F2_BLOODLESS))
+									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 								{
-									bool ok = true;
+									ai.cooldown[i] = ability.cooldown.Random();
+									u.action = A_CAST;
+									u.animation_state = AS_CAST_ANIMATION;
+									u.act.cast.ability = &ability;
+									u.act.cast.target = nullptr;
 
-									if(IsSet(ability.flags, Ability::Drain))
+									if(ability.mana > 0.f)
+										u.RemoveMana(ability.mana);
+									if(ability.stamina > 0.f)
+										u.RemoveStamina(ability.stamina);
+
+									if(u.mesh_inst->mesh->head.n_groups == 2)
+										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+									else
 									{
-										// can't cast drain blood on bloodless units
-										if(IsSet(enemy->data->flags2, F2_BLOODLESS))
-											ok = false;
+										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+										u.animation = ANI_PLAY;
 									}
 
-									if(!game_level->CanShootAtLocation(u, *enemy, enemy->pos))
-										break;
-
-									if(ok)
+									if(Net::IsOnline())
 									{
-										ai.cooldown[i] = ability.cooldown.Random();
-										u.action = A_CAST;
-										u.act.cast.ability = &ability;
-										u.act.cast.target = nullptr;
-										u.animation_state = 0;
-
-										if(u.mesh_inst->mesh->head.n_groups == 2)
-											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-										else
-										{
-											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-											u.animation = ANI_PLAY;
-										}
-
-										if(Net::IsOnline())
-										{
-											NetChange& c = Add1(Net::changes);
-											c.type = NetChange::CAST_SPELL;
-											c.unit = &u;
-										}
-
-										break;
+										NetChange& c = Add1(Net::changes);
+										c.type = NetChange::CAST_SPELL;
+										c.unit = &u;
 									}
+
+									break;
 								}
 							}
 						}
@@ -1720,7 +1712,6 @@ void Game::UpdateAi(float dt)
 						look_pos = ai.PredictTargetPos(*enemy, arrow_speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
-						ai.shoot_yspeed = (enemy->pos.y - u.pos.y) / (Vec3::Distance(u.pos, enemy->pos) / arrow_speed);
 					}
 
 					if(u.IsHoldingBow())
@@ -1737,8 +1728,7 @@ void Game::UpdateAi(float dt)
 								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 								u.mesh_inst->groups[1].speed = speed;
 								u.action = A_SHOOT;
-								u.animation_state = 1;
-								u.hitted = false;
+								u.animation_state = AS_SHOOT_CAN;
 								u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
 								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 								u.bow_instance->groups[0].speed = speed;
@@ -1807,7 +1797,7 @@ void Game::UpdateAi(float dt)
 							for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 							{
 								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
-									&& !(*it2)->hitted && (*it2)->animation_state < 2)
+									&& !(*it2)->act.attack.hitted && (*it2)->animation_state < AS_ATTACK_FINISHED)
 								{
 									float dist = Vec3::Distance(u.pos, (*it2)->pos);
 									if(dist < best_dist)
@@ -1830,7 +1820,6 @@ void Game::UpdateAi(float dt)
 									u.action = A_BLOCK;
 									u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
 									u.mesh_inst->groups[1].blend_max = speed;
-									u.animation_state = 0;
 
 									if(Net::IsOnline())
 									{
@@ -2205,7 +2194,7 @@ void Game::UpdateAi(float dt)
 					for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
-							&& !(*it2)->hitted && (*it2)->animation_state < 2)
+							&& !(*it2)->act.attack.hitted && (*it2)->animation_state < AS_ATTACK_FINISHED)
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2228,10 +2217,9 @@ void Game::UpdateAi(float dt)
 							{
 								float speed = u.GetBashSpeed();
 								u.action = A_BASH;
-								u.animation_state = 0;
+								u.animation_state = AS_BASH_ANIMATION;
 								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 								u.mesh_inst->groups[1].speed = speed;
-								u.hitted = false;
 								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
 
 								if(Net::IsOnline())
@@ -2369,10 +2357,16 @@ void Game::UpdateAi(float dt)
 							}
 						}
 						u.action = A_CAST;
+						u.animation_state = AS_CAST_ANIMATION;
 						u.act.cast.ability = &ability;
 						u.act.cast.target = target;
-						u.animation_state = 0;
 						u.target_pos = target->pos;
+
+						if(ability.mana > 0.f)
+							u.RemoveMana(ability.mana);
+						if(ability.stamina > 0.f)
+							u.RemoveStamina(ability.stamina);
+
 						if(u.mesh_inst->mesh->head.n_groups == 2)
 							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						else

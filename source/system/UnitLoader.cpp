@@ -88,7 +88,9 @@ enum Property
 	P_ARMOR_TYPE,
 	P_CLASS,
 	P_TRADER,
-	P_UPGRADE
+	P_UPGRADE,
+	P_SPELL_POWER,
+	P_MP
 };
 
 enum FrameKeyword
@@ -227,7 +229,9 @@ void UnitLoader::InitTokenizer()
 		{ "armor_type", P_ARMOR_TYPE },
 		{ "class", P_CLASS },
 		{ "trader", P_TRADER },
-		{ "upgrade", P_UPGRADE }
+		{ "upgrade", P_UPGRADE },
+		{ "spell_power", P_SPELL_POWER },
+		{ "mp", P_MP }
 		});
 
 	t.AddKeywords(G_MATERIAL, {
@@ -285,6 +289,7 @@ void UnitLoader::InitTokenizer()
 		{ "dont_talk", F2_DONT_TALK },
 		{ "construct", F2_CONSTRUCT },
 		{ "fast_learner", F2_FAST_LEARNER },
+		{ "mp_bar", F2_MP_BAR },
 		{ "old", F2_OLD },
 		{ "melee", F2_MELEE },
 		{ "melee_50", F2_MELEE_50 },
@@ -1008,6 +1013,22 @@ void UnitLoader::ParseUnit(const string& id)
 				if(!u->upgrade)
 					u->upgrade = new vector<UnitData*>;
 				u->upgrade->push_back(unit.Get());
+			}
+			break;
+		case P_SPELL_POWER:
+			unit->spell_power = t.MustGetInt();
+			crc.Update(unit->spell_power);
+			break;
+		case P_MP:
+			unit->mp = t.MustGetInt();
+			crc.Update(unit->mp);
+			if(t.QuerySymbol('+'))
+			{
+				t.Next();
+				t.AssertSymbol('+');
+				t.Next();
+				unit->mp_lvl = t.MustGetInt();
+				crc.Update(unit->mp_lvl);
 			}
 			break;
 		default:
@@ -1806,10 +1827,10 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 				t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 			t.AssertSymbol('{');
 			t.Next();
-			const string& spell_id = t.MustGetItemKeyword();
-			Ability* ability = Ability::TryGet(spell_id.c_str());
+			const string& ability_id = t.MustGetItemKeyword();
+			Ability* ability = Ability::Get(ability_id.c_str());
 			if(!ability)
-				t.Throw("Missing ability '%s'.", spell_id.c_str());
+				t.Throw("Missing ability '%s'.", ability_id.c_str());
 			t.Next();
 			int lvl = t.MustGetInt();
 			if(lvl < 0)
@@ -1818,7 +1839,7 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 			t.AssertSymbol('}');
 			list->ability[index] = ability;
 			list->level[index] = lvl;
-			crc.Update(ability->id);
+			crc.Update(ability->hash);
 			crc.Update(lvl);
 			++index;
 		}

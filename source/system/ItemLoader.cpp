@@ -190,7 +190,8 @@ void ItemLoader::InitTokenizer()
 		{ "magical", ITEM_MAGICAL },
 		{ "unique", ITEM_UNIQUE },
 		{ "alpha", ITEM_ALPHA },
-		{ "magic_scroll", ITEM_MAGIC_SCROLL }
+		{ "magic_scroll", ITEM_MAGIC_SCROLL },
+		{ "wand", ITEM_WAND }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -1113,6 +1114,15 @@ void ItemLoader::ParseStartItems()
 
 		while(!t.IsSymbol('}'))
 		{
+			bool mage;
+			if(t.IsKeyword(ITEM_MAGE, G_FLAGS))
+			{
+				mage = true;
+				t.Next();
+			}
+			else
+				mage = false;
+
 			int num;
 			if(t.IsSymbol('*'))
 				num = HEIRLOOM;
@@ -1130,7 +1140,7 @@ void ItemLoader::ParseStartItems()
 				t.Throw("Missing item '%s'.", str.c_str());
 			t.Next();
 
-			StartItem::start_items.push_back(StartItem(skill, item, num));
+			StartItem::start_items.push_back(StartItem(skill, item, num, mage));
 		}
 
 		t.Next();

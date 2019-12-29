@@ -1356,6 +1356,9 @@ void Game::SetGameText()
 	txNeedLearningPoints = Str("needLearningPoints");
 	txTeamTooBig = Str("teamTooBig");
 	txHeroJoined = Str("heroJoined");
+	txCantLearnAbility = Str("cantLearnAbility");
+	txSpell = Str("spell");
+	txCantLearnSkill = Str("cantLearnSkill");
 
 	// dystans / si³a
 	txNear = Str("near");
@@ -2688,6 +2691,10 @@ void Game::UpdateFallback(float dt)
 						pc->AddPerk((Perk)fallback_2, -1);
 						game_gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
 						break;
+					case 4:
+						pc->AddAbility(Ability::Get(fallback_2));
+						game_gui->messages->AddGameMsg3(GMS_LEARNED_ABILITY);
+						break;
 					}
 					pc->Rest(10, false);
 					if(Net::IsOnline())
@@ -3224,6 +3231,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoin
 }
 
 // Sprawdza czy jest kolizja hitboxa z jak¹œ postaci¹
+// Jeœli zwraca true a hitted jest nullem to trafiono w obiekt
 // S¹ dwie opcje:
 //  - bone to punkt "bron", hitbox to hitbox z bronii
 //  - bone jest nullptr, hitbox jest na modelu postaci
@@ -3293,7 +3301,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 			if(OOBToOOB(b, a))
 			{
 				hitpoint = a.c;
-				unit.hitted = true;
+				hitted = nullptr;
 
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = game_res->tSpark;
@@ -3326,7 +3334,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
 
-				return false;
+				return true;
 			}
 		}
 	}
@@ -3367,6 +3375,9 @@ Game::ATTACK_RESULT Game::DoAttack(LevelArea& area, Unit& unit)
 
 	if(!CheckForHit(area, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
+
+	if(!hitted)
+		return ATTACK_OBJECT;
 
 	float power;
 	if(unit.data->frames->extra)
@@ -3509,6 +3520,9 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 	if(!CheckForHit(area, attacker, hitted, *mesh->FindPoint("hit"), attacker.mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
+	if(!hitted)
+		return true;
+
 	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
 	{
 		hitted->last_bash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
@@ -3518,7 +3532,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 		if(hitted->action != A_POSITION)
 			hitted->action = A_PAIN;
 		else
-			hitted->animation_state = 1;
+			hitted->animation_state = AS_POSITION_HURT;
 
 		if(hitted->mesh_inst->mesh->head.n_groups == 2)
 		{
@@ -3694,7 +3708,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 							if(hitted->action != A_POSITION)
 								hitted->action = A_PAIN;
 							else
-								hitted->animation_state = 1;
+								hitted->animation_state = AS_POSITION_HURT;
 
 							if(hitted->mesh_inst->mesh->head.n_groups == 2)
 								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
@@ -4179,7 +4193,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 				if(hitted.action != A_POSITION)
 					hitted.action = A_PAIN;
 				else
-					hitted.animation_state = 1;
+					hitted.animation_state = AS_POSITION_HURT;
 
 				if(hitted.mesh_inst->mesh->head.n_groups == 2)
 					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
@@ -4737,7 +4751,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 					if(trigger)
 					{
-						Ability* fireball = Ability::TryGet("fireball");
+						Ability* fireball = Ability::Get("fireball");
 
 						Explo* explo = new Explo;
 						explo->pos = trap.pos;

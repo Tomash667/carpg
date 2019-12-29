@@ -107,3 +107,15 @@ cstring ContentLoader::FormatLanguagePath(cstring filename)
 {
 	return Format("%s/lang/%s/%s", content.system_dir.c_str(), Language::prefix.c_str(), filename);
 }
+
+//=================================================================================================
+bool ContentLoader::IsPrefix(cstring prefix)
+{
+	if(local_id == prefix)
+	{
+		t.Next();
+		local_id = t.MustGetText();
+		return true;
+	}
+	return false;
+}

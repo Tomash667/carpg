@@ -42,6 +42,8 @@ void GameMessages::LoadLanguage()
 	txGoldPlus = Str("goldPlus");
 	txQuestCompletedGold = Str("questCompletedGold");
 	txGmsAddedItems = Str("gmsAddedItems");
+	txNeedWand = Str("needWand");
+	txLearnedAbility = Str("learnedAbility");
 }
 
 //=================================================================================================
@@ -304,6 +306,13 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_GAME_LOADED:
 		text = txGameLoaded;
 		time = 1.f;
+		break;
+	case GMS_NEED_WAND:
+		text = txNeedWand;
+		time = 2.f;
+		break;
+	case GMS_LEARNED_ABILITY:
+		text = txLearnedAbility;
 		break;
 	default:
 		assert(0);

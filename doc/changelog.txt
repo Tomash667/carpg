@@ -3,11 +3,18 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.13 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5 lub starszej
++ mo¿na wybraæ klasê mag
++ lepsze celowanie z ³uku
++ obs³uga wielu zdolnoœci u¿ywanych przez gracza
++ wczytywanie zdolnoœci z pliku
++ nowy atut (adept magii), przedmioty: ró¿d¿ka mistrza, pierœcieñ magii mistycznej
 + optymalizacje
 + aktualizacja do Visual Studio 2019
 + aktualizacja bibliotek: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
 - naprawiony crash gdy jednostka rzucaj¹ca wyssanie ¿ycia jest usuwana
 - crash przy wczytywaniu gry w menu gdy otwarta jest konsola i nie ma zapisu lub nie uda³o siê wczytaæ
+- usuwanie klawiszy w sterowaniu nie zapisywa³o siê jeœli nie zmieniono innych ustawieñ
+- brak regenercji many u npc kleryków
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

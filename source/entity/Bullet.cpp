@@ -24,10 +24,7 @@ void Bullet::Save(FileWriter& f)
 	f << yspeed;
 	f << poison_attack;
 	f << (owner ? owner->id : -1);
-	if(ability)
-		f << ability->id;
-	else
-		f.Write0();
+	f << (ability ? ability->hash : 0);
 	if(tex)
 		f << tex->filename;
 	else
@@ -57,15 +54,30 @@ void Bullet::Load(FileReader& f)
 	f >> yspeed;
 	f >> poison_attack;
 	owner = Unit::GetById(f.Read<int>());
-	const string& ability_id = f.ReadString1();
-	if(!ability_id.empty())
+	if(LOAD_VERSION >= V_DEV)
 	{
-		ability = Ability::TryGet(ability_id);
-		if(!ability)
-			throw Format("Missing ability '%s' for bullet.", ability_id.c_str());
+		uint ability_hash = f.Read<uint>();
+		if(ability_hash != 0)
+		{
+			ability = Ability::Get(ability_hash);
+			if(!ability)
+				throw Format("Missing ability %u for bullet.", ability_hash);
+		}
+		else
+			ability = nullptr;
 	}
 	else
-		ability = nullptr;
+	{
+		const string& ability_id = f.ReadString1();
+		if(!ability_id.empty())
+		{
+			ability = Ability::Get(ability_id);
+			if(!ability)
+				throw Format("Missing ability '%s' for bullet.", ability_id.c_str());
+		}
+		else
+			ability = nullptr;
+	}
 	const string& tex_name = f.ReadString1();
 	if(!tex_name.empty())
 		tex = res_mgr->Load<Texture>(tex_name);

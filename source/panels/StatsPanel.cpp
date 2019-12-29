@@ -156,7 +156,7 @@ void StatsPanel::SetText()
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
 	flowStats.Add()->Set(Format("%s: %s", txClass, clas->name.c_str()), G_STATS, STATS_CLASS);
-	if(clas->mp_bar)
+	if(IsSet(clas->flags, Class::F_MP_BAR))
 	{
 		flowStats.Add()->Set(Format(txTraitsStartMp, hp, int(pc->unit->hpmax), int(pc->unit->mp), int(pc->unit->mpmax),
 			int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);

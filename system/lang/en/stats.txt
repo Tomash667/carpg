@@ -59,11 +59,15 @@ axe = "Axe"
 // ABILITIES
 ability "bull_charge" {
 	name "Bull's charge"
-	desc "You move forward stunning all enemies in your path and dealing damage to them."
+	desc "You charge forward stunning all enemies in your path and dealing $cr{power} damage$c- to them."
 }
 ability "dash" {
 	name "Dash"
 	desc "You move fast in a selected direction. Has three charges."
+}
+ability fireball {
+	name "Fireball"
+	desc "You throw exploding ball of fire that deal $cr{power} damage$c- on small area."
 }
 ability "heal" {
 	name "Heal"
@@ -72,6 +76,10 @@ ability "heal" {
 ability "summon_wolf" {
 	name "Animal ally"
 	desc "You summon a wolf that will help you in combat until it is killed."
+}
+ability "thunder_bolt" {
+	name "Thunderbolt"
+	desc "You throw thunderbolt at enemy, electric charge deal $cr{power} damage$c- and will bounce to nearby enemies."
 }
 
 //------------------------------------------------------------------------------
@@ -93,7 +101,7 @@ attribute dex {
 }
 attribute int {
 	name "Intelligence"
-	desc "\tIncreases power of mage spells and learning speed."
+	desc "\tIncreases power of mage spells and learning speed.\n\tAffected skills: mystic magic."
 }
 attribute wis {
 	name "Wisdom"
@@ -118,7 +126,7 @@ class bard {
 }
 class cleric {
 	name "Cleric"
-	desc "A firm follower of god, recompensated for his devotion with the power to cast spells.\n\nSpecial action: Heal"
+	desc "A firm follower of god, recompensated for his devotion with the power to cast spells.\n\nSpecial ability: Heal"
 	about "I am a cleric, a follower of Imnos. I travel around cities teaching others about my god and helping those who need it."
 }
 class druid {
@@ -128,12 +136,12 @@ class druid {
 }
 class hunter {
 	name "Hunter"
-	desc "Hunters take care about nature and forest. They are specialized in using bow and tracking creatures. Given enough time, they gain knowledge about nature magic.\n\nSpecial action: Animal ally"
+	desc "Hunters take care about nature and forest. They are specialized in using bow and tracking creatures. Given enough time, they gain knowledge about nature magic.\n\nSpecial ability: Animal ally"
 	about "I'm a hunter. I spent my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but that doesn't mean that I'm afraid of hand combat."
 }
 class mage {
 	name "Mage"
-	desc "Adept of mystical arts. Simply by using the power of his mind, he can create magic bullets and fireballs."
+	desc "Adept of mystical arts. Simply by using the power of his mind, he can create magic bullets and fireballs.\n\nSpecial ability: Fireball"
 	about "I'm a mage. Through the power of mind, I have mastered the mysteries of magic and calculated the indefinite integral. Now I travel the world to put my skills into practice."
 }
 class monk {
@@ -148,12 +156,12 @@ class paladin {
 }
 class rogue {
 	name "Rogue"
-	desc "Rogues use light armor and short blade. They are known to attack enemies by surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing.\n\nSpecial action: Dash"
+	desc "Rogues use light armor and short blade. They are known to attack enemies by surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing.\n\nSpecial ability: Dash"
 	about "I'm a rogue. I travel here and there, as I wish. Sometimes I rob someone or stab them in the back. Nothing interesting, as usual."
 }
 class warrior {
 	name "Warrior"
-	desc "Warrior can use any weapon and heavy armor and shield. Prefer melee combat. Can specialize in specific weapon.\n\nSpecial action: Bull's charge"
+	desc "Warrior can use any weapon and heavy armor and shield. Prefer melee combat. Can specialize in specific weapon.\n\nSpecial ability: Bull's charge"
 	about "I'm a warrior. Earn by killing monsters, bandits and other scum. Rely mostly on melee weapons, heavy armor and shield."
 }
 
@@ -263,6 +271,10 @@ perk strong_aura {
 perk mana_harmony {
 	name "Mana harmony"
 	desc "Increase mana regeneration by 100%."
+}
+perk magic_adept {
+	name "Magic adept"
+	desc "Increase spells damage."
 }
 
 //------------------------------------------------------------------------------

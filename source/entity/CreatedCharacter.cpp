@@ -17,6 +17,7 @@ struct TakeRatio
 //=================================================================================================
 void CreatedCharacter::Clear(Class* clas)
 {
+	this->clas = clas;
 	sp_max = StatProfile::MAX_TAGS;
 	perks_max = StatProfile::MAX_PERKS;
 
@@ -254,60 +255,38 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 	for(int i = 0; i < SLOT_MAX; ++i)
 		items[i] = nullptr;
 
+	const bool mage_items = IsSet(clas->flags, Class::F_MAGE_ITEMS);
+	const bool poor = HavePerk(Perk::Poor);
+
 	if(HavePerk(Perk::FamilyHeirloom))
 	{
-		// find best skill for family heirloom
-		const SkillId to_check[] = {
-			SkillId::SHORT_BLADE,
-			SkillId::LONG_BLADE,
-			SkillId::AXE,
-			SkillId::BLUNT,
-			SkillId::BOW,
-			SkillId::SHIELD,
-			SkillId::LIGHT_ARMOR,
-			SkillId::MEDIUM_ARMOR,
-			SkillId::HEAVY_ARMOR
-		};
-
-		const TakeRatio ratio[] = {
-			0.5f, 0, 0.5f,
-			0.75f, 0, 0.25f,
-			0.85f, 0, 0.15f,
-			0.8f, 0, 0.2f,
-			0, 0, 1,
-			0.5f, 0, 0.5f,
-			0, 0, 1,
-			0, 0.5f, 0.5f,
-			0.5f, 0.5f, 0
-		};
-
 		SkillId best = SkillId::NONE;
-		int val = 0, val2 = 0;
-
-		int index = 0;
-		for(SkillId sk : to_check)
+		int best_value = 0, best_value2 = 0;
+		for(const StartItem& item : StartItem::start_items)
 		{
-			int s_val = s[(int)sk].value;
-			if(s_val >= val)
+			if(item.value != HEIRLOOM)
+				continue;
+			int value = s[(int)item.skill].value;
+			if(value >= best_value)
 			{
-				int s_val2 = int(ratio[index].str * Get(AttributeId::STR)
-					+ ratio[index].end * Get(AttributeId::END)
-					+ ratio[index].dex * Get(AttributeId::DEX));
-				if(s_val > val || s_val2 > val2)
+				Skill& skill = Skill::skills[(int)item.skill];
+				int value2 = a[(int)skill.attrib].value;
+				if(skill.attrib2 == AttributeId::NONE)
+					value2 *= 2;
+				else
+					value2 += a[(int)skill.attrib2].value;
+				if(value > best_value || (value == best_value && value2 > best_value2))
 				{
-					val = s_val;
-					val2 = s_val2;
-					best = sk;
+					best = skill.skill_id;
+					best_value = value;
+					best_value2 = value2;
 				}
 			}
-			++index;
 		}
 
-		const Item* heirloom = StartItem::GetStartItem(best, HEIRLOOM);
+		const Item* heirloom = StartItem::GetStartItem(best, HEIRLOOM, mage_items);
 		items[ItemTypeToSlot(heirloom->type)] = heirloom;
 	}
-
-	bool poor = HavePerk(Perk::Poor);
 
 	// weapon
 	if(!items[SLOT_WEAPON])
@@ -316,43 +295,47 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			SkillId::SHORT_BLADE,
 			SkillId::LONG_BLADE,
 			SkillId::AXE,
-			SkillId::BLUNT
+			SkillId::BLUNT,
+			SkillId::MYSTIC_MAGIC
 		};
 
 		SkillId best = SkillId::NONE;
-		int val = 0, val2 = 0;
-
+		int best_value = 0, best_value2 = 0;
 		for(SkillId sk : to_check)
 		{
-			int s_val = s[(int)sk].value;
-			if(s_val >= val)
+			int value = s[(int)sk].value;
+			if(value >= best_value)
 			{
-				const WeaponTypeInfo& info = GetWeaponTypeInfo(sk);
-				int s_val2 = int(info.str2dmg * Get(AttributeId::STR) + info.dex2dmg * Get(AttributeId::DEX));
-				if(s_val > val || s_val2 > val2)
+				Skill& skill = Skill::skills[(int)sk];
+				int value2 = a[(int)skill.attrib].value;
+				if(skill.attrib2 == AttributeId::NONE)
+					value2 *= 2;
+				else
+					value2 += a[(int)skill.attrib2].value;
+				if(value > best_value || (value == best_value && value2 > best_value2))
 				{
-					val = s_val;
-					val2 = s_val2;
-					best = sk;
+					best = skill.skill_id;
+					best_value = value;
+					best_value2 = value2;
 				}
 			}
 		}
 
-		items[SLOT_WEAPON] = StartItem::GetStartItem(best, GetItemLevel(val, poor));
+		items[SLOT_WEAPON] = StartItem::GetStartItem(best, GetItemLevel(best_value, poor), mage_items);
 	}
 
 	// bow
 	if(!items[SLOT_BOW])
 	{
 		int val = s[(int)SkillId::BOW].value;
-		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, GetItemLevel(val, poor));
+		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, GetItemLevel(val, poor), mage_items);
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
 		int val = s[(int)SkillId::SHIELD].value;
-		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, GetItemLevel(val, poor));
+		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, GetItemLevel(val, poor), mage_items);
 	}
 
 	// armor
@@ -364,35 +347,29 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			SkillId::LIGHT_ARMOR
 		};
 
-		const TakeRatio ratio[] = {
-			0.f, 0.f, 1.f,
-			0.f, 0.5f, 0.5f,
-			0.5f, 0.5f, 0.f
-		};
-
 		SkillId best = SkillId::NONE;
-		int val = 0, val2 = 0;
-
-		int index = 0;
+		int best_value = 0, best_value2 = 0;
 		for(SkillId sk : to_check)
 		{
-			int s_val = s[(int)sk].value;
-			if(s_val >= val)
+			int value = s[(int)sk].value;
+			if(value >= best_value)
 			{
-				int s_val2 = int(ratio[index].str * Get(AttributeId::STR)
-					+ ratio[index].end * Get(AttributeId::END)
-					+ ratio[index].dex * Get(AttributeId::DEX));
-				if(s_val > val || s_val2 > val2)
+				Skill& skill = Skill::skills[(int)sk];
+				int value2 = a[(int)skill.attrib].value;
+				if(skill.attrib2 == AttributeId::NONE)
+					value2 *= 2;
+				else
+					value2 += a[(int)skill.attrib2].value;
+				if(value > best_value || (value == best_value && value2 > best_value2))
 				{
-					val = s_val;
-					val2 = s_val2;
-					best = sk;
+					best = skill.skill_id;
+					best_value = value;
+					best_value2 = value2;
 				}
 			}
-			++index;
 		}
 
-		items[SLOT_ARMOR] = StartItem::GetStartItem(best, GetItemLevel(val, poor));
+		items[SLOT_ARMOR] = StartItem::GetStartItem(best, GetItemLevel(best_value, poor), mage_items);
 	}
 }
 

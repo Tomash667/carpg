@@ -577,7 +577,7 @@ void Language::ParseObject(Tokenizer& t)
 		// }
 		{
 			const string& id = t.MustGetText();
-			Ability* ability = Ability::TryGet(id);
+			Ability* ability = Ability::Get(id);
 			if(!ability)
 				t.Throw("Invalid ability '%s'.", id.c_str());
 			t.Next();
