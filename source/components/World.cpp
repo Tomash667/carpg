@@ -2609,6 +2609,17 @@ Encounter* World::RecreateEncounter(int index)
 {
 	assert(InRange(index, 0, (int)encounters.size() - 1));
 	Encounter* e = new Encounter;
+	e->index = index;
+	encounters[index] = e;
+	return e;
+}
+
+//=================================================================================================
+Encounter* World::RecreateEncounterS(Quest* quest, int index)
+{
+	assert(InRange(index, 0, (int)encounters.size() - 1));
+	Encounter* e = new Encounter(quest);
+	e->index = index;
 	encounters[index] = e;
 	return e;
 }

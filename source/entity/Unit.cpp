@@ -6733,8 +6733,8 @@ void Unit::CastSpell()
 			player->Train(TrainWhat::CastCleric, 2000.f, 0);
 		else if(IsSet(ability.flags, Ability::Mage))
 		{
-			float value = ability.level > 0 ? ability.level * 200 : 100;
-			player->Train(TrainWhat::CastMage, value, 0);
+			const int value = ability.level > 0 ? ability.level * 200 : 100;
+			player->Train(TrainWhat::CastMage, (float)value, 0);
 		}
 	}
 

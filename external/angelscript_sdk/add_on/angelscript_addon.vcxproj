@@ -82,11 +82,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="scriptarray\scriptarray.cpp" />
+    <ClCompile Include="scriptdictionary\scriptdictionary.cpp" />
     <ClCompile Include="scriptstdstring\scriptstdstring.cpp" />
     <ClCompile Include="scriptstdstring\scriptstdstring_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scriptarray\scriptarray.h" />
+    <ClInclude Include="scriptdictionary\scriptdictionary.h" />
     <ClInclude Include="scriptstdstring\scriptstdstring.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

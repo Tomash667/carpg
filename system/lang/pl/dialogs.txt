@@ -1026,40 +1026,6 @@ dialog q_bandits_boss {
 }
 
 //==============================================================================
-dialog q_bandits_collect_toll_start {
-	0 "Na drodze pomiêdzy $start_loc$ a $other_loc$ koczuj¹ bandyci. Pobieraj¹ op³atê i okradaj¹ kupców."
-	1 "Masz czas aby siê nimi zaj¹æ?"
-	2 "Tak"
-	3 "IdŸ do $other_loc$ na $other_dir$ st¹d i z powrotem. Wtedy na pewno natrafisz na tych bandytów."
-	4 "Masz na to pó³ miesi¹ca."
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_timeout {
-	0 "Nie uda³o ci siê pozbyæ tych bandytów z drogi?"
-	1 "Ehhh, teraz ju¿ pewnie przenieœli siê gdzie indziej. Zawiod³em siê na tobie."
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_end {
-	0 "Wreszcie ktoœ na kim mo¿na polegaæ. Dobra robota z tymi bandytami, to ich nauczy na jakiœ czas."
-	1 "WeŸ to 1500 sztuk z³ota w nagrodê."
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_talk {
-	0 "Staæ!"
-	1 "To nasza droga, jeœli chcesz przejœæ musisz zap³aciæ 500 sztuk z³ota!"
-	2 "Zap³aæ"
-	3 "Mo¿esz przejœæ. Nie zapomnij nas jeszcze odwiedziæ, hehehe..."
-	4 "Nie masz tyle z³ota cholerny biedaku!"
-	5 "Mam nadzieje ¿e twój ekwipunek jest coœ wart!"
-	6 "Nie p³aæ"
-	7 "Mam nadzieje ¿e twój ekwipunek jest coœ wart!"
-}
-
-//==============================================================================
 dialog q_camp_near_city_start {
 	0 "Wyobra¿asz to sobie?! $Bandyci_zalozyli$ obóz tu¿ ko³o $naszego_miasta$!"
 	1 "Chyba chc¹ zaatakowaæ $miasto$! Musimy coœ z tym zrobiæ!"

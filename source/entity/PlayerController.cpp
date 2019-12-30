@@ -1963,7 +1963,6 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 	else if(ability->sound_cast)
 		game->PlayAttachedSound(*unit, ability->sound_cast, ability->sound_cast_dist);
 
-	Vec3 ability_point;
 	if(ability->type == Ability::Charge)
 	{
 		const bool dash = (ability->effect != Ability::Stun);
@@ -1972,10 +1971,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->action = A_DASH;
 		unit->act.dash.ability = ability;
 		if(Net::IsLocal() || !from_server)
-		{
 			unit->act.dash.rot = Clip(data.ability_rot + unit->rot + PI);
-			ability_point = Vec3(data.ability_rot, 0, 0);
-		}
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
 		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -1994,11 +1990,6 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->mesh_inst->groups[1].blend_max = 0.1f;
 			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
-	}
-	else
-	{
-		if(!from_server)
-			ability_point = data.ability_point;
 	}
 
 	if(Net::IsOnline())
@@ -3274,11 +3265,6 @@ void PlayerController::ClearNextAction()
 //=================================================================================================
 Vec3 PlayerController::RaytestTarget(float range)
 {
-	Ability* ability;
-	if(unit->action == A_CAST)
-		ability = unit->act.cast.ability;
-	else
-		ability = data.ability_ready;
 	RaytestWithIgnoredCallback clbk(unit, nullptr);
 	Vec3 from = game_level->camera.from;
 	Vec3 dir = (game_level->camera.to - from).Normalized();

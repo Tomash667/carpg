@@ -31,7 +31,7 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 
 private:

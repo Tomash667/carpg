@@ -165,6 +165,7 @@ public:
 	void RemoveEncounter(Quest* quest);
 	Encounter* GetEncounter(int index);
 	Encounter* RecreateEncounter(int index);
+	Encounter* RecreateEncounterS(Quest* quest, int index);
 	const vector<Encounter*>& GetEncounters() const { return encounters; }
 	int GetEncounterLocationIndex() const { return encounter_loc; }
 	float GetEncounterChance() const { return encounter_chance; }
@@ -172,6 +173,7 @@ public:
 
 	// news
 	void AddNews(cstring text);
+	void AddNewsS(const string& tex) { AddNews(tex.c_str()); }
 	const vector<News*>& GetNews() const { return news; }
 
 	// boss levels

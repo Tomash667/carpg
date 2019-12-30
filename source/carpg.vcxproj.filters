@@ -596,6 +596,9 @@
     <ClCompile Include="system\RequiredLoader.cpp">
       <Filter>system\required</Filter>
     </ClCompile>
+    <ClCompile Include="helpers\LocationHelper.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">

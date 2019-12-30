@@ -47,7 +47,7 @@ public:
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 	void Update(float dt);

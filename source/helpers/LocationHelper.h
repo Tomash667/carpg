@@ -39,4 +39,7 @@ namespace LocationHelper
 		InsideLocation* inside = static_cast<InsideLocation*>(loc);
 		return inside->IsMultilevel();
 	}
+
+	Unit* GetMayor(Location* loc);
+	Unit* GetCaptain(Location* loc);
 }

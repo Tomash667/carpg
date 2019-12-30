@@ -328,6 +328,7 @@
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="helpers\LocationHelper.cpp" />
     <ClCompile Include="net\NetClient.cpp" />
     <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="generator\AcademyGenerator.cpp" />

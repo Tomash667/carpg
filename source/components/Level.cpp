@@ -39,6 +39,8 @@
 #include "LocationHelper.h"
 #include "PhysicCallbacks.h"
 #include "GameResources.h"
+#include "Quest_Scripted.h"
+#include "ScriptManager.h"
 
 Level* global::game_level;
 
@@ -3194,6 +3196,17 @@ void Level::CheckIfLocationCleared()
 		bool prevent = false;
 		if(event_handler)
 			prevent = event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
+
+		// events v2
+		for(Event& e : location->events)
+		{
+			if(e.type == EVENT_CLEARED)
+			{
+				ScriptEvent event(EVENT_CLEARED);
+				event.location = location;
+				e.quest->FireEvent(event);
+			}
+		}
 
 		if(cleared && prevent && !location->group->IsEmpty())
 		{

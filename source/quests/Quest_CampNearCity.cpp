@@ -195,7 +195,7 @@ void Quest_CampNearCity::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_CampNearCity::Load(GameReader& f)
+Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -209,7 +209,7 @@ bool Quest_CampNearCity::Load(GameReader& f)
 
 	location_event_handler = this;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

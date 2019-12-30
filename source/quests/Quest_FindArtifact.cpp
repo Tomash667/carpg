@@ -183,7 +183,7 @@ void Quest_FindArtifact::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_FindArtifact::Load(GameReader& f)
+Quest::LoadResult Quest_FindArtifact::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -204,7 +204,7 @@ bool Quest_FindArtifact::Load(GameReader& f)
 		item_to_give[0] = &quest_item;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

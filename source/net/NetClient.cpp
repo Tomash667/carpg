@@ -2446,7 +2446,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					break;
 
 				Ability* ability = Ability::Get(ability_hash);
-				if(ability)
+				if(!ability)
 					Error("Update client: SPELL_SOUND, missing ability %u.", ability_hash);
 				else
 					sound_mgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);

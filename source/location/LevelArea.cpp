@@ -800,11 +800,21 @@ Door* LevelArea::FindDoor(const Int2& pt)
 // -2 outside part of city/village
 ForLocation::ForLocation(int loc, int level)
 {
+	Setup(world->GetLocation(loc), level);
+}
+
+ForLocation::ForLocation(Location* loc, int level)
+{
+	Setup(loc, level);
+}
+
+void ForLocation::Setup(Location* l, int level)
+{
 	ctx = LevelAreaContextPool.Get();
 	ctx->entries.clear();
 
+	int loc = l->index;
 	bool active = (world->GetCurrentLocationIndex() == loc);
-	Location* l = world->GetLocation(loc);
 	assert(l->last_visit != -1);
 
 	switch(l->type)

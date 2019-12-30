@@ -68,7 +68,7 @@ public:
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 	int GetChestEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	int GetIncome(int days_passed);
 	int GenerateMine(CaveGenerator* cave_gen, bool first);
 

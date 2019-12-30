@@ -8,6 +8,7 @@ Wersja 0.13 (???):
 + obs³uga wielu zdolnoœci u¿ywanych przez gracza
 + wczytywanie zdolnoœci z pliku
 + nowy atut (adept magii), przedmioty: ró¿d¿ka mistrza, pierœcieñ magii mistycznej
++ przeniesienie zadania "bandyci pobieraj¹ op³atê" do skryptów
 + optymalizacje
 + aktualizacja do Visual Studio 2019
 + aktualizacja bibliotek: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3

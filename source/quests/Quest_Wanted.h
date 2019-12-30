@@ -26,7 +26,7 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	bool IfHaveQuestItem() const override;
 	const Item* GetQuestItem() override { return &letter; }

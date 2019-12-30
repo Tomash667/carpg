@@ -31,7 +31,7 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 
 private:
 	vector<Entry> entries;

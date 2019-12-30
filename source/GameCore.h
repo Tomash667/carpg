@@ -32,6 +32,7 @@ class asIScriptFunction;
 class asIScriptObject;
 class asIScriptModule;
 class asITypeInfo;
+class CScriptDictionary;
 
 //-----------------------------------------------------------------------------
 class AbilityPanel;

@@ -44,7 +44,7 @@ public:
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	void GenerateSawmill(bool in_progress);
 
 	State sawmill_state;

@@ -285,7 +285,7 @@ void Quest_Mine::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Mine::Load(GameReader& f)
+Quest::LoadResult Quest_Mine::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -302,7 +302,7 @@ bool Quest_Mine::Load(GameReader& f)
 	location_event_handler = this;
 	InitSub();
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

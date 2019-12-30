@@ -219,12 +219,12 @@ void Quest_SpreadNews::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_SpreadNews::Load(GameReader& f)
+Quest::LoadResult Quest_SpreadNews::Load(GameReader& f)
 {
 	Quest::Load(f);
 
 	if(IsActive())
 		f >> entries;
 
-	return true;
+	return LoadResult::Ok;
 }

@@ -134,7 +134,7 @@ bool Quest_Mages::SpecialIf(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-bool Quest_Mages::Load(GameReader& f)
+Quest::LoadResult Quest_Mages::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -144,7 +144,7 @@ bool Quest_Mages::Load(GameReader& f)
 		spawn_item = Quest_Event::Item_InTreasure;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -496,7 +496,7 @@ void Quest_Mages2::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Mages2::Load(GameReader& f)
+Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -522,7 +522,7 @@ bool Quest_Mages2::Load(GameReader& f)
 		spawn_2_guard_1 = true;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

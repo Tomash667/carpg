@@ -191,7 +191,7 @@ void Quest_Orcs::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Orcs::Load(GameReader& f)
+Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -211,7 +211,7 @@ bool Quest_Orcs::Load(GameReader& f)
 		spawn_unit_room = RoomTarget::Prison;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -635,7 +635,7 @@ void Quest_Orcs2::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Orcs2::Load(GameReader& f)
+Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -663,7 +663,7 @@ bool Quest_Orcs2::Load(GameReader& f)
 		}
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

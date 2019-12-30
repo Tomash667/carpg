@@ -56,7 +56,7 @@ Static methods:
 GroundItem type:
 	Vec3 pos - readonly
 	Item@ base - readonly
-	
+
 Ability type.
 Static methods:
 	Ability@ Get(const string& in id) - return ability by id.
@@ -70,8 +70,15 @@ Static method:
 	UnitGroup@ Get(const string& in id) - return unit group with id.
 Static variables:
 	UnitGroup@ empty - represents empty group.
+	
+Enum QUEST_STATE:
+	Q_HIDDEN
+	Q_STARTED
+	Q_COMPLETED
+	Q_FAILED
 
 Quest type:
+	const QUEST_STATE state
 	void AddEntry(const string& in str) - add journal message.
 	void SetStarted(const string& in title) - mark quest as started, add journal entry with quest title, can only be called once.
 	void SetCompleted() - mark quest as completed, can only be called when quest is started.
@@ -191,10 +198,11 @@ Team namespace:
 EventType enum:
 	EVENT_ENTER - for locations, send when player enter location (set field location).
 	EVENT_PICKUP - for locations, send when someone pickups ground item (set field unit, item).
-	EVENT_UPDATE - for unit, send every frame (set field unit).
+	EVENT_CLEARED - for locations, send when location is cleared from enemies.
+	EVENT_UPDATE - for units, send every frame (set field unit).
+	EVENT_DIE - for units, send when unit dies.
 	EVENT_TIMEOUT - for quests, send when quest timeout expired.
 	EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
-	EVENT_DIE - for units, send when unit dies.
 
 LOCATION enum:
 	L_CITY
@@ -254,6 +262,8 @@ Location type:
 	void SetKnown() - mark location as known.
 	void AddEventHandler(Quest@, EventType) - add event to location.
 	void RemoveEventHandler(Quest@) - remove event handler from location.
+	Unit@ GetMayor() - return mayor/soltys or null when not in city.
+	Unit@ GetCaptain() - return guard captain or null when not in city.
 
 Encounter type:
 	Vec2 pos
@@ -261,12 +271,14 @@ Encounter type:
 	Quest@ quest
 	Dialog@ dialog
 	int st
+	int chance
 	UnitGroup@ group
 	string text
 
 World namespace:
 	const Vec2 size - get worldmap size (in km).
 	const Vec2 pos - position on worldmap.
+	const int worldtime - number of days since start of game.
 	uint GetSettlements() - return count of settlements.
 	Location@ GetLocation(uint index) - return location by index.
 	string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
@@ -278,8 +290,10 @@ World namespace:
 	Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
 	Location@ CreateLocation(LOCATION type, const Vec2& in pos, int target = 0) - create new location at position.
 	Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
+	Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.
 	void RemoveEncounter(Quest@) - remove encounters attached to this quest.
 	void SetStartLocation(Location@) - game start location, must be set in quest Startup.
+	void AddNews(const string& in) - add news.
 
 Level namespace:
 	Location@ location - readonly

@@ -4,6 +4,7 @@
 #include <angelscript.h>
 #include <scriptarray/scriptarray.h>
 #include <scriptstdstring/scriptstdstring.h>
+#include <scriptdictionary/scriptdictionary.h>
 #include "TypeBuilder.h"
 #include "PlayerController.h"
 #include "SaveState.h"
@@ -71,6 +72,7 @@ void ScriptManager::Init()
 	RegisterScriptArray(engine, true);
 	RegisterStdString(engine);
 	RegisterStdStringUtils(engine);
+	RegisterScriptDictionary(engine);
 	RegisterCommon();
 	RegisterGame();
 }
@@ -484,7 +486,8 @@ void ScriptManager::RegisterGame()
 		{ "EVENT_UPDATE", EVENT_UPDATE },
 		{ "EVENT_TIMEOUT", EVENT_TIMEOUT },
 		{ "EVENT_ENCOUNTER", EVENT_ENCOUNTER },
-		{ "EVENT_DIE", EVENT_DIE }
+		{ "EVENT_DIE", EVENT_DIE },
+		{ "EVENT_CLEARED", EVENT_CLEARED }
 		});
 
 	AddEnum("LOCATION", {
@@ -544,6 +547,13 @@ void ScriptManager::RegisterGame()
 		{ "LI_CAPITAL", LI_CAPITAL }
 		});
 
+	AddEnum("QUEST_STATE", {
+		{ "Q_HIDDEN", Quest::Hidden },
+		{ "Q_STARTED", Quest::Started },
+		{ "Q_COMPLETED", Quest::Completed },
+		{ "Q_FAILED", Quest::Failed }
+		});
+
 	AddType("Var")
 		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
 		.Method("bool IsBool() const", asMETHODPR(Var, IsBool, () const, bool))
@@ -577,6 +587,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Dialog@ Get(const string& in)", asFUNCTION(GameDialog::GetS));
 
 	AddType("Quest")
+		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))
 		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))
 		.Method("void SetStarted(const string& in)", asMETHOD(Quest_Scripted, SetStarted))
 		.Method("void SetFailed()", asMETHOD(Quest_Scripted, SetFailed))
@@ -739,7 +750,9 @@ void ScriptManager::RegisterGame()
 		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Location, RemoveEventHandlerS))
 		.Method("void SetKnown()", asMETHOD(Location, SetKnown))
 		.Method("bool IsCity()", asFUNCTIONPR(LocationHelper::IsCity, (Location*), bool))
-		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool));
+		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool))
+		.Method("Unit@ GetMayor()", asFUNCTION(LocationHelper::GetMayor))
+		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain));
 
 	AddType("Encounter")
 		.Member("Vec2 pos", offsetof(Encounter, pos))
@@ -747,6 +760,7 @@ void ScriptManager::RegisterGame()
 		.Member("Quest@ quest", offsetof(Encounter, quest))
 		.Member("Dialog@ dialog", offsetof(Encounter, dialog))
 		.Member("int st", offsetof(Encounter, st))
+		.Member("int chance", offsetof(Encounter, chance))
 		.Member("UnitGroup@ group", offsetof(Encounter, group))
 		.Method("const string& get_text()", asMETHOD(Encounter, GetTextS))
 		.Method("void set_text(const string& in)", asMETHOD(Encounter, SetTextS));
@@ -756,6 +770,7 @@ void ScriptManager::RegisterGame()
 	WithNamespace("World", world)
 		.AddFunction("Vec2 get_size()", asMETHOD(World, GetSize))
 		.AddFunction("Vec2 get_pos()", asMETHOD(World, GetPos))
+		.AddFunction("int get_worldtime()", asMETHOD(World, GetWorldtime))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -767,8 +782,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
 		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = 0)", asMETHOD(World, CreateLocationS))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
+		.AddFunction("Encounter@ RecreateEncounter(Quest@, int)", asMETHOD(World, RecreateEncounterS))
 		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void))
-		.AddFunction("void SetStartLocation(Location@)", asMETHOD(World, SetStartLocation));
+		.AddFunction("void SetStartLocation(Location@)", asMETHOD(World, SetStartLocation))
+		.AddFunction("void AddNews(const string& in)", asMETHOD(World, AddNews));
 
 	WithNamespace("Level", game_level)
 		.AddFunction("Location@ get_location()", asMETHOD(Level, GetLocation))
@@ -903,7 +920,7 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		{
 			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionFunction()));
+				tmp_context->GetExceptionLineNumber()));
 		}
 		else
 			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
@@ -1161,7 +1178,7 @@ bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
 		{
 			cstring msg = last_exception ? last_exception : ctx->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, ctx->GetExceptionFunction()->GetName(),
-				ctx->GetExceptionFunction()));
+				ctx->GetExceptionLineNumber()));
 		}
 		else
 			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));

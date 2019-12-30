@@ -154,7 +154,7 @@ void Quest_DeliverLetter::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_DeliverLetter::Load(GameReader& f)
+Quest::LoadResult Quest_DeliverLetter::Load(GameReader& f)
 {
 	Quest::Load(f);
 
@@ -172,5 +172,5 @@ bool Quest_DeliverLetter::Load(GameReader& f)
 		}
 	}
 
-	return true;
+	return LoadResult::Ok;
 }

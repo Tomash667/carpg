@@ -213,7 +213,7 @@ void Quest_DeliverParcel::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_DeliverParcel::Load(GameReader& f)
+Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 {
 	Quest_Encounter::Load(f);
 
@@ -248,5 +248,5 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 		e->st = 6;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }

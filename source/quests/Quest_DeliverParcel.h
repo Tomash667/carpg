@@ -29,7 +29,7 @@ public:
 	bool IfHaveQuestItem() const override;
 	const Item* GetQuestItem() override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 
 private:
 	int end_loc;

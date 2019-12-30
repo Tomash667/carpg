@@ -319,7 +319,7 @@ void Quest_Goblins::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Goblins::Load(GameReader& f)
+Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -373,7 +373,7 @@ bool Quest_Goblins::Load(GameReader& f)
 		e->st = 6;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

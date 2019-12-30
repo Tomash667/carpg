@@ -463,7 +463,7 @@ void Quest_Evil::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Evil::Load(GameReader& f)
+Quest::LoadResult Quest_Evil::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -506,7 +506,7 @@ bool Quest_Evil::Load(GameReader& f)
 
 	unit_event_handler = this;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

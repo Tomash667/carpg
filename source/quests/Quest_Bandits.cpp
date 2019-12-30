@@ -344,7 +344,7 @@ void Quest_Bandits::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Bandits::Load(GameReader& f)
+Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -389,7 +389,7 @@ bool Quest_Bandits::Load(GameReader& f)
 		callback = WarpToThroneBanditBoss;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

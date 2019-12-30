@@ -192,7 +192,7 @@ void Quest_RetrievePackage::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_RetrievePackage::Load(GameReader& f)
+Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -221,7 +221,7 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 		}
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

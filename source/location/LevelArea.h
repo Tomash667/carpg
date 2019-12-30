@@ -127,11 +127,14 @@ public:
 struct ForLocation
 {
 	ForLocation(int loc, int level = -1);
+	ForLocation(Location* loc, int level = -1);
 	ForLocation(const ForLocation& f) = delete;
 	~ForLocation();
 	ForLocation& operator = (const ForLocation& f) = delete;
 	LevelAreaContext* operator -> () { return ctx; }
 
 private:
+	void Setup(Location* loc, int level);
+
 	LevelAreaContext* ctx;
 };

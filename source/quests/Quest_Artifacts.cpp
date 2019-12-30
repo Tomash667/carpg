@@ -38,14 +38,14 @@ void Quest_Artifacts::Start()
 }
 
 //=================================================================================================
-bool Quest_Artifacts::Load(GameReader& f)
+Quest::LoadResult Quest_Artifacts::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
 	if(!done)
 		SetupEvent();
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

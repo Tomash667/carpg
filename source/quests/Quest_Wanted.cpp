@@ -231,7 +231,7 @@ void Quest_Wanted::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Wanted::Load(GameReader& f)
+Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -267,5 +267,5 @@ bool Quest_Wanted::Load(GameReader& f)
 		letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 	}
 
-	return true;
+	return LoadResult::Ok;
 }

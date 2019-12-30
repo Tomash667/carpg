@@ -77,7 +77,6 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliver_parcel"));
 	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
 	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
-	infos.push_back(QuestInfo(Q_BANDITS_COLLECT_TOLL, QuestCategory::Captain, "bandits_collect_toll"));
 	infos.push_back(QuestInfo(Q_CAMP_NEAR_CITY, QuestCategory::Captain, "camp_near_city"));
 	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrieve_package"));
 	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestCategory::Captain, "kill_animals"));
@@ -657,6 +656,8 @@ void QuestManager::Save(GameWriter& f)
 //=================================================================================================
 void QuestManager::Load(GameReader& f)
 {
+	upgrade_quests.clear();
+
 	LoadQuests(f, quests);
 	LoadQuests(f, unaccepted_quests);
 
@@ -856,11 +857,14 @@ void QuestManager::LoadQuests(GameReader& f, vector<Quest*>& quests)
 		Quest* quest = CreateQuest(type);
 		quest->type = type;
 		quest->quest_index = quest_index;
-		if(!quest->Load(f))
+		Quest::LoadResult result = quest->Load(f);
+		if(result == Quest::LoadResult::Remove)
 		{
 			delete quest;
 			continue;
 		}
+		else if(result == Quest::LoadResult::Convert)
+			upgrade_quests.push_back(quest);
 
 		quests[quest_index] = quest;
 		++quest_index;
@@ -1772,4 +1776,20 @@ void QuestManager::UpdateQuestsLocal(float dt)
 	quest_mages2->Update(dt);
 	quest_evil->Update(dt);
 	quest_secret->UpdateFight();
+}
+
+//=================================================================================================
+void QuestManager::UpgradeQuests()
+{
+	for(Quest* quest : upgrade_quests)
+	{
+		Quest_Scripted* quest2 = new Quest_Scripted;
+		quest2->quest_index = quest->quest_index;
+		quest2->Upgrade(quest);
+		if(quest->state == Quest::Hidden)
+			unaccepted_quests[quest->quest_index] = quest2;
+		else
+			quests[quest->quest_index] = quest2;
+		delete quest;
+	}
 }

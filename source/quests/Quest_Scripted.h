@@ -36,12 +36,12 @@ class Quest_Scripted final : public Quest
 	};
 
 public:
-	Quest_Scripted() : instance(nullptr), timeout_days(-1), call_depth(0) {}
+	Quest_Scripted() : instance(nullptr), timeout_days(-1), call_depth(0), in_upgrade(false) {}
 	~Quest_Scripted();
 	void Init(QuestScheme* scheme) { this->scheme = scheme; }
 	void Start() override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	GameDialog* GetDialog(int type2) override;
 	GameDialog* GetDialog(const string& dialog_id);
 	void SetProgress(int prog2) override;
@@ -64,6 +64,7 @@ public:
 	asIScriptObject* GetInstance() { return instance; }
 	void AddRumor(const string& str);
 	void RemoveRumor();
+	void Upgrade(Quest* quest);
 
 private:
 	void BeforeCall();
@@ -77,4 +78,5 @@ private:
 	vector<Unit*> unit_dialogs;
 	JournalState journal_state;
 	int journal_changes, timeout_days, call_depth;
+	bool in_upgrade;
 };

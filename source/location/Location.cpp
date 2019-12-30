@@ -324,7 +324,7 @@ void Location::SetKnown()
 //=================================================================================================
 void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
 {
-	assert(Any(type, EVENT_ENTER, EVENT_PICKUP));
+	assert(Any(type, EVENT_ENTER, EVENT_PICKUP, EVENT_CLEARED));
 
 	Event e;
 	e.quest = quest;

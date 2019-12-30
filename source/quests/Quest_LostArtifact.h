@@ -24,7 +24,7 @@ public:
 	bool IfHaveQuestItem2(cstring id) const override;
 	const Item* GetQuestItem() override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 
 private:
 	int GetReward() const;

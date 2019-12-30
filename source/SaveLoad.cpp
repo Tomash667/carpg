@@ -862,7 +862,7 @@ void Game::LoadGame(GameReader& f)
 	// gui
 	game_gui->level_gui->PositionPanels();
 
-	// cele ai
+	// set ai bow targets
 	if(!ai_bow_targets.empty())
 	{
 		BaseObject* bow_target = BaseObject::Get("bow_target");
@@ -888,31 +888,39 @@ void Game::LoadGame(GameReader& f)
 		}
 	}
 
-	// questy zwi¹zane z lokacjami
-	for(vector<Location*>::iterator it = load_location_quest.begin(), end = load_location_quest.end(); it != end; ++it)
+	// location quests
+	for(Location* loc : load_location_quest)
 	{
-		(*it)->active_quest = static_cast<Quest_Dungeon*>(quest_mgr->FindAnyQuest((int)(*it)->active_quest));
-		assert((*it)->active_quest);
-	}
-	// unit event handler
-	for(vector<Unit*>::iterator it = load_unit_handler.begin(), end = load_unit_handler.end(); it != end; ++it)
-	{
-		// pierwszy raz musia³em u¿yæ tego rzutowania ¿eby dzia³a³o :o
-		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(quest_mgr->FindAnyQuest((int)(*it)->event_handler));
-		assert((*it)->event_handler);
-	}
-	// chest event handler
-	for(vector<Chest*>::iterator it = load_chest_handler.begin(), end = load_chest_handler.end(); it != end; ++it)
-	{
-		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_mgr->FindAnyQuest((int)(*it)->handler));
-		assert((*it)->handler);
+		loc->active_quest = static_cast<Quest_Dungeon*>(quest_mgr->FindAnyQuest((int)loc->active_quest));
+		assert(loc->active_quest);
 	}
 
-	dialog_context.dialog_mode = false;
+	// unit event handlers
+	for(Unit* unit : load_unit_handler)
+	{
+		unit->event_handler = dynamic_cast<UnitEventHandler*>(quest_mgr->FindAnyQuest((int)unit->event_handler));
+		assert(unit->event_handler);
+	}
+
+	// chest event handlers
+	for(Chest* chest : load_chest_handler)
+	{
+		chest->handler = dynamic_cast<ChestEventHandler*>(quest_mgr->FindAnyQuest((int)chest->handler));
+		assert(chest->handler);
+	}
+
+	// current location event handler
 	if(location_event_handler_quest_id != -1)
+	{
 		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_id));
+		assert(game_level->event_handler);
+	}
 	else
 		game_level->event_handler = nullptr;
+
+	quest_mgr->UpgradeQuests();
+
+	dialog_context.dialog_mode = false;
 	team->ClearOnNewGameOrLoad();
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;

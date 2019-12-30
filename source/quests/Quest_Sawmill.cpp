@@ -159,7 +159,7 @@ void Quest_Sawmill::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Sawmill::Load(GameReader& f)
+Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -172,7 +172,7 @@ bool Quest_Sawmill::Load(GameReader& f)
 	if(sawmill_state != State::None && build_state != BuildState::Finished)
 		f >> hd_lumberjack;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

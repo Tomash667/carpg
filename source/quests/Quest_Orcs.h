@@ -34,7 +34,7 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 
 private:
@@ -114,7 +114,7 @@ public:
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	OrcClass GetOrcClass() const { return orc_class; }
 
 	State orcs_state;

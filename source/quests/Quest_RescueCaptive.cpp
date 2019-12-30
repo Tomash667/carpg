@@ -333,7 +333,7 @@ void Quest_RescueCaptive::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_RescueCaptive::Load(GameReader& f)
+Quest::LoadResult Quest_RescueCaptive::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -354,7 +354,7 @@ bool Quest_RescueCaptive::Load(GameReader& f)
 		unit_dont_attack = true;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

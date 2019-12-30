@@ -188,7 +188,7 @@ void Quest_StolenArtifact::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_StolenArtifact::Load(GameReader& f)
+Quest::LoadResult Quest_StolenArtifact::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -212,7 +212,7 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 		unit_spawn_level = -3;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

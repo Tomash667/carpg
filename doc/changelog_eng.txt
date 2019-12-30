@@ -8,6 +8,7 @@ Version 0.13 (???):
 + allow player to use multiple abilities
 + loading abilities from files
 + new feat (magic adept), items: master wand, ring of mystic magic
++ moved quest "bandits collect toll" to scripts
 + optimisations
 + updated to Visual Studio 2019
 + update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3

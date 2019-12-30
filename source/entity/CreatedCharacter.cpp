@@ -8,12 +8,6 @@
 #include "Stock.h"
 #include "BitStreamFunc.h"
 
-//-----------------------------------------------------------------------------
-struct TakeRatio
-{
-	float str, end, dex;
-};
-
 //=================================================================================================
 void CreatedCharacter::Clear(Class* clas)
 {
