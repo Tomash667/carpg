@@ -381,7 +381,6 @@ void WorldMapGui::Update(float dt)
 	{
 		Vec2 cursor_pos(float(gui->cursor_pos.x), float(gui->cursor_pos.y));
 		Location* loc = nullptr;
-		float dist = 17.f;
 		int index;
 
 		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom + offset * float(world->world_size) / MAP_IMG_SIZE;
@@ -391,6 +390,7 @@ void WorldMapGui::Update(float dt)
 			c_pos_valid = true;
 			if(!input->Down(Key::Shift))
 			{
+				float dist = 17.f;
 				int i = 0;
 				for(vector<Location*>::iterator it = world->locations.begin(), end = world->locations.end(); it != end; ++it, ++i)
 				{

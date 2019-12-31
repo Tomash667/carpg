@@ -273,15 +273,13 @@ void Item::CreateCopy(Item& item) const
 			OtherItem& o = (OtherItem&)item;
 			const OtherItem& o2 = ToOther();
 			o.mesh = o2.mesh;
+			o.tex = o2.tex;
 			o.desc = o2.desc;
 			o.flags = o2.flags;
 			o.id = o2.id;
-			o.mesh = o2.mesh;
-			o.tex = o2.tex;
 			o.name = o2.name;
 			o.other_type = o2.other_type;
 			o.quest_id = o2.quest_id;
-			o.tex = o2.tex;
 			o.type = o2.type;
 			o.value = o2.value;
 			o.weight = o2.weight;

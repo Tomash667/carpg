@@ -474,8 +474,6 @@ void TakenPerk::Apply(PerkContext& ctx)
 //=================================================================================================
 void TakenPerk::Remove(PerkContext& ctx)
 {
-	PerkInfo& info = PerkInfo::perks[(int)perk];
-
 	switch(perk)
 	{
 	case Perk::BadBack:
@@ -546,6 +544,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 
 	if(ctx.cc)
 	{
+		PerkInfo& info = PerkInfo::perks[(int)perk];
 		if(IsSet(info.flags, PerkInfo::Flaw))
 		{
 			ctx.cc->perks_max--;

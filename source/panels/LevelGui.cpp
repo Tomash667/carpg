@@ -683,10 +683,10 @@ void LevelGui::DrawBack()
 	// debug info
 	if(debug_info2)
 	{
-		Unit& u = *game->pc->unit;
 		cstring text;
 		if(game->devmode)
 		{
+			Unit& u = *game->pc->unit;
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
 				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(engine->GetFps()));
 		}

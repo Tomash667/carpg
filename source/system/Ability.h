@@ -43,7 +43,8 @@ struct Ability
 	uint hash;
 	string id;
 	SoundPtr sound_cast, sound_hit;
-	TexturePtr tex, tex_particle, tex_explode, tex_icon;
+	TexturePtr tex, tex_particle, tex_icon;
+	TexOverride tex_explode;
 	Vec2 cooldown;
 	Type type;
 	Effect effect;
@@ -54,10 +55,10 @@ struct Ability
 	string name, desc, unit_id;
 	UnitData* unit;
 
-	Ability() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), tex_icon(nullptr), shape(nullptr),
-		mesh(nullptr), type(Point), cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f),
-		explode_range(0.f), sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), unit(nullptr), effect(None),
-		learning_points(0), skill(999), level(0) {}
+	Ability() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_icon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
+		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
+		sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), unit(nullptr), effect(None), learning_points(0),
+		skill(999), level(0) {}
 	~Ability()
 	{
 		delete shape;

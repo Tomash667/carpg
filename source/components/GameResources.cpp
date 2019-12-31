@@ -85,7 +85,6 @@ void GameResources::LoadData()
 	// gui textures
 	res_mgr->AddTaskCategory(txLoadGuiTextures);
 	tBlack = res_mgr->Load<Texture>("czern.bmp");
-	tPortal = res_mgr->Load<Texture>("dark_portal.png");
 	tWarning = res_mgr->Load<Texture>("warning.png");
 	tError = res_mgr->Load<Texture>("error.png");
 	game_gui->LoadData();
@@ -166,6 +165,7 @@ void GameResources::LoadData()
 	aDoor = res_mgr->Load<Mesh>("drzwi.qmsh");
 	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
 	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
+	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();
@@ -287,8 +287,8 @@ void GameResources::PreloadAbilities()
 			res_mgr->Load(ability.tex);
 		if(ability.tex_particle)
 			res_mgr->Load(ability.tex_particle);
-		if(ability.tex_explode)
-			res_mgr->Load(ability.tex_explode);
+		if(ability.tex_explode.diffuse)
+			res_mgr->Load(ability.tex_explode.diffuse);
 		if(ability.tex_icon)
 			res_mgr->Load(ability.tex_icon);
 		if(ability.mesh)

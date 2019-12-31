@@ -275,8 +275,8 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_TEX_EXPLODE:
 			{
 				const string& tex_id = t.MustGetString();
-				ability->tex_explode = res_mgr->TryGet<Texture>(tex_id);
-				if(!ability->tex_explode)
+				ability->tex_explode.diffuse = res_mgr->TryGet<Texture>(tex_id);
+				if(!ability->tex_explode.diffuse)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
 				t.Next();
@@ -385,6 +385,8 @@ void AbilityLoader::ParseAbility(const string& id)
 
 	if(Any(ability->type, Ability::Point, Ability::Ball) && ability->speed == 0.f)
 		LoadWarning("Invalid ability speed.");
+	if(IsSet(ability->flags, Ability::Explode) && !ability->tex_explode.diffuse)
+		LoadError("Missing explode texture.");
 
 	if(ability->recharge == 0)
 		ability->recharge = ability->cooldown.x;

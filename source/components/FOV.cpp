@@ -287,16 +287,14 @@ namespace FOV
 			actIsBlocked(dest);
 
 		list<Field>::iterator currentField = activeFields.begin();
-		int i = 0;
-		int j = 0;
 		int maxI = extent.x + extent.y;
 		// For each square outline
-		for(i = 1; i <= maxI && !activeFields.empty(); ++i)
+		for(int i = 1; i <= maxI && !activeFields.empty(); ++i)
 		{
 			int startJ = max(0, i - extent.x);
 			int maxJ = min(i, extent.y);
 			// Visit the nodes in the outline
-			for(j = startJ; j <= maxJ && currentField != activeFields.end(); ++j)
+			for(int j = startJ; j <= maxJ && currentField != activeFields.end(); ++j)
 			{
 				dest.x = i - j;
 				dest.y = j;

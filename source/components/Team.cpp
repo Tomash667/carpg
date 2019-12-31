@@ -626,12 +626,13 @@ void Team::UpdateTeamItemShares()
 		state = 0;
 	else
 	{
-		ItemSlot& slot = tsi.from->items[tsi.index];
 		ITEM_SLOT target_slot;
 		if(!tsi.to->IsBetterItem(tsi.item, nullptr, nullptr, &target_slot))
 			state = 0;
 		else
 		{
+			ItemSlot& slot = tsi.from->items[tsi.index];
+
 			// new item weight - if it's already in inventory then it don't add weight
 			int item_weight = (tsi.from != tsi.to ? slot.item->weight : 0);
 

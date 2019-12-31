@@ -4314,7 +4314,7 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 	}
 
 	// wybuch
-	if(Net::IsLocal() && ability.tex_explode && IsSet(ability.flags, Ability::Explode))
+	if(Net::IsLocal() && IsSet(ability.flags, Ability::Explode))
 	{
 		Explo* explo = new Explo;
 		explo->dmg = (float)ability.dmg;
@@ -4323,7 +4323,7 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 		explo->size = 0.f;
 		explo->sizemax = ability.explode_range;
 		explo->pos = pos;
-		explo->tex = ability.tex_explode;
+		explo->ability = &ability;
 		explo->owner = bullet.owner;
 		if(hitted)
 			explo->hitted.push_back(hitted);
@@ -4759,7 +4759,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 						explo->size = 0.f;
 						explo->sizemax = 2.f;
 						explo->dmg = float(trap.base->attack);
-						explo->tex = fireball->tex_explode;
+						explo->ability = fireball;
 
 						sound_mgr->PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist);
 

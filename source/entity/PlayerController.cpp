@@ -1796,13 +1796,13 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 		{
 			if(type == BP_CHEST)
 			{
-				Chest* chest = (Chest*)ptr;
+				Chest* chest = static_cast<Chest*>(ptr);
 				if(AngleDiff(Clip(chest->rot - PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos))) > PI / 2)
 					return;
 			}
 			else if(type == BP_USABLE)
 			{
-				Usable* use = (Usable*)ptr;
+				Usable* use = static_cast<Usable*>(ptr);
 				auto& bu = *use->base;
 				if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 				{
@@ -2598,7 +2598,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 	// check what is in front of player
 	data.before_player = BP_NONE;
-	float dist, best_dist = 3.0f;
+	float best_dist = 3.0f;
 
 	// doors in front of player
 	for(Door* door : area.doors)
@@ -2615,8 +2615,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			Unit& u2 = **it;
 			if(&u == &u2 || u2.to_remove)
 				continue;
-
-			dist = Vec3::Distance2d(u.visual_pos, u2.visual_pos);
 
 			if(u2.IsStanding())
 				CheckObjectDistance(u2.visual_pos, &u2, best_dist, BP_UNIT);

@@ -4,9 +4,10 @@
 #include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
-struct SceneNode
+struct SceneNode : public ObjectPoolProxy<SceneNode>
 {
 	static constexpr int SPLIT_INDEX = 1 << 31;
+	static constexpr int SPLIT_MASK = 0x7FFFFFFF;
 
 	enum Flags
 	{
@@ -17,7 +18,9 @@ struct SceneNode
 		F_NORMAL_MAP = 1 << 4,
 		F_NO_ZWRITE = 1 << 5,
 		F_NO_CULLING = 1 << 6,
-		F_ALPHA_TEST = 1 << 7
+		F_NO_LIGHTING = 1 << 7,
+		F_ALPHA_TEST = 1 << 8,
+		F_ALPHA_BLEND = 1 << 9
 	};
 
 	Matrix mat;
@@ -28,8 +31,10 @@ struct SceneNode
 	};
 	MeshInstance* parent_mesh_inst;
 	int flags, lights, subs;
+	float dist;
 	const TexOverride* tex_override;
 	Vec4 tint;
+	Vec3 pos;
 	bool billboard;
 
 	const Mesh& GetMesh() const
@@ -51,7 +56,13 @@ struct SceneNode
 };
 
 //-----------------------------------------------------------------------------
-struct DebugSceneNode
+struct SceneNodeGroup
+{
+	int flags, start, end;
+};
+
+//-----------------------------------------------------------------------------
+struct DebugSceneNode : public ObjectPoolProxy<DebugSceneNode>
 {
 	enum Type
 	{
@@ -98,7 +109,7 @@ struct Area
 };
 
 //-----------------------------------------------------------------------------
-struct Area2
+struct Area2 : public ObjectPoolProxy<Area2>
 {
 	vector<Vec3> points;
 	vector<word> faces;
@@ -140,32 +151,28 @@ struct NodeMatrix
 };
 
 //-----------------------------------------------------------------------------
-struct StunEffect
-{
-	Vec3 pos;
-	float time;
-};
-
-//-----------------------------------------------------------------------------
 struct DrawBatch
 {
 	vector<SceneNode*> nodes;
+	vector<SceneNode*> alpha_nodes;
+	vector<SceneNodeGroup> node_groups;
 	vector<DebugSceneNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
 	vector<uint> terrain_parts;
 	vector<Blood*> bloods;
 	vector<Billboard> billboards;
-	vector<Explo*> explos;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*>* tpes;
-	vector<Portal*> portals;
 	vector<Area> areas;
 	float area_range;
 	vector<Area2*> areas2;
 	vector<Lights> lights;
 	vector<DungeonPart> dungeon_parts;
 	vector<NodeMatrix> matrices;
-	vector<StunEffect> stuns;
+	Camera* camera;
+	bool use_specularmap, use_normalmap;
 
 	void Clear();
+	void Add(SceneNode* node, int sub = -1);
+	void Process();
 };

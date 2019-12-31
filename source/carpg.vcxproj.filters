@@ -599,6 +599,9 @@
     <ClCompile Include="helpers\LocationHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="entity\SceneNode.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">

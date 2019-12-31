@@ -216,8 +216,6 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 	this->online = online;
 	this->slots = slots;
 
-	SaveSlot& slot = slots[choice];
-
 	// setup buttons
 	if(save_mode)
 	{
@@ -226,6 +224,7 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 	}
 	else
 	{
+		SaveSlot& slot = slots[choice];
 		bt[0].state = slot.valid ? Button::NONE : Button::DISABLED;
 		bt[0].text = txLoad;
 	}

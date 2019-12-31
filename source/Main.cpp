@@ -58,7 +58,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 	str = lpCmd;
 	while(*str)
 	{
-		while(*str && *str == ' ')
+		while(*str == ' ')
 			++str;
 
 		if(*str)
@@ -581,7 +581,7 @@ void LoadConfiguration(char* lpCmdLine)
 			game->quickstart = QUICKSTART_LOAD_MP;
 	}
 	int slot = cfg.GetInt("loadslot", -1);
-	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
+	if(slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
 		game->quickstart_slot = slot;
 
 	// window position & size

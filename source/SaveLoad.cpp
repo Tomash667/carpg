@@ -494,8 +494,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	game_gui->Save(f);
 
 	check_id = (byte)world->GetLocations().size();
-	f << check_id;
-	++check_id;
+	f << check_id++;
 
 	// save team
 	team->Save(f);
@@ -504,15 +503,13 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	quest_mgr->Save(f);
 	script_mgr->Save(f);
 
-	f << check_id;
-	++check_id;
+	f << check_id++;
 
 	if(Net::IsOnline())
 	{
 		net->Save(f);
 
-		f << check_id;
-		++check_id;
+		f << check_id++;
 
 		Net::PushChange(NetChange::GAME_SAVED);
 		game_gui->mp_box->Add(txGameSaved);
@@ -814,9 +811,8 @@ void Game::LoadGame(GameReader& f)
 
 	check_id = (byte)world->GetLocations().size();
 	f >> read_id;
-	if(read_id != check_id)
+	if(read_id != check_id++)
 		throw "Error reading data before team.";
-	++check_id;
 
 	// wczytaj dru¿ynê
 	team->Load(f);
@@ -831,9 +827,8 @@ void Game::LoadGame(GameReader& f)
 		world->LoadOld(f, loading, 2, false);
 
 	f >> read_id;
-	if(read_id != check_id)
+	if(read_id != check_id++)
 		throw "Error reading data after news.";
-	++check_id;
 
 	LoadingStep(txLoadingLevel);
 
@@ -849,9 +844,8 @@ void Game::LoadGame(GameReader& f)
 			game_level->local_area->tmp->Load(f);
 
 			f >> read_id;
-			if(read_id != check_id)
+			if(read_id != check_id++)
 				throw "Failed to read level data.";
-			++check_id;
 		}
 
 		RemoveUnusedAiAndCheck();
@@ -936,9 +930,8 @@ void Game::LoadGame(GameReader& f)
 		net->Load(f);
 
 		f >> read_id;
-		if(read_id != check_id)
+		if(read_id != check_id++)
 			throw "Failed to read multiplayer data.";
-		++check_id;
 	}
 	else
 		pc->is_local = true;

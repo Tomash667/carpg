@@ -2076,17 +2076,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Ability* ability_ptr = Ability::Get(ability_hash);
-				if(!ability_ptr)
+				Ability* ability = Ability::Get(ability_hash);
+				if(!ability)
 				{
 					Error("Update client: CREATE_EXPLOSION, missing ability %u.", ability_hash);
 					break;
 				}
 
-				Ability& ability = *ability_ptr;
-				if(!IsSet(ability.flags, Ability::Explode))
+				if(!IsSet(ability->flags, Ability::Explode))
 				{
-					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability.id.c_str());
+					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability->id.c_str());
 					break;
 				}
 
@@ -2094,9 +2093,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				explo->pos = pos;
 				explo->size = 0.f;
 				explo->sizemax = 2.f;
-				explo->tex = ability.tex_explode;
+				explo->ability = ability;
 
-				sound_mgr->PlaySound3d(ability.sound_hit, explo->pos, ability.sound_hit_dist);
+				sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
 
 				game_level->GetArea(pos).tmp->explos.push_back(explo);
 			}

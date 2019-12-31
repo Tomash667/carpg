@@ -185,8 +185,6 @@ void InsideLocationGenerator::OnEnter()
 		if(game->devmode)
 			Info("Generated secret room.");
 
-		Room& r = *GetLevelData().rooms[0];
-
 		if(game->hardcore_mode)
 		{
 			Object* o = lvl.FindObject(BaseObject::Get("portal"));
@@ -217,6 +215,7 @@ void InsideLocationGenerator::OnEnter()
 			// dodaj kartkê (overkill sprawdzania!)
 			const Item* kartka = Item::Get("sekret_kartka2");
 			assert(kartka);
+			Room& r = *GetLevelData().rooms[0];
 			Chest* c = lvl.FindChestInRoom(r);
 			assert(c);
 			if(c)

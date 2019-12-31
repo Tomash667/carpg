@@ -327,6 +327,7 @@
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
+    <ClCompile Include="entity\SceneNode.cpp" />
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
     <ClCompile Include="net\NetClient.cpp" />

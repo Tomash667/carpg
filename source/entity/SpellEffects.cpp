@@ -22,7 +22,7 @@ void Explo::Save(FileWriter& f)
 	f << dmg;
 	f << hitted;
 	f << owner;
-	f << tex->filename;
+	f << ability->hash;
 }
 
 //=================================================================================================
@@ -34,13 +34,26 @@ void Explo::Load(FileReader& f)
 	f >> dmg;
 	f >> hitted;
 	f >> owner;
-	tex = res_mgr->Load<Texture>(f.ReadString1());
+	if(LOAD_VERSION >= V_DEV)
+		ability = Ability::Get(f.Read<uint>());
+	else
+	{
+		const string& tex = f.ReadString1();
+		for(Ability* ability : Ability::abilities)
+		{
+			if(ability->tex_explode.diffuse && ability->tex_explode.diffuse->filename == tex)
+			{
+				this->ability = ability;
+				break;
+			}
+		}
+	}
 }
 
 //=================================================================================================
 void Explo::Write(BitStreamWriter& f)
 {
-	f << tex->filename;
+	f << ability->hash;
 	f << pos;
 	f << size;
 	f << sizemax;
@@ -49,14 +62,11 @@ void Explo::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Explo::Read(BitStreamReader& f)
 {
-	const string& tex_id = f.ReadString1();
+	ability = Ability::Get(f.Read<uint>());
 	f >> pos;
 	f >> size;
 	f >> sizemax;
-	if(!f)
-		return false;
-	tex = res_mgr->Load<Texture>(tex_id);
-	return true;
+	return f.IsOk();
 }
 
 //=================================================================================================
