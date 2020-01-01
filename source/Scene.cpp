@@ -2009,6 +2009,7 @@ void Game::PrepareAreaPath()
 				RaytestClosestUnitDeadOrAliveCallback clbk(pc->unit);
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();
+				from += dir * game_level->camera.dist;
 				Vec3 to = from + dir * range;
 				phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
 				target = clbk.hit;

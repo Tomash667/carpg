@@ -10,6 +10,7 @@ Wersja 0.13 (???):
 + nowy atut (adept magii), przedmioty: ró¿d¿ka mistrza, pierœcieñ magii mistycznej
 + przeniesienie zadania "bandyci pobieraj¹ op³atê" do skryptów
 + optymalizacje
++ usprawnienia menad¿era sceny
 + aktualizacja do Visual Studio 2019
 + aktualizacja bibliotek: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
 - naprawiony crash gdy jednostka rzucaj¹ca wyssanie ¿ycia jest usuwana
@@ -18,6 +19,8 @@ Wersja 0.13 (???):
 - brak regenercji many u npc kleryków
 - crash po przekroczeniu czasu w zadaniu "zabij zwierzêta" gdy celem jest jaskinia lub gdy gracz odwiedzi las poraz pierwszy
 - crash po przekroczeniu czasu w zadaniu "obóz obok miasta"
+- nie mo¿na rzuciæ leczenia jeœli coœ jest pomiêdzy kamer¹ a graczem
+- crash przy generowaniu œwiata gdy nie uda³o siê znaleŸæ miejsca dla lokalizacji z artefaktem
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

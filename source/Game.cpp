@@ -903,18 +903,6 @@ void Game::OnUpdate(float dt)
 				Quicksave(console_open);
 			if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
 				Quickload(console_open);
-
-			// mp box
-			if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-				game_gui->mp_box->visible = !game_gui->mp_box->visible;
-
-			// open/close mp box
-			if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
-			{
-				game_gui->mp_box->itb.focus = true;
-				game_gui->mp_box->Event(GuiEvent_GainFocus);
-				game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
-			}
 		}
 	}
 

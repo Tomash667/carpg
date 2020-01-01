@@ -13,23 +13,29 @@ void Quest_Artifacts::Start()
 
 	// one of corners
 	const Vec2& bounds = world->GetWorldBounds();
-	Vec2 pos;
-	switch(Rand() % 4)
+	Location* target;
+	for(int i = 0; i < 10; ++i)
 	{
-	case 0:
-		pos = Vec2(bounds.x, bounds.x);
-		break;
-	case 1:
-		pos = Vec2(bounds.y, bounds.x);
-		break;
-	case 2:
-		pos = Vec2(bounds.x, bounds.y);
-		break;
-	case 3:
-		pos = Vec2(bounds.y, bounds.y);
-		break;
+		Vec2 pos;
+		switch(Rand() % 4)
+		{
+		case 0:
+			pos = Vec2(bounds.x + 16.f, bounds.x + 16.f);
+			break;
+		case 1:
+			pos = Vec2(bounds.y - 16.f, bounds.x + 16.f);
+			break;
+		case 2:
+			pos = Vec2(bounds.x + 16.f, bounds.y - 16.f);
+			break;
+		case 3:
+			pos = Vec2(bounds.y - 16.f, bounds.y - 16.f);
+			break;
+		}
+		target = world->CreateLocation(L_DUNGEON, pos, 64.f, HERO_CRYPT, UnitGroup::Get("golems"), false, 2);
+		if(target)
+			break;
 	}
-	Location* target = world->CreateLocation(L_DUNGEON, pos, 64.f, HERO_CRYPT, UnitGroup::Get("golems"), true, 2);
 	target->active_quest = this;
 	target->st = 12;
 	target_loc = target->index;

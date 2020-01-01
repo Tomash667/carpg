@@ -44,7 +44,7 @@ void DrawBatch::Add(SceneNode* node, int sub)
 
 	if(sub == -1)
 	{
-		assert(node->GetMesh().head.n_subs < 31);
+		assert(mesh.head.n_subs < 31);
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 			node->flags |= SceneNode::F_TANGENTS;
 		if(use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
@@ -74,30 +74,33 @@ void DrawBatch::Add(SceneNode* node, int sub)
 //=================================================================================================
 void DrawBatch::Process()
 {
-	// sort nodes
-	std::sort(nodes.begin(), nodes.end(), [](const SceneNode* node1, const SceneNode* node2)
-	{
-		if(node1->flags == node2->flags)
-			return node1->mesh_inst > node2->mesh_inst;
-		else
-			return node1->flags < node2->flags;
-	});
-
-	// group nodes
 	node_groups.clear();
-	int prev_flags = -1, index = 0;
-	for(SceneNode* node : nodes)
+	if(!nodes.empty())
 	{
-		if(node->flags != prev_flags)
+		// sort nodes
+		std::sort(nodes.begin(), nodes.end(), [](const SceneNode* node1, const SceneNode* node2)
 		{
-			if(!node_groups.empty())
-				node_groups.back().end = index - 1;
-			node_groups.push_back({ node->flags, index, 0 });
-			prev_flags = node->flags;
+			if(node1->flags == node2->flags)
+				return node1->mesh_inst > node2->mesh_inst;
+			else
+				return node1->flags < node2->flags;
+		});
+
+		// group nodes
+		int prev_flags = -1, index = 0;
+		for(SceneNode* node : nodes)
+		{
+			if(node->flags != prev_flags)
+			{
+				if(!node_groups.empty())
+					node_groups.back().end = index - 1;
+				node_groups.push_back({ node->flags, index, 0 });
+				prev_flags = node->flags;
+			}
+			++index;
 		}
-		++index;
+		node_groups.back().end = index - 1;
 	}
-	node_groups.back().end = index - 1;
 
 	// sort alpha nodes
 	std::sort(alpha_nodes.begin(), alpha_nodes.end(), [](const SceneNode* node1, const SceneNode* node2)

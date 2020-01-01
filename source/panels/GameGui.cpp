@@ -346,6 +346,20 @@ void GameGui::UpdateGui(float dt)
 	}
 	else
 		GKey.allow_input = GameKeys::ALLOW_INPUT;
+
+	// mp box
+	if(game->game_state == GS_LEVEL)
+	{
+		if(GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+			mp_box->visible = !mp_box->visible;
+
+		if(GKey.AllowKeyboard() && mp_box->visible && !mp_box->itb.focus && input->PressedRelease(Key::Enter))
+		{
+			mp_box->itb.focus = true;
+			mp_box->Event(GuiEvent_GainFocus);
+			mp_box->itb.Event(GuiEvent_GainFocus);
+		}
+	}
 }
 
 //=================================================================================================

@@ -10,6 +10,7 @@ Version 0.13 (???):
 + new feat (magic adept), items: master wand, ring of mystic magic
 + moved quest "bandits collect toll" to scripts
 + optimisations
++ scene manager improvements
 + updated to Visual Studio 2019
 + update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
 - fixed drain spell crashing when casting unit is removed
@@ -18,6 +19,8 @@ Version 0.13 (???):
 - no mana regeneration for npc clerics
 - crash on quest timeout "kill animals" when target location is cave or player visit forest for first time
 - crash on quest timeout "camp near city"
+- can't cast heal when something is between camera and player
+- crash at world generation when failed to spawn location with artifact
 
 --------------------------------------------------------------------------------
 Version 0.12.2 (2019-10-27):
