@@ -135,11 +135,7 @@ bool Quest_KillAnimals::IsTimedout() const
 bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 {
 	if(prog == Progress::Started)
-	{
 		OnUpdate(game->txQuest[277]);
-		world->AbadonLocation(&GetTargetLocation());
-	}
-
 	return true;
 }
 

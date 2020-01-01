@@ -3245,7 +3245,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		for(auto it = draw_batch.nodes.begin() + group.start, end = draw_batch.nodes.begin() + group.end + 1; it != end; ++it)
 		{
 			const SceneNode* node = *it;
-			const Mesh& mesh = *node->mesh;
+			const Mesh& mesh = node->GetMesh();
 			if(!mesh.IsLoaded())
 			{
 				ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
@@ -3264,7 +3264,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
 			if(animated)
 			{
-				const MeshInstance& mesh_inst = *node->mesh_inst;
+				const MeshInstance& mesh_inst = node->GetMeshInstance();
 				V(effect->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)&mesh_inst.mat_bones[0], mesh_inst.mat_bones.size()));
 			}
 

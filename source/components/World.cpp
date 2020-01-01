@@ -537,8 +537,11 @@ void World::AddLocationAtIndex(Location* loc)
 //=================================================================================================
 void World::RemoveLocation(int index)
 {
-	assert(VerifyLocation(index));
-	delete locations[index];
+	if(Net::IsClient())
+	{
+		assert(VerifyLocation(index));
+		delete locations[index];
+	}
 	if(index == locations.size() - 1)
 		locations.pop_back();
 	else
@@ -2821,16 +2824,20 @@ void World::AbadonLocation(Location* loc)
 {
 	assert(loc);
 
-	// only works for OutsideLocation for now!
-	assert(loc->outside && loc->type != L_CITY);
+	// only works for OutsideLocation or Cave for now!
+	assert((loc->outside && loc->type != L_CITY) || loc->type == L_CAVE);
 
-	OutsideLocation* outside = static_cast<OutsideLocation*>(loc);
+	LevelArea* area;
+	if(loc->type == L_CAVE)
+		area = static_cast<Cave*>(loc);
+	else
+		area = static_cast<OutsideLocation*>(loc);
 
 	// if location is open
 	if(loc == current_location)
 	{
 		// remove units
-		for(Unit*& u : outside->units)
+		for(Unit*& u : area->units)
 		{
 			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
@@ -2840,7 +2847,7 @@ void World::AbadonLocation(Location* loc)
 		}
 
 		// remove items from chests
-		for(Chest* chest : outside->chests)
+		for(Chest* chest : area->chests)
 		{
 			if(!chest->GetUser())
 				chest->items.clear();
@@ -2849,15 +2856,16 @@ void World::AbadonLocation(Location* loc)
 	else
 	{
 		// delete units
-		DeleteElements(outside->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
+		DeleteElements(area->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
 
 		// remove items from chests
-		for(Chest* chest : outside->chests)
+		for(Chest* chest : area->chests)
 			chest->items.clear();
 	}
 
 	loc->group = UnitGroup::empty;
-	loc->last_visit = worldtime;
+	if(loc->last_visit != -1)
+		loc->last_visit = worldtime;
 }
 
 //=================================================================================================

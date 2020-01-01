@@ -16,6 +16,8 @@ Wersja 0.13 (???):
 - crash przy wczytywaniu gry w menu gdy otwarta jest konsola i nie ma zapisu lub nie uda³o siê wczytaæ
 - usuwanie klawiszy w sterowaniu nie zapisywa³o siê jeœli nie zmieniono innych ustawieñ
 - brak regenercji many u npc kleryków
+- crash po przekroczeniu czasu w zadaniu "zabij zwierzêta" gdy celem jest jaskinia lub gdy gracz odwiedzi las poraz pierwszy
+- crash po przekroczeniu czasu w zadaniu "obóz obok miasta"
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

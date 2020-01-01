@@ -16,6 +16,8 @@ Version 0.13 (???):
 - crash when using quickload in menu with console open and there is no save or failed to load
 - removing keys in settings wasn't saved unless other keys were changed
 - no mana regeneration for npc clerics
+- crash on quest timeout "kill animals" when target location is cave or player visit forest for first time
+- crash on quest timeout "camp near city"
 
 --------------------------------------------------------------------------------
 Version 0.12.2 (2019-10-27):
