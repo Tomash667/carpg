@@ -123,6 +123,7 @@ void SaveLoad::Update(float dt)
 				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;
+					ValidateSelectedSave();
 					if(!save_mode)
 						bt[0].state = slots[i].valid ? Button::NONE : Button::DISABLED;
 					SetSaveImage();
@@ -215,6 +216,8 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 	this->save_mode = save_mode;
 	this->online = online;
 	this->slots = slots;
+
+	ValidateSelectedSave();
 
 	// setup buttons
 	if(save_mode)
@@ -414,4 +417,20 @@ void SaveLoad::ShowLoadPanel()
 SaveSlot& SaveLoad::GetSaveSlot(int slot)
 {
 	return (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
+}
+
+//=================================================================================================
+void SaveLoad::ValidateSelectedSave()
+{
+	SaveSlot& slot = Net::IsOnline() ? multi_saves[choice] : single_saves[choice];
+	cstring filename = Format("saves/%s/%d.sav", !Net::IsOnline() ? "single" : "multi", choice + 1);
+	GameReader f(filename);
+	if(!game->LoadGameHeader(f, slot))
+	{
+		if(choice == SaveSlot::MAX_SLOTS)
+			slot.text = txQuickSave;
+		slot.valid = false;
+	}
+	else
+		slot.valid = true;
 }

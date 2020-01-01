@@ -2396,7 +2396,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 
-				if(run && abs(u.speed - u.prev_speed) < 0.25f)
+				if(run && abs(u.speed - u.prev_speed) < 0.25f && move >= 9)
 					u.running = true;
 			}
 		}

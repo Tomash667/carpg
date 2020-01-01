@@ -31,6 +31,7 @@ public:
 
 private:
 	void SetSaveImage();
+	void ValidateSelectedSave();
 
 	SaveSlot single_saves[SaveSlot::MAX_SLOTS], multi_saves[SaveSlot::MAX_SLOTS];
 	SaveSlot* slots;

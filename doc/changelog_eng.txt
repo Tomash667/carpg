@@ -21,6 +21,9 @@ Version 0.13 (???):
 - crash on quest timeout "camp near city"
 - can't cast heal when something is between camera and player
 - crash at world generation when failed to spawn location with artifact
+- removed memory leak in cutscenes
+- crash in save load panel when saves where changed manualy while playing
+- running in side and attacking won't cause running attack
 
 --------------------------------------------------------------------------------
 Version 0.12.2 (2019-10-27):

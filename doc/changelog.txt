@@ -21,6 +21,9 @@ Wersja 0.13 (???):
 - crash po przekroczeniu czasu w zadaniu "obóz obok miasta"
 - nie mo¿na rzuciæ leczenia jeœli coœ jest pomiêdzy kamer¹ a graczem
 - crash przy generowaniu œwiata gdy nie uda³o siê znaleŸæ miejsca dla lokalizacji z artefaktem
+- usuniêty wyciek pamiêci przy cutscenkach
+- crash przy na ekranie zapisu gdy podmienia³o siê zapisy w tle
+- atak podczas biegniêcia w bok nie powoduje ataku w biegu
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

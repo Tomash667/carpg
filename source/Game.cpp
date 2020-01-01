@@ -1911,6 +1911,7 @@ void Game::CutsceneImage(const string& image, float time)
 		c.str = StringPool.Get();
 		*c.str = image;
 		c.f[0] = time;
+		net->net_strs.push_back(c.str);
 	}
 }
 
@@ -1927,6 +1928,7 @@ void Game::CutsceneText(const string& text, float time)
 		c.str = StringPool.Get();
 		*c.str = text;
 		c.f[0] = time;
+		net->net_strs.push_back(c.str);
 	}
 }
 

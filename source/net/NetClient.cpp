@@ -4159,6 +4159,8 @@ bool Net::FilterOut(NetChange& c)
 		return false;
 	case NetChange::TALK:
 	case NetChange::TALK_POS:
+	case NetChange::CUTSCENE_IMAGE:
+	case NetChange::CUTSCENE_TEXT:
 		if(IsServer() && c.str)
 		{
 			StringPool.Free(c.str);
@@ -4168,8 +4170,6 @@ bool Net::FilterOut(NetChange& c)
 		return true;
 	case NetChange::RUN_SCRIPT:
 	case NetChange::CHEAT_ARENA:
-	case NetChange::CUTSCENE_IMAGE:
-	case NetChange::CUTSCENE_TEXT:
 		StringPool.Free(c.str);
 		return true;
 	default:

@@ -3731,6 +3731,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << *c.str;
 			f << c.f[0];
 			StringPool.Free(c.str);
+			RemoveElement(net_strs, c.str);
 			break;
 		case NetChange::PLAYER_ABILITY:
 			f << c.unit->id;
@@ -4028,6 +4029,8 @@ void Net::ClearChanges()
 		{
 		case NetChange::TALK:
 		case NetChange::TALK_POS:
+		case NetChange::CUTSCENE_TEXT:
+		case NetChange::CUTSCENE_IMAGE:
 			if(IsServer() && c.str)
 			{
 				StringPool.Free(c.str);
