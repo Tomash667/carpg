@@ -24,6 +24,8 @@ Wersja 0.13 (???):
 - usuniêty wyciek pamiêci przy cutscenkach
 - crash przy na ekranie zapisu gdy podmienia³o siê zapisy w tle
 - atak podczas biegniêcia w bok nie powoduje ataku w biegu
+- brak fizyki pod³ogi/sufitu w budynkach
+- ai ucieka tylko do nastêpnego pokoju, potem stoi w miejscu
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

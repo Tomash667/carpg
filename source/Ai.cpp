@@ -2143,12 +2143,17 @@ void Game::UpdateAi(float dt)
 								move_type = MoveAway;
 								target_pos = enemy->pos;
 							}
+							else if(ai.st.escape.room->IsInside(u.pos))
+							{
+								// reached escape room, find next room
+								ai.st.escape.room = nullptr;
+							}
 							else
 							{
-								// escape room available
+								// escape to room
+								target_pos = ai.st.escape.room->Center();
 								move_type = MovePoint;
 								look_at = LookAtWalk;
-								target_pos = ai.st.escape.room->Center();
 							}
 						}
 					}
@@ -2158,11 +2163,11 @@ void Game::UpdateAi(float dt)
 						if(ai.st.escape.room)
 						{
 							// run to the place
-							if(!ai.st.escape.room->IsInside(u.pos))
+							target_pos = ai.st.escape.room->Center();
+							if(Vec3::Distance(target_pos, u.pos) > 0.5f)
 							{
 								move_type = MovePoint;
 								look_at = LookAtWalk;
-								target_pos = ai.st.escape.room->Center();
 							}
 						}
 						else if(Unit* target = ai.target)

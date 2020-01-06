@@ -7121,9 +7121,8 @@ void Unit::Update(float dt)
 		}
 		else if(animation_state == AS_SHOOT_CAN)
 		{
-			if(Net::IsLocal() && !act.attack.hitted && mesh_inst->GetProgress(1) > 20.f / 40)
+			if(Net::IsLocal() && mesh_inst->GetProgress(1) > 20.f / 40)
 			{
-				act.attack.hitted = true;
 				Bullet& b = Add1(area->tmp->bullets);
 				b.level = level;
 				b.backstab = GetBackstabMod(&GetBow());

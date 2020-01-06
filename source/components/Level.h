@@ -202,7 +202,7 @@ public:
 	// colliders
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_terrain;
-	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2], *shape_block, *shape_barrier, *shape_door, *shape_arrow, *shape_summon;
+	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2], *shape_block, *shape_barrier, *shape_door, *shape_arrow, *shape_summon, *shape_floor;
 	btBvhTriangleMeshShape* dungeon_shape;
 	btCollisionObject* obj_dungeon;
 	vector<Vec3> dungeon_shape_pos;

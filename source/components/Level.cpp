@@ -46,7 +46,8 @@ Level* global::game_level;
 
 //=================================================================================================
 Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
-shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr)
+shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
+shape_floor(nullptr)
 {
 	camera.draw_range = 80.f;
 }
@@ -69,6 +70,7 @@ Level::~Level()
 	delete shape_door;
 	delete shape_arrow;
 	delete shape_summon;
+	delete shape_floor;
 }
 
 //=================================================================================================
@@ -125,6 +127,7 @@ void Level::Init()
 	shape_block = new btBoxShape(btVector3(1.f, 4.f, 1.f));
 	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
+	shape_floor = new btBoxShape(btVector3(20.f, 0.01f, 20.f));
 
 	Mesh::Point* point = game_res->aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
@@ -1372,6 +1375,23 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			mask.size = Vec2(pt.size.x, pt.size.z);
 			mask.pos = Vec2(pos.x, pos.z);
 		}
+	}
+
+	if(is_inside)
+	{
+		// floor
+		btCollisionObject* co = new btCollisionObject;
+		co->setCollisionShape(shape_floor);
+		co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
+		co->getWorldTransform().setOrigin(ToVector3(shift));
+		phy_world->addCollisionObject(co, CG_COLLIDER);
+
+		// ceiling
+		co = new btCollisionObject;
+		co->setCollisionShape(shape_floor);
+		co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
+		co->getWorldTransform().setOrigin(ToVector3(shift + Vec3(0, 4, 0)));
+		phy_world->addCollisionObject(co, CG_COLLIDER);
 	}
 
 	if(!details.empty() && !is_inside)

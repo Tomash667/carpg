@@ -24,6 +24,8 @@ Version 0.13 (???):
 - removed memory leak in cutscenes
 - crash in save load panel when saves where changed manualy while playing
 - running in side and attacking won't cause running attack
+- missing floor/ceiling collider
+- ai escape only to next room then stays
 
 --------------------------------------------------------------------------------
 Version 0.12.2 (2019-10-27):
