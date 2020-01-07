@@ -136,7 +136,8 @@ struct Shortcut
 		SPECIAL_MELEE_WEAPON,
 		SPECIAL_RANGED_WEAPON,
 		SPECIAL_ABILITY_OLD, // removed in V_DEV
-		SPECIAL_HEALING_POTION
+		SPECIAL_HEALTH_POTION,
+		SPECIAL_MANA_POTION
 	};
 
 	Type type;
@@ -328,7 +329,6 @@ public:
 	int GetExpNeed() const;
 	int GetTrainCost(int train) const;
 	void Yell();
-	int GetHealingPotion() const;
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);

@@ -99,6 +99,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	item_script = ud.item_script;
 	clas = ud.clas;
 	trader = nullptr; // not copied
+	tint = ud.tint;
 }
 
 int UnitData::GetLevelDif(int level) const

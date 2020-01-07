@@ -682,6 +682,8 @@ quest main
 		P_MAIN_NONE
 		P_MAIN_TALKED_TRAINER
 		P_MAIN_START
+		P_MAIN_TALKED_SOLTYS
+		P_MAIN_ATTACKED
 	}
 	
 	dialog trainer {
@@ -735,14 +737,69 @@ quest main
 			talk 0
 		choice 1
 		{
-			talk 2
+			if quest_progress == P_MAIN_START
+			{
+				talk 2
+				talk 3
+				set_quest_progress P_MAIN_TALKED_SOLTYS
+				talk 4
+			}
+			else if quest_progress == P_MAIN_TALKED_SOLTYS
+				talk 5
+			else if quest_progress == P_MAIN_ATTACKED
+			{
+				talk 6
+				talk 7
+				talk 8
+			}
 			restart
+		}
+		end
+	}
+	
+	dialog ill_villager {
+		talk 0
+		if quest_progress == P_MAIN_TALKED_SOLTYS
+		if script "!target.vars.IsSet(\"talked\")"
+		{
+			choice 1
+			{
+				script "counter++; Dialog::var = counter; target.vars[\"talked\"] = true;"
+				if var 1
+				{
+					talk 3
+				}
+				else if var 2
+				{
+					talk 4
+				}
+				else if var 3
+				{
+					talk 5
+					talk 6
+				}
+				else if var 4
+				{
+					talk 7
+					talk 8
+				}
+				else if var 5
+				{
+					talk 9
+					set_quest_progress P_MAIN_ATTACKED
+				}
+				end
+			}
+			escape choice 2
+				end
+			show_choices
 		}
 		end
 	}
 
 	code {
 		Location@ village;
+		int counter;
 		
 		void Startup()
 		{
@@ -777,6 +834,15 @@ quest main
 				{
 					Unit@ u = Level::FindUnit(UnitData::Get("soltys"));
 					u.AddDialog(quest, "soltys");
+					
+					UnitData@ ill = UnitData::Get("q_main_ill_villager");
+					BuildingGroup@ group = BuildingGroup::Get("cottage");
+					for(int i=0; i<5; ++i)
+					{
+						CityBuilding@ building = Level::GetRandomBuilding(group);
+						Unit@ spawned = Level::SpawnUnitNearLocation(ill, building.unit_pos);
+						spawned.RotateTo(building.unit_rot);
+					}
 				}
 			}
 		}
@@ -801,6 +867,14 @@ quest main
 					quest.AddEntry(TEXT(7));
 					quest.AddEntry(TEXT(8));
 				}
+				break;
+			case P_MAIN_TALKED_SOLTYS:
+				quest.AddEntry(TEXT(9));
+				counter = 0;
+				break;
+			case P_MAIN_ATTACKED:
+				quest.AddEntry(TEXT(10));
+				target.ChangeBase(UnitData::Get("q_main_ill_villager_attack"));
 				break;
 			}
 		}

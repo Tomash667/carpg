@@ -580,11 +580,23 @@ void ScriptManager::RegisterGame()
 
 	AddType("VarsContainer")
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
+		.Method("bool IsSet(const string& in)", asMETHOD(VarsContainer, IsSet))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
 	AddType("Dialog")
 		.WithNamespace()
+		.AddProperty("int var", &DialogContext::var)
 		.AddFunction("Dialog@ Get(const string& in)", asFUNCTION(GameDialog::GetS));
+
+	AddType("Building");
+
+	AddType("BuildingGroup")
+		.WithNamespace()
+		.AddFunction("BuildingGroup@ Get(const string& in)", asFUNCTION(BuildingGroup::GetS));
+
+	AddType("CityBuilding")
+		.Method("Vec3 get_unit_pos()", asMETHOD(CityBuilding, GetUnitPos))
+		.Method("float get_unit_rot()", asMETHOD(CityBuilding, GetUnitRot));
 
 	AddType("Quest")
 		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))
@@ -686,6 +698,8 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(Unit, OrderAutoTalk))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
 		.Method("void RotateTo(const Vec3& in)", asMETHODPR(Unit, RotateTo, (const Vec3&), void))
+		.Method("void RotateTo(float)", asMETHODPR(Unit, RotateTo, (float), void))
+		.Method("void ChangeBase(UnitData@, bool=false)", asMETHOD(Unit, ChangeBase))
 		.WithInstance("Unit@ target", &ctx.target)
 		.WithNamespace()
 		.AddFunction("Unit@ Id(int)", asFUNCTION(Unit::GetById));
@@ -705,8 +719,8 @@ void ScriptManager::RegisterGame()
 
 	AddType("UnitGroup")
 		.WithNamespace()
-		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS))
-		.AddObject("UnitGroup@ empty", &UnitGroup::empty);
+		.AddProperty("UnitGroup@ empty", &UnitGroup::empty)
+		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
 
 	WithNamespace("Team", team)
 		.AddFunction("Unit@ get_leader()", asMETHOD(Team, GetLeader))
@@ -801,7 +815,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2)", asMETHOD(Level, SpawnUnitNearLocationS))
 		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
-		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor));
+		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
+		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding));
 
 	WithNamespace("StockScript")
 		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

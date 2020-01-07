@@ -4622,3 +4622,20 @@ MeshInstance* Level::GetBowInstance(Mesh* mesh)
 		return instance;
 	}
 }
+
+//=================================================================================================
+CityBuilding* Level::GetRandomBuilding(BuildingGroup* group)
+{
+	assert(group);
+	if(!city_ctx)
+		return nullptr;
+	LocalVector<CityBuilding*> available;
+	for(CityBuilding& building : city_ctx->buildings)
+	{
+		if(building.building->group == group)
+			available.push_back(&building);
+	}
+	if(available.empty())
+		return nullptr;
+	return available.RandomItem();
+}

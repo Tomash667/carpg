@@ -155,6 +155,8 @@ unit xwokloiz {
 }
 unit q_main_academy = "Nauczyciel z akademii"
 unit q_main_messenger = "Pos³aniec"
+unit q_main_ill_villager = "Chory mieszkaniec wioski"
+unit q_main_ill_villager_attack {}
 
 unit_group orcs {
 	name "orkowie"

@@ -154,8 +154,8 @@ private:
 	CutsceneState cutscene_image_state, cutscene_text_state;
 	Int2 drag_and_drop_pos;
 	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp,
-		tMinistamina, tMinimp, tCrosshair, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped, tDialog, tShortcutAction,
-		tRip, tBlack;
+		tMinistamina, tMinimp, tCrosshair, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tHealthPotion, tManaPotion, tEmerytura, tEquipped, tDialog,
+		tShortcutAction, tRip, tBlack;
 	TexturePtr drag_and_drop_icon, cutscene_image;
 	vector<pair<Texture*, float>> cutscene_next_images;
 	Scrollbar scrollbar;
@@ -164,7 +164,7 @@ private:
 	string cutscene_text;
 	vector<pair<string, float>> cutscene_next_texts;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
-		txPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc, txSkipCutscene;
+		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 	vector<UnitView> unit_views;
 	bool debug_info, debug_info2;

@@ -188,6 +188,7 @@ public:
 		bow_instances.push_back(mesh_inst);
 		mesh_inst = nullptr;
 	}
+	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index

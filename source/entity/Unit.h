@@ -960,12 +960,14 @@ public:
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 	void RotateTo(const Vec3& pos, float dt);
 	void RotateTo(const Vec3& pos);
+	void RotateTo(float rot);
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
 	float GetAbilityPower(Ability& ability) const;
 	void CastSpell();
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
+	void ChangeBase(UnitData* ud, bool update_items = false);
 };
 
 //-----------------------------------------------------------------------------

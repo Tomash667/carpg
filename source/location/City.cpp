@@ -686,3 +686,26 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 			flags |= HaveArena;
 	}
 }
+
+//=================================================================================================
+Vec3 CityBuilding::GetUnitPos()
+{
+	return Vec3(float(unit_pt.x) * 2 + 1, 0, float(unit_pt.y) * 2 + 1);
+}
+
+//=================================================================================================
+float CityBuilding::GetUnitRot()
+{
+	switch(rot)
+	{
+	default:
+	case GDIR_DOWN:
+		return 0.f;
+	case GDIR_LEFT:
+		return PI / 2;
+	case GDIR_UP:
+		return PI;
+	case GDIR_RIGHT:
+		return PI * 3 / 2;
+	}
+}

@@ -2961,8 +2961,9 @@ bool Unit::FindEffect(EffectId effect, float* value)
 // szuka miksturek leczniczych w ekwipunku, zwraca -1 jeœli nie odnaleziono
 int Unit::FindHealingPotion() const
 {
-	float missing = hpmax - hp, heal = 0, heal2 = Inf();
-	int id = -1, id2 = -1, index = 0;
+	float healed_hp,
+		missing_hp = hpmax - hp;
+	int potion_index = -1, index = 0;
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
@@ -2974,38 +2975,30 @@ int Unit::FindHealingPotion() const
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::Heal);
-		if(power <= missing)
+		if(potion_index == -1)
 		{
-			if(power > heal)
-			{
-				heal = power;
-				id = index;
-			}
+			potion_index = index;
+			healed_hp = power;
 		}
 		else
 		{
-			if(power < heal2)
+			if(power > missing_hp)
 			{
-				heal2 = power;
-				id2 = index;
+				if(power < healed_hp)
+				{
+					potion_index = index;
+					healed_hp = power;
+				}
+			}
+			else if(power > healed_hp)
+			{
+				potion_index = index;
+				healed_hp = power;
 			}
 		}
 	}
 
-	if(id != -1)
-	{
-		if(id2 != -1)
-		{
-			if(missing - heal < heal2 - missing)
-				return id;
-			else
-				return id2;
-		}
-		else
-			return id;
-	}
-	else
-		return id2;
+	return potion_index;
 }
 
 //=================================================================================================
@@ -6063,7 +6056,19 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 void Unit::RotateTo(const Vec3& pos)
 {
 	rot = Vec3::LookAtAngle(this->pos, pos);
-	changed = true;
+	if(game_level->entering && ai)
+		ai->start_rot = rot;
+	else
+		changed = true;
+}
+
+void Unit::RotateTo(float rot)
+{
+	this->rot = rot;
+	if(game_level->entering && ai)
+		ai->start_rot = rot;
+	else
+		changed = true;
 }
 
 UnitOrderEntry* UnitOrderEntry::NextOrder()
@@ -8209,4 +8214,43 @@ void Unit::Moved(bool warped, bool dash)
 		changed = true;
 	}
 	UpdatePhysics();
+}
+
+//=================================================================================================
+void Unit::ChangeBase(UnitData* ud, bool update_items)
+{
+	assert(ud);
+
+	if(data == ud)
+		return;
+
+	data = ud;
+	level = ud->level.Clamp(level);
+	stats = data->GetStats(level);
+	CalculateStats();
+
+	if(update_items)
+	{
+		ud->item_script->Parse(*this);
+		for(const Item* item : slots)
+		{
+			if(item)
+				game_res->PreloadItem(item);
+		}
+		for(ItemSlot& slot : items)
+			game_res->PreloadItem(slot.item);
+		if(IsTeamMember())
+			MakeItemsTeam(false);
+		UpdateInventory();
+	}
+
+	if(IsHero() && IsSet(ud->flags2, F2_MELEE))
+		hero->melee = true;
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_UNIT_BASE;
+		c.unit = this;
+	}
 }

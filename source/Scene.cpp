@@ -1038,7 +1038,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	node->flags = SceneNode::F_ANIMATED;
 	node->tex_override = u.data->GetTextureOverride();
 	node->parent_mesh_inst = nullptr;
-	node->tint = Vec4(1, 1, 1, 1);
+	node->tint = u.data->tint;
 
 	// ustawienia œwiat³a
 	int lights = -1;
@@ -1059,7 +1059,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			glow.alpha = false;
 		}
 		else
-			node->tint = Vec4(2, 2, 2, 1);
+		{
+			node->tint.x *= 2;
+			node->tint.y *= 2;
+			node->tint.z *= 2;
+		}
 	}
 	draw_batch.Add(node);
 	if(u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().mesh)
@@ -1351,7 +1355,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		node2->flags = SceneNode::F_ANIMATED;
 		node2->mat = node->mat;
 		node2->tex_override = nullptr;
-		node2->tint = h.hair_color;
+		node2->tint = h.hair_color * u.data->tint;
 		node2->lights = lights;
 		if(selected)
 		{
@@ -1382,7 +1386,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node3->flags = SceneNode::F_ANIMATED;
 			node3->mat = node->mat;
 			node3->tex_override = nullptr;
-			node3->tint = h.hair_color;
+			node3->tint = h.hair_color * u.data->tint;
 			node3->lights = lights;
 			if(selected)
 			{
@@ -1414,7 +1418,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node3->flags = SceneNode::F_ANIMATED;
 			node3->mat = node->mat;
 			node3->tex_override = nullptr;
-			node3->tint = h.hair_color;
+			node3->tint = h.hair_color * u.data->tint;
 			node3->lights = lights;
 			if(selected)
 			{
@@ -1446,7 +1450,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node3->flags = SceneNode::F_ANIMATED;
 			node3->mat = node->mat;
 			node3->tex_override = nullptr;
-			node3->tint = h.hair_color;
+			node3->tint = h.hair_color * u.data->tint;
 			node3->lights = lights;
 			if(selected)
 			{

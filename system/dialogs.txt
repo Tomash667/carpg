@@ -86,11 +86,11 @@ dialog merchant
 dialog alchemist
 {
 	if rand 2
-	if script "pc.HavePerk(\"alchemist\")"
-	{
-		talk 10
-		do_once
-	}
+		if script "pc.HavePerk(\"alchemist\")"
+		{
+			talk 10
+			do_once
+		}
 	if once
 		talk 0
 	if special "q_magowie_kup_miksture"

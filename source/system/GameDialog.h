@@ -35,7 +35,8 @@ enum DialogType : short
 	DTF_SCRIPT,
 	DTF_IF_SCRIPT,
 	DTF_JMP,
-	DTF_CJMP
+	DTF_CJMP,
+	DTF_IF_VAR
 };
 
 //-----------------------------------------------------------------------------

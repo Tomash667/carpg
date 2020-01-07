@@ -44,7 +44,6 @@ enum Keyword
 	K_CHOICES,
 	K_DO_QUEST2,
 	K_HAVE_ITEM,
-	K_QUEST_PROGRESS_RANGE,
 	K_QUEST_EVENT,
 	K_DO_ONCE,
 	K_NOT_ACTIVE,
@@ -52,7 +51,8 @@ enum Keyword
 	K_NOT,
 	K_SCRIPT,
 	K_BETWEEN,
-	K_AND
+	K_AND,
+	K_VAR
 };
 
 //=================================================================================================
@@ -103,7 +103,6 @@ void DialogLoader::InitTokenizer()
 		{ "choices", K_CHOICES },
 		{ "do_quest2", K_DO_QUEST2 },
 		{ "have_item", K_HAVE_ITEM },
-		{ "quest_progress_range", K_QUEST_PROGRESS_RANGE },
 		{ "quest_event", K_QUEST_EVENT },
 		{ "do_once", K_DO_ONCE },
 		{ "not_active", K_NOT_ACTIVE },
@@ -111,7 +110,8 @@ void DialogLoader::InitTokenizer()
 		{ "not", K_NOT },
 		{ "script", K_SCRIPT },
 		{ "between", K_BETWEEN },
-		{ "and", K_AND }
+		{ "and", K_AND },
+		{ "var", K_VAR }
 		});
 }
 
@@ -452,9 +452,21 @@ DialogLoader::Node* DialogLoader::ParseIf()
 		break;
 	case K_CHOICES:
 	case K_QUEST_PROGRESS:
+	case K_VAR:
 		{
 			t.Next();
-			node->type = (k == K_CHOICES ? DTF_IF_CHOICES : DTF_IF_QUEST_PROGRESS);
+			switch(k)
+			{
+			case K_CHOICES:
+				node->type = DTF_IF_CHOICES;
+				break;
+			case K_QUEST_PROGRESS:
+				node->type = DTF_IF_QUEST_PROGRESS;
+				break;
+			case K_VAR:
+				node->type = DTF_IF_VAR;
+				break;
+			}
 			if(t.IsKeyword(K_BETWEEN, G_KEYWORD))
 			{
 				node->op = OP_BETWEEN;

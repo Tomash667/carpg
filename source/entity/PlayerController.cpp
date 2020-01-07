@@ -136,7 +136,7 @@ void PlayerController::InitShortcuts()
 		shortcuts[2].ability = abilities[0].ability;
 	}
 	shortcuts[3].type = Shortcut::TYPE_SPECIAL;
-	shortcuts[3].value = Shortcut::SPECIAL_HEALING_POTION;
+	shortcuts[3].value = Shortcut::SPECIAL_HEALTH_POTION;
 }
 
 //=================================================================================================
@@ -1716,49 +1716,6 @@ void PlayerController::Yell()
 }
 
 //=================================================================================================
-int PlayerController::GetHealingPotion() const
-{
-	float healed_hp,
-		missing_hp = unit->hpmax - unit->hp;
-	int potion_index = -1, index = 0;
-
-	for(vector<ItemSlot>::iterator it = unit->items.begin(), end = unit->items.end(); it != end; ++it, ++index)
-	{
-		if(!it->item || it->item->type != IT_CONSUMABLE)
-			continue;
-
-		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Healing)
-			continue;
-
-		float power = pot.GetEffectPower(EffectId::Heal);
-		if(potion_index == -1)
-		{
-			potion_index = index;
-			healed_hp = power;
-		}
-		else
-		{
-			if(power > missing_hp)
-			{
-				if(power < healed_hp)
-				{
-					potion_index = index;
-					healed_hp = power;
-				}
-			}
-			else if(power > healed_hp)
-			{
-				potion_index = index;
-				healed_hp = power;
-			}
-		}
-	}
-
-	return potion_index;
-}
-
-//=================================================================================================
 void PlayerController::ClearShortcuts()
 {
 	for(int i = 0; i < Shortcut::MAX; ++i)
@@ -2579,17 +2536,29 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 		}
 
-		if((shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_HEALING_POTION) && !Equal(u.hp, u.hpmax))
+		if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_HEALTH_POTION && u.hp < u.hpmax)
 		{
 			// drink healing potion
-			int potion_index = GetHealingPotion();
+			int potion_index = u.FindHealingPotion();
 			if(potion_index != -1)
 			{
 				idle = false;
 				u.ConsumeItem(potion_index);
 			}
 			else
-				game_gui->messages->AddGameMsg3(GMS_NO_POTION);
+				game_gui->messages->AddGameMsg3(GMS_NO_HEALTH_POTION);
+		}
+		else if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_MANA_POTION && u.mp < u.mpmax)
+		{
+			// drink mana potion
+			int potion_index = u.FindManaPotion();
+			if(potion_index != -1)
+			{
+				idle = false;
+				u.ConsumeItem(potion_index);
+			}
+			else
+				game_gui->messages->AddGameMsg3(GMS_NO_MANA_POTION);
 		}
 	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
 

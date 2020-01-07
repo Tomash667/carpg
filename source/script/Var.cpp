@@ -43,7 +43,7 @@ Var* VarsContainer::Get(const string& name)
 }
 
 //=================================================================================================
-Var* VarsContainer::TryGet(const string& name)
+Var* VarsContainer::TryGet(const string& name) const
 {
 	auto it = vars.lower_bound(name);
 	if(it != vars.end() && !(vars.key_comp()(name, it->first)))

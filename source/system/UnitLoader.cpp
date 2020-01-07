@@ -90,7 +90,8 @@ enum Property
 	P_TRADER,
 	P_UPGRADE,
 	P_SPELL_POWER,
-	P_MP
+	P_MP,
+	P_TINT
 };
 
 enum FrameKeyword
@@ -231,7 +232,8 @@ void UnitLoader::InitTokenizer()
 		{ "trader", P_TRADER },
 		{ "upgrade", P_UPGRADE },
 		{ "spell_power", P_SPELL_POWER },
-		{ "mp", P_MP }
+		{ "mp", P_MP },
+		{ "tint", P_TINT }
 		});
 
 	t.AddKeywords(G_MATERIAL, {
@@ -1030,6 +1032,9 @@ void UnitLoader::ParseUnit(const string& id)
 				unit->mp_lvl = t.MustGetInt();
 				crc.Update(unit->mp_lvl);
 			}
+			break;
+		case P_TINT:
+			t.Parse(unit->tint);
 			break;
 		default:
 			t.Unexpected();

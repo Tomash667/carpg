@@ -3,8 +3,10 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.13 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5 lub starszej
++ kontynuacja fabu³y
 + mo¿na wybraæ klasê mag
 + lepsze celowanie z ³uku
++ skrót do miksturki many
 + obs³uga wielu zdolnoœci u¿ywanych przez gracza
 + wczytywanie zdolnoœci z pliku
 + nowy atut (adept magii), przedmioty: ró¿d¿ka mistrza, pierœcieñ magii mistycznej

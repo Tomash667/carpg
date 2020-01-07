@@ -22,7 +22,8 @@ enum OtherAction
 {
 	O_MELEE_WEAPON,
 	O_RANGED_WEAPON,
-	O_POTION
+	O_HEALTH_POTION,
+	O_MANA_POTION
 };
 
 //=================================================================================================
@@ -48,10 +49,12 @@ void AbilityPanel::LoadLanguage()
 	Language::Section s2 = Language::GetSection("LevelGui");
 	txMeleeWeapon = s2.Get("meleeWeapon");
 	txRangedWeapon = s2.Get("rangedWeapon");
-	txPotion = s2.Get("potion");
+	txHealthPotion = s2.Get("healthPotion");
+	txManaPotion = s2.Get("manaPotion");
 	txMeleeWeaponDesc = s2.Get("meleeWeaponDesc");
 	txRangedWeaponDesc = s2.Get("rangedWeaponDesc");
-	txPotionDesc = s2.Get("potionDesc");
+	txHealthPotionDesc = s2.Get("healthPotionDesc");
+	txManaPotionDesc = s2.Get("manaPotionDesc");
 }
 
 //=================================================================================================
@@ -60,7 +63,8 @@ void AbilityPanel::LoadData()
 	tItemBar = res_mgr->Load<Texture>("item_bar.png");
 	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
 	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
-	tPotion = res_mgr->Load<Texture>("health-potion.png");
+	tHealthPotion = res_mgr->Load<Texture>("health-potion.png");
+	tManaPotion = res_mgr->Load<Texture>("mana-potion.png");
 }
 
 //=================================================================================================
@@ -99,7 +103,8 @@ void AbilityPanel::Draw(ControlDrawData*)
 	images.clear();
 	images.push_back(tMelee);
 	images.push_back(tRanged);
-	images.push_back(tPotion);
+	images.push_back(tHealthPotion);
+	images.push_back(tManaPotion);
 	DrawGroup(txOther);
 
 	// tooltips
@@ -186,8 +191,11 @@ void AbilityPanel::Update(float dt)
 				case Shortcut::SPECIAL_RANGED_WEAPON:
 					icon = tRanged;
 					break;
-				case Shortcut::SPECIAL_HEALING_POTION:
-					icon = tPotion;
+				case Shortcut::SPECIAL_HEALTH_POTION:
+					icon = tHealthPotion;
+					break;
+				case Shortcut::SPECIAL_MANA_POTION:
+					icon = tManaPotion;
 					break;
 				}
 			}
@@ -202,7 +210,7 @@ void AbilityPanel::Update(float dt)
 	grid_offset = 0;
 	if(!abilities.empty())
 		UpdateGroup(abilities.size(), G_ACTION, group, id);
-	UpdateGroup(3, G_OTHER, group, id);
+	UpdateGroup(4, G_OTHER, group, id);
 	tooltip.UpdateTooltip(dt, group, id);
 
 	if(input->Focus())
@@ -288,10 +296,15 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 			tooltip.big_text = txRangedWeapon;
 			tooltip.text = txRangedWeaponDesc;
 			break;
-		case O_POTION:
-			tooltip.img = tPotion;
-			tooltip.big_text = txPotion;
-			tooltip.text = txPotionDesc;
+		case O_HEALTH_POTION:
+			tooltip.img = tHealthPotion;
+			tooltip.big_text = txHealthPotion;
+			tooltip.text = txHealthPotionDesc;
+			break;
+		case O_MANA_POTION:
+			tooltip.img = tManaPotion;
+			tooltip.big_text = txManaPotion;
+			tooltip.text = txManaPotionDesc;
 			break;
 		}
 	}
@@ -351,8 +364,11 @@ pair<int, int> AbilityPanel::ConvertToShortcut(int group, int id)
 		case O_RANGED_WEAPON:
 			shortcut.second = Shortcut::SPECIAL_RANGED_WEAPON;
 			break;
-		case O_POTION:
-			shortcut.second = Shortcut::SPECIAL_HEALING_POTION;
+		case O_HEALTH_POTION:
+			shortcut.second = Shortcut::SPECIAL_HEALTH_POTION;
+			break;
+		case O_MANA_POTION:
+			shortcut.second = Shortcut::SPECIAL_MANA_POTION;
 			break;
 		}
 	}

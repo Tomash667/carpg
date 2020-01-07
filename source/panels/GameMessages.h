@@ -22,7 +22,8 @@ enum GMS
 	GMS_DONT_LOOT_ARENA,
 	GMS_NOT_LEADER,
 	GMS_ONLY_LEADER_CAN_TRAVEL,
-	GMS_NO_POTION,
+	GMS_NO_HEALTH_POTION,
+	GMS_NO_MANA_POTION,
 	GMS_GAME_SAVED,
 	GMS_PICK_CHARACTER,
 	GMS_ADDED_ITEM,
@@ -75,10 +76,10 @@ public:
 private:
 	list<GameMsg> msgs;
 	int msgs_h;
-	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
-		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
-		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
-		txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility;
+	cstring txGamePausedBig, txINeedWeapon, txNoHealthPotion, txNoManaPotion, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey,
+		txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem,
+		txGmsGettingOutOfRange, txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated,
+		txAddedCursedStone, txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility;
 public:
 	Sound* snd_scribble;
 };

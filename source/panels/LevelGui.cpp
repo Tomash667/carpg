@@ -100,10 +100,12 @@ void LevelGui::LoadLanguage()
 	txStamina = s.Get("stamina");
 	txMeleeWeapon = s.Get("meleeWeapon");
 	txRangedWeapon = s.Get("rangedWeapon");
-	txPotion = s.Get("potion");
+	txHealthPotion = s.Get("healthPotion");
+	txManaPotion = s.Get("manaPotion");
 	txMeleeWeaponDesc = s.Get("meleeWeaponDesc");
 	txRangedWeaponDesc = s.Get("rangedWeaponDesc");
-	txPotionDesc = s.Get("potionDesc");
+	txHealthPotionDesc = s.Get("healthPotionDesc");
+	txManaPotionDesc = s.Get("manaPotionDesc");
 	txSkipCutscene = s.Get("skipCutscene");
 	BuffInfo::LoadText();
 }
@@ -136,7 +138,8 @@ void LevelGui::LoadData()
 	tActionCooldown = res_mgr->Load<Texture>("action_cooldown.png");
 	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
 	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
-	tPotion = res_mgr->Load<Texture>("health-potion.png");
+	tHealthPotion = res_mgr->Load<Texture>("health-potion.png");
+	tManaPotion = res_mgr->Load<Texture>("mana-potion.png");
 	tEmerytura = res_mgr->Load<Texture>("emerytura.jpg");
 	tEquipped = res_mgr->Load<Texture>("equipped.png");
 	tDialog = res_mgr->Load<Texture>("dialog.png");
@@ -525,9 +528,13 @@ void LevelGui::DrawFront()
 				icon = tRanged;
 				enabled = pc.unit->HaveBow();
 				break;
-			case Shortcut::SPECIAL_HEALING_POTION:
-				icon = tPotion;
-				enabled = pc.GetHealingPotion() != -1;
+			case Shortcut::SPECIAL_HEALTH_POTION:
+				icon = tHealthPotion;
+				enabled = pc.unit->FindHealingPotion() != -1;
+				break;
+			case Shortcut::SPECIAL_MANA_POTION:
+				icon = tManaPotion;
+				enabled = pc.unit->FindManaPotion() != -1;
 				break;
 			}
 		}
@@ -1564,9 +1571,13 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 					title = txRangedWeapon;
 					desc = txRangedWeaponDesc;
 					break;
-				case Shortcut::SPECIAL_HEALING_POTION:
-					title = txPotion;
-					desc = txPotionDesc;
+				case Shortcut::SPECIAL_HEALTH_POTION:
+					title = txHealthPotion;
+					desc = txHealthPotionDesc;
+					break;
+				case Shortcut::SPECIAL_MANA_POTION:
+					title = txManaPotion;
+					desc = txManaPotionDesc;
 					break;
 				}
 			}

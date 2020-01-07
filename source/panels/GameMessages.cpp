@@ -14,7 +14,8 @@ void GameMessages::LoadLanguage()
 {
 	txGamePausedBig = Str("gamePausedBig");
 	txINeedWeapon = Str("iNeedWeapon");
-	txNoHpp = Str("noHpp");
+	txNoHealthPotion = Str("noHealthPotion");
+	txNoManaPotion = Str("noManaPotion");
 	txCantDo = Str("cantDo");
 	txDontLootFollower = Str("dontLootFollower");
 	txDontLootArena = Str("dontLootArena");
@@ -274,8 +275,12 @@ void GameMessages::AddGameMsg3(GMS id)
 		text = txINeedWeapon;
 		time = 2.f;
 		break;
-	case GMS_NO_POTION:
-		text = txNoHpp;
+	case GMS_NO_HEALTH_POTION:
+		text = txNoHealthPotion;
+		time = 2.f;
+		break;
+	case GMS_NO_MANA_POTION:
+		text = txNoManaPotion;
 		time = 2.f;
 		break;
 	case GMS_CANT_DO:

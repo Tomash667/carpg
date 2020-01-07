@@ -165,7 +165,26 @@ quest main {
 	dialog soltys {
 		0 "Dobrze ¿e przyszed³eœ $player_name$. Musimy porozmawiaæ o zarazie..."
 		1 "Zaraza"
-		2 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+		2 "Kilku mieszkañców naszej wioski ostatnio zachorowa³o."
+		3 "Musimy z nimi porozmawiaæ i ustaliæ czy to jest ta zaraza czy jakaœ normalna choroba."
+		4 "IdŸ z nimi porozmawiaæ i spróbuj ustaliæ od czego siê zarazili. Ja w tym czasie pomyœlê..."
+		5 "Porozmawiaj z zara¿onymi wieœniakami i wróæ do mnie."
+		6 "Jeden z wieœniaków zaatakowa³ ciê bez powodu!?"
+		7 "Jest gorzej ni¿ myœla³em, musimy szybko sprowadziæ tu jakiegoœ kap³ana który zna siê na zarazach."
+		8 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+	}
+	
+	dialog ill_villager {
+		0 "Lepiej siê odsuñ. Coœ mnie bierze..."
+		1 "Wypytaj o chorobê"
+		2 "Koniec rozmowy"
+		3 "Wydaje mi siê ¿e woda ostatnio jakoœ dziwnie smakowa³a. Mo¿e to przez to?"
+		4 "Jeszcze kilka dni temu by³em zdrowy... Nie wiem sk¹d ta zaraza!"
+		5 "Tydzieñ temu by³ tu wêdrowny kupiec. Pierwszy raz go tu widzia³em."
+		6 "Kupi³em od niego miêso. Mo¿e by³o jakieœ nieœwie¿e?"
+		7 "Wczoraj by³em w lesie i coœ mnie ugryz³o."
+		8 "Nie widzia³em tego ale od tego czasu kiepsko siê czujê..."
+		9 "Nie dobrze mi. Chyba bêdzie trzeba pos³aæ po jakiegoœ kleryka..."
 	}
 	
 	texts {
@@ -178,5 +197,7 @@ quest main {
 		6 "Zaraza w wiosce"
 		7 "Rozpoczêto dnia $date$."
 		8 "W $(village.name) zaraza zaczê³a siê coraz bardziej rozprzestrzeniaæ. Muszê tam szybko wróciæ."
+		9 "Muszê przejœæ siê po wiosce i znaleŸæ zara¿onych wieœniaków. Mo¿e uda mi siê coœ ustaliæ."
+		10 "Jeden z wieœniaków oszala³ z powodu zarazy i mnie zaatakowa³."
 	}
 }

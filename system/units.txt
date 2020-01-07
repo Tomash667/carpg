@@ -3216,6 +3216,17 @@ unit q_main_messenger : messenger {
 	dialog "main/messenger"
 }
 
+unit q_main_ill_villager : villager {
+	dialog "main/ill_villager"
+	flags {human ai_stay}
+	tint {0.9 1.1 0.9}
+}
+
+unit q_main_ill_villager_attack : q_main_ill_villager {
+	level 5
+	group undead
+}
+
 //------------------------------------------------------------------------------
 // Unit groups
 //------------------------------------------------------------------------------

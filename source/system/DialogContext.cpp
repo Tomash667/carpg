@@ -32,6 +32,7 @@
 #include <angelscript.h>
 
 DialogContext* DialogContext::current;
+int DialogContext::var;
 
 //=================================================================================================
 void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
@@ -648,6 +649,9 @@ void DialogContext::UpdateLoop()
 		case DTF_CJMP:
 			if(!cmp_result)
 				dialog_pos = de.value - 1;
+			break;
+		case DTF_IF_VAR:
+			cmp_result = DoIfOp(var, de.value, de.op);
 			break;
 		default:
 			assert(0 && "Unknown dialog type!");

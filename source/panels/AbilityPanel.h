@@ -27,8 +27,8 @@ private:
 	vector<Ability*> abilities;
 	vector<Texture*> images;
 	cstring txTitle, txCooldown, txCooldownCharges, txCost, txAbilities, txOther, txMana, txStamina;
-	cstring txMeleeWeapon, txRangedWeapon, txPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
-	TexturePtr tItemBar, tMelee, tRanged, tPotion;
+	cstring txMeleeWeapon, txRangedWeapon, txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc;
+	TexturePtr tItemBar, tMelee, tRanged, tHealthPotion, tManaPotion;
 	Int2 drag_and_drop_pos;
 	int grid_offset, drag_and_drop_group, drag_and_drop_index;
 	bool drag_and_drop;

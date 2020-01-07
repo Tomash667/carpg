@@ -3,8 +3,10 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.13 (???):
 ! cannot load saves from version 0.5 or older
++ continued storyline
 + pickable mage class
 + better aiming with bow
++ mana potion shortcut
 + allow player to use multiple abilities
 + loading abilities from files
 + new feat (magic adept), items: master wand, ring of mystic magic

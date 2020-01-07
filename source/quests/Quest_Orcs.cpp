@@ -691,34 +691,11 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	}
 
 	UnitData* ud = UnitData::Get(udi);
-	orc->data = ud;
-	orc->level = ud->level.x;
-	orc->stats = orc->data->GetStats(orc->level);
-	orc->CalculateStats();
-	ud->item_script->Parse(*orc);
-	for(const Item* item : orc->slots)
-	{
-		if(item)
-			game_res->PreloadItem(item);
-	}
-	for(ItemSlot& slot : orc->items)
-		game_res->PreloadItem(slot.item);
-	orc->MakeItemsTeam(false);
-	orc->UpdateInventory();
+	orc->ChangeBase(ud, true);
 
 	OnUpdate(Format(game->txQuest[210], class_name));
 
 	prog = Progress::ChangedClass;
 	orcs_state = State::PickedClass;
 	days = Random(30, 60);
-
-	if(orc->GetClass()->id == "warrior")
-		orc->hero->melee = true;
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_UNIT_BASE;
-		c.unit = orc;
-	}
 }

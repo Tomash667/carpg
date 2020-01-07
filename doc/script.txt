@@ -36,8 +36,21 @@ Enum ITEM_FLAGS:
 	ITEM_NOT_ALCHEMIST - not generated for alchemist.
 
 Dialog type.
+Static properties:
+	int var
 Static methods:
 	Dialog@ Get(const string& in id) - return dialog with id.
+	
+Building type.
+
+BuildingGroup type.
+Static methods:
+	BuildingGroup@ Get(const string& in id) - return building group with id.
+	
+CityBuilding type.
+Members:
+	const Vec3 unit_pos - unit spawn pos.
+	const float unit_rot - unit spawn rot.
 
 Item type:
 	string name - readonly
@@ -160,6 +173,8 @@ Unit type:
 	UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
 	void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 	void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
+	void RotateTo(float rot) - instantly rotates units.
+	void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data.
 Globals:
 	Unit@ target
 Static methods:
@@ -310,6 +325,7 @@ Level namespace:
 	Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2) - spawns unit near position.
 	Unit@ SpawnUnit(LevelArea@, Spawn) - spawns unit inside area.
 	Unit@ GetMayor() - returns city mayor or village soltys or null.
+	CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 
 StockScript namespace - can only be called from stock script:
 	void AddItem(Item@, uint count = 1) - add item to stock.

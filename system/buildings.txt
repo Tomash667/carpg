@@ -292,7 +292,7 @@ building cottage {
 		"|||||||||||"
 		"|||||||||||"
 		"|||||||||||"
-		"     +     "
+		"    @+     "
 	}
 	group cottage
 	shift {
@@ -312,7 +312,7 @@ building cottage2 {
 		"||||||||"
 		"||||||||"
 		"||||||||"
-		"   +    "
+		"   +@   "
 	}
 	group cottage
 	shift {
@@ -332,7 +332,7 @@ building cottage3 {
 		"||||||"
 		"||||||"
 		"||||||"
-		".+    "
+		"@+    "
 	}
 	group cottage
 	shift {1 1}
