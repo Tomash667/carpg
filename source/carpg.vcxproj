@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -180,9 +180,9 @@
     <ClInclude Include="net\NetChangePlayer.h" />
     <ClInclude Include="net\PacketLogger.h" />
     <ClInclude Include="net\PlayerInfo.h" />
-    <ClInclude Include="panels\AbilityPanel.h" />
-    <ClInclude Include="panels\BookPanel.h" />
-    <ClInclude Include="panels\GameGui.h" />
+    <ClInclude Include="gui\AbilityPanel.h" />
+    <ClInclude Include="gui\BookPanel.h" />
+    <ClInclude Include="gui\GameGui.h" />
     <ClInclude Include="quests\QuestHandler.h" />
     <ClInclude Include="quests\QuestConsts.h" />
     <ClInclude Include="quests\Quest_Artifacts.h" />
@@ -250,29 +250,29 @@
     <ClInclude Include="location\OutsideLocation.h" />
     <ClInclude Include="location\SingleInsideLocation.h" />
     <ClInclude Include="net\Net.h" />
-    <ClInclude Include="panels\Console.h" />
-    <ClInclude Include="panels\Controls.h" />
-    <ClInclude Include="panels\CreateCharacterPanel.h" />
-    <ClInclude Include="panels\CreateServerPanel.h" />
-    <ClInclude Include="panels\LevelGui.h" />
-    <ClInclude Include="panels\GameMenu.h" />
-    <ClInclude Include="panels\GameMessages.h" />
-    <ClInclude Include="panels\GamePanel.h" />
-    <ClInclude Include="panels\InfoBox.h" />
-    <ClInclude Include="panels\Inventory.h" />
-    <ClInclude Include="panels\Journal.h" />
-    <ClInclude Include="panels\LoadScreen.h" />
-    <ClInclude Include="panels\MainMenu.h" />
-    <ClInclude Include="panels\Minimap.h" />
-    <ClInclude Include="panels\MpBox.h" />
-    <ClInclude Include="panels\MultiplayerPanel.h" />
-    <ClInclude Include="panels\Options.h" />
-    <ClInclude Include="panels\PickServerPanel.h" />
-    <ClInclude Include="panels\SaveLoadPanel.h" />
-    <ClInclude Include="panels\ServerPanel.h" />
-    <ClInclude Include="panels\StatsPanel.h" />
-    <ClInclude Include="panels\TeamPanel.h" />
-    <ClInclude Include="panels\WorldMapGui.h" />
+    <ClInclude Include="gui\Console.h" />
+    <ClInclude Include="gui\Controls.h" />
+    <ClInclude Include="gui\CreateCharacterPanel.h" />
+    <ClInclude Include="gui\CreateServerPanel.h" />
+    <ClInclude Include="gui\LevelGui.h" />
+    <ClInclude Include="gui\GameMenu.h" />
+    <ClInclude Include="gui\GameMessages.h" />
+    <ClInclude Include="gui\GamePanel.h" />
+    <ClInclude Include="gui\InfoBox.h" />
+    <ClInclude Include="gui\Inventory.h" />
+    <ClInclude Include="gui\Journal.h" />
+    <ClInclude Include="gui\LoadScreen.h" />
+    <ClInclude Include="gui\MainMenu.h" />
+    <ClInclude Include="gui\Minimap.h" />
+    <ClInclude Include="gui\MpBox.h" />
+    <ClInclude Include="gui\MultiplayerPanel.h" />
+    <ClInclude Include="gui\Options.h" />
+    <ClInclude Include="gui\PickServerPanel.h" />
+    <ClInclude Include="gui\SaveLoadPanel.h" />
+    <ClInclude Include="gui\ServerPanel.h" />
+    <ClInclude Include="gui\StatsPanel.h" />
+    <ClInclude Include="gui\TeamPanel.h" />
+    <ClInclude Include="gui\WorldMapGui.h" />
     <ClInclude Include="quests\Quest.h" />
     <ClInclude Include="quests\Quest_Bandits.h" />
     <ClInclude Include="quests\Quest_BanditsCollectToll.h" />
@@ -389,9 +389,9 @@
     <ClCompile Include="net\Net.cpp" />
     <ClCompile Include="net\NetChange.cpp" />
     <ClCompile Include="net\PlayerInfo.cpp" />
-    <ClCompile Include="panels\AbilityPanel.cpp" />
-    <ClCompile Include="panels\BookPanel.cpp" />
-    <ClCompile Include="panels\GameGui.cpp" />
+    <ClCompile Include="gui\AbilityPanel.cpp" />
+    <ClCompile Include="gui\BookPanel.cpp" />
+    <ClCompile Include="gui\GameGui.cpp" />
     <ClCompile Include="quests\Quest_Artifacts.cpp" />
     <ClCompile Include="quests\Quest_Contest.cpp" />
     <ClCompile Include="quests\Quest_Scripted.cpp" />
@@ -441,29 +441,29 @@
     <ClCompile Include="location\OutsideLocation.cpp" />
     <ClCompile Include="location\SingleInsideLocation.cpp" />
     <ClCompile Include="Menu.cpp" />
-    <ClCompile Include="panels\Console.cpp" />
-    <ClCompile Include="panels\Controls.cpp" />
-    <ClCompile Include="panels\CreateCharacterPanel.cpp" />
-    <ClCompile Include="panels\CreateServerPanel.cpp" />
-    <ClCompile Include="panels\LevelGui.cpp" />
-    <ClCompile Include="panels\GameMenu.cpp" />
-    <ClCompile Include="panels\GameMessages.cpp" />
-    <ClCompile Include="panels\GamePanel.cpp" />
-    <ClCompile Include="panels\InfoBox.cpp" />
-    <ClCompile Include="panels\Inventory.cpp" />
-    <ClCompile Include="panels\Journal.cpp" />
-    <ClCompile Include="panels\LoadScreen.cpp" />
-    <ClCompile Include="panels\MainMenu.cpp" />
-    <ClCompile Include="panels\Minimap.cpp" />
-    <ClCompile Include="panels\MpBox.cpp" />
-    <ClCompile Include="panels\MultiplayerPanel.cpp" />
-    <ClCompile Include="panels\Options.cpp" />
-    <ClCompile Include="panels\PickServerPanel.cpp" />
-    <ClCompile Include="panels\SaveLoadPanel.cpp" />
-    <ClCompile Include="panels\ServerPanel.cpp" />
-    <ClCompile Include="panels\StatsPanel.cpp" />
-    <ClCompile Include="panels\TeamPanel.cpp" />
-    <ClCompile Include="panels\WorldMapGui.cpp" />
+    <ClCompile Include="gui\Console.cpp" />
+    <ClCompile Include="gui\Controls.cpp" />
+    <ClCompile Include="gui\CreateCharacterPanel.cpp" />
+    <ClCompile Include="gui\CreateServerPanel.cpp" />
+    <ClCompile Include="gui\LevelGui.cpp" />
+    <ClCompile Include="gui\GameMenu.cpp" />
+    <ClCompile Include="gui\GameMessages.cpp" />
+    <ClCompile Include="gui\GamePanel.cpp" />
+    <ClCompile Include="gui\InfoBox.cpp" />
+    <ClCompile Include="gui\Inventory.cpp" />
+    <ClCompile Include="gui\Journal.cpp" />
+    <ClCompile Include="gui\LoadScreen.cpp" />
+    <ClCompile Include="gui\MainMenu.cpp" />
+    <ClCompile Include="gui\Minimap.cpp" />
+    <ClCompile Include="gui\MpBox.cpp" />
+    <ClCompile Include="gui\MultiplayerPanel.cpp" />
+    <ClCompile Include="gui\Options.cpp" />
+    <ClCompile Include="gui\PickServerPanel.cpp" />
+    <ClCompile Include="gui\SaveLoadPanel.cpp" />
+    <ClCompile Include="gui\ServerPanel.cpp" />
+    <ClCompile Include="gui\StatsPanel.cpp" />
+    <ClCompile Include="gui\TeamPanel.cpp" />
+    <ClCompile Include="gui\WorldMapGui.cpp" />
     <ClCompile Include="QuadTreeAndGrass.cpp" />
     <ClCompile Include="quests\Quest.cpp" />
     <ClCompile Include="quests\Quest_Bandits.cpp" />
