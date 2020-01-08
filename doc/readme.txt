@@ -299,6 +299,7 @@ Podziêkowania za znalezione b³êdy:
 	MikelkCZ
 	MildlyPhilosophicalHobbit
 	Minister of Death
+	mishka
 	Paradox Edge
 	Savagesheep
 	thebard88

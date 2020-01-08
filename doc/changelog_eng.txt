@@ -11,6 +11,7 @@ Version 0.13 (???):
 + loading abilities from files
 + new feat (magic adept), items: master wand, ring of mystic magic
 + moved quest "bandits collect toll" to scripts
++ changed some flora textures [Leinnan]
 + optimisations
 + scene manager improvements
 + updated to Visual Studio 2019

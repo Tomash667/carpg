@@ -2274,33 +2274,42 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						run = false;
 				}
 
+				float speed_mod;
 				switch(move)
 				{
 				case 10: // przód
 					angle += PI;
+					speed_mod = 1.f;
 					break;
 				case -10: // ty³
 					run = false;
+					speed_mod = 0.8f;
 					break;
 				case -1: // lewa
 					angle += PI / 2;
+					speed_mod = 0.75f;
 					break;
 				case 1: // prawa
 					angle += PI * 3 / 2;
+					speed_mod = 0.75f;
 					break;
 				case 9: // lewa góra
 					angle += PI * 3 / 4;
+					speed_mod = 0.9f;
 					break;
 				case 11: // prawa góra
 					angle += PI * 5 / 4;
+					speed_mod = 0.9f;
 					break;
 				case -11: // lewy ty³
 					run = false;
 					angle += PI / 4;
+					speed_mod = 0.9f;
 					break;
 				case -9: // prawy ty³
 					run = false;
 					angle += PI * 7 / 4;
+					speed_mod = 0.9f;
 					break;
 				}
 
@@ -2318,7 +2327,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				else
 					u.animation = ANI_WALK;
 
-				u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
+				u.speed = (run ? u.GetRunSpeed() : u.GetWalkSpeed()) * speed_mod;
 				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 

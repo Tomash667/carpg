@@ -11,6 +11,7 @@ Wersja 0.13 (???):
 + wczytywanie zdolnoœci z pliku
 + nowy atut (adept magii), przedmioty: ró¿d¿ka mistrza, pierœcieñ magii mistycznej
 + przeniesienie zadania "bandyci pobieraj¹ op³atê" do skryptów
++ podmiana niektórych tekstur roœlinnoœci [Leinnan]
 + optymalizacje
 + usprawnienia menad¿era sceny
 + aktualizacja do Visual Studio 2019
