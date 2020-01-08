@@ -130,7 +130,8 @@ void QuestManager::Clear()
 	DeleteElements(unaccepted_quests);
 	DeleteElements(quest_item_requests);
 	DeleteElements(quest_items);
-	quest_tournament->Clear();
+	if(quest_tournament)
+		quest_tournament->Clear();
 }
 
 //=================================================================================================

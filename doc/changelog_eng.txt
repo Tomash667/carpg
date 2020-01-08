@@ -15,6 +15,7 @@ Version 0.13 (???):
 + scene manager improvements
 + updated to Visual Studio 2019
 + update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+- crash when clicking/removing shortcut at right time [Savagesheep/mishka]
 - fixed drain spell crashing when casting unit is removed
 - crash when using quickload in menu with console open and there is no save or failed to load
 - removing keys in settings wasn't saved unless other keys were changed
@@ -28,6 +29,7 @@ Version 0.13 (???):
 - running in side and attacking won't cause running attack
 - missing floor/ceiling collider
 - ai escape only to next room then stays
+- crash when render initialization failed
 
 --------------------------------------------------------------------------------
 Version 0.12.2 (2019-10-27):

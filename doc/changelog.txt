@@ -15,6 +15,7 @@ Wersja 0.13 (???):
 + usprawnienia menad¿era sceny
 + aktualizacja do Visual Studio 2019
 + aktualizacja bibliotek: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+- crash przy klikaniu/usuwaniu skrótu w odpowiednim momencie [Savagesheep/mishka]
 - naprawiony crash gdy jednostka rzucaj¹ca wyssanie ¿ycia jest usuwana
 - crash przy wczytywaniu gry w menu gdy otwarta jest konsola i nie ma zapisu lub nie uda³o siê wczytaæ
 - usuwanie klawiszy w sterowaniu nie zapisywa³o siê jeœli nie zmieniono innych ustawieñ
@@ -28,6 +29,7 @@ Wersja 0.13 (???):
 - atak podczas biegniêcia w bok nie powoduje ataku w biegu
 - brak fizyki pod³ogi/sufitu w budynkach
 - ai ucieka tylko do nastêpnego pokoju, potem stoi w miejscu
+- crash gdy s¹ b³êdy inicjalizacji rendera
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

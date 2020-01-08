@@ -1128,7 +1128,17 @@ void LevelGui::Update(float dt)
 					drag_and_drop_icon = nullptr;
 				}
 				else if(input->PressedRelease(Key::RightButton))
-					game->pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
+				{
+					Shortcut& shortcut = game->pc->shortcuts[shortcut_index];
+					if(shortcut.type == Shortcut::TYPE_ABILITY && shortcut.ability == PlayerController::data.ability_ready)
+						PlayerController::data.ability_ready = nullptr;
+					else
+					{
+						game->pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
+						group = TooltipGroup::Invalid;
+					}
+					drag_and_drop = 0;
+				}
 			}
 		}
 	}
