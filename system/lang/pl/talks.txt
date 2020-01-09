@@ -1,6 +1,8 @@
 // ai talking
 aiNoHpPot0 = "Cholera! Nie mam ju¿ miksturek leczniczych."
 aiNoHpPot1 = "Nie mam ju¿ miksturek leczniczych."
+aiNoMpPot0 = "Nie mam ju¿ miksturek many."
+aiNoMpPot1 = "Musimy uwa¿aæ, skoñczy³y mi siê miksturki many."
 aiJoinTour0 = "Wezmê udzia³ w zawodach, mo¿e uda mi siê wygraæ."
 aiJoinTour1 = "To ja te¿ siê zapiszê!"
 aiJoinTour2 = "Te¿ biorê udzia³!"
@@ -142,7 +144,7 @@ tut2 = "U¿yj skrzyni aby j¹ przeszukaæ. U góry widoczna jest zawartoœæ skrzyni\n
 tut3 = "Otwórz ekwipunek u¿ywaj¹c klawisza [I]. Klikniêcie lewym przyciskiem\nmyszki zak³ada przedmiot, mo¿esz mieæ za³o¿ony broñ, ³uk, pancerz i\ntarczê. Klikniêcie prawym przyciskiem myszki upuszcza przedmiot na\nziemiê. Po za³o¿eniu wciœnij [Spacje] aby wyj¹æ/schowaæ broñ. Zaatakuj\nmanekin na œrodku pokoju lewym przyciskiem myszy lub [Z].\nPotem udaj siê dalej."
 tut4 = "Za tymi drzwiami czeka na ciebie przeciwnik - goblin. Nie stanowi on\nwiêkszego wyzwania. Atakuj go a¿ zdechnie. Mo¿esz blokowaæ ciosy prawym\nprzyciskiem myszki. Podczas bloku mo¿esz uderzyæ tarcz¹. Przytrzymuj¹c\nlewy przycisk myszki mo¿esz wykonaæ ciê¿ki cios. Pamiêtaj ¿e atakowanie zu¿ywa wytrzyma³oœæ. IdŸ dalej i zabij goblina."
 tut5 = "Mo¿esz uzyskaæ wiêcej informacji o grze:\n[I] - ekwipunek\n[C] - panel postaci\n[K] - czary i zdolnoœci\n[T] - dru¿yna\n[M] - minimapa\n[J] - dziennik\n[N] - ekran rozmowy.\n\nObejrzyj te okna i potem ruszaj dalej."
-tut6 = "W skrzyni znajduje siê miksturka i ³uk. Aby wypiæ miksturkê kliknij na\nni¹ w ekwipunku lub wciœnij [4]. Po za³o¿eniu ³uku mo¿esz go wyj¹æ wciskaj¹c\nklawisz [2]. Klawisz [1] wyjmuje broñ do walki wrêcz. [Space] wyjmuje ostatnio\nu¿ywan¹ broñ. Skróty te mo¿na zmieniæ przeci¹gaj¹c je z ekwipunku/akcji\nna listê skrótów na dole. IdŸ do nastêpnego pokoju."
+tut6 = "W skrzyni znajduje siê miksturka i ³uk. Aby wypiæ miksturkê kliknij na\nni¹ w ekwipunku lub wciœnij [4]. Po za³o¿eniu ³uku mo¿esz go wyj¹æ wciskaj¹c\nklawisz [2]. Klawisz [1] wyjmuje broñ do walki wrêcz. [Space] wyjmuje ostatnio\nu¿ywan¹ broñ. Skróty te mo¿na zmieniæ przeci¹gaj¹c je z ekwipunku/zdolnoœci\nna listê skrótów na dole. IdŸ do nastêpnego pokoju."
 tut7 = "Wyjmij ³uk wciskaj¹c klawisz [2]. Strzel w tarczê aby otworzyæ nastêpne drzwi.\nCelujesz u¿ywaj¹c myszki."
 tut8 = "Aby porozmawiaæ z ludŸmi kliknij lewym przyciskiem myszki/[Z] jeœli nie masz\nwyci¹gniêtej broni lub [R]. Z niektórymi osobami mo¿esz handlowaæ, zdobywaæ zadania,\ninformacje lub rekrutowaæ. Jeœli zaatakujesz neutraln¹ postaæ wszyscy mieszkañcy\nmiast bêd¹ ciê atakowaæ wiêc lepiej tego nie robiæ. Porozmawiaj z postaci¹ a potem\nwyjdŸ schodami na zewn¹trz."
 tut9 = "Gratulacje! Ukoñczy³eœ samouczek.\nPamiêtaj ¿e to dopiero pocz¹tek, zapisuj czêsto grê i nie podró¿uj samotnie.\nW pierwszym mieœcie mo¿esz zrekrutowaæ za darmo dwóch towarzyszy. Popytaj\nmieszkañców miasta o okoliczne podziemia i idŸ tam\ngdzie s¹ bardzo s³abi wrogowie póki nie masz doœwiadczenia.\nPowodzenia!"
@@ -277,6 +279,9 @@ learningPoints = "punkty nauki"
 needLearningPoints = "Nie masz doœæ doœwiadczenia ¿ebym móg³ ciê tego nauczyæ."
 teamTooBig = "Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
 heroJoined = "WeŸ ze sob¹ %s, pomo¿e ci w czekaj¹cych ciê wyzwaniach."
+cantLearnAbility = "Nie jesteœ gotowy by siê tego nauczyæ. Wróæ gdy siê podszkolisz."
+spell = "Zaklêcie"
+cantLearnSkill = "Brakuje ci podstaw ¿eby siê szkoliæ w tej umiejêtnoœci."
 
 // yelling
 yell0 = "Z drogi!"

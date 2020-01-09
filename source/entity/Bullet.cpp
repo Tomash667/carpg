@@ -5,7 +5,7 @@
 #include "ResourceManager.h"
 #include "Mesh.h"
 #include "Unit.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ParticleSystem.h"
 
 //=================================================================================================
@@ -24,16 +24,12 @@ void Bullet::Save(FileWriter& f)
 	f << yspeed;
 	f << poison_attack;
 	f << (owner ? owner->id : -1);
-	if(spell)
-		f << spell->id;
-	else
-		f.Write0();
+	f << (ability ? ability->hash : 0);
 	if(tex)
 		f << tex->filename;
 	else
 		f.Write0();
 	f << (trail ? trail->id : -1);
-	f << (trail2 ? trail2->id : -1);
 	f << (pe ? pe->id : -1);
 	f << remove;
 	f << backstab;
@@ -58,22 +54,42 @@ void Bullet::Load(FileReader& f)
 	f >> yspeed;
 	f >> poison_attack;
 	owner = Unit::GetById(f.Read<int>());
-	const string& spell_id = f.ReadString1();
-	if(!spell_id.empty())
+	if(LOAD_VERSION >= V_DEV)
 	{
-		spell = Spell::TryGet(spell_id);
-		if(!spell)
-			throw Format("Missing spell '%s' for bullet.", spell_id.c_str());
+		uint ability_hash = f.Read<uint>();
+		if(ability_hash != 0)
+		{
+			ability = Ability::Get(ability_hash);
+			if(!ability)
+				throw Format("Missing ability %u for bullet.", ability_hash);
+		}
+		else
+			ability = nullptr;
 	}
 	else
-		spell = nullptr;
+	{
+		const string& ability_id = f.ReadString1();
+		if(!ability_id.empty())
+		{
+			ability = Ability::Get(ability_id);
+			if(!ability)
+				throw Format("Missing ability '%s' for bullet.", ability_id.c_str());
+		}
+		else
+			ability = nullptr;
+	}
 	const string& tex_name = f.ReadString1();
 	if(!tex_name.empty())
 		tex = res_mgr->Load<Texture>(tex_name);
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
-	trail2 = TrailParticleEmitter::GetById(f.Read<int>());
+	if(LOAD_VERSION < V_DEV)
+	{
+		TrailParticleEmitter* old_trail = TrailParticleEmitter::GetById(f.Read<int>());
+		if(old_trail)
+			old_trail->destroy = true;
+	}
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> remove;
 	f >> level;

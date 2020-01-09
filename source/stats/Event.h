@@ -7,7 +7,8 @@ enum EventType
 	EVENT_UPDATE,
 	EVENT_TIMEOUT,
 	EVENT_ENCOUNTER,
-	EVENT_DIE
+	EVENT_DIE,
+	EVENT_CLEARED
 };
 
 struct Event

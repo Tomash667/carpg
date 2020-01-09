@@ -12,7 +12,7 @@ struct QuestScheme
 	vector<GameDialog*> dialogs;
 	vector<string> progress;
 	asITypeInfo* script_type;
-	asIScriptFunction* f_startup, *f_progress, *f_event, *f_format_string;
+	asIScriptFunction* f_startup, *f_progress, *f_event, *f_upgrade;
 	DialogScripts scripts;
 	string code;
 	bool set_progress_use_prev;

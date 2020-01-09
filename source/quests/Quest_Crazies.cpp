@@ -112,7 +112,7 @@ void Quest_Crazies::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Crazies::Load(GameReader& f)
+Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -122,7 +122,7 @@ bool Quest_Crazies::Load(GameReader& f)
 	f >> days;
 	f >> check_stone;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

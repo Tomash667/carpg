@@ -97,6 +97,49 @@ quest alchemist_apprentice
 }
 
 //=============================================================================
+quest bandits_collect_toll
+{
+	dialog start {
+		0 "On the road between $(start_loc.name) and $(other_loc.name) camped bandits. They charge a fee and are robbing merchants."
+		1 "You have time to take care of them?"
+		2 "Yes"
+		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc.pos, other_loc.pos)) from here and back. Then certainly you encounter these bandits."
+		4 "You got half month for this."
+		5 "No"
+	}
+	
+	dialog end {
+		0 "You could not get rid of these thugs out of the way?"
+		1 "Ehhh, now probably moved elsewhere. I'm disappointed in you."
+		2 "Finally, someone on whom you can rely on. Well done with these bandits, that will teach them for some time."
+		3 "Take this 1500 gold pieces as reward."
+	}
+	
+	dialog encounter {
+		0 "Stop!"
+		1 "This is our road, if you want to go you have to pay 500 gold pieces!"
+		2 "Pay"
+		3 "You can go. Do not forget to visit us again, hehehe..."
+		4 "You do not have enough gold damn poor thing!"
+		5 "I hope that your equipment is worth something!"
+		6 "Don't pay"
+		7 "I hope that your equipment is worth something!"
+	}
+
+	texts {
+		0 "Bandits collecting tolls"
+		1 "Obtained from captain guard of $(start_loc.name) at $date$."
+		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc.pos, other_loc.pos)) from here. I have to get rid of them in half a month."
+		3 "You encounter group of bandits gathering tolls."
+		4 "I didn't manage to kill the bandits in time."
+		5 "I killed the bandits."
+		6 "I informed the captain of the guard of my success and got the reward. Quest done!"
+		7 "Adventurers took care of the bandits who collected a fee on the road."
+		8 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
 quest main {
 	dialog trainer {
 		0 "Congratulations! You completed training at the academy!"
@@ -122,7 +165,26 @@ quest main {
 	dialog soltys {
 		0 "It's good that you came $player_name$. We need to talk about the plague..."
 		1 "Plague"
-		2 "(This is the end of the main plot for this version. In the meantime try to complete 9 unique quests)"
+		2 "Several inhabitants of our village have recently fallen ill."
+		3 "We need to talk to them and determine if this is the disease or any normal illness."
+		4 "Go talk to them and try to find out what they got infected from. At this time I will think..."
+		5 "Talk to infected villagers and come back to me."
+		6 "One of the villagers attacked you for no reason!?"
+		7 "It's worse than I thought, we must quickly bring in some priest who knows about plagues."
+		8 "(This is the end of the main plot for this version. In the meantime try to complete 9 unique quests)"
+	}
+	
+	dialog ill_villager {
+		0 "You'd better step back. I think I'm ill..."
+		1 "Ask about illness"
+		2 "End dialog"
+		3 "I think the water tasted strange lately. Maybe because of that?"
+		4 "Just a few days ago I was healthy ... I don't know where the plague came from!"
+		5 "A week ago a traveling merchant was here. I saw him here for the first time."
+		6 "I bought meat from him. Maybe it was stale?"
+		7 "I was in the woods yesterday and something bit me."
+		8 "I haven't seen it but since then I feel bad..."
+		9 "I feel sick. I think you will have to send for some cleric..."
 	}
 	
 	texts {
@@ -135,5 +197,7 @@ quest main {
 		6 "Plague in village"
 		7 "Started at $date$."
 		8 "In $(village.name), the plague began to spread more and more. I have to get back there quickly."
+		9 "I have to walk around the village and find infected villagers. Maybe I can establish something."
+		10 "One of the villagers went crazy because of the plague and attacked me."
 	}
 }

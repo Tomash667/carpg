@@ -2,10 +2,10 @@
 #include "GameCore.h"
 #include "UnitData.h"
 #include "ItemScript.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Item.h"
 
-vector<SpellList*> SpellList::lists;
+vector<AbilityList*> AbilityList::lists;
 vector<SoundPack*> SoundPack::packs;
 vector<IdlePack*> IdlePack::packs;
 vector<TexPack*> TexPack::packs;
@@ -67,7 +67,7 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 void UnitData::CopyFrom(UnitData& ud)
 {
 	parent = &ud;
-	mesh_id = ud.mesh_id;
+	mesh = ud.mesh;
 	mat = ud.mat;
 	level = ud.level;
 	stat_profile = ud.stat_profile;
@@ -79,7 +79,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	flags = ud.flags;
 	flags2 = ud.flags2;
 	flags3 = ud.flags3 & ~F3_PARENT_DATA;
-	spells = ud.spells;
+	abilities = ud.abilities;
 	gold = ud.gold;
 	gold2 = ud.gold2;
 	dialog = ud.dialog;
@@ -99,6 +99,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	item_script = ud.item_script;
 	clas = ud.clas;
 	trader = nullptr; // not copied
+	tint = ud.tint;
 }
 
 int UnitData::GetLevelDif(int level) const
@@ -106,7 +107,7 @@ int UnitData::GetLevelDif(int level) const
 	return min(abs(level - this->level.x), abs(level - this->level.y));
 }
 
-SpellList* SpellList::TryGet(Cstring id)
+AbilityList* AbilityList::TryGet(Cstring id)
 {
 	for(auto list : lists)
 	{

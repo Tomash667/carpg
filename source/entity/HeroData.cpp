@@ -100,7 +100,7 @@ void HeroData::Load(FileReader& f)
 	f >> melee;
 	f >> phase;
 	f >> phase_timer;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> type;
 	else
 	{

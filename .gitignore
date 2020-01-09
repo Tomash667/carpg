@@ -9,15 +9,9 @@
 /paks/out
 /paks/pdb
 
-/tools/converter/Debug
-/tools/converter/Release
-/tools/paker/Debug
-/tools/paker/Release
-/tools/prebuild/Debug
-/tools/prebuild/Release
-/tools/pak/Debug
-/tools/pak/Release
 /tools/extractor/Debug
 /tools/extractor/Release
+/tools/paker/Debug
+/tools/paker/Release
 /tools/text_comparer/Debug
 /tools/text_comparer/Release

@@ -11,6 +11,7 @@
 #include "GameMessages.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
+#include "Ability.h"
 
 //=================================================================================================
 void AIController::Init(Unit* unit)
@@ -30,8 +31,7 @@ void AIController::Init(Unit* unit)
 	have_mp_potion = HavePotion::Check;
 	potion = -1;
 	in_combat = false;
-	escape_room = nullptr;
-	idle_action = Idle_None;
+	st.idle.action = Idle_None;
 	start_pos = unit->pos;
 	start_rot = unit->rot;
 	loc_timer = 0.f;
@@ -73,56 +73,67 @@ void AIController::Save(GameWriter& f)
 	f << ignore;
 	f << morale;
 	f << start_rot;
-	if(unit->data->spells)
+	if(unit->data->abilities)
 		f << cooldown;
-	if(state == AIController::Escape)
-		f << (escape_room ? escape_room->index : -1);
+	switch(state)
+	{
+	case Cast:
+		f << st.cast.ability->hash;
+		break;
+	case Escape:
+		f << (st.escape.room ? st.escape.room->index : -1);
+		break;
+	case Idle:
+		f << st.idle.action;
+		switch(st.idle.action)
+		{
+		case Idle_None:
+		case Idle_Animation:
+			break;
+		case Idle_Rot:
+			f << st.idle.rot;
+			break;
+		case Idle_Move:
+		case Idle_TrainCombat:
+		case Idle_Pray:
+			f << st.idle.pos;
+			break;
+		case Idle_Look:
+		case Idle_WalkTo:
+		case Idle_Chat:
+		case Idle_WalkNearUnit:
+		case Idle_MoveAway:
+			f << st.idle.unit;
+			break;
+		case Idle_Use:
+		case Idle_WalkUse:
+		case Idle_WalkUseEat:
+			f << st.idle.usable->id;
+			break;
+		case Idle_TrainBow:
+			f << st.idle.obj.pos;
+			f << st.idle.obj.rot;
+			break;
+		case Idle_MoveRegion:
+		case Idle_RunRegion:
+			f << st.idle.region.area->area_id;
+			f << st.idle.region.pos;
+			f << st.idle.region.exit;
+			break;
+		default:
+			assert(0);
+			break;
+		}
+		break;
+	case SearchEnemy:
+		f << (st.search.room ? st.search.room->index : -1);
+		break;
+	}
 	f << have_potion;
 	f << have_mp_potion;
 	f << potion;
-	f << idle_action;
-	switch(idle_action)
-	{
-	case AIController::Idle_None:
-	case AIController::Idle_Animation:
-		break;
-	case AIController::Idle_Rot:
-		f << idle_data.rot;
-		break;
-	case AIController::Idle_Move:
-	case AIController::Idle_TrainCombat:
-	case AIController::Idle_Pray:
-		f << idle_data.pos;
-		break;
-	case AIController::Idle_Look:
-	case AIController::Idle_WalkTo:
-	case AIController::Idle_Chat:
-	case AIController::Idle_WalkNearUnit:
-	case AIController::Idle_MoveAway:
-		f << idle_data.unit;
-		break;
-	case AIController::Idle_Use:
-	case AIController::Idle_WalkUse:
-	case AIController::Idle_WalkUseEat:
-		f << idle_data.usable->id;
-		break;
-	case AIController::Idle_TrainBow:
-		f << idle_data.obj.pos;
-		f << idle_data.obj.rot;
-		break;
-	case AIController::Idle_MoveRegion:
-	case AIController::Idle_RunRegion:
-		f << idle_data.region.area->area_id;
-		f << idle_data.region.pos;
-		f << idle_data.region.exit;
-		break;
-	default:
-		assert(0);
-		break;
-	}
 	f << city_wander;
 	f << loc_timer;
-	f << shoot_yspeed;
 }
 
 //=================================================================================================
@@ -158,90 +169,132 @@ void AIController::Load(GameReader& f)
 	f >> timer;
 	f >> ignore;
 	f >> morale;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<float>(); // old last_scan
 	f >> start_rot;
-	if(unit->data->spells)
+	if(unit->data->abilities)
 		f >> cooldown;
-	if(state == AIController::Escape)
+	switch(state)
 	{
-		int room_id = f.Read<int>();
-		if(room_id != -1)
-		{
-			if(!game_level->location->outside)
-				escape_room = ((InsideLocation*)game_level->location)->GetLevelData().rooms[room_id];
-			else
-			{
-				game->ReportError(1, Format("Unit %s has escape_room %d.", unit->GetName(), room_id));
-				escape_room = nullptr;
-			}
-		}
+	case Cast:
+		if(LOAD_VERSION >= V_DEV)
+			st.cast.ability = Ability::Get(f.Read<uint>());
 		else
-			escape_room = nullptr;
+		{
+			st.cast.ability = unit->data->abilities->ability[unit->ai_mode];
+			if(LOAD_VERSION < V_0_12)
+				f.Skip<int>(); // old cast_target
+		}
+		break;
+	case Escape:
+		{
+			int room_id = f.Read<int>();
+			if(room_id != -1)
+				st.escape.room = reinterpret_cast<InsideLocation*>(game_level->location)->GetLevelData().rooms[room_id];
+			else
+				st.escape.room = nullptr;
+		}
+		break;
+	case Idle:
+		if(LOAD_VERSION >= V_DEV)
+			LoadIdleAction(f, st.idle, true);
+		break;
+	case SearchEnemy:
+		{
+			int room_id = f.Read<int>();
+			st.search.room = reinterpret_cast<InsideLocation*>(game_level->location)->GetLevelData().rooms[room_id];
+		}
+		break;
 	}
-	else if(state == AIController::Cast && LOAD_VERSION < V_DEV)
-		f.Skip<int>(); // old cast_target
 	f >> have_potion;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> have_mp_potion;
 	else
 		have_mp_potion = HavePotion::Check;
 	f >> potion;
-	f >> idle_action;
-	switch(idle_action)
+	if(LOAD_VERSION < V_DEV)
 	{
-	case AIController::Idle_None:
-	case AIController::Idle_Animation:
+		if(state == Idle)
+			LoadIdleAction(f, st.idle, true);
+		else
+		{
+			StateData::IdleState idle;
+			LoadIdleAction(f, idle, false);
+		}
+	}
+	f >> city_wander;
+	f >> loc_timer;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<float>(); // old shoot_yspeed
+	if(LOAD_VERSION < V_0_12)
+	{
+		bool goto_inn;
+		f >> goto_inn;
+		if(goto_inn)
+			unit->OrderGoToInn();
+	}
+	change_ai_mode = false;
+}
+
+//=================================================================================================
+void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, bool apply)
+{
+	f >> idle.action;
+	switch(idle.action)
+	{
+	case Idle_None:
+	case Idle_Animation:
 		break;
-	case AIController::Idle_Rot:
-		f >> idle_data.rot;
+	case Idle_Rot:
+		f >> idle.rot;
 		break;
-	case AIController::Idle_Move:
-	case AIController::Idle_TrainCombat:
-	case AIController::Idle_Pray:
-		f >> idle_data.pos;
+	case Idle_Move:
+	case Idle_TrainCombat:
+	case Idle_Pray:
+		f >> idle.pos;
 		break;
-	case AIController::Idle_Look:
-	case AIController::Idle_WalkTo:
-	case AIController::Idle_Chat:
-	case AIController::Idle_WalkNearUnit:
-	case AIController::Idle_MoveAway:
-		f >> idle_data.unit;
+	case Idle_Look:
+	case Idle_WalkTo:
+	case Idle_Chat:
+	case Idle_WalkNearUnit:
+	case Idle_MoveAway:
+		f >> idle.unit;
 		break;
-	case AIController::Idle_Use:
-	case AIController::Idle_WalkUse:
-	case AIController::Idle_WalkUseEat:
-		f >> idle_data.usable;
+	case Idle_Use:
+	case Idle_WalkUse:
+	case Idle_WalkUseEat:
+		f >> idle.usable;
 		break;
-	case AIController::Idle_TrainBow:
-		f >> idle_data.obj.pos;
-		f >> idle_data.obj.rot;
-		game->ai_bow_targets.push_back(this);
+	case Idle_TrainBow:
+		f >> idle.obj.pos;
+		f >> idle.obj.rot;
+		if(apply)
+			game->ai_bow_targets.push_back(this);
 		break;
-	case AIController::Idle_MoveRegion:
-	case AIController::Idle_RunRegion:
+	case Idle_MoveRegion:
+	case Idle_RunRegion:
 		{
 			int area_id;
 			f >> area_id;
-			f >> idle_data.region.pos;
+			f >> idle.region.pos;
 			if(LOAD_VERSION >= V_0_11)
 			{
-				f >> idle_data.region.exit;
-				idle_data.region.area = game_level->GetAreaById(area_id);
+				f >> idle.region.exit;
+				idle.region.area = game_level->GetAreaById(area_id);
 			}
 			else
 			{
 				if(area_id == LevelArea::OLD_EXIT_ID)
 				{
-					idle_data.region.exit = true;
-					idle_data.region.area = game_level->GetAreaById(LevelArea::OUTSIDE_ID);
+					idle.region.exit = true;
+					idle.region.area = game_level->GetAreaById(LevelArea::OUTSIDE_ID);
 				}
 				else
 				{
-					idle_data.region.exit = false;
-					idle_data.region.area = game_level->GetAreaById(area_id);
-					if(!idle_data.region.area)
-						idle_data.region.area = game_level->local_area;
+					idle.region.exit = false;
+					idle.region.area = game_level->GetAreaById(area_id);
+					if(!idle.region.area)
+						idle.region.area = game_level->local_area;
 				}
 			}
 		}
@@ -250,17 +303,6 @@ void AIController::Load(GameReader& f)
 		assert(0);
 		break;
 	}
-	f >> city_wander;
-	f >> loc_timer;
-	f >> shoot_yspeed;
-	if(LOAD_VERSION < V_DEV)
-	{
-		bool goto_inn;
-		f >> goto_inn;
-		if(goto_inn)
-			unit->OrderGoToInn();
-	}
-	change_ai_mode = false;
 }
 
 //=================================================================================================
@@ -284,7 +326,7 @@ bool AIController::CheckPotion(bool in_combat)
 			}
 
 			if(unit->ConsumeItem(index) != 3 && this->in_combat)
-				state = AIController::Dodge;
+				state = Dodge;
 			timer = Random(1.f, 1.5f);
 
 			return true;
@@ -294,7 +336,7 @@ bool AIController::CheckPotion(bool in_combat)
 	if(have_mp_potion != HavePotion::No)
 	{
 		Class* clas = unit->GetClass();
-		if(!clas || !clas->mp_bar)
+		if(!clas || !IsSet(clas->flags, Class::F_MP_BAR))
 			have_mp_potion = HavePotion::No;
 		else
 		{
@@ -304,12 +346,14 @@ bool AIController::CheckPotion(bool in_combat)
 				int index = unit->FindManaPotion();
 				if(index == -1)
 				{
+					if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
+						unit->Talk(RandomString(game->txAiNoMpPot));
 					have_mp_potion = HavePotion::No;
 					return false;
 				}
 
 				if(unit->ConsumeItem(index) != 3 && this->in_combat)
-					state = AIController::Dodge;
+					state = Dodge;
 				timer = Random(1.f, 1.5f);
 
 				return true;
@@ -336,12 +380,10 @@ void AIController::Reset()
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;
-	escape_room = nullptr;
 	have_potion = HavePotion::Check;
 	have_mp_potion = HavePotion::Check;
-	idle_action = Idle_None;
+	st.idle.action = Idle_None;
 	change_ai_mode = true;
-	unit->run_attack = false;
 	pf_state = PFS_NOT_USING;
 }
 
@@ -399,7 +441,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bullet_speed) cons
 	float b = -2 * vel.Dot2d(target.pos - unit->pos);
 	float c = -(target.pos - unit->pos).Dot2d();
 
-	float delta = b * b - 4 * a*c;
+	float delta = b * b - 4 * a * c;
 	// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
 	if(delta < 0)
 		return target.GetCenter();
@@ -429,7 +471,7 @@ void AIController::Shout()
 	Unit* target_unit = target;
 	for(Unit* u : unit->area->units)
 	{
-		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == AIController::Fighting
+		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
@@ -444,14 +486,14 @@ void AIController::Shout()
 //=================================================================================================
 void AIController::HitReaction(const Vec3& pos)
 {
-	if(unit->dont_attack || !Any(state, AIController::Idle, AIController::SearchEnemy))
+	if(unit->dont_attack || !Any(state, Idle, SearchEnemy))
 		return;
 
 	target = nullptr;
 	target_last_pos = pos;
-	if(state == AIController::Idle)
+	if(state == Idle)
 		change_ai_mode = true;
-	state = AIController::SeenEnemy;
+	state = SeenEnemy;
 	timer = Random(10.f, 15.f);
 	city_wander = false;
 	if(!unit->data->sounds->Have(SOUND_SEE_ENEMY))
@@ -473,12 +515,12 @@ void AIController::HitReaction(const Vec3& pos)
 		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->dont_attack)
 			continue;
 
-		if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy)
+		if((u->ai->state == Idle || u->ai->state == SearchEnemy)
 			&& Vec3::Distance(unit->pos, u->pos) <= 20.f && game_level->CanSee(*unit, *u))
 		{
 			AIController* ai2 = u->ai;
 			ai2->target_last_pos = pos;
-			ai2->state = AIController::SeenEnemy;
+			ai2->state = SeenEnemy;
 			ai2->timer = Random(5.f, 10.f);
 		}
 	}
@@ -488,13 +530,13 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->mesh_inst->mesh->head.n_groups == 1 || unit->weapon_state == WS_TAKEN) && next_attack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->mesh_inst->mesh->head.n_groups == 1 || unit->weapon_state == WeaponState::Taken) && next_attack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 		game->PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 	unit->action = A_ATTACK;
-	unit->attack_id = unit->GetRandomAttack();
+	unit->act.attack.index = unit->GetRandomAttack();
 
 	bool do_power_attack;
 	if(!IsSet(unit->data->flags, F_NO_POWER_ATTACK))
@@ -506,13 +548,17 @@ void AIController::DoAttack(Unit* target, bool running)
 	}
 	else
 		do_power_attack = false;
-	unit->attack_power = 1.f;
 
 	if(running)
 	{
-		unit->attack_power = 1.5f;
-		unit->run_attack = true;
+		unit->act.attack.power = 1.5f;
+		unit->act.attack.run = true;
 		do_power_attack = false;
+	}
+	else
+	{
+		unit->act.attack.power = 1.f;
+		unit->act.attack.run = false;
 	}
 
 	float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
@@ -526,17 +572,17 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	if(unit->mesh_inst->mesh->head.n_groups > 1)
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+		unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 		unit->mesh_inst->groups[1].speed = speed;
 	}
 	else
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
+		unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 0);
 		unit->mesh_inst->groups[0].speed = speed;
 		unit->animation = ANI_PLAY;
 	}
-	unit->animation_state = (do_power_attack ? 0 : 1);
-	unit->hitted = !target;
+	unit->animation_state = (do_power_attack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
+	unit->act.attack.hitted = !target;
 
 	if(Net::IsOnline())
 	{

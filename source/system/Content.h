@@ -1,13 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+class AbilityLoader;
 class BuildingLoader;
 class ClassLoader;
 class DialogLoader;
 class ItemLoader;
 class ObjectLoader;
 class QuestLoader;
-class SpellLoader;
+class RequiredLoader;
 class UnitLoader;
 
 //-----------------------------------------------------------------------------
@@ -18,18 +19,21 @@ public:
 	{
 		Items,
 		Objects,
-		Spells,
+		Abilities,
 		Dialogs,
 		Classes,
 		Units,
 		Buildings,
 		Musics,
 		Quests,
+		Required,
 
 		Max
 	};
 
 	Content();
+	~Content();
+	void Cleanup();
 	void LoadContent(delegate<void(Id)> callback);
 	void LoadVersion();
 	void CleanupContent();
@@ -47,13 +51,14 @@ public:
 	bool require_update;
 
 private:
+	AbilityLoader* ability_loader;
 	BuildingLoader* building_loader;
 	ClassLoader* class_loader;
 	DialogLoader* dialog_loader;
 	ItemLoader* item_loader;
 	ObjectLoader* object_loader;
 	QuestLoader* quest_loader;
-	SpellLoader* spell_loader;
+	RequiredLoader* required_loader;
 	UnitLoader* unit_loader;
 };
 

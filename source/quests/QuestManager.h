@@ -104,6 +104,7 @@ public:
 	void RemoveQuestUnits(bool on_leave);
 	void HandleQuestEvent(Quest_Event* event);
 	void UpdateQuestsLocal(float dt);
+	void UpgradeQuests();
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
@@ -137,6 +138,7 @@ private:
 	vector<QuestInfo> infos;
 	vector<QuestItemRequest*> quest_item_requests;
 	vector<QuestRequest> quest_requests;
+	vector<Quest*> upgrade_quests;
 	int force;
 	QuestList* quests_mayor, *quests_captain, *quests_random;
 	std::map<string, QuestHandler*> special_handlers, special_if_handlers, format_str_handlers;

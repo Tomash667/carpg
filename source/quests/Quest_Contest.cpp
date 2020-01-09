@@ -338,16 +338,16 @@ void Quest_Contest::Update(float dt)
 			{
 				state = CONTEST_FINISH;
 				state2 = 3;
-				innkeeper.ai->idle_action = AIController::Idle_Rot;
-				innkeeper.ai->idle_data.rot = innkeeper.ai->start_rot;
+				innkeeper.ai->st.idle.action = AIController::Idle_Rot;
+				innkeeper.ai->st.idle.rot = innkeeper.ai->start_rot;
 				innkeeper.ai->timer = 3.f;
 				innkeeper.busy = Unit::Busy_Yes;
 				innkeeper.Talk(txContestNoPeople);
 			}
 			else
 			{
-				innkeeper.ai->idle_action = AIController::Idle_Rot;
-				innkeeper.ai->idle_data.rot = innkeeper.ai->start_rot;
+				innkeeper.ai->st.idle.action = AIController::Idle_Rot;
+				innkeeper.ai->st.idle.rot = innkeeper.ai->start_rot;
 				innkeeper.ai->timer = 3.f;
 				innkeeper.busy = Unit::Busy_Yes;
 				innkeeper.Talk(txContestTalk[0]);

@@ -6,21 +6,22 @@
 //-----------------------------------------------------------------------------
 enum GAME_KEYS
 {
-	GK_MOVE_FORWARD, // W, up arrow
-	GK_MOVE_BACK, // S, down arrow
-	GK_MOVE_LEFT, // A, left arrow
-	GK_MOVE_RIGHT, // D, right arrow
+	GK_MOVE_FORWARD, // W
+	GK_MOVE_BACK, // S
+	GK_MOVE_LEFT, // A
+	GK_MOVE_RIGHT, // D
 	GK_WALK, // shift
-	GK_ROTATE_LEFT, // Q
-	GK_ROTATE_RIGHT, // E
+	GK_ROTATE_LEFT, // (None)
+	GK_ROTATE_RIGHT, // (None)
 	GK_TAKE_WEAPON, // spacebar
-	GK_ATTACK_USE, // Z, left mouse
-	GK_USE, // R
-	GK_BLOCK, // X, right mouse
+	GK_ATTACK_USE, // left mouse
+	GK_SECONDARY_ATTACK, // Z, mouse 4
+	GK_USE, // E
+	GK_BLOCK, // right mouse
 	GK_STATS, // C
 	GK_INVENTORY, // I
 	GK_TEAM_PANEL, // T
-	GK_ACTION_PANEL, // K
+	GK_ABILITY_PANEL, // K
 	GK_JOURNAL, // J
 	GK_MINIMAP, // M
 	GK_QUICKSAVE, // F5
@@ -28,13 +29,13 @@ enum GAME_KEYS
 	GK_TAKE_ALL, // F
 	GK_SELECT_DIALOG, // Enter
 	GK_SKIP_DIALOG, // Space
-	GK_TALK_BOX, // N
+	GK_TALK_BOX, // Tab
 	GK_PAUSE, // Pause
 	GK_YELL, // Y
 	GK_CONSOLE, // ~
 	GK_ROTATE_CAMERA, // V
 	GK_AUTOWALK, // F
-	GK_TOGGLE_WALK, // none
+	GK_TOGGLE_WALK, // Caps Lock
 	GK_SHORTCUT1, // 1
 	GK_SHORTCUT2, // 2
 	GK_SHORTCUT3, // 3

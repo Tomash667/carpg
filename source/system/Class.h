@@ -3,6 +3,12 @@
 //-----------------------------------------------------------------------------
 struct Class
 {
+	enum Flags
+	{
+		F_MP_BAR = 1 << 0,
+		F_MAGE_ITEMS = 1 << 1
+	};
+
 	struct LevelEntry
 	{
 		enum Type
@@ -32,11 +38,11 @@ struct Class
 	vector<LevelEntry> level;
 	Texture* icon;
 	UnitData* player, *hero, *crazy;
-	Action* action;
+	Ability* ability;
 	vector<PotionEntry> potions;
-	bool mp_bar;
+	int flags;
 
-	Class() : icon(nullptr), player(nullptr), hero(nullptr), crazy(nullptr), action(nullptr), mp_bar(false)
+	Class() : icon(nullptr), player(nullptr), hero(nullptr), crazy(nullptr), ability(nullptr), flags(0)
 	{
 	}
 	bool IsPickable() const { return player != nullptr; }
@@ -55,7 +61,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// pre V_DEV
+// pre V_0_12
 namespace old
 {
 	enum class Class

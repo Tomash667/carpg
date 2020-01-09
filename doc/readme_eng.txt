@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: http://carpg.pl/en
-Version: 0.11.1
-Date: 2019-08-12
+Version: 0.12.2
+Date: 2019-10-27
 
 ===============================================================================
 1) Table of contents
@@ -50,26 +50,25 @@ people. Expect changes for the better!
 	Ctrl + U - unlock cursor in windowed mode
 	~ - console
 3.2. In game
-	Z / left mouse button - use, attack, loot, talk
-	R - use, loot, talk with while holding weapon
-	X / right mouse button - block
-	W / up arrow - move forward
-	S / down arrow - move backward
-	A / left arrow - move left
-	D / right arrow - move right
-	Q - rotate left
-	E - rotate right
-	1 - equip melee weapon and shield
-	2 - equip ranged weapon
-	3 - use action
-	4 - drink best healing potion
+	left mouse button - use, attack, loot, talk
+	Z / 4 mouse button - secondary attack
+	E - use, loot, talk with while holding weapon
+	right mouse button - block
+	W - move forward
+	S - move backward
+	A - move left
+	D - move right
+	1..0 - ability/item shortcuts
 	F - auto walk forward
 	Caps Lock - toggle run/walk
 	Y - yell
-	TAB - character screen, team, inventory
+	C - character screen
+	I - inventory
+	T - team
+	K - abilities
 	J - journal
 	M - minimap
-	N - talk box
+	Tab - talk box
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
 	F2 - show/hide fps
@@ -108,9 +107,10 @@ people. Expect changes for the better!
 	that it will be stronger. This is useful against resistant enemies which
 	attack normal asking little or nothing. Attack on the run is like 0.25 of
 	powerful attack but you cannot stop.
-* Actions - Use action by pressing key 3 (by default), it will draw area of effect
-	used by this action. Press left mouse button to use, right to cancel. Red
-	area means that action can be used in this place.
+* Abilities - Use ability by pressing key 3 (by default), it will draw area of effect
+	used by this ability. Press left mouse button to use, right to cancel. Red
+	area means that ability can be used in this place. Some spells can be cast on
+	yourself by holding walk back, player will be highlighted.
 * Stamina - Attacking uses stamina, if you run out of stamina you can't run or
 	attack. Blocking uses stamina too, and if you loss all stamina block is
 	broken. Stop attacking to restore stamina, not walking restore it faster.
@@ -183,7 +183,7 @@ Available commands:
 	add_learning_points - add learning point to selected unit [count - default 1].
 	add_team_item - add team item to player inventory (add_team_item id [count]).
 	arena - spawns enemies on arena (example arena 3 rat vs 2 wolf).
-	break_action - break unit current action ('break 1' targets self)
+	break_action - break unit current action ('break 1' targets self).
 	citizen - citizens/crazies don't attack player or his team.
 	clean_level - remove all corpses and blood from level (clean_level [building_id]).
 	clear - clear text.
@@ -198,22 +198,20 @@ Available commands:
 	draw_phy - draw physical colliders (draw_phy 0/1).
 	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
 	exit - exit to menu.
-	fall - unit fall on ground for some time ('fall 1' targets self)
-	fog - draw fog (fog 0/1).
-	force_quest - force next random quest to select (use list quest or none/reset)
+	fall - unit fall on ground for some time ('fall 1' targets self).
+	force_quest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
 	grass_range - grass draw range (grass_range 0-100).
 	heal - heal player.
 	heal_unit - heal unit in front of player.
 	help - display information about command (help [command]).
-	hurt - deal 100 damage to unit ('hurt 1' targets self)
+	hurt - deal 100 damage to unit ('hurt 1' targets self).
 	invisible - ai can't see player (invisible 0/1).
 	kick - kick player from server (kick nick).
 	kill - kill unit in front of player.
 	killall - kills all enemy units in current level, with 1 it kills allies too, with 2 kill inside buildings (killall [1/2]).
 	leader - change team leader (leader nick).
-	lighting - use lighting (lighting 0/1).
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
 	list_effects - display selected unit effects.
 	list_perks - display selected unit perks.
@@ -238,7 +236,7 @@ Available commands:
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue]).
 	ready - set player as ready/unready.
-	refresh_cooldown - refresh action cooldown/charges.
+	refresh_cooldown - refresh ability cooldown/charges.
 	reload_shaders - reload shaders.
 	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
@@ -246,7 +244,6 @@ Available commands:
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.
-	refresh_cooldown - refresh action cooldown/charges.
 	s - send message to all players, short from say (say msg).
 	save - save game (save 1-10 [text] or name).
 	say - send message to all players (say msg).
@@ -264,6 +261,8 @@ Available commands:
 	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
 	tile_info - write current terrain tile info to console.
+	use_fog - draw fog (use_fog 0/1).
+	use_lighting - use lighting (use_lighting 0/1).
 	version - displays game version.
 	w - send private message to player, short from whisper (w nick msg).
 	warp - move player into building (warp inn/arena/hall).
@@ -294,6 +293,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* nick - nick in multiplayer game
 	* nomusic (true [false]) - don't load music, can't turn it on
 	* nosound (true [false]) - don't load sound, can't turn it on
+	* packet_logger (true [false]) - logging MP packets
 	* play_music ([true] false) - play music
 	* play_sound ([true] false) - play sound
 	* port ([37557]) - port in multiplayer
@@ -363,6 +363,7 @@ Thanks for bug founding:
 	MikelkCZ
 	MildlyPhilosophicalHobbit
 	Minister of Death
+	mishka
 	Paradox Edge
 	Savagesheep
 	thebard88

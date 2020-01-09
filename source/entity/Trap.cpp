@@ -43,12 +43,12 @@ void Trap::Load(FileReader& f, bool local)
 {
 	TRAP_TYPE type;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
 	f >> type;
 	f >> pos;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 
 	base = &BaseTrap::traps[type];

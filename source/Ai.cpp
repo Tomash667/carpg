@@ -6,7 +6,7 @@
 #include "City.h"
 #include "InsideLocation.h"
 #include "LevelGui.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Team.h"
 #include "SoundManager.h"
 #include "Profiler.h"
@@ -19,6 +19,7 @@
 #include "GameGui.h"
 #include "Quest_Scripted.h"
 #include "ScriptManager.h"
+#include "GameResources.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -154,9 +155,9 @@ void Game::UpdateAi(float dt)
 		ai.ignore -= dt;
 		ai.pf_timer -= dt;
 		ai.morale = Min(ai.morale + dt, u.GetMaxMorale());
-		if(u.data->spells)
+		if(u.data->abilities)
 		{
-			for(int i = 0; i < MAX_SPELLS; ++i)
+			for(int i = 0; i < MAX_ABILITIES; ++i)
 				ai.cooldown[i] -= dt;
 		}
 
@@ -174,7 +175,7 @@ void Game::UpdateAi(float dt)
 				float dir = Vec3::LookAtAngle(u.pos, look_target->pos);
 				if(!Equal(u.rot, dir))
 				{
-					const float rot_speed = 3.f*dt;
+					const float rot_speed = 3.f * dt;
 					const float rot_diff = AngleDiff(u.rot, dir);
 					if(rot_diff < rot_speed)
 						u.rot = dir;
@@ -216,7 +217,6 @@ void Game::UpdateAi(float dt)
 			if(u.action == A_BLOCK)
 			{
 				u.action = A_NONE;
-				u.mesh_inst->frame_end_info2 = false;
 				u.mesh_inst->Deactivate(1);
 				if(Net::IsOnline())
 				{
@@ -230,7 +230,7 @@ void Game::UpdateAi(float dt)
 			ai.state = AIController::Escape;
 			ai.timer = Random(2.5f, 5.f);
 			ai.target = nullptr;
-			ai.escape_room = nullptr;
+			ai.st.escape.room = nullptr;
 			ai.ignore = 0.f;
 			ai.target_last_pos = enemy->pos;
 			ai.in_combat = true;
@@ -246,25 +246,26 @@ void Game::UpdateAi(float dt)
 		bool try_phase = false;
 
 		// casting of non combat spells
-		if(u.data->spells && u.data->spells->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
+		if(u.data->abilities && u.data->abilities->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
 			&& u.busy == Unit::Busy_No)
 		{
-			for(int i = 0; i < MAX_SPELLS; ++i)
+			for(int i = 0; i < MAX_ABILITIES; ++i)
 			{
-				Spell* spell = u.data->spells->spell[i];
-				if(spell && IsSet(spell->flags, Spell::NonCombat)
-					&& u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f
-					&& (spell->mana <= 0 || u.mp >= spell->mana))
+				Ability* ability = u.data->abilities->ability[i];
+				if(ability && IsSet(ability->flags, Ability::NonCombat)
+					&& u.level >= u.data->abilities->level[i] && ai.cooldown[i] <= 0.f
+					&& u.mp >= ability->mana
+					&& u.stamina >= ability->stamina)
 				{
-					float spell_range = spell->move_range,
+					float spell_range = ability->move_range,
 						best_prio = -999.f, dist;
 					Unit* spell_target = nullptr;
 
 					// if near enemies, cast only on near targets
 					if(best_dist < 3.f)
-						spell_range = spell->range;
+						spell_range = ability->range;
 
-					if(IsSet(spell->flags, Spell::Raise))
+					if(ability->effect == Ability::Raise)
 					{
 						// raise undead spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -282,7 +283,7 @@ void Game::UpdateAi(float dt)
 							}
 						}
 					}
-					else
+					else if(ability->effect == Ability::Heal)
 					{
 						// healing spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -308,9 +309,9 @@ void Game::UpdateAi(float dt)
 
 					if(spell_target)
 					{
-						u.attack_id = i;
 						ai.state = AIController::Cast;
 						ai.target = spell_target;
+						ai.st.cast.ability = ability;
 						break;
 					}
 				}
@@ -369,10 +370,10 @@ void Game::UpdateAi(float dt)
 					}
 					else if(enemy || ai.alert_target)
 					{
-						if(u.action != A_ANIMATION2 || u.animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
+						if(u.action != A_USE_USABLE || u.animation_state == AS_USE_USABLE_MOVE_TO_ENDPOINT)
 							break;
 						// interrupt object usage
-						ai.idle_action = AIController::Idle_None;
+						ai.st.idle.action = AIController::Idle_None;
 						ai.timer = Random(2.f, 5.f);
 						ai.city_wander = false;
 						u.StopUsingUsable();
@@ -381,12 +382,12 @@ void Game::UpdateAi(float dt)
 					bool hide_weapon = true;
 					if(u.action != A_NONE)
 						hide_weapon = false;
-					else if(ai.idle_action == AIController::Idle_TrainCombat)
+					else if(ai.st.idle.action == AIController::Idle_TrainCombat)
 					{
 						if(u.weapon_taken == W_ONE_HANDED)
 							hide_weapon = false;
 					}
-					else if(ai.idle_action == AIController::Idle_TrainBow)
+					else if(ai.st.idle.action == AIController::Idle_TrainBow)
 					{
 						if(u.weapon_taken == W_BOW)
 							hide_weapon = false;
@@ -399,10 +400,9 @@ void Game::UpdateAi(float dt)
 					}
 
 					// fix bug of unkown origin. occurs after arena fight, affecting loosers
-					if(u.weapon_state == WS_HIDING && u.action == A_NONE)
+					if(u.weapon_state == WeaponState::Hiding && u.action == A_NONE)
 					{
-						assert(0);
-						u.weapon_state = WS_HIDDEN;
+						u.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 						ai.potion = -1;
 						ReportError(8, Format("Unit %s was hiding weapon without action.", u.GetRealName()));
 					}
@@ -424,7 +424,6 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_BLOCK)
 					{
 						u.action = A_NONE;
-						u.mesh_inst->frame_end_info2 = false;
 						u.mesh_inst->Deactivate(1);
 						if(Net::IsOnline())
 						{
@@ -478,10 +477,10 @@ void Game::UpdateAi(float dt)
 								// follow the target
 								if(u.usable)
 								{
-									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+									if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animation_state != AS_USE_USABLE_MOVE_TO_ENDPOINT))
 									{
 										u.StopUsingUsable();
-										ai.idle_action = AIController::Idle_None;
+										ai.st.idle.action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
 									}
@@ -489,21 +488,21 @@ void Game::UpdateAi(float dt)
 								else if(order_unit->area != u.area)
 								{
 									// target is in another area
-									ai.idle_action = AIController::Idle_RunRegion;
-									ai.idle_data.region.exit = false;
+									ai.st.idle.action = AIController::Idle_RunRegion;
+									ai.st.idle.region.exit = false;
 									ai.timer = Random(15.f, 30.f);
 
 									if(u.area->area_type == LevelArea::Type::Outside)
 									{
 										// target is in the building but hero is not - go to the entrance
-										ai.idle_data.region.area = order_unit->area;
-										ai.idle_data.region.pos = static_cast<InsideBuilding*>(order_unit->area)->enter_region.Midpoint().XZ();
+										ai.st.idle.region.area = order_unit->area;
+										ai.st.idle.region.pos = static_cast<InsideBuilding*>(order_unit->area)->enter_region.Midpoint().XZ();
 									}
 									else
 									{
 										// target is not in the building but the hero is - leave the building
-										ai.idle_data.region.area = game_level->local_area;
-										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+										ai.st.idle.region.area = game_level->local_area;
+										ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
 
 									if(u.IsHero())
@@ -522,7 +521,7 @@ void Game::UpdateAi(float dt)
 									move_type = MovePoint;
 									target_pos = order_unit->pos;
 									run_type = WalkIfNear2;
-									ai.idle_action = AIController::Idle_None;
+									ai.st.idle.action = AIController::Idle_None;
 									ai.city_wander = false;
 									ai.timer = Random(2.f, 5.f);
 									path_unit_ignore = order_unit;
@@ -536,10 +535,10 @@ void Game::UpdateAi(float dt)
 								// move away to not block
 								if(u.usable)
 								{
-									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+									if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animation_state != AS_USE_USABLE_MOVE_TO_ENDPOINT))
 									{
 										u.StopUsingUsable();
-										ai.idle_action = AIController::Idle_None;
+										ai.st.idle.action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
 										use_idle = false;
@@ -556,7 +555,7 @@ void Game::UpdateAi(float dt)
 											move_type = MoveAway;
 											target_pos = unit.pos;
 											run_type = Walk;
-											ai.idle_action = AIController::Idle_None;
+											ai.st.idle.action = AIController::Idle_None;
 											ai.timer = Random(2.f, 5.f);
 											ai.city_wander = false;
 											use_idle = false;
@@ -570,21 +569,21 @@ void Game::UpdateAi(float dt)
 					case ORDER_LEAVE:
 						if(u.usable)
 						{
-							if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+							if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animation_state != AS_USE_USABLE_MOVE_TO_ENDPOINT))
 							{
 								u.StopUsingUsable();
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 								ai.timer = Random(1.f, 2.f);
 								ai.city_wander = true;
 							}
 						}
 						else if(ai.timer <= 0.f)
 						{
-							ai.idle_action = AIController::Idle_MoveRegion;
+							ai.st.idle.action = AIController::Idle_MoveRegion;
 							ai.timer = Random(30.f, 40.f);
-							ai.idle_data.region.area = game_level->local_area;
-							ai.idle_data.region.exit = false;
-							ai.idle_data.region.pos = u.area->area_type == LevelArea::Type::Building ?
+							ai.st.idle.region.area = game_level->local_area;
+							ai.st.idle.region.exit = false;
+							ai.st.idle.region.pos = u.area->area_type == LevelArea::Type::Building ?
 								static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ() :
 								game_level->GetExitPos(u);
 						}
@@ -633,10 +632,10 @@ void Game::UpdateAi(float dt)
 						{
 							if(u.usable)
 							{
-								if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+								if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animation_state != AS_USE_USABLE_MOVE_TO_ENDPOINT))
 								{
 									u.StopUsingUsable();
-									ai.idle_action = AIController::Idle_None;
+									ai.st.idle.action = AIController::Idle_None;
 									ai.timer = Random(1.f, 2.f);
 									use_idle = false;
 								}
@@ -649,10 +648,10 @@ void Game::UpdateAi(float dt)
 									// go to inn
 									if(ai.timer <= 0.f)
 									{
-										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.area = inn;
-										ai.idle_data.region.exit = false;
-										ai.idle_data.region.pos = inn->enter_region.Midpoint().XZ();
+										ai.st.idle.action = AIController::Idle_MoveRegion;
+										ai.st.idle.region.area = inn;
+										ai.st.idle.region.exit = false;
+										ai.st.idle.region.pos = inn->enter_region.Midpoint().XZ();
 										ai.timer = Random(30.f, 40.f);
 										ai.city_wander = true;
 									}
@@ -664,17 +663,17 @@ void Game::UpdateAi(float dt)
 										// is inside inn - move to random point
 										u.OrderNext();
 										ai.timer = Random(5.f, 7.5f);
-										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos = (Rand() % 5 == 0 ? inn->region2.Midpoint() : inn->region1.Midpoint()).XZ();
+										ai.st.idle.action = AIController::Idle_Move;
+										ai.st.idle.pos = (Rand() % 5 == 0 ? inn->region2.Midpoint() : inn->region1.Midpoint()).XZ();
 									}
 									else
 									{
 										// is not inside inn - go outside
 										ai.timer = Random(15.f, 30.f);
-										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.area = game_level->local_area;
-										ai.idle_data.region.exit = false;
-										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+										ai.st.idle.action = AIController::Idle_MoveRegion;
+										ai.st.idle.region.area = game_level->local_area;
+										ai.st.idle.region.exit = false;
+										ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
 								}
 							}
@@ -700,7 +699,7 @@ void Game::UpdateAi(float dt)
 
 					if(u.action == A_NONE && ai.timer <= 0.f)
 					{
-						if(Any(ai.idle_action, AIController::Idle_TrainCombat, AIController::Idle_TrainBow) && u.weapon_state != WS_HIDDEN)
+						if(Any(ai.st.idle.action, AIController::Idle_TrainCombat, AIController::Idle_TrainBow) && u.weapon_state != WeaponState::Hidden)
 						{
 							if(u.action == A_NONE)
 							{
@@ -717,38 +716,38 @@ void Game::UpdateAi(float dt)
 							if(obj)
 							{
 								// pray at the altar
-								ai.idle_action = AIController::Idle_Pray;
-								ai.idle_data.pos = obj->pos;
+								ai.st.idle.action = AIController::Idle_Pray;
+								ai.st.idle.pos = obj->pos;
 								ai.timer = 120.f;
 								u.animation = ANI_KNEELS;
 							}
 							else
 							{
 								// no altar - stay in place
-								ai.idle_action = AIController::Idle_Animation;
-								ai.idle_data.rot = u.rot;
+								ai.st.idle.action = AIController::Idle_Animation;
+								ai.st.idle.rot = u.rot;
 								ai.timer = 120.f;
 							}
 						}
-						else if(ai.idle_action == AIController::Idle_Look)
+						else if(ai.st.idle.action == AIController::Idle_Look)
 						{
 							// stop looking at the person, go look somewhere else
-							ai.idle_action = AIController::Idle_Rot;
+							ai.st.idle.action = AIController::Idle_Rot;
 							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
-								ai.idle_data.rot = ai.start_rot;
+								ai.st.idle.rot = ai.start_rot;
 							else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
-								ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
+								ai.st.idle.rot = RandomRot(ai.start_rot, PI / 4);
 							else
-								ai.idle_data.rot = Clip(Vec3::LookAtAngle(u.pos, ai.idle_data.pos) + Random(-PI / 2, PI / 2));
+								ai.st.idle.rot = Clip(Vec3::LookAtAngle(u.pos, ai.st.idle.pos) + Random(-PI / 2, PI / 2));
 							ai.timer = Random(2.f, 5.f);
 						}
-						else if(ai.idle_action == AIController::Idle_Chat)
+						else if(ai.st.idle.action == AIController::Idle_Chat)
 						{
 							u.talking = false;
 							u.mesh_inst->need_update = true;
-							ai.idle_action = AIController::Idle_None;
+							ai.st.idle.action = AIController::Idle_None;
 						}
-						else if(ai.idle_action == AIController::Idle_Use)
+						else if(ai.st.idle.action == AIController::Idle_Use)
 						{
 							if(u.usable->base == stool && u.area->area_type == LevelArea::Type::Building)
 							{
@@ -769,7 +768,7 @@ void Game::UpdateAi(float dt)
 									break;
 								case 2: // stop sitting
 									u.StopUsingUsable();
-									ai.idle_action = AIController::Idle_None;
+									ai.st.idle.action = AIController::Idle_None;
 									ai.timer = Random(2.5f, 5.f);
 									break;
 								}
@@ -777,38 +776,35 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								u.StopUsingUsable();
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 								ai.timer = Random(2.5f, 5.f);
 							}
 						}
-						else if(ai.idle_action == AIController::Idle_WalkUseEat)
+						else if(ai.st.idle.action == AIController::Idle_WalkUseEat)
 						{
 							if(u.usable)
 							{
-								if(u.animation_state != 0)
+								int what;
+								if(u.IsDrunkman())
+									what = Rand() % 2;
+								else
+									what = 1;
+								switch(what)
 								{
-									int what;
-									if(u.IsDrunkman())
-										what = Rand() % 2;
-									else
-										what = 1;
-									switch(what)
-									{
-									case 0: // drink
-										u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
-										ai.timer = Random(10.f, 15.f);
-										break;
-									case 1: // eat
-										u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
-										ai.timer = Random(10.f, 15.f);
-										break;
-									}
-									ai.idle_action = AIController::Idle_Use;
+								case 0: // drink
+									u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
+									ai.timer = Random(10.f, 15.f);
+									break;
+								case 1: // eat
+									u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
+									ai.timer = Random(10.f, 15.f);
+									break;
 								}
+								ai.st.idle.action = AIController::Idle_Use;
 							}
 							else
 							{
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 								ai.timer = Random(2.f, 3.f);
 							}
 						}
@@ -824,8 +820,8 @@ void Game::UpdateAi(float dt)
 									{
 										// go to random position
 										ai.loc_timer = ai.timer = Random(30.f, 120.f);
-										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos = game_level->city_ctx->buildings[Rand() % game_level->city_ctx->buildings.size()].walk_pt
+										ai.st.idle.action = AIController::Idle_Move;
+										ai.st.idle.pos = game_level->city_ctx->buildings[Rand() % game_level->city_ctx->buildings.size()].walk_pt
 											+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 									}
 									else if(where == 1)
@@ -833,17 +829,17 @@ void Game::UpdateAi(float dt)
 										// go to inn
 										InsideBuilding* inn = game_level->city_ctx->FindInn();
 										ai.loc_timer = ai.timer = Random(75.f, 150.f);
-										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.area = inn;
-										ai.idle_data.region.exit = false;
-										ai.idle_data.region.pos = inn->enter_region.Midpoint().XZ();
+										ai.st.idle.action = AIController::Idle_MoveRegion;
+										ai.st.idle.region.area = inn;
+										ai.st.idle.region.exit = false;
+										ai.st.idle.region.pos = inn->enter_region.Midpoint().XZ();
 									}
 									else if(where == 2)
 									{
 										// go to training grounds
 										ai.loc_timer = ai.timer = Random(75.f, 150.f);
-										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos = game_level->city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
+										ai.st.idle.action = AIController::Idle_Move;
+										ai.st.idle.pos = game_level->city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
 											+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 									}
 								}
@@ -851,10 +847,10 @@ void Game::UpdateAi(float dt)
 								{
 									// leave building
 									ai.loc_timer = ai.timer = Random(15.f, 30.f);
-									ai.idle_action = AIController::Idle_MoveRegion;
-									ai.idle_data.region.area = game_level->local_area;
-									ai.idle_data.region.exit = false;
-									ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+									ai.st.idle.action = AIController::Idle_MoveRegion;
+									ai.st.idle.region.area = game_level->local_area;
+									ai.st.idle.region.exit = false;
+									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 								}
 								ai.city_wander = true;
 							}
@@ -862,8 +858,8 @@ void Game::UpdateAi(float dt)
 							{
 								// go near random building
 								ai.loc_timer = ai.timer = Random(30.f, 120.f);
-								ai.idle_action = AIController::Idle_Move;
-								ai.idle_data.pos = game_level->city_ctx->buildings[Rand() % game_level->city_ctx->buildings.size()].walk_pt
+								ai.st.idle.action = AIController::Idle_Move;
+								ai.st.idle.pos = game_level->city_ctx->buildings[Rand() % game_level->city_ctx->buildings.size()].walk_pt
 									+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 								ai.city_wander = true;
 							}
@@ -872,8 +868,8 @@ void Game::UpdateAi(float dt)
 						{
 							// walk to guard target when too far
 							ai.timer = Random(2.f, 4.f);
-							ai.idle_action = AIController::Idle_WalkNearUnit;
-							ai.idle_data.unit = order_unit;
+							ai.st.idle.action = AIController::Idle_WalkNearUnit;
+							ai.st.idle.unit = order_unit;
 							ai.city_wander = false;
 						}
 						else if(IsSet(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
@@ -901,8 +897,8 @@ void Game::UpdateAi(float dt)
 							// start mining if there is anything to mine
 							if(usable)
 							{
-								ai.idle_action = AIController::Idle_WalkUse;
-								ai.idle_data.usable = usable;
+								ai.st.idle.action = AIController::Idle_WalkUse;
+								ai.st.idle.usable = usable;
 								ai.timer = Random(5.f, 10.f);
 							}
 							else
@@ -915,7 +911,7 @@ void Game::UpdateAi(float dt)
 						{
 							// drink something
 							u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable(), true);
-							ai.idle_action = AIController::Idle_None;
+							ai.st.idle.action = AIController::Idle_None;
 							ai.timer = Random(3.f, 6.f);
 						}
 						else
@@ -933,14 +929,14 @@ void Game::UpdateAi(float dt)
 								if(dist > 16.f)
 								{
 									ai.timer = Random(5.f, 10.f);
-									ai.idle_action = AIController::Idle_WalkNearUnit;
-									ai.idle_data.unit = tournament->GetMaster();
+									ai.st.idle.action = AIController::Idle_WalkNearUnit;
+									ai.st.idle.unit = tournament->GetMaster();
 								}
 								else
 								{
 									ai.timer = Random(4.f, 8.f);
-									ai.idle_action = AIController::Idle_Move;
-									ai.idle_data.pos = tournament->GetMaster()->pos + Vec3::Random(Vec3(-10, 0, -10), Vec3(10, 0, 10));
+									ai.st.idle.action = AIController::Idle_Move;
+									ai.st.idle.pos = tournament->GetMaster()->pos + Vec3::Random(Vec3(-10, 0, -10), Vec3(10, 0, 10));
 								}
 							}
 							else if(IsSet(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
@@ -966,16 +962,16 @@ void Game::UpdateAi(float dt)
 											if(o.base == manekin)
 											{
 												ai.timer = Random(10.f, 30.f);
-												ai.idle_action = AIController::Idle_TrainCombat;
-												ai.idle_data.pos = o.pos;
+												ai.st.idle.action = AIController::Idle_TrainCombat;
+												ai.st.idle.pos = o.pos;
 											}
 											else
 											{
 												ai.timer = Random(15.f, 35.f);
-												ai.idle_action = AIController::Idle_TrainBow;
-												ai.idle_data.obj.pos = o.pos;
-												ai.idle_data.obj.rot = o.rot.y;
-												ai.idle_data.obj.ptr = &o;
+												ai.st.idle.action = AIController::Idle_TrainBow;
+												ai.st.idle.obj.pos = o.pos;
+												ai.st.idle.obj.rot = o.rot.y;
+												ai.st.idle.obj.ptr = &o;
 											}
 											do_cw.clear();
 											what = AI_NONE;
@@ -1032,7 +1028,7 @@ void Game::UpdateAi(float dt)
 								break;
 							case AI_USE:
 								{
-									LocalVector2<Usable*> uses;
+									LocalVector<Usable*> uses;
 									for(vector<Usable*>::iterator it2 = area.usables.begin(), end2 = area.usables.end(); it2 != end2; ++it2)
 									{
 										Usable& use = **it2;
@@ -1047,24 +1043,22 @@ void Game::UpdateAi(float dt)
 									}
 									if(!uses.empty())
 									{
-										ai.idle_action = AIController::Idle_WalkUse;
-										ai.idle_data.usable = uses[Rand() % uses.size()];
+										ai.st.idle.action = AIController::Idle_WalkUse;
+										ai.st.idle.usable = uses[Rand() % uses.size()];
 										ai.timer = Random(3.f, 6.f);
-										if(ai.idle_data.usable->base == stool && Rand() % 3 == 0)
-											ai.idle_action = AIController::Idle_WalkUseEat;
+										if(ai.st.idle.usable->base == stool && Rand() % 3 == 0)
+											ai.st.idle.action = AIController::Idle_WalkUseEat;
 										uses.clear();
 										break;
 									}
 								}
-								// nothing to use, play animation
+							// nothing to use, play animation
 							case AI_ANIMATION:
 								{
 									int id = Rand() % u.data->idles->anims.size();
 									ai.timer = Random(2.f, 5.f);
-									ai.idle_action = AIController::Idle_Animation;
+									ai.st.idle.action = AIController::Idle_Animation;
 									u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
-									u.mesh_inst->groups[0].speed = 1.f;
-									u.mesh_inst->frame_end_info = false;
 									u.animation = ANI_IDLE;
 									if(Net::IsOnline())
 									{
@@ -1079,8 +1073,8 @@ void Game::UpdateAi(float dt)
 								if(u.busy == Unit::Busy_Tournament && Rand() % 2 == 0 && tournament->GetMaster())
 								{
 									ai.timer = Random(1.5f, 2.5f);
-									ai.idle_action = AIController::Idle_Look;
-									ai.idle_data.unit = tournament->GetMaster();
+									ai.st.idle.action = AIController::Idle_Look;
+									ai.st.idle.unit = tournament->GetMaster();
 									break;
 								}
 								else
@@ -1097,21 +1091,21 @@ void Game::UpdateAi(float dt)
 									if(!close_enemies.empty())
 									{
 										ai.timer = Random(1.5f, 2.5f);
-										ai.idle_action = AIController::Idle_Look;
-										ai.idle_data.unit = close_enemies[Rand() % close_enemies.size()];
+										ai.st.idle.action = AIController::Idle_Look;
+										ai.st.idle.unit = close_enemies[Rand() % close_enemies.size()];
 										break;
 									}
 								}
 								// no close units, rotate
 							case AI_ROTATE:
 								ai.timer = Random(2.f, 5.f);
-								ai.idle_action = AIController::Idle_Rot;
+								ai.st.idle.action = AIController::Idle_Rot;
 								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
-									ai.idle_data.rot = ai.start_rot;
+									ai.st.idle.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
-									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
+									ai.st.idle.rot = RandomRot(ai.start_rot, PI / 4);
 								else
-									ai.idle_data.rot = Random(MAX_ANGLE);
+									ai.st.idle.rot = Random(MAX_ANGLE);
 								break;
 							case AI_TALK:
 								{
@@ -1129,8 +1123,8 @@ void Game::UpdateAi(float dt)
 									{
 										Unit* target = close_enemies[Rand() % close_enemies.size()];
 										ai.timer = Random(3.f, 6.f);
-										ai.idle_action = AIController::Idle_WalkTo;
-										ai.idle_data.unit = target;
+										ai.st.idle.action = AIController::Idle_WalkTo;
+										ai.st.idle.unit = target;
 										ai.target_last_pos = target->pos;
 										break;
 									}
@@ -1142,35 +1136,35 @@ void Game::UpdateAi(float dt)
 								if(IsSet(u.data->flags, F_AI_GUARD))
 									break;
 								ai.timer = Random(3.f, 6.f);
-								ai.idle_action = AIController::Idle_Move;
+								ai.st.idle.action = AIController::Idle_Move;
 								ai.city_wander = false;
 								if(IsSet(u.data->flags, F_AI_STAY))
 								{
 									if(Vec3::Distance(u.pos, ai.start_pos) > 2.f)
-										ai.idle_data.pos = ai.start_pos;
+										ai.st.idle.pos = ai.start_pos;
 									else
-										ai.idle_data.pos = u.pos + Vec3::Random(Vec3(-2.f, 0, -2.f), Vec3(2.f, 0, 2.f));
+										ai.st.idle.pos = u.pos + Vec3::Random(Vec3(-2.f, 0, -2.f), Vec3(2.f, 0, 2.f));
 								}
 								else
-									ai.idle_data.pos = u.pos + Vec3::Random(Vec3(-5.f, 0, -5.f), Vec3(5.f, 0, 5.f));
-								if(game_level->city_ctx && !game_level->city_ctx->IsInsideCity(ai.idle_data.pos))
+									ai.st.idle.pos = u.pos + Vec3::Random(Vec3(-5.f, 0, -5.f), Vec3(5.f, 0, 5.f));
+								if(game_level->city_ctx && !game_level->city_ctx->IsInsideCity(ai.st.idle.pos))
 								{
 									ai.timer = Random(2.f, 4.f);
-									ai.idle_action = AIController::Idle_None;
+									ai.st.idle.action = AIController::Idle_None;
 								}
 								else if(!game_level->location->outside)
 								{
 									InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
-									if(!inside->GetLevelData().IsValidWalkPos(ai.idle_data.pos, u.GetUnitRadius()))
+									if(!inside->GetLevelData().IsValidWalkPos(ai.st.idle.pos, u.GetUnitRadius()))
 									{
 										ai.timer = Random(2.f, 4.f);
-										ai.idle_action = AIController::Idle_None;
+										ai.st.idle.action = AIController::Idle_None;
 									}
 								}
 								break;
 							case AI_EAT:
 								ai.timer = Random(3.f, 5.f);
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 								u.ConsumeItem(ItemList::GetItem(IsSet(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food")->ToConsumable());
 								break;
 							default:
@@ -1181,40 +1175,40 @@ void Game::UpdateAi(float dt)
 					}
 					else
 					{
-						switch(ai.idle_action)
+						switch(ai.st.idle.action)
 						{
 						case AIController::Idle_None:
 						case AIController::Idle_Animation:
 							break;
 						case AIController::Idle_Rot:
-							if(Equal(u.rot, ai.idle_data.rot))
-								ai.idle_action = AIController::Idle_None;
+							if(Equal(u.rot, ai.st.idle.rot))
+								ai.st.idle.action = AIController::Idle_None;
 							else
 							{
 								look_at = LookAtAngle;
-								look_pos.x = ai.idle_data.rot;
+								look_pos.x = ai.st.idle.rot;
 							}
 							break;
 						case AIController::Idle_Move:
-							if(Vec3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2)
+							if(Vec3::Distance2d(u.pos, ai.st.idle.pos) < u.GetUnitRadius() * 2)
 							{
 								if(ai.city_wander)
 								{
 									ai.city_wander = false;
 									ai.timer = 0.f;
 								}
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 							}
 							else
 							{
 								move_type = MovePoint;
-								target_pos = ai.idle_data.pos;
+								target_pos = ai.st.idle.pos;
 								look_at = LookAtWalk;
 								run_type = Walk;
 							}
 							break;
 						case AIController::Idle_Look:
-							if(Unit* target = ai.idle_data.unit; target && Vec3::Distance2d(u.pos, target->pos) <= 10.f)
+							if(Unit* target = ai.st.idle.unit; target && Vec3::Distance2d(u.pos, target->pos) <= 10.f)
 							{
 								look_at = LookAtPoint;
 								look_pos = target->pos;
@@ -1222,25 +1216,25 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								// stop looking
-								ai.idle_action = AIController::Idle_Rot;
+								ai.st.idle.action = AIController::Idle_Rot;
 								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
-									ai.idle_data.rot = ai.start_rot;
+									ai.st.idle.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
-									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
+									ai.st.idle.rot = RandomRot(ai.start_rot, PI / 4);
 								else
-									ai.idle_data.rot = Random(MAX_ANGLE);
+									ai.st.idle.rot = Random(MAX_ANGLE);
 								ai.timer = Random(2.f, 5.f);
 							}
 							break;
 						case AIController::Idle_WalkTo:
-							if(Unit* target = ai.idle_data.unit; target && target->IsStanding())
+							if(Unit* target = ai.st.idle.unit; target && target->IsStanding())
 							{
 								if(game_level->CanSee(u, *target))
 								{
 									if(Vec3::Distance2d(u.pos, target->pos) < 1.5f)
 									{
 										// stop approaching, start talking
-										ai.idle_action = AIController::Idle_Chat;
+										ai.st.idle.action = AIController::Idle_Chat;
 										ai.timer = Random(2.f, 3.f);
 
 										cstring msg = GetRandomIdleText(u);
@@ -1251,7 +1245,6 @@ void Game::UpdateAi(float dt)
 										{
 											ani = Rand() % 2 + 1;
 											u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-											u.mesh_inst->groups[0].speed = 1.f;
 											u.animation = ANI_PLAY;
 											u.action = A_ANIMATION;
 										}
@@ -1260,12 +1253,12 @@ void Game::UpdateAi(float dt)
 										{
 											AIController& ai2 = *target->ai;
 											if(ai2.state == AIController::Idle
-												&& OR3_EQ(ai2.idle_action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
+												&& OR3_EQ(ai2.st.idle.action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
 											{
 												// look at the person in response to his looking
-												ai2.idle_action = AIController::Idle_Chat;
+												ai2.st.idle.action = AIController::Idle_Chat;
 												ai2.timer = ai.timer + Random(1.f);
-												ai2.idle_data.unit = u;
+												ai2.st.idle.unit = u;
 											}
 										}
 
@@ -1284,7 +1277,7 @@ void Game::UpdateAi(float dt)
 									else
 									{
 										if(IsSet(u.data->flags, F_AI_GUARD))
-											ai.idle_action = AIController::Idle_None;
+											ai.st.idle.action = AIController::Idle_None;
 										else
 										{
 											ai.target_last_pos = target->pos;
@@ -1299,11 +1292,11 @@ void Game::UpdateAi(float dt)
 								else
 								{
 									if(Vec3::Distance2d(u.pos, ai.target_last_pos) < 1.5f)
-										ai.idle_action = AIController::Idle_None;
+										ai.st.idle.action = AIController::Idle_None;
 									else
 									{
 										if(IsSet(u.data->flags, F_AI_GUARD))
-											ai.idle_action = AIController::Idle_None;
+											ai.st.idle.action = AIController::Idle_None;
 										else
 										{
 											move_type = MovePoint;
@@ -1316,10 +1309,10 @@ void Game::UpdateAi(float dt)
 								}
 							}
 							else
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 							break;
 						case AIController::Idle_WalkNearUnit:
-							if(Unit* target = ai.idle_data.unit; target && target->IsStanding() && Vec3::Distance2d(u.pos, target->pos) >= 4.f)
+							if(Unit* target = ai.st.idle.unit; target && target->IsStanding() && Vec3::Distance2d(u.pos, target->pos) >= 4.f)
 							{
 								ai.target_last_pos = target->pos;
 								move_type = MovePoint;
@@ -1329,32 +1322,32 @@ void Game::UpdateAi(float dt)
 								path_unit_ignore = target;
 							}
 							else
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 							break;
 						case AIController::Idle_Chat:
-							if(Unit* target = ai.idle_data.unit)
+							if(Unit* target = ai.st.idle.unit)
 							{
 								look_at = LookAtPoint;
 								look_pos = target->pos;
 							}
 							else
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 							break;
 						case AIController::Idle_WalkUse:
 						case AIController::Idle_WalkUseEat:
 							{
-								Usable& use = *ai.idle_data.usable;
+								Usable& use = *ai.st.idle.usable;
 								if(use.user || u.frozen != FROZEN::NO)
-									ai.idle_action = AIController::Idle_None;
+									ai.st.idle.action = AIController::Idle_None;
 								else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 								{
-									if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
+									if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.st.idle.usable->pos))) < PI / 4)
 									{
 										BaseUsable& base = *use.base;
 										const Item* needed_item = base.item;
 										if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 										{
-											u.action = A_ANIMATION2;
+											u.action = A_USE_USABLE;
 											u.animation = ANI_PLAY;
 											bool read_papers = false;
 											if(use.base == chair && IsSet(u.data->flags, F_AI_CLERK))
@@ -1364,21 +1357,20 @@ void Game::UpdateAi(float dt)
 											}
 											else
 												u.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
-											u.mesh_inst->groups[0].speed = 1.f;
 											u.UseUsable(&use);
 											u.target_pos = u.pos;
 											u.target_pos2 = use.pos;
 											if(use.base->limit_rot == 4)
-												u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
+												u.target_pos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 											u.timer = 0.f;
-											u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-											u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+											u.animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
+											u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 											u.used_item = needed_item;
-											if(ai.idle_action == AIController::Idle_WalkUseEat)
+											if(ai.st.idle.action == AIController::Idle_WalkUseEat)
 												ai.timer = -1.f;
 											else
 											{
-												ai.idle_action = AIController::Idle_Use;
+												ai.st.idle.action = AIController::Idle_Use;
 												if(u.usable->base == stool && u.area->area_type == LevelArea::Type::Building && u.IsDrunkman())
 													ai.timer = Random(10.f, 20.f);
 												else if(u.usable->base == throne)
@@ -1398,7 +1390,7 @@ void Game::UpdateAi(float dt)
 											}
 										}
 										else
-											ai.idle_action = AIController::Idle_None;
+											ai.st.idle.action = AIController::Idle_None;
 									}
 									else
 									{
@@ -1422,44 +1414,45 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_Use:
 							break;
 						case AIController::Idle_TrainCombat:
-							if(Vec3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2 + 0.25f)
+							if(Vec3::Distance2d(u.pos, ai.st.idle.pos) < u.GetUnitRadius() * 2 + 0.25f)
 							{
 								u.TakeWeapon(W_ONE_HANDED);
 								if(u.GetStaminap() >= 0.25f)
 									ai.DoAttack(nullptr, false);
 								ai.in_combat = true;
 								look_at = LookAtPoint;
-								look_pos = ai.idle_data.pos;
+								look_pos = ai.st.idle.pos;
 							}
 							else
 							{
 								move_type = MovePoint;
-								target_pos = ai.idle_data.pos;
+								target_pos = ai.st.idle.pos;
 								look_at = LookAtWalk;
 								run_type = Walk;
 							}
 							break;
 						case AIController::Idle_TrainBow:
 							{
-								Vec3 pt = ai.idle_data.obj.pos;
-								pt -= Vec3(sin(ai.idle_data.obj.rot) * 5, 0, cos(ai.idle_data.obj.rot) * 5);
+								Vec3 pt = ai.st.idle.obj.pos;
+								pt -= Vec3(sin(ai.st.idle.obj.rot) * 5, 0, cos(ai.st.idle.obj.rot) * 5);
 								if(Vec3::Distance2d(u.pos, pt) < u.GetUnitRadius() * 2)
 								{
 									u.TakeWeapon(W_BOW);
-									float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
+									float dir = Vec3::LookAtAngle(u.pos, ai.st.idle.obj.pos);
 									if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
 										&& u.GetStaminap() >= 0.25f && u.frozen == FROZEN::NO
-										&& game_level->CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
+										&& game_level->CanShootAtLocation2(u, ai.st.idle.obj.ptr, ai.st.idle.obj.pos))
 									{
 										// bow shooting
 										float speed = u.GetBowAttackSpeed();
-										u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+										u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 										u.mesh_inst->groups[1].speed = speed;
 										u.action = A_SHOOT;
-										u.animation_state = 1;
-										u.hitted = false;
+										u.target_pos = ai.st.idle.obj.pos;
+										u.target_pos.y += 1.27f;
+										u.animation_state = AS_SHOOT_CAN;
 										u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-										u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
+										u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 										u.bow_instance->groups[0].speed = speed;
 										u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
@@ -1473,10 +1466,8 @@ void Game::UpdateAi(float dt)
 										}
 									}
 									look_at = LookAtPoint;
-									look_pos = ai.idle_data.obj.pos;
+									look_pos = ai.st.idle.obj.pos;
 									ai.in_combat = true;
-									if(u.action == A_SHOOT)
-										ai.shoot_yspeed = (ai.idle_data.obj.pos.y - u.pos.y) / (Vec3::Distance(u.pos, ai.idle_data.obj.pos) / u.GetArrowSpeed());
 								}
 								else
 								{
@@ -1489,20 +1480,20 @@ void Game::UpdateAi(float dt)
 							break;
 						case AIController::Idle_MoveRegion:
 						case AIController::Idle_RunRegion:
-							if(Vec3::Distance2d(u.pos, ai.idle_data.region.pos) < u.GetUnitRadius() * 2)
+							if(Vec3::Distance2d(u.pos, ai.st.idle.region.pos) < u.GetUnitRadius() * 2)
 							{
 								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit)
-									&& ai.idle_data.region.area->area_type == LevelArea::Type::Outside && !ai.idle_data.region.exit)
+									&& ai.st.idle.region.area->area_type == LevelArea::Type::Outside && !ai.st.idle.region.exit)
 								{
 									// in exit area, go to border
-									ai.idle_data.region.exit = true;
-									ai.idle_data.region.pos = game_level->GetExitPos(u, true);
+									ai.st.idle.region.exit = true;
+									ai.st.idle.region.pos = game_level->GetExitPos(u, true);
 								}
 								else
 								{
-									ai.idle_action = AIController::Idle_None;
-									game_level->WarpUnit(&u, ai.idle_data.region.area->area_id);
-									if(ai.idle_data.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && order == ORDER_FOLLOW))
+									ai.st.idle.action = AIController::Idle_None;
+									game_level->WarpUnit(&u, ai.st.idle.region.area->area_id);
+									if(ai.st.idle.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && order == ORDER_FOLLOW))
 									{
 										ai.loc_timer = -1.f;
 										ai.timer = -1.f;
@@ -1510,20 +1501,20 @@ void Game::UpdateAi(float dt)
 									else
 									{
 										// stay somewhere in the inn
-										ai.idle_action = AIController::Idle_Move;
+										ai.st.idle.action = AIController::Idle_Move;
 										ai.timer = Random(5.f, 15.f);
 										ai.loc_timer = Random(60.f, 120.f);
-										InsideBuilding* inside = static_cast<InsideBuilding*>(ai.idle_data.region.area);
-										ai.idle_data.pos = (Rand() % 5 == 0 ? inside->region2 : inside->region1).GetRandomPos3();
+										InsideBuilding* inside = static_cast<InsideBuilding*>(ai.st.idle.region.area);
+										ai.st.idle.pos = (Rand() % 5 == 0 ? inside->region2 : inside->region1).GetRandomPos3();
 									}
 								}
 							}
 							else
 							{
 								move_type = MovePoint;
-								target_pos = ai.idle_data.region.pos;
+								target_pos = ai.st.idle.region.pos;
 								look_at = LookAtWalk;
-								run_type = (ai.idle_action == AIController::Idle_MoveRegion ? Walk : WalkIfNear);
+								run_type = (ai.st.idle.action == AIController::Idle_MoveRegion ? Walk : WalkIfNear);
 							}
 							break;
 						case AIController::Idle_Pray:
@@ -1537,12 +1528,12 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								look_at = LookAtPoint;
-								look_pos = ai.idle_data.pos;
+								look_pos = ai.st.idle.pos;
 								u.animation = ANI_KNEELS;
 							}
 							break;
 						case AIController::Idle_MoveAway:
-							if(Unit* target = ai.idle_data.unit)
+							if(Unit* target = ai.st.idle.unit)
 							{
 								look_at = LookAtPoint;
 								look_pos = target->pos;
@@ -1554,7 +1545,7 @@ void Game::UpdateAi(float dt)
 								}
 							}
 							else
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 							break;
 						default:
 							assert(0);
@@ -1577,7 +1568,7 @@ void Game::UpdateAi(float dt)
 						{
 							// target died, end of the fight
 							ai.state = AIController::Idle;
-							ai.idle_action = AIController::Idle_None;
+							ai.st.idle.action = AIController::Idle_None;
 							ai.in_combat = false;
 							ai.change_ai_mode = true;
 							ai.loc_timer = Random(5.f, 10.f);
@@ -1649,63 +1640,52 @@ void Game::UpdateAi(float dt)
 							u.TakeWeapon(weapon);
 					}
 
-					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
+					if(u.data->abilities && u.action == A_NONE && u.frozen == FROZEN::NO && ai.next_attack <= 0.f)
 					{
 						// spellcasting
-						for(int i = MAX_SPELLS - 1; i >= 0; --i)
+						for(int i = MAX_ABILITIES - 1; i >= 0; --i)
 						{
-							if(u.data->spells->spell[i] && u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f)
+							if(u.data->abilities->ability[i] && u.level >= u.data->abilities->level[i] && ai.cooldown[i] <= 0.f)
 							{
-								Spell& s = *u.data->spells->spell[i];
+								Ability& ability = *u.data->abilities->ability[i];
 
-								if(IsSet(s.flags, Spell::NonCombat))
+								if(IsSet(ability.flags, Ability::NonCombat)
+									|| ability.mana > u.mp
+									|| ability.stamina > u.stamina)
 									continue;
 
-								if(best_dist < s.range)
+								if(best_dist < ability.range
+									// can't cast drain blood on bloodless units
+									&& !(ability.effect == Ability::Drain && IsSet(enemy->data->flags2, F2_BLOODLESS))
+									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 								{
-									bool ok = true;
+									ai.cooldown[i] = ability.cooldown.Random();
+									u.action = A_CAST;
+									u.animation_state = AS_CAST_ANIMATION;
+									u.act.cast.ability = &ability;
+									u.act.cast.target = nullptr;
 
-									if(IsSet(s.flags, Spell::Drain))
+									if(ability.mana > 0.f)
+										u.RemoveMana(ability.mana);
+									if(ability.stamina > 0.f)
+										u.RemoveStamina(ability.stamina);
+
+									if(u.mesh_inst->mesh->head.n_groups == 2)
+										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+									else
 									{
-										// can't cast drain blood on bloodless units
-										if(IsSet(enemy->data->flags2, F2_BLOODLESS))
-											ok = false;
+										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+										u.animation = ANI_PLAY;
 									}
 
-									if(!game_level->CanShootAtLocation(u, *enemy, enemy->pos))
-										break;
-
-									if(ok)
+									if(Net::IsOnline())
 									{
-										ai.cooldown[i] = u.data->spells->spell[i]->cooldown.Random();
-										u.action = A_CAST;
-										u.attack_id = i;
-										u.animation_state = 0;
-										u.action_unit = nullptr;
-
-										if(u.mesh_inst->mesh->head.n_groups == 2)
-										{
-											u.mesh_inst->frame_end_info2 = false;
-											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-										}
-										else
-										{
-											u.mesh_inst->frame_end_info = false;
-											u.animation = ANI_PLAY;
-											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-											u.mesh_inst->groups[0].speed = 1.f;
-										}
-
-										if(Net::IsOnline())
-										{
-											NetChange& c = Add1(Net::changes);
-											c.type = NetChange::CAST_SPELL;
-											c.unit = &u;
-											c.id = i;
-										}
-
-										break;
+										NetChange& c = Add1(Net::changes);
+										c.type = NetChange::CAST_SPELL;
+										c.unit = &u;
 									}
+
+									break;
 								}
 							}
 						}
@@ -1721,7 +1701,7 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_CAST)
 					{
 						// spellshot
-						look_pos = ai.PredictTargetPos(*enemy, u.data->spells->spell[u.attack_id]->speed);
+						look_pos = ai.PredictTargetPos(*enemy, u.act.cast.ability->speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
 					}
@@ -1732,7 +1712,6 @@ void Game::UpdateAi(float dt)
 						look_pos = ai.PredictTargetPos(*enemy, arrow_speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
-						ai.shoot_yspeed = (enemy->pos.y - u.pos.y) / (Vec3::Distance(u.pos, enemy->pos) / arrow_speed);
 					}
 
 					if(u.IsHoldingBow())
@@ -1746,13 +1725,12 @@ void Game::UpdateAi(float dt)
 							{
 								// bowshot
 								float speed = u.GetBowAttackSpeed();
-								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 								u.mesh_inst->groups[1].speed = speed;
 								u.action = A_SHOOT;
-								u.animation_state = 1;
-								u.hitted = false;
+								u.animation_state = AS_SHOOT_CAN;
 								u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
+								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 								u.bow_instance->groups[0].speed = speed;
 								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
@@ -1819,7 +1797,7 @@ void Game::UpdateAi(float dt)
 							for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 							{
 								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
-									&& !(*it2)->hitted && (*it2)->animation_state < 2)
+									&& !(*it2)->act.attack.hitted && (*it2)->animation_state < AS_ATTACK_FINISHED)
 								{
 									float dist = Vec3::Distance(u.pos, (*it2)->pos);
 									if(dist < best_dist)
@@ -1840,9 +1818,8 @@ void Game::UpdateAi(float dt)
 									ai.timer = BLOCK_TIMER;
 									ai.ignore = 0.f;
 									u.action = A_BLOCK;
-									u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+									u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
 									u.mesh_inst->groups[1].blend_max = speed;
-									u.animation_state = 0;
 
 									if(Net::IsOnline())
 									{
@@ -1908,7 +1885,7 @@ void Game::UpdateAi(float dt)
 					{
 						// target is dead
 						ai.state = AIController::Idle;
-						ai.idle_action = AIController::Idle_None;
+						ai.st.idle.action = AIController::Idle_None;
 						ai.in_combat = false;
 						ai.change_ai_mode = true;
 						ai.loc_timer = Random(5.f, 10.f);
@@ -1924,7 +1901,7 @@ void Game::UpdateAi(float dt)
 						{
 							// outside, therefore idle
 							ai.state = AIController::Idle;
-							ai.idle_action = AIController::Idle_None;
+							ai.st.idle.action = AIController::Idle_None;
 							ai.in_combat = false;
 							ai.change_ai_mode = true;
 							ai.loc_timer = Random(5.f, 10.f);
@@ -1939,14 +1916,14 @@ void Game::UpdateAi(float dt)
 								// underground, go to random nearby room
 								ai.timer = u.IsFollower() ? Random(1.f, 2.f) : Random(15.f, 30.f);
 								ai.state = AIController::SearchEnemy;
-								ai.escape_room = room->connected[Rand() % room->connected.size()];
-								ai.target_last_pos = ai.escape_room->GetRandomPos(u.GetUnitRadius());
+								ai.st.search.room = room->connected[Rand() % room->connected.size()];
+								ai.target_last_pos = ai.st.search.room->GetRandomPos(u.GetUnitRadius());
 							}
 							else
 							{
 								// does not work because of no rooms in the labirynth/cave
 								ai.state = AIController::Idle;
-								ai.idle_action = AIController::Idle_None;
+								ai.st.idle.action = AIController::Idle_None;
 								ai.in_combat = false;
 								ai.change_ai_mode = true;
 								ai.loc_timer = Random(5.f, 10.f);
@@ -1994,7 +1971,7 @@ void Game::UpdateAi(float dt)
 					{
 						// pursuit finished, no enemy found
 						ai.state = AIController::Idle;
-						ai.idle_action = AIController::Idle_None;
+						ai.st.idle.action = AIController::Idle_None;
 						ai.in_combat = false;
 						ai.change_ai_mode = true;
 						ai.loc_timer = Random(5.f, 10.f);
@@ -2005,9 +1982,11 @@ void Game::UpdateAi(float dt)
 						// search for another room
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
-						Room* room = lvl.GetNearestRoom(u.pos);
-						ai.escape_room = room->connected[Rand() % room->connected.size()];
-						ai.target_last_pos = ai.escape_room->GetRandomPos(u.GetUnitRadius());
+						Room* room = ai.st.search.room;
+						if(!room) // pre V_DEV
+							room = lvl.GetNearestRoom(u.pos);
+						ai.st.search.room = room->connected[Rand() % room->connected.size()];
+						ai.target_last_pos = ai.st.search.room->GetRandomPos(u.GetUnitRadius());
 					}
 				}
 				break;
@@ -2063,7 +2042,7 @@ void Game::UpdateAi(float dt)
 						if(!ai.in_combat)
 						{
 							ai.state = AIController::Idle;
-							ai.idle_action = AIController::Idle_None;
+							ai.st.idle.action = AIController::Idle_None;
 							ai.in_combat = false;
 							ai.change_ai_mode = true;
 							ai.loc_timer = Random(5.f, 10.f);
@@ -2074,7 +2053,6 @@ void Game::UpdateAi(float dt)
 						{
 							ai.state = AIController::Fighting;
 							ai.timer = 0.f;
-							ai.escape_room = nullptr;
 							repeat = true;
 							break;
 						}
@@ -2100,7 +2078,7 @@ void Game::UpdateAi(float dt)
 							}
 							target_pos = enemy->pos;
 						}
-						else if(!ai.escape_room)
+						else if(!ai.st.escape.room)
 						{
 							// escape location not set yet
 							if(best_dist < 1.5f)
@@ -2130,16 +2108,15 @@ void Game::UpdateAi(float dt)
 									mid += (*it2)->pos;
 								mid /= (float)close_enemies.size();
 
-								// which kind of room is it?
+								// find room to escape to
 								Room* room = static_cast<InsideLocation*>(game_level->location)->GetLevelData().FindEscapeRoom(u.pos, mid);
-
 								if(room)
 								{
 									// escape to the room
-									ai.escape_room = room;
+									ai.st.escape.room = room;
 									move_type = MovePoint;
 									look_at = LookAtWalk;
-									target_pos = ai.escape_room->Center();
+									target_pos = ai.st.escape.room->Center();
 								}
 								else
 								{
@@ -2162,30 +2139,35 @@ void Game::UpdateAi(float dt)
 							if(best_dist < 1.f)
 							{
 								// someone put him in the corner or catched him up
-								ai.escape_room = nullptr;
+								ai.st.escape.room = nullptr;
 								move_type = MoveAway;
 								target_pos = enemy->pos;
 							}
+							else if(ai.st.escape.room->IsInside(u.pos))
+							{
+								// reached escape room, find next room
+								ai.st.escape.room = nullptr;
+							}
 							else
 							{
-								// escape room available
+								// escape to room
+								target_pos = ai.st.escape.room->Center();
 								move_type = MovePoint;
 								look_at = LookAtWalk;
-								target_pos = ai.escape_room->Center();
 							}
 						}
 					}
 					else
 					{
 						// no enemies
-						if(ai.escape_room)
+						if(ai.st.escape.room)
 						{
 							// run to the place
-							if(!ai.escape_room->IsInside(u.pos))
+							target_pos = ai.st.escape.room->Center();
+							if(Vec3::Distance(target_pos, u.pos) > 0.5f)
 							{
 								move_type = MovePoint;
 								look_at = LookAtWalk;
-								target_pos = ai.escape_room->Center();
 							}
 						}
 						else if(Unit* target = ai.target)
@@ -2217,7 +2199,7 @@ void Game::UpdateAi(float dt)
 					for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
-							&& !(*it2)->hitted && (*it2)->animation_state < 2)
+							&& !(*it2)->act.attack.hitted && (*it2)->animation_state < AS_ATTACK_FINISHED)
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2240,11 +2222,9 @@ void Game::UpdateAi(float dt)
 							{
 								float speed = u.GetBashSpeed();
 								u.action = A_BASH;
-								u.animation_state = 0;
-								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+								u.animation_state = AS_BASH_ANIMATION;
+								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 								u.mesh_inst->groups[1].speed = speed;
-								u.mesh_inst->frame_end_info2 = false;
-								u.hitted = false;
 								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
 
 								if(Net::IsOnline())
@@ -2265,7 +2245,6 @@ void Game::UpdateAi(float dt)
 					{
 						// no hits to block or time expiration
 						u.action = A_NONE;
-						u.mesh_inst->frame_end_info2 = false;
 						u.mesh_inst->Deactivate(1);
 						ai.state = AIController::Fighting;
 						ai.timer = 0.f;
@@ -2317,7 +2296,7 @@ void Game::UpdateAi(float dt)
 						else if(u.action == A_CAST)
 						{
 							// cast a spell
-							look_pos = ai.PredictTargetPos(*top, u.data->spells->spell[u.attack_id]->speed);
+							look_pos = ai.PredictTargetPos(*top, u.act.cast.ability->speed);
 							look_at = LookAtPoint;
 							u.target_pos = look_pos;
 						}
@@ -2346,33 +2325,12 @@ void Game::UpdateAi(float dt)
 			case AIController::Cast:
 				if(Unit* target = ai.target)
 				{
-					Spell& s = *u.data->spells->spell[u.attack_id];
+					Ability& ability = *ai.st.cast.ability;
+					bool ok = true;
 					if(target == &u)
 					{
 						move_type = DontMove;
 						look_at = DontLook;
-
-						if(u.action == A_NONE)
-						{
-							ai.cooldown[u.attack_id] = s.cooldown.Random();
-							u.action = A_CAST;
-							u.animation_state = 0;
-							u.target_pos = u.pos;
-							u.action_unit = u;
-
-							if(u.mesh_inst->mesh->head.n_groups == 2)
-							{
-								u.mesh_inst->frame_end_info2 = false;
-								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-							}
-							else
-							{
-								u.mesh_inst->frame_end_info = false;
-								u.animation = ANI_PLAY;
-								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-								u.mesh_inst->groups[0].speed = 1.f;
-							}
-						}
 					}
 					else
 					{
@@ -2381,47 +2339,62 @@ void Game::UpdateAi(float dt)
 						look_at = LookAtPoint;
 						target_pos = look_pos = target->pos;
 
-						if(Vec3::Distance(u.pos, target_pos) <= s.range)
-						{
+						if(Vec3::Distance(u.pos, target_pos) <= ability.range)
 							move_type = DontMove;
-
-							if(u.action == A_NONE)
-							{
-								ai.cooldown[u.attack_id] = s.cooldown.Random();
-								u.action = A_CAST;
-								u.animation_state = 0;
-								u.target_pos = target_pos;
-								u.action_unit = target;
-
-								if(u.mesh_inst->mesh->head.n_groups == 2)
-								{
-									u.mesh_inst->frame_end_info2 = false;
-									u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-								}
-								else
-								{
-									u.mesh_inst->frame_end_info = false;
-									u.animation = ANI_PLAY;
-									u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-									u.mesh_inst->groups[0].speed = 1.f;
-								}
-							}
-						}
 						else
 						{
+							ok = false;
+
 							// fix for Jozan getting stuck when trying to heal someone
 							if(u.IsHero())
 								try_phase = true;
 						}
-
-						if(u.action == A_CAST)
-							u.target_pos = target_pos;
 					}
+
+					if(ok && u.action == A_NONE)
+					{
+						for(int i = 0; i < MAX_ABILITIES; ++i)
+						{
+							if(u.data->abilities->ability[i] == &ability)
+							{
+								ai.cooldown[i] = ability.cooldown.Random();
+								break;
+							}
+						}
+						u.action = A_CAST;
+						u.animation_state = AS_CAST_ANIMATION;
+						u.act.cast.ability = &ability;
+						u.act.cast.target = target;
+						u.target_pos = target->pos;
+
+						if(ability.mana > 0.f)
+							u.RemoveMana(ability.mana);
+						if(ability.stamina > 0.f)
+							u.RemoveStamina(ability.stamina);
+
+						if(u.mesh_inst->mesh->head.n_groups == 2)
+							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+						else
+						{
+							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.animation = ANI_PLAY;
+						}
+
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CAST_SPELL;
+							c.unit = &u;
+						}
+					}
+
+					if(u.action == A_CAST)
+						u.target_pos = target_pos;
 				}
 				else
 				{
 					ai.state = AIController::Idle;
-					ai.idle_action = AIController::Idle_None;
+					ai.st.idle.action = AIController::Idle_None;
 					ai.timer = Random(1.f, 2.f);
 					ai.loc_timer = Random(5.f, 10.f);
 					ai.timer = Random(1.f, 2.f);
@@ -2486,7 +2459,7 @@ void Game::UpdateAi(float dt)
 		// animation
 		if(u.animation != ANI_PLAY && u.animation != ANI_KNEELS)
 		{
-			if(ai.in_combat || ((ai.idle_action == AIController::Idle_TrainBow || ai.idle_action == AIController::Idle_TrainCombat) && u.weapon_state == WS_TAKEN))
+			if(ai.in_combat || ((ai.st.idle.action == AIController::Idle_TrainBow || ai.st.idle.action == AIController::Idle_TrainCombat) && u.weapon_state == WeaponState::Taken))
 			{
 				if(u.IsHoldingBow())
 					u.animation = ANI_BATTLE_BOW;
@@ -2540,7 +2513,7 @@ void Game::UpdateAi(float dt)
 			{
 				if(ai.state == AIController::Fighting)
 				{
-					if(best_dist < u.GetAttackRange()*0.9f)
+					if(best_dist < u.GetAttackRange() * 0.9f)
 						move = -1;
 					else if(best_dist > u.GetAttackRange())
 						move = 1;
@@ -2562,13 +2535,13 @@ void Game::UpdateAi(float dt)
 			{
 				// back movement
 				u.speed = u.GetWalkSpeed();
-				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
+				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 				const float angle = Vec3::LookAtAngle(u.pos, target_pos);
 
 				u.prev_pos = u.pos;
 
-				const Vec3 dir(sin(angle)*speed, 0, cos(angle)*speed);
+				const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
 				bool small;
 
 				if(move_type == KeepDistanceCheck)
@@ -2621,33 +2594,14 @@ void Game::UpdateAi(float dt)
 					ai.pf_state = AIController::PFS_GLOBAL_NOT_USED;
 				}
 
-				// door opening
+				// open doors when ai moves next to them
 				if(!IsSet(u.data->flags, F_DONT_OPEN))
 				{
 					for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 					{
 						Door& door = **it;
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
-						{
-							// doors get opened automatically when AI moves next to them
-							if(!game_level->location->outside)
-								game_level->minimap_opened_doors = true;
-							door.state = Door::Opening;
-							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-							door.mesh_inst->frame_end_info = false;
-
-							// play sound
-							if(Rand() % 2 == 0)
-								sound_mgr->PlaySound3d(sDoor[Rand() % 3], door.GetCenter(), Door::SOUND_DIST);
-
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::USE_DOOR;
-								c.id = door.id;
-								c.count = 0;
-							}
-						}
+							door.Open();
 					}
 				}
 
@@ -2705,7 +2659,7 @@ void Game::UpdateAi(float dt)
 							ai.pf_state = AIController::PFS_WALKING_LOCAL;
 						ai.pf_local_target_tile = local_tile;
 						const Int2& pt = ai.pf_local_path.back();
-						move_target = Vec3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
+						move_target = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
 					}
 					else if(ret == 4)
 					{
@@ -2717,7 +2671,7 @@ void Game::UpdateAi(float dt)
 							if(ai.pf_local_try == 4 || ai.pf_path.size() == ai.pf_local_try)
 							{
 								ai.pf_state = AIController::PFS_MANUAL_WALK;
-								move_target = Vec3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
+								move_target = Vec3(0.25f * local_tile.x + 0.125f, 0, 0.25f * local_tile.y + 0.125f);
 							}
 							else
 								move = 0;
@@ -2731,7 +2685,7 @@ void Game::UpdateAi(float dt)
 						else
 						{
 							ai.pf_state = AIController::PFS_MANUAL_WALK;
-							move_target = Vec3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
+							move_target = Vec3(0.25f * local_tile.x + 0.125f, 0, 0.25f * local_tile.y + 0.125f);
 						}
 					}
 					else
@@ -2746,7 +2700,7 @@ void Game::UpdateAi(float dt)
 					|| ai.pf_state == AIController::PFS_WALKING_LOCAL)
 				{
 					const Int2& pt = ai.pf_local_path.back();
-					move_target = Vec3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
+					move_target = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
 				}
 
 			skip_localpf:
@@ -2757,7 +2711,7 @@ void Game::UpdateAi(float dt)
 					bool run;
 					if(!u.CanRun())
 						run = false;
-					else if(u.run_attack)
+					else if(u.action == A_ATTACK && u.act.attack.run)
 						run = true;
 					else
 					{
@@ -2783,7 +2737,7 @@ void Game::UpdateAi(float dt)
 					}
 
 					u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
-					u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
+					u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
 					float speed = u.prev_speed * dt;
 					const float angle = Vec3::LookAtAngle(u.pos, move_target) + PI;
 
@@ -2795,7 +2749,7 @@ void Game::UpdateAi(float dt)
 						if(dist < speed)
 							speed = dist;
 					}
-					const Vec3 dir(sin(angle)*speed, 0, cos(angle)*speed);
+					const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
 					bool small;
 
 					if(move_type == KeepDistanceCheck)

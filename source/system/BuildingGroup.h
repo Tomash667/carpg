@@ -24,4 +24,8 @@ struct BuildingGroup
 		assert(group);
 		return group;
 	}
+	static BuildingGroup* GetS(const string& id)
+	{
+		return TryGet(id);
+	}
 };

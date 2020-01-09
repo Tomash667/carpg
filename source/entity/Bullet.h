@@ -4,13 +4,13 @@
 struct Bullet
 {
 	Unit* owner;
-	Spell* spell;
+	Ability* ability;
 	Vec3 pos, rot, start_pos;
 	Mesh* mesh;
 	float speed, timer, attack, tex_size, yspeed, poison_attack, backstab;
 	int level;
 	TexturePtr tex;
-	TrailParticleEmitter* trail, *trail2;
+	TrailParticleEmitter* trail;
 	ParticleEmitter* pe;
 	bool remove;
 

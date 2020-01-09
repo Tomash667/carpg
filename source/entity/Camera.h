@@ -6,11 +6,10 @@
 //-----------------------------------------------------------------------------
 struct Camera : public CameraBase
 {
-	Vec3 from, to, center, real_from, real_to;
+	Vec3 real_from, real_to;
 	Vec2 rot, real_rot;
-	Matrix matViewInv;
 	float dist, tmp_dist, draw_range, springiness, d;
-	FrustumPlanes frustum, frustum2;
+	FrustumPlanes frustum;
 	Key free_rot_key;
 	bool free_rot;
 

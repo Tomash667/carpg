@@ -6,7 +6,7 @@
 #include "Level.h"
 #include "GroundItem.h"
 #include "Door.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Trap.h"
 #include "Object.h"
 #include "Portal.h"
@@ -40,19 +40,14 @@
 #include "GameStats.h"
 #include "Arena.h"
 #include "CommandParser.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Net::InitClient()
 {
 	Info("Initlializing client...");
 
-	if(!peer)
-	{
-		peer = RakPeerInterface::GetInstance();
-#ifdef TEST_LAG
-		peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
-#endif
-	}
+	OpenPeer();
 
 	SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
@@ -77,6 +72,7 @@ void Net::OnNewGameClient()
 	game->devmode = game->default_devmode;
 	game->train_move = 0.f;
 	team->anyone_talking = false;
+	game_level->can_fast_travel = false;
 	interpolate_timer = 0.f;
 	changes.clear();
 	if(!net_strs.empty())
@@ -323,11 +319,11 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::ATTACK:
 			{
 				byte b = (byte)c.id;
-				b |= ((pc.unit->attack_id & 0xF) << 4);
+				b |= ((pc.unit->act.attack.index & 0xF) << 4);
 				f << b;
 				f << c.f[1];
-				if(c.id == 2)
-					f << pc.GetShootAngle() * 12;
+				if(c.id == AID_Shoot)
+					f << pc.unit->target_pos;
 			}
 			break;
 		case NetChange::DROP_ITEM:
@@ -436,7 +432,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::TRAIN:
 			f.WriteCasted<byte>(c.id);
-			f.WriteCasted<byte>(c.count);
+			f << c.count;
 			break;
 		case NetChange::GIVE_GOLD:
 		case NetChange::GET_ITEM:
@@ -447,9 +443,10 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::PUT_GOLD:
 			f << c.count;
 			break;
-		case NetChange::PLAYER_ACTION:
+		case NetChange::PLAYER_ABILITY:
 			f << (c.unit ? c.unit->id : -1);
 			f << c.pos;
+			f << c.ability->hash;
 			break;
 		case NetChange::CHEAT_STUN:
 			f << c.unit->id;
@@ -507,11 +504,22 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 				const Shortcut& shortcut = pc.shortcuts[c.id];
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(shortcut.type);
-				if(shortcut.type == Shortcut::TYPE_SPECIAL)
+				switch(shortcut.type)
+				{
+				case Shortcut::TYPE_SPECIAL:
 					f.WriteCasted<byte>(shortcut.value);
-				else if(shortcut.type == Shortcut::TYPE_ITEM)
+					break;
+				case Shortcut::TYPE_ITEM:
 					f << shortcut.item->id;
+					break;
+				case Shortcut::TYPE_ABILITY:
+					f << shortcut.ability->hash;
+					break;
+				}
 			}
+			break;
+		case NetChange::CAST_SPELL:
+			f << c.pos;
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -608,7 +616,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						if(item)
-							game->PreloadItem(item);
+							game_res->PreloadItem(item);
 						target->slots[type] = item;
 					}
 				}
@@ -631,11 +639,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(!unit)
 						Error("Update client: TAKE_WEAPON, missing unit %d.", id);
 					else if(unit != pc.unit)
-					{
-						if(unit->mesh_inst->mesh->head.n_groups > 1)
-							unit->mesh_inst->groups[1].speed = 1.f;
-						unit->SetWeaponState(!hide, type);
-					}
+						unit->SetWeaponState(!hide, type, false);
 				}
 			}
 			break;
@@ -671,14 +675,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				Unit& unit = *unit_ptr;
 				byte type = (typeflags & 0xF);
 				int group = unit.mesh_inst->mesh->head.n_groups - 1;
-				unit.weapon_state = WS_TAKEN;
 
+				bool is_bow = false;
 				switch(type)
 				{
 				case AID_Attack:
-					if(unit.action == A_ATTACK && unit.animation_state == 0)
+					if(unit.action == A_ATTACK && unit.animation_state == AS_ATTACK_PREPARE)
 					{
-						unit.animation_state = 1;
+						unit.animation_state = AS_ATTACK_CAN_HIT;
 						unit.mesh_inst->groups[1].speed = attack_speed;
 					}
 					else
@@ -686,12 +690,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0) >> 4);
-						unit.attack_power = 1.f;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.animation_state = AS_ATTACK_CAN_HIT;
+						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+						unit.act.attack.power = 1.f;
+						unit.act.attack.run = false;
+						unit.act.attack.hitted = false;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
-						unit.animation_state = 1;
-						unit.hitted = false;
 					}
 					break;
 				case AID_PrepareAttack:
@@ -699,25 +704,26 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0) >> 4);
-						unit.attack_power = 1.f;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.animation_state = AS_ATTACK_PREPARE;
+						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+						unit.act.attack.power = 1.f;
+						unit.act.attack.run = false;
+						unit.act.attack.hitted = false;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
-						unit.animation_state = 0;
-						unit.hitted = false;
 					}
 					break;
 				case AID_Shoot:
 				case AID_StartShoot:
-					if(unit.action == A_SHOOT && unit.animation_state == 0)
-						unit.animation_state = 1;
+					is_bow = true;
+					if(unit.action == A_SHOOT && unit.animation_state == AS_SHOOT_PREPARE)
+						unit.animation_state = AS_SHOOT_CAN;
 					else
 					{
-						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
-						unit.animation_state = (type == AID_Shoot ? 1 : 0);
-						unit.hitted = false;
+						unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
 						if(!unit.bow_instance)
 							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
 						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -727,20 +733,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				case AID_Block:
 					{
 						unit.action = A_BLOCK;
-						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
-						unit.mesh_inst->groups[1].speed = 1.f;
-						unit.mesh_inst->groups[1].blend_max = attack_speed;
-						unit.animation_state = 0;
+						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
+						unit.mesh_inst->groups[group].blend_max = attack_speed;
 					}
 					break;
 				case AID_Bash:
 					{
 						unit.action = A_BASH;
-						unit.animation_state = 0;
-						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
-						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.mesh_inst->frame_end_info2 = false;
-						unit.hitted = false;
+						unit.animation_state = AS_BASH_ANIMATION;
+						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 					}
 					break;
 				case AID_RunningAttack:
@@ -748,24 +750,24 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0) >> 4);
-						unit.attack_power = 1.5f;
-						unit.run_attack = true;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.animation_state = AS_ATTACK_CAN_HIT;
+						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+						unit.act.attack.power = 1.5f;
+						unit.act.attack.run = true;
+						unit.act.attack.hitted = false;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.mesh_inst->groups[group].speed = attack_speed;
-						unit.animation_state = 1;
-						unit.hitted = false;
 					}
 					break;
 				case AID_StopBlock:
 					{
 						unit.action = A_NONE;
-						unit.mesh_inst->frame_end_info2 = false;
 						unit.mesh_inst->Deactivate(group);
-						unit.mesh_inst->groups[1].speed = 1.f;
 					}
 					break;
 				}
+
+				unit.SetWeaponStateInstant(WeaponState::Taken, is_bow ? W_BOW : W_ONE_HANDED);
 			}
 			break;
 		// change of game flags
@@ -777,9 +779,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CHANGE_FLAGS.");
 				else
 				{
-					team->is_bandit = IsSet(flags, 0x01);
-					team->crazies_attack = IsSet(flags, 0x02);
-					team->anyone_talking = IsSet(flags, 0x04);
+					team->is_bandit = IsSet(flags, F_IS_BANDIT);
+					team->crazies_attack = IsSet(flags, F_CRAZIES_ATTACKING);
+					team->anyone_talking = IsSet(flags, F_ANYONE_TALKING);
+					game_level->can_fast_travel = IsSet(flags, F_CAN_FAST_TRAVEL);
 				}
 			}
 			break;
@@ -864,7 +867,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				else if(game->game_state == GS_LEVEL)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = game->tBlood[type];
+					pe->tex = game_res->tBlood[type];
 					pe->emision_interval = 0.01f;
 					pe->life = 5.f;
 					pe->particle_life = 0.5f;
@@ -878,9 +881,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 					pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 					pe->size = 0.3f;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 0.9f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
 					game_level->GetArea(pos).tmp->pes.push_back(pe);
@@ -978,8 +981,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					{
 						unit->action = A_ANIMATION;
 						unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -997,7 +998,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					delete item;
 				else
 				{
-					game->PreloadItem(item->item);
+					game_res->PreloadItem(item->item);
 					game_level->GetArea(item->pos).items.push_back(item);
 				}
 			}
@@ -1021,8 +1022,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
 						unit->mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -1073,7 +1072,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						Error("Update client: CONSUME_ITEM, %s is not consumable.", item->id.c_str());
 					else if(unit != pc.unit || force)
 					{
-						game->PreloadItem(item);
+						game_res->PreloadItem(item);
 						unit->ConsumeItem(item->ToConsumable(), false, false);
 					}
 				}
@@ -1090,7 +1089,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(!f)
 					Error("Update client: Broken HIT_SOUND.");
 				else if(game->game_state == GS_LEVEL)
-					sound_mgr->PlaySound3d(game->GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
 			}
 			break;
 		// unit get stunned
@@ -1112,18 +1111,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(unit->action != A_POSITION)
 							unit->action = A_PAIN;
 						else
-							unit->animation_state = 1;
+							unit->animation_state = AS_POSITION_HURT;
 
 						if(unit->mesh_inst->mesh->head.n_groups == 2)
-						{
-							unit->mesh_inst->frame_end_info2 = false;
 							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-						}
 						else
 						{
-							unit->mesh_inst->frame_end_info = false;
 							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -1162,7 +1156,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					LevelArea& area = game_level->GetArea(pos);
 
 					Bullet& b = Add1(area.tmp->bullets);
-					b.mesh = game->aArrow;
+					b.mesh = game_res->aArrow;
 					b.pos = pos;
 					b.start_pos = pos;
 					b.rot = Vec3(rotX, rotY, 0);
@@ -1171,7 +1165,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					b.pe = nullptr;
 					b.remove = false;
 					b.speed = speed;
-					b.spell = nullptr;
+					b.ability = nullptr;
 					b.tex = nullptr;
 					b.tex_size = 0.f;
 					b.timer = ARROW_TIMER;
@@ -1185,15 +1179,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					area.tmp->tpes.push_back(tpe);
 					b.trail = tpe;
 
-					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-					tpe2->fade = 0.3f;
-					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe2->color2 = Vec4(1, 1, 1, 0);
-					tpe2->Init(50);
-					area.tmp->tpes.push_back(tpe2);
-					b.trail2 = tpe2;
-
-					sound_mgr->PlaySound3d(game->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -1255,8 +1241,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						unit->mesh_inst->Play(unit->data->idles->anims[animation_index].c_str(), PLAY_ONCE, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->mesh_inst->frame_end_info = false;
 						unit->animation = ANI_IDLE;
 					}
 				}
@@ -1290,7 +1274,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(animation != 0)
 						{
 							unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -1471,7 +1454,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 							pc.unit->HealPoison();
 							pc.unit->live_state = Unit::ALIVE;
 							pc.unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							pc.unit->mesh_inst->groups[0].speed = 1.f;
 							pc.unit->action = A_ANIMATION;
 							pc.unit->animation = ANI_PLAY;
 						}
@@ -1727,23 +1709,21 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				{
 					if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 					{
-						unit->action = A_ANIMATION2;
+						unit->action = A_USE_USABLE;
 						unit->animation = ANI_PLAY;
 						unit->mesh_inst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
 						unit->target_pos = unit->pos;
 						unit->target_pos2 = usable->pos;
 						if(base.limit_rot == 4)
 							unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit->timer = 0.f;
-						unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit->use_rot = Vec3::LookAtAngle(unit->pos, usable->pos);
+						unit->animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
+						unit->act.use_usable.rot = Vec3::LookAtAngle(unit->pos, usable->pos);
 						unit->used_item = base.item;
 						if(unit->used_item)
 						{
-							game->PreloadItem(unit->used_item);
-							unit->weapon_taken = W_NONE;
-							unit->weapon_state = WS_HIDDEN;
+							game_res->PreloadItem(unit->used_item);
+							unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 						}
 					}
 					else
@@ -1931,11 +1911,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				{
 					Sound* sound;
 					if(type == 0)
-						sound = game->sArenaFight;
+						sound = game_res->sArenaFight;
 					else if(type == 1)
-						sound = game->sArenaWin;
+						sound = game_res->sArenaWin;
 					else
-						sound = game->sArenaLost;
+						sound = game_res->sArenaLost;
 					sound_mgr->PlaySound2d(sound);
 				}
 			}
@@ -2024,23 +2004,20 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						if(is_closing)
 						{
 							// closing door
-							if(door->state == Door::Open)
+							if(door->state == Door::Opened)
 							{
 								door->state = Door::Closing;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening)
 							{
 								door->state = Door::Closing2;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening2)
 							{
 								door->state = Door::Closing;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -2053,21 +2030,18 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening2;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing2)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
 								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -2077,9 +2051,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						{
 							Sound* sound;
 							if(is_closing && Rand() % 2 == 0)
-								sound = game->sDoorClose;
+								sound = game_res->sDoorClose;
 							else
-								sound = game->sDoor[Rand() % 3];
+								sound = game_res->sDoor[Rand() % 3];
 							sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
 						}
 					}
@@ -2090,7 +2064,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::CREATE_EXPLOSION:
 			{
 				Vec3 pos;
-				const string& spell_id = f.ReadString1();
+				uint ability_hash;
+				f >> ability_hash;
 				f >> pos;
 				if(!f)
 				{
@@ -2101,17 +2076,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
+				Ability* ability = Ability::Get(ability_hash);
+				if(!ability)
 				{
-					Error("Update client: CREATE_EXPLOSION, missing spell '%s'.", spell_id.c_str());
+					Error("Update client: CREATE_EXPLOSION, missing ability %u.", ability_hash);
 					break;
 				}
 
-				Spell& spell = *spell_ptr;
-				if(!IsSet(spell.flags, Spell::Explode))
+				if(!IsSet(ability->flags, Ability::Explode))
 				{
-					Error("Update client: CREATE_EXPLOSION, spell '%s' is not explosion.", spell_id.c_str());
+					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability->id.c_str());
 					break;
 				}
 
@@ -2119,9 +2093,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				explo->pos = pos;
 				explo->size = 0.f;
 				explo->sizemax = 2.f;
-				explo->tex = spell.tex_explode;
+				explo->ability = ability;
 
-				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
+				sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
 
 				game_level->GetArea(pos).tmp->explos.push_back(explo);
 			}
@@ -2159,7 +2133,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 			break;
 		// play evil sound
 		case NetChange::EVIL_SOUND:
-			sound_mgr->PlaySound2d(game->sEvil);
+			sound_mgr->PlaySound2d(game_res->sEvil);
 			break;
 		// start encounter on world map
 		case NetChange::ENCOUNTER:
@@ -2227,7 +2201,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				ParticleEmitter* best_pe = nullptr;
 				for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 				{
-					if(pe->tex == game->tBlood[BLOOD_RED])
+					if(pe->tex == game_res->tBlood[BLOOD_RED])
 					{
 						float dist = Vec3::Distance(pe->pos, obj->pos);
 						if(dist < best_dist)
@@ -2344,13 +2318,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				}
 			}
 			break;
-		// unit casts spell
+		// unit cast spell animation
 		case NetChange::CAST_SPELL:
 			{
 				int id;
-				byte attack_id;
 				f >> id;
-				f >> attack_id;
 				if(!f)
 					Error("Update client: Broken CAST_SPELL.");
 				else if(game->game_state == GS_LEVEL)
@@ -2361,20 +2333,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						unit->action = A_CAST;
-						unit->attack_id = attack_id;
-						unit->animation_state = 0;
-
+						unit->animation_state = AS_CAST_ANIMATION;
 						if(unit->mesh_inst->mesh->head.n_groups == 2)
-						{
-							unit->mesh_inst->frame_end_info2 = false;
 							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-						}
 						else
 						{
-							unit->mesh_inst->frame_end_info = false;
 							unit->animation = ANI_PLAY;
 							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -2383,10 +2348,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// create ball - spell effect
 		case NetChange::CREATE_SPELL_BALL:
 			{
+				uint ability_hash;
 				int id;
 				Vec3 pos;
 				float rotY, speedY;
-				const string& spell_id = f.ReadString1();
+				f >> ability_hash;
 				f >> pos;
 				f >> rotY;
 				f >> speedY;
@@ -2400,10 +2366,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
+				Ability* ability_ptr = Ability::Get(ability_hash);
+				if(!ability_ptr)
 				{
-					Error("Update client: CREATE_SPELL_BALL, missing spell '%s'.", spell_id.c_str());
+					Error("Update client: CREATE_SPELL_BALL, missing ability %u.", ability_hash);
 					break;
 				}
 
@@ -2415,31 +2381,30 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						Error("Update client: CREATE_SPELL_BALL, missing unit %d.", id);
 				}
 
-				Spell& spell = *spell_ptr;
+				Ability& ability = *ability_ptr;
 				LevelArea& area = game_level->GetArea(pos);
 
 				Bullet& b = Add1(area.tmp->bullets);
 
 				b.pos = pos;
 				b.rot = Vec3(0, rotY, 0);
-				b.mesh = spell.mesh;
-				b.tex = spell.tex;
-				b.tex_size = spell.size;
-				b.speed = spell.speed;
-				b.timer = spell.range / (spell.speed - 1);
+				b.mesh = ability.mesh;
+				b.tex = ability.tex;
+				b.tex_size = ability.size;
+				b.speed = ability.speed;
+				b.timer = ability.range / (ability.speed - 1);
 				b.remove = false;
 				b.trail = nullptr;
-				b.trail2 = nullptr;
 				b.pe = nullptr;
-				b.spell = &spell;
+				b.ability = &ability;
 				b.start_pos = b.pos;
 				b.owner = unit;
 				b.yspeed = speedY;
 
-				if(spell.tex_particle)
+				if(ability.tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
@@ -2450,12 +2415,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos = b.pos;
 					pe->speed_min = Vec3(-1, -1, -1);
 					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
@@ -2466,8 +2431,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
+				uint ability_hash;
 				Vec3 pos;
-				const string& spell_id = f.ReadString1();
+				f >> ability_hash;
 				f >> pos;
 				if(!f)
 				{
@@ -2478,15 +2444,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Spell* spell_ptr = Spell::TryGet(spell_id);
-				if(!spell_ptr)
-				{
-					Error("Update client: SPELL_SOUND, missing spell '%s'.", spell_id.c_str());
-					break;
-				}
-
-				Spell& spell = *spell_ptr;
-				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
+				Ability* ability = Ability::Get(ability_hash);
+				if(!ability)
+					Error("Update client: SPELL_SOUND, missing ability %u.", ability_hash);
+				else
+					sound_mgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);
 			}
 			break;
 		// drain blood effect
@@ -2509,8 +2471,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						else
 						{
 							Drain& drain = Add1(tmp_area.drains);
-							drain.from = nullptr;
-							drain.to = unit;
+							drain.target = unit;
 							drain.pe = tmp_area.pes.back();
 							drain.t = 0.f;
 							drain.pe->manual_delete = 1;
@@ -2533,14 +2494,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CREATE_ELECTRO.");
 				else if(game->game_state == GS_LEVEL)
 				{
+					LevelArea& area = game_level->GetArea(p1);
 					Electro* e = new Electro;
 					e->id = id;
+					e->area = &area;
 					e->Register();
-					e->spell = Spell::TryGet("thunder_bolt");
+					e->ability = Ability::Get("thunder_bolt");
 					e->start_pos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					game_level->GetArea(p1).tmp->electros.push_back(e);
+					area.tmp->electros.push_back(e);
 				}
 			}
 			break;
@@ -2560,7 +2523,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						Error("Update client: UPDATE_ELECTRO, missing electro %d.", id);
 					else
 					{
-						Vec3 from = e->lines.back().pts.back();
+						Vec3 from = e->lines.back().to;
 						e->AddLine(from, pos);
 					}
 				}
@@ -2575,17 +2538,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken ELECTRO_HIT.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					Spell* spell = Spell::TryGet("thunder_bolt");
+					Ability* ability = Ability::Get("thunder_bolt");
 
 					// sound
-					if(spell->sound_hit)
-						sound_mgr->PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist);
+					if(ability->sound_hit)
+						sound_mgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
 
 					// particles
-					if(spell->tex_particle)
+					if(ability->tex_particle)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = spell->tex_particle;
+						pe->tex = ability->tex_particle;
 						pe->emision_interval = 0.01f;
 						pe->life = 0.f;
 						pe->particle_life = 0.5f;
@@ -2596,12 +2559,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						pe->pos = pos;
 						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-spell->size, -spell->size, -spell->size);
-						pe->pos_max = Vec3(spell->size, spell->size, spell->size);
-						pe->size = spell->size_particle;
-						pe->op_size = POP_LINEAR_SHRINK;
+						pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
+						pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+						pe->size = ability->size_particle;
+						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
-						pe->op_alpha = POP_LINEAR_SHRINK;
+						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->mode = 1;
 						pe->Init();
 
@@ -2619,10 +2582,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken RAISE_EFFECT.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					Spell& spell = *Spell::TryGet("raise");
+					Ability& ability = *Ability::Get("raise");
 
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -2633,12 +2596,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos = pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 
@@ -2655,10 +2618,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken HEAL_EFFECT.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					Spell& spell = *Spell::TryGet("heal");
+					Ability& ability = *Ability::Get("heal");
 
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
+					pe->tex = ability.tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -2669,12 +2632,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->pos = pos;
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
+					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->size = ability.size_particle;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 
@@ -2822,7 +2785,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->Warp(location_index);
+					world->Warp(location_index, false);
 					game_gui->world_map->StartTravel();
 				}
 			}
@@ -2836,7 +2799,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Error("Update client: Broken CHEAT_TRAVEL_POS.");
 				else if(game->game_state == GS_WORLDMAP)
 				{
-					world->WarpPos(pos);
+					world->WarpPos(pos, false);
 					game_gui->world_map->StartTravel();
 				}
 			}
@@ -2900,23 +2863,34 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				}
 			}
 			break;
-		// player used action
-		case NetChange::PLAYER_ACTION:
+		// player used ability
+		case NetChange::PLAYER_ABILITY:
 			{
 				int id;
+				uint ability_hash;
 				f >> id;
+				f >> ability_hash;
 				if(!f)
-					Error("Update client: Broken PLAYER_ACTION.");
-				else if(game->game_state == GS_LEVEL)
+				{
+					Error("Update client: Broken PLAYER_ABILITY.");
+					break;
+				}
+				Ability* ability = Ability::Get(ability_hash);
+				if(!ability)
+				{
+					Error("Update client: PLAYER_ABILITY, invalid ability %u.", ability_hash);
+					break;
+				}
+				if(game->game_state == GS_LEVEL)
 				{
 					Unit* unit = game_level->FindUnit(id);
 					if(unit && unit->player)
 					{
 						if(unit->player != game->pc)
-							unit->player->UseAction(true);
+							unit->player->UseAbility(ability, true);
 					}
 					else
-						Error("Update client: PLAYER_ACTION, invalid player unit %d.", id);
+						Error("Update client: PLAYER_ABILITY, invalid player unit %d.", id);
 				}
 			}
 			break;
@@ -2959,7 +2933,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else
 					{
 						unit->action = A_USE_ITEM;
-						unit->mesh_inst->frame_end_info2 = false;
 						unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 				}
@@ -3216,7 +3189,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				{
 					pc.unit->AddItem2(pc.data.picking_item->item, (uint)count, (uint)team_count, false);
 					if(pc.data.picking_item->item->type == IT_GOLD)
-						sound_mgr->PlaySound2d(game->sCoins);
+						sound_mgr->PlaySound2d(game_res->sCoins);
 					if(pc.data.picking_item_state == 2)
 						delete pc.data.picking_item;
 					pc.data.picking_item_state = 0;
@@ -3441,7 +3414,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", id);
 					else
 					{
-						game->PreloadItem(item);
+						game_res->PreloadItem(item);
 						chest->AddItem(item, (uint)count, (uint)team_count, false);
 					}
 				}
@@ -3698,9 +3671,10 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// response to training
 		case NetChangePlayer::TRAIN:
 			{
-				byte type, stat_type;
+				byte type;
+				int value;
 				f >> type;
-				f >> stat_type;
+				f >> value;
 				if(!f)
 					Error("Update single client: Broken TRAIN.");
 				else if(game->game_state == GS_LEVEL)
@@ -3708,7 +3682,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					game->fallback_type = FALLBACK::TRAIN;
 					game->fallback_t = -1.f;
 					game->fallback_1 = type;
-					game->fallback_2 = stat_type;
+					game->fallback_2 = value;
 					pc.unit->frozen = FROZEN::YES;
 				}
 			}
@@ -3746,7 +3720,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else
 					{
 						game_gui->mp_box->Add(Format(game->txReceivedGold, count, info->name.c_str()));
-						sound_mgr->PlaySound2d(game->sCoins);
+						sound_mgr->PlaySound2d(game_res->sCoins);
 					}
 				}
 			}
@@ -4001,7 +3975,41 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(!f)
 					Error("Update single client: Broken SOUND.");
 				else if(id == 0)
-					sound_mgr->PlaySound2d(game->sCoins);
+					sound_mgr->PlaySound2d(game_res->sCoins);
+			}
+			break;
+		// add ability to player
+		case NetChangePlayer::ADD_ABILITY:
+			{
+				uint ability_hash;
+				f >> ability_hash;
+				if(!f)
+				{
+					Error("Update single client: Broken ADD_ABILITY.");
+					break;
+				}
+				Ability* ability = Ability::Get(ability_hash);
+				if(!ability)
+					Error("Update single client: ADD_ABILITY, invalid ability %u.", ability_hash);
+				else
+					pc.AddAbility(ability);
+			}
+			break;
+		// remove ability from player
+		case NetChangePlayer::REMOVE_ABILITY:
+			{
+				uint ability_hash;
+				f >> ability_hash;
+				if(!f)
+				{
+					Error("Update single client: Broken REMOVE_ABILITY.");
+					break;
+				}
+				Ability* ability = Ability::Get(ability_hash);
+				if(!ability)
+					Error("Update single client: REMOVE_ABILITY, invalid ability %u.", ability_hash);
+				else
+					pc.RemoveAbility(ability);
 			}
 			break;
 		default:
@@ -4151,6 +4159,8 @@ bool Net::FilterOut(NetChange& c)
 		return false;
 	case NetChange::TALK:
 	case NetChange::TALK_POS:
+	case NetChange::CUTSCENE_IMAGE:
+	case NetChange::CUTSCENE_TEXT:
 		if(IsServer() && c.str)
 		{
 			StringPool.Free(c.str);
@@ -4160,8 +4170,6 @@ bool Net::FilterOut(NetChange& c)
 		return true;
 	case NetChange::RUN_SCRIPT:
 	case NetChange::CHEAT_ARENA:
-	case NetChange::CUTSCENE_IMAGE:
-	case NetChange::CUTSCENE_TEXT:
 		StringPool.Free(c.str);
 		return true;
 	default:
@@ -4232,12 +4240,7 @@ bool Net::ReadWorldData(BitStreamReader& f)
 	}
 
 	// load music
-	if(!sound_mgr->IsMusicDisabled())
-	{
-		game->LoadMusic(MusicType::Boss, false);
-		game->LoadMusic(MusicType::Death, false);
-		game->LoadMusic(MusicType::Travel, false);
-	}
+	game_res->LoadCommonMusic();
 
 	return true;
 }
@@ -4371,7 +4374,6 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game->pc = unit->player;
 	game->pc->player_info = &info;
 	info.pc = game->pc;
-	game_gui->level_gui->Setup();
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -4415,8 +4417,6 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	}
 
 	unit->prev_speed = 0.f;
-	unit->run_attack = false;
-
 	unit->weight = 0;
 	unit->CalculateLoad();
 	unit->RecalculateWeight();
@@ -4475,19 +4475,20 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	// multiplayer load data
 	if(mp_load)
 	{
-		byte flags;
-		f >> unit->attack_power;
+		f >> unit->used_item_is_team;
 		f >> unit->raise_timer;
-		if(unit->action == A_CAST)
-			f >> unit->action_unit;
-		f >> flags;
+		if(unit->action == A_ATTACK)
+		{
+			f >> unit->act.attack.power;
+			f >> unit->act.attack.run;
+		}
+		else if(unit->action == A_CAST)
+			f >> unit->act.cast.target;
 		if(!f)
 		{
 			Error("Read player data: Broken multiplayer data.");
 			return false;
 		}
-		unit->run_attack = IsSet(flags, 0x01);
-		unit->used_item_is_team = IsSet(flags, 0x02);
 	}
 
 	// checksum

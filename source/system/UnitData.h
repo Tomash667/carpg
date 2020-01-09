@@ -15,17 +15,17 @@
 
 //-----------------------------------------------------------------------------
 // Lista zaklêæ postaci
-struct SpellList
+struct AbilityList
 {
 	string id;
-	int level[MAX_SPELLS];
-	Spell* spell[MAX_SPELLS];
+	int level[MAX_ABILITIES];
+	Ability* ability[MAX_ABILITIES];
 	bool have_non_combat;
 
-	SpellList() : spell(), level(), have_non_combat(false) {}
+	AbilityList() : ability(), level(), have_non_combat(false) {}
 
-	static vector<SpellList*> lists;
-	static SpellList* TryGet(Cstring id);
+	static vector<AbilityList*> lists;
+	static AbilityList* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ enum UNIT_FLAGS2
 	F2_DONT_TALK = 1 << 5, // no idle talk
 	F2_CONSTRUCT = 1 << 6, // can't be healed
 	F2_FAST_LEARNER = 1 << 7, // ai hero faster exp gain
-	// unused (1 << 8)
+	F2_MP_BAR = 1 << 8, // debug - show mana bar
 	F2_OLD = 1 << 9, // have old gray hair
 	F2_MELEE = 1 << 10, // prefers melee combat
 	F2_MELEE_50 = 1 << 11, // 50% prefers melee combat (randomly selected when spawned)
@@ -191,7 +191,7 @@ struct IdlePack
 struct TexPack
 {
 	string id;
-	vector<TexId> textures;
+	vector<TexOverride> textures;
 	bool inited;
 
 	TexPack() : inited(false) {}
@@ -215,14 +215,14 @@ struct TraderInfo
 // Dane postaci
 struct UnitData
 {
-	string id, mesh_id, name, real_name;
+	string id, name, real_name;
 	UnitData* parent;
 	MeshPtr mesh;
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
-	int hp, hp_lvl, stamina, attack, attack_lvl, def, def_lvl, dmg_type, flags, flags2, flags3;
-	SpellList* spells;
+	int hp, hp_lvl, mp, mp_lvl, stamina, attack, attack_lvl, def, def_lvl, spell_power, dmg_type, flags, flags2, flags3;
+	AbilityList* abilities;
 	Int2 gold, gold2;
 	GameDialog* dialog;
 	UNIT_GROUP group;
@@ -239,12 +239,13 @@ struct UnitData
 	Class* clas;
 	TraderInfo* trader;
 	vector<UnitData*>* upgrade;
+	Vec4 tint;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(0), hp_lvl(0), stamina(0), attack(0), attack_lvl(0), def(0), def_lvl(0),
-		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f),
+		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), abilities(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f),
 		run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(nullptr),
-		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f)
+		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0), tint(Vec4::One)
 	{
 	}
 	~UnitData()
@@ -255,7 +256,7 @@ struct UnitData
 
 	float GetRadius() const { return width; }
 	StatProfile& GetStatProfile() const { return *stat_profile; }
-	const TexId* GetTextureOverride() const
+	const TexOverride* GetTextureOverride() const
 	{
 		if(!tex)
 			return nullptr;

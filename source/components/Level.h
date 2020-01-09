@@ -130,7 +130,7 @@ public:
 	void UpdateLocation(int days, int open_chance, bool reset);
 	int GetDifficultyLevel() const;
 	int GetChestDifficultyLevel() const;
-	void OnReenterLevel();
+	void OnRevisitLevel();
 	bool HaveArena();
 	InsideBuilding* GetArena();
 	cstring GetCurrentLocationText();
@@ -188,6 +188,7 @@ public:
 		bow_instances.push_back(mesh_inst);
 		mesh_inst = nullptr;
 	}
+	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
@@ -195,7 +196,6 @@ public:
 	bool reenter;
 	Camera camera;
 	Vec4 fog_color, fog_params, ambient_color;
-	bool cl_fog, cl_lighting;
 	float lights_dt;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;
@@ -203,7 +203,7 @@ public:
 	// colliders
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_terrain;
-	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2], *shape_block, *shape_barrier, *shape_door, *shape_arrow, *shape_summon;
+	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2], *shape_block, *shape_barrier, *shape_door, *shape_arrow, *shape_summon, *shape_floor;
 	btBvhTriangleMeshShape* dungeon_shape;
 	btCollisionObject* obj_dungeon;
 	vector<Vec3> dungeon_shape_pos;
@@ -218,7 +218,8 @@ public:
 	int enter_from; // from where team entered level (used when spawning new player in MP)
 	float light_angle; // random angle used for lighting in outside locations
 	bool is_open, // is location loaded, team is inside or is on world map and can reenter
-		entering; // true when entering location/generating/spawning unit, false when finished
+		entering, // true when entering location/generating/spawning unit, false when finished
+		can_fast_travel; // used by MP clients
 	vector<Unit*> to_remove;
 	vector<CollisionObject> global_col;
 	vector<Unit*> blood_to_spawn;

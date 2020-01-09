@@ -134,11 +134,12 @@ struct VarsContainer
 	~VarsContainer();
 	Var* Add(Var::Type type, const string& name, bool registered);
 	Var* Get(const string& name);
-	Var* TryGet(const string& name);
+	Var* TryGet(const string& name) const;
+	bool IsEmpty() const { return vars.empty(); }
+	bool IsSet(const string& name) const { return TryGet(name) != nullptr; }
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void Clear();
-	bool IsEmpty() const { return vars.empty(); }
 
 private:
 	std::map<string, Var*> vars;

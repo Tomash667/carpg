@@ -53,7 +53,7 @@ static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
 enum class FALLBACK
 {
 	NO = -1,
-	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk), fallback_2 (skill/attrib id)
+	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), fallback_2 (skill/attrib id)
 	REST, // fallback_1 (days)
 	ARENA,
 	ENTER, // fallback_1 (inside building index)
@@ -90,16 +90,6 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
-struct PostEffect
-{
-	int id;
-	D3DXHANDLE tech;
-	float power;
-	Vec4 skill;
-};
-
-typedef std::map<Mesh*, Texture*> ItemTextureMap;
-
 enum class ProfilerMode
 {
 	Disabled,
@@ -113,10 +103,10 @@ public:
 	Game();
 	~Game();
 
+	bool OnInit() override;
 	void OnCleanup() override;
 	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
-	void OnDebugDraw(DebugDrawer* dd);
 	void OnUpdate(float dt) override;
 	void OnReload() override;
 	void OnReset() override;
@@ -126,34 +116,21 @@ public:
 	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
-	void ClearPointers();
-	void CreateTextures();
 	void CreateRenderTargets();
-	void PreloadData();
 	void ReportError(int id, cstring text, bool once = false);
 
-	// initialization
-	void BeforeInit();
-	bool OnInit() override;
+	// initialization & loading
 	void PreconfigureGame();
 	void PreloadLanguage();
-	void CreatePlaceholderResources();
-
-	// loading system
+	void PreloadData();
 	void LoadSystem();
 	void AddFilesystem();
 	void LoadDatafiles();
-	bool LoadRequiredStats(uint& errors);
 	void LoadLanguageFiles();
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
-
-	// loading data
 	void LoadData();
-	void AddLoadTasks();
-
-	// after loading data
 	void PostconfigureGame();
 	void StartGameMode();
 
@@ -162,10 +139,6 @@ public:
 	//-----------------------------------------------------------------
 	void Draw();
 	void ForceRedraw();
-	void ReloadShaders();
-	void ReleaseShaders();
-	void LoadShaders();
-	void SetupShaders();
 	void InitScene();
 	void BuildDungeon();
 	void ChangeDungeonTexWrap();
@@ -178,24 +151,16 @@ public:
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
-	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
-	void DrawGlowingNodes(bool use_postfx);
-	void DrawSkybox();
+	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawTerrain(const vector<uint>& parts);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
+	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
-	void DrawBillboards(const vector<Billboard>& billboards);
-	void DrawExplosions(const vector<Explo*>& explos);
-	void DrawParticles(const vector<ParticleEmitter*>& pes);
-	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
-	void DrawLightings(const vector<Electro*>& electros);
-	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
-	void DrawPortals(const vector<Portal*>& portals);
 	void UvModChanged();
 	void InitQuadTree();
 	void DrawGrass();
@@ -205,21 +170,18 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
-	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
+	void ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex);
+	void ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void SetDungeonParamsToMeshes();
 
 	//-----------------------------------------------------------------
 	// SOUND & MUSIC
 	//-----------------------------------------------------------------
-	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
 	void UpdateMusic();
-	Sound* GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	Sound* GetItemSound(const Item* item);
 	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
 	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	void UpdateAttachedSounds(float dt);
@@ -232,11 +194,6 @@ public:
 	void PauseGame();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void GenerateItemImage(TaskData& task_data);
-	void GenerateItemImageImpl(Item& item);
-	Texture* TryGenerateItemImage(const Item& item);
-	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
-	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
@@ -252,6 +209,7 @@ public:
 	enum ATTACK_RESULT
 	{
 		ATTACK_NOT_HIT,
+		ATTACK_OBJECT,
 		ATTACK_BLOCKED,
 		ATTACK_NO_DAMAGE,
 		ATTACK_HIT,
@@ -269,7 +227,6 @@ public:
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
-	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
@@ -311,7 +268,6 @@ public:
 	void PreloadUnits(vector<Unit*>& units);
 	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
-	void PreloadItem(const Item* item);
 	void VerifyResources();
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
@@ -327,7 +283,7 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void UpdateLights(vector<Light>& lights);
-	void UpdatePostEffects(float dt);
+	void GetPostEffects(vector<PostEffect>& post_effects);
 	// --- cutscene
 	void CutsceneStart(bool instant);
 	void CutsceneImage(const string& image, float time);
@@ -367,6 +323,7 @@ public:
 	void DoQuit();
 	void RestartGame();
 	void ClearAndExitToMenu(cstring msg);
+	void OnLoadProgress(float progress, cstring str);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
@@ -381,8 +338,12 @@ public:
 	//-----------------------------------------------------------------
 	LocationGeneratorFactory* loc_gen_factory;
 	Arena* arena;
-	DebugDrawer* debug_drawer;
+	BasicShader* basic_shader;
+	GlowShader* glow_shader;
 	GrassShader* grass_shader;
+	ParticleShader* particle_shader;
+	PostfxShader* postfx_shader;
+	SkyboxShader* skybox_shader;
 	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
@@ -398,10 +359,7 @@ public:
 	uint force_seed, next_seed;
 	ProfilerMode profiler_mode;
 	int start_version;
-	ItemTextureMap item_texture_map;
-	vector<Texture*> over_item_textures;
 	uint load_errors, load_warnings;
-	Texture missing_item_texture;
 	std::set<const Item*> items_load;
 	bool hardcore_mode, hardcore_option, check_updates, skip_tutorial;
 	// quickstart
@@ -422,7 +380,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
-	bool loading_first_step;
+	bool loading_first_step, loading_resources;
 	// used temporary at loading
 	vector<AIController*> ai_bow_targets;
 	vector<Location*> load_location_quest;
@@ -458,25 +416,17 @@ public:
 	//-----------------------------------------------------------------
 	int draw_flags;
 	Matrix mat;
-	int particle_count;
 	VB vbDungeon;
 	IB ibDungeon;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
-	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
-	float portal_anim, drunk_anim, grayout;
-	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
-	SURFACE sPostEffect[3];
-	TEX tPostEffect[3];
-	VB vbFullscreen;
-	vector<PostEffect> post_effects;
+	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
+	float portal_anim, drunk_anim;
 	// scene
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
-	bool cl_normalmap, cl_specularmap, cl_glow;
+	bool use_glow, use_fog, use_lighting, use_specularmap, use_normalmap, use_postfx;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
-	VParticle billboard_v[4];
-	Vec3 billboard_ext[4];
 	VParticle portal_v[4];
 	int uv_mod;
 	QuadTree quadtree;
@@ -508,36 +458,19 @@ public:
 	//-----------------------------------------------------------------
 	// RESOURCES
 	//-----------------------------------------------------------------
-	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
-	MeshPtr aBox, aCylinder, aSphere, aCapsule;
-	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
-	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
-	RenderTarget* rt_save, *rt_item, *rt_item_rot;
-	Texture tMinimap;
-	TexturePtr tBlack, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
-	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn;
-	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
-	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
-	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
-	D3DXHANDLE hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
-		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange, hPostTex, hPostPower, hPostSkill,
-		hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
-	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
-		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
-	VB vbParticle;
-	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
+	RenderTarget* rt_save, *rt_item_rot;
+	Texture* tMinimap;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS
 	//-----------------------------------------------------------------
-	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
-	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
+	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingAbilities, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
 		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests, txLoadingClasses;
-	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort,
-		txAiTower, txAiArmory, txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies, txAiNearEnemies, txAiCave,
-		txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4],
-		txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[6],
-		txAiDrunkContestText[4], txAiWildHunterText[3];
+	cstring txAiNoHpPot[2], txAiNoMpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort,
+		txAiDwarfFort, txAiTower, txAiArmory, txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies,
+		txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7],
+		txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2],
+		txAiDrunkMageText[3], txAiDrunkText[6], txAiDrunkContestText[4], txAiWildHunterText[3];
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
 		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
@@ -548,10 +481,11 @@ public:
 	cstring txRumor[29], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
 		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
-		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined;
+		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined,
+		txCantLearnAbility, txSpell, txCantLearnSkill;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
-		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[279], txForMayor, txForSoltys;
+		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[278], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectingProxy, txConnectTimeout, txConnectInvalid,
 		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,

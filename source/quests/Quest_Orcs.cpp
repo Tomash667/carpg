@@ -14,6 +14,7 @@
 #include "World.h"
 #include "Level.h"
 #include "ItemHelper.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Orcs::Init()
@@ -190,7 +191,7 @@ void Quest_Orcs::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Orcs::Load(GameReader& f)
+Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -210,7 +211,7 @@ bool Quest_Orcs::Load(GameReader& f)
 		spawn_unit_room = RoomTarget::Prison;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -468,8 +469,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			assert(throne);
 			if(throne)
 			{
-				orc->ai->idle_action = AIController::Idle_WalkUse;
-				orc->ai->idle_data.usable = throne;
+				orc->ai->st.idle.action = AIController::Idle_WalkUse;
+				orc->ai->st.idle.usable = throne;
 				orc->ai->timer = 9999.f;
 			}
 			orc = nullptr;
@@ -634,7 +635,7 @@ void Quest_Orcs2::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Orcs2::Load(GameReader& f)
+Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -662,7 +663,7 @@ bool Quest_Orcs2::Load(GameReader& f)
 		}
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -690,34 +691,11 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	}
 
 	UnitData* ud = UnitData::Get(udi);
-	orc->data = ud;
-	orc->level = ud->level.x;
-	orc->stats = orc->data->GetStats(orc->level);
-	orc->CalculateStats();
-	ud->item_script->Parse(*orc);
-	for(const Item* item : orc->slots)
-	{
-		if(item)
-			game->PreloadItem(item);
-	}
-	for(ItemSlot& slot : orc->items)
-		game->PreloadItem(slot.item);
-	orc->MakeItemsTeam(false);
-	orc->UpdateInventory();
+	orc->ChangeBase(ud, true);
 
 	OnUpdate(Format(game->txQuest[210], class_name));
 
 	prog = Progress::ChangedClass;
 	orcs_state = State::PickedClass;
 	days = Random(30, 60);
-
-	if(orc->GetClass()->id == "warrior")
-		orc->hero->melee = true;
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_UNIT_BASE;
-		c.unit = orc;
-	}
 }

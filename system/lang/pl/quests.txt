@@ -36,6 +36,49 @@ quest deliver_resources {
 }
 
 //=============================================================================
+quest bandits_collect_toll
+{
+	dialog start {
+		0 "Na drodze pomiêdzy $(start_loc.name) a $(other_loc.name) koczuj¹ bandyci. Pobieraj¹ op³atê i okradaj¹ kupców."
+		1 "Masz czas aby siê nimi zaj¹æ?"
+		2 "Tak"
+		3 "IdŸ do $(other_loc.name) na $(World::GetDirName(start_loc.pos, other_loc.pos)) st¹d i z powrotem. Wtedy na pewno natrafisz na tych bandytów."
+		4 "Masz na to pó³ miesi¹ca."
+		5 "Nie"
+	}
+	
+	dialog end {
+		0 "Nie uda³o ci siê pozbyæ tych bandytów z drogi?"
+		1 "Ehhh, teraz ju¿ pewnie przenieœli siê gdzie indziej. Zawiod³em siê na tobie."
+		2 "Wreszcie ktoœ na kim mo¿na polegaæ. Dobra robota z tymi bandytami, to ich nauczy na jakiœ czas."
+		3 "WeŸ to 1500 sztuk z³ota w nagrodê."
+	}
+	
+	dialog encounter {
+		0 "Staæ!"
+		1 "To nasza droga, jeœli chcesz przejœæ musisz zap³aciæ 500 sztuk z³ota!"
+		2 "Zap³aæ"
+		3 "Mo¿esz przejœæ. Nie zapomnij nas jeszcze odwiedziæ, hehehe..."
+		4 "Nie masz tyle z³ota cholerny biedaku!"
+		5 "Mam nadzieje ¿e twój ekwipunek jest coœ wart!"
+		6 "Nie p³aæ"
+		7 "Mam nadzieje ¿e twój ekwipunek jest coœ wart!"
+	}
+
+	texts {
+		0 "Bandyci pobieraj¹ op³atê"
+		1 "Otrzymano od kapitana stra¿y $(start_loc.name) dnia $date$."
+		2 "Bandyci pobieraj¹ op³atê gdzieœ pomiêdzy $(start_loc.name) a $(other_loc.name) które jest na $(World::GetDirName(start_loc.pos, other_loc.pos)) st¹d. Mam siê ich pozbyæ w ci¹gu po³owy miesi¹ca."
+		3 "Natrafi³eœ na grupê bandytów pobieraj¹c¹ op³aty na drodze."
+		4 "Nie zd¹¿y³em na czas zabiæ bandytów."
+		5 "Zabi³em bandytów."
+		6 "Poinformowa³em kapitana stra¿y o sukcesie i dosta³em nagrodê. Zadanie wykonane!"
+		7 "Poszukiwacze przygód zajêli siê bandytami którzy pobierali op³aty na drodze."
+		8 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+	}
+}
+
+//=============================================================================
 quest alchemist_apprentice
 {
 	dialog alchemist {
@@ -122,7 +165,26 @@ quest main {
 	dialog soltys {
 		0 "Dobrze ¿e przyszed³eœ $player_name$. Musimy porozmawiaæ o zarazie..."
 		1 "Zaraza"
-		2 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+		2 "Kilku mieszkañców naszej wioski ostatnio zachorowa³o."
+		3 "Musimy z nimi porozmawiaæ i ustaliæ czy to jest ta zaraza czy jakaœ normalna choroba."
+		4 "IdŸ z nimi porozmawiaæ i spróbuj ustaliæ od czego siê zarazili. Ja w tym czasie pomyœlê..."
+		5 "Porozmawiaj z zara¿onymi wieœniakami i wróæ do mnie."
+		6 "Jeden z wieœniaków zaatakowa³ ciê bez powodu!?"
+		7 "Jest gorzej ni¿ myœla³em, musimy szybko sprowadziæ tu jakiegoœ kap³ana który zna siê na zarazach."
+		8 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+	}
+	
+	dialog ill_villager {
+		0 "Lepiej siê odsuñ. Coœ mnie bierze..."
+		1 "Wypytaj o chorobê"
+		2 "Koniec rozmowy"
+		3 "Wydaje mi siê ¿e woda ostatnio jakoœ dziwnie smakowa³a. Mo¿e to przez to?"
+		4 "Jeszcze kilka dni temu by³em zdrowy... Nie wiem sk¹d ta zaraza!"
+		5 "Tydzieñ temu by³ tu wêdrowny kupiec. Pierwszy raz go tu widzia³em."
+		6 "Kupi³em od niego miêso. Mo¿e by³o jakieœ nieœwie¿e?"
+		7 "Wczoraj by³em w lesie i coœ mnie ugryz³o."
+		8 "Nie widzia³em tego ale od tego czasu kiepsko siê czujê..."
+		9 "Nie dobrze mi. Chyba bêdzie trzeba pos³aæ po jakiegoœ kleryka..."
 	}
 	
 	texts {
@@ -135,5 +197,7 @@ quest main {
 		6 "Zaraza w wiosce"
 		7 "Rozpoczêto dnia $date$."
 		8 "W $(village.name) zaraza zaczê³a siê coraz bardziej rozprzestrzeniaæ. Muszê tam szybko wróciæ."
+		9 "Muszê przejœæ siê po wiosce i znaleŸæ zara¿onych wieœniaków. Mo¿e uda mi siê coœ ustaliæ."
+		10 "Jeden z wieœniaków oszala³ z powodu zarazy i mnie zaatakowa³."
 	}
 }

@@ -2280,7 +2280,7 @@ void CityGenerator::OnEnter()
 			}
 		}
 
-		game_level->OnReenterLevel();
+		game_level->OnRevisitLevel();
 	}
 	else
 		OnReenter();
@@ -2792,7 +2792,7 @@ void CityGenerator::GeneratePickableItems()
 //=================================================================================================
 void CityGenerator::CreateMinimap()
 {
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{

@@ -21,6 +21,16 @@ enum FAST_TRAVEL
 };
 
 //-----------------------------------------------------------------------------
+enum NetGameFlags
+{
+	F_IS_BANDIT = 1 << 0,
+	F_CRAZIES_ATTACKING = 1 << 1,
+	F_ANYONE_TALKING = 1 << 2,
+	F_CAN_FAST_TRAVEL = 1 << 3
+	// max 8
+};
+
+//-----------------------------------------------------------------------------
 class NetChangeWriter
 {
 public:
@@ -46,7 +56,7 @@ struct NetChange
 		UNIT_POS, // unit position/rotation/animation [int(id)-unit, auto from Unit: Vec3-pos, float-rot, float-animation speed, byte-animation]
 		CHANGE_EQUIPMENT, // unit changed equipped item SERVER[int(id)-unit, byte(id)-item slot, Item-item(automaticaly set)] / CLIENT[int(id)-i_index (if slot remove, else equip)]
 		TAKE_WEAPON, // unit take/hide weapon SERVER[int(id)-unit, bool(id)-hide, byte-type of weapon(auto)] / CLIENT[bool(id) hide, byte-type of weapon(auto)]
-		ATTACK, // unit attack SERVER[int(id)-unit, byte(id)-type/flags, float(f[1])-speed] / CLIENT[byte(id)-type/flags, float(f[1])-speed, [(float(f[2]) - bow yspeed]]
+		ATTACK, // unit attack SERVER[int(id)-unit, byte(id)-type/flags, float(f[1])-speed] / CLIENT[byte(id)-type/flags, float(f[1])-speed, auto: Vec3 - for shoot target_pos]
 		CHANGE_FLAGS, // change of game flags [byte-flags (auto 0x01-bandit, 0x02-crazies attack, 0x04-anyone talking)
 		FALL, // unit falls on ground [int(id)-unit]
 		DIE, // unit dies [int(id)-unit]
@@ -131,7 +141,7 @@ struct NetChange
 		END_TRAVEL, // leader finished travel []
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, int-year]
 		USE_DOOR, // someone open/close door [int(id)-door, bool(count)-is closing]
-		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
+		CREATE_EXPLOSION, // create explosion effect [uint(ability->hash), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap]
 		EVIL_SOUND, // play evil sound []
@@ -145,9 +155,9 @@ struct NetChange
 		CHANGE_UNIT_BASE, // change unit base type [int(id)-unit, string1(unit.data.id)-base unit]
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
-		CAST_SPELL, // unit casts spell [int(id)-unit, byte(id)-attack id]
-		CREATE_SPELL_BALL, // create ball - spell effect [string1(spell->id), Vec3(pos), float(f[0])-rotY, float(f[1])-speedY), int(extra_id)-owner id]
-		SPELL_SOUND, // play spell sound [string1(spell->id), Vec3(pos)]
+		CAST_SPELL, // unit cast spell SERVER[int(id)-unit] / CLIENT[Vec3(pos)-target pos]
+		CREATE_SPELL_BALL, // create ball - spell effect [uint(ability->hash), Vec3(pos), float(rot_y), float(speed_y), int(extra_id)-owner id]
+		SPELL_SOUND, // play spell sound [uint(ability->hash), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(id)-unit that sucks blood]
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro), Vec3(pos), Vec3(f)-pos2]
 		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro, Vec3(pos)]
@@ -157,7 +167,7 @@ struct NetChange
 		CHEAT_NOAI, // player used cheat 'noai' or notification to players [bool(id)-state]
 		END_OF_GAME, // end of game, time run out []
 		REST, // player rest in inn [byte(id)-days]
-		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament, 3-perk), byte(count)-stat type]
+		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), int(count)-value]
 		UPDATE_FREE_DAYS, // update players free days [vector<size:byte, int-unit, int-days>]
 		CHANGE_MP_VARS, // multiplayer vars changed [auto: bool-mp_use_interp, float-mp_interp]
 		GAME_SAVED, // game saved notification []
@@ -182,7 +192,7 @@ struct NetChange
 		BREAK_ACTION, // break unit action [int(id)-unit]
 		STUN, // unit stun - not shield bash [int(id)-unit, f[0]-length]
 		CHEAT_STUN, // player used cheat 'stun' [int(id)-unit, f[0]-length]
-		PLAYER_ACTION, // player unit is using action SERVER[int(id)-unit] / CLIENT[int(id)-unit, Vec3-pos/data]
+		PLAYER_ABILITY, // player unit is using ability SERVER[int(id)-unit, uint(ability->hash)] / CLIENT[int(id)-unit, Vec3-pos/data, uint(ability->hash)]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
 		RUN_SCRIPT, // run script [string(str)-code, int(id)-target unit]
@@ -195,7 +205,7 @@ struct NetChange
 		CLEAN_LEVEL, // clean level from blood and corpses [int(id)-building id (-1 outside, -2 all)]
 		CHANGE_LOCATION_IMAGE, // change location image [byte(id)-index, auto:byte-image]
 		CHANGE_LOCATION_NAME, // change location name [byte(id)-index, auto:string1-name]
-		SET_SHORTCUT, // player set shortcut [byte(id)-index, auto:byte-type, byte/string1-value]
+		SET_SHORTCUT, // player set shortcut [byte(id)-index, auto:byte-type, byte/uint/string1-value]
 		USE_CHEST, // unit uses chest SERVER[int(id)-chest id, int(count)-unit] / CLIENT[int(id)-chest id]
 		FAST_TRAVEL, // fast travel request/response [byte(id)-FAST_TRAVEL enum, SERVER: byte(count)-player id]
 		FAST_TRAVEL_VOTE, // update player vote for fast travel [byte(id)-player id]
@@ -213,7 +223,6 @@ struct NetChange
 		const Item* base_item;
 		UnitData* base_unit;
 		int e_id;
-		Spell* spell;
 		CMD cmd;
 		Usable* usable;
 	};
@@ -231,6 +240,12 @@ struct NetChange
 		float f[3];
 		POD::Vec3 vec3;
 		const Item* item2;
+		struct
+		{
+			Ability* ability;
+			float rot_y;
+			float speed_y;
+		};
 	};
 	Vec3 pos;
 	union

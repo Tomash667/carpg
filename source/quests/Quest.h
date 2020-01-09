@@ -37,6 +37,25 @@ struct Quest : public QuestHandler
 		Failed
 	};
 
+	enum class LoadResult
+	{
+		Ok,
+		Remove,
+		Convert
+	};
+
+	struct ConversionData
+	{
+		cstring id;
+		CScriptDictionary* dict;
+
+		void Add(cstring key, int value);
+		void Add(cstring key, bool value)
+		{
+			Add(key, value ? 1 : 0);
+		}
+	};
+
 	int id;
 	QUEST_TYPE type;
 	State state;
@@ -64,7 +83,8 @@ struct Quest : public QuestHandler
 	virtual const Item* GetQuestItem() { return nullptr; }
 
 	virtual void Save(GameWriter& f);
-	virtual bool Load(GameReader& f);
+	virtual LoadResult Load(GameReader& f);
+	virtual void GetConversionData(ConversionData& data) {}
 
 	void OnStart(cstring name);
 	void OnUpdate(const std::initializer_list<cstring>& msgs);
@@ -99,7 +119,7 @@ struct Quest_Encounter : public Quest
 	}
 
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	void RemoveEncounter();
 };
 
@@ -154,7 +174,7 @@ struct Quest_Event
 struct Quest_Dungeon : public Quest, public Quest_Event
 {
 	virtual void Save(GameWriter& f) override;
-	virtual bool Load(GameReader& f) override;
+	virtual LoadResult Load(GameReader& f) override;
 
 	// to powinno byæ inline ale nie wysz³o :/
 	Location& GetTargetLocation();

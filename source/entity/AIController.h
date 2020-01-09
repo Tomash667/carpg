@@ -98,25 +98,42 @@ struct AIController
 
 	Unit* unit;
 	State state;
+	union StateData
+	{
+		StateData() {}
+		struct CastState
+		{
+			Ability* ability;
+		} cast;
+		struct EscapeState
+		{
+			Room* room;
+		} escape;
+		struct IdleState
+		{
+			IdleState() {}
+			IdleAction action;
+			union
+			{
+				float rot;
+				Vec3 pos;
+				Entity<Unit> unit;
+				Usable* usable;
+				ObjP obj;
+				RegionTarget region;
+			};
+		} idle;
+		struct SearchState
+		{
+			Room* room;
+		} search;
+	} st;
 	Entity<Unit> target, alert_target;
 	Vec3 target_last_pos, alert_target_pos, start_pos;
 	bool in_combat, city_wander;
-	float next_attack, timer, ignore, morale, cooldown[MAX_SPELLS], start_rot, loc_timer, shoot_yspeed;
-	Room* escape_room;
+	float next_attack, timer, ignore, morale, cooldown[MAX_ABILITIES], start_rot, loc_timer;
 	HavePotion have_potion, have_mp_potion;
 	int potion; // miksturka do u¿ycia po schowaniu broni
-	IdleAction idle_action;
-	union IdleData
-	{
-		float rot;
-		Vec3 pos;
-		Entity<Unit> unit;
-		Usable* usable;
-		ObjP obj;
-		RegionTarget region;
-
-		IdleData() {}
-	} idle_data;
 	bool change_ai_mode; // tymczasowe u serwera
 
 	// pathfinding
@@ -129,6 +146,7 @@ struct AIController
 	void Init(Unit* unit);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
+	void LoadIdleAction(GameReader& f, StateData::IdleState& idle, bool apply);
 	bool CheckPotion(bool in_combat = true);
 	void Reset();
 	float GetMorale() const;

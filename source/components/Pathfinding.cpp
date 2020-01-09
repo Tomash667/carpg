@@ -4,9 +4,8 @@
 #include "Level.h"
 #include "OutsideLocation.h"
 #include "InsideLocation.h"
-#include "Game.h"
 #include "Terrain.h"
-#include "DebugDrawer.h"
+#include "BasicShader.h"
 
 //-----------------------------------------------------------------------------
 const float SS = 0.25f;
@@ -745,12 +744,12 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 }
 
 //=================================================================================================
-void Pathfinding::Draw(DebugDrawer* dd)
+void Pathfinding::Draw(BasicShader* shader)
 {
 	if(test_pf.empty() || !marked)
 		return;
 
-	dd->BeginBatch();
+	shader->BeginBatch();
 
 	for(vector<pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
@@ -782,8 +781,8 @@ void Pathfinding::Draw(DebugDrawer* dd)
 			break;
 		}
 
-		dd->AddQuad(v, color);
+		shader->AddQuad(v, color);
 	}
 
-	dd->EndBatch();
+	shader->EndBatch();
 }

@@ -26,6 +26,8 @@ struct CityBuilding
 
 	CityBuilding() {}
 	explicit CityBuilding(Building* building) : building(building) {}
+	Vec3 GetUnitPos();
+	float GetUnitRot();
 };
 
 //-----------------------------------------------------------------------------

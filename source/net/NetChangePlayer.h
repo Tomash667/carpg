@@ -1,11 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Item;
-struct PlayerController;
-struct Unit;
-
-//-----------------------------------------------------------------------------
 struct NetChangePlayer
 {
 	enum TYPE
@@ -38,7 +33,7 @@ struct NetChangePlayer
 		LOOK_AT, // force player to look at unit [int(id)-unit or null]
 		END_FALLBACK, // end of fallback []
 		REST, // response to rest in inn [byte(id)-days]
-		TRAIN, // response to training [byte(id)-type (0-attribute, 1-skill, 2-tournament, 3-perk), byte(count)-stat type]
+		TRAIN, // response to training [byte(id)-type (0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), int(count)-value]
 		UNSTUCK, // warped player to not stuck position [Vec3(pos)]
 		GOLD_RECEIVED, // message about receiving gold from another player [byte(id)-player id, int(count)-count]
 		UPDATE_TRADER_GOLD, // update trader gold [int(id)-unit gold, int(count)-count]
@@ -55,6 +50,8 @@ struct NetChangePlayer
 		ON_REST, // player is resting [byte(count)-days]
 		GAME_MESSAGE_FORMATTED, // add formatted message [int(id)-game message id, int(a)-subtype, int(count)-value]
 		SOUND, // play sound [int(id)-sound id (0-gold)]
+		ADD_ABILITY, // add ability to player [uint(ability->hash)]
+		REMOVE_ABILITY, // remove ability from player [uint(ability->hash)]
 
 		MAX
 	} type;
@@ -64,6 +61,7 @@ struct NetChangePlayer
 		int a;
 		Unit* unit;
 		string* str;
+		Ability* ability;
 		struct
 		{
 			short a1, a2;

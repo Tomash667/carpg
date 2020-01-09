@@ -36,7 +36,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	void Update(float dt);
 
 	Talked talked;

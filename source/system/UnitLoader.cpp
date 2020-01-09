@@ -6,11 +6,13 @@
 #include "GameDialog.h"
 #include "ItemScript.h"
 #include "Item.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ResourceManager.h"
 #include "Stock.h"
 #include "Content.h"
 #include "QuestScheme.h"
+#include "GameResources.h"
+#include <Mesh.h>
 
 enum Group
 {
@@ -30,7 +32,7 @@ enum Group
 	G_FRAME_KEYWORD,
 	G_WEAPON_FLAG,
 	G_NULL,
-	G_SPELL_KEYWORD,
+	G_ABILITY_KEYWORD,
 	G_ITEM_KEYWORD,
 	G_GROUP_KEYWORD,
 	G_TRADER_KEYWORD,
@@ -46,7 +48,7 @@ enum UnitDataType
 	T_UNIT,
 	T_PROFILE,
 	T_ITEMS,
-	T_SPELLS,
+	T_ABILITIES,
 	T_SOUNDS,
 	T_FRAMES,
 	T_TEX,
@@ -67,7 +69,7 @@ enum Property
 	P_ATTACK,
 	P_DEF,
 	P_ITEMS,
-	P_SPELLS,
+	P_ABILITIES,
 	P_GOLD,
 	P_DIALOG,
 	P_GROUP,
@@ -86,7 +88,10 @@ enum Property
 	P_ARMOR_TYPE,
 	P_CLASS,
 	P_TRADER,
-	P_UPGRADE
+	P_UPGRADE,
+	P_SPELL_POWER,
+	P_MP,
+	P_TINT
 };
 
 enum FrameKeyword
@@ -107,10 +112,10 @@ enum ItemKeyword
 	IK_LEVEL
 };
 
-enum SpellKeyword
+enum AbilityKeyword
 {
-	SK_NON_COMBAT,
-	SK_NULL
+	AK_NON_COMBAT,
+	AK_NULL
 };
 
 enum GroupKeyword
@@ -167,7 +172,7 @@ void UnitLoader::Cleanup()
 {
 	DeleteElements(StatProfile::profiles);
 	DeleteElements(ItemScript::scripts);
-	DeleteElements(SpellList::lists);
+	DeleteElements(AbilityList::lists);
 	DeleteElements(SoundPack::packs);
 	DeleteElements(IdlePack::packs);
 	DeleteElements(TexPack::packs);
@@ -186,7 +191,7 @@ void UnitLoader::InitTokenizer()
 		{ "unit", T_UNIT },
 		{ "items", T_ITEMS },
 		{ "profile", T_PROFILE },
-		{ "spells", T_SPELLS },
+		{ "abilities", T_ABILITIES },
 		{ "sounds", T_SOUNDS },
 		{ "frames", T_FRAMES },
 		{ "tex", T_TEX },
@@ -206,7 +211,7 @@ void UnitLoader::InitTokenizer()
 		{ "attack", P_ATTACK },
 		{ "def", P_DEF },
 		{ "items", P_ITEMS },
-		{ "spells", P_SPELLS },
+		{ "abilities", P_ABILITIES },
 		{ "gold", P_GOLD },
 		{ "dialog", P_DIALOG },
 		{ "group", P_GROUP },
@@ -225,7 +230,10 @@ void UnitLoader::InitTokenizer()
 		{ "armor_type", P_ARMOR_TYPE },
 		{ "class", P_CLASS },
 		{ "trader", P_TRADER },
-		{ "upgrade", P_UPGRADE }
+		{ "upgrade", P_UPGRADE },
+		{ "spell_power", P_SPELL_POWER },
+		{ "mp", P_MP },
+		{ "tint", P_TINT }
 		});
 
 	t.AddKeywords(G_MATERIAL, {
@@ -283,6 +291,7 @@ void UnitLoader::InitTokenizer()
 		{ "dont_talk", F2_DONT_TALK },
 		{ "construct", F2_CONSTRUCT },
 		{ "fast_learner", F2_FAST_LEARNER },
+		{ "mp_bar", F2_MP_BAR },
 		{ "old", F2_OLD },
 		{ "melee", F2_MELEE },
 		{ "melee_50", F2_MELEE_50 },
@@ -385,9 +394,9 @@ void UnitLoader::InitTokenizer()
 
 	t.AddKeyword("null", 0, G_NULL);
 
-	t.AddKeywords(G_SPELL_KEYWORD, {
-		{ "non_combat", SK_NON_COMBAT },
-		{ "null", SK_NULL }
+	t.AddKeywords(G_ABILITY_KEYWORD, {
+		{ "non_combat", AK_NON_COMBAT },
+		{ "null", AK_NULL }
 		});
 
 	t.AddKeywords(G_ITEM_KEYWORD, {
@@ -493,14 +502,14 @@ void UnitLoader::LoadEntity(int top, const string& id)
 			ParseItems(script);
 		}
 		break;
-	case T_SPELLS:
+	case T_ABILITIES:
 		{
-			if(SpellList::TryGet(id))
+			if(AbilityList::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<SpellList> list;
+			Ptr<AbilityList> list;
 			list->id = id;
 			t.Next();
-			ParseSpells(list);
+			ParseAbilities(list);
 		}
 		break;
 	case T_SOUNDS:
@@ -605,8 +614,14 @@ void UnitLoader::ParseUnit(const string& id)
 		switch(p)
 		{
 		case P_MESH:
-			unit->mesh_id = t.MustGetString();
-			crc.Update(unit->mesh_id);
+			{
+				const string& mesh_id = t.MustGetString();
+				unit->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				if(unit->mesh)
+					crc.Update(mesh_id);
+				else
+					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+			}
 			break;
 		case P_MAT:
 			unit->mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
@@ -724,19 +739,19 @@ void UnitLoader::ParseUnit(const string& id)
 					crc.Update0();
 			}
 			break;
-		case P_SPELLS:
+		case P_ABILITIES:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<SpellList> spells;
-				unit->spells = spells.Get();
-				ParseSpells(spells);
+				Ptr<AbilityList> abilities;
+				unit->abilities = abilities.Get();
+				ParseAbilities(abilities);
 			}
 			else
 			{
 				const string& id = t.MustGetItemKeyword();
-				unit->spells = SpellList::TryGet(id);
-				if(!unit->spells)
-					t.Throw("Missing spell list '%s'.", id.c_str());
+				unit->abilities = AbilityList::TryGet(id);
+				if(!unit->abilities)
+					t.Throw("Missing ability list '%s'.", id.c_str());
 				crc.Update(id);
 			}
 			break;
@@ -1002,6 +1017,25 @@ void UnitLoader::ParseUnit(const string& id)
 				u->upgrade->push_back(unit.Get());
 			}
 			break;
+		case P_SPELL_POWER:
+			unit->spell_power = t.MustGetInt();
+			crc.Update(unit->spell_power);
+			break;
+		case P_MP:
+			unit->mp = t.MustGetInt();
+			crc.Update(unit->mp);
+			if(t.QuerySymbol('+'))
+			{
+				t.Next();
+				t.AssertSymbol('+');
+				t.Next();
+				unit->mp_lvl = t.MustGetInt();
+				crc.Update(unit->mp_lvl);
+			}
+			break;
+		case P_TINT:
+			t.Parse(unit->tint);
+			break;
 		default:
 			t.Unexpected();
 			break;
@@ -1018,14 +1052,16 @@ void UnitLoader::ParseUnit(const string& id)
 	else
 		unit->type = UNIT_TYPE::ANIMAL;
 
-	if(unit->mesh_id.empty())
+	if(!unit->mesh)
 	{
-		if(unit->type != UNIT_TYPE::HUMAN)
+		if(unit->type == UNIT_TYPE::HUMAN)
+			unit->mesh = game_res->aHuman;
+		else
 			t.Throw("Unit without mesh.");
 	}
 	else
 	{
-		if(unit->type == UNIT_TYPE::HUMAN)
+		if(unit->type == UNIT_TYPE::HUMAN && unit->mesh != game_res->aHuman)
 			t.Throw("Human unit with custom mesh.");
 	}
 
@@ -1761,7 +1797,7 @@ void UnitLoader::AddItem(ItemScript* script)
 }
 
 //=================================================================================================
-void UnitLoader::ParseSpells(Ptr<SpellList>& list)
+void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 {
 	// {
 	t.AssertSymbol('{');
@@ -1771,10 +1807,10 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 
 	do
 	{
-		if(t.IsKeywordGroup(G_SPELL_KEYWORD))
+		if(t.IsKeywordGroup(G_ABILITY_KEYWORD))
 		{
-			SpellKeyword k = (SpellKeyword)t.GetKeywordId(G_SPELL_KEYWORD);
-			if(k == SK_NON_COMBAT)
+			AbilityKeyword k = (AbilityKeyword)t.GetKeywordId(G_ABILITY_KEYWORD);
+			if(k == AK_NON_COMBAT)
 			{
 				// non_combat
 				t.Next();
@@ -1784,31 +1820,31 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 			else
 			{
 				// null
-				if(index == MAX_SPELLS)
-					t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
+				if(index == MAX_ABILITIES)
+					t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 				++index;
 				crc.Update(0);
 			}
 		}
 		else
 		{
-			if(index == MAX_SPELLS)
-				t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
+			if(index == MAX_ABILITIES)
+				t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 			t.AssertSymbol('{');
 			t.Next();
-			const string& spell_id = t.MustGetItemKeyword();
-			Spell* spell = Spell::TryGet(spell_id.c_str());
-			if(!spell)
-				t.Throw("Missing spell '%s'.", spell_id.c_str());
+			const string& ability_id = t.MustGetItemKeyword();
+			Ability* ability = Ability::Get(ability_id.c_str());
+			if(!ability)
+				t.Throw("Missing ability '%s'.", ability_id.c_str());
 			t.Next();
 			int lvl = t.MustGetInt();
 			if(lvl < 0)
-				t.Throw("Invalid spell level %d.", lvl);
+				t.Throw("Invalid ability level %d.", lvl);
 			t.Next();
 			t.AssertSymbol('}');
-			list->spell[index] = spell;
+			list->ability[index] = ability;
 			list->level[index] = lvl;
-			crc.Update(spell->id);
+			crc.Update(ability->hash);
 			crc.Update(lvl);
 			++index;
 		}
@@ -1816,10 +1852,10 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 	}
 	while(!t.IsSymbol('}'));
 
-	if(list->spell[0] == nullptr && list->spell[1] == nullptr && list->spell[2] == nullptr)
-		t.Throw("Empty spell list.");
+	if(list->ability[0] == nullptr && list->ability[1] == nullptr && list->ability[2] == nullptr)
+		t.Throw("Empty ability list.");
 
-	SpellList::lists.push_back(list.Pin());
+	AbilityList::lists.push_back(list.Pin());
 }
 
 //=================================================================================================
@@ -2015,14 +2051,20 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 	{
 		if(t.IsKeywordGroup(G_NULL))
 		{
-			pack->textures.push_back(TexId(nullptr));
+			pack->textures.push_back(TexOverride(nullptr));
 			crc.Update(0);
 		}
 		else
 		{
-			const string& s = t.MustGetString();
-			pack->textures.push_back(TexId(s));
-			crc.Update(s);
+			const string& tex_id = t.MustGetString();
+			Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+			if(tex)
+			{
+				pack->textures.push_back(TexOverride(tex));
+				crc.Update(tex_id);
+			}
+			else
+				LoadError("Missing texture override '%s'.", tex_id.c_str());
 			any = true;
 		}
 		t.Next();

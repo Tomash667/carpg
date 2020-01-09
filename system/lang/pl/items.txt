@@ -147,17 +147,21 @@ item frying_pan {
 
 //------------------------------------------------------------------------------
 // WANDS
-item wand_1 {
+item wand_novice {
 	name "Ró¿d¿ka nowicjusza"
+	desc "Magiczna ró¿d¿ka, nieznacznie zwiêksza obra¿enia od magii."
+}
+item wand_adept {
+	name "Ró¿d¿ka adepta"
 	desc "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii."
 }
-item wand_2 {
-	name "Ró¿d¿ka adepta"
-	desc "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii i przyœpiesza regeneracjê many."
-}
-item wand_3 {
+item wand_expert {
 	name "Ró¿d¿ka eksperta"
-	desc "Magiczna ró¿d¿ka, znacz¹co zwiêksza obra¿enia od magii i szybkoœæ regeneracji many."
+	desc "Magiczna ró¿d¿ka, znacz¹co zwiêksza obra¿enia od magii."
+}
+item wand_master {
+	name "Ró¿d¿ka mistrza"
+	desc "Magiczna ró¿d¿ka, znacznie zwiêksza obra¿enia od magii."
 }
 
 //------------------------------------------------------------------------------
@@ -485,15 +489,15 @@ item al_mage {
 }
 item al_mage2 {
 	name "Szata maga"
-	desc "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
+	desc "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano.\nZwiêksza zapas many i obra¿enia od czarów."
 }
 item al_mage3 {
 	name "Szata maga bojowego"
-	desc "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii."
+	desc "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii.\nZwiêksza zapas many i obra¿enia od czarów."
 }
 item al_mage4 {
 	name "Szata arcymaga"
-	desc "Bardzo dobra magiczna szata, u¿ywana przez arcymagów."
+	desc "Bardzo dobra magiczna szata, u¿ywana przez arcymagów.\nZwiêksza zapas many i obra¿enia od czarów."
 }
 item al_necromancer {
 	name "Szata nekromanty"
@@ -669,6 +673,10 @@ item r_gods_magic {
 item r_concentration {
 	name "Pierœcieñ koncentracji"
 	desc "+10 do umiejêtnoœci koncentracja."
+}
+item r_mystic_magic {
+	name "Pierœcieñ mistycznoœci"
+	desc "+10 do umiejêtnoœci mistyczna magia."
 }
 item r_mana {
 	name "Pierœcieñ many"

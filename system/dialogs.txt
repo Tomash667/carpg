@@ -86,11 +86,11 @@ dialog merchant
 dialog alchemist
 {
 	if rand 2
-	if script "pc.HavePerk(\"alchemist\")"
-	{
-		talk 10
-		do_once
-	}
+		if script "pc.HavePerk(\"alchemist\")"
+		{
+			talk 10
+			do_once
+		}
 	if once
 		talk 0
 	if special "q_magowie_kup_miksture"
@@ -388,11 +388,6 @@ dialog guard_captain
 	if need_talk "captive"
 	{
 		do_quest "captive"
-		do_once
-	}
-	if need_talk "road_bandits"
-	{
-		do_quest "road_bandits"
 		do_once
 	}
 	if need_talk "animals"
@@ -2292,71 +2287,6 @@ dialog q_bandits_boss
 	talk 2
 	script "target.OrderAttack()"
 	end
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_start
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		set_quest_progress 1
-		talk 3
-		talk 4
-		end
-	}
-	escape choice 5
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_timeout
-{
-	set_quest_progress 2
-	talk 0
-	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_end
-{
-	set_quest_progress 4
-	talk 0
-	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_bandits_collect_toll_talk
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		if script "pc.unit.gold >= 500"
-		{
-			talk 3
-			quest_special "pay_500"
-			end2
-		}
-		else
-		{
-			talk 4
-			talk 5
-			script "target.OrderAttack()"
-			end2
-		}
-	}
-	choice 6
-	{
-		talk 7
-		script "target.OrderAttack()"
-		end2
-	}
-	show_choices
 }
 
 //==============================================================================
@@ -4299,6 +4229,18 @@ dialog mage_seller
 	choice 7
 	{
 		talk 8
+		if script "!pc.HaveAbility(Ability::Get(\"fireball\"))"
+			choice 15
+			{
+				special "train/fireball"
+				end
+			}
+		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
+			choice 16
+			{
+				special "train/thunder_bolt"
+				end
+			}
 		choice 9
 		{
 			special "train/int"
@@ -4307,6 +4249,11 @@ dialog mage_seller
 		choice 10
 		{
 			special "train/wis"
+			end
+		}
+		choice 14
+		{
+			special "train/mystic_magic"
 			end
 		}
 		choice 11

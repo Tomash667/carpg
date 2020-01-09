@@ -10,6 +10,7 @@
 #include <Engine.h>
 #include <Render.h>
 #include <SoundManager.h>
+#include <AppEntry.h>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -57,7 +58,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 	str = lpCmd;
 	while(*str)
 	{
-		while(*str && *str == ' ')
+		while(*str == ' ')
 			++str;
 
 		if(*str)
@@ -335,13 +336,16 @@ bool RunInstallScripts()
 }
 
 //=================================================================================================
-void LoadSystemDir()
+void LoadResourcesConfig()
 {
 	g_system_dir = "system";
 
 	Config cfg;
 	if(cfg.Load("resource.cfg") == Config::OK)
+	{
 		g_system_dir = cfg.GetString("system", "system");
+		render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
+	}
 }
 
 //=================================================================================================
@@ -487,19 +491,7 @@ void LoadConfiguration(char* lpCmdLine)
 	if(console == None)
 		console = cfg.GetBool3("console", False);
 	if(console == True)
-	{
 		have_console = true;
-
-		// console
-		AllocConsole();
-		freopen("CONIN$", "r", stdin);
-		freopen("CONOUT$", "w", stdout);
-		freopen("CONOUT$", "w", stderr);
-
-		// console polish diacritics (temporary solution)
-		SetConsoleCP(1250);
-		SetConsoleOutputCP(1250);
-	}
 
 	setlocale(LC_COLLATE, "");
 	setlocale(LC_CTYPE, "");
@@ -589,7 +581,7 @@ void LoadConfiguration(char* lpCmdLine)
 			game->quickstart = QUICKSTART_LOAD_MP;
 	}
 	int slot = cfg.GetInt("loadslot", -1);
-	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
+	if(slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
 		game->quickstart_slot = slot;
 
 	// window position & size
@@ -617,10 +609,10 @@ void LoadConfiguration(char* lpCmdLine)
 	render->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
-	game->cl_postfx = cfg.GetBool("cl_postfx", true);
-	game->cl_normalmap = cfg.GetBool("cl_normalmap", true);
-	game->cl_specularmap = cfg.GetBool("cl_specularmap", true);
-	game->cl_glow = cfg.GetBool("cl_glow", true);
+	game->use_postfx = cfg.GetBool("use_postfx", "cl_postfx", true);
+	game->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
+	game->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
+	game->use_glow = cfg.GetBool("cl_glow", true);
 	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));
 	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
@@ -693,7 +685,7 @@ void LoadConfiguration(char* lpCmdLine)
 //=================================================================================================
 // main program function
 //=================================================================================================
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int AppEntry(char* lpCmdLine)
 {
 #ifdef _DEBUG
 	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
@@ -724,11 +716,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Info("Build type: %s", build_type);
 	}
 	LogProcessorFeatures();
-	LoadSystemDir();
 
 	// settings
 	Ptr<Game> game;
 	global::game = game.Get();
+	LoadResourcesConfig();
 	LoadConfiguration(lpCmdLine);
 
 	// instalation scripts

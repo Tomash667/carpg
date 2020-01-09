@@ -347,6 +347,7 @@ bool CreatePatch(char* pakname)
 			CreateDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()), NULL);
 	}
 
+	// create list of missing files
 	copy_pdb = true;
 	printf("Checking deleted files.\n");
 	vector<PakEntry*> missing;
@@ -373,11 +374,23 @@ bool CreatePatch(char* pakname)
 		}
 	}
 
+	// remove empty dirs
+	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+	{
+		Entry& e = *it;
+		if(e.type == ET_Dir)
+			RemoveDirectory(Format("%s/%s", pak_dir.c_str(), e.output.c_str()));
+		else
+			RemoveDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()));
+	}
+
+	// compress
 	if(!nozip)
 	{
 		printf("Compressing patch.\n");
 		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
 	}
+
 	return true;
 }
 
@@ -451,6 +464,12 @@ bool LoadEntries(char* pakname)
 
 int main(int argc, char** argv)
 {
+	if(argc == 1)
+	{
+		printf("No arguments. Get some -help.");
+		return 0;
+	}
+
 	CreateDirectory("db", NULL);
 	CreateDirectory("pdb", NULL);
 	CreateDirectory("out", NULL);
@@ -462,14 +481,30 @@ int main(int argc, char** argv)
 
 	for(int i = 1; i < argc; ++i)
 	{
-		if(strcmp(argv[i], "-nozip") == 0)
-			nozip = true;
-		else if(strcmp(argv[i], "-patch") == 0)
-			mode = 1;
-		else if(strcmp(argv[i], "-normal") == 0)
-			mode = 0;
-		else if(strcmp(argv[i], "-both") == 0)
-			mode = 2;
+		if(argv[i][0] == '-')
+		{
+			char* arg = argv[i] + 1;
+			if(strcmp(arg, "help") == 0 || strcmp(arg, "?") == 0)
+			{
+				printf("Paker tool. Usage: paker [switches] version.\n"
+					"List of switches:\n"
+					"-help - display help\n"
+					"-nozip - don't zip pak\n"
+					"-patch - create only patch pak\n"
+					"-normal - create normal pak (default)\n"
+					"-both - create normal & patch pak\n");
+			}
+			else if(strcmp(arg, "nozip") == 0)
+				nozip = true;
+			else if(strcmp(arg, "patch") == 0)
+				mode = 1;
+			else if(strcmp(arg, "normal") == 0)
+				mode = 0;
+			else if(strcmp(arg, "both") == 0)
+				mode = 2;
+			else
+				printf("Unknown switch '%s'.\n", arg);
+		}
 		else
 		{
 			if(mode == 0)

@@ -40,6 +40,9 @@
 #include "Render.h"
 #include "GameMessages.h"
 #include "Engine.h"
+#include "Utility.h"
+#include "GameResources.h"
+#include "AbilityPanel.h"
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -57,9 +60,9 @@ bool Game::CanShowMenu()
 void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
-	cfg.Add("cl_glow", cl_glow);
-	cfg.Add("cl_normalmap", cl_normalmap);
-	cfg.Add("cl_specularmap", cl_specularmap);
+	cfg.Add("use_glow", use_glow);
+	cfg.Add("use_normalmap", use_normalmap);
+	cfg.Add("use_specularmap", use_specularmap);
 	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
@@ -141,9 +144,9 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	u->player = new PlayerController;
 	pc = u->player;
 	pc->id = 0;
+	pc->is_local = true;
 	pc->Init(*u);
 	pc->name = name;
-	pc->is_local = true;
 	pc->unit->RecalculateWeight();
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
@@ -159,6 +162,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	team->CalculatePlayersLevel();
 	game_gui->Setup(pc);
+	game_gui->ability->Refresh();
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
@@ -171,7 +175,6 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 		--team->free_recruits;
 		npc->hero->SetupMelee();
 	}
-	game_gui->level_gui->Setup();
 
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
@@ -182,12 +185,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 		GenerateWorld();
 		quest_mgr->InitQuests();
 		world->StartInLocation();
-		if(!sound_mgr->IsMusicDisabled())
-		{
-			LoadMusic(MusicType::Boss, false);
-			LoadMusic(MusicType::Death, false);
-			LoadMusic(MusicType::Travel, false);
-		}
+		game_res->LoadCommonMusic();
 		EnterLocation();
 	}
 }
@@ -1305,12 +1303,7 @@ void Game::UpdateServerTransfer(float dt)
 			quest_mgr->InitQuests();
 			world->StartInLocation();
 			net->prepare_world = false;
-			if(!sound_mgr->IsMusicDisabled())
-			{
-				LoadMusic(MusicType::Boss, false);
-				LoadMusic(MusicType::Death, false);
-				LoadMusic(MusicType::Travel, false);
-			}
+			game_res->LoadCommonMusic();
 		}
 
 		net_state = NetState::Server_Initialized;
@@ -1403,6 +1396,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player->dialog_ctx = &dialog_context;
 				u->player->dialog_ctx->is_local = true;
 				u->player->is_local = true;
+				game_gui->ability->Refresh();
 			}
 			else
 			{
@@ -1773,6 +1767,13 @@ void Game::UpdateServerSend(float dt)
 			{
 				Info("NM_SERVER_SEND: Player %s is ready.", info.name.c_str());
 				info.state = PlayerInfo::IN_GAME;
+			}
+			break;
+		case ID_PROGRESS:
+			if(info.state == PlayerInfo::WAITING_FOR_DATA2 && info.left == PlayerInfo::LEFT_NO)
+			{
+				info.timer = 5.f;
+				Info("NM_SERVER_SEND: Update progress from %s.", info.name.c_str());
 			}
 			break;
 		case ID_CONTROL:
@@ -2238,4 +2239,22 @@ void Game::ClearAndExitToMenu(cstring msg)
 	net->ClosePeer(false, true);
 	ExitToMenu();
 	gui->SimpleDialog(msg, game_gui->main_menu);
+}
+
+void Game::OnLoadProgress(float progress, cstring str)
+{
+	game_gui->load_screen->SetProgressOptional(progress, str);
+	if(progress >= 0.5f)
+		utility::IncrementDelayLock();
+	if(Net::IsClient() && loading_resources)
+	{
+		loading_dt += loading_t.Tick();
+		if(loading_dt >= 2.5f)
+		{
+			BitStreamWriter f;
+			f << ID_PROGRESS;
+			net->SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
+			loading_dt = 0;
+		}
+	}
 }

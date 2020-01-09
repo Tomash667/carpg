@@ -1,7 +1,47 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.12 (???):
+Version 0.13 (???):
+! cannot load saves from version 0.5 or older
++ continued storyline
++ pickable mage class
++ better aiming with bow
++ mana potion shortcut
++ allow player to use multiple abilities
++ loading abilities from files
++ new feat (magic adept), items: master wand, ring of mystic magic
++ moved quest "bandits collect toll" to scripts
++ changed some flora textures [Leinnan]
++ optimisations
++ scene manager improvements
++ updated to Visual Studio 2019
++ update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+- crash when clicking/removing shortcut at right time [Savagesheep/mishka]
+- fixed drain spell crashing when casting unit is removed
+- crash when using quickload in menu with console open and there is no save or failed to load
+- removing keys in settings wasn't saved unless other keys were changed
+- no mana regeneration for npc clerics
+- crash on quest timeout "kill animals" when target location is cave or player visit forest for first time
+- crash on quest timeout "camp near city"
+- can't cast heal when something is between camera and player
+- crash at world generation when failed to spawn location with artifact
+- removed memory leak in cutscenes
+- crash in save load panel when saves where changed manualy while playing
+- running in side and attacking won't cause running attack
+- missing floor/ceiling collider
+- ai escape only to next room then stays
+- crash when render initialization failed
+
+--------------------------------------------------------------------------------
+Version 0.12.2 (2019-10-27):
++ MP packet logger
+- crash when entering location when on leaving location team members was eating/drinking [Anonymous]
+- longer waiting for clients that are slowly loading game [Leinnan]
+- invalid calculations of when fast travel is available for clients
+- improved take out/hide weapon animation
+
+--------------------------------------------------------------------------------
+Version 0.12 (2019-09-22):
 ! cannot load saves from version 0.4.20 or older
 + academy - can recruit beginner heroes there
 + start of storyline

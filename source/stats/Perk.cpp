@@ -43,7 +43,8 @@ PerkInfo PerkInfo::perks[] = {
 	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, 5),
 	PerkInfo(Perk::Energetic, "energetic", 0, 2),
 	PerkInfo(Perk::StrongAura, "strong_aura", 0, 2),
-	PerkInfo(Perk::ManaHarmony, "mana_harmony", 0, 5)
+	PerkInfo(Perk::ManaHarmony, "mana_harmony", 0, 5),
+	PerkInfo(Perk::MagicAdept, "magic_adept", 0, 2)
 };
 
 //-----------------------------------------------------------------------------
@@ -337,6 +338,8 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(AttributeId::WIS, 60);
 	case Perk::ManaHarmony:
 		return ctx.Have(AttributeId::WIS, 90);
+	case Perk::MagicAdept:
+		return ctx.Have(AttributeId::INT, 60);
 	default:
 		assert(0);
 		return true;
@@ -450,6 +453,10 @@ void TakenPerk::Apply(PerkContext& ctx)
 		ctx.AddEffect(perk, EffectId::ManaRegeneration, 1.f);
 		ctx.AddRequired(AttributeId::WIS);
 		break;
+	case Perk::MagicAdept:
+		ctx.AddEffect(perk, EffectId::MagicPower, 5.f);
+		ctx.AddRequired(AttributeId::INT);
+		break;
 	}
 
 	if(ctx.cc)
@@ -467,8 +474,6 @@ void TakenPerk::Apply(PerkContext& ctx)
 //=================================================================================================
 void TakenPerk::Remove(PerkContext& ctx)
 {
-	PerkInfo& info = PerkInfo::perks[(int)perk];
-
 	switch(perk)
 	{
 	case Perk::BadBack:
@@ -530,12 +535,16 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::ManaHarmony:
 		ctx.RemoveRequired(AttributeId::WIS);
 		break;
+	case Perk::MagicAdept:
+		ctx.RemoveRequired(AttributeId::INT);
+		break;
 	}
 
 	ctx.RemoveEffect(perk);
 
 	if(ctx.cc)
 	{
+		PerkInfo& info = PerkInfo::perks[(int)perk];
 		if(IsSet(info.flags, PerkInfo::Flaw))
 		{
 			ctx.cc->perks_max--;

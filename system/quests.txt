@@ -490,6 +490,189 @@ quest alchemist_apprentice
 }
 
 //=============================================================================
+// BANDITS COLLECT TOLL - random captain quest
+//=============================================================================
+quest bandits_collect_toll
+{
+	type captain
+	progress {
+		P_TOLL_NONE
+		P_TOLL_STARTED
+		P_TOLL_TIMEOUT
+		P_TOLL_KILLED_BANDITS
+		P_TOLL_FINISHED
+		P_TOLL_ON_TIMEOUT
+	}
+	
+	dialog start {
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_TOLL_STARTED
+			talk 3
+			talk 4
+			end
+		}
+		escape choice 5
+			end
+		show_choices
+	}
+	
+	dialog end {
+		if quest_progress == P_TOLL_ON_TIMEOUT
+		{
+			do_once
+			set_quest_progress P_TOLL_TIMEOUT
+			talk 0
+			talk 1
+			end
+		}
+		else if quest_progress == P_TOLL_KILLED_BANDITS
+		{
+			do_once
+			set_quest_progress P_TOLL_FINISHED
+			talk 2
+			talk 3
+			end
+		}
+		end
+	}
+	
+	dialog encounter {
+		talk 0
+		talk 1
+		choice 2
+		{
+			if script "pc.unit.gold >= 500"
+			{
+				talk 3
+				script "pc.unit.gold -= 500; target.gold += 500;"
+				end2
+			}
+			else
+			{
+				talk 4
+				talk 5
+				script "target.OrderAttack()"
+				end2
+			}
+		}
+		choice 6
+		{
+			talk 7
+			script "target.OrderAttack()"
+			end2
+		}
+		show_choices
+	}
+	
+	code {
+		Location@ start_loc;
+		Location@ other_loc;
+		
+		void Startup()
+		{
+			@start_loc = Level::location;
+			@other_loc = World::GetRandomSettlement(start_loc);
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_TOLL_STARTED:
+				{
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(15);
+					
+					Encounter@ enc = World::AddEncounter(quest);
+					enc.pos = (start_loc.pos + other_loc.pos) / 2;
+					enc.dont_attack = true;
+					enc.text = TEXT(3);
+					@enc.group = UnitGroup::Get("bandits");
+					@enc.dialog = quest.GetDialog("encounter");
+					@enc.quest = quest;
+					enc.st = 6;
+					enc.chance = 50;
+					
+					target.AddDialog(quest, "end");
+				}
+				break;
+			case P_TOLL_ON_TIMEOUT:
+				quest.AddEntry(TEXT(8));
+				break;
+			case P_TOLL_TIMEOUT:
+				quest.AddEntry(TEXT(4));
+				quest.SetFailed();
+				break;
+			case P_TOLL_KILLED_BANDITS:
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_TOLL_FINISHED:
+				quest.AddEntry(TEXT(6));
+				quest.SetCompleted();
+				Team::AddReward(1500, 4500);
+				World::AddNews(TEXT(7));
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_TIMEOUT)
+			{
+				if(progress != P_TOLL_KILLED_BANDITS)
+					progress = P_TOLL_ON_TIMEOUT;
+			}
+			else if(e.event == EVENT_ENCOUNTER)
+				Level::location.AddEventHandler(quest, EVENT_CLEARED);
+			else if(e.event == EVENT_CLEARED)
+				progress = P_TOLL_KILLED_BANDITS;
+		}
+		
+		void OnUpgrade(dictionary& dict)
+		{
+			@start_loc = World::GetLocation(int(dict["start_loc"]));
+			@other_loc = World::GetLocation(int(dict["other_loc"]));
+			int start_time = int(dict["start_time"]);
+			int enc_index = int(dict["enc"]);
+			bool in_enc = bool(dict["in_enc"]);
+			
+			if(quest.state != Q_STARTED)
+				return;
+			
+			int days = 15 - World::worldtime - start_time;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_TOLL_STARTED)
+				progress = P_TOLL_ON_TIMEOUT;
+			
+			if(enc_index != -1)
+			{
+				Encounter@ enc = World::RecreateEncounter(quest, enc_index);
+				enc.pos = (start_loc.pos + other_loc.pos) / 2;
+				enc.dont_attack = true;
+				enc.text = TEXT(3);
+				@enc.group = UnitGroup::Get("bandits");
+				@enc.dialog = quest.GetDialog("encounter");
+				@enc.quest = quest;
+				enc.st = 6;
+				enc.chance = 50;
+			}
+			
+			if(in_enc)
+				Level::location.AddEventHandler(quest, EVENT_CLEARED);
+			
+			Unit@ captain = start_loc.GetCaptain();
+			captain.AddDialog(quest, "end");
+		}
+	}
+}
+
+//=============================================================================
 // MAIN STORY QUEST
 //=============================================================================
 quest main
@@ -499,6 +682,8 @@ quest main
 		P_MAIN_NONE
 		P_MAIN_TALKED_TRAINER
 		P_MAIN_START
+		P_MAIN_TALKED_SOLTYS
+		P_MAIN_ATTACKED
 	}
 	
 	dialog trainer {
@@ -552,14 +737,69 @@ quest main
 			talk 0
 		choice 1
 		{
-			talk 2
+			if quest_progress == P_MAIN_START
+			{
+				talk 2
+				talk 3
+				set_quest_progress P_MAIN_TALKED_SOLTYS
+				talk 4
+			}
+			else if quest_progress == P_MAIN_TALKED_SOLTYS
+				talk 5
+			else if quest_progress == P_MAIN_ATTACKED
+			{
+				talk 6
+				talk 7
+				talk 8
+			}
 			restart
+		}
+		end
+	}
+	
+	dialog ill_villager {
+		talk 0
+		if quest_progress == P_MAIN_TALKED_SOLTYS
+		if script "!target.vars.IsSet(\"talked\")"
+		{
+			choice 1
+			{
+				script "counter++; Dialog::var = counter; target.vars[\"talked\"] = true;"
+				if var 1
+				{
+					talk 3
+				}
+				else if var 2
+				{
+					talk 4
+				}
+				else if var 3
+				{
+					talk 5
+					talk 6
+				}
+				else if var 4
+				{
+					talk 7
+					talk 8
+				}
+				else if var 5
+				{
+					talk 9
+					set_quest_progress P_MAIN_ATTACKED
+				}
+				end
+			}
+			escape choice 2
+				end
+			show_choices
 		}
 		end
 	}
 
 	code {
 		Location@ village;
+		int counter;
 		
 		void Startup()
 		{
@@ -594,6 +834,15 @@ quest main
 				{
 					Unit@ u = Level::FindUnit(UnitData::Get("soltys"));
 					u.AddDialog(quest, "soltys");
+					
+					UnitData@ ill = UnitData::Get("q_main_ill_villager");
+					BuildingGroup@ group = BuildingGroup::Get("cottage");
+					for(int i=0; i<5; ++i)
+					{
+						CityBuilding@ building = Level::GetRandomBuilding(group);
+						Unit@ spawned = Level::SpawnUnitNearLocation(ill, building.unit_pos);
+						spawned.RotateTo(building.unit_rot);
+					}
 				}
 			}
 		}
@@ -618,6 +867,14 @@ quest main
 					quest.AddEntry(TEXT(7));
 					quest.AddEntry(TEXT(8));
 				}
+				break;
+			case P_MAIN_TALKED_SOLTYS:
+				quest.AddEntry(TEXT(9));
+				counter = 0;
+				break;
+			case P_MAIN_ATTACKED:
+				quest.AddEntry(TEXT(10));
+				target.ChangeBase(UnitData::Get("q_main_ill_villager_attack"));
 				break;
 			}
 		}

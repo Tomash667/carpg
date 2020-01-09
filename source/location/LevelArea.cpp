@@ -73,7 +73,10 @@ void LevelArea::Save(GameWriter& f)
 void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibility)
 {
 	if(local && !tmp)
+	{
 		tmp = TmpLevelArea::Get();
+		tmp->area = this;
+	}
 
 	switch(compatibility)
 	{
@@ -341,14 +344,17 @@ void LevelArea::Write(BitStreamWriter& f)
 bool LevelArea::Read(BitStreamReader& f)
 {
 	if(!tmp)
+	{
 		tmp = TmpLevelArea::Get();
+		tmp->area = this;
+	}
 
 	// units
 	uint count;
 	f >> count;
 	if(!f.Ensure(Unit::MIN_SIZE * count))
 	{
-		Error("Broken packet for unit count.");
+		Error("Read area: Invalid unit count.");
 		return false;
 	}
 	units.resize(count);
@@ -357,7 +363,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		unit = new Unit;
 		if(!unit->Read(f))
 		{
-			Error("Broken packet for units.");
+			Error("Read area: Broken unit.");
 			return false;
 		}
 		unit->area = this;
@@ -367,7 +373,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Object::MIN_SIZE))
 	{
-		Error("Broken packet for object count.");
+		Error("Read area: Invalid object count.");
 		return false;
 	}
 	objects.resize(count);
@@ -376,7 +382,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		object = new Object;
 		if(!object->Read(f))
 		{
-			Error("Broken packet for objects.");
+			Error("Read area: Broken object.");
 			return false;
 		}
 	}
@@ -385,7 +391,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(Usable::MIN_SIZE * count))
 	{
-		Error("Broken packet for usable object count.");
+		Error("Read area: Invalid usable object count.");
 		return false;
 	}
 	usables.resize(count);
@@ -394,7 +400,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		usable = new Usable;
 		if(!usable->Read(f))
 		{
-			Error("Broken packet for usable objects.");
+			Error("Read area: Broken usable objects.");
 			return false;
 		}
 	}
@@ -403,7 +409,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Door::MIN_SIZE))
 	{
-		Error("Broken packet for door count.");
+		Error("Read area: Invalid door count.");
 		return false;
 	}
 	doors.resize(count);
@@ -412,7 +418,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		door = new Door;
 		if(!door->Read(f))
 		{
-			Error("Broken packet for doors.");
+			Error("Read area: Broken door.");
 			return false;
 		}
 	}
@@ -421,7 +427,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Chest::MIN_SIZE))
 	{
-		Error("Read level: Broken chest count.");
+		Error("Read area: Invalid chest count.");
 		return false;
 	}
 	chests.resize(count);
@@ -430,7 +436,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		chest = new Chest;
 		if(!chest->Read(f))
 		{
-			Error("Read level: Broken chest.");
+			Error("Read area: Broken chest.");
 			return false;
 		}
 	}
@@ -439,7 +445,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * GroundItem::MIN_SIZE))
 	{
-		Error("Broken packet for ground item count.");
+		Error("Read area: Invalid ground item count.");
 		return false;
 	}
 	items.resize(count);
@@ -448,7 +454,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		item = new GroundItem;
 		if(!item->Read(f))
 		{
-			Error("Broken packet for ground items.");
+			Error("Read area: Broken ground item.");
 			return false;
 		}
 	}
@@ -457,7 +463,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Trap::MIN_SIZE))
 	{
-		Error("Read level: Broken packet for inside location trap count.");
+		Error("Read area: Invalid trap count.");
 		return false;
 	}
 	traps.resize(count);
@@ -466,7 +472,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		trap = new Trap;
 		if(!trap->Read(f))
 		{
-			Error("Read level: Broken packet for inside location trap.");
+			Error("Read area: Broken trap.");
 			return false;
 		}
 	}
@@ -475,7 +481,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Blood::MIN_SIZE))
 	{
-		Error("Broken packet for blood count.");
+		Error("Read area: Invalid blood count.");
 		return false;
 	}
 	bloods.resize(count);
@@ -483,7 +489,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		blood.Read(f);
 	if(!f)
 	{
-		Error("Broken packet for bloods.");
+		Error("Read area: Broken blood.");
 		return false;
 	}
 
@@ -491,7 +497,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Light::MIN_SIZE))
 	{
-		Error("Broken packet for light count.");
+		Error("Read area: Invalid light count.");
 		return false;
 	}
 	lights.resize(count);
@@ -499,7 +505,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		light.Read(f);
 	if(!f)
 	{
-		Error("Broken packet for lights.");
+		Error("Read area: Broken light.");
 		return false;
 	}
 
@@ -794,11 +800,21 @@ Door* LevelArea::FindDoor(const Int2& pt)
 // -2 outside part of city/village
 ForLocation::ForLocation(int loc, int level)
 {
+	Setup(world->GetLocation(loc), level);
+}
+
+ForLocation::ForLocation(Location* loc, int level)
+{
+	Setup(loc, level);
+}
+
+void ForLocation::Setup(Location* l, int level)
+{
 	ctx = LevelAreaContextPool.Get();
 	ctx->entries.clear();
 
+	int loc = l->index;
 	bool active = (world->GetCurrentLocationIndex() == loc);
-	Location* l = world->GetLocation(loc);
 	assert(l->last_visit != -1);
 
 	switch(l->type)
@@ -1129,7 +1145,7 @@ void TmpLevelArea::Save(GameWriter& f)
 
 void TmpLevelArea::Load(GameReader& f)
 {
-	const int particle_version = (LOAD_VERSION >= V_DEV ? 1 : 0);
+	const int particle_version = (LOAD_VERSION >= V_DEV ? 2 : (LOAD_VERSION >= V_0_12 ? 1 : 0));
 
 	pes.resize(f.Read<uint>());
 	for(ParticleEmitter*& pe : pes)
@@ -1156,6 +1172,7 @@ void TmpLevelArea::Load(GameReader& f)
 	for(Electro*& electro : electros)
 	{
 		electro = new Electro;
+		electro->area = area;
 		electro->Load(f);
 	}
 

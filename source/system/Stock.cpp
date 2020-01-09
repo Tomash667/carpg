@@ -55,7 +55,7 @@ void Stock::Parse(vector<ItemSlot>& items)
 void Stock::ParseInternal(vector<ItemSlot>& items)
 {
 	CityBlock in_city = CityBlock::ANY;
-	LocalVector2<int> sets;
+	LocalVector<int> sets;
 	bool in_set = false;
 	bool city = (game_level->location && game_level->IsCity());
 	uint i = 0;

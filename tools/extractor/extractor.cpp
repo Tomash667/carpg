@@ -1,143 +1,67 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <WinSock2.h>
-#undef min
-#undef max
-#undef STRICT
-#include <Pch.h>
-#include <Core.h>
+#include <CoreInclude.h>
+#include <File.h>
 #include <Tokenizer.h>
 #include <iostream>
 
-Logger* logger;
-
-cstring types[] = {
-	"None",
-	"PickServer",
-	"PingIp",
-	"Connect",
-	"Quitting",
-	"QuittingServer",
-	"Transfer",
-	"TransferServer",
-	"ServerSend",
-	"UpdateLobbyServer",
-	"UpdateLobbyClient",
-	"UpdateGameServer",
-	"UpdateGameClient"
-};
-
-enum STATUS
-{
-	STATUS_OK,
-	STATUS_ERROR,
-	STATUS_WRITE
-};
-
-cstring status_str[] = {
-	"READ OK",
-	"READ ERROR",
-	"WRITE"
-};
-
 struct Node
 {
-	STATUS status;
-	int index, type;
-	sockaddr_in adr;
-	uint length;
+	byte type;
+	time_t time;
+	uint length, hash, compressed;
 	byte* data;
-	// http://www.retran.com/beej/inet_ntoaman.html
 };
 
 vector<Node> nodes;
 vector<byte> data;
 
-struct Reader
+bool Read(cstring path)
 {
-	byte* b, *bs, *be;
-
-	Reader()
+	FileReader file(path);
+	if(!file)
 	{
-		b = (byte*)data.data();
-		bs = b;
-		be = b + data.size();
+		printf("ERROR: Failed to open file.");
+		return false;
 	}
 
-	template<typename T>
-	bool Read(T& v)
+	while(!file.IsEof())
 	{
-		if(be - b >= sizeof(v))
+		int sign;
+		Node& node = Add1(nodes);
+
+		file >> sign;
+		file >> node.type;
+		file >> node.time;
+		file >> node.hash;
+		file >> node.length;
+		file >> node.compressed;
+
+		if(sign != 0x4C455744)
 		{
-			v = *(T*)b;
-			b += sizeof(T);
-			return true;
-		}
-		else
+			printf("Missing node signature.");
 			return false;
-	}
-
-	bool Skip(uint size)
-	{
-		if(be - b >= (int)size)
-		{
-			b += size;
-			return true;
 		}
+
+		node.data = new byte[node.length];
+		if(node.compressed == 0)
+			file.Read(node.data, node.length);
 		else
-			return false;
+		{
+			Buffer* buf = Buffer::Get();
+			buf->Resize(node.compressed);
+			file.Read(buf->Data(), node.compressed);
+			Buffer* buf2 = buf->Decompress(node.length);
+			memcpy(node.data, buf2->Data(), node.length);
+			buf2->Free();
+		}
 	}
 
-	inline bool IsEof() const
+	if(nodes.empty())
 	{
-		return b == be;
+		printf("Empty file.");
+		return false;
 	}
-};
 
-void ProcessFile()
-{
-	Reader r;
-
-	int index = 0;
-	while(!r.IsEof())
-	{
-		byte sign;
-		byte status;
-		byte type;
-		sockaddr_in adr;
-		uint length;
-
-		if(!r.Read(sign)
-			|| !r.Read(status)
-			|| !r.Read(type)
-			|| !r.Read(adr)
-			|| !r.Read(length))
-		{
-			printf("Read failed at index %d.\n", index);
-			return;
-		}
-
-		if(sign != 0xFF)
-		{
-			printf("Read sign failed at index %d.\n", index);
-			return;
-		}
-
-		byte* ptr = r.b;
-		if(!r.Skip(length))
-		{
-			printf("Read data failed at index %d.\n", index);
-			return;
-		}
-
-		Node node;
-		node.status = (STATUS)status;
-		node.index = index;
-		node.type = type;
-		node.length = length;
-		node.data = ptr;
-		node.adr = adr;
-		nodes.push_back(node);
-	}
+	return true;
 }
 
 Tokenizer t;
@@ -147,7 +71,6 @@ enum Keyword
 	K_EXIT,
 	K_HELP,
 	K_LIST,
-	K_SELECT,
 	K_SAVE
 };
 
@@ -157,7 +80,6 @@ void Init()
 		{ "exit", K_EXIT },
 		{ "help", K_HELP },
 		{ "list", K_LIST },
-		{ "select", K_SELECT },
 		{ "save", K_SAVE }
 		});
 }
@@ -253,37 +175,16 @@ cstring GetMsg(byte type)
 	}
 }
 
-void LogStream(Node& node, int index)
+void WriteNodeInfo(int index, Node& node)
 {
-	string m = "(";
-	for(int i = 0; i < min(4, (int)node.length) - 1; ++i)
-	{
-		if(i != 0)
-			m += ";";
-		m += Format("%u", node.data[i + 1]);
-	}
-	if(m.length() == 1)
-		m.clear();
-	else
-		m += ")";
-	printf("%s: Index: %d, type: %s(%d), size: %u, from: %s:%u, cmd: %s%s\n", status_str[node.status], index, types[node.type], node.type, node.length, inet_ntoa(node.adr.sin_addr),
-		node.adr.sin_port, GetMsg(node.data[0]), m.c_str());
+	tm tm;
+	localtime_s(&tm, &node.time);
+	printf("%d %02d:%02d:%02d %s [length:%u, from:%u]\n",
+		index, tm.tm_hour, tm.tm_min, tm.tm_sec, GetMsg(node.type), node.length, node.hash);
 }
 
 bool MainLoop()
 {
-	/*
-	cmds:
-	help
-	list
-	list group
-	list type
-	list adr
-	exit
-	filter (none, ok=0/1, index=> >= < <= !=0/1/n, type, adr
-	adr
-	*/
-
 	string str;
 	printf(">");
 	std::getline(std::cin, str);
@@ -304,41 +205,10 @@ bool MainLoop()
 			printf("HELP - List of commands:\n"
 				"exit - close application\n"
 				"help - display this message\n"
-				"list - display list of messages grouped by type\n"
-				"save index [filename] - save stream data to file\n"
-				"select index/all - select single stream\n");
+				"list [all] - display list of messages\n"
+				"save index - save stream data to file\n");
 			break;
 		case K_LIST:
-			{
-				printf("List by type:\n");
-				int prev_type = -1;
-				int start_index = -1, index = 0;
-				for(Node& node : nodes)
-				{
-					if(prev_type != node.type)
-					{
-						if(prev_type != -1)
-						{
-							if(start_index != index - 1)
-								printf("%d - %d: Type %s(%d)\n", start_index, index - 1, types[prev_type], prev_type);
-							else
-								printf("%d: Type %s(%d)\n", start_index, types[prev_type], prev_type);
-						}
-						prev_type = node.type;
-						start_index = index;
-					}
-					++index;
-				}
-				if(prev_type != -1)
-				{
-					if(start_index != index - 1)
-						printf("%d - %d: Type %s(%d)\n", start_index, index - 1, types[prev_type], prev_type);
-					else
-						printf("%d: Type %s(%d)\n", start_index, types[prev_type], prev_type);
-				}
-			}
-			break;
-		case K_SELECT:
 			{
 				t.Next();
 				if(t.IsItem("all"))
@@ -346,16 +216,33 @@ bool MainLoop()
 					int index = 0;
 					for(Node& node : nodes)
 					{
-						LogStream(node, index);
+						WriteNodeInfo(index, node);
 						++index;
 					}
 				}
 				else
 				{
-					int index = t.MustGetInt();
-					if(index >= (int)nodes.size())
-						t.Throw("Invalid index %d.\n", index);
-					LogStream(nodes[index], index);
+					byte prev = 0;
+					int index = 0;
+					bool more = false;
+					for(Node& node : nodes)
+					{
+						if(node.type == prev)
+						{
+							++index;
+							more = true;
+							continue;
+						}
+						if(more)
+						{
+							more = false;
+							printf("...\n");
+							WriteNodeInfo(index - 1, nodes[index - 1]);
+						}
+						WriteNodeInfo(index, node);
+						prev = node.type;
+						++index;
+					}
 				}
 			}
 			break;
@@ -366,18 +253,10 @@ bool MainLoop()
 				if(index >= (int)nodes.size())
 					t.Throw("Invalid index %d.\n", index);
 				t.Next();
-				string out;
-				if(t.IsEof())
-					out = Format("packet%d.bin", index);
-				else
-					out = t.MustGetString();
-				HANDLE file = CreateFile(out.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-				if(file == INVALID_HANDLE_VALUE)
-					t.Throw("Failed to open file '%s' (%d).\n", out.c_str(), GetLastError());
+				cstring out = Format("packet%d.bin", index);
+				FileWriter f(out);
 				Node& node = nodes[index];
-				DWORD tmp;
-				WriteFile(file, node.data, node.length, &tmp, nullptr);
-				CloseHandle(file);
+				f.Write(node.data, node.length);
 			}
 			break;
 		}
@@ -402,32 +281,16 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	HANDLE file = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
+	cstring path = argv[1];
+	if(!Read(path))
 	{
-		printf("Failed to open file. Error %u.", GetLastError());
 		return 1;
 	}
 
-	DWORD size = GetFileSize(file, nullptr);
-	data.resize(size);
-	DWORD tmp;
-	ReadFile(file, data.data(), size, &tmp, nullptr);
-	if(tmp != size)
-	{
-		printf("Failed to read file. Error %u.", GetLastError());
-		return 2;
-	}
-
-	CloseHandle(file);
-
-	ProcessFile();
-	if(nodes.empty())
-	{
-		printf("Failed to read file, closing...");
-		return 3;
-	}
-
+	tm tm;
+	localtime_s(&tm, &nodes[0].time);
+	printf("%04d-%02d-%02d %02d:%02d:%02d\nLoaded nodes: %u\n\n",
+		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, nodes.size());
 	Init();
 
 	while(MainLoop());

@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: http://carpg.pl
-Wersja: 0.11.1
-Data: 2019-08-12
+Wersja: 0.12.2
+Data: 2019-10-27
 
 ===============================================================================
 1) Spis treœci
@@ -50,26 +50,25 @@ osoby. Oczekuj zmian na lepsze!
 	Ctrl + U - uwolnij kursor w trybie okienkowym
 	~ - konsola
 3.2. W grze
-	Z / lewy przycisk myszki - u¿yj, atakuj, ograbiaj, rozmawiaj
-	R - u¿yj, ograbiaj, rozmawiaj maj¹c wyci¹gniêt¹ broñ
-	X / prawy przycisk myszki - blok
-	W / strza³ka w górê - ruch do przodu
-	S / strza³ka w dó³ - ruch do ty³u
-	A / strza³ka w lewo - ruch w lewo
-	D / strza³ka w prawo - ruch w prawo
-	Q - obrót w lewo
-	E - obrót w prawo
-	1 - wybierz broñ do walki wrêcz i tarcze
-	2 - wybierz broñ dystansow¹
-	3 - u¿yj akcji
-	4 - wypij najlepsz¹ miksturkê zdrowia
+	lewy przycisk myszki - u¿yj, atakuj, ograbiaj, rozmawiaj
+	Z / 4 przycisk myszki - druga opcja ataku
+	E - u¿yj, ograbiaj, rozmawiaj maj¹c wyci¹gniêt¹ broñ
+	prawy przycisk myszki - blok
+	W - ruch do przodu
+	S - ruch do ty³u
+	A - ruch w lewo
+	D - ruch w prawo
+	1..0 - skróty przedmiotów/zdolnoœci
 	F - automatyczny ruch do przodu
 	Caps Lock - prze³¹cz bieganie/chodzenie
 	Y - okrzyk
-	TAB - ekran postaci, ekwipunek, dru¿yna
+	C - ekran postaci
+	I - ekwipunek
+	T - dru¿yna
+	K - zdolnoœci
 	J - dziennik
 	M - minimapa
-	N - okno rozmowy
+	Tab - okno rozmowy
 	Enter - wprowadzanie tekstu w multiplayer
 	Kó³ko myszy - zmiana odleg³oœci kamery
 	F2 - poka¿/ukryj fps
@@ -109,10 +108,11 @@ osoby. Oczekuj zmian na lepsze!
 	przydatne przeciwko odpornym wrogom którym normalnym atakiem zadajesz ma³o
 	lub nic. Atak w biegu jest jak 0.25 potê¿nego ataku ale nie mo¿esz siê
 	zatrzymaæ.
-* Akcje - Aby u¿yæ akcji wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
-	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ akcji,
-	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia akcji w
-	tym miejscu.
+* Zdolnoœci - Aby u¿yæ zdolnoœci wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
+	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ zdolnoœci,
+	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia zdolnoœci w
+	tym miejscu. Niektóre czary mo¿esz rzuciæ na siebie przytrzymuj¹c ruch do ty³u,
+	gracz zostanie podœwietlony.
 * Wytrzyma³oœæ - Atakowanie zu¿ywa wytrzyma³oœæ, gdy siê skoñczy nie mo¿esz
 	biegaæ ani atakowaæ. Blokowanie ciosów te¿ zu¿ywa wytrzyma³oœæ i gdy siê
 	skoñczy blok zostaje przerwany. Przestañ atakowaæ aby odzyskaæ wytrzyma³oœæ,
@@ -299,6 +299,7 @@ Podziêkowania za znalezione b³êdy:
 	MikelkCZ
 	MildlyPhilosophicalHobbit
 	Minister of Death
+	mishka
 	Paradox Edge
 	Savagesheep
 	thebard88

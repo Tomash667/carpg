@@ -37,8 +37,8 @@ CommandParser* global::cmdp;
 //=================================================================================================
 void CommandParser::AddCommands()
 {
-	cmds.push_back(ConsoleCommand(&game_level->cl_fog, "cl_fog", "draw fog (cl_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game_level->cl_lighting, "cl_lighting", "use lighting (cl_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->use_fog, "use_fog", "draw fog (use_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->use_lighting, "use_lighting", "use lighting (use_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
@@ -50,10 +50,10 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
-	cmds.push_back(ConsoleCommand(&game->cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->use_postfx, "use_postfx", "use post effects (use_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->use_normalmap, "use_normalmap", "use normal mapping (use_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->use_specularmap, "use_specularmap", "use specular mapping (use_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->use_glow, "use_glow", "use glow (use_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(reinterpret_cast<int*>(&game->profiler_mode), "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
 	cmds.push_back(ConsoleCommand(&game->settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
@@ -409,7 +409,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		Msg("CaRpg version " VERSION_STR ", built %s.", utility::GetCompileTime().c_str());
 		break;
 	case CMD_QUIT:
-		if(t.Next() && t.IsInt() && t.GetInt() == 1)
+		if(t.Next() && t.IsInt(1))
 			exit(0);
 		else
 			game->Quit();
@@ -497,7 +497,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Msg("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
 		else if(t.IsSymbol('?'))
 		{
-			LocalVector2<AttributeId> attribs;
+			LocalVector<AttributeId> attribs;
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
 				attribs.push_back((AttributeId)i);
 			std::sort(attribs.begin(), attribs.end(),
@@ -505,7 +505,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				return strcmp(Attribute::attributes[(int)a1].id, Attribute::attributes[(int)a2].id) < 0;
 			});
-			LocalVector2<SkillId> skills;
+			LocalVector<SkillId> skills;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 				skills.push_back((SkillId)i);
 			std::sort(skills.begin(), skills.end(),
@@ -1123,7 +1123,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				if(t.IsSymbol('?'))
 				{
-					LocalVector2<Class*> classes;
+					LocalVector<Class*> classes;
 					for(Class* clas : Class::classes)
 					{
 						if(clas->IsPickable())
@@ -1412,7 +1412,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_FALL:
 		{
 			Unit* u;
-			if(t.Next() && t.GetInt() == 1)
+			if(t.Next() && t.IsInt(1))
 				u = game->pc->unit;
 			else if(Unit* target = game->pc->data.GetTargetUnit())
 				u = target;
@@ -1444,7 +1444,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_RELOAD_SHADERS:
-		game->ReloadShaders();
+		render->ReloadShaders();
 		if(engine->IsShutdown())
 			return;
 		break;
@@ -1495,7 +1495,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					break;
 			}
 			Unit* u;
-			if(t.Next() && t.GetInt() == 1)
+			if(t.Next() && t.IsInt(1))
 				u = game->pc->unit;
 			else if(Unit* target = game->pc->data.GetTargetUnit())
 				u = target;
@@ -2014,7 +2014,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				render->SetShaderVersion(value);
 				Msg("shader_version: %d", value);
-				game->ReloadShaders();
+				render->ReloadShaders();
 			}
 		}
 		break;
@@ -2603,7 +2603,7 @@ void CommandParser::ListStats(Unit* u)
 	}
 	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
 		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
-	if(u->GetClass()->mp_bar)
+	if(IsSet(u->GetClass()->flags, Class::F_MP_BAR))
 	{
 		Msg("Mana: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->mp, (int)u->mpmax, u->GetEffectSum(EffectId::Mana), u->GetMpRegen(),
 			1.f + u->GetEffectSum(EffectId::ManaRegeneration));
@@ -2771,7 +2771,7 @@ void CommandParser::CmdList(Tokenizer& t)
 	{
 	case LIST_ITEM:
 		{
-			LocalVector2<const Item*> items;
+			LocalVector<const Item*> items;
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
@@ -2806,7 +2806,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_ITEM_NAME:
 		{
-			LocalVector2<const Item*> items;
+			LocalVector<const Item*> items;
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
@@ -2841,7 +2841,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_UNIT:
 		{
-			LocalVector2<UnitData*> units;
+			LocalVector<UnitData*> units;
 			for(auto unit : UnitData::units)
 			{
 				if(!IsSet(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
@@ -2875,7 +2875,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_UNIT_NAME:
 		{
-			LocalVector2<UnitData*> units;
+			LocalVector<UnitData*> units;
 			for(auto unit : UnitData::units)
 			{
 				if(!IsSet(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
@@ -2909,7 +2909,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_QUEST:
 		{
-			LocalVector2<const QuestInfo*> quests;
+			LocalVector<const QuestInfo*> quests;
 			for(auto& info : quest_mgr->GetQuestInfos())
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
@@ -2950,7 +2950,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_EFFECT:
 		{
-			LocalVector2<const EffectInfo*> effects;
+			LocalVector<const EffectInfo*> effects;
 			for(EffectInfo& info : EffectInfo::effects)
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)
@@ -2984,7 +2984,7 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_PERK:
 		{
-			LocalVector2<const PerkInfo*> perks;
+			LocalVector<const PerkInfo*> perks;
 			for(PerkInfo& info : PerkInfo::perks)
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)

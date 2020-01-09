@@ -186,7 +186,10 @@ enum GamePacket : byte
 
 	// Game is quickloaded
 	// bool - load on worldmap
-	ID_LOADING
+	ID_LOADING,
+
+	// Sent by clients when loading takes some time
+	ID_PROGRESS
 };
 
 //-----------------------------------------------------------------------------

@@ -3,11 +3,13 @@
 #include "GameCore.h"
 #include "SpellEffects.h"
 #include "Unit.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
+#include "GameResources.h"
+#include "LevelArea.h"
 
 EntityType<Electro>::Impl EntityType<Electro>::impl;
 
@@ -20,7 +22,7 @@ void Explo::Save(FileWriter& f)
 	f << dmg;
 	f << hitted;
 	f << owner;
-	f << tex->filename;
+	f << ability->hash;
 }
 
 //=================================================================================================
@@ -32,13 +34,26 @@ void Explo::Load(FileReader& f)
 	f >> dmg;
 	f >> hitted;
 	f >> owner;
-	tex = res_mgr->Load<Texture>(f.ReadString1());
+	if(LOAD_VERSION >= V_DEV)
+		ability = Ability::Get(f.Read<uint>());
+	else
+	{
+		const string& tex = f.ReadString1();
+		for(Ability* ability : Ability::abilities)
+		{
+			if(ability->tex_explode.diffuse && ability->tex_explode.diffuse->filename == tex)
+			{
+				this->ability = ability;
+				break;
+			}
+		}
+	}
 }
 
 //=================================================================================================
 void Explo::Write(BitStreamWriter& f)
 {
-	f << tex->filename;
+	f << ability->hash;
 	f << pos;
 	f << size;
 	f << sizemax;
@@ -47,39 +62,114 @@ void Explo::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Explo::Read(BitStreamReader& f)
 {
-	const string& tex_id = f.ReadString1();
+	ability = Ability::Get(f.Read<uint>());
 	f >> pos;
 	f >> size;
 	f >> sizemax;
-	if(!f)
-		return false;
-	tex = res_mgr->Load<Texture>(tex_id);
-	return true;
+	return f.IsOk();
 }
 
 //=================================================================================================
-void Electro::AddLine(const Vec3& from, const Vec3& to)
+Electro::~Electro()
+{
+	for(Line& line : lines)
+	{
+		if(line.trail)
+			line.trail->destroy = true;
+	}
+}
+
+//=================================================================================================
+void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 {
 	Line& line = Add1(lines);
+	line.from = from;
+	line.to = to;
+	line.t = t;
+	line.trail = nullptr;
 
-	line.t = 0.f;
-	line.pts.push_back(from);
-
-	int steps = int(Vec3::Distance(from, to) * 10);
-
-	Vec3 dir = to - from;
-	const Vec3 step = dir / float(steps);
-	Vec3 prev_off(0.f, 0.f, 0.f);
-
-	for(int i = 1; i < steps; ++i)
+	if(t < 0.5f)
 	{
-		Vec3 p = from + step * (float(i) + Random(-0.25f, 0.25f));
-		Vec3 r = Vec3::Random(Vec3(-0.3f, -0.3f, -0.3f), Vec3(0.3f, 0.3f, 0.3f));
-		prev_off = (r + prev_off) / 2;
-		line.pts.push_back(p + prev_off);
-	}
+		const int steps = int(Vec3::Distance(line.from, line.to) * 10);
 
-	line.pts.push_back(to);
+		TrailParticleEmitter* trail = new TrailParticleEmitter;
+		trail->Init(steps + 1);
+		trail->manual = true;
+		trail->first = 0;
+		trail->last = steps + 1;
+		trail->alive = steps + 1;
+		trail->tex = game_res->tLightingLine;
+		trail->fade = 0.25f;
+		trail->color1 = Vec4(0.2f, 0.2f, 1.f, 0.5f);
+		trail->color2 = Vec4(0.2f, 0.2f, 1.f, 0);
+
+		const Vec3 dir = line.to - line.from;
+		const Vec3 step = dir / float(steps);
+		Vec3 prev_off(0.f, 0.f, 0.f);
+
+		trail->parts[0].exists = true;
+		trail->parts[0].next = 1;
+		trail->parts[0].pt = line.from;
+		trail->parts[0].t = 0;
+
+		for(int i = 1; i < steps; ++i)
+		{
+			Vec3 p = line.from + step * (float(i) + Random(-0.25f, 0.25f));
+			Vec3 r = Vec3::Random(Vec3(-0.3f, -0.3f, -0.3f), Vec3(0.3f, 0.3f, 0.3f));
+			prev_off = (r + prev_off) / 2;
+			trail->parts[i].exists = true;
+			trail->parts[i].next = i + 1;
+			trail->parts[i].pt = p + prev_off;
+			trail->parts[i].t = 0;
+		}
+
+		trail->parts[steps].exists = true;
+		trail->parts[steps].next = -1;
+		trail->parts[steps].pt = line.to;
+		trail->parts[steps].t = 0;
+
+		area->tmp->tpes.push_back(trail);
+		line.trail = trail;
+		UpdateColor(line);
+	}
+}
+
+//=================================================================================================
+void Electro::Update(float dt)
+{
+	for(Line& line : lines)
+	{
+		if(!line.trail)
+			continue;
+		line.t += dt;
+		if(line.t >= 0.5f)
+		{
+			line.trail->destroy = true;
+			line.trail = nullptr;
+		}
+		else
+			UpdateColor(line);
+	}
+}
+
+//=================================================================================================
+void Electro::UpdateColor(Line& line)
+{
+	const float t = line.t * 4;
+	const float r = 0.5f;
+	for(int i = 0, count = (int)line.trail->parts.size(); i < count; ++i)
+	{
+		const float x = float(i) / count;
+		const float d = abs(x - t);
+		float a;
+		if(d <= r / 2)
+			a = 1.f;
+		else if(d < r)
+			a = 1.f - (d - r / 2) / (r / 2);
+		else
+			a = 0.f;
+		line.trail->parts[i].t = a;
+	}
 }
 
 //=================================================================================================
@@ -89,15 +179,17 @@ void Electro::Save(FileWriter& f)
 	f << lines.size();
 	for(Line& line : lines)
 	{
-		f.WriteVector4(line.pts);
+		f << line.from;
+		f << line.to;
 		f << line.t;
+		f << (line.trail ? line.trail->id : -1);
 	}
 	f << hitted.size();
 	for(Entity<Unit> unit : hitted)
 		f << unit;
 	f << dmg;
 	f << owner;
-	f << spell->id;
+	f << ability->hash;
 	f << valid;
 	f << hitsome;
 	f << start_pos;
@@ -106,24 +198,52 @@ void Electro::Save(FileWriter& f)
 //=================================================================================================
 void Electro::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
-	lines.resize(f.Read<uint>());
-	for(Line& line : lines)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		f.ReadVector4(line.pts);
-		f >> line.t;
+		lines.resize(f.Read<uint>());
+		for(Line& line : lines)
+		{
+			f >> line.from;
+			f >> line.to;
+			f >> line.t;
+			line.trail = TrailParticleEmitter::GetById(f.Read<int>());
+		}
+	}
+	else
+	{
+		vector<Vec3> pts;
+		float t;
+		uint count;
+		f >> count;
+		for(uint i = 0; i < count; ++i)
+		{
+			f.ReadVector4(pts);
+			f >> t;
+			AddLine(pts.front(), pts.back(), t);
+		}
 	}
 	hitted.resize(f.Read<uint>());
 	for(Entity<Unit>& unit : hitted)
 		f >> unit;
 	f >> dmg;
 	f >> owner;
-	const string& spell_id = f.ReadString1();
-	spell = Spell::TryGet(spell_id);
-	if(!spell)
-		throw Format("Missing spell '%s' for electro.", spell_id.c_str());
+	if(LOAD_VERSION >= V_DEV)
+	{
+		uint ability_hash = f.Read<uint>();
+		ability = Ability::Get(ability_hash);
+		if(!ability)
+			throw Format("Missing ability %u for electro.", ability_hash);
+	}
+	else
+	{
+		const string& ability_id = f.ReadString1();
+		ability = Ability::Get(ability_id);
+		if(!ability)
+			throw Format("Missing ability '%s' for electro.", ability_id.c_str());
+	}
 	f >> valid;
 	f >> hitsome;
 	f >> start_pos;
@@ -133,12 +253,12 @@ void Electro::Load(FileReader& f)
 void Electro::Write(BitStreamWriter& f)
 {
 	f << id;
-	f << spell->id;
+	f << ability->hash;
 	f.WriteCasted<byte>(lines.size());
 	for(Line& line : lines)
 	{
-		f << line.pts.front();
-		f << line.pts.back();
+		f << line.from;
+		f << line.to;
 		f << line.t;
 	}
 }
@@ -147,13 +267,14 @@ void Electro::Write(BitStreamWriter& f)
 bool Electro::Read(BitStreamReader& f)
 {
 	f >> id;
-	spell = Spell::TryGet(f.ReadString1());
+	ability = Ability::Get(f.Read<uint>());
 
 	byte count;
 	f >> count;
-	if(!f.Ensure(count * LINE_MIN_SIZE))
+	if(!f.Ensure(count * Line::SIZE))
 		return false;
 	lines.reserve(count);
+
 	Vec3 from, to;
 	float t;
 	for(byte i = 0; i < count; ++i)
@@ -161,8 +282,7 @@ bool Electro::Read(BitStreamReader& f)
 		f >> from;
 		f >> to;
 		f >> t;
-		AddLine(from, to);
-		lines.back().t = t;
+		AddLine(from, to, t);
 	}
 
 	valid = true;
@@ -173,8 +293,7 @@ bool Electro::Read(BitStreamReader& f)
 //=================================================================================================
 void Drain::Save(FileWriter& f)
 {
-	f << from->id;
-	f << to->id;
+	f << target;
 	f << pe->id;
 	f << t;
 }
@@ -182,8 +301,9 @@ void Drain::Save(FileWriter& f)
 //=================================================================================================
 void Drain::Load(FileReader& f)
 {
-	from = Unit::GetById(f.Read<int>());
-	to = Unit::GetById(f.Read<int>());
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old from
+	f >> target;
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> t;
 }

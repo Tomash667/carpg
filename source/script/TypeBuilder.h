@@ -187,7 +187,7 @@ public:
 		}
 	}
 
-	void AddObject(cstring decl, void* ptr)
+	void AddProperty(cstring decl, void* ptr)
 	{
 		CHECKED(engine->RegisterGlobalProperty(decl, ptr));
 	}
@@ -202,9 +202,16 @@ class NamespaceBuilder : public GlobalFunctionBuilder
 public:
 	NamespaceBuilder(asIScriptEngine* engine, cstring ns, void* auxiliary) : GlobalFunctionBuilder(engine), auxiliary(auxiliary) { SetNamespace(ns); }
 	~NamespaceBuilder() { SetNamespace(""); }
+
 	NamespaceBuilder& AddFunction(cstring decl, const asSFuncPtr& funcPointer)
 	{
 		GlobalFunctionBuilder::AddFunction(decl, funcPointer, auxiliary);
+		return *this;
+	}
+
+	NamespaceBuilder& AddProperty(cstring decl, void* ptr)
+	{
+		GlobalFunctionBuilder::AddProperty(decl, ptr);
 		return *this;
 	}
 

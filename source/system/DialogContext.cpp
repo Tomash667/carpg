@@ -28,9 +28,11 @@
 #include "News.h"
 #include "MultiInsideLocation.h"
 #include "QuestScheme.h"
+#include "Ability.h"
 #include <angelscript.h>
 
 DialogContext* DialogContext::current;
+int DialogContext::var;
 
 //=================================================================================================
 void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
@@ -648,6 +650,9 @@ void DialogContext::UpdateLoop()
 			if(!cmp_result)
 				dialog_pos = de.value - 1;
 			break;
+		case DTF_IF_VAR:
+			cmp_result = DoIfOp(var, de.value, de.op);
+			break;
 		default:
 			assert(0 && "Unknown dialog type!");
 			break;
@@ -1163,35 +1168,52 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		const int gold_cost = 200;
 		cstring s = msg + 6;
-		bool is_skill;
-		int what;
+		int type, what, cost;
 		int* train;
 
-		Attribute* attrib = Attribute::Find(s);
-		if(attrib)
+		if(Ability* ability = Ability::Get(s))
 		{
-			is_skill = false;
+			// check required skill
+			if(pc->unit->stats->skill[(int)SkillId::MYSTIC_MAGIC] < ability->skill)
+			{
+				DialogTalk(game->txCantLearnAbility);
+				force_end = true;
+				return true;
+			}
+
+			type = 4;
+			what = ability->hash;
+			train = nullptr;
+			cost = ability->learning_points;
+		}
+		else if(Attribute* attrib = Attribute::Find(s))
+		{
+			type = 0;
 			what = (int)attrib->attrib_id;
 			train = &pc->attrib[what].train;
 		}
+		else if(Skill* skill = Skill::Find(s))
+		{
+			if(skill->locked && pc->unit->GetBase(skill->skill_id) <= 0)
+			{
+				DialogTalk(game->txCantLearnSkill);
+				force_end = true;
+				return true;
+			}
+
+			type = 1;
+			what = (int)skill->skill_id;
+			train = &pc->skill[what].train;
+		}
 		else
 		{
-			Skill* skill = Skill::Find(s);
-			if(skill)
-			{
-				is_skill = true;
-				what = (int)skill->skill_id;
-				train = &pc->skill[what].train;
-			}
-			else
-			{
-				assert(0);
-				return false;
-			}
+			assert(0);
+			return false;
 		}
 
 		// check learning points
-		int cost = pc->GetTrainCost(*train);
+		if(train)
+			 cost = pc->GetTrainCost(*train);
 		if(pc->learning_points < cost)
 		{
 			DialogTalk(game->txNeedLearningPoints);
@@ -1209,7 +1231,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		}
 
 		// give gold and freeze
-		*train += 1;
+		if(train)
+			*train += 1;
 		pc->learning_points -= cost;
 		pc->unit->ModGold(-gold_cost);
 		pc->unit->frozen = FROZEN::YES;
@@ -1217,14 +1240,14 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			game->fallback_type = FALLBACK::TRAIN;
 			game->fallback_t = -1.f;
-			game->fallback_1 = (is_skill ? 1 : 0);
+			game->fallback_1 = type;
 			game->fallback_2 = what;
 		}
 		else
 		{
 			NetChangePlayer& c = Add1(pc->player_info->changes);
 			c.type = NetChangePlayer::TRAIN;
-			c.id = (is_skill ? 1 : 0);
+			c.id = type;
 			c.count = what;
 
 			pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
@@ -1640,19 +1663,22 @@ cstring DialogContext::FormatString(const string& str_part)
 	else if(strncmp(str_part.c_str(), "train_lab/", 10) == 0)
 	{
 		cstring s = str_part.c_str() + 10;
-		cstring name;
-		int cost;
-
-		Attribute* attrib = Attribute::Find(s);
-		if(attrib)
+		if(Ability* ability = Ability::Get(s))
 		{
-			name = attrib->name.c_str();
-			cost = pc->GetTrainCost(pc->attrib[(int)attrib->attrib_id].train);
+			talk_msg = ability->name.c_str();
+			return Format("%s: %s (%d %s, %d %s)", game->txSpell, ability->name.c_str(), ability->skill, Skill::Find("mystic_magic")->name.c_str(),
+				ability->learning_points, ability->learning_points == 1 ? game->txLearningPoint : game->txLearningPoints);
 		}
 		else
 		{
-			Skill* skill = Skill::Find(s);
-			if(skill)
+			cstring name;
+			int cost;
+			if(Attribute * attrib = Attribute::Find(s))
+			{
+				name = attrib->name.c_str();
+				cost = pc->GetTrainCost(pc->attrib[(int)attrib->attrib_id].train);
+			}
+			else if(Skill* skill = Skill::Find(s))
 			{
 				name = skill->name.c_str();
 				cost = pc->GetTrainCost(pc->skill[(int)skill->skill_id].train);
@@ -1662,11 +1688,10 @@ cstring DialogContext::FormatString(const string& str_part)
 				assert(0);
 				return "INVALID_TRAIN_STAT";
 			}
+
+			talk_msg = name;
+			return Format("%s (%d %s)", name, cost, cost == 1 ? game->txLearningPoint : game->txLearningPoints);
 		}
-
-		talk_msg = name;
-
-		return Format("%s (%d %s)", name, cost, cost == 1 ? game->txLearningPoint : game->txLearningPoints);
 	}
 	else if(str_part == "date")
 		return world->GetDate();
@@ -1690,7 +1715,6 @@ void DialogContext::DialogTalk(cstring msg)
 	{
 		ani = Rand() % 2 + 1;
 		talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-		talker->mesh_inst->groups[0].speed = 1.f;
 		talker->animation = ANI_PLAY;
 		talker->action = A_ANIMATION;
 	}

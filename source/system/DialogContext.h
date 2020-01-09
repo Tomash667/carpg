@@ -63,6 +63,7 @@ struct DialogContext
 	int quest_dialog_index;
 
 	static DialogContext* current;
+	static int var;
 
 	~DialogContext() { ClearChoices(); }
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr, Quest* quest = nullptr);

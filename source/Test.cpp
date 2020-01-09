@@ -79,7 +79,7 @@ void UpdateTest()
 		tdt -= dt;
 		if(tdt <= 0.f)
 		{
-			world->Warp(loc->index);
+			world->Warp(loc->index, true);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);

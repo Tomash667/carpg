@@ -2,6 +2,7 @@ unit base_warrior = "Base warrior"
 unit base_hunter = "Base hunter"
 unit base_rogue = "Base rogue"
 unit base_cleric = "Base cleric"
+unit base_mage = "Base mage"
 unit blacksmith = "Blacksmith"
 unit merchant = "Merchant"
 unit food_seller = "Grocer"
@@ -154,6 +155,8 @@ unit xwokloiz {
 }
 unit q_main_academy = "Academy teacher"
 unit q_main_messenger = "Messenger"
+unit q_main_ill_villager = "Ill villager"
+unit q_main_ill_villager_attack {}
 
 unit_group orcs {
 	name "orcs"

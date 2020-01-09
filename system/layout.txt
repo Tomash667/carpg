@@ -4,7 +4,6 @@ font "normal" {
 	name "Arial"
 	size 12
 	weight 8
-	tex_size 512
 	outline 2
 }
 
@@ -12,14 +11,12 @@ font "big" {
 	name "Florence Regular"
 	size 28
 	weight 8
-	tex_size 512
 }
 
 font "small" {
 	name "Arial"
 	size 10
 	weight 5
-	tex_size 512
 }
 
 control "Button" {

@@ -22,7 +22,7 @@
 #include "GameMessages.h"
 #include "LoadScreen.h"
 #include "AIController.h"
-#include "Spell.h"
+#include "Ability.h"
 #include "Team.h"
 #include "Journal.h"
 #include "SoundManager.h"
@@ -46,6 +46,8 @@
 #include "BitStreamFunc.h"
 #include "InfoBox.h"
 #include "CommandParser.h"
+#include "GameResources.h"
+#include "AbilityPanel.h"
 
 enum SaveFlags
 {
@@ -253,7 +255,6 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		game_gui->game_menu->CloseDialog();
 		game_gui->world_map->Hide();
 	}
-	LoadingStart(9);
 
 	try
 	{
@@ -472,8 +473,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << game_level->cl_fog;
-	f << game_level->cl_lighting;
+	f << game->use_fog;
+	f << game->use_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -493,8 +494,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	game_gui->Save(f);
 
 	check_id = (byte)world->GetLocations().size();
-	f << check_id;
-	++check_id;
+	f << check_id++;
 
 	// save team
 	team->Save(f);
@@ -503,15 +503,13 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	quest_mgr->Save(f);
 	script_mgr->Save(f);
 
-	f << check_id;
-	++check_id;
+	f << check_id++;
 
 	if(Net::IsOnline())
 	{
 		net->Save(f);
 
-		f << check_id;
-		++check_id;
+		f << check_id++;
 
 		Net::PushChange(NetChange::GAME_SAVED);
 		game_gui->mp_box->Add(txGameSaved);
@@ -584,6 +582,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 //=================================================================================================
 void Game::LoadGame(GameReader& f)
 {
+	LoadingStart(8);
 	ClearGame();
 	ClearGameVars(false);
 	StopAllSounds();
@@ -674,7 +673,7 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// ids
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_12)
 	{
 		f >> ParticleEmitter::impl.id_counter;
 		f >> TrailParticleEmitter::impl.id_counter;
@@ -779,8 +778,8 @@ void Game::LoadGame(GameReader& f)
 	noai = true;
 #endif
 	f >> dont_wander;
-	f >> game_level->cl_fog;
-	f >> game_level->cl_lighting;
+	f >> game->use_fog;
+	f >> game->use_lighting;
 	f >> draw_particle_sphere;
 	f >> draw_unit_radius;
 	f >> draw_hitbox;
@@ -812,9 +811,8 @@ void Game::LoadGame(GameReader& f)
 
 	check_id = (byte)world->GetLocations().size();
 	f >> read_id;
-	if(read_id != check_id)
+	if(read_id != check_id++)
 		throw "Error reading data before team.";
-	++check_id;
 
 	// wczytaj dru¿ynê
 	team->Load(f);
@@ -829,9 +827,8 @@ void Game::LoadGame(GameReader& f)
 		world->LoadOld(f, loading, 2, false);
 
 	f >> read_id;
-	if(read_id != check_id)
+	if(read_id != check_id++)
 		throw "Error reading data after news.";
-	++check_id;
 
 	LoadingStep(txLoadingLevel);
 
@@ -847,9 +844,8 @@ void Game::LoadGame(GameReader& f)
 			game_level->local_area->tmp->Load(f);
 
 			f >> read_id;
-			if(read_id != check_id)
+			if(read_id != check_id++)
 				throw "Failed to read level data.";
-			++check_id;
 		}
 
 		RemoveUnusedAiAndCheck();
@@ -860,7 +856,7 @@ void Game::LoadGame(GameReader& f)
 	// gui
 	game_gui->level_gui->PositionPanels();
 
-	// cele ai
+	// set ai bow targets
 	if(!ai_bow_targets.empty())
 	{
 		BaseObject* bow_target = BaseObject::Get("bow_target");
@@ -873,7 +869,7 @@ void Game::LoadGame(GameReader& f)
 			{
 				if(obj->base == bow_target)
 				{
-					dist = Vec3::Distance(obj->pos, ai.idle_data.pos);
+					dist = Vec3::Distance(obj->pos, ai.st.idle.pos);
 					if(!ptr || dist < best_dist)
 					{
 						ptr = obj;
@@ -882,53 +878,60 @@ void Game::LoadGame(GameReader& f)
 				}
 			}
 			assert(ptr);
-			ai.idle_data.obj.ptr = ptr;
+			ai.st.idle.obj.ptr = ptr;
 		}
 	}
 
-	// questy zwi¹zane z lokacjami
-	for(vector<Location*>::iterator it = load_location_quest.begin(), end = load_location_quest.end(); it != end; ++it)
+	// location quests
+	for(Location* loc : load_location_quest)
 	{
-		(*it)->active_quest = static_cast<Quest_Dungeon*>(quest_mgr->FindAnyQuest((int)(*it)->active_quest));
-		assert((*it)->active_quest);
-	}
-	// unit event handler
-	for(vector<Unit*>::iterator it = load_unit_handler.begin(), end = load_unit_handler.end(); it != end; ++it)
-	{
-		// pierwszy raz musia³em u¿yæ tego rzutowania ¿eby dzia³a³o :o
-		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(quest_mgr->FindAnyQuest((int)(*it)->event_handler));
-		assert((*it)->event_handler);
-	}
-	// chest event handler
-	for(vector<Chest*>::iterator it = load_chest_handler.begin(), end = load_chest_handler.end(); it != end; ++it)
-	{
-		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_mgr->FindAnyQuest((int)(*it)->handler));
-		assert((*it)->handler);
+		loc->active_quest = static_cast<Quest_Dungeon*>(quest_mgr->FindAnyQuest((int)loc->active_quest));
+		assert(loc->active_quest);
 	}
 
-	dialog_context.dialog_mode = false;
+	// unit event handlers
+	for(Unit* unit : load_unit_handler)
+	{
+		unit->event_handler = dynamic_cast<UnitEventHandler*>(quest_mgr->FindAnyQuest((int)unit->event_handler));
+		assert(unit->event_handler);
+	}
+
+	// chest event handlers
+	for(Chest* chest : load_chest_handler)
+	{
+		chest->handler = dynamic_cast<ChestEventHandler*>(quest_mgr->FindAnyQuest((int)chest->handler));
+		assert(chest->handler);
+	}
+
+	// current location event handler
 	if(location_event_handler_quest_id != -1)
+	{
 		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_id));
+		assert(game_level->event_handler);
+	}
 	else
 		game_level->event_handler = nullptr;
+
+	quest_mgr->UpgradeQuests();
+
+	dialog_context.dialog_mode = false;
 	team->ClearOnNewGameOrLoad();
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	game_gui->inventory->mode = I_NONE;
+	game_gui->ability->Refresh();
 	pc->data.before_player = BP_NONE;
 	pc->data.selected_unit = pc->unit;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
-	game_gui->level_gui->Setup();
 
 	if(net->mp_load)
 	{
 		net->Load(f);
 
 		f >> read_id;
-		if(read_id != check_id)
+		if(read_id != check_id++)
 			throw "Failed to read multiplayer data.";
-		++check_id;
 	}
 	else
 		pc->is_local = true;
@@ -939,14 +942,7 @@ void Game::LoadGame(GameReader& f)
 	if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
 		throw "Missing EOS.";
 
-	// load music
-	LoadingStep(txLoadMusic);
-	if(!sound_mgr->IsMusicDisabled())
-	{
-		LoadMusic(MusicType::Boss, false);
-		LoadMusic(MusicType::Death, false);
-		LoadMusic(MusicType::Travel, false);
-	}
+	game_res->LoadCommonMusic();
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
 	if(!net->mp_quickload)
@@ -983,14 +979,14 @@ bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
 		{
 			Warn("Missing quicksave.");
 			if(from_console)
-				cmdp->Msg("Missing quicksave.");
+				game_gui->console->AddMsg("Missing quicksave.");
 			return false;
 		}
 
 		cstring msg = Format("Failed to load game: %s", ex.msg);
 		Error(msg);
 		if(from_console)
-			cmdp->Msg(msg);
+			game_gui->console->AddMsg(msg);
 		else
 		{
 			cstring dialog_text;

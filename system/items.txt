@@ -169,7 +169,7 @@ weapon sword_semur {
 	dmg_type slash
 	flags {not_chest not_shop not_random mage unique}
 	effects {
-		magic_power 4
+		magic_power 15
 	}
 }
 
@@ -184,7 +184,7 @@ weapon sword_forbidden {
 	dmg_type {slash pierce blunt}
 	flags {not_shop not_chest not_random unique}
 	effects {
-		magic_power 2
+		magic_power 10
 	}
 }
 
@@ -304,6 +304,7 @@ weapon blunt_orcish {
 weapon blunt_orcish_shaman {
 	weight 2
 	value 50
+	ai_value 150
 	mesh "ozdobny_orkowy_mlot.qmsh"
 	attack 30
 	req_str 40
@@ -311,6 +312,9 @@ weapon blunt_orcish_shaman {
 	material rock
 	dmg_type blunt
 	flags {not_shop not_chest mage}
+	effects {
+		magic_power 2
+	}
 }
 
 weapon blunt_morningstar {
@@ -393,51 +397,67 @@ weapon frying_pan {
 	dmg_type blunt
 }
 
-weapon wand_1 {
+weapon wand_novice {
 	weight 0.6
 	value 75
 	ai_value 100
-	mesh "rozdzka1.qmsh"
+	mesh "wand1.qmsh"
 	attack 10
 	req_str 15
 	type blunt
 	material wood
 	dmg_type blunt
-	flags {not_shop not_chest mage magical}
+	flags {not_shop mage magical wand}
 	effects {
 		magic_power 1
 	}
 }
 
-weapon wand_2 {
+weapon wand_adept {
 	weight 0.6
 	value 200
 	ai_value 200
-	mesh "rozdzka2.qmsh"
-	attack 15
+	mesh "wand2.qmsh"
+	attack 25
 	req_str 15
 	type blunt
 	material wood
 	dmg_type blunt
-	flags {not_shop not_chest mage magical}
+	flags {not_shop mage magical wand}
 	effects {
-		magic_power 2
+		magic_power 4
 	}
 }
 
-weapon wand_3 {
+weapon wand_expert {
 	weight 0.6
 	value 1250
 	ai_value 300
-	mesh "rozdzka3.qmsh"
-	attack 20
+	mesh "wand3.qmsh"
+	attack 50
 	req_str 15
 	type blunt
 	material wood
 	dmg_type blunt
-	flags {not_shop not_chest mage magical}
+	flags {not_shop mage magical wand}
 	effects {
-		magic_power 3
+		magic_power 8
+	}
+}
+
+weapon wand_master {
+	weight 0.6
+	value 6500
+	ai_value 400
+	mesh "wand4.qmsh"
+	attack 75
+	req_str 15
+	type blunt
+	material wood
+	dmg_type blunt
+	flags {not_shop mage magical wand}
+	effects {
+		magic_power 12
 	}
 }
 
@@ -500,7 +520,7 @@ bow bow_angel {
 	speed 60
 	flags {not_shop not_chest not_random unique}
 	effects {
-		magic_power 1
+		magic_power 4
 	}
 }
 
@@ -802,7 +822,6 @@ armor al_angelskin {
 	mobility 100
 	flags {not_shop not_chest not_random unique}
 	effects {
-		magic_power 1
 		magic_resistance 0.25
 		regeneration 5
 	}
@@ -1361,9 +1380,6 @@ armor al_mage {
 	req_str 20
 	mobility 90
 	flags {not_shop not_chest mage magical}
-	effects {
-		magic_power 1
-	}
 }
 
 armor al_mage2 {
@@ -1380,7 +1396,9 @@ armor al_mage2 {
 	mobility 90
 	flags {not_shop not_chest mage magical}
 	effects {
-		magic_power 2
+		magic_power 1
+		mana 100
+		mana_regeneration 0.1
 		magic_resistance 0.1
 	}
 }
@@ -1399,7 +1417,9 @@ armor al_mage3 {
 	mobility 90
 	flags {not_shop not_chest mage magical}
 	effects {
-		magic_power 3
+		magic_power 2
+		mana 200
+		mana_regeneration 0.2
 		magic_resistance 0.1
 	}
 }
@@ -1418,7 +1438,9 @@ armor al_mage4 {
 	mobility 90
 	flags {not_shop not_chest mage unique}
 	effects {
-		magic_power 4
+		magic_power 3
+		mana 300
+		mana_regeneration 0.3
 		magic_resistance 0.25
 	}
 }
@@ -1559,7 +1581,7 @@ amulet a_mage : a_gold {
 	ai_value 120
 	flags magical
 	effects {
-		magic_power 2
+		magic_power 5
 	}
 	tag mage
 }
@@ -1701,6 +1723,7 @@ ring r_int : r_gold {
 	effects {
 		attribute int 5
 	}
+	tag mage
 }
 
 ring r_wis : r_gold {
@@ -1777,7 +1800,7 @@ ring r_mage : r_gold {
 	ai_value 80
 	flags magical
 	effects {
-		magic_power 1
+		magic_power 2
 	}
 	tag mage
 }
@@ -1920,6 +1943,16 @@ ring r_concentration : r_gold {
 	tag mana
 }
 
+ring r_mystic_magic : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		skill mystic_magic 10
+	}
+	tag mage
+}
+
 ring r_mana : r_gold {
 	value 500
 	ai_value 80
@@ -1967,6 +2000,7 @@ ring r_int2 : r_emerald {
 	effects {
 		attribute int 15
 	}
+	tag mage
 }
 
 ring r_wis2 : r_emerald {
@@ -2955,7 +2989,7 @@ list base_items {
 	sword_wooden
 	axe_rusted
 	blunt_club
-	wand_1
+	wand_novice
 	bow_short
 	shield_plank
 	al_mage
@@ -3084,9 +3118,10 @@ leveled_list blunt {
 }
 
 leveled_list wand {
-	wand_1 1
-	wand_2 9
-	wand_3 13
+	wand_novice 1
+	wand_adept 5
+	wand_expert 10
+	wand_master 15
 }
 
 leveled_list bow {
@@ -3443,6 +3478,8 @@ stock mage_seller {
 	random 2 4 amulets
 	random 6 8 rings
 	random 1 2 magic_scroll
+	random 2 3 wand
+	random 2 3 mage_armor
 }
 
 //------------------------------------------------------------------------------
@@ -3497,6 +3534,10 @@ start_items {
 		20 al_studded
 		30 al_studded_hq
 		* al_chain_shirt
+		mage 0 al_clothes
+		mage 10 al_mage
+		mage 25 al_mage2
+		mage * al_mage3
 	}
 	medium_armor {
 		0 am_hide
@@ -3511,6 +3552,14 @@ start_items {
 		20 ah_splint
 		30 ah_splint_hq
 		* ah_plate
+	}
+	mystic_magic {
+		0 wand_novice
+		25 wand_adept
+		* wand_expert
+	}
+	gods_magic {
+		* a_mana
 	}
 }
 
@@ -3542,8 +3591,9 @@ better_items {
 	blacksmith_hammer blunt_orcish
 	pickaxe blunt_orcish
 	frying_pan blunt_orcish
-	wand_1 wand_2
-	wand_2 wand_3
+	wand_novice wand_adept
+	wand_adept wand_expert
+	wand_expert wand_master
 	
 	bow_short bow_long
 	bow_long bow_composite
@@ -3618,3 +3668,7 @@ better_items {
 alias sword_semur sword_unique
 alias bow_angel bow_unique
 alias shield_wall shield_unique
+// renamed in V_DEV
+alias wand_novice wand_1
+alias wand_adept wand_2
+alias wand_expert wand_3

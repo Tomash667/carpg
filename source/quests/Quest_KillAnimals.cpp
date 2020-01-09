@@ -135,11 +135,7 @@ bool Quest_KillAnimals::IsTimedout() const
 bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 {
 	if(prog == Progress::Started)
-	{
 		OnUpdate(game->txQuest[277]);
-		world->AbadonLocation(&GetTargetLocation());
-	}
-
 	return true;
 }
 
@@ -165,7 +161,7 @@ void Quest_KillAnimals::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_KillAnimals::Load(GameReader& f)
+Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 	if(LOAD_VERSION >= V_0_9)
@@ -178,7 +174,7 @@ bool Quest_KillAnimals::Load(GameReader& f)
 	location_event_handler = this;
 	at_level = 0;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

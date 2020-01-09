@@ -20,6 +20,7 @@
 #include "SoundManager.h"
 #include "LocationGeneratorFactory.h"
 #include "DungeonGenerator.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Evil::Init()
@@ -253,7 +254,7 @@ void Quest_Evil::SetProgress(int prog2)
 			ParticleEmitter* best_pe = nullptr;
 			for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 			{
-				if(pe->tex == game->tBlood[BLOOD_RED])
+				if(pe->tex == game_res->tBlood[BLOOD_RED])
 				{
 					float dist = Vec3::Distance(pe->pos, obj->pos);
 					if(dist < best_dist)
@@ -462,7 +463,7 @@ void Quest_Evil::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Evil::Load(GameReader& f)
+Quest::LoadResult Quest_Evil::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -505,7 +506,7 @@ bool Quest_Evil::Load(GameReader& f)
 
 	unit_event_handler = this;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -544,8 +545,8 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->emisions = -1;
 	pe->life = -1;
 	pe->max_particles = 50;
-	pe->op_alpha = POP_LINEAR_SHRINK;
-	pe->op_size = POP_LINEAR_SHRINK;
+	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->particle_life = 0.5f;
 	pe->pos = obj->pos;
 	pe->pos.y += obj->base->centery;
@@ -556,7 +557,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->speed_min = Vec3(-1, 4, -1);
 	pe->speed_max = Vec3(1, 6, 1);
 	pe->mode = 0;
-	pe->tex = game->tBlood[BLOOD_RED];
+	pe->tex = game_res->tBlood[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
 	lvl.tmp->pes.push_back(pe);
@@ -708,7 +709,7 @@ void Quest_Evil::Update(float dt)
 				&& game_level->CanSee(*game_level->local_area, unit.pos, pos))
 			{
 				evil_state = State::Summoning;
-				sound_mgr->PlaySound2d(game->sEvil);
+				sound_mgr->PlaySound2d(game_res->sEvil);
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::EVIL_SOUND);
 				SetProgress(Progress::AltarEvent);
@@ -738,8 +739,8 @@ void Quest_Evil::Update(float dt)
 					if(dist < 5.f)
 					{
 						// podejdŸ
-						u->ai->idle_action = AIController::Idle_Move;
-						u->ai->idle_data.pos = l.pos;
+						u->ai->st.idle.action = AIController::Idle_Move;
+						u->ai->st.idle.pos = l.pos;
 						u->ai->timer = 1.f;
 						if(u->GetOrder() != ORDER_WAIT)
 							u->OrderWait();
@@ -752,7 +753,7 @@ void Quest_Evil::Update(float dt)
 							{
 								l.state = Loc::State::PortalClosed;
 								u->OrderFollow(team->GetLeader());
-								u->ai->idle_action = AIController::Idle_None;
+								u->ai->st.idle.action = AIController::Idle_None;
 								OnUpdate(Format(game->txPortalClosed, game_level->location->name.c_str()));
 								u->OrderAutoTalk();
 								changed = true;

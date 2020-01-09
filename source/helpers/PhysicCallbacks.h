@@ -3,20 +3,27 @@
 //-----------------------------------------------------------------------------
 struct RaytestWithIgnoredCallback : public btCollisionWorld::RayResultCallback
 {
-	RaytestWithIgnoredCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), clear(true)
+	RaytestWithIgnoredCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), hit(false), fraction(1.01f)
 	{
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
-		if(OR2_EQ(rayResult.m_collisionObject->getUserPointer(), ignore1, ignore2))
+		void* ptr = rayResult.m_collisionObject->getUserPointer();
+		if(ptr && Any(ptr, ignore1, ignore2))
 			return 1.f;
-		clear = false;
+		if(rayResult.m_hitFraction < fraction)
+		{
+			fraction = rayResult.m_hitFraction;
+			hit = true;
+		}
 		return 0.f;
 	}
 
 	bool clear;
 	const void* ignore1, *ignore2;
+	float fraction;
+	bool hit;
 };
 
 //-----------------------------------------------------------------------------

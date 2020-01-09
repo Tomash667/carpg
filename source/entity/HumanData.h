@@ -26,7 +26,7 @@ struct Human
 	vector<Matrix> mat_scale;
 
 	Vec2 GetScale();
-	void ApplyScale(Mesh* mesh);
+	void ApplyScale(MeshInstance* mesh_inst);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 };

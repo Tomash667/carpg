@@ -14,6 +14,7 @@
 #include "Portal.h"
 #include "AIController.h"
 #include "Team.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Mine::Start()
@@ -284,7 +285,7 @@ void Quest_Mine::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Mine::Load(GameReader& f)
+Quest::LoadResult Quest_Mine::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -301,7 +302,7 @@ bool Quest_Mine::Load(GameReader& f)
 	location_event_handler = this;
 	InitSub();
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -691,7 +692,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		// doors
 		{
 			Object* o = new Object;
-			o->mesh = game->aDoorWall;
+			o->mesh = game_res->aDoorWall;
 			o->pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
 			o->scale = 1;
 			o->base = nullptr;

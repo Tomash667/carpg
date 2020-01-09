@@ -389,6 +389,7 @@ void QuestLoader::Finalize()
 		else
 			scheme->set_progress_use_prev = false;
 		scheme->f_event = type->GetMethodByDecl("void OnEvent(Event@)");
+		scheme->f_upgrade = type->GetMethodByDecl("void OnUpgrade(dictionary&)");
 		scheme->scripts.Set(type);
 
 		if(!scheme->f_progress)

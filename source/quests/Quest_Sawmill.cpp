@@ -159,7 +159,7 @@ void Quest_Sawmill::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Sawmill::Load(GameReader& f)
+Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -172,7 +172,7 @@ bool Quest_Sawmill::Load(GameReader& f)
 	if(sawmill_state != State::None && build_state != BuildState::Finished)
 		f >> hd_lumberjack;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -231,8 +231,6 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	{
 		// artur drwal
 		Unit* u = game_level->SpawnUnitNearLocation(outside, Vec3(128, 0, 128), ud, nullptr, -2);
-		assert(u);
-		u->rot = Random(MAX_ANGLE);
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
 
@@ -247,11 +245,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		// generuj innych drwali
 		int count = Random(5, 10);
 		for(int i = 0; i < count; ++i)
-		{
-			Unit* u = game_level->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
-			if(u)
-				u->rot = Random(MAX_ANGLE);
-		}
+			game_level->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 
 		build_state = BuildState::InProgress;
 	}
@@ -264,7 +258,6 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 
 		// artur drwal
 		Unit* u = game_level->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
-		assert(u);
 		u->rot = rot;
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
@@ -280,11 +273,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		// inni drwale
 		int count = Random(5, 10);
 		for(int i = 0; i < count; ++i)
-		{
-			Unit* u = game_level->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
-			if(u)
-				u->rot = Random(MAX_ANGLE);
-		}
+			game_level->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 
 		build_state = BuildState::Finished;
 	}

@@ -36,8 +36,21 @@ Enum ITEM_FLAGS:
 	ITEM_NOT_ALCHEMIST - not generated for alchemist.
 
 Dialog type.
+Static properties:
+	int var
 Static methods:
 	Dialog@ Get(const string& in id) - return dialog with id.
+	
+Building type.
+
+BuildingGroup type.
+Static methods:
+	BuildingGroup@ Get(const string& in id) - return building group with id.
+	
+CityBuilding type.
+Members:
+	const Vec3 unit_pos - unit spawn pos.
+	const float unit_rot - unit spawn rot.
 
 Item type:
 	string name - readonly
@@ -57,6 +70,10 @@ GroundItem type:
 	Vec3 pos - readonly
 	Item@ base - readonly
 
+Ability type.
+Static methods:
+	Ability@ Get(const string& in id) - return ability by id.
+
 UnitData type:
 Static methods:
 	UnitData@ Get(const string& in id) - return unit data with id.
@@ -66,8 +83,15 @@ Static method:
 	UnitGroup@ Get(const string& in id) - return unit group with id.
 Static variables:
 	UnitGroup@ empty - represents empty group.
+	
+Enum QUEST_STATE:
+	Q_HIDDEN
+	Q_STARTED
+	Q_COMPLETED
+	Q_FAILED
 
 Quest type:
+	const QUEST_STATE state
 	void AddEntry(const string& in str) - add journal message.
 	void SetStarted(const string& in title) - mark quest as started, add journal entry with quest title, can only be called once.
 	void SetCompleted() - mark quest as completed, can only be called when quest is started.
@@ -128,6 +152,7 @@ Unit type:
 	uint RemoveItem(const string& in item_id, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
 	uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
 	void RemoveQuestItem(Quest@) - remove 1 quest item from unit inventory.
+	void ConsumeItem(Item@) - unit consume item (food or drink) if not busy.
 	void AddDialog(Quest@, const string& in dialog_id) - add quest dialog to unit.
 	void RemoveDialog(Quest@) - remove quest dialog from unit.
 	void AddEventHandler(Quest@, EventType) - add event to unit.
@@ -148,6 +173,8 @@ Unit type:
 	UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
 	void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 	void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
+	void RotateTo(float rot) - instantly rotates units.
+	void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data.
 Globals:
 	Unit@ target
 Static methods:
@@ -157,7 +184,10 @@ Player type:
 	Unit@ unit - unit player.
 	const string name
 	bool IsLeader() - return true if player is leader.
+	bool HaveAbility(Ability@) - return true if player have this ability.
 	bool HavePerk(const string& in perk) - return true if player have this perk.
+	bool AddAbility(Ability@) - add ability, return true if not already added.
+	bool RemoveAbility(Ability@) - remove ability, return true if removed.
 Globals:
 	Player@ pc
 
@@ -183,10 +213,11 @@ Team namespace:
 EventType enum:
 	EVENT_ENTER - for locations, send when player enter location (set field location).
 	EVENT_PICKUP - for locations, send when someone pickups ground item (set field unit, item).
-	EVENT_UPDATE - for unit, send every frame (set field unit).
+	EVENT_CLEARED - for locations, send when location is cleared from enemies.
+	EVENT_UPDATE - for units, send every frame (set field unit).
+	EVENT_DIE - for units, send when unit dies.
 	EVENT_TIMEOUT - for quests, send when quest timeout expired.
 	EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
-	EVENT_DIE - for units, send when unit dies.
 
 LOCATION enum:
 	L_CITY
@@ -246,6 +277,8 @@ Location type:
 	void SetKnown() - mark location as known.
 	void AddEventHandler(Quest@, EventType) - add event to location.
 	void RemoveEventHandler(Quest@) - remove event handler from location.
+	Unit@ GetMayor() - return mayor/soltys or null when not in city.
+	Unit@ GetCaptain() - return guard captain or null when not in city.
 
 Encounter type:
 	Vec2 pos
@@ -253,12 +286,14 @@ Encounter type:
 	Quest@ quest
 	Dialog@ dialog
 	int st
+	int chance
 	UnitGroup@ group
 	string text
 
 World namespace:
 	const Vec2 size - get worldmap size (in km).
 	const Vec2 pos - position on worldmap.
+	const int worldtime - number of days since start of game.
 	uint GetSettlements() - return count of settlements.
 	Location@ GetLocation(uint index) - return location by index.
 	string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
@@ -270,8 +305,10 @@ World namespace:
 	Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
 	Location@ CreateLocation(LOCATION type, const Vec2& in pos, int target = 0) - create new location at position.
 	Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
+	Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.
 	void RemoveEncounter(Quest@) - remove encounters attached to this quest.
 	void SetStartLocation(Location@) - game start location, must be set in quest Startup.
+	void AddNews(const string& in) - add news.
 
 Level namespace:
 	Location@ location - readonly
@@ -288,6 +325,7 @@ Level namespace:
 	Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2) - spawns unit near position.
 	Unit@ SpawnUnit(LevelArea@, Spawn) - spawns unit inside area.
 	Unit@ GetMayor() - returns city mayor or village soltys or null.
+	CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 
 StockScript namespace - can only be called from stock script:
 	void AddItem(Item@, uint count = 1) - add item to stock.

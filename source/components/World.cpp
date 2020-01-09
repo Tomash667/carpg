@@ -537,8 +537,11 @@ void World::AddLocationAtIndex(Location* loc)
 //=================================================================================================
 void World::RemoveLocation(int index)
 {
-	assert(VerifyLocation(index));
-	delete locations[index];
+	if(Net::IsClient())
+	{
+		assert(VerifyLocation(index));
+		delete locations[index];
+	}
 	if(index == locations.size() - 1)
 		locations.pop_back();
 	else
@@ -702,7 +705,7 @@ void World::GenerateWorld()
 				city.citizens_world = 0;
 				city.st = 1;
 				city.group = UnitGroup::empty;
-				LocalVector2<Building*> buildings;
+				LocalVector<Building*> buildings;
 				city.GenerateCityBuildings(buildings.Get(), true);
 				city.buildings.reserve(buildings.size());
 				for(Building* b : buildings)
@@ -1241,7 +1244,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
 	f >> boss_levels;
 	f >> tomir_spawned;
@@ -1267,7 +1270,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	{
 		++index;
 
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_12)
 		{
 			LOCATION type;
 			f >> type;
@@ -2163,7 +2166,7 @@ void World::StartEncounter()
 }
 
 //=================================================================================================
-void World::Travel(int index, bool send)
+void World::Travel(int index, bool order)
 {
 	if(state == State::TRAVEL)
 		return;
@@ -2189,7 +2192,7 @@ void World::Travel(int index, bool send)
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
-	if(Net::IsOnline() && send)
+	if(Net::IsServer() || (Net::IsClient() && order))
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TRAVEL;
@@ -2198,7 +2201,7 @@ void World::Travel(int index, bool send)
 }
 
 //=================================================================================================
-void World::TravelPos(const Vec2& pos, bool send)
+void World::TravelPos(const Vec2& pos, bool order)
 {
 	if(state == State::TRAVEL)
 		return;
@@ -2224,7 +2227,7 @@ void World::TravelPos(const Vec2& pos, bool send)
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
-	if(Net::IsOnline() && send)
+	if(Net::IsServer() || (Net::IsClient() && order))
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TRAVEL_POS;
@@ -2507,13 +2510,14 @@ void World::EndTravel()
 }
 
 //=================================================================================================
-void World::Warp(int index)
+void World::Warp(int index, bool order)
 {
 	if(game_level->is_open)
 	{
 		game->LeaveLocation(false, false);
 		game_level->is_open = false;
 	}
+
 	current_location_index = index;
 	current_location = locations[current_location_index];
 	game_level->location_index = current_location_index;
@@ -2521,21 +2525,37 @@ void World::Warp(int index)
 	Location& loc = *current_location;
 	loc.SetVisited();
 	world_pos = loc.pos;
+
+	if(Net::IsServer() || (Net::IsClient() && order))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHEAT_TRAVEL;
+		c.id = index;
+	}
 }
 
 //=================================================================================================
-void World::WarpPos(const Vec2& pos)
+void World::WarpPos(const Vec2& pos, bool order)
 {
 	if(game_level->is_open)
 	{
 		game->LeaveLocation(false, false);
 		game_level->is_open = false;
 	}
+
 	world_pos = pos;
 	current_location_index = -1;
 	current_location = nullptr;
 	game_level->location_index = -1;
 	game_level->location = nullptr;
+
+	if(Net::IsServer() || (Net::IsClient() && order))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHEAT_TRAVEL_POS;
+		c.pos.x = pos.x;
+		c.pos.y = pos.y;
+	}
 }
 
 //=================================================================================================
@@ -2607,6 +2627,17 @@ Encounter* World::RecreateEncounter(int index)
 {
 	assert(InRange(index, 0, (int)encounters.size() - 1));
 	Encounter* e = new Encounter;
+	e->index = index;
+	encounters[index] = e;
+	return e;
+}
+
+//=================================================================================================
+Encounter* World::RecreateEncounterS(Quest* quest, int index)
+{
+	assert(InRange(index, 0, (int)encounters.size() - 1));
+	Encounter* e = new Encounter(quest);
+	e->index = index;
 	encounters[index] = e;
 	return e;
 }
@@ -2808,16 +2839,20 @@ void World::AbadonLocation(Location* loc)
 {
 	assert(loc);
 
-	// only works for OutsideLocation for now!
-	assert(loc->outside && loc->type != L_CITY);
+	// only works for OutsideLocation or Cave for now!
+	assert((loc->outside && loc->type != L_CITY) || loc->type == L_CAVE);
 
-	OutsideLocation* outside = static_cast<OutsideLocation*>(loc);
+	LevelArea* area;
+	if(loc->type == L_CAVE)
+		area = static_cast<Cave*>(loc);
+	else
+		area = static_cast<OutsideLocation*>(loc);
 
 	// if location is open
 	if(loc == current_location)
 	{
 		// remove units
-		for(Unit*& u : outside->units)
+		for(Unit*& u : area->units)
 		{
 			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
@@ -2827,7 +2862,7 @@ void World::AbadonLocation(Location* loc)
 		}
 
 		// remove items from chests
-		for(Chest* chest : outside->chests)
+		for(Chest* chest : area->chests)
 		{
 			if(!chest->GetUser())
 				chest->items.clear();
@@ -2836,15 +2871,16 @@ void World::AbadonLocation(Location* loc)
 	else
 	{
 		// delete units
-		DeleteElements(outside->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
+		DeleteElements(area->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
 
 		// remove items from chests
-		for(Chest* chest : outside->chests)
+		for(Chest* chest : area->chests)
 			chest->items.clear();
 	}
 
 	loc->group = UnitGroup::empty;
-	loc->last_visit = worldtime;
+	if(loc->last_visit != -1)
+		loc->last_visit = worldtime;
 }
 
 //=================================================================================================

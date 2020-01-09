@@ -62,7 +62,8 @@ enum class TrainWhat
 	Stamina, // player uses stamina [value],
 	BullsCharge, // trains str
 	Dash,
-	Cast,
+	CastCleric, // player cast cleric spell [value]
+	CastMage, // player cast mage spell [value]
 	Mana, // player uses mana [value]
 };
 
@@ -110,6 +111,14 @@ inline int GetRequiredSkillPoints(int level)
 }
 
 //-----------------------------------------------------------------------------
+struct PlayerAbility
+{
+	Ability* ability;
+	float recharge, cooldown;
+	int charges;
+};
+
+//-----------------------------------------------------------------------------
 struct Shortcut
 {
 	static const uint MAX = 10;
@@ -118,15 +127,17 @@ struct Shortcut
 	{
 		TYPE_NONE,
 		TYPE_SPECIAL,
-		TYPE_ITEM
+		TYPE_ITEM,
+		TYPE_ABILITY
 	};
 
 	enum Special
 	{
 		SPECIAL_MELEE_WEAPON,
 		SPECIAL_RANGED_WEAPON,
-		SPECIAL_ACTION,
-		SPECIAL_HEALING_POTION
+		SPECIAL_ABILITY_OLD, // removed in V_DEV
+		SPECIAL_HEALTH_POTION,
+		SPECIAL_MANA_POTION
 	};
 
 	Type type;
@@ -134,6 +145,7 @@ struct Shortcut
 	{
 		int value;
 		const Item* item;
+		Ability* ability;
 	};
 	bool trigger;
 };
@@ -155,26 +167,28 @@ struct LocalPlayerData
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
 	Unit* selected_unit; // unit marked with 'select' command
-	Entity<Unit> action_target;
+	Entity<Unit> ability_target;
 	GroundItem* picking_item;
-	Vec3 action_point;
+	Vec3 ability_point;
 	int picking_item_state;
-	float rot_buf, action_rot;
+	float rot_buf, ability_rot, grayout, range_ratio;
 	Key wasted_key;
-	bool autowalk, action_ready, action_ok;
+	Ability* ability_ready;
+	bool autowalk, ability_ok;
 
 	void Reset()
 	{
 		before_player = BP_NONE;
 		before_player_ptr.any = nullptr;
 		selected_unit = nullptr;
-		action_target = nullptr;
+		ability_target = nullptr;
 		picking_item = nullptr;
 		picking_item_state = 0;
 		rot_buf = 0.f;
+		grayout = 0.f;
 		wasted_key = Key::None;
 		autowalk = false;
-		action_ready = false;
+		ability_ready = nullptr;
 	}
 	Unit* GetTargetUnit()
 	{
@@ -198,7 +212,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 
 	PlayerInfo* player_info;
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	Key action_key;
 	NextAction next_action;
@@ -214,7 +228,7 @@ struct PlayerController : public HeroPlayerCommon
 	} next_action_data;
 	WeaponType last_weapon;
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
-	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
+	int id, free_days, learning_points, exp, exp_need, exp_level;
 	//----------------------
 	PlayerAction action;
 	union
@@ -230,14 +244,12 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
-	vector<Entity<Unit>> action_targets;
+	vector<Entity<Unit>> ability_targets;
 	Shortcut shortcuts[Shortcut::MAX];
+	vector<PlayerAbility> abilities;
 	static LocalPlayerData data;
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
-		action_cooldown(0.f), action_charges(0), last_ring(false)
-	{
-	}
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
 	~PlayerController();
 
 	void Rest(int days, bool resting, bool travel = false);
@@ -282,10 +294,6 @@ public:
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	Action& GetAction() const;
-	bool CanUseAction() const;
-	bool UseActionCharge();
-	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
 	void PayCredit(int count);
@@ -298,22 +306,37 @@ public:
 	bool AddPerk(Perk perk, int value);
 	bool RemovePerk(Perk perk, int value);
 
+	// abilities
+	bool HaveAbility(Ability* ability) const;
+	bool AddAbility(Ability* ability);
+	bool RemoveAbility(Ability* ability);
+	PlayerAbility* GetAbility(Ability* ability);
+	const PlayerAbility* GetAbility(Ability* ability) const;
+	enum class CanUseAbilityResult
+	{
+		Yes,
+		No,
+		NeedWand,
+		TakeWand
+	};
+	CanUseAbilityResult CanUseAbility(Ability* ability) const;
+	void UpdateCooldown(float dt);
+	void RefreshCooldown();
+	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp);
 	int GetExpNeed() const;
 	int GetTrainCost(int train) const;
 	void Yell();
-	int GetHealingPotion() const;
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
-	float GetActionPower() const;
-	float GetShootAngle() const;
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	void UseUsable(Usable* u, bool after_action);
-	void CastSpell();
-	void UseAction(bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 	void Update(float dt);
 	void UpdateMove(float dt, bool allow_rot);
-	void UpdateCooldown(float dt);
 	bool WantExitLevel();
+	void ClearNextAction();
+	Vec3 RaytestTarget(float range);
+	bool ShouldUseRaytest() const;
 };

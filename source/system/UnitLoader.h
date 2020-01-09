@@ -27,7 +27,7 @@ class UnitLoader : public ContentLoader
 	ARMOR_TYPE GetArmorType();
 	void ParseItems(Ptr<ItemScript>& script);
 	void AddItem(ItemScript* script);
-	void ParseSpells(Ptr<SpellList>& list);
+	void ParseAbilities(Ptr<AbilityList>& list);
 	void ParseSounds(Ptr<SoundPack>& pack);
 	void ParseFrames(Ptr<FrameInfo>& frames);
 	void ParseTextures(Ptr<TexPack>& pack);

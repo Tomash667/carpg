@@ -7,7 +7,7 @@ struct Explo
 	Entity<Unit> owner;
 	Vec3 pos;
 	float size, sizemax, dmg;
-	TexturePtr tex;
+	Ability* ability;
 	vector<Entity<Unit>> hitted;
 
 	static const int MIN_SIZE = 21;
@@ -23,11 +23,15 @@ struct Electro : public EntityType<Electro>
 {
 	struct Line
 	{
-		vector<Vec3> pts;
-		float t;
+		TrailParticleEmitter* trail;
+		Vec3 from, to;
+		float t; // 0.0 -> 0.25 animation -> 0.5 removed
+
+		static const int SIZE = sizeof(Vec3) * 2 + sizeof(float);
 	};
 
-	Spell* spell;
+	LevelArea* area;
+	Ability* ability;
 	Entity<Unit> owner;
 	vector<Line> lines;
 	vector<Entity<Unit>> hitted;
@@ -36,9 +40,11 @@ struct Electro : public EntityType<Electro>
 	Vec3 start_pos;
 
 	static const int MIN_SIZE = 5;
-	static const int LINE_MIN_SIZE = 28;
 
-	void AddLine(const Vec3& from, const Vec3& to);
+	~Electro();
+	void AddLine(const Vec3& from, const Vec3& to, float t = 0);
+	void Update(float dt);
+	void UpdateColor(Line& line);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void Write(BitStreamWriter& f);
@@ -48,7 +54,7 @@ struct Electro : public EntityType<Electro>
 //-----------------------------------------------------------------------------
 struct Drain
 {
-	Unit* from, *to;
+	Entity<Unit> target;
 	ParticleEmitter* pe;
 	float t;
 

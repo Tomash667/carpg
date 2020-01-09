@@ -10,8 +10,8 @@ class cleric {
 	player base_cleric
 	hero hero_cleric
 	icon "icon_cleric.png"
-	action heal
-	mp_bar 1
+	ability heal
+	flags mp_bar
 	level {
 		str 1
 		end 1
@@ -68,7 +68,7 @@ class hunter {
 	hero hero_hunter
 	crazy crazy_hunter
 	icon "icon_hunter.png"
-	action summon_wolf
+	ability summon_wolf
 	level {
 		str 1
 		end 1
@@ -106,31 +106,54 @@ class hunter {
 }
 
 class mage {
+	player base_mage
 	hero hero_mage
 	crazy crazy_mage
 	icon "icon_mage.png"
+	ability fireball
+	flags {mp_bar mage_items}
+	level {
+		str 0.5
+		end 1
+		dex 1
+		int 1
+		wis 0.5
+		weapon 0.5
+		armor 1
+		one_handed_weapon 0.5
+		shield 0.5
+		mystic_magic required 1
+		concentration required 0.75
+	}
 	potions {
 		level 17 {
-			p_hp3 4
+			p_hp3 1
+			p_mp3 1
 			p_hp2 5
+			p_mp2 3
 			p_hp 6
+			p_mp 6
 		}
 		level 13 {
-			p_hp3 2
-			p_hp2 4
+			p_hp2 3
+			p_mp2 2
 			p_hp 6
+			p_mp 5
 		}
 		level 9 {
-			p_hp3 1
-			p_hp2 3
-			p_hp 6
+			p_hp2 2
+			p_mp2 1
+			p_hp 5
+			p_mp 4
 		}
 		level 6 {
-			p_hp2 2
-			p_hp 5
+			p_hp2 1
+			p_hp 4
+			p_mp 4
 		}
 		level 0 {
-			p_hp 5
+			p_hp 4
+			p_mp 2
 		}
 	}
 }
@@ -148,7 +171,7 @@ class rogue {
 	hero hero_rogue
 	crazy crazy_rogue
 	icon "icon_rogue.png"
-	action dash
+	ability dash
 	level {
 		str 1
 		end 1
@@ -190,7 +213,7 @@ class warrior {
 	hero hero_warrior
 	crazy crazy_warrior
 	icon "icon_warrior.png"
-	action bull_charge
+	ability bull_charge
 	level {
 		str 1
 		end 1.1

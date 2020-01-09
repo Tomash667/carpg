@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "Tokenizer.h"
 #include "Content.h"
-#include "Spell.h"
+#include "AbilityLoader.h"
 #include "MusicTrack.h"
 #include "BitStreamFunc.h"
 #include "BuildingLoader.h"
@@ -11,7 +11,7 @@
 #include "ItemLoader.h"
 #include "ObjectLoader.h"
 #include "QuestLoader.h"
-#include "SpellLoader.h"
+#include "RequiredLoader.h"
 #include "UnitLoader.h"
 
 //-----------------------------------------------------------------------------
@@ -19,21 +19,44 @@ Content content;
 static cstring content_id[] = {
 	"items",
 	"objects",
-	"spells",
+	"abilities",
 	"dialogs",
 	"classes",
 	"units",
 	"buildings",
 	"musics",
-	"quests"
+	"quests",
+	"required"
 };
 static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
 
 //=================================================================================================
-Content::Content() : building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader), item_loader(new ItemLoader),
-object_loader(new ObjectLoader), quest_loader(new QuestLoader), spell_loader(new SpellLoader), unit_loader(new UnitLoader)
+Content::Content() : ability_loader(new AbilityLoader), building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader),
+item_loader(new ItemLoader), object_loader(new ObjectLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader), unit_loader(new UnitLoader)
 {
 	quest_loader->dialog_loader = dialog_loader;
+}
+
+//=================================================================================================
+Content::~Content()
+{
+	if(building_loader)
+		Cleanup();
+}
+
+//=================================================================================================
+void Content::Cleanup()
+{
+	delete ability_loader;
+	delete building_loader;
+	delete class_loader;
+	delete dialog_loader;
+	delete item_loader;
+	delete object_loader;
+	delete quest_loader;
+	delete required_loader;
+	delete unit_loader;
+	building_loader = nullptr;
 }
 
 //=================================================================================================
@@ -55,9 +78,9 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Objects);
 	object_loader->DoLoading();
 
-	Info("Game: Loading spells.");
-	callback(Id::Spells);
-	spell_loader->DoLoading();
+	Info("Game: Loading abilities.");
+	callback(Id::Abilities);
+	ability_loader->DoLoading();
 
 	Info("Game: Loading classes.");
 	callback(Id::Classes);
@@ -67,6 +90,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Units);
 	unit_loader->DoLoading();
 	class_loader->ApplyUnits();
+	ability_loader->ApplyUnits();
 
 	Info("Game: Loading buildings.");
 	callback(Id::Buildings);
@@ -80,17 +104,12 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	Info("Game: Loading quests.");
 	callback(Id::Quests);
 	quest_loader->DoLoading();
-
 	unit_loader->ProcessDialogRequests();
 
-	delete building_loader;
-	delete class_loader;
-	delete dialog_loader;
-	delete item_loader;
-	delete object_loader;
-	delete quest_loader;
-	delete spell_loader;
-	delete unit_loader;
+	callback(Id::Required);
+	required_loader->DoLoading();
+
+	Cleanup();
 }
 
 //=================================================================================================
@@ -123,7 +142,7 @@ void Content::CleanupContent()
 {
 	ItemLoader::Cleanup();
 	ObjectLoader::Cleanup();
-	SpellLoader::Cleanup();
+	AbilityLoader::Cleanup();
 	DialogLoader::Cleanup();
 	UnitLoader::Cleanup();
 	BuildingLoader::Cleanup();

@@ -31,7 +31,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void CheckStone();

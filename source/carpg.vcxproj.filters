@@ -22,9 +22,6 @@
     <Filter Include="net">
       <UniqueIdentifier>{929811af-2ec9-429b-ab7b-4695cb616a46}</UniqueIdentifier>
     </Filter>
-    <Filter Include="panels">
-      <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="quests">
       <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
     </Filter>
@@ -55,9 +52,6 @@
     <Filter Include="system\dialogs">
       <UniqueIdentifier>{4fa50a58-faa4-4845-82e7-383202a0bd2b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="system\spells">
-      <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="resource">
       <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
     </Filter>
@@ -66,6 +60,15 @@
     </Filter>
     <Filter Include="system\classes">
       <UniqueIdentifier>{36e9d514-c76f-4a1d-a204-97a28e33e7d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\abilities">
+      <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\required">
+      <UniqueIdentifier>{99d81813-979a-407e-948e-fb8ad7c1dccb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui">
+      <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -147,65 +150,65 @@
     <ClCompile Include="stats\UnitStats.cpp">
       <Filter>stats</Filter>
     </ClCompile>
-    <ClCompile Include="panels\Console.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\Console.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\CreateCharacterPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\CreateCharacterPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\CreateServerPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\CreateServerPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\GameMenu.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\GameMenu.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\GamePanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\GamePanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\InfoBox.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\InfoBox.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\Inventory.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\Inventory.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\Journal.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\Journal.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\LoadScreen.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\LoadScreen.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\MainMenu.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\MainMenu.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\Minimap.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\Minimap.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\MpBox.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\MpBox.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\MultiplayerPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\MultiplayerPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\Options.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\Options.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\PickServerPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\PickServerPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\SaveLoadPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\SaveLoadPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\ServerPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\ServerPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\StatsPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\StatsPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\TeamPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\TeamPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\WorldMapGui.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\WorldMapGui.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Pch.cpp" />
@@ -215,8 +218,8 @@
     <ClCompile Include="stats\Skill.cpp">
       <Filter>stats</Filter>
     </ClCompile>
-    <ClCompile Include="panels\Controls.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\Controls.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="stats\Perk.cpp">
       <Filter>stats</Filter>
@@ -224,8 +227,8 @@
     <ClCompile Include="entity\CreatedCharacter.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="panels\GameMessages.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\GameMessages.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="stats\Effect.cpp">
       <Filter>stats</Filter>
@@ -294,9 +297,6 @@
     <ClCompile Include="entity\Light.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="stats\Required.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
@@ -315,15 +315,9 @@
     <ClCompile Include="entity\Usable.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="stats\Action.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
-    <ClCompile Include="panels\ActionPanel.cpp">
-      <Filter>panels</Filter>
-    </ClCompile>
     <ClCompile Include="Utility.cpp" />
-    <ClCompile Include="panels\BookPanel.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\BookPanel.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="entity\ItemContainer.cpp">
       <Filter>entity</Filter>
@@ -505,12 +499,6 @@
     <ClCompile Include="quests\Quest_Artifacts.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="system\Spell.cpp">
-      <Filter>system\spells</Filter>
-    </ClCompile>
-    <ClCompile Include="system\SpellLoader.cpp">
-      <Filter>system\spells</Filter>
-    </ClCompile>
     <ClCompile Include="quests\Quest_Scripted.cpp">
       <Filter>quests</Filter>
     </ClCompile>
@@ -536,7 +524,6 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameFile.cpp" />
-    <ClCompile Include="Init.cpp" />
     <ClCompile Include="Language.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="QuadTreeAndGrass.cpp" />
@@ -546,11 +533,11 @@
     <ClCompile Include="stats\MusicTrack.cpp">
       <Filter>stats</Filter>
     </ClCompile>
-    <ClCompile Include="panels\LevelGui.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\LevelGui.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="panels\GameGui.cpp">
-      <Filter>panels</Filter>
+    <ClCompile Include="gui\GameGui.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="system\Class.cpp">
       <Filter>system\classes</Filter>
@@ -590,6 +577,30 @@
     </ClCompile>
     <ClCompile Include="generator\AcademyGenerator.cpp">
       <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="net\PacketLogger.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="components\GameResources.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\AbilityPanel.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="system\AbilityLoader.cpp">
+      <Filter>system\abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Ability.cpp">
+      <Filter>system\abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="system\RequiredLoader.cpp">
+      <Filter>system\required</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\LocationHelper.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\SceneNode.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
@@ -690,65 +701,65 @@
     <ClInclude Include="stats\UnitStats.h">
       <Filter>stats</Filter>
     </ClInclude>
-    <ClInclude Include="panels\Console.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\Console.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\CreateCharacterPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\CreateCharacterPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\CreateServerPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\CreateServerPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\GameMenu.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\GameMenu.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\GamePanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\GamePanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\InfoBox.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\InfoBox.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\Inventory.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\Inventory.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\Journal.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\Journal.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\LoadScreen.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\LoadScreen.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\MainMenu.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\MainMenu.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\Minimap.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\Minimap.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\MpBox.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\MpBox.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\MultiplayerPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\MultiplayerPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\Options.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\Options.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\PickServerPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\PickServerPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\SaveLoadPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\SaveLoadPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\ServerPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\ServerPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\StatsPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\StatsPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\TeamPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\TeamPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\WorldMapGui.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\WorldMapGui.h">
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="Pch.h" />
     <ClInclude Include="stats\Attribute.h">
@@ -757,8 +768,8 @@
     <ClInclude Include="stats\Skill.h">
       <Filter>stats</Filter>
     </ClInclude>
-    <ClInclude Include="panels\Controls.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\Controls.h">
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="stats\Perk.h">
       <Filter>stats</Filter>
@@ -769,8 +780,8 @@
     <ClInclude Include="stats\ArmorUnitType.h">
       <Filter>stats</Filter>
     </ClInclude>
-    <ClInclude Include="panels\GameMessages.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\GameMessages.h">
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="stats\Effect.h">
       <Filter>stats</Filter>
@@ -873,12 +884,6 @@
     <ClInclude Include="entity\Usable.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="stats\Action.h">
-      <Filter>stats</Filter>
-    </ClInclude>
-    <ClInclude Include="panels\ActionPanel.h">
-      <Filter>panels</Filter>
-    </ClInclude>
     <ClInclude Include="Utility.h" />
     <ClInclude Include="net\GamePacket.h">
       <Filter>net</Filter>
@@ -889,8 +894,8 @@
     <ClInclude Include="net\NetChangePlayer.h">
       <Filter>net</Filter>
     </ClInclude>
-    <ClInclude Include="panels\BookPanel.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\BookPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="entity\ItemContainer.h">
       <Filter>entity</Filter>
@@ -1078,9 +1083,6 @@
     <ClInclude Include="quests\Quest_Artifacts.h">
       <Filter>quests</Filter>
     </ClInclude>
-    <ClInclude Include="system\Spell.h">
-      <Filter>system\spells</Filter>
-    </ClInclude>
     <ClInclude Include="quests\Quest_Scripted.h">
       <Filter>quests</Filter>
     </ClInclude>
@@ -1114,9 +1116,6 @@
     <ClInclude Include="system\QuestList.h">
       <Filter>system\quests</Filter>
     </ClInclude>
-    <ClInclude Include="system\SpellLoader.h">
-      <Filter>system\spells</Filter>
-    </ClInclude>
     <ClInclude Include="generator\DungeonMapGenerator.h">
       <Filter>generator</Filter>
     </ClInclude>
@@ -1132,11 +1131,11 @@
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="system\DialogLoader.h" />
-    <ClInclude Include="panels\LevelGui.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\LevelGui.h">
+      <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="panels\GameGui.h">
-      <Filter>panels</Filter>
+    <ClInclude Include="gui\GameGui.h">
+      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="system\Class.h">
       <Filter>system\classes</Filter>
@@ -1176,6 +1175,24 @@
     </ClInclude>
     <ClInclude Include="generator\AcademyGenerator.h">
       <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="net\PacketLogger.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="components\GameResources.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\AbilityPanel.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="system\AbilityLoader.h">
+      <Filter>system\abilities</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Ability.h">
+      <Filter>system\abilities</Filter>
+    </ClInclude>
+    <ClInclude Include="system\RequiredLoader.h">
+      <Filter>system\required</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

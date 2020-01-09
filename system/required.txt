@@ -234,12 +234,12 @@ group list arena_hard
 group list random
 
 //------------------------------------------------------------------------------
-// Required spells
+// Required abilities
 //------------------------------------------------------------------------------
-spell thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net
-spell raise // hardcoded spell effect in net
-spell heal // hardcoded spell effect in net
-spell fireball // hardcoded to cast for fire rune
+ability thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net
+ability raise // hardcoded spell effect in net
+ability heal // hardcoded spell effect in net
+ability fireball // hardcoded to cast for fire rune
 
 //------------------------------------------------------------------------------
 // Required dialogs
@@ -251,10 +251,6 @@ dialog q_bandits_guard
 dialog q_bandits_agent
 dialog q_bandits_boss
 dialog q_bandits_encounter
-dialog q_bandits_collect_toll_start
-dialog q_bandits_collect_toll_timeout
-dialog q_bandits_collect_toll_end
-dialog q_bandits_collect_toll_talk
 dialog q_camp_near_city_start
 dialog q_camp_near_city_timeout
 dialog q_camp_near_city_end

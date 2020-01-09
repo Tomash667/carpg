@@ -46,7 +46,7 @@ enum ACTION
 	A_PAIN,
 	A_CAST,
 	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
-	A_ANIMATION2, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
+	A_USE_USABLE, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
@@ -62,10 +62,43 @@ enum AnimationState
 {
 	AS_NONE = 0,
 
-	AS_ANIMATION2_MOVE_TO_OBJECT = 0,
-	AS_ANIMATION2_USING = 1,
-	AS_ANIMATION2_USING_SOUND = 2,
-	AS_ANIMATION2_MOVE_TO_ENDPOINT = 3
+	AS_ATTACK_PREPARE = 0,
+	AS_ATTACK_CAN_HIT = 1,
+	AS_ATTACK_FINISHED = 2,
+
+	AS_BASH_ANIMATION = 0,
+	AS_BASH_CAN_HIT = 1,
+	AS_BASH_HITTED = 2,
+
+	AS_CAST_ANIMATION = 0,
+	AS_CAST_CASTED = 1,
+	AS_CAST_TRIGGER = 2,
+
+	AS_DRINK_START = 0,
+	AS_DRINK_EFFECT = 1,
+	AS_DRINK_END = 2,
+
+	AS_EAT_START = 0,
+	AS_EAT_SOUND = 1,
+	AS_EAT_EFFECT = 2,
+	AS_EAT_END = 3,
+
+	AS_POSITION_NORMAL = 0,
+	AS_POSITION_HURT = 1,
+	AS_POSITION_HURT_END = 2,
+
+	AS_SHOOT_PREPARE = 0,
+	AS_SHOOT_CAN = 1,
+	AS_SHOOT_SHOT = 2,
+	AS_SHOOT_FINISHED = 3,
+
+	AS_TAKE_WEAPON_START = 0,
+	AS_TAKE_WEAPON_MOVED = 1,
+
+	AS_USE_USABLE_MOVE_TO_OBJECT = 0,
+	AS_USE_USABLE_USING = 1,
+	AS_USE_USABLE_USING_SOUND = 2,
+	AS_USE_USABLE_MOVE_TO_ENDPOINT = 3
 };
 
 inline bool IsBlocking(ACTION a)
@@ -74,12 +107,12 @@ inline bool IsBlocking(ACTION a)
 }
 
 //-----------------------------------------------------------------------------
-enum WeaponState
+enum class WeaponState
 {
-	WS_HIDDEN,
-	WS_HIDING,
-	WS_TAKING,
-	WS_TAKEN
+	Hidden,
+	Hiding,
+	Taking,
+	Taken
 };
 
 //-----------------------------------------------------------------------------
@@ -258,24 +291,45 @@ struct Unit : public EntityType<Unit>
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
-		raise_timer;
-	int refs, animation_state, level, gold, attack_id, in_arena, quest_id;
+	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, last_bash, alcohol, raise_timer, stamina_timer;
+	int refs, animation_state, level, gold, in_arena, quest_id, ai_mode;
 	FROZEN frozen;
 	ACTION action;
+	union ActionData
+	{
+		ActionData() {}
+		struct AttackAction
+		{
+			int index;
+			float power;
+			bool run, hitted;
+		} attack;
+		struct CastAction
+		{
+			Ability* ability;
+			Entity<Unit> target;
+		} cast;
+		struct DashAction
+		{
+			Ability* ability;
+			float rot;
+		} dash;
+		struct UseUsableAction
+		{
+			float rot;
+		} use_usable;
+	} act;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
 	MeshInstance* bow_instance;
 	const Item* used_item;
-	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
+	bool talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	Entity<Unit> summoner, look_target, action_unit;
-	int ai_mode;
+	Entity<Unit> summoner, look_target;
 	enum Busy
 	{
 		Busy_No,
@@ -288,7 +342,6 @@ struct Unit : public EntityType<Unit>
 	EntityInterpolator* interp;
 	UnitStats* stats;
 	StaminaAction stamina_action;
-	float stamina_timer;
 	TraderStock* stock;
 	vector<QuestDialog> dialogs;
 	vector<Event> events;
@@ -321,28 +374,29 @@ struct Unit : public EntityType<Unit>
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
 	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
 	void ConsumeItemAnim(const Consumable& cons);
+	void ConsumeItemS(const Item* item);
 	void UseItem(int index);
-	void HideWeapon();
+	void HideWeapon() { SetWeaponState(false, W_NONE, true); }
 	void TakeWeapon(WeaponType type);
 	float GetSphereRadius() const
 	{
 		float radius = data->mesh->head.radius;
 		if(data->type == UNIT_TYPE::HUMAN)
-			radius *= ((human_data->height - 1)*0.2f + 1.f);
+			radius *= ((human_data->height - 1) * 0.2f + 1.f);
 		return radius;
 	}
 	float GetUnitRadius() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 0.3f * ((human_data->height - 1)*0.2f + 1.f);
+			return 0.3f * ((human_data->height - 1) * 0.2f + 1.f);
 		else
 			return data->width;
 	}
 	Vec3 GetColliderPos() const
 	{
-		if(action != A_ANIMATION2)
+		if(action != A_USE_USABLE)
 			return pos;
-		else if(animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
+		else if(animation_state == AS_USE_USABLE_MOVE_TO_ENDPOINT)
 			return target_pos;
 		else
 			return target_pos2;
@@ -350,7 +404,7 @@ struct Unit : public EntityType<Unit>
 	float GetUnitHeight() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
+			return 1.73f * ((human_data->height - 1) * 0.2f + 1.f);
 		else
 			return data->mesh->head.bbox.SizeY();
 	}
@@ -402,7 +456,7 @@ struct Unit : public EntityType<Unit>
 		if(data->type == UNIT_TYPE::ANIMAL)
 			return false;
 		else
-			return (weapon_state == WS_HIDDEN);
+			return weapon_state == WeaponState::Hidden;
 	}
 	Vec3 GetLootCenter() const;
 
@@ -429,7 +483,7 @@ struct Unit : public EntityType<Unit>
 	}
 	bool CanRun() const
 	{
-		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !run_attack))
+		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !act.attack.run))
 			return false;
 		else
 			return !IsOverloaded();
@@ -439,22 +493,20 @@ struct Unit : public EntityType<Unit>
 	void RecalculateStamina();
 	bool CanBlock() const
 	{
-		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
+		return weapon_state == WeaponState::Taken && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
 
 	WeaponType GetHoldWeapon() const
 	{
 		switch(weapon_state)
 		{
-		case WS_TAKEN:
-		case WS_TAKING:
+		case WeaponState::Taken:
+		case WeaponState::Taking:
 			return weapon_taken;
-		case WS_HIDING:
+		case WeaponState::Hiding:
 			return weapon_hiding;
-		case WS_HIDDEN:
-			return W_NONE;
+		case WeaponState::Hidden:
 		default:
-			assert(0);
 			return W_NONE;
 		}
 	}
@@ -562,8 +614,8 @@ public:
 	bool IsUsingMp() const
 	{
 		if(data->clas)
-			return data->clas->mp_bar;
-		return false;
+			return IsSet(data->clas->flags, Class::F_MP_BAR);
+		return IsSet(data->flags2, F2_MP_BAR);
 	}
 	bool CanFollowWarp() const { return IsHero() && GetOrder() == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
@@ -640,7 +692,7 @@ public:
 	void SetKnownName(bool known);
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
-	float GetBlockSpeed() const;
+	float GetBlockSpeed() const { return 0.1f; }
 
 	float CalculateMagicResistance() const;
 	float GetPoisonResistance() const;
@@ -770,7 +822,7 @@ public:
 	bool CanTake(const Item* item, uint count = 1) const
 	{
 		assert(item && count);
-		return weight + item->weight*(int)count <= weight_max;
+		return weight + item->weight * (int)count <= weight_max;
 	}
 	const Item* GetIIndexItem(int i_index) const;
 
@@ -778,7 +830,7 @@ public:
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
+		return action == A_USE_USABLE && animation_state == AS_USE_USABLE_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;
@@ -805,7 +857,7 @@ public:
 	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
-		human_data->ApplyScale(data->mesh);
+		human_data->ApplyScale(mesh_inst);
 	}
 
 	int ItemsToSellWeight() const;
@@ -846,7 +898,8 @@ public:
 	{
 		NORMAL,
 		FALL,
-		INSTANT
+		INSTANT,
+		ON_LEAVE
 	};
 	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
 	void Fall();
@@ -859,7 +912,9 @@ public:
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
-	void SetWeaponState(bool takes_out, WeaponType type);
+	bool SetWeaponState(bool takes_out, WeaponType type, bool send);
+	void SetWeaponStateInstant(WeaponState weapon_state, WeaponType type);
+	void SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u, bool check_arena_attack = false) const;
@@ -899,17 +954,20 @@ public:
 	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
-	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }
-	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
+	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
+	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 	void RotateTo(const Vec3& pos, float dt);
 	void RotateTo(const Vec3& pos);
+	void RotateTo(float rot);
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
+	float GetAbilityPower(Ability& ability) const;
 	void CastSpell();
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
+	void ChangeBase(UnitData* ud, bool update_items = false);
 };
 
 //-----------------------------------------------------------------------------

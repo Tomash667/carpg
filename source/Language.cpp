@@ -9,7 +9,7 @@
 #include "Perk.h"
 #include "UnitData.h"
 #include "Building.h"
-#include "Action.h"
+#include "Ability.h"
 #include "BaseUsable.h"
 #include "UnitGroup.h"
 
@@ -36,7 +36,7 @@ enum Keyword
 	K_LOCATION_START,
 	K_LOCATION_END,
 	K_BUILDING,
-	K_ACTION,
+	K_ABILITY,
 	K_USABLE
 };
 
@@ -215,7 +215,7 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "location_start", K_LOCATION_START },
 		{ "location_end", K_LOCATION_END },
 		{ "building", K_BUILDING },
-		{ "action", K_ACTION },
+		{ "ability", K_ABILITY },
 		{ "usable", K_USABLE }
 		});
 
@@ -570,21 +570,21 @@ void Language::ParseObject(Tokenizer& t)
 			b->name = t.MustGetString();
 		}
 		break;
-	case K_ACTION:
-		// action id {
+	case K_ABILITY:
+		// ability id {
 		//		name "text"
 		//		desc "text"
 		// }
 		{
 			const string& id = t.MustGetText();
-			Action* action = Action::Find(id);
-			if(!action)
-				t.Throw("Invalid action '%s'.", id.c_str());
+			Ability* ability = Ability::Get(id);
+			if(!ability)
+				t.Throw("Invalid ability '%s'.", id.c_str());
 			t.Next();
 			t.AssertSymbol('{');
 			t.Next();
-			GetString(t, P_NAME, action->name);
-			GetString(t, P_DESC, action->desc);
+			GetString(t, P_NAME, ability->name);
+			GetString(t, P_DESC, ability->desc);
 			t.AssertSymbol('}');
 		}
 		break;
@@ -624,21 +624,6 @@ void Language::LoadLanguageFiles()
 
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
-
-	for(uint i = 0; i < Action::n_actions; ++i)
-	{
-		Action& action = Action::actions[i];
-		if(action.name.empty())
-		{
-			Warn("Action '%s': empty name.", action.id);
-			++errors;
-		}
-		if(action.desc.empty())
-		{
-			Warn("Action '%s': empty desc.", action.id);
-			++errors;
-		}
-	}
 
 	for(Building* building : Building::buildings)
 	{

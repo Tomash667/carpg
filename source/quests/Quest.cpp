@@ -10,6 +10,7 @@
 #include "GameGui.h"
 #include "LevelGui.h"
 #include "GameMessages.h"
+#include <scriptdictionary/scriptdictionary.h>
 
 //=================================================================================================
 Quest::Quest() : state(Hidden), prog(0), timeout(false)
@@ -32,7 +33,7 @@ void Quest::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest::Load(GameReader& f)
+Quest::LoadResult Quest::Load(GameReader& f)
 {
 	// type is read in QuestManager to create this instance
 	f >> state;
@@ -45,7 +46,7 @@ bool Quest::Load(GameReader& f)
 	f.ReadStringArray<byte, word>(msgs);
 	f >> timeout;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -113,7 +114,7 @@ void Quest_Dungeon::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Dungeon::Load(GameReader& f)
+Quest::LoadResult Quest_Dungeon::Load(GameReader& f)
 {
 	Quest::Load(f);
 
@@ -121,7 +122,7 @@ bool Quest_Dungeon::Load(GameReader& f)
 	f >> done;
 	f >> at_level;
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================
@@ -181,11 +182,18 @@ void Quest_Encounter::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Encounter::Load(GameReader& f)
+Quest::LoadResult Quest_Encounter::Load(GameReader& f)
 {
 	Quest::Load(f);
 
 	f >> enc;
 
-	return false;
+	return LoadResult::Ok;
+}
+
+//=================================================================================================
+void Quest::ConversionData::Add(cstring key, int value)
+{
+	asINT64 v = value;
+	dict->Set(key, v);
 }

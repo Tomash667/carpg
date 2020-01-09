@@ -32,9 +32,10 @@ class asIScriptFunction;
 class asIScriptObject;
 class asIScriptModule;
 class asITypeInfo;
+class CScriptDictionary;
 
 //-----------------------------------------------------------------------------
-class ActionPanel;
+class AbilityPanel;
 class Arena;
 class BitStreamReader;
 class BitStreamWriter;
@@ -52,6 +53,7 @@ class GameMessages;
 class GamePanel;
 class GamePanelContainer;
 class GameReader;
+class GameResources;
 class GameStats;
 class GameWriter;
 class InfoBox;
@@ -83,7 +85,8 @@ class World;
 class WorldMapGui;
 
 //-----------------------------------------------------------------------------
-struct Action;
+struct Ability;
+struct AbilityList;
 struct AIController;
 struct Amulet;
 struct Armor;
@@ -158,8 +161,6 @@ struct ScriptEvent;
 struct Shield;
 struct SoundPack;
 struct SpeechBubble;
-struct Spell;
-struct SpellList;
 struct StatProfile;
 struct Stock;
 struct TerrainTile;
@@ -235,6 +236,7 @@ namespace global
 	extern CommandParser* cmdp;
 	extern Game* game;
 	extern GameGui* game_gui;
+	extern GameResources* game_res;
 	extern GameStats* game_stats;
 	extern Level* game_level;
 	extern Net* net;

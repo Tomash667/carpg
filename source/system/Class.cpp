@@ -122,7 +122,7 @@ int Class::VerifyGroup(UnitGroup* group, bool crazy)
 ::Class* old::ConvertOldClass(int clas)
 {
 	cstring id;
-	switch(clas)
+	switch((old::Class)clas)
 	{
 	case old::Class::BARBARIAN:
 		id = "barbarian";

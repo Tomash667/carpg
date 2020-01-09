@@ -4,7 +4,6 @@
 #include "QuestScheme.h"
 #include "ScriptManager.h"
 #include "World.h"
-#include "Game.h"
 #include "Journal.h"
 #include "GameGui.h"
 #include "GameMessages.h"
@@ -13,7 +12,10 @@
 #include "City.h"
 #include "Encounter.h"
 #include "GroundItem.h"
+#include "Net.h"
+#include "DialogContext.h"
 #include <angelscript.h>
+#include <scriptdictionary\scriptdictionary.h>
 #pragma warning(error: 4062)
 
 Quest_Scripted::~Quest_Scripted()
@@ -131,7 +133,7 @@ void Quest_Scripted::Save(GameWriter& f)
 	}
 }
 
-bool Quest_Scripted::Load(GameReader& f)
+Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 {
 	Quest::Load(f);
 
@@ -212,7 +214,7 @@ bool Quest_Scripted::Load(GameReader& f)
 		}
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 GameDialog* Quest_Scripted::GetDialog(int type2)
@@ -269,6 +271,11 @@ void Quest_Scripted::SetProgress(int prog2)
 {
 	if(prog == prog2)
 		return;
+	if(in_upgrade)
+	{
+		prog = prog2;
+		return;
+	}
 	int prev = prog;
 	prog = prog2;
 	BeforeCall();
@@ -493,4 +500,41 @@ void Quest_Scripted::AddRumor(const string& str)
 void Quest_Scripted::RemoveRumor()
 {
 	quest_mgr->RemoveQuestRumor(id);
+}
+
+void Quest_Scripted::Upgrade(Quest* quest)
+{
+	// copy vars
+	state = quest->state;
+	name = quest->name;
+	prog = quest->prog;
+	id = quest->id;
+	start_time = quest->start_time;
+	start_loc = quest->start_loc;
+	msgs = quest->msgs;
+
+	// convert
+	ConversionData data;
+	data.dict = CScriptDictionary::Create(script_mgr->GetEngine());
+	quest->GetConversionData(data);
+	scheme = QuestScheme::TryGet(data.id);
+	if(!scheme || !scheme->f_upgrade)
+		throw Format("Missing upgrade quest '%s'.", data.id);
+
+	type = Q_SCRIPTED;
+	category = scheme->category;
+	CreateInstance();
+
+	// call method
+	in_upgrade = true;
+	BeforeCall();
+	script_mgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
+	{
+		if(stage == 0)
+			CHECKED(ctx->SetArgAddress(0, data.dict));
+	});
+	AfterCall();
+	in_upgrade = false;
+
+	data.dict->Release();
 }

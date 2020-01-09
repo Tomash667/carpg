@@ -11,6 +11,7 @@
 #include "World.h"
 #include "Level.h"
 #include "Team.h"
+#include "GameResources.h"
 
 //=================================================================================================
 void Quest_Bandits::Init()
@@ -137,7 +138,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			if(get_letter || Rand() % 3 != 0)
 			{
 				const Item* item = Item::Get("q_bandyci_list");
-				game->PreloadItem(item);
+				game_res->PreloadItem(item);
 				DialogContext::current->talker->AddItem(item, 1, true);
 			}
 			get_letter = true;
@@ -343,7 +344,7 @@ void Quest_Bandits::Save(GameWriter& f)
 }
 
 //=================================================================================================
-bool Quest_Bandits::Load(GameReader& f)
+Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
@@ -388,7 +389,7 @@ bool Quest_Bandits::Load(GameReader& f)
 		callback = WarpToThroneBanditBoss;
 	}
 
-	return true;
+	return LoadResult::Ok;
 }
 
 //=================================================================================================

@@ -7,6 +7,9 @@
     <Filter Include="scriptstdstring">
       <UniqueIdentifier>{35a02940-cf27-4e1d-b311-7bb0ef16e3ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scriptdictionary">
+      <UniqueIdentifier>{febd753a-2afb-41e5-a538-06de9364e621}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scriptarray\scriptarray.h">
@@ -14,6 +17,9 @@
     </ClInclude>
     <ClInclude Include="scriptstdstring\scriptstdstring.h">
       <Filter>scriptstdstring</Filter>
+    </ClInclude>
+    <ClInclude Include="scriptdictionary\scriptdictionary.h">
+      <Filter>scriptdictionary</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -25,6 +31,9 @@
     </ClCompile>
     <ClCompile Include="scriptstdstring\scriptstdstring_utils.cpp">
       <Filter>scriptstdstring</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptdictionary\scriptdictionary.cpp">
+      <Filter>scriptdictionary</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

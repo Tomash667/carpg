@@ -81,7 +81,7 @@ void City::Load(GameReader& f, bool local)
 
 	f >> citizens;
 	f >> citizens_world;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_12)
 		f >> target;
 	f >> flags;
 	f >> variant;
@@ -165,7 +165,8 @@ void City::Write(BitStreamWriter& f)
 //=================================================================================================
 bool City::Read(BitStreamReader& f)
 {
-	OutsideLocation::Read(f);
+	if(!OutsideLocation::Read(f))
+		return false;
 
 	// entry points
 	const int ENTRY_POINT_MIN_SIZE = 20;
@@ -660,7 +661,7 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 	buildings.clear();
 
 	// not required buildings
-	LocalVector2<Building*> buildings;
+	LocalVector<Building*> buildings;
 	GenerateCityBuildings(buildings.Get(), false);
 	tobuild.reserve(tobuild.size() + buildings.size());
 	for(Building* b : buildings)
@@ -683,5 +684,28 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 			flags |= HaveInn;
 		else if(tb.building->group == BuildingGroup::BG_ARENA)
 			flags |= HaveArena;
+	}
+}
+
+//=================================================================================================
+Vec3 CityBuilding::GetUnitPos()
+{
+	return Vec3(float(unit_pt.x) * 2 + 1, 0, float(unit_pt.y) * 2 + 1);
+}
+
+//=================================================================================================
+float CityBuilding::GetUnitRot()
+{
+	switch(rot)
+	{
+	default:
+	case GDIR_DOWN:
+		return 0.f;
+	case GDIR_LEFT:
+		return PI / 2;
+	case GDIR_UP:
+		return PI;
+	case GDIR_RIGHT:
+		return PI * 3 / 2;
 	}
 }

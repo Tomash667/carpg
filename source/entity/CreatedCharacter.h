@@ -46,6 +46,7 @@ struct CreatedCharacter
 		}
 	};
 
+	Class* clas;
 	vector<TakenPerk> taken_perks;
 	AttributeData a[(int)AttributeId::MAX];
 	SkillData s[(int)SkillId::MAX];

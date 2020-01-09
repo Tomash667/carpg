@@ -17,6 +17,7 @@
 #include "Game.h"
 #include "Team.h"
 #include "Pathfinding.h"
+#include "GameResources.h"
 
 // don't spawn objects near other objects to not block path
 const float EXTRA_RADIUS = 0.8f;
@@ -106,7 +107,7 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game_level->OnReenterLevel();
+		game_level->OnRevisitLevel();
 
 		// odtwórz jednostki
 		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
@@ -184,8 +185,6 @@ void InsideLocationGenerator::OnEnter()
 		if(game->devmode)
 			Info("Generated secret room.");
 
-		Room& r = *GetLevelData().rooms[0];
-
 		if(game->hardcore_mode)
 		{
 			Object* o = lvl.FindObject(BaseObject::Get("portal"));
@@ -216,6 +215,7 @@ void InsideLocationGenerator::OnEnter()
 			// dodaj kartkê (overkill sprawdzania!)
 			const Item* kartka = Item::Get("sekret_kartka2");
 			assert(kartka);
+			Room& r = *GetLevelData().rooms[0];
 			Chest* c = lvl.FindChestInRoom(r);
 			assert(c);
 			if(c)
@@ -344,7 +344,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	if(inside->HaveUpStairs())
 	{
 		Object* o = new Object;
-		o->mesh = game->aStairsUp;
+		o->mesh = game_res->aStairsUp;
 		o->pos = PtToPos(lvl.staircase_up);
 		o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 		o->scale = 1;
@@ -358,7 +358,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	if(inside->HaveDownStairs())
 	{
 		Object* o = new Object;
-		o->mesh = (lvl.staircase_down_in_wall ? game->aStairsDown2 : game->aStairsDown);
+		o->mesh = (lvl.staircase_down_in_wall ? game_res->aStairsDown2 : game_res->aStairsDown);
 		o->pos = PtToPos(lvl.staircase_down);
 		o->rot = Vec3(0, DirToRot(lvl.staircase_down_dir), 0);
 		o->scale = 1;
@@ -375,7 +375,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(p == BARS || p == BARS_FLOOR)
 			{
 				Object* o = new Object;
-				o->mesh = game->aGrating;
+				o->mesh = game_res->aGrating;
 				o->rot = Vec3(0, 0, 0);
 				o->pos = Vec3(float(x * 2), 0, float(y * 2));
 				o->scale = 1;
@@ -385,7 +385,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(p == BARS || p == BARS_CEILING)
 			{
 				Object* o = new Object;
-				o->mesh = game->aGrating;
+				o->mesh = game_res->aGrating;
 				o->rot = Vec3(0, 0, 0);
 				o->pos = Vec3(float(x * 2), 4, float(y * 2));
 				o->scale = 1;
@@ -395,9 +395,9 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(p == DOORS)
 			{
 				Object* o = new Object;
-				o->mesh = game->aDoorWall;
+				o->mesh = game_res->aDoorWall;
 				if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
-					o->mesh = game->aDoorWall2;
+					o->mesh = game_res->aDoorWall2;
 				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o->scale = 1;
 				o->base = nullptr;
@@ -439,8 +439,8 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->pos = o->pos;
 					door->rot = o->rot.y;
 					door->state = Door::Closed;
-					door->mesh_inst = new MeshInstance(game->aDoor);
-					door->mesh_inst->groups[0].speed = 2.f;
+					door->mesh_inst = new MeshInstance(game_res->aDoor);
+					door->mesh_inst->base_speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(game_level->shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -456,7 +456,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						door->locked = LOCK_ORCS;
 					else if(Rand() % 100 < base.door_open)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
@@ -1066,7 +1066,7 @@ void InsideLocationGenerator::RespawnTraps()
 void InsideLocationGenerator::CreateMinimap()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	TextureLock lock(game->tMinimap.tex);
+	TextureLock lock(game->tMinimap);
 
 	for(int y = 0; y < lvl.h; ++y)
 	{
@@ -1271,7 +1271,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					Door* door = lvl.FindDoor(Int2(x, y));
 					if(door && door->state == Door::Closed)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
@@ -1406,7 +1406,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 					Door* door = lvl.FindDoor(*it2);
 					if(door && door->state == Door::Closed)
 					{
-						door->state = Door::Open;
+						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);

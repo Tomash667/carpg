@@ -84,6 +84,7 @@ struct LevelArea
 // Temporary level area (used only for active level areas to hold temporary entities)
 struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
 {
+	LevelArea* area;
 	vector<Bullet> bullets;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*> tpes;
@@ -126,11 +127,14 @@ public:
 struct ForLocation
 {
 	ForLocation(int loc, int level = -1);
+	ForLocation(Location* loc, int level = -1);
 	ForLocation(const ForLocation& f) = delete;
 	~ForLocation();
 	ForLocation& operator = (const ForLocation& f) = delete;
 	LevelAreaContext* operator -> () { return ctx; }
 
 private:
+	void Setup(Location* loc, int level);
+
 	LevelAreaContext* ctx;
 };

@@ -25,7 +25,7 @@ public:
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
-	bool Load(GameReader& f) override;
+	LoadResult Load(GameReader& f) override;
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 
 private:

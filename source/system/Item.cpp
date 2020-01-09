@@ -4,7 +4,7 @@
 #include "Crc.h"
 #include "ResourceManager.h"
 #include "Net.h"
-#include "Game.h"
+#include "GameResources.h"
 #include "ScriptException.h"
 #include "Quest.h"
 #include "QuestManager.h"
@@ -44,7 +44,8 @@ vector<const Item*> items_to_add;
 Item& Item::operator = (const Item& i)
 {
 	assert(type == i.type);
-	mesh_id = i.mesh_id;
+	mesh = i.mesh;
+	tex = i.tex;
 	weight = i.weight;
 	value = i.value;
 	flags = i.flags;
@@ -263,7 +264,7 @@ float Item::GetEffectPower(EffectId effect) const
 //=================================================================================================
 void Item::CreateCopy(Item& item) const
 {
-	game->PreloadItem(this);
+	game_res->PreloadItem(this);
 
 	switch(type)
 	{
@@ -272,14 +273,13 @@ void Item::CreateCopy(Item& item) const
 			OtherItem& o = (OtherItem&)item;
 			const OtherItem& o2 = ToOther();
 			o.mesh = o2.mesh;
+			o.tex = o2.tex;
 			o.desc = o2.desc;
 			o.flags = o2.flags;
 			o.id = o2.id;
-			o.mesh_id = o2.mesh_id;
 			o.name = o2.name;
 			o.other_type = o2.other_type;
 			o.quest_id = o2.quest_id;
-			o.tex = o2.tex;
 			o.type = o2.type;
 			o.value = o2.value;
 			o.weight = o2.weight;
@@ -369,17 +369,11 @@ void Item::Validate(uint& err)
 			++err;
 			Error("Test: Missing book '%s' text.", item.id.c_str());
 		}
-
-		if(item.mesh_id.empty())
-		{
-			++err;
-			Error("Test: Missing item '%s' mesh/texture.", item.id.c_str());
-		}
 	}
 }
 
 //=================================================================================================
-const Item* StartItem::GetStartItem(SkillId skill, int value)
+const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 {
 	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
@@ -387,17 +381,46 @@ const Item* StartItem::GetStartItem(SkillId skill, int value)
 		return nullptr;
 	const Item* best = nullptr;
 	int best_value = -2;
+	if(mage)
+	{
+		auto start_it = it;
+		while(true)
+		{
+			if(it->mage)
+			{
+				if(it->value == HEIRLOOM)
+				{
+					if(value == HEIRLOOM)
+						return it->item;
+				}
+				else if(it->value > best_value && it->value <= value)
+				{
+					best = it->item;
+					best_value = it->value;
+				}
+			}
+			++it;
+			if(it == StartItem::start_items.end() || it->skill != skill)
+				break;
+		}
+		if(best)
+			return best;
+		it = start_it;
+	}
 	while(true)
 	{
-		if(it->value == HEIRLOOM)
+		if(!it->mage)
 		{
-			if(value == HEIRLOOM)
-				return it->item;
-		}
-		else if(it->value > best_value && it->value <= value)
-		{
-			best = it->item;
-			best_value = it->value;
+			if(it->value == HEIRLOOM)
+			{
+				if(value == HEIRLOOM)
+					return it->item;
+			}
+			else if(it->value > best_value && it->value <= value)
+			{
+				best = it->item;
+				best_value = it->value;
+			}
 		}
 		++it;
 		if(it == StartItem::start_items.end() || it->skill != skill)
