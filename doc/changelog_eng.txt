@@ -31,6 +31,7 @@ Version 0.13 (???):
 - missing floor/ceiling collider
 - ai escape only to next room then stays
 - crash when render initialization failed
+- rare crash when spawning heroes in dungeon
 
 --------------------------------------------------------------------------------
 Version 0.12.2 (2019-10-27):

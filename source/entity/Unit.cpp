@@ -7462,7 +7462,7 @@ void Unit::Update(float dt)
 				action = A_NONE;
 				animation = ANI_BATTLE;
 			}
-			if(IsAI())
+			if(Net::IsLocal() && IsAI())
 				ai->next_attack = Random(0.25f, 0.75f);
 		}
 		break;
