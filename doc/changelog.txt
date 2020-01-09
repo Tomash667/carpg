@@ -31,6 +31,7 @@ Wersja 0.13 (???):
 - brak fizyki pod³ogi/sufitu w budynkach
 - ai ucieka tylko do nastêpnego pokoju, potem stoi w miejscu
 - crash gdy s¹ b³êdy inicjalizacji rendera
+- rzadki crash przy generowaniu bohaterów w podziemiach
 
 --------------------------------------------------------------------------------
 Wersja 0.12.2 (2019-10-27):

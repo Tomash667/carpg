@@ -1282,14 +1282,16 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// create heroes
-	int count = Random(3, 4);
 	LocalVector<Unit*> heroes;
 	Room* room;
 	RoomGroup* group = groups[depth];
 	if(group->rooms.size() == 1u)
 		room = lvl.rooms[group->rooms.front()];
+	else if(depth == 0)
+		room = lvl.GetUpStairsRoom();
 	else
 		room = lvl.GetConnectingRooms(groups[depth - 1], group).second;
+	int count = Random(3, 4);
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
