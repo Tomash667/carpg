@@ -338,14 +338,10 @@ bool RunInstallScripts()
 //=================================================================================================
 void LoadResourcesConfig()
 {
-	g_system_dir = "system";
-
 	Config cfg;
-	if(cfg.Load("resource.cfg") == Config::OK)
-	{
-		g_system_dir = cfg.GetString("system", "system");
-		render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
-	}
+	cfg.Load("resource.cfg");
+	g_system_dir = cfg.GetString("system", "system");
+	render->SetShadersDir(cfg.GetString("shaders", "system/shaders").c_str());
 }
 
 //=================================================================================================

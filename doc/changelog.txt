@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.13 (???):
+Wersja 0.13 (2020-01-11):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5 lub starszej
 + kontynuacja fabu³y
 + mo¿na wybraæ klasê mag

@@ -54,7 +54,7 @@ void Bullet::Load(FileReader& f)
 	f >> yspeed;
 	f >> poison_attack;
 	owner = Unit::GetById(f.Read<int>());
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_13)
 	{
 		uint ability_hash = f.Read<uint>();
 		if(ability_hash != 0)
@@ -84,7 +84,7 @@ void Bullet::Load(FileReader& f)
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 	{
 		TrailParticleEmitter* old_trail = TrailParticleEmitter::GetById(f.Read<int>());
 		if(old_trail)

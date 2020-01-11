@@ -27,6 +27,7 @@ dir "../bin/data" "data"
 
 // copy system
 dir "../system" "system"
+dir "../carpglib/shaders" "system/shaders"
 
 // copy pdb
 pdb "../bin/carpg.pdb"

@@ -2069,7 +2069,7 @@ void Unit::Load(GameReader& f, bool local)
 		bool old_run_attack = false, old_hitted = false;
 
 		CreateMesh(CREATE_MESH::LOAD);
-		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
+		mesh_inst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 		f >> animation;
 		f >> current_animation;
 
@@ -2077,20 +2077,20 @@ void Unit::Load(GameReader& f, bool local)
 		f >> speed;
 		f >> prev_speed;
 		f >> animation_state;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_13)
 			f >> ai_mode; // old attack_id, assigned to unused variable at client side to pass to AIController
 		f >> action;
 		f >> weapon_taken;
 		f >> weapon_hiding;
 		f >> weapon_state;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_13)
 			f >> old_hitted;
 		f >> hurt_timer;
 		f >> target_pos;
 		f >> target_pos2;
 		f >> talking;
 		f >> talk_timer;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_13)
 		{
 			f >> old_attack_power;
 			f >> old_run_attack;
@@ -2102,7 +2102,7 @@ void Unit::Load(GameReader& f, bool local)
 		switch(action)
 		{
 		case A_ATTACK:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_13)
 			{
 				f >> act.attack.index;
 				f >> act.attack.power;
@@ -2118,7 +2118,7 @@ void Unit::Load(GameReader& f, bool local)
 			}
 			break;
 		case A_CAST:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_13)
 			{
 				act.cast.ability = Ability::Get(f.Read<uint>());
 				f >> act.cast.target;
@@ -2136,7 +2136,7 @@ void Unit::Load(GameReader& f, bool local)
 			}
 			break;
 		case A_DASH:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_13)
 				act.dash.ability = Ability::Get(f.Read<uint>());
 			else
 				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");

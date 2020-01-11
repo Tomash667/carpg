@@ -3668,7 +3668,7 @@ better_items {
 alias sword_semur sword_unique
 alias bow_angel bow_unique
 alias shield_wall shield_unique
-// renamed in V_DEV
+// renamed in V_0_13
 alias wand_novice wand_1
 alias wand_adept wand_2
 alias wand_expert wand_3

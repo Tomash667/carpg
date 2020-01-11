@@ -177,7 +177,7 @@ void AIController::Load(GameReader& f)
 	switch(state)
 	{
 	case Cast:
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_13)
 			st.cast.ability = Ability::Get(f.Read<uint>());
 		else
 		{
@@ -196,7 +196,7 @@ void AIController::Load(GameReader& f)
 		}
 		break;
 	case Idle:
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_13)
 			LoadIdleAction(f, st.idle, true);
 		break;
 	case SearchEnemy:
@@ -212,7 +212,7 @@ void AIController::Load(GameReader& f)
 	else
 		have_mp_potion = HavePotion::Check;
 	f >> potion;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 	{
 		if(state == Idle)
 			LoadIdleAction(f, st.idle, true);
@@ -224,7 +224,7 @@ void AIController::Load(GameReader& f)
 	}
 	f >> city_wander;
 	f >> loc_timer;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 		f.Skip<float>(); // old shoot_yspeed
 	if(LOAD_VERSION < V_0_12)
 	{

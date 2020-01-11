@@ -52,7 +52,7 @@ void Door::Load(FileReader& f, bool local)
 	if(local)
 	{
 		mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
+		mesh_inst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 		mesh_inst->base_speed = 2.f;
 
 		phy = new btCollisionObject;

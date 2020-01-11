@@ -613,7 +613,7 @@ void PlayerController::Load(FileReader& f)
 	}
 
 	// abilities
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_13)
 	{
 		abilities.resize(f.Read<byte>());
 		for(PlayerAbility& ab : abilities)

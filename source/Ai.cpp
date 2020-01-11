@@ -1983,7 +1983,7 @@ void Game::UpdateAi(float dt)
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						Room* room = ai.st.search.room;
-						if(!room) // pre V_DEV
+						if(!room) // pre V_0_13
 							room = lvl.GetNearestRoom(u.pos);
 						ai.st.search.room = room->connected[Rand() % room->connected.size()];
 						ai.target_last_pos = ai.st.search.room->GetRandomPos(u.GetUnitRadius());
