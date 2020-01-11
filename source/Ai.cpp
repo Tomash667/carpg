@@ -1482,7 +1482,7 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_RunRegion:
 							if(Vec3::Distance2d(u.pos, ai.st.idle.region.pos) < u.GetUnitRadius() * 2)
 							{
-								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit)
+								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit) && u.area == ai.st.idle.region.area
 									&& ai.st.idle.region.area->area_type == LevelArea::Type::Outside && !ai.st.idle.region.exit)
 								{
 									// in exit area, go to border

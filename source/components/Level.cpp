@@ -2949,14 +2949,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 				}
 			}
 			RemoveNullElements(area.units);
-			auto from = std::remove_if(area.items.begin(), area.items.end(), RemoveRandomPred<GroundItem*>(days, 0, 10));
-			auto end = area.items.end();
-			if(from != end)
-			{
-				for(vector<GroundItem*>::iterator it = from; it != end; ++it)
-					delete *it;
-				area.items.erase(from, end);
-			}
+			DeleteElements(area.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
 		}
 		else
 		{
