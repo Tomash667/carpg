@@ -1026,11 +1026,11 @@ NamespaceBuilder ScriptManager::WithNamespace(cstring name, void* auxiliary)
 VarsContainer* ScriptManager::GetVars(Unit* unit)
 {
 	assert(unit);
-	auto it = unit_vars.lower_bound(unit);
-	if(it == unit_vars.end() || it->first != unit)
+	auto it = unit_vars.find(unit);
+	if(it == unit_vars.end())
 	{
 		VarsContainer* vars = new VarsContainer;
-		unit_vars.insert(it, std::unordered_map<Unit*, VarsContainer*>::value_type(unit, vars));
+		unit_vars.insert(std::unordered_map<Unit*, VarsContainer*>::value_type(unit, vars));
 		return vars;
 	}
 	else

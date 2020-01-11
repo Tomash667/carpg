@@ -28,7 +28,7 @@ enum SAVE_VERSION
 	V_NEXT = 19,
 
 	// save version used by saves
-	V_CURRENT = V_0_13,
+	V_CURRENT = V_NEXT,
 
 	// use this versions in development on different branches
 	V_MAIN = V_NEXT, // main bugfix branch

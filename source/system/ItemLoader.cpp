@@ -304,8 +304,7 @@ void ItemLoader::Finalize()
 //=================================================================================================
 void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 {
-	ItemsMap::iterator it = Item::items.lower_bound(id.c_str());
-	if(it != Item::items.end() && id == it->first)
+	if(Item::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	// create
@@ -660,7 +659,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		LoadError("No mesh/texture.");
 
 	Item* item_ptr = item.Pin();
-	Item::items.insert(it, ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
+	Item::items.insert(ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
 
 	switch(item_ptr->type)
 	{
