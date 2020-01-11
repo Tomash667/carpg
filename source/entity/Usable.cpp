@@ -100,7 +100,7 @@ void Usable::Load(FileReader& f, bool local)
 		f.Skip<int>(); // old netid
 	if(base->variants)
 		f >> variant;
-	if(LOAD_VERSION >= V_0_6 && IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;
 		container->Load(f);

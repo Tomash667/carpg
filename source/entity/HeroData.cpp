@@ -108,10 +108,7 @@ void HeroData::Load(FileReader& f)
 		f >> free;
 		type = free ? HeroType::Visitor : HeroType::Normal;
 	}
-	if(LOAD_VERSION >= V_0_6)
-		f >> lost_pvp;
-	else
-		lost_pvp = false;
+	f >> lost_pvp;
 	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
 	else

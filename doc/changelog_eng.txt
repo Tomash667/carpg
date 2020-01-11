@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.14 (???):
+! cannot load saves from version 0.5.1 or older
+
+--------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):
 ! cannot load saves from version 0.5 or older
 + continued storyline
