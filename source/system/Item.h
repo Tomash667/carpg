@@ -35,6 +35,7 @@ enum ITEM_FLAGS
 	ITEM_ALPHA = 1 << 16, // item require alpha test
 	ITEM_MAGIC_SCROLL = 1 << 17,
 	ITEM_WAND = 1 << 18, // cast magic bolts instead of attacking
+	ITEM_INGREDIENT = 1 << 19, // shows in crafting panel
 };
 
 //-----------------------------------------------------------------------------
@@ -540,6 +541,20 @@ struct StartItem
 
 	static vector<StartItem> start_items;
 	static const Item* GetStartItem(SkillId skill, int value, bool mage);
+};
+
+//-----------------------------------------------------------------------------
+struct Receipt
+{
+	string id;
+	const Item* result;
+	vector<pair<const Item*, uint>> items;
+	int skill;
+
+	Receipt() : result(nullptr), skill(0) {}
+
+	static vector<Receipt*> receipts;
+	static Receipt* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------

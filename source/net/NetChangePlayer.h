@@ -52,6 +52,7 @@ struct NetChangePlayer
 		SOUND, // play sound [int(id)-sound id (0-gold)]
 		ADD_ABILITY, // add ability to player [uint(ability->hash)]
 		REMOVE_ABILITY, // remove ability from player [uint(ability->hash)]
+		AFTER_CRAFT, // after crafting - update ingredients, play sound
 
 		MAX
 	} type;

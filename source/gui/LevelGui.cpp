@@ -29,6 +29,7 @@
 #include "Engine.h"
 #include "Quest.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.1f;
@@ -1010,7 +1011,7 @@ void LevelGui::Update(float dt)
 	sidebar_state[(int)SideButtonId::Menu] = 0;
 
 	bool anything = use_cursor;
-	if(game_gui->inventory->gp_trade->visible || game_gui->book->visible)
+	if(game_gui->inventory->gp_trade->visible || game_gui->book->visible || game_gui->craft->visible)
 		anything = true;
 	bool show_tooltips = anything;
 	if(!anything)
@@ -1635,7 +1636,8 @@ bool LevelGui::HavePanelOpen() const
 		|| game_gui->team->visible
 		|| game_gui->journal->visible
 		|| game_gui->minimap->visible
-		|| game_gui->ability->visible;
+		|| game_gui->ability->visible
+		|| game_gui->craft->visible;
 }
 
 //=================================================================================================
@@ -1659,6 +1661,8 @@ void LevelGui::ClosePanels(bool close_mp_box)
 		game_gui->ability->Hide();
 	if(game_gui->book->visible)
 		game_gui->book->Hide();
+	if(game_gui->craft->visible)
+		game_gui->craft->Hide();
 }
 
 //=================================================================================================
@@ -1694,6 +1698,8 @@ OpenPanel LevelGui::GetOpenPanel()
 		return OpenPanel::Ability;
 	else if(game_gui->book->visible)
 		return OpenPanel::Book;
+	else if(game_gui->craft->visible)
+		return OpenPanel::Craft;
 	else
 		return OpenPanel::None;
 }
@@ -1733,6 +1739,9 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		break;
 	case OpenPanel::Book:
 		game_gui->book->Hide();
+		break;
+	case OpenPanel::Craft:
+		game_gui->craft->Hide();
 		break;
 	}
 

@@ -65,6 +65,7 @@ enum class TrainWhat
 	CastCleric, // player cast cleric spell [value]
 	CastMage, // player cast mage spell [value]
 	Mana, // player uses mana [value]
+	Craft, // player craft potion [value]
 };
 
 //-----------------------------------------------------------------------------

@@ -168,6 +168,7 @@
     <ClInclude Include="generator\OutsideLocationGenerator.h" />
     <ClInclude Include="generator\SecretLocationGenerator.h" />
     <ClInclude Include="generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="gui\CraftPanel.h" />
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
@@ -329,6 +330,7 @@
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\SceneNode.cpp" />
     <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
     <ClCompile Include="net\NetClient.cpp" />
     <ClCompile Include="net\NetServer.cpp" />

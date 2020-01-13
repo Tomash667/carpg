@@ -40,6 +40,7 @@
 #include "GameFile.h"
 #include "SaveState.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 const float CHANGE_LEVEL_TIMER = 5.f;
 
@@ -3286,6 +3287,29 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				Error("Update server: Broken CAST_SPELL from %s.", info.name.c_str());
 			info.u->animation_state = AS_CAST_TRIGGER;
 			break;
+		// craft item
+		case NetChange::CRAFT:
+			{
+				const string& receipt_id = f.ReadString1();
+				uint count = f.Read<uint>();
+				if(!f)
+				{
+					Error("Update server: Broken CRAFT from %s.", info.name.c_str());
+					break;
+				}
+				Receipt* receipt = Receipt::TryGet(receipt_id);
+				if(!receipt)
+				{
+					Error("Update server: CRAFT, invalid receipt '%s'.", receipt_id.c_str());
+					break;
+				}
+				if(count > 0)
+				{
+					if(!game_gui->craft->DoPlayerCraft(player, receipt, count))
+						Error("Update server: CRAFT, missing ingredients to craft %s.", receipt_id.c_str());
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3816,6 +3840,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::START_ARENA_COMBAT:
 		case NetChangePlayer::EXIT_ARENA:
 		case NetChangePlayer::END_FALLBACK:
+		case NetChangePlayer::AFTER_CRAFT:
 			break;
 		case NetChangePlayer::START_TRADE:
 			f << c.id;

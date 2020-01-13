@@ -39,7 +39,7 @@ enum class Perk
 	Talent, // +5 attrib, +1 apt
 	Skilled, // +3 skill points
 	SkillFocus, // +5 skill, +1 apt (only for skills with value >= 0)
-	AlchemistApprentice, // more potions
+	AlchemistApprentice, // +10 alchemy, potions & ladle
 	Wealthy, // +2.5k gold
 	VeryWealthy, // [C] +50k gold
 	FamilyHeirloom, // good starting item
@@ -59,7 +59,10 @@ enum class Perk
 	ManaHarmony, // (90 wis) +X mp reg
 	MagicAdept, // (60 int) +magic power
 
-	Max
+	// mixed - perks are saved by id so can't reorder currently
+	TravelingMerchant, // +10 haggle, more gold
+
+	Max // max 256, saved as byte
 };
 
 //-----------------------------------------------------------------------------
@@ -68,8 +71,9 @@ struct PerkInfo
 	enum Flags
 	{
 		Flaw = 1 << 0,
-		History = 1 << 1,
-		RequireFormat = 1 << 2
+		Start = 1 << 1,
+		History = 1 << 2,
+		RequireFormat = 1 << 3
 	};
 
 	enum ValueType

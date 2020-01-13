@@ -111,6 +111,18 @@ dialog alchemist
 	}
 	choice 4
 		trade
+	choice 11
+	{
+		talk 12
+		choice 13
+		{
+			special "train/alchemy"
+			end
+		}
+		escape choice 14
+			restart
+		show_choices
+	}
 	choice 5
 	{
 		talk 6

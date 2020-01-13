@@ -62,6 +62,10 @@ dialog alchemist {
 	}
 	9 "End dialog"
 	10 "I see that you know a thing or two about alchemy. I have special prices for you."
+	11 "Training"
+	12 "I can teach you how to brew potions better. The training lasts 10 days and costs 200 gold. Are you still interested?"
+	13 "$train_lab/alchemy$"
+	14 "Cancel"
 }
 
 //==============================================================================

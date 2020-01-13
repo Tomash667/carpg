@@ -602,6 +602,9 @@
     <ClCompile Include="entity\SceneNode.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="gui\CraftPanel.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1192,6 +1195,9 @@
     </ClInclude>
     <ClInclude Include="system\RequiredLoader.h">
       <Filter>system\required</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\CraftPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

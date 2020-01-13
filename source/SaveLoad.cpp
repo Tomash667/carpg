@@ -48,6 +48,7 @@
 #include "CommandParser.h"
 #include "GameResources.h"
 #include "AbilityPanel.h"
+#include "CraftPanel.h"
 
 enum SaveFlags
 {
@@ -958,7 +959,11 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	if(game_state2 == GS_LEVEL)
+	{
 		SetMusic();
+		if(pc->unit->usable && IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+			game_gui->craft->Show();
+	}
 	else
 		SetMusic(MusicType::Travel);
 	game_state = game_state2;

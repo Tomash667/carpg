@@ -986,3 +986,9 @@ abilities = "Abilities:"
 other = "Other:"
 mana = "mana"
 stamina = "stamina"
+
+[CraftPanel]
+alchemy = "Alchemy"
+craft = "Craft"
+craftCount = "Craft how many?"
+ingredients = "Ingredients"

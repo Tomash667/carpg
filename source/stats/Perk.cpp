@@ -17,21 +17,21 @@ inline constexpr T PrevEnum(T val)
 //-----------------------------------------------------------------------------
 PerkInfo PerkInfo::perks[] = {
 	// negative starting perks
-	PerkInfo(Perk::BadBack, "bad_back", PerkInfo::Flaw | PerkInfo::History, 0),
-	PerkInfo(Perk::ChronicDisease, "chronic_disease", PerkInfo::Flaw | PerkInfo::History, 0),
-	PerkInfo(Perk::Sluggish, "sluggish", PerkInfo::Flaw | PerkInfo::History, 0),
-	PerkInfo(Perk::SlowLearner, "slow_learner", PerkInfo::Flaw | PerkInfo::History, 0),
-	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::History, 0),
-	PerkInfo(Perk::Poor, "poor", PerkInfo::Flaw | PerkInfo::History, 0),
+	PerkInfo(Perk::BadBack, "bad_back", PerkInfo::Flaw | PerkInfo::Start, 0),
+	PerkInfo(Perk::ChronicDisease, "chronic_disease", PerkInfo::Flaw | PerkInfo::Start, 0),
+	PerkInfo(Perk::Sluggish, "sluggish", PerkInfo::Flaw | PerkInfo::Start, 0),
+	PerkInfo(Perk::SlowLearner, "slow_learner", PerkInfo::Flaw | PerkInfo::Start, 0),
+	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::Start, 0),
+	PerkInfo(Perk::Poor, "poor", PerkInfo::Flaw | PerkInfo::Start, 0),
 	// positive starting perks
-	PerkInfo(Perk::Talent, "talent", PerkInfo::History | PerkInfo::RequireFormat, 0, PerkInfo::Attribute),
-	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History, 0),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, 0, PerkInfo::Skill),
-	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History, 0),
-	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History, 0),
-	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History, 0),
-	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History, 0),
-	PerkInfo(Perk::Leader, "leader", PerkInfo::History, 0),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Start | PerkInfo::RequireFormat, 0, PerkInfo::Attribute),
+	PerkInfo(Perk::Skilled, "skilled", PerkInfo::Start, 0),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Start | PerkInfo::RequireFormat, 0, PerkInfo::Skill),
+	PerkInfo(Perk::AlchemistApprentice, "alchemist_apprentice", PerkInfo::Start | PerkInfo::History, 0),
+	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::Start, 0),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::Start, 0),
+	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::Start, 0),
+	PerkInfo(Perk::Leader, "leader", PerkInfo::Start, 0),
 	// normal perks
 	PerkInfo(Perk::StrongBack, "strong_back", 0, 2),
 	PerkInfo(Perk::Aggressive, "aggressive", 0, 2),
@@ -44,7 +44,9 @@ PerkInfo PerkInfo::perks[] = {
 	PerkInfo(Perk::Energetic, "energetic", 0, 2),
 	PerkInfo(Perk::StrongAura, "strong_aura", 0, 2),
 	PerkInfo(Perk::ManaHarmony, "mana_harmony", 0, 5),
-	PerkInfo(Perk::MagicAdept, "magic_adept", 0, 2)
+	PerkInfo(Perk::MagicAdept, "magic_adept", 0, 2),
+	// mixed perks
+	PerkInfo(Perk::TravelingMerchant, "traveling_merchant", PerkInfo::Start | PerkInfo::History, 0)
 };
 
 //-----------------------------------------------------------------------------
@@ -278,6 +280,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::Skilled:
 		return !ctx.HavePerk(Perk::SlowLearner);
 	case Perk::AlchemistApprentice:
+	case Perk::TravelingMerchant:
 		return true;
 	case Perk::Talent:
 		if(ctx.validate)
@@ -339,7 +342,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::ManaHarmony:
 		return ctx.Have(AttributeId::WIS, 90);
 	case Perk::MagicAdept:
-		return ctx.Have(AttributeId::INT, 60);
+		return ctx.Have(AttributeId::INT, 60) && !ctx.HavePerk(Perk::SlowLearner);
 	default:
 		assert(0);
 		return true;
@@ -408,6 +411,9 @@ void TakenPerk::Apply(PerkContext& ctx)
 	case Perk::SkillFocus:
 		ctx.Mod((SkillId)value, 5, true);
 		break;
+	case Perk::AlchemistApprentice:
+		ctx.Mod(SkillId::ALCHEMY, 10, true);
+		break;
 	case Perk::StrongBack:
 		ctx.AddEffect(perk, EffectId::Carry, 1.25f);
 		ctx.AddRequired(AttributeId::STR);
@@ -456,6 +462,11 @@ void TakenPerk::Apply(PerkContext& ctx)
 	case Perk::MagicAdept:
 		ctx.AddEffect(perk, EffectId::MagicPower, 5.f);
 		ctx.AddRequired(AttributeId::INT);
+		break;
+	case Perk::TravelingMerchant:
+		ctx.Mod(SkillId::HAGGLE, 10, true);
+		if(ctx.pc && ctx.startup)
+			ctx.pc->unit->gold += 500;
 		break;
 	}
 
@@ -508,6 +519,9 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::SkillFocus:
 		ctx.Mod((SkillId)value, -5, false);
 		break;
+	case Perk::AlchemistApprentice:
+		ctx.Mod(SkillId::ALCHEMY, -10, false);
+		break;
 	case Perk::StrongBack:
 	case Perk::Aggressive:
 		ctx.RemoveRequired(AttributeId::STR);
@@ -537,6 +551,9 @@ void TakenPerk::Remove(PerkContext& ctx)
 		break;
 	case Perk::MagicAdept:
 		ctx.RemoveRequired(AttributeId::INT);
+		break;
+	case Perk::TravelingMerchant:
+		ctx.Mod(SkillId::HAGGLE, -10, false);
 		break;
 	}
 

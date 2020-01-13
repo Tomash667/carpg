@@ -984,3 +984,9 @@ abilities = "Zdolnoœci:"
 other = "Pozosta³e:"
 mana = "many"
 stamina = "wytrzyma³oœci"
+
+[CraftPanel]
+alchemy = "Alchemia"
+craft = "Stwórz"
+craftCount = "Ile stworzyæ?"
+ingredients = "Sk³adniki"

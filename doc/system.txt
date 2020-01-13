@@ -165,7 +165,7 @@ New multiplayer game
 							| Step, ReadWorldData, Step (net_state = 0)
 							| <- ID_READY
  ID_PLAYER_START_DATA ->	|
-							| Step, ReadPlayerData, Step/LoadResources (second if starting on worldmap; net_state = 1)
+							| Step, ReadPlayerStartData, Step/LoadResources (second if starting on worldmap; net_state = 1)
 							| <- ID_READY
 *ID_CHANGE_LEVEL ->			|
  or ID_START (worldmap) ----+--------------------------------------> DONE

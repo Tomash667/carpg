@@ -13,6 +13,7 @@ struct BaseUsable : public BaseObject
 		SLOW_STAMINA_RESTORE = 1 << 1,
 		CONTAINER = 1 << 2,
 		IS_BENCH = 1 << 3, // hardcoded to use variant in city
+		ALCHEMY = 1 << 4
 	};
 
 	string anim, name;

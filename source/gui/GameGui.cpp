@@ -37,16 +37,17 @@
 #include "Render.h"
 #include "Notifications.h"
 #include "LayoutLoader.h"
+#include "CraftPanel.h"
 
 GameGui* global::game_gui;
 FontPtr GameGui::font, GameGui::font_small, GameGui::font_big;
 extern string g_system_dir;
 
 //=================================================================================================
-GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
-journal(nullptr), minimap(nullptr), ability(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
-console(nullptr), game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr),
-pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
+GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
+ability(nullptr), book(nullptr), craft(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr), console(nullptr),
+game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr), pick_server(nullptr),
+server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
 {
 }
 
@@ -62,6 +63,7 @@ GameGui::~GameGui()
 	delete minimap;
 	delete ability;
 	delete book;
+	delete craft;
 	delete messages;
 	delete mp_box;
 	delete world_map;
@@ -132,6 +134,9 @@ void GameGui::Init()
 
 	book = new BookPanel;
 	level_gui->Add(book);
+
+	craft = new CraftPanel;
+	level_gui->Add(craft);
 
 	messages = new GameMessages;
 
@@ -207,6 +212,7 @@ void GameGui::LoadLanguage()
 
 	ability->LoadLanguage();
 	controls->LoadLanguage();
+	craft->LoadLanguage();
 	create_character->LoadLanguage();
 	create_server->LoadLanguage();
 	level_gui->LoadLanguage();
@@ -234,6 +240,7 @@ void GameGui::LoadData()
 	ability->LoadData();
 	book->LoadData();
 	console->LoadData();
+	craft->LoadData();
 	create_character->LoadData();
 	level_gui->LoadData();
 	game_menu->LoadData();
@@ -312,6 +319,7 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Ability:
 		case OpenPanel::Journal:
 		case OpenPanel::Book:
+		case OpenPanel::Craft:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
@@ -340,6 +348,7 @@ void GameGui::UpdateGui(float dt)
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Journal:
+		case OpenPanel::Craft:
 			GKey.allow_input = GameKeys::ALLOW_NONE;
 			break;
 		}
@@ -408,6 +417,7 @@ void GameGui::OnResize()
 	if(level_gui)
 		level_gui->PositionPanels();
 	console->Event(GuiEvent_WindowResize);
+	craft->Event(GuiEvent_WindowResize);
 }
 
 //=================================================================================================

@@ -101,7 +101,7 @@ attribute dex {
 }
 attribute int {
 	name "Inteligencja"
-	desc "\tZwiêksza si³ê czarów maga i szybkoœæ nauki.\n\tWp³ywa na umiejêtnoœci: mistyczna magia."
+	desc "\tZwiêksza si³ê czarów maga i szybkoœæ nauki.\n\tWp³ywa na umiejêtnoœci: mistyczna magia, alchemia."
 }
 attribute wis {
 	name "M¹droœæ"
@@ -208,9 +208,9 @@ perk skill_focus {
 	name "Skupienie na umiejêtnoœci"
 	desc "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów. Przyœpiesza szybkoœæ zdobywania tej umiejêtnoœci."
 }
-perk alchemist {
+perk alchemist_apprentice {
 	name "Uczeñ alchemika"
-	desc "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale za to zdoby³eœ spor¹ liczbê mikstur."
+	desc "Pracowa³eœ jako uczeñ alchemika. Znasz siê na podstawach alchemii (+10) i pod czujnym okiem mistrza uwarzy³eœ spor¹ liczbê mikstur."
 }
 perk wealthy {
 	name "Bogaty"
@@ -275,6 +275,10 @@ perk mana_harmony {
 perk magic_adept {
 	name "Adept magii"
 	desc "Zwiêksza obra¿enia od czarów."
+}
+perk traveling_merchant {
+	name "Uczeñ wêdrownego kupca"
+	desc "W m³odoœci spêdzi³eœ kilka lat podró¿uj¹c wraz z wêdrownymi kupcami. Znasz siê na targowaniu (+10) i rozpoczynasz maj¹c o 500 sztuk z³ota wiêcej."
 }
 
 //------------------------------------------------------------------------------

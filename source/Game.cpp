@@ -5331,6 +5331,8 @@ void Game::LeaveLevel(bool clear)
 			InsideLocationLevel& lvl = inside->GetLevelData();
 			Room::Free(lvl.rooms);
 		}
+		if(clear)
+			pc = nullptr;
 	}
 
 	ais.clear();
@@ -5342,10 +5344,10 @@ void Game::LeaveLevel(bool clear)
 	game_gui->CloseAllPanels();
 
 	game_level->camera.Reset();
-	pc->data.rot_buf = 0.f;
+	PlayerController::data.rot_buf = 0.f;
 	dialog_context.dialog_mode = false;
 	game_gui->inventory->mode = I_NONE;
-	pc->data.before_player = BP_NONE;
+	PlayerController::data.before_player = BP_NONE;
 }
 
 void Game::LeaveLevel(LevelArea& area, bool clear)

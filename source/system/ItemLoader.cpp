@@ -24,7 +24,8 @@ enum Group
 	G_BOOK_SCHEME_PROPERTY,
 	G_SKILL,
 	G_EFFECT,
-	G_TAG
+	G_TAG,
+	G_RECEIPT
 };
 
 enum Property
@@ -74,6 +75,13 @@ enum BookSchemeProperty
 	BSP_NEXT
 };
 
+enum ReceiptProperty
+{
+	RP_RESULT,
+	RP_ITEMS,
+	RP_SKILL
+};
+
 //=================================================================================================
 void ItemLoader::DoLoading()
 {
@@ -92,6 +100,7 @@ void ItemLoader::Cleanup()
 	DeleteElements(ItemList::lists);
 	DeleteElements(LeveledItemList::lists);
 	DeleteElements(Stock::stocks);
+	DeleteElements(Receipt::receipts);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -120,7 +129,8 @@ void ItemLoader::InitTokenizer()
 		{ "book_scheme", IT_BOOK_SCHEME },
 		{ "start_items", IT_START_ITEMS },
 		{ "better_items", IT_BETTER_ITEMS },
-		{ "alias", IT_ALIAS }
+		{ "alias", IT_ALIAS },
+		{ "receipt", IT_RECEIPT }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -191,7 +201,8 @@ void ItemLoader::InitTokenizer()
 		{ "unique", ITEM_UNIQUE },
 		{ "alpha", ITEM_ALPHA },
 		{ "magic_scroll", ITEM_MAGIC_SCROLL },
-		{ "wand", ITEM_WAND }
+		{ "wand", ITEM_WAND },
+		{ "ingredient", ITEM_INGREDIENT }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -255,6 +266,12 @@ void ItemLoader::InitTokenizer()
 		{ "mana", TAG_MANA },
 		{ "cleric", TAG_CLERIC }
 		});
+
+	t.AddKeywords(G_RECEIPT, {
+		{ "result", RP_RESULT },
+		{ "items", RP_ITEMS },
+		{ "skill", RP_SKILL }
+		});
 }
 
 //=================================================================================================
@@ -283,6 +300,9 @@ void ItemLoader::LoadEntity(int top, const string& id)
 		break;
 	case IT_BETTER_ITEMS:
 		ParseBetterItems();
+		break;
+	case IT_RECEIPT:
+		ParseReceipt(id);
 		break;
 	case IT_ALIAS:
 		ParseAlias(id);
@@ -730,8 +750,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 //=================================================================================================
 void ItemLoader::ParseItemList(const string& id)
 {
-	ItemListResult existing_list = ItemList::TryGet(id);
-	if(existing_list)
+	if(ItemList::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<ItemList> lis;
@@ -760,8 +779,7 @@ void ItemLoader::ParseItemList(const string& id)
 //=================================================================================================
 void ItemLoader::ParseLeveledItemList(const string& id)
 {
-	ItemListResult existing_list = ItemList::TryGet(id);
-	if(existing_list)
+	if(ItemList::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<LeveledItemList> lis;
@@ -795,8 +813,7 @@ void ItemLoader::ParseLeveledItemList(const string& id)
 //=================================================================================================
 void ItemLoader::ParseStock(const string& id)
 {
-	Stock* existing_stock = Stock::TryGet(id);
-	if(existing_stock)
+	if(Stock::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<Stock> stock;
@@ -1028,8 +1045,7 @@ void ItemLoader::ParseItemOrList(Stock* stock)
 //=================================================================================================
 void ItemLoader::ParseBookScheme(const string& id)
 {
-	BookScheme* existing_scheme = BookScheme::TryGet(id);
-	if(existing_scheme)
+	if(BookScheme::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<BookScheme> scheme;
@@ -1178,6 +1194,85 @@ void ItemLoader::ParseBetterItems()
 }
 
 //=================================================================================================
+void ItemLoader::ParseReceipt(const string& id)
+{
+	if(Receipt::TryGet(id))
+		t.Throw("Id must be unique.");
+
+	Ptr<Receipt> receipt;
+	receipt->id = id;
+
+	t.Next();
+	t.AssertSymbol('{');
+	t.Next();
+
+	while(!t.IsSymbol('}'))
+	{
+		ReceiptProperty prop = (ReceiptProperty)t.MustGetKeywordId(G_RECEIPT);
+		t.Next();
+		switch(prop)
+		{
+		case RP_RESULT:
+			{
+				const string& item_id = t.MustGetItem();
+				receipt->result = Item::TryGet(item_id);
+				if(!receipt->result)
+					LoadError("Missing result item '%s'.", item_id.c_str());
+			}
+			break;
+		case RP_ITEMS:
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				uint count = 1;
+				if(t.IsInt())
+				{
+					count = t.GetUint();
+					if(count == 0u)
+						LoadError("Invalid item count %u.", count);
+					t.Next();
+				}
+
+				const string& item_id = t.MustGetItem();
+				const Item* item = Item::TryGet(item_id);
+				if(!receipt->result)
+					LoadError("Missing item '%s'.", item_id.c_str());
+				else
+				{
+					bool added = false;
+					for(pair<const Item*, uint>& p : receipt->items)
+					{
+						if(p.first == item)
+						{
+							p.second += count;
+							added = true;
+							break;
+						}
+					}
+					if(!added)
+						receipt->items.push_back(std::make_pair(item, count));
+				}
+
+				t.Next();
+			}
+			break;
+		case RP_SKILL:
+			receipt->skill = t.MustGetUint();
+			break;
+		}
+		t.Next();
+	}
+
+	if(!receipt->result)
+		LoadError("No result item.");
+	else if(receipt->items.empty())
+		LoadError("No required items.");
+	else
+		Receipt::receipts.push_back(receipt.Pin());
+}
+
+//=================================================================================================
 void ItemLoader::ParseAlias(const string& id)
 {
 	Item* item = Item::TryGet(id);
@@ -1321,7 +1416,7 @@ void ItemLoader::CalculateCrc()
 		}
 	}
 
-	for(auto scheme : BookScheme::book_schemes)
+	for(BookScheme* scheme : BookScheme::book_schemes)
 	{
 		crc.Update(scheme->id);
 		crc.Update(scheme->tex->filename);
@@ -1329,6 +1424,17 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->prev);
 		crc.Update(scheme->next);
 		crc.Update(scheme->regions);
+	}
+
+	for(Receipt* receipt : Receipt::receipts)
+	{
+		crc.Update(receipt->result->id);
+		for(pair<const Item*, uint>& p : receipt->items)
+		{
+			crc.Update(p.first->id);
+			crc.Update(p.second);
+		}
+		crc.Update(receipt->skill);
 	}
 
 	content.crc[(int)Content::Id::Items] = crc.Get();

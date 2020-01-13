@@ -41,6 +41,7 @@
 #include "Arena.h"
 #include "CommandParser.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 //=================================================================================================
 void Net::InitClient()
@@ -520,6 +521,10 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::CAST_SPELL:
 			f << c.pos;
+			break;
+		case NetChange::CRAFT:
+			f << c.receipt->id;
+			f << c.count;
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -1732,6 +1737,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					unit->UseUsable(usable);
 					if(pc.data.before_player == BP_USABLE && pc.data.before_player_ptr.usable == usable)
 						pc.data.before_player = BP_NONE;
+
+					if(unit->player == game->pc && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
+						game_gui->craft->Show();
 				}
 				else
 				{
@@ -4012,6 +4020,10 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					pc.RemoveAbility(ability);
 			}
 			break;
+		// after crafting - update ingredients, play sound
+		case NetChangePlayer::AFTER_CRAFT:
+			game_gui->craft->AfterCraft();
+			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);
 			break;
@@ -4489,6 +4501,9 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 			Error("Read player data: Broken multiplayer data.");
 			return false;
 		}
+
+		if(unit->usable && IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+			game_gui->craft->Show();
 	}
 
 	// checksum

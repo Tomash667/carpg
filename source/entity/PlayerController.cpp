@@ -32,6 +32,7 @@
 #include "GameResources.h"
 #include "AbilityPanel.h"
 #include "PhysicCallbacks.h"
+#include "CraftPanel.h"
 
 LocalPlayerData PlayerController::data;
 
@@ -1006,6 +1007,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::CastMage:
 		TrainMod(SkillId::MYSTIC_MAGIC, value);
 		break;
+	case TrainWhat::Craft:
+		TrainMod(SkillId::ALCHEMY, value);
+		break;
 	default:
 		assert(0);
 		break;
@@ -1847,6 +1851,9 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 				u.target_pos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 			u.timer = 0.f;
 			u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+
+			if(IsSet(bu.use_flags, BaseUsable::ALCHEMY))
+				game_gui->craft->Show();
 		}
 
 		if(Net::IsOnline())

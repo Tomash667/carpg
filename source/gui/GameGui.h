@@ -43,6 +43,7 @@ public:
 	Minimap* minimap;
 	AbilityPanel* ability;
 	BookPanel* book;
+	CraftPanel* craft;
 	GameMessages* messages;
 	MpBox* mp_box;
 	WorldMapGui* world_map;

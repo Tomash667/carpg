@@ -2466,7 +2466,7 @@ consumable healing_herb {
 	value 10
 	mesh "healing_herb.qmsh"
 	type herb
-	flags {not_merchant ground_mesh alpha}
+	flags {not_merchant ground_mesh alpha ingredient}
 	effects {
 		heal 150
 	}
@@ -2496,7 +2496,7 @@ consumable magic_crystal {
 	value 10
 	mesh "magic_crystal.qmsh"
 	type herb
-	flags {not_merchant ground_mesh}
+	flags {not_merchant ground_mesh ingredient}
 	effects {
 		mana 150
 	}
@@ -3403,6 +3403,7 @@ stock alchemist {
 		for(int i=0; i<count; ++i)
 			StockScript::AddRandomItem(IT_CONSUMABLE, 99999, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST, Random(3, 6));
 	}
+	random 2 5 ladle
 }
 
 // innkeeper drinks & food
@@ -3469,9 +3470,10 @@ stock orc_blacksmith {
 }
 
 stock alchemist_apprentice {
-	15 p_hp
+	8 p_hp
 	3 p_hp2
 	5 p_nreg
+	ladle
 }
 
 stock mage_seller {
@@ -3659,6 +3661,57 @@ better_items {
 	al_clothes2b al_leather
 	al_clothes3 al_leather
 	al_clothes3b al_leather
+}
+
+//------------------------------------------------------------------------------
+// RECEIPTS
+//------------------------------------------------------------------------------
+receipt p_hp {
+	result p_hp
+	items {
+		healing_herb
+	}
+	skill 1
+}
+
+receipt p_hp2 {
+	result p_hp2
+	items {
+		2 healing_herb
+	}
+	skill 25
+}
+
+receipt p_hp3 {
+	result p_hp3
+	items {
+		3 healing_herb
+	}
+	skill 50
+}
+
+receipt p_mp {
+	result p_mp
+	items {
+		magic_crystal
+	}
+	skill 1
+}
+
+receipt p_mp2 {
+	result p_mp2
+	items {
+		2 magic_crystal
+	}
+	skill 25
+}
+
+receipt p_mp3 {
+	result p_mp3
+	items {
+		3 magic_crystal
+	}
+	skill 50
 }
 
 //------------------------------------------------------------------------------

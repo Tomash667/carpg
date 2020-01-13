@@ -17,7 +17,8 @@ enum class OpenPanel
 	Ability,
 	Trade,
 	Unknown,
-	Book
+	Book,
+	Craft
 };
 
 //-----------------------------------------------------------------------------

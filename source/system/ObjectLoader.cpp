@@ -114,7 +114,8 @@ void ObjectLoader::InitTokenizer()
 		{ "allow_use_item", BaseUsable::ALLOW_USE_ITEM },
 		{ "slow_stamina_restore", BaseUsable::SLOW_STAMINA_RESTORE },
 		{ "container", BaseUsable::CONTAINER },
-		{ "is_bench", BaseUsable::IS_BENCH }
+		{ "is_bench", BaseUsable::IS_BENCH },
+		{ "alchemy", BaseUsable::ALCHEMY }
 		});
 }
 

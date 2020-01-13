@@ -65,6 +65,10 @@ dialog alchemist {
 	}
 	9 "Koniec rozmowy"
 	10 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
+	11 "Szkolenie"
+	12 "Mogê ciê nauczyæ jak lepiej warzyæ mikstury. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Nadal jesteœ zainteresowany?"
+	13 "$train_lab/alchemy$"
+	14 "Anuluj"
 }
 
 //==============================================================================

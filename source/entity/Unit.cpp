@@ -39,6 +39,7 @@
 #include "InsideLocation.h"
 #include "Portal.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -4836,6 +4837,9 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			game_gui->inventory->lock = nullptr;
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
+
+			if(game_gui->craft->visible)
+				game_gui->craft->Hide();
 
 			if(player->action == PlayerAction::Talk)
 			{

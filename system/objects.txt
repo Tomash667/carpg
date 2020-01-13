@@ -563,7 +563,7 @@ usable cauldron {
 	mesh "kociol.qmsh"
 	required_item ladle
 	animation "miesza"
-	flags slow_stamina_restore
+	flags {slow_stamina_restore alchemy}
 	limit_rot 0
 }
 

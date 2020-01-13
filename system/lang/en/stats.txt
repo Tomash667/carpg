@@ -101,7 +101,7 @@ attribute dex {
 }
 attribute int {
 	name "Intelligence"
-	desc "\tIncreases power of mage spells and learning speed.\n\tAffected skills: mystic magic."
+	desc "\tIncreases power of mage spells and learning speed.\n\tAffected skills: mystic magic, alchemy."
 }
 attribute wis {
 	name "Wisdom"
@@ -208,9 +208,9 @@ perk skill_focus {
 	name "Skill focus"
 	desc "Increases chosen skill by 5 points and increases the speed with which you gain experience in it."
 }
-perk alchemist {
+perk alchemist_apprentice {
 	name "Alchemist apprentice"
-	desc "You worked as an alchemist apprentice. You haven't learned to brew potions, but earned a large number of potions."
+	desc "You worked as an alchemist apprentice. You know the basics of alchemy (+10) and under the watchful eye of the master you brewed a large number of potions."
 }
 perk wealthy {
 	name "Wealthy"
@@ -275,6 +275,10 @@ perk mana_harmony {
 perk magic_adept {
 	name "Magic adept"
 	desc "Increase spells damage."
+}
+perk traveling_merchant {
+	name "Student of traveling merchant"
+	desc "In your youth you spent several years traveling with traveling merchants. You know how to bargain (+10) and start with 500 gold more."
 }
 
 //------------------------------------------------------------------------------
