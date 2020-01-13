@@ -437,7 +437,7 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		code += "\n";
 	}
 	LocalString str;
-	code += Format("class quest_%s {\n int get_progress(){return quest.progress;}\n void set_progress(int value){quest.SetProgress(value);}\n"
+	code += Format("class quest_%s {\n int get_progress()property{return quest.progress;}\n void set_progress(int value)property{quest.SetProgress(value);}\n"
 		" string TEXT(int index){return quest.GetString(index);}\n", scheme->id.c_str());
 	for(int i = 0; i < DialogScripts::F_MAX; ++i)
 	{

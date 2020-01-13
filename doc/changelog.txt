@@ -3,7 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.14 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5.1 lub starszej
-+ aktualizacja biblioteki: Bullet 2.89
++ aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (020-01-11):
