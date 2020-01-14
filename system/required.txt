@@ -255,10 +255,6 @@ dialog q_camp_near_city_start
 dialog q_camp_near_city_timeout
 dialog q_camp_near_city_end
 dialog q_crazies_trainer
-dialog q_deliver_letter_start
-dialog q_deliver_letter_timeout
-dialog q_deliver_letter_give
-dialog q_deliver_letter_end
 dialog q_deliver_parcel_start
 dialog q_deliver_parcel_timeout
 dialog q_deliver_parcel_give

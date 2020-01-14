@@ -914,6 +914,7 @@ void Game::LoadGame(GameReader& f)
 		game_level->event_handler = nullptr;
 
 	quest_mgr->UpgradeQuests();
+	quest_mgr->ProcessQuestRequests();
 
 	dialog_context.dialog_mode = false;
 	team->ClearOnNewGameOrLoad();

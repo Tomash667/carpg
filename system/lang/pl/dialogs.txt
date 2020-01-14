@@ -79,7 +79,7 @@ dialog mayor {
 		"Potrzebujesz czegoœ?"
 	}
 	1 "Potrzebujê Ksiêgi przywo³ywania"
-	2 "Dostarcz list"
+	2 "" // moved to quest
 	3 "Dostarcz paczkê"
 	4 "Zwróæ paczkê"
 	5 "Przeka¿ wieœci"
@@ -1059,43 +1059,6 @@ dialog q_crazies_trainer {
 	2 "Lepiej siê go szybko pozb¹dŸ..."
 	3 "Ponoæ mo¿na siê go pozbyæ po w³o¿eniu do skrzyni w $target_loc$."
 	4 "To na $target_dir$ st¹d. Powodzenia!"
-}
-
-//==============================================================================
-dialog q_deliver_letter_start {
-	0 "Szukam kogoœ kto dostarczy ten list do $target_burmistrza$ $target_locname$. Jesteœ zainteresowany?"
-	1 "Tak"
-	2 {
-		"Dobrze, oto wiadomoœæ. Masz miesi¹c ¿eby j¹ dostarczyæ i wróciæ z odpowiedzi¹."
-		"Dobrze, weŸ ten list. Musisz w ci¹gu miesi¹ca dostarczyæ mi odpowiedŸ."
-	}
-	3 "$target_locname$ znajduje siê na $target_dir$."
-	4 "Nie"
-}
-
-//==============================================================================
-dialog q_deliver_letter_timeout {
-	0 "Zawiod³em siê na tobie. Mia³eœ dostarczyæ list do $target_burmistrza$ $target_locname$. Nie licz, ¿e wyznaczê ci jakieœ odpowiedzialne zadanie."
-}
-
-//==============================================================================
-dialog q_deliver_letter_give {
-	0 "Poka¿ mi ten list."
-	1 "Hm..."
-	2 "Mia³eœ mi dostarczyæ ten list wczeœniej. Teraz te informacje s¹ nic nie warte."
-	3 {
-		"Te informacje s¹ bardzo wa¿ne."
-		"Interesuj¹ce wieœci."
-		"Dobrze, ¿e mi dostarczy³eœ ten list."
-	}
-	4 "Tu masz moj¹ odpowiedŸ. Tylko dostarcz j¹ na czas."
-}
-
-//==============================================================================
-dialog q_deliver_letter_end {
-	0 "Dobrze. Poka¿ ten list z odpowiedzi¹."
-	1 "Widzê, ¿e jesteœ odpowiedzialny, oto twoje 250 sztuk z³ota."
-	2 "Przyda³oby mi siê wiêcej ludzi takich jak ty."
 }
 
 //==============================================================================

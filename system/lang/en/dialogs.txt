@@ -76,7 +76,7 @@ dialog mayor {
 		"You need something?"
 	}
 	1 "I need Summoning book"
-	2 "Deliver a letter"
+	2 "" // moved to quest
 	3 "Deliver a package"
 	4 "Return a package"
 	5 "Tell news"
@@ -1056,43 +1056,6 @@ dialog q_crazies_trainer {
 	2 "You'd better get rid of it quickly..."
 	3 "Apparently you can get rid of it after it is inserted into the chest in $target_loc$."
 	4 "It's to the $target_dir$ from here. Good luck!"
-}
-
-//==============================================================================
-dialog q_deliver_letter_start {
-	0 "I'm looking for someone who will deliver this letter to $target_burmistrza$ in $target_locname$.Are you interested in it?"
-	1 "Yes"
-	2 {
-		"Good, here's the message. You have a month to deliver it and come back with the answer."
-		"Good, take this letter. You have one month to provide me with an answer."
-	}
-	3 "$target_locname$ is $target_dir$ from here."
-	4 "No"
-}
-
-//==============================================================================
-dialog q_deliver_letter_timeout {
-	0 "You disappointed me. You should deliver letter to $target_burmistrza$ in $target_locname$. Do not expect that I will give you any task."
-}
-
-//==============================================================================
-dialog q_deliver_letter_give {
-	0 "Show me that letter."
-	1 "Hm..."
-	2 "You had me deliver this letter before. Now this information is worth nothing."
-	3 {
-		"This information is very important."
-		"Interesting news."
-		"It is good that you provided me this letter."
-	}
-	4 "Here you have my answer. Try to deliver it on time."
-}
-
-//==============================================================================
-dialog q_deliver_letter_end {
-	0 "Good. Show me that letter with answer."
-	1 "I see that you are responsible, here's your 250 gold pieces."
-	2 "I could use more people like you."
 }
 
 //==============================================================================

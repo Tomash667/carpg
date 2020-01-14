@@ -114,6 +114,7 @@ struct Item
 	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
 	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
 
+	const string& GetName() const { return name; }
 	float GetWeight() const { return float(weight) / 10; }
 	float GetWeightValue() const { return float(value) / weight; }
 	float GetEffectPower(EffectId effect) const;
@@ -122,6 +123,7 @@ struct Item
 	Item* CreateCopy() const;
 	Item* QuestCopy(Quest* quest, const string& name);
 	void Rename(cstring name);
+	void RenameS(const string& name) { Rename(name.c_str()); }
 
 	string id, name, desc;
 	int weight, value, ai_value, flags, quest_id;
@@ -551,7 +553,7 @@ struct Receipt
 	vector<pair<const Item*, uint>> items;
 	int skill;
 
-	Receipt() : result(nullptr), skill(0) {}
+	explicit Receipt() : result(nullptr), skill(0) {}
 
 	static vector<Receipt*> receipts;
 	static Receipt* TryGet(Cstring id);

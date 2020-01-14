@@ -1,4 +1,51 @@
 //=============================================================================
+quest deliver_letter {
+	dialog start {
+		0 "Szukam kogoœ kto dostarczy ten list do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). Jesteœ zainteresowany?"
+		1 "Tak"
+		2 {
+			"Dobrze, oto wiadomoœæ. Masz miesi¹c ¿eby j¹ dostarczyæ i wróciæ z odpowiedzi¹."
+			"Dobrze, weŸ ten list. Musisz w ci¹gu miesi¹ca dostarczyæ mi odpowiedŸ."
+		}
+		3 "$(end_loc.name) znajduje siê na $(World::GetDirName(start_loc.pos, end_loc.pos)) st¹d."
+		4 "Nie"
+	}
+	
+	dialog target {
+		0 "Dostarcz list"
+		1 "Poka¿ mi ten list."
+		2 "Hm..."
+		3 "Mia³eœ mi dostarczyæ ten list wczeœniej. Teraz te informacje s¹ nic nie warte."
+		4 {
+			"Te informacje s¹ bardzo wa¿ne."
+			"Interesuj¹ce wieœci."
+			"Dobrze, ¿e mi dostarczy³eœ ten list."
+		}
+		5 "Tu masz moj¹ odpowiedŸ. Tylko dostarcz j¹ na czas."
+	}
+	
+	dialog end {
+		0 "Zawiod³em siê na tobie. Mia³eœ dostarczyæ list do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). Nie licz, ¿e wyznaczê ci jakieœ odpowiedzialne zadanie."
+		1 "Dostarcz list"
+		2 "Dobrze. Poka¿ ten list z odpowiedzi¹."
+		3 "Widzê, ¿e jesteœ odpowiedzialny, oto twoje 250 sztuk z³ota."
+		4 "Przyda³oby mi siê wiêcej ludzi takich jak ty."
+	}
+	
+	texts {
+		0 "Dostarcz list"
+		1 "Otrzymano od $(start_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
+		2 "Dosta³em list który muszê dostarczyæ do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). To na $(World::GetDirName(start_loc.pos, end_loc.pos)) st¹d. Mam miesi¹c na dojœcie tam i powrót."
+		3 "List do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name)"
+		4 "List od $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name)"
+		5 "Nie zd¹¿y³em dostarczyæ listu na czas."
+		6 "Odda³em list, teraz muszê zanieœæ odpowiedŸ."
+		7 "Dostarczy³em odpowiedŸ. Zadanie wykonane!"
+		8 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+	}
+}
+
+//=============================================================================
 quest deliver_resources {
 	dialog start {
 		0 "Mam do dostarczenia skrzynkê z zasobami do $(target_loc.name). Normalnie wys³a³ bym jednego z moich ludzi ale skoro ju¿ tu jesteœ..."

@@ -3,8 +3,9 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.14 (???):
 ! cannot load saves from version 0.5.1 or older
-+ umiejętność alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
-+ nowy atut historii: uczeń wędrownego kupca (+10 targowania, 500 złota)
++ alchemy skill, crafting 6 simple potions (healing & mana)
++ new history feat: studend of traveling merchant (+10 haggle, 500 gold)
++ converted quest "deliver letter" to scripts
 + update libraries: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------

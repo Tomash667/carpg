@@ -154,6 +154,7 @@ struct Location
 	void AddEventHandler(Quest_Scripted* quest, EventType type);
 	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
 	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
+	bool IsVisited() const { return last_visit != -1; }
 };
 
 //-----------------------------------------------------------------------------

@@ -73,7 +73,6 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_ORCS2, QuestCategory::Unique, "orcs2"));
 	infos.push_back(QuestInfo(Q_GOBLINS, QuestCategory::Unique, "goblins"));
 	infos.push_back(QuestInfo(Q_EVIL, QuestCategory::Unique, "evil"));
-	infos.push_back(QuestInfo(Q_DELIVER_LETTER, QuestCategory::Mayor, "deliver_letter"));
 	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliver_parcel"));
 	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
 	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
@@ -800,42 +799,6 @@ void QuestManager::Load(GameReader& f)
 	}
 	else
 		f >> force;
-
-	// process quest requests
-	for(QuestRequest& request : quest_requests)
-	{
-		*request.quest = FindAnyQuest(request.id);
-		if(request.callback)
-			request.callback();
-	}
-	quest_requests.clear();
-
-	// process quest item requests
-	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
-	{
-		QuestItemRequest* qir = *it;
-		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_id);
-		if(qir->items)
-		{
-			bool ok = true;
-			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
-			{
-				if(it2->item == QUEST_ITEM_PLACEHOLDER)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok && (LOAD_VERSION < V_0_7_1 || content.require_update))
-			{
-				SortItems(*qir->items);
-				if(qir->unit)
-					qir->unit->RecalculateWeight();
-			}
-		}
-		delete *it;
-	}
-	quest_item_requests.clear();
 
 	// load pseudo-quests
 	quest_secret->Load(f);
@@ -1780,6 +1743,50 @@ void QuestManager::UpdateQuestsLocal(float dt)
 }
 
 //=================================================================================================
+void QuestManager::ProcessQuestRequests()
+{
+	// process quest requests
+	for(QuestRequest& request : quest_requests)
+	{
+		Quest* quest = FindAnyQuest(request.id);
+		assert(quest);
+		*request.quest = quest;
+		if(request.callback)
+			request.callback();
+	}
+	quest_requests.clear();
+
+	// process quest item requests
+	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
+	{
+		QuestItemRequest* qir = *it;
+		const Item* item = FindQuestItem(qir->name.c_str(), qir->quest_id);
+		assert(item);
+		*qir->item = item;
+		if(qir->items && (LOAD_VERSION < V_0_7_1 || content.require_update))
+		{
+			bool ok = true;
+			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
+			{
+				if(it2->item == QUEST_ITEM_PLACEHOLDER)
+				{
+					ok = false;
+					break;
+				}
+			}
+			if(ok)
+			{
+				SortItems(*qir->items);
+				if(qir->unit)
+					qir->unit->RecalculateWeight();
+			}
+		}
+		delete* it;
+	}
+	quest_item_requests.clear();
+}
+
+//=================================================================================================
 void QuestManager::UpgradeQuests()
 {
 	for(Quest* quest : upgrade_quests)
@@ -1791,6 +1798,7 @@ void QuestManager::UpgradeQuests()
 			unaccepted_quests[quest->quest_index] = quest2;
 		else
 			quests[quest->quest_index] = quest2;
+		RemoveElementTry(quests_timeout2, quest);
 		delete quest;
 	}
 }

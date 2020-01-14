@@ -1,4 +1,182 @@
 //=============================================================================
+// DELIVER LETTER - random mayor quest
+//=============================================================================
+quest deliver_letter
+{
+	type mayor
+	progress {
+		P_LETTER_NONE
+		P_LETTER_STARTED
+		P_LETTER_TIMEOUT
+		P_LETTER_GOT_RESPONSE
+		P_LETTER_FINISHED
+		P_LETTER_ON_TIMEOUT
+	}
+	
+	dialog start {
+		talk 0
+		choice 1
+		{
+			talk 2
+			talk 3
+			set_quest_progress P_LETTER_STARTED
+			end
+		}
+		escape choice 4
+			end
+		show_choices
+	}
+	
+	dialog target {
+		if have_quest_item
+			choice 0
+			{
+				talk 1
+				talk 2
+				if quest_progress == P_LETTER_ON_TIMEOUT
+				{
+					talk 3
+					set_quest_progress P_LETTER_TIMEOUT
+					end
+				}
+				talk 4
+				talk 5
+				set_quest_progress P_LETTER_GOT_RESPONSE
+				end
+			}
+		end
+	}
+	
+	dialog end {
+		if quest_progress == P_LETTER_ON_TIMEOUT
+		{
+			do_once
+			talk 0
+			set_quest_progress P_LETTER_TIMEOUT
+			end
+		}
+		else if quest_progress == P_LETTER_GOT_RESPONSE
+			 if have_quest_item
+		{
+			choice 1
+			{
+				talk 2
+				talk 3
+				talk 4
+				set_quest_progress P_LETTER_FINISHED
+				end
+			}
+		}
+		end
+	}
+	
+	code {
+		Location@ start_loc;
+		Location@ end_loc;
+		Item@ letter;
+		
+		void Startup()
+		{
+			@start_loc = Level::location;
+			@end_loc = World::GetRandomSettlement(start_loc);
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_LETTER_STARTED:
+				{
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(30);
+					
+					Item@ item = Item::Get("letter");
+					@letter = item.QuestCopy(quest, TEXT(3));
+					pc.unit.AddTeamItem(letter);
+					
+					target.AddDialog(quest, "end");
+					end_loc.AddEventHandler(quest, EVENT_ENTER);
+				}
+				break;
+			case P_LETTER_TIMEOUT:
+				{
+					quest.AddEntry(TEXT(5));
+					quest.SetFailed();
+					if(Level::location is end_loc)
+						pc.unit.RemoveQuestItem(quest);
+				}
+				break;
+			case P_LETTER_GOT_RESPONSE:
+				{
+					letter.name = TEXT(4);
+					quest.AddEntry(TEXT(6));
+				}
+				break;
+			case P_LETTER_FINISHED:
+				{
+					quest.AddEntry(TEXT(7));
+					quest.SetCompleted();
+					
+					Team::AddReward(250, 1000);
+					pc.unit.RemoveQuestItem(quest);
+				}
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_TIMEOUT)
+			{
+				quest.AddEntry(TEXT(8));
+				progress = P_LETTER_ON_TIMEOUT;
+			}
+			else if(e.event == EVENT_ENTER)
+			{
+				e.location.RemoveEventHandler(quest);
+				Unit@ mayor = Level::GetMayor();
+				mayor.AddDialog(quest, "target");
+			}
+		}
+		
+		void OnUpgrade(dictionary& dict)
+		{
+			@start_loc = World::GetLocation(int(dict["start_loc"]));
+			@end_loc = World::GetLocation(int(dict["end_loc"]));
+			int start_time = int(dict["start_time"]);
+			
+			if(quest.state != Q_HIDDEN)
+			{
+				Item@ item = Item::Get("letter");
+				@letter = item.QuestCopy(quest, TEXT(progress >= P_LETTER_GOT_RESPONSE ? 4 : 3));
+			}
+			
+			if(quest.state != Q_STARTED)
+				return;
+			
+			int days = 30 - World::worldtime - start_time;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_LETTER_STARTED)
+				progress = P_LETTER_ON_TIMEOUT;
+			
+			if(end_loc.visited)
+			{
+				Unit@ mayor = end_loc.GetMayor();
+				mayor.AddDialog(quest, "target");
+			}
+			else
+				end_loc.AddEventHandler(quest, EVENT_ENTER);
+			
+			Unit@ mayor = start_loc.GetMayor();
+			mayor.AddDialog(quest, "end");
+		}
+	}
+}
+
+//=============================================================================
 // DELIVER RESOURCES - random mayor quest
 //=============================================================================
 quest deliver_resources

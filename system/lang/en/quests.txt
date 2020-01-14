@@ -1,4 +1,51 @@
 //=============================================================================
+quest deliver_letter {
+	dialog start {
+		0 "I'm looking for someone who will deliver this letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). Are you interested in it?"
+		1 "Yes"
+		2 {
+			"Good, here's the message. You have a month to deliver it and come back with the answer."
+			"Good, take this letter. You have one month to provide me with an answer."
+		}
+		3 "$(end_loc.name) is $(World::GetDirName(start_loc.pos, end_loc.pos)) from here."
+		4 "No"
+	}
+	
+	dialog target {
+		0 "Deliver a letter"
+		1 "Show me that letter."
+		2 "Hm..."
+		3 "You supposed to deliver me this letter earlier. Now this information is worth nothing."
+		4 {
+			"This information is very important."
+			"Interesting news."
+			"It is good that you provided me this letter."
+		}
+		5 "Here you have my answer. Try to deliver it on time."
+	}
+	
+	dialog end {
+		0 "You disappointed me. You should deliver letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") in $(end_loc.name). Do not expect that I will give you any task."
+		1 "Deliver a letter"
+		2 "Good. Show me that letter with answer."
+		3 "I see that you are responsible, here's your 250 gold pieces."
+		4 "I could use more people like you."
+	}
+	
+	texts {
+		0 "Deliver the letter"
+		1 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
+		2 "I got a letter that I need to deliver to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). It's $(World::GetDirName(start_loc.pos, end_loc.pos)) from here. I have a month to go there and return."
+		3 "Letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
+		4 "Letter from $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
+		5 "I couldn't deliver the letter on time."
+		6 "I delivered the letter, now I have to return with the answer."
+		7 "I delivered the answer. Quest done!"
+		8 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
 quest deliver_resources {
 	dialog start {
 		0 "I have to deliver a box of resource to $(target_loc.name). Normally, I would send one of my people, but since you're already here..."

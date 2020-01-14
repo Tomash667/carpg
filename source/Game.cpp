@@ -5761,7 +5761,10 @@ void Game::PreloadResources(bool worldmap)
 			if(Net::IsLocal())
 			{
 				for(GroundItem* ground_item : area.items)
+				{
+					assert(ground_item->item);
 					items_load.insert(ground_item->item);
+				}
 				for(Chest* chest : area.chests)
 					PreloadItems(chest->items);
 				for(Usable* usable : area.usables)
@@ -5894,7 +5897,10 @@ void Game::PreloadUnit(Unit* unit)
 void Game::PreloadItems(vector<ItemSlot>& items)
 {
 	for(auto& slot : items)
+	{
+		assert(slot.item);
 		items_load.insert(slot.item);
+	}
 }
 
 void Game::VerifyResources()

@@ -104,6 +104,7 @@ public:
 	void RemoveQuestUnits(bool on_leave);
 	void HandleQuestEvent(Quest_Event* event);
 	void UpdateQuestsLocal(float dt);
+	void ProcessQuestRequests();
 	void UpgradeQuests();
 
 	vector<Quest*> unaccepted_quests;

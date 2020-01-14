@@ -155,14 +155,6 @@ dialog mayor
 			restart
 		}
 	}
-	if have_quest_item "$letter"
-	{
-		choice 2
-		{
-			do_quest_item "$letter"
-			restart
-		}
-	}
 	if have_quest_item "$parcel"
 	{
 		choice 3
@@ -2346,57 +2338,6 @@ dialog q_crazies_trainer
 	set_quest_progress 1
 	talk 3
 	talk 4
-	end
-}
-
-//==============================================================================
-dialog q_deliver_letter_start
-{
-	talk 0
-	choice 1
-	{
-		talk 2
-		talk 3
-		set_quest_progress 1
-		end
-	}
-	escape choice 4
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_deliver_letter_timeout
-{
-	talk 0
-	set_quest_progress 2
-	end
-}
-
-//==============================================================================
-dialog q_deliver_letter_give
-{
-	talk 0
-	talk 1
-	if quest_timeout
-	{
-		talk 2
-		set_quest_progress 2
-		end
-	}
-	talk 3
-	talk 4
-	set_quest_progress 3
-	end
-}
-
-//==============================================================================
-dialog q_deliver_letter_end
-{
-	talk 0
-	talk 1
-	talk 2
-	set_quest_progress 4
 	end
 }
 
