@@ -975,7 +975,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			continue;
 
 		char c = pt.name[2];
-		if(c == 'o' || c == 'r' || c == 'p' || c == 's' || c == 'c' || c == 'l')
+		if(c == 'o' || c == 'r' || c == 'p' || c == 's' || c == 'c' || c == 'l' || c == 'e')
 		{
 			uint poss = pt.name.find_first_of('_', 4);
 			if(poss == string::npos)
@@ -1014,9 +1014,11 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			pos = Vec3::TransformZero(pt.mat);
 		pos += shift;
 
-		if(c == 'o' || c == 'r' || c == 'l')
+		switch(c)
 		{
-			// obiekt / obrócony obiekt
+		case 'o': // object
+		case 'r': // rotated object
+		case 'l': // random rotation (90* angle) object
 			if(!recreate)
 			{
 				cstring name;
@@ -1056,10 +1058,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					SpawnObjectEntity(area, base, pos, r, 1.f, 0, nullptr, variant);
 				}
 			}
-		}
-		else if(c == 'p')
-		{
-			// fizyka
+			break;
+		case 'p': // physics
 			if(token == "circle" || token == "circlev")
 			{
 				bool is_wall = (token == "circle");
@@ -1131,7 +1131,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				{
 					cobj.type = CollisionObject::RECTANGLE_ROT;
 					cobj.rot = rot;
-					cobj.radius = sqrt(cobj.w*cobj.w + cobj.h*cobj.h);
+					cobj.radius = sqrt(cobj.w * cobj.w + cobj.h * cobj.h);
 					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 				}
 			}
@@ -1185,10 +1185,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			}
 			else
 				assert(0);
-		}
-		else if(c == 's')
-		{
-			// strefa
+			break;
+		case 's': // zone
 			if(!recreate)
 			{
 				if(token == "enter")
@@ -1199,7 +1197,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					inside->tmp = TmpLevelArea::Get();
 					inside->tmp->area = inside;
 					inside->level_shift = city->inside_offset;
-					inside->offset = Vec2(512.f*city->inside_offset.x + 256.f, 512.f*city->inside_offset.y + 256.f);
+					inside->offset = Vec2(512.f * city->inside_offset.x + 256.f, 512.f * city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
 					{
 						--city->inside_offset.x;
@@ -1354,9 +1352,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				else
 					assert(0);
 			}
-		}
-		else if(c == 'c')
-		{
+			break;
+		case 'c': // unit
 			if(!recreate)
 			{
 				UnitData* ud = UnitData::TryGet(token.c_str());
@@ -1371,12 +1368,47 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					}
 				}
 			}
-		}
-		else if(c == 'm')
-		{
-			LightMask& mask = Add1(inside->masks);
-			mask.size = Vec2(pt.size.x, pt.size.z);
-			mask.pos = Vec2(pos.x, pos.z);
+			break;
+		case 'm': // light mask
+			{
+				LightMask& mask = Add1(inside->masks);
+				mask.size = Vec2(pt.size.x, pt.size.z);
+				mask.pos = Vec2(pos.x, pos.z);
+			}
+			break;
+		case 'e': // effect
+			if(token == "magicfire")
+			{
+				if(!game->in_load)
+				{
+					ParticleEmitter* pe = new ParticleEmitter;
+					pe->tex = tFlare2;
+					pe->alpha = 1.0f;
+					pe->size = 1.0f;
+					pe->emision_interval = 0.1f;
+					pe->emisions = -1;
+					pe->life = -1;
+					pe->max_particles = 50;
+					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->particle_life = 0.5f;
+					pe->pos = pos;
+					if(area.area_type == LevelArea::Type::Outside)
+						pe->pos.y += terrain->GetH(pos);
+					pe->pos_min = Vec3(0, 0, 0);
+					pe->pos_max = Vec3(0, 0, 0);
+					pe->spawn_min = 2;
+					pe->spawn_max = 4;
+					pe->speed_min = Vec3(-1, 3, -1);
+					pe->speed_max = Vec3(1, 4, 1);
+					pe->mode = 1;
+					pe->Init();
+					area.tmp->pes.push_back(pe);
+				}
+			}
+			else
+				assert(0);
+			break;
 		}
 	}
 

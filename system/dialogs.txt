@@ -4183,13 +4183,13 @@ dialog mage_seller
 	{
 		talk 8
 		if script "!pc.HaveAbility(Ability::Get(\"fireball\"))"
-			choice 15
+			choice 13
 			{
 				special "train/fireball"
 				end
 			}
 		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
-			choice 16
+			choice 14
 			{
 				special "train/thunder_bolt"
 				end
@@ -4201,25 +4201,15 @@ dialog mage_seller
 		}
 		choice 10
 		{
-			special "train/wis"
-			end
-		}
-		choice 14
-		{
 			special "train/mystic_magic"
 			end
 		}
 		choice 11
 		{
-			special "train/gods_magic"
-			end
-		}
-		choice 12
-		{
 			special "train/concentration"
 			end
 		}
-		escape choice 13
+		escape choice 12
 			restart
 		show_choices
 	}
@@ -4237,6 +4227,52 @@ dialog mage_seller
 		}
 	}
 	escape choice 6
+		end
+	show_choices
+}
+
+
+//==============================================================================
+dialog cleric_seller
+{
+	if once
+		talk 0
+	choice 1
+	{
+		talk 2
+		choice 3
+		{
+			special "train/wis"
+			end
+		}
+		choice 4
+		{
+			special "train/gods_magic"
+			end
+		}
+		choice 5
+		{
+			special "train/concentration"
+			end
+		}
+		escape choice 6
+			restart
+		show_choices
+	}
+	choice 7
+	{
+		talk 8
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 9
+		{
+			talk 10
+			restart
+		}
+	}
+	escape choice 11
 		end
 	show_choices
 }

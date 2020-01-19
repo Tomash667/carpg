@@ -1526,6 +1526,23 @@ unit mage_seller : base_human {
 	dialog mage_seller
 }
 
+unit cleric_seller : base_human {
+	level 10
+	profile cleric
+	flags | {ai_stay ai_guard dont_eat limited_rot mp_bar}
+	items {
+		!-2blunt
+		!-1medium_armor
+		!-2shield
+	}
+	abilities {
+		non_combat 1
+		{heal 0}
+	}
+	gold {1000 2000}
+	dialog cleric_seller
+}
+
 unit arena_master : base_human {
 	level 15
 	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}

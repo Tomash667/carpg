@@ -120,7 +120,7 @@ draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false)
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine), in_load(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;

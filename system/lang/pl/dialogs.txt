@@ -1918,11 +1918,28 @@ dialog mage_seller {
 	7 "Szkolenie"
 	8 "Pomogê ci poszerzyæ twoje horyzonty. Co chcesz wiedzieæ?"
 	9 "$train_lab/int$"
-	10 "$train_lab/wis$"
-	11 "$train_lab/gods_magic$"
-	12 "$train_lab/concentration$"
-	13 "Anuluj"
-	14 "$train_lab/mystic_magic$"
-	15 "$train_lab/fireball$"
-	16 "$train_lab/thunder_bolt$"
+	10 "$train_lab/mystic_magic$"
+	11 "$train_lab/concentration$"
+	12 "Anuluj"
+	13 "$train_lab/fireball$"
+	14 "$train_lab/thunder_bolt$"
+}
+
+//==============================================================================
+dialog cleric_seller {
+	0 {
+		"Witaj wêdrowcze."
+		"W czym mogê ci pomóc?"
+	}
+	1 "Szkolenie"
+	2 "Jeœli chcesz mogê ciê nauczyæ czegoœ o magii bogów."
+	3 "$train_lab/wis$"
+	4 "$train_lab/gods_magic$"
+	5 "$train_lab/concentration$"
+	6 "Anuluj"
+	7 "Czym siê zajmujesz?"
+	8 "Jestem kap³anem, wyznawc¹ Imnosa. Opiekujê siê t¹ kapliczk¹ i pomagam tym którzy na to zas³uguj¹."
+	9 "Zapytaj o dziwny kamieñ"
+	10 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
+	11 "Koniec rozmowy"
 }

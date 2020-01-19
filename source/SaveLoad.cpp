@@ -260,16 +260,20 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	try
 	{
+		in_load = true;
 		LoadGame(f);
+		in_load = false;
 	}
 	catch(const SaveException&)
 	{
+		in_load = false;
 		prev_game_state = GS_LOAD;
 		ExitToMenu();
 		throw;
 	}
 	catch(cstring msg)
 	{
+		in_load = false;
 		prev_game_state = GS_LOAD;
 		ExitToMenu();
 		throw SaveException(nullptr, msg);

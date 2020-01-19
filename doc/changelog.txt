@@ -5,6 +5,7 @@ Wersja 0.14 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5.1 lub starszej
 + umiejêtnoœæ alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
 + nowy atut historii: uczeñ wêdrownego kupca (+10 targowania, 500 z³ota)
++ budynek w mieœcie - kapliczka
 + przeniesienie zadania "dostarcz list" do skryptów
 + usprawnienia menad¿era sceny - czêœæ 2
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89

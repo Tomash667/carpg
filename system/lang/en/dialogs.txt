@@ -1915,11 +1915,28 @@ dialog mage_seller {
 	7 "Training"
 	8 "I will help you broaden your horizons. What do you want to know?"
 	9 "$train_lab/int$"
-	10 "$train_lab/wis$"
-	11 "$train_lab/gods_magic$"
-	12 "$train_lab/concentration$"
-	13 "Cancel"
-	14 "$train_lab/mystic_magic$"
-	15 "$train_lab/fireball$"
-	16 "$train_lab/thunder_bolt$"
+	10 "$train_lab/mystic_magic$"
+	11 "$train_lab/concentration$"
+	12 "Cancel"
+	13 "$train_lab/fireball$"
+	14 "$train_lab/thunder_bolt$"
+}
+
+//==============================================================================
+dialog cleric_seller {
+	0 {
+		"Hello, traveler."
+		"How can I help you?"
+	}
+	1 "Training"
+	2 "If you want I can teach you something about the magic of the gods."
+	3 "$train_lab/wis$"
+	4 "$train_lab/gods_magic$"
+	5 "$train_lab/concentration$"
+	6 "Cancel"
+	7 "What you do here?"
+	8 "I am a priest, a follower of Imnos. I look after this shrine and help those who deserve it."
+	9 "Ask about strange stone"
+	10 "I sense the magical aura emanating from this stone. It is cursed! Unfortunately, I can't remove the curse from it, better get rid of it."
+	11 "End dialog"
 }
