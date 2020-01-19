@@ -6,6 +6,7 @@ Version 0.14 (???):
 + alchemy skill, crafting 6 simple potions (healing & mana)
 + new history feat: studend of traveling merchant (+10 haggle, 500 gold)
 + converted quest "deliver letter" to scripts
++ scene manager improvements (part 2)
 + update libraries: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------

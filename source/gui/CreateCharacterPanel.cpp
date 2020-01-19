@@ -14,6 +14,7 @@
 #include "Level.h"
 #include "GameGui.h"
 #include "GameResources.h"
+#include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -655,8 +656,7 @@ void CreateCharacterPanel::RenderUnit()
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	static vector<Lights> lights;
-
+	game_level->light_angle = PI / 2;
 	game_level->SetOutsideParams();
 
 	Vec3 from = Vec3(0.f, 2.f, dist);
@@ -667,11 +667,15 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.mat_view_inv = mat_view.Inverse();
 	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
+	scene_mgr->scene = game_level->scene;
+	scene_mgr->camera = &game_level->camera;
+
 	game->draw_batch.Clear();
+	game->draw_batch.camera = &game_level->camera;
+	game->draw_batch.gather_lights = false;
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->draw_batch.Process();
-	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
-	game->draw_batch.Clear();
+	scene_mgr->DrawSceneNodes(game->draw_batch.nodes, game->draw_batch.node_groups);
 
 	// end rendering
 	V(device->EndScene());

@@ -43,6 +43,7 @@
 #include "Utility.h"
 #include "GameResources.h"
 #include "AbilityPanel.h"
+#include <SceneManager.h>
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -61,8 +62,8 @@ void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
 	cfg.Add("use_glow", use_glow);
-	cfg.Add("use_normalmap", use_normalmap);
-	cfg.Add("use_specularmap", use_specularmap);
+	cfg.Add("use_normalmap", scene_mgr->use_normalmap);
+	cfg.Add("use_specularmap", scene_mgr->use_specularmap);
 	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);

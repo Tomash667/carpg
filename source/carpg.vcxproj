@@ -212,7 +212,7 @@
     <ClInclude Include="entity\AIController.h" />
     <ClInclude Include="entity\Blood.h" />
     <ClInclude Include="entity\Bullet.h" />
-    <ClInclude Include="entity\Camera.h" />
+    <ClInclude Include="entity\GameCamera.h" />
     <ClInclude Include="entity\Chest.h" />
     <ClInclude Include="entity\CreatedCharacter.h" />
     <ClInclude Include="entity\Door.h" />
@@ -221,10 +221,10 @@
     <ClInclude Include="entity\HeroPlayerCommon.h" />
     <ClInclude Include="entity\HumanData.h" />
     <ClInclude Include="entity\ItemSlot.h" />
-    <ClInclude Include="entity\Light.h" />
+    <ClInclude Include="entity\GameLight.h" />
     <ClInclude Include="entity\Object.h" />
     <ClInclude Include="entity\PlayerController.h" />
-    <ClInclude Include="entity\SceneNode.h" />
+    <ClInclude Include="entity\DrawBatch.h" />
     <ClInclude Include="entity\SpellEffects.h" />
     <ClInclude Include="entity\Trap.h" />
     <ClInclude Include="entity\Unit.h" />
@@ -328,7 +328,7 @@
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
-    <ClCompile Include="entity\SceneNode.cpp" />
+    <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
@@ -360,7 +360,7 @@
   <ItemGroup>
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Ai.cpp" />
-    <ClCompile Include="entity\Camera.cpp" />
+    <ClCompile Include="entity\GameCamera.cpp" />
     <ClCompile Include="entity\ItemContainer.cpp" />
     <ClCompile Include="entity\Portal.cpp" />
     <ClCompile Include="entity\Room.cpp" />
@@ -419,7 +419,7 @@
     <ClCompile Include="entity\HeroData.cpp" />
     <ClCompile Include="entity\HumanData.cpp" />
     <ClCompile Include="entity\ItemSlot.cpp" />
-    <ClCompile Include="entity\Light.cpp" />
+    <ClCompile Include="entity\GameLight.cpp" />
     <ClCompile Include="entity\Object.cpp" />
     <ClCompile Include="entity\PlayerController.cpp" />
     <ClCompile Include="entity\SpellEffects.cpp" />

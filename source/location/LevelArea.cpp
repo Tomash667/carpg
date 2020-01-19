@@ -63,7 +63,7 @@ void LevelArea::Save(GameWriter& f)
 		blood.Save(f);
 
 	f << lights.size();
-	for(Light& light : lights)
+	for(GameLight& light : lights)
 		light.Save(f);
 
 	if(tmp)
@@ -137,7 +137,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				blood.Load(f);
 
 			lights.resize(f.Read<uint>());
-			for(Light& light : lights)
+			for(GameLight& light : lights)
 				light.Load(f);
 		}
 		break;
@@ -184,7 +184,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				blood.Load(f);
 
 			lights.resize(f.Read<uint>());
-			for(Light& light : lights)
+			for(GameLight& light : lights)
 				light.Load(f);
 		}
 		break;
@@ -238,7 +238,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				blood.Load(f);
 
 			lights.resize(f.Read<uint>());
-			for(Light& light : lights)
+			for(GameLight& light : lights)
 				light.Load(f);
 		}
 		break;
@@ -337,7 +337,7 @@ void LevelArea::Write(BitStreamWriter& f)
 		blood.Write(f);
 	// lights
 	f.Write(lights.size());
-	for(Light& light : lights)
+	for(GameLight& light : lights)
 		light.Write(f);
 }
 
@@ -495,13 +495,13 @@ bool LevelArea::Read(BitStreamReader& f)
 
 	// lights
 	f >> count;
-	if(!f.Ensure(count * Light::MIN_SIZE))
+	if(!f.Ensure(count * GameLight::MIN_SIZE))
 	{
 		Error("Read area: Invalid light count.");
 		return false;
 	}
 	lights.resize(count);
-	for(Light& light : lights)
+	for(GameLight& light : lights)
 		light.Read(f);
 	if(!f)
 	{

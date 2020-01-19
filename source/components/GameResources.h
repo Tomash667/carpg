@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "BloodType.h"
+#include "Light.h"
 
 //-----------------------------------------------------------------------------
 class GameResources
@@ -9,6 +10,7 @@ class GameResources
 public:
 	static constexpr int ITEM_IMAGE_SIZE = 64;
 
+	GameResources();
 	~GameResources();
 	void Init();
 	void LoadLanguage();
@@ -43,6 +45,10 @@ private:
 	void PreloadItems();
 
 	typedef std::map<Mesh*, Texture*> ItemTextureMap;
+
+	Scene* scene;
+	SceneNode* node;
+	Camera* camera;
 	ItemTextureMap item_texture_map;
 	vector<Texture*> over_item_textures;
 	RenderTarget* rt_item;

@@ -89,6 +89,8 @@
 #include "GlowShader.h"
 #include "PostfxShader.h"
 #include "SkyboxShader.h"
+#include "SceneManager.h"
+#include "Scene.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -118,8 +120,7 @@ draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false)
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine), use_fog(true), use_lighting(true), use_normalmap(true),
-use_specularmap(true)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -395,7 +396,6 @@ void Game::ConfigureGame()
 	render->RegisterShader(particle_shader = new ParticleShader);
 	render->RegisterShader(postfx_shader = new PostfxShader);
 	render->RegisterShader(skybox_shader = new SkyboxShader);
-	render->RegisterShader(super_shader = new SuperShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
 	tMinimap = render->CreateDynamicTexture(Int2(128, 128));
@@ -1443,13 +1443,12 @@ void Game::SetGameText()
 }
 
 //=================================================================================================
-void Game::UpdateLights(vector<Light>& lights)
+void Game::UpdateLights(vector<GameLight>& lights)
 {
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
+	for(GameLight& light : lights)
 	{
-		Light& s = *it;
-		s.t_pos = s.pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
-		s.t_color = (s.color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped();
+		light.pos = light.start_pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
+		light.color = Vec4((light.start_color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
 	}
 }
 
@@ -1971,21 +1970,22 @@ bool Game::CutsceneShouldSkip()
 //=================================================================================================
 void Game::SetupCamera(float dt)
 {
+	GameCamera& camera = game_level->camera;
 	Unit* target = pc->unit;
 	LevelArea& area = *target->area;
 
 	float rotX;
-	if(game_level->camera.free_rot)
-		rotX = game_level->camera.real_rot.x;
+	if(camera.free_rot)
+		rotX = camera.real_rot.x;
 	else
 		rotX = target->rot;
 
-	game_level->camera.UpdateRot(dt, Vec2(rotX, game_level->camera.real_rot.y));
+	camera.UpdateRot(dt, Vec2(rotX, camera.real_rot.y));
 
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
-	Vec3 dist(0, -game_level->camera.tmp_dist, 0);
+	Vec3 dist(0, -camera.tmp_dist, 0);
 
-	Matrix mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
+	Matrix mat = Matrix::Rotation(camera.rot.y, camera.rot.x, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!
@@ -2254,17 +2254,17 @@ void Game::SetupCamera(float dt)
 		real_dist = 0.01f;
 	Vec3 from = to + dist.Normalize() * real_dist;
 
-	game_level->camera.Update(dt, from, to);
+	camera.Update(dt, from, to);
 
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	Matrix mat_view = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
+	Matrix mat_view = Matrix::CreateLookAt(camera.from, camera.to);
 	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim) * (PI / 16) * drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
-	game_level->camera.mat_view_proj = mat_view * mat_proj;
-	game_level->camera.mat_view_inv = mat_view.Inverse();
-	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
+		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), camera.znear, camera.zfar);
+	camera.mat_view_proj = mat_view * mat_proj;
+	camera.mat_view_inv = mat_view.Inverse();
+	camera.frustum.Set(camera.mat_view_proj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
@@ -2314,6 +2314,7 @@ void Game::UpdateGame(float dt)
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
 	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
+	game_level->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
 
 	UpdateFallback(dt);
 	if(!game_level->location)
@@ -5103,8 +5104,8 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		use_fog = true;
-		use_lighting = true;
+		scene_mgr->use_lighting = true;
+		scene_mgr->use_fog = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
@@ -5229,11 +5230,12 @@ void Game::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack:
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// ustawienia t³a
-	game_level->camera.draw_range = base.draw_range;
-	game_level->fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
-	game_level->fog_color = Vec4(base.fog_color, 1);
-	game_level->ambient_color = Vec4(base.ambient_color, 1);
-	clear_color_next = Color(int(game_level->fog_color.x * 255), int(game_level->fog_color.y * 255), int(game_level->fog_color.z * 255));
+	game_level->camera.zfar = base.draw_range;
+	game_level->scene->fog_range = base.fog_range;
+	game_level->scene->fog_color = base.fog_color;
+	game_level->scene->ambient_color = base.ambient_color;
+	game_level->scene->use_light_dir = false;
+	clear_color_next = game_level->scene->fog_color;
 
 	// tekstury podziemi
 	ApplyLocationTextureOverride(game_res->tFloor[0], game_res->tWall[0], game_res->tCeil[0], base.tex);

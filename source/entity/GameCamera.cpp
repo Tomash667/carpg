@@ -1,12 +1,12 @@
 #include "Pch.h"
 #include "GameCore.h"
-#include "Camera.h"
+#include "GameCamera.h"
 
-Camera::Camera(float springiness) : springiness(springiness), reset(2), free_rot(false)
+GameCamera::GameCamera(float springiness) : springiness(springiness), reset(2), free_rot(false)
 {
 }
 
-void Camera::Reset()
+void GameCamera::Reset()
 {
 	reset = 2;
 	free_rot = false;
@@ -15,7 +15,7 @@ void Camera::Reset()
 	tmp_dist = dist;
 }
 
-void Camera::UpdateRot(float dt, const Vec2& new_rot)
+void GameCamera::UpdateRot(float dt, const Vec2& new_rot)
 {
 	if(reset == 0)
 		d = 1.0f - exp(log(0.5f) * springiness * dt);
@@ -30,7 +30,7 @@ void Camera::UpdateRot(float dt, const Vec2& new_rot)
 	tmp_dist += (dist - tmp_dist) * d;
 }
 
-void Camera::Update(float dt, const Vec3& new_from, const Vec3& new_to)
+void GameCamera::Update(float dt, const Vec3& new_from, const Vec3& new_to)
 {
 	real_from = new_from;
 	real_to = new_to;

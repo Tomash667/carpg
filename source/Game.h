@@ -9,7 +9,7 @@
 #include "DialogContext.h"
 #include "BaseLocation.h"
 #include "GameKeys.h"
-#include "SceneNode.h"
+#include "DrawBatch.h"
 #include "QuadTree.h"
 #include "MusicTrack.h"
 #include "Settings.h"
@@ -151,15 +151,13 @@ public:
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
-	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
+	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
+	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
-	void DrawTerrain(const vector<uint>& parts);
-	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
-	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
-	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
+	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
-	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
+	void DrawBloods(const vector<Blood*>& bloods, bool outside);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
 	void InitQuadTree();
@@ -282,7 +280,7 @@ public:
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
-	void UpdateLights(vector<Light>& lights);
+	void UpdateLights(vector<GameLight>& lights);
 	void GetPostEffects(vector<PostEffect>& post_effects);
 	// --- cutscene
 	void CutsceneStart(bool instant);
@@ -344,7 +342,6 @@ public:
 	ParticleShader* particle_shader;
 	PostfxShader* postfx_shader;
 	SkyboxShader* skybox_shader;
-	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
 	//-----------------------------------------------------------------
@@ -424,7 +421,7 @@ public:
 	// scene
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
-	bool use_glow, use_fog, use_lighting, use_specularmap, use_normalmap, use_postfx;
+	bool use_glow, use_postfx;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
 	VParticle portal_v[4];

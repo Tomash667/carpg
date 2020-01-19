@@ -41,6 +41,7 @@
 #include "GameResources.h"
 #include "Quest_Scripted.h"
 #include "ScriptManager.h"
+#include "Scene.h"
 
 Level* global::game_level;
 
@@ -49,7 +50,8 @@ Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), 
 shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
 shape_floor(nullptr)
 {
-	camera.draw_range = 80.f;
+	camera.zfar = 80.f;
+	scene = new Scene;
 }
 
 //=================================================================================================
@@ -57,6 +59,7 @@ Level::~Level()
 {
 	DeleteElements(bow_instances);
 
+	delete scene;
 	delete terrain;
 	delete terrain_shape;
 	delete dungeon_shape;
@@ -737,13 +740,13 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			// œwiat³o
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
-				Light& s = Add1(area.lights);
-				s.pos = pe->pos;
-				s.range = 5;
+				GameLight& light = Add1(area.lights);
+				light.start_pos = pe->pos;
+				light.range = 5;
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
-					s.color = Vec3(0.8f, 0.8f, 1.f);
+					light.start_color = Vec3(0.8f, 0.8f, 1.f);
 				else
-					s.color = Vec3(1.f, 0.9f, 0.9f);
+					light.start_color = Vec3(1.f, 0.9f, 0.9f);
 			}
 		}
 		else if(IsSet(obj->flags, OBJ_BLOOD_EFFECT))
@@ -4405,38 +4408,16 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 }
 
 //=================================================================================================
-Vec4 Level::GetFogParams()
-{
-	if(game->use_fog)
-		return fog_params;
-	else
-		return Vec4(camera.draw_range, camera.draw_range + 1, 1, 0);
-}
-
-//=================================================================================================
-Vec4 Level::GetAmbientColor()
-{
-	if(!game->use_lighting)
-		return Vec4(1, 1, 1, 1);
-	return ambient_color;
-}
-
-//=================================================================================================
-Vec4 Level::GetLightDir()
-{
-	Vec3 light_dir(sin(light_angle), 2.f, cos(light_angle));
-	light_dir.Normalize();
-	return Vec4(light_dir, 1);
-}
-
-//=================================================================================================
 void Level::SetOutsideParams()
 {
-	camera.draw_range = 80.f;
+	camera.zfar = 80.f;
 	game->clear_color_next = Color::White;
-	fog_params = Vec4(40, 80, 40, 0);
-	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
-	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);
+	scene->fog_range = Vec2(40, 80);
+	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
+	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
+	scene->light_color = Color::White;
+	scene->light_dir = Vec3(sin(light_angle), 2.f, cos(light_angle)).Normalize();
+	scene->use_light_dir = true;
 }
 
 //=================================================================================================

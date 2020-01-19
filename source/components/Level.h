@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "LevelArea.h"
 #include "ObjectEntity.h"
-#include "Camera.h"
+#include "GameCamera.h"
 
 //-----------------------------------------------------------------------------
 enum EnterFrom
@@ -166,11 +166,6 @@ public:
 	bool IsSafe();
 	bool CanFastTravel();
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit, bool check_dist = true);
-	Vec4 GetFogColor() { return fog_color; }
-	Vec4 GetFogParams();
-	Vec4 GetAmbientColor();
-	Vec4 GetLightColor() { return Vec4(1, 1, 1, 1); }
-	Vec4 GetLightDir();
 	void SetOutsideParams();
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
@@ -194,8 +189,7 @@ public:
 	int location_index; // same as world->current_location_index
 	int dungeon_level;
 	bool reenter;
-	Camera camera;
-	Vec4 fog_color, fog_params, ambient_color;
+	GameCamera camera;
 	float lights_dt;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;
@@ -212,6 +206,7 @@ public:
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
 
+	Scene* scene;
 	Terrain* terrain;
 	LocationEventHandler* event_handler;
 	City* city_ctx; // pointer to city or nullptr when not inside city

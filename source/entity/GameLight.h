@@ -1,12 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Light
+#include "Light.h"
+
+//-----------------------------------------------------------------------------
+struct GameLight : public Light
 {
-	Vec3 pos, color;
-	float range;
-	// temporary
-	Vec3 t_pos, t_color;
+	Vec3 start_pos;
+	Vec3 start_color;
 
 	static const int MIN_SIZE = 28;
 

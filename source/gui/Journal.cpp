@@ -37,6 +37,17 @@ void Journal::LoadLanguage()
 }
 
 //=================================================================================================
+void Journal::LoadData()
+{
+	tBook = res_mgr->Load<Texture>("book.png");
+	tPage[0] = res_mgr->Load<Texture>("journal_bts1.png");
+	tPage[1] = res_mgr->Load<Texture>("journal_bts2.png");
+	tPage[2] = res_mgr->Load<Texture>("journal_bts3.png");
+	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
+	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
+}
+
+//=================================================================================================
 void Journal::Draw(ControlDrawData*)
 {
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
@@ -128,7 +139,7 @@ void Journal::Update(float dt)
 				if(!details)
 				{
 					// otwórz ostatni quest na tej stronie
-					open_quest = max((page + 1)*rect_lines * 2 - 1, int(quest_mgr->quests.size()) - 1);
+					open_quest = max((page + 1) * rect_lines * 2 - 1, int(quest_mgr->quests.size()) - 1);
 					prev_page = page;
 					page = 0;
 					Build();
@@ -277,7 +288,7 @@ void Journal::Update(float dt)
 					ok = true;
 			}
 
-			if(ok && gui->cursor_pos.y >= rect.Top() + last_text.y*font_height && gui->cursor_pos.y <= rect.Top() + (last_text.y + 1)*font_height)
+			if(ok && gui->cursor_pos.y >= rect.Top() + last_text.y * font_height && gui->cursor_pos.y <= rect.Top() + (last_text.y + 1) * font_height)
 			{
 				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -517,17 +528,6 @@ void Journal::OnAddNote(int id)
 void Journal::NeedUpdate(Mode at_mode, int quest_id)
 {
 	changes.push_back(std::make_pair(at_mode, quest_id));
-}
-
-//=================================================================================================
-void Journal::LoadData()
-{
-	tBook = res_mgr->Load<Texture>("book.png");
-	tPage[0] = res_mgr->Load<Texture>("dziennik_przyciski.png");
-	tPage[1] = res_mgr->Load<Texture>("dziennik_przyciski2.png");
-	tPage[2] = res_mgr->Load<Texture>("dziennik_przyciski3.png");
-	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
-	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
 }
 
 //=================================================================================================

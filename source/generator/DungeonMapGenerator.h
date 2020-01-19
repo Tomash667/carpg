@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Light.h"
 #include "Tile.h"
 #include "Room.h"
 

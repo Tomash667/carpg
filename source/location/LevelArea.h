@@ -5,7 +5,7 @@
 #include "Bullet.h"
 #include "SpellEffects.h"
 #include "Blood.h"
-#include "Light.h"
+#include "GameLight.h"
 
 //-----------------------------------------------------------------------------
 struct LightMask
@@ -52,7 +52,7 @@ struct LevelArea
 	vector<GroundItem*> items;
 	vector<Trap*> traps;
 	vector<Blood> bloods;
-	vector<Light> lights;
+	vector<GameLight> lights;
 	vector<LightMask> masks;
 	Int2 mine, maxe;
 	const bool have_terrain;

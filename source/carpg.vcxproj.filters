@@ -294,9 +294,6 @@
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="ErrorHandler.cpp" />
-    <ClCompile Include="entity\Light.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
@@ -392,9 +389,6 @@
       <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="entity\Portal.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
-    <ClCompile Include="entity\Camera.cpp">
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="net\EntityInterpolator.cpp">
@@ -599,11 +593,17 @@
     <ClCompile Include="helpers\LocationHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="entity\SceneNode.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
     <ClCompile Include="gui\CraftPanel.cpp">
       <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\DrawBatch.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\GameCamera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\GameLight.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -638,9 +638,6 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\PlayerController.h">
-      <Filter>entity</Filter>
-    </ClInclude>
-    <ClInclude Include="entity\SceneNode.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\SpellEffects.h">
@@ -849,16 +846,10 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />
-    <ClInclude Include="entity\Camera.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="location\LevelArea.h">
       <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="ErrorHandler.h" />
-    <ClInclude Include="entity\Light.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="helpers\UnitHelper.h">
       <Filter>helpers</Filter>
     </ClInclude>
@@ -1198,6 +1189,15 @@
     </ClInclude>
     <ClInclude Include="gui\CraftPanel.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\DrawBatch.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\GameCamera.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\GameLight.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

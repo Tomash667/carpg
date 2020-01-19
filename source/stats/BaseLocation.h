@@ -139,9 +139,9 @@ struct BaseLocation
 	Int2 corridor_size, room_size;
 	int options;
 	RoomStr stairs, required;
-	Vec3 fog_color, fog_color_lvl, ambient_color, ambient_color_lvl;
-	Vec2 fog_range, fog_range_lvl;
-	float draw_range, draw_range_lvl;
+	Color fog_color, ambient_color;
+	Vec2 fog_range;
+	float draw_range;
 	RoomStrChance* rooms;
 	uint room_count, room_total;
 	int door_chance, door_open, bars_chance;

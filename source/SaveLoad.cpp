@@ -49,6 +49,7 @@
 #include "GameResources.h"
 #include "AbilityPanel.h"
 #include "CraftPanel.h"
+#include "SceneManager.h"
 
 enum SaveFlags
 {
@@ -474,8 +475,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << game->use_fog;
-	f << game->use_lighting;
+	f << scene_mgr->use_fog;
+	f << scene_mgr->use_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -779,8 +780,8 @@ void Game::LoadGame(GameReader& f)
 	noai = true;
 #endif
 	f >> dont_wander;
-	f >> game->use_fog;
-	f >> game->use_lighting;
+	f >> scene_mgr->use_fog;
+	f >> scene_mgr->use_lighting;
 	f >> draw_particle_sphere;
 	f >> draw_unit_radius;
 	f >> draw_hitbox;
