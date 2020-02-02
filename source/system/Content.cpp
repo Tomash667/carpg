@@ -9,6 +9,7 @@
 #include "ClassLoader.h"
 #include "DialogLoader.h"
 #include "ItemLoader.h"
+#include "LocationLoader.h"
 #include "ObjectLoader.h"
 #include "PerkLoader.h"
 #include "QuestLoader.h"
@@ -18,24 +19,25 @@
 //-----------------------------------------------------------------------------
 Content content;
 static cstring content_id[] = {
-	"items",
-	"objects",
 	"abilities",
-	"perks",
-	"dialogs",
-	"classes",
-	"units",
 	"buildings",
+	"classes",
+	"dialogs",
+	"items",
+	"locations",
 	"musics",
+	"objects",
+	"perks",
 	"quests",
-	"required"
+	"required",
+	"units"
 };
 static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
 
 //=================================================================================================
 Content::Content() : ability_loader(new AbilityLoader), building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader),
-item_loader(new ItemLoader), object_loader(new ObjectLoader), perk_loader(new PerkLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader),
-unit_loader(new UnitLoader)
+item_loader(new ItemLoader), location_loader(new LocationLoader), object_loader(new ObjectLoader), perk_loader(new PerkLoader), quest_loader(new QuestLoader),
+required_loader(new RequiredLoader), unit_loader(new UnitLoader)
 {
 	quest_loader->dialog_loader = dialog_loader;
 }
@@ -55,6 +57,7 @@ void Content::Cleanup()
 	delete class_loader;
 	delete dialog_loader;
 	delete item_loader;
+	delete location_loader;
 	delete object_loader;
 	delete perk_loader;
 	delete quest_loader;
@@ -81,6 +84,10 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	Info("Game: Loading objects.");
 	callback(Id::Objects);
 	object_loader->DoLoading();
+
+	Info("Game: Loading locations.");
+	callback(Id::Locations);
+	location_loader->DoLoading();
 
 	Info("Game: Loading abilities.");
 	callback(Id::Abilities);
@@ -148,16 +155,17 @@ void Content::LoadVersion()
 //=================================================================================================
 void Content::CleanupContent()
 {
-	ItemLoader::Cleanup();
-	ObjectLoader::Cleanup();
 	AbilityLoader::Cleanup();
-	PerkLoader::Cleanup();
-	DialogLoader::Cleanup();
-	UnitLoader::Cleanup();
 	BuildingLoader::Cleanup();
-	MusicTrack::Cleanup();
-	QuestLoader::Cleanup();
 	ClassLoader::Cleanup();
+	DialogLoader::Cleanup();
+	ItemLoader::Cleanup();
+	LocationLoader::Cleanup();
+	MusicTrack::Cleanup();
+	ObjectLoader::Cleanup();
+	PerkLoader::Cleanup();
+	QuestLoader::Cleanup();
+	UnitLoader::Cleanup();
 }
 
 //=================================================================================================

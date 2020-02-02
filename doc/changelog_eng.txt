@@ -8,6 +8,7 @@ Version 0.14 (???):
 + building inside city - shrine
 + converted quest "deliver letter" to scripts
 + loading feats from file
++ loading rooms from file
 + scene manager improvements (part 2)
 + update libraries: AngelScript 2.34, Bullet 2.89
 

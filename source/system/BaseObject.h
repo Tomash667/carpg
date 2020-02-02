@@ -129,10 +129,10 @@ struct BaseObject
 
 	static BaseObject obj_alpha;
 	static SetContainer<BaseObject> objs;
-	static BaseObject* TryGet(Cstring id, bool* is_group = nullptr);
-	static BaseObject* Get(Cstring id, bool* is_group = nullptr)
+	static BaseObject* TryGet(Cstring id, ObjectGroup** group = nullptr);
+	static BaseObject* Get(Cstring id, ObjectGroup** group = nullptr)
 	{
-		BaseObject* obj = TryGet(id, is_group);
+		BaseObject* obj = TryGet(id, group);
 		assert(obj && "Missing BaseObject!");
 		return obj;
 	}

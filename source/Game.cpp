@@ -221,21 +221,23 @@ void Game::PreloadLanguage()
 {
 	Language::LoadFile("preload.txt");
 
+	txPreloadAssets = Str("preloadAssets");
 	txCreatingListOfFiles = Str("creatingListOfFiles");
 	txConfiguringGame = Str("configuringGame");
-	txLoadingItems = Str("loadingItems");
-	txLoadingObjects = Str("loadingObjects");
 	txLoadingAbilities = Str("loadingAbilities");
-	txLoadingClasses = Str("loadingClasses");
-	txLoadingUnits = Str("loadingUnits");
-	txLoadingMusics = Str("loadingMusics");
 	txLoadingBuildings = Str("loadingBuildings");
-	txLoadingRequires = Str("loadingRequires");
-	txLoadingShaders = Str("loadingShaders");
+	txLoadingClasses = Str("loadingClasses");
 	txLoadingDialogs = Str("loadingDialogs");
+	txLoadingItems = Str("loadingItems");
+	txLoadingLocations = Str("loadingLocations");
+	txLoadingMusics = Str("loadingMusics");
+	txLoadingObjects = Str("loadingObjects");
+	txLoadingPerks = Str("loadingPerks");
 	txLoadingQuests = Str("loadingQuests");
+	txLoadingRequired = Str("loadingRequired");
+	txLoadingUnits = Str("loadingUnits");
+	txLoadingShaders = Str("loadingShaders");
 	txLoadingLanguageFiles = Str("loadingLanguageFiles");
-	txPreloadAssets = Str("preloadAssets");
 }
 
 //=================================================================================================
@@ -267,7 +269,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	game_gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+	game_gui->load_screen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
 
 	AddFilesystem();
 	arena->Init();
@@ -309,35 +311,44 @@ void Game::LoadDatafiles()
 		{
 			switch(id)
 			{
-			case Content::Id::Items:
-				game_gui->load_screen->Tick(txLoadingItems);
-				break;
-			case Content::Id::Objects:
-				game_gui->load_screen->Tick(txLoadingObjects);
-				break;
 			case Content::Id::Abilities:
 				game_gui->load_screen->Tick(txLoadingAbilities);
-				break;
-			case Content::Id::Dialogs:
-				game_gui->load_screen->Tick(txLoadingDialogs);
-				break;
-			case Content::Id::Units:
-				game_gui->load_screen->Tick(txLoadingUnits);
 				break;
 			case Content::Id::Buildings:
 				game_gui->load_screen->Tick(txLoadingBuildings);
 				break;
+			case Content::Id::Classes:
+				game_gui->load_screen->Tick(txLoadingClasses);
+				break;
+			case Content::Id::Dialogs:
+				game_gui->load_screen->Tick(txLoadingDialogs);
+				break;
+			case Content::Id::Items:
+				game_gui->load_screen->Tick(txLoadingItems);
+				break;
+			case Content::Id::Locations:
+				game_gui->load_screen->Tick(txLoadingLocations);
+				break;
 			case Content::Id::Musics:
 				game_gui->load_screen->Tick(txLoadingMusics);
+				break;
+			case Content::Id::Objects:
+				game_gui->load_screen->Tick(txLoadingObjects);
+				break;
+			case Content::Id::Perks:
+				game_gui->load_screen->Tick(txLoadingPerks);
 				break;
 			case Content::Id::Quests:
 				game_gui->load_screen->Tick(txLoadingQuests);
 				break;
-			case Content::Id::Classes:
-				game_gui->load_screen->Tick(txLoadingClasses);
-				break;
 			case Content::Id::Required:
-				game_gui->load_screen->Tick(txLoadingRequires);
+				game_gui->load_screen->Tick(txLoadingRequired);
+				break;
+			case Content::Id::Units:
+				game_gui->load_screen->Tick(txLoadingUnits);
+				break;
+			default:
+				assert(0);
 				break;
 			}
 		});
@@ -1287,7 +1298,6 @@ void Game::SetGameText()
 	txLoadFailed = Str("loadFailed");
 	txQuickSave = Str("quickSave");
 	txGameSaved = Str("gameSaved");
-	txLoadingLocations = Str("loadingLocations");
 	txLoadingData = Str("loadingData");
 	txEndOfLoading = Str("endOfLoading");
 	txCantSaveNow = Str("cantSaveNow");
@@ -1503,7 +1513,6 @@ uint Game::ValidateGameData(bool major)
 	Skill::Validate(err);
 	Item::Validate(err);
 	Perk::Validate(err);
-	RoomType::Validate(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");

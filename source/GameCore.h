@@ -140,6 +140,7 @@ struct NetChange;
 struct NetChangePlayer;
 struct News;
 struct Object;
+struct ObjectGroup;
 struct OutsideObject;
 struct OtherItem;
 struct Perk;

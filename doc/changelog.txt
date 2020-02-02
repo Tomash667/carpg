@@ -8,6 +8,7 @@ Wersja 0.14 (???):
 + budynek w mieœcie - kapliczka
 + przeniesienie zadania "dostarcz list" do skryptów
 + wczytywanie atutów z pliku
++ wczytywanie pokoi z pliku
 + usprawnienia menad¿era sceny - czêœæ 2
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 

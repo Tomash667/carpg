@@ -407,9 +407,9 @@ void ObjectLoader::ParseGroup(const string& id)
 		else if(t.IsText())
 		{
 			const string& obj_id = t.GetText();
-			bool is_group = false;
-			BaseObject* obj = BaseObject::TryGet(obj_id, &is_group);
-			if(is_group)
+			ObjectGroup* group = nullptr;
+			BaseObject* obj = BaseObject::TryGet(obj_id, &group);
+			if(group)
 				t.Throw("Can't use group inside group."); // YAGNI
 			if(!obj)
 				t.Throw("Missing object '%s'.", obj_id.c_str());

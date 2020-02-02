@@ -484,16 +484,16 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 		AddRoomColliders(lvl, *room, blocks);
 
-		// choose room type
+		// choose room typed
 		RoomType* rt;
 		if(room->target != RoomTarget::None)
 		{
 			if(room->target == RoomTarget::Treasury)
-				rt = RoomType::Find("krypta_skarb");
+				rt = RoomType::Get("crypt_treasure");
 			else if(room->target == RoomTarget::Throne)
-				rt = RoomType::Find("tron");
+				rt = RoomType::Get("throne");
 			else if(room->target == RoomTarget::PortalCreate)
-				rt = RoomType::Find("portal");
+				rt = RoomType::Get("portal");
 			else
 			{
 				Int2 pt;
@@ -539,11 +539,23 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		bool required_object = false;
 
 		// try to spawn all objects
-		for(uint i = 0; i < rt->count && fail > 0; ++i)
+		for(uint i = 0, size = rt->objs.size(); i < size && fail > 0; ++i)
 		{
-			bool is_group = false;
-			BaseObject* base = BaseObject::Get(rt->objs[i].id, &is_group);
-			int count = rt->objs[i].count.Random();
+			RoomType::Obj& room_obj = rt->objs[i];
+
+			BaseObject* base;
+			ObjectGroup* group;
+			if(room_obj.is_group)
+			{
+				group = room_obj.group;
+				base = group->GetRandom();
+			}
+			else
+			{
+				group = nullptr;
+				base = room_obj.obj2;
+			}
+			int count = room_obj.count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
@@ -562,8 +574,8 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				if(IsSet(base->flags, OBJ_REQUIRED))
 					required_object = true;
 
-				if(is_group)
-					base = BaseObject::Get(rt->objs[i].id);
+				if(group)
+					base = group->GetRandom();
 			}
 		}
 
@@ -572,7 +584,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 		if(!room_chests.empty())
 		{
-			bool extra = IsSet(rt->flags, RT_TREASURE);
+			bool extra = IsSet(rt->flags, RoomType::TREASURE);
 			GenerateDungeonTreasure(room_chests, chest_lvl, extra);
 			room_chests.clear();
 		}
