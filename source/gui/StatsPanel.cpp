@@ -201,8 +201,8 @@ void StatsPanel::SetText()
 	LocalVector<string*> strs;
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
-		PerkInfo& perk = PerkInfo::perks[(int)pc->perks[i].perk];
-		if(IsSet(perk.flags, PerkInfo::RequireFormat))
+		Perk* perk = pc->perks[i].perk;
+		if(perk->value_type != Perk::None)
 		{
 			string* s = StringPool.Get();
 			*s = pc->perks[i].FormatName();
@@ -210,7 +210,7 @@ void StatsPanel::SetText()
 			perks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
 		else
-			perks.push_back(pair<cstring, int>(perk.name.c_str(), i));
+			perks.push_back(pair<cstring, int>(perk->name.c_str(), i));
 	}
 	std::sort(perks.begin(), perks.end(), SortTakenPerks);
 	flowFeats.Clear();
@@ -309,12 +309,11 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		break;
 	case G_PERK:
 		{
-			TakenPerk& perk = pc->perks[id];
-			PerkInfo& pi = PerkInfo::perks[(int)perk.perk];
+			TakenPerk& tp = pc->perks[id];
 			tooltip.img = nullptr;
-			tooltip.big_text = pi.name;
-			tooltip.text = pi.desc;
-			perk.GetDesc(tooltip.small_text);
+			tooltip.big_text = tp.perk->name;
+			tooltip.text = tp.perk->desc;
+			tp.GetDetails(tooltip.small_text);
 		}
 		break;
 	case G_INVALID:

@@ -3,10 +3,10 @@
 #include "Ability.h"
 
 vector<Ability*> Ability::abilities;
-std::map<uint, Ability*> Ability::hash_abilities;
+std::map<int, Ability*> Ability::hash_abilities;
 
 //=================================================================================================
-Ability* Ability::Get(uint hash)
+Ability* Ability::Get(int hash)
 {
 	auto it = hash_abilities.find(hash);
 	if(it != hash_abilities.end())

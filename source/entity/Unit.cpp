@@ -2121,7 +2121,7 @@ void Unit::Load(GameReader& f, bool local)
 		case A_CAST:
 			if(LOAD_VERSION >= V_0_13)
 			{
-				act.cast.ability = Ability::Get(f.Read<uint>());
+				act.cast.ability = Ability::Get(f.Read<int>());
 				f >> act.cast.target;
 			}
 			else
@@ -2138,7 +2138,7 @@ void Unit::Load(GameReader& f, bool local)
 			break;
 		case A_DASH:
 			if(LOAD_VERSION >= V_0_13)
-				act.dash.ability = Ability::Get(f.Read<uint>());
+				act.dash.ability = Ability::Get(f.Read<int>());
 			else
 				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");
 			f >> act.dash.rot;
@@ -2203,7 +2203,17 @@ void Unit::Load(GameReader& f, bool local)
 
 	// effects
 	if(LOAD_VERSION >= V_0_10)
+	{
 		f.ReadVector4(effects);
+		if(LOAD_VERSION < V_DEV)
+		{
+			for(Effect& e : effects)
+			{
+				if(e.source == EffectSource::Perk)
+					e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
+			}
+		}
+	}
 	else if(LOAD_VERSION >= V_0_8)
 	{
 		effects.resize(f.Read<uint>());
@@ -2215,6 +2225,8 @@ void Unit::Load(GameReader& f, bool local)
 			f >> e.time;
 			f >> e.power;
 			e.value = -1;
+			if(e.source == EffectSource::Perk)
+				e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
 		}
 	}
 	else

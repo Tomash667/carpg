@@ -4072,7 +4072,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			f >> bullet.yspeed;
 			f >> bullet.timer;
 			int unit_id = f.Read<int>();
-			uint ability_hash = f.Read<uint>();
+			int ability_hash = f.Read<int>();
 			if(!f)
 			{
 				Error("Read level: Broken bullet.");

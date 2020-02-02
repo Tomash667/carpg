@@ -7,6 +7,7 @@ Version 0.14 (???):
 + new history feat: studend of traveling merchant (+10 haggle, 500 gold)
 + building inside city - shrine
 + converted quest "deliver letter" to scripts
++ loading feats from file
 + scene manager improvements (part 2)
 + update libraries: AngelScript 2.34, Bullet 2.89
 

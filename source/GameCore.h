@@ -142,6 +142,7 @@ struct News;
 struct Object;
 struct OutsideObject;
 struct OtherItem;
+struct Perk;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
@@ -224,7 +225,6 @@ enum class EffectId;
 enum class EffectSource;
 enum class HeroType;
 enum class MusicType;
-enum class Perk;
 enum class QuestCategory;
 enum class SkillId;
 

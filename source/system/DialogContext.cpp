@@ -174,7 +174,7 @@ void DialogContext::Update(float dt)
 				dialog_pos = choice.pos;
 				break;
 			case DialogChoice::Perk:
-				use_return = LearnPerk(choice.pos);
+				use_return = LearnPerk((Perk*)choice.pos);
 				break;
 			case DialogChoice::Hero:
 				use_return = RecruitHero((Class*)choice.pos);
@@ -1500,30 +1500,30 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "show_perks") == 0)
 	{
-		LocalVector<PerkInfo*> to_pick;
+		LocalVector<Perk*> to_pick;
 		PerkContext ctx(pc, false);
-		for(PerkInfo& info : PerkInfo::perks)
+		for(Perk* perk : Perk::perks)
 		{
-			if(IsSet(info.flags, PerkInfo::History))
+			if(IsSet(perk->flags, Perk::History))
 				continue;
-			if(pc->HavePerk(info.perk_id))
+			if(pc->HavePerk(perk))
 				continue;
-			TakenPerk tp(info.perk_id);
+			TakenPerk tp(perk);
 			if(tp.CanTake(ctx))
-				to_pick->push_back(&info);
+				to_pick->push_back(perk);
 		}
-		std::sort(to_pick->begin(), to_pick->end(), [](const PerkInfo* info1, const PerkInfo* info2)
+		std::sort(to_pick->begin(), to_pick->end(), [](const Perk* info1, const Perk* info2)
 		{
 			return info1->name < info2->name;
 		});
-		for(PerkInfo* info : to_pick)
+		for(Perk* perk : to_pick)
 		{
 			string* str = StringPool.Get();
-			*str = Format("%s (%s %d %s)", info->name.c_str(), info->desc.c_str(), info->cost,
-				info->cost == 1 ? game->txLearningPoint : game->txLearningPoints);
-			DialogChoice choice((int)info->perk_id, str->c_str(), quest_dialog_index, str);
+			*str = Format("%s (%s %d %s)", perk->name.c_str(), perk->desc.c_str(), perk->cost,
+				perk->cost == 1 ? game->txLearningPoint : game->txLearningPoints);
+			DialogChoice choice((int)perk, str->c_str(), quest_dialog_index, str);
 			choice.type = DialogChoice::Perk;
-			choice.talk_msg = info->name.c_str();
+			choice.talk_msg = perk->name.c_str();
 			choices.push_back(choice);
 		}
 	}
@@ -1765,13 +1765,12 @@ bool DialogContext::DoIfOp(int value1, int value2, DialogOp op)
 }
 
 //=================================================================================================
-bool DialogContext::LearnPerk(int perk)
+bool DialogContext::LearnPerk(Perk* perk)
 {
 	const int cost = 200;
-	PerkInfo& info = PerkInfo::perks[perk];
 
 	// check learning points
-	if(pc->learning_points < info.cost)
+	if(pc->learning_points < perk->cost)
 	{
 		DialogTalk(game->txNeedLearningPoints);
 		force_end = true;
@@ -1788,7 +1787,7 @@ bool DialogContext::LearnPerk(int perk)
 	}
 
 	// give gold and freeze
-	pc->learning_points -= info.cost;
+	pc->learning_points -= perk->cost;
 	pc->unit->ModGold(-cost);
 	pc->unit->frozen = FROZEN::YES;
 	if(is_local)
@@ -1796,14 +1795,14 @@ bool DialogContext::LearnPerk(int perk)
 		game->fallback_type = FALLBACK::TRAIN;
 		game->fallback_t = -1.f;
 		game->fallback_1 = 3;
-		game->fallback_2 = perk;
+		game->fallback_2 = perk->hash;
 	}
 	else
 	{
 		NetChangePlayer& c = Add1(pc->player_info->changes);
 		c.type = NetChangePlayer::TRAIN;
 		c.id = 3;
-		c.count = perk;
+		c.count = perk->hash;
 
 		pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 	}

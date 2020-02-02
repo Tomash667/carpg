@@ -167,11 +167,6 @@ class warrior {
 
 //------------------------------------------------------------------------------
 // PERKS
-increasedAttrib = "Increased attribute"
-increasedSkill = "Increased skill"
-decreasedAttrib = "Decreased attribute"
-decreasedSkill = "Decreased skill"
-
 perk bad_back {
 	name "Bad back"
 	desc "Your back is not suitable for carrying heavy loads. Reduced strength by 5 points and decreased carrying capacity."
@@ -199,6 +194,7 @@ perk poor {
 perk talent {
 	name "Talent"
 	desc "Increases chosen attribute by 5 points. Faster training for a selected attribute."
+	details "Increased attribute: {value}"
 }
 perk skilled {
 	name "Skilled"
@@ -207,6 +203,7 @@ perk skilled {
 perk skill_focus {
 	name "Skill focus"
 	desc "Increases chosen skill by 5 points and increases the speed with which you gain experience in it."
+	details "Increased skill: {value}"
 }
 perk alchemist_apprentice {
 	name "Alchemist apprentice"

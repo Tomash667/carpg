@@ -235,7 +235,7 @@ void ClassLoader::ApplyUnits()
 				{
 					for(StatProfile::Subprofile* sub : clas->player->stat_profile->subprofiles)
 					{
-						if(sub->perks[StatProfile::MAX_PERKS - 1].perk == Perk::None)
+						if(!sub->perks[StatProfile::MAX_PERKS - 1].perk)
 							LoadError("Subprofile %s.%s: Missing perks.", clas->player->stat_profile->id.c_str(), sub->id.c_str());
 						else if(sub->tag_skills[StatProfile::MAX_TAGS - 1] == SkillId::NONE)
 							LoadError("Subprofile %s.%s: Missing tag skills.", clas->player->stat_profile->id.c_str(), sub->id.c_str());

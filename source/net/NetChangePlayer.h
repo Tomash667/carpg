@@ -40,8 +40,8 @@ struct NetChangePlayer
 		UPDATE_TRADER_INVENTORY, // update trader inventory after getting item [int(id)-unit, ItemListTeam]
 		PLAYER_STATS, // update player statistics [byte(id)-flags, vector<int>-values]
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(count)-value]
-		ADD_PERK, // add perk to player [char(id)-perk, char(count)-value]
-		REMOVE_PERK, // remvoe perk from player [char(id)-perk, char(count)-value]
+		ADD_PERK, // add perk to player [int(id)-perk hash, char(count)-value]
+		REMOVE_PERK, // remvoe perk from player [int(id)-perk hash, char(count)-value]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
 		RUN_SCRIPT_RESULT, // run script result [string(str)-output]
 		GENERIC_CMD_RESPONSE, // response to GENERIC_CMD [string(str)-result]
@@ -50,8 +50,8 @@ struct NetChangePlayer
 		ON_REST, // player is resting [byte(count)-days]
 		GAME_MESSAGE_FORMATTED, // add formatted message [int(id)-game message id, int(a)-subtype, int(count)-value]
 		SOUND, // play sound [int(id)-sound id (0-gold)]
-		ADD_ABILITY, // add ability to player [uint(ability->hash)]
-		REMOVE_ABILITY, // remove ability from player [uint(ability->hash)]
+		ADD_ABILITY, // add ability to player [int(ability->hash)]
+		REMOVE_ABILITY, // remove ability from player [int(ability->hash)]
 		AFTER_CRAFT, // after crafting - update ingredients, play sound
 
 		MAX

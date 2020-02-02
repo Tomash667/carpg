@@ -209,7 +209,6 @@ struct PlayerController : public HeroPlayerCommon
 		int train;
 		int apt;
 		float train_part;
-		bool blocked;
 	};
 
 	PlayerInfo* player_info;
@@ -302,10 +301,10 @@ public:
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 
 	// perks
-	bool HavePerk(Perk perk, int value = -1);
+	bool HavePerk(Perk* perk, int value = -1);
 	bool HavePerkS(const string& perk_id);
-	bool AddPerk(Perk perk, int value);
-	bool RemovePerk(Perk perk, int value);
+	bool AddPerk(Perk* perk, int value);
+	bool RemovePerk(Perk* perk, int value);
 
 	// abilities
 	bool HaveAbility(Ability* ability) const;

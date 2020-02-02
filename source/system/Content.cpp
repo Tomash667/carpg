@@ -10,6 +10,7 @@
 #include "DialogLoader.h"
 #include "ItemLoader.h"
 #include "ObjectLoader.h"
+#include "PerkLoader.h"
 #include "QuestLoader.h"
 #include "RequiredLoader.h"
 #include "UnitLoader.h"
@@ -20,6 +21,7 @@ static cstring content_id[] = {
 	"items",
 	"objects",
 	"abilities",
+	"perks",
 	"dialogs",
 	"classes",
 	"units",
@@ -32,7 +34,8 @@ static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.
 
 //=================================================================================================
 Content::Content() : ability_loader(new AbilityLoader), building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader),
-item_loader(new ItemLoader), object_loader(new ObjectLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader), unit_loader(new UnitLoader)
+item_loader(new ItemLoader), object_loader(new ObjectLoader), perk_loader(new PerkLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader),
+unit_loader(new UnitLoader)
 {
 	quest_loader->dialog_loader = dialog_loader;
 }
@@ -53,6 +56,7 @@ void Content::Cleanup()
 	delete dialog_loader;
 	delete item_loader;
 	delete object_loader;
+	delete perk_loader;
 	delete quest_loader;
 	delete required_loader;
 	delete unit_loader;
@@ -81,6 +85,10 @@ void Content::LoadContent(delegate<void(Id)> callback)
 	Info("Game: Loading abilities.");
 	callback(Id::Abilities);
 	ability_loader->DoLoading();
+
+	Info("Game: Loading perks.");
+	callback(Id::Perks);
+	perk_loader->DoLoading();
 
 	Info("Game: Loading classes.");
 	callback(Id::Classes);
@@ -143,6 +151,7 @@ void Content::CleanupContent()
 	ItemLoader::Cleanup();
 	ObjectLoader::Cleanup();
 	AbilityLoader::Cleanup();
+	PerkLoader::Cleanup();
 	DialogLoader::Cleanup();
 	UnitLoader::Cleanup();
 	BuildingLoader::Cleanup();

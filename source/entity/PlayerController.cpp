@@ -331,7 +331,6 @@ void PlayerController::Save(FileWriter& f)
 		f << stat.train;
 		f << stat.apt;
 		f << stat.train_part;
-		f << stat.blocked;
 	}
 	for(StatData& stat : skill)
 	{
@@ -382,7 +381,7 @@ void PlayerController::Save(FileWriter& f)
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
-		f << (byte)tp.perk;
+		f << tp.perk->hash;
 		f << tp.value;
 	}
 	f << (byte)abilities.size();
@@ -442,7 +441,8 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.train;
 			f >> stat.apt;
 			f >> stat.train_part;
-			f >> stat.blocked;
+			if(LOAD_VERSION < V_DEV)
+				f.Skip<bool>(); // old blocked
 		}
 		for(StatData& stat : skill)
 		{
@@ -450,7 +450,6 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.train;
 			f >> stat.apt;
 			f >> stat.train_part;
-			stat.blocked = false;
 		}
 		SetRequiredPoints();
 	}
@@ -462,7 +461,6 @@ void PlayerController::Load(FileReader& f)
 			stat.train = 0;
 			stat.apt = 0;
 			stat.train_part = 0;
-			stat.blocked = false;
 		}
 		for(StatData& stat : skill)
 		{
@@ -470,7 +468,6 @@ void PlayerController::Load(FileReader& f)
 			stat.train = 0;
 			stat.apt = 0;
 			stat.train_part = 0;
-			stat.blocked = false;
 		}
 	}
 	f >> action_key;
@@ -542,72 +539,43 @@ void PlayerController::Load(FileReader& f)
 	byte count;
 	f >> count;
 	perks.resize(count);
-	for(TakenPerk& tp : perks)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		tp.perk = (Perk)f.Read<byte>();
-		f >> tp.value;
+		for(TakenPerk& tp : perks)
+		{
+			tp.perk = Perk::Get(f.Read<int>());
+			f >> tp.value;
+		}
 	}
-	if(LOAD_VERSION < V_0_8)
+	else if(LOAD_VERSION >= V_0_8)
 	{
-		// translate old perks
+		for(TakenPerk& tp : perks)
+		{
+			old::v2::Perk perk = (old::v2::Perk)f.Read<byte>();
+			tp.perk = old::Convert(perk);
+			f >> tp.value;
+		}
+	}
+	else
+	{
+		for(TakenPerk& tp : perks)
+		{
+			tp.perk = (Perk*)f.Read<byte>();
+			f >> tp.value;
+		}
 		LoopAndRemove(perks, [this](TakenPerk& tp)
 		{
-			switch((old::Perk)tp.perk)
-			{
-			case old::Perk::Weakness:
-				{
-					switch((AttributeId)tp.value)
-					{
-					case AttributeId::STR:
-						tp.perk = Perk::BadBack;
-						break;
-					case AttributeId::DEX:
-						tp.perk = Perk::Sluggish;
-						break;
-					case AttributeId::END:
-						tp.perk = Perk::ChronicDisease;
-						break;
-					case AttributeId::INT:
-						tp.perk = Perk::SlowLearner;
-						break;
-					case AttributeId::WIS:
-						return true;
-					case AttributeId::CHA:
-						tp.perk = Perk::Asocial;
-						break;
-					}
-					PerkContext ctx(this, false);
-					ctx.upgrade = true;
-					tp.Apply(ctx);
-					tp.value = 0;
-				}
-				break;
-			case old::Perk::Strength:
-				tp.perk = Perk::Talent;
-				break;
-			case old::Perk::Skilled:
-				tp.perk = Perk::Skilled;
-				break;
-			case old::Perk::SkillFocus:
+			bool upgrade;
+			old::v2::Perk perk = old::Convert((old::v1::Perk)(int)tp.perk, tp.value, upgrade);
+			if(perk == old::v2::Perk::None)
 				return true;
-			case old::Perk::Talent:
-				tp.perk = Perk::SkillFocus;
-				break;
-			case old::Perk::AlchemistApprentice:
-				tp.perk = Perk::AlchemistApprentice;
-				break;
-			case old::Perk::Wealthy:
-				tp.perk = Perk::Wealthy;
-				break;
-			case old::Perk::VeryWealthy:
-				tp.perk = Perk::VeryWealthy;
-				break;
-			case old::Perk::FamilyHeirloom:
-				tp.perk = Perk::FamilyHeirloom;
-				break;
-			case old::Perk::Leader:
-				tp.perk = Perk::Leader;
-				break;
+			tp.perk = old::Convert(perk);
+			if(upgrade)
+			{
+				PerkContext ctx(this, false);
+				ctx.upgrade = true;
+				tp.Apply(ctx);
+				tp.value = 0;
 			}
 			return false;
 		});
@@ -619,7 +587,7 @@ void PlayerController::Load(FileReader& f)
 		abilities.resize(f.Read<byte>());
 		for(PlayerAbility& ab : abilities)
 		{
-			ab.ability = Ability::Get(f.Read<uint>());
+			ab.ability = Ability::Get(f.Read<int>());
 			f >> ab.cooldown;
 			f >> ab.recharge;
 			f.ReadCasted<byte>(ab.charges);
@@ -682,7 +650,7 @@ void PlayerController::Load(FileReader& f)
 				shortcut.item = Item::Get(f.ReadString1());
 				break;
 			case Shortcut::TYPE_ABILITY:
-				shortcut.ability = Ability::Get(f.Read<uint>());
+				shortcut.ability = Ability::Get(f.Read<int>());
 				break;
 			}
 			shortcut.trigger = false;
@@ -1167,10 +1135,10 @@ void PlayerController::Write(BitStreamWriter& f) const
 	f << arena_fights;
 	f << learning_points;
 	f.WriteCasted<byte>(perks.size());
-	for(const TakenPerk& perk : perks)
+	for(const TakenPerk& tp : perks)
 	{
-		f.WriteCasted<byte>(perk.perk);
-		f << perk.value;
+		f << tp.perk->hash;
+		f << tp.value;
 	}
 	f.WriteCasted<byte>(abilities.size());
 	for(const PlayerAbility& ab : abilities)
@@ -1223,7 +1191,7 @@ void PlayerController::ReadStart(BitStreamReader& f)
 			shortcut.item = Item::Get(f.ReadString1());
 			break;
 		case Shortcut::TYPE_ABILITY:
-			shortcut.ability = Ability::Get(f.Read<uint>());
+			shortcut.ability = Ability::Get(f.Read<int>());
 			break;
 		}
 		shortcut.trigger = false;
@@ -1245,10 +1213,10 @@ bool PlayerController::Read(BitStreamReader& f)
 	if(!f || !f.Ensure(5 * count))
 		return false;
 	perks.resize(count);
-	for(TakenPerk& perk : perks)
+	for(TakenPerk& tp : perks)
 	{
-		f.ReadCasted<byte>(perk.perk);
-		f >> perk.value;
+		tp.perk = Perk::Get(f.Read<int>());
+		f >> tp.value;
 	}
 	f >> count;
 	if(!f || !f.Ensure(11 * count))
@@ -1256,7 +1224,7 @@ bool PlayerController::Read(BitStreamReader& f)
 	abilities.resize(count);
 	for(PlayerAbility& ab : abilities)
 	{
-		ab.ability = Ability::Get(f.Read<uint>());
+		ab.ability = Ability::Get(f.Read<int>());
 		f >> ab.cooldown;
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
@@ -1540,8 +1508,9 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* ques
 }
 
 //=================================================================================================
-bool PlayerController::HavePerk(Perk perk, int value)
+bool PlayerController::HavePerk(Perk* perk, int value)
 {
+	assert(perk);
 	for(TakenPerk& tp : perks)
 	{
 		if(tp.perk == perk && tp.value == value)
@@ -1553,15 +1522,16 @@ bool PlayerController::HavePerk(Perk perk, int value)
 //=================================================================================================
 bool PlayerController::HavePerkS(const string& perk_id)
 {
-	PerkInfo* perk = PerkInfo::Find(perk_id);
+	Perk* perk = Perk::Get(perk_id);
 	if(!perk)
 		throw ScriptException("Invalid perk '%s'.", perk_id.c_str());
-	return HavePerk(perk->perk_id);
+	return HavePerk(perk);
 }
 
 //=================================================================================================
-bool PlayerController::AddPerk(Perk perk, int value)
+bool PlayerController::AddPerk(Perk* perk, int value)
 {
+	assert(perk);
 	if(HavePerk(perk, value))
 		return false;
 	TakenPerk tp(perk, value);
@@ -1572,15 +1542,16 @@ bool PlayerController::AddPerk(Perk perk, int value)
 	{
 		NetChangePlayer& c = Add1(player_info->changes);
 		c.type = NetChangePlayer::ADD_PERK;
-		c.id = (int)perk;
+		c.id = perk->hash;
 		c.count = value;
 	}
 	return true;
 }
 
 //=================================================================================================
-bool PlayerController::RemovePerk(Perk perk, int value)
+bool PlayerController::RemovePerk(Perk* perk, int value)
 {
+	assert(perk);
 	for(auto it = perks.begin(), end = perks.end(); it != end; ++it)
 	{
 		TakenPerk& tp = *it;
@@ -1594,7 +1565,7 @@ bool PlayerController::RemovePerk(Perk perk, int value)
 			{
 				NetChangePlayer& c = Add1(player_info->changes);
 				c.type = NetChangePlayer::REMOVE_PERK;
-				c.id = (int)perk;
+				c.id = perk->hash;
 				c.count = value;
 			}
 			return true;

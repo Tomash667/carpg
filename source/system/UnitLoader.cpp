@@ -185,7 +185,7 @@ void UnitLoader::Cleanup()
 //=================================================================================================
 void UnitLoader::InitTokenizer()
 {
-	t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS);
+	t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
 
 	t.AddKeywords(G_TYPE, {
 		{ "unit", T_UNIT },
@@ -1269,23 +1269,23 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				int index = 0;
 				for(; index < StatProfile::MAX_PERKS; ++index)
 				{
-					if(subprofile->perks[index].perk == Perk::None)
+					if(!subprofile->perks[index].perk)
 						break;
 				}
 				if(index == StatProfile::MAX_PERKS)
 					t.Throw("Max %u perks.", StatProfile::MAX_PERKS);
 				const string& id = t.MustGetText();
-				PerkInfo* info = PerkInfo::Find(id);
-				if(!info)
+				Perk* perk = Perk::Get(id);
+				if(!perk)
 					t.Throw("Missing perk '%s'.", id.c_str());
-				subprofile->perks[index].perk = info->perk_id;
+				subprofile->perks[index].perk = perk;
 				int value = -1;
-				if(info->value_type != PerkInfo::None)
+				if(perk->value_type != Perk::None)
 				{
 					t.Next();
-					if(info->value_type == PerkInfo::Attribute)
+					if(perk->value_type == Perk::Attribute)
 						value = t.MustGetKeywordId(G_ATTRIBUTE);
-					else if(info->value_type == PerkInfo::Skill)
+					else if(perk->value_type == Perk::Skill)
 					{
 						if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
 							value = (int)SkillId::SPECIAL_WEAPON;

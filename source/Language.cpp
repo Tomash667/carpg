@@ -49,7 +49,8 @@ enum Property
 	P_DESC,
 	P_ABOUT,
 	P_TEXT,
-	P_ENCOUNTER_TEXT
+	P_ENCOUNTER_TEXT,
+	P_DETAILS
 };
 
 //-----------------------------------------------------------------------------
@@ -227,7 +228,8 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "desc", P_DESC },
 		{ "about", P_ABOUT },
 		{ "text", P_TEXT },
-		{ "encounter_text", P_ENCOUNTER_TEXT }
+		{ "encounter_text", P_ENCOUNTER_TEXT },
+		{ "details", P_DETAILS }
 		});
 }
 
@@ -447,10 +449,11 @@ void Language::ParseObject(Tokenizer& t)
 		// perk id {
 		//		name "text"
 		//		desc "text"
+		//		[details "text"]
 		// }
 		{
 			const string& id = t.MustGetText();
-			PerkInfo* perk = PerkInfo::Find(id);
+			Perk* perk = Perk::Get(id);
 			if(!perk)
 				t.Throw("Invalid perk '%s'.", id.c_str());
 			t.Next();
@@ -458,6 +461,12 @@ void Language::ParseObject(Tokenizer& t)
 			t.Next();
 			GetString(t, P_NAME, perk->name);
 			GetString(t, P_DESC, perk->desc);
+			if(t.IsKeyword(P_DETAILS, G_PROPERTY))
+			{
+				t.Next();
+				perk->details = t.MustGetString();
+				t.Next();
+			}
 			t.AssertSymbol('}');
 		}
 		break;
@@ -613,7 +622,7 @@ void Language::LoadLanguageFiles()
 	LoadFile("menu.txt");
 	LoadFile("talks.txt");
 
-	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
+	Tokenizer t(Tokenizer::F_MULTI_KEYWORDS);
 	PrepareTokenizer(t);
 	LoadObjectFile(t, "names.txt");
 	LoadObjectFile(t, "items.txt");

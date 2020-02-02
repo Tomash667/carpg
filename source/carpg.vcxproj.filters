@@ -70,6 +70,9 @@
     <Filter Include="gui">
       <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system\perks">
+      <UniqueIdentifier>{b0058d9b-cbd2-4b8a-b3d9-e012903acb41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -220,9 +223,6 @@
     </ClCompile>
     <ClCompile Include="gui\Controls.cpp">
       <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="stats\Perk.cpp">
-      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="entity\CreatedCharacter.cpp">
       <Filter>entity</Filter>
@@ -605,6 +605,12 @@
     <ClCompile Include="entity\GameLight.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="system\PerkLoader.cpp">
+      <Filter>system\perks</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Perk.cpp">
+      <Filter>system\perks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -769,9 +775,6 @@
     </ClInclude>
     <ClInclude Include="gui\Controls.h">
       <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="stats\Perk.h">
-      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="entity\CreatedCharacter.h">
       <Filter>entity</Filter>
@@ -1198,6 +1201,12 @@
     </ClInclude>
     <ClInclude Include="entity\GameLight.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="system\PerkLoader.h">
+      <Filter>system\perks</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Perk.h">
+      <Filter>system\perks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

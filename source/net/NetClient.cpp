@@ -2072,7 +2072,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::CREATE_EXPLOSION:
 			{
 				Vec3 pos;
-				uint ability_hash;
+				int ability_hash;
 				f >> ability_hash;
 				f >> pos;
 				if(!f)
@@ -2356,7 +2356,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// create ball - spell effect
 		case NetChange::CREATE_SPELL_BALL:
 			{
-				uint ability_hash;
+				int ability_hash;
 				int id;
 				Vec3 pos;
 				float rotY, speedY;
@@ -2439,7 +2439,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				uint ability_hash;
+				int ability_hash;
 				Vec3 pos;
 				f >> ability_hash;
 				f >> pos;
@@ -2875,7 +2875,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::PLAYER_ABILITY:
 			{
 				int id;
-				uint ability_hash;
+				int ability_hash;
 				f >> id;
 				f >> ability_hash;
 				if(!f)
@@ -3860,27 +3860,29 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// add perk to player
 		case NetChangePlayer::ADD_PERK:
 			{
-				Perk perk;
-				int value;
-				f.ReadCasted<char>(perk);
+				int perk_hash, value;
+				f >> perk_hash;
 				f.ReadCasted<char>(value);
 				if(!f)
 					Error("Update single client: Broken ADD_PERK.");
-				else
+				else if(Perk* perk = Perk::Get(perk_hash))
 					pc.AddPerk(perk, value);
+				else
+					Error("Update single client: ADD_PERK, invalid perk %d.", perk_hash);
 			}
 			break;
 		// remove perk from player
 		case NetChangePlayer::REMOVE_PERK:
 			{
-				Perk perk;
-				int value;
-				f.ReadCasted<char>(perk);
+				int perk_hash, value;
+				f >> perk_hash;
 				f.ReadCasted<char>(value);
 				if(!f)
 					Error("Update single client: Broken REMOVE_PERK.");
-				else
+				else if(Perk* perk = Perk::Get(perk_hash))
 					pc.RemovePerk(perk, value);
+				else
+					Error("Update single client: ADD_PERK, invalid perk %d.", perk_hash);
 			}
 			break;
 		// show game message
@@ -3989,7 +3991,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// add ability to player
 		case NetChangePlayer::ADD_ABILITY:
 			{
-				uint ability_hash;
+				int ability_hash;
 				f >> ability_hash;
 				if(!f)
 				{
@@ -4006,7 +4008,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// remove ability from player
 		case NetChangePlayer::REMOVE_ABILITY:
 			{
-				uint ability_hash;
+				int ability_hash;
 				f >> ability_hash;
 				if(!f)
 				{

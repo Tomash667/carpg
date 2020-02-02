@@ -156,10 +156,10 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	int haggle = unit.Get(SkillId::HAGGLE) + unit.Get(AttributeId::CHA) - 50;
 	if(unit.IsPlayer())
 	{
-		if(unit.player->HavePerk(Perk::Asocial))
+		if(unit.player->HavePerk(Perk::Get("asocial")))
 			haggle -= 20;
 		if(unit.player->action == PlayerAction::Trade
-			&& unit.player->action_unit->data->id == "alchemist" && unit.player->HavePerk(Perk::AlchemistApprentice))
+			&& unit.player->action_unit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemist_apprentice")))
 			haggle += 20;
 	}
 

@@ -7,6 +7,7 @@ class ClassLoader;
 class DialogLoader;
 class ItemLoader;
 class ObjectLoader;
+class PerkLoader;
 class QuestLoader;
 class RequiredLoader;
 class UnitLoader;
@@ -20,6 +21,7 @@ public:
 		Items,
 		Objects,
 		Abilities,
+		Perks,
 		Dialogs,
 		Classes,
 		Units,
@@ -57,6 +59,7 @@ private:
 	DialogLoader* dialog_loader;
 	ItemLoader* item_loader;
 	ObjectLoader* object_loader;
+	PerkLoader* perk_loader;
 	QuestLoader* quest_loader;
 	RequiredLoader* required_loader;
 	UnitLoader* unit_loader;

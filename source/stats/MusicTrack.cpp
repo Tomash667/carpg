@@ -102,7 +102,7 @@ void Game::SetMusic()
 //=================================================================================================
 uint MusicTrack::Load(uint& errors)
 {
-	Tokenizer t(Tokenizer::F_UNESCAPE);
+	Tokenizer t;
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
 	{
 		Error("Failed to open music.txt.");

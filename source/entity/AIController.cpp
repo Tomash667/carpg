@@ -178,7 +178,7 @@ void AIController::Load(GameReader& f)
 	{
 	case Cast:
 		if(LOAD_VERSION >= V_0_13)
-			st.cast.ability = Ability::Get(f.Read<uint>());
+			st.cast.ability = Ability::Get(f.Read<int>());
 		else
 		{
 			st.cast.ability = unit->data->abilities->ability[unit->ai_mode];

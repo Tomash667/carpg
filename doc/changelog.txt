@@ -7,6 +7,7 @@ Wersja 0.14 (???):
 + nowy atut historii: uczeñ wêdrownego kupca (+10 targowania, 500 z³ota)
 + budynek w mieœcie - kapliczka
 + przeniesienie zadania "dostarcz list" do skryptów
++ wczytywanie atutów z pliku
 + usprawnienia menad¿era sceny - czêœæ 2
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 

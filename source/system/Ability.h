@@ -40,7 +40,7 @@ struct Ability
 		Strength = 1 << 9, // use Strength to calculate damage
 	};
 
-	uint hash;
+	int hash;
 	string id;
 	SoundPtr sound_cast, sound_hit;
 	TexturePtr tex, tex_particle, tex_icon;
@@ -65,8 +65,8 @@ struct Ability
 	}
 
 	static vector<Ability*> abilities;
-	static std::map<uint, Ability*> hash_abilities;
-	static Ability* Get(uint hash);
+	static std::map<int, Ability*> hash_abilities;
+	static Ability* Get(int hash);
 	static Ability* Get(Cstring id) { return Get(Hash(id)); }
 	static Ability* GetS(const string& id) { return Get(id); }
 };

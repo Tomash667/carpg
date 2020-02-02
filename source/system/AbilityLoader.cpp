@@ -148,7 +148,7 @@ void AbilityLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void AbilityLoader::ParseAbility(const string& id)
 {
-	uint hash = Hash(id);
+	int hash = Hash(id);
 	Ability* existing_ability = Ability::Get(hash);
 	if(existing_ability)
 	{
@@ -406,7 +406,7 @@ void AbilityLoader::ParseAlias(const string& id)
 	t.Next();
 
 	const string& alias_id = t.MustGetItemKeyword();
-	uint hash = Hash(alias_id);
+	int hash = Hash(alias_id);
 	if(Ability::Get(hash))
 		t.Throw("Alias or ability already exists.");
 

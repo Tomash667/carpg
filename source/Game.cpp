@@ -1438,8 +1438,6 @@ void Game::SetGameText()
 
 	// dialogi
 	LoadArray(txYell, "yell");
-
-	TakenPerk::LoadText();
 }
 
 //=================================================================================================
@@ -1504,7 +1502,7 @@ uint Game::ValidateGameData(bool major)
 	Attribute::Validate(err);
 	Skill::Validate(err);
 	Item::Validate(err);
-	PerkInfo::Validate(err);
+	Perk::Validate(err);
 	RoomType::Validate(err);
 
 	if(err == 0)
@@ -2679,7 +2677,7 @@ void Game::UpdateFallback(float dt)
 						quest_mgr->quest_tournament->Train(*pc);
 						break;
 					case 3:
-						pc->AddPerk((Perk)fallback_2, -1);
+						pc->AddPerk(Perk::Get(fallback_2), -1);
 						game_gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
 						break;
 					case 4:

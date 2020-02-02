@@ -167,11 +167,6 @@ class warrior {
 
 //------------------------------------------------------------------------------
 // PERKS
-increasedAttrib = "Zwiêkszony atrybut"
-increasedSkill = "Zwiêkszona umiejêtnoœæ"
-decreasedAttrib = "Zmniejszony atrybut"
-decreasedSkill = "Zmniejszona umiejêtnoœæ"
-
 perk bad_back {
 	name "S³abe plecy"
 	desc "Twoje plecy nie nadaj¹ siê do noszenia ciê¿arów. Zmniejsza si³ê o 5 i zmniejsza maksymalny udŸwig."
@@ -199,6 +194,7 @@ perk poor {
 perk talent {
 	name "Talent"
 	desc "Zwiêksza wybrany atrybut o 5 punktów. Przyœpiesza szybkoœæ zdobywania tego atrybutu."
+	details "Zwiêkszony atrybut: {value}"
 }
 perk skilled {
 	name "Fachowiec"
@@ -207,6 +203,7 @@ perk skilled {
 perk skill_focus {
 	name "Skupienie na umiejêtnoœci"
 	desc "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów. Przyœpiesza szybkoœæ zdobywania tej umiejêtnoœci."
+	details "Zwiêkszona umiejêtnoœæ: {value}"
 }
 perk alchemist_apprentice {
 	name "Uczeñ alchemika"

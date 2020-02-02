@@ -110,7 +110,7 @@ void ItemLoader::Cleanup()
 //=================================================================================================
 void ItemLoader::InitTokenizer()
 {
-	t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
+	t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
 
 	t.AddKeywords(G_ITEM_TYPE, {
 		{ "weapon", IT_WEAPON },

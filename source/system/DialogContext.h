@@ -79,6 +79,6 @@ struct DialogContext
 private:
 	void UpdateLoop();
 	bool DoIfOp(int value1, int value2, DialogOp op);
-	bool LearnPerk(int perk);
+	bool LearnPerk(Perk* perk);
 	bool RecruitHero(Class* clas);
 };

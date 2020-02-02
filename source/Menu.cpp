@@ -165,7 +165,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	game_gui->Setup(pc);
 	game_gui->ability->Refresh();
 
-	if(!tutorial && cc.HavePerk(Perk::Leader))
+	if(!tutorial && cc.HavePerk(Perk::Get("leader")))
 	{
 		Unit* npc = CreateUnit(*Class::GetRandomHeroData(), -1, nullptr, nullptr, false);
 		npc->area = nullptr;
@@ -1371,7 +1371,7 @@ void Game::UpdateServerTransfer(float dt)
 				info.cc.Apply(*u->player);
 				u->fake_unit = false;
 
-				if(info.cc.HavePerk(Perk::Leader))
+				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;
 
 				if(net->mp_load)

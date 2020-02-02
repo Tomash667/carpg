@@ -306,7 +306,6 @@
     <ClInclude Include="stats\Effect.h" />
     <ClInclude Include="stats\Material.h" />
     <ClInclude Include="stats\MusicTrack.h" />
-    <ClInclude Include="stats\Perk.h" />
     <ClInclude Include="stats\RoomType.h" />
     <ClInclude Include="stats\Skill.h" />
     <ClInclude Include="stats\UnitStats.h" />
@@ -340,9 +339,13 @@
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />
     <ClCompile Include="system\Content.cpp" />
+    <ClCompile Include="system\Perk.cpp" />
+    <ClCompile Include="system\PerkLoader.cpp" />
     <ClCompile Include="system\QuestList.cpp" />
     <ClCompile Include="system\QuestLoader.cpp" />
     <ClInclude Include="system\ObjectLoader.h" />
+    <ClInclude Include="system\Perk.h" />
+    <ClInclude Include="system\PerkLoader.h" />
     <ClInclude Include="system\QuestList.h" />
     <ClInclude Include="system\QuestLoader.h" />
     <ClInclude Include="system\QuestScheme.h" />
@@ -496,7 +499,6 @@
     <ClCompile Include="stats\BaseTrap.cpp" />
     <ClCompile Include="stats\Effect.cpp" />
     <ClCompile Include="stats\MusicTrack.cpp" />
-    <ClCompile Include="stats\Perk.cpp" />
     <ClCompile Include="stats\RoomType.cpp" />
     <ClCompile Include="stats\Skill.cpp" />
     <ClCompile Include="stats\UnitStats.cpp" />

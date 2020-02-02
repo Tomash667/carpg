@@ -89,13 +89,12 @@ private:
 	void RebuildSkillsFlow();
 	void RebuildPerksFlow();
 	void ResetSkillsPerks();
-	void PickAttribute(cstring text, Perk picked_perk);
-	void PickSkill(cstring text, Perk picked_perk);
+	void PickAttribute(cstring text, Perk* perk);
+	void PickSkill(cstring text, Perk* perk);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
 	void UpdateSkillButtons();
-	void AddPerk(Perk perk, int value = -1);
-	bool ValidatePerk(Perk perk);
+	void AddPerk(Perk* perk, int value = -1);
 	void CheckSkillsUpdate();
 	void UpdateInventory();
 	void ResetDoll(bool instant);
@@ -123,9 +122,9 @@ private:
 	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn,
 		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany, txFlawExtraPerk,
 		txPerksRemoved;
-	Perk picked_perk;
+	Perk* picked_perk;
 	PickItemDialog* pickItemDialog;
-	vector<Perk> available_perks;
+	vector<Perk*> available_perks;
 	vector<pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
 	TexturePtr tBox, tPowerBar;

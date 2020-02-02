@@ -56,7 +56,7 @@ void Bullet::Load(FileReader& f)
 	owner = Unit::GetById(f.Read<int>());
 	if(LOAD_VERSION >= V_0_13)
 	{
-		uint ability_hash = f.Read<uint>();
+		int ability_hash = f.Read<int>();
 		if(ability_hash != 0)
 		{
 			ability = Ability::Get(ability_hash);

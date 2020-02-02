@@ -35,7 +35,7 @@ void Explo::Load(FileReader& f)
 	f >> hitted;
 	f >> owner;
 	if(LOAD_VERSION >= V_0_13)
-		ability = Ability::Get(f.Read<uint>());
+		ability = Ability::Get(f.Read<int>());
 	else
 	{
 		const string& tex = f.ReadString1();
@@ -62,7 +62,7 @@ void Explo::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Explo::Read(BitStreamReader& f)
 {
-	ability = Ability::Get(f.Read<uint>());
+	ability = Ability::Get(f.Read<int>());
 	f >> pos;
 	f >> size;
 	f >> sizemax;
@@ -232,7 +232,7 @@ void Electro::Load(FileReader& f)
 	f >> owner;
 	if(LOAD_VERSION >= V_0_13)
 	{
-		uint ability_hash = f.Read<uint>();
+		int ability_hash = f.Read<int>();
 		ability = Ability::Get(ability_hash);
 		if(!ability)
 			throw Format("Missing ability %u for electro.", ability_hash);
@@ -267,7 +267,7 @@ void Electro::Write(BitStreamWriter& f)
 bool Electro::Read(BitStreamReader& f)
 {
 	f >> id;
-	ability = Ability::Get(f.Read<uint>());
+	ability = Ability::Get(f.Read<int>());
 
 	byte count;
 	f >> count;

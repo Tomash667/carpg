@@ -2564,11 +2564,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else if(type == 3)
 						{
-							if(value >= (byte)Perk::Max)
+							Perk* perk = Perk::Get(value);
+							if(!perk)
 								error = "perk";
 							else
 							{
-								player.AddPerk((Perk)value, -1);
+								player.AddPerk(perk, -1);
 								NetChangePlayer& c = Add1(info.changes);
 								c.type = NetChangePlayer::GAME_MESSAGE;
 								c.id = GMS_LEARNED_PERK;
@@ -2899,7 +2900,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				int netid;
 				Vec3 pos;
-				uint ability_hash;
+				int ability_hash;
 				f >> netid;
 				f >> pos;
 				f >> ability_hash;
@@ -3189,7 +3190,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				case Shortcut::TYPE_ABILITY:
 					{
-						uint ability_hash;
+						int ability_hash;
 						f >> ability_hash;
 						if(!f)
 							break;
@@ -3930,7 +3931,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			break;
 		case NetChangePlayer::ADD_PERK:
 		case NetChangePlayer::REMOVE_PERK:
-			f.WriteCasted<char>(c.id);
+			f << c.id;
 			f.WriteCasted<char>(c.count);
 			break;
 		case NetChangePlayer::GAME_MESSAGE:
