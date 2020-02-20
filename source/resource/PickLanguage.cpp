@@ -140,7 +140,7 @@ bool ShowPickLanguageDialog(string& lang)
 
 	if(Language::GetLanguages().empty())
 	{
-		MessageBox(nullptr, "Failed to load languaged data files!", "Language error", MB_APPLMODAL);
+		MessageBox(nullptr, "Failed to load language data files!", nullptr, MB_APPLMODAL);
 		return false;
 	}
 

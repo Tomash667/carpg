@@ -340,10 +340,13 @@
     <ClCompile Include="system\ClassLoader.cpp" />
     <ClCompile Include="system\Content.cpp" />
     <ClCompile Include="system\LocationLoader.cpp" />
+    <ClCompile Include="system\ModuleLoader.cpp" />
     <ClCompile Include="system\Perk.cpp" />
     <ClCompile Include="system\PerkLoader.cpp" />
     <ClCompile Include="system\QuestList.cpp" />
     <ClCompile Include="system\QuestLoader.cpp" />
+    <ClInclude Include="system\Module.h" />
+    <ClInclude Include="system\ModuleLoader.h" />
     <ClInclude Include="system\ObjectLoader.h" />
     <ClInclude Include="system\Perk.h" />
     <ClInclude Include="system\PerkLoader.h" />

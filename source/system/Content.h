@@ -46,7 +46,6 @@ public:
 	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);
 	bool ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str);
 
-	string system_dir;
 	uint errors;
 	uint warnings;
 	uint crc[(int)Id::Max];

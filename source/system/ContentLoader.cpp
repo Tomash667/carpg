@@ -18,7 +18,8 @@ void ContentLoader::Load(cstring filename, int top_group, bool* require_id)
 //=================================================================================================
 bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 {
-	LocalString path = Format("%s/%s", content.system_dir.c_str(), filename);
+	FIXME;
+	LocalString path = Format("XXX/%s", filename);
 	this->top_group = top_group;
 
 	if(!t.FromFile(path))
@@ -105,7 +106,8 @@ void ContentLoader::LoadError(cstring msg)
 //=================================================================================================
 cstring ContentLoader::FormatLanguagePath(cstring filename)
 {
-	return Format("%s/lang/%s/%s", content.system_dir.c_str(), Language::prefix.c_str(), filename);
+	FIXME;
+	return Format("XXX/lang/%s/%s", Language::prefix.c_str(), filename);
 }
 
 //=================================================================================================

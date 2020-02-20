@@ -15,7 +15,7 @@
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
-string g_system_dir;
+string g_modules_dir, g_lang_dir;
 
 //-----------------------------------------------------------------------------
 bool ShowPickLanguageDialog(string& lang);
@@ -204,14 +204,14 @@ bool RunInstallScripts()
 	t.AddKeyword("version", 1);
 	t.AddKeyword("remove", 2);
 
-	io::FindFiles(Format("%s/install/*.txt", g_system_dir.c_str()), [&](const io::FileInfo& info)
+	io::FindFiles("install/*.txt", [&](const io::FileInfo& info)
 	{
 		int major, minor, patch;
 
 		// read file to find version info
 		try
 		{
-			if(t.FromFile(Format("%s/install/%s", g_system_dir.c_str(), info.filename)))
+			if(t.FromFile(Format("install/%s", info.filename)))
 			{
 				t.Next();
 				if(t.MustGetKeywordId() == 2)
@@ -275,7 +275,7 @@ bool RunInstallScripts()
 
 	for(vector<InstallScript>::iterator it = scripts.begin(), end = scripts.end(); it != end; ++it)
 	{
-		cstring path = Format("%s/install/%s", g_system_dir.c_str(), it->filename.c_str());
+		cstring path = Format("install/%s", it->filename.c_str());
 
 		try
 		{
@@ -341,8 +341,9 @@ void LoadResourcesConfig()
 {
 	Config cfg;
 	cfg.Load("resource.cfg");
-	g_system_dir = cfg.GetString("system", "system");
-	render->SetShadersDir(cfg.GetString("shaders", "system/shaders").c_str());
+	g_modules_dir = cfg.GetString("modules", "modules");
+	g_lang_dir = cfg.GetString("languages", "lang");
+	render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
 }
 
 //=================================================================================================

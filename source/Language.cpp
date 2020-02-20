@@ -54,7 +54,7 @@ enum Property
 };
 
 //-----------------------------------------------------------------------------
-extern string g_system_dir;
+extern string g_lang_dir;
 extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
 string Language::prefix, Language::tstr;
 Language::Map Language::strs;
@@ -84,7 +84,7 @@ void Language::Cleanup()
 bool Language::LoadFile(cstring filename)
 {
 	assert(filename);
-	LocalString path = Format("%s/lang/%s/%s", g_system_dir.c_str(), prefix.c_str(), filename);
+	LocalString path = Format("%s/%s/%s", g_lang_dir.c_str(), prefix.c_str(), filename);
 	Tokenizer t;
 	return LoadFileInternal(t, path);
 }
@@ -170,11 +170,11 @@ void Language::LoadLanguages()
 	Map* lmap = nullptr;
 	Tokenizer t;
 
-	io::FindFiles(Format("%s/lang/*", g_system_dir.c_str()), [&](const io::FileInfo& info)
+	io::FindFiles(Format("%s/*", g_lang_dir.c_str()), [&](const io::FileInfo& info)
 	{
 		if(!info.is_dir)
 			return true;
-		LocalString path = Format("%s/lang/%s/info.txt", g_system_dir.c_str(), info.filename);
+		LocalString path = Format("%s/%s/info.txt", g_lang_dir.c_str(), info.filename);
 		if(lmap)
 			lmap->clear();
 		else
@@ -245,7 +245,7 @@ inline void GetString(Tokenizer& t, Property prop, string& s)
 //=================================================================================================
 void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 {
-	LocalString path = Format("%s/lang/%s/%s", g_system_dir.c_str(), prefix.c_str(), filename);
+	LocalString path = Format("%s/%s/%s", g_lang_dir.c_str(), prefix.c_str(), filename);
 	Info("Reading text file \"%s\".", path.c_str());
 
 	if(!t.FromFile(path))

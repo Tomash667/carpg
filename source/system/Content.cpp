@@ -130,7 +130,8 @@ void Content::LoadContent(delegate<void(Id)> callback)
 //=================================================================================================
 void Content::LoadVersion()
 {
-	cstring path = Format("%s/system.txt", system_dir.c_str());
+	FIXME;
+	cstring path = "XXX/system.txt";
 	Tokenizer t;
 
 	try

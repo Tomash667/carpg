@@ -10,7 +10,6 @@
 
 //-----------------------------------------------------------------------------
 vector<MusicTrack*> MusicTrack::tracks;
-extern string g_system_dir;
 
 //=================================================================================================
 void Game::SetMusic(MusicType type)
@@ -103,7 +102,8 @@ void Game::SetMusic()
 uint MusicTrack::Load(uint& errors)
 {
 	Tokenizer t;
-	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
+	FIXME;
+	if(!t.FromFile("XXX/music.txt"))
 	{
 		Error("Failed to open music.txt.");
 		++errors;

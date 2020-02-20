@@ -96,7 +96,6 @@ const float LIMIT_DT = 0.3f;
 Game* global::game;
 CustomCollisionWorld* global::phy_world;
 GameKeys GKey;
-extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
@@ -138,8 +137,6 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engi
 
 	SetupConfigVars();
 
-	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
-
 	arena = new Arena;
 	cmdp = new CommandParser;
 	game_gui = new GameGui;
@@ -158,6 +155,20 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engi
 //=================================================================================================
 Game::~Game()
 {
+	delete arena;
+	delete cmdp;
+	delete game_gui;
+	delete game_level;
+	delete game_res;
+	delete game_stats;
+	delete loc_gen_factory;
+	delete net;
+	delete pathfinding;
+	delete quest_mgr;
+	delete script_mgr;
+	delete team;
+	delete world;
+
 	delete engine;
 }
 
@@ -306,7 +317,6 @@ void Game::LoadDatafiles()
 	load_warnings = 0;
 
 	// content
-	content.system_dir = g_system_dir;
 	content.LoadContent([this](Content::Id id)
 		{
 			switch(id)
@@ -601,20 +611,6 @@ void Game::OnCleanup()
 		game_gui->main_menu->ShutdownThread();
 
 	content.CleanupContent();
-
-	delete arena;
-	delete cmdp;
-	delete game_gui;
-	delete game_level;
-	delete game_res;
-	delete game_stats;
-	delete loc_gen_factory;
-	delete net;
-	delete pathfinding;
-	delete quest_mgr;
-	delete script_mgr;
-	delete team;
-	delete world;
 
 	ClearQuadtree();
 
