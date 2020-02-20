@@ -1,0 +1,11 @@
+consumable gamer_bread {
+	weight 0.8
+	value 500
+	mesh "chleb.qmsh"
+	type food
+	time 5
+	flags {not_alchemist not_merchant ground_mesh}
+	effects {
+		food_regeneration 45
+	}
+}

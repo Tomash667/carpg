@@ -1,0 +1,4 @@
+item gamer_bread {
+	name "Chleb dla graczy"
+	desc "Wart swojej ceny!"
+}

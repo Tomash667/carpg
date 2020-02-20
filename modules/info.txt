@@ -1,0 +1,9 @@
+Game modules and language files.
+
+Layout:
+example
+    ├───data
+    ├───files
+    └───lang
+        ├───en
+        └───pl

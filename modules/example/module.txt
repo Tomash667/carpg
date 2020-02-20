@@ -1,0 +1,8 @@
+name {
+	en "Example module"
+	pl "Przykładowy moduł"
+}
+desc {
+	en "Adds new test item \"gamer_bread\"."
+	pl "Dodaje testowy przedmiot \"gamer_bread\"."
+}

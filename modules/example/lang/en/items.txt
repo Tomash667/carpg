@@ -1,0 +1,4 @@
+item gamer_bread {
+	name "Gamer bread"
+	desc "Worth it's price!"
+}

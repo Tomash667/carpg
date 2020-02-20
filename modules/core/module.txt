@@ -1,0 +1,5 @@
+name {
+	en "Core module"
+	pl "Bazowy moduł"
+}
+version 14
