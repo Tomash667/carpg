@@ -1,6 +1,5 @@
 // character skills & gain tables
 #include "Pch.h"
-#include "GameCore.h"
 #include "Skill.h"
 
 //-----------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "LevelArea.h"
 #include "World.h"
 #include "City.h"

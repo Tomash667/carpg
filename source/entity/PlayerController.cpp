@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "PlayerController.h"
 #include "PlayerInfo.h"
 #include "Unit.h"

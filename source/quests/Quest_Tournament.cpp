@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Tournament.h"
 #include "GameFile.h"
 #include "World.h"

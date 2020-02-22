@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "RequiredLoader.h"
 #include "Ability.h"
 #include "BaseUsable.h"

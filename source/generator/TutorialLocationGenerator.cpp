@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "TutorialLocationGenerator.h"
 #include "Level.h"
 #include "InsideLocationLevel.h"

@@ -27,12 +27,19 @@ public:
 	static bool LoadFile(cstring filename);
 	static void LoadLanguages();
 	static void LoadLanguageFiles();
+	static cstring GetPath(cstring filename) { return Format("%s/%s", dir.c_str(), filename); }
 	static cstring TryGetString(cstring str, bool err = true);
 	static Section GetSection(cstring name);
 	static vector<Map*>& GetLanguages() { return languages; }
 	static uint GetErrors() { return errors; }
+	static void SetPrefix(cstring prefix)
+	{
+		Language::prefix = prefix;
+		Language::dir = Format("%s/%s", dir.c_str(), prefix);
+	}
 
 	static string prefix;
+	static string dir;
 
 private:
 	static bool LoadFileInternal(Tokenizer& t, cstring path, Map* lmap = nullptr);

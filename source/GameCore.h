@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include <EngineCore.h>
 #include <File.h>
 #include <Physics.h>
 #include <Sound.h>

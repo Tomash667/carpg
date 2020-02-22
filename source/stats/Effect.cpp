@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Effect.h"
 
 EffectInfo EffectInfo::effects[] = {

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "AbilityLoader.h"
 #include "Ability.h"
 #include "GameResources.h"

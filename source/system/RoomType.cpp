@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "RoomType.h"
 
 vector<RoomType*> RoomType::types;

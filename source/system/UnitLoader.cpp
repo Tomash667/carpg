@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "UnitLoader.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
@@ -437,7 +436,7 @@ void UnitLoader::InitTokenizer()
 		{ "book", IT_BOOK }
 		});
 
-	t.AddEnums<ConsumableType>(G_CONSUMABLE_GROUP, {
+	t.AddKeywords<ConsumableType>(G_CONSUMABLE_GROUP, {
 		{ "food", ConsumableType::Food },
 		{ "drink", ConsumableType::Drink },
 		{ "potion", ConsumableType::Potion },

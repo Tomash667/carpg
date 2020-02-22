@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Artifacts.h"
 #include "World.h"
 #include "BaseLocation.h"

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "EncounterGenerator.h"
 #include "Encounter.h"
 #include "OutsideLocation.h"

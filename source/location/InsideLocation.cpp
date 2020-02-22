@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "InsideLocation.h"
 #include "GameFile.h"
 #include "BitStreamFunc.h"

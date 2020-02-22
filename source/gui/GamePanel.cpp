@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "GamePanel.h"
 #include "DialogBox.h"
 #include "Input.h"

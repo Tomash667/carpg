@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Minimap.h"
 #include "Game.h"
 #include "InsideLocation.h"

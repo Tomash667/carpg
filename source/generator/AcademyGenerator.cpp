@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "AcademyGenerator.h"
 #include <Terrain.h>
 #include <Perlin.h>

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CaveGenerator.h"
 #include "Cave.h"
 #include "Tile.h"

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CraftPanel.h"
 #include "Language.h"
 #include "PlayerController.h"

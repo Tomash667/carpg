@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include <intrin.h>
 #include "Version.h"
@@ -7,6 +6,7 @@
 #include "ErrorHandler.h"
 #include "Utility.h"
 #include "SaveSlot.h"
+#include "Language.h"
 #include <Engine.h>
 #include <Render.h>
 #include <SceneManager.h>
@@ -341,8 +341,8 @@ void LoadResourcesConfig()
 {
 	Config cfg;
 	cfg.Load("resource.cfg");
+	Language::dir = cfg.GetString("languages", "lang");
 	g_modules_dir = cfg.GetString("modules", "modules");
-	g_lang_dir = cfg.GetString("languages", "lang");
 	render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
 }
 
@@ -742,12 +742,12 @@ int AppEntry(char* lpCmdLine)
 		}
 		else
 		{
-			Language::prefix = s;
+			Language::SetPrefix(s);
 			game->cfg.Add("language", s->c_str());
 		}
 	}
 	else
-		Language::prefix = lang;
+		Language::SetPrefix(lang.c_str());
 
 	// save configuration
 	game->SaveCfg();

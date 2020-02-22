@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "InsideBuilding.h"
 #include "SaveState.h"
 #include "Content.h"

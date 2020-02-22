@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Net.h"
 #include "LobbyApi.h"
 #include "Language.h"

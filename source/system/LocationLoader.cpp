@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "LocationLoader.h"
 #include "RoomType.h"
 #include "BaseObject.h"

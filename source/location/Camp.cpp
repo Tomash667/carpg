@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Camp.h"
 #include "GameFile.h"
 

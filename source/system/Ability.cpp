@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Ability.h"
 
 vector<Ability*> Ability::abilities;

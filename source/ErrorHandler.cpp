@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ErrorHandler.h"
 #include "Version.h"
 #include "Config.h"

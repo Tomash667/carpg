@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "GameStats.h"
 #include "ParticleSystem.h"
@@ -119,7 +118,7 @@ draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false)
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine), in_load(false)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -128,6 +127,10 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engi
 	devmode = default_devmode;
 
 	dialog_context.is_local = true;
+
+	LocalString s;
+	GetTitle(s);
+	engine->SetTitle(s.c_str());
 
 	// bufory wierzcho³ków i indeksy
 	vbDungeon = nullptr;
@@ -168,8 +171,6 @@ Game::~Game()
 	delete script_mgr;
 	delete team;
 	delete world;
-
-	delete engine;
 }
 
 //=================================================================================================
@@ -1003,7 +1004,7 @@ void Game::GetTitle(LocalString& s)
 	s += " - DEBUG";
 #endif
 
-	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui->server && game_gui->server->visible))
+	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui && game_gui->server && game_gui->server->visible))
 	{
 		if(none)
 			s += " - ";
@@ -1030,15 +1031,6 @@ void Game::ChangeTitle()
 	GetTitle(s);
 	SetConsoleTitle(s->c_str());
 	engine->SetTitle(s->c_str());
-}
-
-//=================================================================================================
-bool Game::Start()
-{
-	LocalString s;
-	GetTitle(s);
-	engine->SetTitle(s.c_str());
-	return engine->Start(this);
 }
 
 //=================================================================================================

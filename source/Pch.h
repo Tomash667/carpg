@@ -14,5 +14,6 @@
 #define _WINSOCKAPI_
 
 //-----------------------------------------------------------------------------
-#include <EnginePch.h>
+#include <CarpgLib.h>
 #include <json_fwd.hpp>
+#include "GameCore.h"

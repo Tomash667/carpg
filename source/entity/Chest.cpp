@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Chest.h"
 #include "Game.h"
 #include "BitStreamFunc.h"

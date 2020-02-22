@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_DeliverLetter.h"
 #include "GameFile.h"
 
