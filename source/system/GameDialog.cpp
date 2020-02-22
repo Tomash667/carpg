@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "GameDialog.h"
 #include "ScriptManager.h"
 #include <angelscript.h>

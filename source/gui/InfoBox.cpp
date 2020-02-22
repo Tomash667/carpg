@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "InfoBox.h"
 #include "Game.h"
 #include "LoadScreen.h"

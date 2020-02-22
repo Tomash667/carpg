@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CreatedCharacter.h"
 #include "StatProfile.h"
 #include "UnitData.h"

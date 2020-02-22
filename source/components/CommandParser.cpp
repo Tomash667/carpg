@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CommandParser.h"
 #include "BitStreamFunc.h"
 #include "ConsoleCommands.h"

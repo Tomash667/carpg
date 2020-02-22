@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "HeroData.h"
 #include "SaveState.h"
 #include "Level.h"

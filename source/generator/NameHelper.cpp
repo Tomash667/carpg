@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "NameHelper.h"
 #include "Language.h"
 #include "World.h"

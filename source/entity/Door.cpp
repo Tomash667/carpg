@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Door.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"

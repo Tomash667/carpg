@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "PickServerPanel.h"
 #include "Language.h"
 #include "Input.h"

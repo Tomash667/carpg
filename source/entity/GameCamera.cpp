@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "GameCamera.h"
 
 GameCamera::GameCamera(float springiness) : springiness(springiness), reset(2), free_rot(false)

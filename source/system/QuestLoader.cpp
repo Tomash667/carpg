@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "QuestLoader.h"
 #include "QuestScheme.h"
 #include "QuestList.h"
@@ -69,7 +68,7 @@ void QuestLoader::InitTokenizer()
 		{ "dialog", P_DIALOG }
 		});
 
-	t.AddEnums<QuestCategory>(G_QUEST_CATEGORY, {
+	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
 		{ "mayor", QuestCategory::Mayor },
 		{ "captain", QuestCategory::Captain },
 		{ "random", QuestCategory::Random },

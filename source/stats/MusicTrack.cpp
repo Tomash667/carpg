@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "SoundManager.h"
 #include "Level.h"
@@ -112,7 +111,7 @@ uint MusicTrack::Load(uint& errors)
 
 	t.AddKeyword("music", 0, 0);
 
-	t.AddEnums<MusicType>(1, {
+	t.AddKeywords<MusicType>(1, {
 		{ "title", MusicType::Title },
 		{ "forest", MusicType::Forest },
 		{ "city", MusicType::City },

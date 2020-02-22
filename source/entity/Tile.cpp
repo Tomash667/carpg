@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Tile.h"
 
 static const char tile_char[] = {

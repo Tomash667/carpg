@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ContentLoader.h"
 #include "Language.h"
 
@@ -105,7 +104,7 @@ void ContentLoader::LoadError(cstring msg)
 //=================================================================================================
 cstring ContentLoader::FormatLanguagePath(cstring filename)
 {
-	return Format("%s/lang/%s/%s", content.system_dir.c_str(), Language::prefix.c_str(), filename);
+	return Language::GetPath(filename);
 }
 
 //=================================================================================================

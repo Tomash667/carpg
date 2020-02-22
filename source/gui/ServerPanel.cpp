@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ServerPanel.h"
 #include "Game.h"
 #include "Language.h"

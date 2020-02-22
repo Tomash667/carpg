@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_RescueCaptive.h"
 #include "Game.h"
 #include "Journal.h"

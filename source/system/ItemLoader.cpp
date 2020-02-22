@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ItemLoader.h"
 #include "Item.h"
 #include "Stock.h"

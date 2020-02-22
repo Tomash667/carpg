@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Cave.h"
 #include "SaveState.h"
 #include "GameFile.h"

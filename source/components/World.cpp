@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "World.h"
 #include "BitStreamFunc.h"
 #include "Language.h"

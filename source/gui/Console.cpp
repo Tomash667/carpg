@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Console.h"
 #include "Input.h"
 #include "ResourceManager.h"

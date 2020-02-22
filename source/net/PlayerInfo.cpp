@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "PlayerInfo.h"
 #include "SaveState.h"
 #include "NetChangePlayer.h"

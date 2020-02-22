@@ -113,7 +113,6 @@ public:
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activation_point) override;
 
-	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	void CreateRenderTargets();
@@ -495,7 +494,6 @@ public:
 	cstring txHaveErrors;
 
 private:
-	Engine* engine;
 	vector<int> reported_errors;
 	asIScriptContext* cutscene_script;
 };

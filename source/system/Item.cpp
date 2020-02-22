@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Item.h"
 #include "Crc.h"
 #include "ResourceManager.h"
@@ -9,7 +8,6 @@
 #include "Quest.h"
 #include "QuestManager.h"
 
-extern string g_system_dir;
 const Item* Item::gold;
 ItemsMap Item::items;
 std::map<string, Item*> item_aliases;

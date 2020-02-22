@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Secret.h"
 #include "BaseObject.h"
 #include "GameFile.h"

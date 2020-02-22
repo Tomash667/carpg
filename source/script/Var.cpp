@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Var.h"
 #include "Item.h"
 #include "Location.h"

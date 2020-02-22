@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include <intrin.h>
 #include "Version.h"
@@ -7,6 +6,7 @@
 #include "ErrorHandler.h"
 #include "Utility.h"
 #include "SaveSlot.h"
+#include "Language.h"
 #include <Engine.h>
 #include <Render.h>
 #include <SceneManager.h>
@@ -204,14 +204,14 @@ bool RunInstallScripts()
 	t.AddKeyword("version", 1);
 	t.AddKeyword("remove", 2);
 
-	io::FindFiles(Format("%s/install/*.txt", g_system_dir.c_str()), [&](const io::FileInfo& info)
+	io::FindFiles("install/*.txt", [&](const io::FileInfo& info)
 	{
 		int major, minor, patch;
 
 		// read file to find version info
 		try
 		{
-			if(t.FromFile(Format("%s/install/%s", g_system_dir.c_str(), info.filename)))
+			if(t.FromFile(Format("install/%s", info.filename)))
 			{
 				t.Next();
 				if(t.MustGetKeywordId() == 2)
@@ -275,7 +275,7 @@ bool RunInstallScripts()
 
 	for(vector<InstallScript>::iterator it = scripts.begin(), end = scripts.end(); it != end; ++it)
 	{
-		cstring path = Format("%s/install/%s", g_system_dir.c_str(), it->filename.c_str());
+		cstring path = Format("install/%s", it->filename.c_str());
 
 		try
 		{
@@ -341,6 +341,7 @@ void LoadResourcesConfig()
 {
 	Config cfg;
 	cfg.Load("resource.cfg");
+	Language::dir = cfg.GetString("languages", "lang");
 	g_system_dir = cfg.GetString("system", "system");
 	render->SetShadersDir(cfg.GetString("shaders", "system/shaders").c_str());
 }
@@ -741,12 +742,12 @@ int AppEntry(char* lpCmdLine)
 		}
 		else
 		{
-			Language::prefix = s;
+			Language::SetPrefix(s);
 			game->cfg.Add("language", s->c_str());
 		}
 	}
 	else
-		Language::prefix = lang;
+		Language::SetPrefix(lang.c_str());
 
 	// save configuration
 	game->SaveCfg();

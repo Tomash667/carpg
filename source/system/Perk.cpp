@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Perk.h"
 #include "Attribute.h"
 #include "Skill.h"

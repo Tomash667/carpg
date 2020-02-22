@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Scripted.h"
 #include "QuestScheme.h"
 #include "ScriptManager.h"

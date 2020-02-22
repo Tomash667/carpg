@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "DrawBatch.h"
 #include <ParticleSystem.h>
 
