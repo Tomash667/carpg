@@ -64,6 +64,7 @@ bool InsideLocation::Read(BitStreamReader& f)
 {
 	SetActiveLevel(game_level->dungeon_level);
 	InsideLocationLevel& lvl = GetLevelData();
+	game_level->lvl = &lvl;
 	f >> from_portal;
 
 	if(!lvl.Read(f))

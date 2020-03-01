@@ -28,7 +28,14 @@ void GroundItem::Load(FileReader& f)
 		f >> id;
 	Register();
 	f >> pos;
-	f >> rot;
+	if(LOAD_VERSION >= V_DEV)
+		f >> rot;
+	else
+	{
+		float rot_y;
+		f >> rot_y;
+		rot = Quat::RotY(rot_y);
+	}
 	f >> count;
 	f >> team_count;
 	const string& item_id = f.ReadString1();

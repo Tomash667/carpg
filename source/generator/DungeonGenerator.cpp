@@ -9,9 +9,11 @@
 #include "Quest_Secret.h"
 #include "Quest_Evil.h"
 #include "Quest_Orcs.h"
+#include "Quest_Scripted.h"
 #include "Portal.h"
 #include "UnitGroup.h"
 #include "Game.h"
+#include "ScriptManager.h"
 
 //=================================================================================================
 void DungeonGenerator::Generate()
@@ -19,6 +21,7 @@ void DungeonGenerator::Generate()
 	InsideLocation* inside = (InsideLocation*)loc;
 	BaseLocation& base = g_base_locations[inside->target];
 	inside->SetActiveLevel(game_level->dungeon_level);
+	game_level->lvl = &inside->GetLevelData();
 	if(inside->IsMultilevel())
 	{
 		MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -30,6 +33,16 @@ void DungeonGenerator::Generate()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	assert(!lvl.map);
 
+	Quest_Scripted* event_handler = nullptr;
+	for(Event& event : inside->events)
+	{
+		if(event.type == EVENT_GENERATE)
+		{
+			event_handler = event.quest;
+			break;
+		}
+	}
+
 	MapSettings settings;
 	settings.corridor_chance = base.corridor_chance;
 	settings.map_w = settings.map_h = base.size + base.size_lvl * dungeon_level;
@@ -39,31 +52,47 @@ void DungeonGenerator::Generate()
 	settings.groups = &lvl.groups;
 	settings.corridor_join_chance = base.join_corridor;
 	settings.room_join_chance = base.join_room;
-	settings.shape = (IsSet(base.options, BLO_ROUND) ? MapSettings::CIRCLE : MapSettings::SQUARE);
-	settings.stairs_up_loc = (inside->HaveUpStairs() ? MapSettings::RANDOM : MapSettings::NONE);
-	settings.stairs_down_loc = (inside->HaveDownStairs() ? MapSettings::RANDOM : MapSettings::NONE);
+	settings.shape = (IsSet(base.options, BLO_ROUND) ? MapSettings::SHAPE_CIRCLE : MapSettings::SHAPE_SQUARE);
+	settings.stairs_up_loc = (inside->HaveUpStairs() ? MapSettings::STAIRS_RANDOM : MapSettings::STAIRS_NONE);
+	settings.stairs_down_loc = (inside->HaveDownStairs() ? MapSettings::STAIRS_RANDOM : MapSettings::STAIRS_NONE);
 	settings.bars_chance = base.bars_chance;
 	settings.devmode = game->devmode;
 	settings.remove_dead_end_corridors = true;
 
-	if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
+	bool skip_normal_handling = false;
+	if(event_handler)
+	{
+		ScriptEvent e(EVENT_GENERATE);
+		e.on_generate.location = inside;
+		e.on_generate.map_settings = &settings;
+		e.on_generate.stage = 0;
+		event_handler->FireEvent(e);
+		skip_normal_handling = e.cancel;
+	}
+
+	if(skip_normal_handling)
+	{
+	}
+	else if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
 	{
 		// last crypt level
 		Room* room = Room::Get();
 		room->target = RoomTarget::Treasury;
+		room->type = nullptr;
 		room->size = Int2(7, 7);
 		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
-		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
+		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
 	}
 	else if(inside->type == L_DUNGEON && (inside->target == THRONE_FORT || inside->target == THRONE_VAULT) && !inside->HaveDownStairs())
 	{
 		// throne room
 		Room* room = Room::Get();
 		room->target = RoomTarget::Throne;
+		room->type = nullptr;
 		room->size = Int2(13, 7);
 		room->pos.x = (settings.map_w - 13) / 2;
 		room->pos.y = (settings.map_w - 7) / 2;
@@ -71,25 +100,26 @@ void DungeonGenerator::Generate()
 		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
-		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
+		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
 	}
 	else if(game_level->location_index == quest_mgr->quest_secret->where && quest_mgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveDownStairs())
 	{
 		// secret
 		Room* room = Room::Get();
 		room->target = RoomTarget::PortalCreate;
+		room->type = nullptr;
 		room->size = Int2(7, 7);
 		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
-		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
+		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
 	}
 	else if(game_level->location_index == quest_mgr->quest_evil->target_loc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
-		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
+		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
 	}
 
 	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location_index == quest_mgr->quest_orcs->target_loc && dungeon_level == game_level->location->GetLastLevel())
@@ -123,7 +153,7 @@ void DungeonGenerator::Generate()
 			Room* room = RandomItem(possible_rooms);
 			room->target = RoomTarget::Prison;
 			Int2 pt = map_gen.GetConnectingTile(room, room->connected.front());
-			Tile& p = map_gen.GetMap()[pt.x + pt.y*settings.map_w];
+			Tile& p = map_gen.GetMap()[pt.x + pt.y * settings.map_w];
 			p.type = DOORS;
 			p.flags |= Tile::F_SPECIAL;
 
@@ -142,15 +172,24 @@ void DungeonGenerator::Generate()
 	lvl.staircase_down_dir = settings.stairs_down_dir;
 	lvl.staircase_down_in_wall = settings.stairs_down_in_wall;
 
-	// inna tekstura pokoju w krypcie
-	if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
+	// different texture in crypt treasure room
+	if(!skip_normal_handling && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
 	{
 		Room& r = *lvl.rooms[0];
 		for(int y = 0; y < r.size.y; ++y)
 		{
 			for(int x = 0; x < r.size.x; ++x)
-				lvl.map[r.pos.x + x + (r.pos.y + y)*lvl.w].flags |= Tile::F_SECOND_TEXTURE;
+				lvl.map[r.pos.x + x + (r.pos.y + y) * lvl.w].flags |= Tile::F_SECOND_TEXTURE;
 		}
+	}
+
+	if(event_handler)
+	{
+		ScriptEvent e(EVENT_GENERATE);
+		e.on_generate.location = inside;
+		e.on_generate.map_settings = nullptr;
+		e.on_generate.stage = 1;
+		event_handler->FireEvent(e);
 	}
 
 	if(inside->from_portal)
@@ -224,7 +263,7 @@ void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
 
 		pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
 
-		const Vec3 pos(2.f*pt.first.x + 1, 0, 2.f*pt.first.y + 1);
+		const Vec3 pos(2.f * pt.first.x + 1, 0, 2.f * pt.first.y + 1);
 		float rot = Clip(DirToRot(pt.second) + PI);
 
 		inside->portal->pos = pos;

@@ -1,4 +1,5 @@
 #include "Pch.h"
+#include "GameCommon.h"
 #include "SecretLocationGenerator.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
@@ -88,7 +89,7 @@ void SecretLocationGenerator::GenerateObjects()
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
 	game_level->SpawnObjectEntity(area, o, pos, 0);
-	game_level->ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
+	game_level->ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);

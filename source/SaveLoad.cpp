@@ -815,6 +815,8 @@ void Game::LoadGame(GameReader& f)
 	game_gui->Load(f);
 
 	check_id = (byte)world->GetLocations().size();
+	if(LOAD_VERSION < V_DEV)
+		--check_id; // added offscreen location to old saves
 	f >> read_id;
 	if(read_id != check_id++)
 		throw "Error reading data before team.";

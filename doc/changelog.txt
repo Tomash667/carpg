@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.14 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.5.1 lub starszej
++ kontynuacja fabu³y i poboczne zadanie
 + umiejêtnoœæ alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
 + nowy atut historii: uczeñ wêdrownego kupca (+10 targowania, 500 z³ota)
 + budynek w mieœcie - kapliczka
@@ -10,6 +11,7 @@ Wersja 0.14 (???):
 + wczytywanie atutów z pliku
 + wczytywanie pokoi z pliku
 + usprawnienia menad¿era sceny - czêœæ 2
++ komenda warp mo¿e przenieœæ do przodu budynku
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------

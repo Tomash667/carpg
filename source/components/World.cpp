@@ -25,6 +25,7 @@
 #include "Game.h"
 #include "GameGui.h"
 #include "WorldMapGui.h"
+#include "OffscreenLocation.h"
 
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
@@ -201,7 +202,8 @@ void World::SpawnCamps(int days)
 			Location* loc = locations[index];
 			if(loc && loc->state != LS_CLEARED && loc->type == L_DUNGEON && loc->group->have_camps)
 			{
-				CreateCamp(loc->pos, loc->group, 128.f, false);
+				const Vec2 pos = FindPlace(loc->pos, 128.f);
+				CreateCamp(pos, loc->group);
 				break;
 			}
 
@@ -289,7 +291,7 @@ void World::UpdateNews()
 }
 
 //=================================================================================================
-int World::CreateCamp(const Vec2& pos, UnitGroup* group, float range, bool allow_exact)
+int World::CreateCamp(const Vec2& pos, UnitGroup* group)
 {
 	assert(group);
 
@@ -304,7 +306,6 @@ int World::CreateCamp(const Vec2& pos, UnitGroup* group, float range, bool allow
 	loc->create_time = worldtime;
 	SetLocationImageAndName(loc);
 
-	FindPlaceForLocation(loc->pos, range, allow_exact);
 	loc->st = GetTileSt(loc->pos);
 	if(loc->st > 3)
 		loc->st = 3;
@@ -359,19 +360,9 @@ Location* World::CreateLocation(LOCATION type, int levels, int city_target)
 //	0 - minimum randomly generated
 //	9 - maximum randomly generated
 //	other - used number
-Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, UnitGroup* group, bool allow_exact, int dungeon_levels)
+Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int dungeon_levels)
 {
-	assert(group);
 	assert(type != L_CITY); // not implemented - many methods currently assume that cities are at start of locations vector
-
-	Vec2 pt = pos;
-	if(range < 0.f)
-	{
-		pt = Vec2::Random(world_bounds.x, world_bounds.y);
-		range = -range;
-	}
-	if(!FindPlaceForLocation(pt, range, allow_exact))
-		return nullptr;
 
 	int levels = -1;
 	if(type == L_DUNGEON)
@@ -389,16 +380,14 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 	}
 
 	Location* loc = CreateLocation(type, levels);
-	loc->pos = pt;
+	loc->pos = pos;
 	loc->type = type;
 	loc->target = target;
 
 	if(type == L_DUNGEON)
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(loc);
-		inside->group = group;
-		if(inside->group == UnitGroup::random)
-			inside->group = g_base_locations[target].GetRandomGroup();
+		inside->group = g_base_locations[target].GetRandomGroup();
 		if(target == LABYRINTH)
 		{
 			inside->st = GetTileSt(loc->pos);
@@ -419,26 +408,21 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 		loc->st = GetTileSt(loc->pos);
 		if(loc->st < 2)
 			loc->st = 2;
-		if(group != UnitGroup::random)
-			loc->group = group;
-		else
+		switch(type)
 		{
-			switch(type)
-			{
-			case L_CITY:
-				loc->group = UnitGroup::empty;
-				break;
-			case L_OUTSIDE:
-				loc->group = UnitGroup::Get("forest");
-				break;
-			case L_CAVE:
-				loc->group = UnitGroup::Get("cave");
-				break;
-			default:
-				assert(0);
-				loc->group = UnitGroup::empty;
-				break;
-			}
+		case L_CITY:
+			loc->group = UnitGroup::empty;
+			break;
+		case L_OUTSIDE:
+			loc->group = UnitGroup::Get("forest");
+			break;
+		case L_CAVE:
+			loc->group = UnitGroup::Get("cave");
+			break;
+		default:
+			assert(0);
+			loc->group = UnitGroup::empty;
+			break;
 		}
 	}
 
@@ -671,16 +655,22 @@ void World::GenerateWorld()
 	AddLocations(120 - locations.size(), [](uint index) { return locs[Rand() % countof(locs)]; }, 40.f);
 
 	// create location for random encounter
-	{
-		Location* loc = new OutsideLocation;
-		loc->index = locations.size();
-		loc->pos = Vec2(-1000, -1000);
-		loc->state = LS_HIDDEN;
-		loc->type = L_ENCOUNTER;
-		SetLocationImageAndName(loc);
-		encounter_loc = loc->index;
-		locations.push_back(loc);
-	}
+	encounter_loc = new OutsideLocation;
+	encounter_loc->index = locations.size();
+	encounter_loc->pos = Vec2(-1000, -1000);
+	encounter_loc->state = LS_HIDDEN;
+	encounter_loc->type = L_ENCOUNTER;
+	SetLocationImageAndName(encounter_loc);
+	locations.push_back(encounter_loc);
+
+	// create offscreen location
+	offscreen_loc = new OffscreenLocation;
+	offscreen_loc->index = locations.size();
+	offscreen_loc->pos = Vec2(-1000, -1000);
+	offscreen_loc->state = LS_HIDDEN;
+	offscreen_loc->type = L_OFFSCREEN;
+	offscreen_loc->group = UnitGroup::empty;
+	locations.push_back(offscreen_loc);
 
 	CalculateTiles();
 
@@ -1101,6 +1091,10 @@ void World::SetLocationImageAndName(Location* l)
 			break;
 		}
 		break;
+	case L_OFFSCREEN:
+		l->image = LI_FOREST;
+		l->name = "Offscreen";
+		break;
 	default:
 		assert(0);
 		l->image = LI_FOREST;
@@ -1181,7 +1175,6 @@ void World::Save(GameWriter& f)
 	f << reveal_timer;
 	f << encounter_chance;
 	f << settlements;
-	f << encounter_loc;
 	f << travel_dir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
@@ -1279,8 +1272,11 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				switch(type)
 				{
 				case L_OUTSIDE:
-				case L_ENCOUNTER:
 					loc = new OutsideLocation;
+					break;
+				case L_ENCOUNTER:
+					encounter_loc = new OutsideLocation;
+					loc = encounter_loc;
 					break;
 				case L_CITY:
 					loc = new City;
@@ -1299,6 +1295,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				case L_CAMP:
 					loc = new Camp;
+					break;
+				case L_OFFSCREEN:
+					offscreen_loc = new OffscreenLocation;
+					loc = offscreen_loc;
 					break;
 				default:
 					assert(0);
@@ -1401,7 +1401,21 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f >> reveal_timer;
 	f >> encounter_chance;
 	f >> settlements;
-	f >> encounter_loc;
+	if(LOAD_VERSION < V_DEV)
+	{
+		// old encounter_loc
+		const int encounter_loc_index = f.Read<int>();
+		encounter_loc = static_cast<OutsideLocation*>(locations[encounter_loc_index]);
+
+		// create offscreen location
+		offscreen_loc = new OffscreenLocation;
+		offscreen_loc->index = locations.size();
+		offscreen_loc->pos = Vec2(-1000, -1000);
+		offscreen_loc->state = LS_HIDDEN;
+		offscreen_loc->type = L_OFFSCREEN;
+		offscreen_loc->group = UnitGroup::empty;
+		locations.push_back(offscreen_loc);
+	}
 	f >> travel_dir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
@@ -1569,7 +1583,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 	{
 		f.Skip<bool>(); // old first_city
 		f >> boss_levels;
-		locations[encounter_loc]->state = LS_HIDDEN;
+		encounter_loc->state = LS_HIDDEN;
 	}
 }
 
@@ -1718,6 +1732,9 @@ bool World::Read(BitStreamReader& f)
 				city->citizens = citizens;
 				city->citizens_world = world_citizens;
 			}
+			break;
+		case L_OFFSCREEN:
+			loc = new OffscreenLocation;
 			break;
 		default:
 			Error("Read world: Unknown location type %d for location %u.", type, index);
@@ -1966,7 +1983,7 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 }
 
 //=================================================================================================
-bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
+bool World::TryFindPlace(Vec2& pos, float range, bool allow_exact)
 {
 	Vec2 pt;
 
@@ -1978,9 +1995,9 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 	for(int i = 0; i < 20; ++i)
 	{
 		bool valid = true;
-		for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+		for(Location* loc : locations)
 		{
-			if(*it && Vec2::Distance(pt, (*it)->pos) < 32)
+			if(loc && Vec2::Distance(pt, loc->pos) < 32)
 			{
 				valid = false;
 				break;
@@ -1997,6 +2014,70 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+Vec2 World::FindPlace(const Vec2& pos, float range, bool allow_exact)
+{
+	Vec2 pt;
+
+	if(allow_exact)
+		pt = pos;
+	else
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
+
+	for(int i = 0; i < 20; ++i)
+	{
+		bool valid = true;
+		for(Location* loc : locations)
+		{
+			if(loc && Vec2::Distance(pt, loc->pos) < 32)
+			{
+				valid = false;
+				break;
+			}
+		}
+
+		if(!valid)
+			break;
+
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
+	}
+
+	return pt;
+}
+
+//=================================================================================================
+Vec2 World::FindPlace(const Vec2& pos, float min_range, float max_range)
+{
+	for(int i = 0; i < 20; ++i)
+	{
+		float range = Random(min_range, max_range);
+		float angle = Random(PI * 2);
+		Vec2 pt = pos + Vec2(sin(angle) * range, cos(angle) * range);
+
+		bool valid = true;
+		for(Location* loc : locations)
+		{
+			if(loc && Vec2::Distance(pt, loc->pos) < 32)
+			{
+				valid = false;
+				break;
+			}
+		}
+
+		if(valid)
+			return pt;
+	}
+
+	return pos;
+}
+
+//=================================================================================================
+Vec2 World::GetRandomPlace()
+{
+	const Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
+	return FindPlace(pos, 64.f);
 }
 
 //=================================================================================================
@@ -2054,7 +2135,8 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 		return best_empty;
 	}
 
-	return CreateCamp(pos, group, range / 2);
+	const Vec2 target_pos = FindPlace(pos, range / 2);
+	return CreateCamp(target_pos, group);
 }
 
 //=================================================================================================
@@ -2143,7 +2225,8 @@ void World::StartInLocation(Location* loc)
 void World::StartEncounter()
 {
 	state = State::INSIDE_ENCOUNTER;
-	current_location_index = encounter_loc;
+	current_location = encounter_loc;
+	current_location_index = encounter_loc->index;
 	current_location = locations[current_location_index];
 	game_level->location_index = current_location_index;
 	game_level->location = current_location;
@@ -2999,4 +3082,11 @@ int& World::GetTileSt(const Vec2& pos)
 	Int2 tile(int(pos.x / TILE_SIZE), int(pos.y / TILE_SIZE));
 	int ts = world_size / TILE_SIZE;
 	return tiles[tile.x + tile.y * ts];
+}
+
+//=================================================================================================
+Unit* World::CreateUnit(UnitData* data, int level)
+{
+	assert(data);
+	return offscreen_loc->CreateUnit(*data, level);
 }

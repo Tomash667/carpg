@@ -360,13 +360,13 @@ void Item::Validate(uint& err)
 		if(item.name.empty())
 		{
 			++err;
-			Error("Test: Missing item '%s' name.", item.id.c_str());
+			Warn("Test: Missing item '%s' name.", item.id.c_str());
 		}
 
 		if(item.type == IT_BOOK && item.ToBook().text.empty())
 		{
 			++err;
-			Error("Test: Missing book '%s' text.", item.id.c_str());
+			Warn("Test: Missing book '%s' text.", item.id.c_str());
 		}
 	}
 }

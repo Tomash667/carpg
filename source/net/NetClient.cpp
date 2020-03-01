@@ -335,12 +335,15 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::ENTER_BUILDING:
 		case NetChange::CHANGE_LEADER:
 		case NetChange::RANDOM_NUMBER:
-		case NetChange::CHEAT_WARP:
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REST:
 		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
+			break;
+		case NetChange::CHEAT_WARP:
+			f.WriteCasted<byte>(c.id);
+			f.Write(c.count != 0);
 			break;
 		case NetChange::CHEAT_WARP_TO_STAIRS:
 		case NetChange::CHEAT_CHANGE_LEVEL:

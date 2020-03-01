@@ -26,7 +26,7 @@ public:
 	void LoadCommonMusic();
 
 	TexturePtr tBlack, tWarning, tError;
-	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine;
+	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine, tFlare, tFlare2, tWater;
 	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
 	TexOverride tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;

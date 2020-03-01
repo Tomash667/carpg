@@ -81,7 +81,9 @@ void Quest_Orcs::SetProgress(int prog2)
 				u = nullptr;
 			}
 			// generate location
-			Location& tl = *world->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, UnitGroup::Get("orcs"), false);
+			const Vec2 pos = world->FindPlace(GetStartLocation().pos, 64.f);
+			Location& tl = *world->CreateLocation(L_DUNGEON, pos, HUMAN_FORT);
+			tl.group = UnitGroup::Get("orcs");
 			tl.SetKnown();
 			tl.st = 8;
 			tl.active_quest = this;
@@ -311,7 +313,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// do³¹cz do dru¿yny
 			DialogContext::current->talker->dont_attack = false;
-			team->AddTeamMember(DialogContext::current->talker, HeroType::Free);
+			team->AddMember(DialogContext::current->talker, HeroType::Free);
 			if(team->free_recruits > 0)
 				--team->free_recruits;
 		}
@@ -319,7 +321,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutCamp:
 		// powiedzia³ o obozie
 		{
-			target_loc = world->CreateCamp(world->GetWorldPos(), UnitGroup::Get("orcs"), 256.f, false);
+			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 256.f);
+			target_loc = world->CreateCamp(pos, UnitGroup::Get("orcs"));
 			Location& target = GetTargetLocation();
 			target.state = LS_HIDDEN;
 			target.st = 11;
@@ -418,7 +421,9 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// pogada³ o bazie
 		{
 			done = false;
-			Location& target = *world->CreateLocation(L_DUNGEON, world->GetWorldPos(), 256.f, THRONE_FORT, UnitGroup::Get("orcs"), false);
+			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 256.f);
+			Location& target = *world->CreateLocation(L_DUNGEON, pos, THRONE_FORT);
+			target.group = UnitGroup::Get("orcs");
 			target.st = 15;
 			target.active_quest = this;
 			target.state = LS_HIDDEN;
@@ -463,7 +468,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			OnUpdate(game->txQuest[206]);
 			quest_mgr->EndUniqueQuest();
 			// gorush
-			team->RemoveTeamMember(orc);
+			team->RemoveMember(orc);
 			Usable* throne = area.FindUsable(BaseUsable::Get("throne"));
 			assert(throne);
 			if(throne)

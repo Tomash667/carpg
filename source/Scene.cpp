@@ -539,7 +539,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				if(IsSet(item.item->flags, ITEM_ALPHA))
 					node->flags |= SceneNode::F_ALPHA_TEST;
 				node->center = item.pos;
-				node->mat = Matrix::RotationY(item.rot) * Matrix::Translation(pos);
+				node->mat = Matrix::Rotation(item.rot) * Matrix::Translation(pos);
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
@@ -2462,7 +2462,6 @@ void Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, floa
 			{
 				const Vec2 sub_size = node->mesh->splits[sub].box.SizeXZ();
 				Vec2 light_pos = light.pos.XZ();
-				bool masked = false;
 				dist = DistanceRectangleToPoint(obj_pos, sub_size, light_pos);
 				if(dist > light.range + radius || !best.CanAdd(dist))
 					continue;

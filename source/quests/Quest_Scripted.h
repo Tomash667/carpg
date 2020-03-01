@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Quest.h"
+#include "Var.h"
 
 //-----------------------------------------------------------------------------
 // Used to keep info about all events associated with quest
@@ -12,7 +13,9 @@ struct EventPtr
 		LOCATION,
 		UNIT
 	};
+
 	Source source;
+	EventType type;
 	union
 	{
 		Location* location;
@@ -21,7 +24,9 @@ struct EventPtr
 
 	bool operator == (const EventPtr& e) const
 	{
-		return source == e.source && location == e.location;
+		return source == e.source
+			&& location == e.location
+			&& (type == e.type || e.type == EVENT_ANY);
 	}
 };
 
@@ -36,12 +41,14 @@ class Quest_Scripted final : public Quest
 	};
 
 public:
-	Quest_Scripted() : instance(nullptr), timeout_days(-1), call_depth(0), in_upgrade(false) {}
+	Quest_Scripted();
 	~Quest_Scripted();
 	void Init(QuestScheme* scheme) { this->scheme = scheme; }
 	void Start() override;
+	void Start(Vars* vars);
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
+	void LoadVar(GameReader& f, Var::Type var_type, void* ptr);
 	GameDialog* GetDialog(int type2) override;
 	GameDialog* GetDialog(const string& dialog_id);
 	void SetProgress(int prog2) override;

@@ -184,6 +184,7 @@ void Location::Load(GameReader& f, bool)
 			{
 				EventPtr event;
 				event.source = EventPtr::LOCATION;
+				event.type = e.type;
 				event.location = this;
 				e.quest->AddEventPtr(event);
 			});
@@ -323,7 +324,7 @@ void Location::SetKnown()
 //=================================================================================================
 void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
 {
-	assert(Any(type, EVENT_ENTER, EVENT_PICKUP, EVENT_CLEARED));
+	assert(Any(type, EVENT_ENTER, EVENT_PICKUP, EVENT_CLEARED, EVENT_GENERATE));
 
 	Event e;
 	e.quest = quest;
@@ -332,22 +333,24 @@ void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
 
 	EventPtr event;
 	event.source = EventPtr::LOCATION;
+	event.type = type;
 	event.location = this;
 	quest->AddEventPtr(event);
 }
 
 //=================================================================================================
-void Location::RemoveEventHandler(Quest_Scripted* quest, bool cleanup)
+void Location::RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup)
 {
-	LoopAndRemove(events, [quest](Event& e)
+	LoopAndRemove(events, [=](Event& e)
 	{
-		return e.quest == quest;
+		return e.quest == quest && (type == EVENT_ANY || e.type == type);
 	});
 
 	if(!cleanup)
 	{
 		EventPtr event;
 		event.source = EventPtr::LOCATION;
+		event.type = type;
 		event.location = this;
 		quest->RemoveEventPtr(event);
 	}

@@ -370,7 +370,7 @@ void Net::UpdateWarpData(float dt)
 		if((warp.timer -= dt * 2) > 0.f)
 			return false;
 
-		game_level->WarpUnit(warp.u, warp.where);
+		game_level->WarpUnit(warp.u, warp.where, warp.building);
 		warp.u->frozen = FROZEN::NO;
 
 		NetChangePlayer& c = Add1(warp.u->player->player_info->changes);
@@ -901,7 +901,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot) * 0.25f;
 					item->pos.z -= cos(unit.rot) * 0.25f;
-					item->rot = Random(MAX_ANGLE);
+					item->rot = Quat::RotY(Random(MAX_ANGLE));
 					if(!quest_mgr->quest_secret->CheckMoonStone(item, unit))
 						game_level->AddGroundItem(*unit.area, item);
 
@@ -977,7 +977,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(event.type == EVENT_PICKUP)
 					{
 						ScriptEvent e(EVENT_PICKUP);
-						e.item = item;
+						e.on_pickup.unit = &unit;
+						e.on_pickup.item = item;
 						event.quest->FireEvent(e);
 					}
 				}
@@ -1625,6 +1626,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						WarpData& warp = Add1(warps);
 						warp.u = &unit;
 						warp.where = building_index;
+						warp.building = -1;
 						warp.timer = 1.f;
 						unit.frozen = FROZEN::YES;
 					}
@@ -1642,6 +1644,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					WarpData& warp = Add1(warps);
 					warp.u = &unit;
 					warp.where = LevelArea::OUTSIDE_ID;
+					warp.building = -1;
 					warp.timer = 1.f;
 					unit.frozen = FROZEN::YES;
 				}
@@ -2093,26 +2096,65 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::CHEAT_WARP:
 			{
 				byte building_index;
+				bool inside;
 				f >> building_index;
+				f >> inside;
 				if(!f)
-					Error("Update server: Broken CHEAT_WARP from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
 				{
-					if(unit.frozen != FROZEN::NO)
-						Error("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
-					else if(!game_level->city_ctx || building_index >= game_level->city_ctx->inside_buildings.size())
+					Error("Update server: Broken CHEAT_WARP from %s.", info.name.c_str());
+					break;
+				}
+				if(!info.devmode)
+				{
+					Error("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str());
+					break;
+				}
+				if(game->game_state != GS_LEVEL)
+					break;
+				if(unit.frozen != FROZEN::NO)
+				{
+					Error("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
+					break;
+				}
+				if(inside)
+				{
+					if(!game_level->city_ctx || building_index >= game_level->city_ctx->inside_buildings.size())
+					{
 						Error("Update server: CHEAT_WARP from %s, invalid inside building index %u.", info.name.c_str(), building_index);
-					else
+						break;
+					}
+					WarpData& warp = Add1(warps);
+					warp.u = &unit;
+					warp.where = building_index;
+					warp.building = -1;
+					warp.timer = 1.f;
+					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					NetChangePlayer& c = Add1(info.u->player->player_info->changes);
+					c.type = NetChangePlayer::PREPARE_WARP;
+				}
+				else
+				{
+					if(!game_level->city_ctx || building_index >= game_level->city_ctx->buildings.size())
+					{
+						Error("Update server: CHEAT_WARP from %s, invalid building index %u.", info.name.c_str(), building_index);
+						break;
+					}
+					if(unit.area->area_type != LevelArea::Type::Outside)
 					{
 						WarpData& warp = Add1(warps);
 						warp.u = &unit;
-						warp.where = building_index;
+						warp.where = -1;
+						warp.building = building_index;
 						warp.timer = 1.f;
 						unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 						NetChangePlayer& c = Add1(info.u->player->player_info->changes);
 						c.type = NetChangePlayer::PREPARE_WARP;
+					}
+					else
+					{
+						CityBuilding& city_building = game_level->city_ctx->buildings[building_index];
+						game_level->WarpUnit(unit, city_building.walk_pt);
+						unit.RotateTo(PtToPos(city_building.pt));
 					}
 				}
 			}
@@ -2733,7 +2775,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->pos = unit.pos;
 						item->pos.x -= sin(unit.rot) * 0.25f;
 						item->pos.z -= cos(unit.rot) * 0.25f;
-						item->rot = Random(MAX_ANGLE);
+						item->rot = Quat::RotY(Random(MAX_ANGLE));
 						game_level->AddGroundItem(*info.u->area, item);
 
 						// send info to other players

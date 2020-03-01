@@ -44,7 +44,7 @@ void DungeonMapGenerator::SetLayout()
 	map_rooms.resize(map_w*map_h);
 	memset(map_rooms.data(), 0, sizeof(Room*)*map_w*map_h);
 
-	if(settings->shape == MapSettings::SQUARE)
+	if(settings->shape == MapSettings::SHAPE_SQUARE)
 	{
 		for(int x = 0; x < map_w; ++x)
 		{
@@ -188,6 +188,7 @@ void DungeonMapGenerator::AddRoom(int x, int y, int w, int h, bool is_corridor, 
 	room->size.x = w;
 	room->size.y = h;
 	room->target = (is_corridor ? RoomTarget::Corridor : RoomTarget::None);
+	room->type = nullptr;
 	room->connected.clear();
 	settings->rooms->push_back(room);
 
@@ -562,7 +563,7 @@ void DungeonMapGenerator::Finalize()
 	}
 
 	// generate stairs
-	if(settings->stairs_down_loc != MapSettings::NONE || settings->stairs_up_loc != MapSettings::NONE)
+	if(settings->stairs_down_loc != MapSettings::STAIRS_NONE || settings->stairs_up_loc != MapSettings::STAIRS_NONE)
 		GenerateStairs();
 
 	SetRoomGroupTargets();
@@ -743,13 +744,13 @@ void DungeonMapGenerator::GenerateStairs()
 			map_rooms.push_back(room);
 	}
 
-	if(settings->stairs_up_loc != MapSettings::NONE)
+	if(settings->stairs_up_loc != MapSettings::STAIRS_NONE)
 	{
 		bool in_wall;
 		GenerateStairs(map_rooms, settings->stairs_up_loc, settings->stairs_up_room, settings->stairs_up_pos, settings->stairs_up_dir, true, in_wall);
 	}
 
-	if(settings->stairs_down_loc != MapSettings::NONE)
+	if(settings->stairs_down_loc != MapSettings::STAIRS_NONE)
 	{
 		GenerateStairs(map_rooms, settings->stairs_down_loc, settings->stairs_down_room, settings->stairs_down_pos, settings->stairs_down_dir, false,
 			settings->stairs_down_in_wall);
@@ -763,7 +764,7 @@ void DungeonMapGenerator::GenerateStairs(vector<Room*>& rooms, MapSettings::Stai
 {
 	switch(loc)
 	{
-	case MapSettings::RANDOM:
+	case MapSettings::STAIRS_RANDOM:
 		while(!rooms.empty())
 		{
 			uint id = Rand() % rooms.size();
@@ -780,32 +781,65 @@ void DungeonMapGenerator::GenerateStairs(vector<Room*>& rooms, MapSettings::Stai
 			}
 		}
 		break;
-	case MapSettings::FAR_FROM_ROOM:
+	case MapSettings::STAIRS_FAR_FROM_ROOM:
 		{
-			vector<Int2> p;
-			Int2 center = rooms[0]->CenterTile();
-			int index = 1;
-			for(vector<Room*>::iterator it = rooms.begin() + 1, end = rooms.end(); it != end; ++it, ++index)
-				p.push_back(Int2(index, Int2::Distance(center, (*it)->CenterTile())));
-			std::sort(p.begin(), p.end(), [](Int2& a, Int2& b) { return a.y < b.y; });
-
-			while(!p.empty())
+			Int2 far_pt = rooms[0]->CenterTile();
+			if(AddStairsFarFromPoint(rooms, far_pt, room, pos, dir, up, in_wall))
+				return;
+		}
+		break;
+	case MapSettings::STAIRS_BORDER:
+		{
+			Int2 far_pt = Int2(map_w / 2, map_h / 2);
+			if(AddStairsFarFromPoint(rooms, far_pt, room, pos, dir, up, in_wall))
+				return;
+		}
+		break;
+	case MapSettings::STAIRS_FAR_FROM_UP_STAIRS:
+		{
+			int index = 0;
+			for(int i = 0, count = (int)map_rooms.size(); i < count; ++i)
 			{
-				int p_id = p.back().x;
-				p.pop_back();
-
-				if(AddStairs(*rooms[p_id], pos, dir, (up ? STAIRS_UP : STAIRS_DOWN), in_wall))
+				if(map_rooms[i]->target == RoomTarget::StairsUp)
 				{
-					rooms[p_id]->target = (up ? RoomTarget::StairsUp : RoomTarget::StairsDown);
-					room = rooms[p_id];
-					return;
+					index = i;
+					break;
 				}
 			}
+
+			Int2 far_pt = map_rooms[index]->CenterTile();
+			if(AddStairsFarFromPoint(rooms, far_pt, room, pos, dir, up, in_wall))
+				return;
 		}
 		break;
 	}
 
 	throw "Failed to generate dungeon with stairs.";
+}
+
+//=================================================================================================
+bool DungeonMapGenerator::AddStairsFarFromPoint(vector<Room*>& rooms, const Int2& far_pt, Room*& room, Int2& pos, GameDirection& dir, bool up, bool& in_wall)
+{
+	vector<Int2> p;
+	int index = 0;
+	for(vector<Room*>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it, ++index)
+		p.push_back(Int2(index, Int2::Distance(far_pt, (*it)->CenterTile())));
+	std::sort(p.begin(), p.end(), [](Int2& a, Int2& b) { return a.y < b.y; });
+
+	while(!p.empty())
+	{
+		int p_id = p.back().x;
+		p.pop_back();
+
+		if(AddStairs(*rooms[p_id], pos, dir, (up ? STAIRS_UP : STAIRS_DOWN), in_wall))
+		{
+			rooms[p_id]->target = (up ? RoomTarget::StairsUp : RoomTarget::StairsDown);
+			room = rooms[p_id];
+			return true;
+		}
+	}
+
+	return false;
 }
 
 //=================================================================================================

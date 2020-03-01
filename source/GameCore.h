@@ -31,6 +31,7 @@ class asIScriptFunction;
 class asIScriptObject;
 class asIScriptModule;
 class asITypeInfo;
+class CScriptArray;
 class CScriptDictionary;
 
 //-----------------------------------------------------------------------------
@@ -134,6 +135,7 @@ struct LeveledItemList;
 struct LoadingHandler;
 struct LocationEventHandler;
 struct LocationTexturePack;
+struct MapSettings;
 struct Music;
 struct NetChange;
 struct NetChangePlayer;
@@ -159,6 +161,7 @@ struct Receipt;
 struct Ring;
 struct Room;
 struct RoomGroup;
+struct RoomType;
 struct SaveSlot;
 struct ScriptEvent;
 struct Shield;
@@ -178,7 +181,7 @@ struct UnitGroup;
 struct UnitStats;
 struct Usable;
 struct Var;
-struct VarsContainer;
+struct Vars;
 struct Weapon;
 
 //-----------------------------------------------------------------------------
@@ -191,6 +194,7 @@ struct InsideLocation;
 struct InsideLocationLevel;
 struct Location;
 struct MultiInsideLocation;
+struct OffscreenLocation;
 struct OutsideLocation;
 struct SingleInsideLocation;
 
@@ -226,6 +230,7 @@ enum class EffectSource;
 enum class HeroType;
 enum class MusicType;
 enum class QuestCategory;
+enum class RoomTarget;
 enum class SkillId;
 
 //-----------------------------------------------------------------------------

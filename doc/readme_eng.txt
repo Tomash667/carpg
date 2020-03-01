@@ -265,7 +265,7 @@ Available commands:
 	use_lighting - use lighting (use_lighting 0/1).
 	version - displays game version.
 	w - send private message to player, short from whisper (w nick msg).
-	warp - move player into building (warp inn/arena/hall).
+	warp - move player into building (warp building/group [front]).
 	whisper - send private message to player (whisper nick msg).
 
 ===============================================================================
@@ -372,7 +372,7 @@ Thanks for bug founding:
 	xweert123
 	Zettaton
 	Zinny
-	
+
 Audio Engine: FMOD Studio by Firelight Technologies.
 
 Models:

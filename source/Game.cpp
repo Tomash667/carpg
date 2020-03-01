@@ -1573,6 +1573,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *game_level->location;
 	game_level->entering = true;
+	game_level->lvl = nullptr;
 
 	game_gui->world_map->Hide();
 	game_gui->level_gui->Reset();
@@ -1817,6 +1818,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	game_level->is_open = false;
 	game_level->city_ctx = nullptr;
+	game_level->lvl = nullptr;
 }
 
 void Game::Event_RandomEncounter(int)
@@ -2719,7 +2721,7 @@ void Game::UpdateFallback(float dt)
 				}
 				break;
 			case FALLBACK::ENTER: // enter/exit building
-				game_level->WarpUnit(pc->unit, fallback_1);
+				game_level->WarpUnit(pc->unit, fallback_1, fallback_2);
 				break;
 			case FALLBACK::EXIT:
 				ExitToMap();
@@ -3012,184 +3014,6 @@ uint Game::TestGameData(bool major)
 }
 
 //=================================================================================================
-Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_unit, bool create_physics, bool custom)
-{
-	Unit* u;
-	if(test_unit)
-		u = test_unit;
-	else
-	{
-		u = new Unit;
-		u->Register();
-	}
-
-	// unit data
-	u->data = &base;
-	u->human_data = nullptr;
-	u->pos = Vec3(0, 0, 0);
-	u->rot = 0.f;
-	u->used_item = nullptr;
-	u->live_state = Unit::ALIVE;
-	for(int i = 0; i < SLOT_MAX; ++i)
-		u->slots[i] = nullptr;
-	u->action = A_NONE;
-	u->weapon_taken = W_NONE;
-	u->weapon_hiding = W_NONE;
-	u->weapon_state = WeaponState::Hidden;
-	if(level == -2)
-		u->level = base.level.Random();
-	else if(level == -3)
-		u->level = base.level.Clamp(game_level->location->st);
-	else
-		u->level = base.level.Clamp(level);
-	u->player = nullptr;
-	u->ai = nullptr;
-	u->speed = u->prev_speed = 0.f;
-	u->hurt_timer = 0.f;
-	u->talking = false;
-	u->usable = nullptr;
-	u->frozen = FROZEN::NO;
-	u->in_arena = -1;
-	u->event_handler = nullptr;
-	u->to_remove = false;
-	u->temporary = false;
-	u->quest_id = -1;
-	u->bubble = nullptr;
-	u->busy = Unit::Busy_No;
-	u->interp = nullptr;
-	u->dont_attack = false;
-	u->assist = false;
-	u->attack_team = false;
-	u->last_bash = 0.f;
-	u->alcohol = 0.f;
-	u->moved = false;
-	u->running = false;
-
-	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
-	if(base.group == G_PLAYER)
-	{
-		u->stats = new UnitStats;
-		u->stats->fixed = false;
-		u->stats->subprofile.value = 0;
-		u->stats->Set(base.GetStatProfile());
-	}
-	else
-		u->stats = base.GetStats(u->level);
-	u->CalculateStats();
-	u->hp = u->hpmax = u->CalculateMaxHp();
-	u->mp = u->mpmax = u->CalculateMaxMp();
-	u->stamina = u->stamina_max = u->CalculateMaxStamina();
-	u->stamina_timer = 0;
-	u->fake_unit = false;
-
-	// items
-	u->weight = 0;
-	u->CalculateLoad();
-	if(!custom && base.item_script)
-	{
-		ItemScript* script = base.item_script;
-		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script)
-			script = base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script;
-		script->Parse(*u);
-		SortItems(u->items);
-		u->RecalculateWeight();
-		if(!res_mgr->IsLoadScreen())
-		{
-			for(auto slot : u->slots)
-			{
-				if(slot)
-					game_res->PreloadItem(slot);
-			}
-			for(auto& slot : u->items)
-				game_res->PreloadItem(slot.item);
-		}
-	}
-	if(base.trader && !test_unit)
-	{
-		u->stock = new TraderStock;
-		u->stock->date = world->GetWorldtime();
-		base.trader->stock->Parse(u->stock->items);
-		if(!game_level->entering)
-		{
-			for(ItemSlot& slot : u->stock->items)
-				game_res->PreloadItem(slot.item);
-		}
-	}
-
-	// gold
-	float t;
-	if(base.level.x == base.level.y)
-		t = 1.f;
-	else
-		t = float(u->level - base.level.x) / (base.level.y - base.level.x);
-	u->gold = Int2::Lerp(base.gold, base.gold2, t).Random();
-
-	if(!test_unit)
-	{
-		// mesh, human details
-		if(base.type == UNIT_TYPE::HUMAN)
-		{
-			if(human_data)
-				u->human_data = human_data;
-			else
-			{
-				u->human_data = new Human;
-				u->human_data->beard = Rand() % MAX_BEARD - 1;
-				u->human_data->hair = Rand() % MAX_HAIR - 1;
-				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-				u->human_data->height = Random(0.9f, 1.1f);
-				if(IsSet(base.flags2, F2_OLD))
-					u->human_data->hair_color = Color::Hex(0xDED5D0);
-				else if(IsSet(base.flags, F_CRAZY))
-					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
-				else if(IsSet(base.flags, F_GRAY_HAIR))
-					u->human_data->hair_color = g_hair_colors[Rand() % 4];
-				else if(IsSet(base.flags, F_TOMASHU))
-				{
-					u->human_data->beard = 4;
-					u->human_data->mustache = -1;
-					u->human_data->hair = 0;
-					u->human_data->hair_color = g_hair_colors[0];
-					u->human_data->height = 1.1f;
-				}
-				else
-					u->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-#undef HEX
-			}
-		}
-
-		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
-
-		// hero data
-		if(IsSet(base.flags, F_HERO))
-		{
-			u->hero = new HeroData;
-			u->hero->Init(*u);
-		}
-		else
-			u->hero = nullptr;
-
-		// boss music
-		if(IsSet(u->data->flags2, F2_BOSS))
-			world->AddBossLevel(Int2(game_level->location_index, game_level->dungeon_level));
-
-		// physics
-		if(create_physics)
-			u->CreatePhysics();
-		else
-			u->cobj = nullptr;
-	}
-
-	if(Net::IsServer() && !game_level->entering)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_UNIT;
-		c.unit = u;
-	}
-
-	return u;
-}
-
 bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint)
 {
 	// atak broni¹ lub naturalny
@@ -3907,38 +3731,6 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 	if(deletions)
 		RemoveElements(area.tmp->bullets, [](const Bullet& b) { return b.remove; });
-}
-
-Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
-{
-	Unit* u = CreateUnit(unit, level, human_data);
-	u->area = &area;
-	area.units.push_back(u);
-
-	if(pos)
-	{
-		if(area.area_type == LevelArea::Type::Outside)
-		{
-			Vec3 pt = *pos;
-			game_level->terrain->SetH(pt);
-			u->pos = pt;
-		}
-		else
-			u->pos = *pos;
-		u->UpdatePhysics();
-		u->visual_pos = u->pos;
-	}
-
-	if(rot)
-		u->rot = *rot;
-
-	AIController* a = new AIController;
-	a->Init(u);
-	ais.push_back(a);
-	if(ai)
-		*ai = a;
-
-	return u;
 }
 
 void Game::ChangeLevel(int where)
@@ -6229,14 +6021,15 @@ void Game::UpdateGameNet(float dt)
 DialogContext* Game::FindDialogContext(Unit* talker)
 {
 	assert(talker);
-	if(dialog_context.talker == talker)
+	if(dialog_context.dialog_mode && dialog_context.talker == talker)
 		return &dialog_context;
 	if(Net::IsOnline())
 	{
 		for(PlayerInfo& info : net->players)
 		{
-			if(info.pc->dialog_ctx->talker == talker)
-				return info.pc->dialog_ctx;
+			DialogContext* ctx = info.pc->dialog_ctx;
+			if(ctx->dialog_mode && ctx->talker == talker)
+				return ctx;
 		}
 	}
 	return nullptr;
@@ -6615,7 +6408,7 @@ void Game::OnEnterLevelOrLocation()
 		if(e.type == EVENT_ENTER)
 		{
 			ScriptEvent event(EVENT_ENTER);
-			event.location = game_level->location;
+			event.on_enter.location = game_level->location;
 			e.quest->FireEvent(event);
 		}
 	}

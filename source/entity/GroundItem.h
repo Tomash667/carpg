@@ -6,7 +6,7 @@ struct GroundItem : public EntityType<GroundItem>
 	const Item* item;
 	uint count, team_count;
 	Vec3 pos;
-	float rot;
+	Quat rot;
 
 	static const int MIN_SIZE = 23;
 

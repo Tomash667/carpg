@@ -2907,7 +2907,7 @@ book book_orcs {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags alpha
+	flags {alpha ground_mesh}
 }
 
 book book_undead {
@@ -2915,7 +2915,7 @@ book book_undead {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags alpha
+	flags {alpha ground_mesh}
 }
 
 book book_behind_the_wall {
@@ -2923,7 +2923,7 @@ book book_behind_the_wall {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags alpha
+	flags {alpha ground_mesh}
 }
 
 book book_adventurer {
@@ -2931,7 +2931,7 @@ book book_adventurer {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags alpha
+	flags {alpha ground_mesh}
 }
 
 book book_ld {
@@ -2939,7 +2939,7 @@ book book_ld {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha not_shop not_chest not_random}
+	flags {alpha not_shop not_chest not_random ground_mesh}
 }
 
 book book_runic {
@@ -2947,7 +2947,7 @@ book book_runic {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha not_shop not_chest not_random}
+	flags {alpha not_shop not_chest not_random ground_mesh}
 	runic 1
 }
 
@@ -2966,6 +2966,15 @@ book magic_scroll {
 	mesh "scroll.qmsh"
 	scheme book
 	flags {not_shop not_chest not_random magic_scroll magical}
+}
+
+book book_q_cleric {
+	weight 0.2
+	value 100
+	mesh "book.qmsh"
+	scheme book
+	flags {alpha not_shop not_chest not_random ground_mesh}
+	runic 1
 }
 
 //------------------------------------------------------------------------------

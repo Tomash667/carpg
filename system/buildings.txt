@@ -497,9 +497,6 @@ building_script village {
 				inc citizens
 			endif
 		endif
-		if rand 4
-			shrine
-		endif
 	shuffle end
 	barracks
 	set citizens_world = citizens * 100 + random(0,99)

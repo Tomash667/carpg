@@ -237,7 +237,9 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pogadano z karczmarzem
 		{
 			goblins_state = State::KnownLocation;
-			Location& target = *world->CreateLocation(L_DUNGEON, world->GetWorldPos(), 128.f, THRONE_FORT, UnitGroup::Get("goblins"), false);
+			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 128.f);
+			Location& target = *world->CreateLocation(L_DUNGEON, pos, THRONE_FORT);
+			target.group = UnitGroup::Get("goblins");
 			target.st = 12;
 			target.SetKnown();
 			target.active_quest = this;

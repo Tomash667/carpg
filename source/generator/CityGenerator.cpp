@@ -878,7 +878,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		// x = y, x i y odwrócone
 
 		build_it->pt = pt.first;
-		build_it->rot = best_dir;
+		build_it->dir = best_dir;
 
 		Int2 ext2 = build_it->building->size;
 		if(best_dir == GDIR_LEFT || best_dir == GDIR_RIGHT)
@@ -1212,10 +1212,17 @@ void CityGenerator::SmoothTerrain()
 	{
 		for(int x = 1; x < w; ++x)
 		{
-			if(tiles[x + y * w].mode < TM_BUILDING_SAND && tiles[x - 1 + y * w].mode < TM_BUILDING_SAND && tiles[x + (y - 1)*w].mode < TM_BUILDING_SAND && tiles[x - 1 + (y - 1)*w].mode < TM_BUILDING_SAND)
+			if(tiles[x + y * w].mode < TM_BUILDING_SAND
+				&& tiles[x - 1 + y * w].mode < TM_BUILDING_SAND
+				&& tiles[x + (y - 1)*w].mode < TM_BUILDING_SAND
+				&& tiles[x - 1 + (y - 1)*w].mode < TM_BUILDING_SAND)
 			{
-				float sum = (height[x + y * (w + 1)] + height[x - 1 + y * (w + 1)] + height[x + 1 + y * (w + 1)] + height[x + (y - 1)*(h + 1)] + height[x + (y + 1)*(h + 1)]) / 5;
-				height[x + y * (w + 1)] = sum;
+				float avg = (height[x + y * (w + 1)]
+					+ height[x - 1 + y * (w + 1)]
+					+ height[x + 1 + y * (w + 1)]
+					+ height[x + (y - 1)*(h + 1)]
+					+ height[x + (y + 1)*(h + 1)]) / 5;
+				height[x + y * (w + 1)] = avg;
 			}
 		}
 	}
@@ -1512,11 +1519,15 @@ void CityGenerator::GenerateFields()
 			for(int x = pt.x; x < pt.x + fw; ++x)
 			{
 				tiles[x + y * w].Set(TT_FIELD, TM_FIELD);
-				float sum = (height[x + y * (w + 1)] + height[x + y * (w + 1)] + height[x + (y + 1)*(w + 1)] + height[x + 1 + (y - 1)*(w + 1)] + height[x + 1 + (y + 1)*(w + 1)]) / 5;
-				height[x + y * (w + 1)] = sum;
-				height[x + (y + 1)*(w + 1)] = sum;
-				height[x + 1 + (y - 1)*(w + 1)] = sum;
-				height[x + 1 + (y + 1)*(w + 1)] = sum;
+				float avg = (height[x + y * (w + 1)]
+					+ height[x + y * (w + 1)]
+					+ height[x + (y + 1)*(w + 1)]
+					+ height[x + 1 + (y - 1)*(w + 1)]
+					+ height[x + 1 + (y + 1)*(w + 1)]) / 5;
+				height[x + y * (w + 1)] = avg;
+				height[x + (y + 1)*(w + 1)] = avg;
+				height[x + 1 + (y - 1)*(w + 1)] = avg;
+				height[x + 1 + (y + 1)*(w + 1)] = avg;
 			}
 		}
 
@@ -1625,10 +1636,6 @@ void CityGenerator::ApplyWallTiles(int gates)
 	   --X--    width = 2
 */
 
-#define RT_START 0
-#define RT_END 1
-#define RT_MID 2
-
 const int ROAD_MIN_DIST = 10;
 const int ROAD_MIN_MID_SPLIT = 25;
 const int ROAD_CHECK = 6;
@@ -1652,6 +1659,13 @@ int get_choice_pop(int* choice, int& choices)
 //=================================================================================================
 void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 {
+	enum RoadPart
+	{
+		RP_START,
+		RP_END,
+		RP_MID
+	};
+
 	road_tile = _road_tile;
 	to_check.clear();
 	for(int i = 0; i < (int)roads.size(); ++i)
@@ -1673,11 +1687,11 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 
 		int choices = 0;
 		if(!IsSet(r.flags, ROAD_START_CHECKED))
-			choice[choices++] = RT_START;
+			choice[choices++] = RP_START;
 		if(!IsSet(r.flags, ROAD_MID_CHECKED))
-			choice[choices++] = RT_MID;
+			choice[choices++] = RP_MID;
 		if(!IsSet(r.flags, ROAD_END_CHECKED))
-			choice[choices++] = RT_END;
+			choice[choices++] = RP_END;
 		if(choices == 0)
 			continue;
 
@@ -1686,7 +1700,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		Int2 pt;
 		const bool horizontal = IsSet(r.flags, ROAD_HORIZONTAL);
 
-		if(type == RT_MID)
+		if(type == RP_MID)
 		{
 			r.flags |= ROAD_MID_CHECKED;
 			Int2 rstart = r.start, rend = r.end;
@@ -1720,7 +1734,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		else
 		{
 			choices = 3;
-			if(type == RT_START)
+			if(type == RP_START)
 			{
 				r.flags |= ROAD_START_CHECKED;
 				pt = r.start;
@@ -1734,13 +1748,13 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 			{
 				choice[0] = GDIR_UP;
 				choice[1] = GDIR_DOWN;
-				choice[2] = (type == RT_START ? GDIR_LEFT : GDIR_RIGHT);
+				choice[2] = (type == RP_START ? GDIR_LEFT : GDIR_RIGHT);
 			}
 			else
 			{
 				choice[0] = GDIR_LEFT;
 				choice[1] = GDIR_RIGHT;
-				choice[2] = (type == RT_END ? GDIR_DOWN : GDIR_UP);
+				choice[2] = (type == RP_END ? GDIR_DOWN : GDIR_UP);
 			}
 		}
 
@@ -2189,7 +2203,7 @@ void CityGenerator::Generate()
 	{
 		it->building = build_it->building;
 		it->pt = build_it->pt;
-		it->rot = build_it->rot;
+		it->dir = build_it->dir;
 		it->unit_pt = build_it->unit_pt;
 	}
 
@@ -2340,26 +2354,9 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Object* o = new Object;
-
-		switch(it->rot)
-		{
-		case GDIR_DOWN:
-			o->rot.y = 0.f;
-			break;
-		case GDIR_LEFT:
-			o->rot.y = PI / 2;
-			break;
-		case GDIR_UP:
-			o->rot.y = PI;
-			break;
-		case GDIR_RIGHT:
-			o->rot.y = PI * 3 / 2;
-			break;
-		}
-
-		o->pos = Vec3(float(it->pt.x + it->building->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->rot].y) * 2);
+		o->pos = Vec3(float(it->pt.x + it->building->shift[it->dir].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->dir].y) * 2);
 		terrain->SetH(o->pos);
-		o->rot.x = o->rot.z = 0.f;
+		o->rot = Vec3(0, DirToRot(it->dir), 0);
 		o->scale = 1.f;
 		o->base = nullptr;
 		o->mesh = it->building->mesh;
@@ -2435,8 +2432,8 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		game_level->ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
-			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), b, &*it);
+		game_level->ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->dir), it->dir,
+			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 0.f, float(it->pt.y + b->shift[it->dir].y) * 2), b, &*it);
 	}
 }
 
@@ -2506,38 +2503,12 @@ void CityGenerator::SpawnUnits()
 		if(!ud)
 			continue;
 
-		Unit* u = game->CreateUnit(*ud, -2);
-		u->area = city;
-
-		switch(b.rot)
-		{
-		case GDIR_DOWN:
-			u->rot = 0.f;
-			break;
-		case GDIR_LEFT:
-			u->rot = PI / 2;
-			break;
-		case GDIR_UP:
-			u->rot = PI;
-			break;
-		case GDIR_RIGHT:
-			u->rot = PI * 3 / 2;
-			break;
-		}
-
-		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
-		terrain->SetH(u->pos);
-		u->UpdatePhysics();
-		u->visual_pos = u->pos;
+		Vec3 pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
+		float rot = DirToRot(b.dir);
+		Unit* u = game_level->CreateUnitWithAI(*city, *ud, -2, &pos, &rot);
 
 		if(b.building->group == BuildingGroup::BG_ARENA)
 			city->arena_pos = u->pos;
-
-		area.units.push_back(u);
-
-		AIController* ai = new AIController;
-		ai->Init(u);
-		game->ais.push_back(ai);
 	}
 
 	UnitData* dweller = UnitData::Get(city->IsVillage() ? "villager" : "citizen");
@@ -2905,13 +2876,13 @@ void CityGenerator::RespawnBuildingPhysics()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		game_level->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
-			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
+		game_level->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->dir), it->dir,
+			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 1.f, float(it->pt.y + b->shift[it->dir].y) * 2), nullptr, &*it, true);
 	}
 
 	for(vector<InsideBuilding*>::iterator it = city->inside_buildings.begin(), end = city->inside_buildings.end(); it != end; ++it)
 	{
-		game_level->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
-			nullptr, true);
+		game_level->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, GDIR_DOWN,
+			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, true);
 	}
 }

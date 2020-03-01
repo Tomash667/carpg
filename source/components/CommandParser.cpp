@@ -73,7 +73,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_RANDOM, "random", "roll random number 1-100 or pick random character (random, random [name], use ? to get list)", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
-	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/hall)", F_CHEAT | F_GAME));
+	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp building/group [front])", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
@@ -958,40 +958,74 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(t.Next())
 		{
 			const string& type = t.MustGetItem();
-			BuildingGroup* group = BuildingGroup::TryGet(type);
-			if(!group)
+			CityBuilding* city_building = nullptr;
+			int index;
+			if(BuildingGroup* group = BuildingGroup::TryGet(type))
 			{
-				Msg("Missing building group '%s'.", type.c_str());
+				if(game_level->city_ctx)
+					city_building = game_level->city_ctx->FindBuilding(group, &index);
+				if(!city_building)
+				{
+					Msg("Missing building group '%s'.", type.c_str());
+					break;
+				}
+			}
+			else if(Building* building = Building::TryGet(type))
+			{
+				if(game_level->city_ctx)
+					city_building = game_level->city_ctx->FindBuilding(building, &index);
+				if(!city_building)
+				{
+					Msg("Missing building '%s'.", type.c_str());
+					break;
+				}
+			}
+			else
+			{
+				Msg("Invalid building or group '%s'.", type.c_str());
 				break;
 			}
 
-			bool ok = false;
-			if(game_level->city_ctx)
+			bool inside = true;
+			if((t.Next() && t.IsItem("front")) || !city_building->building->inside_mesh)
+				inside = false;
+			else
+				game_level->city_ctx->FindInsideBuilding(city_building->building, &index);
+
+			if(Net::IsLocal())
 			{
-				int index;
-				InsideBuilding* building = game_level->city_ctx->FindInsideBuilding(group, index);
-				if(building)
+				if(inside)
 				{
-					// wejdŸ do budynku
-					if(Net::IsLocal())
-					{
-						game->fallback_type = FALLBACK::ENTER;
-						game->fallback_t = -1.f;
-						game->fallback_1 = index;
-						game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-					}
-					else
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP;
-						c.id = index;
-					}
-					ok = true;
+					// warp to building
+					game->fallback_type = FALLBACK::ENTER;
+					game->fallback_t = -1.f;
+					game->fallback_1 = index;
+					game->fallback_2 = -1;
+					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+				}
+				else if(game->pc->unit->area->area_type != LevelArea::Type::Outside)
+				{
+					// warp from building to front of building
+					game->fallback_type = FALLBACK::ENTER;
+					game->fallback_t = -1.f;
+					game->fallback_1 = -1;
+					game->fallback_2 = index;
+					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+				}
+				else
+				{
+					// warp from outside to front of building
+					game_level->WarpUnit(*game->pc->unit, city_building->walk_pt);
+					game->pc->unit->RotateTo(PtToPos(city_building->pt));
 				}
 			}
-
-			if(!ok)
-				Msg("Missing building of type '%s'.", type.c_str());
+			else
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHEAT_WARP;
+				c.id = index;
+				c.count = inside ? 1 : 0;
+			}
 		}
 		else
 			Msg("You need to enter where.");

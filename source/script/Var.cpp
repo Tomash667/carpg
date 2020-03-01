@@ -6,18 +6,43 @@
 #include "Encounter.h"
 #include "GroundItem.h"
 #include "SaveState.h"
+#include "ScriptManager.h"
 #pragma warning(error: 4062)
 
-string VarsContainer::tmp_str;
+string Vars::tmp_str;
 
 //=================================================================================================
-VarsContainer::~VarsContainer()
+bool Var::IsGeneric(void* ptr, int type)
+{
+	Type is_type = script_mgr->GetVarType(type);
+	return this->type == is_type && this->ptr == ptr;
+}
+
+//=================================================================================================
+Var* Var::SetGeneric(void* ptr, int type)
+{
+	// TODO: check if this is known type
+	this->type = script_mgr->GetVarType(type);
+	this->ptr = ptr;
+	return this;
+}
+
+//=================================================================================================
+void Var::GetGeneric(void* ptr, int type)
+{
+	// TODO: throw on invalid type
+	assert(this->type == script_mgr->GetVarType(type));
+	*(void**)ptr = this->ptr;
+}
+
+//=================================================================================================
+Vars::~Vars()
 {
 	DeleteElements(vars);
 }
 
 //=================================================================================================
-Var* VarsContainer::Add(Var::Type type, const string& name, bool registered)
+Var* Vars::Add(Var::Type type, const string& name, bool registered)
 {
 	Var* var = new Var;
 	var->type = type;
@@ -27,7 +52,7 @@ Var* VarsContainer::Add(Var::Type type, const string& name, bool registered)
 }
 
 //=================================================================================================
-Var* VarsContainer::Get(const string& name)
+Var* Vars::Get(const string& name)
 {
 	auto it = vars.lower_bound(name);
 	if(it != vars.end() && !(vars.key_comp()(name, it->first)))
@@ -42,7 +67,7 @@ Var* VarsContainer::Get(const string& name)
 }
 
 //=================================================================================================
-Var* VarsContainer::TryGet(const string& name) const
+Var* Vars::TryGet(const string& name) const
 {
 	auto it = vars.lower_bound(name);
 	if(it != vars.end() && !(vars.key_comp()(name, it->first)))
@@ -51,7 +76,7 @@ Var* VarsContainer::TryGet(const string& name) const
 }
 
 //=================================================================================================
-void VarsContainer::Save(FileWriter& f)
+void Vars::Save(FileWriter& f)
 {
 	f << vars.size();
 	for(auto& e : vars)
@@ -98,12 +123,16 @@ void VarsContainer::Save(FileWriter& f)
 		case Var::Type::GroundItem:
 			f << (e.second->ground_item ? e.second->ground_item->id : -1);
 			break;
+		case Var::Type::String:
+		case Var::Type::Unit:
+			assert(0); // TODO
+			break;
 		}
 	}
 }
 
 //=================================================================================================
-void VarsContainer::Load(FileReader& f)
+void Vars::Load(FileReader& f)
 {
 	uint count;
 	f >> count;
@@ -190,12 +219,16 @@ void VarsContainer::Load(FileReader& f)
 				v->ground_item = GroundItem::GetById(id);
 			}
 			break;
+		case Var::Type::String:
+		case Var::Type::Unit:
+			assert(0); // TODO
+			break;
 		}
 	}
 }
 
 //=================================================================================================
-void VarsContainer::Clear()
+void Vars::Clear()
 {
 	LoopAndRemove(vars, [](Var* var)
 	{

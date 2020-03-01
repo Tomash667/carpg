@@ -55,7 +55,8 @@ void Quest_Crazies::SetProgress(int prog2)
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
 			start_loc = world->GetCurrentLocationIndex();
-			Location& loc = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABYRINTH, UnitGroup::Get("unk"), false);
+			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), LABYRINTH);
+			loc.group = UnitGroup::Get("unk");
 			loc.active_quest = this;
 			loc.SetKnown();
 			loc.st = 13;

@@ -56,7 +56,7 @@ enum class FALLBACK
 	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), fallback_2 (skill/attrib id)
 	REST, // fallback_1 (days)
 	ARENA,
-	ENTER, // fallback_1 (inside building index)
+	ENTER, // enter/exit building - fallback_1 (inside building index), fallback_2 (warp to building index or -1)
 	EXIT,
 	CHANGE_LEVEL, // fallback_1 (direction +1/-1)
 	NONE,
@@ -198,7 +198,6 @@ public:
 	void UpdateAi(float dt);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelArea& area, float dt);
@@ -224,7 +223,6 @@ public:
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
-	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
 	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);

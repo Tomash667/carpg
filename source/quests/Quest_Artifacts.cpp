@@ -12,7 +12,7 @@ void Quest_Artifacts::Start()
 
 	// one of corners
 	const Vec2& bounds = world->GetWorldBounds();
-	Location* target;
+	Location* target = nullptr;
 	for(int i = 0; i < 10; ++i)
 	{
 		Vec2 pos;
@@ -31,10 +31,17 @@ void Quest_Artifacts::Start()
 			pos = Vec2(bounds.y - 16.f, bounds.y - 16.f);
 			break;
 		}
-		target = world->CreateLocation(L_DUNGEON, pos, 64.f, HERO_CRYPT, UnitGroup::Get("golems"), false, 2);
+		if(!world->TryFindPlace(pos, 64.f))
+			continue;
+		target = world->CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
 		if(target)
+		{
+			target->group = UnitGroup::Get("golems");
 			break;
+		}
 	}
+	if(!target)
+		throw "Failed to create artifacts quest location.";
 	target->active_quest = this;
 	target->st = 12;
 	target_loc = target->index;

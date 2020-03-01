@@ -191,6 +191,7 @@ public:
 	{
 		Unit* u;
 		int where; // <-1 - get outside the building,  >=0 - get inside the building
+		int building;
 		float timer;
 	};
 	vector<WarpData> warps;

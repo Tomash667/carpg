@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.14 (???):
 ! cannot load saves from version 0.5.1 or older
++ continued storyline and side quest
 + alchemy skill, crafting 6 simple potions (healing & mana)
 + new history feat: studend of traveling merchant (+10 haggle, 500 gold)
 + building inside city - shrine
@@ -10,6 +11,7 @@ Version 0.14 (???):
 + loading feats from file
 + loading rooms from file
 + scene manager improvements (part 2)
++ warp to building front command
 + update libraries: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------
@@ -149,7 +151,7 @@ Version 0.10 (2019-05-05):
 + improved chest handling in multiplayer
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - fixed crash when accepting some quests that generate new locations [Anonymous]
-- fixed rare crash when entering some dungeons 
+- fixed rare crash when entering some dungeons
 - fixed infinite wait time when using -delay switch
 - fixed broken side menu
 - fixed save sometimes failing on world map
@@ -234,7 +236,7 @@ Version 0.8 (2019-02-23):
 + effects system (feats gives effects)
 + key to toggle run/walk
 + loading traders stock from file, refreshing stock every 10 days, not when entering location
-+ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points, arena, clean_level) 
++ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points, arena, clean_level)
 + new items: magic scroll, knife, wooden sword, rusted hatchet, plank shield, rusted splint armor, Gladiator armor, muffin
 + hero ai profiles - prefered skills/items
 + application crash reporting using CrashRpt

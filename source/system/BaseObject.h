@@ -29,14 +29,12 @@ enum OBJ_FLAGS
 	OBJ_BUILDING = 1 << 13, // object is building
 	OBJ_DOUBLE_PHYSICS = 1 << 14, // object have 2 physics colliders (only works with box for now)
 	OBJ_BLOOD_EFFECT = 1 << 15, // altar blood effect
-	OBJ_REQUIRED = 1 << 16, // object is required to generate (if not will throw exception)
-	OBJ_IN_MIDDLE = 1 << 17, // object is generated in midle of room
-	OBJ_PHY_BLOCKS_CAM = 1 << 18, // object physics blocks camera
-	OBJ_PHY_ROT = 1 << 19, // object physics can be rotated
-	OBJ_WATER_EFFECT = 1 << 20, // object have water particle effect
-	OBJ_MULTI_PHYSICS = 1 << 21, // object have multiple colliders (only workd with box for now)
-	OBJ_CAM_COLLIDERS = 1 << 22, // spawn camera coliders from mesh attach points
-	OBJ_USABLE = 1 << 23, // object is usable
+	OBJ_PHY_BLOCKS_CAM = 1 << 16, // object physics blocks camera
+	OBJ_PHY_ROT = 1 << 17, // object physics can be rotated
+	OBJ_WATER_EFFECT = 1 << 18, // object have water particle effect
+	OBJ_MULTI_PHYSICS = 1 << 19, // object have multiple colliders (only workd with box for now)
+	OBJ_CAM_COLLIDERS = 1 << 20, // spawn camera coliders from mesh attach points
+	OBJ_USABLE = 1 << 21, // object is usable
 };
 
 //-----------------------------------------------------------------------------

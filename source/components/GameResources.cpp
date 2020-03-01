@@ -126,7 +126,9 @@ void GameResources::LoadData()
 	tSpark = res_mgr->Load<Texture>("iskra.png");
 	tSpawn = res_mgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = res_mgr->Load<Texture>("lighting_line.png");
-	game_level->LoadData();
+	tFlare = res_mgr->Load<Texture>("flare.png");
+	tFlare2 = res_mgr->Load<Texture>("flare2.png");
+	tWater = res_mgr->Load<Texture>("water.png");
 
 	// preload terrain textures
 	res_mgr->AddTaskCategory(txLoadTerrainTextures);
@@ -253,7 +255,11 @@ void GameResources::PreloadBuildings()
 	for(Building* b : Building::buildings)
 	{
 		if(b->mesh)
+		{
 			res_mgr->LoadMeshMetadata(b->mesh);
+			if(!b->mesh->FindPoint("o_s_point"))
+				Warn("Missing building '%s' point.", b->id.c_str());
+		}
 		if(b->inside_mesh)
 			res_mgr->LoadMeshMetadata(b->inside_mesh);
 	}

@@ -46,7 +46,9 @@ public:
 		If,
 		Choice,
 		Block,
-		Statement
+		Statement,
+		Switch,
+		Case
 	};
 
 	enum class IfOp
@@ -89,10 +91,10 @@ public:
 	Node* ParseBlock();
 	Node* ParseIf();
 	Node* ParseChoice();
+	Node* ParseSwitch();
 	DialogOp GetNegatedOp(DialogOp op);
 	bool BuildDialog(Node* node);
 	bool BuildDialogBlock(Node* node);
 
 	GameDialog* current_dialog;
-	//vector<Node*> nodes;
 };

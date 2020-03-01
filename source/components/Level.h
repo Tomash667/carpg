@@ -36,21 +36,23 @@ class Level
 	{
 		Unit* unit;
 		int where;
+		int building;
 	};
 
 public:
 	Level();
 	~Level();
 	void LoadLanguage();
-	void LoadData();
 	void Init();
 	void Reset();
 	Location* GetLocation() { return location; }
-	void WarpUnit(Unit* unit, int where)
+	int GetDungeonLevel() { return dungeon_level; }
+	void WarpUnit(Unit* unit, int where, int building = -1)
 	{
 		UnitWarpData& uwd = Add1(unit_warp_data);
 		uwd.unit = unit;
 		uwd.where = where;
+		uwd.building = building;
 	}
 	void ProcessUnitWarps();
 	void ProcessRemoveUnits(bool leave);
@@ -79,8 +81,7 @@ public:
 		SOE_DONT_CREATE_LIGHT = 1 << 2
 	};
 	void SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
-	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
-	void ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
+	void ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, GameDirection dir,
 		const Vec3& shift, Building* building, CityBuilding* city_building, bool recreate = false, Vec3* out_point = nullptr);
 	void RecreateObjects(bool spawn_pes = true);
 	ObjectEntity SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
@@ -91,12 +92,16 @@ public:
 	void PickableItemAdd(const Item* item);
 	void AddGroundItem(LevelArea& area, GroundItem* item);
 	GroundItem* FindGroundItem(int id, LevelArea** area = nullptr);
-	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
+	GroundItem* SpawnGroundItemInsideAnyRoom(const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
 	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact = false);
 	GroundItem* SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos, const Vec2& region_size, bool try_exact);
+	Unit* CreateUnit(UnitData& base, int level = -1, bool create_physics = true);
+	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, const Vec3* pos = nullptr, const float* rot = nullptr);
+	Vec3 FindSpawnPos(Room* room, Unit* unit);
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
-	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit) { return SpawnUnitInsideRoom(room, unit); }
+	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitData& unit, int level = -1);
 	enum SpawnUnitFlags
@@ -118,8 +123,8 @@ public:
 	bool Collide(const vector<CollisionObject>& objects, const Vec3& pos, float radius);
 	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin = 0.f);
 	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin, float rot);
-	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
-	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
+	bool CollideWithStairs(const CollisionObject& cobj, const Vec3& pos, float radius) const;
+	bool CollideWithStairsRect(const CollisionObject& cobj, const Box2d& box) const;
 	void CreateBlood(LevelArea& area, const Unit& unit, bool fully_created = false);
 	void SpawnBlood();
 	void WarpUnit(Unit& unit, const Vec3& pos);
@@ -157,6 +162,8 @@ public:
 	bool Read(BitStreamReader& f, bool loaded_resources);
 	MusicType GetLocationMusic();
 	void CleanLevel(int building_id = -2);
+	GroundItem* SpawnItem(const Item* item, const Vec3& pos);
+	GroundItem* SpawnItemAtObject(const Item* item, Object* obj);
 	void SpawnItemRandomly(const Item* item, uint count);
 	Unit* GetNearestEnemy(Unit* unit);
 	Unit* SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range);
@@ -184,10 +191,15 @@ public:
 		mesh_inst = nullptr;
 	}
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
+	Room* GetRoom(RoomTarget target);
+	Object* FindObjectInRoom(Room& room, const string& obj_id);
+	CScriptArray* FindPath(Room& from, Room& to);
+	CScriptArray* GetUnits(Room& room);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
 	int dungeon_level;
+	InsideLocationLevel* lvl; // null when in outside location
 	bool reenter;
 	GameCamera camera;
 	float lights_dt;
@@ -227,8 +239,6 @@ public:
 private:
 	vector<MeshInstance*> bow_instances;
 	vector<UnitWarpData> unit_warp_data;
-	TexturePtr tFlare, tFlare2, tWater;
-	Matrix m1, m2, m3;
 
 	// pickable items
 	struct PickableItem

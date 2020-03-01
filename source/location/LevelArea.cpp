@@ -14,6 +14,7 @@
 
 static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
+//=================================================================================================
 LevelArea::~LevelArea()
 {
 	DeleteElements(units);
@@ -25,6 +26,7 @@ LevelArea::~LevelArea()
 	DeleteElements(traps);
 }
 
+//=================================================================================================
 void LevelArea::Save(GameWriter& f)
 {
 	bool local = (tmp != nullptr);
@@ -69,6 +71,7 @@ void LevelArea::Save(GameWriter& f)
 		tmp->Save(f);
 }
 
+//=================================================================================================
 void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibility)
 {
 	if(local && !tmp)
@@ -300,6 +303,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 		tmp->Load(f);
 }
 
+//=================================================================================================
 void LevelArea::Write(BitStreamWriter& f)
 {
 	// units
@@ -340,6 +344,7 @@ void LevelArea::Write(BitStreamWriter& f)
 		light.Write(f);
 }
 
+//=================================================================================================
 bool LevelArea::Read(BitStreamReader& f)
 {
 	if(!tmp)
@@ -511,6 +516,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	return true;
 }
 
+//=================================================================================================
 void LevelArea::Clear()
 {
 	bloods.clear();
@@ -520,6 +526,7 @@ void LevelArea::Clear()
 	DeleteElements(units);
 }
 
+//=================================================================================================
 cstring LevelArea::GetName()
 {
 	switch(area_type)
@@ -533,6 +540,7 @@ cstring LevelArea::GetName()
 	}
 }
 
+//=================================================================================================
 Unit* LevelArea::FindUnit(UnitData* ud)
 {
 	assert(ud);
@@ -546,6 +554,7 @@ Unit* LevelArea::FindUnit(UnitData* ud)
 	return nullptr;
 }
 
+//=================================================================================================
 Usable* LevelArea::FindUsable(BaseUsable* base)
 {
 	assert(base);
@@ -559,6 +568,7 @@ Usable* LevelArea::FindUsable(BaseUsable* base)
 	return nullptr;
 }
 
+//=================================================================================================
 bool LevelArea::RemoveItem(const Item* item)
 {
 	assert(item);
@@ -636,6 +646,7 @@ bool LevelArea::RemoveGroundItem(const Item* item)
 	return false;
 }
 
+//=================================================================================================
 bool LevelArea::FindItemInChest(const Item* item, Chest** chest, int* slot)
 {
 	assert(item);
@@ -656,6 +667,7 @@ bool LevelArea::FindItemInChest(const Item* item, Chest** chest, int* slot)
 	return false;
 }
 
+//=================================================================================================
 Object* LevelArea::FindObject(BaseObject* base_obj)
 {
 	assert(base_obj);
@@ -669,6 +681,7 @@ Object* LevelArea::FindObject(BaseObject* base_obj)
 	return nullptr;
 }
 
+//=================================================================================================
 Chest* LevelArea::FindChestInRoom(const Room& p)
 {
 	for(Chest* chest : chests)
@@ -680,6 +693,7 @@ Chest* LevelArea::FindChestInRoom(const Room& p)
 	return nullptr;
 }
 
+//=================================================================================================
 Chest* LevelArea::GetRandomFarChest(const Int2& pt)
 {
 	vector<pair<Chest*, float>> far_chests;
@@ -730,6 +744,7 @@ Chest* LevelArea::GetRandomFarChest(const Int2& pt)
 	return far_chests[index].first;
 }
 
+//=================================================================================================
 bool LevelArea::HaveUnit(Unit* unit)
 {
 	assert(unit);
@@ -802,11 +817,13 @@ ForLocation::ForLocation(int loc, int level)
 	Setup(world->GetLocation(loc), level);
 }
 
+//=================================================================================================
 ForLocation::ForLocation(Location* loc, int level)
 {
 	Setup(loc, level);
 }
 
+//=================================================================================================
 void ForLocation::Setup(Location* l, int level)
 {
 	ctx = LevelAreaContextPool.Get();
@@ -1104,6 +1121,7 @@ bool LevelAreaContext::RemoveUnit(Unit* unit)
 		return false;
 }
 
+//=================================================================================================
 void TmpLevelArea::Clear()
 {
 	DeleteElements(explos);
@@ -1115,6 +1133,7 @@ void TmpLevelArea::Clear()
 	DeleteElements(tpes);
 }
 
+//=================================================================================================
 void TmpLevelArea::Save(GameWriter& f)
 {
 	f << pes.size();
@@ -1142,6 +1161,7 @@ void TmpLevelArea::Save(GameWriter& f)
 		bullet.Save(f);
 }
 
+//=================================================================================================
 void TmpLevelArea::Load(GameReader& f)
 {
 	const int particle_version = (LOAD_VERSION >= V_0_13 ? 2 : (LOAD_VERSION >= V_0_12 ? 1 : 0));

@@ -379,6 +379,13 @@ void QuestLoader::Finalize()
 		asITypeInfo* type = module->GetTypeInfoByName(Format("quest_%s", scheme->id.c_str()));
 		scheme->script_type = type;
 		scheme->f_startup = type->GetMethodByDecl("void Startup()");
+		if(!scheme->f_startup)
+		{
+			scheme->f_startup = type->GetMethodByDecl("void Startup(Vars@)");
+			scheme->startup_use_vars = true;
+		}
+		else
+			scheme->startup_use_vars = false;
 		scheme->f_progress = type->GetMethodByDecl("void SetProgress()");
 		if(!scheme->f_progress)
 		{

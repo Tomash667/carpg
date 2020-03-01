@@ -132,7 +132,7 @@ void Game::UpdateAi(float dt)
 			if(event.type == EVENT_UPDATE)
 			{
 				ScriptEvent e(EVENT_UPDATE);
-				e.unit = &u;
+				e.on_update.unit = &u;
 				event.quest->FireEvent(e);
 			}
 		}
@@ -465,7 +465,7 @@ void Game::UpdateAi(float dt)
 					case ORDER_FOLLOW:
 						if(!order_unit)
 						{
-							u.OrderClear();
+							u.OrderNext();
 							break;
 						}
 						if(order_unit->in_arena == -1 && u.busy != Unit::Busy_Tournament)
@@ -594,8 +594,8 @@ void Game::UpdateAi(float dt)
 						break;
 					case ORDER_MOVE:
 						use_idle = false;
-						if(Vec3::Distance2d(u.pos, u.order->pos) < 0.1f)
-							u.OrderClear();
+						if(Vec3::Distance2d(u.pos, u.order->pos) < u.order->range)
+							u.OrderNext();
 						move_type = MovePoint;
 						target_pos = u.order->pos;
 						look_at = LookAtWalk;
@@ -686,7 +686,7 @@ void Game::UpdateAi(float dt)
 								u.SetDontAttack(false);
 						}
 						else
-							u.OrderClear();
+							u.OrderNext();
 						break;
 					case ORDER_AUTO_TALK:
 						u.CheckAutoTalk(dt);
@@ -2009,7 +2009,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(Vec3::Distance(order_unit->pos, u.pos) < 3.f)
 							{
-								u.OrderClear();
+								u.OrderNext();
 								break;
 							}
 							move_type = MovePoint;
@@ -2024,7 +2024,7 @@ void Game::UpdateAi(float dt)
 					{
 						if(Vec3::Distance(u.order->pos, u.pos) < 0.1f)
 						{
-							u.OrderClear();
+							u.OrderNext();
 							break;
 						}
 						move_type = MovePoint;
@@ -2875,7 +2875,7 @@ void Game::UpdateAi(float dt)
 				{
 					u.rot = dir;
 					if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
-						u.OrderClear();
+						u.OrderNext();
 				}
 				else
 					u.rot = Clip(u.rot + Sign(arc) * rot_speed);

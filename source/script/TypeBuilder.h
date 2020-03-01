@@ -46,14 +46,6 @@ public:
 		return *this;
 	}
 
-	template<typename T, typename... Args>
-	TypeBuilder& Constructor(cstring decl)
-	{
-		assert(decl);
-		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_CONSTRUCT, decl, asFUNCTION((internal::ConstructorArgs<T, Args...>)), asCALL_CDECL_OBJFIRST));
-		return *this;
-	}
-
 	TypeBuilder& Method(cstring decl, const asSFuncPtr& funcPointer)
 	{
 		assert(decl);
@@ -107,9 +99,9 @@ public:
 		return *this;
 	}
 
-	NamespaceBuilder WithNamespace();
+	NamespaceBuilder WithNamespace(void* auxiliary = nullptr);
 
-private:
+protected:
 	cstring name;
 	asIScriptEngine* engine;
 };
@@ -129,10 +121,23 @@ public:
 		return *this;
 	}
 
+	SpecificTypeBuilder<T>& Constructor()
+	{
+		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_CONSTRUCT, "void f()", asFUNCTION((internal::Constructor<T>)), asCALL_CDECL_OBJFIRST));
+		return *this;
+	}
+
 	template<typename... Args>
 	SpecificTypeBuilder<T>& Constructor(cstring decl)
 	{
-		TypeBuilder::Constructor<T, Args...>(decl);
+		assert(decl);
+		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_CONSTRUCT, decl, asFUNCTION((internal::ConstructorArgs<T, Args...>)), asCALL_CDECL_OBJFIRST));
+		return *this;
+	}
+
+	SpecificTypeBuilder<T>& Destructor()
+	{
+		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_DESTRUCT, "void f()", asFUNCTION((internal::Destructor<T>)), asCALL_CDECL_OBJFIRST));
 		return *this;
 	}
 
@@ -239,9 +244,9 @@ public:
 	}
 
 	template<typename T>
-	SpecificTypeBuilder<T> AddStruct(cstring name, int extra_flags = 0)
+	SpecificTypeBuilder<T> AddStruct(cstring name, int flags = asOBJ_POD)
 	{
-		CHECKED(engine->RegisterObjectType(name, sizeof(T), asOBJ_VALUE | asOBJ_POD | asGetTypeTraits<T>() | extra_flags));
+		CHECKED(engine->RegisterObjectType(name, sizeof(T), asOBJ_VALUE | asGetTypeTraits<T>() | flags));
 		return SpecificTypeBuilder<T>(name, engine);
 	}
 
@@ -257,7 +262,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-inline NamespaceBuilder TypeBuilder::WithNamespace()
+inline NamespaceBuilder TypeBuilder::WithNamespace(void* auxiliary)
 {
-	return NamespaceBuilder(engine, name, nullptr);
+	return NamespaceBuilder(engine, name, auxiliary);
 }

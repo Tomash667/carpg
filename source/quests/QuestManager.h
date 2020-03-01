@@ -78,6 +78,7 @@ public:
 	Quest* FindQuest(QUEST_TYPE type);
 	Quest* FindUnacceptedQuest(int location, QuestCategory category);
 	Quest* FindUnacceptedQuest(int id);
+	Quest* FindQuestS(const string& quest_id);
 	const Item* FindQuestItem(cstring name, int quest_id);
 	void EndUniqueQuest() { ++unique_quests_completed; }
 	bool SetForcedQuest(const string& name);

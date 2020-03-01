@@ -132,6 +132,7 @@ void TutorialLocationGenerator::OnEnter()
 
 	lvl.w = lvl.h = 22;
 	inside->SetActiveLevel(dungeon_level);
+	game_level->lvl = &inside->GetLevelData();
 	game_level->Apply();
 	game->SetDungeonParamsAndTextures(g_base_locations[TUTORIAL_FORT]);
 
@@ -144,6 +145,7 @@ void TutorialLocationGenerator::OnEnter()
 		lvl.rooms[i] = room;
 		room->index = i;
 		room->target = (info.corridor ? RoomTarget::Corridor : RoomTarget::None);
+		room->type = nullptr;
 		room->pos = info.pos;
 		room->size = info.size;
 		room->connected.clear();

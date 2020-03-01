@@ -942,6 +942,15 @@ Quest* QuestManager::FindUnacceptedQuest(int id)
 }
 
 //=================================================================================================
+Quest* QuestManager::FindQuestS(const string& quest_id)
+{
+	QuestScheme* scheme = QuestScheme::TryGet(quest_id);
+	if(!scheme)
+		return nullptr;
+	return FindAnyQuest(scheme);
+}
+
+//=================================================================================================
 const Item* QuestManager::FindQuestItem(cstring item_id, int quest_id)
 {
 	for(Item* item : quest_items)
@@ -1564,7 +1573,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		else
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			spawned = game_level->SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
+			spawned = game_level->SpawnUnitInsideRoomOrNear(room, *event->unit_to_spawn, event->unit_spawn_level);
 		}
 		if(!spawned)
 			throw "Failed to spawn quest unit!";
@@ -1600,7 +1609,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 			room = lvl->GetRoom(PosToPt(spawned->pos));
 		else
 			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
-		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
+		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";
 		if(game->devmode)
@@ -1656,7 +1665,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		{
 			GroundItem* item;
 			if(lvl)
-				item = game_level->SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
+				item = game_level->SpawnGroundItemInsideAnyRoom(event->item_to_give[0]);
 			else
 				item = game_level->SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
 			if(game->devmode)

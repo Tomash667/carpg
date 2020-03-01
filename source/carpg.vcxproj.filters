@@ -617,6 +617,9 @@
     <ClCompile Include="system\RoomType.cpp">
       <Filter>system\locations</Filter>
     </ClCompile>
+    <ClCompile Include="location\OffscreenLocation.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1217,6 +1220,9 @@
     <ClInclude Include="system\RoomType.h">
       <Filter>system\locations</Filter>
     </ClInclude>
+    <ClInclude Include="location\OffscreenLocation.h">
+      <Filter>location</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">
@@ -1240,9 +1246,6 @@
       <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\system.txt">
-      <Filter>doc</Filter>
-    </Text>
-    <Text Include="..\doc\todo.txt">
       <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\script.txt">

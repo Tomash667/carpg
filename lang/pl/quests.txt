@@ -218,7 +218,9 @@ quest main {
 		5 "Porozmawiaj z zara¿onymi wieœniakami i wróæ do mnie."
 		6 "Jeden z wieœniaków zaatakowa³ ciê bez powodu!?"
 		7 "Jest gorzej ni¿ myœla³em, musimy szybko sprowadziæ tu jakiegoœ kap³ana który zna siê na zarazach."
-		8 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) st¹d mieszka jeden z kleryków. S³ysza³em ¿e zajmuje siê badaniami nad ró¿nymi chorobami."
+		9 "ZnajdŸ go i pomó¿ mu odkryæ na co choruj¹ nasi mieszkañcy."
+		10 "ZnajdŸ kleryka mieszkaj¹cego w $(shrine_loc.name), bez niego ta wioska opustoszeje!"
 	}
 	
 	dialog ill_villager {
@@ -234,6 +236,28 @@ quest main {
 		9 "Nie dobrze mi. Chyba bêdzie trzeba pos³aæ po jakiegoœ kleryka..."
 	}
 	
+	dialog cleric_seller {
+		0 "Zaraza"
+		1 "Zaraza? Nic o tym nie wiem..."
+		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.real_name)?"
+		3 "Zazwyczaj mo¿na go tu znaleŸæ ale aktualnie wyruszy³ na badania do $(dungeon.name) na $(World::GetDirName(Level::location.pos, dungeon.pos)) st¹d."
+		4 "Mam nadzieje ¿e nic mu nie jest, od kilku dni go niewidzia³em."
+	}
+	
+	dialog cleric {
+		0 "Chwa³a niech bêdzie Imnosowi!"
+		1 "Obawia³em siê ¿e przyjdzie mi tu zgin¹æ. Tak jak moi stra¿nicy zabici przez tych nieumar³ych..."
+		2 "Proszê zaprowadŸ mnie do $(shrine_loc.name) do kapliczki, muszê zdaæ raport z tego co tu znalaz³em."
+		3 "Potem niezw³ocznie wyruszê z tob¹ aby pomóc w wyleczeniu tej zarazy."
+		4 "Skoro ju¿ tu jesteœ to mam do ciebie jeszcze jedn¹ proœbê."
+		5 "Na ni¿szym poziomie podziemi znajduje siê ksiêga która by³aby nieoceniona w moich badaniach."
+		6 "Jeœli j¹ zdobêdziesz sowicie ci to wynagrodzê."
+		7 "ZaprowadŸ mnie do kapliczki w $(shrine_loc.name), potem ci pomogê."
+		8 "Koniec rozmowy"
+		9 "Dziêkuje! Natychmiast zabieram siê do roboty nad lekarstwem."
+		10 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+	}
+	
 	texts {
 		0 "W królestwie Nyrtany wybuch³a nieznana zaraza."
 		1 "Zabija ludzi powoli nie czyni¹c szkody innym rasom i zwierzêtom."
@@ -246,5 +270,25 @@ quest main {
 		8 "W $(village.name) zaraza zaczê³a siê coraz bardziej rozprzestrzeniaæ. Muszê tam szybko wróciæ."
 		9 "Muszê przejœæ siê po wiosce i znaleŸæ zara¿onych wieœniaków. Mo¿e uda mi siê coœ ustaliæ."
 		10 "Jeden z wieœniaków oszala³ z powodu zarazy i mnie zaatakowa³."
+		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) st¹d mieszka kleryk specjalizuj¹cy siê w chorobach. Muszê z nim porozmawiaæ."
+		12 "Kleryk którego poszukiwa³em, $(cleric.real_name) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location.pos, dungeon.pos)) st¹d prowadziæ jakieœ badania."
+		13 "Odnalaz³em $(cleric.real_name) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrine_loc.name), wtedy mi pomo¿e."
+	}
+}
+
+//=============================================================================
+quest side_cleric {
+	dialog end {
+		0 "Oddaj ksiêgê"
+		1 "Zdoby³eœ t¹ ksiêgê?"
+		2 "Doskonale to pomo¿e w moich badaniach. Proszê, weŸ tê nagrodê."
+	}
+	
+	texts {
+		0 "Wielka ksiêga chorób"
+		1 "Rozpoczêto dnia $date$."
+		2 "Kleryk $(cleric.real_name) zleci³ mi zdobycie ksiêgi która znajduje siê na ni¿szym poziomie $(dungeon.name). Jeœli siê rozdzielimy bêdzie na mnie czeka³ w $(city.name)."
+		3 "Znalaz³em ksiêgê. Teraz muszê j¹ zanieœæ do $(cleric.real_name)."
+		4 "Dostarczy³em ksiêgê i otrzyma³em nagrodê. Zadanie wykonane!"
 	}
 }

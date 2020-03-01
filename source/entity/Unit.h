@@ -180,6 +180,7 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 		{
 			Vec3 pos;
 			MoveType move_type;
+			float range;
 		};
 		struct
 		{
@@ -199,12 +200,14 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 			next = nullptr;
 		}
 	}
-	UnitOrderEntry* WithTimer(float t);
+	UnitOrderEntry* WithTimer(float timer);
+	UnitOrderEntry* WithMoveType(MoveType move_type);
+	UnitOrderEntry* WithRange(float range);
 	UnitOrderEntry* ThenWander();
 	UnitOrderEntry* ThenWait();
 	UnitOrderEntry* ThenFollow(Unit* target);
 	UnitOrderEntry* ThenLeave();
-	UnitOrderEntry* ThenMove(const Vec3& pos, MoveType move_type);
+	UnitOrderEntry* ThenMove(const Vec3& pos);
 	UnitOrderEntry* ThenLookAt(const Vec3& pos);
 	UnitOrderEntry* ThenEscapeTo(const Vec3& pos);
 	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
@@ -354,6 +357,7 @@ struct Unit : public EntityType<Unit>
 
 	void AddRef() { ++refs; }
 	void Release();
+	void Init(UnitData& base, int level = -2);
 
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
@@ -678,14 +682,18 @@ public:
 		else
 			return false;
 	}
-	cstring GetRealName() const
+	const string& GetRealNameS() const
 	{
 		if(IsPlayer())
-			return player->name.c_str();
+			return player->name;
 		else if(IsHero() && !hero->name.empty())
-			return hero->name.c_str();
+			return hero->name;
 		else
-			return data->name.c_str();
+			return data->name;
+	}
+	cstring GetRealName() const
+	{
+		return GetRealNameS().c_str();
 	}
 	void RevealName(bool set_name);
 	bool GetKnownName() const;
@@ -921,13 +929,13 @@ public:
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
-	void AddDialog(Quest_Scripted* quest, GameDialog* dialog);
-	void AddDialogS(Quest_Scripted* quest, const string& dialog_id);
+	void AddDialog(Quest_Scripted* quest, GameDialog* dialog, int priority);
+	void AddDialogS(Quest_Scripted* quest, const string& dialog_id, int priority);
 	void RemoveDialog(Quest_Scripted* quest, bool cleanup);
 	void RemoveDialogS(Quest_Scripted* quest) { RemoveDialog(quest, false); }
 	void AddEventHandler(Quest_Scripted* quest, EventType type);
-	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
-	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
+	void RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup);
+	void RemoveEventHandlerS(Quest_Scripted* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	void RemoveAllEventHandlers();
 	UnitOrder GetOrder() const
 	{
@@ -945,7 +953,7 @@ public:
 	UnitOrderEntry* OrderWait();
 	UnitOrderEntry* OrderFollow(Unit* target);
 	UnitOrderEntry* OrderLeave();
-	UnitOrderEntry* OrderMove(const Vec3& pos, MoveType move_type);
+	UnitOrderEntry* OrderMove(const Vec3& pos);
 	UnitOrderEntry* OrderLookAt(const Vec3& pos);
 	UnitOrderEntry* OrderEscapeTo(const Vec3& pos);
 	UnitOrderEntry* OrderEscapeToUnit(Unit* unit);
@@ -968,6 +976,8 @@ public:
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
 	void ChangeBase(UnitData* ud, bool update_items = false);
+	void MoveToArea(LevelArea* area, const Vec3& pos);
+	void Kill();
 };
 
 //-----------------------------------------------------------------------------

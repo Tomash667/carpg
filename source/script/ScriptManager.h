@@ -21,11 +21,45 @@ struct asSFuncPtr;
 struct ScriptEvent
 {
 	EventType type;
-	Location* location;
-	Unit* unit;
-	GroundItem* item;
+	union
+	{
+		struct OnCleared
+		{
+			Location* location;
+		} on_cleared;
+		struct OnDie
+		{
+			Unit* unit;
+		} on_die;
+		struct OnEncounter
+		{
+		} on_encounter;
+		struct OnEnter
+		{
+			Location* location;
+		} on_enter;
+		struct OnGenerate
+		{
+			Location* location;
+			MapSettings* map_settings;
+			int stage;
+		} on_generate;
+		struct OnPickup
+		{
+			Unit* unit;
+			GroundItem* item;
+		} on_pickup;
+		struct OnTimeout
+		{
+		} on_timeout;
+		struct OnUpdate
+		{
+			Unit* unit;
+		} on_update;
+	};
+	bool cancel;
 
-	ScriptEvent(EventType type) : type(type), location(nullptr), unit(nullptr), item(nullptr) {}
+	ScriptEvent(EventType type) : type(type), cancel(false) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -81,9 +115,14 @@ public:
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* obj);
 	// add enum with values {name, value}
 	void AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values);
+	template<typename T>
+	void AddEnum(cstring name, std::initializer_list<pair<cstring, T>> const& values)
+	{
+		AddEnum(name, (std::initializer_list<pair<cstring, int>> const&)values);
+	}
 	TypeBuilder AddType(cstring name, bool refcount = false);
 	TypeBuilder ForType(cstring name);
-	VarsContainer* GetVars(Unit* unit);
+	Vars* GetVars(Unit* unit);
 	NamespaceBuilder WithNamespace(cstring name, void* auxiliary = nullptr);
 	Var& GetVar(cstring name);
 	void Reset();
@@ -125,7 +164,7 @@ private:
 	bool gather_output;
 	std::map<int, ScriptTypeInfo> script_type_infos;
 	std::map<string, int> var_type_map;
-	std::unordered_map<Unit*, VarsContainer*> unit_vars;
+	std::unordered_map<Unit*, Vars*> unit_vars;
 	ScriptContext ctx;
 	vector<SuspendedScript> suspended_scripts;
 };

@@ -78,6 +78,7 @@ struct LevelArea
 	Chest* FindChestWithItem(const Item* item, int* index);
 	Chest* FindChestWithQuestItem(int quest_id, int* index);
 	Door* FindDoor(const Int2& pt);
+	bool IsActive() const { return tmp != nullptr; }
 };
 
 //-----------------------------------------------------------------------------

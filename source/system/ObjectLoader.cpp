@@ -93,8 +93,6 @@ void ObjectLoader::InitTokenizer()
 		{ "building", OBJ_BUILDING },
 		{ "double_physics", OBJ_DOUBLE_PHYSICS },
 		{ "blood_effect", OBJ_BLOOD_EFFECT },
-		{ "required", OBJ_REQUIRED },
-		{ "in_middle", OBJ_IN_MIDDLE },
 		{ "blocks_camera", OBJ_PHY_BLOCKS_CAM },
 		{ "rotate_physics", OBJ_PHY_ROT },
 		{ "water_effect", OBJ_WATER_EFFECT },

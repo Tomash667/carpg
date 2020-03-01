@@ -95,7 +95,9 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_mgr->RemoveQuestRumor(id);
 			// lokacja
-			Location& target = *world->CreateLocation(L_DUNGEON, world->GetWorldPos(), 128.f, OLD_TEMPLE, UnitGroup::empty, false, 1);
+			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 128.f);
+			Location& target = *world->CreateLocation(L_DUNGEON, pos, OLD_TEMPLE, 1);
+			target.group = UnitGroup::empty;
 			target.SetKnown();
 			target.st = 8;
 			target.active_quest = this;
@@ -175,8 +177,9 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i = 0; i < 3; ++i)
 			{
 				Int2 levels = g_base_locations[l_info[i].target].levels;
-				Location& target = *world->CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, UnitGroup::Get(l_info[i].group), true,
+				Location& target = *world->CreateLocation(l_info[i].type, world->GetRandomPlace(), l_info[i].target,
 					Random(max(levels.x, 2), max(levels.y, 2)));
+				target.group = UnitGroup::Get(l_info[i].group);
 				target.st = l_info[i].st;
 				target.SetKnown();
 				target.active_quest = this;
@@ -201,7 +204,7 @@ void Quest_Evil::SetProgress(int prog2)
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
-			team->AddTeamMember(&u, HeroType::Free);
+			team->AddMember(&u, HeroType::Free);
 
 			evil_state = State::ClosingPortals;
 		}
@@ -286,7 +289,7 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
 			Unit& u = *DialogContext::current->talker;
-			team->RemoveTeamMember(&u);
+			team->RemoveMember(&u);
 			u.OrderLeave();
 		}
 		break;

@@ -20,7 +20,8 @@ enum LOCATION
 	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)
 	L_DUNGEON, // podziemia, ró¿nej g³êbokoœci, posiadaj¹ pomieszczenia o okreœlonym celu (skarbiec, sypialnie itp), zazwyczaj bandyci lub opuszczone
 	L_OUTSIDE, // las, zazwyczaj pusty, czasem potwory lub bandyci maj¹ tu ma³y obóz
-	L_ENCOUNTER // losowe spotkanie na drodze
+	L_ENCOUNTER, // losowe spotkanie na drodze
+	L_OFFSCREEN
 };
 
 //-----------------------------------------------------------------------------
@@ -152,8 +153,8 @@ struct Location
 	void SetNameS(const string& name) { SetName(name.c_str()); }
 	void SetNamePrefix(cstring prefix);
 	void AddEventHandler(Quest_Scripted* quest, EventType type);
-	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
-	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
+	void RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup);
+	void RemoveEventHandlerS(Quest_Scripted* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	bool IsVisited() const { return last_visit != -1; }
 };
 

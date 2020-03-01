@@ -21,7 +21,7 @@ struct CityBuilding
 {
 	Building* building;
 	Int2 pt, unit_pt;
-	GameDirection rot;
+	GameDirection dir;
 	Vec3 walk_pt;
 
 	CityBuilding() {}
@@ -81,14 +81,12 @@ struct City : public OutsideLocation
 
 	void GenerateCityBuildings(vector<Building*>& buildings, bool required);
 	void PrepareCityBuildings(vector<ToBuild>& tobuild);
-	bool IsInsideCity(const Vec3& _pos);
-	InsideBuilding* FindInsideBuilding(Building* building);
-	InsideBuilding* FindInsideBuilding(BuildingGroup* group);
-	InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index);
-	InsideBuilding* FindInn() { return FindInsideBuilding(BuildingGroup::BG_INN); }
-	InsideBuilding* FindInn(int& id) { return FindInsideBuilding(BuildingGroup::BG_INN, id); }
-	CityBuilding* FindBuilding(BuildingGroup* group);
-	CityBuilding* FindBuilding(Building* building);
+	bool IsInsideCity(const Vec3& pos);
+	InsideBuilding* FindInsideBuilding(Building* building, int* index = nullptr);
+	InsideBuilding* FindInsideBuilding(BuildingGroup* group, int* index = nullptr);
+	InsideBuilding* FindInn(int* index = nullptr) { return FindInsideBuilding(BuildingGroup::BG_INN, index); }
+	CityBuilding* FindBuilding(BuildingGroup* group, int* index = nullptr);
+	CityBuilding* FindBuilding(Building* building, int* index = nullptr);
 	bool IsVillage() const { return target == VILLAGE; }
 	void GetEntry(Vec3& pos, float& rot);
 };

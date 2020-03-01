@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "LocationGenerator.h"
 #include "ObjectEntity.h"
+#include "RoomType.h"
 
 //-----------------------------------------------------------------------------
 class InsideLocationGenerator : public LocationGenerator
@@ -20,7 +21,8 @@ protected:
 	InsideLocationLevel& GetLevelData();
 	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonObjects();
-	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
+	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* room_obj,
+		vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void GenerateTraps();
 	void RegenerateTraps();
 	void RespawnTraps();

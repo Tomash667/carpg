@@ -25,8 +25,8 @@ public:
 		bool is_team;
 	};
 
-	void AddTeamMember(Unit* unit, HeroType type);
-	void RemoveTeamMember(Unit* unit);
+	void AddMember(Unit* unit, HeroType type);
+	void RemoveMember(Unit* unit);
 	Unit* FindActiveTeamMember(int id);
 	bool FindItemInTeam(const Item* item, int quest_id, Unit** unit_result, int* i_index, bool check_npc = true);
 	Unit* FindTeamMember(cstring id);

@@ -681,6 +681,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		// set room
 		Room* room = Room::Get();
 		room->target = RoomTarget::Portal;
+		room->type = nullptr;
 		room->pos = pt;
 		room->size = Int2(5, 5);
 		room->connected.clear();
@@ -700,6 +701,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			// hack :3
 			room = Room::Get();
 			room->target = RoomTarget::Corridor;
+			room->type = nullptr;
 			lvl.rooms.push_back(room);
 
 			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))

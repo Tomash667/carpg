@@ -69,6 +69,24 @@ inline constexpr float DirToRot(GameDirection dir)
 }
 
 //-----------------------------------------------------------------------------
+inline GameDirection RotToDir(float rot)
+{
+	if(Equal(rot, 0))
+		return GDIR_DOWN;
+	else if(Equal(rot, PI / 2))
+		return GDIR_LEFT;
+	else if(Equal(rot, PI))
+		return GDIR_UP;
+	else if(Equal(rot, PI * 3 / 2))
+		return GDIR_RIGHT;
+	else
+	{
+		assert(0);
+		return GDIR_DOWN;
+	}
+}
+
+//-----------------------------------------------------------------------------
 inline Int2 DirToPos(GameDirection dir)
 {
 	const Int2 k[5] = {

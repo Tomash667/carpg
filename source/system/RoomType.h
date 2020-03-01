@@ -11,13 +11,22 @@ struct RoomType
 
 	struct Obj
 	{
+		enum Flags
+		{
+			F_REQUIRED = 1 << 0,
+			F_IN_MIDDLE = 1 << 1
+		};
+
 		union
 		{
-			BaseObject* obj2;
+			BaseObject* obj;
 			ObjectGroup* group;
 		};
 		Int2 count;
-		bool is_group;
+		Vec3 pos;
+		float rot;
+		int flags;
+		bool is_group, force_pos, force_rot;
 	};
 
 	string id;
@@ -27,5 +36,6 @@ struct RoomType
 	RoomType() : flags(0) {}
 
 	static RoomType* Get(Cstring id);
+	static RoomType* GetS(const string& id) { return Get(id); }
 	static vector<RoomType*> types;
 };

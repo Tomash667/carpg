@@ -57,9 +57,12 @@ bool UniqueTeamShares(const Team::TeamShareItem& t1, const Team::TeamShareItem& 
 	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item && t1.priority == t2.priority;
 }
 
-void Team::AddTeamMember(Unit* unit, HeroType type)
+void Team::AddMember(Unit* unit, HeroType type)
 {
 	assert(unit && unit->hero);
+
+	if(unit->IsTeamMember())
+		return;
 
 	// set as team member
 	unit->hero->team_member = true;
@@ -94,9 +97,12 @@ void Team::AddTeamMember(Unit* unit, HeroType type)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
 }
 
-void Team::RemoveTeamMember(Unit* unit)
+void Team::RemoveMember(Unit* unit)
 {
 	assert(unit && unit->hero);
+
+	if(!unit->IsTeamMember())
+		return;
 
 	// set as not team member
 	unit->hero->team_member = false;

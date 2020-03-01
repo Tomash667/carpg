@@ -173,6 +173,7 @@
     <ClInclude Include="helpers\ItemHelper.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
     <ClInclude Include="helpers\PhysicCallbacks.h" />
+    <ClInclude Include="location\OffscreenLocation.h" />
     <ClInclude Include="net\BitStreamFunc.h" />
     <ClInclude Include="net\EntityInterpolator.h" />
     <ClInclude Include="net\GamePacket.h" />
@@ -331,6 +332,7 @@
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
+    <ClCompile Include="location\OffscreenLocation.cpp" />
     <ClCompile Include="net\NetClient.cpp" />
     <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="generator\AcademyGenerator.cpp" />
@@ -543,7 +545,6 @@
     <Text Include="..\doc\readme_eng.txt" />
     <Text Include="..\doc\script.txt" />
     <Text Include="..\doc\system.txt" />
-    <Text Include="..\doc\todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

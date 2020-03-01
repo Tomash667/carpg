@@ -75,8 +75,10 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	if(!dialog)
 	{
 		quest_dialogs = talker->dialogs;
+		std::sort(quest_dialogs.begin(), quest_dialogs.end(),
+			[](const QuestDialog& dialog1, const QuestDialog& dialog2) { return dialog1.priority > dialog2.priority; });
 		if(quest_dialogs.empty())
-			quest_dialog_index = -1;
+			quest_dialog_index = QUEST_INDEX_NONE;
 		else
 		{
 			quest_dialog_index = 0;
@@ -88,7 +90,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	else
 	{
 		quest_dialogs.clear();
-		quest_dialog_index = -1;
+		quest_dialog_index = QUEST_INDEX_NONE;
 	}
 	assert(this->dialog);
 
@@ -163,7 +165,7 @@ void DialogContext::Update(float dt)
 			switch(choice.type)
 			{
 			case DialogChoice::Normal:
-				if(choice.quest_dialog_index != -1)
+				if(choice.quest_dialog_index != QUEST_INDEX_NONE)
 				{
 					prev.push_back({ this->dialog, dialog_quest, -1 });
 					quest_dialog_index = choice.quest_dialog_index;
@@ -286,17 +288,23 @@ void DialogContext::UpdateLoop()
 				EndDialog();
 				return;
 			}
-			else if(quest_dialog_index == -1 || quest_dialog_index + 1 == (int)quest_dialogs.size())
+			else if(quest_dialog_index == QUEST_INDEX_NONE || quest_dialog_index + 1 == (int)quest_dialogs.size())
 			{
+				// finished all quest dialogs, use normal dialog
 				Entry& p = prev.back();
 				dialog = p.dialog;
 				dialog_pos = p.pos;
 				dialog_quest = p.quest;
 				prev.pop_back();
-				quest_dialog_index = -1;
+				quest_dialog_index = QUEST_INDEX_NONE;
 			}
 			else
 			{
+				// handle remove quest dialog when was inside this dialog
+				if(quest_dialog_index == QUEST_INDEX_RESTART)
+					quest_dialog_index = QUEST_INDEX_NONE;
+
+				// use next quest dialog
 				++quest_dialog_index;
 				dialog = quest_dialogs[quest_dialog_index].dialog;
 				dialog_quest = (Quest*)quest_dialogs[quest_dialog_index].quest;
@@ -324,6 +332,8 @@ void DialogContext::UpdateLoop()
 			return;
 		case DTF_RESTART:
 			quest_dialogs = talker->dialogs;
+			std::sort(quest_dialogs.begin(), quest_dialogs.end(),
+				[](const QuestDialog& dialog1, const QuestDialog& dialog2) { return dialog1.priority > dialog2.priority; });
 			if(!prev.empty())
 			{
 				Entry e = prev[0];
@@ -332,7 +342,7 @@ void DialogContext::UpdateLoop()
 				{
 					dialog = e.dialog;
 					dialog_quest = e.quest;
-					quest_dialog_index = -1;
+					quest_dialog_index = QUEST_INDEX_NONE;
 				}
 				else
 				{
@@ -345,7 +355,7 @@ void DialogContext::UpdateLoop()
 			else
 			{
 				if(quest_dialogs.empty())
-					quest_dialog_index = -1;
+					quest_dialog_index = QUEST_INDEX_NONE;
 				else
 				{
 					quest_dialog_index = 0;
@@ -1212,7 +1222,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 		// check learning points
 		if(train)
-			 cost = pc->GetTrainCost(*train);
+			cost = pc->GetTrainCost(*train);
 		if(pc->learning_points < cost)
 		{
 			DialogTalk(game->txNeedLearningPoints);
@@ -1335,7 +1345,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		int cost = talker->hero->JoinCost();
 		pc->unit->ModGold(-cost);
 		talker->gold += cost;
-		team->AddTeamMember(talker, HeroType::Normal);
+		team->AddMember(talker, HeroType::Normal);
 		talker->temporary = false;
 		if(team->free_recruits > 0)
 			--team->free_recruits;
@@ -1345,7 +1355,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "recruit_free") == 0)
 	{
-		team->AddTeamMember(talker, HeroType::Normal);
+		team->AddMember(talker, HeroType::Normal);
 		--team->free_recruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
@@ -1386,7 +1396,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
-		team->RemoveTeamMember(talker);
+		team->RemoveMember(talker);
 		if(game_level->city_ctx)
 			talker->OrderWander();
 		else
@@ -1448,13 +1458,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "captive_join") == 0)
 	{
-		team->AddTeamMember(talker, HeroType::Visitor);
+		team->AddMember(talker, HeroType::Visitor);
 		talker->dont_attack = true;
 	}
 	else if(strcmp(msg, "captive_escape") == 0)
 	{
 		if(talker->hero->team_member)
-			team->RemoveTeamMember(talker);
+			team->RemoveMember(talker);
 		talker->OrderLeave();
 		talker->dont_attack = false;
 	}
@@ -1672,7 +1682,7 @@ cstring DialogContext::FormatString(const string& str_part)
 		{
 			cstring name;
 			int cost;
-			if(Attribute * attrib = Attribute::Find(s))
+			if(Attribute* attrib = Attribute::Find(s))
 			{
 				name = attrib->name.c_str();
 				cost = pc->GetTrainCost(pc->attrib[(int)attrib->attrib_id].train);
@@ -1823,8 +1833,50 @@ bool DialogContext::RecruitHero(Class* clas)
 	Unit* u = game_level->SpawnUnitNearLocation(*talker->area, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
 	u->rot = 0.f;
 	u->SetKnownName(true);
-	team->AddTeamMember(u, HeroType::Normal);
+	team->AddMember(u, HeroType::Normal);
 	DialogTalk(Format(game->txHeroJoined, u->GetName()));
 	force_end = true;
 	return true;
+}
+
+//=================================================================================================
+void DialogContext::RemoveQuestDialog(Quest_Scripted* quest)
+{
+	assert(quest);
+
+	if(quest_dialog_index == QUEST_INDEX_NONE)
+	{
+		RemoveElements(quest_dialogs, [=](QuestDialog& dialog) { return dialog.quest == quest; });
+		return;
+	}
+
+	// find next quest dialog
+	for(QuestDialog& dialog : quest_dialogs)
+	{
+		if(dialog.quest == quest)
+			dialog.dialog = nullptr;
+	}
+	QuestDialog next = {};
+	for(int i = quest_dialog_index + 1; i < (int)quest_dialogs.size(); ++i)
+	{
+		if(quest_dialogs[i].dialog)
+		{
+			next = quest_dialogs[i];
+			break;
+		}
+	}
+	RemoveElements(quest_dialogs, [](QuestDialog& dialog) { return !dialog.dialog; });
+	if(next.dialog)
+	{
+		for(int i = 0; i < (int)quest_dialogs.size(); ++i)
+		{
+			if(quest_dialogs[i].dialog == next.dialog && quest_dialogs[i].quest == next.quest)
+			{
+				quest_dialog_index = i - 1;
+				if(quest_dialog_index == QUEST_INDEX_NONE)
+					quest_dialog_index = QUEST_INDEX_RESTART;
+				break;
+			}
+		}
+	}
 }
