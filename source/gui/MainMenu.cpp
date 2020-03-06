@@ -76,7 +76,7 @@ void MainMenu::LoadData()
 //=================================================================================================
 void MainMenu::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::White);
+	gui->DrawSpriteFull(tBackground);
 	gui->DrawSprite(tLogo, Int2(gui->wnd_size.x - 512 - 16, 16));
 	gui->DrawSpriteRect(tFModLogo, Rect(
 		int(gui->wnd_size.x - (512.f * 0.6f + 50.f) * gui->wnd_size.x / 1920),

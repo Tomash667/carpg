@@ -2227,7 +2227,6 @@ void World::StartEncounter()
 	state = State::INSIDE_ENCOUNTER;
 	current_location = encounter_loc;
 	current_location_index = encounter_loc->index;
-	current_location = locations[current_location_index];
 	game_level->location_index = current_location_index;
 	game_level->location = current_location;
 }

@@ -2,7 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
-#include "InputTextBox.h"
+#include <InputTextBox.h>
 
 //-----------------------------------------------------------------------------
 class MpBox : public GamePanel

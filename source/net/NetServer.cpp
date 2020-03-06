@@ -2831,7 +2831,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->Warp(location_index, false);
-					game_gui->world_map->StartTravel();
+					game_gui->world_map->StartTravel(true);
 				}
 			}
 			break;
@@ -2849,7 +2849,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->WarpPos(pos, false);
-					game_gui->world_map->StartTravel();
+					game_gui->world_map->StartTravel(true);
 				}
 			}
 			break;

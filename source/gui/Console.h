@@ -1,8 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "InputTextBox.h"
+#include <DialogBox.h>
+#include <InputTextBox.h>
 
 //-----------------------------------------------------------------------------
 // Ingame console, opened with tilde (~)

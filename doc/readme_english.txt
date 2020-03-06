@@ -83,6 +83,7 @@ people. Expect changes for the better!
 	left mouse button - travel to location / enter
 	Tab - open / close multiplayer input panel
 	Enter - input text in multiplayer
+	F - search for location
 3.5. Journal
 	A / left arrow - previous page
 	D / right arrow - next page
@@ -143,7 +144,7 @@ people. Expect changes for the better!
 5) Multiplayer mode
 * General information - The multiplayer mode has been tested only on a LAN. Thanks
 	to master server it is now possible to connect two computers behind router.
-	But if it fails you need to manualy change router settings (NAT). If the
+	But if it fails you need to manually change router settings (NAT). If the
 	character's movement lags let the server change option in console
 	'mp_interp'. Default is 0.05, raising it until you find the character movement
 	is adequate. Not forget to boast on the forum how it went! :)
@@ -155,7 +156,7 @@ people. Expect changes for the better!
 	resting or training. In multiplayer mode where one person is resting /
 	training other players receive the same amount of days to use. How many days
 	you can see in the team panel (default T key). When someone exceeds this number
-	it wil automatically increase it for all. The day changes only when the number
+	it will automatically increase it for all. The day changes only when the number
 	is exceeded. Free days are decreasing during travel that players do not keep
 	them indefinitely.
 * Saving - Don't save game while in combat or during important dialogue
@@ -302,7 +303,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 		multiplayer uses (nick, server_name, server_player, server_pswd, server_ip),
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
-	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
+	* screenshot_format – set screenshot (jpg, bmp, tga, png)
 	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server

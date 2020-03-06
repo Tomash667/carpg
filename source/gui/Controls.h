@@ -1,8 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "Grid.h"
+#include <DialogBox.h>
+#include <Grid.h>
 
 //-----------------------------------------------------------------------------
 class Controls : public DialogBox

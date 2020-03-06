@@ -45,10 +45,11 @@ control "Button" {
 		size 64
 	}
 	font "normal"
+	padding 4
 }
 
 control "CheckBox" {
-tex {
+	tex {
 		mode ITEM
 		image "button.png"
 		corner 16

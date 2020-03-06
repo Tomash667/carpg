@@ -2,8 +2,8 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
-#include "TooltipController.h"
-#include "FlowContainer.h"
+#include <TooltipController.h>
+#include <FlowContainer.h>
 #include "UnitStats.h"
 #include "Perk.h"
 

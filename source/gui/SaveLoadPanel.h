@@ -1,10 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "Button.h"
+#include <DialogBox.h>
+#include <Button.h>
+#include <TextBox.h>
 #include "SaveSlot.h"
-#include "TextBox.h"
 
 //-----------------------------------------------------------------------------
 class SaveLoad : public DialogBox

@@ -1,9 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "Grid.h"
-#include "CheckBox.h"
+#include <DialogBox.h>
+#include <Grid.h>
+#include <CheckBox.h>
 #include "Version.h"
 
 //-----------------------------------------------------------------------------

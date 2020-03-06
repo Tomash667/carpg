@@ -1,9 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
-#include "Container.h"
-#include "MenuList.h"
+#include <Control.h>
+#include <Container.h>
+#include <MenuList.h>
 
 //-----------------------------------------------------------------------------
 class GamePanel : public Control

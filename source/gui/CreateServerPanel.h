@@ -1,10 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "TextBox.h"
-#include "GuiContainer.h"
-#include "CheckBox.h"
+#include <DialogBox.h>
+#include <TextBox.h>
+#include <GuiContainer.h>
+#include <CheckBox.h>
 
 //-----------------------------------------------------------------------------
 class CreateServerPanel : public DialogBox

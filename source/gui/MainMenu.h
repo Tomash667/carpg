@@ -1,8 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
-#include "Button.h"
+#include <Control.h>
+#include <Button.h>
 
 //-----------------------------------------------------------------------------
 class MainMenu : public Control

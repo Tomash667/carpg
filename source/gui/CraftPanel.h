@@ -2,9 +2,9 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
-#include "Button.h"
-#include "ListBox.h"
-#include "TooltipController.h"
+#include <Button.h>
+#include <ListBox.h>
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 class CraftPanel : public Container

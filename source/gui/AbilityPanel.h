@@ -2,7 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
-#include "TooltipController.h"
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 class AbilityPanel : public GamePanel

@@ -1,11 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "CheckBox.h"
-#include "Button.h"
-#include "ListBox.h"
-#include "Scrollbar.h"
+#include <DialogBox.h>
+#include <CheckBox.h>
+#include <Button.h>
+#include <ListBox.h>
+#include <Scrollbar.h>
 
 //-----------------------------------------------------------------------------
 class Options : public DialogBox

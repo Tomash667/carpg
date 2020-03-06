@@ -12,6 +12,7 @@ Wersja 0.14 (???):
 + wczytywanie pokoi z pliku
 + usprawnienia menad¿era sceny - czêœæ 2
 + komenda warp mo¿e przenieœæ do przodu budynku
++ skrót do szukania lokalizacji - F, przyciski dziennik i chat
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------

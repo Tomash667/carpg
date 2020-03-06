@@ -2,8 +2,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "Button.h"
+#include <DialogBox.h>
+#include <Button.h>
 
 //-----------------------------------------------------------------------------
 class GameMenu : public DialogBox

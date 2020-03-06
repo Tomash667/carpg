@@ -2,9 +2,9 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
-#include "Scrollbar.h"
-#include "Button.h"
-#include "TooltipController.h"
+#include <Scrollbar.h>
+#include <Button.h>
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 class TeamPanel : public GamePanel

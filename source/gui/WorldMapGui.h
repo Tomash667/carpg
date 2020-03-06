@@ -1,7 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "ComboBox.h"
+#include <ComboBox.h>
+#include <TooltipController.h>
+#include <Button.h>
 #include "Location.h"
 
 //-----------------------------------------------------------------------------
@@ -20,15 +22,9 @@ public:
 	void Clear();
 	Vec2 WorldPosToScreen(const Vec2& pt) const;
 	void ShowEncounterMessage(cstring text);
-	void StartTravel()
-	{
-		follow = true;
-		tracking = -1;
-	}
-	bool HaveFocus() const { return !combo_box.focus; }
+	void StartTravel(bool fast = false);
+	bool HaveFocus() const { return !combo_search.focus; }
 
-	cstring txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
-	int picked_location;
 	DialogBox* dialog_enc;
 
 private:
@@ -36,12 +32,15 @@ private:
 	void GetCityText(City& city, string& s);
 	void CenterView(float dt, const Vec2* target = nullptr);
 	Vec2 GetCameraCenter() const;
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 
 	TexturePtr tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover, tSide, tMagnifyingGlass, tTrackingArrow;
-	cstring txBuildings;
-	ComboBox combo_box;
+	cstring txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel, txBuildings;
+	ComboBox combo_search;
+	Button buttons[2];
+	TooltipController tooltip;
 	Vec2 offset, c_pos;
 	float zoom;
-	int tracking;
-	bool clicked, follow, c_pos_valid;
+	int picked_location, tracking;
+	bool clicked, follow, fast_follow, c_pos_valid;
 };

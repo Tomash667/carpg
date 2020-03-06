@@ -8,7 +8,6 @@
 #include "Level.h"
 #include "ResourceManager.h"
 #include "GameGui.h"
-#include "Render.h"
 
 enum UnitType
 {

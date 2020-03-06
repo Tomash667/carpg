@@ -1,18 +1,18 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "CheckBox.h"
-#include "Slider.h"
+#include <DialogBox.h>
+#include <CheckBox.h>
+#include <Slider.h>
+#include <ListBox.h>
+#include <TextBox.h>
+#include <TooltipController.h>
+#include <FlowContainer.h>
 #include "Class.h"
-#include "ListBox.h"
-#include "TextBox.h"
 #include "HumanData.h"
 #include "Attribute.h"
 #include "Skill.h"
 #include "Perk.h"
-#include "TooltipController.h"
-#include "FlowContainer.h"
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
@@ -49,9 +49,6 @@ public:
 	void Init();
 	void Show(bool enter_name);
 	void ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc);
-
-	// data
-	CustomButton custom_x, custom_bt[2];
 
 	// results
 	CreatedCharacter cc;
@@ -106,6 +103,7 @@ private:
 	DOLL_ANIM anim, anim2;
 	float t, dist;
 	// controls
+	CustomButton custom_x, custom_bt[2];
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;
 	CheckBox checkbox;
 	Slider slider[5];

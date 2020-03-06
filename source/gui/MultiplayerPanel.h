@@ -1,8 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "TextBox.h"
+#include <DialogBox.h>
+#include <TextBox.h>
 
 //-----------------------------------------------------------------------------
 class MultiplayerPanel : public DialogBox

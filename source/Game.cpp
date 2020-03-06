@@ -4864,10 +4864,8 @@ void Game::ClearGameVars(bool new_game)
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
 	arena->Reset();
-	game_gui->world_map->dialog_enc = nullptr;
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
-	game_gui->world_map->picked_location = -1;
 	game_level->camera.Reset();
 	game_level->lights_dt = 1.f;
 	pc->data.Reset();

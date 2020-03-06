@@ -5,7 +5,6 @@
 #include "Profiler.h"
 #include "Level.h"
 #include "ResourceManager.h"
-#include "Render.h"
 #include "GrassShader.h"
 #include "Object.h"
 #include "GameResources.h"

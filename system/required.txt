@@ -329,7 +329,7 @@ dialog crazies_encounter
 //------------------------------------------------------------------------------
 // Required buildings
 // Important: hall is not required but no hall = no quests from mayor/soltys
-// Only required buildings are in building_script requirments below
+// Only required buildings are in building_script requirements below
 //------------------------------------------------------------------------------
 // hardcoded
 building_group inn

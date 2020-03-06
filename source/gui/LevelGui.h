@@ -1,9 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Container.h"
-#include "Scrollbar.h"
-#include "TooltipController.h"
+#include <Container.h>
+#include <Scrollbar.h>
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 enum class OpenPanel

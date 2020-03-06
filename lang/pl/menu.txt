@@ -430,6 +430,7 @@ keyShortcut7 = "Skrót 7"
 keyShortcut8 = "Skrót 8"
 keyShortcut9 = "Skrót 9"
 keyShortcut10 = "Skrót 10"
+keyMapSearch = "Szukaj lokalizacji"
 
 [Controls]
 resetKeys = "Resetuj"

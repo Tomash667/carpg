@@ -604,7 +604,7 @@ dialog crazy {
 	41 "No"
 	42 "What do you do here?"
 	43 {
-		"I am the ruler of the universe, king of of all things, the master of the area. Besides..."
+		"I am the ruler of the universe, king of all things, the master of the area. Besides..."
 		"First, let's set something. I'm not crazy, remember that!!! And besides..."
 	}
 	44 "Why are you crazy?"
@@ -1311,7 +1311,7 @@ dialog q_lost_artifact_start {
 	0 "I found $przedmiot$ but unfortunately, I lost it on the way back."
 	1 "Can you find it?"
 	2 "Yes"
-	3 "I found this item at $poziomie$ level of $target_loc$ which is $target_dir$ from here. Hadd to lose it at that or a upper level."
+	3 "I found this item at $poziomie$ level of $target_loc$ which is $target_dir$ from here. Had to lose it at that or a upper level."
 	4 "I'll wait until someone brings it to me but up to two months. Good luck!"
 	5 "No"
 }
@@ -1861,7 +1861,7 @@ dialog q_wanted_start {
 	2 "You are able to kill him?"
 	3 "Yes"
 	4 "This adventurer is called $name$, you'll find him in the $target_loc$ to the $target_dir$ from here."
-	5 "Show him the wanted poster and then kill. Just do not hurt bystanding people."
+	5 "Show him the wanted poster and then kill. Just do not hurt bystanders."
 	6 "If within one month you won't kill him, he will flee from country."
 	7 "No"
 }

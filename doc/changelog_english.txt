@@ -5,13 +5,14 @@ Version 0.14 (???):
 ! cannot load saves from version 0.5.1 or older
 + continued storyline and side quest
 + alchemy skill, crafting 6 simple potions (healing & mana)
-+ new history feat: studend of traveling merchant (+10 haggle, 500 gold)
++ new history feat: student of traveling merchant (+10 haggle, 500 gold)
 + building inside city - shrine
 + converted quest "deliver letter" to scripts
 + loading feats from file
 + loading rooms from file
 + scene manager improvements (part 2)
 + warp to building front command
++ search for location shortcut - F, journal & chat buttons
 + update libraries: AngelScript 2.34, Bullet 2.89
 
 --------------------------------------------------------------------------------
@@ -26,7 +27,7 @@ Version 0.13 (2020-01-11):
 + new feat (magic adept), items: master wand, ring of mystic magic
 + moved quest "bandits collect toll" to scripts
 + changed some flora textures [Leinnan]
-+ optimisations
++ optimizations
 + scene manager improvements
 + updated to Visual Studio 2019
 + update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
@@ -41,7 +42,7 @@ Version 0.13 (2020-01-11):
 - can't cast heal when something is between camera and player
 - crash at world generation when failed to spawn location with artifact
 - removed memory leak in cutscenes
-- crash in save load panel when saves where changed manualy while playing
+- crash in save load panel when saves where changed manually while playing
 - running in side and attacking won't cause running attack
 - missing floor/ceiling collider
 - ai escape only to next room then stays
@@ -67,7 +68,7 @@ Version 0.12 (2019-09-22):
 + new skills: gods magic, concentration
 + new feats: strong aura, magic harmony
 + new items: magic crystal, mana potions, 10 magic rings, amulet of mana
-+ decreased strength requirments for blunt weapons/axes
++ decreased strength requirements for blunt weapons/axes
 + loading character classes from file
 + update libraries: FMod 1.10.14
 + improved version checking, using libcurl
@@ -92,7 +93,7 @@ Version 0.12 (2019-09-22):
 - black armor missing texture
 
 --------------------------------------------------------------------------------
-Wersja 0.11.1 (2019-08-12):
+Version 0.11.1 (2019-08-12):
 - crash on animals encounter [Savagesheep]
 - crash when new player joins loaded multiplayer game [Savagesheep]
 - crash prevention when loading multiplayer game for quest items [Savagesheep]
@@ -146,7 +147,7 @@ Version 0.10 (2019-05-05):
 + rings: silver, golden, emerald, 27 magic rings
 + new item: spring water, troll hide armor, 9 magic amulets
 + better priorities for heroes buying/asking for items
-+ configureable item/action shortcuts
++ configurable item/action shortcuts
 + improved inventory updates
 + improved chest handling in multiplayer
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
@@ -187,7 +188,7 @@ Version 0.9 (2019-03-30):
 + better error reporting
 - fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
 - fixed using kill command on corpse prevent from looting
-- fixed journal not blocking player controlls
+- fixed journal not blocking player controls
 - fixed talking/picking items thru doors at right angle
 - fixed talking/picking items inside building thru walls
 - fixed generating rocks in cave/mine that could block path
@@ -201,9 +202,9 @@ Version 0.9 (2019-03-30):
 - fixed client start location not marked as visited
 - fixed server crash when looted unit is removed
 - fixed client crash when loading game where someone is using usable
-- fixed client broken npcs using usables after reentering location
+- fixed client broken npcs using usable after reentering location
 - fixed crash when left location in single player when player searched for servers first [Anonymous]
-- fixed rare contant alcohol effect for clients after entering location [MildlyPhilosophicalHobbit]
+- fixed rare constant alcohol effect for clients after entering location [MildlyPhilosophicalHobbit]
 - fixed crash at arena combat where there is no free space to spawn enemies [Anonymous]
 - fixed crash when using take all items on chest with visible item details [Anonymous]
 - fixed crash when loading game with visible profiler
@@ -238,7 +239,7 @@ Version 0.8 (2019-02-23):
 + loading traders stock from file, refreshing stock every 10 days, not when entering location
 + new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points, arena, clean_level)
 + new items: magic scroll, knife, wooden sword, rusted hatchet, plank shield, rusted splint armor, Gladiator armor, muffin
-+ hero ai profiles - prefered skills/items
++ hero ai profiles - preferred skills/items
 + application crash reporting using CrashRpt
 + adjusted item prices, units golds, quest rewards
 + not spawning enemies close to stairs, less enemies in big connected rooms
@@ -273,7 +274,7 @@ Version 0.7.1 (2018-04-15):
 - fixed crash when using alt tab in fullscreen mode after opening inventory
 - fixed crash after loading game with saved action after hiding weapon, saving action after hiding weapon in MP
 - fixed blocking player after loading saved game while using bookcase
-- fixed crash after puting welded item to bookcase
+- fixed crash after putting welded item to bookcase
 - closing inventory when hiding weapon to sell/give it correctly cancels action
 - fixed crash when client gives npc equipped item
 - fixed using bookcase by clients
@@ -281,7 +282,7 @@ Version 0.7.1 (2018-04-15):
 - fixed crash after loading game and gaining new fake parcel for bandits quest
 - fixed rare crash when encountered crazies and they give item to player
 - fixed crash after receiving reward from drinking contest
-- fixed snychronization of inventory bug after receiving potions after tournament combat
+- fixed synchronization of inventory bug after receiving potions after tournament combat
 - fixed crash when encountered crazy mage/crazy cook/quest madman/quest golem
 - fixed alt tab moving cursor/view
 - automatic loading game after startup don't crash if save is invalid
@@ -304,7 +305,7 @@ Version 0.7 (2018-03-31):
 - fixed animation error when eating/drinking when sitting
 - fixed animations and other bugs when using objects
 - fixed bug when client take out weapon and use object in same time
-- fixed errors during drinking contest (missing player blockade when he was talking during start, crash when ai was sitting on stoll and eating)
+- fixed errors during drinking contest (missing player blockade when he was talking during start, crash when ai was sitting on stool and eating)
 - fixed player can shoot without stamina
 - fixed crash when Gorush changes class
 - fixed very good starting item when player have very low skill
@@ -318,7 +319,7 @@ Version 0.7 (2018-03-31):
 - rest before drinking contest was blocking join for clients
 - tournament heroes wasn't spawning when entered at exact day
 - removed memory leaks when spawning and removing camps
-- fixed crash when when entering dungeon corpses where generated
+- fixed crash when entering dungeon corpses where generated
 - leaving location when unit is dying don't block looting it or spawning blood
 - fixed crash during pvp when challenged player quit
 - fixed sound volume not working for some sound
@@ -367,7 +368,7 @@ Version 0.6 (2017-10-01):
 + usable bookshelf
 + items rotation in inventory
 + sorting unit labels by distance
-+ open location optimalizations
++ open location optimization
 - fixed not working multiplayer from 0.5 version
 - fixed missing moving animations for clients in multiplayer game
 - fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world
@@ -382,7 +383,7 @@ Version 0.6 (2017-10-01):
 - fixed incorrect message that player was kicked when server was closing
 - fixed random crash when picking easy arena combat
 - fixed sounds not playing correctly for arena in multiplayer
-- remove gray outline around dungon minimap
+- remove gray outline around dungeon minimap
 - fixed invalid rumor texts in journal for some quests
 - fixed summoning wolf on arena
 - fixed allies declining/agreeing randomly to pvp after loading
@@ -393,7 +394,7 @@ Version 0.6 (2017-10-01):
 - fixed missing unit animations that happen sometimes
 - fixed saving & loading name/save name containing quotation mark
 - fixed uneven generation of units in the inn/arena
-- fixed missing message about near enemies for client when trying to leavel location
+- fixed missing message about near enemies for client when trying to leave location
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):
@@ -418,7 +419,7 @@ Version 0.5 (2017-09-07):
 - fixed incorrect number of items generated for innkeeper and orc blacksmith
 - fixed crash when entering cave/encounter with animals
 - fixed crash when using $ in textbox
-- fixed crash in ecounter deliver parcel when parcel was not in inventory
+- fixed crash in encounter deliver parcel when parcel was not in inventory
 - fixed crash when loading game on worldmap and player is disconnected
 - fixed rare crash when generating village
 - fixed tournament heroes being generated in any city, not only chosen one
@@ -428,7 +429,7 @@ Version 0.5 (2017-09-07):
 - fixed invalid player name
 - fixed carried inventory weight effect on run speed
 - fixed many animations speed affected by walk speed (drop item, pickup)
-- fixed compability with pre 0.3 village hall broken in 0.4.20
+- fixed compatibility with pre 0.3 village hall broken in 0.4.20
 - fixed fields texture in villages
 - fixed item icon not using armor texture overrides (mithril, dragonscale)
 - fixed objects around buildings from village spawning inside city townhall
@@ -471,15 +472,15 @@ Version 0.4.10 (2015-12-28):
 	when he leave building server crashed
 - fixed server crash when new player joins game and crash at loading [Leinnan]
 - fixed possibility to spawn new player outside building level, for now new players spawn in front of building
-- fixed crash at closing game when some dialog boxes where closed automaticaly (for example main quest info was shown but server closed)
-- fixed bug where npc team member will disappear but will still be visible on minimap (happened when he was in bulding and you leave location but entered it
+- fixed crash at closing game when some dialog boxes where closed automatically (for example main quest info was shown but server closed)
+- fixed bug where npc team member will disappear but will still be visible on minimap (happened when he was in building and you leave location but entered it
 	again without leaving) [DerpyBarns]
 - fixed cheat 'killall' not working in multiplayer
 - fixed Gorush change don't work for client in MP
 - fixed possible client crash when unit casts spell in MP
 - fixed electro spell in MP
 - fixed standing inside arena won't work when it's your turn to fight
-- fixed generating bugged labiryth (1.5% chance)
+- fixed generating bugged labyrinth (1.5% chance)
 - fixed npc shout sound for client in MP
 - fixed hair changing don't show for client in MP
 - fixed bloody screen when using cheats to lower str/end of client in MP
@@ -512,7 +513,7 @@ Version 0.4.10 (2015-12-28):
 Version 0.4 (2015-10-20):
 + new armor types (padded, hide, scale, splint), high quality armors, magical armor
 + new skills (long blade, short blade, axe, blunt, medium armor)
-+ new attributes (inteligence, wisdom, charisma)
++ new attributes (intelligence, wisdom, charisma)
 + perks
 + reworked character creation screen, multiplayer lobby character picking
 + new music/sounds [Vinur_Gamall]
@@ -553,7 +554,7 @@ Version 0.4 (2015-10-20):
 - [Sawmill] fixed lumberjack visuals not saved properly
 - [Gorush] fixed clearing camp not working after loading (after asking where it is but before entering)
 - [Gorush] fixed generating orc leader inside locked room
-- [Golems on road] fixed posibility to skip drinking animation
+- [Golems on road] fixed possibility to skip drinking animation
 - [Golems on road] fixed crash when not disallow old mage to join party and he leaves
 - [Evil] fixed dialog after closing all portals (tells where to go when you are already there)
 - fixed blood lighting in dungeons

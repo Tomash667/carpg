@@ -47,6 +47,7 @@ void Settings::InitGameKeys()
 	GKey[GK_SHORTCUT8].id = "keyShortcut8";
 	GKey[GK_SHORTCUT9].id = "keyShortcut9";
 	GKey[GK_SHORTCUT10].id = "keyShortcut10";
+	GKey[GK_MAP_SEARCH].id = "keyMapSearch";
 
 	Language::Section s = Language::GetSection("GameKeys");
 	for(int i = 0; i < GK_MAX; ++i)
@@ -96,6 +97,7 @@ void Settings::ResetGameKeys()
 	GKey[GK_SHORTCUT8].Set(Key::N8);
 	GKey[GK_SHORTCUT9].Set(Key::N9);
 	GKey[GK_SHORTCUT10].Set(Key::N0);
+	GKey[GK_MAP_SEARCH].Set(Key::F);
 }
 
 //=================================================================================================

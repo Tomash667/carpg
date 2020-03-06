@@ -3,9 +3,9 @@
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
 #include "ItemSlot.h"
-#include "Scrollbar.h"
-#include "Button.h"
-#include "TooltipController.h"
+#include <Scrollbar.h>
+#include <Button.h>
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 enum InventoryMode

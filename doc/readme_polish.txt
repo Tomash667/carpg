@@ -83,6 +83,7 @@ osoby. Oczekuj zmian na lepsze!
 	lewy przycisk myszki - podró¿uj do lokalizacji / wejdŸ
 	Tab - otwórz / zamknij okno tekstu w multiplayer
 	Enter - wprowadzanie tekstu w multiplayer
+	F - szukaj lokalizacji
 3.5. Dziennik
 	A / strza³ka w lewo - poprzednia strona
 	D / strza³ka w prawo - nastêpna strona

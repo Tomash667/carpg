@@ -52,11 +52,11 @@ cstring order_str[ORDER_MAX] = {
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
 {
+	Invalid = -1,
 	Sidebar,
 	Buff,
 	Bar,
-	Shortcut,
-	Invalid = -1
+	Shortcut
 };
 enum Bar
 {
@@ -654,8 +654,6 @@ void LevelGui::DrawFront()
 	if(sidebar > 0.f)
 	{
 		int max = (int)SideButtonId::Max;
-		if(!Net::IsOnline())
-			--max;
 		int total = offset * max;
 		spos.y = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
@@ -997,9 +995,6 @@ void LevelGui::Update(float dt)
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
-	if(!Net::IsOnline())
-		--max;
-
 	sidebar_state[(int)SideButtonId::Inventory] = (game_gui->inventory->inv_mine->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Journal] = (game_gui->journal->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Stats] = (game_gui->stats->visible ? 2 : 0);
