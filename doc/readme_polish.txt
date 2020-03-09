@@ -315,6 +315,7 @@ Audio Engine: FMOD Studio by Firelight Technologies.
 Modele:
 	* kaangvl - fish
 	* yd - sausage
+	* rubberduck - shrine
 Tekstury:
 	* http://cgtextures.com
 	* Cube
@@ -329,6 +330,7 @@ Muzyka:
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 DŸwiêki:
+	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
 	* http://www.freesound.org/
 	* http://www.pacdv.com/sounds/
 	* http://www.soundjay.com

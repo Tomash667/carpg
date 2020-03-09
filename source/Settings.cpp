@@ -67,7 +67,7 @@ void Settings::ResetGameKeys()
 	GKey[GK_TAKE_WEAPON].Set(Key::Spacebar);
 	GKey[GK_ATTACK_USE].Set(Key::LeftButton);
 	GKey[GK_SECONDARY_ATTACK].Set(Key::Z, Key::X1Button);
-	GKey[GK_USE].Set(Key::R);
+	GKey[GK_USE].Set(Key::E);
 	GKey[GK_BLOCK].Set(Key::RightButton);
 	GKey[GK_STATS].Set(Key::C);
 	GKey[GK_INVENTORY].Set(Key::I);

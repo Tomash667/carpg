@@ -608,7 +608,12 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	}
 
 	// light
-	scene->lights.back().pos = mesh.head.cam_pos;
+	Vec3& light_pos = scene->lights.back().pos;
+	point = mesh.FindPoint("light");
+	if(point)
+		light_pos = Vec3::TransformZero(point->mat);
+	else
+		light_pos = mesh.head.cam_pos;
 
 	// setup camera
 	Matrix mat_view = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
