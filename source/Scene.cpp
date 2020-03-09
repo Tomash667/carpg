@@ -2461,7 +2461,7 @@ void Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, floa
 			else
 			{
 				const Vec2 sub_size = node->mesh->splits[sub].box.SizeXZ();
-				Vec2 light_pos = light.pos.XZ();
+				light_pos = light.pos.XZ();
 				dist = DistanceRectangleToPoint(obj_pos, sub_size, light_pos);
 				if(dist > light.range + radius || !best.CanAdd(dist))
 					continue;
@@ -2514,12 +2514,16 @@ void Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, floa
 
 			if(masked)
 			{
-				Light* tmp_light = DrawBatch::light_pool.Get();
-				tmp_light->color = light.color;
-				tmp_light->pos = Vec3(light_pos.x, light.pos.y, light_pos.y);
-				tmp_light->range = light.range - Vec2::Distance(light_pos, light.pos.XZ());
-				best.Add(tmp_light, dist);
-				draw_batch.tmp_lights.push_back(tmp_light);
+				float range = light.range - Vec2::Distance(light_pos, light.pos.XZ());
+				if(range > 0)
+				{
+					Light* tmp_light = DrawBatch::light_pool.Get();
+					tmp_light->color = light.color;
+					tmp_light->pos = Vec3(light_pos.x, light.pos.y, light_pos.y);
+					tmp_light->range = range;
+					best.Add(tmp_light, dist);
+					draw_batch.tmp_lights.push_back(tmp_light);
+				}
 			}
 			else
 				best.Add(&light, dist);

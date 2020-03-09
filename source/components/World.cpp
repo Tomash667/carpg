@@ -2038,7 +2038,7 @@ Vec2 World::FindPlace(const Vec2& pos, float range, bool allow_exact)
 			}
 		}
 
-		if(!valid)
+		if(valid)
 			break;
 
 		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
