@@ -790,7 +790,9 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 		animation = ANI_STAND;
 		current_animation = ANI_NONE;
 	}
+
 	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	game_res->PreloadItem(&cons);
 	used_item = &cons;
 }
 

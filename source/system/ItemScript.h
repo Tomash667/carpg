@@ -48,8 +48,8 @@ private:
 
 public:
 	static vector<ItemScript*> scripts;
-	static const LeveledItemList* weapon_list[WT_MAX], *armor_list[AT_MAX];
+	static const ItemList* weapon_list[WT_MAX], *armor_list[AT_MAX];
 	static ItemScript* TryGet(Cstring id);
 	static void Init();
-	static const LeveledItemList& GetSpecial(int special, int sub);
+	static const ItemList& GetSpecial(int special, int sub);
 };

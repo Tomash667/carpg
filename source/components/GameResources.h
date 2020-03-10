@@ -42,7 +42,6 @@ private:
 	void PreloadTraps();
 	void PreloadAbilities();
 	void PreloadObjects();
-	void PreloadItems();
 
 	typedef std::map<Mesh*, Texture*> ItemTextureMap;
 

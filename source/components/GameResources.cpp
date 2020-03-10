@@ -192,7 +192,7 @@ void GameResources::LoadData()
 	PreloadTraps();
 	PreloadAbilities();
 	PreloadObjects();
-	PreloadItems();
+	PreloadItem(Item::Get("gold"));
 
 	// physic meshes
 	vdStairsUp = res_mgr->Load<VertexData>("schody_gora.phy");
@@ -434,24 +434,6 @@ void GameResources::PreloadObjects()
 			}
 		}
 	}
-}
-
-//=================================================================================================
-void GameResources::PreloadItems()
-{
-	PreloadItem(Item::Get("beer"));
-	PreloadItem(Item::Get("vodka"));
-	PreloadItem(Item::Get("spirit"));
-	PreloadItem(Item::Get("p_hp"));
-	PreloadItem(Item::Get("p_hp2"));
-	PreloadItem(Item::Get("p_hp3"));
-	PreloadItem(Item::Get("gold"));
-	ItemListResult list = ItemList::Get("normal_food");
-	for(const Item* item : list.lis->items)
-		PreloadItem(item);
-	list = ItemList::Get("orc_food");
-	for(const Item* item : list.lis->items)
-		PreloadItem(item);
 }
 
 //=================================================================================================

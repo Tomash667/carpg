@@ -196,18 +196,6 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint co
 			}
 		}
 		break;
-	case SE_LEVELED_LIST:
-		{
-			LeveledItemList* llis = reinterpret_cast<LeveledItemList*>(code);
-			if(same)
-				InsertItemBare(items, llis->Get(), count);
-			else
-			{
-				for(uint i = 0; i < count; ++i)
-					InsertItemBare(items, llis->Get());
-			}
-		}
-		break;
 	default:
 		assert(0);
 		break;

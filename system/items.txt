@@ -3049,6 +3049,11 @@ list food_and_drink {
 	spirit
 }
 
+list drink priority {
+	2 beer
+	vodka
+}
+
 list ancient_armory_armors {
 	al_dragonskin
 	al_chain_shirt_mith
@@ -3088,7 +3093,7 @@ list rare_books {
 	book_runic
 }
 
-leveled_list short_blade {
+list short_blade leveled {
 	dagger_knife 1
 	dagger_short 2
 	dagger_sword 5
@@ -3097,7 +3102,7 @@ leveled_list short_blade {
 	dagger_sword_a 15
 }
 
-leveled_list long_blade {
+list long_blade leveled {
 	sword_wooden 1
 	sword_long 2
 	sword_scimitar 5
@@ -3106,7 +3111,7 @@ leveled_list long_blade {
 	sword_adamantine 15
 }
 
-leveled_list axe {
+list axe leveled {
 	axe_rusted 1
 	axe_small 2
 	axe_battle 5
@@ -3115,7 +3120,7 @@ leveled_list axe {
 	axe_giant 15
 }
 
-leveled_list blunt {
+list blunt leveled {
 	blunt_club 1
 	blunt_mace 2
 	pickaxe 4
@@ -3126,14 +3131,14 @@ leveled_list blunt {
 	blunt_adamantine 15
 }
 
-leveled_list wand {
+list wand leveled {
 	wand_novice 1
 	wand_adept 5
 	wand_expert 10
 	wand_master 15
 }
 
-leveled_list bow {
+list bow leveled {
 	bow_short 1
 	bow_long 4
 	bow_composite 8
@@ -3141,7 +3146,7 @@ leveled_list bow {
 	bow_dragonbone 16
 }
 
-leveled_list shield {
+list shield leveled {
 	shield_plank 1
 	shield_wood 3
 	shield_iron 5
@@ -3150,7 +3155,7 @@ leveled_list shield {
 	shield_adamantine 16
 }
 
-leveled_list light_armor {
+list light_armor leveled {
 	al_padded 1
 	al_padded_hq 2
 	al_padded_m 4
@@ -3167,7 +3172,7 @@ leveled_list light_armor {
 	al_dragonskin 18
 }
 
-leveled_list medium_armor {
+list medium_armor leveled {
 	am_hide 1
 	am_hide_hq 2
 	am_hide_m 4
@@ -3187,7 +3192,7 @@ leveled_list medium_armor {
 	am_breastplate_adam 17
 }
 
-leveled_list heavy_armor {
+list heavy_armor leveled {
 	ah_splint_rusted 1 // this is level 2 but there is nothing worse, people needs to get something
 	ah_splint 5
 	ah_splint_hq 6
@@ -3202,13 +3207,13 @@ leveled_list heavy_armor {
 	ah_crystal_m 18
 }
 
-leveled_list mage_armor {
+list mage_armor leveled {
 	al_mage 1
 	al_mage2 9
 	al_mage3 13
 }
 
-leveled_list amulets {
+list amulets leveled {
 	a_food 9
 	a_sprinter 9
 	a_mage 12
@@ -3220,7 +3225,7 @@ leveled_list amulets {
 	a_health 18
 }
 
-leveled_list rings {
+list rings leveled {
 	r_str 8
 	r_end 8
 	r_dex 8
@@ -3491,6 +3496,46 @@ stock mage_seller {
 	random 1 2 magic_scroll
 	random 2 3 wand
 	random 2 3 mage_armor
+}
+
+stock inn_on_table {
+	script {
+		if(Rand() % 2 == 0)
+		{
+			Item@ beer = Item::Get("beer");
+			StockScript::AddItem(beer);
+			if(Rand() % 4 == 0)
+				StockScript::AddItem(beer);
+		}
+		if(Rand() % 3 == 0)
+			StockScript::AddItem(Item::Get("plate"));
+		if(Rand() % 3 == 0)
+			StockScript::AddItem(Item::Get("cup"));
+	}
+}
+
+stock inn_on_shelve {
+	random 3 5 beer
+	random 1 3 vodka
+}
+
+stock foodseller_shelve {
+	20 food_and_drink
+}
+
+stock alchemist_shelve {
+	script {
+		Item@ p_hp = Item::Get("p_hp");
+		StockScript::AddItem(p_hp);
+		if(Rand() % 2 == 0)
+			StockScript::AddItem(p_hp);
+		if(Rand() % 2 == 0)
+			StockScript::AddItem(Item::Get("p_nreg"));
+		if(Rand() % 2 == 0)
+			StockScript::AddItem(Item::Get("healing_herb"));
+		if(Rand() % 2 == 0)
+			StockScript::AddItem(Item::Get("p_mp"));
+	}
 }
 
 //------------------------------------------------------------------------------

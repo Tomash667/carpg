@@ -911,7 +911,7 @@ void Team::BuyTeamItems()
 		}
 
 		// buy items
-		const ItemList* lis = ItemList::Get("base_items").lis;
+		const ItemList& lis = ItemList::Get("base_items");
 		const float* priorities = unit.stats->priorities;
 		to_buy.clear();
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
@@ -949,13 +949,13 @@ void Team::BuyTeamItems()
 					switch(i)
 					{
 					case IT_WEAPON:
-						item = UnitHelper::GetBaseWeapon(unit, lis);
+						item = UnitHelper::GetBaseWeapon(unit, &lis);
 						break;
 					case IT_ARMOR:
-						item = UnitHelper::GetBaseArmor(unit, lis);
+						item = UnitHelper::GetBaseArmor(unit, &lis);
 						break;
 					default:
-						item = UnitHelper::GetBaseItem((ITEM_TYPE)i, lis);
+						item = UnitHelper::GetBaseItem((ITEM_TYPE)i, &lis);
 						break;
 					}
 				}

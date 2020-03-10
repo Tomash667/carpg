@@ -72,6 +72,7 @@ struct LevelArea
 	bool RemoveGroundItem(const Item* item);
 	bool FindItemInChest(const Item* item, Chest** chest, int* slot);
 	Object* FindObject(BaseObject* base_obj);
+	Object* FindNearestObject(BaseObject* base_obj, const Vec3& pos);
 	Chest* FindChestInRoom(const Room& p);
 	Chest* GetRandomFarChest(const Int2& pt);
 	bool HaveUnit(Unit* unit);

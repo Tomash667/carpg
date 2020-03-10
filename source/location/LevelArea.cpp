@@ -682,6 +682,27 @@ Object* LevelArea::FindObject(BaseObject* base_obj)
 }
 
 //=================================================================================================
+Object* LevelArea::FindNearestObject(BaseObject* base_obj, const Vec3& pos)
+{
+	Object* found_obj = nullptr;
+	float best_dist = 9999.f;
+	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	{
+		Object& obj = **it;
+		if(obj.base == base_obj)
+		{
+			float dist = Vec3::Distance(pos, obj.pos);
+			if(dist < best_dist)
+			{
+				best_dist = dist;
+				found_obj = &obj;
+			}
+		}
+	}
+	return found_obj;
+}
+
+//=================================================================================================
 Chest* LevelArea::FindChestInRoom(const Room& p)
 {
 	for(Chest* chest : chests)

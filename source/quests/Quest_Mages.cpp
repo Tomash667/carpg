@@ -209,10 +209,10 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageWantsVodka:
 		// daj piwo, chce wódy
 		{
-			const Item* piwo = Item::Get("beer");
-			DialogContext::current->pc->unit->RemoveItem(piwo, 1);
+			const Item* beer = Item::Get("beer");
+			DialogContext::current->pc->unit->RemoveItem(beer, 1);
 			DialogContext::current->talker->action = A_NONE;
-			DialogContext::current->talker->ConsumeItem(piwo->ToConsumable());
+			DialogContext::current->talker->ConsumeItem(beer->ToConsumable());
 			DialogContext::current->dialog_wait = 2.5f;
 			DialogContext::current->can_skip = false;
 			OnUpdate(game->txQuest[175]);
@@ -221,10 +221,10 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GivenVodka:
 		// da³eœ wóde
 		{
-			const Item* woda = Item::Get("vodka");
-			DialogContext::current->pc->unit->RemoveItem(woda, 1);
+			const Item* vodka = Item::Get("vodka");
+			DialogContext::current->pc->unit->RemoveItem(vodka, 1);
 			DialogContext::current->talker->action = A_NONE;
-			DialogContext::current->talker->ConsumeItem(woda->ToConsumable());
+			DialogContext::current->talker->ConsumeItem(vodka->ToConsumable());
 			DialogContext::current->dialog_wait = 2.5f;
 			DialogContext::current->can_skip = false;
 			OnUpdate(game->txQuest[176]);

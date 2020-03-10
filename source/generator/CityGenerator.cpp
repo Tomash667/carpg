@@ -15,6 +15,7 @@
 #include "Arena.h"
 #include "Game.h"
 #include "Object.h"
+#include "Stock.h"
 
 enum RoadFlags
 {
@@ -2659,66 +2660,30 @@ void CityGenerator::GeneratePickableItems()
 {
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
+	vector<ItemSlot> items;
 
 	// alcohol in inn
 	InsideBuilding& inn = *city->FindInn();
-	const Item* beer = Item::Get("beer");
-	const Item* vodka = Item::Get("vodka");
-	const Item* plate = Item::Get("plate");
-	const Item* cup = Item::Get("cup");
+	Stock* stock_table = Stock::Get("inn_on_table");
+	Stock* stock_shelve = Stock::Get("inn_on_shelve");
 	for(vector<Object*>::iterator it = inn.objects.begin(), end = inn.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == table)
-		{
-			game_level->PickableItemBegin(inn, obj);
-			if(Rand() % 2 == 0)
-			{
-				game_level->PickableItemAdd(beer);
-				if(Rand() % 4 == 0)
-					game_level->PickableItemAdd(beer);
-			}
-			if(Rand() % 3 == 0)
-				game_level->PickableItemAdd(plate);
-			if(Rand() % 3 == 0)
-				game_level->PickableItemAdd(cup);
-		}
+			game_level->PickableItemsFromStock(inn, obj, *stock_table);
 		else if(obj.base == shelves)
-		{
-			game_level->PickableItemBegin(inn, obj);
-			for(int i = 0, count = Random(3, 5); i < count; ++i)
-				game_level->PickableItemAdd(beer);
-			for(int i = 0, count = Random(1, 3); i < count; ++i)
-				game_level->PickableItemAdd(vodka);
-		}
+			game_level->PickableItemsFromStock(inn, obj, *stock_shelve);
 	}
 
 	// food in food shop
 	CityBuilding* food = city->FindBuilding(BuildingGroup::BG_FOOD_SELLER);
 	if(food)
 	{
-		Object* found_obj = nullptr;
-		float best_dist = 9999.f, dist;
-		for(vector<Object*>::iterator it = city->objects.begin(), end = city->objects.end(); it != end; ++it)
-		{
-			Object& obj = **it;
-			if(obj.base == shelves)
-			{
-				dist = Vec3::Distance(food->walk_pt, obj.pos);
-				if(dist < best_dist)
-				{
-					best_dist = dist;
-					found_obj = &obj;
-				}
-			}
-		}
-
+		Object* found_obj = city->FindNearestObject(shelves, food->walk_pt);
 		if(found_obj)
 		{
-			const ItemList* lis = ItemList::Get("food_and_drink").lis;
-			game_level->PickableItemBegin(*city, *found_obj);
-			for(int i = 0; i < 20; ++i)
-				game_level->PickableItemAdd(lis->Get());
+			Stock* stock = Stock::Get("foodseller_shelve");
+			game_level->PickableItemsFromStock(*city, *found_obj, *stock);
 		}
 	}
 
@@ -2726,35 +2691,11 @@ void CityGenerator::GeneratePickableItems()
 	CityBuilding* alch = city->FindBuilding(BuildingGroup::BG_ALCHEMIST);
 	if(alch)
 	{
-		Object* found_obj = nullptr;
-		float best_dist = 9999.f, dist;
-		for(vector<Object*>::iterator it = city->objects.begin(), end = city->objects.end(); it != end; ++it)
-		{
-			Object& obj = **it;
-			if(obj.base == shelves)
-			{
-				dist = Vec3::Distance(alch->walk_pt, obj.pos);
-				if(dist < best_dist)
-				{
-					best_dist = dist;
-					found_obj = &obj;
-				}
-			}
-		}
-
+		Object* found_obj = city->FindNearestObject(shelves, alch->walk_pt);
 		if(found_obj)
 		{
-			game_level->PickableItemBegin(*city, *found_obj);
-			const Item* heal_pot = Item::Get("p_hp");
-			game_level->PickableItemAdd(heal_pot);
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(heal_pot);
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(Item::Get("p_nreg"));
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(Item::Get("healing_herb"));
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(Item::Get("p_mp"));
+			Stock* stock = Stock::Get("alchemist_shelve");
+			game_level->PickableItemsFromStock(*city, *found_obj, *stock);
 		}
 	}
 }

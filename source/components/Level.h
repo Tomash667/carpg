@@ -89,7 +89,8 @@ public:
 	ObjectEntity SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
 	void PickableItemBegin(LevelArea& area, Object& o);
-	void PickableItemAdd(const Item* item);
+	bool PickableItemAdd(const Item* item);
+	void PickableItemsFromStock(LevelArea& area, Object& o, Stock& stock);
 	void AddGroundItem(LevelArea& area, GroundItem* item);
 	GroundItem* FindGroundItem(int id, LevelArea** area = nullptr);
 	GroundItem* SpawnGroundItemInsideAnyRoom(const Item* item);
@@ -250,6 +251,7 @@ private:
 	Object* pickable_obj;
 	vector<Box> pickable_spawns;
 	vector<PickableItem> pickable_items;
+	vector<ItemSlot> pickable_tmp_stock;
 
 	cstring txLocationText, txLocationTextMap, txWorldMap, txNewsCampCleared, txNewsLocCleared;
 };

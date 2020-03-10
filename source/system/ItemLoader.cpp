@@ -24,7 +24,8 @@ enum Group
 	G_SKILL,
 	G_EFFECT,
 	G_TAG,
-	G_RECEIPT
+	G_RECEIPT,
+	G_LIST_TYPE
 };
 
 enum Property
@@ -81,6 +82,12 @@ enum ReceiptProperty
 	RP_SKILL
 };
 
+enum ListType
+{
+	LT_LEVELED,
+	LT_PRIORITY
+};
+
 //=================================================================================================
 void ItemLoader::DoLoading()
 {
@@ -97,7 +104,6 @@ void ItemLoader::Cleanup()
 {
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
-	DeleteElements(LeveledItemList::lists);
 	DeleteElements(Stock::stocks);
 	DeleteElements(Receipt::receipts);
 
@@ -123,7 +129,6 @@ void ItemLoader::InitTokenizer()
 		{ "book", IT_BOOK },
 		{ "gold", IT_GOLD },
 		{ "list", IT_LIST },
-		{ "leveled_list", IT_LEVELED_LIST },
 		{ "stock", IT_STOCK },
 		{ "book_scheme", IT_BOOK_SCHEME },
 		{ "start_items", IT_START_ITEMS },
@@ -271,6 +276,11 @@ void ItemLoader::InitTokenizer()
 		{ "items", RP_ITEMS },
 		{ "skill", RP_SKILL }
 		});
+
+	t.AddKeywords(G_LIST_TYPE, {
+		{ "leveled", LT_LEVELED },
+		{ "priority", LT_PRIORITY }
+		});
 }
 
 //=================================================================================================
@@ -284,9 +294,6 @@ void ItemLoader::LoadEntity(int top, const string& id)
 		break;
 	case IT_LIST:
 		ParseItemList(id);
-		break;
-	case IT_LEVELED_LIST:
-		ParseLeveledItemList(id);
 		break;
 	case IT_STOCK:
 		ParseStock(id);
@@ -316,8 +323,7 @@ void ItemLoader::Finalize()
 
 	CalculateCrc();
 
-	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size() + LeveledItemList::lists.size(),
-		content.crc[(int)Content::Id::Items]);
+	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size(), content.crc[(int)Content::Id::Items]);
 }
 
 //=================================================================================================
@@ -756,7 +762,20 @@ void ItemLoader::ParseItemList(const string& id)
 
 	// id
 	lis->id = id;
+	lis->total = 0;
+	lis->is_leveled = false;
+	lis->is_priority = false;
 	t.Next();
+
+	// [leveled|priority]
+	if(t.IsKeywordGroup(G_LIST_TYPE))
+	{
+		if(t.IsKeyword(LT_LEVELED, G_LIST_TYPE))
+			lis->is_leveled = true;
+		else
+			lis->is_priority = true;
+		t.Next();
+	}
 
 	// {
 	t.AssertSymbol('{');
@@ -764,49 +783,40 @@ void ItemLoader::ParseItemList(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
+		ItemList::Entry entry;
+
+		if(lis->is_priority && t.IsInt())
+		{
+			entry.chance = t.GetInt();
+			if(entry.chance < 0)
+				t.Throw("Invalid item priority %d.", entry.chance);
+			t.Next();
+		}
+		else
+			entry.chance = 1;
+		lis->total += entry.chance;
+
 		const string& item_id = t.MustGetItemKeyword();
-		Item* item = Item::TryGet(item_id);
-		if(!item)
+		entry.item = Item::TryGet(item_id);
+		if(!entry.item)
 			t.Throw("Missing item %s.", item_id.c_str());
-		lis->items.push_back(item);
 		t.Next();
+
+		if(lis->is_leveled)
+		{
+			entry.level = t.MustGetInt();
+			if(entry.level < 0)
+				t.Throw("Invalid item level %d.", entry.level);
+			t.Next();
+		}
+
+		lis->items.push_back(entry);
 	}
+
+	if(lis->is_priority && lis->total == (int)lis->items.size())
+		lis->is_priority = false;
 
 	ItemList::lists.push_back(lis.Pin());
-}
-
-//=================================================================================================
-void ItemLoader::ParseLeveledItemList(const string& id)
-{
-	if(ItemList::TryGet(id))
-		t.Throw("Id must be unique.");
-
-	Ptr<LeveledItemList> lis;
-
-	// id
-	lis->id = t.MustGetItemKeyword();
-	t.Next();
-
-	// {
-	t.AssertSymbol('{');
-	t.Next();
-
-	while(!t.IsSymbol('}'))
-	{
-		Item* item = Item::TryGet(t.MustGetItemKeyword());
-		if(!item)
-			t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
-
-		t.Next();
-		int level = t.MustGetInt();
-		if(level < 0)
-			t.Throw("Can't have negative required level %d for item '%s'.", level, item->id.c_str());
-
-		lis->items.push_back({ item, level });
-		t.Next();
-	}
-
-	LeveledItemList::lists.push_back(lis.Pin());
 }
 
 //=================================================================================================
@@ -1015,21 +1025,13 @@ void ItemLoader::ParseStock(const string& id)
 //=================================================================================================
 void ItemLoader::ParseItemOrList(Stock* stock)
 {
-	ItemListResult result;
+	ItemList* lis;
 	const string& item_id = t.MustGetItemKeyword();
-	const Item* item = FindItemOrList(item_id, result);
-	if(result.lis != nullptr)
+	const Item* item = FindItemOrList(item_id, lis);
+	if(lis)
 	{
-		if(result.is_leveled)
-		{
-			stock->code.push_back(SE_LEVELED_LIST);
-			stock->code.push_back((int)result.llis);
-		}
-		else
-		{
-			stock->code.push_back(SE_LIST);
-			stock->code.push_back((int)result.lis);
-		}
+		stock->code.push_back(SE_LIST);
+		stock->code.push_back((int)lis);
 	}
 	else if(item)
 	{
@@ -1400,17 +1402,10 @@ void ItemLoader::CalculateCrc()
 	{
 		crc.Update(lis->id);
 		crc.Update(lis->items.size());
-		for(const Item* i : lis->items)
-			crc.Update(i->id);
-	}
-
-	for(LeveledItemList* lis : LeveledItemList::lists)
-	{
-		crc.Update(lis->id);
-		crc.Update(lis->items.size());
-		for(LeveledItemList::Entry& e : lis->items)
+		for(const ItemList::Entry& e : lis->items)
 		{
 			crc.Update(e.item->id);
+			crc.Update(e.chance);
 			crc.Update(e.level);
 		}
 	}

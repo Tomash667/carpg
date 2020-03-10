@@ -310,8 +310,8 @@ void Quest_Mine::InitSub()
 	if(sub.done)
 		return;
 
-	ItemListResult result = ItemList::Get("ancient_armory_armors");
-	result.lis->Get(3, sub.item_to_give);
+	ItemList& lis = ItemList::Get("ancient_armory_armors");
+	lis.Get(3, sub.item_to_give);
 	sub.item_to_give[3] = Item::Get("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;

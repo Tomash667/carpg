@@ -42,6 +42,7 @@
 #include "ScriptManager.h"
 #include "Scene.h"
 #include "Pathfinding.h"
+#include "Stock.h"
 #include <scriptarray/scriptarray.h>
 #include <angelscript.h>
 
@@ -1683,6 +1684,77 @@ void Level::PickableItemBegin(LevelArea& area, Object& o)
 }
 
 //=================================================================================================
+bool Level::PickableItemAdd(const Item* item)
+{
+	assert(item);
+
+	for(int i = 0; i < 20; ++i)
+	{
+		// pobierz punkt
+		uint spawn = Rand() % pickable_spawns.size();
+		Box& box = pickable_spawns[spawn];
+		// ustal pozycjê
+		Vec3 pos(Random(box.v1.x, box.v2.x), box.v1.y, Random(box.v1.z, box.v2.z));
+		// sprawdŸ kolizjê
+		bool ok = true;
+		for(vector<PickableItem>::iterator it = pickable_items.begin(), end = pickable_items.end(); it != end; ++it)
+		{
+			if(it->spawn == spawn)
+			{
+				if(CircleToCircle(pos.x, pos.z, 0.15f, it->pos.x, it->pos.z, 0.15f))
+				{
+					ok = false;
+					break;
+				}
+			}
+		}
+		// dodaj
+		if(ok)
+		{
+			PickableItem& i = Add1(pickable_items);
+			i.spawn = spawn;
+			i.pos = pos;
+
+			GroundItem* gi = new GroundItem;
+			gi->Register();
+			gi->count = 1;
+			gi->team_count = 1;
+			gi->item = item;
+			gi->rot = Quat::RotY(Random(MAX_ANGLE));
+			float rot = pickable_obj->rot.y,
+				s = sin(rot),
+				c = cos(rot);
+			gi->pos = Vec3(pos.x * c + pos.z * s, pos.y, -pos.x * s + pos.z * c) + pickable_obj->pos;
+			pickable_area->items.push_back(gi);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
+void Level::PickableItemsFromStock(LevelArea& area, Object& o, Stock& stock)
+{
+	pickable_tmp_stock.clear();
+	stock.Parse(pickable_tmp_stock);
+
+	if(!pickable_tmp_stock.empty())
+	{
+		PickableItemBegin(area, o);
+		for(ItemSlot& slot : pickable_tmp_stock)
+		{
+			for(uint i = 0; i < slot.count; ++i)
+			{
+				if(!PickableItemAdd(slot.item))
+					return;
+			}
+		}
+	}
+}
+
+//=================================================================================================
 void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 {
 	assert(item);
@@ -1803,55 +1875,6 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 	}
 
 	return nullptr;
-}
-
-//=================================================================================================
-void Level::PickableItemAdd(const Item* item)
-{
-	assert(item);
-
-	for(int i = 0; i < 20; ++i)
-	{
-		// pobierz punkt
-		uint spawn = Rand() % pickable_spawns.size();
-		Box& box = pickable_spawns[spawn];
-		// ustal pozycjê
-		Vec3 pos(Random(box.v1.x, box.v2.x), box.v1.y, Random(box.v1.z, box.v2.z));
-		// sprawdŸ kolizjê
-		bool ok = true;
-		for(vector<PickableItem>::iterator it = pickable_items.begin(), end = pickable_items.end(); it != end; ++it)
-		{
-			if(it->spawn == spawn)
-			{
-				if(CircleToCircle(pos.x, pos.z, 0.15f, it->pos.x, it->pos.z, 0.15f))
-				{
-					ok = false;
-					break;
-				}
-			}
-		}
-		// dodaj
-		if(ok)
-		{
-			PickableItem& i = Add1(pickable_items);
-			i.spawn = spawn;
-			i.pos = pos;
-
-			GroundItem* gi = new GroundItem;
-			gi->Register();
-			gi->count = 1;
-			gi->team_count = 1;
-			gi->item = item;
-			gi->rot = Quat::RotY(Random(MAX_ANGLE));
-			float rot = pickable_obj->rot.y,
-				s = sin(rot),
-				c = cos(rot);
-			gi->pos = Vec3(pos.x*c + pos.z*s, pos.y, -pos.x*s + pos.z*c) + pickable_obj->pos;
-			pickable_area->items.push_back(gi);
-
-			break;
-		}
-	}
 }
 
 //=================================================================================================

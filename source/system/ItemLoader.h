@@ -15,7 +15,6 @@ private:
 	void Finalize() override;
 	void ParseItem(ITEM_TYPE type, const string& id);
 	void ParseItemList(const string& id);
-	void ParseLeveledItemList(const string& id);
 	void ParseStock(const string& id);
 	void ParseItemOrList(Stock* stock);
 	void ParseBookScheme(const string& id);

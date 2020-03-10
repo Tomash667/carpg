@@ -394,7 +394,7 @@ void DungeonGenerator::GenerateDungeonItems()
 		return;
 
 	// get food list and base objects
-	const ItemList& lis = *ItemList::Get(group->orc_food ? "orc_food" : "normal_food").lis;
+	const ItemList& lis = ItemList::Get(group->orc_food ? "orc_food" : "normal_food");
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
 	const Item* plate = Item::Get("plate");

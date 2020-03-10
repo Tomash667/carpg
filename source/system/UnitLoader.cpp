@@ -1767,29 +1767,29 @@ void UnitLoader::AddItem(ItemScript* script)
 				t.NextChar();
 				t.Next();
 				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
+				ItemList* lis = ItemList::TryGet(s);
+				if(!lis)
 					t.Throw("Missing item list '%s'.", s.c_str());
-				if(!lis.is_leveled)
+				if(!lis->is_leveled)
 					t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
 				script->code.push_back(PS_LEVELED_LIST_MOD);
 				script->code.push_back(mod);
-				script->code.push_back((int)lis.llis);
+				script->code.push_back((int)lis);
 				crc.Update(PS_LEVELED_LIST_MOD);
 				crc.Update(mod);
-				crc.Update(lis.llis->id);
+				crc.Update(lis->id);
 			}
 			else
 			{
 				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
+				ItemList* lis = ItemList::TryGet(s);
+				if(!lis)
 					t.Throw("Missing item list '%s'.", s.c_str());
-				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+				ParseScript type = (lis->is_leveled ? PS_LEVELED_LIST : PS_LIST);
 				script->code.push_back(type);
-				script->code.push_back((int)lis.lis);
+				script->code.push_back((int)lis);
 				crc.Update(type);
-				crc.Update(lis.GetIdString());
+				crc.Update(lis->id);
 			}
 		}
 	}

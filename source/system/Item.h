@@ -432,104 +432,41 @@ struct Book : public Item
 // Item lists
 struct ItemList
 {
-	string id;
-	vector<const Item*> items;
-
-	const Item* Get() const
+	struct Entry
 	{
-		return items[Rand() % items.size()];
-	}
+		const Item* item;
+		int level;
+		int chance;
+	};
+
+	string id;
+	vector<Entry> items;
+	int total;
+	bool is_leveled, is_priority;
+
+	const Item* Get() const;
+	const Item* GetLeveled(int level) const;
 	void Get(int count, const Item** result) const;
 	const Item* GetByIndex(int index) const;
 	inline uint GetSize() const { return items.size(); }
 
 	static vector<ItemList*> lists;
-	static ItemListResult TryGet(Cstring id);
-	static ItemListResult Get(Cstring id);
-	static const ItemList* GetS(const string& id);
-	static const Item* GetItem(Cstring id);
-};
-
-//-----------------------------------------------------------------------------
-// Leveled item lists
-struct LeveledItemList
-{
-	struct Entry
+	static ItemList* TryGet(Cstring id);
+	static ItemList& Get(Cstring id)
 	{
-		const Item* item;
-		int level;
-	};
-
-	string id;
-	vector<Entry> items;
-
-	const Item* Get() const
-	{
-		return items[Rand() % items.size()].item;
+		ItemList* lis = TryGet(id);
+		assert(lis);
+		return *lis;
 	}
-	const Item* Get(int level) const;
-
-	static vector<LeveledItemList*> lists;
-};
-
-//-----------------------------------------------------------------------------
-struct ItemListResult
-{
-	union
+	static const ItemList* GetS(const string& id)
 	{
-		const ItemList* lis;
-		const LeveledItemList* llis;
-	};
-	int mod;
-	bool is_leveled;
-
-	ItemListResult()
-	{
+		return TryGet(id);
 	}
-	ItemListResult(nullptr_t) : lis(nullptr), is_leveled(false)
+	static const Item* GetItem(Cstring id)
 	{
-	}
-	ItemListResult(const ItemList* lis) : lis(lis), is_leveled(false), mod(0)
-	{
-	}
-	ItemListResult(const LeveledItemList* llis) : llis(llis), is_leveled(true), mod(0)
-	{
-	}
-
-	operator bool() const
-	{
-		return lis != nullptr;
-	}
-
-	cstring GetId() const
-	{
-		return is_leveled ? llis->id.c_str() : lis->id.c_str();
-	}
-
-	const string& GetIdString() const
-	{
-		return is_leveled ? llis->id : lis->id;
+		return Get(id).Get();
 	}
 };
-
-inline ItemListResult ItemList::Get(Cstring id)
-{
-	auto result = TryGet(id);
-	assert(result.lis != nullptr);
-	return result;
-}
-
-inline const ItemList* ItemList::GetS(const string& id)
-{
-	return TryGet(id).lis;
-}
-
-inline const Item* ItemList::GetItem(Cstring id)
-{
-	auto result = Get(id);
-	assert(!result.is_leveled);
-	return result.lis->Get();
-}
 
 //-----------------------------------------------------------------------------
 struct StartItem
@@ -561,7 +498,7 @@ struct Receipt
 
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
-const Item* FindItemOrList(Cstring id, ItemListResult& lis);
+const Item* FindItemOrList(Cstring id, ItemList*& lis);
 
 //-----------------------------------------------------------------------------
 extern std::map<const Item*, Item*> better_items;

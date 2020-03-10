@@ -15,8 +15,7 @@ enum StockEntry
 	SE_END_SET,
 	SE_LIST,
 	SE_SAME_MULTIPLE,
-	SE_SAME_RANDOM,
-	SE_LEVELED_LIST
+	SE_SAME_RANDOM
 };
 
 //-----------------------------------------------------------------------------

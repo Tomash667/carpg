@@ -758,7 +758,7 @@ void Game::UpdateAi(float dt)
 								switch(what)
 								{
 								case 0: // drink
-									u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
+									u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable());
 									ai.timer = Random(10.f, 15.f);
 									break;
 								case 1: // eat
@@ -791,7 +791,7 @@ void Game::UpdateAi(float dt)
 								switch(what)
 								{
 								case 0: // drink
-									u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
+									u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable());
 									ai.timer = Random(10.f, 15.f);
 									break;
 								case 1: // eat
@@ -909,7 +909,7 @@ void Game::UpdateAi(float dt)
 							&& Rand() % 3 == 0)
 						{
 							// drink something
-							u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable(), true);
+							u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable(), true);
 							ai.st.idle.action = AIController::Idle_None;
 							ai.timer = Random(3.f, 6.f);
 						}

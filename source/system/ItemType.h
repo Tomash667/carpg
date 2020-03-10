@@ -41,7 +41,6 @@ enum ITEM_TYPE
 
 	// special types (not really items)
 	IT_LIST,
-	IT_LEVELED_LIST,
 	IT_STOCK,
 	IT_BOOK_SCHEME,
 	IT_START_ITEMS,
