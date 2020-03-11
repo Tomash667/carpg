@@ -97,6 +97,8 @@ bool Game::CanLoadGame() const
 		if(Net::IsClient() || !Any(game_state, GS_LEVEL, GS_WORLDMAP))
 			return false;
 	}
+	else if(hardcore_mode)
+		return false;
 	return true;
 }
 
@@ -278,13 +280,14 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		throw SaveException(nullptr, msg);
 	}
 
+	f.Close();
 	prev_game_state = GS_LOAD;
 
 	if(hardcore_mode)
 	{
 		Info("Hardcore mode, deleting save.");
 
-		if(slot == -1)
+		if(slot != -1)
 		{
 			game_gui->saveload->RemoveHardcoreSave(slot);
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));

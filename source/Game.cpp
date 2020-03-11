@@ -1309,6 +1309,7 @@ void Game::SetGameText()
 
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
+	txWinHardcore = Str("winHardcore");
 	txWinMp = Str("winMp");
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
@@ -1528,11 +1529,11 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, game_gui->controls->key_text[(int)k[0]], game_gui->controls->key_text[(int)k[1]]);
+		return Format("%s (%s, %s)", action, game_gui->controls->GetKeyText(k[0]), game_gui->controls->GetKeyText(k[1]));
 	else if(first_key || second_key)
 	{
 		Key used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, game_gui->controls->key_text[(int)used]);
+		return Format("%s (%s)", action, game_gui->controls->GetKeyText(used));
 	}
 	else
 		return action;
@@ -2352,7 +2353,7 @@ void Game::UpdateGame(float dt)
 			}
 		}
 		else
-			text = txWin;
+			text = hardcore_mode ? txWinHardcore : txWin;
 
 		gui->SimpleDialog(Format(text, pc->kills, game_stats->total_kills - pc->kills), nullptr);
 	}

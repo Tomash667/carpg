@@ -645,7 +645,7 @@ void LevelGui::DrawFront()
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
 		if(gk[0] != Key::None)
-			gui->DrawText(GameGui::font_small, game_gui->controls->key_text[(int)gk[0]], DTF_SINGLELINE, Color::White, r);
+			gui->DrawText(GameGui::font_small, game_gui->controls->GetKeyText(gk[0]), DTF_SINGLELINE, Color::White, r);
 
 		spos.x += offset;
 	}
@@ -1501,7 +1501,7 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			switch((SideButtonId)id)
 			{
 			case SideButtonId::Menu:
-				tooltip.text = Format("%s (%s)", txMenu, game_gui->controls->key_text[VK_ESCAPE]);
+				tooltip.text = Format("%s (%s)", txMenu, game_gui->controls->GetKeyText(Key::Escape));
 				return;
 			case SideButtonId::Team:
 				gk = GK_TEAM_PANEL;
@@ -1604,12 +1604,12 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			if(shortcut.type == Shortcut::TYPE_ABILITY)
 			{
 				if(gk[0] != Key::None)
-					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->key_text[(int)gk[0]]);
+					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->GetKeyText(gk[0]));
 			}
 			else
 			{
 				if(gk[0] != Key::None)
-					title = Format("%s (%s)", title, game_gui->controls->key_text[(int)gk[0]]);
+					title = Format("%s (%s)", title, game_gui->controls->GetKeyText(gk[0]));
 				tooltip.text = title;
 				if(desc)
 					tooltip.small_text = desc;

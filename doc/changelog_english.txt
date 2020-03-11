@@ -14,6 +14,7 @@ Version 0.14 (???):
 + warp to building front command
 + search for location shortcut - F, journal & chat buttons
 + update libraries: AngelScript 2.34, Bullet 2.89
+- save in hardcore mode wasn't removed
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

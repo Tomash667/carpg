@@ -4,6 +4,7 @@
 #include <Container.h>
 
 //-----------------------------------------------------------------------------
+// Container for all game gui panels & dialogs
 class GameGui : public Container
 {
 public:
@@ -64,5 +65,5 @@ public:
 	bool cursor_allow_move;
 
 private:
-	cstring txReallyQuit;
+	cstring txReallyQuit, txReallyQuitHardcore;
 };

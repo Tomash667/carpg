@@ -7,6 +7,7 @@
 #include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
+// Panel shown to allow player to craft potion
 class CraftPanel : public Container
 {
 public:

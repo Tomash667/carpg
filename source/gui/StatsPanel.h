@@ -8,6 +8,7 @@
 #include "Perk.h"
 
 //-----------------------------------------------------------------------------
+// Display player stats (attributes, skills, feats, etc)
 class StatsPanel : public GamePanel
 {
 public:
@@ -31,6 +32,6 @@ private:
 	FlowContainer flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;
 	cstring txAttributes, txTitle, txClass, txTraitsStart, txTraitsStartMp, txTraitsEnd, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats,
-		txTraits, txStats, txDate, txAttack, txMeleeAttack, txRangedAttack;
+		txTraits, txStats, txDate, txAttack, txMeleeAttack, txRangedAttack, txHardcoreMode;
 	vector<pair<cstring, int>> perks;
 };

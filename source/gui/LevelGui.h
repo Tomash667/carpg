@@ -60,6 +60,7 @@ struct BuffImage
 };
 
 //-----------------------------------------------------------------------------
+// Ingame gui - contains player hp/stamina/mana bars, shortcuts, buffs, side menu & dialog menu
 class LevelGui : public Container
 {
 public:

@@ -4,6 +4,7 @@
 #include "GamePanel.h"
 
 //-----------------------------------------------------------------------------
+// Book with all quest, rumors & notes
 class Journal : public GamePanel
 {
 public:
@@ -37,7 +38,6 @@ public:
 	void AddRumor(cstring text);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
-
 	vector<string>& GetNotes() { return notes; }
 	vector<string>& GetRumors() { return rumors; }
 

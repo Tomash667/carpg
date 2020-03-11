@@ -7,6 +7,7 @@
 #include <CheckBox.h>
 
 //-----------------------------------------------------------------------------
+// Panel shown when creating new server
 class CreateServerPanel : public DialogBox
 {
 	enum Id

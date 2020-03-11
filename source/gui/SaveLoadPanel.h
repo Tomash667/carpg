@@ -7,6 +7,7 @@
 #include "SaveSlot.h"
 
 //-----------------------------------------------------------------------------
+// Save & load panel
 class SaveLoad : public DialogBox
 {
 public:

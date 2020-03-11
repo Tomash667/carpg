@@ -5,6 +5,7 @@
 #include <Button.h>
 
 //-----------------------------------------------------------------------------
+// Main menu panel
 class MainMenu : public Control
 {
 public:

@@ -195,6 +195,7 @@ void CreateCharacterPanel::LoadLanguage()
 
 	Language::Section section = Language::GetSection("CreateCharacterPanel");
 	txHardcoreMode = section.Get("hardcoreMode");
+	txHardcoreDesc = section.Get("hardcoreDesc");
 	txHair = section.Get("hair");
 	txMustache = section.Get("mustache");
 	txBeard = section.Get("beard");
@@ -264,9 +265,6 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	// close button
 	btCancel.Draw();
 
-	Rect rect;
-	Matrix mat;
-
 	switch(mode)
 	{
 	case Mode::PickClass:
@@ -284,7 +282,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			gui->DrawItem(tBox, fpos, flow_size, Color::White, 8, 32);
 			flow_scroll.Draw();
 
-			rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
+			Rect rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
 			Rect r = rect, part = { 0, 0, 256, 32 };
 			r.Top() += 20;
 
@@ -302,7 +300,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
+						Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
 						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}
@@ -311,8 +309,6 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 						break;
 				}
 			}
-
-			tooltip.Draw();
 		}
 		break;
 	case Mode::PickSkillPerk:
@@ -333,8 +329,6 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
 			gui->DrawText(GameGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
-
-			tooltip.Draw();
 		}
 		break;
 	case Mode::PickAppearance:
@@ -351,6 +345,8 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		}
 		break;
 	}
+
+	tooltip.Draw();
 }
 
 //=================================================================================================
@@ -358,6 +354,8 @@ void CreateCharacterPanel::Update(float dt)
 {
 	RenderUnit();
 	UpdateUnit(dt);
+
+	int group = -1, id = -1;
 
 	// rotating unit
 	if(PointInRect(gui->cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && input->Focus() && focus)
@@ -402,8 +400,6 @@ void CreateCharacterPanel::Update(float dt)
 			flow_scroll.mouse_focus = focus;
 			flow_scroll.Update(dt);
 
-			int group = -1, id = -1;
-
 			if(!flow_scroll.clicked && PointInRect(gui->cursor_pos, flow_pos + global_pos, flow_size))
 			{
 				if(focus && input->Focus())
@@ -424,8 +420,6 @@ void CreateCharacterPanel::Update(float dt)
 			}
 			else if(!flow_scroll.clicked && PointInRect(gui->cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && input->Focus())
 				flow_scroll.ApplyMouseWheel();
-
-			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickSkillPerk:
@@ -442,8 +436,6 @@ void CreateCharacterPanel::Update(float dt)
 			tbInfo.mouse_focus = focus;
 			tbInfo.Update(dt);
 
-			int group = -1, id = -1;
-
 			flowSkills.mouse_focus = focus;
 			flowSkills.Update(dt);
 			flowSkills.GetSelected(group, id);
@@ -451,8 +443,6 @@ void CreateCharacterPanel::Update(float dt)
 			flowPerks.mouse_focus = focus;
 			flowPerks.Update(dt);
 			flowPerks.GetSelected(group, id);
-
-			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickAppearance:
@@ -470,6 +460,11 @@ void CreateCharacterPanel::Update(float dt)
 			{
 				checkbox.mouse_focus = focus;
 				checkbox.Update(dt);
+				if(focus && checkbox.IsInside(gui->cursor_pos))
+				{
+					group = (int)Group::Hardcore;
+					id = 0;
+				}
 			}
 
 			for(int i = 0; i < 5; ++i)
@@ -480,6 +475,8 @@ void CreateCharacterPanel::Update(float dt)
 		}
 		break;
 	}
+
+	tooltip.UpdateTooltip(dt, group, id);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)IdCancel);
@@ -1077,6 +1074,13 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 				tool.text += txFlawExtraPerk;
 			}
 		}
+		break;
+	case Group::Hardcore:
+		tool.anything = true;
+		tool.img = nullptr;
+		tool.big_text.clear();
+		tool.text = txHardcoreDesc;
+		tool.small_text.clear();
 		break;
 	}
 }

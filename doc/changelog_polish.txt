@@ -14,6 +14,7 @@ Wersja 0.14 (???):
 + komenda warp mo¿e przenieœæ do przodu budynku
 + skrót do szukania lokalizacji - F, przyciski dziennik i chat
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
+- zapis w trybie hardcore nie by³ usuwany
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (020-01-11):

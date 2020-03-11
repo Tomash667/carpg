@@ -21,6 +21,7 @@ enum InventoryMode
 };
 
 //-----------------------------------------------------------------------------
+// Container for multiple inventories (single, my trade, other trade)
 class Inventory
 {
 public:
@@ -94,6 +95,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Inventory panel, allow equip, use, drop & sell items
 class InventoryPanel : public GamePanel
 {
 	friend class Inventory;

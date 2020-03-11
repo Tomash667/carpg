@@ -20,6 +20,7 @@ void GameMenu::LoadLanguage()
 	txSave = s.Get("saveGame");
 	txSaveAndExit = s.Get("saveAndExit");
 	txExitToMenuDialog = s.Get("exitToMenuDialog");
+	txExitToMenuDialogHardcore = s.Get("exitToMenuDialogHardcore");
 
 	cstring names[] = {
 		"returnToGame",
@@ -75,6 +76,21 @@ void GameMenu::Draw(ControlDrawData*)
 //=================================================================================================
 void GameMenu::Update(float dt)
 {
+	CheckButtons();
+
+	for(int i = 0; i < 6; ++i)
+	{
+		bt[i].mouse_focus = focus;
+		bt[i].Update(dt);
+	}
+
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
+		gui->CloseDialog(this);
+}
+
+//=================================================================================================
+void GameMenu::CheckButtons()
+{
 	bool can_save = game->CanSaveGame(),
 		can_load = game->CanLoadGame(),
 		hardcore_mode = game->hardcore_mode;
@@ -96,15 +112,6 @@ void GameMenu::Update(float dt)
 		bt[1].text = (hardcore_mode ? txSaveAndExit : txSave);
 		prev_hardcore_mode = hardcore_mode;
 	}
-
-	for(int i = 0; i < 6; ++i)
-	{
-		bt[i].mouse_focus = focus;
-		bt[i].Update(dt);
-	}
-
-	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
-		gui->CloseDialog(this);
 }
 
 //=================================================================================================
@@ -113,7 +120,10 @@ void GameMenu::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		if(e == GuiEvent_Show)
+		{
+			CheckButtons();
 			visible = true;
+		}
 		pos = global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 6; ++i)
 			bt[i].global_pos = bt[i].pos + global_pos;
@@ -147,7 +157,7 @@ void GameMenu::Event(GuiEvent e)
 				info.name = "exit_to_menu";
 				info.parent = nullptr;
 				info.pause = true;
-				info.text = txExitToMenuDialog;
+				info.text = game->hardcore_mode ? txExitToMenuDialogHardcore : txExitToMenuDialog;
 				info.order = ORDER_TOP;
 				info.type = DIALOG_YESNO;
 

@@ -16,6 +16,7 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
+// Show on new game to create player character
 class CreateCharacterPanel : public DialogBox
 {
 public:
@@ -29,7 +30,8 @@ public:
 		PickSkill_Button,
 		PickPerk_AddButton,
 		PickPerk_RemoveButton,
-		PickPerk_DisabledButton
+		PickPerk_DisabledButton,
+		Hardcore
 	};
 
 	enum class Mode
@@ -117,9 +119,9 @@ private:
 	TooltipController tooltip;
 	// data
 	bool reset_skills_perks, rotating;
-	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn,
-		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany, txFlawExtraPerk,
-		txPerksRemoved;
+	cstring txHardcoreMode, txHardcoreDesc, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes,
+		txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany,
+		txFlawExtraPerk, txPerksRemoved;
 	Perk* picked_perk;
 	PickItemDialog* pickItemDialog;
 	vector<Perk*> available_perks;

@@ -4,6 +4,7 @@
 #include <Control.h>
 
 //-----------------------------------------------------------------------------
+// Load screen with progress bar & text
 class LoadScreen : public Control
 {
 public:

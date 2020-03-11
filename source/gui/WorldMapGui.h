@@ -7,6 +7,7 @@
 #include "Location.h"
 
 //-----------------------------------------------------------------------------
+// Show world map with locations, allow travel
 class WorldMapGui : public Control
 {
 public:

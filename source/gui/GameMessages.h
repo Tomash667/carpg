@@ -54,6 +54,7 @@ struct GameMsg
 };
 
 //-----------------------------------------------------------------------------
+// Display messages on center of screen
 class GameMessages : public Control
 {
 public:

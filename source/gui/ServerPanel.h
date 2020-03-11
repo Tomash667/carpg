@@ -18,6 +18,7 @@ enum LobbyUpdate
 };
 
 //-----------------------------------------------------------------------------
+// Lobby shown after creating server, players can chat and select characters
 class ServerPanel : public DialogBox
 {
 public:

@@ -274,6 +274,7 @@ name crazy {
 	"Doctor"
 	"Batman"
 	"Lo Wang"
+	"Paranoix"
 }
 
 name location_start {

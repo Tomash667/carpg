@@ -208,6 +208,7 @@ void GameGui::LoadLanguage()
 	gui->SetText(Str("ok"), Str("yes"), Str("no"), Str("cancel"));
 
 	txReallyQuit = Str("reallyQuit");
+	txReallyQuitHardcore = Str("reallyQuitHardcore");
 
 	ability->LoadLanguage();
 	controls->LoadLanguage();
@@ -439,7 +440,7 @@ void GameGui::ShowMultiplayer()
 void GameGui::ShowQuitDialog()
 {
 	DialogInfo di;
-	di.text = txReallyQuit;
+	di.text = game->hardcore_mode ? txReallyQuitHardcore : txReallyQuit;
 	di.event = [](int id)
 	{
 		if(id == BUTTON_YES)

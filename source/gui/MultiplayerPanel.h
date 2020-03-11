@@ -5,6 +5,7 @@
 #include <TextBox.h>
 
 //-----------------------------------------------------------------------------
+// Panel to select multiplayer game (create server, join server, load game)
 class MultiplayerPanel : public DialogBox
 {
 public:

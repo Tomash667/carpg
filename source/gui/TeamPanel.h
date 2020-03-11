@@ -7,6 +7,7 @@
 #include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
+// Panel contains list of team members and allow to change leader, kick out, fast travel
 class TeamPanel : public GamePanel
 {
 public:

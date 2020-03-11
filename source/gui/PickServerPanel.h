@@ -7,6 +7,7 @@
 #include "Version.h"
 
 //-----------------------------------------------------------------------------
+// Panel used to select and connect to server, supports online & lan mode
 class PickServerPanel : public DialogBox
 {
 public:

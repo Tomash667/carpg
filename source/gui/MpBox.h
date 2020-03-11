@@ -5,6 +5,7 @@
 #include <InputTextBox.h>
 
 //-----------------------------------------------------------------------------
+// Multiplayer chat
 class MpBox : public GamePanel
 {
 public:
