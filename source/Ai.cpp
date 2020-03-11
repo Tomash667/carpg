@@ -693,10 +693,10 @@ void Game::UpdateAi(float dt)
 						break;
 					}
 
-					if(!use_idle)
+					if(!use_idle || (u.action == A_USE_USABLE && !Any(u.animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)))
 						break;
 
-					if(u.action == A_NONE && ai.timer <= 0.f)
+					if(ai.timer <= 0.f && Any(u.action, A_NONE, A_USE_USABLE))
 					{
 						if(Any(ai.st.idle.action, AIController::Idle_TrainCombat, AIController::Idle_TrainBow) && u.weapon_state != WeaponState::Hidden)
 						{

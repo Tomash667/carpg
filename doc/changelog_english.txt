@@ -15,6 +15,7 @@ Version 0.14 (???):
 + search for location shortcut - F, journal & chat buttons
 + update libraries: AngelScript 2.34, Bullet 2.89
 - save in hardcore mode wasn't removed
+- ai gets stuck when using stools in inn
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):
