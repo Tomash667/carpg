@@ -126,6 +126,68 @@ quest bandits_collect_toll
 }
 
 //=============================================================================
+quest crazies
+{
+	dialog crazy {
+		0 "Czemu oszala³eœ?"
+		1 "JA!? JA OSZALA£EM???"
+		2 "Ty nic nie wiesz! Inaczej pogadasz jak po ciebie przyjd¹!!!"
+		3 "Zapytaj o dziwny kamieñ"
+		4 "Zabieraj to ode mnie bo jak ci sprzedam kopa!"
+	}
+	
+	dialog generic {
+		0 "Zapytaj o dziwny kamieñ"
+		1 {
+			"Pierwszy raz coœ takiego widzê."
+			"Nie mam pojêcia co to jest. Kamieñ?"
+			"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+		}
+	}
+	
+	dialog merchant {
+		0 "Zapytaj o dziwny kamieñ"
+		1 "Nigdy nie widzia³em czegoœ takiego. Jeœli chcesz odkupie to od ciebie za 10 sztuk z³ota."
+		2 "Sprzedaj"
+		3 "Oto twoje z³oto. Ciekawe czy ten kamieñ ma jakieœ zastosowanie?"
+		4 "Nie sprzedawaj"
+		5 "Nie to nie."
+	}
+	
+	dialog trainer {
+		0 "Zapytaj o dziwny kamieñ"
+		1 {
+			"Pierwszy raz coœ takiego widzê."
+			"Nie mam pojêcia co to jest. Kamieñ?"
+			"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+		}
+		2 "S³ysza³em opowieœci o tym kamieniu."
+		3 "Jego obecnoœæ przyci¹ga jakieœ stwory i powoduje szaleñstwo."
+		4 "Lepiej siê go szybko pozb¹dŸ..."
+		5 "Ponoæ mo¿na siê go pozbyæ po w³o¿eniu do skrzyni w $(lab.name)."
+		6 "To na $(World::GetDirName(Level::location.pos, lab.pos)) st¹d. Powodzenia!"
+	}
+	
+	dialog mage_seller {
+		0 "Zapytaj o dziwny kamieñ"
+		1 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia, wygl¹da na to ¿e jest przeklêty."
+	}
+	
+	dialog cleric_seller {
+		0 "Zapytaj o dziwny kamieñ"
+		1 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
+	}
+	
+	texts {
+		0 "Dziwny kamieñ"
+		1 "Otrzymano dnia $date$."
+		2 "Zosta³em zaatakowany przez jak¹œ nieznan¹ kreaturê. Mo¿e mieæ to zwi¹zek z dziwnym kamieniem który znalaz³em przy jednym z szaleñców. Powinienem popytaæ w mieœcie, mo¿e ktoœ coœ wie."
+		3 "Trener w $(Level::location.name) powiedzia³ mi, ¿e ten kamieñ przyci¹ga jakieœ stwory i powoduje szaleñstwo. Jeœli schowam go do skrzyni w $(lab.name) na $(World::GetDirName(Level::location.pos, lab.pos)) st¹d to przestan¹ mnie atakowaæ."
+		4 "W³o¿y³em kamieñ do skrzyni. Przy odrobinie szczêœcia potwory nie bêd¹ mnie ju¿ œcigaæ. Zadanie ukoñczone!"
+	}
+}
+
+//=============================================================================
 quest alchemist_apprentice
 {
 	dialog alchemist {

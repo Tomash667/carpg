@@ -19,7 +19,6 @@
 #include "News.h"
 #include "Team.h"
 #include "QuestManager.h"
-#include "Quest_Crazies.h"
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
 #include "Game.h"

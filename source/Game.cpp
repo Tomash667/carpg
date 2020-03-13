@@ -14,7 +14,6 @@
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
-#include "Quest_Crazies.h"
 #include "Version.h"
 #include "LocationHelper.h"
 #include "MultiInsideLocation.h"
@@ -1761,6 +1760,12 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	}
 
 	Info("Leaving location.");
+
+	if(Net::IsLocal())
+	{
+		FIXME;
+		// Leave event
+	}
 
 	if(Net::IsLocal() && (quest_mgr->quest_crazies->check_stone
 		|| (quest_mgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_mgr->quest_crazies->crazies_state < Quest_Crazies::State::End)))

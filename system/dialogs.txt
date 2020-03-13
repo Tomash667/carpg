@@ -16,15 +16,7 @@ dialog blacksmith
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 4
-		{
-			talk 5
-			restart
-		}
-	}
-	escape choice 6
+	escape choice 4
 		end
 	show_choices
 }
@@ -36,48 +28,29 @@ dialog merchant
 		talk 0
 	choice 1
 		trade
-	choice 11
+	choice 2
 	{
-		talk 12
-		choice 13
+		talk 3
+		choice 4
 		{
 			special "train/haggle"
 			end
 		}
-		choice 14
+		choice 5
 		{
 			special "train/cha"
 			end
 		}
-		escape choice 15
+		escape choice 6
 			restart
 		show_choices
 	}
-	choice 2
+	choice 7
 	{
-		talk 3
+		talk 8
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 4
-		{
-			talk 5
-			choice 6
-			{
-				special "crazies_sell_stone"
-				talk 7
-				restart
-			}
-			choice 8
-			{
-				talk 9
-				restart
-			}
-			show_choices
-		}
-	}
-	escape choice 10
+	escape choice 9
 		end
 	show_choices
 }
@@ -88,7 +61,7 @@ dialog alchemist
 	if rand 2
 		if script "pc.HavePerk(\"alchemist\")"
 		{
-			talk 10
+			talk 8
 			do_once
 		}
 	if once
@@ -111,15 +84,15 @@ dialog alchemist
 	}
 	choice 4
 		trade
-	choice 11
+	choice 9
 	{
-		talk 12
-		choice 13
+		talk 10
+		choice 11
 		{
 			special "train/alchemy"
 			end
 		}
-		escape choice 14
+		escape choice 12
 			restart
 		show_choices
 	}
@@ -128,15 +101,7 @@ dialog alchemist
 		talk 6
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 7
-		{
-			talk 8
-			restart
-		}
-	}
-	escape choice 9
+	escape choice 7
 		end
 	show_choices
 }
@@ -197,15 +162,7 @@ dialog mayor
 		talk 9
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 10
-		{
-			talk 11
-			restart
-		}
-	}
-	escape choice 12
+	escape choice 10
 		end
 	show_choices
 }
@@ -233,15 +190,7 @@ dialog citizen
 			special "gossip"
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 4
-		{
-			talk 5
-			restart
-		}
-	}
-	escape choice 6
+	escape choice 4
 		end
 	show_choices
 }
@@ -367,21 +316,7 @@ dialog trainer
 		talk 23
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 24
-		{
-			if special "crazies_need_talk"
-			{
-				do_quest2 "szaleni"
-				restart
-			}
-			else
-				talk 25
-			restart
-		}
-	}
-	escape choice 26
+	escape choice 24
 		end
 	show_choices
 }
@@ -487,15 +422,7 @@ dialog guard_captain
 		talk 13
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 14
-		{
-			talk 15
-			restart
-		}
-	}
-	escape choice 16
+	escape choice 14
 		end
 	show_choices
 }
@@ -656,15 +583,7 @@ dialog innkeeper
 		special "gossip"
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 44
-		{
-			talk 45
-			restart
-		}
-	}
-	escape choice 46
+	escape choice 44
 		end
 	show_choices
 }
@@ -921,15 +840,7 @@ dialog arena_master
 		talk 59
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 60
-		{
-			talk 61
-			restart
-		}
-	}
-	escape choice 62
+	escape choice 60
 		end
 	show_choices
 }
@@ -1377,26 +1288,7 @@ dialog crazy
 			special "hero_about"
 			restart
 		}
-		if special "crazies_not_asked"
-		{
-			choice 44
-			{
-				talk 45
-				talk 46
-				special "crazies_talked"
-				script "target.OrderAttack()"
-				end
-			}
-		}
-		if have_item q_szaleni_kamien
-		{
-			choice 47
-			{
-				talk 48
-				restart
-			}
-		}
-		escape choice 49
+		escape choice 44
 			end
 		show_choices
 	}
@@ -2037,15 +1929,7 @@ dialog foodseller
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 4
-		{
-			talk 5
-			restart
-		}
-	}
-	escape choice 6
+	escape choice 4
 		end
 	show_choices
 }
@@ -2326,18 +2210,6 @@ dialog q_camp_near_city_end
 	set_quest_progress 3
 	talk 0
 	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_crazies_trainer
-{
-	talk 0
-	talk 1
-	talk 2
-	set_quest_progress 1
-	talk 3
-	talk 4
 	end
 }
 
@@ -4179,37 +4051,37 @@ dialog mage_seller
 		talk 0
 	choice 1
 		trade
-	choice 7
+	choice 5
 	{
-		talk 8
+		talk 6
 		if script "!pc.HaveAbility(Ability::Get(\"fireball\"))"
-			choice 13
+			choice 11
 			{
 				special "train/fireball"
 				end
 			}
 		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
-			choice 14
+			choice 12
 			{
 				special "train/thunder_bolt"
 				end
 			}
-		choice 9
+		choice 7
 		{
 			special "train/int"
 			end
 		}
-		choice 10
+		choice 8
 		{
 			special "train/mystic_magic"
 			end
 		}
-		choice 11
+		choice 9
 		{
 			special "train/concentration"
 			end
 		}
-		escape choice 12
+		escape choice 10
 			restart
 		show_choices
 	}
@@ -4218,15 +4090,8 @@ dialog mage_seller
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 4
-		{
-			talk 5
-			restart
-		}
-	}
-	escape choice 6
+	
+	escape choice 4
 		end
 	show_choices
 }
@@ -4264,15 +4129,7 @@ dialog cleric_seller
 		talk 8
 		restart
 	}
-	if have_item q_szaleni_kamien
-	{
-		choice 9
-		{
-			talk 10
-			restart
-		}
-	}
-	escape choice 11
+	escape choice 9
 		end
 	show_choices
 }

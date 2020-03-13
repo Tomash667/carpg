@@ -10,7 +10,6 @@
 #include "ScriptManager.h"
 #include "Var.h"
 #include "QuestManager.h"
-#include "Quest_Crazies.h"
 #include "Quest_Scripted.h"
 #include "UnitGroup.h"
 #include "ItemHelper.h"

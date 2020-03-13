@@ -212,13 +212,6 @@ void QuestManager::InitQuests()
 	unaccepted_quests.push_back(quest_evil);
 	used.push_back(quest_evil->start_loc);
 
-	// crazies
-	quest_crazies = new Quest_Crazies;
-	quest_crazies->Init();
-	quest_crazies->id = quest_counter++;
-	quest_crazies->Start();
-	unaccepted_quests.push_back(quest_crazies);
-
 	// artifacts
 	quest_artifacts = new Quest_Artifacts;
 	quest_artifacts->id = quest_counter++;
@@ -675,8 +668,6 @@ void QuestManager::Load(GameReader& f)
 	quest_orcs2->Init();
 	quest_evil = static_cast<Quest_Evil*>(FindQuest(Q_EVIL));
 	quest_evil->Init();
-	quest_crazies = static_cast<Quest_Crazies*>(FindQuest(Q_CRAZIES));
-	quest_crazies->Init();
 	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuest(Q_ARTIFACTS));
 	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{
@@ -1326,6 +1317,9 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 //=================================================================================================
 void QuestManager::UpdateQuests(int days)
 {
+	FIXME;
+	// wywo³anie EVENT_UPDATE_DAY
+
 	if(team->is_bandit)
 		return;
 
@@ -1440,10 +1434,6 @@ void QuestManager::UpdateQuests(int days)
 	// goblins
 	if(quest_goblins->goblins_state == Quest_Goblins::State::Counting || quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft)
 		quest_goblins->days -= days;
-
-	// crazies
-	if(quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
-		quest_crazies->days -= days;
 
 	quest_tournament->Progress();
 

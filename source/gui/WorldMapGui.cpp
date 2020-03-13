@@ -5,7 +5,6 @@
 #include "Journal.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
-#include "Quest_Crazies.h"
 #include "Encounter.h"
 #include "InsideLocation.h"
 #include "City.h"

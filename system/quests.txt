@@ -852,6 +852,254 @@ quest bandits_collect_toll
 }
 
 //=============================================================================
+// CRAZIES - unique quest
+//=============================================================================
+quest crazies
+{
+	type unique
+	progress {
+		P_CRAZIES_STARTED
+		P_CRAZIES_KNOW_LOCATION
+		P_CRAZIES_FINISHED
+	}
+	
+	dialog crazy {
+		if script "!target.IsTeamMember()"
+		{
+			if script "crazies_state == S_NONE"
+			{
+				choice 0
+				{
+					talk 1
+					talk 2
+					script "CraziesTalked()"
+					end2
+				}
+			}
+			if have_item q_szaleni_kamien
+			{
+				choice 3
+				{
+					talk 4
+					restart
+				}
+			}
+		}
+		end
+	}
+	
+	dialog generic {
+		if have_item q_szaleni_kamien
+		{
+			choice 0
+			{
+				talk 1
+				restart
+			}
+		}
+		end
+	}
+	
+	dialog merchant {
+		if have_item q_szaleni_kamien
+		{
+			choice 0
+			{
+				talk 1
+				choice 2
+				{
+					script "pc.unit.RemoveItem(stone); pc.unit.gold += 10;"
+					talk 3
+					restart
+				}
+				choice 4
+				{
+					talk 5
+					restart
+				}
+				show_choices
+			}
+		}
+		end
+	}
+	
+	dialog trainer {
+		if have_item q_szaleni_kamien
+		{
+			choice 0
+			{
+				if script "crazies_state == S_FIRST_ATTACK"
+				{
+					talk 2
+					talk 3
+					talk 4
+					set_quest_progress P_CRAZIES_KNOW_LOCATION
+					talk 5
+					talk 6
+				}
+				else
+					talk 1
+				restart
+			}
+		}
+		end
+	}
+	
+	dialog mage_seller {
+		if have_item q_szaleni_kamien
+		{
+			choice 0
+			{
+				talk 1
+				restart
+			}
+		}
+		end
+	}
+	
+	dialog cleric_seller {
+		if have_item q_szaleni_kamien
+		{
+			choice 0
+			{
+				talk 1
+				restart
+			}
+		}
+		end
+	}
+	
+	code
+	{
+		const int S_NONE = 0;
+		const int S_TALKED_WITH_CRAZY = 1;
+		const int S_PICKED_STONE = 2;
+		const int S_FIRST_ATTACK = 3;
+		const int S_TALKED_TRAINER = 4;
+		const int S_END = 5;
+		
+		Location@ lab;
+		Item@ stone;
+		int crazies_state;
+		int days;
+		bool check_stone;
+		
+		void Startup()
+		{
+			@stone = Item::Get("q_szaleni_kamien");
+			crazies_state = S_NONE;
+			days = 0;
+			check_stone = false;
+			
+			ExtendGlobalDialog("crazy", "crazy");
+			ExtendGlobalDialog("blacksmith", "general");
+			ExtendGlobalDialog("alchemist", "general");
+			ExtendGlobalDialog("mayor", "general");
+			ExtendGlobalDialog("citizen", "general");
+			ExtendGlobalDialog("guard_captain", "general");
+			ExtendGlobalDialog("innkeeper", "general");
+			ExtendGlobalDialog("arena_master", "general");
+			ExtendGlobalDialog("foodseller", "general");
+			
+			ExtendGlobalDialog("merchant", "merchant");
+			ExtendGlobalDialog("trainer", "trainer");
+			ExtendGlobalDialog("mage_seller", "mage_seller");
+			ExtendGlobalDialog("cleric_seller", "cleric_seller");
+			
+			
+		}
+		
+		void CraziesTalked()
+		{
+			target.ai.morale = -100;
+			target.OrderAttack();
+			crazies_state = S_TALKED_WITH_CRAZY;
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_UPDATE_DAY)
+			{
+				if(crazies_state == S_PICKED_STONE)
+					days -= e.days;
+			}
+			else if(e.event == EVENT_LEAVE)
+			{
+				if(check_stone && crazies_state >= S_PICKED_STONE && crazies_state < S_END)
+				{
+					check_stone = false;
+					
+					// TODO
+					if(!team->FindItemInTeam(stone, -1, nullptr, nullptr, false))
+					{
+						// usuń kamień z gry o ile to nie encounter bo i tak jest resetowany
+						if(game_level->location->type != L_ENCOUNTER)
+						{
+							if(target_loc == game_level->location_index)
+							{
+								// jest w dobrym miejscu, sprawdź czy włożył kamień do skrzyni
+								Chest* chest;
+								int slot;
+								if(game_level->local_area->FindItemInChest(stone, &chest, &slot))
+								{
+									// włożył kamień, koniec questa
+									chest->items.erase(chest->items.begin() + slot);
+									SetProgress(Progress::Finished);
+									return;
+								}
+							}
+
+							game_level->RemoveItemFromWorld(stone);
+						}
+
+						// dodaj kamień przywódcy
+						team->leader->AddItem(stone, 1, false);
+						game_gui->messages->AddGameMsg3(team->leader->player, GMS_ADDED_CURSED_STONE);
+					}
+
+					if(crazies_state == S_TALKED_WITH_CRAZY)
+					{
+						crazies_state = S_PICKED_STONE;
+						days = 13;
+					}
+				}
+			}
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_CRAZIES_STARTED:
+				quest.SetStarted(TEXT(0));
+				quest.AddEntry(TEXT(1));
+				quest.AddEntry(TEXT(2));
+				break;
+			case P_CRAZIES_KNOW_LOCATION:
+				@lab = World::CreateLocation(L_DUNGEON, World::GetRandomPlace(), LABYRINTH);
+				@lab.group = UnitGroup::Get("unk");
+				@lab.active_quest = this;
+				lab.SetKnown();
+				lab.st = 13;
+				
+				crazies_state = S_TALKED_TRAINER;
+				quest.AddEntry(TEXT(3));
+				break;
+			case P_CRAZIES_FINISHED:
+				@lab.active_quest = null;
+				crazies_state = S_END;
+				Team::AddExp(12000);
+			
+				quest.AddEntry(TEXT(4));
+				quest.SetCompleted();
+				break;
+			}
+		}
+	}
+	
+}
+
+//=============================================================================
 // MAIN STORY QUEST
 //=============================================================================
 quest main

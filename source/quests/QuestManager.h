@@ -7,7 +7,6 @@
 class Quest_Artifacts;
 class Quest_Bandits;
 class Quest_Contest;
-class Quest_Crazies;
 class Quest_Evil;
 class Quest_Goblins;
 class Quest_Mages;
@@ -122,7 +121,6 @@ public:
 	Quest_Orcs2* quest_orcs2;
 	Quest_Goblins* quest_goblins;
 	Quest_Evil* quest_evil;
-	Quest_Crazies* quest_crazies;
 	Quest_Contest* quest_contest;
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;

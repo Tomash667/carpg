@@ -76,6 +76,9 @@
     <Filter Include="system\locations">
       <UniqueIdentifier>{d8ce4cfc-eef9-4926-a585-b7d50c955433}</UniqueIdentifier>
     </Filter>
+    <Filter Include="quests\converted">
+      <UniqueIdentifier>{2e5a8aa5-0c9f-4e53-aaca-8378333ac195}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -236,9 +239,6 @@
     <ClCompile Include="quests\QuestManager.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="quests\Quest_DeliverLetter.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
     <ClCompile Include="quests\Quest_DeliverParcel.cpp">
       <Filter>quests</Filter>
     </ClCompile>
@@ -246,9 +246,6 @@
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="quests\Quest_RescueCaptive.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_BanditsCollectToll.cpp">
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="quests\Quest_CampNearCity.cpp">
@@ -288,9 +285,6 @@
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="quests\Quest_Evil.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Crazies.cpp">
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="ErrorHandler.cpp" />
@@ -620,6 +614,15 @@
     <ClCompile Include="location\OffscreenLocation.cpp">
       <Filter>location</Filter>
     </ClCompile>
+    <ClCompile Include="quests\Quest_Crazies.cpp">
+      <Filter>quests\converted</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_BanditsCollectToll.cpp">
+      <Filter>quests\converted</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_DeliverLetter.cpp">
+      <Filter>quests\converted</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -797,9 +800,6 @@
     <ClInclude Include="quests\QuestManager.h">
       <Filter>quests</Filter>
     </ClInclude>
-    <ClInclude Include="quests\Quest_DeliverLetter.h">
-      <Filter>quests</Filter>
-    </ClInclude>
     <ClInclude Include="quests\Quest_DeliverParcel.h">
       <Filter>quests</Filter>
     </ClInclude>
@@ -807,9 +807,6 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="quests\Quest_RescueCaptive.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_BanditsCollectToll.h">
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="quests\Quest_CampNearCity.h">
@@ -849,9 +846,6 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="quests\Quest_Evil.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Crazies.h">
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />
@@ -1222,6 +1216,15 @@
     </ClInclude>
     <ClInclude Include="location\OffscreenLocation.h">
       <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Crazies.h">
+      <Filter>quests\converted</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_BanditsCollectToll.h">
+      <Filter>quests\converted</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_DeliverLetter.h">
+      <Filter>quests\converted</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

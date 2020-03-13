@@ -11,13 +11,7 @@ dialog blacksmith {
 	1 "Pohandlujmy"
 	2 "Czym siê zajmujesz?"
 	3 "Jestem kowalem. Wytwarzam ró¿nego rodzaju bronie i pancerze."
-	4 "Zapytaj o dziwny kamieñ"
-	5 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	6 "Koniec rozmowy"
+	4 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -28,20 +22,14 @@ dialog merchant {
 		"Witaj! Czujê ¿e ubijemy œwietny interes."
 	}
 	1 "Pohandlujmy"
-	2 "Czym siê zajmujesz?"
-	3 "Jestem kupcem. Kupuje w jednym miejscu, sprzedaje w innym dro¿ej. Skupuje te¿ ró¿ne przedmioty."
-	4 "Zapytaj o dziwny kamieñ"
-	5 "Nigdy nie widzia³em czegoœ takiego. Jeœli chcesz odkupie to od ciebie za 10 sztuk z³ota."
-	6 "Sprzedaj"
-	7 "Oto twoje z³oto. Ciekawe czy ten kamieñ ma jakieœ zastosowanie?"
-	8 "Nie sprzedawaj"
-	9 "Nie to nie."
-	10 "Koniec rozmowy"
-	11 "Szkolenie"
-	12 "Mogê ciê nauczyæ targowania albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
-	13 "$train_lab/haggle$"
-	14 "$train_lab/cha$"
-	15 "Anuluj"
+	2 "Szkolenie"
+	3 "Mogê ciê nauczyæ targowania albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
+	4 "$train_lab/haggle$"
+	5 "$train_lab/cha$"
+	6 "Anuluj"
+	7 "Czym siê zajmujesz?"
+	8 "Jestem kupcem. Kupuje w jednym miejscu, sprzedaje w innym dro¿ej. Skupuje te¿ ró¿ne przedmioty."
+	9 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -57,18 +45,12 @@ dialog alchemist {
 	4 "Pohandlujmy"
 	5 "Czym siê zajmujesz?"
 	6 "Jestem alchemikiem. Warzê ró¿ne mikstury a potem sprzedaje osob¹ takim jak ty."
-	7 "Zapytaj o dziwny kamieñ"
-	8 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	9 "Koniec rozmowy"
-	10 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
-	11 "Szkolenie"
-	12 "Mogê ciê nauczyæ jak lepiej warzyæ mikstury. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Nadal jesteœ zainteresowany?"
-	13 "$train_lab/alchemy$"
-	14 "Anuluj"
+	7 "Koniec rozmowy"
+	8 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
+	9 "Szkolenie"
+	10 "Mogê ciê nauczyæ jak lepiej warzyæ mikstury. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Nadal jesteœ zainteresowany?"
+	11 "$train_lab/alchemy$"
+	12 "Anuluj"
 }
 
 //==============================================================================
@@ -87,13 +69,7 @@ dialog mayor {
 	7 "Zadanie"
 	8 "Czym siê zajmujesz?"
 	9 "Jestem $(Level::IsCity() ? \"burmistrzem\" : \"so\\xB3tysem\"). Zajmuje siê urzêdowymi sprawami w imieniu króla. Czasami mam zadania dla poszukiwaczy przygód takich jak ty."
-	10 "Zapytaj o dziwny kamieñ"
-	11 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	12 "Koniec rozmowy"
+	10 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -106,13 +82,7 @@ dialog citizen {
 	1 "Dzia³o siê coœ ostatnio?"
 	2 "Opowiedz mi o okolicy"
 	3 "Plotki"
-	4 "Zapytaj o dziwny kamieñ"
-	5 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	6 "Koniec rozmowy"
+	4 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -163,13 +133,7 @@ dialog trainer {
 	21 "Hmm... Aktualnie nie mogê ciê nauczyæ ¿adnych nowych atutów."
 	22 "Czym siê zajmujesz?"
 	23 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki i obrony."
-	24 "Zapytaj o dziwny kamieñ"
-	25 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	26 "Koniec rozmowy"
+	24 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -192,13 +156,7 @@ dialog guard_captain {
 	11 "Najpierw zajmij siê tym co ci przydzieli³em."
 	12 "Czym siê zajmujesz?"
 	13 "Jestem dowódca stra¿y. Szkolê stra¿ników, ustalam warty, wysy³am patrole po okolicy."
-	14 "Zapytaj o dziwny kamieñ"
-	15 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	16 "Koniec rozmowy"
+	14 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -251,13 +209,7 @@ dialog innkeeper {
 	41 "Czym siê zajmujesz?"
 	42 "Jestem w³aœcicielem tej karczmy. Sprzedajê napoje i jedzenie oraz wynajmujê pokoje dla wêdrowców."
 	43 "Plotki"
-	44 "Zapytaj o dziwny kamieñ"
-	45 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	46 "Koniec rozmowy"
+	44 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -335,13 +287,7 @@ dialog arena_master {
 	57 "Czym siê zajmujesz?"
 	58 "Jestem mistrzem tutejszej areny. Organizuje walki pomiêdzy potworami a bohaterami. Chcesz siê sprawdziæ?"
 	59 "Bez obaw, podczas walki nie mo¿esz umrzeæ."
-	60 "Zapytaj o dziwny kamieñ"
-	61 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	62 "Koniec rozmowy"
+	60 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -610,12 +556,7 @@ dialog crazy {
 		"Jestem w³adc¹ wszechœwiata, królem wszechrzeczy, panem tych okolic. A poza tym..."
 		"Po pierwsze ustalmy coœ. Nie jestem szalony, pamiêtaj o tym!!! A poza tym..."
 	}
-	44 "Czemu oszala³eœ?"
-	45 "JA!? JA OSZALA£EM???"
-	46 "Ty nic nie wiesz! Inaczej pogadasz jak po ciebie przyjd¹!!!"
-	47 "Zapytaj o dziwny kamieñ"
-	48 "Zabieraj to ode mnie bo jak ci sprzedam kopa!"
-	49 "Koniec rozmowy"
+	44 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -906,13 +847,7 @@ dialog foodseller {
 	1 "Handel"
 	2 "Czym siê zajmujesz?"
 	3 "Jestem sprzedawc¹ jedzenia. Skupuje towary od okolicznych farmerów i sprzedajê tutaj. Tylko œwie¿e towary!"
-	4 "Zapytaj o dziwny kamieñ"
-	5 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
-	6 "Koniec rozmowy"
+	4 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -1050,15 +985,6 @@ dialog q_camp_near_city_timeout {
 dialog q_camp_near_city_end {
 	0 "Gdyby nie ty to nie wiem czy byœmy odparli ten atak."
 	1 "WeŸ proszê te $reward$ sztuk z³ota nagrody."
-}
-
-//==============================================================================
-dialog q_crazies_trainer {
-	0 "S³ysza³em opowieœci o tym kamieniu."
-	1 "Jego obecnoœæ przyci¹ga jakieœ stwory i powoduje szaleñstwo."
-	2 "Lepiej siê go szybko pozb¹dŸ..."
-	3 "Ponoæ mo¿na siê go pozbyæ po w³o¿eniu do skrzyni w $target_loc$."
-	4 "To na $target_dir$ st¹d. Powodzenia!"
 }
 
 //==============================================================================
@@ -1912,17 +1838,15 @@ dialog mage_seller {
 	1 "Pohandlujmy"
 	2 "Czym siê zajmujesz?"
 	3 "Jestem magiem. Razem z kilkoma innymi magami w wie¿y zajmujemy siê umagicznaniem przedmiotów."
-	4 "Zapytaj o dziwny kamieñ"
-	5 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia, wygl¹da na to ¿e jest przeklêty."
-	6 "Koniec rozmowy"
-	7 "Szkolenie"
-	8 "Pomogê ci poszerzyæ twoje horyzonty. Co chcesz wiedzieæ?"
-	9 "$train_lab/int$"
-	10 "$train_lab/mystic_magic$"
-	11 "$train_lab/concentration$"
-	12 "Anuluj"
-	13 "$train_lab/fireball$"
-	14 "$train_lab/thunder_bolt$"
+	4 "Koniec rozmowy"
+	5 "Szkolenie"
+	6 "Pomogê ci poszerzyæ twoje horyzonty. Co chcesz wiedzieæ?"
+	7 "$train_lab/int$"
+	8 "$train_lab/mystic_magic$"
+	9 "$train_lab/concentration$"
+	10 "Anuluj"
+	11 "$train_lab/fireball$"
+	12 "$train_lab/thunder_bolt$"
 }
 
 //==============================================================================
@@ -1939,7 +1863,5 @@ dialog cleric_seller {
 	6 "Anuluj"
 	7 "Czym siê zajmujesz?"
 	8 "Jestem kap³anem, wyznawc¹ Imnosa. Opiekujê siê t¹ kapliczk¹ i pomagam tym którzy na to zas³uguj¹."
-	9 "Zapytaj o dziwny kamieñ"
-	10 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
-	11 "Koniec rozmowy"
+	9 "Koniec rozmowy"
 }
