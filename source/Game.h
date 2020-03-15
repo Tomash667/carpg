@@ -17,19 +17,6 @@
 #include "BaseObject.h"
 
 //-----------------------------------------------------------------------------
-// quickstart mode
-enum QUICKSTART
-{
-	QUICKSTART_NONE,
-	QUICKSTART_SINGLE,
-	QUICKSTART_HOST,
-	QUICKSTART_JOIN_LAN,
-	QUICKSTART_JOIN_IP,
-	QUICKSTART_LOAD,
-	QUICKSTART_LOAD_MP
-};
-
-//-----------------------------------------------------------------------------
 // game state
 enum GAME_STATE
 {
@@ -115,22 +102,10 @@ public:
 
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
-	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
 
 	// initialization & loading
-	void PreconfigureGame();
-	void PreloadLanguage();
-	void PreloadData();
-	void LoadSystem();
-	void AddFilesystem();
-	void LoadDatafiles();
-	void LoadLanguageFiles();
 	void SetGameText();
-	void SetStatsText();
-	void ConfigureGame();
-	void LoadData();
-	void PostconfigureGame();
 	void StartGameMode();
 
 	//-----------------------------------------------------------------
@@ -196,8 +171,6 @@ public:
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdateAi(float dt);
-	uint ValidateGameData(bool major);
-	uint TestGameData(bool major);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelArea& area, float dt);
@@ -346,19 +319,15 @@ public:
 	//-----------------------------------------------------------------
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
-	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene, in_load;
+	bool force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene, in_load;
 	int death_screen;
 	float death_fade, game_speed;
 	vector<AIController*> ais;
 	uint force_seed, next_seed;
 	ProfilerMode profiler_mode;
 	int start_version;
-	uint load_errors, load_warnings;
 	std::set<const Item*> items_load;
 	bool hardcore_mode, hardcore_option, check_updates, skip_tutorial;
-	// quickstart
-	QUICKSTART quickstart;
-	int quickstart_slot;
 	// fallback
 	FALLBACK fallback_type;
 	int fallback_1, fallback_2;
@@ -458,9 +427,6 @@ public:
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS
 	//-----------------------------------------------------------------
-	cstring txPreloadAssets, txCreatingListOfFiles, txConfiguringGame, txLoadingAbilities, txLoadingBuildings, txLoadingClasses, txLoadingDialogs,
-		txLoadingItems, txLoadingLocations, txLoadingMusics, txLoadingObjects, txLoadingPerks, txLoadingQuests, txLoadingRequired, txLoadingUnits,
-		txLoadingShaders, txLoadingLanguageFiles;
 	cstring txAiNoHpPot[2], txAiNoMpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort,
 		txAiDwarfFort, txAiTower, txAiArmory, txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies,
 		txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7],
@@ -485,11 +451,10 @@ public:
 		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
 		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave;
+		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave, txLoadingLocations, txLoadingQuests;
 	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txGamePaused, txGameResumed, txDevmodeOn,
 		txDevmodeOff, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
-	cstring txHaveErrors;
 
 private:
 	vector<int> reported_errors;

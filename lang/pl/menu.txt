@@ -945,6 +945,8 @@ invalidCrc = "Z³a suma kontrolna danych"
 connectionFailed = "Nie uda³o siê po³¹czyæ z serwerem."
 loadingSaveByServer = "Wczytywanie zapisu przez serwer..."
 serverFailedToLoadSave = "Wyst¹pi³ b³¹d podczas wczytywania gry przez serwer."
+loadingLocations = "Wczytywanie lokalizacji"
+loadingQuests = "Wczytywanie zadañ"
 
 // net
 createServerFailed = "B³¹d tworzenia serwera (%d)!"

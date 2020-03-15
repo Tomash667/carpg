@@ -978,6 +978,8 @@ public:
 	void ChangeBase(UnitData* ud, bool update_items = false);
 	void MoveToArea(LevelArea* area, const Vec3& pos);
 	void Kill();
+
+	static void Predraw(void* ptr, Matrix* mat, int n);
 };
 
 //-----------------------------------------------------------------------------

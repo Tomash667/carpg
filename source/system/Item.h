@@ -170,6 +170,7 @@ struct WeaponTypeInfo
 	float stamina;
 
 	static WeaponTypeInfo info[];
+	static void LoadLanguage();
 };
 
 inline WEAPON_TYPE GetWeaponType(SkillId s)

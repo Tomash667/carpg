@@ -90,12 +90,14 @@
 #include "SkyboxShader.h"
 #include "SceneManager.h"
 #include "Scene.h"
+//
+#include "GameState.h"
+#include "LoadMenuState.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
 CustomCollisionWorld* global::phy_world;
 GameKeys GKey;
-extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
@@ -114,12 +116,11 @@ const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 
 //=================================================================================================
-Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
-draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
-draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
-profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
+Game::Game() : inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false),
+game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false), check_updates(true), skip_tutorial(false),
+portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD),
+rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled),
+screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), clear_color(Color::Black), in_load(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -179,343 +180,10 @@ Game::~Game()
 //=================================================================================================
 bool Game::OnInit()
 {
-	Info("Game: Initializing game.");
-	game_state = GS_LOAD_MENU;
-
-	try
-	{
-		// set everything needed to show loadscreen
-		PreconfigureGame();
-
-		// STEP 1 - load game system (units/items/etc)
-		LoadSystem();
-
-		// STEP 2 - load game content (meshes/textures/music/etc)
-		LoadData();
-
-		// configure game after loading and enter menu state
-		PostconfigureGame();
-
-		Info("Game: Game initialized.");
-		return true;
-	}
-	catch(cstring err)
-	{
-		engine->ShowError(Format("Game: Failed to initialize game: %s", err), Logger::L_FATAL);
-		return false;
-	}
-}
-
-
-//=================================================================================================
-// Preconfigure game vars.
-//=================================================================================================
-void Game::PreconfigureGame()
-{
-	Info("Game: Preconfiguring game.");
-
-	phy_world = engine->GetPhysicsWorld();
-	engine->UnlockCursor(false);
-
-	// set animesh callback
-	MeshInstance::Predraw = HumanPredraw;
-
-	game_gui->PreInit();
-
-	PreloadLanguage();
-	PreloadData();
-	res_mgr->SetProgressCallback(ProgressCallback(this, &Game::OnLoadProgress));
-}
-
-//=================================================================================================
-// Load language strings showed on load screen.
-//=================================================================================================
-void Game::PreloadLanguage()
-{
-	Language::LoadFile("preload.txt");
-
-	txPreloadAssets = Str("preloadAssets");
-	txCreatingListOfFiles = Str("creatingListOfFiles");
-	txConfiguringGame = Str("configuringGame");
-	txLoadingAbilities = Str("loadingAbilities");
-	txLoadingBuildings = Str("loadingBuildings");
-	txLoadingClasses = Str("loadingClasses");
-	txLoadingDialogs = Str("loadingDialogs");
-	txLoadingItems = Str("loadingItems");
-	txLoadingLocations = Str("loadingLocations");
-	txLoadingMusics = Str("loadingMusics");
-	txLoadingObjects = Str("loadingObjects");
-	txLoadingPerks = Str("loadingPerks");
-	txLoadingQuests = Str("loadingQuests");
-	txLoadingRequired = Str("loadingRequired");
-	txLoadingUnits = Str("loadingUnits");
-	txLoadingShaders = Str("loadingShaders");
-	txLoadingLanguageFiles = Str("loadingLanguageFiles");
-}
-
-//=================================================================================================
-// Load data used by loadscreen.
-//=================================================================================================
-void Game::PreloadData()
-{
-	res_mgr->AddDir("data/preload");
-
-	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 2);
-
-	// loadscreen textures
-	game_gui->load_screen->LoadData();
-
-	// intro music
-	if(!sound_mgr->IsMusicDisabled())
-	{
-		Ptr<MusicTrack> track;
-		track->music = res_mgr->Load<Music>("Intro.ogg");
-		track->type = MusicType::Intro;
-		MusicTrack::tracks.push_back(track.Pin());
-		SetMusic(MusicType::Intro);
-	}
-}
-
-//=================================================================================================
-// Load system.
-//=================================================================================================
-void Game::LoadSystem()
-{
-	Info("Game: Loading system.");
-	game_gui->load_screen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
-
-	AddFilesystem();
-	arena->Init();
-	game_gui->Init();
-	game_res->Init();
-	net->Init();
-	quest_mgr->Init();
-	script_mgr->Init();
-	game_gui->main_menu->UpdateCheckVersion();
-	LoadDatafiles();
-	LoadLanguageFiles();
-	game_gui->server->Init();
-	game_gui->load_screen->Tick(txLoadingShaders);
-	ConfigureGame();
-}
-
-//=================================================================================================
-// Add filesystem.
-//=================================================================================================
-void Game::AddFilesystem()
-{
-	Info("Game: Creating list of files.");
-	res_mgr->AddDir("data");
-	res_mgr->AddPak("data/data.pak", "KrystaliceFire");
-}
-
-//=================================================================================================
-// Load datafiles (items/units/etc).
-//=================================================================================================
-void Game::LoadDatafiles()
-{
-	Info("Game: Loading system.");
-	load_errors = 0;
-	load_warnings = 0;
-
-	// content
-	content.system_dir = g_system_dir;
-	content.LoadContent([this](Content::Id id)
-		{
-			switch(id)
-			{
-			case Content::Id::Abilities:
-				game_gui->load_screen->Tick(txLoadingAbilities);
-				break;
-			case Content::Id::Buildings:
-				game_gui->load_screen->Tick(txLoadingBuildings);
-				break;
-			case Content::Id::Classes:
-				game_gui->load_screen->Tick(txLoadingClasses);
-				break;
-			case Content::Id::Dialogs:
-				game_gui->load_screen->Tick(txLoadingDialogs);
-				break;
-			case Content::Id::Items:
-				game_gui->load_screen->Tick(txLoadingItems);
-				break;
-			case Content::Id::Locations:
-				game_gui->load_screen->Tick(txLoadingLocations);
-				break;
-			case Content::Id::Musics:
-				game_gui->load_screen->Tick(txLoadingMusics);
-				break;
-			case Content::Id::Objects:
-				game_gui->load_screen->Tick(txLoadingObjects);
-				break;
-			case Content::Id::Perks:
-				game_gui->load_screen->Tick(txLoadingPerks);
-				break;
-			case Content::Id::Quests:
-				game_gui->load_screen->Tick(txLoadingQuests);
-				break;
-			case Content::Id::Required:
-				game_gui->load_screen->Tick(txLoadingRequired);
-				break;
-			case Content::Id::Units:
-				game_gui->load_screen->Tick(txLoadingUnits);
-				break;
-			default:
-				assert(0);
-				break;
-			}
-		});
-}
-
-//=================================================================================================
-// Load language files.
-//=================================================================================================
-void Game::LoadLanguageFiles()
-{
-	Info("Game: Loading language files.");
-	game_gui->load_screen->Tick(txLoadingLanguageFiles);
-
-	Language::LoadLanguageFiles();
-
-	txHaveErrors = Str("haveErrors");
-	SetGameCommonText();
-	SetItemStatsText();
-	NameHelper::SetHeroNames();
-	SetGameText();
-	SetStatsText();
-	arena->LoadLanguage();
-	game_gui->LoadLanguage();
-	game_level->LoadLanguage();
-	game_res->LoadLanguage();
-	net->LoadLanguage();
-	quest_mgr->LoadLanguage();
-	world->LoadLanguage();
-
-	uint language_errors = Language::GetErrors();
-	if(language_errors != 0)
-	{
-		Error("Game: %u language errors.", language_errors);
-		load_warnings += language_errors;
-	}
-}
-
-//=================================================================================================
-// Initialize everything needed by game before loading content.
-//=================================================================================================
-void Game::ConfigureGame()
-{
-	Info("Game: Configuring game.");
-	game_gui->load_screen->Tick(txConfiguringGame);
-
-	InitScene();
-	cmdp->AddCommands();
-	settings.ResetGameKeys();
-	settings.LoadGameKeys(cfg);
-	load_errors += BaseLocation::SetRoomPointers();
-
-	// shaders
-	render->RegisterShader(basic_shader = new BasicShader);
-	render->RegisterShader(grass_shader = new GrassShader);
-	render->RegisterShader(glow_shader = new GlowShader);
-	render->RegisterShader(particle_shader = new ParticleShader);
-	render->RegisterShader(postfx_shader = new PostfxShader);
-	render->RegisterShader(skybox_shader = new SkyboxShader);
-	render->RegisterShader(terrain_shader = new TerrainShader);
-
-	tMinimap = render->CreateDynamicTexture(Int2(128, 128));
-	CreateRenderTargets();
-}
-
-//=================================================================================================
-// Load game data.
-//=================================================================================================
-void Game::LoadData()
-{
-	Info("Game: Loading data.");
-
-	res_mgr->PrepareLoadScreen(0.33f);
-	game_gui->load_screen->Tick(txPreloadAssets);
-	game_res->LoadData();
-	res_mgr->StartLoadScreen();
-}
-
-//=================================================================================================
-// Configure game after loading content.
-//=================================================================================================
-void Game::PostconfigureGame()
-{
-	Info("Game: Postconfiguring game.");
-
-	engine->LockCursor();
-	game_gui->PostInit();
-	game_level->Init();
-	loc_gen_factory->Init();
-	world->Init();
-	quest_mgr->InitLists();
-
-	// create save folders
-	io::CreateDirectory("saves");
-	io::CreateDirectory("saves/single");
-	io::CreateDirectory("saves/multi");
-
-	ItemScript::Init();
-
-	// test & validate game data (in debug always check some things)
-	if(testing)
-		ValidateGameData(true);
-#ifdef _DEBUG
-	else
-		ValidateGameData(false);
-#endif
-
-	// show errors notification
-	bool start_game_mode = true;
-	load_errors += content.errors;
-	load_warnings += content.warnings;
-	if(load_errors > 0 || load_warnings > 0)
-	{
-		// show message in release, notification in debug
-		if(load_errors > 0)
-			Error("Game: %u loading errors, %u warnings.", load_errors, load_warnings);
-		else
-			Warn("Game: %u loading warnings.", load_warnings);
-		Texture* img = (load_errors > 0 ? game_res->tError : game_res->tWarning);
-		cstring text = Format(txHaveErrors, load_errors, load_warnings);
-#ifdef _DEBUG
-		game_gui->notifications->Add(text, img, 5.f);
-#else
-		DialogInfo info;
-		info.name = "have_errors";
-		info.text = text;
-		info.type = DIALOG_OK;
-		info.img = img;
-		info.event = [this](int result) { StartGameMode(); };
-		info.parent = game_gui->main_menu;
-		info.order = ORDER_TOPMOST;
-		info.pause = false;
-		info.auto_wrap = true;
-		gui->ShowDialog(info);
-		start_game_mode = false;
-#endif
-	}
-
-	// save config
-	cfg.Add("adapter", render->GetAdapter());
-	cfg.Add("resolution", engine->GetWindowSize());
-	cfg.Add("refresh", render->GetRefreshRate());
-	SaveCfg();
-
-	// end load screen, show menu
-	clear_color = Color::Black;
-	game_state = GS_MAIN_MENU;
-	game_gui->load_screen->visible = false;
-	game_gui->main_menu->visible = true;
-	if(music_type != MusicType::Intro)
-		SetMusic(MusicType::Title);
-
-	// start game mode if selected quickmode
-	if(start_game_mode)
-		StartGameMode();
+	GameState* gs = new LoadMenuState();
+	bool result = gs->OnEnter();
+	delete gs;
+	return result;
 }
 
 //=================================================================================================
@@ -523,7 +191,7 @@ void Game::PostconfigureGame()
 //=================================================================================================
 void Game::StartGameMode()
 {
-	switch(quickstart)
+	switch(settings.quickstart)
 	{
 	case QUICKSTART_NONE:
 		break;
@@ -543,11 +211,11 @@ void Game::StartGameMode()
 			break;
 		}
 
-		if(quickstart == QUICKSTART_LOAD_MP)
+		if(settings.quickstart == QUICKSTART_LOAD_MP)
 		{
 			net->mp_load = true;
 			net->mp_quickload = false;
-			if(TryLoadGame(quickstart_slot, false, false))
+			if(TryLoadGame(settings.quickstart_slot, false, false))
 			{
 				game_gui->create_server->CloseDialog();
 				game_gui->server->autoready = true;
@@ -595,7 +263,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_LOAD:
-		if(!TryLoadGame(quickstart_slot, false, false))
+		if(!TryLoadGame(settings.quickstart_slot, false, false))
 			Error("Quickload failed.");
 		break;
 	default:
@@ -805,23 +473,6 @@ void Game::DrawGame(RenderTarget* target)
 
 			index_surf = (index_surf + 1) % 3;
 		}
-	}
-}
-
-//=================================================================================================
-void HumanPredraw(void* ptr, Matrix* mat, int n)
-{
-	if(n != 0)
-		return;
-
-	Unit* u = static_cast<Unit*>(ptr);
-
-	if(u->data->type == UNIT_TYPE::HUMAN)
-	{
-		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
-		static Matrix mat2;
-		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
-		mat[bone] = Matrix::RotationX(val / 5) * mat[bone];
 	}
 }
 
@@ -1181,13 +832,6 @@ void Game::SaveCfg()
 }
 
 //=================================================================================================
-void Game::CreateRenderTargets()
-{
-	rt_save = render->CreateRenderTarget(Int2(256, 256));
-	rt_item_rot = render->CreateRenderTarget(Int2(128, 128));
-}
-
-//=================================================================================================
 void Game::RestartGame()
 {
 	// stwórz mutex
@@ -1210,16 +854,6 @@ void Game::RestartGame()
 	CreateProcess(nullptr, (char*)Format("%s -restart", GetCommandLine()), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
 
 	Quit();
-}
-
-//=================================================================================================
-void Game::SetStatsText()
-{
-	Language::Section s = Language::GetSection("WeaponTypes");
-	WeaponTypeInfo::info[WT_SHORT_BLADE].name = s.Get("shortBlade");
-	WeaponTypeInfo::info[WT_LONG_BLADE].name = s.Get("longBlade");
-	WeaponTypeInfo::info[WT_BLUNT].name = s.Get("blunt");
-	WeaponTypeInfo::info[WT_AXE].name = s.Get("axe");
 }
 
 //=================================================================================================
@@ -1419,6 +1053,8 @@ void Game::SetGameText()
 	txConnectionFailed = Str("connectionFailed");
 	txLoadingSaveByServer = Str("loadingSaveByServer");
 	txServerFailedToLoadSave = Str("serverFailedToLoadSave");
+	txLoadingLocations = Str("loadingLocations");
+	txLoadingQuests = Str("loadingQuests");
 
 	// net
 	txServer = Str("server");
@@ -1490,28 +1126,6 @@ void Game::GetPostEffects(vector<PostEffect>& post_effects)
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;
 	}
-}
-
-//=================================================================================================
-uint Game::ValidateGameData(bool major)
-{
-	Info("Test: Validating game data...");
-
-	uint err = TestGameData(major);
-
-	UnitData::Validate(err);
-	Attribute::Validate(err);
-	Skill::Validate(err);
-	Item::Validate(err);
-	Perk::Validate(err);
-
-	if(err == 0)
-		Info("Test: Validation succeeded.");
-	else
-		Error("Test: Validation failed, %u errors found.", err);
-
-	content.warnings += err;
-	return err;
 }
 
 void Game::SetupConfigVars()
@@ -2787,231 +2401,6 @@ void Game::UpdateFallback(float dt)
 			fallback_type = FALLBACK::NO;
 		}
 	}
-}
-
-//=================================================================================================
-uint Game::TestGameData(bool major)
-{
-	string str;
-	uint errors = 0;
-
-	Info("Test: Checking items...");
-
-	// bronie
-	for(Weapon* weapon : Weapon::weapons)
-	{
-		const Weapon& w = *weapon;
-		if(!w.mesh)
-		{
-			Error("Test: Weapon %s: missing mesh.", w.id.c_str());
-			++errors;
-		}
-		else
-		{
-			res_mgr->LoadMeshMetadata(w.mesh);
-			Mesh::Point* pt = w.mesh->FindPoint("hit");
-			if(!pt || !pt->IsBox())
-			{
-				Error("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh->filename);
-				++errors;
-			}
-			else if(!pt->size.IsPositive())
-			{
-				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh->filename);
-				++errors;
-			}
-		}
-	}
-
-	// tarcze
-	for(Shield* shield : Shield::shields)
-	{
-		const Shield& s = *shield;
-		if(!s.mesh)
-		{
-			Error("Test: Shield %s: missing mesh.", s.id.c_str());
-			++errors;
-		}
-		else
-		{
-			res_mgr->LoadMeshMetadata(s.mesh);
-			Mesh::Point* pt = s.mesh->FindPoint("hit");
-			if(!pt || !pt->IsBox())
-			{
-				Error("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh->filename);
-				++errors;
-			}
-			else if(!pt->size.IsPositive())
-			{
-				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh->filename);
-				++errors;
-			}
-		}
-	}
-
-	// postacie
-	Info("Test: Checking units...");
-	for(UnitData* ud_ptr : UnitData::units)
-	{
-		UnitData& ud = *ud_ptr;
-		str.clear();
-
-		// przedmioty postaci
-		if(ud.item_script)
-			ud.item_script->Test(str, errors);
-
-		// ataki
-		if(ud.frames)
-		{
-			if(ud.frames->extra)
-			{
-				if(InRange(ud.frames->attacks, 1, NAMES::max_attacks))
-				{
-					for(int i = 0; i < ud.frames->attacks; ++i)
-					{
-						if(!InRange(0.f, ud.frames->extra->e[i].start, ud.frames->extra->e[i].end, 1.f))
-						{
-							str += Format("\tInvalid values in attack %d (%g, %g).\n", i + 1, ud.frames->extra->e[i].start, ud.frames->extra->e[i].end);
-							++errors;
-						}
-					}
-				}
-				else
-				{
-					str += Format("\tInvalid attacks count (%d).\n", ud.frames->attacks);
-					++errors;
-				}
-			}
-			else
-			{
-				if(InRange(ud.frames->attacks, 1, 3))
-				{
-					for(int i = 0; i < ud.frames->attacks; ++i)
-					{
-						if(!InRange(0.f, ud.frames->t[F_ATTACK1_START + i * 2], ud.frames->t[F_ATTACK1_END + i * 2], 1.f))
-						{
-							str += Format("\tInvalid values in attack %d (%g, %g).\n", i + 1, ud.frames->t[F_ATTACK1_START + i * 2],
-								ud.frames->t[F_ATTACK1_END + i * 2]);
-							++errors;
-						}
-					}
-				}
-				else
-				{
-					str += Format("\tInvalid attacks count (%d).\n", ud.frames->attacks);
-					++errors;
-				}
-			}
-			if(!InRange(ud.frames->t[F_BASH], 0.f, 1.f))
-			{
-				str += Format("\tInvalid attack point '%g' bash.\n", ud.frames->t[F_BASH]);
-				++errors;
-			}
-		}
-		else
-		{
-			str += "\tMissing attacks information.\n";
-			++errors;
-		}
-
-		// model postaci
-		if(major)
-		{
-			Mesh& mesh = *ud.mesh;
-			res_mgr->Load(&mesh);
-
-			for(uint i = 0; i < NAMES::n_ani_base; ++i)
-			{
-				if(!mesh.GetAnimation(NAMES::ani_base[i]))
-				{
-					str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
-					++errors;
-				}
-			}
-
-			if(!IsSet(ud.flags, F_SLOW))
-			{
-				if(!mesh.GetAnimation(NAMES::ani_run))
-				{
-					str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
-					++errors;
-				}
-			}
-
-			if(!IsSet(ud.flags, F_DONT_SUFFER))
-			{
-				if(!mesh.GetAnimation(NAMES::ani_hurt))
-				{
-					str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
-					++errors;
-				}
-			}
-
-			if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
-			{
-				for(uint i = 0; i < NAMES::n_points; ++i)
-				{
-					if(!mesh.GetPoint(NAMES::points[i]))
-					{
-						str += Format("\tMissing attachment point '%s'.\n", NAMES::points[i]);
-						++errors;
-					}
-				}
-
-				for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
-				{
-					if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
-						++errors;
-					}
-				}
-			}
-
-			// animacje ataków
-			if(ud.frames)
-			{
-				if(ud.frames->attacks > NAMES::max_attacks)
-				{
-					str += Format("\tToo many attacks (%d)!\n", ud.frames->attacks);
-					++errors;
-				}
-				for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
-				{
-					if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
-					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
-						++errors;
-					}
-				}
-			}
-
-			// animacje idle
-			if(ud.idles)
-			{
-				for(const string& s : ud.idles->anims)
-				{
-					if(!mesh.GetAnimation(s.c_str()))
-					{
-						str += Format("\tMissing animation '%s'.\n", s.c_str());
-						++errors;
-					}
-				}
-			}
-
-			// punkt czaru
-			if(ud.abilities && !mesh.GetPoint(NAMES::point_cast))
-			{
-				str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
-				++errors;
-			}
-		}
-
-		if(!str.empty())
-			Error("Test: Unit %s:\n%s", ud.id.c_str(), str.c_str());
-	}
-
-	return errors;
 }
 
 //=================================================================================================

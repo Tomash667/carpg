@@ -7,6 +7,7 @@
 #include "ScriptException.h"
 #include "Quest.h"
 #include "QuestManager.h"
+#include "Language.h"
 
 const Item* Item::gold;
 ItemsMap Item::items;
@@ -139,6 +140,16 @@ Item& Item::operator = (const Item& i)
 		break;
 	}
 	return *this;
+}
+
+//=================================================================================================
+void WeaponTypeInfo::LoadLanguage()
+{
+	Language::Section s = Language::GetSection("WeaponTypes");
+	info[WT_SHORT_BLADE].name = s.Get("shortBlade");
+	info[WT_LONG_BLADE].name = s.Get("longBlade");
+	info[WT_BLUNT].name = s.Get("blunt");
+	info[WT_AXE].name = s.Get("axe");
 }
 
 //=================================================================================================

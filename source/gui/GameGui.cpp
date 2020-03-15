@@ -145,6 +145,7 @@ void GameGui::Init()
 
 	// main menu
 	main_menu = new MainMenu;
+	main_menu->UpdateCheckVersion();
 	gui->Add(main_menu);
 
 	// notifications
@@ -191,6 +192,7 @@ void GameGui::Init()
 	info.name = "server";
 	info.event = nullptr;
 	server = new ServerPanel(info);
+	server->Init();
 
 	info.name = "info_box";
 	info_box = new InfoBox(info);

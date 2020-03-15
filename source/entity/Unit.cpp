@@ -8508,3 +8508,19 @@ void Unit::Kill()
 	if(event_handler)
 		event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
 }
+
+//=================================================================================================
+void Unit::Predraw(void* ptr, Matrix* mat, int n)
+{
+	if(n != 0)
+		return;
+
+	Unit* u = static_cast<Unit*>(ptr);
+	if(u->data->type == UNIT_TYPE::HUMAN)
+	{
+		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
+		static Matrix mat2;
+		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
+		mat[bone] = Matrix::RotationX(val / 5) * mat[bone];
+	}
+}

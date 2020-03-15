@@ -350,6 +350,7 @@ void LoadResourcesConfig()
 void LoadConfiguration(char* lpCmdLine)
 {
 	Config& cfg = game->cfg;
+	Settings& settings = game->settings;
 	game->cfg_file = "carpg.cfg";
 	string log_filename;
 	int delay = -1;
@@ -391,17 +392,17 @@ void LoadConfiguration(char* lpCmdLine)
 					Warn("No argument for parameter '-config'!");
 			}
 			else if(strcmp(arg, "single") == 0)
-				game->quickstart = QUICKSTART_SINGLE;
+				settings.quickstart = QUICKSTART_SINGLE;
 			else if(strcmp(arg, "host") == 0)
-				game->quickstart = QUICKSTART_HOST;
+				settings.quickstart = QUICKSTART_HOST;
 			else if(strcmp(arg, "join") == 0)
-				game->quickstart = QUICKSTART_JOIN_LAN;
+				settings.quickstart = QUICKSTART_JOIN_LAN;
 			else if(strcmp(arg, "joinip") == 0)
-				game->quickstart = QUICKSTART_JOIN_IP;
+				settings.quickstart = QUICKSTART_JOIN_IP;
 			else if(strcmp(arg, "load") == 0)
-				game->quickstart = QUICKSTART_LOAD;
+				settings.quickstart = QUICKSTART_LOAD;
 			else if(strcmp(arg, "loadmp") == 0)
-				game->quickstart = QUICKSTART_LOAD_MP;
+				settings.quickstart = QUICKSTART_LOAD_MP;
 			else if(strcmp(arg, "loadslot") == 0)
 			{
 				if(argc != i + 1 && argv[i + 1][0] != '-')
@@ -411,7 +412,7 @@ void LoadConfiguration(char* lpCmdLine)
 					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > SaveSlot::MAX_SLOTS)
 						Warn("Invalid loadslot value '%s'.", argv[i]);
 					else
-						game->quickstart_slot = slot;
+						settings.quickstart_slot = slot;
 				}
 				else
 					Warn("No argument for parameter '-loadslot'!");
@@ -428,7 +429,7 @@ void LoadConfiguration(char* lpCmdLine)
 				nomusic = true;
 			else if(strcmp(arg, "test") == 0)
 			{
-				game->testing = true;
+				settings.testing = true;
 				console = True;
 			}
 			else if(strcmp(arg, "delay-0") == 0)
@@ -543,8 +544,8 @@ void LoadConfiguration(char* lpCmdLine)
 	sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 
 	// mouse settings
-	game->settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
-	game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
+	settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
+	settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(settings.mouse_sensitivity) / 100);
 
 	// multiplayer mode
 	game->player_name = cfg.GetString("nick", "");
@@ -562,25 +563,25 @@ void LoadConfiguration(char* lpCmdLine)
 	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// quickstart
-	if(game->quickstart == QUICKSTART_NONE)
+	if(settings.quickstart == QUICKSTART_NONE)
 	{
 		const string& mode = cfg.GetString("quickstart", "");
 		if(mode == "single")
-			game->quickstart = QUICKSTART_SINGLE;
+			settings.quickstart = QUICKSTART_SINGLE;
 		else if(mode == "host")
-			game->quickstart = QUICKSTART_HOST;
+			settings.quickstart = QUICKSTART_HOST;
 		else if(mode == "join")
-			game->quickstart = QUICKSTART_JOIN_LAN;
+			settings.quickstart = QUICKSTART_JOIN_LAN;
 		else if(mode == "joinip")
-			game->quickstart = QUICKSTART_JOIN_IP;
+			settings.quickstart = QUICKSTART_JOIN_IP;
 		else if(mode == "load")
-			game->quickstart = QUICKSTART_LOAD;
+			settings.quickstart = QUICKSTART_LOAD;
 		else if(mode == "loadmp")
-			game->quickstart = QUICKSTART_LOAD_MP;
+			settings.quickstart = QUICKSTART_LOAD_MP;
 	}
 	int slot = cfg.GetInt("loadslot", -1);
 	if(slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
-		game->quickstart_slot = slot;
+		settings.quickstart_slot = slot;
 
 	// window position & size
 	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
@@ -613,9 +614,9 @@ void LoadConfiguration(char* lpCmdLine)
 	game->use_glow = cfg.GetBool("cl_glow", true);
 	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));
-	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
-	if(game->settings.grass_range < 0.f)
-		game->settings.grass_range = 0.f;
+	settings.grass_range = cfg.GetFloat("grass_range", 40.f);
+	if(settings.grass_range < 0.f)
+		settings.grass_range = 0.f;
 	{
 		const string& screenshot_format = cfg.GetString("screenshot_format", "jpg");
 		if(screenshot_format == "jpg")
