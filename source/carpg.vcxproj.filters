@@ -623,6 +623,9 @@
     <ClCompile Include="components\LoadMenuState.cpp">
       <Filter>components</Filter>
     </ClCompile>
+    <ClCompile Include="components\MenuState.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1226,10 +1229,13 @@
     <ClInclude Include="location\OffscreenLocation.h">
       <Filter>location</Filter>
     </ClInclude>
-    <ClInclude Include="components\GameState.h">
+    <ClInclude Include="components\LoadMenuState.h">
       <Filter>components</Filter>
     </ClInclude>
-    <ClInclude Include="components\LoadMenuState.h">
+    <ClInclude Include="components\MenuState.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\BaseGameState.h">
       <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>

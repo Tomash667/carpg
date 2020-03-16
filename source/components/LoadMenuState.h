@@ -1,13 +1,17 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameState.h"
+#include "BaseGameState.h"
 
 //-----------------------------------------------------------------------------
-class LoadMenuState : public GameState
+class LoadMenuState : public BaseGameState
 {
+public:
+	bool IsSuccess() const { return ok; }
+
 private:
-	bool OnEnter() override;
+	void OnEnter() override;
+	void OnLeave() override;
 	void PreconfigureGame();
 	void PreloadLanguage();
 	void PreloadData();
@@ -24,7 +28,7 @@ private:
 
 	LoadScreen* load_screen;
 	uint load_errors, load_warnings;
-	cstring txHaveErrors;
+	bool ok;
 	cstring txPreloadAssets, txCreatingListOfFiles, txConfiguringGame, txLoadingAbilities, txLoadingBuildings, txLoadingClasses, txLoadingDialogs,
 		txLoadingItems, txLoadingLocations, txLoadingMusics, txLoadingObjects, txLoadingPerks, txLoadingQuests, txLoadingRequired, txLoadingUnits,
 		txLoadingShaders, txLoadingLanguageFiles;

@@ -24,8 +24,8 @@
 #include "Level.h"
 #include "LoadScreen.h"
 #include "LocationGeneratorFactory.h"
+#include "MenuState.h"
 #include "NameHelper.h"
-#include "Notifications.h"
 #include "QuestManager.h"
 #include "ScriptManager.h"
 #include "Unit.h"
@@ -34,7 +34,7 @@
 extern string g_system_dir;
 
 //=================================================================================================
-bool LoadMenuState::OnEnter()
+void LoadMenuState::OnEnter()
 {
 	Info("Game: Initializing game.");
 
@@ -53,13 +53,20 @@ bool LoadMenuState::OnEnter()
 		PostconfigureGame();
 
 		Info("Game: Game initialized.");
-		return true;
+		game->SetState<MenuState>([this](MenuState& menu) { menu.PassErrors(load_errors, load_warnings); });
+		ok = true;
 	}
 	catch(cstring err)
 	{
 		engine->ShowError(Format("Game: Failed to initialize game: %s", err), Logger::L_FATAL);
-		return false;
+		ok = false;
 	}
+}
+
+//=================================================================================================
+void LoadMenuState::OnLeave()
+{
+	load_screen->visible = false;
 }
 
 //=================================================================================================
@@ -231,7 +238,6 @@ void LoadMenuState::LoadLanguageFiles()
 
 	Language::LoadLanguageFiles();
 
-	txHaveErrors = Str("haveErrors");
 	SetGameCommonText();
 	SetItemStatsText();
 	NameHelper::SetHeroNames();
@@ -329,54 +335,15 @@ void LoadMenuState::PostconfigureGame()
 		ValidateGameData(false);
 #endif
 
-	// show errors notification
-	bool start_game_mode = true;
+	// sum all errors
 	load_errors += content.errors;
 	load_warnings += content.warnings;
-	if(load_errors > 0 || load_warnings > 0)
-	{
-		// show message in release, notification in debug
-		if(load_errors > 0)
-			Error("Game: %u loading errors, %u warnings.", load_errors, load_warnings);
-		else
-			Warn("Game: %u loading warnings.", load_warnings);
-		Texture* img = (load_errors > 0 ? game_res->tError : game_res->tWarning);
-		cstring text = Format(txHaveErrors, load_errors, load_warnings);
-#ifdef _DEBUG
-		game_gui->notifications->Add(text, img, 5.f);
-#else
-		DialogInfo info;
-		info.name = "have_errors";
-		info.text = text;
-		info.type = DIALOG_OK;
-		info.img = img;
-		info.event = [this](int result) { StartGameMode(); };
-		info.parent = game_gui->main_menu;
-		info.order = ORDER_TOPMOST;
-		info.pause = false;
-		info.auto_wrap = true;
-		gui->ShowDialog(info);
-		start_game_mode = false;
-#endif
-	}
 
 	// save config
 	game->cfg.Add("adapter", render->GetAdapter());
 	game->cfg.Add("resolution", engine->GetWindowSize());
 	game->cfg.Add("refresh", render->GetRefreshRate());
 	game->SaveCfg();
-
-	// end load screen, show menu
-	/*clear_color = Color::Black;
-	game_state = GS_MAIN_MENU;
-	load_screen->visible = false;
-	game_gui->main_menu->visible = true;
-	if(music_type != MusicType::Intro)
-		SetMusic(MusicType::Title);
-
-	// start game mode if selected quickmode
-	if(start_game_mode)
-		StartGameMode();*/
 }
 
 //=================================================================================================

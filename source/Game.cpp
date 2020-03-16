@@ -91,8 +91,8 @@
 #include "SceneManager.h"
 #include "Scene.h"
 //
-#include "GameState.h"
 #include "LoadMenuState.h"
+#include "MenuState.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -180,96 +180,13 @@ Game::~Game()
 //=================================================================================================
 bool Game::OnInit()
 {
-	GameState* gs = new LoadMenuState();
-	bool result = gs->OnEnter();
-	delete gs;
-	return result;
-}
+	// create all gamestates
+	all_states[typeid(LoadMenuState)] = new LoadMenuState;
+	all_states[typeid(MenuState)] = new MenuState;
 
-//=================================================================================================
-// Start quickmode if selected in config.
-//=================================================================================================
-void Game::StartGameMode()
-{
-	switch(settings.quickstart)
-	{
-	case QUICKSTART_NONE:
-		break;
-	case QUICKSTART_SINGLE:
-		StartQuickGame();
-		break;
-	case QUICKSTART_HOST:
-	case QUICKSTART_LOAD_MP:
-		if(player_name.empty())
-		{
-			Warn("Quickstart: Can't create server, no player nick.");
-			break;
-		}
-		if(net->server_name.empty())
-		{
-			Warn("Quickstart: Can't create server, no server name.");
-			break;
-		}
-
-		if(settings.quickstart == QUICKSTART_LOAD_MP)
-		{
-			net->mp_load = true;
-			net->mp_quickload = false;
-			if(TryLoadGame(settings.quickstart_slot, false, false))
-			{
-				game_gui->create_server->CloseDialog();
-				game_gui->server->autoready = true;
-			}
-			else
-			{
-				Error("Multiplayer quickload failed.");
-				break;
-			}
-		}
-
-		try
-		{
-			net->InitServer();
-		}
-		catch(cstring err)
-		{
-			gui->SimpleDialog(err, nullptr);
-			break;
-		}
-
-		net->OnNewGameServer();
-		break;
-	case QUICKSTART_JOIN_LAN:
-		if(!player_name.empty())
-		{
-			game_gui->server->autoready = true;
-			game_gui->pick_server->Show(true);
-		}
-		else
-			Warn("Quickstart: Can't join server, no player nick.");
-		break;
-	case QUICKSTART_JOIN_IP:
-		if(!player_name.empty())
-		{
-			if(!server_ip.empty())
-			{
-				game_gui->server->autoready = true;
-				QuickJoinIp();
-			}
-			else
-				Warn("Quickstart: Can't join server, no server ip.");
-		}
-		else
-			Warn("Quickstart: Can't join server, no player nick.");
-		break;
-	case QUICKSTART_LOAD:
-		if(!TryLoadGame(settings.quickstart_slot, false, false))
-			Error("Quickload failed.");
-		break;
-	default:
-		assert(0);
-		break;
-	}
+	// start with load menu state
+	LoadMenuState& load_menu = SetState<LoadMenuState>();
+	return load_menu.IsSuccess();
 }
 
 //=================================================================================================
@@ -1075,6 +992,8 @@ void Game::SetGameText()
 
 	// dialogi
 	LoadArray(txYell, "yell");
+
+	txHaveErrors = Str("haveErrors");
 }
 
 //=================================================================================================

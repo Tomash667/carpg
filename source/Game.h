@@ -15,6 +15,7 @@
 #include "Settings.h"
 #include "Blood.h"
 #include "BaseObject.h"
+#include "BaseGameState.h"
 
 //-----------------------------------------------------------------------------
 // game state
@@ -106,7 +107,6 @@ public:
 
 	// initialization & loading
 	void SetGameText();
-	void StartGameMode();
 
 	//-----------------------------------------------------------------
 	// DRAWING
@@ -455,8 +455,28 @@ public:
 	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txGamePaused, txGameResumed, txDevmodeOn,
 		txDevmodeOff, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
+	cstring txHaveErrors;
+
+	template<typename State>
+	State& SetState(delegate<void(State&)> params = nullptr)
+	{
+		if(state)
+			state->OnLeave();
+		state = GetState(typeid(State));
+		if(params)
+			params(*static_cast<State*>(state));
+		state->OnEnter();
+		return *static_cast<State*>(state);
+	}
 
 private:
+	BaseGameState* GetState(const type_info& type)
+	{
+		return all_states[type];
+	}
+
 	vector<int> reported_errors;
 	asIScriptContext* cutscene_script;
+	BaseGameState* state;
+	std::unordered_map<std::type_index, BaseGameState*> all_states;
 };

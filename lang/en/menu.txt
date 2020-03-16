@@ -949,8 +949,6 @@ fastTravelText = "Leader wants to use fast travel. Are you ready?"
 fastTravelWaiting = "Fast travel - waiting for other players..."
 loadingSaveByServer = "Loading save by server..."
 serverFailedToLoadSave = "Server failed to load saved game."
-loadingLocations = "Loading locations"
-loadingQuests = "Loading quests"
 
 // net
 createServerFailed = "Failed to create server (%d)!"
