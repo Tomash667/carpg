@@ -1714,7 +1714,7 @@ void Game::ListAreas(LevelArea& area)
 	// action area2
 	if(pc->data.ability_ready)
 		PrepareAreaPath();
-	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray))
+	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
 		pc->unit->target_pos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
 	else if(pc->unit->weapon_state == WeaponState::Taken
 		&& ((pc->unit->weapon_taken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
@@ -1844,152 +1844,54 @@ void Game::PrepareAreaPath()
 		break;
 
 	case Ability::Summon:
+		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
+		if(pc->data.range_ratio < 1.f)
 		{
-			Area2* area_ptr = Area2::Get();
-			Area2& area = *area_ptr;
-			area.ok = 2;
-			draw_batch.areas2.push_back(area_ptr);
+			Area2* area = Area2::Get();
+			draw_batch.areas2.push_back(area);
 
-			const Vec3 from = pc->unit->GetPhysicsPos();
-			const float cam_max = 4.63034153f;
-			const float cam_min = 4.08159288f;
 			const float radius = ability.width / 2;
-			const float unit_r = pc->unit->GetUnitRadius();
+			Vec3 dir = pc->data.ability_point - pc->unit->pos;
+			dir.y = 0;
+			float dist = dir.Length();
+			dir.Normalize();
 
-			float range = (Clamp(game_level->camera.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * ability.range;
-			if(range < radius + unit_r)
-				range = radius + unit_r;
-			const float min_t = ability.width / range / 2;
-			float rot = Clip(pc->unit->rot + PI);
-			static vector<float> t_forward;
-			static vector<float> t_backward;
+			Vec3 from = pc->data.ability_point;
+			from.y = 0;
 
-			// what are we doing here you may ask :) first do line test from player to max point, then from max point to player
-			// this will allow to find free spot event behind small rock on ground
-			t_forward.clear();
-			t_backward.clear();
-
-			auto clbk = [this](btCollisionObject* obj, bool second)
+			bool ok = false;
+			for(int i = 0; i < 20; ++i)
 			{
-				int flags = obj->getCollisionFlags();
-				if(!second)
+				game_level->global_col.clear();
+				game_level->GatherCollisionObjects(*pc->unit->area, game_level->global_col, from, radius);
+				if(!game_level->Collide(game_level->global_col, from, radius))
 				{
-					if(IsSet(flags, CG_TERRAIN))
-						return LT_IGNORE;
-					if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
-						return LT_IGNORE;
-					return LT_COLLIDE;
-				}
-				else
-				{
-					if(IsSet(flags, CG_BUILDING | CG_DOOR))
-						return LT_END;
-					else
-						return LT_COLLIDE;
-				}
-			};
-
-			float t, end_t;
-			Vec3 dir_normal(sin(rot), 0, cos(rot));
-			Vec3 dir = dir_normal * range;
-			game_level->LineTest(game_level->shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
-			game_level->LineTest(game_level->shape_summon, from + dir, -dir, clbk, t, &t_backward);
-
-			// merge t's to find free spots, we only use last one
-			static vector<pair<float, bool>> t_merged;
-			const bool OPEN = true;
-			const bool CLOSE = false;
-			t_merged.clear();
-			float unit_t = pc->unit->GetUnitRadius() / range;
-			if(unit_t < end_t)
-			{
-				t_merged.push_back(pair<float, bool>(0.f, OPEN));
-				t_merged.push_back(pair<float, bool>(unit_t, CLOSE));
-			}
-			for(float f : t_forward)
-			{
-				if(f >= end_t)
+					ok = true;
 					break;
-				t_merged.push_back(pair<float, bool>(f, OPEN));
-			}
-			t_merged.push_back(pair<float, bool>(end_t, OPEN));
-			for(float f : t_backward)
-			{
-				if(f == 0.f)
-					f = 1.f;
-				else
-					f = 1.f - (f + radius / range);
-				if(f >= end_t)
-					continue;
-				t_merged.push_back(pair<float, bool>(f, CLOSE));
-			}
-			std::sort(t_merged.begin(), t_merged.end(), [](const pair<float, bool>& a, const pair<float, bool>& b) { return a.first < b.first; });
-
-			// get list of free ranges
-			//const float extra_t = range / (range + min_t);
-			int open = 0;
-			float start = 0.f;
-			static vector<Vec2> results;
-			results.clear();
-			for(auto& point : t_merged)
-			{
-				if(point.second == CLOSE)
-				{
-					--open;
-					start = point.first;
 				}
-				else
-				{
-					if(open == 0)
-					{
-						float len = point.first - start;
-						if(len >= min_t)
-							results.push_back(Vec2(start, point.first));
-					}
-					++open;
-				}
-			}
-			if(open == 0)
-			{
-				float len = 1.f - start;
-				if(len >= min_t)
-					results.push_back(Vec2(start, 1.f));
+				from -= dir * 0.1f;
+				dist -= 0.1f;
+				if(dist <= 0.f)
+					break;
 			}
 
-			// get best T, actualy last one
-			if(results.empty())
-				t = -1.f;
-			else
-				t = results.back().y;
-
-			if(t < 0)
-			{
-				// no free space
-				t = end_t;
-				area.ok = 0;
-				pc->data.ability_ok = false;
-			}
-			else
+			if(ok)
 			{
 				pc->data.ability_ok = true;
+				if(game_level->terrain)
+					game_level->terrain->SetH(from);
+				pc->data.ability_point = from;
+				area->ok = 2;
 			}
-
-			// build circle
-			PrepareAreaPathCircle(area, radius, t * range, rot);
-
-			// build yellow circle
-			if(t != 1.f)
+			else
 			{
-				Area2* y_area = Area2::Get();
-				y_area->ok = 1;
-				PrepareAreaPathCircle(*y_area, radius, range, rot);
-				draw_batch.areas2.push_back(y_area);
+				pc->data.ability_ok = false;
+				area->ok = 0;
 			}
-
-			// set ability
-			if(pc->data.ability_ok)
-				pc->data.ability_point = area.points[0];
+			PrepareAreaPathCircle(*area, pc->data.ability_point, radius);
 		}
+		else
+			pc->data.ability_ok = false;
 		break;
 
 	case Ability::Target:

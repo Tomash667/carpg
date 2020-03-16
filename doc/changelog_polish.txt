@@ -16,6 +16,7 @@ Wersja 0.14 (???):
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 - zapis w trybie hardcore nie by³ usuwany
 - ai ci¹gle korzysta³o ze sto³ków w karczmie
+- usprawnienie celowania z przywo³ania wilka
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (020-01-11):

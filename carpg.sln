@@ -23,7 +23,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg2", "source\clien
 		{AE943349-930C-4F29-BC46-AAD479B34562} = {AE943349-930C-4F29-BC46-AAD479B34562}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{AC7FB149-0361-45B3-9777-0D664978F3FA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{AC7FB149-0361-45B3-9777-0D664978F3FA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript", "external\angelscript_sdk\angelscript\projects\msvc2015\angelscript.vcxproj", "{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}"
 EndProject

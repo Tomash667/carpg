@@ -16,6 +16,7 @@ Version 0.14 (???):
 + update libraries: AngelScript 2.34, Bullet 2.89
 - save in hardcore mode wasn't removed
 - ai gets stuck when using stools in inn
+- improved summon wolf targeting
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

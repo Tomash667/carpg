@@ -3233,8 +3233,8 @@ Vec3 PlayerController::RaytestTarget(float range)
 bool PlayerController::ShouldUseRaytest() const
 {
 	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
-		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray))
-		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray))
+		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon))
+		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));
