@@ -13,6 +13,7 @@ Version 0.14 (???):
 + scene manager improvements (part 2)
 + warp to building front command
 + search for location shortcut - F, journal & chat buttons
++ cancel attack key - X
 + update libraries: AngelScript 2.34, Bullet 2.89
 - save in hardcore mode wasn't removed
 - ai gets stuck when using stools in inn

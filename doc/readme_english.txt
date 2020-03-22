@@ -50,9 +50,10 @@ people. Expect changes for the better!
 	Ctrl + U - unlock cursor in windowed mode
 	~ - console
 3.2. In game
+	E - use, loot, talk with while holding weapon
 	left mouse button - use, attack, loot, talk
 	Z / 4 mouse button - secondary attack
-	E - use, loot, talk with while holding weapon
+	X - cancel attack
 	right mouse button - block
 	W - move forward
 	S - move backward

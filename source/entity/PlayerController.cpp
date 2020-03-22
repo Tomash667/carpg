@@ -2840,6 +2840,21 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(Net::IsLocal())
 							Train(TrainWhat::AttackStart, 0.f, 0);
 					}
+					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
+					{
+						u.mesh_inst->Deactivate(1);
+						u.action = A_NONE;
+						data.wasted_key = action_key;
+
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = unit;
+							c.id = AID_Cancel;
+							c.f[1] = 1.f;
+						}
+					}
 				}
 				else if(u.animation_state == AS_ATTACK_FINISHED)
 				{
@@ -2887,7 +2902,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = unit;
-						c.id = AID_StopBlock;
+						c.id = AID_Cancel;
 						c.f[1] = 1.f;
 					}
 				}
@@ -3030,16 +3045,34 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state == AS_SHOOT_PREPARE && GKey.KeyUpAllowed(action_key))
+				if(u.animation_state == AS_SHOOT_PREPARE)
 				{
-					u.animation_state = AS_SHOOT_CAN;
-					if(Net::IsOnline())
+					if(GKey.KeyUpAllowed(action_key))
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
-						c.unit = unit;
-						c.id = AID_Shoot;
-						c.f[1] = 1.f;
+						u.animation_state = AS_SHOOT_CAN;
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = unit;
+							c.id = AID_Shoot;
+							c.f[1] = 1.f;
+						}
+					}
+					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
+					{
+						u.mesh_inst->Deactivate(1);
+						u.action = A_NONE;
+						data.wasted_key = action_key;
+						game_level->FreeBowInstance(u.bow_instance);
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = unit;
+							c.id = AID_Cancel;
+							c.f[1] = 1.f;
+						}
 					}
 				}
 			}
@@ -3143,7 +3176,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		else
 		{
 			data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
-			if(data.wasted_key != Key::None)
+			if(data.wasted_key != Key::None || GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
 				data.ability_ready = nullptr;
 		}
 	}

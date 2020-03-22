@@ -707,18 +707,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					}
 					break;
 				case AID_PrepareAttack:
-					{
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_PREPARE;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.f;
-						unit.act.attack.run = false;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-					}
+					if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+						game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+					unit.action = A_ATTACK;
+					unit.animation_state = AS_ATTACK_PREPARE;
+					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+					unit.act.attack.power = 1.f;
+					unit.act.attack.run = false;
+					unit.act.attack.hitted = false;
+					unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+					unit.mesh_inst->groups[group].speed = attack_speed;
 					break;
 				case AID_Shoot:
 				case AID_StartShoot:
@@ -738,39 +736,36 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					}
 					break;
 				case AID_Block:
-					{
-						unit.action = A_BLOCK;
-						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
-						unit.mesh_inst->groups[group].blend_max = attack_speed;
-					}
+					unit.action = A_BLOCK;
+					unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
+					unit.mesh_inst->groups[group].blend_max = attack_speed;
 					break;
 				case AID_Bash:
-					{
-						unit.action = A_BASH;
-						unit.animation_state = AS_BASH_ANIMATION;
-						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-					}
+					unit.action = A_BASH;
+					unit.animation_state = AS_BASH_ANIMATION;
+					unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
+					unit.mesh_inst->groups[group].speed = attack_speed;
 					break;
 				case AID_RunningAttack:
-					{
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_CAN_HIT;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.5f;
-						unit.act.attack.run = true;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-					}
+					if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+						game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+					unit.action = A_ATTACK;
+					unit.animation_state = AS_ATTACK_CAN_HIT;
+					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+					unit.act.attack.power = 1.5f;
+					unit.act.attack.run = true;
+					unit.act.attack.hitted = false;
+					unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+					unit.mesh_inst->groups[group].speed = attack_speed;
 					break;
-				case AID_StopBlock:
+				case AID_Cancel:
+					if(unit.action == A_SHOOT)
 					{
-						unit.action = A_NONE;
-						unit.mesh_inst->Deactivate(group);
+						game_level->FreeBowInstance(unit.bow_instance);
+						is_bow = true;
 					}
+					unit.action = A_NONE;
+					unit.mesh_inst->Deactivate(1);
 					break;
 				}
 

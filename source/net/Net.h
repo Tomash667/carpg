@@ -18,7 +18,7 @@ enum AttackId
 	AID_Block,
 	AID_Bash,
 	AID_RunningAttack,
-	AID_StopBlock
+	AID_Cancel
 };
 
 //-----------------------------------------------------------------------------

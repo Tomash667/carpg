@@ -23,7 +23,7 @@ private:
 	void OnKey(int key);
 
 	Grid grid;
-	cstring key_text[255];
+	cstring key_text[255], txResetConfirm, txInfo;
 	int picked, picked_n;
 	float cursor_tick;
 	bool changed;

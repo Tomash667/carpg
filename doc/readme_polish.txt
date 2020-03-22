@@ -50,9 +50,10 @@ osoby. Oczekuj zmian na lepsze!
 	Ctrl + U - uwolnij kursor w trybie okienkowym
 	~ - konsola
 3.2. W grze
+	E - u¿yj, ograbiaj, rozmawiaj maj¹c wyci¹gniêt¹ broñ
 	lewy przycisk myszki - u¿yj, atakuj, ograbiaj, rozmawiaj
 	Z / 4 przycisk myszki - druga opcja ataku
-	E - u¿yj, ograbiaj, rozmawiaj maj¹c wyci¹gniêt¹ broñ
+	X - anuluj atak
 	prawy przycisk myszki - blok
 	W - ruch do przodu
 	S - ruch do ty³u

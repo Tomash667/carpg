@@ -13,6 +13,7 @@ Wersja 0.14 (???):
 + usprawnienia menad¿era sceny - czêœæ 2
 + komenda warp mo¿e przenieœæ do przodu budynku
 + skrót do szukania lokalizacji - F, przyciski dziennik i chat
++ klawisz anulowania ataku - X
 + aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
 - zapis w trybie hardcore nie by³ usuwany
 - ai ci¹gle korzysta³o ze sto³ków w karczmie

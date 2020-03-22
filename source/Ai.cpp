@@ -222,7 +222,7 @@ void Game::UpdateAi(float dt)
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ATTACK;
 					c.unit = &u;
-					c.id = AID_StopBlock;
+					c.id = AID_Cancel;
 					c.f[1] = 1.f;
 				}
 			}
@@ -429,7 +429,7 @@ void Game::UpdateAi(float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
-							c.id = AID_StopBlock;
+							c.id = AID_Cancel;
 							c.f[1] = 1.f;
 						}
 						ReportError(3, Format("Unit %s blocks in idle.", u.GetRealName()));
@@ -2254,7 +2254,7 @@ void Game::UpdateAi(float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
-							c.id = AID_StopBlock;
+							c.id = AID_Cancel;
 							c.f[1] = 1.f;
 						}
 						break;
