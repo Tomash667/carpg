@@ -583,19 +583,6 @@ void LoadConfiguration(char* lpCmdLine)
 		game->quickstart_slot = slot;
 
 	// window position & size
-	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
-	if(have_console && (con_pos.x != -1 || con_pos.y != -1))
-	{
-		HWND con = GetConsoleWindow();
-		Rect rect;
-		GetWindowRect(con, (RECT*)&rect);
-		if(con_pos.x != -1)
-			rect.Left() = con_pos.x;
-		if(con_pos.y != -1)
-			rect.Top() = con_pos.y;
-		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
-	}
-
 	Int2 force_size = cfg.GetInt2("wnd_size", Int2(-1, -1)),
 		force_pos = cfg.GetInt2("wnd_pos", Int2(-1, -1));
 	engine->SetWindowInitialPos(force_pos, force_size);
@@ -671,6 +658,20 @@ void LoadConfiguration(char* lpCmdLine)
 	game->force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
 	Info("random seed: %u/%u/%d", seed, game->next_seed, (game->force_seed_all ? 1 : 0));
 	Srand(seed);
+
+	// console position
+	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
+	if(have_console && (con_pos.x != -1 || con_pos.y != -1))
+	{
+		HWND con = GetConsoleWindow();
+		Rect rect;
+		GetWindowRect(con, (RECT*)&rect);
+		if(con_pos.x != -1)
+			rect.Left() = con_pos.x;
+		if(con_pos.y != -1)
+			rect.Top() = con_pos.y;
+		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+	}
 
 	// miscellaneous
 	game->check_updates = ToBool(cfg.GetBool3("check_updates", True));

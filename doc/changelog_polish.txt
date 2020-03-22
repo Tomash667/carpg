@@ -18,6 +18,7 @@ Wersja 0.14 (???):
 - zapis w trybie hardcore nie by³ usuwany
 - ai ci¹gle korzysta³o ze sto³ków w karczmie
 - usprawnienie celowania z przywo³ania wilka
+- rzadki crash przy zamykaniu okna wyboru serwera
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (020-01-11):
