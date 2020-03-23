@@ -91,6 +91,7 @@
 #include "SceneManager.h"
 #include "Scene.h"
 #include "CraftPanel.h"
+#include "DungeonMeshBuilder.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -118,7 +119,7 @@ const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
-draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
+draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
 quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 {
@@ -134,16 +135,13 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 	GetTitle(s);
 	engine->SetTitle(s.c_str());
 
-	// bufory wierzcho³ków i indeksy
-	vbDungeon = nullptr;
-	ibDungeon = nullptr;
-
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
 	SetupConfigVars();
 
 	arena = new Arena;
 	cmdp = new CommandParser;
+	dun_mesh_builder = new DungeonMeshBuilder;
 	game_gui = new GameGui;
 	game_level = new Level;
 	game_res = new GameResources;
@@ -155,6 +153,8 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 	script_mgr = new ScriptManager;
 	team = new Team;
 	world = new World;
+
+	render->AddManagedResource(dun_mesh_builder);
 }
 
 //=================================================================================================
@@ -423,7 +423,13 @@ void Game::ConfigureGame()
 	render->RegisterShader(skybox_shader = new SkyboxShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
-	tMinimap = render->CreateDynamicTexture(Int2(128, 128));
+	DynamicTexture* minimap = render->CreateDynamicTexture(Int2(128, 128));
+	minimap->reload = [this]
+	{
+		if(game_state == GS_LEVEL)
+			loc_gen_factory->Get(game_level->location)->CreateMinimap();
+	};
+	tMinimap = minimap;
 	CreateRenderTargets();
 }
 
@@ -617,10 +623,6 @@ void Game::OnCleanup()
 	content.CleanupContent();
 
 	ClearQuadtree();
-
-	// bufory wierzcho³ków i indeksy
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
 
 	draw_batch.Clear();
 
@@ -1034,22 +1036,6 @@ void Game::ChangeTitle()
 	GetTitle(s);
 	SetConsoleTitle(s->c_str());
 	engine->SetTitle(s->c_str());
-}
-
-//=================================================================================================
-void Game::OnReload()
-{
-	BuildDungeon();
-	// rebuild minimap texture
-	if(game_state == GS_LEVEL)
-		loc_gen_factory->Get(game_level->location)->CreateMinimap();
-}
-
-//=================================================================================================
-void Game::OnReset()
-{
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
 }
 
 //=================================================================================================
@@ -4700,12 +4686,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	}
 
 	// ustawienia uv podziemi
-	bool new_tex_wrap = !IsSet(base.options, BLO_NO_TEX_WRAP);
-	if(new_tex_wrap != dungeon_tex_wrap)
-	{
-		dungeon_tex_wrap = new_tex_wrap;
-		ChangeDungeonTexWrap();
-	}
+	dun_mesh_builder->ChangeTexWrap(!IsSet(base.options, BLO_NO_TEX_WRAP));
 }
 
 void Game::SetDungeonParamsToMeshes()

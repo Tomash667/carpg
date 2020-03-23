@@ -170,6 +170,7 @@
     <ClInclude Include="generator\TutorialLocationGenerator.h" />
     <ClInclude Include="gui\CraftPanel.h" />
     <ClInclude Include="helpers\CombatHelper.h" />
+    <ClInclude Include="helpers\DungeonMeshBuilder.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
     <ClInclude Include="helpers\PhysicCallbacks.h" />
@@ -331,6 +332,7 @@
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
+    <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
     <ClCompile Include="location\OffscreenLocation.cpp" />
     <ClCompile Include="net\NetClient.cpp" />

@@ -620,6 +620,9 @@
     <ClCompile Include="location\OffscreenLocation.cpp">
       <Filter>location</Filter>
     </ClCompile>
+    <ClCompile Include="helpers\DungeonMeshBuilder.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1222,6 +1225,9 @@
     </ClInclude>
     <ClInclude Include="location\OffscreenLocation.h">
       <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\DungeonMeshBuilder.h">
+      <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

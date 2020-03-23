@@ -108,8 +108,6 @@ public:
 	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
 	void OnUpdate(float dt) override;
-	void OnReload() override;
-	void OnReset() override;
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activation_point) override;
 
@@ -139,9 +137,6 @@ public:
 	void Draw();
 	void ForceRedraw();
 	void InitScene();
-	void BuildDungeon();
-	void ChangeDungeonTexWrap();
-	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
@@ -149,7 +144,6 @@ public:
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
-	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
@@ -410,18 +404,13 @@ public:
 	//-----------------------------------------------------------------
 	int draw_flags;
 	Matrix mat;
-	VB vbDungeon;
-	IB ibDungeon;
-	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	float portal_anim;
 	// scene
 	Color clear_color, clear_color_next;
-	bool dungeon_tex_wrap;
 	bool use_glow, use_postfx;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
-	VParticle portal_v[4];
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;
@@ -494,4 +483,5 @@ public:
 private:
 	vector<int> reported_errors;
 	asIScriptContext* cutscene_script;
+	DungeonMeshBuilder* dun_mesh_builder;
 };
