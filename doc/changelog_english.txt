@@ -7,6 +7,7 @@ Version 0.14 (???):
 + alchemy skill, crafting 6 simple potions (healing & mana)
 + new history feat: student of traveling merchant (+10 haggle, 500 gold)
 + building inside city - shrine
++ camera setup in dialogs
 + converted quest "deliver letter" to scripts
 + loading feats from file
 + loading rooms from file

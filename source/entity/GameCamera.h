@@ -6,20 +6,24 @@
 //-----------------------------------------------------------------------------
 struct GameCamera : public Camera
 {
-	Vec3 real_from, real_to;
+	GameCamera(float springiness = 40.f);
+	void Reset(bool full = false);
+	void Update(float dt);
+	void RotateTo(float dt, float dest_rot);
+	void UpdateFreeRot(float dt);
+	void SetZoom(const Vec3* zoom_pos);
+
+	Unit* target;
+	Vec3 real_from, real_to, zoom_pos;
 	Vec2 rot, real_rot;
-	float dist, tmp_dist, springiness, d;
+	float dist, shift, h, springiness, drunk_anim;
 	FrustumPlanes frustum;
 	Key free_rot_key;
-	bool free_rot;
+	bool free_rot, zoom;
 
 private:
-	int reset;
+	float HandleCollisions(const Vec3& pos, const Vec3& dir);
 
-public:
-	GameCamera(float springiness = 40.f);
-
-	void Reset();
-	void UpdateRot(float dt, const Vec2& new_rot);
-	void Update(float dt, const Vec3& new_from, const Vec3& new_to);
+	float tmp_dist, tmp_shift, tmp_h, tmp_springiness, prev_dist;
+	bool reset;
 };

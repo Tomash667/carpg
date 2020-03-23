@@ -7,6 +7,7 @@ Wersja 0.14 (???):
 + umiejêtnoœæ alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
 + nowy atut historii: uczeñ wêdrownego kupca (+10 targowania, 500 z³ota)
 + budynek w mieœcie - kapliczka
++ ustawienia kamery podczas rozmowy
 + przeniesienie zadania "dostarcz list" do skryptów
 + wczytywanie atutów z pliku
 + wczytywanie pokoi z pliku

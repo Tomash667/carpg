@@ -90,6 +90,7 @@
 #include "SkyboxShader.h"
 #include "SceneManager.h"
 #include "Scene.h"
+#include "CraftPanel.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -950,7 +951,7 @@ void Game::OnUpdate(float dt)
 						net->UpdateWarpData(dt);
 					game_level->ProcessUnitWarps();
 				}
-				SetupCamera(dt);
+				game_level->camera.Update(dt);
 				if(Net::IsOnline())
 					UpdateGameNet(dt);
 			}
@@ -967,7 +968,7 @@ void Game::OnUpdate(float dt)
 							net->UpdateWarpData(dt);
 						game_level->ProcessUnitWarps();
 					}
-					SetupCamera(dt);
+					game_level->camera.Update(dt);
 				}
 			}
 			else
@@ -1968,309 +1969,6 @@ bool Game::CutsceneShouldSkip()
 }
 
 //=================================================================================================
-void Game::SetupCamera(float dt)
-{
-	GameCamera& camera = game_level->camera;
-	Unit* target = pc->unit;
-	LevelArea& area = *target->area;
-
-	float rotX;
-	if(camera.free_rot)
-		rotX = camera.real_rot.x;
-	else
-		rotX = target->rot;
-
-	camera.UpdateRot(dt, Vec2(rotX, camera.real_rot.y));
-
-	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
-	Vec3 dist(0, -camera.tmp_dist, 0);
-
-	Matrix mat = Matrix::Rotation(camera.rot.y, camera.rot.x, 0);
-	dist = Vec3::Transform(dist, mat);
-
-	// !!! to => from !!!
-	// kamera idzie od g³owy do ty³u
-	Vec3 to = target->pos + cam_h;
-	float tout, min_tout = 2.f;
-
-	int tx = int(target->pos.x / 2),
-		tz = int(target->pos.z / 2);
-
-	if(area.area_type == LevelArea::Type::Outside)
-	{
-		OutsideLocation* outside = (OutsideLocation*)game_level->location;
-
-		// terrain
-		tout = game_level->terrain->Raytest(to, to + dist);
-		if(tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// buildings
-		int minx = max(0, tx - 3),
-			minz = max(0, tz - 3),
-			maxx = min(OutsideLocation::size - 1, tx + 3),
-			maxz = min(OutsideLocation::size - 1, tz + 3);
-		for(int z = minz; z <= maxz; ++z)
-		{
-			for(int x = minx; x <= maxx; ++x)
-			{
-				if(outside->tiles[x + z * OutsideLocation::size].IsBlocking())
-				{
-					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 8.f, float(z + 1) * 2);
-					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-						min_tout = tout;
-				}
-			}
-		}
-	}
-	else if(area.area_type == LevelArea::Type::Inside)
-	{
-		InsideLocation* inside = (InsideLocation*)game_level->location;
-		InsideLocationLevel& lvl = inside->GetLevelData();
-
-		int minx = max(0, tx - 3),
-			minz = max(0, tz - 3),
-			maxx = min(lvl.w - 1, tx + 3),
-			maxz = min(lvl.h - 1, tz + 3);
-
-		// ceil
-		const Plane sufit(0, -1, 0, 4);
-		if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
-		{
-			//tmpvar2 = 1;
-			min_tout = tout;
-		}
-
-		// floor
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// dungeon
-		for(int z = minz; z <= maxz; ++z)
-		{
-			for(int x = minx; x <= maxx; ++x)
-			{
-				Tile& p = lvl.map[x + z * lvl.w];
-				if(IsBlocking(p.type))
-				{
-					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
-					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-						min_tout = tout;
-				}
-				else if(IsSet(p.flags, Tile::F_LOW_CEILING))
-				{
-					const Box box(float(x) * 2, 3.f, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
-					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-						min_tout = tout;
-				}
-				if(p.type == STAIRS_UP)
-				{
-					if(game_res->vdStairsUp->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
-						min_tout = tout;
-				}
-				else if(p.type == STAIRS_DOWN)
-				{
-					if(!lvl.staircase_down_in_wall
-						&& game_res->vdStairsDown->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
-						min_tout = tout;
-				}
-				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
-				{
-					Vec3 pos(float(x * 2) + 1, 0, float(z * 2) + 1);
-					float rot;
-
-					if(IsBlocking(lvl.map[x - 1 + z * lvl.w].type))
-					{
-						rot = 0;
-						int mov = 0;
-						if(lvl.rooms[lvl.map[x + (z - 1) * lvl.w].room]->IsCorridor())
-							++mov;
-						if(lvl.rooms[lvl.map[x + (z + 1) * lvl.w].room]->IsCorridor())
-							--mov;
-						if(mov == 1)
-							pos.z += 0.8229f;
-						else if(mov == -1)
-							pos.z -= 0.8229f;
-					}
-					else
-					{
-						rot = PI / 2;
-						int mov = 0;
-						if(lvl.rooms[lvl.map[x - 1 + z * lvl.w].room]->IsCorridor())
-							++mov;
-						if(lvl.rooms[lvl.map[x + 1 + z * lvl.w].room]->IsCorridor())
-							--mov;
-						if(mov == 1)
-							pos.x += 0.8229f;
-						else if(mov == -1)
-							pos.x -= 0.8229f;
-					}
-
-					if(game_res->vdDoorHole->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
-						min_tout = tout;
-
-					Door* door = area.FindDoor(Int2(x, z));
-					if(door && door->IsBlocking())
-					{
-						Box box(pos.x, 0.f, pos.z);
-						box.v2.y = Door::HEIGHT * 2;
-						if(rot == 0.f)
-						{
-							box.v1.x -= Door::WIDTH;
-							box.v2.x += Door::WIDTH;
-							box.v1.z -= Door::THICKNESS;
-							box.v2.z += Door::THICKNESS;
-						}
-						else
-						{
-							box.v1.z -= Door::WIDTH;
-							box.v2.z += Door::WIDTH;
-							box.v1.x -= Door::THICKNESS;
-							box.v2.x += Door::THICKNESS;
-						}
-
-						if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-							min_tout = tout;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		// building
-		InsideBuilding& building = static_cast<InsideBuilding&>(area);
-
-		// ceil
-		if(building.top > 0.f)
-		{
-			const Plane sufit(0, -1, 0, 4);
-			if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-
-		// floor
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// xsphere
-		if(building.xsphere_radius > 0.f)
-		{
-			Vec3 from = to + dist;
-			if(RayToSphere(from, -dist, building.xsphere_pos, building.xsphere_radius, tout) && tout > 0.f)
-			{
-				tout = 1.f - tout;
-				if(tout < min_tout)
-					min_tout = tout;
-			}
-		}
-
-		// doors
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-			if(door.IsBlocking())
-			{
-				Box box(door.pos);
-				box.v2.y = Door::HEIGHT * 2;
-				if(door.rot == 0.f)
-				{
-					box.v1.x -= Door::WIDTH;
-					box.v2.x += Door::WIDTH;
-					box.v1.z -= Door::THICKNESS;
-					box.v2.z += Door::THICKNESS;
-				}
-				else
-				{
-					box.v1.z -= Door::WIDTH;
-					box.v2.z += Door::WIDTH;
-					box.v1.x -= Door::THICKNESS;
-					box.v2.x += Door::THICKNESS;
-				}
-
-				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-
-			if(game_res->vdDoorHole->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
-				min_tout = tout;
-		}
-	}
-
-	// objects
-	for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
-	{
-		if(!it->cam_collider)
-			continue;
-
-		if(it->type == CollisionObject::SPHERE)
-		{
-			if(RayToCylinder(to, to + dist, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-		else if(it->type == CollisionObject::RECTANGLE)
-		{
-			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
-			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-		else
-		{
-			float w, h;
-			if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
-			{
-				w = it->h;
-				h = it->w;
-			}
-			else
-			{
-				w = it->w;
-				h = it->h;
-			}
-
-			Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
-			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-	}
-
-	// camera colliders
-	for(vector<CameraCollider>::iterator it = game_level->cam_colliders.begin(), end = game_level->cam_colliders.end(); it != end; ++it)
-	{
-		if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-	}
-
-	// uwzglêdnienie znear
-	if(min_tout > 1.f || pc->noclip)
-		min_tout = 1.f;
-	else if(min_tout < 0.1f)
-		min_tout = 0.1f;
-
-	float real_dist = dist.Length() * min_tout - 0.1f;
-	if(real_dist < 0.01f)
-		real_dist = 0.01f;
-	Vec3 from = to + dist.Normalize() * real_dist;
-
-	camera.Update(dt, from, to);
-
-	float drunk = pc->unit->alcohol / pc->unit->hpmax;
-	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
-
-	Matrix mat_view = Matrix::CreateLookAt(camera.from, camera.to);
-	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim) * (PI / 16) * drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), camera.znear, camera.zfar);
-	camera.mat_view_proj = mat_view * mat_proj;
-	camera.mat_view_inv = mat_view.Inverse();
-	camera.frustum.Set(camera.mat_view_proj);
-
-	// centrum dŸwiêku 3d
-	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
-}
-
-//=================================================================================================
 void Game::UpdateGame(float dt)
 {
 	dt *= game_speed;
@@ -2307,8 +2005,6 @@ void Game::UpdateGame(float dt)
 
 	if(quest_mgr->quest_tutorial->in_tutorial && !Net::IsOnline())
 		quest_mgr->quest_tutorial->Update();
-
-	drunk_anim = Clip(drunk_anim + dt);
 
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
@@ -2448,95 +2144,7 @@ void Game::UpdateGame(float dt)
 		}
 	}
 
-	// obracanie kamery góra/dó³
-	if(!Net::IsLocal() || team->IsAnyoneAlive())
-	{
-		if(dialog_context.dialog_mode && game_gui->inventory->mode <= I_INVENTORY)
-		{
-			game_level->camera.free_rot = false;
-			if(game_level->camera.real_rot.y > 4.2875104f)
-			{
-				game_level->camera.real_rot.y -= dt;
-				if(game_level->camera.real_rot.y < 4.2875104f)
-					game_level->camera.real_rot.y = 4.2875104f;
-			}
-			else if(game_level->camera.real_rot.y < 4.2875104f)
-			{
-				game_level->camera.real_rot.y += dt;
-				if(game_level->camera.real_rot.y > 4.2875104f)
-					game_level->camera.real_rot.y = 4.2875104f;
-			}
-		}
-		else
-		{
-			if(Any(GKey.allow_input, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
-			{
-				const float c_cam_angle_min = PI + 0.1f;
-				const float c_cam_angle_max = PI * 1.8f - 0.1f;
-
-				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				game_level->camera.real_rot.y += -float(input->GetMouseDif().y) * settings.mouse_sensitivity_f / div;
-				if(game_level->camera.real_rot.y > c_cam_angle_max)
-					game_level->camera.real_rot.y = c_cam_angle_max;
-				if(game_level->camera.real_rot.y < c_cam_angle_min)
-					game_level->camera.real_rot.y = c_cam_angle_min;
-
-				if(!pc->unit->IsStanding())
-				{
-					game_level->camera.real_rot.x = Clip(game_level->camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
-					game_level->camera.free_rot = true;
-					game_level->camera.free_rot_key = Key::None;
-				}
-				else if(!game_level->camera.free_rot)
-				{
-					game_level->camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
-					if(game_level->camera.free_rot_key != Key::None)
-					{
-						game_level->camera.real_rot.x = Clip(pc->unit->rot + PI);
-						game_level->camera.free_rot = true;
-					}
-				}
-				else
-				{
-					if(game_level->camera.free_rot_key == Key::None || GKey.KeyUpAllowed(game_level->camera.free_rot_key))
-						game_level->camera.free_rot = false;
-					else
-						game_level->camera.real_rot.x = Clip(game_level->camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
-				}
-			}
-			else
-				game_level->camera.free_rot = false;
-		}
-	}
-	else
-	{
-		game_level->camera.free_rot = false;
-		if(game_level->camera.real_rot.y > PI + 0.1f)
-		{
-			game_level->camera.real_rot.y -= dt;
-			if(game_level->camera.real_rot.y < PI + 0.1f)
-				game_level->camera.real_rot.y = PI + 0.1f;
-		}
-		else if(game_level->camera.real_rot.y < PI + 0.1f)
-		{
-			game_level->camera.real_rot.y += dt;
-			if(game_level->camera.real_rot.y > PI + 0.1f)
-				game_level->camera.real_rot.y = PI + 0.1f;
-		}
-	}
-
-	// przybli¿anie/oddalanie kamery
-	if(GKey.AllowMouse())
-	{
-		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->level_gui->IsMouseInsideDialog())
-		{
-			game_level->camera.dist -= input->GetMouseWheel();
-			game_level->camera.dist = Clamp(game_level->camera.dist, 0.5f, 6.f);
-		}
-
-		if(input->PressedRelease(Key::MiddleButton))
-			game_level->camera.dist = 3.5f;
-	}
+	UpdateCamera(dt);
 
 	// umieranie
 	if((Net::IsLocal() && !team->IsAnyoneAlive()) || death_screen != 0)
@@ -2643,9 +2251,6 @@ void Game::UpdateGame(float dt)
 		if(!Net::IsOnline() || game_state != GS_LEVEL)
 			return;
 	}
-
-	// aktualizuj kamerê
-	SetupCamera(dt);
 }
 
 //=================================================================================================
@@ -2787,6 +2392,63 @@ void Game::UpdateFallback(float dt)
 			fallback_type = FALLBACK::NO;
 		}
 	}
+}
+
+//=================================================================================================
+void Game::UpdateCamera(float dt)
+{
+	GameCamera& camera = game_level->camera;
+
+	// obracanie kamery góra/dó³
+	if(!Net::IsLocal() || team->IsAnyoneAlive())
+	{
+		if(dialog_context.dialog_mode || game_gui->inventory->mode > I_INVENTORY || game_gui->craft->visible)
+		{
+			// in dialog/trade look at target
+			camera.RotateTo(dt, 4.2875104f);
+			Vec3 zoom_pos;
+			if(game_gui->inventory->mode == I_LOOT_CHEST)
+				zoom_pos = pc->action_chest->GetCenter();
+			else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
+				zoom_pos = pc->action_usable->GetCenter();
+			else if(game_gui->craft->visible)
+				zoom_pos = pc->unit->usable->GetCenter();
+			else
+			{
+				if(pc->action_unit->IsAlive())
+					zoom_pos = pc->action_unit->GetHeadPoint();
+				else
+					zoom_pos = pc->action_unit->GetLootCenter();
+			}
+			camera.SetZoom(&zoom_pos);
+		}
+		else
+		{
+			camera.UpdateFreeRot(dt);
+			if(GKey.AllowMouse())
+			{
+				// use mouse wheel to set distance
+				if(!game_gui->level_gui->IsMouseInsideDialog())
+				{
+					camera.dist -= input->GetMouseWheel();
+					camera.dist = Clamp(camera.dist, 0.5f, 6.f);
+				}
+				if(input->PressedRelease(Key::MiddleButton))
+					camera.dist = 3.5f;
+			}
+			camera.SetZoom(nullptr);
+		}
+	}
+	else
+	{
+		// when all died rotate camera to look from UP
+		camera.RotateTo(dt, PI + 0.1f);
+		camera.SetZoom(nullptr);
+		if(camera.dist < 10.f)
+			camera.dist += dt;
+	}
+
+	camera.Update(dt);
 }
 
 //=================================================================================================
@@ -4867,7 +4529,7 @@ void Game::ClearGameVars(bool new_game)
 	arena->Reset();
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
-	game_level->camera.Reset();
+	game_level->camera.Reset(new_game);
 	game_level->lights_dt = 1.f;
 	pc->data.Reset();
 	script_mgr->Reset();
@@ -4900,8 +4562,6 @@ void Game::ClearGameVars(bool new_game)
 		noai = false;
 		draw_phy = false;
 		draw_col = false;
-		game_level->camera.real_rot = Vec2(0, 4.2875104f);
-		game_level->camera.dist = 3.5f;
 		game_speed = 1.f;
 		game_level->dungeon_level = 0;
 		quest_mgr->Reset();
@@ -4915,9 +4575,7 @@ void Game::ClearGameVars(bool new_game)
 		game_gui->Clear(true, false);
 		if(!net->mp_quickload)
 			game_gui->mp_box->visible = Net::IsOnline();
-		drunk_anim = 0.f;
 		game_level->light_angle = Random(PI * 2);
-		game_level->camera.Reset();
 		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
 

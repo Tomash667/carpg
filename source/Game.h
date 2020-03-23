@@ -191,11 +191,11 @@ public:
 	void PauseGame();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void SetupCamera(float dt);
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdateAi(float dt);
+	void UpdateCamera(float dt);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
@@ -414,7 +414,7 @@ public:
 	IB ibDungeon;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	float portal_anim, drunk_anim;
+	float portal_anim;
 	// scene
 	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;

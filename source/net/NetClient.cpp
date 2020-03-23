@@ -4385,6 +4385,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game->pc = unit->player;
 	game->pc->player_info = &info;
 	info.pc = game->pc;
+	game_level->camera.target = unit;
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)

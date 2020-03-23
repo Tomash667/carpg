@@ -476,6 +476,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	// camera
 	f << game_level->camera.real_rot.y;
 	f << game_level->camera.dist;
+	f << game_level->camera.drunk_anim;
 
 	// vars
 	f << devmode;
@@ -494,7 +495,6 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << pc->unit->id;
 	f << game_level->dungeon_level;
 	f << portal_anim;
-	f << drunk_anim;
 	f << ais.size();
 	for(AIController* ai : ais)
 		ai->Save(f);
@@ -766,6 +766,8 @@ void Game::LoadGame(GameReader& f)
 	// camera
 	f >> game_level->camera.real_rot.y;
 	f >> game_level->camera.dist;
+	if(LOAD_VERSION >= V_DEV)
+		f >> game_level->camera.drunk_anim;
 	game_level->camera.Reset();
 	pc->data.rot_buf = 0.f;
 
@@ -801,13 +803,15 @@ void Game::LoadGame(GameReader& f)
 	pc = player->player;
 	if(!net->mp_load)
 		pc->id = 0;
+	game_level->camera.target = pc->unit;
 	game_level->camera.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	f >> game_level->dungeon_level;
 	f >> portal_anim;
-	f >> drunk_anim;
+	if(LOAD_VERSION < V_DEV)
+		f >> game_level->camera.drunk_anim;
 	ais.resize(f.Read<uint>());
 	for(AIController*& ai : ais)
 	{

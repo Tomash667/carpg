@@ -160,6 +160,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	}
 	dialog_context.pc = pc;
 
+	game_level->camera.target = u;
 	team->CalculatePlayersLevel();
 	game_gui->Setup(pc);
 	game_gui->ability->Refresh();
@@ -1397,6 +1398,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player->dialog_ctx->is_local = true;
 				u->player->is_local = true;
 				game_gui->ability->Refresh();
+				game_level->camera.target = u;
 			}
 			else
 			{

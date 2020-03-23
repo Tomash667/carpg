@@ -170,3 +170,9 @@ Mesh* Usable::GetMesh() const
 	else
 		return base->mesh;
 }
+
+//=================================================================================================
+Vec3 Usable::GetCenter() const
+{
+	return pos + base->mesh->head.bbox.Midpoint();
+}
