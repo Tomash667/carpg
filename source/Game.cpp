@@ -162,6 +162,7 @@ Game::~Game()
 {
 	delete arena;
 	delete cmdp;
+	delete dun_mesh_builder;
 	delete game_gui;
 	delete game_level;
 	delete game_res;

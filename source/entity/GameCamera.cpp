@@ -300,7 +300,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 				}
 				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
 				{
-					Vec3 pos(float(x * 2) + 1, 0, float(z * 2) + 1);
+					Vec3 door_pos(float(x * 2) + 1, 0, float(z * 2) + 1);
 					float rot;
 
 					if(IsBlocking(lvl.map[x - 1 + z * lvl.w].type))
@@ -312,9 +312,9 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 						if(lvl.rooms[lvl.map[x + (z + 1) * lvl.w].room]->IsCorridor())
 							--mov;
 						if(mov == 1)
-							pos.z += 0.8229f;
+							door_pos.z += 0.8229f;
 						else if(mov == -1)
-							pos.z -= 0.8229f;
+							door_pos.z -= 0.8229f;
 					}
 					else
 					{
@@ -325,18 +325,18 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 						if(lvl.rooms[lvl.map[x + 1 + z * lvl.w].room]->IsCorridor())
 							--mov;
 						if(mov == 1)
-							pos.x += 0.8229f;
+							door_pos.x += 0.8229f;
 						else if(mov == -1)
-							pos.x -= 0.8229f;
+							door_pos.x -= 0.8229f;
 					}
 
-					if(game_res->vdDoorHole->RayToMesh(pos, dir, pos, rot, t) && t < min_t)
+					if(game_res->vdDoorHole->RayToMesh(pos, dir, door_pos, rot, t) && t < min_t)
 						min_t = t;
 
 					Door* door = area.FindDoor(Int2(x, z));
 					if(door && door->IsBlocking())
 					{
-						Box box(pos.x, 0.f, pos.z);
+						Box box(door_pos.x, 0.f, door_pos.z);
 						box.v2.y = Door::HEIGHT * 2;
 						if(rot == 0.f)
 						{

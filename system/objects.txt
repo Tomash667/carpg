@@ -100,7 +100,7 @@ object wardrobe {
 
 object bed {
 	mesh "lozko.qmsh"
-	flags { near_wall blocks_camera }
+	flags near_wall
 }
 
 object bedding {
