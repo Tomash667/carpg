@@ -183,7 +183,6 @@ public:
 	bool IsBossLevel(const Int2& pos = Int2::Zero) const;
 
 	// misc
-	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	void VerifyObjects();
 	void VerifyObjects(vector<Object*>& objects, int& errors);
 	const vector<int>& GetTiles() const { return tiles; }

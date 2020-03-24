@@ -28,28 +28,6 @@ void SingleInsideLocation::Load(GameReader& f, bool local)
 }
 
 //=================================================================================================
-bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
-{
-	if(HaveUnit(unit))
-	{
-		if(level)
-			*level = 0;
-		return true;
-	}
-	else
-		return false;
-}
-
-//=================================================================================================
-Unit* SingleInsideLocation::FindUnit(UnitData* data, int& at_level)
-{
-	Unit* u = InsideLocationLevel::FindUnit(data);
-	if(u)
-		at_level = 0;
-	return u;
-}
-
-//=================================================================================================
 Chest* SingleInsideLocation::FindChestWithItem(const Item* item, int& at_level, int* index)
 {
 	Chest* chest = InsideLocationLevel::FindChestWithItem(item, index);

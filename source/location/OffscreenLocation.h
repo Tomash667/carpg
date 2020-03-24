@@ -14,8 +14,6 @@ struct OffscreenLocation : public Location, public LevelArea
 	void Load(GameReader& f, bool local) override;
 	void Write(BitStreamWriter& f) override { assert(0); }
 	bool Read(BitStreamReader& f) { assert(0); return false; }
-	bool FindUnit(Unit* unit, int* level = nullptr) override { assert(0); return false; }
-	Unit* FindUnit(UnitData* data, int& at_level) override { assert(0); return nullptr; }
 
 	Unit* CreateUnit(UnitData& data, int level = -1);
 };

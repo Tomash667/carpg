@@ -76,8 +76,6 @@ struct City : public OutsideLocation
 	void Load(GameReader& f, bool local) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
-	bool FindUnit(Unit* unit, int* level) override;
-	Unit* FindUnit(UnitData* data, int& at_level) override;
 
 	void GenerateCityBuildings(vector<Building*>& buildings, bool required);
 	void PrepareCityBuildings(vector<ToBuild>& tobuild);

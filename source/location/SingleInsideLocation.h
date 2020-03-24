@@ -11,8 +11,6 @@ struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local) override;
-	bool FindUnit(Unit* unit, int* level) override;
-	Unit* FindUnit(UnitData* unit, int& at_level) override;
 	// from InsideLocation
 	Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) override;
 	Chest* FindChestWithQuestItem(int quest_id, int& at_level, int* index = nullptr) override;

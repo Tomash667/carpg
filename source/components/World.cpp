@@ -51,8 +51,6 @@ struct TmpLocation : public Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override {}
 	void Write(BitStreamWriter& f) override {}
 	bool Read(BitStreamReader& f) override { return false; }
-	bool FindUnit(Unit*, int*) override { return false; }
-	Unit* FindUnit(UnitData*, int&) override { return nullptr; }
 };
 
 //=================================================================================================
@@ -2947,47 +2945,6 @@ void World::AbadonLocation(Location* loc)
 	loc->group = UnitGroup::empty;
 	if(loc->last_visit != -1)
 		loc->last_visit = worldtime;
-}
-
-//=================================================================================================
-int World::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
-{
-	assert(unit);
-
-	int level;
-
-	if(hint_loc != -1)
-	{
-		if(GetLocation(hint_loc)->FindUnit(unit, &level))
-		{
-			if(out_level)
-				*out_level = level;
-			return hint_loc;
-		}
-	}
-
-	if(hint_loc2 != -1 && hint_loc != hint_loc2)
-	{
-		if(GetLocation(hint_loc2)->FindUnit(unit, &level))
-		{
-			if(out_level)
-				*out_level = level;
-			return hint_loc2;
-		}
-	}
-
-	for(uint i = 0; i < locations.size(); ++i)
-	{
-		Location* loc = locations[i];
-		if(loc && i != hint_loc && i != hint_loc2 && loc->last_visit != -1 && loc->FindUnit(unit, &level))
-		{
-			if(out_level)
-				*out_level = level;
-			return i;
-		}
-	}
-
-	return -1;
 }
 
 //=================================================================================================

@@ -260,66 +260,6 @@ bool City::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool City::FindUnit(Unit* unit, int* level)
-{
-	assert(unit);
-
-	for(Unit* u : units)
-	{
-		if(u == unit)
-		{
-			if(level)
-				*level = -1;
-			return true;
-		}
-	}
-
-	for(uint i = 0; i < inside_buildings.size(); ++i)
-	{
-		for(Unit* u : inside_buildings[i]->units)
-		{
-			if(u == unit)
-			{
-				if(level)
-					*level = i;
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-Unit* City::FindUnit(UnitData* data, int& at_level)
-{
-	assert(data);
-
-	for(Unit* u : units)
-	{
-		if(u->data == data)
-		{
-			at_level = -1;
-			return u;
-		}
-	}
-
-	for(uint i = 0; i < inside_buildings.size(); ++i)
-	{
-		for(Unit* u : inside_buildings[i]->units)
-		{
-			if(u->data == data)
-			{
-				at_level = i;
-				return u;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 bool City::IsInsideCity(const Vec3& pos)
 {
 	Int2 tile(int(pos.x / 2), int(pos.z / 2));

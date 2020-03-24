@@ -132,45 +132,6 @@ int MultiInsideLocation::GetRandomLevel() const
 }
 
 //=================================================================================================
-bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
-{
-	assert(unit);
-
-	for(int i = 0; i < generated; ++i)
-	{
-		if(levels[i]->HaveUnit(unit))
-		{
-			if(level)
-				*level = i;
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
-{
-	if(at_level == -1)
-	{
-		for(int i = 0; i < generated; ++i)
-		{
-			Unit* u = levels[i]->FindUnit(data);
-			if(u)
-			{
-				at_level = i;
-				return u;
-			}
-		}
-	}
-	else if(at_level < generated)
-		return levels[at_level]->FindUnit(data);
-
-	return nullptr;
-}
-
-//=================================================================================================
 Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, int* index)
 {
 	if(at_level == -1)
