@@ -2407,11 +2407,19 @@ void Game::UpdateCamera(float dt)
 				else
 					zoom_pos = pc->action_unit->GetLootCenter();
 			}
-			camera.SetZoom(&zoom_pos);
+			camera.zoom_pos = zoom_pos;
+			camera.SetMode(GameCamera::Zoom);
+		}
+		else if(Any(pc->unit->action, A_NONE, A_SHOOT) && pc->unit->weapon_taken == W_BOW && input->Down(Key::RightButton))
+		{
+			FIXME; // klawisz
+			camera.SetMode(GameCamera::Aim);
+			camera.UpdateRotation(dt);
 		}
 		else
 		{
-			camera.UpdateFreeRot(dt);
+			camera.SetMode(GameCamera::Normal);
+			camera.UpdateRotation(dt);
 			if(GKey.AllowMouse())
 			{
 				// use mouse wheel to set distance
@@ -2423,14 +2431,13 @@ void Game::UpdateCamera(float dt)
 				if(input->PressedRelease(Key::MiddleButton))
 					camera.dist = 3.5f;
 			}
-			camera.SetZoom(nullptr);
 		}
 	}
 	else
 	{
 		// when all died rotate camera to look from UP
 		camera.RotateTo(dt, PI + 0.1f);
-		camera.SetZoom(nullptr);
+		camera.SetMode(GameCamera::Normal);
 		if(camera.dist < 10.f)
 			camera.dist += dt;
 	}

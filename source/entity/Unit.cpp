@@ -7385,10 +7385,11 @@ void Unit::Update(float dt)
 						variation_y = 1.f;
 					}
 
-					if(Rand() % 100 < chance)
+					/*if(Rand() % 100 < chance)
 						b.rot.y += RandomNormalized(variation_x);
 					if(Rand() % 100 < chance)
-						b.yspeed += RandomNormalized(variation_y);
+						b.yspeed += RandomNormalized(variation_y);*/
+					FIXME;
 				}
 
 				b.rot.y = Clip(b.rot.y);

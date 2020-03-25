@@ -32,7 +32,7 @@ void GameCamera::Reset(bool full)
 		drunk_anim = 0.f;
 		shift = 0.f;
 		h = 0.2f;
-		zoom = false;
+		mode = Normal;
 	}
 	reset = true;
 	free_rot = false;
@@ -85,7 +85,7 @@ void GameCamera::Update(float dt)
 	Vec3 pos = target->pos;
 	pos.y += target->GetUnitHeight() + tmp_h;
 
-	if(zoom)
+	if(mode == Zoom)
 		real_to = zoom_pos;
 	else
 		real_to = pos + forward_dir * 20;
@@ -145,7 +145,7 @@ void GameCamera::RotateTo(float dt, float dest_rot)
 }
 
 //=================================================================================================
-void GameCamera::UpdateFreeRot(float dt)
+void GameCamera::UpdateRotation(float dt)
 {
 	if(!Any(GKey.allow_input, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
 	{
@@ -163,46 +163,49 @@ void GameCamera::UpdateFreeRot(float dt)
 	if(real_rot.y < c_cam_angle_min)
 		real_rot.y = c_cam_angle_min;
 
-	if(!target->IsStanding())
+	if(mode == Normal)
 	{
-		real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
-		free_rot = true;
-		free_rot_key = Key::None;
-	}
-	else if(!free_rot)
-	{
-		free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
-		if(free_rot_key != Key::None)
+		if(!target->IsStanding())
 		{
-			real_rot.x = Clip(target->rot + PI);
-			free_rot = true;
-		}
-	}
-	else
-	{
-		if(free_rot_key == Key::None || GKey.KeyUpAllowed(free_rot_key))
-			free_rot = false;
-		else
 			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
+			free_rot = true;
+			free_rot_key = Key::None;
+		}
+		else if(!free_rot)
+		{
+			free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
+			if(free_rot_key != Key::None)
+			{
+				real_rot.x = Clip(target->rot + PI);
+				free_rot = true;
+			}
+		}
+		else if(free_rot_key == Key::None || GKey.KeyUpAllowed(free_rot_key))
+			free_rot = false;
 	}
+
+	real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
 }
 
 //=================================================================================================
-void GameCamera::SetZoom(const Vec3* zoom_pos)
+void GameCamera::SetMode(Mode new_mode)
 {
-	bool new_zoom = (zoom_pos != nullptr);
-	if(zoom == new_zoom)
+	if(mode == new_mode)
 		return;
-	zoom = new_zoom;
-	if(zoom)
+	mode = new_mode;
+	if(mode != Normal)
 	{
 		h = -0.15f;
 		shift = 0.483023137f;
 		prev_dist = dist;
 		dist = 2.f;
-		springiness = 10;
-		tmp_springiness = 10;
-		this->zoom_pos = *zoom_pos;
+		if(mode == Zoom)
+		{
+			springiness = 10;
+			tmp_springiness = 10;
+		}
+		else
+			springiness = 30;
 	}
 	else
 	{
@@ -220,7 +223,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	float t, min_t = 2.f;
 
 	const int tx = int(target->pos.x / 2),
-		      tz = int(target->pos.z / 2);
+		tz = int(target->pos.z / 2);
 
 	if(area.area_type == LevelArea::Type::Outside)
 	{
