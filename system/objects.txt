@@ -488,6 +488,11 @@ object book_holder {
 	mesh "book_holder.qmsh"
 }
 
+object vault_door {
+	mesh "vault_door.qmsh"
+	flags blocks_camera
+}
+
 //==============================================================================
 // OBJECT GROUPS
 //==============================================================================

@@ -18,6 +18,14 @@ Core library
   * float Distance(const Vec3& in v1, const Vec3& in v2);
 * Vec4 - 4d vector x, y, z, w.
 
+### SpawnPoint type
+Contain position and rotation.
+
+Members:
+
+* Vec3 pos
+* float rot
+
 ### Var & Vars type
 Used to store types in units/globals or pass between quests.
 
@@ -163,6 +171,13 @@ Abilities or spells used by units.
 Static methods:
 
 * Ability@ Get(const string& in id) - return ability by id.
+
+### BaseObject type
+Object data like barrel, altar.
+
+Static methods:
+
+BaseObject@ Get(const string& in) - return object data by id.
 
 ### Dialog type
 Dialogs between units.
@@ -530,10 +545,12 @@ Static methods:
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
-* Object@ FindObject(Room@, const string& in obj_id) - return first object inside room or null.
+* Object@ FindObject(Room@, BaseObject@) - return first object inside room or null.
 * Chest@ GetRandomChest(Room@) - get random chest in room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
+* bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
+* Object@ SpawnObject(BaseObject@, const Vec3& in pos, float rot) - spawn object at position.
 
 ### StockScript component
 Used in stock script - items to sell by shopkeepers.
@@ -592,7 +609,7 @@ Static methods:
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
-* Location@ CreateLocation(LOCATION type, const Vec2& in pos, int target = 0, int dungeon_levels = -1) - create new location at position.
+* Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
 * Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 * Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.
 * void RemoveEncounter(Quest@) - remove encounters attached to this quest.

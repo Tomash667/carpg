@@ -388,6 +388,10 @@ void ScriptManager::RegisterCommon()
 		.Method("Vec4 opMul(float) const", asMETHODPR(Vec4, operator *, (float) const, Vec4))
 		.Method("Vec4 opDiv(float) const", asMETHODPR(Vec4, operator /, (float) const, Vec4));
 
+	sb.AddStruct<SpawnPoint>("SpawnPoint", asOBJ_POD | asOBJ_APP_CLASS_ALLFLOATS)
+		.Member("Vec3 pos", offsetof(SpawnPoint, pos))
+		.Member("float rot", offsetof(SpawnPoint, rot));
+
 	AddFunction("void Sleep(float)", asMETHOD(ScriptManager, ScriptSleep), this);
 }
 
@@ -788,6 +792,10 @@ void ScriptManager::RegisterGame()
 		.Method("void Fill(UnitGroup@, int, int)", asMETHOD(TmpUnitGroup, FillS))
 		.Method("Spawn Get(uint)", asMETHOD(TmpUnitGroup, GetS));
 
+	AddType("BaseObject")
+		.WithNamespace()
+		.AddFunction("BaseObject@ Get(const string& in)", asFUNCTION(BaseObject::GetS));
+
 	AddType("Object");
 
 	AddType("Chest")
@@ -855,7 +863,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
-		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = 0, int = -1)", asMETHODPR(World, CreateLocation, (LOCATION, const Vec2&, int, int), Location*))
+		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int = -1)", asMETHODPR(World, CreateLocation, (LOCATION, const Vec2&, int, int), Location*))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("Encounter@ RecreateEncounter(Quest@, int)", asMETHOD(World, RecreateEncounterS))
 		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void))
@@ -885,10 +893,12 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))
 		.AddFunction("Room@ GetRoom(ROOM_TARGET)", asMETHOD(Level, GetRoom))
-		.AddFunction("Object@ FindObject(Room@, const string& in)", asMETHOD(Level, FindObjectInRoom))
+		.AddFunction("Object@ FindObject(Room@, BaseObject@)", asMETHOD(Level, FindObjectInRoom))
 		.AddFunction("Chest@ GetRandomChest(Room@)", asMETHOD(Level, GetRandomChest))
 		.AddFunction("array<Room@>@ FindPath(Room@, Room@)", asMETHOD(Level, FindPath))
-		.AddFunction("array<Unit@>@ GetUnits(Room@)", asMETHOD(Level, GetUnits));
+		.AddFunction("array<Unit@>@ GetUnits(Room@)", asMETHOD(Level, GetUnits))
+		.AddFunction("bool FindPlaceNearWall(BaseObject@, SpawnPoint& out)", asMETHOD(Level, FindPlaceNearWall))
+		.AddFunction("Object@ SpawnObject(BaseObject@, const Vec3& in, float)", asMETHOD(Level, SpawnObject));
 
 	WithNamespace("StockScript")
 		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
