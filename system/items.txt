@@ -2902,6 +2902,16 @@ book_scheme book {
 	next {737 497}
 }
 
+book_scheme page {
+	texture "page.jpg"
+	size {437 566}
+	regions {
+		{50 50 387 496}
+	}
+	prev {30 536}
+	next {407 536} 
+}
+
 book book_orcs {
 	weight 0.2
 	value 10
@@ -2975,6 +2985,14 @@ book book_q_cleric {
 	scheme book
 	flags {alpha not_shop not_chest not_random ground_mesh}
 	runic 1
+}
+
+book crypt_note {
+	weight 0.1
+	value 0
+	scheme page
+	tex "piece_of_paper.png"
+	flags {not_shop not_chest not_random}
 }
 
 //------------------------------------------------------------------------------

@@ -13,7 +13,8 @@ enum Group
 {
 	G_TOP,
 	G_PROPERTY,
-	G_QUEST_CATEGORY
+	G_QUEST_CATEGORY,
+	G_FLAGS
 };
 
 enum TopKeyword
@@ -27,7 +28,8 @@ enum Property
 	P_TYPE,
 	P_PROGRESS,
 	P_CODE,
-	P_DIALOG
+	P_DIALOG,
+	P_FLAGS
 };
 
 enum QuestKeyword
@@ -65,7 +67,8 @@ void QuestLoader::InitTokenizer()
 		{ "type", P_TYPE },
 		{ "progress", P_PROGRESS },
 		{ "code", P_CODE },
-		{ "dialog", P_DIALOG }
+		{ "dialog", P_DIALOG },
+		{ "flags", P_FLAGS }
 		});
 
 	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
@@ -73,6 +76,10 @@ void QuestLoader::InitTokenizer()
 		{ "captain", QuestCategory::Captain },
 		{ "random", QuestCategory::Random },
 		{ "unique", QuestCategory::Unique }
+		});
+
+	t.AddKeywords(G_FLAGS, {
+		{ "dont_count", QuestScheme::DONT_COUNT }
 		});
 }
 
@@ -146,6 +153,9 @@ void QuestLoader::ParseQuest(const string& id)
 				}
 				quest->dialogs.push_back(dialog);
 			}
+			break;
+		case P_FLAGS:
+			t.ParseFlags(G_FLAGS, quest->flags);
 			break;
 		}
 		t.Next();

@@ -4,7 +4,6 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
-class Quest_Artifacts;
 class Quest_Bandits;
 class Quest_Contest;
 class Quest_Crazies;
@@ -127,7 +126,6 @@ public:
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;
 	Quest_Tutorial* quest_tutorial;
-	Quest_Artifacts* quest_artifacts;
 	int quest_counter;
 	int unique_quests, unique_quests_completed;
 	bool unique_completed_show;

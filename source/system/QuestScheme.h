@@ -7,6 +7,11 @@
 //-----------------------------------------------------------------------------
 struct QuestScheme
 {
+	enum Flags
+	{
+		DONT_COUNT = 1 << 0
+	};
+
 	string id;
 	QuestCategory category;
 	vector<GameDialog*> dialogs;
@@ -15,9 +20,10 @@ struct QuestScheme
 	asIScriptFunction* f_startup, *f_progress, *f_event, *f_upgrade;
 	DialogScripts scripts;
 	string code;
+	int flags;
 	bool set_progress_use_prev, startup_use_vars;
 
-	QuestScheme() : category(QuestCategory::NotSet) {}
+	QuestScheme() : category(QuestCategory::NotSet), flags(0) {}
 	~QuestScheme();
 	GameDialog* GetDialog(const string& id);
 	int GetProgress(const string& progress_id);

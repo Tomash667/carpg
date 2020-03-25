@@ -134,4 +134,8 @@ struct BaseObject
 		assert(obj && "Missing BaseObject!");
 		return obj;
 	}
+	static BaseObject* GetS(const string& id)
+	{
+		return Get(id);
+	}
 };

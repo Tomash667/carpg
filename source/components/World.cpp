@@ -376,6 +376,13 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int 
 		else
 			levels = dungeon_levels;
 	}
+	else if(target == -1)
+	{
+		if(type == L_CAVE)
+			target = CAVE;
+		else
+			target = 0;
+	}
 
 	Location* loc = CreateLocation(type, levels);
 	loc->pos = pos;

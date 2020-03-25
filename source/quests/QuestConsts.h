@@ -40,7 +40,7 @@ enum QUEST_TYPE
 	Q_CRAZIES,
 	Q_WANTED,
 	Q_MAIN, // removed
-	Q_ARTIFACTS,
+	Q_ARTIFACTS, // removed in V_DEV
 	Q_SCRIPTED
 };
 

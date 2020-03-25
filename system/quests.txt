@@ -1,4 +1,121 @@
 //=============================================================================
+// Global initializer - not real quest
+// 1. generate corner dungeon with gladiator armor
+//=============================================================================
+quest global_init
+{
+	type unique
+	flags dont_count
+	
+	code {
+		Location@ artifacts_loc;
+		Location@ vault;
+		
+		void Startup()
+		{
+			CreateArtifactLocation();
+			CreateVault();
+		}
+		
+		void CreateArtifactLocation()
+		{
+			Vec2 bounds = World::bounds;
+			for(int i = 0; i < 10; ++i)
+			{
+				Vec2 pos;
+				switch(Rand() % 4)
+				{
+				case 0:
+					pos = Vec2(bounds.x + 16.f, bounds.x + 16.f);
+					break;
+				case 1:
+					pos = Vec2(bounds.y - 16.f, bounds.x + 16.f);
+					break;
+				case 2:
+					pos = Vec2(bounds.x + 16.f, bounds.y - 16.f);
+					break;
+				case 3:
+					pos = Vec2(bounds.y - 16.f, bounds.y - 16.f);
+					break;
+				}
+				if(!World::TryFindPlace(pos, 64.f))
+					continue;
+				@artifacts_loc = World::CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
+				if(artifacts_loc !is null)
+					break;
+			}
+			@artifacts_loc.group = UnitGroup::Get("golems");
+			@artifacts_loc.active_quest = quest;
+			artifacts_loc.st = 12;
+			artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
+			
+			DevInfo(Format("Gladiator armor - {0}.", artifacts_loc.name));
+		}
+		
+		void CreateVault()
+		{
+			@vault = World::CreateLocation(L_CAVE, World::GetRandomPlace());
+			@vault.active_quest = quest;
+			vault.st = 6;
+			vault.AddEventHandler(quest, EVENT_ENTER);
+			
+			DevInfo(Format("Vault - {0}.", vault.name));
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event != EVENT_ENTER)
+				return;
+			if(Level::location is artifacts_loc)
+			{
+				if(Level::dungeon_level == 1)
+				{
+					e.location.RemoveEventHandler(quest);
+					Room@ room = Level::GetRoom(ROOM_TREASURY);
+					Chest@ chest = Level::GetRandomChest(room);
+					chest.AddItem(Item::Get("am_gladiator"));
+					Level::SpawnUnit(room, UnitData::Get("golem_adamantine"));
+					Level::SpawnUnit(room, UnitData::Get("golem_iron"));
+				}
+			}
+			else if(Level::location is vault)
+			{
+				e.location.RemoveEventHandler(quest);
+				BaseObject@ obj = BaseObject::Get("vault_door");
+				SpawnPoint point;
+				if(Level::FindPlaceNearWall(obj, point))
+				{
+					Level::SpawnObject(obj, point.pos, point.rot);
+					UnitData@ skeleton = UnitData::Get("skeleton");
+					for(int i=0; i<3; ++i)
+					{
+						Unit@ unit = Level::SpawnUnitNearLocation(skeleton, point.pos, 6);
+						if(unit !is null)
+						{
+							if(i == 0)
+								unit.AddItem(Item::Get("crypt_note"));
+							unit.Kill();
+						}
+					}
+				}
+			}
+		}
+		
+		void SetProgress()
+		{
+		}
+		
+		void OnUpgrade(dictionary& dict)
+		{
+			@artifacts_loc = World::GetLocation(int(dict["artifacts_loc"]));
+			@artifacts_loc.active_quest = quest;
+			if(!bool(dict["done"]))
+				artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
+		}
+	}
+}
+
+//=============================================================================
 // DELIVER LETTER - random mayor quest
 //=============================================================================
 quest deliver_letter
@@ -857,6 +974,7 @@ quest bandits_collect_toll
 quest main
 {
 	type unique
+	flags dont_count
 	progress {
 		P_MAIN_NONE
 		P_MAIN_TALKED_TRAINER
@@ -1105,7 +1223,7 @@ quest main
 					{
 						Item@ book = Item::Get("book_q_cleric");
 						Room@ room = Level::GetRoom(ROOM_TREASURY);
-						Object@ obj = Level::FindObject(room, "book_holder");
+						Object@ obj = Level::FindObject(room, BaseObject::Get("book_holder"));
 						Level::SpawnItem(book, obj);
 						e.location.RemoveEventHandler(quest, EVENT_ENTER);
 					}

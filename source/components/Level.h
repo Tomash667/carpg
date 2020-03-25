@@ -4,6 +4,7 @@
 #include "LevelArea.h"
 #include "ObjectEntity.h"
 #include "GameCamera.h"
+#include "GameCommon.h"
 
 //-----------------------------------------------------------------------------
 enum EnterFrom
@@ -67,6 +68,7 @@ public:
 	Door* FindDoor(int id);
 	Trap* FindTrap(int id);
 	Chest* FindChest(int id);
+	Chest* GetRandomChest(Room& room);
 	Electro* FindElectro(int id);
 	bool RemoveTrap(int id);
 	void RemoveUnit(Unit* unit, bool notify = true);
@@ -88,6 +90,10 @@ public:
 		float scale = 1.f);
 	ObjectEntity SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
+	Object* SpawnObject(BaseObject* obj, const Vec3& pos, float rot)
+	{
+		return SpawnObjectEntity(*local_area, obj, pos, rot);
+	}
 	void PickableItemBegin(LevelArea& area, Object& o);
 	bool PickableItemAdd(const Item* item);
 	void PickableItemsFromStock(LevelArea& area, Object& o, Stock& stock);
@@ -196,6 +202,7 @@ public:
 	Object* FindObjectInRoom(Room& room, const string& obj_id);
 	CScriptArray* FindPath(Room& from, Room& to);
 	CScriptArray* GetUnits(Room& room);
+	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index

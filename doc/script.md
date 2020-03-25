@@ -18,6 +18,14 @@ Core library
   * float Distance(const Vec3& in v1, const Vec3& in v2);
 * Vec4 - 4d vector x, y, z, w.
 
+### SpawnPoint type
+Contain position and rotation.
+
+Members:
+
+* Vec3 pos
+* float rot
+
 ### Var & Vars type
 Used to store types in units/globals or pass between quests.
 
@@ -164,6 +172,13 @@ Static methods:
 
 * Ability@ Get(const string& in id) - return ability by id.
 
+### BaseObject type
+Object data like barrel, altar.
+
+Static methods:
+
+BaseObject@ Get(const string& in) - return object data by id.
+
 ### Dialog type
 Dialogs between units.
 
@@ -231,6 +246,13 @@ Static methods:
 
 Game entities
 -------------------------------------------------------------------------------------------------------------
+### Chest type
+Chest object with items inside.
+
+Methods:
+
+bool AddItem(Item@, uint count = 1) - add item to chest, return true if stacked.
+
 ### CityBuilding type
 Buildings inside city.
 
@@ -523,9 +545,12 @@ Static methods:
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
-* Object@ FindObject(Room@, const string& in obj_id) - return first object inside room or null.
+* Object@ FindObject(Room@, BaseObject@) - return first object inside room or null.
+* Chest@ GetRandomChest(Room@) - get random chest in room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
+* bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
+* Object@ SpawnObject(BaseObject@, const Vec3& in pos, float rot) - spawn object at position.
 
 ### StockScript component
 Used in stock script - items to sell by shopkeepers.
@@ -564,6 +589,7 @@ Component used for world.
 
 Static properties:
 
+* Vec2 bounds - readonly, locations spawn bounds, map size with borders.
 * Vec2 size - readonly, get worldmap size (in km).
 * Vec2 pos - readonly, position on worldmap.
 * int worldtime - readonly, number of days since start of game.
@@ -574,15 +600,16 @@ Static methods:
 * Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
-* bool FindPlace(Vec2& inout pos, float range, bool allow_exact = false) - find place for location inside range.
-* bool FindPlace(Vec2& inout pos, float min_range, float max_range) - find place for location inside range.
+* Vec2 FindPlace(const Vec2& in pos, float range, bool allow_exact = false) - find place for location inside range.
+* Vec2 FindPlace(const Vec2& in pos, float min_range, float max_range) - find place for location inside range.
+* bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false) - try to find place for location inside range.
 * Vec2 GetRandomPlace() - get random pos for location.
 * Location@ GetRandomCity() - returns random city (not village).
 * Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
-* Location@ CreateLocation(LOCATION type, const Vec2& in pos, int target = 0, int dungeon_levels = -1) - create new location at position.
+* Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
 * Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 * Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.
 * void RemoveEncounter(Quest@) - remove encounters attached to this quest.

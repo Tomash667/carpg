@@ -8,7 +8,7 @@ Wersja 0.14 (???):
 + nowy atut historii: uczeñ wêdrownego kupca (+10 targowania, 500 z³ota)
 + budynek w mieœcie - kapliczka
 + ustawienia kamery podczas rozmowy
-+ przeniesienie zadania "dostarcz list" do skryptów
++ przeniesienie zadañ "dostarcz list" i "pancerz gladiatora" do skryptów 
 + wczytywanie atutów z pliku
 + wczytywanie pokoi z pliku
 + usprawnienia menad¿era sceny - czêœæ 2
@@ -20,6 +20,7 @@ Wersja 0.14 (???):
 - ai ci¹gle korzysta³o ze sto³ków w karczmie
 - usprawnienie celowania z przywo³ania wilka
 - rzadki crash przy zamykaniu okna wyboru serwera
+- brakuj¹cy komunikat o ukoñczeniu wszystkich unikalnych zadañ
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (020-01-11):

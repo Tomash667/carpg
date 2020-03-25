@@ -8,7 +8,7 @@ Version 0.14 (???):
 + new history feat: student of traveling merchant (+10 haggle, 500 gold)
 + building inside city - shrine
 + camera setup in dialogs
-+ converted quest "deliver letter" to scripts
++ converted quests "deliver letter" and "gladiator armor" to scripts
 + loading feats from file
 + loading rooms from file
 + scene manager improvements (part 2)
@@ -20,6 +20,7 @@ Version 0.14 (???):
 - ai gets stuck when using stools in inn
 - improved summon wolf targeting
 - rare crash when canceling pick server
+- missing message about completing all unique quests
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

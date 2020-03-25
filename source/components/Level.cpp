@@ -447,6 +447,20 @@ Chest* Level::FindChest(int id)
 }
 
 //=================================================================================================
+Chest* Level::GetRandomChest(Room& room)
+{
+	LocalVector<Chest*> chests;
+	for(Chest* chest : local_area->chests)
+	{
+		if(room.IsInside(chest->pos))
+			chests.push_back(chest);
+	}
+	if(chests.empty())
+		return nullptr;
+	return chests[Rand() % chests.size()];
+}
+
+//=================================================================================================
 Electro* Level::FindElectro(int id)
 {
 	for(LevelArea& area : ForEachArea())
@@ -4789,4 +4803,119 @@ CScriptArray* Level::GetUnits(Room& room)
 	}
 
 	return array;
+}
+
+//=================================================================================================
+bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
+{
+	assert(lvl);
+
+	Mesh::Point* pt = obj.mesh->FindPoint("hit");
+	assert(pt);
+	const Vec2 size = pt->size.XZ() * 2;
+
+	const int width = 2 + (int)ceil(size.x / 2);
+	const int width_a = (width - 1) / 2;
+	const int width_b = width - width_a - 1;
+	const int start_x = Random(width_a, lvl->h - width_b);
+	const int start_y = Random(width_a, lvl->h - width_b);
+	int x = start_x, y = start_y;
+
+	while(true)
+	{
+		// __#
+		// _?#
+		// __#
+		bool ok = true;
+		for(int y1 = -width_a; y1 <= width_b; ++y1)
+		{
+			if(IsBlocking2(lvl->map[x - 1 + (y + y1) * lvl->w])
+				|| IsBlocking2(lvl->map[x + (y + y1) * lvl->w])
+				|| lvl->map[x + 1 + (y + y1) * lvl->w].type != WALL)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+		{
+			point.pos = Vec3(2.f * (x + 1), 0, 2.f * (y - width_a) + (float)width);
+			point.rot = DirToRot(GDIR_LEFT);
+			return true;
+		}
+
+		// #__
+		// #?_
+		// #__
+		ok = true;
+		for(int y1 = -width_a; y1 <= width_b; ++y1)
+		{
+			if(IsBlocking2(lvl->map[x + 1 + (y + y1) * lvl->w])
+				|| IsBlocking2(lvl->map[x + (y + y1) * lvl->w])
+				|| lvl->map[x - 1 + (y + y1) * lvl->w].type != WALL)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+		{
+			point.pos = Vec3(2.f * x, 0, 2.f * (y - width_a) + (float)width);
+			point.rot = DirToRot(GDIR_RIGHT);
+			return true;
+		}
+
+		// ###
+		// _?_
+		// ___
+		ok = true;
+		for(int x1 = -width_a; x1 <= width_b; ++x1)
+		{
+			if(IsBlocking2(lvl->map[x + x1 + (y - 1) * lvl->w])
+				|| IsBlocking2(lvl->map[x + x1 + y * lvl->w])
+				|| lvl->map[x + x1 + (y + 1) * lvl->w].type != WALL)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+		{
+			point.pos = Vec3(2.f * (x - width_a) + (float)width, 0, 2.f * (y + 1));
+			point.rot = DirToRot(GDIR_DOWN);
+			return true;
+		}
+
+		// ___
+		// _?_
+		// ###
+		ok = true;
+		for(int x1 = -width_a; x1 <= width_b; ++x1)
+		{
+			if(IsBlocking2(lvl->map[x + x1 + (y + 1) * lvl->w])
+				|| IsBlocking2(lvl->map[x + x1 + y * lvl->w])
+				|| lvl->map[x + x1 + (y - 1) * lvl->w].type != WALL)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+		{
+			point.pos = Vec3(2.f * (x - width_a) + (float)width, 0, 2.f * y);
+			point.rot = DirToRot(GDIR_UP);
+			return true;
+		}
+
+		++x;
+		if(x == lvl->w - width_b)
+		{
+			x = width_a;
+			++y;
+			if(y == lvl->h - width_b)
+				y = width_a;
+		}
+		if(x == start_x && y == start_y)
+			return false;
+	}
 }
