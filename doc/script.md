@@ -231,6 +231,13 @@ Static methods:
 
 Game entities
 -------------------------------------------------------------------------------------------------------------
+### Chest type
+Chest object with items inside.
+
+Methods:
+
+bool AddItem(Item@, uint count = 1) - add item to chest, return true if stacked.
+
 ### CityBuilding type
 Buildings inside city.
 
@@ -524,6 +531,7 @@ Static methods:
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
 * Object@ FindObject(Room@, const string& in obj_id) - return first object inside room or null.
+* Chest@ GetRandomChest(Room@) - get random chest in room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
 
@@ -564,6 +572,7 @@ Component used for world.
 
 Static properties:
 
+* Vec2 bounds - readonly, locations spawn bounds, map size with borders.
 * Vec2 size - readonly, get worldmap size (in km).
 * Vec2 pos - readonly, position on worldmap.
 * int worldtime - readonly, number of days since start of game.
@@ -574,8 +583,9 @@ Static methods:
 * Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
-* bool FindPlace(Vec2& inout pos, float range, bool allow_exact = false) - find place for location inside range.
-* bool FindPlace(Vec2& inout pos, float min_range, float max_range) - find place for location inside range.
+* Vec2 FindPlace(const Vec2& in pos, float range, bool allow_exact = false) - find place for location inside range.
+* Vec2 FindPlace(const Vec2& in pos, float min_range, float max_range) - find place for location inside range.
+* bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false) - try to find place for location inside range.
 * Vec2 GetRandomPlace() - get random pos for location.
 * Location@ GetRandomCity() - returns random city (not village).
 * Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.

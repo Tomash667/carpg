@@ -403,7 +403,6 @@ public:
 	// DRAWING
 	//-----------------------------------------------------------------
 	int draw_flags;
-	Matrix mat;
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	float portal_anim;
 	// scene

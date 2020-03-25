@@ -67,6 +67,7 @@ public:
 	Door* FindDoor(int id);
 	Trap* FindTrap(int id);
 	Chest* FindChest(int id);
+	Chest* GetRandomChest(Room& room);
 	Electro* FindElectro(int id);
 	bool RemoveTrap(int id);
 	void RemoveUnit(Unit* unit, bool notify = true);

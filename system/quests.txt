@@ -1,4 +1,78 @@
 //=============================================================================
+// Global initializer - not real quest
+// 1. generate corner dungeon with gladiator armor
+//=============================================================================
+quest global_init
+{
+	type unique
+	flags dont_count
+	
+	code {
+		Location@ artifacts_loc;
+		
+		void Startup()
+		{
+			Vec2 bounds = World::bounds;
+			for(int i = 0; i < 10; ++i)
+			{
+				Vec2 pos;
+				switch(Rand() % 4)
+				{
+				case 0:
+					pos = Vec2(bounds.x + 16.f, bounds.x + 16.f);
+					break;
+				case 1:
+					pos = Vec2(bounds.y - 16.f, bounds.x + 16.f);
+					break;
+				case 2:
+					pos = Vec2(bounds.x + 16.f, bounds.y - 16.f);
+					break;
+				case 3:
+					pos = Vec2(bounds.y - 16.f, bounds.y - 16.f);
+					break;
+				}
+				if(!World::TryFindPlace(pos, 64.f))
+					continue;
+				@artifacts_loc = World::CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
+				if(artifacts_loc !is null)
+					break;
+			}
+			@artifacts_loc.group = UnitGroup::Get("golems");
+			@artifacts_loc.active_quest = quest;
+			artifacts_loc.st = 12;
+			artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
+			
+			DevInfo(Format("Gladiator armor - {0}.", artifacts_loc.name));
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER && Level::dungeon_level == 1)
+			{
+				e.location.RemoveEventHandler(quest);
+				Room@ room = Level::GetRoom(ROOM_TREASURY);
+				Chest@ chest = Level::GetRandomChest(room);
+				chest.AddItem(Item::Get("am_gladiator"));
+				Level::SpawnUnit(room, UnitData::Get("golem_adamantine"));
+				Level::SpawnUnit(room, UnitData::Get("golem_iron"));
+			}
+		}
+		
+		void SetProgress()
+		{
+		}
+		
+		void OnUpgrade(dictionary& dict)
+		{
+			@artifacts_loc = World::GetLocation(int(dict["artifacts_loc"]));
+			@artifacts_loc.active_quest = quest;
+			if(!bool(dict["done"]))
+				artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
+		}
+	}
+}
+
+//=============================================================================
 // DELIVER LETTER - random mayor quest
 //=============================================================================
 quest deliver_letter

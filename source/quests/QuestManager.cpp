@@ -219,12 +219,6 @@ void QuestManager::InitQuests()
 	quest_crazies->Start();
 	unaccepted_quests.push_back(quest_crazies);
 
-	// artifacts
-	quest_artifacts = new Quest_Artifacts;
-	quest_artifacts->id = quest_counter++;
-	quest_artifacts->Start();
-	unaccepted_quests.push_back(quest_artifacts);
-
 	// pseudo quests
 	quest_contest->Init();
 	quest_secret->Init();
@@ -241,7 +235,6 @@ void QuestManager::InitQuests()
 		Info("Quest 'Evil' - %s.", world->GetLocation(quest_evil->start_loc)->name.c_str());
 		Info("Tournament - %s.", world->GetLocation(quest_tournament->GetCity())->name.c_str());
 		Info("Contest - %s.", world->GetLocation(quest_contest->where)->name.c_str());
-		Info("Gladiator armor - %s.", world->GetLocation(quest_artifacts->target_loc)->name.c_str());
 	}
 
 	// init scripted quests
@@ -677,7 +670,6 @@ void QuestManager::Load(GameReader& f)
 	quest_evil->Init();
 	quest_crazies = static_cast<Quest_Crazies*>(FindQuest(Q_CRAZIES));
 	quest_crazies->Init();
-	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuest(Q_ARTIFACTS));
 	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;

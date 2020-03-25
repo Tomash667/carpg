@@ -447,6 +447,20 @@ Chest* Level::FindChest(int id)
 }
 
 //=================================================================================================
+Chest* Level::GetRandomChest(Room& room)
+{
+	LocalVector<Chest*> chests;
+	for(Chest* chest : local_area->chests)
+	{
+		if(room.IsInside(chest->pos))
+			chests.push_back(chest);
+	}
+	if(chests.empty())
+		return nullptr;
+	return chests[Rand() % chests.size()];
+}
+
+//=================================================================================================
 Electro* Level::FindElectro(int id)
 {
 	for(LevelArea& area : ForEachArea())

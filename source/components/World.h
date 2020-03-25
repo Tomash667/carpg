@@ -139,12 +139,12 @@ public:
 	Vec2 GetRandomPlace();
 	int GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
 	int GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
-	const Vec2& GetWorldBounds() const { return world_bounds; }
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
 	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
 	Vec2 GetPos() const { return world_pos; }
+	Vec2 GetWorldBounds() const { return world_bounds; }
 
 	// travel
 	void Travel(int index, bool order);

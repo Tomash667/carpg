@@ -8,7 +8,7 @@ Wersja 0.14 (???):
 + nowy atut historii: uczeñ wêdrownego kupca (+10 targowania, 500 z³ota)
 + budynek w mieœcie - kapliczka
 + ustawienia kamery podczas rozmowy
-+ przeniesienie zadania "dostarcz list" do skryptów
++ przeniesienie zadañ "dostarcz list" i "pancerz gladiatora" do skryptów 
 + wczytywanie atutów z pliku
 + wczytywanie pokoi z pliku
 + usprawnienia menad¿era sceny - czêœæ 2

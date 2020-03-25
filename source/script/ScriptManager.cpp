@@ -72,6 +72,7 @@ void ScriptManager::Init()
 	Info("Initializing ScriptManager...");
 
 	engine = asCreateScriptEngine();
+	engine->SetEngineProperty(asEP_ALLOW_UNSAFE_REFERENCES, 1);
 	module = engine->GetModule("Core", asGM_CREATE_IF_NOT_EXISTS);
 
 	CHECKED(engine->SetMessageCallback(asFUNCTION(MessageCallback), nullptr, asCALL_CDECL));
@@ -789,6 +790,9 @@ void ScriptManager::RegisterGame()
 
 	AddType("Object");
 
+	AddType("Chest")
+		.Method("bool AddItem(Item@, uint = 1)", asMETHODPR(Chest, AddItem, (const Item*, uint), bool));
+
 	AddType("RoomType")
 		.WithNamespace()
 		.AddFunction("RoomType@ Get(const string& in)", asFUNCTION(RoomType::GetS));
@@ -834,6 +838,7 @@ void ScriptManager::RegisterGame()
 	CHECKED(engine->RegisterFuncdef("float GetLocationCallback(Location@)"));
 
 	WithNamespace("World", world)
+		.AddFunction("Vec2 get_bounds() property", asMETHOD(World, GetWorldBounds))
 		.AddFunction("Vec2 get_size() property", asMETHOD(World, GetSize))
 		.AddFunction("Vec2 get_pos() property", asMETHOD(World, GetPos))
 		.AddFunction("int get_worldtime() property", asMETHOD(World, GetWorldtime))
@@ -843,6 +848,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("float GetTravelDays(float)", asMETHOD(World, GetTravelDays))
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, bool = false)", asMETHODPR(World, FindPlace, (const Vec2&, float, bool), Vec2))
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, float)", asMETHODPR(World, FindPlace, (const Vec2&, float, float), Vec2))
+		.AddFunction("bool TryFindPlace(Vec2&, float, bool = false)", asMETHOD(World, TryFindPlace))
 		.AddFunction("Vec2 GetRandomPlace()", asMETHOD(World, GetRandomPlace))
 		.AddFunction("Location@ GetRandomCity()", asFUNCTION(World_GetRandomCity)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -880,6 +886,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))
 		.AddFunction("Room@ GetRoom(ROOM_TARGET)", asMETHOD(Level, GetRoom))
 		.AddFunction("Object@ FindObject(Room@, const string& in)", asMETHOD(Level, FindObjectInRoom))
+		.AddFunction("Chest@ GetRandomChest(Room@)", asMETHOD(Level, GetRandomChest))
 		.AddFunction("array<Room@>@ FindPath(Room@, Room@)", asMETHOD(Level, FindPath))
 		.AddFunction("array<Unit@>@ GetUnits(Room@)", asMETHOD(Level, GetUnits));
 
