@@ -20,6 +20,7 @@ Version 0.14 (???):
 - ai gets stuck when using stools in inn
 - improved summon wolf targeting
 - rare crash when canceling pick server
+- missing message about completing all unique quests
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

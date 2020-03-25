@@ -106,7 +106,7 @@ void QuestManager::InitLists()
 	unique_quests = 8;
 	for(QuestScheme* scheme : QuestScheme::schemes)
 	{
-		if(scheme->category == QuestCategory::Unique)
+		if(scheme->category == QuestCategory::Unique && !IsSet(scheme->flags, QuestScheme::DONT_COUNT))
 			++unique_quests;
 	}
 }

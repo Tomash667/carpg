@@ -857,6 +857,7 @@ quest bandits_collect_toll
 quest main
 {
 	type unique
+	flags dont_count
 	progress {
 		P_MAIN_NONE
 		P_MAIN_TALKED_TRAINER
