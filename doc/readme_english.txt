@@ -361,6 +361,7 @@ Thanks for bug founding:
 	Docucat
 	fire
 	Harorri
+	Lemiczek 
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit

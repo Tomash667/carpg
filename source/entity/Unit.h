@@ -795,23 +795,23 @@ public:
 	void CalculateLoad();
 	bool IsOverloaded() const
 	{
-		return weight >= weight_max;
+		return weight > weight_max;
 	}
 	bool IsMaxOverloaded() const
 	{
-		return weight >= weight_max * 2;
+		return weight > weight_max * 2;
 	}
 	LoadState GetLoadState() const
 	{
-		if(weight < weight_max / 4)
+		if(weight <= weight_max / 4)
 			return LS_NONE;
-		else if(weight < weight_max / 2)
+		else if(weight <= weight_max / 2)
 			return LS_LIGHT;
-		else if(weight < weight_max * 3 / 4)
+		else if(weight <= weight_max * 3 / 4)
 			return LS_MEDIUM;
-		else if(weight < weight_max)
+		else if(weight <= weight_max)
 			return LS_HEAVY;
-		else if(weight < weight_max * 2)
+		else if(weight <= weight_max * 2)
 			return LS_OVERLOADED;
 		else
 			return LS_MAX_OVERLOADED;

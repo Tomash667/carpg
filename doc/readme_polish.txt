@@ -297,6 +297,7 @@ Podziêkowania za znalezione b³êdy:
 	Docucat
 	fire
 	Harorri
+	Lemiczek 
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit
