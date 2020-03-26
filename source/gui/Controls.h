@@ -20,7 +20,7 @@ private:
 	void GetCell(int item, int column, Cell& cell);
 	void InitKeyText();
 	void SelectCell(int item, int column, int button);
-	void OnKey(int key);
+	void OnKey(Key key);
 
 	Grid grid;
 	cstring key_text[255], txResetConfirm, txInfo;
