@@ -22,6 +22,8 @@ Wersja 0.14 (???):
 - rzadki crash przy zamykaniu okna wyboru serwera
 - brakuj¹cy komunikat o ukoñczeniu wszystkich unikalnych zadañ
 - przeci¹¿enie po przekroczeniu limitu udŸwigu [Lemiczek]
+- zmiana ustawieñ sterowania wymaga³a podwójnego klikniêcia [BottledByte, Lemiczek, Mokai]
+- b³¹d z brakiem dll MSVCP140 na niektórych systemach [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (020-01-11):

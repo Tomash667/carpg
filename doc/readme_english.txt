@@ -304,7 +304,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 		multiplayer uses (nick, server_name, server_player, server_pswd, server_ip),
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
-	* screenshot_format � set screenshot (jpg, bmp, tga, png)
+	* screenshot_format – set screenshot (jpg, bmp, tga, png)
 	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server
@@ -340,7 +340,7 @@ Command line switches are used for exe shortcut or from window shell.
 -test - test game data
 
 ===============================================================================
-10) Report bug
+10) Report bug 🐜
 Errors and bugs can and should be reported to the appropriate forum section in
 http://carpg.pl/en forum. Do not forget to give all possible details that may
 help in its repair. If game crash with created minidump file you can attach it.
@@ -355,8 +355,9 @@ MarkK - Models and textures of food and other objects.
 Shdorsh - English translation fixes.
 Zielu - Testing.
 
-Thanks for bug founding:
+❤ Thanks for testing & bug founding:
 	Ampped
+	BottledByte
 	darktorq
 	Docucat
 	fire
@@ -367,6 +368,7 @@ Thanks for bug founding:
 	MildlyPhilosophicalHobbit
 	Minister of Death
 	mishka
+	Mokai
 	Paradox Edge
 	Savagesheep
 	thebard88
@@ -376,26 +378,26 @@ Thanks for bug founding:
 	Zettaton
 	Zinny
 
-Audio Engine: FMOD Studio by Firelight Technologies.
+🎵 Audio Engine: FMOD Studio by Firelight Technologies.
 
-Models:
+🗃 Models:
 	* kaangvl - fish
 	* yd - sausage
 	* rubberduck - shrine
-Textures:
+🎨 Textures:
 	* http://cgtextures.com
 	* Cube
 	* texturez.com
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
 	* Class icons - http://game-icons.net/
-Music:
-	* �ukasz Xwokloiz
+🎧 Music:
+	* Łukasz Xwokloiz
 	* Celestial Aeon Project
 	* Project Divinity
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
-Sounds:
+🔈 Sounds:
 	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
 	* http://www.freesound.org/
 	* http://www.pacdv.com/sounds/
