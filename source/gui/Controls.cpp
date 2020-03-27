@@ -486,17 +486,17 @@ void Controls::SelectCell(int item, int column, int button)
 }
 
 //=================================================================================================
-void Controls::OnKey(int key)
+void Controls::OnKey(Key key)
 {
-	if(key == (int)Key::Escape)
+	if(key == Key::Escape)
 	{
 		picked = -1;
 		input->SetCallback(nullptr);
 		game_gui->cursor_allow_move = true;
 	}
-	else if(key < n_texts && IsSet(in_text[key], 0x01))
+	else if((int)key < n_texts && IsSet(in_text[(int)key], 0x01))
 	{
-		GKey[picked][picked_n] = (Key)key;
+		GKey[picked][picked_n] = key;
 		picked = -1;
 		input->SetCallback(nullptr);
 		game_gui->cursor_allow_move = true;

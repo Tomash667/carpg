@@ -382,7 +382,7 @@ float Unit::CalculateDefense(const Item* armor) const
 //=================================================================================================
 Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 {
-	auto state = GetLoadState();
+	LoadState state = GetLoadState();
 	if(armor)
 	{
 		SkillId skill = armor->ToArmor().GetSkill();
@@ -4426,7 +4426,7 @@ float Unit::CalculateMobility(const Armor* armor) const
 		mobility = (float(armor_mobility) / 100 * mobility);
 	}
 
-	auto load_state = GetLoadState();
+	LoadState load_state = GetLoadState();
 	switch(load_state)
 	{
 	case LS_NONE:

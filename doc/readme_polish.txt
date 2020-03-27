@@ -12,37 +12,37 @@ Wersja: 0.13
 Data: 2020-01-11
 
 ===============================================================================
-1) Spis treœci
-	1... Spis treœci
+1) Spis treÅ›ci
+	1... Spis treÅ›ci
 	2... Opis
 	3... Sterowanie
-	4... Jak graæ
+	4... Jak graÄ‡
 	5... Tryb wieloosobowy
 	6... Zmiany
 	7... Komendy w konsoli
 	8... Plik konfiguracyjny
 	9... Linia komend
-	10.. Zg³oœ b³¹d
+	10.. ZgÅ‚oÅ› bÅ‚Ä…d
 	11.. Autorzy
 
 ===============================================================================
 2) Opis
-CaRpg jest to po³¹czenie gier typu action rpg/hack-n-slash jak Gothic czy
+CaRpg jest to poÅ‚Ä…czenie gier typu action rpg/hack-n-slash jak Gothic czy
 TES:Morrowind z grami rougelike SLASH'EM/Dungeon Crawl Stone Soup. W losowo
-wygenerowanym œwiecie, zaczynamy w losowo wygenerowanym mieœcie, rekrutujemy
-losowych bohaterów i idziemy do losowo wygenerowanych podziemi zabijaæ losowo
-wygenerowanych wrogów :3 Nie chodzi o to ¿eby wszystko by³o losowe ale tak¿e
-dopasowane do siebie. Jest kilka unikalnych zadañ (dok³adniej osiem) których
-wykonanie jest celem w obecnej wersji. Jest dostêpny tryb multiplayer dla
-maksimum 8 osób ale na razie chodzenie w tyle osób do podziemi jest trochê
-niewygodne bo trzeba siê przepychaæ ¿eby kogoœ zabiæ wiêc proponuje graæ w 4
+wygenerowanym Å›wiecie, zaczynamy w losowo wygenerowanym mieÅ›cie, rekrutujemy
+losowych bohaterÃ³w i idziemy do losowo wygenerowanych podziemi zabijaÄ‡ losowo
+wygenerowanych wrogÃ³w :3 Nie chodzi o to Å¼eby wszystko byÅ‚o losowe ale takÅ¼e
+dopasowane do siebie. Jest kilka unikalnych zadaÅ„ (dokÅ‚adniej osiem) ktÃ³rych
+wykonanie jest celem w obecnej wersji. Jest dostÄ™pny tryb multiplayer dla
+maksimum 8 osÃ³b ale na razie chodzenie w tyle osÃ³b do podziemi jest trochÄ™
+niewygodne bo trzeba siÄ™ przepychaÄ‡ Å¼eby kogoÅ› zabiÄ‡ wiÄ™c proponuje graÄ‡ w 4
 osoby. Oczekuj zmian na lepsze!
 
 ===============================================================================
-3) Sterowanie - Mo¿na je zmieniæ w opcjach.
-3.1. Wspólne
+3) Sterowanie - MoÅ¼na je zmieniÄ‡ w opcjach.
+3.1. WspÃ³lne
 	Esc - menu / zamknij okno
-	Alt + F4 - wyjœcie z gry
+	Alt + F4 - wyjÅ›cie z gry
 	Print Screen - zrzut ekranu (z shift bez gui)
 	F5 - szybki zapis
 	F9 - szybkie wczytanie
@@ -50,131 +50,131 @@ osoby. Oczekuj zmian na lepsze!
 	Ctrl + U - uwolnij kursor w trybie okienkowym
 	~ - konsola
 3.2. W grze
-	E - u¿yj, ograbiaj, rozmawiaj maj¹c wyci¹gniêt¹ broñ
-	lewy przycisk myszki - u¿yj, atakuj, ograbiaj, rozmawiaj
+	E - uÅ¼yj, ograbiaj, rozmawiaj majÄ…c wyciÄ…gniÄ™tÄ… broÅ„
+	lewy przycisk myszki - uÅ¼yj, atakuj, ograbiaj, rozmawiaj
 	Z / 4 przycisk myszki - druga opcja ataku
 	X - anuluj atak
 	prawy przycisk myszki - blok
 	W - ruch do przodu
-	S - ruch do ty³u
+	S - ruch do tyÅ‚u
 	A - ruch w lewo
 	D - ruch w prawo
-	1..0 - skróty przedmiotów/zdolnoœci
+	1..0 - skrÃ³ty przedmiotÃ³w/zdolnoÅ›ci
 	F - automatyczny ruch do przodu
-	Caps Lock - prze³¹cz bieganie/chodzenie
+	Caps Lock - przeÅ‚Ä…cz bieganie/chodzenie
 	Y - okrzyk
 	C - ekran postaci
 	I - ekwipunek
-	T - dru¿yna
-	K - zdolnoœci
+	T - druÅ¼yna
+	K - zdolnoÅ›ci
 	J - dziennik
 	M - minimapa
 	Tab - okno rozmowy
 	Enter - wprowadzanie tekstu w multiplayer
-	Kó³ko myszy - zmiana odleg³oœci kamery
-	F2 - poka¿/ukryj fps
+	KÃ³Å‚ko myszy - zmiana odlegÅ‚oÅ›ci kamery
+	F2 - pokaÅ¼/ukryj fps
 3.3. Ekwipunek
-	lewy przycisk myszki - u¿yj, za³ó¿, kup
-	prawy przycisk myszki - wyrzuæ
-	klikniêcie + shift - je¿eli jest kilka przedmiotów to robi to dla wszystkich
-	klikniêcie + ctrl - je¿eli jest kilka przedmiotów to robi to dla jednego
-	klikniêcie + alt - wyœwietla dla ilu przedmiotów to zrobiæ
+	lewy przycisk myszki - uÅ¼yj, zaÅ‚Ã³Å¼, kup
+	prawy przycisk myszki - wyrzuÄ‡
+	klikniÄ™cie + shift - jeÅ¼eli jest kilka przedmiotÃ³w to robi to dla wszystkich
+	klikniÄ™cie + ctrl - jeÅ¼eli jest kilka przedmiotÃ³w to robi to dla jednego
+	klikniÄ™cie + alt - wyÅ›wietla dla ilu przedmiotÃ³w to zrobiÄ‡
 	F - zabierz wszystko
-3.4. Mapa œwiata
-	lewy przycisk myszki - podró¿uj do lokalizacji / wejdŸ
-	Tab - otwórz / zamknij okno tekstu w multiplayer
+3.4. Mapa Å›wiata
+	lewy przycisk myszki - podrÃ³Å¼uj do lokalizacji / wejdÅº
+	Tab - otwÃ³rz / zamknij okno tekstu w multiplayer
 	Enter - wprowadzanie tekstu w multiplayer
 	F - szukaj lokalizacji
 3.5. Dziennik
-	A / strza³ka w lewo - poprzednia strona
-	D / strza³ka w prawo - nastêpna strona
-	W / strza³ka w górê - wyjœcie z szczegó³ów zadania
+	A / strzaÅ‚ka w lewo - poprzednia strona
+	D / strzaÅ‚ka w prawo - nastÄ™pna strona
+	W / strzaÅ‚ka w gÃ³rÄ™ - wyjÅ›cie z szczegÃ³Å‚Ã³w zadania
 	Q - poprzednie zadanie
-	E - nastêpne zadanie
+	E - nastÄ™pne zadanie
 	1 - zadania
 	2 - plotki
 	3 - notatki
 
 ===============================================================================
-4) Jak graæ
-* Po pierwsze przejdŸ samouczek, to tam wszystkiego siê dowiesz. Jeœli go przez
-	przypadek wy³¹czy³eœ w carpg.cfg zmieñ "skip_tutorial = 1" na 0.
-* Walka - Najproœciej atakowaæ wroga broni¹ do walki wrêcz. Postaraj siê ich
-	otoczyæ i atakowaæ od ty³u gdy s¹ zajêci walk¹ z innymi, wtedy zadajesz
-	wiêcej obra¿eñ. Blokowanie tarcz¹ nie jest aktualnie a¿ tak przydatne, nie
-	otrzymujesz a¿ takich obra¿eñ ale wróg nie otrzymuje ¿adnych obra¿eñ. Jest
-	on przydatna do blokowania czarów które ignoruj¹ pancerz. Strzelanie z ³uku
-	jest przydatne o ile masz w dru¿ynie kogoœ kto zatrzyma wroga przed
-	dojœciem do ciebie. W walce wrêcz mo¿esz wykonaæ potê¿ny atak, trzeba
-	przytrzymaæ atak przez chwile, dziêki temu bêdzie silniejszy. Jest to
-	przydatne przeciwko odpornym wrogom którym normalnym atakiem zadajesz ma³o
-	lub nic. Atak w biegu jest jak 0.25 potê¿nego ataku ale nie mo¿esz siê
-	zatrzymaæ.
-* Zdolnoœci - Aby u¿yæ zdolnoœci wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
-	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ zdolnoœci,
-	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia zdolnoœci w
-	tym miejscu. Niektóre czary mo¿esz rzuciæ na siebie przytrzymuj¹c ruch do ty³u,
-	gracz zostanie podœwietlony.
-* Wytrzyma³oœæ - Atakowanie zu¿ywa wytrzyma³oœæ, gdy siê skoñczy nie mo¿esz
-	biegaæ ani atakowaæ. Blokowanie ciosów te¿ zu¿ywa wytrzyma³oœæ i gdy siê
-	skoñczy blok zostaje przerwany. Przestañ atakowaæ aby odzyskaæ wytrzyma³oœæ,
-	szybciej je¿eli stoisz w miejscu.
-* Czêsto zapisuj grê, szczególnie na pocz¹tku kiedy jesteœ s³aby. PóŸniej przed
-	walk¹ z bossem. Pamiêtaj, ¿e zawsze mo¿e siê zdarzyæ jakiœ nie naprawiony
-	b³¹d i gra mo¿e siê zawiesiæ :( Przed zapisywaniem poprzedni zapis jest
-	kopiowany do pliku (X.sav -> X.sav.bak) wiêc w razie problemów w czasie
-	zapisywania mo¿esz go skopiowaæ.
-* Pora¿ka - Gdy postaæ z twojej dru¿yny straci ca³e hp to upadnie na ziemiê.
-	Gdy nie bêdzie ju¿ wrogów w okolicy to wstanie maj¹c 1 hp. Gdy wszyscy
-	umr¹ nast¹pi koniec gry. Gra koñczy siê te¿ w 160 roku, twoja postaæ
-	odchodzi na emeryturê.
-* Podzia³ ³upów - Ka¿dy cz³onek dru¿yny otrzymuje jak¹œ czêœæ ³upów dla siebie.
-	Ka¿dy bohater niezale¿ny otrzymuje 10% ³upów, reszta jest dzielona po równo
-	pomiêdzy graczy. Bohaterowie którzy z jakiegoœ powodu zostali w mieœcie nic
-	nie dostaj¹. Przedmioty znalezione w podziemiach s¹ oznaczone jako
-	dru¿ynowe i gdy je sprzedasz zysk zostanie rozdzielony. Mo¿esz wzi¹œæ dla
-	siebie przedmiot dru¿ynowy ale wtedy w przysz³oœci musisz sp³aciæ pozosta³¹
-	czêœæ jego rynkowej wartoœci pozosta³ym bohaterom - jest to oznaczone jako
-	kredyt. Bohaterowie niezale¿ni mog¹ sobie wzi¹æ jakiœ przedmiot jeœli
-	bêdzie on lepszy ni¿ to co maj¹ aktualnie lub cie o niego poprosiæ w
-	mieœcie. Mo¿esz daæ bohaterowie niezale¿nemu przedmiot, jeœli jest
-	lepszy ni¿ to co ma spróbuje go od ciebie odkupiæ. Bohaterowie niezale¿ni
-	przyjm¹ te¿ od ciebie ka¿d¹ miksturkê, za darmo.
+4) Jak graÄ‡
+* Po pierwsze przejdÅº samouczek, to tam wszystkiego siÄ™ dowiesz. JeÅ›li go przez
+	przypadek wyÅ‚Ä…czyÅ‚eÅ› w carpg.cfg zmieÅ„ "skip_tutorial = 1" na 0.
+* Walka - NajproÅ›ciej atakowaÄ‡ wroga broniÄ… do walki wrÄ™cz. Postaraj siÄ™ ich
+	otoczyÄ‡ i atakowaÄ‡ od tyÅ‚u gdy sÄ… zajÄ™ci walkÄ… z innymi, wtedy zadajesz
+	wiÄ™cej obraÅ¼eÅ„. Blokowanie tarczÄ… nie jest aktualnie aÅ¼ tak przydatne, nie
+	otrzymujesz aÅ¼ takich obraÅ¼eÅ„ ale wrÃ³g nie otrzymuje Å¼adnych obraÅ¼eÅ„. Jest
+	on przydatna do blokowania czarÃ³w ktÃ³re ignorujÄ… pancerz. Strzelanie z Å‚uku
+	jest przydatne o ile masz w druÅ¼ynie kogoÅ› kto zatrzyma wroga przed
+	dojÅ›ciem do ciebie. W walce wrÄ™cz moÅ¼esz wykonaÄ‡ potÄ™Å¼ny atak, trzeba
+	przytrzymaÄ‡ atak przez chwile, dziÄ™ki temu bÄ™dzie silniejszy. Jest to
+	przydatne przeciwko odpornym wrogom ktÃ³rym normalnym atakiem zadajesz maÅ‚o
+	lub nic. Atak w biegu jest jak 0.25 potÄ™Å¼nego ataku ale nie moÅ¼esz siÄ™
+	zatrzymaÄ‡.
+* ZdolnoÅ›ci - Aby uÅ¼yÄ‡ zdolnoÅ›ci wciÅ›nij 3 (domyÅ›lnie), bÄ™dzie wtedy rysowany obszar na
+	ktÃ³rym zostanie uÅ¼yty ten efekt. Kliknij lewy przycisk myszki aby uÅ¼yÄ‡ zdolnoÅ›ci,
+	prawy aby anulowaÄ‡. Czerwony obszar oznacza brak moÅ¼liwoÅ›ci uÅ¼ycia zdolnoÅ›ci w
+	tym miejscu. NiektÃ³re czary moÅ¼esz rzuciÄ‡ na siebie przytrzymujÄ…c ruch do tyÅ‚u,
+	gracz zostanie podÅ›wietlony.
+* WytrzymaÅ‚oÅ›Ä‡ - Atakowanie zuÅ¼ywa wytrzymaÅ‚oÅ›Ä‡, gdy siÄ™ skoÅ„czy nie moÅ¼esz
+	biegaÄ‡ ani atakowaÄ‡. Blokowanie ciosÃ³w teÅ¼ zuÅ¼ywa wytrzymaÅ‚oÅ›Ä‡ i gdy siÄ™
+	skoÅ„czy blok zostaje przerwany. PrzestaÅ„ atakowaÄ‡ aby odzyskaÄ‡ wytrzymaÅ‚oÅ›Ä‡,
+	szybciej jeÅ¼eli stoisz w miejscu.
+* CzÄ™sto zapisuj grÄ™, szczegÃ³lnie na poczÄ…tku kiedy jesteÅ› sÅ‚aby. PÃ³Åºniej przed
+	walkÄ… z bossem. PamiÄ™taj, Å¼e zawsze moÅ¼e siÄ™ zdarzyÄ‡ jakiÅ› nie naprawiony
+	bÅ‚Ä…d i gra moÅ¼e siÄ™ zawiesiÄ‡ :( Przed zapisywaniem poprzedni zapis jest
+	kopiowany do pliku (X.sav -> X.sav.bak) wiÄ™c w razie problemÃ³w w czasie
+	zapisywania moÅ¼esz go skopiowaÄ‡.
+* PoraÅ¼ka - Gdy postaÄ‡ z twojej druÅ¼yny straci caÅ‚e hp to upadnie na ziemiÄ™.
+	Gdy nie bÄ™dzie juÅ¼ wrogÃ³w w okolicy to wstanie majÄ…c 1 hp. Gdy wszyscy
+	umrÄ… nastÄ…pi koniec gry. Gra koÅ„czy siÄ™ teÅ¼ w 160 roku, twoja postaÄ‡
+	odchodzi na emeryturÄ™.
+* PodziaÅ‚ Å‚upÃ³w - KaÅ¼dy czÅ‚onek druÅ¼yny otrzymuje jakÄ…Å› czÄ™Å›Ä‡ Å‚upÃ³w dla siebie.
+	KaÅ¼dy bohater niezaleÅ¼ny otrzymuje 10% Å‚upÃ³w, reszta jest dzielona po rÃ³wno
+	pomiÄ™dzy graczy. Bohaterowie ktÃ³rzy z jakiegoÅ› powodu zostali w mieÅ›cie nic
+	nie dostajÄ…. Przedmioty znalezione w podziemiach sÄ… oznaczone jako
+	druÅ¼ynowe i gdy je sprzedasz zysk zostanie rozdzielony. MoÅ¼esz wziÄ…Å›Ä‡ dla
+	siebie przedmiot druÅ¼ynowy ale wtedy w przyszÅ‚oÅ›ci musisz spÅ‚aciÄ‡ pozostaÅ‚Ä…
+	czÄ™Å›Ä‡ jego rynkowej wartoÅ›ci pozostaÅ‚ym bohaterom - jest to oznaczone jako
+	kredyt. Bohaterowie niezaleÅ¼ni mogÄ… sobie wziÄ…Ä‡ jakiÅ› przedmiot jeÅ›li
+	bÄ™dzie on lepszy niÅ¼ to co majÄ… aktualnie lub cie o niego poprosiÄ‡ w
+	mieÅ›cie. MoÅ¼esz daÄ‡ bohaterowie niezaleÅ¼nemu przedmiot, jeÅ›li jest
+	lepszy niÅ¼ to co ma sprÃ³buje go od ciebie odkupiÄ‡. Bohaterowie niezaleÅ¼ni
+	przyjmÄ… teÅ¼ od ciebie kaÅ¼dÄ… miksturkÄ™, za darmo.
 * Tryb hardcore - W tym trybie po zapisaniu wychodzisz do menu a wczytanie
-	usuwa zapis. Standardowy tryb dla gier rougelike. Nie jest on póki co
-	zalecany bo jeœli gra siê zawiesi lub zcrashuje bêdzie trzeba zaczynaæ od
+	usuwa zapis. Standardowy tryb dla gier rougelike. Nie jest on pÃ³ki co
+	zalecany bo jeÅ›li gra siÄ™ zawiesi lub zcrashuje bÄ™dzie trzeba zaczynaÄ‡ od
 	nowa.
-* Jeœli NPC zablokuje ci drogê mo¿esz na niego krzykn¹æ (domyœlnie klawisz Y)
-	aby ruszy³ siê z drogi.
+* JeÅ›li NPC zablokuje ci drogÄ™ moÅ¼esz na niego krzyknÄ…Ä‡ (domyÅ›lnie klawisz Y)
+	aby ruszyÅ‚ siÄ™ z drogi.
 
 ===============================================================================
 5) Tryb wieloosobowy
-* Ogólne informacje - Tryb multiplayer zosta³ przetestowany tylko na LANie.
-	Nie wiadomo czy dzia³a wystarczaj¹co dobrze przez internet. Dziêki g³ównemu
-	serwerowi mo¿na siê po³¹czyæ pomiêdzy dwoma komputerami za routerem. Jeœli
-	jednak siê to nie powiedzie trzeba odpowiednio skonfigurowaæ router
-	(ustawienia NAT). Jeœli ruch postaci laguje niech serwer pozmienia
-	opcje w konsoli 'mp_interp'. Domyœlnie wynosi 0.05, podwy¿szaj j¹ a¿
-	uznasz ¿e ruch postaci jest odpowiedni. Nie zapomnij siê pochwaliæ na forum
-	jak posz³o! :)
-* Przywódca - Bohater który ustala gdzie iœæ na mapie œwiata. Tylko on mo¿e
-	zwalniaæ bohaterów i wydawaæ im rozkazy. Bohater niezale¿ny nie mo¿e zostaæ
-	przywódc¹. Mo¿esz przekazaæ dowodzenie innej postaci w panelu dru¿yny
-	(domyœlny skrót T). Serwer te¿ mo¿e zmieniæ dowódcê.
-* Up³yw czasu - W trybie singleplayer czas p³ynie normalnie, gdy gracz odpoczywa
+* OgÃ³lne informacje - Tryb multiplayer zostaÅ‚ przetestowany tylko na LANie.
+	Nie wiadomo czy dziaÅ‚a wystarczajÄ…co dobrze przez internet. DziÄ™ki gÅ‚Ã³wnemu
+	serwerowi moÅ¼na siÄ™ poÅ‚Ä…czyÄ‡ pomiÄ™dzy dwoma komputerami za routerem. JeÅ›li
+	jednak siÄ™ to nie powiedzie trzeba odpowiednio skonfigurowaÄ‡ router
+	(ustawienia NAT). JeÅ›li ruch postaci laguje niech serwer pozmienia
+	opcje w konsoli 'mp_interp'. DomyÅ›lnie wynosi 0.05, podwyÅ¼szaj jÄ… aÅ¼
+	uznasz Å¼e ruch postaci jest odpowiedni. Nie zapomnij siÄ™ pochwaliÄ‡ na forum
+	jak poszÅ‚o! :)
+* PrzywÃ³dca - Bohater ktÃ³ry ustala gdzie iÅ›Ä‡ na mapie Å›wiata. Tylko on moÅ¼e
+	zwalniaÄ‡ bohaterÃ³w i wydawaÄ‡ im rozkazy. Bohater niezaleÅ¼ny nie moÅ¼e zostaÄ‡
+	przywÃ³dcÄ…. MoÅ¼esz przekazaÄ‡ dowodzenie innej postaci w panelu druÅ¼yny
+	(domyÅ›lny skrÃ³t T). Serwer teÅ¼ moÅ¼e zmieniÄ‡ dowÃ³dcÄ™.
+* UpÅ‚yw czasu - W trybie singleplayer czas pÅ‚ynie normalnie, gdy gracz odpoczywa
 	lub trenuje. W trybie multiplayer gdy jedna osoba odpoczywa/trenuje
-	pozostali gracze otrzymuj¹ tyle samo wolnych dni do wykorzystania. Ile jest
-	dni mo¿na zobaczyæ w panelu dru¿yny (domyœlny skrót T). Gdy ktoœ przekroczy
-	t¹ liczbê to automatycznie zwiêkszy j¹ u wszystkich. Dzieñ siê zmienia siê u
+	pozostali gracze otrzymujÄ… tyle samo wolnych dni do wykorzystania. Ile jest
+	dni moÅ¼na zobaczyÄ‡ w panelu druÅ¼yny (domyÅ›lny skrÃ³t T). Gdy ktoÅ› przekroczy
+	tÄ… liczbÄ™ to automatycznie zwiÄ™kszy jÄ… u wszystkich. DzieÅ„ siÄ™ zmienia siÄ™ u
 	wszystkich tylko przy przekroczeniu tej liczby. Wolnych dni ubywa w czasie
-	podró¿y aby gracze nie trzymali ich w nieskoñczonoœæ.
-* Zapisywanie - Nie zapisuj w trakcie walki albo w czasie jakiejœ wa¿nej
-	rozmowy bo jeszcze siê coœ zepsuje. Mo¿na wczytywaæ grê tylko z menu.
-* Jeœli wczytywanie u klienta trwa za d³ugo mo¿e zmieniæ/dodaæ w pliku
-	konfiguracyjnym wartoœæ "timeout = X" gdzie X = 1-3600 w sekundach po jakim
+	podrÃ³Å¼y aby gracze nie trzymali ich w nieskoÅ„czonoÅ›Ä‡.
+* Zapisywanie - Nie zapisuj w trakcie walki albo w czasie jakiejÅ› waÅ¼nej
+	rozmowy bo jeszcze siÄ™ coÅ› zepsuje. MoÅ¼na wczytywaÄ‡ grÄ™ tylko z menu.
+* JeÅ›li wczytywanie u klienta trwa za dÅ‚ugo moÅ¼e zmieniÄ‡/dodaÄ‡ w pliku
+	konfiguracyjnym wartoÅ›Ä‡ "timeout = X" gdzie X = 1-3600 w sekundach po jakim
 	czasie gracz zostanie wyrzucony.
-* Porty - gra wykorzystuje port udp 37557, mo¿na go zmieniæ w pliku konfiguracyjnym.
-	G³ówny serwer wykorzystuje porty tcp 8080 i udp 60481 do komunikacji.
+* Porty - gra wykorzystuje port udp 37557, moÅ¼na go zmieniÄ‡ w pliku konfiguracyjnym.
+	GÅ‚Ã³wny serwer wykorzystuje porty tcp 8080 i udp 60481 do komunikacji.
 
 ===============================================================================
 6) Zmiany
@@ -182,126 +182,129 @@ Zobacz plik changelog.txt.
 
 ===============================================================================
 7) Komendy w konsoli
-Aby otworzyæ konsolê wciœnij ~ [tylda na lewo od 1]. Niektóre komendy s¹
-dostêpne tylko w trybie multiplayer lub tylko w lobby.
-Dostêpne komendy bez trybu developera:
-	cmds - wyœwietla komendy i zapisuje je do pliku commands.txt, z all wyœwietla te¿ te niedostêpne (cmds [all]).
+Aby otworzyÄ‡ konsolÄ™ wciÅ›nij ~ [tylda na lewo od 1]. NiektÃ³re komendy sÄ…
+dostÄ™pne tylko w trybie multiplayer lub tylko w lobby.
+DostÄ™pne komendy bez trybu developera:
+	cmds - wyÅ›wietla komendy i zapisuje je do pliku commands.txt, z all wyÅ›wietla teÅ¼ te niedostÄ™pne (cmds [all]).
 	devmode - ustawia tryb developera (devmode 0/1).
 	exit - wychodzi do menu.
-	help - wyœwietla informacje o komendzie (help [komenda]).
+	help - wyÅ›wietla informacje o komendzie (help [komenda]).
 	kick - wyrzuca gracza z serwera (kick nick).
-	leader - zmienia przywódcê dru¿yny (leader nick).
-	list - wyœwietla jednostki/przedmioty/zadania po id/nazwie, unit item unitn itemn quest (list typ [filtr]).
-	player_devmode - w³¹cza/wy³¹cza tryb developera dla innego gracza w multiplayer (player_devmode nick/all 0/1).
+	leader - zmienia przywÃ³dcÄ™ druÅ¼yny (leader nick).
+	list - wyÅ›wietla jednostki/przedmioty/zadania po id/nazwie, unit item unitn itemn quest (list typ [filtr]).
+	player_devmode - wÅ‚Ä…cza/wyÅ‚Ä…cza tryb developera dla innego gracza w multiplayer (player_devmode nick/all 0/1).
 	quit - wychodzi z gry.
-	random - losuje liczbê 1-100 lub wybiera losow¹ postaæ (random, random [warrior/hunter/rogue]).
-	server - wyœwietla wiadomoœæ od serwera wszystkim graczom (say wiadomoœæ).
-	version - wyœwietla wersjê gry.
-	w/whisper - wysy³a prywatn¹ wiadomoœæ do gracza (whisper nick wiadomoœæ).
-Pe³na lista komend w readme_eng.txt.
+	random - losuje liczbÄ™ 1-100 lub wybiera losowÄ… postaÄ‡ (random, random [warrior/hunter/rogue]).
+	server - wyÅ›wietla wiadomoÅ›Ä‡ od serwera wszystkim graczom (say wiadomoÅ›Ä‡).
+	version - wyÅ›wietla wersjÄ™ gry.
+	w/whisper - wysyÅ‚a prywatnÄ… wiadomoÅ›Ä‡ do gracza (whisper nick wiadomoÅ›Ä‡).
+PeÅ‚na lista komend w readme_eng.txt.
 
 ===============================================================================
 8) Plik konfiguracyjny
-W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
-	* autopick (random warrior hunter rogue) - automatycznie wybiera postaæ w
-		trybie multiplayer i ustawia gotowoœæ. Dzia³a tylko raz
+W pliku konfiguracyjnym (domyÅ›lnie carpg.cfg) moÅ¼na uÅ¼ywaÄ‡ takich opcji:
+	* autopick (random warrior hunter rogue) - automatycznie wybiera postaÄ‡ w
+		trybie multiplayer i ustawia gotowoÅ›Ä‡. DziaÅ‚a tylko raz
 	* autostart (ile>=1) - automatycznie uruchamia serwer gdy jest taka liczba
 		graczy
-	* change_title (true [false]) - zmienia tytu³ okna w zale¿noœci od trybu
+	* change_title (true [false]) - zmienia tytuÅ‚ okna w zaleÅ¼noÅ›ci od trybu
 		gry
-	* check_updates ([true] false) - czy sprawdzaæ czy jest nowa wersja
+	* check_updates ([true] false) - czy sprawdzaÄ‡ czy jest nowa wersja
 	* class (warrior hunter rogue) - wybrana klasa postaci w trybie szybkiej
 		gry
 	* con_pos Int2 - pozycja konsoli x, y
 	* console (true [false]) - konsola systemowa
-	* crash_mode (none [normal] dataseg full) - okreœla tryb zapisywania
+	* crash_mode (none [normal] dataseg full) - okreÅ›la tryb zapisywania
 		informacji o crashu
-	* grass_range (0-100) - zasiêg rysowania trawy
-	* force_seed (true [false]) - wymuszenie okreœlonej losowoœci na ka¿dym
+	* grass_range (0-100) - zasiÄ™g rysowania trawy
+	* force_seed (true [false]) - wymuszenie okreÅ›lonej losowoÅ›ci na kaÅ¼dym
 		poziomie
-	* fullscreen ([true] false) - tryb pe³noekranowy
+	* fullscreen ([true] false) - tryb peÅ‚noekranowy
 	* inactive_update (true [false]) - gra jest aktualizowana nawet gdy okno
 		jest nieaktywne; gra jest zawsze aktualizowana w trybie multiplayer
 	* log ([true] false) - logowanie do pliku
 	* log_filename ["log.txt"] - plik do logowania
-	* name - imiê gracza w trybie szybkiej gry
-	* next_seed - nastêpne ziarno losowoœci
-	* nick - zapamiêtany wybór nicku w trybie multiplayer
+	* name - imiÄ™ gracza w trybie szybkiej gry
+	* next_seed - nastÄ™pne ziarno losowoÅ›ci
+	* nick - zapamiÄ™tany wybÃ³r nicku w trybie multiplayer
 	* nomusic (true [false]) - po ustawieniu muzyka nie jest wczytywana i
-		odtwarzana, nie mo¿na zmieniæ w czasie gry
-	* nosound (true [false]) - po ustawieniu dŸwiêk nie jest wczytywany i
-		odtwarzany, nie mo¿na zmieniæ w czasie gry
-	* play_music ([true] false) - czy odtwarzaæ muzykê
-	* play_sound ([true] false) - czy odtwarzaæ dŸwiêk
+		odtwarzana, nie moÅ¼na zmieniÄ‡ w czasie gry
+	* nosound (true [false]) - po ustawieniu dÅºwiÄ™k nie jest wczytywany i
+		odtwarzany, nie moÅ¼na zmieniÄ‡ w czasie gry
+	* play_music ([true] false) - czy odtwarzaÄ‡ muzykÄ™
+	* play_sound ([true] false) - czy odtwarzaÄ‡ dÅºwiÄ™k
 	* port ([37557]) - port w trybie multiplayer
 	* quickstart (single host join joinip) - automatycznie wybierany
-		tryb gry (single - gra dla jednego gracza), u¿ywa ustawieñ name (daje
-		"Test" jeœli nie ma), class (losowa klasa) w multiplayer u¿ywa (nick,
-		server_name, server_players, server_pswd, server_ip), jeœli nie ma
-		którejœ zmiennej to nie uruchamia automatycznie
-	* resolution (800x600 [1024x768]) - rozdzielczoœæ ekranu
-	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
-	* seed - ziarno losowoœci
-	* server_ip - zapamiêtane ip serwera
-	* server_lan - jeœli jest 1 to serwer nie bêdzie rejestrowany w g³ównym serwerze
-	* server_name - zapamiêtana nazwa serwera
-	* server_players - zapamiêtana liczba graczy
-	* server_pswd - zapamiêtane has³o serwera
-	* shader_version - ustawia wersjê shadera 2/3
-	* skip_tutorial (true [false]) - czy pomijaæ pytanie o samouczek
+		tryb gry (single - gra dla jednego gracza), uÅ¼ywa ustawieÅ„ name (daje
+		"Test" jeÅ›li nie ma), class (losowa klasa) w multiplayer uÅ¼ywa (nick,
+		server_name, server_players, server_pswd, server_ip), jeÅ›li nie ma
+		ktÃ³rejÅ› zmiennej to nie uruchamia automatycznie
+	* resolution (800x600 [1024x768]) - rozdzielczoÅ›Ä‡ ekranu
+	* screenshot_format - ustawia rozszerzenie screenshotÃ³w (jpg, bmp, tga, png)
+	* seed - ziarno losowoÅ›ci
+	* server_ip - zapamiÄ™tane ip serwera
+	* server_lan - jeÅ›li jest 1 to serwer nie bÄ™dzie rejestrowany w gÅ‚Ã³wnym serwerze
+	* server_name - zapamiÄ™tana nazwa serwera
+	* server_players - zapamiÄ™tana liczba graczy
+	* server_pswd - zapamiÄ™tane hasÅ‚o serwera
+	* shader_version - ustawia wersjÄ™ shadera 2/3
+	* skip_tutorial (true [false]) - czy pomijaÄ‡ pytanie o samouczek
 	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
-	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyœlnie 10)
-	* vsync ([true] false) - ustawia synchronizacjê pionow¹
+	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyÅ›lnie 10)
+	* vsync ([true] false) - ustawia synchronizacjÄ™ pionowÄ…
 	* wnd_pos Int2 - pozycja okna x, y
 	* wnd_size Int2 - wymiary okna x, y
 
 ===============================================================================
 9) Linia komend
-To s¹ prze³¹czniki dla aplikacji, dodawane do skrótu do pliku exe.
--config plik.cfg - ustawia którego pliku cfg u¿yæ
--console - uruchamia grê z konsol¹
+To sÄ… przeÅ‚Ä…czniki dla aplikacji, dodawane do skrÃ³tu do pliku exe.
+-config plik.cfg - ustawia ktÃ³rego pliku cfg uÅ¼yÄ‡
+-console - uruchamia grÄ™ z konsolÄ…
 -delay-1 - powoduje czekanie innej gry
--delay-2 - czeka a¿ inna gra siê wczyta
--fullscreen - uruchamia w trybie pe³noekranowym
--host - automatycznie zak³ada serwer LAN
--hostip - automatycznie zak³ada serwer internet
--join - automatycznie do³¹cza do serwera LAN
--joinip - automatycznie do³¹cza do serwera w internecie
+-delay-2 - czeka aÅ¼ inna gra siÄ™ wczyta
+-fullscreen - uruchamia w trybie peÅ‚noekranowym
+-host - automatycznie zakÅ‚ada serwer LAN
+-hostip - automatycznie zakÅ‚ada serwer internet
+-join - automatycznie doÅ‚Ä…cza do serwera LAN
+-joinip - automatycznie doÅ‚Ä…cza do serwera w internecie
 -nomusic - brak muzyki
--nosound - brak dŸwiêku
--single - rozpoczyna szybk¹ grê w trybie jednego gracza
+-nosound - brak dÅºwiÄ™ku
+-single - rozpoczyna szybkÄ… grÄ™ w trybie jednego gracza
 -windowed - uruchamia w trybie okienkowym
 -test - testuje dane gry
 
 ===============================================================================
-10) Zg³oœ b³¹d
-B³êdy mo¿esz a wrêcz powinieneœ zg³aszaæ na stronie http://carpg.pl w
-odpowiednim dziale forum. Nie zapomnij podaæ wszystkich mo¿liwych szczegó³ów
-które mog¹ pomóc w jego naprawieniu. Jeœli wyskoczy ¿e utworzono plik
-minidump to go do³¹cz. Przydatny te¿ bêdzie plik log.txt i zapis przed
-zawieszeniem siê o ile siê zapisywa³eœ. Przed zg³oszeniem b³êdu sprawdŸ czy ktoœ
-ju¿ go nie zg³osi³ w odpowiednim temacie.
+10) ZgÅ‚oÅ› bÅ‚Ä…d ğŸœ
+BÅ‚Ä™dy moÅ¼esz a wrÄ™cz powinieneÅ› zgÅ‚aszaÄ‡ na stronie http://carpg.pl w
+odpowiednim dziale forum. Nie zapomnij podaÄ‡ wszystkich moÅ¼liwych szczegÃ³Å‚Ã³w
+ktÃ³re mogÄ… pomÃ³c w jego naprawieniu. JeÅ›li wyskoczy Å¼e utworzono plik
+minidump to go doÅ‚Ä…cz. Przydatny teÅ¼ bÄ™dzie plik log.txt i zapis przed
+zawieszeniem siÄ™ o ile siÄ™ zapisywaÅ‚eÅ›. Przed zgÅ‚oszeniem bÅ‚Ä™du sprawdÅº czy ktoÅ›
+juÅ¼ go nie zgÅ‚osiÅ‚ w odpowiednim temacie.
 
 ===============================================================================
 110) Autorzy
-Tomashu - Programowanie, modele, tekstury, pomys³y, fabu³a.
-Leinnan - Modele, tekstury, pomys³y, testowanie.
-MarkK - Modele i tekstury jedzenia oraz innych obiektów.
-Shdorsh - Poprawki w angielskim t³umaczeniu.
+Tomashu - Programowanie, modele, tekstury, pomysÅ‚y, fabuÅ‚a.
+Leinnan - Modele, tekstury, pomysÅ‚y, testowanie.
+MarkK - Modele i tekstury jedzenia oraz innych obiektÃ³w.
+Shdorsh - Poprawki w angielskim tÅ‚umaczeniu.
 Zielu - Testowanie.
 
-Podziêkowania za znalezione b³êdy:
+â¤ PodziÄ™kowania za testy i znalezione bÅ‚Ä™dy:
 	Ampped
+	BottledByte
 	darktorq
 	Docucat
 	fire
 	Harorri
+	Lemiczek 
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit
 	Minister of Death
 	mishka
+	Mokai
 	Paradox Edge
 	Savagesheep
 	thebard88
@@ -311,26 +314,26 @@ Podziêkowania za znalezione b³êdy:
 	Zettaton
 	Zinny
 
-Audio Engine: FMOD Studio by Firelight Technologies.
+ğŸµ Audio Engine: FMOD Studio by Firelight Technologies.
 
-Modele:
+ğŸ—ƒ Modele:
 	* kaangvl - fish
 	* yd - sausage
 	* rubberduck - shrine
-Tekstury:
+ğŸ¨ Tekstury:
 	* http://cgtextures.com
 	* Cube
 	* texturez.com
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
 	* Ikony klas - http://game-icons.net/
-Muzyka:
-	* £ukasz Xwokloiz
+ğŸ§ Muzyka:
+	* Åukasz Xwokloiz
 	* Celestial Aeon Project
 	* Project Divinity
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
-DŸwiêki:
+ğŸ”ˆ DÅºwiÄ™ki:
 	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
 	* http://www.freesound.org/
 	* http://www.pacdv.com/sounds/

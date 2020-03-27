@@ -21,6 +21,9 @@ Version 0.14 (???):
 - improved summon wolf targeting
 - rare crash when canceling pick server
 - missing message about completing all unique quests
+- unit is overloaded after exceeding carry capacity [Lemiczek]
+- changing controls require double-click [BottledByte, Lemiczek, Mokai]
+- error with missing dll MSVCP140 on some systems [BottledByte]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):
