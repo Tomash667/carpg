@@ -2055,14 +2055,13 @@ int CityGenerator::GetNumberOfSteps()
 	int steps = LocationGenerator::GetNumberOfSteps();
 	if(first)
 		steps += 4; // txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems
-	else if(!reenter)
+	else
 	{
 		steps += 2; // txGeneratingUnits, txGeneratingPhysics
 		if(loc->last_visit != world->GetWorldtime())
 			++steps; // txGeneratingItems
 	}
-	if(!reenter)
-		++steps; // txRecreatingObjects
+	++steps; // txRecreatingObjects
 	return steps;
 }
 
@@ -2225,11 +2224,8 @@ void CityGenerator::OnEnter()
 {
 	game->arena->free = true;
 
-	if(!reenter)
-	{
-		game_level->Apply();
-		ApplyTiles();
-	}
+	game_level->Apply();
+	ApplyTiles();
 
 	game_level->SetOutsideParams();
 
@@ -2254,7 +2250,7 @@ void CityGenerator::OnEnter()
 		if(city->IsVillage())
 			SpawnForestItems(-2);
 	}
-	else if(!reenter)
+	else
 	{
 		// remove temporary/quest units
 		if(city->reset)
@@ -2296,21 +2292,16 @@ void CityGenerator::OnEnter()
 
 		game_level->OnRevisitLevel();
 	}
-	else
-		OnReenter();
 
-	if(!reenter)
+	// create colliders
+	game->LoadingStep(game->txRecreatingObjects);
+	game_level->SpawnTerrainCollider();
+	SpawnCityPhysics();
+	SpawnOutsideBariers();
+	for(InsideBuilding* b : city->inside_buildings)
 	{
-		// create colliders
-		game->LoadingStep(game->txRecreatingObjects);
-		game_level->SpawnTerrainCollider();
-		SpawnCityPhysics();
-		SpawnOutsideBariers();
-		for(InsideBuilding* b : city->inside_buildings)
-		{
-			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
-			b->maxe = b->mine + Int2(256, 256);
-		}
+		b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+		b->maxe = b->mine + Int2(256, 256);
 	}
 
 	// spawn quest units
@@ -2326,10 +2317,9 @@ void CityGenerator::OnEnter()
 	Vec3 spawn_pos;
 	float spawn_dir;
 	city->GetEntry(spawn_pos, spawn_dir);
-	game_level->AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
+	game_level->AddPlayerTeam(spawn_pos, spawn_dir);
 
-	if(!reenter)
-		quest_mgr->GenerateQuestUnits(true);
+	quest_mgr->GenerateQuestUnits(true);
 
 	for(Unit& unit : team->members)
 	{

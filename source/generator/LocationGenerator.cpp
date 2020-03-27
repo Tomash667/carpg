@@ -44,19 +44,3 @@ void LocationGenerator::RespawnUnits()
 		}
 	}
 }
-
-//=================================================================================================
-void LocationGenerator::OnReenter()
-{
-	for(LevelArea& area : game_level->ForEachArea())
-	{
-		for(Unit* u : area.units)
-		{
-			if(u->talking)
-			{
-				u->talking = false;
-				u->mesh_inst->need_update = true;
-			}
-		}
-	}
-}

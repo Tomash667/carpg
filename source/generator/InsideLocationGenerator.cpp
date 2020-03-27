@@ -33,7 +33,7 @@ int InsideLocationGenerator::GetNumberOfSteps()
 	int steps = LocationGenerator::GetNumberOfSteps();
 	if(first)
 		steps += 2; // txGeneratingObjects, txGeneratingUnits
-	else if(!reenter)
+	else
 		++steps; // txRegeneratingLevel
 	return steps;
 }
@@ -48,8 +48,7 @@ void InsideLocationGenerator::OnEnter()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 
-	if(!reenter)
-		game_level->Apply();
+	game_level->Apply();
 
 	game->SetDungeonParamsAndTextures(base);
 
@@ -63,7 +62,7 @@ void InsideLocationGenerator::OnEnter()
 
 		GenerateItems();
 	}
-	else if(!reenter)
+	else
 	{
 		game->LoadingStep(game->txRegeneratingLevel);
 
@@ -121,8 +120,6 @@ void InsideLocationGenerator::OnEnter()
 		if(need_reset)
 			GenerateUnits();
 	}
-	else
-		OnReenter();
 
 	// questowe rzeczy
 	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER && inside->active_quest->type != Q_SCRIPTED)
@@ -170,8 +167,7 @@ void InsideLocationGenerator::OnEnter()
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
-	if(!reenter)
-		game_level->SpawnDungeonColliders();
+	game_level->SpawnDungeonColliders();
 
 	// generuj minimapê
 	game->LoadingStep(game->txGeneratingMinimap);
@@ -270,7 +266,7 @@ void InsideLocationGenerator::OnEnter()
 		spawn_pt = PosToPt(spawn_pos);
 	}
 
-	game_level->AddPlayerTeam(spawn_pos, spawn_rot, reenter, game_level->enter_from == ENTER_FROM_OUTSIDE);
+	game_level->AddPlayerTeam(spawn_pos, spawn_rot);
 	OpenDoorsByTeam(spawn_pt);
 }
 

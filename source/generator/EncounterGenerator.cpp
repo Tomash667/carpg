@@ -511,5 +511,5 @@ void EncounterGenerator::SpawnEncounterTeam()
 		break;
 	}
 
-	game_level->AddPlayerTeam(pos, dir, false, true);
+	game_level->AddPlayerTeam(pos, dir);
 }

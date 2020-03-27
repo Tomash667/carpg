@@ -2749,7 +2749,7 @@ void Unit::Write(BitStreamWriter& f)
 		f << GetAiMode();
 
 	// loaded data
-	if(net->mp_load || game_level->reenter)
+	if(net->mp_load)
 	{
 		mesh_inst->Write(f);
 		f.WriteCasted<byte>(animation);
@@ -2994,7 +2994,7 @@ bool Unit::Read(BitStreamReader& f)
 	interp->Reset(pos, rot);
 	visual_pos = pos;
 
-	if(net->mp_load || game_level->reenter)
+	if(net->mp_load)
 	{
 		// get current state in multiplayer
 		if(!mesh_inst->Read(f))

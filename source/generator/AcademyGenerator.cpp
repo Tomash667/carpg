@@ -207,17 +207,16 @@ void AcademyGenerator::OnEnter()
 {
 	OutsideLocationGenerator::OnEnter();
 
-	if(!first && !reenter)
+	if(!first)
 		SpawnBuilding(false);
 
-	if(!reenter)
-		SpawnCityPhysics();
+	SpawnCityPhysics();
 }
 
 //=================================================================================================
 void AcademyGenerator::SpawnTeam()
 {
-	game_level->AddPlayerTeam(Vec3(128.f, 0, 80.f), PI, reenter, true);
+	game_level->AddPlayerTeam(Vec3(128.f, 0, 80.f), PI);
 }
 
 //=================================================================================================

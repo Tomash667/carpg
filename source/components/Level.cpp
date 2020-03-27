@@ -3888,17 +3888,16 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 }
 
 //=================================================================================================
-void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
+void Level::AddPlayerTeam(const Vec3& pos, float rot)
 {
+	const bool hide_weapon = enter_from == ENTER_FROM_OUTSIDE;
+
 	for(Unit& unit : team->members)
 	{
-		if(!reenter)
-		{
-			local_area->units.push_back(&unit);
-			unit.CreatePhysics();
-			if(unit.IsHero())
-				game->ais.push_back(unit.ai);
-		}
+		local_area->units.push_back(&unit);
+		unit.CreatePhysics();
+		if(unit.IsHero())
+			game->ais.push_back(unit.ai);
 
 		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
 		unit.rot = rot;
@@ -3906,11 +3905,6 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
-		if(unit.area && unit.area->area_type == LevelArea::Type::Building && reenter)
-		{
-			RemoveElement(unit.area->units, &unit);
-			local_area->units.push_back(&unit);
-		}
 		unit.area = local_area;
 
 		if(unit.IsAI())
@@ -4028,11 +4022,10 @@ void Level::Update()
 //=================================================================================================
 void Level::Write(BitStreamWriter& f)
 {
-	f << reenter;
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
 
-	if(!net->mp_load && !reenter)
+	if(!net->mp_load)
 		return;
 
 	for(LevelArea& area : ForEachArea())
@@ -4071,7 +4064,6 @@ void Level::Write(BitStreamWriter& f)
 bool Level::Read(BitStreamReader& f, bool loaded_resources)
 {
 	// location
-	f >> reenter;
 	if(!location->Read(f))
 	{
 		Error("Read level: Failed to read location.");
@@ -4099,7 +4091,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	else
 		game->SetMusic(music);
 
-	if(!net->mp_load && !reenter)
+	if(!net->mp_load)
 		return true;
 
 	for(LevelArea& area : ForEachArea())
