@@ -912,7 +912,7 @@ public:
 	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
 	void Fall();
 	void TryStandup(float dt);
-	void Standup();
+	void Standup(bool warp = true);
 	void Die(Unit* killer);
 	void DropGold(int count);
 	bool IsDrunkman() const;

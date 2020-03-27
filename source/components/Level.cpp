@@ -4572,10 +4572,8 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 	btTransform t_from, t_to;
 	t_from.setIdentity();
 	t_from.setOrigin(ToVector3(from));
-	//t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
 	t_to.setIdentity();
 	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
-	//t_to.setBasis(t_from.getBasis());
 
 	ConvexCallback callback(clbk, t_list, use_clbk2);
 

@@ -1452,13 +1452,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						game->fallback_type = FALLBACK::NONE;
 
 						if(pc.unit->hp <= 0.f)
-						{
-							pc.unit->HealPoison();
-							pc.unit->live_state = Unit::ALIVE;
-							pc.unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							pc.unit->action = A_ANIMATION;
-							pc.unit->animation = ANI_PLAY;
-						}
+							pc.unit->Standup(false);
 					}
 					PushChange(NetChange::WARP);
 					interpolate_timer = 0.f;
@@ -1771,7 +1765,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(!unit)
 						Error("Update client: STAND_UP, missing unit %d.", id);
 					else
-						unit->Standup();
+						unit->Standup(false);
 				}
 			}
 			break;

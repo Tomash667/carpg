@@ -20,7 +20,7 @@ CaRpg uses git submodule to link to [carpglib](https://github.com/Tomash667/carp
 git submodule update --init
 ```
 
-Open solution carpg.sln with Visual Studio 2017 (15.9.X) and use build. All dependencies and game should compile (client_dbg/client_dbg2 are for debugging multiplayer and can be unloaded).
+Open solution carpg.sln with Visual Studio 2019 (16.4.X) and use build. All dependencies and game should compile (client_dbg/client_dbg2 are for debugging multiplayer and can be unloaded).
 
 Important branches:
 - **dev** - development branch where all new features are added

@@ -5147,20 +5147,11 @@ void Unit::TryStandup(float dt)
 	}
 
 	if(ok)
-	{
 		Standup();
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::STAND_UP;
-			c.unit = this;
-		}
-	}
 }
 
 //=================================================================================================
-void Unit::Standup()
+void Unit::Standup(bool warp)
 {
 	HealPoison();
 	live_state = ALIVE;
@@ -5172,8 +5163,25 @@ void Unit::Standup()
 		animation = ANI_PLAY;
 	}
 	else
+	{
 		action = A_NONE;
+		animation = ANI_STAND;
+	}
 	used_item = nullptr;
+	if(weapon_state != WeaponState::Hidden)
+	{
+		WeaponType target_weapon;
+		if(weapon_state == WeaponState::Taken || weapon_state == WeaponState::Taking)
+			target_weapon = weapon_taken;
+		else
+			target_weapon = weapon_hiding;
+		if((target_weapon == W_ONE_HANDED && !HaveWeapon())
+			|| (target_weapon == W_BOW && !HaveBow()))
+		{
+			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+		}
+	}
+	ReequipItems();
 
 	// change flag from CG_UNIT_DEAD -> CG_UNIT
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
@@ -5181,19 +5189,16 @@ void Unit::Standup()
 	if(Net::IsLocal())
 	{
 		if(IsAI())
-		{
-			if(ai->state != AIController::Idle)
-			{
-				ai->state = AIController::Idle;
-				ai->change_ai_mode = true;
-			}
-			ai->alert_target = nullptr;
-			ai->st.idle.action = AIController::Idle_None;
-			ai->target = nullptr;
-			ai->timer = Random(2.f, 5.f);
-		}
+			ai->Reset();
+		if(warp)
+			game_level->WarpUnit(*this, pos);
+	}
 
-		game_level->WarpUnit(*this, pos);
+	if(!game_level->entering && Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::STAND_UP;
+		c.unit = this;
 	}
 }
 
@@ -6781,21 +6786,8 @@ void Unit::CastSpell()
 
 			if(ability.effect == Ability::Raise)
 			{
-				Unit& u2 = *target;
-				u2.hp = u2.hpmax;
-				u2.live_state = ALIVE;
-				u2.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
-				u2.action = A_NONE;
-				u2.animation = ANI_STAND;
-
-				// za³ó¿ przedmioty / dodaj z³oto
-				u2.ReequipItems();
-
-				// przenieœ fizyke
-				game_level->WarpUnit(u2, u2.pos);
-
-				// resetuj ai
-				u2.ai->Reset();
+				target->Standup();
+				target->hp = target->hpmax;
 
 				// particle effect
 				ParticleEmitter* pe = new ParticleEmitter;
@@ -6807,8 +6799,8 @@ void Unit::CastSpell()
 				pe->spawn_min = 16;
 				pe->spawn_max = 25;
 				pe->max_particles = 25;
-				pe->pos = u2.pos;
-				pe->pos.y += u2.GetUnitHeight() / 2;
+				pe->pos = target->pos;
+				pe->pos.y += target->GetUnitHeight() / 2;
 				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
@@ -6826,14 +6818,6 @@ void Unit::CastSpell()
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::RAISE_EFFECT;
 					c.pos = pe->pos;
-
-					NetChange& c2 = Add1(Net::changes);
-					c2.type = NetChange::STAND_UP;
-					c2.unit = &u2;
-
-					NetChange& c3 = Add1(Net::changes);
-					c3.type = NetChange::UPDATE_HP;
-					c3.unit = &u2;
 				}
 			}
 			else if(ability.effect == Ability::Heal)
@@ -6841,9 +6825,7 @@ void Unit::CastSpell()
 				// heal target
 				if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
 				{
-					target->hp += dmg;
-					if(target->hp > target->hpmax)
-						target->hp = target->hpmax;
+					target->hp = Min(target->hp + dmg, target->hpmax);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);

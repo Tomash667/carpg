@@ -178,21 +178,7 @@ void Quest_Secret::UpdateFight()
 		{
 			unit->in_arena = -1;
 			if(unit->hp <= 0.f)
-			{
-				unit->HealPoison();
-				unit->live_state = Unit::ALIVE;
-				unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-				unit->action = A_ANIMATION;
-				unit->animation = ANI_PLAY;
-				if(unit->IsAI())
-					unit->ai->Reset();
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::STAND_UP;
-					c.unit = unit;
-				}
-			}
+				unit->Standup();
 
 			if(Net::IsOnline())
 			{
