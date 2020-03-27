@@ -348,7 +348,7 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 		{
 			for(int tries = 0; tries < 5; ++tries)
 			{
-				Int2 pt(Random(8, OutsideLocation::size - 9), Random(8, OutsideLocation::size - 9));
+				Int2 pt(Random(17, OutsideLocation::size - 17), Random(17, OutsideLocation::size - 17));
 				TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
 				if(type == TT_GRASS || type == TT_GRASS3)
 				{

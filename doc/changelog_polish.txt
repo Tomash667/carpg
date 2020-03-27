@@ -28,6 +28,7 @@ Wersja 0.14 (???):
 - pokonany sojusznik blokował zdolność zryw
 - czar piorun mógł być rzucany przez ściany i obiekty
 - poprawki co celowania przez ai
+- zioła generowały się poza obszarem lokalizacji [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

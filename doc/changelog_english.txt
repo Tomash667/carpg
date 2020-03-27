@@ -28,6 +28,7 @@ Version 0.14 (???):
 - defeated ally blocks dash
 - thunder bolt can be cast thru walls and objects
 - ai aiming fixed
+- herbs spawned behind location area [BottledByte]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):
