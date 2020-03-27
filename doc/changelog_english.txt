@@ -25,6 +25,9 @@ Version 0.14 (???):
 - changing controls require double-click [BottledByte, Lemiczek, Mokai]
 - error with missing dll MSVCP140 on some systems [BottledByte]
 - after defeat on arena dash gets broken [Lemiczek]
+- defeated ally blocks dash
+- thunder bolt can be cast thru walls and objects
+- ai aiming fixed
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

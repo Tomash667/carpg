@@ -5181,7 +5181,6 @@ void Unit::Standup(bool warp)
 			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 		}
 	}
-	ReequipItems();
 
 	// change flag from CG_UNIT_DEAD -> CG_UNIT
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
@@ -5189,7 +5188,10 @@ void Unit::Standup(bool warp)
 	if(Net::IsLocal())
 	{
 		if(IsAI())
+		{
+			ReequipItems();
 			ai->Reset();
+		}
 		if(warp)
 			game_level->WarpUnit(*this, pos);
 	}
@@ -5435,25 +5437,8 @@ void Unit::CreatePhysics(bool position)
 void Unit::UpdatePhysics(const Vec3* target_pos)
 {
 	Vec3 phy_pos = target_pos ? *target_pos : pos;
-	switch(live_state)
-	{
-	case ALIVE:
+	if(live_state == ALIVE)
 		phy_pos.y += max(MIN_H, GetUnitHeight()) / 2;
-		break;
-	case FALLING:
-	case FALL:
-		break;
-	case DYING:
-	case DEAD:
-		if(IsTeamMember())
-		{
-			// keep physics pos to alow cast heal spell on corpse - used for raytest
-			cobj->setCollisionFlags(CG_UNIT_DEAD);
-		}
-		else
-			phy_pos = Vec3(1000, 1000, 1000);
-		break;
-	}
 
 	btVector3 a_min, a_max;
 	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
@@ -7888,8 +7873,12 @@ void Unit::Update(float dt)
 					int flags = obj->getCollisionFlags();
 					if(IsSet(flags, CG_TERRAIN))
 						return LT_IGNORE;
-					if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
-						return LT_IGNORE;
+					if(IsSet(flags, CG_UNIT))
+					{
+						Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+						if(unit == this || !unit->IsStanding())
+							return LT_IGNORE;
+					}
 					return LT_COLLIDE;
 				}, t);
 			}
@@ -7905,14 +7894,18 @@ void Unit::Update(float dt)
 					{
 						if(IsSet(flags, CG_TERRAIN))
 							return LT_IGNORE;
-						if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
-							return LT_IGNORE;
+						if(IsSet(flags, CG_UNIT))
+						{
+							Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+							if(unit == this || !unit->IsAlive())
+								return LT_IGNORE;
+						}
 					}
 					else
 					{
 						if(IsSet(obj->getCollisionFlags(), CG_UNIT))
 						{
-							Unit* unit = (Unit*)obj->getUserPointer();
+							Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
 							targets.push_back(unit);
 							return LT_IGNORE;
 						}

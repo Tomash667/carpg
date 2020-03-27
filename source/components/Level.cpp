@@ -4544,19 +4544,24 @@ bool Level::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to)
 {
 	RaytestWithIgnoredCallback callback(&me, ptr);
 	phy_world->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
-	return callback.clear;
+	return !callback.hit;
 }
 
 //=================================================================================================
 bool Level::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted)
 {
-	RaytestClosestUnitCallback callback(ignore);
+	RaytestClosestUnitCallback callback([=](Unit* unit)
+	{
+		if(unit == ignore || !unit->IsAlive())
+			return false;
+		return true;
+	});
 	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
 
-	if(callback.hitted)
+	if(callback.hasHit())
 	{
-		hitpoint = from + (to - from) * callback.fraction;
-		hitted = callback.hitted;
+		hitpoint = from + (to - from) * callback.getFraction();
+		hitted = callback.hit;
 		return true;
 	}
 	else
