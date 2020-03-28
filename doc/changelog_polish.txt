@@ -32,6 +32,7 @@ Wersja 0.14 (???):
 - jeśli jednostka leży na ziemi to po powrocie do lokalizacji też będzie leżeć
 - powiadomienie o szybkiej podróży jest nieaktywne gdy jest więcej niż jedno [Lemiczek]
 - dziwna pozycja i teleportowanie gracza przy używaniu różdżki i krzesła podczas anulowania wyjmowania broni [BottledByte]
+- pasek hp w multiplayer źle się aktualizuje po pokonaniu postaci [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

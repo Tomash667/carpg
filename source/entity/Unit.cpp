@@ -3479,8 +3479,16 @@ void Unit::MakeItemsTeam(bool is_team)
 // Restore hp to 1 and heal poison
 void Unit::HealPoison()
 {
-	if(hp < 1.f)
-		hp = 1.f;
+	if(Net::IsLocal())
+	{
+		if(hp < 1.f)
+			hp = 1.f;
+	}
+	else
+	{
+		if(hp <= 0.f)
+			hp = 0.001f;
+	}
 
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)

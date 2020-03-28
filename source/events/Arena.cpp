@@ -197,12 +197,7 @@ void Arena::Clean()
 		u.area = game_level->local_area;
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
-		{
-			u.HealPoison();
-			u.live_state = Unit::ALIVE;
-		}
-		if(u.IsAI())
-			u.ai->Reset();
+			u.Standup(false, true);
 		game_level->WarpUnit(u, arena->outside_spawn);
 		u.rot = arena->outside_rot;
 	}
