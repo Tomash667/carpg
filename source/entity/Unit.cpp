@@ -5483,7 +5483,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
 					mesh_inst->Deactivate(1);
-					action = A_NONE;
+					action = usable ? A_USE_USABLE : A_NONE;
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taken;
@@ -5577,7 +5577,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				mesh_inst->Deactivate(1);
-				action = A_NONE;
+				action = usable ? A_USE_USABLE : A_NONE;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hidden;
 			}
