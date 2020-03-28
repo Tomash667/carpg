@@ -30,6 +30,7 @@ Version 0.14 (???):
 - ai aiming fixed
 - herbs spawned behind location area [BottledByte]
 - if unit lies on ground, after entering location it will be still lying
+- fast travel toast inactive when there is another [Lemiczek]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):
