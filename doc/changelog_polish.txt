@@ -33,6 +33,7 @@ Wersja 0.14 (???):
 - powiadomienie o szybkiej podróży jest nieaktywne gdy jest więcej niż jedno [Lemiczek]
 - dziwna pozycja i teleportowanie gracza przy używaniu różdżki i krzesła podczas anulowania wyjmowania broni [BottledByte]
 - pasek hp w multiplayer źle się aktualizuje po pokonaniu postaci [BottledByte]
+- magiczny kryształ nie przywraca many [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

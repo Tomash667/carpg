@@ -2498,7 +2498,7 @@ consumable magic_crystal {
 	type herb
 	flags {not_merchant ground_mesh ingredient}
 	effects {
-		mana 150
+		restore_mana 150
 	}
 }
 
