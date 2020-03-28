@@ -24,7 +24,7 @@ enum Group
 	G_SKILL,
 	G_EFFECT,
 	G_TAG,
-	G_RECEIPT,
+	G_RECIPE,
 	G_LIST_TYPE
 };
 
@@ -75,7 +75,7 @@ enum BookSchemeProperty
 	BSP_NEXT
 };
 
-enum ReceiptProperty
+enum RecipeProperty
 {
 	RP_RESULT,
 	RP_ITEMS,
@@ -105,7 +105,7 @@ void ItemLoader::Cleanup()
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
 	DeleteElements(Stock::stocks);
-	DeleteElements(Receipt::receipts);
+	DeleteElements(Recipe::recipes);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -134,7 +134,7 @@ void ItemLoader::InitTokenizer()
 		{ "start_items", IT_START_ITEMS },
 		{ "better_items", IT_BETTER_ITEMS },
 		{ "alias", IT_ALIAS },
-		{ "receipt", IT_RECEIPT }
+		{ "recipe", IT_RECIPE }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -271,7 +271,7 @@ void ItemLoader::InitTokenizer()
 		{ "cleric", TAG_CLERIC }
 		});
 
-	t.AddKeywords(G_RECEIPT, {
+	t.AddKeywords(G_RECIPE, {
 		{ "result", RP_RESULT },
 		{ "items", RP_ITEMS },
 		{ "skill", RP_SKILL }
@@ -307,8 +307,8 @@ void ItemLoader::LoadEntity(int top, const string& id)
 	case IT_BETTER_ITEMS:
 		ParseBetterItems();
 		break;
-	case IT_RECEIPT:
-		ParseReceipt(id);
+	case IT_RECIPE:
+		ParseRecipe(id);
 		break;
 	case IT_ALIAS:
 		ParseAlias(id);
@@ -1195,13 +1195,13 @@ void ItemLoader::ParseBetterItems()
 }
 
 //=================================================================================================
-void ItemLoader::ParseReceipt(const string& id)
+void ItemLoader::ParseRecipe(const string& id)
 {
-	if(Receipt::TryGet(id))
+	if(Recipe::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<Receipt> receipt;
-	receipt->id = id;
+	Ptr<Recipe> recipe;
+	recipe->id = id;
 
 	t.Next();
 	t.AssertSymbol('{');
@@ -1209,15 +1209,15 @@ void ItemLoader::ParseReceipt(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
-		ReceiptProperty prop = (ReceiptProperty)t.MustGetKeywordId(G_RECEIPT);
+		RecipeProperty prop = (RecipeProperty)t.MustGetKeywordId(G_RECIPE);
 		t.Next();
 		switch(prop)
 		{
 		case RP_RESULT:
 			{
 				const string& item_id = t.MustGetItem();
-				receipt->result = Item::TryGet(item_id);
-				if(!receipt->result)
+				recipe->result = Item::TryGet(item_id);
+				if(!recipe->result)
 					LoadError("Missing result item '%s'.", item_id.c_str());
 			}
 			break;
@@ -1237,12 +1237,12 @@ void ItemLoader::ParseReceipt(const string& id)
 
 				const string& item_id = t.MustGetItem();
 				const Item* item = Item::TryGet(item_id);
-				if(!receipt->result)
+				if(!recipe->result)
 					LoadError("Missing item '%s'.", item_id.c_str());
 				else
 				{
 					bool added = false;
-					for(pair<const Item*, uint>& p : receipt->items)
+					for(pair<const Item*, uint>& p : recipe->items)
 					{
 						if(p.first == item)
 						{
@@ -1252,25 +1252,25 @@ void ItemLoader::ParseReceipt(const string& id)
 						}
 					}
 					if(!added)
-						receipt->items.push_back(std::make_pair(item, count));
+						recipe->items.push_back(std::make_pair(item, count));
 				}
 
 				t.Next();
 			}
 			break;
 		case RP_SKILL:
-			receipt->skill = t.MustGetUint();
+			recipe->skill = t.MustGetUint();
 			break;
 		}
 		t.Next();
 	}
 
-	if(!receipt->result)
+	if(!recipe->result)
 		LoadError("No result item.");
-	else if(receipt->items.empty())
+	else if(recipe->items.empty())
 		LoadError("No required items.");
 	else
-		Receipt::receipts.push_back(receipt.Pin());
+		Recipe::recipes.push_back(recipe.Pin());
 }
 
 //=================================================================================================
@@ -1420,15 +1420,15 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->regions);
 	}
 
-	for(Receipt* receipt : Receipt::receipts)
+	for(Recipe* recipe : Recipe::recipes)
 	{
-		crc.Update(receipt->result->id);
-		for(pair<const Item*, uint>& p : receipt->items)
+		crc.Update(recipe->result->id);
+		for(pair<const Item*, uint>& p : recipe->items)
 		{
 			crc.Update(p.first->id);
 			crc.Update(p.second);
 		}
-		crc.Update(receipt->skill);
+		crc.Update(recipe->skill);
 	}
 
 	content.crc[(int)Content::Id::Items] = crc.Get();

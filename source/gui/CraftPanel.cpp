@@ -11,16 +11,16 @@
 #include "SoundManager.h"
 #include "PlayerInfo.h"
 
-struct ReceiptItem : public GuiElement
+struct RecipeItem : public GuiElement
 {
-	ReceiptItem(Receipt* receipt) : receipt(receipt)
+	RecipeItem(Recipe* recipe) : recipe(recipe)
 	{
-		const Item* item = receipt->result;
+		const Item* item = recipe->result;
 		game_res->PreloadItem(item);
 		text = item->name;
 		text += "\n(";
 		bool first = true;
-		for(pair<const Item*, uint>& p : receipt->items)
+		for(pair<const Item*, uint>& p : recipe->items)
 		{
 			if(first)
 				first = false;
@@ -38,7 +38,7 @@ struct ReceiptItem : public GuiElement
 		return text.c_str();
 	}
 
-	Receipt* receipt;
+	Recipe* recipe;
 	string text;
 };
 
@@ -147,7 +147,7 @@ void CraftPanel::Update(float dt)
 	if(skill != new_skill)
 	{
 		skill = new_skill;
-		SetReceipts();
+		SetRecipes();
 	}
 
 	Container::Update(dt);
@@ -210,15 +210,15 @@ void CraftPanel::Event(GuiEvent e)
 			right.Event(GuiEvent_Show);
 
 			skill = game->pc->unit->Get(SkillId::ALCHEMY);
-			SetReceipts();
+			SetRecipes();
 			SetIngredients();
 			if(list.GetItems().empty())
 				button.state = Button::DISABLED;
 			else
 			{
 				list.Select(0);
-				Receipt* receipt = static_cast<ReceiptItem*>(list.GetItem())->receipt;
-				button.state = HaveIngredients(receipt) >= 1u ? Button::NONE : Button::DISABLED;
+				Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+				button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 			}
 			tooltip.Clear();
 		}
@@ -230,21 +230,21 @@ void CraftPanel::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Custom)
 	{
-		Receipt* receipt = static_cast<ReceiptItem*>(list.GetItem())->receipt;
-		uint max = HaveIngredients(receipt);
+		Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+		uint max = HaveIngredients(recipe);
 		counter = 1;
 		GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
 	}
 }
 
-void CraftPanel::SetReceipts()
+void CraftPanel::SetRecipes()
 {
 	list.Reset();
-	for(Receipt* receipt : Receipt::receipts)
+	for(Recipe* recipe : Recipe::recipes)
 	{
-		if(skill >= receipt->skill)
+		if(skill >= recipe->skill)
 		{
-			ReceiptItem* item = new ReceiptItem(receipt);
+			RecipeItem* item = new RecipeItem(recipe);
 			list.Add(item);
 		}
 	}
@@ -276,38 +276,38 @@ void CraftPanel::OnCraft(int id)
 {
 	if(id == BUTTON_CANCEL || counter == 0)
 		return;
-	Receipt* receipt = static_cast<ReceiptItem*>(list.GetItem())->receipt;
+	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 	if(Net::IsLocal())
 	{
-		for(pair<const Item*, uint>& p : receipt->items)
+		for(pair<const Item*, uint>& p : recipe->items)
 			game->pc->unit->RemoveItem(p.first, p.second * counter);
-		game->pc->unit->AddItem2(receipt->result, counter, 0u);
-		float value = ((float)receipt->skill + 25) / 25.f * 1000 * counter;
+		game->pc->unit->AddItem2(recipe->result, counter, 0u);
+		float value = ((float)recipe->skill + 25) / 25.f * 1000 * counter;
 		game->pc->Train(TrainWhat::Craft, value, 0);
 		sound_mgr->PlaySound2d(sAlchemy);
 		SetIngredients();
-		button.state = HaveIngredients(receipt) >= 1u ? Button::NONE : Button::DISABLED;
+		button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 	}
 	else
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CRAFT;
-		c.receipt = receipt;
+		c.recipe = recipe;
 		c.count = counter;
 	}
 }
 
 void CraftPanel::OnSelectionChange(int index)
 {
-	Receipt* receipt = static_cast<ReceiptItem*>(list.GetItem())->receipt;
-	button.state = HaveIngredients(receipt) >= 1u ? Button::NONE : Button::DISABLED;
+	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 }
 
-uint CraftPanel::HaveIngredients(Receipt* receipt)
+uint CraftPanel::HaveIngredients(Recipe* recipe)
 {
-	assert(receipt);
+	assert(recipe);
 	uint max_count = 999u;
-	for(pair<const Item*, uint>& p : receipt->items)
+	for(pair<const Item*, uint>& p : recipe->items)
 	{
 		bool ok = false;
 		for(pair<const Item*, uint>& p2 : ingredients)
@@ -329,19 +329,19 @@ uint CraftPanel::HaveIngredients(Receipt* receipt)
 	return max_count;
 }
 
-bool CraftPanel::DoPlayerCraft(PlayerController& player, Receipt* receipt, uint count)
+bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint count)
 {
-	assert(receipt && count > 0);
-	for(pair<const Item*, uint>& p : receipt->items)
+	assert(recipe && count > 0);
+	for(pair<const Item*, uint>& p : recipe->items)
 	{
 		if((uint)player.unit->CountItem(p.first) < p.second * count)
 			return false;
 	}
 
-	for(pair<const Item*, uint>& p : receipt->items)
+	for(pair<const Item*, uint>& p : recipe->items)
 		player.unit->RemoveItem(p.first, p.second * count);
-	player.unit->AddItem2(receipt->result, count, 0u);
-	float value = ((float)receipt->skill + 25) / 25.f * 1000 * count;
+	player.unit->AddItem2(recipe->result, count, 0u);
+	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
 	player.Train(TrainWhat::Craft, value, 0);
 
 	NetChangePlayer& c = Add1(player.player_info->changes);
@@ -352,8 +352,8 @@ bool CraftPanel::DoPlayerCraft(PlayerController& player, Receipt* receipt, uint 
 
 void CraftPanel::AfterCraft()
 {
-	Receipt* receipt = static_cast<ReceiptItem*>(list.GetItem())->receipt;
+	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 	sound_mgr->PlaySound2d(sAlchemy);
 	SetIngredients();
-	button.state = HaveIngredients(receipt) >= 1u ? Button::NONE : Button::DISABLED;
+	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 }

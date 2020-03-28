@@ -20,7 +20,7 @@ private:
 	void ParseBookScheme(const string& id);
 	void ParseStartItems();
 	void ParseBetterItems();
-	void ParseReceipt(const string& id);
+	void ParseRecipe(const string& id);
 	void ParseAlias(const string& id);
 	void CalculateCrc();
 };

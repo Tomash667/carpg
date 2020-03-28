@@ -483,17 +483,17 @@ struct StartItem
 };
 
 //-----------------------------------------------------------------------------
-struct Receipt
+struct Recipe
 {
 	string id;
 	const Item* result;
 	vector<pair<const Item*, uint>> items;
 	int skill;
 
-	explicit Receipt() : result(nullptr), skill(0) {}
+	explicit Recipe() : result(nullptr), skill(0) {}
 
-	static vector<Receipt*> receipts;
-	static Receipt* TryGet(Cstring id);
+	static vector<Recipe*> recipes;
+	static Recipe* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------

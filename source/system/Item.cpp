@@ -25,7 +25,7 @@ vector<BookScheme*> BookScheme::book_schemes;
 vector<Book*> Book::books;
 vector<StartItem> StartItem::start_items;
 std::map<const Item*, Item*> better_items;
-vector<Receipt*> Receipt::receipts;
+vector<Recipe*> Recipe::recipes;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -509,12 +509,12 @@ const Item* FindItemOrList(Cstring id, ItemList*& lis)
 }
 
 //=================================================================================================
-Receipt* Receipt::TryGet(Cstring id)
+Recipe* Recipe::TryGet(Cstring id)
 {
-	for(Receipt* receipt : Receipt::receipts)
+	for(Recipe* recipe : Recipe::recipes)
 	{
-		if(receipt->id == id)
-			return receipt;
+		if(recipe->id == id)
+			return recipe;
 	}
 	return nullptr;
 }

@@ -157,7 +157,7 @@ struct QuestHandler;
 struct QuestInfo;
 struct QuestList;
 struct QuestScheme;
-struct Receipt;
+struct Recipe;
 struct Ring;
 struct Room;
 struct RoomGroup;

@@ -525,7 +525,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f << c.pos;
 			break;
 		case NetChange::CRAFT:
-			f << c.receipt->id;
+			f << c.recipe->id;
 			f << c.count;
 			break;
 		default:

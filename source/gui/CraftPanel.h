@@ -17,16 +17,16 @@ public:
 	void Draw(ControlDrawData*) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-	bool DoPlayerCraft(PlayerController& player, Receipt* receipt, uint count);
+	bool DoPlayerCraft(PlayerController& player, Recipe* recipe, uint count);
 	void AfterCraft();
 
 private:
 	void SetIngredients();
-	void SetReceipts();
+	void SetRecipes();
 	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void OnCraft(int id);
 	void OnSelectionChange(int index);
-	uint HaveIngredients(Receipt* receipt);
+	uint HaveIngredients(Recipe* recipe);
 
 	vector<pair<const Item*, uint>> ingredients;
 	int skill, counter;

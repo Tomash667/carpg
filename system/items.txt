@@ -3736,9 +3736,9 @@ better_items {
 }
 
 //------------------------------------------------------------------------------
-// RECEIPTS
+// RECIPES
 //------------------------------------------------------------------------------
-receipt p_hp {
+recipe p_hp {
 	result p_hp
 	items {
 		healing_herb
@@ -3746,7 +3746,7 @@ receipt p_hp {
 	skill 1
 }
 
-receipt p_hp2 {
+recipe p_hp2 {
 	result p_hp2
 	items {
 		2 healing_herb
@@ -3754,7 +3754,7 @@ receipt p_hp2 {
 	skill 25
 }
 
-receipt p_hp3 {
+recipe p_hp3 {
 	result p_hp3
 	items {
 		3 healing_herb
@@ -3762,7 +3762,7 @@ receipt p_hp3 {
 	skill 50
 }
 
-receipt p_mp {
+recipe p_mp {
 	result p_mp
 	items {
 		magic_crystal
@@ -3770,7 +3770,7 @@ receipt p_mp {
 	skill 1
 }
 
-receipt p_mp2 {
+recipe p_mp2 {
 	result p_mp2
 	items {
 		2 magic_crystal
@@ -3778,7 +3778,7 @@ receipt p_mp2 {
 	skill 25
 }
 
-receipt p_mp3 {
+recipe p_mp3 {
 	result p_mp3
 	items {
 		3 magic_crystal
