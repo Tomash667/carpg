@@ -34,6 +34,7 @@ Wersja 0.14 (???):
 - dziwna pozycja i teleportowanie gracza przy używaniu różdżki i krzesła podczas anulowania wyjmowania broni [BottledByte]
 - pasek hp w multiplayer źle się aktualizuje po pokonaniu postaci [BottledByte]
 - magiczny kryształ nie przywraca many [BottledByte]
+- zryw/bycza szarża pozwalał przechodzić przez niskie obiekty i powodował zaklinowanie się gracza [Lemiczek, BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

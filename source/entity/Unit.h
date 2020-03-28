@@ -415,7 +415,7 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetPhysicsPos() const
 	{
 		Vec3 p = pos;
-		p.y += max(1.5f, GetUnitHeight()) * 0.5f + 0.4f;
+		p.y += max(1.5f, GetUnitHeight()) * 0.5f + 0.1f;
 		return p;
 	}
 	Vec3 GetHeadPoint() const

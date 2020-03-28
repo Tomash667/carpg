@@ -34,6 +34,7 @@ Version 0.14 (???):
 - weird character placement and downwarp using a wand and seat after canceling take out weapon [BottledByte]
 - health bar in multiplayer incorrect update after defeat [BottledByte]
 - magic crystal does not have mana restoring effect [BottledByte]
+- dash/bull's charge could move thru small objects and get player stuck [Lemiczek, BottledByte]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):
