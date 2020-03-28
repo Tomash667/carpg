@@ -55,6 +55,22 @@ void GameCamera::Update(float dt)
 			tmp_springiness = springiness;
 	}
 
+	FIXME;
+	if(input->Down(Key::Shift))
+	{
+		if(input->Down(Key::N9))
+			h -= dt;
+		if(input->Down(Key::N0))
+			h += dt;
+	}
+	else
+	{
+		if(input->Down(Key::N9))
+			shift -= dt;
+		if(input->Down(Key::N0))
+			shift += dt;
+	}
+
 	const float d = reset
 		? 1.0f
 		: 1.0f - exp(log(0.5f) * tmp_springiness * dt);
@@ -89,6 +105,8 @@ void GameCamera::Update(float dt)
 		real_to = zoom_pos;
 	else
 		real_to = pos + forward_dir * 20;
+	//Info("%g, %g, %g", real_to.x, real_to.y, real_to.z);
+	FIXME;
 
 	// camera goes from character head backwards (to => from)
 	float t = HandleCollisions(pos, -tmp_dist * backward_dir);
@@ -187,6 +205,8 @@ void GameCamera::UpdateRotation(float dt)
 	real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
 }
 
+volatile float mmm = 0.08f;
+
 //=================================================================================================
 void GameCamera::SetMode(Mode new_mode)
 {
@@ -197,21 +217,26 @@ void GameCamera::SetMode(Mode new_mode)
 	{
 		h = -0.15f;
 		shift = 0.483023137f;
+		if(input->Down(Key::N8))
+			target->rot += mmm;
 		prev_dist = dist;
 		dist = 2.f;
-		if(mode == Zoom)
-		{
+		//if(mode == Zoom)
+		//{
 			springiness = 10;
 			tmp_springiness = 10;
-		}
-		else
-			springiness = 30;
+		//}
+		//else
+		//	springiness = 30;
 	}
 	else
 	{
 		h = 0.2f;
 		shift = 0.f;
 		dist = prev_dist;
+
+		if(input->Down(Key::N8))
+			target->rot -= mmm;
 		springiness = 40;
 	}
 }

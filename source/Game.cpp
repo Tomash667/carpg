@@ -2369,6 +2369,19 @@ void Game::UpdateCamera(float dt)
 			FIXME; // klawisz
 			camera.SetMode(GameCamera::Aim);
 			camera.UpdateRotation(dt);
+
+			FIXME;
+			if(GKey.AllowMouse())
+			{
+				// use mouse wheel to set distance
+				if(!game_gui->level_gui->IsMouseInsideDialog())
+				{
+					camera.dist -= input->GetMouseWheel();
+					camera.dist = Clamp(camera.dist, 0.5f, 6.f);
+				}
+				if(input->PressedRelease(Key::MiddleButton))
+					camera.dist = 3.5f;
+			}
 		}
 		else
 		{
