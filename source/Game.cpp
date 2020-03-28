@@ -2357,7 +2357,7 @@ void Game::UpdateCamera(float dt)
 			else
 			{
 				if(pc->action_unit->IsAlive())
-					zoom_pos = pc->action_unit->GetHeadPoint();
+					zoom_pos = pc->action_unit->GetHeadSoundPos();
 				else
 					zoom_pos = pc->action_unit->GetLootCenter();
 			}

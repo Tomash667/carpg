@@ -23,7 +23,6 @@ void MainMenu::LoadLanguage()
 {
 	Language::Section s = Language::GetSection("MainMenu");
 	txInfoText = s.Get("infoText");
-	txVersion = s.Get("version");
 	txCheckingVersion = s.Get("checkingVersion");
 	txNewVersion = s.Get("newVersion");
 	txNewVersionDialog = s.Get("newVersionDialog");
@@ -33,6 +32,8 @@ void MainMenu::LoadLanguage()
 	txNewerVersion = s.Get("newerVersion");
 	txNoNewVersion = s.Get("noNewVersion");
 	txCheckVersionError = s.Get("checkVersionError");
+
+	version = Format(s.Get("version"), VERSION_STR, Split(utility::GetCompileTime().c_str())[0].c_str());
 
 	const cstring names[BUTTONS] = {
 		"newGame",
@@ -90,9 +91,9 @@ void MainMenu::Draw(ControlDrawData*)
 
 	r.Left() = gui->wnd_size.x - 512 - 16;
 	r.Right() = gui->wnd_size.x - 16;
-	r.Top() = 256 + 24;
+	r.Top() = 256;
 	r.Bottom() = r.Top() + 64;
-	gui->DrawText(GameGui::font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, version, DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
 	r.Right() = gui->wnd_size.x;

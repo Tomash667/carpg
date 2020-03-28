@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 struct GameCamera : public Camera
 {
-	GameCamera(float springiness = 40.f);
+	GameCamera();
 	void Reset(bool full = false);
 	void Update(float dt);
 	void RotateTo(float dt, float dest_rot);
@@ -24,6 +24,6 @@ struct GameCamera : public Camera
 private:
 	float HandleCollisions(const Vec3& pos, const Vec3& dir);
 
-	float tmp_dist, tmp_shift, tmp_h, tmp_springiness, prev_dist;
+	float tmp_dist, tmp_shift, tmp_h, springiness_timer, prev_dist;
 	bool reset;
 };

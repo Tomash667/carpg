@@ -17,8 +17,11 @@
 #include "Terrain.h"
 #include "Unit.h"
 
+const float SPRINGINESS_NORMAL = 40.f;
+const float SPRINGINESS_SLOW = 5.f;
+
 //=================================================================================================
-GameCamera::GameCamera(float springiness) : springiness(springiness), reset(true), free_rot(false)
+GameCamera::GameCamera() : springiness(SPRINGINESS_NORMAL), reset(true), free_rot(false)
 {
 }
 
@@ -30,17 +33,18 @@ void GameCamera::Reset(bool full)
 		real_rot = Vec2(0, 4.2875104f);
 		dist = 3.5f;
 		drunk_anim = 0.f;
-		shift = 0.f;
-		h = 0.2f;
-		zoom = false;
 	}
+	shift = 0.f;
+	h = 0.2f;
+	zoom = false;
 	reset = true;
 	free_rot = false;
 	from = real_from;
 	to = real_to;
 	tmp_dist = dist;
 	tmp_shift = shift;
-	tmp_springiness = springiness;
+	springiness = SPRINGINESS_NORMAL;
+	springiness_timer = 0.f;
 }
 
 //=================================================================================================
@@ -48,16 +52,16 @@ void GameCamera::Update(float dt)
 {
 	drunk_anim = Clip(drunk_anim + dt);
 
-	if(tmp_springiness < springiness)
+	if(!zoom && springiness_timer > 0.f)
 	{
-		tmp_springiness += dt * 5;
-		if(tmp_springiness > springiness)
-			tmp_springiness = springiness;
+		springiness_timer -= dt;
+		if(springiness_timer <= 0.f)
+			springiness = SPRINGINESS_NORMAL;
 	}
 
 	const float d = reset
 		? 1.0f
-		: 1.0f - exp(log(0.5f) * tmp_springiness * dt);
+		: 1.0f - exp(log(0.5f) * springiness * dt);
 
 	if(!free_rot)
 		real_rot.x = target->rot;
@@ -200,8 +204,7 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 		shift = 0.483023137f;
 		prev_dist = dist;
 		dist = 2.f;
-		springiness = 10;
-		tmp_springiness = 10;
+		springiness = SPRINGINESS_SLOW;
 		this->zoom_pos = *zoom_pos;
 	}
 	else
@@ -209,7 +212,7 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 		h = 0.2f;
 		shift = 0.f;
 		dist = prev_dist;
-		springiness = 40;
+		springiness_timer = 1.f;
 	}
 }
 
