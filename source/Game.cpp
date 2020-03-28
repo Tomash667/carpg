@@ -4761,14 +4761,10 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				{
 					if(unit.IsFollower())
 					{
-						if(!unit.IsAlive())
-						{
-							unit.hp = 1.f;
-							unit.live_state = Unit::ALIVE;
-						}
+						if(!unit.IsStanding())
+							unit.Standup(false, true);
 						if(unit.GetOrder() != ORDER_FOLLOW)
 							unit.OrderFollow(team->GetLeader());
-						unit.mesh_inst->need_update = true;
 						unit.ai->Reset();
 						return true;
 					}
@@ -4789,6 +4785,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 								unit.mesh_inst->SetToEnd();
 								game_level->CreateBlood(area, unit, true);
 							}
+							else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
+								unit.Standup(false, true);
 
 							if(unit.IsAlive())
 							{

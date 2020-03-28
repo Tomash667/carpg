@@ -5151,21 +5151,29 @@ void Unit::TryStandup(float dt)
 }
 
 //=================================================================================================
-void Unit::Standup(bool warp)
+void Unit::Standup(bool warp, bool leave)
 {
 	HealPoison();
 	live_state = ALIVE;
-	Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
-	if(anim)
-	{
-		mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
-		action = A_STAND_UP;
-		animation = ANI_PLAY;
-	}
-	else
+	if(leave)
 	{
 		action = A_NONE;
 		animation = ANI_STAND;
+	}
+	else
+	{
+		Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
+		if(anim)
+		{
+			mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
+			action = A_STAND_UP;
+			animation = ANI_PLAY;
+		}
+		else
+		{
+			action = A_NONE;
+			animation = ANI_STAND;
+		}
 	}
 	used_item = nullptr;
 	if(weapon_state != WeaponState::Hidden)
@@ -5182,21 +5190,19 @@ void Unit::Standup(bool warp)
 		}
 	}
 
-	// change flag from CG_UNIT_DEAD -> CG_UNIT
-	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
-
 	if(Net::IsLocal())
 	{
 		if(IsAI())
 		{
 			ReequipItems();
-			ai->Reset();
+			if(!leave)
+				ai->Reset();
 		}
 		if(warp)
 			game_level->WarpUnit(*this, pos);
 	}
 
-	if(!game_level->entering && Net::IsServer())
+	if(!game_level->entering && !leave && Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STAND_UP;
@@ -6574,7 +6580,7 @@ void Unit::CastSpell()
 				b.backstab = 0.25f;
 				b.pos = coord;
 				b.attack = dmg;
-				b.rot = Vec3(0, current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f)), 0);
+				b.rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
 				b.mesh = ability.mesh;
 				b.tex = ability.tex;
 				b.tex_size = ability.size;

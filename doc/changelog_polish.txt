@@ -29,6 +29,7 @@ Wersja 0.14 (???):
 - czar piorun mógł być rzucany przez ściany i obiekty
 - poprawki co celowania przez ai
 - zioła generowały się poza obszarem lokalizacji [BottledByte]
+- jeśli jednostka leży na ziemi to po powrocie do lokalizacji też będzie leżeć
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):
