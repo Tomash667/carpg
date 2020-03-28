@@ -329,19 +329,22 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	if(IsSet(perk->flags, Perk::Start) && !ctx.startup)
 		return false;
 
-	// can take only one history perk
-	if(IsSet(perk->flags, Perk::History) && ctx.cc)
+	if(ctx.cc && !ctx.check_remove)
 	{
-		for(TakenPerk& tp : ctx.cc->taken_perks)
+		// can take only one history perk
+		if(IsSet(perk->flags, Perk::History))
 		{
-			if(IsSet(tp.perk->flags, Perk::History))
-				return false;
+			for(TakenPerk& tp : ctx.cc->taken_perks)
+			{
+				if(IsSet(tp.perk->flags, Perk::History))
+					return false;
+			}
 		}
-	}
 
-	// can't take more then 2 flaws
-	if(IsSet(perk->flags, Perk::Flaw) && ctx.cc && ctx.cc->perks_max >= 4)
-		return false;
+		// can't take more then 2 flaws
+		if(IsSet(perk->flags, Perk::Flaw) && ctx.cc->perks_max >= 4)
+			return false;
+	}
 
 	// check requirements
 	for(Perk::Required& req : perk->required)
