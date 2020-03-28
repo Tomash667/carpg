@@ -24,6 +24,16 @@ Version 0.14 (???):
 - unit is overloaded after exceeding carry capacity [Lemiczek]
 - changing controls require double-click [BottledByte, Lemiczek, Mokai]
 - error with missing dll MSVCP140 on some systems [BottledByte]
+- after defeat on arena dash gets broken [Lemiczek]
+- defeated ally blocks dash
+- thunder bolt can be cast thru walls and objects
+- ai aiming fixed
+- herbs spawned behind location area [BottledByte]
+- if unit lies on ground, after entering location it will be still lying
+- fast travel toast inactive when there is another [Lemiczek]
+- weird character placement and downwarp using a wand and seat after canceling take out weapon [BottledByte]
+- health bar in multiplayer incorrect update after defeat [BottledByte]
+- magic crystal does not have mana restoring effect [BottledByte]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

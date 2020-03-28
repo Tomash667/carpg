@@ -1,3 +1,6 @@
 [submodule "carpglib"]
 	path = carpglib
 	url = https://github.com/Tomash667/carpglib.git
+[submodule "bin/data"]
+	path = bin/data
+	url = https://github.com/Tomash667/carpgdata.git

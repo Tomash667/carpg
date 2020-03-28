@@ -3888,17 +3888,16 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 }
 
 //=================================================================================================
-void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
+void Level::AddPlayerTeam(const Vec3& pos, float rot)
 {
+	const bool hide_weapon = enter_from == ENTER_FROM_OUTSIDE;
+
 	for(Unit& unit : team->members)
 	{
-		if(!reenter)
-		{
-			local_area->units.push_back(&unit);
-			unit.CreatePhysics();
-			if(unit.IsHero())
-				game->ais.push_back(unit.ai);
-		}
+		local_area->units.push_back(&unit);
+		unit.CreatePhysics();
+		if(unit.IsHero())
+			game->ais.push_back(unit.ai);
 
 		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
 		unit.rot = rot;
@@ -3906,11 +3905,6 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
-		if(unit.area && unit.area->area_type == LevelArea::Type::Building && reenter)
-		{
-			RemoveElement(unit.area->units, &unit);
-			local_area->units.push_back(&unit);
-		}
 		unit.area = local_area;
 
 		if(unit.IsAI())
@@ -4028,11 +4022,10 @@ void Level::Update()
 //=================================================================================================
 void Level::Write(BitStreamWriter& f)
 {
-	f << reenter;
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
 
-	if(!net->mp_load && !reenter)
+	if(!net->mp_load)
 		return;
 
 	for(LevelArea& area : ForEachArea())
@@ -4071,7 +4064,6 @@ void Level::Write(BitStreamWriter& f)
 bool Level::Read(BitStreamReader& f, bool loaded_resources)
 {
 	// location
-	f >> reenter;
 	if(!location->Read(f))
 	{
 		Error("Read level: Failed to read location.");
@@ -4099,7 +4091,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	else
 		game->SetMusic(music);
 
-	if(!net->mp_load && !reenter)
+	if(!net->mp_load)
 		return true;
 
 	for(LevelArea& area : ForEachArea())
@@ -4552,19 +4544,24 @@ bool Level::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to)
 {
 	RaytestWithIgnoredCallback callback(&me, ptr);
 	phy_world->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
-	return callback.clear;
+	return !callback.hit;
 }
 
 //=================================================================================================
 bool Level::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted)
 {
-	RaytestClosestUnitCallback callback(ignore);
+	RaytestClosestUnitCallback callback([=](Unit* unit)
+	{
+		if(unit == ignore || !unit->IsAlive())
+			return false;
+		return true;
+	});
 	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
 
-	if(callback.hitted)
+	if(callback.hasHit())
 	{
-		hitpoint = from + (to - from) * callback.fraction;
-		hitted = callback.hitted;
+		hitpoint = from + (to - from) * callback.getFraction();
+		hitted = callback.hit;
 		return true;
 	}
 	else
@@ -4580,10 +4577,8 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 	btTransform t_from, t_to;
 	t_from.setIdentity();
 	t_from.setOrigin(ToVector3(from));
-	//t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
 	t_to.setIdentity();
 	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
-	//t_to.setBasis(t_from.getBasis());
 
 	ConvexCallback callback(clbk, t_list, use_clbk2);
 

@@ -366,14 +366,18 @@ bool AIController::CheckPotion(bool in_combat)
 //=================================================================================================
 void AIController::Reset()
 {
+	if(state != AIController::Idle)
+	{
+		state = Idle;
+		change_ai_mode = true;
+	}
 	target = nullptr;
 	alert_target = nullptr;
-	state = Idle;
 	pf_path.clear();
 	pf_local_path.clear();
 	in_combat = false;
 	next_attack = 0.f;
-	timer = 0.f;
+	timer = Random(1.f, 3.f);;
 	ignore = 0.f;
 	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
@@ -382,7 +386,6 @@ void AIController::Reset()
 	have_potion = HavePotion::Check;
 	have_mp_potion = HavePotion::Check;
 	st.idle.action = Idle_None;
-	change_ai_mode = true;
 	pf_state = PFS_NOT_USING;
 }
 

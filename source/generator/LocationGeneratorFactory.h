@@ -10,7 +10,7 @@ public:
 	LocationGeneratorFactory();
 	~LocationGeneratorFactory();
 	void Init();
-	LocationGenerator* Get(Location* loc, bool first = false, bool reenter = false);
+	LocationGenerator* Get(Location* loc, bool first = false);
 
 private:
 	AcademyGenerator* academy;

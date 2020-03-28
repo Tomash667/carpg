@@ -1809,13 +1809,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(game->game_state != GS_LEVEL)
 				break;
 			unit.Standup();
-			// send to other players
-			if(active_players > 2)
-			{
-				NetChange& c = Add1(changes);
-				c.type = NetChange::STAND_UP;
-				c.unit = &unit;
-			}
 			break;
 		// player used cheat 'noclip'
 		case NetChange::CHEAT_NOCLIP:

@@ -2749,7 +2749,7 @@ void Unit::Write(BitStreamWriter& f)
 		f << GetAiMode();
 
 	// loaded data
-	if(net->mp_load || game_level->reenter)
+	if(net->mp_load)
 	{
 		mesh_inst->Write(f);
 		f.WriteCasted<byte>(animation);
@@ -2994,7 +2994,7 @@ bool Unit::Read(BitStreamReader& f)
 	interp->Reset(pos, rot);
 	visual_pos = pos;
 
-	if(net->mp_load || game_level->reenter)
+	if(net->mp_load)
 	{
 		// get current state in multiplayer
 		if(!mesh_inst->Read(f))
@@ -3479,8 +3479,16 @@ void Unit::MakeItemsTeam(bool is_team)
 // Restore hp to 1 and heal poison
 void Unit::HealPoison()
 {
-	if(hp < 1.f)
-		hp = 1.f;
+	if(Net::IsLocal())
+	{
+		if(hp < 1.f)
+			hp = 1.f;
+	}
+	else
+	{
+		if(hp <= 0.f)
+			hp = 0.001f;
+	}
 
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
@@ -5147,53 +5155,66 @@ void Unit::TryStandup(float dt)
 	}
 
 	if(ok)
-	{
 		Standup();
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::STAND_UP;
-			c.unit = this;
-		}
-	}
 }
 
 //=================================================================================================
-void Unit::Standup()
+void Unit::Standup(bool warp, bool leave)
 {
 	HealPoison();
 	live_state = ALIVE;
-	Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
-	if(anim)
+	if(leave)
 	{
-		mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
-		action = A_STAND_UP;
-		animation = ANI_PLAY;
+		action = A_NONE;
+		animation = ANI_STAND;
 	}
 	else
-		action = A_NONE;
+	{
+		Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
+		if(anim)
+		{
+			mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
+			action = A_STAND_UP;
+			animation = ANI_PLAY;
+		}
+		else
+		{
+			action = A_NONE;
+			animation = ANI_STAND;
+		}
+	}
 	used_item = nullptr;
-
-	// change flag from CG_UNIT_DEAD -> CG_UNIT
-	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
+	if(weapon_state != WeaponState::Hidden)
+	{
+		WeaponType target_weapon;
+		if(weapon_state == WeaponState::Taken || weapon_state == WeaponState::Taking)
+			target_weapon = weapon_taken;
+		else
+			target_weapon = weapon_hiding;
+		if((target_weapon == W_ONE_HANDED && !HaveWeapon())
+			|| (target_weapon == W_BOW && !HaveBow()))
+		{
+			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+		}
+	}
 
 	if(Net::IsLocal())
 	{
 		if(IsAI())
 		{
-			if(ai->state != AIController::Idle)
-			{
-				ai->state = AIController::Idle;
-				ai->change_ai_mode = true;
-			}
-			ai->alert_target = nullptr;
-			ai->st.idle.action = AIController::Idle_None;
-			ai->target = nullptr;
-			ai->timer = Random(2.f, 5.f);
+			ReequipItems();
+			if(!leave)
+				ai->Reset();
 		}
+		if(warp)
+			game_level->WarpUnit(*this, pos);
+	}
 
-		game_level->WarpUnit(*this, pos);
+	if(!game_level->entering && !leave && Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::STAND_UP;
+		c.unit = this;
 	}
 }
 
@@ -5430,25 +5451,8 @@ void Unit::CreatePhysics(bool position)
 void Unit::UpdatePhysics(const Vec3* target_pos)
 {
 	Vec3 phy_pos = target_pos ? *target_pos : pos;
-	switch(live_state)
-	{
-	case ALIVE:
+	if(live_state == ALIVE)
 		phy_pos.y += max(MIN_H, GetUnitHeight()) / 2;
-		break;
-	case FALLING:
-	case FALL:
-		break;
-	case DYING:
-	case DEAD:
-		if(IsTeamMember())
-		{
-			// keep physics pos to alow cast heal spell on corpse - used for raytest
-			cobj->setCollisionFlags(CG_UNIT_DEAD);
-		}
-		else
-			phy_pos = Vec3(1000, 1000, 1000);
-		break;
-	}
 
 	btVector3 a_min, a_max;
 	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
@@ -5487,7 +5491,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
 					mesh_inst->Deactivate(1);
-					action = A_NONE;
+					action = usable ? A_USE_USABLE : A_NONE;
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taken;
@@ -5581,7 +5585,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				mesh_inst->Deactivate(1);
-				action = A_NONE;
+				action = usable ? A_USE_USABLE : A_NONE;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hidden;
 			}
@@ -6584,7 +6588,7 @@ void Unit::CastSpell()
 				b.backstab = 0.25f;
 				b.pos = coord;
 				b.attack = dmg;
-				b.rot = Vec3(0, current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f)), 0);
+				b.rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
 				b.mesh = ability.mesh;
 				b.tex = ability.tex;
 				b.tex_size = ability.size;
@@ -6781,21 +6785,8 @@ void Unit::CastSpell()
 
 			if(ability.effect == Ability::Raise)
 			{
-				Unit& u2 = *target;
-				u2.hp = u2.hpmax;
-				u2.live_state = ALIVE;
-				u2.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
-				u2.action = A_NONE;
-				u2.animation = ANI_STAND;
-
-				// za³ó¿ przedmioty / dodaj z³oto
-				u2.ReequipItems();
-
-				// przenieœ fizyke
-				game_level->WarpUnit(u2, u2.pos);
-
-				// resetuj ai
-				u2.ai->Reset();
+				target->Standup();
+				target->hp = target->hpmax;
 
 				// particle effect
 				ParticleEmitter* pe = new ParticleEmitter;
@@ -6807,8 +6798,8 @@ void Unit::CastSpell()
 				pe->spawn_min = 16;
 				pe->spawn_max = 25;
 				pe->max_particles = 25;
-				pe->pos = u2.pos;
-				pe->pos.y += u2.GetUnitHeight() / 2;
+				pe->pos = target->pos;
+				pe->pos.y += target->GetUnitHeight() / 2;
 				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
@@ -6826,14 +6817,6 @@ void Unit::CastSpell()
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::RAISE_EFFECT;
 					c.pos = pe->pos;
-
-					NetChange& c2 = Add1(Net::changes);
-					c2.type = NetChange::STAND_UP;
-					c2.unit = &u2;
-
-					NetChange& c3 = Add1(Net::changes);
-					c3.type = NetChange::UPDATE_HP;
-					c3.unit = &u2;
 				}
 			}
 			else if(ability.effect == Ability::Heal)
@@ -6841,9 +6824,7 @@ void Unit::CastSpell()
 				// heal target
 				if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
 				{
-					target->hp += dmg;
-					if(target->hp > target->hpmax)
-						target->hp = target->hpmax;
+					target->hp = Min(target->hp + dmg, target->hpmax);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -7907,8 +7888,12 @@ void Unit::Update(float dt)
 					int flags = obj->getCollisionFlags();
 					if(IsSet(flags, CG_TERRAIN))
 						return LT_IGNORE;
-					if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
-						return LT_IGNORE;
+					if(IsSet(flags, CG_UNIT))
+					{
+						Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+						if(unit == this || !unit->IsStanding())
+							return LT_IGNORE;
+					}
 					return LT_COLLIDE;
 				}, t);
 			}
@@ -7924,14 +7909,18 @@ void Unit::Update(float dt)
 					{
 						if(IsSet(flags, CG_TERRAIN))
 							return LT_IGNORE;
-						if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
-							return LT_IGNORE;
+						if(IsSet(flags, CG_UNIT))
+						{
+							Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+							if(unit == this || !unit->IsAlive())
+								return LT_IGNORE;
+						}
 					}
 					else
 					{
 						if(IsSet(obj->getCollisionFlags(), CG_UNIT))
 						{
-							Unit* unit = (Unit*)obj->getUserPointer();
+							Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
 							targets.push_back(unit);
 							return LT_IGNORE;
 						}

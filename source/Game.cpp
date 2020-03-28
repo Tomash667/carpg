@@ -943,57 +943,36 @@ void Game::OnUpdate(float dt)
 	{
 		arena->UpdatePvpRequest(dt);
 
+		// update fallback, can leave level so we need to check if we are still in GS_LEVEL
+		if(game_state == GS_LEVEL)
+			UpdateFallback(dt);
+
 		if(game_state == GS_LEVEL)
 		{
-			if(paused)
-			{
-				UpdateFallback(dt);
-				if(Net::IsLocal())
-				{
-					if(Net::IsOnline())
-						net->UpdateWarpData(dt);
-					game_level->ProcessUnitWarps();
-				}
-				game_level->camera.Update(dt);
-				if(Net::IsOnline())
-					UpdateGameNet(dt);
-			}
-			else if(gui->HavePauseDialog())
-			{
-				if(Net::IsOnline())
-					UpdateGame(dt);
-				else
-				{
-					UpdateFallback(dt);
-					if(Net::IsLocal())
-					{
-						if(Net::IsOnline())
-							net->UpdateWarpData(dt);
-						game_level->ProcessUnitWarps();
-					}
-					game_level->camera.Update(dt);
-				}
-			}
-			else
+			if(!paused && !(gui->HavePauseDialog() && Net::IsSingleplayer()))
 				UpdateGame(dt);
 		}
-		else if(game_state == GS_WORLDMAP)
-		{
-			if(Net::IsOnline())
-				UpdateGameNet(dt);
-		}
 
-		if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
+		if(game_state == GS_LEVEL)
 		{
-			assert(Net::changes.empty());
+			if(Net::IsLocal())
+			{
+				if(Net::IsOnline())
+					net->UpdateWarpData(dt);
+				game_level->ProcessUnitWarps();
+			}
+			game_level->camera.Update(dt);
 		}
 	}
-	else
+	else if(cutscene)
+		UpdateFallback(dt);
+
+	if(Net::IsOnline() && Any(game_state, GS_LEVEL, GS_WORLDMAP))
+		UpdateGameNet(dt);
+
+	if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 	{
-		if(cutscene)
-			UpdateFallback(dt);
-		if(Net::IsOnline())
-			UpdateGameNet(dt);
+		assert(Net::changes.empty());
 	}
 
 	Profiler::g_profiler.End();
@@ -1568,17 +1547,14 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	game_gui->level_gui->Reset();
 	game_gui->level_gui->visible = true;
 
-	const bool reenter = game_level->is_open;
 	game_level->is_open = true;
-	game_level->reenter = reenter;
 	if(world->GetState() != World::State::INSIDE_ENCOUNTER)
 		world->SetState(World::State::INSIDE_LOCATION);
 	if(from_portal != -1)
 		game_level->enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
 		game_level->enter_from = ENTER_FROM_OUTSIDE;
-	if(!reenter)
-		game_level->light_angle = Random(PI * 2);
+	game_level->light_angle = Random(PI * 2);
 
 	game_level->dungeon_level = level;
 	game_level->event_handler = nullptr;
@@ -1591,8 +1567,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(l.last_visit == -1)
 		first = true;
 
-	if(!reenter)
-		InitQuadTree();
+	InitQuadTree();
 
 	if(Net::IsOnline() && net->active_players > 1)
 	{
@@ -1617,7 +1592,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	// calculate number of loading steps for drawing progress bar
-	LocationGenerator* loc_gen = loc_gen_factory->Get(&l, first, reenter);
+	LocationGenerator* loc_gen = loc_gen_factory->Get(&l, first);
 	int steps = loc_gen->GetNumberOfSteps();
 	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
@@ -1666,11 +1641,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(game_level->location->outside)
 	{
 		loc_gen->OnEnter();
-		if(!reenter)
-		{
-			SetTerrainTextures();
-			CalculateQuadtree();
-		}
+		SetTerrainTextures();
+		CalculateQuadtree();
 	}
 	else
 		EnterLevel(loc_gen);
@@ -1999,10 +1971,6 @@ void Game::UpdateGame(float dt)
 	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
 	game_level->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
 
-	UpdateFallback(dt);
-	if(!game_level->location)
-		return;
-
 	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
 	{
 		// arena
@@ -2222,22 +2190,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	UpdateAttachedSounds(dt);
-	if(Net::IsLocal())
-	{
-		if(Net::IsOnline())
-			net->UpdateWarpData(dt);
-		game_level->ProcessUnitWarps();
-	}
 
-	// usuñ jednostki
 	game_level->ProcessRemoveUnits(false);
-
-	if(Net::IsOnline())
-	{
-		UpdateGameNet(dt);
-		if(!Net::IsOnline() || game_state != GS_LEVEL)
-			return;
-	}
 }
 
 //=================================================================================================
@@ -3530,7 +3484,7 @@ void Game::ExitToMap()
 
 	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
-	if(game_level->is_open && game_level->location->type == L_ENCOUNTER)
+	if(game_level->is_open)
 		LeaveLocation();
 
 	net->ClearFastTravel();
@@ -4814,14 +4768,10 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				{
 					if(unit.IsFollower())
 					{
-						if(!unit.IsAlive())
-						{
-							unit.hp = 1.f;
-							unit.live_state = Unit::ALIVE;
-						}
+						if(!unit.IsStanding())
+							unit.Standup(false, true);
 						if(unit.GetOrder() != ORDER_FOLLOW)
 							unit.OrderFollow(team->GetLeader());
-						unit.mesh_inst->need_update = true;
 						unit.ai->Reset();
 						return true;
 					}
@@ -4842,6 +4792,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 								unit.mesh_inst->SetToEnd();
 								game_level->CreateBlood(area, unit, true);
 							}
+							else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
+								unit.Standup(false, true);
 
 							if(unit.IsAlive())
 							{

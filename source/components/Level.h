@@ -157,7 +157,7 @@ public:
 	bool CanSee(Unit& unit, Unit& unit2);
 	bool CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door = false, void* ignored = nullptr);
 	bool KillAll(int mode, Unit& unit, Unit* ignore);
-	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
+	void AddPlayerTeam(const Vec3& pos, float rot);
 	void UpdateDungeonMinimap(bool in_level);
 	void RevealMinimap();
 	bool IsSettlement() { return city_ctx != nullptr; }
@@ -208,7 +208,6 @@ public:
 	int location_index; // same as world->current_location_index
 	int dungeon_level;
 	InsideLocationLevel* lvl; // null when in outside location
-	bool reenter;
 	GameCamera camera;
 	float lights_dt;
 	vector<std::reference_wrapper<LevelArea>> areas;
@@ -232,7 +231,7 @@ public:
 	City* city_ctx; // pointer to city or nullptr when not inside city
 	int enter_from; // from where team entered level (used when spawning new player in MP)
 	float light_angle; // random angle used for lighting in outside locations
-	bool is_open, // is location loaded, team is inside or is on world map and can reenter
+	bool is_open, // is location loaded & team is inside
 		entering, // true when entering location/generating/spawning unit, false when finished
 		can_fast_travel; // used by MP clients
 	vector<Unit*> to_remove;

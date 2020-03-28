@@ -198,7 +198,7 @@ void SecretLocationGenerator::GenerateItems()
 //=================================================================================================
 void SecretLocationGenerator::SpawnTeam()
 {
-	game_level->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
+	game_level->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI);
 }
 
 //=================================================================================================

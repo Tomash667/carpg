@@ -10,8 +10,16 @@ struct RaytestWithIgnoredCallback : public btCollisionWorld::RayResultCallback
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
 		void* ptr = rayResult.m_collisionObject->getUserPointer();
+		// ignore selected colliders
 		if(ptr && Any(ptr, ignore1, ignore2))
 			return 1.f;
+		// ignore dead units
+		if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
+		{
+			Unit* unit = reinterpret_cast<Unit*>(ptr);
+			if(!unit->IsAlive())
+				return 1.f;
+		}
 		if(rayResult.m_hitFraction < fraction)
 		{
 			fraction = rayResult.m_hitFraction;
@@ -20,7 +28,6 @@ struct RaytestWithIgnoredCallback : public btCollisionWorld::RayResultCallback
 		return 0.f;
 	}
 
-	bool clear;
 	const void* ignore1, *ignore2;
 	float fraction;
 	bool hit;
@@ -31,12 +38,11 @@ struct RaytestAnyUnitCallback : public btCollisionWorld::RayResultCallback
 {
 	RaytestAnyUnitCallback() : clear(true)
 	{
+		m_collisionFilterMask = ~CG_UNIT;
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
-		if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
-			return 1.f;
 		clear = false;
 		return 0.f;
 	}
@@ -47,66 +53,41 @@ struct RaytestAnyUnitCallback : public btCollisionWorld::RayResultCallback
 //-----------------------------------------------------------------------------
 struct RaytestClosestUnitCallback : public btCollisionWorld::RayResultCallback
 {
-	explicit RaytestClosestUnitCallback(Unit* ignore) : ignore(ignore), hitted(nullptr), fraction(1.01f)
+	explicit RaytestClosestUnitCallback(delegate<bool(Unit*)> clbk) : clbk(clbk), hit(nullptr)
 	{
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
-		if(!IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
-			return 1.f;
-
-		Unit* unit = reinterpret_cast<Unit*>(rayResult.m_collisionObject->getUserPointer());
-		if(unit == ignore)
-			return 1.f;
-
-		if(rayResult.m_hitFraction < fraction)
+		Unit* unit;
+		if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
 		{
-			hitted = unit;
-			fraction = rayResult.m_hitFraction;
+			unit = reinterpret_cast<Unit*>(rayResult.m_collisionObject->getUserPointer());
+			if(!clbk(unit))
+				return 1.f;
 		}
+		else
+			unit = nullptr;
 
-		return 0.f;
-	}
-
-	Unit* ignore, *hitted;
-	float fraction;
-};
-
-//-----------------------------------------------------------------------------
-struct RaytestClosestUnitDeadOrAliveCallback : public btCollisionWorld::RayResultCallback
-{
-	RaytestClosestUnitDeadOrAliveCallback(Unit* me) : me(me), hit(nullptr)
-	{
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		void* ptr = rayResult.m_collisionObject->getUserPointer();
-		if(me == ptr)
-			return 1.f;
 		if(m_closestHitFraction > rayResult.m_hitFraction)
 		{
 			m_closestHitFraction = rayResult.m_hitFraction;
-			if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT | CG_UNIT_DEAD))
-				hit = reinterpret_cast<Unit*>(ptr);
-			else
-				hit = nullptr;
+			hit = unit;
 		}
+
 		return 0.f;
 	}
 
-	Unit* me;
+	bool hasHit() const { return m_closestHitFraction < 1.f; }
+	float getFraction() const { return m_closestHitFraction; }
+
+	delegate<bool(Unit*)> clbk;
 	Unit* hit;
 };
 
 //-----------------------------------------------------------------------------
 struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 {
-	btCollisionObject* obj;
-	delegate<bool(btCollisionObject*, bool)> clbk;
-	bool use_clbk2, hit;
-
 	ContactTestCallback(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2) : obj(obj), clbk(clbk), use_clbk2(use_clbk2), hit(false)
 	{
 	}
@@ -132,26 +113,39 @@ struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 		hit = true;
 		return 0.f;
 	}
+
+	btCollisionObject* obj;
+	delegate<bool(btCollisionObject*, bool)> clbk;
+	bool use_clbk2, hit;
 };
 
 //-----------------------------------------------------------------------------
 struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 {
-	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
+	explicit BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
 	{
-		ClearBit(m_collisionFilterMask, CG_BARRIER);
+		m_collisionFilterMask = ~CG_BARRIER;
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
 	{
 		assert(m_closestHitFraction >= convexResult.m_hitFraction);
 
-		if(convexResult.m_hitCollisionObject == ignore)
+		btCollisionObject* cobj = const_cast<btCollisionObject*>(convexResult.m_hitCollisionObject);
+		if(cobj == ignore)
 			return 1.f;
+
+		// ignore dead units
+		if(IsSet(cobj->getCollisionFlags(), CG_UNIT))
+		{
+			Unit* unit = reinterpret_cast<Unit*>(cobj->getUserPointer());
+			if(!unit->IsAlive())
+				return 1.f;
+		}
 
 		m_closestHitFraction = convexResult.m_hitFraction;
 		hitpoint = convexResult.m_hitPointLocal;
-		target = (btCollisionObject*)convexResult.m_hitCollisionObject;
+		target = cobj;
 		return 0.f;
 	}
 
@@ -162,11 +156,6 @@ struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 //-----------------------------------------------------------------------------
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 {
-	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
-	vector<float>* t_list;
-	float end_t, closest;
-	bool use_clbk2, end = false;
-
 	ConvexCallback(delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, vector<float>* t_list, bool use_clbk2) : clbk(clbk), t_list(t_list), use_clbk2(use_clbk2),
 		end(false), end_t(1.f), closest(1.1f)
 	{
@@ -204,4 +193,9 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 		// return value is unused
 		return 1.f;
 	}
+
+	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
+	vector<float>* t_list;
+	float end_t, closest;
+	bool use_clbk2, end;
 };

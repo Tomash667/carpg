@@ -1390,8 +1390,12 @@ void Game::PrepareAreaPath()
 				int flags = obj->getCollisionFlags();
 				if(IsSet(flags, CG_TERRAIN))
 					return LT_IGNORE;
-				if(IsSet(flags, CG_UNIT) && (obj->getUserPointer() == pc->unit || ignore_units))
-					return LT_IGNORE;
+				if(IsSet(flags, CG_UNIT))
+				{
+					Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+					if(ignore_units || unit == pc->unit || !unit->IsStanding())
+						return LT_IGNORE;
+				}
 				return LT_COLLIDE;
 			}, t);
 
@@ -1516,9 +1520,16 @@ void Game::PrepareAreaPath()
 			}
 			else
 			{
-				// raytest
+				// raytest - can be cast on alive units or dead team members
 				const float range = ability.range + game_level->camera.dist;
-				RaytestClosestUnitDeadOrAliveCallback clbk(pc->unit);
+				RaytestClosestUnitCallback clbk([=](Unit* unit)
+				{
+					if(unit == pc->unit)
+						return false;
+					if(!unit->IsAlive() && !unit->IsTeamMember())
+						return false;
+					return true;
+				});
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();
 				from += dir * game_level->camera.dist;

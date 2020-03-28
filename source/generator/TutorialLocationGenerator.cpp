@@ -291,5 +291,5 @@ void TutorialLocationGenerator::OnEnter()
 
 	game_level->SpawnDungeonColliders();
 	CreateMinimap();
-	game_level->AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
+	game_level->AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0);
 }
