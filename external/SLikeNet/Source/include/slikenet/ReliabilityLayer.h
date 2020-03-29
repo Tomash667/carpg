@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  RakNet License.txt file in the licenses directory of this source tree. An additional grant 
+ *  RakNet License.txt file in the licenses directory of this source tree. An additional grant
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
@@ -65,12 +65,85 @@ class PluginInterface2;
 class RakNetRandom;
 typedef uint64_t reliabilityHeapWeightType;
 
+class SortedSplittedPackets
+{
+private:
+	InternalPacket** data;
+	unsigned int allocation_size;
+	unsigned int addedPacketsCount;
+	SplitPacketIdType packetId;
+
+public:
+	SortedSplittedPackets()
+	{
+		data = NULL;
+		allocation_size = 0;
+		addedPacketsCount = 0;
+	}
+	~SortedSplittedPackets()
+	{
+		if(allocation_size > 0)
+		{
+			SLNet::OP_DELETE_ARRAY(data, _FILE_AND_LINE_);
+		}
+	}
+
+	void Preallocate(InternalPacket* internalPacket, const char* file, unsigned int line)
+	{
+		RakAssert(data == NULL);
+		allocation_size = internalPacket->splitPacketCount;
+		data = SLNet::OP_NEW_ARRAY<InternalPacket*>(allocation_size, file, line);
+		packetId = internalPacket->splitPacketId;
+
+		for(unsigned int i = 0; i < allocation_size; ++i)
+		{
+			data[i] = NULL;
+		}
+	}
+	bool Add(InternalPacket* internalPacket, const char* file, unsigned int line)
+	{
+		(void)file;
+		(void)line;
+		RakAssert(data != NULL);
+		RakAssert(internalPacket->splitPacketIndex < allocation_size);
+		RakAssert(packetId == internalPacket->splitPacketId);
+		RakAssert(data[internalPacket->splitPacketIndex] == NULL);
+		if(data[internalPacket->splitPacketIndex] == NULL)
+		{
+			data[internalPacket->splitPacketIndex] = internalPacket;
+			++addedPacketsCount;
+			return true;
+		}
+		return false;
+	}
+
+	unsigned int AllocSize()
+	{
+		return allocation_size;
+	}
+	unsigned int AddedPacketsCount()
+	{
+		return addedPacketsCount;
+	}
+	InternalPacket* Get(unsigned int index)
+	{
+		RakAssert(data != NULL);
+		RakAssert(index < allocation_size);
+		return data[index];
+	}
+	SplitPacketIdType PacketId()
+	{
+		RakAssert(data != NULL);
+		return packetId;
+	}
+};
+
 // int SplitPacketIndexComp( SplitPacketIndexType const &key, InternalPacket* const &data );
 struct SplitPacketChannel//<SplitPacketChannel>
 {
 	CCTimeType lastUpdateTime;
 
-	DataStructures::List<InternalPacket*> splitPacketList;
+	SortedSplittedPackets splitPacketList;
 
 #if PREALLOCATE_LARGE_MESSAGES==1
 	InternalPacket *returnedPacket;
@@ -183,7 +256,7 @@ public:
 		unsigned bitsPerSecondLimit,
 		DataStructures::List<PluginInterface2*> &messageHandlerList,
 		RakNetRandom *rnr, BitStream &updateBitStream);
-	
+
 	/// Were you ever unable to deliver a packet despite retries?
 	/// \return true means the connection has been lost.  Otherwise not.
 	bool IsDeadConnection( void ) const;
@@ -375,7 +448,7 @@ private:
 	MessageNumberNode* AddFirstToDatagramHistory(DatagramSequenceNumberType datagramNumber, DatagramSequenceNumberType messageNumber, CCTimeType timeSent);
 	MessageNumberNode* AddSubsequentToDatagramHistory(MessageNumberNode *messageNumberNode, DatagramSequenceNumberType messageNumber);
 	DatagramSequenceNumberType datagramHistoryPopCount;
-	
+
 	DataStructures::MemoryPool<InternalPacket> internalPacketPool;
 	// DataStructures::BPlusTree<DatagramSequenceNumberType, InternalPacket*, RESEND_TREE_ORDER> resendTree;
 	InternalPacket *resendBuffer[RESEND_BUFFER_ARRAY_LENGTH];
@@ -428,7 +501,7 @@ private:
 	// Algorithm for blending ordered and sequenced on the same channel:
 	// 1. Each ordered message transmits OrderingIndexType orderedWriteIndex. There are NUMBER_OF_ORDERED_STREAMS independent values of these. The value
 	//    starts at 0. Every time an ordered message is sent, the value increments by 1
-	// 2. Each sequenced message contains the current value of orderedWriteIndex for that channel, and additionally OrderingIndexType sequencedWriteIndex. 
+	// 2. Each sequenced message contains the current value of orderedWriteIndex for that channel, and additionally OrderingIndexType sequencedWriteIndex.
 	//    sequencedWriteIndex resets to 0 every time orderedWriteIndex increments. It increments by 1 every time a sequenced message is sent.
 	// 3. The receiver maintains the next expected value for the orderedWriteIndex, stored in orderedReadIndex.
 	// 4. As messages arrive:
@@ -454,7 +527,7 @@ private:
 	DataStructures::Heap<reliabilityHeapWeightType, InternalPacket*, false> orderingHeaps[NUMBER_OF_ORDERED_STREAMS];
 	OrderingIndexType heapIndexOffsets[NUMBER_OF_ORDERED_STREAMS];
 
-	
+
 
 
 
@@ -522,7 +595,7 @@ private:
 
 	CCTimeType nextAckTimeToSend;
 
-	
+
 #if USE_SLIDING_WINDOW_CONGESTION_CONTROL==1
 	SLNet::CCRakNetSlidingWindow congestionManager;
 #else
@@ -531,7 +604,7 @@ private:
 
 
 	uint32_t unacknowledgedBytes;
-	
+
 	bool ResendBufferOverflow(void) const;
 	void ValidateResendList(void) const;
 	void ResetPacketsAndDatagrams(void);
