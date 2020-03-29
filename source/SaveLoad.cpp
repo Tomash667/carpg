@@ -766,7 +766,7 @@ void Game::LoadGame(GameReader& f)
 	// camera
 	f >> game_level->camera.real_rot.y;
 	f >> game_level->camera.dist;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_14)
 		f >> game_level->camera.drunk_anim;
 	game_level->camera.Reset();
 	pc->data.rot_buf = 0.f;
@@ -810,7 +810,7 @@ void Game::LoadGame(GameReader& f)
 	dialog_context.is_local = true;
 	f >> game_level->dungeon_level;
 	f >> portal_anim;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_14)
 		f >> game_level->camera.drunk_anim;
 	ais.resize(f.Read<uint>());
 	for(AIController*& ai : ais)
@@ -822,7 +822,7 @@ void Game::LoadGame(GameReader& f)
 	game_gui->Load(f);
 
 	check_id = (byte)world->GetLocations().size();
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_14)
 		--check_id; // added offscreen location to old saves
 	f >> read_id;
 	if(read_id != check_id++)

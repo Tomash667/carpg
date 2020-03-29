@@ -440,7 +440,7 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.train;
 			f >> stat.apt;
 			f >> stat.train_part;
-			if(LOAD_VERSION < V_DEV)
+			if(LOAD_VERSION < V_0_14)
 				f.Skip<bool>(); // old blocked
 		}
 		for(StatData& stat : skill)
@@ -538,7 +538,7 @@ void PlayerController::Load(FileReader& f)
 	byte count;
 	f >> count;
 	perks.resize(count);
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_14)
 	{
 		for(TakenPerk& tp : perks)
 		{

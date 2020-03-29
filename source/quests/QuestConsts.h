@@ -26,7 +26,7 @@ enum QUEST_TYPE
 	Q_ORCS2,
 	Q_GOBLINS,
 	Q_EVIL,
-	Q_DELIVER_LETTER, // removed in V_DEV
+	Q_DELIVER_LETTER, // removed in V_0_14
 	Q_DELIVER_PARCEL,
 	Q_SPREAD_NEWS,
 	Q_RESCUE_CAPTIVE,
@@ -40,7 +40,7 @@ enum QUEST_TYPE
 	Q_CRAZIES,
 	Q_WANTED,
 	Q_MAIN, // removed
-	Q_ARTIFACTS, // removed in V_DEV
+	Q_ARTIFACTS, // removed in V_0_14
 	Q_SCRIPTED
 };
 

@@ -74,6 +74,7 @@ void Quest_Tutorial::Start()
 	game_gui->world_map->Hide();
 	game->clear_color = game->clear_color_next;
 	game_level->camera.Reset();
+	game->game_state = GS_LEVEL;
 }
 
 /*

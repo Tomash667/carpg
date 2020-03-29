@@ -5,6 +5,7 @@
 #include "InsideLocation.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
+#include "AIController.h"
 #include "Game.h"
 
 struct RoomInfo
@@ -233,6 +234,7 @@ void TutorialLocationGenerator::OnEnter()
 						{
 							Unit* u = game_level->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
 							u->rot = PI;
+							u->ai->start_rot = PI;
 							u->event_handler = &quest;
 						}
 						break;
@@ -254,6 +256,7 @@ void TutorialLocationGenerator::OnEnter()
 						{
 							Unit* u = game_level->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
+							u->ai->start_rot = PI;
 						}
 						break;
 					default:

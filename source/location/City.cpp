@@ -114,7 +114,7 @@ void City::Load(GameReader& f, bool local)
 			f >> b.dir;
 			f >> b.walk_pt;
 			assert(b.building != nullptr);
-			if(LOAD_VERSION < V_DEV && b.building->id == "mages_tower")
+			if(LOAD_VERSION < V_0_14 && b.building->id == "mages_tower")
 			{
 				const float rot = DirToRot(b.dir);
 				Mesh::Point* point = b.building->mesh->FindPoint("o_s_point");

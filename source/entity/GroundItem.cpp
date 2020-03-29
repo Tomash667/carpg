@@ -28,7 +28,7 @@ void GroundItem::Load(FileReader& f)
 		f >> id;
 	Register();
 	f >> pos;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_14)
 		f >> rot;
 	else
 	{

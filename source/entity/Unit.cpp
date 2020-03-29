@@ -2335,7 +2335,7 @@ void Unit::Load(GameReader& f, bool local)
 	if(LOAD_VERSION >= V_0_10)
 	{
 		f.ReadVector4(effects);
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_14)
 		{
 			for(Effect& e : effects)
 			{
@@ -2396,7 +2396,7 @@ void Unit::Load(GameReader& f, bool local)
 				StringPool.Free(str);
 				dialog.quest->AddDialogPtr(this);
 			});
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_14)
 				f >> dialog.priority;
 			else
 				dialog.priority = 0;
@@ -2451,7 +2451,7 @@ void Unit::Load(GameReader& f, bool local)
 				case ORDER_MOVE:
 					f >> current_order->pos;
 					f >> current_order->move_type;
-					if(LOAD_VERSION >= V_DEV)
+					if(LOAD_VERSION >= V_0_14)
 						f >> current_order->range;
 					else
 						current_order->range = 0.1f;

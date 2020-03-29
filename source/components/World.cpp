@@ -1406,7 +1406,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f >> reveal_timer;
 	f >> encounter_chance;
 	f >> settlements;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_14)
 	{
 		// old encounter_loc
 		const int encounter_loc_index = f.Read<int>();

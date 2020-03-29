@@ -166,7 +166,7 @@ object chest {
 	flags { near_wall is_chest }
 }
 
-// removed in V_DEV
+// removed in V_0_14
 object chest_r {
 	mesh "skrzynia.qmsh"
 	flags is_chest
