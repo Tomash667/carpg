@@ -35,6 +35,7 @@ Version 0.14 (???):
 - health bar in multiplayer incorrect update after defeat [BottledByte]
 - magic crystal does not have mana restoring effect [BottledByte]
 - dash/bull's charge could move thru small objects and get player stuck [Lemiczek, BottledByte]
+- journal cycling while adding a note during world map [Lemiczek]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

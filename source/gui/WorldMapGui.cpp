@@ -321,7 +321,7 @@ void WorldMapGui::Update(float dt)
 
 	if(game_gui->journal->visible)
 	{
-		game_gui->journal->focus = true;
+		game_gui->journal->focus = focus;
 		game_gui->journal->Update(dt);
 	}
 	if(!gui->HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && input->Focus() && !combo_search.focus && game->death_screen == 0)
