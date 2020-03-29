@@ -4994,7 +4994,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(player->is_local)
 		{
 			player->data.ability_ready = nullptr;
-			game_gui->inventory->lock = nullptr;
+			game_gui->inventory->EndLock();
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
 

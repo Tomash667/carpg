@@ -76,6 +76,7 @@ public:
 	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit = nullptr);
 	void StartTrade2(InventoryMode mode, void* ptr);
 	void BuildTmpInventory(int index);
+	void EndLock();
 
 	InventoryMode mode;
 	GamePanelContainer* gp_trade;
@@ -85,6 +86,7 @@ public:
 	vector<int> tmp_inventory[2];
 	int tmp_inventory_shift[2];
 	ItemLock lock;
+	DialogBox* lock_dialog;
 	TooltipController tooltip;
 	TexturePtr tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU, tTeamItem;
 	cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount,
