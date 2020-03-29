@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "BuildingScript.h"
 #include "BuildingGroup.h"
 #include "Building.h"

@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "ConsoleCommands.h"
+#include "Tokenizer.h"
 
 //-----------------------------------------------------------------------------
 class CommandParser
@@ -18,12 +19,12 @@ public:
 	void HealUnit(Unit& unit);
 	void RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value);
 	void ListEffects(Unit* u);
-	void AddPerk(PlayerController* pc, Perk perk, int value);
-	void RemovePerk(PlayerController* pc, Perk perk, int value);
+	void AddPerk(PlayerController* pc, Perk* perk, int value);
+	void RemovePerk(PlayerController* pc, Perk* perk, int value);
 	void ListPerks(PlayerController* pc);
 	void ListStats(Unit* u);
 	void ArenaCombat(cstring str);
-	void CmdList(Tokenizer& t);
+	void CmdList();
 
 	inline void Msg(cstring msg)
 	{
@@ -36,10 +37,11 @@ public:
 	}
 
 private:
-	void ParseScript(Tokenizer& t);
-	void RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE source);
+	void ParseScript();
+	void RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source);
 	bool ParseStreamInner(BitStreamReader& f);
 
+	Tokenizer t;
 	vector<ConsoleCommand> cmds;
 	PrintMsgFunc print_msg;
 };

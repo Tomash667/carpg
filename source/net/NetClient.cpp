@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Net.h"
 #include "BitStreamFunc.h"
 #include "Game.h"
@@ -41,6 +40,7 @@
 #include "Arena.h"
 #include "CommandParser.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 //=================================================================================================
 void Net::InitClient()
@@ -335,12 +335,15 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::ENTER_BUILDING:
 		case NetChange::CHANGE_LEADER:
 		case NetChange::RANDOM_NUMBER:
-		case NetChange::CHEAT_WARP:
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REST:
 		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
+			break;
+		case NetChange::CHEAT_WARP:
+			f.WriteCasted<byte>(c.id);
+			f.Write(c.count != 0);
 			break;
 		case NetChange::CHEAT_WARP_TO_STAIRS:
 		case NetChange::CHEAT_CHANGE_LEVEL:
@@ -521,6 +524,10 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CAST_SPELL:
 			f << c.pos;
 			break;
+		case NetChange::CRAFT:
+			f << c.recipe->id;
+			f << c.count;
+			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
 			assert(0);
@@ -700,18 +707,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					}
 					break;
 				case AID_PrepareAttack:
-					{
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_PREPARE;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.f;
-						unit.act.attack.run = false;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-					}
+					if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+						game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+					unit.action = A_ATTACK;
+					unit.animation_state = AS_ATTACK_PREPARE;
+					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+					unit.act.attack.power = 1.f;
+					unit.act.attack.run = false;
+					unit.act.attack.hitted = false;
+					unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+					unit.mesh_inst->groups[group].speed = attack_speed;
 					break;
 				case AID_Shoot:
 				case AID_StartShoot:
@@ -731,39 +736,36 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					}
 					break;
 				case AID_Block:
-					{
-						unit.action = A_BLOCK;
-						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
-						unit.mesh_inst->groups[group].blend_max = attack_speed;
-					}
+					unit.action = A_BLOCK;
+					unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
+					unit.mesh_inst->groups[group].blend_max = attack_speed;
 					break;
 				case AID_Bash:
-					{
-						unit.action = A_BASH;
-						unit.animation_state = AS_BASH_ANIMATION;
-						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-					}
+					unit.action = A_BASH;
+					unit.animation_state = AS_BASH_ANIMATION;
+					unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
+					unit.mesh_inst->groups[group].speed = attack_speed;
 					break;
 				case AID_RunningAttack:
-					{
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_CAN_HIT;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.5f;
-						unit.act.attack.run = true;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-					}
+					if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+						game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+					unit.action = A_ATTACK;
+					unit.animation_state = AS_ATTACK_CAN_HIT;
+					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+					unit.act.attack.power = 1.5f;
+					unit.act.attack.run = true;
+					unit.act.attack.hitted = false;
+					unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+					unit.mesh_inst->groups[group].speed = attack_speed;
 					break;
-				case AID_StopBlock:
+				case AID_Cancel:
+					if(unit.action == A_SHOOT)
 					{
-						unit.action = A_NONE;
-						unit.mesh_inst->Deactivate(group);
+						game_level->FreeBowInstance(unit.bow_instance);
+						is_bow = true;
 					}
+					unit.action = A_NONE;
+					unit.mesh_inst->Deactivate(1);
 					break;
 				}
 
@@ -1450,13 +1452,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						game->fallback_type = FALLBACK::NONE;
 
 						if(pc.unit->hp <= 0.f)
-						{
-							pc.unit->HealPoison();
-							pc.unit->live_state = Unit::ALIVE;
-							pc.unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							pc.unit->action = A_ANIMATION;
-							pc.unit->animation = ANI_PLAY;
-						}
+							pc.unit->Standup(false);
 					}
 					PushChange(NetChange::WARP);
 					interpolate_timer = 0.f;
@@ -1732,6 +1728,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					unit->UseUsable(usable);
 					if(pc.data.before_player == BP_USABLE && pc.data.before_player_ptr.usable == usable)
 						pc.data.before_player = BP_NONE;
+
+					if(unit->player == game->pc && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
+						game_gui->craft->Show();
 				}
 				else
 				{
@@ -1766,7 +1765,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(!unit)
 						Error("Update client: STAND_UP, missing unit %d.", id);
 					else
-						unit->Standup();
+						unit->Standup(false);
 				}
 			}
 			break;
@@ -2064,7 +2063,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::CREATE_EXPLOSION:
 			{
 				Vec3 pos;
-				uint ability_hash;
+				int ability_hash;
 				f >> ability_hash;
 				f >> pos;
 				if(!f)
@@ -2348,7 +2347,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// create ball - spell effect
 		case NetChange::CREATE_SPELL_BALL:
 			{
-				uint ability_hash;
+				int ability_hash;
 				int id;
 				Vec3 pos;
 				float rotY, speedY;
@@ -2431,7 +2430,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				uint ability_hash;
+				int ability_hash;
 				Vec3 pos;
 				f >> ability_hash;
 				f >> pos;
@@ -2786,7 +2785,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->Warp(location_index, false);
-					game_gui->world_map->StartTravel();
+					game_gui->world_map->StartTravel(true);
 				}
 			}
 			break;
@@ -2800,7 +2799,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->WarpPos(pos, false);
-					game_gui->world_map->StartTravel();
+					game_gui->world_map->StartTravel(true);
 				}
 			}
 			break;
@@ -2867,7 +2866,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::PLAYER_ABILITY:
 			{
 				int id;
-				uint ability_hash;
+				int ability_hash;
 				f >> id;
 				f >> ability_hash;
 				if(!f)
@@ -3852,27 +3851,29 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// add perk to player
 		case NetChangePlayer::ADD_PERK:
 			{
-				Perk perk;
-				int value;
-				f.ReadCasted<char>(perk);
+				int perk_hash, value;
+				f >> perk_hash;
 				f.ReadCasted<char>(value);
 				if(!f)
 					Error("Update single client: Broken ADD_PERK.");
-				else
+				else if(Perk* perk = Perk::Get(perk_hash))
 					pc.AddPerk(perk, value);
+				else
+					Error("Update single client: ADD_PERK, invalid perk %d.", perk_hash);
 			}
 			break;
 		// remove perk from player
 		case NetChangePlayer::REMOVE_PERK:
 			{
-				Perk perk;
-				int value;
-				f.ReadCasted<char>(perk);
+				int perk_hash, value;
+				f >> perk_hash;
 				f.ReadCasted<char>(value);
 				if(!f)
 					Error("Update single client: Broken REMOVE_PERK.");
-				else
+				else if(Perk* perk = Perk::Get(perk_hash))
 					pc.RemovePerk(perk, value);
+				else
+					Error("Update single client: ADD_PERK, invalid perk %d.", perk_hash);
 			}
 			break;
 		// show game message
@@ -3981,7 +3982,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// add ability to player
 		case NetChangePlayer::ADD_ABILITY:
 			{
-				uint ability_hash;
+				int ability_hash;
 				f >> ability_hash;
 				if(!f)
 				{
@@ -3998,7 +3999,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// remove ability from player
 		case NetChangePlayer::REMOVE_ABILITY:
 			{
-				uint ability_hash;
+				int ability_hash;
 				f >> ability_hash;
 				if(!f)
 				{
@@ -4011,6 +4012,10 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				else
 					pc.RemoveAbility(ability);
 			}
+			break;
+		// after crafting - update ingredients, play sound
+		case NetChangePlayer::AFTER_CRAFT:
+			game_gui->craft->AfterCraft();
 			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);
@@ -4374,6 +4379,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game->pc = unit->player;
 	game->pc->player_info = &info;
 	info.pc = game->pc;
+	game_level->camera.target = unit;
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -4489,6 +4495,9 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 			Error("Read player data: Broken multiplayer data.");
 			return false;
 		}
+
+		if(unit->usable && IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+			game_gui->craft->Show();
 	}
 
 	// checksum

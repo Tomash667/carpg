@@ -4,7 +4,6 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
-class Quest_Artifacts;
 class Quest_Bandits;
 class Quest_Contest;
 class Quest_Crazies;
@@ -78,6 +77,7 @@ public:
 	Quest* FindQuest(QUEST_TYPE type);
 	Quest* FindUnacceptedQuest(int location, QuestCategory category);
 	Quest* FindUnacceptedQuest(int id);
+	Quest* FindQuestS(const string& quest_id);
 	const Item* FindQuestItem(cstring name, int quest_id);
 	void EndUniqueQuest() { ++unique_quests_completed; }
 	bool SetForcedQuest(const string& name);
@@ -104,6 +104,7 @@ public:
 	void RemoveQuestUnits(bool on_leave);
 	void HandleQuestEvent(Quest_Event* event);
 	void UpdateQuestsLocal(float dt);
+	void ProcessQuestRequests();
 	void UpgradeQuests();
 
 	vector<Quest*> unaccepted_quests;
@@ -125,7 +126,6 @@ public:
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;
 	Quest_Tutorial* quest_tutorial;
-	Quest_Artifacts* quest_artifacts;
 	int quest_counter;
 	int unique_quests, unique_quests_completed;
 	bool unique_completed_show;

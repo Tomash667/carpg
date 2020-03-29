@@ -69,7 +69,7 @@ object tanning_rack {
 object altar {
 	mesh "oltarz.qmsh"
 	alpha 0
-	flags { near_wall important required blocks_camera }
+	flags { near_wall blocks_camera }
 }
 
 object bloody_altar {
@@ -100,7 +100,7 @@ object wardrobe {
 
 object bed {
 	mesh "lozko.qmsh"
-	flags { near_wall blocks_camera }
+	flags near_wall
 }
 
 object bedding {
@@ -166,9 +166,10 @@ object chest {
 	flags { near_wall is_chest }
 }
 
+// removed in V_DEV
 object chest_r {
 	mesh "skrzynia.qmsh"
-	flags { important required in_middle is_chest }
+	flags is_chest
 }
 
 object melee_target {
@@ -299,14 +300,14 @@ object tartak {
 
 object portal {
 	mesh "portal.qmsh"
-	flags { important double_physics required in_middle }
+	flags double_physics
 }
 
 object magic_thing {
 	mesh "magiczne_cos.qmsh"
 	cylinder { 0.561 0.844 }
 	center_y 0.844
-	flags { light in_middle }
+	flags light
 }
 
 object moonwell {
@@ -483,6 +484,15 @@ object corn {
 	flags { no_physics preload }
 }
 
+object book_holder {
+	mesh "book_holder.qmsh"
+}
+
+object vault_door {
+	mesh "vault_door.qmsh"
+	flags blocks_camera
+}
+
 //==============================================================================
 // OBJECT GROUPS
 //==============================================================================
@@ -563,7 +573,7 @@ usable cauldron {
 	mesh "kociol.qmsh"
 	required_item ladle
 	animation "miesza"
-	flags slow_stamina_restore
+	flags {slow_stamina_restore alchemy}
 	limit_rot 0
 }
 
@@ -588,7 +598,7 @@ usable gold_vein {
 usable throne {
 	mesh "tron.qmsh"
 	animation "siedzi_tron"
-	flags { allow_use_item important required near_wall }
+	flags { allow_use_item near_wall }
 	limit_rot 2
 }
 

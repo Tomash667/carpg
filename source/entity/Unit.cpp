@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Unit.h"
 #include "Game.h"
 #include "SaveState.h"
@@ -39,6 +38,7 @@
 #include "InsideLocation.h"
 #include "Portal.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -80,6 +80,133 @@ void Unit::Release()
 		assert(to_remove);
 		delete this;
 	}
+}
+
+//=================================================================================================
+void Unit::Init(UnitData& base, int lvl)
+{
+	Register();
+
+	// stats
+	data = &base;
+	human_data = nullptr;
+	pos = Vec3(0, 0, 0);
+	rot = 0.f;
+	used_item = nullptr;
+	live_state = Unit::ALIVE;
+	for(int i = 0; i < SLOT_MAX; ++i)
+		slots[i] = nullptr;
+	action = A_NONE;
+	weapon_taken = W_NONE;
+	weapon_hiding = W_NONE;
+	weapon_state = WeaponState::Hidden;
+	if(lvl == -2)
+		level = base.level.Random();
+	else if(lvl == -3)
+		level = base.level.Clamp(game_level->location->st);
+	else
+		level = base.level.Clamp(lvl);
+	player = nullptr;
+	ai = nullptr;
+	speed = prev_speed = 0.f;
+	hurt_timer = 0.f;
+	talking = false;
+	usable = nullptr;
+	frozen = FROZEN::NO;
+	in_arena = -1;
+	event_handler = nullptr;
+	to_remove = false;
+	temporary = false;
+	quest_id = -1;
+	bubble = nullptr;
+	busy = Unit::Busy_No;
+	interp = nullptr;
+	dont_attack = false;
+	assist = false;
+	attack_team = false;
+	last_bash = 0.f;
+	alcohol = 0.f;
+	moved = false;
+	running = false;
+
+	fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
+	if(base.group == G_PLAYER)
+	{
+		stats = new UnitStats;
+		stats->fixed = false;
+		stats->subprofile.value = 0;
+		stats->Set(base.GetStatProfile());
+	}
+	else
+		stats = base.GetStats(level);
+	CalculateStats();
+	hp = hpmax = CalculateMaxHp();
+	mp = mpmax = CalculateMaxMp();
+	stamina = stamina_max = CalculateMaxStamina();
+	stamina_timer = 0;
+	fake_unit = false;
+
+	// items
+	weight = 0;
+	CalculateLoad();
+	if(base.group != G_PLAYER && base.item_script)
+	{
+		ItemScript* script = base.item_script;
+		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[stats->subprofile.index]->item_script)
+			script = base.stat_profile->subprofiles[stats->subprofile.index]->item_script;
+		script->Parse(*this);
+		SortItems(items);
+		RecalculateWeight();
+	}
+	if(base.trader)
+	{
+		stock = new TraderStock;
+		stock->date = world->GetWorldtime();
+		base.trader->stock->Parse(stock->items);
+	}
+
+	// gold
+	float t;
+	if(base.level.x == base.level.y)
+		t = 1.f;
+	else
+		t = float(level - base.level.x) / (base.level.y - base.level.x);
+	gold = Int2::Lerp(base.gold, base.gold2, t).Random();
+
+	// human data
+	if(base.type == UNIT_TYPE::HUMAN)
+	{
+		human_data = new Human;
+		human_data->beard = Rand() % MAX_BEARD - 1;
+		human_data->hair = Rand() % MAX_HAIR - 1;
+		human_data->mustache = Rand() % MAX_MUSTACHE - 1;
+		human_data->height = Random(0.9f, 1.1f);
+		if(IsSet(base.flags2, F2_OLD))
+			human_data->hair_color = Color::Hex(0xDED5D0);
+		else if(IsSet(base.flags, F_CRAZY))
+			human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
+		else if(IsSet(base.flags, F_GRAY_HAIR))
+			human_data->hair_color = g_hair_colors[Rand() % 4];
+		else if(IsSet(base.flags, F_TOMASHU))
+		{
+			human_data->beard = 4;
+			human_data->mustache = -1;
+			human_data->hair = 0;
+			human_data->hair_color = g_hair_colors[0];
+			human_data->height = 1.1f;
+		}
+		else
+			human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
+	}
+
+	// hero data
+	if(IsSet(base.flags, F_HERO))
+	{
+		hero = new HeroData;
+		hero->Init(*this);
+	}
+	else
+		hero = nullptr;
 }
 
 //=================================================================================================
@@ -255,7 +382,7 @@ float Unit::CalculateDefense(const Item* armor) const
 //=================================================================================================
 Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 {
-	auto state = GetLoadState();
+	LoadState state = GetLoadState();
 	if(armor)
 	{
 		SkillId skill = armor->ToArmor().GetSkill();
@@ -335,7 +462,7 @@ bool Unit::DropItem(int index)
 		item->pos = pos;
 		item->pos.x -= sin(rot) * 0.25f;
 		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Random(MAX_ANGLE);
+		item->rot = Quat::RotY(Random(MAX_ANGLE));
 		if(s.count == 0)
 		{
 			no_more = true;
@@ -393,7 +520,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos = pos;
 		item->pos.x -= sin(rot) * 0.25f;
 		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Random(MAX_ANGLE);
+		item->rot = Quat::RotY(Random(MAX_ANGLE));
 		item2 = nullptr;
 		game_level->AddGroundItem(*area, item);
 
@@ -450,7 +577,7 @@ bool Unit::DropItems(int index, uint count)
 		item->pos = pos;
 		item->pos.x -= sin(rot) * 0.25f;
 		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Random(MAX_ANGLE);
+		item->rot = Quat::RotY(Random(MAX_ANGLE));
 		if(s.count == 0)
 		{
 			no_more = true;
@@ -663,7 +790,9 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 		animation = ANI_STAND;
 		current_animation = ANI_NONE;
 	}
+
 	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	game_res->PreloadItem(&cons);
 	used_item = &cons;
 }
 
@@ -1761,6 +1890,7 @@ void Unit::Save(GameWriter& f, bool local)
 	{
 		f << dialog.quest->id;
 		f << dialog.dialog->id;
+		f << dialog.priority;
 	}
 
 	// events
@@ -1790,6 +1920,7 @@ void Unit::Save(GameWriter& f, bool local)
 		case ORDER_MOVE:
 			f << current_order->pos;
 			f << current_order->move_type;
+			f << current_order->range;
 			break;
 		case ORDER_ESCAPE_TO:
 			f << current_order->pos;
@@ -2069,7 +2200,7 @@ void Unit::Load(GameReader& f, bool local)
 		bool old_run_attack = false, old_hitted = false;
 
 		CreateMesh(CREATE_MESH::LOAD);
-		mesh_inst->Load(f, LOAD_VERSION >= V_DEV ? 1 : 0);
+		mesh_inst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 		f >> animation;
 		f >> current_animation;
 
@@ -2077,20 +2208,20 @@ void Unit::Load(GameReader& f, bool local)
 		f >> speed;
 		f >> prev_speed;
 		f >> animation_state;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_13)
 			f >> ai_mode; // old attack_id, assigned to unused variable at client side to pass to AIController
 		f >> action;
 		f >> weapon_taken;
 		f >> weapon_hiding;
 		f >> weapon_state;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_13)
 			f >> old_hitted;
 		f >> hurt_timer;
 		f >> target_pos;
 		f >> target_pos2;
 		f >> talking;
 		f >> talk_timer;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_13)
 		{
 			f >> old_attack_power;
 			f >> old_run_attack;
@@ -2102,7 +2233,7 @@ void Unit::Load(GameReader& f, bool local)
 		switch(action)
 		{
 		case A_ATTACK:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_13)
 			{
 				f >> act.attack.index;
 				f >> act.attack.power;
@@ -2118,9 +2249,9 @@ void Unit::Load(GameReader& f, bool local)
 			}
 			break;
 		case A_CAST:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_13)
 			{
-				act.cast.ability = Ability::Get(f.Read<uint>());
+				act.cast.ability = Ability::Get(f.Read<int>());
 				f >> act.cast.target;
 			}
 			else
@@ -2136,8 +2267,8 @@ void Unit::Load(GameReader& f, bool local)
 			}
 			break;
 		case A_DASH:
-			if(LOAD_VERSION >= V_DEV)
-				act.dash.ability = Ability::Get(f.Read<uint>());
+			if(LOAD_VERSION >= V_0_13)
+				act.dash.ability = Ability::Get(f.Read<int>());
 			else
 				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");
 			f >> act.dash.rot;
@@ -2202,7 +2333,17 @@ void Unit::Load(GameReader& f, bool local)
 
 	// effects
 	if(LOAD_VERSION >= V_0_10)
+	{
 		f.ReadVector4(effects);
+		if(LOAD_VERSION < V_DEV)
+		{
+			for(Effect& e : effects)
+			{
+				if(e.source == EffectSource::Perk)
+					e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
+			}
+		}
+	}
 	else if(LOAD_VERSION >= V_0_8)
 	{
 		effects.resize(f.Read<uint>());
@@ -2214,6 +2355,8 @@ void Unit::Load(GameReader& f, bool local)
 			f >> e.time;
 			f >> e.power;
 			e.value = -1;
+			if(e.source == EffectSource::Perk)
+				e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
 		}
 	}
 	else
@@ -2253,6 +2396,10 @@ void Unit::Load(GameReader& f, bool local)
 				StringPool.Free(str);
 				dialog.quest->AddDialogPtr(this);
 			});
+			if(LOAD_VERSION >= V_DEV)
+				f >> dialog.priority;
+			else
+				dialog.priority = 0;
 		}
 	}
 	if(LOAD_VERSION >= V_0_10)
@@ -2268,6 +2415,7 @@ void Unit::Load(GameReader& f, bool local)
 			{
 				EventPtr event;
 				event.source = EventPtr::UNIT;
+				event.type = e.type;
 				event.unit = this;
 				e.quest->AddEventPtr(event);
 			});
@@ -2303,6 +2451,10 @@ void Unit::Load(GameReader& f, bool local)
 				case ORDER_MOVE:
 					f >> current_order->pos;
 					f >> current_order->move_type;
+					if(LOAD_VERSION >= V_DEV)
+						f >> current_order->range;
+					else
+						current_order->range = 0.1f;
 					break;
 				case ORDER_ESCAPE_TO:
 					f >> current_order->pos;
@@ -2357,6 +2509,7 @@ void Unit::Load(GameReader& f, bool local)
 				case ORDER_MOVE:
 					f >> order->pos;
 					f >> order->move_type;
+					order->range = 0.1f;
 					break;
 				case ORDER_ESCAPE_TO:
 					f >> order->pos;
@@ -2596,7 +2749,7 @@ void Unit::Write(BitStreamWriter& f)
 		f << GetAiMode();
 
 	// loaded data
-	if(net->mp_load || game_level->reenter)
+	if(net->mp_load)
 	{
 		mesh_inst->Write(f);
 		f.WriteCasted<byte>(animation);
@@ -2841,7 +2994,7 @@ bool Unit::Read(BitStreamReader& f)
 	interp->Reset(pos, rot);
 	visual_pos = pos;
 
-	if(net->mp_load || game_level->reenter)
+	if(net->mp_load)
 	{
 		// get current state in multiplayer
 		if(!mesh_inst->Read(f))
@@ -3326,8 +3479,16 @@ void Unit::MakeItemsTeam(bool is_team)
 // Restore hp to 1 and heal poison
 void Unit::HealPoison()
 {
-	if(hp < 1.f)
-		hp = 1.f;
+	if(Net::IsLocal())
+	{
+		if(hp < 1.f)
+			hp = 1.f;
+	}
+	else
+	{
+		if(hp <= 0.f)
+			hp = 0.001f;
+	}
 
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
@@ -4273,7 +4434,7 @@ float Unit::CalculateMobility(const Armor* armor) const
 		mobility = (float(armor_mobility) / 100 * mobility);
 	}
 
-	auto load_state = GetLoadState();
+	LoadState load_state = GetLoadState();
 	switch(load_state)
 	{
 	case LS_NONE:
@@ -4837,6 +4998,9 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
 
+			if(game_gui->craft->visible)
+				game_gui->craft->Hide();
+
 			if(player->action == PlayerAction::Talk)
 			{
 				if(Net::IsLocal())
@@ -4991,53 +5155,66 @@ void Unit::TryStandup(float dt)
 	}
 
 	if(ok)
-	{
 		Standup();
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::STAND_UP;
-			c.unit = this;
-		}
-	}
 }
 
 //=================================================================================================
-void Unit::Standup()
+void Unit::Standup(bool warp, bool leave)
 {
 	HealPoison();
 	live_state = ALIVE;
-	Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
-	if(anim)
+	if(leave)
 	{
-		mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
-		action = A_STAND_UP;
-		animation = ANI_PLAY;
+		action = A_NONE;
+		animation = ANI_STAND;
 	}
 	else
-		action = A_NONE;
+	{
+		Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
+		if(anim)
+		{
+			mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
+			action = A_STAND_UP;
+			animation = ANI_PLAY;
+		}
+		else
+		{
+			action = A_NONE;
+			animation = ANI_STAND;
+		}
+	}
 	used_item = nullptr;
-
-	// change flag from CG_UNIT_DEAD -> CG_UNIT
-	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
+	if(weapon_state != WeaponState::Hidden)
+	{
+		WeaponType target_weapon;
+		if(weapon_state == WeaponState::Taken || weapon_state == WeaponState::Taking)
+			target_weapon = weapon_taken;
+		else
+			target_weapon = weapon_hiding;
+		if((target_weapon == W_ONE_HANDED && !HaveWeapon())
+			|| (target_weapon == W_BOW && !HaveBow()))
+		{
+			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
+		}
+	}
 
 	if(Net::IsLocal())
 	{
 		if(IsAI())
 		{
-			if(ai->state != AIController::Idle)
-			{
-				ai->state = AIController::Idle;
-				ai->change_ai_mode = true;
-			}
-			ai->alert_target = nullptr;
-			ai->st.idle.action = AIController::Idle_None;
-			ai->target = nullptr;
-			ai->timer = Random(2.f, 5.f);
+			ReequipItems();
+			if(!leave)
+				ai->Reset();
 		}
+		if(warp)
+			game_level->WarpUnit(*this, pos);
+	}
 
-		game_level->WarpUnit(*this, pos);
+	if(!game_level->entering && !leave && Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::STAND_UP;
+		c.unit = this;
 	}
 }
 
@@ -5106,7 +5283,7 @@ void Unit::Die(Unit* killer)
 			if(event.type == EVENT_DIE)
 			{
 				ScriptEvent e(EVENT_DIE);
-				e.unit = this;
+				e.on_die.unit = this;
 				event.quest->FireEvent(e);
 			}
 		}
@@ -5214,7 +5391,7 @@ void Unit::DropGold(int count)
 		item->pos = pos;
 		item->pos.x -= sin(rot) * 0.25f;
 		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Random(MAX_ANGLE);
+		item->rot = Quat::RotY(Random(MAX_ANGLE));
 		game_level->AddGroundItem(*area, item);
 
 		// wyœlij info o animacji
@@ -5274,25 +5451,8 @@ void Unit::CreatePhysics(bool position)
 void Unit::UpdatePhysics(const Vec3* target_pos)
 {
 	Vec3 phy_pos = target_pos ? *target_pos : pos;
-	switch(live_state)
-	{
-	case ALIVE:
+	if(live_state == ALIVE)
 		phy_pos.y += max(MIN_H, GetUnitHeight()) / 2;
-		break;
-	case FALLING:
-	case FALL:
-		break;
-	case DYING:
-	case DEAD:
-		if(IsTeamMember())
-		{
-			// keep physics pos to alow cast heal spell on corpse - used for raytest
-			cobj->setCollisionFlags(CG_UNIT_DEAD);
-		}
-		else
-			phy_pos = Vec3(1000, 1000, 1000);
-		break;
-	}
 
 	btVector3 a_min, a_max;
 	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
@@ -5331,7 +5491,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
 					mesh_inst->Deactivate(1);
-					action = A_NONE;
+					action = usable ? A_USE_USABLE : A_NONE;
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taken;
@@ -5425,7 +5585,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				mesh_inst->Deactivate(1);
-				action = A_NONE;
+				action = usable ? A_USE_USABLE : A_NONE;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hidden;
 			}
@@ -5678,20 +5838,20 @@ void Unit::RefreshStock()
 }
 
 //=================================================================================================
-void Unit::AddDialog(Quest_Scripted* quest, GameDialog* dialog)
+void Unit::AddDialog(Quest_Scripted* quest, GameDialog* dialog, int priority)
 {
 	assert(quest && dialog);
-	dialogs.push_back({ dialog, quest });
+	dialogs.push_back({ dialog, quest, priority });
 	quest->AddDialogPtr(this);
 }
 
 //=================================================================================================
-void Unit::AddDialogS(Quest_Scripted* quest, const string& dialog_id)
+void Unit::AddDialogS(Quest_Scripted* quest, const string& dialog_id, int priority)
 {
 	GameDialog* dialog = quest->GetDialog(dialog_id);
 	if(!dialog)
 		throw ScriptException("Missing quest dialog '%s'.", dialog_id.c_str());
-	AddDialog(quest, dialog);
+	AddDialog(quest, dialog, priority);
 }
 
 //=================================================================================================
@@ -5705,7 +5865,15 @@ void Unit::RemoveDialog(Quest_Scripted* quest, bool cleanup)
 		return false;
 	});
 	if(!cleanup)
+	{
 		quest->RemoveDialogPtr(this);
+		if(busy == Busy_Talking)
+		{
+			DialogContext* ctx = game->FindDialogContext(this);
+			if(ctx)
+				ctx->RemoveQuestDialog(quest);
+		}
+	}
 }
 
 //=================================================================================================
@@ -5720,22 +5888,24 @@ void Unit::AddEventHandler(Quest_Scripted* quest, EventType type)
 
 	EventPtr event;
 	event.source = EventPtr::UNIT;
+	event.type = type;
 	event.unit = this;
 	quest->AddEventPtr(event);
 }
 
 //=================================================================================================
-void Unit::RemoveEventHandler(Quest_Scripted* quest, bool cleanup)
+void Unit::RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup)
 {
-	LoopAndRemove(events, [quest](Event& e)
+	LoopAndRemove(events, [=](Event& e)
 	{
-		return e.quest == quest;
+		return e.quest == quest && (type == EVENT_ANY || type == e.type);
 	});
 
 	if(!cleanup)
 	{
 		EventPtr event;
 		event.source = EventPtr::UNIT;
+		event.type = type;
 		event.unit = this;
 		quest->RemoveEventPtr(event);
 	}
@@ -5748,6 +5918,7 @@ void Unit::RemoveAllEventHandlers()
 	{
 		EventPtr event;
 		event.source = EventPtr::UNIT;
+		event.type = EVENT_ANY;
 		event.unit = this;
 		e.quest->RemoveEventPtr(event);
 	}
@@ -5888,12 +6059,13 @@ UnitOrderEntry* Unit::OrderLeave()
 }
 
 //=================================================================================================
-UnitOrderEntry* Unit::OrderMove(const Vec3& pos, MoveType move_type)
+UnitOrderEntry* Unit::OrderMove(const Vec3& pos)
 {
 	OrderReset();
 	order->order = ORDER_MOVE;
 	order->pos = pos;
-	order->move_type = move_type;
+	order->move_type = MOVE_RUN;
+	order->range = 0.1f;
 	return order;
 }
 
@@ -6078,9 +6250,21 @@ UnitOrderEntry* UnitOrderEntry::NextOrder()
 	return next;
 }
 
-UnitOrderEntry* UnitOrderEntry::WithTimer(float t)
+UnitOrderEntry* UnitOrderEntry::WithTimer(float timer)
 {
-	timer = t;
+	this->timer = timer;
+	return this;
+}
+
+UnitOrderEntry* UnitOrderEntry::WithMoveType(MoveType move_type)
+{
+	this->move_type = move_type;
+	return this;
+}
+
+UnitOrderEntry* UnitOrderEntry::WithRange(float range)
+{
+	this->range = range;
 	return this;
 }
 
@@ -6114,12 +6298,13 @@ UnitOrderEntry* UnitOrderEntry::ThenLeave()
 	return o;
 }
 
-UnitOrderEntry* UnitOrderEntry::ThenMove(const Vec3& pos, MoveType move_type)
+UnitOrderEntry* UnitOrderEntry::ThenMove(const Vec3& pos)
 {
 	UnitOrderEntry* o = NextOrder();
 	o->order = ORDER_MOVE;
 	o->pos = pos;
-	o->move_type = move_type;
+	o->move_type = MOVE_RUN;
+	o->range = 0.1f;
 	return o;
 }
 
@@ -6335,7 +6520,7 @@ void Unit::CheckAutoTalk(float dt)
 		else
 		{
 			talk_player->StartDialog(this, order->auto_talk_dialog, order->auto_talk_quest);
-			OrderClear();
+			OrderNext();
 		}
 	}
 	else if(order->auto_talk == AutoTalkMode::Wait)
@@ -6403,7 +6588,7 @@ void Unit::CastSpell()
 				b.backstab = 0.25f;
 				b.pos = coord;
 				b.attack = dmg;
-				b.rot = Vec3(0, current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f)), 0);
+				b.rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
 				b.mesh = ability.mesh;
 				b.tex = ability.tex;
 				b.tex_size = ability.size;
@@ -6600,21 +6785,8 @@ void Unit::CastSpell()
 
 			if(ability.effect == Ability::Raise)
 			{
-				Unit& u2 = *target;
-				u2.hp = u2.hpmax;
-				u2.live_state = ALIVE;
-				u2.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
-				u2.action = A_NONE;
-				u2.animation = ANI_STAND;
-
-				// za³ó¿ przedmioty / dodaj z³oto
-				u2.ReequipItems();
-
-				// przenieœ fizyke
-				game_level->WarpUnit(u2, u2.pos);
-
-				// resetuj ai
-				u2.ai->Reset();
+				target->Standup();
+				target->hp = target->hpmax;
 
 				// particle effect
 				ParticleEmitter* pe = new ParticleEmitter;
@@ -6626,8 +6798,8 @@ void Unit::CastSpell()
 				pe->spawn_min = 16;
 				pe->spawn_max = 25;
 				pe->max_particles = 25;
-				pe->pos = u2.pos;
-				pe->pos.y += u2.GetUnitHeight() / 2;
+				pe->pos = target->pos;
+				pe->pos.y += target->GetUnitHeight() / 2;
 				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
 				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
@@ -6645,14 +6817,6 @@ void Unit::CastSpell()
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::RAISE_EFFECT;
 					c.pos = pe->pos;
-
-					NetChange& c2 = Add1(Net::changes);
-					c2.type = NetChange::STAND_UP;
-					c2.unit = &u2;
-
-					NetChange& c3 = Add1(Net::changes);
-					c3.type = NetChange::UPDATE_HP;
-					c3.unit = &u2;
 				}
 			}
 			else if(ability.effect == Ability::Heal)
@@ -6660,9 +6824,7 @@ void Unit::CastSpell()
 				// heal target
 				if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
 				{
-					target->hp += dmg;
-					if(target->hp > target->hpmax)
-						target->hp = target->hpmax;
+					target->hp = Min(target->hp + dmg, target->hpmax);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -6711,7 +6873,7 @@ void Unit::CastSpell()
 			Unit* existing_unit = game_level->FindUnit([&](Unit* u) { return u->summoner == this; });
 			if(existing_unit)
 			{
-				team->RemoveTeamMember(existing_unit);
+				team->RemoveMember(existing_unit);
 				game_level->RemoveUnit(existing_unit);
 			}
 
@@ -6723,7 +6885,7 @@ void Unit::CastSpell()
 				new_unit->in_arena = in_arena;
 				if(new_unit->in_arena != -1)
 					game->arena->units.push_back(new_unit);
-				team->AddTeamMember(new_unit, HeroType::Visitor);
+				team->AddMember(new_unit, HeroType::Visitor);
 				new_unit->order->unit = this; // follow summoner
 				game_level->SpawnUnitEffect(*new_unit);
 			}
@@ -6942,7 +7104,7 @@ void Unit::Update(float dt)
 				game_level->CreateBlood(*area, *this);
 				if(summoner && Net::IsLocal())
 				{
-					team->RemoveTeamMember(this);
+					team->RemoveMember(this);
 					action = A_DESPAWN;
 					timer = Random(2.5f, 5.f);
 					summoner = nullptr;
@@ -7725,8 +7887,12 @@ void Unit::Update(float dt)
 					int flags = obj->getCollisionFlags();
 					if(IsSet(flags, CG_TERRAIN))
 						return LT_IGNORE;
-					if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
-						return LT_IGNORE;
+					if(IsSet(flags, CG_UNIT))
+					{
+						Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+						if(unit == this || !unit->IsStanding())
+							return LT_IGNORE;
+					}
 					return LT_COLLIDE;
 				}, t);
 			}
@@ -7742,14 +7908,18 @@ void Unit::Update(float dt)
 					{
 						if(IsSet(flags, CG_TERRAIN))
 							return LT_IGNORE;
-						if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == this)
-							return LT_IGNORE;
+						if(IsSet(flags, CG_UNIT))
+						{
+							Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+							if(unit == this || !unit->IsAlive())
+								return LT_IGNORE;
+						}
 					}
 					else
 					{
 						if(IsSet(obj->getCollisionFlags(), CG_UNIT))
 						{
-							Unit* unit = (Unit*)obj->getUserPointer();
+							Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
 							targets.push_back(unit);
 							return LT_IGNORE;
 						}
@@ -7999,6 +8169,7 @@ void Unit::Moved(bool warped, bool dash)
 							game->fallback_type = FALLBACK::ENTER;
 							game->fallback_t = -1.f;
 							game->fallback_1 = id;
+							game->fallback_2 = -1;
 							frozen = FROZEN::YES;
 						}
 						else
@@ -8033,6 +8204,7 @@ void Unit::Moved(bool warped, bool dash)
 					game->fallback_type = FALLBACK::ENTER;
 					game->fallback_t = -1.f;
 					game->fallback_1 = -1;
+					game->fallback_2 = -1;
 					frozen = FROZEN::YES;
 				}
 				else
@@ -8253,4 +8425,75 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 		c.type = NetChange::CHANGE_UNIT_BASE;
 		c.unit = this;
 	}
+}
+
+//=================================================================================================
+void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
+{
+	assert(area && !IsTeamMember());
+	if(area == this->area)
+		return;
+	assert(game_level->entering); // TODO
+	const bool is_active = mesh_inst != nullptr;
+	const bool activate = area->IsActive();
+	RemoveElement(this->area->units, this);
+	area->units.push_back(this);
+	this->area = area;
+	this->pos = pos;
+	visual_pos = pos;
+
+	if(is_active != activate)
+	{
+		if(activate)
+		{
+			CreateMesh(CREATE_MESH::NORMAL);
+			CreatePhysics();
+
+			ai = new AIController;
+			ai->Init(this);
+			game->ais.push_back(ai);
+		}
+		else
+		{
+			BreakAction(BREAK_ACTION_MODE::ON_LEAVE);
+
+			// physics
+			if(cobj)
+			{
+				delete cobj->getCollisionShape();
+				cobj = nullptr;
+			}
+
+			// speech bubble
+			bubble = nullptr;
+			talking = false;
+
+			// mesh
+			delete mesh_inst;
+			mesh_inst = nullptr;
+			delete ai;
+			ai = nullptr;
+			EndEffects();
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::Kill()
+{
+	assert(game_level->entering); // TODO
+	live_state = DEAD;
+	if(data->mesh->IsLoaded())
+	{
+		animation = current_animation = ANI_DIE;
+		SetAnimationAtEnd(NAMES::ani_die);
+		game_level->CreateBlood(*game_level->lvl, *this, true);
+	}
+	else
+		game_level->blood_to_spawn.push_back(this);
+	hp = 0.f;
+	++game_stats->total_kills;
+	UpdatePhysics();
+	if(event_handler)
+		event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
 }

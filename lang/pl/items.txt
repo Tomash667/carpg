@@ -1,0 +1,1102 @@
+//------------------------------------------------------------------------------
+// SHORT BLADE
+item dagger_knife {
+	name "Nó¿"
+	desc "Bardziej nadaje siê do obierania ziemniaków ni¿ do walki."
+}
+item dagger_short {
+	name "Sztylet"
+	desc "Standardowy sztylet do wbijania w plecy albo podrzynania garde³. Raczej nie bêdziesz go u¿ywa³."
+}
+item dagger_sword {
+	name "Krótki miecz"
+	desc "Krótki miecz o d³ugoœci 55 cm. Jeœli potrzebujesz lekkiej, prostej w obs³udze broni to jest to coœ dla ciebie."
+}
+item dagger_rapier {
+	name "Rapier"
+	desc "Rapier wymaga sporej precyzji aby trafiæ w s³abiej odkryte miejsca ale obra¿enia s¹ wiêksze."
+}
+item dagger_assassin {
+	name "Sztylet zabójcy"
+	desc "Sztylet zabójcy zosta³ magicznie zaostrzony i sam nakierowuje siê w s³abe punkt ofiary. Cios w plecy dla ka¿dego!"
+}
+item dagger_sword_a {
+	name "Adamantowy krótki miecz"
+	desc "Krótki miecz wykonany z adamantu. Najlepsze krótki ostrze jakie znajdziesz w sklepie."
+}
+item dagger_spinesheath {
+	name "Grzbietok³uj"
+	desc "Ponoæ ta broñ jest przeklêta. Ale czy robi to na tobie jakiekolwiek wra¿enie? Wa¿ne ¿e wchodzi w mithril jak w mas³o! Zwiêksza obra¿enia zadawane w plecy wrogów."
+}
+
+//------------------------------------------------------------------------------
+// LONG BLADE
+item sword_wooden {
+	name "Drewniany miecz"
+	desc "Broñ u¿ywana w trakcie treningu."
+}
+item sword_long {
+	name "D³ugi miecz"
+	desc "¯elazny miecz. Standardowa broñ dla wielu zbrojnych. Jest uniwersalna pod wzglêdem ataku, obrony i szybkoœci."
+}
+item sword_scimitar {
+	name "Sejmitar"
+	desc "Sejmitar to zaokr¹glony miecz. Trudniej nauczyæ siê nim walczyæ ale ³atwiej zaskoczyæ wroga atakiem ze wzglêdu na brak przyzwyczajenia do tej broni."
+}
+item sword_orcish {
+	name "Orkowy miecz"
+	desc "Orkowy miecz, prymitywna ciê¿ka broñ. Wymaga sporej si³y."
+}
+item sword_serrated {
+	name "Z¹bkowany miecz"
+	desc "Z¹bkowany miecz wykonany z jakiegoœ dziwnego stopu metali. Ostry jak brzytwa."
+}
+item sword_adamantine {
+	name "Adamantowy miecz"
+	desc "Adamantowy miecz to najlepszy miecz jaki mo¿esz dostaæ w sklepie. Przecina adamantow¹ zbroje jak by by³a zwyczajn¹ stal¹."
+}
+item sword_semur {
+	name "Sejmitar Semur"
+	desc "Sejmitar artefakt wykuty ze z³ota przez nieznanego kowala. Umagiczniono go, nigdy siê nie stêpi i jest ostry niczym kie³ smokorzuwaczki. Wzmacnia umiejêtnoœci magiczne."
+}
+item sword_forbidden {
+	name "Miecz \"Zakazane Sny\""
+	desc "Artefakt nieznanego pochodzenia, wykonany ze stopu kryszta³u i z³ota."
+}
+
+//------------------------------------------------------------------------------
+// AXE
+item axe_rusted {
+	name "Zardzewia³y toporek"
+	desc "Tego toporka nikt dawno nie u¿ywa³, mam nadzieje ¿e ty te¿ nie masz zamiaru."
+}
+item axe_small {
+	name "Toporek"
+	desc "Lekki i porêczny toporek. Dla tych co lubi¹ por¹baæ raz drewno a raz wilka."
+}
+item axe_battle {
+	name "Topór bojowy"
+	desc "Bojowa wersja narzêdzia dla drwali. Wrogowie padaj¹ jak drzewa po kilku uderzeniach."
+}
+item axe_orcish {
+	name "Orkowy topór"
+	desc "Orkowy topór, prymitywna ciê¿ka bron. Wymaga sporej si³y."
+}
+item axe_crystal {
+	name "Kryszta³owy topór"
+	desc "Topór wykonany ze specjalnego kryszta³u. Bardzo ciê¿ki!"
+}
+item axe_giant {
+	name "Topór giganta"
+	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje on wiêksze obra¿enia."
+}
+item axe_ripper {
+	name "Rozpruwacz"
+	desc "Ta broñ ucina g³owy jak patyczki. Wrogowie jednak zamiast je nadstawiaæ po zobaczeniu tego topora zaczn¹ uciekaæ."
+}
+
+//------------------------------------------------------------------------------
+// BLUNT
+item blunt_club {
+	name "Maczuga"
+	desc "Maczuga - zwyk³y kawa³ek drewna. Czego siê spodziewa³eœ za tê cenê?"
+}
+item blunt_mace {
+	name "Buzdygan"
+	desc "Buzdygan to ciê¿ka stalowa maczuga. Wymaga sporej si³y by ni¹ sprawnie operowaæ."
+}
+item blunt_orcish {
+	name "Orkowy m³ot"
+	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê."
+}
+item blunt_orcish_shaman {
+	name "Ozdobny orkowy m³ot"
+	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
+}
+item blunt_morningstar {
+	name "Morgensztern"
+	desc "Stalowa kula z kolcami na koñcu patyka. Zadaje obra¿enia k³uto-obuchowe."
+}
+item blunt_dwarven {
+	name "Krasnoludzki m³ot"
+	desc "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
+}
+item blunt_adamantine {
+	name "Adamantowy buzdygan"
+	desc "Buzdygan wykonany z adamantu. Najlepszy przedmiot w swojej klasie."
+}
+item blunt_skullsmasher {
+	name "Mia¿d¿yczerep"
+	desc "Dziêki temu artefaktowi bêdzie z ³atwoœci¹ roz³upywa³ g³owy gigantów. Jak by to by³y orzechy. I to nie kokosowe tylko ziemne!"
+}
+
+//------------------------------------------------------------------------------
+// TOOLS
+item blacksmith_hammer {
+	name "M³ot kowalski"
+	desc "M³ot u¿ywany przez kowala. Chcesz wykuæ jakiœ miecz?"
+}
+item pickaxe {
+	name "Kilof"
+	desc "Podstawowe narzêdzie górnika."
+}
+item frying_pan {
+	name "Patelnia"
+	desc "Broñ dla kobiet."
+}
+
+//------------------------------------------------------------------------------
+// WANDS
+item wand_novice {
+	name "Ró¿d¿ka nowicjusza"
+	desc "Magiczna ró¿d¿ka, nieznacznie zwiêksza obra¿enia od magii."
+}
+item wand_adept {
+	name "Ró¿d¿ka adepta"
+	desc "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii."
+}
+item wand_expert {
+	name "Ró¿d¿ka eksperta"
+	desc "Magiczna ró¿d¿ka, znacz¹co zwiêksza obra¿enia od magii."
+}
+item wand_master {
+	name "Ró¿d¿ka mistrza"
+	desc "Magiczna ró¿d¿ka, znacznie zwiêksza obra¿enia od magii."
+}
+
+//------------------------------------------------------------------------------
+// BOW
+item bow_short {
+	name "Krótki ³uk"
+	desc "Zwyk³y krótki ³uk. £atwiej go ukryæ i mniej wa¿y, ale czy to dla ciebie wystarczaj¹ce plusy aby go u¿ywaæ?"
+}
+item bow_long {
+	name "D³ugi ³uk"
+	desc "Standardowy d³ugi ³uk u¿ywany przez wielu ³uczników, nie tylko pocz¹tkuj¹cych."
+}
+item bow_composite {
+	name "£uk kompozytowy"
+	desc "£uk kompozytowy, wykonany z kilku kawa³ków drewna. Wysokiej jakoœci robota, zadaje du¿o wiêksze obra¿enia."
+}
+item bow_elven {
+	name "Elfi ³uk"
+	desc "£uk wykonany przez elfy, prawdziwe dzie³o sztuki. Zabójcze dzie³o sztuki."
+}
+item bow_dragonbone {
+	name "Smoczy ³uk"
+	desc "Najlepszy przedmiot w swojej klasie. £uk wykonany z koœci smoka to to czego potrzebujesz by zabijaæ lataj¹ce smoki!"
+}
+item bow_angel {
+	name "Anielski ³uk"
+	desc "£uk artefakt wykuty przez anio³y z innego planu. Jest bardzo lekki ale wystrzelone z niego strza³y s¹ zabójcze."
+}
+item q_gobliny_luk {
+	name "Antyczny ³uk"
+	desc "Bardzo stary ³uk, up³yw czasu nie by³ dla niego ³askawy. Nie wygl¹da na magiczny."
+}
+
+//------------------------------------------------------------------------------
+// SHIELD
+item shield_plank {
+	name "Tarcza z desek"
+	desc "Prowizoryczna tarcza zrobiona z kawa³ków p³otu. Tanszej nie znajdziesz."
+}
+item shield_wood {
+	name "Drewniana tarcza"
+	desc "Podstawowa tarcza. Trochê l¿ejsza i tañsza od metalowej. U¿ywasz na w³asne ryzyko."
+}
+item shield_iron {
+	name "¯elazna tarcza"
+	desc "Standardowa tarcza za przyzwoit¹ cenê. Chyba ciê na ni¹ staæ?"
+}
+item shield_steel {
+	name "Stalowa tarcza"
+	desc "Wysokiej jakoœci tarcza wykonana ze stali. Raczej nie z³amie siê po pierwszym ciosie."
+}
+item shield_mithril {
+	name "Mithrilowa tarcza"
+	desc "Tarcza z mithrilu, o po³owê l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
+}
+item shield_adamantine {
+	name "Adamantowa tarcza"
+	desc "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
+}
+item shield_wall {
+	name "Mur"
+	desc "Ta tarcza artefakt jest wykonana z magicznego kamienia. Jest niezniszczalna. Zapewnia znaczn¹ ochronê przed czarami."
+}
+
+//------------------------------------------------------------------------------
+// LIGHT ARMOR
+item al_padded {
+	name "Przeszywnica"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
+}
+item al_padded_hq {
+	name "Przeszywnica wysokiej jakoœci"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_padded_m {
+	name "Magiczna przeszywnica"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
+}
+item al_leather {
+	name "Zbroja skórzana"
+	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju."
+}
+item al_leather_hq {
+	name "Skórznia wysokiej jakoœci"
+	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_leather_m {
+	name "Magiczna skórznia"
+	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
+}
+item al_dragonskin {
+	name "Skóra ze smoka"
+	desc "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê."
+}
+item al_studded {
+	name "Æwiekowany pancerz"
+	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami."
+}
+item al_studded_hq {
+	name "Æwiekowany pancerz wysokiej jakoœci"
+	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_studded_m {
+	name "Magiczny æwiekowany pancerz"
+	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest magiczny."
+}
+item al_shadow {
+	name "Zbroja cienia"
+	desc "Magiczny æwiekowany pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
+}
+item al_chain_shirt {
+	name "Koszulka kolcza"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
+}
+item al_chain_shirt_hq {
+	name "Koszulka kolcza wysokiej jakoœci"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_chain_shirt_m {
+	name "Magiczna koszulka kolcza"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
+}
+item al_chain_shirt_mith {
+	name "Mithrilowa koszulka kolcza"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+}
+item al_angelskin {
+	name "Anielska skóra"
+	desc "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago."
+}
+
+//------------------------------------------------------------------------------
+// MEDIUM ARMOR
+item am_hide {
+	name "Skórznia"
+	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji."
+}
+item am_hide_hq {
+	name "Skórznia wysokiej jakoœci"
+	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_hide_m {
+	name "Magiczna skórznia"
+	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
+}
+item am_troll_hide {
+	name "Skóra trolla"
+	desc "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma regeneracjê zdrowia."
+}
+item am_chainmail {
+	name "Kolczuga"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka."
+}
+item am_chainmail_hq {
+	name "Kolczuga wysokiej jakoœci"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_chainmail_m {
+	name "Magiczna kolczuga"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny."
+}
+item am_chainmail_mith {
+	name "Mithrilowa kolczuga"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+}
+item am_scale {
+	name "Zbroja ³uskowa"
+	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby."
+}
+item am_scale_hq {
+	name "Zbroja ³uskowa wysokiej jakoœci"
+	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_scale_m {
+	name "Magiczna zbroja ³uskowa"
+	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest magiczny."
+}
+item am_dragonscale {
+	name "Zbroja ze smoczej ³uski"
+	desc "Pancerz ³uskowy wykonany z ³usek czerwonego smoka."
+}
+item am_breastplate {
+	name "Napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy."
+}
+item am_breastplate_hq {
+	name "Napierœnik wysokiej jakoœci"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_breastplate_m {
+	name "Magiczny napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
+}
+item am_breastplate_mith {
+	name "Mithrilowy napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
+}
+item am_breastplate_adam {
+	name "Adamantowy napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
+}
+item am_gladiator {
+	name "Pancerz gladiatora"
+	desc "Magiczny napierœnik u¿ywany przez wiele lat przez gladiatora Cord Oszust. Wygra³ kilkadziesi¹t walk na arenie zanim ktoœ zorientowa³ siê ¿e jest magiczny. Zabrano mu go i wrzucono na arenê przeciwko kilku goblinom które go pokona³y."
+}
+
+//------------------------------------------------------------------------------
+// HEAVY ARMOR
+item ah_splint_rusted {
+	name "Zardzewia³a zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest zardzewia³y."
+}
+item ah_splint {
+	name "Zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
+}
+item ah_splint_hq {
+	name "Zbroja paskowa wysokiej jakoœci"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest wysokiej jakoœci."
+}
+item ah_splint_m {
+	name "Magiczna zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny."
+}
+item ah_splint_mith {
+	name "Mithrilowa zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+}
+item ah_antimage {
+	name "Zbroja antymaga"
+	desc "Zbroja paskowa stworzona przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami."
+}
+item ah_plate {
+	name "Zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt."
+}
+item ah_plate_hq {
+	name "Zbroja p³ytowa wysokiej jakoœci"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoœci."
+}
+item ah_plate_m {
+	name "Magiczna zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
+}
+item ah_plate_mith {
+	name "Mithrilowa zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+}
+item ah_plate_adam {
+	name "Adamantowa zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
+}
+item ah_black_armor {
+	name "Czarna zbroja"
+	desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a.."
+	//desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
+}
+item ah_crystal {
+	name "Kryszta³owa zbroja"
+	desc "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
+}
+item ah_crystal_m {
+	name "Magiczna kryszta³owa zbroja"
+	desc "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e. Ten egzemplarz jest magiczny."
+}
+item ah_blood_crystal {
+	name "Krwawa kryszta³owa zbroja"
+	desc "Kryszta³ z podziemia, splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
+}
+
+//------------------------------------------------------------------------------
+// CLOTHES
+item al_blacksmith {
+	name "Ubranie kowala"
+	desc "Ubranie kowala, zrobione ze skór i usprawnione aby chroniæ przed ogniem."
+}
+item al_innkeeper {
+	name "Ubranie karczmarza"
+}
+item al_clothes {
+	name "Ubranie"
+	desc "Zwyczajne ubranie."
+}
+item al_clothes2 {
+	name "Ubranie"
+	desc "Zwyczajne ubranie."
+}
+item al_clothes2b {
+	name "Ubranie"
+	desc "Zwyczajne ubranie."
+}
+item al_clothes3 {
+	name "Drogie ubranie"
+	desc "Drogie ubranie wykonane na miarê."
+}
+item al_clothes3b {
+	name "Drogie ubranie"
+	desc "Drogie ubranie wykonane na miarê."
+}
+
+//------------------------------------------------------------------------------
+// MONSTER ARMOR
+item al_goblin {
+	name "Gobliñska zbroja"
+	desc "Gobliñska zbroja zrobiona z kawa³ków futra, skór i innych znalezionych œmieci."
+}
+item al_orc {
+	name "Orkowa skórznia"
+	desc "Orkowa zbroja wykonana ze skóry. Ciê¿sza od zwyk³ej."
+}
+item al_orc_shaman {
+	name "Orkowa ozdobna skórznia"
+	desc "Orkowa zbroja wykonana ze skóry. Ta wersja jest bardziej ozdobiona, prawdopodobnie u¿ywana przez szamana."
+}
+item am_orc {
+	name "Orkowa kolczuga"
+	desc "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
+}
+
+//------------------------------------------------------------------------------
+// MAGE CLOTHES
+item al_mage {
+	name "Szata nowicjusza"
+	desc "Ubiór pocz¹tkuj¹cych magów. Nie jest umagiczniona."
+}
+item al_mage2 {
+	name "Szata maga"
+	desc "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano.\nZwiêksza zapas many i obra¿enia od czarów."
+}
+item al_mage3 {
+	name "Szata maga bojowego"
+	desc "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii.\nZwiêksza zapas many i obra¿enia od czarów."
+}
+item al_mage4 {
+	name "Szata arcymaga"
+	desc "Bardzo dobra magiczna szata, u¿ywana przez arcymagów.\nZwiêksza zapas many i obra¿enia od czarów."
+}
+item al_necromancer {
+	name "Szata nekromanty"
+	desc "Ubiór u¿ywany przez adeptów mrocznych sztuk. Jest umagiczniona."
+}
+
+//------------------------------------------------------------------------------
+// AMULETS
+item a_silver {
+	name "Srebrny amulet"
+}
+item a_gold {
+	name "Z³oty amulet"
+}
+item a_ruby {
+	name "Rubinowy amulet"
+}
+item a_diamond {
+	name "Diamentowy amulet"
+}
+item a_food {
+	name "Amulet smakosza"
+	desc "+50% do leczonego zdrowia dziêki jedzeniu i odpoczynkowi."
+}
+item a_sprinter {
+	name "Amulet sprintera"
+	desc "+25 do mobilnoœci."
+}
+item a_mage {
+	name "Amulet maga"
+	desc "Zwiêksza si³ê czarów maga."
+}
+item a_defense {
+	name "Amulet naturalnego pancerza"
+	desc "+50 do obrony."
+}
+item a_stamina {
+	name "Amulet energii"
+	desc "+100 do wytrzyma³oœci i przyœpiesza szybkoœæ regeneracji wytrzyma³oœci."
+}
+item a_mana {
+	name "Amulet many"
+	desc "+150 do many i przyœpiesza szybkoœæ regeneracji many."
+}
+item a_warrior {
+	name "Amulet wojownika"
+	desc "+50 do ataku wrêcz, +10 do si³y, +20 do umiejêtnoœci walk¹ jednorêczn¹ broni¹."
+}
+item a_archer {
+	name "Amulet ³ucznika"
+	desc "+50 do ataku dystansowego, +10 do zrêcznoœci, +20 do umiejêtnoœci ³uk."
+}
+item a_antimagic {
+	name "Amulet antymagii"
+	desc "+25% odpornoœci na magiê."
+}
+item a_health {
+	name "Amulet zdrowia"
+	desc "+250 do zdrowia, +10 do kondycji, +10 regeneracji zdrowia, +25% odpornoœci na trucizny."
+}
+
+//------------------------------------------------------------------------------
+// RINGS
+item r_silver {
+	name "Srebrny pierœcieñ"
+}
+item r_gold {
+	name "Z³oty pierœcieñ"
+}
+item r_emerald {
+	name "Szmaragdowy pierœcieñ"
+}
+item r_str {
+	name "Pierœcieñ si³y"
+	desc "+5 do si³y."
+}
+item r_end {
+	name "Pierœcieñ kondycji"
+	desc "+5 do kondycji."
+}
+item r_dex {
+	name "Pierœcieñ zrêcznoœci"
+	desc "+5 do zrêcznoœci."
+}
+item r_int {
+	name "Pierœcien inteligencji"
+	desc "+5 do inteligencji."
+}
+item r_wis {
+	name "Pierœcieñ m¹droœci"
+	desc "+5 do m¹droœci."
+}
+item r_cha {
+	name "Pierœcieñ charyzmy"
+	desc "+5 do charyzmy."
+}
+item r_hp {
+	name "Pierœcieñ zdrowia"
+	desc "+100 do zdrowia."
+}
+item r_stamina {
+	name "Pierœcieñ wytrzyma³oœci"
+	desc "+50 do wytrzyma³oœci."
+}
+item r_def {
+	name "Pierœcieñ obrony"
+	desc "+15 do obrony."
+}
+item r_attack {
+	name "Pierœcieñ ataku"
+	desc "+15 do ataku wrêcz."
+}
+item r_ranged_attack {
+	name "Pierœcieñ ataku dystansowego"
+	desc "+15 do ataku dystansowego."
+}
+item r_mage {
+	name "Pierœcieñ maga"
+	desc "Zwiêksza si³ê czarów maga."
+}
+item r_one_handed_weapon {
+	name "Pierœcieñ broni jednorêcznej"
+	desc "+10 do umiejêtnoœci broñ jednorêczna."
+}
+item r_short_blade {
+	name "Pierœcieñ krótkiego ostrza"
+	desc "+10 do umiejêtnoœci krótkie ostrze."
+}
+item r_long_blade {
+	name "Pierœcieñ d³ugiego ostrza"
+	desc "+10 do umiejêtnoœci d³ugie ostrze."
+}
+item r_axe {
+	name "Pierœcieñ topora"
+	desc "+10 do umiejêtnoœci topór."
+}
+item r_blunt {
+	name "Pierœcieñ bronii obuchowej"
+	desc "+10 do umiejêtnoœci broñ obuchowa."
+}
+item r_bow {
+	name "Pierœcieñ ³uku"
+	desc "+10 do umiejêtnoœci ³uk."
+}
+item r_shield {
+	name "Pierœcieñ tarczy"
+	desc "+10 do umiejêtnoœci tarcza."
+}
+item r_light_armor {
+	name "Pierœcieñ lekkiego pancerz"
+	desc "+10 do umiejêtnoœci lekki pancerz."
+}
+item r_medium_armor {
+	name "Pierœcieñ œredniego pancerza"
+	desc "+10 do umiejêtnoœci œredni pancerz."
+}
+item r_heavy_armor {
+	name "Pierœcieñ ciê¿kiego pancerz"
+	desc "+10 do umiejêtnoœci ciêzki pancerz."
+}
+item r_haggle {
+	name "Pierœcieñ targowania"
+	desc "+10 do umiejêtnoœci targowanie."
+}
+item r_carry {
+	name "Pierœcieñ tragarza"
+	desc "+50% do udŸwigu."
+}
+item r_gods_magic {
+	name "Pierœcieñ wyznawcy"
+	desc "+10 do umiejêtnoœci boska magia."
+}
+item r_concentration {
+	name "Pierœcieñ koncentracji"
+	desc "+10 do umiejêtnoœci koncentracja."
+}
+item r_mystic_magic {
+	name "Pierœcieñ mistycznoœci"
+	desc "+10 do umiejêtnoœci mistyczna magia."
+}
+item r_mana {
+	name "Pierœcieñ many"
+	desc "+100 do many."
+}
+item r_str2 {
+	name "Wiêkszy pierœcieñ si³y"
+	desc "+15 do si³y."
+}
+item r_end2 {
+	name "Wiêkszy pierœcieñ kondycji"
+	desc "+15 do kondycji."
+}
+item r_dex2 {
+	name "Wiêkszy pierœcieñ zrêcznoœci"
+	desc "+15 do zrêcznoœci."
+}
+item r_int2 {
+	name "Wiêkszy pierœcieñ inteligencji"
+	desc "+15 do inteligencji."
+}
+item r_wis2 {
+	name "Wiêkszy pierœcieñ m¹droœci"
+	desc "+15 do m¹droœci."
+}
+item r_cha2 {
+	name "Wiêkszy pierœcieñ charyzmy"
+	desc "+15 do charyzmy."
+}
+item r_regeneration {
+	name "Pierœcieñ regeneracji"
+	desc "+5 regeneracji zdrowia."
+}
+item r_assassin {
+	name "Pierœcieñ zabójcy"
+	desc "+25% do obra¿eñ w plecy."
+}
+item r_poison_resistance {
+	name "Pierœcieñ odpornoœci na trucizny"
+	desc "+50% odpornoœci na trucizny."
+}
+item r_mana_regen {
+	name "Pierœcieñ harmonii"
+	desc "+100% szybkoœci regeneracji many."
+}
+
+//------------------------------------------------------------------------------
+// POTIONS
+item p_nreg {
+	name "Napar leczniczy"
+	desc "Przyœpiesza naturaln¹ regeneracjê. Dawka wystarcza na 10 dni kuracji. Wypij j¹ przed odpoczynkiem."
+}
+item p_nreg2 {
+	name "Napar zdrowia"
+	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 30 dni kuracji. Wypij j¹ przed odpoczynkiem."
+}
+item p_hp {
+	name "Mikstura leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 250 punktów zdrowia."
+}
+item p_hp2 {
+	name "Eliksir leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 500 punktów zdrowia."
+}
+item p_hp3 {
+	name "Ekstrakt leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 1000 punktów zdrowia."
+}
+item p_mp {
+	name "Mikstura many"
+	desc "Magiczna mikstura, natychmiast przywraca 250 punktów many."
+}
+item p_mp2 {
+	name "Eliksir many"
+	desc "Magiczna mikstura, natychmiast przywraca 500 punktów many."
+}
+item p_mp3 {
+	name "Ekstrakt many"
+	desc "Magiczna mikstura, natychmiast przywraca 1000 punktów many."
+}
+item p_reg {
+	name "Mikstura regeneracji"
+	desc "Magiczna mikstura, szybko regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
+}
+item p_antidote {
+	name "Antidotum"
+	desc "Szybko usuwa toksyny z organizmu."
+}
+item p_str {
+	name "Eliksir si³y"
+	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy si³ê."
+}
+item p_end {
+	name "Eliksir kondycji"
+	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy kondycjê."
+}
+item p_dex {
+	name "Eliksir zrêcznoœci"
+	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy zrêcznoœæ."
+}
+item q_magowie_potion {
+	name "Mikstura oczyszczenia umys³u"
+	desc "Mikstura która mo¿e przywróciæ pamiêæ."
+}
+item p_antimagic {
+	name "Eliksir antymagii"
+	desc "Na 5 minut zapewnia odpornoœæ na magiê."
+}
+
+//------------------------------------------------------------------------------
+// DRINK
+item beer {
+	name "Piwo"
+	desc "Ma³a dawka trucizny podawana doustnie."
+}
+item vodka {
+	name "Wódka"
+	desc "Du¿a dawka trucizny podawana doustnie."
+}
+item spirit {
+	name "Spirytus"
+	desc "Bardzo du¿a dawka trucizny podawana doustnie."
+}
+item water {
+	name "Woda"
+	desc "Przywraca wytrzyma³oœæ."
+}
+item spring_water {
+	name "Woda Ÿródlana"
+	desc "OrzeŸwiaj¹ce!"
+}
+
+//------------------------------------------------------------------------------
+// FOOD
+item bread {
+	name "Chleb"
+	desc "Leczy 40 punktów zdrowia po zjedzeniu."
+}
+item meat {
+	name "Miêso"
+	desc "Leczy 50 punktów zdrowia po zjedzeniu."
+}
+item raw_meat {
+	name "Surowe miêso"
+	desc "Leczy 20 punktów zdrowia po zjedzeniu."
+}
+item sausage {
+	name "Kie³basa"
+	desc "Leczy 60 punktów zdrowia po zjedzeniu."
+}
+item fish_meat {
+	name "Miêso z ryby"
+	desc "Leczy 40 punktów zdrowia po zjedzeniu."
+}
+item fish {
+	name "Ryba"
+	desc "Leczy 15 punktów zdrowia po zjedzeniu."
+}
+item apple {
+	name "Jab³ko"
+	desc "Leczy 25 punktów zdrowia po zjedzeniu."
+}
+item cheese {
+	name "Ser"
+	desc "Leczy 40 punktów zdrowia po zjedzeniu."
+}
+item honeycomb {
+	name "Plaster miodu"
+	desc "Leczy 75 punktów zdrowia po zjedzeniu."
+}
+item rice {
+	name "Ry¿"
+	desc "Leczy 30 punktów zdrowia po zjedzeniu."
+}
+item soup {
+	name "Zupa"
+	desc "Leczy 45 punktów zdrowia po zjedzeniu."
+}
+item stew {
+	name "Gulasz"
+	desc "Leczy 60 punktów zdrowia po zjedzeniu."
+}
+item muffin {
+	name "Muffin"
+	desc "Leczy 100 punktów zdrowia po zjedzeniu."
+}
+item mushroom {
+	name "Grzyb"
+	desc "Leczy 15 punktów zdrowia po zjedzeniu."
+}
+item healing_herb {
+	name "Lecznicze ziele"
+	desc "Natychmiast leczy 150 punktów zdrowia."
+}
+item green_herb {
+	name "Zielone ziele"
+}
+item alchemist_herb {
+	name "Ziele alchemiczne"
+	desc "Roœlina o nieznanych ci w³aœciwoœciach alchemicznych."
+}
+item magic_crystal {
+	name "Magiczny kryszta³"
+	desc "Ten kryszta³ jest jadalny. Przywraca 150 punktów many po zjedzeniu."
+}
+
+//------------------------------------------------------------------------------
+// VALUABLES
+item emerald {
+	name "Szmaragd"
+}
+item ruby {
+	name "Rubin"
+}
+item diamond {
+	name "Diament"
+}
+item krystal {
+	name "Ksiê¿ycowy kryszta³"
+}
+item golden_bar {
+	name "Z³ota sztabka"
+}
+item golden_cup {
+	name "Z³oty kielich"
+}
+
+//------------------------------------------------------------------------------
+// COMMON ITEMS
+item ladle {
+	name "Chochla"
+}
+item cup {
+	name "Kielich"
+}
+item plate {
+	name "Talerz"
+}
+item wolf_pelt {
+	name "Futro wilka"
+}
+item worg_pelt {
+	name "Futro worga"
+}
+item bear_pelt {
+	name "Futro niedŸwiedzia"
+}
+item black_bear_pelt {
+	name "Futro czarnego niedŸwiedzia"
+}
+
+//------------------------------------------------------------------------------
+// ARTIFACTS
+item a_amulet {
+	name "Staro¿ytny amulet"
+}
+item a_amulet2 {
+	name "Staro¿ytny amulet"
+}
+item a_amulet3 {
+	name "Staro¿ytny amulet"
+}
+item a_brosza {
+	name "Staro¿ytna brosza"
+}
+item a_butelka {
+	name "Staro¿ytna butelka"
+}
+item a_cos {
+	name "Staro¿ytny artefakt"
+}
+item a_czaszka {
+	name "Staro¿ytny czaszka"
+}
+item a_figurka {
+	name "Staro¿ytna figurka"
+}
+item a_figurka2 {
+	name "Staro¿ytna figurka"
+}
+item a_figurka3 {
+	name "Staro¿ytna figurka"
+}
+item a_ksiega {
+	name "Staro¿ytna ksiêga"
+}
+item a_maska {
+	name "Staro¿ytna maska"
+}
+item a_maska2 {
+	name "Staro¿ytna maska"
+}
+item a_misa {
+	name "Staro¿ytna misa"
+}
+item a_moneta {
+	name "Staro¿ytna moneta"
+}
+item a_pierscien {
+	name "Staro¿ytny pierœcieñ"
+}
+item a_pierscien2 {
+	name "Staro¿ytny pierœcieñ"
+}
+item a_pierscien3 {
+	name "Staro¿ytny pierœcieñ"
+}
+item a_talizman {
+	name "Staro¿ytny talizman"
+}
+item a_talizman2 {
+	name "Staro¿ytny talizman"
+}
+
+//------------------------------------------------------------------------------
+// QUEST ITEMS
+item key_kopalnia {
+	name "Staro¿ytny klucz"
+}
+item q_bandyci_paczka {
+	name "Cenna paczka"
+	desc "Paczka wype³niona kamieniami."
+}
+item q_bandyci_list {
+	name "Zaszyfrowany list"
+	desc "Zaszyfrowany list znaleziony przy ciele bandyty."
+}
+item q_magowie_kula {
+	name "Magiczna kula"
+}
+item q_magowie_kula2 {
+	name "Kula wiêzi"
+	desc "Magiczna kula potrzebna do o¿ywiania golemów."
+}
+item q_orkowie_klucz {
+	name "Zardzewia³y klucz"
+}
+item key_lunar {
+	name "Ksiê¿ycowy klucz"
+}
+item q_szaleni_kamien {
+	name "Dziwny kamieñ"
+	desc "Kamieñ pokryty jakimiœ runami."
+}
+item sekret_kartka {
+	name "Kawa³ek papieru"
+}
+item sekret_kartka2 {
+	name "Kawa³ek papieru"
+	desc "Tylko dziêki prawdziwej odwadze mo¿esz przejœæ przez ten portal. Wczytywanie gry ci nie pomo¿e."
+}
+item q_main_letter {
+	name "Dokumenty"
+	desc "Dokumenty dziêki którym zostaniesz przyjêty do Akademii."
+}
+item letter {
+	name "List"
+}
+item parcel {
+	name "Paczka"
+}
+item wanted_letter {
+	name "List goñczy"
+}
+item q_resources {
+	name "Zasoby"
+}
+
+//------------------------------------------------------------------------------
+item book_orcs {
+	name "Orkowa horda"
+	desc "Ksiêga o orkach."
+	text "*** Orkowa horda ***\n\nOrki pierwszy raz napotkano w roku 713 pierwszej ery. Nie wiele wtedy o nich wiedziano, postrzegano je jako zwyk³e humanoidalne bestie morduj¹ce wieœniaków i pal¹ce wioski. Przyszli oni z pó³nocnych gór gdy nadesz³a zima stulecia. Hordy orków wyla³y siê z gór niczym fala.\n\nOrkowie ¿yj¹ g³ównie pod ziemi¹ w jaskiniach, lub na zewn¹trz niedaleko w lasach. Rzadko rozbijaj¹ tymczasowe obozy pod go³ym niebem, boj¹ siê ¿e niebo zawali im siê na g³owy. Pos³uguj¹ siê prymitywnym jêzykiem który po zapisaniu wygl¹da jak bazgro³y. Rzadko zdarza siê ¿e ork nie jest pó³-g³ówkiem, wtedy zostaje szamanem. Niektórzy szamani znaj¹ jêzyk ludzi.\n\nNajsilniejszy ork zostaje hersztem lub wodzem wojennym. Jedynym co trzyma w kupiê armiê orków jest strach przed swoim wodzem. Czêsto wybuchaj¹ miedzy nimi walki o to kto jest silniejszy."
+}
+item book_undead {
+	name "Plaga nieumar³ych"
+	desc "Ksiêga o nieumar³ych."
+	text "*** Plaga nieumar³ych ***\n\nW tym krótkim traktacie postaram siê opisaæ jak zidentyfikowaæ i zabiæ ró¿ne rodzaje nieumar³ych - kap³an Jared.\n\nSzkielet - koœciany nieumar³y. Pojedynczy nie stanowi wiêkszego zagro¿enia ale zazwyczaj wystêpuj¹ w grupach. Uzbrojony w broñ, tarcze lub ³uk. Szkielety s¹ odporne na broñ k³ut¹ ale podatne na obuchow¹. Dobrze jest nosiæ ze sob¹ na przyk³ad morgensztern.\n\nSzkielet mag - koœciany nieumar³y, dziêki plugawej mocy mo¿e rzucaæ czary. Posiada te same cechy co zwyk³y szkielet. Nale¿y go zlikwidowaæ w pierwszej kolejnoœci co nie zawsze jest ³atwe gdy jest otoczony przez sojuszników. Silniejsze szkielety mog¹ o¿ywiaæ inne szkielety oraz rzucaæ eksploduj¹c¹ czaszk¹.\n\nZombie - o¿ywione plugaw¹ magi¹ zw³oki. Wyj¹tkowo wytrzyma³e i odporne na broñ k³ut¹ oraz obuchow¹. Najlepiej wykorzystaæ to ¿e zombie jest powolny - ostrzelaæ z dystansu z ³uku a gdy podejdzie dobiæ z miecza.\n\nNieumar³y stra¿nik - o¿ywiony cz³owiek który jeszcze nie sta³ siê zombie. Silny niczym cz³owiek ale bardziej wytrzyma³y, odporny na obra¿enia obuchowe i trucizny.\n\nNekromanta - nie jest nieumar³ym ale trzeba go tu opisaæ. To on odprawiaj¹c plugawe czary o¿ywia szkielety i zombie. Nale¿y go zabijaæ w pierwszej kolejnoœci!"
+}
+item book_behind_the_wall {
+	name "Za œcian¹"
+	desc "Ksiêga o niewidzialnym zagro¿eniu które jest tu¿ obok."
+	text "[Treœæ nieznanego autora prze³o¿ona na jêzyk ludzi przez Danarta Szalonego]\n\n*** Za œcian¹ ***\n\nZa os³on¹ rzeczywistoœci tu¿ obok nas czaj¹ siê koszmary. Tylko krucha œciana oddziela nas od potwornoœci które czasem dostaj¹ siê do naszego œwiata. Nienazwane istoty atakuj¹ce umys³ i cia³o. Wielu po takim spotkaniu postrada³o umys³ i zaczê³o wêdrowaæ po œwiecie bez celu atakuj¹c podró¿nych.\n\nYyoijy"
+}
+item book_adventurer {
+	name "Poradnik poszukiwaczy przygód"
+	desc "Ksiêga o tym jak nie daæ siê zabiæ i zdobyæ skarby."
+	text "Jak do¿yæ do emerytury czyli Poradnik poszukiwacza przygód autorstwa Tomashu\n\n1. Mieszkañcy miasta mog¹ siê na ciebie wrogo patrzeæ ale zbieraj wszystkie przedmioty które nie s¹ przybite do œciany. W szczególnoœci miksturki do alchemika, jedzenie od sprzedawcy jedzenia i alkohol z karczmy. Co nie jest ci potrzebne sprzedaj.\n2. Nie podró¿uj sam, im wiêcej postaci w dru¿ynie tym ³atwiejsza bêdzie walka. Postaraj siê mieæ przynajmniej 3-4 osoby w dru¿ynie. Na pocz¹tku z pewnoœci¹ znajdziesz jakichœ bohaterów którzy do³¹cz¹ do ciebie za darmo.\n3. Z podziemi wynoœ tyle przedmiotów ile siê da a potem sprzedawaj je w mieœcie. Twoi sojusznicy te¿ mog¹ siê do czegoœ przydaæ i nosiæ za ciebie przedmioty.\n4. Poza walk¹ warto u¿ywaæ jedzenia aby siê podleczyæ. Wypicie mikstury naturalnego leczenia zwiêksza liczbê przywracanego zdrowia za jedzenie/odpoczynek. Miksturki warto pozostawiæ na walkê.\n5. Szukaj unikalnych sojuszników którzy ciê wspomog¹. Mo¿esz zrekrutowaæ ich w miarê wczeœnie, posiadaj¹ unikatowe zdolnoœci i nie maj¹ udzia³u w ³upach.\n6. Jeœli ciê na to staæ kup od razu lepszy pancerz. Na pocz¹tku ka¿dy punkt obrony siê liczy.\n7. Jeœli chcesz oczyœciæ jak¹œ lokalizacjê zapytaj mieszkañców miasta o pobliskie miejsca. Na pocz¹tek warto odwiedziæ miejsca gdzie wrogowie s¹ bardzo s³abi lub s³abi.\n8. Nie atakuj mieszkañców miasta! Chyba ¿e nie chcesz ju¿ nigdy nic kupowaæ lub trenowaæ.\n9. Nie bój siê uciekaæ gdy szanse na zwyciêstwo s¹ marne.\n10. Zapisuj czêsto grê i postaraj siê nie umieraæ."
+}
+item book_ld {
+	name "Œwiadomy sen"
+	desc "Ksiêga o œwiadomym œnie"
+	text "*** Œwiadomy sen ***\n\nO podró¿y w g³¹b w³asnego umys³u - autor nieznany.\n\nŒwiadomy sen to sen w którym œni¹cy zdaje sobie ¿e jest to sen. Zazwyczaj wystêpuje gdy w trakcie snu osoba zda sobie sprawê ¿e to sen. Mo¿liwe jest te¿ bezpoœrednie zaœniêcie i pozostanie œwiadomym. Œni¹cy posiada kontrolê nad sob¹ i tym co dzieje siê w œnie. O ile jest to jego sen...\n\nJedn¹ z metod s¹ testy rzeczywistoœci oraz zapisywanie codziennie prze¿ytych snów. Po jakimœ czasie zaczniemy wykonywaæ test rzeczywistoœci te¿ w snach i dziêki temu rozpoznamy ¿e jest to sen.\n\nDrug¹ metod¹ jest bezpoœrednie wejœcie do œwiata snów. Mo¿na wykonaæ specjalny magiczny amulet który na to pozwoli."
+}
+item book_runic {
+	name "Runiczna ksiêga"
+	desc "Ksiêga o niewiadomej treœci zapisana nieznanym ci jêzykiem."
+	text "*** Tajne *** \n\nSekretna ksiazka, nie czytac! Nie ma tu nic ciekawego, naprawde. Polecam Bloodborne, to bardzo ciekawa gra. Jak i cala seria Dark Souls oraz Uncharted."
+}
+item q_zlo_ksiega {
+	name "Ksiêga przywo³ywania"
+	desc "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
+	text "Wstep do przywolywania i tworzenia portali autorstwa Magnusa Voolo.\n\n1. Przywolywanie\nAby przywolac istote z innego planu potrzebujesz znac jej imie oraz fragment zywiolu z ktorego ona pochodzi. Na przyklad dla zywiolu ognia cos zwiazanego z ogniem, zapalony kawalek wegla. Przywolanie standardowych zywiolakow nie stanowi wiekszego problemu poniewaz wszystkie maja takie same imiona:\nogien - agni\nwoda - pos\npowietrze - mir\nziemia - ar\nPrzywolanie istot z innych planow nie zostalo opisane w tym tomie. Przed przywolaniem nalezy tez przygotowac krag ochronny - w innym przypadku zywiolak nie bedzie mial przyjaznych zamiarow. Po przywolaniu nalezy go spetac jednym z zaklec.\n\n2. Otwieranie portali\nAby otworzyc portal potrzebna jest specjalnie przygotowana brama. Do tego celu mozna wykorzystac na przyklad adamentium ktore jest odporne na czary. Uzycie zbyt slabej bramy moze spowodowac jej zniszczenie i zapadniecie sie portalu co jest ekstremalnie niebezpieczne. Na portalu trzeba uzyc zaklecia brama. Portal pozostaje otwarty przez nieograniczony czas."
+}
+item magic_scroll {
+	name "Magiczny zwój"
+	desc "Jest zapisany jakimiœ dziwnymi runami..."
+	text "xxx"
+}
+item book_q_cleric {
+	name "Wielka ksiêga chorób"
+	desc "Zawiera opisy i sposoby leczenia wielu chorób. Niestety jest zapisana runami."
+	text "Description\nA disease or medical condition is an unhealthy state where something bad happens to the body or mind.[1] Diseases can cause pain, parts of the body to stop working the right way, or death.\nCauses\nA disease can be caused by many things. Sometimes germs enter our body through food, water or air. A person can be infected by infectious agents like bacteria, viruses or fungus. Disease can also be caused by eating bad or old foods. There are small germs in old foods that can cause diseases. Sometimes the germs produce chemicals or toxins which causes the disease.\nOne of the most common causes of disease is poor sanitation and lack of clean water. Some deadly diseases like malaria in tropical parts of the world are spread by a mosquito. Animals that spread disease are called vectors. There are many vectors, including snails, ticks, and fleas.\nSome people are born with 'genetic diseases'. These are diseases because of an error or mutation in a person's DNA. An example of a mutation is cancer. Living or working in an unhealthy environment can also be a cause for diseases. Diseases are more common in older people."
+}
+item crypt_note {
+	name "Stara notatka"
+	text "https://youtu.be/LJ5nV9aKthU"
+}
+
+//------------------------------------------------------------------------------
+item gold {
+	name "Z³oto"
+}

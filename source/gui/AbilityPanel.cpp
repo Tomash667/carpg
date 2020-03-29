@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "AbilityPanel.h"
 #include "LevelGui.h"
 #include "GameGui.h"

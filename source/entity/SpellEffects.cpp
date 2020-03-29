@@ -1,6 +1,5 @@
 // efekty czarów, eksplozje, electro, drain
 #include "Pch.h"
-#include "GameCore.h"
 #include "SpellEffects.h"
 #include "Unit.h"
 #include "Ability.h"
@@ -34,8 +33,8 @@ void Explo::Load(FileReader& f)
 	f >> dmg;
 	f >> hitted;
 	f >> owner;
-	if(LOAD_VERSION >= V_DEV)
-		ability = Ability::Get(f.Read<uint>());
+	if(LOAD_VERSION >= V_0_13)
+		ability = Ability::Get(f.Read<int>());
 	else
 	{
 		const string& tex = f.ReadString1();
@@ -62,7 +61,7 @@ void Explo::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Explo::Read(BitStreamReader& f)
 {
-	ability = Ability::Get(f.Read<uint>());
+	ability = Ability::Get(f.Read<int>());
 	f >> pos;
 	f >> size;
 	f >> sizemax;
@@ -201,7 +200,7 @@ void Electro::Load(FileReader& f)
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_13)
 	{
 		lines.resize(f.Read<uint>());
 		for(Line& line : lines)
@@ -230,9 +229,9 @@ void Electro::Load(FileReader& f)
 		f >> unit;
 	f >> dmg;
 	f >> owner;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_13)
 	{
-		uint ability_hash = f.Read<uint>();
+		int ability_hash = f.Read<int>();
 		ability = Ability::Get(ability_hash);
 		if(!ability)
 			throw Format("Missing ability %u for electro.", ability_hash);
@@ -267,7 +266,7 @@ void Electro::Write(BitStreamWriter& f)
 bool Electro::Read(BitStreamReader& f)
 {
 	f >> id;
-	ability = Ability::Get(f.Read<uint>());
+	ability = Ability::Get(f.Read<int>());
 
 	byte count;
 	f >> count;
@@ -301,7 +300,7 @@ void Drain::Save(FileWriter& f)
 //=================================================================================================
 void Drain::Load(FileReader& f)
 {
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 		f.Skip<int>(); // old from
 	f >> target;
 	pe = ParticleEmitter::GetById(f.Read<int>());

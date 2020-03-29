@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Mages.h"
 #include "Game.h"
 #include "Journal.h"
@@ -210,10 +209,10 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageWantsVodka:
 		// daj piwo, chce wódy
 		{
-			const Item* piwo = Item::Get("beer");
-			DialogContext::current->pc->unit->RemoveItem(piwo, 1);
+			const Item* beer = Item::Get("beer");
+			DialogContext::current->pc->unit->RemoveItem(beer, 1);
 			DialogContext::current->talker->action = A_NONE;
-			DialogContext::current->talker->ConsumeItem(piwo->ToConsumable());
+			DialogContext::current->talker->ConsumeItem(beer->ToConsumable());
 			DialogContext::current->dialog_wait = 2.5f;
 			DialogContext::current->can_skip = false;
 			OnUpdate(game->txQuest[175]);
@@ -222,10 +221,10 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GivenVodka:
 		// da³eœ wóde
 		{
-			const Item* woda = Item::Get("vodka");
-			DialogContext::current->pc->unit->RemoveItem(woda, 1);
+			const Item* vodka = Item::Get("vodka");
+			DialogContext::current->pc->unit->RemoveItem(vodka, 1);
 			DialogContext::current->talker->action = A_NONE;
-			DialogContext::current->talker->ConsumeItem(woda->ToConsumable());
+			DialogContext::current->talker->ConsumeItem(vodka->ToConsumable());
 			DialogContext::current->dialog_wait = 2.5f;
 			DialogContext::current->can_skip = false;
 			OnUpdate(game->txQuest[176]);
@@ -234,11 +233,12 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			Location& loc = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, UnitGroup::empty, true, 2);
+			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), MAGE_TOWER, 2);
+			loc.group = UnitGroup::empty;
 			loc.st = 1;
 			loc.SetKnown();
 			target_loc = loc.index;
-			team->AddTeamMember(DialogContext::current->talker, HeroType::Free);
+			team->AddMember(DialogContext::current->talker, HeroType::Free);
 			OnUpdate(Format(game->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(world->GetCurrentLocation()->pos, GetTargetLocation().pos), world->GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
@@ -284,7 +284,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			mages_state = State::MageCured;
 			OnUpdate(game->txQuest[181]);
 			GetTargetLocation().active_quest = nullptr;
-			Location& loc = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, UnitGroup::Get("mages_and_golems"));
+			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), MAGE_TOWER);
+			loc.group = UnitGroup::Get("mages_and_golems");
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.active_quest = this;
@@ -308,7 +309,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// nie zrekrutowa³em maga
 		{
 			Unit* u = DialogContext::current->talker;
-			team->RemoveTeamMember(u);
+			team->RemoveMember(u);
 			mages_state = State::MageLeaving;
 			good_mage_name = u->hero->name;
 			hd_mage.Get(*u->human_data);
@@ -346,7 +347,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			{
 				OnUpdate(Format(game->txQuest[184], u->hero->name.c_str()));
 				good_mage_name = u->hero->name;
-				team->AddTeamMember(u, HeroType::Free);
+				team->AddMember(u, HeroType::Free);
 			}
 
 			mages_state = State::MageRecruited;
@@ -369,7 +370,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(Format(game->txQuest[187], DialogContext::current->talker->hero->name.c_str(), evil_mage_name.c_str()));
 			// idŸ sobie
 			Unit* u = DialogContext::current->talker;
-			team->RemoveTeamMember(u);
+			team->RemoveMember(u);
 			u->OrderLeave();
 			scholar = nullptr;
 		}

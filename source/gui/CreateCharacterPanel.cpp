@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CreateCharacterPanel.h"
 #include "Game.h"
 #include "Language.h"
@@ -14,6 +13,7 @@
 #include "Level.h"
 #include "GameGui.h"
 #include "GameResources.h"
+#include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -195,6 +195,7 @@ void CreateCharacterPanel::LoadLanguage()
 
 	Language::Section section = Language::GetSection("CreateCharacterPanel");
 	txHardcoreMode = section.Get("hardcoreMode");
+	txHardcoreDesc = section.Get("hardcoreDesc");
 	txHair = section.Get("hair");
 	txMustache = section.Get("mustache");
 	txBeard = section.Get("beard");
@@ -264,9 +265,6 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	// close button
 	btCancel.Draw();
 
-	Rect rect;
-	Matrix mat;
-
 	switch(mode)
 	{
 	case Mode::PickClass:
@@ -284,7 +282,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			gui->DrawItem(tBox, fpos, flow_size, Color::White, 8, 32);
 			flow_scroll.Draw();
 
-			rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
+			Rect rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
 			Rect r = rect, part = { 0, 0, 256, 32 };
 			r.Top() += 20;
 
@@ -302,7 +300,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
+						Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
 						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}
@@ -311,8 +309,6 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 						break;
 				}
 			}
-
-			tooltip.Draw();
 		}
 		break;
 	case Mode::PickSkillPerk:
@@ -333,8 +329,6 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
 			gui->DrawText(GameGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
-
-			tooltip.Draw();
 		}
 		break;
 	case Mode::PickAppearance:
@@ -351,6 +345,8 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		}
 		break;
 	}
+
+	tooltip.Draw();
 }
 
 //=================================================================================================
@@ -358,6 +354,8 @@ void CreateCharacterPanel::Update(float dt)
 {
 	RenderUnit();
 	UpdateUnit(dt);
+
+	int group = -1, id = -1;
 
 	// rotating unit
 	if(PointInRect(gui->cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && input->Focus() && focus)
@@ -402,8 +400,6 @@ void CreateCharacterPanel::Update(float dt)
 			flow_scroll.mouse_focus = focus;
 			flow_scroll.Update(dt);
 
-			int group = -1, id = -1;
-
 			if(!flow_scroll.clicked && PointInRect(gui->cursor_pos, flow_pos + global_pos, flow_size))
 			{
 				if(focus && input->Focus())
@@ -424,8 +420,6 @@ void CreateCharacterPanel::Update(float dt)
 			}
 			else if(!flow_scroll.clicked && PointInRect(gui->cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && input->Focus())
 				flow_scroll.ApplyMouseWheel();
-
-			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickSkillPerk:
@@ -442,8 +436,6 @@ void CreateCharacterPanel::Update(float dt)
 			tbInfo.mouse_focus = focus;
 			tbInfo.Update(dt);
 
-			int group = -1, id = -1;
-
 			flowSkills.mouse_focus = focus;
 			flowSkills.Update(dt);
 			flowSkills.GetSelected(group, id);
@@ -451,8 +443,6 @@ void CreateCharacterPanel::Update(float dt)
 			flowPerks.mouse_focus = focus;
 			flowPerks.Update(dt);
 			flowPerks.GetSelected(group, id);
-
-			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickAppearance:
@@ -470,6 +460,11 @@ void CreateCharacterPanel::Update(float dt)
 			{
 				checkbox.mouse_focus = focus;
 				checkbox.Update(dt);
+				if(focus && checkbox.IsInside(gui->cursor_pos))
+				{
+					group = (int)Group::Hardcore;
+					id = 0;
+				}
 			}
 
 			for(int i = 0; i < 5; ++i)
@@ -480,6 +475,8 @@ void CreateCharacterPanel::Update(float dt)
 		}
 		break;
 	}
+
+	tooltip.UpdateTooltip(dt, group, id);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)IdCancel);
@@ -655,8 +652,7 @@ void CreateCharacterPanel::RenderUnit()
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	static vector<Lights> lights;
-
+	game_level->light_angle = PI / 2;
 	game_level->SetOutsideParams();
 
 	Vec3 from = Vec3(0.f, 2.f, dist);
@@ -667,11 +663,15 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.mat_view_inv = mat_view.Inverse();
 	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
+	scene_mgr->scene = game_level->scene;
+	scene_mgr->camera = &game_level->camera;
+
 	game->draw_batch.Clear();
+	game->draw_batch.camera = &game_level->camera;
+	game->draw_batch.gather_lights = false;
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->draw_batch.Process();
-	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
-	game->draw_batch.Clear();
+	scene_mgr->DrawSceneNodes(game->draw_batch.nodes, game->draw_batch.node_groups);
 
 	// end rendering
 	V(device->EndScene());
@@ -1047,13 +1047,13 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 		break;
 	case Group::Perk:
 		{
+			Perk* perk = (Perk*)id;
 			tool.anything = true;
 			tool.img = nullptr;
 			tool.small_text.clear();
-			PerkInfo& pi = PerkInfo::perks[id];
-			tool.big_text = pi.name;
-			tool.text = pi.desc;
-			if(IsSet(pi.flags, PerkInfo::Flaw))
+			tool.big_text = perk->name;
+			tool.text = perk->desc;
+			if(IsSet(perk->flags, Perk::Flaw))
 			{
 				tool.text += "\n\n";
 				tool.text += txFlawExtraPerk;
@@ -1062,19 +1062,25 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 		break;
 	case Group::TakenPerk:
 		{
-			TakenPerk& taken = cc.taken_perks[id];
+			TakenPerk& tp = cc.taken_perks[id];
 			tool.anything = true;
 			tool.img = nullptr;
-			PerkInfo& pi = PerkInfo::perks[(int)taken.perk];
-			tool.big_text = pi.name;
-			tool.text = pi.desc;
-			taken.GetDesc(tool.small_text);
-			if(IsSet(pi.flags, PerkInfo::Flaw))
+			tool.big_text = tp.perk->name;
+			tool.text = tp.perk->desc;
+			tp.GetDetails(tool.small_text);
+			if(IsSet(tp.perk->flags, Perk::Flaw))
 			{
 				tool.text += "\n\n";
 				tool.text += txFlawExtraPerk;
 			}
 		}
+		break;
+	case Group::Hardcore:
+		tool.anything = true;
+		tool.img = nullptr;
+		tool.big_text.clear();
+		tool.text = txHardcoreDesc;
+		tool.small_text.clear();
 		break;
 	}
 }
@@ -1186,17 +1192,17 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	if(group == (int)Group::PickPerk_AddButton)
 	{
 		// add perk
-		PerkInfo& info = PerkInfo::perks[id];
-		switch(info.value_type)
+		Perk* perk = (Perk*)id;
+		switch(perk->value_type)
 		{
-		case PerkInfo::Attribute:
-			PickAttribute(txPickAttribIncrease, (Perk)id);
+		case Perk::Attribute:
+			PickAttribute(txPickAttribIncrease, perk);
 			break;
-		case PerkInfo::Skill:
-			PickSkill(txPickSkillIncrease, (Perk)id);
+		case Perk::Skill:
+			PickSkill(txPickSkillIncrease, perk);
 			break;
 		default:
-			AddPerk((Perk)id);
+			AddPerk(perk);
 			break;
 		}
 	}
@@ -1207,7 +1213,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		TakenPerk& taken = cc.taken_perks[id];
 		taken.Remove(ctx);
 		cc.taken_perks.erase(cc.taken_perks.begin() + id);
-		vector<Perk> removed;
+		vector<Perk*> removed;
 		ctx.check_remove = true;
 		LoopAndRemove(cc.taken_perks, [&](TakenPerk& perk)
 		{
@@ -1221,7 +1227,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		{
 			string s = txPerksRemoved;
 			bool first = true;
-			for(Perk p : removed)
+			for(Perk* perk : removed)
 			{
 				if(first)
 				{
@@ -1230,7 +1236,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 				}
 				else
 					s += ", ";
-				s += PerkInfo::perks[(int)p].name;
+				s += perk->name;
 			}
 			s += ".";
 			gui->SimpleDialog(s.c_str(), this);
@@ -1272,21 +1278,21 @@ void CreateCharacterPanel::RebuildPerksFlow()
 
 	// group perks by availability
 	available_perks.clear();
-	for(PerkInfo& perk : PerkInfo::perks)
+	for(Perk* perk : Perk::perks)
 	{
-		if(ctx.HavePerk(perk.perk_id))
+		if(ctx.HavePerk(perk))
 			continue;
 		TakenPerk tp;
-		tp.perk = perk.perk_id;
+		tp.perk = perk;
 		if(tp.CanTake(ctx))
-			available_perks.push_back(perk.perk_id);
+			available_perks.push_back(perk);
 	}
 	taken_perks.clear();
 	LocalVector<string*> strs;
 	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
 	{
-		PerkInfo& perk = PerkInfo::perks[(int)cc.taken_perks[i].perk];
-		if(IsSet(perk.flags, PerkInfo::RequireFormat))
+		Perk* perk = cc.taken_perks[i].perk;
+		if(perk->value_type != Perk::None)
 		{
 			string* s = StringPool.Get();
 			*s = cc.taken_perks[i].FormatName();
@@ -1294,7 +1300,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			taken_perks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
 		else
-			taken_perks.push_back(pair<cstring, int>(perk.name.c_str(), i));
+			taken_perks.push_back(pair<cstring, int>(perk->name.c_str(), i));
 	}
 
 	// sort perks
@@ -1306,12 +1312,11 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	if(!available_perks.empty())
 	{
 		flowPerks.Add()->Set(txAvailablePerks);
-		for(Perk perk : available_perks)
+		for(Perk* perk : available_perks)
 		{
-			PerkInfo& info = PerkInfo::perks[(int)perk];
-			bool can_pick = (cc.perks == 0 && !IsSet(info.flags, PerkInfo::Flaw));
+			bool can_pick = (cc.perks == 0 && !IsSet(perk->flags, Perk::Flaw));
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
-			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
+			flowPerks.Add()->Set(perk->name.c_str(), (int)Group::Perk, (int)perk);
 		}
 	}
 	if(!cc.taken_perks.empty())
@@ -1339,7 +1344,7 @@ void CreateCharacterPanel::ResetSkillsPerks()
 }
 
 //=================================================================================================
-void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
+void CreateCharacterPanel::PickAttribute(cstring text, Perk* perk)
 {
 	picked_perk = perk;
 
@@ -1356,7 +1361,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::PickSkill(cstring text, Perk perk)
+void CreateCharacterPanel::PickSkill(cstring text, Perk* perk)
 {
 	picked_perk = perk;
 
@@ -1430,7 +1435,7 @@ void CreateCharacterPanel::UpdateSkillButtons()
 }
 
 //=================================================================================================
-void CreateCharacterPanel::AddPerk(Perk perk, int value)
+void CreateCharacterPanel::AddPerk(Perk* perk, int value)
 {
 	TakenPerk taken(perk, value);
 	cc.taken_perks.push_back(taken);
@@ -1438,19 +1443,6 @@ void CreateCharacterPanel::AddPerk(Perk perk, int value)
 	taken.Apply(ctx);
 	CheckSkillsUpdate();
 	RebuildPerksFlow();
-}
-
-//=================================================================================================
-bool CreateCharacterPanel::ValidatePerk(Perk perk)
-{
-	switch(perk)
-	{
-	case Perk::VeryWealthy:
-		return cc.HavePerk(Perk::Wealthy);
-	default:
-		assert(0);
-		return false;
-	}
 }
 
 //=================================================================================================

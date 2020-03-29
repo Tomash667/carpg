@@ -1,6 +1,5 @@
 // attributes & skill profiles
 #include "Pch.h"
-#include "GameCore.h"
 #include "StatProfile.h"
 
 //-----------------------------------------------------------------------------
@@ -18,7 +17,7 @@ StatProfile::Subprofile::Subprofile() : weapon_chance(), weapon_total(0), armor_
 	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 		tag_skills[i] = SkillId::NONE;
 	for(int i = 0; i < StatProfile::MAX_PERKS; ++i)
-		perks[i].perk = Perk::None;
+		perks[i].perk = nullptr;
 }
 
 //=================================================================================================

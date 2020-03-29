@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "MainMenu.h"
 #include "Language.h"
 #include "Version.h"
@@ -24,7 +23,6 @@ void MainMenu::LoadLanguage()
 {
 	Language::Section s = Language::GetSection("MainMenu");
 	txInfoText = s.Get("infoText");
-	txVersion = s.Get("version");
 	txCheckingVersion = s.Get("checkingVersion");
 	txNewVersion = s.Get("newVersion");
 	txNewVersionDialog = s.Get("newVersionDialog");
@@ -34,6 +32,8 @@ void MainMenu::LoadLanguage()
 	txNewerVersion = s.Get("newerVersion");
 	txNoNewVersion = s.Get("noNewVersion");
 	txCheckVersionError = s.Get("checkVersionError");
+
+	version = Format(s.Get("version"), VERSION_STR, Split(utility::GetCompileTime().c_str())[0].c_str());
 
 	const cstring names[BUTTONS] = {
 		"newGame",
@@ -77,7 +77,7 @@ void MainMenu::LoadData()
 //=================================================================================================
 void MainMenu::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::White);
+	gui->DrawSpriteFull(tBackground);
 	gui->DrawSprite(tLogo, Int2(gui->wnd_size.x - 512 - 16, 16));
 	gui->DrawSpriteRect(tFModLogo, Rect(
 		int(gui->wnd_size.x - (512.f * 0.6f + 50.f) * gui->wnd_size.x / 1920),
@@ -87,13 +87,13 @@ void MainMenu::Draw(ControlDrawData*)
 
 	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, "Devmode(2013,2020) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = gui->wnd_size.x - 512 - 16;
 	r.Right() = gui->wnd_size.x - 16;
-	r.Top() = 256 + 24;
+	r.Top() = 256;
 	r.Bottom() = r.Top() + 64;
-	gui->DrawText(GameGui::font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, version, DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
 	r.Right() = gui->wnd_size.x;

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "BookPanel.h"
 #include "Item.h"
 #include "Input.h"

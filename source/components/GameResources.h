@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "BloodType.h"
+#include "Light.h"
 
 //-----------------------------------------------------------------------------
 class GameResources
@@ -9,6 +10,7 @@ class GameResources
 public:
 	static constexpr int ITEM_IMAGE_SIZE = 64;
 
+	GameResources();
 	~GameResources();
 	void Init();
 	void LoadLanguage();
@@ -24,7 +26,7 @@ public:
 	void LoadCommonMusic();
 
 	TexturePtr tBlack, tWarning, tError;
-	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine;
+	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine, tFlare, tFlare2, tWater;
 	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
 	TexOverride tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
@@ -40,9 +42,12 @@ private:
 	void PreloadTraps();
 	void PreloadAbilities();
 	void PreloadObjects();
-	void PreloadItems();
 
 	typedef std::map<Mesh*, Texture*> ItemTextureMap;
+
+	Scene* scene;
+	SceneNode* node;
+	Camera* camera;
 	ItemTextureMap item_texture_map;
 	vector<Texture*> over_item_textures;
 	RenderTarget* rt_item;

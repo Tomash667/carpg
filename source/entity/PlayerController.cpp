@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "PlayerController.h"
 #include "PlayerInfo.h"
 #include "Unit.h"
@@ -32,6 +31,7 @@
 #include "GameResources.h"
 #include "AbilityPanel.h"
 #include "PhysicCallbacks.h"
+#include "CraftPanel.h"
 
 LocalPlayerData PlayerController::data;
 
@@ -330,7 +330,6 @@ void PlayerController::Save(FileWriter& f)
 		f << stat.train;
 		f << stat.apt;
 		f << stat.train_part;
-		f << stat.blocked;
 	}
 	for(StatData& stat : skill)
 	{
@@ -381,7 +380,7 @@ void PlayerController::Save(FileWriter& f)
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
-		f << (byte)tp.perk;
+		f << tp.perk->hash;
 		f << tp.value;
 	}
 	f << (byte)abilities.size();
@@ -441,7 +440,8 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.train;
 			f >> stat.apt;
 			f >> stat.train_part;
-			f >> stat.blocked;
+			if(LOAD_VERSION < V_DEV)
+				f.Skip<bool>(); // old blocked
 		}
 		for(StatData& stat : skill)
 		{
@@ -449,7 +449,6 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.train;
 			f >> stat.apt;
 			f >> stat.train_part;
-			stat.blocked = false;
 		}
 		SetRequiredPoints();
 	}
@@ -461,7 +460,6 @@ void PlayerController::Load(FileReader& f)
 			stat.train = 0;
 			stat.apt = 0;
 			stat.train_part = 0;
-			stat.blocked = false;
 		}
 		for(StatData& stat : skill)
 		{
@@ -469,7 +467,6 @@ void PlayerController::Load(FileReader& f)
 			stat.train = 0;
 			stat.apt = 0;
 			stat.train_part = 0;
-			stat.blocked = false;
 		}
 	}
 	f >> action_key;
@@ -541,84 +538,55 @@ void PlayerController::Load(FileReader& f)
 	byte count;
 	f >> count;
 	perks.resize(count);
-	for(TakenPerk& tp : perks)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		tp.perk = (Perk)f.Read<byte>();
-		f >> tp.value;
+		for(TakenPerk& tp : perks)
+		{
+			tp.perk = Perk::Get(f.Read<int>());
+			f >> tp.value;
+		}
 	}
-	if(LOAD_VERSION < V_0_8)
+	else if(LOAD_VERSION >= V_0_8)
 	{
-		// translate old perks
+		for(TakenPerk& tp : perks)
+		{
+			old::v2::Perk perk = (old::v2::Perk)f.Read<byte>();
+			tp.perk = old::Convert(perk);
+			f >> tp.value;
+		}
+	}
+	else
+	{
+		for(TakenPerk& tp : perks)
+		{
+			tp.perk = (Perk*)f.Read<byte>();
+			f >> tp.value;
+		}
 		LoopAndRemove(perks, [this](TakenPerk& tp)
 		{
-			switch((old::Perk)tp.perk)
-			{
-			case old::Perk::Weakness:
-				{
-					switch((AttributeId)tp.value)
-					{
-					case AttributeId::STR:
-						tp.perk = Perk::BadBack;
-						break;
-					case AttributeId::DEX:
-						tp.perk = Perk::Sluggish;
-						break;
-					case AttributeId::END:
-						tp.perk = Perk::ChronicDisease;
-						break;
-					case AttributeId::INT:
-						tp.perk = Perk::SlowLearner;
-						break;
-					case AttributeId::WIS:
-						return true;
-					case AttributeId::CHA:
-						tp.perk = Perk::Asocial;
-						break;
-					}
-					PerkContext ctx(this, false);
-					ctx.upgrade = true;
-					tp.Apply(ctx);
-					tp.value = 0;
-				}
-				break;
-			case old::Perk::Strength:
-				tp.perk = Perk::Talent;
-				break;
-			case old::Perk::Skilled:
-				tp.perk = Perk::Skilled;
-				break;
-			case old::Perk::SkillFocus:
+			bool upgrade;
+			old::v2::Perk perk = old::Convert((old::v1::Perk)(int)tp.perk, tp.value, upgrade);
+			if(perk == old::v2::Perk::None)
 				return true;
-			case old::Perk::Talent:
-				tp.perk = Perk::SkillFocus;
-				break;
-			case old::Perk::AlchemistApprentice:
-				tp.perk = Perk::AlchemistApprentice;
-				break;
-			case old::Perk::Wealthy:
-				tp.perk = Perk::Wealthy;
-				break;
-			case old::Perk::VeryWealthy:
-				tp.perk = Perk::VeryWealthy;
-				break;
-			case old::Perk::FamilyHeirloom:
-				tp.perk = Perk::FamilyHeirloom;
-				break;
-			case old::Perk::Leader:
-				tp.perk = Perk::Leader;
-				break;
+			tp.perk = old::Convert(perk);
+			if(upgrade)
+			{
+				PerkContext ctx(this, false);
+				ctx.upgrade = true;
+				tp.Apply(ctx);
+				tp.value = 0;
 			}
 			return false;
 		});
 	}
 
 	// abilities
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_13)
 	{
 		abilities.resize(f.Read<byte>());
 		for(PlayerAbility& ab : abilities)
 		{
-			ab.ability = Ability::Get(f.Read<uint>());
+			ab.ability = Ability::Get(f.Read<int>());
 			f >> ab.cooldown;
 			f >> ab.recharge;
 			f.ReadCasted<byte>(ab.charges);
@@ -681,7 +649,7 @@ void PlayerController::Load(FileReader& f)
 				shortcut.item = Item::Get(f.ReadString1());
 				break;
 			case Shortcut::TYPE_ABILITY:
-				shortcut.ability = Ability::Get(f.Read<uint>());
+				shortcut.ability = Ability::Get(f.Read<int>());
 				break;
 			}
 			shortcut.trigger = false;
@@ -1006,6 +974,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::CastMage:
 		TrainMod(SkillId::MYSTIC_MAGIC, value);
 		break;
+	case TrainWhat::Craft:
+		TrainMod(SkillId::ALCHEMY, value);
+		break;
 	default:
 		assert(0);
 		break;
@@ -1163,10 +1134,10 @@ void PlayerController::Write(BitStreamWriter& f) const
 	f << arena_fights;
 	f << learning_points;
 	f.WriteCasted<byte>(perks.size());
-	for(const TakenPerk& perk : perks)
+	for(const TakenPerk& tp : perks)
 	{
-		f.WriteCasted<byte>(perk.perk);
-		f << perk.value;
+		f << tp.perk->hash;
+		f << tp.value;
 	}
 	f.WriteCasted<byte>(abilities.size());
 	for(const PlayerAbility& ab : abilities)
@@ -1219,7 +1190,7 @@ void PlayerController::ReadStart(BitStreamReader& f)
 			shortcut.item = Item::Get(f.ReadString1());
 			break;
 		case Shortcut::TYPE_ABILITY:
-			shortcut.ability = Ability::Get(f.Read<uint>());
+			shortcut.ability = Ability::Get(f.Read<int>());
 			break;
 		}
 		shortcut.trigger = false;
@@ -1241,10 +1212,10 @@ bool PlayerController::Read(BitStreamReader& f)
 	if(!f || !f.Ensure(5 * count))
 		return false;
 	perks.resize(count);
-	for(TakenPerk& perk : perks)
+	for(TakenPerk& tp : perks)
 	{
-		f.ReadCasted<byte>(perk.perk);
-		f >> perk.value;
+		tp.perk = Perk::Get(f.Read<int>());
+		f >> tp.value;
 	}
 	f >> count;
 	if(!f || !f.Ensure(11 * count))
@@ -1252,7 +1223,7 @@ bool PlayerController::Read(BitStreamReader& f)
 	abilities.resize(count);
 	for(PlayerAbility& ab : abilities)
 	{
-		ab.ability = Ability::Get(f.Read<uint>());
+		ab.ability = Ability::Get(f.Read<int>());
 		f >> ab.cooldown;
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
@@ -1536,8 +1507,9 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* ques
 }
 
 //=================================================================================================
-bool PlayerController::HavePerk(Perk perk, int value)
+bool PlayerController::HavePerk(Perk* perk, int value)
 {
+	assert(perk);
 	for(TakenPerk& tp : perks)
 	{
 		if(tp.perk == perk && tp.value == value)
@@ -1549,15 +1521,16 @@ bool PlayerController::HavePerk(Perk perk, int value)
 //=================================================================================================
 bool PlayerController::HavePerkS(const string& perk_id)
 {
-	PerkInfo* perk = PerkInfo::Find(perk_id);
+	Perk* perk = Perk::Get(perk_id);
 	if(!perk)
 		throw ScriptException("Invalid perk '%s'.", perk_id.c_str());
-	return HavePerk(perk->perk_id);
+	return HavePerk(perk);
 }
 
 //=================================================================================================
-bool PlayerController::AddPerk(Perk perk, int value)
+bool PlayerController::AddPerk(Perk* perk, int value)
 {
+	assert(perk);
 	if(HavePerk(perk, value))
 		return false;
 	TakenPerk tp(perk, value);
@@ -1568,15 +1541,16 @@ bool PlayerController::AddPerk(Perk perk, int value)
 	{
 		NetChangePlayer& c = Add1(player_info->changes);
 		c.type = NetChangePlayer::ADD_PERK;
-		c.id = (int)perk;
+		c.id = perk->hash;
 		c.count = value;
 	}
 	return true;
 }
 
 //=================================================================================================
-bool PlayerController::RemovePerk(Perk perk, int value)
+bool PlayerController::RemovePerk(Perk* perk, int value)
 {
+	assert(perk);
 	for(auto it = perks.begin(), end = perks.end(); it != end; ++it)
 	{
 		TakenPerk& tp = *it;
@@ -1590,7 +1564,7 @@ bool PlayerController::RemovePerk(Perk perk, int value)
 			{
 				NetChangePlayer& c = Add1(player_info->changes);
 				c.type = NetChangePlayer::REMOVE_PERK;
-				c.id = (int)perk;
+				c.id = perk->hash;
 				c.count = value;
 			}
 			return true;
@@ -1847,6 +1821,9 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 				u.target_pos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 			u.timer = 0.f;
 			u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+
+			if(IsSet(bu.use_flags, BaseUsable::ALCHEMY))
+				game_gui->craft->Show();
 		}
 
 		if(Net::IsOnline())
@@ -2809,7 +2786,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(event.type == EVENT_PICKUP)
 						{
 							ScriptEvent e(EVENT_PICKUP);
-							e.item = &item;
+							e.on_pickup.unit = unit;
+							e.on_pickup.item = &item;
 							event.quest->FireEvent(e);
 						}
 					}
@@ -2862,6 +2840,21 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(Net::IsLocal())
 							Train(TrainWhat::AttackStart, 0.f, 0);
 					}
+					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
+					{
+						u.mesh_inst->Deactivate(1);
+						u.action = A_NONE;
+						data.wasted_key = action_key;
+
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = unit;
+							c.id = AID_Cancel;
+							c.f[1] = 1.f;
+						}
+					}
 				}
 				else if(u.animation_state == AS_ATTACK_FINISHED)
 				{
@@ -2909,7 +2902,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = unit;
-						c.id = AID_StopBlock;
+						c.id = AID_Cancel;
 						c.f[1] = 1.f;
 					}
 				}
@@ -3052,16 +3045,34 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state == AS_SHOOT_PREPARE && GKey.KeyUpAllowed(action_key))
+				if(u.animation_state == AS_SHOOT_PREPARE)
 				{
-					u.animation_state = AS_SHOOT_CAN;
-					if(Net::IsOnline())
+					if(GKey.KeyUpAllowed(action_key))
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
-						c.unit = unit;
-						c.id = AID_Shoot;
-						c.f[1] = 1.f;
+						u.animation_state = AS_SHOOT_CAN;
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = unit;
+							c.id = AID_Shoot;
+							c.f[1] = 1.f;
+						}
+					}
+					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
+					{
+						u.mesh_inst->Deactivate(1);
+						u.action = A_NONE;
+						data.wasted_key = action_key;
+						game_level->FreeBowInstance(u.bow_instance);
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = unit;
+							c.id = AID_Cancel;
+							c.f[1] = 1.f;
+						}
 					}
 				}
 			}
@@ -3165,7 +3176,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		else
 		{
 			data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
-			if(data.wasted_key != Key::None)
+			if(data.wasted_key != Key::None || GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
 				data.ability_ready = nullptr;
 		}
 	}
@@ -3255,8 +3266,8 @@ Vec3 PlayerController::RaytestTarget(float range)
 bool PlayerController::ShouldUseRaytest() const
 {
 	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
-		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray))
-		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray))
+		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon))
+		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));

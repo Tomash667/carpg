@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Item.h"
 #include "Crc.h"
 #include "ResourceManager.h"
@@ -9,12 +8,10 @@
 #include "Quest.h"
 #include "QuestManager.h"
 
-extern string g_system_dir;
 const Item* Item::gold;
 ItemsMap Item::items;
 std::map<string, Item*> item_aliases;
 vector<ItemList*> ItemList::lists;
-vector<LeveledItemList*> LeveledItemList::lists;
 vector<Weapon*> Weapon::weapons;
 vector<Bow*> Bow::bows;
 vector<Shield*> Shield::shields;
@@ -28,6 +25,7 @@ vector<BookScheme*> BookScheme::book_schemes;
 vector<Book*> Book::books;
 vector<StartItem> StartItem::start_items;
 std::map<const Item*, Item*> better_items;
+vector<Recipe*> Recipe::recipes;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -144,11 +142,58 @@ Item& Item::operator = (const Item& i)
 }
 
 //=================================================================================================
+const Item* ItemList::Get() const
+{
+	if(is_priority)
+	{
+		return RandomItemWeight(items, total,
+			[](const ItemList::Entry& e) { return e.chance; },
+			[](const ItemList::Entry& e) { return e.item; });
+	}
+	else
+		return items[Rand() % items.size()].item;
+}
+
+//=================================================================================================
+const Item* ItemList::GetLeveled(int level) const
+{
+	assert(is_leveled);
+
+	if(level < 1)
+		level = 1;
+	int best_lvl = -1;
+
+	for(const Entry& e : items)
+	{
+		if(e.level <= level && e.level >= best_lvl)
+		{
+			if(e.level > best_lvl)
+			{
+				items_to_add.clear();
+				best_lvl = e.level;
+			}
+			items_to_add.push_back(e.item);
+		}
+	}
+
+	if(!items_to_add.empty())
+	{
+		const Item* best = items_to_add[Rand() % items_to_add.size()];
+		items_to_add.clear();
+		return best;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 void ItemList::Get(int count, const Item** result) const
 {
-	assert(count > 0 && result);
+	assert(count > 0 && result && !is_leveled);
+	assert(!is_priority); // TODO
 
-	items_to_add = items;
+	for(const Entry& e : items)
+		items_to_add.push_back(e.item);
 
 	int index = 0;
 	for(; index < count && !items_to_add.empty(); ++index)
@@ -169,36 +214,17 @@ const Item* ItemList::GetByIndex(int index) const
 {
 	if(index < 0 || index >= (int)items.size())
 		throw ScriptException("Invalid index.");
-	return items[index];
+	return items[index].item;
 }
 
 //=================================================================================================
-const Item* LeveledItemList::Get(int level) const
+ItemList* ItemList::TryGet(Cstring id)
 {
-	if(level < 1)
-		level = 1;
-	int best_lvl = -1;
-
-	for(const LeveledItemList::Entry& ie : items)
+	for(ItemList* lis : lists)
 	{
-		if(ie.level <= level && ie.level >= best_lvl)
-		{
-			if(ie.level > best_lvl)
-			{
-				items_to_add.clear();
-				best_lvl = ie.level;
-			}
-			items_to_add.push_back(ie.item);
-		}
+		if(lis->id == id)
+			return lis;
 	}
-
-	if(!items_to_add.empty())
-	{
-		const Item* best = items_to_add[Rand() % items_to_add.size()];
-		items_to_add.clear();
-		return best;
-	}
-
 	return nullptr;
 }
 
@@ -361,13 +387,13 @@ void Item::Validate(uint& err)
 		if(item.name.empty())
 		{
 			++err;
-			Error("Test: Missing item '%s' name.", item.id.c_str());
+			Warn("Test: Missing item '%s' name.", item.id.c_str());
 		}
 
 		if(item.type == IT_BOOK && item.ToBook().text.empty())
 		{
 			++err;
-			Error("Test: Missing book '%s' text.", item.id.c_str());
+			Warn("Test: Missing book '%s' text.", item.id.c_str());
 		}
 	}
 }
@@ -469,53 +495,26 @@ const Item* Book::GetRandom()
 }
 
 //=================================================================================================
-ItemListResult ItemList::TryGet(Cstring _id)
-{
-	ItemListResult result;
-	cstring id = _id.s;
-
-	if(id[0] == '-')
-	{
-		result.mod = -(id[1] - '0');
-		id = id + 2;
-		assert(InRange(result.mod, -9, -1));
-	}
-	else
-		result.mod = 0;
-
-	for(auto lis : lists)
-	{
-		if(lis->id == id)
-		{
-			result.lis = lis;
-			result.is_leveled = false;
-			return result;
-		}
-	}
-
-	for(auto lis : LeveledItemList::lists)
-	{
-		if(lis->id == id)
-		{
-			result.llis = lis;
-			result.is_leveled = true;
-			return result;
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-const Item* FindItemOrList(Cstring id, ItemListResult& lis)
+const Item* FindItemOrList(Cstring id, ItemList*& lis)
 {
 	auto item = Item::TryGet(id);
 	if(item)
 	{
-		lis.lis = nullptr;
+		lis = nullptr;
 		return item;
 	}
 
 	lis = ItemList::TryGet(id);
+	return nullptr;
+}
+
+//=================================================================================================
+Recipe* Recipe::TryGet(Cstring id)
+{
+	for(Recipe* recipe : Recipe::recipes)
+	{
+		if(recipe->id == id)
+			return recipe;
+	}
 	return nullptr;
 }

@@ -144,6 +144,7 @@ profile cleric {
 	gods_magic 20
 	concentration 15
 	haggle 15
+	alchemy 10
 
 	subprofile cleric {
 		weapon blunt
@@ -259,6 +260,7 @@ profile hunter {
 	shield 10
 	light_armor 20
 	medium_armor 10
+	alchemy 5
 
 	subprofile bow {
 		weapon {
@@ -544,6 +546,7 @@ profile mage {
 	haggle 0
 	concentration 15
 	mystic_magic 20
+	alchemy 10
 
 	subprofile mage {
 		weapon blunt
@@ -656,6 +659,7 @@ profile rogue {
 	light_armor 15
 	medium_armor 0
 	haggle 10
+	alchemy 0
 
 	subprofile weapon {
 		weapon {
@@ -850,6 +854,7 @@ profile warrior {
 	medium_armor 15
 	heavy_armor 15
 	haggle 0
+	alchemy 0
 
 	subprofile tank {
 		weapon {
@@ -1519,6 +1524,23 @@ unit mage_seller : base_human {
 	gold {1000 2000}
 	abilities mage
 	dialog mage_seller
+}
+
+unit cleric_seller : base_human {
+	level 10
+	profile cleric
+	flags | {ai_stay ai_guard dont_eat limited_rot mp_bar}
+	items {
+		!-2blunt
+		!-1medium_armor
+		!-2shield
+	}
+	abilities {
+		non_combat 1
+		{heal 0}
+	}
+	gold {1000 2000}
+	dialog cleric_seller
 }
 
 unit arena_master : base_human {

@@ -1,0 +1,961 @@
+Changelog
+
+--------------------------------------------------------------------------------
+Version 0.14 (???):
+! cannot load saves from version 0.5.1 or older
++ continued storyline and side quest
++ alchemy skill, crafting 6 simple potions (healing & mana)
++ new history feat: student of traveling merchant (+10 haggle, 500 gold)
++ building inside city - shrine
++ camera setup in dialogs
++ converted quests "deliver letter" and "gladiator armor" to scripts
++ loading feats from file
++ loading rooms from file
++ scene manager improvements (part 2)
++ warp to building front command
++ search for location shortcut - F, journal & chat buttons
++ cancel attack key - X
++ update libraries: AngelScript 2.34, Bullet 2.89
+- save in hardcore mode wasn't removed
+- ai gets stuck when using stools in inn
+- improved summon wolf targeting
+- rare crash when canceling pick server
+- missing message about completing all unique quests
+- unit is overloaded after exceeding carry capacity [Lemiczek]
+- changing controls require double-click [BottledByte, Lemiczek, Mokai]
+- error with missing dll MSVCP140 on some systems [BottledByte]
+- after defeat on arena dash gets broken [Lemiczek]
+- defeated ally blocks dash
+- thunder bolt can be cast thru walls and objects
+- ai aiming fixed
+- herbs spawned behind location area [BottledByte]
+- if unit lies on ground, after entering location it will be still lying
+- fast travel toast inactive when there is another [Lemiczek]
+- weird character placement and downwarp using a wand and seat after canceling take out weapon [BottledByte]
+- health bar in multiplayer incorrect update after defeat [BottledByte]
+- magic crystal does not have mana restoring effect [BottledByte]
+- dash/bull's charge could move thru small objects and get player stuck [Lemiczek, BottledByte]
+- journal cycling while adding a note during world map [Lemiczek]
+
+--------------------------------------------------------------------------------
+Version 0.13 (2020-01-11):
+! cannot load saves from version 0.5 or older
++ continued storyline
++ pickable mage class
++ better aiming with bow
++ mana potion shortcut
++ allow player to use multiple abilities
++ loading abilities from files
++ new feat (magic adept), items: master wand, ring of mystic magic
++ moved quest "bandits collect toll" to scripts
++ changed some flora textures [Leinnan]
++ optimizations
++ scene manager improvements
++ updated to Visual Studio 2019
++ update libraries: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+- crash or memory corruption when revisiting city between 1 and 9 days
+- crash when clicking/removing shortcut at right time [Savagesheep/mishka]
+- fixed drain spell crashing when casting unit is removed
+- crash when using quickload in menu with console open and there is no save or failed to load
+- removing keys in settings wasn't saved unless other keys were changed
+- no mana regeneration for npc clerics
+- crash on quest timeout "kill animals" when target location is cave or player visit forest for first time
+- crash on quest timeout "camp near city"
+- can't cast heal when something is between camera and player
+- crash at world generation when failed to spawn location with artifact
+- removed memory leak in cutscenes
+- crash in save load panel when saves where changed manually while playing
+- running in side and attacking won't cause running attack
+- missing floor/ceiling collider
+- ai escape only to next room then stays
+- crash when render initialization failed
+- rare crash when spawning heroes in dungeon
+
+--------------------------------------------------------------------------------
+Version 0.12.2 (2019-10-27):
++ MP packet logger
+- crash when entering location when on leaving location team members was eating/drinking [Anonymous]
+- longer waiting for clients that are slowly loading game [Leinnan]
+- invalid calculations of when fast travel is available for clients
+- improved take out/hide weapon animation
+
+--------------------------------------------------------------------------------
+Version 0.12 (2019-09-22):
+! cannot load saves from version 0.4.20 or older
++ academy - can recruit beginner heroes there
++ start of storyline
++ new player class: cleric - healing spell
++ mana
++ fast travel (can be used inside safe locations by team leader to quickly return to map)
++ new skills: gods magic, concentration
++ new feats: strong aura, magic harmony
++ new items: magic crystal, mana potions, 10 magic rings, amulet of mana
++ decreased strength requirements for blunt weapons/axes
++ loading character classes from file
++ update libraries: FMod 1.10.14
++ improved version checking, using libcurl
+- crash when mages at arena kill spectator [Ampped]
+- crash when goblins steal old bow [Ampped]
+- in multiplayer redoing character creation was resetting to standard inventory
+- eating herbs have now correct animation and sounds
+- door sounds was playing very rare when someone else used door in mp
+- crash when player hit by electro spell quits game at same time
+- client crash when loading game with electro effect
+- crash when npc follows player and he quits
+- crash when npc escapes towards player and he quits
+- crash after loading game when npc wants something from player that not exists after loading
+- some spells didn't use magic power to increase damage
+- captive doesn't join arena combat
+- can't give gold to summoned or temporary team members
+- crash on give gold dialog box or kick confirmation when player quit
+- fixed location entrance direction
+- in multiplayer game removing team members don't shuffle order
+- client after exiting multiplayer and starting singleplayer wasn't leader
+- units rotation that stay in single place could change after leaving location
+- black armor missing texture
+
+--------------------------------------------------------------------------------
+Version 0.11.1 (2019-08-12):
+- crash on animals encounter [Savagesheep]
+- crash when new player joins loaded multiplayer game [Savagesheep]
+- crash prevention when loading multiplayer game for quest items [Savagesheep]
+- crash when enemy cast drain and misses hitting melee or bow targets [Savagesheep]
+- fixed attacking peaceful orcs cause attack from citizens
+- units collision shape was slightly higher then it should be
+- fixed starting resolution of 800x600
+- running LAN server was visible on list of servers
+
+--------------------------------------------------------------------------------
+Version 0.11 (2019-07-28):
+! cannot load saves from version 0.3 or older
++ loading unit group settings from file
++ better version checking, new version popup shows changelog
++ player can now cancel attack by hiding weapon
++ player can rotate camera when lying on ground
++ summoned wolf follow owner, heroes follow player that asked for it
++ drawing chests on minimap
++ hitting melee targets and shooting at ranged targets trains player
++ missing stamina slows down attacks instead of preventing them
++ bigger cave, stalagmites
++ gold on bookcases
+- fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
+- fixed rare crash when alt tabbing at startup
+- fixed grass under moon well
+- after player fights at arena with npc ally, npc will warp with player when entering/exiting buildings, this could crash game when npc was outside building and player exit building
+- fixed dialog after pvp with hero
+- missing magic effects for clients after loading inside building
+- fixed crashes when using nosound/nomusic config options
+- fixed rare crash when generating world/traveling [Ampped]
+- loading corrupted save and then loading correct one can crash game [Ampped]
+- added temporary fix for inventory crashing [Ampped/jakee248]
+- drain spell healing effect was not affected by magic resistance
+- random camps was not spawning
+- crash when entering bandits quest final dungeon [Ampped]
+- crash when leaving location before Jozan does [Ampped]
+- crash when leaving location before old mage after refusing to take him to team
+- missing golem sound in encounter on world map
+- journal next page arrow was not working
+- crash when generating secret portal in mine [Ampped]
+- crash when using last item with shortcut with inventory open [Anonymous]
+
+--------------------------------------------------------------------------------
+Version 0.10 (2019-05-05):
+! cannot load saves from version 0.2.20 or older
++ new unique quest: Herbs for the alchemist
++ new unit effects: maximum stamina, stamina regeneration speed, attribute/skill bonus
++ new feat (energetic)
++ mages tower shop inside some cities
++ alchemist now buy herbs
++ rings: silver, golden, emerald, 27 magic rings
++ new item: spring water, troll hide armor, 9 magic amulets
++ better priorities for heroes buying/asking for items
++ configurable item/action shortcuts
++ improved inventory updates
++ improved chest handling in multiplayer
++ update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
+- fixed crash when accepting some quests that generate new locations [Anonymous]
+- fixed rare crash when entering some dungeons
+- fixed infinite wait time when using -delay switch
+- fixed broken side menu
+- fixed save sometimes failing on world map
+- fixed crash when used clean_level command twice without closing console
+- fixed crash when using whisper command by client [Anonymous]
+- fixed bugged quest "Bandits collect toll" [Zielu]
+- fixed possibility to complete quest when talking to different captain/traveler in some quests [Zielu]
+- fixed crash when server takes equipped ring from corpse in multiplayer [Zielu]
+- fixed one bookcase in townhall being not lootable
+- fixed leaving rescue captive inside city, can be talked again and act like it is start of quest
+- fixed strong back perk not affecting carry capacity after loading [Zielu]
+- fixed invalid gold share calculations for clients for example summoned wolf
+- fixed missing torch particles for clients
+- fixed weapon state when changing dungeon level for clients
+- fixed learning perks take no time
+- fixed sometimes missing wall next to dungeon stairs
+
+--------------------------------------------------------------------------------
+Version 0.9 (2019-03-30):
+! removed support for windows xp
+! cannot load saves from version 0.2.12 or older
++ first scripted quest - deliver resources
++ loading multiplayer game without exiting to menu
++ new enemies: bear, black bear
++ more location icons and names
++ dialog script improvements
++ removing dead end corridors
++ update libraries: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
++ better handling of multiplayer when leaving location
++ keeping save image and info inside single file
++ amulets: silver, gold, ruby, diamond
++ wolf/bear pelts
++ better error reporting
+- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
+- fixed using kill command on corpse prevent from looting
+- fixed journal not blocking player controls
+- fixed talking/picking items thru doors at right angle
+- fixed talking/picking items inside building thru walls
+- fixed generating rocks in cave/mine that could block path
+- fixed talking with unit exiting/entering building
+- fixed clients portal memory leak
+- fixed crash when revisiting locations by portal
+- fixed clients invalid position on world map when loading game in locations by portal
+- fixed failed connection when using LAN with password
+- fixed enemy hp not affecting morale
+- fixed missing magic effect for clients when despawning dead summoned unit
+- fixed client start location not marked as visited
+- fixed server crash when looted unit is removed
+- fixed client crash when loading game where someone is using usable
+- fixed client broken npcs using usable after reentering location
+- fixed crash when left location in single player when player searched for servers first [Anonymous]
+- fixed rare constant alcohol effect for clients after entering location [MildlyPhilosophicalHobbit]
+- fixed crash at arena combat where there is no free space to spawn enemies [Anonymous]
+- fixed crash when using take all items on chest with visible item details [Anonymous]
+- fixed crash when loading game with visible profiler
+- fixed sounds max distance
+- fixed units holding food all time in hand after revisiting location
+- fixed decreased performance every time outside location was reentered
+- fixed memory leaks and missing terrain textures after trying to load corrupted save and then starting a new game
+- fixed crash when saving game with magic bullets or some others spells
+- fixed ai rushing at enemy while eating/drinking
+- fixed ai spells targeting that was slightly moved to right
+- fixed ai aiming of some ray spells
+- fixed archers switching between bow and melee weapon too often
+- fixed ai searching for already dead enemy after being hit from slow moving attack after their death
+- fixed ai cleric getting stuck when trying to heal someone
+- fixed ai melee attacks from archers/mages from far range when their line of sight is blocked
+- fixed ai trying to get to enemy corpse when someone else alerted him and target is already dead
+- fixed delay before leaving location on worldmap/entering location before showing load screen
+- fixed crash when necromancer revived enemy with weapons taken [Anonymous]
+- fixed tournament corrupting speech bubbles
+
+--------------------------------------------------------------------------------
+Version 0.8 (2019-02-23):
+! this is last version working on windows xp
+! cannot load saves from version 0.2.10 or older
++ new combat system, mobility calculations
++ master server, get list of existing servers and connect with nat punchthrough
++ learning points used to training skills/attributes/feats
++ new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tough, hard skin, adaptation, perfect health)
++ new skill haggle, trained by merchant
++ effects system (feats gives effects)
++ key to toggle run/walk
++ loading traders stock from file, refreshing stock every 10 days, not when entering location
++ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points, arena, clean_level)
++ new items: magic scroll, knife, wooden sword, rusted hatchet, plank shield, rusted splint armor, Gladiator armor, muffin
++ hero ai profiles - preferred skills/items
++ application crash reporting using CrashRpt
++ adjusted item prices, units golds, quest rewards
++ not spawning enemies close to stairs, less enemies in big connected rooms
++ adjusted speed of gaining attributes/skills by player and heroes
++ bigger world map, map zoom and scrolling, can travel anywhere
++ location search box on world map
++ unique hero to recruit
++ attacking peaceful orcs don't cause attack by citizens
+- fixed fast melee weapon training on low level enemies
+- fixed talking with unit that is standing up
+- fixed units rotating when talking for clients
+- wanted quest could select already used location where target will fail to spawn
+- fixed memory leak when generating mine
+- mayor dialog fixes
+- fixed wrong price calculations when selling items to follower
+- fixed connecting to full server
+- fixed removing password from server but it was still required
+- fixed goblins/orcs missing idle dialogs
+- fixed arena encounter levels
+- fixed handling of quest clear location when location is cave
+- fixed crash when loading game with some quest items
+- fixed crash when left cursed stone in level with corpses
+- fixed special actions drawing
+- fixed healing by Jozan units fighting on arena when he is outside
+- fixed crash when alt tabbing trade is open and item popup is visible
+- fixed crash when loading game with someone shooting bow
+
+--------------------------------------------------------------------------------
+Version 0.7.1 (2018-04-15):
++ sorting team items, icon in inventory
+- fixed multiplayer not working
+- fixed crash when using alt tab in fullscreen mode after opening inventory
+- fixed crash after loading game with saved action after hiding weapon, saving action after hiding weapon in MP
+- fixed blocking player after loading saved game while using bookcase
+- fixed crash after putting welded item to bookcase
+- closing inventory when hiding weapon to sell/give it correctly cancels action
+- fixed crash when client gives npc equipped item
+- fixed using bookcase by clients
+- fixed long transition time when fighting on arena
+- fixed crash after loading game and gaining new fake parcel for bandits quest
+- fixed rare crash when encountered crazies and they give item to player
+- fixed crash after receiving reward from drinking contest
+- fixed synchronization of inventory bug after receiving potions after tournament combat
+- fixed crash when encountered crazy mage/crazy cook/quest madman/quest golem
+- fixed alt tab moving cursor/view
+- automatic loading game after startup don't crash if save is invalid
+- fixed crash when using alt tab at loading in fullscreen mode
+- fixed npc asking player about better items
+
+--------------------------------------------------------------------------------
+Version 0.7 (2018-03-31):
++ loading arena unit groups from lists
++ better visible crosshair in dark places
++ info about leaving event area
++ using AngelScript language in console
++ changes in stamina regeneration speed
+- fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
+- fixed empty location where there should be mages and golems there
+- fixed recalculating inventory weight when loading old saves
+- fixed crash after killing spider [xweert123]
+- fixed some sounds not ending after loading game
+- fixed error when loading sounds when sound was turned off in configuration
+- fixed animation error when eating/drinking when sitting
+- fixed animations and other bugs when using objects
+- fixed bug when client take out weapon and use object in same time
+- fixed errors during drinking contest (missing player blockade when he was talking during start, crash when ai was sitting on stool and eating)
+- fixed player can shoot without stamina
+- fixed crash when Gorush changes class
+- fixed very good starting item when player have very low skill
+- fixed effects not disappearing from clients after travel
+- heavy/medium armor don't gives better defense from dexterity bonus then light armor
+- info about gaining skill/attribute shows up for client not for server
+- fixed effects not disappearing from clients after travel
+- fixed blocking arrows don't remove stamina
+- fixed high shield skill give stamina from being hit
+- fixed going up/down in dungeon kicking client
+- rest before drinking contest was blocking join for clients
+- tournament heroes wasn't spawning when entered at exact day
+- removed memory leaks when spawning and removing camps
+- fixed crash when entering dungeon corpses where generated
+- leaving location when unit is dying don't block looting it or spawning blood
+- fixed crash during pvp when challenged player quit
+- fixed sound volume not working for some sound
+- fixed crash when client have sound attached and quits
+- when npc is looking at player in some quests and player quits it won't make npc freeze
+- fixed bugs and crashes when player leave game during tournament
+- pressing next available dialog option button don't crash, 9 and 0 can be used now
+- better dividing gold between team members
+- fixed crash when used 'scare' command on unaware target, better escape handling
+- Gorush correctly reveals his name for other players
+- improved information about getting gold for clients
+- fixed rare crash when there was encounter just before entering location
+- fixed missing enemies inside forest
+- fixed crash when revisiting sawmill
+- fixed crash when encountered bandits attacking travelers
+- fixed spawning orc with key behind locked doors
+- fixed crash after revisiting mine
+- fixed generating too strong enemies on encounters
+- fixed crash when looking at down stairs in one type of dungeons
+- archers don't come near target when they run out of stamina
+- improved synchronization of traps between client and server
+- fixed invisible arrows shoot from traps for clients
+- fixed hitpoint of arrow and object
+
+--------------------------------------------------------------------------------
+Version 0.6.2 (2017-10-08):
++ loading objects from file
+- fixed some object wrongly having colliders
+- fixed building signs blocking player in city
+- fixed invalid village hall mesh
+- fixed invalid sign texture for food seller
+- better redirecting to website
+- fixed base animation played sometimes after drinking animation
+- fixed not marking usable object as free when client stopped using, broken animation
+- fixed opening/closing door not send between clients (only between client and server)
+- fixed missing items in chests
+
+--------------------------------------------------------------------------------
+Version 0.6.1 (2017-10-02):
+- fixed crash when team npc want item from another team npc [MikelkCZ]
+- better redirecting to website
+
+--------------------------------------------------------------------------------
+Version 0.6 (2017-10-01):
++ readable books
++ usable bookshelf
++ items rotation in inventory
++ sorting unit labels by distance
++ open location optimization
+- fixed not working multiplayer from 0.5 version
+- fixed missing moving animations for clients in multiplayer game
+- fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world
+- fixed crash on loading when new player joins loaded game
+- fixed crashes and invalid working of lobby when loading game with 3+ players
+- fixed crash when alt-tabbing at very start of initialization [Zettaton]
+- fixed crash after killing evil boss [Medarc]
+- fixed clients failed to load when server quit on worldmap and then start new game
+- fixed using warp command when unit is using usable
+- fixed player stats panel showing randomly colors for attributes/skills
+- fixed using goto_map cheat inside buildings and returning to same location
+- fixed incorrect message that player was kicked when server was closing
+- fixed random crash when picking easy arena combat
+- fixed sounds not playing correctly for arena in multiplayer
+- remove gray outline around dungeon minimap
+- fixed invalid rumor texts in journal for some quests
+- fixed summoning wolf on arena
+- fixed allies declining/agreeing randomly to pvp after loading
+- fixed units spawning randomly with worse items then they should have for their level
+- fixed summoning wolf thru walls/door/arena
+- fixed crash when summoned wolf inside wall
+- fixed not working input with low fps, unit position exploding, wrong animations
+- fixed missing unit animations that happen sometimes
+- fixed saving & loading name/save name containing quotation mark
+- fixed uneven generation of units in the inn/arena
+- fixed missing message about near enemies for client when trying to leave location
+
+--------------------------------------------------------------------------------
+Version 0.5 (2017-09-07):
++ player actions (rogue - dash, hunter - animal ally, warrior - bull's charge)
++ stamina - used by attacking, blocking
++ new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan
++ new resource manager, loading when required (units, items, buildings, objects, textures, music) not on start of game, new pak format
++ loading spells, dialogs, unit, buildings from file
++ loading list of required entities from file
++ bow arrow speed depends on bow type & skill [Paradox Edge]
++ autowalk (key F)
++ support for missing textures and meshes for items loading
++ allow game start without sound drivers
++ removed main quest until it's more complete
++ support for transparent items
++ new commands forcequest, stun, refresh_cooldown
+- fixed rare pathfinding crash inside city/village
+- fixed world map not sent to clients randomly
+- fixed last item not visible in controls change panel
+- fixed orc gorush always picking shaman class for random
+- fixed orc gorush never getting more healing potions as intendent
+- fixed incorrect number of items generated for innkeeper and orc blacksmith
+- fixed crash when entering cave/encounter with animals
+- fixed crash when using $ in textbox
+- fixed crash in encounter deliver parcel when parcel was not in inventory
+- fixed crash when loading game on worldmap and player is disconnected
+- fixed rare crash when generating village
+- fixed tournament heroes being generated in any city, not only chosen one
+- fixed window focus bug
+- fixed problems with cursor when window was far from center
+- fixed "iron vain" typo
+- fixed invalid player name
+- fixed carried inventory weight effect on run speed
+- fixed many animations speed affected by walk speed (drop item, pickup)
+- fixed compatibility with pre 0.3 village hall broken in 0.4.20
+- fixed fields texture in villages
+- fixed item icon not using armor texture overrides (mithril, dragonscale)
+- fixed objects around buildings from village spawning inside city townhall
+- fixed journal blocking quicksave/quickload
+
+--------------------------------------------------------------------------------
+Version 0.4.20 (2016-04-29):
++ added code to prevent font loading failure on windows 10 [XNautPhD]
++ added code to turn off sound and music if initializing sound driver fails [XNautPhD]
++ update FmodEx library to newest version
+- fixed new version dialog not showing up
+- fixed ai not buying medium armor if they have none if this is their best skill
+- fixed wrong displayed count for ground items with count > 255 in MP
+- fixed memory leaks created in previous version
+- fixed memory leak for bow animation and unit shape in create character panel
+- fixed memory leaks in dialog window with checkbox
+- fixed bandit archer have 10% change to carry two bows
+- fixed potion or food not disappearing after consume when unit is killed for client
+- fixed memory leak with loading armors from file
+- fixed message box not showing on task bar
+- fixed english translation typo for quest delivery letter
+- fixed taking out bow when changing level cause bugs [Vinur_Gamall]
+- fixed spawning goblins quest boss in random room when loading game after talking with innkeeper (pre 0.4 saves)
+- fixed killing/breaking action of units using objects will make them stuck inside object
+- fixed breaking action of units drinking/eating will cause item to stay in hand
+- fixed message about not accepting pvp when client accepted pvp from server
+- fixed ultra rare crash on create character panel [Vinur_Gamall]
+- fixed bow animation on create character panel [Vinur_Gamall]
+
+--------------------------------------------------------------------------------
+Version 0.4.10 (2015-12-28):
++ rewritten mp packet handling to log all errors and not to crash
++ while shooting player rotate slower
++ add logging of sound drivers
++ better synchronization of revealing locations on world map in multiplayer
+- fixed bug where team member will ask for orc armor and will wear it [Leinnan]
+- fixed white screen after starting new game (sometimes on ati gpu) [Zielu]
+- fixed black glitches in character create screen on character (sometimes on ati gpu) [Zielu]
+- fixed bug where new player joining spawned inside building but was marked as outside (he didn't have green name),
+	when he leave building server crashed
+- fixed server crash when new player joins game and crash at loading [Leinnan]
+- fixed possibility to spawn new player outside building level, for now new players spawn in front of building
+- fixed crash at closing game when some dialog boxes where closed automatically (for example main quest info was shown but server closed)
+- fixed bug where npc team member will disappear but will still be visible on minimap (happened when he was in building and you leave location but entered it
+	again without leaving) [DerpyBarns]
+- fixed cheat 'killall' not working in multiplayer
+- fixed Gorush change don't work for client in MP
+- fixed possible client crash when unit casts spell in MP
+- fixed electro spell in MP
+- fixed standing inside arena won't work when it's your turn to fight
+- fixed generating bugged labyrinth (1.5% chance)
+- fixed npc shout sound for client in MP
+- fixed hair changing don't show for client in MP
+- fixed bloody screen when using cheats to lower str/end of client in MP
+- fixed broken say/whisper/server commands
+- fixed bug that allowed units to cast non combat spells (raise/heal) at lower level
+- fixed bug when dungeon would be generated without prison room
+- press and release mouse outside slider will not stop it working [Vinur_Gamall]
+- now after shooting bow you can instantly click again to wait for next shot, don't have to wait to end of animation
+- fixed bugs when stunned while looting chest/corpse/trading/talking
+- fixed that client after entering/exiting building will rotate on server side after warp
+- fixed units invalid size after entering location until they move/animate
+- fixed items scaling with unit size [Vinur_Gamall]
+- fixed mipmaping problems with terrain
+- fixed bug in journal when sometimes there was missing enter between entries
+- fixed server crash after client failed to load (again!)
+- fixed dialog for deliver news quest
+- fixed retrieve package quest not working for client
+- fixed crash when finished quest rescue captive
+- fixed target location not revealed for client in find artifact quest
+- fixed crash when taking quest for king agent in multiplayer
+- fixed using portal will kick client from game
+- fixed antimagic buff not removed after travel
+- fixed effects removed after using portal
+- fixed quest journal not updated in lost bow quest for client
+- fixed location not revealed for client in lost bow quest
+- fixed journal message added twice for client in evil quest
+- fixed crash when ai tries to walk to location outside dungeon map
+
+--------------------------------------------------------------------------------
+Version 0.4 (2015-10-20):
++ new armor types (padded, hide, scale, splint), high quality armors, magical armor
++ new skills (long blade, short blade, axe, blunt, medium armor)
++ new attributes (intelligence, wisdom, charisma)
++ perks
++ reworked character creation screen, multiplayer lobby character picking
++ new music/sounds [Vinur_Gamall]
++ rogue backstab bonus works for bows now
++ better camera, can rotate around character
++ moved from vs2008 to vs2013
++ setstat command
++ improved quests timeout handling
++ citizens will tell about near locations only once in one dialog
+- fixed port config not working [dookey]
+- fixed heavy armor skill used to calculate dexterity when wearing light armor
+- fixed bow attack speed being changed by weapon skill not bow
+- fixed canceling editing character change appearance anyway
+- fixed missing quest updates in MP
+- clicking on end dialog with weapons taken won't cause attack [Vinur_Gamall]
+- fixed rare crash when entering city/village
+- fixed bug in crazies quest: saving after taking stone will cause quest to not progress further
+- fixed rare heap corruption after generating city roads
+- fixed generating grills in corridors [Minister of Death]
+- fixed crash when leaving village, loading on map with saves from < 0.3 [Minister of Death]
+- fixed compatibility with old saves , village hall model was replaced by new one that not fit [Minister of Death]
+- fixed creating server after loading mp game cause to have character from previous save
+- fixed crash when loading with quest generated items [Medarc]
+- fixed crash when quest with camp timed out (retrieve package, camp near city, stolen artifact) [Medarc]
+- fixed client credit and free days showing invalid values after loading
+- fixed duplicating last item in inventory for followers
+- fixed dialog choices not being cleared after loading when talking
+- fixed keeping cheats from other game after loading
+- fixed camp not being removed while traveling on map if it was last visited location
+- [Rescue captive] fixed captive dying before talking
+- [Rescue captive] captive now disappear when quest timeouts, not when locations resets
+- [Rescue captive] fixed crash when accepted quest after loading
+- [Wanted] fixed entering first time location after loading won't spawn target
+- [Wanted] fixed crash when target is in team on timeout
+- [Wanted] fixed crash on timeout when target leaved area
+- [Deliver letter] fixed invalid letter name after loading
+- [Sawmill] fixed generated woodcutters ai leaks
+- [Sawmill] fixed lumberjack visuals not saved properly
+- [Gorush] fixed clearing camp not working after loading (after asking where it is but before entering)
+- [Gorush] fixed generating orc leader inside locked room
+- [Golems on road] fixed possibility to skip drinking animation
+- [Golems on road] fixed crash when not disallow old mage to join party and he leaves
+- [Evil] fixed dialog after closing all portals (tells where to go when you are already there)
+- fixed blood lighting in dungeons
+- fixed ai going to inn disappear
+- fixed ai exiting village at old gates position
+- fixed tearing near light with high fps
+- fixed bug with ai team member getting warped to usable object [Minister of Death]
+- fixed player unit not being removed when player crashed on loading world
+
+--------------------------------------------------------------------------------
+Version 0.3 (2015-05-16):
++ drawing glow around target
++ normal mapping
++ shader cache
++ specular / specular mapping
++ better lighting inside buildings
++ new walls, towers, gate (Leinnan)
++ new village buildings, inn, village house (Leinnan)
++ new objects around buildings (Leinnan)
++ new city/village generator
++ grass / fields
++ new hero names
++ options to turn off vsync
++ can change screenshot extension
++ translated language pick dialog
++ Ctrl + V in console
++ better pathfinding
++ ai following player don't avoid stepping on grass in city
+- fixed dungeon texture uv
+- enemies spawn further from player team [Docucat]
+- opening doors by ai in building don't crash
+- fixed blockade for joining other versions
+- fixed generating objects blocking path in dungeon
+- fixed memory leaks when loading game with missing player
+- fixed bug when unit eat something when changing level and can't do anything
+- fixed displaying gossip text as dialog
+- fixed rare crash when entering location
+
+--------------------------------------------------------------------------------
+Version 0.2.23 (2015-01-31):
+- fixed crash in MP after loading game [Leinnan]
+- fixed yell for client
+- fixed missing animation when character say something
+- fixed missing animation for client after end of animation
+- fixed some small memory leaks
+- small gui fixes
+- after killing player/npc with poison he will never stand up [Minister of Death]
+- fixed unit still using shield after standing up if it was using it before falling
+- fixed weapon status for client when he fall when taking/hiding weapon
+- fixed ability to use chat box on world map
+- fixed rare crash when entering location associated with chests generation [Minister of Death]
+- fixed many crashes when loading mp game where client is doing something at time of saving [Minister of Death/Leinnan]
+- fixed not stopping using objects by team members [Minister of Death]
+- fixed not eating or drinking by npc when sitting [Minister of Death]
+- fixed rare crash when unit dies when using bow
+- fixed ai standing for long time after fight doing nothing in cities
+- fixed ability to use anvil when holding other item [Minister of Death]
+- fixed units spawning inside well [Minister of Death]
+- fixed mages using bows instead of wands [Minister of Death]
+- fixed playing attack sounds for client when sound is turned off
+- fixed crash when weaponless enemy kills client far from host sight
+- fixed npc animations for client after attacking
+- alchemist don't buy food/drink, food seller don't buy potions [Minister of Death]
+- fixed counter physics inside inn [Minister of Death]
+- fixed animation of training ais
+- fixed command "killall 3" crashing for client
+- fixed animations of ai power attacks for client
+- can't use "speed" command in MP
+
+--------------------------------------------------------------------------------
+Version 0.2.22 (2015-01-24):
++ can change console key
++ can exit city while tournament
+- fixed crash when getting gold when player and npcs take credit [Minister of Death]
+- fixed client hang when entering location [thebard88]
+- fixed missing physics of chair
+- fixed wrong texture in bandits stash
+- fixed wrong player visuals for client when not picked hair/mustache/beard [Leinnan]
+- fixed too small radius of particles
+- fixed talking to enemies when invisible
+- fixed missing Jozan [Minister of Death]
+- fixed killing citizens by one hit not aggregating people [Minister of Death]
+- fixed crash after giving potion of clear mind to mage [Minister of Death]
+- fixed bugs and typos in english dialogs
+- fixed missing old mage dialogs when entering location
+- fixed not translated inventory title [Zinny]
+- fixed items not respawning in city
+- fixed bug when holding weapon, trying to use potion will make character start hiding weapon, canceling that will cause inability to use items [Minister of Death]
+- fixed bug like above but when client do that will cause problems for server
+- fixed crash when there less then two people on tournament or contest
+- fixed inability to exit city after winning tournament [fire]
+- fixed ai bugs after loosing at arena
+- fixed bug when unit was knocked when taking/hiding weapon, will block ai actions
+- fixed bug when waiting for day of tournament will warp all heroes, including team members, in front of arena, units from inn was invisible [fire]
+- fixed crash when asking gossip (will tell about not existing locations) [Minister of Death]
+- fixed spell thunderbolt moving thru walls
+- fixed breaking synchronization in mp when canceling taking/hiding weapon to fast
+
+--------------------------------------------------------------------------------
+Version 0.2.21 (2015-01-04):
++ you can yell at npc to move them out of road (default key Y)
++ configurable timeout
++ better logging
++ synchronization poison debuff and green hpbar
+- fixed crash when client was kicked from server by timeout [thebard88]
+- fixed text about loading (null) models
+- fixed crash when loading game on world map with NPC in team [Paradox Edge]
+- fixed crash when orc tries to sit on throne [Zinny]
+- fixed crash when talking to Jozan (when holding book) or with agent in english version [Zinny]
+- fixed crash after tournament [Zinny]
+- fixed bug that mages won't cast spells and think that target is too far
+- fixed crash when leaving location and units generated after player use object (team members that leave, messengers  etc.) [Zinny]
+- fixed bug after loading saves older then 0.2.20 (break unit action)
+
+--------------------------------------------------------------------------------
+Version 0.2.20 (2014-12-12):
+About saves:
+* Saves from any version should work in this version.
+* New buildings and objects won't spawn in already generated locations.
+* New items won't spawn in locations until they reset.
+* Benches will be updated when loaded.
+* Active alcohol effects won't be changed to new one.
+Added:
++ using items will work in MP for index larger then 255
++ food (meat, raw meat, bread, apple, honeycomb, cheese, rice, mushroom), models created by MarkK
++ new commands: hurt, break_action, fall
++ old drunk mage join contest and tournament, drink from time to time, new dialogs
++ drunkmans after contest train for another, citizens and villagers can join contest
++ eat, drink, hide weapon while sitting
++ better update to text inside box in inventory
++ build number in exe and save
++ better displaying near character names and healthbars
++ new effect after drinking alcohol
++ usable items have visible model when on ground, not a sack
++ pickable mushrooms in caves
++ eating food by AI
++ buffs visible above healthbar
++ potion of natural healing increase healing from food and regeneration potion
++ food seller
++ items inside town, you can take them if you are poor :P
++ better targeting object in front of player
++ game message "Received item"
++ rumors add date
++ background on load screen
++ neutral heroes loot bodies and try not to get overweight
++ better generation of units inside inn
++ control mapping can be removed in options by right mouse button
++ graying out after death
++ game variable: c_postfx - can turn off post effects
++ chests can only be opened from right side
++ miners more often do what they supposed to do
++ level change area is only visible when near
++ food inside dungeons
++ 50% chance for well inside town, model by Leinnan
++ new models: cauldron, 4 benches, many tombstones, chair, barrels by Leinnan
++ worse items inside village, merchant don't sell food because of food seller
++ new drunks and sellers dialogs
++ obelisk on open map, big withered tree
++ better position of new game messages
++ better chance for using healing potions by AI
++ AI faster eat food after sitting
++ new textures created/gathered by Leinnan
+Fixed:
+- fixed missing ceiling and painting inside wall in soltys house
+- fixed missing blood for units killed by heroes dungeon raid
+- fixed font scaling when windows dpi is increased
+- fixed possibility to sitting on wrong side of bench in front of inn
+- fixed wrong sound of magic ball
+- fixed missing blacksmith in villages
+- fixed not sorted items in camps and on bandits caravan attack
+- fixed rare bug when multiple stacks of same items are created
+- fixed rare crash when loading quest item
+- fixed memleak with quest encounters
+- fixed missing sound when client pickup gold from ground
+- fixed bug where using item while changing level will cause item stick to unit hand
+- fixed bug where ai can't see unit standing near door
+- fixed bug where ai can't enter tile with closed doors if it's animal
+- fixed rare crash when ai search for target near border of map
+- fixed rare missing animation when picking item from ground
+- fixed bug: key preventing leaving location was Shift instead of Walk key, work in dungeon now too
+- fixed bug where ai can only mine ore vein from two of four directions
+- fixed bug where player is sitting when contest start, it gets stuck
+- fixed wrong text after losing, it was saying that you was alone if only players where in your team
+- fixed missing sound of using object in MP
+- fixed bugged sounds in multiplayer when attached to unit
+- fixed bug where units don't close mouth after talking until moved
+- fixed rare crash when generating units in forest/moonwell
+
+--------------------------------------------------------------------------------
+Version 0.2.12 (2014-11-20):
++ ai can move while taking out bow
++ new objects: shelves, stool, bania
++ new models (table, desk, throne, bookshelf, bed, tent, boxes, paintings, wooden shield, ladle)
++ patch script
++ more buildings in city
++ torchlight flickering
+- fixed counting fights on arena
+- fixed bug with dialog box with checkbox
+- fixed missing item from version 0.2/0.2.1 due to typo (emerals vs emerald)
+- fixed bug with generating objects on wall inside object near wall (gobelin and bed)
+- fixed memory leak when checking version and server return invalid response
+- fixed memory leak when server lags and client shot arrows fast
+- fixed rare crash when shooting bow
+
+--------------------------------------------------------------------------------
+Version 0.2.10 (2014-11-09):
+Featured changes:
+* better gui (inventory, character panel, trade, minimap)
+* loading translation from file
+* many minor upgrades and bug fixes
+Changes:
++ animation of taking weapon without shield
++ new equipment, sorted, with infinite space, can sell/drop equipped items
++ better console (can scroll, remember last commands)
++ can pick any resolution
++ journal shortcuts
++ update journal when it's opened
++ update minimap after opening doors
++ shortcut for picking all items
++ blocking is more useful now
++ updated raknet library
++ generated team open doors
++ images in saves on world map
++ easier picking dialog choice
++ bow accuracy depends on skill
++ shield block speed depends on skill
++ armor skill increase allowed dexterity
++ in hardcore mode save name is remembered
++ artifacts give magic resistance, potion of antimagic
++ magic items increase magic damage
++ Spinesheath increase backstab damage, rogue has increased backstab damage, undead and golems take decreased backstab damage
++ can open journal on world map
++ minimap displays other units, items and portals
++ ai better cast healing and rise spells, target units that need it most
++ boss in quest 'Evil' is easier, dungeons have minimum two levels
++ priest heals team on travel
++ can't stun with shield bash all the time
++ some bosses now have guards that don't attack until them
++ updated FmodEx from 4.40.06 to 4.44.46
+Fixed bugs:
+- fixed wrong representation of units on minimap
+- keeping button pressed don't act like pressing it more times
+- breaking drinking potion don't change it to team item
+- items gained while alone don't change to team items when someone join you
+- fixed error with stairs in right up corner
+- fixed missing translations
+- fixed heroes in dungeon not opening doors on generation
+- fixed memleak when loading save on world map and exiting
+- fixed MP error when server use different character on loading
+- fixed MP error when leader is new character on loading
+- in MP client throwing gold now works
+- player leaving game don't block NPC with he was trading/talking
+- fixed memleak with text bubbles in MP
+- command 'trainage' don't crash on worldmap for client
+- door walls in crypt have correct texture
+- noclip works for client
+- background color in save images is now correct
+- NPC can't trigger portals by moving in them
+- in ancient weaponry there is only one portal
+- whisper works correctly in lobby for multiple clients
+- turning cheats in tutorial don't crash
+- fixed crash when after visiting dungeon you were in outside locating and alt-tabed
+- units that stop using object won't block
+- potions and training correctly increase requirements for next level
+- fixed missing key in quest 'Orc band'
+- fixed bug when AI keep blocking after combat
+- fixed bug in MP where information about end of blocking was not sent
+- fixed bug in command 'list itemn'
+- stairs are now drawn on cave minimap
+- fixed bug in generating cave
+- fixed bug after loading game where AI is training shooting with bow
+- fixed memleak when loading game (with particles)
+- fixed with bosses running everywhere after hearing combat
+- ai don't break dialog to cast spell
+- ai don't search for enemies when combat end while they cast spell
+- portals where visible on different levels of dungeon
+- changing level when taking weapon is now handled
+- fixed crash when loading game with arrows
+- fixed boss ai in quest 'Evil'
+- fixed bug with crazies on road
+- spell raise don't block other units with raised
+- drain spell don't work on friendly units
+- mages check if there units on fire line
+- fixed bug in location from quest 'Evil' was never reseted after completing it
+- fixed rare crash when entering city/village
+- fixed bug with painting colliding with each other
+- fixed bugs with tournament (correctly say it was in this year, don't crash when loading before starting, heroes gather around)
+- fixed crash when talking with bodyguards in quest 'Lost bow'
+- bodyguards and boss in quest 'Lost bow' don't talk like goblins
+- fixed crash in secret location
+- fixed bug when killing units cause your team to lose morale
+- fixed bug in quest 'Weird stone' not counting toward completed unique quests
+- fixed bug in MP in loading quest items
+- fixed crash in MP where player was talking weapon
+- fixed crash in MP when loading game saved in encounter and leaving
+- fixed bug where player give gold to NPC and it calculate in based on server gold
+
+--------------------------------------------------------------------------------
+Version 0.2.5 (2014-06-22):
++ english language version
++ tournament at arena
++ unique quest connected with crazies
++ repeatable quest "Wanted"
++ hardcore mode
++ quicksave and quickload
++ new location, moonwell
++ pickaxe, animation of mining
++ throne, animation of sitting
++ magical something for mages, new paintings
++ more location names, hero names, texts
++ carrying capacity for team members
++ screenshot in save
++ better minimap, bigger reveal radius
++ moving texts in city minimap
++ better bow aiming
++ priest class image, healing spell
++ better casting raise by necromancers
++ ESC need confirm in main menu
++ screenshot without gui
++ weapon state between levels don't change
++ more dialogues with crazies
++ hiding weapon before using usable
++ kill counter at end of game
++ alt+f4 in multiplayer
++ timeout for client connection to server
++ showing other servers version in red
++ heroes talk that they used all potions
++ heroes talk after entering level, viewers talk at arena
++ unique unit per quest when needed
++ more standard equipment for blacksmith
++ NPC item changes
+- loading exploding skull in multiplayer
+- fixed bugged hiding weapon after pressing space instantly
+- more memleaks fixed
+- sever don't hangs when started with one player
+- looting body looks at it center
+- server don't show in Join LAN after it started
+- better pathfinding
+- repaired loading at world map
+- quest "kidnapped" - works after loading
+- when you have multiple same items NPC don't asks for it multiple times
+- monsters in cave respawn
+- blood and bodies in cities disappear after time
+- fixed escaping on outside location
+- limited enemies screaming when they see threat
+- fixed MP crash when changing level with traps
+- fixed missing animations for client
+- better usables for client
+- when using usable, team nicks are drawn
+- shooting and changing level could crash game
+- you can't die on arena now
+- valid sync of credit/days after loading
+- fixed blood on stairs
+- fixed crash after loading while spawning unit in MP
+- better weapon collision detection
+- fixed crash after winning drinking contest
+- fixed lag when citizen want to travel outside city walls
+- training will now update hp and carrying capacity
+- sawmill now blocks camera
+
+--------------------------------------------------------------------------------
+Version 0.2.1 (2014-06-05):
++ multisampling
++ logging processor features
++ detect files duplicates
++ faster loading with disabled sound/music
+- removed crash when saving quest location two times
+- removed crash when opening empty journal when it was opened on some page before and this page don't exists
+- removed many memory leaks
+
+--------------------------------------------------------------------------------
+Version 0.2 (2014-06-03):
+First public available version.
+Too many changes to write them all so only most important from 0.1:
+	* shield, bow, various potions, other items
+	* power attack, shooting, block, bash
+	* better ai, pathfinding
+	* world map, locations, cities, villages
+	* quests, rumors, news
+	* saving and loading
+	* traps, enemy spells
+	* dialogs

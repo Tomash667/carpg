@@ -4,6 +4,7 @@
 #include "GamePanel.h"
 
 //-----------------------------------------------------------------------------
+// Show book text for player to read
 class BookPanel : public GamePanel
 {
 public:

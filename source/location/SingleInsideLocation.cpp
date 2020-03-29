@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "SingleInsideLocation.h"
 
 //=================================================================================================
@@ -26,28 +25,6 @@ void SingleInsideLocation::Load(GameReader& f, bool local)
 
 	if(last_visit != -1)
 		LoadLevel(f, local);
-}
-
-//=================================================================================================
-bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
-{
-	if(HaveUnit(unit))
-	{
-		if(level)
-			*level = 0;
-		return true;
-	}
-	else
-		return false;
-}
-
-//=================================================================================================
-Unit* SingleInsideLocation::FindUnit(UnitData* data, int& at_level)
-{
-	Unit* u = InsideLocationLevel::FindUnit(data);
-	if(u)
-		at_level = 0;
-	return u;
 }
 
 //=================================================================================================

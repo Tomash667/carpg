@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ObjectLoader.h"
 #include "BaseUsable.h"
 #include "GameDialog.h"
@@ -94,8 +93,6 @@ void ObjectLoader::InitTokenizer()
 		{ "building", OBJ_BUILDING },
 		{ "double_physics", OBJ_DOUBLE_PHYSICS },
 		{ "blood_effect", OBJ_BLOOD_EFFECT },
-		{ "required", OBJ_REQUIRED },
-		{ "in_middle", OBJ_IN_MIDDLE },
 		{ "blocks_camera", OBJ_PHY_BLOCKS_CAM },
 		{ "rotate_physics", OBJ_PHY_ROT },
 		{ "water_effect", OBJ_WATER_EFFECT },
@@ -114,7 +111,8 @@ void ObjectLoader::InitTokenizer()
 		{ "allow_use_item", BaseUsable::ALLOW_USE_ITEM },
 		{ "slow_stamina_restore", BaseUsable::SLOW_STAMINA_RESTORE },
 		{ "container", BaseUsable::CONTAINER },
-		{ "is_bench", BaseUsable::IS_BENCH }
+		{ "is_bench", BaseUsable::IS_BENCH },
+		{ "alchemy", BaseUsable::ALCHEMY }
 		});
 }
 
@@ -406,9 +404,9 @@ void ObjectLoader::ParseGroup(const string& id)
 		else if(t.IsText())
 		{
 			const string& obj_id = t.GetText();
-			bool is_group = false;
-			BaseObject* obj = BaseObject::TryGet(obj_id, &is_group);
-			if(is_group)
+			ObjectGroup* group = nullptr;
+			BaseObject* obj = BaseObject::TryGet(obj_id, &group);
+			if(group)
 				t.Throw("Can't use group inside group."); // YAGNI
 			if(!obj)
 				t.Throw("Missing object '%s'.", obj_id.c_str());

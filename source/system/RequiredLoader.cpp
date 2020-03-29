@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "RequiredLoader.h"
 #include "Ability.h"
 #include "BaseUsable.h"
@@ -63,7 +62,6 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 	{
 	case R_ITEM:
 		{
-			ItemListResult result;
 			const Item* item = Item::TryGet(id);
 			if(!item)
 			{
@@ -75,13 +73,13 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 	case R_LIST:
 		{
 			const bool leveled = IsPrefix("leveled");
-			ItemListResult result = ItemList::TryGet(id.c_str());
-			if(!result.lis)
+			ItemList* lis = ItemList::TryGet(id.c_str());
+			if(!lis)
 			{
 				Error("Missing required item list '%s'.", id.c_str());
 				++content.errors;
 			}
-			else if(result.is_leveled != leveled)
+			else if(lis->is_leveled != leveled)
 			{
 				if(leveled)
 					Error("Required list '%s' must be leveled.", id.c_str());
@@ -89,7 +87,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 					Error("Required list '%s' is leveled.", id.c_str());
 				++content.errors;
 			}
-			else if(result.lis->items.empty())
+			else if(lis->items.empty())
 			{
 				Error("Required list '%s' is empty.", id.c_str());
 				++content.errors;
@@ -333,10 +331,11 @@ void RequiredLoader::CheckBaseItems()
 		have_medium_armor = 0,
 		have_heavy_armor = 0,
 		have_mage_armor = 0;
-	const ItemList* lis = ItemList::Get("base_items").lis;
+	const ItemList& lis = ItemList::Get("base_items");
 
-	for(const Item* item : lis->items)
+	for(const ItemList::Entry& e : lis.items)
 	{
+		const Item* item = e.item;
 		if(item->type == IT_WEAPON)
 		{
 			if(IsSet(item->flags, ITEM_MAGE))

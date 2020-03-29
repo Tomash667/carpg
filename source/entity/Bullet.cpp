@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Bullet.h"
 #include "SaveState.h"
 #include "ResourceManager.h"
@@ -54,9 +53,9 @@ void Bullet::Load(FileReader& f)
 	f >> yspeed;
 	f >> poison_attack;
 	owner = Unit::GetById(f.Read<int>());
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_13)
 	{
-		uint ability_hash = f.Read<uint>();
+		int ability_hash = f.Read<int>();
 		if(ability_hash != 0)
 		{
 			ability = Ability::Get(ability_hash);
@@ -84,7 +83,7 @@ void Bullet::Load(FileReader& f)
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 	{
 		TrailParticleEmitter* old_trail = TrailParticleEmitter::GetById(f.Read<int>());
 		if(old_trail)

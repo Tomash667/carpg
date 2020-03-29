@@ -362,9 +362,8 @@ bool CreatePatch(char* pakname)
 	}
 	if(!missing.empty())
 	{
-		CreateDirectory(Format("%s/system", pak_dir.c_str()), NULL);
-		CreateDirectory(Format("%s/system/install", pak_dir.c_str()), NULL);
-		std::ofstream o(Format("%s/system/install/%s.txt", pak_dir.c_str(), pakname));
+		CreateDirectory(Format("%s/install", pak_dir.c_str()), NULL);
+		std::ofstream o(Format("%s/install/%s.txt", pak_dir.c_str(), pakname));
 		for(vector<PakEntry*>::iterator it = missing.begin(), end = missing.end(); it != end; ++it)
 		{
 			cstring entry = (*it)->path.c_str();

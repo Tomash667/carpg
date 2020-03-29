@@ -1,8 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "InputTextBox.h"
+#include <DialogBox.h>
+#include <InputTextBox.h>
 
 //-----------------------------------------------------------------------------
 // Ingame console, opened with tilde (~)
@@ -15,10 +15,11 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void AddMsg(cstring str) { itb.Add(str); }
-	void OnInput(const string& str);
 	void Reset() { itb.Reset(); }
 
 private:
+	void OnInput(const string& str);
+
 	Texture* tBackground;
 	InputTextBox itb;
 	bool added;

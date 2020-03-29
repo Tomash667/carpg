@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "City.h"
 #include "SaveState.h"
 #include "Content.h"
@@ -13,6 +12,7 @@
 #include "BitStreamFunc.h"
 #include "GroundItem.h"
 #include "GameCommon.h"
+#include "Terrain.h"
 
 //=================================================================================================
 City::~City()
@@ -56,7 +56,7 @@ void City::Save(GameWriter& f, bool local)
 			f << b.building->id;
 			f << b.pt;
 			f << b.unit_pt;
-			f << b.rot;
+			f << b.dir;
 			f << b.walk_pt;
 		}
 
@@ -111,9 +111,27 @@ void City::Load(GameReader& f, bool local)
 			b.building = Building::Get(f.ReadString1());
 			f >> b.pt;
 			f >> b.unit_pt;
-			f >> b.rot;
+			f >> b.dir;
 			f >> b.walk_pt;
 			assert(b.building != nullptr);
+			if(LOAD_VERSION < V_DEV && b.building->id == "mages_tower")
+			{
+				const float rot = DirToRot(b.dir);
+				Mesh::Point* point = b.building->mesh->FindPoint("o_s_point");
+				Vec3 pos;
+				if(b.dir != GDIR_DOWN)
+				{
+					const Matrix m = point->mat * Matrix::RotationY(rot);
+					pos = Vec3::TransformZero(m);
+				}
+				else
+					pos = Vec3::TransformZero(point->mat);
+				pos += Vec3(float(b.pt.x + b.building->shift[b.dir].x) * 2, 0.f, float(b.pt.y + b.building->shift[b.dir].y) * 2);
+				b.walk_pt = pos;
+				game_level->terrain->SetHeightMap(h);
+				game_level->terrain->SetH(b.walk_pt);
+				game_level->terrain->RemoveHeightMap();
+			}
 		}
 
 		f >> inside_offset;
@@ -155,7 +173,7 @@ void City::Write(BitStreamWriter& f)
 	{
 		f << building.building->id;
 		f << building.pt;
-		f.WriteCasted<byte>(building.rot);
+		f.WriteCasted<byte>(building.dir);
 	}
 	f.WriteCasted<byte>(inside_buildings.size());
 	for(InsideBuilding* inside_building : inside_buildings)
@@ -203,7 +221,7 @@ bool City::Read(BitStreamReader& f)
 	{
 		const string& building_id = f.ReadString1();
 		f >> building.pt;
-		f.ReadCasted<byte>(building.rot);
+		f.ReadCasted<byte>(building.dir);
 		if(!f)
 		{
 			Error("Read level: Broken packet for buildings.");
@@ -242,69 +260,9 @@ bool City::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool City::FindUnit(Unit* unit, int* level)
+bool City::IsInsideCity(const Vec3& pos)
 {
-	assert(unit);
-
-	for(Unit* u : units)
-	{
-		if(u == unit)
-		{
-			if(level)
-				*level = -1;
-			return true;
-		}
-	}
-
-	for(uint i = 0; i < inside_buildings.size(); ++i)
-	{
-		for(Unit* u : inside_buildings[i]->units)
-		{
-			if(u == unit)
-			{
-				if(level)
-					*level = i;
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-Unit* City::FindUnit(UnitData* data, int& at_level)
-{
-	assert(data);
-
-	for(Unit* u : units)
-	{
-		if(u->data == data)
-		{
-			at_level = -1;
-			return u;
-		}
-	}
-
-	for(uint i = 0; i < inside_buildings.size(); ++i)
-	{
-		for(Unit* u : inside_buildings[i]->units)
-		{
-			if(u->data == data)
-			{
-				at_level = i;
-				return u;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-bool City::IsInsideCity(const Vec3& _pos)
-{
-	Int2 tile(int(_pos.x / 2), int(_pos.z / 2));
+	Int2 tile(int(pos.x / 2), int(pos.z / 2));
 	if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
 		return false;
 	else
@@ -312,65 +270,82 @@ bool City::IsInsideCity(const Vec3& _pos)
 }
 
 //=================================================================================================
-InsideBuilding* City::FindInsideBuilding(Building* building)
+InsideBuilding* City::FindInsideBuilding(Building* building, int* out_index)
 {
 	assert(building);
+	int index = 0;
 	for(InsideBuilding* i : inside_buildings)
 	{
 		if(i->building == building)
+		{
+			if(out_index)
+				*out_index = index;
 			return i;
-	}
-	return nullptr;
-}
-
-//=================================================================================================
-InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
-{
-	assert(group);
-	for(InsideBuilding* i : inside_buildings)
-	{
-		if(i->building->group == group)
-			return i;
-	}
-	return nullptr;
-}
-
-//=================================================================================================
-InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
-{
-	assert(group);
-	index = 0;
-	for(InsideBuilding* i : inside_buildings)
-	{
-		if(i->building->group == group)
-			return i;
+		}
 		++index;
 	}
-	index = -1;
+	if(out_index)
+		*out_index = -1;
 	return nullptr;
 }
 
 //=================================================================================================
-CityBuilding* City::FindBuilding(BuildingGroup* group)
+InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int* out_index)
 {
 	assert(group);
+	int index = 0;
+	for(InsideBuilding* i : inside_buildings)
+	{
+		if(i->building->group == group)
+		{
+			if(out_index)
+				*out_index = index;
+			return i;
+		}
+		++index;
+	}
+	if(out_index)
+		*out_index = -1;
+	return nullptr;
+}
+
+//=================================================================================================
+CityBuilding* City::FindBuilding(BuildingGroup* group, int* out_index)
+{
+	assert(group);
+	int index = 0;
 	for(CityBuilding& b : buildings)
 	{
 		if(b.building->group == group)
+		{
+			if(out_index)
+				*out_index = index;
 			return &b;
+		}
+		++index;
 	}
+	if(out_index)
+		*out_index = -1;
 	return nullptr;
 }
 
 //=================================================================================================
-CityBuilding* City::FindBuilding(Building* building)
+CityBuilding* City::FindBuilding(Building* building, int* out_index)
 {
 	assert(building);
+	int index = 0;
 	for(CityBuilding& b : buildings)
 	{
 		if(b.building == building)
+		{
+			if(out_index)
+				*out_index = index;
 			return &b;
+		}
+		++index;
 	}
+	if(out_index)
+		*out_index = -1;
 	return nullptr;
 }
 
@@ -696,16 +671,5 @@ Vec3 CityBuilding::GetUnitPos()
 //=================================================================================================
 float CityBuilding::GetUnitRot()
 {
-	switch(rot)
-	{
-	default:
-	case GDIR_DOWN:
-		return 0.f;
-	case GDIR_LEFT:
-		return PI / 2;
-	case GDIR_UP:
-		return PI;
-	case GDIR_RIGHT:
-		return PI * 3 / 2;
-	}
+	return DirToRot(dir);
 }

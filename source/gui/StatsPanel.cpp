@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "StatsPanel.h"
 #include "Unit.h"
 #include "PlayerController.h"
@@ -56,6 +55,7 @@ void StatsPanel::LoadLanguage()
 	txAttack = section.Get("attack");
 	txMeleeAttack = section.Get("meleeAttack");
 	txRangedAttack = section.Get("rangedAttack");
+	txHardcoreMode = section.Get("hardcoreMode");
 }
 
 //=================================================================================================
@@ -170,6 +170,8 @@ void StatsPanel::SetText()
 	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), pc->learning_points,
 		float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
+	if(game->hardcore_mode)
+		flowStats.Add()->Set(Format("$cr%s$c-", txHardcoreMode), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txDate, world->GetDate()), G_STATS, STATS_DATE);
 	flowStats.Add()->Set(Format(txStatsText, game_stats->hour, game_stats->minute, game_stats->second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
 		pc->arena_fights), G_INVALID, -1);
@@ -201,8 +203,8 @@ void StatsPanel::SetText()
 	LocalVector<string*> strs;
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
-		PerkInfo& perk = PerkInfo::perks[(int)pc->perks[i].perk];
-		if(IsSet(perk.flags, PerkInfo::RequireFormat))
+		Perk* perk = pc->perks[i].perk;
+		if(perk->value_type != Perk::None)
 		{
 			string* s = StringPool.Get();
 			*s = pc->perks[i].FormatName();
@@ -210,7 +212,7 @@ void StatsPanel::SetText()
 			perks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
 		else
-			perks.push_back(pair<cstring, int>(perk.name.c_str(), i));
+			perks.push_back(pair<cstring, int>(perk->name.c_str(), i));
 	}
 	std::sort(perks.begin(), perks.end(), SortTakenPerks);
 	flowFeats.Clear();
@@ -309,12 +311,11 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		break;
 	case G_PERK:
 		{
-			TakenPerk& perk = pc->perks[id];
-			PerkInfo& pi = PerkInfo::perks[(int)perk.perk];
+			TakenPerk& tp = pc->perks[id];
 			tooltip.img = nullptr;
-			tooltip.big_text = pi.name;
-			tooltip.text = pi.desc;
-			perk.GetDesc(tooltip.small_text);
+			tooltip.big_text = tp.perk->name;
+			tooltip.text = tp.perk->desc;
+			tp.GetDetails(tooltip.small_text);
 		}
 		break;
 	case G_INVALID:

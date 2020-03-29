@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "DialogLoader.h"
 #include "GameDialog.h"
 #include "Item.h"
@@ -52,7 +51,9 @@ enum Keyword
 	K_SCRIPT,
 	K_BETWEEN,
 	K_AND,
-	K_VAR
+	K_VAR,
+	K_SWITCH,
+	K_CASE
 };
 
 //=================================================================================================
@@ -111,7 +112,9 @@ void DialogLoader::InitTokenizer()
 		{ "script", K_SCRIPT },
 		{ "between", K_BETWEEN },
 		{ "and", K_AND },
-		{ "var", K_VAR }
+		{ "var", K_VAR },
+		{ "switch", K_SWITCH },
+		{ "case", K_CASE }
 		});
 }
 
@@ -254,7 +257,6 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				current_dialog->texts.resize(index, GameDialog::Text());
 				current_dialog->max_index = index;
 			}
-			current_dialog->texts[index - 1].exists = true;
 			return node;
 		}
 	case K_DO_QUEST:
@@ -306,6 +308,8 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 			node->value = index;
 			return node;
 		}
+	case K_SWITCH:
+		return ParseSwitch();
 	default:
 		t.Unexpected();
 		break;
@@ -532,10 +536,116 @@ DialogLoader::Node* DialogLoader::ParseChoice()
 		current_dialog->texts.resize(index, GameDialog::Text());
 		current_dialog->max_index = index;
 	}
-	current_dialog->texts[index - 1].exists = true;
 
 	node->childs.push_back(ParseBlock());
 	return node.Pin();
+}
+
+//=================================================================================================
+DialogLoader::Node* DialogLoader::ParseSwitch()
+{
+	Pooled<Node> node(GetNode());
+	node->node_op = NodeOp::Switch;
+	t.Next();
+
+	DialogType type;
+	Keyword k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
+	if(k == K_QUEST_PROGRESS)
+		type = DTF_IF_QUEST_PROGRESS;
+	else if(k == K_VAR)
+		type = DTF_IF_VAR;
+	else
+		t.Unexpected();
+	t.Next();
+
+	t.AssertSymbol('{');
+	t.Next();
+
+	while(!t.IsSymbol('}'))
+	{
+		t.AssertKeyword(K_CASE, G_KEYWORD);
+		t.Next();
+
+		Node* cas = GetNode();
+		cas->node_op = NodeOp::Case;
+		node->childs.push_back(cas);
+		if(t.IsItem("default"))
+		{
+			cas->value = -1;
+			t.Next();
+		}
+		else
+			cas->value = ParseProgressOrInt(node->value);
+
+		for(Node* n : node->childs)
+		{
+			if(n->value == cas->value && n != cas)
+			{
+				if(n->value == -1)
+					t.Throw("Switch case 'default' already used.", cas->value);
+				else
+					t.Throw("Switch case '%d' already used.", cas->value);
+			}
+		}
+
+		while(!t.IsSymbol('}') && !t.IsKeyword(K_CASE, G_KEYWORD))
+			cas->childs.push_back(ParseStatement());
+
+		if(cas->childs.empty())
+			t.Throw("Empty switch case '%d'.", cas->value);
+	}
+
+	if(node->childs.empty())
+		t.Throw("Empty switch.");
+	t.Next();
+
+	// convert to if..else
+	Node* first = nullptr;
+	Node* current = nullptr;
+	Node* def_case = nullptr;
+	for(Node* n : node->childs)
+	{
+		Node* child;
+		if(n->childs.size() == 1u)
+			child = n->childs.front();
+		else
+		{
+			child = GetNode();
+			child->node_op = NodeOp::Block;
+			for(Node* n2 : n->childs)
+				child->childs.push_back(n2);
+		}
+		n->childs.clear();
+
+		if(n->value == -1)
+		{
+			def_case = child;
+			continue;
+		}
+
+		Node* converted = Node::Get();
+		converted->node_op = NodeOp::If;
+		converted->type = type;
+		converted->op = DialogOp::OP_EQUAL;
+		converted->value = n->value;
+		converted->childs.push_back(child);
+
+		if(!first)
+			first = converted;
+		else
+			current->childs.push_back(converted);
+		current = converted;
+	}
+
+	if(def_case)
+	{
+		if(current)
+			current->childs.push_back(def_case);
+		else
+			return def_case;
+	}
+
+	return first;
 }
 
 //=================================================================================================

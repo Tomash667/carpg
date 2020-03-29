@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "BaseLocation.h"
 #include "ResourceManager.h"
 #include "RoomType.h"
@@ -7,77 +6,77 @@
 
 //-----------------------------------------------------------------------------
 RoomStrChance fort_ludzi_pokoje[] = {
-	RoomStrChance("sypialnia", 10),
-	RoomStrChance("pokoj_dowodcy", 2),
-	RoomStrChance("biblioteczka", 5),
-	RoomStrChance("magazyn", 10),
-	RoomStrChance("skrytka", 2),
-	RoomStrChance("sklad_piwa", 5),
-	RoomStrChance("pokoj_spotkan", 10),
-	RoomStrChance("pokoj_treningowy", 5),
-	RoomStrChance("pokoj_wyrobu", 5),
-	RoomStrChance("kuchnia", 5)
+	RoomStrChance("bedroom", 10),
+	RoomStrChance("commander", 2),
+	RoomStrChance("library", 5),
+	RoomStrChance("storeroom", 10),
+	RoomStrChance("saferoom", 2),
+	RoomStrChance("beer_storeroom", 5),
+	RoomStrChance("meeting_room", 10),
+	RoomStrChance("training_room", 5),
+	RoomStrChance("crafting_room", 5),
+	RoomStrChance("kitchen", 5)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance wieza_magow_pokoje[] = {
-	RoomStrChance("magiczny", 3),
-	RoomStrChance("sypialnia", 10),
-	RoomStrChance("pokoj_dowodcy", 2),
-	RoomStrChance("biblioteczka", 6),
-	RoomStrChance("magazyn", 10),
-	RoomStrChance("skrytka", 1),
-	RoomStrChance("sklad_piwa", 3),
-	RoomStrChance("pokoj_spotkan", 8),
-	RoomStrChance("pokoj_treningowy", 4),
-	RoomStrChance("pokoj_wyrobu", 4),
-	RoomStrChance("kuchnia", 4)
+	RoomStrChance("magic", 3),
+	RoomStrChance("bedroom", 10),
+	RoomStrChance("commander", 2),
+	RoomStrChance("library", 6),
+	RoomStrChance("storeroom", 10),
+	RoomStrChance("saferoom", 1),
+	RoomStrChance("beer_storeroom", 3),
+	RoomStrChance("meeting_room", 8),
+	RoomStrChance("training_room", 4),
+	RoomStrChance("crafting_room", 4),
+	RoomStrChance("kitchen", 4)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance baza_nekro_pokoje[] = {
-	RoomStrChance("sypialnia", 10),
-	RoomStrChance("pokoj_dowodcy", 2),
-	RoomStrChance("biblioteczka", 5),
-	RoomStrChance("magazyn", 10),
-	RoomStrChance("skrytka", 2),
-	RoomStrChance("sklad_piwa", 5),
-	RoomStrChance("kapliczka", 5),
-	RoomStrChance("pokoj_spotkan", 10),
-	RoomStrChance("pokoj_treningowy", 5),
-	RoomStrChance("pokoj_wyrobu", 5),
-	RoomStrChance("kuchnia", 5)
+	RoomStrChance("bedroom", 10),
+	RoomStrChance("commander", 2),
+	RoomStrChance("library", 5),
+	RoomStrChance("storeroom", 10),
+	RoomStrChance("saferoom", 2),
+	RoomStrChance("beer_storeroom", 5),
+	RoomStrChance("shrine", 5),
+	RoomStrChance("meeting_room", 10),
+	RoomStrChance("training_room", 5),
+	RoomStrChance("crafting_room", 5),
+	RoomStrChance("kitchen", 5)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance skrytka_pokoje[] = {
-	RoomStrChance("sypialnia", 5),
-	RoomStrChance("biblioteczka", 2),
-	RoomStrChance("magazyn", 10),
-	RoomStrChance("skrytka", 5),
-	RoomStrChance("sklad_piwa", 5),
-	RoomStrChance("pokoj_spotkan", 5),
-	RoomStrChance("pokoj_treningowy", 2),
-	RoomStrChance("pokoj_wyrobu", 2),
-	RoomStrChance("kuchnia", 2)
+	RoomStrChance("bedroom", 5),
+	RoomStrChance("library", 2),
+	RoomStrChance("storeroom", 10),
+	RoomStrChance("saferoom", 5),
+	RoomStrChance("beer_storeroom", 5),
+	RoomStrChance("meeting_room", 5),
+	RoomStrChance("training_room", 2),
+	RoomStrChance("crafting_room", 2),
+	RoomStrChance("kitchen", 2)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance krypta_pokoje[] = {
-	RoomStrChance("groby", 8),
-	RoomStrChance("groby2", 8),
-	RoomStrChance("kapliczka", 4),
-	RoomStrChance("pokoj_krypta", 2)
+	RoomStrChance("graves", 8),
+	RoomStrChance("graves2", 8),
+	RoomStrChance("shrine", 4),
+	RoomStrChance("crypt_room", 2)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance labirynt_pokoje[] = {
-	RoomStrChance("labirynt_skarb", 1)
+	RoomStrChance("labyrinth_treasure", 1)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance tut_pokoje[] = {
-	RoomStrChance("tut", 1)
+	RoomStrChance("tutorial", 1)
 };
 
 //-----------------------------------------------------------------------------
@@ -85,68 +84,68 @@ RoomStrChance tut_pokoje[] = {
 BaseLocation g_base_locations[] = {
 	//	  NAZWA				POZIOMY			ROZMIAR		PO£¥CZ		KORYTARZ	ROZMIAR		ROZMIAR		INNE	FLOOR/WALL/CEIL
 	//										MAPY		KOR	POK					KORYTARZA	POKOJU
-	"Human fort",			Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Human fort",			Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 50, 25, 2, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack(),
-	"Dwarf fort",			Int2(2, 4),		40, 3,		50, 5,		25,			Int2(5,12),	Int2(4,8),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Dwarf fort",			Int2(2, 4),		40, 3,		50, 5,		25,			Int2(5,12),	Int2(4,8),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 60, 20, 6, "random", nullptr, nullptr, 100, 0, 0, TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile.jpg", "mur078.jpg", "sufit3.jpg"),
-	"Mage tower",			Int2(4, 5),		30, 0,		0,	33,		0,			Int2(0,0),	Int2(4,7),	BLO_MAGIC_LIGHT | BLO_ROUND, "schody", nullptr,
-		Vec3(100.f / 255,0,0), Vec3(-1.f / 255,0,0), Vec3(0.4f,0.3f,0.3f), Vec3(-0.03f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Mage tower",			Int2(4, 5),		30, 0,		0,	33,		0,			Int2(0,0),	Int2(4,7),	BLO_MAGIC_LIGHT | BLO_ROUND, "stairs", nullptr,
+		Color(100,0,0), Color(0.4f,0.3f,0.3f), Vec2(10,20), 20.f,
 		wieza_magow_pokoje, countof(wieza_magow_pokoje), 0, 100, 0, 3, "mages", "mages_and_golems", "random", 50, 25, 25, TRAPS_MAGIC, -1,
 		LocationTexturePack("floor_pavingStone_ceramic.jpg", "stone01d.jpg", "block02b.jpg"),
-	"Bandits hideout",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Bandits hideout",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 80, 10, 3, "bandits", "random", nullptr, 75, 25, 0, TRAPS_NORMAL | TRAPS_NEAR_ENTRANCE, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "sup075.jpg"),
-	"Hero crypt",			Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(5,10),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "schody", nullptr,
-		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
+	"Hero crypt",			Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(5,10),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "stairs", nullptr,
+		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		krypta_pokoje, countof(krypta_pokoje), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01a.jpg", "sufit2.jpg"),
-	"Monster crypt",		Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(5,10),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "schody", nullptr,
-		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
+	"Monster crypt",		Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(5,10),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "stairs", nullptr,
+		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		krypta_pokoje, countof(krypta_pokoje), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01a.jpg", "sufit2.jpg"),
-	"Old temple",			Int2(1, 3),		40, 2,		35, 15,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, RoomStr("schody_swiatynia"), RoomStr("kapliczka"),
-		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
+	"Old temple",			Int2(1, 3),		40, 2,		35, 15,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", "shrine",
+		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		baza_nekro_pokoje, countof(baza_nekro_pokoje), 0, 80, 5, 1, "undead", "necromancers", "evil", 25, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile_ceramicBlue.jpg", "block10c.jpg", "woodmgrid1a.jpg"),
-	"Safehouse",			Int2(1, 1),		30, 0,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Safehouse",			Int2(1, 1),		30, 0,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		skrytka_pokoje, countof(skrytka_pokoje), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "mad013.jpg"),
-	"Necromancers base",	Int2(2, 3),		45, 3,		35,	15,		25,			Int2(5,10),	Int2(5,10), BLO_MAGIC_LIGHT | BLO_LESS_FOOD, RoomStr("schody_swiatynia"), nullptr,
-		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
+	"Necromancers base",	Int2(2, 3),		45, 3,		35,	15,		25,			Int2(5,10),	Int2(5,10), BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", nullptr,
+		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		baza_nekro_pokoje, countof(baza_nekro_pokoje), 0, 80, 5, 1, "necromancers", "evil", "random", 50, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_paving_littleStones3.jpg", "256-03b.jpg", "sufit2.jpg"),
 	"Labyrinth",			Int2(1, 1),		60, 0,		0, 0,		0,			Int2(0,0),	Int2(6,6),	BLO_LABYRINTH, nullptr, nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.33f,0.33f,0.33f), Vec3(0,0,0), Vec2(3.f,15.f), Vec2(0,0), 15.f, 0,
+		Color::Black, Color(0.33f,0.33f,0.33f), Vec2(3.f,15.f), 15.f,
 		labirynt_pokoje, countof(labirynt_pokoje), 0, 0, 0, 3, "undead", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack("block01b.jpg", "stone01b.jpg", "block01d.jpg"),
 	"Cave",					Int2(0,0),		52, 0,		0, 0,		0,			Int2(0,0),	Int2(0,0),	BLO_LABYRINTH,	nullptr, nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.4f,0.4f,0.4f), Vec3(0,0,0), Vec2(16.f,25.f), Vec2(0,0), 25.f, 0,
+		Color::Black, Color(0.4f,0.4f,0.4f), Vec2(16.f,25.f), 25.f,
 		nullptr, 0, 0, 0, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, ANCIENT_ARMORY,
 		LocationTexturePack("rock2.jpg", "rock1.jpg", "rock3.jpg"),
-	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, RoomStr("schody_swiatynia"), nullptr,
-		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
+	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", nullptr,
+		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 80, 5, 1, "golems", nullptr, nullptr, 100, 0, 0, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile_ceramicBlue.jpg", "block10c.jpg", "woodmgrid1a.jpg"),
-	"Tutorial",				Int2(1,1),		22, 0,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Tutorial",				Int2(1,1),		22, 0,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		tut_pokoje, countof(tut_pokoje), 0, 100, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack(),
-	"Fort with throne",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Fort with throne",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 50, 25, 2, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack(),
-	"Safehouse with throne",Int2(2, 2),		35, 2,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, "schody", nullptr,
-		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
+	"Safehouse with throne",Int2(2, 2),		35, 2,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, "stairs", nullptr,
+		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		skrytka_pokoje, countof(skrytka_pokoje), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "mad013.jpg"),
-	"Crypt 2nd texture",	Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "schody", nullptr,
-		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,
+	"Crypt 2nd texture",	Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "stairs", nullptr,
+		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		krypta_pokoje, countof(krypta_pokoje), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, -1,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01b.jpg", "sufit2.jpg")
 };
@@ -233,10 +232,10 @@ uint BaseLocation::SetRoomPointers()
 		BaseLocation& base = g_base_locations[i];
 
 		if(base.stairs.id)
-			base.stairs.value = RoomType::Find(base.stairs.id);
+			base.stairs.value = RoomType::Get(base.stairs.id);
 
 		if(base.required.id)
-			base.required.value = RoomType::Find(base.required.id);
+			base.required.value = RoomType::Get(base.required.id);
 
 		for(int j = 0; j < 3; ++j)
 		{
@@ -259,7 +258,7 @@ uint BaseLocation::SetRoomPointers()
 			base.room_total = 0;
 			for(uint j = 0; j < base.room_count; ++j)
 			{
-				base.rooms[j].room = RoomType::Find(base.rooms[j].id);
+				base.rooms[j].room = RoomType::Get(base.rooms[j].id);
 				base.room_total += base.rooms[j].chance;
 			}
 		}

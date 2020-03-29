@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "QuestLoader.h"
 #include "QuestScheme.h"
 #include "QuestList.h"
@@ -14,7 +13,8 @@ enum Group
 {
 	G_TOP,
 	G_PROPERTY,
-	G_QUEST_CATEGORY
+	G_QUEST_CATEGORY,
+	G_FLAGS
 };
 
 enum TopKeyword
@@ -28,7 +28,8 @@ enum Property
 	P_TYPE,
 	P_PROGRESS,
 	P_CODE,
-	P_DIALOG
+	P_DIALOG,
+	P_FLAGS
 };
 
 enum QuestKeyword
@@ -66,14 +67,19 @@ void QuestLoader::InitTokenizer()
 		{ "type", P_TYPE },
 		{ "progress", P_PROGRESS },
 		{ "code", P_CODE },
-		{ "dialog", P_DIALOG }
+		{ "dialog", P_DIALOG },
+		{ "flags", P_FLAGS }
 		});
 
-	t.AddEnums<QuestCategory>(G_QUEST_CATEGORY, {
+	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
 		{ "mayor", QuestCategory::Mayor },
 		{ "captain", QuestCategory::Captain },
 		{ "random", QuestCategory::Random },
 		{ "unique", QuestCategory::Unique }
+		});
+
+	t.AddKeywords(G_FLAGS, {
+		{ "dont_count", QuestScheme::DONT_COUNT }
 		});
 }
 
@@ -147,6 +153,9 @@ void QuestLoader::ParseQuest(const string& id)
 				}
 				quest->dialogs.push_back(dialog);
 			}
+			break;
+		case P_FLAGS:
+			t.ParseFlags(G_FLAGS, quest->flags);
 			break;
 		}
 		t.Next();
@@ -380,6 +389,13 @@ void QuestLoader::Finalize()
 		asITypeInfo* type = module->GetTypeInfoByName(Format("quest_%s", scheme->id.c_str()));
 		scheme->script_type = type;
 		scheme->f_startup = type->GetMethodByDecl("void Startup()");
+		if(!scheme->f_startup)
+		{
+			scheme->f_startup = type->GetMethodByDecl("void Startup(Vars@)");
+			scheme->startup_use_vars = true;
+		}
+		else
+			scheme->startup_use_vars = false;
 		scheme->f_progress = type->GetMethodByDecl("void SetProgress()");
 		if(!scheme->f_progress)
 		{
@@ -437,7 +453,7 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		code += "\n";
 	}
 	LocalString str;
-	code += Format("class quest_%s {\n int get_progress(){return quest.progress;}\n void set_progress(int value){quest.SetProgress(value);}\n"
+	code += Format("class quest_%s {\n int get_progress()property{return quest.progress;}\n void set_progress(int value)property{quest.SetProgress(value);}\n"
 		" string TEXT(int index){return quest.GetString(index);}\n", scheme->id.c_str());
 	for(int i = 0; i < DialogScripts::F_MAX; ++i)
 	{

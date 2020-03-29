@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_RescueCaptive.h"
 #include "Game.h"
 #include "Journal.h"
@@ -151,7 +150,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			team->RemoveTeamMember(captive);
+			team->RemoveMember(captive);
 
 			game_level->RemoveUnit(captive);
 			captive->event_handler = nullptr;
@@ -222,7 +221,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// captive was left in city
 		{
 			if(captive->hero->team_member)
-				team->RemoveTeamMember(captive);
+				team->RemoveMember(captive);
 			captive->dont_attack = false;
 			captive->OrderGoToInn();
 			captive->temporary = true;

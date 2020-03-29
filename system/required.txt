@@ -23,6 +23,7 @@ item q_gobliny_luk
 item q_magowie_kula
 item beer
 item vodka
+item spirit
 item q_magowie_potion
 item key_kopalnia
 item al_angelskin
@@ -101,6 +102,7 @@ list base_items
 list normal_food
 list orc_food
 list food_and_drink
+list drink
 list ancient_armory_armors
 list contest_reward
 list treasure
@@ -116,6 +118,10 @@ stock blacksmith
 stock innkeeper
 stock orc_blacksmith
 stock alchemist_apprentice
+stock inn_on_table
+stock inn_on_shelve
+stock foodseller_shelve
+stock alchemist_shelve
 
 //------------------------------------------------------------------------------
 // Required units
@@ -255,10 +261,6 @@ dialog q_camp_near_city_start
 dialog q_camp_near_city_timeout
 dialog q_camp_near_city_end
 dialog q_crazies_trainer
-dialog q_deliver_letter_start
-dialog q_deliver_letter_timeout
-dialog q_deliver_letter_give
-dialog q_deliver_letter_end
 dialog q_deliver_parcel_start
 dialog q_deliver_parcel_timeout
 dialog q_deliver_parcel_give
@@ -333,7 +335,7 @@ dialog crazies_encounter
 //------------------------------------------------------------------------------
 // Required buildings
 // Important: hall is not required but no hall = no quests from mayor/soltys
-// Only required buildings are in building_script requirments below
+// Only required buildings are in building_script requirements below
 //------------------------------------------------------------------------------
 // hardcoded
 building_group inn

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "EncounterGenerator.h"
 #include "Encounter.h"
 #include "OutsideLocation.h"
@@ -512,5 +511,5 @@ void EncounterGenerator::SpawnEncounterTeam()
 		break;
 	}
 
-	game_level->AddPlayerTeam(pos, dir, false, true);
+	game_level->AddPlayerTeam(pos, dir);
 }

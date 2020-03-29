@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "SoundManager.h"
 #include "Level.h"
@@ -102,7 +101,7 @@ void Game::SetMusic()
 //=================================================================================================
 uint MusicTrack::Load(uint& errors)
 {
-	Tokenizer t(Tokenizer::F_UNESCAPE);
+	Tokenizer t;
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
 	{
 		Error("Failed to open music.txt.");
@@ -112,7 +111,7 @@ uint MusicTrack::Load(uint& errors)
 
 	t.AddKeyword("music", 0, 0);
 
-	t.AddEnums<MusicType>(1, {
+	t.AddKeywords<MusicType>(1, {
 		{ "title", MusicType::Title },
 		{ "forest", MusicType::Forest },
 		{ "city", MusicType::City },

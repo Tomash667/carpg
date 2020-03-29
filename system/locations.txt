@@ -1,0 +1,277 @@
+room bedroom {
+	flags repeat
+	objects {
+		torch
+		bed 2 3
+		wardrobe 2 3
+		chest 1 2
+		shelves 1 2
+		table_and_chairs 0 1
+	}
+}
+
+room commander {
+	objects {
+		torch
+		bed
+		chest 1 3
+		bookshelf 1 2
+		painting 0 3
+		wardrobe 1 2
+		gobelin 0 1
+		shelves 0 1
+	}
+}
+
+room throne {
+	objects {
+		torch
+		throne {
+			flags required
+		}
+		chest 2 3
+		bookshelf 1 2
+		painting 0 3
+		wardrobe 1 2
+		gobelin 0 1
+	}
+}
+
+room library {
+	objects {
+		torch
+		wardrobe 1 2
+		bookshelf 3 5
+		book_holder 0 1
+		table_and_chairs 1 2
+		gobelin 0 1
+		painting 0 2
+	}
+}
+
+room magic {
+	objects {
+		torch
+		magic_thing {
+			flags in_middle
+		}
+		wardrobe 1 2
+		bookshelf 2 4
+		painting 0 2
+	}
+}
+
+room storeroom {
+	flags repeat
+	objects {
+		torch
+		barrel 3 5
+		barrels 1 2
+		box 3 6
+		boxes 1 3
+		chest 1 2
+		shelves 1 2
+	}
+}
+
+room saferoom {
+	flags repeat
+	objects {
+		torch
+		barrel 2 4
+		barrels 1 3
+		box 3 5
+		boxes 1 2
+		chest 1 2
+		table_and_chairs 0 1
+		gobelin 0 1
+	}
+}
+
+room beer_storeroom {
+	flags repeat
+	objects {
+		torch
+		big_barrel 1 3
+		barrel 1 5
+		barrels 1 4
+	}
+}
+
+room shrine {
+	objects {
+		torch
+		emblem 2 4
+		altar {
+			flags required
+		}
+	}
+}
+
+room meeting_room {
+	objects {
+		torch
+		table_and_chairs 1 2
+		barrel 1 3
+		bench_dir 1 3
+		painting 1 2
+		gobelin 0 1
+	}
+}
+
+room training_room {
+	objects {
+		torch
+		melee_target 1 3
+		bow_target 1 3
+		box 2 4
+		boxes 1 2
+		chest 1 2
+	}
+}
+
+room crafting_room {
+	objects {
+		torch
+		tanning_rack 1 2
+		anvil
+		cauldron
+		table_and_chairs 0 1
+		box 2 4
+		boxes 1 2
+		chest 1 2
+		shelves 1 2
+	}
+}
+
+room kitchen {
+	objects {
+		torch
+		campfire
+		firewood 3 5
+		table_and_chairs 0 1
+		barrels 1 3
+		chest 0 1
+		shelves 1 2
+	}
+}
+
+room stairs {
+	objects {
+		torch
+		box 1 3
+		gobelin 0 1
+	}
+}
+
+room crypt_stairs {
+	objects {
+		torch
+		box 1 3
+		emblem 2 4
+	}
+}
+
+room graves {
+	objects {
+		torch
+		grave 1 3
+		tombstone 1 3
+		emblem 1 3
+	}
+}
+
+room graves2 {
+	objects {
+		torch
+		tombstone 3 5
+		emblem 1 3
+	}
+}
+
+room crypt_room {
+	objects {
+		torch
+		chest 1 2
+		emblem 2 4
+	}
+}
+
+room crypt_treasure {
+	flags treasure
+	objects {
+		torch
+		chest {
+			flags {in_middle required}
+		}
+		chest 1 2
+		emblem 1 3
+		box 1 3
+		boxes 1 2
+		barrel 1 2
+		barrels 0 1
+	}
+}
+
+room labyrinth_treasure {
+	flags treasure
+	objects {
+		chest {
+			flags {in_middle required}
+		}
+		chest 1 2
+		box 1 3
+		boxes 1 2
+		barrel 1 2
+		barrels 1 2
+	}
+}
+
+room tutorial {
+	objects {
+		torch
+		gobelin 0 1
+		painting 0 1
+	}
+}
+
+room paintings {
+	objects {
+		painting 10
+	}
+}
+
+room portal {
+	objects {
+		portal {
+			flags {in_middle required}
+		}
+		chest {
+			flags {in_middle required}
+		}
+		torch
+		emblem_t 2 3
+	}
+}
+
+room crypt_library {
+	flags treasure
+	objects {
+		book_holder {
+			pos {0 0 0}
+			rot 0
+			flags required
+		}
+		torch {
+			pos {-1 0 0}
+		}
+		torch {
+			pos {1 0 0}
+		}
+		chest {
+			flags required
+		}
+		bookshelf 3 5
+		emblem 1 3
+	}
+}

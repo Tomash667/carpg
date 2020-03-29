@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "OutsideLocation.h"
 #include "SaveState.h"
 #include "Unit.h"
@@ -131,39 +130,4 @@ bool OutsideLocation::Read(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-bool OutsideLocation::FindUnit(Unit* unit, int* level)
-{
-	assert(unit);
-
-	for(Unit* u : units)
-	{
-		if(unit == u)
-		{
-			if(level)
-				*level = -1;
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-Unit* OutsideLocation::FindUnit(UnitData* data, int& at_level)
-{
-	assert(data);
-
-	for(Unit* u : units)
-	{
-		if(u->data == data)
-		{
-			at_level = -1;
-			return u;
-		}
-	}
-
-	return nullptr;
 }

@@ -1,28 +1,33 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "GameResources.h"
 #include "Item.h"
 #include "Ability.h"
 #include "Building.h"
 #include "BaseTrap.h"
 #include "Ability.h"
-#include "SceneNode.h"
 #include "Language.h"
 #include "Game.h"
 #include "GameGui.h"
 #include "Level.h"
-#include "SuperShader.h"
 #include <ResourceManager.h>
 #include <SoundManager.h>
 #include <Mesh.h>
+#include <Scene.h>
+#include <SceneManager.h>
 #include <Render.h>
-#include "DirectX.h"
 
 GameResources* global::game_res;
 
 //=================================================================================================
+GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)
+{
+}
+
+//=================================================================================================
 GameResources::~GameResources()
 {
+	delete scene;
+	delete camera;
 	for(auto& item : item_texture_map)
 		delete item.second;
 	for(Texture* tex : over_item_textures)
@@ -32,9 +37,23 @@ GameResources::~GameResources()
 //=================================================================================================
 void GameResources::Init()
 {
+	scene = new Scene;
+
+	Light light;
+	light.range = 10.f;
+	light.color = Vec4::One;
+	scene->lights.push_back(light);
+
+	node = SceneNode::Get();
+	node->type = SceneNode::NORMAL;
+	node->tint = Vec4::One;
+	scene->Add(node);
+
+	camera = new Camera;
+
 	aHuman = res_mgr->Load<Mesh>("human.qmsh");
 	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
-	missing_item_texture =CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	missing_item_texture = CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 }
 
 //=================================================================================================
@@ -107,7 +126,9 @@ void GameResources::LoadData()
 	tSpark = res_mgr->Load<Texture>("iskra.png");
 	tSpawn = res_mgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = res_mgr->Load<Texture>("lighting_line.png");
-	game_level->LoadData();
+	tFlare = res_mgr->Load<Texture>("flare.png");
+	tFlare2 = res_mgr->Load<Texture>("flare2.png");
+	tWater = res_mgr->Load<Texture>("water.png");
 
 	// preload terrain textures
 	res_mgr->AddTaskCategory(txLoadTerrainTextures);
@@ -171,7 +192,7 @@ void GameResources::LoadData()
 	PreloadTraps();
 	PreloadAbilities();
 	PreloadObjects();
-	PreloadItems();
+	PreloadItem(Item::Get("gold"));
 
 	// physic meshes
 	vdStairsUp = res_mgr->Load<VertexData>("schody_gora.phy");
@@ -234,7 +255,11 @@ void GameResources::PreloadBuildings()
 	for(Building* b : Building::buildings)
 	{
 		if(b->mesh)
+		{
 			res_mgr->LoadMeshMetadata(b->mesh);
+			if(!b->mesh->FindPoint("o_s_point"))
+				Warn("Missing building '%s' point.", b->id.c_str());
+		}
 		if(b->inside_mesh)
 			res_mgr->LoadMeshMetadata(b->inside_mesh);
 	}
@@ -412,24 +437,6 @@ void GameResources::PreloadObjects()
 }
 
 //=================================================================================================
-void GameResources::PreloadItems()
-{
-	PreloadItem(Item::Get("beer"));
-	PreloadItem(Item::Get("vodka"));
-	PreloadItem(Item::Get("spirit"));
-	PreloadItem(Item::Get("p_hp"));
-	PreloadItem(Item::Get("p_hp2"));
-	PreloadItem(Item::Get("p_hp3"));
-	PreloadItem(Item::Get("gold"));
-	ItemListResult list = ItemList::Get("normal_food");
-	for(const Item* item : list.lis->items)
-		PreloadItem(item);
-	list = ItemList::Get("orc_food");
-	for(const Item* item : list.lis->items)
-		PreloadItem(item);
-}
-
-//=================================================================================================
 void GameResources::PreloadItem(const Item* p_item)
 {
 	Item& item = *(Item*)p_item;
@@ -560,82 +567,45 @@ void GameResources::GenerateItemIcon(Item& item)
 //=================================================================================================
 void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float rot)
 {
-	IDirect3DDevice9* device = render->GetDevice();
-
-	if(IsSet(ITEM_ALPHA, item.flags))
-	{
-		render->SetAlphaBlend(true);
-		render->SetNoZWrite(true);
-	}
-	else
-	{
-		render->SetAlphaBlend(false);
-		render->SetNoZWrite(false);
-	}
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetTarget(target);
-
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
-
+	// setup node
 	Mesh& mesh = *item.mesh;
-	const TexOverride* tex_override = nullptr;
+	mesh.EnsureIsLoaded();
+	Mesh::Point* point = mesh.FindPoint("cam_rot");
+	if(point)
+		node->mat = Matrix::CreateFromAxisAngle(point->rot, rot);
+	else
+		node->mat = Matrix::RotationY(rot);
+	node->SetMesh(&mesh);
+	node->center = Vec3::Zero;
+	if(IsSet(ITEM_ALPHA, item.flags))
+		node->flags |= SceneNode::F_ALPHA_BLEND;
+	node->tex_override = nullptr;
 	if(item.type == IT_ARMOR)
 	{
 		if(const Armor& armor = item.ToArmor(); !armor.tex_override.empty())
 		{
-			tex_override = armor.GetTextureOverride();
+			node->tex_override = armor.GetTextureOverride();
 			assert(armor.tex_override.size() == mesh.head.n_subs);
 		}
 	}
 
-	Matrix matWorld;
-	Mesh::Point* point = mesh.FindPoint("cam_rot");
+	// light
+	Vec3& light_pos = scene->lights.back().pos;
+	point = mesh.FindPoint("light");
 	if(point)
-		matWorld = Matrix::CreateFromAxisAngle(point->rot, rot);
+		light_pos = Vec3::TransformZero(point->mat);
 	else
-		matWorld = Matrix::RotationY(rot);
-	Matrix matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
-		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
+		light_pos = mesh.head.cam_pos;
 
-	LightData ld;
-	ld.pos = mesh.head.cam_pos;
-	ld.color = Vec3(1, 1, 1);
-	ld.range = 10.f;
+	// setup camera
+	Matrix mat_view = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
+		mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
+	camera->mat_view_proj = mat_view * mat_proj;
+	camera->from = mesh.head.cam_pos;
+	camera->to = mesh.head.cam_target;
 
-	SuperShader* shader = game->super_shader;
-	ID3DXEffect* effect = shader->GetShader(shader->GetShaderId(false, IsSet(mesh.head.flags, Mesh::F_TANGENTS), false, false, false, true, false));
-	D3DXHANDLE tech;
-	V(effect->FindNextValidTechnique(nullptr, &tech));
-	V(effect->SetTechnique(tech));
-	V(effect->SetMatrix(shader->hMatCombined, (D3DXMATRIX*)&(matWorld * matView * matProj)));
-	V(effect->SetMatrix(shader->hMatWorld, (D3DXMATRIX*)&matWorld));
-	V(effect->SetVector(shader->hAmbientColor, (D3DXVECTOR4*)&Vec4(0.5f, 0.5f, 0.5f, 1)));
-	V(effect->SetVector(shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-	V(effect->SetRawValue(shader->hLights, &ld, 0, sizeof(LightData)));
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-
-	uint passes;
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(int i = 0; i < mesh.head.n_subs; ++i)
-	{
-		const Mesh::Submesh& sub = mesh.subs[i];
-		V(effect->SetTexture(shader->hTexDiffuse, mesh.GetTexture(i, tex_override)));
-		V(effect->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	render->SetTarget(nullptr);
+	// draw
+	scene_mgr->Draw(scene, camera, target);
 }
 
 //=================================================================================================

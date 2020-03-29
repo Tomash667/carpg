@@ -1,0 +1,971 @@
+Historia zmian
+
+--------------------------------------------------------------------------------
+Wersja 0.14 (???):
+! nie można wczytywać już zapisów z wersji 0.5.1 lub starszej
++ kontynuacja fabuły i poboczne zadanie
++ umiejętność alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
++ nowy atut historii: uczeń wędrownego kupca (+10 targowania, 500 złota)
++ budynek w mieście - kapliczka
++ ustawienia kamery podczas rozmowy
++ przeniesienie zadań "dostarcz list" i "pancerz gladiatora" do skryptów 
++ wczytywanie atutów z pliku
++ wczytywanie pokoi z pliku
++ usprawnienia menadżera sceny - część 2
++ komenda warp może przenieść do przodu budynku
++ skrót do szukania lokalizacji - F, przyciski dziennik i chat
++ klawisz anulowania ataku - X
++ aktualizacja bibliotek: AngelScript 2.34, Bullet 2.89
+- zapis w trybie hardcore nie był usuwany
+- ai ciągle korzystało ze stołków w karczmie
+- usprawnienie celowania z przywołania wilka
+- rzadki crash przy zamykaniu okna wyboru serwera
+- brakujący komunikat o ukończeniu wszystkich unikalnych zadań
+- przeciążenie po przekroczeniu limitu udźwigu [Lemiczek]
+- zmiana ustawień sterowania wymagała podwójnego kliknięcia [BottledByte, Lemiczek, Mokai]
+- błąd z brakiem dll MSVCP140 na niektórych systemach [BottledByte]
+- po porażce na arenie zdolność zryw jest zepsuta [Lemiczek]
+- pokonany sojusznik blokował zdolność zryw
+- czar piorun mógł być rzucany przez ściany i obiekty
+- poprawki co celowania przez ai
+- zioła generowały się poza obszarem lokalizacji [BottledByte]
+- jeśli jednostka leży na ziemi to po powrocie do lokalizacji też będzie leżeć
+- powiadomienie o szybkiej podróży jest nieaktywne gdy jest więcej niż jedno [Lemiczek]
+- dziwna pozycja i teleportowanie gracza przy używaniu różdżki i krzesła podczas anulowania wyjmowania broni [BottledByte]
+- pasek hp w multiplayer źle się aktualizuje po pokonaniu postaci [BottledByte]
+- magiczny kryształ nie przywraca many [BottledByte]
+- zryw/bycza szarża pozwalał przechodzić przez niskie obiekty i powodował zaklinowanie się gracza [Lemiczek, BottledByte]
+- podczas dodawania notatki na mapie świata klawisze 1,2,3 zmieniały zakładkę w dzienniku [Lemiczek]
+
+--------------------------------------------------------------------------------
+Wersja 0.13 (2020-01-11):
+! nie można wczytywać już zapisów z wersji 0.5 lub starszej
++ kontynuacja fabuły
++ można wybrać klasę mag
++ lepsze celowanie z łuku
++ skrót do miksturki many
++ obsługa wielu zdolności używanych przez gracza
++ wczytywanie zdolności z pliku
++ nowy atut (adept magii), przedmioty: różdżka mistrza, pierścień magii mistycznej
++ przeniesienie zadania "bandyci pobierają opłatę" do skryptów
++ podmiana niektórych tekstur roślinności [Leinnan]
++ optymalizacje
++ usprawnienia menadżera sceny
++ aktualizacja do Visual Studio 2019
++ aktualizacja bibliotek: Curl 7.66, DirectXMath 3.14, FMod 1.10.16, JSON for Modern C++ 3.7.0, SLikeNet 0.1.3
+- crash lub korupcja pamięci po ponownym odwiedzeniu miasta po 1 do 9 dniach
+- crash przy klikaniu/usuwaniu skrótu w odpowiednim momencie [Savagesheep/mishka]
+- naprawiony crash gdy jednostka rzucająca wyssanie życia jest usuwana
+- crash przy wczytywaniu gry w menu gdy otwarta jest konsola i nie ma zapisu lub nie udało się wczytać
+- usuwanie klawiszy w sterowaniu nie zapisywało się jeśli nie zmieniono innych ustawień
+- brak regenercji many u npc kleryków
+- crash po przekroczeniu czasu w zadaniu "zabij zwierzęta" gdy celem jest jaskinia lub gdy gracz odwiedzi las poraz pierwszy
+- crash po przekroczeniu czasu w zadaniu "obóz obok miasta"
+- nie można rzucić leczenia jeśli coś jest pomiędzy kamerą a graczem
+- crash przy generowaniu świata gdy nie udało się znaleźć miejsca dla lokalizacji z artefaktem
+- usunięty wyciek pamięci przy cutscenkach
+- crash przy na ekranie zapisu gdy podmieniało się zapisy w tle
+- atak podczas biegnięcia w bok nie powoduje ataku w biegu
+- brak fizyki podłogi/sufitu w budynkach
+- ai ucieka tylko do następnego pokoju, potem stoi w miejscu
+- crash gdy są błędy inicjalizacji rendera
+- rzadki crash przy generowaniu bohaterów w podziemiach
+
+--------------------------------------------------------------------------------
+Wersja 0.12.2 (2019-10-27):
++ logowanie pakietów MP
+- crash przy wchodzeniu do lokalizacji jeśli przy wychodzeniu z poprzedniej członkowie drużyny jedli/pili [Anonymous]
+- dłuższe czekanie na klientów u których gra powoli się ładuje [Leinnan]
+- nieprawidłowe ustalanie kiedy możliwa jest szybka podróż u klienta
+- poprawki do animacja wyjmowania/chowania broni
+
+--------------------------------------------------------------------------------
+Wersja 0.12 (2019-09-22):
+! nie można wczytywać już zapisów z wersji 0.4.20 lub starszej
++ akademia - można tam rekrutować początkujących bohaterów
++ zalążek fabuły
++ nowa klasa gracza: kapłan - czar uleczenia
++ mana
++ szybka podróż (może być użyta przez przywódcę w bezpiecznej lokalizacji by szybko powrócić na mapę świata)
++ nowe umiejętności: magia bogów, koncentracja
++ nowe atuty: silna aura, harmonia many
++ nowe przedmioty: magiczny kryształ, miksturki many, 10 magicznych pierścieni, amulet many
++ obniżone wymagania siły dla broni obuchowych/toporów
++ wczytywanie klas postaci z pliku
++ aktualizacja bibliotek: FMod 1.10.14
++ usprawnione sprawdzanie wersji, wykorzystywanie biblioteki libcurl
+- crash gdy magowie zabiją na arenie przez barierkę jednego z widzów [Ampped]
+- crash gdy gobliny zabierają stary łuk [Ampped]
+- zmiana postaci w trybie multiplayer resetowała ekwipunek postaci
+- jedzenie ziół ma teraz poprawną animację i dźwięki
+- dźwięk drzwi był bardzo rzadko odtwarzany w mp gdy ktoś inny korzystał z drzwi
+- crash gdy gracz trafiony czarem piorun w tej samej chwili wyjdzie z gry
+- crash klienta po wczytaniu gry z efektem pioruna
+- crash gdy npc podąża za graczem a on wyjdzie z gry
+- crash gdy npc ucieka do gracza a on wyjedzie z gry
+- crash po wczytaniu gry gdy npc chciał coś od gracza którego nie ma po wczytaniu
+- obrażenia od niektórych czarów były źle liczone i nieuwzględniało magicznej siły
+- porwany nie dołącza do walki na arenie
+- nie można dawać złota przywołanym jednostkom i tymczasowym członkom drużyny
+- crash przy oknie dialogowym dawania złota/wyrzucania gdy gracz wyjdzie z gry
+- poprawiony kąt wchodzenia do lokalizacji
+- usuwanie członków drużyny w multiplayer nie zmienia kolejności drużyny
+- klient po wyjściu z gry multiplayer i rozpoczęciu singleplayer nie był przewódcą drużyny
+- obrót jednostek które stoją w miejscu zmieniał się w trakcie opuszczania lokalizacji
+- brakująca tekstura czarnego pancerza
+
+--------------------------------------------------------------------------------
+Wersja 0.11.1 (2019-08-12):
+- crash przy spotkaniu zwierząt na mapie [Savagesheep]
+- crash gdy nowy gracz dołącza do wczytanej gry multiplayer [Savagesheep]
+- zabezpieczenie przed crashem przy wczytywaniu przedmiotów związanych z zadaniami w multiplayer [Savagesheep]
+- crash gdy ai nie trafi z czara wyssania krwi i trafi w maneki lub tarczę strzelniczą [Savagesheep]
+- atakowanie przyjaznych orków nie powoduje już ataku przez ludzi
+- bryła kolizji jednostek był wyższa niż powinna
+- startowa rozdzielczość 800x600
+- uruchomiona gra LAN wyświetlała się na liście serwerów
+
+--------------------------------------------------------------------------------
+Wersja 0.11 (2019-07-28):
+! nie można wczytywać już zapisów z wersji 0.3 lub starszej
++ wczytywanie ustawień grup jednostek z pliku
++ lepsze sprawdzanie wersji, informacje o zmianach w nowej wersji
++ gracz może teraz schować broń w celu anulowania ataku
++ gracz może obracać kamerę leżąc na ziemi
++ przywołany wilk podąża za właścicielem a nie przywódcą drużyny, bohaterowie podążają za osobą która im to powie
++ wyświetlanie skrzyń na minimapie
++ atakowanie manekinów i strzelanie do tarcz strzelniczych trenuje gracza
++ brak wytrzymałości spowalnia ataki zamiast ich blokować
++ większa jaskinia, stalagmity
++ zloto na biblioteczkach
+- naprawione pozycjonowanie szkieletów po śmierci tak by nie wpadały w ściany gdzie nie można ich ograbić [Zielu]
+- naprawiony rzadki crash przy używaniu alt tab przy uruchamianiu gry
+- brak trawy wystającej spod księżycowej studni
+- po walce na arenie bohater NPC teleportuje się za graczem gdy ten wchodzi lub wychodzi z budynku, crashowało gdy gracz wychodził a bohater był już na zewnątrz
+- naprawiona rozmowa po walce pvp z bohaterem
+- brak magicznych efektów w budynku u klienta po wczytaniu
+- naprawione crashe przy użyciu opcji nosound i nomusic
+- naprawiony rzadki crash przy generowaniu/wędrówce [Ampped]
+- wczytywanie zepsutego zapisu a następnie dobrego może zcrashować grę [Ampped]
+- dodanie zabezpieczenia przed crashem w ekwipunku [Ampped/jakee248]
+- efekt leczenia zaklęcia wyssania krwii ignorował odporność na czary celu
+- losowe obozy się nie generowały
+- crash po wejściu do podziemi w zadaniu z bandytami [Ampped]
+- crash po wyjściu z podziemi przed Jozanem [Ampped]
+- crash po wyjściu z lokalizacji przed starym magiem po tym jak odmówi się mu przyłączenia do drużyny
+- brakujący dźwięk golema przy spotkaniu na mapie
+- strzałka następnej strony w dzienniku nie działała
+- crash przy generowaniu sekretnego portalu w kopalni [Ampped]
+- crash przy użyciu ostatniego przedmiotu ze skrótu gdy jest otwarty ekwipunek [Anonymous]
+
+--------------------------------------------------------------------------------
+Wersja 0.10 (2019-05-05):
+! nie można wczytywać już zapisów z wersji 0.2.20 lub starszej
++ nowe unikalne zadanie: Zioła dla alchemika
++ nowe efekty postaci: maksymalna wytrzymałość, szybkość regeneracji wytrzymałości, premia do atrybutu/umiejętności
++ nowy atut (energiczny)
++ sklep wieża magów w niektórych miastach
++ alchemik teraz skupuje zioła
++ pierścienie: srebrny, złoty, szmaragdowy, 27 magicznych pierścieni
++ nowe przedmioty: źródlana woda, pancerz ze skóry trolla, 9 magicznych amuletów
++ konfigurowalne skróty na przedmioty/akcje
++ lepsze ustalanie priorytetów przez bohaterów kupujących/proszących o przedmioty
++ poprawiona aktualizacja ekwipunku
++ usprawniona obsługa skrzyni w multiplayer
++ aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
+- naprawiony crash przy akceptowaniu zadań które generują nową lokalizację [Anonymous]
+- naprawiony rzadki crash przy wchodzeniu do niektórych podziemi
+- naprawiony nieskończony czas oczekiwania przy użyciu opcji -delay
+- naprawione błędne działanie bocznego menu
+- naprawiony rzadki błąd zapisu gry na mapie świata
+- naprawiony crash po podwójnym użyciu komendy clean_level bez zamykania konsoli
+- naprawiony crash po użyciu komendy whisper przez klienta [Anonymous]
+- naprawiony błąd w zadaniu "Bandyci pobierają opłatę" [Zielu]
+- naprawiony błąd który umożliwiał ukończenie niektórych zadań podczas rozmowy z innym kapitanem straży/podróżnikiem [Zielu]
+- naprawiony crash gdy serwer zabiera założony pierścień ze zwłok w trybie multiplayer [Zielu]
+- jednej z biblioteczek w ratuszu nie można było splądrować
+- naprawione zostawianie porwanej osoby w mieście, można było porozmawiać i miała dialog jakbyś ją znalazł w podziemiach
+- naprawiony brak wpływu atutu ciężkie plecy na maksymalny udźwig po wczytaniu gry [Zielu]
+- naprawione złe wyświetlanie udziałów w złocie u klienta dla np przywołanego wilka
+- naprawiony brak efektu ognia pochodni u klientów
+- naprawiony stan broni u klienta przy zmianie poziomu podziemi
+- nauka atutów poprawnie trwa 10 dni
+- czasami w podziemiach koło schodów w dół niebyło ściany
+
+--------------------------------------------------------------------------------
+Wersja 0.9 (2019-03-30):
+! usunięte wsparcie dla windowsa xp
+! nie można wczytywać już zapisów z wersji 0.2.12 lub starszej
++ pierwsze skryptowe zadanie - dostarcz zasoby
++ wczytywanie gry wieloosobowej bez wychodzenia do menu
++ nowi wrogowie: niedźwiedź, czarny niedźwiedź
++ więcej ikon lokalizacji i nazw
++ usprawnienia skryptów dialogowych
++ usuwanie korytarzy prowadzących do nikąd
++ aktualizacja bibliotek: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
++ lepsza obsługa trybu wielu graczy przy opuszczaniu lokalizacji
++ przechowywanie obrazka i informacji zapisu w jednym pliku
++ amulety: srebrny, złoty, rubinowy, diamentowy
++ skóry z wilka/niedźwiedzia
++ lepsze zgłaszanie błędów
+- naprawiony rzadki crash gdy gobliny/orkowie jedzą jedzenie (często zdarzał się w samouczku) [Harorri]
+- naprawiona komenda kill po użyciu na zwłokach blokowała zabieranie przedmiotów
+- naprawiony dziennik nie blokował sterowania graczem
+- naprawione rozmawianie/podnoszenie przedmiotów przez drzwi
+- naprawione rozmawianie/podnoszenie przedmiotów w budynkach przez ścianę
+- naprawione generowanie kamieni w jaskini/kopalni które mogło zablokować przejście
+- naprawione rozmawianie z postacią która opuszcza/wchodzi do budynku
+- naprawiony wyciek pamięci związany z portalami u klienta
+- naprawiony crash przy ponownych odwiedzinach lokalizacji za portalem
+- naprawiona nieprawidłowa pozycja na mapie świata u klienta po wczytaniu gry w lokalizacji za portalem
+- naprawiony błąd połączenia do serwera przy użyciu hasła LAN
+- naprawiony brak wpływu hp na morale jednostek
+- naprawiony brak magicznego efektu u klienta gdy znika umarła przywołana jednostka
+- naprawiony brak oznaczenia początkowej lokalizacji u klienta jako odwiedzona
+- naprawiony crash serwera gdy ograbiana jednostka jest usuwana
+- naprawiony crash klienta przy wczytywaniu gry gdzie ktoś używa obiektu
+- naprawione nieprawidłowe używanie obiektów u klienta przez npc po ponownych odwiedzinach tej samej lokalizacji
+- naprawiony crash po opuszczeniu lokalizacji w trybie jednego gracza jeśli wcześniej szukano serwerów [Anonymous]
+- naprawiony rzadki ciągły efekt alkoholu u klienta po wejściu do lokalizacji [MildlyPhilosophicalHobbit]
+- naprawiony crash na arenie gdy nie ma miejsca na wygenerowanie wrogów [Anonymous]
+- naprawiony crash po użyciu skrótu zabierz wszystko na skrzyni z widocznymi szczegółami przedmiotu [Anonymous]
+- naprawiony crash przy wczytywaniu gdy widoczny jest profiler
+- naprawiony maksymalny zasięg dźwięków
+- naprawione ciągłe trzymanie jedzenia przez jednostki po ponownym wejściu do lokalizacji
+- naprawiony spadek wydajności za każdym razem gdy lokalizacja zewnętrzna była ponownie odwiedzana
+- naprawione wycieki pamięci i brakujące tekstury po próbie wczytania złego zapisu i rozpoczęciu nowej gry
+- naprawiony crash przy zapisywaniu gry z magicznymi pociskami lub kilkoma innymi czarami
+- naprawione ai biegnące na wroga podczas jedzenia/picia
+- naprawione celowanie przez ai z czarów bardziej na prawo
+- naprawione celowanie przez ai z czarów promieni
+- naprawione zbyt częste zmienianie przez łuczników broni pomiędzy łukiem a do walki wręcz
+- naprawione ai szukające już martwego przeciwnika jeśli został trafiony wolno poruszającym się pociskiem po śmierci osoby która go wystrzeliła
+- naprawione blokowanie się ai kleryka gdy próbuje kogoś uleczyć
+- naprawione używanie przez łuczników/magów ataku wręcz z kilku metrów jeśli coś blokuje linie strzału
+- naprawione ai gdy ktoś inny poinformuje o wrogu próbuje się tam dostać nawet jeżeli ten wróg już dawno nie żyje
+- naprawione opóźnienie przy opuszczaniu lokalizacji na mapie świata/przy wchodzeniu do lokalizacji przed otwarciem ekranu wczytywania
+- naprawiony crash gdy nekromanta ożywił wroga któremu zabrano broń [Anonymous]
+- naprawione zawody na arenie powodują problemy z dymkami z tekstem
+
+--------------------------------------------------------------------------------
+Wersja 0.8 (2019-02-23):
+! to jest ostatnia wersja obsługująca windowsa xp
+! nie można wczytywać już zapisów z wersji 0.2.10 lub starszej
++ nowy system walki, obliczenia mobilności
++ główny serwer gry, pozwala na pobieranie listy serwerów i łączenie z pominięciem blokady routera (nat punchthrough)
++ punkty nauki używane do szkolenia umiejętności/atrbutów/atutów
++ nowe atuty (słabe plecy, przewlekła choroba, ospały, powolny uczeń, aspołeczny, biedak, silne plecy, agresywny, mobilność, finezja, twardy, twarda skóra, przystosowane, perfekcyjne zdrowie)
++ nowa umiejętność - targowanie, szkolona przez kupca
++ system efektów (atuty dają efekty)
++ klawisz przełącz bieg/chodzenie
++ wczytywanie ekwipunku handlarzy z pliku, odświeżanie ekwipunku handlarzy co 10 dni a nie tylko po wejściu do lokalizacji
++ nowe komendy (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
++ nowe przedmioty: magiczny zwój, nóż, drewniany miecz, zardzewiały toporek, tarcza z desek, Pancerz gladiatora, muffin
++ profile bohaterów ai - preferowane umiejętności/przedmioty
++ obsługa zgłaszanie błędów dzięki CrashRpt
++ dostosowanie cen przedmiotów, złota jednostek, nagród za zadania
++ nie generowanie wrogów za blisko schodów, mniej wrogów w dużych połączonych pokojach
++ dostosowanie szybkości zdobywania atrybutów/umiejętności przez gracza i bohaterów
++ większa mapa świata, przesuwanie i skalowanie mapy, można podróżować do dowolnego miejsca
++ szukajka lokalizacji na mapie świata
++ unikalny bohater do zrekrutowania
++ atakowanie przyjaznych orków nie powoduje agresji ze strony mieszkańców miasta
+- naprawione bardzo szybkie szkolenie walki bronią atakując słabych, niskopoziomowych wrogów
+- naprawione rozmawianie z jednostkami które wstają
+- naprawione obracanie jednostek podczas dialogu u klienta
+- zadanie z listem gończym wybierało losową lokalizacje która była już używana, cel nie generował się
+- naprawiony wyciek pamięci przy generowaniu kopalni
+- poprawki do dialogów burmistrza
+- naprawione błędne obliczanie ceny gdy sprzedaje się przedmiot towarzyszowi
+- naprawione dołączanie do pełnego serwera
+- naprawiony brak efektu po zmianie hasła serwera na puste, wciąż było wymagane
+- naprawiony brak dialogów pomiędzy goblinami/orkami
+- naprawiony poziom trudności wrogów na arenie
+- naprawione zadanie oczyść lokalizację gdy trzeba oczyścić jaskinię
+- naprawiony crash przy wczytywaniu gry z niektórymi questowymi przedmiotami
+- naprawiony crash po zostawieniu przeklętego kamienia na poziomie ze zwłokami
+- naprawione rysowanie specjalnych akcji
+- naprawione leczenie przez Jozana osób walczących na arenie gdy on jest poza
+- naprawiony crash przy alt tabowaniu gdy jest otwarty handel i jest otwarty popup z przedmiotem
+- naprawiony crash przy wczytywaniu gry gdzie ktoś strzela z łuku
+
+--------------------------------------------------------------------------------
+Wersja 0.7.1 (2018-04-15):
++ sortowanie drużynowych przedmiotów, ikona w ekwipunku
+- naprawione niedziałanie trybu multiplayer
+- naprawiony crash po użyciu alt tab w trybie pełnoekranowym po przeglądaniu ekwipunku
+- naprawiony crash po wczytaniu gry z zapisaną akcją po schowaniu broni, zapisywanie akcji po schowaniu broni w MP
+- naprawione blokowanie akcji gracza po wczytaniu szybkiego zapisu podczas korzystania z biblioteczki
+- naprawiony crash po odłożeniu na biblioteczkę przedmiotu trzymanego w dłoni
+- zamknięcie ekwipunku podczas chowania broni w celu oddania/sprzedania jej poprawnie przerywa akcję
+- naprawiony crash gdy klient da npc założony przedmiot
+- naprawione używanie biblioteczki przez klientów
+- naprawiony długi czas przejścia podczas walki na arenie
+- naprawiony crash po wczytaniu gry i otrzymaniu kolejnej fałszywej paczki w zadaniu z bandytami
+- naprawiony rzadki crash po natrafieniu na szaleńców i otrzymanie od nich przedmiotu
+- naprawiony crash po otrzymaniu nagrody za zawody w piciu
+- naprawiony błąd synchronizacji ekwipunku po otrzymaniu przez klienta miksturek po walce w zawodach
+- naprawiony crash podczas losowego spotkania szalonego maga/szalonego kucharza/questowego szaleńca/questowego golema
+- naprawione przesuwanie kursora/widoku przez alt tab
+- automatyczne wczytywanie gry po uruchomieniu nie crashuje gdy zapis jest nieprawidłowy
+- naprawiony crash po użyciu alt tab w trakcie wczytywania gry w trybie pełnoekranowym
+- naprawione pytanie gracza przez npc o lepsze przedmioty
+
+--------------------------------------------------------------------------------
+Wersja 0.7 (2018-03-31):
++ wczytywanie grup przeciwników na arenie z pliku
++ lepiej widoczny celownik w ciemności
++ info o opuszczaniu obszaru wydarzenia
++ obsługa języka skryptowego AngelScript w konsoli
++ zmiany w szybkości regneracji wytrzymałości
+- naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
+- naprawiony brak wrogów w lokalizacji gdy powinni być tam magowie i golemy
+- naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
+- naprawiony crash po zabiciu pająka [xweert123]
+- naprawione nieprzerywanie niektórych dźwięków po wczytaniu
+- naprawiony błąd wczytywania dźwięków przy wyłączonym dźwięku w konfiguracji
+- naprawiony błąd animacji podczas jedzenia/picia siedząc
+- naprawione błędy animacji i inne problemy podczas używania obiektów
+- naprawiony błąd gdy klient jednocześnie użyje obiektu i zacznie wyjmować broń
+- naprawione błądy podczas zawodów w piciu (brak blokady gracza gdy rozmawiał w trakcie rozpoczęcia, crash gdy ai siedział na stołku i coś jadł)
+- naprawiona możliwość strzelania z łuku bez wytrzymałości przez gracza
+- naprawiony crash gdy Gorush zmienia klasę postaci
+- naprawione bardzo dobre początkowe przedmioty gracza przy bardzo niskiej umiejętności
+- naprawiony brak aktualizacji efektów u klienta po podróży
+- ciężki/średni pancerz nie daje lepszej tylko gorszą premie do obrony od zręczności
+- informacja o zdobyciu atrybutu/umiejętności pojawia się u gracza a nie serwera
+- efekty dla klientów po podróży poprawnie się aktualizują
+- blokowanie strzał i czarów zużywa już wytrzymałość
+- wysoka umiejętność tarczy nie przywraca wytrzymałości po trafieniu
+- podróż w górę/dół nie wyrzuca już klienta z gry
+- odpoczywanie przed zawodami w piciu blokowało udział dla klientów
+- wejście do miasta w dniu zawodów powodowało nie pojawienie się uczestników zawodów
+- usunięte wycieki pamięci przy tworzeniu i usuwaniu obozów
+- naprawiony crash przy wchodzeniu do podziemi gdy generowało zwłoki
+- opuszczanie lokalizacji z umierającymi jednostkami nie blokuje ich późniejsze ograbienie i tworzy krew
+- naprawiony crash gdy podczas pvp wyzwany gracz opuści grę
+- naprawiony brak działania ustawień głośności dla niektórych dźwięków
+- naprawiony crash gdy dźwięk jest przypięty do klienta a on opuści grę
+- opuszczenie gry przez gracza na którego patrzy się npc w niektórych questach nie powoduje jej zawieszenia
+- naprawione bugi i crashe w czasie zawodów gdy gracz opuści grę
+- wybranie klawisza następnej niedostępnej opcji dialogowej nie powoduje już crasha, obsługa klawiszy 9 i 0
+- poprawione działania podziału złota
+- naprawiony crash po użyciu komendy 'scare' na nieświadomym celu, lepsza obsługa uciekania
+- Gorush poprawnie ujawnia jak się nazywa u innych graczy
+- poprawiona informacja o zdobywaniu złota przez klientów
+- naprawiony rzadki crash gdy wystąpi spotkanie tuż przed dotarciem do lokalizacji
+- naprawiony brak wrogów w lesie
+- naprawiony crash po ponownym odwiedzeniu tartaku
+- naprawiony crash przy natrafieniu na bandytów atakujących podróżnych
+- naprawiony błąd gdy ork z kluczem wygeneruje się za zamkniętymi drzwiami
+- naprawiony crash po ponownym odwiedzeniu kopalni
+- naprawione generowanie zbyt silnych wrogów podczas podróży
+- naprawiony crash w jednym rodzaju podziemi podczas renderowania schodów w dół
+- łucznicy nie podchodzą do celu gdy skończy się im wytrzymałość
+- poprawiona synchronizacja pułapek pomiędzy klientem a serwerem
+- naprawione niewidoczne strzały u klientów wystrzelone z pułapek
+- poprawiony punkt trafienia strzały w obiekt
+
+--------------------------------------------------------------------------------
+Wersja 0.6.2 (2017-10-08):
++ wczytywanie obiektów z pliku
+- naprawione nieprawidłowe kolizje dla niektórych obiektów
+- naprawione kolizje gracza z znakami na budynkach
+- naprawiony nieprawidłowy model wioskowego ratuszu
+- naprawiona nieprawidłowa tekstura znaku sprzedawcy jedzenia
+- lepsze przekierowanie na stronę
+- naprawiona bazowa animacja czasami odtwarzana po animacji picia
+- naprawione nieoznaczanie używalnych obiektów jako wolne gdy klient przestaje ich używać, zepsuta animacja
+- naprawione przesyłanie informacji o używaniu drzwi pomiędzy klientami
+- naprawiony brak przedmiotów w skrzynkach
+
+--------------------------------------------------------------------------------
+Wersja 0.6.1 (2017-10-02):
+- naprawiony crash gdy npc w drużynie chce przedmiot od innego npc w drużynie [MikelkCZ]
+- lepsze przekierowanie na stronę
+
+--------------------------------------------------------------------------------
+Wersja 0.6 (2017-10-01):
++ możliwość czytania książek
++ używalna biblioteczka
++ obracanie przedmiotów w ekwipunku
++ sortowanie tekstu jednostek według dystansu
++ optymalizacje renderowania otwartych lokalizacji
+- naprawiony nie działający tryb multiplayer z wersji 0.5
+- naprawione brakujące animacje dla klientów w trybie multiplayer
+- naprawiony crash i brakujące komunikaty dla 3+ graczy gdy klient traci połączenie pomiędzy wczytywanymi poziomami/światem
+- naprawiony crash gdy nowy gracz dołącza do wczytywanej gry
+- naprawiony crash i nieprawidłowe działanie lobby gdy jest wczytywana gra z 3+ graczami
+- naprawiony crash przy alt-tabowaniu na samym początku inicjalizacji gry [Zettaton]
+- naprawiony crash po zabicu złego bossa [Medarc]
+- naprawiony błąd wczytywania klientów gdy serwer opuści grę na mapie świata a potem rozpocznie nową grę
+- naprawiona komenda warp gdy jednostka używa obiektu
+- naprawiony błąd z losowym wyświetlaniem kolorów przy atrybutach/umiejętnościach
+- naprawione używanie komendy goto_map w budynku i powrót do tej samej lokalizacji
+- naprawiona nieprawidłowa informacja że zostałeś wyrzucony zamiast informacji o wyłączaniu serwera
+- naprawiony losowy crash przy wybieraniu łatwej walki na arenie
+- naprawiony błąd z prawidłowym odtwarzaniem dźwięków areny w multiplayer
+- usunięta szara obwódka wokół minimapy w podziemiach
+- naprawione nieprawidłowe teksty plotek w dzienniku dla niektórych questów
+- naprawione przywoływanie wilka na arenie
+- naprawione losowe zgadzenie/odmawianie pvp przez npc po wczytaniu gry
+- naprawione losowe generowanie jednostke z o wiele slabszymi przedmiotami niż ich poziom
+- naprawione przywoływanie wilka za ścianą/drzwiami/na arenie
+- naprawiony crash po przywołaniu wilka w środku ściany
+- naprawione nie działająca obsługa klawiszy, eksplozja pozycji, nieprawidłowe animacje przy niskim fps
+- naprawiony brak animacji postaci czasami
+- naprawione zapisywanie i wczytywanie nazwy postaci/zapisu zawierającej cudzysłów
+- naprawione nierównomierne generowanie jednostek w karczmie/na arenie
+- naprawiony brak komunikatu o pobliskich wrogach przy próbie opuszczenia lokalizacji przez klienta
+
+--------------------------------------------------------------------------------
+Wersja 0.5 (2017-09-07):
++ specjalne akcje (łotrzyk - zryw, łowca - zwierzęcy sojusznik, wojownik - bycza szarza)
++ wytrzymałość - używana do atakowania, blokowania
++ nowe przedmioty: kielich, złoty kielich, talerz, kiełbasa, zupa, gulasz, surowa ryba, ryba, leczące ziele, zielone ziele, patelnia
++ nowy menadżer zasobów, wczytywanie gdy potrzeba a nie na początku gry (jednostki, przedmioty, budynki, obiekty, tekstury, muzyka), nowy format pak
++ wczytywanie z pliku zaklęć, dialogów, jednostek, budynków
++ wczytywanie listy wymaganych encji z pliku
++ szybkość strzały zależy od umiejętności i rodzaju łuku [Paradox Edge]
++ automatyczne chodzenie (domyślnie klawisz F)
++ obsługa brakujących tekstur i modeli dla przedmiotów w trakcie wczytywania
++ możliwość włączenia gry bez głośników/słuchawek
++ tymczasowo usunięty głowny quest dopóki nie jest ukończony
++ przezroczyste przedmioty
++ nowe komendy konsoli forcequest, stun, refresh_cooldown
+- naprawiony rzadki crash podczas wyszukiwania ścieżek w mieście/wiosce
+- naprawiony błąd z losowym nie wysyłanie mapy świata do klientów
+- naprawiony brak widoczności ostatniego elementu na liście sterowania
+- ork gorush nie zawsze wybiera losowo szamana
+- ork gorush ma więcej miksturek gdy awansuje
+- naprawiona nieprawidłowa liczba przedmiotów wygenerowana u handlarzy
+- naprawiony crash przy wchodzeniu do jaskini/losowego spotkania ze zwierzętami
+- naprawiony crash przy używaniu $ w polach tekstowych
+- naprawiony crash przy braku paczki podczas spotkania w queście z dostarczaniem paczki
+- naprawiony crash serwera gdy gracz opuści grę podczas wczytywania mapy świata
+- naprawiony rzadki crash przy generowaniu wioski
+- naprawiony błąd z generowanie uczestników turnieju w innych miastach niż docelowe
+- naprawiony błąd z wykrywaniem że okno gry jest aktywne
+- naprawione problemy z kursorem gdy okno jest przesunięte
+- naprawione nieprawidłowe imie gracza
+- naprawiony wpływ obciążenia na szybkość biegu i niektóre animacjie (wyrzucanie, podnoszenie przedmiotów)
+- naprawiona niekompatybilność z wioskami z przed wersji 0.3
+- naprawione tekstury pola w wioskach
+- naprawione generowanie obrazków przedmiotów które mają inne tekstury (mithrilowe)
+- naprawione generowanie obiektów z wioski w środku ratusza
+- naprawione blokowanie szybkiego zapisu/wczytywanie przez otwarty dziennik
+
+--------------------------------------------------------------------------------
+Wersja 0.4.20 (2016-04-29):
++ dodana obsługa nieudanego wczytywania czcionek w windows 10 [XNautPhD]
++ dodana obsługa wyłączania dźwięku w przypadku błędów inicjalizacji sterownika dźwięku [XNautPhD]
++ aktualizacja biblioteki FmodEx do najnowszej wersji
+- naprawione wyświetlanie komunikatu o nowej wersji
+- naprawione ai nie kupował średniego pancerza gdy nie miał żadnego a był to najlepszy skill
+- naprawiona zła wyświetlana ilość przedmiotów na ziemi w MP gdy było ich ponad 255
+- naprawione wycieki pamięci z poprzedniej wersji
+- naprawiony wyciek pamięci z animacji strzelania i fizyki w ekranie tworzenia postaci
+- naprawiony wyciek pamięci w oknach dialogowych z checkboxem
+- naprawiona szansa 10% bandyty łucznika na posiadanie dwóch łuków
+- naprawione nie znikanie jedzonego przedmiotu gdy postać umiera w MP
+- naprawione wycieki pamięci przy wczytywaniu pancerzy z pliku
+- naprawione nie wyświetlanie ikony na pasku zadań gdy wyskoczył błąd
+- naprawione literówki w zadaniu dostarczenia listu w angielskiej wersji
+- naprawiony błąd gdy postać wyciąga łuk przy zmianie poziomu [Vinur_Gamall]
+- naprawione pojawianie się bosa w losowym pokoju po wczytaniu w jednym zadaniu (zapisy z przed 0.4)
+- naprawione zabijanie/przerywanie akcji jednostki powodowało uwięzienie w obiekcie
+- naprawione przerywanie akcji jedzącej jednostki powodował pozostanie przedmiotu w dłoni
+- naprawiona wiadomość o niezaakceptowaniu pvp gdy się to zrobiło
+- naprawiony ultra rzadki crash na ekranie tworzenia postaci [Vinur_Gamall]
+- naprawiona animacja łuku na ekranie tworzenia postaci [Vinur_Gamall]
+
+--------------------------------------------------------------------------------
+Wersja 0.4.10 (2015-12-28):
++ przepisana obsługa paketiów w mp aby logowała wszystkie błędy i nie crashowała
++ w czasie celowania celownik porusza się wolniej
++ dodane logowanie sterowników dźwięku
++ lepsza synchronizacja ujawniania lokalizacji na mapie świata w MP
+- naprawiony błąd z proszeniem ai o orkowy pancerz i zakładanie go [Leinnan]
+- naprawiony biały ekran po rozpoczęciu gdy (czasami na kartach ati) [Zielu]
+- naprawione czarne paski na postaci na ekranie tworzenia (czasami na ati) [Zielu]
+- naprawiony błąd gdy nowa postać dołączyła do gry i pojawiła się w budynku ale była zapisana jako na zewnątrz (nie miała zielonego nicku), po opuszczeniu
+	budynku crashowała serwer
+- naprawiony crash serwera gdy nowy gracz dołącza do gry i zawiesi się na wczytywaniu [Leinnan]
+- naprawiona możliwość pojawienia się nowej postaci w budynku ale za ścianą (tymczasowo postać pojawią się przy drzwiach)
+- naprawiony crash przy wyłączaniu gry gdy okno dialogowe zostało zamknięte automatycznie (pvp/główny quest)
+- naprawiony błąd z członkiem drużyny niewidocznym ale widocznym na minimapie [DerpyBarns]
+- naprawiona niedziałająca komenda 'killall' w MP
+- naprawiona zmiana klasy Gorush nie działająca w MP
+- naprawiony potęcjalny crash gdy postać rzucała czar w MP
+- naprawiony czar electro w MP
+- naprawione niedziałające stanie w środku areny gdy jest twoja kolej na walkę (trzeba było stać przed drzwiami)
+- naprawione generowanie zbugowanego labiryntu (1.5% szansy)
+- naprawiony dźwięk okrzyku u klienta
+- naprawiony brak zmiany kolorów włosów u klienta
+- naprawiony czerwony ekran przy używaniu kodów do zmniejszenia siły/wytrzymałości u klienta
+- naprawione zepsute komendy say/whisper/server
+- naprawiona możliwość rzucania czarów nie bojowych na zbyt niskim poziomie
+- naprawiony błąd z generowanie podziemi bez więzienia
+- puszczenie myszki w sliderze przy tworzeniu postaci ma poprawny efekt [Vinur_Gamall]
+- naprawione strzelanie z łuku, nie trzeba kliknąć po ataku, wystarczy kliknąć po strzale
+- naprawione błędy gdy postać zostałą ogłyszona w czasie przeszukiwanie skrzyni/ciała, handlu/wymiany/dialogu
+- naprawione obracanie się postaci w miejscu przy wejściu/wyjściu do/z budynku po stronie serwera
+- naprawione nieprawidłowe skalowanie postaci po zmianie poziomu dopóki nie odtworzy się animacja
+- naprawione skalowanie przedmiotów do rozmiaru postaci [Vinur_Gamall]
+- naprawiony mipmaping terenu
+- naprawiony błąd w dzienniku przez który czasami nie było odstępu pomiędzy wpisami
+- naprawiony kolejny crash serwera gdy klient się nie wczytał
+- naprawione dialogi dla questa z roznoszeniem wieści
+- naprawiony quest z odzyskaniem paczki dla klienta
+- naprawiony crash po ukończniu questa uratuj zakładnika w MP
+- docelowa lokalizacja jest ujawniana dla klienta w queści znajdź artefakt
+- naprawiony crash gdy klient rozpoczynał quest z agentem króla
+- używanie portalu nie spowoduje zawieszenie się klienta i wyrzucenie go z gry
+- naprawione nie znikanie buffu antymagi po zmianie lokalizacji
+- naprawione usuwanie buffów po użyciu portalu
+- naprawione nie aktualizowanie się dziennika w queście z zgubionym łukiem u klienta
+- docelowa lokalizacja jest ujawniana dla klienta w queście z zgubionym łukiem
+- naprawione podwójne dodawanie wiadomości o zamknięciu portalu u klienta
+- naprawiony crash gdy ai próbuje wędrować poza mapę w podziemiach
+
+--------------------------------------------------------------------------------
+Wersja 0.4 (2015-10-20):
++ nowe rodzaje pancerzy (przeszywnica, skóra, zbroja łuskowa, zbroja paskowa), pancerz wysokiej jakości, magiczny pancerz
++ nowe umiejętności (długie ostrze, krótkie ostrze, topór, broń obuchowa, średni pancerz)
++ nowe atrybuty (inteligencja, mądrość, charyzma)
++ perki
++ zmieniony ekran tworzenia postaci
++ nowe dźwięki/muzyka [Vinur_Gamall]
++ bonus łotrzyka do ciosu w plecy działa dla łuku
++ lepsza kamera, można obracać wokół postaci
++ konwersja projektu z vs2008 do vs2013
++ komenda setstat
++ ulepszony obsługa upływu czasu questa
++ mieszkańcy nie powtarzają się podczas pytania o okoliczne lokalizacje
+- naprawiona obsługa portu w konfiguracji [dookey]
+- naprawione obliczanie zręczności (dla lekkiego pancerza sprawdzało ciężki)
+- naprawione obliczanie szybkości strzelania z łuku (używało umiejętności walki bronią zamiast łuku)
+- naprawione anulowanie edycji postaci które zmianiało postać
+- naprawione brakujące aktualizacje questów w MP
+- kliknięcie na opcji dialogowej nie spowoduje już ataku gdy trzyma się broń [Vinur_Gamall]
+- naprawiony rzadki crash przy wchodzeniu do miasta/wioski
+- naprawiony błąd w queście z szaleńcami, po zdobyciu kamienia i zapisaniu nie było postępów
+- naprawione rzadki crash przy generowaniu dróg w mieście
+- naprawione generowanie kratek w korytarzach [Minister of Death]
+- naprawiony crash przy wchodzniu do wioski z wersji < 0.3 [Minister of Death]
+- naprawiona kompatybilność ze starymi zapisami w których karczma ma inny rozmiar
+- teraz po założeniu gry w mp nie mamy wybranej postaci z poprzedniej gry
+- naprawiony crash po wczytaniu gry z questowymi przedmiotami [Medarc]
+- naprawiony crash gdy skończy się czas na wykonanie zadania z obozem [Medarc]
+- naprawione złe wartości kredytu/wolnych dni po wczytaniu
+- naprawione duplikowanie przedmiotów w ekwipunku npc na ostatnim miejscu
+- naprawione nie czyszczenie opcji dialogowych po wczytaniu
+- naprawione nie czyszczenie kodów po wczytaniu
+- naprawione nie znikanie obozu jeśli jest ostatnią lokalizacją jaką się odwiedziło pomimo upływu czasu
+- [Uratuj porwanego] naprawione błędy gdy porawny zginie przed rozmową
+- [Uratuj porwanego] porwany znika gdy minie czas na questa
+- [Uratuj porwanego] naprawiony crash gdy zaakceptuje się questa po wczytaniu
+- [List gończy] naprawione nie generowanie celu po wczytaniu
+- [List gończy] naprawiony crash gdy cel jest w drużynie gdy minie czas
+- [List gończy] naprawiony crash gdy cel opuści lokalizację
+- [Dostarcz list] naprawiona zła nazwa listu po wczytaniu
+- [Tartak] naprawiony wyciek pamięci po wygenerowaniu drwali
+- [Tartak] naprawione nie zapisywanie wyglądu Artura Drwala
+- [Gorush] naprawiony brak postępu po oczyszczeniu obozu jeśli się wczytało pomiędzy informacją o obozie a zapytaniu gdzie jest
+- [Gorush] naprawione generowani przywódca orków w zamkniętym pomieszczeniu do którego to on ma klucz
+- [Golemy na drodze] nie można już pomijać animacji picia
+- [Golemy na drodze] naprawiony crash gdy nie przyjmie się starego maga do drużyny i opuści lokalizację
+- [Zło] naprawiony zły dialog po zamknięciu wszystkich portali
+- naprawione złe oświetlenie krwii w podziemiach
+- naprawione znikanie npc którzy poszli do karczmy (ale tylko questowo)
+- naprawione opuszczanie miasta przez npc w miejscu starych bram zamiast dojście do zielonej strefy
+- naprawiony tearing przy dużym fps przy światłach w podziemiach
+- naprawiony błąd z teleportowaniem członka drużyny do używalnego obiektu [Minister of Death]
+- poprawne usuwanie postaci gdy gracz zcrashuje przy wczytywaniu mapy świata
+
+--------------------------------------------------------------------------------
+Wersja 0.3 (2015-05-16):
++ oznaczanie celu rysuje otoczkę
++ normal mapping
++ cache shaderów
++ specular / specular mapping
++ lepsze oświetlenie w budynkach
++ nowe mury i brama zrobione przez Leinnana
++ nowe budynki w wioskach (Leinnan)
++ obiekty wokół budynków (Leinnan)
++ nowy generator wiosek/miast
++ trawa / pola
++ nowe imiona dla bohaterów
++ możliwość wyłączenia vsync
++ ustawienia rozszerzenia dla zrzutów ekranu
++ przetłumaczony tekst okna wyboru języka
++ Ctrl + V w konsoli
++ lepsze wyszukiwanie ścieżek
++ ai podążając za graczem nie stara się unikać trawy w mieście
+- naprawione uv tekstur w podziemiach
+- wrogowie generują się dalej od drużyny, drużyna nie generuje się za blisko krawędzi lasu [Docucat]
+- otwieranie drzwi przez ai w budynku nie crashuje
+- naprawiona blokada dołączania od serwerów z inną wersją
+- naprawione generowanie obiektów blokujących drogę w podziemiach
+- usunięte wycieki pamięci przy wczytywaniu gdy brak jednego z graczy przy wczytywaniu
+- naprawiony błąd z zajętą postacią gdy jadła coś w czasie zmiany poziomu
+- naprawione gadanie przy plotkach o dacie dodania
+- usunięty rzadki crash przy wchodzeniu do lokalizacji
+
+--------------------------------------------------------------------------------
+Wersja 0.2.23 (2015-01-31):
+- naprawiony crash w MP w czasie wczytywania zapisu [Leinnan]
+- naprawione działanie okrzyku u klienta
+- naprawione brakujące animacje gdy postać coś mówi
+- naprawiony brak animacji w MP po odtworzeniu animacji
+- usunięto kilka małych wycieków pamięci
+- poprawki w gui
+- po zabiciu gracza trucizną nie wstaje on po jakimś czasie [Minister of Death]
+- naprawiony błędny stan tarczy gdy postać zostanie pobita blokując
+- naprawione popsute stan broni u klienta gdy zostanie pobity chowając/wyjmując broń
+- naprawiona możliwość używania okna rozmów na mapie świata
+- naprawiony rzadki crash po wejściu do lokalizacji związany z generowaniem skrzyni [Minister of Death]
+- naprawione crashe po wczytywaniu gry spowodowane przez wykonywane w czasie zapisywania akcje klienta [Minister of Death/Leinnan]
+- naprawione nie przerywanie przez ai używanie obiektu [Minister of Death]
+- naprawione blokowanie się ai członków drużyny gdy użyją obiektu podążając z graczem [Minister of Death]
+- naprawione nie używanie przez ai jedzenia i picia gdy siedzą [Minister of Death]
+- naprawiony rzadki crash gdy ginie postać strzelająca z łuku
+- po walce ai nie stoi w miejscu przez dłuższy czas (dotyczy głównie miasta)
+- naprawione używanie kowadła trzymając broń w ręce [Minister of Death]
+- naprawiony spawn jednostek w studni [Minister of Death]
+- magowie nie wolą używać łuku [Minister of Death]
+- naprawione odtwarzane dźwięku u klienta mimo że jest wyłączony w czasie ataku wrogów
+- naprawiony crash gdy wróg bez broni zabija klienta zdala od hosta
+- naprawiona animacja wrogów po ataku u klienta gdy nie używają broni
+- nie można sprzedawać miksturek u sprzedawcy jedzenia, nie można sprzedawać jedzenia/picia u alchemika [Minister of Death]
+- naprawiona fizyka lady w karczmie [Minister of Death]
+- naprawiona animacja trenujących ai
+- komenda "killall 3" nie crashuje u klienta
+- naprawione animacje silnego ataku przez ai u klienta
+- nie można używać komendy speed w MP
+
+--------------------------------------------------------------------------------
+Wersja 0.2.22 (2015-01-24):
++ można zmienić klawisz konsoli
++ można opuścić miasto w czasie trwania zawodów
+- naprawiony crash przy dostawaniu złota jeśli gracz a po nim npc wezmą kredyt [Minister of Death]
+- naprawione zawieszanie w mp przy wchodzeniu do lokalizacji [thebard88]
+- naprawiona brakująca fizyka krzesła
+- naprawiona zła tekstura w skrytce bandytów
+- naprawiony zły wygląd klienta u serwera gdy wybrał zerowe włosy, wąsy lub brodę [Leinnan]
+- naprawiony zły zasięg rysowania cząsteczek
+- nie można rozmawiać z wrogami będąc niewidzialnym
+- naprawiono znikającego Jozana [Minister of Death]
+- naprawiono zabijanie mieszkańców jednym strzałem nie agregowało [Minister of Death]
+- naprawiony crash po daniu miksturki oczyszczenia umysłu magowi [Minister of Death]
+- naprawione angielskie dialogi
+- naprawione brakujące dialogi starego maga po wchodzeniu do lokalizacji
+- naprawiony nie przetłumaczony test w ekwipunku gracza [Zinny]
+- przedmioty w mieście odnawiają się
+- naprawiony błąd: gracz mając wyciągniętą broń zleca wypicie miksturki, gdy chowa broń przerywa akcję, nie można wykonywać żadnych akcji w ekwipunku
+- naprawiony błąd podobny do tego powyżej ale multiplayer gdy klient zleca wypicie miksturki mając wyciągniętą broń, powoduje problemy z ekwipunkiem u serwera
+- naprawiony crash gdy w zawodach biorą udział mniej niż 2 osoby
+- naprawiony brak możliwości opuszczenia miasta po wygranych zawodach [fire]
+- naprawione błędy ai po walce na arenie
+- naprawiony błąd gdy postać została pobity w czasie chowania/wyjmowania broni, miała wyjętą broń ale nie była w trybie walki, blokowało to akcję ai
+- naprawiony błąd gdy jest dzień zawodów przenosiło bohaterów przed arenę, w tym członków drużyny, postacie przeniesione z karczmy były niewidzialne [fire]
+- naprawiony crash podczas pytania o plotki [Minister of Death]
+- czar piorun nie przechodzi już przez ściany
+- naprawiony brak synchronizacji broni jeśli gracz za szybko przerwie wyjmowanie/chowanie broni
+
+--------------------------------------------------------------------------------
+Wersja 0.2.21 (2015-01-04):
++ można przeganiać neutralnych NPC (domyślnie klawisz Y)
++ konfigurowalny timeout
++ lepsze logowanie
++ synchronizacja debuffa zatruty z paskiem hp
+- usunięty crash serwera gdy klient zostanie wyrzucony przez timeout [thebard88]
+- naprawione teksty o wczytywaniu modeli (null)
+- usunięty crash przy wczytywaniu gry na mapie świata gdy ma się NPC w drużynie [Paradox Edge]
+- usunięty crash gdy ork chciał usiąść na tronie [Zinny]
+- usunięty crash przy rozmowie z Jozanem (po przyniesieniu księgi) i agentem w angielskiej wersji [Zinny]
+- usunięty crash po zawodach [Zinny]
+- naprawiony błąd z magami źle określającymi dystans do wroga
+- usunięty crash przy opuszczaniu lokalizacji gdy jednostka wygenerowana po graczu używa obiektu (postacie które opuściły drużynę, posłańcy itp.) [Zinny]
+- naprawiony błąd z wczytywanie zapisów z wersji starszej niż 0.2.20 (psuło akcję postaci)
+
+--------------------------------------------------------------------------------
+Wersja 0.2.20 (2014-12-12):
+Informacja o zapisach:
+* Zapisy z każdej wersji powinny działać w tej wersji.
+* Nowe budynki i obiekty nie pojawią się w już wygenerowanych miastach/wioskach.
+* W wygenerowanych lokalizacjach nie pojawią się nowe przedmioty dopóki się nie zresetują.
+* Ławy zostają zamienione na obrócone w dobrą stronę.
+* Aktualnie trwające efekty alkoholu nie zostaną zmienione na nowe.
+Dodane:
++ używanie miksturek w MP dla indeksów większych niż 255
++ jedzenie (mięso, surowe mięso, chleb, jabłko, plaster miodu, ser, ryż, grzyb), modele stworzone przez MarkK
++ nowe komendy: hurt, break_action, fall
++ stary pijany mag bierze udział w zawodach w piciu o ile go nie wyleczymy, bierze udział w zawodach na arenie o ile go wyleczymy, pije po drodze, nowe teksty
++ pijacy po zawodach trenują do kolejnych
++ mieszkańcy miasta/wioski i magowie mogą wziąć udział w zawodach
++ jedzenie, picie, chowanie/wyjmowanie broni siedząc
++ lepsza aktualizacja tekstów w ekwipunku gdy robi się coś z 1 przedmiotem (wyrzuca, podnosi, używa itp.)
++ numer buildu w exe i zapisie
++ lepsze wyświetlanie pobliskich postaci
++ nowy efekt po wypiciu alkoholu
++ niektóre przedmioty na ziemi mają widoczny model a nie worek
++ zbieralne grzyby w jaskiniach
++ jedzenie jedzenia przez AI
++ buffy wyświetlają się nad paskiem hp
++ mikstura naturalnego leczenia wpływa teraz też na miksturę regeneracji i jedzenie
++ ważne przedmioty są wyświetlane na złoto na minimapie
++ sklep z jedzeniem
++ przedmioty w mieście (w karczmie, u sprzedawców), możesz je zabrać jeśli jesteś biedakiem :P
++ lepsze oznaczanie używanego celu przed graczem
++ animacja podnoszenia przedmiotów nie z ziemi
++ wiadomość "Otrzymano przedmiot"
++ data dodania plotki do dziennika
++ tło przy wczytywaniu
++ neutralni herosi w podziemiach ograbiają zwłoki i się nie przeciążają
++ lepsze generowanie jednostek w karczmie (powinno to zmniejszyć szansę na brak miejsca dla questowych jednostek)
++ można usunąć przypisany klawisz w opcjach klikając na nim prawy przyciskiem myszki
++ szarzenie po śmierci
++ zmienna dostępna też w pliku cfg: c_postfx - można wyłączyć post effects
++ skrzynie można otwierać tylko z dobrej strony
++ górnicy częściej zajmują się tym czym powinni
++ obszar zmiany poziomu jest widoczny tylko gdy się podejdzie, jest też w podziemiach
++ jedzenie w podziemiach
++ 50% szansy na studnie w mieście, model Leinnana
++ nowy model kociołka i 4 modele ław zrobione przez Leinnana
++ gorsze przedmioty w wiosce, jedzenie u karczmarza, brak jedzenia u handlarza bo jest sprzedawca jedzenia
++ nowe dialogi pijaków, sprzedawców
++ obelisk w otwartych mapach, uschnięte drzewo
++ lepsze ustawianie pozycji wiadomości gry
++ nowe nagrobki, krzesło i beczki zrobione przez Leinnana
++ większa szansa że ai użyje miksturki leczniczej
++ ai szybciej zaczyna jeść gdy usiądzie w karczmie
++ nowe tekstury zrobione/znalezione przez Leinnana
+Naprawione:
+- naprawiony brak dachu i obraz w ścianie u sołtysa
+- naprawiony brak krwii przy wrogach zabitych przez bohaterów w podziemiach
+- naprawiona możliwość używana kowadła/żyły rudy gdy potrzebny przedmiot jest założony
+- naprawione błędy w gui gdy jest włączone windowsowe skalowanie DPI
+- nie da się usiąść na ławie przed karczmą ze złej strony
+- naprawiony dźwięk przenoszenia magicznej kuli
+- w wyniku błędu w wiosce nigdy nie było kowala, teraz jest szansa że się wygeneruje
+- przedmioty w skrzyniach w obozie i w ataku na wóz bandytów były nie posortowane
+- naprawione rzadkie złe sortowanie przedmiotów co mogło doprowadzić do posiadania kilku stacków takich samych przedmiotów
+- naprawiony rzadki crash przy wczytywaniu gdy postać/skrzynia miała questowy przedmiot
+- usunięty memory leak związany z niektórymi questowymi spotkaniami na mapie
+- naprawiony brakujący dźwięk podnoszenia złota z ziemi u klienta
+- zmiana poziomu gdy członkowie drużyny używają jakiegoś przedmiotu nie sprawia że cały czas go potem trzymają w ręce
+- usunięty błąd z ai, w podziemiach pozycja zamkniętych drzwi dla testowania czy coś widzi zawsze była na środku kratki więc mógł cię widzieć gdy stanąłeś za drzwiami lub nie widzieć gdy stanąłeś tuż przed nimi
+- usunięty błąd z wyszukiwaniem ścieżek ai, postacie które nie mogą otwierać drzwi nie mogły wejść na pole z zamkniętymi drzwiami nawet gdy drzwi był przy krawędzi pola
+- usunięty rzadki crash gdy ai szuka celu do postaci która jest przy krawędzi mapy
+- naprawiony rzadki brak animacji podnoszenia przedmiotu z ziemi
+- blokada opuszczenia lokalizacji jest przypisana do chodzenia a nie do klawisza Shift, działa też w podziemiach
+- ai potrafił wydobywać rudę tylko z dwóch z czterech kierunków
+- usunięty błąd, gdy rozpoczną się zawody w piciu a gracz siedzi to wbije się w stołek
+- naprawiony zły napis po przegranej, gracze opuszczali grę i mogło pisać że podróżowałeś samotnie
+- naprawiony brakujący dźwięk u klienta gdy ktoś używa obiektu
+- dźwięki 3d przyczepione do postaci źle uwzględniały zasięg
+- po pogadaniu postacie nie zamykały ust dopóki się nie ruszyły
+- usunięty rzadki crash przy generowaniu jednostek w lesie/księżycowej studni
+
+--------------------------------------------------------------------------------
+Wersja 0.2.12 (2014-11-20):
++ ai w czasie wyjmowania łuku może się ruszać
++ nowe obiekty: półki, stołek, bania
++ nowe modele (stół, biurko, tron, biblioteczka, łóżko, namiot, skrzynki, obrazy, drewniana tarcza, chochla)
++ skrypt patch
++ więcej budynków w mieście
++ migotanie pochodni
+- naprawione liczenie walk na arenie
+- naprawiony błąd w oknie dialogowym z checkboxem
+- naprawiony brakujący przedmiot z wersji 0.2/0.2.1 z powodu literówki (emerals zamiast emerald)
+- naprawiony błąd z generowanie obiektów na ścianie w obiektach przy ścianie (np gobelin i łóżko)
+- usunięty memory leak przy sprawdzaniu wersji gry
+- usunięty memory leak u serwera gdy laguje a klient szybko strzela z łuku
+- usunięty crash rzadko występujący przy strzelaniu z łuku
+
+--------------------------------------------------------------------------------
+Wersja 0.2.10 (2014-11-09):
+Najważniejsze zmiany:
+* ulepszone gui (ekwipunek, panel postaci, handel, minimapa itp)
+* wczytywanie tłumaczenia z pliku
+* wiele pomniejszych ulepszeń i naprawionych błędów
+Zmiany:
++ animacja wyciągania/chowania broni jednoręcznej bez tarczy
++ nowy ekwipunek, przedmioty są automatycznie sortowane, nieskończone miejsce, można wyrzucać/sprzedawać założone przedmioty
++ lepsza konsola (przewijanie tekstu, zapamiętywanie ostatnich komend)
++ możliwość wybrania dowolnej rozdzielczości
++ skróty klawiszowe dziennika
++ aktualizacja dziennika gdy jest on otwarty
++ aktualizacja minimapy po otwarciu drzwi
++ skrót do zabierania wszystkich przedmiotów
++ wczytywanie nazw i opisów przedmiotów z pliku
++ blokowanie jest o wiele przydatniejsze
++ zaktualizowany raknet
++ wygenerowana drużyna otwiera drzwi jeśli pojawi się po drugiej stronie
++ miniaturka w zapisach na mapie
++ łatwiejszy wybór opcji dialogowych myszką
++ celność łuku zależy od umiejętności
++ szybkość blokowania zależy od umiejętności
++ umiejętność używania pancerza zwiększa limit zręczności
++ w trybie hardcore używa przy zapisywaniu domyślnie starej nazwy zapisu
++ artefakty dają odporność na czary, mikstura antymagii
++ przedmioty zwiększają obrażenia od magii
++ grzbietokłuj i niektóre postacie zadają większe obrażenia ciosem w plecy, nieumarli i konstrukty są odporne na cios w plecy
++ otwieranie dziennika na mapie świata
++ wyświetlanie na minimapie innych postaci, przedmiotów i portali (aby łatwiej było ukończyć niektóre zadania)
++ lepsze rzucanie czarów celowanych na poruszający się cel lub samego siebie (leczenie)
++ w zadaniu 'Zło' stara świątynia ma minimum 2 poziomy, końcowy boss jest łatwiejszy
++ ai rzuca czar leczenia na najbardziej rannych, ożywienia na najsilniejszych
++ kapłan leczy drużynę w czasie podróży
++ nie można co chwila ogłuszać jednostek
++ niektórzy bossowie mają teraz obstawę która nie atakuje dopóki oni nie zaatakują
++ aktualizacja FmodEx z 4.40.06 do 4.44.46
+Naprawione błędy:
+- naprawione kiepskie odwzorowanie pozycji w grze na minimapie
+- przytrzymanie klawisza nie działa jak kilkukrotne wciskanie
+- przerwanie wypijania mikstury nie zmienia jej na drużynową
+- przedmioty zdobyte samemu nie są drużynowe gdy ktoś do ciebie dołączy
+- usunięty błąd z kierunkiem schodów w prawym górnym rogu
+- naprawione brakujące tłumaczenia
+- bohaterowie wygenerowani w podziemiach otwierają drzwi, nie stoją w korytarzu
+- usunięty memleak przy wczytywaniu zapisu z mapy świata i wychodzeniu do menu
+- usunięty błąd przy wczytywaniu gry w MP gdy serwer używał innej postaci
+- usunięty błąd w generowaniu postaci gdy przywódca jest nową postacią w zapisie
+- usunięty błąd z wyrzucaniem złota przez klienta (nie wysyłał komunikatu do serwera, tak na prawdę nic nie wyrzucał)
+- klient opuszczając grę nie blokuje npc jeśli z nim handluje/rozmawia
+- usunięty memleak związany z tekstami w czasie rozmowy w mp
+- użycie komendy 'trainage' przez klienta na mapie świata nie crashuje
+- obudowa drzwi w skarbcu krypty ma taką samą teksturę jak ściana
+- naprawione działanie noclip u klienta
+- naprawiony kolor tła w miniaturkach zapisów
+- npc nie uruchamia portalu przechodząc przez przypadek przez niego
+- starożytna zbrojownia: usunięty nadmiarowy portal, skrzynia z artefaktami jest w odległej skrzyni
+- szept działa u klienta który chce rozmawiać z klientami którzy dołączyli po nim
+- włączenie kodów w samouczku nie crashuje
+- usunięty crash przy zamykaniu gry jeśli było się w podziemiach a potem w nie podziemiach używało alt-tab w fullscreen
+- usunięty błąd z blokowaniem się jednostek które kończa używać obiekt
+- naprawione błędy związane ze szkoleniem i piciem miksturki zwiększającej atrybuty (nie zwiększało wymagań)
+- usunięty błąd z kluczem w zadaniu "Orkowa banda"
+- usunięty błąd z blokowaniem gdy nie ma wrogów przez ai
+- usunięty błąd z niewysyłaniem komunikatów o końcu blokowania
+- usunięty błąd w komendzie "list itemn"
+- w jaskini na minimapie są rysowane schody
+- usunięty błąd w generowaniu jaskini
+- usunięty błąd dotyczący wczytywania gry gdzie ai trenuje strzelanie (nie strzela)
+- usunięty memoryleak przy wczytywaniu gry (ParticleEmitter)
+- bossowie którzy chcą powiedzieć coś przed walką nie biegają po pokojach gdy usłyszą jakiś okrzyk
+- ai nie przerywa dialogu żeby rzucić czar
+- po rzuceniu czaru leczenia/ożywienia postać nie będzie szukać wrogów jeśli zginęli
+- portal w queście 'Zło' po wygenerowaniu był widoczny też na wyższych poziomach
+- chowanie/wyjmowanie broni w czasie zmiany poziomu jest poprawnie obsługiwane
+- usunięty błąd w generowaniu schodów koło drzwi
+- usunięty crash po wczytywaniu gdy były jakieś pociski w grze
+- boss w queście 'Zło' nie pojawia się w ołtarzu, lepiej modli się przy ołtarzu
+- usunięty błąd w spotkaniu z szaleńcami na drodze
+- usunięty błąd w zaklęciu ożywiania, ożywali tam gdzie stali blokując się w innych wrogach
+- czar wyssania życia nie działa na sojuszników
+- magowie sprawdzają czy nie ma kogoś na lini strzału
+- usunięty błąd, po przejściu questa 'Zło' lokalizacja nigdy nie jest resetowana (nowi wrogowie się pojawiają a starzy nie znikają)
+- usunięty rzadki crash po wchodzeniu do miasta/wioski
+- usunięty błąd w generowaniu obrazów nachodzących na siebie (i inny obiektów wiszących na ścianie)
+- po zawodach jeśli nie weźmie się w nich udziału poprawnie mówi że już w tym roku były
+- pogadanie z ochroniarzami w queście 'Zaginiony łuk' crashowało
+- ochroniarz i boss w queście 'Zaginony łuk' miał teksty goblina
+- usunięty crash w sekretnej lokalizacji
+- usunięty błąd z wpływem śmierci wroga na morale członków drużyny gracza
+- usunięty błąd w queście 'Dziwny kamień', nie liczył się do ukończonych unikalnych zadań, nie dało się przejść na 100% gry
+- bohaterowie przed zawodami nie rozchodzą się, wczytywanie po ich wygenerowniu nie crashuje
+- usunięty błąd w MP przy wczytywaniu questowych przedmiotów
+- w MP nie crashuje po wczytaniu zapisu gdzie ktoś chowa/wyjmuje broń
+- w MP nie crashuje po wczytaniu zapisu w czasie spotkania na mapie świata gdy się je opuszcza
+- w MP płacenie bandytom i magowie używało złota serwera a nie gracza
+
+--------------------------------------------------------------------------------
+Wersja 0.2.5 (2014-06-22):
++ angielska wersja językowa
++ zawody na arenie
++ unikalny quest związany z szaleńcami
++ powtarzalny quest "List gończy"
++ tryb hardcore
++ szybkie zapisywanie i wczytywanie
++ nowa lokalizacja, księżycowa studnia
++ kilof, animacja wydobywania rudy
++ tron, animacja siedzenia
++ magiczne coś u magów, nowe obrazy
++ więcej nazw lokalizacji, imion bohaterów, tekstów
++ udźwig członków drużyny
++ screenshot w zapisie
++ lepsza minimapa, większy zasięg odkrywania
++ przesuwanie tekstów na mapie miasta tak żeby nie nachodziły na siebie
++ lepsze celowanie z łuku
++ obrazek klasy kapłana, czar leczenia
++ lepsze rzucanie ożywienia nieumarłych przez nekromantów
++ ESC w głównym menu pyta czy na pewno zamknąć
++ screenshot bez gui
++ zapamiętywanie wyjęcia broni przy zmianie poziomu
++ więcej interakcji z szaleńcami
++ chowania broni przed używania kowadła/kociołka
++ licznik zabitych przez siebie / innych po śmierci
++ alt+f4 w multiplayer
++ timeout przy łączeniu klienta do serwera
++ wyświetlanie innych wersji na czerwono przy szukaniu serwerów LAN
++ herosi mówią że nie mają już miksturek
++ gadanie herosów po wejściu, obserwatorów na arenie
++ unikalna jednostka per quest gdy potrzeba
++ więcej standardowego ekwipunku u kowala
++ połączenie komunikatów o wzroście atrybutu/umiejętności
++ zmiany w ekwipunku NPC (posłańcy i pijacy nie noszą lepszych ubrań)
+- wczytywanie eksplozji w multiplayer dla czaszki
+- naprawiony błąd przy chowaniu broni jeśli od razu wciśnie się spację
+- usunięte więcej memleaków
+- nie zawiesza się gdy uruchomimy serwer bez innych graczy
+- multisampling a obrazek postaci, ikony przedmiotów (darktorq)
+- grabienie zwłok odwraca w dobrą stronę
+- serwer w czasie gry nie ogłasza że można dołączyć
+- lepszy pathfinding (wybiera szybszą drogę, nie szuka drogi poza mury miasta)
+- naprawione wczytywanie na mapie świata
+- quest "porwany" - działa po wczytaniu
+- przy wymianie kilka razy pytał o ten sam przedmiot
+- potwory w jaskini się nie resetowały
+- w mieście nie znikała krew/zwłoki
+- poprawione uciekanie na otwartym terenie
+- ograniczenie w okrzyku bojowym przez wrogów
+- usunięty błąd w MP powodujący zawieszanie się przy zmianie poziomu z pułapkami
+- brakujące animacje u klienta
+- lepsze używanie obiektów u klienta
+- w czasie używania obiektu rysuje nicki drużyny
+- strzelanie z łuku przy zmianie poziomu mogło zcrashować przy strzelaniu
+- lepsza synchronizacja wyjęcia broni w MP
+- na arenie się nie umiera
+- poprawne wyświetlanie kredytu i dni po wczytaniu u klienta
+- krew w podziemiach na schodach uwzględnia pozycję schodów
+- zawieszanie po wczytaniu w MP gdy była tworzona jednostka na danym poziomie, bez żadnych zmian poziomów (dotyczy głównie spawnunit i kilku questów)
+- poprawione wykrywanie kolizji atakowania
+- wygranie zawodów i odebranie nagrody mogło zcrashować grę, próbowało dać nieistniejącą miksturkę
+- naprawiony błąd szukania ścieżki poza mury miasta który mógł spowolnić grę
+- trening nie aktualizował hp/udźwigu
+- tartak blokuje kamerę
+
+--------------------------------------------------------------------------------
+Wersja 0.2.1 (2014-06-05):
++ dodany multisampling
++ logowanie możliwości procesora
++ wykrywanie duplikatów plików
++ szybsze wczytywanie jeśli wyłączymy dźwięk lub muzykę
+- usunięty crash przy zapisywaniu się w questowej lokalizacji 2 razy
+- usunięty crash przy otwieraniu dziennika jeśli wcześniej był otwarty na stronie z zadaniem a teraz nie mamy żadnego
+- usunięte wycieki pamięci które po dłuższym graniu mogą doprowadzić do braku pamięci i crashu
+
+--------------------------------------------------------------------------------
+Wersja 0.2 (2014-06-03):
+Pierwsza dostępna publicznie wersja.
+Za dużo żeby wszystko wymieniać więc tylko najważniejsze zmiany od wersji 0.1:
+	* tarcza, łuk, różne miksturki, inne przedmioty
+	* potężny cios, strzelanie, blokowanie, bash
+	* lepsze ai, pathfinding
+	* mapa świata, różne lokalizacje, miasta, wioski
+	* zadania, plotki, newsy
+	* zapisywanie i wczytywanie
+	* pułapki, czary wrogów
+	* dialogi

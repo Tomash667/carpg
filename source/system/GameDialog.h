@@ -130,4 +130,5 @@ struct QuestDialog
 {
 	GameDialog* dialog;
 	Quest_Scripted* quest;
+	int priority;
 };

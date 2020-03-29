@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "LoadScreen.h"
 #include "GameGui.h"
 #include <ResourceManager.h>
@@ -17,7 +16,7 @@ void LoadScreen::LoadData()
 void LoadScreen::Draw(ControlDrawData*)
 {
 	// background
-	gui->DrawSpriteFull(tBackground, Color::White);
+	gui->DrawSpriteFull(tBackground);
 
 	// loadbar background
 	Int2 img_size = tLoadbarBg->GetSize();

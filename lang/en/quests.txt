@@ -1,0 +1,295 @@
+//=============================================================================
+quest deliver_letter {
+	dialog start {
+		0 "I'm looking for someone who will deliver this letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). Are you interested in it?"
+		1 "Yes"
+		2 {
+			"Good, here's the message. You have a month to deliver it and come back with the answer."
+			"Good, take this letter. You have one month to provide me with an answer."
+		}
+		3 "$(end_loc.name) is $(World::GetDirName(start_loc.pos, end_loc.pos)) from here."
+		4 "No"
+	}
+	
+	dialog target {
+		0 "Deliver a letter"
+		1 "Show me that letter."
+		2 "Hm..."
+		3 "You supposed to deliver me this letter earlier. Now this information is worth nothing."
+		4 {
+			"This information is very important."
+			"Interesting news."
+			"It is good that you provided me this letter."
+		}
+		5 "Here you have my answer. Try to deliver it on time."
+	}
+	
+	dialog end {
+		0 "You disappointed me. You should deliver letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") in $(end_loc.name). Do not expect that I will give you any task."
+		1 "Deliver a letter"
+		2 "Good. Show me that letter with answer."
+		3 "I see that you are responsible, here's your 250 gold pieces."
+		4 "I could use more people like you."
+	}
+	
+	texts {
+		0 "Deliver the letter"
+		1 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
+		2 "I got a letter that I need to deliver to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). It's $(World::GetDirName(start_loc.pos, end_loc.pos)) from here. I have a month to go there and return."
+		3 "Letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
+		4 "Letter from $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
+		5 "I couldn't deliver the letter on time."
+		6 "I delivered the letter, now I have to return with the answer."
+		7 "I delivered the answer. Quest done!"
+		8 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
+quest deliver_resources {
+	dialog start {
+		0 "I have to deliver a box of resource to $(target_loc.name). Normally, I would send one of my people, but since you're already here..."
+		1 "This is quite urgent. $(target_loc.name) needs these resources within 15 days. Are you interested in?"
+		2 "Yes"
+		3 "No"
+		4 "Take this box and good luck. Try to avoid bandits on the roads."
+	}
+	
+	dialog end {
+		0 "Give resources"
+		1 "Thank you, take this gold as a reward."
+		2 "Thanks be to the gods for help!"
+		3 "But wait... Where do you have these resources?"
+	}
+	
+	dialog bandits_enc {
+		0 "Finally you are fucking here! Kill him!"
+	}
+	
+	dialog bandits {
+		0 "Well, you are finally here! How much can you wait for these goddamned resources!"
+	}
+	
+	texts {
+		0 "Resources for $(target_loc.name)"
+		1 "Deliver resources"
+		2 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
+		3 "I got the resources I need to deliver within 15 days to $(target_loc.name) which is $(World::GetDirName(start_loc.pos, target_loc.pos)) from here."
+		4 "I provided resources on time. Quest done!"
+		5 "I did not have time to deliver resources."
+		6 "Traveling along the road you came across a few bandits. It looks like they've been waiting for you..."
+		7 "I came across bandits who wanted to take away my resources."
+	}
+}
+
+//=============================================================================
+quest alchemist_apprentice
+{
+	dialog alchemist {
+		0 "Welcome. Are you here for the task?"
+		1 "Task"
+		2 "I am looking for someone who will provide me with alchemical herbs from a nearby forest."
+		3 "I sent my student there, but he has not returned for a few days."
+		4 "Will you take care of this?"
+		5 "Yes"
+		6 "No"
+		7 "Thank you for your time."
+		8 "Go to $(forest.name) at $(World::GetDirName(city.pos, forest.pos)) from here."
+		9 "Bring me as much alchemical herbs as you can."
+		10 "My student also went there, but he did not come back so watch yourself."
+		11 "Welcome. Did you find my student or this herbs?"
+		12 "Give back the herbs"
+		13 "Cancel task"
+		14 "Thank you, take this gold."
+		15 "Ehhh, I'm disappointed with you."
+		16 "My student has come back to me all and healthy, please take these potions in thanks."
+		17 "It is a pity that Luke died... He was a great helper."
+		18 "If you change your mind, you know where to find me."
+	}
+	
+	dialog xwokloiz {
+		0 "Greetings! I am $name$. Did my master send you, the alchemist?"
+		1 "He sent me here to collect alchemical herbs, but because of the surrounding beasts, I do not go too fast."
+		2 "I have an idea! You will kill these monsters and I will lead you, what do you say?"
+		3 "Yes"
+		4 "No"
+		5 "Let's go! There, I saw one plant."
+		6 "It's a pity... I'll wait here, maybe you'll change your mind..."
+		7 "Hmmm ... Have you thought about my help offer?"
+		8 "What's happening? We have not found all the plants yet."
+		9 "I see that you handled yourself... Well, I'm going back to $(city.name)."
+		10 "Well done, we've collected everything we could. It's time to get back to the city."
+		11 "I almost forget, take this plant that I found."
+		12 "Relax, I'll find a way to $(city.name) without your help."
+	}
+	
+	texts {
+		12 "" // required when there are multiple text variants in texts
+		0 "Herbs for the alchemist"
+		1 "Received from the alchemist from $(city.name) at $date$."
+		2 "I need to go to $(forest.name) at $(World::GetDirName(Level::location.pos, forest.pos)) from $(city.name) and find as much alchemical herbs as I can. There should also be an alchemist pupil in the area who would be good to find."
+		3 "I met a student of an alchemist in the forest. He wanted to help me find the alchemical herbs but I refused."
+		4 "I met a student of an alchemist in the forest. He offered to help me find the alchemical herbs."
+		5 "I changed my mind and accepted the student's alchemist's help. He will lead me to the surrounding plants."
+		6 "I collected all the herbs I could find. It's time to go back to the alchemist."
+		7 "I provided herbs and received payment. Quest done!"
+		8 "I quit this task."
+		9 {
+			"Another weed!"
+			"I found another plant!"
+		}
+		10 "The student of the alchemist died during the fight in the forest."
+		11 "The alchemist in $(city.name) is looking for a specific type of herbs."
+	}
+}
+
+//=============================================================================
+quest bandits_collect_toll
+{
+	dialog start {
+		0 "On the road between $(start_loc.name) and $(other_loc.name) camped bandits. They charge a fee and are robbing merchants."
+		1 "You have time to take care of them?"
+		2 "Yes"
+		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc.pos, other_loc.pos)) from here and back. Then certainly you encounter these bandits."
+		4 "You got half month for this."
+		5 "No"
+	}
+	
+	dialog end {
+		0 "You could not get rid of these thugs out of the way?"
+		1 "Ehhh, now probably moved elsewhere. I'm disappointed in you."
+		2 "Finally, someone on whom you can rely on. Well done with these bandits, that will teach them for some time."
+		3 "Take this 1500 gold pieces as reward."
+	}
+	
+	dialog encounter {
+		0 "Stop!"
+		1 "This is our road, if you want to go you have to pay 500 gold pieces!"
+		2 "Pay"
+		3 "You can go. Do not forget to visit us again, hehehe..."
+		4 "You do not have enough gold damn poor thing!"
+		5 "I hope that your equipment is worth something!"
+		6 "Don't pay"
+		7 "I hope that your equipment is worth something!"
+	}
+
+	texts {
+		0 "Bandits collecting tolls"
+		1 "Obtained from captain guard of $(start_loc.name) at $date$."
+		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc.pos, other_loc.pos)) from here. I have to get rid of them in half a month."
+		3 "You encounter group of bandits gathering tolls."
+		4 "I didn't manage to kill the bandits in time."
+		5 "I killed the bandits."
+		6 "I informed the captain of the guard of my success and got the reward. Quest done!"
+		7 "Adventurers took care of the bandits who collected a fee on the road."
+		8 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
+quest main {
+	dialog trainer {
+		0 "Congratulations! You completed training at the academy!"
+		1 "What are you going to do now? Any plans for the future?"
+		2 "Welcome back $player_name$! How can I help you?"
+		3 "Recruit heroes"
+		4 "End dialog"
+		5 "Your team is already numerous enough."
+		6 "Who do you want to recruit?"
+		7 "Cancel"
+	}
+	
+	dialog messenger {
+		0 "$player_name$! Here you are!"
+		1 "Did you finish this training at the academy? That's good..."
+		2 "You must immediately return to the $(village.name)."
+		3 "It's getting worse, you need to talk to the village mayor."
+		4 "Since you are here, try to recruit a few people to help you."
+		5 "I'm going back to the village, go there as soon as you can."
+		6 "That's all I had to tell you."
+	}
+	
+	dialog soltys {
+		0 "It's good that you came $player_name$. We need to talk about the plague..."
+		1 "Plague"
+		2 "Several inhabitants of our village have recently fallen ill."
+		3 "We need to talk to them and determine if this is the disease or any normal illness."
+		4 "Go talk to them and try to find out what they got infected from. At this time I will think..."
+		5 "Talk to infected villagers and come back to me."
+		6 "One of the villagers attacked you for no reason!?"
+		7 "It's worse than I thought, we must quickly bring in some priest who knows about plagues."
+		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here one of the clerics lives. I have heard that he is researching various diseases."
+		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) stąd mieszka jeden z kleryków. Słyszałem że zajmuje się badaniami nad różnymi chorobami."
+		9 "Find him and help him discover what our people are suffering from."
+		10 "Find a cleric living in $(shrine_loc.name), without him this village will be empty!"
+	}
+	
+	dialog ill_villager {
+		0 "You'd better step back. I think I'm ill..."
+		1 "Ask about illness"
+		2 "End dialog"
+		3 "I think the water tasted strange lately. Maybe because of that?"
+		4 "Just a few days ago I was healthy ... I don't know where the plague came from!"
+		5 "A week ago a traveling merchant was here. I saw him here for the first time."
+		6 "I bought meat from him. Maybe it was stale?"
+		7 "I was in the woods yesterday and something bit me."
+		8 "I haven't seen it but since then I feel bad..."
+		9 "I feel sick. I think you will have to send for some cleric..."
+	}
+	
+	dialog cleric_seller {
+		0 "Plague"
+		1 "Plague? Nothing that I know of..."
+		2 "You probably wanted to talk to $(cleric.real_name)?"
+		3 "Usually you can find him here but currently he went on research to $ dungeon.name) on $(World::GetDirName(Level::location.pos, dungeon.pos)) from here."
+		4 "I hope he's okay, I haven't seen him for several days."
+	}
+	
+	dialog cleric {
+		0 "Glory be to Imnos!"
+		1 "I was afraid I would die here. Like my guards killed by these undead ..."
+		2 "Please lead me to $(shrine_loc.name) to the shrine, I have to report what I found here."
+		3 "Then I will immediately go with you to help heal this disease."
+		4 "Since you are here, I have one more request for you."
+		5 "On the lower level of the underground there is a book that would be invaluable in my research."
+		6 "If you get it, I will reward you generously."
+		7 "Lead me to the shrine in $(shrine_loc.name), then I will help you."
+		8 "End dialog"
+		9 "Thank you! I immediately start working on the cure."
+		10 "(This is the end of the main plot for this version. In the meantime try to complete 9 unique quests)"
+	}
+	
+	texts {
+		0 "An unknown plague broke out in the kingdom of Nyrtana."
+		1 "It slowly kills people without harming other races and animals."
+		2 "Other countries have closed the border to avoid the spread of the disease."
+		3 "A few people got infected in your village as well, it is not known why."
+		4 "You went to the heroes' academy to undergo basic training."
+		5 "Your main task is to stop the plague!"
+		6 "Plague in village"
+		7 "Started at $date$."
+		8 "In $(village.name), the plague began to spread more and more. I have to get back there quickly."
+		9 "I have to walk around the village and find infected villagers. Maybe I can establish something."
+		10 "One of the villagers went crazy because of the plague and attacked me."
+		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) stąd mieszka kleryk specjalizujący się w chorobach. Muszę z nim porozmawiać."
+		12 "Kleryk którego poszukiwałem, $(cleric.real_name) wyruszył do $(dungeon.name) na $(World::GetDirName(Level::location.pos, dungeon.pos)) stąd prowadzić jakieś badania."
+		13 "Odnalazłem $(cleric.real_name) w podziemiach, był ledwo żywy a jego strażnicy zostali zabici przez nieumarłych. Chce żebym doprowadził go do kapliczki w $(shrine_loc.name), wtedy mi pomoże."
+	}
+}
+
+//=============================================================================
+quest side_cleric {
+	dialog end {
+		0 "Give the book"
+		1 "Did you get that book?"
+		2 "It will perfectly help in my research. Please, take this as reward."
+	}
+	
+	texts {
+		0 "Great Book of Diseases"
+		1 "Started at $date$."
+		2 "Cleric $(cleric.real_name) asked me to obtain a book which is at the lower level of $(dungeon.name). If we split up, he'll be waiting for me in $(city.name)."
+		3 "I found the book. Now I have to take it to $(cleric.real_name)."
+		4 "I delivered the book and received the reward. Quest done!"
+	}
+}

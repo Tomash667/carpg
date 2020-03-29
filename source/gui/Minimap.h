@@ -4,6 +4,7 @@
 #include "GamePanel.h"
 
 //-----------------------------------------------------------------------------
+// Location minimap
 class Minimap : public GamePanel
 {
 public:
@@ -46,6 +47,9 @@ public:
 		return Convert(TransformTile(tile));
 	}
 
+	City* city;
+
+private:
 	struct Text
 	{
 		cstring text;
@@ -54,11 +58,8 @@ public:
 		Vec2 pos, anchor;
 	};
 
-	Matrix m1;
 	vector<Text> texts;
-	City* city;
-
-private:
+	Matrix m1;
 	TexturePtr tUnit[5], tStairsDown, tStairsUp, tBag, tBagImportant, tPortal, tChest;
 	int minimap_size;
 };

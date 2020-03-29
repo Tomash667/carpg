@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ItemLoader.h"
 #include "Item.h"
 #include "Stock.h"
@@ -24,7 +23,9 @@ enum Group
 	G_BOOK_SCHEME_PROPERTY,
 	G_SKILL,
 	G_EFFECT,
-	G_TAG
+	G_TAG,
+	G_RECIPE,
+	G_LIST_TYPE
 };
 
 enum Property
@@ -74,6 +75,19 @@ enum BookSchemeProperty
 	BSP_NEXT
 };
 
+enum RecipeProperty
+{
+	RP_RESULT,
+	RP_ITEMS,
+	RP_SKILL
+};
+
+enum ListType
+{
+	LT_LEVELED,
+	LT_PRIORITY
+};
+
 //=================================================================================================
 void ItemLoader::DoLoading()
 {
@@ -90,8 +104,8 @@ void ItemLoader::Cleanup()
 {
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
-	DeleteElements(LeveledItemList::lists);
 	DeleteElements(Stock::stocks);
+	DeleteElements(Recipe::recipes);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -101,7 +115,7 @@ void ItemLoader::Cleanup()
 //=================================================================================================
 void ItemLoader::InitTokenizer()
 {
-	t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
+	t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
 
 	t.AddKeywords(G_ITEM_TYPE, {
 		{ "weapon", IT_WEAPON },
@@ -115,12 +129,12 @@ void ItemLoader::InitTokenizer()
 		{ "book", IT_BOOK },
 		{ "gold", IT_GOLD },
 		{ "list", IT_LIST },
-		{ "leveled_list", IT_LEVELED_LIST },
 		{ "stock", IT_STOCK },
 		{ "book_scheme", IT_BOOK_SCHEME },
 		{ "start_items", IT_START_ITEMS },
 		{ "better_items", IT_BETTER_ITEMS },
-		{ "alias", IT_ALIAS }
+		{ "alias", IT_ALIAS },
+		{ "recipe", IT_RECIPE }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -191,7 +205,8 @@ void ItemLoader::InitTokenizer()
 		{ "unique", ITEM_UNIQUE },
 		{ "alpha", ITEM_ALPHA },
 		{ "magic_scroll", ITEM_MAGIC_SCROLL },
-		{ "wand", ITEM_WAND }
+		{ "wand", ITEM_WAND },
+		{ "ingredient", ITEM_INGREDIENT }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -255,6 +270,17 @@ void ItemLoader::InitTokenizer()
 		{ "mana", TAG_MANA },
 		{ "cleric", TAG_CLERIC }
 		});
+
+	t.AddKeywords(G_RECIPE, {
+		{ "result", RP_RESULT },
+		{ "items", RP_ITEMS },
+		{ "skill", RP_SKILL }
+		});
+
+	t.AddKeywords(G_LIST_TYPE, {
+		{ "leveled", LT_LEVELED },
+		{ "priority", LT_PRIORITY }
+		});
 }
 
 //=================================================================================================
@@ -269,9 +295,6 @@ void ItemLoader::LoadEntity(int top, const string& id)
 	case IT_LIST:
 		ParseItemList(id);
 		break;
-	case IT_LEVELED_LIST:
-		ParseLeveledItemList(id);
-		break;
 	case IT_STOCK:
 		ParseStock(id);
 		break;
@@ -283,6 +306,9 @@ void ItemLoader::LoadEntity(int top, const string& id)
 		break;
 	case IT_BETTER_ITEMS:
 		ParseBetterItems();
+		break;
+	case IT_RECIPE:
+		ParseRecipe(id);
 		break;
 	case IT_ALIAS:
 		ParseAlias(id);
@@ -297,15 +323,13 @@ void ItemLoader::Finalize()
 
 	CalculateCrc();
 
-	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size() + LeveledItemList::lists.size(),
-		content.crc[(int)Content::Id::Items]);
+	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size(), content.crc[(int)Content::Id::Items]);
 }
 
 //=================================================================================================
 void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 {
-	ItemsMap::iterator it = Item::items.lower_bound(id.c_str());
-	if(it != Item::items.end() && id == it->first)
+	if(Item::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	// create
@@ -660,7 +684,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		LoadError("No mesh/texture.");
 
 	Item* item_ptr = item.Pin();
-	Item::items.insert(it, ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
+	Item::items.insert(ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
 
 	switch(item_ptr->type)
 	{
@@ -731,15 +755,27 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 //=================================================================================================
 void ItemLoader::ParseItemList(const string& id)
 {
-	ItemListResult existing_list = ItemList::TryGet(id);
-	if(existing_list)
+	if(ItemList::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<ItemList> lis;
 
 	// id
 	lis->id = id;
+	lis->total = 0;
+	lis->is_leveled = false;
+	lis->is_priority = false;
 	t.Next();
+
+	// [leveled|priority]
+	if(t.IsKeywordGroup(G_LIST_TYPE))
+	{
+		if(t.IsKeyword(LT_LEVELED, G_LIST_TYPE))
+			lis->is_leveled = true;
+		else
+			lis->is_priority = true;
+		t.Next();
+	}
 
 	// {
 	t.AssertSymbol('{');
@@ -747,57 +783,46 @@ void ItemLoader::ParseItemList(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
+		ItemList::Entry entry;
+
+		if(lis->is_priority && t.IsInt())
+		{
+			entry.chance = t.GetInt();
+			if(entry.chance < 0)
+				t.Throw("Invalid item priority %d.", entry.chance);
+			t.Next();
+		}
+		else
+			entry.chance = 1;
+		lis->total += entry.chance;
+
 		const string& item_id = t.MustGetItemKeyword();
-		Item* item = Item::TryGet(item_id);
-		if(!item)
+		entry.item = Item::TryGet(item_id);
+		if(!entry.item)
 			t.Throw("Missing item %s.", item_id.c_str());
-		lis->items.push_back(item);
 		t.Next();
+
+		if(lis->is_leveled)
+		{
+			entry.level = t.MustGetInt();
+			if(entry.level < 0)
+				t.Throw("Invalid item level %d.", entry.level);
+			t.Next();
+		}
+
+		lis->items.push_back(entry);
 	}
+
+	if(lis->is_priority && lis->total == (int)lis->items.size())
+		lis->is_priority = false;
 
 	ItemList::lists.push_back(lis.Pin());
 }
 
 //=================================================================================================
-void ItemLoader::ParseLeveledItemList(const string& id)
-{
-	ItemListResult existing_list = ItemList::TryGet(id);
-	if(existing_list)
-		t.Throw("Id must be unique.");
-
-	Ptr<LeveledItemList> lis;
-
-	// id
-	lis->id = t.MustGetItemKeyword();
-	t.Next();
-
-	// {
-	t.AssertSymbol('{');
-	t.Next();
-
-	while(!t.IsSymbol('}'))
-	{
-		Item* item = Item::TryGet(t.MustGetItemKeyword());
-		if(!item)
-			t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
-
-		t.Next();
-		int level = t.MustGetInt();
-		if(level < 0)
-			t.Throw("Can't have negative required level %d for item '%s'.", level, item->id.c_str());
-
-		lis->items.push_back({ item, level });
-		t.Next();
-	}
-
-	LeveledItemList::lists.push_back(lis.Pin());
-}
-
-//=================================================================================================
 void ItemLoader::ParseStock(const string& id)
 {
-	Stock* existing_stock = Stock::TryGet(id);
-	if(existing_stock)
+	if(Stock::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<Stock> stock;
@@ -1000,21 +1025,13 @@ void ItemLoader::ParseStock(const string& id)
 //=================================================================================================
 void ItemLoader::ParseItemOrList(Stock* stock)
 {
-	ItemListResult result;
+	ItemList* lis;
 	const string& item_id = t.MustGetItemKeyword();
-	const Item* item = FindItemOrList(item_id, result);
-	if(result.lis != nullptr)
+	const Item* item = FindItemOrList(item_id, lis);
+	if(lis)
 	{
-		if(result.is_leveled)
-		{
-			stock->code.push_back(SE_LEVELED_LIST);
-			stock->code.push_back((int)result.llis);
-		}
-		else
-		{
-			stock->code.push_back(SE_LIST);
-			stock->code.push_back((int)result.lis);
-		}
+		stock->code.push_back(SE_LIST);
+		stock->code.push_back((int)lis);
 	}
 	else if(item)
 	{
@@ -1029,8 +1046,7 @@ void ItemLoader::ParseItemOrList(Stock* stock)
 //=================================================================================================
 void ItemLoader::ParseBookScheme(const string& id)
 {
-	BookScheme* existing_scheme = BookScheme::TryGet(id);
-	if(existing_scheme)
+	if(BookScheme::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<BookScheme> scheme;
@@ -1179,6 +1195,85 @@ void ItemLoader::ParseBetterItems()
 }
 
 //=================================================================================================
+void ItemLoader::ParseRecipe(const string& id)
+{
+	if(Recipe::TryGet(id))
+		t.Throw("Id must be unique.");
+
+	Ptr<Recipe> recipe;
+	recipe->id = id;
+
+	t.Next();
+	t.AssertSymbol('{');
+	t.Next();
+
+	while(!t.IsSymbol('}'))
+	{
+		RecipeProperty prop = (RecipeProperty)t.MustGetKeywordId(G_RECIPE);
+		t.Next();
+		switch(prop)
+		{
+		case RP_RESULT:
+			{
+				const string& item_id = t.MustGetItem();
+				recipe->result = Item::TryGet(item_id);
+				if(!recipe->result)
+					LoadError("Missing result item '%s'.", item_id.c_str());
+			}
+			break;
+		case RP_ITEMS:
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				uint count = 1;
+				if(t.IsInt())
+				{
+					count = t.GetUint();
+					if(count == 0u)
+						LoadError("Invalid item count %u.", count);
+					t.Next();
+				}
+
+				const string& item_id = t.MustGetItem();
+				const Item* item = Item::TryGet(item_id);
+				if(!recipe->result)
+					LoadError("Missing item '%s'.", item_id.c_str());
+				else
+				{
+					bool added = false;
+					for(pair<const Item*, uint>& p : recipe->items)
+					{
+						if(p.first == item)
+						{
+							p.second += count;
+							added = true;
+							break;
+						}
+					}
+					if(!added)
+						recipe->items.push_back(std::make_pair(item, count));
+				}
+
+				t.Next();
+			}
+			break;
+		case RP_SKILL:
+			recipe->skill = t.MustGetUint();
+			break;
+		}
+		t.Next();
+	}
+
+	if(!recipe->result)
+		LoadError("No result item.");
+	else if(recipe->items.empty())
+		LoadError("No required items.");
+	else
+		Recipe::recipes.push_back(recipe.Pin());
+}
+
+//=================================================================================================
 void ItemLoader::ParseAlias(const string& id)
 {
 	Item* item = Item::TryGet(id);
@@ -1307,22 +1402,15 @@ void ItemLoader::CalculateCrc()
 	{
 		crc.Update(lis->id);
 		crc.Update(lis->items.size());
-		for(const Item* i : lis->items)
-			crc.Update(i->id);
-	}
-
-	for(LeveledItemList* lis : LeveledItemList::lists)
-	{
-		crc.Update(lis->id);
-		crc.Update(lis->items.size());
-		for(LeveledItemList::Entry& e : lis->items)
+		for(const ItemList::Entry& e : lis->items)
 		{
 			crc.Update(e.item->id);
+			crc.Update(e.chance);
 			crc.Update(e.level);
 		}
 	}
 
-	for(auto scheme : BookScheme::book_schemes)
+	for(BookScheme* scheme : BookScheme::book_schemes)
 	{
 		crc.Update(scheme->id);
 		crc.Update(scheme->tex->filename);
@@ -1330,6 +1418,17 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->prev);
 		crc.Update(scheme->next);
 		crc.Update(scheme->regions);
+	}
+
+	for(Recipe* recipe : Recipe::recipes)
+	{
+		crc.Update(recipe->result->id);
+		for(pair<const Item*, uint>& p : recipe->items)
+		{
+			crc.Update(p.first->id);
+			crc.Update(p.second);
+		}
+		crc.Update(recipe->skill);
 	}
 
 	content.crc[(int)Content::Id::Items] = crc.Get();

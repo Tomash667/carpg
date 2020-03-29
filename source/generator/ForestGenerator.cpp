@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ForestGenerator.h"
 #include "OutsideLocation.h"
 #include "Terrain.h"

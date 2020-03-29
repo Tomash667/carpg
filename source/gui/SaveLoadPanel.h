@@ -1,12 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "Button.h"
+#include <DialogBox.h>
+#include <Button.h>
+#include <TextBox.h>
 #include "SaveSlot.h"
-#include "TextBox.h"
 
 //-----------------------------------------------------------------------------
+// Save & load panel
 class SaveLoad : public DialogBox
 {
 public:

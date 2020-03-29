@@ -182,7 +182,3 @@ ability summon_wolf {
 	width 1.5
 	icon
 }
-
-//------------------------------------------------------------------------------
-// Alias for old typo
-alias spit_poison split_poison // V_0_5

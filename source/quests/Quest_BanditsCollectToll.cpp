@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_BanditsCollectToll.h"
 #include "GameFile.h"
 #include "Level.h"

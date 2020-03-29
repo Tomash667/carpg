@@ -22,6 +22,7 @@ struct Room : ObjectPoolProxy<Room>
 	Int2 pos, size;
 	vector<Room*> connected;
 	RoomTarget target;
+	RoomType* type; // not saved - used only during generation
 	int index, group;
 
 	static const int MIN_SIZE = 19;

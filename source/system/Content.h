@@ -6,7 +6,9 @@ class BuildingLoader;
 class ClassLoader;
 class DialogLoader;
 class ItemLoader;
+class LocationLoader;
 class ObjectLoader;
+class PerkLoader;
 class QuestLoader;
 class RequiredLoader;
 class UnitLoader;
@@ -17,16 +19,18 @@ class Content
 public:
 	enum class Id
 	{
-		Items,
-		Objects,
 		Abilities,
-		Dialogs,
-		Classes,
-		Units,
 		Buildings,
+		Classes,
+		Dialogs,
+		Items,
+		Locations,
 		Musics,
+		Objects,
+		Perks,
 		Quests,
 		Required,
+		Units,
 
 		Max
 	};
@@ -56,7 +60,9 @@ private:
 	ClassLoader* class_loader;
 	DialogLoader* dialog_loader;
 	ItemLoader* item_loader;
+	LocationLoader* location_loader;
 	ObjectLoader* object_loader;
+	PerkLoader* perk_loader;
 	QuestLoader* quest_loader;
 	RequiredLoader* required_loader;
 	UnitLoader* unit_loader;

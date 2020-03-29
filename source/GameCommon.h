@@ -16,6 +16,7 @@ enum GameDirection
 //-----------------------------------------------------------------------------
 enum GameDirectionFlag
 {
+	GDIRF_NONE = 0,
 	GDIRF_DOWN = 1 << 0,
 	GDIRF_LEFT = 1 << 1,
 	GDIRF_UP = 1 << 2,
@@ -65,6 +66,24 @@ inline constexpr float DirToRot(GameDirection dir)
 	default:
 		assert(0);
 		return 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+inline GameDirection RotToDir(float rot)
+{
+	if(Equal(rot, 0))
+		return GDIR_DOWN;
+	else if(Equal(rot, PI / 2))
+		return GDIR_LEFT;
+	else if(Equal(rot, PI))
+		return GDIR_UP;
+	else if(Equal(rot, PI * 3 / 2))
+		return GDIR_RIGHT;
+	else
+	{
+		assert(0);
+		return GDIR_DOWN;
 	}
 }
 
@@ -129,6 +148,13 @@ inline float ConvertNewAngleToOld(float angle)
 {
 	return Clip(angle - PI / 2);
 }
+
+//-----------------------------------------------------------------------------
+struct SpawnPoint
+{
+	Vec3 pos;
+	float rot;
+};
 
 //-----------------------------------------------------------------------------
 extern vector<uint> _to_remove;

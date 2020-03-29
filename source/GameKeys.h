@@ -10,32 +10,33 @@ enum GAME_KEYS
 	GK_MOVE_BACK, // S
 	GK_MOVE_LEFT, // A
 	GK_MOVE_RIGHT, // D
-	GK_WALK, // shift
 	GK_ROTATE_LEFT, // (None)
 	GK_ROTATE_RIGHT, // (None)
 	GK_TAKE_WEAPON, // spacebar
+	GK_USE, // E
 	GK_ATTACK_USE, // left mouse
 	GK_SECONDARY_ATTACK, // Z, mouse 4
-	GK_USE, // E
+	GK_CANCEL_ATTACK, // X
 	GK_BLOCK, // right mouse
+	GK_WALK, // shift
+	GK_TOGGLE_WALK, // Caps Lock
+	GK_AUTOWALK, // F
 	GK_STATS, // C
 	GK_INVENTORY, // I
 	GK_TEAM_PANEL, // T
 	GK_ABILITY_PANEL, // K
 	GK_JOURNAL, // J
 	GK_MINIMAP, // M
+	GK_TALK_BOX, // Tab
 	GK_QUICKSAVE, // F5
 	GK_QUICKLOAD, // F9
 	GK_TAKE_ALL, // F
+	GK_MAP_SEARCH, // F
 	GK_SELECT_DIALOG, // Enter
 	GK_SKIP_DIALOG, // Space
-	GK_TALK_BOX, // Tab
 	GK_PAUSE, // Pause
 	GK_YELL, // Y
-	GK_CONSOLE, // ~
 	GK_ROTATE_CAMERA, // V
-	GK_AUTOWALK, // F
-	GK_TOGGLE_WALK, // Caps Lock
 	GK_SHORTCUT1, // 1
 	GK_SHORTCUT2, // 2
 	GK_SHORTCUT3, // 3
@@ -46,6 +47,7 @@ enum GAME_KEYS
 	GK_SHORTCUT8, // 8
 	GK_SHORTCUT9, // 9
 	GK_SHORTCUT10, // 0
+	GK_CONSOLE, // ~
 	GK_MAX
 };
 

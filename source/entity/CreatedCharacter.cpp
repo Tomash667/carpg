@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CreatedCharacter.h"
 #include "StatProfile.h"
 #include "UnitData.h"
@@ -24,7 +23,6 @@ void CreatedCharacter::Clear(Class* clas)
 	{
 		a[i].value = profile.attrib[i];
 		a[i].mod = false;
-		a[i].required = 0;
 	}
 
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -65,11 +63,10 @@ void CreatedCharacter::Random(Class* clas)
 	for(int i = 0; i < StatProfile::MAX_PERKS; ++i)
 	{
 		TakenPerk& tp = subprofile.perks[i];
-		if(tp.perk == Perk::None)
+		if(!tp.perk)
 			break;
-		PerkInfo& info = PerkInfo::perks[(int)tp.perk];
 		int value = tp.value;
-		if(info.value_type == PerkInfo::Skill)
+		if(tp.perk->value_type == Perk::Skill)
 			value = (int)sub.GetSkill((SkillId)value);
 		TakenPerk perk(tp.perk, value);
 		perk.Apply(ctx);
@@ -96,7 +93,7 @@ void CreatedCharacter::Write(BitStreamWriter& f) const
 	f.WriteCasted<byte>(taken_perks.size());
 	for(const TakenPerk& tp : taken_perks)
 	{
-		f.WriteCasted<byte>(tp.perk);
+		f << tp.perk->hash;
 		f << tp.value;
 	}
 }
@@ -130,46 +127,35 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	// perks
 	PerkContext ctx(this);
 	ctx.validate = true;
-	taken_perks.resize(count, TakenPerk(Perk::None));
+	taken_perks.resize(count, TakenPerk(nullptr));
 	for(TakenPerk& tp : taken_perks)
 	{
-		f.ReadCasted<byte>(tp.perk);
+		int perk_hash = f.Read<int>();
 		f >> tp.value;
 		if(!f)
 			return 1;
-		if(tp.perk >= Perk::Max)
+		tp.perk = Perk::Get(perk_hash);
+		if(!tp.perk)
 		{
-			Error("Invalid perk id '%d'.", tp.perk);
+			Error("Invalid perk id '%d'.", perk_hash);
 			return 2;
 		}
 		if(!tp.CanTake(ctx))
 		{
-			Error("Can't take perk '%s'.", PerkInfo::perks[(int)tp.perk].id);
+			Error("Can't take perk '%s'.", tp.perk->id.c_str());
 			return 3;
 		}
 		tp.Apply(ctx);
-	}
-	for(uint i = 0, count = taken_perks.size(); i < count; ++i)
-	{
-		for(uint j = i + 1; j < count; ++j)
-		{
-			if(taken_perks[i].perk == taken_perks[j].perk)
-			{
-				Error("Duplicated perk '%s'.", PerkInfo::perks[(int)taken_perks[i].perk].id);
-				return 3;
-			}
-		}
 	}
 
 	// search for duplicates
 	for(vector<TakenPerk>::iterator it = taken_perks.begin(), end = taken_perks.end(); it != end; ++it)
 	{
-		const PerkInfo& info = PerkInfo::perks[(int)it->perk];
 		for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
 		{
 			if(it->perk == it2->perk)
 			{
-				Error("Multiple same perks '%s'.", info.id);
+				Error("Duplicated perk '%s'.", it->perk->id.c_str());
 				return 3;
 			}
 		}
@@ -192,13 +178,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 
 	// reset blocked stats, apply skill bonus
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-	{
-		pc.attrib[i].blocked = false;
 		pc.attrib[i].apt = (pc.unit->stats->attrib[i] - 50) / 5;
-	}
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		pc.skill[i].blocked = false;
 		if(s[i].add)
 			pc.unit->stats->skill[i] += Skill::TAG_BONUS;
 		pc.skill[i].apt = pc.unit->stats->skill[i] / 5;
@@ -223,16 +205,18 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	GetStartingItems(items);
 	for(int i = 0; i < SLOT_MAX; ++i)
 		pc.unit->slots[i] = items[i];
-	if(HavePerk(Perk::AlchemistApprentice))
+	if(pc.HavePerk(Perk::Get("alchemist_apprentice")))
 		Stock::Get("alchemist_apprentice")->Parse(pc.unit->items);
 	pc.unit->MakeItemsTeam(false);
 	pc.unit->RecalculateWeight();
-	if(!pc.HavePerk(Perk::Poor))
+	if(pc.HavePerk(Perk::Get("poor")))
+		pc.unit->gold = ::Random(0, 1);
+	else
 		pc.unit->gold += pc.unit->GetBase(SkillId::HAGGLE);
 }
 
 //=================================================================================================
-bool CreatedCharacter::HavePerk(Perk perk) const
+bool CreatedCharacter::HavePerk(Perk* perk) const
 {
 	for(const TakenPerk& tp : taken_perks)
 	{
@@ -250,9 +234,9 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 		items[i] = nullptr;
 
 	const bool mage_items = IsSet(clas->flags, Class::F_MAGE_ITEMS);
-	const bool poor = HavePerk(Perk::Poor);
+	const bool poor = HavePerk(Perk::Get("poor"));
 
-	if(HavePerk(Perk::FamilyHeirloom))
+	if(HavePerk(Perk::Get("heirloom")))
 	{
 		SkillId best = SkillId::NONE;
 		int best_value = 0, best_value2 = 0;

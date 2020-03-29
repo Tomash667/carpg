@@ -9,7 +9,7 @@
 #include "DialogContext.h"
 #include "BaseLocation.h"
 #include "GameKeys.h"
-#include "SceneNode.h"
+#include "DrawBatch.h"
 #include "QuadTree.h"
 #include "MusicTrack.h"
 #include "Settings.h"
@@ -56,7 +56,7 @@ enum class FALLBACK
 	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), fallback_2 (skill/attrib id)
 	REST, // fallback_1 (days)
 	ARENA,
-	ENTER, // fallback_1 (inside building index)
+	ENTER, // enter/exit building - fallback_1 (inside building index), fallback_2 (warp to building index or -1)
 	EXIT,
 	CHANGE_LEVEL, // fallback_1 (direction +1/-1)
 	NONE,
@@ -108,12 +108,9 @@ public:
 	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
 	void OnUpdate(float dt) override;
-	void OnReload() override;
-	void OnReset() override;
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activation_point) override;
 
-	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	void CreateRenderTargets();
@@ -140,9 +137,6 @@ public:
 	void Draw();
 	void ForceRedraw();
 	void InitScene();
-	void BuildDungeon();
-	void ChangeDungeonTexWrap();
-	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
@@ -150,16 +144,13 @@ public:
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
-	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
-	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
+	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
+	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
-	void DrawTerrain(const vector<uint>& parts);
-	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
-	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
-	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
+	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
-	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
+	void DrawBloods(const vector<Blood*>& bloods, bool outside);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
 	void InitQuadTree();
@@ -194,14 +185,13 @@ public:
 	void PauseGame();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void SetupCamera(float dt);
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdateAi(float dt);
+	void UpdateCamera(float dt);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelArea& area, float dt);
@@ -227,7 +217,6 @@ public:
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
-	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
 	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
@@ -282,7 +271,7 @@ public:
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
-	void UpdateLights(vector<Light>& lights);
+	void UpdateLights(vector<GameLight>& lights);
 	void GetPostEffects(vector<PostEffect>& post_effects);
 	// --- cutscene
 	void CutsceneStart(bool instant);
@@ -344,7 +333,6 @@ public:
 	ParticleShader* particle_shader;
 	PostfxShader* postfx_shader;
 	SkyboxShader* skybox_shader;
-	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
 	//-----------------------------------------------------------------
@@ -352,7 +340,7 @@ public:
 	//-----------------------------------------------------------------
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
-	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene;
+	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene, in_load;
 	int death_screen;
 	float death_fade, game_speed;
 	vector<AIController*> ais;
@@ -415,19 +403,13 @@ public:
 	// DRAWING
 	//-----------------------------------------------------------------
 	int draw_flags;
-	Matrix mat;
-	VB vbDungeon;
-	IB ibDungeon;
-	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	float portal_anim, drunk_anim;
+	float portal_anim;
 	// scene
 	Color clear_color, clear_color_next;
-	bool dungeon_tex_wrap;
-	bool use_glow, use_fog, use_lighting, use_specularmap, use_normalmap, use_postfx;
+	bool use_glow, use_postfx;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
-	VParticle portal_v[4];
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;
@@ -464,8 +446,9 @@ public:
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS
 	//-----------------------------------------------------------------
-	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingAbilities, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
-		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests, txLoadingClasses;
+	cstring txPreloadAssets, txCreatingListOfFiles, txConfiguringGame, txLoadingAbilities, txLoadingBuildings, txLoadingClasses, txLoadingDialogs,
+		txLoadingItems, txLoadingLocations, txLoadingMusics, txLoadingObjects, txLoadingPerks, txLoadingQuests, txLoadingRequired, txLoadingUnits,
+		txLoadingShaders, txLoadingLanguageFiles;
 	cstring txAiNoHpPot[2], txAiNoMpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort,
 		txAiDwarfFort, txAiTower, txAiArmory, txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies,
 		txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7],
@@ -474,10 +457,10 @@ public:
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
 		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
-	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txEndOfLoading, txCantSaveNow,
-		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError,
-		txCantLoadMultiplayer, txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
-	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
+	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingData, txEndOfLoading, txCantSaveNow, txOnlyServerCanSave,
+		txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError, txCantLoadMultiplayer,
+		txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
+	cstring txPvpRefuse, txWin, txWinHardcore, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
 	cstring txRumor[29], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
 		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
@@ -497,7 +480,7 @@ public:
 	cstring txHaveErrors;
 
 private:
-	Engine* engine;
 	vector<int> reported_errors;
 	asIScriptContext* cutscene_script;
+	DungeonMeshBuilder* dun_mesh_builder;
 };

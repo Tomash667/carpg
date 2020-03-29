@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "LocationGenerator.h"
 #include "Location.h"
 #include "Level.h"
@@ -42,22 +41,6 @@ void LocationGenerator::RespawnUnits()
 			// refresh stock
 			if(u->data->trader)
 				u->RefreshStock();
-		}
-	}
-}
-
-//=================================================================================================
-void LocationGenerator::OnReenter()
-{
-	for(LevelArea& area : game_level->ForEachArea())
-	{
-		for(Unit* u : area.units)
-		{
-			if(u->talking)
-			{
-				u->talking = false;
-				u->mesh_inst->need_update = true;
-			}
 		}
 	}
 }

@@ -12,9 +12,9 @@ enum SAVE_VERSION
 	V_0_3 = 5, // 0.3
 	V_0_4 = 6, // 0.4/0.4.10/0.4.20
 	V_0_5 = 7, // 0.5
-
-	MIN_SUPPORT_LOAD_VERSION = 8,
 	V_0_5_1 = 8, // 0.5.1
+
+	MIN_SUPPORT_LOAD_VERSION = 9,
 	V_0_6 = 9, // 0.6/0.6.1
 	V_0_6_2 = 10, // 0.6.2
 	V_0_7 = 11, // 0.7
@@ -23,8 +23,9 @@ enum SAVE_VERSION
 	V_0_9 = 14, // 0.9
 	V_0_10 = 15, // 0.10
 	V_0_11 = 16, // 0.11/0.11.1
-	V_0_12 = 17, // 0.12
-	V_NEXT = 18,
+	V_0_12 = 17, // 0.12/0.12.2
+	V_0_13 = 18, // 0.13
+	V_NEXT = 19,
 
 	// save version used by saves
 	V_CURRENT = V_NEXT,

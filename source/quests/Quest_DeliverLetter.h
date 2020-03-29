@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Converted to script in V_DEV
 class Quest_DeliverLetter final : public Quest
 {
 public:
@@ -16,16 +17,11 @@ public:
 		Finished
 	};
 
-	void Start();
-	GameDialog* GetDialog(int dialog_type) override;
-	void SetProgress(int prog2) override;
-	cstring FormatString(const string& str) override;
-	bool IsTimedout() const override;
-	bool OnTimeout(TimeoutType ttype) override;
-	bool IfHaveQuestItem() const override;
-	const Item* GetQuestItem() override;
-	void Save(GameWriter& f) override;
+	void Start() override {}
+	GameDialog* GetDialog(int type2) override { return nullptr; }
+	void SetProgress(int prog2) override {}
 	LoadResult Load(GameReader& f) override;
+	void GetConversionData(ConversionData& data) override;
 
 private:
 	int end_loc;

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "InsideLocationLevel.h"
 #include "SaveState.h"
 #include "GameFile.h"

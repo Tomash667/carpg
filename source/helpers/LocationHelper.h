@@ -40,6 +40,7 @@ namespace LocationHelper
 		return inside->IsMultilevel();
 	}
 
+	LevelArea* GetArea(Location* loc);
 	Unit* GetMayor(Location* loc);
 	Unit* GetCaptain(Location* loc);
 }

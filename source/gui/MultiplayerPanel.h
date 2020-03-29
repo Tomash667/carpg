@@ -1,10 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "TextBox.h"
+#include <DialogBox.h>
+#include <TextBox.h>
 
 //-----------------------------------------------------------------------------
+// Panel to select multiplayer game (create server, join server, load game)
 class MultiplayerPanel : public DialogBox
 {
 public:

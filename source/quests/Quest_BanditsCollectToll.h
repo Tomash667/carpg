@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-// Converted to script in V_DEV
+// Converted to script in V_0_13
 class Quest_BanditsCollectToll final : public Quest_Encounter, public LocationEventHandler
 {
 public:

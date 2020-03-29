@@ -1,0 +1,204 @@
+unit base_warrior = "Base warrior"
+unit base_hunter = "Base hunter"
+unit base_rogue = "Base rogue"
+unit base_cleric = "Base cleric"
+unit base_mage = "Base mage"
+unit blacksmith = "Blacksmith"
+unit merchant = "Merchant"
+unit food_seller = "Grocer"
+unit alchemist = "Alchemist"
+unit citizen = "Citizen"
+unit tut_czlowiek = "Citizen"
+unit villager = "Villager"
+unit mayor = "Mayor"
+unit soltys = "Soltys"
+unit trainer = "Trainer"
+unit guard = "Guard"
+unit guard_wagon = "Guard"
+unit guard_merchant = "Guard"
+unit guard_move = "Guard"
+unit guard_captain = "Captain of guard"
+unit clerk = "Clerk"
+unit innkeeper = "Innkeeper"
+unit mage_seller = "Mage seller"
+unit cleric_seller = "Cleric"
+unit arena_master = "Arena master"
+unit viewer = "Viewer"
+unit captive = "Captive"
+unit traveler = "Traveler"
+unit artur_drwal {
+	name "Lumberjack"
+	real_name "Arthur the Luberjack"
+}
+unit poslaniec_tartak = "Messenger"
+unit drwal = "Lumberjack"
+unit inwestor {
+	name "Investor"
+	real_name "Marco Bartoli"
+}
+unit poslaniec_kopalnia = "Messenger"
+unit gornik = "Miner"
+unit gornik_szef = "Chief of miners"
+unit pijak = "Drunkard"
+unit mistrz_agentow {
+	name "Stranger"
+	real_name "Arto"
+}
+unit guard_q_bandyci = "Guard"
+unit agent = "Agent"
+unit q_magowie_uczony = "Scholar"
+unit q_magowie_stary = "Old mage"
+unit q_orkowie_straznik = "Guard"
+unit base_gorush {
+	name "Ork"
+	real_name "Gorush"
+}
+unit q_orkowie_gorush {}
+unit q_orkowie_gorush_woj {}
+unit q_orkowie_gorush_lowca {}
+unit q_orkowie_gorush_szaman {}
+unit q_orkowie_slaby = "Weak orc"
+unit q_orkowie_kowal = "Orc blacksmith"
+unit q_orkowie_orc = "Orc"
+unit q_orkowie_orc_hunter = "Orc hunter"
+unit q_orkowie_orc_fighter = "Orc fighter"
+unit q_orkowie_orc_warius = "Orc warius"
+unit q_orkowie_orc_chief = "Orc chief"
+unit q_orkowie_orc_shaman = "Orc shaman"
+unit q_gobliny_szlachcic {
+	name "Nobleman"
+	real_name "Sir Foltest Denhoff"
+}
+unit q_gobliny_poslaniec = "Messenger"
+unit q_gobliny_mag = "Wandering mage"
+unit q_zlo_kaplan {
+	name "Priest"
+	real_name "Jozan"
+}
+unit q_zlo_mag = "Mage"
+unit goblin = "Goblin"
+unit goblin_hunter = "Goblin hunter"
+unit goblin_fighter = "Goblin fighter"
+unit goblin_chief = "Goblin chief"
+unit q_gobliny_szlachcic2 {
+	name "Nobleman"
+	real_name "Sir Foltest Denhoff"
+}
+unit q_gobliny_ochroniarz = "Bodyguard"
+unit tut_goblin = "Goblin"
+unit orc = "Orc"
+unit orc_hunter = "Orc hunter"
+unit orc_fighter = "Orc fighter"
+unit orc_warius = "Orc warius"
+unit orc_chief = "Orc chief"
+unit orc_shaman = "Orc shaman"
+unit q_orkowie_boss = "Great chief"
+unit zombie = "Zombie"
+unit zombie_rotting = "Rotting zombie"
+unit zombie_ancient = "Ancient zombie"
+unit skeleton = "Skeleton"
+unit skeleton_archer = "Skeleton archer"
+unit skeleton_fighter = "Skeleton fighter"
+unit skeleton_mage = "Skeleton mage"
+unit necromancer = "Necromancer novice"
+unit necromancer2 = "Necromancer"
+unit necromancer3 = "Necromancer master"
+unit undead_guard = "Undead guard"
+unit undead_archer = "Undead archer"
+unit evil_cleric = "Evil cleric"
+unit evil_cleric2 = "Evil leader"
+unit q_zlo_boss = "Xar"
+unit thief = "Thief"
+unit bandit = "Bandit"
+unit bandit_archer = "Bandit archer"
+unit bandit_chief = "Bandit chief"
+unit ruffian = "Ruffian"
+unit assassin = "Assassin"
+unit ruffian_hegemon = "Hegemon"
+unit q_bandyci_szef = "Bandit leader"
+unit mage = "Mage novice"
+unit mage2 = "Mage"
+unit mage3 = "Experienced mage"
+unit mage_guard = "Guard"
+unit golem_stone = "Stone golem"
+unit golem_iron = "Iron golem"
+unit golem_adamantine = "Adamantine golem"
+unit q_magowie_golem = "Stone golem"
+unit q_magowie_boss = "Archmage"
+unit wolf = "Wolf"
+unit worg = "Worg"
+unit white_wolf_sum = "Wolf (summoned)"
+unit spider = "Spider"
+unit spider_big = "Big spider"
+unit rat = "Giant rat"
+unit bear = "Bear"
+unit bear_black = "Black bear"
+unit wild_hunter = "Wild hunter"
+unit q_szaleni_szaleniec = "Madman"
+unit crazy_mage = "Crazy mage"
+unit crazy_warrior = "Crazy warrior"
+unit crazy_hunter = "Crazy hunter"
+unit crazy_rogue = "Crazy rogue"
+unit hero_mage = "Mage"
+unit hero_warrior = "Warrior"
+unit hero_hunter = "Hunter"
+unit hero_rogue = "Rogue"
+unit hero_tomir {
+	real_name "Tomir"
+}
+unit hero_cleric = "Cleric"
+unit tomashu = "Tomashu"
+unit unk = "Unknown"
+unit crazy_cook = "Crazy cook"
+unit xwokloiz {
+	name "Alchemist apprentice"
+	real_name "Luke Herbalist"
+}
+unit q_main_academy = "Academy teacher"
+unit q_main_messenger = "Messenger"
+unit q_main_ill_villager = "Ill villager"
+unit q_main_ill_villager_attack {}
+
+unit_group orcs {
+	name "orcs"
+	encounter_text "You encounter a pack of orcs looking for easy loot!"
+}
+unit_group bandits {
+	name "bandits"
+	encounter_text "While traveling you encountered a group of bandits!"
+}
+unit_group goblins {
+	name "goblins"
+	encounter_text "Out of surprise, a band of goblins attacked you!"
+}
+unit_group undead {
+	name "undead"
+}
+unit_group necromancers {
+	name "necromancers"
+}
+unit_group evil {
+	name "evil clerics"
+}
+unit_group mages {
+	name "mages"
+}
+unit_group golems {
+	name "golems"
+}
+unit_group mages_and_golems {
+	name "mages and golems"
+}
+unit_group unk {
+	name "unknown monsters"
+}
+unit_group challange {
+	name "powerful enemies"
+}
+unit_group forest {
+	name "animals"
+	encounter_text "Suddenly, wild animals jump out of the bushes!"
+}
+unit_group cave {
+	name "animals"
+}

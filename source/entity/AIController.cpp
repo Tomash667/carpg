@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "AIController.h"
 #include "Unit.h"
 #include "Game.h"
@@ -177,8 +176,8 @@ void AIController::Load(GameReader& f)
 	switch(state)
 	{
 	case Cast:
-		if(LOAD_VERSION >= V_DEV)
-			st.cast.ability = Ability::Get(f.Read<uint>());
+		if(LOAD_VERSION >= V_0_13)
+			st.cast.ability = Ability::Get(f.Read<int>());
 		else
 		{
 			st.cast.ability = unit->data->abilities->ability[unit->ai_mode];
@@ -196,7 +195,7 @@ void AIController::Load(GameReader& f)
 		}
 		break;
 	case Idle:
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_13)
 			LoadIdleAction(f, st.idle, true);
 		break;
 	case SearchEnemy:
@@ -212,7 +211,7 @@ void AIController::Load(GameReader& f)
 	else
 		have_mp_potion = HavePotion::Check;
 	f >> potion;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 	{
 		if(state == Idle)
 			LoadIdleAction(f, st.idle, true);
@@ -224,7 +223,7 @@ void AIController::Load(GameReader& f)
 	}
 	f >> city_wander;
 	f >> loc_timer;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_13)
 		f.Skip<float>(); // old shoot_yspeed
 	if(LOAD_VERSION < V_0_12)
 	{
@@ -367,14 +366,18 @@ bool AIController::CheckPotion(bool in_combat)
 //=================================================================================================
 void AIController::Reset()
 {
+	if(state != AIController::Idle)
+	{
+		state = Idle;
+		change_ai_mode = true;
+	}
 	target = nullptr;
 	alert_target = nullptr;
-	state = Idle;
 	pf_path.clear();
 	pf_local_path.clear();
 	in_combat = false;
 	next_attack = 0.f;
-	timer = 0.f;
+	timer = Random(1.f, 3.f);;
 	ignore = 0.f;
 	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
@@ -383,7 +386,6 @@ void AIController::Reset()
 	have_potion = HavePotion::Check;
 	have_mp_potion = HavePotion::Check;
 	st.idle.action = Idle_None;
-	change_ai_mode = true;
 	pf_state = PFS_NOT_USING;
 }
 

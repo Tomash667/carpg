@@ -18,7 +18,7 @@ enum AttackId
 	AID_Block,
 	AID_Bash,
 	AID_RunningAttack,
-	AID_StopBlock
+	AID_Cancel
 };
 
 //-----------------------------------------------------------------------------
@@ -191,6 +191,7 @@ public:
 	{
 		Unit* u;
 		int where; // <-1 - get outside the building,  >=0 - get inside the building
+		int building;
 		float timer;
 	};
 	vector<WarpData> warps;

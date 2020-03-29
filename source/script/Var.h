@@ -16,7 +16,9 @@ struct Var
 		Item,
 		Location,
 		Encounter,
-		GroundItem
+		GroundItem,
+		String,
+		Unit
 	};
 	Type type;
 	union
@@ -32,6 +34,7 @@ struct Var
 		Location* location;
 		Encounter* encounter;
 		GroundItem* ground_item;
+		Unit* unit;
 		void* ptr;
 	};
 	bool registered;
@@ -66,6 +69,7 @@ struct Var
 	{
 		return IsFloat() && _float == value;
 	}
+	bool IsGeneric(void* ptr, int type);
 	bool IsVar(Var* var) const
 	{
 		return type == var->type && _int == var->_int;
@@ -93,6 +97,7 @@ struct Var
 		_float = value;
 		return this;
 	}
+	Var* SetGeneric(void* ptr, int type);
 	Var* SetVar(Var* var)
 	{
 		type = var->type;
@@ -126,12 +131,17 @@ struct Var
 	{
 		SetBool(value);
 	}
+
+	void GetGeneric(void* ptr, int type);
 };
 
 //-----------------------------------------------------------------------------
-struct VarsContainer
+struct Vars
 {
-	~VarsContainer();
+	Vars() : refs(1) {}
+	~Vars();
+	void AddRef() { ++refs; }
+	void Release() { if(--refs == 0) delete this; }
 	Var* Add(Var::Type type, const string& name, bool registered);
 	Var* Get(const string& name);
 	Var* TryGet(const string& name) const;
@@ -141,7 +151,10 @@ struct VarsContainer
 	void Load(FileReader& f);
 	void Clear();
 
+	static Vars* Create() { return new Vars; }
+
 private:
 	std::map<string, Var*> vars;
+	int refs;
 	static string tmp_str;
 };

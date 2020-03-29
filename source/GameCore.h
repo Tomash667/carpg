@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include <EngineCore.h>
 #include <File.h>
 #include <Physics.h>
 #include <Sound.h>
@@ -32,6 +31,7 @@ class asIScriptFunction;
 class asIScriptObject;
 class asIScriptModule;
 class asITypeInfo;
+class CScriptArray;
 class CScriptDictionary;
 
 //-----------------------------------------------------------------------------
@@ -43,8 +43,10 @@ class BookPanel;
 class CommandParser;
 class Console;
 class Controls;
+class CraftPanel;
 class CreateCharacterPanel;
 class CreateServerPanel;
+class DungeonMeshBuilder;
 class Game;
 class GameComponent;
 class GameGui;
@@ -99,7 +101,6 @@ struct Building;
 struct BuildingGroup;
 struct BuildingScript;
 struct Bullet;
-struct Camera;
 struct CameraCollider;
 struct Chest;
 struct CityBuilding;
@@ -112,12 +113,15 @@ struct DialogEntry;
 struct DialogScripts;
 struct Door;
 struct Drain;
+struct DrawBatch;
 struct Electro;
 struct Encounter;
 struct EntityInterpolator;
 struct Explo;
 struct FrameInfo;
+struct GameCamera;
 struct GameDialog;
+struct GameLight;
 struct GroundItem;
 struct HeroData;
 struct Human;
@@ -125,22 +129,22 @@ struct HumanData;
 struct IdlePack;
 struct Item;
 struct ItemList;
-struct ItemListResult;
 struct ItemScript;
 struct ItemSlot;
 struct LevelArea;
-struct LeveledItemList;
-struct Light;
 struct LoadingHandler;
 struct LocationEventHandler;
 struct LocationTexturePack;
+struct MapSettings;
 struct Music;
 struct NetChange;
 struct NetChangePlayer;
 struct News;
 struct Object;
+struct ObjectGroup;
 struct OutsideObject;
 struct OtherItem;
+struct Perk;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
@@ -153,9 +157,11 @@ struct QuestHandler;
 struct QuestInfo;
 struct QuestList;
 struct QuestScheme;
+struct Recipe;
 struct Ring;
 struct Room;
 struct RoomGroup;
+struct RoomType;
 struct SaveSlot;
 struct ScriptEvent;
 struct Shield;
@@ -175,7 +181,7 @@ struct UnitGroup;
 struct UnitStats;
 struct Usable;
 struct Var;
-struct VarsContainer;
+struct Vars;
 struct Weapon;
 
 //-----------------------------------------------------------------------------
@@ -188,6 +194,7 @@ struct InsideLocation;
 struct InsideLocationLevel;
 struct Location;
 struct MultiInsideLocation;
+struct OffscreenLocation;
 struct OutsideLocation;
 struct SingleInsideLocation;
 
@@ -222,8 +229,8 @@ enum class EffectId;
 enum class EffectSource;
 enum class HeroType;
 enum class MusicType;
-enum class Perk;
 enum class QuestCategory;
+enum class RoomTarget;
 enum class SkillId;
 
 //-----------------------------------------------------------------------------

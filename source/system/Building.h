@@ -48,7 +48,7 @@ struct ToBuild
 {
 	Building* building;
 	Int2 pt, unit_pt;
-	GameDirection rot;
+	GameDirection dir;
 	bool required;
 
 	ToBuild(Building* building, bool required = true) : building(building), required(required) {}

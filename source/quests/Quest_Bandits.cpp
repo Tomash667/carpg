@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Bandits.h"
 #include "Game.h"
 #include "Journal.h"
@@ -198,7 +197,9 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::AgentTalked;
 			DialogContext::current->talker->OrderLeave();
 			DialogContext::current->talker->event_handler = this;
-			Location& target = *world->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, UnitGroup::Get("bandits"), false);
+			const Vec2 pos = world->FindPlace(GetStartLocation().pos, 64.f);
+			Location& target = *world->CreateLocation(L_DUNGEON, pos, THRONE_VAULT);
+			target.group = UnitGroup::Get("bandits");
 			target.active_quest = this;
 			target.SetKnown();
 			target.st = 12;

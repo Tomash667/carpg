@@ -1,9 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Container.h"
+#include <Container.h>
 
 //-----------------------------------------------------------------------------
+// Container for all game gui panels & dialogs
 class GameGui : public Container
 {
 public:
@@ -43,6 +44,7 @@ public:
 	Minimap* minimap;
 	AbilityPanel* ability;
 	BookPanel* book;
+	CraftPanel* craft;
 	GameMessages* messages;
 	MpBox* mp_box;
 	WorldMapGui* world_map;
@@ -63,5 +65,5 @@ public:
 	bool cursor_allow_move;
 
 private:
-	cstring txReallyQuit;
+	cstring txReallyQuit, txReallyQuitHardcore;
 };

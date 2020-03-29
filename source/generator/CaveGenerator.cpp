@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CaveGenerator.h"
 #include "Cave.h"
 #include "Tile.h"
@@ -382,10 +381,10 @@ void CaveGenerator::GenerateObjects()
 	// lights
 	for(vector<Int2>::iterator it = cave->holes.begin(), end = cave->holes.end(); it != end; ++it)
 	{
-		Light& s = Add1(lvl.lights);
-		s.pos = Vec3(2.f*it->x + 1.f, 3.f, 2.f*it->y + 1.f);
-		s.range = 5;
-		s.color = Vec3(1.f, 1.0f, 1.0f);
+		GameLight& light = Add1(lvl.lights);
+		light.start_pos = Vec3(2.f*it->x + 1.f, 3.f, 2.f*it->y + 1.f);
+		light.range = 5;
+		light.start_color = Vec3(1.f, 1.0f, 1.0f);
 	}
 
 	// stalactites

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "OutsideLocationGenerator.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
@@ -65,10 +64,9 @@ int OutsideLocationGenerator::GetNumberOfSteps()
 	int steps = LocationGenerator::GetNumberOfSteps();
 	if(first)
 		steps += 3; // txGeneratingObjects, txGeneratingUnits, txGeneratingItems
-	else if(!reenter)
+	else
 		steps += 2; // txGeneratingUnits, txGeneratingPhysics
-	if(!reenter)
-		++steps; // txRecreatingObjects
+	++steps; // txRecreatingObjects
 	return steps;
 }
 
@@ -138,11 +136,8 @@ void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, flo
 //=================================================================================================
 void OutsideLocationGenerator::OnEnter()
 {
-	if(!reenter)
-	{
-		game_level->Apply();
-		ApplyTiles();
-	}
+	game_level->Apply();
+	ApplyTiles();
 
 	int days;
 	bool need_reset = outside->CheckUpdate(days, world->GetWorldtime());
@@ -168,7 +163,7 @@ void OutsideLocationGenerator::OnEnter()
 		game->LoadingStep(game->txGeneratingItems);
 		GenerateItems();
 	}
-	else if(!reenter)
+	else
 	{
 		if(days > 0)
 			game_level->UpdateLocation(days, 100, false);
@@ -194,16 +189,11 @@ void OutsideLocationGenerator::OnEnter()
 
 		game_level->OnRevisitLevel();
 	}
-	else
-		OnReenter();
 
 	// create colliders
-	if(!reenter)
-	{
-		game->LoadingStep(game->txRecreatingObjects);
-		game_level->SpawnTerrainCollider();
-		SpawnOutsideBariers();
-	}
+	game->LoadingStep(game->txRecreatingObjects);
+	game_level->SpawnTerrainCollider();
+	SpawnOutsideBariers();
 
 	// handle quest event
 	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
@@ -358,7 +348,7 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 		{
 			for(int tries = 0; tries < 5; ++tries)
 			{
-				Int2 pt(Random(8, OutsideLocation::size - 9), Random(8, OutsideLocation::size - 9));
+				Int2 pt(Random(17, OutsideLocation::size - 17), Random(17, OutsideLocation::size - 17));
 				TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
 				if(type == TT_GRASS || type == TT_GRASS3)
 				{
@@ -379,7 +369,7 @@ int OutsideLocationGenerator::HandleUpdate(int days)
 //=================================================================================================
 void OutsideLocationGenerator::SpawnTeam()
 {
-	game_level->AddPlayerTeam(team_pos, team_dir, reenter, true);
+	game_level->AddPlayerTeam(team_pos, team_dir);
 }
 
 //=================================================================================================

@@ -26,4 +26,5 @@ struct Usable : EntityType<Usable>
 	void Write(BitStreamWriter& f) const;
 	bool Read(BitStreamReader& f);
 	Mesh* GetMesh() const;
+	Vec3 GetCenter() const;
 };

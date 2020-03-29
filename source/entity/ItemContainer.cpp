@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Item.h"
 #include "ItemContainer.h"
 #include "QuestManager.h"

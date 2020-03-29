@@ -29,8 +29,6 @@ struct OutsideLocation : public Location, public LevelArea
 	void Load(GameReader& f, bool local) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
-	bool FindUnit(Unit* unit, int* level) override;
-	Unit* FindUnit(UnitData* data, int& at_level) override;
 
 	bool IsInside(int _x, int _y) const
 	{

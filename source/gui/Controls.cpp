@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Controls.h"
 #include "GameKeys.h"
 #include "Language.h"
@@ -277,20 +276,20 @@ enum ButtonId
 //=================================================================================================
 Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
 {
-	size = Int2(570 + 8 * 2, 368);
+	size = Int2(600 + 8 * 2, 400);
 	bts.resize(2);
 
 	bts[0].size = Int2(180, 44);
-	bts[0].pos = Int2(50, 316);
+	bts[0].pos = Int2(50, size.y - 53);
 	bts[0].id = Button_Reset;
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
-	bts[1].pos = Int2(size.x - 180 - 50, 316);
+	bts[1].pos = Int2(size.x - 180 - 50, size.y - 53);
 	bts[1].id = Button_Ok;
 	bts[1].parent = this;
 
-	grid.size = Int2(570, 300);
+	grid.size = Int2(600, 300);
 	grid.pos = Int2(8, 8);
 	grid.items = GK_MAX;
 	grid.event = GridEvent(this, &Controls::GetCell);
@@ -308,9 +307,12 @@ void Controls::LoadLanguage()
 	bts[1].text = gui->txOk;
 
 	grid.AddColumn(Grid::TEXT, 200, s.Get("action"));
-	grid.AddColumn(Grid::TEXT, 175, s.Get("key_1"));
-	grid.AddColumn(Grid::TEXT, 175, s.Get("key_2"));
+	grid.AddColumn(Grid::TEXT, 190, s.Get("key_1"));
+	grid.AddColumn(Grid::TEXT, 190, s.Get("key_2"));
 	grid.Init();
+
+	txResetConfirm = s.Get("resetConfirm");
+	txInfo = s.Get("info");
 
 	InitKeyText();
 }
@@ -324,6 +326,9 @@ void Controls::Draw(ControlDrawData*)
 		button.Draw();
 
 	grid.Draw();
+
+	Rect r = { global_pos.x, global_pos.y + size.y - 85, global_pos.x + size.x, global_pos.y + size.y };
+	gui->DrawText(GameGui::font, txInfo, DTF_CENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -388,8 +393,22 @@ void Controls::Event(GuiEvent e)
 	}
 	else if(e == Button_Reset)
 	{
-		game->settings.ResetGameKeys();
-		changed = true;
+		DialogInfo info;
+		info.event = [this](int r)
+		{
+			if(r == BUTTON_YES)
+			{
+				game->settings.ResetGameKeys();
+				changed = true;
+			}
+		};
+		info.name = "reset_ctrls";
+		info.order = ORDER_TOP;
+		info.parent = this;
+		info.pause = false;
+		info.text = txResetConfirm;
+		info.type = DIALOG_YESNO;
+		gui->ShowDialog(info);
 	}
 }
 
@@ -467,17 +486,17 @@ void Controls::SelectCell(int item, int column, int button)
 }
 
 //=================================================================================================
-void Controls::OnKey(int key)
+void Controls::OnKey(Key key)
 {
-	if(key == VK_ESCAPE)
+	if(key == Key::Escape)
 	{
 		picked = -1;
 		input->SetCallback(nullptr);
 		game_gui->cursor_allow_move = true;
 	}
-	else if(key < n_texts && IsSet(in_text[key], 0x01))
+	else if((int)key < n_texts && IsSet(in_text[(int)key], 0x01))
 	{
-		GKey[picked][picked_n] = (Key)key;
+		GKey[picked][picked_n] = key;
 		picked = -1;
 		input->SetCallback(nullptr);
 		game_gui->cursor_allow_move = true;

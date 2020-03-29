@@ -1,9 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
+#include <DialogBox.h>
 
 //-----------------------------------------------------------------------------
+// Display information when loading or waiting in multiplayer
 class InfoBox : public DialogBox
 {
 public:

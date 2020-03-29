@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Light.h"
 #include "Tile.h"
 #include "Room.h"
 
@@ -10,15 +9,17 @@ struct MapSettings
 {
 	enum Shape
 	{
-		SQUARE,
-		CIRCLE
+		SHAPE_SQUARE,
+		SHAPE_CIRCLE
 	};
 
 	enum StairsLocation
 	{
-		NONE,
-		RANDOM,
-		FAR_FROM_ROOM
+		STAIRS_NONE,
+		STAIRS_RANDOM,
+		STAIRS_FAR_FROM_ROOM,
+		STAIRS_BORDER,
+		STAIRS_FAR_FROM_UP_STAIRS
 	};
 
 	int map_w, map_h;
@@ -69,6 +70,7 @@ private:
 	void DrawRoomGroups();
 	void GenerateStairs();
 	void GenerateStairs(vector<Room*>& rooms, MapSettings::StairsLocation loc, Room*& room, Int2& pos, GameDirection& dir, bool up, bool& in_wall);
+	bool AddStairsFarFromPoint(vector<Room*>& rooms, const Int2& far_pt, Room*& room, Int2& pos, GameDirection& dir, bool up, bool& in_wall);
 	bool AddStairs(Room& room, Int2& pos, GameDirection& dir, TILE_TYPE tile, bool& in_wall);
 	void SetRoomGroupTargets();
 

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include <intrin.h>
 #include "Version.h"
@@ -7,8 +6,10 @@
 #include "ErrorHandler.h"
 #include "Utility.h"
 #include "SaveSlot.h"
+#include "Language.h"
 #include <Engine.h>
 #include <Render.h>
+#include <SceneManager.h>
 #include <SoundManager.h>
 #include <AppEntry.h>
 
@@ -203,14 +204,14 @@ bool RunInstallScripts()
 	t.AddKeyword("version", 1);
 	t.AddKeyword("remove", 2);
 
-	io::FindFiles(Format("%s/install/*.txt", g_system_dir.c_str()), [&](const io::FileInfo& info)
+	io::FindFiles("install/*.txt", [&](const io::FileInfo& info)
 	{
 		int major, minor, patch;
 
 		// read file to find version info
 		try
 		{
-			if(t.FromFile(Format("%s/install/%s", g_system_dir.c_str(), info.filename)))
+			if(t.FromFile(Format("install/%s", info.filename)))
 			{
 				t.Next();
 				if(t.MustGetKeywordId() == 2)
@@ -274,7 +275,7 @@ bool RunInstallScripts()
 
 	for(vector<InstallScript>::iterator it = scripts.begin(), end = scripts.end(); it != end; ++it)
 	{
-		cstring path = Format("%s/install/%s", g_system_dir.c_str(), it->filename.c_str());
+		cstring path = Format("install/%s", it->filename.c_str());
 
 		try
 		{
@@ -338,14 +339,11 @@ bool RunInstallScripts()
 //=================================================================================================
 void LoadResourcesConfig()
 {
-	g_system_dir = "system";
-
 	Config cfg;
-	if(cfg.Load("resource.cfg") == Config::OK)
-	{
-		g_system_dir = cfg.GetString("system", "system");
-		render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
-	}
+	cfg.Load("resource.cfg");
+	Language::dir = cfg.GetString("languages", "lang");
+	g_system_dir = cfg.GetString("system", "system");
+	render->SetShadersDir(cfg.GetString("shaders", "system/shaders").c_str());
 }
 
 //=================================================================================================
@@ -585,19 +583,6 @@ void LoadConfiguration(char* lpCmdLine)
 		game->quickstart_slot = slot;
 
 	// window position & size
-	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
-	if(have_console && (con_pos.x != -1 || con_pos.y != -1))
-	{
-		HWND con = GetConsoleWindow();
-		Rect rect;
-		GetWindowRect(con, (RECT*)&rect);
-		if(con_pos.x != -1)
-			rect.Left() = con_pos.x;
-		if(con_pos.y != -1)
-			rect.Top() = con_pos.y;
-		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
-	}
-
 	Int2 force_size = cfg.GetInt2("wnd_size", Int2(-1, -1)),
 		force_pos = cfg.GetInt2("wnd_pos", Int2(-1, -1));
 	engine->SetWindowInitialPos(force_pos, force_size);
@@ -610,8 +595,8 @@ void LoadConfiguration(char* lpCmdLine)
 
 	// miscellaneous
 	game->use_postfx = cfg.GetBool("use_postfx", "cl_postfx", true);
-	game->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
-	game->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
+	scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
+	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
 	game->use_glow = cfg.GetBool("cl_glow", true);
 	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));
@@ -673,6 +658,20 @@ void LoadConfiguration(char* lpCmdLine)
 	game->force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
 	Info("random seed: %u/%u/%d", seed, game->next_seed, (game->force_seed_all ? 1 : 0));
 	Srand(seed);
+
+	// console position
+	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
+	if(have_console && (con_pos.x != -1 || con_pos.y != -1))
+	{
+		HWND con = GetConsoleWindow();
+		Rect rect;
+		GetWindowRect(con, (RECT*)&rect);
+		if(con_pos.x != -1)
+			rect.Left() = con_pos.x;
+		if(con_pos.y != -1)
+			rect.Top() = con_pos.y;
+		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+	}
 
 	// miscellaneous
 	game->check_updates = ToBool(cfg.GetBool3("check_updates", True));
@@ -744,12 +743,12 @@ int AppEntry(char* lpCmdLine)
 		}
 		else
 		{
-			Language::prefix = s;
+			Language::SetPrefix(s);
 			game->cfg.Add("language", s->c_str());
 		}
 	}
 	else
-		Language::prefix = lang;
+		Language::SetPrefix(lang.c_str());
 
 	// save configuration
 	game->SaveCfg();

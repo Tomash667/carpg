@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "AIController.h"
 #include "Game.h"
 #include "Quest_Mages.h"
@@ -133,7 +132,7 @@ void Game::UpdateAi(float dt)
 			if(event.type == EVENT_UPDATE)
 			{
 				ScriptEvent e(EVENT_UPDATE);
-				e.unit = &u;
+				e.on_update.unit = &u;
 				event.quest->FireEvent(e);
 			}
 		}
@@ -223,7 +222,7 @@ void Game::UpdateAi(float dt)
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ATTACK;
 					c.unit = &u;
-					c.id = AID_StopBlock;
+					c.id = AID_Cancel;
 					c.f[1] = 1.f;
 				}
 			}
@@ -430,7 +429,7 @@ void Game::UpdateAi(float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
-							c.id = AID_StopBlock;
+							c.id = AID_Cancel;
 							c.f[1] = 1.f;
 						}
 						ReportError(3, Format("Unit %s blocks in idle.", u.GetRealName()));
@@ -466,7 +465,7 @@ void Game::UpdateAi(float dt)
 					case ORDER_FOLLOW:
 						if(!order_unit)
 						{
-							u.OrderClear();
+							u.OrderNext();
 							break;
 						}
 						if(order_unit->in_arena == -1 && u.busy != Unit::Busy_Tournament)
@@ -595,8 +594,8 @@ void Game::UpdateAi(float dt)
 						break;
 					case ORDER_MOVE:
 						use_idle = false;
-						if(Vec3::Distance2d(u.pos, u.order->pos) < 0.1f)
-							u.OrderClear();
+						if(Vec3::Distance2d(u.pos, u.order->pos) < u.order->range)
+							u.OrderNext();
 						move_type = MovePoint;
 						target_pos = u.order->pos;
 						look_at = LookAtWalk;
@@ -687,17 +686,17 @@ void Game::UpdateAi(float dt)
 								u.SetDontAttack(false);
 						}
 						else
-							u.OrderClear();
+							u.OrderNext();
 						break;
 					case ORDER_AUTO_TALK:
 						u.CheckAutoTalk(dt);
 						break;
 					}
 
-					if(!use_idle)
+					if(!use_idle || (u.action == A_USE_USABLE && !Any(u.animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)))
 						break;
 
-					if(u.action == A_NONE && ai.timer <= 0.f)
+					if(ai.timer <= 0.f && Any(u.action, A_NONE, A_USE_USABLE))
 					{
 						if(Any(ai.st.idle.action, AIController::Idle_TrainCombat, AIController::Idle_TrainBow) && u.weapon_state != WeaponState::Hidden)
 						{
@@ -759,7 +758,7 @@ void Game::UpdateAi(float dt)
 								switch(what)
 								{
 								case 0: // drink
-									u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
+									u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable());
 									ai.timer = Random(10.f, 15.f);
 									break;
 								case 1: // eat
@@ -792,7 +791,7 @@ void Game::UpdateAi(float dt)
 								switch(what)
 								{
 								case 0: // drink
-									u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
+									u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable());
 									ai.timer = Random(10.f, 15.f);
 									break;
 								case 1: // eat
@@ -910,7 +909,7 @@ void Game::UpdateAi(float dt)
 							&& Rand() % 3 == 0)
 						{
 							// drink something
-							u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable(), true);
+							u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable(), true);
 							ai.st.idle.action = AIController::Idle_None;
 							ai.timer = Random(3.f, 6.f);
 						}
@@ -1482,7 +1481,7 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_RunRegion:
 							if(Vec3::Distance2d(u.pos, ai.st.idle.region.pos) < u.GetUnitRadius() * 2)
 							{
-								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit)
+								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit) && u.area == ai.st.idle.region.area
 									&& ai.st.idle.region.area->area_type == LevelArea::Type::Outside && !ai.st.idle.region.exit)
 								{
 									// in exit area, go to border
@@ -1983,7 +1982,7 @@ void Game::UpdateAi(float dt)
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						Room* room = ai.st.search.room;
-						if(!room) // pre V_DEV
+						if(!room) // pre V_0_13
 							room = lvl.GetNearestRoom(u.pos);
 						ai.st.search.room = room->connected[Rand() % room->connected.size()];
 						ai.target_last_pos = ai.st.search.room->GetRandomPos(u.GetUnitRadius());
@@ -2010,7 +2009,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(Vec3::Distance(order_unit->pos, u.pos) < 3.f)
 							{
-								u.OrderClear();
+								u.OrderNext();
 								break;
 							}
 							move_type = MovePoint;
@@ -2025,7 +2024,7 @@ void Game::UpdateAi(float dt)
 					{
 						if(Vec3::Distance(u.order->pos, u.pos) < 0.1f)
 						{
-							u.OrderClear();
+							u.OrderNext();
 							break;
 						}
 						move_type = MovePoint;
@@ -2255,7 +2254,7 @@ void Game::UpdateAi(float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
-							c.id = AID_StopBlock;
+							c.id = AID_Cancel;
 							c.f[1] = 1.f;
 						}
 						break;
@@ -2876,7 +2875,7 @@ void Game::UpdateAi(float dt)
 				{
 					u.rot = dir;
 					if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
-						u.OrderClear();
+						u.OrderNext();
 				}
 				else
 					u.rot = Clip(u.rot + Sign(arc) * rot_speed);

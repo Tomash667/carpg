@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Secret.h"
 #include "BaseObject.h"
 #include "GameFile.h"
@@ -134,7 +133,8 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 	{
 		game_gui->messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
-		Location& l = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, UnitGroup::Get("challange"), false, 3);
+		Location& l = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), DWARF_FORT, 3);
+		l.group = UnitGroup::Get("challange");
 		l.st = 18;
 		l.active_quest = ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
@@ -178,21 +178,7 @@ void Quest_Secret::UpdateFight()
 		{
 			unit->in_arena = -1;
 			if(unit->hp <= 0.f)
-			{
-				unit->HealPoison();
-				unit->live_state = Unit::ALIVE;
-				unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-				unit->action = A_ANIMATION;
-				unit->animation = ANI_PLAY;
-				if(unit->IsAI())
-					unit->ai->Reset();
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::STAND_UP;
-					c.unit = unit;
-				}
-			}
+				unit->Standup();
 
 			if(Net::IsOnline())
 			{

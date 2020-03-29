@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "LevelGui.h"
 #include "Game.h"
 #include "Language.h"
@@ -29,6 +28,7 @@
 #include "Engine.h"
 #include "Quest.h"
 #include "GameResources.h"
+#include "CraftPanel.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.1f;
@@ -52,11 +52,11 @@ cstring order_str[ORDER_MAX] = {
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
 {
+	Invalid = -1,
 	Sidebar,
 	Buff,
 	Bar,
-	Shortcut,
-	Invalid = -1
+	Shortcut
 };
 enum Bar
 {
@@ -255,7 +255,7 @@ void LevelGui::DrawFront()
 				{
 					AIController& ai = *u.ai;
 					UnitOrder order = u.GetOrder();
-					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
+					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
 						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.st.idle.action]) : "",
 						ai.timer, ai.loc_timer, order_str[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
@@ -285,7 +285,7 @@ void LevelGui::DrawFront()
 					}
 				}
 				else
-					str += Format("\nB:%d, F:%d, LVL:%d, Ani:%d, A:%d", u.busy, u.frozen, u.level, u.animation, u.player->action);
+					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, Act:%d, PAct:%d", u.busy, u.frozen, u.level, u.animation, u.action, u.player->action);
 			}
 			DrawUnitInfo(str, u, text_pos);
 		}
@@ -645,7 +645,7 @@ void LevelGui::DrawFront()
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
 		if(gk[0] != Key::None)
-			gui->DrawText(GameGui::font_small, game_gui->controls->key_text[(int)gk[0]], DTF_SINGLELINE, Color::White, r);
+			gui->DrawText(GameGui::font_small, game_gui->controls->GetKeyText(gk[0]), DTF_SINGLELINE, Color::White, r);
 
 		spos.x += offset;
 	}
@@ -654,8 +654,6 @@ void LevelGui::DrawFront()
 	if(sidebar > 0.f)
 	{
 		int max = (int)SideButtonId::Max;
-		if(!Net::IsOnline())
-			--max;
 		int total = offset * max;
 		spos.y = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
@@ -997,9 +995,6 @@ void LevelGui::Update(float dt)
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
-	if(!Net::IsOnline())
-		--max;
-
 	sidebar_state[(int)SideButtonId::Inventory] = (game_gui->inventory->inv_mine->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Journal] = (game_gui->journal->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Stats] = (game_gui->stats->visible ? 2 : 0);
@@ -1010,7 +1005,7 @@ void LevelGui::Update(float dt)
 	sidebar_state[(int)SideButtonId::Menu] = 0;
 
 	bool anything = use_cursor;
-	if(game_gui->inventory->gp_trade->visible || game_gui->book->visible)
+	if(game_gui->inventory->gp_trade->visible || game_gui->book->visible || game_gui->craft->visible)
 		anything = true;
 	bool show_tooltips = anything;
 	if(!anything)
@@ -1506,7 +1501,7 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			switch((SideButtonId)id)
 			{
 			case SideButtonId::Menu:
-				tooltip.text = Format("%s (%s)", txMenu, game_gui->controls->key_text[VK_ESCAPE]);
+				tooltip.text = Format("%s (%s)", txMenu, game_gui->controls->GetKeyText(Key::Escape));
 				return;
 			case SideButtonId::Team:
 				gk = GK_TEAM_PANEL;
@@ -1609,12 +1604,12 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			if(shortcut.type == Shortcut::TYPE_ABILITY)
 			{
 				if(gk[0] != Key::None)
-					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->key_text[(int)gk[0]]);
+					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->GetKeyText(gk[0]));
 			}
 			else
 			{
 				if(gk[0] != Key::None)
-					title = Format("%s (%s)", title, game_gui->controls->key_text[(int)gk[0]]);
+					title = Format("%s (%s)", title, game_gui->controls->GetKeyText(gk[0]));
 				tooltip.text = title;
 				if(desc)
 					tooltip.small_text = desc;
@@ -1635,7 +1630,8 @@ bool LevelGui::HavePanelOpen() const
 		|| game_gui->team->visible
 		|| game_gui->journal->visible
 		|| game_gui->minimap->visible
-		|| game_gui->ability->visible;
+		|| game_gui->ability->visible
+		|| game_gui->craft->visible;
 }
 
 //=================================================================================================
@@ -1659,6 +1655,8 @@ void LevelGui::ClosePanels(bool close_mp_box)
 		game_gui->ability->Hide();
 	if(game_gui->book->visible)
 		game_gui->book->Hide();
+	if(game_gui->craft->visible)
+		game_gui->craft->Hide();
 }
 
 //=================================================================================================
@@ -1694,6 +1692,8 @@ OpenPanel LevelGui::GetOpenPanel()
 		return OpenPanel::Ability;
 	else if(game_gui->book->visible)
 		return OpenPanel::Book;
+	else if(game_gui->craft->visible)
+		return OpenPanel::Craft;
 	else
 		return OpenPanel::None;
 }
@@ -1733,6 +1733,9 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		break;
 	case OpenPanel::Book:
 		game_gui->book->Hide();
+		break;
+	case OpenPanel::Craft:
+		game_gui->craft->Hide();
 		break;
 	}
 

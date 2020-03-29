@@ -1,9 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Container.h"
-#include "Scrollbar.h"
-#include "TooltipController.h"
+#include <Container.h>
+#include <Scrollbar.h>
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 enum class OpenPanel
@@ -17,7 +17,8 @@ enum class OpenPanel
 	Ability,
 	Trade,
 	Unknown,
-	Book
+	Book,
+	Craft
 };
 
 //-----------------------------------------------------------------------------
@@ -59,6 +60,7 @@ struct BuffImage
 };
 
 //-----------------------------------------------------------------------------
+// Ingame gui - contains player hp/stamina/mana bars, shortcuts, buffs, side menu & dialog menu
 class LevelGui : public Container
 {
 public:

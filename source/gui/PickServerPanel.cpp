@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "PickServerPanel.h"
 #include "Language.h"
 #include "Input.h"
@@ -104,7 +103,7 @@ void PickServerPanel::Update(float dt)
 	grid.focus = focus;
 	grid.Update(dt);
 
-	if(!focus)
+	if(!focus || !visible)
 		return;
 
 	if(input->Focus() && input->PressedRelease(Key::Escape))

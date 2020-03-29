@@ -70,6 +70,12 @@
     <Filter Include="gui">
       <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system\perks">
+      <UniqueIdentifier>{b0058d9b-cbd2-4b8a-b3d9-e012903acb41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\locations">
+      <UniqueIdentifier>{d8ce4cfc-eef9-4926-a585-b7d50c955433}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -142,9 +148,6 @@
       <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="stats\BaseTrap.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
-    <ClCompile Include="stats\RoomType.cpp">
       <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="stats\UnitStats.cpp">
@@ -221,9 +224,6 @@
     <ClCompile Include="gui\Controls.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="stats\Perk.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
     <ClCompile Include="entity\CreatedCharacter.cpp">
       <Filter>entity</Filter>
     </ClCompile>
@@ -294,9 +294,6 @@
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="ErrorHandler.cpp" />
-    <ClCompile Include="entity\Light.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
@@ -392,9 +389,6 @@
       <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="entity\Portal.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
-    <ClCompile Include="entity\Camera.cpp">
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="net\EntityInterpolator.cpp">
@@ -599,8 +593,35 @@
     <ClCompile Include="helpers\LocationHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="entity\SceneNode.cpp">
+    <ClCompile Include="gui\CraftPanel.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\DrawBatch.cpp">
       <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\GameCamera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\GameLight.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="system\PerkLoader.cpp">
+      <Filter>system\perks</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Perk.cpp">
+      <Filter>system\perks</Filter>
+    </ClCompile>
+    <ClCompile Include="system\LocationLoader.cpp">
+      <Filter>system\locations</Filter>
+    </ClCompile>
+    <ClCompile Include="system\RoomType.cpp">
+      <Filter>system\locations</Filter>
+    </ClCompile>
+    <ClCompile Include="location\OffscreenLocation.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\DungeonMeshBuilder.cpp">
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
@@ -636,9 +657,6 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\PlayerController.h">
-      <Filter>entity</Filter>
-    </ClInclude>
-    <ClInclude Include="entity\SceneNode.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\SpellEffects.h">
@@ -693,9 +711,6 @@
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="stats\Material.h">
-      <Filter>stats</Filter>
-    </ClInclude>
-    <ClInclude Include="stats\RoomType.h">
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="stats\UnitStats.h">
@@ -771,9 +786,6 @@
     <ClInclude Include="gui\Controls.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="stats\Perk.h">
-      <Filter>stats</Filter>
-    </ClInclude>
     <ClInclude Include="entity\CreatedCharacter.h">
       <Filter>entity</Filter>
     </ClInclude>
@@ -847,16 +859,10 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />
-    <ClInclude Include="entity\Camera.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="location\LevelArea.h">
       <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="ErrorHandler.h" />
-    <ClInclude Include="entity\Light.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="helpers\UnitHelper.h">
       <Filter>helpers</Filter>
     </ClInclude>
@@ -1194,6 +1200,36 @@
     <ClInclude Include="system\RequiredLoader.h">
       <Filter>system\required</Filter>
     </ClInclude>
+    <ClInclude Include="gui\CraftPanel.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\DrawBatch.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\GameCamera.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\GameLight.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="system\PerkLoader.h">
+      <Filter>system\perks</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Perk.h">
+      <Filter>system\perks</Filter>
+    </ClInclude>
+    <ClInclude Include="system\LocationLoader.h">
+      <Filter>system\locations</Filter>
+    </ClInclude>
+    <ClInclude Include="system\RoomType.h">
+      <Filter>system\locations</Filter>
+    </ClInclude>
+    <ClInclude Include="location\OffscreenLocation.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\DungeonMeshBuilder.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">
@@ -1217,9 +1253,6 @@
       <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\system.txt">
-      <Filter>doc</Filter>
-    </Text>
-    <Text Include="..\doc\todo.txt">
       <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\script.txt">

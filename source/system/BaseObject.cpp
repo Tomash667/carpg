@@ -44,7 +44,7 @@ BaseObject::~BaseObject()
 }
 
 //=================================================================================================
-BaseObject* BaseObject::TryGet(Cstring id, bool* is_group)
+BaseObject* BaseObject::TryGet(Cstring id, ObjectGroup** out_group)
 {
 	// find object
 	static BaseObject obj;
@@ -59,9 +59,9 @@ BaseObject* BaseObject::TryGet(Cstring id, bool* is_group)
 	auto group_it = ObjectGroup::groups.find(&group);
 	if(group_it != ObjectGroup::groups.end())
 	{
-		if(is_group)
-			*is_group = true;
-		auto obj = (*group_it)->GetRandom();
+		if(out_group)
+			*out_group = (*group_it);
+		BaseObject* obj = (*group_it)->GetRandom();
 		return obj;
 	}
 

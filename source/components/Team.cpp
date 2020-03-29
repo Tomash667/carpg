@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Team.h"
 #include "Unit.h"
 #include "SaveState.h"
@@ -58,9 +57,12 @@ bool UniqueTeamShares(const Team::TeamShareItem& t1, const Team::TeamShareItem& 
 	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item && t1.priority == t2.priority;
 }
 
-void Team::AddTeamMember(Unit* unit, HeroType type)
+void Team::AddMember(Unit* unit, HeroType type)
 {
 	assert(unit && unit->hero);
+
+	if(unit->IsTeamMember())
+		return;
 
 	// set as team member
 	unit->hero->team_member = true;
@@ -95,9 +97,12 @@ void Team::AddTeamMember(Unit* unit, HeroType type)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
 }
 
-void Team::RemoveTeamMember(Unit* unit)
+void Team::RemoveMember(Unit* unit)
 {
 	assert(unit && unit->hero);
+
+	if(!unit->IsTeamMember())
+		return;
 
 	// set as not team member
 	unit->hero->team_member = false;
@@ -906,7 +911,7 @@ void Team::BuyTeamItems()
 		}
 
 		// buy items
-		const ItemList* lis = ItemList::Get("base_items").lis;
+		const ItemList& lis = ItemList::Get("base_items");
 		const float* priorities = unit.stats->priorities;
 		to_buy.clear();
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
@@ -944,13 +949,13 @@ void Team::BuyTeamItems()
 					switch(i)
 					{
 					case IT_WEAPON:
-						item = UnitHelper::GetBaseWeapon(unit, lis);
+						item = UnitHelper::GetBaseWeapon(unit, &lis);
 						break;
 					case IT_ARMOR:
-						item = UnitHelper::GetBaseArmor(unit, lis);
+						item = UnitHelper::GetBaseArmor(unit, &lis);
 						break;
 					default:
-						item = UnitHelper::GetBaseItem((ITEM_TYPE)i, lis);
+						item = UnitHelper::GetBaseItem((ITEM_TYPE)i, &lis);
 						break;
 					}
 				}
@@ -1433,6 +1438,7 @@ void Team::OnTravel(float dist)
 //=================================================================================================
 void Team::CalculatePlayersLevel()
 {
+	Perk* leader_perk = Perk::Get("leader");
 	bool have_leader_perk = false;
 	players_level = -1;
 	for(Unit& unit : active_members)
@@ -1441,7 +1447,7 @@ void Team::CalculatePlayersLevel()
 		{
 			if(unit.level > players_level)
 				players_level = unit.level;
-			if(unit.player->HavePerk(Perk::Leader))
+			if(unit.player->HavePerk(leader_perk))
 				have_leader_perk = true;
 		}
 	}

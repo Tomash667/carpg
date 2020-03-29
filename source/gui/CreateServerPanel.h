@@ -1,12 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "TextBox.h"
-#include "GuiContainer.h"
-#include "CheckBox.h"
+#include <DialogBox.h>
+#include <TextBox.h>
+#include <GuiContainer.h>
+#include <CheckBox.h>
 
 //-----------------------------------------------------------------------------
+// Panel shown when creating new server
 class CreateServerPanel : public DialogBox
 {
 	enum Id

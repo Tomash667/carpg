@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CommandParser.h"
 #include "BitStreamFunc.h"
 #include "ConsoleCommands.h"
@@ -30,6 +29,7 @@
 #include "Pathfinding.h"
 #include "Utility.h"
 #include "Engine.h"
+#include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
 CommandParser* global::cmdp;
@@ -37,8 +37,11 @@ CommandParser* global::cmdp;
 //=================================================================================================
 void CommandParser::AddCommands()
 {
-	cmds.push_back(ConsoleCommand(&game->use_fog, "use_fog", "draw fog (use_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->use_lighting, "use_lighting", "use lighting (use_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&scene_mgr->use_fog, "use_fog", "draw fog (use_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&scene_mgr->use_lighting, "use_lighting", "use lighting (use_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&scene_mgr->use_normalmap, "use_normalmap", "use normal mapping (use_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&scene_mgr->use_specularmap, "use_specularmap", "use specular mapping (use_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+
 	cmds.push_back(ConsoleCommand(&game->draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
@@ -51,8 +54,6 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&game->use_postfx, "use_postfx", "use post effects (use_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->use_normalmap, "use_normalmap", "use normal mapping (use_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->use_specularmap, "use_specularmap", "use specular mapping (use_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->use_glow, "use_glow", "use glow (use_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(reinterpret_cast<int*>(&game->profiler_mode), "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
@@ -72,7 +73,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_RANDOM, "random", "roll random number 1-100 or pick random character (random, random [name], use ? to get list)", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
-	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/hall)", F_CHEAT | F_GAME));
+	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp building/group [front])", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
@@ -161,7 +162,6 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 {
 	print_msg = print_func;
 
-	Tokenizer t(Tokenizer::F_JOIN_MINUS);
 	t.FromString(command_str);
 
 	try
@@ -171,7 +171,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 		if(t.IsSymbol('#'))
 		{
-			ParseScript(t);
+			ParseScript();
 			return;
 		}
 
@@ -340,7 +340,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 			}
 			else
 			{
-				RunCommand(*it, t, source);
+				RunCommand(*it, source);
 				return;
 			}
 		}
@@ -353,7 +353,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 	}
 }
 
-void CommandParser::ParseScript(Tokenizer& t)
+void CommandParser::ParseScript()
 {
 	Msg(t.GetInnerString().c_str());
 	if(!game->devmode)
@@ -392,7 +392,7 @@ void CommandParser::ParseScript(Tokenizer& t)
 	}
 }
 
-void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE source)
+void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 {
 	if(!IsSet(cmd.flags, F_NO_ECHO))
 		Msg(t.GetInnerString().c_str());
@@ -761,7 +761,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Msg("No unit in front of player.");
 		break;
 	case CMD_LIST:
-		CmdList(t);
+		CmdList();
 		break;
 	case CMD_HEAL_UNIT:
 		if(Unit* target = game->pc->data.GetTargetUnit())
@@ -958,40 +958,74 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(t.Next())
 		{
 			const string& type = t.MustGetItem();
-			BuildingGroup* group = BuildingGroup::TryGet(type);
-			if(!group)
+			CityBuilding* city_building = nullptr;
+			int index;
+			if(BuildingGroup* group = BuildingGroup::TryGet(type))
 			{
-				Msg("Missing building group '%s'.", type.c_str());
+				if(game_level->city_ctx)
+					city_building = game_level->city_ctx->FindBuilding(group, &index);
+				if(!city_building)
+				{
+					Msg("Missing building group '%s'.", type.c_str());
+					break;
+				}
+			}
+			else if(Building* building = Building::TryGet(type))
+			{
+				if(game_level->city_ctx)
+					city_building = game_level->city_ctx->FindBuilding(building, &index);
+				if(!city_building)
+				{
+					Msg("Missing building '%s'.", type.c_str());
+					break;
+				}
+			}
+			else
+			{
+				Msg("Invalid building or group '%s'.", type.c_str());
 				break;
 			}
 
-			bool ok = false;
-			if(game_level->city_ctx)
+			bool inside = true;
+			if((t.Next() && t.IsItem("front")) || !city_building->building->inside_mesh)
+				inside = false;
+			else
+				game_level->city_ctx->FindInsideBuilding(city_building->building, &index);
+
+			if(Net::IsLocal())
 			{
-				int index;
-				InsideBuilding* building = game_level->city_ctx->FindInsideBuilding(group, index);
-				if(building)
+				if(inside)
 				{
-					// wejdŸ do budynku
-					if(Net::IsLocal())
-					{
-						game->fallback_type = FALLBACK::ENTER;
-						game->fallback_t = -1.f;
-						game->fallback_1 = index;
-						game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-					}
-					else
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP;
-						c.id = index;
-					}
-					ok = true;
+					// warp to building
+					game->fallback_type = FALLBACK::ENTER;
+					game->fallback_t = -1.f;
+					game->fallback_1 = index;
+					game->fallback_2 = -1;
+					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+				}
+				else if(game->pc->unit->area->area_type != LevelArea::Type::Outside)
+				{
+					// warp from building to front of building
+					game->fallback_type = FALLBACK::ENTER;
+					game->fallback_t = -1.f;
+					game->fallback_1 = -1;
+					game->fallback_2 = index;
+					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+				}
+				else
+				{
+					// warp from outside to front of building
+					game_level->WarpUnit(*game->pc->unit, city_building->walk_pt);
+					game->pc->unit->RotateTo(PtToPos(city_building->pt));
 				}
 			}
-
-			if(!ok)
-				Msg("Missing building of type '%s'.", type.c_str());
+			else
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHEAT_WARP;
+				c.id = index;
+				c.count = inside ? 1 : 0;
+			}
 		}
 		else
 			Msg("You need to enter where.");
@@ -1592,10 +1626,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					e.source = EffectSource::Perk;
 					t.Next();
 					const string& perk_id = t.MustGetItem();
-					PerkInfo* perk = PerkInfo::Find(perk_id);
-					if(perk == nullptr)
+					Perk* perk = Perk::Get(perk_id);
+					if(!perk)
 						t.Throw("Invalid perk source '%s'.", perk_id.c_str());
-					e.source_id = (int)perk->perk_id;
+					e.source_id = perk->hash;
 					e.time = 0;
 				}
 				else if(source_name == "temporary")
@@ -1635,7 +1669,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					<< game->pc->data.selected_unit->id
 					<< (char)e.effect
 					<< (char)e.source
-					<< (char)e.source_id
+					<< e.source_id
 					<< (char)e.value
 					<< e.power
 					<< e.time;
@@ -1669,10 +1703,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				if(t.Next())
 				{
 					const string& perk_name = t.MustGetItem();
-					PerkInfo* info = PerkInfo::Find(perk_name);
-					if(info != nullptr)
+					Perk* perk = Perk::Get(perk_name);
+					if(perk)
 					{
-						source_id = (int)info->perk_id;
+						source_id = perk->hash;
 						t.Next();
 					}
 				}
@@ -1763,56 +1797,56 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 		{
 			const string& name = t.MustGetItem();
-			PerkInfo* info = PerkInfo::Find(name);
-			if(!info)
+			Perk* perk = Perk::Get(name);
+			if(!perk)
 			{
 				Msg("Invalid perk '%s'.", name.c_str());
 				break;
 			}
 
 			int value = -1;
-			if(info->value_type == PerkInfo::Attribute)
+			if(perk->value_type == Perk::Attribute)
 			{
 				if(!t.Next())
 				{
-					Msg("Perk '%s' require 'attribute' value.", info->id);
+					Msg("Perk '%s' require 'attribute' value.", perk->id.c_str());
 					break;
 				}
 				const string& attrib_name = t.MustGetItem();
 				Attribute* attrib = Attribute::Find(attrib_name);
 				if(!attrib)
 				{
-					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), info->id);
+					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)attrib->attrib_id;
 			}
-			else if(info->value_type == PerkInfo::Skill)
+			else if(perk->value_type == Perk::Skill)
 			{
 				if(!t.Next())
 				{
-					Msg("Perk '%s' require 'skill' value.", info->id);
+					Msg("Perk '%s' require 'skill' value.", perk->id.c_str());
 					break;
 				}
 				const string& skill_name = t.MustGetItem();
 				Skill* skill = Skill::Find(skill_name);
 				if(!skill)
 				{
-					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), info->id);
+					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)skill->skill_id;
 			}
 
 			if(Net::IsLocal())
-				AddPerk(game->pc->data.selected_unit->player, info->perk_id, value);
+				AddPerk(game->pc->data.selected_unit->player, perk, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_PERK
 					<< game->pc->data.selected_unit->id
-					<< (char)info->perk_id
+					<< perk->hash
 					<< (char)value;
 			}
 		}
@@ -1825,56 +1859,56 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 		{
 			const string& name = t.MustGetItem();
-			PerkInfo* info = PerkInfo::Find(name);
-			if(!info)
+			Perk* perk = Perk::Get(name);
+			if(!perk)
 			{
 				Msg("Invalid perk '%s'.", name.c_str());
 				break;
 			}
 
 			int value = -1;
-			if(info->value_type == PerkInfo::Attribute)
+			if(perk->value_type == Perk::Attribute)
 			{
 				if(!t.Next())
 				{
-					Msg("Perk '%s' require 'attribute' value.", info->id);
+					Msg("Perk '%s' require 'attribute' value.", perk->id.c_str());
 					break;
 				}
 				const string& attrib_name = t.MustGetItem();
 				Attribute* attrib = Attribute::Find(attrib_name);
 				if(!attrib)
 				{
-					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), info->id);
+					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)attrib->attrib_id;
 			}
-			else if(info->value_type == PerkInfo::Skill)
+			else if(perk->value_type == Perk::Skill)
 			{
 				if(!t.Next())
 				{
-					Msg("Perk '%s' require 'skill' value.", info->id);
+					Msg("Perk '%s' require 'skill' value.", perk->id.c_str());
 					break;
 				}
 				const string& skill_name = t.MustGetItem();
 				Skill* skill = Skill::Find(skill_name);
 				if(!skill)
 				{
-					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), info->id);
+					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)skill->skill_id;
 			}
 
 			if(Net::IsLocal())
-				RemovePerk(game->pc->data.selected_unit->player, info->perk_id, value);
+				RemovePerk(game->pc->data.selected_unit->player, perk, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_PERK
 					<< game->pc->data.selected_unit->id
-					<< (char)info->perk_id
+					<< perk->hash
 					<< (char)value;
 			}
 		}
@@ -2118,7 +2152,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f >> id;
 			f.ReadCasted<char>(e.effect);
 			f.ReadCasted<char>(e.source);
-			f.ReadCasted<char>(e.source_id);
+			f >> e.source_id;
 			f.ReadCasted<char>(e.value);
 			f >> e.power;
 			f >> e.time;
@@ -2141,7 +2175,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			}
 			if(e.source == EffectSource::Perk)
 			{
-				if(e.source_id < 0 || e.source_id >= (int)Perk::Max)
+				if(!Perk::Get(e.source_id))
 				{
 					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for perk source.", e.source_id);
 					return false;
@@ -2194,7 +2228,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f >> id;
 			f.ReadCasted<char>(effect);
 			f.ReadCasted<char>(source);
-			f.ReadCasted<char>(source_id);
+			f >> source_id;
 			f.ReadCasted<char>(value);
 
 			Unit* unit = game_level->FindUnit(id);
@@ -2215,7 +2249,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			}
 			if(source == EffectSource::Perk)
 			{
-				if(source_id < 0 || source_id >= (int)Perk::Max)
+				if(!Perk::Get(source_id))
 				{
 					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for perk source.", source_id);
 					return false;
@@ -2271,10 +2305,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 	case CMD_ADD_PERK:
 		{
 			int id, value;
-			Perk perk;
+			int perk_hash;
 
 			f >> id;
-			f.ReadCasted<char>(perk);
+			f >> perk_hash;
 			f.ReadCasted<char>(value);
 
 			Unit* unit = game_level->FindUnit(id);
@@ -2288,33 +2322,33 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				Error("CommandParser CMD_ADD_PERK: Unit %d is not player.", id);
 				return false;
 			}
-			if(perk >= Perk::Max)
+			Perk* perk = Perk::Get(perk_hash);
+			if(!perk)
 			{
-				Error("CommandParser CMD_ADD_PERK: Invalid perk %d.", perk);
+				Error("CommandParser CMD_ADD_PERK: Invalid perk %u.", perk_hash);
 				return false;
 			}
-			PerkInfo& info = PerkInfo::perks[(int)perk];
-			if(info.value_type == PerkInfo::None)
+			if(perk->value_type == Perk::None)
 			{
 				if(value != -1)
 				{
-					Error("CommandParser CMD_ADD_PERK: Invalid value %d for perk '%s'.", value, info.id);
+					Error("CommandParser CMD_ADD_PERK: Invalid value %d for perk '%s'.", value, perk->id.c_str());
 					return false;
 				}
 			}
-			else if(info.value_type == PerkInfo::Attribute)
+			else if(perk->value_type == Perk::Attribute)
 			{
 				if(value <= (int)AttributeId::MAX)
 				{
-					Error("CommandParser CMD_ADD_PERK: Invalid value %d for perk '%s'.", value, info.id);
+					Error("CommandParser CMD_ADD_PERK: Invalid value %d for perk '%s'.", value, perk->id.c_str());
 					return false;
 				}
 			}
-			else if(info.value_type == PerkInfo::Skill)
+			else if(perk->value_type == Perk::Skill)
 			{
 				if(value <= (int)SkillId::MAX)
 				{
-					Error("CommandParser CMD_ADD_PERK: Invalid value %d for perk '%s'.", value, info.id);
+					Error("CommandParser CMD_ADD_PERK: Invalid value %d for perk '%s'.", value, perk->id.c_str());
 					return false;
 				}
 			}
@@ -2325,10 +2359,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 	case CMD_REMOVE_PERK:
 		{
 			int id, value;
-			Perk perk;
+			int perk_hash;
 
 			f >> id;
-			f.ReadCasted<char>(perk);
+			f >> perk_hash;
 			f.ReadCasted<char>(value);
 
 			Unit* unit = game_level->FindUnit(id);
@@ -2342,33 +2376,33 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				Error("CommandParser CMD_REMOVE_PERK: Unit %d is not player.", id);
 				return false;
 			}
-			if(perk >= Perk::Max)
+			Perk* perk = Perk::Get(perk_hash);
+			if(!perk)
 			{
-				Error("CommandParser CMD_REMOVE_PERK: Invalid perk %d.", perk);
+				Error("CommandParser CMD_REMOVE_PERK: Invalid perk %u.", perk_hash);
 				return false;
 			}
-			PerkInfo& info = PerkInfo::perks[(int)perk];
-			if(info.value_type == PerkInfo::None)
+			if(perk->value_type == Perk::None)
 			{
 				if(value != -1)
 				{
-					Error("CommandParser CMD_REMOVE_PERK: Invalid value %d for perk '%s'.", value, info.id);
+					Error("CommandParser CMD_REMOVE_PERK: Invalid value %d for perk '%s'.", value, perk->id.c_str());
 					return false;
 				}
 			}
-			else if(info.value_type == PerkInfo::Attribute)
+			else if(perk->value_type == Perk::Attribute)
 			{
 				if(value <= (int)AttributeId::MAX)
 				{
-					Error("CommandParser CMD_REMOVE_PERK: Invalid value %d for perk '%s'.", value, info.id);
+					Error("CommandParser CMD_REMOVE_PERK: Invalid value %d for perk '%s'.", value, perk->id.c_str());
 					return false;
 				}
 			}
-			else if(info.value_type == PerkInfo::Skill)
+			else if(perk->value_type == Perk::Skill)
 			{
 				if(value <= (int)SkillId::MAX)
 				{
-					Error("CommandParser CMD_REMOVE_PERK: Invalid value %d for perk '%s'.", value, info.id);
+					Error("CommandParser CMD_REMOVE_PERK: Invalid value %d for perk '%s'.", value, perk->id.c_str());
 					return false;
 				}
 			}
@@ -2524,7 +2558,7 @@ void CommandParser::ListEffects(Unit* u)
 			s += Format("temporary, time %g", e.time);
 			break;
 		case EffectSource::Perk:
-			s += Format("perk (%s)", PerkInfo::perks[e.source_id].id);
+			s += Format("perk (%s)", Perk::Get(e.source_id)->id.c_str());
 			break;
 		case EffectSource::Permanent:
 			s += "permanent";
@@ -2543,14 +2577,14 @@ void CommandParser::ListEffects(Unit* u)
 }
 
 //=================================================================================================
-void CommandParser::AddPerk(PlayerController* pc, Perk perk, int value)
+void CommandParser::AddPerk(PlayerController* pc, Perk* perk, int value)
 {
 	if(!pc->AddPerk(perk, value))
 		Msg("Unit already have this perk.");
 }
 
 //=================================================================================================
-void CommandParser::RemovePerk(PlayerController* pc, Perk perk, int value)
+void CommandParser::RemovePerk(PlayerController* pc, Perk* perk, int value)
 {
 	if(!pc->RemovePerk(perk, value))
 		Msg("Unit don't have this perk.");
@@ -2569,11 +2603,10 @@ void CommandParser::ListPerks(PlayerController* pc)
 	s = Format("Unit perks (%u):", pc->perks.size());
 	for(TakenPerk& tp : pc->perks)
 	{
-		PerkInfo& info = PerkInfo::perks[(int)tp.perk];
-		s += Format("\n%s", info.id);
-		if(info.value_type == PerkInfo::Attribute)
+		s += Format("\n%s", tp.perk->id.c_str());
+		if(tp.perk->value_type == Perk::Attribute)
 			s += Format(" (%s)", Attribute::attributes[tp.value].id);
-		else if(info.value_type == PerkInfo::Skill)
+		else if(tp.perk->value_type == Perk::Skill)
 			s += Format(" (%s)", Skill::skills[tp.value].id);
 	}
 	Msg(s.c_str());
@@ -2719,7 +2752,7 @@ void CommandParser::ArenaCombat(cstring str)
 }
 
 //=================================================================================================
-void CommandParser::CmdList(Tokenizer& t)
+void CommandParser::CmdList()
 {
 	if(!t.Next())
 	{
@@ -2984,11 +3017,11 @@ void CommandParser::CmdList(Tokenizer& t)
 		break;
 	case LIST_PERK:
 		{
-			LocalVector<const PerkInfo*> perks;
-			for(PerkInfo& info : PerkInfo::perks)
+			LocalVector<const Perk*> perks;
+			for(Perk* perk : Perk::perks)
 			{
-				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)
-					perks.push_back(&info);
+				if(match.empty() || _strnicmp(match.c_str(), perk->id.c_str(), match.length()) == 0)
+					perks.push_back(perk);
 			}
 
 			if(perks.empty())
@@ -2997,17 +3030,17 @@ void CommandParser::CmdList(Tokenizer& t)
 				return;
 			}
 
-			std::sort(perks.begin(), perks.end(), [](const PerkInfo* perk1, const PerkInfo* perk2)
+			std::sort(perks.begin(), perks.end(), [](const Perk* perk1, const Perk* perk2)
 			{
-				return strcoll(perk1->id, perk2->id) < 0;
+				return strcoll(perk1->id.c_str(), perk2->id.c_str()) < 0;
 			});
 
 			LocalString s = Format("Perks list (%d):\n", perks.size());
 			Msg("Perks list (%d):", perks.size());
 
-			for(const PerkInfo* perk : perks)
+			for(const Perk* perk : perks)
 			{
-				cstring s2 = Format("%s (%s, %s)", perk->id, perk->name.c_str(), perk->desc.c_str());
+				cstring s2 = Format("%s (%s, %s)", perk->id.c_str(), perk->name.c_str(), perk->desc.c_str());
 				Msg(s2);
 				s += s2;
 				s += "\n";

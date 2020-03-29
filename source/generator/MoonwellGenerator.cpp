@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "MoonwellGenerator.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"

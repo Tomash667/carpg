@@ -1,9 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "Grid.h"
-#include "InputTextBox.h"
+#include <DialogBox.h>
+#include <Grid.h>
+#include <InputTextBox.h>
 #include "Class.h"
 
 //-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@ enum LobbyUpdate
 };
 
 //-----------------------------------------------------------------------------
+// Lobby shown after creating server, players can chat and select characters
 class ServerPanel : public DialogBox
 {
 public:

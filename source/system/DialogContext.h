@@ -25,6 +25,9 @@ struct DialogChoice
 //-----------------------------------------------------------------------------
 struct DialogContext
 {
+	static constexpr int QUEST_INDEX_NONE = -1;
+	static constexpr int QUEST_INDEX_RESTART = -2;
+
 	struct Entry
 	{
 		GameDialog* dialog;
@@ -76,9 +79,10 @@ struct DialogContext
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);
+	void RemoveQuestDialog(Quest_Scripted* quest);
 private:
 	void UpdateLoop();
 	bool DoIfOp(int value1, int value2, DialogOp op);
-	bool LearnPerk(int perk);
+	bool LearnPerk(Perk* perk);
 	bool RecruitHero(Class* clas);
 };

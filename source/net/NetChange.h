@@ -101,7 +101,7 @@ struct NetChange
 		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(count)-PlayerInfo.LeftReason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
 		RANDOM_NUMBER, // player get random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
-		CHEAT_WARP, // player used cheat 'warp' [byte(id)-inside building index]
+		CHEAT_WARP, // player used cheat 'warp' [byte(id)-inside building index, bool(count)-inside]
 		CHEAT_SKIP_DAYS, // player used cheat 'skip_days' [int(id)-days]
 		CHEAT_KILLALL, // player used cheat 'killall' [int(id)-ignored unit, byte(id)-mode]
 		CHEAT_NOCLIP, // player used cheat 'noclip' [bool(id)-state]
@@ -141,7 +141,7 @@ struct NetChange
 		END_TRAVEL, // leader finished travel []
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, int-year]
 		USE_DOOR, // someone open/close door [int(id)-door, bool(count)-is closing]
-		CREATE_EXPLOSION, // create explosion effect [uint(ability->hash), Vec3(pos)]
+		CREATE_EXPLOSION, // create explosion effect [int(ability->hash), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap]
 		EVIL_SOUND, // play evil sound []
@@ -156,8 +156,8 @@ struct NetChange
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit cast spell SERVER[int(id)-unit] / CLIENT[Vec3(pos)-target pos]
-		CREATE_SPELL_BALL, // create ball - spell effect [uint(ability->hash), Vec3(pos), float(rot_y), float(speed_y), int(extra_id)-owner id]
-		SPELL_SOUND, // play spell sound [uint(ability->hash), Vec3(pos)]
+		CREATE_SPELL_BALL, // create ball - spell effect [int(ability->hash), Vec3(pos), float(rot_y), float(speed_y), int(extra_id)-owner id]
+		SPELL_SOUND, // play spell sound [int(ability->hash), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(id)-unit that sucks blood]
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro), Vec3(pos), Vec3(f)-pos2]
 		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro, Vec3(pos)]
@@ -192,7 +192,7 @@ struct NetChange
 		BREAK_ACTION, // break unit action [int(id)-unit]
 		STUN, // unit stun - not shield bash [int(id)-unit, f[0]-length]
 		CHEAT_STUN, // player used cheat 'stun' [int(id)-unit, f[0]-length]
-		PLAYER_ABILITY, // player unit is using ability SERVER[int(id)-unit, uint(ability->hash)] / CLIENT[int(id)-unit, Vec3-pos/data, uint(ability->hash)]
+		PLAYER_ABILITY, // player unit is using ability SERVER[int(id)-unit, int(ability->hash)] / CLIENT[int(id)-unit, Vec3-pos/data, int(ability->hash)]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
 		RUN_SCRIPT, // run script [string(str)-code, int(id)-target unit]
@@ -213,6 +213,7 @@ struct NetChange
 		CUTSCENE_IMAGE, // queue cutscene image to show [string1(str)-texture, float(f[0])-time]
 		CUTSCENE_TEXT, // queue cutscene text to show [string1(str)-text, float(f[0])-time]
 		CUTSCENE_SKIP, // skip current cutscene []
+		CRAFT, // craft item [string1(Recipe->id), uint(count)]
 
 		MAX
 	} type;
@@ -225,6 +226,7 @@ struct NetChange
 		int e_id;
 		CMD cmd;
 		Usable* usable;
+		Recipe* recipe;
 	};
 	union
 	{

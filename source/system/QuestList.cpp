@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "QuestList.h"
 
 vector<QuestList*> QuestList::lists;

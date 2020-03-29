@@ -1,10 +1,8 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "WorldMapGui.h"
 #include "Game.h"
 #include "Language.h"
 #include "Journal.h"
-#include "Version.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
 #include "Quest_Crazies.h"
@@ -15,17 +13,21 @@
 #include "LevelGui.h"
 #include "MpBox.h"
 #include "GameMessages.h"
-#include "DialogBox.h"
+#include <DialogBox.h>
 #include "World.h"
 #include "Level.h"
 #include "GameStats.h"
 #include "ResourceManager.h"
 #include "Team.h"
 #include "SaveState.h"
-#include "Render.h"
-#include "Engine.h"
 
 const float MAP_IMG_SIZE = 512.f;
+
+enum ButtonId
+{
+	ButtonJournal = GuiEvent_Custom + 10,
+	ButtonTalkBox
+};
 
 struct LocationElement : public GuiElement, public ObjectPoolProxy<LocationElement>
 {
@@ -33,13 +35,30 @@ struct LocationElement : public GuiElement, public ObjectPoolProxy<LocationEleme
 	cstring ToString() override { return loc->name.c_str(); }
 };
 
+layout::Button custom_layout;
+
 //=================================================================================================
 WorldMapGui::WorldMapGui() : zoom(1.2f), offset(0.f, 0.f), follow(false)
 {
 	focusable = true;
 	visible = false;
-	combo_box.parent = this;
-	combo_box.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->Free(); };
+	combo_search.parent = this;
+	combo_search.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->Free(); };
+	tooltip.Init(TooltipController::Callback(this, &WorldMapGui::GetTooltip));
+
+	custom_layout.tex[0] = AreaLayout(Color::None, Color::Black);
+	custom_layout.tex[1] = AreaLayout(Color::Alpha(80), Color::Black);
+	custom_layout.tex[2] = AreaLayout(Color::Alpha(120), Color::Black);
+	custom_layout.font = game_gui->font;
+	custom_layout.padding = 0;
+
+	buttons[0].id = ButtonJournal;
+	buttons[0].parent = this;
+	buttons[0].SetLayout(&custom_layout);
+
+	buttons[1].id = ButtonTalkBox;
+	buttons[1].parent = this;
+	buttons[1].SetLayout(&custom_layout);
 }
 
 //=================================================================================================
@@ -86,23 +105,22 @@ void WorldMapGui::LoadData()
 	tSide = res_mgr->Load<Texture>("worldmap_side.png");
 	tMagnifyingGlass = res_mgr->Load<Texture>("magnifying-glass-icon.png");
 	tTrackingArrow = res_mgr->Load<Texture>("tracking_arrow.png");
+	buttons[0].img = res_mgr->Load<Texture>("bt_journal.png");
+	buttons[1].img = res_mgr->Load<Texture>("bt_talk.png");
 }
 
 //=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	// background
-	Rect rect0(Int2::Zero, engine->GetWindowSize());
-	render->SetTextureAddressMode(TEX_ADR_WRAP);
-	gui->DrawSpriteRectPart(tMapBg, rect0, rect0);
-	render->SetTextureAddressMode(TEX_ADR_CLAMP);
+	gui->DrawSpriteFullWrap(tMapBg);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(world->world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
 	gui->DrawSpriteTransform(tWorldMap, mat);
 
 	// debug tiles
-	if(!combo_box.focus && !gui->HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
+	if(!combo_search.focus && !gui->HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
 	{
 		const vector<int>& tiles = world->GetTiles();
 		int ts = world->world_size / World::TILE_SIZE;
@@ -245,13 +263,17 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// side images
 	gui->DrawSpriteRect(tSide, Rect(gui->wnd_size.x * 2 / 3, 0, gui->wnd_size.x, gui->wnd_size.y));
 
+	// buttons
+	for(int i = 0; i < 2; ++i)
+		buttons[i].Draw();
+
 	// magnifying glass & combo box
 	Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f*gui->wnd_size.x / 1024),
 		int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
 	rect.p2.x += int(32.f * gui->wnd_size.x / 1024);
 	rect.p2.y += int(32.f * gui->wnd_size.y / 768);
 	gui->DrawSpriteRect(tMagnifyingGlass, rect);
-	combo_box.Draw();
+	combo_search.Draw();
 
 	// text
 	rect = Rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f * gui->wnd_size.x / 1024),
@@ -270,6 +292,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 		game_gui->journal->Draw();
 
 	game_gui->messages->Draw();
+
+	tooltip.Draw();
 }
 
 //=================================================================================================
@@ -293,32 +317,41 @@ void WorldMapGui::Update(float dt)
 	if(game->end_of_game)
 		return;
 
+	int group = -1, id = -1;
+
 	if(game_gui->journal->visible)
 	{
-		game_gui->journal->focus = true;
+		game_gui->journal->focus = focus;
 		game_gui->journal->Update(dt);
 	}
-	if(!gui->HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && input->Focus() && !combo_box.focus && game->death_screen == 0
-		&& GKey.PressedRelease(GK_JOURNAL))
+	if(!gui->HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && input->Focus() && !combo_search.focus && game->death_screen == 0)
 	{
-		if(game_gui->journal->visible)
-			game_gui->journal->Hide();
-		else
-			game_gui->journal->Show();
+		if(GKey.PressedRelease(GK_JOURNAL))
+		{
+			if(game_gui->journal->visible)
+				game_gui->journal->Hide();
+			else
+				game_gui->journal->Show();
+		}
+		if(GKey.PressedRelease(GK_MAP_SEARCH))
+		{
+			combo_search.focus = true;
+			combo_search.Event(GuiEvent_GainFocus);
+		}
 	}
 
 	if(focus && !game_gui->journal->visible)
 	{
-		if(!combo_box.focus && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+		if(!combo_search.focus && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
 			game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
-		if(game_gui->mp_box->have_focus && combo_box.focus)
-			combo_box.LostFocus();
+		if(game_gui->mp_box->have_focus && combo_search.focus)
+			combo_search.LostFocus();
 
-		combo_box.mouse_focus = focus;
-		if(combo_box.IsInside(gui->cursor_pos) && input->PressedRelease(Key::LeftButton))
-			combo_box.GainFocus();
-		combo_box.Update(dt);
+		combo_search.mouse_focus = focus;
+		if(combo_search.IsInside(gui->cursor_pos) && input->PressedRelease(Key::LeftButton))
+			combo_search.GainFocus();
+		combo_search.Update(dt);
 
 		zoom = Clamp(zoom + 0.1f * input->GetMouseWheel(), 0.5f, 2.f);
 		if(clicked)
@@ -340,26 +373,53 @@ void WorldMapGui::Update(float dt)
 			clicked = true;
 			follow = false;
 			tracking = -1;
-			combo_box.LostFocus();
+			combo_search.LostFocus();
 		}
 
-		if(!combo_box.focus && input->Down(Key::Spacebar))
+		if(!combo_search.focus && input->Down(Key::Spacebar))
 		{
 			follow = true;
+			fast_follow = true;
 			tracking = -1;
+		}
+
+		// buttons
+		for(int i = 0; i < 2; ++i)
+		{
+			buttons[i].mouse_focus = focus;
+			buttons[i].Update(dt);
+			if(buttons[i].IsInside(gui->cursor_pos))
+			{
+				group = 0;
+				id = (i == 0 ? GK_JOURNAL : GK_TALK_BOX);
+			}
+		}
+
+		// search location tooltip
+		Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f * gui->wnd_size.x / 1024),
+			int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
+		rect.p2.x += int(32.f * gui->wnd_size.x / 1024);
+		rect.p2.y += int(32.f * gui->wnd_size.y / 768);
+		if(rect.IsInside(gui->cursor_pos))
+		{
+			group = 0;
+			id = GK_MAP_SEARCH;
 		}
 	}
 
 	if(follow)
 		CenterView(dt);
 	else if(tracking != -1)
+	{
+		fast_follow = true;
 		CenterView(dt, &world->GetLocation(tracking)->pos);
-
-	if(world->travel_location_index != -1)
-		picked_location = world->travel_location_index;
+	}
 
 	if(world->GetState() == World::State::TRAVEL)
 	{
+		if(world->travel_location_index != -1)
+			picked_location = world->travel_location_index;
+
 		if(game->paused || (!Net::IsOnline() && gui->HavePauseDialog()))
 			return;
 
@@ -415,14 +475,13 @@ void WorldMapGui::Update(float dt)
 			{
 				if(input->PressedRelease(Key::LeftButton))
 				{
-					combo_box.LostFocus();
+					combo_search.LostFocus();
 					if(team->IsLeader())
 					{
 						if(picked_location != world->GetCurrentLocationIndex())
 						{
 							world->Travel(picked_location, true);
-							follow = true;
-							tracking = -1;
+							StartTravel();
 						}
 						else
 						{
@@ -435,13 +494,12 @@ void WorldMapGui::Update(float dt)
 					else
 						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game->devmode && picked_location != world->GetCurrentLocationIndex() && !combo_box.focus && input->PressedRelease(Key::T))
+				else if(game->devmode && picked_location != world->GetCurrentLocationIndex() && !combo_search.focus && input->PressedRelease(Key::T))
 				{
 					if(team->IsLeader())
 					{
 						world->Warp(picked_location, true);
-						follow = true;
-						tracking = -1;
+						StartTravel(true);
 					}
 					else
 						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
@@ -455,23 +513,21 @@ void WorldMapGui::Update(float dt)
 			{
 				if(input->PressedRelease(Key::LeftButton))
 				{
-					combo_box.LostFocus();
+					combo_search.LostFocus();
 					if(team->IsLeader())
 					{
 						world->TravelPos(c_pos, true);
-						follow = true;
-						tracking = -1;
+						StartTravel();
 					}
 					else
 						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game->devmode && !combo_box.focus && input->PressedRelease(Key::T))
+				else if(game->devmode && !combo_search.focus && input->PressedRelease(Key::T))
 				{
 					if(team->IsLeader())
 					{
 						world->WarpPos(c_pos, true);
-						follow = true;
-						tracking = -1;
+						StartTravel(true);
 					}
 					else
 						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
@@ -481,9 +537,10 @@ void WorldMapGui::Update(float dt)
 	}
 
 	if(focus && input->PressedRelease(Key::LeftButton))
-		combo_box.LostFocus();
+		combo_search.LostFocus();
 
 	game_gui->messages->Update(dt);
+	tooltip.UpdateTooltip(dt, group, id);
 }
 
 //=================================================================================================
@@ -493,34 +550,47 @@ void WorldMapGui::Event(GuiEvent e)
 	{
 	case GuiEvent_LostFocus:
 		game_gui->mp_box->LostFocus();
-		combo_box.LostFocus();
+		combo_search.LostFocus();
 		break;
 	case GuiEvent_Show:
 	case GuiEvent_WindowResize:
 		{
 			Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 52.f*gui->wnd_size.x / 1024),
-				int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
+				int(float(gui->wnd_size.y) - 140.f * gui->wnd_size.y / 768));
 			rect.p2.x = int(float(gui->wnd_size.x) - 20.f * gui->wnd_size.y / 1024);
 			rect.p2.y += int(32.f * gui->wnd_size.y / 768);
-			combo_box.pos = rect.p1;
-			combo_box.global_pos = combo_box.pos;
-			combo_box.size = rect.Size();
+			combo_search.pos = rect.p1;
+			combo_search.global_pos = combo_search.pos;
+			combo_search.size = rect.Size();
+
+			const int img_size = int(32.f * gui->wnd_size.y / 768);
+			buttons[0].pos = Int2(rect.p1.x, rect.p1.y - img_size - 5);
+			buttons[0].global_pos = buttons[0].pos;
+			buttons[0].size = Int2(rect.SizeX() / 2 - 2, img_size);
+			buttons[0].force_img_size = Int2(img_size);
+			buttons[1].pos = Int2(rect.p1.x + rect.SizeX() / 2 + 2, rect.p1.y - img_size - 5);
+			buttons[1].global_pos = buttons[1].pos;
+			buttons[1].size = Int2(rect.SizeX() / 2 - 2, img_size);
+			buttons[1].force_img_size = Int2(img_size);
+
 			if(e == GuiEvent_Show)
 			{
 				tracking = -1;
 				clicked = false;
 				CenterView(-1.f);
 				follow = (world->GetState() == World::State::TRAVEL);
-				combo_box.Reset();
+				fast_follow = false;
+				combo_search.Reset();
 				c_pos_valid = false;
+				tooltip.Clear();
 			}
 		}
 		break;
 	case ComboBox::Event_TextChanged:
 		{
-			LocalString str = combo_box.GetText();
+			LocalString str = combo_search.GetText();
 			Trim(str.get_ref());
-			combo_box.ClearItems();
+			combo_search.ClearItems();
 			if(str.length() < 3)
 				break;
 			int count = 0;
@@ -532,7 +602,7 @@ void WorldMapGui::Event(GuiEvent e)
 				{
 					LocationElement* le = LocationElement::Get();
 					le->loc = loc;
-					combo_box.AddItem(le);
+					combo_search.AddItem(le);
 					++count;
 					if(count == 5)
 						break;
@@ -542,10 +612,16 @@ void WorldMapGui::Event(GuiEvent e)
 		break;
 	case ComboBox::Event_Selected:
 		{
-			LocationElement* le = static_cast<LocationElement*>(combo_box.GetSelectedItem());
+			LocationElement* le = static_cast<LocationElement*>(combo_search.GetSelectedItem());
 			tracking = le->loc->index;
 			follow = false;
 		}
+		break;
+	case ButtonJournal:
+		game_gui->journal->Show();
+		break;
+	case ButtonTalkBox:
+		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 		break;
 	}
 }
@@ -570,6 +646,8 @@ void WorldMapGui::Clear()
 	follow = false;
 	tracking = -1;
 	clicked = false;
+	dialog_enc = nullptr;
+	picked_location = -1;
 }
 
 //=================================================================================================
@@ -679,6 +757,14 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 }
 
 //=================================================================================================
+void WorldMapGui::StartTravel(bool fast)
+{
+	follow = true;
+	tracking = -1;
+	fast_follow = fast;
+}
+
+//=================================================================================================
 Vec2 WorldMapGui::WorldPosToScreen(const Vec2& pt) const
 {
 	return Vec2(pt.x, float(world->world_size) - pt.y) * zoom
@@ -692,7 +778,7 @@ void WorldMapGui::CenterView(float dt, const Vec2* target)
 	Vec2 p = (target ? *target : world->world_pos);
 	Vec2 pos = Vec2(p.x, float(world->world_size) - p.y) / (float(world->world_size) / MAP_IMG_SIZE);
 	if(dt >= 0.f)
-		offset += (pos - offset) * dt * 2.f;
+		offset += (pos - offset) * dt * (fast_follow ? 10.f : 2.f);
 	else
 		offset = pos;
 }
@@ -701,4 +787,19 @@ void WorldMapGui::CenterView(float dt, const Vec2* target)
 Vec2 WorldMapGui::GetCameraCenter() const
 {
 	return Vec2(float(gui->wnd_size.x) / 3, float(gui->wnd_size.y) / 2);
+}
+
+//=================================================================================================
+void WorldMapGui::GetTooltip(TooltipController* tooltip, int group, int id, bool refresh)
+{
+	if(id == -1)
+	{
+		tooltip->anything = false;
+		return;
+	}
+	else
+	{
+		tooltip->anything = true;
+		tooltip->text = game->GetShortcutText((GAME_KEYS)id);
+	}
 }

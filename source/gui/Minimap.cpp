@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Minimap.h"
 #include "Game.h"
 #include "InsideLocation.h"
@@ -9,7 +8,6 @@
 #include "Level.h"
 #include "ResourceManager.h"
 #include "GameGui.h"
-#include "Render.h"
 
 enum UnitType
 {

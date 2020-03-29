@@ -1,13 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "CheckBox.h"
-#include "Button.h"
-#include "ListBox.h"
-#include "Scrollbar.h"
+#include <DialogBox.h>
+#include <CheckBox.h>
+#include <Button.h>
+#include <ListBox.h>
+#include <Scrollbar.h>
 
 //-----------------------------------------------------------------------------
+// Options panel (resolution, language, graphics settings etc)
 class Options : public DialogBox
 {
 public:
@@ -32,6 +33,8 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
+
+private:
 	void SetOptions();
 	void OnChangeRes(int res_id);
 	void OnChangeMultisampling(int id);

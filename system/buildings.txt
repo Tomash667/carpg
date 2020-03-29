@@ -404,6 +404,26 @@ building mages_tower {
 	}
 }
 
+building shrine {
+	mesh "shrine.qmsh"
+	flags {favor_center favor_road have_name list}
+	scheme {
+		" |||| "
+		"||||||"
+		"||||||"
+		"||||||"
+		"||||||"
+		" |||| "
+		"  +@  "
+	}
+	unit cleric_seller
+	shift {
+		bottom {1 1}
+		left {0 1}
+		top {1 0}
+		right {1 1}
+	}
+}
 
 //================================================================================
 // Building script
@@ -419,6 +439,7 @@ building_script capital {
 		inn
 		training_grounds
 		mages_tower
+		shrine
 	shuffle end
 	barracks
 	set citizens = 15
@@ -440,6 +461,9 @@ building_script city {
 		training_grounds
 		if rand 2
 			mages_tower
+		endif
+		if rand 2
+			shrine
 		endif
 	shuffle end
 	barracks

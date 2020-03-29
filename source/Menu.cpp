@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "Language.h"
 #include "Terrain.h"
@@ -43,6 +42,7 @@
 #include "Utility.h"
 #include "GameResources.h"
 #include "AbilityPanel.h"
+#include <SceneManager.h>
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -61,8 +61,8 @@ void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
 	cfg.Add("use_glow", use_glow);
-	cfg.Add("use_normalmap", use_normalmap);
-	cfg.Add("use_specularmap", use_specularmap);
+	cfg.Add("use_normalmap", scene_mgr->use_normalmap);
+	cfg.Add("use_specularmap", scene_mgr->use_specularmap);
 	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
@@ -132,7 +132,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	UnitData& ud = *clas->player;
 
-	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false, true);
+	Unit* u = game_level->CreateUnit(ud, -1, false);
 	u->area = nullptr;
 	u->ApplyHumanData(hd);
 	team->members.clear();
@@ -160,18 +160,19 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	}
 	dialog_context.pc = pc;
 
+	game_level->camera.target = u;
 	team->CalculatePlayersLevel();
 	game_gui->Setup(pc);
 	game_gui->ability->Refresh();
 
-	if(!tutorial && cc.HavePerk(Perk::Leader))
+	if(!tutorial && cc.HavePerk(Perk::Get("leader")))
 	{
-		Unit* npc = CreateUnit(*Class::GetRandomHeroData(), -1, nullptr, nullptr, false);
+		Unit* npc = game_level->CreateUnit(*Class::GetRandomHeroData(), -1, false);
 		npc->area = nullptr;
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
-		team->AddTeamMember(npc, HeroType::Normal);
+		team->AddMember(npc, HeroType::Normal);
 		--team->free_recruits;
 		npc->hero->SetupMelee();
 	}
@@ -1356,7 +1357,7 @@ void Game::UpdateServerTransfer(float dt)
 			Unit* u;
 			if(!info.loaded)
 			{
-				u = CreateUnit(*info.clas->player, -1, nullptr, nullptr, in_level, true);
+				u = game_level->CreateUnit(*info.clas->player, -1, in_level);
 				u->area = nullptr;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
@@ -1370,7 +1371,7 @@ void Game::UpdateServerTransfer(float dt)
 				info.cc.Apply(*u->player);
 				u->fake_unit = false;
 
-				if(info.cc.HavePerk(Perk::Leader))
+				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;
 
 				if(net->mp_load)
@@ -1397,6 +1398,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player->dialog_ctx->is_local = true;
 				u->player->is_local = true;
 				game_gui->ability->Refresh();
+				game_level->camera.target = u;
 			}
 			else
 			{
@@ -1454,12 +1456,12 @@ void Game::UpdateServerTransfer(float dt)
 		{
 			UnitData& ud = *Class::GetRandomHeroData();
 			int level = ud.level.x + 2 * (leader_perk - 1);
-			Unit* npc = CreateUnit(ud, level, nullptr, nullptr, false);
+			Unit* npc = game_level->CreateUnit(ud, level, false);
 			npc->area = nullptr;
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
-			team->AddTeamMember(npc, HeroType::Normal);
+			team->AddMember(npc, HeroType::Normal);
 			npc->hero->SetupMelee();
 		}
 		game_level->entering = false;

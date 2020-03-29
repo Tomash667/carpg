@@ -1,12 +1,10 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "Terrain.h"
 #include "LocationHelper.h"
 #include "Profiler.h"
 #include "Level.h"
 #include "ResourceManager.h"
-#include "Render.h"
 #include "GrassShader.h"
 #include "Object.h"
 #include "GameResources.h"
@@ -178,9 +176,7 @@ void Game::DrawGrass()
 
 	PROFILER_BLOCK("DrawGrass");
 
-	grass_shader->SetCamera(game_level->camera);
-	grass_shader->SetFog(game_level->GetFogColor(), game_level->GetFogParams());
-	grass_shader->Begin(max(grass_count[0], grass_count[1]));
+	grass_shader->Begin(game_level->scene, &game_level->camera, max(grass_count[0], grass_count[1]));
 	for(int i = 0; i < 2; ++i)
 	{
 		if(grass_count[i] > 0)

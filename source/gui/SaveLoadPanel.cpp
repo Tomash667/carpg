@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "SaveLoadPanel.h"
 #include "SaveState.h"
 #include "Language.h"

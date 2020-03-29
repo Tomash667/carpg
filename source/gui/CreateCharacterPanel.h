@@ -1,21 +1,22 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
-#include "CheckBox.h"
-#include "Slider.h"
+#include <DialogBox.h>
+#include <CheckBox.h>
+#include <Slider.h>
+#include <ListBox.h>
+#include <TextBox.h>
+#include <TooltipController.h>
+#include <FlowContainer.h>
 #include "Class.h"
-#include "ListBox.h"
-#include "TextBox.h"
 #include "HumanData.h"
 #include "Attribute.h"
 #include "Skill.h"
 #include "Perk.h"
-#include "TooltipController.h"
-#include "FlowContainer.h"
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
+// Show on new game to create player character
 class CreateCharacterPanel : public DialogBox
 {
 public:
@@ -29,7 +30,8 @@ public:
 		PickSkill_Button,
 		PickPerk_AddButton,
 		PickPerk_RemoveButton,
-		PickPerk_DisabledButton
+		PickPerk_DisabledButton,
+		Hardcore
 	};
 
 	enum class Mode
@@ -49,9 +51,6 @@ public:
 	void Init();
 	void Show(bool enter_name);
 	void ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc);
-
-	// data
-	CustomButton custom_x, custom_bt[2];
 
 	// results
 	CreatedCharacter cc;
@@ -89,13 +88,12 @@ private:
 	void RebuildSkillsFlow();
 	void RebuildPerksFlow();
 	void ResetSkillsPerks();
-	void PickAttribute(cstring text, Perk picked_perk);
-	void PickSkill(cstring text, Perk picked_perk);
+	void PickAttribute(cstring text, Perk* perk);
+	void PickSkill(cstring text, Perk* perk);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
 	void UpdateSkillButtons();
-	void AddPerk(Perk perk, int value = -1);
-	bool ValidatePerk(Perk perk);
+	void AddPerk(Perk* perk, int value = -1);
 	void CheckSkillsUpdate();
 	void UpdateInventory();
 	void ResetDoll(bool instant);
@@ -107,6 +105,7 @@ private:
 	DOLL_ANIM anim, anim2;
 	float t, dist;
 	// controls
+	CustomButton custom_x, custom_bt[2];
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;
 	CheckBox checkbox;
 	Slider slider[5];
@@ -120,12 +119,12 @@ private:
 	TooltipController tooltip;
 	// data
 	bool reset_skills_perks, rotating;
-	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn,
-		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany, txFlawExtraPerk,
-		txPerksRemoved;
-	Perk picked_perk;
+	cstring txHardcoreMode, txHardcoreDesc, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes,
+		txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany,
+		txFlawExtraPerk, txPerksRemoved;
+	Perk* picked_perk;
 	PickItemDialog* pickItemDialog;
-	vector<Perk> available_perks;
+	vector<Perk*> available_perks;
 	vector<pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
 	TexturePtr tBox, tPowerBar;

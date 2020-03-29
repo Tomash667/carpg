@@ -84,15 +84,13 @@ public:
 	void SmoothTiles();
 	void CreateCity(const Vec2& pos, int target);
 	void SetLocationImageAndName(Location* l);
-	int CreateCamp(const Vec2& pos, UnitGroup* group, float range = 64.f, bool allow_exact = true);
+	int CreateCamp(const Vec2& pos, UnitGroup* group);
 private:
 	typedef LOCATION(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
 	Location* CreateLocation(LOCATION type, int levels = -1, int city_target = -1);
 public:
-	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, UnitGroup* group = UnitGroup::random,
-		bool allow_exact = true, int dungeon_levels = -1);
-	Location* CreateLocationS(LOCATION type, const Vec2& pos, int target = 0) { return CreateLocation(type, pos, 64.f, target); }
+	Location* CreateLocation(LOCATION type, const Vec2& pos, int target = -1, int dungeon_levels = -1);
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(int index);
@@ -135,15 +133,18 @@ public:
 	{
 		return locations[GetClosestLocation(type, pos, target)];
 	}
-	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
+	bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false);
+	Vec2 FindPlace(const Vec2& pos, float range, bool allow_exact = false);
+	Vec2 FindPlace(const Vec2& pos, float min_range, float max_range);
+	Vec2 GetRandomPlace();
 	int GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
 	int GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
-	const Vec2& GetWorldBounds() const { return world_bounds; }
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
 	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
 	Vec2 GetPos() const { return world_pos; }
+	Vec2 GetWorldBounds() const { return world_bounds; }
 	Location* GetRandomLocation(delegate<bool(Location*)> pred);
 
 	// travel
@@ -168,7 +169,7 @@ public:
 	Encounter* RecreateEncounter(int index);
 	Encounter* RecreateEncounterS(Quest* quest, int index);
 	const vector<Encounter*>& GetEncounters() const { return encounters; }
-	int GetEncounterLocationIndex() const { return encounter_loc; }
+	OutsideLocation* GetEncounterLocation() const { return encounter_loc; }
 	float GetEncounterChance() const { return encounter_chance; }
 	EncounterData GetCurrentEncounter() const { return encounter; }
 
@@ -183,11 +184,13 @@ public:
 	bool IsBossLevel(const Int2& pos = Int2::Zero) const;
 
 	// misc
-	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	void VerifyObjects();
 	void VerifyObjects(vector<Object*>& objects, int& errors);
 	const vector<int>& GetTiles() const { return tiles; }
 	int& GetTileSt(const Vec2& pos);
+
+	// offscreen
+	Unit* CreateUnit(UnitData* data, int level = -1);
 
 private:
 	WorldMapGui* gui;
@@ -197,13 +200,14 @@ private:
 	int current_location_index; // current location index or -1
 	int travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr
+	OutsideLocation* encounter_loc;
+	OffscreenLocation* offscreen_loc;
 	vector<Encounter*> encounters;
 	EncounterData encounter;
 	vector<int> tiles;
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
 	uint settlements, // count and index below this value is city/village
-		empty_locations, // counter
-		encounter_loc; // encounter location index
+		empty_locations; // counter
 	Vec2 world_bounds,
 		world_pos,
 		travel_start_pos,

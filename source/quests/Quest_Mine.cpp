@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_Mine.h"
 #include "Game.h"
 #include "Journal.h"
@@ -311,8 +310,8 @@ void Quest_Mine::InitSub()
 	if(sub.done)
 		return;
 
-	ItemListResult result = ItemList::Get("ancient_armory_armors");
-	result.lis->Get(3, sub.item_to_give);
+	ItemList& lis = ItemList::Get("ancient_armory_armors");
+	lis.Get(3, sub.item_to_give);
 	sub.item_to_give[3] = Item::Get("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;
@@ -682,6 +681,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		// set room
 		Room* room = Room::Get();
 		room->target = RoomTarget::Portal;
+		room->type = nullptr;
 		room->pos = pt;
 		room->size = Int2(5, 5);
 		room->connected.clear();
@@ -701,6 +701,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			// hack :3
 			room = Room::Get();
 			room->target = RoomTarget::Corridor;
+			room->type = nullptr;
 			lvl.rooms.push_back(room);
 
 			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))

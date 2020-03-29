@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "GameStats.h"
 #include "ParticleSystem.h"
@@ -89,6 +88,10 @@
 #include "GlowShader.h"
 #include "PostfxShader.h"
 #include "SkyboxShader.h"
+#include "SceneManager.h"
+#include "Scene.h"
+#include "CraftPanel.h"
+#include "DungeonMeshBuilder.h"
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
@@ -116,10 +119,9 @@ const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
-draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), dungeon_tex_wrap(true),
+draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine), use_fog(true), use_lighting(true), use_normalmap(true),
-use_specularmap(true)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -129,18 +131,17 @@ use_specularmap(true)
 
 	dialog_context.is_local = true;
 
-	// bufory wierzcho³ków i indeksy
-	vbDungeon = nullptr;
-	ibDungeon = nullptr;
+	LocalString s;
+	GetTitle(s);
+	engine->SetTitle(s.c_str());
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
 	SetupConfigVars();
 
-	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
-
 	arena = new Arena;
 	cmdp = new CommandParser;
+	dun_mesh_builder = new DungeonMeshBuilder;
 	game_gui = new GameGui;
 	game_level = new Level;
 	game_res = new GameResources;
@@ -152,12 +153,27 @@ use_specularmap(true)
 	script_mgr = new ScriptManager;
 	team = new Team;
 	world = new World;
+
+	render->AddManagedResource(dun_mesh_builder);
 }
 
 //=================================================================================================
 Game::~Game()
 {
-	delete engine;
+	delete arena;
+	delete cmdp;
+	delete dun_mesh_builder;
+	delete game_gui;
+	delete game_level;
+	delete game_res;
+	delete game_stats;
+	delete loc_gen_factory;
+	delete net;
+	delete pathfinding;
+	delete quest_mgr;
+	delete script_mgr;
+	delete team;
+	delete world;
 }
 
 //=================================================================================================
@@ -220,21 +236,23 @@ void Game::PreloadLanguage()
 {
 	Language::LoadFile("preload.txt");
 
+	txPreloadAssets = Str("preloadAssets");
 	txCreatingListOfFiles = Str("creatingListOfFiles");
 	txConfiguringGame = Str("configuringGame");
-	txLoadingItems = Str("loadingItems");
-	txLoadingObjects = Str("loadingObjects");
 	txLoadingAbilities = Str("loadingAbilities");
-	txLoadingClasses = Str("loadingClasses");
-	txLoadingUnits = Str("loadingUnits");
-	txLoadingMusics = Str("loadingMusics");
 	txLoadingBuildings = Str("loadingBuildings");
-	txLoadingRequires = Str("loadingRequires");
-	txLoadingShaders = Str("loadingShaders");
+	txLoadingClasses = Str("loadingClasses");
 	txLoadingDialogs = Str("loadingDialogs");
+	txLoadingItems = Str("loadingItems");
+	txLoadingLocations = Str("loadingLocations");
+	txLoadingMusics = Str("loadingMusics");
+	txLoadingObjects = Str("loadingObjects");
+	txLoadingPerks = Str("loadingPerks");
 	txLoadingQuests = Str("loadingQuests");
+	txLoadingRequired = Str("loadingRequired");
+	txLoadingUnits = Str("loadingUnits");
+	txLoadingShaders = Str("loadingShaders");
 	txLoadingLanguageFiles = Str("loadingLanguageFiles");
-	txPreloadAssets = Str("preloadAssets");
 }
 
 //=================================================================================================
@@ -266,7 +284,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	game_gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+	game_gui->load_screen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
 
 	AddFilesystem();
 	arena->Init();
@@ -308,35 +326,44 @@ void Game::LoadDatafiles()
 		{
 			switch(id)
 			{
-			case Content::Id::Items:
-				game_gui->load_screen->Tick(txLoadingItems);
-				break;
-			case Content::Id::Objects:
-				game_gui->load_screen->Tick(txLoadingObjects);
-				break;
 			case Content::Id::Abilities:
 				game_gui->load_screen->Tick(txLoadingAbilities);
-				break;
-			case Content::Id::Dialogs:
-				game_gui->load_screen->Tick(txLoadingDialogs);
-				break;
-			case Content::Id::Units:
-				game_gui->load_screen->Tick(txLoadingUnits);
 				break;
 			case Content::Id::Buildings:
 				game_gui->load_screen->Tick(txLoadingBuildings);
 				break;
+			case Content::Id::Classes:
+				game_gui->load_screen->Tick(txLoadingClasses);
+				break;
+			case Content::Id::Dialogs:
+				game_gui->load_screen->Tick(txLoadingDialogs);
+				break;
+			case Content::Id::Items:
+				game_gui->load_screen->Tick(txLoadingItems);
+				break;
+			case Content::Id::Locations:
+				game_gui->load_screen->Tick(txLoadingLocations);
+				break;
 			case Content::Id::Musics:
 				game_gui->load_screen->Tick(txLoadingMusics);
+				break;
+			case Content::Id::Objects:
+				game_gui->load_screen->Tick(txLoadingObjects);
+				break;
+			case Content::Id::Perks:
+				game_gui->load_screen->Tick(txLoadingPerks);
 				break;
 			case Content::Id::Quests:
 				game_gui->load_screen->Tick(txLoadingQuests);
 				break;
-			case Content::Id::Classes:
-				game_gui->load_screen->Tick(txLoadingClasses);
-				break;
 			case Content::Id::Required:
-				game_gui->load_screen->Tick(txLoadingRequires);
+				game_gui->load_screen->Tick(txLoadingRequired);
+				break;
+			case Content::Id::Units:
+				game_gui->load_screen->Tick(txLoadingUnits);
+				break;
+			default:
+				assert(0);
 				break;
 			}
 		});
@@ -395,10 +422,15 @@ void Game::ConfigureGame()
 	render->RegisterShader(particle_shader = new ParticleShader);
 	render->RegisterShader(postfx_shader = new PostfxShader);
 	render->RegisterShader(skybox_shader = new SkyboxShader);
-	render->RegisterShader(super_shader = new SuperShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
-	tMinimap = render->CreateDynamicTexture(Int2(128, 128));
+	DynamicTexture* minimap = render->CreateDynamicTexture(Int2(128, 128));
+	minimap->reload = [this]
+	{
+		if(game_state == GS_LEVEL)
+			loc_gen_factory->Get(game_level->location)->CreateMinimap();
+	};
+	tMinimap = minimap;
 	CreateRenderTargets();
 }
 
@@ -591,25 +623,7 @@ void Game::OnCleanup()
 
 	content.CleanupContent();
 
-	delete arena;
-	delete cmdp;
-	delete game_gui;
-	delete game_level;
-	delete game_res;
-	delete game_stats;
-	delete loc_gen_factory;
-	delete net;
-	delete pathfinding;
-	delete quest_mgr;
-	delete script_mgr;
-	delete team;
-	delete world;
-
 	ClearQuadtree();
-
-	// bufory wierzcho³ków i indeksy
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
 
 	draw_batch.Clear();
 
@@ -935,57 +949,36 @@ void Game::OnUpdate(float dt)
 	{
 		arena->UpdatePvpRequest(dt);
 
+		// update fallback, can leave level so we need to check if we are still in GS_LEVEL
+		if(game_state == GS_LEVEL)
+			UpdateFallback(dt);
+
 		if(game_state == GS_LEVEL)
 		{
-			if(paused)
-			{
-				UpdateFallback(dt);
-				if(Net::IsLocal())
-				{
-					if(Net::IsOnline())
-						net->UpdateWarpData(dt);
-					game_level->ProcessUnitWarps();
-				}
-				SetupCamera(dt);
-				if(Net::IsOnline())
-					UpdateGameNet(dt);
-			}
-			else if(gui->HavePauseDialog())
-			{
-				if(Net::IsOnline())
-					UpdateGame(dt);
-				else
-				{
-					UpdateFallback(dt);
-					if(Net::IsLocal())
-					{
-						if(Net::IsOnline())
-							net->UpdateWarpData(dt);
-						game_level->ProcessUnitWarps();
-					}
-					SetupCamera(dt);
-				}
-			}
-			else
+			if(!paused && !(gui->HavePauseDialog() && Net::IsSingleplayer()))
 				UpdateGame(dt);
 		}
-		else if(game_state == GS_WORLDMAP)
-		{
-			if(Net::IsOnline())
-				UpdateGameNet(dt);
-		}
 
-		if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
+		if(game_state == GS_LEVEL)
 		{
-			assert(Net::changes.empty());
+			if(Net::IsLocal())
+			{
+				if(Net::IsOnline())
+					net->UpdateWarpData(dt);
+				game_level->ProcessUnitWarps();
+			}
+			game_level->camera.Update(dt);
 		}
 	}
-	else
+	else if(cutscene)
+		UpdateFallback(dt);
+
+	if(Net::IsOnline() && Any(game_state, GS_LEVEL, GS_WORLDMAP))
+		UpdateGameNet(dt);
+
+	if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 	{
-		if(cutscene)
-			UpdateFallback(dt);
-		if(Net::IsOnline())
-			UpdateGameNet(dt);
+		assert(Net::changes.empty());
 	}
 
 	Profiler::g_profiler.End();
@@ -1002,7 +995,7 @@ void Game::GetTitle(LocalString& s)
 	s += " - DEBUG";
 #endif
 
-	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui->server && game_gui->server->visible))
+	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui && game_gui->server && game_gui->server->visible))
 	{
 		if(none)
 			s += " - ";
@@ -1029,31 +1022,6 @@ void Game::ChangeTitle()
 	GetTitle(s);
 	SetConsoleTitle(s->c_str());
 	engine->SetTitle(s->c_str());
-}
-
-//=================================================================================================
-bool Game::Start()
-{
-	LocalString s;
-	GetTitle(s);
-	engine->SetTitle(s.c_str());
-	return engine->Start(this);
-}
-
-//=================================================================================================
-void Game::OnReload()
-{
-	BuildDungeon();
-	// rebuild minimap texture
-	if(game_state == GS_LEVEL)
-		loc_gen_factory->Get(game_level->location)->CreateMinimap();
-}
-
-//=================================================================================================
-void Game::OnReset()
-{
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
 }
 
 //=================================================================================================
@@ -1293,7 +1261,6 @@ void Game::SetGameText()
 	txLoadFailed = Str("loadFailed");
 	txQuickSave = Str("quickSave");
 	txGameSaved = Str("gameSaved");
-	txLoadingLocations = Str("loadingLocations");
 	txLoadingData = Str("loadingData");
 	txEndOfLoading = Str("endOfLoading");
 	txCantSaveNow = Str("cantSaveNow");
@@ -1315,6 +1282,7 @@ void Game::SetGameText()
 
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
+	txWinHardcore = Str("winHardcore");
 	txWinMp = Str("winMp");
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
@@ -1444,18 +1412,15 @@ void Game::SetGameText()
 
 	// dialogi
 	LoadArray(txYell, "yell");
-
-	TakenPerk::LoadText();
 }
 
 //=================================================================================================
-void Game::UpdateLights(vector<Light>& lights)
+void Game::UpdateLights(vector<GameLight>& lights)
 {
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
+	for(GameLight& light : lights)
 	{
-		Light& s = *it;
-		s.t_pos = s.pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
-		s.t_color = (s.color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped();
+		light.pos = light.start_pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
+		light.color = Vec4((light.start_color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
 	}
 }
 
@@ -1511,8 +1476,7 @@ uint Game::ValidateGameData(bool major)
 	Attribute::Validate(err);
 	Skill::Validate(err);
 	Item::Validate(err);
-	PerkInfo::Validate(err);
-	RoomType::Validate(err);
+	Perk::Validate(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -1538,11 +1502,11 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, game_gui->controls->key_text[(int)k[0]], game_gui->controls->key_text[(int)k[1]]);
+		return Format("%s (%s, %s)", action, game_gui->controls->GetKeyText(k[0]), game_gui->controls->GetKeyText(k[1]));
 	else if(first_key || second_key)
 	{
 		Key used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, game_gui->controls->key_text[(int)used]);
+		return Format("%s (%s)", action, game_gui->controls->GetKeyText(used));
 	}
 	else
 		return action;
@@ -1583,22 +1547,20 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *game_level->location;
 	game_level->entering = true;
+	game_level->lvl = nullptr;
 
 	game_gui->world_map->Hide();
 	game_gui->level_gui->Reset();
 	game_gui->level_gui->visible = true;
 
-	const bool reenter = game_level->is_open;
 	game_level->is_open = true;
-	game_level->reenter = reenter;
 	if(world->GetState() != World::State::INSIDE_ENCOUNTER)
 		world->SetState(World::State::INSIDE_LOCATION);
 	if(from_portal != -1)
 		game_level->enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
 		game_level->enter_from = ENTER_FROM_OUTSIDE;
-	if(!reenter)
-		game_level->light_angle = Random(PI * 2);
+	game_level->light_angle = Random(PI * 2);
 
 	game_level->dungeon_level = level;
 	game_level->event_handler = nullptr;
@@ -1611,8 +1573,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(l.last_visit == -1)
 		first = true;
 
-	if(!reenter)
-		InitQuadTree();
+	InitQuadTree();
 
 	if(Net::IsOnline() && net->active_players > 1)
 	{
@@ -1637,7 +1598,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	// calculate number of loading steps for drawing progress bar
-	LocationGenerator* loc_gen = loc_gen_factory->Get(&l, first, reenter);
+	LocationGenerator* loc_gen = loc_gen_factory->Get(&l, first);
 	int steps = loc_gen->GetNumberOfSteps();
 	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
@@ -1686,11 +1647,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(game_level->location->outside)
 	{
 		loc_gen->OnEnter();
-		if(!reenter)
-		{
-			SetTerrainTextures();
-			CalculateQuadtree();
-		}
+		SetTerrainTextures();
+		CalculateQuadtree();
 	}
 	else
 		EnterLevel(loc_gen);
@@ -1827,6 +1785,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	game_level->is_open = false;
 	game_level->city_ctx = nullptr;
+	game_level->lvl = nullptr;
 }
 
 void Game::Event_RandomEncounter(int)
@@ -1975,308 +1934,6 @@ bool Game::CutsceneShouldSkip()
 }
 
 //=================================================================================================
-void Game::SetupCamera(float dt)
-{
-	Unit* target = pc->unit;
-	LevelArea& area = *target->area;
-
-	float rotX;
-	if(game_level->camera.free_rot)
-		rotX = game_level->camera.real_rot.x;
-	else
-		rotX = target->rot;
-
-	game_level->camera.UpdateRot(dt, Vec2(rotX, game_level->camera.real_rot.y));
-
-	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
-	Vec3 dist(0, -game_level->camera.tmp_dist, 0);
-
-	Matrix mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
-	dist = Vec3::Transform(dist, mat);
-
-	// !!! to => from !!!
-	// kamera idzie od g³owy do ty³u
-	Vec3 to = target->pos + cam_h;
-	float tout, min_tout = 2.f;
-
-	int tx = int(target->pos.x / 2),
-		tz = int(target->pos.z / 2);
-
-	if(area.area_type == LevelArea::Type::Outside)
-	{
-		OutsideLocation* outside = (OutsideLocation*)game_level->location;
-
-		// terrain
-		tout = game_level->terrain->Raytest(to, to + dist);
-		if(tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// buildings
-		int minx = max(0, tx - 3),
-			minz = max(0, tz - 3),
-			maxx = min(OutsideLocation::size - 1, tx + 3),
-			maxz = min(OutsideLocation::size - 1, tz + 3);
-		for(int z = minz; z <= maxz; ++z)
-		{
-			for(int x = minx; x <= maxx; ++x)
-			{
-				if(outside->tiles[x + z * OutsideLocation::size].IsBlocking())
-				{
-					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 8.f, float(z + 1) * 2);
-					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-						min_tout = tout;
-				}
-			}
-		}
-	}
-	else if(area.area_type == LevelArea::Type::Inside)
-	{
-		InsideLocation* inside = (InsideLocation*)game_level->location;
-		InsideLocationLevel& lvl = inside->GetLevelData();
-
-		int minx = max(0, tx - 3),
-			minz = max(0, tz - 3),
-			maxx = min(lvl.w - 1, tx + 3),
-			maxz = min(lvl.h - 1, tz + 3);
-
-		// ceil
-		const Plane sufit(0, -1, 0, 4);
-		if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
-		{
-			//tmpvar2 = 1;
-			min_tout = tout;
-		}
-
-		// floor
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// dungeon
-		for(int z = minz; z <= maxz; ++z)
-		{
-			for(int x = minx; x <= maxx; ++x)
-			{
-				Tile& p = lvl.map[x + z * lvl.w];
-				if(IsBlocking(p.type))
-				{
-					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
-					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-						min_tout = tout;
-				}
-				else if(IsSet(p.flags, Tile::F_LOW_CEILING))
-				{
-					const Box box(float(x) * 2, 3.f, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
-					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-						min_tout = tout;
-				}
-				if(p.type == STAIRS_UP)
-				{
-					if(game_res->vdStairsUp->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
-						min_tout = tout;
-				}
-				else if(p.type == STAIRS_DOWN)
-				{
-					if(!lvl.staircase_down_in_wall
-						&& game_res->vdStairsDown->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
-						min_tout = tout;
-				}
-				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
-				{
-					Vec3 pos(float(x * 2) + 1, 0, float(z * 2) + 1);
-					float rot;
-
-					if(IsBlocking(lvl.map[x - 1 + z * lvl.w].type))
-					{
-						rot = 0;
-						int mov = 0;
-						if(lvl.rooms[lvl.map[x + (z - 1) * lvl.w].room]->IsCorridor())
-							++mov;
-						if(lvl.rooms[lvl.map[x + (z + 1) * lvl.w].room]->IsCorridor())
-							--mov;
-						if(mov == 1)
-							pos.z += 0.8229f;
-						else if(mov == -1)
-							pos.z -= 0.8229f;
-					}
-					else
-					{
-						rot = PI / 2;
-						int mov = 0;
-						if(lvl.rooms[lvl.map[x - 1 + z * lvl.w].room]->IsCorridor())
-							++mov;
-						if(lvl.rooms[lvl.map[x + 1 + z * lvl.w].room]->IsCorridor())
-							--mov;
-						if(mov == 1)
-							pos.x += 0.8229f;
-						else if(mov == -1)
-							pos.x -= 0.8229f;
-					}
-
-					if(game_res->vdDoorHole->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
-						min_tout = tout;
-
-					Door* door = area.FindDoor(Int2(x, z));
-					if(door && door->IsBlocking())
-					{
-						Box box(pos.x, 0.f, pos.z);
-						box.v2.y = Door::HEIGHT * 2;
-						if(rot == 0.f)
-						{
-							box.v1.x -= Door::WIDTH;
-							box.v2.x += Door::WIDTH;
-							box.v1.z -= Door::THICKNESS;
-							box.v2.z += Door::THICKNESS;
-						}
-						else
-						{
-							box.v1.z -= Door::WIDTH;
-							box.v2.z += Door::WIDTH;
-							box.v1.x -= Door::THICKNESS;
-							box.v2.x += Door::THICKNESS;
-						}
-
-						if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-							min_tout = tout;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		// building
-		InsideBuilding& building = static_cast<InsideBuilding&>(area);
-
-		// ceil
-		if(building.top > 0.f)
-		{
-			const Plane sufit(0, -1, 0, 4);
-			if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-
-		// floor
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// xsphere
-		if(building.xsphere_radius > 0.f)
-		{
-			Vec3 from = to + dist;
-			if(RayToSphere(from, -dist, building.xsphere_pos, building.xsphere_radius, tout) && tout > 0.f)
-			{
-				tout = 1.f - tout;
-				if(tout < min_tout)
-					min_tout = tout;
-			}
-		}
-
-		// doors
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-			if(door.IsBlocking())
-			{
-				Box box(door.pos);
-				box.v2.y = Door::HEIGHT * 2;
-				if(door.rot == 0.f)
-				{
-					box.v1.x -= Door::WIDTH;
-					box.v2.x += Door::WIDTH;
-					box.v1.z -= Door::THICKNESS;
-					box.v2.z += Door::THICKNESS;
-				}
-				else
-				{
-					box.v1.z -= Door::WIDTH;
-					box.v2.z += Door::WIDTH;
-					box.v1.x -= Door::THICKNESS;
-					box.v2.x += Door::THICKNESS;
-				}
-
-				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-
-			if(game_res->vdDoorHole->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
-				min_tout = tout;
-		}
-	}
-
-	// objects
-	for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
-	{
-		if(!it->cam_collider)
-			continue;
-
-		if(it->type == CollisionObject::SPHERE)
-		{
-			if(RayToCylinder(to, to + dist, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-		else if(it->type == CollisionObject::RECTANGLE)
-		{
-			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
-			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-		else
-		{
-			float w, h;
-			if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
-			{
-				w = it->h;
-				h = it->w;
-			}
-			else
-			{
-				w = it->w;
-				h = it->h;
-			}
-
-			Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
-			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-	}
-
-	// camera colliders
-	for(vector<CameraCollider>::iterator it = game_level->cam_colliders.begin(), end = game_level->cam_colliders.end(); it != end; ++it)
-	{
-		if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-	}
-
-	// uwzglêdnienie znear
-	if(min_tout > 1.f || pc->noclip)
-		min_tout = 1.f;
-	else if(min_tout < 0.1f)
-		min_tout = 0.1f;
-
-	float real_dist = dist.Length() * min_tout - 0.1f;
-	if(real_dist < 0.01f)
-		real_dist = 0.01f;
-	Vec3 from = to + dist.Normalize() * real_dist;
-
-	game_level->camera.Update(dt, from, to);
-
-	float drunk = pc->unit->alcohol / pc->unit->hpmax;
-	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
-
-	Matrix mat_view = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
-	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim) * (PI / 16) * drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
-	game_level->camera.mat_view_proj = mat_view * mat_proj;
-	game_level->camera.mat_view_inv = mat_view.Inverse();
-	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
-
-	// centrum dŸwiêku 3d
-	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
-}
-
-//=================================================================================================
 void Game::UpdateGame(float dt)
 {
 	dt *= game_speed;
@@ -2314,16 +1971,11 @@ void Game::UpdateGame(float dt)
 	if(quest_mgr->quest_tutorial->in_tutorial && !Net::IsOnline())
 		quest_mgr->quest_tutorial->Update();
 
-	drunk_anim = Clip(drunk_anim + dt);
-
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
 	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
-
-	UpdateFallback(dt);
-	if(!game_level->location)
-		return;
+	game_level->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
 
 	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
 	{
@@ -2358,7 +2010,7 @@ void Game::UpdateGame(float dt)
 			}
 		}
 		else
-			text = txWin;
+			text = hardcore_mode ? txWinHardcore : txWin;
 
 		gui->SimpleDialog(Format(text, pc->kills, game_stats->total_kills - pc->kills), nullptr);
 	}
@@ -2453,95 +2105,7 @@ void Game::UpdateGame(float dt)
 		}
 	}
 
-	// obracanie kamery góra/dó³
-	if(!Net::IsLocal() || team->IsAnyoneAlive())
-	{
-		if(dialog_context.dialog_mode && game_gui->inventory->mode <= I_INVENTORY)
-		{
-			game_level->camera.free_rot = false;
-			if(game_level->camera.real_rot.y > 4.2875104f)
-			{
-				game_level->camera.real_rot.y -= dt;
-				if(game_level->camera.real_rot.y < 4.2875104f)
-					game_level->camera.real_rot.y = 4.2875104f;
-			}
-			else if(game_level->camera.real_rot.y < 4.2875104f)
-			{
-				game_level->camera.real_rot.y += dt;
-				if(game_level->camera.real_rot.y > 4.2875104f)
-					game_level->camera.real_rot.y = 4.2875104f;
-			}
-		}
-		else
-		{
-			if(Any(GKey.allow_input, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
-			{
-				const float c_cam_angle_min = PI + 0.1f;
-				const float c_cam_angle_max = PI * 1.8f - 0.1f;
-
-				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				game_level->camera.real_rot.y += -float(input->GetMouseDif().y) * settings.mouse_sensitivity_f / div;
-				if(game_level->camera.real_rot.y > c_cam_angle_max)
-					game_level->camera.real_rot.y = c_cam_angle_max;
-				if(game_level->camera.real_rot.y < c_cam_angle_min)
-					game_level->camera.real_rot.y = c_cam_angle_min;
-
-				if(!pc->unit->IsStanding())
-				{
-					game_level->camera.real_rot.x = Clip(game_level->camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
-					game_level->camera.free_rot = true;
-					game_level->camera.free_rot_key = Key::None;
-				}
-				else if(!game_level->camera.free_rot)
-				{
-					game_level->camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
-					if(game_level->camera.free_rot_key != Key::None)
-					{
-						game_level->camera.real_rot.x = Clip(pc->unit->rot + PI);
-						game_level->camera.free_rot = true;
-					}
-				}
-				else
-				{
-					if(game_level->camera.free_rot_key == Key::None || GKey.KeyUpAllowed(game_level->camera.free_rot_key))
-						game_level->camera.free_rot = false;
-					else
-						game_level->camera.real_rot.x = Clip(game_level->camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
-				}
-			}
-			else
-				game_level->camera.free_rot = false;
-		}
-	}
-	else
-	{
-		game_level->camera.free_rot = false;
-		if(game_level->camera.real_rot.y > PI + 0.1f)
-		{
-			game_level->camera.real_rot.y -= dt;
-			if(game_level->camera.real_rot.y < PI + 0.1f)
-				game_level->camera.real_rot.y = PI + 0.1f;
-		}
-		else if(game_level->camera.real_rot.y < PI + 0.1f)
-		{
-			game_level->camera.real_rot.y += dt;
-			if(game_level->camera.real_rot.y > PI + 0.1f)
-				game_level->camera.real_rot.y = PI + 0.1f;
-		}
-	}
-
-	// przybli¿anie/oddalanie kamery
-	if(GKey.AllowMouse())
-	{
-		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->level_gui->IsMouseInsideDialog())
-		{
-			game_level->camera.dist -= input->GetMouseWheel();
-			game_level->camera.dist = Clamp(game_level->camera.dist, 0.5f, 6.f);
-		}
-
-		if(input->PressedRelease(Key::MiddleButton))
-			game_level->camera.dist = 3.5f;
-	}
+	UpdateCamera(dt);
 
 	// umieranie
 	if((Net::IsLocal() && !team->IsAnyoneAlive()) || death_screen != 0)
@@ -2632,25 +2196,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	UpdateAttachedSounds(dt);
-	if(Net::IsLocal())
-	{
-		if(Net::IsOnline())
-			net->UpdateWarpData(dt);
-		game_level->ProcessUnitWarps();
-	}
 
-	// usuñ jednostki
 	game_level->ProcessRemoveUnits(false);
-
-	if(Net::IsOnline())
-	{
-		UpdateGameNet(dt);
-		if(!Net::IsOnline() || game_state != GS_LEVEL)
-			return;
-	}
-
-	// aktualizuj kamerê
-	SetupCamera(dt);
 }
 
 //=================================================================================================
@@ -2684,7 +2231,7 @@ void Game::UpdateFallback(float dt)
 						quest_mgr->quest_tournament->Train(*pc);
 						break;
 					case 3:
-						pc->AddPerk((Perk)fallback_2, -1);
+						pc->AddPerk(Perk::Get(fallback_2), -1);
 						game_gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
 						break;
 					case 4:
@@ -2727,7 +2274,7 @@ void Game::UpdateFallback(float dt)
 				}
 				break;
 			case FALLBACK::ENTER: // enter/exit building
-				game_level->WarpUnit(pc->unit, fallback_1);
+				game_level->WarpUnit(pc->unit, fallback_1, fallback_2);
 				break;
 			case FALLBACK::EXIT:
 				ExitToMap();
@@ -2792,6 +2339,63 @@ void Game::UpdateFallback(float dt)
 			fallback_type = FALLBACK::NO;
 		}
 	}
+}
+
+//=================================================================================================
+void Game::UpdateCamera(float dt)
+{
+	GameCamera& camera = game_level->camera;
+
+	// obracanie kamery góra/dó³
+	if(!Net::IsLocal() || team->IsAnyoneAlive())
+	{
+		if(dialog_context.dialog_mode || game_gui->inventory->mode > I_INVENTORY || game_gui->craft->visible)
+		{
+			// in dialog/trade look at target
+			camera.RotateTo(dt, 4.2875104f);
+			Vec3 zoom_pos;
+			if(game_gui->inventory->mode == I_LOOT_CHEST)
+				zoom_pos = pc->action_chest->GetCenter();
+			else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
+				zoom_pos = pc->action_usable->GetCenter();
+			else if(game_gui->craft->visible)
+				zoom_pos = pc->unit->usable->GetCenter();
+			else
+			{
+				if(pc->action_unit->IsAlive())
+					zoom_pos = pc->action_unit->GetHeadSoundPos();
+				else
+					zoom_pos = pc->action_unit->GetLootCenter();
+			}
+			camera.SetZoom(&zoom_pos);
+		}
+		else
+		{
+			camera.UpdateFreeRot(dt);
+			if(GKey.AllowMouse())
+			{
+				// use mouse wheel to set distance
+				if(!game_gui->level_gui->IsMouseInsideDialog())
+				{
+					camera.dist -= input->GetMouseWheel();
+					camera.dist = Clamp(camera.dist, 0.5f, 6.f);
+				}
+				if(input->PressedRelease(Key::MiddleButton))
+					camera.dist = 3.5f;
+			}
+			camera.SetZoom(nullptr);
+		}
+	}
+	else
+	{
+		// when all died rotate camera to look from UP
+		camera.RotateTo(dt, PI + 0.1f);
+		camera.SetZoom(nullptr);
+		if(camera.dist < 10.f)
+			camera.dist += dt;
+	}
+
+	camera.Update(dt);
 }
 
 //=================================================================================================
@@ -3020,184 +2624,6 @@ uint Game::TestGameData(bool major)
 }
 
 //=================================================================================================
-Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_unit, bool create_physics, bool custom)
-{
-	Unit* u;
-	if(test_unit)
-		u = test_unit;
-	else
-	{
-		u = new Unit;
-		u->Register();
-	}
-
-	// unit data
-	u->data = &base;
-	u->human_data = nullptr;
-	u->pos = Vec3(0, 0, 0);
-	u->rot = 0.f;
-	u->used_item = nullptr;
-	u->live_state = Unit::ALIVE;
-	for(int i = 0; i < SLOT_MAX; ++i)
-		u->slots[i] = nullptr;
-	u->action = A_NONE;
-	u->weapon_taken = W_NONE;
-	u->weapon_hiding = W_NONE;
-	u->weapon_state = WeaponState::Hidden;
-	if(level == -2)
-		u->level = base.level.Random();
-	else if(level == -3)
-		u->level = base.level.Clamp(game_level->location->st);
-	else
-		u->level = base.level.Clamp(level);
-	u->player = nullptr;
-	u->ai = nullptr;
-	u->speed = u->prev_speed = 0.f;
-	u->hurt_timer = 0.f;
-	u->talking = false;
-	u->usable = nullptr;
-	u->frozen = FROZEN::NO;
-	u->in_arena = -1;
-	u->event_handler = nullptr;
-	u->to_remove = false;
-	u->temporary = false;
-	u->quest_id = -1;
-	u->bubble = nullptr;
-	u->busy = Unit::Busy_No;
-	u->interp = nullptr;
-	u->dont_attack = false;
-	u->assist = false;
-	u->attack_team = false;
-	u->last_bash = 0.f;
-	u->alcohol = 0.f;
-	u->moved = false;
-	u->running = false;
-
-	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
-	if(base.group == G_PLAYER)
-	{
-		u->stats = new UnitStats;
-		u->stats->fixed = false;
-		u->stats->subprofile.value = 0;
-		u->stats->Set(base.GetStatProfile());
-	}
-	else
-		u->stats = base.GetStats(u->level);
-	u->CalculateStats();
-	u->hp = u->hpmax = u->CalculateMaxHp();
-	u->mp = u->mpmax = u->CalculateMaxMp();
-	u->stamina = u->stamina_max = u->CalculateMaxStamina();
-	u->stamina_timer = 0;
-	u->fake_unit = false;
-
-	// items
-	u->weight = 0;
-	u->CalculateLoad();
-	if(!custom && base.item_script)
-	{
-		ItemScript* script = base.item_script;
-		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script)
-			script = base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script;
-		script->Parse(*u);
-		SortItems(u->items);
-		u->RecalculateWeight();
-		if(!res_mgr->IsLoadScreen())
-		{
-			for(auto slot : u->slots)
-			{
-				if(slot)
-					game_res->PreloadItem(slot);
-			}
-			for(auto& slot : u->items)
-				game_res->PreloadItem(slot.item);
-		}
-	}
-	if(base.trader && !test_unit)
-	{
-		u->stock = new TraderStock;
-		u->stock->date = world->GetWorldtime();
-		base.trader->stock->Parse(u->stock->items);
-		if(!game_level->entering)
-		{
-			for(ItemSlot& slot : u->stock->items)
-				game_res->PreloadItem(slot.item);
-		}
-	}
-
-	// gold
-	float t;
-	if(base.level.x == base.level.y)
-		t = 1.f;
-	else
-		t = float(u->level - base.level.x) / (base.level.y - base.level.x);
-	u->gold = Int2::Lerp(base.gold, base.gold2, t).Random();
-
-	if(!test_unit)
-	{
-		// mesh, human details
-		if(base.type == UNIT_TYPE::HUMAN)
-		{
-			if(human_data)
-				u->human_data = human_data;
-			else
-			{
-				u->human_data = new Human;
-				u->human_data->beard = Rand() % MAX_BEARD - 1;
-				u->human_data->hair = Rand() % MAX_HAIR - 1;
-				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-				u->human_data->height = Random(0.9f, 1.1f);
-				if(IsSet(base.flags2, F2_OLD))
-					u->human_data->hair_color = Color::Hex(0xDED5D0);
-				else if(IsSet(base.flags, F_CRAZY))
-					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
-				else if(IsSet(base.flags, F_GRAY_HAIR))
-					u->human_data->hair_color = g_hair_colors[Rand() % 4];
-				else if(IsSet(base.flags, F_TOMASHU))
-				{
-					u->human_data->beard = 4;
-					u->human_data->mustache = -1;
-					u->human_data->hair = 0;
-					u->human_data->hair_color = g_hair_colors[0];
-					u->human_data->height = 1.1f;
-				}
-				else
-					u->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-#undef HEX
-			}
-		}
-
-		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
-
-		// hero data
-		if(IsSet(base.flags, F_HERO))
-		{
-			u->hero = new HeroData;
-			u->hero->Init(*u);
-		}
-		else
-			u->hero = nullptr;
-
-		// boss music
-		if(IsSet(u->data->flags2, F2_BOSS))
-			world->AddBossLevel(Int2(game_level->location_index, game_level->dungeon_level));
-
-		// physics
-		if(create_physics)
-			u->CreatePhysics();
-		else
-			u->cobj = nullptr;
-	}
-
-	if(Net::IsServer() && !game_level->entering)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_UNIT;
-		c.unit = u;
-	}
-
-	return u;
-}
-
 bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint)
 {
 	// atak broni¹ lub naturalny
@@ -3917,38 +3343,6 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		RemoveElements(area.tmp->bullets, [](const Bullet& b) { return b.remove; });
 }
 
-Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
-{
-	Unit* u = CreateUnit(unit, level, human_data);
-	u->area = &area;
-	area.units.push_back(u);
-
-	if(pos)
-	{
-		if(area.area_type == LevelArea::Type::Outside)
-		{
-			Vec3 pt = *pos;
-			game_level->terrain->SetH(pt);
-			u->pos = pt;
-		}
-		else
-			u->pos = *pos;
-		u->UpdatePhysics();
-		u->visual_pos = u->pos;
-	}
-
-	if(rot)
-		u->rot = *rot;
-
-	AIController* a = new AIController;
-	a->Init(u);
-	ais.push_back(a);
-	if(ai)
-		*ai = a;
-
-	return u;
-}
-
 void Game::ChangeLevel(int where)
 {
 	assert(where == 1 || where == -1);
@@ -4089,7 +3483,7 @@ void Game::ExitToMap()
 
 	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
-	if(game_level->is_open && game_level->location->type == L_ENCOUNTER)
+	if(game_level->is_open)
 		LeaveLocation();
 
 	net->ClearFastTravel();
@@ -5080,11 +4474,9 @@ void Game::ClearGameVars(bool new_game)
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
 	arena->Reset();
-	game_gui->world_map->dialog_enc = nullptr;
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
-	game_gui->world_map->picked_location = -1;
-	game_level->camera.Reset();
+	game_level->camera.Reset(new_game);
 	game_level->lights_dt = 1.f;
 	pc->data.Reset();
 	script_mgr->Reset();
@@ -5109,16 +4501,14 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		use_fog = true;
-		use_lighting = true;
+		scene_mgr->use_lighting = true;
+		scene_mgr->use_fog = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
 		noai = false;
 		draw_phy = false;
 		draw_col = false;
-		game_level->camera.real_rot = Vec2(0, 4.2875104f);
-		game_level->camera.dist = 3.5f;
 		game_speed = 1.f;
 		game_level->dungeon_level = 0;
 		quest_mgr->Reset();
@@ -5132,9 +4522,7 @@ void Game::ClearGameVars(bool new_game)
 		game_gui->Clear(true, false);
 		if(!net->mp_quickload)
 			game_gui->mp_box->visible = Net::IsOnline();
-		drunk_anim = 0.f;
 		game_level->light_angle = Random(PI * 2);
-		game_level->camera.Reset();
 		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
 
@@ -5235,11 +4623,12 @@ void Game::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack:
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// ustawienia t³a
-	game_level->camera.draw_range = base.draw_range;
-	game_level->fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
-	game_level->fog_color = Vec4(base.fog_color, 1);
-	game_level->ambient_color = Vec4(base.ambient_color, 1);
-	clear_color_next = Color(int(game_level->fog_color.x * 255), int(game_level->fog_color.y * 255), int(game_level->fog_color.z * 255));
+	game_level->camera.zfar = base.draw_range;
+	game_level->scene->fog_range = base.fog_range;
+	game_level->scene->fog_color = base.fog_color;
+	game_level->scene->ambient_color = base.ambient_color;
+	game_level->scene->use_light_dir = false;
+	clear_color_next = game_level->scene->fog_color;
 
 	// tekstury podziemi
 	ApplyLocationTextureOverride(game_res->tFloor[0], game_res->tWall[0], game_res->tCeil[0], base.tex);
@@ -5258,12 +4647,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	}
 
 	// ustawienia uv podziemi
-	bool new_tex_wrap = !IsSet(base.options, BLO_NO_TEX_WRAP);
-	if(new_tex_wrap != dungeon_tex_wrap)
-	{
-		dungeon_tex_wrap = new_tex_wrap;
-		ChangeDungeonTexWrap();
-	}
+	dun_mesh_builder->ChangeTexWrap(!IsSet(base.options, BLO_NO_TEX_WRAP));
 }
 
 void Game::SetDungeonParamsToMeshes()
@@ -5337,6 +4721,8 @@ void Game::LeaveLevel(bool clear)
 			InsideLocationLevel& lvl = inside->GetLevelData();
 			Room::Free(lvl.rooms);
 		}
+		if(clear)
+			pc = nullptr;
 	}
 
 	ais.clear();
@@ -5348,10 +4734,10 @@ void Game::LeaveLevel(bool clear)
 	game_gui->CloseAllPanels();
 
 	game_level->camera.Reset();
-	pc->data.rot_buf = 0.f;
+	PlayerController::data.rot_buf = 0.f;
 	dialog_context.dialog_mode = false;
 	game_gui->inventory->mode = I_NONE;
-	pc->data.before_player = BP_NONE;
+	PlayerController::data.before_player = BP_NONE;
 }
 
 void Game::LeaveLevel(LevelArea& area, bool clear)
@@ -5381,14 +4767,10 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				{
 					if(unit.IsFollower())
 					{
-						if(!unit.IsAlive())
-						{
-							unit.hp = 1.f;
-							unit.live_state = Unit::ALIVE;
-						}
+						if(!unit.IsStanding())
+							unit.Standup(false, true);
 						if(unit.GetOrder() != ORDER_FOLLOW)
 							unit.OrderFollow(team->GetLeader());
-						unit.mesh_inst->need_update = true;
 						unit.ai->Reset();
 						return true;
 					}
@@ -5409,6 +4791,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 								unit.mesh_inst->SetToEnd();
 								game_level->CreateBlood(area, unit, true);
 							}
+							else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
+								unit.Standup(false, true);
 
 							if(unit.IsAlive())
 							{
@@ -5765,7 +5149,10 @@ void Game::PreloadResources(bool worldmap)
 			if(Net::IsLocal())
 			{
 				for(GroundItem* ground_item : area.items)
+				{
+					assert(ground_item->item);
 					items_load.insert(ground_item->item);
+				}
 				for(Chest* chest : area.chests)
 					PreloadItems(chest->items);
 				for(Usable* usable : area.usables)
@@ -5898,7 +5285,10 @@ void Game::PreloadUnit(Unit* unit)
 void Game::PreloadItems(vector<ItemSlot>& items)
 {
 	for(auto& slot : items)
+	{
+		assert(slot.item);
 		items_load.insert(slot.item);
+	}
 }
 
 void Game::VerifyResources()
@@ -6228,14 +5618,15 @@ void Game::UpdateGameNet(float dt)
 DialogContext* Game::FindDialogContext(Unit* talker)
 {
 	assert(talker);
-	if(dialog_context.talker == talker)
+	if(dialog_context.dialog_mode && dialog_context.talker == talker)
 		return &dialog_context;
 	if(Net::IsOnline())
 	{
 		for(PlayerInfo& info : net->players)
 		{
-			if(info.pc->dialog_ctx->talker == talker)
-				return info.pc->dialog_ctx;
+			DialogContext* ctx = info.pc->dialog_ctx;
+			if(ctx->dialog_mode && ctx->talker == talker)
+				return ctx;
 		}
 	}
 	return nullptr;
@@ -6614,7 +6005,7 @@ void Game::OnEnterLevelOrLocation()
 		if(e.type == EVENT_ENTER)
 		{
 			ScriptEvent event(EVENT_ENTER);
-			event.location = game_level->location;
+			event.on_enter.location = game_level->location;
 			e.quest->FireEvent(event);
 		}
 	}

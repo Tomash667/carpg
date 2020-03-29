@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "LocationGeneratorFactory.h"
 #include "InsideLocation.h"
 #include "AcademyGenerator.h"
@@ -58,7 +57,7 @@ void LocationGeneratorFactory::Init()
 }
 
 //=================================================================================================
-LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool reenter)
+LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 {
 	LocationGenerator* loc_gen;
 	switch(loc->type)
@@ -103,7 +102,6 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 	loc_gen->loc = loc;
 	loc_gen->dungeon_level = game_level->dungeon_level;
 	loc_gen->first = first;
-	loc_gen->reenter = reenter;
 	loc_gen->Init();
 	return loc_gen;
 }

@@ -65,6 +65,7 @@ enum class TrainWhat
 	CastCleric, // player cast cleric spell [value]
 	CastMage, // player cast mage spell [value]
 	Mana, // player uses mana [value]
+	Craft, // player craft potion [value]
 };
 
 //-----------------------------------------------------------------------------
@@ -135,7 +136,7 @@ struct Shortcut
 	{
 		SPECIAL_MELEE_WEAPON,
 		SPECIAL_RANGED_WEAPON,
-		SPECIAL_ABILITY_OLD, // removed in V_DEV
+		SPECIAL_ABILITY_OLD, // removed in V_0_13
 		SPECIAL_HEALTH_POTION,
 		SPECIAL_MANA_POTION
 	};
@@ -208,7 +209,6 @@ struct PlayerController : public HeroPlayerCommon
 		int train;
 		int apt;
 		float train_part;
-		bool blocked;
 	};
 
 	PlayerInfo* player_info;
@@ -301,10 +301,10 @@ public:
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 
 	// perks
-	bool HavePerk(Perk perk, int value = -1);
+	bool HavePerk(Perk* perk, int value = -1);
 	bool HavePerkS(const string& perk_id);
-	bool AddPerk(Perk perk, int value);
-	bool RemovePerk(Perk perk, int value);
+	bool AddPerk(Perk* perk, int value);
+	bool RemovePerk(Perk* perk, int value);
 
 	// abilities
 	bool HaveAbility(Ability* ability) const;

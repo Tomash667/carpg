@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "UnitHelper.h"
 
 namespace UnitHelper
@@ -7,7 +6,7 @@ namespace UnitHelper
 	inline void EnsureList(const ItemList*& lis)
 	{
 		if(!lis)
-			lis = ItemList::Get("base_items").lis;
+			lis = &ItemList::Get("base_items");
 	}
 
 	static vector<const Item*> items_to_pick;
@@ -19,16 +18,18 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 
 	if(IsSet(unit.data->flags, F_MAGE))
 	{
-		for(const Item* item : lis->items)
+		for(const ItemList::Entry& e : lis->items)
 		{
+			const Item* item = e.item;
 			if(item->type == IT_WEAPON && IsSet(item->flags, ITEM_MAGE))
 				return item;
 		}
 	}
 
 	WEAPON_TYPE best = unit.GetBestWeaponType();
-	for(const Item* item : lis->items)
+	for(const ItemList::Entry& e : lis->items)
 	{
+		const Item* item = e.item;
 		if(item->ToWeapon().weapon_type == best)
 			return item;
 	}
@@ -43,16 +44,18 @@ const Item* UnitHelper::GetBaseArmor(const Unit& unit, const ItemList* lis)
 
 	if(IsSet(unit.data->flags, F_MAGE))
 	{
-		for(const Item* item : lis->items)
+		for(const ItemList::Entry& e : lis->items)
 		{
+			const Item* item = e.item;
 			if(item->type == IT_ARMOR && IsSet(item->flags, ITEM_MAGE))
 				return item;
 		}
 	}
 
 	ARMOR_TYPE armor_type = unit.GetBestArmorType();
-	for(const Item* item : lis->items)
+	for(const ItemList::Entry& e : lis->items)
 	{
+		const Item* item = e.item;
 		if(item->type == IT_ARMOR && item->ToArmor().armor_type == armor_type)
 			return item;
 	}
@@ -64,8 +67,9 @@ const Item* UnitHelper::GetBaseItem(ITEM_TYPE type, const ItemList* lis)
 {
 	EnsureList(lis);
 
-	for(const Item* item : lis->items)
+	for(const ItemList::Entry& e : lis->items)
 	{
+		const Item* item = e.item;
 		if(item->type == type)
 			return item;
 	}
@@ -75,12 +79,12 @@ const Item* UnitHelper::GetBaseItem(ITEM_TYPE type, const ItemList* lis)
 
 UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 {
-	static const LeveledItemList* lis = ItemList::Get("amulets").llis;
+	static const ItemList& lis = ItemList::Get("amulets");
 	const Item* amulet = unit.slots[SLOT_AMULET];
 	float prev_value = amulet ? unit.GetItemAiValue(amulet) : 0.f;
 	float best_value = prev_value;
 	items_to_pick.clear();
-	for(auto& e : lis->items)
+	for(const ItemList::Entry& e : lis.items)
 	{
 		const Item* item = e.item;
 		if(item == amulet)
@@ -133,13 +137,13 @@ array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
 
 array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit& unit, float min_value)
 {
-	static const LeveledItemList* lis = ItemList::Get("rings").llis;
+	static const ItemList& lis = ItemList::Get("rings");
 	const Item* rings[2] = { unit.slots[SLOT_RING1], unit.slots[SLOT_RING2] };
 
 	items_to_pick.clear();
 	const Item* second_best_item = nullptr;
 	float second_best_value = 0.f;
-	for(auto& e : lis->items)
+	for(const ItemList::Entry& e : lis.items)
 	{
 		const Item* item = e.item;
 		if(item->value > unit.gold)

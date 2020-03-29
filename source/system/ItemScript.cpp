@@ -1,27 +1,26 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "ItemScript.h"
 #include "StatProfile.h"
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
 vector<ItemScript*> ItemScript::scripts;
-const LeveledItemList* ItemScript::weapon_list[WT_MAX], *ItemScript::armor_list[AT_MAX];
+const ItemList* ItemScript::weapon_list[WT_MAX], *ItemScript::armor_list[AT_MAX];
 
 //=================================================================================================
 void ItemScript::Init()
 {
-	weapon_list[WT_SHORT_BLADE] = ItemList::Get("short_blade").llis;
-	weapon_list[WT_LONG_BLADE] = ItemList::Get("long_blade").llis;
-	weapon_list[WT_AXE] = ItemList::Get("axe").llis;
-	weapon_list[WT_BLUNT] = ItemList::Get("blunt").llis;
-	armor_list[AT_LIGHT] = ItemList::Get("light_armor").llis;
-	armor_list[AT_MEDIUM] = ItemList::Get("medium_armor").llis;
-	armor_list[AT_HEAVY] = ItemList::Get("heavy_armor").llis;
+	weapon_list[WT_SHORT_BLADE] = &ItemList::Get("short_blade");
+	weapon_list[WT_LONG_BLADE] = &ItemList::Get("long_blade");
+	weapon_list[WT_AXE] = &ItemList::Get("axe");
+	weapon_list[WT_BLUNT] = &ItemList::Get("blunt");
+	armor_list[AT_LIGHT] = &ItemList::Get("light_armor");
+	armor_list[AT_MEDIUM] = &ItemList::Get("medium_armor");
+	armor_list[AT_HEAVY] = &ItemList::Get("heavy_armor");
 }
 
 //=================================================================================================
-const LeveledItemList& ItemScript::GetSpecial(int special, int sub)
+const ItemList& ItemScript::GetSpecial(int special, int sub)
 {
 	SubprofileInfo s;
 	s.value = sub;
@@ -346,34 +345,34 @@ void ItemScript::GiveItem(Unit& unit, const int*& ps, int count) const
 		break;
 	case PS_LEVELED_LIST:
 		{
-			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			const ItemList& lis = *(const ItemList*)(*ps);
 			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+				unit.AddItemAndEquipIfNone(lis.GetLeveled(unit.level + Random(-2, 1)));
 		}
 		break;
 	case PS_LEVELED_LIST_MOD:
 		{
 			int mod = *ps++;
-			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			const ItemList& lis = *(const ItemList*)(*ps);
 			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+				unit.AddItemAndEquipIfNone(lis.GetLeveled(unit.level + Random(-2, 1) + mod));
 		}
 		break;
 	case PS_SPECIAL_ITEM:
 		{
 			int special = *ps;
-			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			const ItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
 			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+				unit.AddItemAndEquipIfNone(lis.GetLeveled(unit.level + Random(-2, 1)));
 		}
 		break;
 	case PS_SPECIAL_ITEM_MOD:
 		{
 			int mod = *ps++;
 			int special = *ps;
-			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			const ItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
 			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+				unit.AddItemAndEquipIfNone(lis.GetLeveled(unit.level + Random(-2, 1) + mod));
 		}
 	}
 

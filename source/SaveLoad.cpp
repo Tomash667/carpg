@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"
@@ -48,6 +47,8 @@
 #include "CommandParser.h"
 #include "GameResources.h"
 #include "AbilityPanel.h"
+#include "CraftPanel.h"
+#include "SceneManager.h"
 
 enum SaveFlags
 {
@@ -96,6 +97,8 @@ bool Game::CanLoadGame() const
 		if(Net::IsClient() || !Any(game_state, GS_LEVEL, GS_WORLDMAP))
 			return false;
 	}
+	else if(hardcore_mode)
+		return false;
 	return true;
 }
 
@@ -258,28 +261,33 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	try
 	{
+		in_load = true;
 		LoadGame(f);
+		in_load = false;
 	}
 	catch(const SaveException&)
 	{
+		in_load = false;
 		prev_game_state = GS_LOAD;
 		ExitToMenu();
 		throw;
 	}
 	catch(cstring msg)
 	{
+		in_load = false;
 		prev_game_state = GS_LOAD;
 		ExitToMenu();
 		throw SaveException(nullptr, msg);
 	}
 
+	f.Close();
 	prev_game_state = GS_LOAD;
 
 	if(hardcore_mode)
 	{
 		Info("Hardcore mode, deleting save.");
 
-		if(slot == -1)
+		if(slot != -1)
 		{
 			game_gui->saveload->RemoveHardcoreSave(slot);
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
@@ -468,13 +476,14 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	// camera
 	f << game_level->camera.real_rot.y;
 	f << game_level->camera.dist;
+	f << game_level->camera.drunk_anim;
 
 	// vars
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << game->use_fog;
-	f << game->use_lighting;
+	f << scene_mgr->use_fog;
+	f << scene_mgr->use_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -486,7 +495,6 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << pc->unit->id;
 	f << game_level->dungeon_level;
 	f << portal_anim;
-	f << drunk_anim;
 	f << ais.size();
 	for(AIController* ai : ais)
 		ai->Save(f);
@@ -758,6 +766,8 @@ void Game::LoadGame(GameReader& f)
 	// camera
 	f >> game_level->camera.real_rot.y;
 	f >> game_level->camera.dist;
+	if(LOAD_VERSION >= V_DEV)
+		f >> game_level->camera.drunk_anim;
 	game_level->camera.Reset();
 	pc->data.rot_buf = 0.f;
 
@@ -778,8 +788,8 @@ void Game::LoadGame(GameReader& f)
 	noai = true;
 #endif
 	f >> dont_wander;
-	f >> game->use_fog;
-	f >> game->use_lighting;
+	f >> scene_mgr->use_fog;
+	f >> scene_mgr->use_lighting;
 	f >> draw_particle_sphere;
 	f >> draw_unit_radius;
 	f >> draw_hitbox;
@@ -793,13 +803,15 @@ void Game::LoadGame(GameReader& f)
 	pc = player->player;
 	if(!net->mp_load)
 		pc->id = 0;
+	game_level->camera.target = pc->unit;
 	game_level->camera.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	f >> game_level->dungeon_level;
 	f >> portal_anim;
-	f >> drunk_anim;
+	if(LOAD_VERSION < V_DEV)
+		f >> game_level->camera.drunk_anim;
 	ais.resize(f.Read<uint>());
 	for(AIController*& ai : ais)
 	{
@@ -810,6 +822,8 @@ void Game::LoadGame(GameReader& f)
 	game_gui->Load(f);
 
 	check_id = (byte)world->GetLocations().size();
+	if(LOAD_VERSION < V_DEV)
+		--check_id; // added offscreen location to old saves
 	f >> read_id;
 	if(read_id != check_id++)
 		throw "Error reading data before team.";
@@ -913,6 +927,7 @@ void Game::LoadGame(GameReader& f)
 		game_level->event_handler = nullptr;
 
 	quest_mgr->UpgradeQuests();
+	quest_mgr->ProcessQuestRequests();
 
 	dialog_context.dialog_mode = false;
 	team->ClearOnNewGameOrLoad();
@@ -958,7 +973,11 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	if(game_state2 == GS_LEVEL)
+	{
 		SetMusic();
+		if(pc->unit->usable && IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+			game_gui->craft->Show();
+	}
 	else
 		SetMusic(MusicType::Travel);
 	game_state = game_state2;

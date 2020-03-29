@@ -2,9 +2,10 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
-#include "TooltipController.h"
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
+// Panel with player abilities and some special shortcuts (use healing/mana potion, take weapon)
 class AbilityPanel : public GamePanel
 {
 public:

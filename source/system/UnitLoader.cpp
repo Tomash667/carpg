@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "UnitLoader.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
@@ -185,7 +184,7 @@ void UnitLoader::Cleanup()
 //=================================================================================================
 void UnitLoader::InitTokenizer()
 {
-	t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS);
+	t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
 
 	t.AddKeywords(G_TYPE, {
 		{ "unit", T_UNIT },
@@ -437,7 +436,7 @@ void UnitLoader::InitTokenizer()
 		{ "book", IT_BOOK }
 		});
 
-	t.AddEnums<ConsumableType>(G_CONSUMABLE_GROUP, {
+	t.AddKeywords<ConsumableType>(G_CONSUMABLE_GROUP, {
 		{ "food", ConsumableType::Food },
 		{ "drink", ConsumableType::Drink },
 		{ "potion", ConsumableType::Potion },
@@ -1269,23 +1268,23 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				int index = 0;
 				for(; index < StatProfile::MAX_PERKS; ++index)
 				{
-					if(subprofile->perks[index].perk == Perk::None)
+					if(!subprofile->perks[index].perk)
 						break;
 				}
 				if(index == StatProfile::MAX_PERKS)
 					t.Throw("Max %u perks.", StatProfile::MAX_PERKS);
 				const string& id = t.MustGetText();
-				PerkInfo* info = PerkInfo::Find(id);
-				if(!info)
+				Perk* perk = Perk::Get(id);
+				if(!perk)
 					t.Throw("Missing perk '%s'.", id.c_str());
-				subprofile->perks[index].perk = info->perk_id;
+				subprofile->perks[index].perk = perk;
 				int value = -1;
-				if(info->value_type != PerkInfo::None)
+				if(perk->value_type != Perk::None)
 				{
 					t.Next();
-					if(info->value_type == PerkInfo::Attribute)
+					if(perk->value_type == Perk::Attribute)
 						value = t.MustGetKeywordId(G_ATTRIBUTE);
-					else if(info->value_type == PerkInfo::Skill)
+					else if(perk->value_type == Perk::Skill)
 					{
 						if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
 							value = (int)SkillId::SPECIAL_WEAPON;
@@ -1768,29 +1767,29 @@ void UnitLoader::AddItem(ItemScript* script)
 				t.NextChar();
 				t.Next();
 				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
+				ItemList* lis = ItemList::TryGet(s);
+				if(!lis)
 					t.Throw("Missing item list '%s'.", s.c_str());
-				if(!lis.is_leveled)
+				if(!lis->is_leveled)
 					t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
 				script->code.push_back(PS_LEVELED_LIST_MOD);
 				script->code.push_back(mod);
-				script->code.push_back((int)lis.llis);
+				script->code.push_back((int)lis);
 				crc.Update(PS_LEVELED_LIST_MOD);
 				crc.Update(mod);
-				crc.Update(lis.llis->id);
+				crc.Update(lis->id);
 			}
 			else
 			{
 				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
+				ItemList* lis = ItemList::TryGet(s);
+				if(!lis)
 					t.Throw("Missing item list '%s'.", s.c_str());
-				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+				ParseScript type = (lis->is_leveled ? PS_LEVELED_LIST : PS_LIST);
 				script->code.push_back(type);
-				script->code.push_back((int)lis.lis);
+				script->code.push_back((int)lis);
 				crc.Update(type);
-				crc.Update(lis.GetIdString());
+				crc.Update(lis->id);
 			}
 		}
 	}

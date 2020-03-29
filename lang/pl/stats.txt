@@ -1,0 +1,403 @@
+[Buffs]
+buff_poison = "Zatrucie"
+buff_alcohol = "Alkohol"
+buff_regeneration = "Regeneracja"
+buff_natural = "Naturalne leczenie"
+buff_food = "Jedzenie"
+buff_antimagic = "Antymagia"
+buff_stamina = "Przywracanie wytrzyma³oœci"
+buff_stun = "Og³uszony"
+buff_poison_res = "Odpornoœæ na trucizny"
+
+[Directions]
+dirN = "pó³noc"
+dirS = "po³udnie"
+dirE = "wschód"
+dirW = "zachód"
+dirNE = "pó³nocny wschód"
+dirNW = "pó³nocny zachód"
+dirSE = "po³udniowy wschód"
+dirSW = "po³udniowy zachód"
+
+[Encounters]
+encCrazyMage = "Spotka³eœ jakiegoœ maga na drodze. Chyba brak mu pi¹tej klepki..."
+encCrazyHeroes = "Natrafi³eœ na jakichœ nie do koñca normalnych \"bohaterów\"."
+encCrazyCook = "Z naprzeciwka zatrzyma³ ciê jakiœ kucharz."
+encMerchant = "Spotka³eœ wêdrownego kupca."
+encHeroes = "Natkn¹³eœ siê na oddzia³ bohaterów zmierzaj¹cy w przeciwnym kierunku."
+encSingleHero = "Natkn¹³eœ siê na pojedyñczego bohatera zmierzaj¹cego w przeciwnym kierunku."
+encBanditsAttackTravelers = "W oddali zauwa¿y³eœ podró¿ników jad¹cych na wozie.\nNagle z krzaków wyskoczyli bandyci i zaatakowali podró¿nych."
+encHeroesAttack = "W oddali zauwa¿y³eœ oddzia³ bohaterów walcz¹cych z jakimiœ wrogami."
+encGolem = "Podró¿uj¹c drog¹ natrafi³eœ na kamiennego golema!"
+encCrazy = "Z krzaków wyskoczy³ jakiœ wariat..."
+encUnk = "Czujesz ¿e ktoœ lub coœ ciê obserwuje, s³yszysz jakiœ dŸwiêk za plecami!"
+encEnemiesCombat = "W oddali zauwa¿y³eœ dwie grupy wrogów walcz¹ce pomiêdzy sob¹."
+
+[Locations]
+camp = "Obóz"
+cave = "Jaskinia"
+city = "Miasto"
+crypt = "Krypta"
+dungeon = "Podziemia"
+forest = "Las"
+village = "Wioska"
+moonwell = "Ksiê¿ycowa studnia"
+otherness = "Innoœæ"
+randomEncounter = "Losowe spotkanie"
+tower = "Wie¿a"
+labyrinth = "Labirynt"
+academy = "Akademia"
+
+[WeaponTypes]
+shortBlade = "Krótkie ostrze"
+longBlade = "D³ugie ostrze"
+blunt = "Broñ obuchowa"
+axe = "Topór"
+[]
+
+//------------------------------------------------------------------------------
+// ABILITIES
+ability "bull_charge" {
+	name "Bycza szar¿a"
+	desc "Szar¿ujesz do przodu og³uszaj¹c wszystkich po drodze i zadaj¹c im $cr{power} obra¿eñ$c-."
+}
+ability "dash" {
+	name "Zryw"
+	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada trzy ³adunki."
+}
+ability fireball {
+	name "Kula ognia"
+	desc "Rzucasz kule ognia która zadaje $cr{power} obra¿eñ$c- na niewielkim obszarze."
+}
+ability "heal" {
+	name "Uzdrowienie"
+	desc "Przywraca $cg{power} punktów ¿ycia$c- celowi."
+}
+ability "summon_wolf" {
+	name "Zwierzêcy sojusznik"
+	desc "Przywo³uje wilka który pomaga ci w walce dopóki nie zginie."
+}
+ability "thunder_bolt" {
+	name "Piorun"
+	desc "Rzucasz piorun we wroga, ³adunek elektryczny zadaje $cr{power} obra¿eñ$c- przeskakuje na pobliskich przeciwników."
+}
+
+//------------------------------------------------------------------------------
+// ATTRIBUTES
+attributes = "Atrybuty"
+relatedAttributes = "Powi¹zane atrybuty"
+
+attribute str {
+	name "Si³a"
+	desc "\tZwiêksza zadawane obra¿enia w walce wrêcz, si³ê bloku, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
+}
+attribute end {
+	name "Kondycja"
+	desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja."
+}
+attribute dex {
+	name "Zrêcznoœæ"
+	desc "\tZwiêksza wytrzyma³oœæ, szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
+}
+attribute int {
+	name "Inteligencja"
+	desc "\tZwiêksza si³ê czarów maga i szybkoœæ nauki.\n\tWp³ywa na umiejêtnoœci: mistyczna magia, alchemia."
+}
+attribute wis {
+	name "M¹droœæ"
+	desc "\tZwiêksza si³ê czarów druida.\n\tWp³ywa na umiejêtnoœci: koncentracja."
+}
+attribute cha {
+	name "Charyzma"
+	desc "\tZwiêksza si³ê czarów kap³ana i szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: magia bogów, targowanie."
+}
+
+//------------------------------------------------------------------------------
+// CLASSES
+class barbarian {
+	name "Barbarzyñca"
+	desc "Dziki wojownik który gardzi ciê¿kim pancerzem. Wpada w sza³ aby uzyskaæ przewagê w walce."
+	about "?"
+}
+class bard {
+	name "Bard"
+	desc "Zawadiaka który podró¿uje od miasta do miasta. Zna siê na wszystkim i niczym."
+	about "?"
+}
+class cleric {
+	name "Kap³an"
+	desc "Wyznawca boga który dziêki oddaniu otrzyma³ moc rzucania czarów.\n\nSpecjalna zdolnoœæ: Uleczenie"
+	about "Jestem kap³anem, wyznawc¹ Imnosa. Podró¿ujê po miastach ucz¹c innych o moim bogu oraz pomagam tym którzy tego potrzebuj¹. "
+}
+class druid {
+	name "Druid"
+	desc "Wyznawca magii natury, u¿ywa jej aby chroniæ naturê i niszczyæ tych którzy jej zagra¿aj¹."
+	about "?"
+}
+class hunter {
+	name "£owca"
+	desc "Stra¿nik lasu, specjalizuje siê w strzelaniu z ³uku, polowaniu i tropieniu istot. Z czasem zdobywa wiedzê o magii natury.\n\nSpecjalna zdolnoœæ: Zwierzêcy sojusznik"
+	about "Jestem ³owc¹. Ca³e swoje ¿ycie spêdzi³em na podró¿ach, zwiedzaniu lasów i jaskiñ. Doskonale strzelam z ³uku ale nie boje siê walki wrêcz."
+}
+class mage {
+	name "Mag"
+	desc "Adept sztuk mistycznych. Dziêki potêdze swojego umys³u potrafi stworzyæ magiczne pociski i kule ognia.\n\nSpecjalna zdolnoœæ: Kula ognia"
+	about "Jestem magiem. Dziêki potêdze umys³u opanowa³em arkana magii i obliczy³em ca³kê nieoznaczon¹. Teraz podró¿uje po œwiecie sprawdzam swoje umiejêtnoœci w praktyce."
+}
+class monk {
+	name "Mnich"
+	desc "Walczy u¿ywaj¹c prostych broni, w tym swojego cia³a. Nie u¿ywa pancerza ale dziêki medytacji d¹¿y do doskona³oœci."
+	about "?"
+}
+class paladin {
+	name "Paladyn"
+	desc "Œwiêty wojownik który kieruje siê kodeksem swojego boga. Zna magiê bogów ale nie tak dobrze jak kap³an."
+	about "?"
+}
+class rogue {
+	name "£otrzyk"
+	desc "Preferuje lekki pancerz i walk¹ krótki ostrzem lub ³uk. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce. Zna siê na otwieraniu zamków, pu³apkach, skradaniu i kradzie¿y.\n\nSpecjalna zdolnoœæ: Zryw"
+	about "Jestem ³otrzykiem. Podró¿uje to tu to tam. Czasem kogoœ okradnê albo wbije sztylet w plecy. Nic ciekawego."
+}
+class warrior {
+	name "Wojownik"
+	desc "Bieg³y zbrojny, mo¿e u¿ywaæ dowolnej broni, tarczy i pancerza. Preferuje walkê w zwarciu. Mo¿e specjalizowaæ siê w okreœlonej broni.\n\nSpecjalna zdolnoœæ: Bycza szar¿a"
+	about "Jestem wojownikiem. Zarabiam zabijaj¹c potwory, bandytów i inne œcierwo. Polegam g³ównie na broni do walki wrêcz, ciê¿kim pancerzu i tarczy."
+}
+
+//------------------------------------------------------------------------------
+// PERKS
+perk bad_back {
+	name "S³abe plecy"
+	desc "Twoje plecy nie nadaj¹ siê do noszenia ciê¿arów. Zmniejsza si³ê o 5 i zmniejsza maksymalny udŸwig."
+}
+perk chronic_disease {
+	name "Przewlek³a choroba"
+	desc "Od dziecka jesteœ bardziej chorowity ni¿ inni. Zmniejsza kondycjê o 5 i wolniej leczysz siê z obra¿eñ."
+}
+perk sluggish {
+	name "Ospa³y"
+	desc "Jesteœ powolny. Zmniejsza zrêcznoœæ o 5 i wolniej biegasz."
+}
+perk slow_learner {
+	name "Powolny uczeñ"
+	desc "Nauczenie nowych umiejêtnoœci przychodzi ci z trudem. Zmniejsza inteligencjê o 5 punktów i spowalnia szkolenie umiejêtnoœci."
+}
+perk asocial {
+	name "Aspo³eczny"
+	desc "Nie najlepiej dogadujesz siê z innymi osobami. Zmniejsza charyzmê o 5 punktów i zwiêksza ceny w sklepach."
+}
+perk poor {
+	name "Biedak"
+	desc "Rozpoczynasz swoj¹ przygodê z pust¹ sakiewk¹. Twój ekwipunek jest gorszej jakoœci."
+}
+perk talent {
+	name "Talent"
+	desc "Zwiêksza wybrany atrybut o 5 punktów. Przyœpiesza szybkoœæ zdobywania tego atrybutu."
+	details "Zwiêkszony atrybut: {value}"
+}
+perk skilled {
+	name "Fachowiec"
+	desc "Daje trzy dodatkowe punkty umiejêtnoœci."
+}
+perk skill_focus {
+	name "Skupienie na umiejêtnoœci"
+	desc "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów. Przyœpiesza szybkoœæ zdobywania tej umiejêtnoœci."
+	details "Zwiêkszona umiejêtnoœæ: {value}"
+}
+perk alchemist_apprentice {
+	name "Uczeñ alchemika"
+	desc "Pracowa³eœ jako uczeñ alchemika. Znasz siê na podstawach alchemii (+10) i pod czujnym okiem mistrza uwarzy³eœ spor¹ liczbê mikstur."
+}
+perk wealthy {
+	name "Bogaty"
+	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 2500 sztuk z³ota aby zakupiæ lepszy ekwipunek."
+}
+perk very_wealthy {
+	name "Bardzo bogaty"
+	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 50000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
+}
+perk heirloom {
+	name "Rodzinna pami¹tka"
+	desc "W twojej rodzinie od pokoleñ pewien przedmiot przechodzi³ z ojca na syna. Teraz przyszed³ czas na ciebie."
+}
+perk leader {
+	name "Przywódca"
+	desc "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³. Bohaterowie szybciej zdobywaj¹ doœwiadczenie gdy ty dowodzisz dru¿yn¹."
+}
+perk strong_back {
+	name "Silne plecy"
+	desc "+25% do maksymalnego udŸwigu."
+}
+perk aggressive {
+	name "Agresywny"
+	desc "+10 do ataku w walce wrêcz."
+}
+perk mobility {
+	name "Mobilnoœæ"
+	desc "+20 do bazowej mobilnoœci."
+}
+perk finesse {
+	name "Finezja"
+	desc "+10 do ataku dystansowego."
+}
+perk tough {
+	name "Twardy"
+	desc "+100 do maksymalnego zdrowia."
+}
+perk hard_skin {
+	name "Twarda skóra"
+	desc "+10 do obrony."
+}
+perk adaptation {
+	name "Przystosowanie"
+	desc "Zapewnia odpornoœæ na trucizny."
+}
+perk perfect_health {
+	name "Perfekcyjne zdrowie"
+	desc "Zapewnia 5 punktów na sekundê regeneracji zdrowia."
+}
+perk energetic {
+	name "Energiczny"
+	desc "+100 do wytrzyma³oœci."
+}
+perk strong_aura {
+	name "Silna aura"
+	desc "+100 do maksymalnej many."
+}
+perk mana_harmony {
+	name "Harmonia many"
+	desc "Zwiêksza szybkoœæ przywracania many o 100%."
+}
+perk magic_adept {
+	name "Adept magii"
+	desc "Zwiêksza obra¿enia od czarów."
+}
+perk traveling_merchant {
+	name "Uczeñ wêdrownego kupca"
+	desc "W m³odoœci spêdzi³eœ kilka lat podró¿uj¹c wraz z wêdrownymi kupcami. Znasz siê na targowaniu (+10) i rozpoczynasz maj¹c o 500 sztuk z³ota wiêcej."
+}
+
+//------------------------------------------------------------------------------
+// SKILLS
+skill_group weapon = "Walka broni¹"
+skill_group armor = "Tarcza & Pancerz"
+skill_group magic = "Magia"
+skill_group other = "Pozosta³e"
+
+skill one_handed_weapon {
+	name "Broñ jednorêczna"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku przy u¿yciu ka¿dej broni jednorêcznej."
+}
+skill short_blade {
+	name "Krótkie ostrze"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla sztyletów, krótkich mieczy, rapierów."
+}
+skill long_blade {
+	name "D³ugie ostrze"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugich mieczy i sejmitarów."
+}
+skill axe {
+	name "Topór"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku toporów."
+}
+skill blunt {
+	name "Broñ obuchowa"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku maczug, buzdyganów i morgenszternów."
+}
+skill bow {
+	name "£uk"
+	desc "Zwiêksza celnoœæ, obra¿enia i szybkoœæ ataku przy u¿yciu ³uku."
+}
+skill unarmed {
+	name "Walka bez broni"
+	desc "Zwiêksza obra¿enia i szybkoœæ ataku bez broni."
+}
+skill shield {
+	name "Tarcza"
+	desc "Zwiêksza szybkoœæ blokowania i zablokowane obra¿enia dziêki tarczy oraz daje ma³¹ premiê do obrony."
+}
+skill light_armor {
+	name "Lekki pancerz"
+	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania lekkiego pancerza."
+}
+skill medium_armor {
+	name "Œredni pancerz"
+	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania œredniego pancerza."
+}
+skill heavy_armor {
+	name "Ciê¿ki pancerz"
+	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania ciê¿kiego pancerza."
+}
+skill nature_magic {
+	name "Magia natury"
+	desc "Poprawia efekty czarów natury i pozwala na rzucanie potê¿niejszych zaklêæ."
+}
+skill gods_magic {
+	name "Magia bogów"
+	desc "Poprawia efekty czarów bogów i pozwala na rzucanie potê¿niejszych zaklêæ."
+}
+skill mystic_magic {
+	name "Magia mistyczna"
+	desc "Poprawia efekty czarów mistycznych i pozwala na rzucanie potê¿niejszych zaklêæ."
+}
+skill spellcraft {
+	name "Czarnoznastwo"
+	desc "Pozwala tworzyæ nowe potê¿niejsze czary."
+}
+skill concentration {
+	name "Koncentracja"
+	desc "Zwiêksza zasoby many i pozwala unikn¹æ przerwania czaru w przypadku otrzymania obra¿eñ."
+}
+skill identification {
+	name "Identyfikacja"
+	desc "Pozwala dziêki wiedzy poznaæ magiczne w³aœciwoœci przedmiotów."
+}
+skill lockpick {
+	name "Otwieranie zamków"
+	desc "Pozwala otwieraæ lepsze zamki i robiæ to szybciej."
+}
+skill sneak {
+	name "Skradanie"
+	desc "Pozwala unikn¹æ zobaczenia i us³yszenia przez wrogów."
+}
+skill traps {
+	name "Pu³apki"
+	desc "Wp³ywa na szansê znalezienia i rozbrojenia pu³apki oraz efektywnoœæ zastawionych pu³apek."
+}
+skill steal {
+	name "Kradzie¿"
+	desc "Zwiêksza szansê na pomyœlne okradzenie postaci."
+}
+skill animal_empathy {
+	name "Zwierzêca empatia"
+	desc "Pozwala na zrozumienie, uspokojenie i zrekrutowanie napotkanych zwierz¹t."	
+}
+skill survival {
+	name "Sztuka przetrwania"
+	desc "Pozwala zdobywaæ trofea ze zwierz¹t, unikaæ zasadzek. Zwiêksza szybkoœæ podró¿ny i szansê na znalezienie czegoœ przydatnego."
+}
+skill haggle {
+	name "Targowanie"
+	desc "Pozwala lepiej targowaæ siê i przekonywaæ innych do swojej racji."
+}
+skill alchemy {
+	name "Alchemia"
+	desc "Umo¿liwia tworzenie lepszych mikstur alchemicznych."
+}
+skill crafting {
+	name "Rzemios³o"
+	desc "Umo¿liwia tworzenie broni i pancerza."
+}
+skill healing {
+	name "Leczenie"
+	desc "Pozwala leczyæ u¿ywaj¹c banda¿y i innych niemagicznych przedmiotów."
+}
+skill athletics {
+	name "Atletyka"
+	desc "Zwiêksza zdrowie, wytrzyma³oœæ i udŸwig postaci."
+}
+skill rage {
+	name "Sza³"
+	desc "Okreœla si³ê i czas trwania sza³u."
+}

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Quest_DeliverParcel.h"
 #include "Game.h"
 #include "Journal.h"
@@ -192,7 +191,7 @@ bool Quest_DeliverParcel::SpecialIf(DialogContext& ctx, cstring msg)
 //=================================================================================================
 bool Quest_DeliverParcel::IfHaveQuestItem() const
 {
-	if(world->GetCurrentLocationIndex() == world->GetEncounterLocationIndex() && prog == Progress::Started)
+	if(world->GetCurrentLocation() == world->GetEncounterLocation() && prog == Progress::Started)
 		return true;
 	return world->GetCurrentLocationIndex() == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
 }

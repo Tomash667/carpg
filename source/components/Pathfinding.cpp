@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Pathfinding.h"
 #include "Level.h"
 #include "OutsideLocation.h"

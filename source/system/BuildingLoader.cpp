@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "BuildingLoader.h"
 #include "BuildingGroup.h"
 #include "Building.h"
@@ -76,7 +75,7 @@ struct Var
 };
 
 //=================================================================================================
-BuildingLoader::BuildingLoader() : ContentLoader(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE | Tokenizer::F_HIDE_ID)
+BuildingLoader::BuildingLoader() : ContentLoader(Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_HIDE_ID)
 {
 }
 

@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "Stock.h"
 #include "ItemSlot.h"
 #include "Item.h"
@@ -194,18 +193,6 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint co
 			{
 				for(uint i = 0; i < count; ++i)
 					InsertItemBare(items, lis->Get());
-			}
-		}
-		break;
-	case SE_LEVELED_LIST:
-		{
-			LeveledItemList* llis = reinterpret_cast<LeveledItemList*>(code);
-			if(same)
-				InsertItemBare(items, llis->Get(), count);
-			else
-			{
-				for(uint i = 0; i < count; ++i)
-					InsertItemBare(items, llis->Get());
 			}
 		}
 		break;

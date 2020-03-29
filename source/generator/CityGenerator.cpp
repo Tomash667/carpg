@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "CityGenerator.h"
 #include "Location.h"
 #include "City.h"
@@ -16,6 +15,7 @@
 #include "Arena.h"
 #include "Game.h"
 #include "Object.h"
+#include "Stock.h"
 
 enum RoadFlags
 {
@@ -879,7 +879,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		// x = y, x i y odwrócone
 
 		build_it->pt = pt.first;
-		build_it->rot = best_dir;
+		build_it->dir = best_dir;
 
 		Int2 ext2 = build_it->building->size;
 		if(best_dir == GDIR_LEFT || best_dir == GDIR_RIGHT)
@@ -1213,10 +1213,17 @@ void CityGenerator::SmoothTerrain()
 	{
 		for(int x = 1; x < w; ++x)
 		{
-			if(tiles[x + y * w].mode < TM_BUILDING_SAND && tiles[x - 1 + y * w].mode < TM_BUILDING_SAND && tiles[x + (y - 1)*w].mode < TM_BUILDING_SAND && tiles[x - 1 + (y - 1)*w].mode < TM_BUILDING_SAND)
+			if(tiles[x + y * w].mode < TM_BUILDING_SAND
+				&& tiles[x - 1 + y * w].mode < TM_BUILDING_SAND
+				&& tiles[x + (y - 1)*w].mode < TM_BUILDING_SAND
+				&& tiles[x - 1 + (y - 1)*w].mode < TM_BUILDING_SAND)
 			{
-				float sum = (height[x + y * (w + 1)] + height[x - 1 + y * (w + 1)] + height[x + 1 + y * (w + 1)] + height[x + (y - 1)*(h + 1)] + height[x + (y + 1)*(h + 1)]) / 5;
-				height[x + y * (w + 1)] = sum;
+				float avg = (height[x + y * (w + 1)]
+					+ height[x - 1 + y * (w + 1)]
+					+ height[x + 1 + y * (w + 1)]
+					+ height[x + (y - 1)*(h + 1)]
+					+ height[x + (y + 1)*(h + 1)]) / 5;
+				height[x + y * (w + 1)] = avg;
 			}
 		}
 	}
@@ -1513,11 +1520,15 @@ void CityGenerator::GenerateFields()
 			for(int x = pt.x; x < pt.x + fw; ++x)
 			{
 				tiles[x + y * w].Set(TT_FIELD, TM_FIELD);
-				float sum = (height[x + y * (w + 1)] + height[x + y * (w + 1)] + height[x + (y + 1)*(w + 1)] + height[x + 1 + (y - 1)*(w + 1)] + height[x + 1 + (y + 1)*(w + 1)]) / 5;
-				height[x + y * (w + 1)] = sum;
-				height[x + (y + 1)*(w + 1)] = sum;
-				height[x + 1 + (y - 1)*(w + 1)] = sum;
-				height[x + 1 + (y + 1)*(w + 1)] = sum;
+				float avg = (height[x + y * (w + 1)]
+					+ height[x + y * (w + 1)]
+					+ height[x + (y + 1)*(w + 1)]
+					+ height[x + 1 + (y - 1)*(w + 1)]
+					+ height[x + 1 + (y + 1)*(w + 1)]) / 5;
+				height[x + y * (w + 1)] = avg;
+				height[x + (y + 1)*(w + 1)] = avg;
+				height[x + 1 + (y - 1)*(w + 1)] = avg;
+				height[x + 1 + (y + 1)*(w + 1)] = avg;
 			}
 		}
 
@@ -1626,10 +1637,6 @@ void CityGenerator::ApplyWallTiles(int gates)
 	   --X--    width = 2
 */
 
-#define RT_START 0
-#define RT_END 1
-#define RT_MID 2
-
 const int ROAD_MIN_DIST = 10;
 const int ROAD_MIN_MID_SPLIT = 25;
 const int ROAD_CHECK = 6;
@@ -1653,6 +1660,13 @@ int get_choice_pop(int* choice, int& choices)
 //=================================================================================================
 void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 {
+	enum RoadPart
+	{
+		RP_START,
+		RP_END,
+		RP_MID
+	};
+
 	road_tile = _road_tile;
 	to_check.clear();
 	for(int i = 0; i < (int)roads.size(); ++i)
@@ -1674,11 +1688,11 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 
 		int choices = 0;
 		if(!IsSet(r.flags, ROAD_START_CHECKED))
-			choice[choices++] = RT_START;
+			choice[choices++] = RP_START;
 		if(!IsSet(r.flags, ROAD_MID_CHECKED))
-			choice[choices++] = RT_MID;
+			choice[choices++] = RP_MID;
 		if(!IsSet(r.flags, ROAD_END_CHECKED))
-			choice[choices++] = RT_END;
+			choice[choices++] = RP_END;
 		if(choices == 0)
 			continue;
 
@@ -1687,7 +1701,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		Int2 pt;
 		const bool horizontal = IsSet(r.flags, ROAD_HORIZONTAL);
 
-		if(type == RT_MID)
+		if(type == RP_MID)
 		{
 			r.flags |= ROAD_MID_CHECKED;
 			Int2 rstart = r.start, rend = r.end;
@@ -1721,7 +1735,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		else
 		{
 			choices = 3;
-			if(type == RT_START)
+			if(type == RP_START)
 			{
 				r.flags |= ROAD_START_CHECKED;
 				pt = r.start;
@@ -1735,13 +1749,13 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 			{
 				choice[0] = GDIR_UP;
 				choice[1] = GDIR_DOWN;
-				choice[2] = (type == RT_START ? GDIR_LEFT : GDIR_RIGHT);
+				choice[2] = (type == RP_START ? GDIR_LEFT : GDIR_RIGHT);
 			}
 			else
 			{
 				choice[0] = GDIR_LEFT;
 				choice[1] = GDIR_RIGHT;
-				choice[2] = (type == RT_END ? GDIR_DOWN : GDIR_UP);
+				choice[2] = (type == RP_END ? GDIR_DOWN : GDIR_UP);
 			}
 		}
 
@@ -2041,14 +2055,13 @@ int CityGenerator::GetNumberOfSteps()
 	int steps = LocationGenerator::GetNumberOfSteps();
 	if(first)
 		steps += 4; // txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems
-	else if(!reenter)
+	else
 	{
 		steps += 2; // txGeneratingUnits, txGeneratingPhysics
 		if(loc->last_visit != world->GetWorldtime())
 			++steps; // txGeneratingItems
 	}
-	if(!reenter)
-		++steps; // txRecreatingObjects
+	++steps; // txRecreatingObjects
 	return steps;
 }
 
@@ -2190,7 +2203,7 @@ void CityGenerator::Generate()
 	{
 		it->building = build_it->building;
 		it->pt = build_it->pt;
-		it->rot = build_it->rot;
+		it->dir = build_it->dir;
 		it->unit_pt = build_it->unit_pt;
 	}
 
@@ -2211,11 +2224,8 @@ void CityGenerator::OnEnter()
 {
 	game->arena->free = true;
 
-	if(!reenter)
-	{
-		game_level->Apply();
-		ApplyTiles();
-	}
+	game_level->Apply();
+	ApplyTiles();
 
 	game_level->SetOutsideParams();
 
@@ -2240,7 +2250,7 @@ void CityGenerator::OnEnter()
 		if(city->IsVillage())
 			SpawnForestItems(-2);
 	}
-	else if(!reenter)
+	else
 	{
 		// remove temporary/quest units
 		if(city->reset)
@@ -2282,21 +2292,16 @@ void CityGenerator::OnEnter()
 
 		game_level->OnRevisitLevel();
 	}
-	else
-		OnReenter();
 
-	if(!reenter)
+	// create colliders
+	game->LoadingStep(game->txRecreatingObjects);
+	game_level->SpawnTerrainCollider();
+	SpawnCityPhysics();
+	SpawnOutsideBariers();
+	for(InsideBuilding* b : city->inside_buildings)
 	{
-		// create colliders
-		game->LoadingStep(game->txRecreatingObjects);
-		game_level->SpawnTerrainCollider();
-		SpawnCityPhysics();
-		SpawnOutsideBariers();
-		for(InsideBuilding* b : city->inside_buildings)
-		{
-			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
-			b->maxe = b->mine + Int2(256, 256);
-		}
+		b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+		b->maxe = b->mine + Int2(256, 256);
 	}
 
 	// spawn quest units
@@ -2312,10 +2317,9 @@ void CityGenerator::OnEnter()
 	Vec3 spawn_pos;
 	float spawn_dir;
 	city->GetEntry(spawn_pos, spawn_dir);
-	game_level->AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
+	game_level->AddPlayerTeam(spawn_pos, spawn_dir);
 
-	if(!reenter)
-		quest_mgr->GenerateQuestUnits(true);
+	quest_mgr->GenerateQuestUnits(true);
 
 	for(Unit& unit : team->members)
 	{
@@ -2341,26 +2345,9 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Object* o = new Object;
-
-		switch(it->rot)
-		{
-		case GDIR_DOWN:
-			o->rot.y = 0.f;
-			break;
-		case GDIR_LEFT:
-			o->rot.y = PI / 2;
-			break;
-		case GDIR_UP:
-			o->rot.y = PI;
-			break;
-		case GDIR_RIGHT:
-			o->rot.y = PI * 3 / 2;
-			break;
-		}
-
-		o->pos = Vec3(float(it->pt.x + it->building->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->rot].y) * 2);
+		o->pos = Vec3(float(it->pt.x + it->building->shift[it->dir].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->dir].y) * 2);
 		terrain->SetH(o->pos);
-		o->rot.x = o->rot.z = 0.f;
+		o->rot = Vec3(0, DirToRot(it->dir), 0);
 		o->scale = 1.f;
 		o->base = nullptr;
 		o->mesh = it->building->mesh;
@@ -2436,8 +2423,8 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		game_level->ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
-			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), b, &*it);
+		game_level->ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->dir), it->dir,
+			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 0.f, float(it->pt.y + b->shift[it->dir].y) * 2), b, &*it);
 	}
 }
 
@@ -2507,38 +2494,12 @@ void CityGenerator::SpawnUnits()
 		if(!ud)
 			continue;
 
-		Unit* u = game->CreateUnit(*ud, -2);
-		u->area = city;
-
-		switch(b.rot)
-		{
-		case GDIR_DOWN:
-			u->rot = 0.f;
-			break;
-		case GDIR_LEFT:
-			u->rot = PI / 2;
-			break;
-		case GDIR_UP:
-			u->rot = PI;
-			break;
-		case GDIR_RIGHT:
-			u->rot = PI * 3 / 2;
-			break;
-		}
-
-		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
-		terrain->SetH(u->pos);
-		u->UpdatePhysics();
-		u->visual_pos = u->pos;
+		Vec3 pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
+		float rot = DirToRot(b.dir);
+		Unit* u = game_level->CreateUnitWithAI(*city, *ud, -2, &pos, &rot);
 
 		if(b.building->group == BuildingGroup::BG_ARENA)
 			city->arena_pos = u->pos;
-
-		area.units.push_back(u);
-
-		AIController* ai = new AIController;
-		ai->Init(u);
-		game->ais.push_back(ai);
 	}
 
 	UnitData* dweller = UnitData::Get(city->IsVillage() ? "villager" : "citizen");
@@ -2689,66 +2650,30 @@ void CityGenerator::GeneratePickableItems()
 {
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
+	vector<ItemSlot> items;
 
 	// alcohol in inn
 	InsideBuilding& inn = *city->FindInn();
-	const Item* beer = Item::Get("beer");
-	const Item* vodka = Item::Get("vodka");
-	const Item* plate = Item::Get("plate");
-	const Item* cup = Item::Get("cup");
+	Stock* stock_table = Stock::Get("inn_on_table");
+	Stock* stock_shelve = Stock::Get("inn_on_shelve");
 	for(vector<Object*>::iterator it = inn.objects.begin(), end = inn.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == table)
-		{
-			game_level->PickableItemBegin(inn, obj);
-			if(Rand() % 2 == 0)
-			{
-				game_level->PickableItemAdd(beer);
-				if(Rand() % 4 == 0)
-					game_level->PickableItemAdd(beer);
-			}
-			if(Rand() % 3 == 0)
-				game_level->PickableItemAdd(plate);
-			if(Rand() % 3 == 0)
-				game_level->PickableItemAdd(cup);
-		}
+			game_level->PickableItemsFromStock(inn, obj, *stock_table);
 		else if(obj.base == shelves)
-		{
-			game_level->PickableItemBegin(inn, obj);
-			for(int i = 0, count = Random(3, 5); i < count; ++i)
-				game_level->PickableItemAdd(beer);
-			for(int i = 0, count = Random(1, 3); i < count; ++i)
-				game_level->PickableItemAdd(vodka);
-		}
+			game_level->PickableItemsFromStock(inn, obj, *stock_shelve);
 	}
 
 	// food in food shop
 	CityBuilding* food = city->FindBuilding(BuildingGroup::BG_FOOD_SELLER);
 	if(food)
 	{
-		Object* found_obj = nullptr;
-		float best_dist = 9999.f, dist;
-		for(vector<Object*>::iterator it = city->objects.begin(), end = city->objects.end(); it != end; ++it)
-		{
-			Object& obj = **it;
-			if(obj.base == shelves)
-			{
-				dist = Vec3::Distance(food->walk_pt, obj.pos);
-				if(dist < best_dist)
-				{
-					best_dist = dist;
-					found_obj = &obj;
-				}
-			}
-		}
-
+		Object* found_obj = city->FindNearestObject(shelves, food->walk_pt);
 		if(found_obj)
 		{
-			const ItemList* lis = ItemList::Get("food_and_drink").lis;
-			game_level->PickableItemBegin(*city, *found_obj);
-			for(int i = 0; i < 20; ++i)
-				game_level->PickableItemAdd(lis->Get());
+			Stock* stock = Stock::Get("foodseller_shelve");
+			game_level->PickableItemsFromStock(*city, *found_obj, *stock);
 		}
 	}
 
@@ -2756,35 +2681,11 @@ void CityGenerator::GeneratePickableItems()
 	CityBuilding* alch = city->FindBuilding(BuildingGroup::BG_ALCHEMIST);
 	if(alch)
 	{
-		Object* found_obj = nullptr;
-		float best_dist = 9999.f, dist;
-		for(vector<Object*>::iterator it = city->objects.begin(), end = city->objects.end(); it != end; ++it)
-		{
-			Object& obj = **it;
-			if(obj.base == shelves)
-			{
-				dist = Vec3::Distance(alch->walk_pt, obj.pos);
-				if(dist < best_dist)
-				{
-					best_dist = dist;
-					found_obj = &obj;
-				}
-			}
-		}
-
+		Object* found_obj = city->FindNearestObject(shelves, alch->walk_pt);
 		if(found_obj)
 		{
-			game_level->PickableItemBegin(*city, *found_obj);
-			const Item* heal_pot = Item::Get("p_hp");
-			game_level->PickableItemAdd(heal_pot);
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(heal_pot);
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(Item::Get("p_nreg"));
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(Item::Get("healing_herb"));
-			if(Rand() % 2 == 0)
-				game_level->PickableItemAdd(Item::Get("p_mp"));
+			Stock* stock = Stock::Get("alchemist_shelve");
+			game_level->PickableItemsFromStock(*city, *found_obj, *stock);
 		}
 	}
 }
@@ -2906,13 +2807,13 @@ void CityGenerator::RespawnBuildingPhysics()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		game_level->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
-			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
+		game_level->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->dir), it->dir,
+			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 1.f, float(it->pt.y + b->shift[it->dir].y) * 2), nullptr, &*it, true);
 	}
 
 	for(vector<InsideBuilding*>::iterator it = city->inside_buildings.begin(), end = city->inside_buildings.end(); it != end; ++it)
 	{
-		game_level->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
-			nullptr, true);
+		game_level->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, GDIR_DOWN,
+			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, true);
 	}
 }

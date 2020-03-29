@@ -1,5 +1,4 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "BitStreamFunc.h"
 #include "QuestManager.h"
 #include "SaveState.h"
@@ -73,7 +72,6 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_ORCS2, QuestCategory::Unique, "orcs2"));
 	infos.push_back(QuestInfo(Q_GOBLINS, QuestCategory::Unique, "goblins"));
 	infos.push_back(QuestInfo(Q_EVIL, QuestCategory::Unique, "evil"));
-	infos.push_back(QuestInfo(Q_DELIVER_LETTER, QuestCategory::Mayor, "deliver_letter"));
 	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliver_parcel"));
 	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
 	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
@@ -108,7 +106,7 @@ void QuestManager::InitLists()
 	unique_quests = 8;
 	for(QuestScheme* scheme : QuestScheme::schemes)
 	{
-		if(scheme->category == QuestCategory::Unique)
+		if(scheme->category == QuestCategory::Unique && !IsSet(scheme->flags, QuestScheme::DONT_COUNT))
 			++unique_quests;
 	}
 }
@@ -221,12 +219,6 @@ void QuestManager::InitQuests()
 	quest_crazies->Start();
 	unaccepted_quests.push_back(quest_crazies);
 
-	// artifacts
-	quest_artifacts = new Quest_Artifacts;
-	quest_artifacts->id = quest_counter++;
-	quest_artifacts->Start();
-	unaccepted_quests.push_back(quest_artifacts);
-
 	// pseudo quests
 	quest_contest->Init();
 	quest_secret->Init();
@@ -243,7 +235,6 @@ void QuestManager::InitQuests()
 		Info("Quest 'Evil' - %s.", world->GetLocation(quest_evil->start_loc)->name.c_str());
 		Info("Tournament - %s.", world->GetLocation(quest_tournament->GetCity())->name.c_str());
 		Info("Contest - %s.", world->GetLocation(quest_contest->where)->name.c_str());
-		Info("Gladiator armor - %s.", world->GetLocation(quest_artifacts->target_loc)->name.c_str());
 	}
 
 	// init scripted quests
@@ -679,7 +670,6 @@ void QuestManager::Load(GameReader& f)
 	quest_evil->Init();
 	quest_crazies = static_cast<Quest_Crazies*>(FindQuest(Q_CRAZIES));
 	quest_crazies->Init();
-	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuest(Q_ARTIFACTS));
 	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
@@ -800,42 +790,6 @@ void QuestManager::Load(GameReader& f)
 	}
 	else
 		f >> force;
-
-	// process quest requests
-	for(QuestRequest& request : quest_requests)
-	{
-		*request.quest = FindAnyQuest(request.id);
-		if(request.callback)
-			request.callback();
-	}
-	quest_requests.clear();
-
-	// process quest item requests
-	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
-	{
-		QuestItemRequest* qir = *it;
-		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_id);
-		if(qir->items)
-		{
-			bool ok = true;
-			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
-			{
-				if(it2->item == QUEST_ITEM_PLACEHOLDER)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok && (LOAD_VERSION < V_0_7_1 || content.require_update))
-			{
-				SortItems(*qir->items);
-				if(qir->unit)
-					qir->unit->RecalculateWeight();
-			}
-		}
-		delete *it;
-	}
-	quest_item_requests.clear();
 
 	// load pseudo-quests
 	quest_secret->Load(f);
@@ -977,6 +931,15 @@ Quest* QuestManager::FindUnacceptedQuest(int id)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+Quest* QuestManager::FindQuestS(const string& quest_id)
+{
+	QuestScheme* scheme = QuestScheme::TryGet(quest_id);
+	if(!scheme)
+		return nullptr;
+	return FindAnyQuest(scheme);
 }
 
 //=================================================================================================
@@ -1602,7 +1565,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		else
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			spawned = game_level->SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
+			spawned = game_level->SpawnUnitInsideRoomOrNear(room, *event->unit_to_spawn, event->unit_spawn_level);
 		}
 		if(!spawned)
 			throw "Failed to spawn quest unit!";
@@ -1638,7 +1601,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 			room = lvl->GetRoom(PosToPt(spawned->pos));
 		else
 			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
-		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
+		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";
 		if(game->devmode)
@@ -1694,7 +1657,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		{
 			GroundItem* item;
 			if(lvl)
-				item = game_level->SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
+				item = game_level->SpawnGroundItemInsideAnyRoom(event->item_to_give[0]);
 			else
 				item = game_level->SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
 			if(game->devmode)
@@ -1780,6 +1743,50 @@ void QuestManager::UpdateQuestsLocal(float dt)
 }
 
 //=================================================================================================
+void QuestManager::ProcessQuestRequests()
+{
+	// process quest requests
+	for(QuestRequest& request : quest_requests)
+	{
+		Quest* quest = FindAnyQuest(request.id);
+		assert(quest);
+		*request.quest = quest;
+		if(request.callback)
+			request.callback();
+	}
+	quest_requests.clear();
+
+	// process quest item requests
+	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
+	{
+		QuestItemRequest* qir = *it;
+		const Item* item = FindQuestItem(qir->name.c_str(), qir->quest_id);
+		assert(item);
+		*qir->item = item;
+		if(qir->items && (LOAD_VERSION < V_0_7_1 || content.require_update))
+		{
+			bool ok = true;
+			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
+			{
+				if(it2->item == QUEST_ITEM_PLACEHOLDER)
+				{
+					ok = false;
+					break;
+				}
+			}
+			if(ok)
+			{
+				SortItems(*qir->items);
+				if(qir->unit)
+					qir->unit->RecalculateWeight();
+			}
+		}
+		delete* it;
+	}
+	quest_item_requests.clear();
+}
+
+//=================================================================================================
 void QuestManager::UpgradeQuests()
 {
 	for(Quest* quest : upgrade_quests)
@@ -1791,6 +1798,7 @@ void QuestManager::UpgradeQuests()
 			unaccepted_quests[quest->quest_index] = quest2;
 		else
 			quests[quest->quest_index] = quest2;
+		RemoveElementTry(quests_timeout2, quest);
 		delete quest;
 	}
 }
