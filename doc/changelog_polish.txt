@@ -36,6 +36,9 @@ Wersja 0.14 (???):
 - magiczny kryształ nie przywraca many [BottledByte]
 - zryw/bycza szarża pozwalał przechodzić przez niskie obiekty i powodował zaklinowanie się gracza [Lemiczek, BottledByte]
 - podczas dodawania notatki na mapie świata klawisze 1,2,3 zmieniały zakładkę w dzienniku [Lemiczek]
+- nieprawidłowa synchronizacja terenu przy utracie pakietów [BottledByte]
+- crash gdy w konsoli poda się za długą liczbę [BottledByte, Lemiczek]
+- można używać przedmiotów podczas animacji upadania lub leżąc na ziemi [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

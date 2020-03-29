@@ -24,7 +24,7 @@ namespace old
 		};
 	}
 
-	// pre V_DEV compatibility
+	// pre V_0_14 compatibility
 	namespace v2
 	{
 		enum class Perk

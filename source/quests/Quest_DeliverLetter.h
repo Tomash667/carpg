@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-// Converted to script in V_DEV
+// Converted to script in V_0_14
 class Quest_DeliverLetter final : public Quest
 {
 public:

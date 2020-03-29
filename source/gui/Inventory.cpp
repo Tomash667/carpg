@@ -322,6 +322,16 @@ void Inventory::BuildTmpInventory(int index)
 }
 
 //=================================================================================================
+void Inventory::EndLock()
+{
+	if(!lock)
+		return;
+	lock = nullptr;
+	if(lock_dialog)
+		lock_dialog->CloseDialog();
+}
+
+//=================================================================================================
 InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr), i_items(nullptr), for_unit(false), tex_replaced(false)
 {
 	scrollbar.total = 100;
@@ -588,7 +598,7 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	// klawisz to podnoszenia wszystkich przedmiotów
+	// klawisz do podnoszenia wszystkich przedmiotów
 	if(mode == LOOT_OTHER && (focus || base.inv_trade_mine->focus) && input->Focus() && GKey.PressedRelease(GK_TAKE_ALL))
 	{
 		Event(GuiEvent_Custom);
@@ -666,7 +676,7 @@ void InventoryPanel::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game->pc->unit->action == A_NONE || game->pc->unit->CanDoWhileUsing()) || base.lock || !input->Focus())
+		if(!focus || !(game->pc->unit->action == A_NONE || game->pc->unit->CanDoWhileUsing()) || base.lock || !input->Focus() || !game->pc->unit->IsStanding())
 			return;
 
 		// obs³uga kilkania w ekwipunku
@@ -722,7 +732,7 @@ void InventoryPanel::Update(float dt)
 						// wyrzuæ okreœlon¹ liczbê
 						counter = 1;
 						base.lock.Lock(i_index, *slot);
-						GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 1, slot->count, &counter);
+						base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 1, slot->count, &counter);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							base.tooltip.Clear();
@@ -763,7 +773,7 @@ void InventoryPanel::Update(float dt)
 						di.text = base.txBuyTeamDialog;
 						di.order = ORDER_NORMAL;
 						di.type = DIALOG_YESNO;
-						gui->ShowDialog(di);
+						base.lock_dialog = gui->ShowDialog(di);
 						base.lock.Lock(i_index, *slot);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
@@ -837,7 +847,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 1, slot->count, &counter);
+							base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -865,7 +875,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 1, slot->count, &counter);
+							base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -894,7 +904,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 1, slot->count, &counter);
+							base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -955,7 +965,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 1, slot->count, &counter);
+							base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1031,7 +1041,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
+							base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
 								base.txShareGiveItemCount, 1, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -1071,7 +1081,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount,
+							base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount,
 								1, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -1134,7 +1144,7 @@ void InventoryPanel::Update(float dt)
 								info.parent = this;
 								info.type = DIALOG_YESNO;
 								info.pause = false;
-								gui->ShowDialog(info);
+								base.lock_dialog = gui->ShowDialog(info);
 							}
 							else
 								gui->SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
@@ -1142,6 +1152,7 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							base.lock.Lock(i_index, *slot, true);
+							base.lock_dialog = nullptr;
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::IS_BETTER_ITEM;
 							c.id = i_index;
@@ -1160,7 +1171,7 @@ void InventoryPanel::Update(float dt)
 							{
 								counter = 1;
 								base.lock.Lock(i_index, *slot);
-								GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount,
+								base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount,
 									1, slot->count, &counter);
 								last_index = INDEX_INVALID;
 								if(mode == INVENTORY)
@@ -1215,6 +1226,7 @@ void InventoryPanel::Update(float dt)
 					else
 					{
 						base.lock.Lock(slot_type, true);
+						base.lock_dialog = nullptr;
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::IS_BETTER_ITEM;
 						c.id = i_index;
@@ -1224,7 +1236,7 @@ void InventoryPanel::Update(float dt)
 			}
 		}
 	}
-	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock)
+	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock && game->pc->unit->IsStanding() && game->pc->unit->action == A_NONE)
 	{
 		// wyrzucanie/chowanie/dawanie z³ota
 		if(input->PressedRelease(Key::LeftButton))
@@ -2407,7 +2419,7 @@ void InventoryPanel::GiveSlotItem(ITEM_SLOT slot)
 	info.parent = this;
 	info.type = DIALOG_YESNO;
 	info.pause = false;
-	gui->ShowDialog(info);
+	base.lock_dialog = gui->ShowDialog(info);
 }
 
 //=================================================================================================
@@ -2463,7 +2475,7 @@ void InventoryPanel::IsBetterItemResponse(bool is_better)
 				info.parent = this;
 				info.type = DIALOG_YESNO;
 				info.pause = false;
-				gui->ShowDialog(info);
+				base.lock_dialog = gui->ShowDialog(info);
 			}
 		}
 		else

@@ -809,6 +809,8 @@ void ItemLoader::ParseItemList(const string& id)
 				t.Throw("Invalid item level %d.", entry.level);
 			t.Next();
 		}
+		else
+			entry.level = 0;
 
 		lis->items.push_back(entry);
 	}

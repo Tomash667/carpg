@@ -127,7 +127,6 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	quest_mgr->quest_tutorial->in_tutorial = tutorial;
 	game_gui->main_menu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);
-	game_state = GS_LEVEL;
 	hardcore_mode = hardcore_option;
 
 	UnitData& ud = *clas->player;

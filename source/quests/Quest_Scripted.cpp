@@ -205,7 +205,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	CreateInstance();
 
 	// properties
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_14)
 	{
 		uint props;
 		f >> props;
