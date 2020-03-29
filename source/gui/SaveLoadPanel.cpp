@@ -364,7 +364,7 @@ void SaveLoad::LoadSaveSlots()
 					slot.game_year = cfg.GetInt("game_year", -1);
 					slot.hardcore = cfg.GetBool("hardcore");
 					slot.mp_players.clear();
-					slot.save_date = cfg.GetInt64("save_date");
+					slot.save_date = cfg.GetInt("save_date");
 					const string& str = cfg.GetString("player_class");
 					if(str == "0")
 						slot.player_class = Class::TryGet("warrior");

@@ -37,6 +37,7 @@ Version 0.14 (???):
 - dash/bull's charge could move thru small objects and get player stuck [Lemiczek, BottledByte]
 - journal cycling while adding a note during world map [Lemiczek]
 - multiplayer terrain synchronization weirdness on packet loss [BottledByte]
+- console causing game crash when extremely long integer is supplied to a command [BottledByte, Lemiczek]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

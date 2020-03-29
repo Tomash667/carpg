@@ -48,7 +48,7 @@ struct AttachedSound
 	Entity<Unit> unit;
 };
 
-static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
+static_assert(sizeof(time_t) == sizeof(int64), "time_t needs to be 64 bit");
 
 enum class FALLBACK
 {
