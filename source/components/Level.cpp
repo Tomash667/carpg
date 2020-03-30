@@ -4742,9 +4742,8 @@ Room* Level::GetRoom(RoomTarget target)
 }
 
 //=================================================================================================
-Object* Level::FindObjectInRoom(Room& room, const string& obj_id)
+Object* Level::FindObjectInRoom(Room& room, BaseObject* base)
 {
-	BaseObject* base = BaseObject::Get(obj_id);
 	for(Object* obj : local_area->objects)
 	{
 		if(obj->base == base && room.IsInside(obj->pos))

@@ -39,6 +39,8 @@ Version 0.14 (???):
 - multiplayer terrain synchronization weirdness on packet loss [BottledByte]
 - console causing game crash when extremely long integer is supplied to a command [BottledByte, Lemiczek]
 - items can be used in knockout animation or when lying on ground [BottledByte]
+- client crash when disconnected during changing dungeon level
+- missing mouth animation when talking for clients
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

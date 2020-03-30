@@ -6927,6 +6927,12 @@ void Unit::Update(float dt)
 	{
 		UpdateEffects(dt);
 
+		if(IsStanding() && talking)
+		{
+			talk_timer += dt;
+			mesh_inst->need_update = true;
+		}
+
 		if(Net::IsLocal())
 		{
 			// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
@@ -6994,11 +7000,6 @@ void Unit::Update(float dt)
 						}
 					}
 				}
-			}
-			if(IsStanding() && talking)
-			{
-				talk_timer += dt;
-				mesh_inst->need_update = true;
 			}
 		}
 	}

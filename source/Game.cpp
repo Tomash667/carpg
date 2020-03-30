@@ -4553,7 +4553,7 @@ void Game::ClearGame()
 		team->members.clear();
 		prev_game_state = GS_LOAD;
 	}
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !game_level->is_open && (Net::IsClient() || net->was_client))
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || prev_game_state == GS_LOAD) && !game_level->is_open && (Net::IsClient() || net->was_client))
 	{
 		delete pc;
 		pc = nullptr;
@@ -4732,6 +4732,8 @@ void Game::LeaveLevel(bool clear)
 	dialog_context.dialog_mode = false;
 	game_gui->inventory->mode = I_NONE;
 	PlayerController::data.before_player = BP_NONE;
+	if(Net::IsClient())
+		game_level->is_open = false;
 }
 
 void Game::LeaveLevel(LevelArea& area, bool clear)

@@ -39,6 +39,8 @@ Wersja 0.14 (???):
 - nieprawidłowa synchronizacja terenu przy utracie pakietów [BottledByte]
 - crash gdy w konsoli poda się za długą liczbę [BottledByte, Lemiczek]
 - można używać przedmiotów podczas animacji upadania lub leżąc na ziemi [BottledByte]
+- crash klienta przy rozłączaniu przy zmianie poziomu w podziemiach
+- brak animacji ust podczas mówienia u klientów
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

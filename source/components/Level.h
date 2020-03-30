@@ -199,7 +199,7 @@ public:
 	}
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
-	Object* FindObjectInRoom(Room& room, const string& obj_id);
+	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
 	CScriptArray* GetUnits(Room& room);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
