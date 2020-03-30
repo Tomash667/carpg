@@ -148,7 +148,9 @@ int CreatedCharacter::Read(BitStreamReader& f)
 		tp.Apply(ctx);
 	}
 
-	// search for duplicates
+	// search for duplicates, too many types
+	int history_perks = 0,
+		flaw_perks = 0;
 	for(vector<TakenPerk>::iterator it = taken_perks.begin(), end = taken_perks.end(); it != end; ++it)
 	{
 		for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
@@ -159,6 +161,20 @@ int CreatedCharacter::Read(BitStreamReader& f)
 				return 3;
 			}
 		}
+		if(IsSet(it->perk->flags, Perk::History))
+			++history_perks;
+		if(IsSet(it->perk->flags, Perk::Flaw))
+			++flaw_perks;
+	}
+	if(history_perks > 1)
+	{
+		Error("Too many (%d) history perks.", history_perks);
+		return 3;
+	}
+	if(flaw_perks > 2)
+	{
+		Error("Toom many (%d) flaw perks.", flaw_perks);
+		return 3;
 	}
 
 	// check for too many sp/perks

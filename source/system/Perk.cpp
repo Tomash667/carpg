@@ -329,7 +329,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	if(IsSet(perk->flags, Perk::Start) && !ctx.startup)
 		return false;
 
-	if(ctx.cc && !ctx.check_remove)
+	if(ctx.cc && !ctx.check_remove && !ctx.validate)
 	{
 		// can take only one history perk
 		if(IsSet(perk->flags, Perk::History))
