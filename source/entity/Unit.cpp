@@ -5210,7 +5210,7 @@ void Unit::Standup(bool warp, bool leave)
 			game_level->WarpUnit(*this, pos);
 	}
 
-	if(!game_level->entering && !leave && Net::IsServer())
+	if(!game_level->entering && !leave && (Net::IsServer() || (Net::IsClient() && IsLocalPlayer())))
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STAND_UP;

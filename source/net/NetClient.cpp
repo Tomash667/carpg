@@ -1764,7 +1764,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					Unit* unit = game_level->FindUnit(id);
 					if(!unit)
 						Error("Update client: STAND_UP, missing unit %d.", id);
-					else
+					else if(!unit->IsLocalPlayer())
 						unit->Standup(false);
 				}
 			}
