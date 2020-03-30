@@ -52,7 +52,7 @@ void UpdateTest()
 			{
 				loc = world->GetRandomLocation([](Location* l)
 				{
-					return l->state < LS_VISITED && l->type != L_ENCOUNTER;
+					return l->state < LS_VISITED && !Any(l->type, L_ENCOUNTER, L_OFFSCREEN);
 				});
 				if(!loc)
 				{
