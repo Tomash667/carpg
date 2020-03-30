@@ -28,7 +28,7 @@ Data: 2020-01-11
 ===============================================================================
 2) Opis
 CaRpg jest to połączenie gier typu action rpg/hack-n-slash jak Gothic czy
-TES:Morrowind z grami rougelike SLASH'EM/Dungeon Crawl Stone Soup. W losowo
+TES:Morrowind z grami roguelike SLASH'EM/Dungeon Crawl Stone Soup. W losowo
 wygenerowanym świecie, zaczynamy w losowo wygenerowanym mieście, rekrutujemy
 losowych bohaterów i idziemy do losowo wygenerowanych podziemi zabijać losowo
 wygenerowanych wrogów :3 Nie chodzi o to żeby wszystko było losowe ale także
@@ -141,7 +141,7 @@ osoby. Oczekuj zmian na lepsze!
 	lepszy niż to co ma spróbuje go od ciebie odkupić. Bohaterowie niezależni
 	przyjmą też od ciebie każdą miksturkę, za darmo.
 * Tryb hardcore - W tym trybie po zapisaniu wychodzisz do menu a wczytanie
-	usuwa zapis. Standardowy tryb dla gier rougelike. Nie jest on póki co
+	usuwa zapis. Standardowy tryb dla gier roguelike. Nie jest on póki co
 	zalecany bo jeśli gra się zawiesi lub zcrashuje będzie trzeba zaczynać od
 	nowa.
 * Jeśli NPC zablokuje ci drogę możesz na niego krzyknąć (domyślnie klawisz Y)

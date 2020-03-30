@@ -2,10 +2,10 @@
 cdir "doc"
 
 // copy documents
-file "../doc/readme.txt" "doc/readme.txt"
-file "../doc/readme_eng.txt" "doc/readme_eng.txt"
-file "../doc/changelog.txt" "doc/changelog.txt"
-file "../doc/changelog_eng.txt" "doc/changelog_eng.txt"
+file "../doc/readme_polish.txt" "doc/readme_polish.txt"
+file "../doc/readme_english.txt" "doc/readme_english.txt"
+file "../doc/changelog_polish.txt" "doc/changelog_polish.txt"
+file "../doc/changelog_english.txt" "doc/changelog_english.txt"
 
 // copy exe
 file "../bin/carpg.exe" "carpg.exe"
@@ -15,6 +15,7 @@ file "../bin/D3DCompiler_43.dll" "D3DCompiler_43.dll"
 file "../bin/D3DX9_43.dll" "D3DX9_43.dll"
 file "../bin/fmod.dll" "fmod.dll"
 file "../bin/libcurl.dll" "libcurl.dll"
+file "../bin/zlib1.dll" "zlib1.dll"
 
 // crash reporter
 file "../bin/CrashRpt1500.dll" "CrashRpt1500.dll"
@@ -27,6 +28,7 @@ dir "../bin/data" "data"
 
 // copy system
 dir "../system" "system"
+dir "../lang" "lang"
 dir "../carpglib/shaders" "system/shaders"
 
 // copy pdb

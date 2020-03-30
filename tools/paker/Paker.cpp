@@ -200,7 +200,8 @@ bool PakDir(cstring input, cstring output)
 
 	do
 	{
-		if(strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0)
+		// ignore special directories (., .., .git, etc)
+		if(data.cFileName[0] == '.')
 			continue;
 
 		if(IS_SET(data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))

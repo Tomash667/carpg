@@ -28,7 +28,7 @@ Date: 2020-01-11
 ===============================================================================
 2) About
 CaRpg is a combination of the type of game action rpg / hack-n-slash like Gothic
-or TES: Morrowind and rougelike games like Slash'EM or Dungeon Crawl Stone Soup.
+or TES: Morrowind and roguelike games like Slash'EM or Dungeon Crawl Stone Soup.
 In randomly generated world, we begin in randomly generated city, recruit random
 characters and go to the randomly generated dungeons to kill randomly generated
 enemies :3 This is not about everything to be random but also matched to each
@@ -136,7 +136,7 @@ people. Expect changes for the better!
 	than what they have to try to buy it from you. NPCs can take from you every
 	potion, for free.
 * Hardcore mode - In this mode, when you save you exit to menu and load deletes
-	a save. Standard mode for rougelike games. It is not recommended so
+	a save. Standard mode for roguelike games. It is not recommended so
 	far because if the game freeze or crashes you will need to start new game.
 * If the NPC will block your path you can yell at him (default key Y) so he
 	will move out of the road.
