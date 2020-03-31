@@ -7,9 +7,9 @@
 | (____/\| )   ( || ) \ \__| )      | (___) |
 (_______/|/     \||/   \__/|/       (_______)
 
-Strona: http://carpg.pl
-Wersja: 0.13
-Data: 2020-01-11
+Strona: https://carpg.pl
+Wersja: 0.14
+Data: 2020-03-31
 
 ===============================================================================
 1) Spis treści
@@ -276,7 +276,7 @@ To są przełączniki dla aplikacji, dodawane do skrótu do pliku exe.
 
 ===============================================================================
 10) Zgłoś błąd 🐜
-Błędy możesz a wręcz powinieneś zgłaszać na stronie http://carpg.pl w
+Błędy możesz a wręcz powinieneś zgłaszać na stronie https://carpg.pl w
 odpowiednim dziale forum. Nie zapomnij podać wszystkich możliwych szczegółów
 które mogą pomóc w jego naprawieniu. Jeśli wyskoczy że utworzono plik
 minidump to go dołącz. Przydatny też będzie plik log.txt i zapis przed
@@ -321,12 +321,12 @@ Zielu - Testowanie.
 	* yd - sausage
 	* rubberduck - shrine
 🎨 Tekstury:
-	* http://cgtextures.com
+	* https://textures.com
 	* Cube
 	* texturez.com
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
-	* Ikony klas - http://game-icons.net/
+	* Ikony klas - https://game-icons.net/
 🎧 Muzyka:
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project
@@ -335,8 +335,8 @@ Zielu - Testowanie.
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
 	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
-	* http://www.freesound.org/
-	* http://www.pacdv.com/sounds/
-	* http://www.soundjay.com
+	* https://www.freesound.org/
+	* https://www.pacdv.com/sounds/
+	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/
 	* http://www.wavsource.com

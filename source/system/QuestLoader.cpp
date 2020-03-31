@@ -473,6 +473,5 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 	TextWriter::WriteAll(Format("debug/quests_%s.txt", scheme->id.c_str()), code);
 #endif
 
-	int r = module->AddScriptSection(scheme->id.c_str(), code.c_str());
-	assert(r >= 0);
+	CHECKED(module->AddScriptSection(scheme->id.c_str(), code.c_str()));
 }

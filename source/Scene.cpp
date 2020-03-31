@@ -2266,9 +2266,8 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 
 		if(node.type == DebugSceneNode::TriMesh)
 		{
-			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
 			// currently only dungeon mesh is supported here
-			assert(mesh == game_level->dungeon_shape_data);
+			assert(reinterpret_cast<btTriangleIndexVertexArray*>(node.mesh_ptr) == game_level->dungeon_shape_data);
 			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 			V(effect->CommitChanges());
 

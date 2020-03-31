@@ -7,9 +7,9 @@
 | (____/\| )   ( || ) \ \__| )      | (___) |
 (_______/|/     \||/   \__/|/       (_______)
 
-Website: http://carpg.pl/en
-Version: 0.13
-Date: 2020-01-11
+Website: https://carpg.pl/en
+Version: 0.14
+Date: 2020-03-31
 
 ===============================================================================
 1) Table of contents
@@ -342,7 +342,7 @@ Command line switches are used for exe shortcut or from window shell.
 ===============================================================================
 10) Report bug 🐜
 Errors and bugs can and should be reported to the appropriate forum section in
-http://carpg.pl/en forum. Do not forget to give all possible details that may
+https://carpg.pl/en forum. Do not forget to give all possible details that may
 help in its repair. If game crash with created minidump file you can attach it.
 Log file can be helpful too. Before reporting a bug check if someone has not
 reported it in the appropriate topic.
@@ -385,12 +385,12 @@ Zielu - Testing.
 	* yd - sausage
 	* rubberduck - shrine
 🎨 Textures:
-	* http://cgtextures.com
+	* https://www.textures.com/
 	* Cube
 	* texturez.com
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
-	* Class icons - http://game-icons.net/
+	* Class icons - https://game-icons.net/
 🎧 Music:
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project
@@ -399,8 +399,8 @@ Zielu - Testing.
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Sounds:
 	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
-	* http://www.freesound.org/
-	* http://www.pacdv.com/sounds/
-	* http://www.soundjay.com
+	* https://www.freesound.org/
+	* https://www.pacdv.com/sounds/
+	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/
 	* http://www.wavsource.com
