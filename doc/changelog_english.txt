@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.15 (???):
+! cannot load saves from version 0.6.1 or older
+
+--------------------------------------------------------------------------------
 Version 0.14 (2020-03-31):
 ! cannot load saves from version 0.5.1 or older
 + continued storyline and side quest
