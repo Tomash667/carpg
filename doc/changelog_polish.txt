@@ -3,9 +3,10 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.15 (2020-03-31):
 ! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
++ aktualizacja bibliotek: JSON for Modern C++ 3.7.3
 
 --------------------------------------------------------------------------------
-Wersja 0.14 (???):
+Wersja 0.14 (2020-03-31):
 ! nie można wczytywać już zapisów z wersji 0.5.1 lub starszej
 + kontynuacja fabuły i poboczne zadanie
 + umiejętność alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
