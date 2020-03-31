@@ -952,8 +952,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				Info("ServerPanel: Removed %s due to inactivity.", info.adr.ToString());
 				net->peer->CloseConnection(info.adr, false);
 				--net->active_players;
+				OnChangePlayersCount();
 				if(net->active_players > 1)
-					AddLobbyUpdate(Int2(Lobby_RemovePlayer, 0));
+					AddLobbyUpdate(Int2(Lobby_RemovePlayer, info.id));
 				delete &info;
 				grid.RemoveItem(index);
 				return true;

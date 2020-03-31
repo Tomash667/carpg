@@ -41,6 +41,7 @@ Version 0.14 (2020-03-31):
 - items can be used in knockout animation or when lying on ground [BottledByte]
 - client crash when disconnected during changing dungeon level
 - missing mouth animation when talking for clients
+- broken lobby after client with invalid data checksum tries to join [BottledByte]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

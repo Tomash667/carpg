@@ -41,6 +41,7 @@ Wersja 0.14 (2020-03-31):
 - można używać przedmiotów podczas animacji upadania lub leżąc na ziemi [BottledByte]
 - crash klienta przy rozłączaniu przy zmianie poziomu w podziemiach
 - brak animacji ust podczas mówienia u klientów
+- popsute lobby gdy próbuje dołączyć osoba z nieprawidłową sumą kontrolną danych [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

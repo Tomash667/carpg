@@ -369,6 +369,8 @@ void Game::EndConnecting(cstring msg, bool wait)
 		ForceRedraw();
 	if(!game_gui->pick_server->visible)
 		net->ClosePeer(wait);
+	else
+		net->peer->CloseConnection(net->server, true);
 }
 
 //=================================================================================================
