@@ -3,7 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.15 (???):
 ! cannot load saves from version 0.6.1 or older
-+ update libraries: JSON for Modern C++ 3.7.3
++ update libraries: FMod 1.10.20, JSON for Modern C++ 3.7.3
 
 --------------------------------------------------------------------------------
 Version 0.14 (2020-03-31):

@@ -3,7 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.15 (2020-03-31):
 ! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
-+ aktualizacja bibliotek: JSON for Modern C++ 3.7.3
++ aktualizacja bibliotek: FMod 1.10.20, JSON for Modern C++ 3.7.3
 
 --------------------------------------------------------------------------------
 Wersja 0.14 (2020-03-31):
