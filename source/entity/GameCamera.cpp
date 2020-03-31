@@ -14,7 +14,7 @@
 #include "Level.h"
 #include "LevelArea.h"
 #include "OutsideLocation.h"
-#include "Terrain.h"
+#include "PhysicCallbacks.h"
 #include "Unit.h"
 
 const float SPRINGINESS_NORMAL = 40.f;
@@ -230,7 +230,9 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		OutsideLocation* outside = (OutsideLocation*)game_level->location;
 
 		// terrain
-		float t = game_level->terrain->Raytest(pos, pos + dir);
+		RaytestTerrainCallback callback;
+		phy_world->rayTest(ToVector3(pos), ToVector3(pos + dir), callback);
+		float t = callback.getFraction();
 		if(t < min_t && t > 0.f)
 			min_t = t;
 

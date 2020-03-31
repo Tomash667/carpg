@@ -86,6 +86,25 @@ struct RaytestClosestUnitCallback : public btCollisionWorld::RayResultCallback
 };
 
 //-----------------------------------------------------------------------------
+struct RaytestTerrainCallback : public btCollisionWorld::RayResultCallback
+{
+	RaytestTerrainCallback()
+	{
+		m_collisionFilterMask = CG_TERRAIN;
+	}
+
+	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+	{
+		if(m_closestHitFraction > rayResult.m_hitFraction)
+			m_closestHitFraction = rayResult.m_hitFraction;
+		return 0.f;
+	}
+
+	bool hasHit() const { return m_closestHitFraction < 1.f; }
+	float getFraction() const { return m_closestHitFraction; }
+};
+
+//-----------------------------------------------------------------------------
 struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 {
 	ContactTestCallback(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2) : obj(obj), clbk(clbk), use_clbk2(use_clbk2), hit(false)
