@@ -975,7 +975,8 @@ void Game::LoadGame(GameReader& f)
 	if(game_state2 == GS_LEVEL)
 	{
 		SetMusic();
-		if(pc->unit->usable && IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && pc->unit->animation_state != AS_USE_USABLE_MOVE_TO_ENDPOINT
+			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
 			game_gui->craft->Show();
 	}
 	else
