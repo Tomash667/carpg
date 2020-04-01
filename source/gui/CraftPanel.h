@@ -30,6 +30,7 @@ private:
 
 	vector<pair<const Item*, uint>> ingredients;
 	int skill, counter;
+	uint lastListIndex, lastListSize;
 	GamePanel left, right;
 	ListBox list;
 	Button button;
