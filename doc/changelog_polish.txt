@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Poprawki:
+- crash przy alchemii, naprawione przez BottledByte [Lemiczek]
+
+--------------------------------------------------------------------------------
 Wersja 0.14 (2020-03-31):
 ! nie można wczytywać już zapisów z wersji 0.5.1 lub starszej
 + kontynuacja fabuły i poboczne zadanie

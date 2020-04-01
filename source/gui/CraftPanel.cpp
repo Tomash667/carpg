@@ -231,10 +231,10 @@ void CraftPanel::Event(GuiEvent e)
 	else if(e == GuiEvent_GainFocus)
 	{
 		if(list.GetItems().empty())
-				button.state = Button::DISABLED;
+			button.state = Button::DISABLED;
 		else
 		{
-			if (lastListSize > list.GetCount())
+			if(lastListSize > list.GetCount())
 			{
 				list.Select(0);
 				lastListIndex = 0;
