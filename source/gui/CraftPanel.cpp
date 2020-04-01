@@ -58,6 +58,9 @@ CraftPanel::CraftPanel()
 	button.parent = this;
 	button.id = GuiEvent_Custom;
 
+	lastListSize = 0;
+	lastListIndex = 0;
+
 	Add(&left);
 	Add(&right);
 }
@@ -217,10 +220,30 @@ void CraftPanel::Event(GuiEvent e)
 			else
 			{
 				list.Select(0);
+				lastListIndex = 0;
+				lastListSize = list.GetCount();
 				Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 				button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 			}
 			tooltip.Clear();
+		}
+	}
+	else if(e == GuiEvent_GainFocus)
+	{
+		if(list.GetItems().empty())
+				button.state = Button::DISABLED;
+		else
+		{
+			if (lastListSize > list.GetCount())
+			{
+				list.Select(0);
+				lastListIndex = 0;
+			}
+			else
+				list.Select(lastListIndex);
+
+			Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+			button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 		}
 	}
 	else if(e == GuiEvent_Hide)
@@ -230,6 +253,7 @@ void CraftPanel::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Custom)
 	{
+		lastListIndex = list.GetIndex();
 		Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 		uint max = HaveIngredients(recipe);
 		counter = 1;
