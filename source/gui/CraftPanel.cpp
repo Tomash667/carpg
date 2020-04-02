@@ -58,9 +58,6 @@ CraftPanel::CraftPanel()
 	button.parent = this;
 	button.id = GuiEvent_Custom;
 
-	lastListSize = 0;
-	lastListIndex = 0;
-
 	Add(&left);
 	Add(&right);
 }
@@ -146,13 +143,6 @@ void CraftPanel::Update(float dt)
 		return;
 	}
 
-	int new_skill = game->pc->unit->Get(SkillId::ALCHEMY);
-	if(skill != new_skill)
-	{
-		skill = new_skill;
-		SetRecipes();
-	}
-
 	Container::Update(dt);
 
 	list.mouse_focus = focus;
@@ -220,30 +210,10 @@ void CraftPanel::Event(GuiEvent e)
 			else
 			{
 				list.Select(0);
-				lastListIndex = 0;
-				lastListSize = list.GetCount();
 				Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 				button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 			}
 			tooltip.Clear();
-		}
-	}
-	else if(e == GuiEvent_GainFocus)
-	{
-		if(list.GetItems().empty())
-			button.state = Button::DISABLED;
-		else
-		{
-			if(lastListSize > list.GetCount())
-			{
-				list.Select(0);
-				lastListIndex = 0;
-			}
-			else
-				list.Select(lastListIndex);
-
-			Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
-			button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 		}
 	}
 	else if(e == GuiEvent_Hide)
@@ -253,7 +223,6 @@ void CraftPanel::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Custom)
 	{
-		lastListIndex = list.GetIndex();
 		Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 		uint max = HaveIngredients(recipe);
 		counter = 1;
@@ -308,9 +277,7 @@ void CraftPanel::OnCraft(int id)
 		game->pc->unit->AddItem2(recipe->result, counter, 0u);
 		float value = ((float)recipe->skill + 25) / 25.f * 1000 * counter;
 		game->pc->Train(TrainWhat::Craft, value, 0);
-		sound_mgr->PlaySound2d(sAlchemy);
-		SetIngredients();
-		button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
+		AfterCraft();
 	}
 	else
 	{
@@ -380,4 +347,13 @@ void CraftPanel::AfterCraft()
 	sound_mgr->PlaySound2d(sAlchemy);
 	SetIngredients();
 	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
+
+	int new_skill = game->pc->unit->Get(SkillId::ALCHEMY);
+	if(skill != new_skill)
+	{
+		skill = new_skill;
+		int index = list.GetIndex();
+		SetRecipes();
+		list.SetIndex(index);
+	}
 }
