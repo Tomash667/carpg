@@ -225,8 +225,23 @@ void CraftPanel::Event(GuiEvent e)
 	{
 		Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 		uint max = HaveIngredients(recipe);
-		counter = 1;
-		GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
+		if(max == 1 || input->Down(Key::Control))
+		{
+			// craft one
+			counter = 1;
+			OnCraft(BUTTON_OK);
+		}
+		else if(input->Down(Key::Shift))
+		{
+			// craft max
+			counter = max;
+			OnCraft(BUTTON_OK);
+		}
+		else
+		{
+			counter = 1;
+			GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
+		}
 	}
 }
 

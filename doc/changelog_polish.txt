@@ -5,6 +5,7 @@ Poprawki:
 - crash przy alchemii, naprawione przez BottledByte [Lemiczek]
 - crash po zapisaniu gry przy odchodzeniu od kociołka po alchemii [Lemiczek]
 - popsute angielski teksty w głównej fabule [BottledByte]
+- klikanie na pasek przewijania podczas alchemii gdy można stworzyć tylko jedną miksturkę powodowało wyświetlenie błędnych liczb [Lemiczek]
 
 --------------------------------------------------------------------------------
 Wersja 0.14 (2020-03-31):
