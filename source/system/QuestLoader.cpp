@@ -105,7 +105,9 @@ void QuestLoader::ParseQuest(const string& id)
 
 	Ptr<QuestScheme> quest;
 	quest->id = id;
-	quest->dialogs.push_back(new GameDialog);
+	GameDialog* texts = new GameDialog;
+	texts->quest = quest;
+	quest->dialogs.push_back(texts);
 	t.Next();
 
 	t.AssertSymbol('{');
