@@ -2868,6 +2868,7 @@ bool Unit::Read(BitStreamReader& f)
 	hpmax = 1.f;
 	mpmax = 1.f;
 	stamina_max = 1.f;
+	level = 0;
 	f.ReadCasted<byte>(live_state);
 	f >> pos;
 	f >> rot;
@@ -7778,7 +7779,9 @@ void Unit::Update(float dt)
 						if(timer >= 0.5f)
 						{
 							timer = 0.5f;
-							++animation_state;
+							animation_state = AS_USE_USABLE_USING;
+							if(IsLocalPlayer() && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
+								game_gui->craft->Show();
 						}
 
 						// przesuñ postaæ i fizykê

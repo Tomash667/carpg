@@ -219,7 +219,7 @@ quest main {
 		6 "One of the villagers attacked you for no reason!?"
 		7 "It's worse than I thought, we must quickly bring in some priest who knows about plagues."
 		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here one of the clerics lives. I have heard that he is researching various diseases."
-		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) stąd mieszka jeden z kleryków. Słyszałem że zajmuje się badaniami nad różnymi chorobami."
+		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here lives one of the clerics. I have heard that he is researching various diseases."
 		9 "Find him and help him discover what our people are suffering from."
 		10 "Find a cleric living in $(shrine_loc.name), without him this village will be empty!"
 	}
@@ -241,22 +241,22 @@ quest main {
 		0 "Plague"
 		1 "Plague? Nothing that I know of..."
 		2 "You probably wanted to talk to $(cleric.real_name)?"
-		3 "Usually you can find him here but currently he went on research to $ dungeon.name) on $(World::GetDirName(Level::location.pos, dungeon.pos)) from here."
+		3 "Usually you can find him here but currently he went on research to $(dungeon.name) on $(World::GetDirName(Level::location.pos, dungeon.pos)) from here."
 		4 "I hope he's okay, I haven't seen him for several days."
 	}
 	
 	dialog cleric {
 		0 "Glory be to Imnos!"
-		1 "I was afraid I would die here. Like my guards killed by these undead ..."
+		1 "I was afraid I would die here. Like my guards, killed by these undead ..."
 		2 "Please lead me to $(shrine_loc.name) to the shrine, I have to report what I found here."
 		3 "Then I will immediately go with you to help heal this disease."
 		4 "Since you are here, I have one more request for you."
 		5 "On the lower level of the underground there is a book that would be invaluable in my research."
-		6 "If you get it, I will reward you generously."
+		6 "If you bring it to me, I will reward you generously."
 		7 "Lead me to the shrine in $(shrine_loc.name), then I will help you."
 		8 "End dialog"
-		9 "Thank you! I immediately start working on the cure."
-		10 "(This is the end of the main plot for this version. In the meantime try to complete 9 unique quests)"
+		9 "Thank you! I will immediately start working on the cure."
+		10 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
 	}
 	
 	texts {
@@ -271,9 +271,9 @@ quest main {
 		8 "In $(village.name), the plague began to spread more and more. I have to get back there quickly."
 		9 "I have to walk around the village and find infected villagers. Maybe I can establish something."
 		10 "One of the villagers went crazy because of the plague and attacked me."
-		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) stąd mieszka kleryk specjalizujący się w chorobach. Muszę z nim porozmawiać."
-		12 "Kleryk którego poszukiwałem, $(cleric.real_name) wyruszył do $(dungeon.name) na $(World::GetDirName(Level::location.pos, dungeon.pos)) stąd prowadzić jakieś badania."
-		13 "Odnalazłem $(cleric.real_name) w podziemiach, był ledwo żywy a jego strażnicy zostali zabici przez nieumarłych. Chce żebym doprowadził go do kapliczki w $(shrine_loc.name), wtedy mi pomoże."
+		11 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here lives a cleric who specializes in diseases. I need to talk with him."
+		12 "The cleric I was looking for, $(cleric.real_name) went to $(dungeon.name) that is $(World::GetDirName(Level::location.pos, dungeon.pos)) from here to do some research."
+		13 "I found $(cleric.real_name) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrine_loc.name), then he will help me."
 	}
 }
 
