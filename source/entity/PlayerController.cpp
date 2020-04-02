@@ -1821,9 +1821,6 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 				u.target_pos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 			u.timer = 0.f;
 			u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
-
-			if(IsSet(bu.use_flags, BaseUsable::ALCHEMY))
-				game_gui->craft->Show();
 		}
 
 		if(Net::IsOnline())

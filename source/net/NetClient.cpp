@@ -1728,9 +1728,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					unit->UseUsable(usable);
 					if(pc.data.before_player == BP_USABLE && pc.data.before_player_ptr.usable == usable)
 						pc.data.before_player = BP_NONE;
-
-					if(unit->player == game->pc && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
-						game_gui->craft->Show();
 				}
 				else
 				{
@@ -4187,6 +4184,7 @@ void Net::ReadNetVars(BitStreamReader& f)
 {
 	f >> mp_use_interp;
 	f >> mp_interp;
+	f >> game->game_speed;
 }
 
 //=================================================================================================
@@ -4496,7 +4494,8 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 			return false;
 		}
 
-		if(unit->usable && IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+		if(unit->usable && unit->action == A_USE_USABLE && Any(unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
+			&& IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
 			game_gui->craft->Show();
 	}
 
