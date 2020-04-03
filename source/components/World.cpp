@@ -115,6 +115,7 @@ void World::OnNewGame()
 	month = 0;
 	worldtime = 0;
 	day_timer = 0.f;
+	reveal_timer = 0.f;
 }
 
 //=================================================================================================
@@ -557,7 +558,7 @@ void World::GenerateWorld()
 			Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
 			float rot = Random(MAX_ANGLE);
 			float dist = Random(300.f, 400.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot)*dist, sin(rot)*dist);
+			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
 			bool ok = true;
@@ -590,7 +591,7 @@ void World::GenerateWorld()
 			Vec2 parent_pos = locations[Rand() % cities]->pos;
 			float rot = Random(MAX_ANGLE);
 			float dist = Random(100.f, 250.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot)*dist, sin(rot)*dist);
+			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
 			bool ok = true;
@@ -905,7 +906,7 @@ void World::StartInLocation()
 void World::CalculateTiles()
 {
 	int ts = world_size / TILE_SIZE;
-	tiles.resize(ts*ts);
+	tiles.resize(ts * ts);
 
 	// set from near locations
 	for(int y = 0; y < ts; ++y)
@@ -968,12 +969,12 @@ void World::SmoothTiles()
 				if(y > 0)
 				{
 					++count;
-					st += tiles[x - 1 + (y - 1)*ts];
+					st += tiles[x - 1 + (y - 1) * ts];
 				}
 				if(y < ts - 1)
 				{
 					++count;
-					st += tiles[x - 1 + (y + 1)*ts];
+					st += tiles[x - 1 + (y + 1) * ts];
 				}
 			}
 			if(x < ts - 1)
@@ -983,30 +984,30 @@ void World::SmoothTiles()
 				if(y > 0)
 				{
 					++count;
-					st += tiles[x + 1 + (y - 1)*ts];
+					st += tiles[x + 1 + (y - 1) * ts];
 				}
 				if(y < ts - 1)
 				{
 					++count;
-					st += tiles[x + 1 + (y + 1)*ts];
+					st += tiles[x + 1 + (y + 1) * ts];
 				}
 			}
 			if(y > 0)
 			{
 				++count;
-				st += tiles[x + (y - 1)*ts];
+				st += tiles[x + (y - 1) * ts];
 			}
 			if(y < ts - 1)
 			{
 				++count;
-				st += tiles[x + (y + 1)*ts];
+				st += tiles[x + (y + 1) * ts];
 			}
 			tiles[x + y * ts] = st / count;
 		}
 	}
 
 	// clamp values
-	for(int i = 0; i < ts*ts; ++i)
+	for(int i = 0; i < ts * ts; ++i)
 		tiles[i] = Clamp(tiles[i], 2, 16);
 }
 
@@ -1404,6 +1405,8 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		create_camp = 10;
 	f >> world_pos;
 	f >> reveal_timer;
+	if(LOAD_VERSION < V_MAIN && reveal_timer < 0)
+		reveal_timer = 0;
 	f >> encounter_chance;
 	f >> settlements;
 	if(LOAD_VERSION < V_0_14)
@@ -2259,7 +2262,6 @@ void World::Travel(int index, bool order)
 	travel_location_index = index;
 	travel_target_pos = locations[travel_location_index]->pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
-	reveal_timer = 0.f;
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
@@ -2294,7 +2296,6 @@ void World::TravelPos(const Vec2& pos, bool order)
 	travel_location_index = -1;
 	travel_target_pos = pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
-	reveal_timer = 0.f;
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
@@ -2805,7 +2806,7 @@ void World::SetTravelDir(const Vec3& pos)
 
 	// point is outside of location borders
 	if(unit_pos.x < border)
-		travel_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
+		travel_dir = Lerp(3.f / 4.f * PI, 5.f / 4.f * PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
 	else if(unit_pos.x > map_size - border)
 	{
 		if(unit_pos.y > map_size / 2)
