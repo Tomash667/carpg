@@ -6,6 +6,15 @@ Version 0.15 (???):
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
 
 --------------------------------------------------------------------------------
+Fixes:
+- crash on crafting in alchemy, fixed by BottledByte [Lemiczek]
+- crash after finishing using cauldron after alchemy [Lemiczek]
+- missing/broken english texts in main storyline [BottledByte]
+- clicking on scrollbar in alchemy when only 1 potion can be created caused numberic overflow [Lemiczek]
+- after loading game where client is ending using object it was stuck inside object
+- no encounters when spamming travel and stop travel [Lemiczek]
+
+--------------------------------------------------------------------------------
 Version 0.14 (2020-03-31):
 ! cannot load saves from version 0.5.1 or older
 + continued storyline and side quest

@@ -249,13 +249,13 @@ void LevelGui::DrawFront()
 			if(u.refs != 1)
 				str += Format(" x%u", u.refs);
 			str += ")";
-			if(Net::IsLocal())
+			if(Net::IsLocal() || u.IsLocalPlayer())
 			{
 				if(u.IsAI())
 				{
 					AIController& ai = *u.ai;
 					UnitOrder order = u.GetOrder();
-					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
+					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level, u.usable ? 1 : 0,
 						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.st.idle.action]) : "",
 						ai.timer, ai.loc_timer, order_str[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
@@ -285,7 +285,10 @@ void LevelGui::DrawFront()
 					}
 				}
 				else
-					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, Act:%d, PAct:%d", u.busy, u.frozen, u.level, u.animation, u.action, u.player->action);
+				{
+					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, PAct:%d",
+						u.busy, u.frozen, u.level, u.usable ? 1 : 0, u.animation, u.action, u.player->action);
+				}
 			}
 			DrawUnitInfo(str, u, text_pos);
 		}

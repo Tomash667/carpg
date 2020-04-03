@@ -255,7 +255,7 @@ quest main {
 		7 "ZaprowadŸ mnie do kapliczki w $(shrine_loc.name), potem ci pomogê."
 		8 "Koniec rozmowy"
 		9 "Dziêkuje! Natychmiast zabieram siê do roboty nad lekarstwem."
-		10 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 9 unikalnych zadañ)"
+		10 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
 	}
 	
 	texts {

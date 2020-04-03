@@ -1762,14 +1762,20 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							BaseUsable& base = *usable->base;
 							if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 							{
-								unit.action = A_NONE;
+								unit.action = A_USE_USABLE;
 								unit.animation = ANI_STAND;
+								unit.animation_state = AS_USE_USABLE_MOVE_TO_ENDPOINT;
+								unit.timer = 0;
 								if(unit.live_state == Unit::ALIVE)
 									unit.used_item = nullptr;
 							}
 						}
 						else if(state == USE_USABLE_END)
+						{
+							if(unit.action == A_USE_USABLE)
+								unit.action = A_NONE;
 							unit.UseUsable(nullptr);
+						}
 					}
 				}
 
@@ -4176,6 +4182,7 @@ void Net::WriteNetVars(BitStreamWriter& f)
 {
 	f << mp_use_interp;
 	f << mp_interp;
+	f << game->game_speed;
 }
 
 //=================================================================================================

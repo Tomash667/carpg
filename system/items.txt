@@ -2983,7 +2983,7 @@ book book_q_cleric {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha not_shop not_chest not_random ground_mesh}
+	flags {alpha not_shop not_chest not_random ground_mesh important}
 	runic 1
 }
 
