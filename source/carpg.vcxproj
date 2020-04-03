@@ -66,7 +66,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../lib;../carpglib/lib;../carpglib/external/CrashRpt/lib;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;dbghelp.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;D3D11.lib;D3DCompiler.lib;dbghelp.lib;DXGI.lib;fmod_vc.lib;Gdiplus.lib;libcurl_imp.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -109,7 +109,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../lib;../carpglib/lib;../carpglib/external/CrashRpt/lib;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;dbghelp.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;D3D11.lib;D3DCompiler.lib;dbghelp.lib;DXGI.lib;fmod_vc.lib;Gdiplus.lib;libcurl_imp.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>

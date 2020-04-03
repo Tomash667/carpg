@@ -637,7 +637,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;
@@ -676,7 +677,7 @@ void CreateCharacterPanel::RenderUnit()
 	// end rendering
 	V(device->EndScene());
 
-	render->SetTarget(nullptr);
+	render->SetTarget(nullptr);*/
 }
 
 //=================================================================================================

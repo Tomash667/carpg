@@ -153,8 +153,6 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 	script_mgr = new ScriptManager;
 	team = new Team;
 	world = new World;
-
-	render->AddManagedResource(dun_mesh_builder);
 }
 
 //=================================================================================================
@@ -262,7 +260,7 @@ void Game::PreloadData()
 {
 	res_mgr->AddDir("data/preload");
 
-	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 2);
+	GameGui::font = game_gui->gui->GetFont("Arial", 12, 8, 2);
 
 	// loadscreen textures
 	game_gui->load_screen->LoadData();
@@ -666,7 +664,7 @@ void Game::Draw()
 //=================================================================================================
 void Game::DrawGame(RenderTarget* target)
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	/*IDirect3DDevice9* device = render->GetDevice();
 
 	vector<PostEffect> post_effects;
 	GetPostEffects(post_effects);
@@ -809,7 +807,7 @@ void Game::DrawGame(RenderTarget* target)
 
 			index_surf = (index_surf + 1) % 3;
 		}
-	}
+	}*/
 }
 
 //=================================================================================================
@@ -1021,7 +1019,8 @@ void Game::ChangeTitle()
 //=================================================================================================
 void Game::TakeScreenshot(bool no_gui)
 {
-	if(no_gui)
+	FIXME;
+	/*if(no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
@@ -1088,7 +1087,7 @@ void Game::TakeScreenshot(bool no_gui)
 		Info(msg);
 
 		back_buffer->Release();
-	}
+	}*/
 }
 
 //=================================================================================================
@@ -1421,7 +1420,8 @@ void Game::UpdateLights(vector<GameLight>& lights)
 //=================================================================================================
 void Game::GetPostEffects(vector<PostEffect>& post_effects)
 {
-	post_effects.clear();
+	FIXME;
+	/*post_effects.clear();
 	if(!use_postfx || game_state != GS_LEVEL || !postfx_shader->effect)
 		return;
 
@@ -1456,7 +1456,7 @@ void Game::GetPostEffects(vector<PostEffect>& post_effects)
 		// 0.1-0
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;
-	}
+	}*/
 }
 
 //=================================================================================================

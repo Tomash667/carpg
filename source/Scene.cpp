@@ -1136,7 +1136,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	{
 		Mesh& mesh = *o.mesh;
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-			node->flags |= SceneNode::F_TANGENTS;
+			node->flags |= SceneNode::F_HAVE_TANGENTS;
 
 		// for simplicity original node in unused and freed at end
 		for(int i = 0; i < mesh.head.n_subs; ++i)
@@ -1825,7 +1825,8 @@ void Game::DrawScene(bool outside)
 		DrawDebugNodes(draw_batch.debug_nodes);
 	if(pathfinding->IsDebugDraw())
 	{
-		basic_shader->Prepare(game_level->camera);
+		FIXME;
+		//basic_shader->Prepare(game_level->camera);
 		pathfinding->Draw(basic_shader);
 	}
 
@@ -1836,14 +1837,15 @@ void Game::DrawScene(bool outside)
 	// particles
 	if(!draw_batch.billboards.empty() || !draw_batch.pes.empty() || draw_batch.tpes)
 	{
-		particle_shader->Begin(game_level->camera);
+		/*particle_shader->Begin(game_level->camera);
 		if(!draw_batch.billboards.empty())
 			particle_shader->DrawBillboards(draw_batch.billboards);
 		if(draw_batch.tpes)
 			particle_shader->DrawTrailParticles(*draw_batch.tpes);
 		if(!draw_batch.pes.empty())
 			particle_shader->DrawParticles(draw_batch.pes);
-		particle_shader->End();
+		particle_shader->End();*/
+		FIXME;
 	}
 
 	// alpha nodes
@@ -1861,7 +1863,8 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 {
 	PROFILER_BLOCK("DrawGlowingNodes");
 
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 	ID3DXEffect* effect = glow_shader->effect;
 
 	// ustaw flagi renderowania
@@ -2125,13 +2128,14 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
 	V(device->SetRenderState(D3DRS_STENCILENABLE, FALSE));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));*/
 }
 
 //=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups)
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 	SuperShader* shader = scene_mgr->super_shader;
 
 	render->SetAlphaBlend(false);
@@ -2220,13 +2224,14 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 	}
 
 	V(e->EndPass());
-	V(e->End());
+	V(e->End());*/
 }
 
 //=================================================================================================
 void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 	ID3DXEffect* effect = basic_shader->effect;
 
 	render->SetAlphaTest(false);
@@ -2291,13 +2296,14 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	V(effect->End());
 
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
-	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
+	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));*/
 }
 
 //=================================================================================================
 void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 	SuperShader* shader = scene_mgr->super_shader;
 
 	render->SetAlphaTest(false);
@@ -2388,13 +2394,14 @@ void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 	}
 
 	V(e->EndPass());
-	V(e->End());
+	V(e->End());*/
 }
 
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
-	IDirect3DDevice9* device = render->GetDevice();
+	FIXME;
+	/*IDirect3DDevice9* device = render->GetDevice();
 	ID3DXEffect* effect = basic_shader->effect;
 
 	render->SetAlphaTest(false);
@@ -2443,7 +2450,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 
 		V(effect->EndPass());
 		V(effect->End());
-	}
+	}*/
 }
 
 //=================================================================================================

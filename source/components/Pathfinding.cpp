@@ -748,7 +748,8 @@ void Pathfinding::Draw(BasicShader* shader)
 	if(test_pf.empty() || !marked)
 		return;
 
-	shader->BeginBatch();
+	FIXME;
+	//shader->BeginBatch();
 
 	for(vector<pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
@@ -780,8 +781,8 @@ void Pathfinding::Draw(BasicShader* shader)
 			break;
 		}
 
-		shader->AddQuad(v, color);
+		//shader->AddQuad(v, color);
 	}
 
-	shader->EndBatch();
+	//shader->EndBatch();
 }

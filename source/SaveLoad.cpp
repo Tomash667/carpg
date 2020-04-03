@@ -444,9 +444,10 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		slot->location = game_level->GetCurrentLocationText();
 		slot->img_offset = f.GetPos() + 4;
 	}
-	uint img_size = rt_save->SaveToFile(f);
-	if(slot)
-		slot->img_size = img_size;
+	//uint img_size = rt_save->SaveToFile(f);
+	//if(slot)
+	//	slot->img_size = img_size;
+	FIXME;
 
 	// ids
 	f << ParticleEmitter::impl.id_counter;

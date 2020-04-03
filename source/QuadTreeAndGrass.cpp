@@ -176,7 +176,7 @@ void Game::DrawGrass()
 
 	PROFILER_BLOCK("DrawGrass");
 
-	grass_shader->Begin(game_level->scene, &game_level->camera, max(grass_count[0], grass_count[1]));
+	/*grass_shader->Begin(game_level->scene, &game_level->camera, max(grass_count[0], grass_count[1]));
 	for(int i = 0; i < 2; ++i)
 	{
 		if(grass_count[i] > 0)
@@ -185,7 +185,8 @@ void Game::DrawGrass()
 			grass_shader->Draw(mesh, grass_patches[i], grass_count[i]);
 		}
 	}
-	grass_shader->End();
+	grass_shader->End();*/
+	FIXME;
 }
 
 void Game::ListGrass()

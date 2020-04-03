@@ -247,7 +247,8 @@ void SaveLoad::SetSaveImage()
 			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
 			if(io::FileExists(filename))
 			{
-				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave.tex));
+				FIXME;
+				//V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave.tex));
 				tMiniSave.state = ResourceState::Loaded;
 			}
 		}
@@ -255,7 +256,8 @@ void SaveLoad::SetSaveImage()
 		{
 			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
 			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave.tex));
+			FIXME;
+			//V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave.tex));
 			buf->Free();
 			tMiniSave.state = ResourceState::Loaded;
 		}
