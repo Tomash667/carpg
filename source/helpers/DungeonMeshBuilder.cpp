@@ -231,14 +231,14 @@ void DungeonMeshBuilder::Build()
 
 	// create vertex buffer
 	D3D11_BUFFER_DESC desc;
-	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
 	desc.ByteWidth = size;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	desc.MiscFlags = 0;
 	desc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA data;
+	D3D11_SUBRESOURCE_DATA data = {};
 	data.pSysMem = buf.Get();
 
 	V(device->CreateBuffer(&desc, &data, &vb));

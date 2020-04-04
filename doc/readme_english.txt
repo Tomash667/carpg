@@ -255,7 +255,6 @@ Available commands:
 	server - send message from server to all players (server msg).
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
-	shader_version - force shader version (shader_version 2/3).
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
@@ -311,7 +310,6 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* server_name - last server name
 	* server_players - last server max players
 	* server_pswd - last server password
-	* shader_version - force shader version 2/3
 	* skip_tutorial (true [false]) - skip tutorial
 	* stream_log_file ["log.stream"] - file to log mp information
 	* stream_log_mode (none [errors] full) - mode to log mp information

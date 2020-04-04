@@ -64,18 +64,15 @@ Texture* GameResources::CreatePlaceholderTexture(const Int2& size)
 	if(tex)
 		return tex;
 
-	TEX t = render->CreateTexture(size);
-	TextureLock lock(t);
+	Buf buf;
+	Color* texData = buf.Get<Color>(sizeof(Color) * size.x * size.y);
 	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
 	for(int y = 0; y < size.y; ++y)
 	{
-		uint* pix = lock[y];
 		for(int x = 0; x < size.x; ++x)
-		{
-			*pix = col[(x >= size.x / 2 ? 1 : 0) + (y >= size.y / 2 ? 1 : 0) % 2];
-			++pix;
-		}
+			texData[x + y * size.x] = col[(x >= size.x / 2 ? 1 : 0) + (y >= size.y / 2 ? 1 : 0) % 2];
 	}
+	TEX t = render->CreateRawTexture(size, texData);
 
 	tex = new Texture;
 	tex->path = name;
@@ -550,12 +547,10 @@ void GameResources::GenerateItemIcon(Item& item)
 		it = item_texture_map.end();
 
 	Texture* tex;
-	do
-	{
+
 		DrawItemIcon(item, rt_item, 0.f);
 		tex = render->CopyToTexture(rt_item);
-	}
-	while(tex == nullptr);
+		FIXME;
 
 	item.icon = tex;
 	if(it != item_texture_map.end())

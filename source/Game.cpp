@@ -422,13 +422,7 @@ void Game::ConfigureGame()
 	render->RegisterShader(skybox_shader = new SkyboxShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
-	DynamicTexture* minimap = render->CreateDynamicTexture(Int2(128, 128));
-	minimap->reload = [this]
-	{
-		if(game_state == GS_LEVEL)
-			loc_gen_factory->Get(game_level->location)->CreateMinimap();
-	};
-	tMinimap = minimap;
+	tMinimap = render->CreateTexture(Int2(128, 128));
 	CreateRenderTargets();
 }
 
@@ -856,8 +850,7 @@ void Game::OnUpdate(float dt)
 
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
-	// lost directx device or window don't have focus
-	if(render->IsLostDevice() || !engine->IsActive() || !engine->IsCursorLocked())
+	if(!engine->IsActive() || !engine->IsCursorLocked())
 	{
 		input->SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)

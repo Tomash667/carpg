@@ -247,7 +247,6 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* server_name - zapamiętana nazwa serwera
 	* server_players - zapamiętana liczba graczy
 	* server_pswd - zapamiętane hasło serwera
-	* shader_version - ustawia wersję shadera 2/3
 	* skip_tutorial (true [false]) - czy pomijać pytanie o samouczek
 	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
