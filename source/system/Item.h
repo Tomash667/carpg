@@ -485,6 +485,7 @@ struct StartItem
 //-----------------------------------------------------------------------------
 struct Recipe
 {
+	int hash;
 	string id;
 	const Item* result;
 	vector<pair<const Item*, uint>> items;
@@ -492,8 +493,10 @@ struct Recipe
 
 	explicit Recipe() : result(nullptr), skill(0) {}
 
-	static vector<Recipe*> recipes;
-	static Recipe* TryGet(Cstring id);
+	static std::map<int, Recipe*> hash_recipes;
+	static Recipe* Get(int hash);
+	static Recipe* TryGet(Cstring id) { return Get(Hash(id)); }
+	static Recipe* GetS(const string& id);
 };
 
 //-----------------------------------------------------------------------------

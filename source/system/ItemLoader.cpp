@@ -105,7 +105,6 @@ void ItemLoader::Cleanup()
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
 	DeleteElements(Stock::stocks);
-	DeleteElements(Recipe::recipes);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -1199,11 +1198,19 @@ void ItemLoader::ParseBetterItems()
 //=================================================================================================
 void ItemLoader::ParseRecipe(const string& id)
 {
-	if(Recipe::TryGet(id))
-		t.Throw("Id must be unique.");
+	int hash = Hash(id);
+	Recipe* existing_recipe = Recipe::Get(hash);
+	if(existing_recipe)
+	{
+		if(existing_recipe->id == id)
+			t.Throw("Id must be unique.");
+		else
+			t.Throw("Id hash collision.");
+	}
 
 	Ptr<Recipe> recipe;
 	recipe->id = id;
+	recipe->hash = hash;
 
 	t.Next();
 	t.AssertSymbol('{');
@@ -1272,7 +1279,9 @@ void ItemLoader::ParseRecipe(const string& id)
 	else if(recipe->items.empty())
 		LoadError("No required items.");
 	else
-		Recipe::recipes.push_back(recipe.Pin());
+	{
+		Recipe::hash_recipes[hash] = recipe.Pin();
+	}
 }
 
 //=================================================================================================
@@ -1422,15 +1431,16 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->regions);
 	}
 
-	for(Recipe* recipe : Recipe::recipes)
+	for(pair<int, Recipe*> element : Recipe::hash_recipes)
 	{
-		crc.Update(recipe->result->id);
-		for(pair<const Item*, uint>& p : recipe->items)
+		crc.Update(element.second->id);
+		crc.Update(element.second->result->id);
+		for(pair<const Item*, uint>& p : element.second->items)
 		{
 			crc.Update(p.first->id);
 			crc.Update(p.second);
 		}
-		crc.Update(recipe->skill);
+		crc.Update(element.second->skill);
 	}
 
 	content.crc[(int)Content::Id::Items] = crc.Get();

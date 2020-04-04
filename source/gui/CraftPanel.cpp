@@ -202,7 +202,6 @@ void CraftPanel::Event(GuiEvent e)
 			left.Event(GuiEvent_Show);
 			right.Event(GuiEvent_Show);
 
-			skill = game->pc->unit->Get(SkillId::ALCHEMY);
 			SetRecipes();
 			SetIngredients();
 			if(list.GetItems().empty())
@@ -248,13 +247,10 @@ void CraftPanel::Event(GuiEvent e)
 void CraftPanel::SetRecipes()
 {
 	list.Reset();
-	for(Recipe* recipe : Recipe::recipes)
+	for(MemorizedRecipe& recipe : game->pc->recipes)
 	{
-		if(skill >= recipe->skill)
-		{
-			RecipeItem* item = new RecipeItem(recipe);
-			list.Add(item);
-		}
+		RecipeItem* item = new RecipeItem(recipe.recipe);
+		list.Add(item);
 	}
 }
 
@@ -363,12 +359,7 @@ void CraftPanel::AfterCraft()
 	SetIngredients();
 	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 
-	int new_skill = game->pc->unit->Get(SkillId::ALCHEMY);
-	if(skill != new_skill)
-	{
-		skill = new_skill;
-		int index = list.GetIndex();
-		SetRecipes();
-		list.SetIndex(index);
-	}
+	int index = list.GetIndex();
+	SetRecipes();
+	list.SetIndex(index);
 }
