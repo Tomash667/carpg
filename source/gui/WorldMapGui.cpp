@@ -241,12 +241,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		ok = true;
 	}
 	if(ok)
-	{
-		Vec2 pts[2] = { WorldPosToScreen(world_pos), WorldPosToScreen(target_pos) };
-		gui->LineBegin();
-		gui->DrawLine(pts, 1, 0xAA000000);
-		gui->LineEnd();
-	}
+		gui->DrawLine(WorldPosToScreen(world_pos), WorldPosToScreen(target_pos), 0xAA000000);
 
 	// encounter chance
 	if(game->devmode && Net::IsLocal())

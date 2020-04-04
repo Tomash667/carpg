@@ -637,6 +637,7 @@ void Game::OnDraw()
 		Profiler::g_profiler.Clear();
 
 	DrawGame(nullptr);
+	render->Present();
 
 	Profiler::g_profiler.End();
 }
@@ -664,17 +665,17 @@ void Game::Draw()
 //=================================================================================================
 void Game::DrawGame(RenderTarget* target)
 {
-	/*IDirect3DDevice9* device = render->GetDevice();
+	//IDirect3DDevice9* device = render->GetDevice();
 
-	vector<PostEffect> post_effects;
-	GetPostEffects(post_effects);
+	//vector<PostEffect> post_effects;
+	//GetPostEffects(post_effects);
 
-	if(post_effects.empty())
-	{
-		if(target)
-			render->SetTarget(target);
-		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
-		V(device->BeginScene());
+	//if(post_effects.empty())
+	//{
+	//	if(target)
+	//		render->SetTarget(target);
+
+		render->Clear(clear_color);
 
 		if(game_state == GS_LEVEL)
 		{
@@ -682,21 +683,21 @@ void Game::DrawGame(RenderTarget* target)
 			Draw();
 
 			// draw glow
-			if(!draw_batch.glow_nodes.empty())
+			/*if(!draw_batch.glow_nodes.empty())
 			{
 				V(device->EndScene());
 				DrawGlowingNodes(draw_batch.glow_nodes, false);
 				V(device->BeginScene());
-			}
+			}*/
+			FIXME;
 		}
 
 		// draw gui
 		game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
-		V(device->EndScene());
-		if(target)
-			render->SetTarget(nullptr);
-	}
+		//if(target)
+		//	render->SetTarget(nullptr);
+	/*}
 	else
 	{
 		ID3DXEffect* effect = postfx_shader->effect;
