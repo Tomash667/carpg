@@ -420,6 +420,8 @@ struct Book : public Item
 	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
+	vector<string> recipe_ids;
+	vector<Recipe*> recipes;
 	string text;
 	bool runic;
 
@@ -491,7 +493,7 @@ struct Recipe
 	vector<pair<const Item*, uint>> items;
 	int skill;
 
-	explicit Recipe() : result(nullptr), skill(0) {}
+	explicit Recipe() : hash(0), result(nullptr), skill(0) {}
 
 	static std::map<int, Recipe*> hash_recipes;
 	static Recipe* Get(int hash);
