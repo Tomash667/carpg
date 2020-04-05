@@ -121,7 +121,7 @@ draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false)
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -158,20 +158,6 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 //=================================================================================================
 Game::~Game()
 {
-	delete arena;
-	delete cmdp;
-	delete dun_mesh_builder;
-	delete game_gui;
-	delete game_level;
-	delete game_res;
-	delete game_stats;
-	delete loc_gen_factory;
-	delete net;
-	delete pathfinding;
-	delete quest_mgr;
-	delete script_mgr;
-	delete team;
-	delete world;
 }
 
 //=================================================================================================
@@ -618,8 +604,24 @@ void Game::OnCleanup()
 	ClearQuadtree();
 
 	draw_batch.Clear();
+	delete tMinimap;
 
 	Language::Cleanup();
+
+	delete arena;
+	delete cmdp;
+	delete dun_mesh_builder;
+	delete game_gui;
+	delete game_level;
+	delete game_res;
+	delete game_stats;
+	delete loc_gen_factory;
+	delete net;
+	delete pathfinding;
+	delete quest_mgr;
+	delete script_mgr;
+	delete team;
+	delete world;
 }
 
 //=================================================================================================
@@ -1792,9 +1794,9 @@ void Game::OnResize()
 }
 
 //=================================================================================================
-void Game::OnFocus(bool focus, const Int2& activation_point)
+void Game::OnFocus(bool focus, const Int2& activationPoint)
 {
-	game_gui->OnFocus(focus, activation_point);
+	game_gui->OnFocus(focus, activationPoint);
 }
 
 //=================================================================================================

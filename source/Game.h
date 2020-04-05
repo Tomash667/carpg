@@ -109,7 +109,7 @@ public:
 	void DrawGame(RenderTarget* target);
 	void OnUpdate(float dt) override;
 	void OnResize() override;
-	void OnFocus(bool focus, const Int2& activation_point) override;
+	void OnFocus(bool focus, const Int2& activationPoint) override;
 
 	void GetTitle(LocalString& s);
 	void ChangeTitle();

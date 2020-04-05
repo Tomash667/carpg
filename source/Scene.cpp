@@ -1814,7 +1814,7 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.nodes.empty())
 	{
 		PROFILER_BLOCK("DrawSceneNodes");
-		scene_mgr->DrawSceneNodes(draw_batch.nodes, draw_batch.node_groups);
+		scene_mgr->DrawSceneNodes(draw_batch);
 	}
 
 	// grass
@@ -1850,7 +1850,7 @@ void Game::DrawScene(bool outside)
 
 	// alpha nodes
 	if(!draw_batch.alpha_nodes.empty())
-		scene_mgr->DrawAlphaSceneNodes(draw_batch.alpha_nodes);
+		scene_mgr->DrawAlphaSceneNodes(draw_batch);
 
 	// areas
 	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())

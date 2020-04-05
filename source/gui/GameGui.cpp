@@ -421,12 +421,12 @@ void GameGui::OnResize()
 }
 
 //=================================================================================================
-void GameGui::OnFocus(bool focus, const Int2& activation_point)
+void GameGui::OnFocus(bool focus, const Int2& activationPoint)
 {
 	if(!focus && level_gui)
 		level_gui->use_cursor = false;
-	if(focus && activation_point.x != -1)
-		gui->cursor_pos = activation_point;
+	if(focus && activationPoint.x != -1)
+		gui->cursor_pos = activationPoint;
 }
 
 //=================================================================================================
