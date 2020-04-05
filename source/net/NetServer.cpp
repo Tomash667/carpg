@@ -119,7 +119,7 @@ void Net::OnNewGameServer()
 	game_level->can_fast_travel = false;
 	warps.clear();
 	if(!mp_load)
-		changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items
+		changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes sï¿½ zapisane quest_items
 	if(!net_strs.empty())
 		StringPool.Free(net_strs);
 	game_gui->server->max_players = max_players;
@@ -242,7 +242,7 @@ void Net::UpdateServer(float dt)
 				ServerProcessUnits(area.units);
 		}
 
-		// wyœlij odkryte kawa³ki minimapy
+		// wyï¿½lij odkryte kawaï¿½ki minimapy
 		if(!game_level->minimap_reveal_mp.empty())
 		{
 			if(game->game_state == GS_LEVEL)
@@ -4014,6 +4014,9 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::REMOVE_ABILITY:
 			f << c.ability->hash;
 			break;
+		case NetChangePlayer::ADD_RECIPE:
+			f << c.recipe->hash;
+			break;
 		default:
 			Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 			assert(0);
@@ -4034,13 +4037,13 @@ void Net::Server_Say(BitStreamReader& f, PlayerInfo& info)
 		Error("Server_Say: Broken packet from %s: %s.", info.name.c_str());
 	else
 	{
-		// id gracza jest ignorowane przez serwer ale mo¿na je sprawdziæ
+		// id gracza jest ignorowane przez serwer ale moï¿½na je sprawdziï¿½
 		assert(id == info.id);
 
 		cstring str = Format("%s: %s", info.name.c_str(), text.c_str());
 		game_gui->AddMsg(str);
 
-		// przeœlij dalej
+		// przeï¿½lij dalej
 		if(active_players > 2)
 			peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, info.adr, true);
 
@@ -4061,13 +4064,13 @@ void Net::Server_Whisper(BitStreamReader& f, PlayerInfo& info)
 	{
 		if(id == team->my_id)
 		{
-			// wiadomoœæ do mnie
+			// wiadomoï¿½ï¿½ do mnie
 			cstring str = Format("%s@: %s", info.name.c_str(), text.c_str());
 			game_gui->AddMsg(str);
 		}
 		else
 		{
-			// wiadomoœæ do kogoœ innego
+			// wiadomoï¿½ï¿½ do kogoï¿½ innego
 			PlayerInfo* info2 = TryGetPlayer(id);
 			if(!info2)
 				Error("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id);
@@ -4171,6 +4174,7 @@ bool Net::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::GAME_MESSAGE_FORMATTED:
 	case NetChangePlayer::ADD_ABILITY:
 	case NetChangePlayer::REMOVE_ABILITY:
+	case NetChangePlayer::ADD_RECIPE:
 		return false;
 	default:
 		return true;

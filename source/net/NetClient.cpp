@@ -234,7 +234,7 @@ void Net::UpdateClient(float dt)
 		}
 	}
 
-	// wyœli moj¹ pozycjê/akcjê
+	// wyï¿½li mojï¿½ pozycjï¿½/akcjï¿½
 	update_timer += dt;
 	if(update_timer >= TICK)
 	{
@@ -4013,6 +4013,23 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// after crafting - update ingredients, play sound
 		case NetChangePlayer::AFTER_CRAFT:
 			game_gui->craft->AfterCraft();
+			break;
+		// add recipe to player
+		case NetChangePlayer::ADD_RECIPE:
+			{
+				int recipe_hash;
+				f >> recipe_hash;
+				if(!f)
+				{
+					Error("Update single client: Broken ADD_RECIPE.");
+					break;
+				}
+				Recipe* recipe = Recipe::Get(recipe_hash);
+				if(!recipe)
+					Error("Update single client: ADD_RECIPE, invalid recipe %u.", recipe_hash);
+				else
+					pc.AddRecipe(recipe);
+			}
 			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);

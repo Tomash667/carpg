@@ -1190,6 +1190,11 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << ab.recharge;
 		f.WriteCasted<byte>(ab.charges);
 	}
+	f << recipes.size();
+	for(const MemorizedRecipe& mr : recipes)
+	{
+		f << mr.recipe->hash;
+	}
 	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
@@ -1270,6 +1275,15 @@ bool PlayerController::Read(BitStreamReader& f)
 		f >> ab.cooldown;
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
+	}
+	int i_count;
+	f >> i_count;
+	if(!f || !f.Ensure(sizeof(MemorizedRecipe) * i_count))
+		return false;
+	recipes.resize(i_count);
+	for(MemorizedRecipe& mr : recipes)
+	{
+		mr.recipe = Recipe::Get(f.Read<int>());
 	}
 	f.ReadCasted<byte>(next_action);
 	game_gui->ability->Refresh();
@@ -1996,6 +2010,18 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 	MemorizedRecipe mr;
 	mr.recipe = recipe;
 	recipes.push_back(mr);
+
+	if(!unit->fake_unit)
+	{
+		if(Net::IsServer() && !IsLocal())
+		{
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::ADD_RECIPE;
+			c.recipe = recipe;
+		}
+	}
+		
+
 	return true;
 }
 
