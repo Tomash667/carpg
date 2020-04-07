@@ -420,6 +420,8 @@ struct Book : public Item
 	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
+	vector<string> recipe_ids;
+	vector<Recipe*> recipes;
 	string text;
 	bool runic;
 
@@ -485,15 +487,18 @@ struct StartItem
 //-----------------------------------------------------------------------------
 struct Recipe
 {
+	int hash;
 	string id;
 	const Item* result;
 	vector<pair<const Item*, uint>> items;
 	int skill;
 
-	explicit Recipe() : result(nullptr), skill(0) {}
+	explicit Recipe() : hash(0), result(nullptr), skill(0) {}
 
-	static vector<Recipe*> recipes;
-	static Recipe* TryGet(Cstring id);
+	static std::map<int, Recipe*> hash_recipes;
+	static Recipe* Get(int hash);
+	static Recipe* TryGet(Cstring id) { return Get(Hash(id)); }
+	static Recipe* GetS(const string& id);
 };
 
 //-----------------------------------------------------------------------------

@@ -673,6 +673,10 @@ void ScriptManager::RegisterGame()
 		.WithNamespace()
 		.AddFunction("Ability@ Get(const string& in)", asFUNCTION(Ability::GetS));
 
+	AddType("Recipe")
+		.WithNamespace()
+		.AddFunction("Recipe@ Get(const string& in)", asFUNCTION(Recipe::GetS));
+
 	AddType("UnitData")
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
@@ -755,6 +759,7 @@ void ScriptManager::RegisterGame()
 		.Method("bool IsLeader()", asMETHOD(PlayerController, IsLeader))
 		.Method("bool AddAbility(Ability@)", asMETHOD(PlayerController, AddAbility))
 		.Method("bool RemoveAbility(Ability@)", asMETHOD(PlayerController, RemoveAbility))
+		.Method("bool AddRecipe(Recipe@)", asMETHOD(PlayerController, AddRecipe))
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	ForType("Hero")

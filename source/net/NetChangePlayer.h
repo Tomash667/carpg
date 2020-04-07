@@ -53,6 +53,7 @@ struct NetChangePlayer
 		ADD_ABILITY, // add ability to player [int(ability->hash)]
 		REMOVE_ABILITY, // remove ability from player [int(ability->hash)]
 		AFTER_CRAFT, // after crafting - update ingredients, play sound
+		ADD_RECIPE, // add recipe to player [int(recipe->hash)]
 
 		MAX
 	} type;
@@ -63,6 +64,7 @@ struct NetChangePlayer
 		Unit* unit;
 		string* str;
 		Ability* ability;
+		Recipe* recipe;
 		struct
 		{
 			short a1, a2;

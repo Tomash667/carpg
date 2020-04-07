@@ -25,7 +25,7 @@ vector<BookScheme*> BookScheme::book_schemes;
 vector<Book*> Book::books;
 vector<StartItem> StartItem::start_items;
 std::map<const Item*, Item*> better_items;
-vector<Recipe*> Recipe::recipes;
+std::map<int, Recipe*> Recipe::hash_recipes;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -509,12 +509,18 @@ const Item* FindItemOrList(Cstring id, ItemList*& lis)
 }
 
 //=================================================================================================
-Recipe* Recipe::TryGet(Cstring id)
+Recipe* Recipe::Get(int hash)
 {
-	for(Recipe* recipe : Recipe::recipes)
-	{
-		if(recipe->id == id)
-			return recipe;
-	}
+	auto it = hash_recipes.find(hash);
+	if(it != hash_recipes.end())
+		return it->second;
 	return nullptr;
+}
+
+Recipe* Recipe::GetS(const string& id)
+{
+	Recipe* recipe = TryGet(id);
+	if (!recipe)
+		throw ScriptException("Invalid recipe '%s'.", id);
+	return recipe;
 }

@@ -119,6 +119,15 @@ struct PlayerAbility
 	int charges;
 };
 
+/**
+ * Represents recipe known to the player
+ */
+struct MemorizedRecipe
+{
+	Recipe* recipe;
+};
+
+
 //-----------------------------------------------------------------------------
 struct Shortcut
 {
@@ -237,16 +246,17 @@ struct PlayerController : public HeroPlayerCommon
 		Chest* action_chest;
 		Usable* action_usable;
 	};
-	// tymczasowa zmienna u¿ywane w AddGold, nie trzeba zapisywaæ
+	// tymczasowa zmienna uï¿½ywane w AddGold, nie trzeba zapisywaï¿½
 	int gold_get;
 	//
 	DialogContext* dialog_ctx;
-	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
+	vector<ItemSlot>* chest_trade; // zaleï¿½ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoï¿½ï¿½ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
 	vector<Entity<Unit>> ability_targets;
 	Shortcut shortcuts[Shortcut::MAX];
 	vector<PlayerAbility> abilities;
+	vector<MemorizedRecipe> recipes;
 	static LocalPlayerData data;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
@@ -323,6 +333,10 @@ public:
 	void UpdateCooldown(float dt);
 	void RefreshCooldown();
 	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+
+	// recipes
+	bool AddRecipe(Recipe* recipe);
+	bool HaveRecipe(Recipe* recipe) const;
 
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp);
