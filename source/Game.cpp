@@ -737,7 +737,6 @@ void Game::DrawGame(RenderTarget* target)
 		// post effects
 		V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
 		V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
-		render->SetAlphaTest(false);
 		render->SetAlphaBlend(false);
 		render->SetNoCulling(false);
 		render->SetNoZWrite(true);

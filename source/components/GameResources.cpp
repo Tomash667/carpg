@@ -572,8 +572,6 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		node->mat = Matrix::RotationY(rot);
 	node->SetMesh(&mesh);
 	node->center = Vec3::Zero;
-	if(IsSet(ITEM_ALPHA, item.flags))
-		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->tex_override = nullptr;
 	if(item.type == IT_ARMOR)
 	{

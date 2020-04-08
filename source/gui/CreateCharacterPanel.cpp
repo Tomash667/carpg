@@ -645,7 +645,6 @@ void CreateCharacterPanel::RenderUnit()
 		return;
 
 	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
 	render->SetNoCulling(false);
 	render->SetNoZWrite(false);
 	render->SetTarget(rt_char);
