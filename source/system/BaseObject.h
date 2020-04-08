@@ -35,6 +35,7 @@ enum OBJ_FLAGS
 	OBJ_MULTI_PHYSICS = 1 << 19, // object have multiple colliders (only workd with box for now)
 	OBJ_CAM_COLLIDERS = 1 << 20, // spawn camera coliders from mesh attach points
 	OBJ_USABLE = 1 << 21, // object is usable
+	OBJ_NO_CULLING = 1 << 22, // no mesh backface culling
 };
 
 //-----------------------------------------------------------------------------
@@ -94,12 +95,12 @@ struct BaseObject
 	Vec2 size;
 	btCollisionShape* shape;
 	Matrix* matrix;
-	int flags, alpha;
+	int flags;
 	BaseObject* next_obj;
 	VariantObject* variants;
 	float extra_dist; // extra distance from wall
 
-	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags(0), alpha(-1), next_obj(nullptr),
+	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags(0), next_obj(nullptr),
 		variants(nullptr), extra_dist(0.f)
 	{
 	}
@@ -114,7 +115,6 @@ struct BaseObject
 		h = o.h;
 		centery = o.centery;
 		flags = o.flags;
-		alpha = o.alpha;
 		variants = o.variants;
 		extra_dist = o.extra_dist;
 		return *this;
@@ -125,7 +125,6 @@ struct BaseObject
 		return IsSet(flags, OBJ_USABLE);
 	}
 
-	static BaseObject obj_alpha;
 	static SetContainer<BaseObject> objs;
 	static BaseObject* TryGet(Cstring id, ObjectGroup** group = nullptr);
 	static BaseObject* Get(Cstring id, ObjectGroup** group = nullptr)

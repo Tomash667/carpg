@@ -2466,7 +2466,7 @@ consumable healing_herb {
 	value 10
 	mesh "healing_herb.qmsh"
 	type herb
-	flags {not_merchant ground_mesh alpha ingredient}
+	flags {not_merchant ground_mesh ingredient}
 	effects {
 		heal 150
 	}
@@ -2477,7 +2477,7 @@ consumable green_herb {
 	value 50
 	mesh "green_herb.qmsh"
 	type herb
-	flags {not_alchemist not_merchant ground_mesh alpha}
+	flags {not_alchemist not_merchant ground_mesh}
 	effects {
 		green_hair 0
 	}
@@ -2488,7 +2488,7 @@ consumable alchemist_herb {
 	value 25
 	mesh "woddruff_herb.qmsh"
 	type herb
-	flags {not_shop not_chest not_random not_alchemist ground_mesh alpha}
+	flags {not_shop not_chest not_random not_alchemist ground_mesh}
 }
 
 consumable magic_crystal {
@@ -2917,7 +2917,7 @@ book book_orcs {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha ground_mesh}
+	flags ground_mesh
 }
 
 book book_undead {
@@ -2925,7 +2925,7 @@ book book_undead {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha ground_mesh}
+	flags ground_mesh
 }
 
 book book_behind_the_wall {
@@ -2933,7 +2933,7 @@ book book_behind_the_wall {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha ground_mesh}
+	flags ground_mesh
 }
 
 book book_adventurer {
@@ -2941,7 +2941,7 @@ book book_adventurer {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha ground_mesh}
+	flags ground_mesh
 }
 
 book book_ld {
@@ -2949,7 +2949,7 @@ book book_ld {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha not_shop not_chest not_random ground_mesh}
+	flags {not_shop not_chest not_random ground_mesh}
 }
 
 book book_runic {
@@ -2957,7 +2957,7 @@ book book_runic {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha not_shop not_chest not_random ground_mesh}
+	flags {not_shop not_chest not_random ground_mesh}
 	runic 1
 }
 
@@ -2966,7 +2966,7 @@ book q_zlo_ksiega {
 	value 100
 	tex "summoning.png"
 	scheme book
-	flags {alpha not_shop not_chest not_random}
+	flags {not_shop not_chest not_random}
 	runic 1
 }
 
@@ -2983,7 +2983,7 @@ book book_q_cleric {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {alpha not_shop not_chest not_random ground_mesh important}
+	flags {not_shop not_chest not_random ground_mesh important}
 	runic 1
 }
 

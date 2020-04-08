@@ -42,7 +42,6 @@ struct GlowNode
 	} type;
 	SceneNode* node;
 	void* ptr;
-	bool alpha;
 };
 
 //-----------------------------------------------------------------------------

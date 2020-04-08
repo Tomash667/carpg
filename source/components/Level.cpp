@@ -3011,11 +3011,8 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 		trap.obj2.pos.y -= 2.f;
 		trap.hitted = new vector<Unit*>;
 	}
-	else
-	{
+	else if(type == TRAP_FIREBALL)
 		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
-		trap.obj.base = &BaseObject::obj_alpha;
-	}
 
 	if(timed)
 	{

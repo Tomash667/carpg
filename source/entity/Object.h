@@ -24,13 +24,11 @@ struct Object
 	{
 		return mesh->head.radius * scale;
 	}
-	// -1 - nie, 0 - tak, 1 - tak i bez cullingu
-	int RequireAlphaTest() const
+	bool RequireNoCulling() const
 	{
-		if(!base)
-			return -1;
-		else
-			return base->alpha;
+		if(base)
+			return IsSet(base->flags, OBJ_NO_CULLING);
+		return false;
 	}
 	bool IsBillboard() const
 	{

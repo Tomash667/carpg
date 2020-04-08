@@ -148,8 +148,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
 				node->SetMesh(mesh);
-				if(IsSet(item.item->flags, ITEM_ALPHA))
-					node->flags |= SceneNode::F_ALPHA_TEST;
 				node->center = item.pos;
 				node->mat = Matrix::Rotation(item.rot) * Matrix::Translation(pos);
 				node->tex_override = nullptr;
@@ -164,7 +162,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						glow.node = node;
 						glow.type = GlowNode::Item;
 						glow.ptr = &item;
-						glow.alpha = IsSet(item.item->flags, ITEM_ALPHA);
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -202,7 +199,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						glow.node = node;
 						glow.type = GlowNode::Usable;
 						glow.ptr = &use;
-						glow.alpha = false;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -245,7 +241,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						glow.node = node;
 						glow.type = GlowNode::Chest;
 						glow.ptr = &chest;
-						glow.alpha = false;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -287,7 +282,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						glow.node = node;
 						glow.type = GlowNode::Door;
 						glow.ptr = &door;
-						glow.alpha = false;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -360,11 +354,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
 				node->SetMesh(trap.obj.mesh);
-				int alpha = trap.obj.RequireAlphaTest();
-				if(alpha == 0)
-					node->flags |= SceneNode::F_ALPHA_TEST;
-				else if(alpha == 1)
-					node->flags |= SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+				if(trap.obj.RequireNoCulling())
+					node->flags |= SceneNode::F_NO_CULLING;
 				node->center = trap.obj.pos;
 				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
 				node->tex_override = nullptr;
@@ -380,11 +371,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
 				node->SetMesh(trap.obj2.mesh);
-				int alpha = trap.obj2.RequireAlphaTest();
-				if(alpha == 0)
-					node->flags = SceneNode::F_ALPHA_TEST;
-				else if(alpha == 1)
-					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+				if(trap.obj2.RequireNoCulling())
+					node->flags |= SceneNode::F_NO_CULLING;
 				node->center = trap.obj2.pos;
 				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
 				node->tex_override = nullptr;
@@ -672,7 +660,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			glow.node = node;
 			glow.type = GlowNode::Unit;
 			glow.ptr = &u;
-			glow.alpha = false;
 		}
 		else
 		{
@@ -705,7 +692,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -757,11 +743,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	}
 
 	if(u.used_item && u.action != A_USE_ITEM)
-	{
 		right_hand_item = u.used_item->mesh;
-		if(IsSet(u.used_item->flags, ITEM_ALPHA))
-			right_hand_item_flags = SceneNode::F_ALPHA_TEST;
-	}
 
 	Matrix mat_scale;
 	if(u.human_data)
@@ -797,7 +779,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -841,7 +822,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -885,7 +865,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = IsSet(right_hand_item_flags, SceneNode::F_ALPHA_TEST);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -943,7 +922,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -973,7 +951,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = false;
 			}
 			else
 			{
@@ -1003,7 +980,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 					glow.node = node3;
 					glow.type = GlowNode::Unit;
 					glow.ptr = &u;
-					glow.alpha = false;
 				}
 				else
 				{
@@ -1034,7 +1010,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 					glow.node = node3;
 					glow.type = GlowNode::Unit;
 					glow.ptr = &u;
-					glow.alpha = false;
 				}
 				else
 				{
@@ -1065,7 +1040,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 					glow.node = node3;
 					glow.type = GlowNode::Unit;
 					glow.ptr = &u;
-					glow.alpha = false;
 				}
 				else
 				{
@@ -1117,11 +1091,8 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	}
 
 	node->SetMesh(o.mesh);
-	int alpha = o.RequireAlphaTest();
-	if(alpha == 0)
-		node->flags |= SceneNode::F_ALPHA_TEST;
-	else if(alpha == 1)
-		node->flags |= SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+	if(o.RequireNoCulling())
+		node->flags |= SceneNode::F_NO_CULLING;
 	node->tex_override = nullptr;
 	node->tint = Vec4(1, 1, 1, 1);
 	if(!IsSet(o.mesh->head.flags, Mesh::F_SPLIT))
@@ -1867,7 +1838,7 @@ void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 	/*IDirect3DDevice9* device = render->GetDevice();
 	ID3DXEffect* effect = glow_shader->effect;
 
-	
+
 
 	//======================================================================
 	// w teksturze są teraz wyrenderowane obiekty z kolorem glow
@@ -2019,7 +1990,6 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 	SuperShader* shader = scene_mgr->super_shader;
 
 	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
 	render->SetNoCulling(false);
 	render->SetNoZWrite(false);
 
@@ -2114,7 +2084,6 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	/*IDirect3DDevice9* device = render->GetDevice();
 	ID3DXEffect* effect = basic_shader->effect;
 
-	render->SetAlphaTest(false);
 	render->SetAlphaBlend(false);
 	render->SetNoCulling(true);
 	render->SetNoZWrite(false);
@@ -2186,7 +2155,6 @@ void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 	/*IDirect3DDevice9* device = render->GetDevice();
 	SuperShader* shader = scene_mgr->super_shader;
 
-	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
 	render->SetNoCulling(false);
 	render->SetNoZWrite(true);
@@ -2284,7 +2252,6 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	/*IDirect3DDevice9* device = render->GetDevice();
 	ID3DXEffect* effect = basic_shader->effect;
 
-	render->SetAlphaTest(false);
 	render->SetAlphaBlend(true);
 	render->SetNoCulling(true);
 	render->SetNoZWrite(true);
