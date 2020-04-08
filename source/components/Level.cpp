@@ -93,7 +93,7 @@ void Level::LoadLanguage()
 void Level::Init()
 {
 	terrain = new Terrain;
-	TerrainOptions terrain_options;
+	Terrain::Options terrain_options;
 	terrain_options.n_parts = 8;
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
