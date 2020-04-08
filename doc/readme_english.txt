@@ -303,7 +303,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 		multiplayer uses (nick, server_name, server_player, server_pswd, server_ip),
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
-	* screenshot_format – set screenshot (jpg, bmp, tga, png)
+	* screenshot_format – set screenshot (jpg, bmp, tif, gif, png, dds)
 	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server

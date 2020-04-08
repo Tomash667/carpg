@@ -240,7 +240,7 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 		server_name, server_players, server_pswd, server_ip), jeśli nie ma
 		którejś zmiennej to nie uruchamia automatycznie
 	* resolution (800x600 [1024x768]) - rozdzielczość ekranu
-	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
+	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tif, gif, png, dds)
 	* seed - ziarno losowości
 	* server_ip - zapamiętane ip serwera
 	* server_lan - jeśli jest 1 to serwer nie będzie rejestrowany w głównym serwerze

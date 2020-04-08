@@ -85,7 +85,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 		{
 			Unit& u = **it;
-			ListDrawObjectsUnit(frustum, outside, u);
+			if(u.IsPlayer())
+				ListDrawObjectsUnit(frustum, outside, u);
+			FIXME;
 		}
 	}
 
