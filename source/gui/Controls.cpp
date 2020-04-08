@@ -467,7 +467,7 @@ void Controls::SelectCell(int item, int column, int button)
 {
 	if(button == 0)
 	{
-		input->SetState(Key::LeftButton, IS_UP);
+		input->SetState(Key::LeftButton, Input::IS_UP);
 		picked = item;
 		picked_n = column - 1;
 		cursor_tick = 0.f;
