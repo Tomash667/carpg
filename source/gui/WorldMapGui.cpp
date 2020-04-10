@@ -388,7 +388,7 @@ void WorldMapGui::Update(float dt)
 		{
 			buttons[i].mouse_focus = focus;
 			buttons[i].Update(dt);
-			if(buttons[i].IsInside(gui->cursor_pos))
+			if(!combo_search.focus && buttons[i].IsInside(gui->cursor_pos))
 			{
 				group = 0;
 				id = (i == 0 ? GK_JOURNAL : GK_TALK_BOX);
