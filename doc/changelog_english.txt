@@ -9,6 +9,7 @@ Fixes:
 - after loading game where client is ending using object it was stuck inside object
 - no encounters when spamming travel and stop travel [Lemiczek]
 - no quest item spawned in crypt [Ampped]
+- camp spawned under city and can't be entered in bandits/camp near city quest [Ampped]
 
 --------------------------------------------------------------------------------
 Version 0.14 (2020-03-31):

@@ -151,7 +151,8 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedTalkWithCaptain:
 		// info o obozie
 		{
-			camp_loc = world->CreateCamp(GetStartLocation().pos, UnitGroup::Get("bandits"));
+			Vec2 pos = world->FindPlace(GetStartLocation().pos, 64.f);
+			camp_loc = world->CreateCamp(pos, UnitGroup::Get("bandits"));
 			Location& camp = *world->GetLocation(camp_loc);
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
