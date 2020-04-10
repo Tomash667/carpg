@@ -13,6 +13,8 @@ Poprawki:
 - klikanie na pasek przewijania podczas alchemii gdy można stworzyć tylko jedną miksturkę powodowało wyświetlenie błędnych liczb [Lemiczek]
 - po wczytaniu gry gdzie klient kończy korzystać z obiektu jest on wbity w obiekt
 - brak spotkań na mapie gdy szybko zleca się i anuluje podróż [Lemiczek]
+- brak questowych przedmiotów w krypcie [Ampped]
+- obóz pojawia się pod miastem i nie można do niego wejść w questach bandyci/obóz koło miasta [Ampped]
 
 --------------------------------------------------------------------------------
 Wersja 0.14 (2020-03-31):

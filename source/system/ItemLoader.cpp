@@ -49,6 +49,7 @@ enum Property
 	P_SPEED,
 	P_SCHEME,
 	P_RUNIC,
+	P_RECIPE,
 	P_BLOCK,
 	P_EFFECTS,
 	P_TAG
@@ -105,7 +106,7 @@ void ItemLoader::Cleanup()
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
 	DeleteElements(Stock::stocks);
-	DeleteElements(Recipe::recipes);
+	DeleteElements(Recipe::hash_recipes);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -157,6 +158,7 @@ void ItemLoader::InitTokenizer()
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },
 		{ "runic", P_RUNIC },
+		{ "recipes", P_RECIPE },
 		{ "block", P_BLOCK },
 		{ "effects", P_EFFECTS },
 		{ "tag", P_TAG }
@@ -320,6 +322,17 @@ void ItemLoader::Finalize()
 {
 	Item::gold = Item::Get("gold");
 
+	// Load recipes into books as all recipes should be loaded now
+	for(Book* b : Book::books)
+	{
+		for(string& rcp_id : b->recipe_ids)
+		{
+			Recipe* recipe = Recipe::TryGet(rcp_id);
+			if(!recipe)
+				t.Throw("Could not find recipe '%s' for book '%s'", rcp_id, b->id);
+			b->recipes.push_back(recipe);
+		}
+	}
 	CalculateCrc();
 
 	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size(), content.crc[(int)Content::Id::Items]);
@@ -366,7 +379,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= Bit(P_SCHEME) | Bit(P_RUNIC);
+		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPE);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -608,6 +621,22 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_RUNIC:
 			item->ToBook().runic = t.MustGetBool();
+			break;
+		case P_RECIPE:
+			// load the ids only, recipes may not be loaded yet
+			if(t.IsSymbol('{'))
+			{
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					item->ToBook().recipe_ids.push_back(t.GetString());
+					t.Next();
+				}
+			}
+			else
+			{
+				item->ToBook().recipe_ids.push_back(t.GetString());
+			}
 			break;
 		case P_EFFECTS:
 			t.AssertSymbol('{');
@@ -1198,11 +1227,19 @@ void ItemLoader::ParseBetterItems()
 //=================================================================================================
 void ItemLoader::ParseRecipe(const string& id)
 {
-	if(Recipe::TryGet(id))
-		t.Throw("Id must be unique.");
+	int hash = Hash(id);
+	Recipe* existing_recipe = Recipe::Get(hash);
+	if(existing_recipe)
+	{
+		if(existing_recipe->id == id)
+			t.Throw("Id must be unique.");
+		else
+			t.Throw("Id hash collision.");
+	}
 
 	Ptr<Recipe> recipe;
 	recipe->id = id;
+	recipe->hash = hash;
 
 	t.Next();
 	t.AssertSymbol('{');
@@ -1271,7 +1308,9 @@ void ItemLoader::ParseRecipe(const string& id)
 	else if(recipe->items.empty())
 		LoadError("No required items.");
 	else
-		Recipe::recipes.push_back(recipe.Pin());
+	{
+		Recipe::hash_recipes[hash] = recipe.Pin();
+	}
 }
 
 //=================================================================================================
@@ -1421,8 +1460,10 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->regions);
 	}
 
-	for(Recipe* recipe : Recipe::recipes)
+	for(auto& element :  Recipe::hash_recipes)
 	{
+		Recipe* recipe = element.second;
+		crc.Update(recipe->id);
 		crc.Update(recipe->result->id);
 		for(pair<const Item*, uint>& p : recipe->items)
 		{

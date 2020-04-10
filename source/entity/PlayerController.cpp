@@ -397,6 +397,11 @@ void PlayerController::Save(FileWriter& f)
 		for(Entity<Unit> unit : ability_targets)
 			f << unit;
 	}
+	f << recipes.size();
+	for(MemorizedRecipe& mr : recipes)
+	{
+		f << mr.recipe->hash;
+	}
 	f << split_gold;
 	f << always_run;
 	f << exp;
@@ -609,6 +614,44 @@ void PlayerController::Load(FileReader& f)
 		for(Entity<Unit>& unit : ability_targets)
 			f >> unit;
 	}
+
+	// recipes
+	if(LOAD_VERSION >= V_DEV)
+	{
+		uint count;
+		f >> count;
+		recipes.resize(count);
+		for(MemorizedRecipe& mr : recipes)
+		{
+			mr.recipe = Recipe::Get(f.Read<int>());
+		}
+	}
+	else
+	{
+		// Learn recipes based on player skill for saves before recipe learning
+		if (unit->Get(SkillId::ALCHEMY) >= 1)
+		{
+			Recipe* rcp_p_hp = Recipe::TryGet("p_hp");
+			Recipe* rcp_p_mp = Recipe::TryGet("p_mp");
+			AddRecipe(rcp_p_hp);
+			AddRecipe(rcp_p_mp);
+		}
+		if (unit->Get(SkillId::ALCHEMY) >= 25)
+		{
+			Recipe* rcp_p_hp = Recipe::TryGet("p_hp2");
+			Recipe* rcp_p_mp = Recipe::TryGet("p_mp2");
+			AddRecipe(rcp_p_hp);
+			AddRecipe(rcp_p_mp);
+		}
+		if (unit->Get(SkillId::ALCHEMY) >= 50)
+		{
+			Recipe* rcp_p_hp = Recipe::TryGet("p_hp3");
+			Recipe* rcp_p_mp = Recipe::TryGet("p_mp3");
+			AddRecipe(rcp_p_hp);
+			AddRecipe(rcp_p_mp);
+		}
+	}
+
 	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
 	else
@@ -657,7 +700,7 @@ void PlayerController::Load(FileReader& f)
 	}
 	else
 		InitShortcuts();
-
+	
 	action = PlayerAction::None;
 }
 
@@ -1147,6 +1190,11 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << ab.recharge;
 		f.WriteCasted<byte>(ab.charges);
 	}
+	f << recipes.size();
+	for(const MemorizedRecipe& mr : recipes)
+	{
+		f << mr.recipe->hash;
+	}
 	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
@@ -1227,6 +1275,15 @@ bool PlayerController::Read(BitStreamReader& f)
 		f >> ab.cooldown;
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
+	}
+	int i_count;
+	f >> i_count;
+	if(!f || !f.Ensure(sizeof(MemorizedRecipe) * i_count))
+		return false;
+	recipes.resize(i_count);
+	for(MemorizedRecipe& mr : recipes)
+	{
+		mr.recipe = Recipe::Get(f.Read<int>());
 	}
 	f.ReadCasted<byte>(next_action);
 	game_gui->ability->Refresh();
@@ -1946,10 +2003,43 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		data.ability_ready = nullptr;
 }
 
+bool PlayerController::AddRecipe(Recipe* recipe)
+{
+	if(HaveRecipe(recipe))
+		return false;
+	MemorizedRecipe mr;
+	mr.recipe = recipe;
+	recipes.push_back(mr);
+
+	if(!unit->fake_unit)
+	{
+		if(Net::IsServer() && !IsLocal())
+		{
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::ADD_RECIPE;
+			c.recipe = recipe;
+		}
+	}
+		
+
+	return true;
+}
+
+bool PlayerController::HaveRecipe(Recipe* recipe) const
+{
+	assert(recipe);
+	for(const MemorizedRecipe& mr : recipes)
+	{
+		if(mr.recipe == recipe)
+			return true;
+	}
+	return false;
+}
+
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
-	// licznik otrzymanych obra¿eñ
+	// licznik otrzymanych obraï¿½eï¿½
 	last_dmg = 0.f;
 	if(Net::IsLocal())
 		last_dmg_poison = 0.f;
@@ -2008,7 +2098,7 @@ void PlayerController::Update(float dt)
 			{
 				if(action_unit->IsAlive())
 				{
-					// grabiony cel o¿y³
+					// grabiony cel oï¿½yï¿½
 					game->CloseInventory();
 				}
 			}
@@ -2016,7 +2106,7 @@ void PlayerController::Update(float dt)
 			{
 				if(!action_unit->IsStanding() || !action_unit->IsIdle())
 				{
-					// handlarz umar³ / zaatakowany
+					// handlarz umarï¿½ / zaatakowany
 					game->CloseInventory();
 				}
 			}
@@ -2026,7 +2116,7 @@ void PlayerController::Update(float dt)
 			if(!game->dialog_context.talker->IsStanding() || !game->dialog_context.talker->IsIdle() || game->dialog_context.talker->to_remove
 				|| game->dialog_context.talker->frozen != FROZEN::NO)
 			{
-				// rozmówca umar³ / jest usuwany / zaatakowa³ kogoœ
+				// rozmï¿½wca umarï¿½ / jest usuwany / zaatakowaï¿½ kogoï¿½
 				game->dialog_context.EndDialog();
 			}
 		}
@@ -2235,7 +2325,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 			if(move)
 			{
-				// ustal k¹t i szybkoœæ ruchu
+				// ustal kï¿½t i szybkoï¿½ï¿½ ruchu
 				float angle = u.rot;
 				bool run = always_run;
 				if(u.action == A_ATTACK && u.act.attack.run)
@@ -2251,11 +2341,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				float speed_mod;
 				switch(move)
 				{
-				case 10: // przód
+				case 10: // przï¿½d
 					angle += PI;
 					speed_mod = 1.f;
 					break;
-				case -10: // ty³
+				case -10: // tyï¿½
 					run = false;
 					speed_mod = 0.8f;
 					break;
@@ -2267,20 +2357,20 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					angle += PI * 3 / 2;
 					speed_mod = 0.75f;
 					break;
-				case 9: // lewa góra
+				case 9: // lewa gï¿½ra
 					angle += PI * 3 / 4;
 					speed_mod = 0.9f;
 					break;
-				case 11: // prawa góra
+				case 11: // prawa gï¿½ra
 					angle += PI * 5 / 4;
 					speed_mod = 0.9f;
 					break;
-				case -11: // lewy ty³
+				case -11: // lewy tyï¿½
 					run = false;
 					angle += PI / 4;
 					speed_mod = 0.9f;
 					break;
-				case -9: // prawy ty³
+				case -9: // prawy tyï¿½
 					run = false;
 					angle += PI * 7 / 4;
 					speed_mod = 0.9f;
@@ -2602,21 +2692,21 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			Unit* u2 = data.before_player_ptr.unit;
 
-			// przed graczem jest jakaœ postaæ
+			// przed graczem jest jakaï¿½ postaï¿½
 			if(u2->live_state == Unit::DEAD || u2->live_state == Unit::FALL)
 			{
-				// grabienie zw³ok
+				// grabienie zwï¿½ok
 				if(u.action != A_NONE)
 				{
 				}
 				else if(u2->live_state == Unit::FALL)
 				{
-					// nie mo¿na okradaæ osoby która zaraz wstanie
+					// nie moï¿½na okradaï¿½ osoby ktï¿½ra zaraz wstanie
 					game_gui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
-					// nie mo¿na okradaæ sojuszników
+					// nie moï¿½na okradaï¿½ sojusznikï¿½w
 					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
@@ -2625,12 +2715,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
-						// ktoœ ju¿ ograbia zw³oki
+						// ktoï¿½ juï¿½ ograbia zwï¿½oki
 						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
-						// rozpoczynij wymianê przedmiotów
+						// rozpoczynij wymianï¿½ przedmiotï¿½w
 						action = PlayerAction::LootUnit;
 						action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
@@ -2640,7 +2730,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 				else
 				{
-					// wiadomoœæ o wymianie do serwera
+					// wiadomoï¿½ï¿½ o wymianie do serwera
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::LOOT_UNIT;
 					c.id = u2->id;
@@ -2655,19 +2745,19 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk(u))
 					{
-						// osoba jest czymœ zajêta
+						// osoba jest czymï¿½ zajï¿½ta
 						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
-						// rozpocznij rozmowê
+						// rozpocznij rozmowï¿½
 						game->dialog_context.StartDialog(u2);
 						data.before_player = BP_NONE;
 					}
 				}
 				else
 				{
-					// wiadomoœæ o rozmowie do serwera
+					// wiadomoï¿½ï¿½ o rozmowie do serwera
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TALK;
 					c.id = u2->id;
@@ -2679,7 +2769,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_CHEST)
 		{
-			// pl¹drowanie skrzyni
+			// plï¿½drowanie skrzyni
 			if(u.action != A_NONE)
 			{
 			}
@@ -2691,7 +2781,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 			else
 			{
-				// wyœlij wiadomoœæ o pl¹drowaniu skrzyni
+				// wyï¿½lij wiadomoï¿½ï¿½ o plï¿½drowaniu skrzyni
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
 				c.id = data.before_player_ptr.chest->id;
@@ -2746,7 +2836,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_ITEM)
 		{
-			// podnieœ przedmiot
+			// podnieï¿½ przedmiot
 			GroundItem& item = *data.before_player_ptr.item;
 			if(u.action == A_NONE)
 			{
@@ -3156,7 +3246,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			case -11: // left backward
 				data.ability_rot = -PI * 3 / 4;
 				break;
-			case -9: // prawy ty³
+			case -9: // prawy tyï¿½
 				data.ability_rot = PI * 3 / 4;
 				break;
 			}

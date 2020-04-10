@@ -29,7 +29,7 @@ private:
 	uint HaveIngredients(Recipe* recipe);
 
 	vector<pair<const Item*, uint>> ingredients;
-	int skill, counter;
+	int counter;
 	GamePanel left, right;
 	ListBox list;
 	Button button;
