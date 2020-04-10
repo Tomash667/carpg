@@ -1971,7 +1971,7 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 		bool ok = false;
 		for(int i = 0; i < n_targets; ++i)
 		{
-			if(loc->target == i)
+			if(loc->target == targets[i])
 			{
 				ok = true;
 				break;
