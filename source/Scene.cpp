@@ -1810,14 +1810,13 @@ void Game::DrawScene(bool outside)
 	// particles
 	if(!draw_batch.billboards.empty() || !draw_batch.pes.empty() || draw_batch.tpes)
 	{
-		particle_shader->Begin(game_level->camera);
+		particle_shader->Prepare(game_level->camera);
 		if(!draw_batch.billboards.empty())
 			particle_shader->DrawBillboards(draw_batch.billboards);
 		if(draw_batch.tpes)
 			particle_shader->DrawTrailParticles(*draw_batch.tpes);
 		if(!draw_batch.pes.empty())
 			particle_shader->DrawParticles(draw_batch.pes);
-		particle_shader->End();
 	}
 
 	// alpha nodes

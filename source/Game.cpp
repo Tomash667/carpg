@@ -1467,6 +1467,9 @@ uint Game::ValidateGameData(bool major)
 	Item::Validate(err);
 	Perk::Validate(err);
 
+	if(major)
+		err += res_mgr->VerifyResources();
+
 	if(err == 0)
 		Info("Test: Validation succeeded.");
 	else
