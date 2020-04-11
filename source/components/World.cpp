@@ -1485,6 +1485,20 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			++index;
 		}
 	}
+
+	if(LOAD_VERSION < V_MAIN)
+	{
+		for(Location* loc : locations)
+		{
+			if(loc && loc->type == L_CAMP)
+			{
+				Location* city = locations[GetNearestSettlement(loc->pos)];
+				if(Vec2::Distance(loc->pos, city->pos) < 16.f)
+					loc->pos.y += 16.f;
+			}
+		}
+	}
+
 	if(LOAD_VERSION >= V_0_8)
 		f >> tiles;
 	else
