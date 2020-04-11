@@ -2,6 +2,7 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Poprawki:
++ zwiększenie maksymalnej liczby graczy do 64
 - crash przy alchemii, naprawione przez BottledByte [Lemiczek]
 - crash po zapisaniu gry przy odchodzeniu od kociołka po alchemii [Lemiczek]
 - popsute angielski teksty w głównej fabule [BottledByte]

@@ -2,6 +2,7 @@ Changelog
 
 --------------------------------------------------------------------------------
 Fixes:
++ increased max allowed players to 64
 - crash on crafting in alchemy, fixed by BottledByte [Lemiczek]
 - crash after finishing using cauldron after alchemy [Lemiczek]
 - missing/broken english texts in main storyline [BottledByte]

@@ -264,6 +264,7 @@ lan = "LAN"
 create = "Create"
 enterServerName = "Enter server name."
 invalidPlayersCount = "The number of players needs to be in range 1-%d."
+confirmMaxPlayers = "Warning! Playing with so many players is not recommended. Are you sure you want to create a server?"
 
 [PickServerPanel]
 players = "Players"
