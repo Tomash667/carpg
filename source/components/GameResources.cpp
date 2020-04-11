@@ -72,7 +72,7 @@ Texture* GameResources::CreatePlaceholderTexture(const Int2& size)
 		for(int x = 0; x < size.x; ++x)
 			texData[x + y * size.x] = col[(x >= size.x / 2 ? 1 : 0) + (y >= size.y / 2 ? 1 : 0) % 2];
 	}
-	TEX t = render->CreateRawTexture(size, texData);
+	TEX t = render->CreateImmutableTexture(size, texData);
 
 	tex = new Texture;
 	tex->path = name;

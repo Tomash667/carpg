@@ -441,7 +441,7 @@ public:
 	// RESOURCES
 	//-----------------------------------------------------------------
 	RenderTarget* rt_save, *rt_item_rot;
-	Texture* tMinimap;
+	DynamicTexture* tMinimap;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS

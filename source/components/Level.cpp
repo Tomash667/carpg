@@ -3939,12 +3939,13 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
 		Tile& p = lvl->map[it->x + (lvl->w - it->y - 1)*lvl->w];
 		SetBit(p.flags, Tile::F_REVEALED);
-		uint* pix = lock[it->y] + it->x;
+		uint* pix = tex[it->y] + it->x;
 		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
 			*pix = Color(100, 100, 100);
 		else if(p.type == DOORS)
@@ -3952,6 +3953,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 		else
 			*pix = Color(220, 220, 240);
 	}
+	tex.Unlock();
 
 	if(Net::IsLocal())
 	{

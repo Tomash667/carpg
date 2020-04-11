@@ -408,7 +408,7 @@ void Game::ConfigureGame()
 	render->RegisterShader(skybox_shader = new SkyboxShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
 
-	tMinimap = render->CreateTexture(Int2(128, 128));
+	tMinimap = render->CreateDynamicTexture(Int2(128));
 	CreateRenderTargets();
 }
 
