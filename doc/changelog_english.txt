@@ -10,6 +10,7 @@ Fixes:
 - no encounters when spamming travel and stop travel [Lemiczek]
 - no quest item spawned in crypt [Ampped]
 - camp spawned under city and can't be entered in bandits/camp near city quest [Ampped]
+- loading freeze after dead unit with script vars is removed (ill villager) [Ampped]
 
 --------------------------------------------------------------------------------
 Version 0.14 (2020-03-31):
