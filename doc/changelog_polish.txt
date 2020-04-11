@@ -6,7 +6,8 @@ Wersja 0.15 (2020-03-31):
 + aktualizacja bibliotek: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
 
 --------------------------------------------------------------------------------
-Poprawki:
+Wersja 0.14.1 (2020-04-11):
++ zwiększenie maksymalnej liczby graczy do 64
 - crash przy alchemii, naprawione przez BottledByte [Lemiczek]
 - crash po zapisaniu gry przy odchodzeniu od kociołka po alchemii [Lemiczek]
 - popsute angielski teksty w głównej fabule [BottledByte]
@@ -15,6 +16,7 @@ Poprawki:
 - brak spotkań na mapie gdy szybko zleca się i anuluje podróż [Lemiczek]
 - brak questowych przedmiotów w krypcie [Ampped]
 - obóz pojawia się pod miastem i nie można do niego wejść w questach bandyci/obóz koło miasta [Ampped]
+- zatrzymanie wczytywania się gdy zostaje usunięta jednostka z zmienymi skryptu (chory wieśniak) [Ampped]
 
 --------------------------------------------------------------------------------
 Wersja 0.14 (2020-03-31):

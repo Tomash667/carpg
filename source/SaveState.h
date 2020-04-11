@@ -26,7 +26,8 @@ enum SAVE_VERSION
 	V_0_12 = 17, // 0.12/0.12.2
 	V_0_13 = 18, // 0.13
 	V_0_14 = 19, // 0.14
-	V_NEXT = 20,
+	V_0_14_1 = 20, // 0.14.1
+	V_NEXT = 21,
 
 	// save version used by saves
 	V_CURRENT = V_NEXT,

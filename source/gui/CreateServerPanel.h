@@ -13,6 +13,7 @@ class CreateServerPanel : public DialogBox
 	enum Id
 	{
 		IdOk = GuiEvent_Custom,
+		IdOkConfirm,
 		IdCancel,
 		IdHidden
 	};
@@ -26,6 +27,6 @@ public:
 
 	TextBox textbox[3];
 	CheckBox checkbox;
-	cstring txCreateServer, textbox_text[3], txEnterServerName, txInvalidPlayersCount;
+	cstring txCreateServer, textbox_text[3], txEnterServerName, txInvalidPlayersCount, txConfirmMaxPlayers;
 	GuiContainer cont;
 };

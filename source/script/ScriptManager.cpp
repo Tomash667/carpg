@@ -1122,12 +1122,12 @@ NamespaceBuilder ScriptManager::WithNamespace(cstring name, void* auxiliary)
 Vars* ScriptManager::GetVars(Unit* unit)
 {
 	assert(unit);
-	auto it = unit_vars.find(unit);
+	auto it = unit_vars.find(unit->id);
 	Vars* vars;
 	if(it == unit_vars.end())
 	{
 		vars = new Vars;
-		unit_vars.insert(std::unordered_map<Unit*, Vars*>::value_type(unit, vars));
+		unit_vars.insert(std::unordered_map<int, Vars*>::value_type(unit->id, vars));
 	}
 	else
 		vars = it->second;
@@ -1160,7 +1160,7 @@ void ScriptManager::Save(FileWriter& f)
 		if(e.second->IsEmpty())
 			continue;
 		++count;
-		f << e.first->id;
+		f << e.first;
 		e.second->Save(f);
 	}
 	if(count > 0)
@@ -1185,7 +1185,10 @@ void ScriptManager::Load(FileReader& f)
 		Unit* unit = Unit::GetById(id);
 		Vars* vars = new Vars;
 		vars->Load(f);
-		unit_vars[unit] = vars;
+		if(unit)
+			unit_vars[id] = vars;
+		else
+			delete vars;
 	}
 }
 
