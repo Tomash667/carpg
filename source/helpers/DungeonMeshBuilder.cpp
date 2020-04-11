@@ -242,9 +242,7 @@ void DungeonMeshBuilder::Build()
 	data.pSysMem = buf.Get();
 
 	V(device->CreateBuffer(&desc, &data, &vb));
-#ifdef _DEBUG
-	vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("DungeonMeshVb"), "DungeonMeshVb");
-#endif
+	SetDebugName(vb, "DungeonMeshVb");
 
 	// fill index buffer
 	//----------
