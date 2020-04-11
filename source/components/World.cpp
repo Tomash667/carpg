@@ -1405,7 +1405,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		create_camp = 10;
 	f >> world_pos;
 	f >> reveal_timer;
-	if(LOAD_VERSION < V_MAIN && reveal_timer < 0)
+	if(LOAD_VERSION < V_0_14_1 && reveal_timer < 0)
 		reveal_timer = 0;
 	f >> encounter_chance;
 	f >> settlements;
@@ -1485,6 +1485,20 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			++index;
 		}
 	}
+
+	if(LOAD_VERSION < V_0_14_1)
+	{
+		for(Location* loc : locations)
+		{
+			if(loc && loc->type == L_CAMP)
+			{
+				Location* city = locations[GetNearestSettlement(loc->pos)];
+				if(Vec2::Distance(loc->pos, city->pos) < 16.f)
+					loc->pos.y += 16.f;
+			}
+		}
+	}
+
 	if(LOAD_VERSION >= V_0_8)
 		f >> tiles;
 	else

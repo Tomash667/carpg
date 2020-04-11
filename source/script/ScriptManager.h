@@ -164,7 +164,7 @@ private:
 	bool gather_output;
 	std::map<int, ScriptTypeInfo> script_type_infos;
 	std::map<string, int> var_type_map;
-	std::unordered_map<Unit*, Vars*> unit_vars;
+	std::unordered_map<int, Vars*> unit_vars;
 	ScriptContext ctx;
 	vector<SuspendedScript> suspended_scripts;
 };
