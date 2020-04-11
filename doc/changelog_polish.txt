@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Poprawki:
+Wersja 0.14.1 (2020-04-11):
 + zwiększenie maksymalnej liczby graczy do 64
 - crash przy alchemii, naprawione przez BottledByte [Lemiczek]
 - crash po zapisaniu gry przy odchodzeniu od kociołka po alchemii [Lemiczek]

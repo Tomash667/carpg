@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Fixes:
+Version 0.14.1 (2020-04-11):
 + increased max allowed players to 64
 - crash on crafting in alchemy, fixed by BottledByte [Lemiczek]
 - crash after finishing using cauldron after alchemy [Lemiczek]

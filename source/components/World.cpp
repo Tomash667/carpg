@@ -1405,7 +1405,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		create_camp = 10;
 	f >> world_pos;
 	f >> reveal_timer;
-	if(LOAD_VERSION < V_MAIN && reveal_timer < 0)
+	if(LOAD_VERSION < V_0_14_1 && reveal_timer < 0)
 		reveal_timer = 0;
 	f >> encounter_chance;
 	f >> settlements;
@@ -1486,7 +1486,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		}
 	}
 
-	if(LOAD_VERSION < V_MAIN)
+	if(LOAD_VERSION < V_0_14_1)
 	{
 		for(Location* loc : locations)
 		{
