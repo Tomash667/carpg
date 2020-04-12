@@ -1,33 +1,35 @@
 ﻿#include "Pch.h"
 #include "Game.h"
-#include "Terrain.h"
-#include "City.h"
-#include "InsideLocation.h"
+
 #include "Ability.h"
-#include "Profiler.h"
-#include "Portal.h"
-#include "Level.h"
-#include "SuperShader.h"
+#include "City.h"
+#include "DungeonMeshBuilder.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "ParticleSystem.h"
-#include "Render.h"
-#include "TerrainShader.h"
-#include "ResourceManager.h"
-#include "SoundManager.h"
-#include "PhysicCallbacks.h"
 #include "GameResources.h"
-#include "ParticleShader.h"
-#include "GlowShader.h"
-#include "PostfxShader.h"
-#include "BasicShader.h"
-#include "SkyboxShader.h"
+#include "InsideLocation.h"
+#include "Level.h"
 #include "Pathfinding.h"
-#include <SceneManager.h>
-#include <Scene.h>
+#include "PhysicCallbacks.h"
+#include "Portal.h"
+
 #include <Algorithm.h>
-#include "DungeonMeshBuilder.h"
-#include "DirectX.h"
+#include <BasicShader.h>
+#include <DirectX.h>
+#include <GlowShader.h>
+#include <ParticleShader.h>
+#include <ParticleSystem.h>
+#include <PostfxShader.h>
+#include <Profiler.h>
+#include <Render.h>
+#include <ResourceManager.h>
+#include <Scene.h>
+#include <SceneManager.h>
+#include <SkyboxShader.h>
+#include <SoundManager.h>
+#include <SuperShader.h>
+#include <Terrain.h>
+#include <TerrainShader.h>
 
 //=================================================================================================
 void Game::InitScene()
@@ -2150,12 +2152,11 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 {
 	FIXME;
-	/*IDirect3DDevice9* device = render->GetDevice();
-	SuperShader* shader = scene_mgr->super_shader;
+	/*SuperShader* shader = scene_mgr->super_shader;
 
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(true);
+	render->SetBlendState(Render::BLEND_ADD);
+	render->SetDepthState(Render::DEPTH_READ);
+	render->SetRasterState(Render::RASTER_NORMAL);
 
 	const bool use_fog = scene_mgr->use_lighting && scene_mgr->use_fog;
 
@@ -2237,10 +2238,7 @@ void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 		// draw
 		V(e->CommitChanges());
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, blood_v, sizeof(VDefault)));
-	}
-
-	V(e->EndPass());
-	V(e->End());*/
+	}*/
 }
 
 //=================================================================================================

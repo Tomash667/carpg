@@ -1,18 +1,18 @@
 #include "Pch.h"
 #include "CreateCharacterPanel.h"
+
 #include "Game.h"
-#include "Language.h"
-#include "GetTextDialog.h"
-#include "Language.h"
-#include "PickItemDialog.h"
-#include "ResourceManager.h"
-#include "DirectX.h"
-#include "Unit.h"
-#include "Render.h"
-#include "RenderTarget.h"
-#include "Level.h"
 #include "GameGui.h"
 #include "GameResources.h"
+#include "Language.h"
+#include "Level.h"
+#include "Unit.h"
+
+#include <GetTextDialog.h>
+#include <PickItemDialog.h>
+#include <Render.h>
+#include <RenderTarget.h>
+#include <ResourceManager.h>
 #include <SceneManager.h>
 
 //-----------------------------------------------------------------------------

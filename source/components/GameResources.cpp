@@ -1,20 +1,21 @@
 #include "Pch.h"
 #include "GameResources.h"
-#include "Item.h"
+
 #include "Ability.h"
-#include "Building.h"
 #include "BaseTrap.h"
-#include "Ability.h"
-#include "Language.h"
+#include "Building.h"
 #include "Game.h"
 #include "GameGui.h"
+#include "Item.h"
+#include "Language.h"
 #include "Level.h"
+
+#include <Mesh.h>
+#include <Render.h>
 #include <ResourceManager.h>
 #include <SoundManager.h>
-#include <Mesh.h>
 #include <Scene.h>
 #include <SceneManager.h>
-#include <Render.h>
 
 GameResources* global::game_res;
 
@@ -38,6 +39,7 @@ GameResources::~GameResources()
 void GameResources::Init()
 {
 	scene = new Scene;
+	scene->clear_color = Color::None;
 
 	Light light;
 	light.range = 10.f;
@@ -546,11 +548,8 @@ void GameResources::GenerateItemIcon(Item& item)
 	else
 		it = item_texture_map.end();
 
-	Texture* tex;
-
-		DrawItemIcon(item, rt_item, 0.f);
-		tex = render->CopyToTexture(rt_item);
-		FIXME;
+	DrawItemIcon(item, rt_item, 0.f);
+	Texture* tex = render->CopyToTexture(rt_item);
 
 	item.icon = tex;
 	if(it != item_texture_map.end())
