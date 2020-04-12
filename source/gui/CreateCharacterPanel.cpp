@@ -260,8 +260,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	//gui->DrawSprite(rt_char, Int2(pos.x + 228, pos.y + 64));
-	FIXME;
+	gui->DrawSprite(rt_char, Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -638,20 +637,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	FIXME;
-	/*IDirect3DDevice9* device = render->GetDevice();
-	HRESULT hr = device->TestCooperativeLevel();
-	if(hr != D3D_OK)
-		return;
-
-	render->SetAlphaBlend(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(false);
 	render->SetTarget(rt_char);
-
-	// start rendering
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
+	render->Clear(Color::None);
 
 	game_level->light_angle = PI / 2;
 	game_level->SetOutsideParams();
@@ -672,12 +659,9 @@ void CreateCharacterPanel::RenderUnit()
 	game->draw_batch.gather_lights = false;
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->draw_batch.Process();
-	scene_mgr->DrawSceneNodes(game->draw_batch.nodes, game->draw_batch.node_groups);
+	scene_mgr->DrawSceneNodes(game->draw_batch);
 
-	// end rendering
-	V(device->EndScene());
-
-	render->SetTarget(nullptr);*/
+	render->SetTarget(nullptr);
 }
 
 //=================================================================================================

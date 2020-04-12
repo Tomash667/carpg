@@ -668,8 +668,8 @@ void Game::DrawGame(RenderTarget* target)
 
 	//if(post_effects.empty())
 	//{
-	//	if(target)
-	//		render->SetTarget(target);
+		if(target)
+			render->SetTarget(target);
 
 		render->Clear(clear_color);
 
@@ -691,8 +691,8 @@ void Game::DrawGame(RenderTarget* target)
 		// draw gui
 		game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
-		//if(target)
-		//	render->SetTarget(nullptr);
+		if(target)
+			render->SetTarget(nullptr);
 	/*}
 	else
 	{
