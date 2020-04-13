@@ -296,21 +296,24 @@ void Item::CreateCopy(Item& item) const
 	{
 	case IT_OTHER:
 		{
-			OtherItem& o = (OtherItem&)item;
-			const OtherItem& o2 = ToOther();
-			o.mesh = o2.mesh;
-			o.tex = o2.tex;
-			o.desc = o2.desc;
-			o.flags = o2.flags;
-			o.id = o2.id;
-			o.name = o2.name;
+			Item& i = item;
+			const Item& i2 = *this;
+			OtherItem& o = i.ToOther();
+			const OtherItem& o2 = i2.ToOther();
+			
+			i.mesh = i2.mesh;
+			i.tex = i2.tex;
+			i.desc = i2.desc;
+			i.flags = i2.flags;
+			i.id = i2.id;
+			i.name = i2.name;
 			o.other_type = o2.other_type;
-			o.quest_id = o2.quest_id;
-			o.type = o2.type;
-			o.value = o2.value;
-			o.weight = o2.weight;
-			o.icon = o2.icon;
-			o.state = ResourceState::NotLoaded;
+			i.quest_id = i2.quest_id;
+			i.type = i2.type;
+			i.value = i2.value;
+			i.weight = i2.weight;
+			i.icon = i2.icon;
+			i.state = ResourceState::NotLoaded;
 		}
 		break;
 	default:
@@ -334,7 +337,8 @@ Item* Item::CreateCopy() const
 	{
 	case IT_OTHER:
 		{
-			OtherItem* o = new OtherItem;
+			Item* o = new Item(IT_OTHER);
+			o->SetProperty<OtherItem>(new OtherItem);
 			CreateCopy(*o);
 			return o;
 		}

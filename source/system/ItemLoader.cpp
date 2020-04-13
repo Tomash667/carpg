@@ -330,7 +330,7 @@ void ItemLoader::Finalize()
 		{
 			Recipe* recipe = Recipe::TryGet(rcp_id);
 			if(!recipe)
-				t.Throw("Could not find recipe '%s' for book '%s'", rcp_id, b->id);
+				t.Throw("Could not find recipe '%s' for book '%s'", rcp_id, b->GetItem().id);
 			b->recipes.push_back(recipe);
 		}
 	}
@@ -347,47 +347,56 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 
 	// create
 	int req = Bit(P_WEIGHT) | Bit(P_VALUE) | Bit(P_AI_VALUE) | Bit(P_MESH) | Bit(P_TEX) | Bit(P_FLAGS);
-	Ptr<Item> item(nullptr);
+	Ptr<Item> item(new Item(IT_NONE));
 	switch(type)
 	{
 	case IT_WEAPON:
-		item = new Weapon;
+		item->SetProperty<Weapon>(new Weapon);
+		item->type = ITEM_TYPE::IT_WEAPON;
 		req |= Bit(P_ATTACK) | Bit(P_REQ_STR) | Bit(P_TYPE) | Bit(P_MATERIAL) | Bit(P_DMG_TYPE) | Bit(P_EFFECTS);
 		break;
 	case IT_BOW:
-		item = new Bow;
+		item->SetProperty<Bow>(new Bow);
+		item->type = ITEM_TYPE::IT_BOW;
 		req |= Bit(P_ATTACK) | Bit(P_REQ_STR) | Bit(P_SPEED) | Bit(P_EFFECTS);
 		break;
 	case IT_SHIELD:
-		item = new Shield;
+		item->SetProperty<Shield>(new Shield);
+		item->type = ITEM_TYPE::IT_SHIELD;
 		req |= Bit(P_BLOCK) | Bit(P_REQ_STR) | Bit(P_MATERIAL) | Bit(P_EFFECTS);
 		break;
 	case IT_ARMOR:
-		item = new Armor;
+		item->SetProperty<Armor>(new Armor);
+		item->type = ITEM_TYPE::IT_ARMOR;
 		req |= Bit(P_DEFENSE) | Bit(P_MOBILITY) | Bit(P_REQ_STR) | Bit(P_MATERIAL) | Bit(P_UNIT_TYPE) | Bit(P_TYPE) | Bit(P_TEX_OVERRIDE) | Bit(P_EFFECTS);
 		break;
 	case IT_AMULET:
-		item = new Amulet;
+		item->SetProperty<Amulet>(new Amulet);
+		item->type = ITEM_TYPE::IT_AMULET;
 		req |= Bit(P_EFFECTS) | Bit(P_TAG);
 		break;
 	case IT_RING:
-		item = new Ring;
+		item->SetProperty<Ring>(new Ring);
+		item->type = ITEM_TYPE::IT_RING;
 		req |= Bit(P_EFFECTS) | Bit(P_TAG);
 		break;
 	case IT_CONSUMABLE:
-		item = new Consumable;
+		item->SetProperty<Consumable>(new Consumable);
+		item->type = ITEM_TYPE::IT_CONSUMABLE;
 		req |= Bit(P_TIME) | Bit(P_TYPE) | Bit(P_EFFECTS);
 		break;
 	case IT_BOOK:
-		item = new Book;
+		item->SetProperty<Book>(new Book);
+		item->type = ITEM_TYPE::IT_BOOK;
 		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPE);
 		break;
 	case IT_GOLD:
-		item = new Item(IT_GOLD);
+		item->type = ITEM_TYPE::IT_GOLD;
 		break;
 	case IT_OTHER:
 	default:
-		item = new OtherItem;
+		item->SetProperty<OtherItem>(new OtherItem);
+		item->type = ITEM_TYPE::IT_OTHER;
 		req |= Bit(P_TYPE);
 		break;
 	}
@@ -718,29 +727,29 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	switch(item_ptr->type)
 	{
 	case IT_WEAPON:
-		Weapon::weapons.push_back(static_cast<Weapon*>(item_ptr));
+		Weapon::weapons.push_back(static_cast<Weapon*>(item_ptr->GetProperty<Weapon>()));
 		break;
 	case IT_BOW:
-		Bow::bows.push_back(static_cast<Bow*>(item_ptr));
+		Bow::bows.push_back(static_cast<Bow*>(item_ptr->GetProperty<Bow>()));
 		break;
 	case IT_SHIELD:
-		Shield::shields.push_back(static_cast<Shield*>(item_ptr));
+		Shield::shields.push_back(static_cast<Shield*>(item_ptr->GetProperty<Shield>()));
 		break;
 	case IT_ARMOR:
-		Armor::armors.push_back(static_cast<Armor*>(item_ptr));
+		Armor::armors.push_back(static_cast<Armor*>(item_ptr->GetProperty<Armor>()));
 		break;
 	case IT_AMULET:
-		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr));
+		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr->GetProperty<Amulet>()));
 		break;
 	case IT_RING:
-		Ring::rings.push_back(static_cast<Ring*>(item_ptr));
+		Ring::rings.push_back(static_cast<Ring*>(item_ptr->GetProperty<Ring>()));
 		break;
 	case IT_CONSUMABLE:
 		{
-			Consumable* consumable = static_cast<Consumable*>(item_ptr);
+			Consumable* consumable = static_cast<Consumable*>(item_ptr->GetProperty<Consumable>());
 			if(consumable->cons_type == ConsumableType::Potion)
 			{
-				for(ItemEffect& e : consumable->effects)
+				for(ItemEffect& e : consumable->GetItem().effects)
 				{
 					if(e.effect == EffectId::Heal && e.power > 0.f)
 					{
@@ -769,7 +778,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		{
 			Book& b = item_ptr->ToBook();
 			if(!b.scheme)
-				t.Throw("Missing book '%s' scheme.", b.id.c_str());
+				t.Throw("Missing book '%s' scheme.", b.GetItem().id.c_str());
 			Book::books.push_back(&b);
 		}
 		break;

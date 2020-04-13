@@ -1157,7 +1157,7 @@ void Game::CreateRenderTargets()
 //=================================================================================================
 void Game::RestartGame()
 {
-	// stwórz mutex
+	// stwï¿½rz mutex
 	HANDLE mutex = CreateMutex(nullptr, TRUE, RESTART_MUTEX_NAME);
 	DWORD dwLastError = GetLastError();
 	bool AlreadyRunning = (dwLastError == ERROR_ALREADY_EXISTS || dwLastError == ERROR_ACCESS_DENIED);
@@ -1172,8 +1172,8 @@ void Game::RestartGame()
 	si.cb = sizeof(STARTUPINFO);
 	PROCESS_INFORMATION pi = { 0 };
 
-	// drugi parametr tak na prawdê nie jest modyfikowany o ile nie u¿ywa siê unicode (tak jest napisane w doku)
-	// z ka¿dym restartem dodaje prze³¹cznik, mam nadzieje ¿e nikt nie bêdzie restartowa³ 100 razy pod rz¹d bo mo¿e skoñczyæ siê miejsce w cmdline albo co
+	// drugi parametr tak na prawdï¿½ nie jest modyfikowany o ile nie uï¿½ywa siï¿½ unicode (tak jest napisane w doku)
+	// z kaï¿½dym restartem dodaje przeï¿½ï¿½cznik, mam nadzieje ï¿½e nikt nie bï¿½dzie restartowaï¿½ 100 razy pod rzï¿½d bo moï¿½e skoï¿½czyï¿½ siï¿½ miejsce w cmdline albo co
 	CreateProcess(nullptr, (char*)Format("%s -restart", GetCommandLine()), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
 
 	Quit();
@@ -1316,7 +1316,7 @@ void Game::SetGameText()
 	txSpell = Str("spell");
 	txCantLearnSkill = Str("cantLearnSkill");
 
-	// dystans / si³a
+	// dystans / siï¿½a
 	txNear = Str("near");
 	txFar = Str("far");
 	txVeryFar = Str("veryFar");
@@ -1627,7 +1627,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 			}
 		}
 
-		// nie odwiedzono, trzeba wygenerowaæ
+		// nie odwiedzono, trzeba wygenerowaï¿½
 		if(l.state != LS_HIDDEN)
 			l.state = LS_ENTERED;
 
@@ -1698,7 +1698,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	game_level->entering = false;
 }
 
-// dru¿yna opuœci³a lokacje
+// druï¿½yna opuï¿½ciï¿½a lokacje
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
 	if(!game_level->is_open)
@@ -1750,7 +1750,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	{
 		if(Net::IsLocal())
 		{
-			// usuñ questowe postacie
+			// usuï¿½ questowe postacie
 			quest_mgr->RemoveQuestUnits(true);
 		}
 
@@ -1772,7 +1772,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(Net::IsLocal() && end_buffs)
 	{
-		// usuñ tymczasowe bufy
+		// usuï¿½ tymczasowe bufy
 		for(Unit& unit : team->members)
 			unit.EndEffects();
 	}
@@ -1984,7 +1984,7 @@ void Game::UpdateGame(float dt)
 		quest_mgr->UpdateQuestsLocal(dt);
 	}
 
-	// info o uczoñczeniu wszystkich unikalnych questów
+	// info o uczoï¿½czeniu wszystkich unikalnych questï¿½w
 	if(CanShowEndScreen())
 	{
 		if(Net::IsLocal())
@@ -2036,7 +2036,7 @@ void Game::UpdateGame(float dt)
 				}
 				else
 				{
-					// poziom w górê
+					// poziom w gï¿½rï¿½
 					if(Net::IsLocal())
 					{
 						ChangeLevel(-1);
@@ -2056,7 +2056,7 @@ void Game::UpdateGame(float dt)
 			{
 				if(!input->Down(Key::Control))
 				{
-					// teleportuj gracza do schodów w dó³
+					// teleportuj gracza do schodï¿½w w dï¿½
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
@@ -2072,7 +2072,7 @@ void Game::UpdateGame(float dt)
 				}
 				else
 				{
-					// poziom w dó³
+					// poziom w dï¿½
 					if(Net::IsLocal())
 					{
 						ChangeLevel(+1);
@@ -2151,7 +2151,7 @@ void Game::UpdateGame(float dt)
 			UpdateAi(dt);
 	}
 
-	// aktualizuj konteksty poziomów
+	// aktualizuj konteksty poziomï¿½w
 	game_level->lights_dt += dt;
 	for(LevelArea& area : game_level->ForEachArea())
 		UpdateArea(area, dt);
@@ -2281,7 +2281,7 @@ void Game::UpdateFallback(float dt)
 					LeaveLocation(false, false);
 					Portal* portal = game_level->location->GetPortal(fallback_1);
 					world->ChangeLevel(portal->target_loc, false);
-					// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
+					// aktualnie moï¿½na siï¿½ tepnï¿½ï¿½ z X poziomu na 1 zawsze ale ï¿½eby z X na X to musi byï¿½ odwiedzony
 					// np w sekrecie z 3 na 1 i spowrotem do
 					int at_level = 0;
 					if(game_level->location->portal)
@@ -2340,7 +2340,7 @@ void Game::UpdateCamera(float dt)
 {
 	GameCamera& camera = game_level->camera;
 
-	// obracanie kamery góra/dó³
+	// obracanie kamery gï¿½ra/dï¿½
 	if(!Net::IsLocal() || team->IsAnyoneAlive())
 	{
 		if(dialog_context.dialog_mode || game_gui->inventory->mode > I_INVENTORY || game_gui->craft->visible)
@@ -2404,23 +2404,23 @@ uint Game::TestGameData(bool major)
 	for(Weapon* weapon : Weapon::weapons)
 	{
 		const Weapon& w = *weapon;
-		if(!w.mesh)
+		if(!w.GetItem().mesh)
 		{
-			Error("Test: Weapon %s: missing mesh.", w.id.c_str());
+			Error("Test: Weapon %s: missing mesh.", w.GetItem().id.c_str());
 			++errors;
 		}
 		else
 		{
-			res_mgr->LoadMeshMetadata(w.mesh);
-			Mesh::Point* pt = w.mesh->FindPoint("hit");
+			res_mgr->LoadMeshMetadata(w.GetItem().mesh);
+			Mesh::Point* pt = w.GetItem().mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				Error("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh->filename);
+				Error("Test: Weapon %s: no hitbox in mesh %s.", w.GetItem().id.c_str(), w.GetItem().mesh->filename);
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh->filename);
+				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.GetItem().id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.GetItem().mesh->filename);
 				++errors;
 			}
 		}
@@ -2430,23 +2430,23 @@ uint Game::TestGameData(bool major)
 	for(Shield* shield : Shield::shields)
 	{
 		const Shield& s = *shield;
-		if(!s.mesh)
+		if(!s.GetItem().mesh)
 		{
-			Error("Test: Shield %s: missing mesh.", s.id.c_str());
+			Error("Test: Shield %s: missing mesh.", s.GetItem().id.c_str());
 			++errors;
 		}
 		else
 		{
-			res_mgr->LoadMeshMetadata(s.mesh);
-			Mesh::Point* pt = s.mesh->FindPoint("hit");
+			res_mgr->LoadMeshMetadata(s.GetItem().mesh);
+			Mesh::Point* pt = s.GetItem().mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				Error("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh->filename);
+				Error("Test: Shield %s: no hitbox in mesh %s.", s.GetItem().id.c_str(), s.GetItem().mesh->filename);
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh->filename);
+				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.GetItem().id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.GetItem().mesh->filename);
 				++errors;
 			}
 		}
@@ -2571,7 +2571,7 @@ uint Game::TestGameData(bool major)
 				}
 			}
 
-			// animacje ataków
+			// animacje atakï¿½w
 			if(ud.frames)
 			{
 				if(ud.frames->attacks > NAMES::max_attacks)
@@ -2620,13 +2620,13 @@ uint Game::TestGameData(bool major)
 //=================================================================================================
 bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint)
 {
-	// atak broni¹ lub naturalny
+	// atak broniï¿½ lub naturalny
 
 	Mesh::Point* hitbox, *point;
 
 	if(unit.mesh_inst->mesh->head.n_groups > 1)
 	{
-		Mesh* mesh = unit.GetWeapon().mesh;
+		Mesh* mesh = unit.GetWeapon().GetItem().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
@@ -2646,17 +2646,17 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoin
 	return CheckForHit(area, unit, hitted, *hitbox, point, hitpoint);
 }
 
-// Sprawdza czy jest kolizja hitboxa z jak¹œ postaci¹
-// Jeœli zwraca true a hitted jest nullem to trafiono w obiekt
-// S¹ dwie opcje:
+// Sprawdza czy jest kolizja hitboxa z jakï¿½ï¿½ postaciï¿½
+// Jeï¿½li zwraca true a hitted jest nullem to trafiono w obiekt
+// Sï¿½ dwie opcje:
 //  - bone to punkt "bron", hitbox to hitbox z bronii
 //  - bone jest nullptr, hitbox jest na modelu postaci
-// Na drodze testów ustali³em ¿e najlepiej dzia³a gdy stosuje siê sam¹ funkcjê OrientedBoxToOrientedBox
+// Na drodze testï¿½w ustaliï¿½em ï¿½e najlepiej dziaï¿½a gdy stosuje siï¿½ samï¿½ funkcjï¿½ OrientedBoxToOrientedBox
 bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint)
 {
 	assert(hitted && hitbox.IsBox());
 
-	// ustaw koœci
+	// ustaw koï¿½ci
 	unit.mesh_inst->SetupBones();
 
 	// oblicz macierz hitbox
@@ -2928,7 +2928,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 
 	Vec3 hitpoint;
 	Unit* hitted;
-	Mesh* mesh = attacker.GetShield().mesh;
+	Mesh* mesh = attacker.GetShield().GetItem().mesh;
 
 	if(!mesh)
 		return false;
@@ -2968,7 +2968,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 		}
 	}
 
-	DoGenericAttack(area, attacker, *hitted, hitpoint, attacker.CalculateAttack(&attacker.GetShield()), DMG_BLUNT, true);
+	DoGenericAttack(area, attacker, *hitted, hitpoint, attacker.CalculateAttack(&attacker.GetShield().GetItem()), DMG_BLUNT, true);
 
 	return true;
 }
@@ -3207,13 +3207,13 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 			}
 			else
 			{
-				// trafienie w postaæ z czara
+				// trafienie w postaï¿½ z czara
 				if(it->owner && it->owner->IsFriend(*hitted, true))
 				{
 					// frendly fire
 					SpellHitEffect(area, *it, hitpoint, hitted);
 
-					// dŸwiêk trafienia w postaæ
+					// dï¿½wiï¿½k trafienia w postaï¿½
 					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
@@ -3366,7 +3366,7 @@ void Game::ChangeLevel(int where)
 
 	if(where == -1)
 	{
-		// poziom w górê
+		// poziom w gï¿½rï¿½
 		if(game_level->dungeon_level == 0)
 		{
 			if(quest_mgr->quest_tutorial->in_tutorial)
@@ -3377,7 +3377,7 @@ void Game::ChangeLevel(int where)
 				return;
 			}
 
-			// wyjœcie na powierzchniê
+			// wyjï¿½cie na powierzchniï¿½
 			ExitToMap();
 			return;
 		}
@@ -3407,7 +3407,7 @@ void Game::ChangeLevel(int where)
 		LoadingStart(steps);
 		LoadingStep(txLevelDown);
 
-		// poziom w dó³
+		// poziom w dï¿½
 		LeaveLevel();
 		++game_level->dungeon_level;
 
@@ -3667,11 +3667,11 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 {
 	Ability& ability = *bullet.ability;
 
-	// dŸwiêk
+	// dï¿½wiï¿½k
 	if(ability.sound_hit)
 		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
 
-	// cz¹steczki
+	// czï¿½steczki
 	if(ability.tex_particle && ability.type == Ability::Ball)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
@@ -3901,7 +3901,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 									float def = unit->CalculateDefense();
 									float dmg = CombatHelper::CalculateDamage(attack, def);
 
-									// dŸwiêk trafienia
+									// dï¿½wiï¿½k trafienia
 									sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), HIT_SOUND_DIST);
 
 									// train player armor skill
@@ -4346,7 +4346,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					}
 					else
 					{
-						// trafi³ ju¿ wystarczaj¹co du¿o postaci
+						// trafiï¿½ juï¿½ wystarczajï¿½co duï¿½o postaci
 						electro.valid = false;
 					}
 				}
@@ -4361,7 +4361,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					if(electro.ability->sound_hit)
 						sound_mgr->PlaySound3d(electro.ability->sound_hit, target_pos, electro.ability->sound_hit_dist);
 
-					// cz¹steczki
+					// czï¿½steczki
 					if(electro.ability->tex_particle)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
@@ -4488,7 +4488,7 @@ void Game::ClearGameVars(bool new_game)
 	Door::ResetEntities();
 	Electro::ResetEntities();
 
-	// odciemnianie na pocz¹tku
+	// odciemnianie na poczï¿½tku
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 
@@ -4616,7 +4616,7 @@ void Game::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack:
 
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
-	// ustawienia t³a
+	// ustawienia tï¿½a
 	game_level->camera.zfar = base.draw_range;
 	game_level->scene->fog_range = base.fog_range;
 	game_level->scene->fog_color = base.fog_color;
@@ -4646,7 +4646,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 
 void Game::SetDungeonParamsToMeshes()
 {
-	// tekstury schodów / pu³apek
+	// tekstury schodï¿½w / puï¿½apek
 	ApplyTextureOverrideToSubmesh(game_res->aStairsDown->subs[0], game_res->tFloor[0]);
 	ApplyTextureOverrideToSubmesh(game_res->aStairsDown->subs[2], game_res->tWall[0]);
 	ApplyTextureOverrideToSubmesh(game_res->aStairsDown2->subs[0], game_res->tFloor[0]);
@@ -4967,20 +4967,20 @@ void Game::UpdateArea(LevelArea& area, float dt)
 					door.state = Door::Closed;
 				else
 				{
-					// nie mo¿na zamknaæ drzwi bo coœ blokuje
+					// nie moï¿½na zamknaï¿½ drzwi bo coï¿½ blokuje
 					door.state = Door::Opening2;
 					door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
-					// mo¿na by daæ lepszy punkt dŸwiêku
+					// moï¿½na by daï¿½ lepszy punkt dï¿½wiï¿½ku
 					sound_mgr->PlaySound3d(game_res->sDoorBudge, door.pos, Door::BLOCKED_SOUND_DIST);
 				}
 			}
 		}
 	}
 
-	// aktualizuj pu³apki
+	// aktualizuj puï¿½apki
 	UpdateTraps(area, dt);
 
-	// aktualizuj pociski i efekty czarów
+	// aktualizuj pociski i efekty czarï¿½w
 	UpdateBullets(area, dt);
 	UpdateElectros(area, dt);
 	UpdateExplosions(area, dt);
@@ -5553,7 +5553,7 @@ void Game::OnCloseInventory()
 	game_gui->inventory->mode = I_NONE;
 }
 
-// zamyka ekwipunek i wszystkie okna które on móg³by utworzyæ
+// zamyka ekwipunek i wszystkie okna ktï¿½re on mï¿½gï¿½by utworzyï¿½
 void Game::CloseInventory()
 {
 	OnCloseInventory();

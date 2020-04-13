@@ -682,16 +682,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 	}
 	draw_batch.Add(node);
-	if(u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().mesh)
+	if(u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().GetItem().mesh)
 		node->subs = Bit(1) | Bit(2);
 
 	// pancerz
-	if(u.HaveArmor() && u.GetArmor().mesh)
+	if(u.HaveArmor() && u.GetArmor().GetItem().mesh)
 	{
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = SceneNode::Get();
 		node2->type = SceneNode::NORMAL;
-		node2->SetMesh(armor.mesh, u.mesh_inst);
+		node2->SetMesh(armor.GetItem().mesh, u.mesh_inst);
 		node2->center = node->center;
 		node2->mat = node->mat;
 		node2->tex_override = armor.GetTextureOverride();
@@ -776,7 +776,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	// broń
 	Mesh* mesh;
-	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
+	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().GetItem().mesh))
 	{
 		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 		assert(point);
@@ -819,9 +819,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	}
 
 	// tarcza
-	if(u.HaveShield() && u.GetShield().mesh)
+	if(u.HaveShield() && u.GetShield().GetItem().mesh)
 	{
-		Mesh* shield = u.GetShield().mesh;
+		Mesh* shield = u.GetShield().GetItem().mesh;
 		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
 		assert(point);
 
@@ -922,7 +922,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			node2->SetMesh(u.bow_instance);
 		}
 		else
-			node2->SetMesh(u.GetBow().mesh);
+			node2->SetMesh(u.GetBow().GetItem().mesh);
 		node2->center = node->center;
 		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
 		assert(point);
@@ -1330,7 +1330,7 @@ void Game::ListAreas(LevelArea& area)
 		pc->unit->target_pos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
 	else if(pc->unit->weapon_state == WeaponState::Taken
 		&& ((pc->unit->weapon_taken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
-			|| (pc->unit->weapon_taken == W_ONE_HANDED && IsSet(pc->unit->GetWeapon().flags, ITEM_WAND)
+			|| (pc->unit->weapon_taken == W_ONE_HANDED && IsSet(pc->unit->GetWeapon().GetItem().flags, ITEM_WAND)
 				&& Any(pc->unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH))))
 		pc->unit->target_pos = pc->RaytestTarget(50.f);
 

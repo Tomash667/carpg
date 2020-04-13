@@ -58,14 +58,14 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 
 			cstring who = (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 
-			Item::Get("parcel")->CreateCopy(parcel);
-			parcel.id = "$stolen_parcel";
-			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
-			parcel.quest_id = id;
+			Item::Get("parcel")->CreateCopy(parcel.GetItem());
+			parcel.GetItem().id = "$stolen_parcel";
+			parcel.GetItem().name = Format(game->txQuest[8], who, loc.name.c_str());
+			parcel.GetItem().quest_id = id;
 			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
-			item_to_give[0] = &parcel;
+			item_to_give[0] = &parcel.GetItem();
 			at_level = loc2.GetRandomLevel();
 
 			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), world->GetDate()));
@@ -175,7 +175,7 @@ bool Quest_RetrievePackage::IfHaveQuestItem() const
 //=================================================================================================
 const Item* Quest_RetrievePackage::GetQuestItem()
 {
-	return &parcel;
+	return &parcel.GetItem();
 }
 
 //=================================================================================================
@@ -208,12 +208,12 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 		if(prog >= Progress::Started)
 		{
 			Location& loc = GetStartLocation();
-			Item::Get("parcel")->CreateCopy(parcel);
-			parcel.id = "$stolen_parcel";
-			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.quest_id = id;
+			Item::Get("parcel")->CreateCopy(parcel.GetItem());
+			parcel.GetItem().id = "$stolen_parcel";
+			parcel.GetItem().name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.GetItem().quest_id = id;
 
-			item_to_give[0] = &parcel;
+			item_to_give[0] = &parcel.GetItem();
 			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;

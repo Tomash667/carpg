@@ -9,6 +9,9 @@
 #include "Effect.h"
 #include "Skill.h"
 
+
+struct Item;
+
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
 
@@ -62,91 +65,22 @@ struct ItemEffect
 	bool on_attack;
 };
 
-//-----------------------------------------------------------------------------
-// Base item type
-struct Item
+/**
+ * Some Item property
+ * Every Item property has to inherit from this.
+ * Every subclass is required to have:
+ * - static variable ITEM_TYPE type
+ */
+class ItemProp
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
-		state(ResourceState::NotLoaded)
-	{
-	}
-	virtual ~Item() {}
-
-	Item& operator = (const Item& i);
-
-	template<typename T, ITEM_TYPE _type>
-	T& Cast()
-	{
-		assert(type == _type);
-		return *(T*)this;
-	}
-
-	template<typename T, ITEM_TYPE _type>
-	const T& Cast() const
-	{
-		assert(type == _type);
-		return *(const T*)this;
-	}
-
-	Weapon& ToWeapon() { return Cast<Weapon, IT_WEAPON>(); }
-	Bow& ToBow() { return Cast<Bow, IT_BOW>(); }
-	Shield& ToShield() { return Cast<Shield, IT_SHIELD>(); }
-	Armor& ToArmor() { return Cast<Armor, IT_ARMOR>(); }
-	Amulet& ToAmulet() { return Cast<Amulet, IT_AMULET>(); }
-	Ring& ToRing() { return Cast<Ring, IT_RING>(); }
-	Consumable& ToConsumable() { return Cast<Consumable, IT_CONSUMABLE>(); }
-	OtherItem& ToOther() { return Cast<OtherItem, IT_OTHER>(); }
-	Book& ToBook() { return Cast<Book, IT_BOOK>(); }
-
-	const Weapon& ToWeapon() const { return Cast<Weapon, IT_WEAPON>(); }
-	const Bow& ToBow() const { return Cast<Bow, IT_BOW>(); }
-	const Shield& ToShield() const { return Cast<Shield, IT_SHIELD>(); }
-	const Armor& ToArmor() const { return Cast<Armor, IT_ARMOR>(); }
-	const Amulet& ToAmulet() const { return Cast<Amulet, IT_AMULET>(); }
-	const Ring& ToRing() const { return Cast<Ring, IT_RING>(); }
-	const Consumable& ToConsumable() const { return Cast<Consumable, IT_CONSUMABLE>(); }
-	const OtherItem& ToOther() const { return Cast<OtherItem, IT_OTHER>(); }
-	const Book& ToBook() const { return Cast<Book, IT_BOOK>(); }
-
-	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
-	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
-	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
-	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
-	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
-
-	const string& GetName() const { return name; }
-	float GetWeight() const { return float(weight) / 10; }
-	float GetWeightValue() const { return float(value) / weight; }
-	float GetEffectPower(EffectId effect) const;
-
-	void CreateCopy(Item& item) const;
-	Item* CreateCopy() const;
-	Item* QuestCopy(Quest* quest, const string& name);
-	void Rename(cstring name);
-	void RenameS(const string& name) { Rename(name.c_str()); }
-
-	string id, name, desc;
-	int weight, value, ai_value, flags, quest_id;
-	vector<ItemEffect> effects;
-	ITEM_TYPE type;
-	MeshPtr mesh;
-	TexturePtr tex, icon;
-	ResourceState state;
-
-	static const Item* gold;
-	static ItemsMap items;
-	static Item* TryGet(Cstring id);
-	static Item* Get(Cstring id)
-	{
-		auto item = TryGet(id);
-		assert(item);
-		return item;
-	}
-	static Item* GetS(const string& id)
-	{
-		return TryGet(id);
-	}
-	static void Validate(uint& err);
+protected:
+	friend Item;
+	Item* item;
+	ItemProp() : item(nullptr) {}
+public:
+	virtual ~ItemProp() {}
+	const Item& GetItem() const { assert(item); return *item; }
+	Item& GetItem() { assert(item); return *item; }
 };
 
 //-----------------------------------------------------------------------------
@@ -206,10 +140,10 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 
 //-----------------------------------------------------------------------------
 // Weapon
-struct Weapon : public Item
+struct Weapon : public ItemProp
 {
-	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
-
+	const static ITEM_TYPE type = IT_WEAPON;
+	Weapon() : dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 	const WeaponTypeInfo& GetInfo() const
 	{
 		return WeaponTypeInfo::info[weapon_type];
@@ -228,9 +162,10 @@ struct Weapon : public Item
 
 //-----------------------------------------------------------------------------
 // Bow
-struct Bow : public Item
+struct Bow : public ItemProp
 {
-	Bow() : Item(IT_BOW), dmg(10), req_str(10), speed(45) {}
+	const static ITEM_TYPE type = IT_BOW;
+	Bow() : dmg(10), req_str(10), speed(45) {}
 
 	int dmg, req_str, speed;
 
@@ -239,9 +174,10 @@ struct Bow : public Item
 
 //-----------------------------------------------------------------------------
 // Shield
-struct Shield : public Item
+struct Shield : public ItemProp
 {
-	Shield() : Item(IT_SHIELD), block(10), req_str(10), material(MAT_WOOD) {}
+	const static ITEM_TYPE type = IT_SHIELD;
+	Shield() : block(10), req_str(10), material(MAT_WOOD) {}
 
 	int block, req_str;
 	MATERIAL_TYPE material;
@@ -291,9 +227,10 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 
 //-----------------------------------------------------------------------------
 // Armor
-struct Armor : public Item
+struct Armor : public ItemProp
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
+	const static ITEM_TYPE type = IT_ARMOR;
+	Armor() : def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexOverride* GetTextureOverride() const
 	{
@@ -334,9 +271,10 @@ static const int MAX_ITEM_TAGS = 2;
 
 //-----------------------------------------------------------------------------
 // Amulet
-struct Amulet : public Item
+struct Amulet : public ItemProp
 {
-	Amulet() : Item(IT_AMULET), tag() {}
+	const static ITEM_TYPE type = IT_AMULET;
+	Amulet() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
 
@@ -345,9 +283,10 @@ struct Amulet : public Item
 
 //-----------------------------------------------------------------------------
 // Ring
-struct Ring : public Item
+struct Ring : public ItemProp
 {
-	Ring() : Item(IT_RING), tag() {}
+	const static ITEM_TYPE type = IT_RING;
+	Ring() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
 
@@ -369,9 +308,10 @@ enum class ConsumableAiType
 	Healing,
 	Mana
 };
-struct Consumable : public Item
+struct Consumable : public ItemProp
 {
-	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
+	const static ITEM_TYPE type = IT_CONSUMABLE;
+	Consumable() : time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
 
 	float time;
 	ConsumableType cons_type;
@@ -390,9 +330,11 @@ enum OtherType
 	OtherItems,
 	Artifact
 };
-struct OtherItem : public Item
+struct OtherItem : public ItemProp
 {
-	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
+	const static ITEM_TYPE type = IT_OTHER;
+	OtherItem() : other_type(OtherItems) {}
+	~OtherItem() {}
 
 	OtherType other_type;
 
@@ -415,9 +357,10 @@ struct BookScheme
 	static BookScheme* TryGet(Cstring id);
 };
 
-struct Book : public Item
+struct Book : public ItemProp
 {
-	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
+	const static ITEM_TYPE type = IT_BOOK;
+	Book() : scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
 	vector<string> recipe_ids;
@@ -428,6 +371,207 @@ struct Book : public Item
 	static vector<Book*> books;
 	// get random book for shelf (can be nullptr)
 	static const Item* GetRandom();
+};
+
+/**
+ * Basic item type with settable properties.
+ * 
+ * Each Item may have one or more properties set.
+ */
+struct Item
+{
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
+		state(ResourceState::NotLoaded), weapon(nullptr), bow(nullptr), shield(nullptr), armor(nullptr), amulet(nullptr), ring(nullptr),
+		consumable(nullptr), book(nullptr), other_item(nullptr)
+	{
+	}
+	~Item()
+	{
+		if(weapon != nullptr)
+			delete weapon;
+		if(bow != nullptr)
+			delete bow;
+		if(shield != nullptr)
+			delete shield;
+		if(armor != nullptr)
+			delete armor;
+		if(amulet != nullptr)
+			delete amulet;
+		if(ring != nullptr)
+			delete ring;
+		if(consumable != nullptr)
+			delete consumable;
+		if(book != nullptr)
+			delete book;
+		if(other_item != nullptr)
+			delete other_item;
+	}
+
+	Item& operator = (const Item& i);
+
+	/**
+	 * Return an Item's property, nullptr if property not set
+	 */
+	template<typename Prop>
+	Prop* GetProperty()
+	{
+		void* prop = nullptr;
+		switch(Prop::type)
+		{
+		case IT_WEAPON:
+			prop = weapon;
+			break;
+		case IT_BOW:
+			prop = bow;
+			break;
+		case IT_SHIELD:
+			prop = shield;
+			break;
+		case IT_ARMOR:
+			prop = armor;
+			break;
+		case IT_AMULET:
+			prop = amulet;
+			break;
+		case IT_RING:
+			prop = ring;
+			break;
+		case IT_CONSUMABLE:
+			prop = consumable;
+			break;
+		case IT_BOOK:
+			prop = book;
+			break;
+		case IT_OTHER:
+			prop = other_item;
+			break;
+		}
+		return static_cast<Prop*>(prop);
+	}
+	/**
+	 * Sets some property of this Item
+	 * Sets property's Item to this instance
+	 */
+	template<typename Type>
+	void SetProperty(ItemProp* p)
+	{
+		switch (Type::type)
+		{
+		case IT_WEAPON:
+			weapon = (Weapon*)p;
+			break;
+		case IT_BOW:
+			bow = (Bow*)p;
+			break;
+		case IT_SHIELD:
+			shield = (Shield*)p;
+			break;
+		case IT_ARMOR:
+			armor = (Armor*)p;
+			break;
+		case IT_AMULET:
+			amulet = (Amulet*)p;
+			break;
+		case IT_RING:
+			ring = (Ring*)p;
+			break;
+		case IT_CONSUMABLE:
+			consumable = (Consumable*)p;
+			break;
+		case IT_BOOK:
+			book = (Book*)p;
+			break;
+		case IT_OTHER:
+			other_item = (OtherItem*)p;
+			break;
+		default:
+			assert(0);
+			break;
+		}	
+		p->item = this;
+	}
+
+	/**
+	 * Retrieve various Item's properties.
+	 */
+	/*@{*/
+	Weapon& ToWeapon() { return *GetProperty<Weapon>(); }
+	Bow& ToBow() { return *GetProperty<Bow>(); }
+	Shield& ToShield() { return *GetProperty<Shield>(); }
+	Armor& ToArmor() { return *GetProperty<Armor>(); }
+	Amulet& ToAmulet() { return *GetProperty<Amulet>(); }
+	Ring& ToRing() { return *GetProperty<Ring>(); }
+	Consumable& ToConsumable() { return *GetProperty<Consumable>(); }
+	OtherItem& ToOther() { return *GetProperty<OtherItem>(); }
+	Book& ToBook() { return *GetProperty<Book>(); }
+
+	const Weapon& ToWeapon() const { return *weapon; }
+	const Bow& ToBow() const { return *bow; }
+	const Shield& ToShield() const { return *shield; }
+	const Armor& ToArmor() const { return *armor; }
+	const Amulet& ToAmulet() const { return *amulet; }
+	const Ring& ToRing() const { return *ring; }
+	const Consumable& ToConsumable() const { return *consumable; }
+	const OtherItem& ToOther() const { return *other_item; }
+	const Book& ToBook() const { return *book; }
+	/*@}*/
+
+	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
+	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
+	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
+	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
+	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
+
+	const string& GetName() const { return name; }
+	float GetWeight() const { return float(weight) / 10; }
+	float GetWeightValue() const { return float(value) / weight; }
+	float GetEffectPower(EffectId effect) const;
+
+	void CreateCopy(Item& item) const;
+	Item* CreateCopy() const;
+	Item* QuestCopy(Quest* quest, const string& name);
+	void Rename(cstring name);
+	void RenameS(const string& name) { Rename(name.c_str()); }
+
+	string id, name, desc;
+	int weight, value, ai_value, flags, quest_id;
+	vector<ItemEffect> effects;
+	ITEM_TYPE type;
+	MeshPtr mesh;
+	TexturePtr tex, icon;
+	ResourceState state;
+
+	/**
+	 * Slots for various Item's properties. To retrieve those properties,
+	 * use appropriate ToXXX() functions.
+	 * To check whether Item has certain property, use IsXXX().
+	 */
+	/*@{*/
+	Weapon* weapon;
+	Bow* bow;
+	Shield* shield;
+	Armor* armor;
+	Amulet* amulet;
+	Ring* ring;
+	Consumable* consumable;
+	Book* book;
+	OtherItem* other_item;
+	/*@}*/
+
+	static const Item* gold;
+	static ItemsMap items;
+	static Item* TryGet(Cstring id);
+	static Item* Get(Cstring id)
+	{
+		auto item = TryGet(id);
+		assert(item);
+		return item;
+	}
+	static Item* GetS(const string& id)
+	{
+		return TryGet(id);
+	}
+	static void Validate(uint& err);
 };
 
 //-----------------------------------------------------------------------------

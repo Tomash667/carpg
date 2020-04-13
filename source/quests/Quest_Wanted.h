@@ -29,7 +29,7 @@ public:
 	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override { return id; }
 	bool IfHaveQuestItem() const override;
-	const Item* GetQuestItem() override { return &letter; }
+	const Item* GetQuestItem() override { return &letter.GetItem(); }
 	bool IfNeedTalk(cstring topic) const override;
 
 private:

@@ -39,9 +39,9 @@ void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_
 	for(int i = 0; i < 100; ++i)
 	{
 		T* item = items[Rand() % items.size()];
-		if(item->value > price_limit || IsSet(item->flags, exclude_flags))
+		if(item->GetItem().value > price_limit || IsSet(item->GetItem().flags, exclude_flags))
 			continue;
-		InsertItemBare(container, item, count);
+		InsertItemBare(container, &item->GetItem(), count);
 		return;
 	}
 }
@@ -63,35 +63,35 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 		switch(Rand() % IT_MAX_GEN)
 		{
 		case IT_WEAPON:
-			item = Weapon::weapons[Rand() % Weapon::weapons.size()];
+			item = &Weapon::weapons[Rand() % Weapon::weapons.size()]->GetItem();
 			count = 1;
 			break;
 		case IT_BOW:
-			item = Bow::bows[Rand() % Bow::bows.size()];
+			item = &Bow::bows[Rand() % Bow::bows.size()]->GetItem();
 			count = 1;
 			break;
 		case IT_SHIELD:
-			item = Shield::shields[Rand() % Shield::shields.size()];
+			item = &Shield::shields[Rand() % Shield::shields.size()]->GetItem();
 			count = 1;
 			break;
 		case IT_ARMOR:
-			item = Armor::armors[Rand() % Armor::armors.size()];
+			item = &Armor::armors[Rand() % Armor::armors.size()]->GetItem();
 			count = 1;
 			break;
 		case IT_AMULET:
-			item = Amulet::amulets[Rand() % Amulet::amulets.size()];
+			item = &Amulet::amulets[Rand() % Amulet::amulets.size()]->GetItem();
 			count = 1;
 			break;
 		case IT_RING:
-			item = Ring::rings[Rand() % Ring::rings.size()];
+			item = &Ring::rings[Rand() % Ring::rings.size()]->GetItem();
 			count = 1;
 			break;
 		case IT_CONSUMABLE:
-			item = Consumable::consumables[Rand() % Consumable::consumables.size()];
+			item = &Consumable::consumables[Rand() % Consumable::consumables.size()]->GetItem();
 			count = Random(2, 5);
 			break;
 		case IT_OTHER:
-			item = OtherItem::others[Rand() % OtherItem::others.size()];
+			item = &OtherItem::others[Rand() % OtherItem::others.size()]->GetItem();
 			count = Random(1, 4);
 			break;
 		default:
@@ -202,7 +202,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 
 //=================================================================================================
 // zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
-// mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
+// moï¿½e zwrï¿½ciï¿½ questowy przedmiot jeï¿½li bï¿½dzie wystarczajï¿½co tani, lub unikat!
 const Item* ItemHelper::GetRandomItem(int max_value)
 {
 	int type = Rand() % 6;
@@ -214,43 +214,43 @@ const Item* ItemHelper::GetRandomItem(int max_value)
 	case 0:
 		for(Weapon* w : Weapon::weapons)
 		{
-			if(w->value <= max_value && w->CanBeGenerated())
-				items->push_back(w);
+			if(w->GetItem().value <= max_value && w->GetItem().CanBeGenerated())
+				items->push_back(&w->GetItem());
 		}
 		break;
 	case 1:
 		for(Bow* b : Bow::bows)
 		{
-			if(b->value <= max_value && b->CanBeGenerated())
-				items->push_back(b);
+			if(b->GetItem().value <= max_value && b->GetItem().CanBeGenerated())
+				items->push_back(&b->GetItem());
 		}
 		break;
 	case 2:
 		for(Shield* s : Shield::shields)
 		{
-			if(s->value <= max_value && s->CanBeGenerated())
-				items->push_back(s);
+			if(s->GetItem().value <= max_value && s->GetItem().CanBeGenerated())
+				items->push_back(&s->GetItem());
 		}
 		break;
 	case 3:
 		for(Armor* a : Armor::armors)
 		{
-			if(a->value <= max_value && a->CanBeGenerated())
-				items->push_back(a);
+			if(a->GetItem().value <= max_value && a->GetItem().CanBeGenerated())
+				items->push_back(&a->GetItem());
 		}
 		break;
 	case 4:
 		for(Consumable* c : Consumable::consumables)
 		{
-			if(c->value <= max_value && c->CanBeGenerated())
-				items->push_back(c);
+			if(c->GetItem().value <= max_value && c->GetItem().CanBeGenerated())
+				items->push_back(&c->GetItem());
 		}
 		break;
 	case 5:
 		for(OtherItem* o : OtherItem::others)
 		{
-			if(o->value <= max_value && o->CanBeGenerated())
-				items->push_back(o);
+			if(o->GetItem().value <= max_value && o->GetItem().CanBeGenerated())
+				items->push_back(&o->GetItem());
 		}
 		break;
 	}

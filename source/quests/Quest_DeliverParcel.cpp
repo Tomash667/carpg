@@ -49,11 +49,11 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			quest_mgr->quests_timeout2.push_back(this);
 
 			Location& loc = *world->GetLocation(end_loc);
-			Item::Get("parcel")->CreateCopy(parcel);
-			parcel.id = "$parcel";
-			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.quest_id = id;
-			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
+			Item::Get("parcel")->CreateCopy(parcel.GetItem());
+			parcel.GetItem().id = "$parcel";
+			parcel.GetItem().name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.GetItem().quest_id = id;
+			DialogContext::current->pc->unit->AddItem2(&parcel.GetItem(), 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), world->GetDate()));
@@ -131,8 +131,8 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		{
 			RemoveEncounter();
 
-			DialogContext::current->talker->AddItem(&parcel, 1, true);
-			team->RemoveQuestItem(&parcel, id);
+			DialogContext::current->talker->AddItem(&parcel.GetItem(), 1, true);
+			team->RemoveQuestItem(&parcel.GetItem(), id);
 
 			OnUpdate(game->txQuest[16]);
 		}
@@ -199,7 +199,7 @@ bool Quest_DeliverParcel::IfHaveQuestItem() const
 //=================================================================================================
 const Item* Quest_DeliverParcel::GetQuestItem()
 {
-	return &parcel;
+	return &parcel.GetItem();
 }
 
 //=================================================================================================
@@ -222,10 +222,10 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 		if(prog >= Progress::Started)
 		{
 			Location& loc = *world->GetLocation(end_loc);
-			Item::Get("parcel")->CreateCopy(parcel);
-			parcel.id = "$parcel";
-			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.quest_id = id;
+			Item::Get("parcel")->CreateCopy(parcel.GetItem());
+			parcel.GetItem().id = "$parcel";
+			parcel.GetItem().name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.GetItem().quest_id = id;
 		}
 	}
 

@@ -236,7 +236,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 		{
 			if(!u.IsTeamMember())
 			{
-				// po wszystkim wróæ do karczmy
+				// po wszystkim wrï¿½ï¿½ do karczmy
 				u.OrderGoToInn();
 			}
 			return true;
@@ -636,9 +636,9 @@ void Quest_Tournament::Update(float dt)
 				if(master->CanAct() && master->busy == Unit::Busy_No)
 				{
 					// give healing potions
-					static const Consumable* p1 = (Consumable*)Item::Get("p_hp");
-					static const Consumable* p2 = (Consumable*)Item::Get("p_hp2");
-					static const Consumable* p3 = (Consumable*)Item::Get("p_hp3");
+					static const Item* p1 = Item::Get("p_hp");
+					static const Item* p2 = Item::Get("p_hp2");
+					static const Item* p3 = Item::Get("p_hp3");
 					static const float p1_power = p1->GetEffectPower(EffectId::Heal);
 					static const float p2_power = p2->GetEffectPower(EffectId::Heal);
 					static const float p3_power = p3->GetEffectPower(EffectId::Heal);

@@ -53,7 +53,7 @@ void Quest_Wanted::SetProgress(int prog2)
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			target_loc = world->GetRandomFreeSettlementIndex(start_loc);
-			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
+			// jeï¿½li nie ma wolnego miasta to powie jakieï¿½ ale go tam nie bï¿½dzie...
 			if(target_loc == -1)
 				target_loc = world->GetRandomSettlementIndex(start_loc);
 			Location& target = GetTargetLocation();
@@ -68,19 +68,19 @@ void Quest_Wanted::SetProgress(int prog2)
 			}
 
 			// dodaj list
-			Item::Get("wanted_letter")->CreateCopy(letter);
-			letter.id = "$wanted_letter";
-			letter.name = game->txQuest[258];
-			letter.quest_id = id;
-			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
-			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
+			Item::Get("wanted_letter")->CreateCopy(letter.GetItem());
+			letter.GetItem().id = "$wanted_letter";
+			letter.GetItem().name = game->txQuest[258];
+			letter.GetItem().quest_id = id;
+			letter.GetItem().desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
+			DialogContext::current->pc->unit->AddItem2(&letter.GetItem(), 1u, 1u);
 
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
-	case Progress::Timeout: // czas min¹³
+	case Progress::Timeout: // czas minï¿½ï¿½
 		{
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
@@ -259,11 +259,11 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 
 	if(prog >= Progress::Started)
 	{
-		Item::Get("wanted_letter")->CreateCopy(letter);
-		letter.id = "$wanted_letter";
-		letter.name = game->txQuest[258];
-		letter.quest_id = id;
-		letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
+		Item::Get("wanted_letter")->CreateCopy(letter.GetItem());
+		letter.GetItem().id = "$wanted_letter";
+		letter.GetItem().name = game->txQuest[258];
+		letter.GetItem().quest_id = id;
+		letter.GetItem().desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 	}
 
 	return LoadResult::Ok;

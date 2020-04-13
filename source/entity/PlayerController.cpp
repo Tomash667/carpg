@@ -1454,7 +1454,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		return CanUseAbilityResult::No;
 	if(IsSet(ability->flags, Ability::Mage))
 	{
-		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().flags, ITEM_MAGE))
+		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().GetItem().flags, ITEM_MAGE))
 			return CanUseAbilityResult::NeedWand;
 		if((unit->weapon_taken != W_ONE_HANDED || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeWand;
@@ -1838,7 +1838,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
-		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
+		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon().GetItem() || unit->HaveShield()))
 		{
 			if(after_action)
 				return;
@@ -3032,7 +3032,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 				if(k != Key::None)
 				{
-					if(!secondary && IsSet(u.GetWeapon().flags, ITEM_WAND) && u.Get(SkillId::MYSTIC_MAGIC) > 0)
+					if(!secondary && IsSet(u.GetWeapon().GetItem().flags, ITEM_WAND) && u.Get(SkillId::MYSTIC_MAGIC) > 0)
 					{
 						// cast magic bolt
 						UseAbility(Ability::Get("magic_bolt"), false);
@@ -3176,7 +3176,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.action = A_SHOOT;
 					u.animation_state = AS_SHOOT_PREPARE;
 					action_key = k;
-					u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
+					u.bow_instance = game_level->GetBowInstance(u.GetBow().GetItem().mesh);
 					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 					u.bow_instance->groups[0].speed = speed;
 
@@ -3356,6 +3356,6 @@ bool PlayerController::ShouldUseRaytest() const
 		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon))
 		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
-			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
+			&& IsSet(unit->GetWeapon().GetItem().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));
 }

@@ -16,7 +16,7 @@ void Quest_StolenArtifact::Start()
 	type = Q_STOLEN_ARTIFACT;
 	category = QuestCategory::Random;
 	start_loc = world->GetCurrentLocationIndex();
-	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
+	item = &OtherItem::artifacts[Rand() % OtherItem::artifacts.size()]->GetItem();
 	switch(Rand() % 6)
 	{
 	case 0:
@@ -74,11 +74,11 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			tl.SetKnown();
 			st = tl.st;
 
-			item->CreateCopy(quest_item);
-			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.quest_id = id;
+			item->CreateCopy(quest_item.GetItem());
+			quest_item.GetItem().id = Format("$%s", item->id.c_str());
+			quest_item.GetItem().quest_id = id;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
-			item_to_give[0] = &quest_item;
+			item_to_give[0] = &quest_item.GetItem();
 			unit_to_spawn = group->GetLeader(tl.st);
 			unit_spawn_level = -3;
 
@@ -103,7 +103,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
-			DialogContext::current->talker->AddItem(&quest_item, 1, true);
+			DialogContext::current->talker->AddItem(&quest_item.GetItem(), 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 		}
 		break;
@@ -173,7 +173,7 @@ bool Quest_StolenArtifact::IfHaveQuestItem2(cstring id) const
 //=================================================================================================
 const Item* Quest_StolenArtifact::GetQuestItem()
 {
-	return &quest_item;
+	return &quest_item.GetItem();
 }
 
 //=================================================================================================
@@ -202,11 +202,11 @@ Quest::LoadResult Quest_StolenArtifact::Load(GameReader& f)
 
 	if(prog >= Progress::Started)
 	{
-		item->CreateCopy(quest_item);
-		quest_item.id = Format("$%s", item->id.c_str());
-		quest_item.quest_id = id;
+		item->CreateCopy(quest_item.GetItem());
+		quest_item.GetItem().id = Format("$%s", item->id.c_str());
+		quest_item.GetItem().quest_id = id;
 		spawn_item = Quest_Dungeon::Item_GiveSpawned;
-		item_to_give[0] = &quest_item;
+		item_to_give[0] = &quest_item.GetItem();
 		unit_to_spawn = group->GetLeader(st);
 		unit_spawn_level = -3;
 	}

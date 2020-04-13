@@ -730,7 +730,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
 						if(!unit.bow_instance)
-							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
+							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().GetItem().mesh);
 						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 						unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[group].speed;
 					}

@@ -16,7 +16,7 @@ void Quest_LostArtifact::Start()
 	type = Q_LOST_ARTIFACT;
 	category = QuestCategory::Random;
 	start_loc = world->GetCurrentLocationIndex();
-	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
+	item = &OtherItem::artifacts[Rand() % OtherItem::artifacts.size()]->GetItem();
 }
 
 //=================================================================================================
@@ -47,15 +47,15 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			OnStart(game->txQuest[106]);
 			quest_mgr->quests_timeout.push_back(this);
 
-			item->CreateCopy(quest_item);
-			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.quest_id = id;
+			item->CreateCopy(quest_item.GetItem());
+			quest_item.GetItem().id = Format("$%s", item->id.c_str());
+			quest_item.GetItem().quest_id = id;
 
 			Location& sl = GetStartLocation();
 
 			// event
 			spawn_item = Quest_Dungeon::Item_OnGround;
-			item_to_give[0] = &quest_item;
+			item_to_give[0] = &quest_item.GetItem();
 			if(Rand() % 2 == 0)
 				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
 			else
@@ -113,7 +113,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
-			DialogContext::current->talker->AddItem(&quest_item, 1, true);
+			DialogContext::current->talker->AddItem(&quest_item.GetItem(), 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 		}
 		break;
@@ -199,7 +199,7 @@ bool Quest_LostArtifact::IfHaveQuestItem2(cstring id) const
 //=================================================================================================
 const Item* Quest_LostArtifact::GetQuestItem()
 {
-	return &quest_item;
+	return &quest_item.GetItem();
 }
 
 //=================================================================================================
@@ -226,11 +226,11 @@ Quest::LoadResult Quest_LostArtifact::Load(GameReader& f)
 
 	if(prog >= Progress::Started)
 	{
-		item->CreateCopy(quest_item);
-		quest_item.id = Format("$%s", item->id.c_str());
-		quest_item.quest_id = id;
+		item->CreateCopy(quest_item.GetItem());
+		quest_item.GetItem().id = Format("$%s", item->id.c_str());
+		quest_item.GetItem().quest_id = id;
 		spawn_item = Quest_Dungeon::Item_OnGround;
-		item_to_give[0] = &quest_item;
+		item_to_give[0] = &quest_item.GetItem();
 	}
 
 	return LoadResult::Ok;
