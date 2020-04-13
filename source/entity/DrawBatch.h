@@ -5,31 +5,6 @@
 #include "Light.h"
 
 //-----------------------------------------------------------------------------
-struct DebugSceneNode : public ObjectPoolProxy<DebugSceneNode>
-{
-	enum Type
-	{
-		Box,
-		Cylinder,
-		Sphere,
-		Capsule,
-		TriMesh,
-		MaxType
-	} type;
-	enum Group
-	{
-		Hitbox,
-		UnitRadius,
-		ParticleRadius,
-		Collider,
-		Physic,
-		MaxGroup
-	} group;
-	Matrix mat;
-	void* mesh_ptr;
-};
-
-//-----------------------------------------------------------------------------
 struct GlowNode
 {
 	enum Type

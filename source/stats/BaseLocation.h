@@ -53,8 +53,7 @@ enum BaseLocationOptions
 	BLO_ROUND = 1 << 0,
 	BLO_LABYRINTH = 1 << 1,
 	BLO_MAGIC_LIGHT = 1 << 2,
-	BLO_LESS_FOOD = 1 << 3,
-	BLO_NO_TEX_WRAP = 1 << 4,
+	BLO_LESS_FOOD = 1 << 3
 };
 
 //-----------------------------------------------------------------------------

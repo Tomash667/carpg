@@ -4637,9 +4637,6 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 		game_res->tCeil[1] = game_res->tCeil[0];
 		game_res->tWall[1] = game_res->tWall[0];
 	}
-
-	// ustawienia uv podziemi
-	dun_mesh_builder->ChangeTexWrap(!IsSet(base.options, BLO_NO_TEX_WRAP));
 }
 
 void Game::SetDungeonParamsToMeshes()

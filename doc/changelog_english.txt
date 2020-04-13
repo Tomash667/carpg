@@ -4,6 +4,7 @@ Changelog
 Version 0.15 (???):
 ! cannot load saves from version 0.6.1 or older
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- randomly generated dungeons were mostly of single type
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):

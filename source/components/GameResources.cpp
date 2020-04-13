@@ -154,10 +154,6 @@ void GameResources::LoadData()
 	// meshes
 	res_mgr->AddTaskCategory(txLoadModels);
 	res_mgr->Load(aHuman);
-	aBox = res_mgr->Load<Mesh>("box.qmsh");
-	aCylinder = res_mgr->Load<Mesh>("cylinder.qmsh");
-	aSphere = res_mgr->Load<Mesh>("sphere.qmsh");
-	aCapsule = res_mgr->Load<Mesh>("capsule.qmsh");
 	aHair[0] = res_mgr->Load<Mesh>("hair1.qmsh");
 	aHair[1] = res_mgr->Load<Mesh>("hair2.qmsh");
 	aHair[2] = res_mgr->Load<Mesh>("hair3.qmsh");

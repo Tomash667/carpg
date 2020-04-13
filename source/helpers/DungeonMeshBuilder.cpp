@@ -61,7 +61,7 @@ struct IBOX
 };
 
 //=================================================================================================
-DungeonMeshBuilder::DungeonMeshBuilder() : vb(nullptr), ib(nullptr), dungeon_tex_wrap(true)
+DungeonMeshBuilder::DungeonMeshBuilder() : vb(nullptr), ib(nullptr)
 {
 }
 
@@ -98,7 +98,7 @@ void DungeonMeshBuilder::Build()
 	const float H1U = 8.f;
 	const float H2D = -4.f;
 	const float H2U = 0.001f;
-	const float V0 = (dungeon_tex_wrap ? 2.f : 1);
+	const float V0 = 2.f;
 
 #define NTB_PX Vec3(1,0,0), Vec3(0,0,1), Vec3(0,-1,0)
 #define NTB_MX Vec3(-1,0,0), Vec3(0,0,-1), Vec3(0,-1,0)
@@ -230,13 +230,10 @@ void DungeonMeshBuilder::Build()
 	v[75] = VTangent(Vec3(L, H2U, L), Vec2(1, 0), NTB_PZ);
 
 	// create vertex buffer
-	D3D11_BUFFER_DESC desc;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
 	desc.ByteWidth = size;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data = {};
 	data.pSysMem = buf.Get();
@@ -290,10 +287,8 @@ void DungeonMeshBuilder::Build()
 	FillPart(dungeon_part4, id, index, 60);
 
 	// create index buffer
-	desc.Usage = D3D11_USAGE_IMMUTABLE;
 	desc.ByteWidth = size;
 	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc.CPUAccessFlags = 0;
 
 	data.pSysMem = buf.Get();
 
@@ -301,68 +296,6 @@ void DungeonMeshBuilder::Build()
 #ifdef _DEBUG
 	ib->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("DungeonMeshIb"), "DungeonMeshIb");
 #endif
-}
-
-//=================================================================================================
-void DungeonMeshBuilder::ChangeTexWrap(bool use_tex_wrap)
-{
-	if(use_tex_wrap == dungeon_tex_wrap)
-		return;
-
-	dungeon_tex_wrap = use_tex_wrap;
-
-	ResourceLock lock(vb);
-	VTangent* v = lock.Get<VTangent>();
-
-	const float V0 = (dungeon_tex_wrap ? 2.f : 1);
-
-	// lewa
-	v[8].tex.y = V0;
-	v[10].tex.y = V0;
-
-	// prawa
-	v[12].tex.y = V0;
-	v[14].tex.y = V0;
-
-	// przód
-	v[16].tex.y = V0;
-	v[18].tex.y = V0;
-
-	// ty³
-	v[20].tex.y = V0;
-	v[22].tex.y = V0;
-
-	// dziura góra lewa
-	v[44].tex.y = V0;
-	v[46].tex.y = V0;
-
-	// dziura góra prawa
-	v[48].tex.y = V0;
-	v[50].tex.y = V0;
-
-	// dziura góra przód
-	v[52].tex.y = V0;
-	v[54].tex.y = V0;
-
-	// dziura góra ty³
-	v[56].tex.y = V0;
-	v[58].tex.y = V0;
-
-	// dziura dó³ lewa
-	v[60].tex.y = V0;
-	v[62].tex.y = V0;
-
-	// dziura dó³ prawa
-	v[64].tex.y = V0;
-	v[66].tex.y = V0;
-
-	// dziura dó³ przód
-	v[68].tex.y = V0;
-	v[70].tex.y = V0;
-
-	// dziura dó³ ty³
-	v[72].tex.y = V0;
-	v[74].tex.y = V0;
 }
 
 //=================================================================================================
