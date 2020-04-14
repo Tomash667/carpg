@@ -3461,6 +3461,33 @@ float Unit::GetBowAttackSpeed() const
 }
 
 //=================================================================================================
+float Unit::GetAttackSpeedModFromStrength(const Item& weapon) const
+{
+	if(weapon.Is<WeaponProp>())
+	{
+		const WeaponProp& weaponProp = weapon.Get<WeaponProp>();
+		int str = Get(AttributeId::STR);
+		if(str >= weaponProp.req_str)
+			return 0.f;
+		else if(str * 2 <= weaponProp.req_str)
+			return 0.5f;
+		else
+			return 0.5f * float(weaponProp.req_str - str) / (weaponProp.req_str / 2);
+	}
+	else
+	{
+		const BowProp& bowProp = weapon.Get<BowProp>();
+		int str = Get(AttributeId::STR);
+		if(str >= bowProp.req_str)
+			return 0.f;
+		else if(str * 2 <= bowProp.req_str)
+			return 0.75f;
+		else
+			return 0.75f * float(bowProp.req_str - str) / (bowProp.req_str / 2);
+	}
+}
+
+//=================================================================================================
 void Unit::MakeItemsTeam(bool is_team)
 {
 	if(is_team)

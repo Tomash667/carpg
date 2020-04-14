@@ -376,8 +376,8 @@ struct Unit : public EntityType<Unit>
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
-	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
-	void ConsumeItemAnim(const Consumable& cons);
+	void ConsumeItem(const Item& item, bool force = false, bool send = true);
+	void ConsumeItemAnim(const Item& cons);
 	void ConsumeItemS(const Item* item);
 	void UseItem(int index);
 	void HideWeapon() { SetWeaponState(false, W_NONE, true); }
@@ -464,9 +464,9 @@ struct Unit : public EntityType<Unit>
 	}
 	Vec3 GetLootCenter() const;
 
-	float CalculateWeaponPros(const Weapon& weapon) const;
-	bool IsBetterWeapon(const Weapon& weapon, int* value = nullptr, int* prev_value = nullptr) const;
-	bool IsBetterArmor(const Armor& armor, int* value = nullptr, int* prev_value = nullptr) const;
+	float CalculateWeaponPros(const Item& weapon) const;
+	bool IsBetterWeapon(const Item& weapon, int* value = nullptr, int* prev_value = nullptr) const;
+	bool IsBetterArmor(const Item& armor, int* value = nullptr, int* prev_value = nullptr) const;
 	bool IsBetterItem(const Item* item, int* value = nullptr, int* prev_value = nullptr, ITEM_SLOT* target_slot = nullptr) const;
 	float GetItemAiValue(const Item* item) const;
 	bool IsPlayer() const { return (player != nullptr); }
@@ -532,14 +532,14 @@ struct Unit : public EntityType<Unit>
 	MATERIAL_TYPE GetWeaponMaterial() const
 	{
 		if(HaveWeapon())
-			return GetWeapon().material;
+			return GetWeapon().Get<WeaponProp>().material;
 		else
 			return data->mat;
 	}
 	MATERIAL_TYPE GetBodyMaterial() const
 	{
 		if(HaveArmor())
-			return GetArmor().material;
+			return GetArmor().Get<ArmorProp>().material;
 		else
 			return data->mat;
 	}
@@ -581,35 +581,17 @@ public:
 	bool HaveItem(const Item* item, bool owned = false) const;
 	bool HaveItemEquipped(const Item* item) const;
 	bool SlotRequireHideWeapon(ITEM_SLOT slot) const;
-	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
-	float GetAttackSpeedModFromStrength(const Weapon& wep) const
-	{
-		int str = Get(AttributeId::STR);
-		if(str >= wep.req_str)
-			return 0.f;
-		else if(str * 2 <= wep.req_str)
-			return 0.5f;
-		else
-			return 0.5f * float(wep.req_str - str) / (wep.req_str / 2);
-	}
-	float GetPowerAttackSpeed() const
-	{
+	float GetAttackSpeed(const Item* weapon = nullptr) const;
+	float GetAttackSpeedModFromStrength(const Item& weapon) const;
+	float GetPowerAttackSpeed() const;
+	/*{
 		if(HaveWeapon())
 			return GetWeapon().GetInfo().power_speed * GetAttackSpeed();
 		else
 			return 0.33f;
-	}
+	}*/
+	FIXME;
 	float GetBowAttackSpeed() const;
-	float GetAttackSpeedModFromStrength(const Bow& b) const
-	{
-		int str = Get(AttributeId::STR);
-		if(str >= b.req_str)
-			return 0.f;
-		else if(str * 2 <= b.req_str)
-			return 0.75f;
-		else
-			return 0.75f * float(b.req_str - str) / (b.req_str / 2);
-	}
 	bool IsHero() const { return hero != nullptr; }
 	bool IsFollower() const { return hero && hero->team_member; }
 	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
@@ -712,7 +694,7 @@ public:
 	//-----------------------------------------------------------------------------
 	void AddEffect(Effect& e, bool send = true);
 	// dodaj efekt zjadanego przedmiotu
-	void ApplyConsumableEffect(const Consumable& item);
+	void ApplyConsumableEffect(const Item& item);
 	// aktualizuj efekty
 	void UpdateEffects(float dt);
 	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
@@ -751,25 +733,25 @@ public:
 	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
 	bool HaveAmulet() const { return slots[SLOT_AMULET] != nullptr; }
 	bool CanWear(const Item* item) const;
-	const Weapon& GetWeapon() const
+	const Item& GetWeapon() const
 	{
 		assert(HaveWeapon());
-		return slots[SLOT_WEAPON]->ToWeapon();
+		return *slots[SLOT_WEAPON];
 	}
-	const Bow& GetBow() const
+	const Item& GetBow() const
 	{
 		assert(HaveBow());
-		return slots[SLOT_BOW]->ToBow();
+		return *slots[SLOT_BOW];
 	}
-	const Shield& GetShield() const
+	const Item& GetShield() const
 	{
 		assert(HaveShield());
-		return slots[SLOT_SHIELD]->ToShield();
+		return *slots[SLOT_SHIELD];
 	}
-	const Armor& GetArmor() const
+	const Item& GetArmor() const
 	{
 		assert(HaveArmor());
-		return slots[SLOT_ARMOR]->ToArmor();
+		return *slots[SLOT_ARMOR];
 	}
 	const Item& GetAmulet() const
 	{
@@ -856,7 +838,7 @@ public:
 	void ApplyStat(AttributeId a);
 	void ApplyStat(SkillId s);
 	void CalculateStats();
-	float CalculateMobility(const Armor* armor = nullptr) const;
+	float CalculateMobility(const Item* armor = nullptr) const;
 	float GetMobilityMod(bool run) const;
 
 	WEAPON_TYPE GetBestWeaponType() const;
@@ -874,7 +856,7 @@ public:
 
 	float GetArrowSpeed() const
 	{
-		float s = (float)GetBow().speed;
+		float s = (float)GetBow().Get<BowProp>().speed;
 		s *= 1.f + float(Get(SkillId::BOW)) / 666;
 		return s;
 	}

@@ -63,93 +63,6 @@ struct ItemEffect
 };
 
 //-----------------------------------------------------------------------------
-// Base item type
-struct Item
-{
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
-		state(ResourceState::NotLoaded)
-	{
-	}
-	virtual ~Item() {}
-
-	Item& operator = (const Item& i);
-
-	template<typename T, ITEM_TYPE _type>
-	T& Cast()
-	{
-		assert(type == _type);
-		return *(T*)this;
-	}
-
-	template<typename T, ITEM_TYPE _type>
-	const T& Cast() const
-	{
-		assert(type == _type);
-		return *(const T*)this;
-	}
-
-	Weapon& ToWeapon() { return Cast<Weapon, IT_WEAPON>(); }
-	Bow& ToBow() { return Cast<Bow, IT_BOW>(); }
-	Shield& ToShield() { return Cast<Shield, IT_SHIELD>(); }
-	Armor& ToArmor() { return Cast<Armor, IT_ARMOR>(); }
-	Amulet& ToAmulet() { return Cast<Amulet, IT_AMULET>(); }
-	Ring& ToRing() { return Cast<Ring, IT_RING>(); }
-	Consumable& ToConsumable() { return Cast<Consumable, IT_CONSUMABLE>(); }
-	OtherItem& ToOther() { return Cast<OtherItem, IT_OTHER>(); }
-	Book& ToBook() { return Cast<Book, IT_BOOK>(); }
-
-	const Weapon& ToWeapon() const { return Cast<Weapon, IT_WEAPON>(); }
-	const Bow& ToBow() const { return Cast<Bow, IT_BOW>(); }
-	const Shield& ToShield() const { return Cast<Shield, IT_SHIELD>(); }
-	const Armor& ToArmor() const { return Cast<Armor, IT_ARMOR>(); }
-	const Amulet& ToAmulet() const { return Cast<Amulet, IT_AMULET>(); }
-	const Ring& ToRing() const { return Cast<Ring, IT_RING>(); }
-	const Consumable& ToConsumable() const { return Cast<Consumable, IT_CONSUMABLE>(); }
-	const OtherItem& ToOther() const { return Cast<OtherItem, IT_OTHER>(); }
-	const Book& ToBook() const { return Cast<Book, IT_BOOK>(); }
-
-	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
-	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
-	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
-	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
-	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
-
-	const string& GetName() const { return name; }
-	float GetWeight() const { return float(weight) / 10; }
-	float GetWeightValue() const { return float(value) / weight; }
-	float GetEffectPower(EffectId effect) const;
-
-	void CreateCopy(Item& item) const;
-	Item* CreateCopy() const;
-	Item* QuestCopy(Quest* quest, const string& name);
-	void Rename(cstring name);
-	void RenameS(const string& name) { Rename(name.c_str()); }
-
-	string id, name, desc;
-	int weight, value, ai_value, flags, quest_id;
-	vector<ItemEffect> effects;
-	ITEM_TYPE type;
-	MeshPtr mesh;
-	TexturePtr tex, icon;
-	ResourceState state;
-
-	static const Item* gold;
-	static ItemsMap items;
-	static Item* TryGet(Cstring id);
-	static Item* Get(Cstring id)
-	{
-		auto item = TryGet(id);
-		assert(item);
-		return item;
-	}
-	static Item* GetS(const string& id)
-	{
-		return TryGet(id);
-	}
-	static void Validate(uint& err);
-};
-
-//-----------------------------------------------------------------------------
 // Weapon types
 enum WEAPON_TYPE
 {
@@ -206,9 +119,9 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 
 //-----------------------------------------------------------------------------
 // Weapon
-struct Weapon : public Item
+struct WeaponProp
 {
-	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
+	WeaponProp() : dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 
 	const WeaponTypeInfo& GetInfo() const
 	{
@@ -223,30 +136,33 @@ struct Weapon : public Item
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
 
-	static vector<Weapon*> weapons;
+	static const ITEM_PROP prop = ITEM_WEAPON;
+	static std::unordered_map<Item*, WeaponProp*> list;
 };
 
 //-----------------------------------------------------------------------------
 // Bow
-struct Bow : public Item
+struct BowProp
 {
-	Bow() : Item(IT_BOW), dmg(10), req_str(10), speed(45) {}
+	BowProp() : dmg(10), req_str(10), speed(45) {}
 
 	int dmg, req_str, speed;
 
-	static vector<Bow*> bows;
+	static const ITEM_PROP prop = ITEM_BOW;
+	static std::unordered_map<Item*, BowProp*> list;
 };
 
 //-----------------------------------------------------------------------------
 // Shield
-struct Shield : public Item
+struct ShieldProp
 {
-	Shield() : Item(IT_SHIELD), block(10), req_str(10), material(MAT_WOOD) {}
+	ShieldProp() : block(10), req_str(10), material(MAT_WOOD) {}
 
 	int block, req_str;
 	MATERIAL_TYPE material;
 
-	static vector<Shield*> shields;
+	static const ITEM_PROP prop = ITEM_SHIELD;
+	static std::unordered_map<Item*, ShieldProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -291,9 +207,9 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 
 //-----------------------------------------------------------------------------
 // Armor
-struct Armor : public Item
+struct ArmorProp
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
+	ArmorProp() : def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexOverride* GetTextureOverride() const
 	{
@@ -310,7 +226,8 @@ struct Armor : public Item
 	ArmorUnitType armor_unit_type;
 	vector<TexOverride> tex_override;
 
-	static vector<Armor*> armors;
+	static const ITEM_PROP prop = ITEM_ARMOR;
+	static std::unordered_map<Item*, ArmorProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -334,24 +251,26 @@ static const int MAX_ITEM_TAGS = 2;
 
 //-----------------------------------------------------------------------------
 // Amulet
-struct Amulet : public Item
+struct AmuletProp
 {
-	Amulet() : Item(IT_AMULET), tag() {}
+	AmuletProp() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
 
-	static vector<Amulet*> amulets;
+	static const ITEM_PROP prop = ITEM_AMULET;
+	static std::unordered_map<Item*, AmuletProp*> list;
 };
 
 //-----------------------------------------------------------------------------
 // Ring
-struct Ring : public Item
+struct RingProp
 {
-	Ring() : Item(IT_RING), tag() {}
+	RingProp() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
 
-	static vector<Ring*> rings;
+	static const ITEM_PROP prop = ITEM_RING;
+	static std::unordered_map<Item*, RingProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -369,15 +288,16 @@ enum class ConsumableAiType
 	Healing,
 	Mana
 };
-struct Consumable : public Item
+struct ConsumableProp
 {
-	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
+	ConsumableProp() : time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
 
 	float time;
 	ConsumableType cons_type;
 	ConsumableAiType ai_type;
 
-	static vector<Consumable*> consumables;
+	static const ITEM_PROP prop = ITEM_CONSUMABLE;
+	static std::unordered_map<Item*, ConsumableProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -390,14 +310,15 @@ enum OtherType
 	OtherItems,
 	Artifact
 };
-struct OtherItem : public Item
+struct OtherItemProp
 {
-	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
+	OtherItemProp() : other_type(OtherItems) {}
 
 	OtherType other_type;
 
-	static vector<OtherItem*> others;
-	static vector<OtherItem*> artifacts;
+	static const ITEM_PROP prop = ITEM_OTHER;
+	static vector<Item*> artifacts;
+	static std::unordered_map<Item*, OtherItemProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -415,9 +336,9 @@ struct BookScheme
 	static BookScheme* TryGet(Cstring id);
 };
 
-struct Book : public Item
+struct BookProp
 {
-	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
+	BookProp() : scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
 	vector<string> recipe_ids;
@@ -425,9 +346,88 @@ struct Book : public Item
 	string text;
 	bool runic;
 
-	static vector<Book*> books;
+	static const ITEM_PROP prop = ITEM_BOOK;
+	static std::unordered_map<Item*, BookProp*> list;
 	// get random book for shelf (can be nullptr)
 	static const Item* GetRandom();
+};
+
+//-----------------------------------------------------------------------------
+// Base item type
+struct Item
+{
+	Item() : weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr), state(ResourceState::NotLoaded) {}
+	virtual ~Item() {}
+
+	Item& operator = (const Item& i);
+
+	template<typename T>
+	bool Is() const
+	{
+		return IsSet(prop, T::prop);
+	}
+
+	template<typename T>
+	T& Get()
+	{
+		assert(Is<T>());
+		return *T::list[this];
+	}
+
+	template<typename T>
+	const T& Get() const
+	{
+		assert(Is<T>());
+		return *T::list[this];
+	}
+
+	template<typename T>
+	void Set(T* p)
+	{
+		prop = ITEM_PROP(prop | T::prop);
+		T::list[this] = p;
+	}
+
+	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
+	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
+	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
+	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
+	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
+
+	const string& GetName() const { return name; }
+	float GetWeight() const { return float(weight) / 10; }
+	float GetWeightValue() const { return float(value) / weight; }
+	float GetEffectPower(EffectId effect) const;
+
+	void CreateCopy(Item& item) const;
+	Item* CreateCopy() const;
+	Item* QuestCopy(Quest* quest, const string& name);
+	void Rename(cstring name);
+	void RenameS(const string& name) { Rename(name.c_str()); }
+
+	string id, name, desc;
+	int weight, value, ai_value, flags, quest_id;
+	vector<ItemEffect> effects;
+	ITEM_TYPE type;
+	ITEM_PROP prop;
+	MeshPtr mesh;
+	TexturePtr tex, icon;
+	ResourceState state;
+
+	static const Item* gold;
+	static ItemsMap items;
+	static Item* TryGet(Cstring id);
+	static Item* Get(Cstring id)
+	{
+		auto item = TryGet(id);
+		assert(item);
+		return item;
+	}
+	static Item* GetS(const string& id)
+	{
+		return TryGet(id);
+	}
+	static void Validate(uint& err);
 };
 
 //-----------------------------------------------------------------------------

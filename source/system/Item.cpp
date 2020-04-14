@@ -12,17 +12,16 @@ const Item* Item::gold;
 ItemsMap Item::items;
 std::map<string, Item*> item_aliases;
 vector<ItemList*> ItemList::lists;
-vector<Weapon*> Weapon::weapons;
-vector<Bow*> Bow::bows;
-vector<Shield*> Shield::shields;
-vector<Armor*> Armor::armors;
-vector<Amulet*> Amulet::amulets;
-vector<Ring*> Ring::rings;
-vector<Consumable*> Consumable::consumables;
-vector<OtherItem*> OtherItem::others;
-vector<OtherItem*> OtherItem::artifacts;
+std::unordered_map<Item*, WeaponProp*> WeaponProp::list;
+std::unordered_map<Item*, BowProp*> BowProp::list;
+std::unordered_map<Item*, ShieldProp*> ShieldProp::list;
+std::unordered_map<Item*, ArmorProp*> ArmorProp::list;
+std::unordered_map<Item*, AmuletProp*> AmuletProp::list;
+std::unordered_map<Item*, RingProp*> RingProp::list;
+std::unordered_map<Item*, OtherItemProp*> OtherItemProp::list;
+std::unordered_map<Item*, BookProp*> BookProp::list;
+vector<Item*> OtherItemProp::artifacts;
 vector<BookScheme*> BookScheme::book_schemes;
-vector<Book*> Book::books;
 vector<StartItem> StartItem::start_items;
 std::map<const Item*, Item*> better_items;
 std::map<int, Recipe*> Recipe::hash_recipes;
@@ -48,7 +47,7 @@ Item& Item::operator = (const Item& i)
 	value = i.value;
 	flags = i.flags;
 	effects = i.effects;
-	switch(type)
+	/*switch(type)
 	{
 	case IT_WEAPON:
 		{
@@ -137,7 +136,8 @@ Item& Item::operator = (const Item& i)
 	default:
 		assert(0);
 		break;
-	}
+	}*/
+	FIXME;
 	return *this;
 }
 
@@ -236,8 +236,8 @@ bool ItemCmp(const Item* a, const Item* b)
 	{
 		if(a->type == IT_WEAPON)
 		{
-			WEAPON_TYPE w1 = a->ToWeapon().weapon_type,
-				w2 = b->ToWeapon().weapon_type;
+			WEAPON_TYPE w1 = a->Get<WeaponProp>().weapon_type,
+				w2 = b->Get<WeaponProp>().weapon_type;
 			if(w1 != w2)
 				return w1 < w2;
 		}

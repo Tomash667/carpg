@@ -33,7 +33,7 @@ enum ITEM_TYPE
 	IT_AMULET,
 	IT_RING,
 	IT_OTHER,
-	IT_MAX_WEARABLE = IT_OTHER, // used in team->cpp priorities
+	IT_MAX_WEARABLE = IT_OTHER, // used in Team.cpp priorities
 	IT_CONSUMABLE,
 	IT_BOOK,
 	IT_MAX_GEN = IT_BOOK, // items generated in treasure
@@ -50,3 +50,18 @@ enum ITEM_TYPE
 
 	IT_MAX
 };
+
+enum ITEM_PROP
+{
+	ITEM_NONE = 0,
+	ITEM_WEAPON = 1 << 0,
+	ITEM_BOW = 1 << 1,
+	ITEM_SHIELD = 1 << 2,
+	ITEM_ARMOR = 1 << 3,
+	ITEM_AMULET = 1 << 4,
+	ITEM_RING = 1 << 5,
+	ITEM_OTHER = 1 << 6,
+	ITEM_CONSUMABLE = 1 << 7,
+	ITEM_BOOK = 1 << 8
+};
+
