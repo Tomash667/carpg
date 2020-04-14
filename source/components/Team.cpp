@@ -1159,6 +1159,8 @@ void Team::CheckUnitOverload(Unit& unit)
 		items_to_sell.pop_back();
 	}
 
+	RemoveNullItems(unit.items);
+	SortItems(unit.items);
 	if(team_gold > 0)
 		AddGold(team_gold);
 

@@ -1,6 +1,11 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Poprawki:
+- losowo generowane podziemia były głównie jednego typu
+- losowy crash przy wchodzeniu do miasta po tym jak ai poprosił o pancerz [SwagOfficerSuccubus]
+
+--------------------------------------------------------------------------------
 Wersja 0.14.1 (2020-04-11):
 + zwiększenie maksymalnej liczby graczy do 64
 - crash przy alchemii, naprawione przez BottledByte [Lemiczek]
