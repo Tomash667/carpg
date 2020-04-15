@@ -161,14 +161,16 @@ void Net::UpdateServer(float dt)
 {
 	if(game->game_state == GS_LEVEL)
 	{
+		float gameDt = dt * game->game_speed;
+
 		for(PlayerInfo& info : players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && !info.pc->is_local)
-				info.pc->UpdateCooldown(dt);
+				info.pc->UpdateCooldown(gameDt);
 		}
 
-		InterpolatePlayers(dt);
-		UpdateFastTravel(dt);
+		InterpolatePlayers(gameDt);
+		UpdateFastTravel(gameDt);
 		game->pc->unit->changed = true;
 	}
 
@@ -4300,7 +4302,10 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 			f << unit.act.attack.run;
 		}
 		else if(unit.action == A_CAST)
+		{
+			f << unit.act.cast.ability->hash;
 			f << unit.act.cast.target;
+		}
 	}
 
 	f.WriteCasted<byte>(0xFF);

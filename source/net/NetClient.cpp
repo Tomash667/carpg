@@ -90,10 +90,12 @@ void Net::UpdateClient(float dt)
 {
 	if(game->game_state == GS_LEVEL)
 	{
+		float gameDt = dt * game->game_speed;
+
 		// interpolacja pozycji gracza
 		if(interpolate_timer > 0.f)
 		{
-			interpolate_timer -= dt;
+			interpolate_timer -= gameDt;
 			if(interpolate_timer >= 0.f)
 				game->pc->unit->visual_pos = Vec3::Lerp(game->pc->unit->visual_pos, game->pc->unit->pos, (0.1f - interpolate_timer) * 10);
 			else
@@ -101,7 +103,7 @@ void Net::UpdateClient(float dt)
 		}
 
 		// interpolacja pozycji/obrotu postaci
-		InterpolateUnits(dt);
+		InterpolateUnits(gameDt);
 	}
 
 	bool exit_from_server = false;
@@ -4487,7 +4489,10 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 			f >> unit->act.attack.run;
 		}
 		else if(unit->action == A_CAST)
+		{
+			unit->act.cast.ability = Ability::Get(f.Read<int>());
 			f >> unit->act.cast.target;
+		}
 		if(!f)
 		{
 			Error("Read player data: Broken multiplayer data.");

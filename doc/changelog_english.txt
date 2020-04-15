@@ -4,6 +4,7 @@ Changelog
 Fixes:
 - randomly generated dungeons were mostly of single type
 - random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
+- crash after loading game where player is casting spell [Ampped]
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):
