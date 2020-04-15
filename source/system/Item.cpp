@@ -27,6 +27,16 @@ vector<StartItem> StartItem::start_items;
 std::map<const Item*, Item*> better_items;
 std::map<int, Recipe*> Recipe::hash_recipes;
 
+std::map<Item*, Weapon*> Weapon::storage;
+std::map<Item*, Bow*> Bow::storage;
+std::map<Item*, Shield*> Shield::storage;
+std::map<Item*, Armor*> Armor::storage;
+std::map<Item*, Amulet*> Amulet::storage;
+std::map<Item*, Ring*> Ring::storage;
+std::map<Item*, Consumable*> Consumable::storage;
+std::map<Item*, OtherItem*> OtherItem::storage;
+std::map<Item*, Book*> Book::storage;
+
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
 WeaponTypeInfo WeaponTypeInfo::info[] = {

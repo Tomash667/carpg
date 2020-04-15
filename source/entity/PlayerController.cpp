@@ -849,12 +849,12 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())
-			TrainMod(unit->GetArmor().GetSkill(), value * 3000 * GetLevelMod(unit->level, level));
+			TrainMod(unit->GetArmor().ToArmor().GetSkill(), value * 3000 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::AttackStart:
 		{
 			const float c_points = 50.f;
-			const Weapon& weapon = unit->GetWeapon();
+			const Weapon& weapon = unit->GetWeapon().ToWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 
 			int skill = unit->GetBase(info.skill);
@@ -882,7 +882,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::AttackNoDamage:
 		{
 			const float c_points = 200.f * GetLevelMod(unit->level, level);
-			const Weapon& weapon = unit->GetWeapon();
+			const Weapon& weapon = unit->GetWeapon().ToWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
 			TrainMod2(info.skill, c_points);
@@ -893,7 +893,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::AttackHit:
 		{
 			const float c_points = (200.f + 2300.f * value) * GetLevelMod(unit->level, level);
-			const Weapon& weapon = unit->GetWeapon();
+			const Weapon& weapon = unit->GetWeapon().ToWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
 			TrainMod2(info.skill, c_points);
@@ -908,9 +908,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::BashStart:
 		{
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetShield().req_str > str)
+			if(unit->GetShield().ToShield().req_str > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetShield().req_str + 10 > str)
+			else if(unit->GetShield().ToShield().req_str + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::SHIELD);
 			if(skill < 25)
@@ -928,9 +928,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::BowStart:
 		{
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetBow().req_str > str)
+			if(unit->GetBow().ToBow().req_str > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetBow().req_str + 10 > str)
+			else if(unit->GetBow().ToBow().req_str + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::BOW);
 			if(skill < 25)
@@ -977,7 +977,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 
 			if(unit->HaveArmor())
 			{
-				const Armor& armor = unit->GetArmor();
+				const Armor& armor = unit->GetArmor().ToArmor();
 				int str = unit->Get(AttributeId::STR);
 				if(armor.req_str > str)
 					TrainMod(AttributeId::STR, 250.f);
@@ -1454,7 +1454,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		return CanUseAbilityResult::No;
 	if(IsSet(ability->flags, Ability::Mage))
 	{
-		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().GetItem().flags, ITEM_MAGE))
+		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().flags, ITEM_MAGE))
 			return CanUseAbilityResult::NeedWand;
 		if((unit->weapon_taken != W_ONE_HANDED || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeWand;
@@ -1838,7 +1838,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
-		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon().GetItem() || unit->HaveShield()))
+		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
 		{
 			if(after_action)
 				return;
@@ -2972,7 +2972,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 
 						if(Net::IsLocal())
-							u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+							u.RemoveStamina(u.GetWeapon().ToWeapon().GetInfo().stamina);
 					}
 				}
 			}
@@ -3032,7 +3032,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 				if(k != Key::None)
 				{
-					if(!secondary && IsSet(u.GetWeapon().GetItem().flags, ITEM_WAND) && u.Get(SkillId::MYSTIC_MAGIC) > 0)
+					if(!secondary && IsSet(u.GetWeapon().flags, ITEM_WAND) && u.Get(SkillId::MYSTIC_MAGIC) > 0)
 					{
 						// cast magic bolt
 						UseAbility(Ability::Get("magic_bolt"), false);
@@ -3064,7 +3064,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							if(Net::IsLocal())
 							{
 								Train(TrainWhat::AttackStart, 0.f, 0);
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
+								u.RemoveStamina(u.GetWeapon().ToWeapon().GetInfo().stamina * 1.5f);
 							}
 						}
 						else
@@ -3087,7 +3087,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							}
 
 							if(Net::IsLocal())
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+								u.RemoveStamina(u.GetWeapon().ToWeapon().GetInfo().stamina);
 						}
 					}
 				}
@@ -3176,7 +3176,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.action = A_SHOOT;
 					u.animation_state = AS_SHOOT_PREPARE;
 					action_key = k;
-					u.bow_instance = game_level->GetBowInstance(u.GetBow().GetItem().mesh);
+					u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
 					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 					u.bow_instance->groups[0].speed = speed;
 
@@ -3356,6 +3356,6 @@ bool PlayerController::ShouldUseRaytest() const
 		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon))
 		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
-			&& IsSet(unit->GetWeapon().GetItem().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
+			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));
 }

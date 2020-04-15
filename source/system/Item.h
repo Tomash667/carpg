@@ -41,6 +41,24 @@ enum ITEM_FLAGS
 	ITEM_INGREDIENT = 1 << 19, // shows in crafting panel
 };
 
+/**
+ * Enum flags for marking what properties an Item has.
+ * When adding a new ItemProp, add an entry here
+ */
+enum ITEM_PROP
+{
+	IT_PROP_NONE = 0,
+	IT_PROP_WEAPON = 1 << 0,
+	IT_PROP_BOW = 1 << 1,
+	IT_PROP_SHIELD = 1 << 2,
+	IT_PROP_ARMOR = 1 << 3,
+	IT_PROP_AMULET = 1 << 4,
+	IT_PROP_RING = 1 << 5,
+	IT_PROP_CONSUMABLE = 1 << 6,
+	IT_PROP_OTHER_ITEM = 1 << 7,
+	IT_PROP_BOOK = 1 << 8
+};
+
 //-----------------------------------------------------------------------------
 struct CstringHash
 {
@@ -69,7 +87,12 @@ struct ItemEffect
  * Some Item property
  * Every Item property has to inherit from this.
  * Every subclass is required to have:
- * - static variable ITEM_TYPE type
+ * - static variable ITEM_TYPE type with unique value
+ * - static variable std::map<Item*, PropertyType*> storage
+ * 
+ * NOTE: Do no forget to clean up the storage var for each property type
+ * 
+ * WARNING: Item pointer is stored in property for compatibility reasons only! Do not use it in new code!
  */
 class ItemProp
 {
@@ -78,8 +101,16 @@ protected:
 	Item* item;
 	ItemProp() : item(nullptr) {}
 public:
-	virtual ~ItemProp() {}
+	~ItemProp() {}
+
+	/**
+	 * @deprecated This function is for compatibility reasons only and can be removed in future
+	 */
 	const Item& GetItem() const { assert(item); return *item; }
+
+	/**
+	 * @deprecated This function is for compatibility reasons only and can be removed in future
+	 */
 	Item& GetItem() { assert(item); return *item; }
 };
 
@@ -142,7 +173,7 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 // Weapon
 struct Weapon : public ItemProp
 {
-	const static ITEM_TYPE type = IT_WEAPON;
+	const static ITEM_PROP type = IT_PROP_WEAPON;
 	Weapon() : dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 	const WeaponTypeInfo& GetInfo() const
 	{
@@ -158,31 +189,34 @@ struct Weapon : public ItemProp
 	MATERIAL_TYPE material;
 
 	static vector<Weapon*> weapons;
+	static std::map<Item*, Weapon*> storage;
 };
 
 //-----------------------------------------------------------------------------
 // Bow
 struct Bow : public ItemProp
 {
-	const static ITEM_TYPE type = IT_BOW;
+	const static ITEM_PROP type = IT_PROP_BOW;
 	Bow() : dmg(10), req_str(10), speed(45) {}
 
 	int dmg, req_str, speed;
 
 	static vector<Bow*> bows;
+	static std::map<Item*, Bow*> storage;
 };
 
 //-----------------------------------------------------------------------------
 // Shield
 struct Shield : public ItemProp
 {
-	const static ITEM_TYPE type = IT_SHIELD;
+	const static ITEM_PROP type = IT_PROP_SHIELD;
 	Shield() : block(10), req_str(10), material(MAT_WOOD) {}
 
 	int block, req_str;
 	MATERIAL_TYPE material;
 
 	static vector<Shield*> shields;
+	static std::map<Item*, Shield*> storage;
 };
 
 //-----------------------------------------------------------------------------
@@ -229,7 +263,7 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 // Armor
 struct Armor : public ItemProp
 {
-	const static ITEM_TYPE type = IT_ARMOR;
+	const static ITEM_PROP type = IT_PROP_ARMOR;
 	Armor() : def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexOverride* GetTextureOverride() const
@@ -248,6 +282,7 @@ struct Armor : public ItemProp
 	vector<TexOverride> tex_override;
 
 	static vector<Armor*> armors;
+	static std::map<Item*, Armor*> storage;
 };
 
 //-----------------------------------------------------------------------------
@@ -273,24 +308,26 @@ static const int MAX_ITEM_TAGS = 2;
 // Amulet
 struct Amulet : public ItemProp
 {
-	const static ITEM_TYPE type = IT_AMULET;
+	const static ITEM_PROP type = IT_PROP_AMULET;
 	Amulet() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
 
 	static vector<Amulet*> amulets;
+	static std::map<Item*, Amulet*> storage;
 };
 
 //-----------------------------------------------------------------------------
 // Ring
 struct Ring : public ItemProp
 {
-	const static ITEM_TYPE type = IT_RING;
+	const static ITEM_PROP type = IT_PROP_RING;
 	Ring() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
 
 	static vector<Ring*> rings;
+	static std::map<Item*, Ring*> storage;
 };
 
 //-----------------------------------------------------------------------------
@@ -310,7 +347,7 @@ enum class ConsumableAiType
 };
 struct Consumable : public ItemProp
 {
-	const static ITEM_TYPE type = IT_CONSUMABLE;
+	const static ITEM_PROP type = IT_PROP_CONSUMABLE;
 	Consumable() : time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
 
 	float time;
@@ -318,6 +355,7 @@ struct Consumable : public ItemProp
 	ConsumableAiType ai_type;
 
 	static vector<Consumable*> consumables;
+	static std::map<Item*, Consumable*> storage;
 };
 
 //-----------------------------------------------------------------------------
@@ -332,7 +370,7 @@ enum OtherType
 };
 struct OtherItem : public ItemProp
 {
-	const static ITEM_TYPE type = IT_OTHER;
+	const static ITEM_PROP type = IT_PROP_OTHER_ITEM;
 	OtherItem() : other_type(OtherItems) {}
 	~OtherItem() {}
 
@@ -340,6 +378,7 @@ struct OtherItem : public ItemProp
 
 	static vector<OtherItem*> others;
 	static vector<OtherItem*> artifacts;
+	static std::map<Item*, OtherItem*> storage;
 };
 
 //-----------------------------------------------------------------------------
@@ -359,7 +398,7 @@ struct BookScheme
 
 struct Book : public ItemProp
 {
-	const static ITEM_TYPE type = IT_BOOK;
+	const static ITEM_PROP type = IT_PROP_BOOK;
 	Book() : scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
@@ -369,6 +408,7 @@ struct Book : public ItemProp
 	bool runic;
 
 	static vector<Book*> books;
+	static std::map<Item*, Book*> storage;
 	// get random book for shelf (can be nullptr)
 	static const Item* GetRandom();
 };
@@ -381,139 +421,91 @@ struct Book : public ItemProp
 struct Item
 {
 	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
-		state(ResourceState::NotLoaded), weapon(nullptr), bow(nullptr), shield(nullptr), armor(nullptr), amulet(nullptr), ring(nullptr),
-		consumable(nullptr), book(nullptr), other_item(nullptr)
+		state(ResourceState::NotLoaded), properties(IT_PROP_NONE)
 	{
 	}
 	~Item()
 	{
-		if(weapon != nullptr)
-			delete weapon;
-		if(bow != nullptr)
-			delete bow;
-		if(shield != nullptr)
-			delete shield;
-		if(armor != nullptr)
-			delete armor;
-		if(amulet != nullptr)
-			delete amulet;
-		if(ring != nullptr)
-			delete ring;
-		if(consumable != nullptr)
-			delete consumable;
-		if(book != nullptr)
-			delete book;
-		if(other_item != nullptr)
-			delete other_item;
 	}
 
 	Item& operator = (const Item& i);
 
 	/**
+	 * Return true if item has property set, false otherwise
+	 */
+	template<typename Prop>
+	const bool HasProperty() const
+	{
+		return IsSet(properties, Prop::type);
+	}
+
+	/**
 	 * Return an Item's property, nullptr if property not set
 	 */
 	template<typename Prop>
-	Prop* GetProperty()
+	Prop& GetProperty()
 	{
-		void* prop = nullptr;
-		switch(Prop::type)
-		{
-		case IT_WEAPON:
-			prop = weapon;
-			break;
-		case IT_BOW:
-			prop = bow;
-			break;
-		case IT_SHIELD:
-			prop = shield;
-			break;
-		case IT_ARMOR:
-			prop = armor;
-			break;
-		case IT_AMULET:
-			prop = amulet;
-			break;
-		case IT_RING:
-			prop = ring;
-			break;
-		case IT_CONSUMABLE:
-			prop = consumable;
-			break;
-		case IT_BOOK:
-			prop = book;
-			break;
-		case IT_OTHER:
-			prop = other_item;
-			break;
-		}
-		return static_cast<Prop*>(prop);
+		assert(HasProperty<Prop>());
+		return *Prop::storage[this];
 	}
+	
 	/**
-	 * Sets some property of this Item
+	 * Return an Item's property as const, nullptr if property not set
+	 */
+	template<typename Prop>
+	const Prop& GetProperty() const
+	{
+		assert(HasProperty<Prop>());
+		return *(Prop::storage[(Item*)this]);
+	}
+
+	/**
+	 * Sets some property of this Item and stores it in respective storage
 	 * Sets property's Item to this instance
 	 */
-	template<typename Type>
-	void SetProperty(ItemProp* p)
+	template<typename Prop>
+	void SetProperty(Prop* p)
 	{
-		switch (Type::type)
-		{
-		case IT_WEAPON:
-			weapon = (Weapon*)p;
-			break;
-		case IT_BOW:
-			bow = (Bow*)p;
-			break;
-		case IT_SHIELD:
-			shield = (Shield*)p;
-			break;
-		case IT_ARMOR:
-			armor = (Armor*)p;
-			break;
-		case IT_AMULET:
-			amulet = (Amulet*)p;
-			break;
-		case IT_RING:
-			ring = (Ring*)p;
-			break;
-		case IT_CONSUMABLE:
-			consumable = (Consumable*)p;
-			break;
-		case IT_BOOK:
-			book = (Book*)p;
-			break;
-		case IT_OTHER:
-			other_item = (OtherItem*)p;
-			break;
-		default:
-			assert(0);
-			break;
-		}	
+		properties = (ITEM_PROP)(properties | Prop::type);
+		Prop::storage[this] = p;
 		p->item = this;
 	}
 
 	/**
-	 * Retrieve various Item's properties.
+	 * Removes Item's property from respective storage and unmarks it on Item.
+	 * Fails with assert if property is not set.
+	 */
+	template<typename Prop>
+	void RemoveProperty()
+	{
+		assert(HasProperty<Prop>());
+		properties = (ITEM_PROP)(properties ^ Prop::type);
+		DeleteProperty<Prop>();
+	}
+
+	/**
+	 * Wrappers for retrieveval of various Item's properties.
 	 */
 	/*@{*/
-	Weapon& ToWeapon() { return *GetProperty<Weapon>(); }
-	Bow& ToBow() { return *GetProperty<Bow>(); }
-	Shield& ToShield() { return *GetProperty<Shield>(); }
-	Armor& ToArmor() { return *GetProperty<Armor>(); }
-	Amulet& ToAmulet() { return *GetProperty<Amulet>(); }
-	Ring& ToRing() { return *GetProperty<Ring>(); }
-	Consumable& ToConsumable() { return *GetProperty<Consumable>(); }
-	OtherItem& ToOther() { return *GetProperty<OtherItem>(); }
-	Book& ToBook() { return *GetProperty<Book>(); }
+	Weapon& ToWeapon() { return GetProperty<Weapon>(); }
+	Bow& ToBow() { return GetProperty<Bow>(); }
+	Shield& ToShield() { return GetProperty<Shield>(); }
+	Armor& ToArmor() { return GetProperty<Armor>(); }
+	Amulet& ToAmulet() { return GetProperty<Amulet>(); }
+	Ring& ToRing() { return GetProperty<Ring>(); }
+	Consumable& ToConsumable() { return GetProperty<Consumable>(); }
+	OtherItem& ToOther() { return GetProperty<OtherItem>(); }
+	Book& ToBook() { return GetProperty<Book>(); }
 
-	const Weapon& ToWeapon() const { return *weapon; }
-	const Bow& ToBow() const { return *bow; }
-	const Shield& ToShield() const { return *shield; }
-	const Armor& ToArmor() const { return *armor; }
-	const Amulet& ToAmulet() const { return *amulet; }
-	const Ring& ToRing() const { return *ring; }
-	const Consumable& ToConsumable() const { return *consumable; }
-	const OtherItem& ToOther() const { return *other_item; }
-	const Book& ToBook() const { return *book; }
+	const Weapon& ToWeapon() const { return GetProperty<Weapon>(); }
+	const Bow& ToBow() const { return GetProperty<Bow>(); }
+	const Shield& ToShield() const { return GetProperty<Shield>(); }
+	const Armor& ToArmor() const { return GetProperty<Armor>(); }
+	const Amulet& ToAmulet() const { return GetProperty<Amulet>(); }
+	const Ring& ToRing() const { return GetProperty<Ring>(); }
+	const Consumable& ToConsumable() const { return GetProperty<Consumable>(); }
+	const OtherItem& ToOther() const { return GetProperty<OtherItem>(); }
+	const Book& ToBook() const { return GetProperty<Book>(); }
 	/*@}*/
 
 	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
@@ -542,21 +534,9 @@ struct Item
 	ResourceState state;
 
 	/**
-	 * Slots for various Item's properties. To retrieve those properties,
-	 * use appropriate ToXXX() functions.
-	 * To check whether Item has certain property, use IsXXX().
+	 * Bit record of properties this Item has 
 	 */
-	/*@{*/
-	Weapon* weapon;
-	Bow* bow;
-	Shield* shield;
-	Armor* armor;
-	Amulet* amulet;
-	Ring* ring;
-	Consumable* consumable;
-	Book* book;
-	OtherItem* other_item;
-	/*@}*/
+	ITEM_PROP properties;
 
 	static const Item* gold;
 	static ItemsMap items;
@@ -572,6 +552,20 @@ struct Item
 		return TryGet(id);
 	}
 	static void Validate(uint& err);
+private:
+	/**
+	 * Removes Item's property from respective storage and deletes it.
+	 */
+	template<typename Prop>
+	void DeleteProperty()
+	{
+		auto& it = Prop::storage.find(this);
+		if(it != Prop::storage.end())
+		{
+			delete it->second;
+			Prop::storage.erase(it);
+		}
+	}
 };
 
 //-----------------------------------------------------------------------------

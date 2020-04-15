@@ -444,7 +444,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bullet_speed) cons
 	float c = -(target.pos - unit->pos).Dot2d();
 
 	float delta = b * b - 4 * a * c;
-	// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
+	// brak rozwiï¿½zania, nie moï¿½e trafiï¿½ wiï¿½c strzel w aktualnï¿½ pozycjï¿½
 	if(delta < 0)
 		return target.GetCenter();
 
@@ -565,7 +565,7 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
 	if(unit->HaveWeapon())
-		stamina_cost *= unit->GetWeapon().GetInfo().stamina;
+		stamina_cost *= unit->GetWeapon().ToWeapon().GetInfo().stamina;
 	else
 		stamina_cost *= Unit::STAMINA_UNARMED_ATTACK;
 	unit->RemoveStamina(stamina_cost);

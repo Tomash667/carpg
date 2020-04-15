@@ -739,7 +739,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.act.attack.hitted = false;
 						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
+						unit.RemoveStamina(unit.GetWeapon().ToWeapon().GetInfo().stamina);
 						unit.timer = 0.f;
 						break;
 					case AID_Shoot:
@@ -754,7 +754,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.action = A_SHOOT;
 							unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
 							if(!unit.bow_instance)
-								unit.bow_instance = game_level->GetBowInstance(unit.GetBow().GetItem().mesh);
+								unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
 							unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
 							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
@@ -787,7 +787,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.act.attack.hitted = false;
 						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
+						unit.RemoveStamina(unit.GetWeapon().ToWeapon().GetInfo().stamina * 1.5f);
 						break;
 					case AID_Cancel:
 						if(unit.action == A_SHOOT)

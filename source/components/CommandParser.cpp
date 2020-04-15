@@ -2647,7 +2647,7 @@ void CommandParser::ListStats(Unit* u)
 		(u->HaveWeapon() || u->data->type == UNIT_TYPE::ANIMAL) ? Format("%d", (int)u->CalculateAttack()) : "-",
 		u->GetEffectSum(EffectId::MeleeAttack),
 		1.f + u->GetBackstabMod(u->slots[SLOT_WEAPON]),
-		u->HaveBow() ? Format("%d", (int)u->CalculateAttack(&u->GetBow().GetItem())) : "-",
+		u->HaveBow() ? Format("%d", (int)u->CalculateAttack(&u->GetBow())) : "-",
 		u->GetEffectSum(EffectId::RangedAttack),
 		1.f + u->GetBackstabMod(u->slots[SLOT_BOW]));
 	Msg("Defense %d (bonus: %+g), block: %s", (int)u->CalculateDefense(), u->GetEffectSum(EffectId::Defense),

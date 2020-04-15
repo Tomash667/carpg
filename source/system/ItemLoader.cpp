@@ -108,6 +108,17 @@ void ItemLoader::Cleanup()
 	DeleteElements(Stock::stocks);
 	DeleteElements(Recipe::hash_recipes);
 
+	// Deletion and cleanup of Item property storages
+	DeleteElements(Weapon::storage);
+	DeleteElements(Bow::storage);
+	DeleteElements(Shield::storage);
+	DeleteElements(Armor::storage);
+	DeleteElements(Amulet::storage);
+	DeleteElements(Ring::storage);
+	DeleteElements(Consumable::storage);
+	DeleteElements(Book::storage);
+	DeleteElements(OtherItem::storage);
+
 	for(auto it : Item::items)
 		delete it.second;
 	Item::items.clear();
@@ -727,26 +738,26 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	switch(item_ptr->type)
 	{
 	case IT_WEAPON:
-		Weapon::weapons.push_back(static_cast<Weapon*>(item_ptr->GetProperty<Weapon>()));
+		Weapon::weapons.push_back(static_cast<Weapon*>(&item_ptr->GetProperty<Weapon>()));
 		break;
 	case IT_BOW:
-		Bow::bows.push_back(static_cast<Bow*>(item_ptr->GetProperty<Bow>()));
+		Bow::bows.push_back(static_cast<Bow*>(&item_ptr->GetProperty<Bow>()));
 		break;
 	case IT_SHIELD:
-		Shield::shields.push_back(static_cast<Shield*>(item_ptr->GetProperty<Shield>()));
+		Shield::shields.push_back(static_cast<Shield*>(&item_ptr->GetProperty<Shield>()));
 		break;
 	case IT_ARMOR:
-		Armor::armors.push_back(static_cast<Armor*>(item_ptr->GetProperty<Armor>()));
+		Armor::armors.push_back(static_cast<Armor*>(&item_ptr->GetProperty<Armor>()));
 		break;
 	case IT_AMULET:
-		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr->GetProperty<Amulet>()));
+		Amulet::amulets.push_back(static_cast<Amulet*>(&item_ptr->GetProperty<Amulet>()));
 		break;
 	case IT_RING:
-		Ring::rings.push_back(static_cast<Ring*>(item_ptr->GetProperty<Ring>()));
+		Ring::rings.push_back(static_cast<Ring*>(&item_ptr->GetProperty<Ring>()));
 		break;
 	case IT_CONSUMABLE:
 		{
-			Consumable* consumable = static_cast<Consumable*>(item_ptr->GetProperty<Consumable>());
+			Consumable* consumable = static_cast<Consumable*>(&item_ptr->GetProperty<Consumable>());
 			if(consumable->cons_type == ConsumableType::Potion)
 			{
 				for(ItemEffect& e : consumable->GetItem().effects)

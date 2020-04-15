@@ -259,7 +259,7 @@ float Unit::CalculateMaxStamina() const
 float Unit::CalculateAttack() const
 {
 	if(HaveWeapon())
-		return CalculateAttack(&GetWeapon().GetItem());
+		return CalculateAttack(&GetWeapon());
 	else if(IsSet(data->flags2, F2_FIXED_STATS))
 		return (float)(data->attack + data->attack_lvl * (level - data->level.x));
 	{
@@ -1545,7 +1545,7 @@ void Unit::GetBox(Box& box) const
 int Unit::GetDmgType() const
 {
 	if(HaveWeapon())
-		return GetWeapon().dmg_type;
+		return GetWeapon().ToWeapon().dmg_type;
 	else
 		return data->dmg_type;
 }
@@ -1588,13 +1588,13 @@ bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prev_value) con
 	if(value)
 	{
 		float v = CalculateWeaponPros(weapon);
-		float prev_v = CalculateWeaponPros(GetWeapon());
+		float prev_v = CalculateWeaponPros(GetWeapon().ToWeapon());
 		*value = (int)v;
 		*prev_value = (int)prev_v;
 		return prev_v < v;
 	}
 	else
-		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
+		return CalculateWeaponPros(GetWeapon().ToWeapon()) < CalculateWeaponPros(weapon);
 }
 
 //=================================================================================================
@@ -1701,7 +1701,7 @@ int Unit::GetRandomAttack() const
 	{
 		int a;
 
-		switch(GetWeapon().weapon_type)
+		switch(GetWeapon().ToWeapon().weapon_type)
 		{
 		case WT_LONG_BLADE:
 			a = A_LONG_BLADE;
@@ -2298,7 +2298,7 @@ void Unit::Load(GameReader& f, bool local)
 
 		if(action == A_SHOOT)
 		{
-			bow_instance = game_level->GetBowInstance(GetBow().GetItem().mesh);
+			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
@@ -3039,7 +3039,7 @@ bool Unit::Read(BitStreamReader& f)
 			f >> act.attack.index;
 			break;
 		case A_SHOOT:
-			bow_instance = game_level->GetBowInstance(GetBow().GetItem().mesh);
+			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
@@ -3394,7 +3394,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	if(used_weapon)
 		wep = used_weapon;
 	else if(HaveWeapon())
-		wep = &GetWeapon();
+		wep = &GetWeapon().ToWeapon();
 	else
 		wep = nullptr;
 
@@ -3445,7 +3445,7 @@ float Unit::GetBowAttackSpeed() const
 	//	1 dex, 0 skill = 0.8
 	// 50 dex, 10 skill = 1.1
 	// 100 dex, 100 skill = 1.7
-	float mod = 0.8f + float(Get(SkillId::BOW)) / 200 + 0.004f * Get(AttributeId::DEX) - GetAttackSpeedModFromStrength(GetBow());
+	float mod = 0.8f + float(Get(SkillId::BOW)) / 200 + 0.004f * Get(AttributeId::DEX) - GetAttackSpeedModFromStrength(GetBow().ToBow());
 
 	float mobility = CalculateMobility();
 	if(mobility < 100)
@@ -3889,7 +3889,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 		else
 		{
 			int v = item->ai_value;
-			int prev_v = HaveWeapon() ? GetWeapon().GetItem().ai_value : 0;
+			int prev_v = HaveWeapon() ? GetWeapon().ai_value : 0;
 			if(value)
 			{
 				*value = v;
@@ -3900,7 +3900,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 	case IT_BOW:
 		{
 			int v = item->ToBow().dmg;
-			int prev_v = HaveBow() ? GetBow().dmg : 0;
+			int prev_v = HaveBow() ? GetBow().ToBow().dmg : 0;
 			if(value)
 			{
 				*value = v * 2;
@@ -3911,7 +3911,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 	case IT_SHIELD:
 		{
 			int v = item->ToShield().block;
-			int prev_v = HaveShield() ? GetShield().block : 0;
+			int prev_v = HaveShield() ? GetShield().ToShield().block : 0;
 			if(value)
 			{
 				*value = v * 2;
@@ -3925,7 +3925,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 		else
 		{
 			int v = item->ai_value;
-			int prev_v = HaveArmor() ? GetArmor().GetItem().ai_value : 0;
+			int prev_v = HaveArmor() ? GetArmor().ai_value : 0;
 			if(value)
 			{
 				*value = v;
@@ -7295,7 +7295,7 @@ void Unit::Update(float dt)
 			{
 				Bullet& b = Add1(area->tmp->bullets);
 				b.level = level;
-				b.backstab = GetBackstabMod(&GetBow().GetItem());
+				b.backstab = GetBackstabMod(&GetBow());
 
 				mesh_inst->SetupBones();
 
@@ -7304,7 +7304,7 @@ void Unit::Update(float dt)
 
 				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
-				b.attack = CalculateAttack(&GetBow().GetItem());
+				b.attack = CalculateAttack(&GetBow());
 				b.rot = Vec3(PI / 2, rot + PI, 0);
 				b.pos = Vec3::TransformZero(m2);
 				b.mesh = game_res->aArrow;
@@ -7460,7 +7460,7 @@ void Unit::Update(float dt)
 			else if(IsPlayer() && Net::IsLocal())
 			{
 				float dif = p - timer;
-				float stamina_to_remove_total = GetWeapon().GetInfo().stamina / 2;
+				float stamina_to_remove_total = GetWeapon().ToWeapon().GetInfo().stamina / 2;
 				float stamina_used = dif / t * stamina_to_remove_total;
 				timer = p;
 				RemoveStamina(stamina_used);

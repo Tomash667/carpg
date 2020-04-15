@@ -169,7 +169,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			*/
 			const Bow& bow = item->ToBow();
 
-			int old_attack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow().GetItem()) : 0);
+			int old_attack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow()) : 0);
 			int new_attack = (int)unit->CalculateAttack(item);
 			cstring atk_desc;
 			if(old_attack == new_attack)

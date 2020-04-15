@@ -37,18 +37,18 @@ enum ACTION
 {
 	A_NONE,
 	A_TAKE_WEAPON, // etapy: 0, 1
-	A_SHOOT, // etapy: 0 - naci¹ga, 1 - naci¹ga ale mo¿e strzelaæ, 2 - po strzale, 3 - wyj¹³ now¹ strza³ê
-	A_ATTACK, // etapy: 0 - przygotowanie, 1 - mo¿e atakowaæ, 2 - po trafieniu
+	A_SHOOT, // etapy: 0 - naciï¿½ga, 1 - naciï¿½ga ale moï¿½e strzelaï¿½, 2 - po strzale, 3 - wyjï¿½ï¿½ nowï¿½ strzaï¿½ï¿½
+	A_ATTACK, // etapy: 0 - przygotowanie, 1 - moï¿½e atakowaï¿½, 2 - po trafieniu
 	A_BLOCK,
 	A_BASH,
-	A_DRINK, // picie napoju (0 - zaczyna piæ, 1-efekt wypicia, 2-schowa³ przedmiot)
-	A_EAT, // jedzenie (0 - zaczyna jeœæ, 1-odtwarza dŸwiêk, 2-efekt, 3-chowa)
+	A_DRINK, // picie napoju (0 - zaczyna piï¿½, 1-efekt wypicia, 2-schowaï¿½ przedmiot)
+	A_EAT, // jedzenie (0 - zaczyna jeï¿½ï¿½, 1-odtwarza dï¿½wiï¿½k, 2-efekt, 3-chowa)
 	A_PAIN,
 	A_CAST,
-	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
-	A_USE_USABLE, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
-	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
-	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
+	A_ANIMATION, // animacja bez obiektu (np drapani siï¿½, rozglï¿½danie)
+	A_USE_USABLE, // uï¿½ywanie obiektu (0-podchodzi, 1-uï¿½ywa, 2-uï¿½ywa dï¿½wiï¿½k, 3-odchodzi)
+	A_POSITION, // uï¿½ywaï¿½ czegoï¿½ ale dostaï¿½ basha lub umarï¿½, trzeba go przesunï¿½ï¿½ w normalne miejsce
+	A_PICKUP, // pï¿½ki co dziaï¿½a jak animacja, potem doda siï¿½ punkt podnoszenia
 	A_DASH,
 	A_DESPAWN,
 	A_PREPARE, // mp client want to use object, waiting for response
@@ -341,7 +341,7 @@ struct Unit : public EntityType<Unit>
 		Busy_Looted,
 		Busy_Trading,
 		Busy_Tournament
-	} busy; // nie zapisywane, powinno byæ Busy_No
+	} busy; // nie zapisywane, powinno byï¿½ Busy_No
 	EntityInterpolator* interp;
 	UnitStats* stats;
 	StaminaAction stamina_action;
@@ -363,9 +363,9 @@ struct Unit : public EntityType<Unit>
 	float CalculateAttack(const Item* weapon) const;
 	float CalculateBlock(const Item* shield = nullptr) const;
 	float CalculateDefense(const Item* armor = nullptr) const;
-	// czy ¿yje i nie le¿y na ziemi
+	// czy ï¿½yje i nie leï¿½y na ziemi
 	bool IsStanding() const { return live_state == ALIVE; }
-	// czy ¿yje
+	// czy ï¿½yje
 	bool IsAlive() const { return live_state < DYING; }
 	bool IsIdle() const;
 	bool IsAssist() const;
@@ -373,9 +373,9 @@ struct Unit : public EntityType<Unit>
 	bool WantAttackTeam() const;
 	byte GetAiMode() const;
 	void RecalculateWeight();
-	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
+	// konsumuje przedmiot (zwraca 0-uï¿½yto ostatni, 1-uï¿½yto nie ostatni, 2-chowa broï¿½, 3-zajï¿½ty)
 	int ConsumeItem(int index);
-	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
+	// uï¿½ywa przedmiotu, nie moï¿½e nic robiï¿½ w tej chwili i musi mieï¿½ schowanï¿½ broï¿½
 	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
 	void ConsumeItemAnim(const Consumable& cons);
 	void ConsumeItemS(const Item* item);
@@ -532,14 +532,14 @@ struct Unit : public EntityType<Unit>
 	MATERIAL_TYPE GetWeaponMaterial() const
 	{
 		if(HaveWeapon())
-			return GetWeapon().material;
+			return GetWeapon().ToWeapon().material;
 		else
 			return data->mat;
 	}
 	MATERIAL_TYPE GetBodyMaterial() const
 	{
 		if(HaveArmor())
-			return GetArmor().material;
+			return GetArmor().ToWeapon().material;
 		else
 			return data->mat;
 	}
@@ -595,7 +595,7 @@ public:
 	float GetPowerAttackSpeed() const
 	{
 		if(HaveWeapon())
-			return GetWeapon().GetInfo().power_speed * GetAttackSpeed();
+			return GetWeapon().ToWeapon().GetInfo().power_speed * GetAttackSpeed();
 		else
 			return 0.33f;
 	}
@@ -643,7 +643,7 @@ public:
 		Heal(0.15f * Get(AttributeId::END) * days);
 	}
 	void HealPoison();
-	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
+	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeï¿½li nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_id = -1) const;
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
@@ -699,7 +699,7 @@ public:
 	bool GetKnownName() const;
 	void SetKnownName(bool known);
 
-	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
+	// szybkoï¿½ï¿½ blokowania aktualnie uï¿½ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const { return 0.1f; }
 
 	float CalculateMagicResistance() const;
@@ -715,7 +715,7 @@ public:
 	void ApplyConsumableEffect(const Consumable& item);
 	// aktualizuj efekty
 	void UpdateEffects(float dt);
-	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
+	// zakoï¿½cz tymczasowe efekty po opuszczeniu lokacji
 	void EndEffects(int days = 0, float* o_natural_mod = nullptr);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
@@ -751,46 +751,46 @@ public:
 	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
 	bool HaveAmulet() const { return slots[SLOT_AMULET] != nullptr; }
 	bool CanWear(const Item* item) const;
-	const Weapon& GetWeapon() const
+	const Item& GetWeapon() const
 	{
 		assert(HaveWeapon());
-		return slots[SLOT_WEAPON]->ToWeapon();
+		return *slots[SLOT_WEAPON];
 	}
-	const Bow& GetBow() const
+	const Item& GetBow() const
 	{
 		assert(HaveBow());
-		return slots[SLOT_BOW]->ToBow();
+		return *slots[SLOT_BOW];
 	}
-	const Shield& GetShield() const
+	const Item& GetShield() const
 	{
 		assert(HaveShield());
-		return slots[SLOT_SHIELD]->ToShield();
+		return *slots[SLOT_SHIELD];
 	}
-	const Armor& GetArmor() const
+	const Item& GetArmor() const
 	{
 		assert(HaveArmor());
-		return slots[SLOT_ARMOR]->ToArmor();
+		return *slots[SLOT_ARMOR];
 	}
 	const Item& GetAmulet() const
 	{
 		assert(HaveAmulet());
 		return *slots[SLOT_AMULET];
 	}
-	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
+	// wyrzuca przedmiot o podanym indeksie, zwraca czy to byï¿½ ostatni
 	bool DropItem(int index);
-	// wyrzuca za³o¿ony przedmiot
+	// wyrzuca zaï¿½oï¿½ony przedmiot
 	void DropItem(ITEM_SLOT slot);
-	// wyrzuca kilka przedmiotów o podanym indeksie, zwraca czy to by³ ostatni (count=0 oznacza wszystko)
+	// wyrzuca kilka przedmiotï¿½w o podanym indeksie, zwraca czy to byï¿½ ostatni (count=0 oznacza wszystko)
 	bool DropItems(int index, uint count);
-	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
+	// dodaje przedmiot do ekwipunku, zwraca czy siï¿½ zestackowaï¿½
 	bool AddItem(const Item* item, uint count, uint team_count);
 	// add item and show game message, send net notification, calls preload, refresh inventory if open
 	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true, bool notify = true);
 	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0u); }
 	void AddTeamItemS(const Item* item, uint count) { AddItem2(item, count, count); }
-	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
+	// dodaje przedmiot i zakï¿½ada jeï¿½li nie ma takiego typu, przedmiot jest druï¿½ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
-	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
+	// zwraca udï¿½wig postaci (0-brak obciï¿½ï¿½enia, 1-maksymalne, >1 przeciï¿½ï¿½ony)
 	float GetLoad() const { return float(weight) / weight_max; }
 	void CalculateLoad();
 	bool IsOverloaded() const
@@ -817,12 +817,12 @@ public:
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	// zwraca wagê ekwipunku w kg
+	// zwraca wagï¿½ ekwipunku w kg
 	float GetWeight() const
 	{
 		return float(weight) / 10;
 	}
-	// zwraca maksymalny udŸwig w kg
+	// zwraca maksymalny udï¿½wig w kg
 	float GetWeightMax() const
 	{
 		return float(weight_max) / 10;
@@ -843,7 +843,7 @@ public:
 
 	int GetBuffs() const;
 
-	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
+	// nie sprawdza czy stoi/ï¿½yje/czy chce gadaï¿½ - tylko akcjï¿½
 	bool CanTalk(Unit& unit) const;
 	bool CanAct() const;
 
@@ -874,7 +874,7 @@ public:
 
 	float GetArrowSpeed() const
 	{
-		float s = (float)GetBow().speed;
+		float s = (float)GetBow().ToBow().speed;
 		s *= 1.f + float(Get(SkillId::BOW)) / 666;
 		return s;
 	}

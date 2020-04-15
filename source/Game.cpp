@@ -1157,7 +1157,7 @@ void Game::CreateRenderTargets()
 //=================================================================================================
 void Game::RestartGame()
 {
-	// stw�rz mutex
+	// create mutex
 	HANDLE mutex = CreateMutex(nullptr, TRUE, RESTART_MUTEX_NAME);
 	DWORD dwLastError = GetLastError();
 	bool AlreadyRunning = (dwLastError == ERROR_ALREADY_EXISTS || dwLastError == ERROR_ACCESS_DENIED);
@@ -1316,7 +1316,7 @@ void Game::SetGameText()
 	txSpell = Str("spell");
 	txCantLearnSkill = Str("cantLearnSkill");
 
-	// dystans / si�a
+	// distance / strength
 	txNear = Str("near");
 	txFar = Str("far");
 	txVeryFar = Str("veryFar");
@@ -1627,7 +1627,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 			}
 		}
 
-		// nie odwiedzono, trzeba wygenerowa�
+		// not visited, need to generate
 		if(l.state != LS_HIDDEN)
 			l.state = LS_ENTERED;
 
@@ -1698,7 +1698,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	game_level->entering = false;
 }
 
-// dru�yna opu�ci�a lokacje
+// the team has left location
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
 	if(!game_level->is_open)
@@ -1750,7 +1750,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	{
 		if(Net::IsLocal())
 		{
-			// usu� questowe postacie
+			// remove quest related characters
 			quest_mgr->RemoveQuestUnits(true);
 		}
 
@@ -1772,7 +1772,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(Net::IsLocal() && end_buffs)
 	{
-		// usu� tymczasowe bufy
+		// remove temporary buffs
 		for(Unit& unit : team->members)
 			unit.EndEffects();
 	}
@@ -1984,7 +1984,7 @@ void Game::UpdateGame(float dt)
 		quest_mgr->UpdateQuestsLocal(dt);
 	}
 
-	// info o uczo�czeniu wszystkich unikalnych quest�w
+	// information about finishing all unique quests
 	if(CanShowEndScreen())
 	{
 		if(Net::IsLocal())
@@ -2404,23 +2404,24 @@ uint Game::TestGameData(bool major)
 	for(Weapon* weapon : Weapon::weapons)
 	{
 		const Weapon& w = *weapon;
-		if(!w.GetItem().mesh)
+		const Item& w_item = w.GetItem();
+		if(!w_item.mesh)
 		{
-			Error("Test: Weapon %s: missing mesh.", w.GetItem().id.c_str());
+			Error("Test: Weapon %s: missing mesh.", w_item.id.c_str());
 			++errors;
 		}
 		else
 		{
-			res_mgr->LoadMeshMetadata(w.GetItem().mesh);
-			Mesh::Point* pt = w.GetItem().mesh->FindPoint("hit");
+			res_mgr->LoadMeshMetadata(w_item.mesh);
+			Mesh::Point* pt = w_item.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				Error("Test: Weapon %s: no hitbox in mesh %s.", w.GetItem().id.c_str(), w.GetItem().mesh->filename);
+				Error("Test: Weapon %s: no hitbox in mesh %s.", w_item.id.c_str(), w_item.mesh->filename);
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.GetItem().id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.GetItem().mesh->filename);
+				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w_item.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w_item.mesh->filename);
 				++errors;
 			}
 		}
@@ -2430,23 +2431,24 @@ uint Game::TestGameData(bool major)
 	for(Shield* shield : Shield::shields)
 	{
 		const Shield& s = *shield;
-		if(!s.GetItem().mesh)
+		const Item& s_item = s.GetItem();
+		if(!s_item.mesh)
 		{
-			Error("Test: Shield %s: missing mesh.", s.GetItem().id.c_str());
+			Error("Test: Shield %s: missing mesh.", s_item.id.c_str());
 			++errors;
 		}
 		else
 		{
-			res_mgr->LoadMeshMetadata(s.GetItem().mesh);
-			Mesh::Point* pt = s.GetItem().mesh->FindPoint("hit");
+			res_mgr->LoadMeshMetadata(s_item.mesh);
+			Mesh::Point* pt = s_item.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				Error("Test: Shield %s: no hitbox in mesh %s.", s.GetItem().id.c_str(), s.GetItem().mesh->filename);
+				Error("Test: Shield %s: no hitbox in mesh %s.", s_item.id.c_str(), s_item.mesh->filename);
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.GetItem().id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.GetItem().mesh->filename);
+				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s_item.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s_item.mesh->filename);
 				++errors;
 			}
 		}
@@ -2626,7 +2628,7 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoin
 
 	if(unit.mesh_inst->mesh->head.n_groups > 1)
 	{
-		Mesh* mesh = unit.GetWeapon().GetItem().mesh;
+		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
@@ -2928,7 +2930,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 
 	Vec3 hitpoint;
 	Unit* hitted;
-	Mesh* mesh = attacker.GetShield().GetItem().mesh;
+	Mesh* mesh = attacker.GetShield().mesh;
 
 	if(!mesh)
 		return false;
@@ -2968,7 +2970,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 		}
 	}
 
-	DoGenericAttack(area, attacker, *hitted, hitpoint, attacker.CalculateAttack(&attacker.GetShield().GetItem()), DMG_BLUNT, true);
+	DoGenericAttack(area, attacker, *hitted, hitpoint, attacker.CalculateAttack(&attacker.GetShield()), DMG_BLUNT, true);
 
 	return true;
 }
@@ -3048,7 +3050,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					// friendly fire
 					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
-						MATERIAL_TYPE mat = hitted->GetShield().material;
+						MATERIAL_TYPE mat = hitted->GetShield().ToShield().material;
 						sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
 						if(Net::IsOnline())
 						{
@@ -3093,7 +3095,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
 				{
 					// play sound
-					MATERIAL_TYPE mat = hitted->GetShield().material;
+					MATERIAL_TYPE mat = hitted->GetShield().ToShield().material;
 					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
 					if(Net::IsOnline())
 					{
@@ -3216,7 +3218,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					// d�wi�k trafienia w posta�
 					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
-						MATERIAL_TYPE mat = hitted->GetShield().material;
+						MATERIAL_TYPE mat = hitted->GetShield().ToShield().material;
 						sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
 						if(Net::IsOnline())
 						{
@@ -3541,8 +3543,8 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 	if(hitted.IsBlocking() && angle_dif < PI / 2)
 	{
 		// play sound
-		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
-		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
+		MATERIAL_TYPE hitted_mat = hitted.GetShield().ToShield().material;
+		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().ToShield().material);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -3610,7 +3612,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 	float dmg = CombatHelper::CalculateDamage(attack, def);
 
 	// hit sound
-	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
+	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().ToShield().material, hitted.GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
 
 	// train player armor skill
 	if(hitted.IsPlayer())
