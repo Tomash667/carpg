@@ -53,7 +53,7 @@ struct DrawBatch : public SceneBatch
 {
 	static ObjectPool<Light> light_pool;
 
-	vector<DebugSceneNode*> debug_nodes;
+	vector<DebugNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
 	vector<uint> terrain_parts;
 	vector<Blood*> bloods;

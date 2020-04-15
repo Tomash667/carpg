@@ -15,6 +15,7 @@
 
 #include <Algorithm.h>
 #include <BasicShader.h>
+#include <DebugNode.h>
 #include <DirectX.h>
 #include <GlowShader.h>
 #include <ParticleShader.h>
@@ -421,9 +422,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				draw_batch.pes.push_back(&pe);
 				if(draw_particle_sphere)
 				{
-					DebugSceneNode* debug_node = DebugSceneNode::Get();
+					DebugNode* debug_node = DebugNode::Get();
 					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
-					debug_node->type = DebugSceneNode::Sphere;
+					debug_node->mesh = DebugNode::Sphere;
 					debug_node->color = Color::Green;
 					draw_batch.debug_nodes.push_back(debug_node);
 				}
@@ -470,39 +471,33 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	{
 		for(vector<CollisionObject>::iterator it = tmp_area.colliders.begin(), end = tmp_area.colliders.end(); it != end; ++it)
 		{
-			DebugSceneNode::Type type = DebugSceneNode::MaxType;
+			DebugNode::Mesh mesh = DebugNode::None;
 			Vec3 scale;
 			float rot = 0.f;
 
 			switch(it->type)
 			{
 			case CollisionObject::RECTANGLE:
-				{
-					scale = Vec3(it->w, 1, it->h);
-					type = DebugSceneNode::Box;
-				}
+				scale = Vec3(it->w, 1, it->h);
+				mesh = DebugNode::Box;
 				break;
 			case CollisionObject::RECTANGLE_ROT:
-				{
-					scale = Vec3(it->w, 1, it->h);
-					type = DebugSceneNode::Box;
-					rot = it->rot;
-				}
+				scale = Vec3(it->w, 1, it->h);
+				mesh = DebugNode::Box;
+				rot = it->rot;
 				break;
 			case CollisionObject::SPHERE:
-				{
-					scale = Vec3(it->radius, 1, it->radius);
-					type = DebugSceneNode::Cylinder;
-				}
+				scale = Vec3(it->radius, 1, it->radius);
+				mesh = DebugNode::Cylinder;
 				break;
 			default:
 				break;
 			}
 
-			if(type != DebugSceneNode::MaxType)
+			if(mesh != DebugNode::None)
 			{
-				DebugSceneNode* node = DebugSceneNode::Get();
-				node->type = type;
+				DebugNode* node = DebugNode::Get();
+				node->mesh = mesh;
 				node->color = Color(153, 217, 164);
 				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
@@ -528,8 +523,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case BOX_SHAPE_PROXYTYPE:
 				{
 					const btBoxShape* box = (const btBoxShape*)shape;
-					DebugSceneNode* node = DebugSceneNode::Get();
-					node->type = DebugSceneNode::Box;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::Box;
 					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -540,8 +535,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btCapsuleShape* capsule = (const btCapsuleShape*)shape;
 					float r = capsule->getRadius();
 					float h = capsule->getHalfHeight();
-					DebugSceneNode* node = DebugSceneNode::Get();
-					node->type = DebugSceneNode::Capsule;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::Capsule;
 					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -550,8 +545,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case CYLINDER_SHAPE_PROXYTYPE:
 				{
 					const btCylinderShape* cylinder = (const btCylinderShape*)shape;
-					DebugSceneNode* node = DebugSceneNode::Get();
-					node->type = DebugSceneNode::Cylinder;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::Cylinder;
 					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
 					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
@@ -571,8 +566,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						if(child->getShapeType() == BOX_SHAPE_PROXYTYPE)
 						{
 							btBoxShape* box = (btBoxShape*)child;
-							DebugSceneNode* node = DebugSceneNode::Get();
-							node->type = DebugSceneNode::Box;
+							DebugNode* node = DebugNode::Get();
+							node->mesh = DebugNode::Box;
 							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
@@ -589,9 +584,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				break;
 			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
 				{
-					DebugSceneNode* node = DebugSceneNode::Get();
+					DebugNode* node = DebugNode::Get();
 					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
-					node->type = DebugSceneNode::TriMesh;
+					node->mesh = DebugNode::TriMesh;
 					node->color = Color(163, 73, 164);
 					node->mat = m_world * game_level->camera.mat_view_proj;
 					node->mesh_ptr = (void*)trimesh->getMeshInterface();
@@ -793,9 +788,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugSceneNode* debug_node = DebugSceneNode::Get();
+			DebugNode* debug_node = DebugNode::Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->type = DebugSceneNode::Box;
+			debug_node->mesh = DebugNode::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
@@ -836,9 +831,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugSceneNode* debug_node = DebugSceneNode::Get();
+			DebugNode* debug_node = DebugNode::Get();
 			node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->type = DebugSceneNode::Box;
+			debug_node->mesh = DebugNode::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
@@ -1058,9 +1053,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(draw_unit_radius)
 	{
 		float h = u.GetUnitHeight() / 2;
-		DebugSceneNode* debug_node = DebugSceneNode::Get();
+		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->type = DebugSceneNode::Cylinder;
+		debug_node->mesh = DebugNode::Cylinder;
 		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -1069,9 +1064,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		float h = u.GetUnitHeight() / 2;
 		Box box;
 		u.GetBox(box);
-		DebugSceneNode* debug_node = DebugSceneNode::Get();
+		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->type = DebugSceneNode::Box;
+		debug_node->mesh = DebugNode::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -1314,9 +1309,9 @@ void Game::ListAreas(LevelArea& area)
 			pos = pc->data.ability_point;
 		else
 			pos = pc->unit->target_pos;
-		DebugSceneNode* node = DebugSceneNode::Get();
+		DebugNode* node = DebugNode::Get();
 		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * game_level->camera.mat_view_proj;
-		node->type = DebugSceneNode::Sphere;
+		node->mesh = DebugNode::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
 	}
@@ -1795,7 +1790,7 @@ void Game::DrawScene(bool outside)
 
 	// debug nodes
 	if(!draw_batch.debug_nodes.empty())
-		DrawDebugNodes(draw_batch.debug_nodes);
+		basic_shader->DrawDebugNodes(draw_batch.debug_nodes);
 	if(pathfinding->IsDebugDraw())
 	{
 		FIXME;
@@ -2013,13 +2008,6 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 		const DungeonPartGroup& group = groups[dp.group];
 		shader->DrawCustom(group.mat_world, group.mat_combined, group.lights, dp.start_index, dp.primitive_count * 3);
 	}
-}
-
-//=================================================================================================
-void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
-{
-	FIXME;
-	
 }
 
 //=================================================================================================

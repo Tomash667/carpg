@@ -149,7 +149,6 @@ public:
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
-	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(const vector<Blood*>& bloods, bool outside);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
