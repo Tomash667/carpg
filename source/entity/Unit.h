@@ -360,7 +360,7 @@ struct Unit : public EntityType<Unit>
 	void Init(UnitData& base, int level = -2);
 
 	float CalculateAttack() const;
-	float CalculateAttack(const Item* weapon) const;
+	float CalculateAttack(const Item& weapon) const;
 	float CalculateBlock(const Item* shield = nullptr) const;
 	float CalculateDefense(const Item* armor = nullptr) const;
 	// czy ¿yje i nie le¿y na ziemi
@@ -377,7 +377,9 @@ struct Unit : public EntityType<Unit>
 	int ConsumeItem(int index);
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
 	void ConsumeItem(const Item& item, bool force = false, bool send = true);
+private:
 	void ConsumeItemAnim(const Item& cons);
+public:
 	void ConsumeItemS(const Item* item);
 	void UseItem(int index);
 	void HideWeapon() { SetWeaponState(false, W_NONE, true); }

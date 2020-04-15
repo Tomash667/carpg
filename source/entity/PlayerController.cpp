@@ -700,7 +700,7 @@ void PlayerController::Load(FileReader& f)
 	}
 	else
 		InitShortcuts();
-	
+
 	action = PlayerAction::None;
 }
 
@@ -849,12 +849,12 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())
-			TrainMod(unit->GetArmor().GetSkill(), value * 3000 * GetLevelMod(unit->level, level));
+			TrainMod(unit->GetArmor().Get<ArmorProp>().GetSkill(), value * 3000 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::AttackStart:
 		{
 			const float c_points = 50.f;
-			const Weapon& weapon = unit->GetWeapon();
+			const WeaponProp& weapon = unit->GetWeapon().Get<WeaponProp>();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 
 			int skill = unit->GetBase(info.skill);
@@ -882,8 +882,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::AttackNoDamage:
 		{
 			const float c_points = 200.f * GetLevelMod(unit->level, level);
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
+			const WeaponTypeInfo& info = unit->GetWeapon().Get<WeaponProp>().GetInfo();
 			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
 			TrainMod2(info.skill, c_points);
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
@@ -893,8 +892,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::AttackHit:
 		{
 			const float c_points = (200.f + 2300.f * value) * GetLevelMod(unit->level, level);
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
+			const WeaponTypeInfo& info = unit->GetWeapon().Get<WeaponProp>().GetInfo();
 			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
 			TrainMod2(info.skill, c_points);
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
@@ -907,10 +905,11 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::BashStart:
 		{
+			const ShieldProp& shield = unit->GetShield().Get<ShieldProp>();
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetShield().req_str > str)
+			if(shield.req_str > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetShield().req_str + 10 > str)
+			else if(shield.req_str + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::SHIELD);
 			if(skill < 25)
@@ -927,10 +926,11 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::BowStart:
 		{
+			const BowProp& bow = unit->GetBow().Get<BowProp>();
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetBow().req_str > str)
+			if(bow.req_str > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetBow().req_str + 10 > str)
+			else if(bow.req_str + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::BOW);
 			if(skill < 25)
@@ -977,7 +977,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 
 			if(unit->HaveArmor())
 			{
-				const Armor& armor = unit->GetArmor();
+				const ArmorProp& armor = unit->GetArmor().Get<ArmorProp>();
 				int str = unit->Get(AttributeId::STR);
 				if(armor.req_str > str)
 					TrainMod(AttributeId::STR, 250.f);
@@ -2020,7 +2020,7 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 			c.recipe = recipe;
 		}
 	}
-		
+
 
 	return true;
 }
@@ -2529,7 +2529,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							OpenPanel open = game_gui->level_gui->GetOpenPanel();
 							if(open != OpenPanel::Inventory)
 								game_gui->level_gui->ClosePanels();
-							game_gui->book->Show((const Book*)item);
+							game_gui->book->Show(item->Get<BookProp>());
 						}
 					}
 				}
@@ -2972,7 +2972,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 
 						if(Net::IsLocal())
-							u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+							u.RemoveStamina(u.GetWeapon().Get<WeaponProp>().GetInfo().stamina);
 					}
 				}
 			}
@@ -3064,7 +3064,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							if(Net::IsLocal())
 							{
 								Train(TrainWhat::AttackStart, 0.f, 0);
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
+								u.RemoveStamina(u.GetWeapon().Get<WeaponProp>().GetInfo().stamina * 1.5f);
 							}
 						}
 						else
@@ -3087,7 +3087,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							}
 
 							if(Net::IsLocal())
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+								u.RemoveStamina(u.GetWeapon().Get<WeaponProp>().GetInfo().stamina);
 						}
 					}
 				}

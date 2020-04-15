@@ -13,7 +13,7 @@ public:
 	void Draw(ControlDrawData*) override;
 	void Event(GuiEvent event) override;
 	void Update(float dt) override;
-	void Show(const Book* book);
+	void Show(const BookProp& book);
 
 private:
 	struct Split
@@ -25,7 +25,7 @@ private:
 	Font* GetFont();
 	void ChangePage(int change);
 
-	const Book* book;
+	const BookProp* book;
 	vector<TextLine> text_lines;
 	vector<Split> splits;
 	uint max_page, current_page;

@@ -739,7 +739,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.act.attack.hitted = false;
 						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
+						unit.RemoveStamina(unit.GetWeapon().Get<WeaponProp>().GetInfo().stamina);
 						unit.timer = 0.f;
 						break;
 					case AID_Shoot:
@@ -787,7 +787,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.act.attack.hitted = false;
 						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
+						unit.RemoveStamina(unit.GetWeapon().Get<WeaponProp>().GetInfo().stamina * 1.5f);
 						break;
 					case AID_Cancel:
 						if(unit.action == A_SHOOT)
@@ -1145,10 +1145,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE)
 						{
-							const Consumable& pot = slot.item->ToConsumable();
-							if(pot.ai_type == ConsumableAiType::Healing)
+							ConsumableAiType aiType = slot.item->Get<ConsumableProp>().ai_type;
+							if(aiType == ConsumableAiType::Healing)
 								player.action_unit->ai->have_potion = HavePotion::Check;
-							else if(pot.ai_type == ConsumableAiType::Mana)
+							else if(aiType == ConsumableAiType::Mana)
 								player.action_unit->ai->have_mp_potion = HavePotion::Check;
 						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
@@ -1308,10 +1308,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						{
 							if(slot.item->type == IT_CONSUMABLE)
 							{
-								const Consumable& pot = slot.item->ToConsumable();
-								if(pot.ai_type == ConsumableAiType::Healing)
+								ConsumableAiType aiType = slot.item->Get<ConsumableProp>().ai_type;
+								if(aiType == ConsumableAiType::Healing)
 									t->ai->have_potion = HavePotion::Yes;
-								else if(pot.ai_type == ConsumableAiType::Mana)
+								else if(aiType == ConsumableAiType::Mana)
 									t->ai->have_mp_potion = HavePotion::Yes;
 							}
 							if(player.action == PlayerAction::GiveItems)

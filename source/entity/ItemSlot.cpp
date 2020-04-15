@@ -110,7 +110,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Attack: 30 (40 -> 50) piercing
 			Required strength: $50$
 			*/
-			const Weapon& weapon = item->ToWeapon();
+			const WeaponProp& weapon = item->Get<WeaponProp>();
 
 			cstring dmg_type;
 			switch(weapon.dmg_type)
@@ -167,7 +167,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Attack: 30 (40 -> 50) piercing
 			Required strength: $40$
 			*/
-			const Bow& bow = item->ToBow();
+			const BowProp& bow = item->Get<BowProp>();
 
 			int old_attack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow()) : 0);
 			int new_attack = (int)unit->CalculateAttack(item);
@@ -195,7 +195,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Required strength: $40$
 			Mobility: 50 (40 -> 50)
 			*/
-			const Armor& armor = item->ToArmor();
+			const ArmorProp& armor = item->Get<ArmorProp>();
 			cstring mob_str, armor_type_text;
 
 			cstring skill = Skill::skills[(int)armor.GetSkill()].name.c_str();
@@ -205,7 +205,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				armor_type_text = Format("%s (%s)", skill, txInvalidArmor);
 
 			int old_mob = (int)unit->CalculateMobility();
-			int new_mob = (int)unit->CalculateMobility(&armor);
+			int new_mob = (int)unit->CalculateMobility(item);
 			if(old_mob == new_mob)
 				mob_str = Format("%d", new_mob);
 			else
@@ -239,7 +239,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Block: 30 (40 -> 50)
 			Required strength: $40$
 			*/
-			const Shield& shield = item->ToShield();
+			const ShieldProp& shield = item->Get<ShieldProp>();
 
 			cstring block_desc;
 			int new_block = (int)unit->CalculateBlock(item);

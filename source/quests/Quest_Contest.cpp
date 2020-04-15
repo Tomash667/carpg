@@ -450,7 +450,7 @@ void Quest_Contest::Update(float dt)
 				{
 					assert(next_drink);
 					time = 0.f;
-					const Consumable& drink = Item::Get(next_drink)->ToConsumable();
+					const Item& drink = *Item::Get(next_drink);
 					for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}

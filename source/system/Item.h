@@ -118,8 +118,17 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 }
 
 //-----------------------------------------------------------------------------
+template<typename T, ITEM_PROP P>
+struct ItemProp
+{
+	static const ITEM_PROP prop = P;
+	static vector<Item*> items;
+	static std::unordered_map<Item*, T*> map;
+};
+
+//-----------------------------------------------------------------------------
 // Weapon
-struct WeaponProp
+struct WeaponProp : public ItemProp<WeaponProp, ITEM_WEAPON>
 {
 	WeaponProp() : dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 
@@ -135,34 +144,25 @@ struct WeaponProp
 	int dmg, dmg_type, req_str;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
-
-	static const ITEM_PROP prop = ITEM_WEAPON;
-	static std::unordered_map<Item*, WeaponProp*> list;
 };
 
 //-----------------------------------------------------------------------------
 // Bow
-struct BowProp
+struct BowProp : public ItemProp<BowProp, ITEM_BOW>
 {
 	BowProp() : dmg(10), req_str(10), speed(45) {}
 
 	int dmg, req_str, speed;
-
-	static const ITEM_PROP prop = ITEM_BOW;
-	static std::unordered_map<Item*, BowProp*> list;
 };
 
 //-----------------------------------------------------------------------------
 // Shield
-struct ShieldProp
+struct ShieldProp : public ItemProp<ShieldProp, ITEM_SHIELD>
 {
 	ShieldProp() : block(10), req_str(10), material(MAT_WOOD) {}
 
 	int block, req_str;
 	MATERIAL_TYPE material;
-
-	static const ITEM_PROP prop = ITEM_SHIELD;
-	static std::unordered_map<Item*, ShieldProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -207,7 +207,7 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 
 //-----------------------------------------------------------------------------
 // Armor
-struct ArmorProp
+struct ArmorProp : public ItemProp<ArmorProp, ITEM_ARMOR>
 {
 	ArmorProp() : def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
@@ -225,9 +225,6 @@ struct ArmorProp
 	ARMOR_TYPE armor_type;
 	ArmorUnitType armor_unit_type;
 	vector<TexOverride> tex_override;
-
-	static const ITEM_PROP prop = ITEM_ARMOR;
-	static std::unordered_map<Item*, ArmorProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -251,26 +248,20 @@ static const int MAX_ITEM_TAGS = 2;
 
 //-----------------------------------------------------------------------------
 // Amulet
-struct AmuletProp
+struct AmuletProp : public ItemProp<AmuletProp, ITEM_AMULET>
 {
 	AmuletProp() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
-
-	static const ITEM_PROP prop = ITEM_AMULET;
-	static std::unordered_map<Item*, AmuletProp*> list;
 };
 
 //-----------------------------------------------------------------------------
 // Ring
-struct RingProp
+struct RingProp : public ItemProp<RingProp, ITEM_RING>
 {
 	RingProp() : tag() {}
 
 	ItemTag tag[MAX_ITEM_TAGS];
-
-	static const ITEM_PROP prop = ITEM_RING;
-	static std::unordered_map<Item*, RingProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -288,16 +279,13 @@ enum class ConsumableAiType
 	Healing,
 	Mana
 };
-struct ConsumableProp
+struct ConsumableProp : public ItemProp<ConsumableProp, ITEM_CONSUMABLE>
 {
 	ConsumableProp() : time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
 
 	float time;
 	ConsumableType cons_type;
 	ConsumableAiType ai_type;
-
-	static const ITEM_PROP prop = ITEM_CONSUMABLE;
-	static std::unordered_map<Item*, ConsumableProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -310,15 +298,13 @@ enum OtherType
 	OtherItems,
 	Artifact
 };
-struct OtherItemProp
+struct OtherItemProp : public ItemProp<OtherItemProp, ITEM_OTHER>
 {
 	OtherItemProp() : other_type(OtherItems) {}
 
 	OtherType other_type;
 
-	static const ITEM_PROP prop = ITEM_OTHER;
 	static vector<Item*> artifacts;
-	static std::unordered_map<Item*, OtherItemProp*> list;
 };
 
 //-----------------------------------------------------------------------------
@@ -336,7 +322,7 @@ struct BookScheme
 	static BookScheme* TryGet(Cstring id);
 };
 
-struct BookProp
+struct BookProp : public ItemProp<BookProp, ITEM_BOOK>
 {
 	BookProp() : scheme(nullptr), runic(false) {}
 
@@ -346,8 +332,6 @@ struct BookProp
 	string text;
 	bool runic;
 
-	static const ITEM_PROP prop = ITEM_BOOK;
-	static std::unordered_map<Item*, BookProp*> list;
 	// get random book for shelf (can be nullptr)
 	static const Item* GetRandom();
 };
@@ -371,21 +355,21 @@ struct Item
 	T& Get()
 	{
 		assert(Is<T>());
-		return *T::list[this];
+		return *T::map[this];
 	}
 
 	template<typename T>
 	const T& Get() const
 	{
 		assert(Is<T>());
-		return *T::list[this];
+		return *T::map[const_cast<Item*>(this)];
 	}
 
 	template<typename T>
 	void Set(T* p)
 	{
 		prop = ITEM_PROP(prop | T::prop);
-		T::list[this] = p;
+		T::map[this] = p;
 	}
 
 	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }

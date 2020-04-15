@@ -620,7 +620,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		if(IsSet(base_use->use_flags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
-			const Item* item = Book::GetRandom();
+			const Item* item = BookProp::GetRandom();
 			if(item)
 				u->container->items.push_back({ item, 1, 1 });
 			if(Rand() % 2 == 0)

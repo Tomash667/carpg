@@ -33,12 +33,11 @@ const float price_mod_buy_v[] = { 1.75f, 1.25f, 1.f, 0.95f, 0.925f };
 const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
 const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
 
-template<typename T>
-void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count)
+void InsertRandomItem(vector<ItemSlot>& container, vector<Item*>& items, int price_limit, int exclude_flags, uint count)
 {
 	for(int i = 0; i < 100; ++i)
 	{
-		T* item = items[Rand() % items.size()];
+		Item* item = items[Rand() % items.size()];
 		if(item->value > price_limit || IsSet(item->flags, exclude_flags))
 			continue;
 		InsertItemBare(container, item, count);
@@ -63,35 +62,35 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 		switch(Rand() % IT_MAX_GEN)
 		{
 		case IT_WEAPON:
-			item = Weapon::weapons[Rand() % Weapon::weapons.size()];
+			item = RandomItem(WeaponProp::items);
 			count = 1;
 			break;
 		case IT_BOW:
-			item = Bow::bows[Rand() % Bow::bows.size()];
+			item = RandomItem(BowProp::items);
 			count = 1;
 			break;
 		case IT_SHIELD:
-			item = Shield::shields[Rand() % Shield::shields.size()];
+			item = RandomItem(ShieldProp::items);
 			count = 1;
 			break;
 		case IT_ARMOR:
-			item = Armor::armors[Rand() % Armor::armors.size()];
+			item = RandomItem(ArmorProp::items);
 			count = 1;
 			break;
 		case IT_AMULET:
-			item = Amulet::amulets[Rand() % Amulet::amulets.size()];
+			item = RandomItem(AmuletProp::items);
 			count = 1;
 			break;
 		case IT_RING:
-			item = Ring::rings[Rand() % Ring::rings.size()];
+			item = RandomItem(RingProp::items);
 			count = 1;
 			break;
 		case IT_CONSUMABLE:
-			item = Consumable::consumables[Rand() % Consumable::consumables.size()];
+			item = RandomItem(ConsumableProp::items);
 			count = Random(2, 5);
 			break;
 		case IT_OTHER:
-			item = OtherItem::others[Rand() % OtherItem::others.size()];
+			item = RandomItem(OtherItemProp::items);
 			count = Random(1, 4);
 			break;
 		default:
@@ -164,7 +163,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 
 	const float* mod_table;
 
-	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
+	if(item->type == IT_OTHER && item->Get<OtherItemProp>().other_type == Valuable)
 	{
 		if(buy)
 			mod_table = price_mod_buy_v;
@@ -205,57 +204,50 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 // mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
 const Item* ItemHelper::GetRandomItem(int max_value)
 {
-	int type = Rand() % 6;
-
-	LocalVector<const Item*> items;
+	int type = Rand() % 9;
+	vector<Item*>* items;
 
 	switch(type)
 	{
 	case 0:
-		for(Weapon* w : Weapon::weapons)
-		{
-			if(w->value <= max_value && w->CanBeGenerated())
-				items->push_back(w);
-		}
+	default:
+		items = &WeaponProp::items;
 		break;
 	case 1:
-		for(Bow* b : Bow::bows)
-		{
-			if(b->value <= max_value && b->CanBeGenerated())
-				items->push_back(b);
-		}
+		items = &BowProp::items;
 		break;
 	case 2:
-		for(Shield* s : Shield::shields)
-		{
-			if(s->value <= max_value && s->CanBeGenerated())
-				items->push_back(s);
-		}
+		items = &ShieldProp::items;
 		break;
 	case 3:
-		for(Armor* a : Armor::armors)
-		{
-			if(a->value <= max_value && a->CanBeGenerated())
-				items->push_back(a);
-		}
+		items = &ArmorProp::items;
 		break;
 	case 4:
-		for(Consumable* c : Consumable::consumables)
-		{
-			if(c->value <= max_value && c->CanBeGenerated())
-				items->push_back(c);
-		}
+		items = &ConsumableProp::items;
 		break;
 	case 5:
-		for(OtherItem* o : OtherItem::others)
-		{
-			if(o->value <= max_value && o->CanBeGenerated())
-				items->push_back(o);
-		}
+		items = &OtherItemProp::items;
+		break;
+	case 6:
+		items = &BookProp::items;
+		break;
+	case 7:
+		items = &AmuletProp::items;
+		break;
+	case 8:
+		items = &RingProp::items;
 		break;
 	}
 
-	return items->at(Rand() % items->size());
+	LocalVector<const Item*> allowedItems;
+	for(Item* item : *items)
+	{
+		if(item->value <= max_value && item->CanBeGenerated())
+			allowedItems->push_back(item);
+	}
+
+	FIXME; // empty check
+	return allowedItems->at(Rand() % allowedItems->size());
 }
 
 //=================================================================================================
@@ -293,25 +285,31 @@ void ItemHelper::AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int pric
 	switch(type)
 	{
 	case IT_WEAPON:
-		InsertRandomItem(items, Weapon::weapons, price_limit, flags, count);
+		InsertRandomItem(items, WeaponProp::items, price_limit, flags, count);
 		break;
 	case IT_BOW:
-		InsertRandomItem(items, Bow::bows, price_limit, flags, count);
+		InsertRandomItem(items, BowProp::items, price_limit, flags, count);
 		break;
 	case IT_SHIELD:
-		InsertRandomItem(items, Shield::shields, price_limit, flags, count);
+		InsertRandomItem(items, ShieldProp::items, price_limit, flags, count);
 		break;
 	case IT_ARMOR:
-		InsertRandomItem(items, Armor::armors, price_limit, flags, count);
+		InsertRandomItem(items, ArmorProp::items, price_limit, flags, count);
 		break;
 	case IT_OTHER:
-		InsertRandomItem(items, OtherItem::others, price_limit, flags, count);
+		InsertRandomItem(items, OtherItemProp::items, price_limit, flags, count);
 		break;
 	case IT_CONSUMABLE:
-		InsertRandomItem(items, Consumable::consumables, price_limit, flags, count);
+		InsertRandomItem(items, ConsumableProp::items, price_limit, flags, count);
 		break;
 	case IT_BOOK:
-		InsertRandomItem(items, Book::books, price_limit, flags, count);
+		InsertRandomItem(items, BookProp::items, price_limit, flags, count);
+		break;
+	case IT_AMULET:
+		InsertRandomItem(items, AmuletProp::items, price_limit, flags, count);
+		break;
+	case IT_RING:
+		InsertRandomItem(items, RingProp::items, price_limit, flags, count);
 		break;
 	}
 }

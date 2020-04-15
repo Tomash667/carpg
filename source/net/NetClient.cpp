@@ -1075,7 +1075,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					else if(unit != pc.unit || force)
 					{
 						game_res->PreloadItem(item);
-						unit->ConsumeItem(item->ToConsumable(), false, false);
+						unit->ConsumeItem(*item, false, false);
 					}
 				}
 			}

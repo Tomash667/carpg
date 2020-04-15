@@ -565,7 +565,7 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
 	if(unit->HaveWeapon())
-		stamina_cost *= unit->GetWeapon().GetInfo().stamina;
+		stamina_cost *= unit->GetWeapon().Get<WeaponProp>().GetInfo().stamina;
 	else
 		stamina_cost *= Unit::STAMINA_UNARMED_ATTACK;
 	unit->RemoveStamina(stamina_cost);

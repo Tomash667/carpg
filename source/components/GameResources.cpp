@@ -449,7 +449,7 @@ void GameResources::PreloadItem(const Item* p_item)
 		{
 			if(item.type == IT_ARMOR)
 			{
-				Armor& armor = item.ToArmor();
+				ArmorProp& armor = item.Get<ArmorProp>();
 				if(!armor.tex_override.empty())
 				{
 					for(TexOverride& tex_o : armor.tex_override)
@@ -461,7 +461,7 @@ void GameResources::PreloadItem(const Item* p_item)
 			}
 			else if(item.type == IT_BOOK)
 			{
-				Book& book = item.ToBook();
+				BookProp& book = item.Get<BookProp>();
 				res_mgr->Load(book.scheme->tex);
 			}
 
@@ -479,7 +479,7 @@ void GameResources::PreloadItem(const Item* p_item)
 		// instant loading
 		if(item.type == IT_ARMOR)
 		{
-			Armor& armor = item.ToArmor();
+			ArmorProp& armor = item.Get<ArmorProp>();
 			if(!armor.tex_override.empty())
 			{
 				for(TexOverride& tex_o : armor.tex_override)
@@ -491,7 +491,7 @@ void GameResources::PreloadItem(const Item* p_item)
 		}
 		else if(item.type == IT_BOOK)
 		{
-			Book& book = item.ToBook();
+			BookProp& book = item.Get<BookProp>();
 			res_mgr->Load(book.scheme->tex);
 		}
 
@@ -535,7 +535,7 @@ void GameResources::GenerateItemIcon(Item& item)
 	// try to find icon using same mesh
 	bool use_tex_override = false;
 	if(item.type == IT_ARMOR)
-		use_tex_override = !item.ToArmor().tex_override.empty();
+		use_tex_override = !item.Get<ArmorProp>().tex_override.empty();
 	ItemTextureMap::iterator it;
 	if(!use_tex_override)
 	{
@@ -582,7 +582,7 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	node->tex_override = nullptr;
 	if(item.type == IT_ARMOR)
 	{
-		if(const Armor& armor = item.ToArmor(); !armor.tex_override.empty())
+		if(const ArmorProp& armor = item.Get<ArmorProp>(); !armor.tex_override.empty())
 		{
 			node->tex_override = armor.GetTextureOverride();
 			assert(armor.tex_override.size() == mesh.head.n_subs);
@@ -648,7 +648,7 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_SHIELD:
 		return sItem[5];
 	case IT_ARMOR:
-		if(item->ToArmor().armor_type != AT_LIGHT)
+		if(item->Get<ArmorProp>().armor_type != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];
@@ -657,7 +657,7 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_RING:
 		return sItem[9];
 	case IT_CONSUMABLE:
-		if(Any(item->ToConsumable().cons_type, ConsumableType::Food, ConsumableType::Herb))
+		if(Any(item->Get<ConsumableProp>().cons_type, ConsumableType::Food, ConsumableType::Herb))
 			return sItem[7];
 		else
 			return sItem[0];

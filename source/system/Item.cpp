@@ -243,26 +243,24 @@ bool ItemCmp(const Item* a, const Item* b)
 		}
 		else if(a->type == IT_ARMOR)
 		{
-			ArmorUnitType aut1 = a->ToArmor().armor_unit_type,
-				aut2 = b->ToArmor().armor_unit_type;
-			if(aut1 != aut2)
-				return aut1 < aut2;
-			ARMOR_TYPE at1 = a->ToArmor().armor_type,
-				at2 = b->ToArmor().armor_type;
-			if(at1 != at2)
-				return at1 < at2;
+			const ArmorProp& armor1 = a->Get<ArmorProp>();
+			const ArmorProp& armor2 = b->Get<ArmorProp>();
+			if(armor1.armor_unit_type != armor2.armor_unit_type)
+				return armor1.armor_unit_type < armor2.armor_unit_type;
+			if(armor1.armor_type != armor2.armor_type)
+				return armor1.armor_type < armor2.armor_type;
 		}
 		else if(a->type == IT_CONSUMABLE)
 		{
-			ConsumableType c1 = a->ToConsumable().cons_type,
-				c2 = b->ToConsumable().cons_type;
+			ConsumableType c1 = a->Get<ConsumableProp>().cons_type,
+				c2 = b->Get<ConsumableProp>().cons_type;
 			if(c1 != c2)
 				return c1 < c2;
 		}
 		else if(a->type == IT_OTHER)
 		{
-			OtherType o1 = a->ToOther().other_type,
-				o2 = b->ToOther().other_type;
+			OtherType o1 = a->Get<OtherItemProp>().other_type,
+				o2 = b->Get<OtherItemProp>().other_type;
 			if(o1 != o2)
 				return o1 < o2;
 		}
@@ -292,7 +290,7 @@ void Item::CreateCopy(Item& item) const
 {
 	game_res->PreloadItem(this);
 
-	switch(type)
+	/*switch(type)
 	{
 	case IT_OTHER:
 		{
@@ -316,7 +314,8 @@ void Item::CreateCopy(Item& item) const
 	default:
 		assert(0); // not implemented
 		break;
-	}
+	}*/
+	FIXME;
 
 	if(Net::IsServer() || net->mp_load)
 	{
@@ -332,13 +331,14 @@ Item* Item::CreateCopy() const
 {
 	switch(type)
 	{
-	case IT_OTHER:
+	/*case IT_OTHER:
 		{
 			OtherItem* o = new OtherItem;
 			CreateCopy(*o);
 			return o;
 		}
-		break;
+		break;*/
+		FIXME;
 	case IT_WEAPON:
 	case IT_BOW:
 	case IT_SHIELD:
@@ -390,7 +390,7 @@ void Item::Validate(uint& err)
 			Warn("Test: Missing item '%s' name.", item.id.c_str());
 		}
 
-		if(item.type == IT_BOOK && item.ToBook().text.empty())
+		if(item.Is<BookProp>() && item.Get<BookProp>().text.empty())
 		{
 			++err;
 			Warn("Test: Missing book '%s' text.", item.id.c_str());

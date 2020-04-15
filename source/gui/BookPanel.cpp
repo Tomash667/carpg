@@ -113,12 +113,11 @@ void BookPanel::Update(float dt)
 }
 
 //=================================================================================================
-void BookPanel::Show(const Book* book)
+void BookPanel::Show(const BookProp& book)
 {
-	assert(book);
-	if(this->book != book)
+	if(this->book != &book)
 	{
-		this->book = book;
+		this->book = &book;
 		SplitBook();
 	}
 	visible = true;

@@ -269,29 +269,27 @@ float Unit::CalculateAttack() const
 }
 
 //=================================================================================================
-float Unit::CalculateAttack(const Item* weapon) const
+float Unit::CalculateAttack(const Item& weapon) const
 {
-	assert(weapon);
-
 	float attack = (float)data->attack;
 
 	if(IsSet(data->flags2, F2_FIXED_STATS))
 	{
-		if(weapon->type == IT_WEAPON)
-			attack += weapon->ToWeapon().dmg;
-		else if(weapon->type == IT_BOW)
-			attack += weapon->ToBow().dmg;
+		if(weapon.type == IT_WEAPON)
+			attack += weapon.Get<WeaponProp>().dmg;
+		else if(weapon.type == IT_BOW)
+			attack += weapon.Get<BowProp>().dmg;
 		else
-			attack += 0.5f * weapon->ToShield().block;
+			attack += 0.5f * weapon.Get<ShieldProp>().block;
 		return attack + data->attack_lvl * (level - data->level.x);
 	}
 
 	int str = Get(AttributeId::STR),
 		dex = Get(AttributeId::DEX);
 
-	if(weapon->type == IT_WEAPON)
+	if(weapon.type == IT_WEAPON)
 	{
-		const Weapon& w = weapon->ToWeapon();
+		const WeaponProp& w = weapon.Get<WeaponProp>();
 		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
 		float p;
 		if(str >= w.req_str)
@@ -304,9 +302,9 @@ float Unit::CalculateAttack(const Item* weapon) const
 			+ w.dmg * p
 			+ (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill)) / 2;
 	}
-	else if(weapon->type == IT_BOW)
+	else if(weapon.type == IT_BOW)
 	{
-		const Bow& b = weapon->ToBow();
+		const BowProp& b = weapon.Get<BowProp>();
 		float p;
 		if(str >= b.req_str)
 			p = 1.f;
@@ -319,7 +317,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 	}
 	else
 	{
-		const Shield& s = weapon->ToShield();
+		const ShieldProp& s = weapon.Get<ShieldProp>();
 		float p;
 		if(str >= s.req_str)
 			p = 1.f;
@@ -341,7 +339,7 @@ float Unit::CalculateBlock(const Item* shield) const
 		shield = slots[SLOT_SHIELD];
 	assert(shield && shield->type == IT_SHIELD);
 
-	const Shield& s = shield->ToShield();
+	const ShieldProp& s = shield->Get<ShieldProp>();
 	float p;
 	int str = Get(AttributeId::STR);
 	if(str >= s.req_str)
@@ -366,7 +364,7 @@ float Unit::CalculateDefense(const Item* armor) const
 			armor = slots[SLOT_ARMOR];
 		if(armor)
 		{
-			const Armor& a = armor->ToArmor();
+			const ArmorProp& a = armor->Get<ArmorProp>();
 			float skill_val = (float)Get(a.GetSkill());
 			int str = Get(AttributeId::STR);
 			if(str < a.req_str)
@@ -385,7 +383,7 @@ Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 	LoadState state = GetLoadState();
 	if(armor)
 	{
-		SkillId skill = armor->ToArmor().GetSkill();
+		SkillId skill = armor->Get<ArmorProp>().GetSkill();
 		if(skill == SkillId::HEAVY_ARMOR)
 		{
 			if(state < LS_HEAVY)
@@ -428,7 +426,7 @@ bool Unit::CanWear(const Item* item) const
 	if(item->IsWearable())
 	{
 		if(item->type == IT_ARMOR)
-			return item->ToArmor().armor_unit_type == data->armor_type;
+			return item->Get<ArmorProp>().armor_unit_type == data->armor_type;
 		return true;
 	}
 	return false;
@@ -689,11 +687,9 @@ int Unit::ConsumeItem(int index)
 		return 2;
 	}
 
-	const Consumable& cons = slot.item->ToConsumable();
-
 	// usuñ przedmiot
 	--slot.count;
-	weight -= cons.weight;
+	weight -= slot.item->weight;
 	bool removed = false;
 	if(slot.team_count)
 	{
@@ -708,7 +704,7 @@ int Unit::ConsumeItem(int index)
 		removed = true;
 	}
 
-	ConsumeItemAnim(cons);
+	ConsumeItemAnim(*slot.item);
 
 	// wyœlij komunikat
 	if(Net::IsOnline())
@@ -729,8 +725,10 @@ int Unit::ConsumeItem(int index)
 }
 
 //=================================================================================================
-void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
+void Unit::ConsumeItem(const Item& item, bool force, bool send)
 {
+	assert(item.Is<ConsumableProp>());
+
 	if(action != A_NONE && action != A_USE_USABLE)
 	{
 		if(Net::IsLocal())
@@ -765,14 +763,14 @@ void Unit::ConsumeItemS(const Item* item)
 		return;
 	if(action != A_NONE && action != A_USE_USABLE)
 		return;
-	ConsumeItem(item->ToConsumable());
+	ConsumeItem(*item);
 }
 
 //=================================================================================================
-void Unit::ConsumeItemAnim(const Consumable& cons)
+void Unit::ConsumeItemAnim(const Item& item)
 {
 	cstring anim_name;
-	if(cons.cons_type == ConsumableType::Food || cons.cons_type == ConsumableType::Herb)
+	if(Any(item.Get<ConsumableProp>().cons_type, ConsumableType::Food, ConsumableType::Herb))
 	{
 		action = A_EAT;
 		animation_state = AS_EAT_START;
@@ -792,8 +790,8 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 	}
 
 	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
-	game_res->PreloadItem(&cons);
-	used_item = &cons;
+	game_res->PreloadItem(&item);
+	used_item = &item;
 }
 
 //=================================================================================================
@@ -847,8 +845,7 @@ void Unit::TakeWeapon(WeaponType type)
 }
 
 //=================================================================================================
-// Dodaje przedmiot(y) do ekwipunku, zwraca true jeœli przedmiot siê zestackowa³
-//=================================================================================================
+// Add item to inventory, return true if stacked
 bool Unit::AddItem(const Item* item, uint count, uint team_count)
 {
 	assert(item && count != 0 && team_count <= count);
@@ -1021,8 +1018,10 @@ void Unit::RemoveItemEffects(const Item* item, ITEM_SLOT slot)
 }
 
 //=================================================================================================
-void Unit::ApplyConsumableEffect(const Consumable& item)
+void Unit::ApplyConsumableEffect(const Item& item)
 {
+	const ConsumableProp& consumable = item.Get<ConsumableProp>();
+
 	for(const ItemEffect& effect : item.effects)
 	{
 		switch(effect.effect)
@@ -1052,8 +1051,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					e.source = EffectSource::Temporary;
 					e.source_id = -1;
 					e.value = -1;
-					e.time = item.time;
-					e.power = effect.power / item.time * poison_res;
+					e.time = consumable.time;
+					e.power = effect.power / consumable.time * poison_res;
 					AddEffect(e);
 				}
 			}
@@ -1084,8 +1083,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				e.source = EffectSource::Temporary;
 				e.source_id = -1;
 				e.value = -1;
-				e.time = item.time;
-				e.power = effect.power / item.time;
+				e.time = consumable.time;
+				e.power = effect.power / consumable.time;
 				AddEffect(e);
 			}
 			break;
@@ -1116,7 +1115,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			}
 			break;
 		default:
-			if(item.time == 0.f && effect.effect == EffectId::Attribute)
+			if(consumable.time == 0.f && effect.effect == EffectId::Attribute)
 				player->Train(false, effect.value, TrainMode::Potion);
 			else
 			{
@@ -1125,7 +1124,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				e.source = EffectSource::Temporary;
 				e.source_id = -1;
 				e.value = -1;
-				e.time = item.time;
+				e.time = consumable.time;
 				e.power = effect.power;
 				AddEffect(e);
 			}
@@ -1489,9 +1488,7 @@ float Unit::GetEffectMax(EffectId effect) const
 }
 
 //=================================================================================================
-// Dodaje przedmioty do ekwipunku i zak³ada je jeœli nie ma nic za³o¿onego. Dodane przedmioty s¹
-// traktowane jako dru¿ynowe
-//=================================================================================================
+// Add new item and equip if have empty slot. Added items are team owned.
 void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 {
 	assert(item && count != 0);
@@ -1545,7 +1542,7 @@ void Unit::GetBox(Box& box) const
 int Unit::GetDmgType() const
 {
 	if(HaveWeapon())
-		return GetWeapon().dmg_type;
+		return GetWeapon().Get<WeaponProp>().dmg_type;
 	else
 		return data->dmg_type;
 }
