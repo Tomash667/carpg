@@ -795,7 +795,7 @@ void World::GenerateWorld()
 					}
 
 					++guaranteed_dungeon;
-					if(target == 10)
+					if(guaranteed_dungeon == 10)
 						guaranteed_dungeon = -1;
 				}
 

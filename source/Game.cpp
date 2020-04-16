@@ -5325,7 +5325,7 @@ void Game::VerifyUnitResources(Unit* unit)
 		if(unit->slots[i])
 			VerifyItemResources(unit->slots[i]);
 	}
-	for(auto& slot : unit->items)
+	for(ItemSlot& slot : unit->items)
 		VerifyItemResources(slot.item);
 }
 
