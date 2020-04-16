@@ -36,19 +36,19 @@ enum Animation
 enum ACTION
 {
 	A_NONE,
-	A_TAKE_WEAPON, // etapy: 0, 1
-	A_SHOOT, // etapy: 0 - naci¹ga, 1 - naci¹ga ale mo¿e strzelaæ, 2 - po strzale, 3 - wyj¹³ now¹ strza³ê
-	A_ATTACK, // etapy: 0 - przygotowanie, 1 - mo¿e atakowaæ, 2 - po trafieniu
+	A_TAKE_WEAPON,
+	A_SHOOT,
+	A_ATTACK,
 	A_BLOCK,
 	A_BASH,
-	A_DRINK, // picie napoju (0 - zaczyna piæ, 1-efekt wypicia, 2-schowa³ przedmiot)
-	A_EAT, // jedzenie (0 - zaczyna jeœæ, 1-odtwarza dŸwiêk, 2-efekt, 3-chowa)
+	A_DRINK,
+	A_EAT,
 	A_PAIN,
 	A_CAST,
-	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
-	A_USE_USABLE, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
-	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
-	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
+	A_ANIMATION, // animation without object (looking around, scratching)
+	A_USE_USABLE,
+	A_POSITION, // was using object but was stunned or died, need to move unit to valid place
+	A_PICKUP,
 	A_DASH,
 	A_DESPAWN,
 	A_PREPARE, // mp client want to use object, waiting for response
@@ -220,7 +220,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// jednostka w grze
 struct Unit : public EntityType<Unit>
 {
 	enum LiveState
@@ -341,7 +340,7 @@ struct Unit : public EntityType<Unit>
 		Busy_Looted,
 		Busy_Trading,
 		Busy_Tournament
-	} busy; // nie zapisywane, powinno byæ Busy_No
+	} busy; // not saved, should be Busy_No at saving
 	EntityInterpolator* interp;
 	UnitStats* stats;
 	StaminaAction stamina_action;
@@ -363,9 +362,7 @@ struct Unit : public EntityType<Unit>
 	float CalculateAttack(const Item* weapon) const;
 	float CalculateBlock(const Item* shield = nullptr) const;
 	float CalculateDefense(const Item* armor = nullptr) const;
-	// czy ¿yje i nie le¿y na ziemi
 	bool IsStanding() const { return live_state == ALIVE; }
-	// czy ¿yje
 	bool IsAlive() const { return live_state < DYING; }
 	bool IsIdle() const;
 	bool IsAssist() const;
@@ -817,12 +814,10 @@ public:
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	// zwraca wagê ekwipunku w kg
 	float GetWeight() const
 	{
 		return float(weight) / 10;
 	}
-	// zwraca maksymalny udŸwig w kg
 	float GetWeightMax() const
 	{
 		return float(weight_max) / 10;
@@ -843,7 +838,6 @@ public:
 
 	int GetBuffs() const;
 
-	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
 	bool CanTalk(Unit& unit) const;
 	bool CanAct() const;
 
@@ -983,7 +977,7 @@ public:
 //-----------------------------------------------------------------------------
 struct NAMES
 {
-	// punkty
+	// points
 	static cstring point_weapon;
 	static cstring point_hidden_weapon;
 	static cstring point_shield;
@@ -993,7 +987,7 @@ struct NAMES
 	static cstring points[];
 	static uint n_points;
 
-	// animacje
+	// animations
 	static cstring ani_take_weapon;
 	static cstring ani_take_weapon_no_shield;
 	static cstring ani_take_bow;

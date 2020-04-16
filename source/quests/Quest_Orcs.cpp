@@ -101,19 +101,17 @@ void Quest_Orcs::SetProgress(int prog2)
 			unit_to_spawn2 = UnitGroup::Get("orcs")->GetLeader(10);
 			unit_spawn_level2 = -3;
 			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
-			// questowe rzeczy
+			// add journal entry
 			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
-		// oczyszczono lokacjê
 		{
 			OnUpdate(Format(game->txQuest[194], GetTargetLocationName(), GetStartLocationName()));
 		}
 		break;
 	case Progress::Finished:
-		// ukoñczono - nagroda
 		{
 			state = Quest::Completed;
 
@@ -258,7 +256,7 @@ void WarpToThroneOrcBoss()
 {
 	LevelArea& area = *game_level->local_area;
 
-	// szukaj orka
+	// search for boss
 	UnitData* ud = UnitData::Get("q_orkowie_boss");
 	Unit* u = nullptr;
 	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
@@ -271,11 +269,11 @@ void WarpToThroneOrcBoss()
 	}
 	assert(u);
 
-	// szukaj tronu
+	// search for throne
 	Usable* use = area.FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
-	// przenieœ
+	// warp
 	game_level->WarpUnit(*u, use->pos);
 }
 
@@ -287,7 +285,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 	switch(prog2)
 	{
 	case Progress::TalkedOrc:
-		// zapisz gorusha
 		{
 			orc = DialogContext::current->talker;
 			orc->RevealName(true);
@@ -296,12 +293,11 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::NotJoined:
 		break;
 	case Progress::Joined:
-		// dodaj questa
+		// add quest
 		{
 			OnStart(game->txQuest[214]);
 			msgs.push_back(Format(game->txQuest[170], world->GetDate()));
 			msgs.push_back(game->txQuest[197]);
-			// ustaw stan
 			if(orcs_state == Quest_Orcs2::State::Accepted)
 				orcs_state = Quest_Orcs2::State::OrcJoined;
 			else
@@ -311,7 +307,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				quest_mgr->quest_orcs->GetTargetLocation().active_quest = nullptr;
 				quest_mgr->quest_orcs->target_loc = -1;
 			}
-			// do³¹cz do dru¿yny
+			// join team
 			DialogContext::current->talker->dont_attack = false;
 			team->AddMember(DialogContext::current->talker, HeroType::Free);
 			if(team->free_recruits > 0)
@@ -319,7 +315,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedAboutCamp:
-		// powiedzia³ o obozie
 		{
 			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 256.f);
 			target_loc = world->CreateCamp(pos, UnitGroup::Get("orcs"));
@@ -333,7 +328,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedWhereIsCamp:
-		// powiedzia³ gdzie obóz
 		{
 			if(prog == Progress::TalkedWhereIsCamp)
 				break;
@@ -346,7 +340,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::ClearedCamp:
-		// oczyszczono obóz orków
 		{
 			orc->OrderAutoTalk();
 			world->AddNews(game->txQuest[200]);
@@ -354,7 +347,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:
-		// pogada³ po oczyszczeniu
 		{
 			orcs_state = Quest_Orcs2::State::CampCleared;
 			days = Random(25, 50);
@@ -364,22 +356,18 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::SelectWarrior:
-		// zostañ wojownikiem
 		apply = false;
 		ChangeClass(OrcClass::Warrior);
 		break;
 	case Progress::SelectHunter:
-		// zostañ ³owc¹
 		apply = false;
 		ChangeClass(OrcClass::Hunter);
 		break;
 	case Progress::SelectShaman:
-		// zostañ szamanem
 		apply = false;
 		ChangeClass(OrcClass::Shaman);
 		break;
 	case Progress::SelectRandom:
-		// losowo
 		{
 			Class* player_class = DialogContext::current->pc->unit->GetClass();
 			OrcClass clas;
@@ -418,7 +406,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedAboutBase:
-		// pogada³ o bazie
 		{
 			done = false;
 			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 256.f);
@@ -433,7 +420,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedWhereIsBase:
-		// powiedzia³ gdzie baza
 		{
 			Location& target = GetTargetLocation();
 			target.SetKnown();
@@ -451,7 +437,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::KilledBoss:
-		// zabito bossa
 		{
 			orc->OrderAutoTalk();
 			OnUpdate(game->txQuest[204]);
@@ -460,14 +445,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::Finished:
-		// pogadano z gorushem
 		{
 			LevelArea& area = *game_level->local_area;
 			state = Quest::Completed;
 			team->AddReward(Random(9000, 11000), 25000);
 			OnUpdate(game->txQuest[206]);
 			quest_mgr->EndUniqueQuest();
-			// gorush
+
+			// gorush - move to throne
 			team->RemoveMember(orc);
 			Usable* throne = area.FindUsable(BaseUsable::Get("throne"));
 			assert(throne);
@@ -478,7 +463,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 				orc->ai->timer = 9999.f;
 			}
 			orc = nullptr;
-			// orki
+
+			// convert orcs to friendly version
 			UnitData* ud[12] = {
 				UnitData::Get("orc"), UnitData::Get("q_orkowie_orc"),
 				UnitData::Get("orc_fighter"), UnitData::Get("q_orkowie_orc_fighter"),
@@ -487,16 +473,15 @@ void Quest_Orcs2::SetProgress(int prog2)
 				UnitData::Get("orc_shaman"), UnitData::Get("q_orkowie_orc_shaman"),
 				UnitData::Get("orc_chief"), UnitData::Get("q_orkowie_orc_chief")
 			};
-			UnitData* ud_slaby = UnitData::Get("q_orkowie_slaby");
+			UnitData* ud_weak_orc = UnitData::Get("q_orkowie_slaby");
 
 			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.IsAlive())
 				{
-					if(u.data == ud_slaby)
+					if(u.data == ud_weak_orc)
 					{
-						// usuñ dont_attack, od tak :3
 						u.dont_attack = false;
 						u.ai->change_ai_mode = true;
 					}
@@ -523,7 +508,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 					}
 				}
 			}
-			// zak³ada ¿e gadamy na ostatnim levelu, mam nadzieje ¿e gracz z tamt¹d nie spierdoli przed pogadaniem :3
+
+			// assumes that player is talking at last dungeon level, hopefuly player won't run away before talking
 			MultiInsideLocation* multi = (MultiInsideLocation*)world->GetCurrentLocation();
 			for(vector<InsideLocationLevel*>::iterator it = multi->levels.begin(), end = multi->levels.end() - 1; it != end; ++it)
 			{
@@ -542,7 +528,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 					}
 				}
 			}
-			// usuñ zw³oki po opuszczeniu lokacji
+
+			// clear corpses after leaving dungeon
 			orcs_state = State::ClearDungeon;
 		}
 		break;

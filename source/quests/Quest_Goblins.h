@@ -5,17 +5,13 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
-// quest gobliny
-// "Odzyskaj antyczny ³uk" - jest w lesie, szlachcic uciek³ przed wilkami
-// po zdobyciu go na drodze napadaj¹ gobliny i go kradn¹
-// wraca siê do szlachcica i on to komentuje
-// po jakimœ czasie przychodzi pos³aniec i mówi w których podziemiach s¹ gobliny
-// jest tam ³uk, zanosimy go a szlachcic mówi ¿e to nie ten ale kupuje go za 500 sz
-// potem spotykamy wêdrownego maga i pyta czy mamy ³uk, bo jest na nim jakaœ iluzja
-// gdy wracamy to szlachcica nie ma, mo¿na zapytaæ karczmarza
-// mówi ¿e poszed³ œmiej¹c siê z naiwnego gracza, do swojego fortu
-// w forcie s¹ gobliny i na koñcu szlachcic i dwóch stra¿ników
-// zabija siê go i koniec
+// Nobleman asks to go to forest and find his father lost bow.
+// While returning with it golbins will ambush player and steal it.
+// Returning to nobleman will mark quest as failed but after some time he will send messanger to player.
+// He send player to goblin dungeon to recover bow.
+// Nobleman pays some small amount of gold and disappear.
+// Later mage asks player about this bow and tell that it was artifact.
+// Need to go to dungeon and kill nobleman and recover bow.
 class Quest_Goblins final : public Quest_Dungeon, public UnitEventHandler
 {
 public:

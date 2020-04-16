@@ -4,6 +4,10 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// After asking madman why he is crazy will cause another madman encounter.
+// He will have cursed stone in inventory that will always appear in player inventory.
+// After encountering unknown enemies player can ask trainer about it.
+// Deliverying cursed stone to labyrinth will end curse.
 class Quest_Crazies final : public Quest_Dungeon
 {
 public:

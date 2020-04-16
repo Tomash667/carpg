@@ -921,7 +921,6 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 
 			if(u && !u->player->is_local)
 			{
-				// wyœlij komunikat do gracza z aktualizacj¹ ekwipunku
 				NetChangePlayer& c = Add1(u->player->player_info->changes);
 				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
 				c.item = item;

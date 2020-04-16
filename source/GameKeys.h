@@ -214,7 +214,7 @@ public:
 	{
 		return KeyDo(gk, &Input::PressedUp);
 	}
-	// Zwraca czy dany klawisze jest wyciœniêty, jeœli nie jest to dozwolone to traktuje jak wyciœniêty
+	// Return if key is up if is allowed, otherwise return true
 	bool KeyUpAllowed(Key key)
 	{
 		if(KeyAllowed(key))

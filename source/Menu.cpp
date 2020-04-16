@@ -2094,7 +2094,7 @@ void Game::OnCreateCharacter(int id)
 		info.clas = game_gui->create_character->clas;
 		info.hd.Get(*game_gui->create_character->unit->human_data);
 		info.cc = game_gui->create_character->cc;
-		// send info to other net->active_players about changing my class
+		// send info to other active players about changing my class
 		if(Net::IsServer())
 		{
 			if(info.clas != old_class && net->active_players > 1)

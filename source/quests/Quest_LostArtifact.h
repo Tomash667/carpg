@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Traveler found artifact but lost it inside dungeon. Need to recover it from ground.
 class Quest_LostArtifact final : public Quest_Dungeon
 {
 public:

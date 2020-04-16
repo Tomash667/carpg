@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Go to crypt and recover artifact from treasure.
 class Quest_FindArtifact final : public Quest_Dungeon
 {
 public:

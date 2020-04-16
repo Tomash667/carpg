@@ -178,7 +178,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::Counting;
 			timer = 7.5f;
 
-			// zmieñ ai pod¹¿aj¹cych stra¿ników
+			// change ai of following guards
 			UnitData* ud = UnitData::Get("guard_q_bandyci");
 			for(Unit* unit : game_level->local_area->units)
 			{

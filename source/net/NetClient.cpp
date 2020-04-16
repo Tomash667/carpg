@@ -234,7 +234,7 @@ void Net::UpdateClient(float dt)
 		}
 	}
 
-	// wy�li moj� pozycj�/akcj�
+	// send my position/action
 	update_timer += dt;
 	if(update_timer >= TICK)
 	{

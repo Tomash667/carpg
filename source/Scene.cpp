@@ -642,14 +642,14 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 	}
 
-	// ustaw kości
+	// set bones
 	u.mesh_inst->SetupBones();
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
 		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.ability_target == u)
 			|| (pc->unit->action == A_CAST && pc->unit->act.cast.target == u)));
 
-	// dodaj scene node
+	// add scene node
 	SceneNode* node = SceneNode::Get();
 	node->type = SceneNode::NORMAL;
 	node->SetMesh(u.mesh_inst);
@@ -658,7 +658,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	node->tex_override = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 
-	// ustawienia światła
+	// light settings
 	if(!outside)
 	{
 		assert(u.area);
@@ -685,7 +685,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().mesh)
 		node->subs = Bit(1) | Bit(2);
 
-	// pancerz
+	// armor
 	if(u.HaveArmor() && u.GetArmor().mesh)
 	{
 		const Armor& armor = u.GetArmor();
@@ -713,7 +713,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		draw_batch.Add(node2);
 	}
 
-	// przedmiot w dłoni
+	// item in hand
 	Mesh* right_hand_item = nullptr;
 	int right_hand_item_flags = 0;
 	bool in_hand = false;
@@ -774,7 +774,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	else
 		mat_scale = Matrix::IdentityMatrix;
 
-	// broń
+	// weapon
 	Mesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
@@ -804,7 +804,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 		draw_batch.Add(node2);
 
-		// hitbox broni
+		// weapon hitbox
 		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
 		{
 			Mesh::Point* box = mesh->FindPoint("hit");
@@ -818,7 +818,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 	}
 
-	// tarcza
+	// shield
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
@@ -848,7 +848,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 		draw_batch.Add(node2);
 
-		// hitbox tarczy
+		// shield hitbox
 		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
 		{
 			Mesh::Point* box = shield->FindPoint("hit");
@@ -862,7 +862,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 	}
 
-	// jakiś przedmiot
+	// other item (arrow/potion)
 	if(right_hand_item)
 	{
 		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
@@ -893,7 +893,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		draw_batch.Add(node2);
 	}
 
-	// łuk
+	// bow
 	if(u.HaveBow())
 	{
 		bool in_hand;
@@ -951,12 +951,12 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		draw_batch.Add(node2);
 	}
 
-	// włosy/broda/brwi u ludzi
+	// hair/beard/eyebrows for humans
 	if(u.data->type == UNIT_TYPE::HUMAN)
 	{
 		Human& h = *u.human_data;
 
-		// brwi
+		// eyebrows
 		SceneNode* node2 = SceneNode::Get();
 		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(game_res->aEyebrows, node->mesh_inst);
@@ -984,7 +984,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 		draw_batch.Add(node2);
 
-		// włosy
+		// hair
 		if(h.hair != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
@@ -1015,7 +1015,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			draw_batch.Add(node3);
 		}
 
-		// broda
+		// beard
 		if(h.beard != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
@@ -1046,7 +1046,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			draw_batch.Add(node3);
 		}
 
-		// wąsy
+		// mustache
 		if(h.mustache != -1 && (h.beard == -1 || !g_beard_and_mustache[h.beard]))
 		{
 			SceneNode* node3 = SceneNode::Get();
@@ -1078,7 +1078,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 	}
 
-	// pseudo hitbox postaci
+	// unit hitbox radius
 	if(draw_unit_radius)
 	{
 		float h = u.GetUnitHeight() / 2;
@@ -1202,7 +1202,7 @@ void Game::ListAreas(LevelArea& area)
 			const float H1 = -10.f;
 			const float H2 = 30.f;
 
-			// góra
+			// up
 			{
 				Area& a = Add1(draw_batch.areas);
 				a.v[0] = Vec3(33.f, H1, 256.f - 33.f);
@@ -1211,7 +1211,7 @@ void Game::ListAreas(LevelArea& area)
 				a.v[3] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
 			}
 
-			// dół
+			// bottom
 			{
 				Area& a = Add1(draw_batch.areas);
 				a.v[0] = Vec3(33.f, H1, 33.f);
@@ -1220,7 +1220,7 @@ void Game::ListAreas(LevelArea& area)
 				a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
 			}
 
-			// lewa
+			// left
 			{
 				Area& a = Add1(draw_batch.areas);
 				a.v[0] = Vec3(33.f, H1, 33.f);
@@ -1229,7 +1229,7 @@ void Game::ListAreas(LevelArea& area)
 				a.v[3] = Vec3(33.f, H2, 256.f - 33.f);
 			}
 
-			// prawa
+			// right
 			{
 				Area& a = Add1(draw_batch.areas);
 				a.v[0] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
@@ -1792,7 +1792,7 @@ void Game::DrawScene(bool outside)
 	scene_mgr->scene->use_light_dir = outside;
 	scene_mgr->camera = &game_level->camera;
 
-	// niebo
+	// sky
 	if(outside && IsSet(draw_flags, DF_SKYBOX))
 		skybox_shader->Draw(*game_res->aSkybox, game_level->camera);
 
@@ -1856,7 +1856,6 @@ void Game::DrawScene(bool outside)
 }
 
 //=================================================================================================
-// nie zoptymalizowane, póki co wyświetla jeden obiekt (lub kilka ale dobrze posortowanych w przypadku postaci z przedmiotami)
 void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
 {
 	PROFILER_BLOCK("DrawGlowingNodes");

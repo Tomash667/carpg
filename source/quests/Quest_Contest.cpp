@@ -493,18 +493,18 @@ void Quest_Contest::Update(float dt)
 		{
 			switch(state2)
 			{
-			case 0: // wygrana
+			case 0: // win
 				state2 = 2;
 				innkeeper.Talk(txContestPrize);
 				break;
-			case 1: // remis
+			case 1: // draw
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = nullptr;
 				state = CONTEST_DONE;
 				generated = false;
 				winner = nullptr;
 				break;
-			case 2: // wygrana2
+			case 2: // win2
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = nullptr;
 				winner = units.back();
@@ -515,7 +515,7 @@ void Quest_Contest::Update(float dt)
 				winner->busy = Unit::Busy_No;
 				winner->event_handler = nullptr;
 				break;
-			case 3: // brak ludzi
+			case 3: // no people
 				for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
@@ -546,7 +546,7 @@ void Quest_Contest::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 {
 	if(event == UnitEventHandler::FALL)
 	{
-		// jednostka poleg³a w zawodach w piciu :3
+		// unit fallen from drinking...
 		unit->look_target = nullptr;
 		unit->busy = Unit::Busy_No;
 		unit->event_handler = nullptr;

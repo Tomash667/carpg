@@ -5,10 +5,11 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
-// zleca kap³an w losowym miejscu
-// trzeba iœæ do podziemi zabiæ nekromantê ale go tam nie ma, jest zakrwawiony o³tarz, gdy siê podejdzie pojawiaj¹ siê nieumarli;
-// potem trzeba zameldowaæ o postêpach, wysy³a nas do jakiegoœ maga po ksiêgê, mag mówi ¿e stra¿nicy j¹ zarewirowali, kapitan odsy³a do burmistrza
-// potem do kapitana i j¹ daje, wracamy do kap³ana, wysy³a nas do podziemi na koñcu których jest portal do innych podziemi, na koñcu jest boss
+// In front of inn is standing cleric.
+// He asks you to go to some crypt. Inside are no enemies, but bloody altar. Spawn enemies when near.
+// Cleric then send player for book.
+// Later player need to go to 3 dungeons and close portals.
+// After that in first dungeon there is a boss that need to be killed.
 class Quest_Evil final : public Quest_Dungeon, public UnitEventHandler
 {
 public:

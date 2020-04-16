@@ -5,6 +5,10 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
+// Bandits are planing to take over a city.
+// Talking with secret agent will tell to encounter some bandits and get message.
+// After that need to clear bandits camp with guards.
+// Later there is boss inside dungeon that needs to be killed.
 class Quest_Bandits final : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler
 {
 public:

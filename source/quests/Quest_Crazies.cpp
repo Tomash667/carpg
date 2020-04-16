@@ -45,14 +45,14 @@ void Quest_Crazies::SetProgress(int prog2)
 	prog = prog2;
 	switch(prog2)
 	{
-	case Progress::Started: // zaatakowano przez unk
+	case Progress::Started:
 		{
 			OnStart(game->txQuest[253]);
 			msgs.push_back(Format(game->txQuest[170], world->GetDate()));
 			msgs.push_back(game->txQuest[254]);
 		}
 		break;
-	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
+	case Progress::KnowLocation:
 		{
 			start_loc = world->GetCurrentLocationIndex();
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), LABYRINTH);
@@ -67,7 +67,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			OnUpdate(Format(game->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
-	case Progress::Finished: // schowano kamieñ do skrzyni
+	case Progress::Finished:
 		{
 			state = Quest::Completed;
 			GetTargetLocation().active_quest = nullptr;
@@ -161,17 +161,17 @@ void Quest_Crazies::CheckStone()
 
 	if(!team->FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
-		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
+		// remove item from game, unless it is encounter (because level is reset anyway)
 		if(game_level->location->type != L_ENCOUNTER)
 		{
 			if(target_loc == game_level->location_index)
 			{
-				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
+				// is in good location, check if inside chest
 				Chest* chest;
 				int slot;
 				if(game_level->local_area->FindItemInChest(stone, &chest, &slot))
 				{
-					// w³o¿y³ kamieñ, koniec questa
+					// put inside chest, end of quest
 					chest->items.erase(chest->items.begin() + slot);
 					SetProgress(Progress::Finished);
 					return;
@@ -181,7 +181,7 @@ void Quest_Crazies::CheckStone()
 			game_level->RemoveItemFromWorld(stone);
 		}
 
-		// dodaj kamieñ przywódcy
+		// add stone to leader
 		team->leader->AddItem(stone, 1, false);
 		game_gui->messages->AddGameMsg3(team->leader->player, GMS_ADDED_CURSED_STONE);
 	}

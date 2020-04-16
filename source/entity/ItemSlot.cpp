@@ -50,9 +50,8 @@ void SetItemStatsText()
 }
 
 //=================================================================================================
-// Funkcja u¿ywana do sortowanie przedmiotów
-// true - s1 ma byæ wczeœniej
-//=================================================================================================
+// Function used to sort items
+// true - s1 need to be before s2
 static bool SortItemsPred(const ItemSlot& s1, const ItemSlot& s2)
 {
 	if(!s1.item)
@@ -73,14 +72,12 @@ static bool SortItemsPred(const ItemSlot& s1, const ItemSlot& s2)
 }
 
 //=================================================================================================
-// Sortowanie przedmiotów
-//=================================================================================================
 void SortItems(vector<ItemSlot>& items)
 {
-	// sortuj przedmioty
+	// sort items
 	std::sort(items.begin(), items.end(), SortItemsPred);
 
-	// usuñ puste elementy
+	// remove empty items
 	while(!items.empty() && !items.back().item)
 		items.pop_back();
 }
@@ -268,24 +265,23 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		break;
 	}
 
-	// waga
+	// weight
 	str += Format(txWeight, item->GetWeight());
 	if(count > 1)
 		str += Format(" (%g)\n", item->GetWeight()*count);
 	else
 		str += "\n";
 
-	// cena
+	// value
 	str += Format(txValue, item->value);
 }
 
-// dodaj stackuj¹cy siê przedmiot do wektora przedmiotów
 bool InsertItemStackable(vector<ItemSlot>& items, ItemSlot& slot)
 {
 	vector<ItemSlot>::iterator it = std::lower_bound(items.begin(), items.end(), slot, SortItemsPred);
 	if(it == items.end())
 	{
-		// dodaj na samym koñcu
+		// add at end
 		items.push_back(slot);
 		return false;
 	}
@@ -293,21 +289,20 @@ bool InsertItemStackable(vector<ItemSlot>& items, ItemSlot& slot)
 	{
 		if(it->item == slot.item)
 		{
-			// stackuj przedmiot
+			// stack up item
 			it->count += slot.count;
 			it->team_count += slot.team_count;
 			return true;
 		}
 		else
 		{
-			// dodaj przedmiot
+			// add in middle
 			items.insert(it, slot);
 			return false;
 		}
 	}
 }
 
-// dodaj nie stackuj¹cy siê przedmiot do wektora przedmiotów
 void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 {
 	vector<ItemSlot>::iterator it = std::lower_bound(items.begin(), items.end(), slot, SortItemsPred);
@@ -325,10 +320,10 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 
 	if(it == items.end())
 	{
-		// powiêksz wektor
+		// resize vector
 		items.reserve(size + slot.count);
 
-		// dodaj na samym koñcu
+		// add at end
 		while(slot.count)
 		{
 			items.push_back(slot2);
@@ -347,7 +342,7 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 		vector<ItemSlot> v_copy(items.begin(), it);
 		v_copy.reserve(items.size() + slot.count);
 
-		// dodaj nowe
+		// add new
 		while(slot.count)
 		{
 			v_copy.push_back(slot2);
@@ -361,11 +356,10 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 			--slot.count;
 		}
 
-		// dodaj stare z prawej
+		// add old at right
 		for(vector<ItemSlot>::iterator end = items.end(); it != end; ++it)
 			v_copy.push_back(*it);
 
-		// zamieñ
 		items.swap(v_copy);
 	}
 }
