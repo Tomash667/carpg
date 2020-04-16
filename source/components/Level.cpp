@@ -3502,6 +3502,7 @@ void Level::SpawnDungeonColliders()
 	dungeon_shape_data = new btTriangleIndexVertexArray();
 	dungeon_shape_data->addIndexedMesh(mesh, PHY_SHORT);
 	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
+	dungeon_shape->setUserPointer(dungeon_mesh);
 
 	obj_dungeon = new btCollisionObject;
 	obj_dungeon->setCollisionShape(dungeon_shape);

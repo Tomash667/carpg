@@ -585,11 +585,10 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
 				{
 					DebugNode* node = DebugNode::Get();
-					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
 					node->mesh = DebugNode::TriMesh;
 					node->color = Color(163, 73, 164);
 					node->mat = m_world * game_level->camera.mat_view_proj;
-					node->mesh_ptr = (void*)trimesh->getMeshInterface();
+					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
 					draw_batch.debug_nodes.push_back(node);
 				}
 			default:
