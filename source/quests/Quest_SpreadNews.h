@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Visit nearby cities and talk with mayor
 class Quest_SpreadNews final : public Quest
 {
 public:

@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Random artifact was stolen, stronger enemy in dungeon/camp have it
 class Quest_StolenArtifact final : public Quest_Dungeon
 {
 public:

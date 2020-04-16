@@ -5,6 +5,7 @@
 #include "QuestHandler.h"
 
 //-----------------------------------------------------------------------------
+// Once per year drinking contest
 class Quest_Contest : public QuestHandler, public UnitEventHandler
 {
 public:

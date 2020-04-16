@@ -1,23 +1,22 @@
-// dane cz³owieka
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Iloœæ bród, w³osów i w¹sów
+// Count of beard, hair & mustache types
 static const int MAX_BEARD = 6;
 static const int MAX_HAIR = 6;
 static const int MAX_MUSTACHE = 3;
 
 //-----------------------------------------------------------------------------
-// Ustawienia brodow¹sów
+// Settings for beard & mustache combination
 extern bool g_beard_and_mustache[MAX_BEARD - 1];
 
 //-----------------------------------------------------------------------------
-// Dostêpne kolory w³osów
+// Allowed normal hair colors
 extern const Vec4 g_hair_colors[];
 extern const uint n_hair_colors;
 
 //-----------------------------------------------------------------------------
-// Dane cz³owieka
+// Human data
 struct Human
 {
 	int hair, beard, mustache;
@@ -32,7 +31,7 @@ struct Human
 };
 
 //-----------------------------------------------------------------------------
-// Jak Human ale bez macierzy, u¿ywane do zapamiêtania jak wygl¹da³a jakaœ postaæ
+// Like Human but without matrices
 struct HumanData
 {
 	int hair, beard, mustache;

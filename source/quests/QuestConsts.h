@@ -11,8 +11,7 @@ enum class QuestCategory
 };
 
 //-----------------------------------------------------------------------------
-// identyfikatory questów
-// kolejnoœæ nie jest nigdzie u¿ywana, mo¿na dawaæ jak siê chce, ale na koñcu ¿eby zapisy by³y kompatybilne
+// Old quest identifiers
 enum QUEST_TYPE
 {
 	Q_FORCE_DISABLED = -2,

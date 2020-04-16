@@ -43,7 +43,7 @@ void Quest_Tutorial::Start()
 	game->pc->data.autowalk = false;
 	game->pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 
-	// ekwipunek
+	// inventory
 	game->pc->unit->ClearInventory();
 	auto item = Item::Get("al_clothes");
 	game_res->PreloadItem(item);
@@ -52,7 +52,7 @@ void Quest_Tutorial::Start()
 	game->pc->unit->gold = 10;
 	game_gui->journal->GetNotes().push_back(txTutNote);
 
-	// startowa lokacja
+	// start location
 	SingleInsideLocation* loc = new SingleInsideLocation;
 	loc->target = TUTORIAL_FORT;
 	loc->name = txTutLoc;
@@ -79,21 +79,21 @@ void Quest_Tutorial::Start()
 
 /*
 state:
-0 - pocz¹tek
-1 - pierwszy tekst
-2 - tekst przed drzwiami
-3 - tekst przed skrzyni¹
-4 - otwarto skrzyniê
-5 - tekst przed manekinem
-6 - uderzono manekin
-7 - tekst przed goblinem
-8 - zabito goblina
-9 - tekst o dzienniku
-10 - tekst o skrzyni z ³ukiem
-11 - otwarto skrzyniê
-12 - tekst o ³uku
-13 - trafiono z ³uku
-14 - tekst o gadaniu
+0 - start
+1 - first text
+2 - text before door
+3 - text before chest
+4 - opened chest
+5 - text before melee target
+6 - hit melee target
+7 - text before goblin
+8 - killed goblin
+9 - text about journal
+10 - text about chest with bow
+11 - opened chest with bow
+12 - text about bow
+13 - hit with bow
+14 - text about talking
 */
 
 //=================================================================================================

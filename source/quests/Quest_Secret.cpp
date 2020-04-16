@@ -173,7 +173,7 @@ void Quest_Secret::UpdateFight()
 
 	if(count[0] == 0 || count[1] == 0)
 	{
-		// o¿yw wszystkich
+		// revive all
 		for(Unit* unit : arena->units)
 		{
 			unit->in_arena = -1;
@@ -198,7 +198,7 @@ void Quest_Secret::UpdateFight()
 
 		if(count[0])
 		{
-			// gracz wygra³
+			// player won
 			state = SECRET_WIN;
 			arena->units[0]->OrderAutoTalk();
 			team->AddLearningPoint();
@@ -206,7 +206,7 @@ void Quest_Secret::UpdateFight()
 		}
 		else
 		{
-			// gracz przegra³
+			// player lost
 			state = SECRET_LOST;
 		}
 

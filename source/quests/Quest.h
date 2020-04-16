@@ -100,7 +100,7 @@ struct Quest : public QuestHandler
 };
 
 //-----------------------------------------------------------------------------
-// u¿ywane w MP u klienta
+// Used by MP clients (store only journal entries and status)
 struct PlaceholderQuest : public Quest
 {
 	void Start() override {}
@@ -126,8 +126,6 @@ struct Quest_Encounter : public Quest
 typedef void(*VoidFunc)();
 
 //-----------------------------------------------------------------------------
-// aktualnie next_event i item_to_give2 dzia³a tylko w podziemiach
-// w mieœcie dzia³a tylko unit_to_spawn, unit_dont_attack, unit_auto_talk, unit_spawn_level, unit_event_handler i send_spawn_event (spawnuje w karczmie)
 struct Quest_Event
 {
 	enum SpawnItem
@@ -135,22 +133,22 @@ struct Quest_Event
 		Item_DontSpawn,
 		Item_GiveStrongest,
 		Item_GiveSpawned,
-		Item_InTreasure, // tylko labirynt i krypta!
+		Item_InTreasure, // only crypt or labyrinth
 		Item_OnGround,
-		Item_InChest, // tylko podziemia
-		Item_GiveSpawned2 // tylko podziemia
+		Item_InChest, // only dungeon
+		Item_GiveSpawned2 // only dungeon
 	};
 
 	static const int MAX_ITEMS = 4;
 
 	SpawnItem spawn_item;
-	const Item* item_to_give[MAX_ITEMS]; // wiele przedmiotów obs³ugiwane tylko w Item_InChest
+	const Item* item_to_give[MAX_ITEMS]; // multiple items works only in Item_InChest
 	int target_loc, at_level;
 	bool done;
 	LocationEventHandler* location_event_handler;
-	Quest_Event* next_event;
+	Quest_Event* next_event; // only works in dungeon
 	ChestEventHandler* chest_event_handler;
-	bool whole_location_event_handler; // czy location_event_handler jest dla wszystkich poziomów czy tylko okreœlonego
+	bool whole_location_event_handler; // is location_event_handler is for all dungeon levels or only selected
 	VoidDelegate callback;
 
 	// unit
@@ -176,7 +174,6 @@ struct Quest_Dungeon : public Quest, public Quest_Event
 	virtual void Save(GameWriter& f) override;
 	virtual LoadResult Load(GameReader& f) override;
 
-	// to powinno byæ inline ale nie wysz³o :/
 	Location& GetTargetLocation();
 	const Location& GetTargetLocation() const;
 	cstring GetTargetLocationName() const;

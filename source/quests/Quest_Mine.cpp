@@ -515,7 +515,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			Int2(3,4),
 			Int2(4,4)
 		};
-		const Int2 p_zajete[] = {
+		const Int2 usedTile[] = {
 			Int2(2,0),
 			Int2(0,2),
 			Int2(4,2),
@@ -527,15 +527,14 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			p.type = BLOCKADE;
 			p.flags = 0;
 		}
-		for(uint i = 0; i < countof(p_zajete); ++i)
+		for(uint i = 0; i < countof(usedTile); ++i)
 		{
-			Tile& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
+			Tile& p = lvl.map[(pt + usedTile[i])(lvl.w)];
 			p.type = USED;
 			p.flags = 0;
 		}
 
-		// dorób wejœcie
-		// znajdŸ najbli¿szy pokoju wolny punkt
+		// add entance - find nearest empty point
 		const Int2 center(pt.x + 2, pt.y + 2);
 		Int2 closest;
 		int best_dist = 999;
@@ -555,8 +554,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			}
 		}
 
-		// prowadŸ drogê do œrodka
-		// tu mo¿e byæ nieskoñczona pêtla ale nie powinno jej byæ chyba ¿e bêd¹ jakieœ blokady na mapie :3
+		// find path from point to room
 		Int2 end_pt;
 		while(true)
 		{
@@ -660,9 +658,9 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			Tile& p = lvl.map[(pt + blockades[i])(lvl.w)];
 			p.type = WALL;
 		}
-		for(uint i = 0; i < countof(p_zajete); ++i)
+		for(uint i = 0; i < countof(usedTile); ++i)
 		{
-			Tile& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
+			Tile& p = lvl.map[(pt + usedTile[i])(lvl.w)];
 			p.type = WALL;
 		}
 		for(int y = 1; y < 4; ++y)

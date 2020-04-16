@@ -79,22 +79,16 @@ void Quest_Evil::SetProgress(int prog2)
 	switch(prog2)
 	{
 	case Progress::NotAccepted:
-		// nie zaakceptowano
 		{
 			if(!quest_mgr->RemoveQuestRumor(id))
 				game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
-	case Progress::Started:
-		// zaakceptowano
-		break;
 	case Progress::Talked:
-		// zaakceptowano
 		{
 			OnStart(game->txQuest[233]);
-			// usuñ plotkê
 			quest_mgr->RemoveQuestRumor(id);
-			// lokacja
+			// add location
 			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 128.f);
 			Location& target = *world->CreateLocation(L_DUNGEON, pos, OLD_TEMPLE, 1);
 			target.group = UnitGroup::empty;
@@ -105,20 +99,18 @@ void Quest_Evil::SetProgress(int prog2)
 			target_loc = target.index;
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
-			// questowe rzeczy
+			// add journal entries
 			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::AltarEvent:
-		// zdarzenie
 		{
 			OnUpdate(game->txQuest[236]);
 			world->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
 		}
 		break;
 	case Progress::TalkedAboutBook:
-		// powiedzia³ o ksiêdze
 		{
 			mage_loc = world->GetRandomSettlementIndex(start_loc);
 			Location& mage = *world->GetLocation(mage_loc);
@@ -128,7 +120,6 @@ void Quest_Evil::SetProgress(int prog2)
 		}
 		break;
 	case Progress::MageToldAboutStolenBook:
-		// mag powiedzia³ ¿e mu zabrali ksiêge
 		{
 			OnUpdate(game->txQuest[239]);
 			world->AddNews(Format(game->txQuest[240], world->GetLocation(mage_loc)->name.c_str()));
@@ -136,19 +127,16 @@ void Quest_Evil::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedWithCaptain:
-		// pogadano z kapitanem
 		{
 			OnUpdate(Format(game->txQuest[241], LocationHelper::IsCity(world->GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 		}
 		break;
 	case Progress::TalkedWithMayor:
-		// pogadano z burmistrzem
 		{
 			OnUpdate(Format(game->txQuest[242], LocationHelper::IsCity(world->GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 		}
 		break;
 	case Progress::GotBook:
-		// dosta³eœ ksi¹¿ke
 		{
 			OnUpdate(game->txQuest[243]);
 			const Item* item = Item::Get("q_zlo_ksiega");
@@ -156,9 +144,8 @@ void Quest_Evil::SetProgress(int prog2)
 		}
 		break;
 	case Progress::GivenBook:
-		// da³eœ ksi¹¿kê jozanowi
 		{
-			// dodaj lokacje
+			// spawn locations
 			const struct
 			{
 				LOCATION type;
@@ -199,7 +186,7 @@ void Quest_Evil::SetProgress(int prog2)
 			loc[0].next_event = &loc[1];
 			loc[1].next_event = &loc[2];
 
-			// dodaj jozana do dru¿yny
+			// add cleric to team
 			Unit& u = *DialogContext::current->talker;
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
@@ -210,13 +197,11 @@ void Quest_Evil::SetProgress(int prog2)
 		}
 		break;
 	case Progress::PortalClosed:
-		// u¿ywane tylko do czyszczenia flagi changed
 		apply = false;
 		changed = false;
 		team->AddExp(10000);
 		break;
 	case Progress::AllPortalsClosed:
-		// zamkniêto wszystkie portale
 		{
 			changed = false;
 			done = false;
@@ -238,11 +223,10 @@ void Quest_Evil::SetProgress(int prog2)
 		}
 		break;
 	case Progress::KilledBoss:
-		// zabito bossa
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[249]);
-			// przywróæ stary o³tarz
+			// restore old altar
 			Location& target = GetTargetLocation();
 			target.active_quest = nullptr;
 			target.dont_clean = false;
@@ -251,7 +235,7 @@ void Quest_Evil::SetProgress(int prog2)
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
 			res_mgr->Load(obj->mesh);
-			// usuñ cz¹steczki
+			// remove particles
 			float best_dist = 999.f;
 			ParticleEmitter* best_pe = nullptr;
 			for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
@@ -268,7 +252,7 @@ void Quest_Evil::SetProgress(int prog2)
 			}
 			assert(best_pe);
 			best_pe->destroy = true;
-			// gadanie przez jozana
+			// talking
 			Unit* unit = team->FindTeamMember("q_zlo_kaplan");
 			if(unit)
 				unit->OrderAutoTalk();
@@ -284,10 +268,9 @@ void Quest_Evil::SetProgress(int prog2)
 		}
 		break;
 	case Progress::Finished:
-		// pogadano z jozanem
 		{
 			evil_state = State::ClericLeaving;
-			// usuñ jozana z dru¿yny
+			// remove cleric from team
 			Unit& u = *DialogContext::current->talker;
 			team->RemoveMember(&u);
 			u.OrderLeave();
@@ -517,7 +500,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	InsideLocation* inside = (InsideLocation*)world->GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
-	// szukaj zwyk³ego o³tarza blisko œrodka
+	// find altar need center
 	Vec3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
 	float best_dist = 999.f;
 	BaseObject* base_obj = BaseObject::Get("altar");
@@ -536,11 +519,11 @@ void Quest_Evil::GenerateBloodyAltar()
 	}
 	assert(obj);
 
-	// zmieñ typ obiektu
+	// change object type
 	obj->base = BaseObject::Get("bloody_altar");
 	obj->mesh = obj->base->mesh;
 
-	// dodaj cz¹steczki
+	// add particles
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->alpha = 0.8f;
 	pe->emision_interval = 0.1f;
@@ -564,7 +547,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->Init();
 	lvl.tmp->pes.push_back(pe);
 
-	// dodaj krew
+	// add blood
 	vector<Int2> path;
 	pathfinding->FindPath(lvl, lvl.staircase_up, PosToPt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
@@ -593,7 +576,7 @@ void Quest_Evil::GenerateBloodyAltar()
 		}
 	}
 
-	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
+	// set special room type so no enemies will spawn there
 	lvl.GetNearestRoom(obj->pos)->target = RoomTarget::Treasury;
 
 	evil_state = Quest_Evil::State::SpawnedAltar;
@@ -662,11 +645,11 @@ void Quest_Evil::WarpEvilBossToAltar()
 {
 	LevelArea& area = *game_level->local_area;
 
-	// znajdŸ bossa
+	// find bossa
 	Unit* u = area.FindUnit(UnitData::Get("q_zlo_boss"));
 	assert(u);
 
-	// znajdŸ krwawy o³tarz
+	// find blood altar
 	Object* o = area.FindObject(BaseObject::Get("bloody_altar"));
 	assert(o);
 
@@ -736,18 +719,18 @@ void Quest_Evil::Update(float dt)
 
 				if(u->ai->state == AIController::Idle)
 				{
-					// sprawdŸ czy podszed³ do portalu
+					// check if is near portal
 					float dist = Vec3::Distance2d(u->pos, l.pos);
 					if(dist < 5.f)
 					{
-						// podejdŸ
+						// move towards
 						u->ai->st.idle.action = AIController::Idle_Move;
 						u->ai->st.idle.pos = l.pos;
 						u->ai->timer = 1.f;
 						if(u->GetOrder() != ORDER_WAIT)
 							u->OrderWait();
 
-						// zamknij
+						// close portal
 						if(dist < 2.f)
 						{
 							timer -= dt;

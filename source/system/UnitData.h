@@ -14,7 +14,6 @@
 #include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
-// Lista zaklêæ postaci
 struct AbilityList
 {
 	string id;
@@ -143,7 +142,7 @@ enum UNIT_FLAGS3
 };
 
 //-----------------------------------------------------------------------------
-// Id dŸwiêku
+// Unit sound id
 enum SOUND_ID
 {
 	SOUND_SEE_ENEMY,
@@ -155,7 +154,7 @@ enum SOUND_ID
 };
 
 //-----------------------------------------------------------------------------
-// DŸwiêki postaci
+// Unit sounds
 struct SoundPack
 {
 	string id;
@@ -212,7 +211,6 @@ struct TraderInfo
 };
 
 //-----------------------------------------------------------------------------
-// Dane postaci
 struct UnitData
 {
 	string id, name, real_name;

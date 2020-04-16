@@ -48,13 +48,13 @@ const Int2 c_dir2[4] = {
 };
 
 //=================================================================================================
-// szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
-// zwraca true jeœli znaleziono i w wektorze jest ta œcie¿ka, w œcie¿ce nie ma pocz¹tkowego kafelka
+// Search for path using A-Star algorithm
+// Return true if there is path, retured path don't contain first tile
 bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
 {
 	if(start_tile == target_tile || area.area_type == LevelArea::Type::Building)
 	{
-		// jest w tym samym miejscu
+		// already at same tile
 		path.clear();
 		path.push_back(target_tile);
 		return true;
@@ -65,25 +65,25 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 
 	if(area.area_type == LevelArea::Type::Outside)
 	{
-		// zewnêtrze
+		// outside location
 		OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
-		// czy poza map¹
+		// is inside map?
 		if(!outside->IsInside(start_tile) || !outside->IsInside(target_tile))
 			return false;
 
-		// czy na blokuj¹cym miejscu
+		// is in blocking tile?
 		if(m[start_tile(w)].IsBlocking() || m[target_tile(w)].IsBlocking())
 			return false;
 
-		// powiêksz mapê
+		// resize map
 		const uint size = uint(w*w);
 		if(size > a_map.size())
 			a_map.resize(size);
 
-		// wyzeruj
+		// zero out
 		memset(&a_map[0], 0, sizeof(APoint)*size);
 		path.clear();
 
@@ -96,7 +96,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 				return false;
 		}
 
-		// dodaj pierwszy kafelek do sprawdzenia
+		// add first tile to check
 		APoint apt, prev_apt;
 		apt.sum = apt.dist = 10 * (abs(target_tile.x - start_tile.x) + abs(target_tile.y - start_tile.y));
 		apt.state = 1;
@@ -109,7 +109,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 
 		AStarSort sorter(a_map, w);
 
-		// szukaj drogi
+		// search for path
 		while(!to_check.empty())
 		{
 			pt = to_check.back();
@@ -182,11 +182,11 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 			std::sort(to_check.begin(), to_check.end(), sorter);
 		}
 
-		// jeœli cel jest niezbadany to nie znaleziono œcie¿ki
+		// if target is not visited then path was not found
 		if(a_map[target_tile(w)].state == 0)
 			return false;
 
-		// wype³nij elementami œcie¿kê
+		// fill path elements
 		path.push_back(target_tile);
 
 		Int2 p;
@@ -196,26 +196,26 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 	}
 	else
 	{
-		// wnêtrze
+		// inside location
 		InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		const Tile* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;
 
-		// czy poza map¹
+		// is inside level?
 		if(!lvl.IsInside(start_tile) || !lvl.IsInside(target_tile))
 			return false;
 
-		// czy na blokuj¹cym miejscu
+		// is in blocking tile?
 		if(IsBlocking(m[start_tile(w)]) || IsBlocking(m[target_tile(w)]))
 			return false;
 
-		// powiêksz mapê
+		// resize map
 		const uint size = uint(w*h);
 		if(size > a_map.size())
 			a_map.resize(size);
 
-		// wyzeruj
+		// zero out
 		memset(&a_map[0], 0, sizeof(APoint)*size);
 		path.clear();
 
@@ -228,7 +228,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 				return false;
 		}
 
-		// dodaj pierwszy kafelek do sprawdzenia
+		// add first tile to check
 		APoint apt, prev_apt;
 		apt.sum = apt.dist = 10 * (abs(target_tile.x - start_tile.x) + abs(target_tile.y - start_tile.y));
 		apt.state = 1;
@@ -241,15 +241,12 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 
 		AStarSort sorter(a_map, w);
 
-		// szukaj drogi
+		// search for path
 		while(!to_check.empty())
 		{
 			pt = to_check.back();
 			to_check.pop_back();
-
 			prev_apt = a_map[pt.pt(w)];
-
-			//Info("(%d,%d)->(%d,%d), K:%d D:%d S:%d", pt.prev.x, pt.prev.y, pt.pt.x, pt.pt.y, prev_apt.cost, prev_apt.dist, prev_apt.sum);
 
 			if(pt.pt == target_tile)
 			{
@@ -315,14 +312,14 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 
 					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !IsBlocking(m[pt1(w)]))
 					{
-						int ok = 2; // 2-ok i dodaj, 1-ok, 0-nie
+						int ok = 2; // 2-ok & next, 1-ok, 0-no
 
 						if(m[pt1(w)].type == DOORS)
 						{
 							Door* door = area.FindDoor(pt1);
 							if(door && door->IsBlocking())
 							{
-								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
+								// decide if door can be entered from this tile
 								if(IsBlocking(lvl.map[pt1.x - 1 + pt1.y*lvl.w].type))
 								{
 									// #   #
@@ -461,7 +458,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 			std::sort(to_check.begin(), to_check.end(), sorter);
 		}
 
-		// jeœli cel jest niezbadany to nie znaleziono œcie¿ki
+		// if target is not visited then path was not found
 		if(a_map[target_tile(w)].state == 0)
 			return false;
 
@@ -474,7 +471,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 			path.push_back(a_map[p(w)].prev);
 	}
 
-	// usuñ ostatni element œcie¿ki
+	// fill path elements
 	path.pop_back();
 
 	return true;
@@ -503,7 +500,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	if(dist >= 32)
 		return 1;
 
-	// œrodek
+	// center
 	const Int2 center_tile((my_tile + target_tile) / 2);
 
 	int minx = max(area.mine.x * 8, center_tile.x - 15),
@@ -571,7 +568,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	if(!is_end_point && local_pfmap[target_rel(w)])
 		return 4;
 
-	// oznacz moje pole jako wolne
+	// mark my tile as free
 	local_pfmap[my_rel(w)] = false;
 	const Int2 neis[8] = {
 		Int2(-1,-1),
@@ -600,7 +597,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	if(!have_empty_tile)
 		return 2;
 
-	// dodaj pierwszy punkt do sprawdzenia
+	// add first tile to check
 	static vector<Point> to_check;
 	to_check.clear();
 	{
@@ -622,7 +619,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	const int MAX_STEPS = 100;
 	int steps = 0;
 
-	// rozpocznij szukanie œcie¿ki
+	// begin search of path
 	while(!to_check.empty())
 	{
 		Point pt = to_check.back();

@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Bandits stolen package that must be retrived from dungeon strongest unit.
 class Quest_RetrievePackage final : public Quest_Dungeon
 {
 public:

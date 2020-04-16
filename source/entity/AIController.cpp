@@ -444,7 +444,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bullet_speed) cons
 	float c = -(target.pos - unit->pos).Dot2d();
 
 	float delta = b * b - 4 * a * c;
-	// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
+	// no solution, can't hit target, just aim at center
 	if(delta < 0)
 		return target.GetCenter();
 

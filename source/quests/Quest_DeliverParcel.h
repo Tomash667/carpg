@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Deliver parcel from one city mayor to another. There may be bandits waiting on road.
 class Quest_DeliverParcel final : public Quest_Encounter
 {
 public:

@@ -234,11 +234,9 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 			return true;
 		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
 		{
+			// go back to inn
 			if(!u.IsTeamMember())
-			{
-				// po wszystkim wróæ do karczmy
 				u.OrderGoToInn();
-			}
 			return true;
 		}
 	}
@@ -417,7 +415,7 @@ void Quest_Tournament::Update(float dt)
 	{
 		if(state2 == 0)
 		{
-			// introduce all fight in this round
+			// introduce all fights in this round
 			if(master->CanAct())
 			{
 				cstring text;

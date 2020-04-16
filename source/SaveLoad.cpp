@@ -111,7 +111,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 	if(!CanSaveGame())
 	{
-		// w tej chwili nie mo¿na zapisaæ gry
+		// can't save right now
 		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, game_gui->saveload->visible ? game_gui->saveload : nullptr);
 		return false;
 	}
@@ -830,7 +830,7 @@ void Game::LoadGame(GameReader& f)
 	if(read_id != check_id++)
 		throw "Error reading data before team.";
 
-	// wczytaj dru¿ynê
+	// load team
 	team->Load(f);
 
 	// load quests
@@ -1065,7 +1065,6 @@ void Game::RemoveUnusedAiAndCheck()
 	uint prev_size = ais.size();
 	bool deleted = false;
 
-	// to jest tylko tymczasowe rozwi¹zanie nadmiarowych ai, byæ mo¿e wystêpowa³o tylko w wersji 0.2 ale póki co niech zostanie
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;

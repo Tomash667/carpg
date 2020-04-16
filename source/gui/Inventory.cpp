@@ -18,13 +18,9 @@
 #include "RenderTarget.h"
 #include "GameResources.h"
 
-/* UWAGI CO DO ZMIENNYCH
-index - indeks do items [0, 1, 2, 3...]
-t_index - indeks to tmp_inv [0, 1, 2, 3...]
-i_index - warto�� dla t_index (dla ujemnych slot) [-1, -2, -3, 0, 1, 2, 3...]
-i_index == index dla nie za�o�onych przedmiot�w
-
-last_index to tutaj t_index
+/* REMARKS ON SOME VARIABLES
+i_index for positive values is index to items [0, 1, 2, 3...]
+negative values are for equipped items [-1, -2, -3...]
 */
 
 //-----------------------------------------------------------------------------
@@ -271,7 +267,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 }
 
 //=================================================================================================
-// zbuduj tymczasowy ekwipunek kt�ry ��czy slots i items postaci
+// build temporary inventory that contain normal & equipped items
 void Inventory::BuildTmpInventory(int index)
 {
 	assert(index == 0 || index == 1);
@@ -285,13 +281,13 @@ void Inventory::BuildTmpInventory(int index)
 
 	if(index == 0)
 	{
-		// przedmioty gracza
+		// player items
 		slots = pc->unit->slots;
 		items = &pc->unit->items;
 	}
 	else
 	{
-		// przedmioty innej postaci, w skrzyni
+		// other unit or chest items
 		if(pc->action == PlayerAction::LootChest
 			|| pc->action == PlayerAction::Trade
 			|| pc->action == PlayerAction::LootContainer)
@@ -303,7 +299,7 @@ void Inventory::BuildTmpInventory(int index)
 
 	ids.clear();
 
-	// je�li to posta� to dodaj za�o�one przedmioty
+	// add equipped items if unit
 	if(slots)
 	{
 		for(int i = 0; i < SLOT_MAX; ++i)
@@ -316,7 +312,7 @@ void Inventory::BuildTmpInventory(int index)
 		}
 	}
 
-	// nie za�o�one przedmioty
+	// add normal items
 	for(int i = 0, count = (int)items->size(); i < count; ++i)
 		ids.push_back(i);
 }
@@ -360,7 +356,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 	// scrollbar
 	scrollbar.Draw();
 
-	// miejsce na z�oto i ud�wig
+	// place for gold & carry capacity
 	int bar_size = (cells_w * 63 - 8) / 2;
 	int bar_y = shift_y + cells_h * 63 + 8;
 	float load = 0.f;
@@ -374,7 +370,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 	else if(mode == LOOT_OTHER)
 		bt.Draw();
 
-	// napis u g�ry
+	// title
 	Rect rect = {
 		pos.x,
 		pos.y + 10,
@@ -385,14 +381,14 @@ void InventoryPanel::Draw(ControlDrawData*)
 
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
-		// ikona z�ota
+		// gold icon
 		gui->DrawSprite(base.tGold, Int2(shift_x, bar_y));
 
-		// z�oto
+		// gold value
 		rect = Rect::Create(Int2(shift_x, bar_y), Int2(bar_size, 32));
 		gui->DrawText(GameGui::font, Format("%d", unit->gold), DTF_CENTER | DTF_VCENTER, Color::Black, rect);
 
-		// ud�wig
+		// carry capacity
 		rect.Left() = shift_x + bar_size + 10;
 		rect.Right() = rect.Left() + bar_size;
 		cstring weight_str = Format(base.txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
@@ -401,14 +397,14 @@ void InventoryPanel::Draw(ControlDrawData*)
 			DTF_CENTER | DTF_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
 	}
 
-	// rysuj kratki
+	// draw tiles
 	for(int y = 0; y < cells_h; ++y)
 	{
 		for(int x = 0; x < cells_w; ++x)
 			gui->DrawSprite(base.tItemBar, Int2(shift_x + x * 63, shift_y + y * 63));
 	}
 
-	// rysuj przedmioty
+	// draw items
 	bool have_team = team->GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
 	int shift = int(scrollbar.offset / 63)*cells_w;
 	for(int i = 0, cells = min(cells_w*cells_h, (int)i_items->size() - shift); i < cells; ++i)
@@ -562,7 +558,7 @@ void InventoryPanel::Update(float dt)
 
 	if(have_focus && !game_gui->level_gui->IsDragAndDrop())
 	{
-		// przedmiot
+		// item
 		if(cursor_pos.x >= shift_x && cursor_pos.y >= shift_y)
 		{
 			int x = (cursor_pos.x - shift_x) / 63,
@@ -578,7 +574,7 @@ void InventoryPanel::Update(float dt)
 		int bar_size = (cells_w * 63 - 8) / 2;
 		int bar_y = shift_y + cells_h * 63 + 8;
 
-		// pasek ze z�otem lub ud�wigiem
+		// bar with gold or carry capacity
 		if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 		{
 			if(cursor_pos.y >= bar_y && cursor_pos.y < bar_y + 32)
@@ -590,7 +586,7 @@ void InventoryPanel::Update(float dt)
 			}
 		}
 
-		// przycisk
+		// take all button
 		if(mode == LOOT_OTHER)
 		{
 			bt.mouse_focus = focus;
@@ -598,14 +594,14 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	// klawisz do podnoszenia wszystkich przedmiot�w
+	// handle button to take all
 	if(mode == LOOT_OTHER && (focus || base.inv_trade_mine->focus) && input->Focus() && GKey.PressedRelease(GK_TAKE_ALL))
 	{
 		Event(GuiEvent_Custom);
 		return;
 	}
 
-	// aktualizuj box
+	// update box
 	if(mode == INVENTORY)
 		base.tooltip.UpdateTooltip(dt, new_index, -1);
 	else
@@ -656,7 +652,7 @@ void InventoryPanel::Update(float dt)
 
 	if(new_index >= 0)
 	{
-		// pobierz przedmiot
+		// get item
 		const Item* item;
 		ItemSlot* slot;
 		ITEM_SLOT slot_type;
@@ -679,10 +675,10 @@ void InventoryPanel::Update(float dt)
 		if(!focus || !(game->pc->unit->action == A_NONE || game->pc->unit->CanDoWhileUsing()) || base.lock || !input->Focus() || !game->pc->unit->IsStanding())
 			return;
 
-		// obs�uga kilkania w ekwipunku
+		// handling on clickin in inventory
 		if(mode == INVENTORY && input->PressedRelease(Key::RightButton) && game->pc->unit->action == A_NONE)
 		{
-			// wyrzu� przedmiot
+			// drop item
 			if(IsSet(item->flags, ITEM_DONT_DROP) && team->IsAnyoneTalking())
 				gui->SimpleDialog(base.txCantDoNow, this);
 			else
@@ -705,7 +701,7 @@ void InventoryPanel::Update(float dt)
 				{
 					if(input->Down(Key::Shift))
 					{
-						// wyrzu� wszystkie
+						// drop all
 						unit->DropItems(i_index, 0);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
@@ -715,7 +711,7 @@ void InventoryPanel::Update(float dt)
 					}
 					else if(input->Down(Key::Control) || slot->count == 1)
 					{
-						// wyrzu� jeden
+						// drop single
 						if(unit->DropItem(i_index))
 						{
 							base.BuildTmpInventory(0);
@@ -729,7 +725,7 @@ void InventoryPanel::Update(float dt)
 					}
 					else
 					{
-						// wyrzu� okre�lon� liczb�
+						// drop selected count
 						counter = 1;
 						base.lock.Lock(i_index, *slot);
 						base.lock_dialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 1, slot->count, &counter);
@@ -748,7 +744,7 @@ void InventoryPanel::Update(float dt)
 				// use/equip/unequip item
 				if(!slot)
 				{
-					// zdejmij przedmiot
+					// unequip item
 					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide weapon & add next action to unequip
@@ -798,7 +794,7 @@ void InventoryPanel::Update(float dt)
 						}
 						else
 						{
-							// sprawd� czy mo�na u�ywa�
+							// check if can be equipped
 							bool ok = true;
 							if(type == SLOT_ARMOR)
 							{
@@ -821,7 +817,6 @@ void InventoryPanel::Update(float dt)
 					gui->SimpleDialog(base.txWontBuy, this);
 				else if(!slot)
 				{
-					// za�o�ony przedmiot
 					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide equipped item and sell it
@@ -834,8 +829,7 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					// nie za�o�ony przedmiot
-					// ustal ile gracz chce sprzeda� przedmiot�w
+					// decide how many to sell
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
@@ -863,7 +857,7 @@ void InventoryPanel::Update(float dt)
 			case TRADE_OTHER:
 				// buying items
 				{
-					// ustal ile gracz chce kupi� przedmiot�w
+					// how many player want to buy?
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
@@ -892,7 +886,6 @@ void InventoryPanel::Update(float dt)
 				// put item into corpse/chest/container
 				if(slot)
 				{
-					// nie za�o�ony przedmiot
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
@@ -918,7 +911,6 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					// za�o�ony przedmiot
 					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide equipped item and put it in container
@@ -934,7 +926,6 @@ void InventoryPanel::Update(float dt)
 				// take item from corpse/chest/container
 				if(slot)
 				{
-					// nie za�o�ony przedmiot
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
@@ -979,12 +970,11 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					// za�o�ony przedmiot
 					last_index = INDEX_INVALID;
-					// dodaj
+					// add to player
 					game->pc->unit->AddItem(item, 1u, 1u);
 					base.BuildTmpInventory(0);
-					// usu�
+					// remove from container
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
 					{
 						unit->used_item = nullptr;
@@ -1000,9 +990,9 @@ void InventoryPanel::Update(float dt)
 					unit->weight -= item->weight;
 					slots[slot_type] = nullptr;
 					base.BuildTmpInventory(1);
-					// d�wi�k
+					// sound
 					sound_mgr->PlaySound2d(game_res->GetItemSound(item));
-					// komunikat
+					// message
 					if(Net::IsOnline())
 					{
 						if(Net::IsServer())
@@ -1029,7 +1019,6 @@ void InventoryPanel::Update(float dt)
 				// give item to companion to store
 				if(slot && slot->team_count > 0)
 				{
-					// nie za�o�ony przedmiot
 					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
@@ -1069,7 +1058,6 @@ void InventoryPanel::Update(float dt)
 				// take item from companion
 				if(slot && slot->team_count > 0)
 				{
-					// nie za�o�ony przedmiot
 					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
@@ -1107,7 +1095,6 @@ void InventoryPanel::Update(float dt)
 				Unit* t = unit->player->action_unit;
 				if(slot)
 				{
-					// nie za�o�ony przedmiot
 					if(t->CanWear(item))
 					{
 						last_index = INDEX_INVALID;
@@ -1199,7 +1186,6 @@ void InventoryPanel::Update(float dt)
 					{
 						if(t->IsBetterItem(item))
 						{
-							// za�o�ony przedmiot
 							if(t->CanTake(item))
 							{
 								if(unit->SlotRequireHideWeapon(slot_type))
@@ -1238,7 +1224,7 @@ void InventoryPanel::Update(float dt)
 	}
 	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock && game->pc->unit->IsStanding() && game->pc->unit->action == A_NONE)
 	{
-		// wyrzucanie/chowanie/dawanie z�ota
+		// give/drop/put gold
 		if(input->PressedRelease(Key::LeftButton))
 		{
 			last_index = INDEX_INVALID;
@@ -1399,7 +1385,6 @@ void InventoryPanel::Event(GuiEvent e)
 }
 
 //=================================================================================================
-// przek�ada przedmiot ze slotu do ekwipunku
 void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
@@ -1764,22 +1749,22 @@ void InventoryPanel::BuyItem(int index, uint count)
 
 	if(price > game->pc->unit->gold)
 	{
-		// gracz ma za ma�o z�ota
+		// not enough gold
 		gui->SimpleDialog(Format(base.txNeedMoreGoldItem, price - game->pc->unit->gold, slot.item->name.c_str()), this);
 	}
 	else
 	{
-		// d�wi�k
+		// sound
 		sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 		sound_mgr->PlaySound2d(game_res->sCoins);
-		// usu� z�oto
+		// remove old
 		game->pc->unit->gold -= price;
 		if(Net::IsLocal())
 			game->pc->Train(TrainWhat::Trade, (float)price, 0);
-		// dodaj przedmiot graczowi
+		// add player item
 		if(!game->pc->unit->AddItem(slot.item, count, 0u))
 			UpdateGrid(true);
-		// usu� przedmiot sprzedawcy
+		// remove item from seller
 		slot.count -= count;
 		if(slot.count == 0)
 		{
@@ -1791,7 +1776,7 @@ void InventoryPanel::BuyItem(int index, uint count)
 		}
 		else
 			base.tooltip.Refresh();
-		// komunikat
+		// message
 		if(!Net::IsLocal())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1809,10 +1794,10 @@ void InventoryPanel::SellItem(int index, uint count)
 	uint team_count = min(count, slot.team_count);
 	uint normal_count = count - team_count;
 
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	sound_mgr->PlaySound2d(game_res->sCoins);
-	// dodaj z�oto
+	// add gold
 	if(Net::IsLocal())
 	{
 		int price = ItemHelper::GetItemPrice(slot.item, *game->pc->unit, false);
@@ -1822,10 +1807,10 @@ void InventoryPanel::SellItem(int index, uint count)
 		if(normal_count)
 			unit->gold += price * normal_count;
 	}
-	// dodaj przedmiot kupcowi
+	// add item to trader
 	if(!InsertItem(*unit->player->chest_trade, slot.item, count, team_count))
 		UpdateGrid(false);
-	// usu� przedmiot graczowi
+	// remove item from player
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
 	if(slot.count == 0)
@@ -1841,7 +1826,7 @@ void InventoryPanel::SellItem(int index, uint count)
 		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+	// message
 	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1856,24 +1841,24 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
 
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 	sound_mgr->PlaySound2d(game_res->sCoins);
-	// dodaj z�oto
+	// add gold
 	int price = ItemHelper::GetItemPrice(item, *game->pc->unit, false);
 	unit->gold += price;
 	if(Net::IsLocal())
 		game->pc->Train(TrainWhat::Trade, (float)price, 0);
-	// dodaj przedmiot kupcowi
+	// add item to trader
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
-	// usu� przedmiot graczowi
+	// remove player item
 	if(Net::IsLocal())
 		unit->RemoveItemEffects(item, slot);
 	slots[slot] = nullptr;
 	unit->weight -= item->weight;
 	UpdateGrid(true);
-	// komunikat
+	// message
 	if(Net::IsOnline())
 	{
 		if(Net::IsServer())
@@ -1906,12 +1891,12 @@ void InventoryPanel::OnPutGold(int id)
 			gui->SimpleDialog(base.txDropNoGold, this);
 			return;
 		}
-		// dodaj z�oto
+		// add gold
 		if(!InsertItem(*unit->player->chest_trade, Item::gold, counter, 0))
 			UpdateGrid(false);
-		// usu�
+		// remove
 		unit->gold -= counter;
-		// d�wi�k
+		// sound
 		sound_mgr->PlaySound2d(game_res->sCoins);
 		if(!Net::IsLocal())
 		{
@@ -1935,12 +1920,12 @@ void InventoryPanel::LootItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
-	// dodaj
+	// add
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
-	// usu�
+	// remove
 	if(base.mode == I_LOOT_BODY)
 	{
 		unit->weight -= slot.item->weight*count;
@@ -1980,7 +1965,7 @@ void InventoryPanel::LootItem(int index, uint count)
 		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+	// message
 	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2165,9 +2150,9 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
-	// dodaj
+	// add
 	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
@@ -2178,7 +2163,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		else if(pot.ai_type == ConsumableAiType::Mana)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
-	// usu�
+	// remove
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
 	if(slot.count == 0)
@@ -2194,7 +2179,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+	// message
 	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2210,9 +2195,9 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
-	// dodaj
+	// add
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
@@ -2223,7 +2208,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		else if(pot.ai_type == ConsumableAiType::Mana)
 			unit->ai->have_mp_potion = HavePotion::Check;
 	}
-	// usu�
+	// remove
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
 	if(slot.count == 0)
@@ -2239,7 +2224,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+	// message
 	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2276,7 +2261,7 @@ void InventoryPanel::OnGiveItem(int id)
 		item = slots[slot_type];
 	}
 
-	// dodaj
+	// add
 	Unit* t = unit->player->action_unit;
 	int price = item->value / 2;
 	switch(give_item_mode)
@@ -2298,9 +2283,9 @@ void InventoryPanel::OnGiveItem(int id)
 	}
 	t->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
-	// usu�
+	// remove
 	unit->weight -= item->weight;
 	if(slot)
 		items->erase(items->begin() + iindex);
@@ -2318,13 +2303,13 @@ void InventoryPanel::OnGiveItem(int id)
 		}
 	}
 	UpdateGrid(true);
-	// ustaw przedmioty
+	// setup inventory
 	if(Net::IsLocal())
 	{
 		t->UpdateInventory();
 		base.BuildTmpInventory(1);
 	}
-	// komunikat
+	// message
 	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2353,9 +2338,9 @@ void InventoryPanel::GivePotion(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
-	// d�wi�k
+	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
-	// dodaj
+	// add
 	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
 		UpdateGrid(false);
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
@@ -2366,7 +2351,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 		else if(pot.ai_type == ConsumableAiType::Mana)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
-	// usu�
+	// remove
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
 	if(slot.count == 0)
@@ -2382,7 +2367,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+	// message
 	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2402,13 +2387,13 @@ void InventoryPanel::GiveSlotItem(ITEM_SLOT slot)
 	const Item* item = slots[slot];
 	if(unit->player->action_unit->gold >= item->value / 2)
 	{
-		// odkup przedmiot
+		// buy item
 		info.text = Format(base.txSellItem, item->value / 2);
 		give_item_mode = 1;
 	}
 	else
 	{
-		// zaproponuj inn� cen�
+		// offer lower price
 		info.text = Format(base.txSellFreeItem, item->value / 2);
 		give_item_mode = 2;
 	}

@@ -5,6 +5,7 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
+// There is wanted hero in one of cities, killing him will get reward
 class Quest_Wanted final : public Quest_Dungeon, public UnitEventHandler
 {
 public:

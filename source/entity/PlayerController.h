@@ -238,7 +238,6 @@ struct PlayerController : public HeroPlayerCommon
 	WeaponType last_weapon;
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, learning_points, exp, exp_need, exp_level;
-	//----------------------
 	PlayerAction action;
 	union
 	{
@@ -246,11 +245,8 @@ struct PlayerController : public HeroPlayerCommon
 		Chest* action_chest;
 		Usable* action_usable;
 	};
-	// tymczasowa zmienna u�ywane w AddGold, nie trzeba zapisywa�
-	int gold_get;
-	//
 	DialogContext* dialog_ctx;
-	vector<ItemSlot>* chest_trade; // zale�ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawarto�� skrzyni, dla Trade skrzynia kupca)
+	vector<ItemSlot>* chest_trade; // depends on action (can be unit inventory or chest or trader stock)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
 	vector<Entity<Unit>> ability_targets;
@@ -258,6 +254,11 @@ struct PlayerController : public HeroPlayerCommon
 	vector<PlayerAbility> abilities;
 	vector<MemorizedRecipe> recipes;
 	static LocalPlayerData data;
+
+	//----------------------
+	// Temporary
+	//----------------------
+	int gold_get; // used in AddGold
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
 	~PlayerController();

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Typy ramek
+// Frame types
 enum FRAME_INDEX
 {
 	F_CAST,
@@ -27,7 +27,7 @@ enum WeaponAnimationFlags
 };
 
 //-----------------------------------------------------------------------------
-// Informacje o animacjach ataku postaci
+// Info about unit attack frames
 struct AttackFrameInfo
 {
 	struct Entry
@@ -44,7 +44,7 @@ struct AttackFrameInfo
 };
 
 //-----------------------------------------------------------------------------
-// Informacje o ramce animacji
+// Info about unit frames
 struct FrameInfo
 {
 	static const int MAX_ATTACKS = 3;

@@ -119,7 +119,7 @@ void Net::OnNewGameServer()
 	game_level->can_fast_travel = false;
 	warps.clear();
 	if(!mp_load)
-		changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s� zapisane quest_items
+		changes.clear(); // was clear before loading and now contains registered quest_items
 	if(!net_strs.empty())
 		StringPool.Free(net_strs);
 	game_gui->server->max_players = max_players;
@@ -161,14 +161,16 @@ void Net::UpdateServer(float dt)
 {
 	if(game->game_state == GS_LEVEL)
 	{
+		float gameDt = dt * game->game_speed;
+
 		for(PlayerInfo& info : players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && !info.pc->is_local)
-				info.pc->UpdateCooldown(dt);
+				info.pc->UpdateCooldown(gameDt);
 		}
 
-		InterpolatePlayers(dt);
-		UpdateFastTravel(dt);
+		InterpolatePlayers(gameDt);
+		UpdateFastTravel(gameDt);
 		game->pc->unit->changed = true;
 	}
 
@@ -235,14 +237,14 @@ void Net::UpdateServer(float dt)
 		BitStreamWriter f;
 		f << ID_CHANGES;
 
-		// dodaj zmiany pozycji jednostek i ai_mode
+		// add changed units positions and ai modes
 		if(game->game_state == GS_LEVEL)
 		{
 			for(LevelArea& area : game_level->ForEachArea())
 				ServerProcessUnits(area.units);
 		}
 
-		// wy�lij odkryte kawa�ki minimapy
+		// send revealed minimap tiles
 		if(!game_level->minimap_reveal_mp.empty())
 		{
 			if(game->game_state == GS_LEVEL)
@@ -4037,13 +4039,13 @@ void Net::Server_Say(BitStreamReader& f, PlayerInfo& info)
 		Error("Server_Say: Broken packet from %s: %s.", info.name.c_str());
 	else
 	{
-		// id gracza jest ignorowane przez serwer ale mo�na je sprawdzi�
+		// player id is ignored by server but whe can check it anyway
 		assert(id == info.id);
 
 		cstring str = Format("%s: %s", info.name.c_str(), text.c_str());
 		game_gui->AddMsg(str);
 
-		// prze�lij dalej
+		// send to other players
 		if(active_players > 2)
 			peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, info.adr, true);
 
@@ -4064,13 +4066,13 @@ void Net::Server_Whisper(BitStreamReader& f, PlayerInfo& info)
 	{
 		if(id == team->my_id)
 		{
-			// wiadomo�� do mnie
+			// message to me
 			cstring str = Format("%s@: %s", info.name.c_str(), text.c_str());
 			game_gui->AddMsg(str);
 		}
 		else
 		{
-			// wiadomo�� do kogo� innego
+			// relay message to other player
 			PlayerInfo* info2 = TryGetPlayer(id);
 			if(!info2)
 				Error("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id);
@@ -4304,7 +4306,10 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 			f << unit.act.attack.run;
 		}
 		else if(unit.action == A_CAST)
+		{
+			f << unit.act.cast.ability->hash;
 			f << unit.act.cast.target;
+		}
 	}
 
 	f.WriteCasted<byte>(0xFF);

@@ -5,6 +5,8 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
+// Bandits captures someone and are holding him inside dungeon/camp.
+// Need to rescue him and deliver back to city.
 class Quest_RescueCaptive final : public Quest_Dungeon, public UnitEventHandler
 {
 public:

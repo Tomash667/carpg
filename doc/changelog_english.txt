@@ -7,6 +7,12 @@ Version 0.15 (???):
 - randomly generated dungeons were mostly of single type
 
 --------------------------------------------------------------------------------
+Fixes:
+- randomly generated dungeons were mostly of single type
+- random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
+- crash after loading game where player is casting spell [Ampped]
+
+--------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):
 + increased max allowed players to 64
 - crash on crafting in alchemy, fixed by BottledByte [Lemiczek]

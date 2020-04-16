@@ -700,7 +700,7 @@ void PlayerController::Load(FileReader& f)
 	}
 	else
 		InitShortcuts();
-	
+
 	action = PlayerAction::None;
 }
 
@@ -2020,7 +2020,7 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 			c.recipe = recipe;
 		}
 	}
-		
+
 
 	return true;
 }
@@ -2039,7 +2039,6 @@ bool PlayerController::HaveRecipe(Recipe* recipe) const
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
-	// licznik otrzymanych obra�e�
 	last_dmg = 0.f;
 	if(Net::IsLocal())
 		last_dmg_poison = 0.f;
@@ -2098,7 +2097,7 @@ void PlayerController::Update(float dt)
 			{
 				if(action_unit->IsAlive())
 				{
-					// grabiony cel o�y�
+					// looted corpse was resurected
 					game->CloseInventory();
 				}
 			}
@@ -2106,7 +2105,7 @@ void PlayerController::Update(float dt)
 			{
 				if(!action_unit->IsStanding() || !action_unit->IsIdle())
 				{
-					// handlarz umar� / zaatakowany
+					// trader was attacked/died
 					game->CloseInventory();
 				}
 			}
@@ -2116,7 +2115,7 @@ void PlayerController::Update(float dt)
 			if(!game->dialog_context.talker->IsStanding() || !game->dialog_context.talker->IsIdle() || game->dialog_context.talker->to_remove
 				|| game->dialog_context.talker->frozen != FROZEN::NO)
 			{
-				// rozm�wca umar� / jest usuwany / zaatakowa� kogo�
+				// talker waas removed/died/was attacked
 				game->dialog_context.EndDialog();
 			}
 		}
@@ -2325,7 +2324,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 			if(move)
 			{
-				// ustal k�t i szybko�� ruchu
+				// set angle & speed of move
 				float angle = u.rot;
 				bool run = always_run;
 				if(u.action == A_ATTACK && u.act.attack.run)
@@ -2341,36 +2340,36 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				float speed_mod;
 				switch(move)
 				{
-				case 10: // prz�d
+				case 10: // forward
 					angle += PI;
 					speed_mod = 1.f;
 					break;
-				case -10: // ty�
+				case -10: // backward
 					run = false;
 					speed_mod = 0.8f;
 					break;
-				case -1: // lewa
+				case -1: // left
 					angle += PI / 2;
 					speed_mod = 0.75f;
 					break;
-				case 1: // prawa
+				case 1: // right
 					angle += PI * 3 / 2;
 					speed_mod = 0.75f;
 					break;
-				case 9: // lewa g�ra
+				case 9: // forward left
 					angle += PI * 3 / 4;
 					speed_mod = 0.9f;
 					break;
-				case 11: // prawa g�ra
+				case 11: // forward right
 					angle += PI * 5 / 4;
 					speed_mod = 0.9f;
 					break;
-				case -11: // lewy ty�
+				case -11: // backward left
 					run = false;
 					angle += PI / 4;
 					speed_mod = 0.9f;
 					break;
-				case -9: // prawy ty�
+				case -9: // backward right
 					run = false;
 					angle += PI * 7 / 4;
 					speed_mod = 0.9f;
@@ -2692,21 +2691,20 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			Unit* u2 = data.before_player_ptr.unit;
 
-			// przed graczem jest jaka� posta�
+			// there is unit in front of player
 			if(u2->live_state == Unit::DEAD || u2->live_state == Unit::FALL)
 			{
-				// grabienie zw�ok
 				if(u.action != A_NONE)
 				{
 				}
 				else if(u2->live_state == Unit::FALL)
 				{
-					// nie mo�na okrada� osoby kt�ra zaraz wstanie
+					// can't loot alive units that are just lying on ground
 					game_gui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
-					// nie mo�na okrada� sojusznik�w
+					// can't loot allies
 					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
@@ -2715,12 +2713,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
-						// kto� ju� ograbia zw�oki
+						// someone else is looting
 						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
-						// rozpoczynij wymian� przedmiot�w
+						// start looting corpse
 						action = PlayerAction::LootUnit;
 						action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
@@ -2730,7 +2728,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 				else
 				{
-					// wiadomo�� o wymianie do serwera
+					// send message to server about looting
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::LOOT_UNIT;
 					c.id = u2->id;
@@ -2745,19 +2743,19 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk(u))
 					{
-						// osoba jest czym� zaj�ta
+						// using is busy
 						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
-						// rozpocznij rozmow�
+						// start dialog
 						game->dialog_context.StartDialog(u2);
 						data.before_player = BP_NONE;
 					}
 				}
 				else
 				{
-					// wiadomo�� o rozmowie do serwera
+					// send message to server about starting dialog
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TALK;
 					c.id = u2->id;
@@ -2769,19 +2767,18 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_CHEST)
 		{
-			// pl�drowanie skrzyni
 			if(u.action != A_NONE)
 			{
 			}
 			else if(Net::IsLocal())
 			{
-				// rozpocznij ograbianie skrzyni
+				// start looting chest
 				game_gui->inventory->StartTrade2(I_LOOT_CHEST, data.before_player_ptr.chest);
 				data.before_player_ptr.chest->OpenClose(unit);
 			}
 			else
 			{
-				// wy�lij wiadomo�� o pl�drowaniu skrzyni
+				// send message to server about looting chest
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
 				c.id = data.before_player_ptr.chest->id;
@@ -2793,11 +2790,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_DOOR)
 		{
-			// otwieranie/zamykanie drzwi
+			// opening/closing door
 			Door* door = data.before_player_ptr.door;
 			if(door->state == Door::Closed)
 			{
-				// otwieranie drzwi
+				// open door
 				if(door->locked == LOCK_NONE)
 					door->Open();
 				else
@@ -2836,7 +2833,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_ITEM)
 		{
-			// podnie� przedmiot
+			// pickup item
 			GroundItem& item = *data.before_player_ptr.item;
 			if(u.action == A_NONE)
 			{
@@ -2896,7 +2893,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			UseUsable(data.before_player_ptr.usable, false);
 	}
 
-	// atak
+	// attack
 	if(u.weapon_state == WeaponState::Taken && !data.ability_ready)
 	{
 		idle = false;
@@ -3237,16 +3234,16 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			case 1: // right
 				data.ability_rot = PI / 2;
 				break;
-			case 9: // left forward
+			case 9: // forward left
 				data.ability_rot = -PI / 4;
 				break;
-			case 11: // right forward
+			case 11: // forward right
 				data.ability_rot = PI / 4;
 				break;
-			case -11: // left backward
+			case -11: // backward left
 				data.ability_rot = -PI * 3 / 4;
 				break;
-			case -9: // prawy ty�
+			case -9: // backward right
 				data.ability_rot = PI * 3 / 4;
 				break;
 			}
@@ -3268,7 +3265,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 	}
 
-	// animacja idle
+	// idle animation
 	if(idle && u.action == A_NONE)
 	{
 		idle_timer += dt;
