@@ -2104,56 +2104,46 @@ void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
-	FIXME;
-	/*IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = basic_shader->effect;
-
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
-
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
-
-	V(effect->SetTechnique(basic_shader->techArea));
-	V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
-	V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
-	Vec4 playerPos(pc->unit->pos, 1.f);
+	Vec3 playerPos = pc->unit->pos;
 	playerPos.y += 0.75f;
-	V(effect->SetVector(basic_shader->hPlayerPos, (D3DXVECTOR4*)&playerPos));
-	V(effect->SetFloat(basic_shader->hRange, range));
-	uint passes;
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
 
+	basic_shader->PrepareArea(camera, playerPos);
+	basic_shader->SetAreaParams(Color(0, 1, 0, 0.5f), range);
+	
 	for(const Area& area : areas)
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (const void*)&area.v[0], sizeof(Vec3)));
-
-	V(effect->EndPass());
-	V(effect->End());
+		basic_shader->DrawArea(area.v);
+		//V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (const void*)&area.v[0], sizeof(Vec3)));
 
 	if(!areas2.empty())
 	{
-		V(effect->Begin(&passes, 0));
-		V(effect->BeginPass(0));
 		V(effect->SetFloat(basic_shader->hRange, 100.f));
 
-		static const Vec4 colors[3] = {
-			Vec4(1, 0, 0, 0.5f),
-			Vec4(1, 1, 0, 0.5f),
-			Vec4(0, 0.58f, 1.f, 0.5f)
-		};
+		// range
+		// i color
 
-		for(auto* area2 : areas2)
+		static const Color colors[3] = {
+			Color(1, 0, 0, 0.5f),
+			Color(1, 1, 0, 0.5f),
+			Color(0, 0.58f, 1.f, 0.5f)
+		};
+		Color prevColor = Color::None;
+
+		for(Area2* area2 : areas2)
 		{
+			Color color = colors[area2->ok];
+			if(color != prevColor)
+			{
+				basic_shader->SetAreaParams(color, 100.f);
+				prevColor = color;
+			}
+			basic_shader->DrawArea(area2->points)
+
 			V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[area2->ok]));
 			V(effect->CommitChanges());
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
 				area2->points.data(), sizeof(Vec3)));
 		}
-
-		V(effect->EndPass());
-		V(effect->End());
-	}*/
+	}
 }
 
 //=================================================================================================
