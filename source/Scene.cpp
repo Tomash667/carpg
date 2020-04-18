@@ -2107,24 +2107,18 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	Vec3 playerPos = pc->unit->pos;
 	playerPos.y += 0.75f;
 
-	basic_shader->PrepareArea(camera, playerPos);
-	basic_shader->SetAreaParams(Color(0, 1, 0, 0.5f), range);
-	
+	basic_shader->PrepareArea(*draw_batch.camera, playerPos);
+	basic_shader->SetAreaParams(Color(0.f, 1.f, 0.f, 0.5f), range);
+
 	for(const Area& area : areas)
 		basic_shader->DrawArea(area.v);
-		//V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (const void*)&area.v[0], sizeof(Vec3)));
 
 	if(!areas2.empty())
 	{
-		V(effect->SetFloat(basic_shader->hRange, 100.f));
-
-		// range
-		// i color
-
-		static const Color colors[3] = {
-			Color(1, 0, 0, 0.5f),
-			Color(1, 1, 0, 0.5f),
-			Color(0, 0.58f, 1.f, 0.5f)
+		const Color colors[3] = {
+			Color(1.f, 0.f, 0.f, 0.5f),
+			Color(1.f, 1.f, 0.f, 0.5f),
+			Color(0.f, 0.58f, 1.f, 0.5f)
 		};
 		Color prevColor = Color::None;
 
@@ -2136,12 +2130,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 				basic_shader->SetAreaParams(color, 100.f);
 				prevColor = color;
 			}
-			basic_shader->DrawArea(area2->points)
-
-			V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[area2->ok]));
-			V(effect->CommitChanges());
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
-				area2->points.data(), sizeof(Vec3)));
+			basic_shader->DrawArea(area2->points, area2->faces);
 		}
 	}
 }
