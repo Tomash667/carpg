@@ -12,7 +12,7 @@
 
 /tools/extractor/Debug
 /tools/extractor/Release
-/tools/paker/Debug
-/tools/paker/Release
+/tools/paker/bin
+/tools/paker/output
 /tools/text_comparer/Debug
 /tools/text_comparer/Release
