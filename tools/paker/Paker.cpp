@@ -19,6 +19,45 @@ enum EntryType
 	ET_CDir
 };
 
+struct VersionInfo
+{
+	string str;
+	int major;
+	int minor;
+	int patch;
+
+	bool Construct(const char* str)
+	{
+		int result = sscanf_s(str, "%u.%u.%u", &major, &minor, &patch);
+		if(result != 3 || major > 255 || minor > 255 || patch > 255)
+		{
+			result = sscanf_s(str, "%u.%u", &major, &minor);
+			if(result != 2 || major > 255 || minor > 255)
+				return false;
+			patch = 0;
+		}
+		this->str = str;
+		return true;
+	}
+
+	bool operator >= (const VersionInfo& v) const
+	{
+		if(major > v.major)
+			return true;
+		else if(major < v.major)
+			return false;
+		else if(minor > v.minor)
+			return true;
+		else if(minor < v.minor)
+			return false;
+		else if(patch >= v.patch)
+			return true;
+		else
+			return false;
+	}
+};
+VersionInfo ver;
+
 struct Entry
 {
 	EntryType type;
@@ -229,9 +268,12 @@ bool PakDir(cstring input, cstring output)
 	return true;
 }
 
-void SaveEntries(cstring out)
+void SaveEntries()
 {
-	std::ofstream o(out);
+	printf("Saving database.\n");
+
+	std::ofstream o("db.txt");
+	o << Format("version \"%s\"\n", ver.str.c_str());
 
 	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
 	{
@@ -247,10 +289,10 @@ void DeleteEntries()
 	pak_entries.clear();
 }
 
-bool CreatePak(char* pakname)
+bool CreatePak()
 {
 	check_entry = false;
-	pak_dir = Format("out/%s", pakname);
+	pak_dir = Format("out/%s", ver.str.c_str());
 	printf("Creating pak %s.\n", pak_dir.c_str());
 
 	if(io::DirectoryExists(pak_dir.c_str()))
@@ -281,7 +323,7 @@ bool CreatePak(char* pakname)
 		{
 			if(!copy_pdb)
 			{
-				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
+				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", ver.str.c_str()), FALSE) == FALSE)
 				{
 					printf("Failed to copy file '%s'.", e.input.c_str());
 					return false;
@@ -293,18 +335,17 @@ bool CreatePak(char* pakname)
 	}
 
 	copy_pdb = true;
-	printf("Saving database.\n");
-	SaveEntries(Format("db/%s.txt", pakname));
+	SaveEntries();
 
 	if(!nozip)
 	{
 		printf("Compressing pak.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", ver.str.c_str()), pak_dir.c_str(), SW_SHOWNORMAL);
 	}
 	return true;
 }
 
-bool CreatePatch(char* pakname)
+bool CreatePatch()
 {
 	check_entry = true;
 	pak_dir = Format("out/patch_%s", pakname);
@@ -395,51 +436,33 @@ bool CreatePatch(char* pakname)
 	return true;
 }
 
-bool LoadEntries(char* pakname)
+bool LoadEntries()
 {
-	printf("Searching for last version.\n");
-
-	WIN32_FIND_DATA data;
-	HANDLE find = FindFirstFile("db/*.txt", &data);
-	if(find == INVALID_HANDLE_VALUE)
-	{
-		printf("Failed to find last version.\n");
-		return false;
-	}
-
-	string cur_pak = Format("%s.txt", pakname);
-	DWORD t1 = 0, t2 = 0;
-	string best;
-
-	do
-	{
-		if(cur_pak != data.cFileName && data.ftLastWriteTime.dwHighDateTime > t1 || (data.ftLastWriteTime.dwHighDateTime == t1 && data.ftLastWriteTime.dwLowDateTime > t2))
-		{
-			t1 = data.ftLastWriteTime.dwHighDateTime;
-			t2 = data.ftLastWriteTime.dwLowDateTime;
-			best = data.cFileName;
-		}
-	} while(FindNextFile(find, &data));
-
-	FindClose(find);
-
-	printf("Using version %s. Loading...\n", best.c_str());
+	printf("Reading db.\n");
 
 	Tokenizer t;
-	if(!t.FromFile(Format("db/%s", best.c_str())))
+	if(!t.FromFile("db.txt"))
 	{
-		printf("Failed to load file '%s'!", best.c_str());
+		printf("Failed to load file 'db.txt'!");
 		return false;
 	}
 	DeleteEntries();
 
 	try
 	{
-		while(true)
+		t.Next();
+		t.AssertItem("version");
+		t.Next();
+		const string& prevVerStr = t.MustGetString();
+		VersionInfo prevVer;
+		if(!prevVer.Construct(prevVerStr))
+			t.Throw("Invalid version string.");
+		if(prevVer >= ver)
+			t.Throw("New version is older then saved.");
+		t.Next();
+
+		while(!t.IsEof())
 		{
-			t.Next();
-			if(t.IsEof())
-				break;
 			PakEntry* e = new PakEntry;
 			e->path = t.MustGetString();
 			t.Next();
@@ -448,11 +471,12 @@ bool LoadEntries(char* pakname)
 			e->size = t.MustGetInt();
 			e->found = false;
 			pak_entries[e->path.c_str()] = e;
+			t.Next();
 		}
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& ex)
 	{
-		printf("Error while reading file '%s': %s\n", best.c_str(), err);
+		printf("Error while reading file 'db.txt': %s\n", best.c_str(), ex.ToString());
 		return false;
 	}
 
@@ -490,7 +514,7 @@ int main(int argc, char** argv)
 					"-nozip - don't zip pak\n"
 					"-patch - create only patch pak\n"
 					"-normal - create normal pak (default)\n"
-					"-both - create normal & patch pak\n");
+					"-both - create normal & patch pak\n";
 			}
 			else if(strcmp(arg, "nozip") == 0)
 				nozip = true;
@@ -505,21 +529,28 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			if(!ver.Construct(argv[i]))
+			{
+				printf("Invalid version!\n");
+				return 2;
+			}
+
 			if(mode == 0)
 			{
-				if(!CreatePak(argv[i]))
+				if(!CreatePak())
 					return 2;
 			}
 			else if(mode == 1)
 			{
-				if(!LoadEntries(argv[i]) || !CreatePatch(argv[i]))
+				if(!LoadEntries(ver) || !CreatePatch(ver))
 					return 2;
 			}
 			else
 			{
-				if(!LoadEntries(argv[i]) || !CreatePatch(argv[i]) || !CreatePak(argv[i]))
+				if(!LoadEntries() || !CreatePatch(ver) || !CreatePak(ver))
 					return 2;
 			}
+			SaveEntries();
 		}
 	}
 
