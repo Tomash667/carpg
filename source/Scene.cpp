@@ -1792,8 +1792,8 @@ void Game::DrawScene(bool outside)
 		basic_shader->DrawDebugNodes(draw_batch.debug_nodes);
 	if(pathfinding->IsDebugDraw())
 	{
-		FIXME;
-		//basic_shader->Prepare(game_level->camera);
+		basic_shader->Prepare(game_level->camera);
+		basic_shader->SetAreaParams(Vec3::Zero, 100.f, 0.f);
 		pathfinding->Draw(basic_shader);
 	}
 
@@ -2104,17 +2104,26 @@ void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
-	Vec3 playerPos = pc->unit->pos;
-	playerPos.y += 0.75f;
+	basic_shader->Prepare(*draw_batch.camera);
 
-	basic_shader->PrepareArea(*draw_batch.camera, playerPos);
-	basic_shader->SetAreaParams(Color(0.f, 1.f, 0.f, 0.5f), range);
+	if(!areas.empty())
+	{
+		Vec3 playerPos = pc->unit->pos;
+		playerPos.y += 0.75f;
 
-	for(const Area& area : areas)
-		basic_shader->DrawArea(area.v);
+		basic_shader->SetAreaParams(playerPos, range, 1.f);
+
+		const Color color = Color(0.f, 1.f, 0.f, 0.5f);
+		for(const Area& area : areas)
+			basic_shader->DrawQuad(area.v, color);
+
+		basic_shader->Draw();
+	}
 
 	if(!areas2.empty())
 	{
+		basic_shader->SetAreaParams(Vec3::Zero, 100.f, 0.f);
+
 		const Color colors[3] = {
 			Color(1.f, 0.f, 0.f, 0.5f),
 			Color(1.f, 1.f, 0.f, 0.5f),
@@ -2123,15 +2132,9 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 		Color prevColor = Color::None;
 
 		for(Area2* area2 : areas2)
-		{
-			Color color = colors[area2->ok];
-			if(color != prevColor)
-			{
-				basic_shader->SetAreaParams(color, 100.f);
-				prevColor = color;
-			}
-			basic_shader->DrawArea(area2->points, area2->faces);
-		}
+			basic_shader->DrawArea(area2->points, area2->faces, colors[area2->ok]);
+
+		basic_shader->Draw();
 	}
 }
 
