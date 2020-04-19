@@ -202,15 +202,17 @@ void Options::LoadLanguage()
 	render->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
-	vector<Int2> ms_modes;
-	render->GetMultisamplingModes(ms_modes);
+	const vector<Int2>& ms_modes = render->GetMultisamplingModes();
 	index = 1;
-	for(Int2& mode : ms_modes)
+	for(const Int2& mode : ms_modes)
 	{
-		multisampling.Add(new MultisamplingItem(mode.x, mode.y));
-		if(ms == mode.x && msq == mode.y)
-			multisampling.SetIndex(index);
-		++index;
+		for(int level = 0; level < mode.y; ++level)
+		{
+			multisampling.Add(new MultisamplingItem(mode.x, level));
+			if(ms == mode.x && msq == level)
+				multisampling.SetIndex(index);
+			++index;
+		}
 	}
 	multisampling.Initialize();
 }
