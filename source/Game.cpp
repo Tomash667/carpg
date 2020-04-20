@@ -660,42 +660,42 @@ void Game::Draw()
 //=================================================================================================
 void Game::DrawGame(RenderTarget* target)
 {
-	//IDirect3DDevice9* device = render->GetDevice();
+	vector<PostEffect> post_effects;
+	GetPostEffects(post_effects);
 
-	//vector<PostEffect> post_effects;
-	//GetPostEffects(post_effects);
+	if(target)
+		render->SetTarget(target);
 
-	//if(post_effects.empty())
-	//{
-		if(target)
-			render->SetTarget(target);
+	if(!post_effects.empty())
+		postfx_shader->Prepare();
 
-		render->Clear(clear_color);
+	render->Clear(clear_color);
 
-		if(game_state == GS_LEVEL)
+	if(game_state == GS_LEVEL)
+	{
+		// draw level
+		Draw();
+
+		// draw glow
+		/*if(!draw_batch.glow_nodes.empty())
 		{
-			// draw level
-			Draw();
+			V(device->EndScene());
+			DrawGlowingNodes(draw_batch.glow_nodes, false);
+			V(device->BeginScene());
+		}*/
+		FIXME;
+	}
 
-			// draw glow
-			/*if(!draw_batch.glow_nodes.empty())
-			{
-				V(device->EndScene());
-				DrawGlowingNodes(draw_batch.glow_nodes, false);
-				V(device->BeginScene());
-			}*/
-			FIXME;
-		}
+	if(!post_effects.empty())
+		postfx_shader->Draw(post_effects);
 
-		// draw gui
-		game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
-
-		if(target)
-			render->SetTarget(nullptr);
+	// draw gui
+	game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+	
 	/*}
 	else
 	{
-		ID3DXEffect* effect = postfx_shader->effect;
+		postfx_shader->Prepare();
 
 		// render scene to texture
 		SURFACE sPost;
@@ -803,6 +803,9 @@ void Game::DrawGame(RenderTarget* target)
 			index_surf = (index_surf + 1) % 3;
 		}
 	}*/
+
+	if(target)
+		render->SetTarget(nullptr);
 }
 
 //=================================================================================================
@@ -1413,31 +1416,26 @@ void Game::UpdateLights(vector<GameLight>& lights)
 //=================================================================================================
 void Game::GetPostEffects(vector<PostEffect>& post_effects)
 {
-	FIXME;
-	/*post_effects.clear();
-	if(!use_postfx || game_state != GS_LEVEL || !postfx_shader->effect)
+	post_effects.clear();
+	if(!use_postfx || game_state != GS_LEVEL)
 		return;
 
 	// gray effect
 	if(pc->data.grayout > 0.f)
 	{
-		PostEffect& e = Add1(post_effects);
-		e.tech = postfx_shader->techMonochrome;
-		e.power = pc->data.grayout;
+		PostEffect effect;
+		effect.id = POSTFX_MONOCHROME;
+		effect.power = pc->data.grayout;
+		effect.skill = Vec4::Zero;
+		post_effects.push_back(effect);
 	}
 
 	// drunk effect
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
-		PostEffect* e, *e2;
-		post_effects.resize(post_effects.size() + 2);
-		e = &*(post_effects.end() - 2);
-		e2 = &*(post_effects.end() - 1);
-
-		e->id = e2->id = 0;
-		e->tech = postfx_shader->techBlurX;
-		e2->tech = postfx_shader->techBlurY;
+		PostEffect effect;
+		effect.id = POSTFX_BLUR_X;
 		// 0.1-0.5 - 1
 		// 1 - 2
 		float mod;
@@ -1445,11 +1443,15 @@ void Game::GetPostEffects(vector<PostEffect>& post_effects)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		e->skill = e2->skill = Vec4(1.f / engine->GetWindowSize().x * mod, 1.f / engine->GetWindowSize().y * mod, 0, 0);
+		effect.skill = Vec4(1.f / engine->GetWindowSize().x * mod, 1.f / engine->GetWindowSize().y * mod, 0, 0);
 		// 0.1-0
 		// 1-1
-		e->power = e2->power = (drunk - 0.1f) / 0.9f;
-	}*/
+		effect.power = (drunk - 0.1f) / 0.9f;
+		post_effects.push_back(effect);
+
+		effect.id = POSTFX_BLUR_Y;
+		post_effects.push_back(effect);
+	}
 }
 
 //=================================================================================================
