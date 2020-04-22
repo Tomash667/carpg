@@ -106,7 +106,7 @@ public:
 	bool OnInit() override;
 	void OnCleanup() override;
 	void OnDraw() override;
-	void DrawGame(RenderTarget* target);
+	void DrawGame();
 	void OnUpdate(float dt) override;
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activationPoint) override;

@@ -631,7 +631,7 @@ void Game::OnDraw()
 	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
-	DrawGame(nullptr);
+	DrawGame();
 	render->Present();
 
 	Profiler::g_profiler.End();
@@ -658,13 +658,10 @@ void Game::Draw()
 }
 
 //=================================================================================================
-void Game::DrawGame(RenderTarget* target)
+void Game::DrawGame()
 {
 	vector<PostEffect> post_effects;
 	GetPostEffects(post_effects);
-
-	if(target)
-		render->SetTarget(target);
 
 	if(!post_effects.empty())
 		postfx_shader->Prepare();
@@ -677,13 +674,8 @@ void Game::DrawGame(RenderTarget* target)
 		Draw();
 
 		// draw glow
-		/*if(!draw_batch.glow_nodes.empty())
-		{
-			V(device->EndScene());
+		if(!draw_batch.glow_nodes.empty())
 			DrawGlowingNodes(draw_batch.glow_nodes, false);
-			V(device->BeginScene());
-		}*/
-		FIXME;
 	}
 
 	if(!post_effects.empty())
@@ -691,7 +683,7 @@ void Game::DrawGame(RenderTarget* target)
 
 	// draw gui
 	game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
-	
+
 	/*}
 	else
 	{
@@ -803,9 +795,7 @@ void Game::DrawGame(RenderTarget* target)
 			index_surf = (index_surf + 1) % 3;
 		}
 	}*/
-
-	if(target)
-		render->SetTarget(nullptr);
+FIXME;
 }
 
 //=================================================================================================
@@ -1016,75 +1006,38 @@ void Game::ChangeTitle()
 //=================================================================================================
 void Game::TakeScreenshot(bool no_gui)
 {
-	FIXME;
-	/*if(no_gui)
+	if(no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
-		render->Draw(false);
+		DrawGame();
 		draw_flags = old_flags;
 	}
 	else
-		render->Draw(false);
+		DrawGame();
 
-	SURFACE back_buffer;
-	HRESULT hr = render->GetDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
-	if(FAILED(hr))
-	{
-		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
-		game_gui->console->AddMsg(msg);
-		Error(msg);
-	}
+	io::CreateDirectory("screenshots");
+
+	time_t t = ::time(0);
+	tm lt;
+	localtime_s(&lt, &t);
+
+	if(t == last_screenshot)
+		++screenshot_count;
 	else
 	{
-		io::CreateDirectory("screenshots");
+		last_screenshot = t;
+		screenshot_count = 1;
+	}
 
-		time_t t = ::time(0);
-		tm lt;
-		localtime_s(&lt, &t);
+	cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
+		lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ImageFormatMethods::GetExtension(screenshot_format));
 
-		if(t == last_screenshot)
-			++screenshot_count;
-		else
-		{
-			last_screenshot = t;
-			screenshot_count = 1;
-		}
+	render->SaveScreenshot(path, screenshot_format);
 
-		cstring ext;
-		D3DXIMAGE_FILEFORMAT format;
-		switch(screenshot_format)
-		{
-		case ImageFormat::BMP:
-			ext = "bmp";
-			format = D3DXIFF_BMP;
-			break;
-		default:
-		case ImageFormat::JPG:
-			ext = "jpg";
-			format = D3DXIFF_JPG;
-			break;
-		case ImageFormat::TGA:
-			ext = "tga";
-			format = D3DXIFF_TGA;
-			break;
-		case ImageFormat::PNG:
-			ext = "png";
-			format = D3DXIFF_PNG;
-			break;
-		}
-
-		cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
-			lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ext);
-
-		D3DXSaveSurfaceToFileA(path, format, back_buffer, nullptr, nullptr);
-
-		cstring msg = Format("Screenshot saved to '%s'.", path);
-		game_gui->console->AddMsg(msg);
-		Info(msg);
-
-		back_buffer->Release();
-	}*/
+	cstring msg = Format("Screenshot saved to '%s'.", path);
+	game_gui->console->AddMsg(msg);
+	Info(msg);
 }
 
 //=================================================================================================

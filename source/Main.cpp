@@ -602,7 +602,7 @@ void LoadConfiguration(char* lpCmdLine)
 	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game->settings.grass_range < 0.f)
 		game->settings.grass_range = 0.f;
-	game->screenshot_format = ToImageFormat(cfg.GetString("screenshot_format", "jpg"));
+	game->screenshot_format = ImageFormatMethods::FromString(cfg.GetString("screenshot_format", "jpg"));
 	if(game->screenshot_format == ImageFormat::Invalid)
 	{
 		Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", cfg.GetString("screenshot_format").c_str());
