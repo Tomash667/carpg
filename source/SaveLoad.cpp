@@ -188,9 +188,9 @@ void Game::CreateSaveImage()
 		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
 	else
 		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	render->SetTarget(rt_save);
+	render->SetRenderTarget(rt_save);
 	DrawGame();
-	render->SetTarget(nullptr);
+	render->SetRenderTarget(nullptr);
 	draw_flags = old_flags;
 }
 

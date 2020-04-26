@@ -5810,6 +5810,17 @@ bool Unit::IsFriend(Unit& u, bool check_arena_attack) const
 }
 
 //=================================================================================================
+Color Unit::GetRelationColor(Unit& u) const
+{
+	if(IsEnemy(u))
+		return Color::Red;
+	else if(IsFriend(u))
+		return Color::Green;
+	else
+		return Color::Yellow;
+}
+
+//=================================================================================================
 void Unit::RefreshStock()
 {
 	assert(data->trader);

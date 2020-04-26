@@ -637,7 +637,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	render->SetTarget(rt_char);
+	render->SetRenderTarget(rt_char);
 	render->Clear(Color::None);
 
 	game_level->light_angle = PI / 2;
@@ -661,7 +661,7 @@ void CreateCharacterPanel::RenderUnit()
 	game->draw_batch.Process();
 	scene_mgr->DrawSceneNodes(game->draw_batch);
 
-	render->SetTarget(nullptr);
+	render->SetRenderTarget(nullptr);
 }
 
 //=================================================================================================

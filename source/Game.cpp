@@ -401,11 +401,11 @@ void Game::ConfigureGame()
 	// shaders
 	render->RegisterShader(basic_shader = new BasicShader);
 	render->RegisterShader(grass_shader = new GrassShader);
-	render->RegisterShader(glow_shader = new GlowShader);
 	render->RegisterShader(particle_shader = new ParticleShader);
 	render->RegisterShader(postfx_shader = new PostfxShader);
 	render->RegisterShader(skybox_shader = new SkyboxShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
+	render->RegisterShader(glow_shader = new GlowShader(postfx_shader));
 
 	tMinimap = render->CreateDynamicTexture(Int2(128));
 	CreateRenderTargets();
@@ -638,164 +638,57 @@ void Game::OnDraw()
 }
 
 //=================================================================================================
-void Game::Draw()
+void Game::DrawGame()
 {
 	PROFILER_BLOCK("Draw");
 
-	LevelArea& area = *pc->unit->area;
-	bool outside;
-	if(area.area_type == LevelArea::Type::Outside)
-		outside = true;
-	else if(area.area_type == LevelArea::Type::Inside)
-		outside = false;
-	else if(game_level->city_ctx->inside_buildings[area.area_id]->top > 0.f)
-		outside = false;
-	else
-		outside = true;
-
-	ListDrawObjects(area, game_level->camera.frustum, outside);
-	DrawScene(outside);
-}
-
-//=================================================================================================
-void Game::DrawGame()
-{
-	vector<PostEffect> post_effects;
-	GetPostEffects(post_effects);
-
-	if(!post_effects.empty())
-		postfx_shader->Prepare();
-
-	render->Clear(clear_color);
-
 	if(game_state == GS_LEVEL)
 	{
+		LevelArea& area = *pc->unit->area;
+		bool outside;
+		if(area.area_type == LevelArea::Type::Outside)
+			outside = true;
+		else if(area.area_type == LevelArea::Type::Inside)
+			outside = false;
+		else if(game_level->city_ctx->inside_buildings[area.area_id]->top > 0.f)
+			outside = false;
+		else
+			outside = true;
+
+		ListDrawObjects(area, game_level->camera.frustum, outside);
+
+		vector<PostEffect> postEffects;
+		GetPostEffects(postEffects);
+
+		const bool usePostfx = !postEffects.empty();
+		const bool useGlow = !draw_batch.glow_nodes.empty();
+
+		if(usePostfx || useGlow)
+			postfx_shader->Prepare(useGlow);
+
+		render->Clear(clear_color);
+
 		// draw level
-		Draw();
+		DrawScene(outside);
 
 		// draw glow
-		if(!draw_batch.glow_nodes.empty())
-			DrawGlowingNodes(draw_batch.glow_nodes, false);
-	}
+		if(useGlow)
+		{
+			PROFILER_BLOCK("DrawGlowingNodes");
+			glow_shader->Draw(game_level->camera, draw_batch.glow_nodes, usePostfx);
+		}
 
-	if(!post_effects.empty())
-		postfx_shader->Draw(post_effects);
+		if(usePostfx)
+		{
+			PROFILER_BLOCK("DrawPostFx");
+			postfx_shader->Draw(postEffects, true, false);
+		}
+	}
+	else
+		render->Clear(clear_color);
 
 	// draw gui
 	game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
-
-	/*}
-	else
-	{
-		postfx_shader->Prepare();
-
-		// render scene to texture
-		SURFACE sPost;
-		if(!render->IsMultisamplingEnabled())
-			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &sPost));
-		else
-			sPost = postfx_shader->surf[2];
-
-		V(device->SetRenderTarget(0, sPost));
-		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
-
-		if(game_state == GS_LEVEL)
-		{
-			V(device->BeginScene());
-			Draw();
-			V(device->EndScene());
-			if(!draw_batch.glow_nodes.empty())
-				DrawGlowingNodes(draw_batch.glow_nodes, true);
-		}
-
-		PROFILER_BLOCK("PostEffects");
-
-		TEX t;
-		if(!render->IsMultisamplingEnabled())
-		{
-			sPost->Release();
-			t = postfx_shader->tex[2];
-		}
-		else
-		{
-			SURFACE surf2;
-			V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
-			V(device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE));
-			surf2->Release();
-			t = postfx_shader->tex[0];
-		}
-
-		// post effects
-		V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-		V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
-		render->SetAlphaBlend(false);
-		render->SetNoCulling(false);
-		render->SetNoZWrite(true);
-
-		uint passes;
-		int index_surf = 1;
-		for(vector<PostEffect>::iterator it = post_effects.begin(), end = post_effects.end(); it != end; ++it)
-		{
-			SURFACE surf;
-			if(it + 1 == end)
-			{
-				// last pass
-				if(target)
-					surf = target->GetSurface();
-				else
-					V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-			}
-			else
-			{
-				// using next pass
-				if(!render->IsMultisamplingEnabled())
-					V(postfx_shader->tex[index_surf]->GetSurfaceLevel(0, &surf));
-				else
-					surf = postfx_shader->surf[index_surf];
-			}
-
-			V(device->SetRenderTarget(0, surf));
-			V(device->BeginScene());
-
-			V(effect->SetTechnique(it->tech));
-			V(effect->SetTexture(postfx_shader->hTex, t));
-			V(effect->SetFloat(postfx_shader->hPower, it->power));
-			V(effect->SetVector(postfx_shader->hSkill, (D3DXVECTOR4*)&it->skill));
-
-			V(effect->Begin(&passes, 0));
-			V(effect->BeginPass(0));
-			V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-			V(effect->EndPass());
-			V(effect->End());
-
-			if(it + 1 == end)
-				game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
-
-			V(device->EndScene());
-
-			if(it + 1 == end)
-			{
-				if(!target)
-					surf->Release();
-			}
-			else if(!render->IsMultisamplingEnabled())
-			{
-				surf->Release();
-				t = postfx_shader->tex[index_surf];
-			}
-			else
-			{
-				SURFACE surf2;
-				V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
-				V(device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE));
-				surf2->Release();
-				t = postfx_shader->tex[0];
-			}
-
-			index_surf = (index_surf + 1) % 3;
-		}
-	}*/
-FIXME;
 }
 
 //=================================================================================================
@@ -1367,10 +1260,10 @@ void Game::UpdateLights(vector<GameLight>& lights)
 }
 
 //=================================================================================================
-void Game::GetPostEffects(vector<PostEffect>& post_effects)
+void Game::GetPostEffects(vector<PostEffect>& postEffects)
 {
-	post_effects.clear();
-	if(!use_postfx || game_state != GS_LEVEL)
+	postEffects.clear();
+	if(!use_postfx)
 		return;
 
 	// gray effect
@@ -1380,7 +1273,7 @@ void Game::GetPostEffects(vector<PostEffect>& post_effects)
 		effect.id = POSTFX_MONOCHROME;
 		effect.power = pc->data.grayout;
 		effect.skill = Vec4::Zero;
-		post_effects.push_back(effect);
+		postEffects.push_back(effect);
 	}
 
 	// drunk effect
@@ -1400,10 +1293,10 @@ void Game::GetPostEffects(vector<PostEffect>& post_effects)
 		// 0.1-0
 		// 1-1
 		effect.power = (drunk - 0.1f) / 0.9f;
-		post_effects.push_back(effect);
+		postEffects.push_back(effect);
 
 		effect.id = POSTFX_BLUR_Y;
-		post_effects.push_back(effect);
+		postEffects.push_back(effect);
 	}
 }
 

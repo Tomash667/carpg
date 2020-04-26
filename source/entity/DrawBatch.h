@@ -5,21 +5,6 @@
 #include "Light.h"
 
 //-----------------------------------------------------------------------------
-struct GlowNode
-{
-	enum Type
-	{
-		Item,
-		Usable,
-		Unit,
-		Door,
-		Chest
-	} type;
-	SceneNode* node;
-	void* ptr;
-};
-
-//-----------------------------------------------------------------------------
 struct Area
 {
 	Vec3 v[4];

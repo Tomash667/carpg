@@ -106,7 +106,6 @@ public:
 	bool OnInit() override;
 	void OnCleanup() override;
 	void OnDraw() override;
-	void DrawGame();
 	void OnUpdate(float dt) override;
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activationPoint) override;
@@ -134,7 +133,7 @@ public:
 	//-----------------------------------------------------------------
 	// DRAWING
 	//-----------------------------------------------------------------
-	void Draw();
+	void DrawGame();
 	void ForceRedraw();
 	void InitScene();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
@@ -147,7 +146,6 @@ public:
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
-	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
 	void DrawBloods(const vector<Blood*>& bloods, bool outside);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
@@ -271,7 +269,9 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void UpdateLights(vector<GameLight>& lights);
-	void GetPostEffects(vector<PostEffect>& post_effects);
+private:
+	void GetPostEffects(vector<PostEffect>& postEffects);
+public:
 	// --- cutscene
 	void CutsceneStart(bool instant);
 	void CutsceneImage(const string& image, float time);

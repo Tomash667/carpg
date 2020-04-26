@@ -163,8 +163,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Item;
-						glow.ptr = &item;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -200,8 +199,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Usable;
-						glow.ptr = &use;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -242,8 +240,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Chest;
-						glow.ptr = &chest;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -283,8 +280,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Door;
-						glow.ptr = &door;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -654,8 +650,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		{
 			GlowNode& glow = Add1(draw_batch.glow_nodes);
 			glow.node = node;
-			glow.type = GlowNode::Unit;
-			glow.ptr = &u;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		else
 		{
@@ -686,8 +681,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -773,8 +767,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -816,8 +809,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -859,8 +851,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -916,8 +907,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -945,8 +935,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 			{
@@ -974,8 +963,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
-					glow.type = GlowNode::Unit;
-					glow.ptr = &u;
+					glow.color = pc->unit->GetRelationColor(u);
 				}
 				else
 				{
@@ -1004,8 +992,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
-					glow.type = GlowNode::Unit;
-					glow.ptr = &u;
+					glow.color = pc->unit->GetRelationColor(u);
 				}
 				else
 				{
@@ -1034,8 +1021,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
-					glow.type = GlowNode::Unit;
-					glow.ptr = &u;
+					glow.color = pc->unit->GetRelationColor(u);
 				}
 				else
 				{
@@ -1820,159 +1806,6 @@ void Game::DrawScene(bool outside)
 	// areas
 	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())
 		DrawAreas(draw_batch.areas, draw_batch.area_range, draw_batch.areas2);
-}
-
-//=================================================================================================
-void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
-{
-	PROFILER_BLOCK("DrawGlowingNodes");
-
-	FIXME;
-	/*IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = glow_shader->effect;
-
-
-
-	//======================================================================
-	// w teksturze są teraz wyrenderowane obiekty z kolorem glow
-	// trzeba rozmyć teksturę, napierw po X
-	effect = postfx_shader->effect;
-
-	TEX tex;
-	if(!render->IsMultisamplingEnabled())
-	{
-		render_surface->Release();
-		V(postfx_shader->tex[1]->GetSurfaceLevel(0, &render_surface));
-		tex = postfx_shader->tex[0];
-	}
-	else
-	{
-		SURFACE tex_surface;
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
-		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
-		tex_surface->Release();
-		tex = postfx_shader->tex[0];
-		render_surface = postfx_shader->surf[1];
-	}
-	V(device->SetRenderTarget(0, render_surface));
-	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
-
-	// ustawienia shadera
-	V(effect->SetTechnique(postfx_shader->techBlurX));
-	V(effect->SetTexture(postfx_shader->hTex, tex));
-	// chcę żeby rozmiar efektu był % taki sam w każdej rozdzielczości (już tak nie jest)
-	const float base_range = 2.5f;
-	const float range_x = (base_range / 1024.f);// *(wnd_size.x/1024.f);
-	const float range_y = (base_range / 768.f);// *(wnd_size.x/768.f);
-	V(effect->SetVector(postfx_shader->hSkill, (D3DXVECTOR4*)&Vec4(range_x, range_y, 0, 0)));
-	V(effect->SetFloat(postfx_shader->hPower, 1));
-
-	// ustawienia modelu
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-	V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
-
-	// renderowanie
-	V(device->BeginScene());
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	//======================================================================
-	// rozmywanie po Y
-	if(!render->IsMultisamplingEnabled())
-	{
-		render_surface->Release();
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
-		tex = postfx_shader->tex[1];
-	}
-	else
-	{
-		SURFACE tex_surface;
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
-		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
-		tex_surface->Release();
-		tex = postfx_shader->tex[0];
-		render_surface = postfx_shader->surf[0];
-	}
-	V(device->SetRenderTarget(0, render_surface));
-
-	// ustawienia shadera
-	V(effect->SetTechnique(postfx_shader->techBlurY));
-	V(effect->SetTexture(postfx_shader->hTex, tex));
-
-	// renderowanie
-	V(device->BeginScene());
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	//======================================================================
-	// Renderowanie tekstury z glow na ekran gry
-	// ustaw normalny render target
-	if(!render->IsMultisamplingEnabled())
-	{
-		render_surface->Release();
-		tex = postfx_shader->tex[1];
-	}
-	else
-	{
-		SURFACE tex_surface;
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
-		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
-		tex_surface->Release();
-		tex = postfx_shader->tex[0];
-	}
-	if(!use_postfx)
-	{
-		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &render_surface));
-		V(device->SetRenderTarget(0, render_surface));
-		render_surface->Release();
-	}
-	else
-	{
-		if(!render->IsMultisamplingEnabled())
-		{
-			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &render_surface));
-			render_surface->Release();
-		}
-		else
-			render_surface = postfx_shader->surf[2];
-		V(device->SetRenderTarget(0, render_surface));
-	}
-
-	// ustaw potrzebny render state
-	V(device->SetRenderState(D3DRS_STENCILENABLE, TRUE));
-	V(device->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP));
-	V(device->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL));
-	V(device->SetRenderState(D3DRS_STENCILREF, 0));
-	render->SetAlphaBlend(true);
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-
-	// ustawienia shadera
-	V(effect->SetTexture(postfx_shader->hTex, tex));
-
-	// renderowanie
-	V(device->BeginScene());
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	// przywróć ustawienia
-	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
-	V(device->SetRenderState(D3DRS_STENCILENABLE, FALSE));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));*/
 }
 
 //=================================================================================================
