@@ -56,10 +56,13 @@ struct TmpLocation : public Location
 //=================================================================================================
 void World::LoadLanguage()
 {
-	txDate = Str("dateFormat");
+	// general
+	Language::Section s = Language::GetSection("WorldMap");
+	txDate = s.Get("dateFormat");
+	s.GetArray(txMonth, "month");
 
 	// encounters
-	Language::Section s = Language::GetSection("Encounters");
+	s = Language::GetSection("Encounters");
 	txEncCrazyMage = s.Get("encCrazyMage");
 	txEncCrazyHeroes = s.Get("encCrazyHeroes");
 	txEncCrazyCook = s.Get("encCrazyCook");
@@ -1854,13 +1857,13 @@ bool World::IsSameWeek(int worldtime2) const
 //=================================================================================================
 cstring World::GetDate() const
 {
-	return Format(txDate, year, month + 1, day + 1);
+	return Format(txDate, year, txMonth[month], day + 1);
 }
 
 //=================================================================================================
 cstring World::GetDate(int year, int month, int day) const
 {
-	return Format(txDate, year, month + 1, day + 1);
+	return Format(txDate, year, txMonth[month], day + 1);
 }
 
 //=================================================================================================

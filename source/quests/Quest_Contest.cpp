@@ -37,7 +37,7 @@ void Quest_Contest::LoadLanguage()
 {
 	txContestNoWinner = Str("contestNoWinner");
 	txContestStart = Str("contestStart");
-	LoadArray(txContestTalk, "contestTalk");
+	StrArray(txContestTalk, "contestTalk");
 	txContestWin = Str("contestWin");
 	txContestWinNews = Str("contestWinNews");
 	txContestDraw = Str("contestDraw");

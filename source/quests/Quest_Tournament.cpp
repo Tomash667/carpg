@@ -37,8 +37,8 @@ void Quest_Tournament::InitOnce()
 //=================================================================================================
 void Quest_Tournament::LoadLanguage()
 {
-	LoadArray(txTour, "tour");
-	LoadArray(txAiJoinTour, "aiJoinTour");
+	StrArray(txTour, "tour");
+	StrArray(txAiJoinTour, "aiJoinTour");
 }
 
 //=================================================================================================
