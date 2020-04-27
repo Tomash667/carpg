@@ -1844,94 +1844,19 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 //=================================================================================================
 void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 {
-	FIXME;
-	/*SuperShader* shader = scene_mgr->super_shader;
-
-	render->SetBlendState(Render::BLEND_ADD);
-	render->SetDepthState(Render::DEPTH_READ);
-	render->SetRasterState(Render::RASTER_NORMAL);
-
-	const bool use_fog = scene_mgr->use_lighting && scene_mgr->use_fog;
-
-	ID3DXEffect* e = shader->GetShader(
-		shader->GetShaderId(false, false, use_fog, false, false, !outside && scene_mgr->use_lighting, outside && scene_mgr->use_lighting));
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_DEFAULT)));
-	V(e->SetVector(shader->hTint, (D3DXVECTOR4*)&Vec4::One));
-
-	uint passes;
-	V(e->Begin(&passes, 0));
-	V(e->BeginPass(0));
-
-	for(vector<Blood*>::const_iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
+	SuperShader* shader = scene_mgr->super_shader;
+	shader->PrepareDecals();
+	Decal decal;
+	for(const Blood* blood : bloods)
 	{
-		const Blood& blood = **it;
-
-		// set blood vertices
-		for(int i = 0; i < 4; ++i)
-			blood_v[i].normal = blood.normal;
-
-		const float s = blood.size * blood.scale,
-			r = blood.rot;
-
-		if(blood.normal.Equal(Vec3(0, 1, 0)))
-		{
-			blood_v[0].pos.x = s * sin(r + 5.f / 4 * PI);
-			blood_v[0].pos.z = s * cos(r + 5.f / 4 * PI);
-			blood_v[1].pos.x = s * sin(r + 7.f / 4 * PI);
-			blood_v[1].pos.z = s * cos(r + 7.f / 4 * PI);
-			blood_v[2].pos.x = s * sin(r + 3.f / 4 * PI);
-			blood_v[2].pos.z = s * cos(r + 3.f / 4 * PI);
-			blood_v[3].pos.x = s * sin(r + 1.f / 4 * PI);
-			blood_v[3].pos.z = s * cos(r + 1.f / 4 * PI);
-		}
-		else
-		{
-			const Vec3 front(sin(r), 0, cos(r)), right(sin(r + PI / 2), 0, cos(r + PI / 2));
-			Vec3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
-			v_x = blood.normal.Cross(front);
-			v_z = blood.normal.Cross(right);
-			if(v_x.x > 0.f)
-			{
-				v_rx = v_x * s;
-				v_lx = -v_x * s;
-			}
-			else
-			{
-				v_rx = -v_x * s;
-				v_lx = v_x * s;
-			}
-			if(v_z.z > 0.f)
-			{
-				v_rz = v_z * s;
-				v_lz = -v_z * s;
-			}
-			else
-			{
-				v_rz = -v_z * s;
-				v_lz = v_z * s;
-			}
-
-			blood_v[0].pos = v_lx + v_lz;
-			blood_v[1].pos = v_lx + v_rz;
-			blood_v[2].pos = v_rx + v_lz;
-			blood_v[3].pos = v_rx + v_rz;
-		}
-
-		// setup shader
-		Matrix m1 = Matrix::Translation(blood.pos);
-		Matrix m2 = m1 * game_level->camera.mat_view_proj;
-		V(e->SetMatrix(shader->hMatCombined, (D3DXMATRIX*)&m2));
-		V(e->SetMatrix(shader->hMatWorld, (D3DXMATRIX*)&m1));
-		V(e->SetTexture(shader->hTexDiffuse, game_res->tBloodSplat[blood.type]->tex));
-
-		// lights
-		if(!outside)
-			shader->ApplyLights(blood.lights);
-
-		// draw
-		V(e->CommitChanges());
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, blood_v, sizeof(VDefault)));
-	}*/
+		decal.pos = blood->pos;
+		decal.normal = blood->normal;
+		decal.rot = blood->rot;
+		decal.scale = blood->size * blood->scale;
+		decal.tex = game_res->tBloodSplat[blood->type]->tex;
+		decal.lights = &blood->lights;
+		shader->DrawDecal(decal);
+	}
 }
 
 //=================================================================================================
