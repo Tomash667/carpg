@@ -11,6 +11,12 @@ public:
 	{
 		Section(Map& lm, cstring name) : lm(lm), name(name) {}
 		cstring Get(cstring str);
+		template<int N>
+		inline void GetArray(cstring(&var)[N], cstring str)
+		{
+			for(uint i = 0; i < N; ++i)
+				var[i] = Get(Format("%s%u", str, i));
+		}
 		Section& operator = (const Section& s)
 		{
 			lm = s.lm;
@@ -61,7 +67,7 @@ inline cstring Str(cstring str)
 	return s ? s : "";
 }
 template<int N>
-inline void LoadArray(cstring(&var)[N], cstring str)
+inline void StrArray(cstring(&var)[N], cstring str)
 {
 	for(uint i = 0; i < N; ++i)
 		var[i] = Str(Format("%s%u", str, i));

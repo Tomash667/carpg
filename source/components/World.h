@@ -227,6 +227,7 @@ private:
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
 		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncEnemiesCombat;
 	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy;
+	cstring txMonth[12];
 	bool boss_level_mp, // used by clients instead boss_levels
 		tomir_spawned,
 		travel_first_frame;

@@ -114,7 +114,7 @@ void QuestManager::InitLists()
 //=================================================================================================
 void QuestManager::LoadLanguage()
 {
-	LoadArray(txRumorQ, "rumorQ");
+	StrArray(txRumorQ, "rumorQ");
 	quest_contest->LoadLanguage();
 	quest_secret->LoadLanguage();
 	quest_tournament->LoadLanguage();

@@ -1034,10 +1034,10 @@ void Game::SetStatsText()
 void Game::SetGameText()
 {
 	// ai
-	LoadArray(txAiNoHpPot, "aiNoHpPot");
-	LoadArray(txAiNoMpPot, "aiNoMpPot");
-	LoadArray(txAiCity, "aiCity");
-	LoadArray(txAiVillage, "aiVillage");
+	StrArray(txAiNoHpPot, "aiNoHpPot");
+	StrArray(txAiNoMpPot, "aiNoMpPot");
+	StrArray(txAiCity, "aiCity");
+	StrArray(txAiVillage, "aiVillage");
 	txAiForest = Str("aiForest");
 	txAiMoonwell = Str("aiMoonwell");
 	txAiAcademy = Str("aiAcademy");
@@ -1056,23 +1056,23 @@ void Game::SetGameText()
 	txAiNoEnemies = Str("aiNoEnemies");
 	txAiNearEnemies = Str("aiNearEnemies");
 	txAiCave = Str("aiCave");
-	LoadArray(txAiInsaneText, "aiInsaneText");
-	LoadArray(txAiDefaultText, "aiDefaultText");
-	LoadArray(txAiOutsideText, "aiOutsideText");
-	LoadArray(txAiInsideText, "aiInsideText");
-	LoadArray(txAiHumanText, "aiHumanText");
-	LoadArray(txAiOrcText, "aiOrcText");
-	LoadArray(txAiGoblinText, "aiGoblinText");
-	LoadArray(txAiMageText, "aiMageText");
-	LoadArray(txAiSecretText, "aiSecretText");
-	LoadArray(txAiHeroDungeonText, "aiHeroDungeonText");
-	LoadArray(txAiHeroCityText, "aiHeroCityText");
-	LoadArray(txAiBanditText, "aiBanditText");
-	LoadArray(txAiHeroOutsideText, "aiHeroOutsideText");
-	LoadArray(txAiDrunkMageText, "aiDrunkMageText");
-	LoadArray(txAiDrunkText, "aiDrunkText");
-	LoadArray(txAiDrunkContestText, "aiDrunkContestText");
-	LoadArray(txAiWildHunterText, "aiWildHunterText");
+	StrArray(txAiInsaneText, "aiInsaneText");
+	StrArray(txAiDefaultText, "aiDefaultText");
+	StrArray(txAiOutsideText, "aiOutsideText");
+	StrArray(txAiInsideText, "aiInsideText");
+	StrArray(txAiHumanText, "aiHumanText");
+	StrArray(txAiOrcText, "aiOrcText");
+	StrArray(txAiGoblinText, "aiGoblinText");
+	StrArray(txAiMageText, "aiMageText");
+	StrArray(txAiSecretText, "aiSecretText");
+	StrArray(txAiHeroDungeonText, "aiHeroDungeonText");
+	StrArray(txAiHeroCityText, "aiHeroCityText");
+	StrArray(txAiBanditText, "aiBanditText");
+	StrArray(txAiHeroOutsideText, "aiHeroOutsideText");
+	StrArray(txAiDrunkMageText, "aiDrunkMageText");
+	StrArray(txAiDrunkText, "aiDrunkText");
+	StrArray(txAiDrunkContestText, "aiDrunkContestText");
+	StrArray(txAiWildHunterText, "aiWildHunterText");
 
 	// world
 	txEnteringLocation = Str("enteringLocation");
@@ -1125,28 +1125,28 @@ void Game::SetGameText()
 	txNeedItem = Str("needItem");
 
 	// rumors
-	LoadArray(txRumor, "rumor_");
-	LoadArray(txRumorD, "rumor_d_");
+	StrArray(txRumor, "rumor_");
+	StrArray(txRumorD, "rumor_d_");
 
 	// dialogs 1
-	LoadArray(txMayorQFailed, "mayorQFailed");
-	LoadArray(txQuestAlreadyGiven, "questAlreadyGiven");
-	LoadArray(txMayorNoQ, "mayorNoQ");
-	LoadArray(txCaptainQFailed, "captainQFailed");
-	LoadArray(txCaptainNoQ, "captainNoQ");
-	LoadArray(txLocationDiscovered, "locationDiscovered");
-	LoadArray(txAllDiscovered, "allDiscovered");
-	LoadArray(txCampDiscovered, "campDiscovered");
-	LoadArray(txAllCampDiscovered, "allCampDiscovered");
-	LoadArray(txNoQRumors, "noQRumors");
+	StrArray(txMayorQFailed, "mayorQFailed");
+	StrArray(txQuestAlreadyGiven, "questAlreadyGiven");
+	StrArray(txMayorNoQ, "mayorNoQ");
+	StrArray(txCaptainQFailed, "captainQFailed");
+	StrArray(txCaptainNoQ, "captainNoQ");
+	StrArray(txLocationDiscovered, "locationDiscovered");
+	StrArray(txAllDiscovered, "allDiscovered");
+	StrArray(txCampDiscovered, "campDiscovered");
+	StrArray(txAllCampDiscovered, "allCampDiscovered");
+	StrArray(txNoQRumors, "noQRumors");
 	txNeedMoreGold = Str("needMoreGold");
 	txNoNearLoc = Str("noNearLoc");
 	txNearLoc = Str("nearLoc");
-	LoadArray(txNearLocEmpty, "nearLocEmpty");
+	StrArray(txNearLocEmpty, "nearLocEmpty");
 	txNearLocCleared = Str("nearLocCleared");
-	LoadArray(txNearLocEnemy, "nearLocEnemy");
-	LoadArray(txNoNews, "noNews");
-	LoadArray(txAllNews, "allNews");
+	StrArray(txNearLocEnemy, "nearLocEnemy");
+	StrArray(txNoNews, "noNews");
+	StrArray(txAllNews, "allNews");
 	txAllNearLoc = Str("allNearLoc");
 	txLearningPoint = Str("learningPoint");
 	txLearningPoints = Str("learningPoints");
@@ -1161,11 +1161,11 @@ void Game::SetGameText()
 	txNear = Str("near");
 	txFar = Str("far");
 	txVeryFar = Str("veryFar");
-	LoadArray(txELvlVeryWeak, "eLvlVeryWeak");
-	LoadArray(txELvlWeak, "eLvlWeak");
-	LoadArray(txELvlAverage, "eLvlAverage");
-	LoadArray(txELvlQuiteStrong, "eLvlQuiteStrong");
-	LoadArray(txELvlStrong, "eLvlStrong");
+	StrArray(txELvlVeryWeak, "eLvlVeryWeak");
+	StrArray(txELvlWeak, "eLvlWeak");
+	StrArray(txELvlAverage, "eLvlAverage");
+	StrArray(txELvlQuiteStrong, "eLvlQuiteStrong");
+	StrArray(txELvlStrong, "eLvlStrong");
 
 	// quests
 	txMineBuilt = Str("mineBuilt");
@@ -1182,7 +1182,7 @@ void Game::SetGameText()
 	txMageHere = Str("mageHere");
 	txMageEnter = Str("mageEnter");
 	txMageFinal = Str("mageFinal");
-	LoadArray(txQuest, "quest");
+	StrArray(txQuest, "quest");
 	txForMayor = Str("forMayor");
 	txForSoltys = Str("forSoltys");
 
@@ -1246,7 +1246,7 @@ void Game::SetGameText()
 	txServerClosed = Str("serverClosed");
 
 	// yell text
-	LoadArray(txYell, "yell");
+	StrArray(txYell, "yell");
 }
 
 //=================================================================================================

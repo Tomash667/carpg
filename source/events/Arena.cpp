@@ -38,8 +38,8 @@ void Arena::LoadLanguage()
 	txPvp = Str("pvp");
 	txPvpWith = Str("pvpWith");
 	txPvpTooFar = Str("pvpTooFar");
-	LoadArray(txArenaText, "arenaText");
-	LoadArray(txArenaTextU, "arenaTextU");
+	StrArray(txArenaText, "arenaText");
+	StrArray(txArenaTextU, "arenaTextU");
 }
 
 //=================================================================================================

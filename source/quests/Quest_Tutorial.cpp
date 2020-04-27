@@ -23,7 +23,7 @@
 //=================================================================================================
 void Quest_Tutorial::LoadLanguage()
 {
-	LoadArray(txTut, "tut");
+	StrArray(txTut, "tut");
 	txTutNote = Str("tutNote");
 	txTutLoc = Str("tutLoc");
 }
