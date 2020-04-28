@@ -651,8 +651,7 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.mat_view_inv = mat_view.Inverse();
 	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
-	scene_mgr->scene = game_level->scene;
-	scene_mgr->camera = &game_level->camera;
+	scene_mgr->SetScene(game_level->scene, &game_level->camera);
 
 	game->draw_batch.Clear();
 	game->draw_batch.camera = &game_level->camera;

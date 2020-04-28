@@ -593,7 +593,8 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	camera->to = mesh.head.cam_target;
 
 	// draw
-	scene_mgr->Draw(scene, camera, target);
+	scene_mgr->SetScene(scene, camera);
+	scene_mgr->Draw(target);
 }
 
 //=================================================================================================

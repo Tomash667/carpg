@@ -1741,9 +1741,8 @@ void Game::DrawScene(bool outside)
 {
 	PROFILER_BLOCK("DrawScene");
 
-	scene_mgr->scene = game_level->scene;
-	scene_mgr->scene->use_light_dir = outside;
-	scene_mgr->camera = &game_level->camera;
+	game_level->scene->use_light_dir = outside;
+	scene_mgr->SetScene(game_level->scene, &game_level->camera);
 
 	// sky
 	if(outside && IsSet(draw_flags, DF_SKYBOX))
@@ -1817,7 +1816,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 	render->SetDepthState(Render::DEPTH_YES);
 	render->SetRasterState(Render::RASTER_NORMAL);
 
-	shader->Prepare(game_level->scene, &game_level->camera);
+	shader->Prepare();
 	shader->SetCustomMesh(dun_mesh_builder->vb, dun_mesh_builder->ib, sizeof(VTangent));
 
 	const bool use_fog = scene_mgr->use_fog && scene_mgr->use_lighting;
