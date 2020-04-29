@@ -776,7 +776,7 @@ void Game::OnUpdate(float dt)
 
 		// switch window mode
 		if(input->Shortcut(KEY_ALT, Key::Enter))
-			engine->ChangeMode(!engine->IsFullscreen());
+			engine->SetFullscreen(!engine->IsFullscreen());
 
 		// screenshot
 		if(input->PressedRelease(Key::PrintScreen))

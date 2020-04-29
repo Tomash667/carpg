@@ -1401,7 +1401,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 			}
 			if(valid)
-				engine->ChangeMode(Int2(w, h), engine->IsFullscreen(), hz);
+			{	//engine->ChangeMode(Int2(w, h), engine->IsFullscreen(), hz);
+				engine->SetWindowSize(Int2(w, h));
+				FIXME;
+			}
 			else
 				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
 		}

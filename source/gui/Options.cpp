@@ -364,7 +364,7 @@ void Options::Event(GuiEvent e)
 			game->SaveOptions();
 			break;
 		case IdFullscreen:
-			engine->ChangeMode(check[0].checked);
+			engine->SetFullscreen(check[0].checked);
 			break;
 		case IdChangeRes:
 			break;
@@ -469,7 +469,9 @@ void Options::SetOptions()
 void Options::OnChangeRes(int)
 {
 	ResolutionItem& item = *res.GetItemCast<ResolutionItem>();
-	engine->ChangeMode(item.resolution.size, engine->IsFullscreen(), item.resolution.hz);
+	//engine->ChangeMode(item.resolution.size, engine->IsFullscreen(), item.resolution.hz);
+	FIXME;
+	engine->SetWindowSize(item.resolution.size);
 	Event((GuiEvent)IdChangeRes);
 }
 

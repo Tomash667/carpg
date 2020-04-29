@@ -506,7 +506,9 @@ void LoadConfiguration(char* lpCmdLine)
 	Int2 wnd_size = cfg.GetInt2("resolution");
 	int refresh_hz = cfg.GetInt("refresh");
 	Info("Settings: Resolution %dx%d (%d Hz, %s).", wnd_size.x, wnd_size.y, refresh_hz, windowed == False ? "fullscreen" : "windowed");
-	engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
+	//engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
+	engine->SetFullscreen(windowed == False);
+	engine->SetWindowSize(wnd_size);
 
 	// adapter
 	int used_adapter = cfg.GetInt("adapter");
