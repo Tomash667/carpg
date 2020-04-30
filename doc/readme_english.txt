@@ -283,6 +283,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
+	* feature_level ("10.0" "10.1" "11.0") - directx feature level
 	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is

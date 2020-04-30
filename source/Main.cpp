@@ -509,11 +509,22 @@ void LoadConfiguration(char* lpCmdLine)
 	//engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
 	engine->SetFullscreen(windowed == False);
 	engine->SetWindowSize(wnd_size);
+	FIXME;
 
 	// adapter
 	int used_adapter = cfg.GetInt("adapter");
 	Info("Settings: Adapter %d.", used_adapter);
 	render->SetAdapter(used_adapter);
+
+	// feature level
+	{
+		const string& featureLevel = cfg.GetString("feature_level", "");
+		if(!featureLevel.empty())
+		{
+			if(!app::render->SetFeatureLevel(featureLevel))
+				Warn("Settings: Invalid feature level '%s'.", featureLevel.c_str());
+		}
+	}
 
 	// log
 	log_to_file = (cfg.GetBool3("log", True) == True);

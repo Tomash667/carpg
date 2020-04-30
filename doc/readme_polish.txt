@@ -217,6 +217,7 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* crash_mode (none [normal] dataseg full) - określa tryb zapisywania
 		informacji o crashu
 	* grass_range (0-100) - zasięg rysowania trawy
+	* feature_level ("10.0" "10.1" "11.0") - poziom funkcji directx
 	* force_seed (true [false]) - wymuszenie określonej losowości na każdym
 		poziomie
 	* fullscreen ([true] false) - tryb pełnoekranowy
