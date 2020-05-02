@@ -2693,11 +2693,12 @@ void CityGenerator::GeneratePickableItems()
 //=================================================================================================
 void CityGenerator::CreateMinimap()
 {
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
-		uint* pix = lock[y];
+		uint* pix = tex[y];
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			const TerrainTile& t = city->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
@@ -2780,6 +2781,7 @@ void CityGenerator::CreateMinimap()
 		}
 	}
 
+	tex.Unlock();
 	game_level->minimap_size = OutsideLocation::size;
 }
 

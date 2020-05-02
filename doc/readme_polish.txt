@@ -198,7 +198,7 @@ Dostępne komendy bez trybu developera:
 	server - wyświetla wiadomość od serwera wszystkim graczom (say wiadomość).
 	version - wyświetla wersję gry.
 	w/whisper - wysyła prywatną wiadomość do gracza (whisper nick wiadomość).
-Pełna lista komend w readme_eng.txt.
+Pełna lista komend w readme_english.txt.
 
 ===============================================================================
 8) Plik konfiguracyjny
@@ -217,6 +217,7 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* crash_mode (none [normal] dataseg full) - określa tryb zapisywania
 		informacji o crashu
 	* grass_range (0-100) - zasięg rysowania trawy
+	* feature_level ("10.0" "10.1" "11.0") - poziom funkcji directx
 	* force_seed (true [false]) - wymuszenie określonej losowości na każdym
 		poziomie
 	* fullscreen ([true] false) - tryb pełnoekranowy
@@ -240,14 +241,13 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 		server_name, server_players, server_pswd, server_ip), jeśli nie ma
 		którejś zmiennej to nie uruchamia automatycznie
 	* resolution (800x600 [1024x768]) - rozdzielczość ekranu
-	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
+	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tif, gif, png, dds)
 	* seed - ziarno losowości
 	* server_ip - zapamiętane ip serwera
 	* server_lan - jeśli jest 1 to serwer nie będzie rejestrowany w głównym serwerze
 	* server_name - zapamiętana nazwa serwera
 	* server_players - zapamiętana liczba graczy
 	* server_pswd - zapamiętane hasło serwera
-	* shader_version - ustawia wersję shadera 2/3
 	* skip_tutorial (true [false]) - czy pomijać pytanie o samouczek
 	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp

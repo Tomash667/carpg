@@ -205,7 +205,6 @@ void ItemLoader::InitTokenizer()
 		{ "hq", ITEM_HQ },
 		{ "magical", ITEM_MAGICAL },
 		{ "unique", ITEM_UNIQUE },
-		{ "alpha", ITEM_ALPHA },
 		{ "magic_scroll", ITEM_MAGIC_SCROLL },
 		{ "wand", ITEM_WAND },
 		{ "ingredient", ITEM_INGREDIENT }

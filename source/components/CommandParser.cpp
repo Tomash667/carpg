@@ -108,7 +108,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
@@ -134,7 +134,6 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SHADER_VERSION, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
 
@@ -1358,20 +1357,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 	case CMD_RESOLUTION:
 		if(t.Next())
 		{
-			int w = t.MustGetInt(), h = -1, hz = -1;
-			bool pick_h = true, pick_hz = true, valid = false;
+			int w = t.MustGetInt(), h = -1;
+			bool pick_h = true, valid = false;
 			if(t.Next())
 			{
 				h = t.MustGetInt();
 				pick_h = false;
-				if(t.Next())
-				{
-					hz = t.MustGetInt();
-					pick_hz = false;
-				}
 			}
-			vector<Resolution> resolutions;
-			render->GetResolutions(resolutions);
+			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
 			{
 				if(w == res.size.x)
@@ -1381,41 +1374,30 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 						if((int)res.size.y >= h)
 						{
 							h = res.size.y;
-							if((int)res.hz > hz)
-								hz = res.hz;
 							valid = true;
 						}
 					}
 					else if(h == res.size.y)
 					{
-						if(pick_hz)
-						{
-							if((int)res.hz > hz)
-								hz = res.hz;
-							valid = true;
-						}
-						else if(hz == res.hz)
-						{
-							valid = true;
-							break;
-						}
+						valid = true;
+						break;
 					}
 				}
 			}
 			if(valid)
-				engine->ChangeMode(Int2(w, h), engine->IsFullscreen(), hz);
+				engine->SetWindowSize(Int2(w, h));
 			else
-				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
+				Msg("Can't change resolution to %dx%d.", w, h);
 		}
 		else
 		{
-			LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
-				engine->GetWindowSize().x, engine->GetWindowSize().y, render->GetRefreshRate());
-			vector<Resolution> resolutions;
-			render->GetResolutions(resolutions);
+			LocalString s = Format("Current resolution %dx%d. Available: ",
+				engine->GetWindowSize().x, engine->GetWindowSize().y);
+			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
-				s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
+				s += Format("%dx%d, ", res.size.x, res.size.y);
 			s.pop(2u);
+			s += ".";
 			Msg(s);
 		}
 		break;
@@ -2033,22 +2015,6 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				c.type = NetChange::CHEAT_ARENA;
 				c.str = StringPool.Get();
 				*c.str = s;
-			}
-		}
-		break;
-	case CMD_SHADER_VERSION:
-		if(!t.Next() || !t.IsInt())
-			Msg("shader_version: %d", render->GetShaderVersion());
-		else
-		{
-			int value = t.GetInt();
-			if(value != 2 && value != 3)
-				Msg("Invalid shader version, must be 2 or 3.");
-			else
-			{
-				render->SetShaderVersion(value);
-				Msg("shader_version: %d", value);
-				render->ReloadShaders();
 			}
 		}
 		break;

@@ -375,11 +375,12 @@ void OutsideLocationGenerator::SpawnTeam()
 //=================================================================================================
 void OutsideLocationGenerator::CreateMinimap()
 {
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
-		uint* pix = lock[y];
+		uint* pix = tex[y];
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			TerrainTile& t = outside->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
@@ -424,6 +425,7 @@ void OutsideLocationGenerator::CreateMinimap()
 		}
 	}
 
+	tex.Unlock();
 	game_level->minimap_size = OutsideLocation::size;
 }
 
@@ -446,11 +448,11 @@ void OutsideLocationGenerator::OnLoad()
 //=================================================================================================
 void OutsideLocationGenerator::ApplyTiles()
 {
-	TEX splat = terrain->GetSplatTexture();
-	TextureLock lock(splat);
+	DynamicTexture& splat = terrain->GetSplatTexture();
+	splat.Lock();
 	for(uint y = 0; y < 256; ++y)
 	{
-		uint* row = lock[y];
+		uint* row = splat[y];
 		for(uint x = 0; x < 256; ++x, ++row)
 		{
 			TerrainTile& t = outside->tiles[x / 2 + y / 2 * OutsideLocation::size];
@@ -467,7 +469,7 @@ void OutsideLocationGenerator::ApplyTiles()
 			}
 		}
 	}
-	lock.GenerateMipSubLevels();
+	splat.Unlock(true);
 
 	terrain->SetHeightMap(outside->h);
 	terrain->Rebuild();

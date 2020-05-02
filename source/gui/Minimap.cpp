@@ -135,16 +135,8 @@ void Minimap::Draw(ControlDrawData*)
 		}
 
 		// lines from building name to building
-		gui->LineBegin();
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
-		{
-			Vec2 pts[2] = {
-				Convert(it->pos),
-				Convert(it->anchor)
-			};
-			gui->DrawLine(pts, 1, Color(0, 0, 0, 140));
-		}
-		gui->LineEnd();
+			gui->DrawLine(Convert(it->pos), Convert(it->anchor), Color(0, 0, 0, 140));
 	}
 
 	// location name

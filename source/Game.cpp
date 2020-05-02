@@ -121,7 +121,7 @@ draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false)
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -153,27 +153,11 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false)
 	script_mgr = new ScriptManager;
 	team = new Team;
 	world = new World;
-
-	render->AddManagedResource(dun_mesh_builder);
 }
 
 //=================================================================================================
 Game::~Game()
 {
-	delete arena;
-	delete cmdp;
-	delete dun_mesh_builder;
-	delete game_gui;
-	delete game_level;
-	delete game_res;
-	delete game_stats;
-	delete loc_gen_factory;
-	delete net;
-	delete pathfinding;
-	delete quest_mgr;
-	delete script_mgr;
-	delete team;
-	delete world;
 }
 
 //=================================================================================================
@@ -261,7 +245,7 @@ void Game::PreloadData()
 {
 	res_mgr->AddDir("data/preload");
 
-	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 2);
+	GameGui::font = game_gui->gui->GetFont("Arial", 12, 8, 2);
 
 	// loadscreen textures
 	game_gui->load_screen->LoadData();
@@ -417,19 +401,13 @@ void Game::ConfigureGame()
 	// shaders
 	render->RegisterShader(basic_shader = new BasicShader);
 	render->RegisterShader(grass_shader = new GrassShader);
-	render->RegisterShader(glow_shader = new GlowShader);
 	render->RegisterShader(particle_shader = new ParticleShader);
 	render->RegisterShader(postfx_shader = new PostfxShader);
 	render->RegisterShader(skybox_shader = new SkyboxShader);
 	render->RegisterShader(terrain_shader = new TerrainShader);
+	render->RegisterShader(glow_shader = new GlowShader(postfx_shader));
 
-	DynamicTexture* minimap = render->CreateDynamicTexture(Int2(128, 128));
-	minimap->reload = [this]
-	{
-		if(game_state == GS_LEVEL)
-			loc_gen_factory->Get(game_level->location)->CreateMinimap();
-	};
-	tMinimap = minimap;
+	tMinimap = render->CreateDynamicTexture(Int2(128));
 	CreateRenderTargets();
 }
 
@@ -509,7 +487,6 @@ void Game::PostconfigureGame()
 	// save config
 	cfg.Add("adapter", render->GetAdapter());
 	cfg.Add("resolution", engine->GetWindowSize());
-	cfg.Add("refresh", render->GetRefreshRate());
 	SaveCfg();
 
 	// end load screen, show menu
@@ -625,8 +602,24 @@ void Game::OnCleanup()
 	ClearQuadtree();
 
 	draw_batch.Clear();
+	delete tMinimap;
 
 	Language::Cleanup();
+
+	delete arena;
+	delete cmdp;
+	delete dun_mesh_builder;
+	delete game_gui;
+	delete game_level;
+	delete game_res;
+	delete game_stats;
+	delete loc_gen_factory;
+	delete net;
+	delete pathfinding;
+	delete quest_mgr;
+	delete script_mgr;
+	delete team;
+	delete world;
 }
 
 //=================================================================================================
@@ -637,178 +630,64 @@ void Game::OnDraw()
 	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
-	DrawGame(nullptr);
+	DrawGame();
+	render->Present();
 
 	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
-void Game::Draw()
+void Game::DrawGame()
 {
 	PROFILER_BLOCK("Draw");
 
-	LevelArea& area = *pc->unit->area;
-	bool outside;
-	if(area.area_type == LevelArea::Type::Outside)
-		outside = true;
-	else if(area.area_type == LevelArea::Type::Inside)
-		outside = false;
-	else if(game_level->city_ctx->inside_buildings[area.area_id]->top > 0.f)
-		outside = false;
-	else
-		outside = true;
-
-	ListDrawObjects(area, game_level->camera.frustum, outside);
-	DrawScene(outside);
-}
-
-//=================================================================================================
-void Game::DrawGame(RenderTarget* target)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-
-	vector<PostEffect> post_effects;
-	GetPostEffects(post_effects);
-
-	if(post_effects.empty())
+	if(game_state == GS_LEVEL)
 	{
-		if(target)
-			render->SetTarget(target);
-		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
-		V(device->BeginScene());
+		LevelArea& area = *pc->unit->area;
+		bool outside;
+		if(area.area_type == LevelArea::Type::Outside)
+			outside = true;
+		else if(area.area_type == LevelArea::Type::Inside)
+			outside = false;
+		else if(game_level->city_ctx->inside_buildings[area.area_id]->top > 0.f)
+			outside = false;
+		else
+			outside = true;
 
-		if(game_state == GS_LEVEL)
+		ListDrawObjects(area, game_level->camera.frustum, outside);
+
+		vector<PostEffect> postEffects;
+		GetPostEffects(postEffects);
+
+		const bool usePostfx = !postEffects.empty();
+		const bool useGlow = !draw_batch.glow_nodes.empty();
+
+		if(usePostfx || useGlow)
+			postfx_shader->Prepare(useGlow);
+
+		render->Clear(clear_color);
+
+		// draw level
+		DrawScene(outside);
+
+		// draw glow
+		if(useGlow)
 		{
-			// draw level
-			Draw();
-
-			// draw glow
-			if(!draw_batch.glow_nodes.empty())
-			{
-				V(device->EndScene());
-				DrawGlowingNodes(draw_batch.glow_nodes, false);
-				V(device->BeginScene());
-			}
+			PROFILER_BLOCK("DrawGlowingNodes");
+			glow_shader->Draw(game_level->camera, draw_batch.glow_nodes, usePostfx);
 		}
 
-		// draw gui
-		game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
-
-		V(device->EndScene());
-		if(target)
-			render->SetTarget(nullptr);
+		if(usePostfx)
+		{
+			PROFILER_BLOCK("DrawPostFx");
+			postfx_shader->Draw(postEffects, true, false);
+		}
 	}
 	else
-	{
-		ID3DXEffect* effect = postfx_shader->effect;
+		render->Clear(clear_color);
 
-		// render scene to texture
-		SURFACE sPost;
-		if(!render->IsMultisamplingEnabled())
-			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &sPost));
-		else
-			sPost = postfx_shader->surf[2];
-
-		V(device->SetRenderTarget(0, sPost));
-		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
-
-		if(game_state == GS_LEVEL)
-		{
-			V(device->BeginScene());
-			Draw();
-			V(device->EndScene());
-			if(!draw_batch.glow_nodes.empty())
-				DrawGlowingNodes(draw_batch.glow_nodes, true);
-		}
-
-		PROFILER_BLOCK("PostEffects");
-
-		TEX t;
-		if(!render->IsMultisamplingEnabled())
-		{
-			sPost->Release();
-			t = postfx_shader->tex[2];
-		}
-		else
-		{
-			SURFACE surf2;
-			V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
-			V(device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE));
-			surf2->Release();
-			t = postfx_shader->tex[0];
-		}
-
-		// post effects
-		V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-		V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
-		render->SetAlphaTest(false);
-		render->SetAlphaBlend(false);
-		render->SetNoCulling(false);
-		render->SetNoZWrite(true);
-
-		uint passes;
-		int index_surf = 1;
-		for(vector<PostEffect>::iterator it = post_effects.begin(), end = post_effects.end(); it != end; ++it)
-		{
-			SURFACE surf;
-			if(it + 1 == end)
-			{
-				// last pass
-				if(target)
-					surf = target->GetSurface();
-				else
-					V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-			}
-			else
-			{
-				// using next pass
-				if(!render->IsMultisamplingEnabled())
-					V(postfx_shader->tex[index_surf]->GetSurfaceLevel(0, &surf));
-				else
-					surf = postfx_shader->surf[index_surf];
-			}
-
-			V(device->SetRenderTarget(0, surf));
-			V(device->BeginScene());
-
-			V(effect->SetTechnique(it->tech));
-			V(effect->SetTexture(postfx_shader->hTex, t));
-			V(effect->SetFloat(postfx_shader->hPower, it->power));
-			V(effect->SetVector(postfx_shader->hSkill, (D3DXVECTOR4*)&it->skill));
-
-			V(effect->Begin(&passes, 0));
-			V(effect->BeginPass(0));
-			V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-			V(effect->EndPass());
-			V(effect->End());
-
-			if(it + 1 == end)
-				game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
-
-			V(device->EndScene());
-
-			if(it + 1 == end)
-			{
-				if(!target)
-					surf->Release();
-			}
-			else if(!render->IsMultisamplingEnabled())
-			{
-				surf->Release();
-				t = postfx_shader->tex[index_surf];
-			}
-			else
-			{
-				SURFACE surf2;
-				V(postfx_shader->tex[0]->GetSurfaceLevel(0, &surf2));
-				V(device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE));
-				surf2->Release();
-				t = postfx_shader->tex[0];
-			}
-
-			index_surf = (index_surf + 1) % 3;
-		}
-	}
+	// draw gui
+	game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 }
 
 //=================================================================================================
@@ -856,8 +735,7 @@ void Game::OnUpdate(float dt)
 
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
-	// lost directx device or window don't have focus
-	if(render->IsLostDevice() || !engine->IsActive() || !engine->IsCursorLocked())
+	if(!engine->IsActive() || !engine->IsCursorLocked())
 	{
 		input->SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
@@ -897,7 +775,7 @@ void Game::OnUpdate(float dt)
 
 		// switch window mode
 		if(input->Shortcut(KEY_ALT, Key::Enter))
-			engine->ChangeMode(!engine->IsFullscreen());
+			engine->SetFullscreen(!engine->IsFullscreen());
 
 		// screenshot
 		if(input->PressedRelease(Key::PrintScreen))
@@ -1024,70 +902,34 @@ void Game::TakeScreenshot(bool no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
-		render->Draw(false);
+		DrawGame();
 		draw_flags = old_flags;
 	}
 	else
-		render->Draw(false);
+		DrawGame();
 
-	SURFACE back_buffer;
-	HRESULT hr = render->GetDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
-	if(FAILED(hr))
-	{
-		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
-		game_gui->console->AddMsg(msg);
-		Error(msg);
-	}
+	io::CreateDirectory("screenshots");
+
+	time_t t = ::time(0);
+	tm lt;
+	localtime_s(&lt, &t);
+
+	if(t == last_screenshot)
+		++screenshot_count;
 	else
 	{
-		io::CreateDirectory("screenshots");
-
-		time_t t = ::time(0);
-		tm lt;
-		localtime_s(&lt, &t);
-
-		if(t == last_screenshot)
-			++screenshot_count;
-		else
-		{
-			last_screenshot = t;
-			screenshot_count = 1;
-		}
-
-		cstring ext;
-		D3DXIMAGE_FILEFORMAT format;
-		switch(screenshot_format)
-		{
-		case ImageFormat::BMP:
-			ext = "bmp";
-			format = D3DXIFF_BMP;
-			break;
-		default:
-		case ImageFormat::JPG:
-			ext = "jpg";
-			format = D3DXIFF_JPG;
-			break;
-		case ImageFormat::TGA:
-			ext = "tga";
-			format = D3DXIFF_TGA;
-			break;
-		case ImageFormat::PNG:
-			ext = "png";
-			format = D3DXIFF_PNG;
-			break;
-		}
-
-		cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
-			lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ext);
-
-		D3DXSaveSurfaceToFileA(path, format, back_buffer, nullptr, nullptr);
-
-		cstring msg = Format("Screenshot saved to '%s'.", path);
-		game_gui->console->AddMsg(msg);
-		Info(msg);
-
-		back_buffer->Release();
+		last_screenshot = t;
+		screenshot_count = 1;
 	}
+
+	cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
+		lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ImageFormatMethods::GetExtension(screenshot_format));
+
+	render->SaveScreenshot(path, screenshot_format);
+
+	cstring msg = Format("Screenshot saved to '%s'.", path);
+	game_gui->console->AddMsg(msg);
+	Info(msg);
 }
 
 //=================================================================================================
@@ -1417,32 +1259,28 @@ void Game::UpdateLights(vector<GameLight>& lights)
 }
 
 //=================================================================================================
-void Game::GetPostEffects(vector<PostEffect>& post_effects)
+void Game::GetPostEffects(vector<PostEffect>& postEffects)
 {
-	post_effects.clear();
-	if(!use_postfx || game_state != GS_LEVEL || !postfx_shader->effect)
+	postEffects.clear();
+	if(!use_postfx)
 		return;
 
 	// gray effect
 	if(pc->data.grayout > 0.f)
 	{
-		PostEffect& e = Add1(post_effects);
-		e.tech = postfx_shader->techMonochrome;
-		e.power = pc->data.grayout;
+		PostEffect effect;
+		effect.id = POSTFX_MONOCHROME;
+		effect.power = pc->data.grayout;
+		effect.skill = Vec4::Zero;
+		postEffects.push_back(effect);
 	}
 
 	// drunk effect
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
-		PostEffect* e, *e2;
-		post_effects.resize(post_effects.size() + 2);
-		e = &*(post_effects.end() - 2);
-		e2 = &*(post_effects.end() - 1);
-
-		e->id = e2->id = 0;
-		e->tech = postfx_shader->techBlurX;
-		e2->tech = postfx_shader->techBlurY;
+		PostEffect effect;
+		effect.id = POSTFX_BLUR_X;
 		// 0.1-0.5 - 1
 		// 1 - 2
 		float mod;
@@ -1450,10 +1288,14 @@ void Game::GetPostEffects(vector<PostEffect>& post_effects)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		e->skill = e2->skill = Vec4(1.f / engine->GetWindowSize().x * mod, 1.f / engine->GetWindowSize().y * mod, 0, 0);
+		effect.skill = Vec4(1.f / engine->GetClientSize().x * mod, 1.f / engine->GetClientSize().y * mod, 0, 0);
 		// 0.1-0
 		// 1-1
-		e->power = e2->power = (drunk - 0.1f) / 0.9f;
+		effect.power = (drunk - 0.1f) / 0.9f;
+		postEffects.push_back(effect);
+
+		effect.id = POSTFX_BLUR_Y;
+		postEffects.push_back(effect);
 	}
 }
 
@@ -1469,6 +1311,9 @@ uint Game::ValidateGameData(bool major)
 	Skill::Validate(err);
 	Item::Validate(err);
 	Perk::Validate(err);
+
+	if(major)
+		err += res_mgr->VerifyResources();
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -1790,9 +1635,9 @@ void Game::OnResize()
 }
 
 //=================================================================================================
-void Game::OnFocus(bool focus, const Int2& activation_point)
+void Game::OnFocus(bool focus, const Int2& activationPoint)
 {
-	game_gui->OnFocus(focus, activation_point);
+	game_gui->OnFocus(focus, activationPoint);
 }
 
 //=================================================================================================
@@ -4621,9 +4466,6 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 		game_res->tCeil[1] = game_res->tCeil[0];
 		game_res->tWall[1] = game_res->tWall[0];
 	}
-
-	// dungeon uv settings
-	dun_mesh_builder->ChangeTexWrap(!IsSet(base.options, BLO_NO_TEX_WRAP));
 }
 
 void Game::SetDungeonParamsToMeshes()

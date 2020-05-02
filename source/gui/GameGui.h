@@ -23,7 +23,7 @@ public:
 	void Clear(bool reset_mpbox, bool on_enter);
 	void Setup(PlayerController* pc);
 	void OnResize();
-	void OnFocus(bool focus, const Int2& activation_point);
+	void OnFocus(bool focus, const Int2& activationPoint);
 	void ShowMenu() { gui->ShowDialog((DialogBox*)game_menu); }
 	void ShowOptions() { gui->ShowDialog((DialogBox*)options); }
 	void ShowMultiplayer();

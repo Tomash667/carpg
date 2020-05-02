@@ -1,21 +1,23 @@
 #include "Pch.h"
 #include "SaveLoadPanel.h"
-#include "SaveState.h"
-#include "Language.h"
-#include "Input.h"
+
 #include "Class.h"
-#include "Scrollbar.h"
-#include "Net.h"
-#include "World.h"
-#include "Level.h"
-#include "Game.h"
-#include "GameGui.h"
-#include "GetTextDialog.h"
-#include "GameMenu.h"
 #include "CreateServerPanel.h"
-#include "Unit.h"
+#include "Game.h"
 #include "GameFile.h"
-#include "DirectX.h"
+#include "GameGui.h"
+#include "GameMenu.h"
+#include "Language.h"
+#include "Level.h"
+#include "Net.h"
+#include "SaveState.h"
+#include "Unit.h"
+#include "World.h"
+
+#include <GetTextDialog.h>
+#include <Input.h>
+#include <ResourceManager.h>
+#include <Scrollbar.h>
 
 //=================================================================================================
 SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0)
@@ -238,8 +240,7 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 void SaveLoad::SetSaveImage()
 {
 	SaveSlot& slot = slots[choice];
-	SafeRelease(tMiniSave.tex);
-	tMiniSave.state = ResourceState::NotLoaded;
+	tMiniSave.Release();
 	if(slot.valid)
 	{
 		if(slot.img_size == 0)
@@ -247,7 +248,7 @@ void SaveLoad::SetSaveImage()
 			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
 			if(io::FileExists(filename))
 			{
-				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave.tex));
+				tMiniSave.tex = res_mgr->LoadRawTexture(filename);
 				tMiniSave.state = ResourceState::Loaded;
 			}
 		}
@@ -255,9 +256,9 @@ void SaveLoad::SetSaveImage()
 		{
 			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
 			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave.tex));
-			buf->Free();
+			tMiniSave.tex = res_mgr->LoadRawTexture(buf);
 			tMiniSave.state = ResourceState::Loaded;
+			buf->Free();
 		}
 	}
 }

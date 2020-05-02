@@ -51,7 +51,7 @@ Level* global::game_level;
 //=================================================================================================
 Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
 shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
-shape_floor(nullptr)
+shape_floor(nullptr), dungeon_mesh(nullptr)
 {
 	camera.zfar = 80.f;
 	scene = new Scene;
@@ -65,6 +65,7 @@ Level::~Level()
 	delete scene;
 	delete terrain;
 	delete terrain_shape;
+	delete dungeon_mesh;
 	delete dungeon_shape;
 	delete dungeon_shape_data;
 	delete shape_wall;
@@ -93,12 +94,12 @@ void Level::LoadLanguage()
 void Level::Init()
 {
 	terrain = new Terrain;
-	TerrainOptions terrain_options;
+	Terrain::Options terrain_options;
 	terrain_options.n_parts = 8;
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(render->GetDevice(), terrain_options);
+	terrain->Init(terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -130,6 +131,8 @@ void Level::Init()
 	Mesh::Point* point = game_res->aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
 	shape_arrow = new btBoxShape(ToVector3(point->size));
+
+	dungeon_mesh = new SimpleMesh;
 }
 
 //=================================================================================================
@@ -3011,11 +3014,8 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 		trap.obj2.pos.y -= 2.f;
 		trap.hitted = new vector<Unit*>;
 	}
-	else
-	{
+	else if(type == TRAP_FIREBALL)
 		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
-		trap.obj.base = &BaseObject::obj_alpha;
-	}
 
 	if(timed)
 	{
@@ -3419,8 +3419,7 @@ void Level::SpawnDungeonColliders()
 	}
 
 	// room floors/ceilings
-	dungeon_shape_pos.clear();
-	dungeon_shape_index.clear();
+	dungeon_mesh->Clear();
 	int index = 0;
 
 	if((inside->type == L_DUNGEON && inside->target == LABYRINTH) || inside->type == L_CAVE)
@@ -3431,29 +3430,29 @@ void Level::SpawnDungeonColliders()
 			for(int y = 0; y < 16; ++y)
 			{
 				// floor
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_index.push_back(index);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 3);
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->indices.push_back(index);
+				dungeon_mesh->indices.push_back(index + 1);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 1);
+				dungeon_mesh->indices.push_back(index + 3);
 				index += 4;
 
 				// ceil
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_index.push_back(index);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 3);
-				dungeon_shape_index.push_back(index + 1);
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->indices.push_back(index);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 1);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 3);
+				dungeon_mesh->indices.push_back(index + 1);
 				index += 4;
 			}
 		}
@@ -3462,39 +3461,48 @@ void Level::SpawnDungeonColliders()
 	for(Room* room : lvl->rooms)
 	{
 		// floor
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, 0, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, 0, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 3);
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, 0, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, 0, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->indices.push_back(index);
+		dungeon_mesh->indices.push_back(index + 1);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 1);
+		dungeon_mesh->indices.push_back(index + 3);
 		index += 4;
 
 		// ceil
 		const float h = (room->IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, h, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, h, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 3);
-		dungeon_shape_index.push_back(index + 1);
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, h, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, h, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->indices.push_back(index);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 1);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 3);
+		dungeon_mesh->indices.push_back(index + 1);
 		index += 4;
 	}
 
 	delete dungeon_shape;
 	delete dungeon_shape_data;
 
-	dungeon_shape_data = new btTriangleIndexVertexArray(dungeon_shape_index.size() / 3, dungeon_shape_index.data(), sizeof(int) * 3,
-		dungeon_shape_pos.size(), (btScalar*)dungeon_shape_pos.data(), sizeof(Vec3));
+	btIndexedMesh mesh;
+	mesh.m_numTriangles = dungeon_mesh->indices.size() / 3;
+	mesh.m_triangleIndexBase = (byte*)dungeon_mesh->indices.data();
+	mesh.m_triangleIndexStride = sizeof(word) * 3;
+	mesh.m_numVertices = dungeon_mesh->vertices.size();
+	mesh.m_vertexBase = (byte*)dungeon_mesh->vertices.data();
+	mesh.m_vertexStride = sizeof(Vec3);
+
+	dungeon_shape_data = new btTriangleIndexVertexArray();
+	dungeon_shape_data->addIndexedMesh(mesh, PHY_SHORT);
 	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
+	dungeon_shape->setUserPointer(dungeon_mesh);
 
 	obj_dungeon = new btCollisionObject;
 	obj_dungeon->setCollisionShape(dungeon_shape);
@@ -3942,12 +3950,13 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
 		Tile& p = lvl->map[it->x + (lvl->w - it->y - 1)*lvl->w];
 		SetBit(p.flags, Tile::F_REVEALED);
-		uint* pix = lock[it->y] + it->x;
+		uint* pix = tex[it->y] + it->x;
 		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
 			*pix = Color(100, 100, 100);
 		else if(p.type == DOORS)
@@ -3955,6 +3964,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 		else
 			*pix = Color(220, 220, 240);
 	}
+	tex.Unlock();
 
 	if(Net::IsLocal())
 	{

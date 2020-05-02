@@ -74,8 +74,6 @@ void Trap::Load(FileReader& f, bool local)
 		obj2.mesh = base->mesh2;
 		obj2.base = nullptr;
 	}
-	else if(type == TRAP_FIREBALL)
-		obj.base = &BaseObject::obj_alpha;
 
 	if(local && base->type != TRAP_FIREBALL)
 	{
@@ -157,8 +155,6 @@ bool Trap::Read(BitStreamReader& f)
 		obj2.pos.y -= 2.f;
 		hitted = nullptr;
 	}
-	else
-		obj.base = &BaseObject::obj_alpha;
 
 	Register();
 	return true;

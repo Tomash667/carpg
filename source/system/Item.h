@@ -32,10 +32,9 @@ enum ITEM_FLAGS
 	ITEM_HQ = 1 << 13, // high quality item icon
 	ITEM_MAGICAL = 1 << 14, // magic quality item icon
 	ITEM_UNIQUE = 1 << 15, // unique quality item icon
-	ITEM_ALPHA = 1 << 16, // item require alpha test
-	ITEM_MAGIC_SCROLL = 1 << 17,
-	ITEM_WAND = 1 << 18, // cast magic bolts instead of attacking
-	ITEM_INGREDIENT = 1 << 19, // shows in crafting panel
+	ITEM_MAGIC_SCROLL = 1 << 16,
+	ITEM_WAND = 1 << 17, // cast magic bolts instead of attacking
+	ITEM_INGREDIENT = 1 << 18, // shows in crafting panel
 };
 
 //-----------------------------------------------------------------------------

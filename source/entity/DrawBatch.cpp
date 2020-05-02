@@ -1,5 +1,7 @@
 #include "Pch.h"
 #include "DrawBatch.h"
+
+#include <DebugNode.h>
 #include <ParticleSystem.h>
 
 ObjectPool<Light> DrawBatch::light_pool;
@@ -10,7 +12,7 @@ void DrawBatch::Clear()
 	SceneNode::Free(nodes);
 	SceneNode::Free(alpha_nodes);
 	node_groups.clear();
-	DebugSceneNode::Free(debug_nodes);
+	DebugNode::Free(debug_nodes);
 	glow_nodes.clear();
 	terrain_parts.clear();
 	bloods.clear();

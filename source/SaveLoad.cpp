@@ -1,54 +1,56 @@
 #include "Pch.h"
 #include "Game.h"
-#include "SaveState.h"
-#include "Version.h"
-#include "QuestManager.h"
+
+#include "Ability.h"
+#include "AbilityPanel.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "Cave.h"
+#include "City.h"
+#include "CommandParser.h"
+#include "Console.h"
+#include "CraftPanel.h"
+#include "CreateServerPanel.h"
+#include "GameFile.h"
+#include "GameGui.h"
+#include "GameMenu.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "Gui.h"
+#include "InfoBox.h"
+#include "Inventory.h"
+#include "ItemHelper.h"
+#include "Journal.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "LoadingHandler.h"
+#include "LoadScreen.h"
+#include "LocationGeneratorFactory.h"
+#include "MainMenu.h"
+#include "MpBox.h"
+#include "MultiplayerPanel.h"
+#include "PlayerInfo.h"
 #include "Quest.h"
+#include "QuestManager.h"
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
-#include "GameFile.h"
-#include "GameStats.h"
-#include "City.h"
-#include "Cave.h"
-#include "Gui.h"
 #include "SaveLoadPanel.h"
-#include "MultiplayerPanel.h"
-#include "MainMenu.h"
-#include "LevelGui.h"
-#include "WorldMapGui.h"
-#include "GameMessages.h"
-#include "LoadScreen.h"
-#include "AIController.h"
-#include "Ability.h"
-#include "Team.h"
-#include "Journal.h"
-#include "SoundManager.h"
+#include "SaveState.h"
 #include "ScriptManager.h"
+#include "Team.h"
+#include "Version.h"
 #include "World.h"
-#include "Level.h"
-#include "LoadingHandler.h"
-#include "LocationGeneratorFactory.h"
-#include "Arena.h"
-#include "ParticleSystem.h"
-#include "Inventory.h"
-#include "GameGui.h"
-#include "Console.h"
-#include "Pathfinding.h"
-#include "ItemHelper.h"
-#include "CreateServerPanel.h"
-#include "GameMenu.h"
-#include "MpBox.h"
-#include "PlayerInfo.h"
-#include "RenderTarget.h"
-#include "BitStreamFunc.h"
-#include "InfoBox.h"
-#include "CommandParser.h"
-#include "GameResources.h"
-#include "AbilityPanel.h"
-#include "CraftPanel.h"
-#include "SceneManager.h"
+#include "WorldMapGui.h"
+
+#include <ParticleSystem.h>
+#include <Render.h>
+#include <RenderTarget.h>
+#include <SceneManager.h>
+#include <SoundManager.h>
 
 enum SaveFlags
 {
@@ -186,7 +188,9 @@ void Game::CreateSaveImage()
 		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
 	else
 		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	DrawGame(rt_save);
+	render->SetRenderTarget(rt_save);
+	DrawGame();
+	render->SetRenderTarget(nullptr);
 	draw_flags = old_flags;
 }
 
@@ -444,7 +448,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		slot->location = game_level->GetCurrentLocationText();
 		slot->img_offset = f.GetPos() + 4;
 	}
-	uint img_size = rt_save->SaveToFile(f);
+	uint img_size = app::render->SaveToFile(rt_save->tex, f);
 	if(slot)
 		slot->img_size = img_size;
 

@@ -106,10 +106,9 @@ public:
 	bool OnInit() override;
 	void OnCleanup() override;
 	void OnDraw() override;
-	void DrawGame(RenderTarget* target);
 	void OnUpdate(float dt) override;
 	void OnResize() override;
-	void OnFocus(bool focus, const Int2& activation_point) override;
+	void OnFocus(bool focus, const Int2& activationPoint) override;
 
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
@@ -134,7 +133,7 @@ public:
 	//-----------------------------------------------------------------
 	// DRAWING
 	//-----------------------------------------------------------------
-	void Draw();
+	void DrawGame();
 	void ForceRedraw();
 	void InitScene();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
@@ -147,9 +146,7 @@ public:
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
-	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
-	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(const vector<Blood*>& bloods, bool outside);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
@@ -272,7 +269,9 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void UpdateLights(vector<GameLight>& lights);
-	void GetPostEffects(vector<PostEffect>& post_effects);
+private:
+	void GetPostEffects(vector<PostEffect>& postEffects);
+public:
 	// --- cutscene
 	void CutsceneStart(bool instant);
 	void CutsceneImage(const string& image, float time);
@@ -441,7 +440,7 @@ public:
 	// RESOURCES
 	//-----------------------------------------------------------------
 	RenderTarget* rt_save, *rt_item_rot;
-	Texture* tMinimap;
+	DynamicTexture* tMinimap;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS

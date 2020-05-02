@@ -1,33 +1,36 @@
 ﻿#include "Pch.h"
 #include "Game.h"
-#include "Terrain.h"
-#include "City.h"
-#include "InsideLocation.h"
+
 #include "Ability.h"
-#include "Profiler.h"
-#include "Portal.h"
-#include "Level.h"
-#include "SuperShader.h"
+#include "City.h"
+#include "DungeonMeshBuilder.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "ParticleSystem.h"
-#include "Render.h"
-#include "TerrainShader.h"
-#include "ResourceManager.h"
-#include "SoundManager.h"
-#include "PhysicCallbacks.h"
 #include "GameResources.h"
-#include "ParticleShader.h"
-#include "GlowShader.h"
-#include "PostfxShader.h"
-#include "BasicShader.h"
-#include "SkyboxShader.h"
+#include "InsideLocation.h"
+#include "Level.h"
 #include "Pathfinding.h"
-#include <SceneManager.h>
-#include <Scene.h>
+#include "PhysicCallbacks.h"
+#include "Portal.h"
+
 #include <Algorithm.h>
-#include "DungeonMeshBuilder.h"
-#include "DirectX.h"
+#include <BasicShader.h>
+#include <DebugNode.h>
+#include <DirectX.h>
+#include <GlowShader.h>
+#include <ParticleShader.h>
+#include <ParticleSystem.h>
+#include <PostfxShader.h>
+#include <Profiler.h>
+#include <Render.h>
+#include <ResourceManager.h>
+#include <Scene.h>
+#include <SceneManager.h>
+#include <SkyboxShader.h>
+#include <SoundManager.h>
+#include <SuperShader.h>
+#include <Terrain.h>
+#include <TerrainShader.h>
 
 //=================================================================================================
 void Game::InitScene()
@@ -148,8 +151,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
 				node->SetMesh(mesh);
-				if(IsSet(item.item->flags, ITEM_ALPHA))
-					node->flags |= SceneNode::F_ALPHA_TEST;
 				node->center = item.pos;
 				node->mat = Matrix::Rotation(item.rot) * Matrix::Translation(pos);
 				node->tex_override = nullptr;
@@ -162,9 +163,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Item;
-						glow.ptr = &item;
-						glow.alpha = IsSet(item.item->flags, ITEM_ALPHA);
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -200,9 +199,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Usable;
-						glow.ptr = &use;
-						glow.alpha = false;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -243,9 +240,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Chest;
-						glow.ptr = &chest;
-						glow.alpha = false;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -285,9 +280,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Door;
-						glow.ptr = &door;
-						glow.alpha = false;
+						glow.color = Color::White;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -360,11 +353,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
 				node->SetMesh(trap.obj.mesh);
-				int alpha = trap.obj.RequireAlphaTest();
-				if(alpha == 0)
-					node->flags |= SceneNode::F_ALPHA_TEST;
-				else if(alpha == 1)
-					node->flags |= SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+				if(trap.obj.RequireNoCulling())
+					node->flags |= SceneNode::F_NO_CULLING;
 				node->center = trap.obj.pos;
 				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
 				node->tex_override = nullptr;
@@ -380,11 +370,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
 				node->SetMesh(trap.obj2.mesh);
-				int alpha = trap.obj2.RequireAlphaTest();
-				if(alpha == 0)
-					node->flags = SceneNode::F_ALPHA_TEST;
-				else if(alpha == 1)
-					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+				if(trap.obj2.RequireNoCulling())
+					node->flags |= SceneNode::F_NO_CULLING;
 				node->center = trap.obj2.pos;
 				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
 				node->tex_override = nullptr;
@@ -431,10 +418,10 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				draw_batch.pes.push_back(&pe);
 				if(draw_particle_sphere)
 				{
-					DebugSceneNode* debug_node = DebugSceneNode::Get();
+					DebugNode* debug_node = DebugNode::Get();
 					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
-					debug_node->type = DebugSceneNode::Sphere;
-					debug_node->group = DebugSceneNode::ParticleRadius;
+					debug_node->mesh = DebugNode::Sphere;
+					debug_node->color = Color::Green;
 					draw_batch.debug_nodes.push_back(debug_node);
 				}
 			}
@@ -480,40 +467,34 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	{
 		for(vector<CollisionObject>::iterator it = tmp_area.colliders.begin(), end = tmp_area.colliders.end(); it != end; ++it)
 		{
-			DebugSceneNode::Type type = DebugSceneNode::MaxType;
+			DebugNode::Mesh mesh = DebugNode::None;
 			Vec3 scale;
 			float rot = 0.f;
 
 			switch(it->type)
 			{
 			case CollisionObject::RECTANGLE:
-				{
-					scale = Vec3(it->w, 1, it->h);
-					type = DebugSceneNode::Box;
-				}
+				scale = Vec3(it->w, 1, it->h);
+				mesh = DebugNode::Box;
 				break;
 			case CollisionObject::RECTANGLE_ROT:
-				{
-					scale = Vec3(it->w, 1, it->h);
-					type = DebugSceneNode::Box;
-					rot = it->rot;
-				}
+				scale = Vec3(it->w, 1, it->h);
+				mesh = DebugNode::Box;
+				rot = it->rot;
 				break;
 			case CollisionObject::SPHERE:
-				{
-					scale = Vec3(it->radius, 1, it->radius);
-					type = DebugSceneNode::Cylinder;
-				}
+				scale = Vec3(it->radius, 1, it->radius);
+				mesh = DebugNode::Cylinder;
 				break;
 			default:
 				break;
 			}
 
-			if(type != DebugSceneNode::MaxType)
+			if(mesh != DebugNode::None)
 			{
-				DebugSceneNode* node = DebugSceneNode::Get();
-				node->type = type;
-				node->group = DebugSceneNode::Collider;
+				DebugNode* node = DebugNode::Get();
+				node->mesh = mesh;
+				node->color = Color(153, 217, 164);
 				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
 			}
@@ -538,9 +519,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case BOX_SHAPE_PROXYTYPE:
 				{
 					const btBoxShape* box = (const btBoxShape*)shape;
-					DebugSceneNode* node = DebugSceneNode::Get();
-					node->type = DebugSceneNode::Box;
-					node->group = DebugSceneNode::Physic;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::Box;
+					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -550,9 +531,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btCapsuleShape* capsule = (const btCapsuleShape*)shape;
 					float r = capsule->getRadius();
 					float h = capsule->getHalfHeight();
-					DebugSceneNode* node = DebugSceneNode::Get();
-					node->type = DebugSceneNode::Capsule;
-					node->group = DebugSceneNode::Physic;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::Capsule;
+					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -560,9 +541,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case CYLINDER_SHAPE_PROXYTYPE:
 				{
 					const btCylinderShape* cylinder = (const btCylinderShape*)shape;
-					DebugSceneNode* node = DebugSceneNode::Get();
-					node->type = DebugSceneNode::Cylinder;
-					node->group = DebugSceneNode::Physic;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::Cylinder;
+					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
 					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -581,9 +562,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						if(child->getShapeType() == BOX_SHAPE_PROXYTYPE)
 						{
 							btBoxShape* box = (btBoxShape*)child;
-							DebugSceneNode* node = DebugSceneNode::Get();
-							node->type = DebugSceneNode::Box;
-							node->group = DebugSceneNode::Physic;
+							DebugNode* node = DebugNode::Get();
+							node->mesh = DebugNode::Box;
+							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
 							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * game_level->camera.mat_view_proj;
@@ -599,12 +580,11 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				break;
 			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
 				{
-					DebugSceneNode* node = DebugSceneNode::Get();
-					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
-					node->type = DebugSceneNode::TriMesh;
-					node->group = DebugSceneNode::Physic;
+					DebugNode* node = DebugNode::Get();
+					node->mesh = DebugNode::TriMesh;
+					node->color = Color(163, 73, 164);
 					node->mat = m_world * game_level->camera.mat_view_proj;
-					node->mesh_ptr = (void*)trimesh->getMeshInterface();
+					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
 					draw_batch.debug_nodes.push_back(node);
 				}
 			default:
@@ -670,9 +650,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		{
 			GlowNode& glow = Add1(draw_batch.glow_nodes);
 			glow.node = node;
-			glow.type = GlowNode::Unit;
-			glow.ptr = &u;
-			glow.alpha = false;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		else
 		{
@@ -703,9 +681,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
-				glow.alpha = false;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -757,11 +733,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	}
 
 	if(u.used_item && u.action != A_USE_ITEM)
-	{
 		right_hand_item = u.used_item->mesh;
-		if(IsSet(u.used_item->flags, ITEM_ALPHA))
-			right_hand_item_flags = SceneNode::F_ALPHA_TEST;
-	}
 
 	Matrix mat_scale;
 	if(u.human_data)
@@ -795,9 +767,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
-				glow.alpha = false;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -810,10 +780,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugSceneNode* debug_node = DebugSceneNode::Get();
+			DebugNode* debug_node = DebugNode::Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->type = DebugSceneNode::Box;
-			debug_node->group = DebugSceneNode::Hitbox;
+			debug_node->mesh = DebugNode::Box;
+			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
 	}
@@ -839,9 +809,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
-				glow.alpha = false;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -854,10 +822,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugSceneNode* debug_node = DebugSceneNode::Get();
+			DebugNode* debug_node = DebugNode::Get();
 			node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->type = DebugSceneNode::Box;
-			debug_node->group = DebugSceneNode::Hitbox;
+			debug_node->mesh = DebugNode::Box;
+			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
 	}
@@ -883,9 +851,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
-				glow.alpha = IsSet(right_hand_item_flags, SceneNode::F_ALPHA_TEST);
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -941,9 +907,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
-				glow.alpha = false;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -971,9 +935,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
-				glow.type = GlowNode::Unit;
-				glow.ptr = &u;
-				glow.alpha = false;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			else
 			{
@@ -1001,9 +963,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
-					glow.type = GlowNode::Unit;
-					glow.ptr = &u;
-					glow.alpha = false;
+					glow.color = pc->unit->GetRelationColor(u);
 				}
 				else
 				{
@@ -1032,9 +992,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
-					glow.type = GlowNode::Unit;
-					glow.ptr = &u;
-					glow.alpha = false;
+					glow.color = pc->unit->GetRelationColor(u);
 				}
 				else
 				{
@@ -1063,9 +1021,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
-					glow.type = GlowNode::Unit;
-					glow.ptr = &u;
-					glow.alpha = false;
+					glow.color = pc->unit->GetRelationColor(u);
 				}
 				else
 				{
@@ -1082,10 +1038,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(draw_unit_radius)
 	{
 		float h = u.GetUnitHeight() / 2;
-		DebugSceneNode* debug_node = DebugSceneNode::Get();
+		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->type = DebugSceneNode::Cylinder;
-		debug_node->group = DebugSceneNode::UnitRadius;
+		debug_node->mesh = DebugNode::Cylinder;
+		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
 	if(draw_hitbox)
@@ -1093,10 +1049,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		float h = u.GetUnitHeight() / 2;
 		Box box;
 		u.GetBox(box);
-		DebugSceneNode* debug_node = DebugSceneNode::Get();
+		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->type = DebugSceneNode::Box;
-		debug_node->group = DebugSceneNode::Hitbox;
+		debug_node->mesh = DebugNode::Box;
+		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
 }
@@ -1117,11 +1073,8 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	}
 
 	node->SetMesh(o.mesh);
-	int alpha = o.RequireAlphaTest();
-	if(alpha == 0)
-		node->flags |= SceneNode::F_ALPHA_TEST;
-	else if(alpha == 1)
-		node->flags |= SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+	if(o.RequireNoCulling())
+		node->flags |= SceneNode::F_NO_CULLING;
 	node->tex_override = nullptr;
 	node->tint = Vec4(1, 1, 1, 1);
 	if(!IsSet(o.mesh->head.flags, Mesh::F_SPLIT))
@@ -1136,7 +1089,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	{
 		Mesh& mesh = *o.mesh;
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-			node->flags |= SceneNode::F_TANGENTS;
+			node->flags |= SceneNode::F_HAVE_TANGENTS;
 
 		// for simplicity original node in unused and freed at end
 		for(int i = 0; i < mesh.head.n_subs; ++i)
@@ -1341,10 +1294,10 @@ void Game::ListAreas(LevelArea& area)
 			pos = pc->data.ability_point;
 		else
 			pos = pc->unit->target_pos;
-		DebugSceneNode* node = DebugSceneNode::Get();
+		DebugNode* node = DebugNode::Get();
 		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * game_level->camera.mat_view_proj;
-		node->type = DebugSceneNode::Sphere;
-		node->group = DebugSceneNode::ParticleRadius;
+		node->mesh = DebugNode::Sphere;
+		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
 	}
 }
@@ -1788,9 +1741,8 @@ void Game::DrawScene(bool outside)
 {
 	PROFILER_BLOCK("DrawScene");
 
-	scene_mgr->scene = game_level->scene;
-	scene_mgr->scene->use_light_dir = outside;
-	scene_mgr->camera = &game_level->camera;
+	game_level->scene->use_light_dir = outside;
+	scene_mgr->SetScene(game_level->scene, &game_level->camera);
 
 	// sky
 	if(outside && IsSet(draw_flags, DF_SKYBOX))
@@ -1814,7 +1766,7 @@ void Game::DrawScene(bool outside)
 	if(!draw_batch.nodes.empty())
 	{
 		PROFILER_BLOCK("DrawSceneNodes");
-		scene_mgr->DrawSceneNodes(draw_batch.nodes, draw_batch.node_groups);
+		scene_mgr->DrawSceneNodes(draw_batch);
 	}
 
 	// grass
@@ -1822,10 +1774,11 @@ void Game::DrawScene(bool outside)
 
 	// debug nodes
 	if(!draw_batch.debug_nodes.empty())
-		DrawDebugNodes(draw_batch.debug_nodes);
+		basic_shader->DrawDebugNodes(draw_batch.debug_nodes);
 	if(pathfinding->IsDebugDraw())
 	{
 		basic_shader->Prepare(game_level->camera);
+		basic_shader->SetAreaParams(Vec3::Zero, 100.f, 0.f);
 		pathfinding->Draw(basic_shader);
 	}
 
@@ -1836,19 +1789,18 @@ void Game::DrawScene(bool outside)
 	// particles
 	if(!draw_batch.billboards.empty() || !draw_batch.pes.empty() || draw_batch.tpes)
 	{
-		particle_shader->Begin(game_level->camera);
+		particle_shader->Prepare(game_level->camera);
 		if(!draw_batch.billboards.empty())
 			particle_shader->DrawBillboards(draw_batch.billboards);
 		if(draw_batch.tpes)
 			particle_shader->DrawTrailParticles(*draw_batch.tpes);
 		if(!draw_batch.pes.empty())
 			particle_shader->DrawParticles(draw_batch.pes);
-		particle_shader->End();
 	}
 
 	// alpha nodes
 	if(!draw_batch.alpha_nodes.empty())
-		scene_mgr->DrawAlphaSceneNodes(draw_batch.alpha_nodes);
+		scene_mgr->DrawAlphaSceneNodes(draw_batch);
 
 	// areas
 	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())
@@ -1856,592 +1808,90 @@ void Game::DrawScene(bool outside)
 }
 
 //=================================================================================================
-void Game::DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx)
-{
-	PROFILER_BLOCK("DrawGlowingNodes");
-
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = glow_shader->effect;
-
-	// ustaw flagi renderowania
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(true);
-	V(device->SetRenderState(D3DRS_STENCILENABLE, TRUE));
-	V(device->SetRenderState(D3DRS_STENCILREF, 1));
-	V(device->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE));
-	V(device->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS));
-
-	// ustaw render target
-	SURFACE render_surface;
-	if(!render->IsMultisamplingEnabled())
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
-	else
-		render_surface = postfx_shader->surf[0];
-	V(device->SetRenderTarget(0, render_surface));
-	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
-	V(device->BeginScene());
-
-	// renderuj wszystkie obiekty
-	int prev_mode = -1;
-	Vec4 glow_color;
-	uint passes;
-
-	for(const GlowNode& glow : glow_nodes)
-	{
-		render->SetAlphaTest(glow.alpha);
-
-		// animowany czy nie?
-		Mesh* mesh = glow.node->mesh;
-		if(IsSet(glow.node->flags, SceneNode::F_ANIMATED))
-		{
-			if(prev_mode != 1)
-			{
-				if(prev_mode != -1)
-				{
-					V(effect->EndPass());
-					V(effect->End());
-				}
-				prev_mode = 1;
-				V(effect->SetTechnique(glow_shader->techGlowAni));
-				V(effect->Begin(&passes, 0));
-				V(effect->BeginPass(0));
-			}
-			vector<Matrix>& mat_bones = glow.node->mesh_inst->mat_bones;
-			V(effect->SetMatrixArray(glow_shader->hMatBones, (D3DXMATRIX*)mat_bones.data(), mat_bones.size()));
-		}
-		else
-		{
-			if(prev_mode != 0)
-			{
-				if(prev_mode != -1)
-				{
-					V(effect->EndPass());
-					V(effect->End());
-				}
-				prev_mode = 0;
-				V(effect->SetTechnique(glow_shader->techGlowMesh));
-				V(effect->Begin(&passes, 0));
-				V(effect->BeginPass(0));
-			}
-		}
-
-		// wybierz kolor
-		if(glow.type == GlowNode::Unit)
-		{
-			Unit& unit = *static_cast<Unit*>(glow.ptr);
-			if(pc->unit->IsEnemy(unit))
-				glow_color = Vec4(1, 0, 0, 1);
-			else if(pc->unit->IsFriend(unit))
-				glow_color = Vec4(0, 1, 0, 1);
-			else
-				glow_color = Vec4(1, 1, 0, 1);
-		}
-		else
-			glow_color = Vec4(1, 1, 1, 1);
-
-		// ustawienia shadera
-		Matrix m1 = glow.node->mat * game_level->camera.mat_view_proj;
-		V(effect->SetMatrix(glow_shader->hMatCombined, (D3DXMATRIX*)&m1));
-		V(effect->SetVector(glow_shader->hColor, (D3DXVECTOR4*)&glow_color));
-		V(effect->CommitChanges());
-
-		// ustawienia modelu
-		V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
-		V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-		V(device->SetIndices(mesh->ib));
-
-		// render mesh
-		if(glow.alpha)
-		{
-			// for glow need to set texture per submesh
-			for(int i = 0; i < mesh->head.n_subs; ++i)
-			{
-				if(i == 0 || glow.type != GlowNode::Door)
-				{
-					V(effect->SetTexture(glow_shader->hTex, mesh->subs[i].tex->tex));
-					V(effect->CommitChanges());
-					V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
-				}
-			}
-		}
-		else
-		{
-			V(effect->SetTexture(glow_shader->hTex, game_res->tBlack->tex));
-			V(effect->CommitChanges());
-			for(int i = 0; i < mesh->head.n_subs; ++i)
-			{
-				if(i == 0 || glow.type != GlowNode::Door)
-					V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
-			}
-		}
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
-	V(device->SetRenderState(D3DRS_STENCILENABLE, FALSE));
-
-	//======================================================================
-	// w teksturze są teraz wyrenderowane obiekty z kolorem glow
-	// trzeba rozmyć teksturę, napierw po X
-	effect = postfx_shader->effect;
-
-	TEX tex;
-	if(!render->IsMultisamplingEnabled())
-	{
-		render_surface->Release();
-		V(postfx_shader->tex[1]->GetSurfaceLevel(0, &render_surface));
-		tex = postfx_shader->tex[0];
-	}
-	else
-	{
-		SURFACE tex_surface;
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
-		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
-		tex_surface->Release();
-		tex = postfx_shader->tex[0];
-		render_surface = postfx_shader->surf[1];
-	}
-	V(device->SetRenderTarget(0, render_surface));
-	V(device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0));
-
-	// ustawienia shadera
-	V(effect->SetTechnique(postfx_shader->techBlurX));
-	V(effect->SetTexture(postfx_shader->hTex, tex));
-	// chcę żeby rozmiar efektu był % taki sam w każdej rozdzielczości (już tak nie jest)
-	const float base_range = 2.5f;
-	const float range_x = (base_range / 1024.f);// *(wnd_size.x/1024.f);
-	const float range_y = (base_range / 768.f);// *(wnd_size.x/768.f);
-	V(effect->SetVector(postfx_shader->hSkill, (D3DXVECTOR4*)&Vec4(range_x, range_y, 0, 0)));
-	V(effect->SetFloat(postfx_shader->hPower, 1));
-
-	// ustawienia modelu
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
-	V(device->SetStreamSource(0, postfx_shader->vbFullscreen, 0, sizeof(VTex)));
-
-	// renderowanie
-	V(device->BeginScene());
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	//======================================================================
-	// rozmywanie po Y
-	if(!render->IsMultisamplingEnabled())
-	{
-		render_surface->Release();
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &render_surface));
-		tex = postfx_shader->tex[1];
-	}
-	else
-	{
-		SURFACE tex_surface;
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
-		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
-		tex_surface->Release();
-		tex = postfx_shader->tex[0];
-		render_surface = postfx_shader->surf[0];
-	}
-	V(device->SetRenderTarget(0, render_surface));
-
-	// ustawienia shadera
-	V(effect->SetTechnique(postfx_shader->techBlurY));
-	V(effect->SetTexture(postfx_shader->hTex, tex));
-
-	// renderowanie
-	V(device->BeginScene());
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	//======================================================================
-	// Renderowanie tekstury z glow na ekran gry
-	// ustaw normalny render target
-	if(!render->IsMultisamplingEnabled())
-	{
-		render_surface->Release();
-		tex = postfx_shader->tex[1];
-	}
-	else
-	{
-		SURFACE tex_surface;
-		V(postfx_shader->tex[0]->GetSurfaceLevel(0, &tex_surface));
-		V(device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE));
-		tex_surface->Release();
-		tex = postfx_shader->tex[0];
-	}
-	if(!use_postfx)
-	{
-		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &render_surface));
-		V(device->SetRenderTarget(0, render_surface));
-		render_surface->Release();
-	}
-	else
-	{
-		if(!render->IsMultisamplingEnabled())
-		{
-			V(postfx_shader->tex[2]->GetSurfaceLevel(0, &render_surface));
-			render_surface->Release();
-		}
-		else
-			render_surface = postfx_shader->surf[2];
-		V(device->SetRenderTarget(0, render_surface));
-	}
-
-	// ustaw potrzebny render state
-	V(device->SetRenderState(D3DRS_STENCILENABLE, TRUE));
-	V(device->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP));
-	V(device->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL));
-	V(device->SetRenderState(D3DRS_STENCILREF, 0));
-	render->SetAlphaBlend(true);
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-
-	// ustawienia shadera
-	V(effect->SetTexture(postfx_shader->hTex, tex));
-
-	// renderowanie
-	V(device->BeginScene());
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
-	V(effect->EndPass());
-	V(effect->End());
-	V(device->EndScene());
-
-	// przywróć ustawienia
-	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
-	V(device->SetRenderState(D3DRS_STENCILENABLE, FALSE));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
-
-//=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups)
 {
-	IDirect3DDevice9* device = render->GetDevice();
 	SuperShader* shader = scene_mgr->super_shader;
 
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(false);
+	render->SetBlendState(Render::BLEND_NO);
+	render->SetDepthState(Render::DEPTH_YES);
+	render->SetRasterState(Render::RASTER_NORMAL);
 
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TANGENT)));
-	V(device->SetStreamSource(0, dun_mesh_builder->vbDungeon, 0, sizeof(VTangent)));
-	V(device->SetIndices(dun_mesh_builder->ibDungeon));
+	shader->Prepare();
+	shader->SetCustomMesh(dun_mesh_builder->vb, dun_mesh_builder->ib, sizeof(VTangent));
 
 	const bool use_fog = scene_mgr->use_fog && scene_mgr->use_lighting;
-
-	int last_mode = -1;
-	ID3DXEffect* e = nullptr;
-	bool first = true;
 	TexOverride* last_override = nullptr;
-	uint passes;
 
 	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 	{
 		const DungeonPart& dp = *it;
-		int mode = dp.tex_o->GetIndex();
-
-		// change shader
-		if(mode != last_mode)
-		{
-			last_mode = mode;
-			if(!first)
-			{
-				V(e->EndPass());
-				V(e->End());
-			}
-			e = shader->GetShader(shader->GetShaderId(false, true, use_fog, scene_mgr->use_specularmap && dp.tex_o->specular != nullptr,
-				scene_mgr->use_normalmap && dp.tex_o->normal != nullptr, scene_mgr->use_lighting, false));
-			if(first)
-			{
-				first = false;
-				V(e->SetVector(shader->hTint, (D3DXVECTOR4*)&Vec4::One));
-				V(e->SetVector(shader->hAmbientColor, (D3DXVECTOR4*)&game_level->scene->GetAmbientColor()));
-				V(e->SetVector(shader->hFogColor, (D3DXVECTOR4*)&game_level->scene->GetFogColor()));
-				V(e->SetVector(shader->hFogParams, (D3DXVECTOR4*)&game_level->scene->GetFogParams()));
-				V(e->SetVector(shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.from));
-				V(e->SetVector(shader->hSpecularColor, (D3DXVECTOR4*)&Vec4::One));
-				V(e->SetFloat(shader->hSpecularIntensity, 0.2f));
-				V(e->SetFloat(shader->hSpecularHardness, 10));
-			}
-			V(e->Begin(&passes, 0));
-			V(e->BeginPass(0));
-		}
 
 		// set textures
 		if(last_override != dp.tex_o)
 		{
+			shader->SetShader(shader->GetShaderId(false, true, false, use_fog, scene_mgr->use_specularmap && dp.tex_o->specular != nullptr,
+				scene_mgr->use_normalmap && dp.tex_o->normal != nullptr, scene_mgr->use_lighting, false));
+			shader->SetTexture(dp.tex_o, nullptr, 0);
 			last_override = dp.tex_o;
-			V(e->SetTexture(shader->hTexDiffuse, last_override->diffuse->tex));
-			if(scene_mgr->use_normalmap && last_override->normal)
-				V(e->SetTexture(shader->hTexNormal, last_override->normal->tex));
-			if(scene_mgr->use_specularmap && last_override->specular)
-				V(e->SetTexture(shader->hTexSpecular, last_override->specular->tex));
 		}
 
-		// set matrices
 		const DungeonPartGroup& group = groups[dp.group];
-		V(e->SetMatrix(shader->hMatCombined, (D3DXMATRIX*)&group.mat_combined));
-		V(e->SetMatrix(shader->hMatWorld, (D3DXMATRIX*)&group.mat_world));
-
-		// set lights
-		Lights lights;
-		for(int i = 0; i < 3; ++i)
-		{
-			if(group.lights[i])
-				memcpy(&lights.ld[i], group.lights[i], sizeof(Light));
-			else
-			{
-				lights.ld[i].pos = Vec3::Zero;
-				lights.ld[i].range = 1.f;
-				lights.ld[i].color = Vec4::Zero;
-			}
-		}
-		V(e->SetRawValue(shader->hLights, &lights, 0, sizeof(Lights)));
-
-		// draw
-		V(e->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 76, dp.start_index, dp.primitive_count));
+		shader->DrawCustom(group.mat_world, group.mat_combined, group.lights, dp.start_index, dp.primitive_count * 3);
 	}
-
-	V(e->EndPass());
-	V(e->End());
-}
-
-//=================================================================================================
-void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
-{
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = basic_shader->effect;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(false);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
-
-	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME));
-	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
-
-	uint passes;
-	V(effect->SetTechnique(basic_shader->techSimple));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	static Mesh* meshes[DebugSceneNode::MaxType] = {
-		game_res->aBox,
-		game_res->aCylinder,
-		game_res->aSphere,
-		game_res->aCapsule
-	};
-
-	static Vec4 colors[DebugSceneNode::MaxGroup] = {
-		Vec4(0,0,0,1),
-		Vec4(1,1,1,1),
-		Vec4(0,1,0,1),
-		Vec4(153.f / 255,217.f / 255,164.f / 234,1.f),
-		Vec4(163.f / 255,73.f / 255,164.f / 255,1.f)
-	};
-
-	for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
-	{
-		const DebugSceneNode& node = **it;
-
-		V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[node.group]));
-		V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&node.mat));
-
-		if(node.type == DebugSceneNode::TriMesh)
-		{
-			// currently only dungeon mesh is supported here
-			assert(reinterpret_cast<btTriangleIndexVertexArray*>(node.mesh_ptr) == game_level->dungeon_shape_data);
-			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
-			V(effect->CommitChanges());
-
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, game_level->dungeon_shape_pos.size(), game_level->dungeon_shape_index.size() / 3, game_level->dungeon_shape_index.data(),
-				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));
-		}
-		else
-		{
-			Mesh* mesh = meshes[node.type];
-			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
-			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-			V(device->SetIndices(mesh->ib));
-			V(effect->CommitChanges());
-
-			for(int i = 0; i < mesh->head.n_subs; ++i)
-				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
-		}
-	}
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
-	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
 }
 
 //=================================================================================================
 void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
 {
-	IDirect3DDevice9* device = render->GetDevice();
 	SuperShader* shader = scene_mgr->super_shader;
-
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(true);
-
-	const bool use_fog = scene_mgr->use_lighting && scene_mgr->use_fog;
-
-	ID3DXEffect* e = shader->GetShader(
-		shader->GetShaderId(false, false, use_fog, false, false, !outside && scene_mgr->use_lighting, outside && scene_mgr->use_lighting));
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_DEFAULT)));
-	V(e->SetVector(shader->hTint, (D3DXVECTOR4*)&Vec4::One));
-
-	uint passes;
-	V(e->Begin(&passes, 0));
-	V(e->BeginPass(0));
-
-	for(vector<Blood*>::const_iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
+	shader->PrepareDecals();
+	Decal decal;
+	for(const Blood* blood : bloods)
 	{
-		const Blood& blood = **it;
-
-		// set blood vertices
-		for(int i = 0; i < 4; ++i)
-			blood_v[i].normal = blood.normal;
-
-		const float s = blood.size * blood.scale,
-			r = blood.rot;
-
-		if(blood.normal.Equal(Vec3(0, 1, 0)))
-		{
-			blood_v[0].pos.x = s * sin(r + 5.f / 4 * PI);
-			blood_v[0].pos.z = s * cos(r + 5.f / 4 * PI);
-			blood_v[1].pos.x = s * sin(r + 7.f / 4 * PI);
-			blood_v[1].pos.z = s * cos(r + 7.f / 4 * PI);
-			blood_v[2].pos.x = s * sin(r + 3.f / 4 * PI);
-			blood_v[2].pos.z = s * cos(r + 3.f / 4 * PI);
-			blood_v[3].pos.x = s * sin(r + 1.f / 4 * PI);
-			blood_v[3].pos.z = s * cos(r + 1.f / 4 * PI);
-		}
-		else
-		{
-			const Vec3 front(sin(r), 0, cos(r)), right(sin(r + PI / 2), 0, cos(r + PI / 2));
-			Vec3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
-			v_x = blood.normal.Cross(front);
-			v_z = blood.normal.Cross(right);
-			if(v_x.x > 0.f)
-			{
-				v_rx = v_x * s;
-				v_lx = -v_x * s;
-			}
-			else
-			{
-				v_rx = -v_x * s;
-				v_lx = v_x * s;
-			}
-			if(v_z.z > 0.f)
-			{
-				v_rz = v_z * s;
-				v_lz = -v_z * s;
-			}
-			else
-			{
-				v_rz = -v_z * s;
-				v_lz = v_z * s;
-			}
-
-			blood_v[0].pos = v_lx + v_lz;
-			blood_v[1].pos = v_lx + v_rz;
-			blood_v[2].pos = v_rx + v_lz;
-			blood_v[3].pos = v_rx + v_rz;
-		}
-
-		// setup shader
-		Matrix m1 = Matrix::Translation(blood.pos);
-		Matrix m2 = m1 * game_level->camera.mat_view_proj;
-		V(e->SetMatrix(shader->hMatCombined, (D3DXMATRIX*)&m2));
-		V(e->SetMatrix(shader->hMatWorld, (D3DXMATRIX*)&m1));
-		V(e->SetTexture(shader->hTexDiffuse, game_res->tBloodSplat[blood.type]->tex));
-
-		// lights
-		if(!outside)
-			shader->ApplyLights(blood.lights);
-
-		// draw
-		V(e->CommitChanges());
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, blood_v, sizeof(VDefault)));
+		decal.pos = blood->pos;
+		decal.normal = blood->normal;
+		decal.rot = blood->rot;
+		decal.scale = blood->size * blood->scale;
+		decal.tex = game_res->tBloodSplat[blood->type]->tex;
+		decal.lights = &blood->lights;
+		shader->DrawDecal(decal);
 	}
-
-	V(e->EndPass());
-	V(e->End());
 }
 
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
-	IDirect3DDevice9* device = render->GetDevice();
-	ID3DXEffect* effect = basic_shader->effect;
+	basic_shader->Prepare(*draw_batch.camera);
 
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(true);
+	if(!areas.empty())
+	{
+		Vec3 playerPos = pc->unit->pos;
+		playerPos.y += 0.75f;
 
-	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
+		basic_shader->SetAreaParams(playerPos, range, 1.f);
 
-	V(effect->SetTechnique(basic_shader->techArea));
-	V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&game_level->camera.mat_view_proj));
-	V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
-	Vec4 playerPos(pc->unit->pos, 1.f);
-	playerPos.y += 0.75f;
-	V(effect->SetVector(basic_shader->hPlayerPos, (D3DXVECTOR4*)&playerPos));
-	V(effect->SetFloat(basic_shader->hRange, range));
-	uint passes;
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
+		const Color color = Color(0.f, 1.f, 0.f, 0.5f);
+		for(const Area& area : areas)
+			basic_shader->DrawQuad(area.v, color);
 
-	for(const Area& area : areas)
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (const void*)&area.v[0], sizeof(Vec3)));
-
-	V(effect->EndPass());
-	V(effect->End());
+		basic_shader->Draw();
+	}
 
 	if(!areas2.empty())
 	{
-		V(effect->Begin(&passes, 0));
-		V(effect->BeginPass(0));
-		V(effect->SetFloat(basic_shader->hRange, 100.f));
+		basic_shader->SetAreaParams(Vec3::Zero, 100.f, 0.f);
 
-		static const Vec4 colors[3] = {
-			Vec4(1, 0, 0, 0.5f),
-			Vec4(1, 1, 0, 0.5f),
-			Vec4(0, 0.58f, 1.f, 0.5f)
+		const Color colors[3] = {
+			Color(1.f, 0.f, 0.f, 0.5f),
+			Color(1.f, 1.f, 0.f, 0.5f),
+			Color(0.f, 0.58f, 1.f, 0.5f)
 		};
+		Color prevColor = Color::None;
 
-		for(auto* area2 : areas2)
-		{
-			V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[area2->ok]));
-			V(effect->CommitChanges());
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
-				area2->points.data(), sizeof(Vec3)));
-		}
+		for(Area2* area2 : areas2)
+			basic_shader->DrawArea(area2->points, area2->faces, colors[area2->ok]);
 
-		V(effect->EndPass());
-		V(effect->End());
+		basic_shader->Draw();
 	}
 }
 

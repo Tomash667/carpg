@@ -745,8 +745,6 @@ void Pathfinding::Draw(BasicShader* shader)
 	if(test_pf.empty() || !marked)
 		return;
 
-	shader->BeginBatch();
-
 	for(vector<pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
 		Vec3 v[4] = {
@@ -763,22 +761,15 @@ void Pathfinding::Draw(BasicShader* shader)
 				v[i].y = h;
 		}
 
-		Vec4 color;
-		switch(it->second)
+		const Color color[] =
 		{
-		case 0:
-			color = Vec4(0, 1, 0, 0.5f);
-			break;
-		case 1:
-			color = Vec4(1, 0, 0, 0.5f);
-			break;
-		case 2:
-			color = Vec4(0, 0, 0, 0.5f);
-			break;
-		}
+			Color(0.f, 1.f, 0.f, 0.5f),
+			Color(1.f, 0.f, 0.f, 0.5f),
+			Color(0.f, 0.f, 0.f, 0.5f)
+		};
 
-		shader->AddQuad(v, color);
+		shader->DrawQuad(v, color[it->second]);
 	}
 
-	shader->EndBatch();
+	shader->Draw();
 }

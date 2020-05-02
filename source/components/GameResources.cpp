@@ -1,20 +1,21 @@
 #include "Pch.h"
 #include "GameResources.h"
-#include "Item.h"
+
 #include "Ability.h"
-#include "Building.h"
 #include "BaseTrap.h"
-#include "Ability.h"
-#include "Language.h"
+#include "Building.h"
 #include "Game.h"
 #include "GameGui.h"
+#include "Item.h"
+#include "Language.h"
 #include "Level.h"
+
+#include <Mesh.h>
+#include <Render.h>
 #include <ResourceManager.h>
 #include <SoundManager.h>
-#include <Mesh.h>
 #include <Scene.h>
 #include <SceneManager.h>
-#include <Render.h>
 
 GameResources* global::game_res;
 
@@ -38,6 +39,7 @@ GameResources::~GameResources()
 void GameResources::Init()
 {
 	scene = new Scene;
+	scene->clear_color = Color::None;
 
 	Light light;
 	light.range = 10.f;
@@ -64,18 +66,15 @@ Texture* GameResources::CreatePlaceholderTexture(const Int2& size)
 	if(tex)
 		return tex;
 
-	TEX t = render->CreateTexture(size);
-	TextureLock lock(t);
+	Buf buf;
+	Color* texData = buf.Get<Color>(sizeof(Color) * size.x * size.y);
 	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
 	for(int y = 0; y < size.y; ++y)
 	{
-		uint* pix = lock[y];
 		for(int x = 0; x < size.x; ++x)
-		{
-			*pix = col[(x >= size.x / 2 ? 1 : 0) + (y >= size.y / 2 ? 1 : 0) % 2];
-			++pix;
-		}
+			texData[x + y * size.x] = col[(x >= size.x / 2 ? 1 : 0) + (y >= size.y / 2 ? 1 : 0) % 2];
 	}
+	TEX t = render->CreateImmutableTexture(size, texData);
 
 	tex = new Texture;
 	tex->path = name;
@@ -155,10 +154,6 @@ void GameResources::LoadData()
 	// meshes
 	res_mgr->AddTaskCategory(txLoadModels);
 	res_mgr->Load(aHuman);
-	aBox = res_mgr->Load<Mesh>("box.qmsh");
-	aCylinder = res_mgr->Load<Mesh>("cylinder.qmsh");
-	aSphere = res_mgr->Load<Mesh>("sphere.qmsh");
-	aCapsule = res_mgr->Load<Mesh>("capsule.qmsh");
 	aHair[0] = res_mgr->Load<Mesh>("hair1.qmsh");
 	aHair[1] = res_mgr->Load<Mesh>("hair2.qmsh");
 	aHair[2] = res_mgr->Load<Mesh>("hair3.qmsh");
@@ -549,13 +544,8 @@ void GameResources::GenerateItemIcon(Item& item)
 	else
 		it = item_texture_map.end();
 
-	Texture* tex;
-	do
-	{
-		DrawItemIcon(item, rt_item, 0.f);
-		tex = render->CopyToTexture(rt_item);
-	}
-	while(tex == nullptr);
+	DrawItemIcon(item, rt_item, 0.f);
+	Texture* tex = render->CopyToTexture(rt_item);
 
 	item.icon = tex;
 	if(it != item_texture_map.end())
@@ -577,8 +567,6 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		node->mat = Matrix::RotationY(rot);
 	node->SetMesh(&mesh);
 	node->center = Vec3::Zero;
-	if(IsSet(ITEM_ALPHA, item.flags))
-		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->tex_override = nullptr;
 	if(item.type == IT_ARMOR)
 	{
@@ -605,7 +593,8 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	camera->to = mesh.head.cam_target;
 
 	// draw
-	scene_mgr->Draw(scene, camera, target);
+	scene_mgr->SetScene(scene, camera);
+	scene_mgr->Draw(target);
 }
 
 //=================================================================================================

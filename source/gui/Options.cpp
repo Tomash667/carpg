@@ -14,40 +14,20 @@
 cstring txQuality, txMsNone;
 
 //-----------------------------------------------------------------------------
-class Res : public GuiElement
+class ResolutionItem : public GuiElement
 {
 public:
-	Int2 size;
-	int hz;
+	Resolution resolution;
 
-	Res(const Int2& size, int hz) : size(size), hz(hz)
+	ResolutionItem(const Resolution& resolution) : resolution(resolution)
 	{
 	}
 
 	cstring ToString()
 	{
-		return Format("%dx%d (%d Hz)", size.x, size.y, hz);
+		return Format("%dx%d", resolution.size.x, resolution.size.y);
 	}
 };
-
-//-----------------------------------------------------------------------------
-inline bool ResPred(const Res* r1, const Res* r2)
-{
-	if(r1->size.x > r2->size.x)
-		return false;
-	else if(r1->size.x < r2->size.x)
-		return true;
-	else if(r1->size.y > r2->size.y)
-		return false;
-	else if(r1->size.y < r2->size.y)
-		return true;
-	else if(r1->hz > r2->hz)
-		return false;
-	else if(r1->hz < r2->hz)
-		return true;
-	else
-		return false;
-}
 
 //-----------------------------------------------------------------------------
 class MultisamplingItem : public GuiElement
@@ -186,23 +166,24 @@ void Options::LoadLanguage()
 	bts[0].pos = Int2(20, 410);
 	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
-	// lista rozdzielczoœci
-	int refresh_hz = render->GetRefreshRate();
+	// resolutions list
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
-	vector<Resolution> resolutions;
-	render->GetResolutions(resolutions);
-	LocalVector<Res*> vres;
-	for(Resolution& r : resolutions)
-		vres->push_back(new Res(r.size, r.hz));
-	std::sort(vres->begin(), vres->end(), ResPred);
-	int index = 0;
-	for(auto r : vres)
+	const vector<Resolution>& resolutions = render->GetResolutions();
+	LocalVector<ResolutionItem*> items;
+	for(const Resolution& r : resolutions)
+		items->push_back(new ResolutionItem(r));
+	std::sort(items->begin(), items->end(), [](const ResolutionItem* r1, const ResolutionItem* r2)
 	{
-		res.Add(r);
-		if(r->size == engine->GetWindowSize() && r->hz == refresh_hz)
+		return r1->resolution < r2->resolution;
+	});
+	int index = 0;
+	for(ResolutionItem* item : items)
+	{
+		res.Add(item);
+		if(item->resolution.size == engine->GetWindowSize())
 			res.SetIndex(index);
 		++index;
 	}
@@ -220,15 +201,17 @@ void Options::LoadLanguage()
 	render->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
-	vector<Int2> ms_modes;
-	render->GetMultisamplingModes(ms_modes);
+	const vector<Int2>& ms_modes = render->GetMultisamplingModes();
 	index = 1;
-	for(Int2& mode : ms_modes)
+	for(const Int2& mode : ms_modes)
 	{
-		multisampling.Add(new MultisamplingItem(mode.x, mode.y));
-		if(ms == mode.x && msq == mode.y)
-			multisampling.SetIndex(index);
-		++index;
+		for(int level = 0; level < mode.y; ++level)
+		{
+			multisampling.Add(new MultisamplingItem(mode.x, level));
+			if(ms == mode.x && msq == level)
+				multisampling.SetIndex(index);
+			++index;
+		}
 	}
 	multisampling.Initialize();
 }
@@ -380,7 +363,7 @@ void Options::Event(GuiEvent e)
 			game->SaveOptions();
 			break;
 		case IdFullscreen:
-			engine->ChangeMode(check[0].checked);
+			engine->SetFullscreen(check[0].checked);
 			break;
 		case IdChangeRes:
 			break;
@@ -425,16 +408,14 @@ void Options::SetOptions()
 	check[3].checked = scene_mgr->use_specularmap;
 	check[4].checked = render->IsVsyncEnabled();
 
-	Res& re = *res.GetItemCast<Res>();
-	const Int2& wnd_size = engine->GetWindowSize();
-	int refresh_hz = render->GetRefreshRate();
-	if(re.size != wnd_size || re.hz != refresh_hz)
+	ResolutionItem& currentItem = *res.GetItemCast<ResolutionItem>();
+	const Int2& wndSize = engine->GetWindowSize();
+	if(currentItem.resolution.size != wndSize)
 	{
-		auto& ress = res.GetItemsCast<Res>();
 		int index = 0;
-		for(auto r : ress)
+		for(ResolutionItem* item : res.GetItemsCast<ResolutionItem>())
 		{
-			if(r->size == wnd_size && r->hz == refresh_hz)
+			if(item->resolution.size == wndSize)
 			{
 				res.SetIndex(index);
 				break;
@@ -485,8 +466,8 @@ void Options::SetOptions()
 //=================================================================================================
 void Options::OnChangeRes(int)
 {
-	Res& r = *res.GetItemCast<Res>();
-	engine->ChangeMode(r.size, engine->IsFullscreen(), r.hz);
+	ResolutionItem& item = *res.GetItemCast<ResolutionItem>();
+	engine->SetWindowSize(item.resolution.size);
 	Event((GuiEvent)IdChangeRes);
 }
 

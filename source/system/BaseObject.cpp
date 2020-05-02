@@ -4,7 +4,6 @@
 #include "BaseObject.h"
 
 //-----------------------------------------------------------------------------
-BaseObject BaseObject::obj_alpha;
 SetContainer<BaseObject> BaseObject::objs;
 SetContainer<ObjectGroup> ObjectGroup::groups;
 

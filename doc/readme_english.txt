@@ -243,7 +243,7 @@ Available commands:
 	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
 	remove_unit - remove selected unit.
-	resolution - show or change display resolution (resolution [w h hz]).
+	resolution - show or change display resolution (resolution [w h]).
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.
 	s - send message to all players, short from say (say msg).
@@ -255,7 +255,6 @@ Available commands:
 	server - send message from server to all players (server msg).
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
-	shader_version - force shader version (shader_version 2/3).
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
@@ -284,6 +283,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
+	* feature_level ("10.0" "10.1" "11.0") - directx feature level
 	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
@@ -304,14 +304,13 @@ In configuration file (by default carpg.cfg) you can use such options:
 		multiplayer uses (nick, server_name, server_player, server_pswd, server_ip),
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
-	* screenshot_format – set screenshot (jpg, bmp, tga, png)
+	* screenshot_format – set screenshot (jpg, bmp, tif, gif, png, dds)
 	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server
 	* server_name - last server name
 	* server_players - last server max players
 	* server_pswd - last server password
-	* shader_version - force shader version 2/3
 	* skip_tutorial (true [false]) - skip tutorial
 	* stream_log_file ["log.stream"] - file to log mp information
 	* stream_log_mode (none [errors] full) - mode to log mp information

@@ -504,14 +504,24 @@ void LoadConfiguration(char* lpCmdLine)
 			windowed = True;
 	}
 	Int2 wnd_size = cfg.GetInt2("resolution");
-	int refresh_hz = cfg.GetInt("refresh");
-	Info("Settings: Resolution %dx%d (%d Hz, %s).", wnd_size.x, wnd_size.y, refresh_hz, windowed == False ? "fullscreen" : "windowed");
-	engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
+	Info("Settings: Resolution %dx%d (%s).", wnd_size.x, wnd_size.y, windowed == False ? "fullscreen" : "windowed");
+	engine->SetFullscreen(windowed == False);
+	engine->SetWindowSize(wnd_size);
 
 	// adapter
 	int used_adapter = cfg.GetInt("adapter");
 	Info("Settings: Adapter %d.", used_adapter);
 	render->SetAdapter(used_adapter);
+
+	// feature level
+	{
+		const string& featureLevel = cfg.GetString("feature_level", "");
+		if(!featureLevel.empty())
+		{
+			if(!app::render->SetFeatureLevel(featureLevel))
+				Warn("Settings: Invalid feature level '%s'.", featureLevel.c_str());
+		}
+	}
 
 	// log
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -598,26 +608,15 @@ void LoadConfiguration(char* lpCmdLine)
 	scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
 	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
 	game->use_glow = cfg.GetBool("cl_glow", true);
-	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));
 	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game->settings.grass_range < 0.f)
 		game->settings.grass_range = 0.f;
+	game->screenshot_format = ImageFormatMethods::FromString(cfg.GetString("screenshot_format", "jpg"));
+	if(game->screenshot_format == ImageFormat::Invalid)
 	{
-		const string& screenshot_format = cfg.GetString("screenshot_format", "jpg");
-		if(screenshot_format == "jpg")
-			game->screenshot_format = ImageFormat::JPG;
-		else if(screenshot_format == "bmp")
-			game->screenshot_format = ImageFormat::BMP;
-		else if(screenshot_format == "tga")
-			game->screenshot_format = ImageFormat::TGA;
-		else if(screenshot_format == "png")
-			game->screenshot_format = ImageFormat::PNG;
-		else
-		{
-			Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", screenshot_format.c_str());
-			game->screenshot_format = ImageFormat::JPG;
-		}
+		Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", cfg.GetString("screenshot_format").c_str());
+		game->screenshot_format = ImageFormat::JPG;
 	}
 
 	cfg.LoadConfigVars();
