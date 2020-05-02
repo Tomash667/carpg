@@ -487,7 +487,6 @@ void Game::PostconfigureGame()
 	// save config
 	cfg.Add("adapter", render->GetAdapter());
 	cfg.Add("resolution", engine->GetWindowSize());
-	cfg.Add("refresh", render->GetRefreshRate());
 	SaveCfg();
 
 	// end load screen, show menu
@@ -1289,7 +1288,7 @@ void Game::GetPostEffects(vector<PostEffect>& postEffects)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		effect.skill = Vec4(1.f / engine->GetWindowSize().x * mod, 1.f / engine->GetWindowSize().y * mod, 0, 0);
+		effect.skill = Vec4(1.f / engine->GetClientSize().x * mod, 1.f / engine->GetClientSize().y * mod, 0, 0);
 		// 0.1-0
 		// 1-1
 		effect.power = (drunk - 0.1f) / 0.9f;

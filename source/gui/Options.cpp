@@ -25,7 +25,7 @@ public:
 
 	cstring ToString()
 	{
-		return Format("%dx%d (%u Hz)", resolution.size.x, resolution.size.y, resolution.hz);
+		return Format("%dx%d", resolution.size.x, resolution.size.y);
 	}
 };
 
@@ -167,7 +167,6 @@ void Options::LoadLanguage()
 	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
 	// resolutions list
-	uint refreshHz = render->GetRefreshRate();
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
@@ -184,7 +183,7 @@ void Options::LoadLanguage()
 	for(ResolutionItem* item : items)
 	{
 		res.Add(item);
-		if(item->resolution.size == engine->GetWindowSize() && item->resolution.hz == refreshHz)
+		if(item->resolution.size == engine->GetWindowSize())
 			res.SetIndex(index);
 		++index;
 	}
@@ -411,13 +410,12 @@ void Options::SetOptions()
 
 	ResolutionItem& currentItem = *res.GetItemCast<ResolutionItem>();
 	const Int2& wndSize = engine->GetWindowSize();
-	uint refreshHz = render->GetRefreshRate();
-	if(currentItem.resolution.size != wndSize || currentItem.resolution.hz != refreshHz)
+	if(currentItem.resolution.size != wndSize)
 	{
 		int index = 0;
 		for(ResolutionItem* item : res.GetItemsCast<ResolutionItem>())
 		{
-			if(item->resolution.size == wndSize && item->resolution.hz == refreshHz)
+			if(item->resolution.size == wndSize)
 			{
 				res.SetIndex(index);
 				break;
@@ -469,8 +467,6 @@ void Options::SetOptions()
 void Options::OnChangeRes(int)
 {
 	ResolutionItem& item = *res.GetItemCast<ResolutionItem>();
-	//engine->ChangeMode(item.resolution.size, engine->IsFullscreen(), item.resolution.hz);
-	FIXME;
 	engine->SetWindowSize(item.resolution.size);
 	Event((GuiEvent)IdChangeRes);
 }

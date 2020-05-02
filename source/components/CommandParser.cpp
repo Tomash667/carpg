@@ -108,7 +108,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
@@ -1357,17 +1357,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 	case CMD_RESOLUTION:
 		if(t.Next())
 		{
-			int w = t.MustGetInt(), h = -1, hz = -1;
-			bool pick_h = true, pick_hz = true, valid = false;
+			int w = t.MustGetInt(), h = -1;
+			bool pick_h = true, valid = false;
 			if(t.Next())
 			{
 				h = t.MustGetInt();
 				pick_h = false;
-				if(t.Next())
-				{
-					hz = t.MustGetInt();
-					pick_hz = false;
-				}
 			}
 			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
@@ -1379,43 +1374,30 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 						if((int)res.size.y >= h)
 						{
 							h = res.size.y;
-							if((int)res.hz > hz)
-								hz = res.hz;
 							valid = true;
 						}
 					}
 					else if(h == res.size.y)
 					{
-						if(pick_hz)
-						{
-							if((int)res.hz > hz)
-								hz = res.hz;
-							valid = true;
-						}
-						else if(hz == res.hz)
-						{
-							valid = true;
-							break;
-						}
+						valid = true;
+						break;
 					}
 				}
 			}
 			if(valid)
-			{	//engine->ChangeMode(Int2(w, h), engine->IsFullscreen(), hz);
 				engine->SetWindowSize(Int2(w, h));
-				FIXME;
-			}
 			else
-				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
+				Msg("Can't change resolution to %dx%d.", w, h);
 		}
 		else
 		{
-			LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
-				engine->GetWindowSize().x, engine->GetWindowSize().y, render->GetRefreshRate());
+			LocalString s = Format("Current resolution %dx%d. Available: ",
+				engine->GetWindowSize().x, engine->GetWindowSize().y);
 			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
-				s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
+				s += Format("%dx%d, ", res.size.x, res.size.y);
 			s.pop(2u);
+			s += ".";
 			Msg(s);
 		}
 		break;
