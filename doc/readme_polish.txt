@@ -198,7 +198,7 @@ Dostępne komendy bez trybu developera:
 	server - wyświetla wiadomość od serwera wszystkim graczom (say wiadomość).
 	version - wyświetla wersję gry.
 	w/whisper - wysyła prywatną wiadomość do gracza (whisper nick wiadomość).
-Pełna lista komend w readme_eng.txt.
+Pełna lista komend w readme_english.txt.
 
 ===============================================================================
 8) Plik konfiguracyjny
