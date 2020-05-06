@@ -343,7 +343,7 @@ void LoadResourcesConfig()
 	cfg.Load("resource.cfg");
 	Language::dir = cfg.GetString("languages", "lang");
 	g_system_dir = cfg.GetString("system", "system");
-	render->SetShadersDir(cfg.GetString("shaders", "system/shaders").c_str());
+	render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
 }
 
 //=================================================================================================

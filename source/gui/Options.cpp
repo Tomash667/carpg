@@ -19,7 +19,7 @@ class ResolutionItem : public GuiElement
 public:
 	Resolution resolution;
 
-	ResolutionItem(const Resolution& resolution) : resolution(resolution)
+	explicit ResolutionItem(const Resolution& resolution) : resolution(resolution)
 	{
 	}
 
@@ -111,7 +111,7 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 
 	language.SetCollapsed(true);
 	language.parent = this;
-	language.pos = Int2(20, 383);
+	language.pos = Int2(20, 383 - 8);
 	language.size = Int2(250, 25);
 	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
 	int index = 0;
@@ -193,7 +193,7 @@ void Options::LoadLanguage()
 	// multisampling
 	multisampling.SetCollapsed(true);
 	multisampling.parent = this;
-	multisampling.pos = Int2(20, 327);
+	multisampling.pos = Int2(20, 327 - 8);
 	multisampling.size = Int2(250, 25);
 	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
@@ -241,11 +241,11 @@ void Options::Draw(ControlDrawData*)
 	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
 	gui->DrawText(GameGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
-	r2.Top() = global_pos.y + 300;
+	r2.Top() = global_pos.y + 300 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
 	// Jêzyk:
-	r2.Top() = global_pos.y + 360;
+	r2.Top() = global_pos.y + 360 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ dŸwiêku (0)

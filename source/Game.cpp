@@ -663,7 +663,7 @@ void Game::DrawGame()
 		const bool useGlow = !draw_batch.glow_nodes.empty();
 
 		if(usePostfx || useGlow)
-			postfx_shader->Prepare(useGlow);
+			postfx_shader->SetTarget();
 
 		render->Clear(clear_color);
 
@@ -680,7 +680,9 @@ void Game::DrawGame()
 		if(usePostfx)
 		{
 			PROFILER_BLOCK("DrawPostFx");
-			postfx_shader->Draw(postEffects, true, false);
+			if(!useGlow)
+				postfx_shader->Prepare();
+			postfx_shader->Draw(postEffects);
 		}
 	}
 	else

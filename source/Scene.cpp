@@ -1886,7 +1886,6 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 			Color(1.f, 1.f, 0.f, 0.5f),
 			Color(0.f, 0.58f, 1.f, 0.5f)
 		};
-		Color prevColor = Color::None;
 
 		for(Area2* area2 : areas2)
 			basic_shader->DrawArea(area2->points, area2->faces, colors[area2->ok]);

@@ -12,6 +12,7 @@
 
 #include <Mesh.h>
 #include <Render.h>
+#include <RenderTarget.h>
 #include <ResourceManager.h>
 #include <SoundManager.h>
 #include <Scene.h>
@@ -54,7 +55,7 @@ void GameResources::Init()
 	camera = new Camera;
 
 	aHuman = res_mgr->Load<Mesh>("human.qmsh");
-	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
 	missing_item_texture = CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 }
 
