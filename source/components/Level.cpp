@@ -1015,6 +1015,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 		}
 		else
 			pos = Vec3::TransformZero(pt.mat);
+		const float heigh = pos.y;
 		pos += shift;
 
 		switch(c)
@@ -1043,7 +1044,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				if(base)
 				{
 					if(area.area_type == LevelArea::Type::Outside)
-						terrain->SetH(pos);
+						pos.y = terrain->GetH(pos) + heigh;
+
 					float r;
 					switch(c)
 					{

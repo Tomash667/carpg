@@ -43,7 +43,7 @@ WorldMapGui::WorldMapGui() : zoom(1.2f), offset(0.f, 0.f), follow(false)
 	focusable = true;
 	visible = false;
 	combo_search.parent = this;
-	combo_search.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->Free(); };
+	combo_search.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->SafeFree(); };
 	tooltip.Init(TooltipController::Callback(this, &WorldMapGui::GetTooltip));
 
 	custom_layout.tex[0] = AreaLayout(Color::None, Color::Black);

@@ -234,9 +234,9 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 	LevelArea& area = *outside;
 	TerrainTile* tiles = outside->tiles;
 
-	// obelisk
 	if(Rand() % (road_dir == -1 ? 10 : 15) == 0)
 	{
+		// obelisk
 		Vec3 pos;
 		if(road_dir == -1)
 			pos = Vec3(127.f, 0, 127.f);

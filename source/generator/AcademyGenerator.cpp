@@ -164,20 +164,20 @@ void AcademyGenerator::Generate()
 void AcademyGenerator::GenerateObjects()
 {
 	SpawnBuilding(true);
-	SpawnForestObjects();
+	SpawnForestObjects(1);
 }
 
 //=================================================================================================
 void AcademyGenerator::SpawnBuilding(bool first)
 {
 	Vec3 pos = Vec3(float(pt.x + building->shift[GDIR_DOWN].x) * 2, 1.f, float(pt.y + building->shift[GDIR_DOWN].y) * 2);
+	terrain->SetH(pos);
 
 	if(first)
 	{
 		Object* o = new Object;
 		o->rot = Vec3(0, 0, 0);
 		o->pos = pos;
-		terrain->SetH(o->pos);
 		o->scale = 1.f;
 		o->base = nullptr;
 		o->mesh = building->mesh;

@@ -11,6 +11,7 @@ struct GameCamera : public Camera
 	void Update(float dt);
 	void RotateTo(float dt, float dest_rot);
 	void UpdateFreeRot(float dt);
+	void UpdateDistance();
 	void SetZoom(const Vec3* zoom_pos);
 
 	Unit* target;

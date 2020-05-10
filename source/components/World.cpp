@@ -30,7 +30,7 @@
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
-const int start_year = 100;
+const int start_year = 631;
 const float world_border = 50.f;
 const int def_world_size = 1200;
 World* global::world;
@@ -1857,13 +1857,13 @@ bool World::IsSameWeek(int worldtime2) const
 //=================================================================================================
 cstring World::GetDate() const
 {
-	return Format(txDate, year, txMonth[month], day + 1);
+	return Format(txDate, day + 1, txMonth[month], year);
 }
 
 //=================================================================================================
 cstring World::GetDate(int year, int month, int day) const
 {
-	return Format(txDate, year, txMonth[month], day + 1);
+	return Format(txDate, day + 1, txMonth[month], year);
 }
 
 //=================================================================================================

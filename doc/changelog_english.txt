@@ -6,6 +6,8 @@ Version 0.15 (???):
 + moved from directx 9 to directx 11
 + month name instead of number
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- can't use speed command in singleplayer game
+- mouse zoom sometimes didn't have effect on camera
 
 --------------------------------------------------------------------------------
 Fixes:

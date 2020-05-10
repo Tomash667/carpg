@@ -241,11 +241,12 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 				}
 			}
 
-			if(it->type == ConsoleCommand::VAR_BOOL)
+			switch(it->type)
 			{
+			case ConsoleCommand::VAR_BOOL:
 				if(t.Next())
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
+					if(IsSet(it->flags, F_MP_VAR) && Net::IsClient())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -257,91 +258,90 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 					if(value != var)
 					{
 						var = value;
-						if(IsSet(it->flags, F_MP_VAR))
+						if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
 							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
 					}
 				}
 				Msg("%s = %d", it->name, *(bool*)it->var ? 1 : 0);
-				return;
-			}
-			else if(it->type == ConsoleCommand::VAR_FLOAT)
-			{
-				float& f = it->Get<float>();
-
-				if(t.Next())
+				break;
+			case ConsoleCommand::VAR_FLOAT:
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
-					{
-						Msg("Only server can change this variable.");
-						return;
-					}
+					float& f = it->Get<float>();
 
-					float f2 = Clamp(t.MustGetFloat(), it->_float.x, it->_float.y);
-					if(!Equal(f, f2))
+					if(t.Next())
 					{
-						f = f2;
-						if(IsSet(it->flags, F_MP_VAR))
-							Net::PushChange(NetChange::CHANGE_MP_VARS);
+						if(IsSet(it->flags, F_MP_VAR) && Net::IsClient())
+						{
+							Msg("Only server can change this variable.");
+							return;
+						}
+
+						float f2 = Clamp(t.MustGetFloat(), it->_float.x, it->_float.y);
+						if(!Equal(f, f2))
+						{
+							f = f2;
+							if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
+								Net::PushChange(NetChange::CHANGE_MP_VARS);
+						}
 					}
+					Msg("%s = %g", it->name, f);
 				}
-				Msg("%s = %g", it->name, f);
-				return;
-			}
-			else if(it->type == ConsoleCommand::VAR_INT)
-			{
-				int& i = it->Get<int>();
-
-				if(t.Next())
+				break;
+			case ConsoleCommand::VAR_INT:
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
-					{
-						Msg("Only server can change this variable.");
-						return;
-					}
+					int& i = it->Get<int>();
 
-					int i2 = Clamp(t.MustGetInt(), it->_int.x, it->_int.y);
-					if(i != i2)
+					if(t.Next())
 					{
-						i = i2;
-						if(IsSet(it->flags, F_MP_VAR))
-							Net::PushChange(NetChange::CHANGE_MP_VARS);
-						if(it->changed)
-							it->changed();
+						if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
+						{
+							Msg("Only server can change this variable.");
+							return;
+						}
+
+						int i2 = Clamp(t.MustGetInt(), it->_int.x, it->_int.y);
+						if(i != i2)
+						{
+							i = i2;
+							if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
+								Net::PushChange(NetChange::CHANGE_MP_VARS);
+							if(it->changed)
+								it->changed();
+						}
 					}
+					Msg("%s = %d", it->name, i);
 				}
-				Msg("%s = %d", it->name, i);
-				return;
-			}
-			else if(it->type == ConsoleCommand::VAR_UINT)
-			{
-				uint& u = it->Get<uint>();
-
-				if(t.Next())
+				break;
+			case ConsoleCommand::VAR_UINT:
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
-					{
-						Msg("Only server can change this variable.");
-						return;
-					}
+					uint& u = it->Get<uint>();
 
-					uint u2 = Clamp(t.MustGetUint(), it->_uint.x, it->_uint.y);
-					if(u != u2)
+					if(t.Next())
 					{
-						u = u2;
-						if(IsSet(it->flags, F_MP_VAR))
-							Net::PushChange(NetChange::CHANGE_MP_VARS);
+						if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
+						{
+							Msg("Only server can change this variable.");
+							return;
+						}
+
+						uint u2 = Clamp(t.MustGetUint(), it->_uint.x, it->_uint.y);
+						if(u != u2)
+						{
+							u = u2;
+							if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
+								Net::PushChange(NetChange::CHANGE_MP_VARS);
+						}
 					}
+					Msg("%s = %u", it->name, u);
 				}
-				Msg("%s = %u", it->name, u);
-				return;
-			}
-			else
-			{
+				break;
+			case ConsoleCommand::VAR_NONE:
 				RunCommand(*it, source);
-				return;
+				break;
 			}
+			return;
 		}
 
 		Msg("Unknown command '%s'!", token.c_str());

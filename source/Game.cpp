@@ -826,9 +826,12 @@ void Game::OnUpdate(float dt)
 		if(game_state == GS_LEVEL)
 			UpdateFallback(dt);
 
+		bool isPaused = false;
+
 		if(game_state == GS_LEVEL)
 		{
-			if(!paused && !(gui->HavePauseDialog() && Net::IsSingleplayer()))
+			isPaused = (paused || (gui->HavePauseDialog() && Net::IsSingleplayer()));
+			if(!isPaused)
 				UpdateGame(dt);
 		}
 
@@ -840,7 +843,7 @@ void Game::OnUpdate(float dt)
 					net->UpdateWarpData(dt);
 				game_level->ProcessUnitWarps();
 			}
-			game_level->camera.Update(dt);
+			game_level->camera.Update(isPaused ? 0.f : dt);
 		}
 	}
 	else if(cutscene)
@@ -2040,8 +2043,6 @@ void Game::UpdateFallback(float dt)
 	if(fallback_type == FALLBACK::NO)
 		return;
 
-	dt /= game_speed;
-
 	if(fallback_t <= 0.f)
 	{
 		fallback_t += dt * 2;
@@ -2205,17 +2206,7 @@ void Game::UpdateCamera(float dt)
 		else
 		{
 			camera.UpdateFreeRot(dt);
-			if(GKey.AllowMouse())
-			{
-				// use mouse wheel to set distance
-				if(!game_gui->level_gui->IsMouseInsideDialog())
-				{
-					camera.dist -= input->GetMouseWheel();
-					camera.dist = Clamp(camera.dist, 0.5f, 6.f);
-				}
-				if(input->PressedRelease(Key::MiddleButton))
-					camera.dist = 3.5f;
-			}
+			camera.UpdateDistance();
 			camera.SetZoom(nullptr);
 		}
 	}

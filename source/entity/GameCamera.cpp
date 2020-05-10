@@ -19,6 +19,9 @@
 
 const float SPRINGINESS_NORMAL = 40.f;
 const float SPRINGINESS_SLOW = 5.f;
+const float DIST_MIN = 0.5f;
+const float DIST_DEF = 3.5f;
+const float DIST_MAX = 6.f;
 
 //=================================================================================================
 GameCamera::GameCamera() : springiness(SPRINGINESS_NORMAL), reset(true), free_rot(false)
@@ -31,7 +34,7 @@ void GameCamera::Reset(bool full)
 	if(full)
 	{
 		real_rot = Vec2(0, 4.2875104f);
-		dist = 3.5f;
+		dist = DIST_DEF;
 		drunk_anim = 0.f;
 	}
 	shift = 0.f;
@@ -188,6 +191,17 @@ void GameCamera::UpdateFreeRot(float dt)
 			free_rot = false;
 		else
 			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
+	}
+}
+
+//=================================================================================================
+void GameCamera::UpdateDistance()
+{
+	if(GKey.AllowMouse())
+	{
+		dist = Clamp(dist - input->GetMouseWheel(), DIST_MIN, DIST_MAX);
+		if(input->PressedRelease(Key::MiddleButton))
+			dist = DIST_DEF;
 	}
 }
 
