@@ -420,6 +420,7 @@ object rock
 object fern
 object table
 object shelves
+object scarecrow
 // outside
 object tree
 object tree2

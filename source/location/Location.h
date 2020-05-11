@@ -77,7 +77,6 @@ namespace old
 };
 
 //-----------------------------------------------------------------------------
-// stan lokacji
 enum LOCATION_STATE
 {
 	LS_HIDDEN,
@@ -98,8 +97,8 @@ static constexpr int ANY_TARGET = -1;
 struct Location
 {
 	int index;
-	LOCATION type; // typ lokacji
-	LOCATION_STATE state; // stan lokacji
+	LOCATION type;
+	LOCATION_STATE state;
 	int target;
 	Vec2 pos; // pozycja na mapie œwiata
 	string name; // nazwa lokacji

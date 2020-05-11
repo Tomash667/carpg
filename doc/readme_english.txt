@@ -382,8 +382,9 @@ Zielu - Testing.
 
 🗃 Models:
 	* kaangvl - fish
-	* yd - sausage
+	* Mophs - scarecrow
 	* rubberduck - shrine
+	* yd - sausage
 🎨 Textures:
 	* https://www.textures.com/
 	* Cube

@@ -498,7 +498,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky
 	{
 		for(int i = 0; i < (int)roads.size(); ++i)
 		{
-			const Road2& r = roads[i];
+			const Road& r = roads[i];
 			int minx = max(0, r.start.x - 1),
 				miny = max(0, r.start.y - 1),
 				maxx = min(w - 1, r.end.x + 1),
@@ -985,7 +985,7 @@ void CityGenerator::GeneratePath(const Int2& pt)
 	int start_idx = pt.x + pt.y*w;
 	to_check.push_back(start_idx);
 
-	grid[start_idx].stan = 1;
+	grid[start_idx].state = 1;
 	grid[start_idx].dir = -1;
 
 	struct Mod
@@ -1028,7 +1028,7 @@ void CityGenerator::GeneratePath(const Int2& pt)
 		{
 			const int idx = pt_idx + mod[i].change.x + mod[i].change.y*w;
 			APoint2& point = grid[idx];
-			if(point.stan == 0)
+			if(point.state == 0)
 			{
 				TerrainTile& tile = tiles[idx];
 				if(tile.mode == TM_ROAD)
@@ -1041,13 +1041,13 @@ void CityGenerator::GeneratePath(const Int2& pt)
 				else if(tile.mode == TM_NORMAL || tile.mode == TM_BUILDING_SAND)
 				{
 					point.prev = pt;
-					point.stan = 1;
-					point.koszt = this_point.koszt + (this_point.dir == i ? mod[i].cost : mod[i].cost2);
+					point.state = 1;
+					point.cost = this_point.cost + (this_point.dir == i ? mod[i].cost : mod[i].cost2);
 					point.dir = i;
 					to_check.push_back(idx);
 				}
 				else
-					point.stan = 1;
+					point.state = 1;
 			}
 		}
 
@@ -1492,6 +1492,7 @@ void CityGenerator::GenerateFields()
 {
 	const int ymin = int(0.25f*w);
 	const int ymax = int(0.75f*w) - 5;
+	fields.clear();
 
 	for(int i = 0; i < 50; ++i)
 	{
@@ -1499,25 +1500,24 @@ void CityGenerator::GenerateFields()
 		if(tiles[pt.x + pt.y*w].mode != TM_NORMAL)
 			continue;
 
-		int fw = Random(4, 8);
-		int fh = Random(4, 8);
-		if(fw > fh)
-			fw *= 2;
+		Int2 size(Random(4, 8), Random(4, 8));
+		if(size.x > size.y)
+			size.x *= 2;
 		else
-			fh *= 2;
+			size.y *= 2;
 
-		for(int y = pt.y - 1; y <= pt.y + fh; ++y)
+		for(int y = pt.y - 1; y <= pt.y + size.y; ++y)
 		{
-			for(int x = pt.x - 1; x <= pt.x + fw; ++x)
+			for(int x = pt.x - 1; x <= pt.x + size.x; ++x)
 			{
 				if(tiles[x + y * w].mode != TM_NORMAL)
 					goto next;
 			}
 		}
 
-		for(int y = pt.y; y < pt.y + fh; ++y)
+		for(int y = pt.y; y < pt.y + size.y; ++y)
 		{
-			for(int x = pt.x; x < pt.x + fw; ++x)
+			for(int x = pt.x; x < pt.x + size.x; ++x)
 			{
 				tiles[x + y * w].Set(TT_FIELD, TM_FIELD);
 				float avg = (height[x + y * (w + 1)]
@@ -1531,6 +1531,8 @@ void CityGenerator::GenerateFields()
 				height[x + 1 + (y + 1)*(w + 1)] = avg;
 			}
 		}
+
+		fields.push_back(Rect::Create(pt, size));
 
 	next:;
 	}
@@ -1684,7 +1686,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 			break;
 
 		int index = RandomItemPop(to_check);
-		Road2& r = roads[index];
+		Road& r = roads[index];
 
 		int choices = 0;
 		if(!IsSet(r.flags, ROAD_START_CHECKED))
@@ -1867,7 +1869,7 @@ int CityGenerator::MakeRoad(const Int2& start_pt, GameDirection dir, int road_in
 void CityGenerator::FillRoad(const Int2& pt, GameDirection dir, int dist)
 {
 	int index = (int)roads.size();
-	Road2& road = Add1(roads);
+	Road& road = Add1(roads);
 	Int2 start_pt = pt, end_pt = pt;
 	switch(dir)
 	{
@@ -2458,6 +2460,23 @@ void CityGenerator::SpawnObjects()
 		Vec3 pos = PtToPos(well_pt);
 		terrain->SetH(pos);
 		game_level->SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
+	}
+
+	// fields scarecrow
+	if(city->IsVillage())
+	{
+		BaseObject* scarecrow = BaseObject::Get("scarecrow");
+		for(const Rect& rect : fields)
+		{
+			if(Rand() % 3 != 0)
+				continue;
+			const Int2 size = rect.Size();
+			Box2d spawnBox(2.f * (rect.p1.x + size.x / 4), 2.f * (rect.p1.y + size.y / 4),
+				2.f * (rect.p2.x - size.x / 4), 2.f * (rect.p2.y - size.y / 4));
+			Vec3 pos = spawnBox.GetRandomPos3();
+			terrain->SetH(pos);
+			game_level->SpawnObjectEntity(area, scarecrow, pos, Random(MAX_ANGLE));
+		}
 	}
 
 	TerrainTile* tiles = city->tiles;

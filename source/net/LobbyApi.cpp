@@ -60,7 +60,7 @@ static bool IsBinary(CURL* eh)
 {
 	char* ct;
 	curl_easy_getinfo(eh, CURLINFO_CONTENT_TYPE, &ct);
-	return strcmp(ct, "application/octet-stream") == 0;
+	return !ct || strcmp(ct, "application/octet-stream") == 0;
 }
 
 void LobbyApi::UpdateInternal()

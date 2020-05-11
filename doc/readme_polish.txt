@@ -319,8 +319,9 @@ Zielu - Testowanie.
 
 🗃 Modele:
 	* kaangvl - fish
-	* yd - sausage
+	* Mophs - scarecrow
 	* rubberduck - shrine
+	* yd - sausage
 🎨 Tekstury:
 	* https://textures.com
 	* Cube

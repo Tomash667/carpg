@@ -4,10 +4,12 @@ Historia zmian
 Wersja 0.15 (2020-03-31):
 ! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
 + przejście z directx 9 na directx 11
++ strach na wróble na polach
 + nazwa miesiąca zamiast liczby
 + aktualizacja bibliotek: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
 - nie można używać komendy 'speed' w jednoosobowej grze
 - kółko myszki czasami nie ma wpływu na kamerę
+- crash podczas uruchamiania [AnimeIsWrong]
 
 --------------------------------------------------------------------------------
 Poprawki:
@@ -36,7 +38,7 @@ Wersja 0.14 (2020-03-31):
 + nowy atut historii: uczeń wędrownego kupca (+10 targowania, 500 złota)
 + budynek w mieście - kapliczka
 + ustawienia kamery podczas rozmowy
-+ przeniesienie zadań "dostarcz list" i "pancerz gladiatora" do skryptów 
++ przeniesienie zadań "dostarcz list" i "pancerz gladiatora" do skryptów
 + wczytywanie atutów z pliku
 + wczytywanie pokoi z pliku
 + usprawnienia menadżera sceny - część 2
