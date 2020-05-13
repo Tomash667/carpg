@@ -134,6 +134,7 @@
     <ClInclude Include="components\GameResources.h" />
     <ClInclude Include="components\GameStats.h" />
     <ClInclude Include="components\Level.h" />
+    <ClInclude Include="components\Messenger.h" />
     <ClInclude Include="components\Pathfinding.h" />
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
@@ -210,6 +211,7 @@
     <ClInclude Include="system\Class.h" />
     <ClInclude Include="system\ClassLoader.h" />
     <ClInclude Include="system\Content.h" />
+    <ClInclude Include="system\ContentItem.h" />
     <ClInclude Include="system\ContentLoader.h" />
     <ClInclude Include="entity\AIController.h" />
     <ClInclude Include="entity\Blood.h" />
@@ -325,6 +327,7 @@
     <ClCompile Include="components\GameResources.cpp" />
     <ClCompile Include="components\GameStats.cpp" />
     <ClCompile Include="components\Level.cpp" />
+    <ClCompile Include="components\Messenger.cpp" />
     <ClCompile Include="components\Pathfinding.cpp" />
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />

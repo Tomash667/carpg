@@ -1,38 +1,40 @@
 #include "Pch.h"
 #include "CommandParser.h"
-#include "BitStreamFunc.h"
-#include "ConsoleCommands.h"
-#include "Level.h"
-#include "PlayerInfo.h"
-#include "NetChangePlayer.h"
+
+#include "AIController.h"
 #include "Arena.h"
-#include "Tokenizer.h"
-#include "Game.h"
-#include "QuestManager.h"
-#include "GameGui.h"
-#include "ServerPanel.h"
+#include "BitStreamFunc.h"
+#include "BuildingGroup.h"
+#include "City.h"
 #include "Console.h"
+#include "ConsoleCommands.h"
+#include "Game.h"
+#include "GameGui.h"
+#include "InsideLocation.h"
+#include "Level.h"
 #include "LevelGui.h"
-#include "WorldMapGui.h"
 #include "MpBox.h"
+#include "NetChangePlayer.h"
+#include "Pathfinding.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "SaveState.h"
 #include "ScriptManager.h"
+#include "ServerPanel.h"
+#include "Team.h"
+#include "Utility.h"
 #include "Version.h"
 #include "World.h"
-#include "InsideLocation.h"
-#include "City.h"
-#include "Team.h"
-#include "AIController.h"
-#include "SaveState.h"
-#include "BuildingGroup.h"
-#include "Render.h"
-#include "Terrain.h"
-#include "Pathfinding.h"
-#include "Utility.h"
-#include "Engine.h"
+#include "WorldMapGui.h"
+
+#include <Engine.h>
+#include <Render.h>
 #include <SceneManager.h>
+#include <Terrain.h>
+#include <Tokenizer.h>
 
 //-----------------------------------------------------------------------------
-CommandParser* global::cmdp;
+CommandParser* cmdp;
 
 //=================================================================================================
 void CommandParser::AddCommands()

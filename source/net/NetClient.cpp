@@ -527,7 +527,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f << c.pos;
 			break;
 		case NetChange::CRAFT:
-			f << c.recipe->id;
+			f << c.recipe->hash;
 			f << c.count;
 			break;
 		default:
@@ -4026,9 +4026,9 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					Error("Update single client: Broken ADD_RECIPE.");
 					break;
 				}
-				Recipe* recipe = Recipe::Get(recipe_hash);
+				Recipe* recipe = Recipe::TryGet(recipe_hash);
 				if(!recipe)
-					Error("Update single client: ADD_RECIPE, invalid recipe %u.", recipe_hash);
+					Error("Update single client: ADD_RECIPE, invalid recipe %d.", recipe_hash);
 				else
 					pc.AddRecipe(recipe);
 			}

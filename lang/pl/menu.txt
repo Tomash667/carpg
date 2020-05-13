@@ -585,6 +585,7 @@ tooComplicated = "To jest zbyt skomplikowane..."
 addedCursedStone = "W twoim ekwipunku pojawi³o siê coœ ciê¿kiego!"
 needWand = "Potrzebujesz ró¿d¿ki do rzucania czarów"
 learnedAbility = "Pozna³eœ now¹ zdolnoœæ"
+learnedRecipe = "Pozna³eœ now¹ recepturê"
 
 // distance/group difficulty
 near = "niedaleko "

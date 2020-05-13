@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "Pathfinding.h"
+
+#include "InsideLocation.h"
 #include "Level.h"
 #include "OutsideLocation.h"
-#include "InsideLocation.h"
-#include "Terrain.h"
-#include "BasicShader.h"
+
+#include <BasicShader.h>
+#include <Terrain.h>
 
 //-----------------------------------------------------------------------------
 const float SS = 0.25f;
-Pathfinding* global::pathfinding;
+Pathfinding* pathfinding;
 
 //-----------------------------------------------------------------------------
 struct Point

@@ -1,20 +1,22 @@
 #include "Pch.h"
 #include "ServerPanel.h"
-#include "Game.h"
-#include "Language.h"
-#include "InfoBox.h"
+
 #include "BitStreamFunc.h"
-#include "ResourceManager.h"
-#include "GameGui.h"
-#include "CreateCharacterPanel.h"
-#include "MainMenu.h"
+#include "CommandParser.h"
 #include "Content.h"
-#include "Version.h"
+#include "CreateCharacterPanel.h"
+#include "Game.h"
+#include "GameGui.h"
+#include "InfoBox.h"
+#include "Language.h"
 #include "Level.h"
+#include "LobbyApi.h"
+#include "MainMenu.h"
 #include "PlayerInfo.h"
 #include "Team.h"
-#include "LobbyApi.h"
-#include "CommandParser.h"
+#include "Version.h"
+
+#include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -1317,7 +1319,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == team->leader_id ? Color(0xFFFFD700) : Color::Black);
+		cell.text_color->color = (info.id == team->leader_id ? Color(255, 215, 0) : Color::Black);
 	}
 	else
 		cell.text = (info.clas ? info.clas->name.c_str() : txNone);

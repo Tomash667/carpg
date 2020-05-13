@@ -3328,23 +3328,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// craft item
 		case NetChange::CRAFT:
 			{
-				const string& recipe_id = f.ReadString1();
+				int recipe_hash = f.Read<int>();
 				uint count = f.Read<uint>();
 				if(!f)
 				{
 					Error("Update server: Broken CRAFT from %s.", info.name.c_str());
 					break;
 				}
-				Recipe* recipe = Recipe::TryGet(recipe_id);
+				Recipe* recipe = Recipe::TryGet(recipe_hash);
 				if(!recipe)
 				{
-					Error("Update server: CRAFT, invalid recipe '%s'.", recipe_id.c_str());
+					Error("Update server: CRAFT, invalid recipe %d.", recipe_hash);
 					break;
 				}
 				if(count > 0)
 				{
 					if(!game_gui->craft->DoPlayerCraft(player, recipe, count))
-						Error("Update server: CRAFT, missing ingredients to craft %s.", recipe_id.c_str());
+						Error("Update server: CRAFT, missing ingredients to craft %s.", recipe->id.c_str());
 				}
 			}
 			break;

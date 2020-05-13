@@ -213,7 +213,7 @@ struct NetChange
 		CUTSCENE_IMAGE, // queue cutscene image to show [string1(str)-texture, float(f[0])-time]
 		CUTSCENE_TEXT, // queue cutscene text to show [string1(str)-text, float(f[0])-time]
 		CUTSCENE_SKIP, // skip current cutscene []
-		CRAFT, // craft item [string1(Recipe->id), uint(count)]
+		CRAFT, // craft item [int(recipe->hash), uint(count)]
 
 		MAX
 	} type;

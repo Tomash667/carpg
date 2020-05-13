@@ -623,6 +623,9 @@
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="components\Messenger.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1228,6 +1231,12 @@
     </ClInclude>
     <ClInclude Include="helpers\DungeonMeshBuilder.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ContentItem.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Messenger.h">
+      <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

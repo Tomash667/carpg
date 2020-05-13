@@ -226,6 +226,13 @@ Static methods:
 
 * ItemList@ Get(const string& in id) - return item list with id.
 
+### Recipe type
+Information how to craft items, learned by player.
+
+Static methods:
+
+* Recipe@ Get(const string& in id) - return recipe with id.
+
 ### UnitData type
 Unit template.
 
@@ -358,6 +365,7 @@ Methods:
 * bool HavePerk(const string& in perk) - return true if player have this perk.
 * bool AddAbility(Ability@) - add ability, return true if not already added.
 * bool RemoveAbility(Ability@) - remove ability, return true if removed.
+* bool AddRecipe(Recipe@) - add recipe, return true if not already added.
 
 Static properties:
 

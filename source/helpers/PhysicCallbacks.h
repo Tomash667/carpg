@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Unit.h"
+
+//-----------------------------------------------------------------------------
 struct RaytestWithIgnoredCallback : public btCollisionWorld::RayResultCallback
 {
 	RaytestWithIgnoredCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), hit(false), fraction(1.01f)

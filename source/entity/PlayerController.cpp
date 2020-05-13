@@ -1,37 +1,38 @@
 #include "Pch.h"
 #include "PlayerController.h"
-#include "PlayerInfo.h"
-#include "Unit.h"
-#include "Game.h"
-#include "SaveState.h"
-#include "BitStreamFunc.h"
-#include "Class.h"
+
 #include "Ability.h"
-#include "Level.h"
+#include "AbilityPanel.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "BookPanel.h"
+#include "Class.h"
+#include "Door.h"
+#include "FOV.h"
+#include "Game.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "Team.h"
-#include "World.h"
-#include "ScriptException.h"
-#include "AIController.h"
-#include "SoundManager.h"
-#include "QuestManager.h"
-#include "Quest_Tutorial.h"
-#include "Inventory.h"
-#include "Arena.h"
-#include "Ability.h"
-#include "ParticleSystem.h"
-#include "FOV.h"
-#include "LevelGui.h"
-#include "BookPanel.h"
-#include "Door.h"
-#include "GroundItem.h"
-#include "ScriptManager.h"
-#include "Quest_Scripted.h"
 #include "GameResources.h"
-#include "AbilityPanel.h"
+#include "GroundItem.h"
+#include "Inventory.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "Messenger.h"
 #include "PhysicCallbacks.h"
-#include "CraftPanel.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "Quest_Scripted.h"
+#include "Quest_Tutorial.h"
+#include "SaveState.h"
+#include "ScriptException.h"
+#include "ScriptManager.h"
+#include "Team.h"
+#include "Unit.h"
+#include "World.h"
+
+#include <ParticleSystem.h>
+#include <SoundManager.h>
 
 LocalPlayerData PlayerController::data;
 
@@ -70,6 +71,9 @@ PlayerController::~PlayerController()
 //=================================================================================================
 void PlayerController::Init(Unit& _unit, bool partial)
 {
+	// to prevent sending MP message set temporary as fake unit
+	_unit.fake_unit = true;
+
 	unit = &_unit;
 	move_tick = 0.f;
 	last_weapon = W_NONE;
@@ -115,7 +119,21 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		exp_level = 0;
 		exp_need = GetExpNeed();
 		InitShortcuts();
+
+		// starting known recipes
+		int skill = unit->GetBase(SkillId::ALCHEMY);
+		if(skill > 0)
+		{
+			for(pair<const int, Recipe*>& p : Recipe::items)
+			{
+				Recipe* recipe = p.second;
+				if(recipe->autolearn && skill >= recipe->skill)
+					AddRecipe(recipe);
+			}
+		}
 	}
+
+	_unit.fake_unit = false;
 }
 
 //=================================================================================================
@@ -622,33 +640,20 @@ void PlayerController::Load(FileReader& f)
 		f >> count;
 		recipes.resize(count);
 		for(MemorizedRecipe& mr : recipes)
-		{
 			mr.recipe = Recipe::Get(f.Read<int>());
-		}
 	}
 	else
 	{
 		// Learn recipes based on player skill for saves before recipe learning
-		if (unit->Get(SkillId::ALCHEMY) >= 1)
+		int skill = unit->GetBase(SkillId::ALCHEMY);
+		if(skill >= 1)
 		{
-			Recipe* rcp_p_hp = Recipe::TryGet("p_hp");
-			Recipe* rcp_p_mp = Recipe::TryGet("p_mp");
-			AddRecipe(rcp_p_hp);
-			AddRecipe(rcp_p_mp);
-		}
-		if (unit->Get(SkillId::ALCHEMY) >= 25)
-		{
-			Recipe* rcp_p_hp = Recipe::TryGet("p_hp2");
-			Recipe* rcp_p_mp = Recipe::TryGet("p_mp2");
-			AddRecipe(rcp_p_hp);
-			AddRecipe(rcp_p_mp);
-		}
-		if (unit->Get(SkillId::ALCHEMY) >= 50)
-		{
-			Recipe* rcp_p_hp = Recipe::TryGet("p_hp3");
-			Recipe* rcp_p_mp = Recipe::TryGet("p_mp3");
-			AddRecipe(rcp_p_hp);
-			AddRecipe(rcp_p_mp);
+			for(pair<const int, Recipe*>& p : Recipe::items)
+			{
+				Recipe* recipe = p.second;
+				if(recipe->autolearn && skill >= recipe->skill)
+					AddRecipe(recipe);
+			}
 		}
 	}
 
@@ -1176,12 +1181,16 @@ void PlayerController::Write(BitStreamWriter& f) const
 	f << knocks;
 	f << arena_fights;
 	f << learning_points;
+
+	// perks
 	f.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& tp : perks)
 	{
 		f << tp.perk->hash;
 		f << tp.value;
 	}
+
+	// abilities
 	f.WriteCasted<byte>(abilities.size());
 	for(const PlayerAbility& ab : abilities)
 	{
@@ -1190,11 +1199,13 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << ab.recharge;
 		f.WriteCasted<byte>(ab.charges);
 	}
+
+	// recipes
 	f << recipes.size();
 	for(const MemorizedRecipe& mr : recipes)
-	{
 		f << mr.recipe->hash;
-	}
+
+	// next action
 	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
@@ -1216,6 +1227,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 		assert(0);
 		break;
 	}
+
 	f << last_ring;
 }
 
@@ -1256,6 +1268,8 @@ bool PlayerController::Read(BitStreamReader& f)
 	f >> knocks;
 	f >> arena_fights;
 	f >> learning_points;
+
+	// perks
 	f >> count;
 	if(!f || !f.Ensure(5 * count))
 		return false;
@@ -1265,6 +1279,8 @@ bool PlayerController::Read(BitStreamReader& f)
 		tp.perk = Perk::Get(f.Read<int>());
 		f >> tp.value;
 	}
+
+	// abilities
 	f >> count;
 	if(!f || !f.Ensure(11 * count))
 		return false;
@@ -1276,17 +1292,19 @@ bool PlayerController::Read(BitStreamReader& f)
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
 	}
-	int i_count;
+	game_gui->ability->Refresh();
+
+	// recipes
+	uint i_count;
 	f >> i_count;
 	if(!f || !f.Ensure(sizeof(MemorizedRecipe) * i_count))
 		return false;
 	recipes.resize(i_count);
 	for(MemorizedRecipe& mr : recipes)
-	{
 		mr.recipe = Recipe::Get(f.Read<int>());
-	}
+
+	// next action
 	f.ReadCasted<byte>(next_action);
-	game_gui->ability->Refresh();
 	if(!f)
 		return false;
 	switch(next_action)
@@ -1324,6 +1342,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		assert(0);
 		break;
 	}
+
 	f >> last_ring;
 	return true;
 }
@@ -2013,14 +2032,15 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 
 	if(!unit->fake_unit)
 	{
-		if(Net::IsServer() && !IsLocal())
+		if(IsLocal())
+			messenger->Post(Msg::LearnRecipe);
+		else
 		{
 			NetChangePlayer& c = Add1(player_info->changes);
 			c.type = NetChangePlayer::ADD_RECIPE;
 			c.recipe = recipe;
 		}
 	}
-
 
 	return true;
 }

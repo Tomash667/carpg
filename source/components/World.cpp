@@ -1,31 +1,32 @@
 #include "Pch.h"
 #include "World.h"
+
 #include "BitStreamFunc.h"
-#include "Language.h"
-#include "LocationHelper.h"
-#include "GameFile.h"
-#include "SaveState.h"
-#include "LoadingHandler.h"
-#include "ScriptManager.h"
-#include "Var.h"
-#include "Level.h"
 #include "Camp.h"
 #include "Cave.h"
 #include "City.h"
+#include "Encounter.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "GameGui.h"
+#include "Language.h"
+#include "Level.h"
+#include "LoadingHandler.h"
+#include "LocationHelper.h"
 #include "MultiInsideLocation.h"
 #include "Net.h"
-#include "Encounter.h"
-#include "Quest.h"
 #include "News.h"
-#include "Team.h"
+#include "OffscreenLocation.h"
+#include "Quest.h"
 #include "QuestManager.h"
 #include "Quest_Crazies.h"
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
-#include "Game.h"
-#include "GameGui.h"
+#include "SaveState.h"
+#include "ScriptManager.h"
+#include "Team.h"
+#include "Var.h"
 #include "WorldMapGui.h"
-#include "OffscreenLocation.h"
 
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
@@ -33,7 +34,7 @@ const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
 const int start_year = 631;
 const float world_border = 50.f;
 const int def_world_size = 1200;
-World* global::world;
+World* world;
 vector<string> txLocationStart, txLocationEnd;
 
 // pre V_0_8 compatibility

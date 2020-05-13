@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "GameStats.h"
-#include "GameFile.h"
-#include "BitStreamFunc.h"
 
-GameStats* global::game_stats;
+#include "BitStreamFunc.h"
+#include "GameFile.h"
+
+GameStats* game_stats;
 
 void GameStats::Reset()
 {

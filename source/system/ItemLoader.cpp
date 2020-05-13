@@ -49,7 +49,7 @@ enum Property
 	P_SPEED,
 	P_SCHEME,
 	P_RUNIC,
-	P_RECIPE,
+	P_RECIPES,
 	P_BLOCK,
 	P_EFFECTS,
 	P_TAG
@@ -79,8 +79,9 @@ enum BookSchemeProperty
 enum RecipeProperty
 {
 	RP_RESULT,
-	RP_ITEMS,
-	RP_SKILL
+	RP_INGREDIENTS,
+	RP_SKILL,
+	RP_AUTOLEARN
 };
 
 enum ListType
@@ -106,7 +107,7 @@ void ItemLoader::Cleanup()
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
 	DeleteElements(Stock::stocks);
-	DeleteElements(Recipe::hash_recipes);
+	DeleteElements(Recipe::items);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -158,7 +159,7 @@ void ItemLoader::InitTokenizer()
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },
 		{ "runic", P_RUNIC },
-		{ "recipes", P_RECIPE },
+		{ "recipes", P_RECIPES },
 		{ "block", P_BLOCK },
 		{ "effects", P_EFFECTS },
 		{ "tag", P_TAG }
@@ -274,8 +275,9 @@ void ItemLoader::InitTokenizer()
 
 	t.AddKeywords(G_RECIPE, {
 		{ "result", RP_RESULT },
-		{ "items", RP_ITEMS },
-		{ "skill", RP_SKILL }
+		{ "ingredients", RP_INGREDIENTS },
+		{ "skill", RP_SKILL },
+		{ "autolearn", RP_AUTOLEARN }
 		});
 
 	t.AddKeywords(G_LIST_TYPE, {
@@ -379,7 +381,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPE);
+		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPES);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -622,7 +624,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		case P_RUNIC:
 			item->ToBook().runic = t.MustGetBool();
 			break;
-		case P_RECIPE:
+		case P_RECIPES:
 			// load the ids only, recipes may not be loaded yet
 			if(t.IsSymbol('{'))
 			{
@@ -1228,7 +1230,7 @@ void ItemLoader::ParseBetterItems()
 void ItemLoader::ParseRecipe(const string& id)
 {
 	int hash = Hash(id);
-	Recipe* existing_recipe = Recipe::Get(hash);
+	Recipe* existing_recipe = Recipe::TryGet(hash);
 	if(existing_recipe)
 	{
 		if(existing_recipe->id == id)
@@ -1240,6 +1242,7 @@ void ItemLoader::ParseRecipe(const string& id)
 	Ptr<Recipe> recipe;
 	recipe->id = id;
 	recipe->hash = hash;
+	recipe->order = Recipe::items.size();
 
 	t.Next();
 	t.AssertSymbol('{');
@@ -1259,7 +1262,7 @@ void ItemLoader::ParseRecipe(const string& id)
 					LoadError("Missing result item '%s'.", item_id.c_str());
 			}
 			break;
-		case RP_ITEMS:
+		case RP_INGREDIENTS:
 			t.AssertSymbol('{');
 			t.Next();
 			while(!t.IsSymbol('}'))
@@ -1269,7 +1272,7 @@ void ItemLoader::ParseRecipe(const string& id)
 				{
 					count = t.GetUint();
 					if(count == 0u)
-						LoadError("Invalid item count %u.", count);
+						LoadError("Invalid ingredients count %u.", count);
 					t.Next();
 				}
 
@@ -1280,7 +1283,7 @@ void ItemLoader::ParseRecipe(const string& id)
 				else
 				{
 					bool added = false;
-					for(pair<const Item*, uint>& p : recipe->items)
+					for(pair<const Item*, uint>& p : recipe->ingredients)
 					{
 						if(p.first == item)
 						{
@@ -1290,7 +1293,7 @@ void ItemLoader::ParseRecipe(const string& id)
 						}
 					}
 					if(!added)
-						recipe->items.push_back(std::make_pair(item, count));
+						recipe->ingredients.push_back(std::make_pair(item, count));
 				}
 
 				t.Next();
@@ -1299,18 +1302,19 @@ void ItemLoader::ParseRecipe(const string& id)
 		case RP_SKILL:
 			recipe->skill = t.MustGetUint();
 			break;
+		case RP_AUTOLEARN:
+			recipe->autolearn = t.MustGetBool();
+			break;
 		}
 		t.Next();
 	}
 
 	if(!recipe->result)
 		LoadError("No result item.");
-	else if(recipe->items.empty())
-		LoadError("No required items.");
+	else if(recipe->ingredients.empty())
+		LoadError("No ingredients.");
 	else
-	{
-		Recipe::hash_recipes[hash] = recipe.Pin();
-	}
+		Recipe::items[hash] = recipe.Pin();
 }
 
 //=================================================================================================
@@ -1460,12 +1464,12 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->regions);
 	}
 
-	for(auto& element :  Recipe::hash_recipes)
+	for(auto& element : Recipe::items)
 	{
 		Recipe* recipe = element.second;
 		crc.Update(recipe->id);
 		crc.Update(recipe->result->id);
-		for(pair<const Item*, uint>& p : recipe->items)
+		for(pair<const Item*, uint>& p : recipe->ingredients)
 		{
 			crc.Update(p.first->id);
 			crc.Update(p.second);

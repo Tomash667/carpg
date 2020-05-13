@@ -1,44 +1,46 @@
 #include "Pch.h"
 #include "Unit.h"
+
+#include "Ability.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "City.h"
+#include "CombatHelper.h"
+#include "Content.h"
+#include "CraftPanel.h"
+#include "EntityInterpolator.h"
 #include "Game.h"
-#include "SaveState.h"
+#include "GameFile.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "GroundItem.h"
+#include "InsideLocation.h"
 #include "Inventory.h"
-#include "UnitHelper.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "PlayerInfo.h"
+#include "Portal.h"
 #include "QuestManager.h"
-#include "Quest_Secret.h"
 #include "Quest_Contest.h"
 #include "Quest_Mages.h"
-#include "AIController.h"
-#include "Team.h"
-#include "Content.h"
-#include "SoundManager.h"
-#include "GameFile.h"
-#include "World.h"
-#include "Level.h"
-#include "BitStreamFunc.h"
-#include "EntityInterpolator.h"
-#include "UnitEventHandler.h"
-#include "GameStats.h"
-#include "GameMessages.h"
-#include "GroundItem.h"
-#include "ResourceManager.h"
-#include "GameGui.h"
-#include "PlayerInfo.h"
-#include "Stock.h"
-#include "Arena.h"
 #include "Quest_Scripted.h"
+#include "Quest_Secret.h"
+#include "SaveState.h"
 #include "ScriptException.h"
-#include "LevelGui.h"
 #include "ScriptManager.h"
-#include "Terrain.h"
-#include "Ability.h"
-#include "ParticleSystem.h"
-#include "CombatHelper.h"
-#include "City.h"
-#include "InsideLocation.h"
-#include "Portal.h"
-#include "GameResources.h"
-#include "CraftPanel.h"
+#include "Stock.h"
+#include "Team.h"
+#include "UnitEventHandler.h"
+#include "UnitHelper.h"
+#include "World.h"
+
+#include <ParticleSystem.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
+#include <Terrain.h>
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -86,6 +88,7 @@ void Unit::Release()
 void Unit::Init(UnitData& base, int lvl)
 {
 	Register();
+	fake_unit = true; // to prevent sending MP message set temporary as fake unit
 
 	// stats
 	data = &base;
@@ -129,7 +132,6 @@ void Unit::Init(UnitData& base, int lvl)
 	moved = false;
 	running = false;
 
-	fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 	if(base.group == G_PLAYER)
 	{
 		stats = new UnitStats;
@@ -144,7 +146,6 @@ void Unit::Init(UnitData& base, int lvl)
 	mp = mpmax = CalculateMaxMp();
 	stamina = stamina_max = CalculateMaxStamina();
 	stamina_timer = 0;
-	fake_unit = false;
 
 	// items
 	weight = 0;
@@ -207,6 +208,8 @@ void Unit::Init(UnitData& base, int lvl)
 	}
 	else
 		hero = nullptr;
+
+	fake_unit = false;
 }
 
 //=================================================================================================
@@ -1979,6 +1982,7 @@ void Unit::SaveStock(GameWriter& f)
 //=================================================================================================
 void Unit::Load(GameReader& f, bool local)
 {
+	fake_unit = true; // to prevent sending MP message set temporary as fake unit
 	human_data = nullptr;
 
 	if(LOAD_VERSION >= V_0_12)
@@ -2630,6 +2634,8 @@ void Unit::Load(GameReader& f, bool local)
 		mp = mpmax = CalculateMaxMp();
 
 	CalculateLoad();
+
+	fake_unit = false;
 }
 
 //=================================================================================================
@@ -3543,7 +3549,7 @@ int Unit::FindItem(const Item* item, int quest_id) const
 }
 
 //=================================================================================================
-int Unit::FindItem(delegate<bool(const ItemSlot & slot)> callback) const
+int Unit::FindItem(delegate<bool(const ItemSlot& slot)> callback) const
 {
 	int index = 0;
 	for(const ItemSlot& slot : items)
@@ -4389,6 +4395,19 @@ void Unit::ApplyStat(SkillId s)
 {
 	if(s == SkillId::CONCENTRATION)
 		RecalculateMp();
+	else if(s == SkillId::ALCHEMY)
+	{
+		if(IsPlayer())
+		{
+			int skill = GetBase(SkillId::ALCHEMY);
+			for(pair<const int, Recipe*>& p : Recipe::items)
+			{
+				Recipe* recipe = p.second;
+				if(recipe->autolearn && skill >= recipe->skill)
+					player->AddRecipe(recipe);
+			}
+		}
+	}
 }
 
 //=================================================================================================

@@ -44,6 +44,7 @@ void GameMessages::LoadLanguage()
 	txGmsAddedItems = Str("gmsAddedItems");
 	txNeedWand = Str("needWand");
 	txLearnedAbility = Str("learnedAbility");
+	txLearnedRecipe = Str("learnedRecipe");
 }
 
 //=================================================================================================
@@ -317,6 +318,9 @@ void GameMessages::AddGameMsg3(GMS id)
 		break;
 	case GMS_LEARNED_ABILITY:
 		text = txLearnedAbility;
+		break;
+	case GMS_LEARNED_RECIPE:
+		text = txLearnedRecipe;
 		break;
 	default:
 		assert(0);

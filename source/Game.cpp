@@ -1,101 +1,102 @@
 #include "Pch.h"
 #include "Game.h"
+
+#include "Ability.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "BookPanel.h"
+#include "CombatHelper.h"
+#include "CommandParser.h"
+#include "Console.h"
+#include "Controls.h"
+#include "CraftPanel.h"
+#include "CreateServerPanel.h"
+#include "DungeonGenerator.h"
+#include "DungeonMeshBuilder.h"
+#include "Encounter.h"
+#include "EntityInterpolator.h"
+#include "FOV.h"
+#include "GameGui.h"
+#include "GameMenu.h"
+#include "GameMessages.h"
+#include "GameResources.h"
 #include "GameStats.h"
-#include "ParticleSystem.h"
-#include "Terrain.h"
-#include "ItemScript.h"
-#include "RoomType.h"
-#include "SaveState.h"
+#include "InfoBox.h"
 #include "Inventory.h"
+#include "ItemContainer.h"
+#include "ItemHelper.h"
+#include "ItemScript.h"
 #include "Journal.h"
-#include "TeamPanel.h"
+#include "Language.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "LoadScreen.h"
+#include "LobbyApi.h"
+#include "LocationGeneratorFactory.h"
+#include "LocationHelper.h"
+#include "MainMenu.h"
+#include "Messenger.h"
 #include "Minimap.h"
+#include "MpBox.h"
+#include "MultiInsideLocation.h"
+#include "NameHelper.h"
+#include "News.h"
+#include "Pathfinding.h"
+#include "PhysicCallbacks.h"
+#include "PickServerPanel.h"
+#include "PlayerInfo.h"
+#include "Portal.h"
 #include "QuestManager.h"
+#include "Quest_Contest.h"
+#include "Quest_Crazies.h"
+#include "Quest_Evil.h"
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"
-#include "Quest_Evil.h"
-#include "Quest_Crazies.h"
-#include "Version.h"
-#include "LocationHelper.h"
-#include "MultiInsideLocation.h"
-#include "SingleInsideLocation.h"
-#include "Encounter.h"
-#include "LevelGui.h"
-#include "Console.h"
-#include "InfoBox.h"
-#include "LoadScreen.h"
-#include "MainMenu.h"
-#include "WorldMapGui.h"
-#include "MpBox.h"
-#include "GameMessages.h"
-#include "AIController.h"
-#include "Ability.h"
-#include "Team.h"
-#include "Ability.h"
-#include "ItemContainer.h"
-#include "Stock.h"
-#include "UnitGroup.h"
-#include "SoundManager.h"
-#include "ScriptManager.h"
-#include "Profiler.h"
-#include "Portal.h"
-#include "BitStreamFunc.h"
-#include "EntityInterpolator.h"
-#include "World.h"
-#include "Level.h"
-#include "DirectX.h"
-#include "Var.h"
-#include "News.h"
-#include "Quest_Contest.h"
+#include "Quest_Scripted.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
-#include "LocationGeneratorFactory.h"
-#include "DungeonGenerator.h"
-#include "Texture.h"
-#include "Pathfinding.h"
-#include "Arena.h"
-#include "ResourceManager.h"
-#include "ItemHelper.h"
-#include "GameGui.h"
-#include "FOV.h"
-#include "PlayerInfo.h"
-#include "CombatHelper.h"
-#include "Quest_Scripted.h"
-#include "Render.h"
-#include "RenderTarget.h"
-#include "BookPanel.h"
-#include "Engine.h"
-#include "PhysicCallbacks.h"
+#include "RoomType.h"
 #include "SaveSlot.h"
-#include "BasicShader.h"
-#include "LobbyApi.h"
+#include "SaveState.h"
+#include "ScriptManager.h"
 #include "ServerPanel.h"
-#include "GameMenu.h"
-#include "Language.h"
-#include "CommandParser.h"
-#include "Controls.h"
-#include "GameResources.h"
-#include "NameHelper.h"
-#include "GrassShader.h"
-#include "SuperShader.h"
-#include "TerrainShader.h"
-#include "Notifications.h"
-#include "GameGui.h"
-#include "CreateServerPanel.h"
-#include "PickServerPanel.h"
-#include "ParticleShader.h"
-#include "GlowShader.h"
-#include "PostfxShader.h"
-#include "SkyboxShader.h"
-#include "SceneManager.h"
-#include "Scene.h"
-#include "CraftPanel.h"
-#include "DungeonMeshBuilder.h"
+#include "SingleInsideLocation.h"
+#include "Stock.h"
+#include "Team.h"
+#include "TeamPanel.h"
+#include "UnitGroup.h"
+#include "Var.h"
+#include "Version.h"
+#include "World.h"
+#include "WorldMapGui.h"
+
+#include <BasicShader.h>
+#include <DirectX.h>
+#include <Engine.h>
+#include <GlowShader.h>
+#include <GrassShader.h>
+#include <Notifications.h>
+#include <ParticleShader.h>
+#include <ParticleSystem.h>
+#include <PostfxShader.h>
+#include <Profiler.h>
+#include <Render.h>
+#include <RenderTarget.h>
+#include <ResourceManager.h>
+#include <Scene.h>
+#include <SceneManager.h>
+#include <SkyboxShader.h>
+#include <SuperShader.h>
+#include <Terrain.h>
+#include <TerrainShader.h>
+#include <Texture.h>
+#include <SoundManager.h>
 
 const float LIMIT_DT = 0.3f;
-Game* global::game;
-CustomCollisionWorld* global::phy_world;
+Game* game;
+CustomCollisionWorld* phy_world;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
@@ -147,6 +148,7 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false),
 	game_res = new GameResources;
 	game_stats = new GameStats;
 	loc_gen_factory = new LocationGeneratorFactory;
+	messenger = new Messenger;
 	net = new Net;
 	pathfinding = new Pathfinding;
 	quest_mgr = new QuestManager;
@@ -614,6 +616,7 @@ void Game::OnCleanup()
 	delete game_res;
 	delete game_stats;
 	delete loc_gen_factory;
+	delete messenger;
 	delete net;
 	delete pathfinding;
 	delete quest_mgr;
@@ -851,6 +854,8 @@ void Game::OnUpdate(float dt)
 
 	if(Net::IsOnline() && Any(game_state, GS_LEVEL, GS_WORLDMAP))
 		UpdateGameNet(dt);
+
+	messenger->Process();
 
 	if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 	{

@@ -8,6 +8,7 @@
 #include "ArmorUnitType.h"
 #include "Effect.h"
 #include "Skill.h"
+#include "ContentItem.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -484,20 +485,16 @@ struct StartItem
 };
 
 //-----------------------------------------------------------------------------
-struct Recipe
+struct Recipe : public ContentItem<Recipe>
 {
-	int hash;
-	string id;
+	inline static const cstring type_name = "recipe";
+
 	const Item* result;
-	vector<pair<const Item*, uint>> items;
-	int skill;
+	vector<pair<const Item*, uint>> ingredients;
+	int skill, order;
+	bool autolearn;
 
-	explicit Recipe() : hash(0), result(nullptr), skill(0) {}
-
-	static std::map<int, Recipe*> hash_recipes;
-	static Recipe* Get(int hash);
-	static Recipe* TryGet(Cstring id) { return Get(Hash(id)); }
-	static Recipe* GetS(const string& id);
+	explicit Recipe() : result(nullptr), skill(0), autolearn(false) {}
 };
 
 //-----------------------------------------------------------------------------

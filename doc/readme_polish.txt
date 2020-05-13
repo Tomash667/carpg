@@ -290,10 +290,11 @@ Leinnan - Modele, tekstury, pomysły, testowanie.
 MarkK - Modele i tekstury jedzenia oraz innych obiektów.
 Shdorsh - Poprawki w angielskim tłumaczeniu.
 Zielu - Testowanie.
+BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 
 ❤ Podziękowania za testy i znalezione błędy:
 	Ampped
-	BottledByte
+	AnimeIsWrong
 	darktorq
 	Docucat
 	fire

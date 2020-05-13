@@ -1,20 +1,17 @@
 #include "Pch.h"
-#include "BitStreamFunc.h"
 #include "QuestManager.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "World.h"
-#include "Content.h"
-#include "Net.h"
-#include "QuestScheme.h"
-#include "QuestList.h"
-#include "Language.h"
-#include "Game.h"
-#include "Level.h"
-#include "Team.h"
-#include "City.h"
-#include "InsideLocation.h"
 
+#include "BitStreamFunc.h"
+#include "City.h"
+#include "Content.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "InsideLocation.h"
+#include "Language.h"
+#include "Level.h"
+#include "Net.h"
+#include "QuestList.h"
+#include "QuestScheme.h"
 #include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -41,8 +38,11 @@
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
 #include "Quest_Wanted.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
-QuestManager* global::quest_mgr;
+QuestManager* quest_mgr;
 
 //=================================================================================================
 QuestManager::QuestManager() : quest_contest(nullptr), quest_secret(nullptr), quest_tournament(nullptr), quest_tutorial(nullptr)

@@ -717,7 +717,7 @@ int AppEntry(char* lpCmdLine)
 
 	// settings
 	Ptr<Game> game;
-	global::game = game.Get();
+	::game = game.Get();
 	LoadResourcesConfig();
 	LoadConfiguration(lpCmdLine);
 

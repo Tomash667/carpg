@@ -18,7 +18,7 @@
 #include <Scene.h>
 #include <SceneManager.h>
 
-GameResources* global::game_res;
+GameResources* game_res;
 
 //=================================================================================================
 GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)

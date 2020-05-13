@@ -1,32 +1,33 @@
 #include "Pch.h"
 #include "ScriptManager.h"
+
+#include "Ability.h"
+#include "BaseLocation.h"
+#include "City.h"
+#include "DungeonMapGenerator.h"
+#include "Encounter.h"
+#include "Game.h"
+#include "InsideLocation.h"
+#include "ItemHelper.h"
+#include "LocationHelper.h"
+#include "Level.h"
+#include "PlayerController.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "Quest_Scripted.h"
+#include "RoomType.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "TypeBuilder.h"
+#include "UnitGroup.h"
+#include "World.h"
+
 #include <angelscript.h>
 #include <scriptarray/scriptarray.h>
-#include <scriptstdstring/scriptstdstring.h>
 #include <scriptdictionary/scriptdictionary.h>
-#include "TypeBuilder.h"
-#include "PlayerController.h"
-#include "SaveState.h"
-#include "Game.h"
-#include "ItemHelper.h"
-#include "Level.h"
-#include "City.h"
-#include "InsideLocation.h"
-#include "BaseLocation.h"
-#include "Team.h"
-#include "Quest_Scripted.h"
-#include "LocationHelper.h"
-#include "Encounter.h"
-#include "UnitGroup.h"
-#include "Ability.h"
-#include "PlayerInfo.h"
-#include "Level.h"
-#include "World.h"
-#include "QuestManager.h"
-#include "RoomType.h"
-#include "DungeonMapGenerator.h"
+#include <scriptstdstring/scriptstdstring.h>
 
-ScriptManager* global::script_mgr;
+ScriptManager* script_mgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
 Vars globals;

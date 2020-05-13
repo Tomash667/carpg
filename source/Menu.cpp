@@ -1363,13 +1363,11 @@ void Game::UpdateServerTransfer(float dt)
 				u->mesh_inst->need_update = true;
 				info.u = u;
 
-				u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 				u->player = new PlayerController;
 				u->player->id = info.id;
 				u->player->name = info.name;
 				u->player->Init(*u);
 				info.cc.Apply(*u->player);
-				u->fake_unit = false;
 
 				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;

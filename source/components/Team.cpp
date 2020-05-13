@@ -1,25 +1,26 @@
 #include "Pch.h"
 #include "Team.h"
-#include "Unit.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
-#include "Quest_Evil.h"
-#include "Net.h"
-#include "GameGui.h"
-#include "TeamPanel.h"
-#include "UnitHelper.h"
+
 #include "AIController.h"
-#include "Quest_Mages.h"
-#include "Quest_Orcs.h"
+#include "EntityInterpolator.h"
 #include "Game.h"
+#include "GameFile.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "ItemHelper.h"
-#include "PlayerInfo.h"
 #include "Level.h"
-#include "EntityInterpolator.h"
+#include "Net.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "Quest_Evil.h"
+#include "Quest_Mages.h"
+#include "Quest_Orcs.h"
+#include "SaveState.h"
+#include "TeamPanel.h"
+#include "Unit.h"
+#include "UnitHelper.h"
 
-Team* global::team;
+Team* team;
 
 //-----------------------------------------------------------------------------
 // Team shares only work for equippable items, that have only 1 count in slot!
