@@ -244,7 +244,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(127.f, 0, Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f);
 		else
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
-		terrain->SetH(pos);
+		terrain->SetY(pos);
 		pos.y -= 1.f;
 		game_level->SpawnObjectEntity(area, BaseObject::Get("obelisk"), pos, 0.f);
 	}

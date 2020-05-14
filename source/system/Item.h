@@ -36,6 +36,7 @@ enum ITEM_FLAGS
 	ITEM_MAGIC_SCROLL = 1 << 16,
 	ITEM_WAND = 1 << 17, // cast magic bolts instead of attacking
 	ITEM_INGREDIENT = 1 << 18, // shows in crafting panel
+	ITEM_SINGLE_USE = 1 << 19, // mark single use recipes
 };
 
 //-----------------------------------------------------------------------------
@@ -420,7 +421,6 @@ struct Book : public Item
 	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
-	vector<string> recipe_ids;
 	vector<Recipe*> recipes;
 	string text;
 	bool runic;
@@ -492,9 +492,11 @@ struct Recipe : public ContentItem<Recipe>
 	const Item* result;
 	vector<pair<const Item*, uint>> ingredients;
 	int skill, order;
-	bool autolearn;
+	bool autolearn, defined;
 
 	explicit Recipe() : result(nullptr), skill(0), autolearn(false) {}
+
+	static Recipe* ForwardGet(const string& id);
 };
 
 //-----------------------------------------------------------------------------

@@ -81,7 +81,8 @@ enum RecipeProperty
 	RP_RESULT,
 	RP_INGREDIENTS,
 	RP_SKILL,
-	RP_AUTOLEARN
+	RP_AUTOLEARN,
+	RP_ORDER
 };
 
 enum ListType
@@ -208,7 +209,8 @@ void ItemLoader::InitTokenizer()
 		{ "unique", ITEM_UNIQUE },
 		{ "magic_scroll", ITEM_MAGIC_SCROLL },
 		{ "wand", ITEM_WAND },
-		{ "ingredient", ITEM_INGREDIENT }
+		{ "ingredient", ITEM_INGREDIENT },
+		{ "single_use", ITEM_SINGLE_USE }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -277,7 +279,8 @@ void ItemLoader::InitTokenizer()
 		{ "result", RP_RESULT },
 		{ "ingredients", RP_INGREDIENTS },
 		{ "skill", RP_SKILL },
-		{ "autolearn", RP_AUTOLEARN }
+		{ "autolearn", RP_AUTOLEARN },
+		{ "order", RP_ORDER }
 		});
 
 	t.AddKeywords(G_LIST_TYPE, {
@@ -324,17 +327,14 @@ void ItemLoader::Finalize()
 {
 	Item::gold = Item::Get("gold");
 
-	// Load recipes into books as all recipes should be loaded now
-	for(Book* b : Book::books)
+	// check if all recipes are defined
+	for(std::pair<const int, Recipe*>& p : Recipe::items)
 	{
-		for(string& rcp_id : b->recipe_ids)
-		{
-			Recipe* recipe = Recipe::TryGet(rcp_id);
-			if(!recipe)
-				t.Throw("Could not find recipe '%s' for book '%s'", rcp_id, b->id);
-			b->recipes.push_back(recipe);
-		}
+		Recipe* recipe = p.second;
+		if(!recipe->defined)
+			LoadError("Missing declared recipe '%s'.", recipe->id.c_str());
 	}
+
 	CalculateCrc();
 
 	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size(), content.crc[(int)Content::Id::Items]);
@@ -625,19 +625,19 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			item->ToBook().runic = t.MustGetBool();
 			break;
 		case P_RECIPES:
-			// load the ids only, recipes may not be loaded yet
-			if(t.IsSymbol('{'))
 			{
-				t.Next();
-				while(!t.IsSymbol('}'))
+				Book& book = item->ToBook();
+				if(t.IsSymbol('{'))
 				{
-					item->ToBook().recipe_ids.push_back(t.GetString());
 					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						book.recipes.push_back(Recipe::ForwardGet(t.MustGetItem()));
+						t.Next();
+					}
 				}
-			}
-			else
-			{
-				item->ToBook().recipe_ids.push_back(t.GetString());
+				else
+					book.recipes.push_back(Recipe::ForwardGet(t.MustGetItem()));
 			}
 			break;
 		case P_EFFECTS:
@@ -1230,18 +1230,19 @@ void ItemLoader::ParseBetterItems()
 void ItemLoader::ParseRecipe(const string& id)
 {
 	int hash = Hash(id);
-	Recipe* existing_recipe = Recipe::TryGet(hash);
-	if(existing_recipe)
+	Recipe* existingRecipe = Recipe::TryGet(hash);
+	if(existingRecipe)
 	{
-		if(existing_recipe->id == id)
-			t.Throw("Id must be unique.");
-		else
+		if(existingRecipe->id != id)
 			t.Throw("Id hash collision.");
+		else if(existingRecipe->defined)
+			t.Throw("Id must be unique.");
 	}
 
-	Ptr<Recipe> recipe;
+	Ptr<Recipe> recipe(existingRecipe, false);
 	recipe->id = id;
 	recipe->hash = hash;
+	recipe->defined = true;
 	recipe->order = Recipe::items.size();
 
 	t.Next();
@@ -1305,6 +1306,9 @@ void ItemLoader::ParseRecipe(const string& id)
 		case RP_AUTOLEARN:
 			recipe->autolearn = t.MustGetBool();
 			break;
+		case RP_ORDER:
+			recipe->order = t.MustGetInt();
+			break;
 		}
 		t.Next();
 	}
@@ -1313,7 +1317,7 @@ void ItemLoader::ParseRecipe(const string& id)
 		LoadError("No result item.");
 	else if(recipe->ingredients.empty())
 		LoadError("No ingredients.");
-	else
+	else if(!existingRecipe)
 		Recipe::items[hash] = recipe.Pin();
 }
 

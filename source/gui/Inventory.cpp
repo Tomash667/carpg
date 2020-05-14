@@ -2522,6 +2522,14 @@ void InventoryPanel::UpdateGrid(bool mine)
 void InventoryPanel::ReadBook(const Item* item, int index)
 {
 	assert(item && item->type == IT_BOOK);
+	const Book& book = item->ToBook();
+	if(IsSet(book.flags, ITEM_SINGLE_USE))
+	{
+		for(Recipe* recipe : book.recipes)
+		{
+
+		}
+	}
 	// Book contains a recipes, so learn them
 	for(Recipe* r : ((const Book*)item)->recipes)
 	{

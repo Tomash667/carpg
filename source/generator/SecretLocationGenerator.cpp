@@ -85,14 +85,14 @@ void SecretLocationGenerator::GenerateObjects()
 	LevelArea& area = *game_level->local_area;
 
 	Vec3 pos(128.f, 0, 96.f * 2);
-	terrain->SetH(pos);
+	terrain->SetY(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
 	game_level->SpawnObjectEntity(area, o, pos, 0);
 	game_level->ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
-	terrain->SetH(pos);
+	terrain->SetY(pos);
 	game_level->SpawnObjectEntity(area, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;

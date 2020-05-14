@@ -1448,7 +1448,7 @@ void Game::PrepareAreaPath()
 			{
 				pc->data.ability_ok = true;
 				if(game_level->terrain)
-					game_level->terrain->SetH(from);
+					game_level->terrain->SetY(from);
 				pc->data.ability_point = from;
 				area->ok = 2;
 			}

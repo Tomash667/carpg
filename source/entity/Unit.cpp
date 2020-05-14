@@ -800,11 +800,22 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 }
 
 //=================================================================================================
-void Unit::UseItem(int index)
+bool Unit::ReadItem(int index)
 {
 	assert(index >= 0 && index < int(items.size()));
 	ItemSlot& slot = items[index];
-	assert(slot.item);
+	assert(slot.item && slot.item->type == IT_BOOK);
+	const Book& book = slot.item->ToBook();
+	if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
+	{
+		if(unit->usable) // can't use when sitting
+			return false;
+
+	}
+	else
+	{
+
+	}
 	switch(slot.item->type)
 	{
 	case IT_CONSUMABLE:
@@ -8117,7 +8128,7 @@ void Unit::Moved(bool warped, bool dash)
 		{
 			if(game_level->terrain->IsInside(pos))
 			{
-				game_level->terrain->SetH(pos);
+				game_level->terrain->SetY(pos);
 				if(warped)
 					return;
 				if(IsPlayer() && player->WantExitLevel() && frozen == FROZEN::NO && !dash)

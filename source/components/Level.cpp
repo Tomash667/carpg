@@ -1081,7 +1081,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 				if(area.area_type == LevelArea::Type::Outside)
 				{
-					terrain->SetH(pos);
+					terrain->SetY(pos);
 					pos.y += 2.f;
 				}
 
@@ -1114,7 +1114,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
 					if(area.area_type == LevelArea::Type::Outside)
 					{
-						terrain->SetH(pos);
+						terrain->SetY(pos);
 						pos.y += 8.f;
 					}
 					else
@@ -1277,7 +1277,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					else
 					{
 						spawn_point = pos;
-						terrain->SetH(spawn_point);
+						terrain->SetY(spawn_point);
 					}
 
 					have_spawn = true;
@@ -1351,7 +1351,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					if(city_building)
 					{
 						city_building->walk_pt = pos;
-						terrain->SetH(city_building->walk_pt);
+						terrain->SetY(city_building->walk_pt);
 					}
 					else if(out_point)
 						*out_point = pos;
@@ -1500,7 +1500,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				if(obj)
 				{
 					if(area.area_type == LevelArea::Type::Outside)
-						terrain->SetH(pos);
+						terrain->SetY(pos);
 					SpawnObjectEntity(area, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
 				}
 			}
@@ -1590,7 +1590,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 			return nullptr;
 
 		if(area.area_type == LevelArea::Type::Outside)
-			terrain->SetH(pt);
+			terrain->SetY(pt);
 
 		return SpawnObjectEntity(area, obj, pt, rot, scale);
 	}
@@ -1625,7 +1625,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 			return nullptr;
 
 		if(area.area_type == LevelArea::Type::Outside)
-			terrain->SetH(pt);
+			terrain->SetY(pt);
 
 		return SpawnObjectEntity(area, obj, pt, rot, scale);
 	}
@@ -1670,7 +1670,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 			return nullptr;
 
 		if(area.area_type == LevelArea::Type::Outside)
-			terrain->SetH(pt);
+			terrain->SetY(pt);
 
 		return SpawnObjectEntity(area, obj, pt, rot, scale);
 	}
@@ -1781,7 +1781,7 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 	assert(item);
 
 	if(area.area_type == LevelArea::Type::Outside)
-		terrain->SetH(item->pos);
+		terrain->SetY(item->pos);
 	area.items.push_back(item);
 
 	if(Net::IsOnline())
@@ -1956,7 +1956,7 @@ Unit* Level::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, const 
 		if(area.area_type == LevelArea::Type::Outside)
 		{
 			Vec3 pt = *pos;
-			game_level->terrain->SetH(pt);
+			game_level->terrain->SetY(pt);
 			u->pos = pt;
 		}
 		else
@@ -2843,7 +2843,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	assert(ok);
 
 	if(area.have_terrain && terrain->IsInside(unit.pos))
-		terrain->SetH(unit.pos);
+		terrain->SetY(unit.pos);
 
 	if(unit.cobj)
 		unit.UpdatePhysics();
@@ -4316,7 +4316,7 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	gi->rot = Quat::RotY(Random(MAX_ANGLE));
 	gi->pos = pos;
 	if(local_area->area_type == LevelArea::Type::Outside)
-		terrain->SetH(gi->pos);
+		terrain->SetY(gi->pos);
 	gi->item = item;
 	local_area->items.push_back(gi);
 	return gi;

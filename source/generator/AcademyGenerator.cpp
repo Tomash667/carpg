@@ -171,7 +171,7 @@ void AcademyGenerator::GenerateObjects()
 void AcademyGenerator::SpawnBuilding(bool first)
 {
 	Vec3 pos = Vec3(float(pt.x + building->shift[GDIR_DOWN].x) * 2, 1.f, float(pt.y + building->shift[GDIR_DOWN].y) * 2);
-	terrain->SetH(pos);
+	terrain->SetY(pos);
 
 	if(first)
 	{

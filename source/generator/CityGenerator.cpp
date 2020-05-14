@@ -2348,7 +2348,7 @@ void CityGenerator::SpawnBuildings()
 	{
 		Object* o = new Object;
 		o->pos = Vec3(float(it->pt.x + it->building->shift[it->dir].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->dir].y) * 2);
-		terrain->SetH(o->pos);
+		terrain->SetY(o->pos);
 		o->rot = Vec3(0, DirToRot(it->dir), 0);
 		o->scale = 1.f;
 		o->base = nullptr;
@@ -2458,7 +2458,7 @@ void CityGenerator::SpawnObjects()
 	if(have_well)
 	{
 		Vec3 pos = PtToPos(well_pt);
-		terrain->SetH(pos);
+		terrain->SetY(pos);
 		game_level->SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
@@ -2474,7 +2474,7 @@ void CityGenerator::SpawnObjects()
 			Box2d spawnBox(2.f * (rect.p1.x + size.x / 4), 2.f * (rect.p1.y + size.y / 4),
 				2.f * (rect.p2.x - size.x / 4), 2.f * (rect.p2.y - size.y / 4));
 			Vec3 pos = spawnBox.GetRandomPos3();
-			terrain->SetH(pos);
+			terrain->SetY(pos);
 			game_level->SpawnObjectEntity(area, scarecrow, pos, Random(MAX_ANGLE));
 		}
 	}

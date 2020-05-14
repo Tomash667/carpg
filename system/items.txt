@@ -2979,7 +2979,7 @@ book magic_scroll {
 }
 
 book book_q_cleric {
-	weight 0.2
+	weight 1
 	value 100
 	mesh "book.qmsh"
 	scheme book
@@ -2993,6 +2993,15 @@ book crypt_note {
 	scheme page
 	tex "piece_of_paper.png"
 	flags {not_shop not_chest not_random}
+}
+
+book recipe_antidote {
+	weight 0.1
+	value 200
+	tex "recipe.png"
+	scheme page
+	recipes p_antidote
+	flags single_use
 }
 
 //------------------------------------------------------------------------------
@@ -3745,6 +3754,7 @@ recipe p_hp {
 	}
 	skill 1
 	autolearn 1
+	order 0
 }
 
 recipe p_hp2 {
@@ -3754,6 +3764,7 @@ recipe p_hp2 {
 	}
 	skill 25
 	autolearn 1
+	order 1
 }
 
 recipe p_hp3 {
@@ -3763,6 +3774,7 @@ recipe p_hp3 {
 	}
 	skill 50
 	autolearn 1
+	order 2
 }
 
 recipe p_mp {
@@ -3772,6 +3784,7 @@ recipe p_mp {
 	}
 	skill 1
 	autolearn 1
+	order 3
 }
 
 recipe p_mp2 {
@@ -3781,6 +3794,7 @@ recipe p_mp2 {
 	}
 	skill 25
 	autolearn 1
+	order 4
 }
 
 recipe p_mp3 {
@@ -3790,6 +3804,17 @@ recipe p_mp3 {
 	}
 	skill 50
 	autolearn 1
+	order 5
+}
+
+recipe p_antidote {
+	result p_antidote
+	ingredients {
+		healing_herb
+		magic_crystal
+	}
+	skill 1
+	order 6
 }
 
 //------------------------------------------------------------------------------

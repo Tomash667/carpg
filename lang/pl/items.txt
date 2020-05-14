@@ -1095,6 +1095,11 @@ item crypt_note {
 	name "Stara notatka"
 	text "https://youtu.be/LJ5nV9aKthU"
 }
+item recipe_antidote {
+	name "Recepta - antidotum"
+	desc "Zawiera instrukcje przyrz¹dzenia antidotum."
+	text "xxx"
+}
 
 //------------------------------------------------------------------------------
 item gold {
