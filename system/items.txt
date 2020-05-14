@@ -2472,6 +2472,17 @@ consumable healing_herb {
 	}
 }
 
+consumable mana_herb {
+	weight 0.2
+	value 10
+	mesh "mana_herb.qmsh"
+	type herb
+	flags {not_merchant ground_mesh ingredient}
+	effects {
+		restore_mana 150
+	}
+}
+
 consumable green_herb {
 	weight 0.2
 	value 50
@@ -2489,17 +2500,6 @@ consumable alchemist_herb {
 	mesh "woddruff_herb.qmsh"
 	type herb
 	flags {not_shop not_chest not_random not_alchemist ground_mesh}
-}
-
-consumable magic_crystal {
-	weight 0.5
-	value 10
-	mesh "magic_crystal.qmsh"
-	type herb
-	flags {not_merchant ground_mesh ingredient}
-	effects {
-		restore_mana 150
-	}
 }
 
 //------------------------------------------------------------------------------
@@ -2602,6 +2602,38 @@ other black_bear_pelt {
 	value 100
 	tex "black_bear_pelt.png"
 	type other
+}
+
+other heal_crystal {
+	weight 0.5
+	value 25
+	mesh "heal_crystal.qmsh"
+	type other
+	flags {not_merchant ground_mesh ingredient}
+}
+
+other magic_crystal {
+	weight 0.5
+	value 25
+	mesh "magic_crystal.qmsh"
+	type other
+	flags {not_merchant ground_mesh ingredient}
+}
+
+other tallow {
+	weight 0.5
+	value 10
+	mesh "tallow.qmsh"
+	type other
+	flags {ground_mesh ingredient}
+}
+
+other troll_blood {
+	weight 0.1
+	value 50
+	mesh "vial.qmsh"
+	type other
+	flags {not_merchant ingredient}
 }
 
 //------------------------------------------------------------------------------
@@ -3002,6 +3034,36 @@ book recipe_antidote {
 	scheme page
 	recipes p_antidote
 	flags single_use
+}
+
+book recipe_reg {
+	weight 0.1
+	value 500
+	mesh "recipe.qmsh"
+	scheme page
+	recipes p_reg
+	flags single_use
+}
+
+book recipe_antimagic {
+	weight 0.1
+	value 1000
+	mesh "recipe.qmsh"
+	scheme page
+	recipes p_antimagic
+	flags single_use
+}
+
+book recipe_book_nreg {
+	weight 1
+	value 250
+	mesh "book.qmsh"
+	scheme book
+	recipes {
+		p_nreg
+		p_nreg2
+	}
+	flags ground_mesh
 }
 
 //------------------------------------------------------------------------------
@@ -3760,7 +3822,8 @@ recipe p_hp {
 recipe p_hp2 {
 	result p_hp2
 	ingredients {
-		2 healing_herb
+		heal_crystal
+		healing_herb
 	}
 	skill 25
 	autolearn 1
@@ -3770,7 +3833,7 @@ recipe p_hp2 {
 recipe p_hp3 {
 	result p_hp3
 	ingredients {
-		3 healing_herb
+		2 heal_crystal
 	}
 	skill 50
 	autolearn 1
@@ -3780,7 +3843,7 @@ recipe p_hp3 {
 recipe p_mp {
 	result p_mp
 	ingredients {
-		magic_crystal
+		mana_herb
 	}
 	skill 1
 	autolearn 1
@@ -3790,7 +3853,8 @@ recipe p_mp {
 recipe p_mp2 {
 	result p_mp2
 	ingredients {
-		2 magic_crystal
+		magic_crystal
+		mana_herb
 	}
 	skill 25
 	autolearn 1
@@ -3800,21 +3864,61 @@ recipe p_mp2 {
 recipe p_mp3 {
 	result p_mp3
 	ingredients {
-		3 magic_crystal
+		2 magic_crystal
 	}
 	skill 50
 	autolearn 1
 	order 5
 }
 
+recipe p_nreg {
+	result p_nreg
+	ingredients {
+		tallow
+		healing_herb
+	}
+	skill 1
+	order 6
+}
+
+recipe p_nreg2 {
+	result p_nreg2
+	ingredients {
+		2 tallow
+		healing_herb
+	}
+	skill 25
+	order 7
+}
+
 recipe p_antidote {
 	result p_antidote
 	ingredients {
 		healing_herb
-		magic_crystal
+		mana_herb
 	}
 	skill 1
-	order 6
+	order 8
+}
+
+recipe p_reg {
+	result p_reg
+	ingredients {
+		troll_blood
+		healing_herb
+	}
+	skill 25
+	order 9
+}
+
+recipe p_antimagic {
+	result p_antimagic
+	ingredients {
+		2 magic_crystal
+		heal_crystal
+	}
+	skill 50
+	order 10
 }
 
 //------------------------------------------------------------------------------

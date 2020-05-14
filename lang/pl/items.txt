@@ -871,16 +871,16 @@ item healing_herb {
 	name "Lecznicze ziele"
 	desc "Natychmiast leczy 150 punktów zdrowia."
 }
+item mana_herb {
+	name "Ziele many"
+	desc "Przywraca 150 punktów many po zjedzeniu."
+}
 item green_herb {
 	name "Zielone ziele"
 }
 item alchemist_herb {
 	name "Ziele alchemiczne"
 	desc "Roœlina o nieznanych ci w³aœciwoœciach alchemicznych."
-}
-item magic_crystal {
-	name "Magiczny kryszta³"
-	desc "Ten kryszta³ jest jadalny. Przywraca 150 punktów many po zjedzeniu."
 }
 
 //------------------------------------------------------------------------------
@@ -926,6 +926,20 @@ item bear_pelt {
 }
 item black_bear_pelt {
 	name "Futro czarnego niedŸwiedzia"
+}
+item tallow {
+	name "Sad³o"
+}
+item heal_crystal {
+	name "Vitalit"
+	desc "Kryszta³ o leczniczych w³aœciwoœciach."
+}
+item magic_crystal {
+	name "Magiczny kryszta³"
+	desc "Kryszta³ o magicznych w³aœciwoœciach."
+}
+item troll_blood {
+	name "Krew trola"
 }
 
 //------------------------------------------------------------------------------
@@ -1099,6 +1113,21 @@ item recipe_antidote {
 	name "Receptura - antidotum"
 	desc "Zawiera instrukcje przyrz¹dzenia antidotum."
 	text "xxx"
+}
+item recipe_reg {
+	name "Receptura - mikstura regeneracji"
+	desc "Zawiera instrukcje przyrz¹dzenia mikstury regeneracji, wymaga 25 alchemii."
+	text "xxx"
+}
+item recipe_antimagic {
+	name "Receptura - eliksir antymagii"
+	desc "Zawiera instrukcje przyrz¹dzenia eliksiru antymagii, wymaga 50 alchemii."
+	text "xxx"
+}
+item recipe_book_nreg {
+	name "Naturale metody leczenia"
+	desc "Zawiera instrukcje przyrz¹dzenia naparów leczniczych."
+	text "TODO"
 }
 
 //------------------------------------------------------------------------------
