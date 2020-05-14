@@ -2998,7 +2998,7 @@ book crypt_note {
 book recipe_antidote {
 	weight 0.1
 	value 200
-	tex "recipe.png"
+	mesh "recipe.qmsh"
 	scheme page
 	recipes p_antidote
 	flags single_use

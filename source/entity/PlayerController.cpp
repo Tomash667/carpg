@@ -2541,7 +2541,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
 						{
 							if(!u.usable) // can't use when sitting
-								u.UseItem(i_index);
+								ReadBook(i_index);
 						}
 						else
 						{
@@ -3375,4 +3375,79 @@ bool PlayerController::ShouldUseRaytest() const
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));
+}
+
+//=================================================================================================
+void PlayerController::ReadBook(int index)
+{
+	assert(index >= 0 && index < int(unit->items.size()));
+	ItemSlot& slot = unit->items[index];
+	assert(slot.item && slot.item->type == IT_BOOK);
+	const Book& book = slot.item->ToBook();
+	if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
+	{
+		if(unit->usable) // can't use when sitting
+			return;
+		if(Net::IsLocal())
+		{
+			unit->action = A_USE_ITEM;
+			unit->used_item = slot.item;
+			unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.unit = unit;
+			}
+		}
+		else
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::USE_ITEM;
+			c.id = index;
+			unit->action = A_PREPARE;
+		}
+	}
+	else
+	{
+		if(!book.recipes.empty())
+		{
+			int skill = unit->GetBase(SkillId::ALCHEMY);
+			bool anythingNew = false, anythingAllowed = false;
+			for(Recipe* recipe : book.recipes)
+			{
+				if(!HaveRecipe(recipe))
+				{
+					anythingNew = true;
+					if(skill >= recipe->skill)
+						anythingAllowed = true;
+				}
+			}
+
+			if(!anythingNew)
+				game_gui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
+			else if(!anythingAllowed)
+				game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+			else if(Net::IsLocal())
+			{
+				for(Recipe* recipe : book.recipes)
+				{
+					if(skill >= recipe->skill)
+						AddRecipe(recipe);
+				}
+				if(IsSet(book.flags, ITEM_SINGLE_USE))
+					unit->RemoveItem(index, 1u);
+			}
+			else
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.id = index;
+				unit->action = A_PREPARE;
+			}
+		}
+
+		if(!IsSet(book.flags, ITEM_SINGLE_USE))
+			game_gui->book->Show(&book);
+	}
 }

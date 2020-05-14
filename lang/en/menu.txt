@@ -586,6 +586,7 @@ addedCursedStone = "Something heavy appeared in your inventory!"
 needWand = "You need wand to cast spells"
 learnedAbility = "You learned a new ability"
 learnedRecipe = "You learned a new recipe"
+alreadyLearned = "I already know that..."
 
 // distance/group difficulty
 near = "near "

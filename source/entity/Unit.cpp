@@ -800,56 +800,6 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 }
 
 //=================================================================================================
-bool Unit::ReadItem(int index)
-{
-	assert(index >= 0 && index < int(items.size()));
-	ItemSlot& slot = items[index];
-	assert(slot.item && slot.item->type == IT_BOOK);
-	const Book& book = slot.item->ToBook();
-	if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
-	{
-		if(unit->usable) // can't use when sitting
-			return false;
-
-	}
-	else
-	{
-
-	}
-	switch(slot.item->type)
-	{
-	case IT_CONSUMABLE:
-		ConsumeItem(index);
-		break;
-	case IT_BOOK:
-		assert(IsSet(slot.item->flags, ITEM_MAGIC_SCROLL));
-		if(Net::IsLocal())
-		{
-			action = A_USE_ITEM;
-			used_item = slot.item;
-			mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-			if(Net::IsServer())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_ITEM;
-				c.unit = this;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_ITEM;
-			c.id = index;
-			action = A_PREPARE;
-		}
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-
-//=================================================================================================
 void Unit::TakeWeapon(WeaponType type)
 {
 	assert(type == W_ONE_HANDED || type == W_BOW);

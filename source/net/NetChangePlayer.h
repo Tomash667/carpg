@@ -54,6 +54,7 @@ struct NetChangePlayer
 		REMOVE_ABILITY, // remove ability from player [int(ability->hash)]
 		AFTER_CRAFT, // after crafting - update ingredients, play sound
 		ADD_RECIPE, // add recipe to player [int(recipe->hash)]
+		END_PREPARE, // end prepare action []
 
 		MAX
 	} type;

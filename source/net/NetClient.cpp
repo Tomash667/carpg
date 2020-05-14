@@ -4033,6 +4033,11 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					pc.AddRecipe(recipe);
 			}
 			break;
+		// end prepare action
+		case NetChangePlayer::END_PREPARE:
+			if(pc.unit->action == A_PREPARE)
+				pc.unit->action = A_NONE;
+			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);
 			break;

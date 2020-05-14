@@ -490,9 +490,10 @@ void InventoryPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	if(game_gui->book->visible)
+	if(!focus || game_gui->book->visible)
 	{
 		drag_and_drop = false;
+		base.tooltip.Clear();
 		return;
 	}
 
@@ -778,7 +779,7 @@ void InventoryPanel::Update(float dt)
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
 					else if(item->type == IT_BOOK)
-						ReadBook(item, i_index);
+						game->pc->ReadBook(i_index);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -2515,38 +2516,6 @@ void InventoryPanel::UpdateGrid(bool mine)
 	{
 		base.BuildTmpInventory(1);
 		base.inv_trade_other->UpdateScrollbar();
-	}
-}
-
-//=================================================================================================
-void InventoryPanel::ReadBook(const Item* item, int index)
-{
-	assert(item && item->type == IT_BOOK);
-	const Book& book = item->ToBook();
-	if(IsSet(book.flags, ITEM_SINGLE_USE))
-	{
-		for(Recipe* recipe : book.recipes)
-		{
-
-		}
-	}
-	// Book contains a recipes, so learn them
-	for(Recipe* r : ((const Book*)item)->recipes)
-	{
-		game->pc->AddRecipe(r);
-	}
-	if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
-	{
-		if(!game->pc->unit->usable) // can't use when sitting
-		{
-			game->pc->unit->UseItem(index);
-			Hide();
-		}
-	}
-	else
-	{
-		game_gui->book->Show((const Book*)item);
-		base.tooltip.Clear();
 	}
 }
 
