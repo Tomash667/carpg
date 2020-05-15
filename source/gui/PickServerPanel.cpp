@@ -1,15 +1,17 @@
 #include "Pch.h"
 #include "PickServerPanel.h"
-#include "Language.h"
-#include "Input.h"
+
+#include "BitStreamFunc.h"
 #include "Const.h"
 #include "Game.h"
-#include "Version.h"
-#include "BitStreamFunc.h"
-#include "ResourceManager.h"
 #include "GameGui.h"
+#include "Language.h"
 #include "LobbyApi.h"
+#include "Version.h"
+
+#include <Input.h>
 #include <json.hpp>
+#include <ResourceManager.h>
 
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : DialogBox(info), pick_autojoin(false)

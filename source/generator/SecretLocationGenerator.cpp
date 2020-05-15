@@ -1,16 +1,18 @@
 #include "Pch.h"
-#include "GameCommon.h"
 #include "SecretLocationGenerator.h"
+
+#include "BaseObject.h"
+#include "GameCommon.h"
+#include "Level.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
+#include "Portal.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
-#include "Terrain.h"
-#include "Perlin.h"
-#include "Portal.h"
-#include "Level.h"
-#include "BaseObject.h"
 #include "UnitData.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
 
 //=================================================================================================
 void SecretLocationGenerator::Generate()

@@ -2828,6 +2828,7 @@ unit wolf {
 	items {
 		random 2 3 raw_meat
 		wolf_pelt
+		chance 50 tallow
 	}
 	group animals
 	dmg_type slash
@@ -2868,6 +2869,7 @@ unit worg : wolf {
 	items {
 		random 2 3 raw_meat
 		worg_pelt
+		chance 50 tallow
 	}
 }
 
@@ -2973,6 +2975,7 @@ unit bear {
 	items {
 		random 4 6 raw_meat
 		bear_pelt
+		random 1 2 tallow
 	}
 	group animals
 	dmg_type {slash blunt}
@@ -3012,6 +3015,7 @@ unit bear_black : bear {
 	items {
 		random 4 6 raw_meat
 		black_bear_pelt
+		random 1 3 tallow
 	}
 }
 

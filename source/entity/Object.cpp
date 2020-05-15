@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "Object.h"
-#include "SaveState.h"
-#include "ResourceManager.h"
+
 #include "BitStreamFunc.h"
+#include "ResourceManager.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Object::Save(FileWriter& f)

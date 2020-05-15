@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "Settings.h"
+
 #include "GameKeys.h"
 #include "Language.h"
-#include "Config.h"
+
+#include <Config.h>
 
 //=================================================================================================
 void Settings::InitGameKeys()

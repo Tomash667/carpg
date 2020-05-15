@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "LocationLoader.h"
-#include "RoomType.h"
+
 #include "BaseObject.h"
+#include "RoomType.h"
 
 enum Group
 {

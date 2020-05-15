@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "ItemLoader.h"
+
 #include "Item.h"
-#include "Stock.h"
 #include "ScriptManager.h"
-#include <ResourceManager.h>
+#include "Stock.h"
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
 enum Group

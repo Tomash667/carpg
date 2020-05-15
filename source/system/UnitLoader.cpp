@@ -1,17 +1,19 @@
 #include "Pch.h"
 #include "UnitLoader.h"
+
+#include "Ability.h"
+#include "Content.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
 #include "GameDialog.h"
-#include "ItemScript.h"
-#include "Item.h"
-#include "Ability.h"
-#include "ResourceManager.h"
-#include "Stock.h"
-#include "Content.h"
-#include "QuestScheme.h"
 #include "GameResources.h"
+#include "Item.h"
+#include "ItemScript.h"
+#include "QuestScheme.h"
+#include "Stock.h"
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 enum Group
 {

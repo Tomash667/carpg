@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "LoadScreen.h"
+
 #include "GameGui.h"
-#include <ResourceManager.h>
+
 #include <Engine.h>
+#include <ResourceManager.h>
 
 //=================================================================================================
 void LoadScreen::LoadData()

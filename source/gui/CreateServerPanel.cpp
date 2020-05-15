@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "CreateServerPanel.h"
-#include "Language.h"
-#include "Input.h"
+
 #include "Const.h"
-#include "Net.h"
 #include "GameGui.h"
+#include "Language.h"
+#include "Net.h"
+
+#include <Input.h>
 
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)

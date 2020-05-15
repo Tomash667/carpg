@@ -1,10 +1,11 @@
 #include "Pch.h"
 #include "InsideLocation.h"
-#include "GameFile.h"
+
+#include "BaseLocation.h"
 #include "BitStreamFunc.h"
+#include "GameFile.h"
 #include "Level.h"
 #include "SaveState.h"
-#include "BaseLocation.h"
 
 //=================================================================================================
 void InsideLocation::Save(GameWriter& f, bool local)

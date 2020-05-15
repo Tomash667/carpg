@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "DungeonMapGenerator.h"
+
 #include "GameCommon.h"
 
 #define H(_x,_y) map[(_x)+(_y)*map_w].type

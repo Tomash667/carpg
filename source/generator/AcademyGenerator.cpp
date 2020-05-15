@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "AcademyGenerator.h"
-#include <Terrain.h>
-#include <Perlin.h>
-#include "OutsideLocation.h"
+
+#include "AIController.h"
 #include "Building.h"
-#include "Object.h"
 #include "GameCommon.h"
 #include "Level.h"
+#include "Object.h"
+#include "OutsideLocation.h"
 #include "Unit.h"
-#include "AIController.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
 
 static const Int2 pt(63, 64);
 

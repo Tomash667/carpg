@@ -1,22 +1,24 @@
 #include "Pch.h"
 #include "Inventory.h"
-#include "Item.h"
-#include "Unit.h"
-#include "Game.h"
-#include "Language.h"
-#include "GetNumberDialog.h"
-#include "GameGui.h"
-#include "LevelGui.h"
+
 #include "AIController.h"
-#include "Chest.h"
-#include "Team.h"
 #include "BookPanel.h"
-#include "SoundManager.h"
-#include "ResourceManager.h"
-#include "ItemHelper.h"
-#include "PlayerInfo.h"
-#include "RenderTarget.h"
+#include "Chest.h"
+#include "Game.h"
+#include "GameGui.h"
 #include "GameResources.h"
+#include "Item.h"
+#include "ItemHelper.h"
+#include "Language.h"
+#include "LevelGui.h"
+#include "PlayerInfo.h"
+#include "Team.h"
+#include "Unit.h"
+
+#include <GetNumberDialog.h>
+#include <RenderTarget.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 /* REMARKS ON SOME VARIABLES
 i_index for positive values is index to items [0, 1, 2, 3...]

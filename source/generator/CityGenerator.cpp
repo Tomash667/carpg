@@ -1,21 +1,23 @@
 #include "Pch.h"
 #include "CityGenerator.h"
-#include "Location.h"
-#include "City.h"
-#include "World.h"
-#include "Level.h"
-#include "Terrain.h"
-#include "QuestManager.h"
-#include "Quest.h"
-#include "Quest_Contest.h"
-#include "Team.h"
-#include "OutsideObject.h"
-#include "AIController.h"
-#include "Texture.h"
+
 #include "Arena.h"
+#include "AIController.h"
+#include "City.h"
 #include "Game.h"
+#include "Level.h"
+#include "Location.h"
 #include "Object.h"
+#include "OutsideObject.h"
+#include "Quest.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
 #include "Stock.h"
+#include "Team.h"
+#include "World.h"
+
+#include <Terrain.h>
+#include <Texture.h>
 
 enum RoadFlags
 {

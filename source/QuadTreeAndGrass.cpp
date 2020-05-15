@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "Game.h"
-#include "Terrain.h"
-#include "LocationHelper.h"
-#include "Profiler.h"
-#include "Level.h"
-#include "ResourceManager.h"
-#include "GrassShader.h"
-#include "Object.h"
+
 #include "GameResources.h"
-#include "DirectX.h"
+#include "Level.h"
+#include "LocationHelper.h"
+#include "Object.h"
+
+#include <DirectX.h>
+#include <GrassShader.h>
+#include <Profiler.h>
+#include <ResourceManager.h>
+#include <Terrain.h>
 
 enum QuadPartType
 {

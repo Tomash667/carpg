@@ -1,17 +1,18 @@
 #include "Pch.h"
 #include "Game.h"
-#include <intrin.h>
-#include "Version.h"
-#include "Language.h"
+
 #include "ErrorHandler.h"
-#include "Utility.h"
-#include "SaveSlot.h"
 #include "Language.h"
+#include "SaveSlot.h"
+#include "Utility.h"
+#include "Version.h"
+
+#include <AppEntry.h>
 #include <Engine.h>
+#include <intrin.h>
 #include <Render.h>
 #include <SceneManager.h>
 #include <SoundManager.h>
-#include <AppEntry.h>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";

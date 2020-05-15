@@ -1,19 +1,20 @@
 #include "Pch.h"
 #include "DungeonGenerator.h"
-#include "InsideLocation.h"
-#include "MultiInsideLocation.h"
-#include "DungeonMapGenerator.h"
+
 #include "BaseLocation.h"
+#include "DungeonMapGenerator.h"
+#include "Game.h"
+#include "InsideLocation.h"
 #include "Level.h"
+#include "MultiInsideLocation.h"
+#include "Portal.h"
 #include "QuestManager.h"
-#include "Quest_Secret.h"
 #include "Quest_Evil.h"
 #include "Quest_Orcs.h"
+#include "Quest_Secret.h"
 #include "Quest_Scripted.h"
-#include "Portal.h"
-#include "UnitGroup.h"
-#include "Game.h"
 #include "ScriptManager.h"
+#include "UnitGroup.h"
 
 //=================================================================================================
 void DungeonGenerator::Generate()

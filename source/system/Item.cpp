@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "Item.h"
-#include "Crc.h"
-#include "ResourceManager.h"
-#include "Net.h"
+
 #include "GameResources.h"
-#include "ScriptException.h"
+#include "Net.h"
 #include "Quest.h"
 #include "QuestManager.h"
+#include "ScriptException.h"
+
+#include <ResourceManager.h>
 
 const Item* Item::gold;
 ItemsMap Item::items;

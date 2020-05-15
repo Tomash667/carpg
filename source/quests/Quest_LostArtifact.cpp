@@ -1,14 +1,15 @@
 #include "Pch.h"
 #include "Quest_LostArtifact.h"
+
 #include "Game.h"
-#include "Journal.h"
 #include "GameFile.h"
-#include "QuestManager.h"
-#include "World.h"
-#include "LevelArea.h"
-#include "Team.h"
 #include "ItemHelper.h"
+#include "LevelArea.h"
+#include "Journal.h"
+#include "QuestManager.h"
 #include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_LostArtifact::Start()

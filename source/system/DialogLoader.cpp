@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "DialogLoader.h"
+
 #include "GameDialog.h"
 #include "Item.h"
-#include "ScriptManager.h"
 #include "QuestScheme.h"
+#include "ScriptManager.h"
 
 enum Group
 {

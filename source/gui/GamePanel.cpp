@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "GamePanel.h"
-#include "DialogBox.h"
-#include "Input.h"
-#include "Language.h"
+
 #include "GameGui.h"
+#include "Language.h"
+
+#include <DialogBox.h>
+#include <Input.h>
 
 //-----------------------------------------------------------------------------
 TexturePtr GamePanel::tBackground, GamePanel::tDialog;

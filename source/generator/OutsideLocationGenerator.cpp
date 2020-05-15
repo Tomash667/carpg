@@ -1,17 +1,19 @@
 #include "Pch.h"
 #include "OutsideLocationGenerator.h"
+
+#include "Game.h"
+#include "Item.h"
+#include "Level.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
-#include "Item.h"
-#include "Terrain.h"
-#include "Perlin.h"
-#include "World.h"
-#include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Bandits.h"
 #include "Team.h"
-#include "Texture.h"
-#include "Game.h"
+#include "World.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
+#include <Texture.h>
 
 const uint OutsideLocationGenerator::s = OutsideLocation::size;
 

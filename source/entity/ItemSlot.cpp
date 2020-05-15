@@ -1,8 +1,9 @@
 #include "Pch.h"
-#include "Item.h"
 #include "ItemSlot.h"
-#include "Unit.h"
+
+#include "Item.h"
 #include "Language.h"
+#include "Unit.h"
 
 cstring txAttack, txDefense, txBlock, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical,
 txWeight, txValue, txInvalidArmor;

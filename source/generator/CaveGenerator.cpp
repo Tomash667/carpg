@@ -1,13 +1,14 @@
 #include "Pch.h"
 #include "CaveGenerator.h"
+
 #include "Cave.h"
-#include "Tile.h"
+#include "Game.h"
+#include "GameResources.h"
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Mine.h"
+#include "Tile.h"
 #include "UnitGroup.h"
-#include "GameResources.h"
-#include "Game.h"
 
 //=================================================================================================
 CaveGenerator::CaveGenerator() : m1(nullptr), m2(nullptr)

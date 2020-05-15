@@ -1,16 +1,17 @@
 #include "Pch.h"
 #include "Quest_RescueCaptive.h"
-#include "Game.h"
-#include "Journal.h"
-#include "GameFile.h"
-#include "QuestManager.h"
-#include "City.h"
+
 #include "AIController.h"
+#include "City.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "ItemHelper.h"
+#include "Journal.h"
+#include "Level.h"
+#include "QuestManager.h"
 #include "SaveState.h"
 #include "Team.h"
 #include "World.h"
-#include "Level.h"
-#include "ItemHelper.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()

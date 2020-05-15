@@ -1,9 +1,9 @@
-// dane cz³owieka
 #include "Pch.h"
 #include "HumanData.h"
+
+#include "BitStreamFunc.h"
 #include "MeshInstance.h"
 #include "SaveState.h"
-#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 bool g_beard_and_mustache[MAX_BEARD - 1] = {

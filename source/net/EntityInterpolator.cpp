@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "EntityInterpolator.h"
+
 #include "Net.h"
 
 ObjectPool<EntityInterpolator> EntityInterpolator::Pool;

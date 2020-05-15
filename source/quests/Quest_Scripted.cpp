@@ -1,19 +1,21 @@
 #include "Pch.h"
 #include "Quest_Scripted.h"
-#include "QuestScheme.h"
-#include "ScriptManager.h"
-#include "World.h"
-#include "Journal.h"
+
+#include "City.h"
+#include "DialogContext.h"
+#include "Encounter.h"
+#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "QuestManager.h"
-#include "GameFile.h"
-#include "City.h"
-#include "Encounter.h"
 #include "GroundItem.h"
+#include "Journal.h"
 #include "Net.h"
-#include "DialogContext.h"
+#include "QuestManager.h"
+#include "QuestScheme.h"
 #include "SaveState.h"
+#include "ScriptManager.h"
+#include "World.h"
+
 #include <angelscript.h>
 #include <scriptdictionary\scriptdictionary.h>
 #pragma warning(error: 4062)

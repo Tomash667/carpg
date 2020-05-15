@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "ObjectLoader.h"
+
 #include "BaseUsable.h"
 #include "GameDialog.h"
 #include "Item.h"
-#include <ResourceManager.h>
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 static vector<VariantObject*> variant_objects;
 

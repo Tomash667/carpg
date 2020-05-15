@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "PerkLoader.h"
-#include "Perk.h"
+
 #include "Attribute.h"
-#include "Skill.h"
 #include "Effect.h"
+#include "Perk.h"
+#include "Skill.h"
 
 enum Group
 {

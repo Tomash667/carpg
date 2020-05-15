@@ -1,6 +1,6 @@
 #include "Pch.h"
-#include "GameCore.h"
 #include "OffscreenLocation.h"
+
 #include "Unit.h"
 
 //=================================================================================================

@@ -1,13 +1,14 @@
 #include "Pch.h"
 #include "Minimap.h"
-#include "Game.h"
-#include "InsideLocation.h"
+
 #include "City.h"
-#include "Team.h"
-#include "Portal.h"
-#include "Level.h"
-#include "ResourceManager.h"
+#include "Game.h"
 #include "GameGui.h"
+#include "InsideLocation.h"
+#include "Level.h"
+#include "Portal.h"
+#include "ResourceManager.h"
+#include "Team.h"
 
 enum UnitType
 {

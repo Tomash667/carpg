@@ -1,25 +1,27 @@
 #include "Pch.h"
 #include "Quest_Evil.h"
-#include "Game.h"
-#include "Journal.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "LocationHelper.h"
-#include "QuestManager.h"
-#include "InsideLocation.h"
-#include "GameGui.h"
+
 #include "AIController.h"
-#include "Team.h"
-#include "Portal.h"
-#include "World.h"
-#include "Level.h"
-#include "Pathfinding.h"
-#include "ResourceManager.h"
-#include "ParticleSystem.h"
-#include "SoundManager.h"
-#include "LocationGeneratorFactory.h"
 #include "DungeonGenerator.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "GameGui.h"
 #include "GameResources.h"
+#include "InsideLocation.h"
+#include "Journal.h"
+#include "Level.h"
+#include "LocationGeneratorFactory.h"
+#include "LocationHelper.h"
+#include "Pathfinding.h"
+#include "Portal.h"
+#include "QuestManager.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
+
+#include <ParticleSystem.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 void Quest_Evil::Init()

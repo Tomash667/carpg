@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Trap.h"
+#include "BaseTrap.h"
 
 //-----------------------------------------------------------------------------
 BaseTrap BaseTrap::traps[] = {

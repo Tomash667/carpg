@@ -1,20 +1,22 @@
 #include "Pch.h"
 #include "EncounterGenerator.h"
-#include "Encounter.h"
-#include "OutsideLocation.h"
-#include "Perlin.h"
-#include "Terrain.h"
-#include "Level.h"
-#include "World.h"
+
 #include "Chest.h"
-#include "ScriptManager.h"
-#include "Var.h"
+#include "Encounter.h"
+#include "Game.h"
+#include "ItemHelper.h"
+#include "Level.h"
+#include "OutsideLocation.h"
 #include "QuestManager.h"
 #include "Quest_Crazies.h"
 #include "Quest_Scripted.h"
+#include "ScriptManager.h"
 #include "UnitGroup.h"
-#include "ItemHelper.h"
-#include "Game.h"
+#include "Var.h"
+#include "World.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
 
 //=================================================================================================
 int EncounterGenerator::GetNumberOfSteps()

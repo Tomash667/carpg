@@ -1,12 +1,14 @@
 #include "Pch.h"
 #include "GameMessages.h"
+
 #include "Game.h"
+#include "GameGui.h"
 #include "Language.h"
 #include "PlayerInfo.h"
 #include "SaveState.h"
-#include "SoundManager.h"
-#include "ResourceManager.h"
-#include "GameGui.h"
+
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 void GameMessages::LoadLanguage()

@@ -1,11 +1,12 @@
 #include "Pch.h"
 #include "CreatedCharacter.h"
-#include "StatProfile.h"
-#include "UnitData.h"
-#include "PlayerController.h"
-#include "Unit.h"
-#include "Stock.h"
+
 #include "BitStreamFunc.h"
+#include "PlayerController.h"
+#include "StatProfile.h"
+#include "Stock.h"
+#include "Unit.h"
+#include "UnitData.h"
 
 //=================================================================================================
 void CreatedCharacter::Clear(Class* clas)

@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "ForestGenerator.h"
+
+#include "Level.h"
 #include "OutsideLocation.h"
-#include "Terrain.h"
-#include "Perlin.h"
 #include "QuestManager.h"
 #include "Quest_Sawmill.h"
-#include "World.h"
-#include "Level.h"
 #include "Team.h"
 #include "UnitGroup.h"
+#include "World.h"
+
+#include <Terrain.h>
+#include <Perlin.h>
 
 //=================================================================================================
 void ForestGenerator::Generate()

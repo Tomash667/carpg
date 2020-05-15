@@ -1,6 +1,8 @@
 // obs³uga odkrywania minimapy
 // kod przerobiony z http://www.roguebasin.com/index.php?title=Permissive-fov
 #include "Pch.h"
+#include "FOV.h"
+
 #include "InsideLocation.h"
 #include "Level.h"
 

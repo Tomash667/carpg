@@ -1,16 +1,16 @@
 #include "Pch.h"
 #include "Quest_Mages.h"
-#include "Game.h"
-#include "Journal.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
+
 #include "AIController.h"
-#include "SoundManager.h"
-#include "World.h"
-#include "Team.h"
-#include "NameHelper.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "Journal.h"
 #include "Level.h"
+#include "NameHelper.h"
+#include "QuestManager.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Mages::Start()

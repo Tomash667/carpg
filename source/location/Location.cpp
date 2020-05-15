@@ -1,13 +1,14 @@
 #include "Pch.h"
 #include "Game.h"
-#include "SaveState.h"
-#include "City.h"
-#include "Quest.h"
+
 #include "BitStreamFunc.h"
-#include "Portal.h"
+#include "City.h"
 #include "GameFile.h"
-#include "Quest_Scripted.h"
+#include "Portal.h"
+#include "Quest.h"
 #include "QuestManager.h"
+#include "Quest_Scripted.h"
+#include "SaveState.h"
 #include "UnitGroup.h"
 
 //=================================================================================================

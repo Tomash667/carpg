@@ -1,13 +1,14 @@
 #include "Pch.h"
 #include "OutsideLocation.h"
+
+#include "BitStreamFunc.h"
+#include "Chest.h"
+#include "GameFile.h"
+#include "GroundItem.h"
+#include "Level.h"
+#include "Object.h"
 #include "SaveState.h"
 #include "Unit.h"
-#include "Object.h"
-#include "Chest.h"
-#include "GroundItem.h"
-#include "GameFile.h"
-#include "BitStreamFunc.h"
-#include "Level.h"
 
 namespace OLD
 {

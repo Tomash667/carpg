@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "Console.h"
-#include "Input.h"
-#include "ResourceManager.h"
+
 #include "CommandParser.h"
 #include "GameKeys.h"
+
+#include <Input.h>
+#include <ResourceManager.h>
 
 //=================================================================================================
 Console::Console(const DialogInfo& info) : DialogBox(info), added(false)

@@ -1,11 +1,13 @@
 #include "Pch.h"
 #include "BuildingLoader.h"
-#include "BuildingGroup.h"
+
 #include "Building.h"
+#include "BuildingGroup.h"
 #include "BuildingScript.h"
 #include "UnitData.h"
-#include <ResourceManager.h>
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 enum Group
 {
