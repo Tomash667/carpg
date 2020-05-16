@@ -12,6 +12,7 @@ Version 0.15 (???):
 - can't use speed command in singleplayer game
 - mouse zoom sometimes didn't have effect on camera
 - crash when launching [AnimeIsWrong]
+- script error when talking with alchemist, everyone get better prices
 
 --------------------------------------------------------------------------------
 Fixes:

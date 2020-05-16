@@ -12,6 +12,7 @@ Wersja 0.15 (2020-03-31):
 - nie można używać komendy 'speed' w jednoosobowej grze
 - kółko myszki czasami nie ma wpływu na kamerę
 - crash podczas uruchamiania [AnimeIsWrong]
+- błędy skryptu podczas rozmowy z alchemikiem, wszyscy mają lepsze ceny
 
 --------------------------------------------------------------------------------
 Poprawki:

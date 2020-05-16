@@ -1125,9 +1125,9 @@ item recipe_antimagic {
 	text "xxx"
 }
 item recipe_book_nreg {
-	name "Naturale metody leczenia"
+	name "Naturalne metody leczenia"
 	desc "Zawiera instrukcje przyrz¹dzenia naparów leczniczych."
-	text "TODO"
+	text "[Ta ksi¹¿ka zawiera instrukcje przyrz¹dzenia naparu leczniczego i naparu zdrowia (wymaga 25 alchemii)]\n\nZio³olecznictwo to badania botaniki i stosowania roœlin leczniczych. Roœliny by³y podstaw¹ leczenia przez wiêksz¹ czêœæ historii ludzkoœci, a taka tradycyjna medycyna jest nadal szeroko praktykowana. Zakres zio³olecznictwa jest czasem rozszerzany o produkty grzybowe i pszczele, a tak¿e minera³y, muszle i niektóre czêœci zwierzêce."
 }
 
 //------------------------------------------------------------------------------

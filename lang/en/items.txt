@@ -1127,7 +1127,7 @@ item recipe_antimagic {
 item recipe_book_nreg {
 	name "Natural healing methods"
 	desc "Contains instructions for making a healing brews."
-	text "TODO"
+	text "[This book contains instructions for making healing brew and big healing brew (requires 25 alchemy)]\n\nHerbal medicine is the study of botany and the use of medicinal plants. Plants have been the basis for medical treatments through much of human history, and such traditional medicine is still widely practiced today. The scope of herbalism is sometimes extended to include fungal and bee products, as well as minerals, shells and certain animal parts."
 }
 
 //------------------------------------------------------------------------------

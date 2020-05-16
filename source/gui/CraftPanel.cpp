@@ -29,7 +29,7 @@ struct RecipeItem : public GuiElement
 			if(first)
 				first = false;
 			else
-				text += "\n";
+				text += ", ";
 			if(p.second > 1u)
 				text += Format("%ux ", p.second);
 			text += p.first->name;

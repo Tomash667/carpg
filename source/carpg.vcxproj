@@ -138,6 +138,7 @@
     <ClInclude Include="components\Pathfinding.h" />
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
+    <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -312,7 +313,6 @@
     <ClInclude Include="stats\MusicTrack.h" />
     <ClInclude Include="stats\Skill.h" />
     <ClInclude Include="stats\UnitStats.h" />
-    <ClInclude Include="system\DialogContext.h" />
     <ClInclude Include="system\DialogLoader.h" />
     <ClInclude Include="system\LocationLoader.h" />
     <ClInclude Include="system\FrameInfo.h" />
@@ -331,6 +331,7 @@
     <ClCompile Include="components\Pathfinding.cpp" />
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
+    <ClCompile Include="entity\DialogContext.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="GameFile.cpp" />
@@ -511,7 +512,6 @@
     <ClCompile Include="stats\Skill.cpp" />
     <ClCompile Include="stats\UnitStats.cpp" />
     <ClCompile Include="system\ContentLoader.cpp" />
-    <ClCompile Include="system\DialogContext.cpp" />
     <ClCompile Include="system\DialogLoader.cpp" />
     <ClCompile Include="system\FrameInfo.cpp" />
     <ClCompile Include="system\GameDialog.cpp" />

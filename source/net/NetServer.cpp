@@ -3177,13 +3177,21 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					int skill = unit.GetBase(SkillId::ALCHEMY);
+					bool anythingTooHard = false;
 					for(Recipe* recipe : book.recipes)
 					{
-						if(skill >= recipe->skill)
-							player.AddRecipe(recipe);
+						if(!player.HaveRecipe(recipe))
+						{
+							if(skill >= recipe->skill)
+								player.AddRecipe(recipe);
+							else
+								anythingTooHard = true;
+						}
 					}
 					if(IsSet(book.flags, ITEM_SINGLE_USE))
 						unit.RemoveItem(index, 1u);
+					if(anythingTooHard)
+						game_gui->messages->AddGameMsg3(&player, GMS_TOO_COMPLICATED);
 
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_PREPARE;

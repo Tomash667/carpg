@@ -492,7 +492,7 @@ void InventoryPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	if(!focus || game_gui->book->visible)
+	if(game_gui->book->visible)
 	{
 		drag_and_drop = false;
 		base.tooltip.Clear();

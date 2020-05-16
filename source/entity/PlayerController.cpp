@@ -3413,7 +3413,7 @@ void PlayerController::ReadBook(int index)
 		if(!book.recipes.empty())
 		{
 			int skill = unit->GetBase(SkillId::ALCHEMY);
-			bool anythingNew = false, anythingAllowed = false;
+			bool anythingNew = false, anythingAllowed = false, anythingTooHard = false;
 			for(Recipe* recipe : book.recipes)
 			{
 				if(!HaveRecipe(recipe))
@@ -3421,6 +3421,8 @@ void PlayerController::ReadBook(int index)
 					anythingNew = true;
 					if(skill >= recipe->skill)
 						anythingAllowed = true;
+					else
+						anythingTooHard = true;
 				}
 			}
 
@@ -3428,22 +3430,27 @@ void PlayerController::ReadBook(int index)
 				game_gui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
 			else if(!anythingAllowed)
 				game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
-			else if(Net::IsLocal())
-			{
-				for(Recipe* recipe : book.recipes)
-				{
-					if(skill >= recipe->skill)
-						AddRecipe(recipe);
-				}
-				if(IsSet(book.flags, ITEM_SINGLE_USE))
-					unit->RemoveItem(index, 1u);
-			}
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_ITEM;
-				c.id = index;
-				unit->action = A_PREPARE;
+				if(Net::IsLocal())
+				{
+					for(Recipe* recipe : book.recipes)
+					{
+						if(skill >= recipe->skill)
+							AddRecipe(recipe);
+					}
+					if(IsSet(book.flags, ITEM_SINGLE_USE))
+						unit->RemoveItem(index, 1u);
+					if(anythingTooHard)
+						game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+				}
+				else
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::USE_ITEM;
+					c.id = index;
+					unit->action = A_PREPARE;
+				}
 			}
 		}
 
