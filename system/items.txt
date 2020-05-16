@@ -2383,7 +2383,7 @@ consumable cheese {
 	mesh "ser.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 40
 	}
@@ -2395,7 +2395,7 @@ consumable honeycomb {
 	mesh "plaster_miodu.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 75
 	}
@@ -2407,7 +2407,7 @@ consumable rice {
 	mesh "ryz.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 30
 	}
@@ -2419,7 +2419,7 @@ consumable soup {
 	mesh "soup.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 45
 	}
@@ -2431,7 +2431,7 @@ consumable stew {
 	mesh "stew.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 60
 	}
@@ -2443,7 +2443,7 @@ consumable mushroom {
 	mesh "grzyb.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 15
 	}
@@ -2455,7 +2455,7 @@ consumable muffin {
 	mesh "muffin.qmsh"
 	type food
 	time 5
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh ingredient}
 	effects {
 		food_regeneration 100
 	}
