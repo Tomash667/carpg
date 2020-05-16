@@ -113,7 +113,7 @@ Item& Item::operator = (const Item& i)
 		{
 			OtherItem& o = ToOther();
 			const OtherItem& o2 = i.ToOther();
-			o.other_type = o2.other_type;
+			o.subtype = o2.subtype;
 		}
 		break;
 	case IT_CONSUMABLE:
@@ -121,8 +121,8 @@ Item& Item::operator = (const Item& i)
 			Consumable& c = ToConsumable();
 			const Consumable& c2 = i.ToConsumable();
 			c.time = c2.time;
-			c.cons_type = c2.cons_type;
-			c.ai_type = c2.ai_type;
+			c.subtype = c2.subtype;
+			c.aiType = c2.aiType;
 		}
 		break;
 	case IT_BOOK:
@@ -130,6 +130,7 @@ Item& Item::operator = (const Item& i)
 			Book& b = ToBook();
 			const Book& b2 = i.ToBook();
 			b.scheme = b2.scheme;
+			b.subtype = b2.subtype;
 			b.runic = b2.runic;
 		}
 		break;
@@ -255,15 +256,15 @@ bool ItemCmp(const Item* a, const Item* b)
 		}
 		else if(a->type == IT_CONSUMABLE)
 		{
-			ConsumableType c1 = a->ToConsumable().cons_type,
-				c2 = b->ToConsumable().cons_type;
+			Consumable::Subtype c1 = a->ToConsumable().subtype,
+				c2 = b->ToConsumable().subtype;
 			if(c1 != c2)
 				return c1 < c2;
 		}
 		else if(a->type == IT_OTHER)
 		{
-			OtherType o1 = a->ToOther().other_type,
-				o2 = b->ToOther().other_type;
+			OtherItem::Subtype o1 = a->ToOther().subtype,
+				o2 = b->ToOther().subtype;
 			if(o1 != o2)
 				return o1 < o2;
 		}
@@ -305,7 +306,7 @@ void Item::CreateCopy(Item& item) const
 			o.flags = o2.flags;
 			o.id = o2.id;
 			o.name = o2.name;
-			o.other_type = o2.other_type;
+			o.subtype = o2.subtype;
 			o.quest_id = o2.quest_id;
 			o.type = o2.type;
 			o.value = o2.value;

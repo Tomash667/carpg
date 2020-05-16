@@ -21,6 +21,7 @@ enum Group
 	G_ARMOR_UNIT_TYPE,
 	G_CONSUMABLE_TYPE,
 	G_OTHER_TYPE,
+	G_BOOK_TYPE,
 	G_STOCK_KEYWORD,
 	G_BOOK_SCHEME_PROPERTY,
 	G_SKILL,
@@ -227,18 +228,24 @@ void ItemLoader::InitTokenizer()
 		{ "orc", (int)ArmorUnitType::ORC }
 		});
 
-	t.AddKeywords(G_CONSUMABLE_TYPE, {
-		{ "potion", (int)ConsumableType::Potion },
-		{ "drink", (int)ConsumableType::Drink },
-		{ "food", (int)ConsumableType::Food },
-		{ "herb", (int)ConsumableType::Herb }
+	t.AddKeywords<Consumable::Subtype>(G_CONSUMABLE_TYPE, {
+		{ "potion", Consumable::Subtype::Potion },
+		{ "drink", Consumable::Subtype::Drink },
+		{ "food", Consumable::Subtype::Food },
+		{ "herb", Consumable::Subtype::Herb }
 		});
 
-	t.AddKeywords(G_OTHER_TYPE, {
-		{ "tool", Tool },
-		{ "valuable", Valuable },
-		{ "other", OtherItems },
-		{ "artifact", Artifact }
+	t.AddKeywords<OtherItem::Subtype>(G_OTHER_TYPE, {
+		{ "misc_item", OtherItem::Subtype::MiscItem },
+		{ "tool", OtherItem::Subtype::Tool },
+		{ "valuable", OtherItem::Subtype::Valuable },
+		{ "artifact", OtherItem::Subtype::Artifact },
+		{ "ingredient", OtherItem::Subtype::Ingredient }
+		});
+
+	t.AddKeywords<Book::Subtype>(G_BOOK_TYPE, {
+		{ "normal_book", Book::Subtype::NormalBook },
+		{ "recipe", Book::Subtype::Recipe }
 		});
 
 	t.AddKeywords(G_STOCK_KEYWORD, {
@@ -383,7 +390,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPES);
+		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPES) | Bit(P_TYPE);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -508,10 +515,13 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				item->ToArmor().armor_type = (ARMOR_TYPE)t.MustGetKeywordId(G_ARMOR_TYPE);
 				break;
 			case IT_CONSUMABLE:
-				item->ToConsumable().cons_type = (ConsumableType)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
+				item->ToConsumable().subtype = (Consumable::Subtype)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
 				break;
 			case IT_OTHER:
-				item->ToOther().other_type = (OtherType)t.MustGetKeywordId(G_OTHER_TYPE);
+				item->ToOther().subtype = (OtherItem::Subtype)t.MustGetKeywordId(G_OTHER_TYPE);
+				break;
+			case IT_BOOK:
+				item->ToBook().subtype = (Book::Subtype)t.MustGetKeywordId(G_BOOK_TYPE);
 				break;
 			}
 			break;
@@ -741,18 +751,18 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_CONSUMABLE:
 		{
 			Consumable* consumable = static_cast<Consumable*>(item_ptr);
-			if(consumable->cons_type == ConsumableType::Potion)
+			if(consumable->subtype == Consumable::Subtype::Potion)
 			{
 				for(ItemEffect& e : consumable->effects)
 				{
 					if(e.effect == EffectId::Heal && e.power > 0.f)
 					{
-						consumable->ai_type = ConsumableAiType::Healing;
+						consumable->aiType = Consumable::AiType::Healing;
 						break;
 					}
 					else if(e.effect == EffectId::RestoreMana && e.power > 0.f)
 					{
-						consumable->ai_type = ConsumableAiType::Mana;
+						consumable->aiType = Consumable::AiType::Mana;
 						break;
 					}
 				}
@@ -764,7 +774,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		{
 			OtherItem& o = item_ptr->ToOther();
 			OtherItem::others.push_back(&o);
-			if(o.other_type == Artifact)
+			if(o.subtype == OtherItem::Subtype::Artifact)
 				OtherItem::artifacts.push_back(&o);
 		}
 		break;
@@ -1425,19 +1435,22 @@ void ItemLoader::CalculateCrc()
 			{
 				Consumable& c = item->ToConsumable();
 				crc.Update(c.time);
-				crc.Update(c.cons_type);
+				crc.Update(c.subtype);
 			}
 			break;
 		case IT_OTHER:
 			{
 				OtherItem& o = item->ToOther();
-				crc.Update(o.other_type);
+				crc.Update(o.subtype);
 			}
 			break;
 		case IT_BOOK:
 			{
 				Book& b = item->ToBook();
 				crc.Update(b.scheme->id);
+				crc.Update(b.subtype);
+				for(Recipe* recipe : b.recipes)
+					crc.Update(recipe->hash);
 			}
 			break;
 		case IT_GOLD:
@@ -1473,6 +1486,8 @@ void ItemLoader::CalculateCrc()
 	for(auto& element : Recipe::items)
 	{
 		Recipe* recipe = element.second;
+		if(!recipe->defined)
+			continue;
 		crc.Update(recipe->id);
 		crc.Update(recipe->result->id);
 		for(pair<const Item*, uint>& p : recipe->ingredients)

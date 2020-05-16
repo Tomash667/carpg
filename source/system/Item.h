@@ -357,45 +357,48 @@ struct Ring : public Item
 
 //-----------------------------------------------------------------------------
 // Eatible item (food, drink, potion)
-enum class ConsumableType
-{
-	Food,
-	Drink,
-	Herb,
-	Potion
-};
-enum class ConsumableAiType
-{
-	None,
-	Healing,
-	Mana
-};
 struct Consumable : public Item
 {
-	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
+	enum class Subtype
+	{
+		Food,
+		Drink,
+		Herb,
+		Potion
+	};
+
+	enum class AiType
+	{
+		None,
+		Healing,
+		Mana
+	};
+
+	Consumable() : Item(IT_CONSUMABLE), time(0), subtype(Subtype::Drink), aiType(AiType::None) {}
 
 	float time;
-	ConsumableType cons_type;
-	ConsumableAiType ai_type;
+	Subtype subtype;
+	AiType aiType;
 
 	static vector<Consumable*> consumables;
 };
 
 //-----------------------------------------------------------------------------
 // Other items
-// valuable items, tools, quest items
-enum OtherType
-{
-	Tool,
-	Valuable,
-	OtherItems,
-	Artifact
-};
 struct OtherItem : public Item
 {
-	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
+	enum class Subtype
+	{
+		MiscItem,
+		Tool,
+		Valuable,
+		Artifact,
+		Ingredient
+	};
 
-	OtherType other_type;
+	OtherItem() : Item(IT_OTHER), subtype(Subtype::MiscItem) {}
+
+	Subtype subtype;
 
 	static vector<OtherItem*> others;
 	static vector<OtherItem*> artifacts;
@@ -418,11 +421,18 @@ struct BookScheme
 
 struct Book : public Item
 {
-	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
+	enum class Subtype
+	{
+		NormalBook,
+		Recipe
+	};
+
+	Book() : Item(IT_BOOK), scheme(nullptr), subtype(Subtype::NormalBook), runic(false) {}
 
 	BookScheme* scheme;
 	vector<Recipe*> recipes;
 	string text;
+	Subtype subtype;
 	bool runic;
 
 	static vector<Book*> books;

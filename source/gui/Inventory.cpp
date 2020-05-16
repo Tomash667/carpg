@@ -1148,7 +1148,7 @@ void InventoryPanel::Update(float dt)
 							c.id = i_index;
 						}
 					}
-					else if(item->type == IT_CONSUMABLE && item->ToConsumable().ai_type != ConsumableAiType::None)
+					else if(item->type == IT_CONSUMABLE && item->ToConsumable().aiType != Consumable::AiType::None)
 					{
 						uint count;
 						if(slot->count != 1)
@@ -2161,9 +2161,9 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
+		if(pot.aiType == Consumable::AiType::Healing)
 			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
+		else if(pot.aiType == Consumable::AiType::Mana)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 	// remove
@@ -2206,9 +2206,9 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
+		if(pot.aiType == Consumable::AiType::Healing)
 			unit->ai->have_potion = HavePotion::Check;
-		else if(pot.ai_type == ConsumableAiType::Mana)
+		else if(pot.aiType == Consumable::AiType::Mana)
 			unit->ai->have_mp_potion = HavePotion::Check;
 	}
 	// remove
@@ -2349,9 +2349,9 @@ void InventoryPanel::GivePotion(int index, uint count)
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = slot.item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
+		if(pot.aiType == Consumable::AiType::Healing)
 			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
+		else if(pot.aiType == Consumable::AiType::Mana)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 	// remove

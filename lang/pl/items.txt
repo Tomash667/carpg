@@ -939,7 +939,7 @@ item magic_crystal {
 	desc "Kryszta³ o magicznych w³aœciwoœciach."
 }
 item troll_blood {
-	name "Krew trola"
+	name "Krew trolla"
 }
 
 //------------------------------------------------------------------------------

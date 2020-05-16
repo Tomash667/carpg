@@ -1407,7 +1407,8 @@ unit alchemist : merchant {
 	}
 	trader {
 		stock alchemist
-		groups {potion herb}
+		groups {potion herb ingredient recipe}
+		include {ladle}
 	}
 	gold {500 1000}
 	dialog alchemist
@@ -1520,6 +1521,7 @@ unit mage_seller : base_human {
 	trader {
 		stock mage_seller
 		groups {amulet ring}
+		include {magic_scroll}
 	}
 	gold {1000 2000}
 	abilities mage

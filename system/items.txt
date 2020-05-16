@@ -2564,7 +2564,6 @@ other cup {
 	weight 0.2
 	value 3
 	mesh "cup.qmsh"
-	type other
 	flags ground_mesh
 }
 
@@ -2572,7 +2571,6 @@ other plate {
 	weight 0.2
 	value 3
 	mesh "plate.qmsh"
-	type other
 	flags ground_mesh
 }
 
@@ -2580,35 +2578,31 @@ other wolf_pelt {
 	weight 2.5
 	value 25
 	tex "wolf_pelt.png"
-	type other
 }
 
 other worg_pelt {
 	weight 2.5
 	value 50
 	tex "worg_pelt.png"
-	type other
 }
 
 other bear_pelt {
 	weight 4
 	value 75
 	tex "bear_pelt.png"
-	type other
 }
 
 other black_bear_pelt {
 	weight 4
 	value 100
 	tex "black_bear_pelt.png"
-	type other
 }
 
 other heal_crystal {
 	weight 0.5
 	value 25
 	mesh "heal_crystal.qmsh"
-	type other
+	type ingredient
 	flags {not_merchant ground_mesh ingredient}
 }
 
@@ -2616,7 +2610,7 @@ other magic_crystal {
 	weight 0.5
 	value 25
 	mesh "magic_crystal.qmsh"
-	type other
+	type ingredient
 	flags {not_merchant ground_mesh ingredient}
 }
 
@@ -2624,7 +2618,7 @@ other tallow {
 	weight 0.5
 	value 10
 	mesh "tallow.qmsh"
-	type other
+	type ingredient
 	flags {ground_mesh ingredient}
 }
 
@@ -2632,7 +2626,7 @@ other troll_blood {
 	weight 0.1
 	value 50
 	mesh "vial.qmsh"
-	type other
+	type ingredient
 	flags {not_merchant ingredient}
 }
 
@@ -2803,7 +2797,6 @@ other key_kopalnia {
 	weight 0.1
 	value 0
 	tex "old-key.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2811,7 +2804,6 @@ other q_bandyci_paczka {
 	weight 5
 	value 0
 	tex "paczka.png"
-	type other
 	flags {not_shop not_chest not_random important dont_drop}
 }
 
@@ -2819,7 +2811,6 @@ other q_bandyci_list {
 	weight 0.1
 	value 0
 	tex "list.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2827,7 +2818,6 @@ other q_magowie_kula {
 	weight 1
 	value 0
 	tex "magic_sphere.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2835,7 +2825,6 @@ other q_magowie_kula2 {
 	weight 1
 	value 5000
 	tex "magic_sphere.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2843,7 +2832,6 @@ other q_orkowie_klucz {
 	weight 1
 	value 0
 	tex "rusty-key.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2851,7 +2839,6 @@ other key_lunar {
 	weight 0.1
 	value 100
 	tex "moon_key.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2859,7 +2846,6 @@ other q_szaleni_kamien {
 	weight 5
 	value 0
 	tex "kamien2.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2867,7 +2853,6 @@ other sekret_kartka {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2875,7 +2860,6 @@ other sekret_kartka2 {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2883,7 +2867,6 @@ other q_main_letter {
 	weight 0.1
 	value 0
 	tex "list.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2891,7 +2874,6 @@ other letter {
 	weight 0.1
 	value 0
 	tex "list.png"
-	type other
 	flags {quest not_shop not_chest not_random dont_drop}
 }
 
@@ -2899,7 +2881,6 @@ other parcel {
 	weight 1
 	value 0
 	tex "paczka.png"
-	type other
 	flags {quest not_shop not_chest not_random important dont_drop}
 }
 
@@ -2907,7 +2888,6 @@ other wanted_letter {
 	weight 0.1
 	value 0
 	tex "wanted.png"
-	type other
 	flags {quest not_shop not_chest not_random}
 }
 
@@ -2915,7 +2895,6 @@ other q_resources {
 	weight 10
 	value 0
 	mesh "resources_box.qmsh"
-	type other
 	flags {quest not_shop not_chest not_random important dont_drop ground_mesh}
 }
 
@@ -3033,6 +3012,7 @@ book recipe_antidote {
 	mesh "recipe.qmsh"
 	scheme page
 	recipes p_antidote
+	type recipe
 	flags single_use
 }
 
@@ -3042,6 +3022,7 @@ book recipe_reg {
 	mesh "recipe.qmsh"
 	scheme page
 	recipes p_reg
+	type recipe
 	flags single_use
 }
 
@@ -3051,6 +3032,7 @@ book recipe_antimagic {
 	mesh "recipe.qmsh"
 	scheme page
 	recipes p_antimagic
+	type recipe
 	flags single_use
 }
 
@@ -3063,7 +3045,8 @@ book recipe_book_nreg {
 		p_nreg
 		p_nreg2
 	}
-	flags ground_mesh
+	type recipe
+	flags {ground_mesh hq}
 }
 
 //------------------------------------------------------------------------------

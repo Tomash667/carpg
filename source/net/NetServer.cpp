@@ -1148,9 +1148,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE)
 						{
 							const Consumable& pot = slot.item->ToConsumable();
-							if(pot.ai_type == ConsumableAiType::Healing)
+							if(pot.aiType == Consumable::AiType::Healing)
 								player.action_unit->ai->have_potion = HavePotion::Check;
-							else if(pot.ai_type == ConsumableAiType::Mana)
+							else if(pot.aiType == Consumable::AiType::Mana)
 								player.action_unit->ai->have_mp_potion = HavePotion::Check;
 						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
@@ -1311,9 +1311,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(slot.item->type == IT_CONSUMABLE)
 							{
 								const Consumable& pot = slot.item->ToConsumable();
-								if(pot.ai_type == ConsumableAiType::Healing)
+								if(pot.aiType == Consumable::AiType::Healing)
 									t->ai->have_potion = HavePotion::Yes;
-								else if(pot.ai_type == ConsumableAiType::Mana)
+								else if(pot.aiType == Consumable::AiType::Mana)
 									t->ai->have_mp_potion = HavePotion::Yes;
 							}
 							if(player.action == PlayerAction::GiveItems)

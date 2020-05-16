@@ -165,7 +165,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 
 	const float* mod_table;
 
-	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
+	if(item->type == IT_OTHER && item->ToOther().subtype == OtherItem::Subtype::Valuable)
 	{
 		if(buy)
 			mod_table = price_mod_buy_v;

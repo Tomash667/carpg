@@ -775,7 +775,7 @@ void Unit::ConsumeItemS(const Item* item)
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
 	cstring anim_name;
-	if(cons.cons_type == ConsumableType::Food || cons.cons_type == ConsumableType::Herb)
+	if(Any(cons.subtype, Consumable::Subtype::Food, Consumable::Subtype::Herb))
 	{
 		action = A_EAT;
 		animation_state = AS_EAT_START;
@@ -3091,7 +3091,7 @@ int Unit::FindHealingPotion() const
 			continue;
 
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Healing)
+		if(pot.aiType != Consumable::AiType::Healing)
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::Heal);
@@ -3133,7 +3133,7 @@ int Unit::FindManaPotion() const
 			continue;
 
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Mana)
+		if(pot.aiType != Consumable::AiType::Mana)
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::RestoreMana);
