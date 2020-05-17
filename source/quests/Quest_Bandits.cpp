@@ -1,16 +1,17 @@
 #include "Pch.h"
 #include "Quest_Bandits.h"
-#include "Game.h"
-#include "Journal.h"
-#include "GameFile.h"
-#include "SaveState.h"
-#include "QuestManager.h"
-#include "Encounter.h"
+
 #include "AIController.h"
-#include "World.h"
-#include "Level.h"
-#include "Team.h"
+#include "Encounter.h"
+#include "Game.h"
+#include "GameFile.h"
 #include "GameResources.h"
+#include "Journal.h"
+#include "Level.h"
+#include "QuestManager.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Bandits::Init()

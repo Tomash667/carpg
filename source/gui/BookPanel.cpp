@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "BookPanel.h"
+
 #include "Item.h"
-#include "Input.h"
-#include "ResourceManager.h"
-#include "SoundManager.h"
+
+#include <Input.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 BookPanel::BookPanel() : book(nullptr), scale(0, 0)

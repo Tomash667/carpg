@@ -1,17 +1,19 @@
 #include "Pch.h"
 #include "OutsideLocationGenerator.h"
+
+#include "Game.h"
+#include "Item.h"
+#include "Level.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
-#include "Item.h"
-#include "Terrain.h"
-#include "Perlin.h"
-#include "World.h"
-#include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Bandits.h"
 #include "Team.h"
-#include "Texture.h"
-#include "Game.h"
+#include "World.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
+#include <Texture.h>
 
 const uint OutsideLocationGenerator::s = OutsideLocation::size;
 
@@ -244,7 +246,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(127.f, 0, Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f);
 		else
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
-		terrain->SetH(pos);
+		terrain->SetY(pos);
 		pos.y -= 1.f;
 		game_level->SpawnObjectEntity(area, BaseObject::Get("obelisk"), pos, 0.f);
 	}
@@ -303,30 +305,34 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 }
 
 //=================================================================================================
-void OutsideLocationGenerator::SpawnForestItems(int count_mod)
+void OutsideLocationGenerator::SpawnForestItems(int countMod)
 {
-	assert(InRange(count_mod, -2, 1));
+	assert(InRange(countMod, -2, 1));
 
 	// get count to spawn
-	int herbs, green_herbs;
-	switch(count_mod)
+	int healingHerbs, manaHerbs, greenHerbs;
+	switch(countMod)
 	{
 	case -2:
-		green_herbs = 0;
-		herbs = Random(1, 3);
+		greenHerbs = 0;
+		healingHerbs = Random(1, 2);
+		manaHerbs = Random(1, 2);
 		break;
 	case -1:
-		green_herbs = 0;
-		herbs = Random(2, 5);
+		greenHerbs = 0;
+		healingHerbs = Random(2, 4);
+		manaHerbs = Random(2, 4);
 		break;
 	default:
 	case 0:
-		green_herbs = Random(0, 1);
-		herbs = Random(5, 10);
+		greenHerbs = Random(0, 1);
+		healingHerbs = Random(4, 8);
+		manaHerbs = Random(4, 8);
 		break;
 	case 1:
-		green_herbs = Random(1, 2);
-		herbs = Random(10, 15);
+		greenHerbs = Random(1, 2);
+		healingHerbs = Random(8, 12);
+		manaHerbs = Random(8, 12);
 		break;
 	}
 
@@ -336,15 +342,16 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 		const Item* item;
 		int count;
 	};
-	ItemToSpawn items_to_spawn[] = {
-		Item::Get("green_herb"), green_herbs,
-		Item::Get("healing_herb"), herbs
+	const ItemToSpawn itemsToSpawn[] = {
+		Item::Get("green_herb"), greenHerbs,
+		Item::Get("healing_herb"), healingHerbs,
+		Item::Get("mana_herb"), manaHerbs
 	};
 	TerrainTile* tiles = outside->tiles;
-	Vec2 region_size(2.f, 2.f);
-	for(const ItemToSpawn& to_spawn : items_to_spawn)
+	const Vec2 regionSize(2.f, 2.f);
+	for(const ItemToSpawn& toSpawn : itemsToSpawn)
 	{
-		for(int i = 0; i < to_spawn.count; ++i)
+		for(int i = 0; i < toSpawn.count; ++i)
 		{
 			for(int tries = 0; tries < 5; ++tries)
 			{
@@ -352,7 +359,7 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 				TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
 				if(type == TT_GRASS || type == TT_GRASS3)
 				{
-					game_level->SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
+					game_level->SpawnGroundItemInsideRegion(toSpawn.item, Vec2(2.f*pt.x, 2.f*pt.y), regionSize, false);
 					break;
 				}
 			}

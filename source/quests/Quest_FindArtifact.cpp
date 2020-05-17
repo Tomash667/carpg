@@ -1,15 +1,16 @@
 #include "Pch.h"
 #include "Quest_FindArtifact.h"
+
 #include "Game.h"
-#include "Journal.h"
 #include "GameFile.h"
-#include "QuestManager.h"
 #include "InsideLocation.h"
-#include "MultiInsideLocation.h"
-#include "World.h"
-#include "Team.h"
 #include "ItemHelper.h"
+#include "Journal.h"
+#include "MultiInsideLocation.h"
+#include "QuestManager.h"
 #include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_FindArtifact::Start()

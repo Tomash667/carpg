@@ -1,17 +1,19 @@
 #include "Pch.h"
 #include "Journal.h"
-#include "Input.h"
-#include "GetTextDialog.h"
-#include "Language.h"
-#include "GameKeys.h"
-#include "QuestManager.h"
-#include "Quest.h"
-#include "ResourceManager.h"
-#include "World.h"
+
 #include "GameGui.h"
+#include "GameKeys.h"
 #include "GameMessages.h"
-#include "SoundManager.h"
+#include "Language.h"
 #include "Net.h"
+#include "Quest.h"
+#include "QuestManager.h"
+#include "World.h"
+
+#include <GetTextDialog.h>
+#include <Input.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 Journal::Journal() : mode(Quests)

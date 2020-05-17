@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "ErrorHandler.h"
-#include "Version.h"
+
 #include "Config.h"
+#include "Version.h"
 
 //=================================================================================================
 void DoCrash()

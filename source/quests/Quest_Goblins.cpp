@@ -1,17 +1,18 @@
 #include "Pch.h"
 #include "Quest_Goblins.h"
-#include "Game.h"
-#include "Journal.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
+
 #include "Encounter.h"
-#include "InsideLocation.h"
-#include "OutsideLocation.h"
+#include "Game.h"
+#include "GameFile.h"
 #include "GameGui.h"
+#include "InsideLocation.h"
+#include "Journal.h"
+#include "Level.h"
+#include "OutsideLocation.h"
+#include "QuestManager.h"
+#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
-#include "Level.h"
 
 //=================================================================================================
 void Quest_Goblins::Init()

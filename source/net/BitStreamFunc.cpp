@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "BitStreamFunc.h"
+
+#include "GameResources.h"
 #include "Item.h"
 #include "ItemSlot.h"
 #include "QuestManager.h"
-#include "GameResources.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;

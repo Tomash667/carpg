@@ -67,8 +67,10 @@ item beer
 item vodka
 item plate
 item cup
-// cave mushrooms
+// cave items
 item mushroom
+item heal_crystal
+item magic_crystal
 // tutorial items
 item al_clothes
 item sword_long
@@ -81,6 +83,7 @@ item frying_pan
 item ladle
 // spawn forest items
 item healing_herb
+item mana_herb
 item green_herb
 // pre 0.5 quest item
 item q_main_letter
@@ -106,9 +109,13 @@ list drink
 list ancient_armory_armors
 list contest_reward
 list treasure
+// random item on bookcase
 list books
 list rare_books
+list recipes
+// GetBetterAmulet
 list leveled amulets
+// GetBetterRing
 list leveled rings
 
 //------------------------------------------------------------------------------

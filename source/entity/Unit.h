@@ -376,7 +376,6 @@ struct Unit : public EntityType<Unit>
 	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
 	void ConsumeItemAnim(const Consumable& cons);
 	void ConsumeItemS(const Item* item);
-	void UseItem(int index);
 	void HideWeapon() { SetWeaponState(false, W_NONE, true); }
 	void TakeWeapon(WeaponType type);
 	float GetSphereRadius() const

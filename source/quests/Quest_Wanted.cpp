@@ -1,14 +1,15 @@
 #include "Pch.h"
 #include "Quest_Wanted.h"
-#include "Game.h"
-#include "Journal.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
+
 #include "City.h"
-#include "World.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "Journal.h"
 #include "NameHelper.h"
+#include "QuestManager.h"
+#include "SaveState.h"
 #include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()

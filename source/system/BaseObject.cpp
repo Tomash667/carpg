@@ -1,6 +1,4 @@
 #include "Pch.h"
-#include <unordered_set>
-#include "GameCore.h"
 #include "BaseObject.h"
 
 //-----------------------------------------------------------------------------

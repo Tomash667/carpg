@@ -647,7 +647,7 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_RING:
 		return sItem[9];
 	case IT_CONSUMABLE:
-		if(Any(item->ToConsumable().cons_type, ConsumableType::Food, ConsumableType::Herb))
+		if(Any(item->ToConsumable().subtype, Consumable::Subtype::Food, Consumable::Subtype::Herb))
 			return sItem[7];
 		else
 			return sItem[0];

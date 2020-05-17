@@ -1,15 +1,18 @@
 #include "Pch.h"
 #include "MainMenu.h"
-#include "Language.h"
-#include "Version.h"
-#include "DialogBox.h"
-#include "ResourceManager.h"
+
 #include "Game.h"
 #include "GameGui.h"
-#include "SaveLoadPanel.h"
-#include <thread>
+#include "Language.h"
 #include "LobbyApi.h"
+#include "SaveLoadPanel.h"
 #include "Utility.h"
+#include "Version.h"
+
+#include <DialogBox.h>
+#include <ResourceManager.h>
+#include <thread>
+
 
 //=================================================================================================
 MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(game->check_updates)

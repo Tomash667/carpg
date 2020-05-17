@@ -2472,6 +2472,17 @@ consumable healing_herb {
 	}
 }
 
+consumable mana_herb {
+	weight 0.2
+	value 10
+	mesh "mana_herb.qmsh"
+	type herb
+	flags {not_merchant ground_mesh ingredient}
+	effects {
+		restore_mana 150
+	}
+}
+
 consumable green_herb {
 	weight 0.2
 	value 50
@@ -2489,17 +2500,6 @@ consumable alchemist_herb {
 	mesh "woddruff_herb.qmsh"
 	type herb
 	flags {not_shop not_chest not_random not_alchemist ground_mesh}
-}
-
-consumable magic_crystal {
-	weight 0.5
-	value 10
-	mesh "magic_crystal.qmsh"
-	type herb
-	flags {not_merchant ground_mesh ingredient}
-	effects {
-		restore_mana 150
-	}
 }
 
 //------------------------------------------------------------------------------
@@ -2564,7 +2564,6 @@ other cup {
 	weight 0.2
 	value 3
 	mesh "cup.qmsh"
-	type other
 	flags ground_mesh
 }
 
@@ -2572,7 +2571,6 @@ other plate {
 	weight 0.2
 	value 3
 	mesh "plate.qmsh"
-	type other
 	flags ground_mesh
 }
 
@@ -2580,28 +2578,56 @@ other wolf_pelt {
 	weight 2.5
 	value 25
 	tex "wolf_pelt.png"
-	type other
 }
 
 other worg_pelt {
 	weight 2.5
 	value 50
 	tex "worg_pelt.png"
-	type other
 }
 
 other bear_pelt {
 	weight 4
 	value 75
 	tex "bear_pelt.png"
-	type other
 }
 
 other black_bear_pelt {
 	weight 4
 	value 100
 	tex "black_bear_pelt.png"
-	type other
+}
+
+other heal_crystal {
+	weight 0.5
+	value 25
+	mesh "heal_crystal.qmsh"
+	type ingredient
+	flags {not_merchant ground_mesh ingredient}
+}
+
+other magic_crystal {
+	weight 0.5
+	value 25
+	mesh "magic_crystal.qmsh"
+	type ingredient
+	flags {not_merchant ground_mesh ingredient}
+}
+
+other tallow {
+	weight 0.5
+	value 10
+	mesh "tallow.qmsh"
+	type ingredient
+	flags {ground_mesh ingredient}
+}
+
+other troll_blood {
+	weight 0.1
+	value 50
+	mesh "vial.qmsh"
+	type ingredient
+	flags {not_merchant ingredient}
 }
 
 //------------------------------------------------------------------------------
@@ -2771,7 +2797,6 @@ other key_kopalnia {
 	weight 0.1
 	value 0
 	tex "old-key.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2779,7 +2804,6 @@ other q_bandyci_paczka {
 	weight 5
 	value 0
 	tex "paczka.png"
-	type other
 	flags {not_shop not_chest not_random important dont_drop}
 }
 
@@ -2787,7 +2811,6 @@ other q_bandyci_list {
 	weight 0.1
 	value 0
 	tex "list.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2795,7 +2818,6 @@ other q_magowie_kula {
 	weight 1
 	value 0
 	tex "magic_sphere.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2803,7 +2825,6 @@ other q_magowie_kula2 {
 	weight 1
 	value 5000
 	tex "magic_sphere.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2811,7 +2832,6 @@ other q_orkowie_klucz {
 	weight 1
 	value 0
 	tex "rusty-key.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2819,7 +2839,6 @@ other key_lunar {
 	weight 0.1
 	value 100
 	tex "moon_key.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2827,7 +2846,6 @@ other q_szaleni_kamien {
 	weight 5
 	value 0
 	tex "kamien2.png"
-	type other
 	flags {not_shop not_chest not_random important}
 }
 
@@ -2835,7 +2853,6 @@ other sekret_kartka {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2843,7 +2860,6 @@ other sekret_kartka2 {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2851,7 +2867,6 @@ other q_main_letter {
 	weight 0.1
 	value 0
 	tex "list.png"
-	type other
 	flags {not_shop not_chest not_random}
 }
 
@@ -2859,7 +2874,6 @@ other letter {
 	weight 0.1
 	value 0
 	tex "list.png"
-	type other
 	flags {quest not_shop not_chest not_random dont_drop}
 }
 
@@ -2867,7 +2881,6 @@ other parcel {
 	weight 1
 	value 0
 	tex "paczka.png"
-	type other
 	flags {quest not_shop not_chest not_random important dont_drop}
 }
 
@@ -2875,7 +2888,6 @@ other wanted_letter {
 	weight 0.1
 	value 0
 	tex "wanted.png"
-	type other
 	flags {quest not_shop not_chest not_random}
 }
 
@@ -2883,7 +2895,6 @@ other q_resources {
 	weight 10
 	value 0
 	mesh "resources_box.qmsh"
-	type other
 	flags {quest not_shop not_chest not_random important dont_drop ground_mesh}
 }
 
@@ -2979,7 +2990,7 @@ book magic_scroll {
 }
 
 book book_q_cleric {
-	weight 0.2
+	weight 1
 	value 100
 	mesh "book.qmsh"
 	scheme book
@@ -2993,6 +3004,49 @@ book crypt_note {
 	scheme page
 	tex "piece_of_paper.png"
 	flags {not_shop not_chest not_random}
+}
+
+book recipe_antidote {
+	weight 0.1
+	value 200
+	mesh "recipe.qmsh"
+	scheme page
+	recipes p_antidote
+	type recipe
+	flags single_use
+}
+
+book recipe_reg {
+	weight 0.1
+	value 500
+	mesh "recipe.qmsh"
+	scheme page
+	recipes p_reg
+	type recipe
+	flags single_use
+}
+
+book recipe_antimagic {
+	weight 0.1
+	value 1000
+	mesh "recipe.qmsh"
+	scheme page
+	recipes p_antimagic
+	type recipe
+	flags single_use
+}
+
+book recipe_book_nreg {
+	weight 1
+	value 250
+	mesh "book.qmsh"
+	scheme book
+	recipes {
+		p_nreg
+		p_nreg2
+	}
+	type recipe
+	flags {ground_mesh hq}
 }
 
 //------------------------------------------------------------------------------
@@ -3273,6 +3327,36 @@ list rings leveled {
 	r_poison_resistance 11
 }
 
+list potions {
+	p_nreg
+	p_nreg2
+	p_hp
+	p_hp2
+	p_hp3
+	p_mp
+	p_mp2
+	p_mp3
+	p_reg
+	p_antidote
+	p_antimagic
+}
+
+list ingredients priority {
+	4 healing_herb
+	4 mana_herb
+	3 heal_crystal
+	3 magic_crystal
+	2 tallow
+	2 troll_blood
+}
+
+list recipes {
+	recipe_antidote
+	recipe_reg
+	recipe_antimagic
+	recipe_book_nreg
+}
+
 //------------------------------------------------------------------------------
 // STOCK SCRIPTS
 //------------------------------------------------------------------------------
@@ -3280,22 +3364,25 @@ list rings leveled {
 stock merchant {
 	// random items
 	script {
-		int price_limit;
+		int priceLimit, count = Random(15, 20);
 		if(Level::IsCity())
-			price_limit = Random(2000, 2500); // city
-		else if(Level::IsVillage())
-			price_limit = Random(500, 1000); // village
-		else if(Level::IsTutorial())
-			price_limit = 500; // tutorial
-		else
-			price_limit = 1000; // traveling merchant
-		for(int i=0,count=Random(15,20); i<count; ++i)
 		{
-			ITEM_TYPE type = ITEM_TYPE(Rand() % 6);
-			if(type == IT_CONSUMABLE)
-				StockScript::AddRandomItem(type, price_limit/5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2,5));
+			priceLimit = Random(2000, 2500); // city
+			count += 5;
+		}
+		else if(Level::IsVillage())
+			priceLimit = Random(500, 1000); // village
+		else if(Level::IsTutorial())
+			priceLimit = 500; // tutorial
+		else
+			priceLimit = 1000; // traveling merchant
+		for(int i=0; i<count; ++i)
+		{
+			ITEM_TYPE type = ITEM_TYPE(Rand() % 9);
+			if(type == IT_CONSUMABLE || type == IT_OTHER)
+				StockScript::AddRandomItem(type, priceLimit/5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2,5));
 			else
-				StockScript::AddRandomItem(type, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+				StockScript::AddRandomItem(type, priceLimit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
 		}
 	}
 	// potions
@@ -3308,18 +3395,18 @@ stock blacksmith {
 	// basic equipment
 	script {
 		int count = Random(12, 18);
-		int price_limit;
+		int priceLimit;
 		if(Level::IsCity())
-			price_limit = 99999;
+			priceLimit = 99999;
 		else
 		{
 			count -= Random(1, 3);
-			price_limit = Random(1250, 2500);
+			priceLimit = Random(1250, 2500);
 		}		
 		for(int i=0; i<count; ++i)
 		{
 			ITEM_TYPE type = ITEM_TYPE(Rand() % 4);
-			StockScript::AddRandomItem(type, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
+			StockScript::AddRandomItem(type, priceLimit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 		}
 	}
 	
@@ -3429,11 +3516,38 @@ stock blacksmith {
 // alchemist - random potions
 stock alchemist {
 	script {
-		int count = Random(12, 18);
+		int priceLimit;
+		int potionCount = Random(12, 18);
+		int recipeCount = Random(1, 3);
+		
 		if(!Level::IsCity())
-			count -= Random(1, 3);
-		for(int i=0; i<count; ++i)
-			StockScript::AddRandomItem(IT_CONSUMABLE, 99999, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST, Random(3, 6));
+		{
+			priceLimit = Random(150, 250);
+			potionCount -= Random(1, 3);
+			--recipeCount;
+		}
+		else
+			priceLimit = Random(250, 350);
+		
+		// potions
+		ItemList@ lis = ItemList::Get("potions");
+		for(int i=0; i<potionCount; ++i)
+			StockScript::AddItem(lis.GetItem(), Random(3, 6));
+		
+		// ingredients
+		@lis = ItemList::Get("ingredients");
+		for(int i=0; i<10; ++i)
+		{
+			Item@ item = lis.GetItem();
+			int count = priceLimit / item.value;
+			if(count > 0)
+				StockScript::AddItem(item, count);
+		}
+		
+		// recipes
+		@lis = ItemList::Get("recipes");
+		for(int i=0; i<recipeCount; ++i)
+			StockScript::AddItem(lis.GetItem());
 	}
 	random 2 5 ladle
 }
@@ -3470,11 +3584,11 @@ stock innkeeper {
 stock food_seller {
 	script {
 		ItemList@ list = ItemList::Get("food_and_drink");
-		bool is_village = !Level::IsCity();
+		bool isVillage = !Level::IsCity();
 		for(int i=0, count=list.Size(); i<count; ++i)
 		{
 			int value = Random(50, 100);
-			if(is_village)
+			if(isVillage)
 				value /= 2;
 			Item@ item = list.GetItem(i);
 			int add = value / item.value;
@@ -3745,51 +3859,109 @@ recipe p_hp {
 	}
 	skill 1
 	autolearn 1
+	order 0
 }
 
 recipe p_hp2 {
 	result p_hp2
 	ingredients {
-		2 healing_herb
+		heal_crystal
+		healing_herb
 	}
 	skill 25
 	autolearn 1
+	order 1
 }
 
 recipe p_hp3 {
 	result p_hp3
 	ingredients {
-		3 healing_herb
+		2 heal_crystal
 	}
 	skill 50
 	autolearn 1
+	order 2
 }
 
 recipe p_mp {
 	result p_mp
 	ingredients {
-		magic_crystal
+		mana_herb
 	}
 	skill 1
 	autolearn 1
+	order 3
 }
 
 recipe p_mp2 {
 	result p_mp2
 	ingredients {
-		2 magic_crystal
+		magic_crystal
+		mana_herb
 	}
 	skill 25
 	autolearn 1
+	order 4
 }
 
 recipe p_mp3 {
 	result p_mp3
 	ingredients {
-		3 magic_crystal
+		2 magic_crystal
 	}
 	skill 50
 	autolearn 1
+	order 5
+}
+
+recipe p_nreg {
+	result p_nreg
+	ingredients {
+		tallow
+		healing_herb
+	}
+	skill 1
+	order 6
+}
+
+recipe p_nreg2 {
+	result p_nreg2
+	ingredients {
+		2 tallow
+		healing_herb
+	}
+	skill 25
+	order 7
+}
+
+recipe p_antidote {
+	result p_antidote
+	ingredients {
+		healing_herb
+		mana_herb
+	}
+	skill 1
+	order 8
+}
+
+recipe p_reg {
+	result p_reg
+	ingredients {
+		troll_blood
+		healing_herb
+	}
+	skill 25
+	order 9
+}
+
+recipe p_antimagic {
+	result p_antimagic
+	ingredients {
+		2 magic_crystal
+		heal_crystal
+	}
+	skill 50
+	order 10
 }
 
 //------------------------------------------------------------------------------

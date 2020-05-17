@@ -354,4 +354,5 @@ public:
 	void ClearNextAction();
 	Vec3 RaytestTarget(float range);
 	bool ShouldUseRaytest() const;
+	void ReadBook(int index);
 };

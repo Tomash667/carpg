@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "Options.h"
-#include "Language.h"
-#include "Input.h"
-#include "GameGui.h"
+
 #include "Game.h"
-#include "MenuList.h"
-#include "SoundManager.h"
-#include "Render.h"
-#include "Engine.h"
+#include "GameGui.h"
+#include "Language.h"
+
+#include <Engine.h>
+#include <Input.h>
+#include <MenuList.h>
+#include <Render.h>
 #include <SceneManager.h>
+#include <SoundManager.h>
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;

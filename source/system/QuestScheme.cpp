@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "QuestScheme.h"
+
 #include "GameDialog.h"
 
 vector<QuestScheme*> QuestScheme::schemes;

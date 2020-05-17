@@ -1,7 +1,9 @@
 #include "Pch.h"
 #include "Buff.h"
+
 #include "Language.h"
-#include "ResourceManager.h"
+
+#include <ResourceManager.h>
 
 BuffInfo BuffInfo::info[] = {
 	BuffInfo("buff_regeneration"),

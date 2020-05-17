@@ -1,24 +1,26 @@
 #include "Pch.h"
-#include "AIController.h"
 #include "Game.h"
-#include "Quest_Mages.h"
-#include "City.h"
-#include "InsideLocation.h"
-#include "LevelGui.h"
+
 #include "Ability.h"
-#include "Team.h"
-#include "SoundManager.h"
-#include "Profiler.h"
+#include "AIController.h"
+#include "City.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "InsideLocation.h"
 #include "Level.h"
+#include "LevelGui.h"
+#include "Pathfinding.h"
 #include "QuestManager.h"
 #include "Quest_Contest.h"
-#include "Quest_Tournament.h"
-#include "Pathfinding.h"
-#include "GameMessages.h"
-#include "GameGui.h"
+#include "Quest_Mages.h"
 #include "Quest_Scripted.h"
+#include "Quest_Tournament.h"
 #include "ScriptManager.h"
-#include "GameResources.h"
+#include "Team.h"
+
+#include <Profiler.h>
+#include <SoundManager.h>
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;

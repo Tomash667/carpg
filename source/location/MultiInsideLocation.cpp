@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "MultiInsideLocation.h"
-#include "SaveState.h"
+
 #include "GameFile.h"
+#include "SaveState.h"
 
 //=================================================================================================
 MultiInsideLocation::MultiInsideLocation(int level_count) : active_level(-1), active(nullptr), generated(0)

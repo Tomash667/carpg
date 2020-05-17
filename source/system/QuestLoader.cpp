@@ -1,12 +1,14 @@
 #include "Pch.h"
 #include "QuestLoader.h"
-#include "QuestScheme.h"
-#include "QuestList.h"
-#include "QuestConsts.h"
-#include "QuestManager.h"
+
 #include "DialogLoader.h"
 #include "GameDialog.h"
+#include "QuestConsts.h"
+#include "QuestList.h"
+#include "QuestManager.h"
+#include "QuestScheme.h"
 #include "ScriptManager.h"
+
 #include <angelscript.h>
 
 enum Group

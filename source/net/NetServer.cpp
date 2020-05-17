@@ -1148,9 +1148,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE)
 						{
 							const Consumable& pot = slot.item->ToConsumable();
-							if(pot.ai_type == ConsumableAiType::Healing)
+							if(pot.aiType == Consumable::AiType::Healing)
 								player.action_unit->ai->have_potion = HavePotion::Check;
-							else if(pot.ai_type == ConsumableAiType::Mana)
+							else if(pot.aiType == Consumable::AiType::Mana)
 								player.action_unit->ai->have_mp_potion = HavePotion::Check;
 						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
@@ -1311,9 +1311,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(slot.item->type == IT_CONSUMABLE)
 							{
 								const Consumable& pot = slot.item->ToConsumable();
-								if(pot.ai_type == ConsumableAiType::Healing)
+								if(pot.aiType == Consumable::AiType::Healing)
 									t->ai->have_potion = HavePotion::Yes;
-								else if(pot.ai_type == ConsumableAiType::Mana)
+								else if(pot.aiType == Consumable::AiType::Mana)
 									t->ai->have_mp_potion = HavePotion::Yes;
 							}
 							if(player.action == PlayerAction::GiveItems)
@@ -3156,19 +3156,46 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 				ItemSlot& slot = unit.items[index];
-				if(!slot.item || slot.item->type != IT_BOOK || !IsSet(slot.item->flags, ITEM_MAGIC_SCROLL))
+				if(!slot.item || slot.item->type != IT_BOOK)
 				{
 					Error("Update server: USE_ITEM, invalid item '%s' at index %d from %s.",
 						slot.item ? slot.item->id.c_str() : "null", index, info.name.c_str());
 					break;
 				}
-				unit.action = A_USE_ITEM;
-				unit.used_item = slot.item;
-				unit.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 
-				NetChange& c = Add1(changes);
-				c.type = NetChange::USE_ITEM;
-				c.unit = &unit;
+				const Book& book = slot.item->ToBook();
+				if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
+				{
+					unit.action = A_USE_ITEM;
+					unit.used_item = slot.item;
+					unit.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+
+					NetChange& c = Add1(changes);
+					c.type = NetChange::USE_ITEM;
+					c.unit = &unit;
+				}
+				else
+				{
+					int skill = unit.GetBase(SkillId::ALCHEMY);
+					bool anythingTooHard = false;
+					for(Recipe* recipe : book.recipes)
+					{
+						if(!player.HaveRecipe(recipe))
+						{
+							if(skill >= recipe->skill)
+								player.AddRecipe(recipe);
+							else
+								anythingTooHard = true;
+						}
+					}
+					if(IsSet(book.flags, ITEM_SINGLE_USE))
+						unit.RemoveItem(index, 1u);
+					if(anythingTooHard)
+						game_gui->messages->AddGameMsg3(&player, GMS_TOO_COMPLICATED);
+
+					NetChangePlayer& c = Add1(info.changes);
+					c.type = NetChangePlayer::END_PREPARE;
+				}
 			}
 			break;
 		// player used cheat 'arena'
@@ -3879,6 +3906,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::EXIT_ARENA:
 		case NetChangePlayer::END_FALLBACK:
 		case NetChangePlayer::AFTER_CRAFT:
+		case NetChangePlayer::END_PREPARE:
 			break;
 		case NetChangePlayer::START_TRADE:
 			f << c.id;

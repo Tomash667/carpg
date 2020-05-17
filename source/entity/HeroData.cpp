@@ -1,11 +1,12 @@
 #include "Pch.h"
 #include "HeroData.h"
-#include "SaveState.h"
-#include "Level.h"
-#include "Unit.h"
-#include "NameHelper.h"
+
 #include "Const.h"
+#include "Level.h"
+#include "NameHelper.h"
+#include "SaveState.h"
 #include "Team.h"
+#include "Unit.h"
 
 // pre V_0_10 compatibility
 namespace old

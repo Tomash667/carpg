@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "Item.h"
-#include "Crc.h"
-#include "ResourceManager.h"
-#include "Net.h"
+
 #include "GameResources.h"
-#include "ScriptException.h"
+#include "Net.h"
 #include "Quest.h"
 #include "QuestManager.h"
+#include "ScriptException.h"
+
+#include <ResourceManager.h>
 
 const Item* Item::gold;
 ItemsMap Item::items;
@@ -112,7 +113,7 @@ Item& Item::operator = (const Item& i)
 		{
 			OtherItem& o = ToOther();
 			const OtherItem& o2 = i.ToOther();
-			o.other_type = o2.other_type;
+			o.subtype = o2.subtype;
 		}
 		break;
 	case IT_CONSUMABLE:
@@ -120,8 +121,8 @@ Item& Item::operator = (const Item& i)
 			Consumable& c = ToConsumable();
 			const Consumable& c2 = i.ToConsumable();
 			c.time = c2.time;
-			c.cons_type = c2.cons_type;
-			c.ai_type = c2.ai_type;
+			c.subtype = c2.subtype;
+			c.aiType = c2.aiType;
 		}
 		break;
 	case IT_BOOK:
@@ -129,6 +130,7 @@ Item& Item::operator = (const Item& i)
 			Book& b = ToBook();
 			const Book& b2 = i.ToBook();
 			b.scheme = b2.scheme;
+			b.subtype = b2.subtype;
 			b.runic = b2.runic;
 		}
 		break;
@@ -254,15 +256,15 @@ bool ItemCmp(const Item* a, const Item* b)
 		}
 		else if(a->type == IT_CONSUMABLE)
 		{
-			ConsumableType c1 = a->ToConsumable().cons_type,
-				c2 = b->ToConsumable().cons_type;
+			Consumable::Subtype c1 = a->ToConsumable().subtype,
+				c2 = b->ToConsumable().subtype;
 			if(c1 != c2)
 				return c1 < c2;
 		}
 		else if(a->type == IT_OTHER)
 		{
-			OtherType o1 = a->ToOther().other_type,
-				o2 = b->ToOther().other_type;
+			OtherItem::Subtype o1 = a->ToOther().subtype,
+				o2 = b->ToOther().subtype;
 			if(o1 != o2)
 				return o1 < o2;
 		}
@@ -304,7 +306,7 @@ void Item::CreateCopy(Item& item) const
 			o.flags = o2.flags;
 			o.id = o2.id;
 			o.name = o2.name;
-			o.other_type = o2.other_type;
+			o.subtype = o2.subtype;
 			o.quest_id = o2.quest_id;
 			o.type = o2.type;
 			o.value = o2.value;
@@ -488,10 +490,19 @@ const Item* Book::GetRandom()
 {
 	if(Rand() % 2 == 0)
 		return nullptr;
+
+	cstring listName;
 	if(Rand() % 50 == 0)
-		return ItemList::GetItem("rare_books");
+	{
+		if(Rand() % 3 == 0)
+			listName = "recipes";
+		else
+			listName = "rare_books";
+	}
 	else
-		return ItemList::GetItem("books");
+		listName = "books";
+
+	return ItemList::GetItem(listName);
 }
 
 //=================================================================================================
@@ -506,4 +517,22 @@ const Item* FindItemOrList(Cstring id, ItemList*& lis)
 
 	lis = ItemList::TryGet(id);
 	return nullptr;
+}
+
+//=================================================================================================
+Recipe* Recipe::ForwardGet(const string& id)
+{
+	int hash = Hash(id);
+	Recipe* recipe = TryGet(hash);
+	if(!recipe)
+	{
+		recipe = new Recipe;
+		recipe->id = id;
+		recipe->hash = hash;
+		recipe->defined = false;
+		items[hash] = recipe;
+	}
+	else if(recipe->id != id)
+		throw Format("Recipe hash collision '%s' and '%s' (%d).", id.c_str(), recipe->id.c_str(), hash);
+	return recipe;
 }

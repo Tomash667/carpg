@@ -1,8 +1,10 @@
 #include "Pch.h"
-#include "Item.h"
 #include "ItemSlot.h"
-#include "Unit.h"
+
+#include "Game.h"
+#include "Item.h"
 #include "Language.h"
+#include "Unit.h"
 
 cstring txAttack, txDefense, txBlock, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical,
 txWeight, txValue, txInvalidArmor;
@@ -95,6 +97,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	assert(item);
 
 	str = item->name;
+	if(game->devmode)
+		str += Format(" (%s)", item->id.c_str());
 	if(item->IsStackable() && count > 1)
 		str += Format(" (%d)", count);
 

@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "LocationGenerator.h"
-#include "Location.h"
-#include "Level.h"
+
 #include "AIController.h"
 #include "Game.h"
+#include "Level.h"
+#include "Location.h"
 #include "Unit.h"
 
 //=================================================================================================

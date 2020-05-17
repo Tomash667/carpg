@@ -86,7 +86,7 @@ dialog merchant
 dialog alchemist
 {
 	if rand 2
-		if script "pc.HavePerk(\"alchemist\")"
+		if script "pc.HavePerk(\"alchemist_apprentice\")"
 		{
 			talk 10
 			do_once

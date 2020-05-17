@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "Stock.h"
-#include "ItemSlot.h"
+
 #include "Item.h"
+#include "ItemSlot.h"
 #include "Level.h"
 #include "ScriptManager.h"
+
 #include <angelscript.h>
 
 //-----------------------------------------------------------------------------

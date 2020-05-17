@@ -1,22 +1,24 @@
 #include "Pch.h"
 #include "InsideLocationGenerator.h"
+
+#include "Game.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "ItemHelper.h"
+#include "Level.h"
 #include "MultiInsideLocation.h"
 #include "OutsideLocation.h"
-#include "World.h"
-#include "Level.h"
+#include "Pathfinding.h"
+#include "Portal.h"
 #include "QuestManager.h"
 #include "Quest_Orcs.h"
 #include "Quest_Secret.h"
-#include "Stock.h"
-#include "Portal.h"
-#include "Texture.h"
-#include "GameStats.h"
 #include "RoomType.h"
-#include "ItemHelper.h"
-#include "Game.h"
+#include "Stock.h"
 #include "Team.h"
-#include "Pathfinding.h"
-#include "GameResources.h"
+#include "World.h"
+
+#include <Texture.h>
 
 // don't spawn objects near other objects to not block path
 const float EXTRA_RADIUS = 0.8f;

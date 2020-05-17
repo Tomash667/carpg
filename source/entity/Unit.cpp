@@ -775,7 +775,7 @@ void Unit::ConsumeItemS(const Item* item)
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
 	cstring anim_name;
-	if(cons.cons_type == ConsumableType::Food || cons.cons_type == ConsumableType::Herb)
+	if(Any(cons.subtype, Consumable::Subtype::Food, Consumable::Subtype::Herb))
 	{
 		action = A_EAT;
 		animation_state = AS_EAT_START;
@@ -797,45 +797,6 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	game_res->PreloadItem(&cons);
 	used_item = &cons;
-}
-
-//=================================================================================================
-void Unit::UseItem(int index)
-{
-	assert(index >= 0 && index < int(items.size()));
-	ItemSlot& slot = items[index];
-	assert(slot.item);
-	switch(slot.item->type)
-	{
-	case IT_CONSUMABLE:
-		ConsumeItem(index);
-		break;
-	case IT_BOOK:
-		assert(IsSet(slot.item->flags, ITEM_MAGIC_SCROLL));
-		if(Net::IsLocal())
-		{
-			action = A_USE_ITEM;
-			used_item = slot.item;
-			mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-			if(Net::IsServer())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_ITEM;
-				c.unit = this;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_ITEM;
-			c.id = index;
-			action = A_PREPARE;
-		}
-		break;
-	default:
-		assert(0);
-		break;
-	}
 }
 
 //=================================================================================================
@@ -3130,7 +3091,7 @@ int Unit::FindHealingPotion() const
 			continue;
 
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Healing)
+		if(pot.aiType != Consumable::AiType::Healing)
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::Heal);
@@ -3172,7 +3133,7 @@ int Unit::FindManaPotion() const
 			continue;
 
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Mana)
+		if(pot.aiType != Consumable::AiType::Mana)
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::RestoreMana);
@@ -8117,7 +8078,7 @@ void Unit::Moved(bool warped, bool dash)
 		{
 			if(game_level->terrain->IsInside(pos))
 			{
-				game_level->terrain->SetH(pos);
+				game_level->terrain->SetY(pos);
 				if(warped)
 					return;
 				if(IsPlayer() && player->WantExitLevel() && frozen == FROZEN::NO && !dash)

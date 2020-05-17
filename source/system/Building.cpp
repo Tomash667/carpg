@@ -1,8 +1,5 @@
 #include "Pch.h"
 #include "Building.h"
-#include "ContentLoader.h"
-#include "Crc.h"
-#include "UnitData.h"
 
 //-----------------------------------------------------------------------------
 vector<Building*> Building::buildings;

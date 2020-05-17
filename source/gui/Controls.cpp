@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "Controls.h"
-#include "GameKeys.h"
-#include "Language.h"
+
 #include "Game.h"
 #include "GameGui.h"
+#include "GameKeys.h"
+#include "Language.h"
 
 //-----------------------------------------------------------------------------
 // 0x01 - pickable key

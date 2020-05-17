@@ -1,13 +1,15 @@
 #include "Pch.h"
 #include "Door.h"
-#include "SaveState.h"
+
 #include "BitStreamFunc.h"
 #include "Collision.h"
-#include "Level.h"
 #include "GameResources.h"
+#include "Level.h"
 #include "Location.h"
-#include "SoundManager.h"
 #include "Net.h"
+#include "SaveState.h"
+
+#include <SoundManager.h>
 
 EntityType<Door>::Impl EntityType<Door>::impl;
 const float Door::WIDTH = 0.842f;

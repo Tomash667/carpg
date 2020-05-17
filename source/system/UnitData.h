@@ -203,10 +203,10 @@ struct TexPack
 struct TraderInfo
 {
 	Stock* stock;
-	int buy_flags, buy_consumable_flags;
+	int types, consumableSubtypes, otherSubtypes, bookSubtypes;
 	vector<const Item*> includes;
 
-	TraderInfo() : stock(nullptr), buy_flags(0), buy_consumable_flags(0) {}
+	TraderInfo() : stock(nullptr), types(0), consumableSubtypes(0), otherSubtypes(0), bookSubtypes(0) {}
 	bool CanBuySell(const Item* item);
 };
 

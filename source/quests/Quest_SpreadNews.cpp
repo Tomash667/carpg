@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "Quest_SpreadNews.h"
+
 #include "Game.h"
+#include "GameFile.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "GameFile.h"
-#include "World.h"
 #include "Team.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)

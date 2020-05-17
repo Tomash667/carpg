@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "BuildingScript.h"
-#include "BuildingGroup.h"
+
 #include "Building.h"
+#include "BuildingGroup.h"
 
 //-----------------------------------------------------------------------------
 vector<BuildingScript*> BuildingScript::scripts;

@@ -1,15 +1,15 @@
 #include "Pch.h"
 #include "DungeonMeshBuilder.h"
 
-#include <Algorithm.h>
-#include <DirectX.h>
-
 #include "BaseLocation.h"
 #include "DrawBatch.h"
 #include "GameResources.h"
 #include "InsideLocation.h"
 #include "Level.h"
 #include "Room.h"
+
+#include <Algorithm.h>
+#include <DirectX.h>
 
 //-----------------------------------------------------------------------------
 struct IBOX

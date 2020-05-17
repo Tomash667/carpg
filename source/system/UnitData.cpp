@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "UnitData.h"
-#include "ItemScript.h"
+
 #include "Ability.h"
 #include "Item.h"
+#include "ItemScript.h"
 
 vector<AbilityList*> AbilityList::lists;
 vector<SoundPack*> SoundPack::packs;
@@ -194,16 +195,25 @@ bool TraderInfo::CanBuySell(const Item* item)
 {
 	assert(item);
 
-	if(IsSet(buy_flags, (1 << item->type)))
+	if(IsSet(types, (1 << item->type)))
 	{
-		if(item->type == IT_CONSUMABLE)
+		switch(item->type)
 		{
-			const Consumable* c = static_cast<const Consumable*>(item);
-			if(IsSet(buy_consumable_flags, (1 << (int)c->cons_type)))
+		case IT_CONSUMABLE:
+			if(IsSet(consumableSubtypes, 1 << (int)item->ToConsumable().subtype))
 				return true;
-		}
-		else
+			break;
+		case IT_OTHER:
+			if(IsSet(otherSubtypes, 1 << (int)item->ToOther().subtype))
+				return true;
+			break;
+		case IT_BOOK:
+			if(IsSet(bookSubtypes, 1 << (int)item->ToBook().subtype))
+				return true;
+			break;
+		default:
 			return true;
+		}
 	}
 
 	for(const Item* item2 : includes)

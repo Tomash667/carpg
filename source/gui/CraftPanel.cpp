@@ -29,7 +29,7 @@ struct RecipeItem : public GuiElement
 			if(first)
 				first = false;
 			else
-				text += "\n";
+				text += ", ";
 			if(p.second > 1u)
 				text += Format("%ux ", p.second);
 			text += p.first->name;
@@ -54,9 +54,9 @@ CraftPanel::CraftPanel()
 	visible = false;
 	tooltip.Init(TooltipController::Callback(this, &CraftPanel::GetTooltip));
 
-	list.SetItemHeight(50);
+	list.SetItemHeight(-1);
 	list.SetForceImageSize(Int2(40));
-	list.flags = DTF_VCENTER;
+	list.textFlags = DTF_VCENTER;
 	list.parent = this;
 	list.event_handler = DialogEvent(this, &CraftPanel::OnSelectionChange);
 	list.Initialize();
@@ -152,6 +152,7 @@ void CraftPanel::Update(float dt)
 	Container::Update(dt);
 
 	list.mouse_focus = focus;
+	list.focus = focus;
 	list.Update(dt);
 
 	button.mouse_focus = focus;
@@ -277,6 +278,7 @@ void CraftPanel::SetRecipes(bool rememberRecipe)
 			if(item->recipe == prevRecipe)
 			{
 				list.Select(index);
+				list.ScrollTo(index);
 				break;
 			}
 			++index;

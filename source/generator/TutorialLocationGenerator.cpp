@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "TutorialLocationGenerator.h"
-#include "Level.h"
-#include "InsideLocationLevel.h"
-#include "InsideLocation.h"
-#include "QuestManager.h"
-#include "Quest_Tutorial.h"
+
 #include "AIController.h"
 #include "Game.h"
+#include "InsideLocation.h"
+#include "InsideLocationLevel.h"
+#include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Tutorial.h"
 
 struct RoomInfo
 {

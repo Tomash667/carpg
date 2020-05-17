@@ -1,17 +1,19 @@
 #include "Pch.h"
 #include "UnitLoader.h"
+
+#include "Ability.h"
+#include "Content.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
 #include "GameDialog.h"
-#include "ItemScript.h"
-#include "Item.h"
-#include "Ability.h"
-#include "ResourceManager.h"
-#include "Stock.h"
-#include "Content.h"
-#include "QuestScheme.h"
 #include "GameResources.h"
+#include "Item.h"
+#include "ItemScript.h"
+#include "QuestScheme.h"
+#include "Stock.h"
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 enum Group
 {
@@ -35,8 +37,10 @@ enum Group
 	G_ITEM_KEYWORD,
 	G_GROUP_KEYWORD,
 	G_TRADER_KEYWORD,
-	G_ITEM_GROUP,
-	G_CONSUMABLE_GROUP,
+	G_ITEM_TYPE,
+	G_CONSUMABLE_TYPE,
+	G_OTHER_TYPE,
+	G_BOOK_TYPE,
 	G_SUBPROFILE_GROUP,
 	G_TAG,
 	G_GROUP_OPTIONS
@@ -424,7 +428,7 @@ void UnitLoader::InitTokenizer()
 		{ "include", TK_INCLUDE }
 		});
 
-	t.AddKeywords(G_ITEM_GROUP, {
+	t.AddKeywords(G_ITEM_TYPE, {
 		{ "weapon", IT_WEAPON },
 		{ "bow", IT_BOW },
 		{ "shield", IT_SHIELD },
@@ -436,11 +440,24 @@ void UnitLoader::InitTokenizer()
 		{ "book", IT_BOOK }
 		});
 
-	t.AddKeywords<ConsumableType>(G_CONSUMABLE_GROUP, {
-		{ "food", ConsumableType::Food },
-		{ "drink", ConsumableType::Drink },
-		{ "potion", ConsumableType::Potion },
-		{ "herb", ConsumableType::Herb }
+	t.AddKeywords<Consumable::Subtype>(G_CONSUMABLE_TYPE, {
+		{ "food", Consumable::Subtype::Food },
+		{ "drink", Consumable::Subtype::Drink },
+		{ "potion", Consumable::Subtype::Potion },
+		{ "herb", Consumable::Subtype::Herb }
+		});
+
+	t.AddKeywords<OtherItem::Subtype>(G_OTHER_TYPE, {
+		{ "misc_item", OtherItem::Subtype::MiscItem },
+		{ "tool", OtherItem::Subtype::Tool },
+		{ "valuable", OtherItem::Subtype::Valuable },
+		{ "artifact", OtherItem::Subtype::Artifact },
+		{ "ingredient", OtherItem::Subtype::Ingredient }
+		});
+
+	t.AddKeywords<Book::Subtype>(G_BOOK_TYPE, {
+		{ "normal_book", Book::Subtype::NormalBook },
+		{ "recipe", Book::Subtype::Recipe }
 		});
 
 	t.AddKeywords(G_SUBPROFILE_GROUP, {
@@ -968,19 +985,48 @@ void UnitLoader::ParseUnit(const string& id)
 					t.Next();
 					while(!t.IsSymbol('}'))
 					{
-						t.AssertKeywordGroup({ G_ITEM_GROUP, G_CONSUMABLE_GROUP });
-						if(t.IsKeywordGroup(G_ITEM_GROUP))
+						int group = t.AssertKeywordGroup({ G_ITEM_TYPE, G_CONSUMABLE_TYPE, G_OTHER_TYPE, G_BOOK_TYPE });
+						switch(group)
 						{
-							int group = t.GetKeywordId(G_ITEM_GROUP);
-							unit->trader->buy_flags |= (1 << group);
-							if(group == IT_CONSUMABLE)
-								unit->trader->buy_consumable_flags = 0xFF;
-						}
-						else
-						{
-							int group = t.GetKeywordId(G_CONSUMABLE_GROUP);
-							unit->trader->buy_flags |= (1 << IT_CONSUMABLE);
-							unit->trader->buy_consumable_flags |= (1 << group);
+						case G_ITEM_TYPE:
+							{
+								int type = t.GetKeywordId(G_ITEM_TYPE);
+								unit->trader->types |= Bit(type);
+								switch(type)
+								{
+								case IT_CONSUMABLE:
+									unit->trader->consumableSubtypes = 0xFFFFFFFF;
+									break;
+								case IT_OTHER:
+									unit->trader->otherSubtypes = 0xFFFFFFFF;
+									break;
+								case IT_BOOK:
+									unit->trader->bookSubtypes = 0xFFFFFFFF;
+									break;
+								}
+							}
+							break;
+						case G_CONSUMABLE_TYPE:
+							{
+								int subtype = t.GetKeywordId(G_CONSUMABLE_TYPE);
+								unit->trader->types |= Bit(IT_CONSUMABLE);
+								unit->trader->consumableSubtypes |= Bit(subtype);
+							}
+							break;
+						case G_OTHER_TYPE:
+							{
+								int subtype = t.GetKeywordId(G_OTHER_TYPE);
+								unit->trader->types |= Bit(IT_OTHER);
+								unit->trader->otherSubtypes |= Bit(subtype);
+							}
+							break;
+						case G_BOOK_TYPE:
+							{
+								int subtype = t.GetKeywordId(G_BOOK_TYPE);
+								unit->trader->types |= Bit(IT_BOOK);
+								unit->trader->bookSubtypes |= Bit(subtype);
+							}
+							break;
 						}
 						t.Next();
 					}

@@ -1,16 +1,18 @@
 #include "Pch.h"
-#include "GameCommon.h"
 #include "InsideBuilding.h"
-#include "SaveState.h"
+
+#include "BitStreamFunc.h"
+#include "BuildingGroup.h"
 #include "Content.h"
 #include "Door.h"
-#include "BuildingGroup.h"
+#include "GameCommon.h"
 #include "GameFile.h"
+#include "GroundItem.h"
 #include "Level.h"
 #include "Object.h"
-#include "GroundItem.h"
-#include "ParticleSystem.h"
-#include "BitStreamFunc.h"
+#include "SaveState.h"
+
+#include <ParticleSystem.h>
 
 //=================================================================================================
 void InsideBuilding::Save(GameWriter& f, bool local)

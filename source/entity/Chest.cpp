@@ -1,13 +1,15 @@
 #include "Pch.h"
 #include "Chest.h"
-#include "Game.h"
+
 #include "BitStreamFunc.h"
-#include "Inventory.h"
+#include "Game.h"
 #include "GameGui.h"
-#include "PlayerInfo.h"
-#include "SoundManager.h"
-#include "SaveState.h"
 #include "GameResources.h"
+#include "Inventory.h"
+#include "PlayerInfo.h"
+#include "SaveState.h"
+
+#include <SoundManager.h>
 
 const float Chest::SOUND_DIST = 1.f;
 EntityType<Chest>::Impl EntityType<Chest>::impl;

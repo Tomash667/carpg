@@ -12,7 +12,7 @@ public:
 	int GetNumberOfSteps() override;
 	void OnEnter() override;
 	void SpawnForestObjects(int road_dir = -1); //-1 none, 0 horizontal, 1 vertical
-	void SpawnForestItems(int count_mod);
+	void SpawnForestItems(int countMod);
 	int HandleUpdate(int days);
 	virtual void SpawnTeam();
 	void CreateMinimap() override;

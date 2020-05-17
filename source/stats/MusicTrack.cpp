@@ -1,11 +1,14 @@
 #include "Pch.h"
+#include "MusicTrack.h"
+
 #include "Game.h"
-#include "SoundManager.h"
 #include "Level.h"
-#include "World.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
-#include "ResourceManager.h"
+#include "World.h"
+
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //-----------------------------------------------------------------------------
 vector<MusicTrack*> MusicTrack::tracks;

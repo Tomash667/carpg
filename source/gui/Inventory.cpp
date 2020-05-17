@@ -1,22 +1,24 @@
 #include "Pch.h"
 #include "Inventory.h"
-#include "Item.h"
-#include "Unit.h"
-#include "Game.h"
-#include "Language.h"
-#include "GetNumberDialog.h"
-#include "GameGui.h"
-#include "LevelGui.h"
+
 #include "AIController.h"
-#include "Chest.h"
-#include "Team.h"
 #include "BookPanel.h"
-#include "SoundManager.h"
-#include "ResourceManager.h"
-#include "ItemHelper.h"
-#include "PlayerInfo.h"
-#include "RenderTarget.h"
+#include "Chest.h"
+#include "Game.h"
+#include "GameGui.h"
 #include "GameResources.h"
+#include "Item.h"
+#include "ItemHelper.h"
+#include "Language.h"
+#include "LevelGui.h"
+#include "PlayerInfo.h"
+#include "Team.h"
+#include "Unit.h"
+
+#include <GetNumberDialog.h>
+#include <RenderTarget.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 /* REMARKS ON SOME VARIABLES
 i_index for positive values is index to items [0, 1, 2, 3...]
@@ -493,6 +495,7 @@ void InventoryPanel::Update(float dt)
 	if(game_gui->book->visible)
 	{
 		drag_and_drop = false;
+		base.tooltip.Clear();
 		return;
 	}
 
@@ -778,7 +781,7 @@ void InventoryPanel::Update(float dt)
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
 					else if(item->type == IT_BOOK)
-						ReadBook(item, i_index);
+						game->pc->ReadBook(i_index);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -1145,7 +1148,7 @@ void InventoryPanel::Update(float dt)
 							c.id = i_index;
 						}
 					}
-					else if(item->type == IT_CONSUMABLE && item->ToConsumable().ai_type != ConsumableAiType::None)
+					else if(item->type == IT_CONSUMABLE && item->ToConsumable().aiType != Consumable::AiType::None)
 					{
 						uint count;
 						if(slot->count != 1)
@@ -2158,9 +2161,9 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
+		if(pot.aiType == Consumable::AiType::Healing)
 			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
+		else if(pot.aiType == Consumable::AiType::Mana)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 	// remove
@@ -2203,9 +2206,9 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
+		if(pot.aiType == Consumable::AiType::Healing)
 			unit->ai->have_potion = HavePotion::Check;
-		else if(pot.ai_type == ConsumableAiType::Mana)
+		else if(pot.aiType == Consumable::AiType::Mana)
 			unit->ai->have_mp_potion = HavePotion::Check;
 	}
 	// remove
@@ -2346,9 +2349,9 @@ void InventoryPanel::GivePotion(int index, uint count)
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = slot.item->ToConsumable();
-		if(pot.ai_type == ConsumableAiType::Healing)
+		if(pot.aiType == Consumable::AiType::Healing)
 			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
-		else if(pot.ai_type == ConsumableAiType::Mana)
+		else if(pot.aiType == Consumable::AiType::Mana)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 	// remove
@@ -2515,30 +2518,6 @@ void InventoryPanel::UpdateGrid(bool mine)
 	{
 		base.BuildTmpInventory(1);
 		base.inv_trade_other->UpdateScrollbar();
-	}
-}
-
-//=================================================================================================
-void InventoryPanel::ReadBook(const Item* item, int index)
-{
-	assert(item && item->type == IT_BOOK);
-	// Book contains a recipes, so learn them
-	for(Recipe* r : ((const Book*)item)->recipes)
-	{
-		game->pc->AddRecipe(r);
-	}
-	if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
-	{
-		if(!game->pc->unit->usable) // can't use when sitting
-		{
-			game->pc->unit->UseItem(index);
-			Hide();
-		}
-	}
-	else
-	{
-		game_gui->book->Show((const Book*)item);
-		base.tooltip.Clear();
 	}
 }
 

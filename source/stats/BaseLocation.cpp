@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "BaseLocation.h"
-#include "ResourceManager.h"
+
 #include "RoomType.h"
 #include "UnitGroup.h"
+
+#include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
 RoomStrChance human_fort_rooms[] = {

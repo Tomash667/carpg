@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "Trap.h"
-#include "Net.h"
+
 #include "BitStreamFunc.h"
-#include "Unit.h"
+#include "Net.h"
 #include "SaveState.h"
+#include "Unit.h"
 
 EntityType<Trap>::Impl EntityType<Trap>::impl;
 
