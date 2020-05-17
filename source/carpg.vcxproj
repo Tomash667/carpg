@@ -138,6 +138,7 @@
     <ClInclude Include="components\Pathfinding.h" />
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
+    <ClInclude Include="entity\Date.h" />
     <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />

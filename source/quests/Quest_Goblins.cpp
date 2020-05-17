@@ -30,6 +30,9 @@ void Quest_Goblins::Start()
 	nobleman = nullptr;
 	messenger = nullptr;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[7], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Goblins' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================

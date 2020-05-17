@@ -47,6 +47,9 @@ void Quest_Evil::Start()
 	evil_state = State::None;
 	cleric = nullptr;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[8], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Evil' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================

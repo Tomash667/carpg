@@ -24,7 +24,6 @@ enum Group
 //-----------------------------------------------------------------------------
 enum Stats
 {
-	STATS_DATE,
 	STATS_CLASS,
 	STATS_ATTACK
 };
@@ -47,7 +46,6 @@ void StatsPanel::LoadLanguage()
 	txTraitsStartMp = section.Get("traitsStartMp");
 	txTraitsEnd = section.Get("traitsEnd");
 	txStatsText = section.Get("statsText");
-	txYearMonthDay = section.Get("yearMonthDay");
 	txBase = section.Get("base");
 	txRelatedAttributes = section.Get("relatedAttributes");
 	txFeats = section.Get("feats");
@@ -174,7 +172,7 @@ void StatsPanel::SetText()
 	flowStats.Add()->Set(txStats);
 	if(game->hardcore_mode)
 		flowStats.Add()->Set(Format("$cr%s$c-", txHardcoreMode), G_INVALID, -1);
-	flowStats.Add()->Set(Format(txDate, world->GetDate()), G_STATS, STATS_DATE);
+	flowStats.Add()->Set(Format(txDate, world->GetDate()), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txStatsText, game_stats->hour, game_stats->minute, game_stats->second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
 		pc->arena_fights), G_INVALID, -1);
 	flowStats.Reposition();
@@ -254,13 +252,6 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 	case G_STATS:
 		switch(id)
 		{
-		case STATS_DATE:
-			{
-				tooltip.big_text.clear();
-				tooltip.text = Format(txYearMonthDay, world->GetYear(), world->GetMonth() + 1, world->GetDay() + 1);
-				tooltip.small_text.clear();
-			}
-			break;
 		case STATS_CLASS:
 			{
 				Class* clas = pc->unit->GetClass();

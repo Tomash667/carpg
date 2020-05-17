@@ -30,6 +30,9 @@ void Quest_Mine::Start()
 	days_required = 0;
 	days_gold = 0;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Mine' - %s, %s.", GetStartLocationName(), GetTargetLocationName());
 }
 
 //=================================================================================================

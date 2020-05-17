@@ -18,6 +18,9 @@ void Quest_Mages::Start()
 	type = Q_MAGES;
 	category = QuestCategory::Unique;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[4], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Mages' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================

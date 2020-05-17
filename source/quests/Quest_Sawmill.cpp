@@ -23,6 +23,9 @@ void Quest_Sawmill::Start()
 	build_state = BuildState::None;
 	days = 0;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[0], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Sawmill' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================

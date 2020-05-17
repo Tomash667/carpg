@@ -315,8 +315,8 @@ void SaveLoad::SetText()
 		localtime_s(&t, &slot.save_date);
 		s += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
-	if(slot.game_year != -1 && slot.game_month != -1 && slot.game_day != -1)
-		s += Format(txSaveTime, world->GetDate(slot.game_year, slot.game_month, slot.game_day));
+	if(slot.game_date.IsValid())
+		s += Format(txSaveTime, world->GetDate(slot.game_date));
 	if(!slot.location.empty())
 		s += slot.location;
 
@@ -360,9 +360,9 @@ void SaveLoad::LoadSaveSlots()
 					slot.player_name = cfg.GetString("player_name", "");
 					slot.location = cfg.GetString("location", "");
 					slot.text = cfg.GetString("text", "");
-					slot.game_day = cfg.GetInt("game_day", -1);
-					slot.game_month = cfg.GetInt("game_month", -1);
-					slot.game_year = cfg.GetInt("game_year", -1);
+					slot.game_date = Date(cfg.GetInt("game_year", -1),
+						cfg.GetInt("game_month", -1),
+						cfg.GetInt("game_day", -1));
 					slot.hardcore = cfg.GetBool("hardcore");
 					slot.mp_players.clear();
 					slot.save_date = cfg.GetInt("save_date");
@@ -381,9 +381,7 @@ void SaveLoad::LoadSaveSlots()
 					slot.player_name.clear();
 					slot.text.clear();
 					slot.location.clear();
-					slot.game_day = -1;
-					slot.game_month = -1;
-					slot.game_year = -1;
+					slot.game_date = Date(-1, -1, -1);
 					slot.player_class = nullptr;
 					slot.mp_players.clear();
 					slot.save_date = 0;

@@ -1238,6 +1238,9 @@
     <ClInclude Include="entity\DialogContext.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="entity\Date.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">

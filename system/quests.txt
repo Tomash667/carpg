@@ -1,6 +1,8 @@
 //=============================================================================
 // Global initializer - not real quest
-// 1. generate corner dungeon with gladiator armor
+// 1. set start date
+// 2. generate corner dungeon with gladiator armor
+// 3. create secret vault
 //=============================================================================
 quest global_init
 {
@@ -13,6 +15,7 @@ quest global_init
 		
 		void Startup()
 		{
+			World::startDate = Date(631, Rand() % 6, Rand() % 20);
 			CreateArtifactLocation();
 			CreateVault();
 		}

@@ -33,6 +33,9 @@ void Quest_Bandits::Start()
 	timer = 0.f;
 	agent = nullptr;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[3], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Bandits' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================

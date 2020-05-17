@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Location.h"
 #include "UnitGroup.h"
+#include "Date.h"
 
 //-----------------------------------------------------------------------------
 struct EncounterData
@@ -101,11 +102,11 @@ public:
 	// datetime
 	bool IsSameWeek(int worldtime2) const;
 	cstring GetDate() const;
-	cstring GetDate(int year, int month, int day) const;
-	int GetDay() const { return day; }
-	int GetMonth() const { return month; }
-	int GetYear() const { return year; }
+	cstring GetDate(const Date& date) const;
 	int GetWorldtime() const { return worldtime; }
+	const Date& GetDateValue() const { return date; }
+	const Date& GetStartDate() const { return startDate; }
+	void SetStartDate(const Date& date);
 
 	// world state
 	State GetState() const { return state; }
@@ -212,17 +213,15 @@ private:
 		travel_start_pos,
 		travel_target_pos;
 	int world_size,
-		create_camp; // counter to create new random camps
+		create_camp, // counter to create new random camps
+		worldtime; // number of passed game days since startDate, starts at 0
 	float travel_timer,
 		day_timer,
 		reveal_timer, // increase chance for encounter every 0.25 sec
 		encounter_chance,
 		travel_dir; // direction from start to target point (uses NEW rotation)
 	EncounterMode encounter_mode;
-	int year, // in game year, starts at 100
-		month, // in game month, 0 to 11
-		day, // in game day, 0 to 29
-		worldtime; // number of passed game days, starts at 0
+	Date date, startDate;
 	vector<News*> news;
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
 		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncEnemiesCombat;
@@ -230,7 +229,8 @@ private:
 	cstring txMonth[12];
 	bool boss_level_mp, // used by clients instead boss_levels
 		tomir_spawned,
-		travel_first_frame;
+		travel_first_frame,
+		startup;
 
 	void UpdateDate(int days);
 	void SpawnCamps(int days);

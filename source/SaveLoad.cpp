@@ -420,9 +420,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		}
 	}
 	f << time(nullptr);
-	f << world->GetYear();
-	f << world->GetMonth();
-	f << world->GetDay();
+	f << world->GetDateValue();
 	f << game_level->GetCurrentLocationText();
 	if(slot)
 	{
@@ -440,9 +438,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 			}
 		}
 		slot->save_date = time(nullptr);
-		slot->game_year = world->GetYear();
-		slot->game_month = world->GetMonth();
-		slot->game_day = world->GetDay();
+		slot->game_date = world->GetDateValue();
 		slot->hardcore = hardcore_mode;
 		slot->on_worldmap = (game_state == GS_WORLDMAP);
 		slot->location = game_level->GetCurrentLocationText();
@@ -580,9 +576,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 		else
 			slot.mp_players.clear();
 		f >> slot.save_date;
-		f >> slot.game_year;
-		f >> slot.game_month;
-		f >> slot.game_day;
+		f >> slot.game_date;
 		f >> slot.location;
 		f >> slot.img_size;
 		slot.img_offset = f.GetPos();

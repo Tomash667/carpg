@@ -393,6 +393,13 @@ void ScriptManager::RegisterCommon()
 		.Member("Vec3 pos", offsetof(SpawnPoint, pos))
 		.Member("float rot", offsetof(SpawnPoint, rot));
 
+	sb.AddStruct<Date>("Date", asOBJ_POD | asOBJ_APP_CLASS_ALLINTS)
+		.Constructor()
+		.Constructor<int, int, int>("void f(int, int, int)")
+		.Member("int year", offsetof(Date, year))
+		.Member("int month", offsetof(Date, month))
+		.Member("int day", offsetof(Date, day));
+
 	AddFunction("void Sleep(float)", asMETHOD(ScriptManager, ScriptSleep), this);
 }
 
@@ -856,6 +863,9 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Vec2 get_size() property", asMETHOD(World, GetSize))
 		.AddFunction("Vec2 get_pos() property", asMETHOD(World, GetPos))
 		.AddFunction("int get_worldtime() property", asMETHOD(World, GetWorldtime))
+		.AddFunction("const Date& get_date() property", asMETHOD(World, GetDateValue))
+		.AddFunction("const Date& get_startDate() property", asMETHOD(World, GetStartDate))
+		.AddFunction("void set_startDate(const Date& in) property", asMETHOD(World, SetStartDate))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

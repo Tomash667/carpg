@@ -31,16 +31,16 @@
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
-const int start_year = 631;
-const float world_border = 50.f;
-const int def_world_size = 1200;
+const float WORLD_BORDER = 50.f;
+const int DEF_WORLD_SIZE = 1200;
 World* world;
 vector<string> txLocationStart, txLocationEnd;
 
 // pre V_0_8 compatibility
 namespace old
 {
-	const int def_world_size = 600;
+	const int DEF_WORLD_SIZE = 600;
+	const int START_YEAR = 100;
 }
 
 //-----------------------------------------------------------------------------
@@ -114,9 +114,8 @@ void World::OnNewGame()
 	create_camp = Random(5, 10);
 	encounter_chance = 0.f;
 	travel_dir = Random(MAX_ANGLE);
-	year = start_year;
-	day = 0;
-	month = 0;
+	date = Date(100, 0, 0);
+	startDate = date;
 	worldtime = 0;
 	day_timer = 0.f;
 	reveal_timer = 0.f;
@@ -155,7 +154,7 @@ void World::Update(int days, UpdateMode mode)
 		team->Update(days, false);
 
 	// end of game
-	if(year >= 160)
+	if(date.year >= startDate.year + 60)
 	{
 		Info("Game over: you are too old.");
 		game_gui->CloseAllPanels(true);
@@ -173,20 +172,7 @@ void World::Update(int days, UpdateMode mode)
 void World::UpdateDate(int days)
 {
 	worldtime += days;
-	day += days;
-	if(day >= 30)
-	{
-		int count = day / 30;
-		month += count;
-		day -= count * 30;
-		if(month >= 12)
-		{
-			count = month / 12;
-			year += count;
-			month -= count * 12;
-		}
-	}
-
+	date.AddDays(days);
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::WORLD_TIME);
 }
@@ -448,7 +434,7 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 	{
 		for(uint j = 0; j < 100; ++j)
 		{
-			Vec2 pt = Vec2::Random(world_border, float(world_size) - world_border);
+			Vec2 pt = Vec2::Random(WORLD_BORDER, float(world_size) - WORLD_BORDER);
 			bool ok = true;
 
 			// disallow when near other location
@@ -547,8 +533,9 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld()
 {
-	world_size = def_world_size;
-	world_bounds = Vec2(world_border, world_size - world_border);
+	startup = true;
+	world_size = DEF_WORLD_SIZE;
+	world_bounds = Vec2(WORLD_BORDER, world_size - WORLD_BORDER);
 
 	// create capital
 	Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
@@ -892,6 +879,7 @@ void World::StartInLocation()
 	world_pos = current_location->pos;
 	game_level->location_index = current_location_index;
 	game_level->location = current_location;
+	startup = false;
 
 	// reveal near locations
 	const Vec2& start_pos = start_location->pos;
@@ -1149,9 +1137,8 @@ void World::SetLocationImageAndName(Location* l)
 void World::Save(GameWriter& f)
 {
 	f << state;
-	f << year;
-	f << month;
-	f << day;
+	f << date;
+	f << startDate;
 	f << worldtime;
 	f << day_timer;
 	f << world_size;
@@ -1236,13 +1223,15 @@ void World::Save(GameWriter& f)
 void World::Load(GameReader& f, LoadingHandler& loading)
 {
 	f >> state;
-	f >> year;
-	f >> month;
-	f >> day;
+	f >> date;
+	if(LOAD_VERSION >= V_DEV)
+		f >> startDate;
+	else
+		startDate = Date(100, 0, 0);
 	f >> worldtime;
 	f >> day_timer;
 	f >> world_size;
-	world_bounds = Vec2(world_border, world_size - 16.f);
+	world_bounds = Vec2(WORLD_BORDER, world_size - 16.f);
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
@@ -1551,12 +1540,11 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 {
 	if(part == 0)
 	{
-		f >> year;
-		f >> month;
-		f >> day;
+		f >> date;
+		startDate = Date(100, 0, 0);
 		f >> worldtime;
-		world_size = old::def_world_size;
-		world_bounds = Vec2(world_border, world_size - 16.f);
+		world_size = old::DEF_WORLD_SIZE;
+		world_bounds = Vec2(WORLD_BORDER, world_size - 16.f);
 		day_timer = 0.f;
 		tomir_spawned = false;
 	}
@@ -1665,9 +1653,7 @@ void World::Write(BitStreamWriter& f)
 void World::WriteTime(BitStreamWriter& f)
 {
 	f << worldtime;
-	f.WriteCasted<byte>(day);
-	f.WriteCasted<byte>(month);
-	f << year;
+	f << date;
 }
 
 //=================================================================================================
@@ -1840,9 +1826,7 @@ bool World::Read(BitStreamReader& f)
 void World::ReadTime(BitStreamReader& f)
 {
 	f >> worldtime;
-	f.ReadCasted<byte>(day);
-	f.ReadCasted<byte>(month);
-	f >> year;
+	f >> date;
 }
 
 //=================================================================================================
@@ -1858,13 +1842,22 @@ bool World::IsSameWeek(int worldtime2) const
 //=================================================================================================
 cstring World::GetDate() const
 {
-	return Format(txDate, day + 1, txMonth[month], year);
+	return Format(txDate, date.day + 1, txMonth[date.month], date.year);
 }
 
 //=================================================================================================
-cstring World::GetDate(int year, int month, int day) const
+cstring World::GetDate(const Date& date) const
 {
-	return Format(txDate, day + 1, txMonth[month], year);
+	return Format(txDate, date.day + 1, txMonth[date.month], date.year);
+}
+
+//=================================================================================================
+void World::SetStartDate(const Date& date)
+{
+	if(!startup)
+		throw ScriptException("Start date can only be set at startup.");
+	this->date = date;
+	startDate = date;
 }
 
 //=================================================================================================
@@ -2245,6 +2238,7 @@ void World::StartInLocation(Location* loc)
 	game_level->location_index = current_location_index;
 	game_level->location = loc;
 	game_level->is_open = true;
+	startup = false;
 }
 
 //=================================================================================================

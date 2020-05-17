@@ -54,8 +54,11 @@ void Quest_Contest::Init()
 	units.clear();
 	winner = nullptr;
 	generated = false;
-	year = world->GetYear();
+	year = world->GetDateValue().year;
 	rumor = quest_mgr->AddQuestRumor(quest_mgr->txRumorQ[2]);
+
+	if(game->devmode)
+		Info("Contest - %s.", world->GetLocation(where)->name.c_str());
 }
 
 //=================================================================================================
@@ -93,7 +96,7 @@ void Quest_Contest::Load(GameReader& f)
 		for(Unit*& unit : units)
 			f >> unit;
 	}
-	year = world->GetYear();
+	year = world->GetDateValue().year;
 }
 
 //=================================================================================================
@@ -162,16 +165,15 @@ cstring Quest_Contest::FormatString(const string& str)
 void Quest_Contest::Progress()
 {
 	int step; // 0 - before contest, 1 - time for contest, 2 - after contest
-	int month = world->GetMonth();
-	int day = world->GetDay();
+	const Date& date = world->GetDateValue();
 
-	if(month < 8)
+	if(date.month < 8)
 		step = 0;
-	else if(month == 8)
+	else if(date.month == 8)
 	{
-		if(day < 20)
+		if(date.day < 20)
 			step = 0;
-		else if(day == 20)
+		else if(date.day == 20)
 			step = 1;
 		else
 			step = 2;

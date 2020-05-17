@@ -601,6 +601,8 @@ Static properties:
 * Vec2 size - readonly, get worldmap size (in km).
 * Vec2 pos - readonly, position on worldmap.
 * int worldtime - readonly, number of days since start of game.
+* const Date& date - readonly, current in game date.
+* const Date& startDate - can only be set at startup.
 
 Static methods:
 

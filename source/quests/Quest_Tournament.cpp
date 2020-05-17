@@ -46,12 +46,15 @@ void Quest_Tournament::LoadLanguage()
 void Quest_Tournament::Init()
 {
 	year = 0;
-	city_year = world->GetYear();
+	city_year = world->GetDateValue().year;
 	city = world->GetRandomCityIndex();
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
 	winner = nullptr;
 	generated = false;
+
+	if(game->devmode)
+		Info("Tournament - %s.", world->GetLocation(GetCity())->name.c_str());
 }
 
 //=================================================================================================
@@ -133,14 +136,15 @@ bool Quest_Tournament::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "ironfist_can_start") == 0)
 	{
+		const Date& date = world->GetDateValue();
 		return state == TOURNAMENT_NOT_DONE
 			&& city == world->GetCurrentLocationIndex()
-			&& world->GetDay() == 6
-			&& world->GetMonth() == 2
-			&& year != world->GetYear();
+			&& date.day == 6
+			&& date.month == 2
+			&& date.year != year;
 	}
 	else if(strcmp(msg, "ironfist_done") == 0)
-		return year == world->GetYear();
+		return year == world->GetDateValue().year;
 	else if(strcmp(msg, "ironfist_here") == 0)
 		return city == world->GetCurrentLocationIndex();
 	else if(strcmp(msg, "ironfist_preparing") == 0)
@@ -186,19 +190,17 @@ cstring Quest_Tournament::FormatString(const string& str)
 //=================================================================================================
 void Quest_Tournament::Progress()
 {
-	int current_year = world->GetYear();
-	int month = world->GetMonth();
-	int day = world->GetDay();
-	if(current_year != city_year)
+	const Date& date = world->GetDateValue();
+	if(date.year != city_year)
 	{
-		city_year = current_year;
+		city_year = date.year;
 		city = world->GetRandomCityIndex(city);
 		master = nullptr;
 	}
-	if(day == 6 && month == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena) && world->GetCurrentLocationIndex() == city && !generated)
+	if(date.day == 6 && date.month == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena) && world->GetCurrentLocationIndex() == city && !generated)
 		GenerateUnits();
-	if(month > 2 || (month == 2 && day > 6))
-		year = current_year;
+	if(date.month > 2 || (date.month == 2 && date.day > 6))
+		year = date.year;
 }
 
 //=================================================================================================
@@ -211,7 +213,7 @@ UnitData& Quest_Tournament::GetRandomHeroData()
 //=================================================================================================
 void Quest_Tournament::StartTournament(Unit* arena_master)
 {
-	year = world->GetYear();
+	year = world->GetDateValue().year;
 	state = TOURNAMENT_STARTING;
 	timer = 0.f;
 	state2 = 0;

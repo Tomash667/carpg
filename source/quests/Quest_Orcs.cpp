@@ -28,6 +28,9 @@ void Quest_Orcs::Start()
 	type = Q_ORCS;
 	category = QuestCategory::Unique;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[6], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Orcs' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================

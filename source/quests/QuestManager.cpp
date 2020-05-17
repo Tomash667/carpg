@@ -137,6 +137,18 @@ void QuestManager::InitQuests()
 {
 	vector<int> used;
 
+	// init scripted quests
+	for(QuestScheme* scheme : QuestScheme::schemes)
+	{
+		if(scheme->category != QuestCategory::Unique)
+			continue;
+		Quest_Scripted* quest = new Quest_Scripted;
+		quest->Init(scheme);
+		unaccepted_quests.push_back(quest);
+		quest->id = quest_counter++;
+		quest->Start();
+	}
+
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->Init();
@@ -223,31 +235,6 @@ void QuestManager::InitQuests()
 	quest_contest->Init();
 	quest_secret->Init();
 	quest_tournament->Init();
-
-	if(game->devmode)
-	{
-		Info("Quest 'Sawmill' - %s.", world->GetLocation(quest_sawmill->start_loc)->name.c_str());
-		Info("Quest 'Mine' - %s, %s.", world->GetLocation(quest_mine->start_loc)->name.c_str(), world->GetLocation(quest_mine->target_loc)->name.c_str());
-		Info("Quest 'Bandits' - %s.", world->GetLocation(quest_bandits->start_loc)->name.c_str());
-		Info("Quest 'Mages' - %s.", world->GetLocation(quest_mages->start_loc)->name.c_str());
-		Info("Quest 'Orcs' - %s.", world->GetLocation(quest_orcs->start_loc)->name.c_str());
-		Info("Quest 'Goblins' - %s.", world->GetLocation(quest_goblins->start_loc)->name.c_str());
-		Info("Quest 'Evil' - %s.", world->GetLocation(quest_evil->start_loc)->name.c_str());
-		Info("Tournament - %s.", world->GetLocation(quest_tournament->GetCity())->name.c_str());
-		Info("Contest - %s.", world->GetLocation(quest_contest->where)->name.c_str());
-	}
-
-	// init scripted quests
-	for(QuestScheme* scheme : QuestScheme::schemes)
-	{
-		if(scheme->category != QuestCategory::Unique)
-			continue;
-		Quest_Scripted* quest = new Quest_Scripted;
-		quest->Init(scheme);
-		unaccepted_quests.push_back(quest);
-		quest->id = quest_counter++;
-		quest->Start();
-	}
 }
 
 //=================================================================================================
@@ -477,9 +464,10 @@ void QuestManager::Update(int days)
 	});
 
 	// update contest
-	if(quest_contest->year != world->GetYear())
+	const Date& date = world->GetDateValue();
+	if(quest_contest->year != date.year)
 	{
-		quest_contest->year = world->GetYear();
+		quest_contest->year = date.year;
 		quest_contest->where = world->GetRandomSettlementIndex(quest_contest->where);
 	}
 }
@@ -1280,7 +1268,8 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(world->GetDay() == 6 && world->GetMonth() == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
+		const Date& date = world->GetDateValue();
+		if(date.day == 6 && date.month == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
 			&& game_level->location_index == quest_tournament->GetCity() && !quest_tournament->IsGenerated())
 			quest_tournament->GenerateUnits();
 	}
