@@ -130,6 +130,8 @@ void SaveLoad::Update(float dt)
 					SetSaveImage();
 					SetText();
 				}
+				if(gui->DoubleClick(Key::LeftButton) && (save_mode || slots[i].valid))
+					Event((GuiEvent)IdOk);
 			}
 
 			rect.Top() = rect.Bottom() + 4;
