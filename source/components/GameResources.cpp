@@ -117,12 +117,14 @@ void GameResources::LoadData()
 	tBlood[BLOOD_BONE] = res_mgr->Load<Texture>("iskra.png");
 	tBlood[BLOOD_ROCK] = res_mgr->Load<Texture>("kamien.png");
 	tBlood[BLOOD_IRON] = res_mgr->Load<Texture>("iskra.png");
+	tBlood[BLOOD_SLIME] = res_mgr->Load<Texture>("slime_part.png");
 	tBloodSplat[BLOOD_RED] = res_mgr->Load<Texture>("krew_slad.png");
 	tBloodSplat[BLOOD_GREEN] = res_mgr->Load<Texture>("krew_slad2.png");
 	tBloodSplat[BLOOD_BLACK] = res_mgr->Load<Texture>("krew_slad3.png");
 	tBloodSplat[BLOOD_BONE] = nullptr;
 	tBloodSplat[BLOOD_ROCK] = nullptr;
 	tBloodSplat[BLOOD_IRON] = nullptr;
+	tBloodSplat[BLOOD_SLIME] = nullptr;
 	tSpark = res_mgr->Load<Texture>("iskra.png");
 	tSpawn = res_mgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = res_mgr->Load<Texture>("lighting_line.png");
@@ -231,6 +233,7 @@ void GameResources::LoadData()
 	sBody[4] = res_mgr->Load<Sound>("atak_cialo5.mp3");
 	sBone = res_mgr->Load<Sound>("atak_kosci.mp3");
 	sSkin = res_mgr->Load<Sound>("atak_skora.mp3");
+	sSlime = res_mgr->Load<Sound>("slime_hit.wav");
 	sArenaFight = res_mgr->Load<Sound>("arena_fight.mp3");
 	sArenaWin = res_mgr->Load<Sound>("arena_wygrana.mp3");
 	sArenaLost = res_mgr->Load<Sound>("arena_porazka.mp3");
@@ -618,6 +621,8 @@ Sound* GameResources::GetMaterialSound(MATERIAL_TYPE attack_mat, MATERIAL_TYPE h
 		return sRock;
 	case MAT_CRYSTAL:
 		return sCrystal;
+	case MAT_SLIME:
+		return sSlime;
 	default:
 		assert(0);
 		return nullptr;

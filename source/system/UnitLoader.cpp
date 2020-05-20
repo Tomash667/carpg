@@ -247,7 +247,8 @@ void UnitLoader::InitTokenizer()
 		{ "cloth", MAT_CLOTH },
 		{ "rock", MAT_ROCK },
 		{ "body", MAT_BODY },
-		{ "bone", MAT_BONE }
+		{ "bone", MAT_BONE },
+		{ "slime", MAT_SLIME }
 		});
 
 	t.AddKeywords(G_FLAGS, {
@@ -301,6 +302,7 @@ void UnitLoader::InitTokenizer()
 		{ "boss", F2_BOSS },
 		{ "bloodless", F2_BLOODLESS },
 		{ "limited_rot", F2_LIMITED_ROT },
+		{ "alpha_blend", F2_ALPHA_BLEND },
 		{ "stun_res", F2_STUN_RESISTANCE },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
 		{ "xar", F2_XAR },
@@ -350,7 +352,8 @@ void UnitLoader::InitTokenizer()
 		{ "black", BLOOD_BLACK },
 		{ "bone", BLOOD_BONE },
 		{ "rock", BLOOD_ROCK },
-		{ "iron", BLOOD_IRON }
+		{ "iron", BLOOD_IRON },
+		{ "slime", BLOOD_SLIME }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {

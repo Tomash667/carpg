@@ -633,6 +633,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	SceneNode* node = SceneNode::Get();
 	node->type = SceneNode::NORMAL;
 	node->SetMesh(u.mesh_inst);
+	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
+		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->center = u.visual_pos;
 	node->mat = Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
 	node->tex_override = u.data->GetTextureOverride();

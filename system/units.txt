@@ -3021,6 +3021,38 @@ unit bear_black : bear {
 	}
 }
 
+unit slime {
+	mesh "slime.qmsh"
+	mat slime
+	level 5
+	flags {fixed_stats slow dont_escape dont_open no_power_attack ignore_block dont_eat dont_talk poison_res bloodless backstab_res stun_res alpha_blend}
+	hp 300
+	stamina 200
+	attack 75
+	def 150
+	group animals
+	dmg_type blunt
+	walk_speed 2
+	run_speed 0
+	rot_speed 4
+	blood slime
+	sounds {
+		see_enemy "slime_alert.wav"
+		attack "slime_alert.wav"
+		death "slime_die.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.55 0.7}
+		}
+	}
+	idles {
+		"idle"
+	}
+	width 0.4
+	attack_range 0.4
+}
+
 unit wild_hunter : base_human {
 	level {6 10}
 	flags {human archer}

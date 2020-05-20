@@ -184,7 +184,8 @@ void ItemLoader::InitTokenizer()
 		{ "cloth", MAT_CLOTH },
 		{ "rock", MAT_ROCK },
 		{ "body", MAT_BODY },
-		{ "bone", MAT_BONE }
+		{ "bone", MAT_BONE },
+		{ "slime", MAT_SLIME }
 		});
 
 	t.AddKeywords(G_DMG_TYPE, {

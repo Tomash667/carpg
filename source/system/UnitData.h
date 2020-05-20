@@ -108,7 +108,7 @@ enum UNIT_FLAGS2
 	F2_BOSS = 1 << 12, // when player is on same level, play boss music
 	F2_BLOODLESS = 1 << 13, // no blood pool on death, can't cast drain hp
 	F2_LIMITED_ROT = 1 << 14, // tries to keep starting rotation - innkeeper
-	// unused (1 << 15)
+	F2_ALPHA_BLEND = 1 << 15, // use alpha blend when rendering
 	F2_STUN_RESISTANCE = 1 << 16, // 50% resistance to stuns
 	F2_SIT_ON_THRONE = 1 << 17, // ai can sit on throne
 	// unused (1 << 18)

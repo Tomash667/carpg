@@ -139,6 +139,8 @@ unit base_hunter
 unit base_rogue
 // hardcoded spawn in forest
 unit wild_hunter
+// hardcoded spawn in dungeons
+unit slime
 // quest units
 unit q_bandyci_szef
 unit guard_q_bandyci

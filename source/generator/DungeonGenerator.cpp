@@ -298,6 +298,8 @@ void DungeonGenerator::GenerateUnits()
 	Pooled<TmpUnitGroup> tmp;
 	tmp->Fill(group, base_level);
 
+	const bool canSpawnSlime = (base_level >= 3 && base_level <= 5);
+
 	// chance for spawning units
 	const int chance_for_none = 10,
 		chance_for_1 = 20,
@@ -355,10 +357,22 @@ void DungeonGenerator::GenerateUnits()
 		else
 			excluded_pt = Int2(-1000, -1000);
 
-		for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
+		if(canSpawnSlime && Rand() % 20 == 0)
 		{
-			Room& room = *lvl.rooms[RandomItem(group.rooms)];
-			game_level->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
+			static UnitData* slime = UnitData::Get("slime");
+			for(int i = 0; i < count; ++i)
+			{
+				Room& room = *lvl.rooms[RandomItem(group.rooms)];
+				game_level->SpawnUnitInsideRoom(room, *slime, -1, excluded_pt, down_stairs_pt);
+			}
+		}
+		else
+		{
+			for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
+			{
+				Room& room = *lvl.rooms[RandomItem(group.rooms)];
+				game_level->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
+			}
 		}
 	}
 }
