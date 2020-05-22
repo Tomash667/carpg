@@ -47,13 +47,12 @@ struct Quest : public QuestHandler
 	struct ConversionData
 	{
 		cstring id;
-		CScriptDictionary* dict;
+		Vars* vars;
 
+		void Add(cstring key, bool value);
 		void Add(cstring key, int value);
-		void Add(cstring key, bool value)
-		{
-			Add(key, value ? 1 : 0);
-		}
+		void Add(cstring key, Location* location);
+		void Add(cstring key, const Item* item);
 	};
 
 	int id;

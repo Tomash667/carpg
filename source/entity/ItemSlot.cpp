@@ -98,7 +98,13 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 
 	str = item->name;
 	if(game->devmode)
-		str += Format(" (%s)", item->id.c_str());
+	{
+		cstring id = ReplaceAll(item->id.c_str(), "$", "$$");
+		if(item->IsQuest())
+			str += Format(" (%s,%d)", id, item->quest_id);
+		else
+			str += Format(" (%s)", id);
+	}
 	if(item->IsStackable() && count > 1)
 		str += Format(" (%d)", count);
 

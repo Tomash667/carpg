@@ -28,6 +28,8 @@
 #include "Var.h"
 #include "WorldMapGui.h"
 
+#include <scriptarray/scriptarray.h>
+
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
@@ -1999,6 +2001,14 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 	}
 
 	return best;
+}
+
+//=================================================================================================
+Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
+{
+	int index = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
+	array->Release();
+	return locations[index];
 }
 
 //=================================================================================================

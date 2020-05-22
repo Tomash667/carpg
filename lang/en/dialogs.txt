@@ -740,12 +740,10 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Hello!"
 	1 "Welcome back!"
-	2 "Welcome back!"
-	3 "Give back artifact"
-	4 "Give back stolen artifact"
-	5 "Give back lost artifact"
-	6 "Did you find something? No? Too bad, I'm still waiting for that item."
-	7 "End dialog"
+	2 "Give back stolen artifact"
+	3 "Give back lost artifact"
+	4 "Did you find something? No? Too bad, I'm still waiting for that item."
+	5 "End dialog"
 }
 
 //==============================================================================
@@ -1168,28 +1166,6 @@ dialog q_evil_mayor {
 dialog q_evil_boss {
 	0 "Damn manling!"
 	1 "I will torture your soul to the end of the world and one day longer!"
-}
-
-//==============================================================================
-dialog q_find_artifact_start {
-	0 "I'm looking for a certain artifact known as the $przedmiot$."
-	1 "Can you deliver it to me?"
-	2 "Yes"
-	3 "Apparently, the item which I need is in the $target_loc$, $target_dir$ out of here."
-	4 "I'll wait until someone brings it to me but up to two months. Good luck!"
-	5 "No"
-}
-
-//==============================================================================
-dialog q_find_artifact_end {
-	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
-}
-
-//==============================================================================
-dialog q_find_artifact_timeout {
-	0 "You could not find this artifact? Too bad..."
-	1 "Apparently close to $random_loc$ people found some new artifacts, there I leave."
-	2 "Good luck in your adventures!"
 }
 
 //==============================================================================

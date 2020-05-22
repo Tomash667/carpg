@@ -83,8 +83,78 @@ quest deliver_resources {
 }
 
 //=============================================================================
-quest alchemist_apprentice
-{
+quest bandits_collect_toll {
+	dialog start {
+		0 "On the road between $(start_loc.name) and $(other_loc.name) camped bandits. They charge a fee and are robbing merchants."
+		1 "You have time to take care of them?"
+		2 "Yes"
+		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc.pos, other_loc.pos)) from here and back. Then certainly you encounter these bandits."
+		4 "You got half month for this."
+		5 "No"
+	}
+	
+	dialog end {
+		0 "You could not get rid of these thugs out of the way?"
+		1 "Ehhh, now probably moved elsewhere. I'm disappointed in you."
+		2 "Finally, someone on whom you can rely on. Well done with these bandits, that will teach them for some time."
+		3 "Take this 1500 gold pieces as reward."
+	}
+	
+	dialog encounter {
+		0 "Stop!"
+		1 "This is our road, if you want to go you have to pay 500 gold pieces!"
+		2 "Pay"
+		3 "You can go. Do not forget to visit us again, hehehe..."
+		4 "You do not have enough gold damn poor thing!"
+		5 "I hope that your equipment is worth something!"
+		6 "Don't pay"
+		7 "I hope that your equipment is worth something!"
+	}
+
+	texts {
+		0 "Bandits collecting tolls"
+		1 "Obtained from captain guard of $(start_loc.name) at $date$."
+		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc.pos, other_loc.pos)) from here. I have to get rid of them in half a month."
+		3 "You encounter group of bandits gathering tolls."
+		4 "I didn't manage to kill the bandits in time."
+		5 "I killed the bandits."
+		6 "I informed the captain of the guard of my success and got the reward. Quest done!"
+		7 "Adventurers took care of the bandits who collected a fee on the road."
+		8 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
+quest find_artifact {
+	dialog start {
+		0 "I'm looking for a certain artifact known as the $(item.name)."
+		1 "Can you deliver it to me?"
+		2 "Yes"
+		3 "Apparently, the item which I need is in the $(target_loc.name), $(World::GetDirName(start_loc.pos, target_loc.pos)) out of here."
+		4 "I'll wait until someone brings it to me but up to two months. Good luck!"
+		5 "No"
+	}
+
+	dialog end {
+		0 "Give back artifact"
+		1 "Thank you for this artifact, take this $(Str(GetReward())) gold pieces in thanks."
+		2 "You could not find this artifact? Too bad..."
+		3 "Apparently close to $(World::GetRandomSettlement(start_loc).name) people found some new artifacts, there I leave."
+		4 "Good luck in your adventures!"
+	}
+	
+	texts {
+		0 "Find artifact"
+		1 "Obtained from traveler in $(start_loc.name) at $date$."
+		2 "The traveler wants me to find $(item.name) which is located in the $(target_loc.name) to the $(World::GetDirName(start_loc.pos, target_loc.pos)) from here. I have two months for that."
+		3 "I delivered the artifact and received the reward. Quest done!"
+		4 "I didn't bring the artifact in time."
+		5 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
+quest alchemist_apprentice {
 	dialog alchemist {
 		0 "Welcome. Are you here for the task?"
 		1 "Task"
@@ -140,49 +210,6 @@ quest alchemist_apprentice
 		}
 		10 "The student of the alchemist died during the fight in the forest."
 		11 "The alchemist in $(city.name) is looking for a specific type of herbs."
-	}
-}
-
-//=============================================================================
-quest bandits_collect_toll
-{
-	dialog start {
-		0 "On the road between $(start_loc.name) and $(other_loc.name) camped bandits. They charge a fee and are robbing merchants."
-		1 "You have time to take care of them?"
-		2 "Yes"
-		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc.pos, other_loc.pos)) from here and back. Then certainly you encounter these bandits."
-		4 "You got half month for this."
-		5 "No"
-	}
-	
-	dialog end {
-		0 "You could not get rid of these thugs out of the way?"
-		1 "Ehhh, now probably moved elsewhere. I'm disappointed in you."
-		2 "Finally, someone on whom you can rely on. Well done with these bandits, that will teach them for some time."
-		3 "Take this 1500 gold pieces as reward."
-	}
-	
-	dialog encounter {
-		0 "Stop!"
-		1 "This is our road, if you want to go you have to pay 500 gold pieces!"
-		2 "Pay"
-		3 "You can go. Do not forget to visit us again, hehehe..."
-		4 "You do not have enough gold damn poor thing!"
-		5 "I hope that your equipment is worth something!"
-		6 "Don't pay"
-		7 "I hope that your equipment is worth something!"
-	}
-
-	texts {
-		0 "Bandits collecting tolls"
-		1 "Obtained from captain guard of $(start_loc.name) at $date$."
-		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc.pos, other_loc.pos)) from here. I have to get rid of them in half a month."
-		3 "You encounter group of bandits gathering tolls."
-		4 "I didn't manage to kill the bandits in time."
-		5 "I killed the bandits."
-		6 "I informed the captain of the guard of my success and got the reward. Quest done!"
-		7 "Adventurers took care of the bandits who collected a fee on the road."
-		8 "The time that I had to complete this quest passed."
 	}
 }
 

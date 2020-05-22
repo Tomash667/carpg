@@ -168,12 +168,12 @@ void Quest_Crazies::CheckStone()
 			if(target_loc == game_level->location_index)
 			{
 				// is in good location, check if inside chest
-				Chest* chest;
-				int slot;
-				if(game_level->local_area->FindItemInChest(stone, &chest, &slot))
+				int index;
+				Chest* chest = game_level->local_area->FindChestWithItem(stone, &index);
+				if(chest)
 				{
 					// put inside chest, end of quest
-					chest->items.erase(chest->items.begin() + slot);
+					chest->items.erase(chest->items.begin() + index);
 					SetProgress(Progress::Finished);
 					return;
 				}

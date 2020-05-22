@@ -1596,20 +1596,18 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return quest_mgr->FindUnacceptedQuest(talker->quest_id);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* q = quest_mgr->FindQuest(talker->quest_id);
-		if(q && !q->IsActive())
-			return true;
+		Quest* quest = quest_mgr->FindQuest(talker->quest_id, false);
+		return quest && !quest->IsActive();
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
 		return talker->level <= 8 && team->free_recruits > 0;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
-		if(((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+		return (((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			&& quest_mgr->quest_orcs->start_loc == game_level->location_index)
 			|| (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
 			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed
-			&& quest_mgr->quest_mages2->start_loc == game_level->location_index))
-			return true;
+			&& quest_mgr->quest_mages2->start_loc == game_level->location_index));
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
 	{

@@ -152,6 +152,73 @@ string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
 	return tmp_str_result;
 }
 
+static cstring ArgToString(asIScriptGeneric* gen, int index)
+{
+	auto type_id = gen->GetArgTypeId(index);
+	void* adr = gen->GetAddressOfArg(index);
+	switch(type_id)
+	{
+	case asTYPEID_BOOL:
+		{
+			bool value = **(bool**)adr;
+			return (value ? "true" : "false");
+		}
+	case asTYPEID_INT8:
+		{
+			char value = **(char**)adr;
+			return Format("%d", (int)value);
+		}
+	case asTYPEID_INT16:
+		{
+			short value = **(short**)adr;
+			return Format("%d", (int)value);
+		}
+	case asTYPEID_INT32:
+		{
+			int value = **(int**)adr;
+			return Format("%d", value);
+		}
+	case asTYPEID_INT64:
+		{
+			int64 value = **(int64**)adr;
+			return Format("%I64d", value);
+		}
+	case asTYPEID_UINT8:
+		{
+			byte value = **(byte**)adr;
+			return Format("%u", (uint)value);
+		}
+	case asTYPEID_UINT16:
+		{
+			word value = **(word**)adr;
+			return Format("%u", (uint)value);
+		}
+	case asTYPEID_UINT32:
+		{
+			uint value = **(uint**)adr;
+			return Format("%u", value);
+		}
+	case asTYPEID_UINT64:
+		{
+			uint64 value = **(uint64**)adr;
+			return Format("%I64u", value);
+		}
+	case asTYPEID_FLOAT:
+		{
+			float value = **(float**)adr;
+			return Format("%g", value);
+		}
+		break;
+	case asTYPEID_DOUBLE:
+		{
+			double value = **(double**)adr;
+			return Format("%g", value);
+		}
+	default:
+		return ToString(gen, adr, type_id).c_str();
+	}
+}
+
 static void FormatStrGeneric(asIScriptGeneric* gen)
 {
 	int count = gen->GetArgCount();
@@ -185,87 +252,18 @@ static void FormatStrGeneric(asIScriptGeneric* gen)
 		++index;
 		if(index < 1 || index >= count)
 			throw ScriptException("Broken format string, invalid index %d.", index - 1);
-		auto type_id = gen->GetArgTypeId(index);
-		void* adr = gen->GetAddressOfArg(index);
-		cstring s = nullptr;
-		switch(type_id)
-		{
-		case asTYPEID_BOOL:
-			{
-				bool value = **(bool**)adr;
-				s = (value ? "true" : "false");
-			}
-			break;
-		case asTYPEID_INT8:
-			{
-				char value = **(char**)adr;
-				s = Format("%d", (int)value);
-			}
-			break;
-		case asTYPEID_INT16:
-			{
-				short value = **(short**)adr;
-				s = Format("%d", (int)value);
-			}
-			break;
-		case asTYPEID_INT32:
-			{
-				int value = **(int**)adr;
-				s = Format("%d", value);
-			}
-			break;
-		case asTYPEID_INT64:
-			{
-				int64 value = **(int64**)adr;
-				s = Format("%I64d", value);
-			}
-			break;
-		case asTYPEID_UINT8:
-			{
-				byte value = **(byte**)adr;
-				s = Format("%u", (uint)value);
-			}
-			break;
-		case asTYPEID_UINT16:
-			{
-				word value = **(word**)adr;
-				s = Format("%u", (uint)value);
-			}
-			break;
-		case asTYPEID_UINT32:
-			{
-				uint value = **(uint**)adr;
-				s = Format("%u", value);
-			}
-			break;
-		case asTYPEID_UINT64:
-			{
-				uint64 value = **(uint64**)adr;
-				s = Format("%I64u", value);
-			}
-			break;
-		case asTYPEID_FLOAT:
-			{
-				float value = **(float**)adr;
-				s = Format("%g", value);
-			}
-			break;
-		case asTYPEID_DOUBLE:
-			{
-				double value = **(double**)adr;
-				s = Format("%g", value);
-			}
-			break;
-		default:
-			s = ToString(gen, adr, type_id).c_str();
-			break;
-		}
-
+		cstring s = ArgToString(gen, index);
 		result += s;
 		i = pos;
 	}
 
 	new(gen->GetAddressOfReturnLocation()) string(result);
+}
+
+static void ToStrGeneric(asIScriptGeneric* gen)
+{
+	cstring s = ArgToString(gen, 0);
+	new(gen->GetAddressOfReturnLocation()) string(s);
 }
 
 static void ScriptInfo(const string& str)
@@ -310,6 +308,8 @@ void ScriptManager::RegisterCommon()
 
 	AddFunction("int Random(int, int)", asFUNCTIONPR(Random, (int, int), int));
 	AddFunction("int Rand()", asFUNCTIONPR(Rand, (), int));
+
+	CHECKED(engine->RegisterGlobalFunction("string Str(?& in)", asFUNCTION(ToStrGeneric), asCALL_GENERIC));
 
 	sb.AddStruct<Int2>("Int2", asOBJ_POD | asOBJ_APP_CLASS_ALLINTS)
 		.Constructor()
@@ -443,12 +443,6 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 	engine->ReturnContext(ctx);
 	func->Release();
 	return target;
-}
-
-Location* World_GetClosestLocation2(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
-{
-	int index = world->GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
-	return world->GetLocation(index);
 }
 
 void StockScript_AddItem(const Item* item, uint count)
@@ -655,13 +649,15 @@ void ScriptManager::RegisterGame()
 		.Method("void Start(Vars@)", asMETHODPR(Quest_Scripted, Start, (Vars*), void))
 		.WithInstance("Quest@ quest", &ctx.quest)
 		.WithNamespace(quest_mgr)
-		.AddFunction("Quest@ Find(const string& in)", asMETHOD(QuestManager, FindQuestS));
+		.AddFunction("Quest@ Find(const string& in)", asMETHOD(QuestManager, FindQuestS))
+		.AddFunction("int CalculateReward(int, const Int2& in, const Int2& in)", asFUNCTION(ItemHelper::CalculateReward));
 
 	AddType("Item")
 		.Member("const int value", offsetof(Item, value))
 		.Method("const string& get_name() const property", asMETHOD(Item, GetName))
 		.Method("void set_name(const string& in) property", asMETHOD(Item, RenameS))
-		.Method("Item@ QuestCopy(Quest@, const string& in)", asMETHOD(Item, QuestCopy))
+		.Method("Item@ QuestCopy(Quest@)", asMETHODPR(Item, QuestCopy, (Quest*), Item*))
+		.Method("Item@ QuestCopy(Quest@, const string& in)", asMETHODPR(Item, QuestCopy, (Quest*, const string&), Item*))
 		.WithNamespace()
 		.AddFunction("Item@ Get(const string& in)", asFUNCTION(Item::GetS))
 		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
@@ -671,7 +667,8 @@ void ScriptManager::RegisterGame()
 		.Method("Item@ GetItem(int)", asMETHOD(ItemList, GetByIndex))
 		.Method("int Size()", asMETHOD(ItemList, GetSize))
 		.WithNamespace()
-		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS));
+		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS))
+		.AddFunction("Item@ GetRandomItem(const string& in)", asFUNCTION(ItemList::GetItemS));
 
 	AddType("GroundItem")
 		.Member("const Vec3 pos", offsetof(GroundItem, pos))
@@ -710,6 +707,7 @@ void ScriptManager::RegisterGame()
 		.Member("const Player@ player", offsetof(Unit, player))
 		.Member("const Hero@ hero", offsetof(Unit, hero))
 		.Member("LevelArea@ area", offsetof(Unit, area))
+		.Member("bool temporary", offsetof(Unit, temporary))
 		.Method("int get_gold() const property", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int) property", asMETHOD(Unit, SetGold))
 		.Method("Vars@ get_vars() property", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -823,6 +821,9 @@ void ScriptManager::RegisterGame()
 		.Member("RoomType@ type", offsetof(Room, type))
 		.Method("Vec3 get_center() const property", asMETHOD(Room, Center));
 
+	ForType("LevelArea")
+		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LevelArea, RemoveItemFromChest));
+
 	AddType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
 		.Member("const string name", offsetof(Location, name))
@@ -836,14 +837,17 @@ void ScriptManager::RegisterGame()
 		.Method("LOCATION_IMAGE get_image() const property", asMETHOD(Location, GetImage))
 		.Method("void set_image(LOCATION_IMAGE) property", asMETHOD(Location, SetImage))
 		.Method("bool get_visited() const property", asMETHOD(Location, IsVisited))
-		.Method("LevelArea@ get_area() const property", asFUNCTION(LocationHelper::GetArea))
+		.Method("LevelArea@ get_area() const property", asFUNCTIONPR(LocationHelper::GetArea, (Location*), LevelArea*))
+		.Method("int get_levels() const property", asFUNCTION(LocationHelper::GetLevels))
 		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Location, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY)", asMETHOD(Location, RemoveEventHandlerS))
 		.Method("void SetKnown()", asMETHOD(Location, SetKnown))
 		.Method("bool IsCity()", asFUNCTIONPR(LocationHelper::IsCity, (Location*), bool))
 		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool))
 		.Method("Unit@ GetMayor()", asFUNCTION(LocationHelper::GetMayor))
-		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain));
+		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain))
+		.Method("LevelArea@ GetArea(int)", asFUNCTIONPR(LocationHelper::GetArea, (Location*, int), LevelArea*))
+		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit));
 
 	AddType("Encounter")
 		.Member("Vec2 pos", offsetof(Encounter, pos))
@@ -878,7 +882,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
-		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
+		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1))", asMETHOD(World, GetClosestLocationS))
+		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, array<LOCATION_TARGET>@)", asMETHOD(World, GetClosestLocationArrayS))
 		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int = -1)", asMETHODPR(World, CreateLocation, (LOCATION, const Vec2&, int, int), Location*))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("Encounter@ RecreateEncounter(Quest@, int)", asMETHOD(World, RecreateEncounterS))

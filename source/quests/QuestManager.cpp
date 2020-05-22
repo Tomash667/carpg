@@ -80,10 +80,8 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestCategory::Captain, "kill_animals"));
 	infos.push_back(QuestInfo(Q_LOST_ARTIFACT, QuestCategory::Random, "lost_artifact"));
 	infos.push_back(QuestInfo(Q_STOLEN_ARTIFACT, QuestCategory::Random, "stolen_artifact"));
-	infos.push_back(QuestInfo(Q_FIND_ARTIFACT, QuestCategory::Random, "find_artifact"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
-	infos.push_back({ Q_ARTIFACTS, QuestCategory::Unique, "artifacts" });
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
@@ -1787,6 +1785,7 @@ void QuestManager::UpgradeQuests()
 			unaccepted_quests[quest->quest_index] = quest2;
 		else
 			quests[quest->quest_index] = quest2;
+		RemoveElementTry(quests_timeout, reinterpret_cast<Quest_Dungeon*>(quest));
 		RemoveElementTry(quests_timeout2, quest);
 		delete quest;
 	}

@@ -122,6 +122,7 @@ struct Item
 
 	void CreateCopy(Item& item) const;
 	Item* CreateCopy() const;
+	Item* QuestCopy(Quest* quest);
 	Item* QuestCopy(Quest* quest, const string& name);
 	void Rename(cstring name);
 	void RenameS(const string& name) { Rename(name.c_str()); }
@@ -392,7 +393,6 @@ struct OtherItem : public Item
 		MiscItem,
 		Tool,
 		Valuable,
-		Artifact,
 		Ingredient
 	};
 
@@ -401,7 +401,6 @@ struct OtherItem : public Item
 	Subtype subtype;
 
 	static vector<OtherItem*> others;
-	static vector<OtherItem*> artifacts;
 };
 
 //-----------------------------------------------------------------------------
@@ -475,6 +474,10 @@ struct ItemList
 		return TryGet(id);
 	}
 	static const Item* GetItem(Cstring id)
+	{
+		return Get(id).Get();
+	}
+	static const Item* GetItemS(const string& id)
 	{
 		return Get(id).Get();
 	}

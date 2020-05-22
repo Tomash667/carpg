@@ -591,15 +591,8 @@ bool LevelArea::RemoveItem(const Item* item)
 		return true;
 
 	// szukaj w skrzyni
-	{
-		Chest* chest;
-		int slot;
-		if(FindItemInChest(item, &chest, &slot))
-		{
-			chest->items.erase(chest->items.begin() + slot);
-			return true;
-		}
-	}
+	if(RemoveItemFromChest(item))
+		return true;
 
 	return false;
 }
@@ -641,27 +634,6 @@ bool LevelArea::RemoveGroundItem(const Item* item)
 			if(it + 1 != end)
 				std::iter_swap(it, end - 1);
 			items.pop_back();
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-bool LevelArea::FindItemInChest(const Item* item, Chest** chest, int* slot)
-{
-	assert(item);
-
-	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
-	{
-		int item_slot = (*it)->FindItem(item);
-		if(item_slot != -1)
-		{
-			if(chest)
-				*chest = *it;
-			if(slot)
-				*slot = item_slot;
 			return true;
 		}
 	}
@@ -815,6 +787,19 @@ Chest* LevelArea::FindChestWithQuestItem(int quest_id, int* index)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+bool LevelArea::RemoveItemFromChest(const Item* item)
+{
+	int index;
+	Chest* chest = FindChestWithItem(item, &index);
+	if(chest)
+	{
+		chest->items.erase(chest->items.begin() + index);
+		return true;
+	}
+	return false;
 }
 
 //=================================================================================================

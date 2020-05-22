@@ -454,7 +454,6 @@ void UnitLoader::InitTokenizer()
 		{ "misc_item", OtherItem::Subtype::MiscItem },
 		{ "tool", OtherItem::Subtype::Tool },
 		{ "valuable", OtherItem::Subtype::Valuable },
-		{ "artifact", OtherItem::Subtype::Artifact },
 		{ "ingredient", OtherItem::Subtype::Ingredient }
 		});
 

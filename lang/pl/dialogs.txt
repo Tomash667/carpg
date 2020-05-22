@@ -743,12 +743,10 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Witaj!"
 	1 "Witaj ponownie!"
-	2 "Witaj ponownie!"
-	3 "Oddaj artefakt"
-	4 "Oddaj ukradziony artefakt"
-	5 "Oddaj zgubiony przedmiot"
-	6 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
-	7 "Koniec rozmowy"
+	2 "Oddaj ukradziony artefakt"
+	3 "Oddaj zgubiony przedmiot"
+	4 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
+	5 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -1171,28 +1169,6 @@ dialog q_evil_mayor {
 dialog q_evil_boss {
 	0 "Cholerny cz³owiek!"
 	1 "Bêdê torturowa³ twoj¹ duszê do koñca œwiata i jeden dzieñ d³u¿ej!"
-}
-
-//==============================================================================
-dialog q_find_artifact_start {
-	0 "Poszukujê pewnego artefaktu znanego jako $przedmiot$."
-	1 "Czy mo¿esz mi go dostarczyæ?"
-	2 "Tak"
-	3 "Ponoæ przedmiot którego potrzebujê znajduje siê w $target_loc$, to na $target_dir$ st¹d."
-	4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_find_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
-}
-
-//==============================================================================
-dialog q_find_artifact_timeout {
-	0 "Nie uda³o ci siê znaleŸæ tego artefaktu? Trudno..."
-	1 "Ponoæ niedaleko $random_loc$ znaleziono jakieœ nowe artefakty, tam wyruszê."
-	2 "Powodzenia w przygodach!"
 }
 
 //==============================================================================

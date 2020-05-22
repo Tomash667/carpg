@@ -396,7 +396,7 @@ void LabyrinthGenerator::Generate()
 
 	lvl.w = lvl.h = base.size;
 	Room* room = Room::Get();
-	room->target = RoomTarget::None;
+	room->target = RoomTarget::Treasury;
 	room->type = nullptr;
 	room->pos = room_pos;
 	room->size = base.room_size;

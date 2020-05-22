@@ -240,7 +240,6 @@ void ItemLoader::InitTokenizer()
 		{ "misc_item", OtherItem::Subtype::MiscItem },
 		{ "tool", OtherItem::Subtype::Tool },
 		{ "valuable", OtherItem::Subtype::Valuable },
-		{ "artifact", OtherItem::Subtype::Artifact },
 		{ "ingredient", OtherItem::Subtype::Ingredient }
 		});
 
@@ -772,12 +771,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		}
 		break;
 	case IT_OTHER:
-		{
-			OtherItem& o = item_ptr->ToOther();
-			OtherItem::others.push_back(&o);
-			if(o.subtype == OtherItem::Subtype::Artifact)
-				OtherItem::artifacts.push_back(&o);
-		}
+		OtherItem::others.push_back(static_cast<OtherItem*>(item_ptr));
 		break;
 	case IT_BOOK:
 		{

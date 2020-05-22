@@ -21,7 +21,6 @@ vector<Amulet*> Amulet::amulets;
 vector<Ring*> Ring::rings;
 vector<Consumable*> Consumable::consumables;
 vector<OtherItem*> OtherItem::others;
-vector<OtherItem*> OtherItem::artifacts;
 vector<BookScheme*> BookScheme::book_schemes;
 vector<Book*> Book::books;
 vector<StartItem> StartItem::start_items;
@@ -353,6 +352,16 @@ Item* Item::CreateCopy() const
 		assert(0);
 		return nullptr;
 	}
+}
+
+//=================================================================================================
+Item* Item::QuestCopy(Quest* quest)
+{
+	Item* item = CreateCopy();
+	item->id = Format("$%s", id.c_str());
+	item->quest_id = quest->id;
+	quest_mgr->AddQuestItem(item);
+	return item;
 }
 
 //=================================================================================================

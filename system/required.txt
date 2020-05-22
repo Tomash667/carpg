@@ -117,6 +117,8 @@ list recipes
 list leveled amulets
 // GetBetterRing
 list leveled rings
+// quests LostArtifact, StolenArtifact
+list artifacts
 
 //------------------------------------------------------------------------------
 // Required item stock
@@ -279,9 +281,6 @@ dialog q_evil_mage
 dialog q_evil_boss
 dialog q_evil_captain
 dialog q_evil_mayor
-dialog q_find_artifact_start
-dialog q_find_artifact_end
-dialog q_find_artifact_timeout
 dialog q_goblins_encounter
 dialog q_goblins_nobleman
 dialog q_goblins_mage

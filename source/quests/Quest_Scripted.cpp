@@ -662,7 +662,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	// convert
 	ConversionData data;
-	data.dict = CScriptDictionary::Create(script_mgr->GetEngine());
+	data.vars = new Vars;
 	quest->GetConversionData(data);
 	scheme = QuestScheme::TryGet(data.id);
 	if(!scheme || !scheme->f_upgrade)
@@ -678,10 +678,8 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	script_mgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
-			CHECKED(ctx->SetArgAddress(0, data.dict));
+			CHECKED(ctx->SetArgAddress(0, data.vars));
 	});
 	AfterCall();
 	in_upgrade = false;
-
-	data.dict->Release();
 }

@@ -5,6 +5,7 @@ Core library
 * void DevInfo(const string& in msg) - like info but only in dev mode.
 * void Warn(const string& in msg) - show warning msg in console.
 * void Error(const string& in msg) - show error msg in console.
+* string Str(?& in) - convert value to string.
 * string Format(const string& in format_str, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
 * int Random(int a, int b) - returns random number in range <a,b>.
 * int Rand() - returns random int number.
@@ -208,6 +209,11 @@ Properties:
 * string name - can be changed, mostly changed for quest items.
 * int value - readonly
 
+Methods:
+
+* Item* QuestCopy(Quest*) - create quest item from item.
+* Item* QuestCopy(Quest*, const string& in name) - create quest item with name.
+
 Static methods:
 
 * Item@ Get(const string& in id) - return item with id.
@@ -225,6 +231,7 @@ Methods:
 Static methods:
 
 * ItemList@ Get(const string& in id) - return item list with id.
+* Item@ GetRandomItem(const string& in id) - return random item from list.
 
 ### Recipe type
 Information how to craft items, learned by player.
@@ -313,6 +320,10 @@ Properties:
 ### LevelArea type
 Part of level - dungeon level, outside, inside of building.
 
+Methods:
+
+* bool RemoveItemFromChest(Item@) - return true if removed item.
+
 ### Location type
 Location on world map. Currently locations can be added dynamicaly but not removed. Only camps support disappearing after some time.
 
@@ -323,6 +334,7 @@ Properties:
 * LOCATION type - readonly
 * LOCATION_IMAGE image
 * int st
+* int levels - readonly, return count of level areas (for dungeon this is dungeon levels, for city enterable buildings + 1 for outside area)
 * bool reset - when true reset locations (respawn units/loot) when team enters
 * bool visited - readonly
 * Quest@ active_quest - quest assigned to location, prevent other quests from using this location.
@@ -338,6 +350,8 @@ Method:
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from location.
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
+* LevelArea@ GetArea(int index) - get level area by index.
+* Unit@ FindQuestUnit(Quest@) - find unit with quest set.
 
 ### MapSettings type
 Used when generating dungeon.
@@ -404,6 +418,7 @@ Static properties:
 Static methods:
 
 * Quest@ Find(const string& in id) - return quest with id (only works for unique quests).
+* int CalculateReward(int st, const Int2& in st_range, const Int2& in reward) - calculate reward from value range.
 
 ### Spawn type
 Contains information about unit to spawn (template, level).
@@ -444,6 +459,7 @@ Properties:
 * string real_name - readonly, return real name for heroes that don't have known_name.
 * bool dont_attack - enemy ai don't attack.
 * bool known_name - player known name, can't be changed from true to false.
+* bool temporary - unit is removed when location is repopulated.
 * UNIT_ORDER order - readonly, current unit order.
 * LevelArea@ area - level area unit is in.
 
@@ -453,7 +469,8 @@ Methods:
 * bool IsFollowing(Unit@) - true if following unit.
 * bool IsEnemy(Unit@) - true if unit is enemy.
 * float GetHpp() - get health percentage 0..1.
-* void AddItem(Item@ item, uint count = 1) - add item, will show message.
+* void Add
+* Item(Item@ item, uint count = 1) - add item, will show message.
 * void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
 * uint RemoveItem(const string& in item_id, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
 * uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
@@ -618,7 +635,8 @@ Static methods:
 * Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
-* Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
+* Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1) - get closest location of this type (doesn't return quest locations).
+* Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).
 * Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
 * Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 * Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.

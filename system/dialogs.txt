@@ -1688,28 +1688,17 @@ dialog traveler
 		special "item_quest"
 		end
 	}
+	talk 1
 	if special "have_unaccepted_quest"
 	{
-		talk 1
 		special "item_quest"
 		end
 	}
 	if special "have_completed_quest"
-	{
-		talk 2
 		end
-	}
-	if have_quest_item "$$artifact"
-	{
-		choice 3
-		{
-			do_quest_item "$$artifact"
-			end
-		}
-	}
 	if have_quest_item "$$stolen_artifact"
 	{
-		choice 4
+		choice 2
 		{
 			do_quest_item "$$stolen_artifact"
 			end
@@ -1717,7 +1706,7 @@ dialog traveler
 	}
 	if have_quest_item "$$lost_item"
 	{
-		choice 5
+		choice 3
 		{
 			do_quest_item "$$lost_item"
 			end
@@ -1726,10 +1715,10 @@ dialog traveler
 	if choices 0
 	{
 		check_quest_timeout 2
-		talk 6
+		talk 4
 		end
 	}
-	escape choice 7
+	escape choice 5
 		end
 	show_choices
 }
@@ -2619,41 +2608,6 @@ dialog q_evil_boss
 	talk 1
 	script "target.OrderAttack()"
 	end
-}
-
-//==============================================================================
-dialog q_find_artifact_start
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		set_quest_progress 1
-		talk 3
-		talk 4
-		end
-	}
-	escape choice 5
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_find_artifact_end
-{
-	set_quest_progress 2
-	talk 0
-	end
-}
-
-//==============================================================================
-dialog q_find_artifact_timeout
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
-	talk 2
-	end2
 }
 
 //==============================================================================

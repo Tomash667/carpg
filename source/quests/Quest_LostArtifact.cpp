@@ -17,7 +17,7 @@ void Quest_LostArtifact::Start()
 	type = Q_LOST_ARTIFACT;
 	category = QuestCategory::Random;
 	start_loc = world->GetCurrentLocationIndex();
-	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
+	item = ItemList::GetItem("artifacts");
 }
 
 //=================================================================================================

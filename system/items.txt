@@ -2637,7 +2637,6 @@ other a_amulet {
 	weight 0.1
 	value 100
 	tex "a_amulet.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2645,7 +2644,6 @@ other a_amulet2 {
 	weight 0.1
 	value 100
 	tex "a_amulet2.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2653,7 +2651,6 @@ other a_amulet3 {
 	weight 0.1
 	value 100
 	tex "a_amulet3.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2661,7 +2658,6 @@ other a_brosza {
 	weight 0.1
 	value 100
 	tex "a_brosza.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2669,7 +2665,6 @@ other a_butelka {
 	weight 0.5
 	value 50
 	tex "a_butelka.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2677,7 +2672,6 @@ other a_cos {
 	weight 0.5
 	value 50
 	tex "a_cos.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2685,7 +2679,6 @@ other a_czaszka {
 	weight 1
 	value 50
 	tex "a_czaszka.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2693,7 +2686,6 @@ other a_figurka {
 	weight 0.2
 	value 100
 	tex "a_figurka.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2701,7 +2693,6 @@ other a_figurka2 {
 	weight 0.2
 	value 100
 	tex "a_figurka2.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2709,7 +2700,6 @@ other a_figurka3 {
 	weight 0.2
 	value 100
 	tex "a_figurka3.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2717,7 +2707,6 @@ other a_ksiega {
 	weight 0.5
 	value 50
 	tex "a_ksiega.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2725,7 +2714,6 @@ other a_maska {
 	weight 0.5
 	value 100
 	tex "a_maska.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2733,7 +2721,6 @@ other a_maska2 {
 	weight 0.5
 	value 100
 	tex "a_maska2.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2741,7 +2728,6 @@ other a_misa {
 	weight 0.5
 	value 50
 	tex "a_misa.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2749,7 +2735,6 @@ other a_moneta {
 	weight 0.1
 	value 50
 	tex "a_moneta.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2757,7 +2742,6 @@ other a_pierscien {
 	weight 0.1
 	value 100
 	tex "a_pierscien.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2765,7 +2749,6 @@ other a_pierscien2 {
 	weight 0.1
 	value 100
 	tex "a_pierscien2.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2773,7 +2756,6 @@ other a_pierscien3 {
 	weight 0.1
 	value 100
 	tex "a_pierscien3.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2781,7 +2763,6 @@ other a_talizman {
 	weight 0.1
 	value 75
 	tex "a_talizman.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -2789,7 +2770,6 @@ other a_talizman2 {
 	weight 0.1
 	value 75
 	tex "a_talizman2.png"
-	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
 
@@ -3355,6 +3335,29 @@ list recipes {
 	recipe_reg
 	recipe_antimagic
 	recipe_book_nreg
+}
+
+list artifacts {
+	a_amulet
+	a_amulet2
+	a_amulet3
+	a_brosza
+	a_butelka
+	a_cos
+	a_czaszka
+	a_figurka
+	a_figurka2
+	a_figurka3
+	a_ksiega
+	a_maska
+	a_maska2
+	a_misa
+	a_moneta
+	a_pierscien
+	a_pierscien2
+	a_pierscien3
+	a_talizman
+	a_talizman2
 }
 
 //------------------------------------------------------------------------------

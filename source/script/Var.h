@@ -104,6 +104,11 @@ struct Var
 		_int = var->_int;
 		return this;
 	}
+	void SetPtr(void* ptr, Type type)
+	{
+		this->type = type;
+		this->ptr = ptr;
+	}
 
 	bool GetBool() const
 	{

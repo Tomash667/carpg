@@ -133,22 +133,6 @@ bool InsideLocation::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool InsideLocation::RemoveItemFromChest(const Item* item, int& at_level)
-{
-	assert(item);
-
-	int index;
-	Chest* chest = FindChestWithItem(item, at_level, &index);
-	if(!chest)
-		return false;
-	else
-	{
-		chest->RemoveItem(index);
-		return true;
-	}
-}
-
-//=================================================================================================
 bool InsideLocation::RemoveQuestItemFromChest(int quest_id, int& at_level)
 {
 	int index;
