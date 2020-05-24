@@ -2,6 +2,7 @@
 #include "Usable.h"
 
 #include "BitStreamFunc.h"
+#include "GameFile.h"
 #include "ItemContainer.h"
 #include "Net.h"
 #include "Object.h"
@@ -12,7 +13,7 @@ const float Usable::SOUND_DIST = 1.5f;
 EntityType<Usable>::Impl EntityType<Usable>::impl;
 
 //=================================================================================================
-void Usable::Save(FileWriter& f, bool local)
+void Usable::Save(GameWriter& f)
 {
 	f << id;
 	f << base->id;
@@ -22,12 +23,12 @@ void Usable::Save(FileWriter& f, bool local)
 		f << variant;
 	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 		container->Save(f);
-	if(local && !IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(f.isLocal && !IsSet(base->use_flags, BaseUsable::CONTAINER))
 		f << user;
 }
 
 //=================================================================================================
-void Usable::Load(FileReader& f, bool local)
+void Usable::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
@@ -45,7 +46,7 @@ void Usable::Load(FileReader& f, bool local)
 		container->Load(f);
 	}
 
-	if(local)
+	if(f.isLocal)
 	{
 		if(LOAD_VERSION >= V_0_7_1)
 		{

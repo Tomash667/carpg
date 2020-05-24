@@ -1251,7 +1251,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 						o->pos = o_pos;
 						o->rot = Vec3(0, 0, 0);
 						o->scale = 1.f;
-						o->require_split = true;
+						o->requireSplit = true;
 						inside->objects.push_back(o);
 
 						ProcessBuildingObjects(*inside, city, inside, inside_mesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr);
@@ -4925,5 +4925,27 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(x == start_x && y == start_y)
 			return false;
+	}
+}
+
+//=================================================================================================
+void Level::CreateObjectsMeshInstance()
+{
+	const bool isLoading = (game->in_load || net->mp_load);
+	for(LevelArea& area : ForEachArea())
+	{
+		for(Object* obj : area.objects)
+		{
+			if(obj->mesh->IsAnimated())
+			{
+				float time = 0;
+				if(isLoading)
+					time = obj->time;
+				obj->meshInst = new MeshInstance(obj->mesh);
+				obj->meshInst->Play(&obj->mesh->anims[0], PLAY_NO_BLEND, 0);
+				if(time != 0)
+					obj->meshInst->groups[0].time = time;
+			}
+		}
 	}
 }

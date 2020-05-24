@@ -318,10 +318,14 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 
 🎵 Audio Engine: FMOD Studio by Firelight Technologies.
 
+
 🗃 Modele:
+	* https://opengameart.org
+		* Enetheru - windmill
+		* Grefuntor - slime
+		* Mophs - scarecrow
+		* rubberduck - shrine
 	* kaangvl - fish
-	* Mophs - scarecrow
-	* rubberduck - shrine
 	* yd - sausage
 🎨 Tekstury:
 	* https://textures.com
@@ -337,8 +341,10 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
-	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
 	* https://www.freesound.org/
+		* DrMinky - Slime Death, Slime Land
+		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
+		* wubitog - Slime attack or movement
 	* https://www.pacdv.com/sounds/
 	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/

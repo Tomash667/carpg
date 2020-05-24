@@ -1685,7 +1685,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				net->DeleteOldPlayers();
 				if(!net->mp_quickload)
-					LoadResources("", false);
+					LoadResources("", false, false);
 
 				net_mode = NM_SERVER_SEND;
 				net_state = NetState::Server_Send;

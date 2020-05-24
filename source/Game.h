@@ -248,7 +248,7 @@ public:
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
-	void LoadResources(cstring text, bool worldmap);
+	void LoadResources(cstring text, bool worldmap, bool postLoad = true);
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);

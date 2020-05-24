@@ -9,17 +9,17 @@ OffscreenLocation::OffscreenLocation() : Location(false), LevelArea(LevelArea::T
 }
 
 //=================================================================================================
-void OffscreenLocation::Save(GameWriter& f, bool local)
+void OffscreenLocation::Save(GameWriter& f)
 {
-	Location::Save(f, local);
+	Location::Save(f);
 	LevelArea::Save(f);
 }
 
 //=================================================================================================
-void OffscreenLocation::Load(GameReader& f, bool local)
+void OffscreenLocation::Load(GameReader& f)
 {
-	Location::Load(f, local);
-	LevelArea::Load(f, local);
+	Location::Load(f);
+	LevelArea::Load(f);
 }
 
 //=================================================================================================

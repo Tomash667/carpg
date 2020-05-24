@@ -2,6 +2,7 @@
 #include "Trap.h"
 
 #include "BitStreamFunc.h"
+#include "GameFile.h"
 #include "Net.h"
 #include "SaveState.h"
 #include "Unit.h"
@@ -9,7 +10,7 @@
 EntityType<Trap>::Impl EntityType<Trap>::impl;
 
 //=================================================================================================
-void Trap::Save(FileWriter& f, bool local)
+void Trap::Save(GameWriter& f)
 {
 	f << id;
 	f << base->type;
@@ -23,7 +24,7 @@ void Trap::Save(FileWriter& f, bool local)
 	else
 		f << obj.rot.y;
 
-	if(local && base->type != TRAP_FIREBALL)
+	if(f.isLocal && base->type != TRAP_FIREBALL)
 	{
 		f << state;
 		f << time;
@@ -39,7 +40,7 @@ void Trap::Save(FileWriter& f, bool local)
 }
 
 //=================================================================================================
-void Trap::Load(FileReader& f, bool local)
+void Trap::Load(GameReader& f)
 {
 	TRAP_TYPE type;
 
@@ -76,7 +77,7 @@ void Trap::Load(FileReader& f, bool local)
 		obj2.base = nullptr;
 	}
 
-	if(local && base->type != TRAP_FIREBALL)
+	if(f.isLocal && base->type != TRAP_FIREBALL)
 	{
 		f >> state;
 		f >> time;

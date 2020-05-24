@@ -687,7 +687,7 @@ void LoadConfiguration(char* lpCmdLine)
 int AppEntry(char* lpCmdLine)
 {
 #ifdef _DEBUG
-	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
+	if(IsDebuggerPresent() && !io::FileExists("fmod.dll"))
 	{
 		MessageBox(nullptr, "Invalid debug working directory.", nullptr, MB_OK | MB_ICONERROR);
 		return 1;

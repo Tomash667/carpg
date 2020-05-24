@@ -15,7 +15,7 @@
 #include <ParticleSystem.h>
 
 //=================================================================================================
-void InsideBuilding::Save(GameWriter& f, bool local)
+void InsideBuilding::Save(GameWriter& f)
 {
 	f << offset;
 	f << inside_spawn;
@@ -36,7 +36,7 @@ void InsideBuilding::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void InsideBuilding::Load(GameReader& f, bool local)
+void InsideBuilding::Load(GameReader& f)
 {
 	f >> offset;
 	f >> inside_spawn;
@@ -54,9 +54,9 @@ void InsideBuilding::Load(GameReader& f, bool local)
 	f >> enter_y;
 
 	if(LOAD_VERSION >= V_0_11)
-		LevelArea::Load(f, local);
+		LevelArea::Load(f);
 	else
-		LevelArea::Load(f, local, old::LoadCompatibility::InsideBuilding);
+		LevelArea::Load(f, old::LoadCompatibility::InsideBuilding);
 }
 
 //=================================================================================================

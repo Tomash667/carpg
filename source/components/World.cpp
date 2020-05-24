@@ -1162,11 +1162,13 @@ void World::Save(GameWriter& f)
 			f << loc->type;
 			if(loc->type == L_DUNGEON)
 				f << loc->GetLastLevel() + 1;
-			loc->Save(f, current == loc);
+			f.isLocal = (current == loc);
+			loc->Save(f);
 		}
 		f << check_id;
 		++check_id;
 	}
+	f.isLocal = false;
 
 	f << empty_locations;
 	f << create_camp;
@@ -1307,9 +1309,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
+				f.isLocal = (current_index == index);
 				loc->type = type;
 				loc->index = index;
-				loc->Load(f, current_index == index);
+				loc->Load(f);
 			}
 			else
 				loc = nullptr;
@@ -1351,8 +1354,9 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
+				f.isLocal = (current_index == index);
 				loc->index = index;
-				loc->Load(f, current_index == index);
+				loc->Load(f);
 
 				// remove old academy
 				if(LOAD_VERSION < V_0_8 && loc->type == L_NULL)
@@ -1392,6 +1396,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
 		++check_id;
 	}
+	f.isLocal = false;
 	f >> empty_locations;
 	f >> create_camp;
 	if(LOAD_VERSION < V_0_8)

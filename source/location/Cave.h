@@ -17,8 +17,8 @@ struct Cave : public SingleInsideLocation
 	}
 
 	// from Location
-	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local) override;
+	void Save(GameWriter& f) override;
+	void Load(GameReader& f) override;
 
 	Int2 GetRandomTile() const
 	{

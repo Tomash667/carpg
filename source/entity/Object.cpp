@@ -2,11 +2,21 @@
 #include "Object.h"
 
 #include "BitStreamFunc.h"
+#include "Game.h"
+#include "GameFile.h"
 #include "ResourceManager.h"
 #include "SaveState.h"
 
+#include <MeshInstance.h>
+
 //=================================================================================================
-void Object::Save(FileWriter& f)
+Object::~Object()
+{
+	delete meshInst;
+}
+
+//=================================================================================================
+void Object::Save(GameWriter& f)
 {
 	f << pos;
 	f << rot;
@@ -19,10 +29,12 @@ void Object::Save(FileWriter& f)
 		f.Write0();
 		f << mesh->filename;
 	}
+	if(meshInst)
+		f << meshInst->groups[0].time;
 }
 
 //=================================================================================================
-void Object::Load(FileReader& f)
+void Object::Load(GameReader& f)
 {
 	f >> pos;
 	f >> rot;
@@ -39,6 +51,8 @@ void Object::Load(FileReader& f)
 		base = nullptr;
 		mesh = res_mgr->Load<Mesh>(f.ReadString1());
 	}
+	if(f.isLocal && mesh->IsAnimated())
+		f >> time;
 }
 
 //=================================================================================================
@@ -54,6 +68,8 @@ void Object::Write(BitStreamWriter& f) const
 		f.Write0();
 		f << mesh->filename;
 	}
+	if(meshInst && net->mp_load)
+		f << meshInst->groups[0].time;
 }
 
 //=================================================================================================
@@ -85,5 +101,7 @@ bool Object::Read(BitStreamReader& f)
 		mesh = res_mgr->Load<Mesh>(mesh_id);
 		base = nullptr;
 	}
+	if(mesh->IsAnimated() && net->mp_load)
+		f >> time;
 	return true;
 }

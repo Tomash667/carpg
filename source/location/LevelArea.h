@@ -60,7 +60,7 @@ struct LevelArea
 	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id), have_terrain(have_terrain), tmp(nullptr) {}
 	~LevelArea();
 	void Save(GameWriter& f);
-	void Load(GameReader& f, bool local, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
+	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	void Clear();

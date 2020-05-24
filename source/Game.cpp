@@ -4651,6 +4651,15 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 					return true;
 				}
 			});
+
+		for(Object* obj : area.objects)
+		{
+			if(obj->meshInst)
+			{
+				delete obj->meshInst;
+				obj->meshInst = nullptr;
+			}
+		}
 	}
 	else
 	{
@@ -4811,6 +4820,13 @@ void Game::UpdateArea(LevelArea& area, float dt)
 		if(blood.size >= 1.f)
 			blood.size = 1.f;
 	}
+
+	// update objects
+	for(Object* obj : area.objects)
+	{
+		if(obj->meshInst)
+			obj->meshInst->Update(dt);
+	}
 }
 
 void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, float range, bool dmg)
@@ -4887,7 +4903,7 @@ void Game::LoadingStep(cstring text, int end)
 }
 
 // Preload resources and start load screen if required
-void Game::LoadResources(cstring text, bool worldmap)
+void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 {
 	LoadingStep(nullptr, 1);
 
@@ -4930,10 +4946,13 @@ void Game::LoadResources(cstring text, bool worldmap)
 		res_mgr->CancelLoadScreen();
 	}
 
-	if(game_level->location)
+	if(postLoad && game_level->location)
 	{
 		// spawn blood for units that are dead and their mesh just loaded
 		game_level->SpawnBlood();
+
+		// create mesh instance for objects
+		game_level->CreateObjectsMeshInstance();
 
 		// finished
 		if((Net::IsLocal() || !net->mp_load_worldmap) && !game_level->location->outside)

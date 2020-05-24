@@ -459,7 +459,7 @@ void Team::SaveOnWorldmap(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit& unit : members)
-		unit.Save(f, false);
+		unit.Save(f);
 }
 
 void Team::Update(int days, bool travel)

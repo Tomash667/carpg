@@ -31,9 +31,9 @@ void City::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 }
 
 //=================================================================================================
-void City::Save(GameWriter& f, bool local)
+void City::Save(GameWriter& f)
 {
-	OutsideLocation::Save(f, local);
+	OutsideLocation::Save(f);
 
 	f << citizens;
 	f << citizens_world;
@@ -65,7 +65,7 @@ void City::Save(GameWriter& f, bool local)
 		f << inside_offset;
 		f << inside_buildings.size();
 		for(InsideBuilding* b : inside_buildings)
-			b->Save(f, local);
+			b->Save(f);
 
 		f << quest_mayor;
 		f << quest_mayor_time;
@@ -77,9 +77,9 @@ void City::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void City::Load(GameReader& f, bool local)
+void City::Load(GameReader& f)
 {
-	OutsideLocation::Load(f, local);
+	OutsideLocation::Load(f);
 
 	f >> citizens;
 	f >> citizens_world;
@@ -143,7 +143,7 @@ void City::Load(GameReader& f, bool local)
 		for(InsideBuilding*& b : inside_buildings)
 		{
 			b = new InsideBuilding(index);
-			b->Load(f, local);
+			b->Load(f);
 			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
 			b->maxe = b->mine + Int2(256, 256);
 			++index;

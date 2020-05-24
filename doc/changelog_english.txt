@@ -7,7 +7,7 @@ Version 0.15 (???):
 + learning new alchemy recipes [BottledByte & Tomashu]
 + new alchemical ingredients: magic herb, tallow, vitalit, troll's blood; new recipes: natural healing , regeneration, antimagic, antidotum
 + new enemy - slime
-+ scarecrow on fields
++ scarecrow on fields, windmill
 + converted quest "find artifact" to script
 + month name instead of number, different start date
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3

@@ -1074,7 +1074,13 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 		node->mat = Matrix::CreateLookAt(o.pos, game_level->camera.from);
 	}
 
-	node->SetMesh(o.mesh);
+	if(o.meshInst)
+	{
+		o.meshInst->SetupBones();
+		node->SetMesh(o.meshInst);
+	}
+	else
+		node->SetMesh(o.mesh);
 	if(o.RequireNoCulling())
 		node->flags |= SceneNode::F_NO_CULLING;
 	node->tex_override = nullptr;

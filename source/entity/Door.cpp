@@ -3,6 +3,7 @@
 
 #include "BitStreamFunc.h"
 #include "Collision.h"
+#include "GameFile.h"
 #include "GameResources.h"
 #include "Level.h"
 #include "Location.h"
@@ -20,7 +21,7 @@ const float Door::UNLOCK_SOUND_DIST = 0.5f;
 const float Door::BLOCKED_SOUND_DIST = 1.f;
 
 //=================================================================================================
-void Door::Save(FileWriter& f, bool local)
+void Door::Save(GameWriter& f)
 {
 	f << id;
 	f << pos;
@@ -30,12 +31,12 @@ void Door::Save(FileWriter& f, bool local)
 	f << state;
 	f << door2;
 
-	if(local)
+	if(f.isLocal)
 		mesh_inst->Save(f);
 }
 
 //=================================================================================================
-void Door::Load(FileReader& f, bool local)
+void Door::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
@@ -50,7 +51,7 @@ void Door::Load(FileReader& f, bool local)
 		f.Skip<int>(); // old netid
 	f >> door2;
 
-	if(local)
+	if(f.isLocal)
 	{
 		mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 		mesh_inst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);

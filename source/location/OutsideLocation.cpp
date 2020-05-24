@@ -48,9 +48,9 @@ void OutsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 }
 
 //=================================================================================================
-void OutsideLocation::Save(GameWriter& f, bool local)
+void OutsideLocation::Save(GameWriter& f)
 {
-	Location::Save(f, local);
+	Location::Save(f);
 
 	if(last_visit != -1)
 	{
@@ -65,16 +65,16 @@ void OutsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void OutsideLocation::Load(GameReader& f, bool local)
+void OutsideLocation::Load(GameReader& f)
 {
-	Location::Load(f, local);
+	Location::Load(f);
 
 	if(last_visit != -1)
 	{
 		if(LOAD_VERSION >= V_0_11)
-			LevelArea::Load(f, local);
+			LevelArea::Load(f);
 		else
-			LevelArea::Load(f, local, old::LoadCompatibility::OutsideLocation);
+			LevelArea::Load(f, old::LoadCompatibility::OutsideLocation);
 
 		// terrain
 		int size2 = size + 1;

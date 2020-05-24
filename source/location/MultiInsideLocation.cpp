@@ -29,15 +29,20 @@ void MultiInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas
 }
 
 //=================================================================================================
-void MultiInsideLocation::Save(GameWriter& f, bool local)
+void MultiInsideLocation::Save(GameWriter& f)
 {
-	InsideLocation::Save(f, local);
+	InsideLocation::Save(f);
 
 	f << active_level;
 	f << generated;
 
+	const bool prevIsLocal = f.isLocal;
 	for(int i = 0; i < generated; ++i)
-		levels[i]->SaveLevel(f, local && i == active_level);
+	{
+		f.isLocal = (prevIsLocal && i == active_level);
+		levels[i]->SaveLevel(f);
+	}
+	f.isLocal = prevIsLocal;
 
 	for(LevelInfo& info : infos)
 	{
@@ -49,17 +54,22 @@ void MultiInsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void MultiInsideLocation::Load(GameReader& f, bool local)
+void MultiInsideLocation::Load(GameReader& f)
 {
-	InsideLocation::Load(f, local);
+	InsideLocation::Load(f);
 
 	f >> active_level;
 	f >> generated;
 
 	if(LOAD_VERSION < V_0_11)
 		f.Read<uint>(); // skip levels count, already set in constructor
+	const bool prevIsLocal = f.isLocal;
 	for(int i = 0; i < generated; ++i)
-		levels[i]->LoadLevel(f, local && active_level == i);
+	{
+		f.isLocal = (prevIsLocal && active_level == i);
+		levels[i]->LoadLevel(f);
+	}
+	f.isLocal = prevIsLocal;
 
 	if(active_level != -1)
 		active = levels[active_level];
