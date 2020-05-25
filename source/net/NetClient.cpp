@@ -64,7 +64,8 @@ void Net::InitClient()
 
 	SetMode(Mode::Client);
 
-	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+	if(IsDebug())
+		peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS);
 }
 
 //=================================================================================================

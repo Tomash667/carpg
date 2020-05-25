@@ -4,9 +4,9 @@
 extern const TerrainTileInfo terrain_tile_info[TT_MAX] = {
 	0x00000000, 0,	"TT_GRASS",
 	0x0000FF00,	8,	"TT_GRASS2",
-	0x00FF0000,	0,	"TT_GRASS3",
+	0x00FF0000,	16,	"TT_GRASS3",
 	0x0000FF00,	8,	"TT_FIELD",
-	0x000000FF,	16,	"TT_SAND",
+	0x000000FF,	0,	"TT_SAND",
 	0xFF000000,	24,	"TT_ROAD",
 };
 

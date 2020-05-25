@@ -396,10 +396,11 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << content.version;
 
 	// save flags
-	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
-#ifdef _DEBUG
-	flags |= SF_DEBUG;
-#endif
+	byte flags = 0;
+	if(Net::IsOnline())
+		flags |= SF_ONLINE;
+	if(IsDebug())
+		flags |= SF_DEBUG;
 	if(hardcore_mode)
 		flags |= SF_HARDCORE;
 	if(game_state == GS_WORLDMAP)
@@ -782,9 +783,8 @@ void Game::LoadGame(GameReader& f)
 	// vars
 	f >> devmode;
 	f >> noai;
-#ifdef _DEBUG
-	noai = true;
-#endif
+	if(IsDebug())
+		noai = true;
 	f >> dont_wander;
 	f >> scene_mgr->use_fog;
 	f >> scene_mgr->use_lighting;
@@ -1091,13 +1091,14 @@ void Game::RemoveUnusedAiAndCheck()
 		ReportError(5, Format("Removed unused ais: %u.", prev_size - ais.size()));
 	}
 
-#ifdef _DEBUG
-	int err_count = 0;
-	for(LevelArea& area : game_level->ForEachArea())
-		CheckUnitsAi(area, err_count);
-	if(err_count)
-		game_gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
-#endif
+	if(IsDebug())
+	{
+		int err_count = 0;
+		for(LevelArea& area : game_level->ForEachArea())
+			CheckUnitsAi(area, err_count);
+		if(err_count)
+			game_gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
+	}
 }
 
 //=================================================================================================

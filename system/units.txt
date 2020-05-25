@@ -1388,6 +1388,10 @@ unit merchant : base_human {
 }
 
 unit traveling_merchant : merchant {
+	trader {
+		stock merchant
+		groups {weapon bow shield armor amulet ring consumable other book}
+	}
 	dialog traveling_merchant
 }
 

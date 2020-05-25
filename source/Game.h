@@ -135,7 +135,6 @@ public:
 	//-----------------------------------------------------------------
 	void DrawGame();
 	void ForceRedraw();
-	void InitScene();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
@@ -408,7 +407,6 @@ public:
 	Color clear_color, clear_color_next;
 	bool use_glow, use_postfx;
 	DrawBatch draw_batch;
-	VDefault blood_v[4];
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;

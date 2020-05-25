@@ -68,15 +68,13 @@ void BookPanel::Draw(ControlDrawData*)
 		gui->DrawText2(options);
 	}
 
-#ifdef _DEBUG
-	if(input->Down(Key::B))
+	if(IsDebug() && input->Down(Key::B))
 	{
 		for(auto& rect : book->scheme->regions)
 		{
 			gui->DrawArea(Color(255, 0, 0, 128), rect * scale + book_pos);
 		}
 	}
-#endif
 }
 
 //=================================================================================================

@@ -1962,9 +1962,8 @@ void Game::QuickJoinIp()
 		net_state = NetState::Client_PingIp;
 		net_timer = T_CONNECT_PING;
 		net_tries = I_CONNECT_TRIES;
-#ifdef _DEBUG
-		net_tries *= 2;
-#endif
+		if(IsDebug())
+			net_tries *= 2;
 		net->ping_adr = adr;
 		net->peer->Ping(net->ping_adr.ToString(false), net->ping_adr.GetPort(), false);
 	}

@@ -72,7 +72,8 @@ void Net::InitServer()
 		peer->SetIncomingPassword(nullptr, 0);
 
 	peer->SetMaximumIncomingConnections((word)max_players - 1);
-	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+	if(IsDebug())
+		peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS);
 
 	if(!server_lan)
 	{

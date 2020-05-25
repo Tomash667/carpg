@@ -33,19 +33,6 @@
 #include <TerrainShader.h>
 
 //=================================================================================================
-void Game::InitScene()
-{
-	blood_v[0].tex = Vec2(0, 0);
-	blood_v[1].tex = Vec2(0, 1);
-	blood_v[2].tex = Vec2(1, 0);
-	blood_v[3].tex = Vec2(1, 1);
-	for(int i = 0; i < 4; ++i)
-		blood_v[i].pos.y = 0.f;
-
-	dun_mesh_builder->Build();
-}
-
-//=================================================================================================
 void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside)
 {
 	PROFILER_BLOCK("ListDrawObjects");

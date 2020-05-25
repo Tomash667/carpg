@@ -293,9 +293,7 @@ void DungeonMeshBuilder::Build()
 	data.pSysMem = buf.Get();
 
 	V(device->CreateBuffer(&desc, &data, &ib));
-#ifdef _DEBUG
-	ib->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("DungeonMeshIb"), "DungeonMeshIb");
-#endif
+	SetDebugName(ib, "DungeonMeshIb");
 }
 
 //=================================================================================================

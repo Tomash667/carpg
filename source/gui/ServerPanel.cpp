@@ -19,11 +19,7 @@
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
-#ifdef _DEBUG
-const int STARTUP_TIMER = 1;
-#else
-const int STARTUP_TIMER = 3;
-#endif
+const int STARTUP_TIMER = IsDebug() ? 1 : 3;
 const float T_WAIT_FOR_HELLO = 5.f;
 const float T_LOBBY_UPDATE = 0.2f;
 

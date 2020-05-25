@@ -686,13 +686,11 @@ void LoadConfiguration(char* lpCmdLine)
 //=================================================================================================
 int AppEntry(char* lpCmdLine)
 {
-#ifdef _DEBUG
-	if(IsDebuggerPresent() && !io::FileExists("fmod.dll"))
+	if(IsDebug() && IsDebuggerPresent() && !io::FileExists("fmod.dll"))
 	{
-		MessageBox(nullptr, "Invalid debug working directory.", nullptr, MB_OK | MB_ICONERROR);
+		MessageBox(nullptr, "Invalid debug working directory (missing fmod.dll).", nullptr, MB_OK | MB_ICONERROR);
 		return 1;
 	}
-#endif
 
 	// logger (prelogger in this case, because we do not know where to log yet)
 	Logger::SetInstance(new PreLogger);
@@ -705,15 +703,7 @@ int AppEntry(char* lpCmdLine)
 	Info("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday);
 	Info("Build date: %s", utility::GetCompileTime().c_str());
 	Info("Process ID: %d", GetCurrentProcessId());
-	{
-		cstring build_type =
-#ifdef _DEBUG
-			"debug ";
-#else
-			"release ";
-#endif
-		Info("Build type: %s", build_type);
-	}
+	Info("Build type: %s", IsDebug() ? "debug" : "release");
 	LogProcessorFeatures();
 
 	// settings

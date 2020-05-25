@@ -140,22 +140,23 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
-#ifdef _DEBUG
-	for(uint i = 0; i < CMD_MAX; ++i)
+	if(IsDebug())
 	{
-		bool ok = false;
-		for(ConsoleCommand& cmd : cmds)
+		for(uint i = 0; i < CMD_MAX; ++i)
 		{
-			if(cmd.cmd == i)
+			bool ok = false;
+			for(ConsoleCommand& cmd : cmds)
 			{
-				ok = true;
-				break;
+				if(cmd.cmd == i)
+				{
+					ok = true;
+					break;
+				}
 			}
+			if(!ok)
+				Error("Missing command %u.", i);
 		}
-		if(!ok)
-			Error("Missing command %u.", i);
 	}
-#endif
 }
 
 //=================================================================================================

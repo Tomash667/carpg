@@ -124,10 +124,11 @@ draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(
 profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
 quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
-#ifdef _DEBUG
-	default_devmode = true;
-	default_player_devmode = true;
-#endif
+	if(IsDebug())
+	{
+		default_devmode = true;
+		default_player_devmode = true;
+	}
 	devmode = default_devmode;
 
 	dialog_context.is_local = true;
@@ -394,7 +395,6 @@ void Game::ConfigureGame()
 	Info("Game: Configuring game.");
 	game_gui->load_screen->Tick(txConfiguringGame);
 
-	InitScene();
 	cmdp->AddCommands();
 	settings.ResetGameKeys();
 	settings.LoadGameKeys(cfg);
@@ -439,6 +439,7 @@ void Game::PostconfigureGame()
 	loc_gen_factory->Init();
 	world->Init();
 	quest_mgr->InitLists();
+	dun_mesh_builder->Build();
 
 	// create save folders
 	io::CreateDirectory("saves");
@@ -450,10 +451,8 @@ void Game::PostconfigureGame()
 	// test & validate game data (in debug always check some things)
 	if(testing)
 		ValidateGameData(true);
-#ifdef _DEBUG
-	else
+	else if(IsDebug())
 		ValidateGameData(false);
-#endif
 
 	// show errors notification
 	bool start_game_mode = true;
@@ -468,22 +467,23 @@ void Game::PostconfigureGame()
 			Warn("Game: %u loading warnings.", load_warnings);
 		Texture* img = (load_errors > 0 ? game_res->tError : game_res->tWarning);
 		cstring text = Format(txHaveErrors, load_errors, load_warnings);
-#ifdef _DEBUG
-		game_gui->notifications->Add(text, img, 5.f);
-#else
-		DialogInfo info;
-		info.name = "have_errors";
-		info.text = text;
-		info.type = DIALOG_OK;
-		info.img = img;
-		info.event = [this](int result) { StartGameMode(); };
-		info.parent = game_gui->main_menu;
-		info.order = ORDER_TOPMOST;
-		info.pause = false;
-		info.auto_wrap = true;
-		gui->ShowDialog(info);
-		start_game_mode = false;
-#endif
+		if(IsDebug())
+			game_gui->notifications->Add(text, img, 5.f);
+		else
+		{
+			DialogInfo info;
+			info.name = "have_errors";
+			info.text = text;
+			info.type = DIALOG_OK;
+			info.img = img;
+			info.event = [this](int result) { StartGameMode(); };
+			info.parent = game_gui->main_menu;
+			info.order = ORDER_TOPMOST;
+			info.pause = false;
+			info.auto_wrap = true;
+			gui->ShowDialog(info);
+			start_game_mode = false;
+		}
 	}
 
 	// save config
@@ -871,10 +871,11 @@ void Game::GetTitle(LocalString& s)
 	s = "CaRpg " VERSION_STR;
 	bool none = true;
 
-#ifdef _DEBUG
-	none = false;
-	s += " - DEBUG";
-#endif
+	if(IsDebug())
+	{
+		none = false;
+		s += " - DEBUG";
+	}
 
 	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui && game_gui->server && game_gui->server->visible))
 	{
@@ -1672,9 +1673,8 @@ void Game::ReportError(int id, cstring text, bool once)
 		mode = "CL";
 	cstring str = Format("[Report %d]: %s", id, text);
 	Warn(str);
-#ifdef _DEBUG
-	game_gui->messages->AddGameMsg(str, 5.f);
-#endif
+	if(IsDebug())
+		game_gui->messages->AddGameMsg(str, 5.f);
 	api->Report(id, Format("[%s] %s", mode, text));
 }
 
@@ -1784,28 +1784,27 @@ void Game::UpdateGame(float dt)
 	PROFILER_BLOCK("UpdateGame");
 
 	// sanity checks
-#ifdef _DEBUG
-	if(Net::IsLocal())
+	if(IsDebug())
 	{
-		assert(pc->is_local);
-		if(Net::IsServer())
+		if(Net::IsLocal())
 		{
-			for(PlayerInfo& info : net->players)
+			assert(pc->is_local);
+			if(Net::IsServer())
 			{
-				if(info.left == PlayerInfo::LEFT_NO)
+				for(PlayerInfo& info : net->players)
 				{
-					assert(info.pc == info.pc->player_info->pc);
-					if(info.id != 0)
-						assert(!info.pc->is_local);
+					if(info.left == PlayerInfo::LEFT_NO)
+					{
+						assert(info.pc == info.pc->player_info->pc);
+						if(info.id != 0)
+							assert(!info.pc->is_local);
+					}
 				}
 			}
 		}
+		else
+			assert(pc->is_local && pc == pc->player_info->pc);
 	}
-	else
-	{
-		assert(pc->is_local && pc == pc->player_info->pc);
-	}
-#endif
 
 	game_level->minimap_opened_doors = false;
 
@@ -4345,10 +4344,11 @@ void Game::ClearGameVars(bool new_game)
 		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
 
-#ifdef _DEBUG
-		noai = true;
-		dont_wander = true;
-#endif
+		if(IsDebug())
+		{
+			noai = true;
+			dont_wander = true;
+		}
 	}
 }
 
