@@ -83,6 +83,23 @@ dialog merchant
 }
 
 //==============================================================================
+dialog traveling_merchant
+{
+	if once
+		talk 0
+	choice 1
+		trade
+	choice 2
+	{
+		talk 3
+		restart
+	}
+	escape choice 4
+		end
+	show_choices
+}
+
+//==============================================================================
 dialog alchemist
 {
 	if rand 2

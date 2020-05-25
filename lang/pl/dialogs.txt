@@ -45,6 +45,19 @@ dialog merchant {
 }
 
 //==============================================================================
+dialog traveling_merchant {
+	0 {
+		"Jak mogê ci pomóc?"
+		"Witaj! Jeœli jesteœ zainteresowany to mam na sprzeda¿ kilka rzeczy."
+		"Witaj na szlaku!"
+	}
+	1 "Pohandlujmy"
+	2 "Czym siê zajmujesz?"
+	3 "Jestem wêdrownym kupcem. Prowadzê t¹ karawane do $(World::GetClosestLocation(L_CITY, World::pos).name), sprzedam tam z zyskiem moje towary."
+	4 "Koniec rozmowy"
+}
+
+//==============================================================================
 dialog alchemist {
 	0 {
 		"Witaj. Mam tu szeroki wybór mikstur i eliksirów."
@@ -164,11 +177,7 @@ dialog trainer {
 	22 "Czym siê zajmujesz?"
 	23 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki i obrony."
 	24 "Zapytaj o dziwny kamieñ"
-	25 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
+	25 "Powiedzia³em ci wszystko co wiem, musisz siê pozbyæ tego kamienia."
 	26 "Koniec rozmowy"
 }
 

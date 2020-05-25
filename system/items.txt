@@ -2903,6 +2903,14 @@ book_scheme page {
 	next {407 536} 
 }
 
+book book_history {
+	weight 0.2
+	value 10
+	mesh "book.qmsh"
+	scheme book
+	flags ground_mesh
+}
+
 book book_orcs {
 	weight 0.2
 	value 10
@@ -3134,6 +3142,7 @@ list treasure {
 }
 
 list books {
+	book_history
 	book_orcs
 	book_undead
 	book_adventurer

@@ -77,8 +77,8 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp building/group [front])", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-11 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-11 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_REVEAL_MINIMAP, "reveal_minimap", "reveal dungeon minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
@@ -880,12 +880,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					slot = -1;
 					text = t.GetString();
 				}
-				else
+				else if(t.IsInt())
 				{
-					slot = Clamp(t.MustGetInt(), 1, 10);
+					slot = t.GetInt();
+					if(slot < 1 || slot > 11)
+						t.Throw("Invalid slot %d.", slot);
 					if(t.Next())
 						text = t.MustGetString();
 				}
+				else
+					t.StartUnexpected().Add(tokenizer::T_INT).Add(tokenizer::T_STRING).Throw();
 			}
 			if(slot != -1)
 				game->SaveGameSlot(slot, text->c_str());
@@ -907,8 +911,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					name = t.GetString();
 					slot = -1;
 				}
+				else if(t.IsInt())
+				{
+					slot = t.GetInt();
+					if(slot < 1 || slot > 11)
+						t.Throw("Invalid slot %d.", slot);
+				}
 				else
-					slot = Clamp(t.MustGetInt(), 1, 10);
+					t.StartUnexpected().Add(tokenizer::T_INT).Add(tokenizer::T_STRING).Throw();
 			}
 
 			try

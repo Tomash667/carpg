@@ -42,6 +42,19 @@ dialog merchant {
 }
 
 //==============================================================================
+dialog traveling_merchant {
+	0 {
+		"How can I help you?"
+		"Hello! If you're interested, I have a few things for sale."
+		"Welcome to the trail!"
+	}
+	1 "Let's trade"
+	2 "What you do here?"
+	3 "I'm a traveling merchant. I run this caravan to $(World::GetClosestLocation(L_CITY, World::pos).name), I will sell my goods there profitably."
+	4 "End dialog"
+}
+
+//==============================================================================
 dialog alchemist {
 	0 {
 		"Hello. I have a wide variety of potions and elixirs."
@@ -161,11 +174,7 @@ dialog trainer {
 	22 "What do you do here?"
 	23 "I'm a trainer, I train warriors, hunters and rogues fighting and defense."
 	24 "Ask about strange stone"
-	25 {
-		"That's a first time I see such thing."
-		"I have no idea what it is. A stone?"
-		"Stone with some runes? I know nothing about this."
-	}
+	25 "I told you everything I know, you have to get rid of this stone."
 	26 "End dialog"
 }
 

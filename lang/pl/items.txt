@@ -1060,6 +1060,11 @@ item q_resources {
 }
 
 //------------------------------------------------------------------------------
+item book_history {
+	name "Wspó³czesna historia œwiata"
+	desc "Ksi¹¿ka historyczna"
+	text "*** Wspó³czesna historia œwiata ***\n\nWspó³czesny kalendarz zosta³ stworzony przez I³geniusza Trzeciego w roku 103. Za pocz¹tek nowego kalendarza wzi¹³ rok za³o¿enia królestwa Nyrtany.\n\nRok dzieli siê na 12 miesiêcy, ka¿dy z nich ma 30 dni. Niekórzy dziel¹ miesi¹c na trzy dziesiêcio dniowe okresy - dekadni.\n\nZim¹ 607 roku zda¿y³a siê dziwna rzecz. Wiele potworów na terenie ca³ego królestwa sta³o siê bardzo agresywnych. Tradycyjna armia mia³a du¿e problemy z rozwi¹zaniem tego problemu. Powsta³o wiele grup œmia³ków które walczy³y z potworami.\n\nW roku 610 zosta³a za³o¿ona Akademia. Jej zadaniem jest szkolenie bohaterów, którzy s¹ wyszkolenie do walki z potworami tak by sytuacja siê nie powtórzy³a."
+}
 item book_orcs {
 	name "Orkowa horda"
 	desc "Ksiêga o orkach."

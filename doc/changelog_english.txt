@@ -5,11 +5,12 @@ Version 0.15 (???):
 ! cannot load saves from version 0.6.1 or older
 + moved from directx 9 to directx 11
 + learning new alchemy recipes [BottledByte & Tomashu]
-+ new alchemical ingredients: magic herb, tallow, vitalit, troll's blood; new recipes: natural healing , regeneration, antimagic, antidotum
++ new alchemical ingredients: magic herb, tallow, vitalit, troll's blood; new recipes: natural healing , regeneration, antimagic, antidotum; historic book
 + new enemy - slime
 + scarecrow on fields, windmill
 + converted quest "find artifact" to script
 + month name instead of number, different start date
++ different dialogs for traveling merchant, trainer
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
 - can't use speed command in singleplayer game
 - mouse zoom sometimes didn't have effect on camera

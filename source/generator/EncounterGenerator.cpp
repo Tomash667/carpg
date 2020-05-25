@@ -221,7 +221,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			dialog = GameDialog::TryGet("crazies_encounter");
 			break;
 		case SE_MERCHANT:
-			essential = UnitData::Get("merchant");
+			essential = UnitData::Get("traveling_merchant");
 			group_name = "merchant_guards";
 			count = Random(3, 4);
 			level = Clamp(encounter.st, 5, 6);

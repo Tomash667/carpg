@@ -1387,6 +1387,10 @@ unit merchant : base_human {
 	dialog merchant
 }
 
+unit traveling_merchant : merchant {
+	dialog traveling_merchant
+}
+
 unit food_seller : merchant {
 	trader {
 		stock food_seller

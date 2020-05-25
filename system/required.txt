@@ -216,6 +216,7 @@ unit tut_czlowiek
 // encounters
 unit crazy_cook
 unit hero_tomir
+unit traveling_merchant
 
 //------------------------------------------------------------------------------
 // Required unit groups

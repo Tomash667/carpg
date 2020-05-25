@@ -1060,6 +1060,11 @@ item q_resources {
 }
 
 //------------------------------------------------------------------------------
+item book_history {
+	name "Contemporary world history"
+	desc "History book."
+	text "*** Contemporary world history ***\n\nThe modern calendar was created by Ilgenius the Third in 103. The beginning of the new calendar was the year the foundation of the kingdom of Nyrtana.\n\nThe year is divided into 12 months, each of them has 30 days. Some people divide the month into three ten-day periods - decadays.\n\nIn the winter of 607 a strange thing happened. Many monsters throughout the kingdom have become very aggressive. The traditional army had big problems solving this problem. There were many groups of adventurers who fought monsters.\n\nIn 610 the Academy was founded. It task is to train heroes who are prepared to fight monsters so that the situation does not happen again."
+}
 item book_orcs {
 	name "Orc horde"
 	desc "Book about orcs."

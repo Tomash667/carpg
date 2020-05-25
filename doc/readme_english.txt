@@ -218,7 +218,7 @@ Available commands:
 	list_effects - display selected unit effects.
 	list_perks - display selected unit perks.
 	list_stats - display selected unit stats.
-	load - load game (load 1-10 or name).
+	load - load game (load 1-11 or name).
 	map2console - draw dungeon map in console.
 	mod_stat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
 	mp_interp - interpolation interval (mp_interp 0.f-1.f).
@@ -247,7 +247,7 @@ Available commands:
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.
 	s - send message to all players, short from say (say msg).
-	save - save game (save 1-10 [text] or name).
+	save - save game (save 1-11 [text] or name).
 	say - send message to all players (say msg).
 	scare - enemies escape.
 	screenshot - save screenshot.
