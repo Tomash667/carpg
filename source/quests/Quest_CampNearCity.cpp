@@ -1,14 +1,15 @@
 #include "Pch.h"
 #include "Quest_CampNearCity.h"
+
 #include "Game.h"
+#include "GameFile.h"
+#include "ItemHelper.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "GameFile.h"
-#include "World.h"
-#include "Team.h"
-#include "ItemHelper.h"
 #include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -63,7 +64,8 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			quest_mgr->quests_timeout.push_back(this);
 
 			// event
-			target_loc = world->CreateCamp(sl.pos, group);
+			Vec2 pos = world->FindPlace(sl.pos, 64.f);
+			target_loc = world->CreateCamp(pos, group);
 			location_event_handler = this;
 
 			Location& tl = GetTargetLocation();

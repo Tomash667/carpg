@@ -5,19 +5,7 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
-// jakiœ facet chce ¿eby odnaleŸæ dla niego magiczny artefakt
-// idziemy do krypty i go przynosimy
-// p³aci i znika jak pos³aniec
-// po jakimœ czasie natrafiamy na golema na drodze który ka¿e nam oddaæ ca³e z³oto, dostajemy questa "Golem na drodze"
-// mo¿emy porozmawiaæ z dowolnym kapitanem stra¿y który mówi o tym ¿e ma wiêcej informacji o golemach bududowanych przez magów
-// wysy³a nas do jakiegoœ maga w wiosce
-// jest pijany i chce piwo, potem wódkê, potem prowadzi nas do jakichœ podziemi w których nic nie ma
-// wracamy do kapitana który nam to zleci³
-// ka¿e nam przynieœæ miksturkê oczyszczenia umys³u (mo¿na kupiæ u alchemika za 100 z³ota)
-// dajemy j¹ magowie [mówi ¿e sobie wszystko przypomnia³ i nienawidzi piwa]
-// informuje nas o tym ¿e jakiœ poszukiwacz przygód pomóg³ jednemu z magów znaleŸæ kule wiêzi potrzebn¹ do budowy golemów
-// mówi nam gdzie trzeba iœæ zabiæ maga
-// wracamy do kapitana, daje nagrodê
+// One mage wants to recover artifact from crypt. Give gold and disappear after that.
 class Quest_Mages final : public Quest_Dungeon
 {
 public:
@@ -39,6 +27,12 @@ public:
 	LoadResult Load(GameReader& f) override;
 };
 
+//-----------------------------------------------------------------------------
+// After some time there are golems on road that demand gold from players.
+// Talking with guard captain will lead to drunk mage.
+// Visiting mage tower will reveal that he forget everything.
+// Need to create alchemic potion to recover his memory.
+// After that we can go to enemy mage tower and kill him.
 //-----------------------------------------------------------------------------
 // start_loc = location with guard captain
 // mage_loc = location with drunk mage

@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "MpBox.h"
+
+#include "BitStreamFunc.h"
+#include "CommandParser.h"
 #include "Game.h"
 #include "GameGui.h"
 #include "LevelGui.h"
-#include "BitStreamFunc.h"
-#include "Team.h"
-#include "CommandParser.h"
 #include "PlayerController.h"
+#include "Team.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)

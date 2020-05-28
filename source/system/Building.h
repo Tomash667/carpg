@@ -18,7 +18,9 @@ struct Building
 		FAVOR_CENTER = 1 << 0,
 		FAVOR_ROAD = 1 << 1,
 		HAVE_NAME = 1 << 2,
-		LIST = 1 << 3
+		LIST = 1 << 3,
+		FAVOR_DIST = 1 << 4,
+		NO_PATH = 1 << 5
 	};
 
 	string id, name;
@@ -30,7 +32,8 @@ struct Building
 	UnitData* unit;
 	ResourceState state;
 
-	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr), state(ResourceState::NotLoaded) {}
+	Building() : size(0, 0), shift{Int2::Zero, Int2::Zero, Int2::Zero, Int2::Zero}, flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr),
+		unit(nullptr), state(ResourceState::NotLoaded) {}
 
 	static vector<Building*> buildings;
 	static Building* TryGet(Cstring id);

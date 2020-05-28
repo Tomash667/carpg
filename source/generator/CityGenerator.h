@@ -46,19 +46,19 @@ class CityGenerator final : public OutsideLocationGenerator
 
 	struct APoint2
 	{
-		int koszt, stan, dir;
+		int cost, state, dir;
 		Int2 prev;
 	};
 
 	struct APoint2Sorter
 	{
-		APoint2Sorter(APoint2* _grid, uint _s) : grid(_grid), s(_s)
+		APoint2Sorter(APoint2* grid, uint s) : grid(grid), s(s)
 		{
 		}
 
 		bool operator() (int idx1, int idx2) const
 		{
-			return grid[idx1].koszt > grid[idx2].koszt;
+			return grid[idx1].cost > grid[idx2].cost;
 		}
 
 		APoint2* grid;
@@ -73,13 +73,13 @@ class CityGenerator final : public OutsideLocationGenerator
 
 		bool operator() (int idx1, int idx2) const
 		{
-			return grid[idx1].koszt > grid[idx2].koszt;
+			return grid[idx1].cost > grid[idx2].cost;
 		}
 
 		vector<APoint2>& grid;
 	};
 
-	struct Road2
+	struct Road
 	{
 		Int2 start, end;
 		int flags;
@@ -114,7 +114,7 @@ public:
 
 	void AddRoad(const Int2& start, const Int2& end, int flags)
 	{
-		Road2& r = Add1(roads);
+		Road& r = Add1(roads);
 		r.start = start;
 		r.end = end;
 		r.flags = flags;
@@ -158,10 +158,11 @@ private:
 	APoint2Sorter2 sorter;
 	vector<int> to_check;
 	vector<Int2> tmp_pts;
-	vector<Road2> roads;
+	vector<Road> roads;
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;
 	vector<pair<Int2, GameDirection>> valid_pts;
+	vector<Rect> fields;
 	Int2 well_pt;
 	bool have_well;
 };

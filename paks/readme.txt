@@ -8,3 +8,5 @@ Other:
 paker -patch version (create only a patch, this require previous versions info in db directory)
 paker -normal version (create pak, this is default)
 paker -both version (create pak & patch)
+paker -help - show help
+paker -nozip - don't compress pak

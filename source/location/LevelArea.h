@@ -60,7 +60,7 @@ struct LevelArea
 	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id), have_terrain(have_terrain), tmp(nullptr) {}
 	~LevelArea();
 	void Save(GameWriter& f);
-	void Load(GameReader& f, bool local, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
+	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	void Clear();
@@ -70,7 +70,6 @@ struct LevelArea
 	bool RemoveItem(const Item* item);
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
 	bool RemoveGroundItem(const Item* item);
-	bool FindItemInChest(const Item* item, Chest** chest, int* slot);
 	Object* FindObject(BaseObject* base_obj);
 	Object* FindNearestObject(BaseObject* base_obj, const Vec3& pos);
 	Chest* FindChestInRoom(const Room& p);
@@ -78,6 +77,7 @@ struct LevelArea
 	bool HaveUnit(Unit* unit);
 	Chest* FindChestWithItem(const Item* item, int* index);
 	Chest* FindChestWithQuestItem(int quest_id, int* index);
+	bool RemoveItemFromChest(const Item* item);
 	Door* FindDoor(const Int2& pt);
 	bool IsActive() const { return tmp != nullptr; }
 };

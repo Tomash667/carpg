@@ -5,6 +5,7 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
+// Move thru dungeon and learn basics
 class Quest_Tutorial final : public ChestEventHandler, public UnitEventHandler
 {
 	friend class TutorialLocationGenerator;
@@ -13,7 +14,7 @@ class Quest_Tutorial final : public ChestEventHandler, public UnitEventHandler
 	{
 		cstring text;
 		Vec3 pos;
-		int state; // 0 - nie aktywny, 1 - aktywny, 2 - uruchomiony
+		int state; // 0 - not active, 1 - active, 2 - done
 		int id;
 	};
 

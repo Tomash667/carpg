@@ -1,46 +1,48 @@
 #include "Pch.h"
 #include "Net.h"
-#include "BitStreamFunc.h"
-#include "Game.h"
-#include "Level.h"
-#include "GroundItem.h"
-#include "Door.h"
+
 #include "Ability.h"
-#include "Trap.h"
-#include "Object.h"
-#include "Portal.h"
-#include "ResourceManager.h"
-#include "Team.h"
-#include "PlayerController.h"
-#include "PlayerInfo.h"
-#include "Unit.h"
-#include "GameGui.h"
-#include "Journal.h"
-#include "LevelGui.h"
-#include "GameMessages.h"
-#include "WorldMapGui.h"
-#include "TeamPanel.h"
-#include "Inventory.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "Cave.h"
+#include "City.h"
+#include "CommandParser.h"
 #include "Console.h"
+#include "CraftPanel.h"
+#include "Door.h"
+#include "EntityInterpolator.h"
+#include "Game.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "GroundItem.h"
 #include "InfoBox.h"
+#include "Inventory.h"
+#include "Journal.h"
+#include "Level.h"
+#include "LevelGui.h"
 #include "LoadScreen.h"
 #include "MpBox.h"
-#include "EntityInterpolator.h"
-#include "ParticleSystem.h"
-#include "SoundManager.h"
+#include "MultiInsideLocation.h"
+#include "Object.h"
+#include "PlayerController.h"
+#include "PlayerInfo.h"
+#include "Portal.h"
+#include "Quest.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
-#include "Quest.h"
+#include "Team.h"
+#include "TeamPanel.h"
+#include "Trap.h"
+#include "Unit.h"
 #include "World.h"
-#include "City.h"
-#include "MultiInsideLocation.h"
-#include "Cave.h"
-#include "DialogBox.h"
-#include "GameStats.h"
-#include "Arena.h"
-#include "CommandParser.h"
-#include "GameResources.h"
-#include "CraftPanel.h"
+#include "WorldMapGui.h"
+
+#include <DialogBox.h>
+#include <ParticleSystem.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 void Net::InitClient()
@@ -62,7 +64,8 @@ void Net::InitClient()
 
 	SetMode(Mode::Client);
 
-	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+	if(IsDebug())
+		peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS);
 }
 
 //=================================================================================================
@@ -90,10 +93,12 @@ void Net::UpdateClient(float dt)
 {
 	if(game->game_state == GS_LEVEL)
 	{
+		float gameDt = dt * game->game_speed;
+
 		// interpolacja pozycji gracza
 		if(interpolate_timer > 0.f)
 		{
-			interpolate_timer -= dt;
+			interpolate_timer -= gameDt;
 			if(interpolate_timer >= 0.f)
 				game->pc->unit->visual_pos = Vec3::Lerp(game->pc->unit->visual_pos, game->pc->unit->pos, (0.1f - interpolate_timer) * 10);
 			else
@@ -101,7 +106,7 @@ void Net::UpdateClient(float dt)
 		}
 
 		// interpolacja pozycji/obrotu postaci
-		InterpolateUnits(dt);
+		InterpolateUnits(gameDt);
 	}
 
 	bool exit_from_server = false;
@@ -234,7 +239,7 @@ void Net::UpdateClient(float dt)
 		}
 	}
 
-	// wyœli moj¹ pozycjê/akcjê
+	// send my position/action
 	update_timer += dt;
 	if(update_timer >= TICK)
 	{
@@ -525,7 +530,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f << c.pos;
 			break;
 		case NetChange::CRAFT:
-			f << c.recipe->id;
+			f << c.recipe->hash;
 			f << c.count;
 			break;
 		default:
@@ -1728,9 +1733,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					unit->UseUsable(usable);
 					if(pc.data.before_player == BP_USABLE && pc.data.before_player_ptr.usable == usable)
 						pc.data.before_player = BP_NONE;
-
-					if(unit->player == game->pc && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
-						game_gui->craft->Show();
 				}
 				else
 				{
@@ -4017,6 +4019,28 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		case NetChangePlayer::AFTER_CRAFT:
 			game_gui->craft->AfterCraft();
 			break;
+		// add recipe to player
+		case NetChangePlayer::ADD_RECIPE:
+			{
+				int recipe_hash;
+				f >> recipe_hash;
+				if(!f)
+				{
+					Error("Update single client: Broken ADD_RECIPE.");
+					break;
+				}
+				Recipe* recipe = Recipe::TryGet(recipe_hash);
+				if(!recipe)
+					Error("Update single client: ADD_RECIPE, invalid recipe %d.", recipe_hash);
+				else
+					pc.AddRecipe(recipe);
+			}
+			break;
+		// end prepare action
+		case NetChangePlayer::END_PREPARE:
+			if(pc.unit->action == A_PREPARE)
+				pc.unit->action = A_NONE;
+			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);
 			break;
@@ -4187,6 +4211,7 @@ void Net::ReadNetVars(BitStreamReader& f)
 {
 	f >> mp_use_interp;
 	f >> mp_interp;
+	f >> game->game_speed;
 }
 
 //=================================================================================================
@@ -4489,14 +4514,18 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 			f >> unit->act.attack.run;
 		}
 		else if(unit->action == A_CAST)
+		{
+			unit->act.cast.ability = Ability::Get(f.Read<int>());
 			f >> unit->act.cast.target;
+		}
 		if(!f)
 		{
 			Error("Read player data: Broken multiplayer data.");
 			return false;
 		}
 
-		if(unit->usable && IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+		if(unit->usable && unit->action == A_USE_USABLE && Any(unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
+			&& IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
 			game_gui->craft->Show();
 	}
 

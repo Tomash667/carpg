@@ -1,10 +1,7 @@
 #include "Pch.h"
-#include <unordered_set>
-#include "GameCore.h"
 #include "BaseObject.h"
 
 //-----------------------------------------------------------------------------
-BaseObject BaseObject::obj_alpha;
 SetContainer<BaseObject> BaseObject::objs;
 SetContainer<ObjectGroup> ObjectGroup::groups;
 

@@ -5,6 +5,8 @@
 #include "Item.h"
 
 //-----------------------------------------------------------------------------
+// Throw moonstone to moonwell to get info about hard dungeon
+// At end of dungeon there is portal to secret location (hardcore only)
 class Quest_Secret : public QuestHandler
 {
 public:

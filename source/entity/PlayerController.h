@@ -119,6 +119,15 @@ struct PlayerAbility
 	int charges;
 };
 
+/**
+ * Represents recipe known to the player
+ */
+struct MemorizedRecipe
+{
+	Recipe* recipe;
+};
+
+
 //-----------------------------------------------------------------------------
 struct Shortcut
 {
@@ -229,7 +238,6 @@ struct PlayerController : public HeroPlayerCommon
 	WeaponType last_weapon;
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, learning_points, exp, exp_need, exp_level;
-	//----------------------
 	PlayerAction action;
 	union
 	{
@@ -237,17 +245,20 @@ struct PlayerController : public HeroPlayerCommon
 		Chest* action_chest;
 		Usable* action_usable;
 	};
-	// tymczasowa zmienna u¿ywane w AddGold, nie trzeba zapisywaæ
-	int gold_get;
-	//
 	DialogContext* dialog_ctx;
-	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
+	vector<ItemSlot>* chest_trade; // depends on action (can be unit inventory or chest or trader stock)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
 	vector<Entity<Unit>> ability_targets;
 	Shortcut shortcuts[Shortcut::MAX];
 	vector<PlayerAbility> abilities;
+	vector<MemorizedRecipe> recipes;
 	static LocalPlayerData data;
+
+	//----------------------
+	// Temporary
+	//----------------------
+	int gold_get; // used in AddGold
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
 	~PlayerController();
@@ -324,6 +335,10 @@ public:
 	void RefreshCooldown();
 	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 
+	// recipes
+	bool AddRecipe(Recipe* recipe);
+	bool HaveRecipe(Recipe* recipe) const;
+
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp);
 	int GetExpNeed() const;
@@ -339,4 +354,5 @@ public:
 	void ClearNextAction();
 	Vec3 RaytestTarget(float range);
 	bool ShouldUseRaytest() const;
+	void ReadBook(int index);
 };

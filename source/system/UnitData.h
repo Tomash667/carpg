@@ -14,7 +14,6 @@
 #include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
-// Lista zaklêæ postaci
 struct AbilityList
 {
 	string id;
@@ -109,7 +108,7 @@ enum UNIT_FLAGS2
 	F2_BOSS = 1 << 12, // when player is on same level, play boss music
 	F2_BLOODLESS = 1 << 13, // no blood pool on death, can't cast drain hp
 	F2_LIMITED_ROT = 1 << 14, // tries to keep starting rotation - innkeeper
-	// unused (1 << 15)
+	F2_ALPHA_BLEND = 1 << 15, // use alpha blend when rendering
 	F2_STUN_RESISTANCE = 1 << 16, // 50% resistance to stuns
 	F2_SIT_ON_THRONE = 1 << 17, // ai can sit on throne
 	// unused (1 << 18)
@@ -143,7 +142,7 @@ enum UNIT_FLAGS3
 };
 
 //-----------------------------------------------------------------------------
-// Id dŸwiêku
+// Unit sound id
 enum SOUND_ID
 {
 	SOUND_SEE_ENEMY,
@@ -155,7 +154,7 @@ enum SOUND_ID
 };
 
 //-----------------------------------------------------------------------------
-// DŸwiêki postaci
+// Unit sounds
 struct SoundPack
 {
 	string id;
@@ -204,15 +203,14 @@ struct TexPack
 struct TraderInfo
 {
 	Stock* stock;
-	int buy_flags, buy_consumable_flags;
+	int types, consumableSubtypes, otherSubtypes, bookSubtypes;
 	vector<const Item*> includes;
 
-	TraderInfo() : stock(nullptr), buy_flags(0), buy_consumable_flags(0) {}
+	TraderInfo() : stock(nullptr), types(0), consumableSubtypes(0), otherSubtypes(0), bookSubtypes(0) {}
 	bool CanBuySell(const Item* item);
 };
 
 //-----------------------------------------------------------------------------
-// Dane postaci
 struct UnitData
 {
 	string id, name, real_name;

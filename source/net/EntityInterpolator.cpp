@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "EntityInterpolator.h"
+
 #include "Net.h"
 
 ObjectPool<EntityInterpolator> EntityInterpolator::Pool;
@@ -36,26 +37,26 @@ void EntityInterpolator::Update(float dt, Vec3& pos, float& rot)
 	{
 		if(entries[0].timer > net->mp_interp)
 		{
-			// nie ma nowszej klatki
-			// extrapolation ? nie dziú...
+			// no new frame
+			// extrapolation? not today...
 			pos = entries[0].pos;
 			rot = entries[0].rot;
 		}
 		else
 		{
-			// znajdü odpowiednie klatki
+			// find correct frame
 			for(int i = 0; i < valid_entries; ++i)
 			{
 				if(Equal(entries[i].timer, net->mp_interp))
 				{
-					// rÛwne trafienie w klatke
+					// exact frame found
 					pos = entries[i].pos;
 					rot = entries[i].rot;
 					return;
 				}
 				else if(entries[i].timer > net->mp_interp)
 				{
-					// interpolacja pomiÍdzy dwoma klatkami ([i-1],[i])
+					// interpolate between two frames
 					Entry& e1 = entries[i - 1];
 					Entry& e2 = entries[i];
 					float t = (net->mp_interp - e1.timer) / (e2.timer - e1.timer);
@@ -64,13 +65,11 @@ void EntityInterpolator::Update(float dt, Vec3& pos, float& rot)
 					return;
 				}
 			}
-
-			// brak ruchu do tej pory
 		}
 	}
 	else
 	{
-		// nie uøywa interpolacji
+		// don't use interpolation
 		pos = entries[0].pos;
 		rot = entries[0].rot;
 	}

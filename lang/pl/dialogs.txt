@@ -45,6 +45,19 @@ dialog merchant {
 }
 
 //==============================================================================
+dialog traveling_merchant {
+	0 {
+		"Jak mogê ci pomóc?"
+		"Witaj! Jeœli jesteœ zainteresowany to mam na sprzeda¿ kilka rzeczy."
+		"Witaj na szlaku!"
+	}
+	1 "Pohandlujmy"
+	2 "Czym siê zajmujesz?"
+	3 "Jestem wêdrownym kupcem. Prowadzê t¹ karawane do $(World::GetClosestLocation(L_CITY, World::pos).name), sprzedam tam z zyskiem moje towary."
+	4 "Koniec rozmowy"
+}
+
+//==============================================================================
 dialog alchemist {
 	0 {
 		"Witaj. Mam tu szeroki wybór mikstur i eliksirów."
@@ -164,11 +177,7 @@ dialog trainer {
 	22 "Czym siê zajmujesz?"
 	23 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki i obrony."
 	24 "Zapytaj o dziwny kamieñ"
-	25 {
-		"Pierwszy raz coœ takiego widzê."
-		"Nie mam pojêcia co to jest. Kamieñ?"
-		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
-	}
+	25 "Powiedzia³em ci wszystko co wiem, musisz siê pozbyæ tego kamienia."
 	26 "Koniec rozmowy"
 }
 
@@ -743,12 +752,10 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Witaj!"
 	1 "Witaj ponownie!"
-	2 "Witaj ponownie!"
-	3 "Oddaj artefakt"
-	4 "Oddaj ukradziony artefakt"
-	5 "Oddaj zgubiony przedmiot"
-	6 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
-	7 "Koniec rozmowy"
+	2 "Oddaj ukradziony artefakt"
+	3 "Oddaj zgubiony przedmiot"
+	4 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
+	5 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -1171,28 +1178,6 @@ dialog q_evil_mayor {
 dialog q_evil_boss {
 	0 "Cholerny cz³owiek!"
 	1 "Bêdê torturowa³ twoj¹ duszê do koñca œwiata i jeden dzieñ d³u¿ej!"
-}
-
-//==============================================================================
-dialog q_find_artifact_start {
-	0 "Poszukujê pewnego artefaktu znanego jako $przedmiot$."
-	1 "Czy mo¿esz mi go dostarczyæ?"
-	2 "Tak"
-	3 "Ponoæ przedmiot którego potrzebujê znajduje siê w $target_loc$, to na $target_dir$ st¹d."
-	4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_find_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
-}
-
-//==============================================================================
-dialog q_find_artifact_timeout {
-	0 "Nie uda³o ci siê znaleŸæ tego artefaktu? Trudno..."
-	1 "Ponoæ niedaleko $random_loc$ znaleziono jakieœ nowe artefakty, tam wyruszê."
-	2 "Powodzenia w przygodach!"
 }
 
 //==============================================================================

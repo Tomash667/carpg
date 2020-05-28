@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "Class.h"
-#include "UnitGroup.h"
+
 #include "UnitData.h"
+#include "UnitGroup.h"
 
 vector<Class*> Class::classes;
 static vector<Class*> player_classes;

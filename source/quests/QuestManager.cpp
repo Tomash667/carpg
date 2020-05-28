@@ -1,20 +1,17 @@
 #include "Pch.h"
-#include "BitStreamFunc.h"
 #include "QuestManager.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "World.h"
-#include "Content.h"
-#include "Net.h"
-#include "QuestScheme.h"
-#include "QuestList.h"
-#include "Language.h"
-#include "Game.h"
-#include "Level.h"
-#include "Team.h"
-#include "City.h"
-#include "InsideLocation.h"
 
+#include "BitStreamFunc.h"
+#include "City.h"
+#include "Content.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "InsideLocation.h"
+#include "Language.h"
+#include "Level.h"
+#include "Net.h"
+#include "QuestList.h"
+#include "QuestScheme.h"
 #include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -41,8 +38,11 @@
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
 #include "Quest_Wanted.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
-QuestManager* global::quest_mgr;
+QuestManager* quest_mgr;
 
 //=================================================================================================
 QuestManager::QuestManager() : quest_contest(nullptr), quest_secret(nullptr), quest_tournament(nullptr), quest_tutorial(nullptr)
@@ -80,10 +80,8 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestCategory::Captain, "kill_animals"));
 	infos.push_back(QuestInfo(Q_LOST_ARTIFACT, QuestCategory::Random, "lost_artifact"));
 	infos.push_back(QuestInfo(Q_STOLEN_ARTIFACT, QuestCategory::Random, "stolen_artifact"));
-	infos.push_back(QuestInfo(Q_FIND_ARTIFACT, QuestCategory::Random, "find_artifact"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
-	infos.push_back({ Q_ARTIFACTS, QuestCategory::Unique, "artifacts" });
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
@@ -114,7 +112,7 @@ void QuestManager::InitLists()
 //=================================================================================================
 void QuestManager::LoadLanguage()
 {
-	LoadArray(txRumorQ, "rumorQ");
+	StrArray(txRumorQ, "rumorQ");
 	quest_contest->LoadLanguage();
 	quest_secret->LoadLanguage();
 	quest_tournament->LoadLanguage();
@@ -136,6 +134,18 @@ void QuestManager::Clear()
 void QuestManager::InitQuests()
 {
 	vector<int> used;
+
+	// init scripted quests
+	for(QuestScheme* scheme : QuestScheme::schemes)
+	{
+		if(scheme->category != QuestCategory::Unique)
+			continue;
+		Quest_Scripted* quest = new Quest_Scripted;
+		quest->Init(scheme);
+		unaccepted_quests.push_back(quest);
+		quest->id = quest_counter++;
+		quest->Start();
+	}
 
 	// goblins
 	quest_goblins = new Quest_Goblins;
@@ -223,31 +233,6 @@ void QuestManager::InitQuests()
 	quest_contest->Init();
 	quest_secret->Init();
 	quest_tournament->Init();
-
-	if(game->devmode)
-	{
-		Info("Quest 'Sawmill' - %s.", world->GetLocation(quest_sawmill->start_loc)->name.c_str());
-		Info("Quest 'Mine' - %s, %s.", world->GetLocation(quest_mine->start_loc)->name.c_str(), world->GetLocation(quest_mine->target_loc)->name.c_str());
-		Info("Quest 'Bandits' - %s.", world->GetLocation(quest_bandits->start_loc)->name.c_str());
-		Info("Quest 'Mages' - %s.", world->GetLocation(quest_mages->start_loc)->name.c_str());
-		Info("Quest 'Orcs' - %s.", world->GetLocation(quest_orcs->start_loc)->name.c_str());
-		Info("Quest 'Goblins' - %s.", world->GetLocation(quest_goblins->start_loc)->name.c_str());
-		Info("Quest 'Evil' - %s.", world->GetLocation(quest_evil->start_loc)->name.c_str());
-		Info("Tournament - %s.", world->GetLocation(quest_tournament->GetCity())->name.c_str());
-		Info("Contest - %s.", world->GetLocation(quest_contest->where)->name.c_str());
-	}
-
-	// init scripted quests
-	for(QuestScheme* scheme : QuestScheme::schemes)
-	{
-		if(scheme->category != QuestCategory::Unique)
-			continue;
-		Quest_Scripted* quest = new Quest_Scripted;
-		quest->Init(scheme);
-		unaccepted_quests.push_back(quest);
-		quest->id = quest_counter++;
-		quest->Start();
-	}
 }
 
 //=================================================================================================
@@ -477,9 +462,10 @@ void QuestManager::Update(int days)
 	});
 
 	// update contest
-	if(quest_contest->year != world->GetYear())
+	const Date& date = world->GetDateValue();
+	if(quest_contest->year != date.year)
 	{
-		quest_contest->year = world->GetYear();
+		quest_contest->year = date.year;
 		quest_contest->where = world->GetRandomSettlementIndex(quest_contest->where);
 	}
 }
@@ -1280,7 +1266,8 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(world->GetDay() == 6 && world->GetMonth() == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
+		const Date& date = world->GetDateValue();
+		if(date.day == 6 && date.month == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
 			&& game_level->location_index == quest_tournament->GetCity() && !quest_tournament->IsGenerated())
 			quest_tournament->GenerateUnits();
 	}
@@ -1798,6 +1785,7 @@ void QuestManager::UpgradeQuests()
 			unaccepted_quests[quest->quest_index] = quest2;
 		else
 			quests[quest->quest_index] = quest2;
+		RemoveElementTry(quests_timeout, reinterpret_cast<Quest_Dungeon*>(quest));
 		RemoveElementTry(quests_timeout2, quest);
 		delete quest;
 	}

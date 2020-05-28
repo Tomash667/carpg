@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "ItemLoader.h"
+
 #include "Item.h"
-#include "Stock.h"
 #include "ScriptManager.h"
-#include <ResourceManager.h>
+#include "Stock.h"
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
 enum Group
@@ -19,6 +21,7 @@ enum Group
 	G_ARMOR_UNIT_TYPE,
 	G_CONSUMABLE_TYPE,
 	G_OTHER_TYPE,
+	G_BOOK_TYPE,
 	G_STOCK_KEYWORD,
 	G_BOOK_SCHEME_PROPERTY,
 	G_SKILL,
@@ -49,6 +52,7 @@ enum Property
 	P_SPEED,
 	P_SCHEME,
 	P_RUNIC,
+	P_RECIPES,
 	P_BLOCK,
 	P_EFFECTS,
 	P_TAG
@@ -78,8 +82,10 @@ enum BookSchemeProperty
 enum RecipeProperty
 {
 	RP_RESULT,
-	RP_ITEMS,
-	RP_SKILL
+	RP_INGREDIENTS,
+	RP_SKILL,
+	RP_AUTOLEARN,
+	RP_ORDER
 };
 
 enum ListType
@@ -105,7 +111,7 @@ void ItemLoader::Cleanup()
 	DeleteElements(BookScheme::book_schemes);
 	DeleteElements(ItemList::lists);
 	DeleteElements(Stock::stocks);
-	DeleteElements(Recipe::recipes);
+	DeleteElements(Recipe::items);
 
 	for(auto it : Item::items)
 		delete it.second;
@@ -157,6 +163,7 @@ void ItemLoader::InitTokenizer()
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },
 		{ "runic", P_RUNIC },
+		{ "recipes", P_RECIPES },
 		{ "block", P_BLOCK },
 		{ "effects", P_EFFECTS },
 		{ "tag", P_TAG }
@@ -177,7 +184,8 @@ void ItemLoader::InitTokenizer()
 		{ "cloth", MAT_CLOTH },
 		{ "rock", MAT_ROCK },
 		{ "body", MAT_BODY },
-		{ "bone", MAT_BONE }
+		{ "bone", MAT_BONE },
+		{ "slime", MAT_SLIME }
 		});
 
 	t.AddKeywords(G_DMG_TYPE, {
@@ -203,10 +211,10 @@ void ItemLoader::InitTokenizer()
 		{ "hq", ITEM_HQ },
 		{ "magical", ITEM_MAGICAL },
 		{ "unique", ITEM_UNIQUE },
-		{ "alpha", ITEM_ALPHA },
 		{ "magic_scroll", ITEM_MAGIC_SCROLL },
 		{ "wand", ITEM_WAND },
-		{ "ingredient", ITEM_INGREDIENT }
+		{ "ingredient", ITEM_INGREDIENT },
+		{ "single_use", ITEM_SINGLE_USE }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -221,18 +229,23 @@ void ItemLoader::InitTokenizer()
 		{ "orc", (int)ArmorUnitType::ORC }
 		});
 
-	t.AddKeywords(G_CONSUMABLE_TYPE, {
-		{ "potion", (int)ConsumableType::Potion },
-		{ "drink", (int)ConsumableType::Drink },
-		{ "food", (int)ConsumableType::Food },
-		{ "herb", (int)ConsumableType::Herb }
+	t.AddKeywords<Consumable::Subtype>(G_CONSUMABLE_TYPE, {
+		{ "potion", Consumable::Subtype::Potion },
+		{ "drink", Consumable::Subtype::Drink },
+		{ "food", Consumable::Subtype::Food },
+		{ "herb", Consumable::Subtype::Herb }
 		});
 
-	t.AddKeywords(G_OTHER_TYPE, {
-		{ "tool", Tool },
-		{ "valuable", Valuable },
-		{ "other", OtherItems },
-		{ "artifact", Artifact }
+	t.AddKeywords<OtherItem::Subtype>(G_OTHER_TYPE, {
+		{ "misc_item", OtherItem::Subtype::MiscItem },
+		{ "tool", OtherItem::Subtype::Tool },
+		{ "valuable", OtherItem::Subtype::Valuable },
+		{ "ingredient", OtherItem::Subtype::Ingredient }
+		});
+
+	t.AddKeywords<Book::Subtype>(G_BOOK_TYPE, {
+		{ "normal_book", Book::Subtype::NormalBook },
+		{ "recipe", Book::Subtype::Recipe }
 		});
 
 	t.AddKeywords(G_STOCK_KEYWORD, {
@@ -273,8 +286,10 @@ void ItemLoader::InitTokenizer()
 
 	t.AddKeywords(G_RECIPE, {
 		{ "result", RP_RESULT },
-		{ "items", RP_ITEMS },
-		{ "skill", RP_SKILL }
+		{ "ingredients", RP_INGREDIENTS },
+		{ "skill", RP_SKILL },
+		{ "autolearn", RP_AUTOLEARN },
+		{ "order", RP_ORDER }
 		});
 
 	t.AddKeywords(G_LIST_TYPE, {
@@ -320,6 +335,14 @@ void ItemLoader::LoadEntity(int top, const string& id)
 void ItemLoader::Finalize()
 {
 	Item::gold = Item::Get("gold");
+
+	// check if all recipes are defined
+	for(std::pair<const int, Recipe*>& p : Recipe::items)
+	{
+		Recipe* recipe = p.second;
+		if(!recipe->defined)
+			LoadError("Missing declared recipe '%s'.", recipe->id.c_str());
+	}
 
 	CalculateCrc();
 
@@ -367,7 +390,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= Bit(P_SCHEME) | Bit(P_RUNIC);
+		req |= Bit(P_SCHEME) | Bit(P_RUNIC) | Bit(P_RECIPES) | Bit(P_TYPE);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -492,10 +515,13 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				item->ToArmor().armor_type = (ARMOR_TYPE)t.MustGetKeywordId(G_ARMOR_TYPE);
 				break;
 			case IT_CONSUMABLE:
-				item->ToConsumable().cons_type = (ConsumableType)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
+				item->ToConsumable().subtype = (Consumable::Subtype)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
 				break;
 			case IT_OTHER:
-				item->ToOther().other_type = (OtherType)t.MustGetKeywordId(G_OTHER_TYPE);
+				item->ToOther().subtype = (OtherItem::Subtype)t.MustGetKeywordId(G_OTHER_TYPE);
+				break;
+			case IT_BOOK:
+				item->ToBook().subtype = (Book::Subtype)t.MustGetKeywordId(G_BOOK_TYPE);
 				break;
 			}
 			break;
@@ -610,6 +636,22 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		case P_RUNIC:
 			item->ToBook().runic = t.MustGetBool();
 			break;
+		case P_RECIPES:
+			{
+				Book& book = item->ToBook();
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						book.recipes.push_back(Recipe::ForwardGet(t.MustGetItem()));
+						t.Next();
+					}
+				}
+				else
+					book.recipes.push_back(Recipe::ForwardGet(t.MustGetItem()));
+			}
+			break;
 		case P_EFFECTS:
 			t.AssertSymbol('{');
 			t.Next();
@@ -709,18 +751,18 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_CONSUMABLE:
 		{
 			Consumable* consumable = static_cast<Consumable*>(item_ptr);
-			if(consumable->cons_type == ConsumableType::Potion)
+			if(consumable->subtype == Consumable::Subtype::Potion)
 			{
 				for(ItemEffect& e : consumable->effects)
 				{
 					if(e.effect == EffectId::Heal && e.power > 0.f)
 					{
-						consumable->ai_type = ConsumableAiType::Healing;
+						consumable->aiType = Consumable::AiType::Healing;
 						break;
 					}
 					else if(e.effect == EffectId::RestoreMana && e.power > 0.f)
 					{
-						consumable->ai_type = ConsumableAiType::Mana;
+						consumable->aiType = Consumable::AiType::Mana;
 						break;
 					}
 				}
@@ -729,12 +771,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		}
 		break;
 	case IT_OTHER:
-		{
-			OtherItem& o = item_ptr->ToOther();
-			OtherItem::others.push_back(&o);
-			if(o.other_type == Artifact)
-				OtherItem::artifacts.push_back(&o);
-		}
+		OtherItem::others.push_back(static_cast<OtherItem*>(item_ptr));
 		break;
 	case IT_BOOK:
 		{
@@ -1199,11 +1236,21 @@ void ItemLoader::ParseBetterItems()
 //=================================================================================================
 void ItemLoader::ParseRecipe(const string& id)
 {
-	if(Recipe::TryGet(id))
-		t.Throw("Id must be unique.");
+	int hash = Hash(id);
+	Recipe* existingRecipe = Recipe::TryGet(hash);
+	if(existingRecipe)
+	{
+		if(existingRecipe->id != id)
+			t.Throw("Id hash collision.");
+		else if(existingRecipe->defined)
+			t.Throw("Id must be unique.");
+	}
 
-	Ptr<Recipe> recipe;
+	Ptr<Recipe> recipe(existingRecipe, false);
 	recipe->id = id;
+	recipe->hash = hash;
+	recipe->defined = true;
+	recipe->order = Recipe::items.size();
 
 	t.Next();
 	t.AssertSymbol('{');
@@ -1223,7 +1270,7 @@ void ItemLoader::ParseRecipe(const string& id)
 					LoadError("Missing result item '%s'.", item_id.c_str());
 			}
 			break;
-		case RP_ITEMS:
+		case RP_INGREDIENTS:
 			t.AssertSymbol('{');
 			t.Next();
 			while(!t.IsSymbol('}'))
@@ -1233,7 +1280,7 @@ void ItemLoader::ParseRecipe(const string& id)
 				{
 					count = t.GetUint();
 					if(count == 0u)
-						LoadError("Invalid item count %u.", count);
+						LoadError("Invalid ingredients count %u.", count);
 					t.Next();
 				}
 
@@ -1244,7 +1291,7 @@ void ItemLoader::ParseRecipe(const string& id)
 				else
 				{
 					bool added = false;
-					for(pair<const Item*, uint>& p : recipe->items)
+					for(pair<const Item*, uint>& p : recipe->ingredients)
 					{
 						if(p.first == item)
 						{
@@ -1254,7 +1301,7 @@ void ItemLoader::ParseRecipe(const string& id)
 						}
 					}
 					if(!added)
-						recipe->items.push_back(std::make_pair(item, count));
+						recipe->ingredients.push_back(std::make_pair(item, count));
 				}
 
 				t.Next();
@@ -1263,16 +1310,22 @@ void ItemLoader::ParseRecipe(const string& id)
 		case RP_SKILL:
 			recipe->skill = t.MustGetUint();
 			break;
+		case RP_AUTOLEARN:
+			recipe->autolearn = t.MustGetBool();
+			break;
+		case RP_ORDER:
+			recipe->order = t.MustGetInt();
+			break;
 		}
 		t.Next();
 	}
 
 	if(!recipe->result)
 		LoadError("No result item.");
-	else if(recipe->items.empty())
-		LoadError("No required items.");
-	else
-		Recipe::recipes.push_back(recipe.Pin());
+	else if(recipe->ingredients.empty())
+		LoadError("No ingredients.");
+	else if(!existingRecipe)
+		Recipe::items[hash] = recipe.Pin();
 }
 
 //=================================================================================================
@@ -1377,19 +1430,22 @@ void ItemLoader::CalculateCrc()
 			{
 				Consumable& c = item->ToConsumable();
 				crc.Update(c.time);
-				crc.Update(c.cons_type);
+				crc.Update(c.subtype);
 			}
 			break;
 		case IT_OTHER:
 			{
 				OtherItem& o = item->ToOther();
-				crc.Update(o.other_type);
+				crc.Update(o.subtype);
 			}
 			break;
 		case IT_BOOK:
 			{
 				Book& b = item->ToBook();
 				crc.Update(b.scheme->id);
+				crc.Update(b.subtype);
+				for(Recipe* recipe : b.recipes)
+					crc.Update(recipe->hash);
 			}
 			break;
 		case IT_GOLD:
@@ -1422,10 +1478,14 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->regions);
 	}
 
-	for(Recipe* recipe : Recipe::recipes)
+	for(auto& element : Recipe::items)
 	{
+		Recipe* recipe = element.second;
+		if(!recipe->defined)
+			continue;
+		crc.Update(recipe->id);
 		crc.Update(recipe->result->id);
-		for(pair<const Item*, uint>& p : recipe->items)
+		for(pair<const Item*, uint>& p : recipe->ingredients)
 		{
 			crc.Update(p.first->id);
 			crc.Update(p.second);

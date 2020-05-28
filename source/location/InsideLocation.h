@@ -15,8 +15,8 @@ struct InsideLocation : public Location
 	}
 
 	// from Location
-	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local) override;
+	void Save(GameWriter& f) override;
+	void Load(GameReader& f) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
 
@@ -30,7 +30,6 @@ struct InsideLocation : public Location
 	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) = 0;
 	virtual Chest* FindChestWithQuestItem(int quest_id, int& at_level, int* index = nullptr) = 0;
 
-	bool RemoveItemFromChest(const Item* item, int& at_level);
 	bool RemoveQuestItemFromChest(int quest_id, int& at_level);
 	Room* FindChaseRoom(const Vec3& _pos)
 	{

@@ -1,21 +1,23 @@
 #include "Pch.h"
 #include "SaveLoadPanel.h"
-#include "SaveState.h"
-#include "Language.h"
-#include "Input.h"
+
 #include "Class.h"
-#include "Scrollbar.h"
-#include "Net.h"
-#include "World.h"
-#include "Level.h"
-#include "Game.h"
-#include "GameGui.h"
-#include "GetTextDialog.h"
-#include "GameMenu.h"
 #include "CreateServerPanel.h"
-#include "Unit.h"
+#include "Game.h"
 #include "GameFile.h"
-#include "DirectX.h"
+#include "GameGui.h"
+#include "GameMenu.h"
+#include "Language.h"
+#include "Level.h"
+#include "Net.h"
+#include "SaveState.h"
+#include "Unit.h"
+#include "World.h"
+
+#include <GetTextDialog.h>
+#include <Input.h>
+#include <ResourceManager.h>
+#include <Scrollbar.h>
 
 //=================================================================================================
 SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0)
@@ -128,6 +130,8 @@ void SaveLoad::Update(float dt)
 					SetSaveImage();
 					SetText();
 				}
+				if(gui->DoubleClick(Key::LeftButton) && (save_mode || slots[i].valid))
+					Event((GuiEvent)IdOk);
 			}
 
 			rect.Top() = rect.Bottom() + 4;
@@ -238,8 +242,7 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 void SaveLoad::SetSaveImage()
 {
 	SaveSlot& slot = slots[choice];
-	SafeRelease(tMiniSave.tex);
-	tMiniSave.state = ResourceState::NotLoaded;
+	tMiniSave.Release();
 	if(slot.valid)
 	{
 		if(slot.img_size == 0)
@@ -247,7 +250,7 @@ void SaveLoad::SetSaveImage()
 			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
 			if(io::FileExists(filename))
 			{
-				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave.tex));
+				tMiniSave.tex = res_mgr->LoadRawTexture(filename);
 				tMiniSave.state = ResourceState::Loaded;
 			}
 		}
@@ -255,9 +258,9 @@ void SaveLoad::SetSaveImage()
 		{
 			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
 			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave.tex));
-			buf->Free();
+			tMiniSave.tex = res_mgr->LoadRawTexture(buf);
 			tMiniSave.state = ResourceState::Loaded;
+			buf->Free();
 		}
 	}
 }
@@ -314,8 +317,8 @@ void SaveLoad::SetText()
 		localtime_s(&t, &slot.save_date);
 		s += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
-	if(slot.game_year != -1 && slot.game_month != -1 && slot.game_day != -1)
-		s += Format(txSaveTime, world->GetDate(slot.game_year, slot.game_month, slot.game_day));
+	if(slot.game_date.IsValid())
+		s += Format(txSaveTime, world->GetDate(slot.game_date));
 	if(!slot.location.empty())
 		s += slot.location;
 
@@ -359,9 +362,9 @@ void SaveLoad::LoadSaveSlots()
 					slot.player_name = cfg.GetString("player_name", "");
 					slot.location = cfg.GetString("location", "");
 					slot.text = cfg.GetString("text", "");
-					slot.game_day = cfg.GetInt("game_day", -1);
-					slot.game_month = cfg.GetInt("game_month", -1);
-					slot.game_year = cfg.GetInt("game_year", -1);
+					slot.game_date = Date(cfg.GetInt("game_year", -1),
+						cfg.GetInt("game_month", -1),
+						cfg.GetInt("game_day", -1));
 					slot.hardcore = cfg.GetBool("hardcore");
 					slot.mp_players.clear();
 					slot.save_date = cfg.GetInt("save_date");
@@ -380,9 +383,7 @@ void SaveLoad::LoadSaveSlots()
 					slot.player_name.clear();
 					slot.text.clear();
 					slot.location.clear();
-					slot.game_day = -1;
-					slot.game_month = -1;
-					slot.game_year = -1;
+					slot.game_date = Date(-1, -1, -1);
 					slot.player_class = nullptr;
 					slot.mp_players.clear();
 					slot.save_date = 0;

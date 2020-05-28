@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "GameDialog.h"
+
 #include "ScriptManager.h"
+
 #include <angelscript.h>
 
 GameDialog::Map GameDialog::dialogs;

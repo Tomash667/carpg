@@ -4,6 +4,7 @@
 #include "QuestHandler.h"
 
 //-----------------------------------------------------------------------------
+// Arena tournament that is hold once per year
 class Quest_Tournament : public QuestHandler
 {
 public:

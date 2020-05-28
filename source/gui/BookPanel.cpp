@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "BookPanel.h"
+
 #include "Item.h"
-#include "Input.h"
-#include "ResourceManager.h"
-#include "SoundManager.h"
+
+#include <Input.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 BookPanel::BookPanel() : book(nullptr), scale(0, 0)
@@ -20,8 +22,8 @@ void BookPanel::LoadData()
 	sound = res_mgr->Load<Sound>("page-turn.wav");
 
 	gui->AddFont("Dwarf Runes.ttf");
-	normal_font = gui->CreateFont("Arial", 16, 800);
-	runic_font = gui->CreateFont("Dwarf Runes", 16, 800);
+	normal_font = gui->GetFont("Arial", 16, 8);
+	runic_font = gui->GetFont("Dwarf Runes", 16, 8);
 }
 
 //=================================================================================================
@@ -66,15 +68,13 @@ void BookPanel::Draw(ControlDrawData*)
 		gui->DrawText2(options);
 	}
 
-#ifdef _DEBUG
-	if(input->Down(Key::B))
+	if(IsDebug() && input->Down(Key::B))
 	{
 		for(auto& rect : book->scheme->regions)
 		{
 			gui->DrawArea(Color(255, 0, 0, 128), rect * scale + book_pos);
 		}
 	}
-#endif
 }
 
 //=================================================================================================

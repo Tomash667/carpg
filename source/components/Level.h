@@ -137,7 +137,7 @@ public:
 	void WarpUnit(Unit& unit, const Vec3& pos);
 	bool WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec3& pos, int tries = 10);
 	void WarpNearLocation(LevelArea& area, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
-	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
+	// return pointer to temporary or nullptr (can fail only for arrow and poison traps)
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	int GetDifficultyLevel() const;
@@ -199,10 +199,11 @@ public:
 	}
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
-	Object* FindObjectInRoom(Room& room, const string& obj_id);
+	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
 	CScriptArray* GetUnits(Room& room);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
+	void CreateObjectsMeshInstance();
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
@@ -219,8 +220,7 @@ public:
 	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2], *shape_block, *shape_barrier, *shape_door, *shape_arrow, *shape_summon, *shape_floor;
 	btBvhTriangleMeshShape* dungeon_shape;
 	btCollisionObject* obj_dungeon;
-	vector<Vec3> dungeon_shape_pos;
-	vector<int> dungeon_shape_index;
+	SimpleMesh* dungeon_mesh;
 	btTriangleIndexVertexArray* dungeon_shape_data;
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;

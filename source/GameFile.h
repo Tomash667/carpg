@@ -9,9 +9,9 @@
 class GameReader final : public FileReader
 {
 public:
-	explicit GameReader(HANDLE file) : FileReader(file) {}
-	explicit GameReader(cstring filename) : FileReader(filename) {}
-	explicit GameReader(const FileReader& f) : FileReader(f.GetHandle()) {}
+	explicit GameReader(HANDLE file) : FileReader(file), isLocal(false) {}
+	explicit GameReader(cstring filename) : FileReader(filename), isLocal(false) {}
+	explicit GameReader(const FileReader& f) : FileReader(f.GetHandle()), isLocal(false) {}
 
 	using FileReader::operator >>;
 
@@ -55,17 +55,19 @@ public:
 	}
 
 	void operator >> (UnitGroup*& group);
+
+	bool isLocal;
 };
 
 //-----------------------------------------------------------------------------
 class GameWriter final : public FileWriter
 {
 public:
-	explicit GameWriter(HANDLE file) : FileWriter(file)
+	explicit GameWriter(HANDLE file) : FileWriter(file), isLocal(false)
 	{
 	}
 
-	explicit GameWriter(cstring filename) : FileWriter(filename)
+	explicit GameWriter(cstring filename) : FileWriter(filename), isLocal(false)
 	{
 	}
 
@@ -108,4 +110,6 @@ public:
 	{
 		WriteString1(group->id);
 	}
+
+	bool isLocal;
 };

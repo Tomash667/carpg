@@ -16,7 +16,7 @@ enum class RoomTarget
 };
 
 //-----------------------------------------------------------------------------
-// Struktura opisuj¹ca pomieszczenie w podziemiach
+// Room inside dungeon
 struct Room : ObjectPoolProxy<Room>
 {
 	Int2 pos, size;

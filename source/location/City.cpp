@@ -1,18 +1,20 @@
 #include "Pch.h"
 #include "City.h"
-#include "SaveState.h"
-#include "Content.h"
-#include "ResourceManager.h"
-#include "Object.h"
-#include "Unit.h"
-#include "GameFile.h"
-#include "BuildingScript.h"
-#include "World.h"
-#include "Level.h"
+
 #include "BitStreamFunc.h"
-#include "GroundItem.h"
+#include "BuildingScript.h"
+#include "Content.h"
 #include "GameCommon.h"
-#include "Terrain.h"
+#include "GameFile.h"
+#include "GroundItem.h"
+#include "Level.h"
+#include "Object.h"
+#include "SaveState.h"
+#include "Unit.h"
+#include "World.h"
+
+#include <ResourceManager.h>
+#include <Terrain.h>
 
 //=================================================================================================
 City::~City()
@@ -29,9 +31,9 @@ void City::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 }
 
 //=================================================================================================
-void City::Save(GameWriter& f, bool local)
+void City::Save(GameWriter& f)
 {
-	OutsideLocation::Save(f, local);
+	OutsideLocation::Save(f);
 
 	f << citizens;
 	f << citizens_world;
@@ -63,7 +65,7 @@ void City::Save(GameWriter& f, bool local)
 		f << inside_offset;
 		f << inside_buildings.size();
 		for(InsideBuilding* b : inside_buildings)
-			b->Save(f, local);
+			b->Save(f);
 
 		f << quest_mayor;
 		f << quest_mayor_time;
@@ -75,9 +77,9 @@ void City::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void City::Load(GameReader& f, bool local)
+void City::Load(GameReader& f)
 {
-	OutsideLocation::Load(f, local);
+	OutsideLocation::Load(f);
 
 	f >> citizens;
 	f >> citizens_world;
@@ -129,7 +131,7 @@ void City::Load(GameReader& f, bool local)
 				pos += Vec3(float(b.pt.x + b.building->shift[b.dir].x) * 2, 0.f, float(b.pt.y + b.building->shift[b.dir].y) * 2);
 				b.walk_pt = pos;
 				game_level->terrain->SetHeightMap(h);
-				game_level->terrain->SetH(b.walk_pt);
+				game_level->terrain->SetY(b.walk_pt);
 				game_level->terrain->RemoveHeightMap();
 			}
 		}
@@ -141,7 +143,7 @@ void City::Load(GameReader& f, bool local)
 		for(InsideBuilding*& b : inside_buildings)
 		{
 			b = new InsideBuilding(index);
-			b->Load(f, local);
+			b->Load(f);
 			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
 			b->maxe = b->mine + Int2(256, 256);
 			++index;

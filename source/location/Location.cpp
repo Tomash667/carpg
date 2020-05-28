@@ -1,13 +1,14 @@
 #include "Pch.h"
 #include "Game.h"
-#include "SaveState.h"
-#include "City.h"
-#include "Quest.h"
+
 #include "BitStreamFunc.h"
-#include "Portal.h"
+#include "City.h"
 #include "GameFile.h"
-#include "Quest_Scripted.h"
+#include "Portal.h"
+#include "Quest.h"
 #include "QuestManager.h"
+#include "Quest_Scripted.h"
+#include "SaveState.h"
 #include "UnitGroup.h"
 
 //=================================================================================================
@@ -38,7 +39,7 @@ bool Location::CheckUpdate(int& days_passed, int worldtime)
 }
 
 //=================================================================================================
-void Location::Save(GameWriter& f, bool)
+void Location::Save(GameWriter& f)
 {
 	f << pos;
 	f << name;
@@ -84,7 +85,7 @@ void Location::Save(GameWriter& f, bool)
 }
 
 //=================================================================================================
-void Location::Load(GameReader& f, bool)
+void Location::Load(GameReader& f)
 {
 	if(LOAD_VERSION < V_0_12)
 	{

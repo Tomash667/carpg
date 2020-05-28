@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "AbilityPanel.h"
-#include "LevelGui.h"
-#include "GameGui.h"
+
 #include "Ability.h"
-#include "Language.h"
-#include "ResourceManager.h"
+#include "Game.h"
+#include "GameGui.h"
 #include "GameKeys.h"
+#include "Language.h"
+#include "LevelGui.h"
 #include "PlayerController.h"
 #include "Unit.h"
-#include "Game.h"
+
+#include <ResourceManager.h>
 
 enum TooltipGroup
 {

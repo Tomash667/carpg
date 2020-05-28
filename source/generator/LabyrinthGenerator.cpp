@@ -1,10 +1,11 @@
 #include "Pch.h"
 #include "LabyrinthGenerator.h"
-#include "InsideLocation.h"
-#include "Tile.h"
-#include "Level.h"
-#include "UnitGroup.h"
+
 #include "Game.h"
+#include "InsideLocation.h"
+#include "Level.h"
+#include "Tile.h"
+#include "UnitGroup.h"
 
 //=================================================================================================
 int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors)
@@ -395,7 +396,7 @@ void LabyrinthGenerator::Generate()
 
 	lvl.w = lvl.h = base.size;
 	Room* room = Room::Get();
-	room->target = RoomTarget::None;
+	room->target = RoomTarget::Treasury;
 	room->type = nullptr;
 	room->pos = room_pos;
 	room->size = base.room_size;

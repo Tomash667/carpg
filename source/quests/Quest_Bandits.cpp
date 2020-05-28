@@ -1,16 +1,17 @@
 #include "Pch.h"
 #include "Quest_Bandits.h"
-#include "Game.h"
-#include "Journal.h"
-#include "GameFile.h"
-#include "SaveState.h"
-#include "QuestManager.h"
-#include "Encounter.h"
+
 #include "AIController.h"
-#include "World.h"
-#include "Level.h"
-#include "Team.h"
+#include "Encounter.h"
+#include "Game.h"
+#include "GameFile.h"
 #include "GameResources.h"
+#include "Journal.h"
+#include "Level.h"
+#include "QuestManager.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Bandits::Init()
@@ -32,6 +33,9 @@ void Quest_Bandits::Start()
 	timer = 0.f;
 	agent = nullptr;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[3], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Bandits' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================
@@ -151,7 +155,8 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedTalkWithCaptain:
 		// info o obozie
 		{
-			camp_loc = world->CreateCamp(GetStartLocation().pos, UnitGroup::Get("bandits"));
+			Vec2 pos = world->FindPlace(GetStartLocation().pos, 64.f);
+			camp_loc = world->CreateCamp(pos, UnitGroup::Get("bandits"));
 			Location& camp = *world->GetLocation(camp_loc);
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
@@ -177,7 +182,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::Counting;
 			timer = 7.5f;
 
-			// zmieñ ai pod¹¿aj¹cych stra¿ników
+			// change ai of following guards
 			UnitData* ud = UnitData::Get("guard_q_bandyci");
 			for(Unit* unit : game_level->local_area->units)
 			{

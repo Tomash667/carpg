@@ -1,14 +1,16 @@
 #include "Pch.h"
 #include "Trap.h"
-#include "Net.h"
+
 #include "BitStreamFunc.h"
-#include "Unit.h"
+#include "GameFile.h"
+#include "Net.h"
 #include "SaveState.h"
+#include "Unit.h"
 
 EntityType<Trap>::Impl EntityType<Trap>::impl;
 
 //=================================================================================================
-void Trap::Save(FileWriter& f, bool local)
+void Trap::Save(GameWriter& f)
 {
 	f << id;
 	f << base->type;
@@ -22,7 +24,7 @@ void Trap::Save(FileWriter& f, bool local)
 	else
 		f << obj.rot.y;
 
-	if(local && base->type != TRAP_FIREBALL)
+	if(f.isLocal && base->type != TRAP_FIREBALL)
 	{
 		f << state;
 		f << time;
@@ -38,7 +40,7 @@ void Trap::Save(FileWriter& f, bool local)
 }
 
 //=================================================================================================
-void Trap::Load(FileReader& f, bool local)
+void Trap::Load(GameReader& f)
 {
 	TRAP_TYPE type;
 
@@ -74,10 +76,8 @@ void Trap::Load(FileReader& f, bool local)
 		obj2.mesh = base->mesh2;
 		obj2.base = nullptr;
 	}
-	else if(type == TRAP_FIREBALL)
-		obj.base = &BaseObject::obj_alpha;
 
-	if(local && base->type != TRAP_FIREBALL)
+	if(f.isLocal && base->type != TRAP_FIREBALL)
 	{
 		f >> state;
 		f >> time;
@@ -157,8 +157,6 @@ bool Trap::Read(BitStreamReader& f)
 		obj2.pos.y -= 2.f;
 		hitted = nullptr;
 	}
-	else
-		obj.base = &BaseObject::obj_alpha;
 
 	Register();
 	return true;

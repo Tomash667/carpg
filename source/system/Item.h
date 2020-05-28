@@ -8,6 +8,7 @@
 #include "ArmorUnitType.h"
 #include "Effect.h"
 #include "Skill.h"
+#include "ContentItem.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -32,10 +33,10 @@ enum ITEM_FLAGS
 	ITEM_HQ = 1 << 13, // high quality item icon
 	ITEM_MAGICAL = 1 << 14, // magic quality item icon
 	ITEM_UNIQUE = 1 << 15, // unique quality item icon
-	ITEM_ALPHA = 1 << 16, // item require alpha test
-	ITEM_MAGIC_SCROLL = 1 << 17,
-	ITEM_WAND = 1 << 18, // cast magic bolts instead of attacking
-	ITEM_INGREDIENT = 1 << 19, // shows in crafting panel
+	ITEM_MAGIC_SCROLL = 1 << 16,
+	ITEM_WAND = 1 << 17, // cast magic bolts instead of attacking
+	ITEM_INGREDIENT = 1 << 18, // shows in crafting panel
+	ITEM_SINGLE_USE = 1 << 19, // mark single use recipes
 };
 
 //-----------------------------------------------------------------------------
@@ -121,6 +122,7 @@ struct Item
 
 	void CreateCopy(Item& item) const;
 	Item* CreateCopy() const;
+	Item* QuestCopy(Quest* quest);
 	Item* QuestCopy(Quest* quest, const string& name);
 	void Rename(cstring name);
 	void RenameS(const string& name) { Rename(name.c_str()); }
@@ -356,48 +358,49 @@ struct Ring : public Item
 
 //-----------------------------------------------------------------------------
 // Eatible item (food, drink, potion)
-enum class ConsumableType
-{
-	Food,
-	Drink,
-	Herb,
-	Potion
-};
-enum class ConsumableAiType
-{
-	None,
-	Healing,
-	Mana
-};
 struct Consumable : public Item
 {
-	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
+	enum class Subtype
+	{
+		Food,
+		Drink,
+		Herb,
+		Potion
+	};
+
+	enum class AiType
+	{
+		None,
+		Healing,
+		Mana
+	};
+
+	Consumable() : Item(IT_CONSUMABLE), time(0), subtype(Subtype::Drink), aiType(AiType::None) {}
 
 	float time;
-	ConsumableType cons_type;
-	ConsumableAiType ai_type;
+	Subtype subtype;
+	AiType aiType;
 
 	static vector<Consumable*> consumables;
 };
 
 //-----------------------------------------------------------------------------
 // Other items
-// valuable items, tools, quest items
-enum OtherType
-{
-	Tool,
-	Valuable,
-	OtherItems,
-	Artifact
-};
 struct OtherItem : public Item
 {
-	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
+	enum class Subtype
+	{
+		MiscItem,
+		Tool,
+		Valuable,
+		Ingredient
+	};
 
-	OtherType other_type;
+	OtherItem() : Item(IT_OTHER), subtype(Subtype::MiscItem) {}
+
+	Subtype subtype;
 
 	static vector<OtherItem*> others;
-	static vector<OtherItem*> artifacts;
 };
 
 //-----------------------------------------------------------------------------
@@ -417,10 +420,18 @@ struct BookScheme
 
 struct Book : public Item
 {
-	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
+	enum class Subtype
+	{
+		NormalBook,
+		Recipe
+	};
+
+	Book() : Item(IT_BOOK), scheme(nullptr), subtype(Subtype::NormalBook), runic(false) {}
 
 	BookScheme* scheme;
+	vector<Recipe*> recipes;
 	string text;
+	Subtype subtype;
 	bool runic;
 
 	static vector<Book*> books;
@@ -466,6 +477,10 @@ struct ItemList
 	{
 		return Get(id).Get();
 	}
+	static const Item* GetItemS(const string& id)
+	{
+		return Get(id).Get();
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -483,17 +498,18 @@ struct StartItem
 };
 
 //-----------------------------------------------------------------------------
-struct Recipe
+struct Recipe : public ContentItem<Recipe>
 {
-	string id;
+	inline static const cstring type_name = "recipe";
+
 	const Item* result;
-	vector<pair<const Item*, uint>> items;
-	int skill;
+	vector<pair<const Item*, uint>> ingredients;
+	int skill, order;
+	bool autolearn, defined;
 
-	explicit Recipe() : result(nullptr), skill(0) {}
+	explicit Recipe() : result(nullptr), skill(0), autolearn(false) {}
 
-	static vector<Recipe*> recipes;
-	static Recipe* TryGet(Cstring id);
+	static Recipe* ForwardGet(const string& id);
 };
 
 //-----------------------------------------------------------------------------

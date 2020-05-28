@@ -11,6 +11,7 @@ public:
 	struct Text
 	{
 		cstring text;
+		string* pooled;
 		int x, y, color;
 	};
 
@@ -23,6 +24,7 @@ public:
 	};
 
 	Journal();
+	~Journal();
 	void LoadLanguage();
 	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
@@ -31,17 +33,18 @@ public:
 	void Reset();
 	void Show();
 	void Hide();
-	void Build();
-	void AddEntry(cstring text, int color, bool singleline);
-	void OnAddNote(int id);
-	void NeedUpdate(Mode mode, int quest_index = 0);
 	void AddRumor(cstring text);
+	void NeedUpdate(Mode mode, int quest_index = 0);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	vector<string>& GetNotes() { return notes; }
 	vector<string>& GetRumors() { return rumors; }
 
 private:
+	void Build();
+	void AddEntry(cstring text, int color, bool singleline, bool pooled = false);
+	void OnAddNote(int id);
+
 	Mode mode;
 	TexturePtr tBook, tPage[3], tArrowL, tArrowR;
 	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;

@@ -1,16 +1,16 @@
 #include "Pch.h"
 #include "Quest_Mages.h"
-#include "Game.h"
-#include "Journal.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
+
 #include "AIController.h"
-#include "SoundManager.h"
-#include "World.h"
-#include "Team.h"
-#include "NameHelper.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "Journal.h"
 #include "Level.h"
+#include "NameHelper.h"
+#include "QuestManager.h"
+#include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -18,6 +18,9 @@ void Quest_Mages::Start()
 	type = Q_MAGES;
 	category = QuestCategory::Unique;
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[4], GetStartLocationName()));
+
+	if(game->devmode)
+		Info("Quest 'Mages' - %s.", GetStartLocationName());
 }
 
 //=================================================================================================
@@ -186,7 +189,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	switch(prog2)
 	{
 	case Progress::Started:
-		// porozmawiano ze stra¿nikiem o golemach, wys³a³ do maga
+		// talked with guard captain, send to mage
 		{
 			start_loc = world->GetCurrentLocationIndex();
 			mage_loc = world->GetRandomSettlementIndex(start_loc);
@@ -201,13 +204,11 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::MageWantsBeer:
-		// mag chce piwa
 		{
 			OnUpdate(Format(game->txQuest[174], DialogContext::current->talker->hero->name.c_str()));
 		}
 		break;
 	case Progress::MageWantsVodka:
-		// daj piwo, chce wódy
 		{
 			const Item* beer = Item::Get("beer");
 			DialogContext::current->pc->unit->RemoveItem(beer, 1);
@@ -219,7 +220,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::GivenVodka:
-		// da³eœ wóde
 		{
 			const Item* vodka = Item::Get("vodka");
 			DialogContext::current->pc->unit->RemoveItem(vodka, 1);
@@ -231,7 +231,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::GotoTower:
-		// idzie za tob¹ do pustej wie¿y
 		{
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), MAGE_TOWER, 2);
 			loc.group = UnitGroup::empty;
@@ -247,7 +246,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::MageTalkedAboutTower:
-		// mag sobie przypomnia³ ¿e to jego wie¿a
 		{
 			mages_state = State::OldMageRemembers;
 			OnUpdate(Format(game->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
@@ -255,15 +253,12 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedWithCaptain:
-		// cpt kaza³ pogadaæ z alchemikiem
 		{
 			mages_state = State::BuyPotion;
 			OnUpdate(game->txQuest[179]);
 		}
 		break;
 	case Progress::BoughtPotion:
-		// kupno miksturki
-		// wywo³ywane z DOP_IF_SPECAL q_magowie_kup
 		{
 			if(prog != Progress::BoughtPotion)
 				OnUpdate(game->txQuest[180]);
@@ -273,7 +268,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::MageDrinkPotion:
-		// wypi³ miksturkê
 		{
 			const Item* mikstura = Item::Get("q_magowie_potion");
 			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
@@ -306,7 +300,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::NotRecruitMage:
-		// nie zrekrutowa³em maga
 		{
 			Unit* u = DialogContext::current->talker;
 			team->RemoveMember(u);
@@ -315,13 +308,9 @@ void Quest_Mages2::SetProgress(int prog2)
 			hd_mage.Get(*u->human_data);
 
 			if(world->GetCurrentLocationIndex() == mage_loc)
-			{
-				// idŸ do karczmy
 				u->OrderGoToInn();
-			}
 			else
 			{
-				// idŸ do startowej lokacji do karczmy
 				u->OrderLeave();
 				u->event_handler = this;
 			}
@@ -333,7 +322,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::RecruitMage:
-		// zrekrutowa³em maga
 		{
 			Unit* u = DialogContext::current->talker;
 			Location& target = GetTargetLocation();
@@ -354,7 +342,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::KilledBoss:
-		// zabito maga
 		{
 			if(mages_state == State::MageRecruited)
 				scholar->OrderAutoTalk();
@@ -365,10 +352,8 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedWithMage:
-		// porozmawiano z magiem po
 		{
 			OnUpdate(Format(game->txQuest[187], DialogContext::current->talker->hero->name.c_str(), evil_mage_name.c_str()));
-			// idŸ sobie
 			Unit* u = DialogContext::current->talker;
 			team->RemoveMember(u);
 			u->OrderLeave();
@@ -376,7 +361,6 @@ void Quest_Mages2::SetProgress(int prog2)
 		}
 		break;
 	case Progress::Finished:
-		// odebrano nagrodê
 		{
 			GetTargetLocation().active_quest = nullptr;
 			state = Quest::Completed;

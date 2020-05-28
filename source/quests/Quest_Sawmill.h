@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Clear forest so woodcutters can build sawmill there, monthly payment.
 class Quest_Sawmill final : public Quest_Dungeon, public LocationEventHandler
 {
 public:

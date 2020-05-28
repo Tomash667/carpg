@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "ItemHelper.h"
+
 #include "Chest.h"
 #include "Stock.h"
 #include "Unit.h"
@@ -94,6 +95,10 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 			item = OtherItem::others[Rand() % OtherItem::others.size()];
 			count = Random(1, 4);
 			break;
+		case IT_BOOK:
+			item = Book::books[Rand() % Book::books.size()];
+			count = 1;
+			break;
 		default:
 			assert(0);
 			item = nullptr;
@@ -164,7 +169,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 
 	const float* mod_table;
 
-	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
+	if(item->type == IT_OTHER && item->ToOther().subtype == OtherItem::Subtype::Valuable)
 	{
 		if(buy)
 			mod_table = price_mod_buy_v;

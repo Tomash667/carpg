@@ -1,25 +1,27 @@
 #include "Pch.h"
 #include "WorldMapGui.h"
-#include "Game.h"
-#include "Language.h"
-#include "Journal.h"
-#include "QuestManager.h"
-#include "Quest_Mages.h"
-#include "Quest_Crazies.h"
-#include "Encounter.h"
-#include "InsideLocation.h"
+
 #include "City.h"
+#include "Encounter.h"
+#include "Game.h"
 #include "GameGui.h"
+#include "GameMessages.h"
+#include "GameStats.h"
+#include "InsideLocation.h"
+#include "Journal.h"
+#include "Language.h"
+#include "Level.h"
 #include "LevelGui.h"
 #include "MpBox.h"
-#include "GameMessages.h"
-#include <DialogBox.h>
-#include "World.h"
-#include "Level.h"
-#include "GameStats.h"
-#include "ResourceManager.h"
-#include "Team.h"
+#include "QuestManager.h"
+#include "Quest_Crazies.h"
+#include "Quest_Mages.h"
 #include "SaveState.h"
+#include "Team.h"
+#include "World.h"
+
+#include <DialogBox.h>
+#include <ResourceManager.h>
 
 const float MAP_IMG_SIZE = 512.f;
 
@@ -43,7 +45,7 @@ WorldMapGui::WorldMapGui() : zoom(1.2f), offset(0.f, 0.f), follow(false)
 	focusable = true;
 	visible = false;
 	combo_search.parent = this;
-	combo_search.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->Free(); };
+	combo_search.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->SafeFree(); };
 	tooltip.Init(TooltipController::Callback(this, &WorldMapGui::GetTooltip));
 
 	custom_layout.tex[0] = AreaLayout(Color::None, Color::Black);
@@ -150,7 +152,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
-		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? Color(0x70707070) : Color::White);
+		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? Color::Alpha(128) : Color::White);
 	}
 
 	// encounter locations
@@ -241,12 +243,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		ok = true;
 	}
 	if(ok)
-	{
-		Vec2 pts[2] = { WorldPosToScreen(world_pos), WorldPosToScreen(target_pos) };
-		gui->LineBegin();
-		gui->DrawLine(pts, 1, 0xAA000000);
-		gui->LineEnd();
-	}
+		gui->DrawLine(WorldPosToScreen(world_pos), WorldPosToScreen(target_pos), 0xAA000000);
 
 	// encounter chance
 	if(game->devmode && Net::IsLocal())
@@ -388,7 +385,7 @@ void WorldMapGui::Update(float dt)
 		{
 			buttons[i].mouse_focus = focus;
 			buttons[i].Update(dt);
-			if(buttons[i].IsInside(gui->cursor_pos))
+			if(!combo_search.focus && buttons[i].IsInside(gui->cursor_pos))
 			{
 				group = 0;
 				id = (i == 0 ? GK_JOURNAL : GK_TALK_BOX);

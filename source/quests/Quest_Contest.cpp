@@ -1,20 +1,21 @@
 #include "Pch.h"
 #include "Quest_Contest.h"
-#include "World.h"
-#include "Level.h"
-#include "PlayerController.h"
-#include "GameFile.h"
-#include "QuestManager.h"
-#include "Quest_Mages.h"
-#include "City.h"
-#include "InsideBuilding.h"
+
 #include "AIController.h"
-#include "Language.h"
+#include "City.h"
 #include "Game.h"
+#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
+#include "InsideBuilding.h"
+#include "Language.h"
+#include "Level.h"
+#include "PlayerController.h"
 #include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "Quest_Mages.h"
 #include "SaveState.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Contest::InitOnce()
@@ -37,7 +38,7 @@ void Quest_Contest::LoadLanguage()
 {
 	txContestNoWinner = Str("contestNoWinner");
 	txContestStart = Str("contestStart");
-	LoadArray(txContestTalk, "contestTalk");
+	StrArray(txContestTalk, "contestTalk");
 	txContestWin = Str("contestWin");
 	txContestWinNews = Str("contestWinNews");
 	txContestDraw = Str("contestDraw");
@@ -53,8 +54,11 @@ void Quest_Contest::Init()
 	units.clear();
 	winner = nullptr;
 	generated = false;
-	year = world->GetYear();
+	year = world->GetDateValue().year;
 	rumor = quest_mgr->AddQuestRumor(quest_mgr->txRumorQ[2]);
+
+	if(game->devmode)
+		Info("Contest - %s.", world->GetLocation(where)->name.c_str());
 }
 
 //=================================================================================================
@@ -92,7 +96,7 @@ void Quest_Contest::Load(GameReader& f)
 		for(Unit*& unit : units)
 			f >> unit;
 	}
-	year = world->GetYear();
+	year = world->GetDateValue().year;
 }
 
 //=================================================================================================
@@ -161,16 +165,15 @@ cstring Quest_Contest::FormatString(const string& str)
 void Quest_Contest::Progress()
 {
 	int step; // 0 - before contest, 1 - time for contest, 2 - after contest
-	int month = world->GetMonth();
-	int day = world->GetDay();
+	const Date& date = world->GetDateValue();
 
-	if(month < 8)
+	if(date.month < 8)
 		step = 0;
-	else if(month == 8)
+	else if(date.month == 8)
 	{
-		if(day < 20)
+		if(date.day < 20)
 			step = 0;
-		else if(day == 20)
+		else if(date.day == 20)
 			step = 1;
 		else
 			step = 2;
@@ -493,18 +496,18 @@ void Quest_Contest::Update(float dt)
 		{
 			switch(state2)
 			{
-			case 0: // wygrana
+			case 0: // win
 				state2 = 2;
 				innkeeper.Talk(txContestPrize);
 				break;
-			case 1: // remis
+			case 1: // draw
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = nullptr;
 				state = CONTEST_DONE;
 				generated = false;
 				winner = nullptr;
 				break;
-			case 2: // wygrana2
+			case 2: // win2
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = nullptr;
 				winner = units.back();
@@ -515,7 +518,7 @@ void Quest_Contest::Update(float dt)
 				winner->busy = Unit::Busy_No;
 				winner->event_handler = nullptr;
 				break;
-			case 3: // brak ludzi
+			case 3: // no people
 				for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
@@ -546,7 +549,7 @@ void Quest_Contest::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 {
 	if(event == UnitEventHandler::FALL)
 	{
-		// jednostka poleg³a w zawodach w piciu :3
+		// unit fallen from drinking...
 		unit->look_target = nullptr;
 		unit->busy = Unit::Busy_No;
 		unit->event_handler = nullptr;

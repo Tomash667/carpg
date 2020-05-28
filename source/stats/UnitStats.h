@@ -6,7 +6,6 @@
 #include "StatProfile.h"
 
 //-----------------------------------------------------------------------------
-// Typ broni
 enum WeaponType
 {
 	W_NONE,

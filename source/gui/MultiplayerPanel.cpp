@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "MultiplayerPanel.h"
-#include "Input.h"
-#include "Language.h"
+
 #include "Game.h"
 #include "GameGui.h"
+#include "Language.h"
+
+#include <Input.h>
 
 //=================================================================================================
 MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : DialogBox(info)

@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Bandits have camp near city, need to clean it up.
 class Quest_CampNearCity final : public Quest_Dungeon, public LocationEventHandler
 {
 public:

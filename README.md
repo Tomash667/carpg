@@ -6,10 +6,10 @@ CaRpg is a 3d role playing game somewhat based on Gothic series. Can be played i
 
 ## Docs
 
-- [Readme ENG](https://github.com/Tomash667/carpg/blob/master/doc/readme_eng.txt)
-- [Readme PL](https://github.com/Tomash667/carpg/blob/master/doc/readme.txt)
-- [Changelog ENG](https://github.com/Tomash667/carpg/blob/master/doc/changelog_eng.txt)
-- [Changelog PL](https://github.com/Tomash667/carpg/blob/master/doc/changelog.txt)
+- [Readme ENG](https://github.com/Tomash667/carpg/blob/master/doc/readme_english.txt)
+- [Readme PL](https://github.com/Tomash667/carpg/blob/master/doc/readme_polish.txt)
+- [Changelog ENG](https://github.com/Tomash667/carpg/blob/master/doc/changelog_english.txt)
+- [Changelog PL](https://github.com/Tomash667/carpg/blob/master/doc/changelog_polish.txt)
 
 ## How to build
 

@@ -47,7 +47,6 @@ struct BaseUsable : public BaseObject
 		h = o.h;
 		centery = o.centery;
 		flags = o.flags;
-		alpha = o.alpha;
 		variants = o.variants;
 		extra_dist = o.extra_dist;
 		return *this;

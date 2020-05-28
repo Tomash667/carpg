@@ -106,10 +106,9 @@ public:
 	bool OnInit() override;
 	void OnCleanup() override;
 	void OnDraw() override;
-	void DrawGame(RenderTarget* target);
 	void OnUpdate(float dt) override;
 	void OnResize() override;
-	void OnFocus(bool focus, const Int2& activation_point) override;
+	void OnFocus(bool focus, const Int2& activationPoint) override;
 
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
@@ -134,9 +133,8 @@ public:
 	//-----------------------------------------------------------------
 	// DRAWING
 	//-----------------------------------------------------------------
-	void Draw();
+	void DrawGame();
 	void ForceRedraw();
-	void InitScene();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
@@ -147,9 +145,7 @@ public:
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
 	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
-	void DrawGlowingNodes(const vector<GlowNode>& glow_nodes, bool use_postfx);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
-	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(const vector<Blood*>& bloods, bool outside);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
@@ -251,7 +247,7 @@ public:
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
-	void LoadResources(cstring text, bool worldmap);
+	void LoadResources(cstring text, bool worldmap, bool postLoad = true);
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
@@ -272,7 +268,9 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void UpdateLights(vector<GameLight>& lights);
-	void GetPostEffects(vector<PostEffect>& post_effects);
+private:
+	void GetPostEffects(vector<PostEffect>& postEffects);
+public:
 	// --- cutscene
 	void CutsceneStart(bool instant);
 	void CutsceneImage(const string& image, float time);
@@ -409,7 +407,6 @@ public:
 	Color clear_color, clear_color_next;
 	bool use_glow, use_postfx;
 	DrawBatch draw_batch;
-	VDefault blood_v[4];
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;
@@ -441,7 +438,7 @@ public:
 	// RESOURCES
 	//-----------------------------------------------------------------
 	RenderTarget* rt_save, *rt_item_rot;
-	Texture* tMinimap;
+	DynamicTexture* tMinimap;
 
 	//-----------------------------------------------------------------
 	// LOCALIZED TEXTS

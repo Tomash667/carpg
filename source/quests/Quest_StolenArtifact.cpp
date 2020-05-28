@@ -1,14 +1,15 @@
 #include "Pch.h"
 #include "Quest_StolenArtifact.h"
+
 #include "Game.h"
-#include "Journal.h"
 #include "GameFile.h"
-#include "QuestManager.h"
-#include "World.h"
-#include "LevelArea.h"
-#include "Team.h"
 #include "ItemHelper.h"
+#include "LevelArea.h"
+#include "Journal.h"
+#include "QuestManager.h"
 #include "SaveState.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
@@ -16,7 +17,7 @@ void Quest_StolenArtifact::Start()
 	type = Q_STOLEN_ARTIFACT;
 	category = QuestCategory::Random;
 	start_loc = world->GetCurrentLocationIndex();
-	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
+	item = ItemList::GetItem("artifacts");
 	switch(Rand() % 6)
 	{
 	case 0:

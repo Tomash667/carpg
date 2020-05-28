@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "Controls.h"
-#include "GameKeys.h"
-#include "Language.h"
+
 #include "Game.h"
 #include "GameGui.h"
+#include "GameKeys.h"
+#include "Language.h"
 
 //-----------------------------------------------------------------------------
 // 0x01 - pickable key
@@ -467,7 +468,7 @@ void Controls::SelectCell(int item, int column, int button)
 {
 	if(button == 0)
 	{
-		input->SetState(Key::LeftButton, IS_UP);
+		input->SetState(Key::LeftButton, Input::IS_UP);
 		picked = item;
 		picked_n = column - 1;
 		cursor_tick = 0.f;

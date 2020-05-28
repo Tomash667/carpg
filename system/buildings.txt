@@ -425,6 +425,20 @@ building shrine {
 	}
 }
 
+building windmill {
+	mesh "windmill.qmsh"
+	flags {favor_dist no_path}
+	scheme {
+		"        "
+		"        "
+		"   ||   "
+		"   ||   "
+		"        "
+		"        "
+	}
+	shift {1 1}
+}
+
 //================================================================================
 // Building script
 //================================================================================
@@ -499,6 +513,7 @@ building_script village {
 		endif
 	shuffle end
 	barracks
+	windmill
 	set citizens_world = citizens * 100 + random(0,99)
 	required off
 	set count = citizens

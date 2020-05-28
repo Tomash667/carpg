@@ -1,19 +1,20 @@
 #include "Pch.h"
 #include "Quest_Secret.h"
+
+#include "AIController.h"
+#include "Arena.h"
 #include "BaseObject.h"
+#include "Game.h"
 #include "GameFile.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "GroundItem.h"
+#include "Language.h"
+#include "Location.h"
+#include "OutsideLocation.h"
 #include "QuestManager.h"
 #include "Team.h"
 #include "World.h"
-#include "Location.h"
-#include "Language.h"
-#include "Game.h"
-#include "GameGui.h"
-#include "GameMessages.h"
-#include "Arena.h"
-#include "AIController.h"
-#include "GroundItem.h"
-#include "OutsideLocation.h"
 
 //=================================================================================================
 void Quest_Secret::InitOnce()
@@ -173,7 +174,7 @@ void Quest_Secret::UpdateFight()
 
 	if(count[0] == 0 || count[1] == 0)
 	{
-		// o¿yw wszystkich
+		// revive all
 		for(Unit* unit : arena->units)
 		{
 			unit->in_arena = -1;
@@ -198,7 +199,7 @@ void Quest_Secret::UpdateFight()
 
 		if(count[0])
 		{
-			// gracz wygra³
+			// player won
 			state = SECRET_WIN;
 			arena->units[0]->OrderAutoTalk();
 			team->AddLearningPoint();
@@ -206,7 +207,7 @@ void Quest_Secret::UpdateFight()
 		}
 		else
 		{
-			// gracz przegra³
+			// player lost
 			state = SECRET_LOST;
 		}
 

@@ -1,15 +1,18 @@
 #include "Pch.h"
 #include "MainMenu.h"
-#include "Language.h"
-#include "Version.h"
-#include "DialogBox.h"
-#include "ResourceManager.h"
+
 #include "Game.h"
 #include "GameGui.h"
-#include "SaveLoadPanel.h"
-#include <thread>
+#include "Language.h"
 #include "LobbyApi.h"
+#include "SaveLoadPanel.h"
 #include "Utility.h"
+#include "Version.h"
+
+#include <DialogBox.h>
+#include <ResourceManager.h>
+#include <thread>
+
 
 //=================================================================================================
 MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(game->check_updates)
@@ -228,7 +231,7 @@ void MainMenu::Event(GuiEvent e)
 			gui->SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);
 			break;
 		case IdWebsite:
-			io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));
+			io::OpenUrl(Format("https://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));
 			break;
 		case IdQuit:
 			game->Quit();
@@ -254,7 +257,7 @@ void MainMenu::PlaceButtons()
 void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
-		io::OpenUrl(Format("http://carpg.pl/redirect.php?action=download&language=%s", Language::prefix.c_str()));
+		io::OpenUrl(Format("https://carpg.pl/redirect.php?action=download&language=%s", Language::prefix.c_str()));
 }
 
 //=================================================================================================

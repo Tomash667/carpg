@@ -72,7 +72,8 @@ void Net::InitServer()
 		peer->SetIncomingPassword(nullptr, 0);
 
 	peer->SetMaximumIncomingConnections((word)max_players - 1);
-	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+	if(IsDebug())
+		peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS);
 
 	if(!server_lan)
 	{
@@ -119,7 +120,7 @@ void Net::OnNewGameServer()
 	game_level->can_fast_travel = false;
 	warps.clear();
 	if(!mp_load)
-		changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items
+		changes.clear(); // was clear before loading and now contains registered quest_items
 	if(!net_strs.empty())
 		StringPool.Free(net_strs);
 	game_gui->server->max_players = max_players;
@@ -161,14 +162,16 @@ void Net::UpdateServer(float dt)
 {
 	if(game->game_state == GS_LEVEL)
 	{
+		float gameDt = dt * game->game_speed;
+
 		for(PlayerInfo& info : players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && !info.pc->is_local)
-				info.pc->UpdateCooldown(dt);
+				info.pc->UpdateCooldown(gameDt);
 		}
 
-		InterpolatePlayers(dt);
-		UpdateFastTravel(dt);
+		InterpolatePlayers(gameDt);
+		UpdateFastTravel(gameDt);
 		game->pc->unit->changed = true;
 	}
 
@@ -235,14 +238,14 @@ void Net::UpdateServer(float dt)
 		BitStreamWriter f;
 		f << ID_CHANGES;
 
-		// dodaj zmiany pozycji jednostek i ai_mode
+		// add changed units positions and ai modes
 		if(game->game_state == GS_LEVEL)
 		{
 			for(LevelArea& area : game_level->ForEachArea())
 				ServerProcessUnits(area.units);
 		}
 
-		// wyœlij odkryte kawa³ki minimapy
+		// send revealed minimap tiles
 		if(!game_level->minimap_reveal_mp.empty())
 		{
 			if(game->game_state == GS_LEVEL)
@@ -1146,9 +1149,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE)
 						{
 							const Consumable& pot = slot.item->ToConsumable();
-							if(pot.ai_type == ConsumableAiType::Healing)
+							if(pot.aiType == Consumable::AiType::Healing)
 								player.action_unit->ai->have_potion = HavePotion::Check;
-							else if(pot.ai_type == ConsumableAiType::Mana)
+							else if(pot.aiType == Consumable::AiType::Mana)
 								player.action_unit->ai->have_mp_potion = HavePotion::Check;
 						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
@@ -1309,9 +1312,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(slot.item->type == IT_CONSUMABLE)
 							{
 								const Consumable& pot = slot.item->ToConsumable();
-								if(pot.ai_type == ConsumableAiType::Healing)
+								if(pot.aiType == Consumable::AiType::Healing)
 									t->ai->have_potion = HavePotion::Yes;
-								else if(pot.ai_type == ConsumableAiType::Mana)
+								else if(pot.aiType == Consumable::AiType::Mana)
 									t->ai->have_mp_potion = HavePotion::Yes;
 							}
 							if(player.action == PlayerAction::GiveItems)
@@ -1762,14 +1765,20 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							BaseUsable& base = *usable->base;
 							if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 							{
-								unit.action = A_NONE;
+								unit.action = A_USE_USABLE;
 								unit.animation = ANI_STAND;
+								unit.animation_state = AS_USE_USABLE_MOVE_TO_ENDPOINT;
+								unit.timer = 0;
 								if(unit.live_state == Unit::ALIVE)
 									unit.used_item = nullptr;
 							}
 						}
 						else if(state == USE_USABLE_END)
+						{
+							if(unit.action == A_USE_USABLE)
+								unit.action = A_NONE;
 							unit.UseUsable(nullptr);
+						}
 					}
 				}
 
@@ -3148,19 +3157,46 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 				ItemSlot& slot = unit.items[index];
-				if(!slot.item || slot.item->type != IT_BOOK || !IsSet(slot.item->flags, ITEM_MAGIC_SCROLL))
+				if(!slot.item || slot.item->type != IT_BOOK)
 				{
 					Error("Update server: USE_ITEM, invalid item '%s' at index %d from %s.",
 						slot.item ? slot.item->id.c_str() : "null", index, info.name.c_str());
 					break;
 				}
-				unit.action = A_USE_ITEM;
-				unit.used_item = slot.item;
-				unit.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 
-				NetChange& c = Add1(changes);
-				c.type = NetChange::USE_ITEM;
-				c.unit = &unit;
+				const Book& book = slot.item->ToBook();
+				if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
+				{
+					unit.action = A_USE_ITEM;
+					unit.used_item = slot.item;
+					unit.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+
+					NetChange& c = Add1(changes);
+					c.type = NetChange::USE_ITEM;
+					c.unit = &unit;
+				}
+				else
+				{
+					int skill = unit.GetBase(SkillId::ALCHEMY);
+					bool anythingTooHard = false;
+					for(Recipe* recipe : book.recipes)
+					{
+						if(!player.HaveRecipe(recipe))
+						{
+							if(skill >= recipe->skill)
+								player.AddRecipe(recipe);
+							else
+								anythingTooHard = true;
+						}
+					}
+					if(IsSet(book.flags, ITEM_SINGLE_USE))
+						unit.RemoveItem(index, 1u);
+					if(anythingTooHard)
+						game_gui->messages->AddGameMsg3(&player, GMS_TOO_COMPLICATED);
+
+					NetChangePlayer& c = Add1(info.changes);
+					c.type = NetChangePlayer::END_PREPARE;
+				}
 			}
 			break;
 		// player used cheat 'arena'
@@ -3320,23 +3356,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// craft item
 		case NetChange::CRAFT:
 			{
-				const string& recipe_id = f.ReadString1();
+				int recipe_hash = f.Read<int>();
 				uint count = f.Read<uint>();
 				if(!f)
 				{
 					Error("Update server: Broken CRAFT from %s.", info.name.c_str());
 					break;
 				}
-				Recipe* recipe = Recipe::TryGet(recipe_id);
+				Recipe* recipe = Recipe::TryGet(recipe_hash);
 				if(!recipe)
 				{
-					Error("Update server: CRAFT, invalid recipe '%s'.", recipe_id.c_str());
+					Error("Update server: CRAFT, invalid recipe %d.", recipe_hash);
 					break;
 				}
 				if(count > 0)
 				{
 					if(!game_gui->craft->DoPlayerCraft(player, recipe, count))
-						Error("Update server: CRAFT, missing ingredients to craft %s.", recipe_id.c_str());
+						Error("Update server: CRAFT, missing ingredients to craft %s.", recipe->id.c_str());
 				}
 			}
 			break;
@@ -3871,6 +3907,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::EXIT_ARENA:
 		case NetChangePlayer::END_FALLBACK:
 		case NetChangePlayer::AFTER_CRAFT:
+		case NetChangePlayer::END_PREPARE:
 			break;
 		case NetChangePlayer::START_TRADE:
 			f << c.id;
@@ -4008,6 +4045,9 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::REMOVE_ABILITY:
 			f << c.ability->hash;
 			break;
+		case NetChangePlayer::ADD_RECIPE:
+			f << c.recipe->hash;
+			break;
 		default:
 			Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 			assert(0);
@@ -4028,13 +4068,13 @@ void Net::Server_Say(BitStreamReader& f, PlayerInfo& info)
 		Error("Server_Say: Broken packet from %s: %s.", info.name.c_str());
 	else
 	{
-		// id gracza jest ignorowane przez serwer ale mo¿na je sprawdziæ
+		// player id is ignored by server but whe can check it anyway
 		assert(id == info.id);
 
 		cstring str = Format("%s: %s", info.name.c_str(), text.c_str());
 		game_gui->AddMsg(str);
 
-		// przeœlij dalej
+		// send to other players
 		if(active_players > 2)
 			peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, info.adr, true);
 
@@ -4055,13 +4095,13 @@ void Net::Server_Whisper(BitStreamReader& f, PlayerInfo& info)
 	{
 		if(id == team->my_id)
 		{
-			// wiadomoœæ do mnie
+			// message to me
 			cstring str = Format("%s@: %s", info.name.c_str(), text.c_str());
 			game_gui->AddMsg(str);
 		}
 		else
 		{
-			// wiadomoœæ do kogoœ innego
+			// relay message to other player
 			PlayerInfo* info2 = TryGetPlayer(id);
 			if(!info2)
 				Error("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id);
@@ -4165,6 +4205,7 @@ bool Net::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::GAME_MESSAGE_FORMATTED:
 	case NetChangePlayer::ADD_ABILITY:
 	case NetChangePlayer::REMOVE_ABILITY:
+	case NetChangePlayer::ADD_RECIPE:
 		return false;
 	default:
 		return true;
@@ -4176,6 +4217,7 @@ void Net::WriteNetVars(BitStreamWriter& f)
 {
 	f << mp_use_interp;
 	f << mp_interp;
+	f << game->game_speed;
 }
 
 //=================================================================================================
@@ -4293,7 +4335,10 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 			f << unit.act.attack.run;
 		}
 		else if(unit.action == A_CAST)
+		{
+			f << unit.act.cast.ability->hash;
 			f << unit.act.cast.target;
+		}
 	}
 
 	f.WriteCasted<byte>(0xFF);

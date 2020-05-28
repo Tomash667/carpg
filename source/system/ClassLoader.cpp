@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "ClassLoader.h"
-#include "Class.h"
-#include "ResourceManager.h"
+
 #include "Ability.h"
+#include "Class.h"
 #include "UnitData.h"
+
+#include <ResourceManager.h>
 
 enum Group
 {

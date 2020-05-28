@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "ObjectLoader.h"
+
 #include "BaseUsable.h"
 #include "GameDialog.h"
 #include "Item.h"
-#include <ResourceManager.h>
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 static vector<VariantObject*> variant_objects;
 
@@ -97,7 +99,8 @@ void ObjectLoader::InitTokenizer()
 		{ "rotate_physics", OBJ_PHY_ROT },
 		{ "water_effect", OBJ_WATER_EFFECT },
 		{ "multiple_physics", OBJ_MULTI_PHYSICS },
-		{ "camera_colliders", OBJ_CAM_COLLIDERS }
+		{ "camera_colliders", OBJ_CAM_COLLIDERS },
+		{ "no_culling", OBJ_NO_CULLING }
 		});
 
 	t.AddKeywords(G_USABLE_PROPERTY, {
@@ -139,9 +142,6 @@ void ObjectLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ObjectLoader::Finalize()
 {
-	BaseObject::obj_alpha.id = "tmp_alpha";
-	BaseObject::obj_alpha.alpha = 1;
-
 	CalculateCrc();
 
 	Info("Loaded objects (%u), usables (%u) - crc %p.",
@@ -213,12 +213,6 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 		break;
 	case OP_FLAGS:
 		t.ParseFlags(G_OBJECT_FLAGS, obj->flags);
-		t.Next();
-		break;
-	case OP_ALPHA:
-		obj->alpha = t.MustGetInt();
-		if(obj->alpha < -1)
-			t.Throw("Invalid alpha value.");
 		t.Next();
 		break;
 	case OP_VARIANTS:
@@ -446,7 +440,6 @@ void ObjectLoader::CalculateCrc()
 		}
 		crc.Update(obj->centery);
 		crc.Update(obj->flags);
-		crc.Update(obj->alpha);
 		if(obj->variants)
 		{
 			for(Mesh* mesh : obj->variants->meshes)

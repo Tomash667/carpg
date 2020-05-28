@@ -4,6 +4,10 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Investor wants to have cave cleared so mine can be build.
+// Reward can be gold or monthly payment.
+// After some time mine can be upgraded from iron to gold.
+// Later portal to ancient armory is discovered.
 class Quest_Mine final : public Quest_Dungeon, public LocationEventHandler, public ChestEventHandler
 {
 public:

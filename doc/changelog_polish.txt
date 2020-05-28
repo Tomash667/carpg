@@ -1,14 +1,54 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.14 (???):
+Wersja 0.15 (2020-03-31):
+! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
++ przejście z directx 9 na directx 11
++ nauka nowych receptur alchemicznych [BottledByte & Tomashu]
++ nowe składniki alchemiczne: magiczne ziele, smalec, vitalit, krew trola; nowe receptury: naturalnego leczenia, regeneracji, antymagii, antidotum; książka historyczna
++ nowy wróg - szlam
++ strach na wróble na polach, wiatrak
++ przeniesienie zadania "znajdź artefakt" do skryptów
++ nazwa miesiąca zamiast liczby, inna początkowa data
++ inne dialogi u wędrownego kupca, trenera
++ aktualizacja bibliotek: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- nie można używać komendy 'speed' w jednoosobowej grze
+- kółko myszki czasami nie ma wpływu na kamerę
+- crash podczas uruchamiania [AnimeIsWrong]
+- błędy skryptu podczas rozmowy z alchemikiem, wszyscy mają lepsze ceny
+- u kupca nie generowało niektórych przedmiotów
+- crash gdy okno jest zminimalizowane w trybie pełnoekranowym podczas wczytywania [BottledByte, Lemiczek, Mokai]
+- ai w złej kolejności prosi o przedmioty
+- błąd kamery gdy rozmawia się z jedną osobą po drugiej
+
+--------------------------------------------------------------------------------
+Poprawki:
+- losowo generowane podziemia były głównie jednego typu
+- losowy crash przy wchodzeniu do miasta po tym jak ai poprosił o pancerz [SwagOfficerSuccubus]
+- crash po wczytaniu zapisu w MP gdy klient rzuca czar [Ampped]
+
+--------------------------------------------------------------------------------
+Wersja 0.14.1 (2020-04-11):
++ zwiększenie maksymalnej liczby graczy do 64
+- crash przy alchemii, naprawione przez BottledByte [Lemiczek]
+- crash po zapisaniu gry przy odchodzeniu od kociołka po alchemii [Lemiczek]
+- popsute angielski teksty w głównej fabule [BottledByte]
+- klikanie na pasek przewijania podczas alchemii gdy można stworzyć tylko jedną miksturkę powodowało wyświetlenie błędnych liczb [Lemiczek]
+- po wczytaniu gry gdzie klient kończy korzystać z obiektu jest on wbity w obiekt
+- brak spotkań na mapie gdy szybko zleca się i anuluje podróż [Lemiczek]
+- brak questowych przedmiotów w krypcie [Ampped]
+- obóz pojawia się pod miastem i nie można do niego wejść w questach bandyci/obóz koło miasta [Ampped]
+- zatrzymanie wczytywania się gdy zostaje usunięta jednostka z zmienymi skryptu (chory wieśniak) [Ampped]
+
+--------------------------------------------------------------------------------
+Wersja 0.14 (2020-03-31):
 ! nie można wczytywać już zapisów z wersji 0.5.1 lub starszej
 + kontynuacja fabuły i poboczne zadanie
 + umiejętność alchemii, wytwarzanie 6 prostych miksturek (leczenie & mana)
 + nowy atut historii: uczeń wędrownego kupca (+10 targowania, 500 złota)
 + budynek w mieście - kapliczka
 + ustawienia kamery podczas rozmowy
-+ przeniesienie zadań "dostarcz list" i "pancerz gladiatora" do skryptów 
++ przeniesienie zadań "dostarcz list" i "pancerz gladiatora" do skryptów
 + wczytywanie atutów z pliku
 + wczytywanie pokoi z pliku
 + usprawnienia menadżera sceny - część 2
@@ -39,6 +79,9 @@ Wersja 0.14 (???):
 - nieprawidłowa synchronizacja terenu przy utracie pakietów [BottledByte]
 - crash gdy w konsoli poda się za długą liczbę [BottledByte, Lemiczek]
 - można używać przedmiotów podczas animacji upadania lub leżąc na ziemi [BottledByte]
+- crash klienta przy rozłączaniu przy zmianie poziomu w podziemiach
+- brak animacji ust podczas mówienia u klientów
+- popsute lobby gdy próbuje dołączyć osoba z nieprawidłową sumą kontrolną danych [BottledByte]
 
 --------------------------------------------------------------------------------
 Wersja 0.13 (2020-01-11):

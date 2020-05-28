@@ -67,8 +67,10 @@ item beer
 item vodka
 item plate
 item cup
-// cave mushrooms
+// cave items
 item mushroom
+item heal_crystal
+item magic_crystal
 // tutorial items
 item al_clothes
 item sword_long
@@ -81,6 +83,7 @@ item frying_pan
 item ladle
 // spawn forest items
 item healing_herb
+item mana_herb
 item green_herb
 // pre 0.5 quest item
 item q_main_letter
@@ -106,10 +109,16 @@ list drink
 list ancient_armory_armors
 list contest_reward
 list treasure
+// random item on bookcase
 list books
 list rare_books
+list recipes
+// GetBetterAmulet
 list leveled amulets
+// GetBetterRing
 list leveled rings
+// quests LostArtifact, StolenArtifact
+list artifacts
 
 //------------------------------------------------------------------------------
 // Required item stock
@@ -132,6 +141,8 @@ unit base_hunter
 unit base_rogue
 // hardcoded spawn in forest
 unit wild_hunter
+// hardcoded spawn in dungeons
+unit slime
 // quest units
 unit q_bandyci_szef
 unit guard_q_bandyci
@@ -205,6 +216,7 @@ unit tut_czlowiek
 // encounters
 unit crazy_cook
 unit hero_tomir
+unit traveling_merchant
 
 //------------------------------------------------------------------------------
 // Required unit groups
@@ -270,9 +282,6 @@ dialog q_evil_mage
 dialog q_evil_boss
 dialog q_evil_captain
 dialog q_evil_mayor
-dialog q_find_artifact_start
-dialog q_find_artifact_end
-dialog q_find_artifact_timeout
 dialog q_goblins_encounter
 dialog q_goblins_nobleman
 dialog q_goblins_mage
@@ -420,6 +429,7 @@ object rock
 object fern
 object table
 object shelves
+object scarecrow
 // outside
 object tree
 object tree2

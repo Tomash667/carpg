@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "InfoBox.h"
+
 #include "Game.h"
-#include "LoadScreen.h"
 #include "GameGui.h"
+#include "LoadScreen.h"
 
 //=================================================================================================
 InfoBox::InfoBox(const DialogInfo& info) : DialogBox(info)

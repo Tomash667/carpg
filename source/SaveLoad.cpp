@@ -1,54 +1,56 @@
 #include "Pch.h"
 #include "Game.h"
-#include "SaveState.h"
-#include "Version.h"
-#include "QuestManager.h"
+
+#include "Ability.h"
+#include "AbilityPanel.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "Cave.h"
+#include "City.h"
+#include "CommandParser.h"
+#include "Console.h"
+#include "CraftPanel.h"
+#include "CreateServerPanel.h"
+#include "GameFile.h"
+#include "GameGui.h"
+#include "GameMenu.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "Gui.h"
+#include "InfoBox.h"
+#include "Inventory.h"
+#include "ItemHelper.h"
+#include "Journal.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "LoadingHandler.h"
+#include "LoadScreen.h"
+#include "LocationGeneratorFactory.h"
+#include "MainMenu.h"
+#include "MpBox.h"
+#include "MultiplayerPanel.h"
+#include "PlayerInfo.h"
 #include "Quest.h"
+#include "QuestManager.h"
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
-#include "GameFile.h"
-#include "GameStats.h"
-#include "City.h"
-#include "Cave.h"
-#include "Gui.h"
 #include "SaveLoadPanel.h"
-#include "MultiplayerPanel.h"
-#include "MainMenu.h"
-#include "LevelGui.h"
-#include "WorldMapGui.h"
-#include "GameMessages.h"
-#include "LoadScreen.h"
-#include "AIController.h"
-#include "Ability.h"
-#include "Team.h"
-#include "Journal.h"
-#include "SoundManager.h"
+#include "SaveState.h"
 #include "ScriptManager.h"
+#include "Team.h"
+#include "Version.h"
 #include "World.h"
-#include "Level.h"
-#include "LoadingHandler.h"
-#include "LocationGeneratorFactory.h"
-#include "Arena.h"
-#include "ParticleSystem.h"
-#include "Inventory.h"
-#include "GameGui.h"
-#include "Console.h"
-#include "Pathfinding.h"
-#include "ItemHelper.h"
-#include "CreateServerPanel.h"
-#include "GameMenu.h"
-#include "MpBox.h"
-#include "PlayerInfo.h"
-#include "RenderTarget.h"
-#include "BitStreamFunc.h"
-#include "InfoBox.h"
-#include "CommandParser.h"
-#include "GameResources.h"
-#include "AbilityPanel.h"
-#include "CraftPanel.h"
-#include "SceneManager.h"
+#include "WorldMapGui.h"
+
+#include <ParticleSystem.h>
+#include <Render.h>
+#include <RenderTarget.h>
+#include <SceneManager.h>
+#include <SoundManager.h>
 
 enum SaveFlags
 {
@@ -109,7 +111,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 	if(!CanSaveGame())
 	{
-		// w tej chwili nie mo¿na zapisaæ gry
+		// can't save right now
 		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, game_gui->saveload->visible ? game_gui->saveload : nullptr);
 		return false;
 	}
@@ -186,7 +188,9 @@ void Game::CreateSaveImage()
 		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
 	else
 		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	DrawGame(rt_save);
+	render->SetRenderTarget(rt_save);
+	DrawGame();
+	render->SetRenderTarget(nullptr);
 	draw_flags = old_flags;
 }
 
@@ -392,10 +396,11 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << content.version;
 
 	// save flags
-	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
-#ifdef _DEBUG
-	flags |= SF_DEBUG;
-#endif
+	byte flags = 0;
+	if(Net::IsOnline())
+		flags |= SF_ONLINE;
+	if(IsDebug())
+		flags |= SF_DEBUG;
 	if(hardcore_mode)
 		flags |= SF_HARDCORE;
 	if(game_state == GS_WORLDMAP)
@@ -416,9 +421,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		}
 	}
 	f << time(nullptr);
-	f << world->GetYear();
-	f << world->GetMonth();
-	f << world->GetDay();
+	f << world->GetDateValue();
 	f << game_level->GetCurrentLocationText();
 	if(slot)
 	{
@@ -436,15 +439,13 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 			}
 		}
 		slot->save_date = time(nullptr);
-		slot->game_year = world->GetYear();
-		slot->game_month = world->GetMonth();
-		slot->game_day = world->GetDay();
+		slot->game_date = world->GetDateValue();
 		slot->hardcore = hardcore_mode;
 		slot->on_worldmap = (game_state == GS_WORLDMAP);
 		slot->location = game_level->GetCurrentLocationText();
 		slot->img_offset = f.GetPos() + 4;
 	}
-	uint img_size = rt_save->SaveToFile(f);
+	uint img_size = app::render->SaveToFile(rt_save->tex, f);
 	if(slot)
 		slot->img_size = img_size;
 
@@ -576,9 +577,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 		else
 			slot.mp_players.clear();
 		f >> slot.save_date;
-		f >> slot.game_year;
-		f >> slot.game_month;
-		f >> slot.game_day;
+		f >> slot.game_date;
 		f >> slot.location;
 		f >> slot.img_size;
 		slot.img_offset = f.GetPos();
@@ -741,7 +740,7 @@ void Game::LoadGame(GameReader& f)
 		for(uint i = 0; i < count; ++i)
 		{
 			Unit* u = new Unit;
-			u->Load(f, false);
+			u->Load(f);
 			u->area = nullptr;
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
@@ -784,9 +783,8 @@ void Game::LoadGame(GameReader& f)
 	// vars
 	f >> devmode;
 	f >> noai;
-#ifdef _DEBUG
-	noai = true;
-#endif
+	if(IsDebug())
+		noai = true;
 	f >> dont_wander;
 	f >> scene_mgr->use_fog;
 	f >> scene_mgr->use_lighting;
@@ -828,7 +826,7 @@ void Game::LoadGame(GameReader& f)
 	if(read_id != check_id++)
 		throw "Error reading data before team.";
 
-	// wczytaj dru¿ynê
+	// load team
 	team->Load(f);
 
 	// load quests
@@ -975,7 +973,8 @@ void Game::LoadGame(GameReader& f)
 	if(game_state2 == GS_LEVEL)
 	{
 		SetMusic();
-		if(pc->unit->usable && IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
+			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
 			game_gui->craft->Show();
 	}
 	else
@@ -1062,7 +1061,6 @@ void Game::RemoveUnusedAiAndCheck()
 	uint prev_size = ais.size();
 	bool deleted = false;
 
-	// to jest tylko tymczasowe rozwi¹zanie nadmiarowych ai, byæ mo¿e wystêpowa³o tylko w wersji 0.2 ale póki co niech zostanie
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;
@@ -1093,13 +1091,14 @@ void Game::RemoveUnusedAiAndCheck()
 		ReportError(5, Format("Removed unused ais: %u.", prev_size - ais.size()));
 	}
 
-#ifdef _DEBUG
-	int err_count = 0;
-	for(LevelArea& area : game_level->ForEachArea())
-		CheckUnitsAi(area, err_count);
-	if(err_count)
-		game_gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
-#endif
+	if(IsDebug())
+	{
+		int err_count = 0;
+		for(LevelArea& area : game_level->ForEachArea())
+			CheckUnitsAi(area, err_count);
+		if(err_count)
+			game_gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
+	}
 }
 
 //=================================================================================================

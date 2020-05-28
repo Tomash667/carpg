@@ -1,44 +1,46 @@
 #include "Pch.h"
 #include "Unit.h"
+
+#include "Ability.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "City.h"
+#include "CombatHelper.h"
+#include "Content.h"
+#include "CraftPanel.h"
+#include "EntityInterpolator.h"
 #include "Game.h"
-#include "SaveState.h"
+#include "GameFile.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "GroundItem.h"
+#include "InsideLocation.h"
 #include "Inventory.h"
-#include "UnitHelper.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "PlayerInfo.h"
+#include "Portal.h"
 #include "QuestManager.h"
-#include "Quest_Secret.h"
 #include "Quest_Contest.h"
 #include "Quest_Mages.h"
-#include "AIController.h"
-#include "Team.h"
-#include "Content.h"
-#include "SoundManager.h"
-#include "GameFile.h"
-#include "World.h"
-#include "Level.h"
-#include "BitStreamFunc.h"
-#include "EntityInterpolator.h"
-#include "UnitEventHandler.h"
-#include "GameStats.h"
-#include "GameMessages.h"
-#include "GroundItem.h"
-#include "ResourceManager.h"
-#include "GameGui.h"
-#include "PlayerInfo.h"
-#include "Stock.h"
-#include "Arena.h"
 #include "Quest_Scripted.h"
+#include "Quest_Secret.h"
+#include "SaveState.h"
 #include "ScriptException.h"
-#include "LevelGui.h"
 #include "ScriptManager.h"
-#include "Terrain.h"
-#include "Ability.h"
-#include "ParticleSystem.h"
-#include "CombatHelper.h"
-#include "City.h"
-#include "InsideLocation.h"
-#include "Portal.h"
-#include "GameResources.h"
-#include "CraftPanel.h"
+#include "Stock.h"
+#include "Team.h"
+#include "UnitEventHandler.h"
+#include "UnitHelper.h"
+#include "World.h"
+
+#include <ParticleSystem.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
+#include <Terrain.h>
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -86,6 +88,7 @@ void Unit::Release()
 void Unit::Init(UnitData& base, int lvl)
 {
 	Register();
+	fake_unit = true; // to prevent sending MP message set temporary as fake unit
 
 	// stats
 	data = &base;
@@ -129,7 +132,6 @@ void Unit::Init(UnitData& base, int lvl)
 	moved = false;
 	running = false;
 
-	fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 	if(base.group == G_PLAYER)
 	{
 		stats = new UnitStats;
@@ -144,7 +146,6 @@ void Unit::Init(UnitData& base, int lvl)
 	mp = mpmax = CalculateMaxMp();
 	stamina = stamina_max = CalculateMaxStamina();
 	stamina_timer = 0;
-	fake_unit = false;
 
 	// items
 	weight = 0;
@@ -207,6 +208,8 @@ void Unit::Init(UnitData& base, int lvl)
 	}
 	else
 		hero = nullptr;
+
+	fake_unit = false;
 }
 
 //=================================================================================================
@@ -772,7 +775,7 @@ void Unit::ConsumeItemS(const Item* item)
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
 	cstring anim_name;
-	if(cons.cons_type == ConsumableType::Food || cons.cons_type == ConsumableType::Herb)
+	if(Any(cons.subtype, Consumable::Subtype::Food, Consumable::Subtype::Herb))
 	{
 		action = A_EAT;
 		animation_state = AS_EAT_START;
@@ -794,45 +797,6 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	game_res->PreloadItem(&cons);
 	used_item = &cons;
-}
-
-//=================================================================================================
-void Unit::UseItem(int index)
-{
-	assert(index >= 0 && index < int(items.size()));
-	ItemSlot& slot = items[index];
-	assert(slot.item);
-	switch(slot.item->type)
-	{
-	case IT_CONSUMABLE:
-		ConsumeItem(index);
-		break;
-	case IT_BOOK:
-		assert(IsSet(slot.item->flags, ITEM_MAGIC_SCROLL));
-		if(Net::IsLocal())
-		{
-			action = A_USE_ITEM;
-			used_item = slot.item;
-			mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-			if(Net::IsServer())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_ITEM;
-				c.unit = this;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_ITEM;
-			c.id = index;
-			action = A_PREPARE;
-		}
-		break;
-	default:
-		assert(0);
-		break;
-	}
 }
 
 //=================================================================================================
@@ -921,7 +885,6 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 
 			if(u && !u->player->is_local)
 			{
-				// wyœlij komunikat do gracza z aktualizacj¹ ekwipunku
 				NetChangePlayer& c = Add1(u->player->player_info->changes);
 				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
 				c.item = item;
@@ -1734,7 +1697,7 @@ int Unit::GetRandomAttack() const
 }
 
 //=================================================================================================
-void Unit::Save(GameWriter& f, bool local)
+void Unit::Save(GameWriter& f)
 {
 	f << id;
 	f << data->id;
@@ -1758,7 +1721,7 @@ void Unit::Save(GameWriter& f, bool local)
 	}
 	if(stock)
 	{
-		if(local || world->GetWorldtime() - stock->date < 10)
+		if(f.isLocal || world->GetWorldtime() - stock->date < 10)
 		{
 			f.Write1();
 			SaveStock(f);
@@ -1811,7 +1774,7 @@ void Unit::Save(GameWriter& f, bool local)
 	else
 		f.Write0();
 
-	if(local)
+	if(f.isLocal)
 	{
 		mesh_inst->Save(f);
 		f << animation;
@@ -1978,8 +1941,9 @@ void Unit::SaveStock(GameWriter& f)
 }
 
 //=================================================================================================
-void Unit::Load(GameReader& f, bool local)
+void Unit::Load(GameReader& f)
 {
+	fake_unit = true; // to prevent sending MP message set temporary as fake unit
 	human_data = nullptr;
 
 	if(LOAD_VERSION >= V_0_12)
@@ -2194,7 +2158,7 @@ void Unit::Load(GameReader& f, bool local)
 		human_data = nullptr;
 	}
 
-	if(local)
+	if(f.isLocal)
 	{
 		float old_attack_power = 1.f;
 		bool old_run_attack = false, old_hitted = false;
@@ -2557,7 +2521,7 @@ void Unit::Load(GameReader& f, bool local)
 	else
 		player = nullptr;
 
-	if(local && human_data)
+	if(f.isLocal && human_data)
 		human_data->ApplyScale(mesh_inst);
 
 	if(IsSet(data->flags, F_HERO))
@@ -2583,7 +2547,7 @@ void Unit::Load(GameReader& f, bool local)
 	frozen = FROZEN::NO;
 
 	// fizyka
-	if(local)
+	if(f.isLocal)
 		CreatePhysics(true);
 	else
 		cobj = nullptr;
@@ -2631,6 +2595,8 @@ void Unit::Load(GameReader& f, bool local)
 		mp = mpmax = CalculateMaxMp();
 
 	CalculateLoad();
+
+	fake_unit = false;
 }
 
 //=================================================================================================
@@ -2868,6 +2834,7 @@ bool Unit::Read(BitStreamReader& f)
 	hpmax = 1.f;
 	mpmax = 1.f;
 	stamina_max = 1.f;
+	level = 0;
 	f.ReadCasted<byte>(live_state);
 	f >> pos;
 	f >> rot;
@@ -3124,7 +3091,7 @@ int Unit::FindHealingPotion() const
 			continue;
 
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Healing)
+		if(pot.aiType != Consumable::AiType::Healing)
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::Heal);
@@ -3166,7 +3133,7 @@ int Unit::FindManaPotion() const
 			continue;
 
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.ai_type != ConsumableAiType::Mana)
+		if(pot.aiType != Consumable::AiType::Mana)
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::RestoreMana);
@@ -3543,7 +3510,7 @@ int Unit::FindItem(const Item* item, int quest_id) const
 }
 
 //=================================================================================================
-int Unit::FindItem(delegate<bool(const ItemSlot & slot)> callback) const
+int Unit::FindItem(delegate<bool(const ItemSlot& slot)> callback) const
 {
 	int index = 0;
 	for(const ItemSlot& slot : items)
@@ -4389,6 +4356,19 @@ void Unit::ApplyStat(SkillId s)
 {
 	if(s == SkillId::CONCENTRATION)
 		RecalculateMp();
+	else if(s == SkillId::ALCHEMY)
+	{
+		if(IsPlayer())
+		{
+			int skill = GetBase(SkillId::ALCHEMY);
+			for(pair<const int, Recipe*>& p : Recipe::items)
+			{
+				Recipe* recipe = p.second;
+				if(recipe->autolearn && skill >= recipe->skill)
+					player->AddRecipe(recipe);
+			}
+		}
+	}
 }
 
 //=================================================================================================
@@ -5810,6 +5790,17 @@ bool Unit::IsFriend(Unit& u, bool check_arena_attack) const
 }
 
 //=================================================================================================
+Color Unit::GetRelationColor(Unit& u) const
+{
+	if(IsEnemy(u))
+		return Color::Red;
+	else if(IsFriend(u))
+		return Color::Green;
+	else
+		return Color::Yellow;
+}
+
+//=================================================================================================
 void Unit::RefreshStock()
 {
 	assert(data->trader);
@@ -6927,6 +6918,12 @@ void Unit::Update(float dt)
 	{
 		UpdateEffects(dt);
 
+		if(IsStanding() && talking)
+		{
+			talk_timer += dt;
+			mesh_inst->need_update = true;
+		}
+
 		if(Net::IsLocal())
 		{
 			// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
@@ -6994,11 +6991,6 @@ void Unit::Update(float dt)
 						}
 					}
 				}
-			}
-			if(IsStanding() && talking)
-			{
-				talk_timer += dt;
-				mesh_inst->need_update = true;
 			}
 		}
 	}
@@ -7777,7 +7769,9 @@ void Unit::Update(float dt)
 						if(timer >= 0.5f)
 						{
 							timer = 0.5f;
-							++animation_state;
+							animation_state = AS_USE_USABLE_USING;
+							if(IsLocalPlayer() && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
+								game_gui->craft->Show();
 						}
 
 						// przesuñ postaæ i fizykê
@@ -8084,7 +8078,7 @@ void Unit::Moved(bool warped, bool dash)
 		{
 			if(game_level->terrain->IsInside(pos))
 			{
-				game_level->terrain->SetH(pos);
+				game_level->terrain->SetY(pos);
 				if(warped)
 					return;
 				if(IsPlayer() && player->WantExitLevel() && frozen == FROZEN::NO && !dash)

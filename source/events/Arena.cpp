@@ -1,22 +1,24 @@
 #include "Pch.h"
 #include "Arena.h"
-#include "Team.h"
-#include "Unit.h"
+
 #include "AIController.h"
-#include "Level.h"
-#include "World.h"
 #include "City.h"
-#include "Language.h"
 #include "Game.h"
 #include "GameGui.h"
 #include "GameMessages.h"
+#include "GameResources.h"
+#include "Language.h"
+#include "Level.h"
+#include "PlayerInfo.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
-#include "DialogBox.h"
+#include "Team.h"
+#include "Unit.h"
 #include "UnitGroup.h"
-#include "SoundManager.h"
-#include "PlayerInfo.h"
-#include "GameResources.h"
+#include "World.h"
+
+#include <DialogBox.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 void Arena::Init()
@@ -38,8 +40,8 @@ void Arena::LoadLanguage()
 	txPvp = Str("pvp");
 	txPvpWith = Str("pvpWith");
 	txPvpTooFar = Str("pvpTooFar");
-	LoadArray(txArenaText, "arenaText");
-	LoadArray(txArenaTextU, "arenaTextU");
+	StrArray(txArenaText, "arenaText");
+	StrArray(txArenaTextU, "arenaTextU");
 }
 
 //=================================================================================================

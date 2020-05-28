@@ -1,17 +1,20 @@
 #include "Pch.h"
 #include "Journal.h"
-#include "Input.h"
-#include "GetTextDialog.h"
-#include "Language.h"
-#include "GameKeys.h"
-#include "QuestManager.h"
-#include "Quest.h"
-#include "ResourceManager.h"
-#include "World.h"
+
+#include "Game.h"
 #include "GameGui.h"
+#include "GameKeys.h"
 #include "GameMessages.h"
-#include "SoundManager.h"
+#include "Language.h"
 #include "Net.h"
+#include "Quest.h"
+#include "QuestManager.h"
+#include "World.h"
+
+#include <GetTextDialog.h>
+#include <Input.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 Journal::Journal() : mode(Quests)
@@ -20,6 +23,16 @@ Journal::Journal() : mode(Quests)
 	Reset();
 
 	font_height = GameGui::font->height;
+}
+
+//=================================================================================================
+Journal::~Journal()
+{
+	for(Text& text : texts)
+	{
+		if(text.pooled)
+			StringPool.SafeFree(text.pooled);
+	}
 }
 
 //=================================================================================================
@@ -382,6 +395,13 @@ void Journal::Hide()
 //=================================================================================================
 void Journal::Build()
 {
+	const bool devmode = game->devmode;
+
+	for(Text& text : texts)
+	{
+		if(text.pooled)
+			StringPool.Free(text.pooled);
+	}
 	texts.clear();
 	x = 0;
 	y = 0;
@@ -396,14 +416,18 @@ void Journal::Build()
 				AddEntry(txNoQuests, 0, true);
 			else
 			{
-				for(vector<Quest*>::iterator it = quest_mgr->quests.begin(), end = quest_mgr->quests.end(); it != end; ++it)
+				for(Quest* quest : quest_mgr->quests)
 				{
 					int color = 0;
-					if((*it)->state == Quest::Failed)
+					if(quest->state == Quest::Failed)
 						color = 1;
-					else if((*it)->state == Quest::Completed)
+					else if(quest->state == Quest::Completed)
 						color = 2;
-					AddEntry((*it)->name.c_str(), color, true);
+
+					if(devmode)
+						AddEntry(Format("%s (%p)", quest->name.c_str(), quest), color, true, true);
+					else
+						AddEntry(quest->name.c_str(), color, true);
 				}
 			}
 		}
@@ -442,13 +466,25 @@ void Journal::Build()
 }
 
 //=================================================================================================
-void Journal::AddEntry(cstring text, int color, bool singleline)
+void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
 {
+	Text& t = Add1(texts);
+	t.color = color;
+	if(pooled)
+	{
+		string* str = StringPool.Get();
+		*str = text;
+		t.pooled = str;
+		t.text = str->c_str();
+	}
+	else
+	{
+		t.pooled = nullptr;
+		t.text = text;
+	}
+
 	if(singleline)
 	{
-		Text& t = Add1(texts);
-		t.text = text;
-		t.color = color;
 		t.x = x;
 		t.y = y;
 		++y;
@@ -470,9 +506,6 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 		{
 			// ten tekst zajmuje ponad jedn¹ stronê
 			assert(0);
-			Text& t = Add1(texts);
-			t.text = text;
-			t.color = color;
 			t.x = x;
 			t.y = y;
 			++x;
@@ -481,9 +514,6 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 		{
 			++x;
 			y = 0;
-			Text& t = Add1(texts);
-			t.text = text;
-			t.color = color;
 			t.x = x;
 			t.y = y;
 			y += h;
@@ -496,9 +526,6 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 	}
 	else
 	{
-		Text& t = Add1(texts);
-		t.text = text;
-		t.color = color;
 		t.x = x;
 		t.y = y;
 		y += h;

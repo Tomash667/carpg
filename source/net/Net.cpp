@@ -1,19 +1,21 @@
 #include "Pch.h"
 #include "Net.h"
-#include "LobbyApi.h"
-#include "Language.h"
+
 #include "Game.h"
-#include "ResourceManager.h"
-#include "PlayerInfo.h"
-#include "Team.h"
 #include "GameGui.h"
-#include "Notifications.h"
-#include "ServerPanel.h"
 #include "GameMessages.h"
+#include "Language.h"
+#include "LobbyApi.h"
 #include "MpBox.h"
 #include "PacketLogger.h"
+#include "PlayerInfo.h"
+#include "ServerPanel.h"
+#include "Team.h"
 
-Net* global::net;
+#include <Notifications.h>
+#include <ResourceManager.h>
+
+Net* net;
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
 const int CLOSE_PEER_TIMER = 1000; // ms

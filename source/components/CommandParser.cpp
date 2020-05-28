@@ -1,38 +1,40 @@
 #include "Pch.h"
 #include "CommandParser.h"
-#include "BitStreamFunc.h"
-#include "ConsoleCommands.h"
-#include "Level.h"
-#include "PlayerInfo.h"
-#include "NetChangePlayer.h"
+
+#include "AIController.h"
 #include "Arena.h"
-#include "Tokenizer.h"
-#include "Game.h"
-#include "QuestManager.h"
-#include "GameGui.h"
-#include "ServerPanel.h"
+#include "BitStreamFunc.h"
+#include "BuildingGroup.h"
+#include "City.h"
 #include "Console.h"
+#include "ConsoleCommands.h"
+#include "Game.h"
+#include "GameGui.h"
+#include "InsideLocation.h"
+#include "Level.h"
 #include "LevelGui.h"
-#include "WorldMapGui.h"
 #include "MpBox.h"
+#include "NetChangePlayer.h"
+#include "Pathfinding.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "SaveState.h"
 #include "ScriptManager.h"
+#include "ServerPanel.h"
+#include "Team.h"
+#include "Utility.h"
 #include "Version.h"
 #include "World.h"
-#include "InsideLocation.h"
-#include "City.h"
-#include "Team.h"
-#include "AIController.h"
-#include "SaveState.h"
-#include "BuildingGroup.h"
-#include "Render.h"
-#include "Terrain.h"
-#include "Pathfinding.h"
-#include "Utility.h"
-#include "Engine.h"
+#include "WorldMapGui.h"
+
+#include <Engine.h>
+#include <Render.h>
 #include <SceneManager.h>
+#include <Terrain.h>
+#include <Tokenizer.h>
 
 //-----------------------------------------------------------------------------
-CommandParser* global::cmdp;
+CommandParser* cmdp;
 
 //=================================================================================================
 void CommandParser::AddCommands()
@@ -47,7 +49,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_WORLD_MAP | F_SINGLEPLAYER, 0.f, 10.f));
+	cmds.push_back(ConsoleCommand(&game->game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_GAME | F_WORLD_MAP | F_MP_VAR, 0.01f, 10.f));
 	cmds.push_back(ConsoleCommand(&game->next_seed, "next_seed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
@@ -75,8 +77,8 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp building/group [front])", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-11 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-11 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_REVEAL_MINIMAP, "reveal_minimap", "reveal dungeon minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
@@ -108,7 +110,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
@@ -134,27 +136,27 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SHADER_VERSION, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
-#ifdef _DEBUG
-	for(uint i = 0; i < CMD_MAX; ++i)
+	if(IsDebug())
 	{
-		bool ok = false;
-		for(ConsoleCommand& cmd : cmds)
+		for(uint i = 0; i < CMD_MAX; ++i)
 		{
-			if(cmd.cmd == i)
+			bool ok = false;
+			for(ConsoleCommand& cmd : cmds)
 			{
-				ok = true;
-				break;
+				if(cmd.cmd == i)
+				{
+					ok = true;
+					break;
+				}
 			}
+			if(!ok)
+				Error("Missing command %u.", i);
 		}
-		if(!ok)
-			Error("Missing command %u.", i);
 	}
-#endif
 }
 
 //=================================================================================================
@@ -242,11 +244,12 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 				}
 			}
 
-			if(it->type == ConsoleCommand::VAR_BOOL)
+			switch(it->type)
 			{
+			case ConsoleCommand::VAR_BOOL:
 				if(t.Next())
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
+					if(IsSet(it->flags, F_MP_VAR) && Net::IsClient())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -258,91 +261,90 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 					if(value != var)
 					{
 						var = value;
-						if(IsSet(it->flags, F_MP_VAR))
+						if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
 							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
 					}
 				}
 				Msg("%s = %d", it->name, *(bool*)it->var ? 1 : 0);
-				return;
-			}
-			else if(it->type == ConsoleCommand::VAR_FLOAT)
-			{
-				float& f = it->Get<float>();
-
-				if(t.Next())
+				break;
+			case ConsoleCommand::VAR_FLOAT:
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
-					{
-						Msg("Only server can change this variable.");
-						return;
-					}
+					float& f = it->Get<float>();
 
-					float f2 = Clamp(t.MustGetFloat(), it->_float.x, it->_float.y);
-					if(!Equal(f, f2))
+					if(t.Next())
 					{
-						f = f2;
-						if(IsSet(it->flags, F_MP_VAR))
-							Net::PushChange(NetChange::CHANGE_MP_VARS);
+						if(IsSet(it->flags, F_MP_VAR) && Net::IsClient())
+						{
+							Msg("Only server can change this variable.");
+							return;
+						}
+
+						float f2 = Clamp(t.MustGetFloat(), it->_float.x, it->_float.y);
+						if(!Equal(f, f2))
+						{
+							f = f2;
+							if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
+								Net::PushChange(NetChange::CHANGE_MP_VARS);
+						}
 					}
+					Msg("%s = %g", it->name, f);
 				}
-				Msg("%s = %g", it->name, f);
-				return;
-			}
-			else if(it->type == ConsoleCommand::VAR_INT)
-			{
-				int& i = it->Get<int>();
-
-				if(t.Next())
+				break;
+			case ConsoleCommand::VAR_INT:
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
-					{
-						Msg("Only server can change this variable.");
-						return;
-					}
+					int& i = it->Get<int>();
 
-					int i2 = Clamp(t.MustGetInt(), it->_int.x, it->_int.y);
-					if(i != i2)
+					if(t.Next())
 					{
-						i = i2;
-						if(IsSet(it->flags, F_MP_VAR))
-							Net::PushChange(NetChange::CHANGE_MP_VARS);
-						if(it->changed)
-							it->changed();
+						if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
+						{
+							Msg("Only server can change this variable.");
+							return;
+						}
+
+						int i2 = Clamp(t.MustGetInt(), it->_int.x, it->_int.y);
+						if(i != i2)
+						{
+							i = i2;
+							if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
+								Net::PushChange(NetChange::CHANGE_MP_VARS);
+							if(it->changed)
+								it->changed();
+						}
 					}
+					Msg("%s = %d", it->name, i);
 				}
-				Msg("%s = %d", it->name, i);
-				return;
-			}
-			else if(it->type == ConsoleCommand::VAR_UINT)
-			{
-				uint& u = it->Get<uint>();
-
-				if(t.Next())
+				break;
+			case ConsoleCommand::VAR_UINT:
 				{
-					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
-					{
-						Msg("Only server can change this variable.");
-						return;
-					}
+					uint& u = it->Get<uint>();
 
-					uint u2 = Clamp(t.MustGetUint(), it->_uint.x, it->_uint.y);
-					if(u != u2)
+					if(t.Next())
 					{
-						u = u2;
-						if(IsSet(it->flags, F_MP_VAR))
-							Net::PushChange(NetChange::CHANGE_MP_VARS);
+						if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
+						{
+							Msg("Only server can change this variable.");
+							return;
+						}
+
+						uint u2 = Clamp(t.MustGetUint(), it->_uint.x, it->_uint.y);
+						if(u != u2)
+						{
+							u = u2;
+							if(IsSet(it->flags, F_MP_VAR) && Net::IsServer())
+								Net::PushChange(NetChange::CHANGE_MP_VARS);
+						}
 					}
+					Msg("%s = %u", it->name, u);
 				}
-				Msg("%s = %u", it->name, u);
-				return;
-			}
-			else
-			{
+				break;
+			case ConsoleCommand::VAR_NONE:
 				RunCommand(*it, source);
-				return;
+				break;
 			}
+			return;
 		}
 
 		Msg("Unknown command '%s'!", token.c_str());
@@ -879,12 +881,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					slot = -1;
 					text = t.GetString();
 				}
-				else
+				else if(t.IsInt())
 				{
-					slot = Clamp(t.MustGetInt(), 1, 10);
+					slot = t.GetInt();
+					if(slot < 1 || slot > 11)
+						t.Throw("Invalid slot %d.", slot);
 					if(t.Next())
 						text = t.MustGetString();
 				}
+				else
+					t.StartUnexpected().Add(tokenizer::T_INT).Add(tokenizer::T_STRING).Throw();
 			}
 			if(slot != -1)
 				game->SaveGameSlot(slot, text->c_str());
@@ -906,8 +912,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					name = t.GetString();
 					slot = -1;
 				}
+				else if(t.IsInt())
+				{
+					slot = t.GetInt();
+					if(slot < 1 || slot > 11)
+						t.Throw("Invalid slot %d.", slot);
+				}
 				else
-					slot = Clamp(t.MustGetInt(), 1, 10);
+					t.StartUnexpected().Add(tokenizer::T_INT).Add(tokenizer::T_STRING).Throw();
 			}
 
 			try
@@ -1358,20 +1370,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 	case CMD_RESOLUTION:
 		if(t.Next())
 		{
-			int w = t.MustGetInt(), h = -1, hz = -1;
-			bool pick_h = true, pick_hz = true, valid = false;
+			int w = t.MustGetInt(), h = -1;
+			bool pick_h = true, valid = false;
 			if(t.Next())
 			{
 				h = t.MustGetInt();
 				pick_h = false;
-				if(t.Next())
-				{
-					hz = t.MustGetInt();
-					pick_hz = false;
-				}
 			}
-			vector<Resolution> resolutions;
-			render->GetResolutions(resolutions);
+			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
 			{
 				if(w == res.size.x)
@@ -1381,41 +1387,30 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 						if((int)res.size.y >= h)
 						{
 							h = res.size.y;
-							if((int)res.hz > hz)
-								hz = res.hz;
 							valid = true;
 						}
 					}
 					else if(h == res.size.y)
 					{
-						if(pick_hz)
-						{
-							if((int)res.hz > hz)
-								hz = res.hz;
-							valid = true;
-						}
-						else if(hz == res.hz)
-						{
-							valid = true;
-							break;
-						}
+						valid = true;
+						break;
 					}
 				}
 			}
 			if(valid)
-				engine->ChangeMode(Int2(w, h), engine->IsFullscreen(), hz);
+				engine->SetWindowSize(Int2(w, h));
 			else
-				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
+				Msg("Can't change resolution to %dx%d.", w, h);
 		}
 		else
 		{
-			LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
-				engine->GetWindowSize().x, engine->GetWindowSize().y, render->GetRefreshRate());
-			vector<Resolution> resolutions;
-			render->GetResolutions(resolutions);
+			LocalString s = Format("Current resolution %dx%d. Available: ",
+				engine->GetWindowSize().x, engine->GetWindowSize().y);
+			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
-				s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
+				s += Format("%dx%d, ", res.size.x, res.size.y);
 			s.pop(2u);
+			s += ".";
 			Msg(s);
 		}
 		break;
@@ -2033,22 +2028,6 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				c.type = NetChange::CHEAT_ARENA;
 				c.str = StringPool.Get();
 				*c.str = s;
-			}
-		}
-		break;
-	case CMD_SHADER_VERSION:
-		if(!t.Next() || !t.IsInt())
-			Msg("shader_version: %d", render->GetShaderVersion());
-		else
-		{
-			int value = t.GetInt();
-			if(value != 2 && value != 3)
-				Msg("Invalid shader version, must be 2 or 3.");
-			else
-			{
-				render->SetShaderVersion(value);
-				Msg("shader_version: %d", value);
-				render->ReloadShaders();
 			}
 		}
 		break;

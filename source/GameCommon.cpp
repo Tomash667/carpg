@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "GameCommon.h"
-#include "Version.h"
+
 #include "Language.h"
+#include "Version.h"
 
 //-----------------------------------------------------------------------------
 vector<uint> _to_remove;

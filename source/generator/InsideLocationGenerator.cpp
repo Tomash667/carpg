@@ -1,22 +1,24 @@
 #include "Pch.h"
 #include "InsideLocationGenerator.h"
+
+#include "Game.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "ItemHelper.h"
+#include "Level.h"
 #include "MultiInsideLocation.h"
 #include "OutsideLocation.h"
-#include "World.h"
-#include "Level.h"
+#include "Pathfinding.h"
+#include "Portal.h"
 #include "QuestManager.h"
 #include "Quest_Orcs.h"
 #include "Quest_Secret.h"
-#include "Stock.h"
-#include "Portal.h"
-#include "Texture.h"
-#include "GameStats.h"
 #include "RoomType.h"
-#include "ItemHelper.h"
-#include "Game.h"
+#include "Stock.h"
 #include "Team.h"
-#include "Pathfinding.h"
-#include "GameResources.h"
+#include "World.h"
+
+#include <Texture.h>
 
 // don't spawn objects near other objects to not block path
 const float EXTRA_RADIUS = 0.8f;
@@ -1069,11 +1071,12 @@ void InsideLocationGenerator::RespawnTraps()
 void InsideLocationGenerator::CreateMinimap()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 
 	for(int y = 0; y < lvl.h; ++y)
 	{
-		uint* pix = lock[y];
+		uint* pix = tex[y];
 		for(int x = 0; x < lvl.w; ++x)
 		{
 			Tile& p = lvl.map[x + (lvl.w - 1 - y) * lvl.w];
@@ -1093,7 +1096,7 @@ void InsideLocationGenerator::CreateMinimap()
 	}
 
 	// extra borders
-	uint* pix = lock[lvl.h];
+	uint* pix = tex[lvl.h];
 	for(int x = 0; x < lvl.w + 1; ++x)
 	{
 		*pix = 0;
@@ -1101,10 +1104,11 @@ void InsideLocationGenerator::CreateMinimap()
 	}
 	for(int y = 0; y < lvl.h + 1; ++y)
 	{
-		uint* pix = lock[y] + lvl.w;
+		uint* pix = tex[y] + lvl.w;
 		*pix = 0;
 	}
 
+	tex.Unlock();
 	game_level->minimap_size = lvl.w;
 }
 

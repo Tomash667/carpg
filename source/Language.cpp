@@ -1,16 +1,18 @@
 #include "Pch.h"
-#include "Tokenizer.h"
 #include "Language.h"
+
+#include "Ability.h"
 #include "Attribute.h"
-#include "Skill.h"
+#include "BaseUsable.h"
+#include "Building.h"
 #include "Class.h"
 #include "Item.h"
 #include "Perk.h"
+#include "Skill.h"
 #include "UnitData.h"
-#include "Building.h"
-#include "Ability.h"
-#include "BaseUsable.h"
 #include "UnitGroup.h"
+
+#include <Tokenizer.h>
 
 enum Group
 {

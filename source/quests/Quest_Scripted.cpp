@@ -1,19 +1,21 @@
 #include "Pch.h"
 #include "Quest_Scripted.h"
-#include "QuestScheme.h"
-#include "ScriptManager.h"
-#include "World.h"
-#include "Journal.h"
+
+#include "City.h"
+#include "DialogContext.h"
+#include "Encounter.h"
+#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "QuestManager.h"
-#include "GameFile.h"
-#include "City.h"
-#include "Encounter.h"
 #include "GroundItem.h"
+#include "Journal.h"
 #include "Net.h"
-#include "DialogContext.h"
+#include "QuestManager.h"
+#include "QuestScheme.h"
 #include "SaveState.h"
+#include "ScriptManager.h"
+#include "World.h"
+
 #include <angelscript.h>
 #include <scriptdictionary\scriptdictionary.h>
 #pragma warning(error: 4062)
@@ -660,7 +662,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	// convert
 	ConversionData data;
-	data.dict = CScriptDictionary::Create(script_mgr->GetEngine());
+	data.vars = new Vars;
 	quest->GetConversionData(data);
 	scheme = QuestScheme::TryGet(data.id);
 	if(!scheme || !scheme->f_upgrade)
@@ -676,10 +678,8 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	script_mgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
-			CHECKED(ctx->SetArgAddress(0, data.dict));
+			CHECKED(ctx->SetArgAddress(0, data.vars));
 	});
 	AfterCall();
 	in_upgrade = false;
-
-	data.dict->Release();
 }

@@ -1,15 +1,19 @@
 #include "Pch.h"
 #include "CraftPanel.h"
-#include "Language.h"
-#include "PlayerController.h"
-#include "Unit.h"
+
 #include "Game.h"
 #include "GameGui.h"
+#include "GameMessages.h"
 #include "GameResources.h"
-#include "ResourceManager.h"
-#include "GetNumberDialog.h"
-#include "SoundManager.h"
+#include "Language.h"
+#include "Messenger.h"
+#include "PlayerController.h"
 #include "PlayerInfo.h"
+#include "Unit.h"
+
+#include <GetNumberDialog.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 struct RecipeItem : public GuiElement
 {
@@ -20,12 +24,12 @@ struct RecipeItem : public GuiElement
 		text = item->name;
 		text += "\n(";
 		bool first = true;
-		for(pair<const Item*, uint>& p : recipe->items)
+		for(pair<const Item*, uint>& p : recipe->ingredients)
 		{
 			if(first)
 				first = false;
 			else
-				text += "\n";
+				text += ", ";
 			if(p.second > 1u)
 				text += Format("%ux ", p.second);
 			text += p.first->name;
@@ -44,13 +48,15 @@ struct RecipeItem : public GuiElement
 
 CraftPanel::CraftPanel()
 {
+	messenger->Register(Msg::LearnRecipe, Messenger::Delegate(this, &CraftPanel::OnLearnRecipe));
+
 	focusable = true;
 	visible = false;
 	tooltip.Init(TooltipController::Callback(this, &CraftPanel::GetTooltip));
 
-	list.SetItemHeight(50);
+	list.SetItemHeight(-1);
 	list.SetForceImageSize(Int2(40));
-	list.flags = DTF_VCENTER;
+	list.textFlags = DTF_VCENTER;
 	list.parent = this;
 	list.event_handler = DialogEvent(this, &CraftPanel::OnSelectionChange);
 	list.Initialize();
@@ -143,16 +149,10 @@ void CraftPanel::Update(float dt)
 		return;
 	}
 
-	int new_skill = game->pc->unit->Get(SkillId::ALCHEMY);
-	if(skill != new_skill)
-	{
-		skill = new_skill;
-		SetRecipes();
-	}
-
 	Container::Update(dt);
 
 	list.mouse_focus = focus;
+	list.focus = focus;
 	list.Update(dt);
 
 	button.mouse_focus = focus;
@@ -209,8 +209,7 @@ void CraftPanel::Event(GuiEvent e)
 			left.Event(GuiEvent_Show);
 			right.Event(GuiEvent_Show);
 
-			skill = game->pc->unit->Get(SkillId::ALCHEMY);
-			SetRecipes();
+			SetRecipes(false);
 			SetIngredients();
 			if(list.GetItems().empty())
 				button.state = Button::DISABLED;
@@ -232,20 +231,57 @@ void CraftPanel::Event(GuiEvent e)
 	{
 		Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 		uint max = HaveIngredients(recipe);
-		counter = 1;
-		GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
+		if(max == 1 || input->Down(Key::Control))
+		{
+			// craft one
+			counter = 1;
+			OnCraft(BUTTON_OK);
+		}
+		else if(input->Down(Key::Shift))
+		{
+			// craft max
+			counter = max;
+			OnCraft(BUTTON_OK);
+		}
+		else
+		{
+			counter = 1;
+			GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
+		}
 	}
 }
 
-void CraftPanel::SetRecipes()
+void CraftPanel::SetRecipes(bool rememberRecipe)
 {
+	Recipe* prevRecipe = nullptr;
+	if(rememberRecipe && list.GetIndex() != -1)
+		prevRecipe = list.GetItemCast<RecipeItem>()->recipe;
+
 	list.Reset();
-	for(Recipe* recipe : Recipe::recipes)
+	for(MemorizedRecipe& recipe : game->pc->recipes)
 	{
-		if(skill >= recipe->skill)
+		RecipeItem* item = new RecipeItem(recipe.recipe);
+		list.Add(item);
+	}
+
+	vector<RecipeItem*>& items = list.GetItemsCast<RecipeItem>();
+	std::sort(items.begin(), items.end(), [](RecipeItem* a, RecipeItem* b)
+	{
+		return a->recipe->order < b->recipe->order;
+	});
+
+	if(prevRecipe)
+	{
+		int index = 0;
+		for(RecipeItem* item : items)
 		{
-			RecipeItem* item = new RecipeItem(recipe);
-			list.Add(item);
+			if(item->recipe == prevRecipe)
+			{
+				list.Select(index);
+				list.ScrollTo(index);
+				break;
+			}
+			++index;
 		}
 	}
 }
@@ -279,14 +315,12 @@ void CraftPanel::OnCraft(int id)
 	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
 	if(Net::IsLocal())
 	{
-		for(pair<const Item*, uint>& p : recipe->items)
+		for(pair<const Item*, uint>& p : recipe->ingredients)
 			game->pc->unit->RemoveItem(p.first, p.second * counter);
 		game->pc->unit->AddItem2(recipe->result, counter, 0u);
 		float value = ((float)recipe->skill + 25) / 25.f * 1000 * counter;
 		game->pc->Train(TrainWhat::Craft, value, 0);
-		sound_mgr->PlaySound2d(sAlchemy);
-		SetIngredients();
-		button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
+		AfterCraft();
 	}
 	else
 	{
@@ -307,7 +341,7 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 {
 	assert(recipe);
 	uint max_count = 999u;
-	for(pair<const Item*, uint>& p : recipe->items)
+	for(pair<const Item*, uint>& p : recipe->ingredients)
 	{
 		bool ok = false;
 		for(pair<const Item*, uint>& p2 : ingredients)
@@ -332,13 +366,13 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint count)
 {
 	assert(recipe && count > 0);
-	for(pair<const Item*, uint>& p : recipe->items)
+	for(pair<const Item*, uint>& p : recipe->ingredients)
 	{
 		if((uint)player.unit->CountItem(p.first) < p.second * count)
 			return false;
 	}
 
-	for(pair<const Item*, uint>& p : recipe->items)
+	for(pair<const Item*, uint>& p : recipe->ingredients)
 		player.unit->RemoveItem(p.first, p.second * count);
 	player.unit->AddItem2(recipe->result, count, 0u);
 	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
@@ -356,4 +390,11 @@ void CraftPanel::AfterCraft()
 	sound_mgr->PlaySound2d(sAlchemy);
 	SetIngredients();
 	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
+}
+
+void CraftPanel::OnLearnRecipe()
+{
+	game_gui->messages->AddGameMsg3(GMS_LEARNED_RECIPE);
+	if(visible)
+		SetRecipes(true);
 }

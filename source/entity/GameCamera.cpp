@@ -14,11 +14,14 @@
 #include "Level.h"
 #include "LevelArea.h"
 #include "OutsideLocation.h"
-#include "Terrain.h"
+#include "PhysicCallbacks.h"
 #include "Unit.h"
 
 const float SPRINGINESS_NORMAL = 40.f;
 const float SPRINGINESS_SLOW = 5.f;
+const float DIST_MIN = 0.5f;
+const float DIST_DEF = 3.5f;
+const float DIST_MAX = 6.f;
 
 //=================================================================================================
 GameCamera::GameCamera() : springiness(SPRINGINESS_NORMAL), reset(true), free_rot(false)
@@ -31,7 +34,7 @@ void GameCamera::Reset(bool full)
 	if(full)
 	{
 		real_rot = Vec2(0, 4.2875104f);
-		dist = 3.5f;
+		dist = DIST_DEF;
 		drunk_anim = 0.f;
 	}
 	shift = 0.f;
@@ -56,7 +59,13 @@ void GameCamera::Update(float dt)
 	{
 		springiness_timer -= dt;
 		if(springiness_timer <= 0.f)
-			springiness = SPRINGINESS_NORMAL;
+		{
+			springiness += 5;
+			if(springiness >= SPRINGINESS_NORMAL)
+				springiness = SPRINGINESS_NORMAL;
+			else
+				springiness_timer = 0.5f;
+		}
 	}
 
 	const float d = reset
@@ -152,10 +161,7 @@ void GameCamera::RotateTo(float dt, float dest_rot)
 void GameCamera::UpdateFreeRot(float dt)
 {
 	if(!Any(GKey.allow_input, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
-	{
-		free_rot = false;
 		return;
-	}
 
 	const float c_cam_angle_min = PI + 0.1f;
 	const float c_cam_angle_max = PI * 1.8f - 0.1f;
@@ -184,10 +190,21 @@ void GameCamera::UpdateFreeRot(float dt)
 	}
 	else
 	{
-		if(free_rot_key == Key::None || GKey.KeyUpAllowed(free_rot_key))
+		if(free_rot_key == Key::None || input->Up(free_rot_key))
 			free_rot = false;
 		else
 			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
+	}
+}
+
+//=================================================================================================
+void GameCamera::UpdateDistance()
+{
+	if(GKey.AllowMouse())
+	{
+		dist = Clamp(dist - input->GetMouseWheel(), DIST_MIN, DIST_MAX);
+		if(input->PressedRelease(Key::MiddleButton))
+			dist = DIST_DEF;
 	}
 }
 
@@ -196,7 +213,11 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 {
 	bool new_zoom = (zoom_pos != nullptr);
 	if(zoom == new_zoom)
+	{
+		if(zoom_pos)
+			this->zoom_pos = *zoom_pos;
 		return;
+	}
 	zoom = new_zoom;
 	if(zoom)
 	{
@@ -212,7 +233,7 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 		h = 0.2f;
 		shift = 0.f;
 		dist = prev_dist;
-		springiness_timer = 1.f;
+		springiness_timer = 0.5f;
 	}
 }
 
@@ -230,7 +251,9 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		OutsideLocation* outside = (OutsideLocation*)game_level->location;
 
 		// terrain
-		float t = game_level->terrain->Raytest(pos, pos + dir);
+		RaytestTerrainCallback callback;
+		phy_world->rayTest(ToVector3(pos), ToVector3(pos + dir), callback);
+		float t = callback.getFraction();
 		if(t < min_t && t > 0.f)
 			min_t = t;
 

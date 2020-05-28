@@ -1,6 +1,8 @@
 //=============================================================================
 // Global initializer - not real quest
-// 1. generate corner dungeon with gladiator armor
+// 1. set start date
+// 2. generate corner dungeon with gladiator armor
+// 3. create secret vault
 //=============================================================================
 quest global_init
 {
@@ -13,6 +15,7 @@ quest global_init
 		
 		void Startup()
 		{
+			World::startDate = Date(631, Rand() % 6, Rand() % 20);
 			CreateArtifactLocation();
 			CreateVault();
 		}
@@ -105,11 +108,11 @@ quest global_init
 		{
 		}
 		
-		void OnUpgrade(dictionary& dict)
+		void OnUpgrade(Vars@ vars)
 		{
-			@artifacts_loc = World::GetLocation(int(dict["artifacts_loc"]));
+			@artifacts_loc = World::GetLocation(int(vars["artifacts_loc"]));
 			@artifacts_loc.active_quest = quest;
-			if(!bool(dict["done"]))
+			if(!bool(vars["done"]))
 				artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
 		}
 	}
@@ -258,11 +261,11 @@ quest deliver_letter
 			}
 		}
 
-		void OnUpgrade(dictionary& dict)
+		void OnUpgrade(Vars@ vars)
 		{
-			@start_loc = World::GetLocation(int(dict["start_loc"]));
-			@end_loc = World::GetLocation(int(dict["end_loc"]));
-			int start_time = int(dict["start_time"]);
+			@start_loc = World::GetLocation(int(vars["start_loc"]));
+			@end_loc = World::GetLocation(int(vars["end_loc"]));
+			int start_time = int(vars["start_time"]);
 
 			if(quest.state != Q_HIDDEN)
 			{
@@ -476,6 +479,375 @@ quest deliver_resources
 			{
 				quest.AddEntry(TEXT(7));
 				progress = P_DELIVER_ENCOUNTER;
+			}
+		}
+	}
+}
+
+//=============================================================================
+// BANDITS COLLECT TOLL - random captain quest
+//=============================================================================
+quest bandits_collect_toll
+{
+	type captain
+	progress {
+		P_TOLL_NONE
+		P_TOLL_STARTED
+		P_TOLL_TIMEOUT
+		P_TOLL_KILLED_BANDITS
+		P_TOLL_FINISHED
+		P_TOLL_ON_TIMEOUT
+	}
+
+	dialog start {
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_TOLL_STARTED
+			talk 3
+			talk 4
+			end
+		}
+		escape choice 5
+			end
+		show_choices
+	}
+
+	dialog end {
+		if quest_progress == P_TOLL_ON_TIMEOUT
+		{
+			do_once
+			set_quest_progress P_TOLL_TIMEOUT
+			talk 0
+			talk 1
+			end
+		}
+		else if quest_progress == P_TOLL_KILLED_BANDITS
+		{
+			do_once
+			set_quest_progress P_TOLL_FINISHED
+			talk 2
+			talk 3
+			end
+		}
+		end
+	}
+
+	dialog encounter {
+		talk 0
+		talk 1
+		choice 2
+		{
+			if script "pc.unit.gold >= 500"
+			{
+				talk 3
+				script "pc.unit.gold -= 500; target.gold += 500;"
+				end2
+			}
+			else
+			{
+				talk 4
+				talk 5
+				script "target.OrderAttack()"
+				end2
+			}
+		}
+		choice 6
+		{
+			talk 7
+			script "target.OrderAttack()"
+			end2
+		}
+		show_choices
+	}
+
+	code {
+		Location@ start_loc;
+		Location@ other_loc;
+
+		void Startup()
+		{
+			@start_loc = Level::location;
+			@other_loc = World::GetRandomSettlement(start_loc);
+		}
+
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_TOLL_STARTED:
+				{
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(15);
+
+					Encounter@ enc = World::AddEncounter(quest);
+					enc.pos = (start_loc.pos + other_loc.pos) / 2;
+					enc.dont_attack = true;
+					enc.text = TEXT(3);
+					@enc.group = UnitGroup::Get("bandits");
+					@enc.dialog = quest.GetDialog("encounter");
+					@enc.quest = quest;
+					enc.st = 6;
+					enc.chance = 50;
+
+					target.AddDialog(quest, "end");
+				}
+				break;
+			case P_TOLL_ON_TIMEOUT:
+				quest.AddEntry(TEXT(8));
+				break;
+			case P_TOLL_TIMEOUT:
+				quest.AddEntry(TEXT(4));
+				quest.SetFailed();
+				break;
+			case P_TOLL_KILLED_BANDITS:
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_TOLL_FINISHED:
+				quest.AddEntry(TEXT(6));
+				quest.SetCompleted();
+				Team::AddReward(1500, 4500);
+				World::AddNews(TEXT(7));
+				break;
+			}
+		}
+
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_TIMEOUT)
+			{
+				if(progress != P_TOLL_KILLED_BANDITS)
+					progress = P_TOLL_ON_TIMEOUT;
+			}
+			else if(e.event == EVENT_ENCOUNTER)
+				Level::location.AddEventHandler(quest, EVENT_CLEARED);
+			else if(e.event == EVENT_CLEARED)
+				progress = P_TOLL_KILLED_BANDITS;
+		}
+
+		void OnUpgrade(Vars@ vars)
+		{
+			@start_loc = World::GetLocation(int(vars["start_loc"]));
+			@other_loc = World::GetLocation(int(vars["other_loc"]));
+			int start_time = int(vars["start_time"]);
+			int enc_index = int(vars["enc"]);
+			bool in_enc = bool(vars["in_enc"]);
+
+			if(quest.state != Q_STARTED)
+				return;
+
+			int days = 15 - World::worldtime - start_time;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_TOLL_STARTED)
+				progress = P_TOLL_ON_TIMEOUT;
+
+			if(enc_index != -1)
+			{
+				Encounter@ enc = World::RecreateEncounter(quest, enc_index);
+				enc.pos = (start_loc.pos + other_loc.pos) / 2;
+				enc.dont_attack = true;
+				enc.text = TEXT(3);
+				@enc.group = UnitGroup::Get("bandits");
+				@enc.dialog = quest.GetDialog("encounter");
+				@enc.quest = quest;
+				enc.st = 6;
+				enc.chance = 50;
+			}
+
+			if(in_enc)
+				Level::location.AddEventHandler(quest, EVENT_CLEARED);
+
+			Unit@ captain = start_loc.GetCaptain();
+			captain.AddDialog(quest, "end");
+		}
+	}
+}
+
+//=============================================================================
+// FIND ARTIFACT - random traveler quest
+// Go to crypt and recover artifact from treasure.
+//=============================================================================
+quest find_artifact
+{
+	type random
+	progress {
+		P_FINDART_NONE
+		P_FINDART_STARTED
+		P_FINDART_FINISHED
+		P_FINDART_TIMEOUT
+		P_FINDART_ON_TIMEOUT
+	}
+	
+	dialog start
+	{
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_FINDART_STARTED
+			talk 3
+			talk 4
+			end
+		}
+		escape choice 5
+			end
+		show_choices
+	}
+	
+	dialog end
+	{
+		if have_quest_item
+		{
+			choice 0
+			{
+				set_quest_progress P_FINDART_FINISHED
+				talk 1
+				end2
+			}
+		}
+		else if quest_progress == P_FINDART_ON_TIMEOUT
+		{
+			set_quest_progress P_FINDART_TIMEOUT
+			talk 2
+			talk 3
+			talk 4
+			end2
+		}
+		end
+	}
+	
+	code
+	{
+		Location@ start_loc;
+		Location@ target_loc;
+		Item@ item;
+		int st;
+		bool spawned;
+		
+		void Startup()
+		{
+			@start_loc = Level::location;
+			@item = ItemList::GetRandomItem("artifacts");
+			spawned = false;
+		}
+
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_FINDART_STARTED:
+				{
+					@item = item.QuestCopy(quest);
+					
+					if(Rand() % 4 == 0)
+						@target_loc = World::GetClosestLocation(L_DUNGEON, World::pos, LABYRINTH);
+					else
+						@target_loc = World::GetClosestLocation(L_DUNGEON, World::pos, { HERO_CRYPT, MONSTER_CRYPT });
+					target_loc.SetKnown();
+					@target_loc.active_quest = quest;
+					target_loc.AddEventHandler(quest, EVENT_ENTER);
+					st = target_loc.st;
+					
+					target.AddDialog(quest, "end");
+					target.temporary = false;
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(60);
+				}
+				break;
+			case P_FINDART_FINISHED:
+				{
+					int reward = GetReward();
+					Team::AddReward(reward, reward * 3);
+					
+					target.AddItem(item);
+					pc.unit.RemoveItem(item);
+					target.temporary = true;
+					
+					if(target_loc.active_quest is quest)
+						@target_loc.active_quest = null;
+					
+					quest.AddEntry(TEXT(3));
+					quest.SetCompleted();
+				}
+				break;
+			case P_FINDART_TIMEOUT:
+				{
+					target.temporary = true;
+						
+					if(target_loc.active_quest is quest)
+						@target_loc.active_quest = null;
+					
+					quest.AddEntry(TEXT(4));
+					quest.SetFailed();
+				}
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				if(Level::dungeon_level == target_loc.levels - 1)
+				{
+					e.location.RemoveEventHandler(quest);
+					Chest@ chest = Level::GetRandomChest(Level::GetRoom(ROOM_TREASURY));
+					chest.AddItem(item);
+					spawned = true;
+				}
+			}
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				if(spawned)
+					target_loc.GetArea(target_loc.levels - 1).RemoveItemFromChest(item);
+				else
+					target_loc.RemoveEventHandler(quest);
+				@target_loc.active_quest = null;
+				quest.AddEntry(TEXT(5));
+				progress = P_FINDART_ON_TIMEOUT;
+			}
+		}
+		
+		int GetReward()
+		{
+			return Quest::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
+		}
+		
+		void OnUpgrade(Vars@ vars)
+		{
+			@item = vars["item"];
+			@start_loc = vars["start_loc"];
+			@target_loc = vars["target_loc"];
+			int start_time = vars["start_time"];
+			st = vars["st"];
+			spawned = vars["done"];
+			
+			if(progress != P_FINDART_NONE)
+				@item = item.QuestCopy(quest);
+
+			if(quest.state != Q_STARTED)
+				return;
+			
+			start_loc.FindQuestUnit(quest).AddDialog(quest, "end");
+			
+			int days = 60 - World::worldtime - start_time;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_FINDART_STARTED)
+				progress = P_FINDART_ON_TIMEOUT;
+			
+			if(progress == P_FINDART_STARTED)
+			{
+				if(!spawned)
+					target_loc.AddEventHandler(quest, EVENT_ENTER);
+				@target_loc.active_quest = quest;
 			}
 		}
 	}
@@ -781,189 +1153,6 @@ quest alchemist_apprentice
 				@forest.active_quest = null;
 				break;
 			}
-		}
-	}
-}
-
-//=============================================================================
-// BANDITS COLLECT TOLL - random captain quest
-//=============================================================================
-quest bandits_collect_toll
-{
-	type captain
-	progress {
-		P_TOLL_NONE
-		P_TOLL_STARTED
-		P_TOLL_TIMEOUT
-		P_TOLL_KILLED_BANDITS
-		P_TOLL_FINISHED
-		P_TOLL_ON_TIMEOUT
-	}
-
-	dialog start {
-		talk 0
-		talk 1
-		choice 2
-		{
-			set_quest_progress P_TOLL_STARTED
-			talk 3
-			talk 4
-			end
-		}
-		escape choice 5
-			end
-		show_choices
-	}
-
-	dialog end {
-		if quest_progress == P_TOLL_ON_TIMEOUT
-		{
-			do_once
-			set_quest_progress P_TOLL_TIMEOUT
-			talk 0
-			talk 1
-			end
-		}
-		else if quest_progress == P_TOLL_KILLED_BANDITS
-		{
-			do_once
-			set_quest_progress P_TOLL_FINISHED
-			talk 2
-			talk 3
-			end
-		}
-		end
-	}
-
-	dialog encounter {
-		talk 0
-		talk 1
-		choice 2
-		{
-			if script "pc.unit.gold >= 500"
-			{
-				talk 3
-				script "pc.unit.gold -= 500; target.gold += 500;"
-				end2
-			}
-			else
-			{
-				talk 4
-				talk 5
-				script "target.OrderAttack()"
-				end2
-			}
-		}
-		choice 6
-		{
-			talk 7
-			script "target.OrderAttack()"
-			end2
-		}
-		show_choices
-	}
-
-	code {
-		Location@ start_loc;
-		Location@ other_loc;
-
-		void Startup()
-		{
-			@start_loc = Level::location;
-			@other_loc = World::GetRandomSettlement(start_loc);
-		}
-
-		void SetProgress()
-		{
-			switch(progress)
-			{
-			case P_TOLL_STARTED:
-				{
-					quest.SetStarted(TEXT(0));
-					quest.AddEntry(TEXT(1));
-					quest.AddEntry(TEXT(2));
-					quest.SetTimeout(15);
-
-					Encounter@ enc = World::AddEncounter(quest);
-					enc.pos = (start_loc.pos + other_loc.pos) / 2;
-					enc.dont_attack = true;
-					enc.text = TEXT(3);
-					@enc.group = UnitGroup::Get("bandits");
-					@enc.dialog = quest.GetDialog("encounter");
-					@enc.quest = quest;
-					enc.st = 6;
-					enc.chance = 50;
-
-					target.AddDialog(quest, "end");
-				}
-				break;
-			case P_TOLL_ON_TIMEOUT:
-				quest.AddEntry(TEXT(8));
-				break;
-			case P_TOLL_TIMEOUT:
-				quest.AddEntry(TEXT(4));
-				quest.SetFailed();
-				break;
-			case P_TOLL_KILLED_BANDITS:
-				quest.AddEntry(TEXT(5));
-				break;
-			case P_TOLL_FINISHED:
-				quest.AddEntry(TEXT(6));
-				quest.SetCompleted();
-				Team::AddReward(1500, 4500);
-				World::AddNews(TEXT(7));
-				break;
-			}
-		}
-
-		void OnEvent(Event@ e)
-		{
-			if(e.event == EVENT_TIMEOUT)
-			{
-				if(progress != P_TOLL_KILLED_BANDITS)
-					progress = P_TOLL_ON_TIMEOUT;
-			}
-			else if(e.event == EVENT_ENCOUNTER)
-				Level::location.AddEventHandler(quest, EVENT_CLEARED);
-			else if(e.event == EVENT_CLEARED)
-				progress = P_TOLL_KILLED_BANDITS;
-		}
-
-		void OnUpgrade(dictionary& dict)
-		{
-			@start_loc = World::GetLocation(int(dict["start_loc"]));
-			@other_loc = World::GetLocation(int(dict["other_loc"]));
-			int start_time = int(dict["start_time"]);
-			int enc_index = int(dict["enc"]);
-			bool in_enc = bool(dict["in_enc"]);
-
-			if(quest.state != Q_STARTED)
-				return;
-
-			int days = 15 - World::worldtime - start_time;
-			if(days > 0)
-				quest.SetTimeout(days);
-			else if(progress == P_TOLL_STARTED)
-				progress = P_TOLL_ON_TIMEOUT;
-
-			if(enc_index != -1)
-			{
-				Encounter@ enc = World::RecreateEncounter(quest, enc_index);
-				enc.pos = (start_loc.pos + other_loc.pos) / 2;
-				enc.dont_attack = true;
-				enc.text = TEXT(3);
-				@enc.group = UnitGroup::Get("bandits");
-				@enc.dialog = quest.GetDialog("encounter");
-				@enc.quest = quest;
-				enc.st = 6;
-				enc.chance = 50;
-			}
-
-			if(in_enc)
-				Level::location.AddEventHandler(quest, EVENT_CLEARED);
-
-			Unit@ captain = start_loc.GetCaptain();
-			captain.AddDialog(quest, "end");
 		}
 	}
 }

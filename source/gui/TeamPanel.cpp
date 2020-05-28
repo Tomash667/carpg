@@ -1,18 +1,20 @@
 #include "Pch.h"
 #include "TeamPanel.h"
-#include "Unit.h"
+
 #include "Game.h"
-#include "Language.h"
-#include "GetNumberDialog.h"
-#include "Team.h"
-#include "SoundManager.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "MpBox.h"
-#include "ResourceManager.h"
-#include "PlayerInfo.h"
-#include "Level.h"
 #include "GameResources.h"
+#include "Language.h"
+#include "Level.h"
+#include "MpBox.h"
+#include "PlayerInfo.h"
+#include "Team.h"
+#include "Unit.h"
+
+#include <GetNumberDialog.h>
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //-----------------------------------------------------------------------------
 enum ButtonId

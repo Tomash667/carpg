@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Utility.h"
-#include "Timer.h"
+
+#include <Timer.h>
 
 //-----------------------------------------------------------------------------
 static cstring MUTEX_NAME = "CaRpgMutex";

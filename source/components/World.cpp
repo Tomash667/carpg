@@ -1,45 +1,48 @@
 #include "Pch.h"
 #include "World.h"
+
 #include "BitStreamFunc.h"
-#include "Language.h"
-#include "LocationHelper.h"
-#include "GameFile.h"
-#include "SaveState.h"
-#include "LoadingHandler.h"
-#include "ScriptManager.h"
-#include "Var.h"
-#include "Level.h"
 #include "Camp.h"
 #include "Cave.h"
 #include "City.h"
+#include "Encounter.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "GameGui.h"
+#include "Language.h"
+#include "Level.h"
+#include "LoadingHandler.h"
+#include "LocationHelper.h"
 #include "MultiInsideLocation.h"
 #include "Net.h"
-#include "Encounter.h"
-#include "Quest.h"
 #include "News.h"
-#include "Team.h"
+#include "OffscreenLocation.h"
+#include "Quest.h"
 #include "QuestManager.h"
 #include "Quest_Crazies.h"
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
-#include "Game.h"
-#include "GameGui.h"
+#include "SaveState.h"
+#include "ScriptManager.h"
+#include "Team.h"
+#include "Var.h"
 #include "WorldMapGui.h"
-#include "OffscreenLocation.h"
+
+#include <scriptarray/scriptarray.h>
 
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
-const int start_year = 100;
-const float world_border = 50.f;
-const int def_world_size = 1200;
-World* global::world;
+const float WORLD_BORDER = 50.f;
+const int DEF_WORLD_SIZE = 1200;
+World* world;
 vector<string> txLocationStart, txLocationEnd;
 
 // pre V_0_8 compatibility
 namespace old
 {
-	const int def_world_size = 600;
+	const int DEF_WORLD_SIZE = 600;
+	const int START_YEAR = 100;
 }
 
 //-----------------------------------------------------------------------------
@@ -56,10 +59,13 @@ struct TmpLocation : public Location
 //=================================================================================================
 void World::LoadLanguage()
 {
-	txDate = Str("dateFormat");
+	// general
+	Language::Section s = Language::GetSection("WorldMap");
+	txDate = s.Get("dateFormat");
+	s.GetArray(txMonth, "month");
 
 	// encounters
-	Language::Section s = Language::GetSection("Encounters");
+	s = Language::GetSection("Encounters");
 	txEncCrazyMage = s.Get("encCrazyMage");
 	txEncCrazyHeroes = s.Get("encCrazyHeroes");
 	txEncCrazyCook = s.Get("encCrazyCook");
@@ -110,11 +116,11 @@ void World::OnNewGame()
 	create_camp = Random(5, 10);
 	encounter_chance = 0.f;
 	travel_dir = Random(MAX_ANGLE);
-	year = start_year;
-	day = 0;
-	month = 0;
+	date = Date(100, 0, 0);
+	startDate = date;
 	worldtime = 0;
 	day_timer = 0.f;
+	reveal_timer = 0.f;
 }
 
 //=================================================================================================
@@ -150,7 +156,7 @@ void World::Update(int days, UpdateMode mode)
 		team->Update(days, false);
 
 	// end of game
-	if(year >= 160)
+	if(date.year >= startDate.year + 60)
 	{
 		Info("Game over: you are too old.");
 		game_gui->CloseAllPanels(true);
@@ -168,20 +174,7 @@ void World::Update(int days, UpdateMode mode)
 void World::UpdateDate(int days)
 {
 	worldtime += days;
-	day += days;
-	if(day >= 30)
-	{
-		int count = day / 30;
-		month += count;
-		day -= count * 30;
-		if(month >= 12)
-		{
-			count = month / 12;
-			year += count;
-			month -= count * 12;
-		}
-	}
-
+	date.AddDays(days);
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::WORLD_TIME);
 }
@@ -443,7 +436,7 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 	{
 		for(uint j = 0; j < 100; ++j)
 		{
-			Vec2 pt = Vec2::Random(world_border, float(world_size) - world_border);
+			Vec2 pt = Vec2::Random(WORLD_BORDER, float(world_size) - WORLD_BORDER);
 			bool ok = true;
 
 			// disallow when near other location
@@ -542,8 +535,9 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld()
 {
-	world_size = def_world_size;
-	world_bounds = Vec2(world_border, world_size - world_border);
+	startup = true;
+	world_size = DEF_WORLD_SIZE;
+	world_bounds = Vec2(WORLD_BORDER, world_size - WORLD_BORDER);
 
 	// create capital
 	Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
@@ -557,7 +551,7 @@ void World::GenerateWorld()
 			Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
 			float rot = Random(MAX_ANGLE);
 			float dist = Random(300.f, 400.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot)*dist, sin(rot)*dist);
+			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
 			bool ok = true;
@@ -590,7 +584,7 @@ void World::GenerateWorld()
 			Vec2 parent_pos = locations[Rand() % cities]->pos;
 			float rot = Random(MAX_ANGLE);
 			float dist = Random(100.f, 250.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot)*dist, sin(rot)*dist);
+			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
 			bool ok = true;
@@ -794,7 +788,7 @@ void World::GenerateWorld()
 					}
 
 					++guaranteed_dungeon;
-					if(target == 10)
+					if(guaranteed_dungeon == 10)
 						guaranteed_dungeon = -1;
 				}
 
@@ -887,6 +881,7 @@ void World::StartInLocation()
 	world_pos = current_location->pos;
 	game_level->location_index = current_location_index;
 	game_level->location = current_location;
+	startup = false;
 
 	// reveal near locations
 	const Vec2& start_pos = start_location->pos;
@@ -905,7 +900,7 @@ void World::StartInLocation()
 void World::CalculateTiles()
 {
 	int ts = world_size / TILE_SIZE;
-	tiles.resize(ts*ts);
+	tiles.resize(ts * ts);
 
 	// set from near locations
 	for(int y = 0; y < ts; ++y)
@@ -968,12 +963,12 @@ void World::SmoothTiles()
 				if(y > 0)
 				{
 					++count;
-					st += tiles[x - 1 + (y - 1)*ts];
+					st += tiles[x - 1 + (y - 1) * ts];
 				}
 				if(y < ts - 1)
 				{
 					++count;
-					st += tiles[x - 1 + (y + 1)*ts];
+					st += tiles[x - 1 + (y + 1) * ts];
 				}
 			}
 			if(x < ts - 1)
@@ -983,30 +978,30 @@ void World::SmoothTiles()
 				if(y > 0)
 				{
 					++count;
-					st += tiles[x + 1 + (y - 1)*ts];
+					st += tiles[x + 1 + (y - 1) * ts];
 				}
 				if(y < ts - 1)
 				{
 					++count;
-					st += tiles[x + 1 + (y + 1)*ts];
+					st += tiles[x + 1 + (y + 1) * ts];
 				}
 			}
 			if(y > 0)
 			{
 				++count;
-				st += tiles[x + (y - 1)*ts];
+				st += tiles[x + (y - 1) * ts];
 			}
 			if(y < ts - 1)
 			{
 				++count;
-				st += tiles[x + (y + 1)*ts];
+				st += tiles[x + (y + 1) * ts];
 			}
 			tiles[x + y * ts] = st / count;
 		}
 	}
 
 	// clamp values
-	for(int i = 0; i < ts*ts; ++i)
+	for(int i = 0; i < ts * ts; ++i)
 		tiles[i] = Clamp(tiles[i], 2, 16);
 }
 
@@ -1144,9 +1139,8 @@ void World::SetLocationImageAndName(Location* l)
 void World::Save(GameWriter& f)
 {
 	f << state;
-	f << year;
-	f << month;
-	f << day;
+	f << date;
+	f << startDate;
 	f << worldtime;
 	f << day_timer;
 	f << world_size;
@@ -1168,11 +1162,13 @@ void World::Save(GameWriter& f)
 			f << loc->type;
 			if(loc->type == L_DUNGEON)
 				f << loc->GetLastLevel() + 1;
-			loc->Save(f, current == loc);
+			f.isLocal = (current == loc);
+			loc->Save(f);
 		}
 		f << check_id;
 		++check_id;
 	}
+	f.isLocal = false;
 
 	f << empty_locations;
 	f << create_camp;
@@ -1231,13 +1227,15 @@ void World::Save(GameWriter& f)
 void World::Load(GameReader& f, LoadingHandler& loading)
 {
 	f >> state;
-	f >> year;
-	f >> month;
-	f >> day;
+	f >> date;
+	if(LOAD_VERSION >= V_DEV)
+		f >> startDate;
+	else
+		startDate = Date(100, 0, 0);
 	f >> worldtime;
 	f >> day_timer;
 	f >> world_size;
-	world_bounds = Vec2(world_border, world_size - 16.f);
+	world_bounds = Vec2(WORLD_BORDER, world_size - 16.f);
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
@@ -1311,9 +1309,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
+				f.isLocal = (current_index == index);
 				loc->type = type;
 				loc->index = index;
-				loc->Load(f, current_index == index);
+				loc->Load(f);
 			}
 			else
 				loc = nullptr;
@@ -1355,8 +1354,9 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
+				f.isLocal = (current_index == index);
 				loc->index = index;
-				loc->Load(f, current_index == index);
+				loc->Load(f);
 
 				// remove old academy
 				if(LOAD_VERSION < V_0_8 && loc->type == L_NULL)
@@ -1396,6 +1396,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
 		++check_id;
 	}
+	f.isLocal = false;
 	f >> empty_locations;
 	f >> create_camp;
 	if(LOAD_VERSION < V_0_8)
@@ -1404,6 +1405,8 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		create_camp = 10;
 	f >> world_pos;
 	f >> reveal_timer;
+	if(LOAD_VERSION < V_0_14_1 && reveal_timer < 0)
+		reveal_timer = 0;
 	f >> encounter_chance;
 	f >> settlements;
 	if(LOAD_VERSION < V_0_14)
@@ -1482,6 +1485,20 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			++index;
 		}
 	}
+
+	if(LOAD_VERSION < V_0_14_1)
+	{
+		for(Location* loc : locations)
+		{
+			if(loc && loc->type == L_CAMP)
+			{
+				Location* city = locations[GetNearestSettlement(loc->pos)];
+				if(Vec2::Distance(loc->pos, city->pos) < 16.f)
+					loc->pos.y += 16.f;
+			}
+		}
+	}
+
 	if(LOAD_VERSION >= V_0_8)
 		f >> tiles;
 	else
@@ -1530,12 +1547,11 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 {
 	if(part == 0)
 	{
-		f >> year;
-		f >> month;
-		f >> day;
+		f >> date;
+		startDate = Date(100, 0, 0);
 		f >> worldtime;
-		world_size = old::def_world_size;
-		world_bounds = Vec2(world_border, world_size - 16.f);
+		world_size = old::DEF_WORLD_SIZE;
+		world_bounds = Vec2(WORLD_BORDER, world_size - 16.f);
 		day_timer = 0.f;
 		tomir_spawned = false;
 	}
@@ -1644,9 +1660,7 @@ void World::Write(BitStreamWriter& f)
 void World::WriteTime(BitStreamWriter& f)
 {
 	f << worldtime;
-	f.WriteCasted<byte>(day);
-	f.WriteCasted<byte>(month);
-	f << year;
+	f << date;
 }
 
 //=================================================================================================
@@ -1819,9 +1833,7 @@ bool World::Read(BitStreamReader& f)
 void World::ReadTime(BitStreamReader& f)
 {
 	f >> worldtime;
-	f.ReadCasted<byte>(day);
-	f.ReadCasted<byte>(month);
-	f >> year;
+	f >> date;
 }
 
 //=================================================================================================
@@ -1837,13 +1849,22 @@ bool World::IsSameWeek(int worldtime2) const
 //=================================================================================================
 cstring World::GetDate() const
 {
-	return Format(txDate, year, month + 1, day + 1);
+	return Format(txDate, date.day + 1, txMonth[date.month], date.year);
 }
 
 //=================================================================================================
-cstring World::GetDate(int year, int month, int day) const
+cstring World::GetDate(const Date& date) const
 {
-	return Format(txDate, year, month + 1, day + 1);
+	return Format(txDate, date.day + 1, txMonth[date.month], date.year);
+}
+
+//=================================================================================================
+void World::SetStartDate(const Date& date)
+{
+	if(!startup)
+		throw ScriptException("Start date can only be set at startup.");
+	this->date = date;
+	startDate = date;
 }
 
 //=================================================================================================
@@ -1968,7 +1989,7 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 		bool ok = false;
 		for(int i = 0; i < n_targets; ++i)
 		{
-			if(loc->target == i)
+			if(loc->target == targets[i])
 			{
 				ok = true;
 				break;
@@ -1985,6 +2006,14 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 	}
 
 	return best;
+}
+
+//=================================================================================================
+Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
+{
+	int index = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
+	array->Release();
+	return locations[index];
 }
 
 //=================================================================================================
@@ -2239,6 +2268,7 @@ void World::StartInLocation(Location* loc)
 	game_level->location_index = current_location_index;
 	game_level->location = loc;
 	game_level->is_open = true;
+	startup = false;
 }
 
 //=================================================================================================
@@ -2274,7 +2304,6 @@ void World::Travel(int index, bool order)
 	travel_location_index = index;
 	travel_target_pos = locations[travel_location_index]->pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
-	reveal_timer = 0.f;
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
@@ -2309,7 +2338,6 @@ void World::TravelPos(const Vec2& pos, bool order)
 	travel_location_index = -1;
 	travel_target_pos = pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
-	reveal_timer = 0.f;
 	if(Net::IsLocal())
 		travel_first_frame = true;
 
@@ -2820,7 +2848,7 @@ void World::SetTravelDir(const Vec3& pos)
 
 	// point is outside of location borders
 	if(unit_pos.x < border)
-		travel_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
+		travel_dir = Lerp(3.f / 4.f * PI, 5.f / 4.f * PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
 	else if(unit_pos.x > map_size - border)
 	{
 		if(unit_pos.y > map_size / 2)

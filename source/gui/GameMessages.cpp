@@ -1,12 +1,14 @@
 #include "Pch.h"
 #include "GameMessages.h"
+
 #include "Game.h"
+#include "GameGui.h"
 #include "Language.h"
 #include "PlayerInfo.h"
 #include "SaveState.h"
-#include "SoundManager.h"
-#include "ResourceManager.h"
-#include "GameGui.h"
+
+#include <ResourceManager.h>
+#include <SoundManager.h>
 
 //=================================================================================================
 void GameMessages::LoadLanguage()
@@ -44,6 +46,8 @@ void GameMessages::LoadLanguage()
 	txGmsAddedItems = Str("gmsAddedItems");
 	txNeedWand = Str("needWand");
 	txLearnedAbility = Str("learnedAbility");
+	txLearnedRecipe = Str("learnedRecipe");
+	txAlreadyLearned = Str("alreadyLearned");
 }
 
 //=================================================================================================
@@ -317,6 +321,13 @@ void GameMessages::AddGameMsg3(GMS id)
 		break;
 	case GMS_LEARNED_ABILITY:
 		text = txLearnedAbility;
+		break;
+	case GMS_LEARNED_RECIPE:
+		text = txLearnedRecipe;
+		break;
+	case GMS_ALREADY_LEARNED:
+		text = txAlreadyLearned;
+		time = 2.5f;
 		break;
 	default:
 		assert(0);

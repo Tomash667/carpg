@@ -1,57 +1,59 @@
 #include "Pch.h"
 #include "Level.h"
-#include "City.h"
-#include "InsideBuilding.h"
-#include "MultiInsideLocation.h"
-#include "InsideLocationLevel.h"
-#include "Door.h"
-#include "Trap.h"
-#include "Chest.h"
-#include "UnitEventHandler.h"
-#include "AIController.h"
-#include "ResourceManager.h"
-#include "Terrain.h"
-#include "UnitGroup.h"
-#include "EntityInterpolator.h"
-#include "Arena.h"
-#include "Game.h"
-#include "ParticleSystem.h"
-#include "Language.h"
-#include "World.h"
-#include "Portal.h"
-#include "Team.h"
-#include "FOV.h"
-#include "Texture.h"
-#include "PlayerInfo.h"
-#include "BitStreamFunc.h"
-#include "Ability.h"
-#include "QuestManager.h"
-#include "Quest_Secret.h"
-#include "Quest_Tutorial.h"
-#include "Quest_Contest.h"
-#include "Quest_Tournament.h"
-#include "LocationGeneratorFactory.h"
-#include "SoundManager.h"
-#include "Render.h"
-#include "SpellEffects.h"
-#include "Collision.h"
-#include "LocationHelper.h"
-#include "PhysicCallbacks.h"
-#include "GameResources.h"
-#include "Quest_Scripted.h"
-#include "ScriptManager.h"
-#include "Scene.h"
-#include "Pathfinding.h"
-#include "Stock.h"
-#include <scriptarray/scriptarray.h>
-#include <angelscript.h>
 
-Level* global::game_level;
+#include "Ability.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "Chest.h"
+#include "City.h"
+#include "Collision.h"
+#include "Door.h"
+#include "EntityInterpolator.h"
+#include "FOV.h"
+#include "Game.h"
+#include "GameResources.h"
+#include "InsideBuilding.h"
+#include "InsideLocationLevel.h"
+#include "Language.h"
+#include "LocationGeneratorFactory.h"
+#include "LocationHelper.h"
+#include "MultiInsideLocation.h"
+#include "Pathfinding.h"
+#include "PhysicCallbacks.h"
+#include "PlayerInfo.h"
+#include "Portal.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
+#include "Quest_Scripted.h"
+#include "Quest_Secret.h"
+#include "Quest_Tournament.h"
+#include "Quest_Tutorial.h"
+#include "ScriptManager.h"
+#include "SpellEffects.h"
+#include "Stock.h"
+#include "Team.h"
+#include "Trap.h"
+#include "UnitEventHandler.h"
+#include "UnitGroup.h"
+#include "World.h"
+
+#include <angelscript.h>
+#include <ParticleSystem.h>
+#include <Render.h>
+#include <ResourceManager.h>
+#include <Scene.h>
+#include <scriptarray/scriptarray.h>
+#include <SoundManager.h>
+#include <Texture.h>
+#include <Terrain.h>
+
+Level* game_level;
 
 //=================================================================================================
 Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
 shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
-shape_floor(nullptr)
+shape_floor(nullptr), dungeon_mesh(nullptr)
 {
 	camera.zfar = 80.f;
 	scene = new Scene;
@@ -65,6 +67,7 @@ Level::~Level()
 	delete scene;
 	delete terrain;
 	delete terrain_shape;
+	delete dungeon_mesh;
 	delete dungeon_shape;
 	delete dungeon_shape_data;
 	delete shape_wall;
@@ -93,12 +96,12 @@ void Level::LoadLanguage()
 void Level::Init()
 {
 	terrain = new Terrain;
-	TerrainOptions terrain_options;
+	Terrain::Options terrain_options;
 	terrain_options.n_parts = 8;
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(render->GetDevice(), terrain_options);
+	terrain->Init(terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -130,6 +133,8 @@ void Level::Init()
 	Mesh::Point* point = game_res->aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
 	shape_arrow = new btBoxShape(ToVector3(point->size));
+
+	dungeon_mesh = new SimpleMesh;
 }
 
 //=================================================================================================
@@ -1012,6 +1017,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 		}
 		else
 			pos = Vec3::TransformZero(pt.mat);
+		const float height = pos.y;
 		pos += shift;
 
 		switch(c)
@@ -1040,7 +1046,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				if(base)
 				{
 					if(area.area_type == LevelArea::Type::Outside)
-						terrain->SetH(pos);
+						pos.y = terrain->GetH(pos) + height;
+
 					float r;
 					switch(c)
 					{
@@ -1074,7 +1081,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 				if(area.area_type == LevelArea::Type::Outside)
 				{
-					terrain->SetH(pos);
+					terrain->SetY(pos);
 					pos.y += 2.f;
 				}
 
@@ -1107,7 +1114,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
 					if(area.area_type == LevelArea::Type::Outside)
 					{
-						terrain->SetH(pos);
+						terrain->SetY(pos);
 						pos.y += 8.f;
 					}
 					else
@@ -1244,7 +1251,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 						o->pos = o_pos;
 						o->rot = Vec3(0, 0, 0);
 						o->scale = 1.f;
-						o->require_split = true;
+						o->requireSplit = true;
 						inside->objects.push_back(o);
 
 						ProcessBuildingObjects(*inside, city, inside, inside_mesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr);
@@ -1270,7 +1277,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					else
 					{
 						spawn_point = pos;
-						terrain->SetH(spawn_point);
+						terrain->SetY(spawn_point);
 					}
 
 					have_spawn = true;
@@ -1344,7 +1351,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					if(city_building)
 					{
 						city_building->walk_pt = pos;
-						terrain->SetH(city_building->walk_pt);
+						terrain->SetY(city_building->walk_pt);
 					}
 					else if(out_point)
 						*out_point = pos;
@@ -1493,7 +1500,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				if(obj)
 				{
 					if(area.area_type == LevelArea::Type::Outside)
-						terrain->SetH(pos);
+						terrain->SetY(pos);
 					SpawnObjectEntity(area, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
 				}
 			}
@@ -1583,7 +1590,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 			return nullptr;
 
 		if(area.area_type == LevelArea::Type::Outside)
-			terrain->SetH(pt);
+			terrain->SetY(pt);
 
 		return SpawnObjectEntity(area, obj, pt, rot, scale);
 	}
@@ -1618,7 +1625,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 			return nullptr;
 
 		if(area.area_type == LevelArea::Type::Outside)
-			terrain->SetH(pt);
+			terrain->SetY(pt);
 
 		return SpawnObjectEntity(area, obj, pt, rot, scale);
 	}
@@ -1663,7 +1670,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 			return nullptr;
 
 		if(area.area_type == LevelArea::Type::Outside)
-			terrain->SetH(pt);
+			terrain->SetY(pt);
 
 		return SpawnObjectEntity(area, obj, pt, rot, scale);
 	}
@@ -1774,7 +1781,7 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 	assert(item);
 
 	if(area.area_type == LevelArea::Type::Outside)
-		terrain->SetH(item->pos);
+		terrain->SetY(item->pos);
 	area.items.push_back(item);
 
 	if(Net::IsOnline())
@@ -1949,7 +1956,7 @@ Unit* Level::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, const 
 		if(area.area_type == LevelArea::Type::Outside)
 		{
 			Vec3 pt = *pos;
-			game_level->terrain->SetH(pt);
+			game_level->terrain->SetY(pt);
 			u->pos = pt;
 		}
 		else
@@ -2836,7 +2843,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	assert(ok);
 
 	if(area.have_terrain && terrain->IsInside(unit.pos))
-		terrain->SetH(unit.pos);
+		terrain->SetY(unit.pos);
 
 	if(unit.cobj)
 		unit.UpdatePhysics();
@@ -3011,11 +3018,8 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 		trap.obj2.pos.y -= 2.f;
 		trap.hitted = new vector<Unit*>;
 	}
-	else
-	{
+	else if(type == TRAP_FIREBALL)
 		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
-		trap.obj.base = &BaseObject::obj_alpha;
-	}
 
 	if(timed)
 	{
@@ -3419,8 +3423,7 @@ void Level::SpawnDungeonColliders()
 	}
 
 	// room floors/ceilings
-	dungeon_shape_pos.clear();
-	dungeon_shape_index.clear();
+	dungeon_mesh->Clear();
 	int index = 0;
 
 	if((inside->type == L_DUNGEON && inside->target == LABYRINTH) || inside->type == L_CAVE)
@@ -3431,29 +3434,29 @@ void Level::SpawnDungeonColliders()
 			for(int y = 0; y < 16; ++y)
 			{
 				// floor
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_index.push_back(index);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 3);
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, 0, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->indices.push_back(index);
+				dungeon_mesh->indices.push_back(index + 1);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 1);
+				dungeon_mesh->indices.push_back(index + 3);
 				index += 4;
 
 				// ceil
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * y * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
-				dungeon_shape_index.push_back(index);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 3);
-				dungeon_shape_index.push_back(index + 1);
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * y * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * x * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->vertices.push_back(Vec3(2.f * (x + 1) * lvl->w / 16, h, 2.f * (y + 1) * lvl->h / 16));
+				dungeon_mesh->indices.push_back(index);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 1);
+				dungeon_mesh->indices.push_back(index + 2);
+				dungeon_mesh->indices.push_back(index + 3);
+				dungeon_mesh->indices.push_back(index + 1);
 				index += 4;
 			}
 		}
@@ -3462,39 +3465,48 @@ void Level::SpawnDungeonColliders()
 	for(Room* room : lvl->rooms)
 	{
 		// floor
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, 0, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, 0, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 3);
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, 0, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, 0, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->indices.push_back(index);
+		dungeon_mesh->indices.push_back(index + 1);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 1);
+		dungeon_mesh->indices.push_back(index + 3);
 		index += 4;
 
 		// ceil
 		const float h = (room->IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, h, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * room->pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, h, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * (room->pos.y + room->size.y)));
-		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 3);
-		dungeon_shape_index.push_back(index + 1);
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, h, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * room->pos.y));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * room->pos.x, h, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->vertices.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * (room->pos.y + room->size.y)));
+		dungeon_mesh->indices.push_back(index);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 1);
+		dungeon_mesh->indices.push_back(index + 2);
+		dungeon_mesh->indices.push_back(index + 3);
+		dungeon_mesh->indices.push_back(index + 1);
 		index += 4;
 	}
 
 	delete dungeon_shape;
 	delete dungeon_shape_data;
 
-	dungeon_shape_data = new btTriangleIndexVertexArray(dungeon_shape_index.size() / 3, dungeon_shape_index.data(), sizeof(int) * 3,
-		dungeon_shape_pos.size(), (btScalar*)dungeon_shape_pos.data(), sizeof(Vec3));
+	btIndexedMesh mesh;
+	mesh.m_numTriangles = dungeon_mesh->indices.size() / 3;
+	mesh.m_triangleIndexBase = (byte*)dungeon_mesh->indices.data();
+	mesh.m_triangleIndexStride = sizeof(word) * 3;
+	mesh.m_numVertices = dungeon_mesh->vertices.size();
+	mesh.m_vertexBase = (byte*)dungeon_mesh->vertices.data();
+	mesh.m_vertexStride = sizeof(Vec3);
+
+	dungeon_shape_data = new btTriangleIndexVertexArray();
+	dungeon_shape_data->addIndexedMesh(mesh, PHY_SHORT);
 	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
+	dungeon_shape->setUserPointer(dungeon_mesh);
 
 	obj_dungeon = new btCollisionObject;
 	obj_dungeon->setCollisionShape(dungeon_shape);
@@ -3942,12 +3954,13 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
 		Tile& p = lvl->map[it->x + (lvl->w - it->y - 1)*lvl->w];
 		SetBit(p.flags, Tile::F_REVEALED);
-		uint* pix = lock[it->y] + it->x;
+		uint* pix = tex[it->y] + it->x;
 		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
 			*pix = Color(100, 100, 100);
 		else if(p.type == DOORS)
@@ -3955,6 +3968,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 		else
 			*pix = Color(220, 220, 240);
 	}
+	tex.Unlock();
 
 	if(Net::IsLocal())
 	{
@@ -4302,7 +4316,7 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	gi->rot = Quat::RotY(Random(MAX_ANGLE));
 	gi->pos = pos;
 	if(local_area->area_type == LevelArea::Type::Outside)
-		terrain->SetH(gi->pos);
+		terrain->SetY(gi->pos);
 	gi->item = item;
 	local_area->items.push_back(gi);
 	return gi;
@@ -4742,9 +4756,8 @@ Room* Level::GetRoom(RoomTarget target)
 }
 
 //=================================================================================================
-Object* Level::FindObjectInRoom(Room& room, const string& obj_id)
+Object* Level::FindObjectInRoom(Room& room, BaseObject* base)
 {
-	BaseObject* base = BaseObject::Get(obj_id);
 	for(Object* obj : local_area->objects)
 	{
 		if(obj->base == base && room.IsInside(obj->pos))
@@ -4912,5 +4925,27 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(x == start_x && y == start_y)
 			return false;
+	}
+}
+
+//=================================================================================================
+void Level::CreateObjectsMeshInstance()
+{
+	const bool isLoading = (game->in_load || net->mp_load);
+	for(LevelArea& area : ForEachArea())
+	{
+		for(Object* obj : area.objects)
+		{
+			if(obj->mesh->IsAnimated())
+			{
+				float time = 0;
+				if(isLoading)
+					time = obj->time;
+				obj->meshInst = new MeshInstance(obj->mesh);
+				obj->meshInst->Play(&obj->mesh->anims[0], PLAY_NO_BLEND, 0);
+				if(time != 0)
+					obj->meshInst->groups[0].time = time;
+			}
+		}
 	}
 }

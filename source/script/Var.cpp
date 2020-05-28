@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "Var.h"
-#include "Item.h"
-#include "Location.h"
-#include "World.h"
+
 #include "Encounter.h"
 #include "GroundItem.h"
+#include "Item.h"
+#include "Location.h"
 #include "SaveState.h"
 #include "ScriptManager.h"
+#include "World.h"
 #pragma warning(error: 4062)
 
 string Vars::tmp_str;

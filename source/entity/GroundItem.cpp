@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "GroundItem.h"
+
+#include "BitStreamFunc.h"
 #include "Item.h"
 #include "QuestConsts.h"
 #include "QuestManager.h"
-#include "BitStreamFunc.h"
 #include "SaveState.h"
 
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;

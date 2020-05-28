@@ -1,14 +1,17 @@
 #include "Pch.h"
 #include "Quest.h"
+
 #include "Game.h"
-#include "SaveState.h"
-#include "Journal.h"
-#include "QuestManager.h"
-#include "GameFile.h"
-#include "World.h"
 #include "GameGui.h"
-#include "LevelGui.h"
+#include "GameFile.h"
 #include "GameMessages.h"
+#include "Journal.h"
+#include "LevelGui.h"
+#include "QuestManager.h"
+#include "SaveState.h"
+#include "Var.h"
+#include "World.h"
+
 #include <scriptdictionary/scriptdictionary.h>
 
 //=================================================================================================
@@ -191,8 +194,25 @@ Quest::LoadResult Quest_Encounter::Load(GameReader& f)
 }
 
 //=================================================================================================
+void Quest::ConversionData::Add(cstring key, bool value)
+{
+	vars->Get(key)->SetBool(value);
+}
+
+//=================================================================================================
 void Quest::ConversionData::Add(cstring key, int value)
 {
-	asINT64 v = value;
-	dict->Set(key, v);
+	vars->Get(key)->SetInt(value);
+}
+
+//=================================================================================================
+void Quest::ConversionData::Add(cstring key, Location* location)
+{
+	vars->Get(key)->SetPtr(location, Var::Type::Location);
+}
+
+//=================================================================================================
+void Quest::ConversionData::Add(cstring key, const Item* item)
+{
+	vars->Get(key)->SetPtr(const_cast<Item*>(item), Var::Type::Item);
 }

@@ -1,7 +1,9 @@
-#include "Base.h"
-#include "Tokenizer.h"
+#include <CarpgLibCore.h>
+#include <Tokenizer.h>
+#include <Crc.h>
+#include <File.h>
+
 #include <Shlwapi.h>
-#include "Crc.h"
 #include <fstream>
 #include <Shellapi.h>
 
@@ -27,13 +29,11 @@ vector<Entry> entries;
 bool FillEntry()
 {
 	Tokenizer t;
-	string s, s2, s3;
-	if(!LoadFileToString("paklist.txt", s))
+	if(!t.FromFile("paklist.txt"))
 	{
 		printf("Missing paklist.txt!");
 		return false;
 	}
-	t.FromString(s);
 	t.AddKeyword("file", 0);
 	t.AddKeyword("dir", 1);
 	t.AddKeyword("pdb", 2);
@@ -98,7 +98,8 @@ uint CalculateCrc(HANDLE file)
 		buf = new byte[chunk];
 
 	DWORD size_left = GetFileSize(file, NULL);
-	CRC32 crc;
+	DWORD tmp;
+	Crc crc;
 
 	while(size_left > 0)
 	{
@@ -200,10 +201,11 @@ bool PakDir(cstring input, cstring output)
 
 	do
 	{
-		if(strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0)
+		// ignore special directories (., .., .git, etc)
+		if(data.cFileName[0] == '.')
 			continue;
 
-		if(IS_SET(data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
+		if(IsSet(data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
 		{
 			string input2 = Format("%s/%s", input, data.cFileName),
 				output2 = Format("%s%s/", output, data.cFileName);
@@ -251,8 +253,8 @@ bool CreatePak(char* pakname)
 	pak_dir = Format("out/%s", pakname);
 	printf("Creating pak %s.\n", pak_dir.c_str());
 
-	if(DirectoryExists(pak_dir.c_str()))
-		DeleteDirectory(pak_dir.c_str());
+	if(io::DirectoryExists(pak_dir.c_str()))
+		io::DeleteDirectory(pak_dir.c_str());
 	DeleteEntries();
 	CreateDirectory(pak_dir.c_str(), NULL);
 
@@ -262,7 +264,7 @@ bool CreatePak(char* pakname)
 		if(e.type == ET_File)
 		{
 			cstring output = Format("%s/%s", pak_dir.c_str(), e.output.c_str());
-			strcpy(BUF, output);
+			strcpy_s(BUF, output);
 			cstring path = BUF;
 			if(!PathRemoveFileSpec(BUF) || !BUF[0])
 				path = NULL;
@@ -308,8 +310,8 @@ bool CreatePatch(char* pakname)
 	pak_dir = Format("out/patch_%s", pakname);
 	printf("Creating patch %s.\n", pak_dir.c_str());
 
-	if(DirectoryExists(pak_dir.c_str()))
-		DeleteDirectory(pak_dir.c_str());
+	if(io::DirectoryExists(pak_dir.c_str()))
+		io::DeleteDirectory(pak_dir.c_str());
 	CreateDirectory(pak_dir.c_str(), NULL);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
@@ -318,7 +320,7 @@ bool CreatePatch(char* pakname)
 		if(e.type == ET_File)
 		{
 			cstring output = Format("%s/%s", pak_dir.c_str(), e.output.c_str());
-			strcpy(BUF, output);
+			strcpy_s(BUF, output);
 			cstring path = BUF;
 			if(!PathRemoveFileSpec(BUF) || !BUF[0])
 				path = NULL;
@@ -423,15 +425,12 @@ bool LoadEntries(char* pakname)
 
 	printf("Using version %s. Loading...\n", best.c_str());
 
-	string s;
-	if(!LoadFileToString(Format("db/%s", best.c_str()), s))
+	Tokenizer t;
+	if(!t.FromFile(Format("db/%s", best.c_str())))
 	{
 		printf("Failed to load file '%s'!", best.c_str());
 		return false;
 	}
-
-	Tokenizer t;
-	t.FromString(s);
 	DeleteEntries();
 
 	try

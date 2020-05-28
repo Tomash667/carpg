@@ -1,48 +1,49 @@
 #include "Pch.h"
 #include "Game.h"
-#include "Language.h"
-#include "Terrain.h"
-#include "Version.h"
-#include "City.h"
-#include "InsideLocation.h"
-#include "LevelGui.h"
-#include "MainMenu.h"
-#include "GameMenu.h"
-#include "MultiplayerPanel.h"
-#include "Options.h"
-#include "Controls.h"
-#include "SaveLoadPanel.h"
-#include "GetTextDialog.h"
-#include "CreateServerPanel.h"
-#include "CreateCharacterPanel.h"
-#include "PickServerPanel.h"
-#include "ServerPanel.h"
-#include "InfoBox.h"
-#include "LoadScreen.h"
-#include "WorldMapGui.h"
-#include "MpBox.h"
+
+#include "AbilityPanel.h"
 #include "AIController.h"
 #include "BitStreamFunc.h"
-#include "Team.h"
-#include "SaveState.h"
-#include "SoundManager.h"
-#include "BitStreamFunc.h"
-#include "Portal.h"
+#include "City.h"
+#include "Controls.h"
+#include "CreateCharacterPanel.h"
+#include "CreateServerPanel.h"
 #include "EntityInterpolator.h"
-#include "World.h"
+#include "GameGui.h"
+#include "GameMenu.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "InfoBox.h"
+#include "InsideLocation.h"
+#include "Language.h"
 #include "Level.h"
+#include "LevelGui.h"
+#include "LoadScreen.h"
+#include "LobbyApi.h"
+#include "MainMenu.h"
+#include "MpBox.h"
+#include "MultiplayerPanel.h"
+#include "Options.h"
+#include "PickServerPanel.h"
+#include "PlayerInfo.h"
+#include "Portal.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
-#include "GameGui.h"
-#include "PlayerInfo.h"
-#include "LobbyApi.h"
-#include "Render.h"
-#include "GameMessages.h"
-#include "Engine.h"
+#include "SaveLoadPanel.h"
+#include "SaveState.h"
+#include "ServerPanel.h"
+#include "Team.h"
 #include "Utility.h"
-#include "GameResources.h"
-#include "AbilityPanel.h"
+#include "Version.h"
+#include "World.h"
+#include "WorldMapGui.h"
+
+#include <Engine.h>
+#include <GetTextDialog.h>
+#include <Render.h>
 #include <SceneManager.h>
+#include <SoundManager.h>
+#include <Terrain.h>
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -68,7 +69,6 @@ void Game::SaveOptions()
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", engine->GetWindowSize());
-	cfg.Add("refresh", render->GetRefreshRate());
 	cfg.Add("skip_tutorial", skip_tutorial);
 	cfg.Add("language", Language::prefix);
 	int ms, msq;
@@ -369,6 +369,8 @@ void Game::EndConnecting(cstring msg, bool wait)
 		ForceRedraw();
 	if(!game_gui->pick_server->visible)
 		net->ClosePeer(wait);
+	else
+		net->peer->CloseConnection(net->server, true);
 }
 
 //=================================================================================================
@@ -1362,13 +1364,11 @@ void Game::UpdateServerTransfer(float dt)
 				u->mesh_inst->need_update = true;
 				info.u = u;
 
-				u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 				u->player = new PlayerController;
 				u->player->id = info.id;
 				u->player->name = info.name;
 				u->player->Init(*u);
 				info.cc.Apply(*u->player);
-				u->fake_unit = false;
 
 				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;
@@ -1685,7 +1685,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				net->DeleteOldPlayers();
 				if(!net->mp_quickload)
-					LoadResources("", false);
+					LoadResources("", false, false);
 
 				net_mode = NM_SERVER_SEND;
 				net_state = NetState::Server_Send;
@@ -1962,9 +1962,8 @@ void Game::QuickJoinIp()
 		net_state = NetState::Client_PingIp;
 		net_timer = T_CONNECT_PING;
 		net_tries = I_CONNECT_TRIES;
-#ifdef _DEBUG
-		net_tries *= 2;
-#endif
+		if(IsDebug())
+			net_tries *= 2;
 		net->ping_adr = adr;
 		net->peer->Ping(net->ping_adr.ToString(false), net->ping_adr.GetPort(), false);
 	}
@@ -2092,7 +2091,7 @@ void Game::OnCreateCharacter(int id)
 		info.clas = game_gui->create_character->clas;
 		info.hd.Get(*game_gui->create_character->unit->human_data);
 		info.cc = game_gui->create_character->cc;
-		// send info to other net->active_players about changing my class
+		// send info to other active players about changing my class
 		if(Net::IsServer())
 		{
 			if(info.clas != old_class && net->active_players > 1)

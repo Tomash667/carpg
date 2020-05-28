@@ -871,16 +871,16 @@ item healing_herb {
 	name "Healing herb"
 	desc "Instantly heals 150 hit points."
 }
+item mana_herb {
+	name "Mana herb"
+	desc "Restores 150 mana points after eating."
+}
 item green_herb {
 	name "Green herb"
 }
 item alchemist_herb {
 	name "Alchemical herb"
 	desc "A plant with unknown alchemical properties."
-}
-item magic_crystal {
-	name "Magic crystal"
-	desc "This crystal is edible. Restores 150 mana points after eating."
 }
 
 //------------------------------------------------------------------------------
@@ -926,6 +926,20 @@ item bear_pelt {
 }
 item black_bear_pelt {
 	name "Black bear pelt"
+}
+item tallow {
+	name "Tallow"
+}
+item heal_crystal {
+	name "Vitalit"
+	desc "Crystal with healing properties."
+}
+item magic_crystal {
+	name "Magic crystal"
+	desc "Crystal with magic properties."
+}
+item troll_blood {
+	name "Troll blood"
 }
 
 //------------------------------------------------------------------------------
@@ -1046,6 +1060,11 @@ item q_resources {
 }
 
 //------------------------------------------------------------------------------
+item book_history {
+	name "Contemporary world history"
+	desc "History book."
+	text "*** Contemporary world history ***\n\nThe modern calendar was created by Ilgenius the Third in 103. The beginning of the new calendar was the year the foundation of the kingdom of Nyrtana.\n\nThe year is divided into 12 months, each of them has 30 days. Some people divide the month into three ten-day periods - decadays.\n\nIn the winter of 607 a strange thing happened. Many monsters throughout the kingdom have become very aggressive. The traditional army had big problems solving this problem. There were many groups of adventurers who fought monsters.\n\nIn 610 the Academy was founded. It task is to train heroes who are prepared to fight monsters so that the situation does not happen again."
+}
 item book_orcs {
 	name "Orc horde"
 	desc "Book about orcs."
@@ -1094,6 +1113,26 @@ item book_q_cleric {
 item crypt_note {
 	name "Old note"
 	text "https://youtu.be/LJ5nV9aKthU"
+}
+item recipe_antidote {
+	name "Recipe - antidote"
+	desc "Contains instructions for making an antidote."
+	text "xxx"
+}
+item recipe_reg {
+	name "Recipe - regeneration potion"
+	desc "Contains instructions for making a regeneration potion, requires 25 alchemy."
+	text "xxx"
+}
+item recipe_antimagic {
+	name "Recipe - elixir of antimagic"
+	desc "Contains instructions for making an elixir of antimagic, requires 50 alchemy."
+	text "xxx"
+}
+item recipe_book_nreg {
+	name "Natural healing methods"
+	desc "Contains instructions for making a healing brews."
+	text "[This book contains instructions for making healing brew and big healing brew (requires 25 alchemy)]\n\nHerbal medicine is the study of botany and the use of medicinal plants. Plants have been the basis for medical treatments through much of human history, and such traditional medicine is still widely practiced today. The scope of herbalism is sometimes extended to include fungal and bee products, as well as minerals, shells and certain animal parts."
 }
 
 //------------------------------------------------------------------------------

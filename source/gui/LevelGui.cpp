@@ -1,34 +1,36 @@
 #include "Pch.h"
 #include "LevelGui.h"
-#include "Game.h"
-#include "Language.h"
-#include "Inventory.h"
-#include "StatsPanel.h"
-#include "TeamPanel.h"
-#include "MpBox.h"
-#include "Journal.h"
-#include "Minimap.h"
-#include "GameMessages.h"
-#include "Controls.h"
-#include "AIController.h"
-#include "Chest.h"
-#include "Door.h"
-#include "Team.h"
-#include "Class.h"
+
 #include "Ability.h"
 #include "AbilityPanel.h"
+#include "AIController.h"
 #include "BookPanel.h"
-#include "Profiler.h"
-#include "GameStats.h"
-#include "Level.h"
-#include "GroundItem.h"
-#include "ResourceManager.h"
-#include "GameGui.h"
-#include "PlayerInfo.h"
-#include "Engine.h"
-#include "Quest.h"
-#include "GameResources.h"
+#include "Chest.h"
+#include "Class.h"
+#include "Controls.h"
 #include "CraftPanel.h"
+#include "Door.h"
+#include "Game.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "GameResources.h"
+#include "GameStats.h"
+#include "GroundItem.h"
+#include "Inventory.h"
+#include "Journal.h"
+#include "Language.h"
+#include "Level.h"
+#include "Minimap.h"
+#include "MpBox.h"
+#include "PlayerInfo.h"
+#include "Quest.h"
+#include "StatsPanel.h"
+#include "Team.h"
+#include "TeamPanel.h"
+
+#include <Engine.h>
+#include <Profiler.h>
+#include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.1f;
@@ -249,13 +251,13 @@ void LevelGui::DrawFront()
 			if(u.refs != 1)
 				str += Format(" x%u", u.refs);
 			str += ")";
-			if(Net::IsLocal())
+			if(Net::IsLocal() || u.IsLocalPlayer())
 			{
 				if(u.IsAI())
 				{
 					AIController& ai = *u.ai;
 					UnitOrder order = u.GetOrder();
-					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
+					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level, u.usable ? 1 : 0,
 						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.st.idle.action]) : "",
 						ai.timer, ai.loc_timer, order_str[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
@@ -285,7 +287,10 @@ void LevelGui::DrawFront()
 					}
 				}
 				else
-					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, Act:%d, PAct:%d", u.busy, u.frozen, u.level, u.animation, u.action, u.player->action);
+				{
+					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, PAct:%d",
+						u.busy, u.frozen, u.level, u.usable ? 1 : 0, u.animation, u.action, u.player->action);
+				}
 			}
 			DrawUnitInfo(str, u, text_pos);
 		}

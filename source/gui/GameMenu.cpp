@@ -1,11 +1,13 @@
 #include "Pch.h"
 #include "GameMenu.h"
-#include "Language.h"
-#include "Input.h"
-#include "ResourceManager.h"
+
 #include "Game.h"
 #include "GameGui.h"
+#include "Language.h"
 #include "SaveLoadPanel.h"
+
+#include <Input.h>
+#include <ResourceManager.h>
 
 //=================================================================================================
 GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)

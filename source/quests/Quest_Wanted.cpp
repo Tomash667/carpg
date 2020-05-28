@@ -1,14 +1,15 @@
 #include "Pch.h"
 #include "Quest_Wanted.h"
-#include "Game.h"
-#include "Journal.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
+
 #include "City.h"
-#include "World.h"
+#include "Game.h"
+#include "GameFile.h"
+#include "Journal.h"
 #include "NameHelper.h"
+#include "QuestManager.h"
+#include "SaveState.h"
 #include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()
@@ -46,14 +47,14 @@ void Quest_Wanted::SetProgress(int prog2)
 	prog = prog2;
 	switch(prog2)
 	{
-	case Progress::Started: // zaakceptowano
+	case Progress::Started:
 		{
 			OnStart(game->txQuest[257]);
 			quest_mgr->quests_timeout.push_back(this);
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			target_loc = world->GetRandomFreeSettlementIndex(start_loc);
-			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
+			// if there is no free city he will talk about some random city but there won't be there...
 			if(target_loc == -1)
 				target_loc = world->GetRandomSettlementIndex(start_loc);
 			Location& target = GetTargetLocation();
@@ -67,7 +68,7 @@ void Quest_Wanted::SetProgress(int prog2)
 				unit_spawn_level = level;
 			}
 
-			// dodaj list
+			// add letter
 			Item::Get("wanted_letter")->CreateCopy(letter);
 			letter.id = "$wanted_letter";
 			letter.name = game->txQuest[258];
@@ -75,12 +76,12 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
-			// wpis do dziennika
+			// add journal entry
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
-	case Progress::Timeout: // czas min¹³
+	case Progress::Timeout:
 		{
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
@@ -94,14 +95,14 @@ void Quest_Wanted::SetProgress(int prog2)
 			done = false;
 		}
 		break;
-	case Progress::Killed: // zabito
+	case Progress::Killed:
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
 			OnUpdate(Format(game->txQuest[262], unit_name.c_str()));
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
-	case Progress::Finished: // wykonano
+	case Progress::Finished:
 		{
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;

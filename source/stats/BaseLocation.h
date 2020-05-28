@@ -3,44 +3,21 @@
 //-----------------------------------------------------------------------------
 enum BaseLocationId
 {
-	// fort ludzi, 2-3 poziomów, bez pu³apek czy ukrytych przejœæ
-	HUMAN_FORT,
-	// fort krasnoludów 3-5 poziomów, pu³apki, tajne przejœcia, na dole skarby
-	DWARF_FORT,
-	// wie¿a magów, 4-6 okr¹g³ych ma³ych poziomów
-	// 50% szansy na magów, 25% na magów i golemy
-	MAGE_TOWER,
-	// kryjówka bandytów, 1 poziom, pu³apki przy wejœciu
-	// 75% szansy na bandytów
-	BANDITS_HIDEOUT,
-	// krypta w której pochowano jak¹œ znan¹ osobê, 2-3 poziomów, na pocz¹tku ostrze¿enia, na ostatnim poziomie du¿o pu³apek i centralna sala ze zw³okami i skarbami
-	// 50% szansy na nieumar³ych, 25% nekro
-	HERO_CRYPT,
-	// uwiêziono tu jakiegoœ z³ego potwora, 2-3 poziomów, jak wy¿ej
-	// 75% szansy na nieumar³ych
-	MONSTER_CRYPT,
-	// stara œwi¹tynia, 1-3 poziomów, mo¿e byæ oczyszczona lub nie ze z³ych kap³anów/nekromantów
-	// 25% nieumarli, 25% nekro, 25% Ÿli
-	OLD_TEMPLE,
-	// ukryta skrytka, 1 poziom, wygl¹da jak zwyk³y poziom ale s¹ ukryte przejœcia i pu³apki, na koñcu skarb
-	// 25% nic, 25% bandyci
-	VAULT,
-	// baza nekromantów
-	// 50% nekro, 25% z³o
-	NECROMANCER_BASE,
-	// labirynt
-	LABYRINTH,
-	// jaskina
+	HUMAN_FORT, // 2-3 levels, no traps
+	DWARF_FORT, // 2-4 levels, have traps
+	MAGE_TOWER, // 3-5 round small level; 50% chance for mages, 25% for mages & golems
+	BANDITS_HIDEOUT, // 2-3 level, traps at entrance (75% chance for bandits)
+	HERO_CRYPT, // 2-3 levels, someone important was burried here; 50% chance for undead, 25% for necromancers
+	MONSTER_CRYPT, // 2-3 levels, some dangerous monsters were locked here; 75% chance for undead
+	OLD_TEMPLE, // 1-3 levels, 25% undead, 25% necromancers, 25% evil
+	VAULT, // 1 level with traps; 25% chance for empty, 25% for bandits
+	NECROMANCER_BASE, // 50% chance for necromancers, 25% evil
+	LABYRINTH, // maze
 	CAVE,
-	// koñcowy poziom questu kopalnia
 	ANCIENT_ARMORY,
-	// jak HUMAN_FORT ale 100% szansy na drzwi
-	TUTORIAL_FORT,
-	// jak HUMAN_FORT ale z sal¹ tronow¹
-	THRONE_FORT,
-	// jak VAULT ale z sal¹ tronow¹
-	THRONE_VAULT,
-	// druga tekstura krypty
+	TUTORIAL_FORT, // like HUMAN_FORT but with 100% door chance
+	THRONE_FORT, // like HUMAN_FORT but with throne room
+	THRONE_VAULT, // like VAULT but with throne room
 	CRYPT_2_TEXTURE,
 	BASE_LOCATION_MAX
 };
@@ -53,8 +30,7 @@ enum BaseLocationOptions
 	BLO_ROUND = 1 << 0,
 	BLO_LABYRINTH = 1 << 1,
 	BLO_MAGIC_LIGHT = 1 << 2,
-	BLO_LESS_FOOD = 1 << 3,
-	BLO_NO_TEX_WRAP = 1 << 4,
+	BLO_LESS_FOOD = 1 << 3
 };
 
 //-----------------------------------------------------------------------------

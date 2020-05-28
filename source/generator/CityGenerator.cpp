@@ -1,21 +1,23 @@
 #include "Pch.h"
 #include "CityGenerator.h"
-#include "Location.h"
-#include "City.h"
-#include "World.h"
-#include "Level.h"
-#include "Terrain.h"
-#include "QuestManager.h"
-#include "Quest.h"
-#include "Quest_Contest.h"
-#include "Team.h"
-#include "OutsideObject.h"
-#include "AIController.h"
-#include "Texture.h"
+
 #include "Arena.h"
+#include "AIController.h"
+#include "City.h"
 #include "Game.h"
+#include "Level.h"
+#include "Location.h"
 #include "Object.h"
+#include "OutsideObject.h"
+#include "Quest.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
 #include "Stock.h"
+#include "Team.h"
+#include "World.h"
+
+#include <Terrain.h>
+#include <Texture.h>
 
 enum RoadFlags
 {
@@ -498,7 +500,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky
 	{
 		for(int i = 0; i < (int)roads.size(); ++i)
 		{
-			const Road2& r = roads[i];
+			const Road& r = roads[i];
 			int minx = max(0, r.start.x - 1),
 				miny = max(0, r.start.y - 1),
 				maxx = min(w - 1, r.end.x + 1),
@@ -564,7 +566,8 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 	// budynki
 	for(vector<ToBuild>::iterator build_it = tobuild.begin(), build_end = tobuild.end(); build_it != build_end; ++build_it)
 	{
-		Int2 ext = build_it->building->size - Int2(1, 1);
+		Building& building = *build_it->building;
+		Int2 ext = building.size - Int2(1, 1);
 
 		bool ok;
 		vector<BuildPt> points;
@@ -577,8 +580,8 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		// 2 - po x i po z
 
 		// miejsca na domy
-		const int ymin = int(0.25f*w);
-		const int ymax = int(0.75f*w);
+		const int ymin = int(0.25f * w);
+		const int ymax = int(0.75f * w);
 		for(int y = ymin; y < ymax; ++y)
 		{
 			for(int x = ymin; x < ymax; ++x)
@@ -674,177 +677,244 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				tobuild.erase(build_it, tobuild.end());
 				break;
 			}
-			Error("Failed to generate city map! No place for building %s!", build_it->building->id.c_str());
+			Error("Failed to generate city map! No place for building %s!", building.id.c_str());
 			return;
 		}
 
 		// ustal pozycjê i obrót budynku
-		const Int2 centrum(w / 2, w / 2);
-		int range, best_range = INT_MAX, index = 0;
-		for(vector<BuildPt>::iterator it = points.begin(), end = points.end(); it != end; ++it, ++index)
+		if(IsSet(building.flags, Building::FAVOR_DIST))
 		{
-			int best_length = 999;
-			GameDirection dir = GDIR_INVALID;
-
-			// calculate distance to closest road
-			if(it->side == 1 || it->side == 2)
+			int bestTotal = 0;
+			for(vector<BuildPt>::iterator it = points.begin(), end = points.end(); it != end; ++it)
 			{
-				// down
-				int length = 1;
-				Int2 pt = it->pt;
-				--pt.y;
-
-				while(1)
+				const Int2 mod[] = {
+					Int2(-1,-1),
+					Int2(-1,0),
+					Int2(-1,1),
+					Int2(0,-1),
+					Int2(0,1),
+					Int2(1,-1),
+					Int2(1,0),
+					Int2(1,1)
+				};
+				int bestDist = 999;
+				for(int i = 0; i < 8; ++i)
 				{
-					TerrainTile& t = tiles[pt.x + pt.y*w];
-					if(t.mode == TM_ROAD)
+					Int2 pt = it->pt;
+					int dist = 0;
+					while(true)
 					{
-						if(t.t == TT_SAND)
-							length = length * 2 + 5;
-						break;
+						pt += mod[i];
+						if(pt.x < ymin || pt.y < ymin || pt.x > ymax || pt.y > ymax)
+							break;
+						if(tiles[pt.x + pt.y * s].mode != TM_NORMAL)
+						{
+							if(dist < bestDist)
+								bestDist = dist;
+							break;
+						}
+						++dist;
 					}
+				}
+				if(bestDist >= bestTotal)
+				{
+					if(bestDist > bestTotal)
+					{
+						valid_pts.clear();
+						bestTotal = bestDist;
+					}
+
+					GameDirection dir;
+					if(it->side == 2)
+						dir = (GameDirection)(Rand() % 4);
+					else if(it->side == 1)
+					{
+						if(Rand() % 2 == 0)
+							dir = GDIR_DOWN;
+						else
+							dir = GDIR_UP;
+					}
+					else
+					{
+						if(Rand() % 2 == 0)
+							dir = GDIR_LEFT;
+						else
+							dir = GDIR_RIGHT;
+					}
+					valid_pts.push_back(std::make_pair(it->pt, dir));
+				}
+			}
+		}
+		else
+		{
+			const Int2 centrum(w / 2, w / 2);
+			int best_range = INT_MAX;
+			for(vector<BuildPt>::iterator it = points.begin(), end = points.end(); it != end; ++it)
+			{
+				int best_length = 999;
+				GameDirection dir = GDIR_INVALID;
+
+				// calculate distance to closest road
+				if(it->side == 1 || it->side == 2)
+				{
+					// down
+					int length = 1;
+					Int2 pt = it->pt;
 					--pt.y;
-					if(pt.y < ymin)
+
+					while(1)
 					{
-						length = 1000;
-						break;
+						TerrainTile& t = tiles[pt.x + pt.y * w];
+						if(t.mode == TM_ROAD)
+						{
+							if(t.t == TT_SAND)
+								length = length * 2 + 5;
+							break;
+						}
+						--pt.y;
+						if(pt.y < ymin)
+						{
+							length = 1000;
+							break;
+						}
+						++length;
 					}
-					++length;
-				}
 
-				if(tiles[pt.x + pt.y*w].mode == TM_ROAD && length < best_length)
-				{
-					best_length = length;
-					dir = GDIR_DOWN;
-				}
-
-				// up
-				length = 1;
-				pt = it->pt;
-				++pt.y;
-
-				while(1)
-				{
-					TerrainTile& t = tiles[pt.x + pt.y*w];
-					if(t.mode == TM_ROAD)
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
 					{
-						if(t.t == TT_SAND)
-							length = length * 2 + 5;
-						break;
-					}
-					++pt.y;
-					if(pt.y > ymax)
-					{
-						length = 1000;
-						break;
-					}
-					++length;
-				}
-
-				if(tiles[pt.x + pt.y*w].mode == TM_ROAD && length < best_length)
-				{
-					best_length = length;
-					dir = GDIR_UP;
-				}
-			}
-			if(it->side == 0 || it->side == 2)
-			{
-				// left
-				int length = 1;
-				Int2 pt = it->pt;
-				--pt.x;
-
-				while(1)
-				{
-					TerrainTile& t = tiles[pt.x + pt.y*w];
-					if(t.mode == TM_ROAD)
-					{
-						if(t.t == TT_SAND)
-							length = length * 2 + 5;
-						break;
-					}
-					--pt.x;
-					if(pt.x < ymin)
-					{
-						length = 1000;
-						break;
-					}
-					++length;
-				}
-
-				if(tiles[pt.x + pt.y*w].mode == TM_ROAD && length < best_length)
-				{
-					best_length = length;
-					dir = GDIR_LEFT;
-				}
-
-				// right
-				length = 1;
-				pt = it->pt;
-				++pt.x;
-
-				while(1)
-				{
-					TerrainTile& t = tiles[pt.x + pt.y*w];
-					if(t.mode == TM_ROAD)
-					{
-						if(t.t == TT_SAND)
-							length = length * 2 + 5;
-						break;
-					}
-					++pt.x;
-					if(pt.x > ymax)
-					{
-						length = 1000;
-						break;
-					}
-					++length;
-				}
-
-				if(tiles[pt.x + pt.y*w].mode == TM_ROAD && length < best_length)
-				{
-					best_length = length;
-					dir = GDIR_RIGHT;
-				}
-			}
-
-			if(dir == GDIR_INVALID)
-			{
-				if(it->side == 2)
-					dir = (GameDirection)(Rand() % 4);
-				else if(it->side == 1)
-				{
-					if(Rand() % 2 == 0)
+						best_length = length;
 						dir = GDIR_DOWN;
-					else
+					}
+
+					// up
+					length = 1;
+					pt = it->pt;
+					++pt.y;
+
+					while(1)
+					{
+						TerrainTile& t = tiles[pt.x + pt.y * w];
+						if(t.mode == TM_ROAD)
+						{
+							if(t.t == TT_SAND)
+								length = length * 2 + 5;
+							break;
+						}
+						++pt.y;
+						if(pt.y > ymax)
+						{
+							length = 1000;
+							break;
+						}
+						++length;
+					}
+
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					{
+						best_length = length;
 						dir = GDIR_UP;
+					}
 				}
-				else
+				if(it->side == 0 || it->side == 2)
 				{
-					if(Rand() % 2 == 0)
+					// left
+					int length = 1;
+					Int2 pt = it->pt;
+					--pt.x;
+
+					while(1)
+					{
+						TerrainTile& t = tiles[pt.x + pt.y * w];
+						if(t.mode == TM_ROAD)
+						{
+							if(t.t == TT_SAND)
+								length = length * 2 + 5;
+							break;
+						}
+						--pt.x;
+						if(pt.x < ymin)
+						{
+							length = 1000;
+							break;
+						}
+						++length;
+					}
+
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					{
+						best_length = length;
 						dir = GDIR_LEFT;
-					else
+					}
+
+					// right
+					length = 1;
+					pt = it->pt;
+					++pt.x;
+
+					while(1)
+					{
+						TerrainTile& t = tiles[pt.x + pt.y * w];
+						if(t.mode == TM_ROAD)
+						{
+							if(t.t == TT_SAND)
+								length = length * 2 + 5;
+							break;
+						}
+						++pt.x;
+						if(pt.x > ymax)
+						{
+							length = 1000;
+							break;
+						}
+						++length;
+					}
+
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					{
+						best_length = length;
 						dir = GDIR_RIGHT;
+					}
 				}
-			}
 
-			if(IsSet(build_it->building->flags, Building::FAVOR_CENTER))
-				range = Int2::Distance(centrum, it->pt);
-			else
-				range = 0;
-			if(IsSet(build_it->building->flags, Building::FAVOR_ROAD))
-				range += max(0, best_length - 1);
-			else
-				range += max(0, best_length - 5);
-
-			if(range <= best_range)
-			{
-				if(range < best_range)
+				if(dir == GDIR_INVALID)
 				{
-					valid_pts.clear();
-					best_range = range;
+					if(it->side == 2)
+						dir = (GameDirection)(Rand() % 4);
+					else if(it->side == 1)
+					{
+						if(Rand() % 2 == 0)
+							dir = GDIR_DOWN;
+						else
+							dir = GDIR_UP;
+					}
+					else
+					{
+						if(Rand() % 2 == 0)
+							dir = GDIR_LEFT;
+						else
+							dir = GDIR_RIGHT;
+					}
 				}
-				valid_pts.push_back(std::make_pair(it->pt, dir));
+
+				int range;
+				if(IsSet(building.flags, Building::FAVOR_CENTER))
+					range = Int2::Distance(centrum, it->pt);
+				else
+					range = 0;
+				if(IsSet(building.flags, Building::FAVOR_ROAD))
+					range += max(0, best_length - 1);
+				else
+					range += max(0, best_length - 5);
+
+				if(range <= best_range)
+				{
+					if(range < best_range)
+					{
+						valid_pts.clear();
+						best_range = range;
+					}
+					valid_pts.push_back(std::make_pair(it->pt, dir));
+				}
 			}
 		}
 
@@ -881,7 +951,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		build_it->pt = pt.first;
 		build_it->dir = best_dir;
 
-		Int2 ext2 = build_it->building->size;
+		Int2 ext2 = building.size;
 		if(best_dir == GDIR_LEFT || best_dir == GDIR_RIGHT)
 			std::swap(ext2.x, ext2.y);
 
@@ -902,16 +972,16 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				switch(best_dir)
 				{
 				case GDIR_DOWN:
-					scheme = build_it->building->scheme[xr + (ext2.y - yr - 1)*ext2.x];
+					scheme = building.scheme[xr + (ext2.y - yr - 1)*ext2.x];
 					break;
 				case GDIR_LEFT:
-					scheme = build_it->building->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
+					scheme = building.scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
 					break;
 				case GDIR_UP:
-					scheme = build_it->building->scheme[ext2.x - xr - 1 + yr * ext2.x];
+					scheme = building.scheme[ext2.x - xr - 1 + yr * ext2.x];
 					break;
 				case GDIR_RIGHT:
-					scheme = build_it->building->scheme[yr + xr * ext2.y];
+					scheme = building.scheme[yr + xr * ext2.y];
 					break;
 				default:
 					assert(0);
@@ -965,10 +1035,13 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 			height[pt.x + pt.y*(w + 1)] = sum;
 		tmp_pts.clear();
 
-		assert(road_start != Int2(-1, -1));
-
-		if(road_start != Int2(-1, -1))
-			GeneratePath(road_start);
+		// generate path
+		if(!IsSet(building.flags, Building::NO_PATH))
+		{
+			assert(road_start != Int2(-1, -1));
+			if(road_start != Int2(-1, -1))
+				GeneratePath(road_start);
+		}
 	}
 }
 
@@ -985,7 +1058,7 @@ void CityGenerator::GeneratePath(const Int2& pt)
 	int start_idx = pt.x + pt.y*w;
 	to_check.push_back(start_idx);
 
-	grid[start_idx].stan = 1;
+	grid[start_idx].state = 1;
 	grid[start_idx].dir = -1;
 
 	struct Mod
@@ -1028,7 +1101,7 @@ void CityGenerator::GeneratePath(const Int2& pt)
 		{
 			const int idx = pt_idx + mod[i].change.x + mod[i].change.y*w;
 			APoint2& point = grid[idx];
-			if(point.stan == 0)
+			if(point.state == 0)
 			{
 				TerrainTile& tile = tiles[idx];
 				if(tile.mode == TM_ROAD)
@@ -1041,13 +1114,13 @@ void CityGenerator::GeneratePath(const Int2& pt)
 				else if(tile.mode == TM_NORMAL || tile.mode == TM_BUILDING_SAND)
 				{
 					point.prev = pt;
-					point.stan = 1;
-					point.koszt = this_point.koszt + (this_point.dir == i ? mod[i].cost : mod[i].cost2);
+					point.state = 1;
+					point.cost = this_point.cost + (this_point.dir == i ? mod[i].cost : mod[i].cost2);
 					point.dir = i;
 					to_check.push_back(idx);
 				}
 				else
-					point.stan = 1;
+					point.state = 1;
 			}
 		}
 
@@ -1492,6 +1565,7 @@ void CityGenerator::GenerateFields()
 {
 	const int ymin = int(0.25f*w);
 	const int ymax = int(0.75f*w) - 5;
+	fields.clear();
 
 	for(int i = 0; i < 50; ++i)
 	{
@@ -1499,25 +1573,24 @@ void CityGenerator::GenerateFields()
 		if(tiles[pt.x + pt.y*w].mode != TM_NORMAL)
 			continue;
 
-		int fw = Random(4, 8);
-		int fh = Random(4, 8);
-		if(fw > fh)
-			fw *= 2;
+		Int2 size(Random(4, 8), Random(4, 8));
+		if(size.x > size.y)
+			size.x *= 2;
 		else
-			fh *= 2;
+			size.y *= 2;
 
-		for(int y = pt.y - 1; y <= pt.y + fh; ++y)
+		for(int y = pt.y - 1; y <= pt.y + size.y; ++y)
 		{
-			for(int x = pt.x - 1; x <= pt.x + fw; ++x)
+			for(int x = pt.x - 1; x <= pt.x + size.x; ++x)
 			{
 				if(tiles[x + y * w].mode != TM_NORMAL)
 					goto next;
 			}
 		}
 
-		for(int y = pt.y; y < pt.y + fh; ++y)
+		for(int y = pt.y; y < pt.y + size.y; ++y)
 		{
-			for(int x = pt.x; x < pt.x + fw; ++x)
+			for(int x = pt.x; x < pt.x + size.x; ++x)
 			{
 				tiles[x + y * w].Set(TT_FIELD, TM_FIELD);
 				float avg = (height[x + y * (w + 1)]
@@ -1531,6 +1604,8 @@ void CityGenerator::GenerateFields()
 				height[x + 1 + (y + 1)*(w + 1)] = avg;
 			}
 		}
+
+		fields.push_back(Rect::Create(pt, size));
 
 	next:;
 	}
@@ -1684,7 +1759,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 			break;
 
 		int index = RandomItemPop(to_check);
-		Road2& r = roads[index];
+		Road& r = roads[index];
 
 		int choices = 0;
 		if(!IsSet(r.flags, ROAD_START_CHECKED))
@@ -1867,7 +1942,7 @@ int CityGenerator::MakeRoad(const Int2& start_pt, GameDirection dir, int road_in
 void CityGenerator::FillRoad(const Int2& pt, GameDirection dir, int dist)
 {
 	int index = (int)roads.size();
-	Road2& road = Add1(roads);
+	Road& road = Add1(roads);
 	Int2 start_pt = pt, end_pt = pt;
 	switch(dir)
 	{
@@ -2346,7 +2421,7 @@ void CityGenerator::SpawnBuildings()
 	{
 		Object* o = new Object;
 		o->pos = Vec3(float(it->pt.x + it->building->shift[it->dir].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->dir].y) * 2);
-		terrain->SetH(o->pos);
+		terrain->SetY(o->pos);
 		o->rot = Vec3(0, DirToRot(it->dir), 0);
 		o->scale = 1.f;
 		o->base = nullptr;
@@ -2456,8 +2531,25 @@ void CityGenerator::SpawnObjects()
 	if(have_well)
 	{
 		Vec3 pos = PtToPos(well_pt);
-		terrain->SetH(pos);
+		terrain->SetY(pos);
 		game_level->SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
+	}
+
+	// fields scarecrow
+	if(city->IsVillage())
+	{
+		BaseObject* scarecrow = BaseObject::Get("scarecrow");
+		for(const Rect& rect : fields)
+		{
+			if(Rand() % 3 != 0)
+				continue;
+			const Int2 size = rect.Size();
+			Box2d spawnBox(2.f * (rect.p1.x + size.x / 4), 2.f * (rect.p1.y + size.y / 4),
+				2.f * (rect.p2.x - size.x / 4), 2.f * (rect.p2.y - size.y / 4));
+			Vec3 pos = spawnBox.GetRandomPos3();
+			terrain->SetY(pos);
+			game_level->SpawnObjectEntity(area, scarecrow, pos, Random(MAX_ANGLE));
+		}
 	}
 
 	TerrainTile* tiles = city->tiles;
@@ -2693,11 +2785,12 @@ void CityGenerator::GeneratePickableItems()
 //=================================================================================================
 void CityGenerator::CreateMinimap()
 {
-	TextureLock lock(game->tMinimap);
+	DynamicTexture& tex = *game->tMinimap;
+	tex.Lock();
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
-		uint* pix = lock[y];
+		uint* pix = tex[y];
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			const TerrainTile& t = city->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
@@ -2780,6 +2873,7 @@ void CityGenerator::CreateMinimap()
 		}
 	}
 
+	tex.Unlock();
 	game_level->minimap_size = OutsideLocation::size;
 }
 

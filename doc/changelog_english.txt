@@ -1,7 +1,47 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.14 (???):
+Version 0.15 (???):
+! cannot load saves from version 0.6.1 or older
++ moved from directx 9 to directx 11
++ learning new alchemy recipes [BottledByte & Tomashu]
++ new alchemical ingredients: magic herb, tallow, vitalit, troll's blood; new recipes: natural healing , regeneration, antimagic, antidotum; historic book
++ new enemy - slime
++ scarecrow on fields, windmill
++ converted quest "find artifact" to script
++ month name instead of number, different start date
++ different dialogs for traveling merchant, trainer
++ update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- can't use speed command in singleplayer game
+- mouse zoom sometimes didn't have effect on camera
+- crash when launching [AnimeIsWrong]
+- script error when talking with alchemist, everyone get better prices
+- merchant stock didn't generate selected items
+- crash when window is minimized in fullscreen and game is loading [BottledByte, Lemiczek, Mokai]
+- ai asks for items in invalid order
+- camera bugs when talking with next npc right after first dialog
+
+--------------------------------------------------------------------------------
+Fixes:
+- randomly generated dungeons were mostly of single type
+- random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
+- crash after loading game where player is casting spell [Ampped]
+
+--------------------------------------------------------------------------------
+Version 0.14.1 (2020-04-11):
++ increased max allowed players to 64
+- crash on crafting in alchemy, fixed by BottledByte [Lemiczek]
+- crash after finishing using cauldron after alchemy [Lemiczek]
+- missing/broken english texts in main storyline [BottledByte]
+- clicking on scrollbar in alchemy when only 1 potion can be created caused numberic overflow [Lemiczek]
+- after loading game where client is ending using object it was stuck inside object
+- no encounters when spamming travel and stop travel [Lemiczek]
+- no quest item spawned in crypt [Ampped]
+- camp spawned under city and can't be entered in bandits/camp near city quest [Ampped]
+- loading freeze after dead unit with script vars is removed (ill villager) [Ampped]
+
+--------------------------------------------------------------------------------
+Version 0.14 (2020-03-31):
 ! cannot load saves from version 0.5.1 or older
 + continued storyline and side quest
 + alchemy skill, crafting 6 simple potions (healing & mana)
@@ -39,6 +79,9 @@ Version 0.14 (???):
 - multiplayer terrain synchronization weirdness on packet loss [BottledByte]
 - console causing game crash when extremely long integer is supplied to a command [BottledByte, Lemiczek]
 - items can be used in knockout animation or when lying on ground [BottledByte]
+- client crash when disconnected during changing dungeon level
+- missing mouth animation when talking for clients
+- broken lobby after client with invalid data checksum tries to join [BottledByte]
 
 --------------------------------------------------------------------------------
 Version 0.13 (2020-01-11):

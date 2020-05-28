@@ -1,12 +1,14 @@
 #include "Pch.h"
 #include "QuestLoader.h"
-#include "QuestScheme.h"
-#include "QuestList.h"
-#include "QuestConsts.h"
-#include "QuestManager.h"
+
 #include "DialogLoader.h"
 #include "GameDialog.h"
+#include "QuestConsts.h"
+#include "QuestList.h"
+#include "QuestManager.h"
+#include "QuestScheme.h"
 #include "ScriptManager.h"
+
 #include <angelscript.h>
 
 enum Group
@@ -105,7 +107,9 @@ void QuestLoader::ParseQuest(const string& id)
 
 	Ptr<QuestScheme> quest;
 	quest->id = id;
-	quest->dialogs.push_back(new GameDialog);
+	GameDialog* texts = new GameDialog;
+	texts->quest = quest;
+	quest->dialogs.push_back(texts);
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -405,7 +409,7 @@ void QuestLoader::Finalize()
 		else
 			scheme->set_progress_use_prev = false;
 		scheme->f_event = type->GetMethodByDecl("void OnEvent(Event@)");
-		scheme->f_upgrade = type->GetMethodByDecl("void OnUpgrade(dictionary&)");
+		scheme->f_upgrade = type->GetMethodByDecl("void OnUpgrade(Vars@)");
 		scheme->scripts.Set(type);
 
 		if(!scheme->f_progress)
@@ -468,11 +472,11 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 	code += scheme->code;
 	code += "\n}";
 
-#ifdef _DEBUG
-	io::CreateDirectory("debug");
-	TextWriter::WriteAll(Format("debug/quests_%s.txt", scheme->id.c_str()), code);
-#endif
+	if(IsDebug())
+	{
+		io::CreateDirectory("debug");
+		TextWriter::WriteAll(Format("debug/quests_%s.txt", scheme->id.c_str()), code);
+	}
 
-	int r = module->AddScriptSection(scheme->id.c_str(), code.c_str());
-	assert(r >= 0);
+	CHECKED(module->AddScriptSection(scheme->id.c_str(), code.c_str()));
 }

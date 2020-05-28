@@ -1,14 +1,14 @@
 #pragma once
 
-// gra
-const int FRAMES = 30; // iloœæ aktualizacji na sekundê w multiplayer
+const int FRAMES = 30; // multiplayer update frames
 const float TICK = 1.f / FRAMES;
 constexpr int MAX_ABILITIES = 3;
 
-const uint MIN_PLAYERS = 1; // minimum slotów na graczy na serwerze
-const uint MAX_PLAYERS = 8; // max slotów na graczy na serweerze
-const int DEFAULT_PLAYERS = 6; // domyœlna liczba slotów
-const int PORT = 37557; // port gry
+const uint MIN_PLAYERS = 1; // min players in create server
+const uint MAX_PLAYERS_WARNING = 8; // show warning when creating server with >8 players
+const uint MAX_PLAYERS = 64; // max players in create server
+const int DEFAULT_PLAYERS = 6; // default number of players when creating server
+const int PORT = 37557; // default server port
 
 // server flags
 enum ServerFlags
@@ -17,11 +17,11 @@ enum ServerFlags
 	SERVER_SAVED = 0x02
 };
 
-// czas oczekiwania
+// waiting time
 const float T_WAIT_FOR_DISCONNECT = 1.f;
-const float T_CONNECT_PING = 1.f; // odstêp pomiêdzy pingowaniem serwera
-const int I_CONNECT_TRIES = 5; // liczba prób po³¹czenia (ca³kowity czas ³¹czenia z serwerem = T_CONNECT_PING*T_CONNECT_TRIES)
-const float T_CONNECT = 5.f; // czas na po³¹czenie do serwera
+const float T_CONNECT_PING = 1.f; // delay between server pinging
+const int I_CONNECT_TRIES = 5; // no of tries to connect to server
+const float T_CONNECT = 5.f; // wait time when trying to connect to server
 
 const int MAX_LEVEL = 25;
 

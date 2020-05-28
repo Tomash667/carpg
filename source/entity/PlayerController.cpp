@@ -1,37 +1,38 @@
 #include "Pch.h"
 #include "PlayerController.h"
-#include "PlayerInfo.h"
-#include "Unit.h"
-#include "Game.h"
-#include "SaveState.h"
-#include "BitStreamFunc.h"
-#include "Class.h"
+
 #include "Ability.h"
-#include "Level.h"
+#include "AbilityPanel.h"
+#include "AIController.h"
+#include "Arena.h"
+#include "BitStreamFunc.h"
+#include "BookPanel.h"
+#include "Class.h"
+#include "Door.h"
+#include "FOV.h"
+#include "Game.h"
 #include "GameGui.h"
 #include "GameMessages.h"
-#include "Team.h"
-#include "World.h"
-#include "ScriptException.h"
-#include "AIController.h"
-#include "SoundManager.h"
-#include "QuestManager.h"
-#include "Quest_Tutorial.h"
-#include "Inventory.h"
-#include "Arena.h"
-#include "Ability.h"
-#include "ParticleSystem.h"
-#include "FOV.h"
-#include "LevelGui.h"
-#include "BookPanel.h"
-#include "Door.h"
-#include "GroundItem.h"
-#include "ScriptManager.h"
-#include "Quest_Scripted.h"
 #include "GameResources.h"
-#include "AbilityPanel.h"
+#include "GroundItem.h"
+#include "Inventory.h"
+#include "Level.h"
+#include "LevelGui.h"
+#include "Messenger.h"
 #include "PhysicCallbacks.h"
-#include "CraftPanel.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "Quest_Scripted.h"
+#include "Quest_Tutorial.h"
+#include "SaveState.h"
+#include "ScriptException.h"
+#include "ScriptManager.h"
+#include "Team.h"
+#include "Unit.h"
+#include "World.h"
+
+#include <ParticleSystem.h>
+#include <SoundManager.h>
 
 LocalPlayerData PlayerController::data;
 
@@ -70,6 +71,9 @@ PlayerController::~PlayerController()
 //=================================================================================================
 void PlayerController::Init(Unit& _unit, bool partial)
 {
+	// to prevent sending MP message set temporary as fake unit
+	_unit.fake_unit = true;
+
 	unit = &_unit;
 	move_tick = 0.f;
 	last_weapon = W_NONE;
@@ -115,7 +119,21 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		exp_level = 0;
 		exp_need = GetExpNeed();
 		InitShortcuts();
+
+		// starting known recipes
+		int skill = unit->GetBase(SkillId::ALCHEMY);
+		if(skill > 0)
+		{
+			for(pair<const int, Recipe*>& p : Recipe::items)
+			{
+				Recipe* recipe = p.second;
+				if(recipe->autolearn && skill >= recipe->skill)
+					AddRecipe(recipe);
+			}
+		}
 	}
+
+	_unit.fake_unit = false;
 }
 
 //=================================================================================================
@@ -397,6 +415,11 @@ void PlayerController::Save(FileWriter& f)
 		for(Entity<Unit> unit : ability_targets)
 			f << unit;
 	}
+	f << recipes.size();
+	for(MemorizedRecipe& mr : recipes)
+	{
+		f << mr.recipe->hash;
+	}
 	f << split_gold;
 	f << always_run;
 	f << exp;
@@ -609,6 +632,31 @@ void PlayerController::Load(FileReader& f)
 		for(Entity<Unit>& unit : ability_targets)
 			f >> unit;
 	}
+
+	// recipes
+	if(LOAD_VERSION >= V_DEV)
+	{
+		uint count;
+		f >> count;
+		recipes.resize(count);
+		for(MemorizedRecipe& mr : recipes)
+			mr.recipe = Recipe::Get(f.Read<int>());
+	}
+	else
+	{
+		// Learn recipes based on player skill for saves before recipe learning
+		int skill = unit->GetBase(SkillId::ALCHEMY);
+		if(skill >= 1)
+		{
+			for(pair<const int, Recipe*>& p : Recipe::items)
+			{
+				Recipe* recipe = p.second;
+				if(recipe->autolearn && skill >= recipe->skill)
+					AddRecipe(recipe);
+			}
+		}
+	}
+
 	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
 	else
@@ -1133,12 +1181,16 @@ void PlayerController::Write(BitStreamWriter& f) const
 	f << knocks;
 	f << arena_fights;
 	f << learning_points;
+
+	// perks
 	f.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& tp : perks)
 	{
 		f << tp.perk->hash;
 		f << tp.value;
 	}
+
+	// abilities
 	f.WriteCasted<byte>(abilities.size());
 	for(const PlayerAbility& ab : abilities)
 	{
@@ -1147,6 +1199,13 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << ab.recharge;
 		f.WriteCasted<byte>(ab.charges);
 	}
+
+	// recipes
+	f << recipes.size();
+	for(const MemorizedRecipe& mr : recipes)
+		f << mr.recipe->hash;
+
+	// next action
 	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
@@ -1168,6 +1227,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 		assert(0);
 		break;
 	}
+
 	f << last_ring;
 }
 
@@ -1208,6 +1268,8 @@ bool PlayerController::Read(BitStreamReader& f)
 	f >> knocks;
 	f >> arena_fights;
 	f >> learning_points;
+
+	// perks
 	f >> count;
 	if(!f || !f.Ensure(5 * count))
 		return false;
@@ -1217,6 +1279,8 @@ bool PlayerController::Read(BitStreamReader& f)
 		tp.perk = Perk::Get(f.Read<int>());
 		f >> tp.value;
 	}
+
+	// abilities
 	f >> count;
 	if(!f || !f.Ensure(11 * count))
 		return false;
@@ -1228,8 +1292,19 @@ bool PlayerController::Read(BitStreamReader& f)
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
 	}
-	f.ReadCasted<byte>(next_action);
 	game_gui->ability->Refresh();
+
+	// recipes
+	uint i_count;
+	f >> i_count;
+	if(!f || !f.Ensure(sizeof(MemorizedRecipe) * i_count))
+		return false;
+	recipes.resize(i_count);
+	for(MemorizedRecipe& mr : recipes)
+		mr.recipe = Recipe::Get(f.Read<int>());
+
+	// next action
+	f.ReadCasted<byte>(next_action);
 	if(!f)
 		return false;
 	switch(next_action)
@@ -1267,6 +1342,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		assert(0);
 		break;
 	}
+
 	f >> last_ring;
 	return true;
 }
@@ -1821,9 +1897,6 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 				u.target_pos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 			u.timer = 0.f;
 			u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
-
-			if(IsSet(bu.use_flags, BaseUsable::ALCHEMY))
-				game_gui->craft->Show();
 		}
 
 		if(Net::IsOnline())
@@ -1949,10 +2022,43 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		data.ability_ready = nullptr;
 }
 
+bool PlayerController::AddRecipe(Recipe* recipe)
+{
+	if(HaveRecipe(recipe))
+		return false;
+	MemorizedRecipe mr;
+	mr.recipe = recipe;
+	recipes.push_back(mr);
+
+	if(!unit->fake_unit)
+	{
+		if(IsLocal())
+			messenger->Post(Msg::LearnRecipe);
+		else
+		{
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::ADD_RECIPE;
+			c.recipe = recipe;
+		}
+	}
+
+	return true;
+}
+
+bool PlayerController::HaveRecipe(Recipe* recipe) const
+{
+	assert(recipe);
+	for(const MemorizedRecipe& mr : recipes)
+	{
+		if(mr.recipe == recipe)
+			return true;
+	}
+	return false;
+}
+
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
-	// licznik otrzymanych obra¿eñ
 	last_dmg = 0.f;
 	if(Net::IsLocal())
 		last_dmg_poison = 0.f;
@@ -2011,7 +2117,7 @@ void PlayerController::Update(float dt)
 			{
 				if(action_unit->IsAlive())
 				{
-					// grabiony cel o¿y³
+					// looted corpse was resurected
 					game->CloseInventory();
 				}
 			}
@@ -2019,7 +2125,7 @@ void PlayerController::Update(float dt)
 			{
 				if(!action_unit->IsStanding() || !action_unit->IsIdle())
 				{
-					// handlarz umar³ / zaatakowany
+					// trader was attacked/died
 					game->CloseInventory();
 				}
 			}
@@ -2029,7 +2135,7 @@ void PlayerController::Update(float dt)
 			if(!game->dialog_context.talker->IsStanding() || !game->dialog_context.talker->IsIdle() || game->dialog_context.talker->to_remove
 				|| game->dialog_context.talker->frozen != FROZEN::NO)
 			{
-				// rozmówca umar³ / jest usuwany / zaatakowa³ kogoœ
+				// talker waas removed/died/was attacked
 				game->dialog_context.EndDialog();
 			}
 		}
@@ -2238,7 +2344,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 			if(move)
 			{
-				// ustal k¹t i szybkoœæ ruchu
+				// set angle & speed of move
 				float angle = u.rot;
 				bool run = always_run;
 				if(u.action == A_ATTACK && u.act.attack.run)
@@ -2254,36 +2360,36 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				float speed_mod;
 				switch(move)
 				{
-				case 10: // przód
+				case 10: // forward
 					angle += PI;
 					speed_mod = 1.f;
 					break;
-				case -10: // ty³
+				case -10: // backward
 					run = false;
 					speed_mod = 0.8f;
 					break;
-				case -1: // lewa
+				case -1: // left
 					angle += PI / 2;
 					speed_mod = 0.75f;
 					break;
-				case 1: // prawa
+				case 1: // right
 					angle += PI * 3 / 2;
 					speed_mod = 0.75f;
 					break;
-				case 9: // lewa góra
+				case 9: // forward left
 					angle += PI * 3 / 4;
 					speed_mod = 0.9f;
 					break;
-				case 11: // prawa góra
+				case 11: // forward right
 					angle += PI * 5 / 4;
 					speed_mod = 0.9f;
 					break;
-				case -11: // lewy ty³
+				case -11: // backward left
 					run = false;
 					angle += PI / 4;
 					speed_mod = 0.9f;
 					break;
-				case -9: // prawy ty³
+				case -9: // backward right
 					run = false;
 					angle += PI * 7 / 4;
 					speed_mod = 0.9f;
@@ -2435,7 +2541,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
 						{
 							if(!u.usable) // can't use when sitting
-								u.UseItem(i_index);
+								ReadBook(i_index);
 						}
 						else
 						{
@@ -2605,21 +2711,20 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			Unit* u2 = data.before_player_ptr.unit;
 
-			// przed graczem jest jakaœ postaæ
+			// there is unit in front of player
 			if(u2->live_state == Unit::DEAD || u2->live_state == Unit::FALL)
 			{
-				// grabienie zw³ok
 				if(u.action != A_NONE)
 				{
 				}
 				else if(u2->live_state == Unit::FALL)
 				{
-					// nie mo¿na okradaæ osoby która zaraz wstanie
+					// can't loot alive units that are just lying on ground
 					game_gui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
-					// nie mo¿na okradaæ sojuszników
+					// can't loot allies
 					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
@@ -2628,12 +2733,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
-						// ktoœ ju¿ ograbia zw³oki
+						// someone else is looting
 						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
-						// rozpoczynij wymianê przedmiotów
+						// start looting corpse
 						action = PlayerAction::LootUnit;
 						action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
@@ -2643,7 +2748,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 				else
 				{
-					// wiadomoœæ o wymianie do serwera
+					// send message to server about looting
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::LOOT_UNIT;
 					c.id = u2->id;
@@ -2658,19 +2763,19 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk(u))
 					{
-						// osoba jest czymœ zajêta
+						// using is busy
 						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
-						// rozpocznij rozmowê
+						// start dialog
 						game->dialog_context.StartDialog(u2);
 						data.before_player = BP_NONE;
 					}
 				}
 				else
 				{
-					// wiadomoœæ o rozmowie do serwera
+					// send message to server about starting dialog
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TALK;
 					c.id = u2->id;
@@ -2682,19 +2787,18 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_CHEST)
 		{
-			// pl¹drowanie skrzyni
 			if(u.action != A_NONE)
 			{
 			}
 			else if(Net::IsLocal())
 			{
-				// rozpocznij ograbianie skrzyni
+				// start looting chest
 				game_gui->inventory->StartTrade2(I_LOOT_CHEST, data.before_player_ptr.chest);
 				data.before_player_ptr.chest->OpenClose(unit);
 			}
 			else
 			{
-				// wyœlij wiadomoœæ o pl¹drowaniu skrzyni
+				// send message to server about looting chest
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
 				c.id = data.before_player_ptr.chest->id;
@@ -2706,11 +2810,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_DOOR)
 		{
-			// otwieranie/zamykanie drzwi
+			// opening/closing door
 			Door* door = data.before_player_ptr.door;
 			if(door->state == Door::Closed)
 			{
-				// otwieranie drzwi
+				// open door
 				if(door->locked == LOCK_NONE)
 					door->Open();
 				else
@@ -2749,7 +2853,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 		else if(data.before_player == BP_ITEM)
 		{
-			// podnieœ przedmiot
+			// pickup item
 			GroundItem& item = *data.before_player_ptr.item;
 			if(u.action == A_NONE)
 			{
@@ -2809,7 +2913,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			UseUsable(data.before_player_ptr.usable, false);
 	}
 
-	// atak
+	// attack
 	if(u.weapon_state == WeaponState::Taken && !data.ability_ready)
 	{
 		idle = false;
@@ -3150,16 +3254,16 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			case 1: // right
 				data.ability_rot = PI / 2;
 				break;
-			case 9: // left forward
+			case 9: // forward left
 				data.ability_rot = -PI / 4;
 				break;
-			case 11: // right forward
+			case 11: // forward right
 				data.ability_rot = PI / 4;
 				break;
-			case -11: // left backward
+			case -11: // backward left
 				data.ability_rot = -PI * 3 / 4;
 				break;
-			case -9: // prawy ty³
+			case -9: // backward right
 				data.ability_rot = PI * 3 / 4;
 				break;
 			}
@@ -3181,7 +3285,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 	}
 
-	// animacja idle
+	// idle animation
 	if(idle && u.action == A_NONE)
 	{
 		idle_timer += dt;
@@ -3271,4 +3375,86 @@ bool PlayerController::ShouldUseRaytest() const
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));
+}
+
+//=================================================================================================
+void PlayerController::ReadBook(int index)
+{
+	assert(index >= 0 && index < int(unit->items.size()));
+	ItemSlot& slot = unit->items[index];
+	assert(slot.item && slot.item->type == IT_BOOK);
+	const Book& book = slot.item->ToBook();
+	if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
+	{
+		if(unit->usable) // can't use when sitting
+			return;
+		if(Net::IsLocal())
+		{
+			unit->action = A_USE_ITEM;
+			unit->used_item = slot.item;
+			unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.unit = unit;
+			}
+		}
+		else
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::USE_ITEM;
+			c.id = index;
+			unit->action = A_PREPARE;
+		}
+	}
+	else
+	{
+		if(!book.recipes.empty())
+		{
+			int skill = unit->GetBase(SkillId::ALCHEMY);
+			bool anythingNew = false, anythingAllowed = false, anythingTooHard = false;
+			for(Recipe* recipe : book.recipes)
+			{
+				if(!HaveRecipe(recipe))
+				{
+					anythingNew = true;
+					if(skill >= recipe->skill)
+						anythingAllowed = true;
+					else
+						anythingTooHard = true;
+				}
+			}
+
+			if(!anythingNew)
+				game_gui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
+			else if(!anythingAllowed)
+				game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+			else
+			{
+				if(Net::IsLocal())
+				{
+					for(Recipe* recipe : book.recipes)
+					{
+						if(skill >= recipe->skill)
+							AddRecipe(recipe);
+					}
+					if(IsSet(book.flags, ITEM_SINGLE_USE))
+						unit->RemoveItem(index, 1u);
+					if(anythingTooHard)
+						game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+				}
+				else
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::USE_ITEM;
+					c.id = index;
+					unit->action = A_PREPARE;
+				}
+			}
+		}
+
+		if(!IsSet(book.flags, ITEM_SINGLE_USE))
+			game_gui->book->Show(&book);
+	}
 }

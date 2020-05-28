@@ -176,6 +176,7 @@ control "ListBox" {
 	}
 	down_arrow "dialog_down.png"
 	font "normal"
+	auto_padding 8
 }
 
 control "MenuBar" {

@@ -1,11 +1,13 @@
 #include "Pch.h"
 #include "BuildingLoader.h"
-#include "BuildingGroup.h"
+
 #include "Building.h"
+#include "BuildingGroup.h"
 #include "BuildingScript.h"
 #include "UnitData.h"
-#include <ResourceManager.h>
+
 #include <Mesh.h>
+#include <ResourceManager.h>
 
 enum Group
 {
@@ -116,7 +118,9 @@ void BuildingLoader::InitTokenizer()
 		{ "favor_center", Building::FAVOR_CENTER },
 		{ "favor_road", Building::FAVOR_ROAD },
 		{ "have_name", Building::HAVE_NAME },
-		{ "list", Building::LIST }
+		{ "list", Building::LIST },
+		{ "favor_dist", Building::FAVOR_DIST },
+		{ "no_path", Building::NO_PATH }
 		});
 
 	t.AddKeywords(G_SIDE, {

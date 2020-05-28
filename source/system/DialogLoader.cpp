@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "DialogLoader.h"
+
 #include "GameDialog.h"
 #include "Item.h"
-#include "ScriptManager.h"
 #include "QuestScheme.h"
+#include "ScriptManager.h"
 
 enum Group
 {
@@ -1076,7 +1077,8 @@ void DialogLoader::CheckDialogText(GameDialog* dialog, int index, DialogScripts*
 			pos = FindClosingPos(str, pos2);
 			if(pos == string::npos)
 			{
-				Error("Broken game dialog text: %s", str.c_str());
+				Error("Broken quest '%s' text %d: %s", dialog->quest->id.c_str(), index, str.c_str());
+				++content.errors;
 				text.formatted = false;
 				return;
 			}
@@ -1092,7 +1094,8 @@ void DialogLoader::CheckDialogText(GameDialog* dialog, int index, DialogScripts*
 			pos = str.find_first_of('$', pos2);
 			if(pos == string::npos)
 			{
-				Error("Broken game dialog text: %s", str.c_str());
+				Error("Broken quest '%s' text %d: %s", dialog->quest->id.c_str(), index, str.c_str());
+				++content.errors;
 				text.formatted = false;
 				return;
 			}

@@ -1,25 +1,26 @@
 #include "Pch.h"
 #include "Team.h"
-#include "Unit.h"
-#include "SaveState.h"
-#include "GameFile.h"
-#include "QuestManager.h"
-#include "Quest_Evil.h"
-#include "Net.h"
-#include "GameGui.h"
-#include "TeamPanel.h"
-#include "UnitHelper.h"
+
 #include "AIController.h"
-#include "Quest_Mages.h"
-#include "Quest_Orcs.h"
+#include "EntityInterpolator.h"
 #include "Game.h"
+#include "GameFile.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "ItemHelper.h"
-#include "PlayerInfo.h"
 #include "Level.h"
-#include "EntityInterpolator.h"
+#include "Net.h"
+#include "PlayerInfo.h"
+#include "QuestManager.h"
+#include "Quest_Evil.h"
+#include "Quest_Mages.h"
+#include "Quest_Orcs.h"
+#include "SaveState.h"
+#include "TeamPanel.h"
+#include "Unit.h"
+#include "UnitHelper.h"
 
-Team* global::team;
+Team* team;
 
 //-----------------------------------------------------------------------------
 // Team shares only work for equippable items, that have only 1 count in slot!
@@ -458,7 +459,7 @@ void Team::SaveOnWorldmap(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit& unit : members)
-		unit.Save(f, false);
+		unit.Save(f);
 }
 
 void Team::Update(int days, bool travel)
@@ -544,7 +545,7 @@ void Team::CheckTeamItemShares()
 					int value, prev_value;
 					if(unit.IsBetterItem(slot.item, &value, &prev_value))
 					{
-						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type] / slot.item->value;
+						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type];
 						if(real_value > 0)
 						{
 							TeamShareItem& tsi = Add1(team_shares);
@@ -1159,6 +1160,8 @@ void Team::CheckUnitOverload(Unit& unit)
 		items_to_sell.pop_back();
 	}
 
+	RemoveNullItems(unit.items);
+	SortItems(unit.items);
 	if(team_gold > 0)
 		AddGold(team_gold);
 

@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "CreateServerPanel.h"
-#include "Language.h"
-#include "Input.h"
+
 #include "Const.h"
-#include "Net.h"
 #include "GameGui.h"
+#include "Language.h"
+#include "Net.h"
+
+#include <Input.h>
 
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
@@ -65,6 +67,7 @@ void CreateServerPanel::LoadLanguage()
 	txCreateServer = s.Get("createServer");
 	txEnterServerName = s.Get("enterServerName");
 	txInvalidPlayersCount = s.Get("invalidPlayersCount");
+	txConfirmMaxPlayers = s.Get("confirmMaxPlayers");
 
 	bts[0].text = s.Get("create");
 	bts[1].text = gui->txCancel;
@@ -124,7 +127,23 @@ void CreateServerPanel::Event(GuiEvent e)
 		cont.LostFocus();
 		break;
 	case IdOk:
-		event(BUTTON_OK);
+		{
+			int players;
+			TextHelper::ToInt(textbox[1].GetText().c_str(), players);
+			if(players > MAX_PLAYERS_WARNING)
+			{
+				DialogInfo dialog = {};
+				dialog.event = [this](int id) { if(id == BUTTON_YES) event(BUTTON_OK); };
+				dialog.name = "confirm_max_players";
+				dialog.order = ORDER_TOP;
+				dialog.parent = this;
+				dialog.text = txConfirmMaxPlayers;
+				dialog.type = DIALOG_YESNO;
+				gui->ShowDialog(dialog);
+			}
+			else
+				event(BUTTON_OK);
+		}
 		break;
 	case IdCancel:
 		event(BUTTON_CANCEL);

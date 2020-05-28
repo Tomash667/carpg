@@ -8,7 +8,7 @@ If equippable
 	Item.IsWearable
 	ItemSlot.h - Add new slots in ItemSlot.h (ItemTypeToSlot)
 	Unit.UpdateInventory, IsBetterItem, CanWear, Save/Load, Read/Write for visible slots
-	team->CheckTeamItemShares, BuyTeamItems
+	Team.CheckTeamItemShares, BuyTeamItems
 	If item have multiple slots:
 		Unit.AddItemAndEquipIfNone
 		Unit.HaveItemEquipped
@@ -33,11 +33,11 @@ enum ITEM_TYPE
 	IT_AMULET,
 	IT_RING,
 	IT_OTHER,
-	IT_MAX_WEARABLE = IT_OTHER, // used in team->cpp priorities
+	IT_MAX_WEARABLE = IT_OTHER, // used in Team.cpp priorities
 	IT_CONSUMABLE,
 	IT_BOOK,
-	IT_MAX_GEN = IT_BOOK, // items generated in treasure
 	IT_GOLD,
+	IT_MAX_GEN = IT_GOLD, // items generated in treasure
 
 	// special types (not really items)
 	IT_LIST,

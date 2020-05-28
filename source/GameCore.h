@@ -68,6 +68,7 @@ class LevelGui;
 class LoadScreen;
 class LobbyApi;
 class MainMenu;
+class Messenger;
 class Minimap;
 class MpBox;
 class MultiplayerPanel;
@@ -228,6 +229,7 @@ enum class AttributeId;
 enum class EffectId;
 enum class EffectSource;
 enum class HeroType;
+enum class Msg;
 enum class MusicType;
 enum class QuestCategory;
 enum class RoomTarget;
@@ -237,21 +239,18 @@ enum class SkillId;
 typedef pair<UnitData*, int> TmpSpawn;
 
 //-----------------------------------------------------------------------------
-namespace global
-{
-	extern LobbyApi* api;
-	extern CommandParser* cmdp;
-	extern Game* game;
-	extern GameGui* game_gui;
-	extern GameResources* game_res;
-	extern GameStats* game_stats;
-	extern Level* game_level;
-	extern Net* net;
-	extern Pathfinding* pathfinding;
-	extern CustomCollisionWorld* phy_world;
-	extern QuestManager* quest_mgr;
-	extern ScriptManager* script_mgr;
-	extern Team* team;
-	extern World* world;
-}
-using namespace global;
+extern LobbyApi* api;
+extern CommandParser* cmdp;
+extern Game* game;
+extern GameGui* game_gui;
+extern GameResources* game_res;
+extern GameStats* game_stats;
+extern Level* game_level;
+extern Messenger* messenger;
+extern Net* net;
+extern Pathfinding* pathfinding;
+extern CustomCollisionWorld* phy_world;
+extern QuestManager* quest_mgr;
+extern ScriptManager* script_mgr;
+extern Team* team;
+extern World* world;

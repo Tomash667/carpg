@@ -22,14 +22,15 @@ public:
 
 private:
 	void SetIngredients();
-	void SetRecipes();
+	void SetRecipes(bool rememberRecipe);
 	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void OnCraft(int id);
 	void OnSelectionChange(int index);
 	uint HaveIngredients(Recipe* recipe);
+	void OnLearnRecipe();
 
 	vector<pair<const Item*, uint>> ingredients;
-	int skill, counter;
+	int counter;
 	GamePanel left, right;
 	ListBox list;
 	Button button;

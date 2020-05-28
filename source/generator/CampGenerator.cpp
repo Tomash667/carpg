@@ -1,13 +1,15 @@
 #include "Pch.h"
 #include "CampGenerator.h"
-#include "Terrain.h"
-#include "OutsideLocation.h"
-#include "Perlin.h"
-#include "Level.h"
-#include "Chest.h"
-#include "UnitGroup.h"
-#include "ItemHelper.h"
+
 #include "BaseObject.h"
+#include "Chest.h"
+#include "ItemHelper.h"
+#include "Level.h"
+#include "OutsideLocation.h"
+#include "UnitGroup.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
 
 cstring camp_objs[] = {
 	"barrel",

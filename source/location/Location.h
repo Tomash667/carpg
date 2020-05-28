@@ -77,7 +77,6 @@ namespace old
 };
 
 //-----------------------------------------------------------------------------
-// stan lokacji
 enum LOCATION_STATE
 {
 	LS_HIDDEN,
@@ -98,8 +97,8 @@ static constexpr int ANY_TARGET = -1;
 struct Location
 {
 	int index;
-	LOCATION type; // typ lokacji
-	LOCATION_STATE state; // stan lokacji
+	LOCATION type;
+	LOCATION_STATE state;
 	int target;
 	Vec2 pos; // pozycja na mapie œwiata
 	string name; // nazwa lokacji
@@ -125,8 +124,8 @@ struct Location
 
 	// virtual functions to implement
 	virtual void Apply(vector<std::reference_wrapper<LevelArea>>& areas) = 0;
-	virtual void Save(GameWriter& f, bool local);
-	virtual void Load(GameReader& f, bool local);
+	virtual void Save(GameWriter& f);
+	virtual void Load(GameReader& f);
 	virtual void Write(BitStreamWriter& f) = 0;
 	virtual bool Read(BitStreamReader& f) = 0;
 	virtual bool CheckUpdate(int& days_passed, int worldtime);

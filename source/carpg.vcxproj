@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
@@ -65,8 +65,8 @@
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../lib;../carpglib/lib;../carpglib/external/CrashRpt/lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;dbghelp.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib;../carpglib/lib;../carpglib/external/CrashRpt/lib;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;D3D11.lib;D3DCompiler.lib;dbghelp.lib;DXGI.lib;dxguid.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath_debug.lib;Msimg32.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -108,8 +108,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../lib;../carpglib/lib;../carpglib/external/CrashRpt/lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;dbghelp.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib;../carpglib/lib;../carpglib/external/CrashRpt/lib;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/curl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;D3D11.lib;D3DCompiler.lib;dbghelp.lib;DXGI.lib;dxguid.lib;fmod_vc.lib;libcurl_imp.lib;LinearMath.lib;Msimg32.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -134,9 +134,12 @@
     <ClInclude Include="components\GameResources.h" />
     <ClInclude Include="components\GameStats.h" />
     <ClInclude Include="components\Level.h" />
+    <ClInclude Include="components\Messenger.h" />
     <ClInclude Include="components\Pathfinding.h" />
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
+    <ClInclude Include="entity\Date.h" />
+    <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -210,6 +213,7 @@
     <ClInclude Include="system\Class.h" />
     <ClInclude Include="system\ClassLoader.h" />
     <ClInclude Include="system\Content.h" />
+    <ClInclude Include="system\ContentItem.h" />
     <ClInclude Include="system\ContentLoader.h" />
     <ClInclude Include="entity\AIController.h" />
     <ClInclude Include="entity\Blood.h" />
@@ -310,7 +314,6 @@
     <ClInclude Include="stats\MusicTrack.h" />
     <ClInclude Include="stats\Skill.h" />
     <ClInclude Include="stats\UnitStats.h" />
-    <ClInclude Include="system\DialogContext.h" />
     <ClInclude Include="system\DialogLoader.h" />
     <ClInclude Include="system\LocationLoader.h" />
     <ClInclude Include="system\FrameInfo.h" />
@@ -325,9 +328,11 @@
     <ClCompile Include="components\GameResources.cpp" />
     <ClCompile Include="components\GameStats.cpp" />
     <ClCompile Include="components\Level.cpp" />
+    <ClCompile Include="components\Messenger.cpp" />
     <ClCompile Include="components\Pathfinding.cpp" />
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
+    <ClCompile Include="entity\DialogContext.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="GameFile.cpp" />
@@ -508,7 +513,6 @@
     <ClCompile Include="stats\Skill.cpp" />
     <ClCompile Include="stats\UnitStats.cpp" />
     <ClCompile Include="system\ContentLoader.cpp" />
-    <ClCompile Include="system\DialogContext.cpp" />
     <ClCompile Include="system\DialogLoader.cpp" />
     <ClCompile Include="system\FrameInfo.cpp" />
     <ClCompile Include="system\GameDialog.cpp" />

@@ -1,24 +1,25 @@
 #include "Pch.h"
 #include "InsideLocation.h"
-#include "GameFile.h"
+
+#include "BaseLocation.h"
 #include "BitStreamFunc.h"
+#include "GameFile.h"
 #include "Level.h"
 #include "SaveState.h"
-#include "BaseLocation.h"
 
 //=================================================================================================
-void InsideLocation::Save(GameWriter& f, bool local)
+void InsideLocation::Save(GameWriter& f)
 {
-	Location::Save(f, local);
+	Location::Save(f);
 
 	f << special_room;
 	f << from_portal;
 }
 
 //=================================================================================================
-void InsideLocation::Load(GameReader& f, bool local)
+void InsideLocation::Load(GameReader& f)
 {
-	Location::Load(f, local);
+	Location::Load(f);
 
 	if(LOAD_VERSION < V_0_12)
 		f >> target;
@@ -129,22 +130,6 @@ bool InsideLocation::Read(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-bool InsideLocation::RemoveItemFromChest(const Item* item, int& at_level)
-{
-	assert(item);
-
-	int index;
-	Chest* chest = FindChestWithItem(item, at_level, &index);
-	if(!chest)
-		return false;
-	else
-	{
-		chest->RemoveItem(index);
-		return true;
-	}
 }
 
 //=================================================================================================

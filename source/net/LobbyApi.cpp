@@ -1,15 +1,17 @@
 #include "Pch.h"
 #include "LobbyApi.h"
+
 #include "GameGui.h"
-#include "PickServerPanel.h"
 #include "Language.h"
 #include "Net.h"
+#include "PickServerPanel.h"
+
 #include <Config.h>
+#include <curl\curl.h>
 #include <json.hpp>
 #include <slikenet\NatPunchthroughClient.h>
-#include <curl\curl.h>
 
-LobbyApi* global::api;
+LobbyApi* api;
 
 cstring op_names[] = {
 	"NONE",
@@ -60,7 +62,7 @@ static bool IsBinary(CURL* eh)
 {
 	char* ct;
 	curl_easy_getinfo(eh, CURLINFO_CONTENT_TYPE, &ct);
-	return strcmp(ct, "application/octet-stream") == 0;
+	return !ct || strcmp(ct, "application/octet-stream") == 0;
 }
 
 void LobbyApi::UpdateInternal()

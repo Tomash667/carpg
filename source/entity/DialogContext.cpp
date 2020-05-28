@@ -1,33 +1,35 @@
 #include "Pch.h"
 #include "DialogContext.h"
-#include "ScriptManager.h"
-#include "Quest.h"
+
+#include "Ability.h"
+#include "AIController.h"
+#include "Arena.h"
 #include "Game.h"
-#include "PlayerInfo.h"
 #include "GameGui.h"
-#include "LevelGui.h"
 #include "Inventory.h"
 #include "Journal.h"
-#include "QuestManager.h"
 #include "Level.h"
-#include "World.h"
+#include "LevelGui.h"
 #include "LocationHelper.h"
-#include "Arena.h"
-#include "NameHelper.h"
-#include "Quest_Sawmill.h"
-#include "Quest_Mine.h"
-#include "Quest_Bandits.h"
-#include "Quest_Mages.h"
-#include "Quest_Orcs.h"
-#include "Quest_Goblins.h"
-#include "Quest_Evil.h"
-#include "Quest_Scripted.h"
-#include "Team.h"
-#include "AIController.h"
-#include "News.h"
-#include "MultiInsideLocation.h"
+#include "PlayerInfo.h"
+#include "Quest.h"
+#include "QuestManager.h"
 #include "QuestScheme.h"
-#include "Ability.h"
+#include "Quest_Bandits.h"
+#include "Quest_Evil.h"
+#include "Quest_Goblins.h"
+#include "Quest_Mages.h"
+#include "Quest_Mine.h"
+#include "Quest_Orcs.h"
+#include "Quest_Sawmill.h"
+#include "Quest_Scripted.h"
+#include "MultiInsideLocation.h"
+#include "NameHelper.h"
+#include "News.h"
+#include "ScriptManager.h"
+#include "Team.h"
+#include "World.h"
+
 #include <angelscript.h>
 
 DialogContext* DialogContext::current;
@@ -1594,20 +1596,18 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return quest_mgr->FindUnacceptedQuest(talker->quest_id);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* q = quest_mgr->FindQuest(talker->quest_id);
-		if(q && !q->IsActive())
-			return true;
+		Quest* quest = quest_mgr->FindQuest(talker->quest_id, false);
+		return quest && !quest->IsActive();
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
 		return talker->level <= 8 && team->free_recruits > 0;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
-		if(((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+		return (((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			&& quest_mgr->quest_orcs->start_loc == game_level->location_index)
 			|| (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
 			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed
-			&& quest_mgr->quest_mages2->start_loc == game_level->location_index))
-			return true;
+			&& quest_mgr->quest_mages2->start_loc == game_level->location_index));
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
 	{

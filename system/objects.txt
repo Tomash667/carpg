@@ -62,13 +62,11 @@ object torch_off {
 
 object tanning_rack {
 	mesh "tanning_rack.qmsh"
-	alpha 0
 	flags near_wall
 }
 
 object altar {
 	mesh "oltarz.qmsh"
-	alpha 0
 	flags { near_wall blocks_camera }
 }
 
@@ -234,8 +232,7 @@ object stalagmite2 {
 
 object plant2 {
 	mesh "krzak2.qmsh"
-	alpha 1
-	flags { no_physics billboard }
+	flags { no_physics billboard no_culling }
 }
 
 object rock {
@@ -246,45 +243,40 @@ object rock {
 object tree {
 	mesh "drzewo.qmsh"
 	cylinder { 0.043 5 }
-	alpha 1
-	flags scaleable
+	flags { scaleable no_culling }
 }
 
 object tree2 {
 	mesh "drzewo2.qmsh"
 	cylinder { 0.024 5 }
-	alpha 1
-	flags scaleable
+	flags { scaleable no_culling }
 }
 
 object tree3 {
 	mesh "drzewo3.qmsh"
 	cylinder { 0.067 5 }
-	alpha 1
-	flags scaleable
+	flags { scaleable no_culling }
 }
 
 object grass {
 	mesh "trawa.qmsh"
-	alpha 1
-	flags { no_physics preload }
+	flags { no_physics preload no_culling }
 }
 
 object plant {
 	mesh "krzak.qmsh"
-	alpha 1
-	flags no_physics
+	flags { no_physics no_culling }
 }
 
 object plant_pot {
 	mesh "doniczka.qmsh"
 	cylinder { 0.257 0.05 }
-	alpha 1
+	flags no_culling
 }
 
 object desk {
 	mesh "biurko.qmsh"
-	alpha 1
+	flags no_culling
 }
 
 object withered_tree {
@@ -404,7 +396,6 @@ object tombstone_x9 {
 
 object wall {
 	mesh "mur.qmsh"
-	alpha 0
 	flags blocks_camera
 }
 
@@ -415,7 +406,6 @@ object tower {
 
 object gate {
 	mesh "brama.qmsh"
-	alpha 0
 	flags { double_physics blocks_camera }
 }
 
@@ -438,8 +428,7 @@ object barrel_broken {
 
 object fern {
 	mesh "paproc.qmsh"
-	alpha 1
-	flags no_physics
+	flags { no_physics no_culling }
 }
 
 object stocks {
@@ -449,8 +438,7 @@ object stocks {
 
 object winplant {
 	mesh "krzaki_okno.qmsh"
-	alpha 1
-	flags no_physics
+	flags { no_physics no_culling }
 }
 
 object smallroof {
@@ -474,14 +462,12 @@ object woodpile {
 
 object grass2 {
 	mesh "trawa2.qmsh"
-	alpha 1
-	flags no_physics
+	flags { no_physics no_culling }
 }
 
 object corn {
 	mesh "zboze.qmsh"
-	alpha 1
-	flags { no_physics preload }
+	flags { no_physics preload no_culling }
 }
 
 object book_holder {
@@ -491,6 +477,11 @@ object book_holder {
 object vault_door {
 	mesh "vault_door.qmsh"
 	flags blocks_camera
+}
+
+object scarecrow {
+	mesh "scarecrow.qmsh"
+	cylinder { 0.53 1.92 }
 }
 
 //==============================================================================

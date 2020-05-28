@@ -1,16 +1,15 @@
 #include "Pch.h"
 #include "DungeonMeshBuilder.h"
 
-#include <Algorithm.h>
-#include <DirectX.h>
-#include <Render.h>
-
 #include "BaseLocation.h"
 #include "DrawBatch.h"
 #include "GameResources.h"
 #include "InsideLocation.h"
 #include "Level.h"
 #include "Room.h"
+
+#include <Algorithm.h>
+#include <DirectX.h>
 
 //-----------------------------------------------------------------------------
 struct IBOX
@@ -62,45 +61,29 @@ struct IBOX
 };
 
 //=================================================================================================
-DungeonMeshBuilder::DungeonMeshBuilder() : vbDungeon(nullptr), ibDungeon(nullptr), dungeon_tex_wrap(true)
+DungeonMeshBuilder::DungeonMeshBuilder() : vb(nullptr), ib(nullptr)
 {
 }
 
 //=================================================================================================
-void DungeonMeshBuilder::OnReset()
+DungeonMeshBuilder::~DungeonMeshBuilder()
 {
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
-}
-
-//=================================================================================================
-void DungeonMeshBuilder::OnReload()
-{
-	Build();
-}
-
-//=================================================================================================
-void DungeonMeshBuilder::OnRelease()
-{
-	SafeRelease(vbDungeon);
-	SafeRelease(ibDungeon);
+	SafeRelease(vb);
+	SafeRelease(ib);
 }
 
 //=================================================================================================
 void DungeonMeshBuilder::Build()
 {
-	if(vbDungeon)
-		return;
+	ID3D11Device* device = render->GetDevice();
+	Buf buf;
 
+	// fill vertex buffer
+	//--------------------
 	// ile wierzcho³ków
 	// 19*4, pod³oga, sufit, 4 œciany, niski sufit, 4 kawa³ki niskiego sufitu, 4 œciany w dziurze górnej, 4 œciany w dziurze dolnej
-	IDirect3DDevice9* device = render->GetDevice();
-
 	uint size = sizeof(VTangent) * 19 * 4;
-	V(device->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbDungeon, nullptr));
-
-	VTangent* v;
-	V(vbDungeon->Lock(0, size, (void**)&v, 0));
+	VTangent* v = buf.Get<VTangent>(size);
 
 	// krawêdzie musz¹ na siebie lekko zachodziæ, inaczej widaæ dziury pomiêdzy kafelkami
 	const float L = -0.001f; // pozycja lewej krawêdzi
@@ -115,7 +98,7 @@ void DungeonMeshBuilder::Build()
 	const float H1U = 8.f;
 	const float H2D = -4.f;
 	const float H2U = 0.001f;
-	const float V0 = (dungeon_tex_wrap ? 2.f : 1);
+	const float V0 = 2.f;
 
 #define NTB_PX Vec3(1,0,0), Vec3(0,0,1), Vec3(0,-1,0)
 #define NTB_MX Vec3(-1,0,0), Vec3(0,0,-1), Vec3(0,-1,0)
@@ -246,8 +229,20 @@ void DungeonMeshBuilder::Build()
 	v[74] = VTangent(Vec3(L, H2D, L), Vec2(1, V0), NTB_PZ);
 	v[75] = VTangent(Vec3(L, H2U, L), Vec2(1, 0), NTB_PZ);
 
-	V(vbDungeon->Unlock());
+	// create vertex buffer
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
+	desc.ByteWidth = size;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = buf.Get();
+
+	V(device->CreateBuffer(&desc, &data, &vb));
+	SetDebugName(vb, "DungeonMeshVb");
+
+	// fill index buffer
+	//----------
 	// ile indeksów ?
 	// pod³oga: 6
 	// sufit: 6
@@ -258,12 +253,7 @@ void DungeonMeshBuilder::Build()
 	// opcja ¿e s¹ trzy œciany: 18*4       /
 	// opcja ¿e s¹ wszystkie œciany: 24  -/
 	size = sizeof(word) * (6 * 3 + (6 * 4 + 12 * 6 + 18 * 4 + 24) * 4);
-
-	// index buffer
-	V(device->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ibDungeon, nullptr));
-
-	word* id;
-	V(ibDungeon->Lock(0, size, (void**)&id, 0));
+	word* id = buf.Get<word>(size);
 
 	// pod³oga
 	id[0] = 0;
@@ -296,71 +286,14 @@ void DungeonMeshBuilder::Build()
 	FillPart(dungeon_part3, id, index, 44);
 	FillPart(dungeon_part4, id, index, 60);
 
-	V(ibDungeon->Unlock());
-}
+	// create index buffer
+	desc.ByteWidth = size;
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-//=================================================================================================
-void DungeonMeshBuilder::ChangeTexWrap(bool use_tex_wrap)
-{
-	if(use_tex_wrap == dungeon_tex_wrap)
-		return;
+	data.pSysMem = buf.Get();
 
-	dungeon_tex_wrap = use_tex_wrap;
-
-	VTangent* v;
-	V(vbDungeon->Lock(0, 0, (void**)&v, 0));
-
-	const float V0 = (dungeon_tex_wrap ? 2.f : 1);
-
-	// lewa
-	v[8].tex.y = V0;
-	v[10].tex.y = V0;
-
-	// prawa
-	v[12].tex.y = V0;
-	v[14].tex.y = V0;
-
-	// przód
-	v[16].tex.y = V0;
-	v[18].tex.y = V0;
-
-	// ty³
-	v[20].tex.y = V0;
-	v[22].tex.y = V0;
-
-	// dziura góra lewa
-	v[44].tex.y = V0;
-	v[46].tex.y = V0;
-
-	// dziura góra prawa
-	v[48].tex.y = V0;
-	v[50].tex.y = V0;
-
-	// dziura góra przód
-	v[52].tex.y = V0;
-	v[54].tex.y = V0;
-
-	// dziura góra ty³
-	v[56].tex.y = V0;
-	v[58].tex.y = V0;
-
-	// dziura dó³ lewa
-	v[60].tex.y = V0;
-	v[62].tex.y = V0;
-
-	// dziura dó³ prawa
-	v[64].tex.y = V0;
-	v[66].tex.y = V0;
-
-	// dziura dó³ przód
-	v[68].tex.y = V0;
-	v[70].tex.y = V0;
-
-	// dziura dó³ ty³
-	v[72].tex.y = V0;
-	v[74].tex.y = V0;
-
-	V(vbDungeon->Unlock());
+	V(device->CreateBuffer(&desc, &data, &ib));
+	SetDebugName(ib, "DungeonMeshIb");
 }
 
 //=================================================================================================

@@ -7,9 +7,9 @@
 | (____/\| )   ( || ) \ \__| )      | (___) |
 (_______/|/     \||/   \__/|/       (_______)
 
-Strona: http://carpg.pl
-Wersja: 0.13
-Data: 2020-01-11
+Strona: https://carpg.pl
+Wersja: 0.14.1
+Data: 2020-04-11
 
 ===============================================================================
 1) Spis treści
@@ -28,7 +28,7 @@ Data: 2020-01-11
 ===============================================================================
 2) Opis
 CaRpg jest to połączenie gier typu action rpg/hack-n-slash jak Gothic czy
-TES:Morrowind z grami rougelike SLASH'EM/Dungeon Crawl Stone Soup. W losowo
+TES:Morrowind z grami roguelike SLASH'EM/Dungeon Crawl Stone Soup. W losowo
 wygenerowanym świecie, zaczynamy w losowo wygenerowanym mieście, rekrutujemy
 losowych bohaterów i idziemy do losowo wygenerowanych podziemi zabijać losowo
 wygenerowanych wrogów :3 Nie chodzi o to żeby wszystko było losowe ale także
@@ -141,7 +141,7 @@ osoby. Oczekuj zmian na lepsze!
 	lepszy niż to co ma spróbuje go od ciebie odkupić. Bohaterowie niezależni
 	przyjmą też od ciebie każdą miksturkę, za darmo.
 * Tryb hardcore - W tym trybie po zapisaniu wychodzisz do menu a wczytanie
-	usuwa zapis. Standardowy tryb dla gier rougelike. Nie jest on póki co
+	usuwa zapis. Standardowy tryb dla gier roguelike. Nie jest on póki co
 	zalecany bo jeśli gra się zawiesi lub zcrashuje będzie trzeba zaczynać od
 	nowa.
 * Jeśli NPC zablokuje ci drogę możesz na niego krzyknąć (domyślnie klawisz Y)
@@ -198,7 +198,7 @@ Dostępne komendy bez trybu developera:
 	server - wyświetla wiadomość od serwera wszystkim graczom (say wiadomość).
 	version - wyświetla wersję gry.
 	w/whisper - wysyła prywatną wiadomość do gracza (whisper nick wiadomość).
-Pełna lista komend w readme_eng.txt.
+Pełna lista komend w readme_english.txt.
 
 ===============================================================================
 8) Plik konfiguracyjny
@@ -217,6 +217,7 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* crash_mode (none [normal] dataseg full) - określa tryb zapisywania
 		informacji o crashu
 	* grass_range (0-100) - zasięg rysowania trawy
+	* feature_level ("10.0" "10.1" "11.0") - poziom funkcji directx
 	* force_seed (true [false]) - wymuszenie określonej losowości na każdym
 		poziomie
 	* fullscreen ([true] false) - tryb pełnoekranowy
@@ -240,14 +241,13 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 		server_name, server_players, server_pswd, server_ip), jeśli nie ma
 		którejś zmiennej to nie uruchamia automatycznie
 	* resolution (800x600 [1024x768]) - rozdzielczość ekranu
-	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
+	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tif, gif, png, dds)
 	* seed - ziarno losowości
 	* server_ip - zapamiętane ip serwera
 	* server_lan - jeśli jest 1 to serwer nie będzie rejestrowany w głównym serwerze
 	* server_name - zapamiętana nazwa serwera
 	* server_players - zapamiętana liczba graczy
 	* server_pswd - zapamiętane hasło serwera
-	* shader_version - ustawia wersję shadera 2/3
 	* skip_tutorial (true [false]) - czy pomijać pytanie o samouczek
 	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
@@ -276,7 +276,7 @@ To są przełączniki dla aplikacji, dodawane do skrótu do pliku exe.
 
 ===============================================================================
 10) Zgłoś błąd 🐜
-Błędy możesz a wręcz powinieneś zgłaszać na stronie http://carpg.pl w
+Błędy możesz a wręcz powinieneś zgłaszać na stronie https://carpg.pl w
 odpowiednim dziale forum. Nie zapomnij podać wszystkich możliwych szczegółów
 które mogą pomóc w jego naprawieniu. Jeśli wyskoczy że utworzono plik
 minidump to go dołącz. Przydatny też będzie plik log.txt i zapis przed
@@ -290,10 +290,11 @@ Leinnan - Modele, tekstury, pomysły, testowanie.
 MarkK - Modele i tekstury jedzenia oraz innych obiektów.
 Shdorsh - Poprawki w angielskim tłumaczeniu.
 Zielu - Testowanie.
+BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 
 ❤ Podziękowania za testy i znalezione błędy:
 	Ampped
-	BottledByte
+	AnimeIsWrong
 	darktorq
 	Docucat
 	fire
@@ -307,6 +308,7 @@ Zielu - Testowanie.
 	Mokai
 	Paradox Edge
 	Savagesheep
+	SwagOfficerSuccubus
 	thebard88
 	Vinur_Gamall
 	XNautPhD
@@ -316,17 +318,22 @@ Zielu - Testowanie.
 
 🎵 Audio Engine: FMOD Studio by Firelight Technologies.
 
+
 🗃 Modele:
+	* https://opengameart.org
+		* Enetheru - windmill
+		* Grefuntor - slime
+		* Mophs - scarecrow
+		* rubberduck - shrine
 	* kaangvl - fish
 	* yd - sausage
-	* rubberduck - shrine
 🎨 Tekstury:
-	* http://cgtextures.com
+	* https://textures.com
 	* Cube
 	* texturez.com
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
-	* Ikony klas - http://game-icons.net/
+	* Ikony klas - https://game-icons.net/
 🎧 Muzyka:
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project
@@ -334,9 +341,11 @@ Zielu - Testowanie.
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
-	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
-	* http://www.freesound.org/
-	* http://www.pacdv.com/sounds/
-	* http://www.soundjay.com
+	* https://www.freesound.org/
+		* DrMinky - Slime Death, Slime Land
+		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
+		* wubitog - Slime attack or movement
+	* https://www.pacdv.com/sounds/
+	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/
 	* http://www.wavsource.com

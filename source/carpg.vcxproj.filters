@@ -469,9 +469,6 @@
     <ClCompile Include="events\Arena.cpp">
       <Filter>events</Filter>
     </ClCompile>
-    <ClCompile Include="system\DialogContext.cpp">
-      <Filter>system\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="system\GameDialog.cpp">
       <Filter>system\dialogs</Filter>
     </ClCompile>
@@ -622,6 +619,12 @@
     </ClCompile>
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp">
       <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="components\Messenger.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\DialogContext.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
@@ -1074,9 +1077,6 @@
     <ClInclude Include="system\GameDialog.h">
       <Filter>system\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="system\DialogContext.h">
-      <Filter>system\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="generator\NameHelper.h">
       <Filter>helpers</Filter>
     </ClInclude>
@@ -1229,6 +1229,18 @@
     </ClInclude>
     <ClInclude Include="helpers\DungeonMeshBuilder.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ContentItem.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Messenger.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\DialogContext.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Date.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

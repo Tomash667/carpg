@@ -1387,6 +1387,14 @@ unit merchant : base_human {
 	dialog merchant
 }
 
+unit traveling_merchant : merchant {
+	trader {
+		stock merchant
+		groups {weapon bow shield armor amulet ring consumable other book}
+	}
+	dialog traveling_merchant
+}
+
 unit food_seller : merchant {
 	trader {
 		stock food_seller
@@ -1407,7 +1415,8 @@ unit alchemist : merchant {
 	}
 	trader {
 		stock alchemist
-		groups {potion herb}
+		groups {potion herb ingredient recipe}
+		include {ladle}
 	}
 	gold {500 1000}
 	dialog alchemist
@@ -1520,6 +1529,7 @@ unit mage_seller : base_human {
 	trader {
 		stock mage_seller
 		groups {amulet ring}
+		include {magic_scroll}
 	}
 	gold {1000 2000}
 	abilities mage
@@ -2828,6 +2838,7 @@ unit wolf {
 	items {
 		random 2 3 raw_meat
 		wolf_pelt
+		chance 50 tallow
 	}
 	group animals
 	dmg_type slash
@@ -2868,6 +2879,7 @@ unit worg : wolf {
 	items {
 		random 2 3 raw_meat
 		worg_pelt
+		chance 50 tallow
 	}
 }
 
@@ -2973,6 +2985,7 @@ unit bear {
 	items {
 		random 4 6 raw_meat
 		bear_pelt
+		random 1 2 tallow
 	}
 	group animals
 	dmg_type {slash blunt}
@@ -3012,7 +3025,40 @@ unit bear_black : bear {
 	items {
 		random 4 6 raw_meat
 		black_bear_pelt
+		random 1 3 tallow
 	}
+}
+
+unit slime {
+	mesh "slime.qmsh"
+	mat slime
+	level 5
+	flags {fixed_stats slow dont_escape dont_open no_power_attack ignore_block dont_eat dont_talk poison_res bloodless backstab_res stun_res alpha_blend}
+	hp 300
+	stamina 200
+	attack 75
+	def 150
+	group animals
+	dmg_type blunt
+	walk_speed 2
+	run_speed 0
+	rot_speed 4
+	blood slime
+	sounds {
+		see_enemy "slime_alert.wav"
+		attack "slime_alert.wav"
+		death "slime_die.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.55 0.7}
+		}
+	}
+	idles {
+		"idle"
+	}
+	width 0.4
+	attack_range 0.4
 }
 
 unit wild_hunter : base_human {

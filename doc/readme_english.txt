@@ -7,9 +7,9 @@
 | (____/\| )   ( || ) \ \__| )      | (___) |
 (_______/|/     \||/   \__/|/       (_______)
 
-Website: http://carpg.pl/en
-Version: 0.13
-Date: 2020-01-11
+Website: https://carpg.pl/en
+Version: 0.14.1
+Date: 2020-04-11
 
 ===============================================================================
 1) Table of contents
@@ -28,7 +28,7 @@ Date: 2020-01-11
 ===============================================================================
 2) About
 CaRpg is a combination of the type of game action rpg / hack-n-slash like Gothic
-or TES: Morrowind and rougelike games like Slash'EM or Dungeon Crawl Stone Soup.
+or TES: Morrowind and roguelike games like Slash'EM or Dungeon Crawl Stone Soup.
 In randomly generated world, we begin in randomly generated city, recruit random
 characters and go to the randomly generated dungeons to kill randomly generated
 enemies :3 This is not about everything to be random but also matched to each
@@ -136,7 +136,7 @@ people. Expect changes for the better!
 	than what they have to try to buy it from you. NPCs can take from you every
 	potion, for free.
 * Hardcore mode - In this mode, when you save you exit to menu and load deletes
-	a save. Standard mode for rougelike games. It is not recommended so
+	a save. Standard mode for roguelike games. It is not recommended so
 	far because if the game freeze or crashes you will need to start new game.
 * If the NPC will block your path you can yell at him (default key Y) so he
 	will move out of the road.
@@ -218,7 +218,7 @@ Available commands:
 	list_effects - display selected unit effects.
 	list_perks - display selected unit perks.
 	list_stats - display selected unit stats.
-	load - load game (load 1-10 or name).
+	load - load game (load 1-11 or name).
 	map2console - draw dungeon map in console.
 	mod_stat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
 	mp_interp - interpolation interval (mp_interp 0.f-1.f).
@@ -243,11 +243,11 @@ Available commands:
 	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
 	remove_unit - remove selected unit.
-	resolution - show or change display resolution (resolution [w h hz]).
+	resolution - show or change display resolution (resolution [w h]).
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.
 	s - send message to all players, short from say (say msg).
-	save - save game (save 1-10 [text] or name).
+	save - save game (save 1-11 [text] or name).
 	say - send message to all players (say msg).
 	scare - enemies escape.
 	screenshot - save screenshot.
@@ -255,7 +255,6 @@ Available commands:
 	server - send message from server to all players (server msg).
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
-	shader_version - force shader version (shader_version 2/3).
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
@@ -284,6 +283,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
+	* feature_level ("10.0" "10.1" "11.0") - directx feature level
 	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
@@ -304,14 +304,13 @@ In configuration file (by default carpg.cfg) you can use such options:
 		multiplayer uses (nick, server_name, server_player, server_pswd, server_ip),
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
-	* screenshot_format – set screenshot (jpg, bmp, tga, png)
+	* screenshot_format – set screenshot (jpg, bmp, tif, gif, png, dds)
 	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server
 	* server_name - last server name
 	* server_players - last server max players
 	* server_pswd - last server password
-	* shader_version - force shader version 2/3
 	* skip_tutorial (true [false]) - skip tutorial
 	* stream_log_file ["log.stream"] - file to log mp information
 	* stream_log_mode (none [errors] full) - mode to log mp information
@@ -342,7 +341,7 @@ Command line switches are used for exe shortcut or from window shell.
 ===============================================================================
 10) Report bug 🐜
 Errors and bugs can and should be reported to the appropriate forum section in
-http://carpg.pl/en forum. Do not forget to give all possible details that may
+https://carpg.pl/en forum. Do not forget to give all possible details that may
 help in its repair. If game crash with created minidump file you can attach it.
 Log file can be helpful too. Before reporting a bug check if someone has not
 reported it in the appropriate topic.
@@ -354,10 +353,11 @@ Leinnan - Models, textures, ideas, testing.
 MarkK - Models and textures of food and other objects.
 Shdorsh - English translation fixes.
 Zielu - Testing.
+BottledByte - Bug reports and coding.
 
 ❤ Thanks for testing & bug founding:
 	Ampped
-	BottledByte
+	AnimeIsWrong
 	darktorq
 	Docucat
 	fire
@@ -371,6 +371,7 @@ Zielu - Testing.
 	Mokai
 	Paradox Edge
 	Savagesheep
+	SwagOfficerSuccubus
 	thebard88
 	Vinur_Gamall
 	XNautPhD
@@ -381,16 +382,20 @@ Zielu - Testing.
 🎵 Audio Engine: FMOD Studio by Firelight Technologies.
 
 🗃 Models:
+	* https://opengameart.org
+		* Enetheru - windmill
+		* Grefuntor - slime
+		* Mophs - scarecrow
+		* rubberduck - shrine
 	* kaangvl - fish
 	* yd - sausage
-	* rubberduck - shrine
 🎨 Textures:
-	* http://cgtextures.com
+	* https://www.textures.com/
 	* Cube
 	* texturez.com
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
-	* Class icons - http://game-icons.net/
+	* Class icons - https://game-icons.net/
 🎧 Music:
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project
@@ -399,8 +404,11 @@ Zielu - Testing.
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Sounds:
 	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
-	* http://www.freesound.org/
-	* http://www.pacdv.com/sounds/
-	* http://www.soundjay.com
+	* https://www.freesound.org/
+		* DrMinky - Slime Death, Slime Land
+		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
+		* wubitog - Slime attack or movement
+	* https://www.pacdv.com/sounds/
+	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/
 	* http://www.wavsource.com

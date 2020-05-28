@@ -1,13 +1,15 @@
 #include "Pch.h"
 #include "MoonwellGenerator.h"
+
+#include "BaseObject.h"
+#include "Level.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
-#include "Terrain.h"
-#include "Perlin.h"
-#include "Level.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
-#include "BaseObject.h"
+
+#include <Perlin.h>
+#include <Terrain.h>
 
 //=================================================================================================
 void MoonwellGenerator::Generate()
@@ -51,7 +53,7 @@ void MoonwellGenerator::GenerateObjects()
 {
 	LevelArea& area = *game_level->local_area;
 	Vec3 pos(128.f, 0, 128.f);
-	terrain->SetH(pos);
+	terrain->SetY(pos);
 	pos.y -= 0.2f;
 	game_level->SpawnObjectEntity(area, BaseObject::Get("moonwell"), pos, 0.f);
 	game_level->SpawnObjectEntity(area, BaseObject::Get("moonwell_phy"), pos, 0.f);

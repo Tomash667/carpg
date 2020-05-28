@@ -1,18 +1,18 @@
 #include "Pch.h"
 #include "CreateCharacterPanel.h"
+
 #include "Game.h"
-#include "Language.h"
-#include "GetTextDialog.h"
-#include "Language.h"
-#include "PickItemDialog.h"
-#include "ResourceManager.h"
-#include "DirectX.h"
-#include "Unit.h"
-#include "Render.h"
-#include "RenderTarget.h"
-#include "Level.h"
 #include "GameGui.h"
 #include "GameResources.h"
+#include "Language.h"
+#include "Level.h"
+#include "Unit.h"
+
+#include <GetTextDialog.h>
+#include <PickItemDialog.h>
+#include <Render.h>
+#include <RenderTarget.h>
+#include <ResourceManager.h>
 #include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
@@ -637,20 +637,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	IDirect3DDevice9* device = render->GetDevice();
-	HRESULT hr = device->TestCooperativeLevel();
-	if(hr != D3D_OK)
-		return;
-
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(false);
-	render->SetTarget(rt_char);
-
-	// start rendering
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
+	render->SetRenderTarget(rt_char);
+	render->Clear(Color::None);
 
 	game_level->light_angle = PI / 2;
 	game_level->SetOutsideParams();
@@ -663,20 +651,16 @@ void CreateCharacterPanel::RenderUnit()
 	game_level->camera.mat_view_inv = mat_view.Inverse();
 	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
 
-	scene_mgr->scene = game_level->scene;
-	scene_mgr->camera = &game_level->camera;
+	scene_mgr->SetScene(game_level->scene, &game_level->camera);
 
 	game->draw_batch.Clear();
 	game->draw_batch.camera = &game_level->camera;
 	game->draw_batch.gather_lights = false;
 	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
 	game->draw_batch.Process();
-	scene_mgr->DrawSceneNodes(game->draw_batch.nodes, game->draw_batch.node_groups);
+	scene_mgr->DrawSceneNodes(game->draw_batch);
 
-	// end rendering
-	V(device->EndScene());
-
-	render->SetTarget(nullptr);
+	render->SetRenderTarget(nullptr);
 }
 
 //=================================================================================================

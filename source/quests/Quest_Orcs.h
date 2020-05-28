@@ -5,13 +5,7 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
-// orkowie napadaj¹ na karawany, trzeba iœæ do podziemi i ich pozabijaæ
-// w podziemiach jest zamkniêty pokój który klucz ma najsilniejsza jednostka
-// w zamkniêtym pokoju jest ork który siê do nas przy³¹cza [Gorush]
-// po jakimœ czasie mówi nam o obozie orków którzy go porwali gdy by³ m³ody
-// po zniszczeniu awansuje na szamana/³owce/wojownika
-// po jakimœ czasie mówi o swoim klanie który zosta³ podbity przez silnego orka
-// trzeba iœæ i ich pobiæ a wtedy ork zostaje nowym wodzem, mo¿na tam spotkaæ orkowego kowala który sprzedaje orkowe przedmioty
+// Orcs are attacking caravans, need to go to dungeon and kill them.
 class Quest_Orcs final : public Quest_Dungeon, public LocationEventHandler
 {
 public:
@@ -42,6 +36,11 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// Inside dungeon there is locked orc Gorush that joins team, strongest enemy has the key.
+// After some time he talks about orcs camp that kidnapped him.
+// Destroying camp allow to chance Gorush class to shaman/warrior/hunter.
+// After some time he talks about dungeon where is orc boss.
+// Killing him will make Gorush new orc leader and leave team.
 class Quest_Orcs2 : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler
 {
 public:

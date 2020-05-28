@@ -1,16 +1,17 @@
 #include "Pch.h"
 #include "AIController.h"
-#include "Unit.h"
+
+#include "Ability.h"
 #include "Game.h"
-#include "SaveState.h"
-#include "InsideLocation.h"
-#include "GameFile.h"
-#include "Level.h"
 #include "GameGui.h"
+#include "GameFile.h"
 #include "GameMessages.h"
+#include "InsideLocation.h"
+#include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
-#include "Ability.h"
+#include "SaveState.h"
+#include "Unit.h"
 
 //=================================================================================================
 void AIController::Init(Unit* unit)
@@ -444,7 +445,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bullet_speed) cons
 	float c = -(target.pos - unit->pos).Dot2d();
 
 	float delta = b * b - 4 * a * c;
-	// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
+	// no solution, can't hit target, just aim at center
 	if(delta < 0)
 		return target.GetCenter();
 

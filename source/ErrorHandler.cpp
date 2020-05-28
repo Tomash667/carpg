@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "ErrorHandler.h"
-#include "Version.h"
+
 #include "Config.h"
+#include "Version.h"
 
 //=================================================================================================
 void DoCrash()
@@ -62,6 +63,7 @@ void RegisterErrorHandler(Config& cfg, const string& log_path)
 	Info("Settings: crash_mode = %s", ToString(crash_mode));
 	cfg.Add("crash_mode", ToString(crash_mode));
 
+	// don't use https here!
 	RegisterCrashHandler("CaRpg", VERSION_STR, "http://carpg.pl/crashrpt.php",
 		log_path.empty() ? nullptr : log_path.c_str(), (int)crash_mode);
 }

@@ -11,8 +11,7 @@ enum class QuestCategory
 };
 
 //-----------------------------------------------------------------------------
-// identyfikatory questów
-// kolejnoœæ nie jest nigdzie u¿ywana, mo¿na dawaæ jak siê chce, ale na koñcu ¿eby zapisy by³y kompatybilne
+// Old quest identifiers
 enum QUEST_TYPE
 {
 	Q_FORCE_DISABLED = -2,
@@ -36,7 +35,7 @@ enum QUEST_TYPE
 	Q_KILL_ANIMALS,
 	Q_LOST_ARTIFACT,
 	Q_STOLEN_ARTIFACT,
-	Q_FIND_ARTIFACT,
+	Q_FIND_ARTIFACT, // removed in V_DEV
 	Q_CRAZIES,
 	Q_WANTED,
 	Q_MAIN, // removed

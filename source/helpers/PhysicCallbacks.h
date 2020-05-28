@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Unit.h"
+
+//-----------------------------------------------------------------------------
 struct RaytestWithIgnoredCallback : public btCollisionWorld::RayResultCallback
 {
 	RaytestWithIgnoredCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), hit(false), fraction(1.01f)
@@ -83,6 +86,25 @@ struct RaytestClosestUnitCallback : public btCollisionWorld::RayResultCallback
 
 	delegate<bool(Unit*)> clbk;
 	Unit* hit;
+};
+
+//-----------------------------------------------------------------------------
+struct RaytestTerrainCallback : public btCollisionWorld::RayResultCallback
+{
+	RaytestTerrainCallback()
+	{
+		m_collisionFilterMask = CG_TERRAIN;
+	}
+
+	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+	{
+		if(m_closestHitFraction > rayResult.m_hitFraction)
+			m_closestHitFraction = rayResult.m_hitFraction;
+		return 0.f;
+	}
+
+	bool hasHit() const { return m_closestHitFraction < 1.f; }
+	float getFraction() const { return m_closestHitFraction; }
 };
 
 //-----------------------------------------------------------------------------

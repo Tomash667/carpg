@@ -1,17 +1,18 @@
 #include "Pch.h"
 #include "Game.h"
-#include <intrin.h>
-#include "Version.h"
-#include "Language.h"
+
 #include "ErrorHandler.h"
-#include "Utility.h"
-#include "SaveSlot.h"
 #include "Language.h"
+#include "SaveSlot.h"
+#include "Utility.h"
+#include "Version.h"
+
+#include <AppEntry.h>
 #include <Engine.h>
+#include <intrin.h>
 #include <Render.h>
 #include <SceneManager.h>
 #include <SoundManager.h>
-#include <AppEntry.h>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -343,7 +344,7 @@ void LoadResourcesConfig()
 	cfg.Load("resource.cfg");
 	Language::dir = cfg.GetString("languages", "lang");
 	g_system_dir = cfg.GetString("system", "system");
-	render->SetShadersDir(cfg.GetString("shaders", "system/shaders").c_str());
+	render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
 }
 
 //=================================================================================================
@@ -504,14 +505,24 @@ void LoadConfiguration(char* lpCmdLine)
 			windowed = True;
 	}
 	Int2 wnd_size = cfg.GetInt2("resolution");
-	int refresh_hz = cfg.GetInt("refresh");
-	Info("Settings: Resolution %dx%d (%d Hz, %s).", wnd_size.x, wnd_size.y, refresh_hz, windowed == False ? "fullscreen" : "windowed");
-	engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
+	Info("Settings: Resolution %dx%d (%s).", wnd_size.x, wnd_size.y, windowed == False ? "fullscreen" : "windowed");
+	engine->SetFullscreen(windowed == False);
+	engine->SetWindowSize(wnd_size);
 
 	// adapter
 	int used_adapter = cfg.GetInt("adapter");
 	Info("Settings: Adapter %d.", used_adapter);
 	render->SetAdapter(used_adapter);
+
+	// feature level
+	{
+		const string& featureLevel = cfg.GetString("feature_level", "");
+		if(!featureLevel.empty())
+		{
+			if(!app::render->SetFeatureLevel(featureLevel))
+				Warn("Settings: Invalid feature level '%s'.", featureLevel.c_str());
+		}
+	}
 
 	// log
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -598,26 +609,15 @@ void LoadConfiguration(char* lpCmdLine)
 	scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
 	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
 	game->use_glow = cfg.GetBool("cl_glow", true);
-	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
 	render->SetVsync(cfg.GetBool("vsync", true));
 	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game->settings.grass_range < 0.f)
 		game->settings.grass_range = 0.f;
+	game->screenshot_format = ImageFormatMethods::FromString(cfg.GetString("screenshot_format", "jpg"));
+	if(game->screenshot_format == ImageFormat::Invalid)
 	{
-		const string& screenshot_format = cfg.GetString("screenshot_format", "jpg");
-		if(screenshot_format == "jpg")
-			game->screenshot_format = ImageFormat::JPG;
-		else if(screenshot_format == "bmp")
-			game->screenshot_format = ImageFormat::BMP;
-		else if(screenshot_format == "tga")
-			game->screenshot_format = ImageFormat::TGA;
-		else if(screenshot_format == "png")
-			game->screenshot_format = ImageFormat::PNG;
-		else
-		{
-			Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", screenshot_format.c_str());
-			game->screenshot_format = ImageFormat::JPG;
-		}
+		Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", cfg.GetString("screenshot_format").c_str());
+		game->screenshot_format = ImageFormat::JPG;
 	}
 
 	cfg.LoadConfigVars();
@@ -686,13 +686,11 @@ void LoadConfiguration(char* lpCmdLine)
 //=================================================================================================
 int AppEntry(char* lpCmdLine)
 {
-#ifdef _DEBUG
-	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
+	if(IsDebug() && IsDebuggerPresent() && !io::FileExists("fmod.dll"))
 	{
-		MessageBox(nullptr, "Invalid debug working directory.", nullptr, MB_OK | MB_ICONERROR);
+		MessageBox(nullptr, "Invalid debug working directory (missing fmod.dll).", nullptr, MB_OK | MB_ICONERROR);
 		return 1;
 	}
-#endif
 
 	// logger (prelogger in this case, because we do not know where to log yet)
 	Logger::SetInstance(new PreLogger);
@@ -705,20 +703,12 @@ int AppEntry(char* lpCmdLine)
 	Info("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday);
 	Info("Build date: %s", utility::GetCompileTime().c_str());
 	Info("Process ID: %d", GetCurrentProcessId());
-	{
-		cstring build_type =
-#ifdef _DEBUG
-			"debug ";
-#else
-			"release ";
-#endif
-		Info("Build type: %s", build_type);
-	}
+	Info("Build type: %s", IsDebug() ? "debug" : "release");
 	LogProcessorFeatures();
 
 	// settings
 	Ptr<Game> game;
-	global::game = game.Get();
+	::game = game.Get();
 	LoadResourcesConfig();
 	LoadConfiguration(lpCmdLine);
 

@@ -4,6 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
+// Go to forest/cave and kill all animals.
 class Quest_KillAnimals final : public Quest_Dungeon, public LocationEventHandler
 {
 public:
