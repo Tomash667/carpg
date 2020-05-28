@@ -1,10 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "MeshInstance.h"
-
-//-----------------------------------------------------------------------------
-// id zamka
 enum LockId
 {
 	LOCK_NONE,
@@ -36,32 +32,22 @@ struct Door : public EntityType<Door>
 	static const float BLOCKED_SOUND_DIST;
 	static const int MIN_SIZE = 31;
 
+	MeshInstance* mesh_inst;
+	btCollisionObject* phy;
 	Vec3 pos;
 	float rot;
 	Int2 pt;
+	State state;
 	int locked;
 	bool door2;
-
-	// lokalne zmienne
-	State state;
-	MeshInstance* mesh_inst;
-	btCollisionObject* phy;
 
 	Door() : door2(false), mesh_inst(nullptr)
 	{
 	}
-	~Door()
-	{
-		delete mesh_inst;
-	}
-	bool IsBlocking() const
-	{
-		return state == Closed || state == Opening || state == Closing2;
-	}
-	bool IsBlockingView() const
-	{
-		return state == Closed;
-	}
+	~Door();
+	bool IsBlocking() const { return Any(state, Closed, Opening, Closing2); }
+	bool IsBlockingView() const { return state == Closed; }
+	bool IsAnimated() const { return Any(state, Opening, Opening2, Closing, Closing2); }
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

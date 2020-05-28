@@ -21,6 +21,12 @@ const float Door::UNLOCK_SOUND_DIST = 0.5f;
 const float Door::BLOCKED_SOUND_DIST = 1.f;
 
 //=================================================================================================
+Door::~Door()
+{
+	delete mesh_inst;
+}
+
+//=================================================================================================
 void Door::Save(GameWriter& f)
 {
 	f << id;
@@ -72,7 +78,6 @@ void Door::Load(GameReader& f)
 		{
 			btVector3& poss = phy->getWorldTransform().getOrigin();
 			poss.setY(poss.y() - 100.f);
-			mesh_inst->SetToEnd(mesh_inst->mesh->anims[0].name.c_str());
 		}
 	}
 	else
@@ -89,6 +94,8 @@ void Door::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(locked);
 	f.WriteCasted<byte>(state);
 	f << door2;
+	if(net->mp_load)
+		mesh_inst->Write(f);
 }
 
 //=================================================================================================
@@ -111,6 +118,8 @@ bool Door::Read(BitStreamReader& f)
 	}
 
 	mesh_inst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
+	if(net->mp_load)
+		mesh_inst->Read(f);
 	mesh_inst->base_speed = 2.f;
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
@@ -123,11 +132,12 @@ bool Door::Read(BitStreamReader& f)
 	tr.setRotation(btQuaternion(rot, 0, 0));
 	phy_world->addCollisionObject(phy, CG_DOOR);
 
-	if(state == Opened)
+	if(!net->mp_load && state == Opened)
+		mesh_inst->SetToEnd(&mesh_inst->mesh->anims[0]);
+	if(!IsBlocking())
 	{
 		btVector3& pos = phy->getWorldTransform().getOrigin();
 		pos.setY(pos.y() - 100.f);
-		mesh_inst->SetToEnd(mesh_inst->mesh->anims[0].name.c_str());
 	}
 
 	Register();

@@ -457,7 +457,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						door->state = Door::Opened;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
+						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
 					}
 				}
 				else

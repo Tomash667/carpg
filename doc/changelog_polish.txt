@@ -20,6 +20,7 @@ Wersja 0.15 (2020-03-31):
 - crash gdy okno jest zminimalizowane w trybie pełnoekranowym podczas wczytywania [BottledByte, Lemiczek, Mokai]
 - ai w złej kolejności prosi o przedmioty
 - błąd kamery gdy rozmawia się z jedną osobą po drugiej
+- crash po wczytaniu gry multiplayer gdy drzwi są otwierane/zamykane
 
 --------------------------------------------------------------------------------
 Poprawki:

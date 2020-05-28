@@ -20,6 +20,7 @@ Version 0.15 (???):
 - crash when window is minimized in fullscreen and game is loading [BottledByte, Lemiczek, Mokai]
 - ai asks for items in invalid order
 - camera bugs when talking with next npc right after first dialog
+- crash when loading mp game with doors opening/closing
 
 --------------------------------------------------------------------------------
 Fixes:
