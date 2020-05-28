@@ -17,6 +17,9 @@ Version 0.15 (???):
 - crash when launching [AnimeIsWrong]
 - script error when talking with alchemist, everyone get better prices
 - merchant stock didn't generate selected items
+- crash when window is minimized in fullscreen and game is loading [BottledByte, Lemiczek, Mokai]
+- ai asks for items in invalid order
+- camera bugs when talking with next npc right after first dialog
 
 --------------------------------------------------------------------------------
 Fixes:

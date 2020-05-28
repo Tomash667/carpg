@@ -59,7 +59,13 @@ void GameCamera::Update(float dt)
 	{
 		springiness_timer -= dt;
 		if(springiness_timer <= 0.f)
-			springiness = SPRINGINESS_NORMAL;
+		{
+			springiness += 5;
+			if(springiness >= SPRINGINESS_NORMAL)
+				springiness = SPRINGINESS_NORMAL;
+			else
+				springiness_timer = 0.5f;
+		}
 	}
 
 	const float d = reset
@@ -155,10 +161,7 @@ void GameCamera::RotateTo(float dt, float dest_rot)
 void GameCamera::UpdateFreeRot(float dt)
 {
 	if(!Any(GKey.allow_input, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
-	{
-		free_rot = false;
 		return;
-	}
 
 	const float c_cam_angle_min = PI + 0.1f;
 	const float c_cam_angle_max = PI * 1.8f - 0.1f;
@@ -187,7 +190,7 @@ void GameCamera::UpdateFreeRot(float dt)
 	}
 	else
 	{
-		if(free_rot_key == Key::None || GKey.KeyUpAllowed(free_rot_key))
+		if(free_rot_key == Key::None || input->Up(free_rot_key))
 			free_rot = false;
 		else
 			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
@@ -210,7 +213,11 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 {
 	bool new_zoom = (zoom_pos != nullptr);
 	if(zoom == new_zoom)
+	{
+		if(zoom_pos)
+			this->zoom_pos = *zoom_pos;
 		return;
+	}
 	zoom = new_zoom;
 	if(zoom)
 	{
@@ -226,7 +233,7 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 		h = 0.2f;
 		shift = 0.f;
 		dist = prev_dist;
-		springiness_timer = 1.f;
+		springiness_timer = 0.5f;
 	}
 }
 

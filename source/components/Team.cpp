@@ -545,7 +545,7 @@ void Team::CheckTeamItemShares()
 					int value, prev_value;
 					if(unit.IsBetterItem(slot.item, &value, &prev_value))
 					{
-						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type] / slot.item->value;
+						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type];
 						if(real_value > 0)
 						{
 							TeamShareItem& tsi = Add1(team_shares);
