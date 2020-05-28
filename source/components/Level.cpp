@@ -1319,7 +1319,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					{
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
+						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
 					}
 
 					area.doors.push_back(door);
@@ -3224,7 +3224,7 @@ void Level::OnRevisitLevel()
 			{
 				btVector3& pos = door.phy->getWorldTransform().getOrigin();
 				pos.setY(pos.y() - 100.f);
-				door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
+				door.mesh_inst->SetToEnd(&door.mesh_inst->mesh->anims[0]);
 			}
 		}
 	}
