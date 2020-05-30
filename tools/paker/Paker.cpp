@@ -31,7 +31,7 @@ bool FillEntry()
 	Tokenizer t;
 	if(!t.FromFile("paklist.txt"))
 	{
-		printf("Missing paklist.txt!");
+		printf("Missing paklist.txt!\n");
 		return false;
 	}
 	t.AddKeyword("file", 0);
@@ -64,7 +64,7 @@ bool FillEntry()
 	}
 	catch(cstring err)
 	{
-		printf("Failed to parse 'paklist.txt': %s", err);
+		printf("Failed to parse 'paklist.txt': %s\n", err);
 		return false;
 	}
 
@@ -229,10 +229,10 @@ bool PakDir(cstring input, cstring output)
 	return true;
 }
 
-void SaveEntries(cstring out)
+void SaveEntries(cstring ver)
 {
-	std::ofstream o(out);
-
+	std::ofstream o("db.txt");
+	o << Format("// version %s\n", ver);
 	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
@@ -283,7 +283,7 @@ bool CreatePak(char* pakname)
 			{
 				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
 				{
-					printf("Failed to copy file '%s'.", e.input.c_str());
+					printf("Failed to copy file '%s'.\n", e.input.c_str());
 					return false;
 				}
 			}
@@ -294,7 +294,7 @@ bool CreatePak(char* pakname)
 
 	copy_pdb = true;
 	printf("Saving database.\n");
-	SaveEntries(Format("db/%s.txt", pakname));
+	SaveEntries(pakname);
 
 	if(!nozip)
 	{
@@ -340,7 +340,7 @@ bool CreatePatch(char* pakname)
 			{
 				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
 				{
-					printf("Failed to copy file '%s'.", e.input.c_str());
+					printf("Failed to copy file '%s'.\n", e.input.c_str());
 					return false;
 				}
 			}
@@ -395,46 +395,21 @@ bool CreatePatch(char* pakname)
 	return true;
 }
 
-bool LoadEntries(char* pakname)
+bool LoadEntries()
 {
-	printf("Searching for last version.\n");
-
-	WIN32_FIND_DATA data;
-	HANDLE find = FindFirstFile("db/*.txt", &data);
-	if(find == INVALID_HANDLE_VALUE)
-	{
-		printf("Failed to find last version.\n");
-		return false;
-	}
-
-	string cur_pak = Format("%s.txt", pakname);
-	DWORD t1 = 0, t2 = 0;
-	string best;
-
-	do
-	{
-		if(cur_pak != data.cFileName && data.ftLastWriteTime.dwHighDateTime > t1 || (data.ftLastWriteTime.dwHighDateTime == t1 && data.ftLastWriteTime.dwLowDateTime > t2))
-		{
-			t1 = data.ftLastWriteTime.dwHighDateTime;
-			t2 = data.ftLastWriteTime.dwLowDateTime;
-			best = data.cFileName;
-		}
-	} while(FindNextFile(find, &data));
-
-	FindClose(find);
-
-	printf("Using version %s. Loading...\n", best.c_str());
+	printf("Reading previous version entries.\n");
 
 	Tokenizer t;
-	if(!t.FromFile(Format("db/%s", best.c_str())))
+	if(!t.FromFile("db.txt"))
 	{
-		printf("Failed to load file '%s'!", best.c_str());
+		printf("Failed to load db!\n");
 		return false;
 	}
 	DeleteEntries();
 
 	try
 	{
+		t.Next();
 		while(true)
 		{
 			t.Next();
@@ -452,7 +427,7 @@ bool LoadEntries(char* pakname)
 	}
 	catch(cstring err)
 	{
-		printf("Error while reading file '%s': %s\n", best.c_str(), err);
+		printf("Error while reading db: %s\n", err);
 		return false;
 	}
 
@@ -464,11 +439,10 @@ int main(int argc, char** argv)
 {
 	if(argc == 1)
 	{
-		printf("No arguments. Get some -help.");
+		printf("No arguments. Get some -help.\n");
 		return 0;
 	}
 
-	CreateDirectory("db", NULL);
 	CreateDirectory("pdb", NULL);
 	CreateDirectory("out", NULL);
 
@@ -512,12 +486,12 @@ int main(int argc, char** argv)
 			}
 			else if(mode == 1)
 			{
-				if(!LoadEntries(argv[i]) || !CreatePatch(argv[i]))
+				if(!LoadEntries() || !CreatePatch(argv[i]))
 					return 2;
 			}
 			else
 			{
-				if(!LoadEntries(argv[i]) || !CreatePatch(argv[i]) || !CreatePak(argv[i]))
+				if(!LoadEntries() || !CreatePatch(argv[i]) || !CreatePak(argv[i]))
 					return 2;
 			}
 		}

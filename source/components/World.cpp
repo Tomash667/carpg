@@ -1228,7 +1228,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 {
 	f >> state;
 	f >> date;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_15)
 		f >> startDate;
 	else
 		startDate = Date(100, 0, 0);
@@ -2009,9 +2009,9 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 }
 
 //=================================================================================================
-Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
+Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array)
 {
-	int index = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
+	int index = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), 0);
 	array->Release();
 	return locations[index];
 }

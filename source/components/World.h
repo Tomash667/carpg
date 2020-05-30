@@ -134,7 +134,7 @@ public:
 	{
 		return locations[GetClosestLocation(type, pos, target)];
 	}
-	Location* GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array, int flags);
+	Location* GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array);
 	bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false);
 	Vec2 FindPlace(const Vec2& pos, float range, bool allow_exact = false);
 	Vec2 FindPlace(const Vec2& pos, float min_range, float max_range);

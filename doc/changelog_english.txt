@@ -12,6 +12,9 @@ Version 0.15 (???):
 + month name instead of number, different start date
 + different dialogs for traveling merchant, trainer
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- randomly generated dungeons were mostly of single type
+- random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
+- crash after loading game where player is casting spell [Ampped]
 - can't use speed command in singleplayer game
 - mouse zoom sometimes didn't have effect on camera
 - crash when launching [AnimeIsWrong]
@@ -21,12 +24,6 @@ Version 0.15 (???):
 - ai asks for items in invalid order
 - camera bugs when talking with next npc right after first dialog
 - crash when loading mp game with doors opening/closing
-
---------------------------------------------------------------------------------
-Fixes:
-- randomly generated dungeons were mostly of single type
-- random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
-- crash after loading game where player is casting spell [Ampped]
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):

@@ -634,7 +634,7 @@ void PlayerController::Load(FileReader& f)
 	}
 
 	// recipes
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_15)
 	{
 		uint count;
 		f >> count;

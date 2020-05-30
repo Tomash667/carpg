@@ -12,6 +12,9 @@ Wersja 0.15 (2020-03-31):
 + nazwa miesiąca zamiast liczby, inna początkowa data
 + inne dialogi u wędrownego kupca, trenera
 + aktualizacja bibliotek: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- losowo generowane podziemia były głównie jednego typu
+- losowy crash przy wchodzeniu do miasta po tym jak ai poprosił o pancerz [SwagOfficerSuccubus]
+- crash po wczytaniu zapisu w MP gdy klient rzuca czar [Ampped]
 - nie można używać komendy 'speed' w jednoosobowej grze
 - kółko myszki czasami nie ma wpływu na kamerę
 - crash podczas uruchamiania [AnimeIsWrong]
@@ -21,12 +24,6 @@ Wersja 0.15 (2020-03-31):
 - ai w złej kolejności prosi o przedmioty
 - błąd kamery gdy rozmawia się z jedną osobą po drugiej
 - crash po wczytaniu gry multiplayer gdy drzwi są otwierane/zamykane
-
---------------------------------------------------------------------------------
-Poprawki:
-- losowo generowane podziemia były głównie jednego typu
-- losowy crash przy wchodzeniu do miasta po tym jak ai poprosił o pancerz [SwagOfficerSuccubus]
-- crash po wczytaniu zapisu w MP gdy klient rzuca czar [Ampped]
 
 --------------------------------------------------------------------------------
 Wersja 0.14.1 (2020-04-11):
