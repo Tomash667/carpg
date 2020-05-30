@@ -707,11 +707,8 @@ public:
 	// EFFECTS
 	//-----------------------------------------------------------------------------
 	void AddEffect(Effect& e, bool send = true);
-	// dodaj efekt zjadanego przedmiotu
 	void ApplyConsumableEffect(const Consumable& item);
-	// aktualizuj efekty
 	void UpdateEffects(float dt);
-	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
 	void EndEffects(int days = 0, float* o_natural_mod = nullptr);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);

@@ -291,13 +291,15 @@ void Game::UpdateAi(float dt)
 						{
 							Unit& target = **it2;
 							if(!target.to_remove && !u.IsEnemy(target) && !IsSet(target.data->flags, F_UNDEAD)
-								&& !IsSet(target.data->flags, F2_CONSTRUCT) && target.hpmax - target.hp > 100.f
+								&& !IsSet(target.data->flags, F2_CONSTRUCT) && target.GetHpp() <= 0.8f
 								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena
 								&& (target.IsAlive() || target.IsTeamMember()) && game_level->CanSee(u, target))
 							{
 								float prio = target.hpmax - target.hp;
 								if(&target == &u)
 									prio *= 1.5f;
+								if(!target.IsAlive())
+									prio /= 10;
 								prio -= dist * 10;
 								if(prio > best_prio)
 								{

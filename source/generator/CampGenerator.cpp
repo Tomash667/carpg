@@ -23,7 +23,6 @@ cstring camp_objs[] = {
 	"hay",
 	"firewood",
 	"bench",
-	"chest",
 	"melee_target",
 	"anvil",
 	"cauldron"
@@ -80,7 +79,8 @@ void CampGenerator::GenerateObjects()
 	BaseObject* campfire = BaseObject::Get("campfire"),
 		*campfire_off = BaseObject::Get("campfire_off"),
 		*tent = BaseObject::Get("tent"),
-		*bedding = BaseObject::Get("bedding");
+		*bedding = BaseObject::Get("bedding"),
+		*chest = BaseObject::Get("chest");
 
 	if(!camp_objs_ptrs[0])
 	{
@@ -88,7 +88,8 @@ void CampGenerator::GenerateObjects()
 			camp_objs_ptrs[i] = BaseObject::Get(camp_objs[i]);
 	}
 
-	for(int i = 0; i < 20; ++i)
+	// bonfire with tents/beddings
+	for(int i = 0; i < 10; ++i)
 	{
 		Vec2 pt = Vec2::Random(Vec2(96, 96), Vec2(256 - 96, 256 - 96));
 
@@ -110,7 +111,7 @@ void CampGenerator::GenerateObjects()
 		// campfire
 		if(game_level->SpawnObjectNearLocation(*game_level->local_area, Rand() % 5 == 0 ? campfire_off : campfire, pt, Random(MAX_ANGLE)))
 		{
-			for(int j = 0, count = Random(4, 7); j < count; ++j)
+			for(int j = 0, count = Random(3, 6); j < count; ++j)
 			{
 				float angle = Random(MAX_ANGLE);
 				if(Rand() % 2 == 0)
@@ -121,7 +122,41 @@ void CampGenerator::GenerateObjects()
 		}
 	}
 
-	for(int i = 0; i < 100; ++i)
+	// chests
+	for(int i = 0; i < 3; ++i)
+	{
+		for(int j = 0; j < 10; ++j)
+		{
+			Vec2 pt = Vec2::Random(Vec2(90, 90), Vec2(256 - 90, 256 - 90));
+			bool ok = true;
+			for(vector<Vec2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
+			{
+				if(Vec2::Distance(*it, pt) < 4.f)
+				{
+					ok = false;
+					break;
+				}
+			}
+
+			if(ok)
+			{
+				auto e = game_level->SpawnObjectNearLocation(*game_level->local_area, chest, pt, Random(MAX_ANGLE), 2.f);
+				if(!game_level->location->group->IsEmpty()) // empty chests for empty camps
+				{
+					int gold, level = game_level->location->st;
+					Chest* chest = (Chest*)e;
+
+					ItemHelper::GenerateTreasure(level, 5, chest->items, gold, false);
+					InsertItemBare(chest->items, Item::gold, (uint)gold);
+					SortItems(chest->items);
+				}
+				break;
+			}
+		}
+	}
+
+	// stuff
+	for(int i = 0; i < 50; ++i)
 	{
 		Vec2 pt = Vec2::Random(Vec2(90, 90), Vec2(256 - 90, 256 - 90));
 		bool ok = true;
@@ -136,16 +171,7 @@ void CampGenerator::GenerateObjects()
 		if(ok)
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
-			auto e = game_level->SpawnObjectNearLocation(*game_level->local_area, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(e.IsChest() && !game_level->location->group->IsEmpty()) // empty chests for empty camps
-			{
-				int gold, level = game_level->location->st;
-				Chest* chest = (Chest*)e;
-
-				ItemHelper::GenerateTreasure(level, 5, chest->items, gold, false);
-				InsertItemBare(chest->items, Item::gold, (uint)gold);
-				SortItems(chest->items);
-			}
+			game_level->SpawnObjectNearLocation(*game_level->local_area, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 	}
 }

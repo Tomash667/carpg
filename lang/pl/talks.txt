@@ -173,9 +173,9 @@ tut5 =
 [C] - panel postaci
 [K] - czary i zdolnoœci
 [T] - dru¿yna
-[M] - minimapa
 [J] - dziennik
-[Tab] - ekran rozmowy.
+['\"] - ekran rozmowy
+[Tab] - minimapa.
 
 Obejrzyj te okna i potem ruszaj dalej."
 tut6 =
@@ -285,7 +285,7 @@ captainNoQ1 = "Nie mam w tej chwili dla ciebie ¿adnego zadania."
 locationDiscovered0 = "Ponoæ %sna %s st¹d znajduje siê %s. Tak s³ysza³em."
 locationDiscovered1 = "Ludzie gadaj¹ ¿e %sna %s st¹d znajduje siê %s."
 allDiscovered0 = "Chcia³em ci opowiedzieæ o jakichœ nieznany lokalizacjach ale wygl¹da na to ¿e wiesz ju¿ wszystko."
-allDiscovered1 = "Tyle lokacji... A ty wszêdzie by³eœ!"
+allDiscovered1 = "Tyle lokalizacji... A ty wszêdzie by³eœ!"
 campDiscovered0 = "Ponoæ %sna %s st¹d znajduje siê obóz %s. Mam nadziejê ¿e nie zaatakuj¹ jakiejœ wioski."
 campDiscovered1 = "Chodz¹ pog³oski ¿e %sna %s st¹d jest obóz %s. Stra¿nicy powinni siê tym zaj¹æ!"
 allCampDiscovered0 = "Aktualnie w kraju jest spokój. Nie ma ¿adnych obozów bandytów czy orków lub goblinów."
@@ -317,7 +317,7 @@ pvpTooFar = "%s odszed³ zbyt daleko od areny."
 pvp = "Czy chcesz stoczyæ walkê na arenie przeciwko %s?"
 pvpWith = "Walcz z %s"
 newsCampCleared = "Obóz niedaleko %s zosta³ oczyszczony."
-newsLocCleared = "Lokacja %s zosta³a oczyszczona przez poszukiwaczy przygód."
+newsLocCleared = "Lokalizacja %s zosta³a oczyszczona przez poszukiwaczy przygód."
 arenaText0 = "Krzes³em! Krzes³em go!"
 arenaText1 = "Uderz go w ten zawszony ryj!"
 arenaText2 = "Co ty robisz?!"

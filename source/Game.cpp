@@ -2130,7 +2130,7 @@ void Game::UpdateFallback(float dt)
 					int at_level = 0;
 					if(game_level->location->portal)
 						at_level = game_level->location->portal->at_level;
-					EnterLocation(at_level, portal->target);
+					EnterLocation(at_level, portal->index);
 				}
 				return;
 			case FALLBACK::NONE:

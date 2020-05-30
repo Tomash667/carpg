@@ -102,7 +102,7 @@ void SecretLocationGenerator::GenerateObjects()
 	portal->next_portal = nullptr;
 	portal->pos = pos;
 	portal->rot = 0.f;
-	portal->target = 0;
+	portal->index = 0;
 	portal->target_loc = quest_mgr->quest_secret->where;
 	game_level->location->portal = portal;
 

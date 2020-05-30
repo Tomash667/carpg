@@ -68,8 +68,8 @@ osoby. Oczekuj zmian na lepsze!
 	T - drużyna
 	K - zdolności
 	J - dziennik
-	M - minimapa
-	Tab - okno rozmowy
+	Tab - minimapa
+	'" - okno rozmowy
 	Enter - wprowadzanie tekstu w multiplayer
 	Kółko myszy - zmiana odległości kamery
 	F2 - pokaż/ukryj fps

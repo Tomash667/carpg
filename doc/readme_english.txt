@@ -68,8 +68,8 @@ people. Expect changes for the better!
 	T - team
 	K - abilities
 	J - journal
-	M - minimap
-	Tab - talk box
+	Tab - minimap
+	'" - talk box
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
 	F2 - show/hide fps

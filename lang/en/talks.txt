@@ -171,9 +171,9 @@ tut5 =
 [C] - character panel
 [K] - spells and abilities
 [T] - team
-[M] - minimap
 [J] - journal
-[Tab] - talk box.
+['\"] - talk box
+[Tab] - minimap.
 
 Look at these panels and move forward."
 tut6 =

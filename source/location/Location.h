@@ -15,12 +15,12 @@
 enum LOCATION
 {
 	L_NULL,
-	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga
-	L_CAVE, // jaskinia, jakieœ zwierzêta/potwory/ewentualnie bandyci
-	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)
-	L_DUNGEON, // podziemia, ró¿nej g³êbokoœci, posiadaj¹ pomieszczenia o okreœlonym celu (skarbiec, sypialnie itp), zazwyczaj bandyci lub opuszczone
-	L_OUTSIDE, // las, zazwyczaj pusty, czasem potwory lub bandyci maj¹ tu ma³y obóz
-	L_ENCOUNTER, // losowe spotkanie na drodze
+	L_CITY,
+	L_CAVE,
+	L_CAMP,
+	L_DUNGEON,
+	L_OUTSIDE,
+	L_ENCOUNTER,
 	L_OFFSCREEN
 };
 
@@ -88,20 +88,19 @@ enum LOCATION_STATE
 };
 
 //-----------------------------------------------------------------------------
-// przypisanie takiego quest do lokacji spowoduje ¿e nie zostanie zajêta przez inny quest
+// used to prevent other quest from using this location
 static Quest_Dungeon* const ACTIVE_QUEST_HOLDER = (Quest_Dungeon*)0xFFFFFFFE;
 static constexpr int ANY_TARGET = -1;
 
 //-----------------------------------------------------------------------------
-// struktura opisuj¹ca lokacje na mapie œwiata
 struct Location
 {
 	int index;
 	LOCATION type;
 	LOCATION_STATE state;
 	int target;
-	Vec2 pos; // pozycja na mapie œwiata
-	string name; // nazwa lokacji
+	Vec2 pos;
+	string name;
 	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
 	int last_visit; // worldtime from last time when team entered location or -1
 	int st; // poziom trudnoœci
@@ -110,7 +109,7 @@ struct Location
 	Portal* portal;
 	LOCATION_IMAGE image;
 	vector<Event> events;
-	bool reset; // resetowanie lokacji po wejœciu
+	bool reset; // force reset location when entering
 	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
 	bool loaded_resources;

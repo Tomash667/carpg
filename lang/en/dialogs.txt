@@ -1834,7 +1834,7 @@ dialog q_stolen_artifact_end {
 
 //==============================================================================
 dialog q_stolen_artifact_timeout {
-	0 "You could not find this artifact? Too bad..."
+	0 "You could not recover this artifact? Too bad..."
 	1 "Apparently close to $random_loc$ people found some new artifacts, there I leave."
 	2 "Good luck in your adventures!"
 }

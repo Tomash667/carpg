@@ -202,7 +202,7 @@ void InsideLocationGenerator::OnEnter()
 			portal->next_portal = nullptr;
 			portal->pos = o->pos;
 			portal->rot = o->rot.y;
-			portal->target = 0;
+			portal->index = 0;
 			portal->target_loc = loc_id;
 
 			inside->portal = portal;

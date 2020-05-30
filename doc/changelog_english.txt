@@ -24,6 +24,8 @@ Version 0.15 (???):
 - ai asks for items in invalid order
 - camera bugs when talking with next npc right after first dialog
 - crash when loading mp game with doors opening/closing
+- missing news after clearing location
+- improved cleric heal targeting priority
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):

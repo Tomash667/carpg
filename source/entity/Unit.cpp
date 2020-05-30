@@ -8068,8 +8068,6 @@ void Unit::Update(float dt)
 }
 
 //=============================================================================
-// Ruch jednostki, ustawia pozycje Y dla terenu, opuszczanie lokacji
-//=============================================================================
 void Unit::Moved(bool warped, bool dash)
 {
 	if(game_level->location->outside)

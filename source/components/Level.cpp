@@ -3276,7 +3276,7 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(city_ctx)
+	if(city_ctx || location->state == LS_CLEARED)
 		return;
 
 	bool is_clear = true;
@@ -3324,7 +3324,7 @@ void Level::CheckIfLocationCleared()
 			}
 		}
 
-		if(cleared && prevent && !location->group->IsEmpty())
+		if(cleared && !prevent && !location->group->IsEmpty())
 		{
 			if(location->type == L_CAMP)
 				world->AddNews(Format(txNewsCampCleared, world->GetLocation(world->GetNearestSettlement(location->pos))->name.c_str()));

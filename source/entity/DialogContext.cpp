@@ -999,7 +999,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			int what = Rand() % 3;
 			if(quest_mgr->HaveQuestRumors() && Rand() % 2 == 0)
 				what = 2;
-			if(game->devmode)
+			if(game->devmode && input->Down(Key::Shift))
 			{
 				if(input->Down(Key::N1))
 					what = 0;

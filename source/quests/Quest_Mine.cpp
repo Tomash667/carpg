@@ -815,7 +815,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			// portal info
 			cave.portal = new Portal;
 			cave.portal->at_level = 0;
-			cave.portal->target = 0;
+			cave.portal->index = 0;
 			cave.portal->target_loc = loc_id;
 			cave.portal->rot = rot;
 			cave.portal->next_portal = nullptr;
@@ -824,7 +824,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			// destination portal info
 			loc->portal = new Portal;
 			loc->portal->at_level = 0;
-			loc->portal->target = 0;
+			loc->portal->index = 0;
 			loc->portal->target_loc = game_level->location_index;
 			loc->portal->next_portal = nullptr;
 		}

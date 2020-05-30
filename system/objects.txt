@@ -146,6 +146,11 @@ object painting8 {
 	flags { near_wall no_physics high on_wall }
 }
 
+object painting_elf {
+	mesh "painting_elf.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
 object campfire {
 	mesh "ognisko.qmsh"
 	cylinder { 1.0735 0.43 }
@@ -502,6 +507,7 @@ group painting {
 		3 painting_x2
 		3 painting_x3
 		3 painting_x4
+		2 painting_elf
 	}
 }
 
