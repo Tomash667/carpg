@@ -480,8 +480,6 @@ void PlayerController::Save(FileWriter& f)
 //=================================================================================================
 void PlayerController::Load(FileReader& f)
 {
-	if(LOAD_VERSION < V_0_7)
-		f.Skip<int>(); // old class info
 	f >> name;
 	f >> move_tick;
 	f >> last_dmg;
@@ -691,10 +689,7 @@ void PlayerController::Load(FileReader& f)
 		}
 	}
 
-	if(LOAD_VERSION >= V_0_7)
-		f >> split_gold;
-	else
-		split_gold = 0.f;
+	f >> split_gold;
 	if(LOAD_VERSION >= V_0_8)
 	{
 		f >> always_run;

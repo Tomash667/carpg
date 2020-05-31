@@ -2007,10 +2007,7 @@ void Unit::Load(GameReader& f)
 	f >> stamina;
 	f >> stamina_max;
 	f >> stamina_action;
-	if(LOAD_VERSION >= V_0_7)
-		f >> stamina_timer;
-	else
-		stamina_timer = 0;
+	f >> stamina_timer;
 	f >> level;
 	if(content.require_update && data->group != G_PLAYER)
 	{

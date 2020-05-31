@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.16 (???):
+! cannot load saves from version 0.6.2 or older
+
+--------------------------------------------------------------------------------
 Version 0.15 (2020-05-31):
 ! cannot load saves from version 0.6.1 or older
 + moved from directx 9 to directx 11

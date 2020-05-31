@@ -25,14 +25,5 @@ void Cave::Load(GameReader& f)
 	{
 		f >> holes;
 		f >> ext;
-
-		// fix for broken corridor in mine & portal
-		// propably fixed at unknown point of time, here just repair it for old saves
-		if(LOAD_VERSION < V_0_7 && rooms.size() == 2u && rooms[1]->pos != Int2(0, 0))
-		{
-			Room& room = *rooms[1];
-			room.pos = Int2(0, 0);
-			room.size = Int2(0, 0);
-		}
 	}
 }

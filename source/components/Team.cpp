@@ -379,25 +379,6 @@ void Team::Load(GameReader& f)
 		unit = Unit::GetById(f.Read<int>());
 
 	leader = Unit::GetById(f.Read<int>());
-	if(LOAD_VERSION < V_0_7)
-	{
-		int team_gold;
-		f >> team_gold;
-		if(team_gold > 0)
-		{
-			Vec2 share = GetShare();
-			for(Unit& unit : active_members)
-			{
-				float gold = (unit.IsPlayer() ? share.x : share.y) * team_gold;
-				float gold_int, part = modf(gold, &gold_int);
-				unit.gold += (int)gold_int;
-				if(unit.IsPlayer())
-					unit.player->split_gold = part;
-				else
-					unit.hero->split_gold = part;
-			}
-		}
-	}
 	f >> crazies_attack;
 	f >> is_bandit;
 	if(LOAD_VERSION >= V_0_8)

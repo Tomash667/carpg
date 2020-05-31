@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.16 (???):
+! nie można wczytywać już zapisów z wersji 0.6.2 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.15 (2020-05-31):
 ! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
 + przejście z directx 9 na directx 11

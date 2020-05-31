@@ -1185,9 +1185,6 @@ void ScriptManager::Save(FileWriter& f)
 
 void ScriptManager::Load(FileReader& f)
 {
-	if(LOAD_VERSION < V_0_7)
-		return;
-
 	// global vars
 	if(LOAD_VERSION >= V_0_8)
 		globals.Load(f);
