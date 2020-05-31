@@ -28,6 +28,12 @@ Version 0.15 (2020-05-31):
 - improved cleric heal targeting priority
 - memory leak after regenerating enemies in forest
 - feats mobility/finese required endurance instead of dexterity
+- not visible equipped rings/amulets when sharing items or looting corpse
+- hero skill preference randomized on level up
+- for client raised undead have empty health bar
+- far enemies do nothing after being shot
+- ai wasn't buying some amulets/rings [Zielu]
+- invalid attack/defense values of items when sharing items with hero by client
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):

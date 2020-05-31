@@ -28,6 +28,12 @@ Wersja 0.15 (2020-05-31):
 - usprawnione wybieranie celu do leczenia przez kapłana
 - wyciek pamięci po ponownym wygenerowaniu wrogów w lesie
 - atuty mobilność/finezja wymagały kondycji a nie zręczności
+- brak widocznych założonych pierścieni/amuletów u klienta podczas wymiany przedmiotów i grabienia zwłok
+- losowe preferencje umiejętności bohatera po zdobyciu poziomu
+- u klienta ożywieni nieumarli nie mają pusty pasek życia
+- odlegli wrogowie nie reagują na trafienie z łuku
+- ai niekupowało niektórych amuletów i pierścieni [Zielu]
+- złe wartości ataku/obrony u klienta podczas wymiany przedmiotów z bohaterem
 
 --------------------------------------------------------------------------------
 Wersja 0.14.1 (2020-04-11):

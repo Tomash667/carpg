@@ -545,7 +545,7 @@ struct Unit : public EntityType<Unit>
 	void SaveStock(GameWriter& f);
 	void Load(GameReader& f);
 	void LoadStock(GameReader& f);
-	void Write(BitStreamWriter& f);
+	void Write(BitStreamWriter& f) const;
 	bool Read(BitStreamReader& f);
 	Vec3 GetCenter() const
 	{

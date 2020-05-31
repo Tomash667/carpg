@@ -2639,7 +2639,7 @@ void Unit::LoadStock(GameReader& f)
 }
 
 //=================================================================================================
-void Unit::Write(BitStreamWriter& f)
+void Unit::Write(BitStreamWriter& f) const
 {
 	// main
 	f << id;
@@ -6778,6 +6778,12 @@ void Unit::CastSpell()
 			{
 				target->Standup();
 				target->hp = target->hpmax;
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = target;
+				}
 
 				// particle effect
 				ParticleEmitter* pe = new ParticleEmitter;

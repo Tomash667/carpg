@@ -70,20 +70,20 @@ void BitStreamWriter::Reset()
 	bitstream.Reset();
 }
 
-void BitStreamWriter::WriteItemList(vector<ItemSlot>& items)
+void BitStreamWriter::WriteItemList(const vector<ItemSlot>& items)
 {
 	operator << (items.size());
-	for(ItemSlot& slot : items)
+	for(const ItemSlot& slot : items)
 	{
 		operator << (*slot.item);
 		operator << (slot.count);
 	}
 }
 
-void BitStreamWriter::WriteItemListTeam(vector<ItemSlot>& items)
+void BitStreamWriter::WriteItemListTeam(const vector<ItemSlot>& items)
 {
 	operator << (items.size());
-	for(ItemSlot& slot : items)
+	for(const ItemSlot& slot : items)
 	{
 		operator << (*slot.item);
 		operator << (slot.count);

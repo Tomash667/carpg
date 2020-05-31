@@ -4,12 +4,12 @@
 "/system/system.txt" 984379358 267
 "/system/required.txt" 2510048144 12475
 "/system/quests.txt" 38956962 36554
-"/system/perks.txt" 2012358782 3600
+"/system/perks.txt" 1440202055 3600
 "/system/objects.txt" 4064825779 9787
 "/system/music.txt" 4222252557 817
 "/system/locations.txt" 963039657 3135
 "/system/layout.txt" 3837764956 7010
-"/system/items.txt" 1466789609 62275
+"/system/items.txt" 2427532336 62438
 "/system/dialogs.txt" 1578370150 57814
 "/system/classes.txt" 278257513 2959
 "/system/buildings.txt" 1019049921 7894
@@ -51,8 +51,8 @@
 "/fmod.dll" 998136527 1522176
 "/doc/readme_polish.txt" 727858431 16528
 "/doc/readme_english.txt" 1445731787 19225
-"/doc/changelog_polish.txt" 4004715984 67173
-"/doc/changelog_english.txt" 1046773544 54834
+"/doc/changelog_polish.txt" 1840447459 67679
+"/doc/changelog_english.txt" 726348616 55243
 "/dbghelp.dll" 1706639103 1199296
 "/data/textures/units/zombif.jpg" 3846955551 11369
 "/data/textures/units/zombie.jpg" 1882355995 10361
@@ -1050,6 +1050,6 @@
 "/data/fonts/Dwarf Runes.ttf" 165684846 19916
 "/data/data.pak" 1259983103 1309330
 "/crashrpt_lang.ini" 2973683200 8194
-"/carpg.exe" 829671238 4101632
+"/carpg.exe" 1873995493 4095488
 "/CrashSender1500.exe" 1606687910 1541632
 "/CrashRpt1500.dll" 3755119352 425472

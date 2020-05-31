@@ -20,8 +20,8 @@ public:
 	uint GetSize() const;
 	BitStream& GetBitStream() const { return bitstream; }
 	void Reset();
-	void WriteItemList(vector<ItemSlot>& items);
-	void WriteItemListTeam(vector<ItemSlot>& items);
+	void WriteItemList(const vector<ItemSlot>& items);
+	void WriteItemListTeam(const vector<ItemSlot>& items);
 
 	void operator << (const Item& item);
 	void operator << (const Item* item)

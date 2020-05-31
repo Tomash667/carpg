@@ -3221,6 +3221,21 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				}
 
 				// read items
+				if(pc.action == PlayerAction::LootUnit)
+				{
+					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+					{
+						const string& id = f.ReadString1();
+						if(id.empty())
+							pc.action_unit->slots[i] = nullptr;
+						else
+						{
+							pc.action_unit->slots[i] = Item::TryGet(id);
+							if(pc.action_unit->slots[i])
+								game_res->PreloadItem(pc.action_unit->slots[i]);
+						}
+					}
+				}
 				if(!f.ReadItemListTeam(*pc.chest_trade))
 				{
 					Error("Update single client: Broken LOOT(2).");
@@ -3513,10 +3528,25 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(pc.action_unit && pc.action_unit->IsTeamMember() && game->game_state == GS_LEVEL)
 				{
 					Unit& unit = *pc.action_unit;
+					SubprofileInfo sub;
 					f >> unit.weight;
 					f >> unit.weight_max;
 					f >> unit.gold;
-					unit.stats = unit.data->GetStats(unit.level);
+					f >> sub;
+					f >> unit.effects;
+					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+					{
+						const string& id = f.ReadString1();
+						if(id.empty())
+							unit.slots[i] = nullptr;
+						else
+						{
+							unit.slots[i] = Item::TryGet(id);
+							if(unit.slots[i])
+								game_res->PreloadItem(unit.slots[i]);
+						}
+					}
+					unit.stats = unit.data->GetStats(sub);
 					if(!f.ReadItemListTeam(unit.items))
 						Error("Update single client: Broken %s.", name);
 					else

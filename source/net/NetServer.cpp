@@ -3875,7 +3875,19 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::LOOT:
 			f << (c.id != 0);
 			if(c.id != 0)
+			{
+				if(player.action == PlayerAction::LootUnit)
+				{
+					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+					{
+						if(player.action_unit->slots[i])
+							f << player.action_unit->slots[i]->id;
+						else
+							f.Write0();
+					}
+				}
 				f.WriteItemListTeam(*player.chest_trade);
+			}
 			break;
 		case NetChangePlayer::START_SHARE:
 		case NetChangePlayer::START_GIVE:
@@ -3884,6 +3896,15 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f << u.weight;
 				f << u.weight_max;
 				f << u.gold;
+				f << u.stats->subprofile;
+				f << u.effects;
+				for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+				{
+					if(u.slots[i])
+						f << u.slots[i]->id;
+					else
+						f.Write0();
+				}
 				f.WriteItemListTeam(u.items);
 			}
 			break;

@@ -3280,6 +3280,7 @@ list amulets leveled {
 	a_mage 12
 	a_defense 12
 	a_stamina 12
+	a_mana 12
 	a_warrior 15
 	a_archer 15
 	a_antimagic 15
@@ -3290,6 +3291,9 @@ list rings leveled {
 	r_str 8
 	r_end 8
 	r_dex 8
+	r_int 8
+	r_wis 8
+	r_cha 8
 	r_hp 8
 	r_stamina 8
 	r_def 8
@@ -3308,12 +3312,20 @@ list rings leveled {
 	r_heavy_armor 8
 	r_haggle 8
 	r_carry 8
+	r_gods_magic 8
+	r_concentration 8
+	r_mystic_magic 8
+	r_mana 8
 	r_str2 11
 	r_end2 11
 	r_dex2 11
+	r_int2 11
+	r_wis2 11
+	r_cha2 11
 	r_regeneration 11
 	r_assassin 11
 	r_poison_resistance 11
+	r_mana_regen 11
 }
 
 list potions {

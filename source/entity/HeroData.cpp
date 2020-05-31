@@ -147,7 +147,9 @@ void HeroData::PassTime(int days, bool travel)
 void HeroData::LevelUp()
 {
 	++unit->level;
-	unit->stats = unit->data->GetStats(unit->level);
+	SubprofileInfo sub = unit->stats->subprofile;
+	sub.level = unit->level;
+	unit->stats = unit->data->GetStats(sub);
 	unit->CalculateStats();
 }
 

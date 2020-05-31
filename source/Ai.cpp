@@ -1884,17 +1884,20 @@ void Game::UpdateAi(float dt)
 					look_at = LookAtWalk;
 					run_type = Run;
 
-					if(Unit* target = ai.target; !target || !target->IsAlive())
+					if(ai.target)
 					{
-						// target is dead
-						ai.state = AIController::Idle;
-						ai.st.idle.action = AIController::Idle_None;
-						ai.in_combat = false;
-						ai.change_ai_mode = true;
-						ai.loc_timer = Random(5.f, 10.f);
-						ai.timer = Random(1.f, 2.f);
-						ai.target = nullptr;
-						break;
+						if(Unit* target = ai.target; !target || !target->IsAlive())
+						{
+							// target is dead
+							ai.state = AIController::Idle;
+							ai.st.idle.action = AIController::Idle_None;
+							ai.in_combat = false;
+							ai.change_ai_mode = true;
+							ai.loc_timer = Random(5.f, 10.f);
+							ai.timer = Random(1.f, 2.f);
+							ai.target = nullptr;
+							break;
+						}
 					}
 
 					if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
