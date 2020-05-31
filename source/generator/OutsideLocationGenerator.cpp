@@ -172,7 +172,7 @@ void OutsideLocationGenerator::OnEnter()
 
 		// remove alive units
 		if(need_reset)
-			LoopAndRemove(outside->units, [](Unit* unit) { return unit->IsAlive(); });
+			DeleteElements(outside->units, [](Unit* unit) { return unit->IsAlive(); });
 
 		// recreate colliders
 		game->LoadingStep(game->txGeneratingPhysics);

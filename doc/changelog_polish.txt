@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.15 (2020-03-31):
+Wersja 0.15 (2020-05-31):
 ! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
 + przejście z directx 9 na directx 11
 + nauka nowych receptur alchemicznych [BottledByte & Tomashu]
@@ -26,6 +26,8 @@ Wersja 0.15 (2020-03-31):
 - crash po wczytaniu gry multiplayer gdy drzwi są otwierane/zamykane
 - brak wieści o oczyszczeniu lokalizacji
 - usprawnione wybieranie celu do leczenia przez kapłana
+- wyciek pamięci po ponownym wygenerowaniu wrogów w lesie
+- atuty mobilność/finezja wymagały kondycji a nie zręczności
 
 --------------------------------------------------------------------------------
 Wersja 0.14.1 (2020-04-11):

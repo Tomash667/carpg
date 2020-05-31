@@ -140,24 +140,22 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	team->active_members.push_back(u);
 	team->leader = u;
 
-	u->player = new PlayerController;
-	pc = u->player;
+	pc = new PlayerController;
 	pc->id = 0;
 	pc->is_local = true;
-	pc->Init(*u);
 	pc->name = name;
-	pc->unit->RecalculateWeight();
+	pc->Init(*u, &cc);
+
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
-	cc.Apply(*pc);
+
 	if(quest_mgr->quest_tutorial->finished_tutorial)
 	{
 		u->AddItem(Item::Get("book_adventurer"), 1u, false);
 		quest_mgr->quest_tutorial->finished_tutorial = false;
 	}
-	dialog_context.pc = pc;
 
 	game_level->camera.target = u;
 	team->CalculatePlayersLevel();
@@ -1367,8 +1365,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player = new PlayerController;
 				u->player->id = info.id;
 				u->player->name = info.name;
-				u->player->Init(*u);
-				info.cc.Apply(*u->player);
+				u->player->Init(*u, &info.cc);
 
 				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;

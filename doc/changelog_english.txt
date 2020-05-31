@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.15 (???):
+Version 0.15 (2020-05-31):
 ! cannot load saves from version 0.6.1 or older
 + moved from directx 9 to directx 11
 + learning new alchemy recipes [BottledByte & Tomashu]
@@ -26,6 +26,8 @@ Version 0.15 (???):
 - crash when loading mp game with doors opening/closing
 - missing news after clearing location
 - improved cleric heal targeting priority
+- memory leak after regenerating enemies in forest
+- feats mobility/finese required endurance instead of dexterity
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):

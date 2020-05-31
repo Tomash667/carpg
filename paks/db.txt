@@ -5,7 +5,7 @@
 "/system/required.txt" 2510048144 12475
 "/system/quests.txt" 38956962 36554
 "/system/perks.txt" 2012358782 3600
-"/system/objects.txt" 2634717331 9668
+"/system/objects.txt" 4064825779 9787
 "/system/music.txt" 4222252557 817
 "/system/locations.txt" 963039657 3135
 "/system/layout.txt" 3837764956 7010
@@ -25,19 +25,19 @@
 "/shaders/basic.hlsl" 3022876968 1081
 "/libcurl.dll" 675605786 466432
 "/lang/pl/units.txt" 4174082539 6220
-"/lang/pl/talks.txt" 2143563244 19988
+"/lang/pl/talks.txt" 2573737224 19998
 "/lang/pl/stats.txt" 2509767636 14147
 "/lang/pl/quests.txt" 2006662281 14955
 "/lang/pl/preload.txt" 1468588888 770
 "/lang/pl/objects.txt" 645689231 302
 "/lang/pl/names.txt" 3303570948 4350
-"/lang/pl/menu.txt" 4069675208 43294
+"/lang/pl/menu.txt" 3298314061 43331
 "/lang/pl/items.txt" 2252393301 42486
 "/lang/pl/info.txt" 3869173621 251
-"/lang/pl/dialogs.txt" 1985251322 70910
+"/lang/pl/dialogs.txt" 103115375 70915
 "/lang/pl/buildings.txt" 1737987629 485
 "/lang/en/units.txt" 2018494609 5546
-"/lang/en/talks.txt" 2302136080 20494
+"/lang/en/talks.txt" 725638024 20517
 "/lang/en/stats.txt" 4081760702 13796
 "/lang/en/quests.txt" 331952047 15401
 "/lang/en/preload.txt" 4293383404 696
@@ -46,13 +46,13 @@
 "/lang/en/menu.txt" 2003519078 43380
 "/lang/en/items.txt" 657340447 41487
 "/lang/en/info.txt" 3877320310 311
-"/lang/en/dialogs.txt" 566942792 70712
+"/lang/en/dialogs.txt" 4124242887 70715
 "/lang/en/buildings.txt" 3121533072 479
 "/fmod.dll" 998136527 1522176
-"/doc/readme_polish.txt" 3841896450 16529
-"/doc/readme_english.txt" 2057753055 19226
-"/doc/changelog_polish.txt" 3950537453 67011
-"/doc/changelog_english.txt" 3323228413 54692
+"/doc/readme_polish.txt" 727858431 16528
+"/doc/readme_english.txt" 1445731787 19225
+"/doc/changelog_polish.txt" 4004715984 67173
+"/doc/changelog_english.txt" 1046773544 54834
 "/dbghelp.dll" 1706639103 1199296
 "/data/textures/units/zombif.jpg" 3846955551 11369
 "/data/textures/units/zombie.jpg" 1882355995 10361
@@ -211,6 +211,7 @@
 "/data/textures/particles/flare2.png" 1531967552 5478
 "/data/textures/particles/flare.png" 2760416453 5389
 "/data/textures/particles/czarna_iskra.png" 615738611 489
+"/data/textures/paintings/painting_elf.jpg" 4168196057 87374
 "/data/textures/paintings/obrazy.jpg" 132097518 687637
 "/data/textures/paintings/obraz8.jpg" 226466379 8876
 "/data/textures/paintings/obraz7.jpg" 3214187285 7787
@@ -622,6 +623,7 @@
 "/data/meshes/objects/polki.qmsh" 3066507538 12083
 "/data/meshes/objects/pochodnia.qmsh" 4275569860 17558
 "/data/meshes/objects/paproc.qmsh" 3786611185 3974
+"/data/meshes/objects/painting_elf.qmsh" 3171942490 2094
 "/data/meshes/objects/oltarz.qmsh" 2257415385 2986
 "/data/meshes/objects/ognisko2.qmsh" 3561346874 17399
 "/data/meshes/objects/ognisko.qmsh" 1489856941 17555
@@ -1048,6 +1050,6 @@
 "/data/fonts/Dwarf Runes.ttf" 165684846 19916
 "/data/data.pak" 1259983103 1309330
 "/crashrpt_lang.ini" 2973683200 8194
-"/carpg.exe" 182377545 4094464
+"/carpg.exe" 829671238 4101632
 "/CrashSender1500.exe" 1606687910 1541632
 "/CrashRpt1500.dll" 3755119352 425472

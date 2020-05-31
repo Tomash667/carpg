@@ -4433,7 +4433,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	int credit = unit->player->credit,
 		free_days = unit->player->free_days;
 
-	unit->player->Init(*unit, true);
+	unit->player->Init(*unit, nullptr);
 
 	unit->stats = new UnitStats;
 	unit->stats->fixed = false;

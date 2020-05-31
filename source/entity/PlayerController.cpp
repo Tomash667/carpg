@@ -27,6 +27,7 @@
 #include "SaveState.h"
 #include "ScriptException.h"
 #include "ScriptManager.h"
+#include "Stock.h"
 #include "Team.h"
 #include "Unit.h"
 #include "World.h"
@@ -69,12 +70,13 @@ PlayerController::~PlayerController()
 }
 
 //=================================================================================================
-void PlayerController::Init(Unit& _unit, bool partial)
+void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 {
 	// to prevent sending MP message set temporary as fake unit
 	_unit.fake_unit = true;
 
 	unit = &_unit;
+	unit->player = this;
 	move_tick = 0.f;
 	last_weapon = W_NONE;
 	next_action = NA_NONE;
@@ -87,7 +89,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	recalculate_level = false;
 	split_gold = 0.f;
 
-	if(!partial)
+	if(cc)
 	{
 		godmode = false;
 		noclip = false;
@@ -98,26 +100,58 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		dmg_taken = 0;
 		knocks = 0;
 		arena_fights = 0;
+		learning_points = 0;
+		exp = 0;
+		exp_level = 0;
+		exp_need = GetExpNeed();
 
+		// stats
+		unit->stats->Set(unit->data->GetStatProfile());
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
 		{
+			if(cc->s[i].add)
+				unit->stats->skill[i] += Skill::TAG_BONUS;
 			skill[i].points = 0;
 			skill[i].train = 0;
 			skill[i].train_part = 0;
+			skill[i].apt = unit->stats->skill[i] / 5;
 		}
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			attrib[i].points = 0;
 			attrib[i].train = 0;
 			attrib[i].train_part = 0;
+			attrib[i].apt = (unit->stats->attrib[i] - 50) / 5;
 		}
 
+		// apply perks
+		PerkContext ctx(this, true);
+		perks = cc->taken_perks;
+		for(TakenPerk& tp : perks)
+			tp.Apply(ctx);
+
+		// inventory
+		unit->data->item_script->Parse(*unit);
+		const Item* items[SLOT_MAX];
+		cc->GetStartingItems(items);
+		for(int i = 0; i < SLOT_MAX; ++i)
+			unit->slots[i] = items[i];
+		if(HavePerk(Perk::Get("alchemist_apprentice")))
+			Stock::Get("alchemist_apprentice")->Parse(unit->items);
+		unit->MakeItemsTeam(false);
+		unit->RecalculateWeight();
+		if(HavePerk(Perk::Get("poor")))
+			unit->gold = ::Random(0, 1);
+		else
+			unit->gold += unit->GetBase(SkillId::HAGGLE);
+
+		unit->CalculateStats();
+		unit->CalculateLoad();
+		RecalculateLevel();
+		unit->hp = unit->hpmax = unit->CalculateMaxHp();
+		SetRequiredPoints();
 		if(!quest_mgr->quest_tutorial->in_tutorial)
 			AddAbility(unit->GetClass()->ability);
-		learning_points = 0;
-		exp = 0;
-		exp_level = 0;
-		exp_need = GetExpNeed();
 		InitShortcuts();
 
 		// starting known recipes

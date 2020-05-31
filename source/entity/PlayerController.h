@@ -265,7 +265,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Rest(int days, bool resting, bool travel = false);
 
-	void Init(Unit& unit, bool partial = false);
+	void Init(Unit& unit, CreatedCharacter* cc);
 private:
 	void InitShortcuts();
 	void Train(SkillId s, float points);

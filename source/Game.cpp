@@ -1557,7 +1557,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(!game_level->is_open)
 		return;
 
-	if(Net::IsLocal() && !net->was_client)
+	if(Net::IsLocal() && !net->was_client && !clear)
 	{
 		if(quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			quest_mgr->quest_tournament->Clean();

@@ -175,7 +175,7 @@ perk aggressive {
 perk mobility {
 	cost 2
 	required {
-		end 60
+		dex 60
 		no_perk sluggish
 	}
 	effect {
@@ -185,7 +185,7 @@ perk mobility {
 perk finesse {
 	cost 2
 	required {
-		end 60
+		dex 60
 		no_perk sluggish
 	}
 	effect {
