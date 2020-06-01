@@ -196,9 +196,7 @@ void ItemLoader::InitTokenizer()
 
 	// register item flags (ITEM_TEX_ONLY is not flag in item but property)
 	t.AddKeywords(G_FLAGS, {
-		{ "not_chest", ITEM_NOT_CHEST },
 		{ "not_shop", ITEM_NOT_SHOP },
-		{ "not_alchemist", ITEM_NOT_ALCHEMIST },
 		{ "quest", ITEM_QUEST },
 		{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
 		{ "mage", ITEM_MAGE },

@@ -3802,8 +3802,21 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					}
 					if(ok)
 					{
+						for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+						{
+							const string& id = f.ReadString1();
+							if(id.empty())
+								unit->slots[i] = nullptr;
+							else
+							{
+								unit->slots[i] = Item::TryGet(id);
+								if(unit->slots[i])
+									game_res->PreloadItem(unit->slots[i]);
+							}
+						}
 						if(!f.ReadItemListTeam(unit->items))
 							Error("Update single client: Broken UPDATE_TRADER_INVENTORY(2).");
+						game_gui->inventory->BuildTmpInventory(1);
 					}
 					else
 					{

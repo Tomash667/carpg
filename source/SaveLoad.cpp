@@ -338,18 +338,10 @@ void Game::LoadGameCommon(cstring filename, int slot)
 //=================================================================================================
 bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 {
-	SaveSlot* ptr;
-	if(slot == -1)
-	{
-		static SaveSlot ss;
-		if(!LoadGameHeader(f, ss))
-			throw SaveException(txLoadSignature, "Invalid file signature.");
-		f.SetPos(0);
-		ptr = &ss;
-	}
-	else
-		ptr = &game_gui->saveload->GetSaveSlot(slot);
-	SaveSlot& ss = *ptr;
+	SaveSlot ss;
+	if(!LoadGameHeader(f, ss))
+		throw SaveException(txLoadSignature, "Invalid file signature.");
+	f.SetPos(0);
 	if(ss.load_version < V_0_9)
 		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
 	for(PlayerInfo& info : net->players)
