@@ -3996,6 +3996,13 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			break;
 		case NetChangePlayer::UPDATE_TRADER_INVENTORY:
 			f << c.unit->id;
+			for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+			{
+				if(c.unit->slots[i])
+					f << c.unit->slots[i]->id;
+				else
+					f.Write0();
+			}
 			f.WriteItemListTeam(c.unit->items);
 			break;
 		case NetChangePlayer::PLAYER_STATS:

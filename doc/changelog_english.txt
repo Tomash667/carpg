@@ -1,6 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Fixes:
+- crash sometimes when client gives item to npc hero
+- after client give ring/amulet npc hero it won't be visible until trading again
+
+--------------------------------------------------------------------------------
 Version 0.15 (2020-05-31):
 ! cannot load saves from version 0.6.1 or older
 + moved from directx 9 to directx 11
