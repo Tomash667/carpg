@@ -60,7 +60,6 @@ Game enums & consts
 * ITEM_NOT_SHOP - not generated in shop.
 * ITEM_NOT_MERCHANT - not generated for merchant.
 * ITEM_NOT_BLACKSMITH - not generated for blacksmith.
-* ITEM_NOT_ALCHEMIST - not generated for alchemist.
 
 ### Enum ITEM_TYPE
 * IT_WEAPON

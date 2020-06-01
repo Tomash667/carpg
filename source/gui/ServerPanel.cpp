@@ -207,7 +207,7 @@ void ServerPanel::Draw(ControlDrawData*)
 		pswd = gui->txNo;
 	else
 	{
-		for(int i = 0; i < password.length(); ++i)
+		for(uint i = 0; i < password.length(); ++i)
 			pswd += '*';
 	}
 	gui->DrawText(GameGui::font, Format(txServerText, server_name.c_str(), net->active_players, max_players, pswd->c_str()), 0, Color::Black, r, &r);
