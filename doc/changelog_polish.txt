@@ -4,6 +4,8 @@ Historia zmian
 Poprawki:
 - crash czasami gdy klient daje przedmiot bohaterowi
 - gdy klient daje amulet/pierścień bohaterowni nie widać go aż do kolejnej wymiany przedmiotów
+- u klienta po dołączeniu do serwera zawsze wyświetla się że nie ma hasła
+- crash przy szybkim wczytywaniu gry w multiplayer gdy podmieniło się w tle zapis na niekompatybilny
 
 --------------------------------------------------------------------------------
 Wersja 0.15 (2020-05-31):

@@ -4,6 +4,8 @@ Changelog
 Fixes:
 - crash sometimes when client gives item to npc hero
 - after client give ring/amulet npc hero it won't be visible until trading again
+- in server lobby for clients it was always displayed that there was no password
+- crash in multiplayer when quickloading after save was replaced in background to incompatibile save
 
 --------------------------------------------------------------------------------
 Version 0.15 (2020-05-31):

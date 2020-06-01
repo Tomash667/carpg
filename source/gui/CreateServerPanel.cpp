@@ -98,7 +98,7 @@ void CreateServerPanel::Update(float dt)
 	cont.Update(dt);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
-		Event((GuiEvent)(GuiEvent_Custom + BUTTON_CANCEL));
+		Event((GuiEvent)IdCancel);
 }
 
 //=================================================================================================

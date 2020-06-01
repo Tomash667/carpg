@@ -201,8 +201,16 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// text
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	gui->DrawText(GameGui::font, Format(txServerText, server_name.c_str(), net->active_players, max_players, net->password.empty() ? gui->txNo : gui->txYes),
-		0, Color::Black, r, &r);
+	const string& password = (Net::IsServer() ? net->password : game->enter_pswd);
+	LocalString pswd;
+	if(password.empty())
+		pswd = gui->txNo;
+	else
+	{
+		for(int i = 0; i < password.length(); ++i)
+			pswd += '*';
+	}
+	gui->DrawText(GameGui::font, Format(txServerText, server_name.c_str(), net->active_players, max_players, pswd->c_str()), 0, Color::Black, r, &r);
 }
 
 //=================================================================================================
