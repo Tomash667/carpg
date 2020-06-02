@@ -4056,10 +4056,7 @@ void Level::Write(BitStreamWriter& f)
 			f << bullet.yspeed;
 			f << bullet.timer;
 			f << (bullet.owner ? bullet.owner->id : -1);
-			if(bullet.ability)
-				f << bullet.ability->hash;
-			else
-				f.Write0();
+			f << (bullet.ability ? bullet.ability->hash : 0);
 		}
 
 		// explosions

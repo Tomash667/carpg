@@ -106,7 +106,7 @@ void Net::UpdateClient(float dt)
 		}
 
 		// interpolacja pozycji/obrotu postaci
-		InterpolateUnits(gameDt);
+		InterpolateUnits(dt);
 	}
 
 	bool exit_from_server = false;

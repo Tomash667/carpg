@@ -7,6 +7,8 @@ Poprawki:
 - u klienta po dołączeniu do serwera zawsze wyświetla się że nie ma hasła
 - crash przy szybkim wczytywaniu gry w multiplayer gdy podmieniło się w tle zapis na niekompatybilny
 - w skrzyniach mogło wygenerować eliksiry siły/kondycji/zręczności
+- błąd wczytywania zapisu u klienta gdy ktoś strzelił z łuku
+- błędna interpolacja jednostek przy użyciu komendy 'speed'
 
 --------------------------------------------------------------------------------
 Wersja 0.15 (2020-05-31):
