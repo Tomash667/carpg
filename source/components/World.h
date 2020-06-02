@@ -144,6 +144,7 @@ public:
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
+	Location* GetRandomLocation(delegate<bool(Location*)> pred);
 	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
 	Vec2 GetPos() const { return world_pos; }
 	Vec2 GetWorldBounds() const { return world_bounds; }

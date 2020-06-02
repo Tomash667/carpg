@@ -2568,7 +2568,10 @@ dialog q_evil_mage
 		talk 0
 		choice 1
 		{
-			talk 2
+			if script "pc.unit.clas == \"mage\""
+				talk 8
+			else
+				talk 2
 			talk 3
 			talk 4
 			talk 5

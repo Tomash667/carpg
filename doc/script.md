@@ -461,6 +461,7 @@ Properties:
 * bool temporary - unit is removed when location is repopulated.
 * UNIT_ORDER order - readonly, current unit order.
 * LevelArea@ area - level area unit is in.
+* const string& clas - readonly, class identifier.
 
 Methods:
 

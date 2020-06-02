@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.16 (???):
 ! nie można wczytywać już zapisów z wersji 0.6.2 lub starszej
++ nowe imiona/nazwy, usprawnienia dialogów
 
 --------------------------------------------------------------------------------
 Poprawki:

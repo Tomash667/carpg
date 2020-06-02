@@ -1150,12 +1150,13 @@ dialog q_evil_cleric {
 dialog q_evil_mage {
 	0 "Co siê na mnie gapisz?! Chcesz coœ?"
 	1 "Potrzebujê Ksiêgê przywo³ywania"
-	2 "A po co ci ona? Nie wygl¹dasz na maga."
+	2 "A po co ci ona? Nie wygl¹dasz mi na maga."
 	3 "Zreszt¹ to i tak nie wa¿ne."
 	4 "Cholerni stra¿nicy mi j¹ skonfiskowali."
 	5 "Chyba nie podoba³ im siê pomys³ przywo³ywania ¿ywio³aków."
 	6 "Koniec rozmowy"
 	7 "Zostaw mnie w spokoju."
+	8 "A po co ci ona? Chcesz coœ przywo³aæ?"
 }
 
 //==============================================================================

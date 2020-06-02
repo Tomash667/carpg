@@ -611,6 +611,7 @@ public:
 	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
 	bool IsFollowingTeamMember() const { return IsFollower() && GetOrder() == ORDER_FOLLOW; }
 	Class* GetClass() const { return data->clas; }
+	const string& GetClassId() const { return data->clas->id; }
 	bool IsUsingMp() const
 	{
 		if(data->clas)

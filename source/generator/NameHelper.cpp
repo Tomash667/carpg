@@ -2,6 +2,7 @@
 #include "NameHelper.h"
 
 #include "Language.h"
+#include "OutsideLocation.h"
 #include "Unit.h"
 #include "World.h"
 
@@ -34,10 +35,11 @@ void NameHelper::GenerateHeroName(Class* clas, bool crazy, string& hero_name)
 		return;
 	}
 
-	if(Rand() % 2 == 0 && !clas->names.empty())
-		hero_name = RandomItem(clas->names);
+	int index = Rand() % (clas->names.size() + name_random.size());
+	if(index < (int)clas->names.size())
+		hero_name = clas->names[index];
 	else
-		hero_name = RandomItem(name_random);
+		hero_name = name_random[index - clas->names.size()];
 
 	hero_name += " ";
 
@@ -50,7 +52,10 @@ void NameHelper::GenerateHeroName(Class* clas, bool crazy, string& hero_name)
 	else if((type == 0 || type == 4) && !world->GetLocations().empty())
 	{
 		hero_name += txNameFrom;
-		hero_name += world->GetRandomSettlement()->name;
+		if(IsSet(clas->flags, Class::F_FROM_FOREST))
+			hero_name += world->GetRandomLocation([](Location* loc) { return loc->type == L_OUTSIDE && loc->target == FOREST; })->name;
+		else
+			hero_name += world->GetRandomSettlement()->name;
 	}
 	else if(type == 0 || type == 1 || type == 4 || type == 5)
 	{

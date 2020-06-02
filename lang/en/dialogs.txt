@@ -1147,12 +1147,13 @@ dialog q_evil_cleric {
 dialog q_evil_mage {
 	0 "What are you staring at me?! Do you want something?"
 	1 "I need Summoning book"
-	2 "And what do you need it? You do not look like a mage."
+	2 "And why do you need it? You do not look like a mage."
 	3 "Besides, it not matter now."
 	4 "Damn guards confiscated it from me."
 	5 "I do not think they liked the idea of summoning elementals."
 	6 "End dialog"
 	7 "Leave me alone."
+	8 "And why do you need it? You want to summon something?"
 }
 
 //==============================================================================

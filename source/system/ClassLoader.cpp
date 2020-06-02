@@ -56,7 +56,8 @@ void ClassLoader::InitTokenizer()
 
 	t.AddKeywords(G_FLAGS, {
 		{ "mp_bar", Class::F_MP_BAR },
-		{ "mage_items", Class::F_MAGE_ITEMS }
+		{ "mage_items", Class::F_MAGE_ITEMS },
+		{ "from_forest", Class::F_FROM_FOREST }
 		});
 }
 
