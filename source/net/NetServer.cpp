@@ -170,7 +170,7 @@ void Net::UpdateServer(float dt)
 				info.pc->UpdateCooldown(gameDt);
 		}
 
-		InterpolatePlayers(gameDt);
+		InterpolatePlayers(dt);
 		UpdateFastTravel(gameDt);
 		game->pc->unit->changed = true;
 	}

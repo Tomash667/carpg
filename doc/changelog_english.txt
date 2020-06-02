@@ -11,6 +11,8 @@ Fixes:
 - in server lobby for clients it was always displayed that there was no password
 - crash in multiplayer when quickloading after save was replaced in background to incompatibile save
 - it was possible to spawn strength/endurance/dexterity potion in chest
+- failed to load game for client when someone shoot from bow
+- invalid units interpolation when using 'speed' command
 
 --------------------------------------------------------------------------------
 Version 0.15 (2020-05-31):
