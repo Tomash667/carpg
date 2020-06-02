@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+struct BulletCallback;
+
+//-----------------------------------------------------------------------------
 struct Bullet
 {
 	Unit* owner;
@@ -12,10 +15,15 @@ struct Bullet
 	TexturePtr tex;
 	TrailParticleEmitter* trail;
 	ParticleEmitter* pe;
-	bool remove;
 
 	static const int MIN_SIZE = 41;
 
-	void Save(FileWriter& f);
+	bool Update(float dt, LevelArea& area);
+	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f, TmpLevelArea& tmp_area);
+
+private:
+	void OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback);
 };

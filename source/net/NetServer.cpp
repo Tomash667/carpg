@@ -1795,7 +1795,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(info.devmode)
 			{
 				if(game->game_state == GS_LEVEL)
-					game->GiveDmg(unit, unit.hpmax);
+					unit.GiveDmg(unit.hpmax);
 			}
 			else
 				Error("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str());
@@ -1974,7 +1974,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!target)
 						Error("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), id);
 					else if(target->IsAlive())
-						game->GiveDmg(*target, target->hpmax);
+						target->GiveDmg(target->hpmax);
 				}
 			}
 			break;
@@ -2346,74 +2346,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 
 				Door* door = game_level->FindDoor(id);
-				if(!door)
-				{
-					Error("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), id);
-					break;
-				}
-
-				bool ok = true;
-				if(is_closing)
-				{
-					// closing door
-					if(door->state == Door::Opened)
-					{
-						door->state = Door::Closing;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-					}
-					else if(door->state == Door::Opening)
-					{
-						door->state = Door::Closing2;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					}
-					else if(door->state == Door::Opening2)
-					{
-						door->state = Door::Closing;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					}
-					else
-						ok = false;
-				}
+				if(door)
+					door->SetState(is_closing);
 				else
-				{
-					// opening door
-					if(door->state == Door::Closed)
-					{
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-					}
-					else if(door->state == Door::Closing)
-					{
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening2;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					}
-					else if(door->state == Door::Closing2)
-					{
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					}
-					else
-						ok = false;
-				}
-
-				if(ok && Rand() % 2 == 0)
-				{
-					Sound* sound;
-					if(is_closing && Rand() % 2 == 0)
-						sound = game_res->sDoorClose;
-					else
-						sound = game_res->sDoor[Rand() % 3];
-					sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
-				}
-
-				// send to other players
-				NetChange& c = Add1(changes);
-				c.type = NetChange::USE_DOOR;
-				c.id = id;
-				c.count = (is_closing ? 1 : 0);
+					Error("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), id);
 			}
 			break;
 		// leader wants to travel to location
@@ -2863,7 +2799,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					Unit* target = game_level->FindUnit(id);
 					if(target)
-						game->GiveDmg(*target, 100.f);
+						target->GiveDmg(100.f);
 					else
 						Error("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), id);
 				}

@@ -210,7 +210,6 @@ public:
 	int dungeon_level;
 	InsideLocationLevel* lvl; // null when in outside location
 	GameCamera camera;
-	float lights_dt;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;
 

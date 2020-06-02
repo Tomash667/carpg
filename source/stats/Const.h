@@ -25,14 +25,16 @@ const float T_CONNECT = 5.f; // wait time when trying to connect to server
 
 const int MAX_LEVEL = 25;
 
-extern const float ALERT_RANGE;
-extern const float ALERT_SPAWN_RANGE;
-extern const float PICKUP_RANGE;
-extern const float ARROW_TIMER;
-extern const float MIN_H;
+const float ALERT_RANGE = 20.f;
+const float ALERT_SPAWN_RANGE = 25.f;
+const float PICKUP_RANGE = 2.f;
+const float ARROW_TIMER = 5.f;
+const float TRAP_ARROW_SPEED = 45.f;
+const float MIN_H = 1.5f;
+const float TRAIN_KILL_RATIO = 0.1f;
 
-extern const float HIT_SOUND_DIST;
-extern const float ARROW_HIT_SOUND_DIST;
-extern const float SHOOT_SOUND_DIST;
-extern const float SPAWN_SOUND_DIST;
-extern const float MAGIC_SCROLL_SOUND_DIST;
+const float HIT_SOUND_DIST = 1.5f;
+const float ARROW_HIT_SOUND_DIST = 1.5f;
+const float SHOOT_SOUND_DIST = 1.f;
+const float SPAWN_SOUND_DIST = 1.5f;
+const float MAGIC_SCROLL_SOUND_DIST = 1.5f;

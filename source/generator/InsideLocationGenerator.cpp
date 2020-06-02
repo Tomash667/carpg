@@ -430,35 +430,28 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 				if(Rand() % 100 < base.door_chance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 				{
+					LockId lock;
+					bool open;
+
+					if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
+					{
+						lock = LOCK_ORCS;
+						open = false;
+					}
+					else
+					{
+						lock = LOCK_NONE;
+						open = (Rand() % 100 < base.door_open);
+					}
+
 					Door* door = new Door;
-					door->Register();
-					lvl.doors.push_back(door);
 					door->pt = Int2(x, y);
 					door->pos = o->pos;
 					door->rot = o->rot.y;
-					door->state = Door::Closed;
-					door->mesh_inst = new MeshInstance(game_res->aDoor);
-					door->mesh_inst->base_speed = 2.f;
-					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(game_level->shape_door);
-					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
-					door->locked = LOCK_NONE;
-					btTransform& tr = door->phy->getWorldTransform();
-					Vec3 pos = door->pos;
-					pos.y += Door::HEIGHT;
-					tr.setOrigin(ToVector3(pos));
-					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					phy_world->addCollisionObject(door->phy, CG_DOOR);
-
-					if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
-						door->locked = LOCK_ORCS;
-					else if(Rand() % 100 < base.door_open)
-					{
-						door->state = Door::Opened;
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
+					door->locked = lock;
+					door->state = open ? Door::Opened : Door::Closed;
+					door->Init();
+					lvl.doors.push_back(door);
 				}
 				else
 					lvl.map[x + y * lvl.w].type = HOLE_FOR_DOORS;
@@ -1265,12 +1258,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 				{
 					Door* door = lvl.FindDoor(Int2(x, y));
 					if(door && door->state == Door::Closed)
-					{
-						door->state = Door::Opened;
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
+						door->OpenInstant();
 				}
 			}
 		}
@@ -1402,12 +1390,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 				{
 					Door* door = lvl.FindDoor(*it2);
 					if(door && door->state == Door::Closed)
-					{
-						door->state = Door::Opened;
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
+						door->OpenInstant();
 				}
 			}
 		}

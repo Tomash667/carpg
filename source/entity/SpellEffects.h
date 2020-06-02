@@ -12,6 +12,7 @@ struct Explo
 
 	static const int MIN_SIZE = 21;
 
+	bool Update(float dt, LevelArea& area);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void Write(BitStreamWriter& f);
@@ -37,13 +38,13 @@ struct Electro : public EntityType<Electro>
 	vector<Entity<Unit>> hitted;
 	float dmg;
 	bool valid, hitsome;
-	Vec3 start_pos;
+	Vec3 startPos;
 
 	static const int MIN_SIZE = 5;
 
 	~Electro();
 	void AddLine(const Vec3& from, const Vec3& to, float t = 0);
-	void Update(float dt);
+	bool Update(float dt);
 	void UpdateColor(Line& line);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
@@ -58,6 +59,7 @@ struct Drain
 	ParticleEmitter* pe;
 	float t;
 
+	bool Update(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 };

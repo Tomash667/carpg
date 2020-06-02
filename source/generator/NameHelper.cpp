@@ -20,7 +20,7 @@ void NameHelper::SetHeroNames()
 }
 
 //=================================================================================================
-void NameHelper::GenerateHeroName(HeroData& hero)
+void NameHelper::GenerateHeroName(Hero& hero)
 {
 	return GenerateHeroName(hero.unit->GetClass(), IsSet(hero.unit->data->flags, F_CRAZY), hero.name);
 }

@@ -751,7 +751,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(Unit* target = game->pc->data.GetTargetUnit(); target && target->IsAlive())
 		{
 			if(Net::IsLocal())
-				game->GiveDmg(*target, target->hpmax);
+				target->GiveDmg(target->hpmax);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -782,7 +782,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		break;
 	case CMD_SUICIDE:
 		if(Net::IsLocal())
-			game->GiveDmg(*game->pc->unit, game->pc->unit->hpmax);
+			game->pc->unit->GiveDmg(game->pc->unit->hpmax);
 		else
 			Net::PushChange(NetChange::CHEAT_SUICIDE);
 		break;
@@ -1453,7 +1453,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(Net::IsLocal())
 			{
 				if(cmd.cmd == CMD_HURT)
-					game->GiveDmg(*u, 100.f);
+					u->GiveDmg(100.f);
 				else if(cmd.cmd == CMD_BREAK_ACTION)
 					u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				else

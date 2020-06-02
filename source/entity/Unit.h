@@ -6,7 +6,7 @@
 #include "Class.h"
 #include "MeshInstance.h"
 #include "HumanData.h"
-#include "HeroData.h"
+#include "Hero.h"
 #include "PlayerController.h"
 #include "Usable.h"
 #include "Effect.h"
@@ -287,7 +287,7 @@ struct Unit : public EntityType<Unit>
 	UnitData* data;
 	PlayerController* player;
 	AIController* ai;
-	HeroData* hero;
+	Hero* hero;
 	Human* human_data;
 	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
@@ -411,7 +411,7 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetPhysicsPos() const
 	{
 		Vec3 p = pos;
-		p.y += max(1.5f, GetUnitHeight()) * 0.5f + 0.1f;
+		p.y += max(MIN_H, GetUnitHeight()) * 0.5f + 0.1f;
 		return p;
 	}
 	Vec3 GetHeadPoint() const
@@ -969,6 +969,16 @@ public:
 	void ChangeBase(UnitData* ud, bool update_items = false);
 	void MoveToArea(LevelArea* area, const Vec3& pos);
 	void Kill();
+	enum DamageFlags
+	{
+		DMG_NO_BLOOD = 1 << 0,
+		DMG_MAGICAL = 1 << 1
+	};
+	void GiveDmg(float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
+	void AttackReaction(Unit& attacker);
+	bool DoAttack();
+	bool DoShieldSmash();
+	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 };
 
 //-----------------------------------------------------------------------------

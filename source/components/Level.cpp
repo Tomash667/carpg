@@ -1290,38 +1290,19 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				else if(token == "door" || token == "doorc" || token == "doorl" || token == "door2")
 				{
 					Door* door = new Door;
-					door->Register();
 					door->pos = pos;
 					door->rot = Clip(pt.rot.y + rot);
-					door->state = Door::Opened;
-					door->door2 = (token == "door2");
-					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
-					door->mesh_inst->base_speed = 2.f;
-					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(shape_door);
-					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-
-					btTransform& tr = door->phy->getWorldTransform();
-					Vec3 pos = door->pos;
-					pos.y += Door::HEIGHT;
-					tr.setOrigin(ToVector3(pos));
-					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					phy_world->addCollisionObject(door->phy, CG_DOOR);
-
 					if(token != "door") // door2 are closed now, this is intended
 					{
 						door->state = Door::Closed;
 						if(token == "doorl")
-							door->locked = 1;
+							door->locked = LOCK_UNLOCKABLE;
 					}
 					else
-					{
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
-
+						door->state = Door::Opened;
+					door->door2 = (token == "door2");
+					door->Init();
 					area.doors.push_back(door);
 				}
 				else if(token == "arena")
@@ -3191,42 +3172,13 @@ void Level::OnRevisitLevel()
 {
 	for(LevelArea& area : ForEachArea())
 	{
-		// odtwórz skrzynie
-		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-		{
-			Chest& chest = **it;
+		// recreate chests
+		for(Chest* chest : area.chests)
+			chest->mesh_inst = new MeshInstance(game_res->aChest);
 
-			chest.mesh_inst = new MeshInstance(game_res->aChest);
-		}
-
-		// odtwórz drzwi
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-
-			// animowany model
-			door.mesh_inst = new MeshInstance(door.door2 ? game_res->aDoor2 : game_res->aDoor);
-			door.mesh_inst->base_speed = 2.f;
-
-			// fizyka
-			door.phy = new btCollisionObject;
-			door.phy->setCollisionShape(shape_door);
-			door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
-			btTransform& tr = door.phy->getWorldTransform();
-			Vec3 pos = door.pos;
-			pos.y += Door::HEIGHT;
-			tr.setOrigin(ToVector3(pos));
-			tr.setRotation(btQuaternion(door.rot, 0, 0));
-			phy_world->addCollisionObject(door.phy, CG_DOOR);
-
-			// czy otwarte
-			if(door.state == Door::Opened)
-			{
-				btVector3& pos = door.phy->getWorldTransform().getOrigin();
-				pos.setY(pos.y() - 100.f);
-				door.mesh_inst->SetToEnd(&door.mesh_inst->mesh->anims[0]);
-			}
-		}
+		// recreate doors
+		for(Door* door : area.doors)
+			door->Recreate();
 	}
 }
 
@@ -3880,7 +3832,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 			for(Unit* u : area.units)
 			{
 				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
-					game->GiveDmg(*u, u->hp);
+					u->GiveDmg(u->hp);
 			}
 		}
 		break;
@@ -3890,7 +3842,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 			for(Unit* u : area.units)
 			{
 				if(u->IsAlive() && !u->IsPlayer() && u != ignore)
-					game->GiveDmg(*u, u->hp);
+					u->GiveDmg(u->hp);
 			}
 		}
 		break;
@@ -4039,35 +3991,10 @@ void Level::Write(BitStreamWriter& f)
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
 
-	if(!net->mp_load)
-		return;
-
-	for(LevelArea& area : ForEachArea())
+	if(net->mp_load)
 	{
-		TmpLevelArea& tmp_area = *area.tmp;
-
-		// bullets
-		f.Write(tmp_area.bullets.size());
-		for(Bullet& bullet : tmp_area.bullets)
-		{
-			f << bullet.pos;
-			f << bullet.rot;
-			f << bullet.speed;
-			f << bullet.yspeed;
-			f << bullet.timer;
-			f << (bullet.owner ? bullet.owner->id : -1);
-			f << (bullet.ability ? bullet.ability->hash : 0);
-		}
-
-		// explosions
-		f.Write(tmp_area.explos.size());
-		for(Explo* explo : tmp_area.explos)
-			explo->Write(f);
-
-		// electros
-		f.Write(tmp_area.electros.size());
-		for(Electro* electro : tmp_area.electros)
-			electro->Write(f);
+		for(LevelArea& area : ForEachArea())
+			area.tmp->Write(f);
 	}
 }
 
@@ -4102,146 +4029,12 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	else
 		game->SetMusic(music);
 
-	if(!net->mp_load)
-		return true;
-
-	for(LevelArea& area : ForEachArea())
+	if(net->mp_load)
 	{
-		TmpLevelArea& tmp_area = *area.tmp;
-
-		// bullets
-		uint count;
-		f >> count;
-		if(!f.Ensure(count * Bullet::MIN_SIZE))
+		for(LevelArea& area : ForEachArea())
 		{
-			Error("Read level: Broken bullet count.");
-			return false;
-		}
-		tmp_area.bullets.resize(count);
-		for(Bullet& bullet : tmp_area.bullets)
-		{
-			f >> bullet.pos;
-			f >> bullet.rot;
-			f >> bullet.speed;
-			f >> bullet.yspeed;
-			f >> bullet.timer;
-			int unit_id = f.Read<int>();
-			int ability_hash = f.Read<int>();
-			if(!f)
-			{
-				Error("Read level: Broken bullet.");
+			if(!area.tmp->Read(f))
 				return false;
-			}
-			if(ability_hash == 0)
-			{
-				bullet.ability = nullptr;
-				bullet.mesh = game_res->aArrow;
-				bullet.pe = nullptr;
-				bullet.remove = false;
-				bullet.tex = nullptr;
-				bullet.tex_size = 0.f;
-
-				TrailParticleEmitter* tpe = new TrailParticleEmitter;
-				tpe->fade = 0.3f;
-				tpe->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe->color2 = Vec4(1, 1, 1, 0);
-				tpe->Init(50);
-				tmp_area.tpes.push_back(tpe);
-				bullet.trail = tpe;
-			}
-			else
-			{
-				Ability* ability_ptr = Ability::Get(ability_hash);
-				if(!ability_ptr)
-				{
-					Error("Read level: Missing ability '%u'.", ability_hash);
-					return false;
-				}
-
-				Ability& ability = *ability_ptr;
-				bullet.ability = &ability;
-				bullet.mesh = ability.mesh;
-				bullet.tex = ability.tex;
-				bullet.tex_size = ability.size;
-				bullet.remove = false;
-				bullet.trail = nullptr;
-				bullet.pe = nullptr;
-
-				if(ability.tex_particle)
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.1f;
-					pe->life = -1;
-					pe->particle_life = 0.5f;
-					pe->emisions = -1;
-					pe->spawn_min = 3;
-					pe->spawn_max = 4;
-					pe->max_particles = 50;
-					pe->pos = bullet.pos;
-					pe->speed_min = Vec3(-1, -1, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-					tmp_area.pes.push_back(pe);
-					bullet.pe = pe;
-				}
-			}
-
-			if(unit_id != -1)
-			{
-				bullet.owner = FindUnit(unit_id);
-				if(!bullet.owner)
-				{
-					Error("Read level: Missing bullet owner %d.", unit_id);
-					return false;
-				}
-			}
-			else
-				bullet.owner = nullptr;
-		}
-
-		// explosions
-		f >> count;
-		if(!f.Ensure(count * Explo::MIN_SIZE))
-		{
-			Error("Read level: Broken explosion count.");
-			return false;
-		}
-		tmp_area.explos.resize(count);
-		for(Explo*& explo : tmp_area.explos)
-		{
-			explo = new Explo;
-			if(!explo->Read(f))
-			{
-				Error("Read level: Broken explosion.");
-				return false;
-			}
-		}
-
-		// electro effects
-		f >> count;
-		if(!f.Ensure(count * Electro::MIN_SIZE))
-		{
-			Error("Read level: Broken electro count.");
-			return false;
-		}
-		tmp_area.electros.resize(count);
-		for(Electro*& electro : tmp_area.electros)
-		{
-			electro = new Electro;
-			electro->area = &area;
-			if(!electro->Read(f))
-			{
-				Error("Read level: Broken electro.");
-				return false;
-			}
 		}
 	}
 

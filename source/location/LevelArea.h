@@ -6,6 +6,7 @@
 #include "SpellEffects.h"
 #include "Blood.h"
 #include "GameLight.h"
+#include <Mesh.h>
 
 //-----------------------------------------------------------------------------
 struct LightMask
@@ -59,6 +60,7 @@ struct LevelArea
 
 	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id), have_terrain(have_terrain), tmp(nullptr) {}
 	~LevelArea();
+	void Update(float dt);
 	void Save(GameWriter& f);
 	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
 	void Write(BitStreamWriter& f);
@@ -80,6 +82,9 @@ struct LevelArea
 	bool RemoveItemFromChest(const Item* item);
 	Door* FindDoor(const Int2& pt);
 	bool IsActive() const { return tmp != nullptr; }
+	void SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted);
+	bool CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint);
+	bool CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 };
 
 //-----------------------------------------------------------------------------
@@ -87,17 +92,20 @@ struct LevelArea
 struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
 {
 	LevelArea* area;
-	vector<Bullet> bullets;
+	vector<Bullet*> bullets;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*> tpes;
 	vector<Explo*> explos;
 	vector<Electro*> electros;
 	vector<Drain> drains;
 	vector<CollisionObject> colliders;
+	float lights_dt;
 
 	void Clear();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 };
 
 //-----------------------------------------------------------------------------

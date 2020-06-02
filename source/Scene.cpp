@@ -243,17 +243,17 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
-			door.mesh_inst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(door.pos, door.mesh_inst->mesh->head.radius))
+			door.meshInst->mesh->EnsureIsLoaded();
+			if(frustum.SphereToFrustum(door.pos, door.meshInst->mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
-				if(!door.mesh_inst->groups[0].anim || door.mesh_inst->groups[0].time == 0.f)
-					node->SetMesh(door.mesh_inst->mesh);
+				if(!door.meshInst->groups[0].anim || door.meshInst->groups[0].time == 0.f)
+					node->SetMesh(door.meshInst->mesh);
 				else
 				{
-					door.mesh_inst->SetupBones();
-					node->SetMesh(door.mesh_inst);
+					door.meshInst->SetupBones();
+					node->SetMesh(door.meshInst);
 				}
 				node->center = door.pos;
 				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
@@ -294,9 +294,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// bullets
 	if(IsSet(draw_flags, DF_BULLETS))
 	{
-		for(vector<Bullet>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
+		for(vector<Bullet*>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
 		{
-			Bullet& bullet = *it;
+			Bullet& bullet = **it;
 			if(bullet.mesh)
 			{
 				bullet.mesh->EnsureIsLoaded();
@@ -319,9 +319,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				if(frustum.SphereToFrustum(bullet.pos, bullet.tex_size))
 				{
 					Billboard& bb = Add1(draw_batch.billboards);
-					bb.pos = it->pos;
-					bb.size = it->tex_size;
-					bb.tex = it->tex;
+					bb.pos = bullet.pos;
+					bb.size = bullet.tex_size;
+					bb.tex = bullet.tex;
 				}
 			}
 		}

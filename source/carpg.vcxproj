@@ -223,7 +223,7 @@
     <ClInclude Include="entity\CreatedCharacter.h" />
     <ClInclude Include="entity\Door.h" />
     <ClInclude Include="entity\GroundItem.h" />
-    <ClInclude Include="entity\HeroData.h" />
+    <ClInclude Include="entity\Hero.h" />
     <ClInclude Include="entity\HeroPlayerCommon.h" />
     <ClInclude Include="entity\HumanData.h" />
     <ClInclude Include="entity\ItemSlot.h" />
@@ -430,7 +430,7 @@
     <ClCompile Include="entity\CreatedCharacter.cpp" />
     <ClCompile Include="entity\Door.cpp" />
     <ClCompile Include="entity\GroundItem.cpp" />
-    <ClCompile Include="entity\HeroData.cpp" />
+    <ClCompile Include="entity\Hero.cpp" />
     <ClCompile Include="entity\HumanData.cpp" />
     <ClCompile Include="entity\ItemSlot.cpp" />
     <ClCompile Include="entity\GameLight.cpp" />

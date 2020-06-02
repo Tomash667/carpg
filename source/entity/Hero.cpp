@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "HeroData.h"
+#include "Hero.h"
 
 #include "Const.h"
 #include "Level.h"
@@ -21,7 +21,7 @@ namespace old
 }
 
 //=================================================================================================
-void HeroData::Init(Unit& _unit)
+void Hero::Init(Unit& _unit)
 {
 	know_name = false;
 	team_member = false;
@@ -43,7 +43,7 @@ void HeroData::Init(Unit& _unit)
 }
 
 //=================================================================================================
-void HeroData::Save(FileWriter& f)
+void Hero::Save(FileWriter& f)
 {
 	f << name;
 	f << know_name;
@@ -59,7 +59,7 @@ void HeroData::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void HeroData::Load(FileReader& f)
+void Hero::Load(FileReader& f)
 {
 	f >> name;
 	f >> know_name;
@@ -111,7 +111,7 @@ void HeroData::Load(FileReader& f)
 }
 
 //=================================================================================================
-int HeroData::JoinCost() const
+int Hero::JoinCost() const
 {
 	if(IsSet(unit->data->flags, F_CRAZY))
 		return (unit->level - 1) * 100 + Random(50, 150);
@@ -120,7 +120,7 @@ int HeroData::JoinCost() const
 }
 
 //=================================================================================================
-void HeroData::PassTime(int days, bool travel)
+void Hero::PassTime(int days, bool travel)
 {
 	// koñczenie efektów
 	float natural_mod;
@@ -139,7 +139,7 @@ void HeroData::PassTime(int days, bool travel)
 }
 
 //=================================================================================================
-void HeroData::LevelUp()
+void Hero::LevelUp()
 {
 	++unit->level;
 	SubprofileInfo sub = unit->stats->subprofile;
@@ -149,7 +149,7 @@ void HeroData::LevelUp()
 }
 
 //=================================================================================================
-void HeroData::SetupMelee()
+void Hero::SetupMelee()
 {
 	if(IsSet(unit->data->flags2, F2_MELEE))
 		melee = true;
@@ -158,7 +158,7 @@ void HeroData::SetupMelee()
 }
 
 //=================================================================================================
-void HeroData::AddExp(int exp)
+void Hero::AddExp(int exp)
 {
 	if(unit->level == MAX_LEVEL)
 		return;
@@ -172,7 +172,7 @@ void HeroData::AddExp(int exp)
 }
 
 //=================================================================================================
-float HeroData::GetExpMod() const
+float Hero::GetExpMod() const
 {
 	int dif = unit->level - team->players_level;
 	if(IsSet(unit->data->flags2, F2_FAST_LEARNER))

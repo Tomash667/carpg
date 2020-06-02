@@ -2,16 +2,61 @@
 #include "SpellEffects.h"
 
 #include "Ability.h"
+#include "AIController.h"
 #include "BitStreamFunc.h"
 #include "GameResources.h"
+#include "Level.h"
 #include "LevelArea.h"
+#include "Net.h"
 #include "SaveState.h"
 #include "Unit.h"
 
 #include <ParticleSystem.h>
 #include <ResourceManager.h>
+#include <SoundManager.h>
 
 EntityType<Electro>::Impl EntityType<Electro>::impl;
+
+//=================================================================================================
+bool Explo::Update(float dt, LevelArea& area)
+{
+	// increase size
+	bool delete_me = false;
+	size += sizemax * dt;
+	if(size >= sizemax)
+	{
+		delete_me = true;
+		size = sizemax;
+	}
+
+	if(Net::IsLocal())
+	{
+		// deal damage
+		Unit* owner = this->owner;
+		const float dmg = this->dmg * Lerp(1.f, 0.1f, size / sizemax);
+		for(Unit* unit : area.units)
+		{
+			if(!unit->IsAlive() || (owner && owner->IsFriend(*unit, true)))
+				continue;
+
+			if(!IsInside(hitted, unit))
+			{
+				Box box;
+				unit->GetBox(box);
+
+				if(SphereToBox(pos, size, box))
+				{
+					unit->GiveDmg(dmg, owner, nullptr, Unit::DMG_NO_BLOOD | Unit::DMG_MAGICAL);
+					hitted.push_back(unit);
+				}
+			}
+		}
+	}
+
+	if(delete_me)
+		delete this;
+	return delete_me;
+}
 
 //=================================================================================================
 void Explo::Save(FileWriter& f)
@@ -135,7 +180,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 }
 
 //=================================================================================================
-void Electro::Update(float dt)
+bool Electro::Update(float dt)
 {
 	for(Line& line : lines)
 	{
@@ -150,6 +195,203 @@ void Electro::Update(float dt)
 		else
 			UpdateColor(line);
 	}
+
+	if(!Net::IsLocal())
+	{
+		if(lines.back().t >= 0.5f)
+		{
+			delete this;
+			return true;
+		}
+	}
+	else if(valid)
+	{
+		if(lines.back().t >= 0.25f)
+		{
+			Unit* target = hitted.back();
+			Unit* owner = this->owner;
+			if(!target || !owner)
+			{
+				valid = false;
+				return false;
+			}
+
+			const Vec3 target_pos = lines.back().to;
+
+			// deal damage
+			if(!owner->IsFriend(*target, true))
+			{
+				if(target->IsAI() && owner->IsAlive())
+					target->ai->HitReaction(startPos);
+				target->GiveDmg(dmg, owner, nullptr, Unit::DMG_NO_BLOOD | Unit::DMG_MAGICAL);
+			}
+
+			// play sound
+			if(ability->sound_hit)
+				sound_mgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
+
+			// add particles
+			if(ability->tex_particle)
+			{
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = ability->tex_particle;
+				pe->emision_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 8;
+				pe->spawn_max = 12;
+				pe->max_particles = 12;
+				pe->pos = target_pos;
+				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+				pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
+				pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+				pe->size = ability->size_particle;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area->tmp->pes.push_back(pe);
+			}
+
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::ELECTRO_HIT;
+				c.pos = target_pos;
+			}
+
+			if(dmg >= 10.f)
+			{
+				static vector<pair<Unit*, float>> targets;
+
+				// hit another target
+				for(Unit* unit : area->units)
+				{
+					if(!unit->IsAlive() || IsInside(hitted, unit))
+						continue;
+
+					float dist = Vec3::Distance(unit->pos, target->pos);
+					if(dist <= 5.f)
+						targets.push_back(pair<Unit*, float>(unit, dist));
+				}
+
+				if(!targets.empty())
+				{
+					if(targets.size() > 1)
+					{
+						std::sort(targets.begin(), targets.end(), [](const pair<Unit*, float>& target1, const pair<Unit*, float>& target2)
+						{
+							return target1.second < target2.second;
+						});
+					}
+
+					Unit* newTarget = nullptr;
+					float dist;
+					for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
+					{
+						Vec3 hitpoint;
+						Unit* new_hitted;
+						if(game_level->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
+						{
+							if(new_hitted == it2->first)
+							{
+								newTarget = it2->first;
+								dist = it2->second;
+								break;
+							}
+						}
+					}
+
+					if(newTarget)
+					{
+						// found another target
+						dmg = min(dmg / 2, Lerp(dmg, dmg / 5, dist / 5));
+						valid = true;
+						hitted.push_back(newTarget);
+						Vec3 from = lines.back().to;
+						Vec3 to = newTarget->GetCenter();
+						AddLine(from, to);
+
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::UPDATE_ELECTRO;
+							c.e_id = id;
+							c.pos = to;
+						}
+					}
+					else
+					{
+						// noone to hit
+						valid = false;
+					}
+
+					targets.clear();
+				}
+				else
+					valid = false;
+			}
+			else
+			{
+				// already hit enough targets
+				valid = false;
+			}
+		}
+	}
+	else
+	{
+		if(hitsome && lines.back().t >= 0.25f)
+		{
+			const Vec3 target_pos = lines.back().to;
+			hitsome = false;
+
+			if(ability->sound_hit)
+				sound_mgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
+
+			// particles
+			if(ability->tex_particle)
+			{
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = ability->tex_particle;
+				pe->emision_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 8;
+				pe->spawn_max = 12;
+				pe->max_particles = 12;
+				pe->pos = target_pos;
+				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+				pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
+				pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+				pe->size = ability->size_particle;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area->tmp->pes.push_back(pe);
+			}
+
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::ELECTRO_HIT;
+				c.pos = target_pos;
+			}
+		}
+		if(lines.back().t >= 0.5f)
+		{
+			delete this;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 //=================================================================================================
@@ -192,7 +434,7 @@ void Electro::Save(FileWriter& f)
 	f << ability->hash;
 	f << valid;
 	f << hitsome;
-	f << start_pos;
+	f << startPos;
 }
 
 //=================================================================================================
@@ -246,7 +488,7 @@ void Electro::Load(FileReader& f)
 	}
 	f >> valid;
 	f >> hitsome;
-	f >> start_pos;
+	f >> startPos;
 }
 
 //=================================================================================================
@@ -288,6 +530,33 @@ bool Electro::Read(BitStreamReader& f)
 	valid = true;
 	Register();
 	return true;
+}
+
+//=================================================================================================
+bool Drain::Update(float dt)
+{
+	t += dt;
+
+	if(pe->manual_delete == 2)
+	{
+		delete pe;
+		return true;
+	}
+
+	if(Unit* unit = target)
+	{
+		Vec3 center = unit->GetCenter();
+		for(ParticleEmitter::Particle& p : pe->particles)
+			p.pos = Vec3::Lerp(p.pos, center, t / 1.5f);
+
+		return false;
+	}
+	else
+	{
+		pe->time = 0.3f;
+		pe->manual_delete = 0;
+		return true;
+	}
 }
 
 //=================================================================================================

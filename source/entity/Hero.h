@@ -12,7 +12,7 @@ enum class HeroType
 };
 
 //-----------------------------------------------------------------------------
-struct HeroData : public HeroPlayerCommon
+struct Hero : public HeroPlayerCommon
 {
 	int expe;
 	float phase_timer;

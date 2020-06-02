@@ -188,34 +188,10 @@ public:
 	void UpdateCamera(float dt);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
-	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
-	void UpdateParticles(LevelArea& area, float dt);
-	// perform character attack
-	enum ATTACK_RESULT
-	{
-		ATTACK_NOT_HIT,
-		ATTACK_OBJECT,
-		ATTACK_BLOCKED,
-		ATTACK_NO_DAMAGE,
-		ATTACK_HIT,
-		ATTACK_CLEAN_HIT
-	};
-	ATTACK_RESULT DoAttack(LevelArea& area, Unit& unit);
-	enum DamageFlags
-	{
-		DMG_NO_BLOOD = 1 << 0,
-		DMG_MAGICAL = 1 << 1
-	};
-	void GiveDmg(Unit& taker, float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
-	void UpdateUnits(LevelArea& area, float dt);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	bool DoShieldSmash(LevelArea& area, Unit& attacker);
-	void UpdateBullets(LevelArea& area, float dt);
 	void ChangeLevel(int where);
 	void ExitToMap();
-	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f, SaveSlot* slot);
 	void CreateSaveImage();
 	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
@@ -223,12 +199,7 @@ public:
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelArea& area, int& err_count);
-	void SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted);
-	void UpdateExplosions(LevelArea& area, float dt);
-	void UpdateTraps(LevelArea& area, float dt);
 	void PreloadTraps(vector<Trap*>& traps);
-	void UpdateElectros(LevelArea& area, float dt);
-	void UpdateDrains(LevelArea& area, float dt);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -243,7 +214,6 @@ public:
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelArea& area, bool clear);
-	void UpdateArea(LevelArea& area, float dt);
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
@@ -257,7 +227,6 @@ public:
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
 	void DeleteUnit(Unit* unit);
-	void AttackReaction(Unit& attacked, Unit& attacker);
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();
@@ -267,7 +236,6 @@ public:
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
-	void UpdateLights(vector<GameLight>& lights);
 private:
 	void GetPostEffects(vector<PostEffect>& postEffects);
 public:

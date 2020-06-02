@@ -768,7 +768,7 @@ void ScriptManager::RegisterGame()
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	ForType("Hero")
-		.Member("bool lost_pvp", offsetof(HeroData, lost_pvp));
+		.Member("bool lost_pvp", offsetof(Hero, lost_pvp));
 
 	AddType("UnitGroup")
 		.WithNamespace()

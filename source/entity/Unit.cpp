@@ -203,7 +203,7 @@ void Unit::Init(UnitData& base, int lvl)
 	// hero data
 	if(IsSet(base.flags, F_HERO))
 	{
-		hero = new HeroData;
+		hero = new Hero;
 		hero->Init(*this);
 	}
 	else
@@ -1203,7 +1203,7 @@ void Unit::UpdateEffects(float dt)
 
 	// update poison damage
 	if(poison_dmg != 0.f)
-		game->GiveDmg(*this, poison_dmg * dt, nullptr, nullptr, Game::DMG_NO_BLOOD);
+		GiveDmg(poison_dmg * dt, nullptr, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)
@@ -2523,7 +2523,7 @@ void Unit::Load(GameReader& f)
 
 	if(IsSet(data->flags, F_HERO))
 	{
-		hero = new HeroData;
+		hero = new Hero;
 		hero->unit = this;
 		hero->Load(f);
 		if(LOAD_VERSION < V_0_12)
@@ -2868,7 +2868,7 @@ bool Unit::Read(BitStreamReader& f)
 		byte flags;
 		ai = AI_PLACEHOLDER;
 		player = nullptr;
-		hero = new HeroData;
+		hero = new Hero;
 		hero->unit = this;
 		f >> hero->name;
 		f >> flags;
@@ -6570,39 +6570,39 @@ void Unit::CastSpell()
 
 			for(int i = 0; i < count; ++i)
 			{
-				Bullet& b = Add1(area->tmp->bullets);
+				Bullet* bullet = new Bullet;
+				area->tmp->bullets.push_back(bullet);
 
-				b.level = level + CalculateMagicPower();
-				b.backstab = 0.25f;
-				b.pos = coord;
-				b.attack = dmg;
-				b.rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
-				b.mesh = ability.mesh;
-				b.tex = ability.tex;
-				b.tex_size = ability.size;
-				b.speed = ability.speed;
-				b.timer = ability.range / (ability.speed - 1);
-				b.owner = this;
-				b.remove = false;
-				b.trail = nullptr;
-				b.pe = nullptr;
-				b.ability = &ability;
-				b.start_pos = b.pos;
+				bullet->level = level + CalculateMagicPower();
+				bullet->backstab = 0.25f;
+				bullet->pos = coord;
+				bullet->attack = dmg;
+				bullet->rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
+				bullet->mesh = ability.mesh;
+				bullet->tex = ability.tex;
+				bullet->tex_size = ability.size;
+				bullet->speed = ability.speed;
+				bullet->timer = ability.range / (ability.speed - 1);
+				bullet->owner = this;
+				bullet->trail = nullptr;
+				bullet->pe = nullptr;
+				bullet->ability = &ability;
+				bullet->start_pos = bullet->pos;
 
 				// ustal z jak¹ si³¹ rzuciæ kul¹
 				if(ability.type == Ability::Ball)
 				{
 					float dist = Vec3::Distance2d(pos, target_pos);
 					float t = dist / ability.speed;
-					float h = (target_pos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - b.pos.y;
-					b.yspeed = h / t + (10.f * t) / 2;
+					float h = (target_pos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - bullet->pos.y;
+					bullet->yspeed = h / t + (10.f * t) / 2;
 				}
 				else if(ability.type == Ability::Point)
 				{
 					float dist = Vec3::Distance2d(pos, target_pos);
 					float t = dist / ability.speed;
-					float h = (target_pos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - b.pos.y;
-					b.yspeed = h / t;
+					float h = (target_pos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - bullet->pos.y;
+					bullet->yspeed = h / t;
 				}
 
 				if(ability.tex_particle)
@@ -6616,7 +6616,7 @@ void Unit::CastSpell()
 					pe->spawn_min = 3;
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
-					pe->pos = b.pos;
+					pe->pos = bullet->pos;
 					pe->speed_min = Vec3(-1, -1, -1);
 					pe->speed_max = Vec3(1, 1, 1);
 					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
@@ -6628,7 +6628,7 @@ void Unit::CastSpell()
 					pe->mode = 1;
 					pe->Init();
 					area->tmp->pes.push_back(pe);
-					b.pe = pe;
+					bullet->pe = pe;
 				}
 
 				if(Net::IsOnline())
@@ -6636,9 +6636,9 @@ void Unit::CastSpell()
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CREATE_SPELL_BALL;
 					c.ability = &ability;
-					c.pos = b.start_pos;
-					c.rot_y = b.rot.y;
-					c.speed_y = b.yspeed;
+					c.pos = bullet->start_pos;
+					c.rot_y = bullet->rot.y;
+					c.speed_y = bullet->yspeed;
 					c.extra_id = id;
 				}
 			}
@@ -6654,7 +6654,7 @@ void Unit::CastSpell()
 			e->dmg = dmg;
 			e->owner = this;
 			e->ability = &ability;
-			e->start_pos = pos;
+			e->startPos = pos;
 
 			Vec3 hitpoint;
 			Unit* hitted;
@@ -6716,7 +6716,7 @@ void Unit::CastSpell()
 					Drain& drain = Add1(area->tmp->drains);
 					drain.target = this;
 
-					game->GiveDmg(*hitted, dmg, this, nullptr, Game::DMG_MAGICAL);
+					hitted->GiveDmg(dmg, this, nullptr, DMG_MAGICAL);
 
 					drain.pe = area->tmp->pes.back();
 					drain.t = 0.f;
@@ -7285,9 +7285,8 @@ void Unit::Update(float dt)
 		{
 			if(Net::IsLocal() && mesh_inst->GetProgress(1) > 20.f / 40)
 			{
-				Bullet& b = Add1(area->tmp->bullets);
-				b.level = level;
-				b.backstab = GetBackstabMod(&GetBow());
+				Bullet* bullet = new Bullet;
+				area->tmp->bullets.push_back(bullet);
 
 				mesh_inst->SetupBones();
 
@@ -7296,29 +7295,30 @@ void Unit::Update(float dt)
 
 				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
-				b.attack = CalculateAttack(&GetBow());
-				b.rot = Vec3(PI / 2, rot + PI, 0);
-				b.pos = Vec3::TransformZero(m2);
-				b.mesh = game_res->aArrow;
-				b.speed = GetArrowSpeed();
-				b.timer = ARROW_TIMER;
-				b.owner = this;
-				b.remove = false;
-				b.pe = nullptr;
-				b.ability = nullptr;
-				b.tex = nullptr;
-				b.poison_attack = 0.f;
-				b.start_pos = b.pos;
+				bullet->attack = CalculateAttack(&GetBow());
+				bullet->level = level;
+				bullet->backstab = GetBackstabMod(&GetBow());
+				bullet->rot = Vec3(PI / 2, rot + PI, 0);
+				bullet->pos = Vec3::TransformZero(m2);
+				bullet->mesh = game_res->aArrow;
+				bullet->speed = GetArrowSpeed();
+				bullet->timer = ARROW_TIMER;
+				bullet->owner = this;
+				bullet->pe = nullptr;
+				bullet->ability = nullptr;
+				bullet->tex = nullptr;
+				bullet->poison_attack = 0.f;
+				bullet->start_pos = bullet->pos;
 
-				float dist = Vec3::Distance2d(b.pos, target_pos);
-				float t = dist / b.speed;
-				float h = target_pos.y - b.pos.y;
-				b.yspeed = h / t;
+				float dist = Vec3::Distance2d(bullet->pos, target_pos);
+				float t = dist / bullet->speed;
+				float h = target_pos.y - bullet->pos.y;
+				bullet->yspeed = h / t;
 
 				if(IsPlayer())
 					player->Train(TrainWhat::BowStart, 0.f, 0);
 				else if(ai->state == AIController::Idle && ai->st.idle.action == AIController::Idle_TrainBow)
-					b.attack = -100.f;
+					bullet->attack = -100.f;
 
 				// random variation
 				int sk = Get(SkillId::BOW);
@@ -7362,12 +7362,12 @@ void Unit::Update(float dt)
 					}
 
 					if(Rand() % 100 < chance)
-						b.rot.y += RandomNormalized(variation_x);
+						bullet->rot.y += RandomNormalized(variation_x);
 					if(Rand() % 100 < chance)
-						b.yspeed += RandomNormalized(variation_y);
+						bullet->yspeed += RandomNormalized(variation_y);
 				}
 
-				b.rot.y = Clip(b.rot.y);
+				bullet->rot.y = Clip(bullet->rot.y);
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
@@ -7375,20 +7375,20 @@ void Unit::Update(float dt)
 				tpe->color2 = Vec4(1, 1, 1, 0);
 				tpe->Init(50);
 				area->tmp->tpes.push_back(tpe);
-				b.trail = tpe;
+				bullet->trail = tpe;
 
-				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
+				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::SHOOT_ARROW;
 					c.unit = this;
-					c.pos = b.start_pos;
-					c.f[0] = b.rot.y;
-					c.f[1] = b.yspeed;
-					c.f[2] = b.rot.x;
-					c.extra_f = b.speed;
+					c.pos = bullet->start_pos;
+					c.f[0] = bullet->rot.y;
+					c.f[1] = bullet->yspeed;
+					c.f[2] = bullet->rot.x;
+					c.extra_f = bullet->speed;
 				}
 			}
 			if(mesh_inst->GetProgress(1) > 20.f / 40)
@@ -7464,8 +7464,7 @@ void Unit::Update(float dt)
 			{
 				if(Net::IsLocal() && !act.attack.hitted && mesh_inst->GetProgress(group_index) >= GetAttackFrame(1))
 				{
-					Game::ATTACK_RESULT result = game->DoAttack(*area, *this);
-					if(result != Game::ATTACK_NOT_HIT)
+					if(DoAttack())
 						act.attack.hitted = true;
 				}
 				if(mesh_inst->GetProgress(group_index) >= GetAttackFrame(2) || mesh_inst->IsEnded(group_index))
@@ -7505,7 +7504,7 @@ void Unit::Update(float dt)
 		}
 		if(Net::IsLocal() && animation_state == AS_BASH_CAN_HIT)
 		{
-			if(game->DoShieldSmash(*area, *this))
+			if(DoShieldSmash())
 				animation_state = AS_BASH_HITTED;
 		}
 		if(mesh_inst->IsEnded(1))
@@ -7944,7 +7943,7 @@ void Unit::Update(float dt)
 								game->PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), HIT_SOUND_DIST, true);
 								if(unit->IsPlayer())
 									unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, level);
-								game->GiveDmg(*unit, dmg, this);
+								unit->GiveDmg(dmg, this);
 								if(IsPlayer())
 									player->Train(TrainWhat::BullsCharge, 0.f, unit->level);
 								if(!unit->IsAlive())
@@ -8491,4 +8490,384 @@ void Unit::Kill()
 	UpdatePhysics();
 	if(event_handler)
 		event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
+}
+
+//=================================================================================================
+void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
+{
+	// blood particles
+	if(!IsSet(dmg_flags, DMG_NO_BLOOD))
+	{
+		ParticleEmitter* pe = new ParticleEmitter;
+		pe->tex = game_res->tBlood[data->blood];
+		pe->emision_interval = 0.01f;
+		pe->life = 5.f;
+		pe->particle_life = 0.5f;
+		pe->emisions = 1;
+		pe->spawn_min = 10;
+		pe->spawn_max = 15;
+		pe->max_particles = 15;
+		if(hitpoint)
+			pe->pos = *hitpoint;
+		else
+		{
+			pe->pos = pos;
+			pe->pos.y += GetUnitHeight() * 2.f / 3;
+		}
+		pe->speed_min = Vec3(-1, 0, -1);
+		pe->speed_max = Vec3(1, 1, 1);
+		pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
+		pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+		pe->size = 0.3f;
+		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->alpha = 0.9f;
+		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->mode = 0;
+		pe->Init();
+		area->tmp->pes.push_back(pe);
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPAWN_BLOOD;
+			c.id = data->blood;
+			c.pos = pe->pos;
+		}
+	}
+
+	// apply magic resistance
+	if(IsSet(dmg_flags, DMG_MAGICAL))
+		dmg *= CalculateMagicResistance();
+
+	if(giver && giver->IsPlayer())
+	{
+		// update player damage done
+		giver->player->dmg_done += (int)dmg;
+		giver->player->stat_flags |= STAT_DMG_DONE;
+	}
+
+	if(IsPlayer())
+	{
+		// update player damage taken
+		player->dmg_taken += (int)dmg;
+		player->stat_flags |= STAT_DMG_TAKEN;
+
+		// train endurance
+		player->Train(TrainWhat::TakeDamage, min(dmg, hp) / hpmax, (giver ? giver->level : -1));
+
+		// red screen
+		player->last_dmg += dmg;
+	}
+
+	// aggravate units
+	if(giver && giver->IsPlayer())
+		AttackReaction(*giver);
+
+	if((hp -= dmg) <= 0.f && !IsImmortal())
+	{
+		// unit killed
+		Die(giver);
+	}
+	else
+	{
+		// unit hurt sound
+		if(hurt_timer <= 0.f && data->sounds->Have(SOUND_PAIN))
+		{
+			game->PlayAttachedSound(*this, data->sounds->Random(SOUND_PAIN), Unit::PAIN_SOUND_DIST);
+			hurt_timer = Random(1.f, 1.5f);
+			if(IsSet(dmg_flags, DMG_NO_BLOOD))
+				hurt_timer += 1.f;
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UNIT_SOUND;
+				c.unit = this;
+				c.id = SOUND_PAIN;
+			}
+		}
+
+		// immortality
+		if(hp < 1.f)
+			hp = 1.f;
+
+		// send update hp
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = this;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::AttackReaction(Unit& attacker)
+{
+	if(attacker.IsPlayer() && IsAI() && in_arena == -1 && !attack_team)
+	{
+		if(data->group == G_CITIZENS)
+		{
+			if(!team->is_bandit)
+			{
+				if(dont_attack && IsSet(data->flags, F_PEACEFUL))
+				{
+					if(ai->state == AIController::Idle)
+					{
+						ai->state = AIController::Escape;
+						ai->timer = Random(2.f, 4.f);
+						ai->target = attacker;
+						ai->target_last_pos = attacker.pos;
+						ai->st.escape.room = nullptr;
+						ai->ignore = 0.f;
+						ai->in_combat = false;
+					}
+				}
+				else
+					team->SetBandit(true);
+			}
+		}
+		else if(data->group == G_CRAZIES)
+		{
+			if(!team->crazies_attack)
+			{
+				team->crazies_attack = true;
+				if(Net::IsOnline())
+					Net::PushChange(NetChange::CHANGE_FLAGS);
+			}
+		}
+		if(dont_attack && !IsSet(data->flags, F_PEACEFUL))
+		{
+			for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
+			{
+				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
+				{
+					(*it)->dont_attack = false;
+					(*it)->ai->change_ai_mode = true;
+				}
+			}
+		}
+	}
+}
+
+//=================================================================================================
+bool Unit::DoAttack()
+{
+	Vec3 hitpoint;
+	Unit* hitted;
+
+	if(!area->CheckForHit(*this, hitted, hitpoint))
+		return false;
+
+	if(!hitted)
+		return true;
+
+	float power;
+	if(data->frames->extra)
+		power = 1.f;
+	else
+		power = data->frames->attack_power[act.attack.index];
+	DoGenericAttack(*hitted, hitpoint, CalculateAttack() * act.attack.power * power, GetDmgType(), false);
+
+	return true;
+}
+
+//=================================================================================================
+bool Unit::DoShieldSmash()
+{
+	assert(HaveShield());
+
+	Vec3 hitpoint;
+	Unit* hitted;
+	Mesh* mesh = GetShield().mesh;
+
+	if(!mesh)
+		return false;
+
+	if(!area->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
+		return false;
+
+	if(!hitted)
+		return true;
+
+	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
+	{
+		hitted->last_bash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
+
+		hitted->BreakAction();
+
+		if(hitted->action != A_POSITION)
+			hitted->action = A_PAIN;
+		else
+			hitted->animation_state = AS_POSITION_HURT;
+
+		if(hitted->mesh_inst->mesh->head.n_groups == 2)
+			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+		else
+		{
+			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+			hitted->animation = ANI_PLAY;
+		}
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.unit = hitted;
+			c.type = NetChange::STUNNED;
+		}
+	}
+
+	DoGenericAttack(*hitted, hitpoint, CalculateAttack(&GetShield()), DMG_BLUNT, true);
+
+	return true;
+}
+
+//=================================================================================================
+void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash)
+{
+	// calculate modifiers
+	int mod = CombatHelper::CalculateModifier(dmg_type, hitted.data->flags);
+	float m = 1.f;
+	if(mod == -1)
+		m += 0.25f;
+	else if(mod == 1)
+		m -= 0.25f;
+	if(hitted.IsNotFighting())
+		m += 0.1f;
+	else if(hitted.IsHoldingBow())
+		m += 0.05f;
+	if(hitted.action == A_PAIN)
+		m += 0.1f;
+
+	// backstab bonus
+	float angle_dif = AngleDiff(Clip(rot + PI), hitted.rot);
+	float backstab_mod = GetBackstabMod(bash ? slots[SLOT_SHIELD] : slots[SLOT_WEAPON]);
+	if(IsSet(hitted.data->flags2, F2_BACKSTAB_RES))
+		backstab_mod /= 2;
+	m += angle_dif / PI * backstab_mod;
+
+	// apply modifiers
+	attack *= m;
+
+	// blocking
+	if(hitted.IsBlocking() && angle_dif < PI / 2)
+	{
+		// play sound
+		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
+		MATERIAL_TYPE weapon_mat = (!bash ? GetWeaponMaterial() : GetShield().material);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::HIT_SOUND;
+			c.pos = hitpoint;
+			c.id = weapon_mat;
+			c.count = hitted_mat;
+		}
+		sound_mgr->PlaySound3d(game_res->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
+
+		// train blocking
+		if(hitted.IsPlayer())
+			hitted.player->Train(TrainWhat::BlockAttack, attack / hitted.hpmax, level);
+
+		// reduce damage
+		float block = hitted.CalculateBlock() * hitted.GetBlockMod();
+		float stamina = min(attack, block);
+		if(IsSet(data->flags2, F2_IGNORE_BLOCK))
+			block *= 2.f / 3;
+		if(act.attack.power >= 1.9f)
+			stamina *= 4.f / 3;
+		attack -= block;
+		hitted.RemoveStaminaBlock(stamina);
+
+		// pain animation & break blocking
+		if(hitted.stamina < 0)
+		{
+			hitted.BreakAction();
+
+			if(!IsSet(hitted.data->flags, F_DONT_SUFFER))
+			{
+				if(hitted.action != A_POSITION)
+					hitted.action = A_PAIN;
+				else
+					hitted.animation_state = AS_POSITION_HURT;
+
+				if(hitted.mesh_inst->mesh->head.n_groups == 2)
+					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+				else
+				{
+					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.animation = ANI_PLAY;
+				}
+			}
+		}
+
+		// attack fully blocked
+		if(attack < 0)
+		{
+			if(IsPlayer())
+			{
+				// player attack blocked
+				player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
+				// aggravate
+				hitted.AttackReaction(*this);
+			}
+			return;
+		}
+	}
+
+	// calculate defense
+	float def = hitted.CalculateDefense();
+
+	// calculate damage
+	float dmg = CombatHelper::CalculateDamage(attack, def);
+
+	// hit sound
+	game->PlayHitSound(!bash ? GetWeaponMaterial() : GetShield().material, hitted.GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
+
+	// train player armor skill
+	if(hitted.IsPlayer())
+		hitted.player->Train(TrainWhat::TakeDamageArmor, attack / hitted.hpmax, level);
+
+	// fully blocked by armor
+	if(dmg < 0)
+	{
+		if(IsPlayer())
+		{
+			// player attack blocked
+			player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
+			// aggravate
+			hitted.AttackReaction(*this);
+		}
+		return;
+	}
+
+	if(IsPlayer())
+	{
+		// player hurt someone - train
+		float dmgf = (float)dmg;
+		float ratio;
+		if(hitted.hp - dmgf <= 0.f && !hitted.IsImmortal())
+			ratio = Clamp(dmgf / hitted.hpmax, TRAIN_KILL_RATIO, 1.f);
+		else
+			ratio = min(1.f, dmgf / hitted.hpmax);
+		player->Train(bash ? TrainWhat::BashHit : TrainWhat::AttackHit, ratio, hitted.level);
+	}
+
+	hitted.GiveDmg(dmg, this, &hitpoint);
+
+	// apply poison
+	if(IsSet(data->flags, F_POISON_ATTACK))
+	{
+		float poison_res = hitted.GetPoisonResistance();
+		if(poison_res > 0.f)
+		{
+			Effect e;
+			e.effect = EffectId::Poison;
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
+			e.value = -1;
+			e.power = dmg / 10 * poison_res;
+			e.time = 5.f;
+			hitted.AddEffect(e);
+		}
+	}
 }

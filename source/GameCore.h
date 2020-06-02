@@ -124,7 +124,7 @@ struct GameCamera;
 struct GameDialog;
 struct GameLight;
 struct GroundItem;
-struct HeroData;
+struct Hero;
 struct Human;
 struct HumanData;
 struct IdlePack;

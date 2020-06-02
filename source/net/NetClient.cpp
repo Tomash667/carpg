@@ -1162,21 +1162,22 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 
 					LevelArea& area = game_level->GetArea(pos);
 
-					Bullet& b = Add1(area.tmp->bullets);
-					b.mesh = game_res->aArrow;
-					b.pos = pos;
-					b.start_pos = pos;
-					b.rot = Vec3(rotX, rotY, 0);
-					b.yspeed = speedY;
-					b.owner = nullptr;
-					b.pe = nullptr;
-					b.remove = false;
-					b.speed = speed;
-					b.ability = nullptr;
-					b.tex = nullptr;
-					b.tex_size = 0.f;
-					b.timer = ARROW_TIMER;
-					b.owner = owner;
+					Bullet* bullet = new Bullet;
+					area.tmp->bullets.push_back(bullet);
+
+					bullet->mesh = game_res->aArrow;
+					bullet->pos = pos;
+					bullet->start_pos = pos;
+					bullet->rot = Vec3(rotX, rotY, 0);
+					bullet->yspeed = speedY;
+					bullet->owner = nullptr;
+					bullet->pe = nullptr;
+					bullet->speed = speed;
+					bullet->ability = nullptr;
+					bullet->tex = nullptr;
+					bullet->tex_size = 0.f;
+					bullet->timer = ARROW_TIMER;
+					bullet->owner = owner;
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
@@ -1184,9 +1185,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					tpe->color2 = Vec4(1, 1, 1, 0);
 					tpe->Init(50);
 					area.tmp->tpes.push_back(tpe);
-					b.trail = tpe;
+					bullet->trail = tpe;
 
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, ARROW_HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -2000,64 +2001,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					if(!door)
 						Error("Update client: USE_DOOR, missing door %d.", id);
 					else
-					{
-						bool ok = true;
-						if(is_closing)
-						{
-							// closing door
-							if(door->state == Door::Opened)
-							{
-								door->state = Door::Closing;
-								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-							}
-							else if(door->state == Door::Opening)
-							{
-								door->state = Door::Closing2;
-								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-							}
-							else if(door->state == Door::Opening2)
-							{
-								door->state = Door::Closing;
-								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-							}
-							else
-								ok = false;
-						}
-						else
-						{
-							// opening door
-							if(door->state == Door::Closed)
-							{
-								door->locked = LOCK_NONE;
-								door->state = Door::Opening;
-								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-							}
-							else if(door->state == Door::Closing)
-							{
-								door->locked = LOCK_NONE;
-								door->state = Door::Opening2;
-								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-							}
-							else if(door->state == Door::Closing2)
-							{
-								door->locked = LOCK_NONE;
-								door->state = Door::Opening;
-								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-							}
-							else
-								ok = false;
-						}
-
-						if(ok && Rand() % 2 == 0)
-						{
-							Sound* sound;
-							if(is_closing && Rand() % 2 == 0)
-								sound = game_res->sDoorClose;
-							else
-								sound = game_res->sDoor[Rand() % 3];
-							sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
-						}
-					}
+						door->SetState(is_closing);
 				}
 			}
 			break;
@@ -2126,7 +2070,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				{
 					Trap* trap = game_level->FindTrap(id);
 					if(trap)
-						trap->trigger = true;
+						trap->mpTrigger = true;
 					else
 						Error("Update client: TRIGGER_TRAP, missing trap %d.", id);
 				}
@@ -2385,22 +2329,22 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 				Ability& ability = *ability_ptr;
 				LevelArea& area = game_level->GetArea(pos);
 
-				Bullet& b = Add1(area.tmp->bullets);
+				Bullet* bullet = new Bullet;
+				area.tmp->bullets.push_back(bullet);
 
-				b.pos = pos;
-				b.rot = Vec3(0, rotY, 0);
-				b.mesh = ability.mesh;
-				b.tex = ability.tex;
-				b.tex_size = ability.size;
-				b.speed = ability.speed;
-				b.timer = ability.range / (ability.speed - 1);
-				b.remove = false;
-				b.trail = nullptr;
-				b.pe = nullptr;
-				b.ability = &ability;
-				b.start_pos = b.pos;
-				b.owner = unit;
-				b.yspeed = speedY;
+				bullet->pos = pos;
+				bullet->rot = Vec3(0, rotY, 0);
+				bullet->mesh = ability.mesh;
+				bullet->tex = ability.tex;
+				bullet->tex_size = ability.size;
+				bullet->speed = ability.speed;
+				bullet->timer = ability.range / (ability.speed - 1);
+				bullet->trail = nullptr;
+				bullet->pe = nullptr;
+				bullet->ability = &ability;
+				bullet->start_pos = bullet->pos;
+				bullet->owner = unit;
+				bullet->yspeed = speedY;
 
 				if(ability.tex_particle)
 				{
@@ -2413,7 +2357,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->spawn_min = 3;
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
-					pe->pos = b.pos;
+					pe->pos = bullet->pos;
 					pe->speed_min = Vec3(-1, -1, -1);
 					pe->speed_max = Vec3(1, 1, 1);
 					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
@@ -2425,7 +2369,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					pe->mode = 1;
 					pe->Init();
 					area.tmp->pes.push_back(pe);
-					b.pe = pe;
+					bullet->pe = pe;
 				}
 			}
 			break;
@@ -2501,7 +2445,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 					e->area = &area;
 					e->Register();
 					e->ability = Ability::Get("thunder_bolt");
-					e->start_pos = p1;
+					e->startPos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
 					area.tmp->electros.push_back(e);

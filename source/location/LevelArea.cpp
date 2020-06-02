@@ -1,18 +1,24 @@
 #include "Pch.h"
 #include "LevelArea.h"
 
+#include "Ability.h"
 #include "BitStreamFunc.h"
 #include "City.h"
 #include "Game.h"
 #include "GameFile.h"
+#include "GameResources.h"
 #include "Level.h"
 #include "MultiInsideLocation.h"
 #include "Net.h"
+#include "QuestManager.h"
+#include "Quest_Tutorial.h"
 #include "SaveState.h"
 #include "SingleInsideLocation.h"
 #include "World.h"
 
 #include <ParticleSystem.h>
+#include <Profiler.h>
+#include <SoundManager.h>
 
 static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
@@ -26,6 +32,60 @@ LevelArea::~LevelArea()
 	DeleteElements(chests);
 	DeleteElements(items);
 	DeleteElements(traps);
+}
+
+//=================================================================================================
+void LevelArea::Update(float dt)
+{
+	ProfilerBlock profiler_block([&] { return Format("UpdateArea %s", GetName()); });
+
+	// update units
+	// new units can be added inside this loop - so no iterators!
+	for(uint i = 0, count = units.size(); i < count; ++i)
+		units[i]->Update(dt);
+
+	// update flickering lights
+	tmp->lights_dt += dt;
+	if(tmp->lights_dt >= 1.f / 20)
+	{
+		for(GameLight& light : lights)
+		{
+			light.pos = light.start_pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
+			light.color = Vec4((light.start_color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
+		}
+		tmp->lights_dt = 0;
+	}
+
+	// update chests
+	for(Chest* chest : chests)
+		chest->mesh_inst->Update(dt);
+
+	// update doors
+	for(Door* door : doors)
+		door->Update(dt, *this);
+
+	LoopAndRemove(traps, [&](Trap* trap) { return trap->Update(dt, *this); });
+	LoopAndRemove(tmp->bullets, [&](Bullet* bullet) { return bullet->Update(dt, *this); });
+	LoopAndRemove(tmp->electros, [dt](Electro* electro) { return electro->Update(dt); });
+	LoopAndRemove(tmp->explos, [&](Explo* explo) { return explo->Update(dt, *this); });
+	LoopAndRemove(tmp->pes, [dt](ParticleEmitter* pe) { return pe->Update(dt); });
+	LoopAndRemove(tmp->tpes, [dt](TrailParticleEmitter* tpe) { return tpe->Update(dt); });
+	LoopAndRemove(tmp->drains, [dt](Drain& drain) { return drain.Update(dt); });
+
+	// update blood spatters
+	for(Blood& blood : bloods)
+	{
+		blood.size += dt;
+		if(blood.size >= 1.f)
+			blood.size = 1.f;
+	}
+
+	// update objects
+	for(Object* obj : objects)
+	{
+		if(obj->meshInst)
+			obj->meshInst->Update(dt);
+	}
 }
 
 //=================================================================================================
@@ -813,6 +873,202 @@ Door* LevelArea::FindDoor(const Int2& pt)
 }
 
 //=================================================================================================
+void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
+{
+	Ability& ability = *bullet.ability;
+
+	// sound
+	if(ability.sound_hit)
+		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+
+	// particles
+	if(ability.tex_particle && ability.type == Ability::Ball)
+	{
+		ParticleEmitter* pe = new ParticleEmitter;
+		pe->tex = ability.tex_particle;
+		pe->emision_interval = 0.01f;
+		pe->life = 0.f;
+		pe->particle_life = 0.5f;
+		pe->emisions = 1;
+		pe->spawn_min = 8;
+		pe->spawn_max = 12;
+		pe->max_particles = 12;
+		pe->pos = pos;
+		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+		pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+		pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+		pe->size = ability.size / 2;
+		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->alpha = 1.f;
+		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->mode = 1;
+		pe->Init();
+		tmp->pes.push_back(pe);
+	}
+
+	// explosion
+	if(Net::IsLocal() && IsSet(ability.flags, Ability::Explode))
+	{
+		Explo* explo = new Explo;
+		explo->dmg = (float)ability.dmg;
+		if(bullet.owner)
+			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
+		explo->size = 0.f;
+		explo->sizemax = ability.explode_range;
+		explo->pos = pos;
+		explo->ability = &ability;
+		explo->owner = bullet.owner;
+		if(hitted)
+			explo->hitted.push_back(hitted);
+		tmp->explos.push_back(explo);
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CREATE_EXPLOSION;
+			c.ability = &ability;
+			c.pos = explo->pos;
+		}
+	}
+}
+
+//=================================================================================================
+bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
+{
+	// attack with weapon or unarmed
+
+	Mesh::Point* hitbox, *point;
+
+	if(unit.mesh_inst->mesh->head.n_groups > 1)
+	{
+		Mesh* mesh = unit.GetWeapon().mesh;
+		if(!mesh)
+			return false;
+		hitbox = mesh->FindPoint("hit");
+		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+		assert(point);
+	}
+	else
+	{
+		point = nullptr;
+		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
+		if(!hitbox)
+			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
+	}
+
+	assert(hitbox);
+
+	return CheckForHit(unit, hitted, *hitbox, point, hitpoint);
+}
+
+//=================================================================================================
+// Check collision against hitbox and unit
+// If returned true but hitted is nullptr then object was hit
+// There are two allowed inputs:
+// - bone is "bron"(weapon) attachment point, hitbox is from weapon
+// - bone is nullptr, hitbox is from unit attack
+bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint)
+{
+	assert(hitted && hitbox.IsBox());
+
+	unit.mesh_inst->SetupBones();
+
+	// calculate hitbox matrix
+	Matrix m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
+	if(bone)
+	{
+		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
+		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
+	}
+	else
+		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
+
+	// a - weapon hitbox, b - unit hitbox
+	Oob a, b;
+	m1._11 = m1._22 = m1._33 = 1.f;
+	a.c = Vec3::TransformZero(m1);
+	a.e = hitbox.size;
+	a.u[0] = Vec3(m1._11, m1._12, m1._13);
+	a.u[1] = Vec3(m1._21, m1._22, m1._23);
+	a.u[2] = Vec3(m1._31, m1._32, m1._33);
+	b.u[0] = Vec3(1, 0, 0);
+	b.u[1] = Vec3(0, 1, 0);
+	b.u[2] = Vec3(0, 0, 1);
+
+	// search for collision
+	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	{
+		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
+			continue;
+
+		Box box2;
+		(*it)->GetBox(box2);
+		b.c = box2.Midpoint();
+		b.e = box2.Size() / 2;
+
+		if(OOBToOOB(b, a))
+		{
+			hitpoint = a.c;
+			hitted = *it;
+			return true;
+		}
+	}
+
+	// collisions with melee_target
+	b.e = Vec3(0.6f, 2.f, 0.6f);
+	for(Object* obj : objects)
+	{
+		if(obj->base && obj->base->id == "melee_target")
+		{
+			b.c = obj->pos;
+			b.c.y += 1.f;
+
+			if(OOBToOOB(b, a))
+			{
+				hitpoint = a.c;
+				hitted = nullptr;
+
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = game_res->tSpark;
+				pe->emision_interval = 0.01f;
+				pe->life = 5.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 10;
+				pe->spawn_max = 15;
+				pe->max_particles = 15;
+				pe->pos = hitpoint;
+				pe->speed_min = Vec3(-1, 0, -1);
+				pe->speed_max = Vec3(1, 1, 1);
+				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+				pe->size = 0.3f;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->alpha = 0.9f;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->mode = 0;
+				pe->Init();
+				tmp->pes.push_back(pe);
+
+				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+
+				if(Net::IsLocal() && unit.IsPlayer())
+				{
+					if(quest_mgr->quest_tutorial->in_tutorial)
+						quest_mgr->quest_tutorial->HandleMeleeAttackCollision();
+					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
+				}
+
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
 // Get area levels for selected location and level (in multilevel dungeon not generated levels are ignored for -1)
 // Level have special meaning here
 // >= 0 (dungeon_level, building index)
@@ -1132,16 +1388,19 @@ void TmpLevelArea::Clear()
 {
 	DeleteElements(explos);
 	DeleteElements(electros);
+	DeleteElements(bullets);
 	drains.clear();
-	bullets.clear();
 	colliders.clear();
 	DeleteElements(pes);
 	DeleteElements(tpes);
+	lights_dt = 1;
 }
 
 //=================================================================================================
 void TmpLevelArea::Save(GameWriter& f)
 {
+	lights_dt = 1;
+
 	f << pes.size();
 	for(ParticleEmitter* pe : pes)
 		pe->Save(f);
@@ -1163,8 +1422,8 @@ void TmpLevelArea::Save(GameWriter& f)
 		drain.Save(f);
 
 	f << bullets.size();
-	for(Bullet& bullet : bullets)
-		bullet.Save(f);
+	for(Bullet* bullet : bullets)
+		bullet->Save(f);
 }
 
 //=================================================================================================
@@ -1206,6 +1465,90 @@ void TmpLevelArea::Load(GameReader& f)
 		drain.Load(f);
 
 	bullets.resize(f.Read<uint>());
-	for(Bullet& bullet : bullets)
-		bullet.Load(f);
+	for(Bullet*& bullet : bullets)
+	{
+		bullet = new Bullet;
+		bullet->Load(f);
+	}
+}
+
+//=================================================================================================
+void TmpLevelArea::Write(BitStreamWriter& f)
+{
+	// bullets
+	f.Write(bullets.size());
+	for(Bullet* bullet : bullets)
+		bullet->Write(f);
+
+	// explosions
+	f.Write(explos.size());
+	for(Explo* explo : explos)
+		explo->Write(f);
+
+	// electros
+	f.Write(electros.size());
+	for(Electro* electro : electros)
+		electro->Write(f);
+}
+
+//=================================================================================================
+bool TmpLevelArea::Read(BitStreamReader& f)
+{
+	// bullets
+	uint count;
+	f >> count;
+	if(!f.Ensure(count * Bullet::MIN_SIZE))
+	{
+		Error("Read tmp area: Broken bullet count.");
+		return false;
+	}
+	bullets.resize(count);
+	for(Bullet*& bullet : bullets)
+	{
+		bullet = new Bullet;
+		if(!bullet->Read(f, *this))
+		{
+			Error("Read tmp area: Broken bullet.");
+			return false;
+		}
+	}
+
+	// explosions
+	f >> count;
+	if(!f.Ensure(count * Explo::MIN_SIZE))
+	{
+		Error("Read tmp area: Broken explosion count.");
+		return false;
+	}
+	explos.resize(count);
+	for(Explo*& explo : explos)
+	{
+		explo = new Explo;
+		if(!explo->Read(f))
+		{
+			Error("Read tmp area: Broken explosion.");
+			return false;
+		}
+	}
+
+	// electro effects
+	f >> count;
+	if(!f.Ensure(count * Electro::MIN_SIZE))
+	{
+		Error("Read tmp area: Broken electro count.");
+		return false;
+	}
+	electros.resize(count);
+	for(Electro*& electro : electros)
+	{
+		electro = new Electro;
+		electro->area = area;
+		if(!electro->Read(f))
+		{
+			Error("Read tmp area: Broken electro.");
+			return false;
+		}
+	}
+
+	return true;
 }
