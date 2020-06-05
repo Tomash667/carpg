@@ -289,7 +289,7 @@ Tomashu - Programowanie, modele, tekstury, pomysły, fabuła.
 Leinnan - Modele, tekstury, pomysły, testowanie.
 MarkK - Modele i tekstury jedzenia oraz innych obiektów.
 Shdorsh - Poprawki w angielskim tłumaczeniu.
-Zielu - Testowanie.
+Zielu - Testowanie i modele.
 BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 
 ❤ Podziękowania za testy i znalezione błędy:
@@ -315,16 +315,21 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	xweert123
 	Zettaton
 	Zinny
-
 🎵 Audio Engine: FMOD Studio by Firelight Technologies.
-
-
 🗃 Modele:
 	* https://opengameart.org
+		* Clint Bellanger - naraphim sword
 		* Enetheru - windmill
 		* Grefuntor - slime
+		* johndh - cutlass
+		* kindland - shield of death
+		* Lucian Pavel - short sword, kite shield
 		* Mophs - scarecrow
+		* p0ss - long sword
 		* rubberduck - shrine
+		* sandsound - morningstar
+		* System G6 - shield
+		* Wind astella - battle axe
 	* kaangvl - fish
 	* yd - sausage
 🎨 Tekstury:

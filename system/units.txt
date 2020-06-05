@@ -2468,7 +2468,7 @@ unit q_zlo_boss : base_human {
 	items {
 		blunt_skullsmasher
 		ah_black_armor
-		shield_unique
+		shield_death
 		3 p_hp3
 		p_str
 		p_end

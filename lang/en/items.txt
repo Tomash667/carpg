@@ -16,6 +16,10 @@ item dagger_rapier {
 	name "Rapier"
 	desc "A rapier requires a lot of precision to hit in less exposed places but the resulting damage is greater."
 }
+item dagger_cutlass {
+	name "Cutlass"
+	desc "A short sword popular among sailors and pirates."
+}
 item dagger_assassin {
 	name "Assassin dagger"
 	desc "The assassin dagger was magically sharpened. It also directs to the weak point of the victim. Backstab for everyone!"
@@ -50,6 +54,10 @@ item sword_orcish {
 item sword_serrated {
 	name "Serrated sword"
 	desc "It has a serrated blade made of some strange metal alloy. Sharp as a razor."
+}
+item sword_mercenary {
+	name "Mercenary sword"
+	desc "Made on request for an elite mercenary squad. These swords survived more than the memory of their name..."
 }
 item sword_adamantine {
 	name "Adamantine sword"
@@ -86,6 +94,10 @@ item axe_crystal {
 	name "Crystal axe"
 	desc "This axe is made from a special crystal. Very heavy!"
 }
+item axe_dwarf {
+	name "Dwarf axe"
+	desc "An ax made by dwarves, a work of war art."
+}
 item axe_giant {
 	name "Axe of Giant"
 	desc "The magic axe. Increases holding strength of user so that he inflicts more damage."
@@ -113,9 +125,13 @@ item blunt_orcish_shaman {
 	name "Decorated orc hammer"
 	desc "A heavy orcish hammer. Primitive, but does its destructive role rather well. This version is made with decorative elements."
 }
+item blunt_barbed {
+	name "Barbed cudgel"
+	desc "It's a steel ball with spikes on the end of a stick. Inflicts piercing-crushing damage."
+}
 item blunt_morningstar {
 	name "Morningstar"
-	desc "It's a steel ball with spikes on the end of a stick. Inflicts piercing-crushing damage."
+	desc "Heavier version of barbed cudgel."
 }
 item blunt_dwarven {
 	name "Dwarf hammer"
@@ -205,6 +221,10 @@ item shield_wood {
 	name "Wooden shield"
 	desc "The basic shield. Bit lighter and less expensive than metal. Use at your own risk."
 }
+item shield_kite {
+	name "Kite shield"
+	desc "Big wooden shield in shape of kite."
+}
 item shield_iron {
 	name "Iron shield"
 	desc "The standard shield for a decent price. Pretty affordable and good quality-price ratio."
@@ -217,13 +237,21 @@ item shield_mithril {
 	name "Mithril shield"
 	desc "A shield made of mithril, half as light as steel. Its main advantage is the weight, but the endurance isn't bad either."
 }
+item shield_spiked {
+	name "Spiked shield"
+	desc "Durable shield adapted to attack and defense. Deals more damage when bashing."
+}
 item shield_adamantine {
 	name "Adamantine shield"
 	desc "The best item in its class. Shield of adamantine protect you from everything, even acid rain. It gives a small magic resistance."
 }
 item shield_wall {
 	name "The Wall"
-	desc "This shield artifact is made of magical stone. It is indestructible. It also gives magic resistance."
+	desc "When the ancient city of Ilmare was turned to dust by the enemies, all that was left was a piece of wall. From it this indestructible artifact was made. It gives magic resistance."
+}
+item shield_death {
+	name "Shield of Death"
+	desc "A dark artifact created by blacksmiths from the Void. It gives magic resistance."
 }
 
 //------------------------------------------------------------------------------

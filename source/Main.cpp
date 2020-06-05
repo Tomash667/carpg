@@ -31,7 +31,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 
 	while(*str)
 	{
-		while(*str && *str == ' ')
+		while(*str == ' ')
 			++str;
 
 		if(*str)

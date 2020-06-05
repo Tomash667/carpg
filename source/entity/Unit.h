@@ -581,12 +581,12 @@ public:
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
 		int str = Get(AttributeId::STR);
-		if(str >= wep.req_str)
+		if(str >= wep.reqStr)
 			return 0.f;
-		else if(str * 2 <= wep.req_str)
+		else if(str * 2 <= wep.reqStr)
 			return 0.5f;
 		else
-			return 0.5f * float(wep.req_str - str) / (wep.req_str / 2);
+			return 0.5f * float(wep.reqStr - str) / (wep.reqStr / 2);
 	}
 	float GetPowerAttackSpeed() const
 	{
@@ -599,12 +599,12 @@ public:
 	float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
 		int str = Get(AttributeId::STR);
-		if(str >= b.req_str)
+		if(str >= b.reqStr)
 			return 0.f;
-		else if(str * 2 <= b.req_str)
+		else if(str * 2 <= b.reqStr)
 			return 0.75f;
 		else
-			return 0.75f * float(b.req_str - str) / (b.req_str / 2);
+			return 0.75f * float(b.reqStr - str) / (b.reqStr / 2);
 	}
 	bool IsHero() const { return hero != nullptr; }
 	bool IsFollower() const { return hero && hero->team_member; }

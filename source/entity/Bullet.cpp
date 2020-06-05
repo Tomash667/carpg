@@ -71,7 +71,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 	Vec3 hitpoint = ToVec3(callback.hitpoint);
 	Unit* hitted = nullptr;
 	if(IsSet(callback.target->getCollisionFlags(), CG_UNIT))
-		hitted = (Unit*)callback.target->getUserPointer();
+		hitted = reinterpret_cast<Unit*>(callback.target->getUserPointer());
 
 	// something was hit, remove bullet
 	if(trail)

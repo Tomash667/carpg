@@ -1835,7 +1835,7 @@ void Game::UpdateGame(float dt)
 	{
 		if(!game_level->location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)game_level->location;
+			InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
 			// key [<,] - warp to stairs up or upper level
@@ -2473,7 +2473,7 @@ void Game::ChangeLevel(int where)
 			LoadingStart(4);
 			LoadingStep(txLevelUp);
 
-			MultiInsideLocation* inside = (MultiInsideLocation*)game_level->location;
+			MultiInsideLocation* inside = static_cast<MultiInsideLocation*>(game_level->location);
 			LeaveLevel();
 			--game_level->dungeon_level;
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
@@ -3689,10 +3689,10 @@ void Game::OnEnterLocation()
 	{
 		TeamInfo info;
 		team->GetTeamInfo(info);
-		bool always_use = false;
 
 		if(info.sane_heroes > 0)
 		{
+			bool always_use = false;
 			switch(game_level->location->type)
 			{
 			case L_CITY:

@@ -3,6 +3,8 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.16 (???):
 ! nie można wczytywać już zapisów z wersji 0.6.2 lub starszej
++ nowy ekwipunek: kordelas, miecz najemnika, kolczasta pałka, krasnoludzki topór, tarcza latawcowa, tarcza z kolcami, tarcza śmierci
++ usprawnione model: krótki/długi miecz, toporek, topór bojowy, kryształowy topór, żelazna/stalowa/mithrilowa/adamantowa tarcza, tarcza Mur
 + nowe imiona/nazwy, usprawnienia dialogów
 
 --------------------------------------------------------------------------------

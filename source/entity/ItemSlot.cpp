@@ -163,8 +163,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				atk_desc,
 				dmg_type,
 				txRequiredStrength,
-				(unit->Get(AttributeId::STR) >= weapon.req_str ? '-' : 'r'),
-				weapon.req_str);
+				(unit->Get(AttributeId::STR) >= weapon.reqStr ? '-' : 'r'),
+				weapon.reqStr);
 		}
 		break;
 	case IT_BOW:
@@ -190,8 +190,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				atk_desc,
 				txDTPierce,
 				txRequiredStrength,
-				(unit->Get(AttributeId::STR) >= bow.req_str ? '-' : 'r'),
-				bow.req_str);
+				(unit->Get(AttributeId::STR) >= bow.reqStr ? '-' : 'r'),
+				bow.reqStr);
 		}
 		break;
 	case IT_ARMOR:
@@ -232,8 +232,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				armor.def,
 				def_desc,
 				txRequiredStrength,
-				(unit->Get(AttributeId::STR) >= armor.req_str ? '-' : 'r'),
-				armor.req_str,
+				(unit->Get(AttributeId::STR) >= armor.reqStr ? '-' : 'r'),
+				armor.reqStr,
 				txMobility,
 				armor.mobility,
 				mob_str);
@@ -266,8 +266,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				shield.block,
 				block_desc,
 				txRequiredStrength,
-				(unit->Get(AttributeId::STR) >= shield.req_str ? '-' : 'r'),
-				shield.req_str);
+				(unit->Get(AttributeId::STR) >= shield.reqStr ? '-' : 'r'),
+				shield.reqStr);
 		}
 		break;
 	default:

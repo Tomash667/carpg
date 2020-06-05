@@ -208,7 +208,7 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 // Weapon
 struct Weapon : public Item
 {
-	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
+	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), reqStr(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 
 	const WeaponTypeInfo& GetInfo() const
 	{
@@ -219,7 +219,7 @@ struct Weapon : public Item
 		return GetInfo().skill;
 	}
 
-	int dmg, dmg_type, req_str;
+	int dmg, dmg_type, reqStr;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
 
@@ -230,9 +230,9 @@ struct Weapon : public Item
 // Bow
 struct Bow : public Item
 {
-	Bow() : Item(IT_BOW), dmg(10), req_str(10), speed(45) {}
+	Bow() : Item(IT_BOW), dmg(10), reqStr(10), speed(45) {}
 
-	int dmg, req_str, speed;
+	int dmg, reqStr, speed;
 
 	static vector<Bow*> bows;
 };
@@ -241,9 +241,10 @@ struct Bow : public Item
 // Shield
 struct Shield : public Item
 {
-	Shield() : Item(IT_SHIELD), block(10), req_str(10), material(MAT_WOOD) {}
+	Shield() : Item(IT_SHIELD), attackMod(0.5f), block(10), reqStr(10), material(MAT_WOOD) {}
 
-	int block, req_str;
+	float attackMod;
+	int block, reqStr;
 	MATERIAL_TYPE material;
 
 	static vector<Shield*> shields;
@@ -293,7 +294,7 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), reqStr(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexOverride* GetTextureOverride() const
 	{
@@ -304,7 +305,7 @@ struct Armor : public Item
 	}
 	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
 
-	int def, req_str, mobility;
+	int def, reqStr, mobility;
 	MATERIAL_TYPE material;
 	ARMOR_TYPE armor_type;
 	ArmorUnitType armor_unit_type;

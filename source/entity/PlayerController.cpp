@@ -904,9 +904,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 				TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points / 2);
 
 			int str = unit->Get(AttributeId::STR);
-			if(weapon.req_str > str)
+			if(weapon.reqStr > str)
 				TrainMod(AttributeId::STR, c_points);
-			else if(weapon.req_str + 10 > str)
+			else if(weapon.reqStr + 10 > str)
 				TrainMod(AttributeId::STR, c_points / 2);
 
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
@@ -942,9 +942,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::BashStart:
 		{
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetShield().req_str > str)
+			if(unit->GetShield().reqStr > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetShield().req_str + 10 > str)
+			else if(unit->GetShield().reqStr + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::SHIELD);
 			if(skill < 25)
@@ -962,9 +962,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::BowStart:
 		{
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetBow().req_str > str)
+			if(unit->GetBow().reqStr > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetBow().req_str + 10 > str)
+			else if(unit->GetBow().reqStr + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::BOW);
 			if(skill < 25)
@@ -1013,9 +1013,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 			{
 				const Armor& armor = unit->GetArmor();
 				int str = unit->Get(AttributeId::STR);
-				if(armor.req_str > str)
+				if(armor.reqStr > str)
 					TrainMod(AttributeId::STR, 250.f);
-				else if(armor.req_str + 10 > str)
+				else if(armor.reqStr + 10 > str)
 					TrainMod(AttributeId::STR, 125.f);
 				SkillId s = armor.GetSkill();
 				int skill = unit->GetBase(s);

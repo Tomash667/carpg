@@ -174,7 +174,6 @@ void SaveLoad::Event(GuiEvent e)
 		if(save_mode)
 		{
 			// saving
-			SaveSlot& slot = slots[choice];
 			if(choice == SaveSlot::MAX_SLOTS - 1)
 			{
 				// quicksave
@@ -184,6 +183,7 @@ void SaveLoad::Event(GuiEvent e)
 			else
 			{
 				// enter save title
+				SaveSlot& slot = slots[choice];
 				cstring names[] = { nullptr, txSave };
 				if(slot.valid)
 					save_input_text = slot.text;

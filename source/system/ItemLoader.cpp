@@ -55,7 +55,8 @@ enum Property
 	P_RECIPES,
 	P_BLOCK,
 	P_EFFECTS,
-	P_TAG
+	P_TAG,
+	P_ATTACK_MOD
 	// max 32 bits
 };
 
@@ -166,7 +167,8 @@ void ItemLoader::InitTokenizer()
 		{ "recipes", P_RECIPES },
 		{ "block", P_BLOCK },
 		{ "effects", P_EFFECTS },
-		{ "tag", P_TAG }
+		{ "tag", P_TAG },
+		{ "attack_mod", P_ATTACK_MOD }
 		});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
@@ -368,7 +370,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_SHIELD:
 		item = new Shield;
-		req |= Bit(P_BLOCK) | Bit(P_REQ_STR) | Bit(P_MATERIAL) | Bit(P_EFFECTS);
+		req |= Bit(P_BLOCK) | Bit(P_REQ_STR) | Bit(P_MATERIAL) | Bit(P_EFFECTS) | Bit(P_ATTACK_MOD);
 		break;
 	case IT_ARMOR:
 		item = new Armor;
@@ -483,22 +485,22 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_REQ_STR:
 			{
-				int req_str = t.MustGetInt();
-				if(req_str < 0)
-					t.Throw("Can't have negative required strength %d.", req_str);
+				int reqStr = t.MustGetInt();
+				if(reqStr < 0)
+					t.Throw("Can't have negative required strength %d.", reqStr);
 				switch(item->type)
 				{
 				case IT_WEAPON:
-					item->ToWeapon().req_str = req_str;
+					item->ToWeapon().reqStr = reqStr;
 					break;
 				case IT_BOW:
-					item->ToBow().req_str = req_str;
+					item->ToBow().reqStr = reqStr;
 					break;
 				case IT_SHIELD:
-					item->ToShield().req_str = req_str;
+					item->ToShield().reqStr = reqStr;
 					break;
 				case IT_ARMOR:
-					item->ToArmor().req_str = req_str;
+					item->ToArmor().reqStr = reqStr;
 					break;
 				}
 			}
@@ -711,6 +713,9 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				else
 					tags[0] = (ItemTag)t.MustGetKeywordId(G_TAG);
 			}
+			break;
+		case P_ATTACK_MOD:
+			item->ToShield().attackMod = t.MustGetFloat();
 			break;
 		default:
 			assert(0);
@@ -1377,7 +1382,7 @@ void ItemLoader::CalculateCrc()
 				Weapon& w = item->ToWeapon();
 				crc.Update(w.dmg);
 				crc.Update(w.dmg_type);
-				crc.Update(w.req_str);
+				crc.Update(w.reqStr);
 				crc.Update(w.weapon_type);
 				crc.Update(w.material);
 			}
@@ -1386,15 +1391,16 @@ void ItemLoader::CalculateCrc()
 			{
 				Bow& b = item->ToBow();
 				crc.Update(b.dmg);
-				crc.Update(b.req_str);
+				crc.Update(b.reqStr);
 				crc.Update(b.speed);
 			}
 			break;
 		case IT_SHIELD:
 			{
 				Shield& s = item->ToShield();
+				crc.Update(s.attackMod);
 				crc.Update(s.block);
-				crc.Update(s.req_str);
+				crc.Update(s.reqStr);
 				crc.Update(s.material);
 			}
 			break;
@@ -1402,7 +1408,7 @@ void ItemLoader::CalculateCrc()
 			{
 				Armor& a = item->ToArmor();
 				crc.Update(a.def);
-				crc.Update(a.req_str);
+				crc.Update(a.reqStr);
 				crc.Update(a.mobility);
 				crc.Update(a.material);
 				crc.Update(a.armor_type);

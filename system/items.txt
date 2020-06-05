@@ -28,7 +28,7 @@ weapon dagger_short {
 weapon dagger_sword {
 	weight 0.9
 	value 100
-	mesh "kmiecz.qmsh"
+	mesh "short_sword.qmsh"
 	attack 45
 	req_str 25
 	type short_blade
@@ -47,11 +47,23 @@ weapon dagger_rapier {
 	dmg_type pierce
 }
 
+weapon dagger_cutlass {
+	weight 1
+	value 1000
+	mesh "cutlass.qmsh"
+	attack 90
+	req_str 30
+	type short_blade
+	material metal
+	dmg_type {pierce slash}
+	flags hq
+}
+
 weapon dagger_assassin {
 	weight 0.6
-	value 1000
+	value 3000
 	mesh "sztylet_zabojcy.qmsh"
-	attack 90
+	attack 120
 	req_str 20
 	type short_blade
 	material metal
@@ -64,9 +76,9 @@ weapon dagger_assassin {
 
 weapon dagger_sword_a {
 	weight 1
-	value 5000
+	value 7500
 	mesh "adam_kmiecz.qmsh"
-	attack 140
+	attack 150
 	req_str 26
 	type short_blade
 	material metal
@@ -103,7 +115,7 @@ weapon sword_wooden {
 weapon sword_long {
 	weight 1.8
 	value 20
-	mesh "miecz.qmsh"
+	mesh "sword.qmsh"
 	attack 20
 	req_str 40
 	type long_blade
@@ -145,11 +157,23 @@ weapon sword_serrated {
 	flags hq
 }
 
+weapon sword_mercenary {
+	weight 2.5
+	value 3000
+	mesh "naraphim_sword.qmsh"
+	attack 130
+	req_str 50
+	type long_blade
+	material metal
+	dmg_type slash
+	flags hq
+}
+
 weapon sword_adamantine {
 	weight 2
-	value 7000
+	value 7500
 	mesh "adam_miecz.qmsh"
-	attack 150
+	attack 160
 	req_str 50
 	type long_blade
 	material metal
@@ -202,7 +226,7 @@ weapon axe_rusted {
 weapon axe_small {
 	weight 1.3
 	value 15
-	mesh "toporek.qmsh"
+	mesh "hatchet.qmsh"
 	attack 25
 	req_str 45
 	type axe
@@ -213,7 +237,7 @@ weapon axe_small {
 weapon axe_battle {
 	weight 2.7
 	value 80
-	mesh "topor_bojowy.qmsh"
+	mesh "battle_axe.qmsh"
 	attack 55
 	req_str 55
 	type axe
@@ -235,7 +259,7 @@ weapon axe_orcish {
 weapon axe_crystal {
 	weight 3.5
 	value 1500
-	mesh "topor_krysztalowy.qmsh"
+	mesh "crystal_axe.qmsh"
 	attack 105
 	req_str 60
 	type axe
@@ -244,11 +268,23 @@ weapon axe_crystal {
 	flags hq
 }
 
+weapon axe_dwarf {
+	weight 2.8
+	value 4000
+	mesh "axe_dwarf.qmsh"
+	attack 135
+	req_str 55
+	type axe
+	material metal
+	dmg_type slash
+	flags hq
+}
+
 weapon axe_giant {
 	weight 3.5
-	value 8000
+	value 9000
 	mesh "topor_giganta.qmsh"
-	attack 155
+	attack 165
 	req_str 70
 	type axe
 	material metal
@@ -317,22 +353,34 @@ weapon blunt_orcish_shaman {
 	}
 }
 
-weapon blunt_morningstar {
-	weight 2.7
+weapon blunt_barbed {
+	weight 2
 	value 180
-	mesh "morgensztern.qmsh"
+	mesh "barbed_cudgel.qmsh"
 	attack 80
-	req_str 55
+	req_str 50
 	type blunt
 	material metal
 	dmg_type {blunt pierce}
 }
 
+weapon blunt_morningstar {
+	weight 2.7
+	value 800
+	mesh "morgensztern.qmsh"
+	attack 110
+	req_str 55
+	type blunt
+	material metal
+	dmg_type {blunt pierce}
+	flags hq
+}
+
 weapon blunt_dwarven {
 	weight 4.4
-	value 800
+	value 2500
 	mesh "krasnoludzki_mlot.qmsh"
-	attack 110
+	attack 140
 	req_str 60
 	type blunt
 	material metal
@@ -342,9 +390,9 @@ weapon blunt_dwarven {
 
 weapon blunt_adamantine {
 	weight 4
-	value 4000
+	value 6000
 	mesh "adam_buzdygan.qmsh"
-	attack 160
+	attack 170
 	req_str 60
 	type blunt
 	material metal
@@ -538,57 +586,77 @@ bow q_gobliny_luk {
 // SHIELDS
 //------------------------------------------------------------------------------
 shield shield_plank {
-	weight 3
+	weight 1.5
 	value 5
 	mesh "shield_plank.qmsh"
 	block 10
-	req_str 30
-	material wood
-}
-
-shield shield_wood {
-	weight 2.2
-	value 25
-	mesh "drewniana_tarcza.qmsh"
-	block 30
 	req_str 25
 	material wood
 }
 
-shield shield_iron {
-	weight 2.7
+shield shield_wood {
+	weight 2
+	value 25
+	mesh "drewniana_tarcza.qmsh"
+	block 30
+	req_str 30
+	material wood
+}
+
+shield shield_kite {
+	weight 3
 	value 100
-	mesh "zelazna_tarcza.qmsh"
+	mesh "kite_shield.qmsh"
 	block 50
+	req_str 40
+	material wood
+}
+
+shield shield_iron {
+	weight 2.5
+	value 250
+	mesh "iron_shield.qmsh"
+	block 70
 	req_str 35
 	material metal
 }
 
 shield shield_steel {
-	weight 2.7
-	value 500
-	mesh "stalowa_tarcza.qmsh"
-	block 80
-	req_str 40
+	weight 4
+	value 1000
+	mesh "kite_shield_steel.qmsh"
+	block 100
+	req_str 50
 	material metal
 }
 
 shield shield_mithril {
-	weight 1.3
-	value 2000
-	mesh "tarcza_mit.qmsh"
-	block 120
+	weight 1.2
+	value 3000
+	mesh "mith_shield.qmsh"
+	block 130
 	req_str 20
 	material metal
 	flags hq
 }
 
+shield shield_spiked {
+	weight 5
+	value 4000
+	mesh "spiked_shield.qmsh"
+	block 140
+	attack_mod 1
+	req_str 60
+	material metal
+	flags hq
+}
+
 shield shield_adamantine {
-	weight 3
+	weight 4.5
 	value 7500
-	mesh "tarcza_adam.qmsh"
+	mesh "adam_shield.qmsh"
 	block 160
-	req_str 45
+	req_str 55
 	material metal
 	flags magical
 	effects {
@@ -597,11 +665,26 @@ shield shield_adamantine {
 }
 
 shield shield_wall {
-	weight 3.5
+	weight 10
 	value 25000
-	mesh "tarcza_mur.qmsh"
+	mesh "shield_wall.qmsh"
 	block 200
-	req_str 60
+	attack_mod 0.6
+	req_str 75
+	material rock
+	flags {not_shop not_random unique}
+	effects {
+		magic_resistance 0.25
+	}
+}
+
+shield shield_death {
+	weight 4.5
+	value 25000
+	mesh "shield_death.qmsh"
+	block 200
+	attack_mod 0.6
+	req_str 55
 	material rock
 	flags {not_shop not_random unique}
 	effects {
@@ -3159,8 +3242,9 @@ list short_blade leveled {
 	dagger_short 2
 	dagger_sword 5
 	dagger_rapier 7
-	dagger_assassin 10
-	dagger_sword_a 15
+	dagger_cutlass 10
+	dagger_assassin 13
+	dagger_sword_a 16
 }
 
 list long_blade leveled {
@@ -3169,7 +3253,8 @@ list long_blade leveled {
 	sword_scimitar 5
 	sword_orcish 7
 	sword_serrated 10
-	sword_adamantine 15
+	sword_mercenary 13
+	sword_adamantine 16
 }
 
 list axe leveled {
@@ -3178,7 +3263,8 @@ list axe leveled {
 	axe_battle 5
 	axe_orcish 7
 	axe_crystal 10
-	axe_giant 15
+	axe_dwarf 13
+	axe_giant 16
 }
 
 list blunt leveled {
@@ -3187,9 +3273,10 @@ list blunt leveled {
 	pickaxe 4
 	blacksmith_hammer 4
 	blunt_orcish 5
-	blunt_morningstar 7
-	blunt_dwarven 10
-	blunt_adamantine 15
+	blunt_barbed 7
+	blunt_morningstar 10
+	blunt_dwarven 13
+	blunt_adamantine 16
 }
 
 list wand leveled {
@@ -3210,9 +3297,11 @@ list bow leveled {
 list shield leveled {
 	shield_plank 1
 	shield_wood 3
-	shield_iron 5
-	shield_steel 8
-	shield_mithril 12
+	shield_kite 5
+	shield_iron 7
+	shield_steel 10
+	shield_mithril 13
+	shield_spiked 14
 	shield_adamantine 16
 }
 
@@ -3439,6 +3528,7 @@ stock blacksmith {
 		dagger_short
 		dagger_sword
 		dagger_rapier
+		city dagger_cutlass
 		city dagger_assassin
 	}
 	// long blade
@@ -3447,6 +3537,7 @@ stock blacksmith {
 		sword_scimitar
 		sword_orcish
 		city sword_serrated
+		city sword_mercenary
 	}
 	// axe
 	set {
@@ -3454,13 +3545,14 @@ stock blacksmith {
 		axe_battle
 		axe_orcish
 		city axe_crystal
+		city axe_dwarf
 	}
 	// blunt
 	set {
-		blunt_club
 		blunt_mace
 		blunt_orcish
-		blunt_morningstar
+		blunt_barbed
+		city blunt_morningstar
 		city blunt_dwarven
 	}
 	// bow

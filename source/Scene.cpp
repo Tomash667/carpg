@@ -680,7 +680,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	// item in hand
 	Mesh* right_hand_item = nullptr;
-	int right_hand_item_flags = 0;
 	bool in_hand = false;
 
 	switch(u.weapon_state)
@@ -828,7 +827,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		SceneNode* node2 = SceneNode::Get();
 		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(right_hand_item);
-		node2->flags |= right_hand_item_flags;
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
 		node2->tex_override = nullptr;

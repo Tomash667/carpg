@@ -17,7 +17,7 @@
 
 struct RecipeItem : public GuiElement
 {
-	RecipeItem(Recipe* recipe) : recipe(recipe)
+	explicit RecipeItem(Recipe* recipe) : recipe(recipe)
 	{
 		const Item* item = recipe->result;
 		game_res->PreloadItem(item);

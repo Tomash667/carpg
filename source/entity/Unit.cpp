@@ -297,10 +297,10 @@ float Unit::CalculateAttack(const Item* weapon) const
 		const Weapon& w = weapon->ToWeapon();
 		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
 		float p;
-		if(str >= w.req_str)
+		if(str >= w.reqStr)
 			p = 1.f;
 		else
-			p = float(str) / w.req_str;
+			p = float(str) / w.reqStr;
 		attack += GetEffectSum(EffectId::MeleeAttack)
 			+ wi.str2dmg * (str - 25)
 			+ wi.dex2dmg * (dex - 25)
@@ -311,10 +311,10 @@ float Unit::CalculateAttack(const Item* weapon) const
 	{
 		const Bow& b = weapon->ToBow();
 		float p;
-		if(str >= b.req_str)
+		if(str >= b.reqStr)
 			p = 1.f;
 		else
-			p = float(str) / b.req_str;
+			p = float(str) / b.reqStr;
 		attack += GetEffectSum(EffectId::RangedAttack)
 			+ float(dex - 25)
 			+ b.dmg * p
@@ -324,14 +324,13 @@ float Unit::CalculateAttack(const Item* weapon) const
 	{
 		const Shield& s = weapon->ToShield();
 		float p;
-		if(str >= s.req_str)
+		if(str >= s.reqStr)
 			p = 1.f;
 		else
-			p = float(str) / s.req_str;
+			p = float(str) / s.reqStr;
 		attack += GetEffectSum(EffectId::MeleeAttack)
 			+ s.block * p
-			+ 0.5f * Get(SkillId::SHIELD)
-			+ 0.5f * (str - 25);
+			+ s.attackMod * (Get(SkillId::SHIELD) + str - 25);
 	}
 
 	return attack;
@@ -347,10 +346,10 @@ float Unit::CalculateBlock(const Item* shield) const
 	const Shield& s = shield->ToShield();
 	float p;
 	int str = Get(AttributeId::STR);
-	if(str >= s.req_str)
+	if(str >= s.reqStr)
 		p = 1.f;
 	else
-		p = float(str) / s.req_str;
+		p = float(str) / s.reqStr;
 
 	return float(s.block) * p
 		+ float(str - 25)
@@ -372,8 +371,8 @@ float Unit::CalculateDefense(const Item* armor) const
 			const Armor& a = armor->ToArmor();
 			float skill_val = (float)Get(a.GetSkill());
 			int str = Get(AttributeId::STR);
-			if(str < a.req_str)
-				skill_val *= float(str) / a.req_str;
+			if(str < a.reqStr)
+				skill_val *= float(str) / a.reqStr;
 			def += a.def + skill_val;
 		}
 	}
@@ -4400,9 +4399,9 @@ float Unit::CalculateMobility(const Armor* armor) const
 		if(armor_mobility > 100)
 			armor_mobility = 100;
 		int str = Get(AttributeId::STR);
-		if(str < armor->req_str)
+		if(str < armor->reqStr)
 		{
-			armor_mobility -= armor->req_str - str;
+			armor_mobility -= armor->reqStr - str;
 			if(armor_mobility < 0)
 				armor_mobility = 0;
 		}
