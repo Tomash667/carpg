@@ -87,7 +87,6 @@ gameTimeout = "You are too old to chase monsters inside dungeons.\nTime to go in
 chest = "Chest"
 door = "Door"
 doorLocked = "Locked door"
-pressEsc = "(Press ESC to exit to menu)"
 menu = "Menu"
 hp = "Health"
 mana = "Mana"

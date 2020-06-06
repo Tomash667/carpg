@@ -159,7 +159,7 @@ void World::Update(int days, UpdateMode mode)
 	if(date.year >= startDate.year + 60)
 	{
 		Info("Game over: you are too old.");
-		game_gui->CloseAllPanels(true);
+		game_gui->CloseAllPanels();
 		game->end_of_game = true;
 		game->death_fade = 0.f;
 		if(Net::IsOnline())

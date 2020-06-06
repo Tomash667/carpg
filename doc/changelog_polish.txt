@@ -6,6 +6,9 @@ Wersja 0.16 (???):
 + nowy ekwipunek: kordelas, miecz najemnika, kolczasta pałka, krasnoludzki topór, tarcza latawcowa, tarcza z kolcami, tarcza śmierci
 + usprawnione model: krótki/długi miecz, toporek, topór bojowy, kryształowy topór, żelazna/stalowa/mithrilowa/adamantowa tarcza, tarcza Mur
 + nowe imiona/nazwy, usprawnienia dialogów
++ koniec gry nie blokuje otwarcia chatu, wczytania gry itp
+- naprawiona komenda draw_hitbox i tarcze
+- brak kamery śmierci u klienta
 
 --------------------------------------------------------------------------------
 Poprawki:

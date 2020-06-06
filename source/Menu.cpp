@@ -53,8 +53,8 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !gui->HaveDialog() && !game_gui->level_gui->HavePanelOpen() && !game_gui->main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3
-		&& !end_of_game && !dialog_context.dialog_mode;
+	return !gui->HaveDialog() && !game_gui->level_gui->HavePanelOpen() && !game_gui->main_menu->visible
+		&& game_state != GS_MAIN_MENU && !dialog_context.dialog_mode;
 }
 
 //=================================================================================================

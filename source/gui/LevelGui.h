@@ -165,7 +165,7 @@ private:
 	vector<SortedSpeechBubble> sorted_speech_bbs;
 	string cutscene_text;
 	vector<pair<string, float>> cutscene_next_texts;
-	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
+	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
 		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 	vector<UnitView> unit_views;

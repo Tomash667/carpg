@@ -811,7 +811,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugNode* debug_node = DebugNode::Get();
-			node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
+			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
 			debug_node->mesh = DebugNode::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);

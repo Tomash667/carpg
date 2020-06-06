@@ -109,8 +109,6 @@ void Net::UpdateClient(float dt)
 		InterpolateUnits(dt);
 	}
 
-	bool exit_from_server = false;
-
 	Packet* packet;
 	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
@@ -205,7 +203,7 @@ void Net::UpdateClient(float dt)
 			}
 			break;
 		case ID_CHANGES:
-			if(!ProcessControlMessageClient(reader, exit_from_server))
+			if(!ProcessControlMessageClient(reader))
 			{
 				peer->DeallocatePacket(packet);
 				return;
@@ -260,9 +258,6 @@ void Net::UpdateClient(float dt)
 		changes.clear();
 		SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 	}
-
-	if(exit_from_server)
-		peer->Shutdown(1000);
 }
 
 //=================================================================================================
@@ -544,7 +539,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 }
 
 //=================================================================================================
-bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server)
+bool Net::ProcessControlMessageClient(BitStreamReader& f)
 {
 	PlayerController& pc = *game->pc;
 
@@ -1776,11 +1771,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		case NetChange::GAME_OVER:
 			Info("Update client: Game over - all players died.");
 			game->SetMusic(MusicType::Death);
-			game_gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels();
 			++game->death_screen;
 			game->death_fade = 0;
 			game->death_solo = false;
-			exit_from_server = true;
 			break;
 		// recruit npc to team
 		case NetChange::RECRUIT_NPC:
@@ -2627,10 +2621,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server
 		// end of game, time run out
 		case NetChange::END_OF_GAME:
 			Info("Update client: Game over - time run out.");
-			game_gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels();
 			game->end_of_game = true;
 			game->death_fade = 0.f;
-			exit_from_server = true;
 			break;
 		// update players free days
 		case NetChange::UPDATE_FREE_DAYS:

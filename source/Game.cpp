@@ -745,11 +745,6 @@ void Game::OnUpdate(float dt)
 	if(end_of_game)
 	{
 		death_fade += dt;
-		if(death_fade >= 1.f && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
-		{
-			ExitToMenu();
-			end_of_game = false;
-		}
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
@@ -1931,7 +1926,7 @@ void Game::UpdateGame(float dt)
 		{
 			Info("Game over: all players died.");
 			SetMusic(MusicType::Death);
-			game_gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels();
 			++death_screen;
 			death_fade = 0;
 			death_solo = (team->GetTeamSize() == 1u);
@@ -1949,11 +1944,6 @@ void Game::UpdateGame(float dt)
 				death_fade = 0;
 				++death_screen;
 			}
-		}
-		if(death_screen >= 2 && GKey.AllowKeyboard() && input->Pressed2Release(Key::Escape, Key::Enter) != Key::None)
-		{
-			ExitToMenu();
-			return;
 		}
 	}
 
@@ -2158,7 +2148,7 @@ void Game::UpdateCamera(float dt)
 	GameCamera& camera = game_level->camera;
 
 	// rotate camera up/down
-	if(!Net::IsLocal() || team->IsAnyoneAlive())
+	if(team->IsAnyoneAlive())
 	{
 		if(dialog_context.dialog_mode || game_gui->inventory->mode > I_INVENTORY || game_gui->craft->visible)
 		{

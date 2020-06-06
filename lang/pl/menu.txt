@@ -87,7 +87,6 @@ gameTimeout = "Jesteœ ju¿ za stary aby uganiaæ siê za potworami po podziemiach.\
 chest = "Skrzynia"
 door = "Drzwi"
 doorLocked = "Zamkniête drzwi"
-pressEsc = "(Wciœnij ESC aby wróciæ do menu)"
 menu = "Menu"
 hp = "Zdrowie"
 mana = "Mana"

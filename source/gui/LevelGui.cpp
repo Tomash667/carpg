@@ -95,7 +95,6 @@ void LevelGui::LoadLanguage()
 	txChest = s.Get("chest");
 	txDoor = s.Get("door");
 	txDoorLocked = s.Get("doorLocked");
-	txPressEsc = s.Get("pressEsc");
 	txMenu = s.Get("menu");
 	txHp = s.Get("hp");
 	txMana = s.Get("mana");
@@ -757,9 +756,8 @@ void LevelGui::DrawDeathScreen()
 			gui->DrawSprite(tRip, Center(img_size), color);
 
 			cstring text = Format(game->death_solo ? txDeathAlone : txDeath, game->pc->kills, game_stats->total_kills - game->pc->kills);
-			cstring text2 = Format("%s\n\n%s", text, game->death_screen == 3 ? txPressEsc : "\n");
-			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-			gui->DrawText(GameGui::font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
+			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+			gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 		}
 	}
 }
@@ -781,9 +779,8 @@ void LevelGui::DrawEndOfGameScreen()
 
 	// text
 	cstring text = Format(txGameTimeout, game->pc->kills, game_stats->total_kills - game->pc->kills);
-	cstring text2 = Format("%s\n\n%s", text, game->death_fade >= 1.f ? txPressEsc : "\n");
-	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-	gui->DrawText(GameGui::font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
+	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 }
 
 //=================================================================================================
