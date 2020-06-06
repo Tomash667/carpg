@@ -9,6 +9,8 @@ Version 0.16 (???):
 + end of game don't block chat, loading game etc
 - fixed draw_hitbox command & shields
 - no death camera for clients
+- gorush shaman not using his new armor
+- gorush missing shaman texture
 
 --------------------------------------------------------------------------------
 Fixes:

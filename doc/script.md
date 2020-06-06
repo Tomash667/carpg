@@ -497,7 +497,7 @@ Methods:
 * void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 * void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 * void RotateTo(float rot) - instantly rotates units.
-* void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data.
+* void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
 * void MoveToArea(LevelArea@ area, const Vec3& in pos) - move unit to area, works between locations.
 * void Kill() - used to spawn dead units.
 

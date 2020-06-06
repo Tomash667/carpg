@@ -1425,6 +1425,7 @@ armor al_orc {
 armor al_orc_shaman {
 	weight 9
 	value 100
+	ai_value 50
 	mesh "orc_shaman_armor.qmsh"
 	type light
 	unit_type orc

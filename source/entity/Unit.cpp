@@ -8390,6 +8390,7 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 		return;
 
 	data = ud;
+	game->PreloadUnit(this);
 	level = ud->level.Clamp(level);
 	stats = data->GetStats(level);
 	CalculateStats();

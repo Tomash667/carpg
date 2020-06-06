@@ -9,6 +9,8 @@ Wersja 0.16 (???):
 + koniec gry nie blokuje otwarcia chatu, wczytania gry itp
 - naprawiona komenda draw_hitbox i tarcze
 - brak kamery śmierci u klienta
+- gorush shaman nie zakłada nowego pancerza
+- brak tekstury u gorush shaman
 
 --------------------------------------------------------------------------------
 Poprawki:
