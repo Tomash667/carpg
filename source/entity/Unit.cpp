@@ -3019,6 +3019,8 @@ bool Unit::Read(BitStreamReader& f)
 		// player changing dungeon level keeps weapon state
 		f.ReadCasted<byte>(weapon_taken);
 		f.ReadCasted<byte>(weapon_state);
+		if(weapon_state == WeaponState::Taking)
+			weapon_state = WeaponState::Hidden;
 	}
 
 	// physics
@@ -4735,10 +4737,11 @@ void Unit::ApplyStun(float length)
 		e.power = 0.f;
 		e.time = length;
 		AddEffect(e);
-		animation = ANI_STAND;
+
+		BreakAction();
 	}
 
-	if(Net::IsOnline() && Net::IsServer())
+	if(Net::IsServer())
 	{
 		auto& c = Add1(Net::changes);
 		c.type = NetChange::STUN;
@@ -4960,6 +4963,9 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	}
 
 	mesh_inst->ClearEndResult();
+	if(mesh_inst->groups.size() == 2u)
+		mesh_inst->Deactivate(1);
+	animation = ANI_STAND;
 
 	if(mode == BREAK_ACTION_MODE::ON_LEAVE)
 		return;

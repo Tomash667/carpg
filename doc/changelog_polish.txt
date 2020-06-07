@@ -8,9 +8,11 @@ Wersja 0.16 (???):
 + nowe imiona/nazwy, usprawnienia dialogów
 + koniec gry nie blokuje otwarcia chatu, wczytania gry itp
 + losowe dialogi wczytywane z pliku
+- zombie czasami nie atakuje po ogłuszeniu [Zielu]
+- bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze
 - brak kamery śmierci u klienta
-- gorush shaman nie zakłada nowego pancerza
+- gorush shaman nie zakłada nowego pancerza [Zielu]
 - brak tekstury u gorush shaman
 
 --------------------------------------------------------------------------------
@@ -19,7 +21,7 @@ Poprawki:
 - gdy klient daje amulet/pierścień bohaterowni nie widać go aż do kolejnej wymiany przedmiotów
 - u klienta po dołączeniu do serwera zawsze wyświetla się że nie ma hasła
 - crash przy szybkim wczytywaniu gry w multiplayer gdy podmieniło się w tle zapis na niekompatybilny
-- w skrzyniach mogło wygenerować eliksiry siły/kondycji/zręczności
+- w skrzyniach mogło wygenerować eliksiry siły/kondycji/zręczności [Zielu]
 - błąd wczytywania zapisu u klienta gdy ktoś strzelił z łuku
 - błędna interpolacja jednostek przy użyciu komendy 'speed'
 
