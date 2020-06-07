@@ -111,7 +111,7 @@ enum UNIT_FLAGS2
 	F2_ALPHA_BLEND = 1 << 15, // use alpha blend when rendering
 	F2_STUN_RESISTANCE = 1 << 16, // 50% resistance to stuns
 	F2_SIT_ON_THRONE = 1 << 17, // ai can sit on throne
-	// unused (1 << 18)
+	F2_GUARD = 1 << 18, // unit is guard (don't use some idle texts)
 	// unused (1 << 19)
 	F2_XAR = 1 << 20, // pray in front of altar
 	// unused (1 << 21)
@@ -124,7 +124,7 @@ enum UNIT_FLAGS2
 	F2_MAGIC_RES25 = 1 << 28, // 25% magic resistance
 	// unused (1 << 29)
 	F2_GUARDED = 1 << 30, // units spawned in same room protect and follow their leader (only works in dungeon Event::unit_to_spawn)
-	F2_NOT_GOBLIN = 1 << 31 // unit is in goblin group but don't use goblin idle texts
+	// unused (1 << 31)
 };
 
 //-----------------------------------------------------------------------------
@@ -223,6 +223,7 @@ struct UnitData
 	AbilityList* abilities;
 	Int2 gold, gold2;
 	GameDialog* dialog;
+	GameDialog* idleDialog;
 	UNIT_GROUP group;
 	float walk_speed, run_speed, rot_speed, width, attack_range, blood_size;
 	BLOOD blood;
@@ -240,8 +241,8 @@ struct UnitData
 	Vec4 tint;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(0), hp_lvl(0), stamina(0), attack(0), attack_lvl(0), def(0), def_lvl(0),
-		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), abilities(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f),
-		run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
+		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), abilities(nullptr), gold(0), gold2(0), dialog(nullptr), idleDialog(nullptr), group(G_CITIZENS),
+		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(nullptr),
 		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0), tint(Vec4::One)
 	{

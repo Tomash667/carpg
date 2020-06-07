@@ -70,19 +70,22 @@ struct DialogContext
 
 	~DialogContext() { ClearChoices(); }
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr, Quest* quest = nullptr);
-	void StartNextDialog(GameDialog* dialog, Quest* quest = nullptr);
+	void StartNextDialog(GameDialog* dialog, Quest* quest = nullptr, bool returns = true);
 	void Update(float dt);
 	void EndDialog();
 	void ClearChoices();
-	cstring GetText(int index);
+	cstring GetText(int index, bool multi = false);
 	bool ExecuteSpecial(cstring msg);
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);
 	void RemoveQuestDialog(Quest_Scripted* quest);
+	cstring GetIdleText(Unit& talker);
 private:
 	void UpdateLoop();
 	bool DoIfOp(int value1, int value2, DialogOp op);
 	bool LearnPerk(Perk* perk);
 	bool RecruitHero(Class* clas);
+
+	bool idleMode;
 };

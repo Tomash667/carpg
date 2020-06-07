@@ -235,7 +235,6 @@ public:
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
-	cstring GetRandomIdleText(Unit& u);
 private:
 	void GetPostEffects(vector<PostEffect>& postEffects);
 public:
@@ -324,7 +323,7 @@ public:
 	int fallback_1, fallback_2;
 	float fallback_t;
 	// dialogs
-	DialogContext dialog_context;
+	DialogContext dialog_context, idle_context;
 	vector<string> dialog_choices; // used in client multiplayer mode
 	string predialog;
 
@@ -416,9 +415,7 @@ public:
 		txLoadingShaders, txLoadingLanguageFiles;
 	cstring txAiNoHpPot[2], txAiNoMpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort,
 		txAiDwarfFort, txAiTower, txAiArmory, txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies,
-		txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7],
-		txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2],
-		txAiDrunkMageText[3], txAiDrunkText[6], txAiDrunkContestText[4], txAiWildHunterText[3];
+		txAiNearEnemies, txAiCave;
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
 		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;

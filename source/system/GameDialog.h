@@ -6,6 +6,7 @@ enum DialogType : short
 	DTF_CHOICE,
 	DTF_TRADE,
 	DTF_TALK,
+	DTF_MULTI_TALK,
 	DTF_RESTART,
 	DTF_END,
 	DTF_END2,
@@ -14,6 +15,7 @@ enum DialogType : short
 	DTF_SET_QUEST_PROGRESS,
 	DTF_IF_QUEST_TIMEOUT,
 	DTF_IF_RAND,
+	DTF_IF_RAND_P,
 	DTF_CHECK_QUEST_TIMEOUT,
 	DTF_IF_HAVE_QUEST_ITEM,
 	DTF_IF_HAVE_QUEST_ITEM_CURRENT,
@@ -36,7 +38,9 @@ enum DialogType : short
 	DTF_IF_SCRIPT,
 	DTF_JMP,
 	DTF_CJMP,
-	DTF_IF_VAR
+	DTF_IF_VAR,
+	DTF_NEXT,
+	DTF_RAND_VAR
 };
 
 //-----------------------------------------------------------------------------
@@ -115,6 +119,7 @@ struct GameDialog
 	QuestScheme* quest;
 
 	Text& GetText(int index);
+	Text& GetMultiText(int value);
 
 	static GameDialog* TryGet(cstring id);
 	static GameDialog* GetS(const string& id)

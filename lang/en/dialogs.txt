@@ -1926,3 +1926,167 @@ dialog cleric_seller {
 	10 "I sense the magical aura emanating from this stone. It is cursed! Unfortunately, I can't remove the curse from it, better get rid of it."
 	11 "End dialog"
 }
+
+//==============================================================================
+dialog generic_idle {
+	0 { // generic
+		"Boring! Why doesn't anything interesting happen here?"
+		"Did you hear about what happened the other day?"
+		"Where's my bow?"
+		"Did you hear something interesting?"
+		"I saw how you looked at me!"
+		"If only I could find a treasure..."
+		"Hmmm, what was I supposed to do?"
+		"I thought that I had more gold."
+		"What if I threw it all to hell?"
+		"Nowdays, you can't rely on anyone, that's what."
+	}
+	1 { // outside location
+		"At least it's not raining."
+		"Yeah, a wonderful day... The only thing that's missing is a nice hot meteor shower!"
+		"Nice weather today, eh?"
+	}
+	2 { // inside location
+		"What was that sound?"
+		"I hope that nothing will fall on my head."
+	}
+}
+
+//==============================================================================
+dialog hero_idle {
+	0 { // city
+		"I could use a beer."
+		"Can we go to the inn?"
+		"I wonder if the blacksmith has a good and cheap armor for me."
+		"I'd buy myself a better weapon but there is nothing interesting."
+		"Those guards are good for nothing."
+	}
+	1 { // outside location
+		"Something moved in those bushes."
+		"That tree is strange..."
+	}
+	2 { // inside location
+		"What's that smell?"
+		"Watch out for traps."
+		"Another dungeon. Wonderful..."
+		"Remember how I killed that monster?"
+	}
+}
+
+//==============================================================================
+dialog secret_idle {
+	0 {
+		"What did one snowman say to the other?"
+		"Moonstone, moonwell. Did it have anything to do with those?"
+		"What lies in the shadow of the statue?"
+	}
+}
+
+//==============================================================================
+dialog citizen_idle {
+	0 { // generic
+		"People keep talking..."
+		"In this story, however, there must be a grain of truth."
+		"Once such things were settled differently."
+	}
+	1 { // generic non-guard
+		"Damn guards, good for nothing useful."
+	}
+	2 { // before contest
+		"Ahhhh, another contest. These memories..."
+		"What the hell are we waiting for?!"
+		"Contest! Contest! Contest!"
+		"Beer! Gimme beer!"
+	}
+	3 { // drunk
+		"And those who don't drink will be beaten!"
+		"(hic)"
+		"I need more beer!"
+		"Don't you want to have a drink with me?!"
+		"Onlyyyy oneeee moooree beeereee..."
+		"The sound of the harp, the wind hum, water, water, change into rum!"
+	}
+}
+
+//==============================================================================
+dialog bandit_idle {
+	0 {
+		"Where is the caravan?!"
+		"Merchants are late as usual, we have to teach them a lesson by stealing more gold."
+		"Where's the gold for the boss?"
+		"My fists are tingling."
+		"Where is my beer?!"
+		"Fuck!"
+		"I would not want to be in his skin right now."
+	}
+}
+
+//==============================================================================
+dialog goblin_idle {
+	0 {
+		"Eat rubble!"
+		"Hard is the life of a goblin!"
+		"Being a goblin is like playing on hard difficulty!"
+		"Who took my rags!"
+		"Goblin beer tastes like piss! Even once drunk!"
+	}
+}
+
+//==============================================================================
+dialog orc_idle {
+	0 {
+		"How many people did you kill today?"
+		"Where is my fucking axe?"
+		"This mora was a good fighter! And he was tasty..."
+		"Time to loot a village."
+		"Ask the chief when we loot a village."
+		"When will we loot a village?"
+		"It was a long time ago since we looted a village."
+	}
+}
+
+//==============================================================================
+dialog mage_idle {
+	0 {
+		"Strange! This should not happen."
+		"Someone is watching us. Pretend you don't see."
+		"How should I call this new spell..."
+		"This spell has some weird side effects..."
+	}
+}
+
+//==============================================================================
+dialog wild_hunter_idle {
+	0 {
+		"Cursed woodcutters! They would have cleared the whole forest if they let it happen!"
+		"Where did I leave my wolf costume?"
+		"I will not rest until the anger of nature destroys this city!"
+	}
+}
+
+//==============================================================================
+dialog crazy_idle {
+	0 {
+		"Do you know that what I say now isn't a hint on how to find a treasure worth a million gold pieces?"
+		"There is nothing to say."
+		"Execute instruction #0xDEADC0DE#."
+		"Where's my cake?"
+		"I know that I know nothing. But do they know?"
+		"Day 13, they still think I'm one of them."
+		"Do not look back..."
+		"(mumble)"
+		"(humming)"
+		"You know the definition of insanity?"
+		"Killing in the morning is like cream."
+		"What? No! Oh yes, yes, you are right!"
+	}
+}
+
+//==============================================================================
+dialog drunk_mage_idle {
+	0 {
+		"(hic)"
+		"Where is (hic) my beer?!"
+		"(HIC)"
+	}
+}

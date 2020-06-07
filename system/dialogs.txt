@@ -4205,7 +4205,6 @@ dialog mage_seller
 	show_choices
 }
 
-
 //==============================================================================
 dialog cleric_seller
 {
@@ -4249,4 +4248,147 @@ dialog cleric_seller
 	escape choice 11
 		end
 	show_choices
+}
+
+//==============================================================================
+dialog generic_idle {
+	if rand 60%
+		talk 0
+	else if script "Level::location.outside"
+		talk 1
+	else
+		talk 2
+	end
+}
+
+//==============================================================================
+dialog hero_idle {
+	if script "Level::location.type == L_CITY"
+		talk 0
+	else if script "Level::location.outside"
+		talk 1
+	else
+		talk 2
+	end
+}
+
+//==============================================================================
+dialog secret_idle {
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog bandit_idle {
+	if rand 2
+		talk 0
+	next "generic_idle"
+	end
+}
+
+//==============================================================================
+dialog goblin_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog orc_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog wild_hunter_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog crazy_idle
+{
+	if rand 100
+		next "secret_idle"
+	if script "target.IsTeamMember()"
+	{
+		random
+		{
+			chance 1
+				talk 0
+			chance 1
+				next "hero_idle"
+			chance 1
+				next "generic_idle"
+		}
+	}
+	else
+	{
+		if rand 2
+			talk 0
+		else
+			next "generic_idle"
+	}
+	end
+}
+
+//==============================================================================
+dialog citizen_idle
+{
+	if rand 100
+		next "secret_idle"
+	if script "target.IsTeamMember()"
+	{
+		random
+		{
+			chance 10
+				if special "is_guard"
+					talk 0
+				else
+					talk 0, 1
+			chance 45
+				next "hero_idle"
+			chance 45
+				next "generic_idle"
+		}
+	}
+	else
+	{
+		if special "is_inside_inn"
+		{
+			if special "is_before_contest"
+				talk 2
+			else if rand 3
+				talk 3
+		}
+		if rand 2
+		{
+			if special "is_guard"
+				talk 0
+			else
+				talk 0, 1
+		}
+		next "generic_idle"
+	}
+	end
+}
+
+//==============================================================================
+dialog mage_idle
+{
+	if rand 2
+		talk 0
+	next "generic_idle"
+	end
+}
+
+//==============================================================================
+dialog drunk_mage_idle
+{
+	if special "is_drunkmage"
+		talk 0
+	next "citizen_idle"
+	end
 }

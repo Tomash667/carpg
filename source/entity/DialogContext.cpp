@@ -16,6 +16,7 @@
 #include "QuestManager.h"
 #include "QuestScheme.h"
 #include "Quest_Bandits.h"
+#include "Quest_Contest.h"
 #include "Quest_Evil.h"
 #include "Quest_Goblins.h"
 #include "Quest_Mages.h"
@@ -52,6 +53,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	dialog_wait = -1;
 	dialog_pos = 0;
 	show_choices = false;
+	idleMode = false;
 	dialog_text = nullptr;
 	dialog_once = true;
 	dialog_quest = quest;
@@ -118,14 +120,50 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 }
 
 //=================================================================================================
-void DialogContext::StartNextDialog(GameDialog* new_dialog, Quest* quest)
+void DialogContext::StartNextDialog(GameDialog* new_dialog, Quest* quest, bool returns)
 {
 	assert(new_dialog);
 
-	prev.push_back({ dialog, dialog_quest, dialog_pos });
+	if(returns)
+		prev.push_back({ dialog, dialog_quest, dialog_pos });
 	dialog = new_dialog;
 	dialog_quest = quest;
 	dialog_pos = -1;
+}
+
+//=================================================================================================
+cstring DialogContext::GetIdleText(Unit& talker)
+{
+	assert(talker.data->idleDialog);
+
+	dialog_wait = -1;
+	dialog_pos = 0;
+	show_choices = false;
+	idleMode = true;
+	dialog_text = nullptr;
+	dialog_once = true;
+	dialog_quest = nullptr;
+	dialog_skip = -1;
+	dialog_esc = -1;
+	this->talker = &talker;
+	dialog = talker.data->idleDialog;
+	update_news = true;
+	update_locations = 1;
+	ClearChoices();
+	can_skip = true;
+	force_end = false;
+	quest_dialogs.clear();
+	quest_dialog_index = QUEST_INDEX_NONE;
+
+	ScriptContext& ctx = script_mgr->GetContext();
+	ctx.pc = nullptr;
+	ctx.target = this->talker;
+	current = this;
+	UpdateLoop();
+	current = nullptr;
+	ctx.target = nullptr;
+
+	return dialog_text;
 }
 
 //=================================================================================================
@@ -393,8 +431,9 @@ void DialogContext::UpdateLoop()
 			}
 			return;
 		case DTF_TALK:
+		case DTF_MULTI_TALK:
 			{
-				cstring msg = GetText(de.value);
+				cstring msg = GetText(de.value, de.type == DTF_MULTI_TALK);
 				DialogTalk(msg);
 				++dialog_pos;
 			}
@@ -423,6 +462,11 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_IF_RAND:
 			cmp_result = (Rand() % de.value == 0);
+			if(de.op == OP_NOT_EQUAL)
+				cmp_result = !cmp_result;
+			break;
+		case DTF_IF_RAND_P:
+			cmp_result = (Rand() % 100 < de.value);
 			if(de.op == OP_NOT_EQUAL)
 				cmp_result = !cmp_result;
 			break;
@@ -664,6 +708,16 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_VAR:
 			cmp_result = DoIfOp(var, de.value, de.op);
 			break;
+		case DTF_NEXT:
+			{
+				cstring id = dialog->strs[de.value].c_str();
+				GameDialog* dialog = GameDialog::TryGet(id);
+				StartNextDialog(dialog, nullptr, false);
+			}
+			break;
+		case DTF_RAND_VAR:
+			var = Rand() % de.value;
+			break;
 		default:
 			assert(0 && "Unknown dialog type!");
 			break;
@@ -713,9 +767,9 @@ void DialogContext::ClearChoices()
 }
 
 //=================================================================================================
-cstring DialogContext::GetText(int index)
+cstring DialogContext::GetText(int index, bool multi)
 {
-	GameDialog::Text& text = dialog->GetText(index);
+	GameDialog::Text& text = multi ? dialog->GetMultiText(index) : dialog->GetText(index);
 	const string& str = dialog->strs[text.index];
 
 	if(!text.formatted)
@@ -1616,6 +1670,14 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	}
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
+	else if(strcmp(msg, "is_inside_inn") == 0)
+		return talker->area->area_type == LevelArea::Type::Building && game_level->city_ctx->FindInn() == talker->area;
+	else if(strcmp(msg, "is_before_contest") == 0)
+		return quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_TODAY;
+	else if(strcmp(msg, "is_drunkmage") == 0)
+		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
+	else if(strcmp(msg, "is_guard") == 0)
+		return IsSet(talker->data->flags2, F2_GUARD);
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -1718,6 +1780,8 @@ void DialogContext::DialogTalk(cstring msg)
 
 	dialog_text = msg;
 	dialog_wait = 1.f + float(strlen(dialog_text)) / 20;
+	if(idleMode)
+		return;
 
 	int ani;
 	if(!talker->usable && talker->data->type == UNIT_TYPE::HUMAN && talker->action == A_NONE && Rand() % 3 != 0)

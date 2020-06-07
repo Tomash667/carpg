@@ -75,6 +75,7 @@ enum Property
 	P_ABILITIES,
 	P_GOLD,
 	P_DIALOG,
+	P_IDLE_DIALOG,
 	P_GROUP,
 	P_DMG_TYPE,
 	P_WALK_SPEED,
@@ -217,6 +218,7 @@ void UnitLoader::InitTokenizer()
 		{ "abilities", P_ABILITIES },
 		{ "gold", P_GOLD },
 		{ "dialog", P_DIALOG },
+		{ "idle_dialog", P_IDLE_DIALOG },
 		{ "group", P_GROUP },
 		{ "dmg_type", P_DMG_TYPE },
 		{ "walk_speed", P_WALK_SPEED },
@@ -305,6 +307,7 @@ void UnitLoader::InitTokenizer()
 		{ "alpha_blend", F2_ALPHA_BLEND },
 		{ "stun_res", F2_STUN_RESISTANCE },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
+		{ "guard", F2_GUARD },
 		{ "xar", F2_XAR },
 		{ "tournament", F2_TOURNAMENT },
 		{ "yell", F2_YELL },
@@ -313,8 +316,7 @@ void UnitLoader::InitTokenizer()
 		{ "backstab_res", F2_BACKSTAB_RES },
 		{ "magic_res50", F2_MAGIC_RES50 },
 		{ "magic_res25", F2_MAGIC_RES25 },
-		{ "guarded", F2_GUARDED },
-		{ "not_goblin", F2_NOT_GOBLIN }
+		{ "guarded", F2_GUARDED }
 		});
 
 	t.AddKeywords(G_FLAGS3, {
@@ -837,6 +839,15 @@ void UnitLoader::ParseUnit(const string& id)
 				}
 			}
 			break;
+		case P_IDLE_DIALOG:
+			{
+				const string& id = t.MustGetText();
+				unit->idleDialog = GameDialog::TryGet(id.c_str());
+				if(!unit->idleDialog)
+					t.Throw("Missing dialog '%s'.", id.c_str());
+				crc.Update(id);
+			}
+			break;
 		case P_GROUP:
 			unit->group = (UNIT_GROUP)t.MustGetKeywordId(G_GROUP);
 			crc.Update(unit->group);
@@ -1111,6 +1122,9 @@ void UnitLoader::ParseUnit(const string& id)
 		if(unit->type == UNIT_TYPE::HUMAN && unit->mesh != game_res->aHuman)
 			t.Throw("Human unit with custom mesh.");
 	}
+
+	if(!IsSet(unit->flags2, F2_DONT_TALK) && !unit->idleDialog)
+		LoadError("Missing idle dialog.");
 
 	UnitData::units.insert(unit.Pin());
 }

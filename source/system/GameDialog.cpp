@@ -136,6 +136,66 @@ GameDialog::Text& GameDialog::GetText(int index)
 }
 
 //=================================================================================================
+GameDialog::Text& GameDialog::GetMultiText(int value)
+{
+	union
+	{
+		int val;
+		byte index[4];
+	} map;
+
+	map.val = value;
+	int groupCount;
+	if(map.index[0] == map.index[2])
+		groupCount = 2;
+	else if(map.index[0] == map.index[3])
+		groupCount = 3;
+	else
+		groupCount = 4;
+
+	int textCount[4] = { 0 };
+	int total = 0;
+	for(int i = 0; i < groupCount; ++i)
+	{
+		int index = map.index[i];
+		GameDialog::Text& text = texts[index];
+		int count = 1;
+		if(text.next != -1)
+		{
+			GameDialog::Text* t = &texts[index];
+			while(t->next != -1)
+			{
+				++count;
+				t = &texts[t->next];
+			}
+		}
+		textCount[i] = count;
+		total += count;
+	}
+
+	int index = Rand() % total;
+	int offset = 0;
+	for(int i = 0; i < groupCount; ++i)
+	{
+		if(index < offset + textCount[i])
+		{
+			index -= offset;
+			GameDialog::Text* t = &texts[map.index[i]];
+			for(int i = 0; i <= index; ++i)
+			{
+				if(i == index)
+					return *t;
+				t = &texts[t->next];
+			}
+		}
+		offset += textCount[i];
+	}
+
+	assert(0);
+	return texts[0];
+}
+
+//=================================================================================================
 GameDialog* GameDialog::TryGet(cstring id)
 {
 	auto it = dialogs.find(id);

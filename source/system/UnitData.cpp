@@ -83,6 +83,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	gold = ud.gold;
 	gold2 = ud.gold2;
 	dialog = ud.dialog;
+	idleDialog = ud.idleDialog;
 	group = ud.group;
 	walk_speed = ud.walk_speed;
 	run_speed = ud.run_speed;

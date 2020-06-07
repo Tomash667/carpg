@@ -1240,7 +1240,7 @@ void Game::UpdateAi(float dt)
 										ai.st.idle.action = AIController::Idle_Chat;
 										ai.timer = Random(2.f, 3.f);
 
-										cstring msg = GetRandomIdleText(u);
+										cstring msg = game->idle_context.GetIdleText(u);
 
 										int ani = 0;
 										game_gui->level_gui->AddSpeechBubble(&u, msg);

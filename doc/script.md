@@ -331,6 +331,7 @@ Properties:
 * Vec2 pos - readonly
 * string name
 * LOCATION type - readonly
+* bool outside - readonly
 * LOCATION_IMAGE image
 * int st
 * int levels - readonly, return count of level areas (for dungeon this is dungeon levels, for city enterable buildings + 1 for outside area)

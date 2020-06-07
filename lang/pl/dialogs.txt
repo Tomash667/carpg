@@ -1929,3 +1929,167 @@ dialog cleric_seller {
 	10 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
 	11 "Koniec rozmowy"
 }
+
+//==============================================================================
+dialog generic_idle {
+	0 { // generic
+		"Nuda! Czemu nie dzieje siê tu nic ciekawego?"
+		"S³ysza³eœ o tym co siê ostatnio wydarzy³o?"
+		"Gdzie jest mój ³uk?"
+		"S³ysza³eœ coœ ciekawego?"
+		"Widzia³em jak siê na mnie spojrza³eœ!"
+		"Gdyby tak znaleŸæ jakiœ skarb..."
+		"Hmmm, co to ja mia³em zrobiæ?"
+		"Wydawa³o mi siê, ¿e mia³em wiêcej z³ota."
+		"A gdyby tak rzuciæ to wszystko w cholerê?"
+		"W dzisiejszych czasach na nikim nie mo¿na polegaæ, ot co."
+	}
+	1 { // outside location
+		"Przynajmniej dzisiaj nie pada."
+		"Taa, cudowny dzieñ... Brakuje tylko deszczu meteorytów!"
+		"£adna dzisiaj pogoda, co?"
+	}
+	2 { // inside location
+		"Co to by³ za dŸwiêk?"
+		"Mam nadzieje ¿e nie spadnie mi coœ na g³owê."
+	}
+}
+
+//==============================================================================
+dialog hero_idle {
+	0 { // city
+		"Napi³bym siê piwa."
+		"Idziemy do karczmy?"
+		"Ciekawe czy kowal ma jakiœ dobry i tani pancerz dla mnie."
+		"Kupi³bym sobie jak¹œ lepsza broñ ale tu nic nie ma ciekawego."
+		"Ci stra¿nicy nic nie potrafi¹."
+	}
+	1 { // outside location
+		"W tamtych krzakach coœ siê poruszy³o."
+		"Dziwne to drzewo..."
+	}
+	2 { // inside location
+		"Co tu tak œmierdzi?"
+		"Uwa¿aj na pu³apki."
+		"Kolejne podziemia. Cudownie..."
+		"Pamiêtasz jak zabi³em tego potwora?"
+	}
+}
+
+//==============================================================================
+dialog secret_idle {
+	0 {
+		"Co powiedzia³ jeden ba³wanek do drugiego?"
+		"Kamieñ ksiê¿ycowy, ksiê¿ycowa studnia. Czy to ma jakiœ zwi¹zek?"
+		"Co le¿y w cieniu pos¹gu?"
+	}
+}
+
+//==============================================================================
+dialog citizen_idle {
+	0 { // generic
+		"Ludzie ci¹gle gadaj¹..."
+		"W tej historii musi byæ jednak ziarno prawdy."
+		"Kiedyœ takie sprawy za³atwia³o siê inaczej."
+	}
+	1 { // generic non-guard
+		"Cholerni stra¿nicy, do niczego siê nie przydaj¹."
+	}
+	2 { // before contest
+		"Ahhhh, kolejne zawody. A¿ siê ³ezka w oku krêci..."
+		"Na co jeszcze czekamy?!"
+		"Zawody! Zawody! Zawody!"
+		"Piwa! Piwa dajcie!"
+	}
+	3 { // drunk
+		"A kto z nami nie wypije tego we dwa kije!"
+		"(hic)"
+		"Potrzeba wiêcej piwa!"
+		"Ze mn¹ siê nie napijesz?!"
+		"Jesssce tylkoooo jeddnoo piwoo..."
+		"DŸwiêku harfy, wiatru szum, wodo, wodo, zmieñ siê w rum!"
+	}
+}
+
+//==============================================================================
+dialog bandit_idle {
+	0 {
+		"Gdzie ta karawana?!"
+		"Kupcy jak zwykle siê spóŸniaj¹, trzeba ukraœæ im wiêcej z³ota za karê."
+		"Gdzie z³oto dla szefa?"
+		"Piêœci mnie œwierzbi¹."
+		"Gdzie moje piwo?!"
+		"Kurwa!"
+		"Nie chcia³bym byæ teraz w jego skórze."
+	}
+}
+
+//==============================================================================
+dialog goblin_idle {
+	0 {
+		"¯ryj gruz!"
+		"Ciê¿kie jest ¿ycie goblina!"
+		"Byæ goblinem to jak graæ na poziomie trudnym!"
+		"Kto zabra³ moje ³achmany!"
+		"Gobliñskie piwo smakuje jak siki! I to ju¿ raz wypite!"
+	}
+}
+
+//==============================================================================
+dialog orc_idle {
+	0 {
+		"Ile dziœ zabi³eœ ludzi?"
+		"Gdzie jest mój topór do kurwy?"
+		"Ta mora dobrze walczy³a! I by³a smaczna..."
+		"Czas z³upiæ jak¹œ wioskê."
+		"Zapytaj wodza kiedy z³upimy jak¹œ wioskê."
+		"Kiedy z³upimy jak¹œ wioskê?"
+		"Dawno nie z³upiliœmy ¿adnej wioski."
+	}
+}
+
+//==============================================================================
+dialog mage_idle {
+	0 {
+		"Dziwne! To nie powinno siê wydarzyæ."
+		"Ktoœ nas obserwuje. Udawaj ¿e nie widzisz."
+		"Jak by nazwaæ to nowe zaklêcie..."
+		"Ten czar ma dziwne efekty uboczne..."
+	}
+}
+
+//==============================================================================
+dialog wild_hunter_idle {
+	0 {
+		"Przeklêci drwale! Wykarczowali by ca³y las gdyby im na to pozwoliæ!"
+		"Gdzie ja zostawi³em mój kostium wilka?"
+		"Nie spocznê dopóki gniew natury nie zniszczy tego miasta!"
+	}
+}
+
+//==============================================================================
+dialog crazy_idle {
+	0 {
+		"Czy wiesz ¿e to co teraz mówiê nie jest podpowiedzi¹ jak znaleŸæ skarb wart milion sztuk z³ota?"
+		"Nie ma nic do powiedzenia."
+		"Wykonaæ instrukcjê #0xDEADC0DE#."
+		"Gdzie jest moje ciastko?!"
+		"Wiem, ¿e nic nie wiem. Ale czy oni to wiedz¹?"
+		"Dzieñ 13, nadal myœl¹ ¿e jestem jednym z nich."
+		"Nie ogl¹daj siê za siebie..."
+		"(mamrotanie)"
+		"(nuci)"
+		"Znasz definicje szaleñstwa?"
+		"Mordowanie z rana jak œmietana."
+		"Co? Nie! A tak, tak, masz racjê!"
+	}
+}
+
+//==============================================================================
+dialog drunk_mage_idle {
+	0 {
+		"(hic)"
+		"Gdzie moje (hic) piwo?!"
+		"(HIC)"
+	}
+}

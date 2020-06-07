@@ -1295,6 +1295,7 @@ unit base_human {
 		random {!-2short_blade !-2axe !-2blunt}
 		random 1 3 !normal_food
 	}
+	idle_dialog citizen_idle
 }
 
 unit base_player : base_human {
@@ -1460,7 +1461,7 @@ unit soltys : mayor {
 
 unit base_guard : base_human {
 	level {5 6}
-	flags | dont_eat
+	flags | {dont_eat guard}
 	items guard
 	gold {{50 100} {60 120}}
 	dialog guard
@@ -1483,7 +1484,7 @@ unit guard_move : base_guard {
 
 unit guard_captain : base_human {
 	level 10
-	flags | {ai_guard ai_stay dont_eat limited_rot}
+	flags | {ai_guard ai_stay dont_eat limited_rot guard}
 	items guard
 	gold {100 200}
 	dialog guard_captain
@@ -1719,6 +1720,7 @@ unit q_magowie_stary : base_human {
 	gold {150 300}
 	abilities mage
 	dialog q_mages2
+	idle_dialog drunk_mage_idle
 	class mage
 }
 
@@ -1814,6 +1816,7 @@ unit base_goblin {
 	width 0.3
 	attack_range 0.8
 	armor_type goblin
+	idle_dialog goblin_idle
 }
 
 unit goblin : base_goblin {
@@ -1879,7 +1882,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders specific_name boss sit_on_throne not_goblin}
+	flags | {archer hero ai_wanders specific_name boss sit_on_throne}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -1898,7 +1901,7 @@ unit q_gobliny_szlachcic2 : base_human {
 
 unit q_gobliny_ochroniarz : base_human {
 	level 8
-	flags | {ai_train not_goblin}
+	flags | ai_train
 	items guard
 	gold {80 160}
 	dialog bodyguard
@@ -1943,6 +1946,7 @@ unit base_orc {
 	width 0.41
 	attack_range 1
 	armor_type orc
+	idle_dialog orc_idle
 }
 
 unit base_gorush : base_orc {
@@ -1950,6 +1954,7 @@ unit base_gorush : base_orc {
 	dialog q_orcs2
 	gold {10 30}
 	group citizens
+	idle_dialog citizen_idle
 }
 
 unit q_orkowie_gorush : base_gorush {
@@ -2366,6 +2371,7 @@ unit necromancer : base_human {
 		{exploding_skull 13}
 	}
 	group undead
+	dialog mage_idle
 	blood black
 	tex {
 		null
@@ -2446,6 +2452,7 @@ unit evil_cleric : base_human {
 		"evil.jpg"
 		null
 	}
+	dialog mage_idle
 }
 
 unit evil_cleric2 : evil_cleric {
@@ -2463,7 +2470,7 @@ unit evil_cleric2 : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res}
+	flags | {dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res dont_talk}
 	hp 2000
 	items {
 		blunt_skullsmasher
@@ -2501,6 +2508,7 @@ unit q_zlo_boss : base_human {
 //------------------------------------------------------------------------------
 unit base_bandit : base_human {
 	dialog bandit
+	idle_dialog bandit_idle
 	group bandits
 }
 
@@ -2680,6 +2688,7 @@ unit mage : base_human {
 	gold {{50 100}{80 160}}
 	abilities mage
 	dialog mage_bodyguard
+	idle_dialog mage_idle
 	group mages
 }
 
@@ -2719,6 +2728,7 @@ unit mage_guard : base_human {
 	}
 	gold {{25 50}{40 80}}
 	dialog mage_bodyguard
+	idle_dialog generic_idle
 	group mages
 }
 
@@ -2820,6 +2830,7 @@ unit q_magowie_boss : base_human {
 		{thunder_bolt 0}
 	}
 	dialog q_mages2
+	idle_dialog mage_idle
 	group mages
 }
 
@@ -3080,6 +3091,7 @@ unit wild_hunter : base_human {
 		"crazy_hunter.jpg"
 		null
 	}
+	idle_dialog wild_hunter_idle
 }
 
 unit q_szaleni_szaleniec : wild_hunter {
@@ -3104,6 +3116,7 @@ unit base_crazy : base_human {
 	level {5 20}
 	flags | {crazy hero tournament ai_wanders}
 	dialog crazy
+	idle_dialog crazy_idle
 	group crazies
 	gold {{50 100}{200 400}}
 }

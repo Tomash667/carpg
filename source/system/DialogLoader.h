@@ -48,7 +48,9 @@ public:
 		Block,
 		Statement,
 		Switch,
-		Case
+		Case,
+		Random,
+		Chance
 	};
 
 	enum class IfOp
@@ -92,6 +94,7 @@ public:
 	Node* ParseIf();
 	Node* ParseChoice();
 	Node* ParseSwitch();
+	Node* ParseRandom();
 	DialogOp GetNegatedOp(DialogOp op);
 	bool BuildDialog(Node* node);
 	bool BuildDialogBlock(Node* node);
