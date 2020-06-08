@@ -1290,7 +1290,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						Unit* t = player.action_unit;
 						uint add_as_team = team_count;
-						if(player.action == PlayerAction::GiveItems)
+						if(player.action == PlayerAction::GiveItems && slot.item->type != IT_CONSUMABLE)
 						{
 							add_as_team = 0;
 							int price = slot.item->value / 2;

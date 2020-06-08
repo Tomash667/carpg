@@ -690,7 +690,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit.action == A_ATTACK && unit.animation_state == AS_ATTACK_PREPARE)
 					{
 						unit.animation_state = AS_ATTACK_CAN_HIT;
-						unit.mesh_inst->groups[1].speed = attack_speed;
+						unit.mesh_inst->groups[group].speed = attack_speed;
 					}
 					else
 					{

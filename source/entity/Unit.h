@@ -745,6 +745,7 @@ public:
 	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
 	bool HaveAmulet() const { return slots[SLOT_AMULET] != nullptr; }
 	bool CanWear(const Item* item) const;
+	bool WantItem(const Item* item) const;
 	const Weapon& GetWeapon() const
 	{
 		assert(HaveWeapon());

@@ -437,6 +437,25 @@ bool Unit::CanWear(const Item* item) const
 }
 
 //=================================================================================================
+bool Unit::WantItem(const Item* item) const
+{
+	if(item->type != IT_CONSUMABLE)
+		return false;
+
+	const Consumable& cons = item->ToConsumable();
+	switch(cons.aiType)
+	{
+	case Consumable::AiType::None:
+	default:
+		return false;
+	case Consumable::AiType::Healing:
+		return true;
+	case Consumable::AiType::Mana:
+		return IsUsingMp();
+	}
+}
+
+//=================================================================================================
 bool Unit::DropItem(int index)
 {
 	bool no_more = false;

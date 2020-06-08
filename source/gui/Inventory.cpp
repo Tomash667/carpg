@@ -951,6 +951,7 @@ void InventoryPanel::Update(float dt)
 							else
 								option = 0;
 						}
+
 						if(option == 2)
 							count = slot->count;
 						else if(option == 1)
@@ -1025,10 +1026,10 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
-						if(input->Down(Key::Control))
-							count = 1;
-						else if(input->Down(Key::Shift))
+						if(input->Down(Key::Shift))
 							count = slot->team_count;
+						else if(input->Down(Key::Control))
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -1065,9 +1066,9 @@ void InventoryPanel::Update(float dt)
 					if(item->IsStackable() && slot->team_count != 1)
 					{
 						if(input->Down(Key::Shift))
-							count = 1;
-						else if(input->Down(Key::Control))
 							count = slot->team_count;
+						else if(input->Down(Key::Control))
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -1148,15 +1149,15 @@ void InventoryPanel::Update(float dt)
 							c.id = i_index;
 						}
 					}
-					else if(item->type == IT_CONSUMABLE && item->ToConsumable().aiType != Consumable::AiType::None)
+					else if(t->WantItem(item))
 					{
 						uint count;
 						if(slot->count != 1)
 						{
-							if(input->Down(Key::Control))
-								count = 1;
-							else if(input->Down(Key::Shift))
+							if(input->Down(Key::Shift))
 								count = slot->count;
+							else if(input->Down(Key::Control))
+								count = 1;
 							else
 							{
 								counter = 1;
@@ -2344,7 +2345,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// add
-	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
+	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
 	{

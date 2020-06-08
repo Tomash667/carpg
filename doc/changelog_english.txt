@@ -14,6 +14,9 @@ Version 0.16 (???):
 - no death camera for clients
 - gorush shaman not using his new armor [Zielu]
 - gorush missing shaman texture
+- random client crash after fighting with golems [Zielu]
+- fixed reversed shift/control key in give/share items
+- heroes without mana don't collect mana potions
 
 --------------------------------------------------------------------------------
 Fixes:
