@@ -163,7 +163,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 		}
 	}
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 	return true;
 }
 

@@ -275,3 +275,36 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		build_state = BuildState::Finished;
 	}
 }
+
+//=================================================================================================
+int Quest_Sawmill::OnProgress(int d)
+{
+	int income = 0;
+
+	if(sawmill_state == State::InBuild)
+	{
+		days += d;
+		if(days >= 30 && game_level->city_ctx && game->game_state == GS_LEVEL)
+		{
+			days = 29;
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+			if(u)
+			{
+				messenger = u;
+				u->OrderAutoTalk(true);
+			}
+		}
+	}
+	else if(sawmill_state == State::Working)
+	{
+		days += d;
+		int count = days / 30;
+		if(count)
+		{
+			days -= count * 30;
+			income += count * PAYMENT;
+		}
+	}
+
+	return income;
+}

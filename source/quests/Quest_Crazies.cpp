@@ -2,6 +2,7 @@
 #include "Quest_Crazies.h"
 
 #include "AIController.h"
+#include "Encounter.h"
 #include "Game.h"
 #include "GameFile.h"
 #include "GameMessages.h"
@@ -74,6 +75,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			GetTargetLocation().active_quest = nullptr;
 
 			crazies_state = State::End;
+			world->RemoveGlobalEncounter(this);
 			team->AddExp(12000);
 
 			OnUpdate(game->txQuest[256]);
@@ -123,6 +125,25 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 	f >> days;
 	f >> check_stone;
 
+	if(crazies_state == State::TalkedWithCrazy)
+	{
+		GlobalEncounter* globalEnc = new GlobalEncounter;
+		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
+		globalEnc->chance = 50;
+		globalEnc->quest = this;
+		globalEnc->text = game->txQuest[251];
+		world->AddGlobalEncounter(globalEnc);
+	}
+	else if(crazies_state == State::PickedStone && crazies_state < State::End && days <= 0)
+	{
+		GlobalEncounter* globalEnc = new GlobalEncounter;
+		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
+		globalEnc->chance = 33;
+		globalEnc->quest = this;
+		globalEnc->text = game->txQuest[252];
+		world->AddGlobalEncounter(globalEnc);
+	}
+
 	return LoadResult::Ok;
 }
 
@@ -133,6 +154,13 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 	{
 		ctx.talker->ai->morale = -100.f;
 		crazies_state = State::TalkedWithCrazy;
+
+		GlobalEncounter* globalEnc = new GlobalEncounter;
+		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
+		globalEnc->chance = 50;
+		globalEnc->quest = this;
+		globalEnc->text = game->txQuest[251];
+		world->AddGlobalEncounter(globalEnc);
 	}
 	else if(strcmp(msg, "crazies_sell_stone") == 0)
 	{
@@ -191,5 +219,58 @@ void Quest_Crazies::CheckStone()
 	{
 		crazies_state = State::PickedStone;
 		days = 13;
+		world->RemoveGlobalEncounter(this);
+	}
+}
+
+//=================================================================================================
+void Quest_Crazies::OnProgress(int d)
+{
+	if(crazies_state == Quest_Crazies::State::PickedStone && days > 0)
+	{
+		days -= d;
+		if(days <= 0)
+		{
+			GlobalEncounter* globalEnc = new GlobalEncounter;
+			globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
+			globalEnc->chance = 33;
+			globalEnc->quest = this;
+			globalEnc->text = game->txQuest[252];
+			world->AddGlobalEncounter(globalEnc);
+		}
+	}
+}
+
+//=================================================================================================
+void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
+{
+	if(crazies_state == State::TalkedWithCrazy)
+	{
+		spawn.group_name = nullptr;
+		spawn.essential = UnitData::Get("q_szaleni_szaleniec");
+		spawn.level = 13;
+		spawn.dont_attack = true;
+		spawn.dialog = GameDialog::TryGet("q_crazies");
+		spawn.count = 1;
+
+		check_stone = true;
+	}
+	else
+	{
+		spawn.group_name = "unk";
+		spawn.level = 13;
+		spawn.back_attack = true;
+		if(crazies_state == State::PickedStone)
+		{
+			crazies_state = State::FirstAttack;
+			spawn.count = 1;
+			SetProgress(Progress::Started);
+		}
+		else
+		{
+			//spawn.count = max(1, pts / 13);
+			spawn.count = Random(1, 2);
+			FIXME;
+		}
 	}
 }

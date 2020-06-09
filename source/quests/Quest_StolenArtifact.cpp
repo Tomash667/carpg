@@ -161,7 +161,7 @@ bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
 	if(done)
 		ForLocation(target_loc, at_level)->RemoveQuestItemFromUnit(id);
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 	return true;
 }
 

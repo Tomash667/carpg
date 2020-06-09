@@ -19,8 +19,6 @@
 #include "OffscreenLocation.h"
 #include "Quest.h"
 #include "QuestManager.h"
-#include "Quest_Crazies.h"
-#include "Quest_Mages.h"
 #include "Quest_Scripted.h"
 #include "SaveState.h"
 #include "ScriptManager.h"
@@ -74,9 +72,6 @@ void World::LoadLanguage()
 	txEncSingleHero = s.Get("encSingleHero");
 	txEncBanditsAttackTravelers = s.Get("encBanditsAttackTravelers");
 	txEncHeroesAttack = s.Get("encHeroesAttack");
-	txEncGolem = s.Get("encGolem");
-	txEncCrazy = s.Get("encCrazy");
-	txEncUnk = s.Get("encUnk");
 	txEncEnemiesCombat = s.Get("encEnemiesCombat");
 
 	// location names
@@ -128,6 +123,7 @@ void World::Reset()
 {
 	DeleteElements(locations);
 	DeleteElements(encounters);
+	DeleteElements(globalEncounters);
 	DeleteElements(news);
 }
 
@@ -2435,7 +2431,7 @@ void World::UpdateTravel(float dt)
 				}
 			}
 
-			encounter_chance += 1;
+			encounter_chance += 1 + globalEncounters.size();
 
 			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && GKey.DebugKey(Key::E)))
 			{
@@ -2468,115 +2464,105 @@ void World::StartEncounter(int enc, UnitGroup* group)
 	}
 	else
 	{
-		Quest_Crazies::State c_state = quest_mgr->quest_crazies->crazies_state;
-
-		bool special = false;
-		bool golem = (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::Encounter
-			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || GKey.DebugKey(Key::G);
-		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || GKey.DebugKey(Key::S)));
-		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || GKey.DebugKey(Key::S)));
-		if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
-			golem = true;
-		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
-			unk = true;
-
-		if(!group)
+		GlobalEncounter* globalEnc = nullptr;
+		for(GlobalEncounter* enc : globalEncounters)
 		{
-			if(Rand() % 6 == 0)
-				group = UnitGroup::Get("bandits");
-			else
-				special = true;
+			if(Rand() % 100 < enc->chance)
+			{
+				globalEnc = enc;
+				break;
+			}
 		}
-		else if(Rand() % 3 == 0)
-			special = true;
 
-		if(crazy || unk || golem || special || GKey.DebugKey(Key::Shift))
+		if(globalEnc)
 		{
-			// special encounter
-			encounter.mode = ENCOUNTER_SPECIAL;
-			encounter.special = (SpecialEncounter)(Rand() % SE_MAX_NORMAL);
-			if(unk)
-				encounter.special = SE_UNK;
-			else if(crazy)
-				encounter.special = SE_CRAZY;
-			else if(golem)
-			{
-				encounter.special = SE_GOLEM;
-				quest_mgr->quest_mages2->paid = false;
-			}
-			else if(IsDebug() && input->Focus())
-			{
-				if(input->Down(Key::I))
-					encounter.special = SE_CRAZY_HEROES;
-				else if(input->Down(Key::B))
-					encounter.special = SE_BANDITS_VS_TRAVELERS;
-				else if(input->Down(Key::C))
-					encounter.special = SE_CRAZY_COOK;
-			}
-
-			if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
-				encounter.special = SE_CRAZY_COOK;
-
-			switch(encounter.special)
-			{
-			default:
-				assert(0);
-			case SE_CRAZY_MAGE:
-				text = txEncCrazyMage;
-				break;
-			case SE_CRAZY_HEROES:
-				text = txEncCrazyHeroes;
-				break;
-			case SE_MERCHANT:
-				text = txEncMerchant;
-				break;
-			case SE_HEROES:
-				if(!tomir_spawned && Rand() % 5 == 0)
-				{
-					encounter.special = SE_TOMIR;
-					tomir_spawned = true;
-					text = txEncSingleHero;
-				}
-				else
-					text = txEncHeroes;
-				break;
-			case SE_BANDITS_VS_TRAVELERS:
-				text = txEncBanditsAttackTravelers;
-				break;
-			case SE_HEROES_VS_ENEMIES:
-				text = txEncHeroesAttack;
-				break;
-			case SE_GOLEM:
-				text = txEncGolem;
-				break;
-			case SE_CRAZY:
-				text = txEncCrazy;
-				break;
-			case SE_UNK:
-				text = txEncUnk;
-				break;
-			case SE_CRAZY_COOK:
-				text = txEncCrazyCook;
-				break;
-			case SE_ENEMIES_COMBAT:
-				text = txEncEnemiesCombat;
-				break;
-			}
+			encounter.mode = ENCOUNTER_GLOBAL;
+			encounter.global = globalEnc;
+			text = globalEnc->text;
 		}
 		else
 		{
-			// combat encounter
-			encounter.mode = ENCOUNTER_COMBAT;
-			encounter.group = group;
-			text = group->encounter_text.c_str();
-			if(group->is_list)
+			bool special = false;
+			if(!group)
 			{
-				for(UnitGroup::Entry& entry : group->entries)
+				if(Rand() % 6 == 0)
+					group = UnitGroup::Get("bandits");
+				else
+					special = true;
+			}
+			else if(Rand() % 3 == 0)
+				special = true;
+
+			if(special || GKey.DebugKey(Key::Shift))
+			{
+				// special encounter
+				encounter.mode = ENCOUNTER_SPECIAL;
+				encounter.special = (SpecialEncounter)(Rand() % SE_MAX_NORMAL);
+				if(IsDebug() && input->Focus())
 				{
-					if(entry.is_leader)
+					if(input->Down(Key::I))
+						encounter.special = SE_CRAZY_HEROES;
+					else if(input->Down(Key::B))
+						encounter.special = SE_BANDITS_VS_TRAVELERS;
+					else if(input->Down(Key::C))
+						encounter.special = SE_CRAZY_COOK;
+				}
+
+				if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
+					encounter.special = SE_CRAZY_COOK;
+
+				switch(encounter.special)
+				{
+				default:
+					assert(0);
+				case SE_CRAZY_MAGE:
+					text = txEncCrazyMage;
+					break;
+				case SE_CRAZY_HEROES:
+					text = txEncCrazyHeroes;
+					break;
+				case SE_MERCHANT:
+					text = txEncMerchant;
+					break;
+				case SE_HEROES:
+					if(!tomir_spawned && Rand() % 5 == 0)
 					{
-						encounter.group = entry.group;
-						break;
+						encounter.special = SE_TOMIR;
+						tomir_spawned = true;
+						text = txEncSingleHero;
+					}
+					else
+						text = txEncHeroes;
+					break;
+				case SE_BANDITS_VS_TRAVELERS:
+					text = txEncBanditsAttackTravelers;
+					break;
+				case SE_HEROES_VS_ENEMIES:
+					text = txEncHeroesAttack;
+					break;
+				case SE_CRAZY_COOK:
+					text = txEncCrazyCook;
+					break;
+				case SE_ENEMIES_COMBAT:
+					text = txEncEnemiesCombat;
+					break;
+				}
+			}
+			else
+			{
+				// combat encounter
+				encounter.mode = ENCOUNTER_COMBAT;
+				encounter.group = group;
+				text = group->encounter_text.c_str();
+				if(group->is_list)
+				{
+					for(UnitGroup::Entry& entry : group->entries)
+					{
+						if(entry.is_leader)
+						{
+							encounter.group = entry.group;
+							break;
+						}
 					}
 				}
 			}
@@ -2728,6 +2714,20 @@ void World::RemoveEncounter(Quest* quest)
 			encounters[i] = nullptr;
 		}
 	}
+}
+
+//=================================================================================================
+void World::RemoveGlobalEncounter(Quest* quest)
+{
+	LoopAndRemove(globalEncounters, [=](GlobalEncounter* globalEnc)
+	{
+		if(globalEnc->quest == quest)
+		{
+			delete globalEnc;
+			return true;
+		}
+		return false;
+	});
 }
 
 //=================================================================================================

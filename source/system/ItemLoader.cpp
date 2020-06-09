@@ -214,7 +214,8 @@ void ItemLoader::InitTokenizer()
 		{ "magic_scroll", ITEM_MAGIC_SCROLL },
 		{ "wand", ITEM_WAND },
 		{ "ingredient", ITEM_INGREDIENT },
-		{ "single_use", ITEM_SINGLE_USE }
+		{ "single_use", ITEM_SINGLE_USE },
+		{ "not_team", ITEM_NOT_TEAM }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {

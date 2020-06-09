@@ -188,7 +188,7 @@ cstring Quest_Tournament::FormatString(const string& str)
 }
 
 //=================================================================================================
-void Quest_Tournament::Progress()
+void Quest_Tournament::OnProgress()
 {
 	const Date& date = world->GetDateValue();
 	if(date.year != city_year)

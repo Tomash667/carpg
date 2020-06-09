@@ -1479,7 +1479,7 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 
 	if(item->IsStackable() || !CanWear(item))
 	{
-		AddItem(item, count, count);
+		AddItem(item, count, IsSet(item->flags, ITEM_NOT_TEAM) ? 0 : count);
 		return;
 	}
 

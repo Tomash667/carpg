@@ -73,8 +73,8 @@ public:
 	int GetChestEventHandlerQuestRefid() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetIncome(int days_passed);
 	int GenerateMine(CaveGenerator* cave_gen, bool first);
+	int OnProgress(int days);
 
 	Quest_Event sub;
 	int dungeon_loc;

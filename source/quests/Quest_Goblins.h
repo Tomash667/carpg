@@ -57,6 +57,7 @@ public:
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	void OnProgress(int days);
 
 	State goblins_state;
 	int days;

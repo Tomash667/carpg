@@ -35,6 +35,7 @@ enum ITEM_FLAGS
 	ITEM_WAND = 1 << 15, // cast magic bolts instead of attacking
 	ITEM_INGREDIENT = 1 << 16, // shows in crafting panel
 	ITEM_SINGLE_USE = 1 << 17, // mark single use recipes
+	ITEM_NOT_TEAM = 1 << 18, // always spawned as non team item
 };
 
 //-----------------------------------------------------------------------------

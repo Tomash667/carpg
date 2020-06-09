@@ -115,6 +115,7 @@ public:
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	OrcClass GetOrcClass() const { return orc_class; }
+	void OnProgress(int days);
 
 	State orcs_state;
 	Talked talked;

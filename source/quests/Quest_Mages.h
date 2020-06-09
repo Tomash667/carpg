@@ -100,6 +100,8 @@ public:
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	void Update(float dt);
+	void OnProgress(int days);
+	void OnEncounter(EncounterSpawn& spawn);
 
 	Talked talked;
 	State mages_state;

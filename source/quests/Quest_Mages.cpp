@@ -2,6 +2,7 @@
 #include "Quest_Mages.h"
 
 #include "AIController.h"
+#include "Encounter.h"
 #include "Game.h"
 #include "GameFile.h"
 #include "Journal.h"
@@ -369,6 +370,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				scholar->temporary = true;
 				scholar = nullptr;
 			}
+			world->RemoveGlobalEncounter(this);
 			team->AddReward(10000, 25000);
 			OnUpdate(game->txQuest[188]);
 			quest_mgr->EndUniqueQuest();
@@ -507,6 +509,16 @@ Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 		spawn_2_guard_1 = true;
 	}
 
+	if(mages_state >= State::Encounter && mages_state < State::Completed)
+	{
+		GlobalEncounter* globalEnc = new GlobalEncounter;
+		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Mages2::OnEncounter);
+		globalEnc->chance = 33;
+		globalEnc->quest = this;
+		globalEnc->text = game->txQuest[215];
+		world->AddGlobalEncounter(globalEnc);
+	}
+
 	return LoadResult::Ok;
 }
 
@@ -519,4 +531,37 @@ void Quest_Mages2::Update(float dt)
 		if(timer >= 30.f && scholar->GetOrder() != ORDER_AUTO_TALK)
 			scholar->OrderAutoTalk();
 	}
+}
+
+//=================================================================================================
+void Quest_Mages2::OnProgress(int d)
+{
+	if(mages_state == State::Counting)
+	{
+		days -= d;
+		if(days <= 0)
+		{
+			// from now golem can be encountered on road
+			mages_state = Quest_Mages2::State::Encounter;
+
+			GlobalEncounter* globalEnc = new GlobalEncounter;
+			globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Mages2::OnEncounter);
+			globalEnc->chance = 33;
+			globalEnc->quest = this;
+			globalEnc->text = game->txQuest[215];
+			world->AddGlobalEncounter(globalEnc);
+		}
+	}
+}
+
+//=================================================================================================
+void Quest_Mages2::OnEncounter(EncounterSpawn& spawn)
+{
+	paid = false;
+
+	spawn.group_name = nullptr;
+	spawn.essential = UnitData::Get("q_magowie_golem");
+	spawn.count = Random(1, 2); FIXME;
+	spawn.dont_attack = true;
+	spawn.dialog = GameDialog::TryGet("q_mages");
 }

@@ -162,7 +162,7 @@ cstring Quest_Contest::FormatString(const string& str)
 }
 
 //=================================================================================================
-void Quest_Contest::Progress()
+void Quest_Contest::OnProgress()
 {
 	int step; // 0 - before contest, 1 - time for contest, 2 - after contest
 	const Date& date = world->GetDateValue();

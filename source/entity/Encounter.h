@@ -8,7 +8,8 @@ enum EncounterMode
 {
 	ENCOUNTER_COMBAT,
 	ENCOUNTER_SPECIAL,
-	ENCOUNTER_QUEST
+	ENCOUNTER_QUEST,
+	ENCOUNTER_GLOBAL
 };
 
 //-----------------------------------------------------------------------------
@@ -22,10 +23,7 @@ enum SpecialEncounter
 	SE_HEROES_VS_ENEMIES,
 	SE_ENEMIES_COMBAT,
 	SE_MAX_NORMAL,
-	SE_GOLEM = SE_MAX_NORMAL,
-	SE_CRAZY,
-	SE_UNK,
-	SE_CRAZY_COOK,
+	SE_CRAZY_COOK = SE_MAX_NORMAL,
 	SE_TOMIR
 };
 
@@ -52,4 +50,28 @@ struct Encounter
 	~Encounter();
 	const string& GetTextS();
 	void SetTextS(const string& str);
+};
+
+//-----------------------------------------------------------------------------
+struct GlobalEncounter
+{
+	typedef delegate<void(EncounterSpawn&)> Callback;
+
+	Quest* quest;
+	Callback callback;
+	int chance;
+	cstring text;
+};
+
+//-----------------------------------------------------------------------------
+struct EncounterSpawn
+{
+	cstring group_name, group_name2;
+	UnitData* essential;
+	GameDialog* dialog;
+	int count, count2, level, level2;
+	bool dont_attack, back_attack, far_encounter;
+
+	EncounterSpawn(int st) : group_name(nullptr), group_name2(nullptr), essential(nullptr), dialog(nullptr), count(0), count2(0), level(st), level2(st),
+		dont_attack(false), back_attack(false), far_encounter(false) {}
 };

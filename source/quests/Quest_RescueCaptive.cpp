@@ -277,7 +277,7 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 			captive = nullptr;
 		}
 
-		OnUpdate(game->txQuest[277]);
+		OnUpdate(game->txQuest[267]);
 	}
 
 	return true;

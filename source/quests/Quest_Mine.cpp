@@ -325,32 +325,6 @@ void Quest_Mine::InitSub()
 }
 
 //=================================================================================================
-int Quest_Mine::GetIncome(int days_passed)
-{
-	if(mine_state == State::Shares && mine_state2 >= State2::Built)
-	{
-		days_gold += days_passed;
-		int count = days_gold / 30;
-		if(count)
-		{
-			days_gold -= count * 30;
-			return count * PAYMENT;
-		}
-	}
-	else if(mine_state == State::BigShares && mine_state2 >= State2::Expanded)
-	{
-		days_gold += days_passed;
-		int count = days_gold / 30;
-		if(count)
-		{
-			days_gold -= count * 30;
-			return count * PAYMENT2;
-		}
-	}
-	return 0;
-}
-
-//=================================================================================================
 int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 {
 	switch(mine_state3)
@@ -1096,4 +1070,79 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 	}
 
 	return update_flags;
+}
+
+//=================================================================================================
+int Quest_Mine::OnProgress(int d)
+{
+	if(mine_state2 == State2::InBuild)
+	{
+		days += d;
+		if(days >= days_required)
+		{
+			if(mine_state == State::Shares)
+			{
+				// player invested in mine, inform him about finishing
+				if(game_level->city_ctx && game->game_state == GS_LEVEL)
+				{
+					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+					if(u)
+					{
+						world->AddNews(Format(game->txMineBuilt, world->GetLocation(target_loc)->name.c_str()));
+						messenger = u;
+						u->OrderAutoTalk(true);
+					}
+				}
+			}
+			else
+			{
+				// player got gold, don't inform him
+				world->AddNews(Format(game->txMineBuilt, world->GetLocation(target_loc)->name.c_str()));
+				mine_state2 = State2::Built;
+				days -= days_required;
+				days_required = Random(60, 90);
+				if(days >= days_required)
+					days = days_required - 1;
+			}
+		}
+	}
+	else if(mine_state2 == State2::Built
+		|| mine_state2 == State2::InExpand
+		|| mine_state2 == State2::Expanded)
+	{
+		// mine is built/in expand/expanded
+		// count time to news about expanding/finished expanding/found portal
+		days += d;
+		if(days >= days_required && game_level->city_ctx && game->game_state == GS_LEVEL)
+		{
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+			if(u)
+			{
+				messenger = u;
+				u->OrderAutoTalk(true);
+			}
+		}
+	}
+
+	if(mine_state == State::Shares && mine_state2 >= State2::Built)
+	{
+		days_gold += d;
+		int count = days_gold / 30;
+		if(count)
+		{
+			days_gold -= count * 30;
+			return count * PAYMENT;
+		}
+	}
+	else if(mine_state == State::BigShares && mine_state2 >= State2::Expanded)
+	{
+		days_gold += d;
+		int count = days_gold / 30;
+		if(count)
+		{
+			days_gold -= count * 30;
+			return count * PAYMENT2;
+		}
+	}
+	return 0;
 }

@@ -28,9 +28,6 @@ encHeroes = "Natkn¹³eœ siê na oddzia³ bohaterów zmierzaj¹cy w przeciwnym kierunk
 encSingleHero = "Natkn¹³eœ siê na pojedyñczego bohatera zmierzaj¹cego w przeciwnym kierunku."
 encBanditsAttackTravelers = "W oddali zauwa¿y³eœ podró¿ników jad¹cych na wozie.\nNagle z krzaków wyskoczyli bandyci i zaatakowali podró¿nych."
 encHeroesAttack = "W oddali zauwa¿y³eœ oddzia³ bohaterów walcz¹cych z jakimiœ wrogami."
-encGolem = "Podró¿uj¹c drog¹ natrafi³eœ na kamiennego golema!"
-encCrazy = "Z krzaków wyskoczy³ jakiœ wariat..."
-encUnk = "Czujesz ¿e ktoœ lub coœ ciê obserwuje, s³yszysz jakiœ dŸwiêk za plecami!"
 encEnemiesCombat = "W oddali zauwa¿y³eœ dwie grupy wrogów walcz¹ce pomiêdzy sob¹."
 
 [Locations]

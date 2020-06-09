@@ -2910,7 +2910,7 @@ other q_szaleni_kamien {
 	weight 5
 	value 0
 	tex "kamien2.png"
-	flags {not_shop not_random important}
+	flags {not_shop not_random important not_team}
 }
 
 other sekret_kartka {

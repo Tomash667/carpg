@@ -380,3 +380,10 @@ bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
 	assert(0);
 	return false;
 }
+
+//=================================================================================================
+void Quest_Goblins::OnProgress(int d)
+{
+	if(goblins_state == Quest_Goblins::State::Counting || goblins_state == Quest_Goblins::State::NoblemanLeft)
+		days -= d;
+}

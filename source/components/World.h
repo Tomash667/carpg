@@ -12,6 +12,7 @@ struct EncounterData
 	union
 	{
 		Encounter* encounter;
+		GlobalEncounter* global;
 		UnitGroup* group;
 		SpecialEncounter special;
 	};
@@ -165,8 +166,10 @@ public:
 	void StartEncounter();
 	Encounter* AddEncounter(int& index, Quest* quest = nullptr);
 	Encounter* AddEncounterS(Quest* quest);
+	void AddGlobalEncounter(GlobalEncounter* globalEnc) { globalEncounters.push_back(globalEnc); }
 	void RemoveEncounter(int index);
 	void RemoveEncounter(Quest* quest);
+	void RemoveGlobalEncounter(Quest* quest);
 	Encounter* GetEncounter(int index);
 	Encounter* RecreateEncounter(int index);
 	Encounter* RecreateEncounterS(Quest* quest, int index);
@@ -205,6 +208,7 @@ private:
 	OutsideLocation* encounter_loc;
 	OffscreenLocation* offscreen_loc;
 	vector<Encounter*> encounters;
+	vector<GlobalEncounter*> globalEncounters;
 	EncounterData encounter;
 	vector<int> tiles;
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
@@ -226,7 +230,7 @@ private:
 	Date date, startDate;
 	vector<News*> news;
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
-		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncEnemiesCombat;
+		txEncHeroesAttack, txEncEnemiesCombat;
 	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy;
 	cstring txMonth[12];
 	bool boss_level_mp, // used by clients instead boss_levels

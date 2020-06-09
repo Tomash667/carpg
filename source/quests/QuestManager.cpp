@@ -1311,120 +1311,18 @@ void QuestManager::UpdateQuests(int days)
 	RemoveQuestUnits(false);
 
 	int income = 0;
-
-	// sawmill
-	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
-	{
-		quest_sawmill->days += days;
-		if(quest_sawmill->days >= 30 && game_level->city_ctx && game->game_state == GS_LEVEL)
-		{
-			quest_sawmill->days = 29;
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
-			if(u)
-			{
-				quest_sawmill->messenger = u;
-				u->OrderAutoTalk(true);
-			}
-		}
-	}
-	else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
-	{
-		quest_sawmill->days += days;
-		int count = quest_sawmill->days / 30;
-		if(count)
-		{
-			quest_sawmill->days -= count * 30;
-			income += count * Quest_Sawmill::PAYMENT;
-		}
-	}
-
-	// mine
-	if(quest_mine->mine_state2 == Quest_Mine::State2::InBuild)
-	{
-		quest_mine->days += days;
-		if(quest_mine->days >= quest_mine->days_required)
-		{
-			if(quest_mine->mine_state == Quest_Mine::State::Shares)
-			{
-				// player invesetd in mine, inform him about finishing
-				if(game_level->city_ctx && game->game_state == GS_LEVEL)
-				{
-					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
-					if(u)
-					{
-						world->AddNews(Format(game->txMineBuilt, world->GetLocation(quest_mine->target_loc)->name.c_str()));
-						quest_mine->messenger = u;
-						u->OrderAutoTalk(true);
-					}
-				}
-			}
-			else
-			{
-				// player got gold, don't inform him
-				world->AddNews(Format(game->txMineBuilt, world->GetLocation(quest_mine->target_loc)->name.c_str()));
-				quest_mine->mine_state2 = Quest_Mine::State2::Built;
-				quest_mine->days -= quest_mine->days_required;
-				quest_mine->days_required = Random(60, 90);
-				if(quest_mine->days >= quest_mine->days_required)
-					quest_mine->days = quest_mine->days_required - 1;
-			}
-		}
-	}
-	else if(quest_mine->mine_state2 == Quest_Mine::State2::Built
-		|| quest_mine->mine_state2 == Quest_Mine::State2::InExpand
-		|| quest_mine->mine_state2 == Quest_Mine::State2::Expanded)
-	{
-		// mine is built/in expand/expanded
-		// count time to news about expanding/finished expanding/found portal
-		quest_mine->days += days;
-		if(quest_mine->days >= quest_mine->days_required && game_level->city_ctx && game->game_state == GS_LEVEL)
-		{
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
-			if(u)
-			{
-				quest_mine->messenger = u;
-				u->OrderAutoTalk(true);
-			}
-		}
-	}
-
-	// give gold from mine
-	income += quest_mine->GetIncome(days);
-
+	income += quest_sawmill->OnProgress(days);
+	income += quest_mine->OnProgress(days);
 	if(income != 0)
 		team->AddGold(income, nullptr, true);
 
-	quest_contest->Progress();
+	quest_contest->OnProgress();
+	quest_tournament->OnProgress();
 
-	//----------------------------
-	// mages
-	if(quest_mages2->mages_state == Quest_Mages2::State::Counting)
-	{
-		quest_mages2->days -= days;
-		if(quest_mages2->days <= 0)
-		{
-			// from now golem can be encountered on road
-			quest_mages2->mages_state = Quest_Mages2::State::Encounter;
-		}
-	}
-
-	// orcs
-	if(Any(quest_orcs2->orcs_state, Quest_Orcs2::State::CompletedJoined, Quest_Orcs2::State::CampCleared, Quest_Orcs2::State::PickedClass))
-	{
-		quest_orcs2->days -= days;
-		if(quest_orcs2->days <= 0)
-			quest_orcs2->orc->OrderAutoTalk();
-	}
-
-	// goblins
-	if(quest_goblins->goblins_state == Quest_Goblins::State::Counting || quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft)
-		quest_goblins->days -= days;
-
-	// crazies
-	if(quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
-		quest_crazies->days -= days;
-
-	quest_tournament->Progress();
+	quest_mages2->OnProgress(days);
+	quest_orcs2->OnProgress(days);
+	quest_goblins->OnProgress(days);
+	quest_crazies->OnProgress(days);
 
 	if(game_level->city_ctx)
 		GenerateQuestUnits(false);

@@ -164,7 +164,7 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 {
 	if(prog == Progress::Started)
 	{
-		OnUpdate(game->txQuest[277]);
+		OnUpdate(game->txQuest[267]);
 		if(ttype == TIMEOUT_CAMP)
 			world->AbadonLocation(&GetTargetLocation());
 	}

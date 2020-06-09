@@ -694,3 +694,14 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orcs_state = State::PickedClass;
 	days = Random(30, 60);
 }
+
+//=================================================================================================
+void Quest_Orcs2::OnProgress(int d)
+{
+	if(Any(orcs_state, State::CompletedJoined, State::CampCleared, State::PickedClass))
+	{
+		days -= d;
+		if(days <= 0)
+			orc->OrderAutoTalk();
+	}
+}

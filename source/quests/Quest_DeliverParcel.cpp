@@ -176,7 +176,7 @@ bool Quest_DeliverParcel::IsTimedout() const
 bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 {
 	if(ttype == TIMEOUT2)
-		OnUpdate(game->txQuest[277]);
+		OnUpdate(game->txQuest[267]);
 	return true;
 }
 

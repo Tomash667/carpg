@@ -115,7 +115,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Recruited:
 		{
 			state = Quest::Failed;
-			OnUpdate(Format(game->txQuest[276], target_unit->GetName()));
+			OnUpdate(Format(game->txQuest[266], target_unit->GetName()));
 		}
 		break;
 	}
@@ -164,7 +164,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 		target_unit = nullptr;
 	}
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 
 	return true;
 }

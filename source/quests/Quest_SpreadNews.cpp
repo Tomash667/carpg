@@ -186,7 +186,7 @@ bool Quest_SpreadNews::IsTimedout() const
 //=================================================================================================
 bool Quest_SpreadNews::OnTimeout(TimeoutType ttype)
 {
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 	return true;
 }
 
