@@ -17,6 +17,9 @@ Version 0.16 (???):
 - random client crash after fighting with golems [Zielu]
 - fixed reversed shift/control key in give/share items
 - heroes without mana don't collect mana potions
+- only Jozan heal team when traveling
+- sometimes garbage text when recruiting hero in academy
+- more golems on worldmap encounter
 
 --------------------------------------------------------------------------------
 Fixes:

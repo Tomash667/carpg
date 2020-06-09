@@ -1898,7 +1898,8 @@ bool DialogContext::RecruitHero(Class* clas)
 	u->rot = 0.f;
 	u->SetKnownName(true);
 	team->AddMember(u, HeroType::Normal);
-	DialogTalk(Format(game->txHeroJoined, u->GetName()));
+	dialog_s_text = Format(game->txHeroJoined, u->GetName());
+	DialogTalk(dialog_s_text.c_str());
 	force_end = true;
 	return true;
 }

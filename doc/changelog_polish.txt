@@ -17,6 +17,9 @@ Wersja 0.16 (???):
 - losowy crash klienta po walce z golemami [Zielu]
 - odwrócone klawisze shift/control przy wymianie przedmiotów z sojusznikiem
 - bohaterowie bez many nie zbierają miksturek many
+- tylko Jozan przywraca zdrowie podczas podróży
+- czasami śmieciowy tekst po zrekrutowaniu bohatera w akademii
+- więcej golemów podczas spotkania na mapie
 
 --------------------------------------------------------------------------------
 Poprawki:

@@ -268,9 +268,11 @@ void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 		}
 		else
 		{
-			//spawn.count = max(1, pts / 13);
-			spawn.count = Random(1, 2);
-			FIXME;
+			int pts = team->GetStPoints();
+			if(pts >= 80)
+				pts = 80;
+			pts = int(Random(0.5f, 0.75f) * pts);
+			spawn.count = max(1, pts / 13);
 		}
 	}
 }

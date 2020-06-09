@@ -84,6 +84,7 @@ public:
 	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
 	bool IsAnyoneTalking() const;
 	void Warp(const Vec3& pos, const Vec3& look_at);
+	int GetStPoints();
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)

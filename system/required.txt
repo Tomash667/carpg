@@ -243,6 +243,7 @@ group tournament
 group merchant_guards
 group wagon_guards
 group unk
+group q_magowie_golems
 group list challange
 group list cave
 group list forest

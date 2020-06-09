@@ -37,7 +37,7 @@ void Door::Init()
 void Door::Recreate()
 {
 	// mesh
-	meshInst = new MeshInstance(game_res->aDoor);
+	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 	meshInst->base_speed = 2.f;
 
 	// physics

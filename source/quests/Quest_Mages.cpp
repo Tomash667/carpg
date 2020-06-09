@@ -559,9 +559,13 @@ void Quest_Mages2::OnEncounter(EncounterSpawn& spawn)
 {
 	paid = false;
 
-	spawn.group_name = nullptr;
-	spawn.essential = UnitData::Get("q_magowie_golem");
-	spawn.count = Random(1, 2); FIXME;
+	int pts = team->GetStPoints();
+	if(pts >= 60)
+		pts = 60;
+	pts = int(Random(0.5f, 0.75f) * pts);
+	spawn.count = max(1, pts / 8);
+	spawn.level = 8;
+	spawn.group_name = "q_magowie_golems";
 	spawn.dont_attack = true;
 	spawn.dialog = GameDialog::TryGet("q_mages");
 }

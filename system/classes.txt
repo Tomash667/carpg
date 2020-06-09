@@ -11,7 +11,7 @@ class cleric {
 	hero hero_cleric
 	icon "icon_cleric.png"
 	ability heal
-	flags mp_bar
+	flags {mp_bar autoheal}
 	level {
 		str 1
 		end 1

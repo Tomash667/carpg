@@ -2452,7 +2452,10 @@ void Unit::Load(GameReader& f)
 						current_order->auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
 						int quest_id;
 						f >> quest_id;
-						quest_mgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
+						if(quest_id != -1)
+							quest_mgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
+						else
+							current_order->auto_talk_quest = nullptr;
 					}
 					else
 					{

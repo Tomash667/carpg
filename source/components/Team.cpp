@@ -455,7 +455,16 @@ void Team::Update(int days, bool travel)
 	}
 	else
 	{
-		bool autoheal = (quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_mgr->quest_evil->evil_state == Quest_Evil::State::KillBoss);
+		bool autoheal = false;
+		for(Unit& unit : members)
+		{
+			Class* clas = unit.GetClass();
+			if(clas && IsSet(clas->flags, Class::F_AUTOHEAL))
+			{
+				autoheal = true;
+				break;
+			}
+		}
 
 		// regeneracja hp / trenowanie
 		for(Unit& unit : members)
@@ -1531,4 +1540,13 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
 	}
+}
+
+//=================================================================================================
+int Team::GetStPoints()
+{
+	int pts = 0;
+	for(Unit& member : members)
+		pts += member.level;
+	return pts;
 }

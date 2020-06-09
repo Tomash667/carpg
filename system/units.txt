@@ -2802,10 +2802,6 @@ unit golem_adamantine : golem_iron {
 	}
 }
 
-unit q_magowie_golem : golem_stone {
-	dialog q_mages
-}
-
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
@@ -3482,6 +3478,10 @@ group unk {
 	food_mod -2
 }
 
+group q_magowie_golems {
+	golem_stone 1
+}
+
 group challange {
 	list {
 		orcs
@@ -3576,3 +3576,5 @@ alias evil_cleric evil_cleric_q
 alias bandit_chief bandit_hegemon_q
 alias orc_chief orc_chief_q
 alias goblin_chief goblin_chief_q
+// removed in V_DEV
+alias golem_stone q_magowie_golem
