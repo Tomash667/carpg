@@ -32,7 +32,7 @@ public:
 	Unit* FindTeamMember(cstring id);
 	uint GetActiveNpcCount();
 	uint GetActiveTeamSize() { return active_members.size(); }
-	Unit* GetLeader() { return leader; }
+	Unit* GetLeader() const { return leader; }
 	void GetLeaderRequest(Entity<Unit>* unit) { leader_requests.push_back(unit); }
 	uint GetMaxSize() { return 8u; }
 	uint GetNpcCount();
@@ -51,9 +51,9 @@ public:
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool IsAnyoneAlive();
 	bool IsBandit() const { return is_bandit; }
-	bool IsLeader() { return my_id == leader_id; }
-	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }
-	bool IsLeader(const Unit* unit) { assert(unit); return unit == GetLeader(); }
+	bool IsLeader() const { return my_id == leader_id; }
+	bool IsLeader(const Unit& unit) const { return &unit == GetLeader(); }
+	bool IsLeader(const Unit* unit) const { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);
 	bool IsTeamNotBusy();
 	void Load(GameReader& f);
@@ -84,7 +84,7 @@ public:
 	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
 	bool IsAnyoneTalking() const;
 	void Warp(const Vec3& pos, const Vec3& look_at);
-	int GetStPoints();
+	int GetStPoints() const;
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)

@@ -126,6 +126,7 @@ void Vars::Save(FileWriter& f)
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
+		case Var::Type::UnitGroup:
 			assert(0); // TODO
 			break;
 		}
@@ -222,6 +223,7 @@ void Vars::Load(FileReader& f)
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
+		case Var::Type::UnitGroup:
 			assert(0); // TODO
 			break;
 		}

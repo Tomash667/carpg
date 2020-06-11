@@ -1543,10 +1543,10 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 }
 
 //=================================================================================================
-int Team::GetStPoints()
+int Team::GetStPoints() const
 {
 	int pts = 0;
-	for(Unit& member : members)
+	for(const Unit& member : members)
 		pts += member.level;
 	return pts;
 }

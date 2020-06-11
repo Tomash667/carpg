@@ -8,6 +8,7 @@ Version 0.16 (???):
 + new names, dialogs improvements
 + end of game don't block chat, loading game etc
 + idle dialogs loaded from files
++ converted quest "camp near city" to script
 - zombie sometimes not attacking after stunning [Zielu]
 - bull's charge not stopping attack animation [Zielu]
 - fixed draw_hitbox command & shields

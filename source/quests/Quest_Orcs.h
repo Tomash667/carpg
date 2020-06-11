@@ -32,7 +32,7 @@ public:
 	int GetLocationEventHandlerQuestRefid() override { return id; }
 
 private:
-	int dungeon_levels, levels_cleared;
+	int dungeon_levels;
 };
 
 //-----------------------------------------------------------------------------

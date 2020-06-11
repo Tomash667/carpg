@@ -137,14 +137,14 @@ void Quest_Scripted::Save(GameWriter& f)
 		case Var::Type::Item:
 			{
 				Item* item = *(Item**)ptr;
-				if(!item)
-					f.Write0();
-				else
+				if(item)
 				{
 					f << item->id;
 					if(item->id[0] == '$')
 						f << item->quest_id;
 				}
+				else
+					f.Write0();
 			}
 			break;
 		case Var::Type::Location:
@@ -184,6 +184,15 @@ void Quest_Scripted::Save(GameWriter& f)
 					f << unit->id;
 				else
 					f << -1;
+			}
+			break;
+		case Var::Type::UnitGroup:
+			{
+				UnitGroup* group = *(UnitGroup**)ptr;
+				if(group)
+					f << group->id;
+				else
+					f.Write0();
 			}
 			break;
 		}
@@ -338,6 +347,15 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
 		{
 			int id = f.Read<int>();
 			*(Unit**)ptr = Unit::GetById(id);
+		}
+		break;
+	case Var::Type::UnitGroup:
+		{
+			const string& id = f.ReadString1();
+			if(!id.empty())
+				*(UnitGroup**)ptr = UnitGroup::Get(id);
+			else
+				*(UnitGroup**)ptr = nullptr;
 		}
 		break;
 	}

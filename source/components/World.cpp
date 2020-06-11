@@ -2963,6 +2963,10 @@ void World::AbadonLocation(Location* loc)
 	else
 		area = static_cast<OutsideLocation*>(loc);
 
+	// remove camp in 4-8 days
+	if(loc->type == L_CAMP)
+		static_cast<Camp*>(loc)->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+
 	// if location is open
 	if(loc == current_location)
 	{

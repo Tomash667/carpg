@@ -95,7 +95,6 @@ void Quest_Orcs::SetProgress(int prog2)
 			location_event_handler = this;
 			at_level = tl.GetLastLevel();
 			dungeon_levels = at_level + 1;
-			levels_cleared = 0;
 			whole_location_event_handler = true;
 			item_to_give[0] = Item::Get("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
@@ -176,11 +175,7 @@ bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 bool Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
-	{
-		levels_cleared |= (1 << game_level->dungeon_level);
-		if(CountBits(levels_cleared) == dungeon_levels)
-			SetProgress(Progress::ClearedLocation);
-	}
+		SetProgress(Progress::ClearedLocation);
 	return false;
 }
 
@@ -190,7 +185,6 @@ void Quest_Orcs::Save(GameWriter& f)
 	Quest_Dungeon::Save(f);
 
 	f << dungeon_levels;
-	f << levels_cleared;
 }
 
 //=================================================================================================
@@ -199,7 +193,8 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> dungeon_levels;
-	f >> levels_cleared;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old levels_cleared
 
 	location_event_handler = this;
 	whole_location_event_handler = true;

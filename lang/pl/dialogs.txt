@@ -1,6 +1,15 @@
 //==============================================================================
 // UWAGA - plik ma kodowanie ANSI ale bloki w skrypcie musz¹ mieæ UTF8 wiêc widaæ dziwne znaczki zamiast polskich liter
 // jest task na wykorzystanie UTF8 wszêdzie :)
+// ¹ -> \\xB9		¥ -> \\xA5
+// æ -> \\xE6		Æ -> \\xC6
+// ê -> \\xEA		Ê -> \\xCA
+// ³ -> \\xB3		£ -> \\xA3
+// ñ -> \\xF1		Ñ -> \\xD1
+// ó -> \\xF3		Ó -> \\xD3
+// œ -> \\x9C		Œ -> \\x8C
+// ¿ -> \\xBF		¯ -> \\xAF
+// Ÿ -> \\x9F		 -> \\x8F
 //==============================================================================
 dialog blacksmith {
 	0 {
@@ -1034,29 +1043,6 @@ dialog q_bandits_boss {
 	0 "Ty têpy chuju!"
 	1 "Myœlisz ¿e mo¿esz od tak przyjœæ tutaj, zabiæ moich kamratów i ukraœæ co ci siê podoba?!"
 	2 "Przerobiê ciê na mielone!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_start {
-	0 "Wyobra¿asz to sobie?! $Bandyci_zalozyli$ obóz tu¿ ko³o $naszego_miasta$!"
-	1 "Chyba chc¹ zaatakowaæ $miasto$! Musimy coœ z tym zrobiæ!"
-	2 "Mo¿e ty pójdziesz i siê nimi zajmiesz?"
-	3 "Tak"
-	4 "Ten obóz znajduje siê na $dir$ st¹d. Musisz siê tym zaj¹æ w ci¹gu miesi¹ca."
-	5 "Tylko nie daj siê zabiæ."
-	6 "Nie"
-}
-
-//==============================================================================
-dialog q_camp_near_city_timeout {
-	0 "Gdy ciê nie by³o $bandyci_zaatakowali$ $miasto$! Jakoœ siê obroniliœmy ale wiele osób zginê³o!"
-	1 "Nie pokazuj siê tu wiêcej!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_end {
-	0 "Gdyby nie ty to nie wiem czy byœmy odparli ten atak."
-	1 "WeŸ proszê te $reward$ sztuk z³ota nagrody."
 }
 
 //==============================================================================

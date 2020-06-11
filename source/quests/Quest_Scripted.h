@@ -26,7 +26,7 @@ struct EventPtr
 	{
 		return source == e.source
 			&& location == e.location
-			&& (type == e.type || e.type == EVENT_ANY);
+			&& (type == e.type || e.type == EVENT_ANY || type == EVENT_ANY);
 	}
 };
 

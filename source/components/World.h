@@ -87,6 +87,7 @@ public:
 	void CreateCity(const Vec2& pos, int target);
 	void SetLocationImageAndName(Location* l);
 	int CreateCamp(const Vec2& pos, UnitGroup* group);
+	Location* CreateCampS(const Vec2& pos, UnitGroup* group) { return GetLocation(CreateCamp(pos, group)); }
 private:
 	typedef LOCATION(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);

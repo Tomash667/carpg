@@ -1034,29 +1034,6 @@ dialog q_bandits_boss {
 }
 
 //==============================================================================
-dialog q_camp_near_city_start {
-	0 "Can you imagine that?! $Bandyci_zalozyli$ created camp just near $naszego_miasta$!"
-	1 "I think they want to attack the $miasto$! We have to do something about it!"
-	2 "Why do not you go there and take care of them?"
-	3 "Yes"
-	4 "This camp is located $dir$ from here. You must take care of it within a month."
-	5 "Just do not get yourself killed."
-	6 "No"
-}
-
-//==============================================================================
-dialog q_camp_near_city_timeout {
-	0 "When you weren't here $bandyci_zaatakowali$ $miasto$! Somehow we defended but many people have died!"
-	1 "Do not show up here again!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_end {
-	0 "If not for you I do not know whether we repelled this attack."
-	1 "Please, take this $reward$ gold pieces."
-}
-
-//==============================================================================
 dialog q_crazies_trainer {
 	0 "I've heard stories about this stone."
 	1 "His presence attracts some creatures and cause madness."

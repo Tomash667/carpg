@@ -289,6 +289,13 @@ string Vec2_ToString(const Vec2& v)
 	return Format("%g; %g", v.x, v.y);
 }
 
+string String_Upper(string& str)
+{
+	string s = str;
+	s[0] = toupper(s[0]);
+	return s;
+}
+
 void ScriptManager::RegisterCommon()
 {
 	ScriptBuilder sb(engine);
@@ -389,6 +396,9 @@ void ScriptManager::RegisterCommon()
 		.Method("Vec4 opMul(float) const", asMETHODPR(Vec4, operator *, (float) const, Vec4))
 		.Method("Vec4 opDiv(float) const", asMETHODPR(Vec4, operator /, (float) const, Vec4));
 
+	sb.ForType("string")
+		.Method("string Upper() const", asFUNCTION(String_Upper));
+
 	sb.AddStruct<SpawnPoint>("SpawnPoint", asOBJ_POD | asOBJ_APP_CLASS_ALLFLOATS)
 		.Member("Vec3 pos", offsetof(SpawnPoint, pos))
 		.Member("float rot", offsetof(SpawnPoint, rot));
@@ -411,6 +421,11 @@ Vars* Unit_GetVars(Unit* unit)
 string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
 {
 	return GetLocationDirName(pos1, pos2);
+}
+
+string World_GetDirName2(Location* loc1, Location* loc2)
+{
+	return GetLocationDirName(loc1->pos, loc2->pos);
 }
 
 Location* World_GetRandomCity()
@@ -772,6 +787,8 @@ void ScriptManager::RegisterGame()
 		.Member("bool lost_pvp", offsetof(Hero, lost_pvp));
 
 	AddType("UnitGroup")
+		.Member("const string name", offsetof(UnitGroup, name))
+		.Member("const bool female", offsetof(UnitGroup, gender))
 		.WithNamespace()
 		.AddProperty("UnitGroup@ empty", &UnitGroup::empty)
 		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
@@ -874,6 +891,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.AddFunction("string GetDirName(Location@, Location@)", asFUNCTION(World_GetDirName2)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("float GetTravelDays(float)", asMETHOD(World, GetTravelDays))
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, bool = false)", asMETHODPR(World, FindPlace, (const Vec2&, float, bool), Vec2))
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, float)", asMETHODPR(World, FindPlace, (const Vec2&, float, float), Vec2))
@@ -886,6 +904,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1))", asMETHOD(World, GetClosestLocationS))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, array<LOCATION_TARGET>@)", asMETHOD(World, GetClosestLocationArrayS))
 		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int = -1)", asMETHODPR(World, CreateLocation, (LOCATION, const Vec2&, int, int), Location*))
+		.AddFunction("Location@ CreateCamp(const Vec2& in, UnitGroup@)", asMETHOD(World, CreateCampS))
+		.AddFunction("void AbadonLocation(Location@)", asMETHOD(World, AbadonLocation))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("Encounter@ RecreateEncounter(Quest@, int)", asMETHOD(World, RecreateEncounterS))
 		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void))
@@ -958,6 +978,7 @@ void ScriptManager::RegisterGame()
 	AddVarType(Var::Type::GroundItem, "GroundItem", true);
 	AddVarType(Var::Type::String, "string", true);
 	AddVarType(Var::Type::Unit, "Unit", true);
+	AddVarType(Var::Type::UnitGroup, "UnitGroup", true);
 }
 
 void ScriptManager::RunScript(cstring code)

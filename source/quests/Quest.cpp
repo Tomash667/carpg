@@ -212,6 +212,12 @@ void Quest::ConversionData::Add(cstring key, Location* location)
 }
 
 //=================================================================================================
+void Quest::ConversionData::Add(cstring key, UnitGroup* group)
+{
+	vars->Get(key)->SetPtr(group, Var::Type::UnitGroup);
+}
+
+//=================================================================================================
 void Quest::ConversionData::Add(cstring key, const Item* item)
 {
 	vars->Get(key)->SetPtr(const_cast<Item*>(item), Var::Type::Item);

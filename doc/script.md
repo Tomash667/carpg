@@ -18,6 +18,8 @@ Core library
 * Vec3 - 3d vector x, y, z. Static methods:
   * float Distance(const Vec3& in v1, const Vec3& in v2);
 * Vec4 - 4d vector x, y, z, w.
+* string
+	* string Upper() const - return string with first letter uppercase.
 
 ### SpawnPoint type
 Contain position and rotation.
@@ -248,6 +250,11 @@ Static methods:
 
 ### UnitGroup type
 Group of template units. Used for spawn groups inside locations/encounters.
+
+Members:
+
+* const string name
+* const bool female - used in polish language to determine correct spelling of some gender specific words.
 
 Static properties:
 
@@ -627,6 +634,7 @@ Static methods:
 * uint GetSettlements() - return count of settlements.
 * Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
+* string GetDirName(Location@ loc1, Location@ loc2) - get direction name string from loc1 to loc2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
 * Vec2 FindPlace(const Vec2& in pos, float range, bool allow_exact = false) - find place for location inside range.
 * Vec2 FindPlace(const Vec2& in pos, float min_range, float max_range) - find place for location inside range.
@@ -639,6 +647,8 @@ Static methods:
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1) - get closest location of this type (doesn't return quest locations).
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).
 * Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
+* Location@ CreateCamp(const Vec2& in pos, UnitGroup@) - create new camp at position.
+* void AbadonLocation(Location@) - remove all units & items from location.
 * Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 * Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.
 * void RemoveEncounter(Quest@) - remove encounters attached to this quest.

@@ -18,7 +18,8 @@ struct Var
 		Encounter,
 		GroundItem,
 		String,
-		Unit
+		Unit,
+		UnitGroup
 	};
 	Type type;
 	union

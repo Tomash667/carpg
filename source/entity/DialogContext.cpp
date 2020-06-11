@@ -55,7 +55,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	show_choices = false;
 	idleMode = false;
 	dialog_text = nullptr;
-	dialog_once = true;
+	once = true;
 	dialog_quest = quest;
 	dialog_skip = -1;
 	dialog_esc = -1;
@@ -141,7 +141,7 @@ cstring DialogContext::GetIdleText(Unit& talker)
 	show_choices = false;
 	idleMode = true;
 	dialog_text = nullptr;
-	dialog_once = true;
+	once = true;
 	dialog_quest = nullptr;
 	dialog_skip = -1;
 	dialog_esc = -1;
@@ -471,21 +471,21 @@ void DialogContext::UpdateLoop()
 				cmp_result = !cmp_result;
 			break;
 		case DTF_IF_ONCE:
-			cmp_result = dialog_once;
+			cmp_result = once;
 			if(de.op == OP_NOT_EQUAL)
 				cmp_result = !cmp_result;
 			if(cmp_result)
-				dialog_once = false;
+				once = false;
 			break;
 		case DTF_DO_ONCE:
-			dialog_once = false;
+			once = false;
 			break;
 		case DTF_CHECK_QUEST_TIMEOUT:
 			{
 				Quest* quest = quest_mgr->FindQuest(game_level->location_index, (QuestCategory)de.value);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
-					dialog_once = false;
+					once = false;
 					StartNextDialog(quest->GetDialog(QUEST_DIALOG_FAIL), quest);
 				}
 			}

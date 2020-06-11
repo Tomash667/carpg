@@ -8,6 +8,7 @@ Wersja 0.16 (???):
 + nowe imiona/nazwy, usprawnienia dialogów
 + koniec gry nie blokuje otwarcia chatu, wczytania gry itp
 + losowe dialogi wczytywane z pliku
++ konwersja zadania "obóz obok miasta" na skrypty
 - zombie czasami nie atakuje po ogłuszeniu [Zielu]
 - bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze

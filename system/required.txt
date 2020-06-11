@@ -270,9 +270,6 @@ dialog q_bandits_guard
 dialog q_bandits_agent
 dialog q_bandits_boss
 dialog q_bandits_encounter
-dialog q_camp_near_city_start
-dialog q_camp_near_city_timeout
-dialog q_camp_near_city_end
 dialog q_crazies_trainer
 dialog q_deliver_parcel_start
 dialog q_deliver_parcel_timeout

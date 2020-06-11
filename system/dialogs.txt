@@ -416,11 +416,6 @@ dialog guard_captain
 		do_quest "animals"
 		do_once
 	}
-	if need_talk "camp"
-	{
-		do_quest "camp"
-		do_once
-	}
 	if need_talk "wanted"
 	{
 		do_quest "wanted"
@@ -2296,42 +2291,6 @@ dialog q_bandits_boss
 	talk 1
 	talk 2
 	script "target.OrderAttack()"
-	end
-}
-
-//==============================================================================
-dialog q_camp_near_city_start
-{
-	talk 0
-	talk 1
-	talk 2
-	choice 3
-	{
-		set_quest_progress 1
-		talk 4
-		talk 5
-		end
-	}
-	escape choice 6
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_camp_near_city_timeout
-{
-	set_quest_progress 4
-	talk 0
-	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_camp_near_city_end
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
 	end
 }
 

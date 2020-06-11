@@ -53,6 +53,8 @@ struct Quest : public QuestHandler
 		void Add(cstring key, int value);
 		void Add(cstring key, Location* location);
 		void Add(cstring key, const Item* item);
+		void Add(cstring key, UnitGroup* group);
+		void Add(cstring key, void*) = delete;
 	};
 
 	int id;

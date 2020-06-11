@@ -48,7 +48,6 @@ struct DialogContext
 	GameDialog* dialog; // aktualny dialog
 	Unit* talker; // postaæ z któr¹ siê rozmawia
 	float dialog_wait; // czas wyœwietlania opcji dialogowej
-	bool dialog_once; // wyœwietlanie opcji dialogowej tylko raz
 	cstring last_rumor;
 	bool is_local;
 	PlayerController* pc;
@@ -87,5 +86,6 @@ private:
 	bool LearnPerk(Perk* perk);
 	bool RecruitHero(Class* clas);
 
+	bool once;
 	bool idleMode;
 };
