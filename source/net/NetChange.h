@@ -45,7 +45,7 @@ public:
 
 private:
 	byte* data;
-	byte& len;
+	uint& len;
 };
 
 //-----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ struct NetChange
 		CONSUME_ITEM, // unit consume item SERVER[int(id)-unit, string1(Item id)-consumed item, bool(count)-force] / CLIENT[int(id)-item index]
 		HIT_SOUND, // play hit sound [Vec3(pos), byte(id)-material, byte(count)-material2]
 		STUNNED, // unit get stunned [int(id)-unit]
-		SHOOT_ARROW, // create shooted arrow [int(id)-unit, Vec3(pos), float(f[0])-rotY, float(f[1])-speedY, float(f[2])-rotX, float(extra_f)-speed]
+		SHOOT_ARROW, // create shooted arrow [int-bullet id, int-owner id, Vec3-pos, float-rotX, float-rotY, float-speed, float-yspeed]
 		LOOT_UNIT, // player wants to loot unit [int(id)-unit]
 		GET_ITEM, // player gets item from unit or container [int(id)-i_index, int(count)-count]
 		GET_ALL_ITEMS, // player picks up all items from corpse/chest []
@@ -156,7 +156,7 @@ struct NetChange
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit cast spell SERVER[int(id)-unit] / CLIENT[Vec3(pos)-target pos]
-		CREATE_SPELL_BALL, // create ball - spell effect [int(ability->hash), Vec3(pos), float(rot_y), float(speed_y), int(extra_id)-owner id]
+		CREATE_SPELL_BALL, // create ball - spell effect [int-abilityHash, int-id, int-ownerId, Vec3-pos, float-rotY, float-yspeed]
 		SPELL_SOUND, // play spell sound [int(ability->hash), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(id)-unit that sucks blood]
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro), Vec3(pos), Vec3(f)-pos2]
@@ -214,6 +214,7 @@ struct NetChange
 		CUTSCENE_TEXT, // queue cutscene text to show [string1(str)-text, float(f[0])-time]
 		CUTSCENE_SKIP, // skip current cutscene []
 		CRAFT, // craft item [int(recipe->hash), uint(count)]
+		REMOVE_BULLET, // remove bullet [int(id)-bullet id]
 
 		MAX
 	} type;
@@ -224,12 +225,14 @@ struct NetChange
 		const Item* base_item;
 		UnitData* base_unit;
 		int e_id;
+		uint size;
 		CMD cmd;
 		Usable* usable;
 		Recipe* recipe;
 	};
 	union
 	{
+		int data;
 		struct
 		{
 			int id, count;
@@ -254,6 +257,7 @@ struct NetChange
 	{
 		float extra_f;
 		int extra_id;
+		int extra_data[4];
 	};
 
 	template<typename T>

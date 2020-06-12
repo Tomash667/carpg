@@ -270,6 +270,7 @@ bool Trap::Update(float dt, LevelArea& area)
 					Bullet* bullet = new Bullet;
 					area.tmp->bullets.push_back(bullet);
 
+					bullet->Register();
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
 					bullet->attack = float(base->attack);
@@ -303,12 +304,13 @@ bool Trap::Update(float dt, LevelArea& area)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::SHOOT_ARROW;
-						c.unit = nullptr;
-						c.pos = bullet->start_pos;
-						c.f[0] = bullet->rot.y;
-						c.f[1] = 0.f;
-						c.f[2] = 0.f;
-						c.extra_f = bullet->speed;
+						c << bullet->id
+							<< -1 // owner
+							<< bullet->start_pos
+							<< bullet->rot.x
+							<< bullet->rot.y
+							<< bullet->speed
+							<< bullet->yspeed;
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::TRIGGER_TRAP;

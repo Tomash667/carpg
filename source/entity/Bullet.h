@@ -4,7 +4,7 @@
 struct BulletCallback;
 
 //-----------------------------------------------------------------------------
-struct Bullet
+struct Bullet : public EntityType<Bullet>
 {
 	Unit* owner;
 	Ability* ability;

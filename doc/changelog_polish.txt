@@ -21,6 +21,8 @@ Wersja 0.16 (???):
 - tylko Jozan przywraca zdrowie podczas podróży
 - czasami śmieciowy tekst po zrekrutowaniu bohatera w akademii
 - więcej golemów podczas spotkania na mapie
+- mapa losowego spotkania była zawsze taka sama
+- poprawiona synchronizacja pocisków w multiplayer
 
 --------------------------------------------------------------------------------
 Poprawki:

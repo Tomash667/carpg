@@ -21,6 +21,8 @@ Version 0.16 (???):
 - only Jozan heal team when traveling
 - sometimes garbage text when recruiting hero in academy
 - more golems on worldmap encounter
+- encounter map was not changing
+- better projectiles synchronization in multiplayer
 
 --------------------------------------------------------------------------------
 Fixes:

@@ -6600,6 +6600,7 @@ void Unit::CastSpell()
 				Bullet* bullet = new Bullet;
 				area->tmp->bullets.push_back(bullet);
 
+				bullet->Register();
 				bullet->level = level + CalculateMagicPower();
 				bullet->backstab = 0.25f;
 				bullet->pos = coord;
@@ -6662,11 +6663,12 @@ void Unit::CastSpell()
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CREATE_SPELL_BALL;
-					c.ability = &ability;
-					c.pos = bullet->start_pos;
-					c.rot_y = bullet->rot.y;
-					c.speed_y = bullet->yspeed;
-					c.extra_id = id;
+					c << ability.hash
+						<< bullet->id
+						<< id
+						<< bullet->start_pos
+						<< bullet->rot.y
+						<< bullet->yspeed;
 				}
 			}
 		}
@@ -7322,6 +7324,7 @@ void Unit::Update(float dt)
 
 				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
+				bullet->Register();
 				bullet->attack = CalculateAttack(&GetBow());
 				bullet->level = level;
 				bullet->backstab = GetBackstabMod(&GetBow());
@@ -7410,12 +7413,13 @@ void Unit::Update(float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::SHOOT_ARROW;
-					c.unit = this;
-					c.pos = bullet->start_pos;
-					c.f[0] = bullet->rot.y;
-					c.f[1] = bullet->yspeed;
-					c.f[2] = bullet->rot.x;
-					c.extra_f = bullet->speed;
+					c << bullet->id
+						<< id
+						<< bullet->start_pos
+						<< bullet->rot.x
+						<< bullet->rot.y
+						<< bullet->speed
+						<< bullet->yspeed;
 				}
 			}
 			if(mesh_inst->GetProgress(1) > 20.f / 40)

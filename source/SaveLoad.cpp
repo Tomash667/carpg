@@ -451,6 +451,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << Trap::impl.id_counter;
 	f << Door::impl.id_counter;
 	f << Electro::impl.id_counter;
+	f << Bullet::impl.id_counter;
 
 	game_stats->Save(f);
 
@@ -679,6 +680,8 @@ void Game::LoadGame(GameReader& f)
 		f >> Door::impl.id_counter;
 		f >> Electro::impl.id_counter;
 	}
+	if(LOAD_VERSION >= V_DEV)
+		f >> Bullet::impl.id_counter;
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;

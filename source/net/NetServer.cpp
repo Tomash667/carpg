@@ -3475,12 +3475,8 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::SHOOT_ARROW:
-			{
-				f << (c.unit ? c.unit->id : -1);
-				f << c.pos;
-				f << c.vec3;
-				f << c.extra_f;
-			}
+		case NetChange::CREATE_SPELL_BALL:
+			f.Write(&c.data, c.size);
 			break;
 		case NetChange::UPDATE_CREDIT:
 			{
@@ -3532,6 +3528,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TRIGGER_TRAP:
 		case NetChange::CLEAN_LEVEL:
 		case NetChange::REMOVE_ITEM:
+		case NetChange::REMOVE_BULLET:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3672,13 +3669,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CHANGE_UNIT_BASE:
 			f << c.unit->id;
 			f << c.unit->data->id;
-			break;
-		case NetChange::CREATE_SPELL_BALL:
-			f << c.ability->hash;
-			f << c.pos;
-			f << c.rot_y;
-			f << c.speed_y;
-			f << c.extra_id;
 			break;
 		case NetChange::SPELL_SOUND:
 			f << c.ability->hash;

@@ -1562,6 +1562,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 			outside->Clear();
+			outside->last_visit = -1;
 		}
 	}
 
@@ -2645,6 +2646,7 @@ void Game::ClearGameVars(bool new_game)
 	Trap::ResetEntities();
 	Door::ResetEntities();
 	Electro::ResetEntities();
+	Bullet::ResetEntities();
 
 	// remove black background at begining
 	fallback_type = FALLBACK::NONE;

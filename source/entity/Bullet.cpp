@@ -22,6 +22,8 @@
 #include <ResourceManager.h>
 #include <SoundManager.h>
 
+EntityType<Bullet>::Impl EntityType<Bullet>::impl;
+
 //=================================================================================================
 bool Bullet::Update(float dt, LevelArea& area)
 {
@@ -80,6 +82,13 @@ bool Bullet::Update(float dt, LevelArea& area)
 		pe->destroy = true;
 
 	OnHit(area, hitted, hitpoint, callback);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(net->changes);
+		c.type = NetChange::REMOVE_BULLET;
+		c.id = id;
+	}
 
 	delete this;
 	return true;
@@ -388,6 +397,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 //=================================================================================================
 void Bullet::Save(FileWriter& f) const
 {
+	f << id;
 	f << pos;
 	f << rot;
 	if(mesh)
@@ -416,6 +426,9 @@ void Bullet::Save(FileWriter& f) const
 //=================================================================================================
 void Bullet::Load(FileReader& f)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
 	f >> pos;
 	f >> rot;
 	const string& mesh_id = f.ReadString1();
@@ -484,6 +497,7 @@ void Bullet::Load(FileReader& f)
 //=================================================================================================
 void Bullet::Write(BitStreamWriter& f) const
 {
+	f << id;
 	f << pos;
 	f << rot;
 	f << speed;
@@ -496,6 +510,7 @@ void Bullet::Write(BitStreamWriter& f) const
 //=================================================================================================
 bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 {
+	f >> id;
 	f >> pos;
 	f >> rot;
 	f >> speed;
@@ -575,5 +590,6 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 	else
 		owner = nullptr;
 
+	Register();
 	return true;
 }

@@ -485,12 +485,8 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			}
 			break;
 		case NetChange::GENERIC_CMD:
-			{
-				byte* content = ((byte*)&c) + sizeof(NetChange::TYPE);
-				byte size = *content++;
-				f << size;
-				f.Write(content, size);
-			}
+			f.WriteCasted<byte>(c.size);
+			f.Write(&c.data, c.size);
 			break;
 		case NetChange::CHEAT_ARENA:
 			f << *c.str;
@@ -1129,28 +1125,29 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// create shooted arrow
 		case NetChange::SHOOT_ARROW:
 			{
-				int id;
+				int id, ownerId;
 				Vec3 pos;
-				float rotX, rotY, speedY, speed;
+				float rotX, rotY, speed, speedY;
 				f >> id;
+				f >> ownerId;
 				f >> pos;
-				f >> rotY;
-				f >> speedY;
 				f >> rotX;
+				f >> rotY;
 				f >> speed;
+				f >> speedY;
 				if(!f)
 					Error("Update client: Broken SHOOT_ARROW.");
 				else if(game->game_state == GS_LEVEL)
 				{
 					Unit* owner;
-					if(id == -1)
+					if(ownerId == -1)
 						owner = nullptr;
 					else
 					{
-						owner = game_level->FindUnit(id);
+						owner = game_level->FindUnit(ownerId);
 						if(!owner)
 						{
-							Error("Update client: SHOOT_ARROW, missing unit %d.", id);
+							Error("Update client: SHOOT_ARROW, missing unit %d.", ownerId);
 							break;
 						}
 					}
@@ -1160,6 +1157,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Bullet* bullet = new Bullet;
 					area.tmp->bullets.push_back(bullet);
 
+					bullet->id = id;
+					bullet->Register();
 					bullet->mesh = game_res->aArrow;
 					bullet->pos = pos;
 					bullet->start_pos = pos;
@@ -2287,15 +2286,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// create ball - spell effect
 		case NetChange::CREATE_SPELL_BALL:
 			{
-				int ability_hash;
-				int id;
+				int abilityHash;
+				int id, ownerId;
 				Vec3 pos;
 				float rotY, speedY;
-				f >> ability_hash;
+				f >> abilityHash;
+				f >> id;
+				f >> ownerId;
 				f >> pos;
 				f >> rotY;
 				f >> speedY;
-				f >> id;
 				if(!f)
 				{
 					Error("Update client: Broken CREATE_SPELL_BALL.");
@@ -2305,19 +2305,19 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				Ability* ability_ptr = Ability::Get(ability_hash);
+				Ability* ability_ptr = Ability::Get(abilityHash);
 				if(!ability_ptr)
 				{
-					Error("Update client: CREATE_SPELL_BALL, missing ability %u.", ability_hash);
+					Error("Update client: CREATE_SPELL_BALL, missing ability %u.", abilityHash);
 					break;
 				}
 
 				Unit* unit = nullptr;
-				if(id != -1)
+				if(ownerId != -1)
 				{
-					unit = game_level->FindUnit(id);
+					unit = game_level->FindUnit(ownerId);
 					if(!unit)
-						Error("Update client: CREATE_SPELL_BALL, missing unit %d.", id);
+						Error("Update client: CREATE_SPELL_BALL, missing unit %d.", ownerId);
 				}
 
 				Ability& ability = *ability_ptr;
@@ -2326,6 +2326,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				Bullet* bullet = new Bullet;
 				area.tmp->bullets.push_back(bullet);
 
+				bullet->id = id;
+				bullet->Register();
 				bullet->pos = pos;
 				bullet->rot = Vec3(0, rotY, 0);
 				bullet->mesh = ability.mesh;
@@ -3044,6 +3046,21 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// skip current cutscene
 		case NetChange::CUTSCENE_SKIP:
 			game->CutsceneEnded(false);
+			break;
+		// remove bullet
+		case NetChange::REMOVE_BULLET:
+			{
+				int id;
+				f >> id;
+				if(!f)
+					Error("Update client: Broken REMOVE_BULLET.");
+				else
+				{
+					Bullet* bullet = Bullet::GetById(id);
+					if(bullet)
+						bullet->timer = 0.1f;
+				}
+			}
 			break;
 		// invalid change
 		default:
