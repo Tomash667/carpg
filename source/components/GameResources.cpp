@@ -326,9 +326,9 @@ void GameResources::PreloadAbilities()
 //=================================================================================================
 void GameResources::PreloadObjects()
 {
-	for(BaseObject* p_obj : BaseObject::objs)
+	for(pair<const int, BaseObject*>& p : BaseObject::items)
 	{
-		BaseObject& obj = *p_obj;
+		BaseObject& obj = *p.second;
 		if(obj.mesh || obj.variants)
 		{
 			if(obj.mesh && !IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)

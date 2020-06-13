@@ -951,18 +951,18 @@ void Game::UpdateAi(float dt)
 									if(IsSet(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 									{
 										static vector<Object*> do_cw;
-										BaseObject* manekin = BaseObject::Get("melee_target"),
-											*tarcza = BaseObject::Get("bow_target");
+										BaseObject* melee_target = BaseObject::Get("melee_target"),
+											*bow_target = BaseObject::Get("bow_target");
 										for(vector<Object*>::iterator it2 = area.objects.begin(), end2 = area.objects.end(); it2 != end2; ++it2)
 										{
 											Object& obj = **it2;
-											if((obj.base == manekin || (obj.base == tarcza && u.HaveBow())) && Vec3::Distance(obj.pos, u.pos) < 10.f)
+											if((obj.base == melee_target || (obj.base == bow_target && u.HaveBow())) && Vec3::Distance(obj.pos, u.pos) < 10.f)
 												do_cw.push_back(&obj);
 										}
 										if(!do_cw.empty())
 										{
 											Object& o = *do_cw[Rand() % do_cw.size()];
-											if(o.base == manekin)
+											if(o.base == melee_target)
 											{
 												ai.timer = Random(10.f, 30.f);
 												ai.st.idle.action = AIController::Idle_TrainCombat;

@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "ContentItem.h"
+
+//-----------------------------------------------------------------------------
 // Object physics type
 enum OBJ_PHY_TYPE
 {
@@ -45,7 +48,7 @@ struct VariantObject
 };
 
 //-----------------------------------------------------------------------------
-struct ObjectGroup
+struct ObjectGroup : public ContentItem<ObjectGroup>
 {
 	struct EntryList
 	{
@@ -73,22 +76,22 @@ struct ObjectGroup
 		BaseObject* GetRandom();
 	};
 
-	string id;
+	inline static const cstring type_name = "object group";
+
 	EntryList list;
 
 	BaseObject* GetRandom()
 	{
 		return list.GetRandom();
 	}
-
-	static SetContainer<ObjectGroup> groups;
 };
 
 //-----------------------------------------------------------------------------
 // Base object
-struct BaseObject
+struct BaseObject : public ContentItem<BaseObject>
 {
-	string id;
+	inline static const cstring type_name = "object";
+
 	Mesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
@@ -104,28 +107,19 @@ struct BaseObject
 		variants(nullptr), extra_dist(0.f)
 	{
 	}
-
 	virtual ~BaseObject();
 
-	BaseObject& operator = (BaseObject& o)
+	BaseObject& operator = (BaseObject& o);
+
+	bool IsUsable() const { return IsSet(flags, OBJ_USABLE); }
+
+	static BaseObject* TryGet(int hash, ObjectGroup** group = nullptr);
+	static BaseObject* TryGet(Cstring id, ObjectGroup** group = nullptr)
 	{
-		mesh = o.mesh;
-		type = o.type;
-		r = o.r;
-		h = o.h;
-		centery = o.centery;
-		flags = o.flags;
-		variants = o.variants;
-		extra_dist = o.extra_dist;
-		return *this;
+		return TryGet(Hash(id), group);
 	}
 
-	bool IsUsable() const
-	{
-		return IsSet(flags, OBJ_USABLE);
-	}
-
-	static SetContainer<BaseObject> objs;
+	/*static SetContainer<BaseObject> objs;
 	static BaseObject* TryGet(Cstring id, ObjectGroup** group = nullptr);
 	static BaseObject* Get(Cstring id, ObjectGroup** group = nullptr)
 	{
@@ -136,5 +130,5 @@ struct BaseObject
 	static BaseObject* GetS(const string& id)
 	{
 		return Get(id);
-	}
+	}*/
 };

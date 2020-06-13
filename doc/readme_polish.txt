@@ -318,6 +318,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 🎵 Audio Engine: FMOD Studio by Firelight Technologies.
 🗃 Modele:
 	* https://opengameart.org
+		* CDmir - chest
 		* Clint Bellanger - naraphim sword
 		* Enetheru - windmill
 		* Grefuntor - slime

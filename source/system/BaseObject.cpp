@@ -2,8 +2,8 @@
 #include "BaseObject.h"
 
 //-----------------------------------------------------------------------------
-SetContainer<BaseObject> BaseObject::objs;
-SetContainer<ObjectGroup> ObjectGroup::groups;
+std::unordered_map<int, BaseObject*> ContentItem<BaseObject>::items;
+std::unordered_map<int, ObjectGroup*> ContentItem<ObjectGroup>::items;
 
 //=================================================================================================
 BaseObject* ObjectGroup::EntryList::GetRandom()
@@ -41,25 +41,34 @@ BaseObject::~BaseObject()
 }
 
 //=================================================================================================
-BaseObject* BaseObject::TryGet(Cstring id, ObjectGroup** out_group)
+BaseObject& BaseObject::operator = (BaseObject& o)
+{
+	mesh = o.mesh;
+	type = o.type;
+	r = o.r;
+	h = o.h;
+	centery = o.centery;
+	flags = o.flags;
+	variants = o.variants;
+	extra_dist = o.extra_dist;
+	return *this;
+}
+
+//=================================================================================================
+BaseObject* BaseObject::TryGet(int hash, ObjectGroup** out_group)
 {
 	// find object
-	static BaseObject obj;
-	obj.id = id;
-	auto it = objs.find(&obj);
-	if(it != objs.end())
-		return *it;
+	BaseObject* obj = ContentItem<BaseObject>::TryGet(hash);
+	if(obj)
+		return obj;
 
 	// find object group
-	static ObjectGroup group;
-	group.id = id;
-	auto group_it = ObjectGroup::groups.find(&group);
-	if(group_it != ObjectGroup::groups.end())
+	ObjectGroup* group = ObjectGroup::TryGet(hash);
+	if(group)
 	{
 		if(out_group)
-			*out_group = (*group_it);
-		BaseObject* obj = (*group_it)->GetRandom();
-		return obj;
+			*out_group = group;
+		return group->GetRandom();
 	}
 
 	return nullptr;
