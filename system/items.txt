@@ -137,7 +137,7 @@ weapon sword_scimitar {
 weapon sword_orcish {
 	weight 2.2
 	value 200
-	mesh "orkowy_miecz.qmsh"
+	mesh "orc_sword.qmsh"
 	attack 70
 	req_str 55
 	type long_blade
@@ -248,7 +248,7 @@ weapon axe_battle {
 weapon axe_orcish {
 	weight 3
 	value 220
-	mesh "topor_orkowy.qmsh"
+	mesh "orc_axe.qmsh"
 	attack 75
 	req_str 65
 	type axe
@@ -283,7 +283,7 @@ weapon axe_dwarf {
 weapon axe_giant {
 	weight 3.5
 	value 9000
-	mesh "topor_giganta.qmsh"
+	mesh "giant_axe.qmsh"
 	attack 165
 	req_str 70
 	type axe
@@ -329,7 +329,7 @@ weapon blunt_mace {
 weapon blunt_orcish {
 	weight 4
 	value 75
-	mesh "orkowy_mlot.qmsh"
+	mesh "orc_hammer.qmsh"
 	attack 60
 	req_str 60
 	type blunt

@@ -165,13 +165,14 @@ object campfire_off {
 }
 
 object chest {
-	mesh "skrzynia.qmsh"
+	mesh "chest.qmsh"
+	extra_dist 0.2
 	flags { near_wall is_chest }
 }
 
 // removed in V_0_14
 object chest_r {
-	mesh "skrzynia.qmsh"
+	mesh "chest.qmsh"
 	flags is_chest
 }
 

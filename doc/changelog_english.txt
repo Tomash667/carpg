@@ -4,7 +4,7 @@ Changelog
 Version 0.16 (???):
 ! cannot load saves from version 0.6.2 or older
 + new equipment: cutlass, mercenary sword, barbed cudgel, dwarf axe, kite shield, spiked shield, shield of death
-+ improved models: short/long sword, hatchet, battle axe, crystal axe, iron/steel/mithril/adamantine shield, The Wall shield
++ improved models: short/long sword, hatchet, battle axe, crystal axe, axe of giant, orc axe/sword/hammer, iron/steel/mithril/adamantine shield, The Wall shield
 + new names, dialogs improvements
 + end of game don't block chat, loading game etc
 + idle dialogs loaded from files
