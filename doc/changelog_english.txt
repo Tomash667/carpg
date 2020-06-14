@@ -9,6 +9,7 @@ Version 0.16 (???):
 + end of game don't block chat, loading game etc
 + idle dialogs loaded from files
 + converted quest "camp near city" to script
++ multiple chest types support, silver chest
 - zombie sometimes not attacking after stunning [Zielu]
 - bull's charge not stopping attack animation [Zielu]
 - fixed draw_hitbox command & shields
@@ -23,6 +24,7 @@ Version 0.16 (???):
 - more golems on worldmap encounter
 - encounter map was not changing
 - better projectiles synchronization in multiplayer
+- save/load chest animation
 
 --------------------------------------------------------------------------------
 Fixes:

@@ -461,7 +461,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	byte check_id = 0;
 
 	if(game_state == GS_LEVEL)
-		f << (game_level->event_handler ? game_level->event_handler->GetLocationEventHandlerQuestRefid() : -1);
+		f << (game_level->event_handler ? game_level->event_handler->GetLocationEventHandlerQuestId() : -1);
 	else
 		team->SaveOnWorldmap(f);
 	f << game_level->enter_from;

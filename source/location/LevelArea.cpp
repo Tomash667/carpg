@@ -58,7 +58,7 @@ void LevelArea::Update(float dt)
 
 	// update chests
 	for(Chest* chest : chests)
-		chest->mesh_inst->Update(dt);
+		chest->meshInst->Update(dt);
 
 	// update doors
 	for(Door* door : doors)

@@ -69,8 +69,8 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
-	int GetLocationEventHandlerQuestRefid() override { return id; }
-	int GetChestEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
+	int GetChestEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	int GenerateMine(CaveGenerator* cave_gen, bool first);

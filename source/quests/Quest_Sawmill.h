@@ -43,7 +43,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	void GenerateSawmill(bool in_progress);

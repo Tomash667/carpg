@@ -34,7 +34,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
 
 private:
 	int GetReward() const;

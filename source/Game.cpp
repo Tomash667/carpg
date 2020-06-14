@@ -2571,29 +2571,6 @@ void Game::StopAllSounds()
 	attached_sounds.clear();
 }
 
-void Game::PreloadTraps(vector<Trap*>& traps)
-{
-	for(Trap* trap : traps)
-	{
-		auto& base = *trap->base;
-		if(base.state != ResourceState::NotLoaded)
-			continue;
-
-		if(base.mesh)
-			res_mgr->Load(base.mesh);
-		if(base.mesh2)
-			res_mgr->Load(base.mesh2);
-		if(base.sound)
-			res_mgr->Load(base.sound);
-		if(base.sound2)
-			res_mgr->Load(base.sound2);
-		if(base.sound3)
-			res_mgr->Load(base.sound3);
-
-		base.state = ResourceState::Loaded;
-	}
-}
-
 void Game::UpdateAttachedSounds(float dt)
 {
 	LoopAndRemove(attached_sounds, [](AttachedSound& sound)
@@ -3032,10 +3009,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	{
 		// remove chest meshes
 		for(Chest* chest : area.chests)
-		{
-			delete chest->mesh_inst;
-			chest->mesh_inst = nullptr;
-		}
+			chest->Cleanup();
 
 		// remove door meshes
 		for(Door* door : area.doors)
@@ -3204,9 +3178,29 @@ void Game::PreloadResources(bool worldmap)
 		for(LevelArea& area : game_level->ForEachArea())
 		{
 			// load units - units respawn so need to check everytime...
-			PreloadUnits(area.units);
+			for(Unit* unit : area.units)
+				PreloadUnit(unit);
+
 			// some traps respawn
-			PreloadTraps(area.traps);
+			for(Trap* trap : area.traps)
+			{
+				BaseTrap& base = *trap->base;
+				if(base.state != ResourceState::NotLoaded)
+					continue;
+
+				if(base.mesh)
+					res_mgr->Load(base.mesh);
+				if(base.mesh2)
+					res_mgr->Load(base.mesh2);
+				if(base.sound)
+					res_mgr->Load(base.sound);
+				if(base.sound2)
+					res_mgr->Load(base.sound2);
+				if(base.sound3)
+					res_mgr->Load(base.sound3);
+
+				base.state = ResourceState::Loaded;
+			}
 
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
@@ -3232,16 +3226,37 @@ void Game::PreloadResources(bool worldmap)
 			// load music
 			game_res->LoadMusic(game_level->GetLocationMusic(), false);
 
-			// load objects
-			for(Object* obj : game_level->local_area->objects)
-				res_mgr->Load(obj->mesh);
+			for(LevelArea& area : game_level->ForEachArea())
+			{
+				// load objects
+				for(Object* obj : area.objects)
+					res_mgr->Load(obj->mesh);
+				for(Chest* chest : area.chests)
+					res_mgr->Load(chest->base->mesh);
 
-			// load usables
-			PreloadUsables(game_level->local_area->usables);
+				// load usables
+				for(Usable* use : area.usables)
+				{
+					BaseUsable* base = use->base;
+					if(base->state == ResourceState::NotLoaded)
+					{
+						if(base->variants)
+						{
+							for(Mesh* mesh : base->variants->meshes)
+								res_mgr->Load(mesh);
+						}
+						else
+							res_mgr->Load(base->mesh);
+						if(base->sound)
+							res_mgr->Load(base->sound);
+						base->state = ResourceState::Loaded;
+					}
+				}
+			}
 
+			// load buildings
 			if(game_level->city_ctx)
 			{
-				// load buildings
 				for(CityBuilding& city_building : game_level->city_ctx->buildings)
 				{
 					Building& building = *city_building.building;
@@ -3254,52 +3269,12 @@ void Game::PreloadResources(bool worldmap)
 						building.state = ResourceState::Loaded;
 					}
 				}
-
-				for(InsideBuilding* ib : game_level->city_ctx->inside_buildings)
-				{
-					// load building objects
-					for(Object* obj : ib->objects)
-						res_mgr->Load(obj->mesh);
-
-					// load building usables
-					PreloadUsables(ib->usables);
-
-					// load units inside building
-					PreloadUnits(ib->units);
-				}
 			}
 		}
 	}
 
 	for(const Item* item : items_load)
 		game_res->PreloadItem(item);
-}
-
-void Game::PreloadUsables(vector<Usable*>& usables)
-{
-	for(auto u : usables)
-	{
-		auto base = u->base;
-		if(base->state == ResourceState::NotLoaded)
-		{
-			if(base->variants)
-			{
-				for(Mesh* mesh : base->variants->meshes)
-					res_mgr->Load(mesh);
-			}
-			else
-				res_mgr->Load(base->mesh);
-			if(base->sound)
-				res_mgr->Load(base->sound);
-			base->state = ResourceState::Loaded;
-		}
-	}
-}
-
-void Game::PreloadUnits(vector<Unit*>& units)
-{
-	for(Unit* unit : units)
-		PreloadUnit(unit);
 }
 
 void Game::PreloadUnit(Unit* unit)

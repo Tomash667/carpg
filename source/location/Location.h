@@ -164,5 +164,5 @@ struct LocationEventHandler
 
 	// return true to prevent adding default news about clearing location
 	virtual bool HandleLocationEvent(Event event) = 0;
-	virtual int GetLocationEventHandlerQuestRefid() = 0;
+	virtual int GetLocationEventHandlerQuestId() = 0;
 };

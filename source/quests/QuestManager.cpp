@@ -1551,24 +1551,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 	case Quest_Dungeon::Item_InTreasure:
 		if(inside && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT, LABYRINTH))
 		{
-			Chest* chest = nullptr;
-
-			if(inside->target == LABYRINTH)
-				chest = RandomItem(lvl->chests);
-			else
-			{
-				Room& room = *lvl->rooms[inside->special_room];
-				LocalVector<Chest*> chests;
-				for(Chest* chest2 : lvl->chests)
-				{
-					if(room.IsInside(chest2->pos))
-						chests.push_back(chest2);
-				}
-
-				if(!chests.empty())
-					chest = chests.RandomItem();
-			}
-
+			Chest* chest = game_level->GetTreasureChest();
 			assert(chest);
 			if(chest)
 			{

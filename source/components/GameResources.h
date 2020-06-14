@@ -30,8 +30,8 @@ public:
 	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
 	TexOverride tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	MeshPtr aHuman, aHair[5], aBeard[5], aMustache[2], aEyebrows;
-	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2,
-		aStun, aPortal;
+	MeshPtr aArrow, aSkybox, aBag, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun,
+		aPortal;
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
 		sBody[5], sBone, sSkin, sSlime, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;

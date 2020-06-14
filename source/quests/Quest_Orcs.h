@@ -29,7 +29,7 @@ public:
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
 	int dungeon_levels;
@@ -110,8 +110,8 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	OrcClass GetOrcClass() const { return orc_class; }

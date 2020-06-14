@@ -9,6 +9,7 @@ Wersja 0.16 (???):
 + koniec gry nie blokuje otwarcia chatu, wczytania gry itp
 + losowe dialogi wczytywane z pliku
 + konwersja zadania "obóz obok miasta" na skrypty
++ obsługa wielu modeli skrzyni, srebrna skrzynia
 - zombie czasami nie atakuje po ogłuszeniu [Zielu]
 - bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze
@@ -23,6 +24,7 @@ Wersja 0.16 (???):
 - więcej golemów podczas spotkania na mapie
 - mapa losowego spotkania była zawsze taka sama
 - poprawiona synchronizacja pocisków w multiplayer
+- poprawny zapis/wczytywanie animacji skrzyni
 
 --------------------------------------------------------------------------------
 Poprawki:

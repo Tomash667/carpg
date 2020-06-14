@@ -30,7 +30,7 @@ public:
 	void OnProgress();
 	void Update(float dt);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
-	int GetUnitEventHandlerQuestRefid() { return -2; } // special value hack
+	int GetUnitEventHandlerQuestId() override { return -2; } // special value hack
 	void Cleanup();
 	void SpawnDrunkmans();
 

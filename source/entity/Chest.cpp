@@ -16,29 +16,41 @@ const float Chest::SOUND_DIST = 1.f;
 EntityType<Chest>::Impl EntityType<Chest>::impl;
 
 //=================================================================================================
+void Chest::Recreate()
+{
+	if(meshInst)
+	{
+		meshInst->ApplyPreload(base->mesh, true);
+		if(meshInst->IsActive())
+			meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_BACK | PLAY_ONCE);
+	}
+	else
+		meshInst = new MeshInstance(base->mesh);
+}
+
+//=================================================================================================
+void Chest::Cleanup()
+{
+	delete meshInst;
+	meshInst = nullptr;
+	user = nullptr;
+}
+
+//=================================================================================================
 void Chest::Save(GameWriter& f)
 {
 	f << id;
 
 	ItemContainer::Save(f);
 
+	f << base->hash;
 	f << pos;
 	f << rot;
 
 	if(f.isLocal)
-	{
-		MeshInstance::Group& group = mesh_inst->groups[0];
-		if(group.IsPlaying())
-		{
-			f << group.state;
-			f << group.time;
-			f << group.blend_time;
-		}
-		else
-			f << 0;
-	}
+		meshInst->SaveSimple(f);
 
-	f << (handler ? handler->GetChestEventHandlerQuestRefid() : -1);
+	f << (handler ? handler->GetChestEventHandlerQuestId() : -1);
 }
 
 //=================================================================================================
@@ -50,6 +62,13 @@ void Chest::Load(GameReader& f)
 
 	ItemContainer::Load(f);
 
+	if(LOAD_VERSION >= V_DEV)
+		base = BaseObject::Get(f.Read<int>());
+	else
+	{
+		static BaseObject* baseChest = BaseObject::Get("chest");
+		base = baseChest;
+	}
 	f >> pos;
 	f >> rot;
 	user = nullptr;
@@ -59,21 +78,11 @@ void Chest::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		mesh_inst = new MeshInstance(game_res->aChest);
-
-		int state = f.Read<int>();
-		if(state != 0)
-		{
-			MeshInstance::Group& group = mesh_inst->groups[0];
-			group.anim = &mesh_inst->mesh->anims[0];
-			group.state = state;
-			group.used_group = 0;
-			f >> group.time;
-			f >> group.blend_time;
-		}
+		meshInst = new MeshInstance(nullptr);
+		meshInst->LoadSimple(f);
 	}
 	else
-		mesh_inst = nullptr;
+		meshInst = nullptr;
 
 	int handler_id = f.Read<int>();
 	if(handler_id == -1)
@@ -89,20 +98,24 @@ void Chest::Load(GameReader& f)
 void Chest::Write(BitStreamWriter& f)
 {
 	f << id;
+	f << base->hash;
 	f << pos;
 	f << rot;
+	meshInst->WriteSimple(f);
 }
 
 //=================================================================================================
 bool Chest::Read(BitStreamReader& f)
 {
 	f >> id;
+	base = BaseObject::Get(f.Read<int>());
 	f >> pos;
 	f >> rot;
+	meshInst = new MeshInstance(nullptr);
+	meshInst->ReadSimple(f);
 	if(!f)
 		return false;
 	Register();
-	mesh_inst = new MeshInstance(game_res->aChest);
 	return true;
 }
 
@@ -137,7 +150,7 @@ void Chest::OpenClose(Unit* unit)
 		// open chest by unit
 		assert(!user);
 		user = unit;
-		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END);
 		sound_mgr->PlaySound3d(game_res->sChestOpen, GetCenter(), SOUND_DIST);
 		if(Net::IsLocal() && handler)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
@@ -154,7 +167,7 @@ void Chest::OpenClose(Unit* unit)
 		// close chest
 		assert(user);
 		user = nullptr;
-		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK);
 		sound_mgr->PlaySound3d(game_res->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{

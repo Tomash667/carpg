@@ -203,18 +203,18 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
 		{
 			Chest& chest = **it;
-			chest.mesh_inst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(chest.pos, chest.mesh_inst->mesh->head.radius))
+			chest.meshInst->mesh->EnsureIsLoaded();
+			if(frustum.SphereToFrustum(chest.pos, chest.meshInst->mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
 				node->type = SceneNode::NORMAL;
-				if(!chest.mesh_inst->groups[0].anim || chest.mesh_inst->groups[0].time == 0.f)
-					node->SetMesh(chest.mesh_inst->mesh);
-				else
+				if(chest.meshInst->IsActive())
 				{
-					chest.mesh_inst->SetupBones();
-					node->SetMesh(chest.mesh_inst);
+					chest.meshInst->SetupBones();
+					node->SetMesh(chest.meshInst);
 				}
+				else
+					node->SetMesh(chest.meshInst->mesh);
 				node->center = chest.pos;
 				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
 				node->tex_override = nullptr;

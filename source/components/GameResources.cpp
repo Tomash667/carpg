@@ -173,7 +173,6 @@ void GameResources::LoadData()
 	aArrow = res_mgr->Load<Mesh>("strzala.qmsh");
 	aSkybox = res_mgr->Load<Mesh>("skybox.qmsh");
 	aBag = res_mgr->Load<Mesh>("worek.qmsh");
-	aChest = res_mgr->Load<Mesh>("chest.qmsh");
 	aGrating = res_mgr->Load<Mesh>("kratka.qmsh");
 	aDoorWall = res_mgr->Load<Mesh>("nadrzwi.qmsh");
 	aDoorWall2 = res_mgr->Load<Mesh>("nadrzwi2.qmsh");

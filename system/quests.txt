@@ -960,7 +960,7 @@ quest find_artifact
 				if(Level::dungeon_level == target_loc.levels - 1)
 				{
 					e.location.RemoveEventHandler(quest);
-					Chest@ chest = Level::GetRandomChest(Level::GetRoom(ROOM_TREASURY));
+					Chest@ chest = Level::GetTreasureChest();
 					chest.AddItem(item);
 					spawned = true;
 				}

@@ -467,6 +467,36 @@ Chest* Level::GetRandomChest(Room& room)
 }
 
 //=================================================================================================
+Chest* Level::GetTreasureChest()
+{
+	assert(lvl);
+
+	Room* room;
+	if(location->target == LABYRINTH)
+		room = lvl->rooms[0];
+	else
+		room = lvl->rooms[static_cast<InsideLocation*>(location)->special_room];
+
+	Chest* bestChest = nullptr;
+	const Vec3 center = room->Center();
+	float bestDist = 999.f;
+	for(Chest* chest : lvl->chests)
+	{
+		if(room->IsInside(chest->pos))
+		{
+			float dist = Vec3::Distance(chest->pos, center);
+			if(dist < bestDist)
+			{
+				bestDist = dist;
+				bestChest = chest;
+			}
+		}
+	}
+
+	return bestChest;
+}
+
+//=================================================================================================
 Electro* Level::FindElectro(int id)
 {
 	for(LevelArea& area : ForEachArea())
@@ -678,7 +708,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		// chest
 		Chest* chest = new Chest;
 		chest->Register();
-		chest->mesh_inst = new MeshInstance(base->mesh);
+		chest->base = base;
 		chest->rot = rot;
 		chest->pos = pos;
 		area.chests.push_back(chest);
@@ -3173,10 +3203,6 @@ void Level::OnRevisitLevel()
 {
 	for(LevelArea& area : ForEachArea())
 	{
-		// recreate chests
-		for(Chest* chest : area.chests)
-			chest->mesh_inst = new MeshInstance(game_res->aChest);
-
 		// recreate doors
 		for(Door* door : area.doors)
 			door->Recreate();
@@ -4735,5 +4761,8 @@ void Level::CreateObjectsMeshInstance()
 					obj->meshInst->groups[0].time = time;
 			}
 		}
+
+		for(Chest* chest : area.chests)
+			chest->Recreate();
 	}
 }

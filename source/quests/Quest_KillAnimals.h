@@ -27,7 +27,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
 	int GetReward() const;

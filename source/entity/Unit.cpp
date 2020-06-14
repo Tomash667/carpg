@@ -1777,7 +1777,7 @@ void Unit::Save(GameWriter& f)
 	f << assist;
 	f << dont_attack;
 	f << attack_team;
-	f << (event_handler ? event_handler->GetUnitEventHandlerQuestRefid() : -1);
+	f << (event_handler ? event_handler->GetUnitEventHandlerQuestId() : -1);
 	f << weight;
 	f << summoner;
 	if(live_state >= DYING)
@@ -4736,7 +4736,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	else if(mode == CREATE_MESH::PRELOAD)
 	{
 		assert(!mesh_inst);
-		mesh_inst = new MeshInstance(nullptr, true);
+		mesh_inst = new MeshInstance(nullptr);
 	}
 }
 
@@ -4985,9 +4985,13 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	}
 
 	mesh_inst->ClearEndResult();
-	if(mesh_inst->groups.size() == 2u)
-		mesh_inst->Deactivate(1);
-	animation = ANI_STAND;
+
+	if(mode != BREAK_ACTION_MODE::INSTANT)
+	{
+		if(mesh_inst->groups.size() == 2u)
+			mesh_inst->Deactivate(1);
+		animation = ANI_STAND;
+	}
 
 	if(mode == BREAK_ACTION_MODE::ON_LEAVE)
 		return;

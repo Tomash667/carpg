@@ -176,6 +176,12 @@ object chest_r {
 	flags is_chest
 }
 
+object chest_silver {
+	mesh "chest2.qmsh"
+	extra_dist 0.2
+	flags is_chest
+}
+
 object melee_target {
 	mesh "manekin.qmsh"
 	cylinder { 0.27 1.85 }

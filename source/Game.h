@@ -199,7 +199,6 @@ public:
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelArea& area, int& err_count);
-	void PreloadTraps(vector<Trap*>& traps);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -219,8 +218,6 @@ public:
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap, bool postLoad = true);
 	void PreloadResources(bool worldmap);
-	void PreloadUsables(vector<Usable*>& usable);
-	void PreloadUnits(vector<Unit*>& units);
 	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
 	void VerifyResources();

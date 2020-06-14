@@ -580,6 +580,7 @@ Static methods:
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
 * Object@ FindObject(Room@, BaseObject@) - return first object inside room or null.
 * Chest@ GetRandomChest(Room@) - get random chest in room.
+* Chest@ GetTreasureChest() - get silver chest in treasure room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
 * bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
