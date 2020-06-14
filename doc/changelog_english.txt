@@ -10,6 +10,7 @@ Version 0.16 (???):
 + idle dialogs loaded from files
 + converted quest "camp near city" to script
 + multiple chest types support, silver chest
++ allow changing sound device
 - zombie sometimes not attacking after stunning [Zielu]
 - bull's charge not stopping attack animation [Zielu]
 - fixed draw_hitbox command & shields

@@ -552,6 +552,9 @@ void LoadConfiguration(char* lpCmdLine)
 		sound_mgr->Disable(nosound, nomusic);
 	sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
 	sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+	Guid soundDevice;
+	if(soundDevice.TryParse(cfg.GetString("sound_device", Guid::EmptyString)))
+		sound_mgr->SetDevice(soundDevice);
 
 	// mouse settings
 	game->settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);

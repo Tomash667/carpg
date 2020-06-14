@@ -56,6 +56,8 @@ multisamplingError = "B³¹d ustawiania multisamplingu. Byæ mo¿e nie dzia³a on w t
 needRestart = "Zmiana jêzyka wymaga restartu gry. Na pewno chcesz to zrobiæ?"
 grassRange = "Zasiêg trawy"
 vsync = "Vsync"
+soundDevice = "Urz¹dzenie dŸwiêku:"
+defaultDevice = "Domyœlne urz¹dzenie"
 
 [SaveLoad]
 SAVINGGAME = "ZAPISYWANIE GRY"

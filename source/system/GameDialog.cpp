@@ -82,7 +82,7 @@ int DialogScripts::Build()
 		cstring name[F_MAX] = { "_script", "_if_script", "_format" };
 		GetFormattedCode((DialogScripts::FUNC)i, code.get_ref());
 #ifdef _DEBUG
-		output += code;
+		output += (string&)code;
 		output += "\n\n";
 #endif
 		int r = module->CompileFunction(name[i], code.c_str(), -1, 0, &func[i]);

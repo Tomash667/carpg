@@ -1262,5 +1262,5 @@ void DialogLoader::CheckDialogText(GameDialog* dialog, int index, DialogScripts*
 	}
 
 	if(replaced)
-		str = result;
+		str = (string&)result;
 }

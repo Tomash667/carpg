@@ -56,6 +56,8 @@ multisamplingError = "Failed to change multisampling. Maybe it only works in ful
 needRestart = "Changing language requires restarting the game. Are you sure?"
 grassRange = "Grass range"
 vsync = "Vsync"
+soundDevice = "Sound device:"
+defaultDevice = "Default device"
 
 [SaveLoad]
 SAVINGGAME = "SAVING GAME"

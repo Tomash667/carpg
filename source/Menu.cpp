@@ -66,6 +66,7 @@ void Game::SaveOptions()
 	cfg.Add("use_specularmap", scene_mgr->use_specularmap);
 	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
+	cfg.Add("sound_device", sound_mgr->GetDevice().ToString());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", engine->GetWindowSize());

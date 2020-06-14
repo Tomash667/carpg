@@ -248,7 +248,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 	LocalString path = GetPath(filename);
 	Info("Reading text file \"%s\".", path.c_str());
 
-	if(!t.FromFile(path))
+	if(!t.FromFile((const string&)path))
 	{
 		Error("Failed to open language file '%s'.", path.c_str());
 		++errors;
