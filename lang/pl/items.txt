@@ -1,470 +1,470 @@
 //------------------------------------------------------------------------------
 // SHORT BLADE
 item dagger_knife {
-	name "Nó¿"
-	desc "Bardziej nadaje siê do obierania ziemniaków ni¿ do walki."
+	name "NÃ³Å¼"
+	desc "Bardziej nadaje siÄ™ do obierania ziemniakÃ³w niÅ¼ do walki."
 }
 item dagger_short {
 	name "Sztylet"
-	desc "Standardowy sztylet do wbijania w plecy albo podrzynania garde³. Raczej nie bêdziesz go u¿ywa³."
+	desc "Standardowy sztylet do wbijania w plecy albo podrzynania gardeÅ‚. Raczej nie bÄ™dziesz go uÅ¼ywaÅ‚."
 }
 item dagger_sword {
-	name "Krótki miecz"
-	desc "Krótki miecz o d³ugoœci 55 cm. Jeœli potrzebujesz lekkiej, prostej w obs³udze broni to jest to coœ dla ciebie."
+	name "KrÃ³tki miecz"
+	desc "KrÃ³tki miecz o dÅ‚ugoÅ›ci 55 cm. JeÅ›li potrzebujesz lekkiej, prostej w obsÅ‚udze broni to jest to coÅ› dla ciebie."
 }
 item dagger_rapier {
 	name "Rapier"
-	desc "Rapier wymaga sporej precyzji aby trafiæ w s³abiej odkryte miejsca ale obra¿enia s¹ wiêksze."
+	desc "Rapier wymaga sporej precyzji aby trafiÄ‡ w sÅ‚abiej odkryte miejsca ale obraÅ¼enia sÄ… wiÄ™ksze."
 }
 item dagger_cutlass {
 	name "Kordelas"
-	desc "Krótki miecz popularny wœród marynarzy i piratów."
+	desc "KrÃ³tki miecz popularny wÅ›rÃ³d marynarzy i piratÃ³w."
 }
 item dagger_assassin {
-	name "Sztylet zabójcy"
-	desc "Sztylet zabójcy zosta³ magicznie zaostrzony i sam nakierowuje siê w s³abe punkt ofiary. Cios w plecy dla ka¿dego!"
+	name "Sztylet zabÃ³jcy"
+	desc "Sztylet zabÃ³jcy zostaÅ‚ magicznie zaostrzony i sam nakierowuje siÄ™ w sÅ‚abe punkt ofiary. Cios w plecy dla kaÅ¼dego!"
 }
 item dagger_sword_a {
-	name "Adamantowy krótki miecz"
-	desc "Krótki miecz wykonany z adamantu. Najlepsze krótki ostrze jakie znajdziesz w sklepie."
+	name "Adamantowy krÃ³tki miecz"
+	desc "KrÃ³tki miecz wykonany z adamantu. Najlepsze krÃ³tki ostrze jakie znajdziesz w sklepie."
 }
 item dagger_spinesheath {
-	name "Grzbietok³uj"
-	desc "Ponoæ ta broñ jest przeklêta. Ale czy robi to na tobie jakiekolwiek wra¿enie? Wa¿ne ¿e wchodzi w mithril jak w mas³o! Zwiêksza obra¿enia zadawane w plecy wrogów."
+	name "GrzbietokÅ‚uj"
+	desc "PonoÄ‡ ta broÅ„ jest przeklÄ™ta. Ale czy robi to na tobie jakiekolwiek wraÅ¼enie? WaÅ¼ne Å¼e wchodzi w mithril jak w masÅ‚o! ZwiÄ™ksza obraÅ¼enia zadawane w plecy wrogÃ³w."
 }
 
 //------------------------------------------------------------------------------
 // LONG BLADE
 item sword_wooden {
 	name "Drewniany miecz"
-	desc "Broñ u¿ywana w trakcie treningu."
+	desc "BroÅ„ uÅ¼ywana w trakcie treningu."
 }
 item sword_long {
-	name "D³ugi miecz"
-	desc "¯elazny miecz. Standardowa broñ dla wielu zbrojnych. Jest uniwersalna pod wzglêdem ataku, obrony i szybkoœci."
+	name "DÅ‚ugi miecz"
+	desc "Å»elazny miecz. Standardowa broÅ„ dla wielu zbrojnych. Jest uniwersalna pod wzglÄ™dem ataku, obrony i szybkoÅ›ci."
 }
 item sword_scimitar {
 	name "Sejmitar"
-	desc "Sejmitar to zaokr¹glony miecz. Trudniej nauczyæ siê nim walczyæ ale ³atwiej zaskoczyæ wroga atakiem ze wzglêdu na brak przyzwyczajenia do tej broni."
+	desc "Sejmitar to zaokrÄ…glony miecz. Trudniej nauczyÄ‡ siÄ™ nim walczyÄ‡ ale Å‚atwiej zaskoczyÄ‡ wroga atakiem ze wzglÄ™du na brak przyzwyczajenia do tej broni."
 }
 item sword_orcish {
 	name "Orkowy miecz"
-	desc "Orkowy miecz, prymitywna ciê¿ka broñ. Wymaga sporej si³y."
+	desc "Orkowy miecz, prymitywna ciÄ™Å¼ka broÅ„. Wymaga sporej siÅ‚y."
 }
 item sword_serrated {
-	name "Z¹bkowany miecz"
-	desc "Z¹bkowany miecz wykonany z jakiegoœ dziwnego stopu metali. Ostry jak brzytwa."
+	name "ZÄ…bkowany miecz"
+	desc "ZÄ…bkowany miecz wykonany z jakiegoÅ› dziwnego stopu metali. Ostry jak brzytwa."
 }
 item sword_mercenary {
 	name "Miecz najemnika"
-	desc "Wykonane na zlecenie dla elitarnego oddzia³u najemników. Miecze te przetrwa³y du¿ej ni¿ pamieæ o ich nazwie..."
+	desc "Wykonane na zlecenie dla elitarnego oddziaÅ‚u najemnikÃ³w. Miecze te przetrwaÅ‚y duÅ¼ej niÅ¼ pamieÄ‡ o ich nazwie..."
 }
 item sword_adamantine {
 	name "Adamantowy miecz"
-	desc "Adamantowy miecz to najlepszy miecz jaki mo¿esz dostaæ w sklepie. Przecina adamantow¹ zbroje jak by by³a zwyczajn¹ stal¹."
+	desc "Adamantowy miecz to najlepszy miecz jaki moÅ¼esz dostaÄ‡ w sklepie. Przecina adamantowÄ… zbroje jak by byÅ‚a zwyczajnÄ… stalÄ…."
 }
 item sword_semur {
 	name "Sejmitar Semur"
-	desc "Sejmitar artefakt wykuty ze z³ota przez nieznanego kowala. Umagiczniono go, nigdy siê nie stêpi i jest ostry niczym kie³ smokorzuwaczki. Wzmacnia umiejêtnoœci magiczne."
+	desc "Sejmitar artefakt wykuty ze zÅ‚ota przez nieznanego kowala. Umagiczniono go, nigdy siÄ™ nie stÄ™pi i jest ostry niczym kieÅ‚ smokorzuwaczki. Wzmacnia umiejÄ™tnoÅ›ci magiczne."
 }
 item sword_forbidden {
 	name "Miecz \"Zakazane Sny\""
-	desc "Artefakt nieznanego pochodzenia, wykonany ze stopu kryszta³u i z³ota."
+	desc "Artefakt nieznanego pochodzenia, wykonany ze stopu krysztaÅ‚u i zÅ‚ota."
 }
 
 //------------------------------------------------------------------------------
 // AXE
 item axe_rusted {
-	name "Zardzewia³y toporek"
-	desc "Tego toporka nikt dawno nie u¿ywa³, mam nadzieje ¿e ty te¿ nie masz zamiaru."
+	name "ZardzewiaÅ‚y toporek"
+	desc "Tego toporka nikt dawno nie uÅ¼ywaÅ‚, mam nadzieje Å¼e ty teÅ¼ nie masz zamiaru."
 }
 item axe_small {
 	name "Toporek"
-	desc "Lekki i porêczny toporek. Dla tych co lubi¹ por¹baæ raz drewno a raz wilka."
+	desc "Lekki i porÄ™czny toporek. Dla tych co lubiÄ… porÄ…baÄ‡ raz drewno a raz wilka."
 }
 item axe_battle {
-	name "Topór bojowy"
-	desc "Bojowa wersja narzêdzia dla drwali. Wrogowie padaj¹ jak drzewa po kilku uderzeniach."
+	name "TopÃ³r bojowy"
+	desc "Bojowa wersja narzÄ™dzia dla drwali. Wrogowie padajÄ… jak drzewa po kilku uderzeniach."
 }
 item axe_orcish {
-	name "Orkowy topór"
-	desc "Orkowy topór, prymitywna ciê¿ka bron. Wymaga sporej si³y."
+	name "Orkowy topÃ³r"
+	desc "Orkowy topÃ³r, prymitywna ciÄ™Å¼ka bron. Wymaga sporej siÅ‚y."
 }
 item axe_crystal {
-	name "Kryszta³owy topór"
-	desc "Topór wykonany ze specjalnego kryszta³u. Bardzo ciê¿ki!"
+	name "KrysztaÅ‚owy topÃ³r"
+	desc "TopÃ³r wykonany ze specjalnego krysztaÅ‚u. Bardzo ciÄ™Å¼ki!"
 }
 item axe_dwarf {
-	name "Krasnoludzki topór"
-	desc "Topór wykonany przez krasnoludy, dzie³o sztuki wojennej."
+	name "Krasnoludzki topÃ³r"
+	desc "TopÃ³r wykonany przez krasnoludy, dzieÅ‚o sztuki wojennej."
 }
 item axe_giant {
-	name "Topór giganta"
-	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje on wiêksze obra¿enia."
+	name "TopÃ³r giganta"
+	desc "Magiczny topÃ³r. ZwiÄ™ksza siÅ‚e uÅ¼ytkownika tak Å¼e zadaje on wiÄ™ksze obraÅ¼enia."
 }
 item axe_ripper {
 	name "Rozpruwacz"
-	desc "Ta broñ ucina g³owy jak patyczki. Wrogowie jednak zamiast je nadstawiaæ po zobaczeniu tego topora zaczn¹ uciekaæ."
+	desc "Ta broÅ„ ucina gÅ‚owy jak patyczki. Wrogowie jednak zamiast je nadstawiaÄ‡ po zobaczeniu tego topora zacznÄ… uciekaÄ‡."
 }
 
 //------------------------------------------------------------------------------
 // BLUNT
 item blunt_club {
 	name "Maczuga"
-	desc "Maczuga - zwyk³y kawa³ek drewna. Czego siê spodziewa³eœ za tê cenê?"
+	desc "Maczuga - zwykÅ‚y kawaÅ‚ek drewna. Czego siÄ™ spodziewaÅ‚eÅ› za tÄ™ cenÄ™?"
 }
 item blunt_mace {
 	name "Buzdygan"
-	desc "Buzdygan to ciê¿ka stalowa maczuga. Wymaga sporej si³y by ni¹ sprawnie operowaæ."
+	desc "Buzdygan to ciÄ™Å¼ka stalowa maczuga. Wymaga sporej siÅ‚y by niÄ… sprawnie operowaÄ‡."
 }
 item blunt_orcish {
-	name "Orkowy m³ot"
-	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê."
+	name "Orkowy mÅ‚ot"
+	desc "CiÄ™Å¼ki orkowy mÅ‚ot. Prymitywny ale speÅ‚nia swojÄ… destrukcyjnÄ… rolÄ™."
 }
 item blunt_orcish_shaman {
-	name "Ozdobny orkowy m³ot"
-	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
+	name "Ozdobny orkowy mÅ‚ot"
+	desc "CiÄ™Å¼ki orkowy mÅ‚ot. Prymitywny ale speÅ‚nia swojÄ… destrukcyjnÄ… rolÄ™. Ta wersja jest wykonana z ozdobnymi elementami."
 }
 item blunt_barbed {
-	name "Kolczasta pa³ka"
-	desc "Stalowa kula z kolcami na koñcu patyka. Zadaje obra¿enia k³uto-obuchowe."
+	name "Kolczasta paÅ‚ka"
+	desc "Stalowa kula z kolcami na koÅ„cu patyka. Zadaje obraÅ¼enia kÅ‚uto-obuchowe."
 }
 item blunt_morningstar {
 	name "Morgensztern"
-	desc "Ciê¿sza wersja kolczastej pa³ki."
+	desc "CiÄ™Å¼sza wersja kolczastej paÅ‚ki."
 }
 item blunt_dwarven {
-	name "Krasnoludzki m³ot"
-	desc "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
+	name "Krasnoludzki mÅ‚ot"
+	desc "Wysokiej jakoÅ›ci mÅ‚ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
 }
 item blunt_adamantine {
 	name "Adamantowy buzdygan"
 	desc "Buzdygan wykonany z adamantu. Najlepszy przedmiot w swojej klasie."
 }
 item blunt_skullsmasher {
-	name "Mia¿d¿yczerep"
-	desc "Dziêki temu artefaktowi bêdzie z ³atwoœci¹ roz³upywa³ g³owy gigantów. Jak by to by³y orzechy. I to nie kokosowe tylko ziemne!"
+	name "MiaÅ¼dÅ¼yczerep"
+	desc "DziÄ™ki temu artefaktowi bÄ™dzie z Å‚atwoÅ›ciÄ… rozÅ‚upywaÅ‚ gÅ‚owy gigantÃ³w. Jak by to byÅ‚y orzechy. I to nie kokosowe tylko ziemne!"
 }
 
 //------------------------------------------------------------------------------
 // TOOLS
 item blacksmith_hammer {
-	name "M³ot kowalski"
-	desc "M³ot u¿ywany przez kowala. Chcesz wykuæ jakiœ miecz?"
+	name "MÅ‚ot kowalski"
+	desc "MÅ‚ot uÅ¼ywany przez kowala. Chcesz wykuÄ‡ jakiÅ› miecz?"
 }
 item pickaxe {
 	name "Kilof"
-	desc "Podstawowe narzêdzie górnika."
+	desc "Podstawowe narzÄ™dzie gÃ³rnika."
 }
 item frying_pan {
 	name "Patelnia"
-	desc "Broñ dla kobiet."
+	desc "BroÅ„ dla kobiet."
 }
 
 //------------------------------------------------------------------------------
 // WANDS
 item wand_novice {
-	name "Ró¿d¿ka nowicjusza"
-	desc "Magiczna ró¿d¿ka, nieznacznie zwiêksza obra¿enia od magii."
+	name "RÃ³Å¼dÅ¼ka nowicjusza"
+	desc "Magiczna rÃ³Å¼dÅ¼ka, nieznacznie zwiÄ™ksza obraÅ¼enia od magii."
 }
 item wand_adept {
-	name "Ró¿d¿ka adepta"
-	desc "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii."
+	name "RÃ³Å¼dÅ¼ka adepta"
+	desc "Magiczna rÃ³Å¼dÅ¼ka, zwiÄ™ksza obraÅ¼enia od magii."
 }
 item wand_expert {
-	name "Ró¿d¿ka eksperta"
-	desc "Magiczna ró¿d¿ka, znacz¹co zwiêksza obra¿enia od magii."
+	name "RÃ³Å¼dÅ¼ka eksperta"
+	desc "Magiczna rÃ³Å¼dÅ¼ka, znaczÄ…co zwiÄ™ksza obraÅ¼enia od magii."
 }
 item wand_master {
-	name "Ró¿d¿ka mistrza"
-	desc "Magiczna ró¿d¿ka, znacznie zwiêksza obra¿enia od magii."
+	name "RÃ³Å¼dÅ¼ka mistrza"
+	desc "Magiczna rÃ³Å¼dÅ¼ka, znacznie zwiÄ™ksza obraÅ¼enia od magii."
 }
 
 //------------------------------------------------------------------------------
 // BOW
 item bow_short {
-	name "Krótki ³uk"
-	desc "Zwyk³y krótki ³uk. £atwiej go ukryæ i mniej wa¿y, ale czy to dla ciebie wystarczaj¹ce plusy aby go u¿ywaæ?"
+	name "KrÃ³tki Å‚uk"
+	desc "ZwykÅ‚y krÃ³tki Å‚uk. Åatwiej go ukryÄ‡ i mniej waÅ¼y, ale czy to dla ciebie wystarczajÄ…ce plusy aby go uÅ¼ywaÄ‡?"
 }
 item bow_long {
-	name "D³ugi ³uk"
-	desc "Standardowy d³ugi ³uk u¿ywany przez wielu ³uczników, nie tylko pocz¹tkuj¹cych."
+	name "DÅ‚ugi Å‚uk"
+	desc "Standardowy dÅ‚ugi Å‚uk uÅ¼ywany przez wielu Å‚ucznikÃ³w, nie tylko poczÄ…tkujÄ…cych."
 }
 item bow_composite {
-	name "£uk kompozytowy"
-	desc "£uk kompozytowy, wykonany z kilku kawa³ków drewna. Wysokiej jakoœci robota, zadaje du¿o wiêksze obra¿enia."
+	name "Åuk kompozytowy"
+	desc "Åuk kompozytowy, wykonany z kilku kawaÅ‚kÃ³w drewna. Wysokiej jakoÅ›ci robota, zadaje duÅ¼o wiÄ™ksze obraÅ¼enia."
 }
 item bow_elven {
-	name "Elfi ³uk"
-	desc "£uk wykonany przez elfy, prawdziwe dzie³o sztuki. Zabójcze dzie³o sztuki."
+	name "Elfi Å‚uk"
+	desc "Åuk wykonany przez elfy, prawdziwe dzieÅ‚o sztuki. ZabÃ³jcze dzieÅ‚o sztuki."
 }
 item bow_dragonbone {
-	name "Smoczy ³uk"
-	desc "Najlepszy przedmiot w swojej klasie. £uk wykonany z koœci smoka to to czego potrzebujesz by zabijaæ lataj¹ce smoki!"
+	name "Smoczy Å‚uk"
+	desc "Najlepszy przedmiot w swojej klasie. Åuk wykonany z koÅ›ci smoka to to czego potrzebujesz by zabijaÄ‡ latajÄ…ce smoki!"
 }
 item bow_angel {
-	name "Anielski ³uk"
-	desc "£uk artefakt wykuty przez anio³y z innego planu. Jest bardzo lekki ale wystrzelone z niego strza³y s¹ zabójcze."
+	name "Anielski Å‚uk"
+	desc "Åuk artefakt wykuty przez anioÅ‚y z innego planu. Jest bardzo lekki ale wystrzelone z niego strzaÅ‚y sÄ… zabÃ³jcze."
 }
 item q_gobliny_luk {
-	name "Antyczny ³uk"
-	desc "Bardzo stary ³uk, up³yw czasu nie by³ dla niego ³askawy. Nie wygl¹da na magiczny."
+	name "Antyczny Å‚uk"
+	desc "Bardzo stary Å‚uk, upÅ‚yw czasu nie byÅ‚ dla niego Å‚askawy. Nie wyglÄ…da na magiczny."
 }
 
 //------------------------------------------------------------------------------
 // SHIELD
 item shield_plank {
 	name "Tarcza z desek"
-	desc "Prowizoryczna tarcza zrobiona z kawa³ków p³otu. Tanszej nie znajdziesz."
+	desc "Prowizoryczna tarcza zrobiona z kawaÅ‚kÃ³w pÅ‚otu. Tanszej nie znajdziesz."
 }
 item shield_wood {
 	name "Drewniana tarcza"
-	desc "Podstawowa tarcza. Trochê l¿ejsza i tañsza od metalowej. U¿ywasz na w³asne ryzyko."
+	desc "Podstawowa tarcza. TrochÄ™ lÅ¼ejsza i taÅ„sza od metalowej. UÅ¼ywasz na wÅ‚asne ryzyko."
 }
 item shield_kite {
 	name "Tarcza latawcowa"
-	desc "Du¿a drewniana tarcza w kszta³cie latawca."
+	desc "DuÅ¼a drewniana tarcza w ksztaÅ‚cie latawca."
 }
 item shield_iron {
-	name "¯elazna tarcza"
-	desc "Standardowa tarcza za przyzwoit¹ cenê. Chyba ciê na ni¹ staæ?"
+	name "Å»elazna tarcza"
+	desc "Standardowa tarcza za przyzwoitÄ… cenÄ™. Chyba ciÄ™ na niÄ… staÄ‡?"
 }
 item shield_steel {
 	name "Stalowa tarcza"
-	desc "Wysokiej jakoœci tarcza wykonana ze stali. Raczej nie z³amie siê po pierwszym ciosie."
+	desc "Wysokiej jakoÅ›ci tarcza wykonana ze stali. Raczej nie zÅ‚amie siÄ™ po pierwszym ciosie."
 }
 item shield_mithril {
 	name "Mithrilowa tarcza"
-	desc "Tarcza z mithrilu, o po³owê l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
+	desc "Tarcza z mithrilu, o poÅ‚owÄ™ lÅ¼ejsza od stalowej. GÅ‚Ã³wnÄ… jej zaletÄ… jest waga ale wytrzymaÅ‚oÅ›Ä‡ teÅ¼ niczego sobie."
 }
 item shield_spiked {
 	name "Tarcza z kolcami"
-	desc "Wytrzyma³a tarcza przystosowana do ataku jak i do obrony. Zadaje wiêksze obra¿enia podczas uderzenia."
+	desc "WytrzymaÅ‚a tarcza przystosowana do ataku jak i do obrony. Zadaje wiÄ™ksze obraÅ¼enia podczas uderzenia."
 }
 item shield_adamantine {
 	name "Adamantowa tarcza"
-	desc "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
+	desc "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciÄ™ przed wszystkim, nawet deszczem kwasu. Zapewnia nieznacznÄ… ochronÄ™ przed czarami."
 }
 item shield_wall {
 	name "Mur"
-	desc "Gdy pradawne miasto Ilmare zosta³o obrócone przez wrogów w proch jedyne co zosta³o to kawa³ek muru. Stworzono z niego ten niezniszczalny artefakt. Zapewnia znaczn¹ ochronê przed czarami."
+	desc "Gdy pradawne miasto Ilmare zostaÅ‚o obrÃ³cone przez wrogÃ³w w proch jedyne co zostaÅ‚o to kawaÅ‚ek muru. Stworzono z niego ten niezniszczalny artefakt. Zapewnia znacznÄ… ochronÄ™ przed czarami."
 }
 item shield_death {
-	name "Tarcza œmierci"
-	desc "Mroczny artefakt stworzony przez kowali z Pustki. Zapewnia znaczn¹ ochronê przed czarami."
+	name "Tarcza Å›mierci"
+	desc "Mroczny artefakt stworzony przez kowali z Pustki. Zapewnia znacznÄ… ochronÄ™ przed czarami."
 }
 
 //------------------------------------------------------------------------------
 // LIGHT ARMOR
 item al_padded {
 	name "Przeszywnica"
-	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sobÄ… warstw sukna."
 }
 item al_padded_hq {
-	name "Przeszywnica wysokiej jakoœci"
-	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
+	name "Przeszywnica wysokiej jakoÅ›ci"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sobÄ… warstw sukna. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item al_padded_m {
 	name "Magiczna przeszywnica"
-	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sobÄ… warstw sukna. Ten egzemplarz jest magiczny."
 }
 item al_leather {
-	name "Zbroja skórzana"
-	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju."
+	name "Zbroja skÃ³rzana"
+	desc "Pancerz z garbowanej byczej skÃ³ry, utwardzony przez gotowanie w oleju."
 }
 item al_leather_hq {
-	name "Skórznia wysokiej jakoœci"
-	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoœci."
+	name "SkÃ³rznia wysokiej jakoÅ›ci"
+	desc "Pancerz z garbowanej byczej skÃ³ry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item al_leather_m {
-	name "Magiczna skórznia"
-	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
+	name "Magiczna skÃ³rznia"
+	desc "Pancerz z garbowanej byczej skÃ³ry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
 }
 item al_dragonskin {
-	name "Skóra ze smoka"
-	desc "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê."
+	name "SkÃ³ra ze smoka"
+	desc "Pancerz skÃ³rzany wykonany ze skÃ³ry czerwonego smoka, jest ciÄ™Å¼szy ale za to dajÄ™ bardzo dobrÄ… ochronÄ™."
 }
 item al_studded {
-	name "Æwiekowany pancerz"
-	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami."
+	name "Ä†wiekowany pancerz"
+	desc "SkÃ³rzany pancerz z powbijanymi metalowymi Ä‡wiekami."
 }
 item al_studded_hq {
-	name "Æwiekowany pancerz wysokiej jakoœci"
-	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest wysokiej jakoœci."
+	name "Ä†wiekowany pancerz wysokiej jakoÅ›ci"
+	desc "SkÃ³rzany pancerz z powbijanymi metalowymi Ä‡wiekami. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item al_studded_m {
-	name "Magiczny æwiekowany pancerz"
-	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest magiczny."
+	name "Magiczny Ä‡wiekowany pancerz"
+	desc "SkÃ³rzany pancerz z powbijanymi metalowymi Ä‡wiekami. Ten egzemplarz jest magiczny."
 }
 item al_shadow {
 	name "Zbroja cienia"
-	desc "Magiczny æwiekowany pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
+	desc "Magiczny Ä‡wiekowany pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej Åapki. Jest wyjÄ…tkowo wytrzymaÅ‚y i usprawnia umiejÄ™tnoÅ›ci zÅ‚odziejskie."
 }
 item al_chain_shirt {
 	name "Koszulka kolcza"
-	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
+	desc "Lekki pancerz zrobiony z maÅ‚ych splecionych kÃ³Å‚ek chroniÄ…cych tors. PozostaÅ‚e czÄ™Å›ci ciaÅ‚a chroni skÃ³ra."
 }
 item al_chain_shirt_hq {
-	name "Koszulka kolcza wysokiej jakoœci"
-	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
+	name "Koszulka kolcza wysokiej jakoÅ›ci"
+	desc "Lekki pancerz zrobiony z maÅ‚ych splecionych kÃ³Å‚ek chroniÄ…cych tors. PozostaÅ‚e czÄ™Å›ci ciaÅ‚a chroni skÃ³ra. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item al_chain_shirt_m {
 	name "Magiczna koszulka kolcza"
-	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
+	desc "Lekki pancerz zrobiony z maÅ‚ych splecionych kÃ³Å‚ek chroniÄ…cych tors. PozostaÅ‚e czÄ™Å›ci ciaÅ‚a chroni skÃ³ra. Ten egzemplarz jest magiczny."
 }
 item al_chain_shirt_mith {
 	name "Mithrilowa koszulka kolcza"
-	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+	desc "Lekki pancerz zrobiony z maÅ‚ych splecionych kÃ³Å‚ek chroniÄ…cych tors. PozostaÅ‚e czÄ™Å›ci ciaÅ‚a chroni skÃ³ra. Ten egzemplarz jest magiczny i zostaÅ‚ wykonany z mithrilu dziÄ™ki czemu jest lÅ¼ejszy."
 }
 item al_angelskin {
-	name "Anielska skóra"
-	desc "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago."
+	name "Anielska skÃ³ra"
+	desc "Koszulka kolcza - artefakt stworzony przez anioÅ‚y z innego planu. MajÄ…c go na sobie czujesz siÄ™ nago."
 }
 
 //------------------------------------------------------------------------------
 // MEDIUM ARMOR
 item am_hide {
-	name "Skórznia"
-	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji."
+	name "SkÃ³rznia"
+	desc "Wykonana z wielu warstw skÃ³ry dzikich zwierzÄ…t. Ogranicza ruchy i nie jest zbyt wytrzymaÅ‚a ale jest tania w produkcji."
 }
 item am_hide_hq {
-	name "Skórznia wysokiej jakoœci"
-	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoœci."
+	name "SkÃ³rznia wysokiej jakoÅ›ci"
+	desc "Wykonana z wielu warstw skÃ³ry dzikich zwierzÄ…t. Ogranicza ruchy i nie jest zbyt wytrzymaÅ‚a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item am_hide_m {
-	name "Magiczna skórznia"
-	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
+	name "Magiczna skÃ³rznia"
+	desc "Wykonana z wielu warstw skÃ³ry dzikich zwierzÄ…t. Ogranicza ruchy i nie jest zbyt wytrzymaÅ‚a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
 }
 item am_troll_hide {
-	name "Skóra trolla"
-	desc "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma regeneracjê zdrowia."
+	name "SkÃ³ra trolla"
+	desc "Pancerz wykonany ze skÃ³ry trolla. Jej wÅ‚aÅ›ciciel podobnie jak troll ma regeneracjÄ™ zdrowia."
 }
 item am_chainmail {
 	name "Kolczuga"
-	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka."
+	desc "Zbroja zrobiona z wielu metalowych kÃ³Å‚ek a pod spodem skÃ³rzana wkÅ‚adka."
 }
 item am_chainmail_hq {
-	name "Kolczuga wysokiej jakoœci"
-	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest wysokiej jakoœci."
+	name "Kolczuga wysokiej jakoÅ›ci"
+	desc "Zbroja zrobiona z wielu metalowych kÃ³Å‚ek a pod spodem skÃ³rzana wkÅ‚adka. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item am_chainmail_m {
 	name "Magiczna kolczuga"
-	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny."
+	desc "Zbroja zrobiona z wielu metalowych kÃ³Å‚ek a pod spodem skÃ³rzana wkÅ‚adka. Ten egzemplarz jest magiczny."
 }
 item am_chainmail_mith {
 	name "Mithrilowa kolczuga"
-	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+	desc "Zbroja zrobiona z wielu metalowych kÃ³Å‚ek a pod spodem skÃ³rzana wkÅ‚adka. Ten egzemplarz jest magiczny i zostaÅ‚ wykonany z mithrilu dziÄ™ki czemu jest lÅ¼ejszy."
 }
 item am_scale {
-	name "Zbroja ³uskowa"
-	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby."
+	name "Zbroja Å‚uskowa"
+	desc "Pancerz skÃ³rzany pokryty metalowymi kawaÅ‚kami ktÃ³re przypominajÄ… Å‚uski ryby."
 }
 item am_scale_hq {
-	name "Zbroja ³uskowa wysokiej jakoœci"
-	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest wysokiej jakoœci."
+	name "Zbroja Å‚uskowa wysokiej jakoÅ›ci"
+	desc "Pancerz skÃ³rzany pokryty metalowymi kawaÅ‚kami ktÃ³re przypominajÄ… Å‚uski ryby. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item am_scale_m {
-	name "Magiczna zbroja ³uskowa"
-	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest magiczny."
+	name "Magiczna zbroja Å‚uskowa"
+	desc "Pancerz skÃ³rzany pokryty metalowymi kawaÅ‚kami ktÃ³re przypominajÄ… Å‚uski ryby. Ten egzemplarz jest magiczny."
 }
 item am_dragonscale {
-	name "Zbroja ze smoczej ³uski"
-	desc "Pancerz ³uskowy wykonany z ³usek czerwonego smoka."
+	name "Zbroja ze smoczej Å‚uski"
+	desc "Pancerz Å‚uskowy wykonany z Å‚usek czerwonego smoka."
 }
 item am_breastplate {
-	name "Napierœnik"
-	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy."
+	name "NapierÅ›nik"
+	desc "NapierÅ›nik wykonany z dwÃ³ch duÅ¼ych kawaÅ‚kÃ³w metalu dobrze chroni brzuch i klatkÄ™ piersiowÄ…. KoÅ„czyny sÄ… wystawione na ciosy."
 }
 item am_breastplate_hq {
-	name "Napierœnik wysokiej jakoœci"
-	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
+	name "NapierÅ›nik wysokiej jakoÅ›ci"
+	desc "NapierÅ›nik wykonany z dwÃ³ch duÅ¼ych kawaÅ‚kÃ³w metalu dobrze chroni brzuch i klatkÄ™ piersiowÄ…. KoÅ„czyny sÄ… wystawione na ciosy. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item am_breastplate_m {
-	name "Magiczny napierœnik"
-	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
+	name "Magiczny napierÅ›nik"
+	desc "NapierÅ›nik wykonany z dwÃ³ch duÅ¼ych kawaÅ‚kÃ³w metalu dobrze chroni brzuch i klatkÄ™ piersiowÄ…. KoÅ„czyny sÄ… wystawione na ciosy. Ten egzemplarz jest magiczny."
 }
 item am_breastplate_mith {
-	name "Mithrilowy napierœnik"
-	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
+	name "Mithrilowy napierÅ›nik"
+	desc "NapierÅ›nik wykonany z dwÃ³ch duÅ¼ych kawaÅ‚kÃ³w metalu dobrze chroni brzuch i klatkÄ™ piersiowÄ…. KoÅ„czyny sÄ… wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziÄ™ki czemu jest lÅ¼ejszy."
 }
 item am_breastplate_adam {
-	name "Adamantowy napierœnik"
-	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
+	name "Adamantowy napierÅ›nik"
+	desc "NapierÅ›nik wykonany z dwÃ³ch duÅ¼ych kawaÅ‚kÃ³w metalu dobrze chroni brzuch i klatkÄ™ piersiowÄ…. KoÅ„czyny sÄ… wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantu przez co jest wytrzymalszy ale i ciÄ™Å¼szy."
 }
 item am_gladiator {
 	name "Pancerz gladiatora"
-	desc "Magiczny napierœnik u¿ywany przez wiele lat przez gladiatora Cord Oszust. Wygra³ kilkadziesi¹t walk na arenie zanim ktoœ zorientowa³ siê ¿e jest magiczny. Zabrano mu go i wrzucono na arenê przeciwko kilku goblinom które go pokona³y."
+	desc "Magiczny napierÅ›nik uÅ¼ywany przez wiele lat przez gladiatora Cord Oszust. WygraÅ‚ kilkadziesiÄ…t walk na arenie zanim ktoÅ› zorientowaÅ‚ siÄ™ Å¼e jest magiczny. Zabrano mu go i wrzucono na arenÄ™ przeciwko kilku goblinom ktÃ³re go pokonaÅ‚y."
 }
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
 item ah_splint_rusted {
-	name "Zardzewia³a zbroja paskowa"
-	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest zardzewia³y."
+	name "ZardzewiaÅ‚a zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych paskÃ³w ciasno opinajÄ…cych skÃ³rzanÄ… podkÅ‚adkÄ™. Zapewnia dobrÄ… ochronÄ™ maÅ‚ym kosztem mobilnoÅ›ci. Ten egzemplarz jest zardzewiaÅ‚y."
 }
 item ah_splint {
 	name "Zbroja paskowa"
-	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
+	desc "Pancerz wykonany z wielu metalowych paskÃ³w ciasno opinajÄ…cych skÃ³rzanÄ… podkÅ‚adkÄ™. Zapewnia dobrÄ… ochronÄ™ maÅ‚ym kosztem mobilnoÅ›ci."
 }
 item ah_splint_hq {
-	name "Zbroja paskowa wysokiej jakoœci"
-	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest wysokiej jakoœci."
+	name "Zbroja paskowa wysokiej jakoÅ›ci"
+	desc "Pancerz wykonany z wielu metalowych paskÃ³w ciasno opinajÄ…cych skÃ³rzanÄ… podkÅ‚adkÄ™. Zapewnia dobrÄ… ochronÄ™ maÅ‚ym kosztem mobilnoÅ›ci. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item ah_splint_m {
 	name "Magiczna zbroja paskowa"
-	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny."
+	desc "Pancerz wykonany z wielu metalowych paskÃ³w ciasno opinajÄ…cych skÃ³rzanÄ… podkÅ‚adkÄ™. Zapewnia dobrÄ… ochronÄ™ maÅ‚ym kosztem mobilnoÅ›ci. Ten egzemplarz jest magiczny."
 }
 item ah_splint_mith {
 	name "Mithrilowa zbroja paskowa"
-	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+	desc "Pancerz wykonany z wielu metalowych paskÃ³w ciasno opinajÄ…cych skÃ³rzanÄ… podkÅ‚adkÄ™. Zapewnia dobrÄ… ochronÄ™ maÅ‚ym kosztem mobilnoÅ›ci. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziÄ™ki czemu jest lÅ¼ejszy."
 }
 item ah_antimage {
 	name "Zbroja antymaga"
-	desc "Zbroja paskowa stworzona przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami."
+	desc "Zbroja paskowa stworzona przez Å‚owcÃ³w czarnoksiÄ™Å¼nikÃ³w w czasie pierwszej wojny magii. Zapewnia znacznÄ… odpornoÅ›Ä‡ na magiÄ™ i pozwala wypalaÄ‡ manÄ™ atakami."
 }
 item ah_plate {
-	name "Zbroja p³ytowa"
-	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt."
+	name "Zbroja pÅ‚ytowa"
+	desc "Pancerz wykonany z metalowych pÅ‚yt ktÃ³re zachodzÄ… na siebie dajÄ…c bardzo dobrÄ… ochronÄ™. Jedyne wady to waga i koszt."
 }
 item ah_plate_hq {
-	name "Zbroja p³ytowa wysokiej jakoœci"
-	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoœci."
+	name "Zbroja pÅ‚ytowa wysokiej jakoÅ›ci"
+	desc "Pancerz wykonany z metalowych pÅ‚yt ktÃ³re zachodzÄ… na siebie dajÄ…c bardzo dobrÄ… ochronÄ™. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoÅ›ci."
 }
 item ah_plate_m {
-	name "Magiczna zbroja p³ytowa"
-	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
+	name "Magiczna zbroja pÅ‚ytowa"
+	desc "Pancerz wykonany z metalowych pÅ‚yt ktÃ³re zachodzÄ… na siebie dajÄ…c bardzo dobrÄ… ochronÄ™. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
 }
 item ah_plate_mith {
-	name "Mithrilowa zbroja p³ytowa"
-	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+	name "Mithrilowa zbroja pÅ‚ytowa"
+	desc "Pancerz wykonany z metalowych pÅ‚yt ktÃ³re zachodzÄ… na siebie dajÄ…c bardzo dobrÄ… ochronÄ™. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziÄ™ki czemu jest lÅ¼ejszy."
 }
 item ah_plate_adam {
-	name "Adamantowa zbroja p³ytowa"
-	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
+	name "Adamantowa zbroja pÅ‚ytowa"
+	desc "Pancerz wykonany z metalowych pÅ‚yt ktÃ³re zachodzÄ… na siebie dajÄ…c bardzo dobrÄ… ochronÄ™. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantu przez co jest wytrzymalszy ale i ciÄ™Å¼szy."
 }
 item ah_black_armor {
 	name "Czarna zbroja"
-	desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a.."
-	//desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
+	desc "Czarna zbroja pÅ‚ytowa - artefakt uÅ¼ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura zÅ‚a.."
+	//desc "Czarna zbroja pÅ‚ytowa - artefakt uÅ¼ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura zÅ‚a i zadaje obraÅ¼enia w otoczeniu gdy tylko poczuje krew."
 }
 item ah_crystal {
-	name "Kryszta³owa zbroja"
-	desc "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
+	name "KrysztaÅ‚owa zbroja"
+	desc "GÅ‚Ä™boko w jaskiniach moÅ¼na znaleÅºÄ‡ dziwne krysztaÅ‚y. Krasnoludy szybko dorwaÅ‚y je w swoje rÄ™ce i zaczÄ™Å‚y tworzyÄ‡ takie pancerze. SÄ… wyjÄ…tkowo ciÄ™Å¼kie i wytrzymaÅ‚e."
 }
 item ah_crystal_m {
-	name "Magiczna kryszta³owa zbroja"
-	desc "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e. Ten egzemplarz jest magiczny."
+	name "Magiczna krysztaÅ‚owa zbroja"
+	desc "GÅ‚Ä™boko w jaskiniach moÅ¼na znaleÅºÄ‡ dziwne krysztaÅ‚y. Krasnoludy szybko dorwaÅ‚y je w swoje rÄ™ce i zaczÄ™Å‚y tworzyÄ‡ takie pancerze. SÄ… wyjÄ…tkowo ciÄ™Å¼kie i wytrzymaÅ‚e. Ten egzemplarz jest magiczny."
 }
 item ah_blood_crystal {
-	name "Krwawa kryszta³owa zbroja"
-	desc "Kryszta³ z podziemia, splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
+	name "Krwawa krysztaÅ‚owa zbroja"
+	desc "KrysztaÅ‚ z podziemia, splamiony krwiÄ… demonÃ³w. Jest wytrzymalszy i ma dziwne magiczne wÅ‚aÅ›ciwoÅ›ci."
 }
 
 //------------------------------------------------------------------------------
 // CLOTHES
 item al_blacksmith {
 	name "Ubranie kowala"
-	desc "Ubranie kowala, zrobione ze skór i usprawnione aby chroniæ przed ogniem."
+	desc "Ubranie kowala, zrobione ze skÃ³r i usprawnione aby chroniÄ‡ przed ogniem."
 }
 item al_innkeeper {
 	name "Ubranie karczmarza"
@@ -483,53 +483,53 @@ item al_clothes2b {
 }
 item al_clothes3 {
 	name "Drogie ubranie"
-	desc "Drogie ubranie wykonane na miarê."
+	desc "Drogie ubranie wykonane na miarÄ™."
 }
 item al_clothes3b {
 	name "Drogie ubranie"
-	desc "Drogie ubranie wykonane na miarê."
+	desc "Drogie ubranie wykonane na miarÄ™."
 }
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR
 item al_goblin {
-	name "Gobliñska zbroja"
-	desc "Gobliñska zbroja zrobiona z kawa³ków futra, skór i innych znalezionych œmieci."
+	name "GobliÅ„ska zbroja"
+	desc "GobliÅ„ska zbroja zrobiona z kawaÅ‚kÃ³w futra, skÃ³r i innych znalezionych Å›mieci."
 }
 item al_orc {
-	name "Orkowa skórznia"
-	desc "Orkowa zbroja wykonana ze skóry. Ciê¿sza od zwyk³ej."
+	name "Orkowa skÃ³rznia"
+	desc "Orkowa zbroja wykonana ze skÃ³ry. CiÄ™Å¼sza od zwykÅ‚ej."
 }
 item al_orc_shaman {
-	name "Orkowa ozdobna skórznia"
-	desc "Orkowa zbroja wykonana ze skóry. Ta wersja jest bardziej ozdobiona, prawdopodobnie u¿ywana przez szamana."
+	name "Orkowa ozdobna skÃ³rznia"
+	desc "Orkowa zbroja wykonana ze skÃ³ry. Ta wersja jest bardziej ozdobiona, prawdopodobnie uÅ¼ywana przez szamana."
 }
 item am_orc {
 	name "Orkowa kolczuga"
-	desc "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
+	desc "Orkowa kolczuga. CiÄ™Å¼sza od zwykÅ‚ej."
 }
 
 //------------------------------------------------------------------------------
 // MAGE CLOTHES
 item al_mage {
 	name "Szata nowicjusza"
-	desc "Ubiór pocz¹tkuj¹cych magów. Nie jest umagiczniona."
+	desc "UbiÃ³r poczÄ…tkujÄ…cych magÃ³w. Nie jest umagiczniona."
 }
 item al_mage2 {
 	name "Szata maga"
-	desc "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano.\nZwiêksza zapas many i obra¿enia od czarów."
+	desc "UbiÃ³r zaawansowanych magÃ³w. DziÄ™ki magii jest wytrzymalsza niÅ¼ by na to wskazywaÅ‚ materiaÅ‚ z jakiego jÄ… wykonano.\nZwiÄ™ksza zapas many i obraÅ¼enia od czarÃ³w."
 }
 item al_mage3 {
 	name "Szata maga bojowego"
-	desc "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii.\nZwiêksza zapas many i obra¿enia od czarów."
+	desc "UbiÃ³r magÃ³w bojowych. Prawie nie ogranicza ruchÃ³w a zapewnia dobrÄ… ochronÄ™ dziÄ™ki magii.\nZwiÄ™ksza zapas many i obraÅ¼enia od czarÃ³w."
 }
 item al_mage4 {
 	name "Szata arcymaga"
-	desc "Bardzo dobra magiczna szata, u¿ywana przez arcymagów.\nZwiêksza zapas many i obra¿enia od czarów."
+	desc "Bardzo dobra magiczna szata, uÅ¼ywana przez arcymagÃ³w.\nZwiÄ™ksza zapas many i obraÅ¼enia od czarÃ³w."
 }
 item al_necromancer {
 	name "Szata nekromanty"
-	desc "Ubiór u¿ywany przez adeptów mrocznych sztuk. Jest umagiczniona."
+	desc "UbiÃ³r uÅ¼ywany przez adeptÃ³w mrocznych sztuk. Jest umagiczniona."
 }
 
 //------------------------------------------------------------------------------
@@ -538,7 +538,7 @@ item a_silver {
 	name "Srebrny amulet"
 }
 item a_gold {
-	name "Z³oty amulet"
+	name "ZÅ‚oty amulet"
 }
 item a_ruby {
 	name "Rubinowy amulet"
@@ -548,15 +548,15 @@ item a_diamond {
 }
 item a_food {
 	name "Amulet smakosza"
-	desc "+50% do leczonego zdrowia dziêki jedzeniu i odpoczynkowi."
+	desc "+50% do leczonego zdrowia dziÄ™ki jedzeniu i odpoczynkowi."
 }
 item a_sprinter {
 	name "Amulet sprintera"
-	desc "+25 do mobilnoœci."
+	desc "+25 do mobilnoÅ›ci."
 }
 item a_mage {
 	name "Amulet maga"
-	desc "Zwiêksza si³ê czarów maga."
+	desc "ZwiÄ™ksza siÅ‚Ä™ czarÃ³w maga."
 }
 item a_defense {
 	name "Amulet naturalnego pancerza"
@@ -564,351 +564,351 @@ item a_defense {
 }
 item a_stamina {
 	name "Amulet energii"
-	desc "+100 do wytrzyma³oœci i przyœpiesza szybkoœæ regeneracji wytrzyma³oœci."
+	desc "+100 do wytrzymaÅ‚oÅ›ci i przyÅ›piesza szybkoÅ›Ä‡ regeneracji wytrzymaÅ‚oÅ›ci."
 }
 item a_mana {
 	name "Amulet many"
-	desc "+150 do many i przyœpiesza szybkoœæ regeneracji many."
+	desc "+150 do many i przyÅ›piesza szybkoÅ›Ä‡ regeneracji many."
 }
 item a_warrior {
 	name "Amulet wojownika"
-	desc "+50 do ataku wrêcz, +10 do si³y, +20 do umiejêtnoœci walk¹ jednorêczn¹ broni¹."
+	desc "+50 do ataku wrÄ™cz, +10 do siÅ‚y, +20 do umiejÄ™tnoÅ›ci walkÄ… jednorÄ™cznÄ… broniÄ…."
 }
 item a_archer {
-	name "Amulet ³ucznika"
-	desc "+50 do ataku dystansowego, +10 do zrêcznoœci, +20 do umiejêtnoœci ³uk."
+	name "Amulet Å‚ucznika"
+	desc "+50 do ataku dystansowego, +10 do zrÄ™cznoÅ›ci, +20 do umiejÄ™tnoÅ›ci Å‚uk."
 }
 item a_antimagic {
 	name "Amulet antymagii"
-	desc "+25% odpornoœci na magiê."
+	desc "+25% odpornoÅ›ci na magiÄ™."
 }
 item a_health {
 	name "Amulet zdrowia"
-	desc "+250 do zdrowia, +10 do kondycji, +10 regeneracji zdrowia, +25% odpornoœci na trucizny."
+	desc "+250 do zdrowia, +10 do kondycji, +10 regeneracji zdrowia, +25% odpornoÅ›ci na trucizny."
 }
 
 //------------------------------------------------------------------------------
 // RINGS
 item r_silver {
-	name "Srebrny pierœcieñ"
+	name "Srebrny pierÅ›cieÅ„"
 }
 item r_gold {
-	name "Z³oty pierœcieñ"
+	name "ZÅ‚oty pierÅ›cieÅ„"
 }
 item r_emerald {
-	name "Szmaragdowy pierœcieñ"
+	name "Szmaragdowy pierÅ›cieÅ„"
 }
 item r_str {
-	name "Pierœcieñ si³y"
-	desc "+5 do si³y."
+	name "PierÅ›cieÅ„ siÅ‚y"
+	desc "+5 do siÅ‚y."
 }
 item r_end {
-	name "Pierœcieñ kondycji"
+	name "PierÅ›cieÅ„ kondycji"
 	desc "+5 do kondycji."
 }
 item r_dex {
-	name "Pierœcieñ zrêcznoœci"
-	desc "+5 do zrêcznoœci."
+	name "PierÅ›cieÅ„ zrÄ™cznoÅ›ci"
+	desc "+5 do zrÄ™cznoÅ›ci."
 }
 item r_int {
-	name "Pierœcien inteligencji"
+	name "PierÅ›cien inteligencji"
 	desc "+5 do inteligencji."
 }
 item r_wis {
-	name "Pierœcieñ m¹droœci"
-	desc "+5 do m¹droœci."
+	name "PierÅ›cieÅ„ mÄ…droÅ›ci"
+	desc "+5 do mÄ…droÅ›ci."
 }
 item r_cha {
-	name "Pierœcieñ charyzmy"
+	name "PierÅ›cieÅ„ charyzmy"
 	desc "+5 do charyzmy."
 }
 item r_hp {
-	name "Pierœcieñ zdrowia"
+	name "PierÅ›cieÅ„ zdrowia"
 	desc "+100 do zdrowia."
 }
 item r_stamina {
-	name "Pierœcieñ wytrzyma³oœci"
-	desc "+50 do wytrzyma³oœci."
+	name "PierÅ›cieÅ„ wytrzymaÅ‚oÅ›ci"
+	desc "+50 do wytrzymaÅ‚oÅ›ci."
 }
 item r_def {
-	name "Pierœcieñ obrony"
+	name "PierÅ›cieÅ„ obrony"
 	desc "+15 do obrony."
 }
 item r_attack {
-	name "Pierœcieñ ataku"
-	desc "+15 do ataku wrêcz."
+	name "PierÅ›cieÅ„ ataku"
+	desc "+15 do ataku wrÄ™cz."
 }
 item r_ranged_attack {
-	name "Pierœcieñ ataku dystansowego"
+	name "PierÅ›cieÅ„ ataku dystansowego"
 	desc "+15 do ataku dystansowego."
 }
 item r_mage {
-	name "Pierœcieñ maga"
-	desc "Zwiêksza si³ê czarów maga."
+	name "PierÅ›cieÅ„ maga"
+	desc "ZwiÄ™ksza siÅ‚Ä™ czarÃ³w maga."
 }
 item r_one_handed_weapon {
-	name "Pierœcieñ broni jednorêcznej"
-	desc "+10 do umiejêtnoœci broñ jednorêczna."
+	name "PierÅ›cieÅ„ broni jednorÄ™cznej"
+	desc "+10 do umiejÄ™tnoÅ›ci broÅ„ jednorÄ™czna."
 }
 item r_short_blade {
-	name "Pierœcieñ krótkiego ostrza"
-	desc "+10 do umiejêtnoœci krótkie ostrze."
+	name "PierÅ›cieÅ„ krÃ³tkiego ostrza"
+	desc "+10 do umiejÄ™tnoÅ›ci krÃ³tkie ostrze."
 }
 item r_long_blade {
-	name "Pierœcieñ d³ugiego ostrza"
-	desc "+10 do umiejêtnoœci d³ugie ostrze."
+	name "PierÅ›cieÅ„ dÅ‚ugiego ostrza"
+	desc "+10 do umiejÄ™tnoÅ›ci dÅ‚ugie ostrze."
 }
 item r_axe {
-	name "Pierœcieñ topora"
-	desc "+10 do umiejêtnoœci topór."
+	name "PierÅ›cieÅ„ topora"
+	desc "+10 do umiejÄ™tnoÅ›ci topÃ³r."
 }
 item r_blunt {
-	name "Pierœcieñ bronii obuchowej"
-	desc "+10 do umiejêtnoœci broñ obuchowa."
+	name "PierÅ›cieÅ„ bronii obuchowej"
+	desc "+10 do umiejÄ™tnoÅ›ci broÅ„ obuchowa."
 }
 item r_bow {
-	name "Pierœcieñ ³uku"
-	desc "+10 do umiejêtnoœci ³uk."
+	name "PierÅ›cieÅ„ Å‚uku"
+	desc "+10 do umiejÄ™tnoÅ›ci Å‚uk."
 }
 item r_shield {
-	name "Pierœcieñ tarczy"
-	desc "+10 do umiejêtnoœci tarcza."
+	name "PierÅ›cieÅ„ tarczy"
+	desc "+10 do umiejÄ™tnoÅ›ci tarcza."
 }
 item r_light_armor {
-	name "Pierœcieñ lekkiego pancerz"
-	desc "+10 do umiejêtnoœci lekki pancerz."
+	name "PierÅ›cieÅ„ lekkiego pancerz"
+	desc "+10 do umiejÄ™tnoÅ›ci lekki pancerz."
 }
 item r_medium_armor {
-	name "Pierœcieñ œredniego pancerza"
-	desc "+10 do umiejêtnoœci œredni pancerz."
+	name "PierÅ›cieÅ„ Å›redniego pancerza"
+	desc "+10 do umiejÄ™tnoÅ›ci Å›redni pancerz."
 }
 item r_heavy_armor {
-	name "Pierœcieñ ciê¿kiego pancerz"
-	desc "+10 do umiejêtnoœci ciêzki pancerz."
+	name "PierÅ›cieÅ„ ciÄ™Å¼kiego pancerz"
+	desc "+10 do umiejÄ™tnoÅ›ci ciÄ™zki pancerz."
 }
 item r_haggle {
-	name "Pierœcieñ targowania"
-	desc "+10 do umiejêtnoœci targowanie."
+	name "PierÅ›cieÅ„ targowania"
+	desc "+10 do umiejÄ™tnoÅ›ci targowanie."
 }
 item r_carry {
-	name "Pierœcieñ tragarza"
-	desc "+50% do udŸwigu."
+	name "PierÅ›cieÅ„ tragarza"
+	desc "+50% do udÅºwigu."
 }
 item r_gods_magic {
-	name "Pierœcieñ wyznawcy"
-	desc "+10 do umiejêtnoœci boska magia."
+	name "PierÅ›cieÅ„ wyznawcy"
+	desc "+10 do umiejÄ™tnoÅ›ci boska magia."
 }
 item r_concentration {
-	name "Pierœcieñ koncentracji"
-	desc "+10 do umiejêtnoœci koncentracja."
+	name "PierÅ›cieÅ„ koncentracji"
+	desc "+10 do umiejÄ™tnoÅ›ci koncentracja."
 }
 item r_mystic_magic {
-	name "Pierœcieñ mistycznoœci"
-	desc "+10 do umiejêtnoœci mistyczna magia."
+	name "PierÅ›cieÅ„ mistycznoÅ›ci"
+	desc "+10 do umiejÄ™tnoÅ›ci mistyczna magia."
 }
 item r_mana {
-	name "Pierœcieñ many"
+	name "PierÅ›cieÅ„ many"
 	desc "+100 do many."
 }
 item r_str2 {
-	name "Wiêkszy pierœcieñ si³y"
-	desc "+15 do si³y."
+	name "WiÄ™kszy pierÅ›cieÅ„ siÅ‚y"
+	desc "+15 do siÅ‚y."
 }
 item r_end2 {
-	name "Wiêkszy pierœcieñ kondycji"
+	name "WiÄ™kszy pierÅ›cieÅ„ kondycji"
 	desc "+15 do kondycji."
 }
 item r_dex2 {
-	name "Wiêkszy pierœcieñ zrêcznoœci"
-	desc "+15 do zrêcznoœci."
+	name "WiÄ™kszy pierÅ›cieÅ„ zrÄ™cznoÅ›ci"
+	desc "+15 do zrÄ™cznoÅ›ci."
 }
 item r_int2 {
-	name "Wiêkszy pierœcieñ inteligencji"
+	name "WiÄ™kszy pierÅ›cieÅ„ inteligencji"
 	desc "+15 do inteligencji."
 }
 item r_wis2 {
-	name "Wiêkszy pierœcieñ m¹droœci"
-	desc "+15 do m¹droœci."
+	name "WiÄ™kszy pierÅ›cieÅ„ mÄ…droÅ›ci"
+	desc "+15 do mÄ…droÅ›ci."
 }
 item r_cha2 {
-	name "Wiêkszy pierœcieñ charyzmy"
+	name "WiÄ™kszy pierÅ›cieÅ„ charyzmy"
 	desc "+15 do charyzmy."
 }
 item r_regeneration {
-	name "Pierœcieñ regeneracji"
+	name "PierÅ›cieÅ„ regeneracji"
 	desc "+5 regeneracji zdrowia."
 }
 item r_assassin {
-	name "Pierœcieñ zabójcy"
-	desc "+25% do obra¿eñ w plecy."
+	name "PierÅ›cieÅ„ zabÃ³jcy"
+	desc "+25% do obraÅ¼eÅ„ w plecy."
 }
 item r_poison_resistance {
-	name "Pierœcieñ odpornoœci na trucizny"
-	desc "+50% odpornoœci na trucizny."
+	name "PierÅ›cieÅ„ odpornoÅ›ci na trucizny"
+	desc "+50% odpornoÅ›ci na trucizny."
 }
 item r_mana_regen {
-	name "Pierœcieñ harmonii"
-	desc "+100% szybkoœci regeneracji many."
+	name "PierÅ›cieÅ„ harmonii"
+	desc "+100% szybkoÅ›ci regeneracji many."
 }
 
 //------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Napar leczniczy"
-	desc "Przyœpiesza naturaln¹ regeneracjê. Dawka wystarcza na 10 dni kuracji. Wypij j¹ przed odpoczynkiem."
+	desc "PrzyÅ›piesza naturalnÄ… regeneracjÄ™. Dawka wystarcza na 10 dni kuracji. Wypij jÄ… przed odpoczynkiem."
 }
 item p_nreg2 {
 	name "Napar zdrowia"
-	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 30 dni kuracji. Wypij j¹ przed odpoczynkiem."
+	desc "PrzyÅ›piesza naturalnÄ… regeneracje. Dawka wystarcza na 30 dni kuracji. Wypij jÄ… przed odpoczynkiem."
 }
 item p_hp {
 	name "Mikstura leczenia"
-	desc "Magiczna mikstura, natychmiast leczy 250 punktów zdrowia."
+	desc "Magiczna mikstura, natychmiast leczy 250 punktÃ³w zdrowia."
 }
 item p_hp2 {
 	name "Eliksir leczenia"
-	desc "Magiczna mikstura, natychmiast leczy 500 punktów zdrowia."
+	desc "Magiczna mikstura, natychmiast leczy 500 punktÃ³w zdrowia."
 }
 item p_hp3 {
 	name "Ekstrakt leczenia"
-	desc "Magiczna mikstura, natychmiast leczy 1000 punktów zdrowia."
+	desc "Magiczna mikstura, natychmiast leczy 1000 punktÃ³w zdrowia."
 }
 item p_mp {
 	name "Mikstura many"
-	desc "Magiczna mikstura, natychmiast przywraca 250 punktów many."
+	desc "Magiczna mikstura, natychmiast przywraca 250 punktÃ³w many."
 }
 item p_mp2 {
 	name "Eliksir many"
-	desc "Magiczna mikstura, natychmiast przywraca 500 punktów many."
+	desc "Magiczna mikstura, natychmiast przywraca 500 punktÃ³w many."
 }
 item p_mp3 {
 	name "Ekstrakt many"
-	desc "Magiczna mikstura, natychmiast przywraca 1000 punktów many."
+	desc "Magiczna mikstura, natychmiast przywraca 1000 punktÃ³w many."
 }
 item p_reg {
 	name "Mikstura regeneracji"
-	desc "Magiczna mikstura, szybko regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
+	desc "Magiczna mikstura, szybko regeneruje rany. Leczy 5 punktÃ³w zdrowia przez 6 minut."
 }
 item p_antidote {
 	name "Antidotum"
 	desc "Szybko usuwa toksyny z organizmu."
 }
 item p_str {
-	name "Eliksir si³y"
-	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy si³ê."
+	name "Eliksir siÅ‚y"
+	desc "Magiczny eliksir na staÅ‚e zwiÄ™kszajÄ…cy siÅ‚Ä™."
 }
 item p_end {
 	name "Eliksir kondycji"
-	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy kondycjê."
+	desc "Magiczny eliksir na staÅ‚e zwiÄ™kszajÄ…cy kondycjÄ™."
 }
 item p_dex {
-	name "Eliksir zrêcznoœci"
-	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy zrêcznoœæ."
+	name "Eliksir zrÄ™cznoÅ›ci"
+	desc "Magiczny eliksir na staÅ‚e zwiÄ™kszajÄ…cy zrÄ™cznoÅ›Ä‡."
 }
 item q_magowie_potion {
-	name "Mikstura oczyszczenia umys³u"
-	desc "Mikstura która mo¿e przywróciæ pamiêæ."
+	name "Mikstura oczyszczenia umysÅ‚u"
+	desc "Mikstura ktÃ³ra moÅ¼e przywrÃ³ciÄ‡ pamiÄ™Ä‡."
 }
 item p_antimagic {
 	name "Eliksir antymagii"
-	desc "Na 5 minut zapewnia odpornoœæ na magiê."
+	desc "Na 5 minut zapewnia odpornoÅ›Ä‡ na magiÄ™."
 }
 
 //------------------------------------------------------------------------------
 // DRINK
 item beer {
 	name "Piwo"
-	desc "Ma³a dawka trucizny podawana doustnie."
+	desc "MaÅ‚a dawka trucizny podawana doustnie."
 }
 item vodka {
-	name "Wódka"
-	desc "Du¿a dawka trucizny podawana doustnie."
+	name "WÃ³dka"
+	desc "DuÅ¼a dawka trucizny podawana doustnie."
 }
 item spirit {
 	name "Spirytus"
-	desc "Bardzo du¿a dawka trucizny podawana doustnie."
+	desc "Bardzo duÅ¼a dawka trucizny podawana doustnie."
 }
 item water {
 	name "Woda"
-	desc "Przywraca wytrzyma³oœæ."
+	desc "Przywraca wytrzymaÅ‚oÅ›Ä‡."
 }
 item spring_water {
-	name "Woda Ÿródlana"
-	desc "OrzeŸwiaj¹ce!"
+	name "Woda ÅºrÃ³dlana"
+	desc "OrzeÅºwiajÄ…ce!"
 }
 
 //------------------------------------------------------------------------------
 // FOOD
 item bread {
 	name "Chleb"
-	desc "Leczy 40 punktów zdrowia po zjedzeniu."
+	desc "Leczy 40 punktÃ³w zdrowia po zjedzeniu."
 }
 item meat {
-	name "Miêso"
-	desc "Leczy 50 punktów zdrowia po zjedzeniu."
+	name "MiÄ™so"
+	desc "Leczy 50 punktÃ³w zdrowia po zjedzeniu."
 }
 item raw_meat {
-	name "Surowe miêso"
-	desc "Leczy 20 punktów zdrowia po zjedzeniu."
+	name "Surowe miÄ™so"
+	desc "Leczy 20 punktÃ³w zdrowia po zjedzeniu."
 }
 item sausage {
-	name "Kie³basa"
-	desc "Leczy 60 punktów zdrowia po zjedzeniu."
+	name "KieÅ‚basa"
+	desc "Leczy 60 punktÃ³w zdrowia po zjedzeniu."
 }
 item fish_meat {
-	name "Miêso z ryby"
-	desc "Leczy 40 punktów zdrowia po zjedzeniu."
+	name "MiÄ™so z ryby"
+	desc "Leczy 40 punktÃ³w zdrowia po zjedzeniu."
 }
 item fish {
 	name "Ryba"
-	desc "Leczy 15 punktów zdrowia po zjedzeniu."
+	desc "Leczy 15 punktÃ³w zdrowia po zjedzeniu."
 }
 item apple {
-	name "Jab³ko"
-	desc "Leczy 25 punktów zdrowia po zjedzeniu."
+	name "JabÅ‚ko"
+	desc "Leczy 25 punktÃ³w zdrowia po zjedzeniu."
 }
 item cheese {
 	name "Ser"
-	desc "Leczy 40 punktów zdrowia po zjedzeniu."
+	desc "Leczy 40 punktÃ³w zdrowia po zjedzeniu."
 }
 item honeycomb {
 	name "Plaster miodu"
-	desc "Leczy 75 punktów zdrowia po zjedzeniu."
+	desc "Leczy 75 punktÃ³w zdrowia po zjedzeniu."
 }
 item rice {
-	name "Ry¿"
-	desc "Leczy 30 punktów zdrowia po zjedzeniu."
+	name "RyÅ¼"
+	desc "Leczy 30 punktÃ³w zdrowia po zjedzeniu."
 }
 item soup {
 	name "Zupa"
-	desc "Leczy 45 punktów zdrowia po zjedzeniu."
+	desc "Leczy 45 punktÃ³w zdrowia po zjedzeniu."
 }
 item stew {
 	name "Gulasz"
-	desc "Leczy 60 punktów zdrowia po zjedzeniu."
+	desc "Leczy 60 punktÃ³w zdrowia po zjedzeniu."
 }
 item muffin {
 	name "Muffin"
-	desc "Leczy 100 punktów zdrowia po zjedzeniu."
+	desc "Leczy 100 punktÃ³w zdrowia po zjedzeniu."
 }
 item mushroom {
 	name "Grzyb"
-	desc "Leczy 15 punktów zdrowia po zjedzeniu."
+	desc "Leczy 15 punktÃ³w zdrowia po zjedzeniu."
 }
 item healing_herb {
 	name "Lecznicze ziele"
-	desc "Natychmiast leczy 150 punktów zdrowia."
+	desc "Natychmiast leczy 150 punktÃ³w zdrowia."
 }
 item mana_herb {
 	name "Ziele many"
-	desc "Przywraca 150 punktów many po zjedzeniu."
+	desc "Przywraca 150 punktÃ³w many po zjedzeniu."
 }
 item green_herb {
 	name "Zielone ziele"
 }
 item alchemist_herb {
 	name "Ziele alchemiczne"
-	desc "Roœlina o nieznanych ci w³aœciwoœciach alchemicznych."
+	desc "RoÅ›lina o nieznanych ci wÅ‚aÅ›ciwoÅ›ciach alchemicznych."
 }
 
 //------------------------------------------------------------------------------
@@ -923,13 +923,13 @@ item diamond {
 	name "Diament"
 }
 item krystal {
-	name "Ksiê¿ycowy kryszta³"
+	name "KsiÄ™Å¼ycowy krysztaÅ‚"
 }
 item golden_bar {
-	name "Z³ota sztabka"
+	name "ZÅ‚ota sztabka"
 }
 item golden_cup {
-	name "Z³oty kielich"
+	name "ZÅ‚oty kielich"
 }
 
 //------------------------------------------------------------------------------
@@ -950,21 +950,21 @@ item worg_pelt {
 	name "Futro worga"
 }
 item bear_pelt {
-	name "Futro niedŸwiedzia"
+	name "Futro niedÅºwiedzia"
 }
 item black_bear_pelt {
-	name "Futro czarnego niedŸwiedzia"
+	name "Futro czarnego niedÅºwiedzia"
 }
 item tallow {
-	name "Sad³o"
+	name "SadÅ‚o"
 }
 item heal_crystal {
 	name "Vitalit"
-	desc "Kryszta³ o leczniczych w³aœciwoœciach."
+	desc "KrysztaÅ‚ o leczniczych wÅ‚aÅ›ciwoÅ›ciach."
 }
 item magic_crystal {
-	name "Magiczny kryszta³"
-	desc "Kryszta³ o magicznych w³aœciwoœciach."
+	name "Magiczny krysztaÅ‚"
+	desc "KrysztaÅ‚ o magicznych wÅ‚aÅ›ciwoÅ›ciach."
 }
 item troll_blood {
 	name "Krew trolla"
@@ -973,74 +973,74 @@ item troll_blood {
 //------------------------------------------------------------------------------
 // ARTIFACTS
 item a_amulet {
-	name "Staro¿ytny amulet"
+	name "StaroÅ¼ytny amulet"
 }
 item a_amulet2 {
-	name "Staro¿ytny amulet"
+	name "StaroÅ¼ytny amulet"
 }
 item a_amulet3 {
-	name "Staro¿ytny amulet"
+	name "StaroÅ¼ytny amulet"
 }
 item a_brosza {
-	name "Staro¿ytna brosza"
+	name "StaroÅ¼ytna brosza"
 }
 item a_butelka {
-	name "Staro¿ytna butelka"
+	name "StaroÅ¼ytna butelka"
 }
 item a_cos {
-	name "Staro¿ytny artefakt"
+	name "StaroÅ¼ytny artefakt"
 }
 item a_czaszka {
-	name "Staro¿ytny czaszka"
+	name "StaroÅ¼ytny czaszka"
 }
 item a_figurka {
-	name "Staro¿ytna figurka"
+	name "StaroÅ¼ytna figurka"
 }
 item a_figurka2 {
-	name "Staro¿ytna figurka"
+	name "StaroÅ¼ytna figurka"
 }
 item a_figurka3 {
-	name "Staro¿ytna figurka"
+	name "StaroÅ¼ytna figurka"
 }
 item a_ksiega {
-	name "Staro¿ytna ksiêga"
+	name "StaroÅ¼ytna ksiÄ™ga"
 }
 item a_maska {
-	name "Staro¿ytna maska"
+	name "StaroÅ¼ytna maska"
 }
 item a_maska2 {
-	name "Staro¿ytna maska"
+	name "StaroÅ¼ytna maska"
 }
 item a_misa {
-	name "Staro¿ytna misa"
+	name "StaroÅ¼ytna misa"
 }
 item a_moneta {
-	name "Staro¿ytna moneta"
+	name "StaroÅ¼ytna moneta"
 }
 item a_pierscien {
-	name "Staro¿ytny pierœcieñ"
+	name "StaroÅ¼ytny pierÅ›cieÅ„"
 }
 item a_pierscien2 {
-	name "Staro¿ytny pierœcieñ"
+	name "StaroÅ¼ytny pierÅ›cieÅ„"
 }
 item a_pierscien3 {
-	name "Staro¿ytny pierœcieñ"
+	name "StaroÅ¼ytny pierÅ›cieÅ„"
 }
 item a_talizman {
-	name "Staro¿ytny talizman"
+	name "StaroÅ¼ytny talizman"
 }
 item a_talizman2 {
-	name "Staro¿ytny talizman"
+	name "StaroÅ¼ytny talizman"
 }
 
 //------------------------------------------------------------------------------
 // QUEST ITEMS
 item key_kopalnia {
-	name "Staro¿ytny klucz"
+	name "StaroÅ¼ytny klucz"
 }
 item q_bandyci_paczka {
 	name "Cenna paczka"
-	desc "Paczka wype³niona kamieniami."
+	desc "Paczka wypeÅ‚niona kamieniami."
 }
 item q_bandyci_list {
 	name "Zaszyfrowany list"
@@ -1050,29 +1050,29 @@ item q_magowie_kula {
 	name "Magiczna kula"
 }
 item q_magowie_kula2 {
-	name "Kula wiêzi"
-	desc "Magiczna kula potrzebna do o¿ywiania golemów."
+	name "Kula wiÄ™zi"
+	desc "Magiczna kula potrzebna do oÅ¼ywiania golemÃ³w."
 }
 item q_orkowie_klucz {
-	name "Zardzewia³y klucz"
+	name "ZardzewiaÅ‚y klucz"
 }
 item key_lunar {
-	name "Ksiê¿ycowy klucz"
+	name "KsiÄ™Å¼ycowy klucz"
 }
 item q_szaleni_kamien {
-	name "Dziwny kamieñ"
-	desc "Kamieñ pokryty jakimiœ runami."
+	name "Dziwny kamieÅ„"
+	desc "KamieÅ„ pokryty jakimiÅ› runami."
 }
 item sekret_kartka {
-	name "Kawa³ek papieru"
+	name "KawaÅ‚ek papieru"
 }
 item sekret_kartka2 {
-	name "Kawa³ek papieru"
-	desc "Tylko dziêki prawdziwej odwadze mo¿esz przejœæ przez ten portal. Wczytywanie gry ci nie pomo¿e."
+	name "KawaÅ‚ek papieru"
+	desc "Tylko dziÄ™ki prawdziwej odwadze moÅ¼esz przejÅ›Ä‡ przez ten portal. Wczytywanie gry ci nie pomoÅ¼e."
 }
 item q_main_letter {
 	name "Dokumenty"
-	desc "Dokumenty dziêki którym zostaniesz przyjêty do Akademii."
+	desc "Dokumenty dziÄ™ki ktÃ³rym zostaniesz przyjÄ™ty do Akademii."
 }
 item letter {
 	name "List"
@@ -1081,7 +1081,7 @@ item parcel {
 	name "Paczka"
 }
 item wanted_letter {
-	name "List goñczy"
+	name "List goÅ„czy"
 }
 item q_resources {
 	name "Zasoby"
@@ -1089,53 +1089,53 @@ item q_resources {
 
 //------------------------------------------------------------------------------
 item book_history {
-	name "Wspó³czesna historia œwiata"
-	desc "Ksi¹¿ka historyczna."
-	text "*** Wspó³czesna historia œwiata ***\n\nWspó³czesny kalendarz zosta³ stworzony przez I³geniusza Trzeciego w roku 103. Za pocz¹tek nowego kalendarza wzi¹³ rok za³o¿enia królestwa Nyrtany.\n\nRok dzieli siê na 12 miesiêcy, ka¿dy z nich ma 30 dni. Niekórzy dziel¹ miesi¹c na trzy dziesiêcio dniowe okresy - dekadni.\n\nZim¹ 607 roku zda¿y³a siê dziwna rzecz. Wiele potworów na terenie ca³ego królestwa sta³o siê bardzo agresywnych. Tradycyjna armia mia³a du¿e problemy z rozwi¹zaniem tego problemu. Powsta³o wiele grup œmia³ków które walczy³y z potworami.\n\nW roku 610 zosta³a za³o¿ona Akademia. Jej zadaniem jest szkolenie bohaterów, którzy s¹ wyszkolenie do walki z potworami tak by sytuacja siê nie powtórzy³a."
+	name "WspÃ³Å‚czesna historia Å›wiata"
+	desc "KsiÄ…Å¼ka historyczna."
+	text "*** WspÃ³Å‚czesna historia Å›wiata ***\n\nWspÃ³Å‚czesny kalendarz zostaÅ‚ stworzony przez IÅ‚geniusza Trzeciego w roku 103. Za poczÄ…tek nowego kalendarza wziÄ…Å‚ rok zaÅ‚oÅ¼enia krÃ³lestwa Nyrtany.\n\nRok dzieli siÄ™ na 12 miesiÄ™cy, kaÅ¼dy z nich ma 30 dni. NiekÃ³rzy dzielÄ… miesiÄ…c na trzy dziesiÄ™cio dniowe okresy - dekadni.\n\nZimÄ… 607 roku zdaÅ¼yÅ‚a siÄ™ dziwna rzecz. Wiele potworÃ³w na terenie caÅ‚ego krÃ³lestwa staÅ‚o siÄ™ bardzo agresywnych. Tradycyjna armia miaÅ‚a duÅ¼e problemy z rozwiÄ…zaniem tego problemu. PowstaÅ‚o wiele grup Å›miaÅ‚kÃ³w ktÃ³re walczyÅ‚y z potworami.\n\nW roku 610 zostaÅ‚a zaÅ‚oÅ¼ona Akademia. Jej zadaniem jest szkolenie bohaterÃ³w, ktÃ³rzy sÄ… wyszkolenie do walki z potworami tak by sytuacja siÄ™ nie powtÃ³rzyÅ‚a."
 }
 item book_orcs {
 	name "Orkowa horda"
-	desc "Ksiêga o orkach."
-	text "*** Orkowa horda ***\n\nOrki pierwszy raz napotkano w roku 713 pierwszej ery. Nie wiele wtedy o nich wiedziano, postrzegano je jako zwyk³e humanoidalne bestie morduj¹ce wieœniaków i pal¹ce wioski. Przyszli oni z pó³nocnych gór gdy nadesz³a zima stulecia. Hordy orków wyla³y siê z gór niczym fala.\n\nOrkowie ¿yj¹ g³ównie pod ziemi¹ w jaskiniach, lub na zewn¹trz niedaleko w lasach. Rzadko rozbijaj¹ tymczasowe obozy pod go³ym niebem, boj¹ siê ¿e niebo zawali im siê na g³owy. Pos³uguj¹ siê prymitywnym jêzykiem który po zapisaniu wygl¹da jak bazgro³y. Rzadko zdarza siê ¿e ork nie jest pó³-g³ówkiem, wtedy zostaje szamanem. Niektórzy szamani znaj¹ jêzyk ludzi.\n\nNajsilniejszy ork zostaje hersztem lub wodzem wojennym. Jedynym co trzyma w kupiê armiê orków jest strach przed swoim wodzem. Czêsto wybuchaj¹ miedzy nimi walki o to kto jest silniejszy."
+	desc "KsiÄ™ga o orkach."
+	text "*** Orkowa horda ***\n\nOrki pierwszy raz napotkano w roku 713 pierwszej ery. Nie wiele wtedy o nich wiedziano, postrzegano je jako zwykÅ‚e humanoidalne bestie mordujÄ…ce wieÅ›niakÃ³w i palÄ…ce wioski. Przyszli oni z pÃ³Å‚nocnych gÃ³r gdy nadeszÅ‚a zima stulecia. Hordy orkÃ³w wylaÅ‚y siÄ™ z gÃ³r niczym fala.\n\nOrkowie Å¼yjÄ… gÅ‚Ã³wnie pod ziemiÄ… w jaskiniach, lub na zewnÄ…trz niedaleko w lasach. Rzadko rozbijajÄ… tymczasowe obozy pod goÅ‚ym niebem, bojÄ… siÄ™ Å¼e niebo zawali im siÄ™ na gÅ‚owy. PosÅ‚ugujÄ… siÄ™ prymitywnym jÄ™zykiem ktÃ³ry po zapisaniu wyglÄ…da jak bazgroÅ‚y. Rzadko zdarza siÄ™ Å¼e ork nie jest pÃ³Å‚-gÅ‚Ã³wkiem, wtedy zostaje szamanem. NiektÃ³rzy szamani znajÄ… jÄ™zyk ludzi.\n\nNajsilniejszy ork zostaje hersztem lub wodzem wojennym. Jedynym co trzyma w kupiÄ™ armiÄ™ orkÃ³w jest strach przed swoim wodzem. CzÄ™sto wybuchajÄ… miedzy nimi walki o to kto jest silniejszy."
 }
 item book_undead {
-	name "Plaga nieumar³ych"
-	desc "Ksiêga o nieumar³ych."
-	text "*** Plaga nieumar³ych ***\n\nW tym krótkim traktacie postaram siê opisaæ jak zidentyfikowaæ i zabiæ ró¿ne rodzaje nieumar³ych - kap³an Jared.\n\nSzkielet - koœciany nieumar³y. Pojedynczy nie stanowi wiêkszego zagro¿enia ale zazwyczaj wystêpuj¹ w grupach. Uzbrojony w broñ, tarcze lub ³uk. Szkielety s¹ odporne na broñ k³ut¹ ale podatne na obuchow¹. Dobrze jest nosiæ ze sob¹ na przyk³ad morgensztern.\n\nSzkielet mag - koœciany nieumar³y, dziêki plugawej mocy mo¿e rzucaæ czary. Posiada te same cechy co zwyk³y szkielet. Nale¿y go zlikwidowaæ w pierwszej kolejnoœci co nie zawsze jest ³atwe gdy jest otoczony przez sojuszników. Silniejsze szkielety mog¹ o¿ywiaæ inne szkielety oraz rzucaæ eksploduj¹c¹ czaszk¹.\n\nZombie - o¿ywione plugaw¹ magi¹ zw³oki. Wyj¹tkowo wytrzyma³e i odporne na broñ k³ut¹ oraz obuchow¹. Najlepiej wykorzystaæ to ¿e zombie jest powolny - ostrzelaæ z dystansu z ³uku a gdy podejdzie dobiæ z miecza.\n\nNieumar³y stra¿nik - o¿ywiony cz³owiek który jeszcze nie sta³ siê zombie. Silny niczym cz³owiek ale bardziej wytrzyma³y, odporny na obra¿enia obuchowe i trucizny.\n\nNekromanta - nie jest nieumar³ym ale trzeba go tu opisaæ. To on odprawiaj¹c plugawe czary o¿ywia szkielety i zombie. Nale¿y go zabijaæ w pierwszej kolejnoœci!"
+	name "Plaga nieumarÅ‚ych"
+	desc "KsiÄ™ga o nieumarÅ‚ych."
+	text "*** Plaga nieumarÅ‚ych ***\n\nW tym krÃ³tkim traktacie postaram siÄ™ opisaÄ‡ jak zidentyfikowaÄ‡ i zabiÄ‡ rÃ³Å¼ne rodzaje nieumarÅ‚ych - kapÅ‚an Jared.\n\nSzkielet - koÅ›ciany nieumarÅ‚y. Pojedynczy nie stanowi wiÄ™kszego zagroÅ¼enia ale zazwyczaj wystÄ™pujÄ… w grupach. Uzbrojony w broÅ„, tarcze lub Å‚uk. Szkielety sÄ… odporne na broÅ„ kÅ‚utÄ… ale podatne na obuchowÄ…. Dobrze jest nosiÄ‡ ze sobÄ… na przykÅ‚ad morgensztern.\n\nSzkielet mag - koÅ›ciany nieumarÅ‚y, dziÄ™ki plugawej mocy moÅ¼e rzucaÄ‡ czary. Posiada te same cechy co zwykÅ‚y szkielet. NaleÅ¼y go zlikwidowaÄ‡ w pierwszej kolejnoÅ›ci co nie zawsze jest Å‚atwe gdy jest otoczony przez sojusznikÃ³w. Silniejsze szkielety mogÄ… oÅ¼ywiaÄ‡ inne szkielety oraz rzucaÄ‡ eksplodujÄ…cÄ… czaszkÄ….\n\nZombie - oÅ¼ywione plugawÄ… magiÄ… zwÅ‚oki. WyjÄ…tkowo wytrzymaÅ‚e i odporne na broÅ„ kÅ‚utÄ… oraz obuchowÄ…. Najlepiej wykorzystaÄ‡ to Å¼e zombie jest powolny - ostrzelaÄ‡ z dystansu z Å‚uku a gdy podejdzie dobiÄ‡ z miecza.\n\nNieumarÅ‚y straÅ¼nik - oÅ¼ywiony czÅ‚owiek ktÃ³ry jeszcze nie staÅ‚ siÄ™ zombie. Silny niczym czÅ‚owiek ale bardziej wytrzymaÅ‚y, odporny na obraÅ¼enia obuchowe i trucizny.\n\nNekromanta - nie jest nieumarÅ‚ym ale trzeba go tu opisaÄ‡. To on odprawiajÄ…c plugawe czary oÅ¼ywia szkielety i zombie. NaleÅ¼y go zabijaÄ‡ w pierwszej kolejnoÅ›ci!"
 }
 item book_behind_the_wall {
-	name "Za œcian¹"
-	desc "Ksiêga o niewidzialnym zagro¿eniu które jest tu¿ obok."
-	text "[Treœæ nieznanego autora prze³o¿ona na jêzyk ludzi przez Danarta Szalonego]\n\n*** Za œcian¹ ***\n\nZa os³on¹ rzeczywistoœci tu¿ obok nas czaj¹ siê koszmary. Tylko krucha œciana oddziela nas od potwornoœci które czasem dostaj¹ siê do naszego œwiata. Nienazwane istoty atakuj¹ce umys³ i cia³o. Wielu po takim spotkaniu postrada³o umys³ i zaczê³o wêdrowaæ po œwiecie bez celu atakuj¹c podró¿nych.\n\nYyoijy"
+	name "Za Å›cianÄ…"
+	desc "KsiÄ™ga o niewidzialnym zagroÅ¼eniu ktÃ³re jest tuÅ¼ obok."
+	text "[TreÅ›Ä‡ nieznanego autora przeÅ‚oÅ¼ona na jÄ™zyk ludzi przez Danarta Szalonego]\n\n*** Za Å›cianÄ… ***\n\nZa osÅ‚onÄ… rzeczywistoÅ›ci tuÅ¼ obok nas czajÄ… siÄ™ koszmary. Tylko krucha Å›ciana oddziela nas od potwornoÅ›ci ktÃ³re czasem dostajÄ… siÄ™ do naszego Å›wiata. Nienazwane istoty atakujÄ…ce umysÅ‚ i ciaÅ‚o. Wielu po takim spotkaniu postradaÅ‚o umysÅ‚ i zaczÄ™Å‚o wÄ™drowaÄ‡ po Å›wiecie bez celu atakujÄ…c podrÃ³Å¼nych.\n\nYyoijy"
 }
 item book_adventurer {
-	name "Poradnik poszukiwaczy przygód"
-	desc "Ksiêga o tym jak nie daæ siê zabiæ i zdobyæ skarby."
-	text "Jak do¿yæ do emerytury czyli Poradnik poszukiwacza przygód autorstwa Tomashu\n\n1. Mieszkañcy miasta mog¹ siê na ciebie wrogo patrzeæ ale zbieraj wszystkie przedmioty które nie s¹ przybite do œciany. W szczególnoœci miksturki do alchemika, jedzenie od sprzedawcy jedzenia i alkohol z karczmy. Co nie jest ci potrzebne sprzedaj.\n2. Nie podró¿uj sam, im wiêcej postaci w dru¿ynie tym ³atwiejsza bêdzie walka. Postaraj siê mieæ przynajmniej 3-4 osoby w dru¿ynie. Na pocz¹tku z pewnoœci¹ znajdziesz jakichœ bohaterów którzy do³¹cz¹ do ciebie za darmo.\n3. Z podziemi wynoœ tyle przedmiotów ile siê da a potem sprzedawaj je w mieœcie. Twoi sojusznicy te¿ mog¹ siê do czegoœ przydaæ i nosiæ za ciebie przedmioty.\n4. Poza walk¹ warto u¿ywaæ jedzenia aby siê podleczyæ. Wypicie mikstury naturalnego leczenia zwiêksza liczbê przywracanego zdrowia za jedzenie/odpoczynek. Miksturki warto pozostawiæ na walkê.\n5. Szukaj unikalnych sojuszników którzy ciê wspomog¹. Mo¿esz zrekrutowaæ ich w miarê wczeœnie, posiadaj¹ unikatowe zdolnoœci i nie maj¹ udzia³u w ³upach.\n6. Jeœli ciê na to staæ kup od razu lepszy pancerz. Na pocz¹tku ka¿dy punkt obrony siê liczy.\n7. Jeœli chcesz oczyœciæ jak¹œ lokalizacjê zapytaj mieszkañców miasta o pobliskie miejsca. Na pocz¹tek warto odwiedziæ miejsca gdzie wrogowie s¹ bardzo s³abi lub s³abi.\n8. Nie atakuj mieszkañców miasta! Chyba ¿e nie chcesz ju¿ nigdy nic kupowaæ lub trenowaæ.\n9. Nie bój siê uciekaæ gdy szanse na zwyciêstwo s¹ marne.\n10. Zapisuj czêsto grê i postaraj siê nie umieraæ."
+	name "Poradnik poszukiwaczy przygÃ³d"
+	desc "KsiÄ™ga o tym jak nie daÄ‡ siÄ™ zabiÄ‡ i zdobyÄ‡ skarby."
+	text "Jak doÅ¼yÄ‡ do emerytury czyli Poradnik poszukiwacza przygÃ³d autorstwa Tomashu\n\n1. MieszkaÅ„cy miasta mogÄ… siÄ™ na ciebie wrogo patrzeÄ‡ ale zbieraj wszystkie przedmioty ktÃ³re nie sÄ… przybite do Å›ciany. W szczegÃ³lnoÅ›ci miksturki do alchemika, jedzenie od sprzedawcy jedzenia i alkohol z karczmy. Co nie jest ci potrzebne sprzedaj.\n2. Nie podrÃ³Å¼uj sam, im wiÄ™cej postaci w druÅ¼ynie tym Å‚atwiejsza bÄ™dzie walka. Postaraj siÄ™ mieÄ‡ przynajmniej 3-4 osoby w druÅ¼ynie. Na poczÄ…tku z pewnoÅ›ciÄ… znajdziesz jakichÅ› bohaterÃ³w ktÃ³rzy doÅ‚Ä…czÄ… do ciebie za darmo.\n3. Z podziemi wynoÅ› tyle przedmiotÃ³w ile siÄ™ da a potem sprzedawaj je w mieÅ›cie. Twoi sojusznicy teÅ¼ mogÄ… siÄ™ do czegoÅ› przydaÄ‡ i nosiÄ‡ za ciebie przedmioty.\n4. Poza walkÄ… warto uÅ¼ywaÄ‡ jedzenia aby siÄ™ podleczyÄ‡. Wypicie mikstury naturalnego leczenia zwiÄ™ksza liczbÄ™ przywracanego zdrowia za jedzenie/odpoczynek. Miksturki warto pozostawiÄ‡ na walkÄ™.\n5. Szukaj unikalnych sojusznikÃ³w ktÃ³rzy ciÄ™ wspomogÄ…. MoÅ¼esz zrekrutowaÄ‡ ich w miarÄ™ wczeÅ›nie, posiadajÄ… unikatowe zdolnoÅ›ci i nie majÄ… udziaÅ‚u w Å‚upach.\n6. JeÅ›li ciÄ™ na to staÄ‡ kup od razu lepszy pancerz. Na poczÄ…tku kaÅ¼dy punkt obrony siÄ™ liczy.\n7. JeÅ›li chcesz oczyÅ›ciÄ‡ jakÄ…Å› lokalizacjÄ™ zapytaj mieszkaÅ„cÃ³w miasta o pobliskie miejsca. Na poczÄ…tek warto odwiedziÄ‡ miejsca gdzie wrogowie sÄ… bardzo sÅ‚abi lub sÅ‚abi.\n8. Nie atakuj mieszkaÅ„cÃ³w miasta! Chyba Å¼e nie chcesz juÅ¼ nigdy nic kupowaÄ‡ lub trenowaÄ‡.\n9. Nie bÃ³j siÄ™ uciekaÄ‡ gdy szanse na zwyciÄ™stwo sÄ… marne.\n10. Zapisuj czÄ™sto grÄ™ i postaraj siÄ™ nie umieraÄ‡."
 }
 item book_ld {
-	name "Œwiadomy sen"
-	desc "Ksiêga o œwiadomym œnie"
-	text "*** Œwiadomy sen ***\n\nO podró¿y w g³¹b w³asnego umys³u - autor nieznany.\n\nŒwiadomy sen to sen w którym œni¹cy zdaje sobie ¿e jest to sen. Zazwyczaj wystêpuje gdy w trakcie snu osoba zda sobie sprawê ¿e to sen. Mo¿liwe jest te¿ bezpoœrednie zaœniêcie i pozostanie œwiadomym. Œni¹cy posiada kontrolê nad sob¹ i tym co dzieje siê w œnie. O ile jest to jego sen...\n\nJedn¹ z metod s¹ testy rzeczywistoœci oraz zapisywanie codziennie prze¿ytych snów. Po jakimœ czasie zaczniemy wykonywaæ test rzeczywistoœci te¿ w snach i dziêki temu rozpoznamy ¿e jest to sen.\n\nDrug¹ metod¹ jest bezpoœrednie wejœcie do œwiata snów. Mo¿na wykonaæ specjalny magiczny amulet który na to pozwoli."
+	name "Åšwiadomy sen"
+	desc "KsiÄ™ga o Å›wiadomym Å›nie"
+	text "*** Åšwiadomy sen ***\n\nO podrÃ³Å¼y w gÅ‚Ä…b wÅ‚asnego umysÅ‚u - autor nieznany.\n\nÅšwiadomy sen to sen w ktÃ³rym Å›niÄ…cy zdaje sobie Å¼e jest to sen. Zazwyczaj wystÄ™puje gdy w trakcie snu osoba zda sobie sprawÄ™ Å¼e to sen. MoÅ¼liwe jest teÅ¼ bezpoÅ›rednie zaÅ›niÄ™cie i pozostanie Å›wiadomym. ÅšniÄ…cy posiada kontrolÄ™ nad sobÄ… i tym co dzieje siÄ™ w Å›nie. O ile jest to jego sen...\n\nJednÄ… z metod sÄ… testy rzeczywistoÅ›ci oraz zapisywanie codziennie przeÅ¼ytych snÃ³w. Po jakimÅ› czasie zaczniemy wykonywaÄ‡ test rzeczywistoÅ›ci teÅ¼ w snach i dziÄ™ki temu rozpoznamy Å¼e jest to sen.\n\nDrugÄ… metodÄ… jest bezpoÅ›rednie wejÅ›cie do Å›wiata snÃ³w. MoÅ¼na wykonaÄ‡ specjalny magiczny amulet ktÃ³ry na to pozwoli."
 }
 item book_runic {
-	name "Runiczna ksiêga"
-	desc "Ksiêga o niewiadomej treœci zapisana nieznanym ci jêzykiem."
+	name "Runiczna ksiÄ™ga"
+	desc "KsiÄ™ga o niewiadomej treÅ›ci zapisana nieznanym ci jÄ™zykiem."
 	text "*** Tajne *** \n\nSekretna ksiazka, nie czytac! Nie ma tu nic ciekawego, naprawde. Polecam Bloodborne, to bardzo ciekawa gra. Jak i cala seria Dark Souls oraz Uncharted."
 }
 item q_zlo_ksiega {
-	name "Ksiêga przywo³ywania"
-	desc "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
+	name "KsiÄ™ga przywoÅ‚ywania"
+	desc "KsiÄ™ga zawierajÄ…ca zaklÄ™cia przywoÅ‚ywania i tworzenia portali."
 	text "Wstep do przywolywania i tworzenia portali autorstwa Magnusa Voolo.\n\n1. Przywolywanie\nAby przywolac istote z innego planu potrzebujesz znac jej imie oraz fragment zywiolu z ktorego ona pochodzi. Na przyklad dla zywiolu ognia cos zwiazanego z ogniem, zapalony kawalek wegla. Przywolanie standardowych zywiolakow nie stanowi wiekszego problemu poniewaz wszystkie maja takie same imiona:\nogien - agni\nwoda - pos\npowietrze - mir\nziemia - ar\nPrzywolanie istot z innych planow nie zostalo opisane w tym tomie. Przed przywolaniem nalezy tez przygotowac krag ochronny - w innym przypadku zywiolak nie bedzie mial przyjaznych zamiarow. Po przywolaniu nalezy go spetac jednym z zaklec.\n\n2. Otwieranie portali\nAby otworzyc portal potrzebna jest specjalnie przygotowana brama. Do tego celu mozna wykorzystac na przyklad adamentium ktore jest odporne na czary. Uzycie zbyt slabej bramy moze spowodowac jej zniszczenie i zapadniecie sie portalu co jest ekstremalnie niebezpieczne. Na portalu trzeba uzyc zaklecia brama. Portal pozostaje otwarty przez nieograniczony czas."
 }
 item magic_scroll {
-	name "Magiczny zwój"
-	desc "Jest zapisany jakimiœ dziwnymi runami..."
+	name "Magiczny zwÃ³j"
+	desc "Jest zapisany jakimiÅ› dziwnymi runami..."
 	text "xxx"
 }
 item book_q_cleric {
-	name "Wielka ksiêga chorób"
-	desc "Zawiera opisy i sposoby leczenia wielu chorób. Niestety jest zapisana runami."
+	name "Wielka ksiÄ™ga chorÃ³b"
+	desc "Zawiera opisy i sposoby leczenia wielu chorÃ³b. Niestety jest zapisana runami."
 	text "Description\nA disease or medical condition is an unhealthy state where something bad happens to the body or mind.[1] Diseases can cause pain, parts of the body to stop working the right way, or death.\nCauses\nA disease can be caused by many things. Sometimes germs enter our body through food, water or air. A person can be infected by infectious agents like bacteria, viruses or fungus. Disease can also be caused by eating bad or old foods. There are small germs in old foods that can cause diseases. Sometimes the germs produce chemicals or toxins which causes the disease.\nOne of the most common causes of disease is poor sanitation and lack of clean water. Some deadly diseases like malaria in tropical parts of the world are spread by a mosquito. Animals that spread disease are called vectors. There are many vectors, including snails, ticks, and fleas.\nSome people are born with 'genetic diseases'. These are diseases because of an error or mutation in a person's DNA. An example of a mutation is cancer. Living or working in an unhealthy environment can also be a cause for diseases. Diseases are more common in older people."
 }
 item crypt_note {
@@ -1144,26 +1144,26 @@ item crypt_note {
 }
 item recipe_antidote {
 	name "Receptura - antidotum"
-	desc "Zawiera instrukcje przyrz¹dzenia antidotum."
+	desc "Zawiera instrukcje przyrzÄ…dzenia antidotum."
 	text "xxx"
 }
 item recipe_reg {
 	name "Receptura - mikstura regeneracji"
-	desc "Zawiera instrukcje przyrz¹dzenia mikstury regeneracji, wymaga 25 alchemii."
+	desc "Zawiera instrukcje przyrzÄ…dzenia mikstury regeneracji, wymaga 25 alchemii."
 	text "xxx"
 }
 item recipe_antimagic {
 	name "Receptura - eliksir antymagii"
-	desc "Zawiera instrukcje przyrz¹dzenia eliksiru antymagii, wymaga 50 alchemii."
+	desc "Zawiera instrukcje przyrzÄ…dzenia eliksiru antymagii, wymaga 50 alchemii."
 	text "xxx"
 }
 item recipe_book_nreg {
 	name "Naturalne metody leczenia"
-	desc "Zawiera instrukcje przyrz¹dzenia naparów leczniczych."
-	text "[Ta ksi¹¿ka zawiera instrukcje przyrz¹dzenia naparu leczniczego i naparu zdrowia (wymaga 25 alchemii)]\n\nZio³olecznictwo to badania botaniki i stosowania roœlin leczniczych. Roœliny by³y podstaw¹ leczenia przez wiêksz¹ czêœæ historii ludzkoœci, a taka tradycyjna medycyna jest nadal szeroko praktykowana. Zakres zio³olecznictwa jest czasem rozszerzany o produkty grzybowe i pszczele, a tak¿e minera³y, muszle i niektóre czêœci zwierzêce."
+	desc "Zawiera instrukcje przyrzÄ…dzenia naparÃ³w leczniczych."
+	text "[Ta ksiÄ…Å¼ka zawiera instrukcje przyrzÄ…dzenia naparu leczniczego i naparu zdrowia (wymaga 25 alchemii)]\n\nZioÅ‚olecznictwo to badania botaniki i stosowania roÅ›lin leczniczych. RoÅ›liny byÅ‚y podstawÄ… leczenia przez wiÄ™kszÄ… czÄ™Å›Ä‡ historii ludzkoÅ›ci, a taka tradycyjna medycyna jest nadal szeroko praktykowana. Zakres zioÅ‚olecznictwa jest czasem rozszerzany o produkty grzybowe i pszczele, a takÅ¼e mineraÅ‚y, muszle i niektÃ³re czÄ™Å›ci zwierzÄ™ce."
 }
 
 //------------------------------------------------------------------------------
 item gold {
-	name "Z³oto"
+	name "ZÅ‚oto"
 }

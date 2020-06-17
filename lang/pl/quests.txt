@@ -1,351 +1,351 @@
 //=============================================================================
 quest deliver_letter {
 	dialog start {
-		0 "Szukam kogoœ kto dostarczy ten list do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). Jesteœ zainteresowany?"
+		0 "Szukam kogoÅ› kto dostarczy ten list do $(end_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") $(end_loc.name). JesteÅ› zainteresowany?"
 		1 "Tak"
 		2 {
-			"Dobrze, oto wiadomoœæ. Masz miesi¹c ¿eby j¹ dostarczyæ i wróciæ z odpowiedzi¹."
-			"Dobrze, weŸ ten list. Musisz w ci¹gu miesi¹ca dostarczyæ mi odpowiedŸ."
+			"Dobrze, oto wiadomoÅ›Ä‡. Masz miesiÄ…c Å¼eby jÄ… dostarczyÄ‡ i wrÃ³ciÄ‡ z odpowiedziÄ…."
+			"Dobrze, weÅº ten list. Musisz w ciÄ…gu miesiÄ…ca dostarczyÄ‡ mi odpowiedÅº."
 		}
-		3 "$(end_loc.name) znajduje siê na $(World::GetDirName(start_loc, end_loc)) st¹d."
+		3 "$(end_loc.name) znajduje siÄ™ na $(World::GetDirName(start_loc, end_loc)) stÄ…d."
 		4 "Nie"
 	}
 	
 	dialog target {
 		0 "Dostarcz list"
-		1 "Poka¿ mi ten list."
+		1 "PokaÅ¼ mi ten list."
 		2 "Hm..."
-		3 "Mia³eœ mi dostarczyæ ten list wczeœniej. Teraz te informacje s¹ nic nie warte."
+		3 "MiaÅ‚eÅ› mi dostarczyÄ‡ ten list wczeÅ›niej. Teraz te informacje sÄ… nic nie warte."
 		4 {
-			"Te informacje s¹ bardzo wa¿ne."
-			"Interesuj¹ce wieœci."
-			"Dobrze, ¿e mi dostarczy³eœ ten list."
+			"Te informacje sÄ… bardzo waÅ¼ne."
+			"InteresujÄ…ce wieÅ›ci."
+			"Dobrze, Å¼e mi dostarczyÅ‚eÅ› ten list."
 		}
-		5 "Tu masz moj¹ odpowiedŸ. Tylko dostarcz j¹ na czas."
+		5 "Tu masz mojÄ… odpowiedÅº. Tylko dostarcz jÄ… na czas."
 	}
 	
 	dialog end {
-		0 "Zawiod³em siê na tobie. Mia³eœ dostarczyæ list do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). Nie licz, ¿e wyznaczê ci jakieœ odpowiedzialne zadanie."
+		0 "ZawiodÅ‚em siÄ™ na tobie. MiaÅ‚eÅ› dostarczyÄ‡ list do $(end_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") $(end_loc.name). Nie licz, Å¼e wyznaczÄ™ ci jakieÅ› odpowiedzialne zadanie."
 		1 "Dostarcz list"
-		2 "Dobrze. Poka¿ ten list z odpowiedzi¹."
-		3 "Widzê, ¿e jesteœ odpowiedzialny, oto twoje 250 sztuk z³ota."
-		4 "Przyda³oby mi siê wiêcej ludzi takich jak ty."
+		2 "Dobrze. PokaÅ¼ ten list z odpowiedziÄ…."
+		3 "WidzÄ™, Å¼e jesteÅ› odpowiedzialny, oto twoje 250 sztuk zÅ‚ota."
+		4 "PrzydaÅ‚oby mi siÄ™ wiÄ™cej ludzi takich jak ty."
 	}
 	
 	texts {
 		0 "Dostarcz list"
-		1 "Otrzymano od $(start_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
-		2 "Dosta³em list który muszê dostarczyæ do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). To na $(World::GetDirName(start_loc, end_loc)) st¹d. Mam miesi¹c na dojœcie tam i powrót."
-		3 "List do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name)"
-		4 "List od $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name)"
-		5 "Nie zd¹¿y³em dostarczyæ listu na czas."
-		6 "Odda³em list, teraz muszê zanieœæ odpowiedŸ."
-		7 "Dostarczy³em odpowiedŸ. Zadanie wykonane!"
-		8 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+		1 "Otrzymano od $(start_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
+		2 "DostaÅ‚em list ktÃ³ry muszÄ™ dostarczyÄ‡ do $(end_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") $(end_loc.name). To na $(World::GetDirName(start_loc, end_loc)) stÄ…d. Mam miesiÄ…c na dojÅ›cie tam i powrÃ³t."
+		3 "List do $(end_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") $(end_loc.name)"
+		4 "List od $(end_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") $(end_loc.name)"
+		5 "Nie zdÄ…Å¼yÅ‚em dostarczyÄ‡ listu na czas."
+		6 "OddaÅ‚em list, teraz muszÄ™ zanieÅ›Ä‡ odpowiedÅº."
+		7 "DostarczyÅ‚em odpowiedÅº. Zadanie wykonane!"
+		8 "Czas jaki miaÅ‚em na wykonanie tego zadania minÄ…Å‚."
 	}
 }
 
 //=============================================================================
 quest deliver_resources {
 	dialog start {
-		0 "Mam do dostarczenia skrzynkê z zasobami do $(target_loc.name). Normalnie wys³a³ bym jednego z moich ludzi ale skoro ju¿ tu jesteœ..."
-		1 "Jest to doœæ pilne. $(target_loc.name) potrzebuje tych zasobów w ci¹gu 15 dni. Jesteœ zainteresowany?"
+		0 "Mam do dostarczenia skrzynkÄ™ z zasobami do $(target_loc.name). Normalnie wysÅ‚aÅ‚ bym jednego z moich ludzi ale skoro juÅ¼ tu jesteÅ›..."
+		1 "Jest to doÅ›Ä‡ pilne. $(target_loc.name) potrzebuje tych zasobÃ³w w ciÄ…gu 15 dni. JesteÅ› zainteresowany?"
 		2 "Tak"
 		3 "Nie"
-		4 "WeŸ t¹ skrzynkê i powodzenia. Postaraj siê unikaæ bandytów na drogach."
+		4 "WeÅº tÄ… skrzynkÄ™ i powodzenia. Postaraj siÄ™ unikaÄ‡ bandytÃ³w na drogach."
 	}
 	
 	dialog end {
 		0 "Oddaj zasoby"
-		1 "Dziêkujê, weŸ to z³oto w nagrodê."
-		2 "Dziêki niech bêd¹ bogom za ratunek!"
+		1 "DziÄ™kujÄ™, weÅº to zÅ‚oto w nagrodÄ™."
+		2 "DziÄ™ki niech bÄ™dÄ… bogom za ratunek!"
 		3 "Ale zaraz... Gdzie masz te zasoby?"
 	}
 	
 	dialog bandits_enc {
-		0 "Wreszcie kurwa jesteœ! Zabiæ go!"
+		0 "Wreszcie kurwa jesteÅ›! ZabiÄ‡ go!"
 	}
 	
 	dialog bandits {
-		0 "No wreszcie jesteœ! Ile mo¿na czekaæ na te cholerne zasoby!"
+		0 "No wreszcie jesteÅ›! Ile moÅ¼na czekaÄ‡ na te cholerne zasoby!"
 	}
 	
 	texts {
 		0 "Zasoby dla $(target_loc.name)"
 		1 "Dostarcz zasoby"
-		2 "Otrzymano od $(start_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
-		3 "Dosta³em zasoby którê muszê dostarczyæ w ci¹gu 15 dni do $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) st¹d."
-		4 "Dostarczy³em zasoby na czas. Zadanie wykonane!"
-		5 "Nie zd¹¿y³em dostarczyæ na czas zasobów."
-		6 "Przemierzaj¹c drogê natrafi³eœ na kilku bandytów. Wygl¹da na to ¿e na ciebie czekali..."
-		7 "Natrafi³em na bandytów którzy chcieli zabraæ mi zasoby."
+		2 "Otrzymano od $(start_loc.IsVillage() ? \"soÅ‚tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
+		3 "DostaÅ‚em zasoby ktÃ³rÄ™ muszÄ™ dostarczyÄ‡ w ciÄ…gu 15 dni do $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) stÄ…d."
+		4 "DostarczyÅ‚em zasoby na czas. Zadanie wykonane!"
+		5 "Nie zdÄ…Å¼yÅ‚em dostarczyÄ‡ na czas zasobÃ³w."
+		6 "PrzemierzajÄ…c drogÄ™ natrafiÅ‚eÅ› na kilku bandytÃ³w. WyglÄ…da na to Å¼e na ciebie czekali..."
+		7 "NatrafiÅ‚em na bandytÃ³w ktÃ³rzy chcieli zabraÄ‡ mi zasoby."
 	}
 }
 
 //=============================================================================
 quest bandits_collect_toll {
 	dialog start {
-		0 "Na drodze pomiêdzy $(start_loc.name) a $(other_loc.name) koczuj¹ bandyci. Pobieraj¹ op³atê i okradaj¹ kupców."
-		1 "Masz czas aby siê nimi zaj¹æ?"
+		0 "Na drodze pomiÄ™dzy $(start_loc.name) a $(other_loc.name) koczujÄ… bandyci. PobierajÄ… opÅ‚atÄ™ i okradajÄ… kupcÃ³w."
+		1 "Masz czas aby siÄ™ nimi zajÄ…Ä‡?"
 		2 "Tak"
-		3 "IdŸ do $(other_loc.name) na $(World::GetDirName(start_loc, other_loc)) st¹d i z powrotem. Wtedy na pewno natrafisz na tych bandytów."
-		4 "Masz na to pó³ miesi¹ca."
+		3 "IdÅº do $(other_loc.name) na $(World::GetDirName(start_loc, other_loc)) stÄ…d i z powrotem. Wtedy na pewno natrafisz na tych bandytÃ³w."
+		4 "Masz na to pÃ³Å‚ miesiÄ…ca."
 		5 "Nie"
 	}
 	
 	dialog end {
-		0 "Nie uda³o ci siê pozbyæ tych bandytów z drogi?"
-		1 "Ehhh, teraz ju¿ pewnie przenieœli siê gdzie indziej. Zawiod³em siê na tobie."
-		2 "Wreszcie ktoœ na kim mo¿na polegaæ. Dobra robota z tymi bandytami, to ich nauczy na jakiœ czas."
-		3 "WeŸ to 1500 sztuk z³ota w nagrodê."
+		0 "Nie udaÅ‚o ci siÄ™ pozbyÄ‡ tych bandytÃ³w z drogi?"
+		1 "Ehhh, teraz juÅ¼ pewnie przenieÅ›li siÄ™ gdzie indziej. ZawiodÅ‚em siÄ™ na tobie."
+		2 "Wreszcie ktoÅ› na kim moÅ¼na polegaÄ‡. Dobra robota z tymi bandytami, to ich nauczy na jakiÅ› czas."
+		3 "WeÅº to 1500 sztuk zÅ‚ota w nagrodÄ™."
 	}
 	
 	dialog encounter {
-		0 "Staæ!"
-		1 "To nasza droga, jeœli chcesz przejœæ musisz zap³aciæ 500 sztuk z³ota!"
-		2 "Zap³aæ"
-		3 "Mo¿esz przejœæ. Nie zapomnij nas jeszcze odwiedziæ, hehehe..."
-		4 "Nie masz tyle z³ota cholerny biedaku!"
-		5 "Mam nadzieje ¿e twój ekwipunek jest coœ wart!"
-		6 "Nie p³aæ"
-		7 "Mam nadzieje ¿e twój ekwipunek jest coœ wart!"
+		0 "StaÄ‡!"
+		1 "To nasza droga, jeÅ›li chcesz przejÅ›Ä‡ musisz zapÅ‚aciÄ‡ 500 sztuk zÅ‚ota!"
+		2 "ZapÅ‚aÄ‡"
+		3 "MoÅ¼esz przejÅ›Ä‡. Nie zapomnij nas jeszcze odwiedziÄ‡, hehehe..."
+		4 "Nie masz tyle zÅ‚ota cholerny biedaku!"
+		5 "Mam nadzieje Å¼e twÃ³j ekwipunek jest coÅ› wart!"
+		6 "Nie pÅ‚aÄ‡"
+		7 "Mam nadzieje Å¼e twÃ³j ekwipunek jest coÅ› wart!"
 	}
 
 	texts {
-		0 "Bandyci pobieraj¹ op³atê"
-		1 "Otrzymano od kapitana stra¿y $(start_loc.name) dnia $date$."
-		2 "Bandyci pobieraj¹ op³atê gdzieœ pomiêdzy $(start_loc.name) a $(other_loc.name) które jest na $(World::GetDirName(start_loc, other_loc)) st¹d. Mam siê ich pozbyæ w ci¹gu po³owy miesi¹ca."
-		3 "Natrafi³eœ na grupê bandytów pobieraj¹c¹ op³aty na drodze."
-		4 "Nie zd¹¿y³em na czas zabiæ bandytów."
-		5 "Zabi³em bandytów."
-		6 "Poinformowa³em kapitana stra¿y o sukcesie i dosta³em nagrodê. Zadanie wykonane!"
-		7 "Poszukiwacze przygód zajêli siê bandytami którzy pobierali op³aty na drodze."
-		8 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+		0 "Bandyci pobierajÄ… opÅ‚atÄ™"
+		1 "Otrzymano od kapitana straÅ¼y $(start_loc.name) dnia $date$."
+		2 "Bandyci pobierajÄ… opÅ‚atÄ™ gdzieÅ› pomiÄ™dzy $(start_loc.name) a $(other_loc.name) ktÃ³re jest na $(World::GetDirName(start_loc, other_loc)) stÄ…d. Mam siÄ™ ich pozbyÄ‡ w ciÄ…gu poÅ‚owy miesiÄ…ca."
+		3 "NatrafiÅ‚eÅ› na grupÄ™ bandytÃ³w pobierajÄ…cÄ… opÅ‚aty na drodze."
+		4 "Nie zdÄ…Å¼yÅ‚em na czas zabiÄ‡ bandytÃ³w."
+		5 "ZabiÅ‚em bandytÃ³w."
+		6 "PoinformowaÅ‚em kapitana straÅ¼y o sukcesie i dostaÅ‚em nagrodÄ™. Zadanie wykonane!"
+		7 "Poszukiwacze przygÃ³d zajÄ™li siÄ™ bandytami ktÃ³rzy pobierali opÅ‚aty na drodze."
+		8 "Czas jaki miaÅ‚em na wykonanie tego zadania minÄ…Å‚."
 	}
 }
 
 //=============================================================================
 quest camp_near_city {
 	dialog start {
-		0 "Wyobra¿asz to sobie?! $(group.name.Upper()) $(group.female ? \"za\\xB3o\\xBFy\\xB3y\" : \"za\\xB3o\\xBFyli\") obóz tu¿ ko³o $(start_loc.IsVillage() ? \"naszej wioski\" : \"naszego miasta\")!"
-		1 "Chyba chc¹ zaatakowaæ $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")! Musimy coœ z tym zrobiæ!"
-		2 "Mo¿e ty pójdziesz i siê nimi zajmiesz?"
+		0 "WyobraÅ¼asz to sobie?! $(group.name.Upper()) $(group.female ? \"zaÅ‚oÅ¼yÅ‚y\" : \"zaÅ‚oÅ¼yli\") obÃ³z tuÅ¼ koÅ‚o $(start_loc.IsVillage() ? \"naszej wioski\" : \"naszego miasta\")!"
+		1 "Chyba chcÄ… zaatakowaÄ‡ $(start_loc.IsVillage() ? \"wioskÄ™\" : \"miasto\")! Musimy coÅ› z tym zrobiÄ‡!"
+		2 "MoÅ¼e ty pÃ³jdziesz i siÄ™ nimi zajmiesz?"
 		3 "Tak"
-		4 "Ten obóz znajduje siê na $(World::GetDirName(start_loc, camp)) st¹d. Musisz siê tym zaj¹æ w ci¹gu miesi¹ca."
-		5 "Tylko nie daj siê zabiæ."
+		4 "Ten obÃ³z znajduje siÄ™ na $(World::GetDirName(start_loc, camp)) stÄ…d. Musisz siÄ™ tym zajÄ…Ä‡ w ciÄ…gu miesiÄ…ca."
+		5 "Tylko nie daj siÄ™ zabiÄ‡."
 		6 "Nie"
 	}
 	
 	dialog end {
-		0 "Gdyby nie ty to nie wiem czy byœmy odparli ten atak."
-		1 "WeŸ proszê te $(Str(GetReward())) sztuk z³ota nagrody."
-		2 "Gdy ciê nie by³o $(group.name) $(group.female ? \"zaatakowa\\xB3y\" : \"zaatakowali\") $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")! Jakoœ siê obroniliœmy ale wiele osób zginê³o!"
-		3 "Nie pokazuj siê tu wiêcej!"
+		0 "Gdyby nie ty to nie wiem czy byÅ›my odparli ten atak."
+		1 "WeÅº proszÄ™ te $(Str(GetReward())) sztuk zÅ‚ota nagrody."
+		2 "Gdy ciÄ™ nie byÅ‚o $(group.name) $(group.female ? \"zaatakowaÅ‚y\" : \"zaatakowali\") $(start_loc.IsVillage() ? \"wioskÄ™\" : \"miasto\")! JakoÅ› siÄ™ obroniliÅ›my ale wiele osÃ³b zginÄ™Å‚o!"
+		3 "Nie pokazuj siÄ™ tu wiÄ™cej!"
 	}
 	
 	texts {
-		0 "Obóz ko³o $(start_loc.IsVillage() ? \"wioski\" : \"miasta\")"
-		1 "Otrzymano od kapitana stra¿y $(start_loc.name) dnia $date$."
-		2 "$(group.name.Upper()) $(group.female ? \"za\\xB3o\\xBFy\\xB3y\" : \"za\\xB3o\\xBFyli\") obóz na $(World::GetDirName(start_loc, camp)) od $(start_loc.name). Mam $(group.female ? \"je\" : \"ich\") zabiæ w ci¹gu miesi¹ca zanim zaatakuj¹ $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")."
-		3 "Oczyœci³em obóz."
-		4 "Poinformowa³em o oczyszczeniu obozu i otrzyma³em nagrodê. Zadanie wykonane!"
-		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
-		6 "Nie zd¹¿y³em na czas i wrogowie zaatakowali $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")."
+		0 "ObÃ³z koÅ‚o $(start_loc.IsVillage() ? \"wioski\" : \"miasta\")"
+		1 "Otrzymano od kapitana straÅ¼y $(start_loc.name) dnia $date$."
+		2 "$(group.name.Upper()) $(group.female ? \"zaÅ‚oÅ¼yÅ‚y\" : \"zaÅ‚oÅ¼yli\") obÃ³z na $(World::GetDirName(start_loc, camp)) od $(start_loc.name). Mam $(group.female ? \"je\" : \"ich\") zabiÄ‡ w ciÄ…gu miesiÄ…ca zanim zaatakujÄ… $(start_loc.IsVillage() ? \"wioskÄ™\" : \"miasto\")."
+		3 "OczyÅ›ciÅ‚em obÃ³z."
+		4 "PoinformowaÅ‚em o oczyszczeniu obozu i otrzymaÅ‚em nagrodÄ™. Zadanie wykonane!"
+		5 "Czas jaki miaÅ‚em na wykonanie tego zadania minÄ…Å‚."
+		6 "Nie zdÄ…Å¼yÅ‚em na czas i wrogowie zaatakowali $(start_loc.IsVillage() ? \"wioskÄ™\" : \"miasto\")."
 	}
 }
 
 //=============================================================================
 quest find_artifact {
 	dialog start {
-		0 "Poszukujê pewnego artefaktu znanego jako $(item.name)."
-		1 "Czy mo¿esz mi go dostarczyæ?"
+		0 "PoszukujÄ™ pewnego artefaktu znanego jako $(item.name)."
+		1 "Czy moÅ¼esz mi go dostarczyÄ‡?"
 		2 "Tak"
-		3 "Ponoæ przedmiot którego potrzebujê znajduje siê w $(target_loc.name), to na $(World::GetDirName(start_loc, target_loc)) st¹d."
-		4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
+		3 "PonoÄ‡ przedmiot ktÃ³rego potrzebujÄ™ znajduje siÄ™ w $(target_loc.name), to na $(World::GetDirName(start_loc, target_loc)) stÄ…d."
+		4 "BÄ™dÄ™ czekaÅ‚ aÅ¼ ktoÅ› mi go przyniesie ale maksymalnie dwa miesiÄ…ce. Powodzenia!"
 		5 "Nie"
 	}
 	
 	dialog end {
 		0 "Oddaj artefakt"
-		1 "Dziêkuje za ten artefakt, weŸ to $(Str(GetReward())) sztuk z³ota w podziêce."
-		2 "Nie uda³o ci siê znaleŸæ tego artefaktu? Trudno..."
-		3 "Ponoæ niedaleko $(World::GetRandomSettlement(start_loc).name) znaleziono jakieœ nowe artefakty, tam wyruszê."
+		1 "DziÄ™kuje za ten artefakt, weÅº to $(Str(GetReward())) sztuk zÅ‚ota w podziÄ™ce."
+		2 "Nie udaÅ‚o ci siÄ™ znaleÅºÄ‡ tego artefaktu? Trudno..."
+		3 "PonoÄ‡ niedaleko $(World::GetRandomSettlement(start_loc).name) znaleziono jakieÅ› nowe artefakty, tam wyruszÄ™."
 		4 "Powodzenia w przygodach!"
 	}
 	
 	texts {
-		0 "ZnajdŸ artefakt"
-		1 "Otrzymano od podró¿nego w $(start_loc.name) dnia $date$."
-		2 "Podró¿ny chce abym odnalaz³ $(item.name) który znajduje siê w $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) st¹d. Mam na to góra dwa miesi¹ce."
-		3 "Dostarczy³em artefakt i otrzyma³em nagrodê. Zadanie wykonane!"
-		4 "Nie zd¹¿y³em na czas dostarczyæ artefaktu."
-		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+		0 "ZnajdÅº artefakt"
+		1 "Otrzymano od podrÃ³Å¼nego w $(start_loc.name) dnia $date$."
+		2 "PodrÃ³Å¼ny chce abym odnalazÅ‚ $(item.name) ktÃ³ry znajduje siÄ™ w $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) stÄ…d. Mam na to gÃ³ra dwa miesiÄ…ce."
+		3 "DostarczyÅ‚em artefakt i otrzymaÅ‚em nagrodÄ™. Zadanie wykonane!"
+		4 "Nie zdÄ…Å¼yÅ‚em na czas dostarczyÄ‡ artefaktu."
+		5 "Czas jaki miaÅ‚em na wykonanie tego zadania minÄ…Å‚."
 	}
 }
 
 //=============================================================================
 quest alchemist_apprentice {
 	dialog alchemist {
-		0 "Witaj. Jesteœ tu w sprawie zadania?"
+		0 "Witaj. JesteÅ› tu w sprawie zadania?"
 		1 "Zadanie"
-		2 "Szukam kogoœ kto dostarczy mi alchemiczne ziele z pobliskiego lasu."
-		3 "Wys³a³em tam mojego ucznia ale nie wraca od kilku dni."
-		4 "Zajmiesz siê tym?"
+		2 "Szukam kogoÅ› kto dostarczy mi alchemiczne ziele z pobliskiego lasu."
+		3 "WysÅ‚aÅ‚em tam mojego ucznia ale nie wraca od kilku dni."
+		4 "Zajmiesz siÄ™ tym?"
 		5 "Tak"
 		6 "Nie"
-		7 "Dziêkuje ci za twój czas."
-		8 "Udaj siê do $(forest.name) na $(World::GetDirName(city, forest)) st¹d."
-		9 "Przynieœ mi tyle alchemicznego ziela ile zdo³asz."
-		10 "Mój uczeñ te¿ siê tam uda³ ale nie wróci³ wiêc uwa¿aj na siebie."
-		11 "Witaj. Uda³o ci siê znaleŸæ mojego ucznia albo to ziele?"
+		7 "DziÄ™kuje ci za twÃ³j czas."
+		8 "Udaj siÄ™ do $(forest.name) na $(World::GetDirName(city, forest)) stÄ…d."
+		9 "PrzynieÅ› mi tyle alchemicznego ziela ile zdoÅ‚asz."
+		10 "MÃ³j uczeÅ„ teÅ¼ siÄ™ tam udaÅ‚ ale nie wrÃ³ciÅ‚ wiÄ™c uwaÅ¼aj na siebie."
+		11 "Witaj. UdaÅ‚o ci siÄ™ znaleÅºÄ‡ mojego ucznia albo to ziele?"
 		12 "Oddaj ziele"
-		13 "Porzuæ zadanie"
-		14 "Dziêkuje ci, weŸ to z³oto."
-		15 "Ehhh, zawiod³em siê na tobie."
-		16 "Mój uczeñ powróci³ do mnie ca³y i zdrowy, weŸ proszê te mikstury w podziêce."
-		17 "Szkoda ¿e £ukasz umar³... By³ œwietnym pomocnikiem."
-		18 "Jeœli zmienisz zdanie, wiesz gdzie mnie znaleŸæ."
+		13 "PorzuÄ‡ zadanie"
+		14 "DziÄ™kuje ci, weÅº to zÅ‚oto."
+		15 "Ehhh, zawiodÅ‚em siÄ™ na tobie."
+		16 "MÃ³j uczeÅ„ powrÃ³ciÅ‚ do mnie caÅ‚y i zdrowy, weÅº proszÄ™ te mikstury w podziÄ™ce."
+		17 "Szkoda Å¼e Åukasz umarÅ‚... ByÅ‚ Å›wietnym pomocnikiem."
+		18 "JeÅ›li zmienisz zdanie, wiesz gdzie mnie znaleÅºÄ‡."
 	}
 	
 	dialog xwokloiz {
-		0 "O witaj! Jestem $name$. Nie przys³a³ cie czasem mój mistrz, alchemik?"
-		1 "Przys³a³ mnie tu abym uzbiera³ ziele alchemiczne ale z powodu okolicznych bestii nie idzie mi to zbyt szybko."
-		2 "Mam pomys³! Ty zabijesz te potwory a ja ciê poprowadzê, co ty na to?"
+		0 "O witaj! Jestem $name$. Nie przysÅ‚aÅ‚ cie czasem mÃ³j mistrz, alchemik?"
+		1 "PrzysÅ‚aÅ‚ mnie tu abym uzbieraÅ‚ ziele alchemiczne ale z powodu okolicznych bestii nie idzie mi to zbyt szybko."
+		2 "Mam pomysÅ‚! Ty zabijesz te potwory a ja ciÄ™ poprowadzÄ™, co ty na to?"
 		3 "Tak"
 		4 "Nie"
-		5 "Ruszajmy! Tam widzia³em jeden krzak."
-		6 "Szkoda... Zaczekam tutaj, mo¿e zmienisz zdanie..."
-		7 "Hmmm... Przemyœla³eœ moj¹ ofertê pomocy?"
-		8 "Co siê dzieje? Jeszcze nie znaleŸliœmy wszystkich krzaków."
-		9 "Widzê ¿e sam sobie poradzi³eœ... Trudno, wracam do $(city.name)."
-		10 "Dobra robota, zebraliœmy wszystko co siê da³o. Czas wracaæ do miasta."
-		11 "Bym by³ zapomnia³, weŸ jeszcze ten krzak który ja znalaz³em."
-		12 "Spokojnie, sam trafiê do $(city.name)."
+		5 "Ruszajmy! Tam widziaÅ‚em jeden krzak."
+		6 "Szkoda... Zaczekam tutaj, moÅ¼e zmienisz zdanie..."
+		7 "Hmmm... PrzemyÅ›laÅ‚eÅ› mojÄ… ofertÄ™ pomocy?"
+		8 "Co siÄ™ dzieje? Jeszcze nie znaleÅºliÅ›my wszystkich krzakÃ³w."
+		9 "WidzÄ™ Å¼e sam sobie poradziÅ‚eÅ›... Trudno, wracam do $(city.name)."
+		10 "Dobra robota, zebraliÅ›my wszystko co siÄ™ daÅ‚o. Czas wracaÄ‡ do miasta."
+		11 "Bym byÅ‚ zapomniaÅ‚, weÅº jeszcze ten krzak ktÃ³ry ja znalazÅ‚em."
+		12 "Spokojnie, sam trafiÄ™ do $(city.name)."
 	}
 	
 	texts {
 		12 "" // required when there are multiple text variants in texts
-		0 "Zio³a dla alchemika"
+		0 "ZioÅ‚a dla alchemika"
 		1 "Otrzymano od alchemika z $(city.name) dnia $date$."
-		2 "Muszê udaæ siê do $(forest.name) na $(World::GetDirName(Level::location, forest)) od $(city.name) i znaleŸæ tyle alchemicznego ziela ile zdo³am. W okolicy powinnien te¿ byæ uczeñ alchemika którego dobrze by by³o znaleŸæ."
-		3 "Spotka³em ucznia alchemika w lesie. Chcia³ mi pomóc w szukaniu ziela alchemicznego ale odmówi³em."
-		4 "Spotka³em ucznia alchemika w lesie. Zaproponowa³ mi pomoc w szukaniu ziela alchemicznego."
-		5 "Zmieni³em zdanie i przyj¹³em pomoc ucznia alchemika. Zaprowadzi mnie do okolicznych krzaków."
-		6 "Zebra³em ca³e ziele jakie uda³o mi siê znaleŸæ. Czas wracaæ do alchemika."
-		7 "Dostarczy³em ziele i otrzyma³em zap³atê. Zadanie wykonane!"
-		8 "Porzuci³em to zadanie."
+		2 "MuszÄ™ udaÄ‡ siÄ™ do $(forest.name) na $(World::GetDirName(Level::location, forest)) od $(city.name) i znaleÅºÄ‡ tyle alchemicznego ziela ile zdoÅ‚am. W okolicy powinnien teÅ¼ byÄ‡ uczeÅ„ alchemika ktÃ³rego dobrze by byÅ‚o znaleÅºÄ‡."
+		3 "SpotkaÅ‚em ucznia alchemika w lesie. ChciaÅ‚ mi pomÃ³c w szukaniu ziela alchemicznego ale odmÃ³wiÅ‚em."
+		4 "SpotkaÅ‚em ucznia alchemika w lesie. ZaproponowaÅ‚ mi pomoc w szukaniu ziela alchemicznego."
+		5 "ZmieniÅ‚em zdanie i przyjÄ…Å‚em pomoc ucznia alchemika. Zaprowadzi mnie do okolicznych krzakÃ³w."
+		6 "ZebraÅ‚em caÅ‚e ziele jakie udaÅ‚o mi siÄ™ znaleÅºÄ‡. Czas wracaÄ‡ do alchemika."
+		7 "DostarczyÅ‚em ziele i otrzymaÅ‚em zapÅ‚atÄ™. Zadanie wykonane!"
+		8 "PorzuciÅ‚em to zadanie."
 		9 {
 			"Kolejne zielsko!"
-			"Znalaz³em kolejny krzak!"
+			"ZnalazÅ‚em kolejny krzak!"
 		}
-		10 "Uczeñ alchemika zgin¹³ podczas walki w lesie."
-		11 "Alchemik w $(city.name) poszukuje specyficzngo rodzaju zió³."
+		10 "UczeÅ„ alchemika zginÄ…Å‚ podczas walki w lesie."
+		11 "Alchemik w $(city.name) poszukuje specyficzngo rodzaju ziÃ³Å‚."
 	}
 }
 
 //=============================================================================
 quest main {
 	dialog trainer {
-		0 "Gratulacje! Ukoñczy³eœ szkolenie w akademii!"
-		1 "Co zamierzasz teraz zrobiæ? Jakieœ plany na przysz³oœæ?"
-		2 "Witaj ponownie $player_name$! Jak mogê ci pomóc?"
-		3 "Rekrutuj bohaterów"
+		0 "Gratulacje! UkoÅ„czyÅ‚eÅ› szkolenie w akademii!"
+		1 "Co zamierzasz teraz zrobiÄ‡? JakieÅ› plany na przyszÅ‚oÅ›Ä‡?"
+		2 "Witaj ponownie $player_name$! Jak mogÄ™ ci pomÃ³c?"
+		3 "Rekrutuj bohaterÃ³w"
 		4 "Koniec rozmowy"
-		5 "Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
-		6 "Kogo chcesz zrekrutowaæ?"
+		5 "Twoja druÅ¼yna jest juÅ¼ wystarczajÄ…co liczna."
+		6 "Kogo chcesz zrekrutowaÄ‡?"
 		7 "Anuluj"
 	}
 	
 	dialog messenger {
-		0 "$player_name$! Tu jesteœ!"
-		1 "Ukoñczy³eœ to szkolenie w akademii? To dobrze..."
-		2 "Musisz natychmiast wróciæ do $(village.name)."
-		3 "Jest coraz gorzej, musisz porozmawiaæ z so³tysem."
-		4 "Skoro ju¿ tu jesteœ postaraj siê zrekrutowaæ kilka osób do pomocy."
-		5 "Wracam do wioski, udaj siê tam najszybciej jak bêdziesz móg³."
-		6 "To wszystko co mia³em ci do przekazania."
+		0 "$player_name$! Tu jesteÅ›!"
+		1 "UkoÅ„czyÅ‚eÅ› to szkolenie w akademii? To dobrze..."
+		2 "Musisz natychmiast wrÃ³ciÄ‡ do $(village.name)."
+		3 "Jest coraz gorzej, musisz porozmawiaÄ‡ z soÅ‚tysem."
+		4 "Skoro juÅ¼ tu jesteÅ› postaraj siÄ™ zrekrutowaÄ‡ kilka osÃ³b do pomocy."
+		5 "Wracam do wioski, udaj siÄ™ tam najszybciej jak bÄ™dziesz mÃ³gÅ‚."
+		6 "To wszystko co miaÅ‚em ci do przekazania."
 	}
 	
 	dialog soltys {
-		0 "Dobrze ¿e przyszed³eœ $player_name$. Musimy porozmawiaæ o zarazie..."
+		0 "Dobrze Å¼e przyszedÅ‚eÅ› $player_name$. Musimy porozmawiaÄ‡ o zarazie..."
 		1 "Zaraza"
-		2 "Kilku mieszkañców naszej wioski ostatnio zachorowa³o."
-		3 "Musimy z nimi porozmawiaæ i ustaliæ czy to jest ta zaraza czy jakaœ normalna choroba."
-		4 "IdŸ z nimi porozmawiaæ i spróbuj ustaliæ od czego siê zarazili. Ja w tym czasie pomyœlê..."
-		5 "Porozmawiaj z zara¿onymi wieœniakami i wróæ do mnie."
-		6 "Jeden z wieœniaków zaatakowa³ ciê bez powodu!?"
-		7 "Jest gorzej ni¿ myœla³em, musimy szybko sprowadziæ tu jakiegoœ kap³ana który zna siê na zarazach."
-		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka jeden z kleryków. S³ysza³em ¿e zajmuje siê badaniami nad ró¿nymi chorobami."
-		9 "ZnajdŸ go i pomó¿ mu odkryæ na co choruj¹ nasi mieszkañcy."
-		10 "ZnajdŸ kleryka mieszkaj¹cego w $(shrine_loc.name), bez niego ta wioska opustoszeje!"
+		2 "Kilku mieszkaÅ„cÃ³w naszej wioski ostatnio zachorowaÅ‚o."
+		3 "Musimy z nimi porozmawiaÄ‡ i ustaliÄ‡ czy to jest ta zaraza czy jakaÅ› normalna choroba."
+		4 "IdÅº z nimi porozmawiaÄ‡ i sprÃ³buj ustaliÄ‡ od czego siÄ™ zarazili. Ja w tym czasie pomyÅ›lÄ™..."
+		5 "Porozmawiaj z zaraÅ¼onymi wieÅ›niakami i wrÃ³Ä‡ do mnie."
+		6 "Jeden z wieÅ›niakÃ³w zaatakowaÅ‚ ciÄ™ bez powodu!?"
+		7 "Jest gorzej niÅ¼ myÅ›laÅ‚em, musimy szybko sprowadziÄ‡ tu jakiegoÅ› kapÅ‚ana ktÃ³ry zna siÄ™ na zarazach."
+		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) stÄ…d mieszka jeden z klerykÃ³w. SÅ‚yszaÅ‚em Å¼e zajmuje siÄ™ badaniami nad rÃ³Å¼nymi chorobami."
+		9 "ZnajdÅº go i pomÃ³Å¼ mu odkryÄ‡ na co chorujÄ… nasi mieszkaÅ„cy."
+		10 "ZnajdÅº kleryka mieszkajÄ…cego w $(shrine_loc.name), bez niego ta wioska opustoszeje!"
 	}
 	
 	dialog ill_villager {
-		0 "Lepiej siê odsuñ. Coœ mnie bierze..."
-		1 "Wypytaj o chorobê"
+		0 "Lepiej siÄ™ odsuÅ„. CoÅ› mnie bierze..."
+		1 "Wypytaj o chorobÄ™"
 		2 "Koniec rozmowy"
-		3 "Wydaje mi siê ¿e woda ostatnio jakoœ dziwnie smakowa³a. Mo¿e to przez to?"
-		4 "Jeszcze kilka dni temu by³em zdrowy... Nie wiem sk¹d ta zaraza!"
-		5 "Tydzieñ temu by³ tu wêdrowny kupiec. Pierwszy raz go tu widzia³em."
-		6 "Kupi³em od niego miêso. Mo¿e by³o jakieœ nieœwie¿e?"
-		7 "Wczoraj by³em w lesie i coœ mnie ugryz³o."
-		8 "Nie widzia³em tego ale od tego czasu kiepsko siê czujê..."
-		9 "Nie dobrze mi. Chyba bêdzie trzeba pos³aæ po jakiegoœ kleryka..."
+		3 "Wydaje mi siÄ™ Å¼e woda ostatnio jakoÅ› dziwnie smakowaÅ‚a. MoÅ¼e to przez to?"
+		4 "Jeszcze kilka dni temu byÅ‚em zdrowy... Nie wiem skÄ…d ta zaraza!"
+		5 "TydzieÅ„ temu byÅ‚ tu wÄ™drowny kupiec. Pierwszy raz go tu widziaÅ‚em."
+		6 "KupiÅ‚em od niego miÄ™so. MoÅ¼e byÅ‚o jakieÅ› nieÅ›wieÅ¼e?"
+		7 "Wczoraj byÅ‚em w lesie i coÅ› mnie ugryzÅ‚o."
+		8 "Nie widziaÅ‚em tego ale od tego czasu kiepsko siÄ™ czujÄ™..."
+		9 "Nie dobrze mi. Chyba bÄ™dzie trzeba posÅ‚aÄ‡ po jakiegoÅ› kleryka..."
 	}
 	
 	dialog cleric_seller {
 		0 "Zaraza"
 		1 "Zaraza? Nic o tym nie wiem..."
-		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.real_name)?"
-		3 "Zazwyczaj mo¿na go tu znaleŸæ ale aktualnie wyruszy³ na badania do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d."
-		4 "Mam nadzieje ¿e nic mu nie jest, od kilku dni go niewidzia³em."
+		2 "Pewnie chciaÅ‚eÅ› porozmawiaÄ‡ z $(cleric.real_name)?"
+		3 "Zazwyczaj moÅ¼na go tu znaleÅºÄ‡ ale aktualnie wyruszyÅ‚ na badania do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) stÄ…d."
+		4 "Mam nadzieje Å¼e nic mu nie jest, od kilku dni go niewidziaÅ‚em."
 	}
 	
 	dialog cleric {
-		0 "Chwa³a niech bêdzie Imnosowi!"
-		1 "Obawia³em siê ¿e przyjdzie mi tu zgin¹æ. Tak jak moi stra¿nicy zabici przez tych nieumar³ych..."
-		2 "Proszê zaprowadŸ mnie do $(shrine_loc.name) do kapliczki, muszê zdaæ raport z tego co tu znalaz³em."
-		3 "Potem niezw³ocznie wyruszê z tob¹ aby pomóc w wyleczeniu tej zarazy."
-		4 "Skoro ju¿ tu jesteœ to mam do ciebie jeszcze jedn¹ proœbê."
-		5 "Na ni¿szym poziomie podziemi znajduje siê ksiêga która by³aby nieoceniona w moich badaniach."
-		6 "Jeœli j¹ zdobêdziesz sowicie ci to wynagrodzê."
-		7 "ZaprowadŸ mnie do kapliczki w $(shrine_loc.name), potem ci pomogê."
+		0 "ChwaÅ‚a niech bÄ™dzie Imnosowi!"
+		1 "ObawiaÅ‚em siÄ™ Å¼e przyjdzie mi tu zginÄ…Ä‡. Tak jak moi straÅ¼nicy zabici przez tych nieumarÅ‚ych..."
+		2 "ProszÄ™ zaprowadÅº mnie do $(shrine_loc.name) do kapliczki, muszÄ™ zdaÄ‡ raport z tego co tu znalazÅ‚em."
+		3 "Potem niezwÅ‚ocznie wyruszÄ™ z tobÄ… aby pomÃ³c w wyleczeniu tej zarazy."
+		4 "Skoro juÅ¼ tu jesteÅ› to mam do ciebie jeszcze jednÄ… proÅ›bÄ™."
+		5 "Na niÅ¼szym poziomie podziemi znajduje siÄ™ ksiÄ™ga ktÃ³ra byÅ‚aby nieoceniona w moich badaniach."
+		6 "JeÅ›li jÄ… zdobÄ™dziesz sowicie ci to wynagrodzÄ™."
+		7 "ZaprowadÅº mnie do kapliczki w $(shrine_loc.name), potem ci pomogÄ™."
 		8 "Koniec rozmowy"
-		9 "Dziêkuje! Natychmiast zabieram siê do roboty nad lekarstwem."
-		10 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
+		9 "DziÄ™kuje! Natychmiast zabieram siÄ™ do roboty nad lekarstwem."
+		10 "(To koniec gÅ‚Ã³wnej fabuÅ‚y na tÄ… wersjÄ™. SprÃ³buj w miÄ™dzyczasie ukoÅ„czyÄ‡ 10 unikalnych zadaÅ„)"
 	}
 	
 	texts {
-		0 "W królestwie Nyrtany wybuch³a nieznana zaraza."
-		1 "Zabija ludzi powoli nie czyni¹c szkody innym rasom i zwierzêtom."
-		2 "Inne kraje zamknê³y granicê by unikn¹æ rozszerzania siê plagi."
-		3 "W twojej wiosce te¿ zarazi³o siê kilka osób, nie wiadomo dlaczego."
-		4 "Uda³eœ siê do akademii bohaterów by przejœæ podstawowe szkolenie."
-		5 "Twoim g³ównym zadaniem jest powstrzymanie zarazy!"
+		0 "W krÃ³lestwie Nyrtany wybuchÅ‚a nieznana zaraza."
+		1 "Zabija ludzi powoli nie czyniÄ…c szkody innym rasom i zwierzÄ™tom."
+		2 "Inne kraje zamknÄ™Å‚y granicÄ™ by uniknÄ…Ä‡ rozszerzania siÄ™ plagi."
+		3 "W twojej wiosce teÅ¼ zaraziÅ‚o siÄ™ kilka osÃ³b, nie wiadomo dlaczego."
+		4 "UdaÅ‚eÅ› siÄ™ do akademii bohaterÃ³w by przejÅ›Ä‡ podstawowe szkolenie."
+		5 "Twoim gÅ‚Ã³wnym zadaniem jest powstrzymanie zarazy!"
 		6 "Zaraza w wiosce"
-		7 "Rozpoczêto dnia $date$."
-		8 "W $(village.name) zaraza zaczê³a siê coraz bardziej rozprzestrzeniaæ. Muszê tam szybko wróciæ."
-		9 "Muszê przejœæ siê po wiosce i znaleŸæ zara¿onych wieœniaków. Mo¿e uda mi siê coœ ustaliæ."
-		10 "Jeden z wieœniaków oszala³ z powodu zarazy i mnie zaatakowa³."
-		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka kleryk specjalizuj¹cy siê w chorobach. Muszê z nim porozmawiaæ."
-		12 "Kleryk którego poszukiwa³em, $(cleric.real_name) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d prowadziæ jakieœ badania."
-		13 "Odnalaz³em $(cleric.real_name) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrine_loc.name), wtedy mi pomo¿e."
+		7 "RozpoczÄ™to dnia $date$."
+		8 "W $(village.name) zaraza zaczÄ™Å‚a siÄ™ coraz bardziej rozprzestrzeniaÄ‡. MuszÄ™ tam szybko wrÃ³ciÄ‡."
+		9 "MuszÄ™ przejÅ›Ä‡ siÄ™ po wiosce i znaleÅºÄ‡ zaraÅ¼onych wieÅ›niakÃ³w. MoÅ¼e uda mi siÄ™ coÅ› ustaliÄ‡."
+		10 "Jeden z wieÅ›niakÃ³w oszalaÅ‚ z powodu zarazy i mnie zaatakowaÅ‚."
+		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) stÄ…d mieszka kleryk specjalizujÄ…cy siÄ™ w chorobach. MuszÄ™ z nim porozmawiaÄ‡."
+		12 "Kleryk ktÃ³rego poszukiwaÅ‚em, $(cleric.real_name) wyruszyÅ‚ do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) stÄ…d prowadziÄ‡ jakieÅ› badania."
+		13 "OdnalazÅ‚em $(cleric.real_name) w podziemiach, byÅ‚ ledwo Å¼ywy a jego straÅ¼nicy zostali zabici przez nieumarÅ‚ych. Chce Å¼ebym doprowadziÅ‚ go do kapliczki w $(shrine_loc.name), wtedy mi pomoÅ¼e."
 	}
 }
 
 //=============================================================================
 quest side_cleric {
 	dialog end {
-		0 "Oddaj ksiêgê"
-		1 "Zdoby³eœ t¹ ksiêgê?"
-		2 "Doskonale to pomo¿e w moich badaniach. Proszê, weŸ tê nagrodê."
+		0 "Oddaj ksiÄ™gÄ™"
+		1 "ZdobyÅ‚eÅ› tÄ… ksiÄ™gÄ™?"
+		2 "Doskonale to pomoÅ¼e w moich badaniach. ProszÄ™, weÅº tÄ™ nagrodÄ™."
 	}
 	
 	texts {
-		0 "Wielka ksiêga chorób"
-		1 "Rozpoczêto dnia $date$."
-		2 "Kleryk $(cleric.real_name) zleci³ mi zdobycie ksiêgi która znajduje siê na ni¿szym poziomie $(dungeon.name). Jeœli siê rozdzielimy bêdzie na mnie czeka³ w $(city.name)."
-		3 "Znalaz³em ksiêgê. Teraz muszê j¹ zanieœæ do $(cleric.real_name)."
-		4 "Dostarczy³em ksiêgê i otrzyma³em nagrodê. Zadanie wykonane!"
+		0 "Wielka ksiÄ™ga chorÃ³b"
+		1 "RozpoczÄ™to dnia $date$."
+		2 "Kleryk $(cleric.real_name) zleciÅ‚ mi zdobycie ksiÄ™gi ktÃ³ra znajduje siÄ™ na niÅ¼szym poziomie $(dungeon.name). JeÅ›li siÄ™ rozdzielimy bÄ™dzie na mnie czekaÅ‚ w $(city.name)."
+		3 "ZnalazÅ‚em ksiÄ™gÄ™. Teraz muszÄ™ jÄ… zanieÅ›Ä‡ do $(cleric.real_name)."
+		4 "DostarczyÅ‚em ksiÄ™gÄ™ i otrzymaÅ‚em nagrodÄ™. Zadanie wykonane!"
 	}
 }
