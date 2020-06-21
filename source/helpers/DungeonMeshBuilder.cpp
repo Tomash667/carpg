@@ -365,9 +365,9 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 	{
 		for(Room* room : lvl.rooms)
 		{
-			box.v1 = Vec3(float(room->pos.x * 2), 0, float(room->pos.y * 2));
+			box.v1 = Vec3(float(room->pos.x * 2), room->y, float(room->pos.y * 2));
 			box.v2 = box.v1;
-			box.v2 += Vec3(float(room->size.x * 2), 4, float(room->size.y * 2));
+			box.v2 += Vec3(float(room->size.x * 2), room->y + 4, float(room->size.y * 2));
 
 			if(!frustum.BoxToFrustum(box))
 				continue;
@@ -416,7 +416,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						dungeon_group.lights[i] = best[i];
 
 					// set matrices
-					dungeon_group.mat_world = Matrix::Translation(2.f * (room->pos.x + x), 0, 2.f * (room->pos.y + y));
+					dungeon_group.mat_world = Matrix::Translation(2.f * (room->pos.x + x), room->y, 2.f * (room->pos.y + y));
 					dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.mat_view_proj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);

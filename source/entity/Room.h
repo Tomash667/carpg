@@ -24,6 +24,7 @@ struct Room : ObjectPoolProxy<Room>
 	RoomTarget target;
 	RoomType* type; // not saved - used only during generation
 	int index, group;
+	float y;
 
 	static const int MIN_SIZE = 19;
 	static const float HEIGHT;

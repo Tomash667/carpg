@@ -78,7 +78,10 @@ void DungeonMapGenerator::SetLayout()
 	if(!settings->rooms->empty())
 	{
 		for(Room* room : *settings->rooms)
+		{
 			SetRoom(room);
+			room->y = Random(0.f, 2.f);
+		}
 	}
 	else
 	{
@@ -188,6 +191,7 @@ void DungeonMapGenerator::AddRoom(int x, int y, int w, int h, bool is_corridor, 
 	room->pos.y = y;
 	room->size.x = w;
 	room->size.y = h;
+	room->y = Random(0.f, 2.f);
 	room->target = (is_corridor ? RoomTarget::Corridor : RoomTarget::None);
 	room->type = nullptr;
 	room->connected.clear();
