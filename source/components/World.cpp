@@ -531,14 +531,12 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld()
 {
-	auto isDistanceOk = [&](const Vec2 &pos, const auto minDistance) {
+	auto isDistanceOk = [&](const Vec2 &pos, const float minDistance) {
 		for (Location* loc : locations)
 		{
-			const bool ok = Vec2::DistanceSquared(loc->pos, pos) < minDistance * minDistance;
-			if (!ok)
-			{
+			const float dist = Vec2::DistanceSquared(loc->pos, pos);
+			if(dist < minDistance * minDistance)
 				return false;
-			}
 		}
 		return true;
 	};

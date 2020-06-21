@@ -8,12 +8,12 @@
 #include "Version.h"
 
 #include <AppEntry.h>
+#include <clocale>
 #include <Engine.h>
 #include <intrin.h>
 #include <Render.h>
 #include <SceneManager.h>
 #include <SoundManager.h>
-#include <clocale>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
