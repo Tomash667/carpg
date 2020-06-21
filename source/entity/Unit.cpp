@@ -178,26 +178,7 @@ void Unit::Init(UnitData& base, int lvl)
 	if(base.type == UNIT_TYPE::HUMAN)
 	{
 		human_data = new Human;
-		human_data->beard = Rand() % MAX_BEARD - 1;
-		human_data->hair = Rand() % MAX_HAIR - 1;
-		human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-		human_data->height = Random(0.9f, 1.1f);
-		if(IsSet(base.flags2, F2_OLD))
-			human_data->hair_color = Color::Hex(0xDED5D0);
-		else if(IsSet(base.flags, F_CRAZY))
-			human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
-		else if(IsSet(base.flags, F_GRAY_HAIR))
-			human_data->hair_color = g_hair_colors[Rand() % 4];
-		else if(IsSet(base.flags, F_TOMASHU))
-		{
-			human_data->beard = 4;
-			human_data->mustache = -1;
-			human_data->hair = 0;
-			human_data->hair_color = g_hair_colors[0];
-			human_data->height = 1.1f;
-		}
-		else
-			human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
+		human_data->Init(base.appearance);
 	}
 
 	// hero data

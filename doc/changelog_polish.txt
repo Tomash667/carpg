@@ -11,6 +11,7 @@ Wersja 0.16 (???):
 + konwersja zadania "obóz obok miasta" na skrypty
 + obsługa wielu modeli skrzyni, srebrna skrzynia
 + obsługa zmiany urządzenia dźwięku
++ mniej zahardcodowany wygląd postaci
 - zombie czasami nie atakuje po ogłuszeniu [Zielu]
 - bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze

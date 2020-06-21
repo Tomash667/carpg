@@ -71,15 +71,15 @@ enum UNIT_FLAGS
 	F_SLOW = 1 << 13, // don't run
 	F_POISON_ATTACK = 1 << 14, // attack apply poison
 	F_IMMORTAL = 1 << 15, // immortal, can't have less then 1 hp
-	F_TOMASHU = 1 << 16, // fixed Tomashu appearance
-	F_CRAZY = 1 << 17, // random hair color, different dialogs
+	// unused (1 << 16)
+	F_CRAZY = 1 << 17, // crazy name, different dialogs
 	F_DONT_OPEN = 1 << 18, // can't open doors
 	F_SLIGHT = 1 << 19, // don't trigger traps
 	F_SECRET = 1 << 20, // can't be spawned with command
 	F_DONT_SUFFER = 1 << 21, // no suffer animation when taking damage
 	F_MAGE = 1 << 22, // stay away from enemies, use mage weapon/armor
 	F_POISON_RES = 1 << 23, // immune to poisons
-	F_GRAY_HAIR = 1 << 24, // have gray/white/black hair
+	// unused (1 << 24)
 	F_NO_POWER_ATTACK = 1 << 25, // don't have power attack
 	F_AI_CLERK = 1 << 26, // reading documents animation when using chair
 	F_AI_GUARD = 1 << 27, // stays in place
@@ -102,7 +102,7 @@ enum UNIT_FLAGS2
 	F2_CONSTRUCT = 1 << 6, // can't be healed
 	F2_FAST_LEARNER = 1 << 7, // ai hero faster exp gain
 	F2_MP_BAR = 1 << 8, // debug - show mana bar
-	F2_OLD = 1 << 9, // have old gray hair
+	// unused (1 << 9)
 	F2_MELEE = 1 << 10, // prefers melee combat
 	F2_MELEE_50 = 1 << 11, // 50% prefers melee combat (randomly selected when spawned)
 	F2_BOSS = 1 << 12, // when player is on same level, play boss music
@@ -239,12 +239,13 @@ struct UnitData
 	TraderInfo* trader;
 	vector<UnitData*>* upgrade;
 	Vec4 tint;
+	HumanData* appearance;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(0), hp_lvl(0), stamina(0), attack(0), attack_lvl(0), def(0), def_lvl(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), abilities(nullptr), gold(0), gold2(0), dialog(nullptr), idleDialog(nullptr), group(G_CITIZENS),
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(nullptr),
-		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0), tint(Vec4::One)
+		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0), tint(Vec4::One), appearance(nullptr)
 	{
 	}
 	~UnitData()
@@ -269,6 +270,7 @@ struct UnitData
 
 	static SetContainer<UnitData> units;
 	static std::map<string, UnitData*> aliases;
+	static vector<HumanData*> appearances;
 	static UnitData* TryGet(Cstring id);
 	static UnitData* Get(Cstring id);
 	static UnitData* GetS(const string& id) { return Get(id); }

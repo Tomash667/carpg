@@ -1715,13 +1715,16 @@ unit q_magowie_uczony : mayor {
 unit q_magowie_stary : base_human {
 	level 15
 	profile ai_mage
-	flags | {mage hero old drunk_mage}
+	flags | {mage hero drunk_mage}
 	items mage
 	gold {150 300}
 	abilities mage
 	dialog q_mages2
 	idle_dialog drunk_mage_idle
 	class mage
+	appearance {
+		hair_color 0xDED5D0
+	}
 }
 
 unit q_orkowie_straznik : base_guard {
@@ -2357,7 +2360,7 @@ unit skeleton_mage : base_skeleton {
 unit necromancer : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | {mage gray_hair mp_bar}
+	flags | {mage mp_bar}
 	items {
 		al_necromancer
 		!wand
@@ -2378,6 +2381,9 @@ unit necromancer : base_human {
 		"necromant.jpg"
 		null
 	}
+	appearance {
+		hair_color grayscale
+	}
 }
 
 unit necromancer2 : necromancer {
@@ -2394,7 +2400,7 @@ unit necromancer3 : necromancer {
 
 unit base_undead : base_human {
 	level {8 12}
-	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat dont_talk}
+	flags | {undead dont_escape blunt_res25 poison_res dont_eat dont_talk}
 	gold {{40 80} {60 120}}
 	group undead
 	blood black
@@ -2407,6 +2413,9 @@ unit base_undead : base_human {
 		null
 		"undead.jpg"
 		null
+	}
+	appearance {
+		hair_color grayscale
 	}
 }
 
@@ -2430,7 +2439,7 @@ unit undead_archer : base_undead {
 
 unit evil_cleric : base_human {
 	level {8 12}
-	flags | {gray_hair ai_train}
+	flags | ai_train
 	items {
 		!blunt
 		!shield
@@ -2453,6 +2462,9 @@ unit evil_cleric : base_human {
 		null
 	}
 	dialog mage_idle
+	appearance {
+		hair_color grayscale
+	}
 }
 
 unit evil_cleric2 : evil_cleric {
@@ -2470,7 +2482,7 @@ unit evil_cleric2 : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res dont_talk}
+	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res dont_talk}
 	hp 2000
 	items {
 		blunt_skullsmasher
@@ -2500,6 +2512,10 @@ unit q_zlo_boss : base_human {
 		null
 		"evil_boss.jpg"
 		null
+	}
+	appearance {
+		hair -1
+		hair_color grayscale
 	}
 }
 
@@ -2805,7 +2821,7 @@ unit golem_adamantine : golem_iron {
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
-	flags | {mage old boss guarded mp_bar}
+	flags | {mage boss guarded mp_bar}
 	hp 1440
 	def 150
 	items {
@@ -2828,6 +2844,9 @@ unit q_magowie_boss : base_human {
 	dialog q_mages2
 	idle_dialog mage_idle
 	group mages
+	appearance {
+		hair_color 0xDED5D0
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -3115,6 +3134,9 @@ unit base_crazy : base_human {
 	idle_dialog crazy_idle
 	group crazies
 	gold {{50 100}{200 400}}
+	appearance {
+		hair_color random_color
+	}
 }
 
 unit crazy_mage : base_crazy {
@@ -3213,7 +3235,7 @@ unit hero_cleric : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {dont_escape tomashu secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
+	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
 	profile ai_fighter
 	hp 2500
 	items {
@@ -3230,6 +3252,13 @@ unit tomashu : base_human {
 		{mystic_ball 0}
 	}
 	dialog tomashu
+	appearance {
+		beard 4
+		mustache -1
+		hair 0
+		hair_color 0x000000
+		height 1.1
+	}
 }
 
 unit unk {

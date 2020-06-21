@@ -11,6 +11,7 @@ vector<IdlePack*> IdlePack::packs;
 vector<TexPack*> TexPack::packs;
 SetContainer<UnitData> UnitData::units;
 std::map<string, UnitData*> UnitData::aliases;
+vector<HumanData*> UnitData::appearances;
 
 UnitStats* UnitData::GetStats(int level)
 {
@@ -101,6 +102,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	clas = ud.clas;
 	trader = nullptr; // not copied
 	tint = ud.tint;
+	appearance = ud.appearance;
 }
 
 int UnitData::GetLevelDif(int level) const

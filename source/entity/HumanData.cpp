@@ -69,6 +69,58 @@ void Human::ApplyScale(MeshInstance* mesh_inst)
 }
 
 //=================================================================================================
+void Human::Init(const HumanData* hd)
+{
+	if(hd)
+	{
+		if(IsSet(hd->defaultFlags, HumanData::F_BEARD))
+			beard = hd->beard;
+		else
+			beard = Rand() % MAX_BEARD - 1;
+
+		if(IsSet(hd->defaultFlags, HumanData::F_HAIR))
+			hair = hd->hair;
+		else
+			hair = Rand() % MAX_HAIR - 1;
+
+		if(IsSet(hd->defaultFlags, HumanData::F_MUSTACHE))
+			mustache = hd->mustache;
+		else
+			mustache = Rand() % MAX_MUSTACHE - 1;
+
+		if(IsSet(hd->defaultFlags, HumanData::F_HEIGHT))
+			height = hd->height;
+		else
+			height = Random(MIN_HEIGHT, MAX_HEIGHT);
+
+		switch(hd->hair_type)
+		{
+		default:
+		case HumanData::HairColorType::Default:
+			hair_color = g_hair_colors[Rand() % n_hair_colors];
+			break;
+		case HumanData::HairColorType::Fixed:
+			hair_color = hd->hair_color;
+			break;
+		case HumanData::HairColorType::Random:
+			hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
+			break;
+		case HumanData::HairColorType::Grayscale:
+			hair_color = g_hair_colors[Rand() % 4];
+			break;
+		}
+	}
+	else
+	{
+		beard = Rand() % MAX_BEARD - 1;
+		hair = Rand() % MAX_HAIR - 1;
+		mustache = Rand() % MAX_MUSTACHE - 1;
+		height = Random(MIN_HEIGHT, MAX_HEIGHT);
+		hair_color = g_hair_colors[Rand() % n_hair_colors];
+	}
+}
+
+//=================================================================================================
 void Human::Save(FileWriter& f)
 {
 	f << hair;
@@ -164,7 +216,7 @@ int HumanData::Read(BitStreamReader& f)
 		return 1;
 
 	hair_color.w = 1.f;
-	height = Clamp(height, 0.9f, 1.1f);
+	height = Clamp(height, MIN_HEIGHT, MAX_HEIGHT);
 
 	if(hair == 255)
 		hair = -1;
@@ -190,6 +242,6 @@ void HumanData::Random()
 	beard = Rand() % MAX_BEARD - 1;
 	hair = Rand() % MAX_HAIR - 1;
 	mustache = Rand() % MAX_MUSTACHE - 1;
-	height = ::Random(0.9f, 1.1f);
+	height = ::Random(MIN_HEIGHT, MAX_HEIGHT);
 	hair_color = g_hair_colors[Rand() % n_hair_colors];
 }

@@ -547,6 +547,7 @@ dialog crazy {
 	15 {
 		"Ok, I'll carry your trash."
 		"Give that loot!"
+		"Don't touch my garbage!"
 	}
 	16 "Attack enemy from distance unit it's close"
 	17 "Okay, I'll soften them."
