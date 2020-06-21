@@ -13,6 +13,7 @@
 #include <Render.h>
 #include <SceneManager.h>
 #include <SoundManager.h>
+#include <clocale>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";

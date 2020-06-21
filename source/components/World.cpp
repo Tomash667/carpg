@@ -531,12 +531,23 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld()
 {
+	auto isDistanceOk = [&](const Vec2 &pos, const auto minDistance) {
+		for (Location* loc : locations)
+		{
+			const bool ok = Vec2::DistanceSquared(loc->pos, pos) < minDistance * minDistance;
+			if (!ok)
+			{
+				return false;
+			}
+		}
+		return true;
+	};
 	startup = true;
 	world_size = DEF_WORLD_SIZE;
 	world_bounds = Vec2(WORLD_BORDER, world_size - WORLD_BORDER);
 
 	// create capital
-	Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
+	const Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
 	CreateCity(pos, CAPITAL);
 
 	// create more cities
@@ -544,23 +555,14 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 20; ++tries)
 		{
-			Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
-			float rot = Random(MAX_ANGLE);
-			float dist = Random(300.f, 400.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+			const Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
+			const float rot = Random(MAX_ANGLE);
+			const float dist = Random(300.f, 400.f);
+			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
-			bool ok = true;
-			for(Location* loc : locations)
-			{
-				float dist = Vec2::DistanceSquared(loc->pos, pos);
-				if(dist < 250.f * 250.f)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok)
+			if(isDistanceOk(pos, 250.f))
 			{
 				CreateCity(pos, CITY);
 				break;
@@ -569,31 +571,23 @@ void World::GenerateWorld()
 	}
 
 	// player starts in one of cities
-	uint cities = locations.size();
-	uint start_location = Rand() % cities;
+	const uint cities = locations.size();
+	const uint start_location = Rand() % cities;
 
 	// create villages
 	for(uint i = 0, count = Random(10u, 15u); i < count; ++i)
 	{
 		for(int tries = 0; tries < 20; ++tries)
 		{
-			Vec2 parent_pos = locations[Rand() % cities]->pos;
-			float rot = Random(MAX_ANGLE);
-			float dist = Random(100.f, 250.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+			const Vec2 parent_pos = locations[Rand() % cities]->pos;
+			const float rot = Random(MAX_ANGLE);
+			const float dist = Random(100.f, 250.f);
+			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
-			bool ok = true;
-			for(Location* loc : locations)
-			{
-				float dist = Vec2::DistanceSquared(loc->pos, pos);
-				if(dist < 100.f * 100.f)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok)
+
+			if (isDistanceOk(pos, 100.0f))
 			{
 				CreateCity(pos, VILLAGE);
 				break;
@@ -606,18 +600,9 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 50; ++tries)
 		{
-			Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
-			bool ok = true;
-			for(Location* loc : locations)
-			{
-				float dist = Vec2::DistanceSquared(loc->pos, pos);
-				if(dist < 400.f * 400.f)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok)
+			const Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
+
+			if (isDistanceOk(pos, 400.0f))
 			{
 				CreateCity(pos, VILLAGE);
 				break;
@@ -895,7 +880,7 @@ void World::StartInLocation()
 //=================================================================================================
 void World::CalculateTiles()
 {
-	int ts = world_size / TILE_SIZE;
+	const int ts = world_size / TILE_SIZE;
 	tiles.resize(ts * ts);
 
 	// set from near locations
@@ -903,15 +888,15 @@ void World::CalculateTiles()
 	{
 		for(int x = 0; x < ts; ++x)
 		{
-			int index = x + y * ts;
+			const int index = x + y * ts;
 			int st = Random(5, 15);
-			Vec2 pos(float(x * TILE_SIZE) + 0.5f * TILE_SIZE, float(y * TILE_SIZE) + 0.5f * TILE_SIZE);
+			const Vec2 pos(float(x * TILE_SIZE) + 0.5f * TILE_SIZE, float(y * TILE_SIZE) + 0.5f * TILE_SIZE);
 			for(uint i = 0; i < locations.size(); ++i)
 			{
 				Location* loc = locations[i];
 				if(!Any(loc->type, L_CITY, L_DUNGEON))
 					continue;
-				float dist = Vec2::Distance(pos, loc->pos);
+				const float dist = Vec2::Distance(pos, loc->pos);
 				if(loc->type == L_CITY)
 				{
 					if(static_cast<City*>(loc)->IsVillage())
