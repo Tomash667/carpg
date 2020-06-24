@@ -17,6 +17,7 @@ public:
 	void Draw(ControlDrawData*) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
+	void Show();
 	bool DoPlayerCraft(PlayerController& player, Recipe* recipe, uint count);
 	void AfterCraft();
 

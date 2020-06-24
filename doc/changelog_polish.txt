@@ -27,6 +27,8 @@ Wersja 0.16 (???):
 - mapa losowego spotkania była zawsze taka sama
 - poprawiona synchronizacja pocisków w multiplayer
 - poprawny zapis/wczytywanie animacji skrzyni
+- nieprawidłowa waga ekwipunku po alchemii [SwagOfficerSuccubus]
+- otwieranie widoku alchemii nie zamykało innych widoków
 
 --------------------------------------------------------------------------------
 Poprawki:

@@ -306,6 +306,7 @@ void Level::Apply()
 		{
 			area.tmp = TmpLevelArea::Get();
 			area.tmp->area = &area;
+			area.tmp->lights_dt = 1.f;
 		}
 	}
 }
@@ -1234,6 +1235,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
 					inside->tmp = TmpLevelArea::Get();
 					inside->tmp->area = inside;
+					inside->tmp->lights_dt = 1.f;
 					inside->level_shift = city->inside_offset;
 					inside->offset = Vec2(512.f * city->inside_offset.x + 256.f, 512.f * city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)

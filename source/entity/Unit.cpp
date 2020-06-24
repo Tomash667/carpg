@@ -3662,11 +3662,11 @@ uint Unit::RemoveItem(int i_index, uint count)
 		ItemSlot& s = items[i_index];
 		removed = (count == 0 ? s.count : min(s.count, count));
 		s.count -= removed;
+		weight -= s.item->weight * removed;
 		if(s.count == 0)
 			items.erase(items.begin() + i_index);
 		else if(s.team_count > 0)
 			s.team_count -= min(s.team_count, removed);
-		weight -= s.item->weight * removed;
 	}
 	else
 	{

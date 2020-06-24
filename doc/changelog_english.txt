@@ -27,6 +27,8 @@ Version 0.16 (???):
 - encounter map was not changing
 - better projectiles synchronization in multiplayer
 - save/load chest animation
+- invalid inventory weight after alchemy [SwagOfficerSuccubus]
+- opening alchemy view didn't close other views
 
 --------------------------------------------------------------------------------
 Fixes:
