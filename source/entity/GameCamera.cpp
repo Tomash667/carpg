@@ -313,16 +313,35 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 					if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
 						min_t = t;
 				}
-				if(p.type == STAIRS_UP)
+
+				if(p.type == ENTRY_PREV || p.type == ENTRY_NEXT)
 				{
-					if(game_res->vdStairsUp->RayToMesh(pos, dir, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), t) && t < min_t)
-						min_t = t;
-				}
-				else if(p.type == STAIRS_DOWN)
-				{
-					if(!lvl.staircase_down_in_wall
-						&& game_res->vdStairsDown->RayToMesh(pos, dir, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), t) && t < min_t)
-						min_t = t;
+					EntryType type;
+					Int2 pt;
+					GameDirection entryDir;
+					if(p.type == ENTRY_PREV)
+					{
+						type = lvl.prevEntryType;
+						pt = lvl.prevEntryPt;
+						entryDir = lvl.prevEntryDir;
+					}
+					else
+					{
+						type = lvl.nextEntryType;
+						pt = lvl.nextEntryPt;
+						entryDir = lvl.nextEntryDir;
+					}
+
+					if(type == ENTRY_STAIRS_UP)
+					{
+						if(game_res->vdStairsUp->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
+							min_t = t;
+					}
+					else if(type == ENTRY_STAIRS_DOWN)
+					{
+						if(game_res->vdStairsDown->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
+							min_t = t;
+					}
 				}
 				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
 				{

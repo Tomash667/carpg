@@ -20,9 +20,9 @@ struct InsideLocationLevel : public LevelArea
 	int w, h;
 	vector<Room*> rooms;
 	vector<RoomGroup> groups;
-	Int2 staircase_up, staircase_down;
-	GameDirection staircase_up_dir, staircase_down_dir;
-	bool staircase_down_in_wall;
+	EntryType prevEntryType, nextEntryType;
+	Int2 prevEntryPt, nextEntryPt;
+	GameDirection prevEntryDir, nextEntryDir;
 
 	InsideLocationLevel(int area_id) : LevelArea(LevelArea::Type::Inside, area_id, false), map(nullptr) {}
 	~InsideLocationLevel();
@@ -32,14 +32,14 @@ struct InsideLocationLevel : public LevelArea
 	Vec3 GetRandomPos() const { return Vec3(Random(2.f*w), 0, Random(2.f*h)); }
 	Room* GetNearestRoom(const Vec3& pos);
 	Room* FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos);
-	Int2 GetUpStairsFrontTile() const { return staircase_up + DirToPos(staircase_up_dir); }
-	Int2 GetDownStairsFrontTile() const { return staircase_down + DirToPos(staircase_down_dir); }
+	Int2 GetPrevEntryFrontTile() const;
+	Int2 GetNextEntryFrontTile() const;
 	Room* GetRandomRoom() { return rooms[Rand() % rooms.size()]; }
 	bool GetRandomNearWallTile(const Room& room, Int2& tile, GameDirection& rot, bool nocol = false);
-	Room& GetFarRoom(bool have_down_stairs, bool no_target = false);
+	Room& GetFarRoom(bool haveNextEntry, bool noTarget = false);
 	Room* GetRoom(const Int2& pt);
-	Room* GetUpStairsRoom() { return GetRoom(staircase_up); }
-	Room* GetDownStairsRoom() { return GetRoom(staircase_down); }
+	Room* GetPrevEntryRoom() { return GetRoom(prevEntryPt); }
+	Room* GetNextEntryRoom() { return GetRoom(nextEntryPt); }
 	Room* GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* index, int* group);
 	pair<Room*, Room*> GetConnectingRooms(RoomGroup* group1, RoomGroup* group2);
 
@@ -68,6 +68,6 @@ struct InsideLocationLevel : public LevelArea
 	bool IsTileNearWall(const Int2& pt) const;
 	bool IsTileNearWall(const Int2& pt, int& dir) const;
 
-	Room& GetRoom(RoomTarget target, bool down_stairs);
+	Room& GetRoom(RoomTarget target, bool haveNextEntry);
 	int GetTileDirFlags(const Int2& pt);
 };

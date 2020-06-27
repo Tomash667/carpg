@@ -16,8 +16,8 @@ struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 	Chest* FindChestWithQuestItem(int quest_id, int& at_level, int* index = nullptr) override;
 	InsideLocationLevel* GetLastLevelData() override { return (last_visit != -1 ? this : nullptr); }
 	void SetActiveLevel(int level) override { assert(level == 0); }
-	bool HaveUpStairs() const override { return !from_portal; }
-	bool HaveDownStairs() const override { return false; }
+	bool HavePrevEntry() const override { return !from_portal; }
+	bool HaveNextEntry() const override { return false; }
 	InsideLocationLevel& GetLevelData() override { return *this; }
 	int GetRandomLevel() const override { return 0; }
 	bool IsMultilevel() const override { return false; }

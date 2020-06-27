@@ -8234,114 +8234,10 @@ void Unit::Moved(bool warped, bool dash)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		Int2 pt = PosToPt(pos);
 
-		if(pt == lvl.staircase_up)
-		{
-			Box2d box;
-			switch(lvl.staircase_up_dir)
-			{
-			case GDIR_DOWN:
-				pos.y = (pos.z - 2.f * lvl.staircase_up.y) / 2;
-				box = Box2d(2.f * lvl.staircase_up.x, 2.f * lvl.staircase_up.y + 1.4f, 2.f * (lvl.staircase_up.x + 1), 2.f * (lvl.staircase_up.y + 1));
-				break;
-			case GDIR_LEFT:
-				pos.y = (pos.x - 2.f * lvl.staircase_up.x) / 2;
-				box = Box2d(2.f * lvl.staircase_up.x + 1.4f, 2.f * lvl.staircase_up.y, 2.f * (lvl.staircase_up.x + 1), 2.f * (lvl.staircase_up.y + 1));
-				break;
-			case GDIR_UP:
-				pos.y = (2.f * lvl.staircase_up.y - pos.z) / 2 + 1.f;
-				box = Box2d(2.f * lvl.staircase_up.x, 2.f * lvl.staircase_up.y, 2.f * (lvl.staircase_up.x + 1), 2.f * lvl.staircase_up.y + 0.6f);
-				break;
-			case GDIR_RIGHT:
-				pos.y = (2.f * lvl.staircase_up.x - pos.x) / 2 + 1.f;
-				box = Box2d(2.f * lvl.staircase_up.x, 2.f * lvl.staircase_up.y, 2.f * lvl.staircase_up.x + 0.6f, 2.f * (lvl.staircase_up.y + 1));
-				break;
-			}
-
-			if(warped)
-				return;
-
-			if(IsPlayer() && player->WantExitLevel() && box.IsInside(pos) && frozen == FROZEN::NO && !dash)
-			{
-				if(team->IsLeader())
-				{
-					if(Net::IsLocal())
-					{
-						CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
-						if(result == CanLeaveLocationResult::Yes)
-						{
-							game->fallback_type = FALLBACK::CHANGE_LEVEL;
-							game->fallback_t = -1.f;
-							game->fallback_1 = -1;
-							for(Unit& unit : team->members)
-								unit.frozen = FROZEN::YES;
-							if(Net::IsOnline())
-								Net::PushChange(NetChange::LEAVE_LOCATION);
-						}
-						else
-							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
-					}
-					else
-						net->OnLeaveLocation(ENTER_FROM_UP_LEVEL);
-				}
-				else
-					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
-			}
-		}
-		else if(pt == lvl.staircase_down)
-		{
-			Box2d box;
-			switch(lvl.staircase_down_dir)
-			{
-			case GDIR_DOWN:
-				pos.y = (pos.z - 2.f * lvl.staircase_down.y) * -1.f;
-				box = Box2d(2.f * lvl.staircase_down.x, 2.f * lvl.staircase_down.y + 1.4f, 2.f * (lvl.staircase_down.x + 1), 2.f * (lvl.staircase_down.y + 1));
-				break;
-			case GDIR_LEFT:
-				pos.y = (pos.x - 2.f * lvl.staircase_down.x) * -1.f;
-				box = Box2d(2.f * lvl.staircase_down.x + 1.4f, 2.f * lvl.staircase_down.y, 2.f * (lvl.staircase_down.x + 1), 2.f * (lvl.staircase_down.y + 1));
-				break;
-			case GDIR_UP:
-				pos.y = (2.f * lvl.staircase_down.y - pos.z) * -1.f - 2.f;
-				box = Box2d(2.f * lvl.staircase_down.x, 2.f * lvl.staircase_down.y, 2.f * (lvl.staircase_down.x + 1), 2.f * lvl.staircase_down.y + 0.6f);
-				break;
-			case GDIR_RIGHT:
-				pos.y = (2.f * lvl.staircase_down.x - pos.x) * -1.f - 2.f;
-				box = Box2d(2.f * lvl.staircase_down.x, 2.f * lvl.staircase_down.y, 2.f * lvl.staircase_down.x + 0.6f, 2.f * (lvl.staircase_down.y + 1));
-				break;
-			}
-
-			if(warped)
-				return;
-
-			if(IsPlayer() && player->WantExitLevel() && box.IsInside(pos) && frozen == FROZEN::NO && !dash)
-			{
-				if(team->IsLeader())
-				{
-					if(Net::IsLocal())
-					{
-						CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
-						if(result == CanLeaveLocationResult::Yes)
-						{
-							game->fallback_type = FALLBACK::CHANGE_LEVEL;
-							game->fallback_t = -1.f;
-							game->fallback_1 = +1;
-							for(Unit& unit : team->members)
-								unit.frozen = FROZEN::YES;
-							if(Net::IsOnline())
-								Net::PushChange(NetChange::LEAVE_LOCATION);
-						}
-						else
-							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
-					}
-					else
-						net->OnLeaveLocation(ENTER_FROM_DOWN_LEVEL);
-				}
-				else
-					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
-			}
-		}
-		else
-			pos.y = 0.f;
+		if(pt == lvl.prevEntryPt)
+			MovedToEntry(lvl.prevEntryType, pt, lvl.prevEntryDir, !warped && !dash, true);
+		else if(pt == lvl.nextEntryPt)
+			MovedToEntry(lvl.nextEntryType, pt, lvl.nextEntryDir, !warped && !dash, false);
 
 		if(warped)
 			return;
@@ -8396,6 +8292,102 @@ void Unit::Moved(bool warped, bool dash)
 		changed = true;
 	}
 	UpdatePhysics();
+}
+
+//=================================================================================================
+void Unit::MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool canWarp, bool isPrev)
+{
+	Box2d box;
+	switch(type)
+	{
+	case ENTRY_STAIRS_UP:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			pos.y = (pos.z - 2.f * pt.y) / 2;
+			box = Box2d(2.f * pt.x, 2.f * pt.y + 1.4f, 2.f * (pt.x + 1), 2.f * (pt.y + 1));
+			break;
+		case GDIR_LEFT:
+			pos.y = (pos.x - 2.f * pt.x) / 2;
+			box = Box2d(2.f * pt.x + 1.4f, 2.f * pt.y, 2.f * (pt.x + 1), 2.f * (pt.y + 1));
+			break;
+		case GDIR_UP:
+			pos.y = (2.f * pt.y - pos.z) / 2 + 1.f;
+			box = Box2d(2.f * pt.x, 2.f * pt.y, 2.f * (pt.x + 1), 2.f * pt.y + 0.6f);
+			break;
+		case GDIR_RIGHT:
+			pos.y = (2.f * pt.x - pos.x) / 2 + 1.f;
+			box = Box2d(2.f * pt.x, 2.f * pt.y, 2.f * pt.x + 0.6f, 2.f * (pt.y + 1));
+			break;
+		}
+		break;
+	case ENTRY_STAIRS_DOWN:
+	case ENTRY_STAIRS_DOWN_IN_WALL:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			pos.y = (pos.z - 2.f * pt.y) * -1.f;
+			box = Box2d(2.f * pt.x, 2.f * pt.y + 1.4f, 2.f * (pt.x + 1), 2.f * (pt.y + 1));
+			break;
+		case GDIR_LEFT:
+			pos.y = (pos.x - 2.f * pt.x) * -1.f;
+			box = Box2d(2.f * pt.x + 1.4f, 2.f * pt.y, 2.f * (pt.x + 1), 2.f * (pt.y + 1));
+			break;
+		case GDIR_UP:
+			pos.y = (2.f * pt.y - pos.z) * -1.f - 2.f;
+			box = Box2d(2.f * pt.x, 2.f * pt.y, 2.f * (pt.x + 1), 2.f * pt.y + 0.6f);
+			break;
+		case GDIR_RIGHT:
+			pos.y = (2.f * pt.x - pos.x) * -1.f - 2.f;
+			box = Box2d(2.f * pt.x, 2.f * pt.y, 2.f * pt.x + 0.6f, 2.f * (pt.y + 1));
+			break;
+		}
+		break;
+	case ENTRY_DOOR:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			box = Box2d(2.f * pt.x, 2.f * pt.y + 1.4f, 2.f * (pt.x + 1), 2.f * (pt.y + 1));
+			break;
+		case GDIR_LEFT:
+			box = Box2d(2.f * pt.x + 1.4f, 2.f * pt.y, 2.f * (pt.x + 1), 2.f * (pt.y + 1));
+			break;
+		case GDIR_UP:
+			box = Box2d(2.f * pt.x, 2.f * pt.y, 2.f * (pt.x + 1), 2.f * pt.y + 0.6f);
+			break;
+		case GDIR_RIGHT:
+			box = Box2d(2.f * pt.x, 2.f * pt.y, 2.f * pt.x + 0.6f, 2.f * (pt.y + 1));
+			break;
+		}
+		break;
+	}
+
+	if(canWarp && IsPlayer() && player->WantExitLevel() && box.IsInside(pos) && frozen == FROZEN::NO)
+	{
+		if(team->IsLeader())
+		{
+			if(Net::IsLocal())
+			{
+				CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+				if(result == CanLeaveLocationResult::Yes)
+				{
+					game->fallback_type = FALLBACK::CHANGE_LEVEL;
+					game->fallback_t = -1.f;
+					game->fallback_1 = isPrev ? -1 : +1;
+					for(Unit& unit : team->members)
+						unit.frozen = FROZEN::YES;
+					if(Net::IsOnline())
+						Net::PushChange(NetChange::LEAVE_LOCATION);
+				}
+				else
+					game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+			}
+			else
+				net->OnLeaveLocation(isPrev ? ENTER_FROM_PREV_LEVEL : ENTER_FROM_NEXT_LEVEL);
+		}
+		else
+			game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+	}
 }
 
 //=================================================================================================

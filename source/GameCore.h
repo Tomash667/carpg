@@ -222,6 +222,7 @@ enum CMD;
 enum DialogOp : short;
 enum Direction;
 enum EncounterMode;
+enum EntryType;
 enum GameDirection;
 enum ITEM_TYPE;
 enum MATERIAL_TYPE;

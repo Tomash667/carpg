@@ -51,11 +51,12 @@ void InsideLocation::Write(BitStreamWriter& f)
 		room->Write(f);
 
 	// stairs
-	f << lvl.staircase_up;
-	f << lvl.staircase_down;
-	f.WriteCasted<byte>(lvl.staircase_up_dir);
-	f.WriteCasted<byte>(lvl.staircase_down_dir);
-	f << lvl.staircase_down_in_wall;
+	f.WriteCasted<byte>(lvl.prevEntryType);
+	f << lvl.prevEntryPt;
+	f.WriteCasted<byte>(lvl.prevEntryDir);
+	f.WriteCasted<byte>(lvl.nextEntryType);
+	f << lvl.nextEntryPt;
+	f.WriteCasted<byte>(lvl.nextEntryDir);
 
 	WritePortals(f);
 }
@@ -111,14 +112,15 @@ bool InsideLocation::Read(BitStreamReader& f)
 	}
 
 	// stairs
-	f >> lvl.staircase_up;
-	f >> lvl.staircase_down;
-	f.ReadCasted<byte>(lvl.staircase_up_dir);
-	f.ReadCasted<byte>(lvl.staircase_down_dir);
-	f >> lvl.staircase_down_in_wall;
+	f.ReadCasted<byte>(lvl.prevEntryType);
+	f >> lvl.prevEntryPt;
+	f.ReadCasted<byte>(lvl.prevEntryDir);
+	f.ReadCasted<byte>(lvl.nextEntryType);
+	f >> lvl.nextEntryPt;
+	f.ReadCasted<byte>(lvl.nextEntryDir);
 	if(!f)
 	{
-		Error("Read level: Broken packet for stairs.");
+		Error("Read level: Broken packet for entry.");
 		return false;
 	}
 

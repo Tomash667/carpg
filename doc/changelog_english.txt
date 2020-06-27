@@ -12,6 +12,7 @@ Version 0.16 (???):
 + multiple chest types support, silver chest
 + allow changing sound device
 + less hardcoded characters appearances
++ some dungeons start with door, in mages tower levels goes up
 - zombie sometimes not attacking after stunning [Zielu]
 - bull's charge not stopping attack animation [Zielu]
 - fixed draw_hitbox command & shields

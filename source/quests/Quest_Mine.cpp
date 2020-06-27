@@ -412,7 +412,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				{
 #define A(xx,yy) lvl.map[x+(xx)+(y+(yy))*lvl.w].type
 					if(Rand() % 2 == 0 && (!IsBlocking2(A(-1, 0)) || !IsBlocking2(A(1, 0)) || !IsBlocking2(A(0, -1)) || !IsBlocking2(A(0, 1)))
-						&& (A(-1, -1) != STAIRS_UP && A(-1, 1) != STAIRS_UP && A(1, -1) != STAIRS_UP && A(1, 1) != STAIRS_UP))
+						&& (A(-1, -1) != ENTRY_PREV && A(-1, 1) != ENTRY_PREV && A(1, -1) != ENTRY_PREV && A(1, 1) != ENTRY_PREV))
 					{
 						new_tiles.push_back(Int2(x, y));
 					}
@@ -422,7 +422,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		}
 
 		for(vector<Int2>::iterator it = new_tiles.begin(), end = new_tiles.end(); it != end; ++it)
-			lvl.map[it->x + it->y*lvl.w].type = EMPTY;
+			lvl.map[it->x + it->y * lvl.w].type = EMPTY;
 	}
 
 	// generate portal
@@ -442,7 +442,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				{
 					for(int w = 0; w < 5; ++w)
 					{
-						if(lvl.map[x + w + (y + h)*lvl.w].type != WALL)
+						if(lvl.map[x + w + (y + h) * lvl.w].type != WALL)
 							goto skip;
 					}
 				}
@@ -455,16 +455,16 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 
 		if(good_pts.empty())
 		{
-			if(lvl.staircase_up.x / 26 == 1)
+			if(lvl.prevEntryPt.x / 26 == 1)
 			{
-				if(lvl.staircase_up.y / 26 == 1)
+				if(lvl.prevEntryPt.y / 26 == 1)
 					good_pts.push_back(Int2(1, 1));
 				else
 					good_pts.push_back(Int2(1, lvl.h - 6));
 			}
 			else
 			{
-				if(lvl.staircase_up.y / 26 == 1)
+				if(lvl.prevEntryPt.y / 26 == 1)
 					good_pts.push_back(Int2(lvl.w - 6, 1));
 				else
 					good_pts.push_back(Int2(lvl.w - 6, lvl.h - 6));
@@ -542,7 +542,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				if(closest.x > center.x)
 				{
 					--closest.x;
-					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
 						end_pt = closest;
@@ -563,7 +563,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				else
 				{
 					++closest.x;
-					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
 						end_pt = closest;
@@ -588,7 +588,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				if(closest.y > center.y)
 				{
 					--closest.y;
-					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
 						end_pt = closest;
@@ -609,7 +609,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				else
 				{
 					++closest.y;
-					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
 						end_pt = closest;
@@ -645,7 +645,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		{
 			for(int x = 1; x < 4; ++x)
 			{
-				Tile& p = lvl.map[pt.x + x + (pt.y + y)*lvl.w];
+				Tile& p = lvl.map[pt.x + x + (pt.y + y) * lvl.w];
 				p.type = EMPTY;
 				p.flags = Tile::F_SECOND_TEXTURE;
 			}
@@ -680,7 +680,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			room->type = nullptr;
 			lvl.rooms.push_back(room);
 
-			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
+			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y * lvl.w].type))
 			{
 				o->rot = Vec3(0, 0, 0);
 				if(end_pt.y > center.y)
@@ -722,7 +722,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		// torch
 		{
 			BaseObject* torch = BaseObject::Get("torch");
-			Vec3 pos(2.f*(pt.x + 1), 0, 2.f*(pt.y + 1));
+			Vec3 pos(2.f * (pt.x + 1), 0, 2.f * (pt.y + 1));
 
 			switch(Rand() % 4)
 			{
@@ -768,7 +768,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			rot = Clip(rot + PI);
 
 			// object
-			const Vec3 pos(2.f*pt.x + 5, 0, 2.f*pt.y + 5);
+			const Vec3 pos(2.f * pt.x + 5, 0, 2.f * pt.y + 5);
 			game_level->SpawnObjectEntity(cave, BaseObject::Get("portal"), pos, rot);
 
 			// destination location
@@ -872,7 +872,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 
 					if(dir != GDIR_INVALID)
 					{
-						Vec3 pos(2.f*x + 1, 0, 2.f*y + 1);
+						Vec3 pos(2.f * x + 1, 0, 2.f * y + 1);
 
 						switch(dir)
 						{
@@ -960,10 +960,10 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 					cave_gen->GenerateDungeonObject(lvl, *it, rock);
 					break;
 				case 1:
-					game_level->SpawnObjectEntity(cave, plant, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+					game_level->SpawnObjectEntity(cave, plant, Vec3(2.f * it->x + Random(0.1f, 1.9f), 0.f, 2.f * it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 					break;
 				case 2:
-					game_level->SpawnObjectEntity(cave, mushrooms, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+					game_level->SpawnObjectEntity(cave, mushrooms, Vec3(2.f * it->x + Random(0.1f, 1.9f), 0.f, 2.f * it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 					break;
 				}
 			}
@@ -977,15 +977,15 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		position_units = false;
 
 		// miner leader in front of entrance
-		Int2 pt = lvl.GetUpStairsFrontTile();
+		Int2 pt = lvl.GetPrevEntryFrontTile();
 		int odl = 1;
 		while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
 		{
-			pt += DirToPos(lvl.staircase_up_dir);
+			pt += DirToPos(lvl.prevEntryDir);
 			++odl;
 		}
-		pt -= DirToPos(lvl.staircase_up_dir);
-		game_level->SpawnUnitNearLocation(cave, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
+		pt -= DirToPos(lvl.prevEntryDir);
+		game_level->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f * lvl.prevEntryPt.x + 1, 0, 2.f * lvl.prevEntryPt.y + 1), -2);
 
 		// miners
 		UnitData& miner = *UnitData::Get("gornik");
@@ -997,7 +997,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				const Tile& p = lvl.At(tile);
 				if(p.type == EMPTY && !IsSet(p.flags, Tile::F_SECOND_TEXTURE))
 				{
-					game_level->SpawnUnitNearLocation(cave, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), miner, nullptr, -2);
+					game_level->SpawnUnitNearLocation(cave, Vec3(2.f * tile.x + Random(0.4f, 1.6f), 0, 2.f * tile.y + Random(0.4f, 1.6f)), miner, nullptr, -2);
 					break;
 				}
 			}
@@ -1008,7 +1008,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 	if(!position_units && mine_state3 >= State3::GeneratedInBuild)
 	{
 		UnitData* miner = UnitData::Get("gornik"),
-			*miner_leader = UnitData::Get("gornik_szef");
+			* miner_leader = UnitData::Get("gornik_szef");
 		for(vector<Unit*>::iterator it = cave.units.begin(), end = cave.units.end(); it != end; ++it)
 		{
 			Unit* u = *it;
@@ -1022,23 +1022,23 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 						const Tile& p = lvl.At(tile);
 						if(p.type == EMPTY && !IsSet(p.flags, Tile::F_SECOND_TEXTURE))
 						{
-							game_level->WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
+							game_level->WarpUnit(*u, Vec3(2.f * tile.x + Random(0.4f, 1.6f), 0, 2.f * tile.y + Random(0.4f, 1.6f)));
 							break;
 						}
 					}
 				}
 				else if(u->data == miner_leader)
 				{
-					Int2 pt = lvl.GetUpStairsFrontTile();
+					Int2 pt = lvl.GetPrevEntryFrontTile();
 					int odl = 1;
 					while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
 					{
-						pt += DirToPos(lvl.staircase_up_dir);
+						pt += DirToPos(lvl.prevEntryDir);
 						++odl;
 					}
-					pt -= DirToPos(lvl.staircase_up_dir);
+					pt -= DirToPos(lvl.prevEntryDir);
 
-					game_level->WarpUnit(*u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+					game_level->WarpUnit(*u, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1));
 				}
 			}
 		}

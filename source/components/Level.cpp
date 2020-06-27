@@ -2002,7 +2002,7 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 		Int2 pt = PosToPt(pos);
 
 		Tile& tile = lvl->map[pt(lvl->w)];
-		if(Any(tile.type, STAIRS_UP, STAIRS_DOWN))
+		if(Any(tile.type, ENTRY_PREV, ENTRY_NEXT))
 			continue;
 
 		global_col.clear();
@@ -2015,29 +2015,28 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const Int2& stairs_pt, const Int2& stairs_down_pt)
+Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const Int2& awayPt, const Int2& excludedPt)
 {
 	const float radius = unit.GetRadius();
-	Vec3 stairs_pos(2.f * stairs_pt.x + 1.f, 0.f, 2.f * stairs_pt.y + 1.f);
+	const Vec3 awayPos(2.f * awayPt.x + 1.f, 0.f, 2.f * awayPt.y + 1.f);
 
 	for(int i = 0; i < 10; ++i)
 	{
-		Vec3 pt = room.GetRandomPos(radius);
-
-		if(Vec3::Distance(stairs_pos, pt) < ALERT_SPAWN_RANGE)
+		const Vec3 pos = room.GetRandomPos(radius);
+		if(Vec3::Distance(awayPos, pos) < ALERT_SPAWN_RANGE)
 			continue;
 
-		Int2 my_pt = Int2(int(pt.x / 2), int(pt.y / 2));
-		if(my_pt == stairs_down_pt)
+		const Int2 pt = Int2(int(pos.x / 2), int(pos.y / 2));
+		if(pt == excludedPt)
 			continue;
 
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pt, radius, nullptr);
+		GatherCollisionObjects(*local_area, global_col, pos, radius, nullptr);
 
-		if(!Collide(global_col, pt, radius))
+		if(!Collide(global_col, pos, radius))
 		{
 			float rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(*local_area, unit, level, &pt, &rot);
+			return CreateUnitWithAI(*local_area, unit, level, &pos, &rot);
 		}
 	}
 
@@ -2045,9 +2044,9 @@ Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const In
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, const Int2& pt, const Int2& pt2)
+Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, const Int2& awayPt, const Int2& excludedPt)
 {
-	Unit* u = SpawnUnitInsideRoom(room, ud, level, pt, pt2);
+	Unit* u = SpawnUnitInsideRoom(room, ud, level, awayPt, excludedPt);
 	if(u)
 		return u;
 
@@ -2056,7 +2055,7 @@ Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, cons
 
 	for(Room* room : connected)
 	{
-		u = SpawnUnitInsideRoom(*room, ud, level, pt, pt2);
+		u = SpawnUnitInsideRoom(*room, ud, level, awayPt, excludedPt);
 		if(u)
 			return u;
 	}
@@ -2216,26 +2215,18 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(type == STAIRS_DOWN)
+					else if(type == ENTRY_NEXT || type == ENTRY_PREV)
 					{
-						if(!lvl->staircase_down_in_wall)
+						EntryType entryType = type == ENTRY_NEXT ? lvl->nextEntryType : lvl->prevEntryType;
+						if(entryType == ENTRY_STAIRS_UP || entryType == ENTRY_STAIRS_DOWN)
 						{
 							CollisionObject& co = Add1(objects);
 							co.pt = Vec2(2.f * x + 1.f, 2.f * z + 1.f);
 							co.check = &Level::CollideWithStairs;
 							co.check_rect = &Level::CollideWithStairsRect;
-							co.extra = 0;
+							co.extra = (type == ENTRY_PREV);
 							co.type = CollisionObject::CUSTOM;
 						}
-					}
-					else if(type == STAIRS_UP)
-					{
-						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f * x + 1.f, 2.f * z + 1.f);
-						co.check = &Level::CollideWithStairs;
-						co.check_rect = &Level::CollideWithStairsRect;
-						co.extra = 1;
-						co.type = CollisionObject::CUSTOM;
 					}
 				}
 			}
@@ -2423,26 +2414,18 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(type == STAIRS_DOWN)
+					else if(type == ENTRY_NEXT || type == ENTRY_PREV)
 					{
-						if(!lvl->staircase_down_in_wall)
+						EntryType entryType = type == ENTRY_NEXT ? lvl->nextEntryType : lvl->prevEntryType;
+						if(entryType == ENTRY_STAIRS_UP || entryType == ENTRY_STAIRS_DOWN)
 						{
 							CollisionObject& co = Add1(objects);
 							co.pt = Vec2(2.f * x + 1.f, 2.f * z + 1.f);
 							co.check = &Level::CollideWithStairs;
 							co.check_rect = &Level::CollideWithStairsRect;
-							co.extra = 0;
+							co.extra = (type == ENTRY_PREV);
 							co.type = CollisionObject::CUSTOM;
 						}
-					}
-					else if(type == STAIRS_UP)
-					{
-						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f * x + 1.f, 2.f * z + 1.f);
-						co.check = &Level::CollideWithStairs;
-						co.check_rect = &Level::CollideWithStairsRect;
-						co.extra = 1;
-						co.type = CollisionObject::CUSTOM;
 					}
 				}
 			}
@@ -2706,40 +2689,37 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 }
 
 //=================================================================================================
-bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& _pos, float _radius) const
+bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& pos, float radius) const
 {
-	assert(cobj.type == CollisionObject::CUSTOM && cobj.check == &Level::CollideWithStairs && !location->outside && _radius > 0.f);
+	assert(cobj.type == CollisionObject::CUSTOM && cobj.check == &Level::CollideWithStairs && !location->outside && radius > 0.f);
 
 	GameDirection dir;
 	if(cobj.extra == 0)
-	{
-		assert(!lvl->staircase_down_in_wall);
-		dir = lvl->staircase_down_dir;
-	}
+		dir = lvl->nextEntryDir;
 	else
-		dir = lvl->staircase_up_dir;
+		dir = lvl->prevEntryDir;
 
 	if(dir != GDIR_DOWN)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x, cobj.pt.y - 0.95f, 1.f, 0.05f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pt.x, cobj.pt.y - 0.95f, 1.f, 0.05f))
 			return true;
 	}
 
 	if(dir != GDIR_LEFT)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x - 0.95f, cobj.pt.y, 0.05f, 1.f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pt.x - 0.95f, cobj.pt.y, 0.05f, 1.f))
 			return true;
 	}
 
 	if(dir != GDIR_UP)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x, cobj.pt.y + 0.95f, 1.f, 0.05f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pt.x, cobj.pt.y + 0.95f, 1.f, 0.05f))
 			return true;
 	}
 
 	if(dir != GDIR_RIGHT)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x + 0.95f, cobj.pt.y, 0.05f, 1.f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pt.x + 0.95f, cobj.pt.y, 0.05f, 1.f))
 			return true;
 	}
 
@@ -2747,40 +2727,37 @@ bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& _pos, flo
 }
 
 //=================================================================================================
-bool Level::CollideWithStairsRect(const CollisionObject& cobj, const Box2d& _box) const
+bool Level::CollideWithStairsRect(const CollisionObject& cobj, const Box2d& box) const
 {
 	assert(cobj.type == CollisionObject::CUSTOM && cobj.check_rect == &Level::CollideWithStairsRect && !location->outside);
 
 	GameDirection dir;
 	if(cobj.extra == 0)
-	{
-		assert(!lvl->staircase_down_in_wall);
-		dir = lvl->staircase_down_dir;
-	}
+		dir = lvl->nextEntryDir;
 	else
-		dir = lvl->staircase_up_dir;
+		dir = lvl->prevEntryDir;
 
 	if(dir != GDIR_DOWN)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x - 1.f, cobj.pt.y - 1.f, cobj.pt.x + 1.f, cobj.pt.y - 0.9f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pt.x - 1.f, cobj.pt.y - 1.f, cobj.pt.x + 1.f, cobj.pt.y - 0.9f))
 			return true;
 	}
 
 	if(dir != GDIR_LEFT)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x - 1.f, cobj.pt.y - 1.f, cobj.pt.x - 0.9f, cobj.pt.y + 1.f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pt.x - 1.f, cobj.pt.y - 1.f, cobj.pt.x - 0.9f, cobj.pt.y + 1.f))
 			return true;
 	}
 
 	if(dir != GDIR_UP)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x - 1.f, cobj.pt.y + 0.9f, cobj.pt.x + 1.f, cobj.pt.y + 1.f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pt.x - 1.f, cobj.pt.y + 0.9f, cobj.pt.x + 1.f, cobj.pt.y + 1.f))
 			return true;
 	}
 
 	if(dir != GDIR_RIGHT)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x + 0.9f, cobj.pt.y - 1.f, cobj.pt.x + 1.f, cobj.pt.y + 1.f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pt.x + 0.9f, cobj.pt.y - 1.f, cobj.pt.x + 1.f, cobj.pt.y + 1.f))
 			return true;
 	}
 
@@ -3390,13 +3367,13 @@ void Level::SpawnDungeonColliders()
 	}
 
 	// up stairs
-	if(inside->HaveUpStairs())
+	if(inside->HavePrevEntry())
 	{
 		btCollisionObject* cobj = new btCollisionObject;
 		cobj->setCollisionShape(shape_stairs);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-		cobj->getWorldTransform().setOrigin(btVector3(2.f * lvl->staircase_up.x + 1.f, 0.f, 2.f * lvl->staircase_up.y + 1.f));
-		cobj->getWorldTransform().setRotation(btQuaternion(DirToRot(lvl->staircase_up_dir), 0, 0));
+		cobj->getWorldTransform().setOrigin(btVector3(2.f * lvl->prevEntryPt.x + 1.f, 0.f, 2.f * lvl->prevEntryPt.y + 1.f));
+		cobj->getWorldTransform().setRotation(btQuaternion(DirToRot(lvl->prevEntryDir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
 	}
 
@@ -3518,10 +3495,10 @@ Int2 Level::GetSpawnPoint()
 	InsideLocation* inside = static_cast<InsideLocation*>(location);
 	if(enter_from >= ENTER_FROM_PORTAL)
 		return PosToPt(inside->GetPortal(enter_from)->GetSpawnPos());
-	else if(enter_from == ENTER_FROM_DOWN_LEVEL)
-		return lvl->GetDownStairsFrontTile();
+	else if(enter_from == ENTER_FROM_NEXT_LEVEL)
+		return lvl->GetNextEntryFrontTile();
 	else
-		return lvl->GetUpStairsFrontTile();
+		return lvl->GetPrevEntryFrontTile();
 }
 
 //=================================================================================================
@@ -3608,8 +3585,8 @@ Vec3 Level::GetExitPos(Unit& u, bool force_border)
 		InsideLocation* inside = (InsideLocation*)location;
 		if(dungeon_level == 0 && inside->from_portal)
 			return inside->portal->pos;
-		Int2& pt = inside->GetLevelData().staircase_up;
-		return Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1);
+		const Int2& pt = inside->GetLevelData().prevEntryPt;
+		return PtToPos(pt);
 	}
 }
 

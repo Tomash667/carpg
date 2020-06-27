@@ -1818,21 +1818,21 @@ void Game::UpdateGame(float dt)
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
 			// key [<,] - warp to stairs up or upper level
-			if(input->Down(Key::Shift) && input->Pressed(Key::Comma) && inside->HaveUpStairs())
+			if(input->Down(Key::Shift) && input->Pressed(Key::Comma) && inside->HavePrevEntry())
 			{
 				if(!input->Down(Key::Control))
 				{
 					// warp player to up stairs
 					if(Net::IsLocal())
 					{
-						Int2 tile = lvl.GetUpStairsFrontTile();
-						pc->unit->rot = DirToRot(lvl.staircase_up_dir);
+						Int2 tile = lvl.GetPrevEntryFrontTile();
+						pc->unit->rot = DirToRot(lvl.prevEntryDir);
 						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
 						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_STAIRS;
+						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
 						c.id = 0;
 					}
 				}
@@ -1854,21 +1854,21 @@ void Game::UpdateGame(float dt)
 			}
 
 			// key [>.] - warp to down stairs or lower level
-			if(input->Down(Key::Shift) && input->Pressed(Key::Period) && inside->HaveDownStairs())
+			if(input->Down(Key::Shift) && input->Pressed(Key::Period) && inside->HaveNextEntry())
 			{
 				if(!input->Down(Key::Control))
 				{
 					// warp player to down stairs
 					if(Net::IsLocal())
 					{
-						Int2 tile = lvl.GetDownStairsFrontTile();
-						pc->unit->rot = DirToRot(lvl.staircase_down_dir);
+						Int2 tile = lvl.GetNextEntryFrontTile();
+						pc->unit->rot = DirToRot(lvl.nextEntryDir);
 						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
 						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_STAIRS;
+						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
 						c.id = 1;
 					}
 				}
@@ -2451,7 +2451,7 @@ void Game::ChangeLevel(int where)
 			LeaveLevel();
 			--game_level->dungeon_level;
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			game_level->enter_from = ENTER_FROM_DOWN_LEVEL;
+			game_level->enter_from = ENTER_FROM_NEXT_LEVEL;
 			EnterLevel(loc_gen);
 		}
 	}
@@ -2497,7 +2497,7 @@ void Game::ChangeLevel(int where)
 			loc_gen->Generate();
 		}
 
-		game_level->enter_from = ENTER_FROM_UP_LEVEL;
+		game_level->enter_from = ENTER_FROM_PREV_LEVEL;
 		EnterLevel(loc_gen);
 	}
 

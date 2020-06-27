@@ -1191,70 +1191,10 @@ void Game::ListAreas(LevelArea& area)
 		InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if(inside->HaveUpStairs())
-		{
-			Area& a = Add1(draw_batch.areas);
-			a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(lvl.staircase_up);
-			switch(lvl.staircase_up_dir)
-			{
-			case GDIR_DOWN:
-				a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
-				a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
-				a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
-				a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
-				break;
-			case GDIR_UP:
-				a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
-				a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
-				a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
-				break;
-			case GDIR_RIGHT:
-				a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
-				a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
-				a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
-				break;
-			case GDIR_LEFT:
-				a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
-				a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
-				a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
-				a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
-				break;
-			}
-		}
-		if(inside->HaveDownStairs())
-		{
-			Area& a = Add1(draw_batch.areas);
-			a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(lvl.staircase_down);
-			switch(lvl.staircase_down_dir)
-			{
-			case GDIR_DOWN:
-				a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
-				a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
-				a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
-				a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
-				break;
-			case GDIR_UP:
-				a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
-				a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
-				a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
-				break;
-			case GDIR_RIGHT:
-				a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
-				a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
-				a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
-				break;
-			case GDIR_LEFT:
-				a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
-				a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
-				a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
-				a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
-				break;
-			}
-		}
+		if(inside->HavePrevEntry())
+			ListEntry(lvl.prevEntryType, lvl.prevEntryPt, lvl.prevEntryDir);
+		if(inside->HaveNextEntry())
+			ListEntry(lvl.nextEntryType, lvl.nextEntryPt, lvl.nextEntryDir);
 		draw_batch.area_range = 5.f;
 	}
 	else
@@ -1292,6 +1232,104 @@ void Game::ListAreas(LevelArea& area)
 		node->mesh = DebugNode::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
+	}
+}
+
+//=================================================================================================
+void Game::ListEntry(EntryType type, const Int2& pt, GameDirection dir)
+{
+	Area& a = Add1(draw_batch.areas);
+	a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(pt);
+	switch(type)
+	{
+	case ENTRY_STAIRS_UP:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
+			a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
+			a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
+			a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
+			break;
+		case GDIR_UP:
+			a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
+			a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
+			a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
+			break;
+		case GDIR_RIGHT:
+			a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
+			a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
+			a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
+			break;
+		case GDIR_LEFT:
+			a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
+			a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
+			a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
+			a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
+			break;
+		}
+		break;
+	case ENTRY_STAIRS_DOWN:
+	case ENTRY_STAIRS_DOWN_IN_WALL:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
+			a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
+			a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
+			break;
+		case GDIR_UP:
+			a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
+			a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
+			a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
+			break;
+		case GDIR_RIGHT:
+			a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
+			a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
+			a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
+			break;
+		case GDIR_LEFT:
+			a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
+			a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
+			a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
+			break;
+		}
+		break;
+	case ENTRY_DOOR:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			a.v[0] += Vec3(-0.85f, 0.1f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.1f, 0.85f);
+			a.v[2] += Vec3(-0.85f, 0.1f, 0.35f);
+			a.v[3] += Vec3(0.85f, 0.1f, 0.35f);
+			break;
+		case GDIR_UP:
+			a.v[0] += Vec3(0.85f, 0.1f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.1f, -0.85f);
+			a.v[2] += Vec3(0.85f, 0.1f, -0.35f);
+			a.v[3] += Vec3(-0.85f, 0.1f, -0.35f);
+			break;
+		case GDIR_RIGHT:
+			a.v[0] += Vec3(-0.85f, 0.1f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.1f, 0.85f);
+			a.v[2] += Vec3(-0.35f, 0.1f, -0.85f);
+			a.v[3] += Vec3(-0.35f, 0.1f, 0.85f);
+			break;
+		case GDIR_LEFT:
+			a.v[0] += Vec3(0.85f, 0.1f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.1f, -0.85f);
+			a.v[2] += Vec3(0.35f, 0.1f, 0.85f);
+			a.v[3] += Vec3(0.35f, 0.1f, -0.85f);
+			break;
+		}
+		break;
 	}
 }
 

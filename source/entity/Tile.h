@@ -5,8 +5,8 @@ enum TILE_TYPE : byte
 {
 	UNUSED,
 	EMPTY,
-	STAIRS_UP,
-	STAIRS_DOWN,
+	ENTRY_PREV,
+	ENTRY_NEXT,
 	DOORS,
 	HOLE_FOR_DOORS,
 	BARS_FLOOR,
@@ -16,6 +16,15 @@ enum TILE_TYPE : byte
 	BLOCKADE,
 	BLOCKADE_WALL,
 	USED
+};
+
+//-----------------------------------------------------------------------------
+enum EntryType
+{
+	ENTRY_STAIRS_UP,
+	ENTRY_STAIRS_DOWN,
+	ENTRY_STAIRS_DOWN_IN_WALL,
+	ENTRY_DOOR
 };
 
 //-----------------------------------------------------------------------------
@@ -74,7 +83,7 @@ struct Tile
 		return type == WALL || type == BLOCKADE_WALL;
 	}
 
-	static void SetupFlags(Tile* tiles, const Int2& size);
+	static void SetupFlags(Tile* tiles, const Int2& size, EntryType prevEntry, EntryType nextEntry);
 	static void DebugDraw(Tile* tiles, const Int2& size);
 };
 

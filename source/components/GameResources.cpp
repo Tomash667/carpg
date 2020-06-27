@@ -9,6 +9,7 @@
 #include "Item.h"
 #include "Language.h"
 #include "Level.h"
+#include "Tile.h"
 
 #include <Mesh.h>
 #include <Render.h>
@@ -184,6 +185,7 @@ void GameResources::LoadData()
 	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
 	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
 	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
+	aDungeonDoor = res_mgr->Load<Mesh>("dungeon_door.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();
@@ -664,6 +666,24 @@ Sound* GameResources::GetItemSound(const Item* item)
 		return sCoins;
 	default:
 		return sItem[7];
+	}
+}
+
+//=================================================================================================
+Mesh* GameResources::GetEntryMesh(EntryType type)
+{
+	switch(type)
+	{
+	default:
+		assert(0);
+	case ENTRY_STAIRS_UP:
+		return aStairsUp;
+	case ENTRY_STAIRS_DOWN:
+		return aStairsDown;
+	case ENTRY_STAIRS_DOWN_IN_WALL:
+		return aStairsDown2;
+	case ENTRY_DOOR:
+		return aDungeonDoor;
 	}
 }
 

@@ -21,8 +21,8 @@ struct InsideLocation : public Location
 	bool Read(BitStreamReader& f) override;
 
 	virtual void SetActiveLevel(int _level) = 0;
-	virtual bool HaveUpStairs() const = 0;
-	virtual bool HaveDownStairs() const = 0;
+	virtual bool HavePrevEntry() const = 0;
+	virtual bool HaveNextEntry() const = 0;
 	virtual InsideLocationLevel& GetLevelData() = 0;
 	virtual bool IsMultilevel() const = 0;
 	// return last level data if it was generated

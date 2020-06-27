@@ -66,6 +66,24 @@ Room* InsideLocationLevel::FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_
 }
 
 //=================================================================================================
+Int2 InsideLocationLevel::GetPrevEntryFrontTile() const
+{
+	Int2 pt = prevEntryPt;
+	if(prevEntryType != ENTRY_DOOR)
+		pt += DirToPos(prevEntryDir);
+	return pt;
+}
+
+//=================================================================================================
+Int2 InsideLocationLevel::GetNextEntryFrontTile() const
+{
+	Int2 pt = nextEntryPt;
+	if(nextEntryType != ENTRY_DOOR)
+		pt += DirToPos(nextEntryDir);
+	return pt;
+}
+
+//=================================================================================================
 Room* InsideLocationLevel::GetRoom(const Int2& pt)
 {
 	Room* room = rooms[map[pt(w)].room];
@@ -207,11 +225,12 @@ void InsideLocationLevel::SaveLevel(GameWriter& f)
 	for(RoomGroup& group : groups)
 		group.Save(f);
 
-	f << staircase_up;
-	f << staircase_down;
-	f << staircase_up_dir;
-	f << staircase_down_dir;
-	f << staircase_down_in_wall;
+	f << prevEntryType;
+	f << prevEntryPt;
+	f << prevEntryDir;
+	f << nextEntryType;
+	f << nextEntryPt;
+	f << nextEntryDir;
 }
 
 //=================================================================================================
@@ -295,29 +314,44 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
 
-	f >> staircase_up;
-	f >> staircase_down;
-	f >> staircase_up_dir;
-	f >> staircase_down_dir;
-	f >> staircase_down_in_wall;
+	if(LOAD_VERSION >= V_DEV)
+	{
+		f >> prevEntryType;
+		f >> prevEntryPt;
+		f >> prevEntryDir;
+		f >> nextEntryType;
+		f >> nextEntryPt;
+		f >> nextEntryDir;
+	}
+	else
+	{
+		prevEntryType = ENTRY_STAIRS_UP;
+		nextEntryType = ENTRY_STAIRS_DOWN;
+		f >> prevEntryPt;
+		f >> nextEntryPt;
+		f >> prevEntryDir;
+		f >> nextEntryDir;
+		if(f.Read<bool>()) // staircase_down_in_wall
+			nextEntryType = ENTRY_STAIRS_DOWN_IN_WALL;
+	}
 }
 
 //=================================================================================================
-// If no_target is true it will ignore rooms that have target
-Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
+// If noTarget is true it will ignore rooms that have target
+Room& InsideLocationLevel::GetFarRoom(bool haveNextEntry, bool noTarget)
 {
-	if(have_down_stairs)
+	if(haveNextEntry)
 	{
-		Room* up_stairs = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
-		Room* down_stairs = GetNearestRoom(Vec3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
+		Room* prevEntryRoom = GetPrevEntryRoom();
+		Room* nextEntryRoom = GetNextEntryRoom();
 		int best_dist, dist;
 		Room* best = nullptr;
 
 		for(Room* room : rooms)
 		{
-			if(room->IsCorridor() || (no_target && room->target != RoomTarget::None))
+			if(room->IsCorridor() || (noTarget && room->target != RoomTarget::None))
 				continue;
-			dist = Int2::Distance(room->pos, up_stairs->pos) + Int2::Distance(room->pos, down_stairs->pos);
+			dist = Int2::Distance(room->pos, prevEntryRoom->pos) + Int2::Distance(room->pos, nextEntryRoom->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
@@ -329,15 +363,15 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 	}
 	else
 	{
-		Room* up_stairs = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
+		Room* prevEntryRoom = GetPrevEntryRoom();
 		int best_dist, dist;
 		Room* best = nullptr;
 
 		for(Room* room : rooms)
 		{
-			if(room->IsCorridor() || (no_target && room->target != RoomTarget::None))
+			if(room->IsCorridor() || (noTarget && room->target != RoomTarget::None))
 				continue;
-			dist = Int2::Distance(room->pos, up_stairs->pos);
+			dist = Int2::Distance(room->pos, prevEntryRoom->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
@@ -405,10 +439,10 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt, int& dir) const
 }
 
 //=================================================================================================
-Room& InsideLocationLevel::GetRoom(RoomTarget target, bool down_stairs)
+Room& InsideLocationLevel::GetRoom(RoomTarget target, bool haveNextEntry)
 {
 	if(target == RoomTarget::None)
-		return GetFarRoom(down_stairs, true);
+		return GetFarRoom(haveNextEntry, true);
 	else
 	{
 		for(Room* room : rooms)

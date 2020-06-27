@@ -554,7 +554,7 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// add blood
 	vector<Int2> path;
-	pathfinding->FindPath(lvl, lvl.staircase_up, PosToPt(obj->pos), path);
+	pathfinding->FindPath(lvl, lvl.prevEntryPt, PosToPt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())

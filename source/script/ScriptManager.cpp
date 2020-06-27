@@ -594,20 +594,20 @@ void ScriptManager::RegisterGame()
 	AddEnum<RoomTarget>("ROOM_TARGET", {
 		{ "ROOM_NONE", RoomTarget::None },
 		{ "ROOM_CORRIDOR", RoomTarget::Corridor },
-		{ "ROOM_STAIRS_UP", RoomTarget::StairsUp },
-		{ "ROOM_STAIRS_DOWN", RoomTarget::StairsDown },
+		{ "ROOM_ENTRY_PREV", RoomTarget::EntryPrev },
+		{ "ROOM_ENTRY_NEXT", RoomTarget::EntryNext },
 		{ "ROOM_TREASURY", RoomTarget::Treasury },
 		{ "ROOM_PORTAL", RoomTarget::Portal },
 		{ "ROOM_PRISON", RoomTarget::Prison },
 		{ "ROOM_THRONE", RoomTarget::Throne }
 		});
 
-	AddEnum("STAIRS_LOCATION", {
-		{ "STAIRS_NONE", MapSettings::STAIRS_NONE },
-		{ "STAIRS_RANDOM", MapSettings::STAIRS_RANDOM },
-		{ "STAIRS_FAR_FROM_ROOM", MapSettings::STAIRS_FAR_FROM_ROOM },
-		{ "STAIRS_BORDER", MapSettings::STAIRS_BORDER },
-		{ "STAIRS_FAR_FROM_UP_STAIRS", MapSettings::STAIRS_FAR_FROM_UP_STAIRS }
+	AddEnum("ENTRY_LOCATION", {
+		{ "ENTRY_NONE", MapSettings::ENTRY_NONE },
+		{ "ENTRY_RANDOM", MapSettings::ENTRY_RANDOM },
+		{ "ENTRY_FAR_FROM_ROOM", MapSettings::ENTRY_FAR_FROM_ROOM },
+		{ "ENTRY_BORDER", MapSettings::ENTRY_BORDER },
+		{ "ENTRY_FAR_FROM_PREV", MapSettings::ENTRY_FAR_FROM_PREV }
 		});
 
 	AddType("Var")
@@ -948,8 +948,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void AddRandomItem(ITEM_TYPE, int, int, uint = 1)", asFUNCTION(StockScript_AddRandomItem)); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	AddType("MapSettings")
-		.Member("STAIRS_LOCATION stairs_up_loc", offsetof(MapSettings, stairs_up_loc))
-		.Member("STAIRS_LOCATION stairs_down_loc", offsetof(MapSettings, stairs_down_loc));
+		.Member("ENTRY_LOCATION prev_entry_loc", offsetof(MapSettings, prevEntryLoc))
+		.Member("ENTRY_LOCATION next_entry_loc", offsetof(MapSettings, nextEntryLoc));
 
 	AddType("Event")
 		.Member("EVENT event", offsetof(ScriptEvent, type))

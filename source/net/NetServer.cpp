@@ -2291,12 +2291,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						PushChange(NetChange::LEAVE_LOCATION);
 						if(type == ENTER_FROM_OUTSIDE)
 							game->fallback_type = FALLBACK::EXIT;
-						else if(type == ENTER_FROM_UP_LEVEL)
+						else if(type == ENTER_FROM_PREV_LEVEL)
 						{
 							game->fallback_type = FALLBACK::CHANGE_LEVEL;
 							game->fallback_1 = -1;
 						}
-						else if(type == ENTER_FROM_DOWN_LEVEL)
+						else if(type == ENTER_FROM_NEXT_LEVEL)
 						{
 							game->fallback_type = FALLBACK::CHANGE_LEVEL;
 							game->fallback_1 = +1;
@@ -2444,15 +2444,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat to warp to stairs (<>+shift)
-		case NetChange::CHEAT_WARP_TO_STAIRS:
+		// player used cheat to warp to entry (<>+shift)
+		case NetChange::CHEAT_WARP_TO_ENTRY:
 			{
 				bool is_down;
 				f >> is_down;
 				if(!f)
-					Error("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str());
+					Error("Update server: Broken CHEAT_WARP_TO_ENTRY from %s.", info.name.c_str());
 				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
+					Error("Update server: Player %s used CHEAT_WARP_TO_ENTRY without devmode.", info.name.c_str());
 				else if(game->game_state == GS_LEVEL)
 				{
 					InsideLocation* inside = (InsideLocation*)game_level->location;
@@ -2460,14 +2460,14 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					if(!is_down)
 					{
-						Int2 tile = lvl.GetUpStairsFrontTile();
-						unit.rot = DirToRot(lvl.staircase_up_dir);
+						Int2 tile = lvl.GetPrevEntryFrontTile();
+						unit.rot = DirToRot(lvl.prevEntryDir);
 						game_level->WarpUnit(unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
-						Int2 tile = lvl.GetDownStairsFrontTile();
-						unit.rot = DirToRot(lvl.staircase_down_dir);
+						Int2 tile = lvl.GetNextEntryFrontTile();
+						unit.rot = DirToRot(lvl.nextEntryDir);
 						game_level->WarpUnit(unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 				}

@@ -345,7 +345,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f.WriteCasted<byte>(c.id);
 			f.Write(c.count != 0);
 			break;
-		case NetChange::CHEAT_WARP_TO_STAIRS:
+		case NetChange::CHEAT_WARP_TO_ENTRY:
 		case NetChange::CHEAT_CHANGE_LEVEL:
 		case NetChange::CHEAT_NOAI:
 		case NetChange::PVP:

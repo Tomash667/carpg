@@ -11,8 +11,8 @@ enum EnterFrom
 {
 	ENTER_FROM_PORTAL = 0,
 	ENTER_FROM_OUTSIDE = -1,
-	ENTER_FROM_UP_LEVEL = -2,
-	ENTER_FROM_DOWN_LEVEL = -3
+	ENTER_FROM_PREV_LEVEL = -2,
+	ENTER_FROM_NEXT_LEVEL = -3
 };
 
 //-----------------------------------------------------------------------------
@@ -107,9 +107,9 @@ public:
 	Unit* CreateUnit(UnitData& base, int level = -1, bool create_physics = true);
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, const Vec3* pos = nullptr, const float* rot = nullptr);
 	Vec3 FindSpawnPos(Room* room, Unit* unit);
-	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit) { return SpawnUnitInsideRoom(room, unit); }
-	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitData& unit, int level = -1);
 	enum SpawnUnitFlags

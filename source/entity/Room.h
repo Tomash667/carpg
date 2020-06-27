@@ -6,8 +6,8 @@ enum class RoomTarget
 {
 	None,
 	Corridor,
-	StairsUp,
-	StairsDown,
+	EntryPrev,
+	EntryNext,
 	Treasury,
 	Portal,
 	Prison,
@@ -86,7 +86,7 @@ struct Room : ObjectPoolProxy<Room>
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
 	bool IsConnected(Room* room);
-	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
+	bool CanJoinRoom() const { return Any(target, RoomTarget::None, RoomTarget::EntryPrev, RoomTarget::EntryNext); }
 	void AddTile(const Int2& pt);
 
 	void Save(FileWriter& f);

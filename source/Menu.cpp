@@ -1653,15 +1653,15 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
-						if(game_level->enter_from == ENTER_FROM_DOWN_LEVEL)
+						if(game_level->enter_from == ENTER_FROM_NEXT_LEVEL)
 						{
-							pos = PtToPos(lvl.GetDownStairsFrontTile());
-							rot = DirToRot(lvl.staircase_down_dir);
+							pos = PtToPos(lvl.GetNextEntryFrontTile());
+							rot = DirToRot(lvl.nextEntryDir);
 						}
 						else
 						{
-							pos = PtToPos(lvl.GetUpStairsFrontTile());
-							rot = DirToRot(lvl.staircase_up_dir);
+							pos = PtToPos(lvl.GetPrevEntryFrontTile());
+							rot = DirToRot(lvl.prevEntryDir);
 						}
 					}
 					else

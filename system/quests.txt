@@ -1524,7 +1524,7 @@ quest main
 					if(Level::dungeon_level == 0)
 					{
 						// find room for cleric
-						array<Room@>@ path = Level::FindPath(Level::GetRoom(ROOM_STAIRS_UP), Level::GetRoom(ROOM_STAIRS_DOWN));
+						array<Room@>@ path = Level::FindPath(Level::GetRoom(ROOM_ENTRY_PREV), Level::GetRoom(ROOM_ENTRY_NEXT));
 						uint target_depth = 0;
 						for(uint len = path.length(), i = len*2/3; i<len; ++i)
 						{
@@ -1644,8 +1644,8 @@ quest main
 			{
 				if(Level::dungeon_level == 0 && e.stage == 0)
 				{
-					e.map_settings.stairs_up_loc = STAIRS_BORDER;
-					e.map_settings.stairs_down_loc = STAIRS_FAR_FROM_UP_STAIRS;
+					e.map_settings.prev_entry_loc = ENTRY_BORDER;
+					e.map_settings.next_entry_loc = ENTRY_FAR_FROM_PREV;
 				}
 				else if(Level::dungeon_level == 1 && e.stage == 1)
 				{

@@ -13,28 +13,29 @@ struct MapSettings
 		SHAPE_CIRCLE
 	};
 
-	enum StairsLocation
+	enum EntryLocation
 	{
-		STAIRS_NONE,
-		STAIRS_RANDOM,
-		STAIRS_FAR_FROM_ROOM,
-		STAIRS_BORDER,
-		STAIRS_FAR_FROM_UP_STAIRS
+		ENTRY_NONE,
+		ENTRY_RANDOM,
+		ENTRY_FAR_FROM_ROOM,
+		ENTRY_BORDER,
+		ENTRY_FAR_FROM_PREV
 	};
 
 	int map_w, map_h;
 	Int2 room_size, corridor_size;
 	int corridor_chance, corridor_join_chance, room_join_chance, bars_chance;
 	Shape shape;
-	StairsLocation stairs_up_loc, stairs_down_loc;
+	EntryType prevEntryType, nextEntryType;
+	EntryLocation prevEntryLoc, nextEntryLoc;
 	vector<Room*>* rooms;
-	Room* stairs_up_room, *stairs_down_room;
-	GameDirection stairs_up_dir, stairs_down_dir;
-	Int2 stairs_up_pos, stairs_down_pos;
+	Room* prevEntryRoom, *nextEntryRoom;
+	GameDirection prevEntryDir, nextEntryDir;
+	Int2 prevEntryPt, nextEntryPt;
 	vector<RoomGroup>* groups;
-	bool stop, stairs_down_in_wall, devmode, remove_dead_end_corridors;
+	bool stop, devmode, remove_dead_end_corridors;
 
-	MapSettings() : stop(false)
+	MapSettings() : stop(false), prevEntryPt(-1000, -1000), nextEntryPt(-1000, -1000)
 	{
 	}
 };
@@ -68,10 +69,10 @@ private:
 	bool IsConnectingWall(int x, int y, Room* room1, Room* room2);
 	void CreateRoomGroups();
 	void DrawRoomGroups();
-	void GenerateStairs();
-	void GenerateStairs(vector<Room*>& rooms, MapSettings::StairsLocation loc, Room*& room, Int2& pos, GameDirection& dir, bool up, bool& in_wall);
-	bool AddStairsFarFromPoint(vector<Room*>& rooms, const Int2& far_pt, Room*& room, Int2& pos, GameDirection& dir, bool up, bool& in_wall);
-	bool AddStairs(Room& room, Int2& pos, GameDirection& dir, TILE_TYPE tile, bool& in_wall);
+	void GenerateEntry();
+	void GenerateEntry(vector<Room*>& rooms, MapSettings::EntryLocation loc, EntryType& type, Room*& room, Int2& pt, GameDirection& dir, bool isPrev);
+	bool AddEntryFarFromPoint(vector<Room*>& rooms, const Int2& farPt, Room*& room, EntryType& type, Int2& pt, GameDirection& dir, bool isPrev);
+	bool AddEntry(Room& room, EntryType& type, Int2& pt, GameDirection& dir, bool isPrev);
 	void SetRoomGroupTargets();
 
 	Tile* map;

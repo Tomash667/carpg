@@ -1448,7 +1448,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		}
 		else
 		{
-			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
+			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveNextEntry());
 			spawned = game_level->SpawnUnitInsideRoomOrNear(room, *event->unit_to_spawn, event->unit_spawn_level);
 		}
 		if(!spawned)
@@ -1465,7 +1465,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		// mark near units as guards if guarded (only in dungeon)
 		if(IsSet(spawned->data->flags2, F2_GUARDED) && lvl)
 		{
-			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
+			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveNextEntry());
 			for(Unit* unit : game_level->local_area->units)
 			{
 				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
@@ -1484,7 +1484,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		if(spawned && event->spawn_2_guard_1)
 			room = lvl->GetRoom(PosToPt(spawned->pos));
 		else
-			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
+			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveNextEntry());
 		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";

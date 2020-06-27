@@ -154,7 +154,7 @@ struct NetChange
 		CHANGE_AI_MODE, // change unit ai mode [int(id)-unit, byte-mode (0x1-dont attack, 0x02-assist, 0x04-not idle, 0x08-attack team)]
 		CHANGE_UNIT_BASE, // change unit base type [int(id)-unit, string1(unit.data.id)-base unit]
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
-		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
+		CHEAT_WARP_TO_ENTRY, // player used cheat to warp to entry (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit cast spell SERVER[int(id)-unit] / CLIENT[Vec3(pos)-target pos]
 		CREATE_SPELL_BALL, // create ball - spell effect [int-abilityHash, int-id, int-ownerId, Vec3-pos, float-rotY, float-yspeed]
 		SPELL_SOUND, // play spell sound [int(ability->hash), Vec3(pos)]

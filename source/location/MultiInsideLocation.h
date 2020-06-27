@@ -37,8 +37,8 @@ struct MultiInsideLocation : public InsideLocation
 		active_level = level;
 		active = levels[level];
 	}
-	bool HaveUpStairs() const override { return !(from_portal && active_level == 0); }
-	bool HaveDownStairs() const override { return (active_level + 1 < (int)levels.size()); }
+	bool HavePrevEntry() const override { return !(from_portal && active_level == 0); }
+	bool HaveNextEntry() const override { return (active_level + 1 < (int)levels.size()); }
 	InsideLocationLevel& GetLevelData() override { return *active; }
 	bool IsMultilevel() const override { return true; }
 	InsideLocationLevel* GetLastLevelData() override

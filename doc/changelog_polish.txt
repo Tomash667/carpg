@@ -12,6 +12,7 @@ Wersja 0.16 (???):
 + obsługa wielu modeli skrzyni, srebrna skrzynia
 + obsługa zmiany urządzenia dźwięku
 + mniej zahardcodowany wygląd postaci
++ niektóre podziemia zaczynają się od drzwi, w wieży magów poziomy są w górę
 - zombie czasami nie atakuje po ogłuszeniu [Zielu]
 - bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze

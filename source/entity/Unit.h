@@ -968,6 +968,7 @@ public:
 	void CastSpell();
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
+	void MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool canWarp, bool isPrev);
 	void ChangeBase(UnitData* ud, bool update_items = false);
 	void MoveToArea(LevelArea* area, const Vec3& pos);
 	void Kill();

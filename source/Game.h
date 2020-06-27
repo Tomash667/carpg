@@ -139,6 +139,7 @@ public:
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
+	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);

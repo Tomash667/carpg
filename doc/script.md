@@ -47,6 +47,13 @@ Game enums & consts
 ### Funcdefs:
 * float GetLocationCallback(Location@)
 
+### Enum ENTRY_LOCATION
+* ENTRY_NONE
+* ENTRY_RANDOM
+* ENTRY_FAR_FROM_ROOM
+* ENTRY_BORDER
+* ENTRY_FAR_FROM_PREV
+
 ### Enum EVENT
 * EVENT_ANY - used in RemoveEventHandler to remove all handlers.
 * EVENT_ENTER - for locations, send when player enter location.
@@ -135,19 +142,12 @@ Game enums & consts
 ### Enum ROOM_TARGET
 * ROOM_NONE
 * ROOM_CORRIDOR
-* ROOM_STAIRS_UP
-* ROOM_STAIRS_DOWN
+* ROOM_ENTRY_PREV
+* ROOM_ENTRY_NEXT
 * ROOM_TREASURY
 * ROOM_PORTAL
 * ROOM_PRISON
 * ROOM_THRONE
-
-### Enum STAIRS_LOCATION
-* STAIRS_NONE
-* STAIRS_RANDOM
-* STAIRS_FAR_FROM_ROOM
-* STAIRS_BORDER
-* STAIRS_FAR_FROM_UP_STAIRS
 
 ### Enum UNIT_ORDER
 * ORDER_NONE
@@ -365,8 +365,8 @@ Used when generating dungeon.
 
 Properties:
 
-* STAIRS_LOCATION stairs_up_loc
-* STAIRS_LOCATION stairs_down_loc
+* ENTRY_LOCATION prev_entry_loc
+* ENTRY_LOCATION next_entry_loc
 
 ### Object type
 Object inside level - barrel, chair etc.
