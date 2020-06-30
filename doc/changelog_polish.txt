@@ -3,7 +3,8 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.16 (???):
 ! nie można wczytywać już zapisów z wersji 0.6.2 lub starszej
-+ nowy ekwipunek: kordelas, miecz najemnika, kolczasta pałka, krasnoludzki topór, tarcza latawcowa, tarcza z kolcami, tarcza śmierci
++ nowy wróg: ogr
++ nowy ekwipunek: kordelas, miecz najemnika, kolczasta pałka, krasnoludzki topór, tarcza latawcowa, tarcza z kolcami, tarcza śmierci, pałka ogra
 + usprawnione model: krótki/długi miecz, toporek, topór bojowy, kryształowy topór, topór giganta, orkowy topór/miecz/młot, żelazna/stalowa/mithrilowa/adamantowa tarcza, tarcza Mur
 + nowe imiona/nazwy, usprawnienia dialogów
 + koniec gry nie blokuje otwarcia chatu, wczytania gry itp
@@ -30,6 +31,7 @@ Wersja 0.16 (???):
 - poprawny zapis/wczytywanie animacji skrzyni
 - nieprawidłowa waga ekwipunku po alchemii [SwagOfficerSuccubus]
 - otwieranie widoku alchemii nie zamykało innych widoków
+- crash po użyciu komendy list_stats na nie bohaterze
 
 --------------------------------------------------------------------------------
 Poprawki:

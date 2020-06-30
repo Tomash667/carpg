@@ -2036,6 +2036,16 @@ dialog orc_idle {
 }
 
 //==============================================================================
+dialog ogre_idle {
+	0 {
+		"Ogry robi¹ z koœci chleb, wyciskaj¹ bia³ko z oczu, najlepiej smakuje na tostach..."
+		"Ja zgnieœæ twój pysk!"
+		"Czego ty chcieæ!?"
+		"Ugh!"
+	}
+}
+
+//==============================================================================
 dialog mage_idle {
 	0 {
 		"Dziwne! To nie powinno siê wydarzyæ."

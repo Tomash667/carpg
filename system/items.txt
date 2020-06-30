@@ -388,6 +388,18 @@ weapon blunt_dwarven {
 	flags hq
 }
 
+weapon blunt_ogre {
+	weight 20
+	value 150
+	mesh "ogre_club.qmsh"
+	attack 160
+	req_str 120
+	type blunt
+	material wood
+	dmg_type {blunt pierce}
+	flags not_shop
+}
+
 weapon blunt_adamantine {
 	weight 4
 	value 6000

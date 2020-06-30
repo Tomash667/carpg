@@ -3,7 +3,8 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.16 (???):
 ! cannot load saves from version 0.6.2 or older
-+ new equipment: cutlass, mercenary sword, barbed cudgel, dwarf axe, kite shield, spiked shield, shield of death
++ new enemy: ogre
++ new equipment: cutlass, mercenary sword, barbed cudgel, dwarf axe, kite shield, spiked shield, shield of death, ogre club
 + improved models: short/long sword, hatchet, battle axe, crystal axe, axe of giant, orc axe/sword/hammer, iron/steel/mithril/adamantine shield, The Wall shield
 + new names, dialogs improvements
 + end of game don't block chat, loading game etc
@@ -30,6 +31,7 @@ Version 0.16 (???):
 - save/load chest animation
 - invalid inventory weight after alchemy [SwagOfficerSuccubus]
 - opening alchemy view didn't close other views
+- crash when using list_stats command on non hero
 
 --------------------------------------------------------------------------------
 Fixes:

@@ -137,6 +137,10 @@ item blunt_dwarven {
 	name "Krasnoludzki m³ot"
 	desc "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
 }
+item blunt_ogre {
+	name "Pa³ka ogra"
+	desc "Bardzo ciê¿ka prymitywna pa³ka."
+}
 item blunt_adamantine {
 	name "Adamantowy buzdygan"
 	desc "Buzdygan wykonany z adamantu. Najlepszy przedmiot w swojej klasie."

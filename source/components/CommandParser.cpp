@@ -2615,7 +2615,7 @@ void CommandParser::ListStats(Unit* u)
 	}
 	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
 		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
-	if(IsSet(u->GetClass()->flags, Class::F_MP_BAR))
+	if(u->IsUsingMp())
 	{
 		Msg("Mana: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->mp, (int)u->mpmax, u->GetEffectSum(EffectId::Mana), u->GetMpRegen(),
 			1.f + u->GetEffectSum(EffectId::ManaRegeneration));

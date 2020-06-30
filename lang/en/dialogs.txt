@@ -2024,6 +2024,16 @@ dialog orc_idle {
 }
 
 //==============================================================================
+dialog ogre_idle {
+	0 {
+		"Ogres make bread from bones, squeeze protein out of eyes, it tastes best on toast..."
+		"Me crush your muzzle!"
+		"What you want!?"
+		"Ugh!"
+	}
+}
+
+//==============================================================================
 dialog mage_idle {
 	0 {
 		"Strange! This should not happen."

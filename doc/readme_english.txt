@@ -389,6 +389,7 @@ BottledByte - Bug reports and coding.
 		* kindland - shield of death
 		* Lucian Pavel - short sword, kite shield
 		* Mophs - scarecrow
+		* nubux - ogre
 		* p0ss - long sword
 		* rubberduck - shrine
 		* sandsound - morningstar
@@ -410,7 +411,8 @@ BottledByte - Bug reports and coding.
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Sounds:
-	* "Boiling Water, Large, A.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
+	* https://opengameart.org
+		* artisticdude - ogre sounds
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

@@ -326,6 +326,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 		* kindland - shield of death
 		* Lucian Pavel - short sword, kite shield
 		* Mophs - scarecrow
+		* nubux - ogre
 		* p0ss - long sword
 		* rubberduck - shrine
 		* sandsound - morningstar
@@ -347,6 +348,8 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
+	* https://opengameart.org
+		* artisticdude - ogre sounds
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

@@ -2197,6 +2197,48 @@ unit q_orkowie_boss : base_orc {
 	}
 }
 
+unit ogre {
+	mesh "ogre.qmsh"
+	mat body
+	flags {humanoid fixed_stats}
+	level 14
+	hp 1400
+	stamina 250
+	attack 140 // 300
+	def 280
+	group orcs
+	walk_speed 2
+	run_speed 6
+	rot_speed 4
+	blood red
+	blood_size 1.5
+	sounds {
+		see_enemy "giant3.wav"
+		pain "giant1.wav"
+		death "giant5.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.25 0.58}
+			{0.30 0.64}
+		}
+		cast 1
+		take_weapon 0.56
+		bash 0.71
+	}
+	idles {
+		"search_pockets"
+	}
+	items {
+		blunt_ogre
+		random 5 10 !orc_food
+	}
+	gold {140 180}
+	width 0.5
+	attack_range 1.5
+	idle_dialog ogre_idle
+}
+
 //------------------------------------------------------------------------------
 // UNDEAD & EVIL
 //------------------------------------------------------------------------------
@@ -3360,10 +3402,17 @@ group orcs {
 	orc_warius 4
 	orc_chief leader 2
 	orc_shaman 3
+	ogre 2
 
 	orc_food 1
 	have_camps 1
 	encounter_chance 2
+}
+
+group ogres {
+	ogre 1
+	
+	orc_food 1
 }
 
 group bandits {
@@ -3554,6 +3603,7 @@ group arena_hard {
 		necromancers
 		mages_and_golems
 		evil
+		ogres
 	}
 }
 

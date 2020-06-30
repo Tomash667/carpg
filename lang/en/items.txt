@@ -137,6 +137,10 @@ item blunt_dwarven {
 	name "Dwarf hammer"
 	desc "High quality hammer made by a dwarven master. For professional smashing of skulls."
 }
+item blunt_ogre {
+	name "Ogre club"
+	desc "Very heavy primitive club."
+}
 item blunt_adamantine {
 	name "Adamantine mace"
 	desc "A mace made of adamantine. The best item in its class."
