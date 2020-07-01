@@ -1498,7 +1498,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 	const PlayerAbility* ab = GetAbility(ability);
 	if(ab && (ab->charges == 0 || ab->cooldown > 0))
 		return CanUseAbilityResult::No;
-	if(ability->mana > unit->mp || ability->stamina > unit->stamina)
+	if(!CanUseAbilityPreview(ability))
 		return CanUseAbilityResult::No;
 	if(IsSet(ability->flags, Ability::Mage))
 	{
@@ -1521,6 +1521,16 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		}
 	}
 	return CanUseAbilityResult::Yes;
+}
+
+//=================================================================================================
+bool PlayerController::CanUseAbilityPreview(Ability* ability) const
+{
+	if(ability->mana > unit->mp || ability->stamina > unit->stamina)
+		return false;
+	if(ability->type == Ability::Charge && unit->IsOverloaded())
+		return false;
+	return true;
 }
 
 //=================================================================================================
@@ -3018,7 +3028,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 
 						if(Net::IsLocal())
-							u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+						{
+							const Weapon& weapon = u.GetWeapon();
+							u.RemoveStamina(weapon.GetInfo().stamina * u.GetStaminaMod(weapon));
+						}
 					}
 				}
 			}
@@ -3044,7 +3057,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
 						// shield bash
-						float speed = u.GetBashSpeed();
+						const float speed = u.GetBashSpeed();
 						u.action = A_BASH;
 						u.animation_state = AS_BASH_ANIMATION;
 						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
@@ -3062,7 +3075,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(Net::IsLocal())
 						{
 							Train(TrainWhat::BashStart, 0.f, 0);
-							u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
+							u.RemoveStamina(Unit::STAMINA_BASH_ATTACK * u.GetStaminaMod(u.GetShield()));
 						}
 					}
 				}
@@ -3110,7 +3123,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							if(Net::IsLocal())
 							{
 								Train(TrainWhat::AttackStart, 0.f, 0);
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
+								const Weapon& weapon = u.GetWeapon();
+								u.RemoveStamina(weapon.GetInfo().stamina * 1.5f * u.GetStaminaMod(weapon));
 							}
 						}
 						else
@@ -3133,42 +3147,35 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							}
 
 							if(Net::IsLocal())
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+							{
+								const Weapon& weapon = u.GetWeapon();
+								u.RemoveStamina(weapon.GetInfo().stamina * u.GetStaminaMod(weapon));
+							}
 						}
 					}
 				}
 			}
-			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE || (u.action == A_ATTACK && !u.act.attack.run)))
+			// no action or non-heavy attack
+			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE
+				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
 			{
-				int oks = 0;
-				if(u.action == A_ATTACK)
+				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
+				if(k != Key::None)
 				{
-					if(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f)
-						oks = 1;
-					else
-						oks = 2;
-				}
+					// start blocking
+					const float blend_max = u.GetBlockSpeed();
+					u.action = A_BLOCK;
+					u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+					u.mesh_inst->groups[1].blend_max = blend_max;
+					action_key = k;
 
-				if(oks != 1)
-				{
-					Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
-					if(k != Key::None)
+					if(Net::IsOnline())
 					{
-						// start blocking
-						float blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
-						u.action = A_BLOCK;
-						u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-						u.mesh_inst->groups[1].blend_max = blend_max;
-						action_key = k;
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
-							c.unit = unit;
-							c.id = AID_Block;
-							c.f[1] = blend_max;
-						}
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::ATTACK;
+						c.unit = unit;
+						c.id = AID_Block;
+						c.f[1] = blend_max;
 					}
 				}
 			}

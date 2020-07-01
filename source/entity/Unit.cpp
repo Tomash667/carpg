@@ -4052,6 +4052,17 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 }
 
 //=================================================================================================
+// lower value is better
+float Unit::GetBlockSpeed() const
+{
+	const bool inAttack = (action == A_ATTACK);
+	if(!IsSet(data->flags2, F2_FIXED_STATS) && Get(AttributeId::STR) < GetShield().reqStr)
+		return inAttack ? 0.5f : 0.3f;
+	else
+		return inAttack ? 0.3f : 0.1f;
+}
+
+//=================================================================================================
 // 0-immune, 0.5-resists 50%, 1-normal, 1.5-50% extra damage etc
 float Unit::CalculateMagicResistance() const
 {
@@ -4611,6 +4622,31 @@ void Unit::RemoveStaminaBlock(float value)
 	value *= Lerp(0.5f, 0.25f, Max(skill, 100.f) / 100.f);
 	if(value > 0.f)
 		RemoveStamina(value);
+}
+
+//=================================================================================================
+float Unit::GetStaminaMod(const Item& item) const
+{
+	int reqStr;
+	switch(item.type)
+	{
+	case IT_WEAPON:
+		reqStr = item.ToWeapon().reqStr;
+		break;
+	case IT_SHIELD:
+		reqStr = item.ToShield().reqStr;
+		break;
+	default:
+		return 1.f;
+	}
+
+	const int str = Get(AttributeId::STR);
+	if(str >= reqStr)
+		return 1.f;
+	else if(str * 2 < reqStr)
+		return 2.f;
+	else
+		return 1.f + float(reqStr - str) / reqStr;
 }
 
 //=================================================================================================
@@ -6202,6 +6238,21 @@ float Unit::GetStaminaAttackSpeedMod() const
 }
 
 //=================================================================================================
+float Unit::GetBashSpeed() const
+{
+	float sp;
+	const int str = Get(AttributeId::STR);
+	const int reqStr = GetShield().reqStr;
+	if(str >= reqStr)
+		sp = 2.f;
+	else if(str * 2 <= reqStr)
+		sp = 1.f;
+	else
+		sp = 1.f + float(reqStr - str) / (reqStr / 2);
+	return sp * GetStaminaAttackSpeedMod();
+}
+
+//=================================================================================================
 void Unit::RotateTo(const Vec3& pos, float dt)
 {
 	float dir = Vec3::LookAtAngle(this->pos, pos);
@@ -7467,8 +7518,9 @@ void Unit::Update(float dt)
 			}
 			else if(IsPlayer() && Net::IsLocal())
 			{
+				const Weapon& weapon = GetWeapon();
 				float dif = p - timer;
-				float stamina_to_remove_total = GetWeapon().GetInfo().stamina / 2;
+				float stamina_to_remove_total = weapon.GetInfo().stamina / 2 * GetStaminaMod(weapon);
 				float stamina_used = dif / t * stamina_to_remove_total;
 				timer = p;
 				RemoveStamina(stamina_used);
@@ -7953,7 +8005,7 @@ void Unit::Update(float dt)
 						{
 							if(!player->IsHit(unit))
 							{
-								float attack = unit->GetAbilityPower(*act.dash.ability);
+								float attack = GetAbilityPower(*act.dash.ability);
 								float def = unit->CalculateDefense();
 								float dmg = CombatHelper::CalculateDamage(attack, def);
 								game->PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), HIT_SOUND_DIST, true);

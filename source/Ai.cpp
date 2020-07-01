@@ -2226,12 +2226,12 @@ void Game::UpdateAi(float dt)
 						{
 							if(Rand() % 2 == 0)
 							{
-								float speed = u.GetBashSpeed();
+								const float speed = u.GetBashSpeed();
 								u.action = A_BASH;
 								u.animation_state = AS_BASH_ANIMATION;
 								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 								u.mesh_inst->groups[1].speed = speed;
-								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
+								u.RemoveStamina(u.GetStaminaMod(u.GetShield()) * Unit::STAMINA_BASH_ATTACK);
 
 								if(Net::IsOnline())
 								{

@@ -14,6 +14,7 @@ Wersja 0.16 (???):
 + obsługa zmiany urządzenia dźwięku
 + mniej zahardcodowany wygląd postaci
 + niektóre podziemia zaczynają się od drzwi, w wieży magów poziomy są w górę
++ walka: używanie zbyt ciężkiej tarczy spowalnia blokowanie i uderzanie tarczą, zużywa więcej wytrzymałości
 - zombie czasami nie atakuje po ogłuszeniu [Zielu]
 - bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze
@@ -32,6 +33,8 @@ Wersja 0.16 (???):
 - nieprawidłowa waga ekwipunku po alchemii [SwagOfficerSuccubus]
 - otwieranie widoku alchemii nie zamykało innych widoków
 - crash po użyciu komendy list_stats na nie bohaterze
+- nie można używać zrywu/byczej szarży przy przeciążeniu
+- złe liczenie obrażeń byczej szarży
 
 --------------------------------------------------------------------------------
 Poprawki:

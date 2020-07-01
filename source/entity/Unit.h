@@ -696,9 +696,7 @@ public:
 	bool GetKnownName() const;
 	void SetKnownName(bool known);
 
-	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
-	float GetBlockSpeed() const { return 0.1f; }
-
+	float GetBlockSpeed() const;
 	float CalculateMagicResistance() const;
 	float GetPoisonResistance() const;
 	int CalculateMagicPower() const { return (int)GetEffectSum(EffectId::MagicPower); }
@@ -889,6 +887,7 @@ public:
 	void RemoveMana(float value);
 	void RemoveStamina(float value);
 	void RemoveStaminaBlock(float value);
+	float GetStaminaMod(const Item& item) const;
 
 	void CreateMesh(CREATE_MESH mode);
 
@@ -958,7 +957,7 @@ public:
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
 	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
-	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
+	float GetBashSpeed() const;
 	void RotateTo(const Vec3& pos, float dt);
 	void RotateTo(const Vec3& pos);
 	void RotateTo(float rot);

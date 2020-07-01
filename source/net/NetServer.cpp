@@ -732,18 +732,21 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
 						break;
 					case AID_PrepareAttack:
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_PREPARE;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.f;
-						unit.act.attack.run = false;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
-						unit.timer = 0.f;
+						{
+							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+							unit.action = A_ATTACK;
+							unit.animation_state = AS_ATTACK_PREPARE;
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.f;
+							unit.act.attack.run = false;
+							unit.act.attack.hitted = false;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
+							const Weapon& weapon = unit.GetWeapon();
+							unit.RemoveStamina(weapon.GetInfo().stamina * unit.GetStaminaMod(weapon));
+							unit.timer = 0.f;
+						}
 						break;
 					case AID_Shoot:
 					case AID_StartShoot:
@@ -777,20 +780,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 						unit.mesh_inst->groups[1].speed = attack_speed;
 						unit.player->Train(TrainWhat::BashStart, 0.f, 0);
-						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
+						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK * unit.GetStaminaMod(unit.GetShield()));
 						break;
 					case AID_RunningAttack:
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_CAN_HIT;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.5f;
-						unit.act.attack.run = true;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
+						{
+							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+							unit.action = A_ATTACK;
+							unit.animation_state = AS_ATTACK_CAN_HIT;
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.5f;
+							unit.act.attack.run = true;
+							unit.act.attack.hitted = false;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
+							const Weapon& weapon = unit.GetWeapon();
+							unit.RemoveStamina(weapon.GetInfo().stamina * 1.5f * unit.GetStaminaMod(weapon));
+						}
 						break;
 					case AID_Cancel:
 						if(unit.action == A_SHOOT)

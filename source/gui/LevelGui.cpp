@@ -611,7 +611,7 @@ void LevelGui::DrawFront()
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
 				drag_and_drop_icon = ability->tex_icon;
 
-			if(pc.unit->mp >= ability->mana && pc.unit->stamina >= ability->stamina)
+			if(pc.CanUseAbilityPreview(ability))
 			{
 				if(charge == 0.f)
 					gui->DrawSprite2(ability->tex_icon, mat);

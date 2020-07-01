@@ -14,6 +14,7 @@ Version 0.16 (???):
 + allow changing sound device
 + less hardcoded characters appearances
 + some dungeons start with door, in mages tower levels goes up
++ combat: using too heavy shield slow down blocking & bashing, use more stamina
 - zombie sometimes not attacking after stunning [Zielu]
 - bull's charge not stopping attack animation [Zielu]
 - fixed draw_hitbox command & shields
@@ -32,6 +33,8 @@ Version 0.16 (???):
 - invalid inventory weight after alchemy [SwagOfficerSuccubus]
 - opening alchemy view didn't close other views
 - crash when using list_stats command on non hero
+- can't use dash/bull's charge when overloaded
+- invalid damage calculations for bull's charge
 
 --------------------------------------------------------------------------------
 Fixes:
