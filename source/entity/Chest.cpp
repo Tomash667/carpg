@@ -62,7 +62,7 @@ void Chest::Load(GameReader& f)
 
 	ItemContainer::Load(f);
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_16)
 		base = BaseObject::Get(f.Read<int>());
 	else
 	{

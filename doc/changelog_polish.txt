@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.16 (???):
+Wersja 0.16 (2020-07-01):
 ! nie można wczytywać już zapisów z wersji 0.6.2 lub starszej
 + nowy wróg: ogr
 + nowy ekwipunek: kordelas, miecz najemnika, kolczasta pałka, krasnoludzki topór, tarcza latawcowa, tarcza z kolcami, tarcza śmierci, pałka ogra
@@ -15,6 +15,13 @@ Wersja 0.16 (???):
 + mniej zahardcodowany wygląd postaci
 + niektóre podziemia zaczynają się od drzwi, w wieży magów poziomy są w górę
 + walka: używanie zbyt ciężkiej tarczy spowalnia blokowanie i uderzanie tarczą, zużywa więcej wytrzymałości
+- crash czasami gdy klient daje przedmiot bohaterowi
+- gdy klient daje amulet/pierścień bohaterowni nie widać go aż do kolejnej wymiany przedmiotów
+- u klienta po dołączeniu do serwera zawsze wyświetla się że nie ma hasła
+- crash przy szybkim wczytywaniu gry w multiplayer gdy podmieniło się w tle zapis na niekompatybilny
+- w skrzyniach mogło wygenerować eliksiry siły/kondycji/zręczności [Zielu]
+- błąd wczytywania zapisu u klienta gdy ktoś strzelił z łuku
+- błędna interpolacja jednostek przy użyciu komendy 'speed'
 - zombie czasami nie atakuje po ogłuszeniu [Zielu]
 - bycza szarża nie przerywa animacji ataku [Zielu]
 - naprawiona komenda draw_hitbox i tarcze
@@ -35,16 +42,6 @@ Wersja 0.16 (???):
 - crash po użyciu komendy list_stats na nie bohaterze
 - nie można używać zrywu/byczej szarży przy przeciążeniu
 - złe liczenie obrażeń byczej szarży
-
---------------------------------------------------------------------------------
-Poprawki:
-- crash czasami gdy klient daje przedmiot bohaterowi
-- gdy klient daje amulet/pierścień bohaterowni nie widać go aż do kolejnej wymiany przedmiotów
-- u klienta po dołączeniu do serwera zawsze wyświetla się że nie ma hasła
-- crash przy szybkim wczytywaniu gry w multiplayer gdy podmieniło się w tle zapis na niekompatybilny
-- w skrzyniach mogło wygenerować eliksiry siły/kondycji/zręczności [Zielu]
-- błąd wczytywania zapisu u klienta gdy ktoś strzelił z łuku
-- błędna interpolacja jednostek przy użyciu komendy 'speed'
 
 --------------------------------------------------------------------------------
 Wersja 0.15 (2020-05-31):

@@ -33,7 +33,7 @@ void Usable::Load(GameReader& f)
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
 	Register();
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_16)
 		base = BaseUsable::Get(f.Read<int>());
 	else
 		base = BaseUsable::Get(f.ReadString1());

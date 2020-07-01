@@ -193,7 +193,7 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> dungeon_levels;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_16)
 		f.Skip<int>(); // old levels_cleared
 
 	location_event_handler = this;

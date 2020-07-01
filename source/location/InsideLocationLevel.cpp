@@ -314,7 +314,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_16)
 	{
 		f >> prevEntryType;
 		f >> prevEntryPt;

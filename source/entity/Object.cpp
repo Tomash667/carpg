@@ -40,7 +40,7 @@ void Object::Load(GameReader& f)
 	f >> rot;
 	f >> scale;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_16)
 	{
 		const int hash = f.Read<int>();
 		if(hash != 0)

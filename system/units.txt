@@ -3655,5 +3655,5 @@ alias evil_cleric evil_cleric_q
 alias bandit_chief bandit_hegemon_q
 alias orc_chief orc_chief_q
 alias goblin_chief goblin_chief_q
-// removed in V_DEV
+// removed in V_0_16
 alias golem_stone q_magowie_golem

@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-// Converted to script in V_DEV
+// Converted to script in V_0_16
 class Quest_CampNearCity final : public Quest_Dungeon, public LocationEventHandler
 {
 public:

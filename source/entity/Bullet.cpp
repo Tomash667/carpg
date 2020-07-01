@@ -426,7 +426,7 @@ void Bullet::Save(FileWriter& f) const
 //=================================================================================================
 void Bullet::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_16)
 		f >> id;
 	Register();
 	f >> pos;
@@ -480,7 +480,7 @@ void Bullet::Load(FileReader& f)
 			old_trail->destroy = true;
 	}
 	pe = ParticleEmitter::GetById(f.Read<int>());
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_16)
 		f.Skip<bool>();
 	f >> level;
 	if(LOAD_VERSION >= V_0_10)

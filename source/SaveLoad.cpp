@@ -680,7 +680,7 @@ void Game::LoadGame(GameReader& f)
 		f >> Door::impl.id_counter;
 		f >> Electro::impl.id_counter;
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_16)
 		f >> Bullet::impl.id_counter;
 
 	LoadingHandler loading;
