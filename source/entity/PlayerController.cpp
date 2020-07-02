@@ -526,38 +526,30 @@ void PlayerController::Load(FileReader& f)
 	}
 	f >> action_key;
 	f >> next_action;
-	if(LOAD_VERSION < V_0_7_1)
+	switch(next_action)
 	{
+	case NA_NONE:
+		break;
+	case NA_REMOVE:
+	case NA_DROP:
+		f >> next_action_data.slot;
+		break;
+	case NA_EQUIP:
+	case NA_CONSUME:
+	case NA_EQUIP_DRAW:
+		f >> next_action_data.index;
+		next_action_data.item = Item::Get(f.ReadString1());
+		break;
+	case NA_USE:
+		Usable::AddRequest(&next_action_data.usable, f.Read<int>());
+		break;
+	case NA_SELL:
+	case NA_PUT:
+	case NA_GIVE:
+	default:
+		assert(0);
 		next_action = NA_NONE;
-		f.Skip<int>();
-	}
-	else
-	{
-		switch(next_action)
-		{
-		case NA_NONE:
-			break;
-		case NA_REMOVE:
-		case NA_DROP:
-			f >> next_action_data.slot;
-			break;
-		case NA_EQUIP:
-		case NA_CONSUME:
-		case NA_EQUIP_DRAW:
-			f >> next_action_data.index;
-			next_action_data.item = Item::Get(f.ReadString1());
-			break;
-		case NA_USE:
-			Usable::AddRequest(&next_action_data.usable, f.Read<int>());
-			break;
-		case NA_SELL:
-		case NA_PUT:
-		case NA_GIVE:
-		default:
-			assert(0);
-			next_action = NA_NONE;
-			break;
-		}
+		break;
 	}
 	f >> last_weapon;
 	f >> credit;

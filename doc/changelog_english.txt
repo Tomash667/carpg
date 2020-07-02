@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.17 (???):
+! cannot load saves from version 0.7 or older
+
+--------------------------------------------------------------------------------
 Version 0.16 (2020-07-01):
 ! cannot load saves from version 0.6.2 or older
 + new enemy: ogre

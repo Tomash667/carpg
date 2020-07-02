@@ -49,22 +49,8 @@ void Usable::Load(GameReader& f)
 		container->Load(f);
 	}
 
-	if(f.isLocal)
-	{
-		if(LOAD_VERSION >= V_0_7_1)
-		{
-			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
-				user = nullptr;
-			else
-				f >> user;
-		}
-		else
-		{
-			f >> user;
-			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
-				user = nullptr;
-		}
-	}
+	if(f.isLocal && !IsSet(base->use_flags, BaseUsable::CONTAINER))
+		f >> user;
 	else
 		user = nullptr;
 }
