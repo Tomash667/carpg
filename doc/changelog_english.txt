@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Fixes:
+- crash when hunter pick traveling merchant feat [Leinnan]
+
+--------------------------------------------------------------------------------
 Version 0.16 (2020-07-01):
 ! cannot load saves from version 0.6.2 or older
 + new enemy: ogre
