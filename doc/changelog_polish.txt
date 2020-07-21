@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Fixes:
 - crash przy wyborze przez łowce atutu uczeń wędrownego kupca [Leinnan]
+- crash gdy pyta się burmistrza o zadanie w stolicy [Woltvint]
 
 --------------------------------------------------------------------------------
 Wersja 0.16 (2020-07-01):

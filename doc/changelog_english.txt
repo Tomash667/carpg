@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Fixes:
 - crash when hunter pick traveling merchant feat [Leinnan]
+- crash when asking mayor about quest in capital city [Woltvint]
 
 --------------------------------------------------------------------------------
 Version 0.16 (2020-07-01):
