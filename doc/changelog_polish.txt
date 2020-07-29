@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.17 (???):
 ! nie można wczytywać już zapisów z wersji 0.7 lub starszej
++ optymalizacje manadżera sceny
 
 --------------------------------------------------------------------------------
 Wersja 0.16 (2020-07-01):

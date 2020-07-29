@@ -49,8 +49,6 @@ void GameResources::Init()
 	scene->lights.push_back(light);
 
 	node = SceneNode::Get();
-	node->type = SceneNode::NORMAL;
-	node->tint = Vec4::One;
 	scene->Add(node);
 
 	camera = new Camera;

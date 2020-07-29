@@ -244,7 +244,7 @@ object stalagmite2 {
 
 object plant2 {
 	mesh "krzak2.qmsh"
-	flags { no_physics billboard no_culling }
+	flags { no_physics no_culling }
 }
 
 object rock {
