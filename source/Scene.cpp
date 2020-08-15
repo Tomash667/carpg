@@ -594,7 +594,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->center = u.visual_pos;
-	node->mat = Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
+	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
 	node->tex_override = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 
@@ -740,6 +740,17 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
+	}
+	else if(u.action == A_ATTACK && draw_hitbox)
+	{
+		Mesh::Point* hitbox = u.mesh_inst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
+		if(!hitbox)
+			hitbox = u.mesh_inst->mesh->FindPoint("hitbox");
+		DebugNode* debug_node = DebugNode::Get();
+		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * game_level->camera.mat_view_proj;
+		debug_node->mesh = DebugNode::Box;
+		debug_node->color = Color::Black;
+		draw_batch.debug_nodes.push_back(debug_node);
 	}
 
 	// shield

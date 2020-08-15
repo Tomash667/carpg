@@ -89,6 +89,8 @@ void World::LoadLanguage()
 	txTower = s.Get("tower");
 	txLabyrinth = s.Get("labyrinth");
 	txAcademy = s.Get("academy");
+	txHuntersCamp = s.Get("huntersCamp");
+	txHills = s.Get("hills");
 }
 
 //=================================================================================================
@@ -532,7 +534,7 @@ void World::RemoveLocation(int index)
 void World::GenerateWorld()
 {
 	auto isDistanceOk = [&](const Vec2 &pos, const float minDistance) {
-		for (Location* loc : locations)
+		for(Location* loc : locations)
 		{
 			const float dist = Vec2::DistanceSquared(loc->pos, pos);
 			if(dist < minDistance * minDistance)
@@ -585,7 +587,7 @@ void World::GenerateWorld()
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
 
-			if (isDistanceOk(pos, 100.0f))
+			if(isDistanceOk(pos, 100.0f))
 			{
 				CreateCity(pos, VILLAGE);
 				break;
@@ -600,22 +602,18 @@ void World::GenerateWorld()
 		{
 			const Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
 
-			if (isDistanceOk(pos, 400.0f))
+			if(isDistanceOk(pos, 400.0f))
 			{
 				CreateCity(pos, VILLAGE);
 				break;
 			}
 		}
 	}
-
-	// mark cities and villages as known
 	settlements = locations.size();
-	for(Location* loc : locations)
-		loc->state = LS_KNOWN;
 
 	// generate guaranteed locations, one of each type & target
 	static const LOCATION guaranteed[] = {
-		L_OUTSIDE, L_OUTSIDE,
+		L_OUTSIDE, L_OUTSIDE, L_OUTSIDE, L_OUTSIDE,
 		L_CAVE,
 		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
 	};
@@ -653,10 +651,10 @@ void World::GenerateWorld()
 	CalculateTiles();
 
 	// generate locations content
-	bool guaranteed_moonwell = true;
-	int index = 0, guaranteed_dungeon = 0;
+	int index = 0, guaranteed_dungeon = 0, guaranteed_outside = 0;
 	UnitGroup* forest_group = UnitGroup::Get("forest");
 	UnitGroup* cave_group = UnitGroup::Get("cave");
+	const bool knowsHuntersCamp = team->HaveClass(Class::TryGet("hunter"));
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it)
@@ -687,8 +685,39 @@ void World::GenerateWorld()
 				InsideLocation* inside;
 
 				int target;
-				if(guaranteed_dungeon == -1)
+				switch(guaranteed_dungeon)
 				{
+				case 0:
+					target = HUMAN_FORT;
+					break;
+				case 1:
+					target = DWARF_FORT;
+					break;
+				case 2:
+					target = MAGE_TOWER;
+					break;
+				case 3:
+					target = BANDITS_HIDEOUT;
+					break;
+				case 4:
+					target = OLD_TEMPLE;
+					break;
+				case 5:
+					target = VAULT;
+					break;
+				case 6:
+					target = NECROMANCER_BASE;
+					break;
+				case 7:
+					target = LABYRINTH;
+					break;
+				case 8:
+					target = HERO_CRYPT;
+					break;
+				case 9:
+					target = MONSTER_CRYPT;
+					break;
+				default:
 					if(Rand() % 4 == 0)
 						target = Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT;
 					else
@@ -728,47 +757,7 @@ void World::GenerateWorld()
 							break;
 						}
 					}
-				}
-				else
-				{
-					switch(guaranteed_dungeon)
-					{
-					default:
-					case 0:
-						target = HUMAN_FORT;
-						break;
-					case 1:
-						target = DWARF_FORT;
-						break;
-					case 2:
-						target = MAGE_TOWER;
-						break;
-					case 3:
-						target = BANDITS_HIDEOUT;
-						break;
-					case 4:
-						target = OLD_TEMPLE;
-						break;
-					case 5:
-						target = VAULT;
-						break;
-					case 6:
-						target = NECROMANCER_BASE;
-						break;
-					case 7:
-						target = LABYRINTH;
-						break;
-					case 8:
-						target = HERO_CRYPT;
-						break;
-					case 9:
-						target = MONSTER_CRYPT;
-						break;
-					}
-
-					++guaranteed_dungeon;
-					if(guaranteed_dungeon == 10)
-						guaranteed_dungeon = -1;
+					break;
 				}
 
 				BaseLocation& base = g_base_locations[target];
@@ -809,23 +798,53 @@ void World::GenerateWorld()
 			loc.group = UnitGroup::empty;
 			break;
 		case L_OUTSIDE:
-			if(guaranteed_moonwell)
+			switch(guaranteed_outside++)
 			{
-				guaranteed_moonwell = false;
+			case 0:
+				loc.target = MOONWELL;
+				break;
+			case 1:
+				loc.target = HUNTERS_CAMP;
+				break;
+			case 2:
+				loc.target = FOREST;
+				break;
+			case 3:
+				loc.target = HILLS;
+				break;
+			default:
+				loc.target = (Rand() % 2 == 0 ? FOREST : HILLS);
+				break;
+			}
+
+			switch(loc.target)
+			{
+			case FOREST:
+			case HILLS:
+				{
+					int& st = GetTileSt(loc.pos);
+					if(st < 2)
+						st = 2;
+					else if(st > 10)
+						st = 10;
+					loc.st = st;
+					loc.group = forest_group;
+				}
+				break;
+			case MOONWELL:
 				loc.target = MOONWELL;
 				loc.st = 10;
 				loc.group = forest_group;
 				GetTileSt(loc.pos) = 10;
-			}
-			else
-			{
-				int& st = GetTileSt(loc.pos);
-				if(st < 2)
-					st = 2;
-				else if(st > 10)
-					st = 10;
-				loc.st = st;
-				loc.group = forest_group;
+				break;
+			case HUNTERS_CAMP:
+				loc.target = HUNTERS_CAMP;
+				loc.st = 3;
+				loc.active_quest = ACTIVE_QUEST_HOLDER;
+				loc.group = UnitGroup::empty;
+				if(knowsHuntersCamp)
+					loc.state = LS_KNOWN;
+				break;
 			}
 			break;
 		case L_CAVE:
@@ -990,7 +1009,7 @@ void World::CreateCity(const Vec2& pos, int target)
 	Location* l = CreateLocation(L_CITY, -1, target);
 	l->type = L_CITY;
 	l->pos = pos;
-	l->state = LS_UNKNOWN;
+	l->state = LS_KNOWN;
 	l->index = locations.size();
 	locations.push_back(l);
 }
@@ -1030,6 +1049,15 @@ void World::SetLocationImageAndName(Location* l)
 	case L_OUTSIDE:
 		switch(l->target)
 		{
+		default:
+		case FOREST:
+			l->image = LI_FOREST;
+			l->name = txForest;
+			break;
+		case HILLS:
+			l->image = LI_HILLS;
+			l->name = txHills;
+			break;
 		case MOONWELL:
 			l->image = LI_MOONWELL;
 			l->name = txMoonwell;
@@ -1038,10 +1066,10 @@ void World::SetLocationImageAndName(Location* l)
 			l->image = LI_ACADEMY;
 			l->name = txAcademy;
 			return;
-		default:
-			l->image = LI_FOREST;
-			l->name = txForest;
-			break;
+		case HUNTERS_CAMP:
+			l->image = LI_HUNTERS_CAMP;
+			l->name = txHuntersCamp;
+			return;
 		}
 		break;
 	case L_ENCOUNTER:
@@ -1844,6 +1872,17 @@ void World::SetStartDate(const Date& date)
 		throw ScriptException("Start date can only be set at startup.");
 	this->date = date;
 	startDate = date;
+}
+
+//=================================================================================================
+Location* World::GetLocationByType(LOCATION type, int target) const
+{
+	for(Location* loc : locations)
+	{
+		if(loc && loc->type == type && (target == ANY_TARGET || loc->target == target))
+			return loc;
+	}
+	return nullptr;
 }
 
 //=================================================================================================

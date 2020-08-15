@@ -117,6 +117,7 @@ public:
 	int GetCurrentLocationIndex() const { return current_location_index; }
 	const vector<Location*>& GetLocations() const { return locations; }
 	Location* GetLocation(int index) const { assert(index >= 0 && index < (int)locations.size()); return locations[index]; }
+	Location* GetLocationByType(LOCATION type, int target = ANY_TARGET) const;
 	const Vec2& GetWorldPos() const { return world_pos; }
 	const Vec2& GetTargetPos() const { return travel_target_pos; }
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
@@ -232,7 +233,8 @@ private:
 	vector<News*> news;
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
 		txEncHeroesAttack, txEncEnemiesCombat;
-	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy;
+	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy,
+		txHuntersCamp, txHills;
 	cstring txMonth[12];
 	bool boss_level_mp, // used by clients instead boss_levels
 		tomir_spawned,

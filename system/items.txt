@@ -2291,7 +2291,7 @@ consumable p_antimagic {
 consumable p_str {
 	weight 0.4
 	value 500
-	mesh "wodka.qmsh"
+	mesh "gray_potion.qmsh"
 	type potion
 	flags {not_shop not_random ground_mesh magical}
 	effects {
@@ -2302,7 +2302,7 @@ consumable p_str {
 consumable p_end {
 	weight 0.4
 	value 500
-	mesh "wodka.qmsh"
+	mesh "gray_potion.qmsh"
 	type potion
 	flags {not_shop not_random ground_mesh magical}
 	effects {
@@ -2313,7 +2313,7 @@ consumable p_end {
 consumable p_dex {
 	weight 0.4
 	value 500
-	mesh "wodka.qmsh"
+	mesh "gray_potion.qmsh"
 	type potion
 	flags {not_shop not_random ground_mesh magical}
 	effects {
@@ -2368,7 +2368,7 @@ consumable beer {
 consumable vodka {
 	weight 0.4
 	value 10
-	mesh "wodka.qmsh"
+	mesh "vodka.qmsh"
 	type drink
 	time 2
 	flags ground_mesh
@@ -2380,7 +2380,7 @@ consumable vodka {
 consumable spirit {
 	weight 0.4
 	value 20
-	mesh "wodka.qmsh"
+	mesh "vodka.qmsh"
 	type drink
 	time 2
 	flags {ground_mesh hq}
@@ -2672,25 +2672,31 @@ other plate {
 
 other wolf_pelt {
 	weight 2.5
-	value 25
+	value 50
 	tex "wolf_pelt.png"
 }
 
 other worg_pelt {
 	weight 2.5
-	value 50
+	value 100
 	tex "worg_pelt.png"
+}
+
+other dire_wolf_pelt {
+	weight 5
+	value 2000
+	tex "dire_wolf_pelt.png"
 }
 
 other bear_pelt {
 	weight 4
-	value 75
+	value 150
 	tex "bear_pelt.png"
 }
 
 other black_bear_pelt {
 	weight 4
-	value 100
+	value 200
 	tex "black_bear_pelt.png"
 }
 

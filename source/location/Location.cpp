@@ -323,7 +323,7 @@ void Location::SetKnown()
 }
 
 //=================================================================================================
-void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
+void Location::AddEventHandler(Quest2* quest, EventType type)
 {
 	assert(Any(type, EVENT_ENTER, EVENT_PICKUP, EVENT_CLEARED, EVENT_GENERATE));
 
@@ -340,7 +340,7 @@ void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
 }
 
 //=================================================================================================
-void Location::RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup)
+void Location::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 {
 	LoopAndRemove(events, [=](Event& e)
 	{

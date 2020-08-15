@@ -12,7 +12,7 @@
 #include "LevelGui.h"
 #include "LocationHelper.h"
 #include "PlayerInfo.h"
-#include "Quest.h"
+#include "Quest2.h"
 #include "QuestManager.h"
 #include "QuestScheme.h"
 #include "Quest_Bandits.h"
@@ -23,7 +23,6 @@
 #include "Quest_Mine.h"
 #include "Quest_Orcs.h"
 #include "Quest_Sawmill.h"
-#include "Quest_Scripted.h"
 #include "MultiInsideLocation.h"
 #include "NameHelper.h"
 #include "News.h"
@@ -635,9 +634,9 @@ void DialogContext::UpdateLoop()
 				ctx.target = talker;
 				DialogScripts* scripts;
 				void* instance;
-				if(dialog_quest && dialog_quest->type == Q_SCRIPTED)
+				if(dialog_quest && dialog_quest->isNew)
 				{
-					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
+					Quest2* quest = (Quest2*)dialog_quest;
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
 					ctx.quest = quest;
@@ -667,9 +666,9 @@ void DialogContext::UpdateLoop()
 				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
-				if(dialog_quest && dialog_quest->type == Q_SCRIPTED)
+				if(dialog_quest && dialog_quest->isNew)
 				{
-					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
+					Quest2* quest = (Quest2*)dialog_quest;
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
 					ctx.quest = quest;
@@ -793,9 +792,9 @@ cstring DialogContext::GetText(int index, bool multi)
 				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
-				if(dialog_quest && dialog_quest->type == Q_SCRIPTED)
+				if(dialog_quest && dialog_quest->isNew)
 				{
-					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
+					Quest2* quest = (Quest2*)dialog_quest;
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
 					ctx.quest = quest;
@@ -872,13 +871,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 			Quest* quest = quest_mgr->GetMayorQuest();
 			if(quest)
-			{
-				// add new quest
-				quest->id = quest_mgr->quest_counter++;
-				quest->Start();
-				quest_mgr->unaccepted_quests.push_back(quest);
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
-			}
 			else
 				have_quest = false;
 		}
@@ -936,13 +929,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 			Quest* quest = quest_mgr->GetCaptainQuest();
 			if(quest)
-			{
-				// add new quest
-				quest->id = quest_mgr->quest_counter++;
-				quest->Start();
-				quest_mgr->unaccepted_quests.push_back(quest);
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
-			}
 			else
 				have_quest = false;
 		}
@@ -982,10 +969,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(talker->quest_id == -1)
 		{
 			Quest* quest = quest_mgr->GetAdventurerQuest();
-			quest->id = quest_mgr->quest_counter++;
 			talker->quest_id = quest->id;
-			quest->Start();
-			quest_mgr->unaccepted_quests.push_back(quest);
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 		else
@@ -1905,7 +1889,7 @@ bool DialogContext::RecruitHero(Class* clas)
 }
 
 //=================================================================================================
-void DialogContext::RemoveQuestDialog(Quest_Scripted* quest)
+void DialogContext::RemoveQuestDialog(Quest2* quest)
 {
 	assert(quest);
 

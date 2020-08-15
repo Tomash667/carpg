@@ -134,6 +134,6 @@ struct GameDialog
 struct QuestDialog
 {
 	GameDialog* dialog;
-	Quest_Scripted* quest;
+	Quest2* quest;
 	int priority;
 };

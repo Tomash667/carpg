@@ -35,6 +35,9 @@ void Quest_Evil::Start()
 {
 	category = QuestCategory::Unique;
 	type = Q_EVIL;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used);
+	used.push_back(start_loc);
 	mage_loc = -1;
 	closed = 0;
 	changed = false;

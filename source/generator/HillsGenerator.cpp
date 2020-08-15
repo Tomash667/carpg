@@ -1,11 +1,10 @@
 #include "Pch.h"
-#include "ForestGenerator.h"
+#include "HillsGenerator.h"
 
 #include "Level.h"
 #include "OutsideLocation.h"
-#include "QuestManager.h"
-#include "Quest_Sawmill.h"
 #include "Team.h"
+#include "UnitData.h"
 #include "UnitGroup.h"
 #include "World.h"
 
@@ -13,74 +12,33 @@
 #include <Perlin.h>
 
 //=================================================================================================
-void ForestGenerator::Generate()
+void HillsGenerator::Generate()
 {
 	CreateMap();
 	RandomizeTerrainTexture();
 	terrain->SetHeightMap(outside->h);
-	float hmax = Random(8.f, 12.f);
-	int octaves = Random(4, 8);
-	float frequency = Random(3.f, 6.f);
+	float hmax = 13.f;
+	int octaves = Random(2, 8);
+	float frequency = Random(4.f, 8.f);
 	RandomizeHeight(octaves, frequency, 0.f, hmax);
 	terrain->RoundHeight();
 	terrain->RemoveHeightMap();
 }
 
 //=================================================================================================
-void ForestGenerator::RandomizeTerrainTexture()
+int HillsGenerator::HandleUpdate(int days)
 {
-	Perlin perlin2(4, 4);
-	for(uint i = 0, y = 0; y < s; ++y)
-	{
-		for(uint x = 0; x < s; ++x, ++i)
-		{
-			const float v = perlin2.GetNormalized(1.f / 256 * x, 1.f / 256 * y);
-			TERRAIN_TILE& t = outside->tiles[i].t;
-			if(v < 0.25f)
-				t = TT_GRASS2;
-			else if(v < 0.7f)
-				t = TT_GRASS;
-			else
-				t = TT_GRASS3;
-		}
-	}
+	return 0;
 }
 
 //=================================================================================================
-int ForestGenerator::HandleUpdate(int days)
-{
-	if(game_level->location_index != quest_mgr->quest_sawmill->target_loc)
-		return 0;
-
-	// sawmill quest
-	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
-		&& quest_mgr->quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
-	{
-		quest_mgr->quest_sawmill->GenerateSawmill(true);
-		have_sawmill = true;
-		game_level->location->loaded_resources = false;
-		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
-	}
-	else if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
-		&& quest_mgr->quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
-	{
-		quest_mgr->quest_sawmill->GenerateSawmill(false);
-		have_sawmill = true;
-		game_level->location->loaded_resources = false;
-		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
-	}
-	else
-		return 0;
-}
-
-//=================================================================================================
-void ForestGenerator::GenerateObjects()
+void HillsGenerator::GenerateObjects()
 {
 	SpawnForestObjects();
 }
 
 //=================================================================================================
-void ForestGenerator::GenerateUnits()
+void HillsGenerator::GenerateUnits()
 {
 	if(loc->group->IsEmpty())
 		return;
@@ -131,7 +89,7 @@ void ForestGenerator::GenerateUnits()
 }
 
 //=================================================================================================
-void ForestGenerator::GenerateItems()
+void HillsGenerator::GenerateItems()
 {
-	SpawnForestItems(have_sawmill ? -1 : 0);
+	SpawnForestItems(0);
 }

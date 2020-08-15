@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Item.h"
+#include "Location.h"
 #include "Unit.h"
 #include "UnitGroup.h"
 
@@ -55,6 +56,7 @@ public:
 	}
 
 	void operator >> (UnitGroup*& group);
+	void operator >> (Location*& loc);
 
 	bool isLocal;
 };
@@ -109,6 +111,12 @@ public:
 	void operator << (UnitGroup* group)
 	{
 		WriteString1(group->id);
+	}
+
+	void operator << (Location* loc)
+	{
+		int index = loc ? loc->index : -1;
+		Write(index);
 	}
 
 	bool isLocal;

@@ -3,6 +3,7 @@
 
 #include "SaveState.h"
 #include "UnitGroup.h"
+#include "World.h"
 
 void GameReader::operator >> (UnitGroup*& group)
 {
@@ -17,4 +18,13 @@ void GameReader::operator >> (UnitGroup*& group)
 		Read(spawn);
 		group = old::OldToNew(spawn);
 	}
+}
+
+void GameReader::operator >> (Location*& loc)
+{
+	int index = Read<int>();
+	if(index == -1)
+		loc = nullptr;
+	else
+		loc = world->GetLocation(index);
 }

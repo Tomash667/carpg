@@ -27,6 +27,9 @@ void Quest_Orcs::Start()
 {
 	type = Q_ORCS;
 	category = QuestCategory::Unique;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used);
+	used.push_back(start_loc);
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[6], GetStartLocationName()));
 
 	if(game->devmode)

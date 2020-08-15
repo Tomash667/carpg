@@ -20,6 +20,7 @@
 #include "Quest_Crazies.h"
 #include "Quest_DeliverLetter.h"
 #include "Quest_DeliverParcel.h"
+#include "Quest_DireWolf.h"
 #include "Quest_Evil.h"
 #include "Quest_FindArtifact.h"
 #include "Quest_Goblins.h"
@@ -63,14 +64,14 @@ void QuestManager::Init()
 {
 	force = Q_FORCE_DISABLED;
 
+	infos.push_back(QuestInfo(Q_GOBLINS, QuestCategory::Unique, "goblins"));
+	infos.push_back(QuestInfo(Q_BANDITS, QuestCategory::Unique, "bandits"));
 	infos.push_back(QuestInfo(Q_MINE, QuestCategory::Unique, "mine"));
 	infos.push_back(QuestInfo(Q_SAWMILL, QuestCategory::Unique, "sawmill"));
-	infos.push_back(QuestInfo(Q_BANDITS, QuestCategory::Unique, "bandits"));
 	infos.push_back(QuestInfo(Q_MAGES, QuestCategory::Unique, "mages"));
 	infos.push_back(QuestInfo(Q_MAGES2, QuestCategory::Unique, "mages2"));
 	infos.push_back(QuestInfo(Q_ORCS, QuestCategory::Unique, "orcs"));
 	infos.push_back(QuestInfo(Q_ORCS2, QuestCategory::Unique, "orcs2"));
-	infos.push_back(QuestInfo(Q_GOBLINS, QuestCategory::Unique, "goblins"));
 	infos.push_back(QuestInfo(Q_EVIL, QuestCategory::Unique, "evil"));
 	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliver_parcel"));
 	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
@@ -81,6 +82,7 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_STOLEN_ARTIFACT, QuestCategory::Random, "stolen_artifact"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
+	infos.push_back(QuestInfo(Q_DIRE_WOLF, QuestCategory::Unique, "dire_wolf"));
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
@@ -132,101 +134,26 @@ void QuestManager::Clear()
 //=================================================================================================
 void QuestManager::InitQuests()
 {
-	vector<int> used;
+	used.clear();
 
-	// init scripted quests
-	for(QuestScheme* scheme : QuestScheme::schemes)
+	// init quests
+	for(QuestInfo& info : infos)
 	{
-		if(scheme->category != QuestCategory::Unique)
-			continue;
-		Quest_Scripted* quest = new Quest_Scripted;
-		quest->Init(scheme);
-		unaccepted_quests.push_back(quest);
-		quest->id = quest_counter++;
-		quest->Start();
+		if(info.category == QuestCategory::Unique)
+			CreateQuest(&info);
 	}
 
-	// goblins
-	quest_goblins = new Quest_Goblins;
-	quest_goblins->Init();
-	quest_goblins->start_loc = world->GetRandomSettlementIndex(used, CITY);
-	quest_goblins->id = quest_counter++;
-	quest_goblins->Start();
-	unaccepted_quests.push_back(quest_goblins);
-	used.push_back(quest_goblins->start_loc);
-
-	// bandits
-	quest_bandits = new Quest_Bandits;
-	quest_bandits->Init();
-	quest_bandits->start_loc = world->GetRandomSettlementIndex(used, CITY);
-	quest_bandits->id = quest_counter++;
-	quest_bandits->Start();
-	unaccepted_quests.push_back(quest_bandits);
-	used.push_back(quest_bandits->start_loc);
-
-	// sawmill
-	quest_sawmill = new Quest_Sawmill;
-	quest_sawmill->start_loc = world->GetRandomSettlementIndex(used);
-	quest_sawmill->id = quest_counter++;
-	quest_sawmill->Start();
-	unaccepted_quests.push_back(quest_sawmill);
-	used.push_back(quest_sawmill->start_loc);
-
-	// mine
-	quest_mine = new Quest_Mine;
-	quest_mine->start_loc = world->GetRandomSettlementIndex(used);
-	quest_mine->target_loc = world->GetClosestLocation(L_CAVE, world->GetLocation(quest_mine->start_loc)->pos);
-	quest_mine->id = quest_counter++;
-	quest_mine->Start();
-	unaccepted_quests.push_back(quest_mine);
-	used.push_back(quest_mine->start_loc);
-
-	// mages
-	quest_mages = new Quest_Mages;
-	quest_mages->start_loc = world->GetRandomSettlementIndex(used);
-	quest_mages->id = quest_counter++;
-	quest_mages->Start();
-	unaccepted_quests.push_back(quest_mages);
-	used.push_back(quest_mages->start_loc);
-
-	// mages2
-	quest_mages2 = new Quest_Mages2;
-	quest_mages2->Init();
-	quest_mages2->id = quest_counter++;
-	quest_mages2->Start();
-	unaccepted_quests.push_back(quest_mages2);
-
-	// orcs
-	quest_orcs = new Quest_Orcs;
-	quest_orcs->Init();
-	quest_orcs->start_loc = world->GetRandomSettlementIndex(used);
-	quest_orcs->id = quest_counter++;
-	quest_orcs->Start();
-	unaccepted_quests.push_back(quest_orcs);
-	used.push_back(quest_orcs->start_loc);
-
-	// orcs2
-	quest_orcs2 = new Quest_Orcs2;
-	quest_orcs2->Init();
-	quest_orcs2->id = quest_counter++;
-	quest_orcs2->Start();
-	unaccepted_quests.push_back(quest_orcs2);
-
-	// evil
-	quest_evil = new Quest_Evil;
-	quest_evil->Init();
-	quest_evil->start_loc = world->GetRandomSettlementIndex(used);
-	quest_evil->id = quest_counter++;
-	quest_evil->Start();
-	unaccepted_quests.push_back(quest_evil);
-	used.push_back(quest_evil->start_loc);
-
-	// crazies
-	quest_crazies = new Quest_Crazies;
-	quest_crazies->Init();
-	quest_crazies->id = quest_counter++;
-	quest_crazies->Start();
-	unaccepted_quests.push_back(quest_crazies);
+	// set quest pointers
+	quest_sawmill = static_cast<Quest_Sawmill*>(FindQuest(Q_SAWMILL));
+	quest_mine = static_cast<Quest_Mine*>(FindQuest(Q_MINE));
+	quest_bandits = static_cast<Quest_Bandits*>(FindQuest(Q_BANDITS));
+	quest_goblins = static_cast<Quest_Goblins*>(FindQuest(Q_GOBLINS));
+	quest_mages = static_cast<Quest_Mages*>(FindQuest(Q_MAGES));
+	quest_mages2 = static_cast<Quest_Mages2*>(FindQuest(Q_MAGES2));
+	quest_orcs = static_cast<Quest_Orcs*>(FindQuest(Q_ORCS));
+	quest_orcs2 = static_cast<Quest_Orcs2*>(FindQuest(Q_ORCS2));
+	quest_evil = static_cast<Quest_Evil*>(FindQuest(Q_EVIL));
+	quest_crazies = static_cast<Quest_Crazies*>(FindQuest(Q_CRAZIES));
 
 	// pseudo quests
 	quest_contest->Init();
@@ -289,6 +216,8 @@ Quest* QuestManager::CreateQuest(QUEST_TYPE type)
 		return nullptr;
 	case Q_SCRIPTED:
 		return new Quest_Scripted;
+	case Q_DIRE_WOLF:
+		return new Quest_DireWolf;
 	default:
 		assert(0);
 		return nullptr;
@@ -300,14 +229,14 @@ Quest* QuestManager::CreateQuest(QuestInfo* info)
 {
 	if(!info)
 		return nullptr;
-	if(info->type == Q_SCRIPTED)
-	{
-		Quest_Scripted* quest = new Quest_Scripted;
-		quest->Init(info->scheme);
-		return quest;
-	}
-	else
-		return CreateQuest(info->type);
+	Quest* quest = CreateQuest(info->type);
+	if(info->scheme)
+		((Quest2*)quest)->SetScheme(info->scheme);
+	quest->Init();
+	quest->id = quest_counter++;
+	quest->Start();
+	unaccepted_quests.push_back(quest);
+	return quest;
 }
 
 //=================================================================================================
@@ -647,6 +576,9 @@ void QuestManager::Load(GameReader& f)
 	quest_goblins->Init();
 	quest_mages = static_cast<Quest_Mages*>(FindQuest(Q_MAGES));
 	quest_mages2 = static_cast<Quest_Mages2*>(FindQuest(Q_MAGES2));
+	if(LOAD_VERSION < V_0_8 && !quest_mages2)
+		quest_mages2 = static_cast<Quest_Mages2*>(CreateQuest(Q_MAGES2));
+	quest_mages2->Init();
 	quest_orcs = static_cast<Quest_Orcs*>(FindQuest(Q_ORCS));
 	quest_orcs->Init();
 	quest_orcs2 = static_cast<Quest_Orcs2*>(FindQuest(Q_ORCS2));
@@ -655,14 +587,6 @@ void QuestManager::Load(GameReader& f)
 	quest_evil->Init();
 	quest_crazies = static_cast<Quest_Crazies*>(FindQuest(Q_CRAZIES));
 	quest_crazies->Init();
-	if(LOAD_VERSION < V_0_8 && !quest_mages2)
-	{
-		quest_mages2 = new Quest_Mages2;
-		quest_mages2->id = quest_counter++;
-		quest_mages2->Start();
-		unaccepted_quests.push_back(quest_mages2);
-	}
-	quest_mages2->Init();
 
 	// quest timeouts
 	quests_timeout.resize(f.Read<uint>());
@@ -1039,11 +963,28 @@ const Item* QuestManager::FindQuestItemClient(cstring item_id, int quest_id) con
 void QuestManager::AddScriptedQuest(QuestScheme* scheme)
 {
 	assert(scheme);
-	infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
+	if(IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
+	{
+		QuestInfo* info = FindQuestInfo(scheme->id);
+		info->scheme = scheme;
+	}
+	else
+		infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
 }
 
 //=================================================================================================
-QuestInfo* QuestManager::FindQuest(const string& id)
+QuestInfo* QuestManager::FindQuestInfo(QUEST_TYPE type)
+{
+	for(QuestInfo& info : infos)
+	{
+		if(type == info.type)
+			return &info;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+QuestInfo* QuestManager::FindQuestInfo(const string& id)
 {
 	for(QuestInfo& info : infos)
 	{

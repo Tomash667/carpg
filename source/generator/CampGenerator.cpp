@@ -7,6 +7,7 @@
 #include "Level.h"
 #include "OutsideLocation.h"
 #include "UnitGroup.h"
+#include "UnitData.h"
 
 #include <Perlin.h>
 #include <Terrain.h>
@@ -40,7 +41,7 @@ void CampGenerator::Generate()
 	terrain->SetHeightMap(outside->h);
 	terrain->RandomizeHeight(0.f, 5.f);
 	float* h = terrain->GetHeightMap();
-	Perlin perlin(4, 4, 1);
+	Perlin perlin(4, 4);
 
 	for(uint y = 0; y < s; ++y)
 	{
@@ -115,9 +116,9 @@ void CampGenerator::GenerateObjects()
 			{
 				float angle = Random(MAX_ANGLE);
 				if(Rand() % 2 == 0)
-					game_level->SpawnObjectNearLocation(*game_level->local_area, tent, pt + Vec2(sin(angle), cos(angle))*Random(4.f, 5.5f), pt);
+					game_level->SpawnObjectNearLocation(*game_level->local_area, tent, pt + Vec2(sin(angle), cos(angle)) * Random(4.f, 5.5f), pt);
 				else
-					game_level->SpawnObjectNearLocation(*game_level->local_area, bedding, pt + Vec2(sin(angle), cos(angle))*Random(3.f, 4.f), pt);
+					game_level->SpawnObjectNearLocation(*game_level->local_area, bedding, pt + Vec2(sin(angle), cos(angle)) * Random(3.f, 4.f), pt);
 			}
 		}
 	}
@@ -141,7 +142,8 @@ void CampGenerator::GenerateObjects()
 			if(ok)
 			{
 				auto e = game_level->SpawnObjectNearLocation(*game_level->local_area, chest, pt, Random(MAX_ANGLE), 2.f);
-				if(!game_level->location->group->IsEmpty()) // empty chests for empty camps
+				if(!game_level->location->group->IsEmpty()
+					|| outside->target == HUNTERS_CAMP) // empty chests for empty camps
 				{
 					int gold, level = game_level->location->st;
 					Chest* chest = (Chest*)e;
@@ -182,6 +184,19 @@ void CampGenerator::GenerateUnits()
 	static vector<Vec2> poss;
 	poss.clear();
 	int level = outside->st;
+
+	if(outside->target == HUNTERS_CAMP)
+	{
+		UnitData* hunter = UnitData::Get("hunter"),
+			*hunterLeader = UnitData::Get("hunter_leader");
+		game_level->SpawnUnitNearLocation(*game_level->local_area, Vec3(128, 0, 128), *hunterLeader);
+		for(int i = 0; i < 7; ++i)
+		{
+			const Vec3 pos = Vec3(Random(90.f, 256.f - 90), 0, Random(90.f, 256.f - 90));
+			game_level->SpawnUnitNearLocation(*game_level->local_area, pos, *hunter);
+		}
+		return;
+	}
 
 	if(outside->group->IsEmpty())
 		return; // spawn empty camp, no units

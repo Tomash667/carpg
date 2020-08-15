@@ -23,14 +23,13 @@
 #include "LevelGui.h"
 #include "PlayerInfo.h"
 #include "Portal.h"
+#include "Quest2.h"
 #include "QuestManager.h"
 #include "Quest_Contest.h"
 #include "Quest_Mages.h"
-#include "Quest_Scripted.h"
 #include "Quest_Secret.h"
 #include "SaveState.h"
 #include "ScriptException.h"
-#include "ScriptManager.h"
 #include "Stock.h"
 #include "Team.h"
 #include "UnitEventHandler.h"
@@ -5874,7 +5873,7 @@ void Unit::RefreshStock()
 }
 
 //=================================================================================================
-void Unit::AddDialog(Quest_Scripted* quest, GameDialog* dialog, int priority)
+void Unit::AddDialog(Quest2* quest, GameDialog* dialog, int priority)
 {
 	assert(quest && dialog);
 	dialogs.push_back({ dialog, quest, priority });
@@ -5882,7 +5881,7 @@ void Unit::AddDialog(Quest_Scripted* quest, GameDialog* dialog, int priority)
 }
 
 //=================================================================================================
-void Unit::AddDialogS(Quest_Scripted* quest, const string& dialog_id, int priority)
+void Unit::AddDialogS(Quest2* quest, const string& dialog_id, int priority)
 {
 	GameDialog* dialog = quest->GetDialog(dialog_id);
 	if(!dialog)
@@ -5891,7 +5890,7 @@ void Unit::AddDialogS(Quest_Scripted* quest, const string& dialog_id, int priori
 }
 
 //=================================================================================================
-void Unit::RemoveDialog(Quest_Scripted* quest, bool cleanup)
+void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 {
 	assert(quest);
 	LoopAndRemove(dialogs, [quest](QuestDialog& dialog)
@@ -5913,7 +5912,7 @@ void Unit::RemoveDialog(Quest_Scripted* quest, bool cleanup)
 }
 
 //=================================================================================================
-void Unit::AddEventHandler(Quest_Scripted* quest, EventType type)
+void Unit::AddEventHandler(Quest2* quest, EventType type)
 {
 	assert(type == EVENT_UPDATE || type == EVENT_DIE);
 
@@ -5930,7 +5929,7 @@ void Unit::AddEventHandler(Quest_Scripted* quest, EventType type)
 }
 
 //=================================================================================================
-void Unit::RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup)
+void Unit::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 {
 	LoopAndRemove(events, [=](Event& e)
 	{

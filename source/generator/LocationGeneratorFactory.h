@@ -20,6 +20,7 @@ private:
 	DungeonGenerator* dungeon;
 	EncounterGenerator* encounter;
 	ForestGenerator* forest;
+	HillsGenerator* hills;
 	LabyrinthGenerator* labyrinth;
 	MoonwellGenerator* moonwell;
 	SecretLocationGenerator* secret;

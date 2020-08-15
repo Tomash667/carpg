@@ -953,6 +953,10 @@ item wolf_pelt {
 item worg_pelt {
 	name "Worg pelt"
 }
+item dire_wolf_pelt {
+	name "Dire wolf pelt"
+	desc "Valuable trophy."
+}
 item bear_pelt {
 	name "Bear pelt"
 }

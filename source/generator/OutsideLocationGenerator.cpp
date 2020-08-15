@@ -88,10 +88,10 @@ void OutsideLocationGenerator::CreateMap()
 void OutsideLocationGenerator::RandomizeTerrainTexture()
 {
 	// set random grass texture
-	Perlin perlin2(4, 4, 1);
-	for(int i = 0, y = 0; y < s; ++y)
+	Perlin perlin2(4, 4);
+	for(uint i = 0, y = 0; y < s; ++y)
 	{
-		for(int x = 0; x < s; ++x, ++i)
+		for(uint x = 0; x < s; ++x, ++i)
 		{
 			int v = int((perlin2.Get(1.f / 256 * float(x), 1.f / 256 * float(y)) + 1.f) * 50);
 			TERRAIN_TILE& t = outside->tiles[i].t;
@@ -112,16 +112,15 @@ void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, flo
 	const int w = OutsideLocation::size; // allows non-square terrain (but there isn't any yet)
 	const int h = OutsideLocation::size;
 	float* height = outside->h;
-	perlin.Change(max(w, h), octaves, frequency, 1.f);
-	float hdif = hmax - hmin;
-	const float hm = sqrt(2.f) / 2;
+	perlin.Change(octaves, frequency);
+	const float hdif = hmax - hmin;
 
 	for(int y = 0; y <= h; ++y)
 	{
 		for(int x = 0; x <= w; ++x)
 		{
-			float a = perlin.Get(1.f / (w + 1)*x, 1.f / (h + 1)*y);
-			height[x + y * (w + 1)] = (a + hm) / (hm * 2)*hdif + hmin;
+			const float value = perlin.GetNormalized(1.f / (w + 1)*x, 1.f / (h + 1)*y);
+			height[x + y * (w + 1)] = hmin + hdif * value;
 		}
 	}
 
@@ -198,9 +197,10 @@ void OutsideLocationGenerator::OnEnter()
 	SpawnOutsideBariers();
 
 	// handle quest event
-	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
+	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Event* event = outside->active_quest->GetEvent(game_level->location_index);
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(outside->active_quest);
+		Quest_Event* event = quest ?  quest->GetEvent(game_level->location_index) : nullptr;
 		if(event)
 		{
 			if(!event->done)

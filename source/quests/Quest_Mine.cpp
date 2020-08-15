@@ -29,6 +29,10 @@ void Quest_Mine::Start()
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used);
+	target_loc = world->GetClosestLocation(L_CAVE, GetStartLocation().pos);
+	used.push_back(start_loc);
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
 
 	if(game->devmode)

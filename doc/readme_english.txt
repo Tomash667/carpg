@@ -394,6 +394,7 @@ BottledByte - Bug reports and coding.
 		* rubberduck - shrine
 		* sandsound - morningstar
 		* System G6 - shield
+		* TiZiana - vodka, gray potion
 		* Wind astella - battle axe
 	* kaangvl - fish
 	* yd - sausage

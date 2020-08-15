@@ -953,6 +953,10 @@ item wolf_pelt {
 item worg_pelt {
 	name "Futro worga"
 }
+item dire_wolf_pelt {
+	name "Futro z≥owieszczego wilka"
+	desc "Cenne trofeum."
+}
 item bear_pelt {
 	name "Futro niedüwiedzia"
 }

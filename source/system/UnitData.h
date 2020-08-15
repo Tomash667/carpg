@@ -240,12 +240,14 @@ struct UnitData
 	vector<UnitData*>* upgrade;
 	Vec4 tint;
 	HumanData* appearance;
+	float scale;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(0), hp_lvl(0), stamina(0), attack(0), attack_lvl(0), def(0), def_lvl(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), abilities(nullptr), gold(0), gold2(0), dialog(nullptr), idleDialog(nullptr), group(G_CITIZENS),
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(nullptr),
-		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0), tint(Vec4::One), appearance(nullptr)
+		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f), spell_power(0), mp(200), mp_lvl(0), tint(Vec4::One), appearance(nullptr),
+		scale(1.f)
 	{
 	}
 	~UnitData()

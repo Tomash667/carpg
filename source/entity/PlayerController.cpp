@@ -26,7 +26,6 @@
 #include "Quest_Tutorial.h"
 #include "SaveState.h"
 #include "ScriptException.h"
-#include "ScriptManager.h"
 #include "Stock.h"
 #include "Team.h"
 #include "Unit.h"

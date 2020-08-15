@@ -2,6 +2,7 @@
 #include "Quest_Bandits.h"
 
 #include "AIController.h"
+#include "City.h"
 #include "Encounter.h"
 #include "Game.h"
 #include "GameFile.h"
@@ -24,6 +25,9 @@ void Quest_Bandits::Start()
 {
 	type = Q_BANDITS;
 	category = QuestCategory::Unique;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used, CITY);
+	used.push_back(start_loc);
 	enc = -1;
 	other_loc = -1;
 	camp_loc = -1;

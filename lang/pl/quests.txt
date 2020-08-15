@@ -349,3 +349,22 @@ quest side_cleric {
 		4 "Dostarczy³em ksiêgê i otrzyma³em nagrodê. Zadanie wykonane!"
 	}
 }
+
+//=============================================================================
+quest dire_wolf {
+	dialog hunter {
+		0 "Zadanie"
+		1 "Chcesz udowodniæ ¿e jesteœ jednym z nas?"
+		2 "W $(forest.name) z³owieszczy wilk sieje spustoszenie."
+		3 "Zabij go a zyskasz nasze uznanie i nagrodê."
+		4 "Doskona³a robota ³owco! Przyjmij to z³oto w nagrodê."
+	}
+	
+	texts {
+		0 "Z³owieszczy wilk"
+		1 "Otrzymano od przywódcy ³owców dnia $date$"
+		2 "Muszê udaæ siê do $(forest.name) i zabiæ z³owieszczego wilka który terroryzuje okoliczne wioski."
+		3 "Zabi³em z³owieszczego wilka, mogê wróciæ do obozu ³owców i odebraæ nagrodê."
+		4 "Otrzyma³em nagrodê. Zadanie wykonane!"
+	}
+}

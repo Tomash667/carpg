@@ -18,6 +18,9 @@ void Quest_Mages::Start()
 {
 	type = Q_MAGES;
 	category = QuestCategory::Unique;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used);
+	used.push_back(start_loc);
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[4], GetStartLocationName()));
 
 	if(game->devmode)

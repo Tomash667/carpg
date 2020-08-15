@@ -4358,3 +4358,17 @@ dialog drunk_mage_idle
 	next "citizen_idle"
 	end
 }
+
+//==============================================================================
+dialog hunter
+{
+	if once
+		talk 0
+	if choices != 0
+	{
+		escape choice 1
+			end
+		show_choices
+	}
+	end
+}

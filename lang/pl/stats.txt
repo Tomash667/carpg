@@ -44,6 +44,8 @@ randomEncounter = "Losowe spotkanie"
 tower = "Wie¿a"
 labyrinth = "Labirynt"
 academy = "Akademia"
+huntersCamp = "Obóz ³owców"
+hills = "Wzgórza"
 
 [WeaponTypes]
 shortBlade = "Krótkie ostrze"

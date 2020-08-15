@@ -124,9 +124,10 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER && inside->active_quest->type != Q_SCRIPTED)
+	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Event* event = inside->active_quest->GetEvent(game_level->location_index);
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(inside->active_quest);
+		Quest_Event* event = quest ? quest->GetEvent(game_level->location_index) : nullptr;
 		if(event)
 		{
 			if(event->at_level == dungeon_level)
@@ -159,7 +160,7 @@ void InsideLocationGenerator::OnEnter()
 
 				game_level->event_handler = event->location_event_handler;
 			}
-			else if(inside->active_quest->whole_location_event_handler)
+			else if(quest->whole_location_event_handler)
 				game_level->event_handler = event->location_event_handler;
 		}
 	}

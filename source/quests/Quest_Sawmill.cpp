@@ -22,6 +22,9 @@ void Quest_Sawmill::Start()
 	sawmill_state = State::None;
 	build_state = BuildState::None;
 	days = 0;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used);
+	used.push_back(start_loc);
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[0], GetStartLocationName()));
 
 	if(game->devmode)

@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Quest_Goblins.h"
 
+#include "City.h"
 #include "Encounter.h"
 #include "Game.h"
 #include "GameFile.h"
@@ -25,6 +26,9 @@ void Quest_Goblins::Start()
 {
 	category = QuestCategory::Unique;
 	type = Q_GOBLINS;
+	vector<int>& used = quest_mgr->GetUsedCities();
+	start_loc = world->GetRandomSettlementIndex(used, CITY);
+	used.push_back(start_loc);
 	enc = -1;
 	goblins_state = State::None;
 	nobleman = nullptr;

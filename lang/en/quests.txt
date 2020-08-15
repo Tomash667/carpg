@@ -350,3 +350,22 @@ quest side_cleric {
 		4 "I delivered the book and received the reward. Quest done!"
 	}
 }
+
+//=============================================================================
+quest dire_wolf {
+	dialog hunter {
+		0 "Quest"
+		1 "Do you want to prove that you are one of us?"
+		2 "In $(forest.name), a dire wolf is wreaking havoc."
+		3 "Kill it and you will gain our recognition and reward."
+		4 "Excellent job hunter! Please accept this gold as a reward."
+	}
+	
+	texts {
+		0 "Dire wolf"
+		1 "Received from the leader of hunters at $date$"
+		2 "I must go to $(forest.name) and kill the dire wolf that terrorizes the surrounding villages."
+		3 "I killed the dire wolf, I can go back to the hunter's camp and collect my reward."
+		4 "I recived the reward. Quest done!"
+	}
+}

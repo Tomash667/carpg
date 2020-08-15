@@ -1786,6 +1786,29 @@ unit q_zlo_mag : base_human {
 	dialog q_evil
 }
 
+unit hunter : base_human {
+	level 5
+	profile ai_archer
+	flags | {archer ai_train}
+	class hunter
+	items {
+		!light_armor
+		random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!bow
+		chance 50 p_hp
+		random 1 3 !normal_food
+		random 0 2 wolf_pelt
+		random 0 2 bear_pelt
+	}
+	gold {40 80}
+	dialog hunter
+}
+
+unit hunter_leader : hunter {
+	level 10
+	gold {100 200}
+}
+
 //------------------------------------------------------------------------------
 // GOBLINS
 //------------------------------------------------------------------------------
@@ -2964,6 +2987,25 @@ unit white_wolf_sum : wolf {
 	items null
 	group citizens
 	flags | {hero specific_name}
+}
+
+unit dire_wolf : wolf {
+	level 10
+	hp 2000
+	attack 200
+	def 200
+	scale 2
+	tex {
+		"dire_wolf.jpg"
+		null
+		null
+	}
+	items {
+		random 5 10 raw_meat
+		dire_wolf_pelt
+	}
+	width 0.8
+	attack_range 1.8
 }
 
 unit spider {

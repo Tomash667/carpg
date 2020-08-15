@@ -78,7 +78,7 @@ struct DialogContext
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);
-	void RemoveQuestDialog(Quest_Scripted* quest);
+	void RemoveQuestDialog(Quest2* quest);
 	cstring GetIdleText(Unit& talker);
 private:
 	void UpdateLoop();

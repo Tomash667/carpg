@@ -42,6 +42,8 @@ enum LOCATION_IMAGE
 	LI_DUNGEON2,
 	LI_ACADEMY,
 	LI_CAPITAL,
+	LI_HUNTERS_CAMP,
+	LI_HILLS,
 	LI_MAX
 };
 
@@ -89,7 +91,7 @@ enum LOCATION_STATE
 
 //-----------------------------------------------------------------------------
 // used to prevent other quest from using this location
-static Quest_Dungeon* const ACTIVE_QUEST_HOLDER = (Quest_Dungeon*)0xFFFFFFFE;
+static Quest* const ACTIVE_QUEST_HOLDER = (Quest*)0xFFFFFFFE;
 static constexpr int ANY_TARGET = -1;
 
 //-----------------------------------------------------------------------------
@@ -101,7 +103,7 @@ struct Location
 	int target;
 	Vec2 pos;
 	string name;
-	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
+	Quest* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
 	int last_visit; // worldtime from last time when team entered location or -1
 	int st; // poziom trudnoœci
 	uint seed;
@@ -148,9 +150,9 @@ struct Location
 	void SetName(cstring name);
 	void SetNameS(const string& name) { SetName(name.c_str()); }
 	void SetNamePrefix(cstring prefix);
-	void AddEventHandler(Quest_Scripted* quest, EventType type);
-	void RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup);
-	void RemoveEventHandlerS(Quest_Scripted* quest, EventType type) { RemoveEventHandler(quest, type, false); }
+	void AddEventHandler(Quest2* quest, EventType type);
+	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup);
+	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	bool IsVisited() const { return last_visit != -1; }
 };
 

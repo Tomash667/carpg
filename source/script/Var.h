@@ -19,7 +19,8 @@ struct Var
 		GroundItem,
 		String,
 		Unit,
-		UnitGroup
+		UnitGroup,
+		Magic
 	};
 	Type type;
 	union

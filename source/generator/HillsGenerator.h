@@ -4,7 +4,7 @@
 #include "OutsideLocationGenerator.h"
 
 //-----------------------------------------------------------------------------
-class ForestGenerator final : public OutsideLocationGenerator
+class HillsGenerator final : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;
@@ -12,8 +12,4 @@ public:
 	void GenerateObjects() override;
 	void GenerateUnits() override;
 	void GenerateItems() override;
-	void RandomizeTerrainTexture() override;
-
-private:
-	bool have_sawmill;
 };

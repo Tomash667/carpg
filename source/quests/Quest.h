@@ -65,11 +65,12 @@ struct Quest : public QuestHandler
 	uint quest_index;
 	QuestCategory category;
 	vector<string> msgs;
-	bool timeout;
+	bool timeout, isNew;
 
 	Quest();
 	virtual ~Quest() {}
 
+	virtual void Init() {}
 	virtual void Start() = 0;
 	virtual GameDialog* GetDialog(int type2) = 0;
 	virtual void SetProgress(int prog2) = 0;

@@ -1807,6 +1807,48 @@ quest side_cleric
 }
 
 //=============================================================================
+// UNIQUE HUNTERS QUEST - kill boss wolf
+//=============================================================================
+quest dire_wolf
+{
+	type unique
+	flags not_scripted
+	
+	progress {
+		P_WOLF_NONE
+		P_WOLF_STARTED
+		P_WOLF_KILLED
+		P_WOLF_COMPLETE
+	}
+	
+	properties {
+		Location@ camp, forest;
+	}
+	
+	dialog hunter {
+		if quest_progress == P_WOLF_NONE
+		{
+			choice 0
+			{
+				set_quest_progress P_WOLF_STARTED
+				talk 1
+				talk 2
+				talk 3
+				end
+			}
+		}
+		else if quest_progress == P_WOLF_KILLED
+		{
+			set_quest_progress P_WOLF_COMPLETE
+			do_once
+			talk 4
+			end
+		}
+		end
+	}
+}
+
+//=============================================================================
 // QUEST LISTS
 //=============================================================================
 quest_list mayor {

@@ -62,8 +62,8 @@ public:
 		ClericLeft
 	};
 
-	void Init();
-	void Start();
+	void Init() override;
+	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;

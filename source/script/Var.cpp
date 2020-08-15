@@ -32,7 +32,7 @@ Var* Var::SetGeneric(void* ptr, int type)
 void Var::GetGeneric(void* ptr, int type)
 {
 	// TODO: throw on invalid type
-	assert(this->type == script_mgr->GetVarType(type));
+	assert(this->type == script_mgr->GetVarType(type) || this->type == Type::Magic);
 	*(void**)ptr = this->ptr;
 }
 
@@ -127,6 +127,7 @@ void Vars::Save(FileWriter& f)
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
+		case Var::Type::Magic:
 			assert(0); // TODO
 			break;
 		}
@@ -224,6 +225,7 @@ void Vars::Load(FileReader& f)
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
+		case Var::Type::Magic:
 			assert(0); // TODO
 			break;
 		}

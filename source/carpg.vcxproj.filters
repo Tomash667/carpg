@@ -76,6 +76,21 @@
     <Filter Include="system\locations">
       <UniqueIdentifier>{d8ce4cfc-eef9-4926-a585-b7d50c955433}</UniqueIdentifier>
     </Filter>
+    <Filter Include="quests\mayor">
+      <UniqueIdentifier>{c4e3bc31-c9b2-4cee-bfe8-57747b1b7f94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quests\captain">
+      <UniqueIdentifier>{1c2ce389-5deb-457f-a068-5528fd5ca28c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quests\unique">
+      <UniqueIdentifier>{71dc7ab3-b653-4a88-912f-2ac3ffe3eca0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quests\event">
+      <UniqueIdentifier>{05759ce2-f005-4dff-a713-4687858387b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quests\random">
+      <UniqueIdentifier>{4b414ced-1c29-46d2-85d9-8ecfc7dae79f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -233,63 +248,6 @@
     <ClCompile Include="quests\QuestManager.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="quests\Quest_DeliverLetter.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_DeliverParcel.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_SpreadNews.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_RescueCaptive.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_BanditsCollectToll.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_CampNearCity.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_KillAnimals.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_FindArtifact.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_LostArtifact.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_StolenArtifact.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Wanted.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Sawmill.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Mine.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Bandits.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Mages.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Orcs.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Goblins.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Evil.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Crazies.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
@@ -298,9 +256,6 @@
       <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="quests\Quest.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_RetrievePackage.cpp">
       <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="stats\Buff.cpp">
@@ -394,15 +349,6 @@
     <ClCompile Include="helpers\LoadingHandler.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="quests\Quest_Contest.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Secret.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Tournament.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
     <ClCompile Include="generator\LocationGeneratorFactory.cpp">
       <Filter>generator</Filter>
     </ClCompile>
@@ -448,9 +394,6 @@
     <ClCompile Include="location\Cave.cpp">
       <Filter>location</Filter>
     </ClCompile>
-    <ClCompile Include="quests\Quest_Tutorial.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
     <ClCompile Include="entity\TerrainTile.cpp">
       <Filter>entity</Filter>
     </ClCompile>
@@ -483,9 +426,6 @@
     </ClCompile>
     <ClCompile Include="helpers\CombatHelper.cpp">
       <Filter>helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="quests\Quest_Artifacts.cpp">
-      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="quests\Quest_Scripted.cpp">
       <Filter>quests</Filter>
@@ -625,6 +565,90 @@
     </ClCompile>
     <ClCompile Include="entity\Hero.cpp">
       <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\HillsGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_DeliverLetter.cpp">
+      <Filter>quests\mayor</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_DeliverParcel.cpp">
+      <Filter>quests\mayor</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_RetrievePackage.cpp">
+      <Filter>quests\mayor</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_SpreadNews.cpp">
+      <Filter>quests\mayor</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_BanditsCollectToll.cpp">
+      <Filter>quests\captain</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_CampNearCity.cpp">
+      <Filter>quests\captain</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_KillAnimals.cpp">
+      <Filter>quests\captain</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_RescueCaptive.cpp">
+      <Filter>quests\captain</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Wanted.cpp">
+      <Filter>quests\captain</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Bandits.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Crazies.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Evil.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Goblins.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Mages.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Mine.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Orcs.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Sawmill.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Contest.cpp">
+      <Filter>quests\event</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Artifacts.cpp">
+      <Filter>quests\event</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Secret.cpp">
+      <Filter>quests\event</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Tournament.cpp">
+      <Filter>quests\event</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Tutorial.cpp">
+      <Filter>quests\event</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_FindArtifact.cpp">
+      <Filter>quests\random</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_LostArtifact.cpp">
+      <Filter>quests\random</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_StolenArtifact.cpp">
+      <Filter>quests\random</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_DireWolf.cpp">
+      <Filter>quests\unique</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest2.cpp">
+      <Filter>quests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -800,63 +824,6 @@
     <ClInclude Include="quests\QuestManager.h">
       <Filter>quests</Filter>
     </ClInclude>
-    <ClInclude Include="quests\Quest_DeliverLetter.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_DeliverParcel.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_SpreadNews.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_RescueCaptive.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_BanditsCollectToll.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_CampNearCity.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_KillAnimals.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_FindArtifact.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_LostArtifact.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_StolenArtifact.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Wanted.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Sawmill.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Mine.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Bandits.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Mages.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Orcs.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Goblins.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Evil.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Crazies.h">
-      <Filter>quests</Filter>
-    </ClInclude>
     <ClInclude Include="Version.h" />
     <ClInclude Include="location\LevelArea.h">
       <Filter>location</Filter>
@@ -875,9 +842,6 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="quests\QuestConsts.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_RetrievePackage.h">
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="system\ContentLoader.h">
@@ -983,15 +947,6 @@
     <ClInclude Include="entity\News.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="quests\Quest_Contest.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Secret.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Tournament.h">
-      <Filter>quests</Filter>
-    </ClInclude>
     <ClInclude Include="entity\Encounter.h">
       <Filter>entity</Filter>
     </ClInclude>
@@ -1046,9 +1001,6 @@
     <ClInclude Include="location\Cave.h">
       <Filter>location</Filter>
     </ClInclude>
-    <ClInclude Include="quests\Quest_Tutorial.h">
-      <Filter>quests</Filter>
-    </ClInclude>
     <ClInclude Include="entity\ObjectEntity.h">
       <Filter>entity</Filter>
     </ClInclude>
@@ -1081,9 +1033,6 @@
     </ClInclude>
     <ClInclude Include="helpers\CombatHelper.h">
       <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Artifacts.h">
-      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="quests\Quest_Scripted.h">
       <Filter>quests</Filter>
@@ -1240,6 +1189,90 @@
     </ClInclude>
     <ClInclude Include="entity\Hero.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\HillsGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_DeliverLetter.h">
+      <Filter>quests\mayor</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_DeliverParcel.h">
+      <Filter>quests\mayor</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_RetrievePackage.h">
+      <Filter>quests\mayor</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_SpreadNews.h">
+      <Filter>quests\mayor</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_BanditsCollectToll.h">
+      <Filter>quests\captain</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_CampNearCity.h">
+      <Filter>quests\captain</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_KillAnimals.h">
+      <Filter>quests\captain</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_RescueCaptive.h">
+      <Filter>quests\captain</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Wanted.h">
+      <Filter>quests\captain</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Bandits.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Crazies.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Evil.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Goblins.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Mages.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Mine.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Orcs.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Sawmill.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Contest.h">
+      <Filter>quests\event</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Artifacts.h">
+      <Filter>quests\event</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Secret.h">
+      <Filter>quests\event</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Tournament.h">
+      <Filter>quests\event</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Tutorial.h">
+      <Filter>quests\event</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_FindArtifact.h">
+      <Filter>quests\random</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_LostArtifact.h">
+      <Filter>quests\random</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_StolenArtifact.h">
+      <Filter>quests\random</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_DireWolf.h">
+      <Filter>quests\unique</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest2.h">
+      <Filter>quests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

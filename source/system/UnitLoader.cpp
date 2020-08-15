@@ -98,7 +98,8 @@ enum Property
 	P_SPELL_POWER,
 	P_MP,
 	P_TINT,
-	P_APPEARANCE
+	P_APPEARANCE,
+	P_SCALE
 };
 
 enum FrameKeyword
@@ -252,7 +253,8 @@ void UnitLoader::InitTokenizer()
 		{ "spell_power", P_SPELL_POWER },
 		{ "mp", P_MP },
 		{ "tint", P_TINT },
-		{ "appearance", P_APPEARANCE }
+		{ "appearance", P_APPEARANCE },
+		{ "scale", P_SCALE }
 		});
 
 	t.AddKeywords(G_MATERIAL, {
@@ -1112,6 +1114,7 @@ void UnitLoader::ParseUnit(const string& id)
 			break;
 		case P_TINT:
 			t.Parse(unit->tint);
+			crc.Update(unit->tint);
 			break;
 		case P_APPEARANCE:
 			{
@@ -1172,10 +1175,24 @@ void UnitLoader::ParseUnit(const string& id)
 					t.Next();
 				}
 
+				crc.Update(human->hair);
+				crc.Update(human->mustache);
+				crc.Update(human->beard);
+				crc.Update(human->hair_type);
+				if(human->hair_type == HumanData::HairColorType::Fixed)
+					crc.Update(human->hair_color);
+				crc.Update(human->height);
+
 				HumanData* hd = human.Pin();
 				unit->appearance = hd;
 				UnitData::appearances.push_back(hd);
 			}
+			break;
+		case P_SCALE:
+			unit->scale = t.MustGetFloat();
+			if(!InRange(unit->scale, 0.1f, 10.f))
+				LoadError("Invalid scale.");
+			crc.Update(unit->scale);
 			break;
 		default:
 			t.Unexpected();

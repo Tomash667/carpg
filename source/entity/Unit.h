@@ -380,7 +380,7 @@ struct Unit : public EntityType<Unit>
 	void TakeWeapon(WeaponType type);
 	float GetSphereRadius() const
 	{
-		float radius = data->mesh->head.radius;
+		float radius = data->mesh->head.radius * data->scale;
 		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1) * 0.2f + 1.f);
 		return radius;
@@ -404,9 +404,9 @@ struct Unit : public EntityType<Unit>
 	float GetUnitHeight() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 1.73f * ((human_data->height - 1) * 0.2f + 1.f);
+			return 1.73f * data->scale * ((human_data->height - 1) * 0.2f + 1.f);
 		else
-			return data->mesh->head.bbox.SizeY();
+			return data->scale * data->mesh->head.bbox.SizeY();
 	}
 	Vec3 GetPhysicsPos() const
 	{
@@ -921,13 +921,13 @@ public:
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
-	void AddDialog(Quest_Scripted* quest, GameDialog* dialog, int priority);
-	void AddDialogS(Quest_Scripted* quest, const string& dialog_id, int priority);
-	void RemoveDialog(Quest_Scripted* quest, bool cleanup);
-	void RemoveDialogS(Quest_Scripted* quest) { RemoveDialog(quest, false); }
-	void AddEventHandler(Quest_Scripted* quest, EventType type);
-	void RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup);
-	void RemoveEventHandlerS(Quest_Scripted* quest, EventType type) { RemoveEventHandler(quest, type, false); }
+	void AddDialog(Quest2* quest, GameDialog* dialog, int priority = 0);
+	void AddDialogS(Quest2* quest, const string& dialog_id, int priority);
+	void RemoveDialog(Quest2* quest, bool cleanup);
+	void RemoveDialogS(Quest2* quest) { RemoveDialog(quest, false); }
+	void AddEventHandler(Quest2* quest, EventType type);
+	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup);
+	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	void RemoveAllEventHandlers();
 	UnitOrder GetOrder() const
 	{

@@ -13,7 +13,6 @@
 #include "Quest_Orcs.h"
 #include "Quest_Secret.h"
 #include "Quest_Scripted.h"
-#include "ScriptManager.h"
 #include "UnitGroup.h"
 
 //=================================================================================================
@@ -34,7 +33,7 @@ void DungeonGenerator::Generate()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	assert(!lvl.map);
 
-	Quest_Scripted* event_handler = nullptr;
+	Quest2* event_handler = nullptr;
 	for(Event& event : inside->events)
 	{
 		if(event.type == EVENT_GENERATE)

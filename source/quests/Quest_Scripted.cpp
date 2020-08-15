@@ -21,7 +21,7 @@
 #pragma warning(error: 4062)
 
 //=================================================================================================
-Quest_Scripted::Quest_Scripted() : instance(nullptr), timeout_days(-1), call_depth(0), in_upgrade(false)
+Quest_Scripted::Quest_Scripted() : instance(nullptr), call_depth(0), in_upgrade(false)
 {
 	type = Q_SCRIPTED;
 	prog = -1;
@@ -50,7 +50,7 @@ void Quest_Scripted::Start(Vars* vars)
 	start_loc = world->GetCurrentLocationIndex();
 	category = scheme->category;
 
-	CreateInstance();
+	instance = CreateInstance(false);
 
 	// call Startup
 	if(!scheme->f_startup)
@@ -71,21 +71,6 @@ void Quest_Scripted::Start(Vars* vars)
 		script_mgr->RunScript(scheme->f_startup, instance);
 	}
 	AfterCall();
-}
-
-//=================================================================================================
-void Quest_Scripted::CreateInstance()
-{
-	asIScriptFunction* factory = scheme->script_type->GetFactoryByIndex(0);
-	script_mgr->RunScript(factory, nullptr, [this](asIScriptContext* ctx, int stage)
-	{
-		if(stage == 1)
-		{
-			void* ptr = ctx->GetAddressOfReturnValue();
-			instance = *(asIScriptObject**)ptr;
-			instance->AddRef();
-		}
-	});
 }
 
 //=================================================================================================
@@ -195,6 +180,8 @@ void Quest_Scripted::Save(GameWriter& f)
 					f.Write0();
 			}
 			break;
+		case Var::Type::Magic:
+			break;
 		}
 	}
 }
@@ -213,7 +200,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	if(prog == -1)
 		return LoadResult::Ok;
 
-	CreateInstance();
+	instance = CreateInstance(false);
 
 	// properties
 	if(LOAD_VERSION >= V_0_14)
@@ -358,18 +345,8 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
 				*(UnitGroup**)ptr = nullptr;
 		}
 		break;
-	}
-}
-
-//=================================================================================================
-GameDialog* Quest_Scripted::GetDialog(int type2)
-{
-	if(type2 == QUEST_DIALOG_START)
-		return scheme->GetDialog("start");
-	else
-	{
-		assert(0); // not implemented
-		return nullptr;
+	case Var::Type::Magic:
+		break;
 	}
 }
 
@@ -528,75 +505,6 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 }
 
 //=================================================================================================
-void Quest_Scripted::Cleanup()
-{
-	if(timeout_days != -1)
-	{
-		RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
-		timeout_days = -1;
-	}
-
-	for(EventPtr& e : events)
-	{
-		switch(e.source)
-		{
-		case EventPtr::LOCATION:
-			e.location->RemoveEventHandler(this, EVENT_ANY, true);
-			break;
-		case EventPtr::UNIT:
-			e.unit->RemoveEventHandler(this, EVENT_ANY, true);
-			break;
-		}
-	}
-	events.clear();
-
-	for(Unit* unit : unit_dialogs)
-		unit->RemoveDialog(this, true);
-	unit_dialogs.clear();
-
-	world->RemoveEncounter(this);
-}
-
-//=================================================================================================
-// Remove event ptr, must be called when removing real event
-void Quest_Scripted::RemoveEventPtr(const EventPtr& event)
-{
-	LoopAndRemove(events, [&](EventPtr& e)
-	{
-		return event == e;
-	});
-}
-
-//=================================================================================================
-void Quest_Scripted::RemoveDialogPtr(Unit* unit)
-{
-	LoopAndRemove(unit_dialogs, [=](Unit* u)
-	{
-		return unit == u;
-	});
-}
-
-//=================================================================================================
-cstring Quest_Scripted::FormatString(const string& str)
-{
-	if(str == "date")
-		return world->GetDate();
-	else if(str == "name")
-	{
-		Unit* talker = DialogContext::current->talker;
-		assert(talker->IsHero());
-		return talker->hero->name.c_str();
-	}
-	else if(str == "player_name")
-		return DialogContext::current->pc->name.c_str();
-	else
-	{
-		assert(0);
-		return Format("!!!%s!!!", str.c_str());
-	}
-}
-
-//=================================================================================================
 string Quest_Scripted::GetString(int index)
 {
 	assert(script_mgr->GetContext().quest == this);
@@ -688,7 +596,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	type = Q_SCRIPTED;
 	category = scheme->category;
-	CreateInstance();
+	instance = CreateInstance(false);
 
 	// call method
 	in_upgrade = true;

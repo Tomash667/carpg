@@ -63,6 +63,8 @@ ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 
 ScriptManager::~ScriptManager()
 {
+	for(pair<QuestScheme*, asIScriptObject*>& p : sharedInstances)
+		p.second->Release();
 	if(engine)
 		engine->ShutDownAndRelease();
 	DeleteElements(unit_vars);
@@ -542,7 +544,9 @@ void ScriptManager::RegisterGame()
 		{ "ANCIENT_ARMORY", ANCIENT_ARMORY },
 		{ "TUTORIAL_FORT", TUTORIAL_FORT },
 		{ "THRONE_FORT", THRONE_FORT },
-		{ "THRONE_VAULT", THRONE_VAULT }
+		{ "THRONE_VAULT", THRONE_VAULT },
+		{ "HUNTERS_CAMP", HUNTERS_CAMP },
+		{ "HILLS", HILLS }
 		});
 
 	AddEnum("UNIT_ORDER", {
@@ -581,7 +585,9 @@ void ScriptManager::RegisterGame()
 		{ "LI_SAWMILL", LI_SAWMILL },
 		{ "LI_DUNGEON2", LI_DUNGEON2 },
 		{ "LI_ACADEMY", LI_ACADEMY },
-		{ "LI_CAPITAL", LI_CAPITAL }
+		{ "LI_CAPITAL", LI_CAPITAL },
+		{ "LI_HUNTERS_CAMP", LI_HUNTERS_CAMP },
+		{ "LI_HILLS", LI_HILLS }
 		});
 
 	AddEnum("QUEST_STATE", {
@@ -658,6 +664,7 @@ void ScriptManager::RegisterGame()
 		.Method("int get_progress() property", asMETHOD(Quest_Scripted, GetProgress))
 		.Method("string GetString(int)", asMETHOD(Quest_Scripted, GetString))
 		.Method("Dialog@ GetDialog(const string& in)", asMETHODPR(Quest_Scripted, GetDialog, (const string&), GameDialog*))
+		.Method("Var@ GetValue(int offset)", asMETHOD(Quest2, GetValue))
 		.Method("void AddRumor(const string& in)", asMETHOD(Quest_Scripted, AddRumor))
 		.Method("void RemoveRumor()", asMETHOD(Quest_Scripted, RemoveRumor))
 		.Method("void Start(Vars@)", asMETHODPR(Quest_Scripted, Start, (Vars*), void))
@@ -1375,4 +1382,15 @@ void ScriptManager::ResumeScript(asIScriptContext* ctx)
 			return;
 		}
 	}
+}
+
+asIScriptObject* ScriptManager::GetSharedInstance(QuestScheme* scheme)
+{
+	assert(scheme);
+	for(pair<QuestScheme*, asIScriptObject*>& p : sharedInstances)
+	{
+		if(p.first == scheme)
+			return p.second;
+	}
+	return nullptr;
 }

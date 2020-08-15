@@ -331,6 +331,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 		* rubberduck - shrine
 		* sandsound - morningstar
 		* System G6 - shield
+		* TiZiana - vodka, gray potion
 		* Wind astella - battle axe
 	* kaangvl - fish
 	* yd - sausage

@@ -162,6 +162,7 @@
     <ClInclude Include="generator\DungeonGenerator.h" />
     <ClInclude Include="generator\EncounterGenerator.h" />
     <ClInclude Include="generator\ForestGenerator.h" />
+    <ClInclude Include="generator\HillsGenerator.h" />
     <ClInclude Include="generator\InsideLocationGenerator.h" />
     <ClInclude Include="generator\LabyrinthGenerator.h" />
     <ClInclude Include="generator\LocationGenerator.h" />
@@ -189,10 +190,12 @@
     <ClInclude Include="gui\AbilityPanel.h" />
     <ClInclude Include="gui\BookPanel.h" />
     <ClInclude Include="gui\GameGui.h" />
+    <ClInclude Include="quests\Quest2.h" />
     <ClInclude Include="quests\QuestHandler.h" />
     <ClInclude Include="quests\QuestConsts.h" />
     <ClInclude Include="quests\Quest_Artifacts.h" />
     <ClInclude Include="quests\Quest_Contest.h" />
+    <ClInclude Include="quests\Quest_DireWolf.h" />
     <ClInclude Include="quests\Quest_Scripted.h" />
     <ClInclude Include="quests\Quest_Secret.h" />
     <ClInclude Include="quests\Quest_Tournament.h" />
@@ -336,6 +339,7 @@
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
@@ -344,6 +348,8 @@
     <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="generator\AcademyGenerator.cpp" />
     <ClCompile Include="net\PacketLogger.cpp" />
+    <ClCompile Include="quests\Quest2.cpp" />
+    <ClCompile Include="quests\Quest_DireWolf.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />

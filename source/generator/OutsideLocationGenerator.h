@@ -20,7 +20,7 @@ public:
 
 protected:
 	void CreateMap();
-	void RandomizeTerrainTexture();
+	virtual void RandomizeTerrainTexture();
 	void RandomizeHeight(int octaves, float frequency, float hmin, float hmax);
 	void ApplyTiles();
 	void SpawnOutsideBariers();

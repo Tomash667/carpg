@@ -103,6 +103,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	trader = nullptr; // not copied
 	tint = ud.tint;
 	appearance = ud.appearance;
+	scale = ud.scale;
 }
 
 int UnitData::GetLevelDif(int level) const

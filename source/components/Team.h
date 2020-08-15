@@ -49,6 +49,7 @@ public:
 	bool HaveOtherActiveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool HaveOtherPlayer();
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
+	bool HaveClass(Class* clas) const;
 	bool IsAnyoneAlive();
 	bool IsBandit() const { return is_bandit; }
 	bool IsLeader() const { return my_id == leader_id; }

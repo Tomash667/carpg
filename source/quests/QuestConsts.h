@@ -40,7 +40,8 @@ enum QUEST_TYPE
 	Q_WANTED,
 	Q_MAIN, // removed
 	Q_ARTIFACTS, // removed in V_0_14
-	Q_SCRIPTED
+	Q_SCRIPTED,
+	Q_DIRE_WOLF
 };
 
 //-----------------------------------------------------------------------------

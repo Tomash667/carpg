@@ -2090,3 +2090,13 @@ dialog drunk_mage_idle {
 		"(HIC)"
 	}
 }
+
+//==============================================================================
+dialog hunter {
+	0 {
+		"Udanych ³owów!"
+		"Witaj w naszym obozie."
+		"Witaj!"
+	}
+	1 "Koniec rozmowy"
+}

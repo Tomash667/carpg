@@ -44,6 +44,8 @@ randomEncounter = "Random encounter"
 tower = "Tower"
 labyrinth = "Labyrinth"
 academy = "Academy"
+huntersCamp = "Hunters camp"
+hills = "Hills"
 
 [WeaponTypes]
 shortBlade = "Short blade"

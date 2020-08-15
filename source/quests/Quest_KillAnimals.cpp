@@ -53,7 +53,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			if(Rand() % 2 == 0)
 				target_loc = world->GetClosestLocation(L_CAVE, sl.pos);
 			else
-				target_loc = world->GetClosestLocation(L_OUTSIDE, sl.pos, FOREST);
+				target_loc = world->GetClosestLocation(L_OUTSIDE, sl.pos, { FOREST, HILLS });
 			location_event_handler = this;
 			at_level = 0;
 

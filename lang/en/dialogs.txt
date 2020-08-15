@@ -2078,3 +2078,13 @@ dialog drunk_mage_idle {
 		"(HIC)"
 	}
 }
+
+//==============================================================================
+dialog hunter {
+	0 {
+		"Happy hunting!"
+		"Welcome to our camp."
+		"Hello!"
+	}
+	1 "End dialog"
+}

@@ -16,7 +16,6 @@
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
 #include "Quest_Tournament.h"
-#include "ScriptManager.h"
 #include "Team.h"
 
 #include <Profiler.h>

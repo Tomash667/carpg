@@ -105,6 +105,8 @@ Game enums & consts
 * LI_DUNGEON2
 * LI_ACADEMY
 * LI_CAPITAL
+* LI_HUNTERS_CAMP
+* LI_HILLS
 
 ### Enum LOCATION_TARGET
 * FOREST
@@ -127,6 +129,8 @@ Game enums & consts
 * TUTORIAL_FORT
 * THRONE_FORT
 * THRONE_VAULT
+* HUNTERS_CAMP
+* HILLS
 
 ### Enum MOVE_TYPE
 * MOVE_RUN - always run.

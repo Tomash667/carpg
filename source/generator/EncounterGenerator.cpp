@@ -85,7 +85,7 @@ void EncounterGenerator::Generate()
 	terrain->RoundHeight();
 	terrain->RoundHeight();
 
-	Perlin perlin(4, 4, 1);
+	Perlin perlin(4, 4);
 	for(uint y = 0; y < s; ++y)
 	{
 		for(uint x = 0; x < s; ++x)
