@@ -5,6 +5,7 @@ Wersja 0.17 (???):
 ! nie można wczytywać już zapisów z wersji 0.7 lub starszej
 + obóz łowców, zadanie z zabiciem złowieszczego wilka
 + lepsze modele przedmiotów: wódka, szara mikstura
++ lepszy generator obozów
 + optymalizacje manadżera sceny
 
 --------------------------------------------------------------------------------

@@ -58,6 +58,7 @@ LocationGeneratorFactory::~LocationGeneratorFactory()
 void LocationGeneratorFactory::Init()
 {
 	OutsideLocationGenerator::InitOnce();
+	camp->InitOnce();
 }
 
 //=================================================================================================

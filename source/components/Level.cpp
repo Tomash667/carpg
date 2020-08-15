@@ -2319,7 +2319,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					do
 					{
 						if(it->owner == *objs)
-							goto ignoruj;
+							goto ignore;
 						else if(!*objs)
 							break;
 						else
@@ -2339,7 +2339,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 						objects.push_back(*it);
 				}
 
-			ignoruj:
+			ignore:
 				;
 			}
 		}
@@ -2518,7 +2518,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					do
 					{
 						if(it->owner == *objs)
-							goto ignoruj;
+							goto ignore;
 						else if(!*objs)
 							break;
 						else
@@ -2538,7 +2538,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 						objects.push_back(*it);
 				}
 
-			ignoruj:
+			ignore:
 				;
 			}
 		}

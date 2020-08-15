@@ -52,7 +52,7 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 {
 	assert(InRange(level, 1, 20));
 
-	int value = Random(treasure_value[level - 1], treasure_value[level]);
+	int value = Random(treasure_value[level - 1], treasure_value[level]) * _count / 10;
 
 	items.clear();
 
@@ -150,6 +150,18 @@ void ItemHelper::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests
 		slot.Set(Item::gold, divided_count, divided_count);
 		SortItems(chests[i]->items);
 	}
+}
+
+//=================================================================================================
+void ItemHelper::GenerateTreasure(vector<Chest*>& chests, int level, int count)
+{
+	if(chests.empty())
+		return;
+
+	static vector<ItemSlot> items;
+	int gold;
+	GenerateTreasure(level, 10 * count, items, gold, false);
+	SplitTreasure(items, gold, chests.data(), chests.size());
 }
 
 //=================================================================================================

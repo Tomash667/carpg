@@ -5,6 +5,7 @@ Version 0.17 (???):
 ! cannot load saves from version 0.7 or older
 + hunters camp, quest to kill dire wolf
 + better item models: vodka, gray potion
++ better camp generator
 + scene manager optimisations
 
 --------------------------------------------------------------------------------

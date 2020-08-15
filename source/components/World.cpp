@@ -2987,7 +2987,26 @@ void World::AbadonLocation(Location* loc)
 
 	// remove camp in 4-8 days
 	if(loc->type == L_CAMP)
-		static_cast<Camp*>(loc)->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+	{
+		Camp* camp = static_cast<Camp*>(loc);
+		camp->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+
+		// turn off lights
+		if(loc != current_location)
+		{
+			BaseObject* campfire = BaseObject::Get("campfire"),
+				*campfireOff = BaseObject::Get("campfire_off"),
+				*torch = BaseObject::Get("torch"),
+				*torchOff = BaseObject::Get("torch_off");
+			for(Object* obj : camp->objects)
+			{
+				if(obj->base == campfire)
+					obj->base = campfireOff;
+				else if(obj->base == torch)
+					obj->base = torchOff;
+			}
+		}
+	}
 
 	// if location is open
 	if(loc == current_location)
