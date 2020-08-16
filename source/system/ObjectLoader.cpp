@@ -89,6 +89,7 @@ void ObjectLoader::InitTokenizer()
 		{ "table_spawner", OBJ_TABLE_SPAWNER },
 		{ "campfire_effect", OBJ_CAMPFIRE_EFFECT },
 		{ "important", OBJ_IMPORTANT },
+		{ "tmp_physics", OBJ_TMP_PHYSICS },
 		{ "scaleable", OBJ_SCALEABLE },
 		{ "physics_ptr", OBJ_PHYSICS_PTR },
 		{ "building", OBJ_BUILDING },

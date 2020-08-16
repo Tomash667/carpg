@@ -169,6 +169,8 @@ void OutsideLocationGenerator::OnEnter()
 		if(days > 0)
 			game_level->UpdateLocation(days, 100, false);
 
+		game_level->RecreateTmpObjectPhysics();
+
 		// remove alive units
 		if(need_reset)
 			DeleteElements(outside->units, [](Unit* unit) { return unit->IsAlive(); });
@@ -228,6 +230,8 @@ void OutsideLocationGenerator::OnEnter()
 			u->assist = true;
 		}
 	}
+
+	game_level->RemoveTmpObjectPhysics();
 }
 
 //=================================================================================================
@@ -496,7 +500,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, border2);
+		cobj.pos = Vec3(size2, 0, border2);
 		cobj.w = size2;
 		cobj.h = border2;
 
@@ -514,7 +518,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, size - border2);
+		cobj.pos = Vec3(size2, 0, size - border2);
 		cobj.w = size2;
 		cobj.h = border2;
 
@@ -532,7 +536,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(border2, size2);
+		cobj.pos = Vec3(border2, 0, size2);
 		cobj.w = border2;
 		cobj.h = size2;
 
@@ -550,7 +554,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size - border2, size2);
+		cobj.pos = Vec3(size - border2, 0, size2);
 		cobj.w = border2;
 		cobj.h = size2;
 

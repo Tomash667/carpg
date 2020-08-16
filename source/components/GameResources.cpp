@@ -330,7 +330,7 @@ void GameResources::PreloadObjects()
 		BaseObject& obj = *p.second;
 		if(obj.mesh || obj.variants)
 		{
-			if(obj.mesh && !IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
+			if(obj.mesh && !IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS) && obj.type == OBJ_CYLINDER)
 				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
 
 			Mesh::Point* point;
@@ -370,7 +370,7 @@ void GameResources::PreloadObjects()
 				obj.matrix = &point->mat;
 				obj.size = point->size.XZ();
 
-				if(!IsSet(obj.flags, OBJ_NO_PHYSICS))
+				if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 					obj.shape = new btBoxShape(ToVector3(point->size));
 
 				if(IsSet(obj.flags, OBJ_PHY_ROT))
@@ -415,7 +415,7 @@ void GameResources::PreloadObjects()
 					{
 						assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
 						obj.next_obj = new BaseObject;
-						if(!IsSet(obj.flags, OBJ_NO_PHYSICS))
+						if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 						{
 							btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
 							obj.next_obj->shape = shape;

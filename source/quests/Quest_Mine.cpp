@@ -924,7 +924,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 							tr.setOrigin(ToVector3(pos2));
 							tr.setRotation(btQuaternion(rot, 0, 0));
 
-							c.pt = Vec2(pos2.x, pos2.z);
+							c.pos = pos2;
 							c.w = iron_vein->size.x;
 							c.h = iron_vein->size.y;
 							if(NotZero(rot))

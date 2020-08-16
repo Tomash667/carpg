@@ -475,12 +475,12 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 		if(it->type == CollisionObject::SPHERE)
 		{
-			if(RayToCylinder(pos, pos + dir, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, t) && t < min_t && t > 0.f)
+			if(RayToCylinder(pos, pos + dir, Vec3(it->pos.x, 0, it->pos.z), Vec3(it->pos.x, 32.f, it->pos.z), it->radius, t) && t < min_t && t > 0.f)
 				min_t = t;
 		}
 		else if(it->type == CollisionObject::RECTANGLE)
 		{
-			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
+			Box box(it->pos.x - it->w, 0.f, it->pos.z - it->h, it->pos.x + it->w, 32.f, it->pos.z + it->h);
 			if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
 				min_t = t;
 		}
@@ -498,7 +498,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 				h = it->h;
 			}
 
-			Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
+			Box box(it->pos.x - w, 0.f, it->pos.z - h, it->pos.x + w, 32.f, it->pos.z + h);
 			if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
 				min_t = t;
 		}

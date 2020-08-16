@@ -26,7 +26,7 @@ enum OBJ_FLAGS
 	OBJ_TABLE_SPAWNER = 1 << 7, // generate Random table and chairs
 	OBJ_CAMPFIRE_EFFECT = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
 	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
-	// removed (1 << 10)
+	OBJ_TMP_PHYSICS = 1 << 10, // temporary physics, only used on spawning units
 	OBJ_SCALEABLE = 1 << 11, // object can be scaled, need different physics handling
 	OBJ_PHYSICS_PTR = 1 << 12, // btCollisionObject user pointer points to Object (do not use in new code, only used in tutorial, don't support save & load)
 	OBJ_BUILDING = 1 << 13, // object is building

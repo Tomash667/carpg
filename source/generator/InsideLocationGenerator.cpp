@@ -68,6 +68,8 @@ void InsideLocationGenerator::OnEnter()
 	{
 		game->LoadingStep(game->txRegeneratingLevel);
 
+		game_level->RecreateTmpObjectPhysics();
+
 		if(days > 0)
 			game_level->UpdateLocation(days, base.door_open, need_reset);
 
@@ -271,6 +273,8 @@ void InsideLocationGenerator::OnEnter()
 
 	game_level->AddPlayerTeam(spawn_pos, spawn_rot);
 	OpenDoorsByTeam(spawn_pt);
+
+	game_level->RemoveTmpObjectPhysics();
 }
 
 //=================================================================================================
@@ -824,13 +828,13 @@ void InsideLocationGenerator::GenerateTraps()
 
 	InsideLocationLevel& lvl = GetLevelData();
 
-	int szansa;
+	int chance;
 	Int2 pt(-1000, -1000);
 	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
 		if(dungeon_level != 0)
 			return;
-		szansa = 10;
+		chance = 10;
 		pt = lvl.prevEntryPt;
 	}
 	else if(IsSet(base.traps, TRAPS_NEAR_END))
@@ -842,52 +846,52 @@ void InsideLocationGenerator::GenerateTraps()
 			switch(size)
 			{
 			case 0:
-				szansa = 25;
+				chance = 25;
 				break;
 			case 1:
 				if(dungeon_level == 1)
-					szansa = 25;
+					chance = 25;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			case 2:
 				if(dungeon_level == 2)
-					szansa = 25;
+					chance = 25;
 				else if(dungeon_level == 1)
-					szansa = 15;
+					chance = 15;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			case 3:
 				if(dungeon_level == 3)
-					szansa = 25;
+					chance = 25;
 				else if(dungeon_level == 2)
-					szansa = 15;
+					chance = 15;
 				else if(dungeon_level == 1)
-					szansa = 10;
+					chance = 10;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			default:
 				if(dungeon_level == size - 1)
-					szansa = 25;
+					chance = 25;
 				else if(dungeon_level == size - 2)
-					szansa = 15;
+					chance = 15;
 				else if(dungeon_level == size - 3)
-					szansa = 10;
+					chance = 10;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			}
 
-			if(szansa == 0)
+			if(chance == 0)
 				return;
 		}
 		else
-			szansa = 20;
+			chance = 20;
 	}
 	else
-		szansa = 20;
+		chance = 20;
 
 	vector<TRAP_TYPE> traps;
 	if(IsSet(base.traps, TRAPS_NORMAL))
@@ -909,7 +913,7 @@ void InsideLocationGenerator::GenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
 				&& !OR2_EQ(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
-				if(Rand() % 500 < szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
+				if(Rand() % 500 < chance + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
 					game_level->CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
 			}
 		}
@@ -926,13 +930,13 @@ void InsideLocationGenerator::RegenerateTraps()
 
 	InsideLocationLevel& lvl = GetLevelData();
 
-	int szansa;
+	int chance;
 	Int2 pt(-1000, -1000);
 	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
 		if(dungeon_level != 0)
 			return;
-		szansa = 0;
+		chance = 0;
 		pt = lvl.prevEntryPt;
 	}
 	else if(IsSet(base.traps, TRAPS_NEAR_END))
@@ -944,52 +948,52 @@ void InsideLocationGenerator::RegenerateTraps()
 			switch(size)
 			{
 			case 0:
-				szansa = 25;
+				chance = 25;
 				break;
 			case 1:
 				if(dungeon_level == 1)
-					szansa = 25;
+					chance = 25;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			case 2:
 				if(dungeon_level == 2)
-					szansa = 25;
+					chance = 25;
 				else if(dungeon_level == 1)
-					szansa = 15;
+					chance = 15;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			case 3:
 				if(dungeon_level == 3)
-					szansa = 25;
+					chance = 25;
 				else if(dungeon_level == 2)
-					szansa = 15;
+					chance = 15;
 				else if(dungeon_level == 1)
-					szansa = 10;
+					chance = 10;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			default:
 				if(dungeon_level == size - 1)
-					szansa = 25;
+					chance = 25;
 				else if(dungeon_level == size - 2)
-					szansa = 15;
+					chance = 15;
 				else if(dungeon_level == size - 3)
-					szansa = 10;
+					chance = 10;
 				else
-					szansa = 0;
+					chance = 0;
 				break;
 			}
 
-			if(szansa == 0)
+			if(chance == 0)
 				return;
 		}
 		else
-			szansa = 20;
+			chance = 20;
 	}
 	else
-		szansa = 20;
+		chance = 20;
 
 	vector<Trap*>& traps = lvl.traps;
 	int id = 0, topid = traps.size();
@@ -1004,7 +1008,7 @@ void InsideLocationGenerator::RegenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
 				&& !OR2_EQ(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
-				int s = szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
+				int s = chance + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
 				if(IsSet(base.traps, TRAPS_NORMAL))
 					s /= 4;
 				if(Rand() % 500 < s)

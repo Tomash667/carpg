@@ -6,6 +6,7 @@ Wersja 0.17 (???):
 + obóz łowców, zadanie z zabiciem złowieszczego wilka
 + lepsze modele przedmiotów: wódka, szara mikstura
 + lepszy generator obozów
++ zabezpiecznie przed generowaniem jednostek w ognisku
 + optymalizacje manadżera sceny
 
 --------------------------------------------------------------------------------

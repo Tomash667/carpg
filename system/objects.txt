@@ -155,13 +155,13 @@ object campfire {
 	mesh "ognisko.qmsh"
 	cylinder { 1.0735 0.43 }
 	center_y 0.4
-	flags { no_physics light campfire_effect }
+	flags { tmp_physics light campfire_effect }
 }
 
 object campfire_off {
 	mesh "ognisko2.qmsh"
 	cylinder { 1.0735 0.43 }
-	flags no_physics
+	flags tmp_physics
 }
 
 object chest {

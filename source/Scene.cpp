@@ -457,7 +457,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				DebugNode* node = DebugNode::Get();
 				node->mesh = mesh;
 				node->color = Color(153, 217, 164);
-				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.mat_view_proj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}

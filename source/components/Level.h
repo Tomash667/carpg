@@ -205,6 +205,8 @@ public:
 	CScriptArray* GetUnits(Room& room);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
 	void CreateObjectsMeshInstance();
+	void RemoveTmpObjectPhysics();
+	void RecreateTmpObjectPhysics();
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
