@@ -185,11 +185,6 @@ public:
 	void AddNewsS(const string& tex) { AddNews(tex.c_str()); }
 	const vector<News*>& GetNews() const { return news; }
 
-	// boss levels
-	void AddBossLevel(const Int2& pos = Int2::Zero);
-	bool RemoveBossLevel(const Int2& pos = Int2::Zero);
-	bool IsBossLevel(const Int2& pos = Int2::Zero) const;
-
 	// misc
 	void VerifyObjects();
 	void VerifyObjects(vector<Object*>& objects, int& errors);
@@ -213,7 +208,6 @@ private:
 	vector<GlobalEncounter*> globalEncounters;
 	EncounterData encounter;
 	vector<int> tiles;
-	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
 	uint settlements, // count and index below this value is city/village
 		empty_locations; // counter
 	Vec2 world_bounds,
@@ -236,8 +230,7 @@ private:
 	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy,
 		txHuntersCamp, txHills;
 	cstring txMonth[12];
-	bool boss_level_mp, // used by clients instead boss_levels
-		tomir_spawned,
+	bool tomir_spawned,
 		travel_first_frame,
 		startup;
 

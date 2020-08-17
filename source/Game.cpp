@@ -2836,6 +2836,7 @@ void Game::LeaveLevel(bool clear)
 
 	if(game_level->is_open)
 	{
+		game_level->boss = nullptr;
 		for(LevelArea& area : game_level->ForEachArea())
 		{
 			LeaveLevel(area, clear);
@@ -3886,4 +3887,7 @@ void Game::OnEnterLevelOrLocation()
 			e.quest->FireEvent(event);
 		}
 	}
+
+	if(Net::IsClient() && game_level->boss)
+		game_gui->level_gui->SetBoss(game_level->boss, true);
 }

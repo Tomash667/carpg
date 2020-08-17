@@ -492,6 +492,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << ais.size();
 	for(AIController* ai : ais)
 		ai->Save(f);
+	f << game_level->boss;
 
 	game_gui->Save(f);
 
@@ -805,6 +806,12 @@ void Game::LoadGame(GameReader& f)
 	{
 		ai = new AIController;
 		ai->Load(f);
+	}
+	if(LOAD_VERSION >= V_DEV)
+	{
+		f >> game_level->boss;
+		if(game_level->boss)
+			game_gui->level_gui->SetBoss(game_level->boss, true);
 	}
 
 	game_gui->Load(f);

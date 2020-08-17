@@ -7,8 +7,10 @@ Version 0.17 (???):
 + better item models: vodka, gray potion
 + better camp generator
 + wolfs don't attack instantly
++ boss music and health bar
 + prevent from spawning units inside campfire
 + scene manager optimisations
+- missing boss music
 
 --------------------------------------------------------------------------------
 Version 0.16 (2020-07-01):

@@ -5,6 +5,7 @@
 #include "Item.h"
 #include "ItemSlot.h"
 #include "QuestManager.h"
+#include "Unit.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
@@ -89,6 +90,12 @@ void BitStreamWriter::WriteItemListTeam(const vector<ItemSlot>& items)
 		operator << (slot.count);
 		operator << (slot.team_count);
 	}
+}
+
+void BitStreamWriter::operator << (Unit* unit)
+{
+	int id = (unit ? unit->id : -1);
+	Write(id);
 }
 
 //-----------------------------------------------------------------------------
@@ -236,4 +243,10 @@ bool BitStreamReader::ReadItemListTeam(vector<ItemSlot>& items, bool skip)
 	}
 
 	return true;
+}
+
+void BitStreamReader::operator >> (Unit*& unit)
+{
+	int id = Read<int>();
+	unit = Unit::GetById(id);
 }

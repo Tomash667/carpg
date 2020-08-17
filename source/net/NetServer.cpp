@@ -3448,6 +3448,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::BREAK_ACTION:
 		case NetChange::USE_ITEM:
 		case NetChange::CAST_SPELL:
+		case NetChange::BOSS_START:
 			f << c.unit->id;
 			break;
 		case NetChange::TELL_NAME:
@@ -3527,6 +3528,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::GAME_SAVED:
 		case NetChange::END_TRAVEL:
 		case NetChange::CUTSCENE_SKIP:
+		case NetChange::BOSS_END:
 			break;
 		case NetChange::KICK_NPC:
 		case NetChange::REMOVE_UNIT:

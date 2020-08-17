@@ -3062,6 +3062,27 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 			}
 			break;
+		// start boss fight
+		case NetChange::BOSS_START:
+			{
+				int id;
+				f >> id;
+				if(!f)
+					Error("Update client: Broken BOSS_START.");
+				else
+				{
+					Unit* unit = game_level->FindUnit(id);
+					if(unit)
+						game_level->StartBossFight(*unit);
+					else
+						Error("Update client: BOSS_START, missing unit %d.", id);
+				}
+			}
+			break;
+		// end boss fight
+		case NetChange::BOSS_END:
+			game_level->EndBossFight();
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -4301,7 +4322,6 @@ bool Net::ReadLevelData(BitStreamReader& f)
 {
 	game_level->camera.Reset();
 	game->pc->data.rot_buf = 0.f;
-	world->RemoveBossLevel();
 
 	bool loaded_resources;
 	f >> mp_load;

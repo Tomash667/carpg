@@ -94,6 +94,7 @@ public:
 	void ResetCutscene();
 	void SetCutsceneImage(Texture* tex, float time);
 	void SetCutsceneText(const string& text, float time);
+	void SetBoss(Unit* boss, bool instant);
 
 	Int2 dialog_cursor_pos;
 	bool use_cursor;
@@ -151,7 +152,7 @@ private:
 	float buff_scale;
 	vector<BuffImage> buff_images;
 	vector<SortedUnitView> sorted_units;
-	float sidebar, cutscene_image_timer, cutscene_text_timer;
+	float sidebar, cutscene_image_timer, cutscene_text_timer, bossAlpha;
 	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
 	CutsceneState cutscene_image_state, cutscene_text_state;
 	Int2 drag_and_drop_pos;
@@ -169,5 +170,6 @@ private:
 		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 	vector<UnitView> unit_views;
-	bool debug_info, debug_info2;
+	bool debug_info, debug_info2, bossState;
+	Unit* boss;
 };

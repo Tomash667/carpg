@@ -13,10 +13,12 @@
 #include "EntityInterpolator.h"
 #include "FOV.h"
 #include "Game.h"
+#include "GameGui.h"
 #include "GameResources.h"
 #include "InsideBuilding.h"
 #include "InsideLocationLevel.h"
 #include "Language.h"
+#include "LevelGui.h"
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
 #include "MultiInsideLocation.h"
@@ -1965,10 +1967,6 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 
 	// mesh
 	unit->CreateMesh(Unit::CREATE_MESH::NORMAL);
-
-	// boss music
-	if(IsSet(base.flags2, F2_BOSS))
-		world->AddBossLevel(Int2(location_index, dungeon_level));
 
 	// physics
 	if(create_physics)
@@ -4021,6 +4019,7 @@ void Level::Write(BitStreamWriter& f)
 {
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
+	f << boss;
 
 	if(net->mp_load)
 	{
@@ -4055,8 +4054,12 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	game_res->LoadMusic(music, false, true);
-	if(world->IsBossLevel())
-		game->SetMusic();
+	f >> boss;
+	if(boss)
+	{
+		game_res->LoadMusic(MusicType::Boss, false, true);
+		game->SetMusic(MusicType::Boss);
+	}
 	else
 		game->SetMusic(music);
 
@@ -4824,4 +4827,28 @@ void Level::RecreateTmpObjectPhysics()
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void Level::StartBossFight(Unit& unit)
+{
+	boss = &unit;
+	game_gui->level_gui->SetBoss(&unit, false);
+	game->SetMusic(MusicType::Boss);
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::BOSS_START;
+		c.unit = &unit;
+	}
+}
+
+//=================================================================================================
+void Level::EndBossFight()
+{
+	boss = nullptr;
+	game_gui->level_gui->SetBoss(nullptr, false);
+	game->SetMusic();
+	if(Net::IsServer())
+		Net::PushChange(NetChange::BOSS_END);
 }

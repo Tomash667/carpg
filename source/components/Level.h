@@ -207,6 +207,9 @@ public:
 	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();
 	void RecreateTmpObjectPhysics();
+	// --- boss
+	void StartBossFight(Unit& unit);
+	void EndBossFight();
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
@@ -215,6 +218,7 @@ public:
 	GameCamera camera;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;
+	Unit* boss;
 
 	// colliders
 	btHeightfieldTerrainShape* terrain_shape;

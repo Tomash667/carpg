@@ -1226,7 +1226,6 @@ void World::Save(GameWriter& f)
 		f.WriteString2(n->text);
 	}
 
-	f << boss_levels;
 	f << tomir_spawned;
 }
 
@@ -1248,7 +1247,8 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	LoadNews(f);
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
-	f >> boss_levels;
+	if(LOAD_VERSION < V_DEV)
+		f.SkipVector<Int2>(); // old boss_levels
 	f >> tomir_spawned;
 }
 
@@ -1610,7 +1610,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 	else if(part == 3)
 	{
 		f.Skip<bool>(); // old first_city
-		f >> boss_levels;
+		f.SkipVector<Int2>(); // old boss_levels
 		encounter_loc->state = LS_HIDDEN;
 	}
 }
@@ -2909,43 +2909,6 @@ void World::AddNews(cstring text)
 	n->add_time = worldtime;
 
 	news.push_back(n);
-}
-
-//=================================================================================================
-void World::AddBossLevel(const Int2& pos)
-{
-	if(Net::IsLocal())
-		boss_levels.push_back(pos);
-	else
-		boss_level_mp = true;
-}
-
-//=================================================================================================
-bool World::RemoveBossLevel(const Int2& pos)
-{
-	if(Net::IsLocal())
-	{
-		if(boss_level_mp)
-		{
-			boss_level_mp = false;
-			return true;
-		}
-		return false;
-	}
-	return RemoveElementTry(boss_levels, pos);
-}
-
-//=================================================================================================
-bool World::IsBossLevel(const Int2& pos) const
-{
-	if(Net::IsLocal())
-		return boss_level_mp;
-	for(const Int2& boss_pos : boss_levels)
-	{
-		if(boss_pos == pos)
-			return true;
-	}
-	return false;
 }
 
 //=================================================================================================

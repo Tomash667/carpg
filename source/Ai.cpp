@@ -351,6 +351,8 @@ void Game::UpdateAi(float dt)
 							repeat = true;
 							if(IsSet(u.data->flags2, F2_YELL))
 								ai.Shout();
+							if(IsSet(u.data->flags2, F2_BOSS))
+								game_level->StartBossFight(u);
 							break;
 						}
 
@@ -375,6 +377,8 @@ void Game::UpdateAi(float dt)
 								ai.state = AIController::Fighting;
 								ai.timer = 0.f;
 								ai.Shout();
+								if(IsSet(u.data->flags2, F2_BOSS))
+									game_level->StartBossFight(u);
 							}
 							repeat = true;
 							break;

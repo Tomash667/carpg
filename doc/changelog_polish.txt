@@ -7,8 +7,10 @@ Wersja 0.17 (???):
 + lepsze modele przedmiotów: wódka, szara mikstura
 + lepszy generator obozów
 + wilk nie atakuje odrazu
++ muzyka i pasek zdrowia bossa
 + zabezpiecznie przed generowaniem jednostek w ognisku
 + optymalizacje manadżera sceny
+- brak muzyki bossa
 
 --------------------------------------------------------------------------------
 Wersja 0.16 (2020-07-01):

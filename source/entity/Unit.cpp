@@ -3028,10 +3028,6 @@ bool Unit::Read(BitStreamReader& f)
 	// physics
 	CreatePhysics(true);
 
-	// boss music
-	if(IsSet(data->flags2, F2_BOSS))
-		world->AddBossLevel();
-
 	prev_pos = pos;
 	speed = prev_speed = 0.f;
 	talking = false;
@@ -5369,8 +5365,8 @@ void Unit::Die(Unit* killer)
 	}
 
 	// end boss music
-	if(IsSet(data->flags2, F2_BOSS) && world->RemoveBossLevel(Int2(game_level->location_index, game_level->dungeon_level)))
-		game->SetMusic();
+	if(IsSet(data->flags2, F2_BOSS))
+		game_level->EndBossFight();
 
 	if(prev_action == A_ANIMATION)
 	{

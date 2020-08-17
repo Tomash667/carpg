@@ -71,7 +71,7 @@ enum Bar
 static ObjectPool<SpeechBubble> SpeechBubblePool;
 
 //=================================================================================================
-LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false)
+LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), boss(nullptr)
 {
 	scrollbar.parent = this;
 	visible = false;
@@ -675,6 +675,17 @@ void LevelGui::DrawFront()
 		}
 	}
 
+	if(boss)
+	{
+		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wnd_size.x, 40));
+		float hpp = Clamp(boss->GetHpp(), 0.f, 1.f);
+		Rect part = { 0, 0, int(hpp * 256), 16 };
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2((float(gui->wnd_size.x) - wnd_scale * 256) / 2, 25));
+		if(part.Right() > 0)
+			gui->DrawSprite2(tHpBar, mat, &part, nullptr, Color::Alpha(bossAlpha));
+		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::Alpha(bossAlpha));
+	}
+
 	DrawFallback();
 }
 
@@ -874,6 +885,9 @@ void LevelGui::DrawObjectInfo(cstring text, const Vec3& pos)
 //=================================================================================================
 void LevelGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 {
+	if(&unit == boss)
+		return;
+
 	Rect r;
 	if(!gui->DrawText3D(GameGui::font, text, DTF_OUTLINE | DTF_DONT_DRAW, Color::Black, pos, &r))
 		return;
@@ -1202,6 +1216,19 @@ void LevelGui::Update(float dt)
 		}
 	}
 
+	// boss
+	if(boss)
+	{
+		if(bossState)
+		{
+			bossAlpha -= 3.f * dt;
+			if(bossAlpha <= 0)
+				boss = nullptr;
+		}
+		else
+			bossAlpha = Min(bossAlpha + 3.f * dt, 1.f);
+	}
+
 	if(drag_and_drop != 2)
 		tooltip.UpdateTooltip(dt, (int)group, id);
 	else
@@ -1369,6 +1396,7 @@ void LevelGui::Reset()
 	use_cursor = false;
 	sidebar = 0.f;
 	unit_views.clear();
+	boss = nullptr;
 }
 
 //=================================================================================================
@@ -2169,5 +2197,22 @@ int LevelGui::GetAlpha(CutsceneState cs, float timer, int fallback_alpha)
 		return fallback_alpha;
 	default:
 		return int(timer * 255) * fallback_alpha / 255;
+	}
+}
+
+//=================================================================================================
+void LevelGui::SetBoss(Unit* boss, bool instant)
+{
+	if(boss)
+	{
+		this->boss = boss;
+		bossAlpha = instant ? 1.f : 0.f;
+		bossState = false;
+	}
+	else
+	{
+		bossState = true;
+		if(instant)
+			boss = nullptr;
 	}
 }

@@ -215,6 +215,8 @@ struct NetChange
 		CUTSCENE_SKIP, // skip current cutscene []
 		CRAFT, // craft item [int(recipe->hash), uint(count)]
 		REMOVE_BULLET, // remove bullet [int(id)-bullet id]
+		BOSS_START, // start boss fight [int(id)-unit]
+		BOSS_END, // end boss fight []
 
 		MAX
 	} type;

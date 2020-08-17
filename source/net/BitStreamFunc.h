@@ -31,6 +31,7 @@ public:
 		else
 			Write0();
 	}
+	void operator << (Unit* unit);
 
 private:
 	BitStream& bitstream;
@@ -57,6 +58,8 @@ public:
 	int ReadItemAndFind(const Item*& item);
 	bool ReadItemList(vector<ItemSlot>& items);
 	bool ReadItemListTeam(vector<ItemSlot>& items, bool skip = false);
+	using StreamReader::operator >>;
+	void operator >> (Unit*& unit);
 
 private:
 	BitStream& CreateBitStream(Packet* packet);
