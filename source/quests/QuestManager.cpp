@@ -2,6 +2,7 @@
 #include "QuestManager.h"
 
 #include "BitStreamFunc.h"
+#include "Camp.h"
 #include "City.h"
 #include "Content.h"
 #include "Game.h"
@@ -231,7 +232,7 @@ Quest* QuestManager::CreateQuest(QuestInfo* info)
 		return nullptr;
 	Quest* quest = CreateQuest(info->type);
 	if(info->scheme)
-		((Quest2*)quest)->SetScheme(info->scheme);
+		static_cast<Quest2*>(quest)->SetScheme(info->scheme);
 	quest->Init();
 	quest->id = quest_counter++;
 	quest->Start();
@@ -372,7 +373,7 @@ void QuestManager::Update(int days)
 		if(loc->type == L_CAMP)
 		{
 			quest->target_loc = -1;
-			world->DeleteCamp((Camp*)loc);
+			world->DeleteCamp(static_cast<Camp*>(loc));
 		}
 
 		return true;
@@ -1363,7 +1364,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 	InsideLocation* inside = nullptr;
 	if(game_level->local_area->area_type == LevelArea::Type::Inside)
 	{
-		inside = (InsideLocation*)game_level->location;
+		inside = static_cast<InsideLocation*>(game_level->location);
 		lvl = &inside->GetLevelData();
 	}
 

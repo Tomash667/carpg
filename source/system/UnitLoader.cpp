@@ -286,6 +286,7 @@ void UnitLoader::InitTokenizer()
 		{ "slow", F_SLOW },
 		{ "poison_attack", F_POISON_ATTACK },
 		{ "immortal", F_IMMORTAL },
+		{ "aggro", F_AGGRO },
 		{ "crazy", F_CRAZY },
 		{ "dont_open", F_DONT_OPEN },
 		{ "slight", F_SLIGHT },
@@ -395,7 +396,8 @@ void UnitLoader::InitTokenizer()
 		{ "pain", SOUND_PAIN },
 		{ "death", SOUND_DEATH },
 		{ "attack", SOUND_ATTACK },
-		{ "talk", SOUND_TALK }
+		{ "talk", SOUND_TALK },
+		{ "aggro", SOUND_AGGRO }
 		});
 
 	t.AddKeywords(G_FRAME_KEYWORD, {

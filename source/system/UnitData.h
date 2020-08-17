@@ -71,7 +71,7 @@ enum UNIT_FLAGS
 	F_SLOW = 1 << 13, // don't run
 	F_POISON_ATTACK = 1 << 14, // attack apply poison
 	F_IMMORTAL = 1 << 15, // immortal, can't have less then 1 hp
-	// unused (1 << 16)
+	F_AGGRO = 1 << 16, // instead of instant attack will get aggroed after some time
 	F_CRAZY = 1 << 17, // crazy name, different dialogs
 	F_DONT_OPEN = 1 << 18, // can't open doors
 	F_SLIGHT = 1 << 19, // don't trigger traps
@@ -150,6 +150,7 @@ enum SOUND_ID
 	SOUND_DEATH,
 	SOUND_ATTACK,
 	SOUND_TALK,
+	SOUND_AGGRO,
 	SOUND_MAX
 };
 

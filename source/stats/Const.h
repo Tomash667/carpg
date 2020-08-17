@@ -26,7 +26,9 @@ const float T_CONNECT = 5.f; // wait time when trying to connect to server
 const int MAX_LEVEL = 25;
 
 const float ALERT_RANGE = 20.f;
+const float ALERT_RANGE_ATTACK = 5.f;
 const float ALERT_SPAWN_RANGE = 25.f;
+const float AGGRO_TIMER = 5.f;
 const float PICKUP_RANGE = 2.f;
 const float ARROW_TIMER = 5.f;
 const float TRAP_ARROW_SPEED = 45.f;
@@ -38,3 +40,4 @@ const float ARROW_HIT_SOUND_DIST = 1.5f;
 const float SHOOT_SOUND_DIST = 1.f;
 const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
+const float AGGRO_SOUND_DIST = 1.f;

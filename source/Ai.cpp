@@ -36,7 +36,8 @@ cstring str_ai_state[AIController::State_Max] = {
 	"Escape",
 	"Block",
 	"Cast",
-	"Wait"
+	"Wait",
+	"Aggro"
 };
 
 cstring str_ai_idle[AIController::Idle_Max] = {
@@ -361,11 +362,20 @@ void Game::UpdateAi(float dt)
 							ai.in_combat = true;
 							ai.target = enemy;
 							ai.target_last_pos = enemy->pos;
-							ai.state = AIController::Fighting;
-							ai.timer = 0.f;
 							ai.city_wander = false;
 							ai.change_ai_mode = true;
-							ai.Shout();
+							if(IsSet(u.data->flags, F_AGGRO))
+							{
+								ai.state = AIController::Aggro;
+								ai.timer = AGGRO_TIMER;
+								ai.next_attack = -1.f;
+							}
+							else
+							{
+								ai.state = AIController::Fighting;
+								ai.timer = 0.f;
+								ai.Shout();
+							}
 							repeat = true;
 							break;
 						}
@@ -2449,6 +2459,75 @@ void Game::UpdateAi(float dt)
 					{
 						ai.state = AIController::Fighting;
 						ai.timer = 0.f;
+					}
+				}
+				break;
+
+			//===================================================================================================================
+			case AIController::Aggro:
+				{
+					if(Unit* alert_target = ai.alert_target)
+					{
+						// someone else alert him with enemy alert shout
+						ai.target = alert_target;
+						ai.target_last_pos = ai.alert_target_pos;
+						ai.alert_target = nullptr;
+						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
+						repeat = true;
+						if(IsSet(u.data->flags2, F2_YELL))
+							ai.Shout();
+						break;
+					}
+
+					if(enemy)
+					{
+						if(best_dist < ALERT_RANGE_ATTACK || ai.timer <= 0)
+						{
+							// attack
+							ai.target = enemy;
+							ai.target_last_pos = enemy->pos;
+							ai.timer = 0.f;
+							ai.state = AIController::Fighting;
+							ai.Shout();
+							repeat = true;
+							break;
+						}
+
+						ai.target_last_pos = enemy->pos;
+						if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, ai.target_last_pos)) < 0.1f && u.action == A_NONE && ai.next_attack < 0)
+						{
+							// aggro
+							u.mesh_inst->Play("aggro", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.action = A_ANIMATION;
+							u.animation = ANI_PLAY;
+							ai.next_attack = u.mesh_inst->GetGroup(0).anim->length + Random(0.2f, 0.5f);
+
+							u.PlaySound(u.GetSound(SOUND_AGGRO), AGGRO_SOUND_DIST);
+						}
+
+						// look at
+						look_at = LookAtTarget;
+						target_pos = ai.target_last_pos;
+					}
+					else
+					{
+						if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, ai.target_last_pos)) > 0.1f)
+						{
+							// look at
+							look_at = LookAtTarget;
+							target_pos = ai.target_last_pos;
+						}
+						else
+						{
+							// end aggro
+							ai.state = AIController::Idle;
+							ai.st.idle.action = AIController::Idle_None;
+							ai.in_combat = false;
+							ai.change_ai_mode = true;
+							ai.loc_timer = Random(5.f, 10.f);
+							ai.timer = Random(1.f, 2.f);
+						}
 					}
 				}
 				break;

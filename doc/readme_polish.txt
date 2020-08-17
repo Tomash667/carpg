@@ -354,6 +354,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
+		* newagesoup - wolf growl
 		* wubitog - Slime attack or movement
 	* https://www.pacdv.com/sounds/
 	* https://www.soundjay.com

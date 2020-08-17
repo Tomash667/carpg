@@ -2918,10 +2918,10 @@ unit q_magowie_boss : base_human {
 // ANIMALS & HUNTERS
 //------------------------------------------------------------------------------
 unit wolf {
-	mesh "wilk.qmsh"
+	mesh "wolf.qmsh"
 	mat skin
 	level 3
-	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk}
+	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk aggro}
 	hp 250
 	stamina 300
 	attack 50
@@ -2942,16 +2942,18 @@ unit wolf {
 		pain "dog_whine.mp3"
 		death "dog_whine.mp3"
 		attack "wolf_attack.mp3"
+		aggro "wolf_growl.mp3"
 	}
 	frames {
 		simple_attacks {
-			{0.7 1}
-			{0.65 0.75}
+			{0.4 0.6}
+			{0.3 0.65}
 		}
 	}
 	idles {
 		"rozglada"
 		"wygina"
+		"siad"
 	}
 	width 0.4
 	attack_range 1
@@ -2994,6 +2996,7 @@ unit dire_wolf : wolf {
 	hp 2000
 	attack 200
 	def 200
+	flags | ~aggro
 	scale 2
 	tex {
 		"dire_wolf.jpg"
