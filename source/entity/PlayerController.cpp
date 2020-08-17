@@ -11,6 +11,7 @@
 #include "Door.h"
 #include "FOV.h"
 #include "Game.h"
+#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GameResources.h"
@@ -360,7 +361,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 }
 
 //=================================================================================================
-void PlayerController::Save(FileWriter& f)
+void PlayerController::Save(GameWriter& f)
 {
 	if(recalculate_level)
 	{
@@ -442,12 +443,6 @@ void PlayerController::Save(FileWriter& f)
 		f << ab.recharge;
 		f << (byte)ab.charges;
 	}
-	if(unit->action == A_DASH && unit->act.dash.ability->effect == Ability::Stun)
-	{
-		f << ability_targets.size();
-		for(Entity<Unit> unit : ability_targets)
-			f << unit;
-	}
 	f << recipes.size();
 	for(MemorizedRecipe& mr : recipes)
 	{
@@ -477,7 +472,7 @@ void PlayerController::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void PlayerController::Load(FileReader& f)
+void PlayerController::Load(GameReader& f)
 {
 	f >> name;
 	f >> move_tick;
@@ -647,13 +642,10 @@ void PlayerController::Load(FileReader& f)
 		f.ReadCasted<byte>(ab.charges);
 	}
 
-	if(unit->action == A_DASH && unit->act.dash.ability->effect == Ability::Stun)
+	if(LOAD_VERSION < V_DEV && unit->action == A_DASH && unit->act.dash.ability->RequireList())
 	{
-		uint count;
-		f >> count;
-		ability_targets.resize(count);
-		for(Entity<Unit>& unit : ability_targets)
-			f >> unit;
+		unit->act.dash.hit = UnitList::Get();
+		unit->act.dash.hit->Load(f);
 	}
 
 	// recipes
@@ -1536,12 +1528,6 @@ void PlayerController::RefreshCooldown()
 }
 
 //=================================================================================================
-bool PlayerController::IsHit(Unit* unit) const
-{
-	return IsInside(ability_targets, unit);
-}
-
-//=================================================================================================
 int PlayerController::GetNextActionItemIndex() const
 {
 	return FindItemIndex(unit->items, next_action_data.index, next_action_data.item, false);
@@ -2002,7 +1988,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 
 	if(ability->type == Ability::Charge)
 	{
-		const bool dash = (ability->effect != Ability::Stun);
+		const bool dash = !IsSet(ability->flags, Ability::IgnoreUnits);
 		if(dash && Net::IsLocal())
 			Train(TrainWhat::Dash, 0.f, 0);
 		unit->action = A_DASH;
@@ -2023,10 +2009,16 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->timer = 0.5f;
 			unit->speed = ability->range / 0.5f;
 			unit->mesh_inst->groups[0].speed = 2.5f;
-			ability_targets.clear();
 			unit->mesh_inst->groups[1].blend_max = 0.1f;
 			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
+		if(ability->RequireList())
+		{
+			unit->act.dash.hit = UnitList::Get();
+			unit->act.dash.hit->Clear();
+		}
+		else
+			unit->act.dash.hit = nullptr;
 	}
 
 	if(Net::IsOnline())

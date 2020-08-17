@@ -182,6 +182,7 @@ struct Unit;
 struct UnitData;
 struct UnitEventHandler;
 struct UnitGroup;
+struct UnitList;
 struct UnitStats;
 struct Usable;
 struct Var;

@@ -249,7 +249,6 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // depends on action (can be unit inventory or chest or trader stock)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
-	vector<Entity<Unit>> ability_targets;
 	Shortcut shortcuts[Shortcut::MAX];
 	vector<PlayerAbility> abilities;
 	vector<MemorizedRecipe> recipes;
@@ -282,8 +281,8 @@ public:
 	void RecalculateLevel();
 	int GetAptitude(SkillId skill);
 
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void WriteStart(BitStreamWriter& f) const;
 	void Write(BitStreamWriter& f) const;
 	void ReadStart(BitStreamReader& f);
@@ -305,7 +304,6 @@ public:
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
 	void PayCredit(int count);
 	void UseDays(int count);

@@ -315,6 +315,7 @@ struct Unit : public EntityType<Unit>
 		{
 			Ability* ability;
 			float rot;
+			UnitList* hit;
 		} dash;
 		struct UseUsableAction
 		{
@@ -1018,4 +1019,17 @@ struct NAMES
 	static uint n_ani_base;
 	static uint n_ani_humanoid;
 	static int max_attacks;
+};
+
+//-----------------------------------------------------------------------------
+struct UnitList : public ObjectPoolProxy<UnitList>
+{
+	void Clear() { units.clear(); }
+	void Add(Unit* unit) { units.push_back(unit); }
+	bool IsInside(Unit* unit) const;
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
+
+private:
+	vector<Entity<Unit>> units;
 };

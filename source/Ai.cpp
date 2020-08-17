@@ -191,6 +191,9 @@ void Game::UpdateAi(float dt)
 			continue;
 		}
 
+		if(u.action == A_DASH)
+			continue;
+
 		// standing animation
 		if(u.animation != ANI_PLAY && u.animation != ANI_IDLE)
 			u.animation = ANI_STAND;
@@ -1670,10 +1673,14 @@ void Game::UpdateAi(float dt)
 									|| ability.stamina > u.stamina)
 									continue;
 
+								if(IsSet(ability.flags, Ability::Boss50Hp) && u.GetHpp() > 0.5f)
+									continue;
+
 								if(best_dist < ability.range
 									// can't cast drain blood on bloodless units
 									&& !(ability.effect == Ability::Drain && IsSet(enemy->data->flags2, F2_BLOODLESS))
-									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos))
+									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos)
+									&& (ability.type != Ability::Charge || AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, enemy->pos)) < 0.1f))
 								{
 									ai.cooldown[i] = ability.cooldown.Random();
 									u.action = A_CAST;
@@ -1686,11 +1693,19 @@ void Game::UpdateAi(float dt)
 									if(ability.stamina > 0.f)
 										u.RemoveStamina(ability.stamina);
 
-									if(u.mesh_inst->mesh->head.n_groups == 2)
-										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+									if(ability.animation.empty())
+									{
+										if(u.mesh_inst->mesh->head.n_groups == 2)
+											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+										else
+										{
+											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+											u.animation = ANI_PLAY;
+										}
+									}
 									else
 									{
-										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+										u.mesh_inst->Play(ability.animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
 										u.animation = ANI_PLAY;
 									}
 
@@ -1699,6 +1714,7 @@ void Game::UpdateAi(float dt)
 										NetChange& c = Add1(Net::changes);
 										c.type = NetChange::CAST_SPELL;
 										c.unit = &u;
+										c.ability = &ability;
 									}
 
 									break;
@@ -1717,9 +1733,14 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_CAST)
 					{
 						// spellshot
-						look_pos = ai.PredictTargetPos(*enemy, u.act.cast.ability->speed);
-						look_at = LookAtPoint;
-						u.target_pos = look_pos;
+						if(u.act.cast.ability->IsTargeted())
+						{
+							look_pos = ai.PredictTargetPos(*enemy, u.act.cast.ability->speed);
+							look_at = LookAtPoint;
+							u.target_pos = look_pos;
+						}
+						else
+							break;
 					}
 					else if(u.action == A_SHOOT)
 					{
@@ -2391,11 +2412,19 @@ void Game::UpdateAi(float dt)
 						if(ability.stamina > 0.f)
 							u.RemoveStamina(ability.stamina);
 
-						if(u.mesh_inst->mesh->head.n_groups == 2)
-							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+						if(ability.animation.empty())
+						{
+							if(u.mesh_inst->mesh->head.n_groups == 2)
+								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							else
+							{
+								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+								u.animation = ANI_PLAY;
+							}
+						}
 						else
 						{
-							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.mesh_inst->Play(ability.animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
 							u.animation = ANI_PLAY;
 						}
 
@@ -2404,6 +2433,7 @@ void Game::UpdateAi(float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CAST_SPELL;
 							c.unit = &u;
+							c.ability = &ability;
 						}
 					}
 

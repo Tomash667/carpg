@@ -3447,7 +3447,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
 		case NetChange::USE_ITEM:
-		case NetChange::CAST_SPELL:
 		case NetChange::BOSS_START:
 			f << c.unit->id;
 			break;
@@ -3758,6 +3757,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			RemoveElement(net_strs, c.str);
 			break;
 		case NetChange::PLAYER_ABILITY:
+		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			f << c.ability->hash;
 			break;

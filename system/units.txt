@@ -2947,7 +2947,7 @@ unit wolf {
 	frames {
 		simple_attacks {
 			{0.4 0.6}
-			{0.3 0.65}
+			{0.3 0.8}
 		}
 	}
 	idles {
@@ -2998,6 +2998,11 @@ unit dire_wolf : wolf {
 	def 200
 	flags | {~aggro boss dont_escape stun_res}
 	scale 2
+	abilities {
+		{howl_aggro 0}
+		{howl_summon 0}
+		{wolf_charge 0}
+	}
 	tex {
 		"dire_wolf.jpg"
 		null

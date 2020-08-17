@@ -10,7 +10,9 @@ struct Ability
 		Target,
 		Ball,
 		Charge,
-		Summon
+		Summon,
+		Aggro,
+		SummonAway
 	};
 
 	enum Effect
@@ -38,17 +40,18 @@ struct Ability
 		UseCast = 1 << 7, // use cast spell animation
 		Mage = 1 << 8, // uses int/mystic magic, train mystic magic skill, require wand to cast
 		Strength = 1 << 9, // use Strength to calculate damage
+		Boss50Hp = 1 << 10, // can be used when hp below 50%
 	};
 
 	int hash;
-	string id;
+	string id, animation;
 	SoundPtr sound_cast, sound_hit;
 	TexturePtr tex, tex_particle, tex_icon;
 	TexOverride tex_explode;
 	Vec2 cooldown;
 	Type type;
 	Effect effect;
-	int flags, dmg, dmg_bonus, charges, learning_points, skill, level;
+	int flags, dmg, dmg_bonus, charges, learning_points, skill, level, count;
 	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana, stamina, recharge, width;
 	btCollisionShape* shape;
 	Mesh* mesh;
@@ -58,11 +61,14 @@ struct Ability
 	Ability() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_icon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
 		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
 		sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), unit(nullptr), effect(None), learning_points(0),
-		skill(999), level(0) {}
+		skill(999), level(0), count(1) {}
 	~Ability()
 	{
 		delete shape;
 	}
+
+	bool IsTargeted() const { return !Any(type, Aggro, SummonAway); }
+	bool RequireList() const { return !IsSet(flags, IgnoreUnits); }
 
 	static vector<Ability*> abilities;
 	static std::map<int, Ability*> hash_abilities;

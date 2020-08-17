@@ -71,6 +71,8 @@ Unit::~Unit()
 	delete stock;
 	if(stats && !stats->fixed)
 		delete stats;
+	if(action == A_DASH && act.dash.hit)
+		act.dash.hit->Free();
 }
 
 //=================================================================================================
@@ -1810,6 +1812,8 @@ void Unit::Save(GameWriter& f)
 		case A_DASH:
 			f << act.dash.ability->hash;
 			f << act.dash.rot;
+			if(act.dash.hit)
+				act.dash.hit->Save(f);
 			break;
 		case A_USE_USABLE:
 			f << act.use_usable.rot;
@@ -2231,6 +2235,11 @@ void Unit::Load(GameReader& f)
 			else
 				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");
 			f >> act.dash.rot;
+			if(LOAD_VERSION >= V_DEV && act.dash.ability->RequireList())
+			{
+				act.dash.hit = UnitList::Get();
+				act.dash.hit->Load(f);
+			}
 			break;
 		case A_USE_USABLE:
 			if(LOAD_VERSION >= V_0_10)
@@ -4949,6 +4958,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	case A_DASH:
 		if(act.dash.ability->effect == Ability::Stun && mode != BREAK_ACTION_MODE::ON_LEAVE)
 			mesh_inst->Deactivate(1);
+		if(act.dash.hit)
+			act.dash.hit->Free();
 		break;
 	}
 
@@ -5145,7 +5156,7 @@ void Unit::TryStandup(float dt)
 					ok = true;
 					for(Unit* unit : area->units)
 					{
-						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= 20.f && game_level->CanSee(*this, *unit))
+						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
 						{
 							ok = false;
 							break;
@@ -5285,7 +5296,7 @@ void Unit::Die(Unit* killer)
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
 				continue;
 
-			if(Vec3::Distance(pos, (*it)->pos) <= 20.f && game_level->CanSee(*this, **it))
+			if(Vec3::Distance(pos, (*it)->pos) <= ALERT_RANGE && game_level->CanSee(*this, **it))
 				(*it)->ai->morale -= 2.f;
 		}
 
@@ -6604,13 +6615,17 @@ void Unit::CastSpell()
 	Ability& ability = *act.cast.ability;
 
 	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
-	assert(point);
+	Vec3 coord;
 
-	mesh_inst->SetupBones();
+	if(point)
+	{
+		mesh_inst->SetupBones();
+		Matrix m = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+		coord = Vec3::TransformZero(m);
+	}
+	else
+		coord = GetHeadPoint();
 
-	Matrix m = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
-
-	Vec3 coord = Vec3::TransformZero(m);
 	float dmg = GetAbilityPower(ability);
 
 	switch(ability.type)
@@ -6944,6 +6959,46 @@ void Unit::CastSpell()
 				game_level->SpawnUnitEffect(*new_unit);
 			}
 		}
+		break;
+	case Ability::Aggro:
+		for(Unit* u : area->units)
+		{
+			if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
+				|| u->ai->alert_target || u->dont_attack)
+				continue;
+
+			if(Vec3::Distance(pos, u->pos) <= ability.range && game_level->CanSee(*this, *u))
+			{
+				u->ai->alert_target = ai->target;
+				u->ai->alert_target_pos = ai->target_last_pos;
+			}
+		}
+		break;
+	case Ability::SummonAway:
+		for(int i = 0; i < ability.count; ++i)
+		{
+			float angle = Random(MAX_ANGLE);
+			Vec3 targetPos = pos + Vec3(sin(angle) * ability.range, 0, cos(angle) * ability.range);
+			Unit* new_unit = game_level->SpawnUnitNearLocation(*area, targetPos, *ability.unit, nullptr, level);
+			if(new_unit)
+			{
+				new_unit->in_arena = in_arena;
+				if(new_unit->in_arena != -1)
+					game->arena->units.push_back(new_unit);
+				game_level->SpawnUnitEffect(*new_unit);
+				new_unit->ai->alert_target = ai->target;
+				new_unit->ai->alert_target_pos = ai->target_last_pos;
+			}
+		}
+		break;
+	case Ability::Charge:
+		action = A_DASH;
+		act.dash.ability = &ability;
+		act.dash.rot = Clip(rot + PI);
+		act.dash.hit = UnitList::Get();
+		act.dash.hit->Clear();
+		timer = 1.f;
+		speed = ability.range / timer;
 		break;
 	}
 
@@ -7928,7 +7983,6 @@ void Unit::Update(float dt)
 	case A_DASH:
 		// update unit dash/bull charge
 		{
-			assert(player); // todo
 			float dt_left = min(dt, timer);
 			float t;
 			const float eps = 0.05f;
@@ -7938,7 +7992,7 @@ void Unit::Update(float dt)
 			bool ok = true;
 			Vec3 from = GetPhysicsPos();
 
-			if(act.dash.ability->effect != Ability::Stun)
+			if(!IsSet(act.dash.ability->flags, Ability::IgnoreUnits))
 			{
 				// dash
 				game_level->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool)
@@ -7998,7 +8052,7 @@ void Unit::Update(float dt)
 						bool move_forward = true;
 						if(!unit->IsFriend(*this, true))
 						{
-							if(!player->IsHit(unit))
+							if(!act.dash.hit->IsInside(unit))
 							{
 								float attack = GetAbilityPower(*act.dash.ability);
 								float def = unit->CalculateDefense();
@@ -8012,9 +8066,10 @@ void Unit::Update(float dt)
 								if(!unit->IsAlive())
 									continue;
 								else
-									player->ability_targets.push_back(unit);
+									act.dash.hit->Add(unit);
 							}
-							unit->ApplyStun(1.5f);
+							if(act.dash.ability->effect == Ability::Stun)
+								unit->ApplyStun(1.5f);
 						}
 						else
 							move_forward = false;
@@ -8085,6 +8140,8 @@ void Unit::Update(float dt)
 			{
 				if(act.dash.ability->effect == Ability::Stun)
 					mesh_inst->Deactivate(1);
+				if(act.dash.hit)
+					act.dash.hit->Free();
 				action = A_NONE;
 				if(Net::IsLocal() || IsLocalPlayer())
 					mesh_inst->groups[0].speed = GetRunSpeed() / data->run_speed;
@@ -8926,4 +8983,25 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			hitted.AddEffect(e);
 		}
 	}
+}
+
+bool UnitList::IsInside(Unit* unit) const
+{
+	return ::IsInside(units, unit);
+}
+
+void UnitList::Save(GameWriter& f)
+{
+	f << units.size();
+	for(Entity<Unit> unit : units)
+		f << unit;
+}
+
+void UnitList::Load(GameReader& f)
+{
+	uint count;
+	f >> count;
+	units.resize(count);
+	for(Entity<Unit>& unit : units)
+		f >> unit;
 }

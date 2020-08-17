@@ -333,7 +333,10 @@ void LevelGui::DrawFront()
 		SortUnits();
 
 		for(auto& it : sorted_units)
-			DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
+		{
+			if(it.unit != boss)
+				DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
+		}
 	}
 
 	// text above selected object/units
@@ -810,7 +813,7 @@ void LevelGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > 20.f || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
@@ -885,9 +888,6 @@ void LevelGui::DrawObjectInfo(cstring text, const Vec3& pos)
 //=================================================================================================
 void LevelGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 {
-	if(&unit == boss)
-		return;
-
 	Rect r;
 	if(!gui->DrawText3D(GameGui::font, text, DTF_OUTLINE | DTF_DONT_DRAW, Color::Black, pos, &r))
 		return;

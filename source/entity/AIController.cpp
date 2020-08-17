@@ -478,7 +478,7 @@ void AIController::Shout()
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(Vec3::Distance(unit->pos, u->pos) <= 20.f && game_level->CanSee(*unit, *u))
+		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
 		{
 			u->ai->alert_target = target_unit;
 			u->ai->alert_target_pos = target_last_pos;
@@ -519,7 +519,7 @@ void AIController::HitReaction(const Vec3& pos)
 			continue;
 
 		if((u->ai->state == Idle || u->ai->state == SearchEnemy)
-			&& Vec3::Distance(unit->pos, u->pos) <= 20.f && game_level->CanSee(*unit, *u))
+			&& Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
 		{
 			AIController* ai2 = u->ai;
 			ai2->target_last_pos = pos;

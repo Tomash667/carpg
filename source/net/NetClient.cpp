@@ -2259,8 +2259,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// unit cast spell animation
 		case NetChange::CAST_SPELL:
 			{
-				int id;
+				int id, hash;
 				f >> id;
+				f >> hash;
 				if(!f)
 					Error("Update client: Broken CAST_SPELL.");
 				else if(game->game_state == GS_LEVEL)
@@ -2270,15 +2271,29 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						Error("Update client: CAST_SPELL, missing unit %d.", id);
 					else
 					{
-						unit->action = A_CAST;
-						unit->animation_state = AS_CAST_ANIMATION;
-						if(unit->mesh_inst->mesh->head.n_groups == 2)
-							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-						else
+						Ability* ability = Ability::Get(hash);
+						if(ability)
 						{
-							unit->animation = ANI_PLAY;
-							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							unit->action = A_CAST;
+							unit->animation_state = AS_CAST_ANIMATION;
+							if(ability->animation.empty())
+							{
+								if(unit->mesh_inst->mesh->head.n_groups == 2)
+									unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+								else
+								{
+									unit->animation = ANI_PLAY;
+									unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+								}
+							}
+							else
+							{
+								unit->mesh_inst->Play(ability->animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
+								unit->animation = ANI_PLAY;
+							}
 						}
+						else
+							Error("Update client: CAST_SPELL, missing ability %d.", hash);
 					}
 				}
 			}
