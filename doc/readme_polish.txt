@@ -346,6 +346,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project
 	* Project Divinity
+	* HorrorPen - Winds of Stories
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:

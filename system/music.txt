@@ -12,7 +12,7 @@ music forest = {
 }
 
 music city = {
-	"south_castle.ogg",
+	"Winds Of Stories.ogg",
 	"moonlight_gravities.ogg",
 	"carpg_rynek_lub_chuj.ogg",
 	"carpg3.ogg"
