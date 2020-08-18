@@ -13,7 +13,6 @@
 #include <ResourceManager.h>
 #include <thread>
 
-
 //=================================================================================================
 MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(game->check_updates)
 {

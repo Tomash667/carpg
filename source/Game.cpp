@@ -1230,6 +1230,14 @@ void Game::GetPostEffects(vector<PostEffect>& postEffects)
 	if(!use_postfx)
 		return;
 
+	// vignette
+	PostEffect effect;
+	effect.id = POSTFX_VIGNETTE;
+	effect.power = 1.f;
+	effect.skill = Vec4(0.9f, 0.9f, 0.9f, 1.f);
+	effect.tex = game_res->tVignette->tex;
+	postEffects.push_back(effect);
+
 	// gray effect
 	if(pc->data.grayout > 0.f)
 	{

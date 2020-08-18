@@ -130,6 +130,7 @@ void GameResources::LoadData()
 	tFlare = res_mgr->Load<Texture>("flare.png");
 	tFlare2 = res_mgr->Load<Texture>("flare2.png");
 	tWater = res_mgr->Load<Texture>("water.png");
+	tVignette = res_mgr->Load<Texture>("vignette.jpg");
 
 	// preload terrain textures
 	res_mgr->AddTaskCategory(txLoadTerrainTextures);
