@@ -6,6 +6,7 @@ Wersja 0.17 (???):
 + obóz łowców, zadanie z zabiciem złowieszczego wilka
 + lepsze modele przedmiotów: wódka, szara mikstura
 + lepszy generator obozów
++ zmiana nazwy umiejętności targowanie -> perswazja, można ją wykorzystać w niektórych dialogach
 + wilk nie atakuje odrazu
 + muzyka i pasek zdrowia bossa
 + zabezpiecznie przed generowaniem jednostek w ognisku

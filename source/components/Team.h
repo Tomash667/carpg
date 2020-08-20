@@ -86,6 +86,7 @@ public:
 	bool IsAnyoneTalking() const;
 	void Warp(const Vec3& pos, const Vec3& look_at);
 	int GetStPoints() const;
+	bool PersuasionCheck(int level);
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)
@@ -96,6 +97,13 @@ public:
 		anyone_talking;
 
 private:
+	struct CheckResult
+	{
+		Entity<Unit> unit;
+		int tries;
+		bool success;
+	};
+
 	bool CheckTeamShareItem(TeamShareItem& tsi);
 	void CheckUnitOverload(Unit& unit);
 
@@ -114,4 +122,6 @@ private:
 		float priority;
 	};
 	vector<ItemToBuy> to_buy, to_buy2;
+	//
+	vector<CheckResult> checkResults;
 };

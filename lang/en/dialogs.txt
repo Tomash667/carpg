@@ -35,8 +35,8 @@ dialog merchant {
 	9 "Too bad."
 	10 "End dialog"
 	11 "Training"
-	12 "I offer training in haggle or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
-	13 "$train_lab/haggle$"
+	12 "I offer training in persuasion or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
+	13 "$train_lab/persuasion$"
 	14 "$train_lab/cha$"
 	15 "Cancel"
 }
@@ -89,7 +89,7 @@ dialog mayor {
 		"You need something?"
 	}
 	1 "I need Summoning book"
-	2 "" // moved to quest
+	2 "Back"
 	3 "Deliver a package"
 	4 "Return a package"
 	5 "Tell news"
@@ -104,6 +104,14 @@ dialog mayor {
 		"Stone with some runes? I know nothing about this."
 	}
 	12 "End dialog"
+	13 {
+		"I can't rely on you..."
+		"I won't give you any important task! Go collect carrots instead!"
+		"I needs someone I can rely on, not you."
+	}
+	14 "Persuasion"
+	15 "Alright, you convinced me..."
+	16 "No way!"
 }
 
 //==============================================================================
@@ -205,6 +213,14 @@ dialog guard_captain {
 		"Stone with some runes? I know nothing about this."
 	}
 	16 "End dialog"
+	17 {
+		"You are not suitable for such tasks."
+		"I need people who may come in handy, you have already failed."
+	}
+	18 "Persuasion"
+	19 "Alright, you convinced me..."
+	20 "No way!"
+	21 "Back"
 }
 
 //==============================================================================

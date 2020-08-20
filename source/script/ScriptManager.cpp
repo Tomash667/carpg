@@ -816,7 +816,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem))
 		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddMember))
 		.AddFunction("void RemoveMember(Unit@)", asMETHOD(Team, RemoveMember))
-		.AddFunction("void Warp(const Vec3& in, const Vec3& in)", asMETHOD(Team, Warp));
+		.AddFunction("void Warp(const Vec3& in, const Vec3& in)", asMETHOD(Team, Warp))
+		.AddFunction("bool PersuasionCheck(int)", asMETHOD(Team, PersuasionCheck));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 

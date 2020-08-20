@@ -274,7 +274,7 @@ perk magic_adept {
 }
 perk traveling_merchant {
 	name "Uczeñ wêdrownego kupca"
-	desc "W m³odoœci spêdzi³eœ kilka lat podró¿uj¹c wraz z wêdrownymi kupcami. Znasz siê na targowaniu (+10) i rozpoczynasz maj¹c o 500 sztuk z³ota wiêcej."
+	desc "W m³odoœci spêdzi³eœ kilka lat podró¿uj¹c wraz z wêdrownymi kupcami. Znasz siê na perswazji (+10) i rozpoczynasz maj¹c o 500 sztuk z³ota wiêcej."
 }
 
 //------------------------------------------------------------------------------
@@ -376,8 +376,8 @@ skill survival {
 	name "Sztuka przetrwania"
 	desc "Pozwala zdobywaæ trofea ze zwierz¹t, unikaæ zasadzek. Zwiêksza szybkoœæ podró¿ny i szansê na znalezienie czegoœ przydatnego."
 }
-skill haggle {
-	name "Targowanie"
+skill persuasion {
+	name "Perswazja"
 	desc "Pozwala lepiej targowaæ siê i przekonywaæ innych do swojej racji."
 }
 skill alchemy {

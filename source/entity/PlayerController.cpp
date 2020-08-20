@@ -143,7 +143,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		if(HavePerk(Perk::Get("poor")))
 			unit->gold = ::Random(0, 1);
 		else
-			unit->gold += unit->GetBase(SkillId::HAGGLE);
+			unit->gold += unit->GetBase(SkillId::PERSUASION);
 
 		unit->CalculateStats();
 		unit->CalculateLoad();
@@ -1013,7 +1013,13 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		TrainMod(AttributeId::CHA, 10.f);
 		break;
 	case TrainWhat::Trade:
-		TrainMod(SkillId::HAGGLE, value);
+		TrainMod(SkillId::PERSUASION, value);
+		break;
+	case TrainWhat::Persuade:
+		if(value == 0 || value == 100)
+			TrainMod(SkillId::PERSUASION, 30);
+		else
+			TrainMod(SkillId::PERSUASION, 30.f * (101 - value));
 		break;
 	case TrainWhat::Stamina:
 		TrainMod(AttributeId::END, value * 0.75f);

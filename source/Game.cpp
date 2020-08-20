@@ -1116,10 +1116,8 @@ void Game::SetGameText()
 	StrArray(txRumorD, "rumor_d_");
 
 	// dialogs 1
-	StrArray(txMayorQFailed, "mayorQFailed");
 	StrArray(txQuestAlreadyGiven, "questAlreadyGiven");
 	StrArray(txMayorNoQ, "mayorNoQ");
-	StrArray(txCaptainQFailed, "captainQFailed");
 	StrArray(txCaptainNoQ, "captainNoQ");
 	StrArray(txLocationDiscovered, "locationDiscovered");
 	StrArray(txAllDiscovered, "allDiscovered");

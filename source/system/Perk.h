@@ -64,7 +64,7 @@ namespace old
 			MagicAdept, // (60 int) +magic power
 
 			// mixed - perks are saved by id so can't reorder currently
-			TravelingMerchant, // +10 haggle, more gold
+			TravelingMerchant, // +10 persuasion, more gold
 
 			Max // max 256, saved as byte
 		};

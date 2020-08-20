@@ -2001,12 +2001,12 @@ ring r_heavy_armor : r_gold {
 	tag def
 }
 
-ring r_haggle : r_gold {
+ring r_persuasion : r_gold {
 	value 500
 	ai_value 80
 	flags magical
 	effects {
-		skill haggle 10
+		skill persuasion 10
 	}
 }
 
@@ -3418,7 +3418,7 @@ list rings leveled {
 	r_light_armor 8
 	r_medium_armor 8
 	r_heavy_armor 8
-	r_haggle 8
+	r_persuasion 8
 	r_carry 8
 	r_gods_magic 8
 	r_concentration 8
@@ -4110,3 +4110,5 @@ alias shield_wall shield_unique
 alias wand_novice wand_1
 alias wand_adept wand_2
 alias wand_expert wand_3
+// renamed in V_DEV
+alias r_persuasion r_haggle

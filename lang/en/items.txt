@@ -690,9 +690,9 @@ item r_heavy_armor {
 	name "Ring of heavy armor"
 	desc "+10 to heavy armor skill."
 }
-item r_haggle {
-	name "Ring of haggle"
-	desc "+10 to haggle skill."
+item r_persuasion {
+	name "Ring of persuasion"
+	desc "+10 to persuasion skill."
 }
 item r_carry {
 	name "Ring of porter"

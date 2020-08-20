@@ -48,6 +48,8 @@ void GameMessages::LoadLanguage()
 	txLearnedAbility = Str("learnedAbility");
 	txLearnedRecipe = Str("learnedRecipe");
 	txAlreadyLearned = Str("alreadyLearned");
+	txPersuasionSuccess = Str("persuasionSuccess");
+	txPersuasionFailed = Str("persuasionFailed");
 }
 
 //=================================================================================================
@@ -328,6 +330,16 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ALREADY_LEARNED:
 		text = txAlreadyLearned;
 		time = 2.5f;
+		break;
+	case GMS_PERSUASION_SUCCESS:
+		text = txPersuasionSuccess;
+		time = 2.5f;
+		repeat = true;
+		break;
+	case GMS_PERSUASION_FAILED:
+		text = txPersuasionFailed;
+		time = 2.5f;
+		repeat = true;
 		break;
 	default:
 		assert(0);

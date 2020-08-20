@@ -6,6 +6,7 @@ Version 0.17 (???):
 + hunters camp, quest to kill dire wolf
 + better item models: vodka, gray potion
 + better camp generator
++ renamed skill haggle -> persuasion, can be used in some dialogs
 + wolfs don't attack instantly
 + boss music and health bar
 + prevent from spawning units inside campfire

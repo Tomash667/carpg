@@ -47,8 +47,8 @@ dialog merchant {
 	9 "Nie to nie."
 	10 "Koniec rozmowy"
 	11 "Szkolenie"
-	12 "Mogê ciê nauczyæ targowania albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
-	13 "$train_lab/haggle$"
+	12 "Mogê ciê nauczyæ perswazji albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
+	13 "$train_lab/persuasion$"
 	14 "$train_lab/cha$"
 	15 "Anuluj"
 }
@@ -101,7 +101,7 @@ dialog mayor {
 		"Potrzebujesz czegoœ?"
 	}
 	1 "Potrzebujê Ksiêgi przywo³ywania"
-	2 "" // moved to quest
+	2 "Wróæ"
 	3 "Dostarcz paczkê"
 	4 "Zwróæ paczkê"
 	5 "Przeka¿ wieœci"
@@ -116,6 +116,14 @@ dialog mayor {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	12 "Koniec rozmowy"
+	13 {
+		"Nie mo¿na na tobie polegaæ..."
+		"Nie dam ci ¿adnego wa¿nego zadania! IdŸ zbieraæ marchewkê!"
+		"Potrzebuje kogoœ na kim mo¿na polegaæ, na tobie nie mogê."
+	}
+	14 "Perswazja"
+	15 "No dobra, przekona³eœ mnie..."
+	16 "Nie ma takiej opcji!"
 }
 
 //==============================================================================
@@ -217,6 +225,14 @@ dialog guard_captain {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	16 "Koniec rozmowy"
+	17 {
+		"Nie nadajesz siê do takich zadañ."
+		"Potrzebuje ludzi którzy mog¹ siê przydaæ, ty ju¿ raz zawiod³eœ."
+	}
+	18 "Perswazja"
+	19 "No dobra, przekona³eœ mnie..."
+	20 "Nie ma takiej opcji!"
+	21 "Wróæ"
 }
 
 //==============================================================================

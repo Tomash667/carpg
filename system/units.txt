@@ -143,7 +143,7 @@ profile cleric {
 	medium_armor 15
 	gods_magic 20
 	concentration 15
-	haggle 15
+	persuasion 15
 	alchemy 10
 
 	subprofile cleric {
@@ -543,7 +543,7 @@ profile mage {
 	bow 0
 	shield 0
 	light_armor 10
-	haggle 0
+	persuasion 0
 	concentration 15
 	mystic_magic 20
 	alchemy 10
@@ -658,7 +658,7 @@ profile rogue {
 	shield 0
 	light_armor 15
 	medium_armor 0
-	haggle 10
+	persuasion 10
 	alchemy 0
 
 	subprofile weapon {
@@ -853,7 +853,7 @@ profile warrior {
 	light_armor 10
 	medium_armor 15
 	heavy_armor 15
-	haggle 0
+	persuasion 0
 	alchemy 0
 
 	subprofile tank {
@@ -1643,7 +1643,7 @@ unit inwestor : base_human {
 		random {al_clothes3 al_clothes3b}
 		dagger_rapier
 		random 1 3 !normal_food
-		r_haggle
+		r_persuasion
 	}
 	gold {2500 5000}
 	dialog q_mine

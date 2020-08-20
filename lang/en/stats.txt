@@ -108,7 +108,7 @@ attribute wis {
 }
 attribute cha {
 	name "Charisma"
-	desc "\tIncreases the power of cleric spells and chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: gods magic, haggle."
+	desc "\tIncreases the power of cleric spells and chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: gods magic, persuasion."
 }
 
 //------------------------------------------------------------------------------
@@ -274,7 +274,7 @@ perk magic_adept {
 }
 perk traveling_merchant {
 	name "Student of traveling merchant"
-	desc "In your youth you spent several years traveling with traveling merchants. You know how to bargain (+10) and start with 500 gold more."
+	desc "In your youth you spent several years traveling with traveling merchants. You know how to persuade (+10) and start with 500 gold more."
 }
 
 //------------------------------------------------------------------------------
@@ -376,8 +376,8 @@ skill survival {
 	name "Survival"
 	desc "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
 }
-skill haggle {
-	name "Haggle"
+skill persuasion {
+	name "Persuasion"
 	desc "Affects shop prices and allows to affects others."
 }
 skill alchemy {

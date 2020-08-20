@@ -588,6 +588,8 @@ needWand = "Potrzebujesz ró¿d¿ki do rzucania czarów"
 learnedAbility = "Pozna³eœ now¹ zdolnoœæ"
 learnedRecipe = "Pozna³eœ now¹ recepturê"
 alreadyLearned = "Ju¿ to wiem..."
+persuasionSuccess = "Perswazja - Sukces!"
+persuasionFailed = "Perswazja - Pora¿ka!"
 
 // distance/group difficulty
 near = "niedaleko "

@@ -169,14 +169,14 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 {
 	assert(item);
 
-	int haggle = unit.Get(SkillId::HAGGLE) + unit.Get(AttributeId::CHA) - 50;
+	int persuasion = unit.Get(SkillId::PERSUASION) + unit.Get(AttributeId::CHA) - 50;
 	if(unit.IsPlayer())
 	{
 		if(unit.player->HavePerk(Perk::Get("asocial")))
-			haggle -= 20;
+			persuasion -= 20;
 		if(unit.player->action == PlayerAction::Trade
 			&& unit.player->action_unit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemist_apprentice")))
-			haggle += 20;
+			persuasion += 20;
 	}
 
 	const float* mod_table;
@@ -197,16 +197,16 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	}
 
 	float mod;
-	if(haggle <= -25)
+	if(persuasion <= -25)
 		mod = mod_table[0];
-	else if(haggle <= 0)
-		mod = Lerp(mod_table[0], mod_table[1], float(haggle + 25) / 25);
-	else if(haggle <= 15)
-		mod = Lerp(mod_table[1], mod_table[2], float(haggle) / 15);
-	else if(haggle <= 50)
-		mod = Lerp(mod_table[2], mod_table[3], float(haggle - 15) / 30);
-	else if(haggle <= 150)
-		mod = Lerp(mod_table[3], mod_table[4], float(haggle - 50) / 100);
+	else if(persuasion <= 0)
+		mod = Lerp(mod_table[0], mod_table[1], float(persuasion + 25) / 25);
+	else if(persuasion <= 15)
+		mod = Lerp(mod_table[1], mod_table[2], float(persuasion) / 15);
+	else if(persuasion <= 50)
+		mod = Lerp(mod_table[2], mod_table[3], float(persuasion - 15) / 30);
+	else if(persuasion <= 150)
+		mod = Lerp(mod_table[3], mod_table[4], float(persuasion - 50) / 100);
 	else
 		mod = mod_table[4];
 

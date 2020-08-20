@@ -621,6 +621,7 @@ Static methods:
 * void AddMember(Unit@, int type = 0) - add team member, mode: 0-normal, 1-free (no gold), 2-visitor (no gold/exp).
 * void RemoveMember(Unit@) - remove team member.
 * void Warp(const Vec3& in pos, const Vec3& in look_target) - warp team to position rotated towards look target.
+* bool PersuasionCheck(int level) - do persuasion check, return true is succeeded.
 
 ### World component
 Component used for world.

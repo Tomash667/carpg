@@ -58,6 +58,7 @@ enum class TrainWhat
 
 	Talk, // player talked [0]
 	Trade, // player traded items [value]
+	Persuade, // player used persuasion [value: 0-100 chance]
 
 	Stamina, // player uses stamina [value],
 	BullsCharge, // trains str
@@ -104,11 +105,11 @@ enum BeforePlayer
 //-----------------------------------------------------------------------------
 inline int GetRequiredAttributePoints(int level)
 {
-	return 4 * (level + 20)*(level + 25);
+	return 4 * (level + 20) * (level + 25);
 }
 inline int GetRequiredSkillPoints(int level)
 {
-	return 3 * (level + 20)*(level + 25);
+	return 3 * (level + 20) * (level + 25);
 }
 
 //-----------------------------------------------------------------------------

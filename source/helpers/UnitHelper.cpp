@@ -192,3 +192,14 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 	}
 	return result;
 }
+
+int UnitHelper::CalculateChance(int value, int min, int max)
+{
+	if(value <= min)
+		return 0;
+	if(value >= max)
+		return 100;
+	const int diff = max - min;
+	const float ratio = float(value) / diff;
+	return int(ratio * 100 * diff) + min;
+}

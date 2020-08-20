@@ -851,18 +851,15 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	if(strcmp(msg, "mayor_quest") == 0)
 	{
 		bool have_quest = true;
-		if(game_level->city_ctx->quest_mayor == CityQuestState::Failed)
-		{
-			DialogTalk(RandomString(game->txMayorQFailed));
-			++dialog_pos;
-			return true;
-		}
-		else if(world->GetWorldtime() - game_level->city_ctx->quest_mayor_time > 30 || game_level->city_ctx->quest_mayor_time == -1)
+		if(world->GetWorldtime() - game_level->city_ctx->quest_mayor_time > 30
+			|| game_level->city_ctx->quest_mayor_time == -1
+			|| game_level->city_ctx->quest_mayor == CityQuestState::Failed)
 		{
 			if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
 			{
 				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Mayor);
-				DeleteElement(quest_mgr->unaccepted_quests, quest);
+				if(quest)
+					DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -909,18 +906,15 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "captain_quest") == 0)
 	{
 		bool have_quest = true;
-		if(game_level->city_ctx->quest_captain == CityQuestState::Failed)
-		{
-			DialogTalk(RandomString(game->txCaptainQFailed));
-			++dialog_pos;
-			return true;
-		}
-		else if(world->GetWorldtime() - game_level->city_ctx->quest_captain_time > 30 || game_level->city_ctx->quest_captain_time == -1)
+		if(world->GetWorldtime() - game_level->city_ctx->quest_captain_time > 30
+			|| game_level->city_ctx->quest_captain_time == -1
+			|| game_level->city_ctx->quest_captain == CityQuestState::Failed)
 		{
 			if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
 			{
 				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Captain);
-				DeleteElement(quest_mgr->unaccepted_quests, quest);
+				if(quest)
+					DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -1662,6 +1656,10 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(strcmp(msg, "is_guard") == 0)
 		return IsSet(talker->data->flags2, F2_GUARD);
+	else if(strcmp(msg, "mayor_quest_failed") == 0)
+		return game_level->city_ctx->quest_mayor == CityQuestState::Failed;
+	else if(strcmp(msg, "captain_quest_failed") == 0)
+		return game_level->city_ctx->quest_captain == CityQuestState::Failed;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);

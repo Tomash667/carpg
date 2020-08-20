@@ -2063,7 +2063,7 @@ void Unit::Load(GameReader& f)
 			stats->fixed = false;
 			stats->subprofile.value = 0;
 			stats->Load(f);
-			stats->skill[(int)SkillId::HAGGLE] = UnitStats::NEW_STAT;
+			stats->skill[(int)SkillId::PERSUASION] = UnitStats::NEW_STAT;
 		}
 		else
 		{

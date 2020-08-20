@@ -690,9 +690,9 @@ item r_heavy_armor {
 	name "Pierœcieñ ciê¿kiego pancerz"
 	desc "+10 do umiejêtnoœci ciêzki pancerz."
 }
-item r_haggle {
-	name "Pierœcieñ targowania"
-	desc "+10 do umiejêtnoœci targowanie."
+item r_persuasion {
+	name "Pierœcieñ perswazji"
+	desc "+10 do umiejêtnoœci perswazji."
 }
 item r_carry {
 	name "Pierœcieñ tragarza"

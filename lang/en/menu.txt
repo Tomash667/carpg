@@ -588,6 +588,8 @@ needWand = "You need wand to cast spells"
 learnedAbility = "You learned a new ability"
 learnedRecipe = "You learned a new recipe"
 alreadyLearned = "I already know that..."
+persuasionSuccess = "Persuasion - Success!"
+persuasionFailed = "Persuasion - Failed!"
 
 // distance/group difficulty
 near = "near "

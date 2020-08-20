@@ -41,7 +41,7 @@ dialog merchant
 		talk 12
 		choice 13
 		{
-			special "train/haggle"
+			special "train/persuasion"
 			end
 		}
 		choice 14
@@ -206,8 +206,32 @@ dialog mayor
 	}
 	choice 7
 	{
-		special "mayor_quest"
-		restart
+		if special "mayor_quest_failed"
+		{
+			talk 13
+			choice 14
+			{
+				if script "Team::PersuasionCheck(25)"
+				{
+					talk 15
+					special "mayor_quest"
+					restart
+				}
+				else
+				{
+					talk 16
+					restart
+				}
+			}
+			escape choice 2
+				restart
+			show_choices
+		}
+		else
+		{
+			special "mayor_quest"
+			restart
+		}
 	}
 	choice 8
 	{
@@ -491,8 +515,32 @@ dialog guard_captain
 			talk 11
 			restart
 		}
-		special "captain_quest"
-		restart
+		else if special "captain_quest_failed"
+		{
+			talk 17
+			choice 18
+			{
+				if script "Team::PersuasionCheck(25)"
+				{
+					talk 19
+					special "captain_quest"
+					restart
+				}
+				else
+				{
+					talk 20
+					restart
+				}
+			}
+			escape choice 21
+				restart
+			show_choices
+		}
+		else
+		{
+			special "captain_quest"
+			restart
+		}
 	}
 	choice 12
 	{

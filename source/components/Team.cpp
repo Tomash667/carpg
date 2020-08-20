@@ -415,6 +415,11 @@ void Team::Load(GameReader& f)
 			free_recruits = 0;
 	}
 
+	if(LOAD_VERSION >= V_DEV)
+		f >> checkResults;
+	else
+		checkResults.clear();
+
 	CheckCredit(false, true);
 	CalculatePlayersLevel();
 
@@ -429,6 +434,7 @@ void Team::Reset()
 	crazies_attack = false;
 	is_bandit = false;
 	free_recruits = 2;
+	checkResults.clear();
 }
 
 void Team::ClearOnNewGameOrLoad()
@@ -456,6 +462,7 @@ void Team::Save(GameWriter& f)
 	f << crazies_attack;
 	f << is_bandit;
 	f << free_recruits;
+	f << checkResults;
 }
 
 void Team::SaveOnWorldmap(GameWriter& f)
@@ -519,6 +526,8 @@ void Team::Update(int days, bool travel)
 			}
 		}
 	}
+
+	checkResults.clear();
 }
 
 //=================================================================================================
@@ -1571,4 +1580,76 @@ int Team::GetStPoints() const
 	for(const Unit& member : members)
 		pts += member.level;
 	return pts;
+}
+
+//=================================================================================================
+bool Team::PersuasionCheck(int level)
+{
+	// if succeded - don't check
+	// if failed - increase difficulty
+	PlayerController* me = DialogContext::current->pc;
+	Unit* talker = DialogContext::current->talker;
+	CheckResult* existingResult = nullptr;
+	for(CheckResult& check : checkResults)
+	{
+		if(check.unit == talker)
+		{
+			if(check.success)
+			{
+				game_gui->messages->AddGameMsg3(me, GMS_PERSUASION_SUCCESS);
+				return true;
+			}
+			else
+			{
+				existingResult = &check;
+				level += 25 * check.tries;
+				break;
+			}
+		}
+	}
+
+	// find best skill value among nearby team members
+	Unit* bestUnit = me->unit;
+	int bestValue = me->unit->Get(SkillId::PERSUASION) + me->unit->Get(AttributeId::CHA) - 50;
+	for(Unit& r_unit : members)
+	{
+		Unit* unit = &r_unit;
+		if(unit == me->unit || unit->area != me->unit->area || Vec3::Distance(unit->pos, me->unit->pos) > 10.f)
+			continue;
+		int value = unit->Get(SkillId::PERSUASION) + unit->Get(AttributeId::CHA) - 50;
+		if(value > bestValue)
+		{
+			bestValue = value;
+			bestUnit = unit;
+		}
+	}
+
+	// do skill check
+	int chance = UnitHelper::CalculateChance(bestValue, level - 25, level + 25);
+	const bool success = (Rand() % 100 < chance);
+
+	// train player
+	me->Train(TrainWhat::Persuade, 0.f, chance);
+	if(bestUnit->IsPlayer())
+		bestUnit->player->Train(TrainWhat::Persuade, 0.f, chance);
+
+	// add game msg
+	game_gui->messages->AddGameMsg3(me, success ? GMS_PERSUASION_SUCCESS : GMS_PERSUASION_FAILED);
+
+	// remember result
+	if(existingResult)
+	{
+		existingResult->tries++;
+		existingResult->success = success;
+	}
+	else
+	{
+		CheckResult check;
+		check.unit = talker;
+		check.tries = 1;
+		check.success = success;
+		checkResults.push_back(check);
+	}
+
+	return success;
 }
