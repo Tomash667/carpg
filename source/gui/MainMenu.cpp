@@ -37,7 +37,9 @@ void MainMenu::LoadLanguage()
 
 	version = Format(s.Get("version"), VERSION_STR, Split(utility::GetCompileTime().c_str())[0].c_str());
 
+	// create buttons
 	const cstring names[BUTTONS] = {
+		"continue",
 		"newGame",
 		"loadGame",
 		"multiplayer",
@@ -49,11 +51,10 @@ void MainMenu::LoadLanguage()
 
 	Int2 maxsize(0, 0);
 
-	// stwórz przyciski
 	for(int i = 0; i < BUTTONS; ++i)
 	{
 		Button& b = bt[i];
-		b.id = IdNewGame + i;
+		b.id = IdContinue + i;
 		b.parent = this;
 		b.text = s.Get(names[i]);
 		b.size = GameGui::font->CalculateSize(b.text) + Int2(24, 24);
@@ -61,11 +62,13 @@ void MainMenu::LoadLanguage()
 		maxsize = Int2::Max(maxsize, b.size);
 	}
 
-	// ustaw rozmiar
 	for(int i = 0; i < BUTTONS; ++i)
 		bt[i].size = maxsize;
 
 	PlaceButtons();
+
+	// tooltip
+	tooltip.Init(TooltipController::Callback(this, &MainMenu::GetTooltip));
 }
 
 //=================================================================================================
@@ -108,6 +111,8 @@ void MainMenu::Draw(ControlDrawData*)
 		if(bt[i].visible)
 			bt[i].Draw();
 	}
+
+	tooltip.Draw();
 }
 
 //=================================================================================================
@@ -118,6 +123,14 @@ void MainMenu::Update(float dt)
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
 	}
+
+	int group = -1, id = -1;
+	if(bt[0].state == Button::HOVER)
+	{
+		group = 0;
+		id = 0;
+	}
+	tooltip.UpdateTooltip(dt, group, id);
 
 	UpdateCheckVersion();
 }
@@ -205,6 +218,10 @@ void MainMenu::Event(GuiEvent e)
 	{
 		if(check_status == CheckVersionStatus::Checking)
 			version_text = txCheckingVersion;
+		if(game->lastSave != -1 && !game_gui->saveload->GetSaveSlot(game->lastSave, false).valid)
+			game->SetLastSave(-1);
+		bt[0].state = (game->lastSave == -1 ? Button::DISABLED : Button::NONE);
+		tooltip.Clear();
 	}
 	else if(e == GuiEvent_WindowResize)
 		PlaceButtons();
@@ -212,6 +229,10 @@ void MainMenu::Event(GuiEvent e)
 	{
 		switch(e)
 		{
+		case IdContinue:
+			Net::SetMode(Net::Mode::Singleplayer);
+			game->LoadLastSave();
+			break;
 		case IdNewGame:
 			Net::SetMode(Net::Mode::Singleplayer);
 			game_gui->ShowCreateCharacterPanel(true);
@@ -270,4 +291,14 @@ void MainMenu::ShutdownThread()
 	}
 	else if(check_status == CheckVersionStatus::Done)
 		check_version_thread.join();
+}
+
+//=================================================================================================
+void MainMenu::GetTooltip(TooltipController* tooltip, int group, int id, bool refresh)
+{
+	tooltip->anything = true;
+	SaveSlot& slot = game_gui->saveload->GetSaveSlot(game->lastSave, false);
+	tooltip->img = game_gui->saveload->GetSaveImage(game->lastSave, false);
+	tooltip->big_text = slot.text;
+	tooltip->text = game_gui->saveload->GetSaveText(slot);
 }

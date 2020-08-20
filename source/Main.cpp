@@ -532,7 +532,7 @@ void LoadConfiguration(char* lpCmdLine)
 	if(log_to_file)
 		log_filename = cfg.GetString("log_filename", "log.txt");
 
-	game->hardcore_option = ToBool(cfg.GetBool3("hardcore_mode", False));
+	game->hardcore_option = cfg.GetBool("hardcore_mode");
 
 	// window inactivity game stop prevention
 	if(cfg.GetBool3("inactive_update", False) == True)
@@ -636,7 +636,7 @@ void LoadConfiguration(char* lpCmdLine)
 
 	Logger* logger;
 	if(count == 2)
-		logger = new MultiLogger({ new ConsoleLogger , new TextLogger(log_filename.c_str()) });
+		logger = new MultiLogger({ new ConsoleLogger, new TextLogger(log_filename.c_str()) });
 	else if(count == 1)
 	{
 		if(have_console)
@@ -659,7 +659,7 @@ void LoadConfiguration(char* lpCmdLine)
 		game->force_seed = seed;
 	}
 	game->next_seed = cfg.GetUint("next_seed");
-	game->force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
+	game->force_seed_all = cfg.GetBool("force_seed");
 	Info("random seed: %u/%u/%d", seed, game->next_seed, (game->force_seed_all ? 1 : 0));
 	Srand(seed);
 
@@ -677,9 +677,7 @@ void LoadConfiguration(char* lpCmdLine)
 		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 	}
 
-	// miscellaneous
-	game->check_updates = ToBool(cfg.GetBool3("check_updates", True));
-	game->skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
+	game->LoadCfg();
 
 	// crash reporter
 	RegisterErrorHandler(cfg, log_filename);

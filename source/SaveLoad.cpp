@@ -155,7 +155,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	SaveSlot* ss = nullptr;
 	if(slot != -1)
 	{
-		ss = &game_gui->saveload->GetSaveSlot(slot);
+		ss = &game_gui->saveload->GetSaveSlot(slot, Net::IsOnline());
 		ss->text = text;
 	}
 
@@ -169,6 +169,8 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	cstring msg = Format("Game saved '%s'.", filename);
 	game_gui->console->AddMsg(msg);
 	Info(msg);
+	if(slot != -1 && !Net::IsOnline())
+		SetLastSave(slot);
 
 	if(hardcore_mode)
 	{
@@ -216,6 +218,17 @@ void Game::LoadGameFilename(const string& name)
 		filename += ".sav";
 
 	return LoadGameCommon(filename.c_str(), -1);
+}
+
+//=================================================================================================
+void Game::SetLastSave(int slot)
+{
+	if(slot != lastSave && !Net::IsOnline())
+	{
+		lastSave = slot;
+		cfg.Add("lastSave", lastSave);
+		SaveCfg();
+	}
 }
 
 //=================================================================================================
@@ -295,10 +308,14 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		{
 			game_gui->saveload->RemoveHardcoreSave(slot);
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
+			if(!Net::IsOnline())
+				SetLastSave(-1);
 		}
 		else
 			DeleteFile(filename);
 	}
+	else if(slot != -1 && !Net::IsOnline())
+		SetLastSave(slot);
 
 	if(net->mp_quickload)
 	{
@@ -330,7 +347,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	else
 	{
 		game_gui->multiplayer->visible = true;
-		game_gui->main_menu->visible = true;
+		game_gui->main_menu->Show();
 		game_gui->create_server->Show();
 	}
 }

@@ -9,6 +9,7 @@ Wersja 0.17 (???):
 + wilk nie atakuje odrazu
 + muzyka i pasek zdrowia bossa
 + zabezpiecznie przed generowaniem jednostek w ognisku
++ kontynuuj ostatnią grę w menu
 + optymalizacje manadżera sceny
 - brak muzyki bossa
 

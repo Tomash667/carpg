@@ -5,6 +5,7 @@ yes = "Tak"
 no = "Nie"
 
 [MainMenu]
+continue = "Kontynuuj grê"
 newGame = "Nowa gra"
 loadGame = "Wczytaj grê"
 multiplayer = "Tryb multiplayer"

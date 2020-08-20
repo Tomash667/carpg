@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include <Control.h>
 #include <Button.h>
+#include <TooltipController.h>
 
 //-----------------------------------------------------------------------------
 // Main menu panel
@@ -11,7 +12,8 @@ class MainMenu : public Control
 public:
 	enum Id
 	{
-		IdNewGame = GuiEvent_Custom,
+		IdContinue = GuiEvent_Custom,
+		IdNewGame,
 		IdLoadGame,
 		IdMultiplayer,
 		IdOptions,
@@ -41,12 +43,14 @@ private:
 		Cancel
 	};
 
-	static const uint BUTTONS = 7u;
+	static const uint BUTTONS = 8u;
 
 	void PlaceButtons();
 	void OnNewVersion(int id);
 	void CheckVersion();
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 
+	TooltipController tooltip;
 	Button bt[BUTTONS];
 	TexturePtr tBackground, tLogo, tFModLogo;
 	CheckVersionStatus check_status;

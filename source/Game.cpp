@@ -481,7 +481,7 @@ void Game::PostconfigureGame()
 	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
 	game_gui->load_screen->visible = false;
-	game_gui->main_menu->visible = true;
+	game_gui->main_menu->Show();
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);
 
@@ -967,10 +967,23 @@ void Game::DoExitToMenu()
 	game_gui->game_menu->visible = false;
 	game_gui->level_gui->visible = false;
 	game_gui->world_map->Hide();
-	game_gui->main_menu->visible = true;
+	game_gui->main_menu->Show();
 	units_mesh_load.clear();
 
 	ChangeTitle();
+}
+
+//=================================================================================================
+void Game::LoadCfg()
+{
+	// last save
+	lastSave = cfg.GetInt("lastSave", -1);
+	if(lastSave < 1 || lastSave > SaveSlot::MAX_SLOTS)
+		lastSave = -1;
+
+	// miscellaneous
+	check_updates = cfg.GetBool("check_updates", true);
+	skip_tutorial = cfg.GetBool("skip_tutorial", false);
 }
 
 //=================================================================================================

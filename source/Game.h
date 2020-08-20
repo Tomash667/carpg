@@ -177,6 +177,7 @@ public:
 
 	void SetupConfigVars();
 	DialogContext* FindDialogContext(Unit* talker);
+	void LoadCfg();
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 	void PauseGame();
@@ -206,6 +207,8 @@ public:
 	void LoadGameSlot(int slot);
 	void LoadGameFilename(const string& name);
 	void LoadGameCommon(cstring filename, int slot);
+	void LoadLastSave() { LoadGameSlot(lastSave); }
+	void SetLastSave(int slot);
 	bool ValidateNetSaveForLoading(GameReader& f, int slot);
 	void Quicksave(bool from_console);
 	void Quickload(bool from_console);
@@ -396,6 +399,7 @@ public:
 	//-----------------------------------------------------------------
 	Config cfg;
 	Settings settings;
+	int lastSave;
 	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, dont_wander;
 	string cfg_file;
 

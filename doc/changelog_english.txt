@@ -9,6 +9,7 @@ Version 0.17 (???):
 + wolfs don't attack instantly
 + boss music and health bar
 + prevent from spawning units inside campfire
++ continue last game in menu
 + scene manager optimisations
 - missing boss music
 
