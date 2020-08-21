@@ -20,6 +20,5 @@ public:
 	void LoadDetails(GameReader& f) override;
 
 private:
-	Location* camp;
 	Location* forest;
 };

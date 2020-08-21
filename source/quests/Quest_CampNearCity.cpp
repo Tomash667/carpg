@@ -13,8 +13,8 @@ Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)
 	f >> group;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;
-	else if(target_loc != -1)
-		st = GetTargetLocation().st;
+	else if(targetLoc)
+		st = targetLoc->st;
 	else
 		st = 10;
 
@@ -25,8 +25,8 @@ Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)
 void Quest_CampNearCity::GetConversionData(ConversionData& data)
 {
 	data.id = "camp_near_city";
-	data.Add("start_loc", &GetStartLocation());
-	data.Add("target_loc", target_loc == -1 ? nullptr : &GetTargetLocation());
+	data.Add("start_loc", startLoc);
+	data.Add("target_loc", targetLoc);
 	data.Add("start_time", start_time);
 	data.Add("group", group);
 	data.Add("st", st);

@@ -413,8 +413,8 @@ void WorldMapGui::Update(float dt)
 
 	if(world->GetState() == World::State::TRAVEL)
 	{
-		if(world->travel_location_index != -1)
-			picked_location = world->travel_location_index;
+		if(world->travel_location)
+			picked_location = world->travel_location->index;
 
 		if(game->paused || (!Net::IsOnline() && gui->HavePauseDialog()))
 			return;

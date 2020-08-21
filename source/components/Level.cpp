@@ -3308,7 +3308,7 @@ void Level::CheckIfLocationCleared()
 		if(!prevent && !location->group->IsEmpty())
 		{
 			if(location->type == L_CAMP)
-				world->AddNews(Format(txNewsCampCleared, world->GetLocation(world->GetNearestSettlement(location->pos))->name.c_str()));
+				world->AddNews(Format(txNewsCampCleared, world->GetNearestSettlement(location->pos)->name.c_str()));
 			else
 				world->AddNews(Format(txNewsLocCleared, location->name.c_str()));
 		}

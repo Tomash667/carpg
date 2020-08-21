@@ -155,6 +155,34 @@ quest camp_near_city {
 }
 
 //=============================================================================
+quest kill_animals {
+	dialog start {
+		0 "Szukam kogoœ kto zajmie siê jedn¹ z okolicznych lokalizacji w które zagnieŸdzi³o siê sporo stworzeñ."
+		1 "Jesteœ zainteresowany?"
+		2 "Tak"
+		3 "Udaj siê do $(targetLoc.name) i zabij wszystkie stwory. Uwa¿aj te¿ na dzikusów którym odbi³o i zachowuj¹ siê jak zwierzêta."
+		4 "$(targetLoc.name) znajduje siê na $(World::GetDirName(startLoc, targetLoc)) st¹d. Masz na to miesi¹c czasu."
+		5 "Nie"
+	}
+	
+	dialog captain {
+		0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
+		1 "Masz tu $reward$ sztuk z³ota nagrody."
+		2 "Nie oczyœci³eœ na czas $(targetLoc.name). Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
+	}
+	
+	texts {
+		0 "Zabij zwierzêta"
+		1 "Otrzymano od kapitana stra¿y $(startLoc.name) dnia $date$."
+		2 "Zwierzêta z $(targetLoc.name) na $(World::GetDirName(startLoc, targetLoc)) st¹d niepokoj¹ podró¿nych. Mam oczyœciæ tê lokalizacjê w ci¹gu miesi¹ca."
+		3 "Oczyœci³em $(targetLoc.name)."
+		4 "Poinformowa³em o oczyszczeniu lokalizacji i otrzyma³em nagrodê. Zadanie wykonane!"
+		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+		6 "Nie zd¹¿y³em na czas oczyœciæ lokalizacji."
+	}
+}
+
+//=============================================================================
 quest find_artifact {
 	dialog start {
 		0 "Poszukujê pewnego artefaktu znanego jako $(item.name)."

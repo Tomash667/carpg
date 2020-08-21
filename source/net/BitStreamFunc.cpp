@@ -4,8 +4,10 @@
 #include "GameResources.h"
 #include "Item.h"
 #include "ItemSlot.h"
+#include "Location.h"
 #include "QuestManager.h"
 #include "Unit.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
@@ -96,6 +98,12 @@ void BitStreamWriter::operator << (Unit* unit)
 {
 	int id = (unit ? unit->id : -1);
 	Write(id);
+}
+
+void BitStreamWriter::operator << (Location* loc)
+{
+	int index = (loc ? loc->index : -1);
+	Write(index);
 }
 
 //-----------------------------------------------------------------------------
@@ -249,4 +257,13 @@ void BitStreamReader::operator >> (Unit*& unit)
 {
 	int id = Read<int>();
 	unit = Unit::GetById(id);
+}
+
+void BitStreamReader::operator >> (Location*& loc)
+{
+	int index = Read<int>();
+	if(index == -1)
+		loc = nullptr;
+	else
+		loc = world->GetLocation(index);
 }

@@ -26,9 +26,7 @@ void Quest_Goblins::Start()
 {
 	category = QuestCategory::Unique;
 	type = Q_GOBLINS;
-	vector<int>& used = quest_mgr->GetUsedCities();
-	start_loc = world->GetRandomSettlementIndex(used, CITY);
-	used.push_back(start_loc);
+	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities(), CITY);
 	enc = -1;
 	goblins_state = State::None;
 	nobleman = nullptr;
@@ -128,12 +126,11 @@ void Quest_Goblins::SetProgress(int prog2)
 			OnStart(game->txQuest[212]);
 			quest_mgr->RemoveQuestRumor(id);
 			// add location
-			target_loc = world->GetClosestLocation(L_OUTSIDE, GetStartLocation().pos, FOREST);
-			Location& target = GetTargetLocation();
-			target.SetKnown();
-			target.reset = true;
-			target.active_quest = this;
-			target.st = 7;
+			targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
+			targetLoc->SetKnown();
+			targetLoc->reset = true;
+			targetLoc->active_quest = this;
+			targetLoc->st = 7;
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
 			// add journal entry
@@ -146,7 +143,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->dont_attack = true;
 			e->group = UnitGroup::Get("goblins");
 			e->location_event_handler = nullptr;
-			e->pos = GetStartLocation().pos;
+			e->pos = startLoc->pos;
 			e->quest = this;
 			e->chance = 10000;
 			e->range = 32.f;
@@ -161,7 +158,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			OnUpdate(game->txQuest[220]);
 			world->RemoveEncounter(enc);
 			enc = -1;
-			GetTargetLocation().active_quest = nullptr;
+			targetLoc->active_quest = nullptr;
 			world->AddNews(game->txQuest[221]);
 			team->AddExp(1000);
 		}
@@ -177,19 +174,18 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::InfoAboutGoblinBase:
 		{
 			state = Quest::Started;
-			target_loc = world->GetRandomSpawnLocation(GetStartLocation().pos, UnitGroup::Get("goblins"));
-			Location& target = GetTargetLocation();
-			target.state = LS_KNOWN;
-			target.st = 10;
-			target.reset = true;
-			target.active_quest = this;
+			targetLoc = world->GetRandomSpawnLocation(startLoc->pos, UnitGroup::Get("goblins"));
+			targetLoc->state = LS_KNOWN;
+			targetLoc->st = 10;
+			targetLoc->reset = true;
+			targetLoc->active_quest = this;
 			done = false;
 			spawn_item = Quest_Event::Item_GiveSpawned;
 			unit_to_spawn = UnitGroup::Get("goblins")->GetLeader(11);
 			unit_spawn_level = -3;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
-			at_level = target.GetLastLevel();
-			OnUpdate(Format(game->txQuest[223], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+			at_level = targetLoc->GetLastLevel();
+			OnUpdate(Format(game->txQuest[223], targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			goblins_state = State::MessengerTalked;
 		}
 		break;
@@ -202,8 +198,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			team->AddReward(500, 2500);
 			OnUpdate(game->txQuest[224]);
 			goblins_state = State::GivenBow;
-			GetTargetLocation().active_quest = nullptr;
-			target_loc = -1;
+			targetLoc->active_quest = nullptr;
+			targetLoc = nullptr;
 			world->AddNews(game->txQuest[225]);
 		}
 		break;
@@ -238,7 +234,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.st = 12;
 			target.SetKnown();
 			target.active_quest = this;
-			target_loc = target.index;
+			targetLoc = &target;
 			done = false;
 			unit_to_spawn = UnitData::Get("q_gobliny_szlachcic2");
 			spawn_unit_room = RoomTarget::Throne;
@@ -256,7 +252,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[230]);
-			GetTargetLocation().active_quest = nullptr;
+			targetLoc->active_quest = nullptr;
 			quest_mgr->EndUniqueQuest();
 			world->AddNews(game->txQuest[231]);
 			team->AddLearningPoint();
@@ -359,7 +355,7 @@ Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 		e->dont_attack = true;
 		e->group = UnitGroup::Get("goblins");
 		e->location_event_handler = nullptr;
-		e->pos = GetStartLocation().pos;
+		e->pos = startLoc->pos;
 		e->quest = this;
 		e->chance = 10000;
 		e->range = 32.f;
@@ -378,7 +374,7 @@ bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
 	{
 		return goblins_state >= State::MageTalked
 			&& goblins_state < State::KnownLocation
-			&& game_level->location_index == start_loc
+			&& game_level->location == startLoc
 			&& prog != Progress::TalkedWithInnkeeper;
 	}
 	assert(0);

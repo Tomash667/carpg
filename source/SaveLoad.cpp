@@ -932,8 +932,14 @@ void Game::LoadGame(GameReader& f)
 	// current location event handler
 	if(location_event_handler_quest_id != -1)
 	{
-		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_id));
-		assert(game_level->event_handler);
+		Quest* quest = quest_mgr->FindAnyQuest(location_event_handler_quest_id);
+		if(quest->isNew)
+			game_level->event_handler = nullptr;
+		else
+		{
+			game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest);
+			assert(game_level->event_handler);
+		}
 	}
 	else
 		game_level->event_handler = nullptr;

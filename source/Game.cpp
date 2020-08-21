@@ -1556,7 +1556,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		contest->Cleanup();
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && game_level->location_index == quest_mgr->quest_orcs2->target_loc)
+	if(Net::IsLocal() && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && game_level->location == quest_mgr->quest_orcs2->targetLoc)
 	{
 		quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		game_level->UpdateLocation(31, 100, false);
@@ -3647,7 +3647,7 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_mgr->quest_orcs2->target_loc == game_level->location_index
+	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_mgr->quest_orcs2->targetLoc == game_level->location
 		&& quest_mgr->quest_orcs2->talked == Quest_Orcs2::Talked::No)
 	{
 		quest_mgr->quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
@@ -3720,7 +3720,7 @@ void Game::OnEnterLevel()
 	{
 		if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals)
 		{
-			int d = quest_evil->GetLocId(game_level->location_index);
+			int d = quest_evil->GetLocId(game_level->location);
 			if(d != -1)
 			{
 				Quest_Evil::Loc& loc = quest_evil->loc[d];
@@ -3742,7 +3742,7 @@ void Game::OnEnterLevel()
 				}
 			}
 		}
-		else if(game_level->location_index == quest_evil->target_loc && !quest_evil->told_about_boss)
+		else if(game_level->location == quest_evil->targetLoc && !quest_evil->told_about_boss)
 		{
 			quest_evil->told_about_boss = true;
 			talker = quest_evil->cleric;
@@ -3752,7 +3752,7 @@ void Game::OnEnterLevel()
 
 	// orc talking after entering level
 	Quest_Orcs2* quest_orcs2 = quest_mgr->quest_orcs2;
-	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && game_level->location_index == quest_orcs2->target_loc)
+	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && game_level->location == quest_orcs2->targetLoc)
 	{
 		if(game_level->dungeon_level == 0)
 		{
@@ -3778,7 +3778,7 @@ void Game::OnEnterLevel()
 	Quest_Mages2* quest_mages2 = quest_mgr->quest_mages2;
 	if(!talker && (quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined || quest_mages2->mages_state == Quest_Mages2::State::MageRecruited))
 	{
-		if(quest_mages2->target_loc == game_level->location_index)
+		if(quest_mages2->targetLoc == game_level->location)
 		{
 			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{

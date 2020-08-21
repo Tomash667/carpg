@@ -27,6 +27,9 @@ struct Quest2 : public Quest
 	LoadResult Load(GameReader& f) override;
 	virtual void LoadDetails(GameReader& f) {};
 	void SetState(State state);
+	void SetTimeout(int days);
+	bool IsTimedout() const override;
+	bool OnTimeout(TimeoutType ttype) override;
 
 protected:
 	asIScriptObject* CreateInstance(bool shared);

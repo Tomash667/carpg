@@ -29,9 +29,6 @@ public:
 	void SetStarted(const string& name);
 	void SetCompleted();
 	void SetFailed();
-	void SetTimeout(int days);
-	bool IsTimedout() const override;
-	bool OnTimeout(TimeoutType ttype) override;
 	void FireEvent(ScriptEvent& event) override;
 	string GetString(int index);
 	asIScriptObject* GetInstance() override { return instance; }

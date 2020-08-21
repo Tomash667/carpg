@@ -350,10 +350,10 @@ void QuestManager::Update(int days)
 		if(!quest->IsTimedout())
 			return false;
 
-		Location* loc = world->GetLocation(quest->target_loc);
+		Location* loc = quest->targetLoc;
 		bool in_camp = false;
 
-		if(loc->type == L_CAMP && (quest->target_loc == world->GetTravelLocationIndex() || quest->target_loc == world->GetCurrentLocationIndex()))
+		if(loc->type == L_CAMP && (loc == world->GetTravelLocation() || loc == world->GetCurrentLocation()))
 			in_camp = true;
 
 		if(!quest->timeout)
@@ -372,7 +372,7 @@ void QuestManager::Update(int days)
 
 		if(loc->type == L_CAMP)
 		{
-			quest->target_loc = -1;
+			quest->targetLoc = nullptr;
 			world->DeleteCamp(static_cast<Camp*>(loc));
 		}
 
@@ -395,7 +395,7 @@ void QuestManager::Update(int days)
 	if(quest_contest->year != date.year)
 	{
 		quest_contest->year = date.year;
-		quest_contest->where = world->GetRandomSettlementIndex(quest_contest->where);
+		quest_contest->where = world->GetRandomSettlement(world->GetLocation(quest_contest->where))->index;
 	}
 }
 
@@ -641,11 +641,11 @@ void QuestManager::Load(GameReader& f)
 			{
 			case old::R_SAWMILL:
 				type = Q_SAWMILL;
-				text = Format(txRumorQ[0], world->GetLocation(quest_sawmill->start_loc)->name.c_str());
+				text = Format(txRumorQ[0], quest_sawmill->startLoc->name.c_str());
 				break;
 			case old::R_MINE:
 				type = Q_MINE;
-				text = Format(txRumorQ[1], world->GetLocation(quest_mine->start_loc)->name.c_str());
+				text = Format(txRumorQ[1], quest_mine->startLoc->name.c_str());
 				break;
 			case old::R_CONTEST:
 				type = Q_FORCE_NONE;
@@ -653,11 +653,11 @@ void QuestManager::Load(GameReader& f)
 				break;
 			case old::R_BANDITS:
 				type = Q_BANDITS;
-				text = Format(txRumorQ[3], world->GetLocation(quest_bandits->start_loc)->name.c_str());
+				text = Format(txRumorQ[3], quest_bandits->startLoc->name.c_str());
 				break;
 			case old::R_MAGES:
 				type = Q_MAGES;
-				text = Format(txRumorQ[4], world->GetLocation(quest_mages->start_loc)->name.c_str());
+				text = Format(txRumorQ[4], quest_mages->startLoc->name.c_str());
 				break;
 			case old::R_MAGES2:
 				type = Q_MAGES2;
@@ -665,15 +665,15 @@ void QuestManager::Load(GameReader& f)
 				break;
 			case old::R_ORCS:
 				type = Q_ORCS;
-				text = Format(txRumorQ[6], world->GetLocation(quest_orcs->start_loc)->name.c_str());
+				text = Format(txRumorQ[6], quest_orcs->startLoc->name.c_str());
 				break;
 			case old::R_GOBLINS:
 				type = Q_GOBLINS;
-				text = Format(txRumorQ[7], world->GetLocation(quest_goblins->start_loc)->name.c_str());
+				text = Format(txRumorQ[7], quest_goblins->startLoc->name.c_str());
 				break;
 			case old::R_EVIL:
 				type = Q_EVIL;
-				text = Format(txRumorQ[8], world->GetLocation(quest_evil->start_loc)->name.c_str());
+				text = Format(txRumorQ[8], quest_evil->startLoc->name.c_str());
 				break;
 			}
 			if(type == Q_FORCE_NONE)
@@ -752,11 +752,11 @@ Quest* QuestManager::FindQuest(int id, bool active)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindQuest(int loc, QuestCategory category)
+Quest* QuestManager::FindQuest(Location* location, QuestCategory category)
 {
 	for(Quest* quest : quests)
 	{
-		if(quest->start_loc == loc && quest->category == category)
+		if(quest->startLoc == location && quest->category == category)
 			return quest;
 	}
 
@@ -820,11 +820,11 @@ Quest* QuestManager::FindQuest(QUEST_TYPE type)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindUnacceptedQuest(int loc, QuestCategory category)
+Quest* QuestManager::FindUnacceptedQuest(Location* location, QuestCategory category)
 {
 	for(Quest* quest : unaccepted_quests)
 	{
-		if(quest->start_loc == loc && quest->category == category)
+		if(quest->startLoc == location && quest->category == category)
 			return quest;
 	}
 
@@ -1031,7 +1031,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 {
 	if(on_enter)
 	{
-		if(quest_sawmill->sawmill_state == Quest_Sawmill::State::None && game_level->location_index == quest_sawmill->start_loc)
+		if(quest_sawmill->sawmill_state == Quest_Sawmill::State::None && game_level->location == quest_sawmill->startLoc)
 		{
 			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
 			assert(u);
@@ -1044,7 +1044,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(game_level->location_index == quest_mine->start_loc && quest_mine->mine_state == Quest_Mine::State::None)
+		if(game_level->location == quest_mine->startLoc && quest_mine->mine_state == Quest_Mine::State::None)
 		{
 			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
 			assert(u);
@@ -1056,7 +1056,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(game_level->location_index == quest_bandits->start_loc && quest_bandits->bandits_state == Quest_Bandits::State::None)
+		if(game_level->location == quest_bandits->startLoc && quest_bandits->bandits_state == Quest_Bandits::State::None)
 		{
 			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
 			assert(u);
@@ -1068,7 +1068,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(game_level->location_index == quest_mages->start_loc && quest_mages2->mages_state == Quest_Mages2::State::None)
+		if(game_level->location == quest_mages->startLoc && quest_mages2->mages_state == Quest_Mages2::State::None)
 		{
 			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
 			assert(u);
@@ -1111,7 +1111,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(game_level->location_index == quest_orcs->start_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::None)
+		if(game_level->location == quest_orcs->startLoc && quest_orcs2->orcs_state == Quest_Orcs2::State::None)
 		{
 			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
 			assert(u);
@@ -1125,7 +1125,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(game_level->location_index == quest_goblins->start_loc && quest_goblins->goblins_state == Quest_Goblins::State::None)
+		if(game_level->location == quest_goblins->startLoc && quest_goblins->goblins_state == Quest_Goblins::State::None)
 		{
 			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
 			assert(u);
@@ -1139,7 +1139,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 
-		if(game_level->location_index == quest_evil->start_loc && quest_evil->evil_state == Quest_Evil::State::None)
+		if(game_level->location == quest_evil->startLoc && quest_evil->evil_state == Quest_Evil::State::None)
 		{
 			CityBuilding* b = game_level->city_ctx->FindBuilding(BuildingGroup::BG_INN);
 			Unit* u = game_level->SpawnUnitNearLocation(*game_level->local_area, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
@@ -1286,7 +1286,7 @@ void QuestManager::RemoveQuestUnits(bool on_leave)
 			quest_mine->messenger = nullptr;
 		}
 
-		if(game_level->is_open && game_level->location_index == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+		if(game_level->is_open && game_level->location == quest_sawmill->startLoc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
 			&& quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
 		{
 			Unit* u = game_level->city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));

@@ -155,6 +155,34 @@ quest camp_near_city {
 }
 
 //=============================================================================
+quest kill_animals {
+	dialog start {
+		0 "I'm looking for someone who will take up one of the nearby locations which prevailed in many creatures."
+		1 "Are you interested?"
+		2 "Yes"
+		3 "Go to the $(targetLoc.name) and kill all the monsters. Also watch out for the crazy savages that behave like animals."
+		4 "$(targetLoc.name) is $(World::GetDirName(startLoc, targetLoc)) from here."
+		5 "No"
+	}
+	
+	dialog captain {
+		0 "Excellent work, these creatures often troubled travelers."
+		1 "Here you got $reward$ gold pieces as reward."
+		2 "No time for clearing $(targetLoc.name)? Through you, travelers cannot easily wander around."
+	}
+	
+	texts {
+		0 "Kill animals"
+		1 "Obtained from captain guard of $(startLoc.name) at $date$."
+		2 "Travelers who took the path from $(targetLoc.name) at $(World::GetDirName(startLoc, targetLoc)) are concerned about violent animals. I have to clean this location during the month."
+		3 "I cleared $(targetLoc.name)."
+		4 "I told the travelers that the path is safe once again and received my reward. Quest done!"
+		5 "The time that I had to complete this quest passed."
+		6 "I didn't get rid of the animals at the site on time."
+	}
+}
+
+//=============================================================================
 quest find_artifact {
 	dialog start {
 		0 "I'm looking for a certain artifact known as the $(item.name)."

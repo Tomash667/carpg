@@ -86,8 +86,7 @@ public:
 	void SmoothTiles();
 	void CreateCity(const Vec2& pos, int target);
 	void SetLocationImageAndName(Location* l);
-	int CreateCamp(const Vec2& pos, UnitGroup* group);
-	Location* CreateCampS(const Vec2& pos, UnitGroup* group) { return GetLocation(CreateCamp(pos, group)); }
+	Location* CreateCamp(const Vec2& pos, UnitGroup* group);
 private:
 	typedef LOCATION(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
@@ -122,30 +121,24 @@ public:
 	const Vec2& GetTargetPos() const { return travel_target_pos; }
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
 	uint GetSettlements() { return settlements; }
-	int GetRandomSettlementIndex(int excluded = -1) const;
-	int GetRandomSettlementIndex(const vector<int>& used, int target = ANY_TARGET) const;
-	Location* GetRandomSettlement(int excluded = -1) const { return locations[GetRandomSettlementIndex(excluded)]; }
-	int GetRandomFreeSettlementIndex(int excluded = -1) const;
-	int GetRandomCityIndex(int excluded = -1) const;
-	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = ANY_TARGET, int flags = 0);
-	int GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags = 0);
-	int GetClosestLocation(LOCATION type, const Vec2& pos, std::initializer_list<int> const& targets, int flags = 0)
+	Location* GetRandomSettlement(Location* excluded = nullptr) const;
+	Location* GetRandomSettlement(vector<Location*>& used, int target = ANY_TARGET) const;
+	Location* GetRandomFreeSettlement(Location* excluded = nullptr) const;
+	Location* GetRandomCity(Location* excluded = nullptr) const;
+	Location* GetClosestLocation(LOCATION type, const Vec2& pos, int target = ANY_TARGET, int flags = 0);
+	Location* GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags = 0);
+	Location* GetClosestLocation(LOCATION type, const Vec2& pos, std::initializer_list<int> const& targets, int flags = 0)
 	{
 		return GetClosestLocation(type, pos, targets.begin(), targets.size(), flags);
-	}
-	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = ANY_TARGET)
-	{
-		return locations[GetClosestLocation(type, pos, target)];
 	}
 	Location* GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array);
 	bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false);
 	Vec2 FindPlace(const Vec2& pos, float range, bool allow_exact = false);
 	Vec2 FindPlace(const Vec2& pos, float min_range, float max_range);
 	Vec2 GetRandomPlace();
-	int GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
-	int GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
+	Location* GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
+	Location* GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
-	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
 	Location* GetRandomLocation(delegate<bool(Location*)> pred);
 	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
@@ -158,7 +151,7 @@ public:
 	void UpdateTravel(float dt);
 	void StopTravel(const Vec2& pos, bool send);
 	void EndTravel();
-	int GetTravelLocationIndex() const { return travel_location_index; }
+	Location* GetTravelLocation() const { return travel_location; }
 	float GetTravelDir() const { return travel_dir; }
 	void SetTravelDir(const Vec3& pos);
 	void GetOutsideSpawnPoint(Vec3& pos, float& dir) const;
@@ -198,9 +191,9 @@ private:
 	WorldMapGui* gui;
 	State state;
 	Location* current_location; // current location or nullptr
+	Location* travel_location; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (nullptr otherwise)
 	Location* start_location;
 	int current_location_index; // current location index or -1
-	int travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr
 	OutsideLocation* encounter_loc;
 	OffscreenLocation* offscreen_loc;

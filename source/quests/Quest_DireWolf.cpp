@@ -13,8 +13,8 @@ void Quest_DireWolf::Start()
 	category = QuestCategory::Unique;
 	type = Q_DIRE_WOLF;
 
-	camp = world->GetLocationByType(L_OUTSIDE, HUNTERS_CAMP);
-	camp->AddEventHandler(this, EVENT_ENTER);
+	startLoc = world->GetLocationByType(L_OUTSIDE, HUNTERS_CAMP);
+	startLoc->AddEventHandler(this, EVENT_ENTER);
 	forest = nullptr;
 }
 
@@ -24,7 +24,7 @@ void Quest_DireWolf::SetProgress(int p)
 	switch(p)
 	{
 	case Started:
-		forest = world->GetClosestLocationS(L_OUTSIDE, camp->pos, FOREST);
+		forest = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
 		forest->AddEventHandler(this, EVENT_ENTER);
 		forest->SetKnown();
 		forest->active_quest = this;
@@ -34,10 +34,10 @@ void Quest_DireWolf::SetProgress(int p)
 		msgs.push_back(GetText(2));
 		break;
 	case Killed:
+		forest->active_quest = nullptr;
 		OnUpdate(GetText(3));
 		break;
 	case Complete:
-		forest->active_quest = nullptr;
 		SetState(State::Completed);
 		team->AddReward(5000, 15000);
 		OnUpdate(GetText(4));
@@ -75,13 +75,11 @@ void Quest_DireWolf::FireEvent(ScriptEvent& event)
 //=================================================================================================
 void Quest_DireWolf::SaveDetails(GameWriter& f)
 {
-	f << camp;
 	f << forest;
 }
 
 //=================================================================================================
 void Quest_DireWolf::LoadDetails(GameReader& f)
 {
-	f >> camp;
 	f >> forest;
 }

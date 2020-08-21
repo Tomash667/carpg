@@ -151,7 +151,7 @@ struct Location
 	void SetNameS(const string& name) { SetName(name.c_str()); }
 	void SetNamePrefix(cstring prefix);
 	void AddEventHandler(Quest2* quest, EventType type);
-	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup);
+	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
 	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	bool IsVisited() const { return last_visit != -1; }
 };

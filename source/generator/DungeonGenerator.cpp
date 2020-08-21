@@ -145,13 +145,13 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(game_level->location_index == quest_mgr->quest_evil->target_loc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+	else if(game_level->location == quest_mgr->quest_evil->targetLoc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
 
-	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location_index == quest_mgr->quest_orcs->target_loc
+	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location == quest_mgr->quest_orcs->targetLoc
 		&& dungeon_level == game_level->location->GetLastLevel())
 	{
 		// search for room for cell

@@ -430,11 +430,6 @@ string World_GetDirName2(Location* loc1, Location* loc2)
 	return GetLocationDirName(loc1->pos, loc2->pos);
 }
 
-Location* World_GetRandomCity()
-{
-	return world->GetLocation(world->GetRandomCityIndex());
-}
-
 Location* World_GetRandomSettlementWithBuilding(const string& building_id)
 {
 	Building* b = Building::TryGet(building_id);
@@ -486,6 +481,7 @@ void ScriptManager::RegisterGame()
 	AddType("Player");
 	AddType("Hero");
 	AddType("LevelArea");
+	AddType("Location");
 
 	AddEnum("ITEM_TYPE", {
 		{ "IT_WEAPON", IT_WEAPON },
@@ -655,6 +651,7 @@ void ScriptManager::RegisterGame()
 
 	AddType("Quest")
 		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))
+		.Member("Location@ startLoc", offsetof(Quest_Scripted, startLoc))
 		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))
 		.Method("void SetStarted(const string& in)", asMETHOD(Quest_Scripted, SetStarted))
 		.Method("void SetFailed()", asMETHOD(Quest_Scripted, SetFailed))
@@ -849,7 +846,7 @@ void ScriptManager::RegisterGame()
 	ForType("LevelArea")
 		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LevelArea, RemoveItemFromChest));
 
-	AddType("Location")
+	ForType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
 		.Member("const string name", offsetof(Location, name))
 		.Member("const LOCATION type", offsetof(Location, type))
@@ -905,14 +902,14 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, float)", asMETHODPR(World, FindPlace, (const Vec2&, float, float), Vec2))
 		.AddFunction("bool TryFindPlace(Vec2&, float, bool = false)", asMETHOD(World, TryFindPlace))
 		.AddFunction("Vec2 GetRandomPlace()", asMETHOD(World, GetRandomPlace))
-		.AddFunction("Location@ GetRandomCity()", asFUNCTION(World_GetRandomCity)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.AddFunction("Location@ GetRandomCity()", asMETHOD(World, GetRandomCity))
 		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
+		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*) const, Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
-		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1))", asMETHOD(World, GetClosestLocationS))
+		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int flags = 0)", asMETHODPR(World, GetClosestLocation, (LOCATION, const Vec2&, int, int), Location*))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, array<LOCATION_TARGET>@)", asMETHOD(World, GetClosestLocationArrayS))
 		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int = -1)", asMETHODPR(World, CreateLocation, (LOCATION, const Vec2&, int, int), Location*))
-		.AddFunction("Location@ CreateCamp(const Vec2& in, UnitGroup@)", asMETHOD(World, CreateCampS))
+		.AddFunction("Location@ CreateCamp(const Vec2& in, UnitGroup@)", asMETHOD(World, CreateCamp))
 		.AddFunction("void AbadonLocation(Location@)", asMETHOD(World, AbadonLocation))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("Encounter@ RecreateEncounter(Quest@, int)", asMETHOD(World, RecreateEncounterS))

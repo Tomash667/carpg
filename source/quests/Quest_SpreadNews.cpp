@@ -20,15 +20,15 @@ void Quest_SpreadNews::Start()
 {
 	category = QuestCategory::Mayor;
 	type = Q_SPREAD_NEWS;
-	start_loc = world->GetCurrentLocationIndex();
-	Vec2 pos = GetStartLocation().pos;
+	startLoc = world->GetCurrentLocation();
+	Vec2 pos = startLoc->pos;
 	bool sorted = false;
 	const vector<Location*>& locations = world->GetLocations();
 	for(uint i = 0, count = locations.size(); i < count; ++i)
 	{
 		if(!locations[i] || locations[i]->type != L_CITY)
 			break;
-		if(i == start_loc)
+		if(i == startLoc->index)
 			continue;
 		Location& loc = *locations[i];
 		float dist = Vec2::Distance(pos, loc.pos);
@@ -92,10 +92,9 @@ void Quest_SpreadNews::SetProgress(int prog2)
 
 			prog = Progress::Started;
 
-			Location& loc = GetStartLocation();
-			bool is_city = LocationHelper::IsCity(loc);
-			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
+			bool is_city = LocationHelper::IsCity(startLoc);
+			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), startLoc->name.c_str(), FormatString("targets")));
 		}
 		break;
 	case Progress::Deliver:
@@ -132,7 +131,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Timeout;
 			state = Quest::Failed;
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
 			OnUpdate(game->txQuest[20]);
 		}
@@ -142,7 +141,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Finished;
 			state = Quest::Completed;
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
 			team->AddReward(500, 2000);
 
 			OnUpdate(game->txQuest[21]);
@@ -205,7 +204,7 @@ bool Quest_SpreadNews::IfNeedTalk(cstring topic) const
 		}
 	}
 	else if(strcmp(topic, "tell_news_end") == 0)
-		return prog == Progress::Deliver && world->GetCurrentLocationIndex() == start_loc;
+		return prog == Progress::Deliver && world->GetCurrentLocation() == startLoc;
 	return false;
 }
 

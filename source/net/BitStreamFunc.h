@@ -32,6 +32,7 @@ public:
 			Write0();
 	}
 	void operator << (Unit* unit);
+	void operator << (Location* loc);
 
 private:
 	BitStream& bitstream;
@@ -60,6 +61,7 @@ public:
 	bool ReadItemListTeam(vector<ItemSlot>& items, bool skip = false);
 	using StreamReader::operator >>;
 	void operator >> (Unit*& unit);
+	void operator >> (Location*& loc);
 
 private:
 	BitStream& CreateBitStream(Packet* packet);

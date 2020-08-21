@@ -481,7 +481,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_CHECK_QUEST_TIMEOUT:
 			{
-				Quest* quest = quest_mgr->FindQuest(game_level->location_index, (QuestCategory)de.value);
+				Quest* quest = quest_mgr->FindQuest(game_level->location, (QuestCategory)de.value);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					once = false;
@@ -857,9 +857,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Mayor);
+				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Mayor);
 				if(quest)
-					DeleteElement(quest_mgr->unaccepted_quests, quest);
+				DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -875,7 +875,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		else if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie ?
-			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Mayor);
+			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Mayor);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -883,7 +883,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 			else
 			{
-				quest = quest_mgr->FindQuest(game_level->location_index, QuestCategory::Mayor);
+				quest = quest_mgr->FindQuest(game_level->location, QuestCategory::Mayor);
 				if(quest)
 				{
 					DialogTalk(RandomString(game->txQuestAlreadyGiven));
@@ -912,9 +912,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Captain);
+				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Captain);
 				if(quest)
-					DeleteElement(quest_mgr->unaccepted_quests, quest);
+				DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -930,7 +930,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		else if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie
-			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Captain);
+			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Captain);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -938,7 +938,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 			else
 			{
-				quest = quest_mgr->FindQuest(game_level->location_index, QuestCategory::Captain);
+				quest = quest_mgr->FindQuest(game_level->location, QuestCategory::Captain);
 				if(quest)
 				{
 					DialogTalk(RandomString(game->txQuestAlreadyGiven));
@@ -1636,10 +1636,10 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
 		return (((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
-			&& quest_mgr->quest_orcs->start_loc == game_level->location_index)
+			&& quest_mgr->quest_orcs->startLoc == game_level->location)
 			|| (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
 			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed
-			&& quest_mgr->quest_mages2->start_loc == game_level->location_index));
+			&& quest_mgr->quest_mages2->startLoc == game_level->location));
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
 	{
@@ -1677,7 +1677,7 @@ cstring DialogContext::FormatString(const string& str_part)
 		return result;
 
 	if(str_part == "rcitynhere")
-		return world->GetRandomSettlement(game_level->location_index)->name.c_str();
+		return world->GetRandomSettlement(game_level->location)->name.c_str();
 	else if(str_part == "name")
 	{
 		assert(talker->IsHero());

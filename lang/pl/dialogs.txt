@@ -1278,27 +1278,6 @@ dialog q_goblins_boss {
 }
 
 //==============================================================================
-dialog q_kill_animals_start {
-	0 "Szukam kogoœ kto zajmie siê jedn¹ z okolicznych lokalizacji w które zagnieŸdzi³o siê sporo stworzeñ."
-	1 "Jesteœ zainteresowany?"
-	2 "Tak"
-	3 "Udaj siê do $target_loc$ i zabij wszystkie stwory. Uwa¿aj te¿ na dzikusów którym odbi³o i zachowuj¹ siê jak zwierzêta."
-	4 "$target_loc$ znajduje siê na $target_dir$ st¹d. Masz na to miesi¹c czasu."
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_kill_animals_timeout {
-	0 "Nie oczyœci³eœ na czas $target_loc$. Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
-}
-
-//==============================================================================
-dialog q_kill_animals_end {
-	0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
-	1 "Masz tu $reward$ sztuk z³ota nagrody."
-}
-
-//==============================================================================
 dialog q_lost_artifact_start {
 	0 "Znalaz³em $przedmiot$ ale niestety go zgubi³em w drodze powrotnej."
 	1 "Czy mo¿esz go dla mnie odnaleŸæ?"

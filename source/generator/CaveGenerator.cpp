@@ -470,7 +470,7 @@ void CaveGenerator::GenerateObjects()
 			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
 	}
 
-	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
+	if(game_level->location == quest_mgr->quest_mine->targetLoc)
 		quest_mgr->quest_mine->GenerateMine(this, true);
 }
 
@@ -526,7 +526,7 @@ void CaveGenerator::GenerateItems()
 int CaveGenerator::HandleUpdate(int days)
 {
 	int update_flags = 0;
-	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
+	if(game_level->location == quest_mgr->quest_mine->targetLoc)
 		update_flags = quest_mgr->quest_mine->GenerateMine(this, false);
 	if(days > 0)
 		GenerateCaveItems(min(days, 10));

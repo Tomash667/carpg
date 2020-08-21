@@ -129,7 +129,7 @@ void InsideLocationGenerator::OnEnter()
 	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER)
 	{
 		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(inside->active_quest);
-		Quest_Event* event = quest ? quest->GetEvent(game_level->location_index) : nullptr;
+		Quest_Event* event = quest ? quest->GetEvent(game_level->location) : nullptr;
 		if(event)
 		{
 			if(event->at_level == dungeon_level)
@@ -139,7 +139,7 @@ void InsideLocationGenerator::OnEnter()
 					quest_mgr->HandleQuestEvent(event);
 
 					// generowanie orków
-					if(game_level->location_index == quest_mgr->quest_orcs2->target_loc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
+					if(game_level->location == quest_mgr->quest_orcs2->targetLoc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
 					{
 						quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");

@@ -50,7 +50,7 @@ void Quest_Contest::LoadLanguage()
 void Quest_Contest::Init()
 {
 	state = CONTEST_NOT_DONE;
-	where = world->GetRandomSettlementIndex();
+	where = world->GetRandomSettlement()->index;
 	units.clear();
 	winner = nullptr;
 	generated = false;
@@ -187,7 +187,7 @@ void Quest_Contest::OnProgress()
 		if(state != CONTEST_NOT_DONE)
 		{
 			state = CONTEST_NOT_DONE;
-			where = world->GetRandomSettlementIndex(where);
+			where = world->GetRandomSettlement(world->GetLocation(where))->index;
 		}
 		generated = false;
 		units.clear();

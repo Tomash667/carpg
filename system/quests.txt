@@ -830,6 +830,63 @@ quest camp_near_city
 }
 
 //=============================================================================
+// KILL ANIMALS - random captain quest
+// Go to forest/cave and kill all animals.
+//=============================================================================
+quest kill_animals
+{
+	type captain
+	flags not_scripted
+	
+	progress {
+		P_KILLANI_NONE
+		P_KILLANI_STARTED
+		P_KILLANI_CLEARED
+		P_KILLANI_FINISHED
+		P_KILLANI_TIMEOUT
+		P_KILLANI_ON_TIMEOUT
+	}
+	
+	properties {
+		Location@ targetLoc;
+	}
+	
+	dialog start
+	{
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_KILLANI_STARTED
+			talk 3
+			talk 4
+			end
+		}
+		escape choice 5
+			end
+		show_choices
+	}
+	
+	dialog captain
+	{
+		if quest_progress == P_KILLANI_CLEARED
+		{
+			do_once
+			set_quest_progress P_KILLANI_FINISHED
+			talk 0
+			talk 1
+		}
+		else if quest_progress == P_KILLANI_ON_TIMEOUT
+		{
+			do_once
+			set_quest_progress P_KILLANI_TIMEOUT
+			talk 2
+		}
+		end
+	}
+}
+
+//=============================================================================
 // FIND ARTIFACT - random traveler quest
 // Go to crypt and recover artifact from treasure.
 //=============================================================================
@@ -1822,7 +1879,7 @@ quest dire_wolf
 	}
 	
 	properties {
-		Location@ camp, forest;
+		Location@ forest;
 	}
 	
 	dialog hunter {

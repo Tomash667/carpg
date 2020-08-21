@@ -1266,27 +1266,6 @@ dialog q_goblins_boss {
 }
 
 //==============================================================================
-dialog q_kill_animals_start {
-	0 "I'm looking for someone who will take up one of the nearby locations which prevailed in many creatures."
-	1 "Are you interested?"
-	2 "Yes"
-	3 "Go to the $target_loc$ and kill all the monsters. Also watch out for the crazy savages that behave like animals."
-	4 "$target_loc$ is $target_dir$ from here."
-	5 "No"
-}
-
-//==============================================================================
-dialog q_kill_animals_timeout {
-	0 "No time for clearing $target_loc$? Through you, travelers cannot easily wander around."
-}
-
-//==============================================================================
-dialog q_kill_animals_end {
-	0 "Excellent work, these creatures often troubled travelers."
-	1 "Here you got $reward$ gold pieces as reward."
-}
-
-//==============================================================================
 dialog q_lost_artifact_start {
 	0 "I found $przedmiot$ but unfortunately, I lost it on the way back."
 	1 "Can you find it?"

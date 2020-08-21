@@ -1,11 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Quest.h"
+#include "Quest2.h"
 
 //-----------------------------------------------------------------------------
 // Go to forest/cave and kill all animals.
-class Quest_KillAnimals final : public Quest_Dungeon, public LocationEventHandler
+class Quest_KillAnimals final : public Quest2
 {
 public:
 	enum Progress
@@ -14,23 +14,21 @@ public:
 		Started,
 		ClearedLocation,
 		Finished,
-		Timeout
+		Timeout,
+		OnTimeout
 	};
 
 	void Start() override;
-	GameDialog* GetDialog(int type2) override;
-	void SetProgress(int prog2) override;
+	void SetProgress(int p) override;
+	void FireEvent(ScriptEvent& event) override;
 	cstring FormatString(const string& str) override;
-	bool IsTimedout() const override;
-	bool OnTimeout(TimeoutType ttype) override;
-	bool HandleLocationEvent(LocationEventHandler::Event event) override;
-	bool IfNeedTalk(cstring topic) const override;
-	void Save(GameWriter& f) override;
+	void SaveDetails(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestId() override { return id; }
+	void LoadDetails(GameReader& f) override;
 
 private:
 	int GetReward() const;
 
+	Location* targetLoc;
 	int st;
 };

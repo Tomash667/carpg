@@ -28,7 +28,6 @@ void Quest_Crazies::Start()
 {
 	category = QuestCategory::Unique;
 	type = Q_CRAZIES;
-	target_loc = -1;
 	crazies_state = State::None;
 	days = 0;
 	check_stone = false;
@@ -56,13 +55,13 @@ void Quest_Crazies::SetProgress(int prog2)
 		break;
 	case Progress::KnowLocation:
 		{
-			start_loc = world->GetCurrentLocationIndex();
+			startLoc = world->GetCurrentLocation();
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), LABYRINTH);
 			loc.group = UnitGroup::Get("unk");
 			loc.active_quest = this;
 			loc.SetKnown();
 			loc.st = 13;
-			target_loc = loc.index;
+			targetLoc = &loc;
 
 			crazies_state = State::TalkedTrainer;
 
@@ -72,7 +71,7 @@ void Quest_Crazies::SetProgress(int prog2)
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			GetTargetLocation().active_quest = nullptr;
+			targetLoc->active_quest = nullptr;
 
 			crazies_state = State::End;
 			world->RemoveGlobalEncounter(this);
@@ -193,7 +192,7 @@ void Quest_Crazies::CheckStone()
 		// remove item from game, unless it is encounter (because level is reset anyway)
 		if(game_level->location->type != L_ENCOUNTER)
 		{
-			if(target_loc == game_level->location_index)
+			if(targetLoc == game_level->location)
 			{
 				// is in good location, check if inside chest
 				int index;

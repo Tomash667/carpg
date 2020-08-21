@@ -286,9 +286,6 @@ dialog q_goblins_mage
 dialog q_goblins_innkeeper
 dialog q_goblins_boss
 dialog q_goblins_messenger
-dialog q_kill_animals_start
-dialog q_kill_animals_timeout
-dialog q_kill_animals_end
 dialog q_lost_artifact_start
 dialog q_lost_artifact_end
 dialog q_lost_artifact_timeout

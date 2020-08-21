@@ -28,7 +28,7 @@ void Quest::Save(GameWriter& f)
 	f << prog;
 	f << id;
 	f << start_time;
-	f << start_loc;
+	f << startLoc;
 	f << category;
 	f.WriteStringArray<byte, word>(msgs);
 	f << timeout;
@@ -43,7 +43,7 @@ Quest::LoadResult Quest::Load(GameReader& f)
 	f >> prog;
 	f >> id;
 	f >> start_time;
-	f >> start_loc;
+	f >> startLoc;
 	f >> category;
 	f.ReadStringArray<byte, word>(msgs);
 	f >> timeout;
@@ -88,29 +88,11 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 }
 
 //=================================================================================================
-Location& Quest::GetStartLocation()
-{
-	return *world->GetLocation(start_loc);
-}
-
-//=================================================================================================
-const Location& Quest::GetStartLocation() const
-{
-	return *world->GetLocation(start_loc);
-}
-
-//=================================================================================================
-cstring Quest::GetStartLocationName() const
-{
-	return GetStartLocation().name.c_str();
-}
-
-//=================================================================================================
 void Quest_Dungeon::Save(GameWriter& f)
 {
 	Quest::Save(f);
 
-	f << target_loc;
+	f << targetLoc;
 	f << done;
 	f << at_level;
 }
@@ -120,7 +102,7 @@ Quest::LoadResult Quest_Dungeon::Load(GameReader& f)
 {
 	Quest::Load(f);
 
-	f >> target_loc;
+	f >> targetLoc;
 	f >> done;
 	f >> at_level;
 
@@ -128,37 +110,25 @@ Quest::LoadResult Quest_Dungeon::Load(GameReader& f)
 }
 
 //=================================================================================================
-Location& Quest_Dungeon::GetTargetLocation()
-{
-	return *world->GetLocation(target_loc);
-}
-
-//=================================================================================================
-const Location& Quest_Dungeon::GetTargetLocation() const
-{
-	return *world->GetLocation(target_loc);
-}
-
-//=================================================================================================
 cstring Quest_Dungeon::GetTargetLocationName() const
 {
-	return GetTargetLocation().name.c_str();
+	return targetLoc->name.c_str();
 }
 
 //=================================================================================================
 cstring Quest_Dungeon::GetTargetLocationDir() const
 {
-	return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+	return GetLocationDirName(startLoc->pos, targetLoc->pos);
 }
 
 //=================================================================================================
-Quest_Event* Quest_Dungeon::GetEvent(int current_loc)
+Quest_Event* Quest_Dungeon::GetEvent(Location* current_loc)
 {
 	Quest_Event* event = this;
 
 	while(event)
 	{
-		if(event->target_loc == current_loc || event->target_loc == -1)
+		if(event->targetLoc == current_loc || !event->targetLoc)
 			return event;
 		event = event->next_event;
 	}

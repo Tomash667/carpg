@@ -108,7 +108,7 @@ void World::Cleanup()
 //=================================================================================================
 void World::OnNewGame()
 {
-	travel_location_index = -1;
+	travel_location = nullptr;
 	empty_locations = 0;
 	create_camp = Random(5, 10);
 	encounter_chance = 0.f;
@@ -241,7 +241,7 @@ void World::UpdateLocations()
 			Camp* camp = static_cast<Camp*>(loc);
 			if(worldtime - camp->create_time >= 30
 				&& current_location != loc // don't remove when team is inside
-				&& (travel_location_index == -1 || locations[travel_location_index] != loc)) // don't remove when traveling to
+				&& travel_location != loc) // don't remove when traveling to
 			{
 				// remove camp
 				DeleteCamp(camp, false);
@@ -280,7 +280,7 @@ void World::UpdateNews()
 }
 
 //=================================================================================================
-int World::CreateCamp(const Vec2& pos, UnitGroup* group)
+Location* World::CreateCamp(const Vec2& pos, UnitGroup* group)
 {
 	assert(group);
 
@@ -299,7 +299,9 @@ int World::CreateCamp(const Vec2& pos, UnitGroup* group)
 	if(loc->st > 3)
 		loc->st = 3;
 
-	return AddLocation(loc);
+	AddLocation(loc);
+
+	return loc;
 }
 
 //=================================================================================================
@@ -1186,7 +1188,7 @@ void World::Save(GameWriter& f)
 	f << travel_dir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
-		f << travel_location_index;
+		f << travel_location;
 		f << travel_start_pos;
 		f << travel_target_pos;
 		f << travel_timer;
@@ -1434,12 +1436,12 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f >> travel_dir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
-		f >> travel_location_index;
+		f >> travel_location;
 		f >> travel_start_pos;
 		if(LOAD_VERSION >= V_0_8)
 			f >> travel_target_pos;
 		else
-			travel_target_pos = locations[travel_location_index]->pos;
+			travel_target_pos = travel_location->pos;
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
@@ -1499,7 +1501,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		{
 			if(loc && loc->type == L_CAMP)
 			{
-				Location* city = locations[GetNearestSettlement(loc->pos)];
+				Location* city = GetNearestSettlement(loc->pos);
 				if(Vec2::Distance(loc->pos, city->pos) < 16.f)
 					loc->pos.y += 16.f;
 			}
@@ -1516,11 +1518,11 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		current_location = locations[current_location_index];
 		if(current_location == academy)
 		{
-			current_location_index = GetNearestSettlement(academy->pos);
+			current_location = GetNearestSettlement(academy->pos);
+			current_location_index = current_location->index;
 			locations[academy->index] = nullptr;
 			++empty_locations;
 			delete academy;
-			current_location = locations[current_location_index];
 			if(current_location->state == LS_KNOWN)
 				current_location->state = LS_VISITED;
 			world_pos = current_location->pos;
@@ -1600,8 +1602,8 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		{
 			// bugfix
 			state = State::TRAVEL;
-			travel_start_pos = world_pos = locations[0]->pos;
-			travel_location_index = 0;
+			travel_location = locations[0];
+			travel_start_pos = world_pos = travel_location->pos;
 			travel_timer = 1.f;
 		}
 	}
@@ -1654,7 +1656,7 @@ void World::Write(BitStreamWriter& f)
 	if(state == State::INSIDE_ENCOUNTER)
 	{
 		f << true;
-		f << travel_location_index;
+		f << travel_location;
 		f << travel_start_pos;
 		f << travel_target_pos;
 		f << travel_timer;
@@ -1822,7 +1824,7 @@ bool World::Read(BitStreamReader& f)
 	if(inside_encounter)
 	{
 		state = State::INSIDE_ENCOUNTER;
-		f >> travel_location_index;
+		f >> travel_location;
 		f >> travel_start_pos;
 		f >> travel_target_pos;
 		f >> travel_timer;
@@ -1886,63 +1888,67 @@ Location* World::GetLocationByType(LOCATION type, int target) const
 }
 
 //=================================================================================================
-int World::GetRandomSettlementIndex(int excluded) const
+Location* World::GetRandomSettlement(Location* excluded) const
 {
 	int index = Rand() % settlements;
-	if(index == excluded)
+	if(locations[index] == excluded)
 		index = (index + 1) % settlements;
-	return index;
+	return locations[index];
 }
 
 //=================================================================================================
-int World::GetRandomFreeSettlementIndex(int excluded) const
+Location* World::GetRandomFreeSettlement(Location* excluded) const
 {
-	int index = Rand() % settlements,
-		tries = (int)settlements;
-	while((index == excluded || locations[index]->active_quest) && tries > 0)
+	int index = Rand() % settlements;
+	int startIndex = index;
+
+	do
 	{
+		Location* loc = locations[index];
+		if(loc != excluded && !loc->active_quest)
+			return loc;
 		index = (index + 1) % settlements;
-		--tries;
 	}
-	return (tries == 0 ? -1 : index);
+	while(index != startIndex);
+
+	return nullptr;
 }
 
 //=================================================================================================
-int World::GetRandomCityIndex(int excluded) const
+Location* World::GetRandomCity(Location* excluded) const
 {
 	int count = 0;
 	while(LocationHelper::IsCity(locations[count]))
 		++count;
 
 	int index = Rand() % count;
-	if(index == excluded)
-	{
-		++index;
-		if(index == count)
-			index = 0;
-	}
+	if(locations[index] == excluded)
+		index = (index + 1) % count;
 
-	return index;
+	return locations[index];
 }
 
 //=================================================================================================
 // Get random settlement excluded from used list
-int World::GetRandomSettlementIndex(const vector<int>& used, int target) const
+Location* World::GetRandomSettlement(vector<Location*>& used, int target) const
 {
 	int index = Rand() % settlements;
+	int startIndex = index;
 
 	while(true)
 	{
-		if(target != ANY_TARGET && locations[index]->target != target)
+		Location* loc = locations[index];
+
+		if(target != ANY_TARGET && loc->target != target)
 		{
 			index = (index + 1) % settlements;
 			continue;
 		}
 
 		bool ok = true;
-		for(vector<int>::const_iterator it = used.begin(), end = used.end(); it != end; ++it)
+		for(vector<Location*>::const_iterator it = used.begin(), end = used.end(); it != end; ++it)
 		{
-			if(*it == index)
+			if(*it == loc)
 			{
 				index = (index + 1) % settlements;
 				ok = false;
@@ -1951,16 +1957,20 @@ int World::GetRandomSettlementIndex(const vector<int>& used, int target) const
 		}
 
 		if(ok)
-			break;
+		{
+			used.push_back(loc);
+			return loc;
+		}
+		else if(index == startIndex)
+			throw "Out of free cities!";
 	}
-
-	return index;
 }
 
 //=================================================================================================
-int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int flags)
+Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int flags)
 {
-	int best = -1, index = 0;
+	Location* best = nullptr;
+	int index = 0;
 	float dist, best_dist;
 	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
 	const bool excluded = IsSet(flags, F_EXCLUDED);
@@ -1979,9 +1989,9 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int fl
 				continue;
 		}
 		dist = Vec2::Distance(loc->pos, pos);
-		if(best == -1 || dist < best_dist)
+		if(!best || dist < best_dist)
 		{
-			best = index;
+			best = loc;
 			best_dist = dist;
 		}
 	}
@@ -1990,9 +2000,10 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int fl
 }
 
 //=================================================================================================
-int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags)
+Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags)
 {
-	int best = -1, index = 0;
+	Location* best = nullptr;
+	int index = 0;
 	float dist, best_dist;
 	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
 	const bool excluded = IsSet(flags, F_EXCLUDED);
@@ -2016,9 +2027,9 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 		if(ok == excluded)
 			continue;
 		dist = Vec2::Distance(loc->pos, pos);
-		if(best == -1 || dist < best_dist)
+		if(!best || dist < best_dist)
 		{
-			best = index;
+			best = loc;
 			best_dist = dist;
 		}
 	}
@@ -2029,9 +2040,9 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 //=================================================================================================
 Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array)
 {
-	int index = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), 0);
+	Location* loc = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), 0);
 	array->Release();
-	return locations[index];
+	return loc;
 }
 
 //=================================================================================================
@@ -2136,9 +2147,10 @@ Vec2 World::GetRandomPlace()
 // Searches for location with selected spawn group
 // If cleared respawns enemies
 // If nothing found creates camp
-int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range)
+Location* World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range)
 {
-	int best_ok = -1, best_empty = -1, index = settlements;
+	Location* bestOk = nullptr, *bestEmpty = nullptr;
+	int index = settlements;
 	float ok_range, empty_range, dist;
 
 	for(vector<Location*>::iterator it = locations.begin() + settlements, end = locations.end(); it != end; ++it, ++index)
@@ -2155,17 +2167,17 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 				{
 					if(inside->group == group)
 					{
-						if(best_ok == -1 || dist < ok_range)
+						if(!bestOk || dist < ok_range)
 						{
-							best_ok = index;
+							bestOk = inside;
 							ok_range = dist;
 						}
 					}
 					else
 					{
-						if(best_empty == -1 || dist < empty_range)
+						if(!bestEmpty || dist < empty_range)
 						{
-							best_empty = index;
+							bestEmpty = inside;
 							empty_range = dist;
 						}
 					}
@@ -2174,17 +2186,17 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 		}
 	}
 
-	if(best_ok != -1)
+	if(bestOk)
 	{
-		locations[best_ok]->reset = true;
-		return best_ok;
+		bestOk->reset = true;
+		return bestOk;
 	}
 
-	if(best_empty != -1)
+	if(bestEmpty)
 	{
-		locations[best_empty]->group = group;
-		locations[best_empty]->reset = true;
-		return best_empty;
+		bestEmpty->group = group;
+		bestEmpty->reset = true;
+		return bestEmpty;
 	}
 
 	const Vec2 target_pos = FindPlace(pos, range / 2);
@@ -2205,12 +2217,6 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 	}
 	while(index != start_index);
 	return nullptr;
-}
-
-//=================================================================================================
-Location* World::GetRandomSettlement(Location* loc)
-{
-	return GetRandomSettlement(loc->index);
 }
 
 //=================================================================================================
@@ -2320,8 +2326,8 @@ void World::Travel(int index, bool order)
 	game_level->location_index = -1;
 	travel_timer = 0.f;
 	travel_start_pos = world_pos;
-	travel_location_index = index;
-	travel_target_pos = locations[travel_location_index]->pos;
+	travel_location = locations[index];
+	travel_target_pos = travel_location->pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
 	if(Net::IsLocal())
 		travel_first_frame = true;
@@ -2354,7 +2360,7 @@ void World::TravelPos(const Vec2& pos, bool order)
 	game_level->location_index = -1;
 	travel_timer = 0.f;
 	travel_start_pos = world_pos;
-	travel_location_index = -1;
+	travel_location = nullptr;
 	travel_target_pos = pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
 	if(Net::IsLocal())
@@ -2615,11 +2621,11 @@ void World::EndTravel()
 	if(state != State::TRAVEL)
 		return;
 	state = State::ON_MAP;
-	if(travel_location_index != -1)
+	if(travel_location)
 	{
-		current_location_index = travel_location_index;
-		current_location = locations[travel_location_index];
-		travel_location_index = -1;
+		current_location = travel_location;
+		current_location_index = travel_location->index;
+		travel_location = nullptr;
 		game_level->location_index = current_location_index;
 		game_level->location = current_location;
 		Location& loc = *game_level->location;

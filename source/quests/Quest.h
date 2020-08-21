@@ -61,7 +61,8 @@ struct Quest : public QuestHandler
 	QUEST_TYPE type;
 	State state;
 	string name;
-	int prog, start_time, start_loc;
+	Location* startLoc;
+	int prog, start_time;
 	uint quest_index;
 	QuestCategory category;
 	vector<string> msgs;
@@ -95,9 +96,7 @@ struct Quest : public QuestHandler
 	{
 		OnUpdate({ args... });
 	}
-	Location& GetStartLocation();
-	const Location& GetStartLocation() const;
-	cstring GetStartLocationName() const;
+	cstring GetStartLocationName() const { return startLoc->name.c_str(); }
 	bool IsActive() const { return state == Hidden || state == Started; }
 };
 
@@ -145,7 +144,8 @@ struct Quest_Event
 
 	SpawnItem spawn_item;
 	const Item* item_to_give[MAX_ITEMS]; // multiple items works only in Item_InChest
-	int target_loc, at_level;
+	Location* targetLoc;
+	int at_level;
 	bool done;
 	LocationEventHandler* location_event_handler;
 	Quest_Event* next_event; // only works in dungeon
@@ -163,7 +163,7 @@ struct Quest_Event
 	RoomTarget spawn_unit_room2; // room to spawn second unit, only works in inside location
 
 	Quest_Event() : done(false), item_to_give(), at_level(-1), spawn_item(Item_DontSpawn), unit_to_spawn(nullptr), unit_dont_attack(false),
-		location_event_handler(nullptr), target_loc(-1), next_event(nullptr), chest_event_handler(nullptr), unit_event_handler(nullptr), unit_auto_talk(false),
+		location_event_handler(nullptr), targetLoc(nullptr), next_event(nullptr), chest_event_handler(nullptr), unit_event_handler(nullptr), unit_auto_talk(false),
 		whole_location_event_handler(false), spawn_unit_room(RoomTarget::None), callback(nullptr), unit_to_spawn2(nullptr), send_spawn_event(false),
 		unit_spawn_level(-2), unit_spawn_level2(-2), spawn_2_guard_1(false), spawn_unit_room2(RoomTarget::None)
 	{
@@ -176,10 +176,8 @@ struct Quest_Dungeon : public Quest, public Quest_Event
 	virtual void Save(GameWriter& f) override;
 	virtual LoadResult Load(GameReader& f) override;
 
-	Location& GetTargetLocation();
-	const Location& GetTargetLocation() const;
 	cstring GetTargetLocationName() const;
 	cstring GetTargetLocationDir() const;
 
-	Quest_Event* GetEvent(int current_loc);
+	Quest_Event* GetEvent(Location* current_loc);
 };

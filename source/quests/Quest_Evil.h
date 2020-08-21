@@ -74,7 +74,7 @@ public:
 	int GetUnitEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetLocId(int location_id);
+	int GetLocId(Location* location);
 	void Update(float dt);
 
 	Loc loc[3];

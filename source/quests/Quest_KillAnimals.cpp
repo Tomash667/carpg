@@ -6,6 +6,7 @@
 #include "GameFile.h"
 #include "ItemHelper.h"
 #include "Journal.h"
+#include "LocationHelper.h"
 #include "QuestManager.h"
 #include "Team.h"
 #include "World.h"
@@ -16,165 +17,142 @@ void Quest_KillAnimals::Start()
 {
 	type = Q_KILL_ANIMALS;
 	category = QuestCategory::Captain;
-	start_loc = world->GetCurrentLocationIndex();
+	startLoc = world->GetCurrentLocation();
 }
 
 //=================================================================================================
-GameDialog* Quest_KillAnimals::GetDialog(int type2)
+void Quest_KillAnimals::SetProgress(int p)
 {
-	switch(type2)
+	prog = p;
+	switch(prog)
 	{
-	case QUEST_DIALOG_START:
-		return GameDialog::TryGet("q_kill_animals_start");
-	case QUEST_DIALOG_FAIL:
-		return GameDialog::TryGet("q_kill_animals_timeout");
-	case QUEST_DIALOG_NEXT:
-		return GameDialog::TryGet("q_kill_animals_end");
-	default:
-		assert(0);
-		return nullptr;
+	case Started:
+		// player accepted quest
+		{
+			if(Rand() % 2 == 0)
+				targetLoc = world->GetClosestLocation(L_CAVE, startLoc->pos);
+			else
+				targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, { FOREST, HILLS });
+			targetLoc->AddEventHandler(this, EVENT_CLEARED);
+			targetLoc->active_quest = this;
+			targetLoc->SetKnown();
+			if(targetLoc->st < 5)
+				targetLoc->st = 5;
+			st = targetLoc->st;
+
+			OnStart(GetText(0));
+			msgs.push_back(GetText(1));
+			msgs.push_back(GetText(2));
+
+			DialogContext::current->talker->AddDialog(this, GetDialog("captain"));
+			SetTimeout(30);
+		}
+		break;
+	case ClearedLocation:
+		// player cleared location from animals
+		{
+			targetLoc->active_quest = nullptr;
+			OnUpdate(GetText(3));
+		}
+		break;
+	case Finished:
+		// player talked with captain, end of quest
+		{
+			SetState(State::Completed);
+			int reward = GetReward();
+			team->AddReward(2500, reward * 3);
+			OnUpdate(GetText(4));
+		}
+		break;
+	case Timeout:
+		// player failed to clear location in time
+		{
+			SetState(State::Failed);
+			OnUpdate(GetText(6));
+		}
+		break;
+	case OnTimeout:
+		{
+			targetLoc->RemoveEventHandler(this, EVENT_CLEARED);
+			targetLoc->active_quest = nullptr;
+			OnUpdate(GetText(5));
+		}
+		break;
 	}
 }
 
 //=================================================================================================
-void Quest_KillAnimals::SetProgress(int prog2)
+void Quest_KillAnimals::FireEvent(ScriptEvent& event)
 {
-	prog = prog2;
-	switch(prog2)
+	if(event.type == EVENT_CLEARED)
+		SetProgress(ClearedLocation);
+	else if(event.type == EVENT_TIMEOUT)
 	{
-	case Progress::Started:
-		// player accepted quest
-		{
-			OnStart(game->txQuest[76]);
-			quest_mgr->quests_timeout.push_back(this);
-
-			// event
-			Location& sl = GetStartLocation();
-			if(Rand() % 2 == 0)
-				target_loc = world->GetClosestLocation(L_CAVE, sl.pos);
-			else
-				target_loc = world->GetClosestLocation(L_OUTSIDE, sl.pos, { FOREST, HILLS });
-			location_event_handler = this;
-			at_level = 0;
-
-			Location& tl = GetTargetLocation();
-			tl.active_quest = this;
-			tl.SetKnown();
-			if(tl.st < 5)
-				tl.st = 5;
-			st = tl.st;
-
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
-		}
-		break;
-	case Progress::ClearedLocation:
-		// player cleared location from animals
-		{
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			OnUpdate(Format(game->txQuest[78], GetTargetLocationName()));
-		}
-		break;
-	case Progress::Finished:
-		// player talked with captain, end of quest
-		{
-			state = Quest::Completed;
-			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
-			int reward = GetReward();
-			team->AddReward(2500, reward * 3);
-			OnUpdate(game->txQuest[79]);
-		}
-		break;
-	case Progress::Timeout:
-		// player failed to clear location in time
-		{
-			state = Quest::Failed;
-			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
-			OnUpdate(game->txQuest[80]);
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-		}
-		break;
+		if(prog == Started)
+			SetProgress(OnTimeout);
 	}
 }
 
 //=================================================================================================
 cstring Quest_KillAnimals::FormatString(const string& str)
 {
-	if(str == "target_loc")
-		return GetTargetLocationName();
-	else if(str == "target_dir")
-		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
-	else if(str == "reward")
+	if(str == "reward")
 		return Format("%d", GetReward());
 	else
-	{
-		assert(0);
-		return nullptr;
-	}
+		return Quest2::FormatString(str);
 }
 
 //=================================================================================================
-bool Quest_KillAnimals::IsTimedout() const
+void Quest_KillAnimals::SaveDetails(GameWriter& f)
 {
-	return world->GetWorldtime() - start_time > 30;
-}
-
-//=================================================================================================
-bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
-{
-	if(prog == Progress::Started)
-		OnUpdate(game->txQuest[267]);
-	return true;
-}
-
-//=================================================================================================
-bool Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
-{
-	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
-		SetProgress(Progress::ClearedLocation);
-	return false;
-}
-
-//=================================================================================================
-bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
-{
-	return strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation && world->GetCurrentLocationIndex() == start_loc;
-}
-
-//=================================================================================================
-void Quest_KillAnimals::Save(GameWriter& f)
-{
-	Quest_Dungeon::Save(f);
+	f << targetLoc;
 	f << st;
 }
 
 //=================================================================================================
 Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(f);
-	if(LOAD_VERSION >= V_0_9)
-		f >> st;
-	else if(target_loc != -1)
-		st = GetTargetLocation().st;
+	if(LOAD_VERSION >= V_DEV)
+		Quest2::Load(f);
 	else
-		st = 5;
+	{
+		Quest::Load(f);
+		f >> targetLoc;
+		f.Skip<bool>(); // done
+		f.Skip<int>(); // at_level
+		SetScheme(quest_mgr->FindQuestInfo(type)->scheme);
 
-	location_event_handler = this;
-	at_level = 0;
+		if(LOAD_VERSION >= V_0_9)
+			f >> st;
+		else if(targetLoc)
+			st = targetLoc->st;
+		else
+			st = 5;
+
+		if(IsActive())
+		{
+			if(prog == Started)
+			{
+				if(timeout)
+					prog = OnTimeout;
+				else
+				{
+					targetLoc->AddEventHandler(this, EVENT_CLEARED);
+					SetTimeout(30 + start_time - world->GetWorldtime());
+				}
+			}
+			LocationHelper::GetCaptain(startLoc)->AddDialog(this, GetDialog("captain"));
+		}
+	}
 
 	return LoadResult::Ok;
+}
+
+//=================================================================================================
+void Quest_KillAnimals::LoadDetails(GameReader& f)
+{
+	f >> targetLoc;
+	f >> st;
 }
 
 //=================================================================================================

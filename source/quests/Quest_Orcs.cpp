@@ -27,9 +27,7 @@ void Quest_Orcs::Start()
 {
 	type = Q_ORCS;
 	category = QuestCategory::Unique;
-	vector<int>& used = quest_mgr->GetUsedCities();
-	start_loc = world->GetRandomSettlementIndex(used);
-	used.push_back(start_loc);
+	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[6], GetStartLocationName()));
 
 	if(game->devmode)
@@ -88,13 +86,13 @@ void Quest_Orcs::SetProgress(int prog2)
 				u = nullptr;
 			}
 			// generate location
-			const Vec2 pos = world->FindPlace(GetStartLocation().pos, 64.f);
+			const Vec2 pos = world->FindPlace(startLoc->pos, 64.f);
 			Location& tl = *world->CreateLocation(L_DUNGEON, pos, HUMAN_FORT);
 			tl.group = UnitGroup::Get("orcs");
 			tl.SetKnown();
 			tl.st = 8;
 			tl.active_quest = this;
-			target_loc = tl.index;
+			targetLoc = &tl;
 			location_event_handler = this;
 			at_level = tl.GetLastLevel();
 			dungeon_levels = at_level + 1;
@@ -129,8 +127,8 @@ void Quest_Orcs::SetProgress(int prog2)
 			{
 				quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
 				quest_mgr->quest_orcs2->days = Random(30, 60);
-				GetTargetLocation().active_quest = nullptr;
-				target_loc = -1;
+				targetLoc->active_quest = nullptr;
+				targetLoc = nullptr;
 			}
 			else
 				quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
@@ -149,7 +147,7 @@ cstring Quest_Orcs::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "naszego_miasta")
-		return LocationHelper::IsCity(GetStartLocation()) ? game->txQuest[72] : game->txQuest[73];
+		return LocationHelper::IsCity(startLoc) ? game->txQuest[72] : game->txQuest[73];
 	else
 	{
 		assert(0);
@@ -169,7 +167,7 @@ bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
 		return quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
 	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
-		return world->GetCurrentLocationIndex() == start_loc;
+		return world->GetCurrentLocation() == startLoc;
 	assert(0);
 	return false;
 }
@@ -227,7 +225,7 @@ void Quest_Orcs2::Start()
 {
 	type = Q_ORCS2;
 	category = QuestCategory::Unique;
-	start_loc = -1;
+	startLoc = nullptr;
 	near_loc = -1;
 	talked = Talked::No;
 	orcs_state = State::None;
@@ -306,8 +304,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			{
 				orcs_state = Quest_Orcs2::State::CompletedJoined;
 				days = Random(30, 60);
-				quest_mgr->quest_orcs->GetTargetLocation().active_quest = nullptr;
-				quest_mgr->quest_orcs->target_loc = -1;
+				quest_mgr->quest_orcs->targetLoc->active_quest = nullptr;
+				quest_mgr->quest_orcs->targetLoc = nullptr;
 			}
 			// join team
 			DialogContext::current->talker->dont_attack = false;
@@ -319,12 +317,11 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutCamp:
 		{
 			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 256.f);
-			target_loc = world->CreateCamp(pos, UnitGroup::Get("orcs"));
-			Location& target = GetTargetLocation();
-			target.state = LS_HIDDEN;
-			target.st = 11;
-			target.active_quest = this;
-			near_loc = world->GetNearestSettlement(target.pos);
+			targetLoc = world->CreateCamp(pos, UnitGroup::Get("orcs"));
+			targetLoc->state = LS_HIDDEN;
+			targetLoc->st = 11;
+			targetLoc->active_quest = this;
+			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
 			OnUpdate(game->txQuest[198]);
 			orcs_state = Quest_Orcs2::State::ToldAboutCamp;
 		}
@@ -333,12 +330,11 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			if(prog == Progress::TalkedWhereIsCamp)
 				break;
-			Location& target = GetTargetLocation();
 			Location& nearl = *world->GetLocation(near_loc);
-			target.SetKnown();
+			targetLoc->SetKnown();
 			done = false;
 			location_event_handler = this;
-			OnUpdate(Format(game->txQuest[199], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str()));
+			OnUpdate(Format(game->txQuest[199], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str()));
 		}
 		break;
 	case Progress::ClearedCamp:
@@ -352,8 +348,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			orcs_state = Quest_Orcs2::State::CampCleared;
 			days = Random(25, 50);
-			GetTargetLocation().active_quest = nullptr;
-			target_loc = -1;
+			targetLoc->active_quest = nullptr;
+			targetLoc = nullptr;
 			OnUpdate(game->txQuest[201]);
 		}
 		break;
@@ -416,24 +412,23 @@ void Quest_Orcs2::SetProgress(int prog2)
 			target.st = 15;
 			target.active_quest = this;
 			target.state = LS_HIDDEN;
-			target_loc = target.index;
+			targetLoc = &target;
 			OnUpdate(game->txQuest[202]);
 			orcs_state = State::ToldAboutBase;
 		}
 		break;
 	case Progress::TalkedWhereIsBase:
 		{
-			Location& target = GetTargetLocation();
-			target.SetKnown();
+			targetLoc->SetKnown();
 			unit_to_spawn = UnitData::Get("q_orkowie_boss");
 			spawn_unit_room = RoomTarget::Throne;
 			callback = WarpToThroneOrcBoss;
-			at_level = target.GetLastLevel();
+			at_level = targetLoc->GetLastLevel();
 			location_event_handler = nullptr;
 			unit_event_handler = this;
-			near_loc = world->GetNearestSettlement(target.pos);
+			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
 			Location& nearl = *world->GetLocation(near_loc);
-			OnUpdate(Format(game->txQuest[203], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str(), target.name.c_str()));
+			OnUpdate(Format(game->txQuest[203], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str(), targetLoc->name.c_str()));
 			done = false;
 			orcs_state = State::GenerateOrcs;
 		}
@@ -549,11 +544,11 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	else if(str == "close")
 		return world->GetLocation(near_loc)->name.c_str();
 	else if(str == "close_dir")
-		return GetLocationDirName(world->GetLocation(near_loc)->pos, GetTargetLocation().pos);
+		return GetLocationDirName(world->GetLocation(near_loc)->pos, targetLoc->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(world->GetWorldPos(), GetTargetLocation().pos);
+		return GetLocationDirName(world->GetWorldPos(), targetLoc->pos);
 	else
 	{
 		assert(0);
@@ -581,7 +576,7 @@ bool Quest_Orcs2::SpecialIf(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "q_orkowie_lowca") == 0)
 		return orc_class == OrcClass::Hunter;
 	else if(strcmp(msg, "q_orkowie_na_miejscu") == 0)
-		return world->GetCurrentLocationIndex() == target_loc;
+		return world->GetCurrentLocation() == targetLoc;
 	else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
 		return orcs_state >= State::Accepted;
 	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)

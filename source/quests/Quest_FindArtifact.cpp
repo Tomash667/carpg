@@ -12,8 +12,8 @@ Quest::LoadResult Quest_FindArtifact::Load(GameReader& f)
 	f >> item;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;
-	else if(target_loc != -1)
-		st = GetTargetLocation().st;
+	else if(targetLoc)
+		st = targetLoc->st;
 	else
 		st = 10;
 
@@ -25,8 +25,8 @@ void Quest_FindArtifact::GetConversionData(ConversionData& data)
 {
 	data.id = "find_artifact";
 	data.Add("item", item);
-	data.Add("start_loc", &GetStartLocation());
-	data.Add("target_loc", target_loc == -1 ? nullptr : &GetTargetLocation());
+	data.Add("start_loc", startLoc);
+	data.Add("target_loc", targetLoc);
 	data.Add("start_time", start_time);
 	data.Add("st", st);
 	data.Add("done", done);

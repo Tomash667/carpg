@@ -70,12 +70,12 @@ public:
 	bool Read(BitStreamReader& f);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	Quest* FindQuest(int location, QuestCategory category);
+	Quest* FindQuest(Location* location, QuestCategory category);
 	Quest* FindQuest(int id, bool active = true);
 	Quest* FindAnyQuest(int id);
 	Quest* FindAnyQuest(QuestScheme* scheme);
 	Quest* FindQuest(QUEST_TYPE type);
-	Quest* FindUnacceptedQuest(int location, QuestCategory category);
+	Quest* FindUnacceptedQuest(Location* location, QuestCategory category);
 	Quest* FindUnacceptedQuest(int id);
 	Quest* FindQuestS(const string& quest_id);
 	const Item* FindQuestItem(cstring name, int quest_id);
@@ -107,7 +107,7 @@ public:
 	void UpdateQuestsLocal(float dt);
 	void ProcessQuestRequests();
 	void UpgradeQuests();
-	vector<int>& GetUsedCities() { return used; }
+	vector<Location*>& GetUsedCities() { return used; }
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
@@ -145,5 +145,5 @@ private:
 	std::map<string, QuestHandler*> special_handlers, special_if_handlers, format_str_handlers;
 	string tmp_str;
 	vector<pair<int, string>> quest_rumors;
-	vector<int> used;
+	vector<Location*> used;
 };

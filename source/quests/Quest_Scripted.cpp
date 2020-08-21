@@ -47,7 +47,7 @@ void Quest_Scripted::Start()
 void Quest_Scripted::Start(Vars* vars)
 {
 	prog = 0;
-	start_loc = world->GetCurrentLocationIndex();
+	startLoc = world->GetCurrentLocation();
 	category = scheme->category;
 
 	instance = CreateInstance(false);
@@ -442,9 +442,9 @@ void Quest_Scripted::SetCompleted()
 	journal_state = JournalState::Changed;
 	state = Quest::Completed;
 	if(category == QuestCategory::Mayor)
-		((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
+		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
 	else if(category == QuestCategory::Captain)
-		((City&)GetStartLocation()).quest_captain = CityQuestState::None;
+		static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
 	if(category == QuestCategory::Unique)
 		quest_mgr->EndUniqueQuest();
 	Cleanup();
@@ -457,37 +457,10 @@ void Quest_Scripted::SetFailed()
 	journal_state = JournalState::Changed;
 	state = Quest::Failed;
 	if(category == QuestCategory::Mayor)
-		((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 	else if(category == QuestCategory::Captain)
-		((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 	Cleanup();
-}
-
-//=================================================================================================
-void Quest_Scripted::SetTimeout(int days)
-{
-	assert(Any(state, Quest::Hidden, Quest::Started));
-	assert(timeout_days == -1);
-	assert(days > 0);
-	timeout_days = days;
-	quest_mgr->quests_timeout2.push_back(this);
-}
-
-//=================================================================================================
-bool Quest_Scripted::IsTimedout() const
-{
-	if(timeout_days == -1)
-		return false;
-	return world->GetWorldtime() - start_time > timeout_days;
-}
-
-//=================================================================================================
-bool Quest_Scripted::OnTimeout(TimeoutType ttype)
-{
-	ScriptEvent event(EVENT_TIMEOUT);
-	timeout_days = -1;
-	FireEvent(event);
-	return true;
 }
 
 //=================================================================================================
@@ -583,7 +556,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	prog = quest->prog;
 	id = quest->id;
 	start_time = quest->start_time;
-	start_loc = quest->start_loc;
+	startLoc = quest->startLoc;
 	msgs = quest->msgs;
 
 	// convert

@@ -508,7 +508,8 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		"string TEXT(int index) { return quest.GetString(index); }\n", scheme->id.c_str());
 	if(!scheme->properties.empty())
 	{
-		code += "// properties\n";
+		code += "// properties\n"
+			"Location@ get_startLoc() property { return quest.startLoc; }\n";
 		code += scheme->properties;
 	}
 	for(int i = 0; i < DialogScripts::F_MAX; ++i)

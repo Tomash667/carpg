@@ -264,14 +264,41 @@ void Quest2::SetState(State newState)
 	switch(category)
 	{
 	case QuestCategory::Mayor:
-		((City&)GetStartLocation()).quest_mayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
+		static_cast<City*>(startLoc)->quest_mayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Captain:
-		((City&)GetStartLocation()).quest_captain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
+		static_cast<City*>(startLoc)->quest_captain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Unique:
 		quest_mgr->EndUniqueQuest();
 		break;
 	}
 	Cleanup();
+}
+
+//=================================================================================================
+void Quest2::SetTimeout(int days)
+{
+	assert(Any(state, Quest::Hidden, Quest::Started));
+	assert(timeout_days == -1);
+	assert(days > 0);
+	timeout_days = days;
+	quest_mgr->quests_timeout2.push_back(this);
+}
+
+//=================================================================================================
+bool Quest2::IsTimedout() const
+{
+	if(timeout_days == -1)
+		return false;
+	return world->GetWorldtime() - start_time > timeout_days;
+}
+
+//=================================================================================================
+bool Quest2::OnTimeout(TimeoutType ttype)
+{
+	ScriptEvent event(EVENT_TIMEOUT);
+	timeout_days = -1;
+	FireEvent(event);
+	return true;
 }

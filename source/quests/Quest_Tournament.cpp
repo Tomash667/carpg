@@ -47,7 +47,7 @@ void Quest_Tournament::Init()
 {
 	year = 0;
 	city_year = world->GetDateValue().year;
-	city = world->GetRandomCityIndex();
+	city = world->GetRandomCity()->index;
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
 	winner = nullptr;
@@ -194,7 +194,7 @@ void Quest_Tournament::OnProgress()
 	if(date.year != city_year)
 	{
 		city_year = date.year;
-		city = world->GetRandomCityIndex(city);
+		city = world->GetRandomCity(world->GetLocation(city))->index;
 		master = nullptr;
 	}
 	if(date.day == 6 && date.month == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena) && world->GetCurrentLocationIndex() == city && !generated)

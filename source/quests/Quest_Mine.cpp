@@ -29,10 +29,8 @@ void Quest_Mine::Start()
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
-	vector<int>& used = quest_mgr->GetUsedCities();
-	start_loc = world->GetRandomSettlementIndex(used);
-	target_loc = world->GetClosestLocation(L_CAVE, GetStartLocation().pos);
-	used.push_back(start_loc);
+	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
+	targetLoc = world->GetClosestLocation(L_CAVE, startLoc->pos);
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
 
 	if(game->devmode)
@@ -96,19 +94,17 @@ void Quest_Mine::SetProgress(int prog2)
 
 			location_event_handler = this;
 
-			Location& sl = GetStartLocation();
-			Location& tl = GetTargetLocation();
 			at_level = 0;
-			tl.active_quest = this;
-			tl.SetKnown();
-			if(tl.state >= LS_ENTERED)
-				tl.reset = true;
-			tl.st = 10;
+			targetLoc->active_quest = this;
+			targetLoc->SetKnown();
+			if(targetLoc->state >= LS_ENTERED)
+				targetLoc->reset = true;
+			targetLoc->st = 10;
 
 			InitSub();
 
-			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[133], tl.name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(game->txQuest[132], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[133], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
@@ -138,9 +134,8 @@ void Quest_Mine::SetProgress(int prog2)
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
-			Location& target = GetTargetLocation();
-			target.SetImage(LI_MINE);
-			target.SetNamePrefix(game->txQuest[131]);
+			targetLoc->SetImage(LI_MINE);
+			targetLoc->SetNamePrefix(game->txQuest[131]);
 		}
 		break;
 	case Progress::SelectedGold:
@@ -322,7 +317,7 @@ void Quest_Mine::InitSub()
 	lis.Get(3, sub.item_to_give);
 	sub.item_to_give[3] = Item::Get("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
-	sub.target_loc = dungeon_loc;
+	sub.targetLoc = dungeon_loc == -2 ? nullptr : world->GetLocation(dungeon_loc);
 	sub.at_level = 0;
 	sub.chest_event_handler = this;
 	next_event = &sub;
@@ -788,7 +783,8 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			loc->image = LI_DUNGEON;
 			loc->state = LS_HIDDEN;
 			int loc_id = world->AddLocation(loc);
-			sub.target_loc = dungeon_loc = loc_id;
+			dungeon_loc = loc_id;
+			sub.targetLoc = loc;
 
 			// portal info
 			cave.portal = new Portal;
@@ -1092,7 +1088,7 @@ int Quest_Mine::OnProgress(int d)
 					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
-						world->AddNews(Format(game->txMineBuilt, world->GetLocation(target_loc)->name.c_str()));
+						world->AddNews(Format(game->txMineBuilt, targetLoc->name.c_str()));
 						messenger = u;
 						u->OrderAutoTalk(true);
 					}
@@ -1101,7 +1097,7 @@ int Quest_Mine::OnProgress(int d)
 			else
 			{
 				// player got gold, don't inform him
-				world->AddNews(Format(game->txMineBuilt, world->GetLocation(target_loc)->name.c_str()));
+				world->AddNews(Format(game->txMineBuilt, targetLoc->name.c_str()));
 				mine_state2 = State2::Built;
 				days -= days_required;
 				days_required = Random(60, 90);

@@ -49,7 +49,7 @@ void ForestGenerator::RandomizeTerrainTexture()
 //=================================================================================================
 int ForestGenerator::HandleUpdate(int days)
 {
-	if(game_level->location_index != quest_mgr->quest_sawmill->target_loc)
+	if(game_level->location != quest_mgr->quest_sawmill->targetLoc)
 		return 0;
 
 	// sawmill quest
