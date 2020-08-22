@@ -57,7 +57,8 @@ enum Keyword
 	K_CASE,
 	K_NEXT,
 	K_RANDOM,
-	K_CHANCE
+	K_CHANCE,
+	K_GOTO
 };
 
 //=================================================================================================
@@ -121,7 +122,8 @@ void DialogLoader::InitTokenizer()
 		{ "case", K_CASE },
 		{ "next", K_NEXT },
 		{ "random", K_RANDOM },
-		{ "chance", K_CHANCE }
+		{ "chance", K_CHANCE },
+		{ "goto", K_GOTO }
 		});
 }
 
@@ -152,6 +154,9 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 	dialog->quest = nullptr;
 	t.Next();
 
+	labels.clear();
+	jumps.clear();
+
 	t.AssertSymbol('{');
 	t.Next();
 
@@ -168,6 +173,7 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 	if(!BuildDialog(root.Get()))
 		LoadWarning("Missing dialog end.");
 	dialog->code.push_back(DialogEntry(DTF_END_OF_DIALOG));
+	PatchJumps();
 
 	return dialog.Pin();
 }
@@ -379,6 +385,15 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 		return ParseSwitch();
 	case K_RANDOM:
 		return ParseRandom();
+	case K_GOTO:
+		{
+			t.Next();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Goto;
+			node->str = t.MustGetItem();
+			t.Next();
+			return node;
+		}
 	default:
 		t.Unexpected();
 		break;
@@ -392,10 +407,19 @@ DialogLoader::Node* DialogLoader::ParseBlock()
 	{
 		t.Next();
 		Pooled<Node> block(GetNode());
+		if(t.IsItem())
+		{
+			block->str = t.GetItem();
+			t.Next();
+			t.AssertSymbol(':');
+			t.Next();
+		}
+		else
+			block->str.clear();
 		while(!t.IsSymbol('}'))
 			block->childs.push_back(ParseStatement());
 		t.Next();
-		if(block->childs.size() == 1u)
+		if(block->childs.size() == 1u && block->str.empty())
 		{
 			Node* node = block->childs[0];
 			block->childs.clear();
@@ -989,6 +1013,10 @@ bool DialogLoader::BuildDialog(Node* node)
 			code[jmp_pos].value = pos;
 			return false;
 		}
+	case NodeOp::Goto:
+		jumps.push_back(std::make_pair(node->str, code.size()));
+		code.push_back(DialogEntry(DTF_JMP, 0));
+		return true;
 	default:
 		assert(0);
 		return false;
@@ -998,6 +1026,9 @@ bool DialogLoader::BuildDialog(Node* node)
 //=================================================================================================
 bool DialogLoader::BuildDialogBlock(Node* node)
 {
+	if(!node->str.empty())
+		labels.push_back(std::make_pair(node->str, current_dialog->code.size()));
+
 	int have_exit = 0;
 	for(Node* child : node->childs)
 	{
@@ -1015,6 +1046,28 @@ bool DialogLoader::BuildDialogBlock(Node* node)
 			have_exit = 1;
 	}
 	return (have_exit >= 1);
+}
+
+//=================================================================================================
+void DialogLoader::PatchJumps()
+{
+	for(pair<string, uint>& jump : jumps)
+	{
+		bool ok = false;
+		for(pair<string, uint>& label : labels)
+		{
+			if(jump.first == label.first)
+			{
+				current_dialog->code[jump.second].value = label.second;
+				ok = true;
+				break;
+			}
+		}
+		if(!ok)
+			LoadError("Missing label '%s'.", jump.first.c_str());
+	}
+	jumps.clear();
+	labels.clear();
 }
 
 //=================================================================================================

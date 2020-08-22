@@ -28,6 +28,8 @@ struct Hero : public HeroPlayerCommon
 	void SetupMelee();
 	void AddExp(int exp);
 	float GetExpMod() const;
+	bool HaveOtherTeam() const { return otherTeam != nullptr; }
+	int GetPersuasionCheckValue() const;
 
 private:
 	void LevelUp();

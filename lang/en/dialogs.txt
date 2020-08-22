@@ -471,6 +471,11 @@ dialog hero {
 	43 "No"
 	44 "What do you do here?"
 	45 "End dialog"
+	46 "I can't abandon my current team like that!"
+	47 "Persuasion"
+	48 "Back"
+	49 "Okay ... You seem like a good leader."
+	50 "Somehow you didn't convince me..."
 }
 
 //==============================================================================
@@ -639,6 +644,11 @@ dialog crazy {
 	47 "Ask about strange stone"
 	48 "Take it from me or I'll sell you a kick!"
 	49 "End dialog"
+	50 "Am I supposed to leave these weaklings off and join you?"
+	51 "Persuasion"
+	52 "Back"
+	53 "No no no! You will join me!"
+	54 "If you think you convinced me then you are crazy here!"
 }
 
 //==============================================================================

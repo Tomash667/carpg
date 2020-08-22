@@ -215,3 +215,11 @@ float Hero::GetExpMod() const
 			return 5.f;
 	}
 }
+
+//=================================================================================================
+int Hero::GetPersuasionCheckValue() const
+{
+	if(otherTeam->leader == unit)
+		return 50;
+	return 25;
+}

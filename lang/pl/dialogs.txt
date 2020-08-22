@@ -483,6 +483,11 @@ dialog hero {
 	43 "Nie"
 	44 "Czym siê zajmujesz?"
 	45 "Koniec rozmowy"
+	46 "Nie mogê od tak porzuciæ mojej aktualnej dru¿yny!"
+	47 "Perswazja"
+	48 "Wróæ"
+	49 "No dobra... Wydajesz siê dobrym przywódc¹."
+	50 "Jakoœ mnie nie przekona³eœ..."
 }
 
 //==============================================================================
@@ -651,6 +656,11 @@ dialog crazy {
 	47 "Zapytaj o dziwny kamieñ"
 	48 "Zabieraj to ode mnie bo jak ci sprzedam kopa!"
 	49 "Koniec rozmowy"
+	50 "Mam od tak porzuciæ tych s³abeuszy i do³¹czyæ do ciebie?"
+	51 "Perswazja"
+	52 "Wróæ"
+	53 "Nie nie nie! To ty do mnie do³¹czysz!"
+	54 "Jeœli myœlisz ¿e mnie przekona³eœ to chyba ty tu jesteœ szalony!"
 }
 
 //==============================================================================

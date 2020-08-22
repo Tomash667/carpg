@@ -1141,8 +1141,29 @@ dialog hero
 				talk 33
 				restart
 			}
+			else if script "target.hero.otherTeam"
+			{
+				talk 46
+				choice 47
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 49
+						goto recruit
+					}
+					else
+					{
+						talk 50
+						restart
+					}
+				}
+				escape choice 48
+					restart
+				show_choices
+			}
 			else
 			{
+			recruit:
 				if special "is_free_recruit"
 				{
 					talk 34
@@ -1403,8 +1424,29 @@ dialog crazy
 				talk 36
 				restart
 			}
+			else if script "target.hero.otherTeam"
+			{
+				talk 50
+				choice 51
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 53
+						goto recruit
+					}
+					else
+					{
+						talk 54
+						restart
+					}
+				}
+				escape choice 52
+					restart
+				show_choices
+			}
 			else
 			{
+			recruit:
 				talk 37
 				choice 38
 				{
