@@ -167,13 +167,9 @@ void OutsideLocationGenerator::OnEnter()
 	else
 	{
 		if(days > 0)
-			game_level->UpdateLocation(days, 100, false);
+			game_level->UpdateLocation(days, 100, need_reset);
 
 		game_level->RecreateTmpObjectPhysics();
-
-		// remove alive units
-		if(need_reset)
-			DeleteElements(outside->units, [](Unit* unit) { return unit->IsAlive(); });
 
 		// recreate colliders
 		game->LoadingStep(game->txGeneratingPhysics);

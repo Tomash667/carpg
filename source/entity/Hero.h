@@ -17,8 +17,8 @@ struct Hero : public HeroPlayerCommon
 	int expe;
 	float phase_timer;
 	HeroType type;
-	bool know_name, team_member, lost_pvp, melee, phase,
-		gained_gold;
+	AITeam* otherTeam;
+	bool know_name, team_member, lost_pvp, melee, phase, gained_gold;
 
 	void Init(Unit& unit);
 	int JoinCost() const;

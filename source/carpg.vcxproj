@@ -128,6 +128,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="components\AIManager.h" />
     <ClInclude Include="components\CommandParser.h" />
     <ClInclude Include="components\ConsoleCommands.h" />
     <ClInclude Include="components\FOV.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="components\Pathfinding.h" />
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
+    <ClInclude Include="entity\AITeam.h" />
     <ClInclude Include="entity\Date.h" />
     <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="ErrorHandler.h" />
@@ -326,6 +328,7 @@
     <ClInclude Include="system\ItemScript.h" />
     <ClInclude Include="system\ItemType.h" />
     <ClInclude Include="system\Ability.h" />
+    <ClCompile Include="components\AIManager.cpp" />
     <ClCompile Include="components\CommandParser.cpp" />
     <ClCompile Include="components\FOV.cpp" />
     <ClCompile Include="components\GameResources.cpp" />
@@ -335,6 +338,7 @@
     <ClCompile Include="components\Pathfinding.cpp" />
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
+    <ClCompile Include="entity\AITeam.cpp" />
     <ClCompile Include="entity\DialogContext.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />

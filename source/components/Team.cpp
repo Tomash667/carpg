@@ -2,6 +2,7 @@
 #include "Team.h"
 
 #include "AIController.h"
+#include "AITeam.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
 #include "GameFile.h"
@@ -69,6 +70,8 @@ void Team::AddMember(Unit* unit, HeroType type)
 	unit->hero->team_member = true;
 	unit->hero->type = type;
 	unit->OrderFollow(DialogContext::current ? DialogContext::current->pc->unit : leader);
+	if(unit->hero->otherTeam)
+		unit->hero->otherTeam->Remove(unit);
 
 	// add to team list
 	if(type == HeroType::Normal)
@@ -1630,7 +1633,7 @@ bool Team::PersuasionCheck(int level)
 
 	// train player
 	me->Train(TrainWhat::Persuade, 0.f, chance);
-	if(bestUnit->IsPlayer())
+	if(me->unit != bestUnit && bestUnit->IsPlayer())
 		bestUnit->player->Train(TrainWhat::Persuade, 0.f, chance);
 
 	// add game msg

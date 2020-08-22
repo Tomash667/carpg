@@ -650,6 +650,12 @@
     <ClCompile Include="quests\Quest2.cpp">
       <Filter>quests</Filter>
     </ClCompile>
+    <ClCompile Include="entity\AITeam.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="components\AIManager.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1273,6 +1279,12 @@
     </ClInclude>
     <ClInclude Include="quests\Quest2.h">
       <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\AITeam.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="components\AIManager.h">
+      <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

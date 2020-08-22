@@ -3,6 +3,7 @@
 
 #include "Arena.h"
 #include "AIController.h"
+#include "AITeam.h"
 #include "City.h"
 #include "Game.h"
 #include "Level.h"
@@ -2706,7 +2707,16 @@ void CityGenerator::SpawnTemporaryUnits()
 void CityGenerator::RemoveTemporaryUnits()
 {
 	for(LevelArea& area : game_level->ForEachArea())
-		DeleteElements(area.units, [](Unit* u) {return u->temporary; });
+	{
+		DeleteElements(area.units, [](Unit* u)
+		{
+			if(!u->temporary)
+				return false;
+			if(u->IsHero() && u->hero->otherTeam)
+				u->hero->otherTeam->Remove();
+			return true;
+		});
+	}
 }
 
 //=================================================================================================

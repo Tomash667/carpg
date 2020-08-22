@@ -3,6 +3,8 @@
 
 #include "Ability.h"
 #include "AIController.h"
+#include "AIManager.h"
+#include "AITeam.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
 #include "BookPanel.h"
@@ -127,6 +129,7 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false),
 
 	SetupConfigVars();
 
+	aiMgr = new AIManager;
 	arena = new Arena;
 	cmdp = new CommandParser;
 	dun_mesh_builder = new DungeonMeshBuilder;
@@ -594,6 +597,7 @@ void Game::OnCleanup()
 
 	Language::Cleanup();
 
+	delete aiMgr;
 	delete arena;
 	delete cmdp;
 	delete dun_mesh_builder;
@@ -2630,6 +2634,7 @@ void Game::ClearGameVars(bool new_game)
 	pc->data.Reset();
 	script_mgr->Reset();
 	game_level->Reset();
+	aiMgr->Reset();
 	pathfinding->SetTarget(nullptr);
 	game_gui->world_map->Clear();
 	net->ClearFastTravel();
@@ -3498,6 +3503,9 @@ void Game::DeleteUnit(Unit* unit)
 		RemoveElement(ais, unit->ai);
 		delete unit->ai;
 	}
+
+	if(unit->IsHero() && unit->hero->otherTeam)
+		unit->hero->otherTeam->Remove(unit);
 
 	if(unit->cobj)
 	{

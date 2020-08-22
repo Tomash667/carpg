@@ -3,6 +3,7 @@
 
 #include "Ability.h"
 #include "AIController.h"
+#include "AITeam.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
 #include "Camp.h"
@@ -3051,60 +3052,50 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 //=================================================================================================
 void Level::UpdateLocation(int days, int open_chance, bool reset)
 {
-	// up³yw czasu
-	// 1-10 dni (usuñ zw³oki)
-	// 5-30 dni (usuñ krew)
-	// 1+ zamknij/otwórz drzwi
 	for(LevelArea& area : ForEachArea())
 	{
-		if(days <= 10)
+		// if reset remove all units
+		// otherwise all (>10 days) or some
+		if(reset)
 		{
-			// usuñ niektóre zw³oki i przedmioty
-			for(Unit*& u : area.units)
+			for(Unit* unit : area.units)
 			{
-				if(!u->IsAlive() && Random(4, 10) < days)
-				{
-					delete u;
-					u = nullptr;
-				}
+				if(unit->IsAlive() && unit->IsHero() && unit->hero->otherTeam)
+					unit->hero->otherTeam->Remove();
+				delete unit;
 			}
-			RemoveNullElements(area.units);
-			DeleteElements(area.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
+			area.units.clear();
 		}
+		else if(days > 10)
+			DeleteElements(area.units, [](Unit* unit) { return !unit->IsAlive(); });
 		else
-		{
-			// usuñ wszystkie zw³oki i przedmioty
-			if(reset)
-				DeleteElements(area.units);
-			else
-				DeleteElements(area.units, [](Unit* unit) { return !unit->IsAlive(); });
-			DeleteElements(area.items);
-		}
+			DeleteElements(area.units, [=](Unit* unit) { return !unit->IsAlive() && Random(4, 10) < days; });
 
-		// wylecz jednostki
+		// remove all ground items (>10 days) or some
+		if(days > 10)
+			DeleteElements(area.items);
+		else
+			DeleteElements(area.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
+
+		// heal units
 		if(!reset)
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(Unit* unit : area.units)
 			{
-				if((*it)->IsAlive())
-					(*it)->NaturalHealing(days);
+				if(unit->IsAlive())
+					unit->NaturalHealing(days);
 			}
 		}
 
+		// remove all blood (>30 days) or some (>5 days)
 		if(days > 30)
-		{
-			// usuñ krew
 			area.bloods.clear();
-		}
-		else if(days >= 5)
-		{
-			// usuñ czêœciowo krew
+		else if(days > 5)
 			RemoveElements(area.bloods, RemoveRandomPred<Blood>(days, 4, 30));
-		}
 
+		// remove all temporary traps (>30 days) or some (>5 days)
 		if(days > 30)
 		{
-			// usuñ wszystkie jednorazowe pu³apki
 			for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end;)
 			{
 				if((*it)->base->type == TRAP_FIREBALL)
@@ -3128,7 +3119,6 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 		}
 		else if(days >= 5)
 		{
-			// usuñ czêœæ 1razowych pu³apek
 			for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end;)
 			{
 				if((*it)->base->type == TRAP_FIREBALL && Rand() % 30 < days)
@@ -3151,7 +3141,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 			}
 		}
 
-		// losowo otwórz/zamknij drzwi
+		// randomly open/close doors
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;

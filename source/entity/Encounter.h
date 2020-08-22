@@ -70,8 +70,8 @@ struct EncounterSpawn
 	UnitData* essential;
 	GameDialog* dialog;
 	int count, count2, level, level2;
-	bool dont_attack, back_attack, far_encounter;
+	bool dont_attack, back_attack, far_encounter, isTeam, isTeam2;
 
 	EncounterSpawn(int st) : group_name(nullptr), group_name2(nullptr), essential(nullptr), dialog(nullptr), count(0), count2(0), level(st), level2(st),
-		dont_attack(false), back_attack(false), far_encounter(false) {}
+		dont_attack(false), back_attack(false), far_encounter(false), isTeam(false), isTeam2(false) {}
 };

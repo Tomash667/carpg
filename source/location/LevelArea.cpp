@@ -2,6 +2,7 @@
 #include "LevelArea.h"
 
 #include "Ability.h"
+#include "AITeam.h"
 #include "BitStreamFunc.h"
 #include "City.h"
 #include "Game.h"
@@ -585,7 +586,13 @@ void LevelArea::Clear()
 	DeleteElements(objects);
 	DeleteElements(chests);
 	DeleteElements(items);
-	DeleteElements(units);
+	for(Unit* unit : units)
+	{
+		if(unit->IsAlive() && unit->IsHero() && unit->hero->otherTeam)
+			unit->hero->otherTeam->Remove();
+		delete unit;
+	}
+	units.clear();
 }
 
 //=================================================================================================

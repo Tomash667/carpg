@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "Hero.h"
 
+#include "AIManager.h"
+#include "AITeam.h"
 #include "Const.h"
 #include "Level.h"
 #include "NameHelper.h"
@@ -35,6 +37,7 @@ void Hero::Init(Unit& _unit)
 	phase = false;
 	phase_timer = 0.f;
 	split_gold = 0.f;
+	otherTeam = nullptr;
 
 	if(!unit->data->real_name.empty())
 		name = unit->data->real_name;
@@ -56,6 +59,7 @@ void Hero::Save(FileWriter& f)
 	f << type;
 	f << lost_pvp;
 	f << split_gold;
+	f << (otherTeam ? otherTeam->id : -1);
 }
 
 //=================================================================================================
@@ -108,6 +112,17 @@ void Hero::Load(FileReader& f)
 	}
 	f >> lost_pvp;
 	f >> split_gold;
+	if(LOAD_VERSION >= V_DEV)
+	{
+		int teamId;
+		f >> teamId;
+		if(teamId == -1)
+			otherTeam = nullptr;
+		else
+			otherTeam = aiMgr->GetTeam(teamId);
+	}
+	else
+		otherTeam = nullptr;
 }
 
 //=================================================================================================

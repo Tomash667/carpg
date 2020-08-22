@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "EncounterGenerator.h"
 
+#include "AIManager.h"
+#include "AITeam.h"
 #include "Chest.h"
 #include "Encounter.h"
 #include "Game.h"
@@ -213,6 +215,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			if(spawn.level < 5)
 				spawn.level = 5;
 			spawn.dialog = GameDialog::TryGet("crazies_encounter");
+			spawn.isTeam = true;
 			break;
 		case SE_MERCHANT:
 			spawn.essential = UnitData::Get("traveling_merchant");
@@ -225,6 +228,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			spawn.count = Random(3, 4);
 			if(spawn.level < 5)
 				spawn.level = 5;
+			spawn.isTeam = true;
 			break;
 		case SE_BANDITS_VS_TRAVELERS:
 			{
@@ -252,6 +256,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			spawn.count = Random(3, 4);
 			if(spawn.level < 5)
 				spawn.level = 5;
+			spawn.isTeam = true;
 			switch(Rand() % 4)
 			{
 			case 0:
@@ -271,6 +276,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				spawn.count2 = Random(3, 4);
 				if(spawn.level2 < 5)
 					spawn.level2 = 5;
+				spawn.isTeam2 = true;
 				break;
 			}
 			break;
@@ -308,6 +314,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 					spawn.count = Random(3, 4);
 					if(spawn.level < 5)
 						spawn.level = 5;
+					spawn.isTeam = true;
 					break;
 				}
 				spawn.level2 = Max(3, spawn.level2 + Random(-1, +1));
@@ -330,6 +337,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 					spawn.count2 = Random(3, 4);
 					if(spawn.level2 < 5)
 						spawn.level2 = 5;
+					spawn.isTeam2 = true;
 					break;
 				}
 			}
@@ -400,6 +408,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		}
 	}
 
+	// first group of units
+	AITeam* team = spawn.isTeam ? aiMgr->CreateTeam() : nullptr;
 	if(spawn.essential)
 	{
 		int unit_level;
@@ -411,9 +421,9 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		talker->dont_attack = spawn.dont_attack;
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--spawn.count;
+		if(team)
+			team->Add(talker);
 	}
-
-	// first group of units
 	if(spawn.group_name)
 	{
 		UnitGroup* group = UnitGroup::TryGet(spawn.group_name);
@@ -426,15 +436,26 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				talker = u;
 				best_dist = dist;
 			}
+			if(team)
+				team->Add(u);
 		});
 	}
+	if(team)
+		team->SelectLeader();
 
 	// second group of units
 	if(spawn.group_name2)
 	{
+		team = (spawn.isTeam2 ? aiMgr->CreateTeam() : nullptr);
 		UnitGroup* group = UnitGroup::TryGet(spawn.group_name2);
-		game_level->SpawnUnitsGroup(area, spawn_pos, &look_pt, spawn.count2, group, spawn.level2,
-			[&](Unit* u) { u->dont_attack = spawn.dont_attack; });
+		game_level->SpawnUnitsGroup(area, spawn_pos, &look_pt, spawn.count2, group, spawn.level2, [&](Unit* u)
+		{
+			u->dont_attack = spawn.dont_attack;
+			if(team)
+				team->Add(u);
+		});
+		if(team)
+			team->SelectLeader();
 	}
 }
 

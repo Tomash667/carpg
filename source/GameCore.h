@@ -36,6 +36,7 @@ class CScriptDictionary;
 
 //-----------------------------------------------------------------------------
 class AbilityPanel;
+class AIManager;
 class Arena;
 class BitStreamReader;
 class BitStreamWriter;
@@ -91,6 +92,7 @@ class WorldMapGui;
 struct Ability;
 struct AbilityList;
 struct AIController;
+struct AITeam;
 struct Amulet;
 struct Armor;
 struct BaseObject;
@@ -245,6 +247,7 @@ enum class SkillId;
 typedef pair<UnitData*, int> TmpSpawn;
 
 //-----------------------------------------------------------------------------
+extern AIManager* aiMgr;
 extern LobbyApi* api;
 extern CommandParser* cmdp;
 extern Game* game;

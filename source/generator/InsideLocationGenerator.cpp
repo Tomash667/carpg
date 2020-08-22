@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "InsideLocationGenerator.h"
 
+#include "AIManager.h"
+#include "AITeam.h"
 #include "Game.h"
 #include "GameResources.h"
 #include "GameStats.h"
@@ -70,19 +72,15 @@ void InsideLocationGenerator::OnEnter()
 
 		game_level->RecreateTmpObjectPhysics();
 
-		if(days > 0)
-			game_level->UpdateLocation(days, base.door_open, need_reset);
-
 		int update_flags = HandleUpdate(days);
 		if(IsSet(update_flags, PREVENT_RESET))
 			need_reset = false;
 
+		if(days > 0)
+			game_level->UpdateLocation(days, base.door_open, need_reset);
+
 		if(need_reset)
 		{
-			// usuñ ¿ywe jednostki
-			if(days != 0)
-				DeleteElements(lvl.units, [](Unit* unit) { return unit->IsAlive(); });
-
 			// usuñ zawartoœæ skrzyni
 			for(vector<Chest*>::iterator it = lvl.chests.begin(), end = lvl.chests.end(); it != end; ++it)
 				(*it)->items.clear();
@@ -1281,16 +1279,21 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		room = lvl.GetPrevEntryRoom();
 	else
 		room = lvl.GetConnectingRooms(groups[depth - 1], group).second;
+	AITeam* team = aiMgr->CreateTeam();
 	int count = Random(3, 4);
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
 		Unit* u = game_level->SpawnUnitInsideRoom(*room, *Class::GetRandomHeroData(), level);
 		if(u)
+		{
+			team->Add(u);
 			heroes->push_back(u);
+		}
 		else
 			break;
 	}
+	team->SelectLeader();
 
 	// split gold
 	int gold_per_hero = gold / heroes->size();

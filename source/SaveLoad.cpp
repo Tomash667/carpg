@@ -4,6 +4,7 @@
 #include "Ability.h"
 #include "AbilityPanel.h"
 #include "AIController.h"
+#include "AIManager.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
 #include "Cave.h"
@@ -473,6 +474,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	game_stats->Save(f);
 
 	f << game_state;
+	aiMgr->Save(f);
 	world->Save(f);
 
 	byte check_id = 0;
@@ -711,6 +713,9 @@ void Game::LoadGame(GameReader& f)
 
 		// game state
 		f >> game_state2;
+
+		if(LOAD_VERSION >= V_DEV)
+			aiMgr->Load(f);
 
 		// world map
 		LoadingStep(txLoadingLocations);

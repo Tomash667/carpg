@@ -3,6 +3,7 @@
 
 #include "Ability.h"
 #include "AIController.h"
+#include "AITeam.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
 #include "City.h"
@@ -5304,7 +5305,11 @@ void Unit::Die(Unit* killer)
 		if(IsTeamMember())
 			raise_timer = Random(5.f, 7.f);
 		else
+		{
 			game_level->CheckIfLocationCleared();
+			if(IsHero() && hero->otherTeam)
+				hero->otherTeam->Remove(this);
+		}
 
 		// event
 		if(event_handler)
