@@ -66,6 +66,7 @@ public:
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
@@ -86,4 +87,6 @@ public:
 
 private:
 	void InitSub();
+
+	bool persuaded;
 };

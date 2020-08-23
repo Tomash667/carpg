@@ -1655,6 +1655,20 @@ dialog bandits
 			end
 		}
 	}
+	choice 13
+	{
+		if script "Team::PersuasionCheck(25)"
+		{
+			talk 14
+			end
+		}
+		else
+		{
+			talk 15
+			script "target.OrderAttack()"
+			end
+		}
+	}
 	choice 11
 	{
 		talk 12
@@ -1705,11 +1719,25 @@ dialog crazy_mage_encounter
 		}
 		else
 		{
-			talk 6
+			talk 4
 			special "random_hair"
 		}
 		talk 7
 		end
+	}
+	choice 6
+	{
+		if script "Team::PersuasionCheck(25)"
+		{
+			talk 11
+			end
+		}
+		else
+		{
+			talk 12
+			script "target.OrderAttack()"
+			end
+		}
 	}
 	choice 8
 	{
@@ -2005,10 +2033,24 @@ dialog crazies_encounter
 					}
 					end
 				}
+				choice 28
+				{
+					if script "Team::PersuasionCheck(25)"
+						talk 29
+					else
+					{
+						talk 30
+						script "target.OrderAttack()"
+					}
+					end
+				}
 				choice 8
 				{
 					if rand 2
+					{
 						talk 9
+						script "target.OrderAttack()"
+					}
 					else
 						talk 10
 					end
@@ -2358,6 +2400,20 @@ dialog q_bandits_encounter
 		{
 			talk 6
 			talk 7
+			script "target.OrderAttack()"
+			end
+		}
+	}
+	choice 11
+	{
+		if script "Team::PersuasionCheck(50)"
+		{
+			talk 12
+			end
+		}
+		else
+		{
+			talk 13
 			script "target.OrderAttack()"
 			end
 		}
@@ -2877,13 +2933,24 @@ dialog q_goblins_mage
 		{
 			if script "pc.unit.gold >= 100"
 			{
+			info:
 				talk 11
-				talk 12
+				talk 5
 				set_quest_progress 9
 			}
 			else
 				talk 13
 			end
+		}
+		choice 12
+		{
+			if script "Team::PersuasionCheck(25)"
+				goto info
+			else
+			{
+				talk 16
+				end
+			}
 		}
 		escape choice 14
 			end
@@ -3300,9 +3367,7 @@ dialog q_mine_investor
 	{
 		if script "!target.known_name"
 		{
-			if once
-			{
-			}
+			do_once
 			script "target.known_name = true;"
 			talk 0
 			talk 1
@@ -3409,6 +3474,20 @@ dialog q_mine_investor
 					else
 						talk 39
 					end
+				}
+				choice 53
+				{
+					if script "Team::PersuasionCheck(50)"
+					{
+						special "mine_persuaded"
+						talk 54
+						restart
+					}
+					else
+					{
+						talk 55
+						end
+					}
 				}
 			}
 			choice 40

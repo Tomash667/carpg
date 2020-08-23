@@ -29,6 +29,7 @@ void Quest_Mine::Start()
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
+	persuaded = false;
 	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
 	targetLoc = world->GetClosestLocation(L_CAVE, startLoc->pos);
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
@@ -247,9 +248,19 @@ bool Quest_Mine::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
+bool Quest_Mine::Special(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "mine_persuaded") == 0)
+		persuaded = true;
+	else
+		assert(0);
+	return false;
+}
+
+//=================================================================================================
 bool Quest_Mine::SpecialIf(DialogContext& ctx, cstring msg)
 {
-	if(strcmp(msg, "udzialy_w_kopalni") == 0)
+	if(strcmp(msg, "udzialy_w_kopalni") == 0 || persuaded)
 		return mine_state == State::Shares;
 	assert(0);
 	return false;
@@ -284,6 +295,7 @@ void Quest_Mine::Save(GameWriter& f)
 	f << days_required;
 	f << days_gold;
 	f << messenger;
+	f << persuaded;
 }
 
 //=================================================================================================
@@ -300,6 +312,10 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	f >> days_required;
 	f >> days_gold;
 	f >> messenger;
+	if(LOAD_VERSION >= V_DEV)
+		f >> persuaded;
+	else
+		persuaded = false;
 
 	location_event_handler = this;
 	InitSub();

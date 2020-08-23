@@ -299,6 +299,7 @@ void MainMenu::GetTooltip(TooltipController* tooltip, int group, int id, bool re
 	tooltip->anything = true;
 	SaveSlot& slot = game_gui->saveload->GetSaveSlot(game->lastSave, false);
 	tooltip->img = game_gui->saveload->GetSaveImage(game->lastSave, false);
+	tooltip->imgSize = Int2(256, 192);
 	tooltip->big_text = slot.text;
 	tooltip->text = game_gui->saveload->GetSaveText(slot);
 }

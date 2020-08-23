@@ -726,6 +726,9 @@ dialog bandits {
 		"Zabiæ ich wszystkich!"
 		"W takim razie giñ!"
 	}
+	13 "Perswazja"
+	14 "W sumie masz racjê. Mo¿esz przejœæ bez p³acenia..."
+	15 "Myœlisz ¿e sobie pogadasz i ciê puszczê!? Wyskakuj ze z³ota kutasiarzu!"
 }
 
 //==============================================================================
@@ -748,11 +751,13 @@ dialog crazy_mage_encounter {
 	3 "Cholera! Do tego czaru potrzebuje kogoœ z w³osami."
 	4 "Oc repus wóso³w rolok ynni zsam zaret do yram yrazc!"
 	5 "Einm od y¿elan azsud ajowt!"
-	6 "Oc repus wóso³w rolok ynni zsam zaret do yram yrazc!"
+	6 "Perswazja"
 	7 "Chyba nie ma ¿adnych efektów ubocznych, dziêki za pomoc!"
 	8 "Nie"
 	9 "Jak to nie?!"
 	10 "Twoje zw³oki nie powiedz¹ nie!"
+	11 "No dobra... Mo¿e do ciebie do³¹czê i razem poszukamy ochotników do moich eksperymentów?"
+	12 "Jakbym chcia³ z kimœ pogadaæ to bym porozmawia³ z g³osami w mojej g³owie!"
 }
 
 //==============================================================================
@@ -895,6 +900,9 @@ dialog crazies_encounter {
 	25 "le!"
 	26 "Nie wiem"
 	27 "Bo jesteœ g³upi!"
+	28 "Perswazja"
+	29 "Eee co? A tak, tak. Mo¿esz iœæ."
+	30 "Ale ty jesteœ zabawny!"
 }
 
 //==============================================================================
@@ -1036,6 +1044,9 @@ dialog q_bandits_encounter {
 	8 "Nie!"
 	9 "Co kurwa?!"
 	10 "Nauczê cie szacunku dla bandytów!"
+	11 "Perswazja"
+	12 "Hmm... Widocznie kto inny transportuje tê paczkê. Mo¿esz przejœæ."
+	13 "Myœlisz ¿e mnie oszukasz!? Zabiæ go!"
 }
 
 //==============================================================================
@@ -1268,11 +1279,12 @@ dialog q_goblins_mage {
 	8 "Zmieni³eœ zdanie?"
 	9 "Cena za moje informacje wzros³a do 100 sztuk z³ota."
 	10 "Zap³aæ 100 sztuk z³ota"
-	11 "To wielka szkoda, ten ³uk jest bardzo cenny. Mam nadzieje ¿e nie odda³eœ go za garœæ miedziaków."
-	12 "Dziêki magii wygl¹da niczym stary ³uk. Porozmawiaj z tym szlachcicem, wydaje mi siê ¿e on od pocz¹tku o wszystkim wiedzia³."
+	11 "Ten ³uk jest bardzo cenny. Mam nadzieje ¿e nie odda³eœ go za garœæ miedziaków."
+	12 "Perswazja"
 	13 "Wróæ gdy bêdziesz mia³ doœæ z³ota."
 	14 "Koniec rozmowy"
 	15 "Porozmawiaj z karczmarzem w $start_loc$, mo¿e on coœ wie o tym szlachcicu."
+	16 "Wiesz co... ja jednak wolê z³oto."
 }
 
 //==============================================================================
@@ -1493,6 +1505,9 @@ dialog q_mine_investor {
 	50 "Czym siê zajmujesz?"
 	51 "Dorobi³em siê na handlu egzotycznymi towarami. Od tego czasu inwestuje w ró¿ne przedsiêwziêcia, kopalnie, tartaki czy wyprawy."
 	52 "Koniec rozmowy"
+	53 "Perswazja"
+	54 "Dobrze siê targujesz! Obni¿ê cenê do 10,000 sztuk z³ota. Co ty na to?"
+	55 "Nie widzê powodu dla którego mia³bym ci iœæ na rêkê."
 }
 
 //==============================================================================

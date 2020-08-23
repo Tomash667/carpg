@@ -714,6 +714,9 @@ dialog bandits {
 		"Kill them all!"
 		"Then you die!"
 	}
+	13 "Persuasion"
+	14 "You're actually right. You can go without paying..."
+	15 "You think you'll talk to me and I'll let you go!? Drop your gold, dickhead!"
 }
 
 //==============================================================================
@@ -736,11 +739,13 @@ dialog crazy_mage_encounter {
 	3 "Damn! For this spell I needs someone with hair."
 	4 "Huh tearg roloc riah tenrffid evah uoy won sukop sukoh!"
 	5 "Em ot sgnoleb luos ruoy!"
-	6 "Huh tearg roloc riah tenrffid evah uoy won sukop sukoh!"
+	6 "Persuasion"
 	7 "You do not have any side effects, thanks for your help!"
 	8 "No"
 	9 "Why not?!"
 	10 "Your corpse does not say no!"
+	11 "Okay... Maybe I'll join you and we will find volunteers for my experiments together?"
+	12 "If I wanted to talk to someone, I would talk to the voices in my head!"
 }
 
 //==============================================================================
@@ -883,6 +888,9 @@ dialog crazies_encounter {
 	25 "Wrong!"
 	26 "I don't know"
 	27 "Because you're stupid!"
+	28 "Persuasion"
+	29 "Eee what? Oh yes, yes. You can go."
+	30 "You are so funny!"
 }
 
 //==============================================================================
@@ -1024,6 +1032,9 @@ dialog q_bandits_encounter {
 	8 "No!"
 	9 "What the fuck?!"
 	10 "I'll teach you respect for the bandits!"
+	11 "Persuasion"
+	12 "Hmm... Apparently someone else is transporting this package. You can go."
+	13 "You think you're gonna cheat me!? Kill him!"
 }
 
 //==============================================================================
@@ -1256,11 +1267,12 @@ dialog q_goblins_mage {
 	8 "Changed your mind?"
 	9 "The price for my information has increased to 100 gold pieces."
 	10 "Pay 100 gold pieces"
-	11 "It is a great pity, that bow is very valuable. I hope that you don't gave it for a handful of coppers."
-	12 "Through the magic of looks like an old bow. Talk with this nobleman, it seems to me that he knew everything from beginning."
+	11 "That bow is very valuable. I hope that you don't gave it for a handful of coppers."
+	12 "Persuasion"
 	13 "Come back when you have enough gold."
 	14 "End dialog"
 	15 "Talk to the innkeeper at $start_loc$. He may know something about this nobleman."
+	16 "You know what... I prefer gold though."
 }
 
 //==============================================================================
@@ -1481,6 +1493,9 @@ dialog q_mine_investor {
 	50 "What do you do?"
 	51 "I got right due to trade in exotic goods. Since then I invested in various projects, mines, sawmills or expeditions."
 	52 "End dialog"
+	53 "Persuasion"
+	54 "You haggle well! I'll lower the price to 10,000 gold. What do you think?"
+	55 "I don't see why I should go for it."
 }
 
 //==============================================================================
