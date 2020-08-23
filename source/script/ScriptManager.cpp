@@ -790,7 +790,8 @@ void ScriptManager::RegisterGame()
 	ForType("Hero")
 		.Member("bool lost_pvp", offsetof(Hero, lost_pvp))
 		.Method("bool get_otherTeam() const property", asMETHOD(Hero, HaveOtherTeam))
-		.Method("int get_persuasionCheck() const property", asMETHOD(Hero, GetPersuasionCheckValue));
+		.Method("int get_persuasionCheck() const property", asMETHOD(Hero, GetPersuasionCheckValue))
+		.Method("bool get_wantJoin() const property", asMETHOD(Hero, WantJoin));
 
 	AddType("UnitGroup")
 		.Member("const string name", offsetof(UnitGroup, name))

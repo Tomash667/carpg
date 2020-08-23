@@ -294,6 +294,7 @@ void UnitLoader::InitTokenizer()
 		{ "dont_suffer", F_DONT_SUFFER },
 		{ "mage", F_MAGE },
 		{ "poison_res", F_POISON_RES },
+		{ "loner", F_LONER },
 		{ "no_power_attack", F_NO_POWER_ATTACK },
 		{ "ai_clerk", F_AI_CLERK },
 		{ "ai_guard", F_AI_GUARD },

@@ -474,8 +474,10 @@ dialog hero {
 	46 "I can't abandon my current team like that!"
 	47 "Persuasion"
 	48 "Back"
-	49 "Okay ... You seem like a good leader."
+	49 "Okay... You seem like a good leader."
 	50 "Somehow you didn't convince me..."
+	51 "I don't like crowds and your team is already quite large..."
+	52 "Okay... Sometimes you have to compromise."
 }
 
 //==============================================================================
@@ -649,6 +651,7 @@ dialog crazy {
 	52 "Back"
 	53 "No no no! You will join me!"
 	54 "If you think you convinced me then you are crazy here!"
+	55 "Hmmm... In such a crowd you will not pay attention to me!"
 }
 
 //==============================================================================

@@ -3309,7 +3309,7 @@ unit hero_rogue : base_hero {
 }
 
 unit hero_tomir : hero_warrior {
-	flags | fast_learner
+	flags | {fast_learner loner}
 }
 
 unit hero_cleric : base_hero {

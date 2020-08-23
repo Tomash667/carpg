@@ -38,6 +38,7 @@ void Hero::Init(Unit& _unit)
 	phase_timer = 0.f;
 	split_gold = 0.f;
 	otherTeam = nullptr;
+	loner = IsSet(_unit.data->flags, F_LONER) || Rand() % 5 == 0;
 
 	if(!unit->data->real_name.empty())
 		name = unit->data->real_name;
@@ -60,6 +61,7 @@ void Hero::Save(FileWriter& f)
 	f << lost_pvp;
 	f << split_gold;
 	f << (otherTeam ? otherTeam->id : -1);
+	f << loner;
 }
 
 //=================================================================================================
@@ -120,9 +122,13 @@ void Hero::Load(FileReader& f)
 			otherTeam = nullptr;
 		else
 			otherTeam = aiMgr->GetTeam(teamId);
+		f >> loner;
 	}
 	else
+	{
 		otherTeam = nullptr;
+		loner = false;
+	}
 }
 
 //=================================================================================================
@@ -219,7 +225,25 @@ float Hero::GetExpMod() const
 //=================================================================================================
 int Hero::GetPersuasionCheckValue() const
 {
-	if(otherTeam->leader == unit)
-		return 50;
-	return 25;
+	int level = 0;
+	if(otherTeam)
+		level = (otherTeam->leader == unit ? 50 : 0);
+	if(loner)
+	{
+		if(level == 0)
+			level = 25;
+		else
+			level += 10;
+		uint size = team->GetActiveTeamSize();
+		level += (size - 4) * 10;
+	}
+	return level;
+}
+
+//=================================================================================================
+bool Hero::WantJoin() const
+{
+	if(!loner)
+		return true;
+	return team->GetActiveTeamSize() < 4u;
 }

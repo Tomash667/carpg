@@ -326,6 +326,9 @@ Hero is unit that can be recruited to team.
 Properties:
 
 * bool lost_pvp - true if hero recently lost pvp.
+* bool otherTeam - hero is in other team.
+* bool wantJoin - true when join team without persuading.
+* int persuasionCheck - skill level required to persuade to join.
 
 ### LevelArea type
 Part of level - dungeon level, outside, inside of building.

@@ -488,6 +488,8 @@ dialog hero {
 	48 "Wróæ"
 	49 "No dobra... Wydajesz siê dobrym przywódc¹."
 	50 "Jakoœ mnie nie przekona³eœ..."
+	51 "Nie lubiê t³umów a twoja dru¿yna jest ju¿ doœæ liczna..."
+	52 "No dobra... Czasami trzeba pójœæ na kompromis."
 }
 
 //==============================================================================
@@ -661,6 +663,7 @@ dialog crazy {
 	52 "Wróæ"
 	53 "Nie nie nie! To ty do mnie do³¹czysz!"
 	54 "Jeœli myœlisz ¿e mnie przekona³eœ to chyba ty tu jesteœ szalony!"
+	55 "Hmmm... W takim t³umie nie bêdziesz na mnie zwraca³ uwagi!"
 }
 
 //==============================================================================

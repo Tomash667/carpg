@@ -18,7 +18,7 @@ struct Hero : public HeroPlayerCommon
 	float phase_timer;
 	HeroType type;
 	AITeam* otherTeam;
-	bool know_name, team_member, lost_pvp, melee, phase, gained_gold;
+	bool know_name, team_member, lost_pvp, melee, phase, gained_gold, loner;
 
 	void Init(Unit& unit);
 	int JoinCost() const;
@@ -30,6 +30,7 @@ struct Hero : public HeroPlayerCommon
 	float GetExpMod() const;
 	bool HaveOtherTeam() const { return otherTeam != nullptr; }
 	int GetPersuasionCheckValue() const;
+	bool WantJoin() const;
 
 private:
 	void LevelUp();

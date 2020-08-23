@@ -79,7 +79,7 @@ enum UNIT_FLAGS
 	F_DONT_SUFFER = 1 << 21, // no suffer animation when taking damage
 	F_MAGE = 1 << 22, // stay away from enemies, use mage weapon/armor
 	F_POISON_RES = 1 << 23, // immune to poisons
-	// unused (1 << 24)
+	F_LONER = 1 << 24, // need to persuade when team to big to join
 	F_NO_POWER_ATTACK = 1 << 25, // don't have power attack
 	F_AI_CLERK = 1 << 26, // reading documents animation when using chair
 	F_AI_GUARD = 1 << 27, // stays in place

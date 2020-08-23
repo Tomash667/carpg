@@ -1161,6 +1161,26 @@ dialog hero
 					restart
 				show_choices
 			}
+			else if script "!target.hero.wantJoin"
+			{
+				talk 51
+				choice 47
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 52
+						goto recruit
+					}
+					else
+					{
+						talk 50
+						restart
+					}
+				}
+				escape choice 48
+					restart
+				show_choices
+			}
 			else
 			{
 			recruit:
@@ -1427,6 +1447,26 @@ dialog crazy
 			else if script "target.hero.otherTeam"
 			{
 				talk 50
+				choice 51
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 53
+						goto recruit
+					}
+					else
+					{
+						talk 54
+						restart
+					}
+				}
+				escape choice 52
+					restart
+				show_choices
+			}
+			else if script "!target.hero.wantJoin"
+			{
+				talk 55
 				choice 51
 				{
 					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
