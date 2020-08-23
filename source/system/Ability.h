@@ -76,3 +76,15 @@ struct Ability
 	static Ability* Get(Cstring id) { return Get(Hash(id)); }
 	static Ability* GetS(const string& id) { return Get(id); }
 };
+
+//-----------------------------------------------------------------------------
+#include "GameFile.h"
+inline void operator << (GameWriter& f, Ability* ability)
+{
+	f << ability->hash;
+}
+inline void operator >> (GameReader& f, Ability*& ability)
+{
+	ability = Ability::Get(f.Read<int>());
+}
+FIXME;

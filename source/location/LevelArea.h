@@ -45,6 +45,7 @@ struct LevelArea
 	const int area_id; // -1 outside, 0+ building or dungeon level
 	const Type area_type;
 	TmpLevelArea* tmp;
+	Scene* scene;
 	vector<Unit*> units;
 	vector<Object*> objects;
 	vector<Usable*> usables;

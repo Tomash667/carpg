@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;resource;script;stats;system;systems;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;resource;script;stats;system;systems;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -142,6 +142,7 @@
     <ClInclude Include="entity\AITeam.h" />
     <ClInclude Include="entity\Date.h" />
     <ClInclude Include="entity\DialogContext.h" />
+    <ClInclude Include="entity\Explo.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="stats\Buff.h" />
     <ClInclude Include="stats\Event.h" />
+    <ClInclude Include="systems\ExploSystem.h" />
     <ClInclude Include="system\BaseObject.h" />
     <ClInclude Include="system\BaseUsable.h" />
     <ClInclude Include="system\Building.h" />
@@ -355,6 +357,7 @@
     <ClCompile Include="quests\Quest2.cpp" />
     <ClCompile Include="quests\Quest_DireWolf.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="systems\ExploSystem.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />
     <ClCompile Include="system\Content.cpp" />

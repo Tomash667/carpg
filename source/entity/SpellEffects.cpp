@@ -79,20 +79,7 @@ void Explo::Load(FileReader& f)
 	f >> dmg;
 	f >> hitted;
 	f >> owner;
-	if(LOAD_VERSION >= V_0_13)
-		ability = Ability::Get(f.Read<int>());
-	else
-	{
-		const string& tex = f.ReadString1();
-		for(Ability* ability : Ability::abilities)
-		{
-			if(ability->tex_explode.diffuse && ability->tex_explode.diffuse->filename == tex)
-			{
-				this->ability = ability;
-				break;
-			}
-		}
-	}
+	
 }
 
 //=================================================================================================

@@ -5,6 +5,8 @@
 #include "AITeam.h"
 #include "BitStreamFunc.h"
 #include "City.h"
+#include "Explo.h"
+#include "ExploSystem.h"
 #include "Game.h"
 #include "GameFile.h"
 #include "GameResources.h"
@@ -919,26 +921,13 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	// explosion
 	if(Net::IsLocal() && IsSet(ability.flags, Ability::Explode))
 	{
-		Explo* explo = new Explo;
+		Explo* explo = systems::explo->Add(this, &ability, pos);
 		explo->dmg = (float)ability.dmg;
 		if(bullet.owner)
 			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
-		explo->size = 0.f;
-		explo->sizemax = ability.explode_range;
-		explo->pos = pos;
-		explo->ability = &ability;
 		explo->owner = bullet.owner;
 		if(hitted)
 			explo->hitted.push_back(hitted);
-		tmp->explos.push_back(explo);
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CREATE_EXPLOSION;
-			c.ability = &ability;
-			c.pos = explo->pos;
-		}
 	}
 }
 

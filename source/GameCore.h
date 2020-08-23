@@ -48,6 +48,7 @@ class CraftPanel;
 class CreateCharacterPanel;
 class CreateServerPanel;
 class DungeonMeshBuilder;
+class ExploSystem;
 class Game;
 class GameComponent;
 class GameGui;
@@ -263,3 +264,9 @@ extern QuestManager* quest_mgr;
 extern ScriptManager* script_mgr;
 extern Team* team;
 extern World* world;
+
+//-----------------------------------------------------------------------------
+namespace systems
+{
+	ExploSystem* explo;
+}
