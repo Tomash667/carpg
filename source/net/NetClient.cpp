@@ -2030,7 +2030,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				Explo* explo = new Explo;
 				explo->pos = pos;
 				explo->size = 0.f;
-				explo->sizemax = 2.f;
+				explo->sizemax = ability->explode_range;
 				explo->ability = ability;
 
 				sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);

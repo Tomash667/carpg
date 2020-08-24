@@ -387,7 +387,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				explo->pos = pos;
 				explo->pos.y += 0.2f;
 				explo->size = 0.f;
-				explo->sizemax = 2.f;
+				explo->sizemax = fireball->explode_range;
 				explo->dmg = float(base->attack);
 				explo->ability = fireball;
 

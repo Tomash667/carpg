@@ -13,6 +13,7 @@ Wersja 0.17 (???):
 + kontynuuj ostatnią grę w menu
 + optymalizacje manadżera sceny
 - brak muzyki bossa
+- nieprawidłowy rozmiar eksplozji u klienta dla niektórych czarów
 
 --------------------------------------------------------------------------------
 Wersja 0.16 (2020-07-01):
