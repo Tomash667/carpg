@@ -5,7 +5,6 @@
 #include "GroundItem.h"
 #include "Item.h"
 #include "Location.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "World.h"
 #pragma warning(error: 4062)
@@ -77,7 +76,7 @@ Var* Vars::TryGet(const string& name) const
 }
 
 //=================================================================================================
-void Vars::Save(FileWriter& f)
+void Vars::Save(GameWriter& f)
 {
 	f << vars.size();
 	for(auto& e : vars)
@@ -135,7 +134,7 @@ void Vars::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Vars::Load(FileReader& f)
+void Vars::Load(GameReader& f)
 {
 	uint count;
 	f >> count;

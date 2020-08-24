@@ -2,7 +2,6 @@
 #include "AIManager.h"
 
 #include "AITeam.h"
-#include "GameFile.h"
 
 AIManager* aiMgr;
 

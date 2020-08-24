@@ -6,7 +6,6 @@
 #include "Const.h"
 #include "Level.h"
 #include "NameHelper.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "Unit.h"
 
@@ -47,7 +46,7 @@ void Hero::Init(Unit& _unit)
 }
 
 //=================================================================================================
-void Hero::Save(FileWriter& f)
+void Hero::Save(GameWriter& f)
 {
 	f << name;
 	f << know_name;
@@ -65,7 +64,7 @@ void Hero::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Hero::Load(FileReader& f)
+void Hero::Load(GameReader& f)
 {
 	f >> name;
 	f >> know_name;

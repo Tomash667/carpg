@@ -2,11 +2,9 @@
 #include "Usable.h"
 
 #include "BitStreamFunc.h"
-#include "GameFile.h"
 #include "ItemContainer.h"
 #include "Net.h"
 #include "Object.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 const float Usable::SOUND_DIST = 1.5f;

@@ -1,9 +1,6 @@
 #include "Pch.h"
 #include "Quest_FindArtifact.h"
 
-#include "GameFile.h"
-#include "SaveState.h"
-
 //=================================================================================================
 Quest::LoadResult Quest_FindArtifact::Load(GameReader& f)
 {

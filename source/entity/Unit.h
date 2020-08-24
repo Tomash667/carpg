@@ -1033,3 +1033,25 @@ struct UnitList : public ObjectPoolProxy<UnitList>
 private:
 	vector<Entity<Unit>> units;
 };
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, Unit* u)
+{
+	int id = (u ? u->id : -1);
+	f << id;
+}
+inline void operator << (GameWriter& f, const SmartPtr<Unit>& u)
+{
+	int id = (u ? u->id : -1);
+	f << id;
+}
+inline void operator >> (GameReader& f, Unit*& unit)
+{
+	int id = f.Read<int>();
+	unit = Unit::GetById(id);
+}
+inline void operator >> (GameReader& f, SmartPtr<Unit>& unit)
+{
+	int id = f.Read<int>();
+	unit = Unit::GetById(id);
+}

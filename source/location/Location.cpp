@@ -3,13 +3,12 @@
 
 #include "BitStreamFunc.h"
 #include "City.h"
-#include "GameFile.h"
 #include "Portal.h"
 #include "Quest.h"
 #include "QuestManager.h"
 #include "Quest_Scripted.h"
-#include "SaveState.h"
 #include "UnitGroup.h"
+#include "World.h"
 
 //=================================================================================================
 Location::~Location()
@@ -414,4 +413,14 @@ void Location::SetNamePrefix(cstring prefix)
 		c.type = NetChange::CHANGE_LOCATION_NAME;
 		c.id = index;
 	}
+}
+
+//=================================================================================================
+void operator >> (GameReader& f, Location*& loc)
+{
+	int index = f.Read<int>();
+	if(index == -1)
+		loc = nullptr;
+	else
+		loc = world->GetLocation(index);
 }

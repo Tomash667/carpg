@@ -154,8 +154,8 @@ struct Vars
 	Var* TryGet(const string& name) const;
 	bool IsEmpty() const { return vars.empty(); }
 	bool IsSet(const string& name) const { return TryGet(name) != nullptr; }
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Clear();
 
 	static Vars* Create() { return new Vars; }

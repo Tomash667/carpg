@@ -263,3 +263,7 @@ extern QuestManager* quest_mgr;
 extern ScriptManager* script_mgr;
 extern Team* team;
 extern World* world;
+
+//-----------------------------------------------------------------------------
+#include "GameFile.h"
+#include "SaveState.h"

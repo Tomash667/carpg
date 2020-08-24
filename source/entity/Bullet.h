@@ -19,8 +19,8 @@ struct Bullet : public EntityType<Bullet>
 	static const int MIN_SIZE = 41;
 
 	bool Update(float dt, LevelArea& area);
-	void Save(FileWriter& f) const;
-	void Load(FileReader& f);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;
 	bool Read(BitStreamReader& f, TmpLevelArea& tmp_area);
 

@@ -5,7 +5,6 @@
 #include "GameGui.h"
 #include "Language.h"
 #include "PlayerInfo.h"
-#include "SaveState.h"
 
 #include <ResourceManager.h>
 #include <SoundManager.h>
@@ -124,7 +123,7 @@ void GameMessages::Update(float dt)
 }
 
 //=================================================================================================
-void GameMessages::Save(FileWriter& f) const
+void GameMessages::Save(GameWriter& f) const
 {
 	f << msgs.size();
 	for(const GameMsg& msg : msgs)
@@ -142,7 +141,7 @@ void GameMessages::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void GameMessages::Load(FileReader& f)
+void GameMessages::Load(GameReader& f)
 {
 	msgs.resize(f.Read<uint>());
 	for(GameMsg& msg : msgs)

@@ -84,8 +84,8 @@ public:
 	OpenPanel GetOpenPanel();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
 	void PositionPanels();
-	void Save(FileWriter& f) const;
-	void Load(FileReader& f);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(gui->cursor_pos, dialog_pos, dialog_size); }
 	void RemoveUnitView(Unit* unit);
 	void DrawEndOfGameScreen();

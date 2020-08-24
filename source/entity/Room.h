@@ -89,8 +89,8 @@ struct Room : ObjectPoolProxy<Room>
 	bool CanJoinRoom() const { return Any(target, RoomTarget::None, RoomTarget::EntryPrev, RoomTarget::EntryNext); }
 	void AddTile(const Int2& pt);
 
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
 };
@@ -110,7 +110,7 @@ struct RoomGroup
 
 	bool IsConnected(int group_index) const;
 	bool HaveRoom(int room_index) const;
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	static void SetRoomGroupConnections(vector<RoomGroup>& groups, vector<Room*>& rooms);
 };

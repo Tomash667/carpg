@@ -5,7 +5,6 @@
 #include "Arena.h"
 #include "BaseObject.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GroundItem.h"
@@ -14,6 +13,7 @@
 #include "OutsideLocation.h"
 #include "QuestManager.h"
 #include "Team.h"
+#include "Unit.h"
 #include "World.h"
 
 //=================================================================================================

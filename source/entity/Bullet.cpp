@@ -14,7 +14,6 @@
 #include "PhysicCallbacks.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 #include <Mesh.h>
@@ -395,7 +394,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 }
 
 //=================================================================================================
-void Bullet::Save(FileWriter& f) const
+void Bullet::Save(GameWriter& f) const
 {
 	f << id;
 	f << pos;
@@ -424,7 +423,7 @@ void Bullet::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void Bullet::Load(FileReader& f)
+void Bullet::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_16)
 		f >> id;

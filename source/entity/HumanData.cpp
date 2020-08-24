@@ -3,7 +3,6 @@
 
 #include "BitStreamFunc.h"
 #include "MeshInstance.h"
-#include "SaveState.h"
 
 //-----------------------------------------------------------------------------
 bool g_beard_and_mustache[MAX_BEARD - 1] = {
@@ -121,7 +120,7 @@ void Human::Init(const HumanData* hd)
 }
 
 //=================================================================================================
-void Human::Save(FileWriter& f)
+void Human::Save(GameWriter& f)
 {
 	f << hair;
 	f << beard;
@@ -131,7 +130,7 @@ void Human::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Human::Load(FileReader& f)
+void Human::Load(GameReader& f)
 {
 	f >> hair;
 	f >> beard;
@@ -171,7 +170,7 @@ void HumanData::CopyFrom(HumanData& hd)
 }
 
 //=================================================================================================
-void HumanData::Save(FileWriter& f) const
+void HumanData::Save(GameWriter& f) const
 {
 	f << hair;
 	f << beard;
@@ -181,7 +180,7 @@ void HumanData::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void HumanData::Load(FileReader& f)
+void HumanData::Load(GameReader& f)
 {
 	f >> hair;
 	f >> beard;

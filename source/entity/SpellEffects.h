@@ -13,8 +13,8 @@ struct Explo
 	static const int MIN_SIZE = 21;
 
 	bool Update(float dt, LevelArea& area);
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 };
@@ -46,8 +46,8 @@ struct Electro : public EntityType<Electro>
 	void AddLine(const Vec3& from, const Vec3& to, float t = 0);
 	bool Update(float dt);
 	void UpdateColor(Line& line);
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 };
@@ -60,6 +60,6 @@ struct Drain
 	float t;
 
 	bool Update(float dt);
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 };

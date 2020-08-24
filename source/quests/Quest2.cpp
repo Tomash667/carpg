@@ -3,7 +3,6 @@
 
 #include "City.h"
 #include "DialogContext.h"
-#include "GameFile.h"
 #include "QuestManager.h"
 #include "QuestScheme.h"
 #include "ScriptManager.h"

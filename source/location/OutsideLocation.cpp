@@ -3,11 +3,9 @@
 
 #include "BitStreamFunc.h"
 #include "Chest.h"
-#include "GameFile.h"
 #include "GroundItem.h"
 #include "Level.h"
 #include "Object.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 namespace OLD

@@ -9,7 +9,7 @@ namespace ItemHelper
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 	const Item* GetRandomItem(int max_value);
 	const Item* GetBetterItem(const Item* item);
-	void SkipStock(FileReader& f);
+	void SkipStock(GameReader& f);
 	void AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int price_limit, int flags, uint count);
 	int CalculateReward(int level, const Int2& level_range, const Int2& price_range);
 }

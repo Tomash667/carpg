@@ -3,14 +3,12 @@
 
 #include "City.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "ItemHelper.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
 #include "Team.h"
 #include "World.h"
-#include "SaveState.h"
 
 //=================================================================================================
 void Quest_KillAnimals::Start()

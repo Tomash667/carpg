@@ -5,11 +5,9 @@
 #include "BitStreamFunc.h"
 #include "CombatHelper.h"
 #include "GameCommon.h"
-#include "GameFile.h"
 #include "GameResources.h"
 #include "LevelArea.h"
 #include "Net.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 #include <ParticleSystem.h>

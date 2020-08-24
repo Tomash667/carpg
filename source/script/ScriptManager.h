@@ -81,8 +81,8 @@ public:
 	NamespaceBuilder WithNamespace(cstring name, void* auxiliary = nullptr);
 	Var& GetVar(cstring name);
 	void Reset();
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	enum RegisterResult
 	{
 		Ok,

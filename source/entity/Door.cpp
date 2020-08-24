@@ -3,12 +3,11 @@
 
 #include "BitStreamFunc.h"
 #include "Collision.h"
-#include "GameFile.h"
 #include "GameResources.h"
 #include "Level.h"
 #include "Location.h"
 #include "Net.h"
-#include "SaveState.h"
+#include "Unit.h"
 
 #include <SoundManager.h>
 

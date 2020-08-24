@@ -1835,7 +1835,7 @@ void LevelGui::PositionPanels()
 }
 
 //=================================================================================================
-void LevelGui::Save(FileWriter& f) const
+void LevelGui::Save(GameWriter& f) const
 {
 	f << speech_bbs.size();
 	for(const SpeechBubble* p_sb : speech_bbs)
@@ -1852,7 +1852,7 @@ void LevelGui::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void LevelGui::Load(FileReader& f)
+void LevelGui::Load(GameReader& f)
 {
 	speech_bbs.resize(f.Read<uint>());
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)

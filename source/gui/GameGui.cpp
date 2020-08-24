@@ -374,7 +374,7 @@ void GameGui::UpdateGui(float dt)
 }
 
 //=================================================================================================
-void GameGui::Save(FileWriter& f)
+void GameGui::Save(GameWriter& f)
 {
 	messages->Save(f);
 	level_gui->Save(f);
@@ -383,7 +383,7 @@ void GameGui::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void GameGui::Load(FileReader& f)
+void GameGui::Load(GameReader& f)
 {
 	messages->Load(f);
 	level_gui->Load(f);

@@ -4,7 +4,6 @@
 #include "AIController.h"
 #include "City.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "InsideBuilding.h"
@@ -14,7 +13,6 @@
 #include "PlayerInfo.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
-#include "SaveState.h"
 #include "World.h"
 
 //=================================================================================================

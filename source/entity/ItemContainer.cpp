@@ -4,10 +4,9 @@
 #include "Content.h"
 #include "ItemContainer.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 
 //=================================================================================================
-void ItemContainer::Save(FileWriter& f)
+void ItemContainer::Save(GameWriter& f)
 {
 	f << items.size();
 	for(auto& slot : items)
@@ -22,7 +21,7 @@ void ItemContainer::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void ItemContainer::Load(FileReader& f)
+void ItemContainer::Load(GameReader& f)
 {
 	bool can_sort = true;
 

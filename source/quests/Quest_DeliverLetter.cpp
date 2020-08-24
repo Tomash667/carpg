@@ -1,8 +1,6 @@
 #include "Pch.h"
 #include "Quest_DeliverLetter.h"
 
-#include "GameFile.h"
-
 //=================================================================================================
 Quest::LoadResult Quest_DeliverLetter::Load(GameReader& f)
 {

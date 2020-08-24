@@ -4,7 +4,6 @@
 #include "City.h"
 #include "DialogContext.h"
 #include "Encounter.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GroundItem.h"
@@ -12,7 +11,6 @@
 #include "Net.h"
 #include "QuestManager.h"
 #include "QuestScheme.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "World.h"
 

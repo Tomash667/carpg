@@ -168,3 +168,11 @@ struct LocationEventHandler
 	virtual bool HandleLocationEvent(Event event) = 0;
 	virtual int GetLocationEventHandlerQuestId() = 0;
 };
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, Location* loc)
+{
+	int index = loc ? loc->index : -1;
+	f << index;
+}
+void operator >> (GameReader& f, Location*& loc);

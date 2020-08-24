@@ -3,9 +3,7 @@
 
 #include "BaseLocation.h"
 #include "BitStreamFunc.h"
-#include "GameFile.h"
 #include "Level.h"
-#include "SaveState.h"
 
 //=================================================================================================
 void InsideLocation::Save(GameWriter& f)

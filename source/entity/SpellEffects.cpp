@@ -8,7 +8,6 @@
 #include "Level.h"
 #include "LevelArea.h"
 #include "Net.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 #include <ParticleSystem.h>
@@ -59,7 +58,7 @@ bool Explo::Update(float dt, LevelArea& area)
 }
 
 //=================================================================================================
-void Explo::Save(FileWriter& f)
+void Explo::Save(GameWriter& f)
 {
 	f << pos;
 	f << size;
@@ -71,7 +70,7 @@ void Explo::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Explo::Load(FileReader& f)
+void Explo::Load(GameReader& f)
 {
 	f >> pos;
 	f >> size;
@@ -415,7 +414,7 @@ void Electro::UpdateColor(Line& line)
 }
 
 //=================================================================================================
-void Electro::Save(FileWriter& f)
+void Electro::Save(GameWriter& f)
 {
 	f << id;
 	f << lines.size();
@@ -438,7 +437,7 @@ void Electro::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Electro::Load(FileReader& f)
+void Electro::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
@@ -560,7 +559,7 @@ bool Drain::Update(float dt)
 }
 
 //=================================================================================================
-void Drain::Save(FileWriter& f)
+void Drain::Save(GameWriter& f)
 {
 	f << target;
 	f << pe->id;
@@ -568,7 +567,7 @@ void Drain::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Drain::Load(FileReader& f)
+void Drain::Load(GameReader& f)
 {
 	if(LOAD_VERSION < V_0_13)
 		f.Skip<int>(); // old from

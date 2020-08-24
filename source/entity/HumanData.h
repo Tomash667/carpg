@@ -29,8 +29,8 @@ struct Human
 	Vec2 GetScale();
 	void ApplyScale(MeshInstance* mesh_inst);
 	void Init(const HumanData* hd);
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 };
 
 //-----------------------------------------------------------------------------
@@ -62,10 +62,20 @@ struct HumanData
 	void Get(const Human& h);
 	void Set(Human& h) const;
 	void CopyFrom(HumanData& hd);
-	void Save(FileWriter& f) const;
-	void Load(FileReader& f);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;
 	// 0 - ok, 1 - ready error, 2 - value error
 	int Read(BitStreamReader& f);
 	void Random();
 };
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, const HumanData& hd)
+{
+	hd.Save(f);
+}
+inline void operator >> (GameReader& f, HumanData& hd)
+{
+	hd.Load(f);
+}

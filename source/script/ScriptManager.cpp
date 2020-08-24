@@ -16,7 +16,6 @@
 #include "QuestManager.h"
 #include "Quest_Scripted.h"
 #include "RoomType.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "TypeBuilder.h"
 #include "UnitGroup.h"
@@ -1194,7 +1193,7 @@ void ScriptManager::Reset()
 	ctx.Clear();
 }
 
-void ScriptManager::Save(FileWriter& f)
+void ScriptManager::Save(GameWriter& f)
 {
 	// global vars
 	globals.Save(f);
@@ -1214,7 +1213,7 @@ void ScriptManager::Save(FileWriter& f)
 		f.Patch(pos, count);
 }
 
-void ScriptManager::Load(FileReader& f)
+void ScriptManager::Load(GameReader& f)
 {
 	// global vars
 	if(LOAD_VERSION >= V_0_8)

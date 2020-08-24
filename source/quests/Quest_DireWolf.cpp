@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "Quest_DireWolf.h"
 
-#include "GameFile.h"
 #include "Level.h"
 #include "OutsideLocation.h"
 #include "Team.h"

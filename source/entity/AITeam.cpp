@@ -2,7 +2,6 @@
 #include "AITeam.h"
 
 #include "AIManager.h"
-#include "GameFile.h"
 #include "Unit.h"
 
 void AITeam::Add(Unit* unit)

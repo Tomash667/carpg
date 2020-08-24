@@ -67,8 +67,8 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Reset();
-	void Save(FileWriter& f) const;
-	void Load(FileReader& f);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
 	void AddMessage(cstring text, float time, int type, int subtype = -1, int value = 0);
 	void AddMessageIfNotExists(cstring text, float time, int type);
 	void AddGameMsg(cstring msg, float time) { AddMessage(msg, time, 0); }

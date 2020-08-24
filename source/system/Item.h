@@ -515,6 +515,21 @@ struct Recipe : public ContentItem<Recipe>
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
 const Item* FindItemOrList(Cstring id, ItemList*& lis);
+inline void operator << (GameWriter& f, const Item* item)
+{
+	if(item != nullptr)
+		f.WriteString1(item->id);
+	else
+		f.Write0();
+}
+inline void operator >> (GameReader& f, const Item*& item)
+{
+	const string& id = f.ReadString1();
+	if(id.empty())
+		item = nullptr;
+	else
+		item = Item::Get(id);
+}
 
 //-----------------------------------------------------------------------------
 extern std::map<const Item*, Item*> better_items;

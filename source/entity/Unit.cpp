@@ -12,7 +12,6 @@
 #include "CraftPanel.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GameResources.h"
@@ -29,7 +28,6 @@
 #include "Quest_Contest.h"
 #include "Quest_Mages.h"
 #include "Quest_Secret.h"
-#include "SaveState.h"
 #include "ScriptException.h"
 #include "Stock.h"
 #include "Team.h"
@@ -1705,7 +1703,7 @@ void Unit::Save(GameWriter& f)
 
 	// items
 	for(uint i = 0; i < SLOT_MAX; ++i)
-		f.WriteOptional(slots[i]);
+		f << slots[i];
 	f << items.size();
 	for(ItemSlot& slot : items)
 	{
@@ -1964,7 +1962,7 @@ void Unit::Load(GameReader& f)
 	else
 		max_slots = 4;
 	for(int i = 0; i < max_slots; ++i)
-		f.ReadOptional(slots[i]);
+		f >> slots[i];
 	if(LOAD_VERSION < V_0_9)
 		slots[SLOT_AMULET] = nullptr;
 	if(LOAD_VERSION < V_0_10)

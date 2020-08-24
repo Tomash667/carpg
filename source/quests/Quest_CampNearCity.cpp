@@ -1,9 +1,8 @@
 #include "Pch.h"
 #include "Quest_CampNearCity.h"
 
-#include "GameFile.h"
 #include "Level.h"
-#include "SaveState.h"
+#include "UnitGroup.h"
 
 //=================================================================================================
 Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)

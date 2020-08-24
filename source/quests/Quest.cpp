@@ -3,12 +3,10 @@
 
 #include "Game.h"
 #include "GameGui.h"
-#include "GameFile.h"
 #include "GameMessages.h"
 #include "Journal.h"
 #include "LevelGui.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Var.h"
 #include "World.h"
 

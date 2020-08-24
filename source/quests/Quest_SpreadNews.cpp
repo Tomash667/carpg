@@ -2,7 +2,6 @@
 #include "Quest_SpreadNews.h"
 
 #include "Game.h"
-#include "GameFile.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"

@@ -6,7 +6,6 @@
 #include "BuildingGroup.h"
 #include "City.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "Language.h"

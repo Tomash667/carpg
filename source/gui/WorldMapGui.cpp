@@ -13,7 +13,6 @@
 #include "Level.h"
 #include "LevelGui.h"
 #include "MpBox.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -623,13 +622,13 @@ void WorldMapGui::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void WorldMapGui::Save(FileWriter& f)
+void WorldMapGui::Save(GameWriter& f)
 {
 	f << zoom;
 }
 
 //=================================================================================================
-void WorldMapGui::Load(FileReader& f)
+void WorldMapGui::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_8)
 		f >> zoom;

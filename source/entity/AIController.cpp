@@ -4,13 +4,11 @@
 #include "Ability.h"
 #include "Game.h"
 #include "GameGui.h"
-#include "GameFile.h"
 #include "GameMessages.h"
 #include "InsideLocation.h"
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 //=================================================================================================
@@ -108,7 +106,7 @@ void AIController::Save(GameWriter& f)
 		case Idle_Use:
 		case Idle_WalkUse:
 		case Idle_WalkUseEat:
-			f << st.idle.usable->id;
+			f << st.idle.usable;
 			break;
 		case Idle_TrainBow:
 			f << st.idle.obj.pos;

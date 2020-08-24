@@ -288,7 +288,7 @@ const Item* ItemHelper::GetBetterItem(const Item* item)
 }
 
 //=================================================================================================
-void ItemHelper::SkipStock(FileReader& f)
+void ItemHelper::SkipStock(GameReader& f)
 {
 	uint count;
 	f >> count;

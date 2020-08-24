@@ -61,7 +61,6 @@
 #include "Quest_Tutorial.h"
 #include "RoomType.h"
 #include "SaveSlot.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "ServerPanel.h"
 #include "SingleInsideLocation.h"

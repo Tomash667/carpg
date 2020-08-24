@@ -1,8 +1,6 @@
 #include "Pch.h"
 #include "Camp.h"
 
-#include "GameFile.h"
-
 //=================================================================================================
 void Camp::Save(GameWriter& f)
 {

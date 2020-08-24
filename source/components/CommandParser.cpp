@@ -18,7 +18,6 @@
 #include "Pathfinding.h"
 #include "PlayerInfo.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "ServerPanel.h"
 #include "Team.h"

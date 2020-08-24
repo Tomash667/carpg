@@ -2,7 +2,7 @@
 #include "Portal.h"
 
 //=================================================================================================
-void Portal::Save(FileWriter& f)
+void Portal::Save(GameWriter& f)
 {
 	f << pos;
 	f << rot;
@@ -12,7 +12,7 @@ void Portal::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Portal::Load(FileReader& f)
+void Portal::Load(GameReader& f)
 {
 	f >> pos;
 	f >> rot;

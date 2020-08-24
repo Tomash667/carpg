@@ -4,13 +4,11 @@
 #include "Class.h"
 #include "CreateServerPanel.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMenu.h"
 #include "Language.h"
 #include "Level.h"
 #include "Net.h"
-#include "SaveState.h"
 #include "Unit.h"
 #include "World.h"
 
@@ -259,7 +257,7 @@ Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 	else
 	{
 		cstring filename = Format("saves/%s/%d.sav", isOnline ? "multi" : "single", slotIndex);
-		Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
+		Buffer* buf = GameReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
 		tMiniSave.tex = res_mgr->LoadRawTexture(buf);
 		tMiniSave.state = ResourceState::Loaded;
 		buf->Free();
