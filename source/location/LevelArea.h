@@ -3,8 +3,8 @@
 //-----------------------------------------------------------------------------
 #include "Collision.h"
 #include "Bullet.h"
-#include "SpellEffects.h"
 #include "Blood.h"
+#include "Drain.h"
 #include "GameLight.h"
 #include <Mesh.h>
 
@@ -85,6 +85,7 @@ struct LevelArea
 	void SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted);
 	bool CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
+	Explo* CreateExplo(Ability* ability, const Vec3& pos);
 };
 
 //-----------------------------------------------------------------------------
@@ -106,45 +107,4 @@ struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
-};
-
-//-----------------------------------------------------------------------------
-class LevelAreaContext
-{
-	friend struct ForLocation;
-
-	struct Entry
-	{
-		LevelArea* area;
-		int loc, level;
-		bool active;
-	};
-
-	vector<Entry> entries;
-
-public:
-	GroundItem* FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
-	Unit* FindUnitWithQuestItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
-	bool FindUnit(Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(UnitData* data, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	bool RemoveQuestGroundItem(int quest_id);
-	bool RemoveQuestItemFromUnit(int quest_id);
-	bool RemoveUnit(Unit* unit);
-};
-
-//-----------------------------------------------------------------------------
-struct ForLocation
-{
-	ForLocation(int loc, int level = -1);
-	ForLocation(Location* loc, int level = -1);
-	ForLocation(const ForLocation& f) = delete;
-	~ForLocation();
-	ForLocation& operator = (const ForLocation& f) = delete;
-	LevelAreaContext* operator -> () { return ctx; }
-
-private:
-	void Setup(Location* loc, int level);
-
-	LevelAreaContext* ctx;
 };

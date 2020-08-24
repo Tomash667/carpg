@@ -4,6 +4,7 @@
 #include "Ability.h"
 #include "BitStreamFunc.h"
 #include "CombatHelper.h"
+#include "Explo.h"
 #include "GameCommon.h"
 #include "GameResources.h"
 #include "LevelArea.h"
@@ -382,29 +383,15 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(trigger)
 			{
 				Ability* fireball = Ability::Get("fireball");
-
-				Explo* explo = new Explo;
-				explo->pos = pos;
-				explo->pos.y += 0.2f;
-				explo->size = 0.f;
-				explo->sizemax = fireball->explode_range;
+				Vec3 exploPos = pos + Vec3(0, 0.2f, 0);
+				Explo* explo = area.CreateExplo(fireball, exploPos);
 				explo->dmg = float(base->attack);
-				explo->ability = fireball;
-
-				sound_mgr->PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist);
-
-				area.tmp->explos.push_back(explo);
 
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CREATE_EXPLOSION;
-					c.ability = fireball;
-					c.pos = explo->pos;
-
-					NetChange& c2 = Add1(Net::changes);
-					c2.type = NetChange::REMOVE_TRAP;
-					c2.id = id;
+					c.type = NetChange::REMOVE_TRAP;
+					c.id = id;
 				}
 
 				delete this;

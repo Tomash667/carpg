@@ -10,7 +10,9 @@
 #include "Console.h"
 #include "CraftPanel.h"
 #include "Door.h"
+#include "Electro.h"
 #include "EntityInterpolator.h"
+#include "Explo.h"
 #include "Game.h"
 #include "GameGui.h"
 #include "GameMessages.h"
@@ -2016,26 +2018,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				Ability* ability = Ability::Get(ability_hash);
 				if(!ability)
-				{
 					Error("Update client: CREATE_EXPLOSION, missing ability %u.", ability_hash);
-					break;
-				}
-
-				if(!IsSet(ability->flags, Ability::Explode))
-				{
+				else if(!IsSet(ability->flags, Ability::Explode))
 					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability->id.c_str());
-					break;
-				}
-
-				Explo* explo = new Explo;
-				explo->pos = pos;
-				explo->size = 0.f;
-				explo->sizemax = ability->explode_range;
-				explo->ability = ability;
-
-				sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
-
-				game_level->GetArea(pos).tmp->explos.push_back(explo);
+				else
+					game_level->GetArea(pos).CreateExplo(ability, pos);
 			}
 			break;
 		// remove trap

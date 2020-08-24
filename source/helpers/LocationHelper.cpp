@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "LocationHelper.h"
 
-#include "LevelArea.h"
+#include "LevelAreaContext.h"
 #include "MultiInsideLocation.h"
 #include "Quest.h"
 #include "ScriptException.h"

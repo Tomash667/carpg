@@ -13,6 +13,7 @@
 #include "Console.h"
 #include "CraftPanel.h"
 #include "CreateServerPanel.h"
+#include "Electro.h"
 #include "GameGui.h"
 #include "GameMenu.h"
 #include "GameMessages.h"

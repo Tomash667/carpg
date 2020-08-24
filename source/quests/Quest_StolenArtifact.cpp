@@ -3,7 +3,7 @@
 
 #include "Game.h"
 #include "ItemHelper.h"
-#include "LevelArea.h"
+#include "LevelAreaContext.h"
 #include "Journal.h"
 #include "QuestManager.h"
 #include "Team.h"

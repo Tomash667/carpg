@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;resource;script;stats;system;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;resource;script;stats;system;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -142,6 +142,8 @@
     <ClInclude Include="entity\AITeam.h" />
     <ClInclude Include="entity\Date.h" />
     <ClInclude Include="entity\DialogContext.h" />
+    <ClInclude Include="entity\Electro.h" />
+    <ClInclude Include="entity\Explo.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -178,6 +180,7 @@
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\DungeonMeshBuilder.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
+    <ClInclude Include="helpers\LevelAreaContext.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
     <ClInclude Include="helpers\PhysicCallbacks.h" />
     <ClInclude Include="location\OffscreenLocation.h" />
@@ -236,7 +239,7 @@
     <ClInclude Include="entity\Object.h" />
     <ClInclude Include="entity\PlayerController.h" />
     <ClInclude Include="entity\DrawBatch.h" />
-    <ClInclude Include="entity\SpellEffects.h" />
+    <ClInclude Include="entity\Drain.h" />
     <ClInclude Include="entity\Trap.h" />
     <ClInclude Include="entity\Unit.h" />
     <ClInclude Include="entity\Usable.h" />
@@ -340,11 +343,14 @@
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\AITeam.cpp" />
     <ClCompile Include="entity\DialogContext.cpp" />
+    <ClCompile Include="entity\Electro.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />
+    <ClCompile Include="entity\Explo.cpp" />
     <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
+    <ClCompile Include="helpers\LevelAreaContext.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
     <ClCompile Include="location\OffscreenLocation.cpp" />
     <ClCompile Include="net\NetClient.cpp" />
@@ -445,7 +451,7 @@
     <ClCompile Include="entity\GameLight.cpp" />
     <ClCompile Include="entity\Object.cpp" />
     <ClCompile Include="entity\PlayerController.cpp" />
-    <ClCompile Include="entity\SpellEffects.cpp" />
+    <ClCompile Include="entity\Drain.cpp" />
     <ClCompile Include="entity\Trap.cpp" />
     <ClCompile Include="entity\Unit.cpp" />
     <ClCompile Include="entity\Usable.cpp" />

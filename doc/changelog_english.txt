@@ -14,6 +14,7 @@ Version 0.17 (???):
 + scene manager optimisations
 - missing boss music
 - invalid explosion size for client for some spells
+- double explosion sound for clients
 
 --------------------------------------------------------------------------------
 Version 0.16 (2020-07-01):

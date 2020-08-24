@@ -10,6 +10,7 @@
 #include "CombatHelper.h"
 #include "Content.h"
 #include "CraftPanel.h"
+#include "Electro.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
 #include "GameGui.h"

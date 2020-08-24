@@ -4,22 +4,23 @@
 #include "Ability.h"
 #include "AITeam.h"
 #include "BitStreamFunc.h"
-#include "City.h"
-#include "Game.h"
+#include "Chest.h"
+#include "Door.h"
+#include "Electro.h"
+#include "Explo.h"
+#include "GameCommon.h"
 #include "GameResources.h"
-#include "Level.h"
-#include "MultiInsideLocation.h"
+#include "GroundItem.h"
 #include "Net.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
-#include "SingleInsideLocation.h"
-#include "World.h"
+#include "Room.h"
+#include "Trap.h"
+#include "Unit.h"
 
 #include <ParticleSystem.h>
 #include <Profiler.h>
 #include <SoundManager.h>
-
-static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
 //=================================================================================================
 LevelArea::~LevelArea()
@@ -884,58 +885,50 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 {
 	Ability& ability = *bullet.ability;
 
-	// sound
-	if(ability.sound_hit)
-		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
-
-	// particles
-	if(ability.tex_particle && ability.type == Ability::Ball)
+	if(IsSet(ability.flags, Ability::Explode))
 	{
-		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = ability.tex_particle;
-		pe->emision_interval = 0.01f;
-		pe->life = 0.f;
-		pe->particle_life = 0.5f;
-		pe->emisions = 1;
-		pe->spawn_min = 8;
-		pe->spawn_max = 12;
-		pe->max_particles = 12;
-		pe->pos = pos;
-		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-		pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-		pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-		pe->size = ability.size / 2;
-		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->alpha = 1.f;
-		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->mode = 1;
-		pe->Init();
-		tmp->pes.push_back(pe);
-	}
-
-	// explosion
-	if(Net::IsLocal() && IsSet(ability.flags, Ability::Explode))
-	{
-		Explo* explo = new Explo;
-		explo->dmg = (float)ability.dmg;
-		if(bullet.owner)
-			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
-		explo->size = 0.f;
-		explo->sizemax = ability.explode_range;
-		explo->pos = pos;
-		explo->ability = &ability;
-		explo->owner = bullet.owner;
-		if(hitted)
-			explo->hitted.push_back(hitted);
-		tmp->explos.push_back(explo);
-
-		if(Net::IsOnline())
+		// explosion
+		if(Net::IsLocal())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CREATE_EXPLOSION;
-			c.ability = &ability;
-			c.pos = explo->pos;
+			Explo* explo = CreateExplo(&ability, pos);
+			explo->dmg = (float)ability.dmg;
+			if(bullet.owner)
+				explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
+			explo->owner = bullet.owner;
+			if(hitted)
+				explo->hitted.push_back(hitted);
+		}
+	}
+	else
+	{
+		// sound
+		if(ability.sound_hit)
+			sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+
+		// particles
+		if(ability.tex_particle && ability.type == Ability::Ball)
+		{
+			ParticleEmitter* pe = new ParticleEmitter;
+			pe->tex = ability.tex_particle;
+			pe->emision_interval = 0.01f;
+			pe->life = 0.f;
+			pe->particle_life = 0.5f;
+			pe->emisions = 1;
+			pe->spawn_min = 8;
+			pe->spawn_max = 12;
+			pe->max_particles = 12;
+			pe->pos = pos;
+			pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+			pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
+			pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+			pe->size = ability.size / 2;
+			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->alpha = 1.f;
+			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->mode = 1;
+			pe->Init();
+			tmp->pes.push_back(pe);
 		}
 	}
 }
@@ -1076,318 +1069,28 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh
 }
 
 //=================================================================================================
-// Get area levels for selected location and level (in multilevel dungeon not generated levels are ignored for -1)
-// Level have special meaning here
-// >= 0 (dungeon_level, building index)
-// -1 whole location
-// -2 outside part of city/village
-ForLocation::ForLocation(int loc, int level)
+Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 {
-	Setup(world->GetLocation(loc), level);
-}
+	assert(ability);
 
-//=================================================================================================
-ForLocation::ForLocation(Location* loc, int level)
-{
-	Setup(loc, level);
-}
+	Explo* explo = new Explo;
+	explo->ability = ability;
+	explo->pos = pos;
+	explo->size = 0;
+	explo->sizemax = ability->explode_range;
+	tmp->explos.push_back(explo);
 
-//=================================================================================================
-void ForLocation::Setup(Location* l, int level)
-{
-	ctx = LevelAreaContextPool.Get();
-	ctx->entries.clear();
+	sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
 
-	int loc = l->index;
-	bool active = (world->GetCurrentLocationIndex() == loc);
-	assert(l->last_visit != -1);
-
-	switch(l->type)
+	if(Net::IsServer())
 	{
-	case L_CITY:
-		{
-			City* city = static_cast<City*>(l);
-			if(level == -1)
-			{
-				ctx->entries.resize(city->inside_buildings.size() + 1);
-				LevelAreaContext::Entry& e = ctx->entries[0];
-				e.active = active;
-				e.area = city;
-				e.level = -2;
-				e.loc = loc;
-				for(int i = 0, len = (int)city->inside_buildings.size(); i < len; ++i)
-				{
-					LevelAreaContext::Entry& e2 = ctx->entries[i + 1];
-					e2.active = active;
-					e2.area = city->inside_buildings[i];
-					e2.level = i;
-					e2.loc = loc;
-				}
-			}
-			else if(level == -2)
-			{
-				LevelAreaContext::Entry& e = Add1(ctx->entries);
-				e.active = active;
-				e.area = city;
-				e.level = -2;
-				e.loc = loc;
-			}
-			else
-			{
-				assert(level >= 0 && level < (int)city->inside_buildings.size());
-				LevelAreaContext::Entry& e = Add1(ctx->entries);
-				e.active = active;
-				e.area = city->inside_buildings[level];
-				e.level = level;
-				e.loc = loc;
-			}
-		}
-		break;
-	case L_CAVE:
-	case L_DUNGEON:
-		{
-			InsideLocation* inside = static_cast<InsideLocation*>(l);
-			if(inside->IsMultilevel())
-			{
-				MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
-				if(level == -1)
-				{
-					ctx->entries.resize(multi->generated);
-					for(int i = 0; i < multi->generated; ++i)
-					{
-						LevelAreaContext::Entry& e = ctx->entries[i];
-						e.active = (active && game_level->dungeon_level == i);
-						e.area = multi->levels[i];
-						e.level = i;
-						e.loc = loc;
-					}
-				}
-				else
-				{
-					assert(level >= 0 && level < multi->generated);
-					LevelAreaContext::Entry& e = Add1(ctx->entries);
-					e.active = (active && game_level->dungeon_level == level);
-					e.area = multi->levels[level];
-					e.level = level;
-					e.loc = loc;
-				}
-			}
-			else
-			{
-				assert(level == -1 || level == 0);
-				SingleInsideLocation* single = static_cast<SingleInsideLocation*>(inside);
-				LevelAreaContext::Entry& e = Add1(ctx->entries);
-				e.active = active;
-				e.area = single;
-				e.level = 0;
-				e.loc = loc;
-			}
-		}
-		break;
-	case L_OUTSIDE:
-	case L_ENCOUNTER:
-	case L_CAMP:
-		{
-			assert(level == -1);
-			OutsideLocation* outside = static_cast<OutsideLocation*>(l);
-			LevelAreaContext::Entry& e = Add1(ctx->entries);
-			e.active = active;
-			e.area = outside;
-			e.level = -1;
-			e.loc = loc;
-		}
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-
-//=================================================================================================
-ForLocation::~ForLocation()
-{
-	LevelAreaContextPool.Free(ctx);
-}
-
-//=================================================================================================
-GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry, int* item_index)
-{
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->items.size(); i < len; ++i)
-		{
-			GroundItem* it = e.area->items[i];
-			if(it->item->IsQuest(quest_id))
-			{
-				if(entry)
-					*entry = &e;
-				if(item_index)
-					*item_index = i;
-				return it;
-			}
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CREATE_EXPLOSION;
+		c.ability = ability;
+		c.pos = explo->pos;
 	}
 
-	return nullptr;
-}
-
-//=================================================================================================
-// search only alive enemies for now
-Unit* LevelAreaContext::FindUnitWithQuestItem(int quest_id, LevelAreaContext::Entry** entry, int* unit_index, int* item_iindex)
-{
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
-		{
-			Unit* unit = e.area->units[i];
-			if(unit->IsAlive() && unit->IsEnemy(*game->pc->unit))
-			{
-				int iindex = unit->FindQuestItem(quest_id);
-				if(iindex != Unit::INVALID_IINDEX)
-				{
-					if(entry)
-						*entry = &e;
-					if(unit_index)
-						*unit_index = i;
-					if(item_iindex)
-						*item_iindex = iindex;
-					return unit;
-				}
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-bool LevelAreaContext::FindUnit(Unit* unit, LevelAreaContext::Entry** entry, int* unit_index)
-{
-	assert(unit);
-
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
-		{
-			Unit* unit2 = e.area->units[i];
-			if(unit == unit2)
-			{
-				if(entry)
-					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-Unit* LevelAreaContext::FindUnit(UnitData* data, LevelAreaContext::Entry** entry, int* unit_index)
-{
-	assert(data);
-
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
-		{
-			Unit* unit = e.area->units[i];
-			if(unit->data == data)
-			{
-				if(entry)
-					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
-				return unit;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-Unit* LevelAreaContext::FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry, int* unit_index)
-{
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
-		{
-			Unit* unit2 = e.area->units[i];
-			if(clbk(unit2))
-			{
-				if(entry)
-					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
-				return unit2;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-bool LevelAreaContext::RemoveQuestGroundItem(int quest_id)
-{
-	LevelAreaContext::Entry* entry;
-	int index;
-	GroundItem* item = FindQuestGroundItem(quest_id, &entry, &index);
-	if(item)
-	{
-		if(entry->active && Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
-			c.id = item->id;
-		}
-		RemoveElementIndex(entry->area->items, index);
-		return true;
-	}
-	else
-		return false;
-}
-
-//=================================================================================================
-// search only alive enemies for now
-bool LevelAreaContext::RemoveQuestItemFromUnit(int quest_id)
-{
-	LevelAreaContext::Entry* entry;
-	int item_iindex;
-	Unit* unit = FindUnitWithQuestItem(quest_id, &entry, nullptr, &item_iindex);
-	if(unit)
-	{
-		unit->RemoveItem(item_iindex, entry->active);
-		return true;
-	}
-	else
-		return false;
-}
-
-//=================================================================================================
-// only remove alive units for now
-bool LevelAreaContext::RemoveUnit(Unit* unit)
-{
-	assert(unit);
-
-	LevelAreaContext::Entry* entry;
-	int unit_index;
-	if(FindUnit(unit, &entry, &unit_index))
-	{
-		if(entry->active)
-		{
-			unit->to_remove = true;
-			game_level->to_remove.push_back(unit);
-		}
-		else
-			RemoveElementIndex(entry->area->units, unit_index);
-		return true;
-	}
-	else
-		return false;
+	return explo;
 }
 
 //=================================================================================================

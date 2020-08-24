@@ -16,6 +16,7 @@
 #include "CreateServerPanel.h"
 #include "DungeonGenerator.h"
 #include "DungeonMeshBuilder.h"
+#include "Electro.h"
 #include "Encounter.h"
 #include "EntityInterpolator.h"
 #include "FOV.h"

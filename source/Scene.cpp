@@ -4,6 +4,7 @@
 #include "Ability.h"
 #include "City.h"
 #include "DungeonMeshBuilder.h"
+#include "Explo.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GameResources.h"

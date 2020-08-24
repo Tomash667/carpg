@@ -14,6 +14,7 @@ Wersja 0.17 (???):
 + optymalizacje manadżera sceny
 - brak muzyki bossa
 - nieprawidłowy rozmiar eksplozji u klienta dla niektórych czarów
+- podwójny dźwięk eksplozji u klienta
 
 --------------------------------------------------------------------------------
 Wersja 0.16 (2020-07-01):

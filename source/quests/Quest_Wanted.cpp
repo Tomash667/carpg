@@ -4,6 +4,7 @@
 #include "City.h"
 #include "Game.h"
 #include "Journal.h"
+#include "LevelAreaContext.h"
 #include "NameHelper.h"
 #include "QuestManager.h"
 #include "Team.h"

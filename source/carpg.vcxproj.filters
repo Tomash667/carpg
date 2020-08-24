@@ -123,9 +123,6 @@
     <ClCompile Include="entity\PlayerController.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="entity\SpellEffects.cpp">
-      <Filter>entity</Filter>
-    </ClCompile>
     <ClCompile Include="entity\Trap.cpp">
       <Filter>entity</Filter>
     </ClCompile>
@@ -655,6 +652,18 @@
     <ClCompile Include="components\AIManager.cpp">
       <Filter>components</Filter>
     </ClCompile>
+    <ClCompile Include="entity\Explo.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Electro.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Drain.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\LevelAreaContext.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -685,9 +694,6 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\PlayerController.h">
-      <Filter>entity</Filter>
-    </ClInclude>
-    <ClInclude Include="entity\SpellEffects.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\Trap.h">
@@ -1284,6 +1290,18 @@
     </ClInclude>
     <ClInclude Include="components\AIManager.h">
       <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Explo.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Electro.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Drain.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\LevelAreaContext.h">
+      <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
