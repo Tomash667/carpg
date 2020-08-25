@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 struct Explo
 {
+	SceneNode* node;
 	Entity<Unit> owner;
 	Vec3 pos;
 	float size, sizemax, dmg;

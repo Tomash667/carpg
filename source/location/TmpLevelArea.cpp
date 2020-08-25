@@ -7,6 +7,19 @@
 #include "Explo.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
+
+//=================================================================================================
+TmpLevelArea::TmpLevelArea()
+{
+	scene = new Scene;
+}
+
+//=================================================================================================
+TmpLevelArea::~TmpLevelArea()
+{
+	delete scene;
+}
 
 //=================================================================================================
 void TmpLevelArea::Clear()
@@ -18,6 +31,7 @@ void TmpLevelArea::Clear()
 	colliders.clear();
 	DeleteElements(pes);
 	DeleteElements(tpes);
+	scene->Clear();
 }
 
 //=================================================================================================

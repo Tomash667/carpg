@@ -20,6 +20,8 @@
 
 #include <ParticleSystem.h>
 #include <Profiler.h>
+#include <Scene.h>
+#include <SceneNode.h>
 #include <SoundManager.h>
 
 //=================================================================================================
@@ -1073,15 +1075,31 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 {
 	assert(ability);
 
+	// create entity
 	Explo* explo = new Explo;
 	explo->ability = ability;
 	explo->pos = pos;
-	explo->size = 0;
+	explo->size = 0.01f;
 	explo->sizemax = ability->explode_range;
 	tmp->explos.push_back(explo);
 
+	// create scene node
+	SceneNode* node = SceneNode::Get();
+	node->tmp = false;
+	node->SetMesh(game_res->aSpellball);
+	node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
+	node->center = explo->pos;
+	node->radius *= explo->size;
+	node->mat = Matrix::Scale(explo->size) * Matrix::Translation(explo->pos);
+	node->tex_override = &ability->tex_explode;
+	node->tint = Vec4(1, 1, 1, 1.f - explo->size / explo->sizemax);
+	explo->node = node;
+	tmp->scene->Add(node);
+
+	// play sound
 	sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
 
+	// notify
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1091,4 +1109,23 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 	}
 
 	return explo;
+}
+
+//=================================================================================================
+void LevelArea::RecreateScene()
+{
+	for(Explo* explo : tmp->explos)
+	{
+		SceneNode* node = SceneNode::Get();
+		node->tmp = false;
+		node->SetMesh(game_res->aSpellball);
+		node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
+		node->center = explo->pos;
+		node->radius *= explo->size;
+		node->mat = Matrix::Scale(explo->size) * Matrix::Translation(explo->pos);
+		node->tex_override = &explo->ability->tex_explode;
+		node->tint = Vec4(1, 1, 1, 1.f - explo->size / explo->sizemax);
+		explo->node = node;
+		tmp->scene->Add(node);
+	}
 }

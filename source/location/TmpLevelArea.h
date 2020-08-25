@@ -9,6 +9,7 @@
 struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
 {
 	LevelArea* area;
+	Scene* scene;
 	vector<Bullet*> bullets;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*> tpes;
@@ -18,6 +19,8 @@ struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
 	vector<CollisionObject> colliders;
 	float lights_dt;
 
+	TmpLevelArea();
+	~TmpLevelArea();
 	void Clear();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);

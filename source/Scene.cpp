@@ -351,26 +351,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// explosions
-	if(IsSet(draw_flags, DF_EXPLOS))
-	{
-		game_res->aSpellball->EnsureIsLoaded();
-		for(vector<Explo*>::iterator it = tmp_area.explos.begin(), end = tmp_area.explos.end(); it != end; ++it)
-		{
-			Explo& explo = **it;
-			if(frustum.SphereToFrustum(explo.pos, explo.size))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(game_res->aSpellball);
-				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-				node->center = explo.pos;
-				node->radius *= explo.size;
-				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
-				node->tex_override = &explo.ability->tex_explode;
-				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
-				draw_batch.Add(node);
-			}
-		}
-	}
+	area.tmp->scene->ListNodes(draw_batch);
 
 	// particles
 	if(IsSet(draw_flags, DF_PARTICLES))

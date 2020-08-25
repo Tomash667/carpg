@@ -9,8 +9,18 @@ ObjectPool<Light> DrawBatch::light_pool;
 //=================================================================================================
 void DrawBatch::Clear()
 {
-	SceneNode::Free(nodes);
-	SceneNode::Free(alpha_nodes);
+	for(SceneNode* node : nodes)
+	{
+		if(node->tmp)
+			node->Free();
+	}
+	nodes.clear();
+	for(SceneNode* node : alpha_nodes)
+	{
+		if(node->tmp)
+			node->Free();
+	}
+	alpha_nodes.clear();
 	node_groups.clear();
 	DebugNode::Free(debug_nodes);
 	glow_nodes.clear();

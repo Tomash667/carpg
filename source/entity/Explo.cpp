@@ -7,6 +7,9 @@
 #include "Net.h"
 #include "Unit.h"
 
+#include <Scene.h>
+#include <SceneNode.h>
+
 //=================================================================================================
 bool Explo::Update(float dt, LevelArea& area)
 {
@@ -44,8 +47,18 @@ bool Explo::Update(float dt, LevelArea& area)
 	}
 
 	if(delete_me)
+	{
+		area.tmp->scene->Remove(node);
 		delete this;
-	return delete_me;
+		return true;
+	}
+	else
+	{
+		node->radius = node->mesh->head.radius * size;
+		node->mat = Matrix::Scale(size) * Matrix::Translation(pos);
+		node->tint.w = 1.f - size / sizemax;
+		return false;
+	}
 }
 
 //=================================================================================================
