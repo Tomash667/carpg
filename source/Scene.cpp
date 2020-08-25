@@ -86,9 +86,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		PROFILER_BLOCK("Objects");
 		if(area.area_type == LevelArea::Type::Outside)
 		{
-			for(LevelPart* part : level_parts)
+			for(LevelQuad* quad : level_quads)
 			{
-				for(QuadObj& obj : part->objects)
+				for(QuadObj& obj : quad->objects)
 				{
 					const Object& o = *obj.obj;
 					o.mesh->EnsureIsLoaded();

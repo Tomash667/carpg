@@ -3,18 +3,18 @@
 #include <App.h>
 #include <Config.h>
 #include <Timer.h>
-#include "Const.h"
-#include "GameCommon.h"
-#include "Net.h"
-#include "DialogContext.h"
 #include "BaseLocation.h"
-#include "GameKeys.h"
-#include "DrawBatch.h"
-#include "QuadTree.h"
-#include "MusicTrack.h"
-#include "Settings.h"
-#include "Blood.h"
 #include "BaseObject.h"
+#include "Blood.h"
+#include "Const.h"
+#include "DialogContext.h"
+#include "DrawBatch.h"
+#include "GameCommon.h"
+#include "GameKeys.h"
+#include "LevelQuad.h"
+#include "MusicTrack.h"
+#include "Net.h"
+#include "Settings.h"
 
 //-----------------------------------------------------------------------------
 // quickstart mode
@@ -377,7 +377,7 @@ public:
 	DrawBatch draw_batch;
 	int uv_mod;
 	QuadTree quadtree;
-	LevelParts level_parts;
+	LevelQuads level_quads;
 	vector<const vector<Matrix>*> grass_patches[2];
 	uint grass_count[2];
 	// screenshot

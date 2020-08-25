@@ -1303,6 +1303,9 @@
     <ClInclude Include="helpers\LevelAreaContext.h">
       <Filter>helpers</Filter>
     </ClInclude>
+    <ClInclude Include="entity\LevelQuad.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">
