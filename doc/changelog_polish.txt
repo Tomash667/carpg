@@ -12,6 +12,8 @@ Wersja 0.17 (???):
 + zabezpiecznie przed generowaniem jednostek w ognisku
 + kontynuuj ostatnią grę w menu
 + optymalizacje manadżera sceny
+- crash przy wyborze przez łowce atutu uczeń wędrownego kupca [Leinnan]
+- crash gdy pyta się burmistrza o zadanie w stolicy [Woltvint]
 - brak muzyki bossa
 - nieprawidłowy rozmiar eksplozji u klienta dla niektórych czarów
 - podwójny dźwięk eksplozji u klienta

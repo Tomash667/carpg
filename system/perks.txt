@@ -143,6 +143,9 @@ perk leader {
 }
 perk traveling_merchant {
 	flags {start history}
+	required {
+		haggle 0
+	}
 	effect {
 		persuasion 10
 		gold 500

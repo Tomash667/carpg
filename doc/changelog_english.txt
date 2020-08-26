@@ -12,6 +12,8 @@ Version 0.17 (???):
 + prevent from spawning units inside campfire
 + continue last game in menu
 + scene manager optimisations
+- crash when hunter pick traveling merchant feat [Leinnan]
+- crash when asking mayor about quest in capital city [Woltvint]
 - missing boss music
 - invalid explosion size for client for some spells
 - double explosion sound for clients
