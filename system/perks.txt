@@ -144,7 +144,7 @@ perk leader {
 perk traveling_merchant {
 	flags {start history}
 	required {
-		haggle 0
+		persuasion 0
 	}
 	effect {
 		persuasion 10

@@ -7,6 +7,8 @@
 #include <fstream>
 #include <Shellapi.h>
 
+#include "BlobProxy.h"
+
 EXTERN_C DECLSPEC_IMPORT int STDAPICALLTYPE SHCreateDirectoryExA(HWND hwnd, LPCSTR pszPath, const SECURITY_ATTRIBUTES *psa);
 
 bool nozip, check_entry, copy_pdb;
@@ -86,6 +88,7 @@ struct str_cmp
 	}
 };
 std::map<cstring, PakEntry*, str_cmp> pak_entries;
+string prevVer;
 
 string pak_dir; // "out/0.4"
 byte* buf;
@@ -232,7 +235,7 @@ bool PakDir(cstring input, cstring output)
 void SaveEntries(cstring ver)
 {
 	std::ofstream o("db.txt");
-	o << Format("// version %s\n", ver);
+	o << Format("version \"%s\"\n", ver);
 	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
@@ -389,7 +392,12 @@ bool CreatePatch(char* pakname)
 	if(!nozip)
 	{
 		printf("Compressing patch.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+		ShellExecute(nullptr, nullptr, "pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr, SW_SHOWNORMAL);
+
+		printf("Uploading to blob & api.\n");
+		cstring result = AddChange(pakname, prevVer.c_str(), Format("out/CaRpg_patch_%s.pak", pakname));
+		if(result)
+			printf(result);
 	}
 
 	return true;
@@ -410,6 +418,9 @@ bool LoadEntries()
 	try
 	{
 		t.Next();
+		t.AssertItem("version");
+		t.Next();
+		prevVer = t.MustGetString();
 		while(true)
 		{
 			t.Next();
@@ -425,9 +436,9 @@ bool LoadEntries()
 			pak_entries[e->path.c_str()] = e;
 		}
 	}
-	catch(cstring err)
+	catch(Tokenizer::Exception& ex)
 	{
-		printf("Error while reading db: %s\n", err);
+		printf("Error while reading db: %s\n", ex.ToString());
 		return false;
 	}
 

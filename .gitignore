@@ -3,16 +3,16 @@
 
 .vs
 .vscode
-/bin
+bin
+obj
+output
+packages
+
 /lib
 /other
-/output
-/paks/out
-/paks/pdb
+/paks
 
 /tools/extractor/Debug
 /tools/extractor/Release
-/tools/paker/bin
-/tools/paker/output
 /tools/text_comparer/Debug
 /tools/text_comparer/Release
