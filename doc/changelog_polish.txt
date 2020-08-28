@@ -11,7 +11,9 @@ Wersja 0.17 (???):
 + muzyka i pasek zdrowia bossa
 + zabezpiecznie przed generowaniem jednostek w ognisku
 + kontynuuj ostatnią grę w menu
++ wsparcie dla automatycznych aktualizacji
 + optymalizacje manadżera sceny
++ efekt winiety
 - crash przy wyborze przez łowce atutu uczeń wędrownego kupca [Leinnan]
 - crash gdy pyta się burmistrza o zadanie w stolicy [Woltvint]
 - brak muzyki bossa

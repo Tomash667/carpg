@@ -22,10 +22,8 @@ public:
 		GET_SERVERS,
 		GET_CHANGES,
 		GET_VERSION,
-		GET_VERSION2,
 		IGNORE,
-		REPORT,
-		GET_CHANGELOG
+		REPORT
 	};
 
 	enum class Status
@@ -61,8 +59,7 @@ public:
 	void Reset();
 	void GetServers() { AddOperation(GET_SERVERS); }
 	void GetChanges() { AddOperation(GET_CHANGES); }
-	int GetVersion(delegate<bool()> cancel_clbk);
-	bool GetChangelog(string& changelog, delegate<bool()> cancel_clbk);
+	int GetVersion(delegate<bool()> cancel_clbk, string& changelog, bool& update);
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
 	void Report(int id, cstring text);
@@ -83,6 +80,6 @@ private:
 	vector<Op*> active_requests;
 	string changelog, lobby_url;
 	int timestamp, lobby_port, proxy_port;
-	bool np_attached;
+	bool np_attached, update;
 	CURLM* cm;
 };

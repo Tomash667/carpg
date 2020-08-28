@@ -9,8 +9,6 @@
 
 #include "BlobProxy.h"
 
-EXTERN_C DECLSPEC_IMPORT int STDAPICALLTYPE SHCreateDirectoryExA(HWND hwnd, LPCSTR pszPath, const SECURITY_ATTRIBUTES *psa);
-
 bool nozip, check_entry, copy_pdb;
 
 enum EntryType
@@ -91,58 +89,31 @@ std::map<cstring, PakEntry*, str_cmp> pak_entries;
 string prevVer;
 
 string pak_dir; // "out/0.4"
-byte* buf;
-char buf2[256];
-
-uint CalculateCrc(HANDLE file)
-{
-	const DWORD chunk = 64 * 1024;
-	if(!buf)
-		buf = new byte[chunk];
-
-	DWORD size_left = GetFileSize(file, NULL);
-	DWORD tmp;
-	Crc crc;
-
-	while(size_left > 0)
-	{
-		uint count = min(chunk, size_left);
-		ReadFile(file, buf, count, &tmp, NULL);
-		crc.Update(buf, count);
-		size_left -= count;
-	}
-
-	return crc.Get();
-}
 
 // input: bin/dlls/dll.dll
 // output: pak/0.2.11/./dll.dll
 bool PakFile(cstring input, cstring output, cstring path)
 {
-	HANDLE file = CreateFile(input, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(file == INVALID_HANDLE_VALUE)
+	FileReader file(input);
+	if(!file)
 	{
 		printf("File '%s' can't be opened.\n", input);
 		return false;
 	}
-	DWORD size = GetFileSize(file, NULL);
+	uint size = file.GetSize();
 
 	cstring name = output + pak_dir.length();
 
 	if(!check_entry)
 	{
 		if(path)
-		{
-			GetFullPathName(path, 256, buf2, NULL);
-			SHCreateDirectoryExA(NULL, buf2, NULL);
-		}
+			io::CreateDirectories(path);
 		CopyFile(input, output, FALSE);
 
 		PakEntry* pe = new PakEntry;
 		pe->path = name;
 		pe->size = size;
-		pe->crc = CalculateCrc(file);
-		CloseHandle(file);
+		pe->crc = Crc::Calculate(file);
 
 		pak_entries[pe->path.c_str()] = pe;
 	}
@@ -151,36 +122,26 @@ bool PakFile(cstring input, cstring output, cstring path)
 		std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.find(name);
 		bool ok = true;
 		if(it == pak_entries.end())
-		{
-			CloseHandle(file);
 			printf("Added '%s'.\n", input);
-		}
 		else
 		{
 			PakEntry& e = *it->second;
 			e.found = true;
 			if(e.size == size)
 			{
-				uint crc = CalculateCrc(file);
-				CloseHandle(file);
+				uint crc = Crc::Calculate(file);
 				if(crc == e.crc)
 					ok = false;
 				else
 					printf("Modified '%s'.\n", input);
 			}
 			else
-			{
-				CloseHandle(file);
 				printf("Modified '%s'.\n", input);
-			}
 		}
 		if(ok)
 		{
 			if(path)
-			{
-				GetFullPathName(path, 256, buf2, NULL);
-				SHCreateDirectoryExA(NULL, buf2, NULL);
-			}
+				io::CreateDirectories(path);
 			CopyFile(input, output, FALSE);
 		}
 	}

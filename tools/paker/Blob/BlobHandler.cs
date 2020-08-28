@@ -16,7 +16,9 @@ namespace Blob
             CloudBlobContainer container = blobClient.GetContainerReference("updates");
             CloudBlockBlob blockBlob = container.GetBlockBlobReference(Path.GetFileName(path));
             blockBlob.UploadFromFile(path);
-            return blockBlob.Uri.AbsoluteUri;
+            string url = blockBlob.Uri.AbsoluteUri;
+            url = url.Replace("https", "http");
+            return url;
         }
     }
 }

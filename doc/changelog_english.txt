@@ -11,7 +11,9 @@ Version 0.17 (???):
 + boss music and health bar
 + prevent from spawning units inside campfire
 + continue last game in menu
++ support for auto updates
 + scene manager optimisations
++ vignette effect
 - crash when hunter pick traveling merchant feat [Leinnan]
 - crash when asking mayor about quest in capital city [Woltvint]
 - missing boss music
