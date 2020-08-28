@@ -41,6 +41,7 @@ struct AIController
 		Block,
 		Cast,
 		Wait,
+		Aggro,
 		State_Max
 	};
 

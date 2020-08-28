@@ -35,8 +35,8 @@ dialog merchant {
 	9 "Too bad."
 	10 "End dialog"
 	11 "Training"
-	12 "I offer training in haggle or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
-	13 "$train_lab/haggle$"
+	12 "I offer training in persuasion or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
+	13 "$train_lab/persuasion$"
 	14 "$train_lab/cha$"
 	15 "Cancel"
 }
@@ -89,7 +89,7 @@ dialog mayor {
 		"You need something?"
 	}
 	1 "I need Summoning book"
-	2 "" // moved to quest
+	2 "Back"
 	3 "Deliver a package"
 	4 "Return a package"
 	5 "Tell news"
@@ -104,6 +104,14 @@ dialog mayor {
 		"Stone with some runes? I know nothing about this."
 	}
 	12 "End dialog"
+	13 {
+		"I can't rely on you..."
+		"I won't give you any important task! Go collect carrots instead!"
+		"I needs someone I can rely on, not you."
+	}
+	14 "Persuasion"
+	15 "Alright, you convinced me..."
+	16 "No way!"
 }
 
 //==============================================================================
@@ -205,6 +213,14 @@ dialog guard_captain {
 		"Stone with some runes? I know nothing about this."
 	}
 	16 "End dialog"
+	17 {
+		"You are not suitable for such tasks."
+		"I need people who may come in handy, you have already failed."
+	}
+	18 "Persuasion"
+	19 "Alright, you convinced me..."
+	20 "No way!"
+	21 "Back"
 }
 
 //==============================================================================
@@ -455,6 +471,13 @@ dialog hero {
 	43 "No"
 	44 "What do you do here?"
 	45 "End dialog"
+	46 "I can't abandon my current team like that!"
+	47 "Persuasion"
+	48 "Back"
+	49 "Okay... You seem like a good leader."
+	50 "Somehow you didn't convince me..."
+	51 "I don't like crowds and your team is already quite large..."
+	52 "Okay... Sometimes you have to compromise."
 }
 
 //==============================================================================
@@ -547,6 +570,7 @@ dialog crazy {
 	15 {
 		"Ok, I'll carry your trash."
 		"Give that loot!"
+		"Don't touch my garbage!"
 	}
 	16 "Attack enemy from distance unit it's close"
 	17 "Okay, I'll soften them."
@@ -622,6 +646,12 @@ dialog crazy {
 	47 "Ask about strange stone"
 	48 "Take it from me or I'll sell you a kick!"
 	49 "End dialog"
+	50 "Am I supposed to leave these weaklings off and join you?"
+	51 "Persuasion"
+	52 "Back"
+	53 "No no no! You will join me!"
+	54 "If you think you convinced me then you are crazy here!"
+	55 "Hmmm... In such a crowd you will not pay attention to me!"
 }
 
 //==============================================================================
@@ -684,6 +714,9 @@ dialog bandits {
 		"Kill them all!"
 		"Then you die!"
 	}
+	13 "Persuasion"
+	14 "You're actually right. You can go without paying..."
+	15 "You think you'll talk to me and I'll let you go!? Drop your gold, dickhead!"
 }
 
 //==============================================================================
@@ -706,11 +739,13 @@ dialog crazy_mage_encounter {
 	3 "Damn! For this spell I needs someone with hair."
 	4 "Huh tearg roloc riah tenrffid evah uoy won sukop sukoh!"
 	5 "Em ot sgnoleb luos ruoy!"
-	6 "Huh tearg roloc riah tenrffid evah uoy won sukop sukoh!"
+	6 "Persuasion"
 	7 "You do not have any side effects, thanks for your help!"
 	8 "No"
 	9 "Why not?!"
 	10 "Your corpse does not say no!"
+	11 "Okay... Maybe I'll join you and we will find volunteers for my experiments together?"
+	12 "If I wanted to talk to someone, I would talk to the voices in my head!"
 }
 
 //==============================================================================
@@ -853,6 +888,9 @@ dialog crazies_encounter {
 	25 "Wrong!"
 	26 "I don't know"
 	27 "Because you're stupid!"
+	28 "Persuasion"
+	29 "Eee what? Oh yes, yes. You can go."
+	30 "You are so funny!"
 }
 
 //==============================================================================
@@ -994,6 +1032,9 @@ dialog q_bandits_encounter {
 	8 "No!"
 	9 "What the fuck?!"
 	10 "I'll teach you respect for the bandits!"
+	11 "Persuasion"
+	12 "Hmm... Apparently someone else is transporting this package. You can go."
+	13 "You think you're gonna cheat me!? Kill him!"
 }
 
 //==============================================================================
@@ -1031,29 +1072,6 @@ dialog q_bandits_boss {
 	0 "You dumb fuck!"
 	1 "You think you can just come on here to kill my comrades and steal what you like?!"
 	2 "I'll torn you into pieces!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_start {
-	0 "Can you imagine that?! $Bandyci_zalozyli$ created camp just near $naszego_miasta$!"
-	1 "I think they want to attack the $miasto$! We have to do something about it!"
-	2 "Why do not you go there and take care of them?"
-	3 "Yes"
-	4 "This camp is located $dir$ from here. You must take care of it within a month."
-	5 "Just do not get yourself killed."
-	6 "No"
-}
-
-//==============================================================================
-dialog q_camp_near_city_timeout {
-	0 "When you weren't here $bandyci_zaatakowali$ $miasto$! Somehow we defended but many people have died!"
-	1 "Do not show up here again!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_end {
-	0 "If not for you I do not know whether we repelled this attack."
-	1 "Please, take this $reward$ gold pieces."
 }
 
 //==============================================================================
@@ -1147,12 +1165,13 @@ dialog q_evil_cleric {
 dialog q_evil_mage {
 	0 "What are you staring at me?! Do you want something?"
 	1 "I need Summoning book"
-	2 "And what do you need it? You do not look like a mage."
+	2 "And why do you need it? You do not look like a mage."
 	3 "Besides, it not matter now."
 	4 "Damn guards confiscated it from me."
 	5 "I do not think they liked the idea of summoning elementals."
 	6 "End dialog"
 	7 "Leave me alone."
+	8 "And why do you need it? You want to summon something?"
 }
 
 //==============================================================================
@@ -1248,11 +1267,12 @@ dialog q_goblins_mage {
 	8 "Changed your mind?"
 	9 "The price for my information has increased to 100 gold pieces."
 	10 "Pay 100 gold pieces"
-	11 "It is a great pity, that bow is very valuable. I hope that you don't gave it for a handful of coppers."
-	12 "Through the magic of looks like an old bow. Talk with this nobleman, it seems to me that he knew everything from beginning."
+	11 "That bow is very valuable. I hope that you don't gave it for a handful of coppers."
+	12 "Persuasion"
 	13 "Come back when you have enough gold."
 	14 "End dialog"
 	15 "Talk to the innkeeper at $start_loc$. He may know something about this nobleman."
+	16 "You know what... I prefer gold though."
 }
 
 //==============================================================================
@@ -1268,27 +1288,6 @@ dialog q_goblins_boss {
 	0 "Please, please. Whom have we here?"
 	1 "Pesky adventurer. Came to look at real power of the Angelic bow?"
 	2 "I'll try it on you!"
-}
-
-//==============================================================================
-dialog q_kill_animals_start {
-	0 "I'm looking for someone who will take up one of the nearby locations which prevailed in many creatures."
-	1 "Are you interested?"
-	2 "Yes"
-	3 "Go to the $target_loc$ and kill all the monsters. Also watch out for the crazy savages that behave like animals."
-	4 "$target_loc$ is $target_dir$ from here."
-	5 "No"
-}
-
-//==============================================================================
-dialog q_kill_animals_timeout {
-	0 "No time for clearing $target_loc$? Through you, travelers cannot easily wander around."
-}
-
-//==============================================================================
-dialog q_kill_animals_end {
-	0 "Excellent work, these creatures often troubled travelers."
-	1 "Here you got $reward$ gold pieces as reward."
 }
 
 //==============================================================================
@@ -1494,6 +1493,9 @@ dialog q_mine_investor {
 	50 "What do you do?"
 	51 "I got right due to trade in exotic goods. Since then I invested in various projects, mines, sawmills or expeditions."
 	52 "End dialog"
+	53 "Persuasion"
+	54 "You haggle well! I'll lower the price to 10,000 gold. What do you think?"
+	55 "I don't see why I should go for it."
 }
 
 //==============================================================================
@@ -1834,7 +1836,7 @@ dialog q_stolen_artifact_end {
 
 //==============================================================================
 dialog q_stolen_artifact_timeout {
-	0 "You could not find this artifact? Too bad..."
+	0 "You could not recover this artifact? Too bad..."
 	1 "Apparently close to $random_loc$ people found some new artifacts, there I leave."
 	2 "Good luck in your adventures!"
 }
@@ -1924,4 +1926,188 @@ dialog cleric_seller {
 	9 "Ask about strange stone"
 	10 "I sense the magical aura emanating from this stone. It is cursed! Unfortunately, I can't remove the curse from it, better get rid of it."
 	11 "End dialog"
+}
+
+//==============================================================================
+dialog generic_idle {
+	0 { // generic
+		"Boring! Why doesn't anything interesting happen here?"
+		"Did you hear about what happened the other day?"
+		"Where's my bow?"
+		"Did you hear something interesting?"
+		"I saw how you looked at me!"
+		"If only I could find a treasure..."
+		"Hmmm, what was I supposed to do?"
+		"I thought that I had more gold."
+		"What if I threw it all to hell?"
+		"Nowdays, you can't rely on anyone, that's what."
+	}
+	1 { // outside location
+		"At least it's not raining."
+		"Yeah, a wonderful day... The only thing that's missing is a nice hot meteor shower!"
+		"Nice weather today, eh?"
+	}
+	2 { // inside location
+		"What was that sound?"
+		"I hope that nothing will fall on my head."
+	}
+}
+
+//==============================================================================
+dialog hero_idle {
+	0 { // city
+		"I could use a beer."
+		"Can we go to the inn?"
+		"I wonder if the blacksmith has a good and cheap armor for me."
+		"I'd buy myself a better weapon but there is nothing interesting."
+		"Those guards are good for nothing."
+	}
+	1 { // outside location
+		"Something moved in those bushes."
+		"That tree is strange..."
+	}
+	2 { // inside location
+		"What's that smell?"
+		"Watch out for traps."
+		"Another dungeon. Wonderful..."
+		"Remember how I killed that monster?"
+	}
+}
+
+//==============================================================================
+dialog secret_idle {
+	0 {
+		"What did one snowman say to the other?"
+		"Moonstone, moonwell. Did it have anything to do with those?"
+		"What lies in the shadow of the statue?"
+	}
+}
+
+//==============================================================================
+dialog citizen_idle {
+	0 { // generic
+		"People keep talking..."
+		"In this story, however, there must be a grain of truth."
+		"Once such things were settled differently."
+	}
+	1 { // generic non-guard
+		"Damn guards, good for nothing useful."
+	}
+	2 { // before contest
+		"Ahhhh, another contest. These memories..."
+		"What the hell are we waiting for?!"
+		"Contest! Contest! Contest!"
+		"Beer! Gimme beer!"
+	}
+	3 { // drunk
+		"And those who don't drink will be beaten!"
+		"(hic)"
+		"I need more beer!"
+		"Don't you want to have a drink with me?!"
+		"Onlyyyy oneeee moooree beeereee..."
+		"The sound of the harp, the wind hum, water, water, change into rum!"
+	}
+}
+
+//==============================================================================
+dialog bandit_idle {
+	0 {
+		"Where is the caravan?!"
+		"Merchants are late as usual, we have to teach them a lesson by stealing more gold."
+		"Where's the gold for the boss?"
+		"My fists are tingling."
+		"Where is my beer?!"
+		"Fuck!"
+		"I would not want to be in his skin right now."
+	}
+}
+
+//==============================================================================
+dialog goblin_idle {
+	0 {
+		"Eat rubble!"
+		"Hard is the life of a goblin!"
+		"Being a goblin is like playing on hard difficulty!"
+		"Who took my rags!"
+		"Goblin beer tastes like piss! Even once drunk!"
+	}
+}
+
+//==============================================================================
+dialog orc_idle {
+	0 {
+		"How many people did you kill today?"
+		"Where is my fucking axe?"
+		"This mora was a good fighter! And he was tasty..."
+		"Time to loot a village."
+		"Ask the chief when we loot a village."
+		"When will we loot a village?"
+		"It was a long time ago since we looted a village."
+	}
+}
+
+//==============================================================================
+dialog ogre_idle {
+	0 {
+		"Ogres make bread from bones, squeeze protein out of eyes, it tastes best on toast..."
+		"Me crush your muzzle!"
+		"What you want!?"
+		"Ugh!"
+	}
+}
+
+//==============================================================================
+dialog mage_idle {
+	0 {
+		"Strange! This should not happen."
+		"Someone is watching us. Pretend you don't see."
+		"How should I call this new spell..."
+		"This spell has some weird side effects..."
+	}
+}
+
+//==============================================================================
+dialog wild_hunter_idle {
+	0 {
+		"Cursed woodcutters! They would have cleared the whole forest if they let it happen!"
+		"Where did I leave my wolf costume?"
+		"I will not rest until the anger of nature destroys this city!"
+	}
+}
+
+//==============================================================================
+dialog crazy_idle {
+	0 {
+		"Do you know that what I say now isn't a hint on how to find a treasure worth a million gold pieces?"
+		"There is nothing to say."
+		"Execute instruction #0xDEADC0DE#."
+		"Where's my cake?"
+		"I know that I know nothing. But do they know?"
+		"Day 13, they still think I'm one of them."
+		"Do not look back..."
+		"(mumble)"
+		"(humming)"
+		"You know the definition of insanity?"
+		"Killing in the morning is like cream."
+		"What? No! Oh yes, yes, you are right!"
+	}
+}
+
+//==============================================================================
+dialog drunk_mage_idle {
+	0 {
+		"(hic)"
+		"Where is (hic) my beer?!"
+		"(HIC)"
+	}
+}
+
+//==============================================================================
+dialog hunter {
+	0 {
+		"Happy hunting!"
+		"Welcome to our camp."
+		"Hello!"
+	}
+	1 "End dialog"
 }

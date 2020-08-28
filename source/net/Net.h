@@ -206,7 +206,7 @@ public:
 	void UpdateClient(float dt);
 	void InterpolateUnits(float dt);
 	void WriteClientChanges(BitStreamWriter& f);
-	bool ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server);
+	bool ProcessControlMessageClient(BitStreamReader& f);
 	bool ProcessControlMessageClientForMe(BitStreamReader& f);
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);

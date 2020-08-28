@@ -2,12 +2,10 @@
 #include "Quest_LostArtifact.h"
 
 #include "Game.h"
-#include "GameFile.h"
 #include "ItemHelper.h"
-#include "LevelArea.h"
+#include "LevelAreaContext.h"
 #include "Journal.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -16,7 +14,7 @@ void Quest_LostArtifact::Start()
 {
 	type = Q_LOST_ARTIFACT;
 	category = QuestCategory::Random;
-	start_loc = world->GetCurrentLocationIndex();
+	startLoc = world->GetCurrentLocation();
 	item = ItemList::GetItem("artifacts");
 }
 
@@ -52,21 +50,17 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			quest_item.id = Format("$%s", item->id.c_str());
 			quest_item.quest_id = id;
 
-			Location& sl = GetStartLocation();
-
 			// event
 			spawn_item = Quest_Dungeon::Item_OnGround;
 			item_to_give[0] = &quest_item;
 			if(Rand() % 2 == 0)
-				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
+				targetLoc = world->GetClosestLocation(L_DUNGEON, startLoc->pos, { HERO_CRYPT, MONSTER_CRYPT });
 			else
-				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, LABYRINTH, F_EXCLUDED);
-			Location& tl = GetTargetLocation();
-			at_level = tl.GetRandomLevel();
-
-			tl.active_quest = this;
-			tl.SetKnown();
-			st = tl.st;
+				targetLoc = world->GetClosestLocation(L_DUNGEON, startLoc->pos, LABYRINTH, F_EXCLUDED);
+			at_level = targetLoc->GetRandomLevel();
+			targetLoc->active_quest = this;
+			targetLoc->SetKnown();
+			st = targetLoc->st;
 
 			cstring level;
 			switch(at_level)
@@ -96,19 +90,15 @@ void Quest_LostArtifact::SetProgress(int prog2)
 
 			DialogContext::current->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), level, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+			msgs.push_back(Format(game->txQuest[82], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), level, targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 		}
 		break;
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
+			if(targetLoc && targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[115]);
 			int reward = GetReward();
@@ -121,12 +111,8 @@ void Quest_LostArtifact::SetProgress(int prog2)
 	case Progress::Timeout:
 		{
 			state = Quest::Failed;
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
+			if(targetLoc && targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[116]);
 			DialogContext::current->talker->temporary = true;
@@ -143,9 +129,9 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+		return GetLocationDirName(startLoc->pos, targetLoc->pos);
 	else if(str == "random_loc")
-		return world->GetRandomSettlement(start_loc)->name.c_str();
+		return world->GetRandomSettlement(startLoc)->name.c_str();
 	else if(str == "poziomie")
 	{
 		switch(at_level)
@@ -185,9 +171,9 @@ bool Quest_LostArtifact::IsTimedout() const
 bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		ForLocation(target_loc, at_level)->RemoveQuestGroundItem(id);
+		ForLocation(targetLoc, at_level)->RemoveQuestGroundItem(id);
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 	return true;
 }
 
@@ -220,8 +206,8 @@ Quest::LoadResult Quest_LostArtifact::Load(GameReader& f)
 	f >> item;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;
-	else if(target_loc != -1)
-		st = GetTargetLocation().st;
+	else if(targetLoc)
+		st = targetLoc->st;
 	else
 		st = 10;
 

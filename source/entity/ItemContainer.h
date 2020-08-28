@@ -8,8 +8,8 @@ struct ItemContainer
 {
 	vector<ItemSlot> items;
 
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 
 	int FindItem(const Item* item) const;
 	int FindQuestItem(int quest_id) const;

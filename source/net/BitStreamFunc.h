@@ -20,8 +20,8 @@ public:
 	uint GetSize() const;
 	BitStream& GetBitStream() const { return bitstream; }
 	void Reset();
-	void WriteItemList(vector<ItemSlot>& items);
-	void WriteItemListTeam(vector<ItemSlot>& items);
+	void WriteItemList(const vector<ItemSlot>& items);
+	void WriteItemListTeam(const vector<ItemSlot>& items);
 
 	void operator << (const Item& item);
 	void operator << (const Item* item)
@@ -31,6 +31,8 @@ public:
 		else
 			Write0();
 	}
+	void operator << (Unit* unit);
+	void operator << (Location* loc);
 
 private:
 	BitStream& bitstream;
@@ -57,6 +59,9 @@ public:
 	int ReadItemAndFind(const Item*& item);
 	bool ReadItemList(vector<ItemSlot>& items);
 	bool ReadItemListTeam(vector<ItemSlot>& items, bool skip = false);
+	using StreamReader::operator >>;
+	void operator >> (Unit*& unit);
+	void operator >> (Location*& loc);
 
 private:
 	BitStream& CreateBitStream(Packet* packet);

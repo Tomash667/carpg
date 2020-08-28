@@ -11,8 +11,8 @@ struct GameLight : public Light
 
 	static const int MIN_SIZE = 28;
 
-	void Save(FileWriter& f) const;
-	void Load(FileReader& f);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
 };

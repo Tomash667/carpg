@@ -2,12 +2,10 @@
 #include "Quest_StolenArtifact.h"
 
 #include "Game.h"
-#include "GameFile.h"
 #include "ItemHelper.h"
-#include "LevelArea.h"
+#include "LevelAreaContext.h"
 #include "Journal.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -16,7 +14,7 @@ void Quest_StolenArtifact::Start()
 {
 	type = Q_STOLEN_ARTIFACT;
 	category = QuestCategory::Random;
-	start_loc = world->GetCurrentLocationIndex();
+	startLoc = world->GetCurrentLocation();
 	item = ItemList::GetItem("artifacts");
 	switch(Rand() % 6)
 	{
@@ -67,38 +65,32 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			OnStart(game->txQuest[86]);
 			quest_mgr->quests_timeout.push_back(this);
 
-			Location& sl = GetStartLocation();
-			target_loc = world->GetRandomSpawnLocation(sl.pos, group);
-			Location& tl = GetTargetLocation();
-			at_level = tl.GetRandomLevel();
-			tl.active_quest = this;
-			tl.SetKnown();
-			st = tl.st;
+			targetLoc = world->GetRandomSpawnLocation(startLoc->pos, group);
+			at_level = targetLoc->GetRandomLevel();
+			targetLoc->active_quest = this;
+			targetLoc->SetKnown();
+			st = targetLoc->st;
 
 			item->CreateCopy(quest_item);
 			quest_item.id = Format("$%s", item->id.c_str());
 			quest_item.quest_id = id;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &quest_item;
-			unit_to_spawn = group->GetLeader(tl.st);
+			unit_to_spawn = group->GetLeader(targetLoc->st);
 			unit_spawn_level = -3;
 
 			DialogContext::current->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[82], startLoc->name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), group->name.c_str(), game->txQuest[group->gender ? 88 : 87],
-				tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+				targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 		}
 		break;
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
+			if(targetLoc && targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
 			int reward = GetReward();
@@ -111,12 +103,8 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 	case Progress::Timeout:
 		{
 			state = Quest::Failed;
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
+			if(targetLoc && targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[95]);
 			DialogContext::current->talker->temporary = true;
@@ -133,9 +121,9 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+		return GetLocationDirName(startLoc->pos, targetLoc->pos);
 	else if(str == "random_loc")
-		return world->GetRandomSettlement(start_loc)->name.c_str();
+		return world->GetRandomSettlement(startLoc)->name.c_str();
 	else if(str == "Bandyci_ukradli")
 		return Format("%s %s", Upper(group->name.c_str()), game->txQuest[group->gender ? 97 : 96]);
 	else if(str == "Ci_bandyci")
@@ -159,9 +147,9 @@ bool Quest_StolenArtifact::IsTimedout() const
 bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		ForLocation(target_loc, at_level)->RemoveQuestItemFromUnit(id);
+		ForLocation(targetLoc, at_level)->RemoveQuestItemFromUnit(id);
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 	return true;
 }
 
@@ -196,8 +184,8 @@ Quest::LoadResult Quest_StolenArtifact::Load(GameReader& f)
 	f >> group;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;
-	else if(target_loc != -1)
-		st = GetTargetLocation().st;
+	else if(targetLoc)
+		st = targetLoc->st;
 	else
 		st = 10;
 

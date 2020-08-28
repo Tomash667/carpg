@@ -7,7 +7,6 @@
 #include "City.h"
 #include "Encounter.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "Language.h"
 #include "Level.h"
@@ -19,10 +18,7 @@
 #include "OffscreenLocation.h"
 #include "Quest.h"
 #include "QuestManager.h"
-#include "Quest_Crazies.h"
-#include "Quest_Mages.h"
 #include "Quest_Scripted.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "Team.h"
 #include "Var.h"
@@ -74,9 +70,6 @@ void World::LoadLanguage()
 	txEncSingleHero = s.Get("encSingleHero");
 	txEncBanditsAttackTravelers = s.Get("encBanditsAttackTravelers");
 	txEncHeroesAttack = s.Get("encHeroesAttack");
-	txEncGolem = s.Get("encGolem");
-	txEncCrazy = s.Get("encCrazy");
-	txEncUnk = s.Get("encUnk");
 	txEncEnemiesCombat = s.Get("encEnemiesCombat");
 
 	// location names
@@ -94,6 +87,8 @@ void World::LoadLanguage()
 	txTower = s.Get("tower");
 	txLabyrinth = s.Get("labyrinth");
 	txAcademy = s.Get("academy");
+	txHuntersCamp = s.Get("huntersCamp");
+	txHills = s.Get("hills");
 }
 
 //=================================================================================================
@@ -111,7 +106,7 @@ void World::Cleanup()
 //=================================================================================================
 void World::OnNewGame()
 {
-	travel_location_index = -1;
+	travel_location = nullptr;
 	empty_locations = 0;
 	create_camp = Random(5, 10);
 	encounter_chance = 0.f;
@@ -128,6 +123,7 @@ void World::Reset()
 {
 	DeleteElements(locations);
 	DeleteElements(encounters);
+	DeleteElements(globalEncounters);
 	DeleteElements(news);
 }
 
@@ -159,7 +155,7 @@ void World::Update(int days, UpdateMode mode)
 	if(date.year >= startDate.year + 60)
 	{
 		Info("Game over: you are too old.");
-		game_gui->CloseAllPanels(true);
+		game_gui->CloseAllPanels();
 		game->end_of_game = true;
 		game->death_fade = 0.f;
 		if(Net::IsOnline())
@@ -243,7 +239,7 @@ void World::UpdateLocations()
 			Camp* camp = static_cast<Camp*>(loc);
 			if(worldtime - camp->create_time >= 30
 				&& current_location != loc // don't remove when team is inside
-				&& (travel_location_index == -1 || locations[travel_location_index] != loc)) // don't remove when traveling to
+				&& travel_location != loc) // don't remove when traveling to
 			{
 				// remove camp
 				DeleteCamp(camp, false);
@@ -282,7 +278,7 @@ void World::UpdateNews()
 }
 
 //=================================================================================================
-int World::CreateCamp(const Vec2& pos, UnitGroup* group)
+Location* World::CreateCamp(const Vec2& pos, UnitGroup* group)
 {
 	assert(group);
 
@@ -301,7 +297,9 @@ int World::CreateCamp(const Vec2& pos, UnitGroup* group)
 	if(loc->st > 3)
 		loc->st = 3;
 
-	return AddLocation(loc);
+	AddLocation(loc);
+
+	return loc;
 }
 
 //=================================================================================================
@@ -535,12 +533,21 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld()
 {
+	auto isDistanceOk = [&](const Vec2 &pos, const float minDistance) {
+		for(Location* loc : locations)
+		{
+			const float dist = Vec2::DistanceSquared(loc->pos, pos);
+			if(dist < minDistance * minDistance)
+				return false;
+		}
+		return true;
+	};
 	startup = true;
 	world_size = DEF_WORLD_SIZE;
 	world_bounds = Vec2(WORLD_BORDER, world_size - WORLD_BORDER);
 
 	// create capital
-	Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
+	const Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
 	CreateCity(pos, CAPITAL);
 
 	// create more cities
@@ -548,23 +555,14 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 20; ++tries)
 		{
-			Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
-			float rot = Random(MAX_ANGLE);
-			float dist = Random(300.f, 400.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+			const Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
+			const float rot = Random(MAX_ANGLE);
+			const float dist = Random(300.f, 400.f);
+			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
-			bool ok = true;
-			for(Location* loc : locations)
-			{
-				float dist = Vec2::DistanceSquared(loc->pos, pos);
-				if(dist < 250.f * 250.f)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok)
+			if(isDistanceOk(pos, 250.f))
 			{
 				CreateCity(pos, CITY);
 				break;
@@ -573,31 +571,23 @@ void World::GenerateWorld()
 	}
 
 	// player starts in one of cities
-	uint cities = locations.size();
-	uint start_location = Rand() % cities;
+	const uint cities = locations.size();
+	const uint start_location = Rand() % cities;
 
 	// create villages
 	for(uint i = 0, count = Random(10u, 15u); i < count; ++i)
 	{
 		for(int tries = 0; tries < 20; ++tries)
 		{
-			Vec2 parent_pos = locations[Rand() % cities]->pos;
-			float rot = Random(MAX_ANGLE);
-			float dist = Random(100.f, 250.f);
-			Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+			const Vec2 parent_pos = locations[Rand() % cities]->pos;
+			const float rot = Random(MAX_ANGLE);
+			const float dist = Random(100.f, 250.f);
+			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+
 			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
 				continue;
-			bool ok = true;
-			for(Location* loc : locations)
-			{
-				float dist = Vec2::DistanceSquared(loc->pos, pos);
-				if(dist < 100.f * 100.f)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok)
+
+			if(isDistanceOk(pos, 100.0f))
 			{
 				CreateCity(pos, VILLAGE);
 				break;
@@ -610,33 +600,20 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 50; ++tries)
 		{
-			Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
-			bool ok = true;
-			for(Location* loc : locations)
-			{
-				float dist = Vec2::DistanceSquared(loc->pos, pos);
-				if(dist < 400.f * 400.f)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok)
+			const Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
+
+			if(isDistanceOk(pos, 400.0f))
 			{
 				CreateCity(pos, VILLAGE);
 				break;
 			}
 		}
 	}
-
-	// mark cities and villages as known
 	settlements = locations.size();
-	for(Location* loc : locations)
-		loc->state = LS_KNOWN;
 
 	// generate guaranteed locations, one of each type & target
 	static const LOCATION guaranteed[] = {
-		L_OUTSIDE, L_OUTSIDE,
+		L_OUTSIDE, L_OUTSIDE, L_OUTSIDE, L_OUTSIDE,
 		L_CAVE,
 		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
 	};
@@ -674,10 +651,10 @@ void World::GenerateWorld()
 	CalculateTiles();
 
 	// generate locations content
-	bool guaranteed_moonwell = true;
-	int index = 0, guaranteed_dungeon = 0;
+	int index = 0, guaranteed_dungeon = 0, guaranteed_outside = 0;
 	UnitGroup* forest_group = UnitGroup::Get("forest");
 	UnitGroup* cave_group = UnitGroup::Get("cave");
+	const bool knowsHuntersCamp = team->HaveClass(Class::TryGet("hunter"));
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it)
@@ -708,8 +685,39 @@ void World::GenerateWorld()
 				InsideLocation* inside;
 
 				int target;
-				if(guaranteed_dungeon == -1)
+				switch(guaranteed_dungeon)
 				{
+				case 0:
+					target = HUMAN_FORT;
+					break;
+				case 1:
+					target = DWARF_FORT;
+					break;
+				case 2:
+					target = MAGE_TOWER;
+					break;
+				case 3:
+					target = BANDITS_HIDEOUT;
+					break;
+				case 4:
+					target = OLD_TEMPLE;
+					break;
+				case 5:
+					target = VAULT;
+					break;
+				case 6:
+					target = NECROMANCER_BASE;
+					break;
+				case 7:
+					target = LABYRINTH;
+					break;
+				case 8:
+					target = HERO_CRYPT;
+					break;
+				case 9:
+					target = MONSTER_CRYPT;
+					break;
+				default:
 					if(Rand() % 4 == 0)
 						target = Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT;
 					else
@@ -749,47 +757,7 @@ void World::GenerateWorld()
 							break;
 						}
 					}
-				}
-				else
-				{
-					switch(guaranteed_dungeon)
-					{
-					default:
-					case 0:
-						target = HUMAN_FORT;
-						break;
-					case 1:
-						target = DWARF_FORT;
-						break;
-					case 2:
-						target = MAGE_TOWER;
-						break;
-					case 3:
-						target = BANDITS_HIDEOUT;
-						break;
-					case 4:
-						target = OLD_TEMPLE;
-						break;
-					case 5:
-						target = VAULT;
-						break;
-					case 6:
-						target = NECROMANCER_BASE;
-						break;
-					case 7:
-						target = LABYRINTH;
-						break;
-					case 8:
-						target = HERO_CRYPT;
-						break;
-					case 9:
-						target = MONSTER_CRYPT;
-						break;
-					}
-
-					++guaranteed_dungeon;
-					if(guaranteed_dungeon == 10)
-						guaranteed_dungeon = -1;
+					break;
 				}
 
 				BaseLocation& base = g_base_locations[target];
@@ -830,23 +798,53 @@ void World::GenerateWorld()
 			loc.group = UnitGroup::empty;
 			break;
 		case L_OUTSIDE:
-			if(guaranteed_moonwell)
+			switch(guaranteed_outside++)
 			{
-				guaranteed_moonwell = false;
+			case 0:
+				loc.target = MOONWELL;
+				break;
+			case 1:
+				loc.target = HUNTERS_CAMP;
+				break;
+			case 2:
+				loc.target = FOREST;
+				break;
+			case 3:
+				loc.target = HILLS;
+				break;
+			default:
+				loc.target = (Rand() % 2 == 0 ? FOREST : HILLS);
+				break;
+			}
+
+			switch(loc.target)
+			{
+			case FOREST:
+			case HILLS:
+				{
+					int& st = GetTileSt(loc.pos);
+					if(st < 2)
+						st = 2;
+					else if(st > 10)
+						st = 10;
+					loc.st = st;
+					loc.group = forest_group;
+				}
+				break;
+			case MOONWELL:
 				loc.target = MOONWELL;
 				loc.st = 10;
 				loc.group = forest_group;
 				GetTileSt(loc.pos) = 10;
-			}
-			else
-			{
-				int& st = GetTileSt(loc.pos);
-				if(st < 2)
-					st = 2;
-				else if(st > 10)
-					st = 10;
-				loc.st = st;
-				loc.group = forest_group;
+				break;
+			case HUNTERS_CAMP:
+				loc.target = HUNTERS_CAMP;
+				loc.st = 3;
+				loc.active_quest = ACTIVE_QUEST_HOLDER;
+				loc.group = UnitGroup::empty;
+				if(knowsHuntersCamp)
+					loc.state = LS_KNOWN;
+				break;
 			}
 			break;
 		case L_CAVE:
@@ -899,7 +897,7 @@ void World::StartInLocation()
 //=================================================================================================
 void World::CalculateTiles()
 {
-	int ts = world_size / TILE_SIZE;
+	const int ts = world_size / TILE_SIZE;
 	tiles.resize(ts * ts);
 
 	// set from near locations
@@ -907,15 +905,15 @@ void World::CalculateTiles()
 	{
 		for(int x = 0; x < ts; ++x)
 		{
-			int index = x + y * ts;
+			const int index = x + y * ts;
 			int st = Random(5, 15);
-			Vec2 pos(float(x * TILE_SIZE) + 0.5f * TILE_SIZE, float(y * TILE_SIZE) + 0.5f * TILE_SIZE);
+			const Vec2 pos(float(x * TILE_SIZE) + 0.5f * TILE_SIZE, float(y * TILE_SIZE) + 0.5f * TILE_SIZE);
 			for(uint i = 0; i < locations.size(); ++i)
 			{
 				Location* loc = locations[i];
 				if(!Any(loc->type, L_CITY, L_DUNGEON))
 					continue;
-				float dist = Vec2::Distance(pos, loc->pos);
+				const float dist = Vec2::Distance(pos, loc->pos);
 				if(loc->type == L_CITY)
 				{
 					if(static_cast<City*>(loc)->IsVillage())
@@ -1011,7 +1009,7 @@ void World::CreateCity(const Vec2& pos, int target)
 	Location* l = CreateLocation(L_CITY, -1, target);
 	l->type = L_CITY;
 	l->pos = pos;
-	l->state = LS_UNKNOWN;
+	l->state = LS_KNOWN;
 	l->index = locations.size();
 	locations.push_back(l);
 }
@@ -1051,6 +1049,15 @@ void World::SetLocationImageAndName(Location* l)
 	case L_OUTSIDE:
 		switch(l->target)
 		{
+		default:
+		case FOREST:
+			l->image = LI_FOREST;
+			l->name = txForest;
+			break;
+		case HILLS:
+			l->image = LI_HILLS;
+			l->name = txHills;
+			break;
 		case MOONWELL:
 			l->image = LI_MOONWELL;
 			l->name = txMoonwell;
@@ -1059,10 +1066,10 @@ void World::SetLocationImageAndName(Location* l)
 			l->image = LI_ACADEMY;
 			l->name = txAcademy;
 			return;
-		default:
-			l->image = LI_FOREST;
-			l->name = txForest;
-			break;
+		case HUNTERS_CAMP:
+			l->image = LI_HUNTERS_CAMP;
+			l->name = txHuntersCamp;
+			return;
 		}
 		break;
 	case L_ENCOUNTER:
@@ -1179,7 +1186,7 @@ void World::Save(GameWriter& f)
 	f << travel_dir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
-		f << travel_location_index;
+		f << travel_location;
 		f << travel_start_pos;
 		f << travel_target_pos;
 		f << travel_timer;
@@ -1219,7 +1226,6 @@ void World::Save(GameWriter& f)
 		f.WriteString2(n->text);
 	}
 
-	f << boss_levels;
 	f << tomir_spawned;
 }
 
@@ -1228,7 +1234,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 {
 	f >> state;
 	f >> date;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_15)
 		f >> startDate;
 	else
 		startDate = Date(100, 0, 0);
@@ -1241,7 +1247,8 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	LoadNews(f);
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
-	f >> boss_levels;
+	if(LOAD_VERSION < V_DEV)
+		f.SkipVector<Int2>(); // old boss_levels
 	f >> tomir_spawned;
 }
 
@@ -1427,12 +1434,12 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f >> travel_dir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
-		f >> travel_location_index;
+		f >> travel_location;
 		f >> travel_start_pos;
 		if(LOAD_VERSION >= V_0_8)
 			f >> travel_target_pos;
 		else
-			travel_target_pos = locations[travel_location_index]->pos;
+			travel_target_pos = travel_location->pos;
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
@@ -1492,7 +1499,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		{
 			if(loc && loc->type == L_CAMP)
 			{
-				Location* city = locations[GetNearestSettlement(loc->pos)];
+				Location* city = GetNearestSettlement(loc->pos);
 				if(Vec2::Distance(loc->pos, city->pos) < 16.f)
 					loc->pos.y += 16.f;
 			}
@@ -1509,11 +1516,11 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		current_location = locations[current_location_index];
 		if(current_location == academy)
 		{
-			current_location_index = GetNearestSettlement(academy->pos);
+			current_location = GetNearestSettlement(academy->pos);
+			current_location_index = current_location->index;
 			locations[academy->index] = nullptr;
 			++empty_locations;
 			delete academy;
-			current_location = locations[current_location_index];
 			if(current_location->state == LS_KNOWN)
 				current_location->state = LS_VISITED;
 			world_pos = current_location->pos;
@@ -1593,8 +1600,8 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		{
 			// bugfix
 			state = State::TRAVEL;
-			travel_start_pos = world_pos = locations[0]->pos;
-			travel_location_index = 0;
+			travel_location = locations[0];
+			travel_start_pos = world_pos = travel_location->pos;
 			travel_timer = 1.f;
 		}
 	}
@@ -1603,7 +1610,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 	else if(part == 3)
 	{
 		f.Skip<bool>(); // old first_city
-		f >> boss_levels;
+		f.SkipVector<Int2>(); // old boss_levels
 		encounter_loc->state = LS_HIDDEN;
 	}
 }
@@ -1647,7 +1654,7 @@ void World::Write(BitStreamWriter& f)
 	if(state == State::INSIDE_ENCOUNTER)
 	{
 		f << true;
-		f << travel_location_index;
+		f << travel_location;
 		f << travel_start_pos;
 		f << travel_target_pos;
 		f << travel_timer;
@@ -1815,7 +1822,7 @@ bool World::Read(BitStreamReader& f)
 	if(inside_encounter)
 	{
 		state = State::INSIDE_ENCOUNTER;
-		f >> travel_location_index;
+		f >> travel_location;
 		f >> travel_start_pos;
 		f >> travel_target_pos;
 		f >> travel_timer;
@@ -1868,63 +1875,78 @@ void World::SetStartDate(const Date& date)
 }
 
 //=================================================================================================
-int World::GetRandomSettlementIndex(int excluded) const
+Location* World::GetLocationByType(LOCATION type, int target) const
+{
+	for(Location* loc : locations)
+	{
+		if(loc && loc->type == type && (target == ANY_TARGET || loc->target == target))
+			return loc;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+Location* World::GetRandomSettlement(Location* excluded) const
 {
 	int index = Rand() % settlements;
-	if(index == excluded)
+	if(locations[index] == excluded)
 		index = (index + 1) % settlements;
-	return index;
+	return locations[index];
 }
 
 //=================================================================================================
-int World::GetRandomFreeSettlementIndex(int excluded) const
+Location* World::GetRandomFreeSettlement(Location* excluded) const
 {
-	int index = Rand() % settlements,
-		tries = (int)settlements;
-	while((index == excluded || locations[index]->active_quest) && tries > 0)
+	int index = Rand() % settlements;
+	int startIndex = index;
+
+	do
 	{
+		Location* loc = locations[index];
+		if(loc != excluded && !loc->active_quest)
+			return loc;
 		index = (index + 1) % settlements;
-		--tries;
 	}
-	return (tries == 0 ? -1 : index);
+	while(index != startIndex);
+
+	return nullptr;
 }
 
 //=================================================================================================
-int World::GetRandomCityIndex(int excluded) const
+Location* World::GetRandomCity(Location* excluded) const
 {
 	int count = 0;
 	while(LocationHelper::IsCity(locations[count]))
 		++count;
 
 	int index = Rand() % count;
-	if(index == excluded)
-	{
-		++index;
-		if(index == count)
-			index = 0;
-	}
+	if(locations[index] == excluded)
+		index = (index + 1) % count;
 
-	return index;
+	return locations[index];
 }
 
 //=================================================================================================
 // Get random settlement excluded from used list
-int World::GetRandomSettlementIndex(const vector<int>& used, int target) const
+Location* World::GetRandomSettlement(vector<Location*>& used, int target) const
 {
 	int index = Rand() % settlements;
+	int startIndex = index;
 
 	while(true)
 	{
-		if(target != ANY_TARGET && locations[index]->target != target)
+		Location* loc = locations[index];
+
+		if(target != ANY_TARGET && loc->target != target)
 		{
 			index = (index + 1) % settlements;
 			continue;
 		}
 
 		bool ok = true;
-		for(vector<int>::const_iterator it = used.begin(), end = used.end(); it != end; ++it)
+		for(vector<Location*>::const_iterator it = used.begin(), end = used.end(); it != end; ++it)
 		{
-			if(*it == index)
+			if(*it == loc)
 			{
 				index = (index + 1) % settlements;
 				ok = false;
@@ -1933,16 +1955,20 @@ int World::GetRandomSettlementIndex(const vector<int>& used, int target) const
 		}
 
 		if(ok)
-			break;
+		{
+			used.push_back(loc);
+			return loc;
+		}
+		else if(index == startIndex)
+			throw "Out of free cities!";
 	}
-
-	return index;
 }
 
 //=================================================================================================
-int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int flags)
+Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int flags)
 {
-	int best = -1, index = 0;
+	Location* best = nullptr;
+	int index = 0;
 	float dist, best_dist;
 	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
 	const bool excluded = IsSet(flags, F_EXCLUDED);
@@ -1961,9 +1987,9 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int fl
 				continue;
 		}
 		dist = Vec2::Distance(loc->pos, pos);
-		if(best == -1 || dist < best_dist)
+		if(!best || dist < best_dist)
 		{
-			best = index;
+			best = loc;
 			best_dist = dist;
 		}
 	}
@@ -1972,9 +1998,10 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, int fl
 }
 
 //=================================================================================================
-int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags)
+Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags)
 {
-	int best = -1, index = 0;
+	Location* best = nullptr;
+	int index = 0;
 	float dist, best_dist;
 	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
 	const bool excluded = IsSet(flags, F_EXCLUDED);
@@ -1998,9 +2025,9 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 		if(ok == excluded)
 			continue;
 		dist = Vec2::Distance(loc->pos, pos);
-		if(best == -1 || dist < best_dist)
+		if(!best || dist < best_dist)
 		{
-			best = index;
+			best = loc;
 			best_dist = dist;
 		}
 	}
@@ -2009,11 +2036,11 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets
 }
 
 //=================================================================================================
-Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
+Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array)
 {
-	int index = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
+	Location* loc = GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), 0);
 	array->Release();
-	return locations[index];
+	return loc;
 }
 
 //=================================================================================================
@@ -2118,9 +2145,10 @@ Vec2 World::GetRandomPlace()
 // Searches for location with selected spawn group
 // If cleared respawns enemies
 // If nothing found creates camp
-int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range)
+Location* World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range)
 {
-	int best_ok = -1, best_empty = -1, index = settlements;
+	Location* bestOk = nullptr, *bestEmpty = nullptr;
+	int index = settlements;
 	float ok_range, empty_range, dist;
 
 	for(vector<Location*>::iterator it = locations.begin() + settlements, end = locations.end(); it != end; ++it, ++index)
@@ -2137,17 +2165,17 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 				{
 					if(inside->group == group)
 					{
-						if(best_ok == -1 || dist < ok_range)
+						if(!bestOk || dist < ok_range)
 						{
-							best_ok = index;
+							bestOk = inside;
 							ok_range = dist;
 						}
 					}
 					else
 					{
-						if(best_empty == -1 || dist < empty_range)
+						if(!bestEmpty || dist < empty_range)
 						{
-							best_empty = index;
+							bestEmpty = inside;
 							empty_range = dist;
 						}
 					}
@@ -2156,17 +2184,17 @@ int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range
 		}
 	}
 
-	if(best_ok != -1)
+	if(bestOk)
 	{
-		locations[best_ok]->reset = true;
-		return best_ok;
+		bestOk->reset = true;
+		return bestOk;
 	}
 
-	if(best_empty != -1)
+	if(bestEmpty)
 	{
-		locations[best_empty]->group = group;
-		locations[best_empty]->reset = true;
-		return best_empty;
+		bestEmpty->group = group;
+		bestEmpty->reset = true;
+		return bestEmpty;
 	}
 
 	const Vec2 target_pos = FindPlace(pos, range / 2);
@@ -2187,12 +2215,6 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 	}
 	while(index != start_index);
 	return nullptr;
-}
-
-//=================================================================================================
-Location* World::GetRandomSettlement(Location* loc)
-{
-	return GetRandomSettlement(loc->index);
 }
 
 //=================================================================================================
@@ -2220,15 +2242,16 @@ Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
 //=================================================================================================
 Location* World::GetRandomLocation(delegate<bool(Location*)> pred)
 {
-	int start_index = Rand() % locations.size();
-	int index = start_index;
+	int startIndex = Rand() % locations.size();
+	int index = startIndex;
 	do
 	{
 		Location* loc = locations[index];
 		if(loc && pred(loc))
 			return loc;
 		index = (index + 1) % locations.size();
-	} while(index != start_index);
+	}
+	while(index != startIndex);
 	return nullptr;
 }
 
@@ -2301,8 +2324,8 @@ void World::Travel(int index, bool order)
 	game_level->location_index = -1;
 	travel_timer = 0.f;
 	travel_start_pos = world_pos;
-	travel_location_index = index;
-	travel_target_pos = locations[travel_location_index]->pos;
+	travel_location = locations[index];
+	travel_target_pos = travel_location->pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
 	if(Net::IsLocal())
 		travel_first_frame = true;
@@ -2335,7 +2358,7 @@ void World::TravelPos(const Vec2& pos, bool order)
 	game_level->location_index = -1;
 	travel_timer = 0.f;
 	travel_start_pos = world_pos;
-	travel_location_index = -1;
+	travel_location = nullptr;
 	travel_target_pos = pos;
 	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
 	if(Net::IsLocal())
@@ -2434,7 +2457,7 @@ void World::UpdateTravel(float dt)
 				}
 			}
 
-			encounter_chance += 1;
+			encounter_chance += 1 + globalEncounters.size();
 
 			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && GKey.DebugKey(Key::E)))
 			{
@@ -2467,115 +2490,105 @@ void World::StartEncounter(int enc, UnitGroup* group)
 	}
 	else
 	{
-		Quest_Crazies::State c_state = quest_mgr->quest_crazies->crazies_state;
-
-		bool special = false;
-		bool golem = (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::Encounter
-			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || GKey.DebugKey(Key::G);
-		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || GKey.DebugKey(Key::S)));
-		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || GKey.DebugKey(Key::S)));
-		if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
-			golem = true;
-		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
-			unk = true;
-
-		if(!group)
+		GlobalEncounter* globalEnc = nullptr;
+		for(GlobalEncounter* enc : globalEncounters)
 		{
-			if(Rand() % 6 == 0)
-				group = UnitGroup::Get("bandits");
-			else
-				special = true;
+			if(Rand() % 100 < enc->chance)
+			{
+				globalEnc = enc;
+				break;
+			}
 		}
-		else if(Rand() % 3 == 0)
-			special = true;
 
-		if(crazy || unk || golem || special || GKey.DebugKey(Key::Shift))
+		if(globalEnc)
 		{
-			// special encounter
-			encounter.mode = ENCOUNTER_SPECIAL;
-			encounter.special = (SpecialEncounter)(Rand() % SE_MAX_NORMAL);
-			if(unk)
-				encounter.special = SE_UNK;
-			else if(crazy)
-				encounter.special = SE_CRAZY;
-			else if(golem)
-			{
-				encounter.special = SE_GOLEM;
-				quest_mgr->quest_mages2->paid = false;
-			}
-			else if(IsDebug() && input->Focus())
-			{
-				if(input->Down(Key::I))
-					encounter.special = SE_CRAZY_HEROES;
-				else if(input->Down(Key::B))
-					encounter.special = SE_BANDITS_VS_TRAVELERS;
-				else if(input->Down(Key::C))
-					encounter.special = SE_CRAZY_COOK;
-			}
-
-			if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
-				encounter.special = SE_CRAZY_COOK;
-
-			switch(encounter.special)
-			{
-			default:
-				assert(0);
-			case SE_CRAZY_MAGE:
-				text = txEncCrazyMage;
-				break;
-			case SE_CRAZY_HEROES:
-				text = txEncCrazyHeroes;
-				break;
-			case SE_MERCHANT:
-				text = txEncMerchant;
-				break;
-			case SE_HEROES:
-				if(!tomir_spawned && Rand() % 5 == 0)
-				{
-					encounter.special = SE_TOMIR;
-					tomir_spawned = true;
-					text = txEncSingleHero;
-				}
-				else
-					text = txEncHeroes;
-				break;
-			case SE_BANDITS_VS_TRAVELERS:
-				text = txEncBanditsAttackTravelers;
-				break;
-			case SE_HEROES_VS_ENEMIES:
-				text = txEncHeroesAttack;
-				break;
-			case SE_GOLEM:
-				text = txEncGolem;
-				break;
-			case SE_CRAZY:
-				text = txEncCrazy;
-				break;
-			case SE_UNK:
-				text = txEncUnk;
-				break;
-			case SE_CRAZY_COOK:
-				text = txEncCrazyCook;
-				break;
-			case SE_ENEMIES_COMBAT:
-				text = txEncEnemiesCombat;
-				break;
-			}
+			encounter.mode = ENCOUNTER_GLOBAL;
+			encounter.global = globalEnc;
+			text = globalEnc->text;
 		}
 		else
 		{
-			// combat encounter
-			encounter.mode = ENCOUNTER_COMBAT;
-			encounter.group = group;
-			text = group->encounter_text.c_str();
-			if(group->is_list)
+			bool special = false;
+			if(!group)
 			{
-				for(UnitGroup::Entry& entry : group->entries)
+				if(Rand() % 6 == 0)
+					group = UnitGroup::Get("bandits");
+				else
+					special = true;
+			}
+			else if(Rand() % 3 == 0)
+				special = true;
+
+			if(special || GKey.DebugKey(Key::Shift))
+			{
+				// special encounter
+				encounter.mode = ENCOUNTER_SPECIAL;
+				encounter.special = (SpecialEncounter)(Rand() % SE_MAX_NORMAL);
+				if(IsDebug() && input->Focus())
 				{
-					if(entry.is_leader)
+					if(input->Down(Key::I))
+						encounter.special = SE_CRAZY_HEROES;
+					else if(input->Down(Key::B))
+						encounter.special = SE_BANDITS_VS_TRAVELERS;
+					else if(input->Down(Key::C))
+						encounter.special = SE_CRAZY_COOK;
+				}
+
+				if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
+					encounter.special = SE_CRAZY_COOK;
+
+				switch(encounter.special)
+				{
+				default:
+					assert(0);
+				case SE_CRAZY_MAGE:
+					text = txEncCrazyMage;
+					break;
+				case SE_CRAZY_HEROES:
+					text = txEncCrazyHeroes;
+					break;
+				case SE_MERCHANT:
+					text = txEncMerchant;
+					break;
+				case SE_HEROES:
+					if(!tomir_spawned && Rand() % 5 == 0)
 					{
-						encounter.group = entry.group;
-						break;
+						encounter.special = SE_TOMIR;
+						tomir_spawned = true;
+						text = txEncSingleHero;
+					}
+					else
+						text = txEncHeroes;
+					break;
+				case SE_BANDITS_VS_TRAVELERS:
+					text = txEncBanditsAttackTravelers;
+					break;
+				case SE_HEROES_VS_ENEMIES:
+					text = txEncHeroesAttack;
+					break;
+				case SE_CRAZY_COOK:
+					text = txEncCrazyCook;
+					break;
+				case SE_ENEMIES_COMBAT:
+					text = txEncEnemiesCombat;
+					break;
+				}
+			}
+			else
+			{
+				// combat encounter
+				encounter.mode = ENCOUNTER_COMBAT;
+				encounter.group = group;
+				text = group->encounter_text.c_str();
+				if(group->is_list)
+				{
+					for(UnitGroup::Entry& entry : group->entries)
+					{
+						if(entry.is_leader)
+						{
+							encounter.group = entry.group;
+							break;
+						}
 					}
 				}
 			}
@@ -2606,11 +2619,11 @@ void World::EndTravel()
 	if(state != State::TRAVEL)
 		return;
 	state = State::ON_MAP;
-	if(travel_location_index != -1)
+	if(travel_location)
 	{
-		current_location_index = travel_location_index;
-		current_location = locations[travel_location_index];
-		travel_location_index = -1;
+		current_location = travel_location;
+		current_location_index = travel_location->index;
+		travel_location = nullptr;
 		game_level->location_index = current_location_index;
 		game_level->location = current_location;
 		Location& loc = *game_level->location;
@@ -2727,6 +2740,20 @@ void World::RemoveEncounter(Quest* quest)
 			encounters[i] = nullptr;
 		}
 	}
+}
+
+//=================================================================================================
+void World::RemoveGlobalEncounter(Quest* quest)
+{
+	LoopAndRemove(globalEncounters, [=](GlobalEncounter* globalEnc)
+	{
+		if(globalEnc->quest == quest)
+		{
+			delete globalEnc;
+			return true;
+		}
+		return false;
+	});
 }
 
 //=================================================================================================
@@ -2889,43 +2916,6 @@ void World::AddNews(cstring text)
 }
 
 //=================================================================================================
-void World::AddBossLevel(const Int2& pos)
-{
-	if(Net::IsLocal())
-		boss_levels.push_back(pos);
-	else
-		boss_level_mp = true;
-}
-
-//=================================================================================================
-bool World::RemoveBossLevel(const Int2& pos)
-{
-	if(Net::IsLocal())
-	{
-		if(boss_level_mp)
-		{
-			boss_level_mp = false;
-			return true;
-		}
-		return false;
-	}
-	return RemoveElementTry(boss_levels, pos);
-}
-
-//=================================================================================================
-bool World::IsBossLevel(const Int2& pos) const
-{
-	if(Net::IsLocal())
-		return boss_level_mp;
-	for(const Int2& boss_pos : boss_levels)
-	{
-		if(boss_pos == pos)
-			return true;
-	}
-	return false;
-}
-
-//=================================================================================================
 void World::DeleteCamp(Camp* camp, bool remove)
 {
 	assert(camp);
@@ -2961,6 +2951,29 @@ void World::AbadonLocation(Location* loc)
 		area = static_cast<Cave*>(loc);
 	else
 		area = static_cast<OutsideLocation*>(loc);
+
+	// remove camp in 4-8 days
+	if(loc->type == L_CAMP)
+	{
+		Camp* camp = static_cast<Camp*>(loc);
+		camp->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+
+		// turn off lights
+		if(loc != current_location)
+		{
+			BaseObject* campfire = BaseObject::Get("campfire"),
+				*campfireOff = BaseObject::Get("campfire_off"),
+				*torch = BaseObject::Get("torch"),
+				*torchOff = BaseObject::Get("torch_off");
+			for(Object* obj : camp->objects)
+			{
+				if(obj->base == campfire)
+					obj->base = campfireOff;
+				else if(obj->base == torch)
+					obj->base = torchOff;
+			}
+		}
+	}
 
 	// if location is open
 	if(loc == current_location)

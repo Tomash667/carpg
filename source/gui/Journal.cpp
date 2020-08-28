@@ -574,14 +574,14 @@ void Journal::AddRumor(cstring text)
 }
 
 //=================================================================================================
-void Journal::Save(FileWriter& f)
+void Journal::Save(GameWriter& f)
 {
 	f.WriteStringArray<uint, word>(rumors);
 	f.WriteStringArray<uint, word>(notes);
 }
 
 //=================================================================================================
-void Journal::Load(FileReader& f)
+void Journal::Load(GameReader& f)
 {
 	f.ReadStringArray<uint, word>(rumors);
 	f.ReadStringArray<uint, word>(notes);

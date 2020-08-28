@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "ScriptException.h"
+
+//-----------------------------------------------------------------------------
 template<typename T>
 struct ContentItem
 {
@@ -19,27 +22,27 @@ struct ContentItem
 	}
 	static T* Get(int hash)
 	{
-		T* item = TryGet(hash);
+		T* item = T::TryGet(hash);
 		if(item)
 			return item;
 		throw Format("Missing %s hash %d.", T::type_name, hash);
 	}
 	static T* TryGet(Cstring id)
 	{
-		return TryGet(Hash(id));
+		return T::TryGet(Hash(id));
 	}
 	static T* Get(Cstring id)
 	{
-		T* item = TryGet(Hash(id));
+		T* item = T::TryGet(Hash(id));
 		if(item)
 			return item;
-		return Format("Missing %s '%s'.", T::type_name, id);
+		throw Format("Missing %s '%s'.", T::type_name, id);
 	}
 	static T* GetS(const string& id)
 	{
-		Recipe* recipe = TryGet(id);
-		if(recipe)
-			return recipe;
+		T* item = T::TryGet(id);
+		if(item)
+			return item;
 		throw ScriptException("Invalid %s '%s'.", T::type_name, id.c_str());
 	}
 };

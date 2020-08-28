@@ -6,7 +6,7 @@
 #include "Class.h"
 #include "MeshInstance.h"
 #include "HumanData.h"
-#include "HeroData.h"
+#include "Hero.h"
 #include "PlayerController.h"
 #include "Usable.h"
 #include "Effect.h"
@@ -287,7 +287,7 @@ struct Unit : public EntityType<Unit>
 	UnitData* data;
 	PlayerController* player;
 	AIController* ai;
-	HeroData* hero;
+	Hero* hero;
 	Human* human_data;
 	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
@@ -315,6 +315,7 @@ struct Unit : public EntityType<Unit>
 		{
 			Ability* ability;
 			float rot;
+			UnitList* hit;
 		} dash;
 		struct UseUsableAction
 		{
@@ -380,7 +381,7 @@ struct Unit : public EntityType<Unit>
 	void TakeWeapon(WeaponType type);
 	float GetSphereRadius() const
 	{
-		float radius = data->mesh->head.radius;
+		float radius = data->mesh->head.radius * data->scale;
 		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1) * 0.2f + 1.f);
 		return radius;
@@ -404,14 +405,14 @@ struct Unit : public EntityType<Unit>
 	float GetUnitHeight() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 1.73f * ((human_data->height - 1) * 0.2f + 1.f);
+			return 1.73f * data->scale * ((human_data->height - 1) * 0.2f + 1.f);
 		else
-			return data->mesh->head.bbox.SizeY();
+			return data->scale * data->mesh->head.bbox.SizeY();
 	}
 	Vec3 GetPhysicsPos() const
 	{
 		Vec3 p = pos;
-		p.y += max(1.5f, GetUnitHeight()) * 0.5f + 0.1f;
+		p.y += max(MIN_H, GetUnitHeight()) * 0.5f + 0.1f;
 		return p;
 	}
 	Vec3 GetHeadPoint() const
@@ -545,7 +546,7 @@ struct Unit : public EntityType<Unit>
 	void SaveStock(GameWriter& f);
 	void Load(GameReader& f);
 	void LoadStock(GameReader& f);
-	void Write(BitStreamWriter& f);
+	void Write(BitStreamWriter& f) const;
 	bool Read(BitStreamReader& f);
 	Vec3 GetCenter() const
 	{
@@ -581,12 +582,12 @@ public:
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
 		int str = Get(AttributeId::STR);
-		if(str >= wep.req_str)
+		if(str >= wep.reqStr)
 			return 0.f;
-		else if(str * 2 <= wep.req_str)
+		else if(str * 2 <= wep.reqStr)
 			return 0.5f;
 		else
-			return 0.5f * float(wep.req_str - str) / (wep.req_str / 2);
+			return 0.5f * float(wep.reqStr - str) / (wep.reqStr / 2);
 	}
 	float GetPowerAttackSpeed() const
 	{
@@ -599,18 +600,19 @@ public:
 	float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
 		int str = Get(AttributeId::STR);
-		if(str >= b.req_str)
+		if(str >= b.reqStr)
 			return 0.f;
-		else if(str * 2 <= b.req_str)
+		else if(str * 2 <= b.reqStr)
 			return 0.75f;
 		else
-			return 0.75f * float(b.req_str - str) / (b.req_str / 2);
+			return 0.75f * float(b.reqStr - str) / (b.reqStr / 2);
 	}
 	bool IsHero() const { return hero != nullptr; }
 	bool IsFollower() const { return hero && hero->team_member; }
 	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
 	bool IsFollowingTeamMember() const { return IsFollower() && GetOrder() == ORDER_FOLLOW; }
 	Class* GetClass() const { return data->clas; }
+	const string& GetClassId() const { return data->clas->id; }
 	bool IsUsingMp() const
 	{
 		if(data->clas)
@@ -695,9 +697,7 @@ public:
 	bool GetKnownName() const;
 	void SetKnownName(bool known);
 
-	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
-	float GetBlockSpeed() const { return 0.1f; }
-
+	float GetBlockSpeed() const;
 	float CalculateMagicResistance() const;
 	float GetPoisonResistance() const;
 	int CalculateMagicPower() const { return (int)GetEffectSum(EffectId::MagicPower); }
@@ -707,11 +707,8 @@ public:
 	// EFFECTS
 	//-----------------------------------------------------------------------------
 	void AddEffect(Effect& e, bool send = true);
-	// dodaj efekt zjadanego przedmiotu
 	void ApplyConsumableEffect(const Consumable& item);
-	// aktualizuj efekty
 	void UpdateEffects(float dt);
-	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
 	void EndEffects(int days = 0, float* o_natural_mod = nullptr);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
@@ -747,6 +744,7 @@ public:
 	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
 	bool HaveAmulet() const { return slots[SLOT_AMULET] != nullptr; }
 	bool CanWear(const Item* item) const;
+	bool WantItem(const Item* item) const;
 	const Weapon& GetWeapon() const
 	{
 		assert(HaveWeapon());
@@ -890,6 +888,7 @@ public:
 	void RemoveMana(float value);
 	void RemoveStamina(float value);
 	void RemoveStaminaBlock(float value);
+	float GetStaminaMod(const Item& item) const;
 
 	void CreateMesh(CREATE_MESH mode);
 
@@ -923,13 +922,13 @@ public:
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
-	void AddDialog(Quest_Scripted* quest, GameDialog* dialog, int priority);
-	void AddDialogS(Quest_Scripted* quest, const string& dialog_id, int priority);
-	void RemoveDialog(Quest_Scripted* quest, bool cleanup);
-	void RemoveDialogS(Quest_Scripted* quest) { RemoveDialog(quest, false); }
-	void AddEventHandler(Quest_Scripted* quest, EventType type);
-	void RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup);
-	void RemoveEventHandlerS(Quest_Scripted* quest, EventType type) { RemoveEventHandler(quest, type, false); }
+	void AddDialog(Quest2* quest, GameDialog* dialog, int priority = 0);
+	void AddDialogS(Quest2* quest, const string& dialog_id, int priority);
+	void RemoveDialog(Quest2* quest, bool cleanup);
+	void RemoveDialogS(Quest2* quest) { RemoveDialog(quest, false); }
+	void AddEventHandler(Quest2* quest, EventType type);
+	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup);
+	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	void RemoveAllEventHandlers();
 	UnitOrder GetOrder() const
 	{
@@ -959,7 +958,7 @@ public:
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
 	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
-	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
+	float GetBashSpeed() const;
 	void RotateTo(const Vec3& pos, float dt);
 	void RotateTo(const Vec3& pos);
 	void RotateTo(float rot);
@@ -969,9 +968,20 @@ public:
 	void CastSpell();
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
+	void MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool canWarp, bool isPrev);
 	void ChangeBase(UnitData* ud, bool update_items = false);
 	void MoveToArea(LevelArea* area, const Vec3& pos);
 	void Kill();
+	enum DamageFlags
+	{
+		DMG_NO_BLOOD = 1 << 0,
+		DMG_MAGICAL = 1 << 1
+	};
+	void GiveDmg(float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
+	void AttackReaction(Unit& attacker);
+	bool DoAttack();
+	bool DoShieldSmash();
+	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 };
 
 //-----------------------------------------------------------------------------
@@ -1010,3 +1020,38 @@ struct NAMES
 	static uint n_ani_humanoid;
 	static int max_attacks;
 };
+
+//-----------------------------------------------------------------------------
+struct UnitList : public ObjectPoolProxy<UnitList>
+{
+	void Clear() { units.clear(); }
+	void Add(Unit* unit) { units.push_back(unit); }
+	bool IsInside(Unit* unit) const;
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
+
+private:
+	vector<Entity<Unit>> units;
+};
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, Unit* u)
+{
+	int id = (u ? u->id : -1);
+	f << id;
+}
+inline void operator << (GameWriter& f, const SmartPtr<Unit>& u)
+{
+	int id = (u ? u->id : -1);
+	f << id;
+}
+inline void operator >> (GameReader& f, Unit*& unit)
+{
+	int id = f.Read<int>();
+	unit = Unit::GetById(id);
+}
+inline void operator >> (GameReader& f, SmartPtr<Unit>& unit)
+{
+	int id = f.Read<int>();
+	unit = Unit::GetById(id);
+}

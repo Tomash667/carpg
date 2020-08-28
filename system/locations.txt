@@ -201,7 +201,7 @@ room crypt_treasure {
 	flags treasure
 	objects {
 		torch
-		chest {
+		chest_silver {
 			flags {in_middle required}
 		}
 		chest 1 2
@@ -216,7 +216,7 @@ room crypt_treasure {
 room labyrinth_treasure {
 	flags treasure
 	objects {
-		chest {
+		chest_silver {
 			flags {in_middle required}
 		}
 		chest 1 2

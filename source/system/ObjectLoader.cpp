@@ -54,8 +54,8 @@ void ObjectLoader::DoLoading()
 //=================================================================================================
 void ObjectLoader::Cleanup()
 {
-	DeleteElements(BaseObject::objs);
-	DeleteElements(ObjectGroup::groups);
+	DeleteElements(BaseObject::items);
+	DeleteElements(ObjectGroup::items);
 	DeleteElements(variant_objects);
 }
 
@@ -89,7 +89,7 @@ void ObjectLoader::InitTokenizer()
 		{ "table_spawner", OBJ_TABLE_SPAWNER },
 		{ "campfire_effect", OBJ_CAMPFIRE_EFFECT },
 		{ "important", OBJ_IMPORTANT },
-		{ "billboard", OBJ_BILLBOARD },
+		{ "tmp_physics", OBJ_TMP_PHYSICS },
 		{ "scaleable", OBJ_SCALEABLE },
 		{ "physics_ptr", OBJ_PHYSICS_PTR },
 		{ "building", OBJ_BUILDING },
@@ -122,8 +122,16 @@ void ObjectLoader::InitTokenizer()
 //=================================================================================================
 void ObjectLoader::LoadEntity(int top, const string& id)
 {
-	if(BaseObject::TryGet(id))
-		t.Throw("Id must be unique.");
+	int hash = Hash(id);
+	ObjectGroup* group;
+	BaseObject* existingObj = BaseObject::TryGet(hash, &group);
+	if(existingObj)
+	{
+		if((group && group->id != id) || existingObj->id != id)
+			t.Throw("Id hash collision.");
+		else
+			t.Throw("Id must be unique.");
+	}
 
 	switch(top)
 	{
@@ -145,7 +153,7 @@ void ObjectLoader::Finalize()
 	CalculateCrc();
 
 	Info("Loaded objects (%u), usables (%u) - crc %p.",
-		BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
+		BaseObject::items.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
 }
 
 //=================================================================================================
@@ -153,6 +161,7 @@ void ObjectLoader::ParseObject(const string& id)
 {
 	Ptr<BaseObject> obj;
 	obj->id = id;
+	obj->hash = Hash(id);
 	t.Next();
 
 	if(t.IsSymbol(':'))
@@ -177,7 +186,8 @@ void ObjectLoader::ParseObject(const string& id)
 		ParseObjectProperty(prop, obj);
 	}
 
-	BaseObject::objs.insert(obj.Pin());
+	BaseObject* o = obj.Pin();
+	BaseObject::items[o->hash] = o;
 }
 
 //=================================================================================================
@@ -250,6 +260,7 @@ void ObjectLoader::ParseUsable(const string& id)
 {
 	Ptr<BaseUsable> use;
 	use->id = id;
+	use->hash = Hash(id);
 	t.Next();
 
 	if(t.IsSymbol(':'))
@@ -343,7 +354,7 @@ void ObjectLoader::ParseUsable(const string& id)
 	use->flags |= OBJ_USABLE;
 
 	BaseUsable* u = use.Pin();
-	BaseObject::objs.insert(u);
+	BaseObject::items[u->hash] = u;
 	BaseUsable::usables.push_back(u);
 }
 
@@ -355,6 +366,7 @@ void ObjectLoader::ParseGroup(const string& id)
 	list->total_chance = 0;
 	list->parent = nullptr;
 	group->id = id;
+	group->hash = Hash(id);
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -419,7 +431,8 @@ void ObjectLoader::ParseGroup(const string& id)
 	if(group->list.entries.empty())
 		t.Throw("Empty group.");
 
-	ObjectGroup::groups.insert(group.Pin());
+	ObjectGroup* g = group.Pin();
+	ObjectGroup::items[g->hash] = g;
 }
 
 //=================================================================================================
@@ -427,44 +440,45 @@ void ObjectLoader::CalculateCrc()
 {
 	Crc crc;
 
-	for(BaseObject* obj : BaseObject::objs)
+	for(pair<const int, BaseObject*>& p : BaseObject::items)
 	{
-		crc.Update(obj->id);
-		if(obj->mesh)
-			crc.Update(obj->mesh->filename);
-		crc.Update(obj->type);
-		if(obj->type == OBJ_CYLINDER)
+		BaseObject& obj = *p.second;
+		crc.Update(obj.id);
+		if(obj.mesh)
+			crc.Update(obj.mesh->filename);
+		crc.Update(obj.type);
+		if(obj.type == OBJ_CYLINDER)
 		{
-			crc.Update(obj->r);
-			crc.Update(obj->h);
+			crc.Update(obj.r);
+			crc.Update(obj.h);
 		}
-		crc.Update(obj->centery);
-		crc.Update(obj->flags);
-		if(obj->variants)
+		crc.Update(obj.centery);
+		crc.Update(obj.flags);
+		if(obj.variants)
 		{
-			for(Mesh* mesh : obj->variants->meshes)
+			for(Mesh* mesh : obj.variants->meshes)
 				crc.Update(mesh->filename);
 		}
-		crc.Update(obj->extra_dist);
+		crc.Update(obj.extra_dist);
 
-		if(obj->IsUsable())
+		if(obj.IsUsable())
 		{
-			BaseUsable* use = static_cast<BaseUsable*>(obj);
-			crc.Update(use->anim);
-			if(use->item)
-				crc.Update(use->item->id);
-			if(use->sound)
-				crc.Update(use->sound->filename);
-			crc.Update(use->sound_timer);
-			crc.Update(use->limit_rot);
-			crc.Update(use->use_flags);
+			BaseUsable& use = static_cast<BaseUsable&>(obj);
+			crc.Update(use.anim);
+			if(use.item)
+				crc.Update(use.item->id);
+			if(use.sound)
+				crc.Update(use.sound->filename);
+			crc.Update(use.sound_timer);
+			crc.Update(use.limit_rot);
+			crc.Update(use.use_flags);
 		}
 	}
 
-	for(auto group : ObjectGroup::groups)
+	for(pair<const int, ObjectGroup*>& p : ObjectGroup::items)
 	{
-		crc.Update(group->id);
-		UpdateObjectGroupCrc(crc, group->list);
+		crc.Update(p.second->id);
+		UpdateObjectGroupCrc(crc, p.second->list);
 	}
 
 	content.crc[(int)Content::Id::Objects] = crc.Get();

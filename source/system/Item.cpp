@@ -56,7 +56,7 @@ Item& Item::operator = (const Item& i)
 			const Weapon& w2 = i.ToWeapon();
 			w.dmg = w2.dmg;
 			w.dmg_type = w2.dmg_type;
-			w.req_str = w2.req_str;
+			w.reqStr = w2.reqStr;
 			w.weapon_type = w2.weapon_type;
 			w.material = w2.material;
 		}
@@ -66,7 +66,7 @@ Item& Item::operator = (const Item& i)
 			Bow& b = ToBow();
 			const Bow& b2 = i.ToBow();
 			b.dmg = b2.dmg;
-			b.req_str = b2.req_str;
+			b.reqStr = b2.reqStr;
 			b.speed = b2.speed;
 		}
 		break;
@@ -75,7 +75,7 @@ Item& Item::operator = (const Item& i)
 			Shield& s = ToShield();
 			const Shield& s2 = i.ToShield();
 			s.block = s2.block;
-			s.req_str = s2.req_str;
+			s.reqStr = s2.reqStr;
 			s.material = s2.material;
 		}
 		break;
@@ -84,7 +84,7 @@ Item& Item::operator = (const Item& i)
 			Armor& a = ToArmor();
 			const Armor& a2 = i.ToArmor();
 			a.def = a2.def;
-			a.req_str = a2.req_str;
+			a.reqStr = a2.reqStr;
 			a.mobility = a2.mobility;
 			a.material = a2.material;
 			a.armor_type = a2.armor_type;

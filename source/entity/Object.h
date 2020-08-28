@@ -36,10 +36,6 @@ struct Object
 			return IsSet(base->flags, OBJ_NO_CULLING);
 		return false;
 	}
-	bool IsBillboard() const
-	{
-		return base && IsSet(base->flags, OBJ_BILLBOARD);
-	}
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;

@@ -18,51 +18,6 @@ class NamespaceBuilder;
 struct asSFuncPtr;
 
 //-----------------------------------------------------------------------------
-struct ScriptEvent
-{
-	EventType type;
-	union
-	{
-		struct OnCleared
-		{
-			Location* location;
-		} on_cleared;
-		struct OnDie
-		{
-			Unit* unit;
-		} on_die;
-		struct OnEncounter
-		{
-		} on_encounter;
-		struct OnEnter
-		{
-			Location* location;
-		} on_enter;
-		struct OnGenerate
-		{
-			Location* location;
-			MapSettings* map_settings;
-			int stage;
-		} on_generate;
-		struct OnPickup
-		{
-			Unit* unit;
-			GroundItem* item;
-		} on_pickup;
-		struct OnTimeout
-		{
-		} on_timeout;
-		struct OnUpdate
-		{
-			Unit* unit;
-		} on_update;
-	};
-	bool cancel;
-
-	ScriptEvent(EventType type) : type(type), cancel(false) {}
-};
-
-//-----------------------------------------------------------------------------
 struct ScriptContext
 {
 	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr), quest(nullptr) {}
@@ -70,7 +25,7 @@ struct ScriptContext
 	PlayerController* pc;
 	Unit* target;
 	vector<ItemSlot>* stock;
-	Quest_Scripted* quest;
+	Quest2* quest;
 
 	void Clear()
 	{
@@ -79,7 +34,7 @@ struct ScriptContext
 		stock = nullptr;
 		quest = nullptr;
 	}
-	Quest_Scripted* GetQuest()
+	Quest2* GetQuest()
 	{
 		if(!quest)
 			throw ScriptException("Method must be called from quest.");
@@ -126,8 +81,8 @@ public:
 	NamespaceBuilder WithNamespace(cstring name, void* auxiliary = nullptr);
 	Var& GetVar(cstring name);
 	void Reset();
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	enum RegisterResult
 	{
 		Ok,
@@ -146,6 +101,12 @@ public:
 	void StopAllScripts();
 	asIScriptContext* SuspendScript();
 	void ResumeScript(asIScriptContext* ctx);
+	void RegisterSharedInstance(QuestScheme* scheme, asIScriptObject* instance)
+	{
+		assert(scheme && instance);
+		sharedInstances.push_back(std::make_pair(scheme, instance));
+	}
+	asIScriptObject* GetSharedInstance(QuestScheme* scheme);
 
 private:
 	struct ScriptTypeInfo
@@ -167,4 +128,5 @@ private:
 	std::unordered_map<int, Vars*> unit_vars;
 	ScriptContext ctx;
 	vector<SuspendedScript> suspended_scripts;
+	vector<pair<QuestScheme*, asIScriptObject*>> sharedInstances;
 };

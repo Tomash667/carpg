@@ -32,7 +32,7 @@ struct Door : public EntityType<Door>
 	static const float BLOCKED_SOUND_DIST;
 	static const int MIN_SIZE = 31;
 
-	MeshInstance* mesh_inst;
+	MeshInstance* meshInst;
 	btCollisionObject* phy;
 	Vec3 pos;
 	float rot;
@@ -41,23 +41,30 @@ struct Door : public EntityType<Door>
 	int locked;
 	bool door2;
 
-	Door() : door2(false), mesh_inst(nullptr)
+	Door() : door2(false), meshInst(nullptr)
 	{
 	}
 	~Door();
-	bool IsBlocking() const { return Any(state, Closed, Opening, Closing2); }
-	bool IsBlockingView() const { return state == Closed; }
-	bool IsAnimated() const { return Any(state, Opening, Opening2, Closing, Closing2); }
+	void Init();
+	void Recreate();
+	void Cleanup();
+	void Update(float dt, LevelArea& area);
+	void Open();
+	void OpenInstant();
+	void Close();
+	void SetState(bool closing);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
+
+	bool IsBlocking() const { return Any(state, Closed, Opening, Closing2); }
+	bool IsBlockingView() const { return state == Closed; }
+	bool IsAnimated() const { return Any(state, Opening, Opening2, Closing, Closing2); }
 	Vec3 GetCenter() const
 	{
 		Vec3 p = pos;
 		p.y += 1.5f;
 		return p;
 	}
-	void Open();
-	void Close();
 };

@@ -36,8 +36,6 @@
 #include "Door.h"
 #include "SoundManager.h"
 #include "LobbyApi.h"
-#include "GameFile.h"
-#include "SaveState.h"
 #include "GameResources.h"
 #include "CraftPanel.h"
 
@@ -170,7 +168,7 @@ void Net::UpdateServer(float dt)
 				info.pc->UpdateCooldown(gameDt);
 		}
 
-		InterpolatePlayers(gameDt);
+		InterpolatePlayers(dt);
 		UpdateFastTravel(gameDt);
 		game->pc->unit->changed = true;
 	}
@@ -732,18 +730,21 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
 						break;
 					case AID_PrepareAttack:
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_PREPARE;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.f;
-						unit.act.attack.run = false;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
-						unit.timer = 0.f;
+						{
+							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+							unit.action = A_ATTACK;
+							unit.animation_state = AS_ATTACK_PREPARE;
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.f;
+							unit.act.attack.run = false;
+							unit.act.attack.hitted = false;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
+							const Weapon& weapon = unit.GetWeapon();
+							unit.RemoveStamina(weapon.GetInfo().stamina * unit.GetStaminaMod(weapon));
+							unit.timer = 0.f;
+						}
 						break;
 					case AID_Shoot:
 					case AID_StartShoot:
@@ -777,20 +778,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 						unit.mesh_inst->groups[1].speed = attack_speed;
 						unit.player->Train(TrainWhat::BashStart, 0.f, 0);
-						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
+						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK * unit.GetStaminaMod(unit.GetShield()));
 						break;
 					case AID_RunningAttack:
-						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-						unit.action = A_ATTACK;
-						unit.animation_state = AS_ATTACK_CAN_HIT;
-						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
-						unit.act.attack.power = 1.5f;
-						unit.act.attack.run = true;
-						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						unit.mesh_inst->groups[1].speed = attack_speed;
-						unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
+						{
+							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
+								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
+							unit.action = A_ATTACK;
+							unit.animation_state = AS_ATTACK_CAN_HIT;
+							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
+							unit.act.attack.power = 1.5f;
+							unit.act.attack.run = true;
+							unit.act.attack.hitted = false;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
+							const Weapon& weapon = unit.GetWeapon();
+							unit.RemoveStamina(weapon.GetInfo().stamina * 1.5f * unit.GetStaminaMod(weapon));
+						}
 						break;
 					case AID_Cancel:
 						if(unit.action == A_SHOOT)
@@ -1290,7 +1294,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						Unit* t = player.action_unit;
 						uint add_as_team = team_count;
-						if(player.action == PlayerAction::GiveItems)
+						if(player.action == PlayerAction::GiveItems && slot.item->type != IT_CONSUMABLE)
 						{
 							add_as_team = 0;
 							int price = slot.item->value / 2;
@@ -1795,7 +1799,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(info.devmode)
 			{
 				if(game->game_state == GS_LEVEL)
-					game->GiveDmg(unit, unit.hpmax);
+					unit.GiveDmg(unit.hpmax);
 			}
 			else
 				Error("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str());
@@ -1974,7 +1978,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!target)
 						Error("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), id);
 					else if(target->IsAlive())
-						game->GiveDmg(*target, target->hpmax);
+						target->GiveDmg(target->hpmax);
 				}
 			}
 			break;
@@ -2291,12 +2295,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						PushChange(NetChange::LEAVE_LOCATION);
 						if(type == ENTER_FROM_OUTSIDE)
 							game->fallback_type = FALLBACK::EXIT;
-						else if(type == ENTER_FROM_UP_LEVEL)
+						else if(type == ENTER_FROM_PREV_LEVEL)
 						{
 							game->fallback_type = FALLBACK::CHANGE_LEVEL;
 							game->fallback_1 = -1;
 						}
-						else if(type == ENTER_FROM_DOWN_LEVEL)
+						else if(type == ENTER_FROM_NEXT_LEVEL)
 						{
 							game->fallback_type = FALLBACK::CHANGE_LEVEL;
 							game->fallback_1 = +1;
@@ -2346,74 +2350,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 
 				Door* door = game_level->FindDoor(id);
-				if(!door)
-				{
-					Error("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), id);
-					break;
-				}
-
-				bool ok = true;
-				if(is_closing)
-				{
-					// closing door
-					if(door->state == Door::Opened)
-					{
-						door->state = Door::Closing;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-					}
-					else if(door->state == Door::Opening)
-					{
-						door->state = Door::Closing2;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					}
-					else if(door->state == Door::Opening2)
-					{
-						door->state = Door::Closing;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					}
-					else
-						ok = false;
-				}
+				if(door)
+					door->SetState(is_closing);
 				else
-				{
-					// opening door
-					if(door->state == Door::Closed)
-					{
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-					}
-					else if(door->state == Door::Closing)
-					{
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening2;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					}
-					else if(door->state == Door::Closing2)
-					{
-						door->locked = LOCK_NONE;
-						door->state = Door::Opening;
-						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					}
-					else
-						ok = false;
-				}
-
-				if(ok && Rand() % 2 == 0)
-				{
-					Sound* sound;
-					if(is_closing && Rand() % 2 == 0)
-						sound = game_res->sDoorClose;
-					else
-						sound = game_res->sDoor[Rand() % 3];
-					sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
-				}
-
-				// send to other players
-				NetChange& c = Add1(changes);
-				c.type = NetChange::USE_DOOR;
-				c.id = id;
-				c.count = (is_closing ? 1 : 0);
+					Error("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), id);
 			}
 			break;
 		// leader wants to travel to location
@@ -2508,15 +2448,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat to warp to stairs (<>+shift)
-		case NetChange::CHEAT_WARP_TO_STAIRS:
+		// player used cheat to warp to entry (<>+shift)
+		case NetChange::CHEAT_WARP_TO_ENTRY:
 			{
 				bool is_down;
 				f >> is_down;
 				if(!f)
-					Error("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str());
+					Error("Update server: Broken CHEAT_WARP_TO_ENTRY from %s.", info.name.c_str());
 				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
+					Error("Update server: Player %s used CHEAT_WARP_TO_ENTRY without devmode.", info.name.c_str());
 				else if(game->game_state == GS_LEVEL)
 				{
 					InsideLocation* inside = (InsideLocation*)game_level->location;
@@ -2524,14 +2464,14 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					if(!is_down)
 					{
-						Int2 tile = lvl.GetUpStairsFrontTile();
-						unit.rot = DirToRot(lvl.staircase_up_dir);
+						Int2 tile = lvl.GetPrevEntryFrontTile();
+						unit.rot = DirToRot(lvl.prevEntryDir);
 						game_level->WarpUnit(unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
-						Int2 tile = lvl.GetDownStairsFrontTile();
-						unit.rot = DirToRot(lvl.staircase_down_dir);
+						Int2 tile = lvl.GetNextEntryFrontTile();
+						unit.rot = DirToRot(lvl.nextEntryDir);
 						game_level->WarpUnit(unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 				}
@@ -2863,7 +2803,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					Unit* target = game_level->FindUnit(id);
 					if(target)
-						game->GiveDmg(*target, 100.f);
+						target->GiveDmg(100.f);
 					else
 						Error("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), id);
 				}
@@ -3505,7 +3445,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
 		case NetChange::USE_ITEM:
-		case NetChange::CAST_SPELL:
+		case NetChange::BOSS_START:
 			f << c.unit->id;
 			break;
 		case NetChange::TELL_NAME:
@@ -3539,12 +3479,8 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::SHOOT_ARROW:
-			{
-				f << (c.unit ? c.unit->id : -1);
-				f << c.pos;
-				f << c.vec3;
-				f << c.extra_f;
-			}
+		case NetChange::CREATE_SPELL_BALL:
+			f.Write(&c.data, c.size);
 			break;
 		case NetChange::UPDATE_CREDIT:
 			{
@@ -3589,6 +3525,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::GAME_SAVED:
 		case NetChange::END_TRAVEL:
 		case NetChange::CUTSCENE_SKIP:
+		case NetChange::BOSS_END:
 			break;
 		case NetChange::KICK_NPC:
 		case NetChange::REMOVE_UNIT:
@@ -3596,6 +3533,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TRIGGER_TRAP:
 		case NetChange::CLEAN_LEVEL:
 		case NetChange::REMOVE_ITEM:
+		case NetChange::REMOVE_BULLET:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3737,13 +3675,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->id;
 			f << c.unit->data->id;
 			break;
-		case NetChange::CREATE_SPELL_BALL:
-			f << c.ability->hash;
-			f << c.pos;
-			f << c.rot_y;
-			f << c.speed_y;
-			f << c.extra_id;
-			break;
 		case NetChange::SPELL_SOUND:
 			f << c.ability->hash;
 			f << c.pos;
@@ -3824,6 +3755,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			RemoveElement(net_strs, c.str);
 			break;
 		case NetChange::PLAYER_ABILITY:
+		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			f << c.ability->hash;
 			break;
@@ -3875,7 +3807,19 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::LOOT:
 			f << (c.id != 0);
 			if(c.id != 0)
+			{
+				if(player.action == PlayerAction::LootUnit)
+				{
+					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+					{
+						if(player.action_unit->slots[i])
+							f << player.action_unit->slots[i]->id;
+						else
+							f.Write0();
+					}
+				}
 				f.WriteItemListTeam(*player.chest_trade);
+			}
 			break;
 		case NetChangePlayer::START_SHARE:
 		case NetChangePlayer::START_GIVE:
@@ -3884,6 +3828,15 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f << u.weight;
 				f << u.weight_max;
 				f << u.gold;
+				f << u.stats->subprofile;
+				f << u.effects;
+				for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+				{
+					if(u.slots[i])
+						f << u.slots[i]->id;
+					else
+						f.Write0();
+				}
 				f.WriteItemListTeam(u.items);
 			}
 			break;
@@ -3975,6 +3928,13 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			break;
 		case NetChangePlayer::UPDATE_TRADER_INVENTORY:
 			f << c.unit->id;
+			for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+			{
+				if(c.unit->slots[i])
+					f << c.unit->slots[i]->id;
+				else
+					f.Write0();
+			}
 			f.WriteItemListTeam(c.unit->items);
 			break;
 		case NetChangePlayer::PLAYER_STATS:

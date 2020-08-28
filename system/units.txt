@@ -143,7 +143,7 @@ profile cleric {
 	medium_armor 15
 	gods_magic 20
 	concentration 15
-	haggle 15
+	persuasion 15
 	alchemy 10
 
 	subprofile cleric {
@@ -543,7 +543,7 @@ profile mage {
 	bow 0
 	shield 0
 	light_armor 10
-	haggle 0
+	persuasion 0
 	concentration 15
 	mystic_magic 20
 	alchemy 10
@@ -658,7 +658,7 @@ profile rogue {
 	shield 0
 	light_armor 15
 	medium_armor 0
-	haggle 10
+	persuasion 10
 	alchemy 0
 
 	subprofile weapon {
@@ -853,7 +853,7 @@ profile warrior {
 	light_armor 10
 	medium_armor 15
 	heavy_armor 15
-	haggle 0
+	persuasion 0
 	alchemy 0
 
 	subprofile tank {
@@ -1295,6 +1295,7 @@ unit base_human {
 		random {!-2short_blade !-2axe !-2blunt}
 		random 1 3 !normal_food
 	}
+	idle_dialog citizen_idle
 }
 
 unit base_player : base_human {
@@ -1460,7 +1461,7 @@ unit soltys : mayor {
 
 unit base_guard : base_human {
 	level {5 6}
-	flags | dont_eat
+	flags | {dont_eat guard}
 	items guard
 	gold {{50 100} {60 120}}
 	dialog guard
@@ -1483,7 +1484,7 @@ unit guard_move : base_guard {
 
 unit guard_captain : base_human {
 	level 10
-	flags | {ai_guard ai_stay dont_eat limited_rot}
+	flags | {ai_guard ai_stay dont_eat limited_rot guard}
 	items guard
 	gold {100 200}
 	dialog guard_captain
@@ -1642,7 +1643,7 @@ unit inwestor : base_human {
 		random {al_clothes3 al_clothes3b}
 		dagger_rapier
 		random 1 3 !normal_food
-		r_haggle
+		r_persuasion
 	}
 	gold {2500 5000}
 	dialog q_mine
@@ -1714,12 +1715,16 @@ unit q_magowie_uczony : mayor {
 unit q_magowie_stary : base_human {
 	level 15
 	profile ai_mage
-	flags | {mage hero old drunk_mage}
+	flags | {mage hero drunk_mage}
 	items mage
 	gold {150 300}
 	abilities mage
 	dialog q_mages2
+	idle_dialog drunk_mage_idle
 	class mage
+	appearance {
+		hair_color 0xDED5D0
+	}
 }
 
 unit q_orkowie_straznik : base_guard {
@@ -1781,6 +1786,29 @@ unit q_zlo_mag : base_human {
 	dialog q_evil
 }
 
+unit hunter : base_human {
+	level 5
+	profile ai_archer
+	flags | {archer ai_train}
+	class hunter
+	items {
+		!light_armor
+		random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!bow
+		chance 50 p_hp
+		random 1 3 !normal_food
+		random 0 2 wolf_pelt
+		random 0 2 bear_pelt
+	}
+	gold {40 80}
+	dialog hunter
+}
+
+unit hunter_leader : hunter {
+	level 10
+	gold {100 200}
+}
+
 //------------------------------------------------------------------------------
 // GOBLINS
 //------------------------------------------------------------------------------
@@ -1814,6 +1842,7 @@ unit base_goblin {
 	width 0.3
 	attack_range 0.8
 	armor_type goblin
+	idle_dialog goblin_idle
 }
 
 unit goblin : base_goblin {
@@ -1879,7 +1908,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders specific_name boss sit_on_throne not_goblin}
+	flags | {archer hero ai_wanders specific_name boss sit_on_throne}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -1898,7 +1927,7 @@ unit q_gobliny_szlachcic2 : base_human {
 
 unit q_gobliny_ochroniarz : base_human {
 	level 8
-	flags | {ai_train not_goblin}
+	flags | ai_train
 	items guard
 	gold {80 160}
 	dialog bodyguard
@@ -1943,6 +1972,7 @@ unit base_orc {
 	width 0.41
 	attack_range 1
 	armor_type orc
+	idle_dialog orc_idle
 }
 
 unit base_gorush : base_orc {
@@ -1950,6 +1980,7 @@ unit base_gorush : base_orc {
 	dialog q_orcs2
 	gold {10 30}
 	group citizens
+	idle_dialog citizen_idle
 }
 
 unit q_orkowie_gorush : base_gorush {
@@ -2189,6 +2220,48 @@ unit q_orkowie_boss : base_orc {
 	}
 }
 
+unit ogre {
+	mesh "ogre.qmsh"
+	mat body
+	flags {humanoid fixed_stats}
+	level 14
+	hp 1400
+	stamina 250
+	attack 140 // 300
+	def 280
+	group orcs
+	walk_speed 2
+	run_speed 6
+	rot_speed 4
+	blood red
+	blood_size 1.5
+	sounds {
+		see_enemy "giant3.wav"
+		pain "giant1.wav"
+		death "giant5.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.25 0.58}
+			{0.30 0.64}
+		}
+		cast 1
+		take_weapon 0.56
+		bash 0.71
+	}
+	idles {
+		"search_pockets"
+	}
+	items {
+		blunt_ogre
+		random 5 10 !orc_food
+	}
+	gold {140 180}
+	width 0.5
+	attack_range 1.5
+	idle_dialog ogre_idle
+}
+
 //------------------------------------------------------------------------------
 // UNDEAD & EVIL
 //------------------------------------------------------------------------------
@@ -2352,7 +2425,7 @@ unit skeleton_mage : base_skeleton {
 unit necromancer : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | {mage gray_hair mp_bar}
+	flags | {mage mp_bar}
 	items {
 		al_necromancer
 		!wand
@@ -2366,11 +2439,15 @@ unit necromancer : base_human {
 		{exploding_skull 13}
 	}
 	group undead
+	dialog mage_idle
 	blood black
 	tex {
 		null
 		"necromant.jpg"
 		null
+	}
+	appearance {
+		hair_color grayscale
 	}
 }
 
@@ -2388,7 +2465,7 @@ unit necromancer3 : necromancer {
 
 unit base_undead : base_human {
 	level {8 12}
-	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat dont_talk}
+	flags | {undead dont_escape blunt_res25 poison_res dont_eat dont_talk}
 	gold {{40 80} {60 120}}
 	group undead
 	blood black
@@ -2401,6 +2478,9 @@ unit base_undead : base_human {
 		null
 		"undead.jpg"
 		null
+	}
+	appearance {
+		hair_color grayscale
 	}
 }
 
@@ -2424,7 +2504,7 @@ unit undead_archer : base_undead {
 
 unit evil_cleric : base_human {
 	level {8 12}
-	flags | {gray_hair ai_train}
+	flags | ai_train
 	items {
 		!blunt
 		!shield
@@ -2446,6 +2526,10 @@ unit evil_cleric : base_human {
 		"evil.jpg"
 		null
 	}
+	dialog mage_idle
+	appearance {
+		hair_color grayscale
+	}
 }
 
 unit evil_cleric2 : evil_cleric {
@@ -2463,12 +2547,12 @@ unit evil_cleric2 : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res}
+	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res dont_talk}
 	hp 2000
 	items {
 		blunt_skullsmasher
 		ah_black_armor
-		shield_unique
+		shield_death
 		3 p_hp3
 		p_str
 		p_end
@@ -2494,6 +2578,10 @@ unit q_zlo_boss : base_human {
 		"evil_boss.jpg"
 		null
 	}
+	appearance {
+		hair -1
+		hair_color grayscale
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -2501,6 +2589,7 @@ unit q_zlo_boss : base_human {
 //------------------------------------------------------------------------------
 unit base_bandit : base_human {
 	dialog bandit
+	idle_dialog bandit_idle
 	group bandits
 }
 
@@ -2680,6 +2769,7 @@ unit mage : base_human {
 	gold {{50 100}{80 160}}
 	abilities mage
 	dialog mage_bodyguard
+	idle_dialog mage_idle
 	group mages
 }
 
@@ -2719,6 +2809,7 @@ unit mage_guard : base_human {
 	}
 	gold {{25 50}{40 80}}
 	dialog mage_bodyguard
+	idle_dialog generic_idle
 	group mages
 }
 
@@ -2792,14 +2883,10 @@ unit golem_adamantine : golem_iron {
 	}
 }
 
-unit q_magowie_golem : golem_stone {
-	dialog q_mages
-}
-
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
-	flags | {mage old boss guarded mp_bar}
+	flags | {mage boss guarded mp_bar}
 	hp 1440
 	def 150
 	items {
@@ -2820,17 +2907,21 @@ unit q_magowie_boss : base_human {
 		{thunder_bolt 0}
 	}
 	dialog q_mages2
+	idle_dialog mage_idle
 	group mages
+	appearance {
+		hair_color 0xDED5D0
+	}
 }
 
 //------------------------------------------------------------------------------
 // ANIMALS & HUNTERS
 //------------------------------------------------------------------------------
 unit wolf {
-	mesh "wilk.qmsh"
+	mesh "wolf.qmsh"
 	mat skin
 	level 3
-	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk}
+	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk aggro}
 	hp 250
 	stamina 300
 	attack 50
@@ -2851,16 +2942,18 @@ unit wolf {
 		pain "dog_whine.mp3"
 		death "dog_whine.mp3"
 		attack "wolf_attack.mp3"
+		aggro "wolf_growl.mp3"
 	}
 	frames {
 		simple_attacks {
-			{0.7 1}
-			{0.65 0.75}
+			{0.4 0.6}
+			{0.3 0.8}
 		}
 	}
 	idles {
 		"rozglada"
 		"wygina"
+		"siad"
 	}
 	width 0.4
 	attack_range 1
@@ -2896,6 +2989,31 @@ unit white_wolf_sum : wolf {
 	items null
 	group citizens
 	flags | {hero specific_name}
+}
+
+unit dire_wolf : wolf {
+	level 10
+	hp 2000
+	attack 200
+	def 200
+	flags | {~aggro boss dont_escape stun_res}
+	scale 2
+	abilities {
+		{howl_aggro 0}
+		{howl_summon 0}
+		{wolf_charge 0}
+	}
+	tex {
+		"dire_wolf.jpg"
+		null
+		null
+	}
+	items {
+		random 5 10 raw_meat
+		dire_wolf_pelt
+	}
+	width 0.8
+	attack_range 1.8
 }
 
 unit spider {
@@ -3080,6 +3198,7 @@ unit wild_hunter : base_human {
 		"crazy_hunter.jpg"
 		null
 	}
+	idle_dialog wild_hunter_idle
 }
 
 unit q_szaleni_szaleniec : wild_hunter {
@@ -3104,8 +3223,12 @@ unit base_crazy : base_human {
 	level {5 20}
 	flags | {crazy hero tournament ai_wanders}
 	dialog crazy
+	idle_dialog crazy_idle
 	group crazies
 	gold {{50 100}{200 400}}
+	appearance {
+		hair_color random_color
+	}
 }
 
 unit crazy_mage : base_crazy {
@@ -3186,7 +3309,7 @@ unit hero_rogue : base_hero {
 }
 
 unit hero_tomir : hero_warrior {
-	flags | fast_learner
+	flags | {fast_learner loner}
 }
 
 unit hero_cleric : base_hero {
@@ -3204,7 +3327,7 @@ unit hero_cleric : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {dont_escape tomashu secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
+	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
 	profile ai_fighter
 	hp 2500
 	items {
@@ -3221,6 +3344,13 @@ unit tomashu : base_human {
 		{mystic_ball 0}
 	}
 	dialog tomashu
+	appearance {
+		beard 4
+		mustache -1
+		hair 0
+		hair_color 0x000000
+		height 1.1
+	}
 }
 
 unit unk {
@@ -3322,10 +3452,17 @@ group orcs {
 	orc_warius 4
 	orc_chief leader 2
 	orc_shaman 3
+	ogre 2
 
 	orc_food 1
 	have_camps 1
 	encounter_chance 2
+}
+
+group ogres {
+	ogre 1
+	
+	orc_food 1
 }
 
 group bandits {
@@ -3469,6 +3606,10 @@ group unk {
 	food_mod -2
 }
 
+group q_magowie_golems {
+	golem_stone 1
+}
+
 group challange {
 	list {
 		orcs
@@ -3512,6 +3653,7 @@ group arena_hard {
 		necromancers
 		mages_and_golems
 		evil
+		ogres
 	}
 }
 
@@ -3563,3 +3705,5 @@ alias evil_cleric evil_cleric_q
 alias bandit_chief bandit_hegemon_q
 alias orc_chief orc_chief_q
 alias goblin_chief goblin_chief_q
+// removed in V_0_16
+alias golem_stone q_magowie_golem

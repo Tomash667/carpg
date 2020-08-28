@@ -14,5 +14,5 @@ struct UnitEventHandler
 	};
 
 	virtual void HandleUnitEvent(TYPE event_type, Unit* unit) = 0;
-	virtual int GetUnitEventHandlerQuestRefid() = 0;
+	virtual int GetUnitEventHandlerQuestId() = 0;
 };

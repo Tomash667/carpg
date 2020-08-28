@@ -143,8 +143,11 @@ perk leader {
 }
 perk traveling_merchant {
 	flags {start history}
+	required {
+		persuasion 0
+	}
 	effect {
-		haggle 10
+		persuasion 10
 		gold 500
 	}
 }
@@ -175,7 +178,7 @@ perk aggressive {
 perk mobility {
 	cost 2
 	required {
-		end 60
+		dex 60
 		no_perk sluggish
 	}
 	effect {
@@ -185,7 +188,7 @@ perk mobility {
 perk finesse {
 	cost 2
 	required {
-		end 60
+		dex 60
 		no_perk sluggish
 	}
 	effect {

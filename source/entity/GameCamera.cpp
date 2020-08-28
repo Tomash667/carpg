@@ -313,16 +313,35 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 					if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
 						min_t = t;
 				}
-				if(p.type == STAIRS_UP)
+
+				if(p.type == ENTRY_PREV || p.type == ENTRY_NEXT)
 				{
-					if(game_res->vdStairsUp->RayToMesh(pos, dir, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), t) && t < min_t)
-						min_t = t;
-				}
-				else if(p.type == STAIRS_DOWN)
-				{
-					if(!lvl.staircase_down_in_wall
-						&& game_res->vdStairsDown->RayToMesh(pos, dir, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), t) && t < min_t)
-						min_t = t;
+					EntryType type;
+					Int2 pt;
+					GameDirection entryDir;
+					if(p.type == ENTRY_PREV)
+					{
+						type = lvl.prevEntryType;
+						pt = lvl.prevEntryPt;
+						entryDir = lvl.prevEntryDir;
+					}
+					else
+					{
+						type = lvl.nextEntryType;
+						pt = lvl.nextEntryPt;
+						entryDir = lvl.nextEntryDir;
+					}
+
+					if(type == ENTRY_STAIRS_UP)
+					{
+						if(game_res->vdStairsUp->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
+							min_t = t;
+					}
+					else if(type == ENTRY_STAIRS_DOWN)
+					{
+						if(game_res->vdStairsDown->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
+							min_t = t;
+					}
 				}
 				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
 				{
@@ -456,12 +475,12 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 		if(it->type == CollisionObject::SPHERE)
 		{
-			if(RayToCylinder(pos, pos + dir, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, t) && t < min_t && t > 0.f)
+			if(RayToCylinder(pos, pos + dir, Vec3(it->pos.x, 0, it->pos.z), Vec3(it->pos.x, 32.f, it->pos.z), it->radius, t) && t < min_t && t > 0.f)
 				min_t = t;
 		}
 		else if(it->type == CollisionObject::RECTANGLE)
 		{
-			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
+			Box box(it->pos.x - it->w, 0.f, it->pos.z - it->h, it->pos.x + it->w, 32.f, it->pos.z + it->h);
 			if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
 				min_t = t;
 		}
@@ -479,7 +498,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 				h = it->h;
 			}
 
-			Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
+			Box box(it->pos.x - w, 0.f, it->pos.z - h, it->pos.x + w, 32.f, it->pos.z + h);
 			if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
 				min_t = t;
 		}

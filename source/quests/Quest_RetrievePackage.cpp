@@ -2,12 +2,11 @@
 #include "Quest_RetrievePackage.h"
 
 #include "Game.h"
-#include "GameFile.h"
 #include "ItemHelper.h"
 #include "Journal.h"
+#include "LevelAreaContext.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -16,8 +15,8 @@ void Quest_RetrievePackage::Start()
 {
 	type = Q_RETRIEVE_PACKAGE;
 	category = QuestCategory::Mayor;
-	start_loc = world->GetCurrentLocationIndex();
-	from_loc = world->GetRandomSettlementIndex(start_loc);
+	startLoc = world->GetCurrentLocation();
+	from_loc = world->GetRandomSettlement(startLoc)->index;
 }
 
 //=================================================================================================
@@ -49,52 +48,44 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			OnStart(game->txQuest[265]);
 			quest_mgr->quests_timeout.push_back(this);
 
-			target_loc = world->GetRandomSpawnLocation((GetStartLocation().pos + world->GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
+			targetLoc = world->GetRandomSpawnLocation((startLoc->pos + world->GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
+			targetLoc->SetKnown();
+			targetLoc->active_quest = this;
 
-			Location& loc = GetStartLocation();
-			Location& loc2 = GetTargetLocation();
-			loc2.SetKnown();
-
-			loc2.active_quest = this;
-
-			cstring who = (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
+			cstring who = (LocationHelper::IsCity(startLoc) ? game->txForMayor : game->txForSoltys);
 
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
-			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
+			parcel.name = Format(game->txQuest[8], who, startLoc->name.c_str());
 			parcel.quest_id = id;
 			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &parcel;
-			at_level = loc2.GetRandomLevel();
+			at_level = targetLoc->GetRandomLevel();
 
-			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), world->GetDate()));
-			if(loc2.type == L_CAMP)
+			msgs.push_back(Format(game->txQuest[3], who, startLoc->name.c_str(), world->GetDate()));
+			if(targetLoc->type == L_CAMP)
 			{
 				game->target_loc_is_camp = true;
-				msgs.push_back(Format(game->txQuest[22], who, loc.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
+				msgs.push_back(Format(game->txQuest[22], who, startLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 			}
 			else
 			{
 				game->target_loc_is_camp = false;
-				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
+				msgs.push_back(Format(game->txQuest[23], who, startLoc->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 			}
-			st = loc2.st;
+			st = targetLoc->st;
 		}
 		break;
 	case Progress::Timeout:
 		// player failed to retrieve package in time
 		{
 			state = Quest::Failed;
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
+			if(targetLoc && targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 
 			OnUpdate(game->txQuest[24]);
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
@@ -107,14 +98,10 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
-			if(target_loc != -1)
-			{
-				Location& loc = GetTargetLocation();
-				if(loc.active_quest == this)
-					loc.active_quest = nullptr;
-			}
+			if(targetLoc && targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 
 			OnUpdate(game->txQuest[25]);
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
@@ -133,7 +120,7 @@ cstring Quest_RetrievePackage::FormatString(const string& str)
 	else if(str == "locname")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+		return GetLocationDirName(startLoc->pos, targetLoc->pos);
 	else if(str == "reward")
 		return Format("%d", GetReward());
 	else
@@ -154,7 +141,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 {
 	if(done)
 	{
-		Unit* u = ForLocation(target_loc, at_level)->FindUnit([](Unit* u) {return u->mark; });
+		Unit* u = ForLocation(targetLoc, at_level)->FindUnit([](Unit* u) {return u->mark; });
 		if(u)
 		{
 			u->mark = false;
@@ -163,14 +150,14 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 		}
 	}
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 	return true;
 }
 
 //=================================================================================================
 bool Quest_RetrievePackage::IfHaveQuestItem() const
 {
-	return world->GetCurrentLocationIndex() == start_loc && prog == Progress::Started;
+	return world->GetCurrentLocation() == startLoc && prog == Progress::Started;
 }
 
 //=================================================================================================
@@ -201,17 +188,16 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 		f >> from_loc;
 		if(LOAD_VERSION >= V_0_8)
 			f >> st;
-		else if(target_loc != -1)
-			st = GetTargetLocation().st;
+		else if(targetLoc)
+			st = targetLoc->st;
 		else
 			st = 10;
 
 		if(prog >= Progress::Started)
 		{
-			Location& loc = GetStartLocation();
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
-			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(startLoc) ? game->txForMayor : game->txForSoltys, startLoc->name.c_str());
 			parcel.quest_id = id;
 
 			item_to_give[0] = &parcel;

@@ -21,7 +21,7 @@ bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 	LocalString path = Format("%s/%s", content.system_dir.c_str(), filename);
 	this->top_group = top_group;
 
-	if(!t.FromFile(path))
+	if(!t.FromFile((const string&)path))
 	{
 		Error("Failed to open file '%s'.", path.c_str());
 		++content.errors;

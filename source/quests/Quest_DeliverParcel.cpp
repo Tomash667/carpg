@@ -3,7 +3,6 @@
 
 #include "Encounter.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
@@ -13,8 +12,8 @@
 //=================================================================================================
 void Quest_DeliverParcel::Start()
 {
-	start_loc = world->GetCurrentLocationIndex();
-	end_loc = world->GetRandomSettlementIndex(start_loc);
+	startLoc = world->GetCurrentLocation();
+	end_loc = world->GetRandomSettlement(startLoc)->index;
 	type = Q_DELIVER_PARCEL;
 	category = QuestCategory::Mayor;
 }
@@ -56,15 +55,14 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			parcel.quest_id = id;
 			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
-			Location& loc2 = GetStartLocation();
-			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(startLoc) ? game->txForMayor : game->txForSoltys, startLoc->name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
-				GetLocationDirName(loc2.pos, loc.pos)));
+				GetLocationDirName(startLoc->pos, loc.pos)));
 
 			if(Rand() % 4 != 0)
 			{
 				Encounter* e = world->AddEncounter(enc);
-				e->pos = (loc.pos + loc2.pos) / 2;
+				e->pos = (loc.pos + startLoc->pos) / 2;
 				e->range = 64;
 				e->chance = 45;
 				e->dont_attack = true;
@@ -82,7 +80,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time, but gain some gold anyway
 		{
 			state = Quest::Failed;
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(300, 2000);
@@ -96,7 +94,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time
 		{
 			state = Quest::Failed;
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
 			OnUpdate(game->txQuest[13]);
 			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
@@ -107,7 +105,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// parcel delivered, end of quest
 		{
 			state = Quest::Completed;
-			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(750, 3000);
@@ -158,7 +156,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
-		return GetLocationDirName(GetStartLocation().pos, loc.pos);
+		return GetLocationDirName(startLoc->pos, loc.pos);
 	else
 	{
 		assert(0);
@@ -176,7 +174,7 @@ bool Quest_DeliverParcel::IsTimedout() const
 bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 {
 	if(ttype == TIMEOUT2)
-		OnUpdate(game->txQuest[277]);
+		OnUpdate(game->txQuest[267]);
 	return true;
 }
 
@@ -233,9 +231,8 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 	if(enc != -1)
 	{
 		Location& loc = *world->GetLocation(end_loc);
-		Location& loc2 = GetStartLocation();
 		Encounter* e = world->RecreateEncounter(enc);
-		e->pos = (loc.pos + loc2.pos) / 2;
+		e->pos = (loc.pos + startLoc->pos) / 2;
 		e->range = 64;
 		e->chance = 45;
 		e->dont_attack = true;

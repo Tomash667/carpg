@@ -4,8 +4,8 @@
 static const char tile_char[] = {
 	' ', // UNUSED
 	'_', // EMPTY
-	'<', // STAIRS_UP
-	'>', // STAIRS_DOWN
+	'<', // ENTRY_PREV
+	'>', // ENTRY_NEXT
 	'+', // DOORS
 	'-', // HOLE_FOR_DOORS
 	'/', // BARS_FLOOR
@@ -17,19 +17,49 @@ static const char tile_char[] = {
 	'X' // USED
 };
 
-void Tile::SetupFlags(Tile* tiles, const Int2& size)
+void Tile::SetupFlags(Tile* tiles, const Int2& size, EntryType prevEntry, EntryType nextEntry)
 {
 	for(int y = 0; y < size.y; ++y)
 	{
 		for(int x = 0; x < size.x; ++x)
 		{
 			Tile& p = tiles[x + y * size.x];
-			if(p.type != EMPTY && p.type != DOORS && p.type != BARS && p.type != BARS_FLOOR && p.type != BARS_CEILING && p.type != STAIRS_DOWN)
+			int ok; // -1 no, 0 no floor, 1 yes
+			switch(p.type)
+			{
+			default:
+				ok = -1;
+				break;
+			case EMPTY:
+			case DOORS:
+			case BARS:
+			case BARS_FLOOR:
+			case BARS_CEILING:
+				ok = 1;
+				break;
+			case ENTRY_PREV:
+				if(prevEntry == ENTRY_STAIRS_DOWN_IN_WALL)
+					ok = 0;
+				else if(prevEntry == ENTRY_DOOR)
+					ok = 1;
+				else
+					ok = -1;
+				break;
+			case ENTRY_NEXT:
+				if(nextEntry == ENTRY_STAIRS_DOWN_IN_WALL)
+					ok = 0;
+				else if(nextEntry == ENTRY_DOOR)
+					ok = 1;
+				else
+					ok = -1;
+				break;
+			}
+			if(ok == -1)
 				continue;
 
 			p.flags &= (Tile::F_CEILING | Tile::F_LOW_CEILING | Tile::F_BARS_FLOOR | Tile::F_BARS_CEILING | Tile::F_SPECIAL | Tile::F_SECOND_TEXTURE | Tile::F_REVEALED);
 
-			// pod³oga
+			// floor
 			if(p.type == BARS || p.type == BARS_FLOOR)
 			{
 				p.flags |= Tile::F_BARS_FLOOR;
@@ -43,7 +73,7 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size)
 				if(!OR2_EQ(tiles[x + (y + 1)*size.x].type, BARS, BARS_FLOOR))
 					p.flags |= Tile::F_HOLE_FRONT;
 			}
-			else if(p.type != STAIRS_DOWN)
+			else if(ok != 0)
 				p.flags |= Tile::F_FLOOR;
 
 			if(p.type == BARS || p.type == BARS_CEILING)
@@ -60,7 +90,7 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size)
 				if(IsSet(tiles[x + (y + 1)*size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_FRONT;
 
-				// dziura w suficie
+				// ceiling
 				if(p.type == BARS || p.type == BARS_CEILING)
 				{
 					p.flags |= Tile::F_BARS_CEILING;
@@ -75,13 +105,10 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size)
 						p.flags |= Tile::F_UP_FRONT;
 				}
 				else
-				{
-					// normalny sufit w tym miejscu
 					p.flags |= Tile::F_CEILING;
-				}
 			}
 
-			// œciany
+			// walls
 			if(OR2_EQ(tiles[x - 1 + y * size.x].type, WALL, BLOCKADE_WALL))
 				p.flags |= Tile::F_WALL_RIGHT;
 			if(OR2_EQ(tiles[x + 1 + y * size.x].type, WALL, BLOCKADE_WALL))

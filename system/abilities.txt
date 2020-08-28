@@ -182,3 +182,33 @@ ability summon_wolf {
 	width 1.5
 	icon
 }
+
+ability howl_aggro {
+	type aggro
+	cooldown 9999
+	range 50
+	animation "howl"
+	sound_cast "wolf_x.mp3" 3
+}
+
+ability howl_summon {
+	type summon_away
+	unit wolf
+	count 5
+	flags boss50hp
+	cooldown 9999
+	range 50
+	animation "howl"
+	sound_cast "wolf_x.mp3" 3
+}
+
+ability wolf_charge {
+	type charge
+	flags ignore_units
+	dmg 250
+	cooldown {5 10}
+	range 5
+	width 1
+	animation "charge"
+	sound_cast "wolf_attack.mp3" 1
+}

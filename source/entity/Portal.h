@@ -6,14 +6,14 @@ struct Portal
 	Vec3 pos;
 	float rot;
 	int at_level;
-	int target; // portal wyjœciowy
-	int target_loc; // docelowa lokacja
+	int index;
+	int target_loc;
 	Portal* next_portal;
 
 	static const int MIN_SIZE = 17;
 
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 
 	Vec3 GetSpawnPos() const
 	{

@@ -1,7 +1,70 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.15 (???):
+Version 0.17 (???):
+! cannot load saves from version 0.7 or older
++ hunters camp, quest to kill dire wolf
++ better item models: vodka, gray potion
++ better camp generator
++ renamed skill haggle -> persuasion, can be used in some dialogs
++ wolfs don't attack instantly
++ boss music and health bar
++ prevent from spawning units inside campfire
++ continue last game in menu
++ support for auto updates
++ scene manager optimisations
++ vignette effect
+- crash when hunter pick traveling merchant feat [Leinnan]
+- crash when asking mayor about quest in capital city [Woltvint]
+- missing boss music
+- invalid explosion size for client for some spells
+- double explosion sound for clients
+
+--------------------------------------------------------------------------------
+Version 0.16 (2020-07-01):
+! cannot load saves from version 0.6.2 or older
++ new enemy: ogre
++ new equipment: cutlass, mercenary sword, barbed cudgel, dwarf axe, kite shield, spiked shield, shield of death, ogre club
++ improved models: short/long sword, hatchet, battle axe, crystal axe, axe of giant, orc axe/sword/hammer, iron/steel/mithril/adamantine shield, The Wall shield
++ new names, dialogs improvements
++ end of game don't block chat, loading game etc
++ idle dialogs loaded from files
++ converted quest "camp near city" to script
++ multiple chest types support, silver chest
++ allow changing sound device
++ less hardcoded characters appearances
++ some dungeons start with door, in mages tower levels goes up
++ combat: using too heavy shield slow down blocking & bashing, use more stamina
+- crash sometimes when client gives item to npc hero
+- after client give ring/amulet npc hero it won't be visible until trading again
+- in server lobby for clients it was always displayed that there was no password
+- crash in multiplayer when quickloading after save was replaced in background to incompatibile save
+- it was possible to spawn strength/endurance/dexterity potion in chest [Zielu]
+- failed to load game for client when someone shoot from bow
+- invalid units interpolation when using 'speed' command
+- zombie sometimes not attacking after stunning [Zielu]
+- bull's charge not stopping attack animation [Zielu]
+- fixed draw_hitbox command & shields
+- no death camera for clients
+- gorush shaman not using his new armor [Zielu]
+- gorush missing shaman texture
+- random client crash after fighting with golems [Zielu]
+- fixed reversed shift/control key in give/share items
+- heroes without mana don't collect mana potions
+- only Jozan heal team when traveling
+- sometimes garbage text when recruiting hero in academy
+- more golems on worldmap encounter
+- encounter map was not changing
+- better projectiles synchronization in multiplayer
+- save/load chest animation
+- invalid inventory weight after alchemy [SwagOfficerSuccubus]
+- opening alchemy view didn't close other views
+- crash when using list_stats command on non hero
+- can't use dash/bull's charge when overloaded
+- invalid damage calculations for bull's charge
+
+--------------------------------------------------------------------------------
+Version 0.15 (2020-05-31):
 ! cannot load saves from version 0.6.1 or older
 + moved from directx 9 to directx 11
 + learning new alchemy recipes [BottledByte & Tomashu]
@@ -12,6 +75,9 @@ Version 0.15 (???):
 + month name instead of number, different start date
 + different dialogs for traveling merchant, trainer
 + update libraries: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- randomly generated dungeons were mostly of single type
+- random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
+- crash after loading game where player is casting spell [Ampped]
 - can't use speed command in singleplayer game
 - mouse zoom sometimes didn't have effect on camera
 - crash when launching [AnimeIsWrong]
@@ -21,12 +87,16 @@ Version 0.15 (???):
 - ai asks for items in invalid order
 - camera bugs when talking with next npc right after first dialog
 - crash when loading mp game with doors opening/closing
-
---------------------------------------------------------------------------------
-Fixes:
-- randomly generated dungeons were mostly of single type
-- random crash when entering city after AI asks for armor [SwagOfficerSuccubus]
-- crash after loading game where player is casting spell [Ampped]
+- missing news after clearing location
+- improved cleric heal targeting priority
+- memory leak after regenerating enemies in forest
+- feats mobility/finese required endurance instead of dexterity
+- not visible equipped rings/amulets when sharing items or looting corpse
+- hero skill preference randomized on level up
+- for client raised undead have empty health bar
+- far enemies do nothing after being shot
+- ai wasn't buying some amulets/rings [Zielu]
+- invalid attack/defense values of items when sharing items with hero by client
 
 --------------------------------------------------------------------------------
 Version 0.14.1 (2020-04-11):

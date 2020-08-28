@@ -71,7 +71,7 @@ enum Bar
 static ObjectPool<SpeechBubble> SpeechBubblePool;
 
 //=================================================================================================
-LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false)
+LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), boss(nullptr)
 {
 	scrollbar.parent = this;
 	visible = false;
@@ -95,7 +95,6 @@ void LevelGui::LoadLanguage()
 	txChest = s.Get("chest");
 	txDoor = s.Get("door");
 	txDoorLocked = s.Get("doorLocked");
-	txPressEsc = s.Get("pressEsc");
 	txMenu = s.Get("menu");
 	txHp = s.Get("hp");
 	txMana = s.Get("mana");
@@ -334,7 +333,10 @@ void LevelGui::DrawFront()
 		SortUnits();
 
 		for(auto& it : sorted_units)
-			DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
+		{
+			if(it.unit != boss)
+				DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
+		}
 	}
 
 	// text above selected object/units
@@ -612,7 +614,7 @@ void LevelGui::DrawFront()
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
 				drag_and_drop_icon = ability->tex_icon;
 
-			if(pc.unit->mp >= ability->mana && pc.unit->stamina >= ability->stamina)
+			if(pc.CanUseAbilityPreview(ability))
 			{
 				if(charge == 0.f)
 					gui->DrawSprite2(ability->tex_icon, mat);
@@ -674,6 +676,17 @@ void LevelGui::DrawFront()
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
 			gui->DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
 		}
+	}
+
+	if(boss)
+	{
+		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wnd_size.x, 40));
+		float hpp = Clamp(boss->GetHpp(), 0.f, 1.f);
+		Rect part = { 0, 0, int(hpp * 256), 16 };
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2((float(gui->wnd_size.x) - wnd_scale * 256) / 2, 25));
+		if(part.Right() > 0)
+			gui->DrawSprite2(tHpBar, mat, &part, nullptr, Color::Alpha(bossAlpha));
+		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::Alpha(bossAlpha));
 	}
 
 	DrawFallback();
@@ -757,9 +770,8 @@ void LevelGui::DrawDeathScreen()
 			gui->DrawSprite(tRip, Center(img_size), color);
 
 			cstring text = Format(game->death_solo ? txDeathAlone : txDeath, game->pc->kills, game_stats->total_kills - game->pc->kills);
-			cstring text2 = Format("%s\n\n%s", text, game->death_screen == 3 ? txPressEsc : "\n");
-			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-			gui->DrawText(GameGui::font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
+			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+			gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 		}
 	}
 }
@@ -781,9 +793,8 @@ void LevelGui::DrawEndOfGameScreen()
 
 	// text
 	cstring text = Format(txGameTimeout, game->pc->kills, game_stats->total_kills - game->pc->kills);
-	cstring text2 = Format("%s\n\n%s", text, game->death_fade >= 1.f ? txPressEsc : "\n");
-	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-	gui->DrawText(GameGui::font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
+	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 }
 
 //=================================================================================================
@@ -802,7 +813,7 @@ void LevelGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > 20.f || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
@@ -1205,6 +1216,19 @@ void LevelGui::Update(float dt)
 		}
 	}
 
+	// boss
+	if(boss)
+	{
+		if(bossState)
+		{
+			bossAlpha -= 3.f * dt;
+			if(bossAlpha <= 0)
+				boss = nullptr;
+		}
+		else
+			bossAlpha = Min(bossAlpha + 3.f * dt, 1.f);
+	}
+
 	if(drag_and_drop != 2)
 		tooltip.UpdateTooltip(dt, (int)group, id);
 	else
@@ -1372,6 +1396,7 @@ void LevelGui::Reset()
 	use_cursor = false;
 	sidebar = 0.f;
 	unit_views.clear();
+	boss = nullptr;
 }
 
 //=================================================================================================
@@ -1810,7 +1835,7 @@ void LevelGui::PositionPanels()
 }
 
 //=================================================================================================
-void LevelGui::Save(FileWriter& f) const
+void LevelGui::Save(GameWriter& f) const
 {
 	f << speech_bbs.size();
 	for(const SpeechBubble* p_sb : speech_bbs)
@@ -1827,7 +1852,7 @@ void LevelGui::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void LevelGui::Load(FileReader& f)
+void LevelGui::Load(GameReader& f)
 {
 	speech_bbs.resize(f.Read<uint>());
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
@@ -2172,5 +2197,22 @@ int LevelGui::GetAlpha(CutsceneState cs, float timer, int fallback_alpha)
 		return fallback_alpha;
 	default:
 		return int(timer * 255) * fallback_alpha / 255;
+	}
+}
+
+//=================================================================================================
+void LevelGui::SetBoss(Unit* boss, bool instant)
+{
+	if(boss)
+	{
+		this->boss = boss;
+		bossAlpha = instant ? 1.f : 0.f;
+		bossState = false;
+	}
+	else
+	{
+		bossState = true;
+		if(instant)
+			boss = nullptr;
 	}
 }

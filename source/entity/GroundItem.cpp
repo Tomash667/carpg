@@ -5,12 +5,11 @@
 #include "Item.h"
 #include "QuestConsts.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;
 
 //=================================================================================================
-void GroundItem::Save(FileWriter& f)
+void GroundItem::Save(GameWriter& f)
 {
 	f << id;
 	f << pos;
@@ -23,7 +22,7 @@ void GroundItem::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void GroundItem::Load(FileReader& f)
+void GroundItem::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;

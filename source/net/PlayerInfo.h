@@ -55,7 +55,7 @@ struct PlayerInfo
 
 	PlayerInfo();
 	void UpdateGold() { update_flags |= PlayerInfo::UF_GOLD; }
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	int GetIndex() const;
 };

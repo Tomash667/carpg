@@ -2,21 +2,21 @@
 #include "Portal.h"
 
 //=================================================================================================
-void Portal::Save(FileWriter& f)
+void Portal::Save(GameWriter& f)
 {
 	f << pos;
 	f << rot;
 	f << at_level;
-	f << target;
+	f << index;
 	f << target_loc;
 }
 
 //=================================================================================================
-void Portal::Load(FileReader& f)
+void Portal::Load(GameReader& f)
 {
 	f >> pos;
 	f >> rot;
 	f >> at_level;
-	f >> target;
+	f >> index;
 	f >> target_loc;
 }

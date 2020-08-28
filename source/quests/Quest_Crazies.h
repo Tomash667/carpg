@@ -28,7 +28,7 @@ public:
 		End
 	};
 
-	void Init();
+	void Init() override;
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -39,11 +39,13 @@ public:
 	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void CheckStone();
+	void OnProgress(int days);
+	void OnEncounter(EncounterSpawn& spawn);
 
 	State crazies_state;
-	int days;
 	bool check_stone;
 
 private:
 	const Item* stone;
+	int days;
 };

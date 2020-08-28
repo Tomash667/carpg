@@ -7,7 +7,7 @@ quest deliver_letter {
 			"Good, here's the message. You have a month to deliver it and come back with the answer."
 			"Good, take this letter. You have one month to provide me with an answer."
 		}
-		3 "$(end_loc.name) is $(World::GetDirName(start_loc.pos, end_loc.pos)) from here."
+		3 "$(end_loc.name) is $(World::GetDirName(start_loc, end_loc)) from here."
 		4 "No"
 	}
 	
@@ -35,7 +35,7 @@ quest deliver_letter {
 	texts {
 		0 "Deliver the letter"
 		1 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
-		2 "I got a letter that I need to deliver to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). It's $(World::GetDirName(start_loc.pos, end_loc.pos)) from here. I have a month to go there and return."
+		2 "I got a letter that I need to deliver to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). It's $(World::GetDirName(start_loc, end_loc)) from here. I have a month to go there and return."
 		3 "Letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
 		4 "Letter from $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
 		5 "I couldn't deliver the letter on time."
@@ -74,7 +74,7 @@ quest deliver_resources {
 		0 "Resources for $(target_loc.name)"
 		1 "Deliver resources"
 		2 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
-		3 "I got the resources I need to deliver within 15 days to $(target_loc.name) which is $(World::GetDirName(start_loc.pos, target_loc.pos)) from here."
+		3 "I got the resources I need to deliver within 15 days to $(target_loc.name) which is $(World::GetDirName(start_loc, target_loc)) from here."
 		4 "I provided resources on time. Quest done!"
 		5 "I did not have time to deliver resources."
 		6 "Traveling along the road you came across a few bandits. It looks like they've been waiting for you..."
@@ -88,7 +88,7 @@ quest bandits_collect_toll {
 		0 "On the road between $(start_loc.name) and $(other_loc.name) camped bandits. They charge a fee and are robbing merchants."
 		1 "You have time to take care of them?"
 		2 "Yes"
-		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc.pos, other_loc.pos)) from here and back. Then certainly you encounter these bandits."
+		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc, other_loc)) from here and back. Then certainly you encounter these bandits."
 		4 "You got half month for this."
 		5 "No"
 	}
@@ -114,7 +114,7 @@ quest bandits_collect_toll {
 	texts {
 		0 "Bandits collecting tolls"
 		1 "Obtained from captain guard of $(start_loc.name) at $date$."
-		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc.pos, other_loc.pos)) from here. I have to get rid of them in half a month."
+		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc, other_loc)) from here. I have to get rid of them in half a month."
 		3 "You encounter group of bandits gathering tolls."
 		4 "I didn't manage to kill the bandits in time."
 		5 "I killed the bandits."
@@ -125,12 +125,70 @@ quest bandits_collect_toll {
 }
 
 //=============================================================================
+quest camp_near_city {
+	dialog start {
+		0 "Can you imagine that?! $(group.name.Upper()) created camp just near our $(start_loc.IsVillage() ? \"village\" : \"city\")!"
+		1 "I think they want to attack the $(start_loc.IsVillage() ? \"village\" : \"city\")! We have to do something about it!"
+		2 "Why do not you go there and take care of them?"
+		3 "Yes"
+		4 "This camp is located $(World::GetDirName(start_loc, camp)) from here. You must take care of it within a month."
+		5 "Just do not get yourself killed."
+		6 "No"
+	}
+	
+	dialog end {
+		0 "If not for you I do not know whether we repelled this attack."
+		1 "Please, take this $(Str(GetReward())) gold pieces."
+		2 "When you weren't here $(group.name) attacked $(start_loc.IsVillage() ? \"village\" : \"city\")! Somehow we defended but many people have died!"
+		3 "Do not show up here again!"
+	}
+	
+	texts {
+		0 "Camp near $(start_loc.IsVillage() ? \"village\" : \"city\")"
+		1 "Obtained from captain guard of $(start_loc.name) at $date$."
+		2 "$(group.name.Upper()) created a camp at $(World::GetDirName(start_loc, camp)) from $(start_loc.name). I have to kill them within a month, or else they will attack the $(start_loc.IsVillage() ? \"village\" : \"city\")."
+		3 "I cleared the camp."
+		4 "I informed my quest giver about clearing the camp and received a reward. Quest done!"
+		5 "The time that I had to complete this quest passed."
+		6 "I didn't do this in time and enemies attacked our $(start_loc.IsVillage() ? \"village\" : \"city\")."
+	}
+}
+
+//=============================================================================
+quest kill_animals {
+	dialog start {
+		0 "I'm looking for someone who will take up one of the nearby locations which prevailed in many creatures."
+		1 "Are you interested?"
+		2 "Yes"
+		3 "Go to the $(targetLoc.name) and kill all the monsters. Also watch out for the crazy savages that behave like animals."
+		4 "$(targetLoc.name) is $(World::GetDirName(startLoc, targetLoc)) from here."
+		5 "No"
+	}
+	
+	dialog captain {
+		0 "Excellent work, these creatures often troubled travelers."
+		1 "Here you got $reward$ gold pieces as reward."
+		2 "No time for clearing $(targetLoc.name)? Through you, travelers cannot easily wander around."
+	}
+	
+	texts {
+		0 "Kill animals"
+		1 "Obtained from captain guard of $(startLoc.name) at $date$."
+		2 "Travelers who took the path from $(targetLoc.name) at $(World::GetDirName(startLoc, targetLoc)) are concerned about violent animals. I have to clean this location during the month."
+		3 "I cleared $(targetLoc.name)."
+		4 "I told the travelers that the path is safe once again and received my reward. Quest done!"
+		5 "The time that I had to complete this quest passed."
+		6 "I didn't get rid of the animals at the site on time."
+	}
+}
+
+//=============================================================================
 quest find_artifact {
 	dialog start {
 		0 "I'm looking for a certain artifact known as the $(item.name)."
 		1 "Can you deliver it to me?"
 		2 "Yes"
-		3 "Apparently, the item which I need is in the $(target_loc.name), $(World::GetDirName(start_loc.pos, target_loc.pos)) out of here."
+		3 "Apparently, the item which I need is in the $(target_loc.name), $(World::GetDirName(start_loc, target_loc)) out of here."
 		4 "I'll wait until someone brings it to me but up to two months. Good luck!"
 		5 "No"
 	}
@@ -146,7 +204,7 @@ quest find_artifact {
 	texts {
 		0 "Find artifact"
 		1 "Obtained from traveler in $(start_loc.name) at $date$."
-		2 "The traveler wants me to find $(item.name) which is located in the $(target_loc.name) to the $(World::GetDirName(start_loc.pos, target_loc.pos)) from here. I have two months for that."
+		2 "The traveler wants me to find $(item.name) which is located in the $(target_loc.name) to the $(World::GetDirName(start_loc, target_loc)) from here. I have two months for that."
 		3 "I delivered the artifact and received the reward. Quest done!"
 		4 "I didn't bring the artifact in time."
 		5 "The time that I had to complete this quest passed."
@@ -164,7 +222,7 @@ quest alchemist_apprentice {
 		5 "Yes"
 		6 "No"
 		7 "Thank you for your time."
-		8 "Go to $(forest.name) at $(World::GetDirName(city.pos, forest.pos)) from here."
+		8 "Go to $(forest.name) at $(World::GetDirName(city, forest)) from here."
 		9 "Bring me as much alchemical herbs as you can."
 		10 "My student also went there, but he did not come back so watch yourself."
 		11 "Welcome. Did you find my student or this herbs?"
@@ -197,7 +255,7 @@ quest alchemist_apprentice {
 		12 "" // required when there are multiple text variants in texts
 		0 "Herbs for the alchemist"
 		1 "Received from the alchemist from $(city.name) at $date$."
-		2 "I need to go to $(forest.name) at $(World::GetDirName(Level::location.pos, forest.pos)) from $(city.name) and find as much alchemical herbs as I can. There should also be an alchemist pupil in the area who would be good to find."
+		2 "I need to go to $(forest.name) at $(World::GetDirName(Level::location, forest)) from $(city.name) and find as much alchemical herbs as I can. There should also be an alchemist pupil in the area who would be good to find."
 		3 "I met a student of an alchemist in the forest. He wanted to help me find the alchemical herbs but I refused."
 		4 "I met a student of an alchemist in the forest. He offered to help me find the alchemical herbs."
 		5 "I changed my mind and accepted the student's alchemist's help. He will lead me to the surrounding plants."
@@ -245,8 +303,8 @@ quest main {
 		5 "Talk to infected villagers and come back to me."
 		6 "One of the villagers attacked you for no reason!?"
 		7 "It's worse than I thought, we must quickly bring in some priest who knows about plagues."
-		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here one of the clerics lives. I have heard that he is researching various diseases."
-		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here lives one of the clerics. I have heard that he is researching various diseases."
+		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here one of the clerics lives. I have heard that he is researching various diseases."
+		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here lives one of the clerics. I have heard that he is researching various diseases."
 		9 "Find him and help him discover what our people are suffering from."
 		10 "Find a cleric living in $(shrine_loc.name), without him this village will be empty!"
 	}
@@ -268,7 +326,7 @@ quest main {
 		0 "Plague"
 		1 "Plague? Nothing that I know of..."
 		2 "You probably wanted to talk to $(cleric.real_name)?"
-		3 "Usually you can find him here but currently he went on research to $(dungeon.name) on $(World::GetDirName(Level::location.pos, dungeon.pos)) from here."
+		3 "Usually you can find him here but currently he went on research to $(dungeon.name) on $(World::GetDirName(Level::location, dungeon)) from here."
 		4 "I hope he's okay, I haven't seen him for several days."
 	}
 	
@@ -298,8 +356,8 @@ quest main {
 		8 "In $(village.name), the plague began to spread more and more. I have to get back there quickly."
 		9 "I have to walk around the village and find infected villagers. Maybe I can establish something."
 		10 "One of the villagers went crazy because of the plague and attacked me."
-		11 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location.pos, shrine_loc.pos)) from here lives a cleric who specializes in diseases. I need to talk with him."
-		12 "The cleric I was looking for, $(cleric.real_name) went to $(dungeon.name) that is $(World::GetDirName(Level::location.pos, dungeon.pos)) from here to do some research."
+		11 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here lives a cleric who specializes in diseases. I need to talk with him."
+		12 "The cleric I was looking for, $(cleric.real_name) went to $(dungeon.name) that is $(World::GetDirName(Level::location, dungeon)) from here to do some research."
 		13 "I found $(cleric.real_name) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrine_loc.name), then he will help me."
 	}
 }
@@ -318,5 +376,24 @@ quest side_cleric {
 		2 "Cleric $(cleric.real_name) asked me to obtain a book which is at the lower level of $(dungeon.name). If we split up, he'll be waiting for me in $(city.name)."
 		3 "I found the book. Now I have to take it to $(cleric.real_name)."
 		4 "I delivered the book and received the reward. Quest done!"
+	}
+}
+
+//=============================================================================
+quest dire_wolf {
+	dialog hunter {
+		0 "Quest"
+		1 "Do you want to prove that you are one of us?"
+		2 "In $(forest.name), a dire wolf is wreaking havoc."
+		3 "Kill it and you will gain our recognition and reward."
+		4 "Excellent job hunter! Please accept this gold as a reward."
+	}
+	
+	texts {
+		0 "Dire wolf"
+		1 "Received from the leader of hunters at $date$"
+		2 "I must go to $(forest.name) and kill the dire wolf that terrorizes the surrounding villages."
+		3 "I killed the dire wolf, I can go back to the hunter's camp and collect my reward."
+		4 "I recived the reward. Quest done!"
 	}
 }

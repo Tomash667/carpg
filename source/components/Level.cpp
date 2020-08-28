@@ -3,19 +3,24 @@
 
 #include "Ability.h"
 #include "AIController.h"
+#include "AITeam.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
+#include "Camp.h"
 #include "Chest.h"
 #include "City.h"
 #include "Collision.h"
 #include "Door.h"
+#include "Electro.h"
 #include "EntityInterpolator.h"
 #include "FOV.h"
 #include "Game.h"
+#include "GameGui.h"
 #include "GameResources.h"
 #include "InsideBuilding.h"
 #include "InsideLocationLevel.h"
 #include "Language.h"
+#include "LevelGui.h"
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
 #include "MultiInsideLocation.h"
@@ -30,7 +35,6 @@
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
 #include "ScriptManager.h"
-#include "SpellEffects.h"
 #include "Stock.h"
 #include "Team.h"
 #include "Trap.h"
@@ -305,6 +309,7 @@ void Level::Apply()
 		{
 			area.tmp = TmpLevelArea::Get();
 			area.tmp->area = &area;
+			area.tmp->lights_dt = 1.f;
 		}
 	}
 }
@@ -466,6 +471,36 @@ Chest* Level::GetRandomChest(Room& room)
 }
 
 //=================================================================================================
+Chest* Level::GetTreasureChest()
+{
+	assert(lvl);
+
+	Room* room;
+	if(location->target == LABYRINTH)
+		room = lvl->rooms[0];
+	else
+		room = lvl->rooms[static_cast<InsideLocation*>(location)->special_room];
+
+	Chest* bestChest = nullptr;
+	const Vec3 center = room->Center();
+	float bestDist = 999.f;
+	for(Chest* chest : lvl->chests)
+	{
+		if(room->IsInside(chest->pos))
+		{
+			float dist = Vec3::Distance(chest->pos, center);
+			if(dist < bestDist)
+			{
+				bestDist = dist;
+				bestChest = chest;
+			}
+		}
+	}
+
+	return bestChest;
+}
+
+//=================================================================================================
 Electro* Level::FindElectro(int id)
 {
 	for(LevelArea& area : ForEachArea())
@@ -586,7 +621,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			Usable* u = new Usable;
 			u->Register();
 			u->base = stool;
-			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
+			u->pos = pos + Vec3(sin(sdir) * slen, 0, cos(sdir) * slen);
 			u->rot = sdir;
 			area.usables.push_back(u);
 
@@ -677,7 +712,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		// chest
 		Chest* chest = new Chest;
 		chest->Register();
-		chest->mesh_inst = new MeshInstance(base->mesh);
+		chest->base = base;
 		chest->rot = rot;
 		chest->pos = pos;
 		area.chests.push_back(chest);
@@ -829,7 +864,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 		{
 			cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2, pos.z));
 			c.type = CollisionObject::SPHERE;
-			c.pt = Vec2(pos.x, pos.z);
+			c.pos = pos;
 			c.radius = obj->r;
 		}
 		else if(obj->type == OBJ_HITBOX)
@@ -841,7 +876,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			tr.setOrigin(ToVector3(pos2));
 			tr.setRotation(btQuaternion(rot, 0, 0));
 
-			c.pt = Vec2(pos2.x, pos2.z);
+			c.pos = pos2;
 			c.w = obj->size.x;
 			c.h = obj->size.y;
 			if(NotZero(rot))
@@ -864,8 +899,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			Vec3 out_pos = Vec3::TransformZero(m);
 			Quat q = Quat::CreateFromRotationMatrix(m);
 
-			float yaw = asin(-2 * (q.x*q.z - q.w*q.y));
-			c.pt = Vec2(out_pos.x, out_pos.z);
+			float yaw = asin(-2 * (q.x * q.z - q.w * q.y));
+			c.pos = out_pos;
 			c.w = obj->size.x;
 			c.h = obj->size.y;
 			if(NotZero(yaw))
@@ -903,16 +938,46 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 	{
 		CollisionObject& c = Add1(area.tmp->colliders);
 		c.type = CollisionObject::SPHERE;
-		c.pt = Vec2(pos.x, pos.z);
-		c.radius = obj->r*scale;
+		c.pos = pos;
+		c.radius = obj->r * scale;
 
 		btCollisionObject* cobj = new btCollisionObject;
-		btCylinderShape* shape = new btCylinderShape(btVector3(obj->r*scale, obj->h*scale, obj->r*scale));
+		btCylinderShape* shape = new btCylinderShape(btVector3(obj->r * scale, obj->h * scale, obj->r * scale));
 		shapes.push_back(shape);
 		cobj->setCollisionShape(shape);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 		cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2 * scale, pos.z));
 		phy_world->addCollisionObject(cobj, CG_OBJECT);
+	}
+	else if(IsSet(obj->flags, OBJ_TMP_PHYSICS))
+	{
+		CollisionObject& c = Add1(area.tmp->colliders);
+		c.owner = CollisionObject::TMP;
+		c.cam_collider = false;
+		if(obj->type == OBJ_CYLINDER)
+		{
+			c.type = CollisionObject::SPHERE;
+			c.pos = pos;
+			c.radius = obj->r;
+		}
+		else if(obj->type == OBJ_HITBOX)
+		{
+			const Matrix mat = *obj->matrix * Matrix::RotationY(rot);
+			Vec3 pos2 = Vec3::TransformZero(mat);
+			pos2 += pos;
+
+			c.pos = pos2;
+			c.w = obj->size.x;
+			c.h = obj->size.y;
+			if(NotZero(rot))
+			{
+				c.type = CollisionObject::RECTANGLE_ROT;
+				c.rot = rot;
+				c.radius = max(c.w, c.h) * SQRT_2;
+			}
+			else
+				c.type = CollisionObject::RECTANGLE;
+		}
 	}
 
 	if(IsSet(obj->flags, OBJ_CAM_COLLIDERS))
@@ -1074,8 +1139,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				CollisionObject& cobj = Add1(area.tmp->colliders);
 				cobj.type = CollisionObject::SPHERE;
 				cobj.radius = pt.size.x;
-				cobj.pt.x = pos.x;
-				cobj.pt.y = pos.z;
+				cobj.pos = pos;
 				cobj.owner = nullptr;
 				cobj.cam_collider = is_wall;
 
@@ -1101,8 +1165,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 				CollisionObject& cobj = Add1(area.tmp->colliders);
 				cobj.type = CollisionObject::RECTANGLE;
-				cobj.pt.x = pos.x;
-				cobj.pt.y = pos.z;
+				cobj.pos = pos;
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
 				cobj.owner = nullptr;
@@ -1203,6 +1266,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
 					inside->tmp = TmpLevelArea::Get();
 					inside->tmp->area = inside;
+					inside->tmp->lights_dt = 1.f;
 					inside->level_shift = city->inside_offset;
 					inside->offset = Vec2(512.f * city->inside_offset.x + 256.f, 512.f * city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
@@ -1290,38 +1354,19 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				else if(token == "door" || token == "doorc" || token == "doorl" || token == "door2")
 				{
 					Door* door = new Door;
-					door->Register();
 					door->pos = pos;
 					door->rot = Clip(pt.rot.y + rot);
-					door->state = Door::Opened;
-					door->door2 = (token == "door2");
-					door->mesh_inst = new MeshInstance(door->door2 ? game_res->aDoor2 : game_res->aDoor);
-					door->mesh_inst->base_speed = 2.f;
-					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(shape_door);
-					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-
-					btTransform& tr = door->phy->getWorldTransform();
-					Vec3 pos = door->pos;
-					pos.y += Door::HEIGHT;
-					tr.setOrigin(ToVector3(pos));
-					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					phy_world->addCollisionObject(door->phy, CG_DOOR);
-
 					if(token != "door") // door2 are closed now, this is intended
 					{
 						door->state = Door::Closed;
 						if(token == "doorl")
-							door->locked = 1;
+							door->locked = LOCK_UNLOCKABLE;
 					}
 					else
-					{
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
-
+						door->state = Door::Opened;
+					door->door2 = (token == "door2");
+					door->Init();
 					area.doors.push_back(door);
 				}
 				else if(token == "arena")
@@ -1857,7 +1902,7 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 			float a = Random(), b = Random();
 			if(b < a)
 				std::swap(a, b);
-			pt = Vec3(pos.x + b * radius*cos(2 * PI*a / b), 0, pos.y + b * radius*sin(2 * PI*a / b));
+			pt = Vec3(pos.x + b * radius * cos(2 * PI * a / b), 0, pos.y + b * radius * sin(2 * PI * a / b));
 		}
 		else
 		{
@@ -1924,10 +1969,6 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 	// mesh
 	unit->CreateMesh(Unit::CREATE_MESH::NORMAL);
 
-	// boss music
-	if(IsSet(base.flags2, F2_BOSS))
-		world->AddBossLevel(Int2(location_index, dungeon_level));
-
 	// physics
 	if(create_physics)
 		unit->CreatePhysics();
@@ -1988,7 +2029,7 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 		Int2 pt = PosToPt(pos);
 
 		Tile& tile = lvl->map[pt(lvl->w)];
-		if(Any(tile.type, STAIRS_UP, STAIRS_DOWN))
+		if(Any(tile.type, ENTRY_PREV, ENTRY_NEXT))
 			continue;
 
 		global_col.clear();
@@ -2001,29 +2042,28 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const Int2& stairs_pt, const Int2& stairs_down_pt)
+Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const Int2& awayPt, const Int2& excludedPt)
 {
 	const float radius = unit.GetRadius();
-	Vec3 stairs_pos(2.f*stairs_pt.x + 1.f, 0.f, 2.f*stairs_pt.y + 1.f);
+	const Vec3 awayPos(2.f * awayPt.x + 1.f, 0.f, 2.f * awayPt.y + 1.f);
 
 	for(int i = 0; i < 10; ++i)
 	{
-		Vec3 pt = room.GetRandomPos(radius);
-
-		if(Vec3::Distance(stairs_pos, pt) < ALERT_SPAWN_RANGE)
+		const Vec3 pos = room.GetRandomPos(radius);
+		if(Vec3::Distance(awayPos, pos) < ALERT_SPAWN_RANGE)
 			continue;
 
-		Int2 my_pt = Int2(int(pt.x / 2), int(pt.y / 2));
-		if(my_pt == stairs_down_pt)
+		const Int2 pt = Int2(int(pos.x / 2), int(pos.y / 2));
+		if(pt == excludedPt)
 			continue;
 
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pt, radius, nullptr);
+		GatherCollisionObjects(*local_area, global_col, pos, radius, nullptr);
 
-		if(!Collide(global_col, pt, radius))
+		if(!Collide(global_col, pos, radius))
 		{
 			float rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(*local_area, unit, level, &pt, &rot);
+			return CreateUnitWithAI(*local_area, unit, level, &pos, &rot);
 		}
 	}
 
@@ -2031,9 +2071,9 @@ Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const In
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, const Int2& pt, const Int2& pt2)
+Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, const Int2& awayPt, const Int2& excludedPt)
 {
-	Unit* u = SpawnUnitInsideRoom(room, ud, level, pt, pt2);
+	Unit* u = SpawnUnitInsideRoom(room, ud, level, awayPt, excludedPt);
 	if(u)
 		return u;
 
@@ -2042,7 +2082,7 @@ Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, cons
 
 	for(Room* room : connected)
 	{
-		u = SpawnUnitInsideRoom(*room, ud, level, pt, pt2);
+		u = SpawnUnitInsideRoom(*room, ud, level, awayPt, excludedPt);
 		if(u)
 			return u;
 	}
@@ -2051,7 +2091,7 @@ Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, cons
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitNearLocation(LevelArea& area, const Vec3 &pos, UnitData &unit, const Vec3* look_at, int level, float extra_radius)
+Unit* Level::SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at, int level, float extra_radius)
 {
 	const float radius = unit.GetRadius();
 
@@ -2176,7 +2216,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					if(tiles[x + z * OutsideLocation::size].IsBlocking())
 					{
 						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 						co.w = 1.f;
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
@@ -2197,31 +2237,23 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					if(IsBlocking(type))
 					{
 						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 						co.w = 1.f;
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(type == STAIRS_DOWN)
+					else if(type == ENTRY_NEXT || type == ENTRY_PREV)
 					{
-						if(!lvl->staircase_down_in_wall)
+						EntryType entryType = type == ENTRY_NEXT ? lvl->nextEntryType : lvl->prevEntryType;
+						if(entryType == ENTRY_STAIRS_UP || entryType == ENTRY_STAIRS_DOWN)
 						{
 							CollisionObject& co = Add1(objects);
-							co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+							co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 							co.check = &Level::CollideWithStairs;
 							co.check_rect = &Level::CollideWithStairsRect;
-							co.extra = 0;
+							co.extra = (type == ENTRY_PREV);
 							co.type = CollisionObject::CUSTOM;
 						}
-					}
-					else if(type == STAIRS_UP)
-					{
-						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.check = &Level::CollideWithStairs;
-						co.check_rect = &Level::CollideWithStairsRect;
-						co.extra = 1;
-						co.type = CollisionObject::CUSTOM;
 					}
 				}
 			}
@@ -2256,7 +2288,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 				if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
 				{
 					CollisionObject& co = Add1(objects);
-					co.pt = Vec2(pos.x, pos.z);
+					co.pos = pos;
 					co.radius = radius;
 					co.type = CollisionObject::SPHERE;
 				}
@@ -2277,7 +2309,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 				if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
 				{
 					CollisionObject& co = Add1(objects);
-					co.pt = Vec2(pos.x, pos.z);
+					co.pos = pos;
 					co.radius = radius;
 					co.type = CollisionObject::SPHERE;
 				}
@@ -2294,12 +2326,12 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 			{
 				if(it->type == CollisionObject::RECTANGLE)
 				{
-					if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+					if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pos.x, it->pos.z, it->w, it->h))
 						objects.push_back(*it);
 				}
 				else
 				{
-					if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
+					if(CircleToCircle(_pos.x, _pos.z, _radius, it->pos.x, it->pos.z, it->radius))
 						objects.push_back(*it);
 				}
 			}
@@ -2314,7 +2346,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					do
 					{
 						if(it->owner == *objs)
-							goto ignoruj;
+							goto ignore;
 						else if(!*objs)
 							break;
 						else
@@ -2325,16 +2357,16 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 
 				if(it->type == CollisionObject::RECTANGLE)
 				{
-					if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+					if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pos.x, it->pos.z, it->w, it->h))
 						objects.push_back(*it);
 				}
 				else
 				{
-					if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
+					if(CircleToCircle(_pos.x, _pos.z, _radius, it->pos.x, it->pos.z, it->radius))
 						objects.push_back(*it);
 				}
 
-			ignoruj:
+			ignore:
 				;
 			}
 		}
@@ -2348,7 +2380,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 			if((*it)->IsBlocking() && CircleToRotatedRectangle(_pos.x, _pos.z, _radius, (*it)->pos.x, (*it)->pos.z, Door::WIDTH, Door::THICKNESS, (*it)->rot))
 			{
 				CollisionObject& co = Add1(objects);
-				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+				co.pos = (*it)->pos;
 				co.type = CollisionObject::RECTANGLE_ROT;
 				co.w = Door::WIDTH;
 				co.h = Door::THICKNESS;
@@ -2383,7 +2415,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					if(tiles[x + z * OutsideLocation::size].IsBlocking())
 					{
 						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 						co.w = 1.f;
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
@@ -2404,31 +2436,23 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					if(IsBlocking(type))
 					{
 						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 						co.w = 1.f;
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(type == STAIRS_DOWN)
+					else if(type == ENTRY_NEXT || type == ENTRY_PREV)
 					{
-						if(!lvl->staircase_down_in_wall)
+						EntryType entryType = type == ENTRY_NEXT ? lvl->nextEntryType : lvl->prevEntryType;
+						if(entryType == ENTRY_STAIRS_UP || entryType == ENTRY_STAIRS_DOWN)
 						{
 							CollisionObject& co = Add1(objects);
-							co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+							co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 							co.check = &Level::CollideWithStairs;
 							co.check_rect = &Level::CollideWithStairsRect;
-							co.extra = 0;
+							co.extra = (type == ENTRY_PREV);
 							co.type = CollisionObject::CUSTOM;
 						}
-					}
-					else if(type == STAIRS_UP)
-					{
-						CollisionObject& co = Add1(objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.check = &Level::CollideWithStairs;
-						co.check_rect = &Level::CollideWithStairsRect;
-						co.extra = 1;
-						co.type = CollisionObject::CUSTOM;
 					}
 				}
 			}
@@ -2464,7 +2488,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 				{
 					CollisionObject& co = Add1(objects);
-					co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+					co.pos = (*it)->pos;
 					co.radius = radius;
 					co.type = CollisionObject::SPHERE;
 				}
@@ -2484,7 +2508,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 				{
 					CollisionObject& co = Add1(objects);
-					co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+					co.pos = (*it)->pos;
 					co.radius = radius;
 					co.type = CollisionObject::SPHERE;
 				}
@@ -2501,12 +2525,12 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 			{
 				if(it->type == CollisionObject::RECTANGLE)
 				{
-					if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
+					if(RectangleToRectangle(it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
 						objects.push_back(*it);
 				}
 				else
 				{
-					if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+					if(CircleToRectangle(it->pos.x, it->pos.z, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 						objects.push_back(*it);
 				}
 			}
@@ -2521,7 +2545,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 					do
 					{
 						if(it->owner == *objs)
-							goto ignoruj;
+							goto ignore;
 						else if(!*objs)
 							break;
 						else
@@ -2532,16 +2556,16 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 
 				if(it->type == CollisionObject::RECTANGLE)
 				{
-					if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
+					if(RectangleToRectangle(it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
 						objects.push_back(*it);
 				}
 				else
 				{
-					if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+					if(CircleToRectangle(it->pos.x, it->pos.z, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 						objects.push_back(*it);
 				}
 
-			ignoruj:
+			ignore:
 				;
 			}
 		}
@@ -2549,28 +2573,28 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 }
 
 //=================================================================================================
-bool Level::Collide(const vector<CollisionObject>& objects, const Vec3& _pos, float _radius)
+bool Level::Collide(const vector<CollisionObject>& objects, const Vec3& pos, float radius)
 {
-	assert(_radius > 0.f);
+	assert(radius > 0.f);
 
 	for(vector<CollisionObject>::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 	{
 		switch(it->type)
 		{
 		case CollisionObject::SPHERE:
-			if(Distance(_pos.x, _pos.z, it->pt.x, it->pt.y) <= it->radius + _radius)
+			if(Distance(pos.x, pos.z, it->pos.x, it->pos.z) <= it->radius + radius)
 				return true;
 			break;
 		case CollisionObject::RECTANGLE:
-			if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+			if(CircleToRectangle(pos.x, pos.z, radius, it->pos.x, it->pos.z, it->w, it->h))
 				return true;
 			break;
 		case CollisionObject::RECTANGLE_ROT:
-			if(CircleToRotatedRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h, it->rot))
+			if(CircleToRotatedRectangle(pos.x, pos.z, radius, it->pos.x, it->pos.z, it->w, it->h, it->rot))
 				return true;
 			break;
 		case CollisionObject::CUSTOM:
-			if((this->*(it->check))(*it, _pos, _radius))
+			if((this->*(it->check))(*it, pos, radius))
 				return true;
 			break;
 		}
@@ -2596,17 +2620,17 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 		switch(it->type)
 		{
 		case CollisionObject::SPHERE:
-			if(CircleToRectangle(it->pt.x, it->pt.y, it->radius + _margin, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+			if(CircleToRectangle(it->pos.x, it->pos.z, it->radius + _margin, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 				return true;
 			break;
 		case CollisionObject::RECTANGLE:
-			if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h))
+			if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h))
 				return true;
 			break;
 		case CollisionObject::RECTANGLE_ROT:
 			{
 				RotRect r1, r2;
-				r1.center = it->pt;
+				r1.center = it->pos.XZ();
 				r1.size.x = it->w + _margin;
 				r1.size.y = it->h + _margin;
 				r1.rot = -it->rot;
@@ -2648,13 +2672,13 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 		switch(it->type)
 		{
 		case CollisionObject::SPHERE:
-			if(CircleToRotatedRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y, _rot))
+			if(CircleToRotatedRectangle(it->pos.x, it->pos.z, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y, _rot))
 				return true;
 			break;
 		case CollisionObject::RECTANGLE:
 			{
 				RotRect r1, r2;
-				r1.center = it->pt;
+				r1.center = it->pos.XZ();
 				r1.size.x = it->w;
 				r1.size.y = it->h;
 				r1.rot = 0.f;
@@ -2669,7 +2693,7 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 		case CollisionObject::RECTANGLE_ROT:
 			{
 				RotRect r1, r2;
-				r1.center = it->pt;
+				r1.center = it->pos.XZ();
 				r1.size.x = it->w;
 				r1.size.y = it->h;
 				r1.rot = it->rot;
@@ -2692,40 +2716,37 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 }
 
 //=================================================================================================
-bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& _pos, float _radius) const
+bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& pos, float radius) const
 {
-	assert(cobj.type == CollisionObject::CUSTOM && cobj.check == &Level::CollideWithStairs && !location->outside && _radius > 0.f);
+	assert(cobj.type == CollisionObject::CUSTOM && cobj.check == &Level::CollideWithStairs && !location->outside && radius > 0.f);
 
 	GameDirection dir;
 	if(cobj.extra == 0)
-	{
-		assert(!lvl->staircase_down_in_wall);
-		dir = lvl->staircase_down_dir;
-	}
+		dir = lvl->nextEntryDir;
 	else
-		dir = lvl->staircase_up_dir;
+		dir = lvl->prevEntryDir;
 
 	if(dir != GDIR_DOWN)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x, cobj.pt.y - 0.95f, 1.f, 0.05f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pos.x, cobj.pos.z - 0.95f, 1.f, 0.05f))
 			return true;
 	}
 
 	if(dir != GDIR_LEFT)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x - 0.95f, cobj.pt.y, 0.05f, 1.f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pos.x - 0.95f, cobj.pos.z, 0.05f, 1.f))
 			return true;
 	}
 
 	if(dir != GDIR_UP)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x, cobj.pt.y + 0.95f, 1.f, 0.05f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pos.x, cobj.pos.z + 0.95f, 1.f, 0.05f))
 			return true;
 	}
 
 	if(dir != GDIR_RIGHT)
 	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, cobj.pt.x + 0.95f, cobj.pt.y, 0.05f, 1.f))
+		if(CircleToRectangle(pos.x, pos.z, radius, cobj.pos.x + 0.95f, cobj.pos.z, 0.05f, 1.f))
 			return true;
 	}
 
@@ -2733,40 +2754,37 @@ bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& _pos, flo
 }
 
 //=================================================================================================
-bool Level::CollideWithStairsRect(const CollisionObject& cobj, const Box2d& _box) const
+bool Level::CollideWithStairsRect(const CollisionObject& cobj, const Box2d& box) const
 {
 	assert(cobj.type == CollisionObject::CUSTOM && cobj.check_rect == &Level::CollideWithStairsRect && !location->outside);
 
 	GameDirection dir;
 	if(cobj.extra == 0)
-	{
-		assert(!lvl->staircase_down_in_wall);
-		dir = lvl->staircase_down_dir;
-	}
+		dir = lvl->nextEntryDir;
 	else
-		dir = lvl->staircase_up_dir;
+		dir = lvl->prevEntryDir;
 
 	if(dir != GDIR_DOWN)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x - 1.f, cobj.pt.y - 1.f, cobj.pt.x + 1.f, cobj.pt.y - 0.9f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pos.x - 1.f, cobj.pos.z - 1.f, cobj.pos.x + 1.f, cobj.pos.z - 0.9f))
 			return true;
 	}
 
 	if(dir != GDIR_LEFT)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x - 1.f, cobj.pt.y - 1.f, cobj.pt.x - 0.9f, cobj.pt.y + 1.f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pos.x - 1.f, cobj.pos.z - 1.f, cobj.pos.x - 0.9f, cobj.pos.z + 1.f))
 			return true;
 	}
 
 	if(dir != GDIR_UP)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x - 1.f, cobj.pt.y + 0.9f, cobj.pt.x + 1.f, cobj.pt.y + 1.f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pos.x - 1.f, cobj.pos.z + 0.9f, cobj.pos.x + 1.f, cobj.pos.z + 1.f))
 			return true;
 	}
 
 	if(dir != GDIR_RIGHT)
 	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, cobj.pt.x + 0.9f, cobj.pt.y - 1.f, cobj.pt.x + 1.f, cobj.pt.y + 1.f))
+		if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, cobj.pos.x + 0.9f, cobj.pos.z - 1.f, cobj.pos.x + 1.f, cobj.pos.z + 1.f))
 			return true;
 	}
 
@@ -2941,7 +2959,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	trap.base = &base;
 	trap.hitted = nullptr;
 	trap.state = 0;
-	trap.pos = Vec3(2.f*pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f*pt.y + Random(trap.base->h, 2.f - trap.base->h));
+	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
 	trap.obj.base = nullptr;
 	trap.obj.mesh = trap.base->mesh;
 	trap.obj.pos = trap.pos;
@@ -2962,7 +2980,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 			for(j = 1; j <= 10; ++j)
 			{
-				if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x*j + (pt.y + DirToPos(dir).y*j)*lvl->w]))
+				if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
 				{
 					if(j != 1)
 						ok = true;
@@ -2974,7 +2992,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 			{
 				trap.tile = pt + DirToPos(dir) * j;
 
-				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
+				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, trap.pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
 					Vec3(trap.pos.x, 1.f, trap.pos.z)))
 				{
 					TrapLocation& tr = Add1(possible);
@@ -3034,60 +3052,50 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 //=================================================================================================
 void Level::UpdateLocation(int days, int open_chance, bool reset)
 {
-	// up³yw czasu
-	// 1-10 dni (usuñ zw³oki)
-	// 5-30 dni (usuñ krew)
-	// 1+ zamknij/otwórz drzwi
 	for(LevelArea& area : ForEachArea())
 	{
-		if(days <= 10)
+		// if reset remove all units
+		// otherwise all (>10 days) or some
+		if(reset)
 		{
-			// usuñ niektóre zw³oki i przedmioty
-			for(Unit*& u : area.units)
+			for(Unit* unit : area.units)
 			{
-				if(!u->IsAlive() && Random(4, 10) < days)
-				{
-					delete u;
-					u = nullptr;
-				}
+				if(unit->IsAlive() && unit->IsHero() && unit->hero->otherTeam)
+					unit->hero->otherTeam->Remove();
+				delete unit;
 			}
-			RemoveNullElements(area.units);
-			DeleteElements(area.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
+			area.units.clear();
 		}
+		else if(days > 10)
+			DeleteElements(area.units, [](Unit* unit) { return !unit->IsAlive(); });
 		else
-		{
-			// usuñ wszystkie zw³oki i przedmioty
-			if(reset)
-				DeleteElements(area.units);
-			else
-				DeleteElements(area.units, [](Unit* unit) { return !unit->IsAlive(); });
-			DeleteElements(area.items);
-		}
+			DeleteElements(area.units, [=](Unit* unit) { return !unit->IsAlive() && Random(4, 10) < days; });
 
-		// wylecz jednostki
+		// remove all ground items (>10 days) or some
+		if(days > 10)
+			DeleteElements(area.items);
+		else
+			DeleteElements(area.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
+
+		// heal units
 		if(!reset)
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(Unit* unit : area.units)
 			{
-				if((*it)->IsAlive())
-					(*it)->NaturalHealing(days);
+				if(unit->IsAlive())
+					unit->NaturalHealing(days);
 			}
 		}
 
+		// remove all blood (>30 days) or some (>5 days)
 		if(days > 30)
-		{
-			// usuñ krew
 			area.bloods.clear();
-		}
-		else if(days >= 5)
-		{
-			// usuñ czêœciowo krew
+		else if(days > 5)
 			RemoveElements(area.bloods, RemoveRandomPred<Blood>(days, 4, 30));
-		}
 
+		// remove all temporary traps (>30 days) or some (>5 days)
 		if(days > 30)
 		{
-			// usuñ wszystkie jednorazowe pu³apki
 			for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end;)
 			{
 				if((*it)->base->type == TRAP_FIREBALL)
@@ -3111,7 +3119,6 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 		}
 		else if(days >= 5)
 		{
-			// usuñ czêœæ 1razowych pu³apek
 			for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end;)
 			{
 				if((*it)->base->type == TRAP_FIREBALL && Rand() % 30 < days)
@@ -3134,7 +3141,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 			}
 		}
 
-		// losowo otwórz/zamknij drzwi
+		// randomly open/close doors
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
@@ -3191,42 +3198,9 @@ void Level::OnRevisitLevel()
 {
 	for(LevelArea& area : ForEachArea())
 	{
-		// odtwórz skrzynie
-		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-		{
-			Chest& chest = **it;
-
-			chest.mesh_inst = new MeshInstance(game_res->aChest);
-		}
-
-		// odtwórz drzwi
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-
-			// animowany model
-			door.mesh_inst = new MeshInstance(door.door2 ? game_res->aDoor2 : game_res->aDoor);
-			door.mesh_inst->base_speed = 2.f;
-
-			// fizyka
-			door.phy = new btCollisionObject;
-			door.phy->setCollisionShape(shape_door);
-			door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
-			btTransform& tr = door.phy->getWorldTransform();
-			Vec3 pos = door.pos;
-			pos.y += Door::HEIGHT;
-			tr.setOrigin(ToVector3(pos));
-			tr.setRotation(btQuaternion(door.rot, 0, 0));
-			phy_world->addCollisionObject(door.phy, CG_DOOR);
-
-			// czy otwarte
-			if(door.state == Door::Opened)
-			{
-				btVector3& pos = door.phy->getWorldTransform().getOrigin();
-				pos.setY(pos.y() - 100.f);
-				door.mesh_inst->SetToEnd(&door.mesh_inst->mesh->anims[0]);
-			}
-		}
+		// recreate doors
+		for(Door* door : area.doors)
+			door->Recreate();
 	}
 }
 
@@ -3276,9 +3250,10 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(city_ctx)
+	if(city_ctx || location->state == LS_CLEARED)
 		return;
 
+	// is current level cleared?
 	bool is_clear = true;
 	for(vector<Unit*>::iterator it = local_area->units.begin(), end = local_area->units.end(); it != end; ++it)
 	{
@@ -3289,26 +3264,17 @@ void Level::CheckIfLocationCleared()
 		}
 	}
 
+	// is all level cleared?
+	if(is_clear && !location->outside)
+	{
+		InsideLocation* inside = static_cast<InsideLocation*>(location);
+		if(inside->IsMultilevel())
+			is_clear = static_cast<MultiInsideLocation*>(inside)->LevelCleared();
+	}
+
 	if(is_clear)
 	{
-		bool cleared = false;
-		if(!location->outside)
-		{
-			InsideLocation* inside = static_cast<InsideLocation*>(location);
-			if(inside->IsMultilevel())
-			{
-				if(static_cast<MultiInsideLocation*>(inside)->LevelCleared())
-					cleared = true;
-			}
-			else
-				cleared = true;
-		}
-		else
-			cleared = true;
-
-		if(cleared && location->state != LS_HIDDEN)
-			location->state = LS_CLEARED;
-
+		// events v1
 		bool prevent = false;
 		if(event_handler)
 			prevent = event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
@@ -3324,10 +3290,15 @@ void Level::CheckIfLocationCleared()
 			}
 		}
 
-		if(cleared && prevent && !location->group->IsEmpty())
+		// remove camp in 4-8 days
+		if(location->type == L_CAMP)
+			static_cast<Camp*>(location)->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+
+		// add news
+		if(!prevent && !location->group->IsEmpty())
 		{
 			if(location->type == L_CAMP)
-				world->AddNews(Format(txNewsCampCleared, world->GetLocation(world->GetNearestSettlement(location->pos))->name.c_str()));
+				world->AddNews(Format(txNewsCampCleared, world->GetNearestSettlement(location->pos)->name.c_str()));
 			else
 				world->AddNews(Format(txNewsLocCleared, location->name.c_str()));
 		}
@@ -3378,11 +3349,11 @@ void Level::SpawnDungeonColliders()
 	{
 		for(int x = 1; x < w - 1; ++x)
 		{
-			if(IsBlocking(m[x + y * w]) && (!IsBlocking(m[x - 1 + (y - 1)*w]) || !IsBlocking(m[x + (y - 1)*w]) || !IsBlocking(m[x + 1 + (y - 1)*w])
+			if(IsBlocking(m[x + y * w]) && (!IsBlocking(m[x - 1 + (y - 1) * w]) || !IsBlocking(m[x + (y - 1) * w]) || !IsBlocking(m[x + 1 + (y - 1) * w])
 				|| !IsBlocking(m[x - 1 + y * w]) || !IsBlocking(m[x + 1 + y * w])
-				|| !IsBlocking(m[x - 1 + (y + 1)*w]) || !IsBlocking(m[x + (y + 1)*w]) || !IsBlocking(m[x + 1 + (y + 1)*w])))
+				|| !IsBlocking(m[x - 1 + (y + 1) * w]) || !IsBlocking(m[x + (y + 1) * w]) || !IsBlocking(m[x + 1 + (y + 1) * w])))
 			{
-				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
+				SpawnDungeonCollider(Vec3(2.f * x + 1.f, 2.f, 2.f * y + 1.f));
 			}
 		}
 	}
@@ -3391,34 +3362,34 @@ void Level::SpawnDungeonColliders()
 	for(int i = 1; i < h - 1; ++i)
 	{
 		// left
-		if(IsBlocking(m[i*w]) && !IsBlocking(m[1 + i * w]))
-			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f*i + 1.f));
+		if(IsBlocking(m[i * w]) && !IsBlocking(m[1 + i * w]))
+			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f * i + 1.f));
 
 		// right
-		if(IsBlocking(m[i*w + w - 1]) && !IsBlocking(m[w - 2 + i * w]))
-			SpawnDungeonCollider(Vec3(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f));
+		if(IsBlocking(m[i * w + w - 1]) && !IsBlocking(m[w - 2 + i * w]))
+			SpawnDungeonCollider(Vec3(2.f * (w - 1) + 1.f, 2.f, 2.f * i + 1.f));
 	}
 
 	// front/back wall
 	for(int i = 1; i < lvl->w - 1; ++i)
 	{
 		// front
-		if(IsBlocking(m[i + (h - 1)*w]) && !IsBlocking(m[i + (h - 2)*w]))
-			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 2.f*(h - 1) + 1.f));
+		if(IsBlocking(m[i + (h - 1) * w]) && !IsBlocking(m[i + (h - 2) * w]))
+			SpawnDungeonCollider(Vec3(2.f * i + 1.f, 2.f, 2.f * (h - 1) + 1.f));
 
 		// back
 		if(IsBlocking(m[i]) && !IsBlocking(m[i + w]))
-			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
+			SpawnDungeonCollider(Vec3(2.f * i + 1.f, 2.f, 1.f));
 	}
 
 	// up stairs
-	if(inside->HaveUpStairs())
+	if(inside->HavePrevEntry())
 	{
 		btCollisionObject* cobj = new btCollisionObject;
 		cobj->setCollisionShape(shape_stairs);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl->staircase_up.x + 1.f, 0.f, 2.f*lvl->staircase_up.y + 1.f));
-		cobj->getWorldTransform().setRotation(btQuaternion(DirToRot(lvl->staircase_up_dir), 0, 0));
+		cobj->getWorldTransform().setOrigin(btVector3(2.f * lvl->prevEntryPt.x + 1.f, 0.f, 2.f * lvl->prevEntryPt.y + 1.f));
+		cobj->getWorldTransform().setRotation(btQuaternion(DirToRot(lvl->prevEntryDir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
 	}
 
@@ -3540,10 +3511,10 @@ Int2 Level::GetSpawnPoint()
 	InsideLocation* inside = static_cast<InsideLocation*>(location);
 	if(enter_from >= ENTER_FROM_PORTAL)
 		return PosToPt(inside->GetPortal(enter_from)->GetSpawnPos());
-	else if(enter_from == ENTER_FROM_DOWN_LEVEL)
-		return lvl->GetDownStairsFrontTile();
+	else if(enter_from == ENTER_FROM_NEXT_LEVEL)
+		return lvl->GetNextEntryFrontTile();
 	else
-		return lvl->GetUpStairsFrontTile();
+		return lvl->GetPrevEntryFrontTile();
 }
 
 //=================================================================================================
@@ -3630,8 +3601,8 @@ Vec3 Level::GetExitPos(Unit& u, bool force_border)
 		InsideLocation* inside = (InsideLocation*)location;
 		if(dungeon_level == 0 && inside->from_portal)
 			return inside->portal->pos;
-		Int2& pt = inside->GetLevelData().staircase_up;
-		return Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1);
+		const Int2& pt = inside->GetLevelData().prevEntryPt;
+		return PtToPos(pt);
 	}
 }
 
@@ -3659,7 +3630,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 			for(int x = xmin; x <= xmax; ++x)
 			{
 				if(outside->tiles[x + y * OutsideLocation::size].IsBlocking()
-					&& LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+					&& LineToRectangle(u1.pos, u2.pos, Vec2(2.f * x, 2.f * y), Vec2(2.f * (x + 1), 2.f * (y + 1))))
 					return false;
 			}
 		}
@@ -3675,7 +3646,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(IsBlocking(lvl->map[x + y * lvl->w].type) && LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(IsBlocking(lvl->map[x + y * lvl->w].type) && LineToRectangle(u1.pos, u2.pos, Vec2(2.f * x, 2.f * y), Vec2(2.f * (x + 1), 2.f * (y + 1))))
 					return false;
 				if(lvl->map[x + y * lvl->w].type == DOORS)
 				{
@@ -3712,7 +3683,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE)
 				continue;
 
-			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
+			Box2d box(it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h);
 			if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
 				return false;
 		}
@@ -3766,7 +3737,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(outside->tiles[x + y * OutsideLocation::size].IsBlocking() && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(outside->tiles[x + y * OutsideLocation::size].IsBlocking() && LineToRectangle(v1, v2, Vec2(2.f * x, 2.f * y), Vec2(2.f * (x + 1), 2.f * (y + 1))))
 					return false;
 			}
 		}
@@ -3782,7 +3753,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(IsBlocking(lvl->map[x + y * lvl->w].type) && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(IsBlocking(lvl->map[x + y * lvl->w].type) && LineToRectangle(v1, v2, Vec2(2.f * x, 2.f * y), Vec2(2.f * (x + 1), 2.f * (y + 1))))
 					return false;
 				if(lvl->map[x + y * lvl->w].type == DOORS)
 				{
@@ -3821,7 +3792,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE || (ignore && ignore == it->owner))
 				continue;
 
-			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
+			Box2d box(it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h);
 			if(LineToRectangle(v1, v2, box.v1, box.v2))
 				return false;
 		}
@@ -3880,7 +3851,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 			for(Unit* u : area.units)
 			{
 				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
-					game->GiveDmg(*u, u->hp);
+					u->GiveDmg(u->hp);
 			}
 		}
 		break;
@@ -3890,7 +3861,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 			for(Unit* u : area.units)
 			{
 				if(u->IsAlive() && !u->IsPlayer() && u != ignore)
-					game->GiveDmg(*u, u->hp);
+					u->GiveDmg(u->hp);
 			}
 		}
 		break;
@@ -3958,7 +3929,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	tex.Lock();
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
-		Tile& p = lvl->map[it->x + (lvl->w - it->y - 1)*lvl->w];
+		Tile& p = lvl->map[it->x + (lvl->w - it->y - 1) * lvl->w];
 		SetBit(p.flags, Tile::F_REVEALED);
 		uint* pix = tex[it->y] + it->x;
 		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
@@ -4038,39 +4009,12 @@ void Level::Write(BitStreamWriter& f)
 {
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
+	f << boss;
 
-	if(!net->mp_load)
-		return;
-
-	for(LevelArea& area : ForEachArea())
+	if(net->mp_load)
 	{
-		TmpLevelArea& tmp_area = *area.tmp;
-
-		// bullets
-		f.Write(tmp_area.bullets.size());
-		for(Bullet& bullet : tmp_area.bullets)
-		{
-			f << bullet.pos;
-			f << bullet.rot;
-			f << bullet.speed;
-			f << bullet.yspeed;
-			f << bullet.timer;
-			f << (bullet.owner ? bullet.owner->id : -1);
-			if(bullet.ability)
-				f << bullet.ability->hash;
-			else
-				f.Write0();
-		}
-
-		// explosions
-		f.Write(tmp_area.explos.size());
-		for(Explo* explo : tmp_area.explos)
-			explo->Write(f);
-
-		// electros
-		f.Write(tmp_area.electros.size());
-		for(Electro* electro : tmp_area.electros)
-			electro->Write(f);
+		for(LevelArea& area : ForEachArea())
+			area.tmp->Write(f);
 	}
 }
 
@@ -4100,151 +4044,21 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	game_res->LoadMusic(music, false, true);
-	if(world->IsBossLevel())
-		game->SetMusic();
+	f >> boss;
+	if(boss)
+	{
+		game_res->LoadMusic(MusicType::Boss, false, true);
+		game->SetMusic(MusicType::Boss);
+	}
 	else
 		game->SetMusic(music);
 
-	if(!net->mp_load)
-		return true;
-
-	for(LevelArea& area : ForEachArea())
+	if(net->mp_load)
 	{
-		TmpLevelArea& tmp_area = *area.tmp;
-
-		// bullets
-		uint count;
-		f >> count;
-		if(!f.Ensure(count * Bullet::MIN_SIZE))
+		for(LevelArea& area : ForEachArea())
 		{
-			Error("Read level: Broken bullet count.");
-			return false;
-		}
-		tmp_area.bullets.resize(count);
-		for(Bullet& bullet : tmp_area.bullets)
-		{
-			f >> bullet.pos;
-			f >> bullet.rot;
-			f >> bullet.speed;
-			f >> bullet.yspeed;
-			f >> bullet.timer;
-			int unit_id = f.Read<int>();
-			int ability_hash = f.Read<int>();
-			if(!f)
-			{
-				Error("Read level: Broken bullet.");
+			if(!area.tmp->Read(f))
 				return false;
-			}
-			if(ability_hash == 0)
-			{
-				bullet.ability = nullptr;
-				bullet.mesh = game_res->aArrow;
-				bullet.pe = nullptr;
-				bullet.remove = false;
-				bullet.tex = nullptr;
-				bullet.tex_size = 0.f;
-
-				TrailParticleEmitter* tpe = new TrailParticleEmitter;
-				tpe->fade = 0.3f;
-				tpe->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe->color2 = Vec4(1, 1, 1, 0);
-				tpe->Init(50);
-				tmp_area.tpes.push_back(tpe);
-				bullet.trail = tpe;
-			}
-			else
-			{
-				Ability* ability_ptr = Ability::Get(ability_hash);
-				if(!ability_ptr)
-				{
-					Error("Read level: Missing ability '%u'.", ability_hash);
-					return false;
-				}
-
-				Ability& ability = *ability_ptr;
-				bullet.ability = &ability;
-				bullet.mesh = ability.mesh;
-				bullet.tex = ability.tex;
-				bullet.tex_size = ability.size;
-				bullet.remove = false;
-				bullet.trail = nullptr;
-				bullet.pe = nullptr;
-
-				if(ability.tex_particle)
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.1f;
-					pe->life = -1;
-					pe->particle_life = 0.5f;
-					pe->emisions = -1;
-					pe->spawn_min = 3;
-					pe->spawn_max = 4;
-					pe->max_particles = 50;
-					pe->pos = bullet.pos;
-					pe->speed_min = Vec3(-1, -1, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-					tmp_area.pes.push_back(pe);
-					bullet.pe = pe;
-				}
-			}
-
-			if(unit_id != -1)
-			{
-				bullet.owner = FindUnit(unit_id);
-				if(!bullet.owner)
-				{
-					Error("Read level: Missing bullet owner %d.", unit_id);
-					return false;
-				}
-			}
-			else
-				bullet.owner = nullptr;
-		}
-
-		// explosions
-		f >> count;
-		if(!f.Ensure(count * Explo::MIN_SIZE))
-		{
-			Error("Read level: Broken explosion count.");
-			return false;
-		}
-		tmp_area.explos.resize(count);
-		for(Explo*& explo : tmp_area.explos)
-		{
-			explo = new Explo;
-			if(!explo->Read(f))
-			{
-				Error("Read level: Broken explosion.");
-				return false;
-			}
-		}
-
-		// electro effects
-		f >> count;
-		if(!f.Ensure(count * Electro::MIN_SIZE))
-		{
-			Error("Read level: Broken electro count.");
-			return false;
-		}
-		tmp_area.electros.resize(count);
-		for(Electro*& electro : tmp_area.electros)
-		{
-			electro = new Electro;
-			electro->area = &area;
-			if(!electro->Read(f))
-			{
-				Error("Read level: Broken electro.");
-				return false;
-			}
 		}
 	}
 
@@ -4947,5 +4761,84 @@ void Level::CreateObjectsMeshInstance()
 					obj->meshInst->groups[0].time = time;
 			}
 		}
+
+		for(Chest* chest : area.chests)
+			chest->Recreate();
 	}
+}
+
+//=================================================================================================
+void Level::RemoveTmpObjectPhysics()
+{
+	for(LevelArea& area : ForEachArea())
+	{
+		LoopAndRemove(area.tmp->colliders, [](const CollisionObject& cobj)
+		{
+			return cobj.owner == CollisionObject::TMP;
+		});
+	}
+}
+
+//=================================================================================================
+void Level::RecreateTmpObjectPhysics()
+{
+	for(LevelArea& area : ForEachArea())
+	{
+		for(Object* obj : area.objects)
+		{
+			if(!obj->base || !IsSet(obj->base->flags, OBJ_TMP_PHYSICS))
+				continue;
+			CollisionObject& c = Add1(area.tmp->colliders);
+			c.owner = CollisionObject::TMP;
+			c.cam_collider = false;
+			if(obj->base->type == OBJ_CYLINDER)
+			{
+				c.type = CollisionObject::SPHERE;
+				c.pos = obj->pos;
+				c.radius = obj->base->r;
+			}
+			else if(obj->base->type == OBJ_HITBOX)
+			{
+				const Matrix mat = *obj->base->matrix * Matrix::RotationY(obj->rot.y);
+				Vec3 pos2 = Vec3::TransformZero(mat);
+				pos2 += obj->pos;
+
+				c.pos = pos2;
+				c.w = obj->base->size.x;
+				c.h = obj->base->size.y;
+				if(NotZero(obj->rot.y))
+				{
+					c.type = CollisionObject::RECTANGLE_ROT;
+					c.rot = obj->rot.y;
+					c.radius = max(c.w, c.h) * SQRT_2;
+				}
+				else
+					c.type = CollisionObject::RECTANGLE;
+			}
+		}
+	}
+}
+
+//=================================================================================================
+void Level::StartBossFight(Unit& unit)
+{
+	boss = &unit;
+	game_gui->level_gui->SetBoss(&unit, false);
+	game->SetMusic(MusicType::Boss);
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::BOSS_START;
+		c.unit = &unit;
+	}
+}
+
+//=================================================================================================
+void Level::EndBossFight()
+{
+	boss = nullptr;
+	game_gui->level_gui->SetBoss(nullptr, false);
+	game->SetMusic();
+	if(Net::IsServer())
+		Net::PushChange(NetChange::BOSS_END);
 }

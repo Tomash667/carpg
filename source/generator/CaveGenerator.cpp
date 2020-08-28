@@ -225,7 +225,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 	CreateStairs(tiles, stairs, stairs_dir);
 	CreateHoles(tiles, holes);
 
-	Tile::SetupFlags(tiles, Int2(size, size));
+	Tile::SetupFlags(tiles, Int2(size, size), ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
 
 	// rysuj
 	if(game->devmode)
@@ -295,7 +295,7 @@ void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stair
 				{
 					stairs = pt;
 					stairs_dir = stairs_dir_result;
-					tiles[pt.x + pt.y * size].type = STAIRS_UP;
+					tiles[pt.x + pt.y * size].type = ENTRY_PREV;
 					return;
 				}
 				else
@@ -341,7 +341,9 @@ void CaveGenerator::Generate()
 	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
-	GenerateCave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext);
+	lvl.prevEntryType = ENTRY_STAIRS_UP;
+	lvl.nextEntryPt = Int2(-1000, -1000);
+	GenerateCave(lvl.map, 52, lvl.prevEntryPt, lvl.prevEntryDir, cave->holes, &cave->ext);
 
 	lvl.w = lvl.h = 52;
 }
@@ -350,7 +352,7 @@ void CaveGenerator::Generate()
 void CaveGenerator::RegenerateFlags()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	Tile::SetupFlags(lvl.map, Int2(lvl.w, lvl.h));
+	Tile::SetupFlags(lvl.map, Int2(lvl.w, lvl.h), ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
 }
 
 //=================================================================================================
@@ -373,8 +375,8 @@ void CaveGenerator::GenerateObjects()
 
 	Object* o = new Object;
 	o->mesh = game_res->aStairsUp;
-	o->pos = PtToPos(lvl.staircase_up);
-	o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
+	o->pos = PtToPos(lvl.prevEntryPt);
+	o->rot = Vec3(0, DirToRot(lvl.prevEntryDir), 0);
 	o->scale = 1;
 	o->base = nullptr;
 	game_level->local_area->objects.push_back(o);
@@ -468,7 +470,7 @@ void CaveGenerator::GenerateObjects()
 			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
 	}
 
-	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
+	if(game_level->location == quest_mgr->quest_mine->targetLoc)
 		quest_mgr->quest_mine->GenerateMine(this, true);
 }
 
@@ -489,7 +491,7 @@ void CaveGenerator::GenerateUnits()
 		if(lvl.map[pt.x + pt.y * lvl.w].type != EMPTY)
 			continue;
 
-		if(Int2::Distance(pt, lvl.staircase_up) < (int)ALERT_SPAWN_RANGE)
+		if(Int2::Distance(pt, lvl.prevEntryPt) < (int)ALERT_SPAWN_RANGE)
 			continue;
 		bool ok = true;
 		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
@@ -524,7 +526,7 @@ void CaveGenerator::GenerateItems()
 int CaveGenerator::HandleUpdate(int days)
 {
 	int update_flags = 0;
-	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
+	if(game_level->location == quest_mgr->quest_mine->targetLoc)
 		update_flags = quest_mgr->quest_mine->GenerateMine(this, false);
 	if(days > 0)
 		GenerateCaveItems(min(days, 10));

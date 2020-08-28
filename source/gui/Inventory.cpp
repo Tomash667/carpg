@@ -366,7 +366,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 	{
 		load = unit->GetLoad();
 		gui->DrawItem(base.tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), Color::White, 4);
-		gui->DrawItem(base.tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load)*bar_size), 32), Color::White, 4);
+		gui->DrawItem(base.tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load) * bar_size), 32), Color::White, 4);
 		gui->DrawItem(base.tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), Color::White, 4);
 	}
 	else if(mode == LOOT_OTHER)
@@ -408,8 +408,8 @@ void InventoryPanel::Draw(ControlDrawData*)
 
 	// draw items
 	bool have_team = team->GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
-	int shift = int(scrollbar.offset / 63)*cells_w;
-	for(int i = 0, cells = min(cells_w*cells_h, (int)i_items->size() - shift); i < cells; ++i)
+	int shift = int(scrollbar.offset / 63) * cells_w;
+	for(int i = 0, cells = min(cells_w * cells_h, (int)i_items->size() - shift); i < cells; ++i)
 	{
 		int i_item = i_items->at(i + shift);
 		const Item* item;
@@ -534,7 +534,7 @@ void InventoryPanel::Update(float dt)
 		scrollbar.Update(dt);
 	}
 
-	int shift = int(scrollbar.offset / 63)*cells_w;
+	int shift = int(scrollbar.offset / 63) * cells_w;
 
 	if(last_index >= 0)
 	{
@@ -951,6 +951,7 @@ void InventoryPanel::Update(float dt)
 							else
 								option = 0;
 						}
+
 						if(option == 2)
 							count = slot->count;
 						else if(option == 1)
@@ -1025,10 +1026,10 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
-						if(input->Down(Key::Control))
-							count = 1;
-						else if(input->Down(Key::Shift))
+						if(input->Down(Key::Shift))
 							count = slot->team_count;
+						else if(input->Down(Key::Control))
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -1065,9 +1066,9 @@ void InventoryPanel::Update(float dt)
 					if(item->IsStackable() && slot->team_count != 1)
 					{
 						if(input->Down(Key::Shift))
-							count = 1;
-						else if(input->Down(Key::Control))
 							count = slot->team_count;
+						else if(input->Down(Key::Control))
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -1148,15 +1149,15 @@ void InventoryPanel::Update(float dt)
 							c.id = i_index;
 						}
 					}
-					else if(item->type == IT_CONSUMABLE && item->ToConsumable().aiType != Consumable::AiType::None)
+					else if(t->WantItem(item))
 					{
 						uint count;
 						if(slot->count != 1)
 						{
-							if(input->Down(Key::Control))
-								count = 1;
-							else if(input->Down(Key::Shift))
+							if(input->Down(Key::Shift))
 								count = slot->count;
+							else if(input->Down(Key::Control))
+								count = 1;
 							else
 							{
 								counter = 1;
@@ -1814,7 +1815,7 @@ void InventoryPanel::SellItem(int index, uint count)
 	if(!InsertItem(*unit->player->chest_trade, slot.item, count, team_count))
 		UpdateGrid(false);
 	// remove item from player
-	unit->weight -= slot.item->weight*count;
+	unit->weight -= slot.item->weight * count;
 	slot.count -= count;
 	if(slot.count == 0)
 	{
@@ -1931,7 +1932,7 @@ void InventoryPanel::LootItem(int index, uint count)
 	// remove
 	if(base.mode == I_LOOT_BODY)
 	{
-		unit->weight -= slot.item->weight*count;
+		unit->weight -= slot.item->weight * count;
 		if(slot.item == unit->used_item)
 		{
 			unit->used_item = nullptr;
@@ -2013,7 +2014,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	}
 
 	// remove from player
-	unit->weight -= slot.item->weight*count;
+	unit->weight -= slot.item->weight * count;
 	slot.count -= count;
 	if(slot.count == 0)
 	{
@@ -2167,7 +2168,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 	// remove
-	unit->weight -= slot.item->weight*count;
+	unit->weight -= slot.item->weight * count;
 	slot.count -= count;
 	if(slot.count == 0)
 	{
@@ -2212,7 +2213,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 			unit->ai->have_mp_potion = HavePotion::Check;
 	}
 	// remove
-	unit->weight -= slot.item->weight*count;
+	unit->weight -= slot.item->weight * count;
 	slot.count -= count;
 	if(slot.count == 0)
 	{
@@ -2344,7 +2345,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// add
-	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
+	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
 	{
@@ -2355,7 +2356,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
 	}
 	// remove
-	unit->weight -= slot.item->weight*count;
+	unit->weight -= slot.item->weight * count;
 	slot.count -= count;
 	if(slot.count == 0)
 	{

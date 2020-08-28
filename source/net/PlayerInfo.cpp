@@ -3,7 +3,6 @@
 
 #include "Net.h"
 #include "NetChangePlayer.h"
-#include "SaveState.h"
 
 //=================================================================================================
 PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(nullptr), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
@@ -11,7 +10,7 @@ PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(nullptr), left(LEFT_NO)
 }
 
 //=================================================================================================
-void PlayerInfo::Save(FileWriter& f)
+void PlayerInfo::Save(GameWriter& f)
 {
 	f << name;
 	f << id;
@@ -22,7 +21,7 @@ void PlayerInfo::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void PlayerInfo::Load(FileReader& f)
+void PlayerInfo::Load(GameReader& f)
 {
 	f >> name;
 	if(LOAD_VERSION < V_0_12)

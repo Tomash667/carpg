@@ -12,6 +12,7 @@ public:
 	void GenerateObjects() override;
 	void GenerateUnits() override;
 	void GenerateItems() override;
+	void RandomizeTerrainTexture() override;
 
 private:
 	bool have_sawmill;

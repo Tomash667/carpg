@@ -80,8 +80,8 @@ void Settings::ResetGameKeys()
 	GKey[GK_TEAM_PANEL].Set(Key::T);
 	GKey[GK_ABILITY_PANEL].Set(Key::K);
 	GKey[GK_JOURNAL].Set(Key::J);
-	GKey[GK_MINIMAP].Set(Key::M);
-	GKey[GK_TALK_BOX].Set(Key::Tab);
+	GKey[GK_MINIMAP].Set(Key::Tab);
+	GKey[GK_TALK_BOX].Set(Key::Quote);
 	GKey[GK_QUICKSAVE].Set(Key::F5);
 	GKey[GK_QUICKLOAD].Set(Key::F9);
 	GKey[GK_TAKE_ALL].Set(Key::F);

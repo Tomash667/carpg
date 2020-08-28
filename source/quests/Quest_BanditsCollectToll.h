@@ -14,7 +14,7 @@ public:
 	LoadResult Load(GameReader& f) override;
 	void GetConversionData(ConversionData& data) override;
 	bool HandleLocationEvent(Event event) override { return false; }
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
 	int other_loc;

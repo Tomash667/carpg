@@ -21,11 +21,8 @@ class ResolutionItem : public GuiElement
 public:
 	Resolution resolution;
 
-	explicit ResolutionItem(const Resolution& resolution) : resolution(resolution)
-	{
-	}
-
-	cstring ToString()
+	explicit ResolutionItem(const Resolution& resolution) : resolution(resolution) {}
+	cstring ToString() override
 	{
 		return Format("%dx%d", resolution.size.x, resolution.size.y);
 	}
@@ -37,11 +34,8 @@ class MultisamplingItem : public GuiElement
 public:
 	int level, quality;
 
-	MultisamplingItem(int level, int quality) : level(level), quality(quality)
-	{
-	}
-
-	cstring ToString()
+	MultisamplingItem(int level, int quality) : level(level), quality(quality) {}
+	cstring ToString() override
 	{
 		if(level == 0)
 			return txMsNone;
@@ -56,20 +50,25 @@ class LanguageItem : public GuiElement
 public:
 	string text, id;
 
-	LanguageItem(const string& id, const string& text) : id(id), text(text)
-	{
-	}
+	LanguageItem(const string& id, const string& text) : id(id), text(text) {}
+	cstring ToString() override { return text.c_str(); }
+};
 
-	cstring ToString()
-	{
-		return text.c_str();
-	}
+//=================================================================================================
+class SoundDeviceItem : public GuiElement
+{
+public:
+	string name;
+	Guid device;
+
+	SoundDeviceItem(const string& name, const Guid& device) : name(name), device(device) {}
+	cstring ToString() override { return name.c_str(); }
 };
 
 //=================================================================================================
 Options::Options(const DialogInfo& info) : DialogBox(info)
 {
-	size = Int2(570, 460);
+	size = Int2(570, 490);
 	bts.resize(2);
 
 	Int2 offset(290, 60);
@@ -128,6 +127,14 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 	}
 	language.Initialize();
 
+	// sound drivers
+	soundDevice.SetCollapsed(true);
+	soundDevice.parent = this;
+	soundDevice.pos = Int2(20, 431);
+	soundDevice.size = Int2(250, 25);
+	soundDevice.event_handler = DialogEvent(this, &Options::OnChangeSoundDevice);
+	soundDevice.Initialize();
+
 	visible = false;
 }
 
@@ -146,6 +153,8 @@ void Options::LoadLanguage()
 	txMusicVolume = s.Get("musicVolume");
 	txMouseSensitivity = s.Get("mouseSensitivity");
 	txGrassRange = s.Get("grassRange");
+	txSoundDevice = s.Get("soundDevice");
+	txDefaultDevice = s.Get("defaultDevice");
 
 	txQuality = s.Get("quality");
 	txMsNone = s.Get("msNone");
@@ -165,8 +174,8 @@ void Options::LoadLanguage()
 	bts[1].text = s.Get("controls");
 	bts[1].size = GameGui::font->CalculateSize(bts[1].text) + Int2(24, 24);
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
-	bts[0].pos = Int2(20, 410);
-	bts[1].pos = Int2(bts[0].size.x + 40, 410);
+	bts[0].pos = Int2(290, 432);
+	bts[1].pos = Int2(bts[0].size.x + 310, 432);
 
 	// resolutions list
 	res.parent = this;
@@ -223,59 +232,65 @@ void Options::Draw(ControlDrawData*)
 {
 	DrawPanel();
 
-	// checkboxy
-	for(int i = 0; i < 5; ++i)
-		check[i].Draw();
-
-	// scrollbary
-	for(int i = 0; i < 4; ++i)
-		scroll[i].Draw();
-
-	// przyciski
-	for(int i = 0; i < 2; ++i)
-		bts[i].Draw();
-
-	// tekst OPCJE
+	// title
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
 	gui->DrawText(GameGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
 
-	// tekst Rozdzielczoœæ:
+	// controls
+	for(int i = 0; i < 5; ++i)
+		check[i].Draw();
+	for(int i = 0; i < 4; ++i)
+		scroll[i].Draw();
+	for(int i = 0; i < 2; ++i)
+		bts[i].Draw();
+
+	//------ Left part
+	// Resolution:
 	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
 	gui->DrawText(GameGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
 	r2.Top() = global_pos.y + 300 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
-	// Jêzyk:
+	// Language:
 	r2.Top() = global_pos.y + 360 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
-	// G³oœnoœæ dŸwiêku (0)
+	// Sound device:
+	r2.Top() = global_pos.y + 420 - 8;
+	r2.Bottom() = r2.Top() + 20;
+	gui->DrawText(GameGui::font, txSoundDevice, DTF_SINGLELINE, Color::Black, r2);
+
+	//------ Right part
+	// Sound volume (0)
 	r2.Left() = global_pos.x + 290;
 	r2.Top() = global_pos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
-	// G³oœnoœæ muzyki (0)
+	// Music volume (0)
 	r2.Top() = global_pos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
-	// Czu³oœæ myszki (0)
+	// Mouse sensitivity (0)
 	r2.Top() = global_pos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
-	// Zasiêg trawy (0)
+	// Grass range (0)
 	r2.Top() = global_pos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
 
-	// listbox z rozdzielczoœciami
+	// listboxes
 	res.Draw();
 	multisampling.Draw();
 	language.Draw();
+	soundDevice.Draw();
 	if(multisampling.menu->visible)
 		multisampling.menu->Draw();
 	if(language.menu->visible)
 		language.menu->Draw();
+	if(soundDevice.menu->visible)
+		soundDevice.menu->Draw();
 }
 
 //=================================================================================================
@@ -283,11 +298,12 @@ void Options::Update(float dt)
 {
 	SetOptions();
 
-	// aktualizuj kontrolki
 	if(multisampling.menu->visible)
 		multisampling.menu->Update(dt);
 	if(language.menu->visible)
 		language.menu->Update(dt);
+	if(soundDevice.menu->visible)
+		soundDevice.menu->Update(dt);
 	for(int i = 0; i < 5; ++i)
 	{
 		check[i].mouse_focus = focus;
@@ -323,6 +339,8 @@ void Options::Update(float dt)
 	multisampling.Update(dt);
 	language.mouse_focus = focus;
 	language.Update(dt);
+	soundDevice.mouse_focus = focus;
+	soundDevice.Update(dt);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)IdOk);
@@ -337,6 +355,7 @@ void Options::Event(GuiEvent e)
 		{
 			visible = true;
 			SetOptions();
+			SetSoundDevices();
 		}
 		pos = global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 5; ++i)
@@ -348,6 +367,7 @@ void Options::Event(GuiEvent e)
 		res.Event(GuiEvent_Moved);
 		multisampling.Event(GuiEvent_Moved);
 		language.Event(GuiEvent_Moved);
+		soundDevice.Event(GuiEvent_Moved);
 	}
 	else if(e == GuiEvent_Close)
 	{
@@ -466,6 +486,27 @@ void Options::SetOptions()
 }
 
 //=================================================================================================
+void Options::SetSoundDevices()
+{
+	Guid currentDevice;
+	vector<pair<Guid, string>> devices;
+	currentDevice = sound_mgr->GetDevice();
+	sound_mgr->GetDevices(devices);
+	soundDevice.Reset();
+	soundDevice.Add(new SoundDeviceItem(txDefaultDevice, Guid::Empty));
+	if(currentDevice == Guid::Empty)
+		soundDevice.SetIndex(0);
+	int index = 1;
+	for(pair<Guid, string>& p : devices)
+	{
+		soundDevice.Add(new SoundDeviceItem(p.second, p.first));
+		if(p.first == currentDevice)
+			soundDevice.SetIndex(index);
+		++index;
+	}
+}
+
+//=================================================================================================
 void Options::OnChangeRes(int)
 {
 	ResolutionItem& item = *res.GetItemCast<ResolutionItem>();
@@ -519,4 +560,11 @@ void Options::ChangeLanguage(int id)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void Options::OnChangeSoundDevice(int id)
+{
+	SoundDeviceItem* item = soundDevice.GetItemCast<SoundDeviceItem>();
+	sound_mgr->SetDevice(item->device);
 }

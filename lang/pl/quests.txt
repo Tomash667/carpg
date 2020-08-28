@@ -7,7 +7,7 @@ quest deliver_letter {
 			"Dobrze, oto wiadomoœæ. Masz miesi¹c ¿eby j¹ dostarczyæ i wróciæ z odpowiedzi¹."
 			"Dobrze, weŸ ten list. Musisz w ci¹gu miesi¹ca dostarczyæ mi odpowiedŸ."
 		}
-		3 "$(end_loc.name) znajduje siê na $(World::GetDirName(start_loc.pos, end_loc.pos)) st¹d."
+		3 "$(end_loc.name) znajduje siê na $(World::GetDirName(start_loc, end_loc)) st¹d."
 		4 "Nie"
 	}
 	
@@ -35,7 +35,7 @@ quest deliver_letter {
 	texts {
 		0 "Dostarcz list"
 		1 "Otrzymano od $(start_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
-		2 "Dosta³em list który muszê dostarczyæ do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). To na $(World::GetDirName(start_loc.pos, end_loc.pos)) st¹d. Mam miesi¹c na dojœcie tam i powrót."
+		2 "Dosta³em list który muszê dostarczyæ do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). To na $(World::GetDirName(start_loc, end_loc)) st¹d. Mam miesi¹c na dojœcie tam i powrót."
 		3 "List do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name)"
 		4 "List od $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name)"
 		5 "Nie zd¹¿y³em dostarczyæ listu na czas."
@@ -74,7 +74,7 @@ quest deliver_resources {
 		0 "Zasoby dla $(target_loc.name)"
 		1 "Dostarcz zasoby"
 		2 "Otrzymano od $(start_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
-		3 "Dosta³em zasoby którê muszê dostarczyæ w ci¹gu 15 dni do $(target_loc.name) na $(World::GetDirName(start_loc.pos, target_loc.pos)) st¹d."
+		3 "Dosta³em zasoby którê muszê dostarczyæ w ci¹gu 15 dni do $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) st¹d."
 		4 "Dostarczy³em zasoby na czas. Zadanie wykonane!"
 		5 "Nie zd¹¿y³em dostarczyæ na czas zasobów."
 		6 "Przemierzaj¹c drogê natrafi³eœ na kilku bandytów. Wygl¹da na to ¿e na ciebie czekali..."
@@ -88,7 +88,7 @@ quest bandits_collect_toll {
 		0 "Na drodze pomiêdzy $(start_loc.name) a $(other_loc.name) koczuj¹ bandyci. Pobieraj¹ op³atê i okradaj¹ kupców."
 		1 "Masz czas aby siê nimi zaj¹æ?"
 		2 "Tak"
-		3 "IdŸ do $(other_loc.name) na $(World::GetDirName(start_loc.pos, other_loc.pos)) st¹d i z powrotem. Wtedy na pewno natrafisz na tych bandytów."
+		3 "IdŸ do $(other_loc.name) na $(World::GetDirName(start_loc, other_loc)) st¹d i z powrotem. Wtedy na pewno natrafisz na tych bandytów."
 		4 "Masz na to pó³ miesi¹ca."
 		5 "Nie"
 	}
@@ -114,7 +114,7 @@ quest bandits_collect_toll {
 	texts {
 		0 "Bandyci pobieraj¹ op³atê"
 		1 "Otrzymano od kapitana stra¿y $(start_loc.name) dnia $date$."
-		2 "Bandyci pobieraj¹ op³atê gdzieœ pomiêdzy $(start_loc.name) a $(other_loc.name) które jest na $(World::GetDirName(start_loc.pos, other_loc.pos)) st¹d. Mam siê ich pozbyæ w ci¹gu po³owy miesi¹ca."
+		2 "Bandyci pobieraj¹ op³atê gdzieœ pomiêdzy $(start_loc.name) a $(other_loc.name) które jest na $(World::GetDirName(start_loc, other_loc)) st¹d. Mam siê ich pozbyæ w ci¹gu po³owy miesi¹ca."
 		3 "Natrafi³eœ na grupê bandytów pobieraj¹c¹ op³aty na drodze."
 		4 "Nie zd¹¿y³em na czas zabiæ bandytów."
 		5 "Zabi³em bandytów."
@@ -125,12 +125,70 @@ quest bandits_collect_toll {
 }
 
 //=============================================================================
+quest camp_near_city {
+	dialog start {
+		0 "Wyobra¿asz to sobie?! $(group.name.Upper()) $(group.female ? \"za\\xB3o\\xBFy\\xB3y\" : \"za\\xB3o\\xBFyli\") obóz tu¿ ko³o $(start_loc.IsVillage() ? \"naszej wioski\" : \"naszego miasta\")!"
+		1 "Chyba chc¹ zaatakowaæ $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")! Musimy coœ z tym zrobiæ!"
+		2 "Mo¿e ty pójdziesz i siê nimi zajmiesz?"
+		3 "Tak"
+		4 "Ten obóz znajduje siê na $(World::GetDirName(start_loc, camp)) st¹d. Musisz siê tym zaj¹æ w ci¹gu miesi¹ca."
+		5 "Tylko nie daj siê zabiæ."
+		6 "Nie"
+	}
+	
+	dialog end {
+		0 "Gdyby nie ty to nie wiem czy byœmy odparli ten atak."
+		1 "WeŸ proszê te $(Str(GetReward())) sztuk z³ota nagrody."
+		2 "Gdy ciê nie by³o $(group.name) $(group.female ? \"zaatakowa\\xB3y\" : \"zaatakowali\") $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")! Jakoœ siê obroniliœmy ale wiele osób zginê³o!"
+		3 "Nie pokazuj siê tu wiêcej!"
+	}
+	
+	texts {
+		0 "Obóz ko³o $(start_loc.IsVillage() ? \"wioski\" : \"miasta\")"
+		1 "Otrzymano od kapitana stra¿y $(start_loc.name) dnia $date$."
+		2 "$(group.name.Upper()) $(group.female ? \"za\\xB3o\\xBFy\\xB3y\" : \"za\\xB3o\\xBFyli\") obóz na $(World::GetDirName(start_loc, camp)) od $(start_loc.name). Mam $(group.female ? \"je\" : \"ich\") zabiæ w ci¹gu miesi¹ca zanim zaatakuj¹ $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")."
+		3 "Oczyœci³em obóz."
+		4 "Poinformowa³em o oczyszczeniu obozu i otrzyma³em nagrodê. Zadanie wykonane!"
+		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+		6 "Nie zd¹¿y³em na czas i wrogowie zaatakowali $(start_loc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")."
+	}
+}
+
+//=============================================================================
+quest kill_animals {
+	dialog start {
+		0 "Szukam kogoœ kto zajmie siê jedn¹ z okolicznych lokalizacji w które zagnieŸdzi³o siê sporo stworzeñ."
+		1 "Jesteœ zainteresowany?"
+		2 "Tak"
+		3 "Udaj siê do $(targetLoc.name) i zabij wszystkie stwory. Uwa¿aj te¿ na dzikusów którym odbi³o i zachowuj¹ siê jak zwierzêta."
+		4 "$(targetLoc.name) znajduje siê na $(World::GetDirName(startLoc, targetLoc)) st¹d. Masz na to miesi¹c czasu."
+		5 "Nie"
+	}
+	
+	dialog captain {
+		0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
+		1 "Masz tu $reward$ sztuk z³ota nagrody."
+		2 "Nie oczyœci³eœ na czas $(targetLoc.name). Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
+	}
+	
+	texts {
+		0 "Zabij zwierzêta"
+		1 "Otrzymano od kapitana stra¿y $(startLoc.name) dnia $date$."
+		2 "Zwierzêta z $(targetLoc.name) na $(World::GetDirName(startLoc, targetLoc)) st¹d niepokoj¹ podró¿nych. Mam oczyœciæ tê lokalizacjê w ci¹gu miesi¹ca."
+		3 "Oczyœci³em $(targetLoc.name)."
+		4 "Poinformowa³em o oczyszczeniu lokalizacji i otrzyma³em nagrodê. Zadanie wykonane!"
+		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+		6 "Nie zd¹¿y³em na czas oczyœciæ lokalizacji."
+	}
+}
+
+//=============================================================================
 quest find_artifact {
 	dialog start {
 		0 "Poszukujê pewnego artefaktu znanego jako $(item.name)."
 		1 "Czy mo¿esz mi go dostarczyæ?"
 		2 "Tak"
-		3 "Ponoæ przedmiot którego potrzebujê znajduje siê w $(target_loc.name), to na $(World::GetDirName(start_loc.pos, target_loc.pos)) st¹d."
+		3 "Ponoæ przedmiot którego potrzebujê znajduje siê w $(target_loc.name), to na $(World::GetDirName(start_loc, target_loc)) st¹d."
 		4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
 		5 "Nie"
 	}
@@ -146,7 +204,7 @@ quest find_artifact {
 	texts {
 		0 "ZnajdŸ artefakt"
 		1 "Otrzymano od podró¿nego w $(start_loc.name) dnia $date$."
-		2 "Podró¿ny chce abym odnalaz³ $(item.name) który znajduje siê w $(target_loc.name) na $(World::GetDirName(start_loc.pos, target_loc.pos)) st¹d. Mam na to góra dwa miesi¹ce."
+		2 "Podró¿ny chce abym odnalaz³ $(item.name) który znajduje siê w $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) st¹d. Mam na to góra dwa miesi¹ce."
 		3 "Dostarczy³em artefakt i otrzyma³em nagrodê. Zadanie wykonane!"
 		4 "Nie zd¹¿y³em na czas dostarczyæ artefaktu."
 		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
@@ -164,7 +222,7 @@ quest alchemist_apprentice {
 		5 "Tak"
 		6 "Nie"
 		7 "Dziêkuje ci za twój czas."
-		8 "Udaj siê do $(forest.name) na $(World::GetDirName(city.pos, forest.pos)) st¹d."
+		8 "Udaj siê do $(forest.name) na $(World::GetDirName(city, forest)) st¹d."
 		9 "Przynieœ mi tyle alchemicznego ziela ile zdo³asz."
 		10 "Mój uczeñ te¿ siê tam uda³ ale nie wróci³ wiêc uwa¿aj na siebie."
 		11 "Witaj. Uda³o ci siê znaleŸæ mojego ucznia albo to ziele?"
@@ -197,7 +255,7 @@ quest alchemist_apprentice {
 		12 "" // required when there are multiple text variants in texts
 		0 "Zio³a dla alchemika"
 		1 "Otrzymano od alchemika z $(city.name) dnia $date$."
-		2 "Muszê udaæ siê do $(forest.name) na $(World::GetDirName(Level::location.pos, forest.pos)) od $(city.name) i znaleŸæ tyle alchemicznego ziela ile zdo³am. W okolicy powinnien te¿ byæ uczeñ alchemika którego dobrze by by³o znaleŸæ."
+		2 "Muszê udaæ siê do $(forest.name) na $(World::GetDirName(Level::location, forest)) od $(city.name) i znaleŸæ tyle alchemicznego ziela ile zdo³am. W okolicy powinnien te¿ byæ uczeñ alchemika którego dobrze by by³o znaleŸæ."
 		3 "Spotka³em ucznia alchemika w lesie. Chcia³ mi pomóc w szukaniu ziela alchemicznego ale odmówi³em."
 		4 "Spotka³em ucznia alchemika w lesie. Zaproponowa³ mi pomoc w szukaniu ziela alchemicznego."
 		5 "Zmieni³em zdanie i przyj¹³em pomoc ucznia alchemika. Zaprowadzi mnie do okolicznych krzaków."
@@ -245,7 +303,7 @@ quest main {
 		5 "Porozmawiaj z zara¿onymi wieœniakami i wróæ do mnie."
 		6 "Jeden z wieœniaków zaatakowa³ ciê bez powodu!?"
 		7 "Jest gorzej ni¿ myœla³em, musimy szybko sprowadziæ tu jakiegoœ kap³ana który zna siê na zarazach."
-		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) st¹d mieszka jeden z kleryków. S³ysza³em ¿e zajmuje siê badaniami nad ró¿nymi chorobami."
+		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka jeden z kleryków. S³ysza³em ¿e zajmuje siê badaniami nad ró¿nymi chorobami."
 		9 "ZnajdŸ go i pomó¿ mu odkryæ na co choruj¹ nasi mieszkañcy."
 		10 "ZnajdŸ kleryka mieszkaj¹cego w $(shrine_loc.name), bez niego ta wioska opustoszeje!"
 	}
@@ -267,7 +325,7 @@ quest main {
 		0 "Zaraza"
 		1 "Zaraza? Nic o tym nie wiem..."
 		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.real_name)?"
-		3 "Zazwyczaj mo¿na go tu znaleŸæ ale aktualnie wyruszy³ na badania do $(dungeon.name) na $(World::GetDirName(Level::location.pos, dungeon.pos)) st¹d."
+		3 "Zazwyczaj mo¿na go tu znaleŸæ ale aktualnie wyruszy³ na badania do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d."
 		4 "Mam nadzieje ¿e nic mu nie jest, od kilku dni go niewidzia³em."
 	}
 	
@@ -297,8 +355,8 @@ quest main {
 		8 "W $(village.name) zaraza zaczê³a siê coraz bardziej rozprzestrzeniaæ. Muszê tam szybko wróciæ."
 		9 "Muszê przejœæ siê po wiosce i znaleŸæ zara¿onych wieœniaków. Mo¿e uda mi siê coœ ustaliæ."
 		10 "Jeden z wieœniaków oszala³ z powodu zarazy i mnie zaatakowa³."
-		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location.pos, shrine_loc.pos)) st¹d mieszka kleryk specjalizuj¹cy siê w chorobach. Muszê z nim porozmawiaæ."
-		12 "Kleryk którego poszukiwa³em, $(cleric.real_name) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location.pos, dungeon.pos)) st¹d prowadziæ jakieœ badania."
+		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka kleryk specjalizuj¹cy siê w chorobach. Muszê z nim porozmawiaæ."
+		12 "Kleryk którego poszukiwa³em, $(cleric.real_name) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d prowadziæ jakieœ badania."
 		13 "Odnalaz³em $(cleric.real_name) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrine_loc.name), wtedy mi pomo¿e."
 	}
 }
@@ -317,5 +375,24 @@ quest side_cleric {
 		2 "Kleryk $(cleric.real_name) zleci³ mi zdobycie ksiêgi która znajduje siê na ni¿szym poziomie $(dungeon.name). Jeœli siê rozdzielimy bêdzie na mnie czeka³ w $(city.name)."
 		3 "Znalaz³em ksiêgê. Teraz muszê j¹ zanieœæ do $(cleric.real_name)."
 		4 "Dostarczy³em ksiêgê i otrzyma³em nagrodê. Zadanie wykonane!"
+	}
+}
+
+//=============================================================================
+quest dire_wolf {
+	dialog hunter {
+		0 "Zadanie"
+		1 "Chcesz udowodniæ ¿e jesteœ jednym z nas?"
+		2 "W $(forest.name) z³owieszczy wilk sieje spustoszenie."
+		3 "Zabij go a zyskasz nasze uznanie i nagrodê."
+		4 "Doskona³a robota ³owco! Przyjmij to z³oto w nagrodê."
+	}
+	
+	texts {
+		0 "Z³owieszczy wilk"
+		1 "Otrzymano od przywódcy ³owców dnia $date$"
+		2 "Muszê udaæ siê do $(forest.name) i zabiæ z³owieszczego wilka który terroryzuje okoliczne wioski."
+		3 "Zabi³em z³owieszczego wilka, mogê wróciæ do obozu ³owców i odebraæ nagrodê."
+		4 "Otrzyma³em nagrodê. Zadanie wykonane!"
 	}
 }

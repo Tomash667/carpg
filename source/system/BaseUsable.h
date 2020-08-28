@@ -39,42 +39,35 @@ struct BaseUsable : public BaseObject
 	{
 	}
 
-	BaseUsable& operator = (BaseObject& o)
-	{
-		mesh = o.mesh;
-		type = o.type;
-		r = o.r;
-		h = o.h;
-		centery = o.centery;
-		flags = o.flags;
-		variants = o.variants;
-		extra_dist = o.extra_dist;
-		return *this;
-	}
+	BaseUsable& operator = (BaseObject& o);
+	BaseUsable& operator = (BaseUsable& u);
 
-	BaseUsable& operator = (BaseUsable& u)
-	{
-		*this = (BaseObject&)u;
-		anim = u.anim;
-		item = u.item;
-		sound = u.sound;
-		sound_timer = u.sound_timer;
-		limit_rot = u.limit_rot;
-		use_flags = u.use_flags;
-		return *this;
-	}
-
-	bool IsContainer() const
-	{
-		return IsSet(use_flags, CONTAINER);
-	}
+	bool IsContainer() const { return IsSet(use_flags, CONTAINER); }
 
 	static vector<BaseUsable*> usables;
-	static BaseUsable* TryGet(Cstring id);
+	static BaseUsable* TryGet(int hash)
+	{
+		BaseObject* obj = BaseObject::TryGet(hash);
+		if(obj && obj->IsUsable())
+			return static_cast<BaseUsable*>(obj);
+		return nullptr;
+	}
+	static BaseUsable* TryGet(Cstring id)
+	{
+		return TryGet(Hash(id));
+	}
+	static BaseUsable* Get(int hash)
+	{
+		BaseUsable* use = TryGet(hash);
+		if(use)
+			return use;
+		throw Format("Missing usable hash %d.", hash);
+	}
 	static BaseUsable* Get(Cstring id)
 	{
-		auto usable = TryGet(id);
-		assert(usable);
-		return usable;
+		BaseUsable* use = TryGet(id);
+		if(use)
+			return use;
+		throw Format("Missing usable '%s'.", id);
 	}
 };

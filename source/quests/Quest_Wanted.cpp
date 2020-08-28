@@ -3,18 +3,17 @@
 
 #include "City.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "Journal.h"
+#include "LevelAreaContext.h"
 #include "NameHelper.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()
 {
-	start_loc = world->GetCurrentLocationIndex();
+	startLoc = world->GetCurrentLocation();
 	type = Q_WANTED;
 	category = QuestCategory::Captain;
 	level = Random(5, 15);
@@ -53,14 +52,13 @@ void Quest_Wanted::SetProgress(int prog2)
 			quest_mgr->quests_timeout.push_back(this);
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
-			target_loc = world->GetRandomFreeSettlementIndex(start_loc);
+			targetLoc = world->GetRandomFreeSettlement(startLoc);
 			// if there is no free city he will talk about some random city but there won't be there...
-			if(target_loc == -1)
-				target_loc = world->GetRandomSettlementIndex(start_loc);
-			Location& target = GetTargetLocation();
-			if(!target.active_quest)
+			if(!targetLoc)
+				targetLoc = world->GetRandomSettlement(startLoc);
+			if(!targetLoc->active_quest)
 			{
-				target.active_quest = this;
+				targetLoc->active_quest = this;
 				unit_to_spawn = crazy ? clas->crazy : clas->hero;
 				unit_dont_attack = true;
 				unit_event_handler = this;
@@ -84,11 +82,10 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Timeout:
 		{
 			state = Quest::Failed;
-			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 
-			Location& target = GetTargetLocation();
-			if(target.active_quest == this)
-				target.active_quest = nullptr;
+			if(targetLoc->active_quest == this)
+				targetLoc->active_quest = nullptr;
 
 			OnUpdate(Format(game->txQuest[261], unit_name.c_str()));
 
@@ -105,7 +102,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
+			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
 
 			team->AddReward(level * 100, level * 250);
 
@@ -115,7 +112,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Recruited:
 		{
 			state = Quest::Failed;
-			OnUpdate(Format(game->txQuest[276], target_unit->GetName()));
+			OnUpdate(Format(game->txQuest[266], target_unit->GetName()));
 		}
 		break;
 	}
@@ -153,7 +150,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 	if(target_unit)
 	{
 		if(state == Quest::Failed)
-			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 		if(!target_unit->hero->team_member)
 		{
 			// not a team member, remove
@@ -164,7 +161,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 		target_unit = nullptr;
 	}
 
-	OnUpdate(game->txQuest[277]);
+	OnUpdate(game->txQuest[267]);
 
 	return true;
 }
@@ -178,7 +175,7 @@ bool Quest_Wanted::IfHaveQuestItem() const
 //=================================================================================================
 bool Quest_Wanted::IfNeedTalk(cstring topic) const
 {
-	return prog == Progress::Killed && strcmp(topic, "wanted") == 0 && world->GetCurrentLocationIndex() == start_loc;
+	return prog == Progress::Killed && strcmp(topic, "wanted") == 0 && world->GetCurrentLocation() == startLoc;
 }
 
 //=================================================================================================
@@ -188,7 +185,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 	{
 	case UnitEventHandler::SPAWN:
 		unit->hero->name = unit_name;
-		GetTargetLocation().active_quest = nullptr;
+		targetLoc->active_quest = nullptr;
 		target_unit = unit;
 		in_location = world->GetCurrentLocationIndex();
 		break;
@@ -211,7 +208,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 		break;
 	case UnitEventHandler::LEAVE:
 		if(state == Quest::Failed)
-			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 		target_unit = nullptr;
 		break;
 	}

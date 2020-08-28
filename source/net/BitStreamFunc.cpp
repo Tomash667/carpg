@@ -4,7 +4,10 @@
 #include "GameResources.h"
 #include "Item.h"
 #include "ItemSlot.h"
+#include "Location.h"
 #include "QuestManager.h"
+#include "Unit.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
@@ -70,25 +73,37 @@ void BitStreamWriter::Reset()
 	bitstream.Reset();
 }
 
-void BitStreamWriter::WriteItemList(vector<ItemSlot>& items)
+void BitStreamWriter::WriteItemList(const vector<ItemSlot>& items)
 {
 	operator << (items.size());
-	for(ItemSlot& slot : items)
+	for(const ItemSlot& slot : items)
 	{
 		operator << (*slot.item);
 		operator << (slot.count);
 	}
 }
 
-void BitStreamWriter::WriteItemListTeam(vector<ItemSlot>& items)
+void BitStreamWriter::WriteItemListTeam(const vector<ItemSlot>& items)
 {
 	operator << (items.size());
-	for(ItemSlot& slot : items)
+	for(const ItemSlot& slot : items)
 	{
 		operator << (*slot.item);
 		operator << (slot.count);
 		operator << (slot.team_count);
 	}
+}
+
+void BitStreamWriter::operator << (Unit* unit)
+{
+	int id = (unit ? unit->id : -1);
+	Write(id);
+}
+
+void BitStreamWriter::operator << (Location* loc)
+{
+	int index = (loc ? loc->index : -1);
+	Write(index);
 }
 
 //-----------------------------------------------------------------------------
@@ -236,4 +251,19 @@ bool BitStreamReader::ReadItemListTeam(vector<ItemSlot>& items, bool skip)
 	}
 
 	return true;
+}
+
+void BitStreamReader::operator >> (Unit*& unit)
+{
+	int id = Read<int>();
+	unit = Unit::GetById(id);
+}
+
+void BitStreamReader::operator >> (Location*& loc)
+{
+	int index = Read<int>();
+	if(index == -1)
+		loc = nullptr;
+	else
+		loc = world->GetLocation(index);
 }

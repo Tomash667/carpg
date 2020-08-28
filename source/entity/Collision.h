@@ -29,7 +29,7 @@ struct CollisionObject
 		RECTANGLE_ROT
 	};
 
-	Vec2 pt;
+	Vec3 pos;
 	union
 	{
 		struct
@@ -46,6 +46,8 @@ struct CollisionObject
 	void* owner; // pointer to Object/Chest/Usable
 	Type type;
 	bool cam_collider;
+
+	static inline void* const TMP = (void*)0xFFFFFFFF;
 };
 
 //-----------------------------------------------------------------------------

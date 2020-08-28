@@ -15,12 +15,12 @@
 enum LOCATION
 {
 	L_NULL,
-	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga
-	L_CAVE, // jaskinia, jakieœ zwierzêta/potwory/ewentualnie bandyci
-	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)
-	L_DUNGEON, // podziemia, ró¿nej g³êbokoœci, posiadaj¹ pomieszczenia o okreœlonym celu (skarbiec, sypialnie itp), zazwyczaj bandyci lub opuszczone
-	L_OUTSIDE, // las, zazwyczaj pusty, czasem potwory lub bandyci maj¹ tu ma³y obóz
-	L_ENCOUNTER, // losowe spotkanie na drodze
+	L_CITY,
+	L_CAVE,
+	L_CAMP,
+	L_DUNGEON,
+	L_OUTSIDE,
+	L_ENCOUNTER,
 	L_OFFSCREEN
 };
 
@@ -42,6 +42,8 @@ enum LOCATION_IMAGE
 	LI_DUNGEON2,
 	LI_ACADEMY,
 	LI_CAPITAL,
+	LI_HUNTERS_CAMP,
+	LI_HILLS,
 	LI_MAX
 };
 
@@ -88,21 +90,20 @@ enum LOCATION_STATE
 };
 
 //-----------------------------------------------------------------------------
-// przypisanie takiego quest do lokacji spowoduje ¿e nie zostanie zajêta przez inny quest
-static Quest_Dungeon* const ACTIVE_QUEST_HOLDER = (Quest_Dungeon*)0xFFFFFFFE;
+// used to prevent other quest from using this location
+static Quest* const ACTIVE_QUEST_HOLDER = (Quest*)0xFFFFFFFE;
 static constexpr int ANY_TARGET = -1;
 
 //-----------------------------------------------------------------------------
-// struktura opisuj¹ca lokacje na mapie œwiata
 struct Location
 {
 	int index;
 	LOCATION type;
 	LOCATION_STATE state;
 	int target;
-	Vec2 pos; // pozycja na mapie œwiata
-	string name; // nazwa lokacji
-	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
+	Vec2 pos;
+	string name;
+	Quest* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
 	int last_visit; // worldtime from last time when team entered location or -1
 	int st; // poziom trudnoœci
 	uint seed;
@@ -110,7 +111,7 @@ struct Location
 	Portal* portal;
 	LOCATION_IMAGE image;
 	vector<Event> events;
-	bool reset; // resetowanie lokacji po wejœciu
+	bool reset; // force reset location when entering
 	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
 	bool loaded_resources;
@@ -149,9 +150,9 @@ struct Location
 	void SetName(cstring name);
 	void SetNameS(const string& name) { SetName(name.c_str()); }
 	void SetNamePrefix(cstring prefix);
-	void AddEventHandler(Quest_Scripted* quest, EventType type);
-	void RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup);
-	void RemoveEventHandlerS(Quest_Scripted* quest, EventType type) { RemoveEventHandler(quest, type, false); }
+	void AddEventHandler(Quest2* quest, EventType type);
+	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
+	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	bool IsVisited() const { return last_visit != -1; }
 };
 
@@ -165,5 +166,13 @@ struct LocationEventHandler
 
 	// return true to prevent adding default news about clearing location
 	virtual bool HandleLocationEvent(Event event) = 0;
-	virtual int GetLocationEventHandlerQuestRefid() = 0;
+	virtual int GetLocationEventHandlerQuestId() = 0;
 };
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, Location* loc)
+{
+	int index = loc ? loc->index : -1;
+	f << index;
+}
+void operator >> (GameReader& f, Location*& loc);

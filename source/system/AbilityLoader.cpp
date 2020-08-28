@@ -49,7 +49,9 @@ enum Keyword
 	K_EFFECT,
 	K_LEARNING_POINTS,
 	K_SKILL,
-	K_LEVEL
+	K_LEVEL,
+	K_ANIMATION,
+	K_COUNT
 };
 
 //=================================================================================================
@@ -98,7 +100,9 @@ void AbilityLoader::InitTokenizer()
 		{ "effect", K_EFFECT },
 		{ "learning_points", K_LEARNING_POINTS },
 		{ "skill", K_SKILL },
-		{ "level", K_LEVEL }
+		{ "level", K_LEVEL },
+		{ "animation", K_ANIMATION },
+		{ "count", K_COUNT }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -107,7 +111,9 @@ void AbilityLoader::InitTokenizer()
 		{ "target", Ability::Target },
 		{ "ball", Ability::Ball },
 		{ "charge", Ability::Charge },
-		{ "summon", Ability::Summon }
+		{ "summon", Ability::Summon },
+		{ "aggro", Ability::Aggro },
+		{ "summon_away", Ability::SummonAway }
 		});
 
 	t.AddKeywords(G_EFFECT, {
@@ -128,7 +134,8 @@ void AbilityLoader::InitTokenizer()
 		{ "pick_dir", Ability::PickDir },
 		{ "use_cast", Ability::UseCast },
 		{ "mage", Ability::Mage },
-		{ "strength", Ability::Strength }
+		{ "strength", Ability::Strength },
+		{ "boss50hp", Ability::Boss50Hp }
 		});
 }
 
@@ -379,6 +386,16 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_LEVEL:
 			ability->level = t.MustGetInt();
 			crc.Update(ability->level);
+			t.Next();
+			break;
+		case K_ANIMATION:
+			ability->animation = t.MustGetString();
+			crc.Update(ability->animation);
+			t.Next();
+			break;
+		case K_COUNT:
+			ability->count = t.MustGetInt();
+			crc.Update(ability->count);
 			t.Next();
 			break;
 		}

@@ -4,6 +4,7 @@
 #include "Ability.h"
 #include "AbilityPanel.h"
 #include "AIController.h"
+#include "AIManager.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
 #include "Cave.h"
@@ -12,7 +13,7 @@
 #include "Console.h"
 #include "CraftPanel.h"
 #include "CreateServerPanel.h"
-#include "GameFile.h"
+#include "Electro.h"
 #include "GameGui.h"
 #include "GameMenu.h"
 #include "GameMessages.h"
@@ -39,7 +40,6 @@
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
 #include "SaveLoadPanel.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "Team.h"
 #include "Version.h"
@@ -155,7 +155,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	SaveSlot* ss = nullptr;
 	if(slot != -1)
 	{
-		ss = &game_gui->saveload->GetSaveSlot(slot);
+		ss = &game_gui->saveload->GetSaveSlot(slot, Net::IsOnline());
 		ss->text = text;
 	}
 
@@ -169,6 +169,8 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	cstring msg = Format("Game saved '%s'.", filename);
 	game_gui->console->AddMsg(msg);
 	Info(msg);
+	if(slot != -1 && !Net::IsOnline())
+		SetLastSave(slot);
 
 	if(hardcore_mode)
 	{
@@ -216,6 +218,17 @@ void Game::LoadGameFilename(const string& name)
 		filename += ".sav";
 
 	return LoadGameCommon(filename.c_str(), -1);
+}
+
+//=================================================================================================
+void Game::SetLastSave(int slot)
+{
+	if(slot != lastSave && !Net::IsOnline())
+	{
+		lastSave = slot;
+		cfg.Add("lastSave", lastSave);
+		SaveCfg();
+	}
 }
 
 //=================================================================================================
@@ -295,10 +308,14 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		{
 			game_gui->saveload->RemoveHardcoreSave(slot);
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
+			if(!Net::IsOnline())
+				SetLastSave(-1);
 		}
 		else
 			DeleteFile(filename);
 	}
+	else if(slot != -1 && !Net::IsOnline())
+		SetLastSave(slot);
 
 	if(net->mp_quickload)
 	{
@@ -330,7 +347,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	else
 	{
 		game_gui->multiplayer->visible = true;
-		game_gui->main_menu->visible = true;
+		game_gui->main_menu->Show();
 		game_gui->create_server->Show();
 	}
 }
@@ -338,18 +355,10 @@ void Game::LoadGameCommon(cstring filename, int slot)
 //=================================================================================================
 bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 {
-	SaveSlot* ptr;
-	if(slot == -1)
-	{
-		static SaveSlot ss;
-		if(!LoadGameHeader(f, ss))
-			throw SaveException(txLoadSignature, "Invalid file signature.");
-		f.SetPos(0);
-		ptr = &ss;
-	}
-	else
-		ptr = &game_gui->saveload->GetSaveSlot(slot);
-	SaveSlot& ss = *ptr;
+	SaveSlot ss;
+	if(!LoadGameHeader(f, ss))
+		throw SaveException(txLoadSignature, "Invalid file signature.");
+	f.SetPos(0);
 	if(ss.load_version < V_0_9)
 		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
 	for(PlayerInfo& info : net->players)
@@ -459,16 +468,18 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << Trap::impl.id_counter;
 	f << Door::impl.id_counter;
 	f << Electro::impl.id_counter;
+	f << Bullet::impl.id_counter;
 
 	game_stats->Save(f);
 
 	f << game_state;
+	aiMgr->Save(f);
 	world->Save(f);
 
 	byte check_id = 0;
 
 	if(game_state == GS_LEVEL)
-		f << (game_level->event_handler ? game_level->event_handler->GetLocationEventHandlerQuestRefid() : -1);
+		f << (game_level->event_handler ? game_level->event_handler->GetLocationEventHandlerQuestId() : -1);
 	else
 		team->SaveOnWorldmap(f);
 	f << game_level->enter_from;
@@ -499,6 +510,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << ais.size();
 	for(AIController* ai : ais)
 		ai->Save(f);
+	f << game_level->boss;
 
 	game_gui->Save(f);
 
@@ -634,14 +646,9 @@ void Game::LoadGame(GameReader& f)
 	f >> start_version;
 
 	// content version
-	if(LOAD_VERSION >= V_0_7)
-	{
-		uint content_version;
-		f >> content_version;
-		content.require_update = (content.version != content_version);
-	}
-	else
-		content.require_update = true;
+	uint content_version;
+	f >> content_version;
+	content.require_update = (content.version != content_version);
 	if(content.require_update)
 		Info("Loading old system version. Content update required.");
 
@@ -692,6 +699,8 @@ void Game::LoadGame(GameReader& f)
 		f >> Door::impl.id_counter;
 		f >> Electro::impl.id_counter;
 	}
+	if(LOAD_VERSION >= V_0_16)
+		f >> Bullet::impl.id_counter;
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;
@@ -703,6 +712,9 @@ void Game::LoadGame(GameReader& f)
 
 		// game state
 		f >> game_state2;
+
+		if(LOAD_VERSION >= V_DEV)
+			aiMgr->Load(f);
 
 		// world map
 		LoadingStep(txLoadingLocations);
@@ -816,6 +828,12 @@ void Game::LoadGame(GameReader& f)
 		ai = new AIController;
 		ai->Load(f);
 	}
+	if(LOAD_VERSION >= V_DEV)
+	{
+		f >> game_level->boss;
+		if(game_level->boss)
+			game_gui->level_gui->SetBoss(game_level->boss, true);
+	}
 
 	game_gui->Load(f);
 
@@ -918,8 +936,14 @@ void Game::LoadGame(GameReader& f)
 	// current location event handler
 	if(location_event_handler_quest_id != -1)
 	{
-		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_id));
-		assert(game_level->event_handler);
+		Quest* quest = quest_mgr->FindAnyQuest(location_event_handler_quest_id);
+		if(quest->isNew)
+			game_level->event_handler = nullptr;
+		else
+		{
+			game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest);
+			assert(game_level->event_handler);
+		}
 	}
 	else
 		game_level->event_handler = nullptr;

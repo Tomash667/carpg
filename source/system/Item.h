@@ -17,26 +17,25 @@ static const int HEIRLOOM = -1;
 // Item flags
 enum ITEM_FLAGS
 {
-	ITEM_NOT_CHEST = 1 << 0,
-	ITEM_NOT_SHOP = 1 << 1,
-	ITEM_NOT_ALCHEMIST = 1 << 2,
-	ITEM_QUEST = 1 << 3,
-	ITEM_NOT_BLACKSMITH = 1 << 4,
-	ITEM_MAGE = 1 << 5, // equipped by mages, allow casting spells
-	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
-	ITEM_GROUND_MESH = 1 << 7, // when on ground is displayed as mesh not as bag
-	ITEM_CRYSTAL_SOUND = 1 << 8,
-	ITEM_IMPORTANT = 1 << 9, // drawn on map as gold bag in minimap, mark dead units with this item
-	ITEM_TEX_ONLY = 1 << 10,
-	ITEM_NOT_MERCHANT = 1 << 11,
-	ITEM_NOT_RANDOM = 1 << 12,
-	ITEM_HQ = 1 << 13, // high quality item icon
-	ITEM_MAGICAL = 1 << 14, // magic quality item icon
-	ITEM_UNIQUE = 1 << 15, // unique quality item icon
-	ITEM_MAGIC_SCROLL = 1 << 16,
-	ITEM_WAND = 1 << 17, // cast magic bolts instead of attacking
-	ITEM_INGREDIENT = 1 << 18, // shows in crafting panel
-	ITEM_SINGLE_USE = 1 << 19, // mark single use recipes
+	ITEM_NOT_SHOP = 1 << 0,
+	ITEM_QUEST = 1 << 1,
+	ITEM_NOT_BLACKSMITH = 1 << 2, // blacksmith don't sell this
+	ITEM_MAGE = 1 << 3, // equipped by mages, allow casting spells
+	ITEM_DONT_DROP = 1 << 4, // can't drop when in dialog
+	ITEM_GROUND_MESH = 1 << 5, // when on ground is displayed as mesh not as bag
+	ITEM_CRYSTAL_SOUND = 1 << 6,
+	ITEM_IMPORTANT = 1 << 7, // drawn on map as gold bag in minimap, mark dead units with this item
+	ITEM_TEX_ONLY = 1 << 8,
+	ITEM_NOT_MERCHANT = 1 << 9, // merchant don't sell this
+	ITEM_NOT_RANDOM = 1 << 10, // don't spawn in chest, not randomly given by crazies
+	ITEM_HQ = 1 << 11, // high quality item icon
+	ITEM_MAGICAL = 1 << 12, // magic quality item icon
+	ITEM_UNIQUE = 1 << 13, // unique quality item icon
+	ITEM_MAGIC_SCROLL = 1 << 14,
+	ITEM_WAND = 1 << 15, // cast magic bolts instead of attacking
+	ITEM_INGREDIENT = 1 << 16, // shows in crafting panel
+	ITEM_SINGLE_USE = 1 << 17, // mark single use recipes
+	ITEM_NOT_TEAM = 1 << 18, // always spawned as non team item
 };
 
 //-----------------------------------------------------------------------------
@@ -210,7 +209,7 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 // Weapon
 struct Weapon : public Item
 {
-	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
+	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), reqStr(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 
 	const WeaponTypeInfo& GetInfo() const
 	{
@@ -221,7 +220,7 @@ struct Weapon : public Item
 		return GetInfo().skill;
 	}
 
-	int dmg, dmg_type, req_str;
+	int dmg, dmg_type, reqStr;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
 
@@ -232,9 +231,9 @@ struct Weapon : public Item
 // Bow
 struct Bow : public Item
 {
-	Bow() : Item(IT_BOW), dmg(10), req_str(10), speed(45) {}
+	Bow() : Item(IT_BOW), dmg(10), reqStr(10), speed(45) {}
 
-	int dmg, req_str, speed;
+	int dmg, reqStr, speed;
 
 	static vector<Bow*> bows;
 };
@@ -243,9 +242,10 @@ struct Bow : public Item
 // Shield
 struct Shield : public Item
 {
-	Shield() : Item(IT_SHIELD), block(10), req_str(10), material(MAT_WOOD) {}
+	Shield() : Item(IT_SHIELD), attackMod(0.5f), block(10), reqStr(10), material(MAT_WOOD) {}
 
-	int block, req_str;
+	float attackMod;
+	int block, reqStr;
 	MATERIAL_TYPE material;
 
 	static vector<Shield*> shields;
@@ -295,7 +295,7 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), reqStr(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexOverride* GetTextureOverride() const
 	{
@@ -306,7 +306,7 @@ struct Armor : public Item
 	}
 	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
 
-	int def, req_str, mobility;
+	int def, reqStr, mobility;
 	MATERIAL_TYPE material;
 	ARMOR_TYPE armor_type;
 	ArmorUnitType armor_unit_type;
@@ -515,6 +515,21 @@ struct Recipe : public ContentItem<Recipe>
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
 const Item* FindItemOrList(Cstring id, ItemList*& lis);
+inline void operator << (GameWriter& f, const Item* item)
+{
+	if(item != nullptr)
+		f.WriteString1(item->id);
+	else
+		f.Write0();
+}
+inline void operator >> (GameReader& f, const Item*& item)
+{
+	const string& id = f.ReadString1();
+	if(id.empty())
+		item = nullptr;
+	else
+		item = Item::Get(id);
+}
 
 //-----------------------------------------------------------------------------
 extern std::map<const Item*, Item*> better_items;

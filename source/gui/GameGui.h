@@ -18,8 +18,8 @@ public:
 	void Draw(ControlDrawData*) override;
 	void Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs);
 	void UpdateGui(float dt);
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Clear(bool reset_mpbox, bool on_enter);
 	void Setup(PlayerController* pc);
 	void OnResize();

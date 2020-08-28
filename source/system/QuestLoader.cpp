@@ -31,7 +31,8 @@ enum Property
 	P_PROGRESS,
 	P_CODE,
 	P_DIALOG,
-	P_FLAGS
+	P_FLAGS,
+	P_PROPERTIES
 };
 
 enum QuestKeyword
@@ -70,7 +71,8 @@ void QuestLoader::InitTokenizer()
 		{ "progress", P_PROGRESS },
 		{ "code", P_CODE },
 		{ "dialog", P_DIALOG },
-		{ "flags", P_FLAGS }
+		{ "flags", P_FLAGS },
+		{ "properties", P_PROPERTIES }
 		});
 
 	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
@@ -81,7 +83,8 @@ void QuestLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_FLAGS, {
-		{ "dont_count", QuestScheme::DONT_COUNT }
+		{ "dont_count", QuestScheme::DONT_COUNT },
+		{ "not_scripted", QuestScheme::NOT_SCRIPTED }
 		});
 }
 
@@ -102,7 +105,7 @@ void QuestLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void QuestLoader::ParseQuest(const string& id)
 {
-	if(quest_mgr->FindQuest(id))
+	if(QuestScheme::TryGet(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<QuestScheme> quest;
@@ -161,6 +164,44 @@ void QuestLoader::ParseQuest(const string& id)
 		case P_FLAGS:
 			t.ParseFlags(G_FLAGS, quest->flags);
 			break;
+		case P_PROPERTIES:
+			{
+				if(!quest->properties.empty())
+					t.Throw("Properties already declared.");
+				int offset = 0;
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					string type = t.MustGetItem();
+					t.Next();
+					bool isPointer;
+					if(t.IsSymbol('@'))
+					{
+						isPointer = true;
+						t.Next();
+					}
+					else
+						isPointer = false;
+					if(!isPointer)
+						t.Throw("Not implemented property type.");
+					while(true)
+					{
+						const string& name = t.MustGetItem();
+						quest->properties += Format("%s%s get_%s() property { return quest.GetValue(%d); }\n",
+							type.c_str(), isPointer ? "@" : "", name.c_str(), offset);
+						offset += 4;
+						t.Next();
+						if(t.IsSymbol(','))
+							t.Next();
+						else
+							break;
+					}
+					t.AssertSymbol(';');
+					t.Next();
+				}
+			}
+			break;
 		}
 		t.Next();
 	}
@@ -194,7 +235,7 @@ void QuestLoader::ParseQuestList(const string& id)
 			info = nullptr;
 		else
 		{
-			info = quest_mgr->FindQuest(quest_id);
+			info = quest_mgr->FindQuestInfo(quest_id);
 			if(!info)
 				t.Throw("Missing quest '%s'.", quest_id.c_str());
 		}
@@ -414,8 +455,11 @@ void QuestLoader::Finalize()
 
 		if(!scheme->f_progress)
 		{
-			Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
-			++content.errors;
+			if(!IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
+			{
+				Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
+				++content.errors;
+			}
 		}
 		if(scheme->category != QuestCategory::Unique && !scheme->GetDialog("start"))
 		{
@@ -457,8 +501,17 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		code += "\n";
 	}
 	LocalString str;
-	code += Format("class quest_%s {\n int get_progress()property{return quest.progress;}\n void set_progress(int value)property{quest.SetProgress(value);}\n"
-		" string TEXT(int index){return quest.GetString(index);}\n", scheme->id.c_str());
+	code += Format(
+		"class quest_%s {\n"
+		"int get_progress() property { return quest.progress; }\n"
+		"void set_progress(int value) property { quest.SetProgress(value); }\n"
+		"string TEXT(int index) { return quest.GetString(index); }\n", scheme->id.c_str());
+	if(!scheme->properties.empty())
+	{
+		code += "// properties\n"
+			"Location@ get_startLoc() property { return quest.startLoc; }\n";
+		code += scheme->properties;
+	}
 	for(int i = 0; i < DialogScripts::F_MAX; ++i)
 	{
 		scheme->scripts.GetFormattedCode((DialogScripts::FUNC)i, str.get_ref());

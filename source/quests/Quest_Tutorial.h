@@ -36,8 +36,8 @@ public:
 	void HandleEvent(int activate, int unlock);
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
-	int GetChestEventHandlerQuestRefid() override { return -1; } // can't save in tutorial
-	int GetUnitEventHandlerQuestRefid() override { return -1; } // can't save in tutorial
+	int GetChestEventHandlerQuestId() override { return -1; } // can't save in tutorial
+	int GetUnitEventHandlerQuestId() override { return -1; } // can't save in tutorial
 	void HandleMeleeAttackCollision();
 	void HandleBulletCollision();
 

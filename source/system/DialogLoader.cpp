@@ -54,7 +54,11 @@ enum Keyword
 	K_AND,
 	K_VAR,
 	K_SWITCH,
-	K_CASE
+	K_CASE,
+	K_NEXT,
+	K_RANDOM,
+	K_CHANCE,
+	K_GOTO
 };
 
 //=================================================================================================
@@ -115,7 +119,11 @@ void DialogLoader::InitTokenizer()
 		{ "and", K_AND },
 		{ "var", K_VAR },
 		{ "switch", K_SWITCH },
-		{ "case", K_CASE }
+		{ "case", K_CASE },
+		{ "next", K_NEXT },
+		{ "random", K_RANDOM },
+		{ "chance", K_CHANCE },
+		{ "goto", K_GOTO }
 		});
 }
 
@@ -146,6 +154,9 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 	dialog->quest = nullptr;
 	t.Next();
 
+	labels.clear();
+	jumps.clear();
+
 	t.AssertSymbol('{');
 	t.Next();
 
@@ -162,6 +173,7 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 	if(!BuildDialog(root.Get()))
 		LoadWarning("Missing dialog end.");
 	dialog->code.push_back(DialogEntry(DTF_END_OF_DIALOG));
+	PatchJumps();
 
 	return dialog.Pin();
 }
@@ -247,24 +259,81 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 			if(index < 0)
 				t.Throw("Invalid text index %d.", index);
 			t.Next();
-			Node* node = GetNode();
-			node->node_op = NodeOp::Statement;
-			node->type = DTF_TALK;
-			node->op = OP_NONE;
-			node->value = index;
-			++index;
-			if(index > current_dialog->max_index)
+			if(!t.IsSymbol(','))
 			{
-				current_dialog->texts.resize(index, GameDialog::Text());
-				current_dialog->max_index = index;
+				Node* node = GetNode();
+				node->node_op = NodeOp::Statement;
+				node->type = DTF_TALK;
+				node->op = OP_NONE;
+				node->value = index;
+				++index;
+				if(index > current_dialog->max_index)
+				{
+					current_dialog->texts.resize(index, GameDialog::Text());
+					current_dialog->max_index = index;
+				}
+				return node;
 			}
-			return node;
+			else
+			{
+				// setup first text
+				union
+				{
+					int val;
+					byte index[4];
+				} map;
+				for(int i = 0; i < 4; ++i)
+					map.index[i] = index;
+				++index;
+				if(index > current_dialog->max_index)
+				{
+					current_dialog->texts.resize(index, GameDialog::Text());
+					current_dialog->max_index = index;
+				}
+
+				// parse next texts
+				int pos = 1;
+				while(true)
+				{
+					t.Next();
+					index = t.MustGetInt();
+					if(index < 0)
+						t.Throw("Invalid text index %d.", index);
+					if(index == map.index[0])
+						t.Throw("Index %d already used.", index);
+					map.index[pos] = index;
+					++index;
+					if(index > current_dialog->max_index)
+					{
+						current_dialog->texts.resize(index, GameDialog::Text());
+						current_dialog->max_index = index;
+					}
+					t.Next();
+					if(t.IsSymbol(','))
+					{
+						++pos;
+						if(pos == 4)
+							t.Throw("Multi text can have max 4 texts.");
+					}
+					else
+						break;
+				}
+
+				// setup node
+				Node* node = GetNode();
+				node->node_op = NodeOp::Statement;
+				node->type = DTF_MULTI_TALK;
+				node->op = OP_NONE;
+				node->value = map.val;
+				return node;
+			}
 		}
 	case K_DO_QUEST:
 	case K_DO_QUEST2:
 	case K_DO_QUEST_ITEM:
 	case K_QUEST_SPECIAL:
 	case K_SPECIAL:
+	case K_NEXT:
 		{
 			t.Next();
 			DialogType type;
@@ -285,6 +354,9 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				break;
 			case K_SPECIAL:
 				type = DTF_SPECIAL;
+				break;
+			case K_NEXT:
+				type = DTF_NEXT;
 				break;
 			}
 			int index = current_dialog->strs.size();
@@ -311,6 +383,17 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 		}
 	case K_SWITCH:
 		return ParseSwitch();
+	case K_RANDOM:
+		return ParseRandom();
+	case K_GOTO:
+		{
+			t.Next();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Goto;
+			node->str = t.MustGetItem();
+			t.Next();
+			return node;
+		}
 	default:
 		t.Unexpected();
 		break;
@@ -324,10 +407,19 @@ DialogLoader::Node* DialogLoader::ParseBlock()
 	{
 		t.Next();
 		Pooled<Node> block(GetNode());
+		if(t.IsItem())
+		{
+			block->str = t.GetItem();
+			t.Next();
+			t.AssertSymbol(':');
+			t.Next();
+		}
+		else
+			block->str.clear();
 		while(!t.IsSymbol('}'))
 			block->childs.push_back(ParseStatement());
 		t.Next();
-		if(block->childs.size() == 1u)
+		if(block->childs.size() == 1u && block->str.empty())
 		{
 			Node* node = block->childs[0];
 			block->childs.clear();
@@ -430,12 +522,22 @@ DialogLoader::Node* DialogLoader::ParseIf()
 				break;
 			case K_RAND:
 				{
-					node->type = DTF_IF_RAND;
 					int chance = t.MustGetInt();
-					if(chance <= 0 || chance >= 100)
-						t.Throw("Invalid chance %d.", chance);
-					node->value = chance;
 					t.Next();
+					if(t.IsSymbol('%'))
+					{
+						if(chance <= 0 || chance >= 100)
+							t.Throw("Invalid chance %d%%.", chance);
+						node->type = DTF_IF_RAND_P;
+						t.Next();
+					}
+					else
+					{
+						if(chance <= 1)
+							t.Throw("Invalid chance 1/%d.", chance);
+						node->type = DTF_IF_RAND;
+					}
+					node->value = chance;
 				}
 				break;
 			case K_SCRIPT:
@@ -650,6 +752,84 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 }
 
 //=================================================================================================
+DialogLoader::Node* DialogLoader::ParseRandom()
+{
+	Pooled<Node> node(GetNode());
+	node->node_op = NodeOp::Random;
+	t.Next();
+
+	t.AssertSymbol('{');
+	t.Next();
+
+	int total = 0;
+	while(!t.IsSymbol('}'))
+	{
+		t.AssertKeyword(K_CHANCE, G_KEYWORD);
+		t.Next();
+
+		Node* cas = GetNode();
+		cas->node_op = NodeOp::Chance;
+		cas->value = t.MustGetInt();
+		if(cas->value < 1)
+			t.Throw("Invaid chance %d.", cas->value);
+		node->childs.push_back(cas);
+		total += cas->value;
+		t.Next();
+
+		while(!t.IsSymbol('}') && !t.IsKeyword(K_CHANCE, G_KEYWORD))
+			cas->childs.push_back(ParseStatement());
+
+		if(cas->childs.empty())
+			t.Throw("Empty chance case.");
+	}
+
+	if(node->childs.size() <= 1u)
+		t.Throw("Random switch with less then 2 chances.");
+	t.Next();
+
+	// convert to if..else
+	Pooled<Node> block(GetNode());
+	block->node_op = NodeOp::Block;
+
+	Node* randVar = GetNode();
+	randVar->node_op = NodeOp::Statement;
+	randVar->type = DTF_RAND_VAR;
+	randVar->value = total;
+	block->childs.push_back(randVar);
+
+	int counter = 0;
+	Node* current = block.Get();
+	for(Node* n : node->childs)
+	{
+		Node* child;
+		if(n->childs.size() == 1u)
+			child = n->childs.front();
+		else
+		{
+			child = GetNode();
+			child->node_op = NodeOp::Block;
+			for(Node* n2 : n->childs)
+				child->childs.push_back(n2);
+		}
+		n->childs.clear();
+
+		counter += n->value;
+
+		Node* converted = Node::Get();
+		converted->node_op = NodeOp::If;
+		converted->type = DTF_IF_VAR;
+		converted->op = DialogOp::OP_LESS;
+		converted->value = counter;
+		converted->childs.push_back(child);
+
+		current->childs.push_back(converted);
+		current = converted;
+	}
+
+	return block.Pin();
+}
+
+//=================================================================================================
 DialogOp DialogLoader::GetNegatedOp(DialogOp op)
 {
 	switch(op)
@@ -833,6 +1013,10 @@ bool DialogLoader::BuildDialog(Node* node)
 			code[jmp_pos].value = pos;
 			return false;
 		}
+	case NodeOp::Goto:
+		jumps.push_back(std::make_pair(node->str, code.size()));
+		code.push_back(DialogEntry(DTF_JMP, 0));
+		return true;
 	default:
 		assert(0);
 		return false;
@@ -842,6 +1026,9 @@ bool DialogLoader::BuildDialog(Node* node)
 //=================================================================================================
 bool DialogLoader::BuildDialogBlock(Node* node)
 {
+	if(!node->str.empty())
+		labels.push_back(std::make_pair(node->str, current_dialog->code.size()));
+
 	int have_exit = 0;
 	for(Node* child : node->childs)
 	{
@@ -859,6 +1046,28 @@ bool DialogLoader::BuildDialogBlock(Node* node)
 			have_exit = 1;
 	}
 	return (have_exit >= 1);
+}
+
+//=================================================================================================
+void DialogLoader::PatchJumps()
+{
+	for(pair<string, uint>& jump : jumps)
+	{
+		bool ok = false;
+		for(pair<string, uint>& label : labels)
+		{
+			if(jump.first == label.first)
+			{
+				current_dialog->code[jump.second].value = label.second;
+				ok = true;
+				break;
+			}
+		}
+		if(!ok)
+			LoadError("Missing label '%s'.", jump.first.c_str());
+	}
+	jumps.clear();
+	labels.clear();
 }
 
 //=================================================================================================
@@ -1106,5 +1315,5 @@ void DialogLoader::CheckDialogText(GameDialog* dialog, int index, DialogScripts*
 	}
 
 	if(replaced)
-		str = result;
+		str = (string&)result;
 }

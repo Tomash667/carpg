@@ -19,7 +19,7 @@ public:
 		Finished
 	};
 
-	void Init();
+	void Init() override;
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -29,10 +29,10 @@ public:
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
-	int dungeon_levels, levels_cleared;
+	int dungeon_levels;
 };
 
 //-----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ public:
 		AboutBoss
 	};
 
-	void Init();
+	void Init() override;
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -110,11 +110,12 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	OrcClass GetOrcClass() const { return orc_class; }
+	void OnProgress(int days);
 
 	State orcs_state;
 	Talked talked;

@@ -36,6 +36,7 @@ class CScriptDictionary;
 
 //-----------------------------------------------------------------------------
 class AbilityPanel;
+class AIManager;
 class Arena;
 class BitStreamReader;
 class BitStreamWriter;
@@ -91,6 +92,7 @@ class WorldMapGui;
 struct Ability;
 struct AbilityList;
 struct AIController;
+struct AITeam;
 struct Amulet;
 struct Armor;
 struct BaseObject;
@@ -117,14 +119,16 @@ struct Drain;
 struct DrawBatch;
 struct Electro;
 struct Encounter;
+struct EncounterSpawn;
 struct EntityInterpolator;
 struct Explo;
 struct FrameInfo;
 struct GameCamera;
 struct GameDialog;
 struct GameLight;
+struct GlobalEncounter;
 struct GroundItem;
-struct HeroData;
+struct Hero;
 struct Human;
 struct HumanData;
 struct IdlePack;
@@ -150,6 +154,7 @@ struct PlayerController;
 struct PlayerInfo;
 struct Portal;
 struct Quest;
+struct Quest2;
 struct Quest_Dungeon;
 struct Quest_Encounter;
 struct Quest_Event;
@@ -179,6 +184,7 @@ struct Unit;
 struct UnitData;
 struct UnitEventHandler;
 struct UnitGroup;
+struct UnitList;
 struct UnitStats;
 struct Usable;
 struct Var;
@@ -208,6 +214,7 @@ class CityGenerator;
 class DungeonGenerator;
 class EncounterGenerator;
 class ForestGenerator;
+class HillsGenerator;
 class LabyrinthGenerator;
 class LocationGenerator;
 class LocationGeneratorFactory;
@@ -220,6 +227,7 @@ enum CMD;
 enum DialogOp : short;
 enum Direction;
 enum EncounterMode;
+enum EntryType;
 enum GameDirection;
 enum ITEM_TYPE;
 enum MATERIAL_TYPE;
@@ -239,6 +247,7 @@ enum class SkillId;
 typedef pair<UnitData*, int> TmpSpawn;
 
 //-----------------------------------------------------------------------------
+extern AIManager* aiMgr;
 extern LobbyApi* api;
 extern CommandParser* cmdp;
 extern Game* game;
@@ -254,3 +263,7 @@ extern QuestManager* quest_mgr;
 extern ScriptManager* script_mgr;
 extern Team* team;
 extern World* world;
+
+//-----------------------------------------------------------------------------
+#include "GameFile.h"
+#include "SaveState.h"

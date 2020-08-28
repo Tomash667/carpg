@@ -39,6 +39,7 @@ void Minimap::LoadData()
 	tBagImportant = res_mgr->Load<Texture>("mini_bag2.png");
 	tPortal = res_mgr->Load<Texture>("mini_portal.png");
 	tChest = res_mgr->Load<Texture>("mini_chest.png");
+	tDoor = res_mgr->Load<Texture>("mini_door.png");
 }
 
 //=================================================================================================
@@ -58,10 +59,10 @@ void Minimap::Draw(ControlDrawData*)
 		InsideLocation* inside = (InsideLocation*)game_level->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if(inside->HaveDownStairs() && IsSet(lvl.map[lvl.staircase_down(lvl.w)].flags, Tile::F_REVEALED))
-			gui->DrawSprite(tStairsDown, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
-		if(inside->HaveUpStairs() && IsSet(lvl.map[lvl.staircase_up(lvl.w)].flags, Tile::F_REVEALED))
-			gui->DrawSprite(tStairsUp, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
+		if(inside->HaveNextEntry() && IsSet(lvl.map[lvl.nextEntryPt(lvl.w)].flags, Tile::F_REVEALED))
+			gui->DrawSprite(GetEntryImage(lvl.nextEntryType), Int2(TileToPoint(lvl.nextEntryPt)) - Int2(16, 16), Color::Alpha(180));
+		if(inside->HavePrevEntry() && IsSet(lvl.map[lvl.prevEntryPt(lvl.w)].flags, Tile::F_REVEALED))
+			gui->DrawSprite(GetEntryImage(lvl.prevEntryType), Int2(TileToPoint(lvl.prevEntryPt)) - Int2(16, 16), Color::Alpha(180));
 	}
 
 	// portals
@@ -120,7 +121,8 @@ void Minimap::Draw(ControlDrawData*)
 		Unit& u = **it;
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
+			const float scale = IsSet(u.data->flags2, F2_BOSS) ? 0.4f : 0.25f;
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(scale, scale), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
 			gui->DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game->pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
 		}
 	}
@@ -240,4 +242,21 @@ Vec2 Minimap::GetMapPosition(Unit& unit)
 	}
 	assert(0);
 	return Vec2(-1000, -1000);
+}
+
+//=================================================================================================
+Texture* Minimap::GetEntryImage(EntryType type)
+{
+	switch(type)
+	{
+	default:
+		assert(0);
+	case ENTRY_STAIRS_UP:
+		return tStairsUp;
+	case ENTRY_STAIRS_DOWN:
+	case ENTRY_STAIRS_DOWN_IN_WALL:
+		return tStairsDown;
+	case ENTRY_DOOR:
+		return tDoor;
+	}
 }

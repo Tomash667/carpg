@@ -41,7 +41,7 @@ dialog merchant
 		talk 12
 		choice 13
 		{
-			special "train/haggle"
+			special "train/persuasion"
 			end
 		}
 		choice 14
@@ -206,8 +206,32 @@ dialog mayor
 	}
 	choice 7
 	{
-		special "mayor_quest"
-		restart
+		if special "mayor_quest_failed"
+		{
+			talk 13
+			choice 14
+			{
+				if script "Team::PersuasionCheck(25)"
+				{
+					talk 15
+					special "mayor_quest"
+					restart
+				}
+				else
+				{
+					talk 16
+					restart
+				}
+			}
+			escape choice 2
+				restart
+			show_choices
+		}
+		else
+		{
+			special "mayor_quest"
+			restart
+		}
 	}
 	choice 8
 	{
@@ -411,16 +435,6 @@ dialog guard_captain
 		do_quest "captive"
 		do_once
 	}
-	if need_talk "animals"
-	{
-		do_quest "animals"
-		do_once
-	}
-	if need_talk "camp"
-	{
-		do_quest "camp"
-		do_once
-	}
 	if need_talk "wanted"
 	{
 		do_quest "wanted"
@@ -496,8 +510,32 @@ dialog guard_captain
 			talk 11
 			restart
 		}
-		special "captain_quest"
-		restart
+		else if special "captain_quest_failed"
+		{
+			talk 17
+			choice 18
+			{
+				if script "Team::PersuasionCheck(25)"
+				{
+					talk 19
+					special "captain_quest"
+					restart
+				}
+				else
+				{
+					talk 20
+					restart
+				}
+			}
+			escape choice 21
+				restart
+			show_choices
+		}
+		else
+		{
+			special "captain_quest"
+			restart
+		}
 	}
 	choice 12
 	{
@@ -1103,8 +1141,49 @@ dialog hero
 				talk 33
 				restart
 			}
+			else if script "target.hero.otherTeam"
+			{
+				talk 46
+				choice 47
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 49
+						goto recruit
+					}
+					else
+					{
+						talk 50
+						restart
+					}
+				}
+				escape choice 48
+					restart
+				show_choices
+			}
+			else if script "!target.hero.wantJoin"
+			{
+				talk 51
+				choice 47
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 52
+						goto recruit
+					}
+					else
+					{
+						talk 50
+						restart
+					}
+				}
+				escape choice 48
+					restart
+				show_choices
+			}
 			else
 			{
+			recruit:
 				if special "is_free_recruit"
 				{
 					talk 34
@@ -1365,8 +1444,49 @@ dialog crazy
 				talk 36
 				restart
 			}
+			else if script "target.hero.otherTeam"
+			{
+				talk 50
+				choice 51
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 53
+						goto recruit
+					}
+					else
+					{
+						talk 54
+						restart
+					}
+				}
+				escape choice 52
+					restart
+				show_choices
+			}
+			else if script "!target.hero.wantJoin"
+			{
+				talk 55
+				choice 51
+				{
+					if script "Team::PersuasionCheck(target.hero.persuasionCheck)"
+					{
+						talk 53
+						goto recruit
+					}
+					else
+					{
+						talk 54
+						restart
+					}
+				}
+				escape choice 52
+					restart
+				show_choices
+			}
 			else
 			{
+			recruit:
 				talk 37
 				choice 38
 				{
@@ -1535,6 +1655,20 @@ dialog bandits
 			end
 		}
 	}
+	choice 13
+	{
+		if script "Team::PersuasionCheck(25)"
+		{
+			talk 14
+			end
+		}
+		else
+		{
+			talk 15
+			script "target.OrderAttack()"
+			end
+		}
+	}
 	choice 11
 	{
 		talk 12
@@ -1585,11 +1719,25 @@ dialog crazy_mage_encounter
 		}
 		else
 		{
-			talk 6
+			talk 4
 			special "random_hair"
 		}
 		talk 7
 		end
+	}
+	choice 6
+	{
+		if script "Team::PersuasionCheck(25)"
+		{
+			talk 11
+			end
+		}
+		else
+		{
+			talk 12
+			script "target.OrderAttack()"
+			end
+		}
 	}
 	choice 8
 	{
@@ -1885,10 +2033,24 @@ dialog crazies_encounter
 					}
 					end
 				}
+				choice 28
+				{
+					if script "Team::PersuasionCheck(25)"
+						talk 29
+					else
+					{
+						talk 30
+						script "target.OrderAttack()"
+					}
+					end
+				}
 				choice 8
 				{
 					if rand 2
+					{
 						talk 9
+						script "target.OrderAttack()"
+					}
 					else
 						talk 10
 					end
@@ -2242,6 +2404,20 @@ dialog q_bandits_encounter
 			end
 		}
 	}
+	choice 11
+	{
+		if script "Team::PersuasionCheck(50)"
+		{
+			talk 12
+			end
+		}
+		else
+		{
+			talk 13
+			script "target.OrderAttack()"
+			end
+		}
+	}
 	choice 8
 	{
 		talk 9
@@ -2296,42 +2472,6 @@ dialog q_bandits_boss
 	talk 1
 	talk 2
 	script "target.OrderAttack()"
-	end
-}
-
-//==============================================================================
-dialog q_camp_near_city_start
-{
-	talk 0
-	talk 1
-	talk 2
-	choice 3
-	{
-		set_quest_progress 1
-		talk 4
-		talk 5
-		end
-	}
-	escape choice 6
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_camp_near_city_timeout
-{
-	set_quest_progress 4
-	talk 0
-	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_camp_near_city_end
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
 	end
 }
 
@@ -2568,7 +2708,10 @@ dialog q_evil_mage
 		talk 0
 		choice 1
 		{
-			talk 2
+			if script "pc.unit.clas == \"mage\""
+				talk 8
+			else
+				talk 2
 			talk 3
 			talk 4
 			talk 5
@@ -2790,13 +2933,24 @@ dialog q_goblins_mage
 		{
 			if script "pc.unit.gold >= 100"
 			{
+			info:
 				talk 11
-				talk 12
+				talk 5
 				set_quest_progress 9
 			}
 			else
 				talk 13
 			end
+		}
+		choice 12
+		{
+			if script "Team::PersuasionCheck(25)"
+				goto info
+			else
+			{
+				talk 16
+				end
+			}
 		}
 		escape choice 14
 			end
@@ -2824,40 +2978,6 @@ dialog q_goblins_boss
 	talk 1
 	talk 2
 	script "target.OrderAttack()"
-	end
-}
-
-//==============================================================================
-dialog q_kill_animals_start
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		set_quest_progress 1
-		talk 3
-		talk 4
-		end
-	}
-	escape choice 5
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_kill_animals_timeout
-{
-	set_quest_progress 4
-	talk 0
-	end
-}
-
-//==============================================================================
-dialog q_kill_animals_end
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
 	end
 }
 
@@ -3247,9 +3367,7 @@ dialog q_mine_investor
 	{
 		if script "!target.known_name"
 		{
-			if once
-			{
-			}
+			do_once
 			script "target.known_name = true;"
 			talk 0
 			talk 1
@@ -3356,6 +3474,20 @@ dialog q_mine_investor
 					else
 						talk 39
 					end
+				}
+				choice 53
+				{
+					if script "Team::PersuasionCheck(50)"
+					{
+						special "mine_persuaded"
+						talk 54
+						restart
+					}
+					else
+					{
+						talk 55
+						end
+					}
 				}
 			}
 			choice 40
@@ -4202,7 +4334,6 @@ dialog mage_seller
 	show_choices
 }
 
-
 //==============================================================================
 dialog cleric_seller
 {
@@ -4246,4 +4377,168 @@ dialog cleric_seller
 	escape choice 11
 		end
 	show_choices
+}
+
+//==============================================================================
+dialog generic_idle {
+	if rand 60%
+		talk 0
+	else if script "Level::location.outside"
+		talk 1
+	else
+		talk 2
+	end
+}
+
+//==============================================================================
+dialog hero_idle {
+	if script "Level::location.type == L_CITY"
+		talk 0
+	else if script "Level::location.outside"
+		talk 1
+	else
+		talk 2
+	end
+}
+
+//==============================================================================
+dialog secret_idle {
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog bandit_idle {
+	if rand 2
+		talk 0
+	next "generic_idle"
+	end
+}
+
+//==============================================================================
+dialog goblin_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog orc_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog ogre_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog wild_hunter_idle
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog crazy_idle
+{
+	if rand 100
+		next "secret_idle"
+	if script "target.IsTeamMember()"
+	{
+		random
+		{
+			chance 1
+				talk 0
+			chance 1
+				next "hero_idle"
+			chance 1
+				next "generic_idle"
+		}
+	}
+	else
+	{
+		if rand 2
+			talk 0
+		else
+			next "generic_idle"
+	}
+	end
+}
+
+//==============================================================================
+dialog citizen_idle
+{
+	if rand 100
+		next "secret_idle"
+	if script "target.IsTeamMember()"
+	{
+		random
+		{
+			chance 10
+				if special "is_guard"
+					talk 0
+				else
+					talk 0, 1
+			chance 45
+				next "hero_idle"
+			chance 45
+				next "generic_idle"
+		}
+	}
+	else
+	{
+		if special "is_inside_inn"
+		{
+			if special "is_before_contest"
+				talk 2
+			else if rand 3
+				talk 3
+		}
+		if rand 2
+		{
+			if special "is_guard"
+				talk 0
+			else
+				talk 0, 1
+		}
+		next "generic_idle"
+	}
+	end
+}
+
+//==============================================================================
+dialog mage_idle
+{
+	if rand 2
+		talk 0
+	next "generic_idle"
+	end
+}
+
+//==============================================================================
+dialog drunk_mage_idle
+{
+	if special "is_drunkmage"
+		talk 0
+	next "citizen_idle"
+	end
+}
+
+//==============================================================================
+dialog hunter
+{
+	if once
+		talk 0
+	if choices != 0
+	{
+		escape choice 1
+			end
+		show_choices
+	}
+	end
 }

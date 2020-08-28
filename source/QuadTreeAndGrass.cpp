@@ -156,18 +156,18 @@ QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
 	return node;
 }
 
-ObjectPool<LevelPart> level_parts_pool;
+ObjectPool<LevelQuad> level_quads_pool;
 
-QuadNode* GetLevelPart()
+QuadNode* GetLevelQuad()
 {
-	LevelPart* part = level_parts_pool.Get();
-	part->generated = false;
-	return part;
+	LevelQuad* quad = level_quads_pool.Get();
+	quad->generated = false;
+	return quad;
 }
 
 void Game::InitQuadTree()
 {
-	quadtree.get = GetLevelPart;
+	quadtree.get = GetLevelQuad;
 	quadtree.Init(nullptr, Box2d(0, 0, 256, 256), Rect(0, 0, 128, 128), 5);
 }
 
@@ -200,19 +200,19 @@ void Game::ListGrass()
 	Vec2 from = game_level->camera.from.XZ();
 	float in_dist = settings.grass_range * settings.grass_range;
 
-	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
+	for(LevelQuads::iterator it = level_quads.begin(), end = level_quads.end(); it != end; ++it)
 	{
-		LevelPart& part = **it;
-		if(!part.leaf || Vec2::DistanceSquared(part.box.Midpoint(), from) > in_dist)
+		LevelQuad& quad = **it;
+		if(!quad.leaf || Vec2::DistanceSquared(quad.box.Midpoint(), from) > in_dist)
 			continue;
 
-		if(!part.generated)
+		if(!quad.generated)
 		{
-			int minx = max(1, part.grid_box.p1.x),
-				miny = max(1, part.grid_box.p1.y),
-				maxx = min(OutsideLocation::size - 1, part.grid_box.p2.x),
-				maxy = min(OutsideLocation::size - 1, part.grid_box.p2.y);
-			part.generated = true;
+			int minx = max(1, quad.grid_box.p1.x),
+				miny = max(1, quad.grid_box.p1.y),
+				maxx = min(OutsideLocation::size - 1, quad.grid_box.p2.x),
+				maxy = min(OutsideLocation::size - 1, quad.grid_box.p2.y);
+			quad.generated = true;
 			for(int y = miny; y < maxy; ++y)
 			{
 				for(int x = minx; x < maxx; ++x)
@@ -234,7 +234,7 @@ void Game::ListGrass()
 									if(angle.y < 0.7f)
 										continue;
 									game_level->terrain->SetY(pos);
-									part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+									quad.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 								}
 							}
 							else
@@ -243,7 +243,7 @@ void Game::ListGrass()
 								{
 									pos = Vec3(2.f * x + 0.1f + Random(1.8f), 0, 2.f * y + 0.1f + Random(1.8f));
 									game_level->terrain->SetY(pos);
-									part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+									quad.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 								}
 							}
 						}
@@ -259,7 +259,7 @@ void Game::ListGrass()
 							{
 								pos = Vec3(2.f * x + 0.5f + Random(1.f), 0, 2.f * y + 0.5f + Random(1.f));
 								game_level->terrain->SetY(pos);
-								part.grass2.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+								quad.grass2.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
 					}
@@ -267,15 +267,15 @@ void Game::ListGrass()
 			}
 		}
 
-		if(!part.grass.empty())
+		if(!quad.grass.empty())
 		{
-			grass_patches[0].push_back(&part.grass);
-			grass_count[0] += part.grass.size();
+			grass_patches[0].push_back(&quad.grass);
+			grass_count[0] += quad.grass.size();
 		}
-		if(!part.grass2.empty())
+		if(!quad.grass2.empty())
 		{
-			grass_patches[1].push_back(&part.grass2);
-			grass_count[1] += part.grass2.size();
+			grass_patches[1].push_back(&quad.grass2);
+			grass_count[1] += quad.grass2.size();
 		}
 	}
 }
@@ -297,18 +297,18 @@ void Game::ClearQuadtree()
 	if(!quadtree.top)
 		return;
 
-	quadtree.Clear((QuadTree::Nodes&)level_parts);
+	quadtree.Clear((QuadTree::Nodes&)level_quads);
 
-	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
+	for(LevelQuads::iterator it = level_quads.begin(), end = level_quads.end(); it != end; ++it)
 	{
-		LevelPart& part = **it;
-		part.grass.clear();
-		part.grass2.clear();
-		part.objects.clear();
+		LevelQuad& quad = **it;
+		quad.grass.clear();
+		quad.grass2.clear();
+		quad.objects.clear();
 	}
 
-	level_parts_pool.Free(level_parts);
-	level_parts.clear();
+	level_quads_pool.Free(level_quads);
+	level_quads.clear();
 }
 
 void Game::ClearGrass()
@@ -326,7 +326,7 @@ void Game::CalculateQuadtree()
 
 	for(Object* obj : game_level->local_area->objects)
 	{
-		auto node = (LevelPart*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
+		auto node = (LevelQuad*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
 		node->objects.push_back(QuadObj(obj));
 	}
 }
@@ -334,5 +334,5 @@ void Game::CalculateQuadtree()
 void Game::ListQuadtreeNodes()
 {
 	PROFILER_BLOCK("ListQuadtreeNodes");
-	quadtree.List(game_level->camera.frustum, (QuadTree::Nodes&)level_parts);
+	quadtree.List(game_level->camera.frustum, (QuadTree::Nodes&)level_quads);
 }

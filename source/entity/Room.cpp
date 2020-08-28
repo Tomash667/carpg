@@ -2,7 +2,6 @@
 #include "Room.h"
 
 #include "BitStreamFunc.h"
-#include "SaveState.h"
 
 const float Room::HEIGHT = 4.f;
 const float Room::HEIGHT_LOW = 3.f;
@@ -38,7 +37,7 @@ void Room::AddTile(const Int2& pt)
 }
 
 //=================================================================================================
-void Room::Save(FileWriter& f)
+void Room::Save(GameWriter& f)
 {
 	f << pos;
 	f << size;
@@ -50,7 +49,7 @@ void Room::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Room::Load(FileReader& f)
+void Room::Load(GameReader& f)
 {
 	f >> pos;
 	f >> size;
@@ -108,7 +107,7 @@ bool RoomGroup::HaveRoom(int room_index) const
 }
 
 //=================================================================================================
-void RoomGroup::Save(FileWriter& f)
+void RoomGroup::Save(GameWriter& f)
 {
 	f << connections;
 	f << rooms;
@@ -116,7 +115,7 @@ void RoomGroup::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void RoomGroup::Load(FileReader& f)
+void RoomGroup::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_11)
 		f >> connections;

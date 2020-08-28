@@ -13,7 +13,6 @@
 #include "Quest_Orcs.h"
 #include "Quest_Secret.h"
 #include "Quest_Scripted.h"
-#include "ScriptManager.h"
 #include "UnitGroup.h"
 
 //=================================================================================================
@@ -34,7 +33,7 @@ void DungeonGenerator::Generate()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	assert(!lvl.map);
 
-	Quest_Scripted* event_handler = nullptr;
+	Quest2* event_handler = nullptr;
 	for(Event& event : inside->events)
 	{
 		if(event.type == EVENT_GENERATE)
@@ -53,9 +52,37 @@ void DungeonGenerator::Generate()
 	settings.groups = &lvl.groups;
 	settings.corridor_join_chance = base.join_corridor;
 	settings.room_join_chance = base.join_room;
-	settings.shape = (IsSet(base.options, BLO_ROUND) ? MapSettings::SHAPE_CIRCLE : MapSettings::SHAPE_SQUARE);
-	settings.stairs_up_loc = (inside->HaveUpStairs() ? MapSettings::STAIRS_RANDOM : MapSettings::STAIRS_NONE);
-	settings.stairs_down_loc = (inside->HaveDownStairs() ? MapSettings::STAIRS_RANDOM : MapSettings::STAIRS_NONE);
+	settings.shape = IsSet(base.options, BLO_ROUND) ? MapSettings::SHAPE_CIRCLE : MapSettings::SHAPE_SQUARE;
+	if(game_level->dungeon_level == 0)
+	{
+		if(IsSet(base.options, BLO_GOES_UP))
+		{
+			settings.prevEntryType = IsSet(base.options, BLO_DOOR_ENTRY) ? ENTRY_DOOR : ENTRY_STAIRS_DOWN;
+			settings.nextEntryType = ENTRY_STAIRS_UP;
+		}
+		else
+		{
+			settings.prevEntryType = IsSet(base.options, BLO_DOOR_ENTRY) ? ENTRY_DOOR : ENTRY_STAIRS_UP;
+			settings.nextEntryType = ENTRY_STAIRS_DOWN;
+		}
+	}
+	else
+	{
+		if(static_cast<MultiInsideLocation*>(inside)->levels[0]->nextEntryType == ENTRY_STAIRS_UP)
+		{
+			settings.prevEntryType = ENTRY_STAIRS_DOWN;
+			settings.nextEntryType = ENTRY_STAIRS_UP;
+		}
+		else
+		{
+			settings.prevEntryType = ENTRY_STAIRS_UP;
+			settings.nextEntryType = ENTRY_STAIRS_DOWN;
+		}
+	}
+	settings.prevEntryLoc = inside->HavePrevEntry() ? MapSettings::ENTRY_RANDOM : MapSettings::ENTRY_NONE;
+	if(settings.prevEntryLoc == MapSettings::ENTRY_RANDOM && settings.prevEntryType == ENTRY_DOOR)
+		settings.prevEntryLoc = MapSettings::ENTRY_BORDER;
+	settings.nextEntryLoc = inside->HaveNextEntry() ? MapSettings::ENTRY_RANDOM : MapSettings::ENTRY_NONE;
 	settings.bars_chance = base.bars_chance;
 	settings.devmode = game->devmode;
 	settings.remove_dead_end_corridors = true;
@@ -74,7 +101,7 @@ void DungeonGenerator::Generate()
 	if(skip_normal_handling)
 	{
 	}
-	else if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
+	else if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveNextEntry())
 	{
 		// last crypt level
 		Room* room = Room::Get();
@@ -86,9 +113,9 @@ void DungeonGenerator::Generate()
 		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
-		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
+		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(inside->type == L_DUNGEON && (inside->target == THRONE_FORT || inside->target == THRONE_VAULT) && !inside->HaveDownStairs())
+	else if(inside->type == L_DUNGEON && (inside->target == THRONE_FORT || inside->target == THRONE_VAULT) && !inside->HaveNextEntry())
 	{
 		// throne room
 		Room* room = Room::Get();
@@ -101,9 +128,10 @@ void DungeonGenerator::Generate()
 		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
-		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
+		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(game_level->location_index == quest_mgr->quest_secret->where && quest_mgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveDownStairs())
+	else if(game_level->location_index == quest_mgr->quest_secret->where
+		&& quest_mgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveNextEntry())
 	{
 		// secret
 		Room* room = Room::Get();
@@ -115,15 +143,16 @@ void DungeonGenerator::Generate()
 		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
-		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
+		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(game_level->location_index == quest_mgr->quest_evil->target_loc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+	else if(game_level->location == quest_mgr->quest_evil->targetLoc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
-		settings.stairs_up_loc = MapSettings::STAIRS_FAR_FROM_ROOM;
+		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
 
-	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location_index == quest_mgr->quest_orcs->target_loc && dungeon_level == game_level->location->GetLastLevel())
+	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location == quest_mgr->quest_orcs->targetLoc
+		&& dungeon_level == game_level->location->GetLastLevel())
 	{
 		// search for room for cell
 		settings.stop = true;
@@ -167,14 +196,15 @@ void DungeonGenerator::Generate()
 
 	lvl.w = lvl.h = settings.map_w;
 	lvl.map = map_gen.GetMap();
-	lvl.staircase_up = settings.stairs_up_pos;
-	lvl.staircase_up_dir = settings.stairs_up_dir;
-	lvl.staircase_down = settings.stairs_down_pos;
-	lvl.staircase_down_dir = settings.stairs_down_dir;
-	lvl.staircase_down_in_wall = settings.stairs_down_in_wall;
+	lvl.prevEntryType = settings.prevEntryType;
+	lvl.prevEntryPt = settings.prevEntryPt;
+	lvl.prevEntryDir = settings.prevEntryDir;
+	lvl.nextEntryType = settings.nextEntryType;
+	lvl.nextEntryPt = settings.nextEntryPt;
+	lvl.nextEntryDir = settings.nextEntryDir;
 
 	// different texture in crypt treasure room
-	if(!skip_normal_handling && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveDownStairs())
+	if(!skip_normal_handling && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveNextEntry())
 	{
 		Room& r = *lvl.rooms[0];
 		for(int y = 0; y < r.size.y; ++y)
@@ -315,9 +345,9 @@ void DungeonGenerator::GenerateUnits()
 	// spawn units
 	InsideLocation* inside = (InsideLocation*)game_level->location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	Int2 down_stairs_pt = lvl.staircase_down;
-	if(!inside->HaveDownStairs())
-		down_stairs_pt = Int2(-1000, -1000);
+	Int2 excludedPt = lvl.nextEntryPt;
+	if(!inside->HaveNextEntry())
+		excludedPt = Int2(-1000, -1000);
 
 	for(RoomGroup& group : lvl.groups)
 	{
@@ -349,13 +379,13 @@ void DungeonGenerator::GenerateUnits()
 				continue;
 		}
 
-		Int2 excluded_pt;
-		if(group.target == RoomTarget::StairsUp)
-			excluded_pt = lvl.staircase_up;
+		Int2 awayPt;
+		if(group.target == RoomTarget::EntryPrev)
+			awayPt = lvl.prevEntryPt;
 		else if(inside->from_portal && group.target == RoomTarget::Portal)
-			excluded_pt = PosToPt(inside->portal->pos);
+			awayPt = PosToPt(inside->portal->pos);
 		else
-			excluded_pt = Int2(-1000, -1000);
+			awayPt = Int2(-1000, -1000);
 
 		if(canSpawnSlime && Rand() % 20 == 0)
 		{
@@ -363,7 +393,7 @@ void DungeonGenerator::GenerateUnits()
 			for(int i = 0; i < count; ++i)
 			{
 				Room& room = *lvl.rooms[RandomItem(group.rooms)];
-				game_level->SpawnUnitInsideRoom(room, *slime, -1, excluded_pt, down_stairs_pt);
+				game_level->SpawnUnitInsideRoom(room, *slime, -1, awayPt, excludedPt);
 			}
 		}
 		else
@@ -371,7 +401,7 @@ void DungeonGenerator::GenerateUnits()
 			for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
 			{
 				Room& room = *lvl.rooms[RandomItem(group.rooms)];
-				game_level->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
+				game_level->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, awayPt, excludedPt);
 			}
 		}
 	}

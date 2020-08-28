@@ -176,9 +176,10 @@ void TutorialLocationGenerator::OnEnter()
 				p.type = WALL;
 				break;
 			case '/':
-				p.type = STAIRS_UP;
-				lvl.staircase_up = Int2(x, y);
-				lvl.staircase_up_dir = GDIR_UP;
+				p.type = ENTRY_PREV;
+				lvl.prevEntryPt = Int2(x, y);
+				lvl.prevEntryDir = GDIR_UP;
+				lvl.prevEntryType = ENTRY_STAIRS_UP;
 				break;
 			case '+':
 				p.type = DOORS;
@@ -282,7 +283,7 @@ void TutorialLocationGenerator::OnEnter()
 	}
 
 	// objects
-	Tile::SetupFlags(lvl.map, Int2(22, 22));
+	Tile::SetupFlags(lvl.map, Int2(22, 22), ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
 	GenerateDungeonObjects();
 
 	// doors

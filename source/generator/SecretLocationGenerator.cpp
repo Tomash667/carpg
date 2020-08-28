@@ -26,7 +26,7 @@ void SecretLocationGenerator::Generate()
 	terrain->SetHeightMap(outside->h);
 	terrain->RandomizeHeight(0.f, 5.f);
 	float* h = terrain->GetHeightMap();
-	Perlin perlin(4, 4, 1);
+	Perlin perlin(4, 4);
 
 	// flatten terrain around portal & building
 	terrain->RoundHeight();
@@ -102,7 +102,7 @@ void SecretLocationGenerator::GenerateObjects()
 	portal->next_portal = nullptr;
 	portal->pos = pos;
 	portal->rot = 0.f;
-	portal->target = 0;
+	portal->index = 0;
 	portal->target_loc = quest_mgr->quest_secret->where;
 	game_level->location->portal = portal;
 

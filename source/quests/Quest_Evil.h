@@ -62,8 +62,8 @@ public:
 		ClericLeft
 	};
 
-	void Init();
-	void Start();
+	void Init() override;
+	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
@@ -71,10 +71,10 @@ public:
 	bool IfQuestEvent() const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetLocId(int location_id);
+	int GetLocId(Location* location);
 	void Update(float dt);
 
 	Loc loc[3];

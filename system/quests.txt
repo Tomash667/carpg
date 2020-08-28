@@ -276,7 +276,7 @@ quest deliver_letter
 			if(quest.state != Q_STARTED)
 				return;
 
-			int days = 30 - World::worldtime - start_time;
+			int days = 30 + start_time - World::worldtime;
 			if(days > 0)
 				quest.SetTimeout(days);
 			else if(progress == P_LETTER_STARTED)
@@ -639,7 +639,7 @@ quest bandits_collect_toll
 			if(quest.state != Q_STARTED)
 				return;
 
-			int days = 15 - World::worldtime - start_time;
+			int days = 15 + start_time - World::worldtime;
 			if(days > 0)
 				quest.SetTimeout(days);
 			else if(progress == P_TOLL_STARTED)
@@ -661,9 +661,228 @@ quest bandits_collect_toll
 			if(in_enc)
 				Level::location.AddEventHandler(quest, EVENT_CLEARED);
 
-			Unit@ captain = start_loc.GetCaptain();
-			captain.AddDialog(quest, "end");
+			start_loc.GetCaptain().AddDialog(quest, "end");
 		}
+	}
+}
+
+//=============================================================================
+// CAMP NEAR CITY - random captain quest
+// Bandits have camp near city, need to clean it up.
+//=============================================================================
+quest camp_near_city
+{
+	type captain
+	progress {
+		P_CAMP_NONE
+		P_CAMP_STARTED
+		P_CAMP_CLEARED
+		P_CAMP_FINISHED
+		P_CAMP_TIMEOUT
+		P_CAMP_ON_TIMEOUT
+	}
+	
+	dialog start {
+		talk 0
+		talk 1
+		talk 2
+		choice 3
+		{
+			set_quest_progress P_CAMP_STARTED
+			talk 4
+			talk 5
+			end
+		}
+		escape choice 6
+			end
+		show_choices
+	}
+	
+	dialog end {
+		if quest_progress == P_CAMP_CLEARED
+		{
+			do_once
+			set_quest_progress P_CAMP_FINISHED
+			talk 0
+			talk 1
+		}
+		else if quest_progress == P_CAMP_ON_TIMEOUT
+		{
+			do_once
+			set_quest_progress P_CAMP_TIMEOUT
+			talk 2
+			talk 3
+		}
+		end
+	}
+	
+	code {
+		Location@ start_loc;
+		Location@ camp;
+		UnitGroup@ group;
+		int st;
+		
+		void Startup()
+		{
+			@start_loc = Level::location;
+			switch(Rand() % 3)
+			{
+			case 0:
+				@group = UnitGroup::Get("bandits");
+				break;
+			case 1:
+				@group = UnitGroup::Get("goblins");
+				break;
+			case 2:
+				@group = UnitGroup::Get("orcs");
+				break;
+			}
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_CAMP_STARTED:
+				{
+					@camp = World::CreateCamp(World::FindPlace(start_loc.pos, 64.f, false), group);
+					@camp.active_quest = quest;
+					camp.SetKnown();
+					camp.st += Random(3, 5);
+					camp.AddEventHandler(quest, EVENT_CLEARED);
+					st = camp.st;
+					
+					target.AddDialog(quest, "end");
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(30);
+				}
+				break;
+			case P_CAMP_CLEARED:
+				quest.AddEntry(TEXT(3));
+				camp.RemoveEventHandler(quest);
+				@camp.active_quest = null;
+				break;
+			case P_CAMP_FINISHED:
+				{
+					quest.AddEntry(TEXT(4));
+					quest.SetCompleted();
+					int reward = GetReward();
+					Team::AddReward(reward, reward * 3);
+				}
+				break;
+			case P_CAMP_ON_TIMEOUT:
+				quest.AddEntry(TEXT(5));
+				World::AbadonLocation(camp);
+				camp.RemoveEventHandler(quest);
+				@camp.active_quest = null;
+				break;
+			case P_CAMP_TIMEOUT:
+				quest.AddEntry(TEXT(6));
+				quest.SetFailed();
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_CLEARED)
+				progress = P_CAMP_CLEARED;
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				if(progress == P_CAMP_STARTED)
+					progress = P_CAMP_ON_TIMEOUT;
+			}
+		}
+		
+		int GetReward()
+		{
+			return Quest::CalculateReward(st, Int2(5, 15), Int2(2500, 5000));
+		}
+		
+		void OnUpgrade(Vars@ vars)
+		{
+			@start_loc = vars["start_loc"];
+			@camp = vars["target_loc"];
+			int start_time = vars["start_time"];
+			@group = vars["group"];
+			
+			if(quest.state != Q_STARTED)
+				return;
+			
+			start_loc.GetCaptain().AddDialog(quest, "end");
+			
+			int days = 30 + start_time - World::worldtime;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_CAMP_STARTED)
+				progress = P_CAMP_ON_TIMEOUT;
+			
+			if(progress == P_CAMP_STARTED)
+			{
+				@camp.active_quest = quest;
+				camp.AddEventHandler(quest, EVENT_CLEARED);
+			}
+		}
+	}
+}
+
+//=============================================================================
+// KILL ANIMALS - random captain quest
+// Go to forest/cave and kill all animals.
+//=============================================================================
+quest kill_animals
+{
+	type captain
+	flags not_scripted
+	
+	progress {
+		P_KILLANI_NONE
+		P_KILLANI_STARTED
+		P_KILLANI_CLEARED
+		P_KILLANI_FINISHED
+		P_KILLANI_TIMEOUT
+		P_KILLANI_ON_TIMEOUT
+	}
+	
+	properties {
+		Location@ targetLoc;
+	}
+	
+	dialog start
+	{
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_KILLANI_STARTED
+			talk 3
+			talk 4
+			end
+		}
+		escape choice 5
+			end
+		show_choices
+	}
+	
+	dialog captain
+	{
+		if quest_progress == P_KILLANI_CLEARED
+		{
+			do_once
+			set_quest_progress P_KILLANI_FINISHED
+			talk 0
+			talk 1
+		}
+		else if quest_progress == P_KILLANI_ON_TIMEOUT
+		{
+			do_once
+			set_quest_progress P_KILLANI_TIMEOUT
+			talk 2
+		}
+		end
 	}
 }
 
@@ -798,7 +1017,7 @@ quest find_artifact
 				if(Level::dungeon_level == target_loc.levels - 1)
 				{
 					e.location.RemoveEventHandler(quest);
-					Chest@ chest = Level::GetRandomChest(Level::GetRoom(ROOM_TREASURY));
+					Chest@ chest = Level::GetTreasureChest();
 					chest.AddItem(item);
 					spawned = true;
 				}
@@ -837,7 +1056,7 @@ quest find_artifact
 			
 			start_loc.FindQuestUnit(quest).AddDialog(quest, "end");
 			
-			int days = 60 - World::worldtime - start_time;
+			int days = 60 + start_time - World::worldtime;
 			if(days > 0)
 				quest.SetTimeout(days);
 			else if(progress == P_FINDART_STARTED)
@@ -1362,7 +1581,7 @@ quest main
 					if(Level::dungeon_level == 0)
 					{
 						// find room for cleric
-						array<Room@>@ path = Level::FindPath(Level::GetRoom(ROOM_STAIRS_UP), Level::GetRoom(ROOM_STAIRS_DOWN));
+						array<Room@>@ path = Level::FindPath(Level::GetRoom(ROOM_ENTRY_PREV), Level::GetRoom(ROOM_ENTRY_NEXT));
 						uint target_depth = 0;
 						for(uint len = path.length(), i = len*2/3; i<len; ++i)
 						{
@@ -1482,8 +1701,8 @@ quest main
 			{
 				if(Level::dungeon_level == 0 && e.stage == 0)
 				{
-					e.map_settings.stairs_up_loc = STAIRS_BORDER;
-					e.map_settings.stairs_down_loc = STAIRS_FAR_FROM_UP_STAIRS;
+					e.map_settings.prev_entry_loc = ENTRY_BORDER;
+					e.map_settings.next_entry_loc = ENTRY_FAR_FROM_PREV;
 				}
 				else if(Level::dungeon_level == 1 && e.stage == 1)
 				{
@@ -1641,6 +1860,48 @@ quest side_cleric
 				Level::location.RemoveEventHandler(quest);
 			}
 		}
+	}
+}
+
+//=============================================================================
+// UNIQUE HUNTERS QUEST - kill boss wolf
+//=============================================================================
+quest dire_wolf
+{
+	type unique
+	flags not_scripted
+	
+	progress {
+		P_WOLF_NONE
+		P_WOLF_STARTED
+		P_WOLF_KILLED
+		P_WOLF_COMPLETE
+	}
+	
+	properties {
+		Location@ forest;
+	}
+	
+	dialog hunter {
+		if quest_progress == P_WOLF_NONE
+		{
+			choice 0
+			{
+				set_quest_progress P_WOLF_STARTED
+				talk 1
+				talk 2
+				talk 3
+				end
+			}
+		}
+		else if quest_progress == P_WOLF_KILLED
+		{
+			set_quest_progress P_WOLF_COMPLETE
+			do_once
+			talk 4
+			end
+		}
+		end
 	}
 }
 

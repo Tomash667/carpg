@@ -3,6 +3,8 @@
 
 #include "Ability.h"
 #include "AIController.h"
+#include "AIManager.h"
+#include "AITeam.h"
 #include "Arena.h"
 #include "BitStreamFunc.h"
 #include "BookPanel.h"
@@ -14,6 +16,7 @@
 #include "CreateServerPanel.h"
 #include "DungeonGenerator.h"
 #include "DungeonMeshBuilder.h"
+#include "Electro.h"
 #include "Encounter.h"
 #include "EntityInterpolator.h"
 #include "FOV.h"
@@ -59,7 +62,6 @@
 #include "Quest_Tutorial.h"
 #include "RoomType.h"
 #include "SaveSlot.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "ServerPanel.h"
 #include "SingleInsideLocation.h"
@@ -102,20 +104,6 @@ extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
-const float ALERT_RANGE = 20.f;
-const float ALERT_SPAWN_RANGE = 25.f;
-const float PICKUP_RANGE = 2.f;
-const float TRAP_ARROW_SPEED = 45.f;
-const float ARROW_TIMER = 5.f;
-const float MIN_H = 1.5f; // hardcoded in GetPhysicsPos
-const float TRAIN_KILL_RATIO = 0.1f;
-const int NN = 64;
-const float HIT_SOUND_DIST = 1.5f;
-const float ARROW_HIT_SOUND_DIST = 1.5f;
-const float SHOOT_SOUND_DIST = 1.f;
-const float SPAWN_SOUND_DIST = 1.5f;
-const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
-
 //=================================================================================================
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
@@ -141,6 +129,7 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false),
 
 	SetupConfigVars();
 
+	aiMgr = new AIManager;
 	arena = new Arena;
 	cmdp = new CommandParser;
 	dun_mesh_builder = new DungeonMeshBuilder;
@@ -495,7 +484,7 @@ void Game::PostconfigureGame()
 	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
 	game_gui->load_screen->visible = false;
-	game_gui->main_menu->visible = true;
+	game_gui->main_menu->Show();
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);
 
@@ -608,6 +597,7 @@ void Game::OnCleanup()
 
 	Language::Cleanup();
 
+	delete aiMgr;
 	delete arena;
 	delete cmdp;
 	delete dun_mesh_builder;
@@ -759,11 +749,6 @@ void Game::OnUpdate(float dt)
 	if(end_of_game)
 	{
 		death_fade += dt;
-		if(death_fade >= 1.f && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
-		{
-			ExitToMenu();
-			end_of_game = false;
-		}
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
@@ -992,10 +977,23 @@ void Game::DoExitToMenu()
 	game_gui->game_menu->visible = false;
 	game_gui->level_gui->visible = false;
 	game_gui->world_map->Hide();
-	game_gui->main_menu->visible = true;
+	game_gui->main_menu->Show();
 	units_mesh_load.clear();
 
 	ChangeTitle();
+}
+
+//=================================================================================================
+void Game::LoadCfg()
+{
+	// last save
+	lastSave = cfg.GetInt("lastSave", -1);
+	if(lastSave < 1 || lastSave > SaveSlot::MAX_SLOTS)
+		lastSave = -1;
+
+	// miscellaneous
+	check_updates = cfg.GetBool("check_updates", true);
+	skip_tutorial = cfg.GetBool("skip_tutorial", false);
 }
 
 //=================================================================================================
@@ -1072,23 +1070,6 @@ void Game::SetGameText()
 	txAiNoEnemies = Str("aiNoEnemies");
 	txAiNearEnemies = Str("aiNearEnemies");
 	txAiCave = Str("aiCave");
-	StrArray(txAiInsaneText, "aiInsaneText");
-	StrArray(txAiDefaultText, "aiDefaultText");
-	StrArray(txAiOutsideText, "aiOutsideText");
-	StrArray(txAiInsideText, "aiInsideText");
-	StrArray(txAiHumanText, "aiHumanText");
-	StrArray(txAiOrcText, "aiOrcText");
-	StrArray(txAiGoblinText, "aiGoblinText");
-	StrArray(txAiMageText, "aiMageText");
-	StrArray(txAiSecretText, "aiSecretText");
-	StrArray(txAiHeroDungeonText, "aiHeroDungeonText");
-	StrArray(txAiHeroCityText, "aiHeroCityText");
-	StrArray(txAiBanditText, "aiBanditText");
-	StrArray(txAiHeroOutsideText, "aiHeroOutsideText");
-	StrArray(txAiDrunkMageText, "aiDrunkMageText");
-	StrArray(txAiDrunkText, "aiDrunkText");
-	StrArray(txAiDrunkContestText, "aiDrunkContestText");
-	StrArray(txAiWildHunterText, "aiWildHunterText");
 
 	// world
 	txEnteringLocation = Str("enteringLocation");
@@ -1145,10 +1126,8 @@ void Game::SetGameText()
 	StrArray(txRumorD, "rumor_d_");
 
 	// dialogs 1
-	StrArray(txMayorQFailed, "mayorQFailed");
 	StrArray(txQuestAlreadyGiven, "questAlreadyGiven");
 	StrArray(txMayorNoQ, "mayorNoQ");
-	StrArray(txCaptainQFailed, "captainQFailed");
 	StrArray(txCaptainNoQ, "captainNoQ");
 	StrArray(txLocationDiscovered, "locationDiscovered");
 	StrArray(txAllDiscovered, "allDiscovered");
@@ -1266,21 +1245,19 @@ void Game::SetGameText()
 }
 
 //=================================================================================================
-void Game::UpdateLights(vector<GameLight>& lights)
-{
-	for(GameLight& light : lights)
-	{
-		light.pos = light.start_pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
-		light.color = Vec4((light.start_color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
-	}
-}
-
-//=================================================================================================
 void Game::GetPostEffects(vector<PostEffect>& postEffects)
 {
 	postEffects.clear();
 	if(!use_postfx)
 		return;
+
+	// vignette
+	PostEffect effect;
+	effect.id = POSTFX_VIGNETTE;
+	effect.power = 1.f;
+	effect.skill = Vec4(0.9f, 0.9f, 0.9f, 1.f);
+	effect.tex = game_res->tVignette->tex;
+	postEffects.push_back(effect);
 
 	// gray effect
 	if(pc->data.grayout > 0.f)
@@ -1563,7 +1540,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(!game_level->is_open)
 		return;
 
-	if(Net::IsLocal() && !net->was_client)
+	if(Net::IsLocal() && !net->was_client && !clear)
 	{
 		if(quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			quest_mgr->quest_tournament->Clean();
@@ -1589,7 +1566,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		contest->Cleanup();
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && game_level->location_index == quest_mgr->quest_orcs2->target_loc)
+	if(Net::IsLocal() && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && game_level->location == quest_mgr->quest_orcs2->targetLoc)
 	{
 		quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		game_level->UpdateLocation(31, 100, false);
@@ -1614,6 +1591,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 			outside->Clear();
+			outside->last_visit = -1;
 		}
 	}
 
@@ -1865,25 +1843,25 @@ void Game::UpdateGame(float dt)
 	{
 		if(!game_level->location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)game_level->location;
+			InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
 			// key [<,] - warp to stairs up or upper level
-			if(input->Down(Key::Shift) && input->Pressed(Key::Comma) && inside->HaveUpStairs())
+			if(input->Down(Key::Shift) && input->Pressed(Key::Comma) && inside->HavePrevEntry())
 			{
 				if(!input->Down(Key::Control))
 				{
 					// warp player to up stairs
 					if(Net::IsLocal())
 					{
-						Int2 tile = lvl.GetUpStairsFrontTile();
-						pc->unit->rot = DirToRot(lvl.staircase_up_dir);
+						Int2 tile = lvl.GetPrevEntryFrontTile();
+						pc->unit->rot = DirToRot(lvl.prevEntryDir);
 						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
 						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_STAIRS;
+						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
 						c.id = 0;
 					}
 				}
@@ -1905,21 +1883,21 @@ void Game::UpdateGame(float dt)
 			}
 
 			// key [>.] - warp to down stairs or lower level
-			if(input->Down(Key::Shift) && input->Pressed(Key::Period) && inside->HaveDownStairs())
+			if(input->Down(Key::Shift) && input->Pressed(Key::Period) && inside->HaveNextEntry())
 			{
 				if(!input->Down(Key::Control))
 				{
 					// warp player to down stairs
 					if(Net::IsLocal())
 					{
-						Int2 tile = lvl.GetDownStairsFrontTile();
-						pc->unit->rot = DirToRot(lvl.staircase_down_dir);
+						Int2 tile = lvl.GetNextEntryFrontTile();
+						pc->unit->rot = DirToRot(lvl.nextEntryDir);
 						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
 						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_STAIRS;
+						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
 						c.id = 1;
 					}
 				}
@@ -1961,7 +1939,7 @@ void Game::UpdateGame(float dt)
 		{
 			Info("Game over: all players died.");
 			SetMusic(MusicType::Death);
-			game_gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels();
 			++death_screen;
 			death_fade = 0;
 			death_solo = (team->GetTeamSize() == 1u);
@@ -1979,11 +1957,6 @@ void Game::UpdateGame(float dt)
 				death_fade = 0;
 				++death_screen;
 			}
-		}
-		if(death_screen >= 2 && GKey.AllowKeyboard() && input->Pressed2Release(Key::Escape, Key::Enter) != Key::None)
-		{
-			ExitToMenu();
-			return;
 		}
 	}
 
@@ -2005,11 +1978,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	// update level context
-	game_level->lights_dt += dt;
 	for(LevelArea& area : game_level->ForEachArea())
-		UpdateArea(area, dt);
-	if(game_level->lights_dt >= 1.f / 60)
-		game_level->lights_dt = 0.f;
+		area.Update(dt);
 
 	// update minimap
 	game_level->UpdateDungeonMinimap(true);
@@ -2136,7 +2106,7 @@ void Game::UpdateFallback(float dt)
 					int at_level = 0;
 					if(game_level->location->portal)
 						at_level = game_level->location->portal->at_level;
-					EnterLocation(at_level, portal->target);
+					EnterLocation(at_level, portal->index);
 				}
 				return;
 			case FALLBACK::NONE:
@@ -2191,7 +2161,7 @@ void Game::UpdateCamera(float dt)
 	GameCamera& camera = game_level->camera;
 
 	// rotate camera up/down
-	if(!Net::IsLocal() || team->IsAnyoneAlive())
+	if(team->IsAnyoneAlive())
 	{
 		if(dialog_context.dialog_mode || game_gui->inventory->mode > I_INVENTORY || game_gui->craft->visible)
 		{
@@ -2457,717 +2427,6 @@ uint Game::TestGameData(bool major)
 	return errors;
 }
 
-//=================================================================================================
-bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint)
-{
-	// attack with weapon or unarmed
-
-	Mesh::Point* hitbox, *point;
-
-	if(unit.mesh_inst->mesh->head.n_groups > 1)
-	{
-		Mesh* mesh = unit.GetWeapon().mesh;
-		if(!mesh)
-			return false;
-		hitbox = mesh->FindPoint("hit");
-		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
-		assert(point);
-	}
-	else
-	{
-		point = nullptr;
-		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
-		if(!hitbox)
-			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
-	}
-
-	assert(hitbox);
-
-	return CheckForHit(area, unit, hitted, *hitbox, point, hitpoint);
-}
-
-// Check collision against hitbox and unit
-// If returned true but hitted is nullptr then object was hit
-// There are two allowed inputs:
-// - bone is "bron"(weapon) attachment point, hitbox is from weapon
-// - bone is nullptr, hitbox is from unit attack
-bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint)
-{
-	assert(hitted && hitbox.IsBox());
-
-	unit.mesh_inst->SetupBones();
-
-	// calculate hitbox matrix
-	Matrix m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
-	if(bone)
-	{
-		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
-		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
-	}
-	else
-		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
-
-	// a - weapon hitbox, b - unit hitbox
-	Oob a, b;
-	m1._11 = m1._22 = m1._33 = 1.f;
-	a.c = Vec3::TransformZero(m1);
-	a.e = hitbox.size;
-	a.u[0] = Vec3(m1._11, m1._12, m1._13);
-	a.u[1] = Vec3(m1._21, m1._22, m1._23);
-	a.u[2] = Vec3(m1._31, m1._32, m1._33);
-	b.u[0] = Vec3(1, 0, 0);
-	b.u[1] = Vec3(0, 1, 0);
-	b.u[2] = Vec3(0, 0, 1);
-
-	// search for collision
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-	{
-		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
-			continue;
-
-		Box box2;
-		(*it)->GetBox(box2);
-		b.c = box2.Midpoint();
-		b.e = box2.Size() / 2;
-
-		if(OOBToOOB(b, a))
-		{
-			hitpoint = a.c;
-			hitted = *it;
-			return true;
-		}
-	}
-
-	// collisions with melee_target
-	b.e = Vec3(0.6f, 2.f, 0.6f);
-	for(Object* obj : area.objects)
-	{
-		if(obj->base && obj->base->id == "melee_target")
-		{
-			b.c = obj->pos;
-			b.c.y += 1.f;
-
-			if(OOBToOOB(b, a))
-			{
-				hitpoint = a.c;
-				hitted = nullptr;
-
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = game_res->tSpark;
-				pe->emision_interval = 0.01f;
-				pe->life = 5.f;
-				pe->particle_life = 0.5f;
-				pe->emisions = 1;
-				pe->spawn_min = 10;
-				pe->spawn_max = 15;
-				pe->max_particles = 15;
-				pe->pos = hitpoint;
-				pe->speed_min = Vec3(-1, 0, -1);
-				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = 0.3f;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 0;
-				pe->Init();
-				area.tmp->pes.push_back(pe);
-
-				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
-
-				if(Net::IsLocal() && unit.IsPlayer())
-				{
-					if(quest_mgr->quest_tutorial->in_tutorial)
-						quest_mgr->quest_tutorial->HandleMeleeAttackCollision();
-					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
-				}
-
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-void Game::UpdateParticles(LevelArea& area, float dt)
-{
-	LoopAndRemove(area.tmp->pes, [dt](ParticleEmitter* pe)
-		{
-			if(pe->Update(dt))
-			{
-				if(pe->manual_delete == 0)
-					delete pe;
-				else
-					pe->manual_delete = 2;
-				return true;
-			}
-			return false;
-		});
-
-	LoopAndRemove(area.tmp->tpes, [dt](TrailParticleEmitter* tpe)
-		{
-			if(tpe->Update(dt, nullptr))
-			{
-				delete tpe;
-				return true;
-			}
-			return false;
-		});
-}
-
-Game::ATTACK_RESULT Game::DoAttack(LevelArea& area, Unit& unit)
-{
-	Vec3 hitpoint;
-	Unit* hitted;
-
-	if(!CheckForHit(area, unit, hitted, hitpoint))
-		return ATTACK_NOT_HIT;
-
-	if(!hitted)
-		return ATTACK_OBJECT;
-
-	float power;
-	if(unit.data->frames->extra)
-		power = 1.f;
-	else
-		power = unit.data->frames->attack_power[unit.act.attack.index];
-	return DoGenericAttack(area, unit, *hitted, hitpoint, unit.CalculateAttack() * unit.act.attack.power * power, unit.GetDmgType(), false);
-}
-
-void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
-{
-	// blood particles
-	if(!IsSet(dmg_flags, DMG_NO_BLOOD))
-	{
-		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = game_res->tBlood[taker.data->blood];
-		pe->emision_interval = 0.01f;
-		pe->life = 5.f;
-		pe->particle_life = 0.5f;
-		pe->emisions = 1;
-		pe->spawn_min = 10;
-		pe->spawn_max = 15;
-		pe->max_particles = 15;
-		if(hitpoint)
-			pe->pos = *hitpoint;
-		else
-		{
-			pe->pos = taker.pos;
-			pe->pos.y += taker.GetUnitHeight() * 2.f / 3;
-		}
-		pe->speed_min = Vec3(-1, 0, -1);
-		pe->speed_max = Vec3(1, 1, 1);
-		pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-		pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-		pe->size = 0.3f;
-		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->alpha = 0.9f;
-		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->mode = 0;
-		pe->Init();
-		taker.area->tmp->pes.push_back(pe);
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_BLOOD;
-			c.id = taker.data->blood;
-			c.pos = pe->pos;
-		}
-	}
-
-	// apply magic resistance
-	if(IsSet(dmg_flags, DMG_MAGICAL))
-		dmg *= taker.CalculateMagicResistance();
-
-	if(giver && giver->IsPlayer())
-	{
-		// update player damage done
-		giver->player->dmg_done += (int)dmg;
-		giver->player->stat_flags |= STAT_DMG_DONE;
-	}
-
-	if(taker.IsPlayer())
-	{
-		// update player damage taken
-		taker.player->dmg_taken += (int)dmg;
-		taker.player->stat_flags |= STAT_DMG_TAKEN;
-
-		// train endurance
-		taker.player->Train(TrainWhat::TakeDamage, min(dmg, taker.hp) / taker.hpmax, (giver ? giver->level : -1));
-
-		// red screen
-		taker.player->last_dmg += dmg;
-	}
-
-	// aggravate units
-	if(giver && giver->IsPlayer())
-		AttackReaction(taker, *giver);
-
-	if((taker.hp -= dmg) <= 0.f && !taker.IsImmortal())
-	{
-		// unit killed
-		taker.Die(giver);
-	}
-	else
-	{
-		// unit hurt sound
-		if(taker.hurt_timer <= 0.f && taker.data->sounds->Have(SOUND_PAIN))
-		{
-			PlayAttachedSound(taker, taker.data->sounds->Random(SOUND_PAIN), Unit::PAIN_SOUND_DIST);
-			taker.hurt_timer = Random(1.f, 1.5f);
-			if(IsSet(dmg_flags, DMG_NO_BLOOD))
-				taker.hurt_timer += 1.f;
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UNIT_SOUND;
-				c.unit = &taker;
-				c.id = SOUND_PAIN;
-			}
-		}
-
-		// immortality
-		if(taker.hp < 1.f)
-			taker.hp = 1.f;
-
-		// send update hp
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
-			c.unit = &taker;
-		}
-	}
-}
-
-//=================================================================================================
-// Update units in area
-//=================================================================================================
-void Game::UpdateUnits(LevelArea& area, float dt)
-{
-	PROFILER_BLOCK("UpdateUnits");
-
-	// new units can be added inside this loop - so no iterators!
-	for(uint i = 0, count = area.units.size(); i < count; ++i)
-		area.units[i]->Update(dt);
-}
-
-bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
-{
-	assert(attacker.HaveShield());
-
-	Vec3 hitpoint;
-	Unit* hitted;
-	Mesh* mesh = attacker.GetShield().mesh;
-
-	if(!mesh)
-		return false;
-
-	if(!CheckForHit(area, attacker, hitted, *mesh->FindPoint("hit"), attacker.mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
-		return false;
-
-	if(!hitted)
-		return true;
-
-	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
-	{
-		hitted->last_bash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
-
-		hitted->BreakAction();
-
-		if(hitted->action != A_POSITION)
-			hitted->action = A_PAIN;
-		else
-			hitted->animation_state = AS_POSITION_HURT;
-
-		if(hitted->mesh_inst->mesh->head.n_groups == 2)
-			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-		else
-		{
-			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-			hitted->animation = ANI_PLAY;
-		}
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.unit = hitted;
-			c.type = NetChange::STUNNED;
-		}
-	}
-
-	DoGenericAttack(area, attacker, *hitted, hitpoint, attacker.CalculateAttack(&attacker.GetShield()), DMG_BLUNT, true);
-
-	return true;
-}
-
-void Game::UpdateBullets(LevelArea& area, float dt)
-{
-	bool deletions = false;
-
-	for(vector<Bullet>::iterator it = area.tmp->bullets.begin(), end = area.tmp->bullets.end(); it != end; ++it)
-	{
-		// update position
-		Vec3 prev_pos = it->pos;
-		it->pos += Vec3(sin(it->rot.y) * it->speed, it->yspeed, cos(it->rot.y) * it->speed) * dt;
-		if(it->ability && it->ability->type == Ability::Ball)
-			it->yspeed -= 10.f * dt;
-
-		// update particles
-		if(it->pe)
-			it->pe->pos = it->pos;
-		if(it->trail)
-			it->trail->Update(0, &it->pos);
-
-		// remove bullet on timeout
-		if((it->timer -= dt) <= 0.f)
-		{
-			// timeout, delete bullet
-			it->remove = true;
-			deletions = true;
-			if(it->trail)
-				it->trail->destroy = true;
-			if(it->pe)
-				it->pe->destroy = true;
-			continue;
-		}
-
-		// do contact test
-		btCollisionShape* shape;
-		if(!it->ability)
-			shape = game_level->shape_arrow;
-		else
-			shape = it->ability->shape;
-		assert(shape->isConvex());
-
-		btTransform tr_from, tr_to;
-		tr_from.setOrigin(ToVector3(prev_pos));
-		tr_from.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
-		tr_to.setOrigin(ToVector3(it->pos));
-		tr_to.setRotation(tr_from.getRotation());
-
-		BulletCallback callback(it->owner ? it->owner->cobj : nullptr);
-		phy_world->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
-		if(!callback.hasHit())
-			continue;
-
-		Vec3 hitpoint = ToVec3(callback.hitpoint);
-		Unit* hitted = nullptr;
-		if(IsSet(callback.target->getCollisionFlags(), CG_UNIT))
-			hitted = (Unit*)callback.target->getUserPointer();
-
-		// something was hit, remove bullet
-		it->remove = true;
-		deletions = true;
-		if(it->trail)
-			it->trail->destroy = true;
-		if(it->pe)
-			it->pe->destroy = true;
-
-		if(hitted)
-		{
-			if(!Net::IsLocal())
-				continue;
-
-			if(!it->ability)
-			{
-				if(it->owner && it->owner->IsFriend(*hitted, true) || it->attack < -50.f)
-				{
-					// friendly fire
-					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
-					{
-						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::HIT_SOUND;
-							c.id = MAT_IRON;
-							c.count = mat;
-							c.pos = hitpoint;
-						}
-					}
-					else
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, ARROW_HIT_SOUND_DIST, false);
-					continue;
-				}
-
-				// hit enemy unit
-				if(it->owner && it->owner->IsAlive() && hitted->IsAI())
-					hitted->ai->HitReaction(it->start_pos);
-
-				// calculate modifiers
-				int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
-				float m = 1.f;
-				if(mod == -1)
-					m += 0.25f;
-				else if(mod == 1)
-					m -= 0.25f;
-				if(hitted->IsNotFighting())
-					m += 0.1f;
-				if(hitted->action == A_PAIN)
-					m += 0.1f;
-
-				// backstab bonus damage
-				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
-				float backstab_mod = it->backstab;
-				if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
-					backstab_mod /= 2;
-				m += angle_dif / PI * backstab_mod;
-
-				// apply modifiers
-				float attack = it->attack * m;
-
-				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
-				{
-					// play sound
-					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HIT_SOUND;
-						c.id = MAT_IRON;
-						c.count = mat;
-						c.pos = hitpoint;
-					}
-
-					// train blocking
-					if(hitted->IsPlayer())
-						hitted->player->Train(TrainWhat::BlockBullet, attack / hitted->hpmax, it->level);
-
-					// reduce damage
-					float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
-					float stamina = min(block, attack);
-					attack -= block;
-					hitted->RemoveStaminaBlock(stamina);
-
-					// pain animation & break blocking
-					if(hitted->stamina < 0)
-					{
-						hitted->BreakAction();
-
-						if(!IsSet(hitted->data->flags, F_DONT_SUFFER))
-						{
-							if(hitted->action != A_POSITION)
-								hitted->action = A_PAIN;
-							else
-								hitted->animation_state = AS_POSITION_HURT;
-
-							if(hitted->mesh_inst->mesh->head.n_groups == 2)
-								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-							else
-							{
-								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-								hitted->animation = ANI_PLAY;
-							}
-						}
-					}
-
-					if(attack < 0)
-					{
-						// shot blocked by shield
-						if(it->owner && it->owner->IsPlayer())
-						{
-							// train player in bow
-							it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
-							// aggravate
-							AttackReaction(*hitted, *it->owner);
-						}
-						continue;
-					}
-				}
-
-				// calculate defense
-				float def = hitted->CalculateDefense();
-
-				// calculate damage
-				float dmg = CombatHelper::CalculateDamage(attack, def);
-
-				// hit sound
-				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
-
-				// train player armor skill
-				if(hitted->IsPlayer())
-					hitted->player->Train(TrainWhat::TakeDamageArmor, attack / hitted->hpmax, it->level);
-
-				if(dmg < 0)
-				{
-					if(it->owner && it->owner->IsPlayer())
-					{
-						// train player in bow
-						it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
-						// aggravate
-						AttackReaction(*hitted, *it->owner);
-					}
-					continue;
-				}
-
-				// train player in bow
-				if(it->owner && it->owner->IsPlayer())
-				{
-					float v = dmg / hitted->hpmax;
-					if(hitted->hp - dmg < 0.f && !hitted->IsImmortal())
-						v = max(TRAIN_KILL_RATIO, v);
-					if(v > 1.f)
-						v = 1.f;
-					it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
-				}
-
-				GiveDmg(*hitted, dmg, it->owner, &hitpoint);
-
-				// apply poison
-				if(it->poison_attack > 0.f)
-				{
-					float poison_res = hitted->GetPoisonResistance();
-					if(poison_res > 0.f)
-					{
-						Effect e;
-						e.effect = EffectId::Poison;
-						e.source = EffectSource::Temporary;
-						e.source_id = -1;
-						e.value = -1;
-						e.power = it->poison_attack / 5 * poison_res;
-						e.time = 5.f;
-						hitted->AddEffect(e);
-					}
-				}
-			}
-			else
-			{
-				// hit unit with spell
-				if(it->owner && it->owner->IsFriend(*hitted, true))
-				{
-					// frendly fire
-					SpellHitEffect(area, *it, hitpoint, hitted);
-
-					// hit sound
-					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
-					{
-						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::HIT_SOUND;
-							c.id = MAT_IRON;
-							c.count = mat;
-							c.pos = hitpoint;
-						}
-					}
-					else
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, false);
-					continue;
-				}
-
-				if(hitted->IsAI() && it->owner && it->owner->IsAlive())
-					hitted->ai->HitReaction(it->start_pos);
-
-				float dmg = it->attack;
-				if(it->owner)
-					dmg += it->owner->level * it->ability->dmg_bonus;
-				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
-				float base_dmg = dmg;
-
-				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
-				{
-					float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
-					float stamina = min(dmg, block);
-					dmg -= block / 2;
-					hitted->RemoveStaminaBlock(stamina);
-
-					if(hitted->IsPlayer())
-					{
-						// player blocked spell, train him
-						hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
-					}
-
-					if(dmg < 0)
-					{
-						// blocked by shield
-						SpellHitEffect(area, *it, hitpoint, hitted);
-						continue;
-					}
-				}
-
-				GiveDmg(*hitted, dmg, it->owner, &hitpoint, !IsSet(it->ability->flags, Ability::Poison) ? DMG_MAGICAL : 0);
-
-				// apply poison
-				if(IsSet(it->ability->flags, Ability::Poison))
-				{
-					float poison_res = hitted->GetPoisonResistance();
-					if(poison_res > 0.f)
-					{
-						Effect e;
-						e.effect = EffectId::Poison;
-						e.source = EffectSource::Temporary;
-						e.source_id = -1;
-						e.value = -1;
-						e.power = dmg / 5 * poison_res;
-						e.time = 5.f;
-						hitted->AddEffect(e);
-					}
-				}
-
-				// apply spell effect
-				SpellHitEffect(area, *it, hitpoint, hitted);
-			}
-		}
-		else
-		{
-			// hit object
-			if(!it->ability)
-			{
-				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, ARROW_HIT_SOUND_DIST);
-
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = game_res->tSpark;
-				pe->emision_interval = 0.01f;
-				pe->life = 5.f;
-				pe->particle_life = 0.5f;
-				pe->emisions = 1;
-				pe->spawn_min = 10;
-				pe->spawn_max = 15;
-				pe->max_particles = 15;
-				pe->pos = hitpoint;
-				pe->speed_min = Vec3(-1, 0, -1);
-				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = 0.3f;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 0;
-				pe->Init();
-				area.tmp->pes.push_back(pe);
-
-				if(it->owner && it->owner->IsPlayer() && Net::IsLocal() && callback.target && IsSet(callback.target->getCollisionFlags(), CG_OBJECT))
-				{
-					Object* obj = static_cast<Object*>(callback.target->getUserPointer());
-					if(obj && obj->base && obj->base->id == "bow_target")
-					{
-						if(quest_mgr->quest_tutorial->in_tutorial)
-							quest_mgr->quest_tutorial->HandleBulletCollision();
-						it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
-					}
-				}
-			}
-			else
-			{
-				// hit object with spell
-				SpellHitEffect(area, *it, hitpoint, nullptr);
-			}
-		}
-	}
-
-	if(deletions)
-		RemoveElements(area.tmp->bullets, [](const Bullet& b) { return b.remove; });
-}
-
 void Game::ChangeLevel(int where)
 {
 	assert(where == 1 || where == -1);
@@ -3217,11 +2476,11 @@ void Game::ChangeLevel(int where)
 			LoadingStart(4);
 			LoadingStep(txLevelUp);
 
-			MultiInsideLocation* inside = (MultiInsideLocation*)game_level->location;
+			MultiInsideLocation* inside = static_cast<MultiInsideLocation*>(game_level->location);
 			LeaveLevel();
 			--game_level->dungeon_level;
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			game_level->enter_from = ENTER_FROM_DOWN_LEVEL;
+			game_level->enter_from = ENTER_FROM_NEXT_LEVEL;
 			EnterLevel(loc_gen);
 		}
 	}
@@ -3267,7 +2526,7 @@ void Game::ChangeLevel(int where)
 			loc_gen->Generate();
 		}
 
-		game_level->enter_from = ENTER_FROM_UP_LEVEL;
+		game_level->enter_from = ENTER_FROM_PREV_LEVEL;
 		EnterLevel(loc_gen);
 	}
 
@@ -3341,929 +2600,6 @@ void Game::StopAllSounds()
 	attached_sounds.clear();
 }
 
-Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash)
-{
-	// calculate modifiers
-	int mod = CombatHelper::CalculateModifier(dmg_type, hitted.data->flags);
-	float m = 1.f;
-	if(mod == -1)
-		m += 0.25f;
-	else if(mod == 1)
-		m -= 0.25f;
-	if(hitted.IsNotFighting())
-		m += 0.1f;
-	else if(hitted.IsHoldingBow())
-		m += 0.05f;
-	if(hitted.action == A_PAIN)
-		m += 0.1f;
-
-	// backstab bonus
-	float angle_dif = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
-	float backstab_mod = attacker.GetBackstabMod(bash ? attacker.slots[SLOT_SHIELD] : attacker.slots[SLOT_WEAPON]);
-	if(IsSet(hitted.data->flags2, F2_BACKSTAB_RES))
-		backstab_mod /= 2;
-	m += angle_dif / PI * backstab_mod;
-
-	// apply modifiers
-	attack *= m;
-
-	// blocking
-	if(hitted.IsBlocking() && angle_dif < PI / 2)
-	{
-		// play sound
-		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
-		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HIT_SOUND;
-			c.pos = hitpoint;
-			c.id = weapon_mat;
-			c.count = hitted_mat;
-		}
-		sound_mgr->PlaySound3d(game_res->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
-
-		// train blocking
-		if(hitted.IsPlayer())
-			hitted.player->Train(TrainWhat::BlockAttack, attack / hitted.hpmax, attacker.level);
-
-		// reduce damage
-		float block = hitted.CalculateBlock() * hitted.GetBlockMod();
-		float stamina = min(attack, block);
-		if(IsSet(attacker.data->flags2, F2_IGNORE_BLOCK))
-			block *= 2.f / 3;
-		if(attacker.act.attack.power >= 1.9f)
-			stamina *= 4.f / 3;
-		attack -= block;
-		hitted.RemoveStaminaBlock(stamina);
-
-		// pain animation & break blocking
-		if(hitted.stamina < 0)
-		{
-			hitted.BreakAction();
-
-			if(!IsSet(hitted.data->flags, F_DONT_SUFFER))
-			{
-				if(hitted.action != A_POSITION)
-					hitted.action = A_PAIN;
-				else
-					hitted.animation_state = AS_POSITION_HURT;
-
-				if(hitted.mesh_inst->mesh->head.n_groups == 2)
-					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-				else
-				{
-					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-					hitted.animation = ANI_PLAY;
-				}
-			}
-		}
-
-		// attack fully blocked
-		if(attack < 0)
-		{
-			if(attacker.IsPlayer())
-			{
-				// player attack blocked
-				attacker.player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
-				// aggravate
-				AttackReaction(hitted, attacker);
-			}
-			return ATTACK_BLOCKED;
-		}
-	}
-
-	// calculate defense
-	float def = hitted.CalculateDefense();
-
-	// calculate damage
-	float dmg = CombatHelper::CalculateDamage(attack, def);
-
-	// hit sound
-	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
-
-	// train player armor skill
-	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeDamageArmor, attack / hitted.hpmax, attacker.level);
-
-	// fully blocked by armor
-	if(dmg < 0)
-	{
-		if(attacker.IsPlayer())
-		{
-			// player attack blocked
-			attacker.player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
-			// aggravate
-			AttackReaction(hitted, attacker);
-		}
-		return ATTACK_NO_DAMAGE;
-	}
-
-	if(attacker.IsPlayer())
-	{
-		// player hurt someone - train
-		float dmgf = (float)dmg;
-		float ratio;
-		if(hitted.hp - dmgf <= 0.f && !hitted.IsImmortal())
-			ratio = Clamp(dmgf / hitted.hpmax, TRAIN_KILL_RATIO, 1.f);
-		else
-			ratio = min(1.f, dmgf / hitted.hpmax);
-		attacker.player->Train(bash ? TrainWhat::BashHit : TrainWhat::AttackHit, ratio, hitted.level);
-	}
-
-	GiveDmg(hitted, dmg, &attacker, &hitpoint);
-
-	// apply poison
-	if(IsSet(attacker.data->flags, F_POISON_ATTACK))
-	{
-		float poison_res = hitted.GetPoisonResistance();
-		if(poison_res > 0.f)
-		{
-			Effect e;
-			e.effect = EffectId::Poison;
-			e.source = EffectSource::Temporary;
-			e.source_id = -1;
-			e.value = -1;
-			e.power = dmg / 10 * poison_res;
-			e.time = 5.f;
-			hitted.AddEffect(e);
-		}
-	}
-
-	return hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT;
-}
-
-void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted)
-{
-	Ability& ability = *bullet.ability;
-
-	// sound
-	if(ability.sound_hit)
-		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
-
-	// particles
-	if(ability.tex_particle && ability.type == Ability::Ball)
-	{
-		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = ability.tex_particle;
-		pe->emision_interval = 0.01f;
-		pe->life = 0.f;
-		pe->particle_life = 0.5f;
-		pe->emisions = 1;
-		pe->spawn_min = 8;
-		pe->spawn_max = 12;
-		pe->max_particles = 12;
-		pe->pos = pos;
-		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-		pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-		pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-		pe->size = ability.size / 2;
-		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->alpha = 1.f;
-		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->mode = 1;
-		pe->Init();
-		area.tmp->pes.push_back(pe);
-	}
-
-	// explosion
-	if(Net::IsLocal() && IsSet(ability.flags, Ability::Explode))
-	{
-		Explo* explo = new Explo;
-		explo->dmg = (float)ability.dmg;
-		if(bullet.owner)
-			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
-		explo->size = 0.f;
-		explo->sizemax = ability.explode_range;
-		explo->pos = pos;
-		explo->ability = &ability;
-		explo->owner = bullet.owner;
-		if(hitted)
-			explo->hitted.push_back(hitted);
-		area.tmp->explos.push_back(explo);
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CREATE_EXPLOSION;
-			c.ability = &ability;
-			c.pos = explo->pos;
-		}
-	}
-}
-
-void Game::UpdateExplosions(LevelArea& area, float dt)
-{
-	LoopAndRemove(area.tmp->explos, [&](Explo* p_explo)
-		{
-			Explo& explo = *p_explo;
-
-			// increase size
-			bool delete_me = false;
-			explo.size += explo.sizemax * dt;
-			if(explo.size >= explo.sizemax)
-			{
-				delete_me = true;
-				explo.size = explo.sizemax;
-			}
-
-			if(Net::IsLocal())
-			{
-				// deal damage
-				Unit* owner = explo.owner;
-				float dmg = explo.dmg * Lerp(1.f, 0.1f, explo.size / explo.sizemax);
-				for(Unit* unit : area.units)
-				{
-					if(!unit->IsAlive() || (owner && owner->IsFriend(*unit, true)))
-						continue;
-
-					if(!IsInside(explo.hitted, unit))
-					{
-						Box box;
-						unit->GetBox(box);
-
-						if(SphereToBox(explo.pos, explo.size, box))
-						{
-							GiveDmg(*unit, dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
-							explo.hitted.push_back(unit);
-						}
-					}
-				}
-			}
-
-			if(delete_me)
-				delete p_explo;
-			return delete_me;
-		});
-}
-
-void Game::UpdateTraps(LevelArea& area, float dt)
-{
-	const bool is_local = Net::IsLocal();
-	LoopAndRemove(area.traps, [&](Trap* p_trap)
-		{
-			Trap& trap = *p_trap;
-
-			if(trap.state == -1)
-			{
-				trap.time -= dt;
-				if(trap.time <= 0.f)
-					trap.state = 0;
-				return false;
-			}
-
-			switch(trap.base->type)
-			{
-			case TRAP_SPEAR:
-				if(trap.state == 0)
-				{
-					// check if someone is step on it
-					bool trigger = false;
-					if(is_local)
-					{
-						for(Unit* unit : area.units)
-						{
-							if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
-								&& CircleToCircle(trap.pos.x, trap.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
-							{
-								trigger = true;
-								break;
-							}
-						}
-					}
-					else if(trap.trigger)
-					{
-						trigger = true;
-						trap.trigger = false;
-					}
-
-					if(trigger)
-					{
-						sound_mgr->PlaySound3d(trap.base->sound, trap.pos, trap.base->sound_dist);
-						trap.state = 1;
-						trap.time = Random(0.5f, 0.75f);
-
-						if(Net::IsServer())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::TRIGGER_TRAP;
-							c.id = trap.id;
-						}
-					}
-				}
-				else if(trap.state == 1)
-				{
-					// count timer to spears come out
-					bool trigger = false;
-					if(is_local)
-					{
-						trap.time -= dt;
-						if(trap.time <= 0.f)
-							trigger = true;
-					}
-					else if(trap.trigger)
-					{
-						trigger = true;
-						trap.trigger = false;
-					}
-
-					if(trigger)
-					{
-						trap.state = 2;
-						trap.time = 0.f;
-
-						sound_mgr->PlaySound3d(trap.base->sound2, trap.pos, trap.base->sound_dist2);
-
-						if(Net::IsServer())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::TRIGGER_TRAP;
-							c.id = trap.id;
-						}
-					}
-				}
-				else if(trap.state == 2)
-				{
-					// move spears
-					bool end = false;
-					trap.time += dt;
-					if(trap.time >= 0.27f)
-					{
-						trap.time = 0.27f;
-						end = true;
-					}
-
-					trap.obj2.pos.y = trap.obj.pos.y - 2.f + 2.f * (trap.time / 0.27f);
-
-					if(is_local)
-					{
-						for(Unit* unit : area.units)
-						{
-							if(!unit->IsAlive())
-								continue;
-							if(CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
-							{
-								bool found = false;
-								for(Unit* unit2 : *trap.hitted)
-								{
-									if(unit == unit2)
-									{
-										found = true;
-										break;
-									}
-								}
-
-								if(!found)
-								{
-									// hit unit with spears
-									int mod = CombatHelper::CalculateModifier(DMG_PIERCE, unit->data->flags);
-									float m = 1.f;
-									if(mod == -1)
-										m += 0.25f;
-									else if(mod == 1)
-										m -= 0.25f;
-									if(unit->action == A_PAIN)
-										m += 0.1f;
-
-									// calculate attack & defense
-									float attack = float(trap.base->attack) * m;
-									float def = unit->CalculateDefense();
-									float dmg = CombatHelper::CalculateDamage(attack, def);
-
-									// hit sound
-									sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), HIT_SOUND_DIST);
-
-									// train player armor skill
-									if(unit->IsPlayer())
-										unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, 4);
-
-									// damage
-									if(dmg > 0)
-										GiveDmg(*unit, dmg);
-
-									trap.hitted->push_back(unit);
-								}
-							}
-						}
-					}
-
-					if(end)
-					{
-						trap.state = 3;
-						if(is_local)
-							trap.hitted->clear();
-						trap.time = 1.f;
-					}
-				}
-				else if(trap.state == 3)
-				{
-					// count timer to hide spears
-					trap.time -= dt;
-					if(trap.time <= 0.f)
-					{
-						trap.state = 4;
-						trap.time = 1.5f;
-						sound_mgr->PlaySound3d(trap.base->sound3, trap.pos, trap.base->sound_dist3);
-					}
-				}
-				else if(trap.state == 4)
-				{
-					// hiding spears
-					trap.time -= dt;
-					if(trap.time <= 0.f)
-					{
-						trap.time = 0.f;
-						trap.state = 5;
-					}
-
-					trap.obj2.pos.y = trap.obj.pos.y - 2.f + trap.time / 1.5f * 2.f;
-				}
-				else if(trap.state == 5)
-				{
-					// spears are hidden, wait until unit moves away to reactivate
-					bool reactivate;
-					if(is_local)
-					{
-						reactivate = true;
-						for(Unit* unit : area.units)
-						{
-							if(!IsSet(unit->data->flags, F_SLIGHT)
-								&& CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
-							{
-								reactivate = false;
-								break;
-							}
-						}
-					}
-					else
-					{
-						if(trap.trigger)
-						{
-							reactivate = true;
-							trap.trigger = false;
-						}
-						else
-							reactivate = false;
-					}
-
-					if(reactivate)
-					{
-						trap.state = 0;
-						if(Net::IsServer())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::TRIGGER_TRAP;
-							c.id = trap.id;
-						}
-					}
-				}
-				break;
-			case TRAP_ARROW:
-			case TRAP_POISON:
-				if(trap.state == 0)
-				{
-					// check if someone is step on it
-					bool trigger = false;
-					if(is_local)
-					{
-						for(Unit* unit : area.units)
-						{
-							if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
-								&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
-							{
-								trigger = true;
-								break;
-							}
-						}
-					}
-					else if(trap.trigger)
-					{
-						trigger = true;
-						trap.trigger = false;
-					}
-
-					if(trigger)
-					{
-						// someone step on trap, shoot arrow
-						trap.state = is_local ? 1 : 2;
-						trap.time = Random(5.f, 7.5f);
-						sound_mgr->PlaySound3d(trap.base->sound, trap.pos, trap.base->sound_dist);
-
-						if(is_local)
-						{
-							Bullet& b = Add1(area.tmp->bullets);
-							b.level = 4;
-							b.backstab = 0.25f;
-							b.attack = float(trap.base->attack);
-							b.mesh = game_res->aArrow;
-							b.pos = Vec3(2.f * trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f * DirToPos(trap.dir).x,
-								Random(0.5f, 1.5f),
-								2.f * trap.tile.y + trap.pos.z - float(int(trap.pos.z / 2) * 2) + Random(-trap.base->h, trap.base->h) - 1.2f * DirToPos(trap.dir).y);
-							b.start_pos = b.pos;
-							b.rot = Vec3(0, DirToRot(trap.dir), 0);
-							b.owner = nullptr;
-							b.pe = nullptr;
-							b.remove = false;
-							b.speed = TRAP_ARROW_SPEED;
-							b.ability = nullptr;
-							b.tex = nullptr;
-							b.tex_size = 0.f;
-							b.timer = ARROW_TIMER;
-							b.yspeed = 0.f;
-							b.poison_attack = (trap.base->type == TRAP_POISON ? float(trap.base->attack) : 0.f);
-
-							TrailParticleEmitter* tpe = new TrailParticleEmitter;
-							tpe->fade = 0.3f;
-							tpe->color1 = Vec4(1, 1, 1, 0.5f);
-							tpe->color2 = Vec4(1, 1, 1, 0);
-							tpe->Init(50);
-							area.tmp->tpes.push_back(tpe);
-							b.trail = tpe;
-
-							sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], b.pos, SHOOT_SOUND_DIST);
-
-							if(Net::IsServer())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::SHOOT_ARROW;
-								c.unit = nullptr;
-								c.pos = b.start_pos;
-								c.f[0] = b.rot.y;
-								c.f[1] = 0.f;
-								c.f[2] = 0.f;
-								c.extra_f = b.speed;
-
-								NetChange& c2 = Add1(Net::changes);
-								c2.type = NetChange::TRIGGER_TRAP;
-								c2.id = trap.id;
-							}
-						}
-					}
-				}
-				else if(trap.state == 1)
-				{
-					trap.time -= dt;
-					if(trap.time <= 0.f)
-						trap.state = 2;
-				}
-				else
-				{
-					// check if units leave trap
-					bool empty;
-					if(is_local)
-					{
-						empty = true;
-						for(Unit* unit : area.units)
-						{
-							if(!IsSet(unit->data->flags, F_SLIGHT)
-								&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
-							{
-								empty = false;
-								break;
-							}
-						}
-					}
-					else
-					{
-						if(trap.trigger)
-						{
-							empty = true;
-							trap.trigger = false;
-						}
-						else
-							empty = false;
-					}
-
-					if(empty)
-					{
-						trap.state = 0;
-						if(Net::IsServer())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::TRIGGER_TRAP;
-							c.id = trap.id;
-						}
-					}
-				}
-				break;
-			case TRAP_FIREBALL:
-				{
-					if(!is_local)
-						break;
-
-					bool trigger = false;
-					for(Unit* unit : area.units)
-					{
-						if(unit->IsStanding()
-							&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
-						{
-							trigger = true;
-							break;
-						}
-					}
-
-					if(trigger)
-					{
-						Ability* fireball = Ability::Get("fireball");
-
-						Explo* explo = new Explo;
-						explo->pos = trap.pos;
-						explo->pos.y += 0.2f;
-						explo->size = 0.f;
-						explo->sizemax = 2.f;
-						explo->dmg = float(trap.base->attack);
-						explo->ability = fireball;
-
-						sound_mgr->PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist);
-
-						area.tmp->explos.push_back(explo);
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CREATE_EXPLOSION;
-							c.ability = fireball;
-							c.pos = explo->pos;
-
-							NetChange& c2 = Add1(Net::changes);
-							c2.type = NetChange::REMOVE_TRAP;
-							c2.id = trap.id;
-						}
-
-						delete p_trap;
-						return true;
-					}
-				}
-				break;
-			default:
-				assert(0);
-				break;
-			}
-
-			return false;
-		});
-}
-
-void Game::PreloadTraps(vector<Trap*>& traps)
-{
-	for(Trap* trap : traps)
-	{
-		auto& base = *trap->base;
-		if(base.state != ResourceState::NotLoaded)
-			continue;
-
-		if(base.mesh)
-			res_mgr->Load(base.mesh);
-		if(base.mesh2)
-			res_mgr->Load(base.mesh2);
-		if(base.sound)
-			res_mgr->Load(base.sound);
-		if(base.sound2)
-			res_mgr->Load(base.sound2);
-		if(base.sound3)
-			res_mgr->Load(base.sound3);
-
-		base.state = ResourceState::Loaded;
-	}
-}
-
-void Game::UpdateElectros(LevelArea& area, float dt)
-{
-	LoopAndRemove(area.tmp->electros, [&](Electro* p_electro)
-		{
-			Electro& electro = *p_electro;
-			electro.Update(dt);
-
-			if(!Net::IsLocal())
-			{
-				if(electro.lines.back().t >= 0.5f)
-				{
-					delete p_electro;
-					return true;
-				}
-			}
-			else if(electro.valid)
-			{
-				if(electro.lines.back().t >= 0.25f)
-				{
-					Unit* hitted = electro.hitted.back();
-					Unit* owner = electro.owner;
-					if(!hitted || !owner)
-					{
-						electro.valid = false;
-						return false;
-					}
-
-					const Vec3 target_pos = electro.lines.back().to;
-
-					// deal damage
-					if(!owner->IsFriend(*hitted, true))
-					{
-						if(hitted->IsAI() && owner->IsAlive())
-							hitted->ai->HitReaction(electro.start_pos);
-						GiveDmg(*hitted, electro.dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
-					}
-
-					// play sound
-					if(electro.ability->sound_hit)
-						sound_mgr->PlaySound3d(electro.ability->sound_hit, target_pos, electro.ability->sound_hit_dist);
-
-					// add particles
-					if(electro.ability->tex_particle)
-					{
-						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = electro.ability->tex_particle;
-						pe->emision_interval = 0.01f;
-						pe->life = 0.f;
-						pe->particle_life = 0.5f;
-						pe->emisions = 1;
-						pe->spawn_min = 8;
-						pe->spawn_max = 12;
-						pe->max_particles = 12;
-						pe->pos = target_pos;
-						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-electro.ability->size, -electro.ability->size, -electro.ability->size);
-						pe->pos_max = Vec3(electro.ability->size, electro.ability->size, electro.ability->size);
-						pe->size = electro.ability->size_particle;
-						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-						pe->alpha = 1.f;
-						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-						pe->mode = 1;
-						pe->Init();
-						area.tmp->pes.push_back(pe);
-					}
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ELECTRO_HIT;
-						c.pos = target_pos;
-					}
-
-					if(electro.dmg >= 10.f)
-					{
-						static vector<pair<Unit*, float>> targets;
-
-						// hit another target
-						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
-						{
-							if(!(*it2)->IsAlive() || IsInside(electro.hitted, *it2))
-								continue;
-
-							float dist = Vec3::Distance((*it2)->pos, hitted->pos);
-							if(dist <= 5.f)
-								targets.push_back(pair<Unit*, float>(*it2, dist));
-						}
-
-						if(!targets.empty())
-						{
-							if(targets.size() > 1)
-							{
-								std::sort(targets.begin(), targets.end(), [](const pair<Unit*, float>& target1, const pair<Unit*, float>& target2)
-									{
-										return target1.second < target2.second;
-									});
-							}
-
-							Unit* target = nullptr;
-							float dist;
-
-							for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
-							{
-								Vec3 hitpoint;
-								Unit* new_hitted;
-								if(game_level->RayTest(target_pos, it2->first->GetCenter(), hitted, hitpoint, new_hitted))
-								{
-									if(new_hitted == it2->first)
-									{
-										target = it2->first;
-										dist = it2->second;
-										break;
-									}
-								}
-							}
-
-							if(target)
-							{
-								// found another target
-								electro.dmg = min(electro.dmg / 2, Lerp(electro.dmg, electro.dmg / 5, dist / 5));
-								electro.valid = true;
-								electro.hitted.push_back(target);
-								Vec3 from = electro.lines.back().to;
-								Vec3 to = target->GetCenter();
-								electro.AddLine(from, to);
-
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::UPDATE_ELECTRO;
-									c.e_id = electro.id;
-									c.pos = to;
-								}
-							}
-							else
-							{
-								// noone to hit
-								electro.valid = false;
-							}
-
-							targets.clear();
-						}
-						else
-							electro.valid = false;
-					}
-					else
-					{
-						// already hit enough targets
-						electro.valid = false;
-					}
-				}
-			}
-			else
-			{
-				if(electro.hitsome && electro.lines.back().t >= 0.25f)
-				{
-					const Vec3 target_pos = electro.lines.back().to;
-					electro.hitsome = false;
-
-					if(electro.ability->sound_hit)
-						sound_mgr->PlaySound3d(electro.ability->sound_hit, target_pos, electro.ability->sound_hit_dist);
-
-					// particles
-					if(electro.ability->tex_particle)
-					{
-						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = electro.ability->tex_particle;
-						pe->emision_interval = 0.01f;
-						pe->life = 0.f;
-						pe->particle_life = 0.5f;
-						pe->emisions = 1;
-						pe->spawn_min = 8;
-						pe->spawn_max = 12;
-						pe->max_particles = 12;
-						pe->pos = target_pos;
-						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-electro.ability->size, -electro.ability->size, -electro.ability->size);
-						pe->pos_max = Vec3(electro.ability->size, electro.ability->size, electro.ability->size);
-						pe->size = electro.ability->size_particle;
-						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-						pe->alpha = 1.f;
-						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-						pe->mode = 1;
-						pe->Init();
-						area.tmp->pes.push_back(pe);
-					}
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ELECTRO_HIT;
-						c.pos = target_pos;
-					}
-				}
-				if(electro.lines.back().t >= 0.5f)
-				{
-					delete p_electro;
-					return true;
-				}
-			}
-
-			return false;
-		});
-}
-
-void Game::UpdateDrains(LevelArea& area, float dt)
-{
-	LoopAndRemove(area.tmp->drains, [&](Drain& drain)
-		{
-			drain.t += dt;
-
-			if(drain.pe->manual_delete == 2)
-			{
-				delete drain.pe;
-				return true;
-			}
-
-			if(Unit* target = drain.target)
-			{
-				Vec3 center = target->GetCenter();
-				for(ParticleEmitter::Particle& p : drain.pe->particles)
-					p.pos = Vec3::Lerp(p.pos, center, drain.t / 1.5f);
-
-				return false;
-			}
-			else
-			{
-				drain.pe->time = 0.3f;
-				drain.pe->manual_delete = 0;
-				return true;
-			}
-		});
-}
-
 void Game::UpdateAttachedSounds(float dt)
 {
 	LoopAndRemove(attached_sounds, [](AttachedSound& sound)
@@ -4301,10 +2637,10 @@ void Game::ClearGameVars(bool new_game)
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
 	game_level->camera.Reset(new_game);
-	game_level->lights_dt = 1.f;
 	pc->data.Reset();
 	script_mgr->Reset();
 	game_level->Reset();
+	aiMgr->Reset();
 	pathfinding->SetTarget(nullptr);
 	game_gui->world_map->Clear();
 	net->ClearFastTravel();
@@ -4317,6 +2653,7 @@ void Game::ClearGameVars(bool new_game)
 	Trap::ResetEntities();
 	Door::ResetEntities();
 	Electro::ResetEntities();
+	Bullet::ResetEntities();
 
 	// remove black background at begining
 	fallback_type = FALLBACK::NONE;
@@ -4529,6 +2866,7 @@ void Game::LeaveLevel(bool clear)
 
 	if(game_level->is_open)
 	{
+		game_level->boss = nullptr;
 		for(LevelArea& area : game_level->ForEachArea())
 		{
 			LeaveLevel(area, clear);
@@ -4702,22 +3040,11 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	{
 		// remove chest meshes
 		for(Chest* chest : area.chests)
-		{
-			delete chest->mesh_inst;
-			chest->mesh_inst = nullptr;
-		}
+			chest->Cleanup();
 
 		// remove door meshes
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-			if(door.state == Door::Closing || door.state == Door::Closing2)
-				door.state = Door::Closed;
-			else if(door.state == Door::Opening || door.state == Door::Opening2)
-				door.state = Door::Opened;
-			delete door.mesh_inst;
-			door.mesh_inst = nullptr;
-		}
+		for(Door* door : area.doors)
+			door->Cleanup();
 	}
 	else
 	{
@@ -4735,103 +3062,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		// make blood splatter full size
 		for(vector<Blood>::iterator it = area.bloods.begin(), end = area.bloods.end(); it != end; ++it)
 			it->size = 1.f;
-	}
-}
-
-void Game::UpdateArea(LevelArea& area, float dt)
-{
-	ProfilerBlock profiler_block([&] { return Format("UpdateArea %s", area.GetName()); });
-
-	UpdateUnits(area, dt);
-
-	if(game_level->lights_dt >= 1.f / 60)
-		UpdateLights(area.lights);
-
-	// update chests
-	for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-		(*it)->mesh_inst->Update(dt);
-
-	// update doors
-	for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-	{
-		Door& door = **it;
-		door.mesh_inst->Update(dt);
-		if(door.state == Door::Opening || door.state == Door::Opening2)
-		{
-			bool done = door.mesh_inst->IsEnded();
-			if(door.state == Door::Opening)
-			{
-				if(done || door.mesh_inst->GetProgress() >= 0.25f)
-				{
-					door.state = Door::Opening2;
-					btVector3& pos = door.phy->getWorldTransform().getOrigin();
-					pos.setY(pos.y() - 100.f);
-				}
-			}
-			if(done)
-				door.state = Door::Opened;
-		}
-		else if(door.state == Door::Closing || door.state == Door::Closing2)
-		{
-			bool done = door.mesh_inst->IsEnded();
-			if(door.state == Door::Closing)
-			{
-				if(done || door.mesh_inst->GetProgress() <= 0.25f)
-				{
-					bool blocking = false;
-
-					for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-					{
-						if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetUnitRadius(), door.pos.x, door.pos.z, Door::WIDTH, Door::THICKNESS, door.rot))
-						{
-							blocking = true;
-							break;
-						}
-					}
-
-					if(!blocking)
-					{
-						door.state = Door::Closing2;
-						btVector3& pos = door.phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() + 100.f);
-					}
-				}
-			}
-			if(done)
-			{
-				if(door.state == Door::Closing2)
-					door.state = Door::Closed;
-				else
-				{
-					// can't close doors, somone is blocking it
-					door.state = Door::Opening2;
-					door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
-					sound_mgr->PlaySound3d(game_res->sDoorBudge, door.pos, Door::BLOCKED_SOUND_DIST);
-				}
-			}
-		}
-	}
-
-	UpdateTraps(area, dt);
-	UpdateBullets(area, dt);
-	UpdateElectros(area, dt);
-	UpdateExplosions(area, dt);
-	UpdateParticles(area, dt);
-	UpdateDrains(area, dt);
-
-	// update blood spatters
-	for(Blood& blood : area.bloods)
-	{
-		blood.size += dt;
-		if(blood.size >= 1.f)
-			blood.size = 1.f;
-	}
-
-	// update objects
-	for(Object* obj : area.objects)
-	{
-		if(obj->meshInst)
-			obj->meshInst->Update(dt);
 	}
 }
 
@@ -4979,9 +3209,29 @@ void Game::PreloadResources(bool worldmap)
 		for(LevelArea& area : game_level->ForEachArea())
 		{
 			// load units - units respawn so need to check everytime...
-			PreloadUnits(area.units);
+			for(Unit* unit : area.units)
+				PreloadUnit(unit);
+
 			// some traps respawn
-			PreloadTraps(area.traps);
+			for(Trap* trap : area.traps)
+			{
+				BaseTrap& base = *trap->base;
+				if(base.state != ResourceState::NotLoaded)
+					continue;
+
+				if(base.mesh)
+					res_mgr->Load(base.mesh);
+				if(base.mesh2)
+					res_mgr->Load(base.mesh2);
+				if(base.sound)
+					res_mgr->Load(base.sound);
+				if(base.sound2)
+					res_mgr->Load(base.sound2);
+				if(base.sound3)
+					res_mgr->Load(base.sound3);
+
+				base.state = ResourceState::Loaded;
+			}
 
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
@@ -5007,16 +3257,37 @@ void Game::PreloadResources(bool worldmap)
 			// load music
 			game_res->LoadMusic(game_level->GetLocationMusic(), false);
 
-			// load objects
-			for(Object* obj : game_level->local_area->objects)
-				res_mgr->Load(obj->mesh);
+			for(LevelArea& area : game_level->ForEachArea())
+			{
+				// load objects
+				for(Object* obj : area.objects)
+					res_mgr->Load(obj->mesh);
+				for(Chest* chest : area.chests)
+					res_mgr->Load(chest->base->mesh);
 
-			// load usables
-			PreloadUsables(game_level->local_area->usables);
+				// load usables
+				for(Usable* use : area.usables)
+				{
+					BaseUsable* base = use->base;
+					if(base->state == ResourceState::NotLoaded)
+					{
+						if(base->variants)
+						{
+							for(Mesh* mesh : base->variants->meshes)
+								res_mgr->Load(mesh);
+						}
+						else
+							res_mgr->Load(base->mesh);
+						if(base->sound)
+							res_mgr->Load(base->sound);
+						base->state = ResourceState::Loaded;
+					}
+				}
+			}
 
+			// load buildings
 			if(game_level->city_ctx)
 			{
-				// load buildings
 				for(CityBuilding& city_building : game_level->city_ctx->buildings)
 				{
 					Building& building = *city_building.building;
@@ -5029,52 +3300,12 @@ void Game::PreloadResources(bool worldmap)
 						building.state = ResourceState::Loaded;
 					}
 				}
-
-				for(InsideBuilding* ib : game_level->city_ctx->inside_buildings)
-				{
-					// load building objects
-					for(Object* obj : ib->objects)
-						res_mgr->Load(obj->mesh);
-
-					// load building usables
-					PreloadUsables(ib->usables);
-
-					// load units inside building
-					PreloadUnits(ib->units);
-				}
 			}
 		}
 	}
 
 	for(const Item* item : items_load)
 		game_res->PreloadItem(item);
-}
-
-void Game::PreloadUsables(vector<Usable*>& usables)
-{
-	for(auto u : usables)
-	{
-		auto base = u->base;
-		if(base->state == ResourceState::NotLoaded)
-		{
-			if(base->variants)
-			{
-				for(Mesh* mesh : base->variants->meshes)
-					res_mgr->Load(mesh);
-			}
-			else
-				res_mgr->Load(base->mesh);
-			if(base->sound)
-				res_mgr->Load(base->sound);
-			base->state = ResourceState::Loaded;
-		}
-	}
-}
-
-void Game::PreloadUnits(vector<Unit*>& units)
-{
-	for(Unit* unit : units)
-		PreloadUnit(unit);
 }
 
 void Game::PreloadUnit(Unit* unit)
@@ -5279,6 +3510,9 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit->ai;
 	}
 
+	if(unit->IsHero() && unit->hero->otherTeam)
+		unit->hero->otherTeam->Remove(unit);
+
 	if(unit->cobj)
 	{
 		delete unit->cobj->getCollisionShape();
@@ -5288,54 +3522,6 @@ void Game::DeleteUnit(Unit* unit)
 
 	if(--unit->refs == 0)
 		delete unit;
-}
-
-void Game::AttackReaction(Unit& attacked, Unit& attacker)
-{
-	if(attacker.IsPlayer() && attacked.IsAI() && attacked.in_arena == -1 && !attacked.attack_team)
-	{
-		if(attacked.data->group == G_CITIZENS)
-		{
-			if(!team->is_bandit)
-			{
-				if(attacked.dont_attack && IsSet(attacked.data->flags, F_PEACEFUL))
-				{
-					if(attacked.ai->state == AIController::Idle)
-					{
-						attacked.ai->state = AIController::Escape;
-						attacked.ai->timer = Random(2.f, 4.f);
-						attacked.ai->target = attacker;
-						attacked.ai->target_last_pos = attacker.pos;
-						attacked.ai->st.escape.room = nullptr;
-						attacked.ai->ignore = 0.f;
-						attacked.ai->in_combat = false;
-					}
-				}
-				else
-					team->SetBandit(true);
-			}
-		}
-		else if(attacked.data->group == G_CRAZIES)
-		{
-			if(!team->crazies_attack)
-			{
-				team->crazies_attack = true;
-				if(Net::IsOnline())
-					Net::PushChange(NetChange::CHANGE_FLAGS);
-			}
-		}
-		if(attacked.dont_attack && !IsSet(attacked.data->flags, F_PEACEFUL))
-		{
-			for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
-			{
-				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
-				{
-					(*it)->dont_attack = false;
-					(*it)->ai->change_ai_mode = true;
-				}
-			}
-		}
-	}
 }
 
 void Game::OnCloseInventory()
@@ -5475,7 +3661,7 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_mgr->quest_orcs2->target_loc == game_level->location_index
+	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_mgr->quest_orcs2->targetLoc == game_level->location
 		&& quest_mgr->quest_orcs2->talked == Quest_Orcs2::Talked::No)
 	{
 		quest_mgr->quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
@@ -5487,10 +3673,10 @@ void Game::OnEnterLocation()
 	{
 		TeamInfo info;
 		team->GetTeamInfo(info);
-		bool always_use = false;
 
 		if(info.sane_heroes > 0)
 		{
+			bool always_use = false;
 			switch(game_level->location->type)
 			{
 			case L_CITY:
@@ -5548,7 +3734,7 @@ void Game::OnEnterLevel()
 	{
 		if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals)
 		{
-			int d = quest_evil->GetLocId(game_level->location_index);
+			int d = quest_evil->GetLocId(game_level->location);
 			if(d != -1)
 			{
 				Quest_Evil::Loc& loc = quest_evil->loc[d];
@@ -5570,7 +3756,7 @@ void Game::OnEnterLevel()
 				}
 			}
 		}
-		else if(game_level->location_index == quest_evil->target_loc && !quest_evil->told_about_boss)
+		else if(game_level->location == quest_evil->targetLoc && !quest_evil->told_about_boss)
 		{
 			quest_evil->told_about_boss = true;
 			talker = quest_evil->cleric;
@@ -5580,7 +3766,7 @@ void Game::OnEnterLevel()
 
 	// orc talking after entering level
 	Quest_Orcs2* quest_orcs2 = quest_mgr->quest_orcs2;
-	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && game_level->location_index == quest_orcs2->target_loc)
+	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && game_level->location == quest_orcs2->targetLoc)
 	{
 		if(game_level->dungeon_level == 0)
 		{
@@ -5606,7 +3792,7 @@ void Game::OnEnterLevel()
 	Quest_Mages2* quest_mages2 = quest_mgr->quest_mages2;
 	if(!talker && (quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined || quest_mages2->mages_state == Quest_Mages2::State::MageRecruited))
 	{
-		if(quest_mages2->target_loc == game_level->location_index)
+		if(quest_mages2->targetLoc == game_level->location)
 		{
 			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{
@@ -5711,121 +3897,9 @@ void Game::OnEnterLevel()
 		talker->Talk(text);
 }
 
-cstring Game::GetRandomIdleText(Unit& u)
-{
-	if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured)
-		return RandomString(txAiDrunkMageText);
-
-	int n = Rand() % 100;
-	if(n == 0)
-		return RandomString(txAiSecretText);
-
-	bool hero_text;
-
-	switch(u.data->group)
-	{
-	case G_CRAZIES:
-		if(u.IsTeamMember())
-		{
-			if(n < 33)
-				return RandomString(txAiInsaneText);
-			else if(n < 66)
-				hero_text = true;
-			else
-				hero_text = false;
-		}
-		else
-		{
-			if(n < 50)
-				return RandomString(txAiInsaneText);
-			else
-				hero_text = false;
-		}
-		break;
-	case G_CITIZENS:
-		if(!u.IsTeamMember())
-		{
-			if(u.area->area_type == LevelArea::Type::Building && (IsSet(u.data->flags, F_AI_DRUNKMAN) || IsSet(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
-			{
-				if(game_level->city_ctx->FindInn() == u.area)
-				{
-					if(IsSet(u.data->flags, F_AI_DRUNKMAN) || quest_mgr->quest_contest->state != Quest_Contest::CONTEST_TODAY)
-					{
-						if(Rand() % 3 == 0)
-							return RandomString(txAiDrunkText);
-					}
-					else
-						return RandomString(txAiDrunkContestText);
-				}
-			}
-			if(n < 50)
-				return RandomString(txAiHumanText);
-			else
-				hero_text = false;
-		}
-		else
-		{
-			if(n < 10)
-				return RandomString(txAiHumanText);
-			else if(n < 55)
-				hero_text = true;
-			else
-				hero_text = false;
-		}
-		break;
-	case G_BANDITS:
-		if(n < 50)
-			return RandomString(txAiBanditText);
-		else
-			hero_text = false;
-		break;
-	case G_MAGES:
-	case G_UNDEAD:
-		if(IsSet(u.data->flags, F_MAGE) && n < 50)
-			return RandomString(txAiMageText);
-		else
-			hero_text = false;
-		break;
-	case G_GOBLINS:
-		if(!IsSet(u.data->flags2, F2_NOT_GOBLIN))
-			return RandomString(txAiGoblinText);
-		hero_text = false;
-		break;
-	case G_ORCS:
-		return RandomString(txAiOrcText);
-	case G_ANIMALS:
-		return RandomString(txAiWildHunterText);
-	default:
-		assert(0);
-		hero_text = false;
-		break;
-	}
-
-	if(hero_text)
-	{
-		if(game_level->location->type == L_CITY)
-			return RandomString(txAiHeroCityText);
-		else if(game_level->location->outside)
-			return RandomString(txAiHeroOutsideText);
-		else
-			return RandomString(txAiHeroDungeonText);
-	}
-	else
-	{
-		n = Rand() % 100;
-		if(n < 60)
-			return RandomString(txAiDefaultText);
-		else if(game_level->location->outside)
-			return RandomString(txAiOutsideText);
-		else
-			return RandomString(txAiInsideText);
-	}
-}
-
 void Game::OnEnterLevelOrLocation()
 {
 	game_gui->Clear(false, true);
-	game_level->lights_dt = 1.f;
 	pc->data.autowalk = false;
 	pc->data.selected_unit = pc->unit;
 	fallback_t = -0.5f;
@@ -5846,4 +3920,7 @@ void Game::OnEnterLevelOrLocation()
 			e.quest->FireEvent(event);
 		}
 	}
+
+	if(Net::IsClient() && game_level->boss)
+		game_gui->level_gui->SetBoss(game_level->boss, true);
 }

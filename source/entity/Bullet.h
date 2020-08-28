@@ -1,7 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Bullet
+struct BulletCallback;
+
+//-----------------------------------------------------------------------------
+struct Bullet : public EntityType<Bullet>
 {
 	Unit* owner;
 	Ability* ability;
@@ -12,10 +15,15 @@ struct Bullet
 	TexturePtr tex;
 	TrailParticleEmitter* trail;
 	ParticleEmitter* pe;
-	bool remove;
 
 	static const int MIN_SIZE = 41;
 
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	bool Update(float dt, LevelArea& area);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f, TmpLevelArea& tmp_area);
+
+private:
+	void OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback);
 };

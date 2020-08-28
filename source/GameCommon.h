@@ -107,6 +107,10 @@ inline Vec3 PtToPos(const Int2& pt, float y = 0)
 }
 
 //-----------------------------------------------------------------------------
+inline Int2 PosToPt(const Vec2& pos)
+{
+	return Int2(int(floor(pos.x / 2)), int(floor(pos.y / 2)));
+}
 inline Int2 PosToPt(const Vec3& pos)
 {
 	return Int2(int(floor(pos.x / 2)), int(floor(pos.z / 2)));

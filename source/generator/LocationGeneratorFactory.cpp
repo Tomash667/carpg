@@ -9,6 +9,7 @@
 #include "DungeonGenerator.h"
 #include "EncounterGenerator.h"
 #include "ForestGenerator.h"
+#include "HillsGenerator.h"
 #include "InsideLocation.h"
 #include "LabyrinthGenerator.h"
 #include "Level.h"
@@ -29,6 +30,7 @@ LocationGeneratorFactory::LocationGeneratorFactory()
 	dungeon = new DungeonGenerator;
 	encounter = new EncounterGenerator;
 	forest = new ForestGenerator;
+	hills = new HillsGenerator;
 	labyrinth = new LabyrinthGenerator;
 	moonwell = new MoonwellGenerator;
 	secret = new SecretLocationGenerator;
@@ -45,6 +47,7 @@ LocationGeneratorFactory::~LocationGeneratorFactory()
 	delete dungeon;
 	delete encounter;
 	delete forest;
+	delete hills;
 	delete labyrinth;
 	delete moonwell;
 	delete secret;
@@ -55,6 +58,7 @@ LocationGeneratorFactory::~LocationGeneratorFactory()
 void LocationGeneratorFactory::Init()
 {
 	OutsideLocationGenerator::InitOnce();
+	camp->InitOnce();
 }
 
 //=================================================================================================
@@ -73,13 +77,29 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 		break;
 	case L_OUTSIDE:
 		if(game_level->location_index == quest_mgr->quest_secret->where2)
+		{
 			loc_gen = secret;
-		else if(loc->target == MOONWELL)
-			loc_gen = moonwell;
-		else if(loc->target == ACADEMY)
-			loc_gen = academy;
-		else
+			break;
+		}
+		switch(loc->target)
+		{
+		default:
+		case FOREST:
 			loc_gen = forest;
+			break;
+		case HILLS:
+			loc_gen = hills;
+			break;
+		case MOONWELL:
+			loc_gen = moonwell;
+			break;
+		case ACADEMY:
+			loc_gen = academy;
+			break;
+		case HUNTERS_CAMP:
+			loc_gen = camp;
+			break;
+		}
 		break;
 	case L_CAMP:
 		loc_gen = camp;

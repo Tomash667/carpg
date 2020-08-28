@@ -9,10 +9,9 @@ file "../doc/changelog_english.txt" "doc/changelog_english.txt"
 
 // copy exe
 file "../bin/carpg.exe" "carpg.exe"
+file "../bin/updater.exe" "updater.exe"
 
 // copy dlls
-file "../bin/D3DCompiler_43.dll" "D3DCompiler_43.dll"
-file "../bin/D3DX9_43.dll" "D3DX9_43.dll"
 file "../bin/fmod.dll" "fmod.dll"
 file "../bin/libcurl.dll" "libcurl.dll"
 file "../bin/zlib1.dll" "zlib1.dll"

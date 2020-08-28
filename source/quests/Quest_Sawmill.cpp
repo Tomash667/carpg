@@ -2,13 +2,11 @@
 #include "Quest_Sawmill.h"
 
 #include "Game.h"
-#include "GameFile.h"
 #include "Journal.h"
 #include "Level.h"
 #include "Object.h"
 #include "OutsideLocation.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -22,6 +20,7 @@ void Quest_Sawmill::Start()
 	sawmill_state = State::None;
 	build_state = BuildState::None;
 	days = 0;
+	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[0], GetStartLocationName()));
 
 	if(game->devmode)
@@ -57,18 +56,16 @@ void Quest_Sawmill::SetProgress(int prog2)
 
 			location_event_handler = this;
 
-			Location& sl = GetStartLocation();
-			target_loc = world->GetClosestLocation(L_OUTSIDE, sl.pos, FOREST);
-			Location& tl = GetTargetLocation();
+			targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
 			at_level = 0;
-			tl.active_quest = this;
-			tl.SetKnown();
-			if(tl.state >= LS_ENTERED)
-				tl.reset = true;
-			tl.st = 8;
+			targetLoc->active_quest = this;
+			targetLoc->SetKnown();
+			if(targetLoc->state >= LS_ENTERED)
+				targetLoc->reset = true;
+			targetLoc->st = 8;
 
-			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(game->txQuest[125], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[126], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
@@ -94,10 +91,9 @@ void Quest_Sawmill::SetProgress(int prog2)
 			OnUpdate(game->txQuest[129]);
 			team->AddReward(PAYMENT);
 			quest_mgr->EndUniqueQuest();
-			Location& target = GetTargetLocation();
-			world->AddNews(Format(game->txQuest[130], target.name.c_str()));
-			target.SetImage(LI_SAWMILL);
-			target.SetNamePrefix(game->txQuest[124]);
+			world->AddNews(Format(game->txQuest[130], targetLoc->name.c_str()));
+			targetLoc->SetImage(LI_SAWMILL);
+			targetLoc->SetNamePrefix(game->txQuest[124]);
 		}
 		break;
 	}
@@ -129,7 +125,7 @@ bool Quest_Sawmill::IfNeedTalk(cstring topic) const
 bool Quest_Sawmill::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "czy_tartak") == 0)
-		return world->GetCurrentLocationIndex() == target_loc;
+		return world->GetCurrentLocation() == targetLoc;
 	assert(0);
 	return false;
 }
@@ -274,4 +270,37 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 
 		build_state = BuildState::Finished;
 	}
+}
+
+//=================================================================================================
+int Quest_Sawmill::OnProgress(int d)
+{
+	int income = 0;
+
+	if(sawmill_state == State::InBuild)
+	{
+		days += d;
+		if(days >= 30 && game_level->city_ctx && game->game_state == GS_LEVEL)
+		{
+			days = 29;
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+			if(u)
+			{
+				messenger = u;
+				u->OrderAutoTalk(true);
+			}
+		}
+	}
+	else if(sawmill_state == State::Working)
+	{
+		days += d;
+		int count = days / 30;
+		if(count)
+		{
+			days -= count * 30;
+			income += count * PAYMENT;
+		}
+	}
+
+	return income;
 }

@@ -4,13 +4,11 @@
 #include "Class.h"
 #include "CreateServerPanel.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMenu.h"
 #include "Language.h"
 #include "Level.h"
 #include "Net.h"
-#include "SaveState.h"
 #include "Unit.h"
 #include "World.h"
 
@@ -174,7 +172,6 @@ void SaveLoad::Event(GuiEvent e)
 		if(save_mode)
 		{
 			// saving
-			SaveSlot& slot = slots[choice];
 			if(choice == SaveSlot::MAX_SLOTS - 1)
 			{
 				// quicksave
@@ -184,6 +181,7 @@ void SaveLoad::Event(GuiEvent e)
 			else
 			{
 				// enter save title
+				SaveSlot& slot = slots[choice];
 				cstring names[] = { nullptr, txSave };
 				if(slot.valid)
 					save_input_text = slot.text;
@@ -239,30 +237,32 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 }
 
 //=================================================================================================
-void SaveLoad::SetSaveImage()
+Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 {
-	SaveSlot& slot = slots[choice];
+	SaveSlot& slot = (isOnline ? multi_saves : single_saves)[slotIndex - 1];
 	tMiniSave.Release();
-	if(slot.valid)
+	if(!slot.valid)
+		return nullptr;
+	if(slot.img_size == 0)
 	{
-		if(slot.img_size == 0)
+		cstring filename = Format("saves/%s/%d.jpg", isOnline ? "multi" : "single", slotIndex);
+		if(io::FileExists(filename))
 		{
-			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
-			if(io::FileExists(filename))
-			{
-				tMiniSave.tex = res_mgr->LoadRawTexture(filename);
-				tMiniSave.state = ResourceState::Loaded;
-			}
+			tMiniSave.tex = res_mgr->LoadRawTexture(filename);
+			tMiniSave.state = ResourceState::Loaded;
 		}
 		else
-		{
-			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
-			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			tMiniSave.tex = res_mgr->LoadRawTexture(buf);
-			tMiniSave.state = ResourceState::Loaded;
-			buf->Free();
-		}
+			return nullptr;
 	}
+	else
+	{
+		cstring filename = Format("saves/%s/%d.sav", isOnline ? "multi" : "single", slotIndex);
+		Buffer* buf = GameReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
+		tMiniSave.tex = res_mgr->LoadRawTexture(buf);
+		tMiniSave.state = ResourceState::Loaded;
+		buf->Free();
+	}
+	return &tMiniSave;
 }
 
 //=================================================================================================
@@ -272,58 +272,63 @@ void SaveLoad::SetText()
 	if(choice == -1 || !slots[choice].valid)
 		return;
 
-	LocalString s;
-	SaveSlot& slot = slots[choice];
+	const string& text = GetSaveText(slots[choice]);
+	textbox.SetText(text.c_str());
+	textbox.UpdateScrollbar();
+}
+
+//=================================================================================================
+const string& SaveLoad::GetSaveText(SaveSlot& slot)
+{
+	saveText.clear();
 
 	bool exists = false;
 	if(!slot.player_name.empty())
 	{
-		s += slot.player_name;
+		saveText += slot.player_name;
 		exists = true;
 	}
 	if(slot.player_class)
 	{
 		if(exists)
-			s += " ";
-		s += slot.player_class->name;
+			saveText += " ";
+		saveText += slot.player_class->name;
 		exists = true;
 	}
 	if(slot.hardcore)
 	{
 		if(exists)
-			s += " ";
-		s += "(hardcore)";
+			saveText += " ";
+		saveText += "(hardcore)";
 		exists = true;
 	}
 	if(exists)
-		s += "\n";
+		saveText += "\n";
 	if(online && !slot.mp_players.empty())
 	{
-		s += txSavePlayers;
+		saveText += txSavePlayers;
 		bool first = true;
 		for(string& str : slot.mp_players)
 		{
 			if(first)
 				first = false;
 			else
-				s += ", ";
-			s += str;
+				saveText += ", ";
+			saveText += str;
 		}
-		s += "\n";
+		saveText += "\n";
 	}
 	if(slot.save_date != 0)
 	{
 		tm t;
 		localtime_s(&t, &slot.save_date);
-		s += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+		saveText += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
 	if(slot.game_date.IsValid())
-		s += Format(txSaveTime, world->GetDate(slot.game_date));
+		saveText += Format(txSaveTime, world->GetDate(slot.game_date));
 	if(!slot.location.empty())
-		s += slot.location;
-
-	textbox.SetText(s);
-	textbox.UpdateScrollbar();
+		saveText += slot.location;
+	return saveText;
 }
 
 //=================================================================================================
@@ -414,9 +419,9 @@ void SaveLoad::ShowLoadPanel()
 }
 
 //=================================================================================================
-SaveSlot& SaveLoad::GetSaveSlot(int slot)
+SaveSlot& SaveLoad::GetSaveSlot(int slot, bool isOnline)
 {
-	return (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
+	return (isOnline ? multi_saves : single_saves)[slot - 1];
 }
 
 //=================================================================================================

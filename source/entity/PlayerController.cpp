@@ -24,9 +24,8 @@
 #include "QuestManager.h"
 #include "Quest_Scripted.h"
 #include "Quest_Tutorial.h"
-#include "SaveState.h"
 #include "ScriptException.h"
-#include "ScriptManager.h"
+#include "Stock.h"
 #include "Team.h"
 #include "Unit.h"
 #include "World.h"
@@ -69,12 +68,13 @@ PlayerController::~PlayerController()
 }
 
 //=================================================================================================
-void PlayerController::Init(Unit& _unit, bool partial)
+void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 {
 	// to prevent sending MP message set temporary as fake unit
 	_unit.fake_unit = true;
 
 	unit = &_unit;
+	unit->player = this;
 	move_tick = 0.f;
 	last_weapon = W_NONE;
 	next_action = NA_NONE;
@@ -87,7 +87,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	recalculate_level = false;
 	split_gold = 0.f;
 
-	if(!partial)
+	if(cc)
 	{
 		godmode = false;
 		noclip = false;
@@ -98,26 +98,58 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		dmg_taken = 0;
 		knocks = 0;
 		arena_fights = 0;
+		learning_points = 0;
+		exp = 0;
+		exp_level = 0;
+		exp_need = GetExpNeed();
 
+		// stats
+		unit->stats->Set(unit->data->GetStatProfile());
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
 		{
+			if(cc->s[i].add)
+				unit->stats->skill[i] += Skill::TAG_BONUS;
 			skill[i].points = 0;
 			skill[i].train = 0;
 			skill[i].train_part = 0;
+			skill[i].apt = unit->stats->skill[i] / 5;
 		}
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			attrib[i].points = 0;
 			attrib[i].train = 0;
 			attrib[i].train_part = 0;
+			attrib[i].apt = (unit->stats->attrib[i] - 50) / 5;
 		}
 
+		// apply perks
+		PerkContext ctx(this, true);
+		perks = cc->taken_perks;
+		for(TakenPerk& tp : perks)
+			tp.Apply(ctx);
+
+		// inventory
+		unit->data->item_script->Parse(*unit);
+		const Item* items[SLOT_MAX];
+		cc->GetStartingItems(items);
+		for(int i = 0; i < SLOT_MAX; ++i)
+			unit->slots[i] = items[i];
+		if(HavePerk(Perk::Get("alchemist_apprentice")))
+			Stock::Get("alchemist_apprentice")->Parse(unit->items);
+		unit->MakeItemsTeam(false);
+		unit->RecalculateWeight();
+		if(HavePerk(Perk::Get("poor")))
+			unit->gold = ::Random(0, 1);
+		else
+			unit->gold += unit->GetBase(SkillId::PERSUASION);
+
+		unit->CalculateStats();
+		unit->CalculateLoad();
+		RecalculateLevel();
+		unit->hp = unit->hpmax = unit->CalculateMaxHp();
+		SetRequiredPoints();
 		if(!quest_mgr->quest_tutorial->in_tutorial)
 			AddAbility(unit->GetClass()->ability);
-		learning_points = 0;
-		exp = 0;
-		exp_level = 0;
-		exp_need = GetExpNeed();
 		InitShortcuts();
 
 		// starting known recipes
@@ -327,7 +359,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 }
 
 //=================================================================================================
-void PlayerController::Save(FileWriter& f)
+void PlayerController::Save(GameWriter& f)
 {
 	if(recalculate_level)
 	{
@@ -409,12 +441,6 @@ void PlayerController::Save(FileWriter& f)
 		f << ab.recharge;
 		f << (byte)ab.charges;
 	}
-	if(unit->action == A_DASH && unit->act.dash.ability->effect == Ability::Stun)
-	{
-		f << ability_targets.size();
-		for(Entity<Unit> unit : ability_targets)
-			f << unit;
-	}
 	f << recipes.size();
 	for(MemorizedRecipe& mr : recipes)
 	{
@@ -444,10 +470,8 @@ void PlayerController::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void PlayerController::Load(FileReader& f)
+void PlayerController::Load(GameReader& f)
 {
-	if(LOAD_VERSION < V_0_7)
-		f.Skip<int>(); // old class info
 	f >> name;
 	f >> move_tick;
 	f >> last_dmg;
@@ -494,38 +518,30 @@ void PlayerController::Load(FileReader& f)
 	}
 	f >> action_key;
 	f >> next_action;
-	if(LOAD_VERSION < V_0_7_1)
+	switch(next_action)
 	{
+	case NA_NONE:
+		break;
+	case NA_REMOVE:
+	case NA_DROP:
+		f >> next_action_data.slot;
+		break;
+	case NA_EQUIP:
+	case NA_CONSUME:
+	case NA_EQUIP_DRAW:
+		f >> next_action_data.index;
+		next_action_data.item = Item::Get(f.ReadString1());
+		break;
+	case NA_USE:
+		Usable::AddRequest(&next_action_data.usable, f.Read<int>());
+		break;
+	case NA_SELL:
+	case NA_PUT:
+	case NA_GIVE:
+	default:
+		assert(0);
 		next_action = NA_NONE;
-		f.Skip<int>();
-	}
-	else
-	{
-		switch(next_action)
-		{
-		case NA_NONE:
-			break;
-		case NA_REMOVE:
-		case NA_DROP:
-			f >> next_action_data.slot;
-			break;
-		case NA_EQUIP:
-		case NA_CONSUME:
-		case NA_EQUIP_DRAW:
-			f >> next_action_data.index;
-			next_action_data.item = Item::Get(f.ReadString1());
-			break;
-		case NA_USE:
-			Usable::AddRequest(&next_action_data.usable, f.Read<int>());
-			break;
-		case NA_SELL:
-		case NA_PUT:
-		case NA_GIVE:
-		default:
-			assert(0);
-			next_action = NA_NONE;
-			break;
-		}
+		break;
 	}
 	f >> last_weapon;
 	f >> credit;
@@ -624,17 +640,14 @@ void PlayerController::Load(FileReader& f)
 		f.ReadCasted<byte>(ab.charges);
 	}
 
-	if(unit->action == A_DASH && unit->act.dash.ability->effect == Ability::Stun)
+	if(LOAD_VERSION < V_DEV && unit->action == A_DASH && unit->act.dash.ability->RequireList())
 	{
-		uint count;
-		f >> count;
-		ability_targets.resize(count);
-		for(Entity<Unit>& unit : ability_targets)
-			f >> unit;
+		unit->act.dash.hit = UnitList::Get();
+		unit->act.dash.hit->Load(f);
 	}
 
 	// recipes
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_15)
 	{
 		uint count;
 		f >> count;
@@ -657,10 +670,7 @@ void PlayerController::Load(FileReader& f)
 		}
 	}
 
-	if(LOAD_VERSION >= V_0_7)
-		f >> split_gold;
-	else
-		split_gold = 0.f;
+	f >> split_gold;
 	if(LOAD_VERSION >= V_0_8)
 	{
 		f >> always_run;
@@ -875,9 +885,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 				TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points / 2);
 
 			int str = unit->Get(AttributeId::STR);
-			if(weapon.req_str > str)
+			if(weapon.reqStr > str)
 				TrainMod(AttributeId::STR, c_points);
-			else if(weapon.req_str + 10 > str)
+			else if(weapon.reqStr + 10 > str)
 				TrainMod(AttributeId::STR, c_points / 2);
 
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
@@ -913,9 +923,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::BashStart:
 		{
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetShield().req_str > str)
+			if(unit->GetShield().reqStr > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetShield().req_str + 10 > str)
+			else if(unit->GetShield().reqStr + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::SHIELD);
 			if(skill < 25)
@@ -933,9 +943,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::BowStart:
 		{
 			int str = unit->Get(AttributeId::STR);
-			if(unit->GetBow().req_str > str)
+			if(unit->GetBow().reqStr > str)
 				TrainMod(AttributeId::STR, 50.f);
-			else if(unit->GetBow().req_str + 10 > str)
+			else if(unit->GetBow().reqStr + 10 > str)
 				TrainMod(AttributeId::STR, 25.f);
 			int skill = unit->GetBase(SkillId::BOW);
 			if(skill < 25)
@@ -984,9 +994,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 			{
 				const Armor& armor = unit->GetArmor();
 				int str = unit->Get(AttributeId::STR);
-				if(armor.req_str > str)
+				if(armor.reqStr > str)
 					TrainMod(AttributeId::STR, 250.f);
-				else if(armor.req_str + 10 > str)
+				else if(armor.reqStr + 10 > str)
 					TrainMod(AttributeId::STR, 125.f);
 				SkillId s = armor.GetSkill();
 				int skill = unit->GetBase(s);
@@ -1001,7 +1011,13 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		TrainMod(AttributeId::CHA, 10.f);
 		break;
 	case TrainWhat::Trade:
-		TrainMod(SkillId::HAGGLE, value);
+		TrainMod(SkillId::PERSUASION, value);
+		break;
+	case TrainWhat::Persuade:
+		if(value == 0 || value == 100)
+			TrainMod(SkillId::PERSUASION, 30);
+		else
+			TrainMod(SkillId::PERSUASION, 30.f * (101 - value));
 		break;
 	case TrainWhat::Stamina:
 		TrainMod(AttributeId::END, value * 0.75f);
@@ -1469,7 +1485,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 	const PlayerAbility* ab = GetAbility(ability);
 	if(ab && (ab->charges == 0 || ab->cooldown > 0))
 		return CanUseAbilityResult::No;
-	if(ability->mana > unit->mp || ability->stamina > unit->stamina)
+	if(!CanUseAbilityPreview(ability))
 		return CanUseAbilityResult::No;
 	if(IsSet(ability->flags, Ability::Mage))
 	{
@@ -1495,6 +1511,16 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 }
 
 //=================================================================================================
+bool PlayerController::CanUseAbilityPreview(Ability* ability) const
+{
+	if(ability->mana > unit->mp || ability->stamina > unit->stamina)
+		return false;
+	if(ability->type == Ability::Charge && unit->IsOverloaded())
+		return false;
+	return true;
+}
+
+//=================================================================================================
 void PlayerController::RefreshCooldown()
 {
 	for(PlayerAbility& ab : abilities)
@@ -1503,12 +1529,6 @@ void PlayerController::RefreshCooldown()
 		ab.recharge = 0;
 		ab.charges = ab.ability->charges;
 	}
-}
-
-//=================================================================================================
-bool PlayerController::IsHit(Unit* unit) const
-{
-	return IsInside(ability_targets, unit);
 }
 
 //=================================================================================================
@@ -1972,7 +1992,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 
 	if(ability->type == Ability::Charge)
 	{
-		const bool dash = (ability->effect != Ability::Stun);
+		const bool dash = !IsSet(ability->flags, Ability::IgnoreUnits);
 		if(dash && Net::IsLocal())
 			Train(TrainWhat::Dash, 0.f, 0);
 		unit->action = A_DASH;
@@ -1993,10 +2013,16 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->timer = 0.5f;
 			unit->speed = ability->range / 0.5f;
 			unit->mesh_inst->groups[0].speed = 2.5f;
-			ability_targets.clear();
 			unit->mesh_inst->groups[1].blend_max = 0.1f;
 			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
+		if(ability->RequireList())
+		{
+			unit->act.dash.hit = UnitList::Get();
+			unit->act.dash.hit->Clear();
+		}
+		else
+			unit->act.dash.hit = nullptr;
 	}
 
 	if(Net::IsOnline())
@@ -2989,7 +3015,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 
 						if(Net::IsLocal())
-							u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+						{
+							const Weapon& weapon = u.GetWeapon();
+							u.RemoveStamina(weapon.GetInfo().stamina * u.GetStaminaMod(weapon));
+						}
 					}
 				}
 			}
@@ -3015,7 +3044,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
 						// shield bash
-						float speed = u.GetBashSpeed();
+						const float speed = u.GetBashSpeed();
 						u.action = A_BASH;
 						u.animation_state = AS_BASH_ANIMATION;
 						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
@@ -3033,7 +3062,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						if(Net::IsLocal())
 						{
 							Train(TrainWhat::BashStart, 0.f, 0);
-							u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
+							u.RemoveStamina(Unit::STAMINA_BASH_ATTACK * u.GetStaminaMod(u.GetShield()));
 						}
 					}
 				}
@@ -3081,7 +3110,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							if(Net::IsLocal())
 							{
 								Train(TrainWhat::AttackStart, 0.f, 0);
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
+								const Weapon& weapon = u.GetWeapon();
+								u.RemoveStamina(weapon.GetInfo().stamina * 1.5f * u.GetStaminaMod(weapon));
 							}
 						}
 						else
@@ -3104,42 +3134,35 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 							}
 
 							if(Net::IsLocal())
-								u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
+							{
+								const Weapon& weapon = u.GetWeapon();
+								u.RemoveStamina(weapon.GetInfo().stamina * u.GetStaminaMod(weapon));
+							}
 						}
 					}
 				}
 			}
-			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE || (u.action == A_ATTACK && !u.act.attack.run)))
+			// no action or non-heavy attack
+			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE
+				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
 			{
-				int oks = 0;
-				if(u.action == A_ATTACK)
+				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
+				if(k != Key::None)
 				{
-					if(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f)
-						oks = 1;
-					else
-						oks = 2;
-				}
+					// start blocking
+					const float blend_max = u.GetBlockSpeed();
+					u.action = A_BLOCK;
+					u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+					u.mesh_inst->groups[1].blend_max = blend_max;
+					action_key = k;
 
-				if(oks != 1)
-				{
-					Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
-					if(k != Key::None)
+					if(Net::IsOnline())
 					{
-						// start blocking
-						float blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
-						u.action = A_BLOCK;
-						u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-						u.mesh_inst->groups[1].blend_max = blend_max;
-						action_key = k;
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
-							c.unit = unit;
-							c.id = AID_Block;
-							c.f[1] = blend_max;
-						}
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::ATTACK;
+						c.unit = unit;
+						c.id = AID_Block;
+						c.f[1] = blend_max;
 					}
 				}
 			}

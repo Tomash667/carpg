@@ -28,10 +28,12 @@ public:
 	void LoadSaveSlots();
 	void ShowSavePanel();
 	void ShowLoadPanel();
-	SaveSlot& GetSaveSlot(int slot);
+	SaveSlot& GetSaveSlot(int slotIndex, bool isOnline);
+	Texture* GetSaveImage(int slotIndex, bool isOnline);
+	const string& GetSaveText(SaveSlot& slot);
 
 private:
-	void SetSaveImage();
+	void SetSaveImage() { GetSaveImage(choice + 1, online); }
 	void ValidateSelectedSave();
 
 	SaveSlot single_saves[SaveSlot::MAX_SLOTS], multi_saves[SaveSlot::MAX_SLOTS];
@@ -41,6 +43,6 @@ private:
 	int choice;
 	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN;
 	Texture tMiniSave;
-	string save_input_text, hardcore_savename;
+	string save_input_text, hardcore_savename, saveText;
 	bool save_mode, online;
 };

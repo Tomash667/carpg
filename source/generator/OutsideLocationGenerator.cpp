@@ -88,10 +88,10 @@ void OutsideLocationGenerator::CreateMap()
 void OutsideLocationGenerator::RandomizeTerrainTexture()
 {
 	// set random grass texture
-	Perlin perlin2(4, 4, 1);
-	for(int i = 0, y = 0; y < s; ++y)
+	Perlin perlin2(4, 4);
+	for(uint i = 0, y = 0; y < s; ++y)
 	{
-		for(int x = 0; x < s; ++x, ++i)
+		for(uint x = 0; x < s; ++x, ++i)
 		{
 			int v = int((perlin2.Get(1.f / 256 * float(x), 1.f / 256 * float(y)) + 1.f) * 50);
 			TERRAIN_TILE& t = outside->tiles[i].t;
@@ -112,16 +112,15 @@ void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, flo
 	const int w = OutsideLocation::size; // allows non-square terrain (but there isn't any yet)
 	const int h = OutsideLocation::size;
 	float* height = outside->h;
-	perlin.Change(max(w, h), octaves, frequency, 1.f);
-	float hdif = hmax - hmin;
-	const float hm = sqrt(2.f) / 2;
+	perlin.Change(octaves, frequency);
+	const float hdif = hmax - hmin;
 
 	for(int y = 0; y <= h; ++y)
 	{
 		for(int x = 0; x <= w; ++x)
 		{
-			float a = perlin.Get(1.f / (w + 1)*x, 1.f / (h + 1)*y);
-			height[x + y * (w + 1)] = (a + hm) / (hm * 2)*hdif + hmin;
+			const float value = perlin.GetNormalized(1.f / (w + 1)*x, 1.f / (h + 1)*y);
+			height[x + y * (w + 1)] = hmin + hdif * value;
 		}
 	}
 
@@ -168,11 +167,9 @@ void OutsideLocationGenerator::OnEnter()
 	else
 	{
 		if(days > 0)
-			game_level->UpdateLocation(days, 100, false);
+			game_level->UpdateLocation(days, 100, need_reset);
 
-		// remove alive units
-		if(need_reset)
-			LoopAndRemove(outside->units, [](Unit* unit) { return unit->IsAlive(); });
+		game_level->RecreateTmpObjectPhysics();
 
 		// recreate colliders
 		game->LoadingStep(game->txGeneratingPhysics);
@@ -198,9 +195,10 @@ void OutsideLocationGenerator::OnEnter()
 	SpawnOutsideBariers();
 
 	// handle quest event
-	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
+	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Event* event = outside->active_quest->GetEvent(game_level->location_index);
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(outside->active_quest);
+		Quest_Event* event = quest ? quest->GetEvent(game_level->location) : nullptr;
 		if(event)
 		{
 			if(!event->done)
@@ -216,7 +214,7 @@ void OutsideLocationGenerator::OnEnter()
 	SpawnTeam();
 
 	// generate guards for bandits quest
-	if(quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && game_level->location_index == quest_mgr->quest_bandits->target_loc)
+	if(quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && game_level->location == quest_mgr->quest_bandits->targetLoc)
 	{
 		quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 		UnitData* ud = UnitData::Get("guard_q_bandyci");
@@ -228,6 +226,8 @@ void OutsideLocationGenerator::OnEnter()
 			u->assist = true;
 		}
 	}
+
+	game_level->RemoveTmpObjectPhysics();
 }
 
 //=================================================================================================
@@ -496,7 +496,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, border2);
+		cobj.pos = Vec3(size2, 0, border2);
 		cobj.w = size2;
 		cobj.h = border2;
 
@@ -514,7 +514,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, size - border2);
+		cobj.pos = Vec3(size2, 0, size - border2);
 		cobj.w = size2;
 		cobj.h = border2;
 
@@ -532,7 +532,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(border2, size2);
+		cobj.pos = Vec3(border2, 0, size2);
 		cobj.w = border2;
 		cobj.h = size2;
 
@@ -550,7 +550,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 	{
 		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size - border2, size2);
+		cobj.pos = Vec3(size - border2, 0, size2);
 		cobj.w = border2;
 		cobj.h = size2;
 

@@ -4,7 +4,6 @@
 #include "City.h"
 #include "DialogContext.h"
 #include "Encounter.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GroundItem.h"
@@ -12,7 +11,6 @@
 #include "Net.h"
 #include "QuestManager.h"
 #include "QuestScheme.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "World.h"
 
@@ -21,7 +19,7 @@
 #pragma warning(error: 4062)
 
 //=================================================================================================
-Quest_Scripted::Quest_Scripted() : instance(nullptr), timeout_days(-1), call_depth(0), in_upgrade(false)
+Quest_Scripted::Quest_Scripted() : instance(nullptr), call_depth(0), in_upgrade(false)
 {
 	type = Q_SCRIPTED;
 	prog = -1;
@@ -37,6 +35,8 @@ Quest_Scripted::~Quest_Scripted()
 //=================================================================================================
 void Quest_Scripted::Start()
 {
+	category = scheme->category;
+
 	if(scheme->startup_use_vars)
 		return;
 
@@ -47,10 +47,9 @@ void Quest_Scripted::Start()
 void Quest_Scripted::Start(Vars* vars)
 {
 	prog = 0;
-	start_loc = world->GetCurrentLocationIndex();
-	category = scheme->category;
+	startLoc = world->GetCurrentLocation();
 
-	CreateInstance();
+	instance = CreateInstance(false);
 
 	// call Startup
 	if(!scheme->f_startup)
@@ -71,21 +70,6 @@ void Quest_Scripted::Start(Vars* vars)
 		script_mgr->RunScript(scheme->f_startup, instance);
 	}
 	AfterCall();
-}
-
-//=================================================================================================
-void Quest_Scripted::CreateInstance()
-{
-	asIScriptFunction* factory = scheme->script_type->GetFactoryByIndex(0);
-	script_mgr->RunScript(factory, nullptr, [this](asIScriptContext* ctx, int stage)
-	{
-		if(stage == 1)
-		{
-			void* ptr = ctx->GetAddressOfReturnValue();
-			instance = *(asIScriptObject**)ptr;
-			instance->AddRef();
-		}
-	});
 }
 
 //=================================================================================================
@@ -137,14 +121,14 @@ void Quest_Scripted::Save(GameWriter& f)
 		case Var::Type::Item:
 			{
 				Item* item = *(Item**)ptr;
-				if(!item)
-					f.Write0();
-				else
+				if(item)
 				{
 					f << item->id;
 					if(item->id[0] == '$')
 						f << item->quest_id;
 				}
+				else
+					f.Write0();
 			}
 			break;
 		case Var::Type::Location:
@@ -186,6 +170,17 @@ void Quest_Scripted::Save(GameWriter& f)
 					f << -1;
 			}
 			break;
+		case Var::Type::UnitGroup:
+			{
+				UnitGroup* group = *(UnitGroup**)ptr;
+				if(group)
+					f << group->id;
+				else
+					f.Write0();
+			}
+			break;
+		case Var::Type::Magic:
+			break;
 		}
 	}
 }
@@ -201,10 +196,14 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
 	f >> timeout_days;
 
+	// fix for not initializing category for 'side_cleric' quest
+	if(LOAD_VERSION <= V_MAIN)
+		category = scheme->category;
+
 	if(prog == -1)
 		return LoadResult::Ok;
 
-	CreateInstance();
+	instance = CreateInstance(false);
 
 	// properties
 	if(LOAD_VERSION >= V_0_14)
@@ -340,18 +339,17 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
 			*(Unit**)ptr = Unit::GetById(id);
 		}
 		break;
-	}
-}
-
-//=================================================================================================
-GameDialog* Quest_Scripted::GetDialog(int type2)
-{
-	if(type2 == QUEST_DIALOG_START)
-		return scheme->GetDialog("start");
-	else
-	{
-		assert(0); // not implemented
-		return nullptr;
+	case Var::Type::UnitGroup:
+		{
+			const string& id = f.ReadString1();
+			if(!id.empty())
+				*(UnitGroup**)ptr = UnitGroup::Get(id);
+			else
+				*(UnitGroup**)ptr = nullptr;
+		}
+		break;
+	case Var::Type::Magic:
+		break;
 	}
 }
 
@@ -447,9 +445,9 @@ void Quest_Scripted::SetCompleted()
 	journal_state = JournalState::Changed;
 	state = Quest::Completed;
 	if(category == QuestCategory::Mayor)
-		((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
+		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
 	else if(category == QuestCategory::Captain)
-		((City&)GetStartLocation()).quest_captain = CityQuestState::None;
+		static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
 	if(category == QuestCategory::Unique)
 		quest_mgr->EndUniqueQuest();
 	Cleanup();
@@ -462,37 +460,10 @@ void Quest_Scripted::SetFailed()
 	journal_state = JournalState::Changed;
 	state = Quest::Failed;
 	if(category == QuestCategory::Mayor)
-		((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 	else if(category == QuestCategory::Captain)
-		((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 	Cleanup();
-}
-
-//=================================================================================================
-void Quest_Scripted::SetTimeout(int days)
-{
-	assert(Any(state, Quest::Hidden, Quest::Started));
-	assert(timeout_days == -1);
-	assert(days > 0);
-	timeout_days = days;
-	quest_mgr->quests_timeout2.push_back(this);
-}
-
-//=================================================================================================
-bool Quest_Scripted::IsTimedout() const
-{
-	if(timeout_days == -1)
-		return false;
-	return world->GetWorldtime() - start_time > timeout_days;
-}
-
-//=================================================================================================
-bool Quest_Scripted::OnTimeout(TimeoutType ttype)
-{
-	ScriptEvent event(EVENT_TIMEOUT);
-	timeout_days = -1;
-	FireEvent(event);
-	return true;
 }
 
 //=================================================================================================
@@ -507,75 +478,6 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 			CHECKED(ctx->SetArgObject(0, &event));
 	});
 	AfterCall();
-}
-
-//=================================================================================================
-void Quest_Scripted::Cleanup()
-{
-	if(timeout_days != -1)
-	{
-		RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
-		timeout_days = -1;
-	}
-
-	for(EventPtr& e : events)
-	{
-		switch(e.source)
-		{
-		case EventPtr::LOCATION:
-			e.location->RemoveEventHandler(this, EVENT_ANY, true);
-			break;
-		case EventPtr::UNIT:
-			e.unit->RemoveEventHandler(this, EVENT_ANY, true);
-			break;
-		}
-	}
-	events.clear();
-
-	for(Unit* unit : unit_dialogs)
-		unit->RemoveDialog(this, true);
-	unit_dialogs.clear();
-
-	world->RemoveEncounter(this);
-}
-
-//=================================================================================================
-// Remove event ptr, must be called when removing real event
-void Quest_Scripted::RemoveEventPtr(const EventPtr& event)
-{
-	LoopAndRemove(events, [&](EventPtr& e)
-	{
-		return event == e;
-	});
-}
-
-//=================================================================================================
-void Quest_Scripted::RemoveDialogPtr(Unit* unit)
-{
-	LoopAndRemove(unit_dialogs, [=](Unit* u)
-	{
-		return unit == u;
-	});
-}
-
-//=================================================================================================
-cstring Quest_Scripted::FormatString(const string& str)
-{
-	if(str == "date")
-		return world->GetDate();
-	else if(str == "name")
-	{
-		Unit* talker = DialogContext::current->talker;
-		assert(talker->IsHero());
-		return talker->hero->name.c_str();
-	}
-	else if(str == "player_name")
-		return DialogContext::current->pc->name.c_str();
-	else
-	{
-		assert(0);
-		return Format("!!!%s!!!", str.c_str());
-	}
 }
 
 //=================================================================================================
@@ -657,7 +559,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	prog = quest->prog;
 	id = quest->id;
 	start_time = quest->start_time;
-	start_loc = quest->start_loc;
+	startLoc = quest->startLoc;
 	msgs = quest->msgs;
 
 	// convert
@@ -670,7 +572,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	type = Q_SCRIPTED;
 	category = scheme->category;
-	CreateInstance();
+	instance = CreateInstance(false);
 
 	// call method
 	in_upgrade = true;

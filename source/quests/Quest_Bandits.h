@@ -40,7 +40,7 @@ public:
 		AgentLeft
 	};
 
-	void Init();
+	void Init() override;
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -52,8 +52,8 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
-	int GetLocationEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 	void Update(float dt);
 
 	State bandits_state;

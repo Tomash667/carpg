@@ -89,16 +89,8 @@ void Game::UpdateMusic()
 //=================================================================================================
 void Game::SetMusic()
 {
-	if(sound_mgr->IsMusicDisabled())
-		return;
-
-	if(world->IsBossLevel(Int2(game_level->location_index, game_level->dungeon_level)))
-	{
-		SetMusic(MusicType::Boss);
-		return;
-	}
-
-	SetMusic(game_level->GetLocationMusic());
+	if(!sound_mgr->IsMusicDisabled())
+		SetMusic(game_level->boss ? MusicType::Boss : game_level->GetLocationMusic());
 }
 
 //=================================================================================================

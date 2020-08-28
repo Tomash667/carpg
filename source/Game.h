@@ -3,18 +3,18 @@
 #include <App.h>
 #include <Config.h>
 #include <Timer.h>
-#include "Const.h"
-#include "GameCommon.h"
-#include "Net.h"
-#include "DialogContext.h"
 #include "BaseLocation.h"
-#include "GameKeys.h"
-#include "DrawBatch.h"
-#include "QuadTree.h"
-#include "MusicTrack.h"
-#include "Settings.h"
-#include "Blood.h"
 #include "BaseObject.h"
+#include "Blood.h"
+#include "Const.h"
+#include "DialogContext.h"
+#include "DrawBatch.h"
+#include "GameCommon.h"
+#include "GameKeys.h"
+#include "LevelQuad.h"
+#include "MusicTrack.h"
+#include "Net.h"
+#include "Settings.h"
 
 //-----------------------------------------------------------------------------
 // quickstart mode
@@ -139,6 +139,7 @@ public:
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
+	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
@@ -176,6 +177,7 @@ public:
 
 	void SetupConfigVars();
 	DialogContext* FindDialogContext(Unit* talker);
+	void LoadCfg();
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 	void PauseGame();
@@ -188,34 +190,10 @@ public:
 	void UpdateCamera(float dt);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
-	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
-	void UpdateParticles(LevelArea& area, float dt);
-	// perform character attack
-	enum ATTACK_RESULT
-	{
-		ATTACK_NOT_HIT,
-		ATTACK_OBJECT,
-		ATTACK_BLOCKED,
-		ATTACK_NO_DAMAGE,
-		ATTACK_HIT,
-		ATTACK_CLEAN_HIT
-	};
-	ATTACK_RESULT DoAttack(LevelArea& area, Unit& unit);
-	enum DamageFlags
-	{
-		DMG_NO_BLOOD = 1 << 0,
-		DMG_MAGICAL = 1 << 1
-	};
-	void GiveDmg(Unit& taker, float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
-	void UpdateUnits(LevelArea& area, float dt);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	bool DoShieldSmash(LevelArea& area, Unit& attacker);
-	void UpdateBullets(LevelArea& area, float dt);
 	void ChangeLevel(int where);
 	void ExitToMap();
-	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f, SaveSlot* slot);
 	void CreateSaveImage();
 	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
@@ -223,18 +201,14 @@ public:
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelArea& area, int& err_count);
-	void SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted);
-	void UpdateExplosions(LevelArea& area, float dt);
-	void UpdateTraps(LevelArea& area, float dt);
-	void PreloadTraps(vector<Trap*>& traps);
-	void UpdateElectros(LevelArea& area, float dt);
-	void UpdateDrains(LevelArea& area, float dt);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
 	void LoadGameSlot(int slot);
 	void LoadGameFilename(const string& name);
 	void LoadGameCommon(cstring filename, int slot);
+	void LoadLastSave() { LoadGameSlot(lastSave); }
+	void SetLastSave(int slot);
 	bool ValidateNetSaveForLoading(GameReader& f, int slot);
 	void Quicksave(bool from_console);
 	void Quickload(bool from_console);
@@ -243,21 +217,17 @@ public:
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelArea& area, bool clear);
-	void UpdateArea(LevelArea& area, float dt);
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap, bool postLoad = true);
 	void PreloadResources(bool worldmap);
-	void PreloadUsables(vector<Usable*>& usable);
-	void PreloadUnits(vector<Unit*>& units);
 	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
 	void VerifyResources();
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
 	void DeleteUnit(Unit* unit);
-	void AttackReaction(Unit& attacked, Unit& attacker);
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();
@@ -266,8 +236,6 @@ public:
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
-	cstring GetRandomIdleText(Unit& u);
-	void UpdateLights(vector<GameLight>& lights);
 private:
 	void GetPostEffects(vector<PostEffect>& postEffects);
 public:
@@ -356,7 +324,7 @@ public:
 	int fallback_1, fallback_2;
 	float fallback_t;
 	// dialogs
-	DialogContext dialog_context;
+	DialogContext dialog_context, idle_context;
 	vector<string> dialog_choices; // used in client multiplayer mode
 	string predialog;
 
@@ -409,7 +377,7 @@ public:
 	DrawBatch draw_batch;
 	int uv_mod;
 	QuadTree quadtree;
-	LevelParts level_parts;
+	LevelQuads level_quads;
 	vector<const vector<Matrix>*> grass_patches[2];
 	uint grass_count[2];
 	// screenshot
@@ -431,6 +399,7 @@ public:
 	//-----------------------------------------------------------------
 	Config cfg;
 	Settings settings;
+	int lastSave;
 	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, dont_wander;
 	string cfg_file;
 
@@ -448,9 +417,7 @@ public:
 		txLoadingShaders, txLoadingLanguageFiles;
 	cstring txAiNoHpPot[2], txAiNoMpPot[2], txAiCity[2], txAiVillage[2], txAiForest, txAiMoonwell, txAiAcademy, txAiCampEmpty, txAiCampFull, txAiFort,
 		txAiDwarfFort, txAiTower, txAiArmory, txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies,
-		txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7],
-		txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2],
-		txAiDrunkMageText[3], txAiDrunkText[6], txAiDrunkContestText[4], txAiWildHunterText[3];
+		txAiNearEnemies, txAiCave;
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
 		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
@@ -459,13 +426,12 @@ public:
 		txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
 	cstring txPvpRefuse, txWin, txWinHardcore, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
 	cstring txRumor[29], txRumorD[7];
-	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
-		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
-		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined,
-		txCantLearnAbility, txSpell, txCantLearnSkill;
+	cstring txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2], txAllCampDiscovered[2],
+		txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
+		txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined, txCantLearnAbility, txSpell, txCantLearnSkill;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
-		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[278], txForMayor, txForSoltys;
+		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[268], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectingProxy, txConnectTimeout, txConnectInvalid,
 		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,

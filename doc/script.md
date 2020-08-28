@@ -18,6 +18,8 @@ Core library
 * Vec3 - 3d vector x, y, z. Static methods:
   * float Distance(const Vec3& in v1, const Vec3& in v2);
 * Vec4 - 4d vector x, y, z, w.
+* string
+	* string Upper() const - return string with first letter uppercase.
 
 ### SpawnPoint type
 Contain position and rotation.
@@ -45,6 +47,13 @@ Game enums & consts
 ### Funcdefs:
 * float GetLocationCallback(Location@)
 
+### Enum ENTRY_LOCATION
+* ENTRY_NONE
+* ENTRY_RANDOM
+* ENTRY_FAR_FROM_ROOM
+* ENTRY_BORDER
+* ENTRY_FAR_FROM_PREV
+
 ### Enum EVENT
 * EVENT_ANY - used in RemoveEventHandler to remove all handlers.
 * EVENT_ENTER - for locations, send when player enter location.
@@ -60,7 +69,6 @@ Game enums & consts
 * ITEM_NOT_SHOP - not generated in shop.
 * ITEM_NOT_MERCHANT - not generated for merchant.
 * ITEM_NOT_BLACKSMITH - not generated for blacksmith.
-* ITEM_NOT_ALCHEMIST - not generated for alchemist.
 
 ### Enum ITEM_TYPE
 * IT_WEAPON
@@ -97,6 +105,8 @@ Game enums & consts
 * LI_DUNGEON2
 * LI_ACADEMY
 * LI_CAPITAL
+* LI_HUNTERS_CAMP
+* LI_HILLS
 
 ### Enum LOCATION_TARGET
 * FOREST
@@ -119,6 +129,8 @@ Game enums & consts
 * TUTORIAL_FORT
 * THRONE_FORT
 * THRONE_VAULT
+* HUNTERS_CAMP
+* HILLS
 
 ### Enum MOVE_TYPE
 * MOVE_RUN - always run.
@@ -134,19 +146,12 @@ Game enums & consts
 ### Enum ROOM_TARGET
 * ROOM_NONE
 * ROOM_CORRIDOR
-* ROOM_STAIRS_UP
-* ROOM_STAIRS_DOWN
+* ROOM_ENTRY_PREV
+* ROOM_ENTRY_NEXT
 * ROOM_TREASURY
 * ROOM_PORTAL
 * ROOM_PRISON
 * ROOM_THRONE
-
-### Enum STAIRS_LOCATION
-* STAIRS_NONE
-* STAIRS_RANDOM
-* STAIRS_FAR_FROM_ROOM
-* STAIRS_BORDER
-* STAIRS_FAR_FROM_UP_STAIRS
 
 ### Enum UNIT_ORDER
 * ORDER_NONE
@@ -250,6 +255,11 @@ Static methods:
 ### UnitGroup type
 Group of template units. Used for spawn groups inside locations/encounters.
 
+Members:
+
+* const string name
+* const bool female - used in polish language to determine correct spelling of some gender specific words.
+
 Static properties:
 
 * UnitGroup@ empty - represents empty group.
@@ -316,6 +326,9 @@ Hero is unit that can be recruited to team.
 Properties:
 
 * bool lost_pvp - true if hero recently lost pvp.
+* bool otherTeam - hero is in other team.
+* bool wantJoin - true when join team without persuading.
+* int persuasionCheck - skill level required to persuade to join.
 
 ### LevelArea type
 Part of level - dungeon level, outside, inside of building.
@@ -332,6 +345,7 @@ Properties:
 * Vec2 pos - readonly
 * string name
 * LOCATION type - readonly
+* bool outside - readonly
 * LOCATION_IMAGE image
 * int st
 * int levels - readonly, return count of level areas (for dungeon this is dungeon levels, for city enterable buildings + 1 for outside area)
@@ -358,8 +372,8 @@ Used when generating dungeon.
 
 Properties:
 
-* STAIRS_LOCATION stairs_up_loc
-* STAIRS_LOCATION stairs_down_loc
+* ENTRY_LOCATION prev_entry_loc
+* ENTRY_LOCATION next_entry_loc
 
 ### Object type
 Object inside level - barrel, chair etc.
@@ -462,6 +476,7 @@ Properties:
 * bool temporary - unit is removed when location is repopulated.
 * UNIT_ORDER order - readonly, current unit order.
 * LevelArea@ area - level area unit is in.
+* const string& clas - readonly, class identifier.
 
 Methods:
 
@@ -497,7 +512,7 @@ Methods:
 * void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 * void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 * void RotateTo(float rot) - instantly rotates units.
-* void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data.
+* void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
 * void MoveToArea(LevelArea@ area, const Vec3& in pos) - move unit to area, works between locations.
 * void Kill() - used to spawn dead units.
 
@@ -572,6 +587,7 @@ Static methods:
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
 * Object@ FindObject(Room@, BaseObject@) - return first object inside room or null.
 * Chest@ GetRandomChest(Room@) - get random chest in room.
+* Chest@ GetTreasureChest() - get silver chest in treasure room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
 * bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
@@ -608,6 +624,7 @@ Static methods:
 * void AddMember(Unit@, int type = 0) - add team member, mode: 0-normal, 1-free (no gold), 2-visitor (no gold/exp).
 * void RemoveMember(Unit@) - remove team member.
 * void Warp(const Vec3& in pos, const Vec3& in look_target) - warp team to position rotated towards look target.
+* bool PersuasionCheck(int level) - do persuasion check, return true is succeeded.
 
 ### World component
 Component used for world.
@@ -626,6 +643,7 @@ Static methods:
 * uint GetSettlements() - return count of settlements.
 * Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
+* string GetDirName(Location@ loc1, Location@ loc2) - get direction name string from loc1 to loc2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
 * Vec2 FindPlace(const Vec2& in pos, float range, bool allow_exact = false) - find place for location inside range.
 * Vec2 FindPlace(const Vec2& in pos, float min_range, float max_range) - find place for location inside range.
@@ -638,6 +656,8 @@ Static methods:
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1) - get closest location of this type (doesn't return quest locations).
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).
 * Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
+* Location@ CreateCamp(const Vec2& in pos, UnitGroup@) - create new camp at position.
+* void AbadonLocation(Location@) - remove all units & items from location.
 * Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 * Encounter@ RecreateEncounter(Quest@, int) - recreate encounter, used for compatibility with old hardcoded quests.
 * void RemoveEncounter(Quest@) - remove encounters attached to this quest.

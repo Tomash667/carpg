@@ -5,40 +5,57 @@ name_sonOfInvalid = "y"
 name_prefix = ""
 
 name random {
+	"Adam"
 	"Adrian"
+	"Andrzej"
 	"Artur"
 	"Bartosz"
+	"Borys"
 	"Cezary"
 	"Damian"
 	"Dawid"
 	"Dominik"
+	"Edmund"
 	"Emil"
 	"Filip"
 	"Ferdynand"
+	"Gabriel"
 	"Grzegorz"
 	"Henry"
+	"Hugo"
 	"Ignacy"
+	"Igor"
 	"Jakub"
 	"Jan"
 	"Kacper"
 	"Konrad"
 	"Krzysztof"
+	"Krystian"
+	"Leon"
 	"Lucjan"
 	"£ukasz"
+	"Marian"
 	"Mateusz"
 	"Miko³aj"
 	"Norbert"
+	"Olaf"
 	"Oliwier"
+	"Pawe³"
 	"Piotr"
 	"Robert"
+	"Ryszard"
 	"Sebastian"
 	"S³awomir"
+	"Szymon"
+	"Tadeusz"
 	"Tomasz"
+	"Tymon"
 	"Urban"
 	"Waldemar"
 	"Wojciech"
 	"Zbigniew"
 	"Zygfryd"
+	"Zygmunt"
 }
 
 nickname random {
@@ -53,6 +70,9 @@ nickname random {
 	"Smutny"
 	"Odkrywca"
 	"Ciekawy"
+	"Bohater"
+	"Uczciwy"
+	"Uparty"
 }
 
 name warrior {
@@ -89,6 +109,10 @@ nickname warrior {
 	"Kapitan"
 	"Wojownik"
 	"Dziki"
+	"Lew"
+	"Bezwzglêdny"
+	"Niezniszczalny"
+	"Stra¿nik"
 }
 
 name hunter {
@@ -122,6 +146,7 @@ nickname hunter {
 	"Zabójca Nieumar³ych"
 	"Zielony"
 	"W³adca Zwierz¹t"
+	"Wilk"
 }
 
 name rogue {
@@ -153,6 +178,9 @@ nickname rogue {
 	"Asasyn"
 	"Zabójca"
 	"Ostro¿ny"
+	"Mroczny"
+	"Bezwzglêdny"
+	"Cieñ"
 }
 
 name mage {
@@ -203,6 +231,8 @@ nickname cleric {
 	"B³ogos³awiony"
 	"Uzdrowiciel"
 	"Zakonnik"
+	"Bia³y"
+	"Szlachetny"
 }
 
 name crazy {
@@ -275,6 +305,7 @@ name crazy {
 	"Batman"
 	"Lo Wang"
 	"Paranoix"
+	"Cezar"
 }
 
 name location_start {
@@ -334,6 +365,7 @@ name location_start {
 	"South"
 	"Snow"
 	"Star"
+	"Suny"
 	"Timber"
 	"Town"
 	"Tower"
@@ -343,6 +375,7 @@ name location_start {
 	"Well"
 	"West"
 	"White"
+	"Wild"
 	"Wind"
 	"Winter"
 	"Witch"
@@ -387,6 +420,7 @@ name location_end {
 	"star"
 	"town"
 	"tower"
+	"ville"
 	"ward"
 	"winter"
 	"wood"

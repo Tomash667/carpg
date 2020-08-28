@@ -24,7 +24,7 @@ public:
 	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	cstring FormatString(const string& str) override;
-	void Progress();
+	void OnProgress();
 	void Update(float dt);
 	bool IsGenerated() const { return generated; }
 	Unit* GetMaster() const { return master; }

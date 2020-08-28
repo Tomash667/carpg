@@ -3,9 +3,10 @@
 //-----------------------------------------------------------------------------
 #include "Collision.h"
 #include "Bullet.h"
-#include "SpellEffects.h"
 #include "Blood.h"
+#include "Drain.h"
 #include "GameLight.h"
+#include <Mesh.h>
 
 //-----------------------------------------------------------------------------
 struct LightMask
@@ -59,6 +60,7 @@ struct LevelArea
 
 	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id), have_terrain(have_terrain), tmp(nullptr) {}
 	~LevelArea();
+	void Update(float dt);
 	void Save(GameWriter& f);
 	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
 	void Write(BitStreamWriter& f);
@@ -80,6 +82,10 @@ struct LevelArea
 	bool RemoveItemFromChest(const Item* item);
 	Door* FindDoor(const Int2& pt);
 	bool IsActive() const { return tmp != nullptr; }
+	void SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted);
+	bool CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint);
+	bool CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
+	Explo* CreateExplo(Ability* ability, const Vec3& pos);
 };
 
 //-----------------------------------------------------------------------------
@@ -87,56 +93,18 @@ struct LevelArea
 struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
 {
 	LevelArea* area;
-	vector<Bullet> bullets;
+	vector<Bullet*> bullets;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*> tpes;
 	vector<Explo*> explos;
 	vector<Electro*> electros;
 	vector<Drain> drains;
 	vector<CollisionObject> colliders;
+	float lights_dt;
 
 	void Clear();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-};
-
-//-----------------------------------------------------------------------------
-class LevelAreaContext
-{
-	friend struct ForLocation;
-
-	struct Entry
-	{
-		LevelArea* area;
-		int loc, level;
-		bool active;
-	};
-
-	vector<Entry> entries;
-
-public:
-	GroundItem* FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
-	Unit* FindUnitWithQuestItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
-	bool FindUnit(Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(UnitData* data, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	bool RemoveQuestGroundItem(int quest_id);
-	bool RemoveQuestItemFromUnit(int quest_id);
-	bool RemoveUnit(Unit* unit);
-};
-
-//-----------------------------------------------------------------------------
-struct ForLocation
-{
-	ForLocation(int loc, int level = -1);
-	ForLocation(Location* loc, int level = -1);
-	ForLocation(const ForLocation& f) = delete;
-	~ForLocation();
-	ForLocation& operator = (const ForLocation& f) = delete;
-	LevelAreaContext* operator -> () { return ctx; }
-
-private:
-	void Setup(Location* loc, int level);
-
-	LevelAreaContext* ctx;
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 };

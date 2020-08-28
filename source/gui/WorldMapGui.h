@@ -18,8 +18,8 @@ public:
 	void Update(float dt) override;
 	bool NeedCursor() const override { return true; }
 	void Event(GuiEvent e) override;
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	void Clear();
 	Vec2 WorldPosToScreen(const Vec2& pt) const;
 	void ShowEncounterMessage(cstring text);

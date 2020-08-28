@@ -243,6 +243,7 @@ group tournament
 group merchant_guards
 group wagon_guards
 group unk
+group q_magowie_golems
 group list challange
 group list cave
 group list forest
@@ -269,9 +270,6 @@ dialog q_bandits_guard
 dialog q_bandits_agent
 dialog q_bandits_boss
 dialog q_bandits_encounter
-dialog q_camp_near_city_start
-dialog q_camp_near_city_timeout
-dialog q_camp_near_city_end
 dialog q_crazies_trainer
 dialog q_deliver_parcel_start
 dialog q_deliver_parcel_timeout
@@ -288,9 +286,6 @@ dialog q_goblins_mage
 dialog q_goblins_innkeeper
 dialog q_goblins_boss
 dialog q_goblins_messenger
-dialog q_kill_animals_start
-dialog q_kill_animals_timeout
-dialog q_kill_animals_end
 dialog q_lost_artifact_start
 dialog q_lost_artifact_end
 dialog q_lost_artifact_timeout

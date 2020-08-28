@@ -4,13 +4,11 @@
 #include "Ability.h"
 #include "Game.h"
 #include "GameGui.h"
-#include "GameFile.h"
 #include "GameMessages.h"
 #include "InsideLocation.h"
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
-#include "SaveState.h"
 #include "Unit.h"
 
 //=================================================================================================
@@ -108,7 +106,7 @@ void AIController::Save(GameWriter& f)
 		case Idle_Use:
 		case Idle_WalkUse:
 		case Idle_WalkUseEat:
-			f << st.idle.usable->id;
+			f << st.idle.usable;
 			break;
 		case Idle_TrainBow:
 			f << st.idle.obj.pos;
@@ -478,7 +476,7 @@ void AIController::Shout()
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(Vec3::Distance(unit->pos, u->pos) <= 20.f && game_level->CanSee(*unit, *u))
+		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
 		{
 			u->ai->alert_target = target_unit;
 			u->ai->alert_target_pos = target_last_pos;
@@ -519,7 +517,7 @@ void AIController::HitReaction(const Vec3& pos)
 			continue;
 
 		if((u->ai->state == Idle || u->ai->state == SearchEnemy)
-			&& Vec3::Distance(unit->pos, u->pos) <= 20.f && game_level->CanSee(*unit, *u))
+			&& Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
 		{
 			AIController* ai2 = u->ai;
 			ai2->target_last_pos = pos;
@@ -566,7 +564,10 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
 	if(unit->HaveWeapon())
-		stamina_cost *= unit->GetWeapon().GetInfo().stamina;
+	{
+		const Weapon& weapon = unit->GetWeapon();
+		stamina_cost *= weapon.GetInfo().stamina * unit->GetStaminaMod(weapon);
+	}
 	else
 		stamina_cost *= Unit::STAMINA_UNARMED_ATTACK;
 	unit->RemoveStamina(stamina_cost);

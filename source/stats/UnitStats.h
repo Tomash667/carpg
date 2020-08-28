@@ -49,17 +49,17 @@ struct UnitStats
 	SubprofileInfo subprofile;
 	bool fixed;
 
-	void Save(FileWriter& f) const
+	void Save(GameWriter& f) const
 	{
 		f << attrib;
 		f << skill;
 	}
-	void Load(FileReader& f)
+	void Load(GameReader& f)
 	{
 		f >> attrib;
 		f >> skill;
 	}
-	static void Skip(FileReader& f) { f.Skip(sizeof(attrib) + sizeof(skill)); }
+	static void Skip(GameReader& f) { f.Skip(sizeof(attrib) + sizeof(skill)); }
 
 	void Set(StatProfile& stat);
 	void SetForNew(StatProfile& stat);

@@ -66,15 +66,16 @@ public:
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
-	int GetLocationEventHandlerQuestRefid() override { return id; }
-	int GetChestEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestId() override { return id; }
+	int GetChestEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetIncome(int days_passed);
 	int GenerateMine(CaveGenerator* cave_gen, bool first);
+	int OnProgress(int days);
 
 	Quest_Event sub;
 	int dungeon_loc;
@@ -86,4 +87,6 @@ public:
 
 private:
 	void InitSub();
+
+	bool persuaded;
 };

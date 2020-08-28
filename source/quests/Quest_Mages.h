@@ -88,7 +88,7 @@ public:
 		BeforeBoss
 	};
 
-	void Init();
+	void Init() override;
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -96,10 +96,12 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	void Update(float dt);
+	void OnProgress(int days);
+	void OnEncounter(EncounterSpawn& spawn);
 
 	Talked talked;
 	State mages_state;

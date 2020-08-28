@@ -70,12 +70,12 @@ public:
 	bool Read(BitStreamReader& f);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	Quest* FindQuest(int location, QuestCategory category);
+	Quest* FindQuest(Location* location, QuestCategory category);
 	Quest* FindQuest(int id, bool active = true);
 	Quest* FindAnyQuest(int id);
 	Quest* FindAnyQuest(QuestScheme* scheme);
 	Quest* FindQuest(QUEST_TYPE type);
-	Quest* FindUnacceptedQuest(int location, QuestCategory category);
+	Quest* FindUnacceptedQuest(Location* location, QuestCategory category);
 	Quest* FindUnacceptedQuest(int id);
 	Quest* FindQuestS(const string& quest_id);
 	const Item* FindQuestItem(cstring name, int quest_id);
@@ -91,7 +91,8 @@ public:
 	bool HandleFormatString(const string& str, cstring& result);
 	const Item* FindQuestItemClient(cstring item_id, int quest_id) const;
 	void AddScriptedQuest(QuestScheme* scheme);
-	QuestInfo* FindQuest(const string& id);
+	QuestInfo* FindQuestInfo(QUEST_TYPE type);
+	QuestInfo* FindQuestInfo(const string& id);
 	void AddQuestRequest(int id, Quest** quest, delegate<void()> callback = nullptr) { quest_requests.push_back({ id, quest, callback }); }
 	void AddQuestItem(Item* item) { quest_items.push_back(item); }
 	bool HaveQuestRumors() const { return !quest_rumors.empty(); }
@@ -106,6 +107,7 @@ public:
 	void UpdateQuestsLocal(float dt);
 	void ProcessQuestRequests();
 	void UpgradeQuests();
+	vector<Location*>& GetUsedCities() { return used; }
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
@@ -126,7 +128,6 @@ public:
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;
 	Quest_Tutorial* quest_tutorial;
-	int quest_counter;
 	int unique_quests, unique_quests_completed;
 	bool unique_completed_show;
 	cstring txRumorQ[9];
@@ -139,9 +140,10 @@ private:
 	vector<QuestItemRequest*> quest_item_requests;
 	vector<QuestRequest> quest_requests;
 	vector<Quest*> upgrade_quests;
-	int force;
+	int quest_counter, force;
 	QuestList* quests_mayor, *quests_captain, *quests_random;
 	std::map<string, QuestHandler*> special_handlers, special_if_handlers, format_str_handlers;
 	string tmp_str;
 	vector<pair<int, string>> quest_rumors;
+	vector<Location*> used;
 };

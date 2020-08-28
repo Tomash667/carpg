@@ -1,6 +1,15 @@
 //==============================================================================
 // UWAGA - plik ma kodowanie ANSI ale bloki w skrypcie musz¹ mieæ UTF8 wiêc widaæ dziwne znaczki zamiast polskich liter
 // jest task na wykorzystanie UTF8 wszêdzie :)
+// ¹ -> \\xB9		¥ -> \\xA5
+// æ -> \\xE6		Æ -> \\xC6
+// ê -> \\xEA		Ê -> \\xCA
+// ³ -> \\xB3		£ -> \\xA3
+// ñ -> \\xF1		Ñ -> \\xD1
+// ó -> \\xF3		Ó -> \\xD3
+// œ -> \\x9C		Œ -> \\x8C
+// ¿ -> \\xBF		¯ -> \\xAF
+// Ÿ -> \\x9F		 -> \\x8F
 //==============================================================================
 dialog blacksmith {
 	0 {
@@ -38,8 +47,8 @@ dialog merchant {
 	9 "Nie to nie."
 	10 "Koniec rozmowy"
 	11 "Szkolenie"
-	12 "Mogê ciê nauczyæ targowania albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
-	13 "$train_lab/haggle$"
+	12 "Mogê ciê nauczyæ perswazji albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
+	13 "$train_lab/persuasion$"
 	14 "$train_lab/cha$"
 	15 "Anuluj"
 }
@@ -92,7 +101,7 @@ dialog mayor {
 		"Potrzebujesz czegoœ?"
 	}
 	1 "Potrzebujê Ksiêgi przywo³ywania"
-	2 "" // moved to quest
+	2 "Wróæ"
 	3 "Dostarcz paczkê"
 	4 "Zwróæ paczkê"
 	5 "Przeka¿ wieœci"
@@ -107,6 +116,14 @@ dialog mayor {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	12 "Koniec rozmowy"
+	13 {
+		"Nie mo¿na na tobie polegaæ..."
+		"Nie dam ci ¿adnego wa¿nego zadania! IdŸ zbieraæ marchewkê!"
+		"Potrzebuje kogoœ na kim mo¿na polegaæ, na tobie nie mogê."
+	}
+	14 "Perswazja"
+	15 "No dobra, przekona³eœ mnie..."
+	16 "Nie ma takiej opcji!"
 }
 
 //==============================================================================
@@ -208,6 +225,14 @@ dialog guard_captain {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	16 "Koniec rozmowy"
+	17 {
+		"Nie nadajesz siê do takich zadañ."
+		"Potrzebuje ludzi którzy mog¹ siê przydaæ, ty ju¿ raz zawiod³eœ."
+	}
+	18 "Perswazja"
+	19 "No dobra, przekona³eœ mnie..."
+	20 "Nie ma takiej opcji!"
+	21 "Wróæ"
 }
 
 //==============================================================================
@@ -458,6 +483,13 @@ dialog hero {
 	43 "Nie"
 	44 "Czym siê zajmujesz?"
 	45 "Koniec rozmowy"
+	46 "Nie mogê od tak porzuciæ mojej aktualnej dru¿yny!"
+	47 "Perswazja"
+	48 "Wróæ"
+	49 "No dobra... Wydajesz siê dobrym przywódc¹."
+	50 "Jakoœ mnie nie przekona³eœ..."
+	51 "Nie lubiê t³umów a twoja dru¿yna jest ju¿ doœæ liczna..."
+	52 "No dobra... Czasami trzeba pójœæ na kompromis."
 }
 
 //==============================================================================
@@ -550,6 +582,7 @@ dialog crazy {
 	15 {
 		"Dobra, ponoszê te twoje œmieci."
 		"Dawaj te ³upy!"
+		"Zostaw moje œmieci!"
 	}
 	16 "Atakuj wroga z dystansu póki nie podejdzie"
 	17 "Dobra, zmiêkczê ich."
@@ -625,6 +658,12 @@ dialog crazy {
 	47 "Zapytaj o dziwny kamieñ"
 	48 "Zabieraj to ode mnie bo jak ci sprzedam kopa!"
 	49 "Koniec rozmowy"
+	50 "Mam od tak porzuciæ tych s³abeuszy i do³¹czyæ do ciebie?"
+	51 "Perswazja"
+	52 "Wróæ"
+	53 "Nie nie nie! To ty do mnie do³¹czysz!"
+	54 "Jeœli myœlisz ¿e mnie przekona³eœ to chyba ty tu jesteœ szalony!"
+	55 "Hmmm... W takim t³umie nie bêdziesz na mnie zwraca³ uwagi!"
 }
 
 //==============================================================================
@@ -687,6 +726,9 @@ dialog bandits {
 		"Zabiæ ich wszystkich!"
 		"W takim razie giñ!"
 	}
+	13 "Perswazja"
+	14 "W sumie masz racjê. Mo¿esz przejœæ bez p³acenia..."
+	15 "Myœlisz ¿e sobie pogadasz i ciê puszczê!? Wyskakuj ze z³ota kutasiarzu!"
 }
 
 //==============================================================================
@@ -709,11 +751,13 @@ dialog crazy_mage_encounter {
 	3 "Cholera! Do tego czaru potrzebuje kogoœ z w³osami."
 	4 "Oc repus wóso³w rolok ynni zsam zaret do yram yrazc!"
 	5 "Einm od y¿elan azsud ajowt!"
-	6 "Oc repus wóso³w rolok ynni zsam zaret do yram yrazc!"
+	6 "Perswazja"
 	7 "Chyba nie ma ¿adnych efektów ubocznych, dziêki za pomoc!"
 	8 "Nie"
 	9 "Jak to nie?!"
 	10 "Twoje zw³oki nie powiedz¹ nie!"
+	11 "No dobra... Mo¿e do ciebie do³¹czê i razem poszukamy ochotników do moich eksperymentów?"
+	12 "Jakbym chcia³ z kimœ pogadaæ to bym porozmawia³ z g³osami w mojej g³owie!"
 }
 
 //==============================================================================
@@ -856,6 +900,9 @@ dialog crazies_encounter {
 	25 "le!"
 	26 "Nie wiem"
 	27 "Bo jesteœ g³upi!"
+	28 "Perswazja"
+	29 "Eee co? A tak, tak. Mo¿esz iœæ."
+	30 "Ale ty jesteœ zabawny!"
 }
 
 //==============================================================================
@@ -997,6 +1044,9 @@ dialog q_bandits_encounter {
 	8 "Nie!"
 	9 "Co kurwa?!"
 	10 "Nauczê cie szacunku dla bandytów!"
+	11 "Perswazja"
+	12 "Hmm... Widocznie kto inny transportuje tê paczkê. Mo¿esz przejœæ."
+	13 "Myœlisz ¿e mnie oszukasz!? Zabiæ go!"
 }
 
 //==============================================================================
@@ -1034,29 +1084,6 @@ dialog q_bandits_boss {
 	0 "Ty têpy chuju!"
 	1 "Myœlisz ¿e mo¿esz od tak przyjœæ tutaj, zabiæ moich kamratów i ukraœæ co ci siê podoba?!"
 	2 "Przerobiê ciê na mielone!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_start {
-	0 "Wyobra¿asz to sobie?! $Bandyci_zalozyli$ obóz tu¿ ko³o $naszego_miasta$!"
-	1 "Chyba chc¹ zaatakowaæ $miasto$! Musimy coœ z tym zrobiæ!"
-	2 "Mo¿e ty pójdziesz i siê nimi zajmiesz?"
-	3 "Tak"
-	4 "Ten obóz znajduje siê na $dir$ st¹d. Musisz siê tym zaj¹æ w ci¹gu miesi¹ca."
-	5 "Tylko nie daj siê zabiæ."
-	6 "Nie"
-}
-
-//==============================================================================
-dialog q_camp_near_city_timeout {
-	0 "Gdy ciê nie by³o $bandyci_zaatakowali$ $miasto$! Jakoœ siê obroniliœmy ale wiele osób zginê³o!"
-	1 "Nie pokazuj siê tu wiêcej!"
-}
-
-//==============================================================================
-dialog q_camp_near_city_end {
-	0 "Gdyby nie ty to nie wiem czy byœmy odparli ten atak."
-	1 "WeŸ proszê te $reward$ sztuk z³ota nagrody."
 }
 
 //==============================================================================
@@ -1150,12 +1177,13 @@ dialog q_evil_cleric {
 dialog q_evil_mage {
 	0 "Co siê na mnie gapisz?! Chcesz coœ?"
 	1 "Potrzebujê Ksiêgê przywo³ywania"
-	2 "A po co ci ona? Nie wygl¹dasz na maga."
+	2 "A po co ci ona? Nie wygl¹dasz mi na maga."
 	3 "Zreszt¹ to i tak nie wa¿ne."
 	4 "Cholerni stra¿nicy mi j¹ skonfiskowali."
 	5 "Chyba nie podoba³ im siê pomys³ przywo³ywania ¿ywio³aków."
 	6 "Koniec rozmowy"
 	7 "Zostaw mnie w spokoju."
+	8 "A po co ci ona? Chcesz coœ przywo³aæ?"
 }
 
 //==============================================================================
@@ -1251,11 +1279,12 @@ dialog q_goblins_mage {
 	8 "Zmieni³eœ zdanie?"
 	9 "Cena za moje informacje wzros³a do 100 sztuk z³ota."
 	10 "Zap³aæ 100 sztuk z³ota"
-	11 "To wielka szkoda, ten ³uk jest bardzo cenny. Mam nadzieje ¿e nie odda³eœ go za garœæ miedziaków."
-	12 "Dziêki magii wygl¹da niczym stary ³uk. Porozmawiaj z tym szlachcicem, wydaje mi siê ¿e on od pocz¹tku o wszystkim wiedzia³."
+	11 "Ten ³uk jest bardzo cenny. Mam nadzieje ¿e nie odda³eœ go za garœæ miedziaków."
+	12 "Perswazja"
 	13 "Wróæ gdy bêdziesz mia³ doœæ z³ota."
 	14 "Koniec rozmowy"
 	15 "Porozmawiaj z karczmarzem w $start_loc$, mo¿e on coœ wie o tym szlachcicu."
+	16 "Wiesz co... ja jednak wolê z³oto."
 }
 
 //==============================================================================
@@ -1271,27 +1300,6 @@ dialog q_goblins_boss {
 	0 "Proszê, proszê. Kogo my tu mamy?"
 	1 "Zakichany poszukiwacz przygód. Przyszed³eœ popatrzeæ jak wygl¹da prawdziwa potêga Anielskiego ³uku?"
 	2 "Wypróbujê go na tobie!"
-}
-
-//==============================================================================
-dialog q_kill_animals_start {
-	0 "Szukam kogoœ kto zajmie siê jedn¹ z okolicznych lokacji w które zagnieŸdzi³o siê sporo stworzeñ."
-	1 "Jesteœ zainteresowany?"
-	2 "Tak"
-	3 "Udaj siê do $target_loc$ i zabij wszystkie stwory. Uwa¿aj te¿ na dzikusów którym odbi³o i zachowuj¹ siê jak zwierzêta."
-	4 "$target_loc$ znajduje siê na $target_dir$ st¹d. Masz na to miesi¹c czasu."
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_kill_animals_timeout {
-	0 "Nie oczyœci³eœ na czas $target_loc$. Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
-}
-
-//==============================================================================
-dialog q_kill_animals_end {
-	0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
-	1 "Masz tu $reward$ sztuk z³ota nagrody."
 }
 
 //==============================================================================
@@ -1497,6 +1505,9 @@ dialog q_mine_investor {
 	50 "Czym siê zajmujesz?"
 	51 "Dorobi³em siê na handlu egzotycznymi towarami. Od tego czasu inwestuje w ró¿ne przedsiêwziêcia, kopalnie, tartaki czy wyprawy."
 	52 "Koniec rozmowy"
+	53 "Perswazja"
+	54 "Dobrze siê targujesz! Obni¿ê cenê do 10,000 sztuk z³ota. Co ty na to?"
+	55 "Nie widzê powodu dla którego mia³bym ci iœæ na rêkê."
 }
 
 //==============================================================================
@@ -1837,7 +1848,7 @@ dialog q_stolen_artifact_end {
 
 //==============================================================================
 dialog q_stolen_artifact_timeout {
-	0 "Nie uda³o ci siê znaleŸæ tego artefaktu? Trudno..."
+	0 "Nie uda³o ci siê odzyskaæ tego artefaktu? Trudno..."
 	1 "Ponoæ niedaleko $random_loc$ znaleziono jakieœ nowe artefakty, tam wyruszê."
 	2 "Powodzenia w przygodach!"
 }
@@ -1927,4 +1938,188 @@ dialog cleric_seller {
 	9 "Zapytaj o dziwny kamieñ"
 	10 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
 	11 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog generic_idle {
+	0 { // generic
+		"Nuda! Czemu nie dzieje siê tu nic ciekawego?"
+		"S³ysza³eœ o tym co siê ostatnio wydarzy³o?"
+		"Gdzie jest mój ³uk?"
+		"S³ysza³eœ coœ ciekawego?"
+		"Widzia³em jak siê na mnie spojrza³eœ!"
+		"Gdyby tak znaleŸæ jakiœ skarb..."
+		"Hmmm, co to ja mia³em zrobiæ?"
+		"Wydawa³o mi siê, ¿e mia³em wiêcej z³ota."
+		"A gdyby tak rzuciæ to wszystko w cholerê?"
+		"W dzisiejszych czasach na nikim nie mo¿na polegaæ, ot co."
+	}
+	1 { // outside location
+		"Przynajmniej dzisiaj nie pada."
+		"Taa, cudowny dzieñ... Brakuje tylko deszczu meteorytów!"
+		"£adna dzisiaj pogoda, co?"
+	}
+	2 { // inside location
+		"Co to by³ za dŸwiêk?"
+		"Mam nadzieje ¿e nie spadnie mi coœ na g³owê."
+	}
+}
+
+//==============================================================================
+dialog hero_idle {
+	0 { // city
+		"Napi³bym siê piwa."
+		"Idziemy do karczmy?"
+		"Ciekawe czy kowal ma jakiœ dobry i tani pancerz dla mnie."
+		"Kupi³bym sobie jak¹œ lepsza broñ ale tu nic nie ma ciekawego."
+		"Ci stra¿nicy nic nie potrafi¹."
+	}
+	1 { // outside location
+		"W tamtych krzakach coœ siê poruszy³o."
+		"Dziwne to drzewo..."
+	}
+	2 { // inside location
+		"Co tu tak œmierdzi?"
+		"Uwa¿aj na pu³apki."
+		"Kolejne podziemia. Cudownie..."
+		"Pamiêtasz jak zabi³em tego potwora?"
+	}
+}
+
+//==============================================================================
+dialog secret_idle {
+	0 {
+		"Co powiedzia³ jeden ba³wanek do drugiego?"
+		"Kamieñ ksiê¿ycowy, ksiê¿ycowa studnia. Czy to ma jakiœ zwi¹zek?"
+		"Co le¿y w cieniu pos¹gu?"
+	}
+}
+
+//==============================================================================
+dialog citizen_idle {
+	0 { // generic
+		"Ludzie ci¹gle gadaj¹..."
+		"W tej historii musi byæ jednak ziarno prawdy."
+		"Kiedyœ takie sprawy za³atwia³o siê inaczej."
+	}
+	1 { // generic non-guard
+		"Cholerni stra¿nicy, do niczego siê nie przydaj¹."
+	}
+	2 { // before contest
+		"Ahhhh, kolejne zawody. A¿ siê ³ezka w oku krêci..."
+		"Na co jeszcze czekamy?!"
+		"Zawody! Zawody! Zawody!"
+		"Piwa! Piwa dajcie!"
+	}
+	3 { // drunk
+		"A kto z nami nie wypije tego we dwa kije!"
+		"(hic)"
+		"Potrzeba wiêcej piwa!"
+		"Ze mn¹ siê nie napijesz?!"
+		"Jesssce tylkoooo jeddnoo piwoo..."
+		"DŸwiêku harfy, wiatru szum, wodo, wodo, zmieñ siê w rum!"
+	}
+}
+
+//==============================================================================
+dialog bandit_idle {
+	0 {
+		"Gdzie ta karawana?!"
+		"Kupcy jak zwykle siê spóŸniaj¹, trzeba ukraœæ im wiêcej z³ota za karê."
+		"Gdzie z³oto dla szefa?"
+		"Piêœci mnie œwierzbi¹."
+		"Gdzie moje piwo?!"
+		"Kurwa!"
+		"Nie chcia³bym byæ teraz w jego skórze."
+	}
+}
+
+//==============================================================================
+dialog goblin_idle {
+	0 {
+		"¯ryj gruz!"
+		"Ciê¿kie jest ¿ycie goblina!"
+		"Byæ goblinem to jak graæ na poziomie trudnym!"
+		"Kto zabra³ moje ³achmany!"
+		"Gobliñskie piwo smakuje jak siki! I to ju¿ raz wypite!"
+	}
+}
+
+//==============================================================================
+dialog orc_idle {
+	0 {
+		"Ile dziœ zabi³eœ ludzi?"
+		"Gdzie jest mój topór do kurwy?"
+		"Ta mora dobrze walczy³a! I by³a smaczna..."
+		"Czas z³upiæ jak¹œ wioskê."
+		"Zapytaj wodza kiedy z³upimy jak¹œ wioskê."
+		"Kiedy z³upimy jak¹œ wioskê?"
+		"Dawno nie z³upiliœmy ¿adnej wioski."
+	}
+}
+
+//==============================================================================
+dialog ogre_idle {
+	0 {
+		"Ogry robi¹ z koœci chleb, wyciskaj¹ bia³ko z oczu, najlepiej smakuje na tostach..."
+		"Ja zgnieœæ twój pysk!"
+		"Czego ty chcieæ!?"
+		"Ugh!"
+	}
+}
+
+//==============================================================================
+dialog mage_idle {
+	0 {
+		"Dziwne! To nie powinno siê wydarzyæ."
+		"Ktoœ nas obserwuje. Udawaj ¿e nie widzisz."
+		"Jak by nazwaæ to nowe zaklêcie..."
+		"Ten czar ma dziwne efekty uboczne..."
+	}
+}
+
+//==============================================================================
+dialog wild_hunter_idle {
+	0 {
+		"Przeklêci drwale! Wykarczowali by ca³y las gdyby im na to pozwoliæ!"
+		"Gdzie ja zostawi³em mój kostium wilka?"
+		"Nie spocznê dopóki gniew natury nie zniszczy tego miasta!"
+	}
+}
+
+//==============================================================================
+dialog crazy_idle {
+	0 {
+		"Czy wiesz ¿e to co teraz mówiê nie jest podpowiedzi¹ jak znaleŸæ skarb wart milion sztuk z³ota?"
+		"Nie ma nic do powiedzenia."
+		"Wykonaæ instrukcjê #0xDEADC0DE#."
+		"Gdzie jest moje ciastko?!"
+		"Wiem, ¿e nic nie wiem. Ale czy oni to wiedz¹?"
+		"Dzieñ 13, nadal myœl¹ ¿e jestem jednym z nich."
+		"Nie ogl¹daj siê za siebie..."
+		"(mamrotanie)"
+		"(nuci)"
+		"Znasz definicje szaleñstwa?"
+		"Mordowanie z rana jak œmietana."
+		"Co? Nie! A tak, tak, masz racjê!"
+	}
+}
+
+//==============================================================================
+dialog drunk_mage_idle {
+	0 {
+		"(hic)"
+		"Gdzie moje (hic) piwo?!"
+		"(HIC)"
+	}
+}
+
+//==============================================================================
+dialog hunter {
+	0 {
+		"Udanych ³owów!"
+		"Witaj w naszym obozie."
+		"Witaj!"
+	}
+	1 "Koniec rozmowy"
 }

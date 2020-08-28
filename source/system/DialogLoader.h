@@ -48,7 +48,10 @@ public:
 		Block,
 		Statement,
 		Switch,
-		Case
+		Case,
+		Random,
+		Chance,
+		Goto
 	};
 
 	enum class IfOp
@@ -69,6 +72,7 @@ public:
 		DialogOp op;
 		int value;
 		vector<Node*> childs;
+		string str;
 #ifdef _DEBUG
 		int line;
 #endif
@@ -92,9 +96,13 @@ public:
 	Node* ParseIf();
 	Node* ParseChoice();
 	Node* ParseSwitch();
+	Node* ParseRandom();
 	DialogOp GetNegatedOp(DialogOp op);
 	bool BuildDialog(Node* node);
 	bool BuildDialogBlock(Node* node);
+	void PatchJumps();
 
 	GameDialog* current_dialog;
+	vector<std::pair<string, uint>> labels;
+	vector<std::pair<string, uint>> jumps;
 };

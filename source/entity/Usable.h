@@ -28,3 +28,14 @@ struct Usable : EntityType<Usable>
 	Mesh* GetMesh() const;
 	Vec3 GetCenter() const;
 };
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, Usable* usable)
+{
+	f << usable->id;
+}
+inline void operator >> (GameReader& f, Usable*& usable)
+{
+	int id = f.Read<int>();
+	usable = Usable::GetById(id);
+}

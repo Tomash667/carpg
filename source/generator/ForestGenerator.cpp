@@ -19,17 +19,37 @@ void ForestGenerator::Generate()
 	RandomizeTerrainTexture();
 	terrain->SetHeightMap(outside->h);
 	float hmax = Random(8.f, 12.f);
-	int octaves = Random(2, 8);
-	float frequency = Random(4.f, 16.f);
+	int octaves = Random(4, 8);
+	float frequency = Random(3.f, 6.f);
 	RandomizeHeight(octaves, frequency, 0.f, hmax);
 	terrain->RoundHeight();
 	terrain->RemoveHeightMap();
 }
 
 //=================================================================================================
+void ForestGenerator::RandomizeTerrainTexture()
+{
+	Perlin perlin2(4, 4);
+	for(uint i = 0, y = 0; y < s; ++y)
+	{
+		for(uint x = 0; x < s; ++x, ++i)
+		{
+			const float v = perlin2.GetNormalized(1.f / 256 * x, 1.f / 256 * y);
+			TERRAIN_TILE& t = outside->tiles[i].t;
+			if(v < 0.25f)
+				t = TT_GRASS2;
+			else if(v < 0.7f)
+				t = TT_GRASS;
+			else
+				t = TT_GRASS3;
+		}
+	}
+}
+
+//=================================================================================================
 int ForestGenerator::HandleUpdate(int days)
 {
-	if(game_level->location_index != quest_mgr->quest_sawmill->target_loc)
+	if(game_level->location != quest_mgr->quest_sawmill->targetLoc)
 		return 0;
 
 	// sawmill quest

@@ -46,17 +46,18 @@ public:
 		KnownLocation
 	};
 
-	void Init();
+	void Init() override;
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
-	int GetUnitEventHandlerQuestRefid() override { return id; }
+	int GetUnitEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	void OnProgress(int days);
 
 	State goblins_state;
 	int days;

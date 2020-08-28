@@ -187,7 +187,7 @@ void LabyrinthGenerator::GenerateLabyrinth(Tile*& tiles, const Int2& size, const
 	CreateStairs(tiles, size, stairs, stairs_dir);
 	CreateGratings(tiles, size, room_size, room_pos, grating_chance);
 
-	Tile::SetupFlags(tiles, size);
+	Tile::SetupFlags(tiles, size, ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
 
 	if(game->devmode)
 		Tile::DebugDraw(tiles, size);
@@ -340,7 +340,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 	}
 	if(!ok)
 		throw "Failed to generate labyrinth.";
-	tiles[stairs.x + stairs.y*size.x].type = STAIRS_UP;
+	tiles[stairs.x + stairs.y*size.x].type = ENTRY_PREV;
 
 	// set stairs direction
 	if(tiles[stairs.x + (stairs.y + 1)*size.x].type == EMPTY)
@@ -392,7 +392,9 @@ void LabyrinthGenerator::Generate()
 	assert(!lvl.map);
 
 	Int2 room_pos;
-	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, room_pos, base.bars_chance);
+	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.prevEntryPt, lvl.prevEntryDir, room_pos, base.bars_chance);
+	lvl.prevEntryType = ENTRY_STAIRS_UP;
+	lvl.nextEntryPt = Int2(-1000, -1000);
 
 	lvl.w = lvl.h = base.size;
 	Room* room = Room::Get();
@@ -417,7 +419,7 @@ void LabyrinthGenerator::GenerateObjects()
 	BaseObject* torch = BaseObject::Get("torch");
 
 	// torch near wall
-	Int2 pt = lvl.GetUpStairsFrontTile();
+	Int2 pt = lvl.GetPrevEntryFrontTile();
 	Vec3 pos;
 	if(IsBlocking(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
 		pos = Vec3(2.f*pt.x + torch->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
@@ -459,7 +461,7 @@ void LabyrinthGenerator::GenerateUnits()
 		Int2 pt(Random(1, lvl.w - 2), Random(1, lvl.h - 2));
 		if(IsBlocking2(lvl.map[pt(lvl.w)]))
 			continue;
-		if(Int2::Distance(pt, lvl.staircase_up) < 5)
+		if(Int2::Distance(pt, lvl.prevEntryPt) < 5)
 			continue;
 
 		TmpUnitGroup::Spawn spawn = t->Get();

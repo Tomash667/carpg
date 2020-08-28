@@ -35,8 +35,8 @@ public:
 	void Hide();
 	void AddRumor(cstring text);
 	void NeedUpdate(Mode mode, int quest_index = 0);
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	vector<string>& GetNotes() { return notes; }
 	vector<string>& GetRumors() { return rumors; }
 

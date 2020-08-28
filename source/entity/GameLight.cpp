@@ -4,7 +4,7 @@
 #include "BitStreamFunc.h"
 
 //=================================================================================================
-void GameLight::Save(FileWriter& f) const
+void GameLight::Save(GameWriter& f) const
 {
 	f << start_pos;
 	f << start_color;
@@ -12,7 +12,7 @@ void GameLight::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void GameLight::Load(FileReader& f)
+void GameLight::Load(GameReader& f)
 {
 	f >> start_pos;
 	f >> start_color;

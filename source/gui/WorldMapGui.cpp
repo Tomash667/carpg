@@ -13,10 +13,6 @@
 #include "Level.h"
 #include "LevelGui.h"
 #include "MpBox.h"
-#include "QuestManager.h"
-#include "Quest_Crazies.h"
-#include "Quest_Mages.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -98,6 +94,8 @@ void WorldMapGui::LoadData()
 	tMapIcon[LI_DUNGEON2] = res_mgr->Load<Texture>("dungeon2.png");
 	tMapIcon[LI_ACADEMY] = res_mgr->Load<Texture>("academy.png");
 	tMapIcon[LI_CAPITAL] = res_mgr->Load<Texture>("capital.png");
+	tMapIcon[LI_HUNTERS_CAMP] = res_mgr->Load<Texture>("hunters_camp.png");
+	tMapIcon[LI_HILLS] = res_mgr->Load<Texture>("hills.png");
 	tWorldMap = res_mgr->Load<Texture>("worldmap.jpg");
 	tSelected[0] = res_mgr->Load<Texture>("selected.png");
 	tSelected[1] = res_mgr->Load<Texture>("selected2.png");
@@ -414,8 +412,8 @@ void WorldMapGui::Update(float dt)
 
 	if(world->GetState() == World::State::TRAVEL)
 	{
-		if(world->travel_location_index != -1)
-			picked_location = world->travel_location_index;
+		if(world->travel_location)
+			picked_location = world->travel_location->index;
 
 		if(game->paused || (!Net::IsOnline() && gui->HavePauseDialog()))
 			return;
@@ -624,13 +622,13 @@ void WorldMapGui::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void WorldMapGui::Save(FileWriter& f)
+void WorldMapGui::Save(GameWriter& f)
 {
 	f << zoom;
 }
 
 //=================================================================================================
-void WorldMapGui::Load(FileReader& f)
+void WorldMapGui::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_8)
 		f >> zoom;

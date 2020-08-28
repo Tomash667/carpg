@@ -146,27 +146,39 @@ object painting8 {
 	flags { near_wall no_physics high on_wall }
 }
 
+object painting_elf {
+	mesh "painting_elf.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
 object campfire {
 	mesh "ognisko.qmsh"
 	cylinder { 1.0735 0.43 }
 	center_y 0.4
-	flags { no_physics light campfire_effect }
+	flags { tmp_physics light campfire_effect }
 }
 
 object campfire_off {
 	mesh "ognisko2.qmsh"
 	cylinder { 1.0735 0.43 }
-	flags no_physics
+	flags tmp_physics
 }
 
 object chest {
-	mesh "skrzynia.qmsh"
+	mesh "chest.qmsh"
+	extra_dist 0.2
 	flags { near_wall is_chest }
 }
 
 // removed in V_0_14
 object chest_r {
-	mesh "skrzynia.qmsh"
+	mesh "chest.qmsh"
+	flags is_chest
+}
+
+object chest_silver {
+	mesh "chest2.qmsh"
+	extra_dist 0.2
 	flags is_chest
 }
 
@@ -232,7 +244,7 @@ object stalagmite2 {
 
 object plant2 {
 	mesh "krzak2.qmsh"
-	flags { no_physics billboard no_culling }
+	flags { no_physics no_culling }
 }
 
 object rock {
@@ -502,6 +514,7 @@ group painting {
 		3 painting_x2
 		3 painting_x3
 		3 painting_x4
+		2 painting_elf
 	}
 }
 

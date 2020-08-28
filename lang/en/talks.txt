@@ -29,90 +29,6 @@ aiLabyrinth = "We are in a maze. Let's hope we don't get lost here."
 aiNoEnemies = " I guess there are no enemies here."
 aiNearEnemies = " There are %s here."
 aiCave = "I don't like caves, they never have any treasures in them."
-aiInsaneText0 = "Do you know that what I say now isn't a hint on how to find a treasure worth a million gold pieces?"
-aiInsaneText1 = "There is nothing to say."
-aiInsaneText2 = "Execute instruction #0xDEADC0DE#."
-aiInsaneText3 = "Where's my cake?"
-aiInsaneText4 = "I know that I know nothing. But do they know?"
-aiInsaneText5 = "Day 13, they still think I'm one of them."
-aiInsaneText6 = "Do not look back..."
-aiInsaneText7 = "(mumble)"
-aiInsaneText8 = "(humming)"
-aiInsaneText9 = "You know the definition of insanity?"
-aiInsaneText10 = "Killing in the morning is like cream."
-aiInsaneText11 = "What? No! Oh yes, yes, you are right!"
-aiDefaultText0 = "Boring! Why doesn't anything interesting happen here?"
-aiDefaultText1 = "Did you hear about what happened the other day?"
-aiDefaultText2 = "Where's my bow?"
-aiDefaultText3 = "Did you hear something interesting?"
-aiDefaultText4 = "I saw how you looked at me!"
-aiDefaultText5 = "If only I could find a treasure..."
-aiDefaultText6 = "Hmmm, what was I supposed to do?"
-aiDefaultText7 = "I thought that I had more gold."
-aiDefaultText8 = "What if I threw it all to hell?"
-aiDefaultText9 = "Nowdays, you can't rely on anyone, that's what."
-aiOutsideText0 = "At least it's not raining."
-aiOutsideText1 = "Yeah, a wonderful day... The only thing that's missing is a nice hot meteor shower!"
-aiOutsideText2 = "Nice weather today, eh?"
-aiInsideText0 = "What was that sound?"
-aiInsideText1 = "I hope that nothing will fall on my head."
-aiHumanText0 = "People keep talking..."
-aiHumanText1 = "Damn guards, good for nothing useful."
-aiHumanText2 = "In this story, however, there must be a grain of truth."
-aiHumanText3 = "Once such things were settled differently."
-aiOrcText0 = "How many people did you kill today?"
-aiOrcText1 = "Where is my fucking axe?"
-aiOrcText2 = "This mora was a good fighter! And he was tasty..."
-aiOrcText3 = "Time to loot a village."
-aiOrcText4 = "Ask the chief when we loot a village."
-aiOrcText5 = "When will we loot a village?"
-aiOrcText6 = "It was a long time ago since we looted a village."
-aiGoblinText0 = "Eat rubble!"
-aiGoblinText1 = "Hard is the life of a goblin!"
-aiGoblinText2 = "Being a goblin is like playing on hard difficulty!"
-aiGoblinText3 = "Who took my rags!"
-aiGoblinText4 = "Goblin beer tastes like piss! Even once drunk!"
-aiMageText0 = "Strange! This should not happen."
-aiMageText1 = "Someone is watching us. Pretend you don't see."
-aiMageText2 = "How should I call this new spell..."
-aiMageText3 = "This spell has some weird side effects..."
-aiSecretText0 = "What did one snowman say to the other?"
-aiSecretText1 = "Moonstone, moonwell. Did it have anything to do with those?"
-aiSecretText2 = "What lies in the shadow of the statue?"
-aiHeroDungeonText0 = "What's that smell?"
-aiHeroDungeonText1 = "Watch out for traps."
-aiHeroDungeonText2 = "Another dungeon. Wonderful..."
-aiHeroDungeonText3 = "Remember how I killed that monster?"
-aiHeroCityText0 = "I could use a beer."
-aiHeroCityText1 = "Can we go to the inn?"
-aiHeroCityText2 = "I wonder if the blacksmith has a good and cheap armor for me."
-aiHeroCityText3 = "I'd buy myself a better weapon but there is nothing interesting."
-aiHeroCityText4 = "Those guards are good for nothing."
-aiBanditText0 = "Where is the caravan?!"
-aiBanditText1 = "Merchants are late as usual, we have to teach them a lesson by stealing more gold."
-aiBanditText2 = "Where's the gold for the boss?"
-aiBanditText3 = "My fists are tingling."
-aiBanditText4 = "Where is my beer?!"
-aiBanditText5 = "Fuck!"
-aiBanditText6 = "I would not want to be in his skin right now."
-aiHeroOutsideText0 = "Something moved in those bushes."
-aiHeroOutsideText1 = "That tree is strange..."
-aiDrunkMageText0 = "(hic)"
-aiDrunkMageText1 = "Where is (hic) my beer?!"
-aiDrunkMageText2 = "(HIC)"
-aiDrunkText0 = "And those who don't drink will be beaten!"
-aiDrunkText1 = "(hic)"
-aiDrunkText2 = "I need more beer!"
-aiDrunkText3 = "Don't you want to have a drink with me?!"
-aiDrunkText4 = "Onlyyyy oneeee moooree beeereee..."
-aiDrunkText5 = "The sound of the harp, the wind hum, water, water, change into rum!"
-aiDrunkContestText0 = "Ahhhh, another contest. These memories..."
-aiDrunkContestText1 = "What the hell are we waiting for?!"
-aiDrunkContestText2 = "Contest! Contest! Contest!"
-aiDrunkContestText3 = "Beer! Gimme beer!"
-aiWildHunterText0 = "Cursed woodcutters! They would have cleared the whole forest if they let it happen!"
-aiWildHunterText1 = "Where did I leave my wolf costume?"
-aiWildHunterText2 = "I will not rest until the anger of nature destroys this city!"
 
 // drinking contest
 contestNoWinner = "This year nobody won the drinking contest."
@@ -138,16 +54,65 @@ contestPrize = "Come over and get your prize!"
 contestNoPeople = "What the hell?! No one came!"
 
 // tutorial
-tut0 = "Welcome to the CaRpg tutorial! You can move your character using arrows/[WSAD].\nYou can change controls in options. Rotate using mouse. You can change camera\ndistance with the mouse wheel. Go to door around the corner."
-tut1 = "To use something click the left mouse button or press [E]. You can also use [E]\nwhen you wield weapon. By using [Shift] you can walk slowly. Open the door and\ngo ahead."
-tut2 = "Use the chest to loot it. At the top you can see contents of the\nchest, at the bottom is your equipment. Clicking on an item moves it to\nyour inventory or the chest. At the bottom you have a load counter, hold\nyour mouse over it to get detailed information. Next to it you can see\n some information about your gold - click to drop some gold. The [I] key opens the\ninventory. [ESC] closes it.\nTake the items from the chest and move forward."
-tut3 = "Open your inventory using the [I] button. Click to left mouse button equip the\nselected item or use it. You can equip one weapon, bow, armor and shield.\nClicking with the right mouse button will drop it to the ground. After equipping\na weapon press [Space] to wield/hide the weapon. Attack the melee target in the middle of\nthe room using the left mouse button or [Z].\nThen, move to next room."
-tut4 = "Behind this door there's your first enemy waiting for you - goblin. It's not a big\nchallenge. Attack him until he bites the dust. You can block attacks using the\nright mouse button. While blocking click the left mouse button to bash. Hold\nthe left mouse button for a powerful attack. Remember that attacking uses stamina. Go ahead and kill goblin."
-tut5 = "You can get more information about the game:\n[I] - inventory\n[C] - character panel\n[K] - spells and abilities\n[T] - team\n[M] - minimap\n[J] - journal\n[Tab] - talk box.\n\nLook at these panels and move forward."
-tut6 = "In the chest there is healing potion and bow. To drink a potion click it using the right\nmouse button or press [4]. After equipping the bow you can take it out using [2].\nButton [1] will take out the melee weapon. [Space] will take out the last weapon you\nused. This shortcuts can be changed by draging and droping from inventory/abilities.\nGo to the next room."
-tut7 = "Take out the bow using [2] button. Shoot the bow target to open the next door.\nYou can aim using your mouse."
-tut8 = "To talk with people click them with the left mouse button or press [Z] if you have hidden weapon.\nOtherwise press [R]. Some people let you trade, get quests, information or\nrecruit them to your team. If you attack neutral characters all citizens will become\nyour enemy so better don't do that. Talk with this person and go outside using the stairs."
-tut9 = "Good job! You completed the tutorial.\nRemember that it's just the beginning, save your game often and don't travel alone.\nIn the academy or first city you can recruit free team members.\n Ask citizens about near dungeons and go to one with very weak enemies.\nGood luck!"
+tut0 =
+"Welcome to the CaRpg tutorial! You can move your character using arrows/[WSAD].
+You can change controls in options. Rotate using mouse. You can change camera
+distance with the mouse wheel. Go to door around the corner."
+tut1 =
+"To use something click the left mouse button or press [E]. You can also use [E]
+when you wield weapon. By using [Shift] you can walk slowly. Open the door and
+go ahead."
+tut2 =
+"Use the chest to loot it. At the top you can see contents of the chest, at the
+bottom is your equipment. Clicking on an item moves it to your inventory or the
+chest. At the bottom you have a load counter, hold your mouse over it to get
+detailed information. Next to it you can see some information about your gold,
+click to drop some gold. The [I] key opens the inventory. [ESC] closes it.
+Take the items from the chest and move forward."
+tut3 =
+"Open your inventory using the [I] button. Click to left mouse button equip the
+selected item or use it. You can equip one weapon, bow, armor and shield.
+Clicking with the right mouse button will drop it to the ground. After equipping
+a weapon press [Space] to wield/hide the weapon. Attack the melee target in the
+middle of the room using the left mouse button or [Z]. Then, move to next room."
+tut4 =
+"Behind this door there's your first enemy waiting for you - goblin. It's not a
+big challenge. Attack him until he bites the dust. You can block attacks using
+the right mouse button. While blocking click the left mouse button to bash. Hold
+the left mouse button for a powerful attack. Remember that attacking uses
+stamina. Go ahead and kill goblin."
+tut5 =
+"You can get more information about the game:
+[I] - inventory
+[C] - character panel
+[K] - spells and abilities
+[T] - team
+[J] - journal
+['\"] - talk box
+[Tab] - minimap.
+
+Look at these panels and move forward."
+tut6 =
+"In the chest there is healing potion and bow. To drink a potion click it using
+the right mouse button or press [4]. After equipping the bow you can take it out
+using [2]. Button [1] will take out the melee weapon. [Space] will take out the
+last weapon you used. This shortcuts can be changed by draging and droping from
+inventory/abilities. Go to the next room."
+tut7 =
+"Take out the bow using [2] button. Shoot the bow target to open the next door.
+You can aim using your mouse."
+tut8 =
+"To talk with people click them with the left mouse button if you have hidden
+weapon. Otherwise press [E]. Some people let you trade, get quests, information
+or recruit them to your team. If you attack neutral characters all citizens
+will become your enemy so better don't do that. Talk with this person and go
+outside using the stairs."
+tut9 =
+"Good job! You completed the tutorial.
+Remember that it's just the beginning, save your game often and don't travel
+alone. In the academy or first city you can recruit free team members. Ask
+citizens about near dungeons and go to one with very weak enemies.
+Good luck!"
 tutNote = "Finish the tutorial to start the real adventure!"
 tutLoc = "Tutorial"
 tutPlay = "Do you want to play the tutorial?"
@@ -218,15 +183,10 @@ rumor_d_5 = "I ain't (hic) fucking drunk!"
 rumor_d_6 = "There are no ugly women, only a lack of wine sometimes..."
 
 // npc texts
-mayorQFailed0 = "I can't rely on you..."
-mayorQFailed1 = "I won't give you any important task! Go collect carrots instead!"
-mayorQFailed2 = "I needs someone I can rely on, not you."
 questAlreadyGiven0 = "I already assigned you a task."
 questAlreadyGiven1 = "First, take care of what I commissioned you."
 mayorNoQ0 = "Currently, I have no job for you. Come back in some time."
 mayorNoQ1 = "We don't need your help currently, maybe in the future."
-captainQFailed0 = "You are not suitable for such tasks."
-captainQFailed1 = "I need people who may come in handy, you have already failed."
 captainNoQ0 = "Currently, everything is quiet in this area. We'll see what will happen after some time."
 captainNoQ1 = "I don't have any job for you this moment."
 locationDiscovered0 = "Apparently at %s%s of here is %s from what I heard."

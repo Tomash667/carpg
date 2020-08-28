@@ -2,10 +2,9 @@
 #include "Blood.h"
 
 #include "BitStreamFunc.h"
-#include "SaveState.h"
 
 //=================================================================================================
-void Blood::Save(FileWriter& f) const
+void Blood::Save(GameWriter& f) const
 {
 	f.Write<byte>(type);
 	f << pos;
@@ -16,7 +15,7 @@ void Blood::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void Blood::Load(FileReader& f)
+void Blood::Load(GameReader& f)
 {
 	type = (BLOOD)f.Read<byte>();
 	f >> pos;

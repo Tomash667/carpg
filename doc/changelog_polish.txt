@@ -1,7 +1,70 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.15 (2020-03-31):
+Wersja 0.17 (???):
+! nie można wczytywać już zapisów z wersji 0.7 lub starszej
++ obóz łowców, zadanie z zabiciem złowieszczego wilka
++ lepsze modele przedmiotów: wódka, szara mikstura
++ lepszy generator obozów
++ zmiana nazwy umiejętności targowanie -> perswazja, można ją wykorzystać w niektórych dialogach
++ wilk nie atakuje odrazu
++ muzyka i pasek zdrowia bossa
++ zabezpiecznie przed generowaniem jednostek w ognisku
++ kontynuuj ostatnią grę w menu
++ wsparcie dla automatycznych aktualizacji
++ optymalizacje manadżera sceny
++ efekt winiety
+- crash przy wyborze przez łowce atutu uczeń wędrownego kupca [Leinnan]
+- crash gdy pyta się burmistrza o zadanie w stolicy [Woltvint]
+- brak muzyki bossa
+- nieprawidłowy rozmiar eksplozji u klienta dla niektórych czarów
+- podwójny dźwięk eksplozji u klienta
+
+--------------------------------------------------------------------------------
+Wersja 0.16 (2020-07-01):
+! nie można wczytywać już zapisów z wersji 0.6.2 lub starszej
++ nowy wróg: ogr
++ nowy ekwipunek: kordelas, miecz najemnika, kolczasta pałka, krasnoludzki topór, tarcza latawcowa, tarcza z kolcami, tarcza śmierci, pałka ogra
++ usprawnione model: krótki/długi miecz, toporek, topór bojowy, kryształowy topór, topór giganta, orkowy topór/miecz/młot, żelazna/stalowa/mithrilowa/adamantowa tarcza, tarcza Mur
++ nowe imiona/nazwy, usprawnienia dialogów
++ koniec gry nie blokuje otwarcia chatu, wczytania gry itp
++ losowe dialogi wczytywane z pliku
++ konwersja zadania "obóz obok miasta" na skrypty
++ obsługa wielu modeli skrzyni, srebrna skrzynia
++ obsługa zmiany urządzenia dźwięku
++ mniej zahardcodowany wygląd postaci
++ niektóre podziemia zaczynają się od drzwi, w wieży magów poziomy są w górę
++ walka: używanie zbyt ciężkiej tarczy spowalnia blokowanie i uderzanie tarczą, zużywa więcej wytrzymałości
+- crash czasami gdy klient daje przedmiot bohaterowi
+- gdy klient daje amulet/pierścień bohaterowni nie widać go aż do kolejnej wymiany przedmiotów
+- u klienta po dołączeniu do serwera zawsze wyświetla się że nie ma hasła
+- crash przy szybkim wczytywaniu gry w multiplayer gdy podmieniło się w tle zapis na niekompatybilny
+- w skrzyniach mogło wygenerować eliksiry siły/kondycji/zręczności [Zielu]
+- błąd wczytywania zapisu u klienta gdy ktoś strzelił z łuku
+- błędna interpolacja jednostek przy użyciu komendy 'speed'
+- zombie czasami nie atakuje po ogłuszeniu [Zielu]
+- bycza szarża nie przerywa animacji ataku [Zielu]
+- naprawiona komenda draw_hitbox i tarcze
+- brak kamery śmierci u klienta
+- gorush shaman nie zakłada nowego pancerza [Zielu]
+- brak tekstury u gorush shaman
+- losowy crash klienta po walce z golemami [Zielu]
+- odwrócone klawisze shift/control przy wymianie przedmiotów z sojusznikiem
+- bohaterowie bez many nie zbierają miksturek many
+- tylko Jozan przywraca zdrowie podczas podróży
+- czasami śmieciowy tekst po zrekrutowaniu bohatera w akademii
+- więcej golemów podczas spotkania na mapie
+- mapa losowego spotkania była zawsze taka sama
+- poprawiona synchronizacja pocisków w multiplayer
+- poprawny zapis/wczytywanie animacji skrzyni
+- nieprawidłowa waga ekwipunku po alchemii [SwagOfficerSuccubus]
+- otwieranie widoku alchemii nie zamykało innych widoków
+- crash po użyciu komendy list_stats na nie bohaterze
+- nie można używać zrywu/byczej szarży przy przeciążeniu
+- złe liczenie obrażeń byczej szarży
+
+--------------------------------------------------------------------------------
+Wersja 0.15 (2020-05-31):
 ! nie można wczytywać już zapisów z wersji 0.6.1 lub starszej
 + przejście z directx 9 na directx 11
 + nauka nowych receptur alchemicznych [BottledByte & Tomashu]
@@ -12,6 +75,9 @@ Wersja 0.15 (2020-03-31):
 + nazwa miesiąca zamiast liczby, inna początkowa data
 + inne dialogi u wędrownego kupca, trenera
 + aktualizacja bibliotek: Curl 7.69.1, FMod 1.10.20, JSON for Modern C++ 3.7.3
+- losowo generowane podziemia były głównie jednego typu
+- losowy crash przy wchodzeniu do miasta po tym jak ai poprosił o pancerz [SwagOfficerSuccubus]
+- crash po wczytaniu zapisu w MP gdy klient rzuca czar [Ampped]
 - nie można używać komendy 'speed' w jednoosobowej grze
 - kółko myszki czasami nie ma wpływu na kamerę
 - crash podczas uruchamiania [AnimeIsWrong]
@@ -21,12 +87,16 @@ Wersja 0.15 (2020-03-31):
 - ai w złej kolejności prosi o przedmioty
 - błąd kamery gdy rozmawia się z jedną osobą po drugiej
 - crash po wczytaniu gry multiplayer gdy drzwi są otwierane/zamykane
-
---------------------------------------------------------------------------------
-Poprawki:
-- losowo generowane podziemia były głównie jednego typu
-- losowy crash przy wchodzeniu do miasta po tym jak ai poprosił o pancerz [SwagOfficerSuccubus]
-- crash po wczytaniu zapisu w MP gdy klient rzuca czar [Ampped]
+- brak wieści o oczyszczeniu lokalizacji
+- usprawnione wybieranie celu do leczenia przez kapłana
+- wyciek pamięci po ponownym wygenerowaniu wrogów w lesie
+- atuty mobilność/finezja wymagały kondycji a nie zręczności
+- brak widocznych założonych pierścieni/amuletów u klienta podczas wymiany przedmiotów i grabienia zwłok
+- losowe preferencje umiejętności bohatera po zdobyciu poziomu
+- u klienta ożywieni nieumarli nie mają pusty pasek życia
+- odlegli wrogowie nie reagują na trafienie z łuku
+- ai niekupowało niektórych amuletów i pierścieni [Zielu]
+- złe wartości ataku/obrony u klienta podczas wymiany przedmiotów z bohaterem
 
 --------------------------------------------------------------------------------
 Wersja 0.14.1 (2020-04-11):

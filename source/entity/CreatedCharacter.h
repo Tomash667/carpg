@@ -61,7 +61,6 @@ struct CreatedCharacter
 	void Write(BitStreamWriter& f) const;
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStreamReader& f);
-	void Apply(PlayerController& pc);
 	bool HavePerk(Perk* perk) const;
 	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
 	int GetItemLevel(int level, bool poor);

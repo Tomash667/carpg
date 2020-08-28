@@ -6,7 +6,9 @@ struct Class
 	enum Flags
 	{
 		F_MP_BAR = 1 << 0,
-		F_MAGE_ITEMS = 1 << 1
+		F_MAGE_ITEMS = 1 << 1,
+		F_FROM_FOREST = 1 << 2,
+		F_AUTOHEAL = 1 << 3
 	};
 
 	struct LevelEntry

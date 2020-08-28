@@ -19,4 +19,5 @@ namespace UnitHelper
 	BetterItem GetBetterAmulet(const Unit& unit);
 	array<BetterItem, 2> GetBetterRings(const Unit& unit);
 	array<pair<const Item*, float>, 2> GetBetterRingsInternal(const Unit& unit, float min_value);
+	int CalculateChance(int value, int min, int max);
 }

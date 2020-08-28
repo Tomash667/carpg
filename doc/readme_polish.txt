@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: https://carpg.pl
-Wersja: 0.14.1
-Data: 2020-04-11
+Wersja: 0.16
+Data: 2020-07-01
 
 ===============================================================================
 1) Spis treści
@@ -68,8 +68,8 @@ osoby. Oczekuj zmian na lepsze!
 	T - drużyna
 	K - zdolności
 	J - dziennik
-	M - minimapa
-	Tab - okno rozmowy
+	Tab - minimapa
+	'" - okno rozmowy
 	Enter - wprowadzanie tekstu w multiplayer
 	Kółko myszy - zmiana odległości kamery
 	F2 - pokaż/ukryj fps
@@ -289,7 +289,7 @@ Tomashu - Programowanie, modele, tekstury, pomysły, fabuła.
 Leinnan - Modele, tekstury, pomysły, testowanie.
 MarkK - Modele i tekstury jedzenia oraz innych obiektów.
 Shdorsh - Poprawki w angielskim tłumaczeniu.
-Zielu - Testowanie.
+Zielu - Testowanie i modele.
 BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 
 ❤ Podziękowania za testy i znalezione błędy:
@@ -311,20 +311,29 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	SwagOfficerSuccubus
 	thebard88
 	Vinur_Gamall
+	Woltvint
 	XNautPhD
 	xweert123
 	Zettaton
 	Zinny
-
 🎵 Audio Engine: FMOD Studio by Firelight Technologies.
-
-
 🗃 Modele:
 	* https://opengameart.org
+		* CDmir - chest
+		* Clint Bellanger - naraphim sword
 		* Enetheru - windmill
 		* Grefuntor - slime
+		* johndh - cutlass
+		* kindland - shield of death
+		* Lucian Pavel - short sword, kite shield
 		* Mophs - scarecrow
+		* nubux - ogre
+		* p0ss - long sword
 		* rubberduck - shrine
+		* sandsound - morningstar
+		* System G6 - shield
+		* TiZiana - vodka, gray potion
+		* Wind astella - battle axe
 	* kaangvl - fish
 	* yd - sausage
 🎨 Tekstury:
@@ -338,12 +347,16 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project
 	* Project Divinity
+	* HorrorPen - Winds of Stories
 	* For Originz - Kevin MacLeod (incompetech.com)
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
+	* https://opengameart.org
+		* artisticdude - ogre sounds
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
+		* newagesoup - wolf growl
 		* wubitog - Slime attack or movement
 	* https://www.pacdv.com/sounds/
 	* https://www.soundjay.com

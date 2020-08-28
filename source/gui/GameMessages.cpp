@@ -5,7 +5,6 @@
 #include "GameGui.h"
 #include "Language.h"
 #include "PlayerInfo.h"
-#include "SaveState.h"
 
 #include <ResourceManager.h>
 #include <SoundManager.h>
@@ -48,6 +47,8 @@ void GameMessages::LoadLanguage()
 	txLearnedAbility = Str("learnedAbility");
 	txLearnedRecipe = Str("learnedRecipe");
 	txAlreadyLearned = Str("alreadyLearned");
+	txPersuasionSuccess = Str("persuasionSuccess");
+	txPersuasionFailed = Str("persuasionFailed");
 }
 
 //=================================================================================================
@@ -122,7 +123,7 @@ void GameMessages::Update(float dt)
 }
 
 //=================================================================================================
-void GameMessages::Save(FileWriter& f) const
+void GameMessages::Save(GameWriter& f) const
 {
 	f << msgs.size();
 	for(const GameMsg& msg : msgs)
@@ -140,7 +141,7 @@ void GameMessages::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void GameMessages::Load(FileReader& f)
+void GameMessages::Load(GameReader& f)
 {
 	msgs.resize(f.Read<uint>());
 	for(GameMsg& msg : msgs)
@@ -328,6 +329,16 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ALREADY_LEARNED:
 		text = txAlreadyLearned;
 		time = 2.5f;
+		break;
+	case GMS_PERSUASION_SUCCESS:
+		text = txPersuasionSuccess;
+		time = 2.5f;
+		repeat = true;
+		break;
+	case GMS_PERSUASION_FAILED:
+		text = txPersuasionFailed;
+		time = 2.5f;
+		repeat = true;
 		break;
 	default:
 		assert(0);

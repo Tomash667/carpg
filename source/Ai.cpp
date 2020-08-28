@@ -16,7 +16,6 @@
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
 #include "Quest_Tournament.h"
-#include "ScriptManager.h"
 #include "Team.h"
 
 #include <Profiler.h>
@@ -37,7 +36,8 @@ cstring str_ai_state[AIController::State_Max] = {
 	"Escape",
 	"Block",
 	"Cast",
-	"Wait"
+	"Wait",
+	"Aggro"
 };
 
 cstring str_ai_idle[AIController::Idle_Max] = {
@@ -191,6 +191,9 @@ void Game::UpdateAi(float dt)
 			continue;
 		}
 
+		if(u.action == A_DASH)
+			continue;
+
 		// standing animation
 		if(u.animation != ANI_PLAY && u.animation != ANI_IDLE)
 			u.animation = ANI_STAND;
@@ -291,13 +294,15 @@ void Game::UpdateAi(float dt)
 						{
 							Unit& target = **it2;
 							if(!target.to_remove && !u.IsEnemy(target) && !IsSet(target.data->flags, F_UNDEAD)
-								&& !IsSet(target.data->flags, F2_CONSTRUCT) && target.hpmax - target.hp > 100.f
+								&& !IsSet(target.data->flags, F2_CONSTRUCT) && target.GetHpp() <= 0.8f
 								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena
 								&& (target.IsAlive() || target.IsTeamMember()) && game_level->CanSee(u, target))
 							{
 								float prio = target.hpmax - target.hp;
 								if(&target == &u)
 									prio *= 1.5f;
+								if(!target.IsAlive())
+									prio /= 10;
 								prio -= dist * 10;
 								if(prio > best_prio)
 								{
@@ -349,6 +354,8 @@ void Game::UpdateAi(float dt)
 							repeat = true;
 							if(IsSet(u.data->flags2, F2_YELL))
 								ai.Shout();
+							if(IsSet(u.data->flags2, F2_BOSS))
+								game_level->StartBossFight(u);
 							break;
 						}
 
@@ -360,11 +367,22 @@ void Game::UpdateAi(float dt)
 							ai.in_combat = true;
 							ai.target = enemy;
 							ai.target_last_pos = enemy->pos;
-							ai.state = AIController::Fighting;
-							ai.timer = 0.f;
 							ai.city_wander = false;
 							ai.change_ai_mode = true;
-							ai.Shout();
+							if(IsSet(u.data->flags, F_AGGRO))
+							{
+								ai.state = AIController::Aggro;
+								ai.timer = AGGRO_TIMER;
+								ai.next_attack = -1.f;
+							}
+							else
+							{
+								ai.state = AIController::Fighting;
+								ai.timer = 0.f;
+								ai.Shout();
+								if(IsSet(u.data->flags2, F2_BOSS))
+									game_level->StartBossFight(u);
+							}
 							repeat = true;
 							break;
 						}
@@ -949,18 +967,18 @@ void Game::UpdateAi(float dt)
 									if(IsSet(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 									{
 										static vector<Object*> do_cw;
-										BaseObject* manekin = BaseObject::Get("melee_target"),
-											*tarcza = BaseObject::Get("bow_target");
+										BaseObject* melee_target = BaseObject::Get("melee_target"),
+											*bow_target = BaseObject::Get("bow_target");
 										for(vector<Object*>::iterator it2 = area.objects.begin(), end2 = area.objects.end(); it2 != end2; ++it2)
 										{
 											Object& obj = **it2;
-											if((obj.base == manekin || (obj.base == tarcza && u.HaveBow())) && Vec3::Distance(obj.pos, u.pos) < 10.f)
+											if((obj.base == melee_target || (obj.base == bow_target && u.HaveBow())) && Vec3::Distance(obj.pos, u.pos) < 10.f)
 												do_cw.push_back(&obj);
 										}
 										if(!do_cw.empty())
 										{
 											Object& o = *do_cw[Rand() % do_cw.size()];
-											if(o.base == manekin)
+											if(o.base == melee_target)
 											{
 												ai.timer = Random(10.f, 30.f);
 												ai.st.idle.action = AIController::Idle_TrainCombat;
@@ -1238,7 +1256,7 @@ void Game::UpdateAi(float dt)
 										ai.st.idle.action = AIController::Idle_Chat;
 										ai.timer = Random(2.f, 3.f);
 
-										cstring msg = GetRandomIdleText(u);
+										cstring msg = game->idle_context.GetIdleText(u);
 
 										int ani = 0;
 										game_gui->level_gui->AddSpeechBubble(&u, msg);
@@ -1655,10 +1673,14 @@ void Game::UpdateAi(float dt)
 									|| ability.stamina > u.stamina)
 									continue;
 
+								if(IsSet(ability.flags, Ability::Boss50Hp) && u.GetHpp() > 0.5f)
+									continue;
+
 								if(best_dist < ability.range
 									// can't cast drain blood on bloodless units
 									&& !(ability.effect == Ability::Drain && IsSet(enemy->data->flags2, F2_BLOODLESS))
-									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos))
+									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos)
+									&& (ability.type != Ability::Charge || AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, enemy->pos)) < 0.1f))
 								{
 									ai.cooldown[i] = ability.cooldown.Random();
 									u.action = A_CAST;
@@ -1671,11 +1693,19 @@ void Game::UpdateAi(float dt)
 									if(ability.stamina > 0.f)
 										u.RemoveStamina(ability.stamina);
 
-									if(u.mesh_inst->mesh->head.n_groups == 2)
-										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+									if(ability.animation.empty())
+									{
+										if(u.mesh_inst->mesh->head.n_groups == 2)
+											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+										else
+										{
+											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+											u.animation = ANI_PLAY;
+										}
+									}
 									else
 									{
-										u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+										u.mesh_inst->Play(ability.animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
 										u.animation = ANI_PLAY;
 									}
 
@@ -1684,6 +1714,7 @@ void Game::UpdateAi(float dt)
 										NetChange& c = Add1(Net::changes);
 										c.type = NetChange::CAST_SPELL;
 										c.unit = &u;
+										c.ability = &ability;
 									}
 
 									break;
@@ -1702,9 +1733,14 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_CAST)
 					{
 						// spellshot
-						look_pos = ai.PredictTargetPos(*enemy, u.act.cast.ability->speed);
-						look_at = LookAtPoint;
-						u.target_pos = look_pos;
+						if(u.act.cast.ability->IsTargeted())
+						{
+							look_pos = ai.PredictTargetPos(*enemy, u.act.cast.ability->speed);
+							look_at = LookAtPoint;
+							u.target_pos = look_pos;
+						}
+						else
+							break;
 					}
 					else if(u.action == A_SHOOT)
 					{
@@ -1882,17 +1918,20 @@ void Game::UpdateAi(float dt)
 					look_at = LookAtWalk;
 					run_type = Run;
 
-					if(Unit* target = ai.target; !target || !target->IsAlive())
+					if(ai.target)
 					{
-						// target is dead
-						ai.state = AIController::Idle;
-						ai.st.idle.action = AIController::Idle_None;
-						ai.in_combat = false;
-						ai.change_ai_mode = true;
-						ai.loc_timer = Random(5.f, 10.f);
-						ai.timer = Random(1.f, 2.f);
-						ai.target = nullptr;
-						break;
+						if(Unit* target = ai.target; !target || !target->IsAlive())
+						{
+							// target is dead
+							ai.state = AIController::Idle;
+							ai.st.idle.action = AIController::Idle_None;
+							ai.in_combat = false;
+							ai.change_ai_mode = true;
+							ai.loc_timer = Random(5.f, 10.f);
+							ai.timer = Random(1.f, 2.f);
+							ai.target = nullptr;
+							break;
+						}
 					}
 
 					if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
@@ -2221,12 +2260,12 @@ void Game::UpdateAi(float dt)
 						{
 							if(Rand() % 2 == 0)
 							{
-								float speed = u.GetBashSpeed();
+								const float speed = u.GetBashSpeed();
 								u.action = A_BASH;
 								u.animation_state = AS_BASH_ANIMATION;
 								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
 								u.mesh_inst->groups[1].speed = speed;
-								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
+								u.RemoveStamina(u.GetStaminaMod(u.GetShield()) * Unit::STAMINA_BASH_ATTACK);
 
 								if(Net::IsOnline())
 								{
@@ -2373,11 +2412,19 @@ void Game::UpdateAi(float dt)
 						if(ability.stamina > 0.f)
 							u.RemoveStamina(ability.stamina);
 
-						if(u.mesh_inst->mesh->head.n_groups == 2)
-							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+						if(ability.animation.empty())
+						{
+							if(u.mesh_inst->mesh->head.n_groups == 2)
+								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							else
+							{
+								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+								u.animation = ANI_PLAY;
+							}
+						}
 						else
 						{
-							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.mesh_inst->Play(ability.animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
 							u.animation = ANI_PLAY;
 						}
 
@@ -2386,6 +2433,7 @@ void Game::UpdateAi(float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CAST_SPELL;
 							c.unit = &u;
+							c.ability = &ability;
 						}
 					}
 
@@ -2445,6 +2493,75 @@ void Game::UpdateAi(float dt)
 					{
 						ai.state = AIController::Fighting;
 						ai.timer = 0.f;
+					}
+				}
+				break;
+
+			//===================================================================================================================
+			case AIController::Aggro:
+				{
+					if(Unit* alert_target = ai.alert_target)
+					{
+						// someone else alert him with enemy alert shout
+						ai.target = alert_target;
+						ai.target_last_pos = ai.alert_target_pos;
+						ai.alert_target = nullptr;
+						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
+						repeat = true;
+						if(IsSet(u.data->flags2, F2_YELL))
+							ai.Shout();
+						break;
+					}
+
+					if(enemy)
+					{
+						if(best_dist < ALERT_RANGE_ATTACK || ai.timer <= 0)
+						{
+							// attack
+							ai.target = enemy;
+							ai.target_last_pos = enemy->pos;
+							ai.timer = 0.f;
+							ai.state = AIController::Fighting;
+							ai.Shout();
+							repeat = true;
+							break;
+						}
+
+						ai.target_last_pos = enemy->pos;
+						if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, ai.target_last_pos)) < 0.1f && u.action == A_NONE && ai.next_attack < 0)
+						{
+							// aggro
+							u.mesh_inst->Play("aggro", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.action = A_ANIMATION;
+							u.animation = ANI_PLAY;
+							ai.next_attack = u.mesh_inst->GetGroup(0).anim->length + Random(0.2f, 0.5f);
+
+							u.PlaySound(u.GetSound(SOUND_AGGRO), AGGRO_SOUND_DIST);
+						}
+
+						// look at
+						look_at = LookAtTarget;
+						target_pos = ai.target_last_pos;
+					}
+					else
+					{
+						if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, ai.target_last_pos)) > 0.1f)
+						{
+							// look at
+							look_at = LookAtTarget;
+							target_pos = ai.target_last_pos;
+						}
+						else
+						{
+							// end aggro
+							ai.state = AIController::Idle;
+							ai.st.idle.action = AIController::Idle_None;
+							ai.in_combat = false;
+							ai.change_ai_mode = true;
+							ai.loc_timer = Random(5.f, 10.f);
+							ai.timer = Random(1.f, 2.f);
+						}
 					}
 				}
 				break;

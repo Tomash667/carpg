@@ -2,7 +2,6 @@
 #include "GameStats.h"
 
 #include "BitStreamFunc.h"
-#include "GameFile.h"
 
 GameStats* game_stats;
 

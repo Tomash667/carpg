@@ -29,90 +29,6 @@ aiLabyrinth = "Jesteœmy w labiryncie. Lepiej siê tu nie zgubiæ."
 aiNoEnemies = " Chyba nie ma tu wrogów."
 aiNearEnemies = " W okolicy jest pe³no %s."
 aiCave = "Nie lubiê jaskiñ, nigdy nie ma w nich skarbów."
-aiInsaneText0 = "Czy wiesz ¿e to co teraz mówiê nie jest podpowiedzi¹ jak znaleŸæ skarb wart milion sztuk z³ota?"
-aiInsaneText1 = "Nie ma nic do powiedzenia."
-aiInsaneText2 = "Wykonaæ instrukcjê #0xDEADC0DE#."
-aiInsaneText3 = "Gdzie jest moje ciastko?!"
-aiInsaneText4 = "Wiem, ¿e nic nie wiem. Ale czy oni to wiedz¹?"
-aiInsaneText5 = "Dzieñ 13, nadal myœl¹ ¿e jestem jednym z nich."
-aiInsaneText6 = "Nie ogl¹daj siê za siebie..."
-aiInsaneText7 = "(mamrotanie)"
-aiInsaneText8 = "(nuci)"
-aiInsaneText9 = "Znasz definicje szaleñstwa?"
-aiInsaneText10 = "Mordowanie z rana jak œmietana."
-aiInsaneText11 = "Co? Nie! A tak, tak, masz racjê!"
-aiDefaultText0 = "Nuda! Czemu nie dzieje siê tu nic ciekawego?"
-aiDefaultText1 = "S³ysza³eœ o tym co siê ostatnio wydarzy³o?"
-aiDefaultText2 = "Gdzie jest mój ³uk?"
-aiDefaultText3 = "S³ysza³eœ coœ ciekawego?"
-aiDefaultText4 = "Widzia³em jak siê na mnie spojrza³eœ!"
-aiDefaultText5 = "Gdyby tak znaleŸæ jakiœ skarb..."
-aiDefaultText6 = "Hmmm, co to ja mia³em zrobiæ?"
-aiDefaultText7 = "Wydawa³o mi siê, ¿e mia³em wiêcej z³ota."
-aiDefaultText8 = "A gdyby tak rzuciæ to wszystko w cholerê?"
-aiDefaultText9 = "W dzisiejszych czasach na nikim nie mo¿na polegaæ, ot co."
-aiOutsideText0 = "Przynajmniej dzisiaj nie pada."
-aiOutsideText1 = "Taa, cudowny dzieñ... Brakuje tylko deszczu meteorytów!"
-aiOutsideText2 = "£adna dzisiaj pogoda, co?"
-aiInsideText0 = "Co to by³ za dŸwiêk?"
-aiInsideText1 = "Mam nadzieje ¿e nie spadnie mi coœ na g³owê."
-aiHumanText0 = "Ludzie ci¹gle gadaj¹..."
-aiHumanText1 = "Cholerni stra¿nicy, do niczego siê nie przydaj¹."
-aiHumanText2 = "W tej historii musi byæ jednak ziarno prawdy."
-aiHumanText3 = "Kiedyœ takie sprawy za³atwia³o siê inaczej."
-aiOrcText0 = "Ile dziœ zabi³eœ ludzi?"
-aiOrcText1 = "Gdzie jest mój topór do kurwy?"
-aiOrcText2 = "Ta mora dobrze walczy³a! I by³a smaczna..."
-aiOrcText3 = "Czas z³upiæ jak¹œ wioskê."
-aiOrcText4 = "Zapytaj wodza kiedy z³upimy jak¹œ wioskê."
-aiOrcText5 = "Kiedy z³upimy jak¹œ wioskê?"
-aiOrcText6 = "Dawno nie z³upiliœmy ¿adnej wioski."
-aiGoblinText0 = "¯ryj gruz!"
-aiGoblinText1 = "Ciê¿kie jest ¿ycie goblina!"
-aiGoblinText2 = "Byæ goblinem to jak graæ na poziomie trudnym!"
-aiGoblinText3 = "Kto zabra³ moje ³achmany!"
-aiGoblinText4 = "Gobliñskie piwo smakuje jak siki! I to ju¿ raz wypite!"
-aiMageText0 = "Dziwne! To nie powinno siê wydarzyæ."
-aiMageText1 = "Ktoœ nas obserwuje. Udawaj ¿e nie widzisz."
-aiMageText2 = "Jak by nazwaæ to nowe zaklêcie..."
-aiMageText3 = "Ten czar ma dziwne efekty uboczne..."
-aiSecretText0 = "Co powiedzia³ jeden ba³wanek do drugiego?"
-aiSecretText1 = "Kamieñ ksiê¿ycowy, ksiê¿ycowa studnia. Czy to ma jakiœ zwi¹zek?"
-aiSecretText2 = "Co le¿y w cieniu pos¹gu?"
-aiHeroDungeonText0 = "Co tu tak œmierdzi?"
-aiHeroDungeonText1 = "Uwa¿aj na pu³apki."
-aiHeroDungeonText2 = "Kolejne podziemia. Cudownie..."
-aiHeroDungeonText3 = "Pamiêtasz jak zabi³em tego potwora?"
-aiHeroCityText0 = "Napi³bym siê piwa."
-aiHeroCityText1 = "Idziemy do karczmy?"
-aiHeroCityText2 = "Ciekawe czy kowal ma jakiœ dobry i tani pancerz dla mnie."
-aiHeroCityText3 = "Kupi³bym sobie jak¹œ lepsza broñ ale tu nic nie ma ciekawego."
-aiHeroCityText4 = "Ci stra¿nicy nic nie potrafi¹."
-aiBanditText0 = "Gdzie ta karawana?!"
-aiBanditText1 = "Kupcy jak zwykle siê spóŸniaj¹, trzeba ukraœæ im wiêcej z³ota za karê."
-aiBanditText2 = "Gdzie z³oto dla szefa?"
-aiBanditText3 = "Piêœci mnie œwierzbi¹."
-aiBanditText4 = "Gdzie moje piwo?!"
-aiBanditText5 = "Kurwa!"
-aiBanditText6 = "Nie chcia³bym byæ teraz w jego skórze."
-aiHeroOutsideText0 = "W tamtych krzakach coœ siê poruszy³o."
-aiHeroOutsideText1 = "Dziwne to drzewo..."
-aiDrunkMageText0 = "(hic)"
-aiDrunkMageText1 = "Gdzie moje (hic) piwo?!"
-aiDrunkMageText2 = "(HIC)"
-aiDrunkText0 = "A kto z nami nie wypije tego we dwa kije!"
-aiDrunkText1 = "(hic)"
-aiDrunkText2 = "Potrzeba wiêcej piwa!"
-aiDrunkText3 = "Ze mn¹ siê nie napijesz?!"
-aiDrunkText4 = "Jesssce tylkoooo jeddnoo piwoo..."
-aiDrunkText5 = "DŸwiêku harfy, wiatru szum, wodo, wodo, zmieñ siê w rum!"
-aiDrunkContestText0 = "Ahhhh, kolejne zawody. A¿ siê ³ezka w oku krêci..."
-aiDrunkContestText1 = "Na co jeszcze czekamy?!"
-aiDrunkContestText2 = "Zawody! Zawody! Zawody!"
-aiDrunkContestText3 = "Piwa! Piwa dajcie!"
-aiWildHunterText0 = "Przeklêci drwale! Wykarczowali by ca³y las gdyby im na to pozwoliæ!"
-aiWildHunterText1 = "Gdzie ja zostawi³em mój kostium wilka?"
-aiWildHunterText2 = "Nie spocznê dopóki gniew natury nie zniszczy tego miasta!"
 
 // drinking contest
 contestNoWinner = "W tym roku nikt nie wygra³ zawodów w piciu."
@@ -138,16 +54,69 @@ contestPrize = "PodejdŸ no tu po nagrodê!"
 contestNoPeople = "Co jest do cholery?! Nikt nie przyszed³!"
 
 // tutorial
-tut0 = "Witaj w samouczku CaRpg! Poruszasz postaci¹ u¿ywaj¹c strza³ek/[WSAD].\nUstawienia te mo¿esz zmieniæ w opcjach. Obracasz siê u¿ywaj¹c myszki.\nKó³kiem myszy ustawiasz odleg³oœæ kamery. PodejdŸ do drzwi za rogiem."
-tut1 = "Aby czegoœ u¿yæ kliknij lewym przyciskiem myszki lub [E]. [E] mo¿esz u¿ywaæ gdy\nmasz wyci¹gniêt¹ broñ. U¿ywaj¹c [Shift] mo¿esz powoli chodziæ. Otwórz drzwi\ni idŸ dalej."
-tut2 = "U¿yj skrzyni aby j¹ przeszukaæ. U góry widoczna jest zawartoœæ skrzyni\na na dole twój ekwipunek. Klikniêcie na przedmiot przenosi go do twojego\nekwipunku lub do skrzyni. Na dole masz wskaŸnik obci¹¿enia, przytrzymaj\nnad nim myszkê aby uzyskaæ szczegó³owe informacje. Obok znajduje siê\ninformacja o posiadanym z³ocie, klikniêcie powoduje schowanie z³ota.\nKlawisz [I] otwiera ekwipunek. [ESC] zamyka.\nZabierz przedmioty ze skrzyni i idŸ dalej."
-tut3 = "Otwórz ekwipunek u¿ywaj¹c klawisza [I]. Klikniêcie lewym przyciskiem\nmyszki zak³ada przedmiot, mo¿esz mieæ za³o¿ony broñ, ³uk, pancerz i\ntarczê. Klikniêcie prawym przyciskiem myszki upuszcza przedmiot na\nziemiê. Po za³o¿eniu wciœnij [Spacje] aby wyj¹æ/schowaæ broñ. Zaatakuj\nmanekin na œrodku pokoju lewym przyciskiem myszy lub [Z].\nPotem udaj siê dalej."
-tut4 = "Za tymi drzwiami czeka na ciebie przeciwnik - goblin. Nie stanowi on\nwiêkszego wyzwania. Atakuj go a¿ zdechnie. Mo¿esz blokowaæ ciosy prawym\nprzyciskiem myszki. Podczas bloku mo¿esz uderzyæ tarcz¹. Przytrzymuj¹c\nlewy przycisk myszki mo¿esz wykonaæ ciê¿ki cios. Pamiêtaj ¿e atakowanie zu¿ywa wytrzyma³oœæ. IdŸ dalej i zabij goblina."
-tut5 = "Mo¿esz uzyskaæ wiêcej informacji o grze:\n[I] - ekwipunek\n[C] - panel postaci\n[K] - czary i zdolnoœci\n[T] - dru¿yna\n[M] - minimapa\n[J] - dziennik\n[Tab] - ekran rozmowy.\n\nObejrzyj te okna i potem ruszaj dalej."
-tut6 = "W skrzyni znajduje siê miksturka i ³uk. Aby wypiæ miksturkê kliknij na\nni¹ w ekwipunku lub wciœnij [4]. Po za³o¿eniu ³uku mo¿esz go wyj¹æ wciskaj¹c\nklawisz [2]. Klawisz [1] wyjmuje broñ do walki wrêcz. [Space] wyjmuje ostatnio\nu¿ywan¹ broñ. Skróty te mo¿na zmieniæ przeci¹gaj¹c je z ekwipunku/zdolnoœci\nna listê skrótów na dole. IdŸ do nastêpnego pokoju."
-tut7 = "Wyjmij ³uk wciskaj¹c klawisz [2]. Strzel w tarczê aby otworzyæ nastêpne drzwi.\nCelujesz u¿ywaj¹c myszki."
-tut8 = "Aby porozmawiaæ z ludŸmi kliknij lewym przyciskiem myszki/[Z] jeœli nie masz\nwyci¹gniêtej broni lub [R]. Z niektórymi osobami mo¿esz handlowaæ, zdobywaæ zadania,\ninformacje lub rekrutowaæ. Jeœli zaatakujesz neutraln¹ postaæ wszyscy mieszkañcy\nmiast bêd¹ ciê atakowaæ wiêc lepiej tego nie robiæ. Porozmawiaj z postaci¹ a potem\nwyjdŸ schodami na zewn¹trz."
-tut9 = "Gratulacje! Ukoñczy³eœ samouczek.\nPamiêtaj ¿e to dopiero pocz¹tek, zapisuj czêsto grê i nie podró¿uj samotnie.\nW akademii lub pierwszym mieœcie mo¿esz zrekrutowaæ za darmo dwóch towarzyszy.\nPopytaj mieszkañców miasta o okoliczne podziemia i idŸ tam gdzie s¹ bardzo\ns³abi wrogowie póki nie masz doœwiadczenia.\nPowodzenia!"
+tut0 = 
+"Witaj w samouczku CaRpg! Poruszasz postaci¹ u¿ywaj¹c strza³ek/[WSAD].
+Ustawienia te mo¿esz zmieniæ w opcjach. Obracasz siê u¿ywaj¹c myszki.
+Kó³kiem myszy ustawiasz odleg³oœæ kamery. PodejdŸ do drzwi za rogiem."
+tut1 =
+"Aby czegoœ u¿yæ kliknij lewym przyciskiem myszki lub [E]. [E] mo¿esz
+u¿ywaæ gdy masz wyci¹gniêt¹ broñ. U¿ywaj¹c [Shift] mo¿esz powoli chodziæ.
+Otwórz drzwi i idŸ dalej."
+tut2 =
+"U¿yj skrzyni aby j¹ przeszukaæ. U góry widoczna jest zawartoœæ skrzyni
+a na dole twój ekwipunek. Klikniêcie na przedmiot przenosi go do twojego
+ekwipunku lub do skrzyni. Na dole masz wskaŸnik obci¹¿enia, przytrzymaj
+nad nim myszkê aby uzyskaæ szczegó³owe informacje. Obok znajduje siê
+informacja o posiadanym z³ocie, klikniêcie powoduje schowanie z³ota.
+Klawisz [I] otwiera ekwipunek, [ESC] zamyka. Zabierz przedmioty ze
+skrzyni i idŸ dalej."
+tut3 =
+"Otwórz ekwipunek u¿ywaj¹c klawisza [I]. Klikniêcie lewym przyciskiem
+myszki zak³ada przedmiot, mo¿esz mieæ za³o¿ony broñ, ³uk, pancerz i
+tarczê. Klikniêcie prawym przyciskiem myszki upuszcza przedmiot na
+ziemiê. Po za³o¿eniu wciœnij [Spacje] aby wyj¹æ/schowaæ broñ. Zaatakuj
+manekin na œrodku pokoju lewym przyciskiem myszy lub [Z]. Potem udaj
+siê dalej."
+tut4 =
+"Za tymi drzwiami czeka na ciebie przeciwnik - goblin. Nie stanowi on
+wiêkszego wyzwania. Atakuj go a¿ zdechnie. Mo¿esz blokowaæ ciosy prawym
+przyciskiem myszki. Podczas bloku mo¿esz uderzyæ tarcz¹. Przytrzymuj¹c
+lewy przycisk myszki mo¿esz wykonaæ ciê¿ki cios. Pamiêtaj ¿e atakowanie
+zu¿ywa wytrzyma³oœæ. IdŸ dalej i zabij goblina."
+tut5 =
+"Mo¿esz uzyskaæ wiêcej informacji o grze:
+[I] - ekwipunek
+[C] - panel postaci
+[K] - czary i zdolnoœci
+[T] - dru¿yna
+[J] - dziennik
+['\"] - ekran rozmowy
+[Tab] - minimapa.
+
+Obejrzyj te okna i potem ruszaj dalej."
+tut6 =
+"W skrzyni znajduje siê miksturka i ³uk. Aby wypiæ miksturkê kliknij na
+ni¹ w ekwipunku lub wciœnij [4]. Po za³o¿eniu ³uku mo¿esz go wyj¹æ
+wciskaj¹c klawisz [2]. Klawisz [1] wyjmuje broñ do walki wrêcz.
+[Space] wyjmuje ostatnio u¿ywan¹ broñ. Skróty te mo¿na zmieniæ
+przeci¹gaj¹c je z ekwipunku/zdolnoœci na listê skrótów na dole. IdŸ do
+nastêpnego pokoju."
+tut7 =
+"Wyjmij ³uk wciskaj¹c klawisz [2]. Strzel w tarczê aby otworzyæ nastêpne
+drzwi. Celujesz u¿ywaj¹c myszki."
+tut8 =
+"Aby porozmawiaæ z ludŸmi kliknij lewym przyciskiem myszki jeœli nie masz
+wyci¹gniêtej broni lub [E]. Z niektórymi osobami mo¿esz handlowaæ,
+zdobywaæ zadania, informacje lub rekrutowaæ. Jeœli zaatakujesz neutraln¹
+postaæ wszyscy mieszkañcy miast bêd¹ ciê atakowaæ wiêc lepiej tego nie
+robiæ. Porozmawiaj z postaci¹ a potem wyjdŸ schodami na zewn¹trz."
+tut9 =
+"Gratulacje! Ukoñczy³eœ samouczek.
+Pamiêtaj ¿e to dopiero pocz¹tek, zapisuj czêsto grê i nie podró¿uj
+samotnie. W akademii lub pierwszym mieœcie mo¿esz zrekrutowaæ za darmo
+dwóch towarzyszy. Popytaj mieszkañców miasta o okoliczne podziemia i idŸ
+tam gdzie s¹ bardzo s³abi wrogowie póki nie masz doœwiadczenia.
+Powodzenia!"
 tutNote = "Ukoñcz samouczek aby rozpocz¹æ prawdziw¹ przygodê!"
 tutLoc = "Samouczek"
 tutPlay = "Czy chcesz przejœæ samouczek?"
@@ -218,21 +187,16 @@ rumor_d_5 = "Nie jestem (hic) najebany!"
 rumor_d_6 = "Nie ma brzydkich kobiet, czasem tylko wina brak..."
 
 // npc texts
-mayorQFailed0 = "Nie mo¿na na tobie polegaæ..."
-mayorQFailed1 = "Nie dam ci ¿adnego wa¿nego zadania! IdŸ zbieraæ marchewkê!"
-mayorQFailed2 = "Potrzebuje kogoœ na kim mo¿na polegaæ, na tobie nie mogê."
 questAlreadyGiven0 = "Przydzieli³em ci ju¿ zadanie do wykonania."
 questAlreadyGiven1 = "Najpierw zajmij siê tym co ci zleci³em."
 mayorNoQ0 = "Chwilowo nie mam dla ciebie ¿adnego zadania. Wróæ za jakiœ czas."
 mayorNoQ1 = "Aktualnie nie potrzebuje twojej pomocy, mo¿e w przysz³oœci."
-captainQFailed0 = "Nie nadajesz siê do takich zadañ."
-captainQFailed1 = "Potrzebuje ludzi którzy mog¹ siê przydaæ, ty ju¿ raz zawiod³eœ."
 captainNoQ0 = "Aktualnie jest spokój w okolicy. Zobaczymy co siê bêdzie dzia³o za jakiœ czas."
 captainNoQ1 = "Nie mam w tej chwili dla ciebie ¿adnego zadania."
 locationDiscovered0 = "Ponoæ %sna %s st¹d znajduje siê %s. Tak s³ysza³em."
 locationDiscovered1 = "Ludzie gadaj¹ ¿e %sna %s st¹d znajduje siê %s."
 allDiscovered0 = "Chcia³em ci opowiedzieæ o jakichœ nieznany lokalizacjach ale wygl¹da na to ¿e wiesz ju¿ wszystko."
-allDiscovered1 = "Tyle lokacji... A ty wszêdzie by³eœ!"
+allDiscovered1 = "Tyle lokalizacji... A ty wszêdzie by³eœ!"
 campDiscovered0 = "Ponoæ %sna %s st¹d znajduje siê obóz %s. Mam nadziejê ¿e nie zaatakuj¹ jakiejœ wioski."
 campDiscovered1 = "Chodz¹ pog³oski ¿e %sna %s st¹d jest obóz %s. Stra¿nicy powinni siê tym zaj¹æ!"
 allCampDiscovered0 = "Aktualnie w kraju jest spokój. Nie ma ¿adnych obozów bandytów czy orków lub goblinów."
@@ -264,7 +228,7 @@ pvpTooFar = "%s odszed³ zbyt daleko od areny."
 pvp = "Czy chcesz stoczyæ walkê na arenie przeciwko %s?"
 pvpWith = "Walcz z %s"
 newsCampCleared = "Obóz niedaleko %s zosta³ oczyszczony."
-newsLocCleared = "Lokacja %s zosta³a oczyszczona przez poszukiwaczy przygód."
+newsLocCleared = "Lokalizacja %s zosta³a oczyszczona przez poszukiwaczy przygód."
 arenaText0 = "Krzes³em! Krzes³em go!"
 arenaText1 = "Uderz go w ten zawszony ryj!"
 arenaText2 = "Co ty robisz?!"

@@ -614,7 +614,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
-			unit->human_data->height = Lerp(0.9f, 1.1f, float(slider[4].val) / 100);
+			unit->human_data->height = Lerp(MIN_HEIGHT, MAX_HEIGHT, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->human_data->ApplyScale(unit->mesh_inst);
 			unit->mesh_inst->need_update = true;
@@ -945,7 +945,7 @@ void CreateCharacterPanel::SetControls()
 	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
 	slider[3].val = hair_color_index;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
-	slider[4].val = int((unit->human_data->height - 0.9f) * 500);
+	slider[4].val = int((unit->human_data->height - MIN_HEIGHT) * 500);
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 }
 

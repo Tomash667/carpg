@@ -9,6 +9,7 @@
 #include "Item.h"
 #include "Language.h"
 #include "Level.h"
+#include "Tile.h"
 
 #include <Mesh.h>
 #include <Render.h>
@@ -48,8 +49,6 @@ void GameResources::Init()
 	scene->lights.push_back(light);
 
 	node = SceneNode::Get();
-	node->type = SceneNode::NORMAL;
-	node->tint = Vec4::One;
 	scene->Add(node);
 
 	camera = new Camera;
@@ -131,6 +130,7 @@ void GameResources::LoadData()
 	tFlare = res_mgr->Load<Texture>("flare.png");
 	tFlare2 = res_mgr->Load<Texture>("flare2.png");
 	tWater = res_mgr->Load<Texture>("water.png");
+	tVignette = res_mgr->Load<Texture>("vignette.jpg");
 
 	// preload terrain textures
 	res_mgr->AddTaskCategory(txLoadTerrainTextures);
@@ -173,7 +173,6 @@ void GameResources::LoadData()
 	aArrow = res_mgr->Load<Mesh>("strzala.qmsh");
 	aSkybox = res_mgr->Load<Mesh>("skybox.qmsh");
 	aBag = res_mgr->Load<Mesh>("worek.qmsh");
-	aChest = res_mgr->Load<Mesh>("skrzynia.qmsh");
 	aGrating = res_mgr->Load<Mesh>("kratka.qmsh");
 	aDoorWall = res_mgr->Load<Mesh>("nadrzwi.qmsh");
 	aDoorWall2 = res_mgr->Load<Mesh>("nadrzwi2.qmsh");
@@ -185,6 +184,7 @@ void GameResources::LoadData()
 	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
 	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
 	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
+	aDungeonDoor = res_mgr->Load<Mesh>("dungeon_door.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();
@@ -326,12 +326,12 @@ void GameResources::PreloadAbilities()
 //=================================================================================================
 void GameResources::PreloadObjects()
 {
-	for(BaseObject* p_obj : BaseObject::objs)
+	for(pair<const int, BaseObject*>& p : BaseObject::items)
 	{
-		BaseObject& obj = *p_obj;
+		BaseObject& obj = *p.second;
 		if(obj.mesh || obj.variants)
 		{
-			if(obj.mesh && !IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
+			if(obj.mesh && !IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS) && obj.type == OBJ_CYLINDER)
 				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
 
 			Mesh::Point* point;
@@ -371,7 +371,7 @@ void GameResources::PreloadObjects()
 				obj.matrix = &point->mat;
 				obj.size = point->size.XZ();
 
-				if(!IsSet(obj.flags, OBJ_NO_PHYSICS))
+				if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 					obj.shape = new btBoxShape(ToVector3(point->size));
 
 				if(IsSet(obj.flags, OBJ_PHY_ROT))
@@ -416,7 +416,7 @@ void GameResources::PreloadObjects()
 					{
 						assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
 						obj.next_obj = new BaseObject;
-						if(!IsSet(obj.flags, OBJ_NO_PHYSICS))
+						if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 						{
 							btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
 							obj.next_obj->shape = shape;
@@ -665,6 +665,24 @@ Sound* GameResources::GetItemSound(const Item* item)
 		return sCoins;
 	default:
 		return sItem[7];
+	}
+}
+
+//=================================================================================================
+Mesh* GameResources::GetEntryMesh(EntryType type)
+{
+	switch(type)
+	{
+	default:
+		assert(0);
+	case ENTRY_STAIRS_UP:
+		return aStairsUp;
+	case ENTRY_STAIRS_DOWN:
+		return aStairsDown;
+	case ENTRY_STAIRS_DOWN_IN_WALL:
+		return aStairsDown2;
+	case ENTRY_DOOR:
+		return aDungeonDoor;
 	}
 }
 

@@ -5,7 +5,6 @@
 #include "GroundItem.h"
 #include "Item.h"
 #include "Location.h"
-#include "SaveState.h"
 #include "ScriptManager.h"
 #include "World.h"
 #pragma warning(error: 4062)
@@ -32,7 +31,7 @@ Var* Var::SetGeneric(void* ptr, int type)
 void Var::GetGeneric(void* ptr, int type)
 {
 	// TODO: throw on invalid type
-	assert(this->type == script_mgr->GetVarType(type));
+	assert(this->type == script_mgr->GetVarType(type) || this->type == Type::Magic);
 	*(void**)ptr = this->ptr;
 }
 
@@ -77,7 +76,7 @@ Var* Vars::TryGet(const string& name) const
 }
 
 //=================================================================================================
-void Vars::Save(FileWriter& f)
+void Vars::Save(GameWriter& f)
 {
 	f << vars.size();
 	for(auto& e : vars)
@@ -126,6 +125,8 @@ void Vars::Save(FileWriter& f)
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
+		case Var::Type::UnitGroup:
+		case Var::Type::Magic:
 			assert(0); // TODO
 			break;
 		}
@@ -133,7 +134,7 @@ void Vars::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void Vars::Load(FileReader& f)
+void Vars::Load(GameReader& f)
 {
 	uint count;
 	f >> count;
@@ -222,6 +223,8 @@ void Vars::Load(FileReader& f)
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
+		case Var::Type::UnitGroup:
+		case Var::Type::Magic:
 			assert(0); // TODO
 			break;
 		}

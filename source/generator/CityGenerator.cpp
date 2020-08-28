@@ -3,6 +3,7 @@
 
 #include "Arena.h"
 #include "AIController.h"
+#include "AITeam.h"
 #include "City.h"
 #include "Game.h"
 #include "Level.h"
@@ -2155,9 +2156,9 @@ void CityGenerator::Generate()
 	CreateMap();
 	Init(city->tiles, city->h, OutsideLocation::size, OutsideLocation::size);
 	SetRoadSize(3, 32);
-	float hmax = village ? Random(5.f, 12.f) : Random(2.5f, 5.f);
-	int octaves = Random(2, 8);
-	float frequency = Random(3.f, 16.f);
+	const float hmax = village ? Random(4.f, 10.f) : Random(2.5f, 5.f);
+	const int octaves = Random(2, 8);
+	const float frequency = Random(3.f, 16.f);
 	RandomizeHeight(octaves, frequency, 0.f, hmax);
 
 	vector<ToBuild> tobuild;
@@ -2380,9 +2381,12 @@ void CityGenerator::OnEnter()
 	}
 
 	// spawn quest units
-	if(game_level->location->active_quest && game_level->location->active_quest != ACTIVE_QUEST_HOLDER && !game_level->location->active_quest->done
-		&& game_level->location->active_quest->type != Q_SCRIPTED)
-		quest_mgr->HandleQuestEvent(game_level->location->active_quest);
+	if(game_level->location->active_quest && game_level->location->active_quest != ACTIVE_QUEST_HOLDER)
+	{
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(game_level->location->active_quest);
+		if(quest && !quest->done)
+			quest_mgr->HandleQuestEvent(quest);
+	}
 
 	// generate minimap
 	game->LoadingStep(game->txGeneratingMinimap);
@@ -2703,7 +2707,16 @@ void CityGenerator::SpawnTemporaryUnits()
 void CityGenerator::RemoveTemporaryUnits()
 {
 	for(LevelArea& area : game_level->ForEachArea())
-		DeleteElements(area.units, [](Unit* u) {return u->temporary; });
+	{
+		DeleteElements(area.units, [](Unit* u)
+		{
+			if(!u->temporary)
+				return false;
+			if(u->IsHero() && u->hero->otherTeam)
+				u->hero->otherTeam->Remove();
+			return true;
+		});
+	}
 }
 
 //=================================================================================================

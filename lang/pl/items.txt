@@ -16,6 +16,10 @@ item dagger_rapier {
 	name "Rapier"
 	desc "Rapier wymaga sporej precyzji aby trafiæ w s³abiej odkryte miejsca ale obra¿enia s¹ wiêksze."
 }
+item dagger_cutlass {
+	name "Kordelas"
+	desc "Krótki miecz popularny wœród marynarzy i piratów."
+}
 item dagger_assassin {
 	name "Sztylet zabójcy"
 	desc "Sztylet zabójcy zosta³ magicznie zaostrzony i sam nakierowuje siê w s³abe punkt ofiary. Cios w plecy dla ka¿dego!"
@@ -50,6 +54,10 @@ item sword_orcish {
 item sword_serrated {
 	name "Z¹bkowany miecz"
 	desc "Z¹bkowany miecz wykonany z jakiegoœ dziwnego stopu metali. Ostry jak brzytwa."
+}
+item sword_mercenary {
+	name "Miecz najemnika"
+	desc "Wykonane na zlecenie dla elitarnego oddzia³u najemników. Miecze te przetrwa³y du¿ej ni¿ pamieæ o ich nazwie..."
 }
 item sword_adamantine {
 	name "Adamantowy miecz"
@@ -86,6 +94,10 @@ item axe_crystal {
 	name "Kryszta³owy topór"
 	desc "Topór wykonany ze specjalnego kryszta³u. Bardzo ciê¿ki!"
 }
+item axe_dwarf {
+	name "Krasnoludzki topór"
+	desc "Topór wykonany przez krasnoludy, dzie³o sztuki wojennej."
+}
 item axe_giant {
 	name "Topór giganta"
 	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje on wiêksze obra¿enia."
@@ -113,13 +125,21 @@ item blunt_orcish_shaman {
 	name "Ozdobny orkowy m³ot"
 	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
 }
+item blunt_barbed {
+	name "Kolczasta pa³ka"
+	desc "Stalowa kula z kolcami na koñcu patyka. Zadaje obra¿enia k³uto-obuchowe."
+}
 item blunt_morningstar {
 	name "Morgensztern"
-	desc "Stalowa kula z kolcami na koñcu patyka. Zadaje obra¿enia k³uto-obuchowe."
+	desc "Ciê¿sza wersja kolczastej pa³ki."
 }
 item blunt_dwarven {
 	name "Krasnoludzki m³ot"
 	desc "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
+}
+item blunt_ogre {
+	name "Pa³ka ogra"
+	desc "Bardzo ciê¿ka prymitywna pa³ka."
 }
 item blunt_adamantine {
 	name "Adamantowy buzdygan"
@@ -205,6 +225,10 @@ item shield_wood {
 	name "Drewniana tarcza"
 	desc "Podstawowa tarcza. Trochê l¿ejsza i tañsza od metalowej. U¿ywasz na w³asne ryzyko."
 }
+item shield_kite {
+	name "Tarcza latawcowa"
+	desc "Du¿a drewniana tarcza w kszta³cie latawca."
+}
 item shield_iron {
 	name "¯elazna tarcza"
 	desc "Standardowa tarcza za przyzwoit¹ cenê. Chyba ciê na ni¹ staæ?"
@@ -217,13 +241,21 @@ item shield_mithril {
 	name "Mithrilowa tarcza"
 	desc "Tarcza z mithrilu, o po³owê l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
 }
+item shield_spiked {
+	name "Tarcza z kolcami"
+	desc "Wytrzyma³a tarcza przystosowana do ataku jak i do obrony. Zadaje wiêksze obra¿enia podczas uderzenia."
+}
 item shield_adamantine {
 	name "Adamantowa tarcza"
 	desc "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
 }
 item shield_wall {
 	name "Mur"
-	desc "Ta tarcza artefakt jest wykonana z magicznego kamienia. Jest niezniszczalna. Zapewnia znaczn¹ ochronê przed czarami."
+	desc "Gdy pradawne miasto Ilmare zosta³o obrócone przez wrogów w proch jedyne co zosta³o to kawa³ek muru. Stworzono z niego ten niezniszczalny artefakt. Zapewnia znaczn¹ ochronê przed czarami."
+}
+item shield_death {
+	name "Tarcza œmierci"
+	desc "Mroczny artefakt stworzony przez kowali z Pustki. Zapewnia znaczn¹ ochronê przed czarami."
 }
 
 //------------------------------------------------------------------------------
@@ -658,9 +690,9 @@ item r_heavy_armor {
 	name "Pierœcieñ ciê¿kiego pancerz"
 	desc "+10 do umiejêtnoœci ciêzki pancerz."
 }
-item r_haggle {
-	name "Pierœcieñ targowania"
-	desc "+10 do umiejêtnoœci targowanie."
+item r_persuasion {
+	name "Pierœcieñ perswazji"
+	desc "+10 do umiejêtnoœci perswazji."
 }
 item r_carry {
 	name "Pierœcieñ tragarza"
@@ -920,6 +952,10 @@ item wolf_pelt {
 }
 item worg_pelt {
 	name "Futro worga"
+}
+item dire_wolf_pelt {
+	name "Futro z³owieszczego wilka"
+	desc "Cenne trofeum."
 }
 item bear_pelt {
 	name "Futro niedŸwiedzia"

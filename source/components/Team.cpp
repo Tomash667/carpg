@@ -2,9 +2,9 @@
 #include "Team.h"
 
 #include "AIController.h"
+#include "AITeam.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "ItemHelper.h"
@@ -15,7 +15,6 @@
 #include "Quest_Evil.h"
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"
-#include "SaveState.h"
 #include "TeamPanel.h"
 #include "Unit.h"
 #include "UnitHelper.h"
@@ -69,6 +68,8 @@ void Team::AddMember(Unit* unit, HeroType type)
 	unit->hero->team_member = true;
 	unit->hero->type = type;
 	unit->OrderFollow(DialogContext::current ? DialogContext::current->pc->unit : leader);
+	if(unit->hero->otherTeam)
+		unit->hero->otherTeam->Remove(unit);
 
 	// add to team list
 	if(type == HeroType::Normal)
@@ -336,6 +337,28 @@ bool Team::HaveOtherPlayer()
 	return false;
 }
 
+bool Team::HaveClass(Class* clas) const
+{
+	assert(clas);
+	if(net->IsServer())
+	{
+		for(PlayerInfo& info : net->players)
+		{
+			if(info.left != PlayerInfo::LEFT_NO && info.cc.clas == clas)
+				return true;
+		}
+	}
+	else
+	{
+		for(const Unit& unit : members)
+		{
+			if(unit.GetClass() == clas)
+				return true;
+		}
+	}
+	return false;
+}
+
 bool Team::IsAnyoneAlive()
 {
 	for(Unit& unit : members)
@@ -379,25 +402,6 @@ void Team::Load(GameReader& f)
 		unit = Unit::GetById(f.Read<int>());
 
 	leader = Unit::GetById(f.Read<int>());
-	if(LOAD_VERSION < V_0_7)
-	{
-		int team_gold;
-		f >> team_gold;
-		if(team_gold > 0)
-		{
-			Vec2 share = GetShare();
-			for(Unit& unit : active_members)
-			{
-				float gold = (unit.IsPlayer() ? share.x : share.y) * team_gold;
-				float gold_int, part = modf(gold, &gold_int);
-				unit.gold += (int)gold_int;
-				if(unit.IsPlayer())
-					unit.player->split_gold = part;
-				else
-					unit.hero->split_gold = part;
-			}
-		}
-	}
 	f >> crazies_attack;
 	f >> is_bandit;
 	if(LOAD_VERSION >= V_0_8)
@@ -411,6 +415,11 @@ void Team::Load(GameReader& f)
 		else
 			free_recruits = 0;
 	}
+
+	if(LOAD_VERSION >= V_DEV)
+		f >> checkResults;
+	else
+		checkResults.clear();
 
 	CheckCredit(false, true);
 	CalculatePlayersLevel();
@@ -426,6 +435,7 @@ void Team::Reset()
 	crazies_attack = false;
 	is_bandit = false;
 	free_recruits = 2;
+	checkResults.clear();
 }
 
 void Team::ClearOnNewGameOrLoad()
@@ -453,6 +463,7 @@ void Team::Save(GameWriter& f)
 	f << crazies_attack;
 	f << is_bandit;
 	f << free_recruits;
+	f << checkResults;
 }
 
 void Team::SaveOnWorldmap(GameWriter& f)
@@ -474,7 +485,16 @@ void Team::Update(int days, bool travel)
 	}
 	else
 	{
-		bool autoheal = (quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_mgr->quest_evil->evil_state == Quest_Evil::State::KillBoss);
+		bool autoheal = false;
+		for(Unit& unit : members)
+		{
+			Class* clas = unit.GetClass();
+			if(clas && IsSet(clas->flags, Class::F_AUTOHEAL))
+			{
+				autoheal = true;
+				break;
+			}
+		}
 
 		// regeneracja hp / trenowanie
 		for(Unit& unit : members)
@@ -507,6 +527,8 @@ void Team::Update(int days, bool travel)
 			}
 		}
 	}
+
+	checkResults.clear();
 }
 
 //=================================================================================================
@@ -1550,4 +1572,85 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
 	}
+}
+
+//=================================================================================================
+int Team::GetStPoints() const
+{
+	int pts = 0;
+	for(const Unit& member : members)
+		pts += member.level;
+	return pts;
+}
+
+//=================================================================================================
+bool Team::PersuasionCheck(int level)
+{
+	// if succeded - don't check
+	// if failed - increase difficulty
+	PlayerController* me = DialogContext::current->pc;
+	Unit* talker = DialogContext::current->talker;
+	CheckResult* existingResult = nullptr;
+	for(CheckResult& check : checkResults)
+	{
+		if(check.unit == talker)
+		{
+			if(check.success)
+			{
+				game_gui->messages->AddGameMsg3(me, GMS_PERSUASION_SUCCESS);
+				return true;
+			}
+			else
+			{
+				existingResult = &check;
+				level += 25 * check.tries;
+				break;
+			}
+		}
+	}
+
+	// find best skill value among nearby team members
+	Unit* bestUnit = me->unit;
+	int bestValue = me->unit->Get(SkillId::PERSUASION) + me->unit->Get(AttributeId::CHA) - 50;
+	for(Unit& r_unit : members)
+	{
+		Unit* unit = &r_unit;
+		if(unit == me->unit || unit->area != me->unit->area || Vec3::Distance(unit->pos, me->unit->pos) > 10.f)
+			continue;
+		int value = unit->Get(SkillId::PERSUASION) + unit->Get(AttributeId::CHA) - 50;
+		if(value > bestValue)
+		{
+			bestValue = value;
+			bestUnit = unit;
+		}
+	}
+
+	// do skill check
+	int chance = UnitHelper::CalculateChance(bestValue, level - 25, level + 25);
+	const bool success = (Rand() % 100 < chance);
+
+	// train player
+	me->Train(TrainWhat::Persuade, 0.f, chance);
+	if(me->unit != bestUnit && bestUnit->IsPlayer())
+		bestUnit->player->Train(TrainWhat::Persuade, 0.f, chance);
+
+	// add game msg
+	game_gui->messages->AddGameMsg3(me, success ? GMS_PERSUASION_SUCCESS : GMS_PERSUASION_FAILED);
+
+	// remember result
+	if(existingResult)
+	{
+		existingResult->tries++;
+		existingResult->success = success;
+	}
+	else
+	{
+		CheckResult check;
+		check.unit = talker;
+		check.tries = 1;
+		check.success = success;
+		checkResults.push_back(check);
+	}
+
+	return success;
 }

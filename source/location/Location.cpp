@@ -3,13 +3,12 @@
 
 #include "BitStreamFunc.h"
 #include "City.h"
-#include "GameFile.h"
 #include "Portal.h"
 #include "Quest.h"
 #include "QuestManager.h"
 #include "Quest_Scripted.h"
-#include "SaveState.h"
 #include "UnitGroup.h"
+#include "World.h"
 
 //=================================================================================================
 Location::~Location()
@@ -323,7 +322,7 @@ void Location::SetKnown()
 }
 
 //=================================================================================================
-void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
+void Location::AddEventHandler(Quest2* quest, EventType type)
 {
 	assert(Any(type, EVENT_ENTER, EVENT_PICKUP, EVENT_CLEARED, EVENT_GENERATE));
 
@@ -340,7 +339,7 @@ void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
 }
 
 //=================================================================================================
-void Location::RemoveEventHandler(Quest_Scripted* quest, EventType type, bool cleanup)
+void Location::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 {
 	LoopAndRemove(events, [=](Event& e)
 	{
@@ -414,4 +413,14 @@ void Location::SetNamePrefix(cstring prefix)
 		c.type = NetChange::CHANGE_LOCATION_NAME;
 		c.id = index;
 	}
+}
+
+//=================================================================================================
+void operator >> (GameReader& f, Location*& loc)
+{
+	int index = f.Read<int>();
+	if(index == -1)
+		loc = nullptr;
+	else
+		loc = world->GetLocation(index);
 }

@@ -30,17 +30,18 @@ enum QUEST_TYPE
 	Q_SPREAD_NEWS,
 	Q_RESCUE_CAPTIVE,
 	Q_BANDITS_COLLECT_TOLL, // removed in V_0_13
-	Q_CAMP_NEAR_CITY,
+	Q_CAMP_NEAR_CITY, // removed in V_0_16
 	Q_RETRIEVE_PACKAGE,
 	Q_KILL_ANIMALS,
 	Q_LOST_ARTIFACT,
 	Q_STOLEN_ARTIFACT,
-	Q_FIND_ARTIFACT, // removed in V_DEV
+	Q_FIND_ARTIFACT, // removed in V_0_15
 	Q_CRAZIES,
 	Q_WANTED,
 	Q_MAIN, // removed
 	Q_ARTIFACTS, // removed in V_0_14
-	Q_SCRIPTED
+	Q_SCRIPTED,
+	Q_DIRE_WOLF
 };
 
 //-----------------------------------------------------------------------------

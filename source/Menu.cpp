@@ -30,7 +30,6 @@
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
 #include "SaveLoadPanel.h"
-#include "SaveState.h"
 #include "ServerPanel.h"
 #include "Team.h"
 #include "Utility.h"
@@ -53,8 +52,8 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !gui->HaveDialog() && !game_gui->level_gui->HavePanelOpen() && !game_gui->main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3
-		&& !end_of_game && !dialog_context.dialog_mode;
+	return !gui->HaveDialog() && !game_gui->level_gui->HavePanelOpen() && !game_gui->main_menu->visible
+		&& game_state != GS_MAIN_MENU && !dialog_context.dialog_mode;
 }
 
 //=================================================================================================
@@ -66,6 +65,7 @@ void Game::SaveOptions()
 	cfg.Add("use_specularmap", scene_mgr->use_specularmap);
 	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
+	cfg.Add("sound_device", sound_mgr->GetDevice().ToString());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", engine->GetWindowSize());
@@ -140,24 +140,22 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	team->active_members.push_back(u);
 	team->leader = u;
 
-	u->player = new PlayerController;
-	pc = u->player;
+	pc = new PlayerController;
 	pc->id = 0;
 	pc->is_local = true;
-	pc->Init(*u);
 	pc->name = name;
-	pc->unit->RecalculateWeight();
+	pc->Init(*u, &cc);
+
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
-	cc.Apply(*pc);
+
 	if(quest_mgr->quest_tutorial->finished_tutorial)
 	{
 		u->AddItem(Item::Get("book_adventurer"), 1u, false);
 		quest_mgr->quest_tutorial->finished_tutorial = false;
 	}
-	dialog_context.pc = pc;
 
 	game_level->camera.target = u;
 	team->CalculatePlayersLevel();
@@ -1367,8 +1365,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player = new PlayerController;
 				u->player->id = info.id;
 				u->player->name = info.name;
-				u->player->Init(*u);
-				info.cc.Apply(*u->player);
+				u->player->Init(*u, &info.cc);
 
 				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;
@@ -1655,15 +1652,15 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
-						if(game_level->enter_from == ENTER_FROM_DOWN_LEVEL)
+						if(game_level->enter_from == ENTER_FROM_NEXT_LEVEL)
 						{
-							pos = PtToPos(lvl.GetDownStairsFrontTile());
-							rot = DirToRot(lvl.staircase_down_dir);
+							pos = PtToPos(lvl.GetNextEntryFrontTile());
+							rot = DirToRot(lvl.nextEntryDir);
 						}
 						else
 						{
-							pos = PtToPos(lvl.GetUpStairsFrontTile());
-							rot = DirToRot(lvl.staircase_up_dir);
+							pos = PtToPos(lvl.GetPrevEntryFrontTile());
+							rot = DirToRot(lvl.prevEntryDir);
 						}
 					}
 					else

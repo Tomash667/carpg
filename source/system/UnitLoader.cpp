@@ -3,6 +3,7 @@
 
 #include "Ability.h"
 #include "Content.h"
+#include "HumanData.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
 #include "GameDialog.h"
@@ -43,7 +44,8 @@ enum Group
 	G_BOOK_TYPE,
 	G_SUBPROFILE_GROUP,
 	G_TAG,
-	G_GROUP_OPTIONS
+	G_GROUP_OPTIONS,
+	G_APPEARANCE_KEYWORD
 };
 
 enum UnitDataType
@@ -75,6 +77,7 @@ enum Property
 	P_ABILITIES,
 	P_GOLD,
 	P_DIALOG,
+	P_IDLE_DIALOG,
 	P_GROUP,
 	P_DMG_TYPE,
 	P_WALK_SPEED,
@@ -94,7 +97,9 @@ enum Property
 	P_UPGRADE,
 	P_SPELL_POWER,
 	P_MP,
-	P_TINT
+	P_TINT,
+	P_APPEARANCE,
+	P_SCALE
 };
 
 enum FrameKeyword
@@ -164,6 +169,15 @@ enum SubprofileKeyword
 	SPK_TAGS
 };
 
+enum AppearanceKeyword
+{
+	AK_HAIR,
+	AK_BEARD,
+	AK_MUSTACHE,
+	AK_HAIR_COLOR,
+	AK_HEIGHT
+};
+
 //=================================================================================================
 void UnitLoader::DoLoading()
 {
@@ -183,6 +197,7 @@ void UnitLoader::Cleanup()
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
 	DeleteElements(UnitStats::shared_stats);
+	DeleteElements(UnitData::appearances);
 }
 
 //=================================================================================================
@@ -217,6 +232,7 @@ void UnitLoader::InitTokenizer()
 		{ "abilities", P_ABILITIES },
 		{ "gold", P_GOLD },
 		{ "dialog", P_DIALOG },
+		{ "idle_dialog", P_IDLE_DIALOG },
 		{ "group", P_GROUP },
 		{ "dmg_type", P_DMG_TYPE },
 		{ "walk_speed", P_WALK_SPEED },
@@ -236,7 +252,9 @@ void UnitLoader::InitTokenizer()
 		{ "upgrade", P_UPGRADE },
 		{ "spell_power", P_SPELL_POWER },
 		{ "mp", P_MP },
-		{ "tint", P_TINT }
+		{ "tint", P_TINT },
+		{ "appearance", P_APPEARANCE },
+		{ "scale", P_SCALE }
 		});
 
 	t.AddKeywords(G_MATERIAL, {
@@ -268,7 +286,7 @@ void UnitLoader::InitTokenizer()
 		{ "slow", F_SLOW },
 		{ "poison_attack", F_POISON_ATTACK },
 		{ "immortal", F_IMMORTAL },
-		{ "tomashu", F_TOMASHU },
+		{ "aggro", F_AGGRO },
 		{ "crazy", F_CRAZY },
 		{ "dont_open", F_DONT_OPEN },
 		{ "slight", F_SLIGHT },
@@ -276,7 +294,7 @@ void UnitLoader::InitTokenizer()
 		{ "dont_suffer", F_DONT_SUFFER },
 		{ "mage", F_MAGE },
 		{ "poison_res", F_POISON_RES },
-		{ "gray_hair", F_GRAY_HAIR },
+		{ "loner", F_LONER },
 		{ "no_power_attack", F_NO_POWER_ATTACK },
 		{ "ai_clerk", F_AI_CLERK },
 		{ "ai_guard", F_AI_GUARD },
@@ -296,7 +314,6 @@ void UnitLoader::InitTokenizer()
 		{ "construct", F2_CONSTRUCT },
 		{ "fast_learner", F2_FAST_LEARNER },
 		{ "mp_bar", F2_MP_BAR },
-		{ "old", F2_OLD },
 		{ "melee", F2_MELEE },
 		{ "melee_50", F2_MELEE_50 },
 		{ "boss", F2_BOSS },
@@ -305,6 +322,7 @@ void UnitLoader::InitTokenizer()
 		{ "alpha_blend", F2_ALPHA_BLEND },
 		{ "stun_res", F2_STUN_RESISTANCE },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
+		{ "guard", F2_GUARD },
 		{ "xar", F2_XAR },
 		{ "tournament", F2_TOURNAMENT },
 		{ "yell", F2_YELL },
@@ -313,8 +331,7 @@ void UnitLoader::InitTokenizer()
 		{ "backstab_res", F2_BACKSTAB_RES },
 		{ "magic_res50", F2_MAGIC_RES50 },
 		{ "magic_res25", F2_MAGIC_RES25 },
-		{ "guarded", F2_GUARDED },
-		{ "not_goblin", F2_NOT_GOBLIN }
+		{ "guarded", F2_GUARDED }
 		});
 
 	t.AddKeywords(G_FLAGS3, {
@@ -380,7 +397,8 @@ void UnitLoader::InitTokenizer()
 		{ "pain", SOUND_PAIN },
 		{ "death", SOUND_DEATH },
 		{ "attack", SOUND_ATTACK },
-		{ "talk", SOUND_TALK }
+		{ "talk", SOUND_TALK },
+		{ "aggro", SOUND_AGGRO }
 		});
 
 	t.AddKeywords(G_FRAME_KEYWORD, {
@@ -486,6 +504,14 @@ void UnitLoader::InitTokenizer()
 		{ "mage", TAG_MAGE },
 		{ "mana", TAG_MANA },
 		{ "cleric", TAG_CLERIC }
+		});
+
+	t.AddKeywords(G_APPEARANCE_KEYWORD, {
+		{ "hair", AK_HAIR },
+		{ "beard", AK_BEARD },
+		{ "mustache", AK_MUSTACHE },
+		{ "hair_color", AK_HAIR_COLOR },
+		{ "height", AK_HEIGHT }
 		});
 }
 
@@ -837,6 +863,15 @@ void UnitLoader::ParseUnit(const string& id)
 				}
 			}
 			break;
+		case P_IDLE_DIALOG:
+			{
+				const string& id = t.MustGetText();
+				unit->idleDialog = GameDialog::TryGet(id.c_str());
+				if(!unit->idleDialog)
+					t.Throw("Missing dialog '%s'.", id.c_str());
+				crc.Update(id);
+			}
+			break;
 		case P_GROUP:
 			unit->group = (UNIT_GROUP)t.MustGetKeywordId(G_GROUP);
 			crc.Update(unit->group);
@@ -1082,6 +1117,85 @@ void UnitLoader::ParseUnit(const string& id)
 			break;
 		case P_TINT:
 			t.Parse(unit->tint);
+			crc.Update(unit->tint);
+			break;
+		case P_APPEARANCE:
+			{
+				Ptr<HumanData> human;
+				human->defaultFlags = 0;
+				human->hair_type = HumanData::HairColorType::Default;
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					AppearanceKeyword k = t.MustGetKeywordId<AppearanceKeyword>(G_APPEARANCE_KEYWORD);
+					t.Next();
+					switch(k)
+					{
+					case AK_HAIR:
+						human->hair = t.MustGetInt();
+						if(InRange(human->hair, -1, MAX_HAIR))
+							human->defaultFlags |= HumanData::F_HAIR;
+						else
+							LoadError("Invalid hair index.");
+						break;
+					case AK_MUSTACHE:
+						human->mustache = t.MustGetInt();
+						if(InRange(human->mustache, -1, MAX_MUSTACHE))
+							human->defaultFlags |= HumanData::F_MUSTACHE;
+						else
+							LoadError("Invalid mustache index.");
+						break;
+					case AK_BEARD:
+						human->beard = t.MustGetInt();
+						if(InRange(human->beard, -1, MAX_BEARD))
+							human->defaultFlags |= HumanData::F_BEARD;
+						else
+							LoadError("Invalid beard index.");
+						break;
+					case AK_HAIR_COLOR:
+						if(t.IsItem("grayscale"))
+							human->hair_type = HumanData::HairColorType::Grayscale;
+						else if(t.IsItem("random_color"))
+							human->hair_type = HumanData::HairColorType::Random;
+						else
+						{
+							uint val = t.MustGetUint();
+							human->hair_color = Color(val);
+							human->hair_color.w = 1.f;
+							human->hair_type = HumanData::HairColorType::Fixed;
+						}
+						human->defaultFlags |= HumanData::F_HAIR_COLOR;
+						break;
+					case AK_HEIGHT:
+						human->height = t.MustGetFloat();
+						if(InRange(human->height, MIN_HEIGHT, MAX_HEIGHT))
+							human->defaultFlags |= HumanData::F_HEIGHT;
+						else
+							LoadError("Invalid height.");
+						break;
+					}
+					t.Next();
+				}
+
+				crc.Update(human->hair);
+				crc.Update(human->mustache);
+				crc.Update(human->beard);
+				crc.Update(human->hair_type);
+				if(human->hair_type == HumanData::HairColorType::Fixed)
+					crc.Update(human->hair_color);
+				crc.Update(human->height);
+
+				HumanData* hd = human.Pin();
+				unit->appearance = hd;
+				UnitData::appearances.push_back(hd);
+			}
+			break;
+		case P_SCALE:
+			unit->scale = t.MustGetFloat();
+			if(!InRange(unit->scale, 0.1f, 10.f))
+				LoadError("Invalid scale.");
+			crc.Update(unit->scale);
 			break;
 		default:
 			t.Unexpected();
@@ -1111,6 +1225,9 @@ void UnitLoader::ParseUnit(const string& id)
 		if(unit->type == UNIT_TYPE::HUMAN && unit->mesh != game_res->aHuman)
 			t.Throw("Human unit with custom mesh.");
 	}
+
+	if(!IsSet(unit->flags2, F2_DONT_TALK) && !unit->idleDialog)
+		LoadError("Missing idle dialog.");
 
 	UnitData::units.insert(unit.Pin());
 }

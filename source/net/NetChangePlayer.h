@@ -6,13 +6,13 @@ struct NetChangePlayer
 	enum TYPE
 	{
 		PICKUP, // item picked up [int(id)-count, int(count)-team count]
-		LOOT, // response to looting [bool(id)-can loot, if can: ItemListTeam]
+		LOOT, // response to looting [bool(id)-can loot, if can: items]
 		START_DIALOG, // start dialog with unit or is busy [int(id)-unit]
 		END_DIALOG, // end of dialog []
 		SHOW_DIALOG_CHOICES, // show dialog choices [auto:byte-count, char-escape choice, vector<string1>-choices]
 		START_TRADE, // start trade [int(id)-unit, auto:ItemList]
-		START_SHARE, // start sharing items [auto:int-weight, int-weight max, int-gold, stats, ItemListTeam]
-		START_GIVE, // start giving items [auto:int-weight, int-weight max, int-gold, stats, ItemListTeam]
+		START_SHARE, // start sharing items [auto:int-weight, int-weight max, int-gold, stats, items]
+		START_GIVE, // start giving items [auto:int-weight, int-weight max, int-gold, stats, items]
 		SET_FROZEN, // change player frozen state [byte(id)-state]
 		REMOVE_QUEST_ITEM, // remove quest item from inventory [int(id)-quest id]
 		DEVMODE, // change devmode for player [bool(id)-allowed]

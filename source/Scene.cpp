@@ -4,6 +4,7 @@
 #include "Ability.h"
 #include "City.h"
 #include "DungeonMeshBuilder.h"
+#include "Explo.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "GameResources.h"
@@ -85,9 +86,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		PROFILER_BLOCK("Objects");
 		if(area.area_type == LevelArea::Type::Outside)
 		{
-			for(LevelPart* part : level_parts)
+			for(LevelQuad* quad : level_quads)
 			{
-				for(QuadObj& obj : part->objects)
+				for(QuadObj& obj : quad->objects)
 				{
 					const Object& o = *obj.obj;
 					o.mesh->EnsureIsLoaded();
@@ -136,12 +137,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			if(frustum.SphereToFrustum(item.pos, mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
 				node->SetMesh(mesh);
 				node->center = item.pos;
 				node->mat = Matrix::Rotation(item.rot) * Matrix::Translation(pos);
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
@@ -172,12 +170,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
 				node->SetMesh(mesh);
 				node->center = use.pos;
 				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
@@ -203,22 +198,19 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
 		{
 			Chest& chest = **it;
-			chest.mesh_inst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(chest.pos, chest.mesh_inst->mesh->head.radius))
+			chest.meshInst->mesh->EnsureIsLoaded();
+			if(frustum.SphereToFrustum(chest.pos, chest.meshInst->mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
-				if(!chest.mesh_inst->groups[0].anim || chest.mesh_inst->groups[0].time == 0.f)
-					node->SetMesh(chest.mesh_inst->mesh);
-				else
+				if(chest.meshInst->IsActive())
 				{
-					chest.mesh_inst->SetupBones();
-					node->SetMesh(chest.mesh_inst);
+					chest.meshInst->SetupBones();
+					node->SetMesh(chest.meshInst);
 				}
+				else
+					node->SetMesh(chest.meshInst->mesh);
 				node->center = chest.pos;
 				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
@@ -243,22 +235,19 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
-			door.mesh_inst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(door.pos, door.mesh_inst->mesh->head.radius))
+			door.meshInst->mesh->EnsureIsLoaded();
+			if(frustum.SphereToFrustum(door.pos, door.meshInst->mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
-				if(!door.mesh_inst->groups[0].anim || door.mesh_inst->groups[0].time == 0.f)
-					node->SetMesh(door.mesh_inst->mesh);
+				if(!door.meshInst->groups[0].anim || door.meshInst->groups[0].time == 0.f)
+					node->SetMesh(door.meshInst->mesh);
 				else
 				{
-					door.mesh_inst->SetupBones();
-					node->SetMesh(door.mesh_inst);
+					door.meshInst->SetupBones();
+					node->SetMesh(door.meshInst);
 				}
 				node->center = door.pos;
 				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
@@ -294,21 +283,18 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// bullets
 	if(IsSet(draw_flags, DF_BULLETS))
 	{
-		for(vector<Bullet>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
+		for(vector<Bullet*>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
 		{
-			Bullet& bullet = *it;
+			Bullet& bullet = **it;
 			if(bullet.mesh)
 			{
 				bullet.mesh->EnsureIsLoaded();
 				if(frustum.SphereToFrustum(bullet.pos, bullet.mesh->head.radius))
 				{
 					SceneNode* node = SceneNode::Get();
-					node->type = SceneNode::NORMAL;
 					node->SetMesh(bullet.mesh);
 					node->center = bullet.pos;
 					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
-					node->tint = Vec4(1, 1, 1, 1);
-					node->tex_override = nullptr;
 					if(!outside)
 						GatherDrawBatchLights(area, node);
 					draw_batch.Add(node);
@@ -319,9 +305,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				if(frustum.SphereToFrustum(bullet.pos, bullet.tex_size))
 				{
 					Billboard& bb = Add1(draw_batch.billboards);
-					bb.pos = it->pos;
-					bb.size = it->tex_size;
-					bb.tex = it->tex;
+					bb.pos = bullet.pos;
+					bb.size = bullet.tex_size;
+					bb.tex = bullet.tex;
 				}
 			}
 		}
@@ -338,14 +324,11 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				&& frustum.SphereToFrustum(trap.obj.pos, trap.obj.mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
 				node->SetMesh(trap.obj.mesh);
 				if(trap.obj.RequireNoCulling())
 					node->flags |= SceneNode::F_NO_CULLING;
 				node->center = trap.obj.pos;
 				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				draw_batch.Add(node);
@@ -355,14 +338,11 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				&& frustum.SphereToFrustum(trap.obj2.pos, trap.obj2.mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
 				node->SetMesh(trap.obj2.mesh);
 				if(trap.obj2.RequireNoCulling())
 					node->flags |= SceneNode::F_NO_CULLING;
 				node->center = trap.obj2.pos;
 				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				draw_batch.Add(node);
@@ -380,7 +360,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			if(frustum.SphereToFrustum(explo.pos, explo.size))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
 				node->SetMesh(game_res->aSpellball);
 				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
 				node->center = explo.pos;
@@ -432,13 +411,10 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			if(game_level->location->outside || game_level->dungeon_level == portal->at_level)
 			{
 				SceneNode* node = SceneNode::Get();
-				node->type = SceneNode::NORMAL;
 				node->SetMesh(game_res->aPortal);
 				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
 				node->center = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
 				node->mat = Matrix::Rotation(0, portal->rot, -portal_anim * PI * 2) * Matrix::Translation(node->center);
-				node->tex_override = nullptr;
-				node->tint = Vec4::One;
 				draw_batch.Add(node);
 			}
 			portal = portal->next_portal;
@@ -482,7 +458,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				DebugNode* node = DebugNode::Get();
 				node->mesh = mesh;
 				node->color = Color(153, 217, 164);
-				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.mat_view_proj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}
@@ -598,13 +574,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		{
 			game_res->aStun->EnsureIsLoaded();
 			SceneNode* node = SceneNode::Get();
-			node->type = SceneNode::NORMAL;
 			node->SetMesh(game_res->aStun);
 			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->center = u.GetHeadPoint();
 			node->mat = Matrix::RotationY(effect->time * 3) * Matrix::Translation(node->center);
-			node->tex_override = nullptr;
-			node->tint = Vec4::One;
 			draw_batch.Add(node);
 		}
 	}
@@ -618,12 +591,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	// add scene node
 	SceneNode* node = SceneNode::Get();
-	node->type = SceneNode::NORMAL;
 	node->SetMesh(u.mesh_inst);
 	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->center = u.visual_pos;
-	node->mat = Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
+	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
 	node->tex_override = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 
@@ -657,12 +629,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	{
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = SceneNode::Get();
-		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(armor.mesh, u.mesh_inst);
 		node2->center = node->center;
 		node2->mat = node->mat;
 		node2->tex_override = armor.GetTextureOverride();
-		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -680,7 +650,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	// item in hand
 	Mesh* right_hand_item = nullptr;
-	int right_hand_item_flags = 0;
 	bool in_hand = false;
 
 	switch(u.weapon_state)
@@ -743,12 +712,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
-		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(mesh);
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->tex_override = nullptr;
-		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -776,6 +742,17 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
 	}
+	else if(u.action == A_ATTACK && draw_hitbox)
+	{
+		Mesh::Point* hitbox = u.mesh_inst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
+		if(!hitbox)
+			hitbox = u.mesh_inst->mesh->FindPoint("hitbox");
+		DebugNode* debug_node = DebugNode::Get();
+		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * game_level->camera.mat_view_proj;
+		debug_node->mesh = DebugNode::Box;
+		debug_node->color = Color::Black;
+		draw_batch.debug_nodes.push_back(debug_node);
+	}
 
 	// shield
 	if(u.HaveShield() && u.GetShield().mesh)
@@ -785,12 +762,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
-		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(shield);
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->tex_override = nullptr;
-		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -812,7 +786,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugNode* debug_node = DebugNode::Get();
-			node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
+			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
 			debug_node->mesh = DebugNode::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -826,13 +800,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
-		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(right_hand_item);
-		node2->flags |= right_hand_item_flags;
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->tex_override = nullptr;
-		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -870,7 +840,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		}
 
 		SceneNode* node2 = SceneNode::Get();
-		node2->type = SceneNode::NORMAL;
 		if(u.action == A_SHOOT)
 		{
 			u.bow_instance->SetupBones();
@@ -887,8 +856,6 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		else
 			m1 = point->mat * u.mesh_inst->mat_bones[point->bone];
 		node2->mat = mat_scale * m1 * node->mat;
-		node2->tex_override = nullptr;
-		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -911,11 +878,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 		// eyebrows
 		SceneNode* node2 = SceneNode::Get();
-		node2->type = SceneNode::NORMAL;
 		node2->SetMesh(game_res->aEyebrows, node->mesh_inst);
 		node2->center = node->center;
 		node2->mat = node->mat;
-		node2->tex_override = nullptr;
 		node2->tint = h.hair_color * u.data->tint;
 		node2->lights = node->lights;
 		if(selected)
@@ -939,11 +904,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(h.hair != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->type = SceneNode::NORMAL;
 			node3->SetMesh(game_res->aHair[h.hair], node->mesh_inst);
 			node3->center = node->center;
 			node3->mat = node->mat;
-			node3->tex_override = nullptr;
 			node3->tint = h.hair_color * u.data->tint;
 			node3->lights = node->lights;
 			if(selected)
@@ -968,11 +931,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(h.beard != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->type = SceneNode::NORMAL;
 			node3->SetMesh(game_res->aBeard[h.beard], node->mesh_inst);
 			node3->center = node->center;
 			node3->mat = node->mat;
-			node3->tex_override = nullptr;
 			node3->tint = h.hair_color * u.data->tint;
 			node3->lights = node->lights;
 			if(selected)
@@ -997,11 +958,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(h.mustache != -1 && (h.beard == -1 || !g_beard_and_mustache[h.beard]))
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->type = SceneNode::NORMAL;
 			node3->SetMesh(game_res->aMustache[h.mustache], node->mesh_inst);
 			node3->center = node->center;
 			node3->mat = node->mat;
-			node3->tex_override = nullptr;
 			node3->tint = h.hair_color * u.data->tint;
 			node3->lights = node->lights;
 			if(selected)
@@ -1050,16 +1009,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum)
 {
 	SceneNode* node = SceneNode::Get();
-	if(!o.IsBillboard())
-	{
-		node->type = SceneNode::NORMAL;
-		node->mat = Matrix::Transform(o.pos, o.rot, o.scale);
-	}
-	else
-	{
-		node->type = SceneNode::BILLBOARD;
-		node->mat = Matrix::CreateLookAt(o.pos, game_level->camera.from);
-	}
+	node->mat = Matrix::Transform(o.pos, o.rot, o.scale);
 
 	if(o.meshInst)
 	{
@@ -1070,8 +1020,6 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 		node->SetMesh(o.mesh);
 	if(o.RequireNoCulling())
 		node->flags |= SceneNode::F_NO_CULLING;
-	node->tex_override = nullptr;
-	node->tint = Vec4(1, 1, 1, 1);
 	if(!IsSet(o.mesh->head.flags, Mesh::F_SPLIT))
 	{
 		node->center = o.pos;
@@ -1094,7 +1042,6 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 			if(frustum.SphereToFrustum(pos, radius))
 			{
 				SceneNode* node2 = SceneNode::Get();
-				node2->type = SceneNode::NORMAL;
 				node2->mesh = node->mesh;
 				node2->mesh_inst = node->mesh_inst;
 				node2->flags = node->flags;
@@ -1193,70 +1140,10 @@ void Game::ListAreas(LevelArea& area)
 		InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if(inside->HaveUpStairs())
-		{
-			Area& a = Add1(draw_batch.areas);
-			a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(lvl.staircase_up);
-			switch(lvl.staircase_up_dir)
-			{
-			case GDIR_DOWN:
-				a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
-				a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
-				a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
-				a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
-				break;
-			case GDIR_UP:
-				a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
-				a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
-				a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
-				break;
-			case GDIR_RIGHT:
-				a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
-				a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
-				a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
-				break;
-			case GDIR_LEFT:
-				a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
-				a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
-				a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
-				a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
-				break;
-			}
-		}
-		if(inside->HaveDownStairs())
-		{
-			Area& a = Add1(draw_batch.areas);
-			a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(lvl.staircase_down);
-			switch(lvl.staircase_down_dir)
-			{
-			case GDIR_DOWN:
-				a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
-				a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
-				a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
-				a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
-				break;
-			case GDIR_UP:
-				a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
-				a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
-				a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
-				break;
-			case GDIR_RIGHT:
-				a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
-				a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
-				a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
-				a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
-				break;
-			case GDIR_LEFT:
-				a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
-				a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
-				a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
-				a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
-				break;
-			}
-		}
+		if(inside->HavePrevEntry())
+			ListEntry(lvl.prevEntryType, lvl.prevEntryPt, lvl.prevEntryDir);
+		if(inside->HaveNextEntry())
+			ListEntry(lvl.nextEntryType, lvl.nextEntryPt, lvl.nextEntryDir);
 		draw_batch.area_range = 5.f;
 	}
 	else
@@ -1294,6 +1181,104 @@ void Game::ListAreas(LevelArea& area)
 		node->mesh = DebugNode::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
+	}
+}
+
+//=================================================================================================
+void Game::ListEntry(EntryType type, const Int2& pt, GameDirection dir)
+{
+	Area& a = Add1(draw_batch.areas);
+	a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(pt);
+	switch(type)
+	{
+	case ENTRY_STAIRS_UP:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
+			a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
+			a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
+			a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
+			break;
+		case GDIR_UP:
+			a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
+			a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
+			a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
+			break;
+		case GDIR_RIGHT:
+			a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
+			a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
+			a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
+			break;
+		case GDIR_LEFT:
+			a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
+			a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
+			a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
+			a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
+			break;
+		}
+		break;
+	case ENTRY_STAIRS_DOWN:
+	case ENTRY_STAIRS_DOWN_IN_WALL:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
+			a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
+			a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
+			break;
+		case GDIR_UP:
+			a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
+			a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
+			a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
+			break;
+		case GDIR_RIGHT:
+			a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
+			a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
+			a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
+			break;
+		case GDIR_LEFT:
+			a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
+			a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
+			a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
+			break;
+		}
+		break;
+	case ENTRY_DOOR:
+		switch(dir)
+		{
+		case GDIR_DOWN:
+			a.v[0] += Vec3(-0.85f, 0.1f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.1f, 0.85f);
+			a.v[2] += Vec3(-0.85f, 0.1f, 0.35f);
+			a.v[3] += Vec3(0.85f, 0.1f, 0.35f);
+			break;
+		case GDIR_UP:
+			a.v[0] += Vec3(0.85f, 0.1f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.1f, -0.85f);
+			a.v[2] += Vec3(0.85f, 0.1f, -0.35f);
+			a.v[3] += Vec3(-0.85f, 0.1f, -0.35f);
+			break;
+		case GDIR_RIGHT:
+			a.v[0] += Vec3(-0.85f, 0.1f, -0.85f);
+			a.v[1] += Vec3(-0.85f, 0.1f, 0.85f);
+			a.v[2] += Vec3(-0.35f, 0.1f, -0.85f);
+			a.v[3] += Vec3(-0.35f, 0.1f, 0.85f);
+			break;
+		case GDIR_LEFT:
+			a.v[0] += Vec3(0.85f, 0.1f, 0.85f);
+			a.v[1] += Vec3(0.85f, 0.1f, -0.85f);
+			a.v[2] += Vec3(0.35f, 0.1f, 0.85f);
+			a.v[3] += Vec3(0.35f, 0.1f, -0.85f);
+			break;
+		}
+		break;
 	}
 }
 

@@ -2,13 +2,12 @@
 #include "Quest_Mages.h"
 
 #include "AIController.h"
+#include "Encounter.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "Journal.h"
 #include "Level.h"
 #include "NameHelper.h"
 #include "QuestManager.h"
-#include "SaveState.h"
 #include "Team.h"
 #include "World.h"
 
@@ -17,6 +16,7 @@ void Quest_Mages::Start()
 {
 	type = Q_MAGES;
 	category = QuestCategory::Unique;
+	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
 	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[4], GetStartLocationName()));
 
 	if(game->devmode)
@@ -44,21 +44,19 @@ void Quest_Mages::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[165]);
 
-			Location& sl = GetStartLocation();
-			target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
-			Location& tl = GetTargetLocation();
-			tl.active_quest = this;
-			tl.reset = true;
-			tl.group = UnitGroup::Get("undead");
-			tl.st = 8;
-			tl.SetKnown();
+			targetLoc = world->GetClosestLocation(L_DUNGEON, startLoc->pos, { HERO_CRYPT, MONSTER_CRYPT });
+			targetLoc->active_quest = this;
+			targetLoc->reset = true;
+			targetLoc->group = UnitGroup::Get("undead");
+			targetLoc->st = 8;
+			targetLoc->SetKnown();
 
-			at_level = tl.GetLastLevel();
+			at_level = targetLoc->GetLastLevel();
 			item_to_give[0] = Item::Get("q_magowie_kula");
 			spawn_item = Quest_Event::Item_InTreasure;
 
-			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[167], tl.name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(game->txQuest[166], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(game->txQuest[167], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished:
@@ -71,7 +69,7 @@ void Quest_Mages::SetProgress(int prog2)
 			quest_mgr->quest_mages2->scholar = DialogContext::current->talker;
 			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
 
-			GetTargetLocation().active_quest = nullptr;
+			targetLoc->active_quest = nullptr;
 
 			team->AddReward(4000, 12000);
 			OnUpdate(game->txQuest[168]);
@@ -191,13 +189,11 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::Started:
 		// talked with guard captain, send to mage
 		{
-			start_loc = world->GetCurrentLocationIndex();
-			mage_loc = world->GetRandomSettlementIndex(start_loc);
+			startLoc = world->GetCurrentLocation();
+			Location* ml = world->GetRandomSettlement(startLoc);
+			mage_loc = ml->index;
 
-			Location& sl = GetStartLocation();
-			Location& ml = *world->GetLocation(mage_loc);
-
-			OnUpdate(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
+			OnUpdate(Format(game->txQuest[173], startLoc->name.c_str(), ml->name.c_str(), GetLocationDirName(startLoc->pos, ml->pos)));
 
 			mages_state = State::TalkedWithCaptain;
 			team->AddExp(2500);
@@ -236,10 +232,10 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.group = UnitGroup::empty;
 			loc.st = 1;
 			loc.SetKnown();
-			target_loc = loc.index;
+			targetLoc = &loc;
 			team->AddMember(DialogContext::current->talker, HeroType::Free);
 			OnUpdate(Format(game->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
-				GetLocationDirName(world->GetCurrentLocation()->pos, GetTargetLocation().pos), world->GetCurrentLocation()->name.c_str()));
+				GetLocationDirName(world->GetCurrentLocation()->pos, targetLoc->pos), world->GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
 			timer = 0.f;
 			scholar = DialogContext::current->talker;
@@ -277,13 +273,13 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->can_skip = false;
 			mages_state = State::MageCured;
 			OnUpdate(game->txQuest[181]);
-			GetTargetLocation().active_quest = nullptr;
+			targetLoc->active_quest = nullptr;
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), MAGE_TOWER);
 			loc.group = UnitGroup::Get("mages_and_golems");
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.active_quest = this;
-			target_loc = loc.index;
+			targetLoc = &loc;
 			do
 			{
 				NameHelper::GenerateHeroName(Class::TryGet("mage"), false, evil_mage_name);
@@ -315,21 +311,19 @@ void Quest_Mages2::SetProgress(int prog2)
 				u->event_handler = this;
 			}
 
-			Location& target = GetTargetLocation();
-			target.SetKnown();
+			targetLoc->SetKnown();
 
-			OnUpdate(Format(game->txQuest[182], u->hero->name.c_str(), evil_mage_name.c_str(), target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+			OnUpdate(Format(game->txQuest[182], u->hero->name.c_str(), evil_mage_name.c_str(), targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 		}
 		break;
 	case Progress::RecruitMage:
 		{
 			Unit* u = DialogContext::current->talker;
-			Location& target = GetTargetLocation();
 
 			if(prog == Progress::MageDrinkPotion)
 			{
-				target.SetKnown();
-				OnUpdate(Format(game->txQuest[183], u->hero->name.c_str(), evil_mage_name.c_str(), target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+				targetLoc->SetKnown();
+				OnUpdate(Format(game->txQuest[183], u->hero->name.c_str(), evil_mage_name.c_str(), targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			}
 			else
 			{
@@ -362,13 +356,14 @@ void Quest_Mages2::SetProgress(int prog2)
 		break;
 	case Progress::Finished:
 		{
-			GetTargetLocation().active_quest = nullptr;
+			targetLoc->active_quest = nullptr;
 			state = Quest::Completed;
 			if(scholar)
 			{
 				scholar->temporary = true;
 				scholar = nullptr;
 			}
+			world->RemoveGlobalEncounter(this);
 			team->AddReward(10000, 25000);
 			OnUpdate(game->txQuest[188]);
 			quest_mgr->EndUniqueQuest();
@@ -388,13 +383,13 @@ cstring Quest_Mages2::FormatString(const string& str)
 	else if(str == "mage_loc")
 		return world->GetLocation(mage_loc)->name.c_str();
 	else if(str == "mage_dir")
-		return GetLocationDirName(GetStartLocation().pos, world->GetLocation(mage_loc)->pos);
+		return GetLocationDirName(startLoc->pos, world->GetLocation(mage_loc)->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "target_dir2")
-		return GetLocationDirName(world->GetCurrentLocation()->pos, GetTargetLocation().pos);
+		return GetLocationDirName(world->GetCurrentLocation()->pos, targetLoc->pos);
 	else if(str == "name")
 		return DialogContext::current->talker->hero->name.c_str();
 	else if(str == "enemy")
@@ -418,13 +413,13 @@ bool Quest_Mages2::IfNeedTalk(cstring topic) const
 bool Quest_Mages2::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_u_bossa") == 0)
-		return target_loc == world->GetCurrentLocationIndex();
+		return targetLoc == world->GetCurrentLocation();
 	else if(strcmp(msg, "q_magowie_u_siebie") == 0)
-		return target_loc == world->GetCurrentLocationIndex();
+		return targetLoc == world->GetCurrentLocation();
 	else if(strcmp(msg, "q_magowie_czas") == 0)
 		return timer >= 30.f;
 	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
-		return mages_state >= State::TalkedWithCaptain && world->GetCurrentLocationIndex() == start_loc;
+		return mages_state >= State::TalkedWithCaptain && world->GetCurrentLocation() == startLoc;
 	else if(strcmp(msg, "q_magowie_poinformuj") == 0)
 		return mages_state == State::EncounteredGolem;
 	else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
@@ -500,11 +495,21 @@ Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 	{
 		unit_event_handler = this;
 		unit_auto_talk = true;
-		at_level = GetTargetLocation().GetLastLevel();
+		at_level = targetLoc->GetLastLevel();
 		unit_to_spawn = UnitData::Get("q_magowie_boss");
 		unit_dont_attack = true;
 		unit_to_spawn2 = UnitData::Get("golem_iron");
 		spawn_2_guard_1 = true;
+	}
+
+	if(mages_state >= State::Encounter && mages_state < State::Completed)
+	{
+		GlobalEncounter* globalEnc = new GlobalEncounter;
+		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Mages2::OnEncounter);
+		globalEnc->chance = 33;
+		globalEnc->quest = this;
+		globalEnc->text = game->txQuest[215];
+		world->AddGlobalEncounter(globalEnc);
 	}
 
 	return LoadResult::Ok;
@@ -513,10 +518,47 @@ Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 //=================================================================================================
 void Quest_Mages2::Update(float dt)
 {
-	if(mages_state == State::OldMageJoined && game_level->location_index == target_loc)
+	if(mages_state == State::OldMageJoined && game_level->location == targetLoc)
 	{
 		timer += dt;
 		if(timer >= 30.f && scholar->GetOrder() != ORDER_AUTO_TALK)
 			scholar->OrderAutoTalk();
 	}
+}
+
+//=================================================================================================
+void Quest_Mages2::OnProgress(int d)
+{
+	if(mages_state == State::Counting)
+	{
+		days -= d;
+		if(days <= 0)
+		{
+			// from now golem can be encountered on road
+			mages_state = Quest_Mages2::State::Encounter;
+
+			GlobalEncounter* globalEnc = new GlobalEncounter;
+			globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Mages2::OnEncounter);
+			globalEnc->chance = 33;
+			globalEnc->quest = this;
+			globalEnc->text = game->txQuest[215];
+			world->AddGlobalEncounter(globalEnc);
+		}
+	}
+}
+
+//=================================================================================================
+void Quest_Mages2::OnEncounter(EncounterSpawn& spawn)
+{
+	paid = false;
+
+	int pts = team->GetStPoints();
+	if(pts >= 60)
+		pts = 60;
+	pts = int(Random(0.5f, 0.75f) * pts);
+	spawn.count = max(1, pts / 8);
+	spawn.level = 8;
+	spawn.group_name = "q_magowie_golems";
+	spawn.dont_attack = true;
+	spawn.dialog = GameDialog::TryGet("q_mages");
 }

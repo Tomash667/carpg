@@ -2,10 +2,6 @@
 #include "CreatedCharacter.h"
 
 #include "BitStreamFunc.h"
-#include "PlayerController.h"
-#include "StatProfile.h"
-#include "Stock.h"
-#include "Unit.h"
 #include "UnitData.h"
 
 //=================================================================================================
@@ -186,50 +182,6 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	}
 
 	return 0;
-}
-
-//=================================================================================================
-void CreatedCharacter::Apply(PlayerController& pc)
-{
-	pc.unit->stats->Set(pc.unit->data->GetStatProfile());
-
-	// reset blocked stats, apply skill bonus
-	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		pc.attrib[i].apt = (pc.unit->stats->attrib[i] - 50) / 5;
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-	{
-		if(s[i].add)
-			pc.unit->stats->skill[i] += Skill::TAG_BONUS;
-		pc.skill[i].apt = pc.unit->stats->skill[i] / 5;
-	}
-
-	// apply perks
-	PerkContext ctx(&pc, true);
-	pc.perks = taken_perks;
-	for(TakenPerk& tp : pc.perks)
-		tp.Apply(ctx);
-
-	pc.unit->CalculateStats();
-	pc.unit->CalculateLoad();
-	pc.RecalculateLevel();
-	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
-
-	pc.SetRequiredPoints();
-
-	// inventory
-	pc.unit->data->item_script->Parse(*pc.unit);
-	const Item* items[SLOT_MAX];
-	GetStartingItems(items);
-	for(int i = 0; i < SLOT_MAX; ++i)
-		pc.unit->slots[i] = items[i];
-	if(pc.HavePerk(Perk::Get("alchemist_apprentice")))
-		Stock::Get("alchemist_apprentice")->Parse(pc.unit->items);
-	pc.unit->MakeItemsTeam(false);
-	pc.unit->RecalculateWeight();
-	if(pc.HavePerk(Perk::Get("poor")))
-		pc.unit->gold = ::Random(0, 1);
-	else
-		pc.unit->gold += pc.unit->GetBase(SkillId::HAGGLE);
 }
 
 //=================================================================================================

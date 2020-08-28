@@ -4,7 +4,6 @@
 #include "AIController.h"
 #include "City.h"
 #include "Game.h"
-#include "GameFile.h"
 #include "GameGui.h"
 #include "GameMessages.h"
 #include "InsideBuilding.h"
@@ -14,7 +13,6 @@
 #include "PlayerInfo.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
-#include "SaveState.h"
 #include "World.h"
 
 //=================================================================================================
@@ -50,7 +48,7 @@ void Quest_Contest::LoadLanguage()
 void Quest_Contest::Init()
 {
 	state = CONTEST_NOT_DONE;
-	where = world->GetRandomSettlementIndex();
+	where = world->GetRandomSettlement()->index;
 	units.clear();
 	winner = nullptr;
 	generated = false;
@@ -162,7 +160,7 @@ cstring Quest_Contest::FormatString(const string& str)
 }
 
 //=================================================================================================
-void Quest_Contest::Progress()
+void Quest_Contest::OnProgress()
 {
 	int step; // 0 - before contest, 1 - time for contest, 2 - after contest
 	const Date& date = world->GetDateValue();
@@ -187,7 +185,7 @@ void Quest_Contest::Progress()
 		if(state != CONTEST_NOT_DONE)
 		{
 			state = CONTEST_NOT_DONE;
-			where = world->GetRandomSettlementIndex(where);
+			where = world->GetRandomSettlement(world->GetLocation(where))->index;
 		}
 		generated = false;
 		units.clear();

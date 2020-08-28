@@ -110,3 +110,23 @@ namespace old
 
 	UnitGroup* OldToNew(SPAWN_GROUP spawn);
 }
+
+//-----------------------------------------------------------------------------
+inline void operator << (GameWriter& f, UnitGroup* group)
+{
+	f << group->id;
+}
+inline void operator >> (GameReader& f, UnitGroup*& group)
+{
+	if(LOAD_VERSION >= V_0_11)
+	{
+		const string& id = f.ReadString1();
+		group = UnitGroup::Get(id);
+	}
+	else
+	{
+		old::SPAWN_GROUP spawn;
+		f.Read(spawn);
+		group = old::OldToNew(spawn);
+	}
+}

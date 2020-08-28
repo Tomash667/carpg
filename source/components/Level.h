@@ -11,8 +11,8 @@ enum EnterFrom
 {
 	ENTER_FROM_PORTAL = 0,
 	ENTER_FROM_OUTSIDE = -1,
-	ENTER_FROM_UP_LEVEL = -2,
-	ENTER_FROM_DOWN_LEVEL = -3
+	ENTER_FROM_PREV_LEVEL = -2,
+	ENTER_FROM_NEXT_LEVEL = -3
 };
 
 //-----------------------------------------------------------------------------
@@ -69,6 +69,7 @@ public:
 	Trap* FindTrap(int id);
 	Chest* FindChest(int id);
 	Chest* GetRandomChest(Room& room);
+	Chest* GetTreasureChest();
 	Electro* FindElectro(int id);
 	bool RemoveTrap(int id);
 	void RemoveUnit(Unit* unit, bool notify = true);
@@ -106,9 +107,9 @@ public:
 	Unit* CreateUnit(UnitData& base, int level = -1, bool create_physics = true);
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, const Vec3* pos = nullptr, const float* rot = nullptr);
 	Vec3 FindSpawnPos(Room* room, Unit* unit);
-	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit) { return SpawnUnitInsideRoom(room, unit); }
-	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitData& unit, int level = -1);
 	enum SpawnUnitFlags
@@ -204,15 +205,20 @@ public:
 	CScriptArray* GetUnits(Room& room);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
 	void CreateObjectsMeshInstance();
+	void RemoveTmpObjectPhysics();
+	void RecreateTmpObjectPhysics();
+	// --- boss
+	void StartBossFight(Unit& unit);
+	void EndBossFight();
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
 	int dungeon_level;
 	InsideLocationLevel* lvl; // null when in outside location
 	GameCamera camera;
-	float lights_dt;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;
+	Unit* boss;
 
 	// colliders
 	btHeightfieldTerrainShape* terrain_shape;

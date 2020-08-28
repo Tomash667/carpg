@@ -42,7 +42,9 @@ enum GMS
 	GMS_NEED_WAND,
 	GMS_LEARNED_ABILITY,
 	GMS_LEARNED_RECIPE,
-	GMS_ALREADY_LEARNED
+	GMS_ALREADY_LEARNED,
+	GMS_PERSUASION_SUCCESS,
+	GMS_PERSUASION_FAILED
 };
 
 //-----------------------------------------------------------------------------
@@ -65,8 +67,8 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Reset();
-	void Save(FileWriter& f) const;
-	void Load(FileReader& f);
+	void Save(GameWriter& f) const;
+	void Load(GameReader& f);
 	void AddMessage(cstring text, float time, int type, int subtype = -1, int value = 0);
 	void AddMessageIfNotExists(cstring text, float time, int type);
 	void AddGameMsg(cstring msg, float time) { AddMessage(msg, time, 0); }
@@ -82,7 +84,8 @@ private:
 	cstring txGamePausedBig, txINeedWeapon, txNoHealthPotion, txNoManaPotion, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey,
 		txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem,
 		txGmsGettingOutOfRange, txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated,
-		txAddedCursedStone, txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility, txLearnedRecipe, txAlreadyLearned;
+		txAddedCursedStone, txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility, txLearnedRecipe, txAlreadyLearned,
+		txPersuasionSuccess, txPersuasionFailed;
 public:
 	Sound* snd_scribble;
 };

@@ -6,6 +6,7 @@
 #include "GameMessages.h"
 #include "GameResources.h"
 #include "Language.h"
+#include "LevelGui.h"
 #include "Messenger.h"
 #include "PlayerController.h"
 #include "PlayerInfo.h"
@@ -17,7 +18,7 @@
 
 struct RecipeItem : public GuiElement
 {
-	RecipeItem(Recipe* recipe) : recipe(recipe)
+	explicit RecipeItem(Recipe* recipe) : recipe(recipe)
 	{
 		const Item* item = recipe->result;
 		game_res->PreloadItem(item);
@@ -114,9 +115,9 @@ void CraftPanel::Draw(ControlDrawData*)
 
 	// ingredients
 	int count_w = (right.size.x - 48) / 63;
-	int count_h = (right.size.y - 48) / 63;
-	int shift_x = right.pos.x + 24 + (right.size.x - 48) % 63 / 2;
-	int shift_y = right.pos.y + 50 + (right.size.y - 48) % 63 / 2;
+	int count_h = (right.size.y - 66) / 63;
+	int shift_x = right.pos.x + 24 + (right.size.x - 48 - count_w * 63) / 2;
+	int shift_y = right.pos.y + 50 + (right.size.y - 66 - count_h * 63) / 2;
 
 	for(int y = 0; y < count_h; ++y)
 	{
@@ -163,9 +164,9 @@ void CraftPanel::Update(float dt)
 	if(focus)
 	{
 		int count_w = (right.size.x - 48) / 63;
-		int count_h = (right.size.y - 48) / 63;
-		int shift_x = right.pos.x + 24 + (right.size.x - 48) % 63 / 2;
-		int shift_y = right.pos.y + 50 + (right.size.y - 48) % 63 / 2;
+		int count_h = (right.size.y - 66) / 63;
+		int shift_x = right.pos.x + 24 + (right.size.x - 48 - count_w * 63) / 2;
+		int shift_y = right.pos.y + 50 + (right.size.y - 66 - count_h * 63) / 2;
 
 		for(int y = 0; y < count_h; ++y)
 		{
@@ -361,6 +362,12 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 			return 0;
 	}
 	return max_count;
+}
+
+void CraftPanel::Show()
+{
+	game_gui->level_gui->ClosePanels();
+	Control::Show();
 }
 
 bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint count)
