@@ -144,7 +144,6 @@ public:
 	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
 	Vec2 GetPos() const { return world_pos; }
 	Vec2 GetWorldBounds() const { return world_bounds; }
-	Location* GetRandomLocation(delegate<bool(Location*)> pred);
 
 	// travel
 	void Travel(int index, bool order);
