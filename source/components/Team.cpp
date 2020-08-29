@@ -416,7 +416,7 @@ void Team::Load(GameReader& f)
 			free_recruits = 0;
 	}
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 		f >> checkResults;
 	else
 		checkResults.clear();

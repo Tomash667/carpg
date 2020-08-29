@@ -713,7 +713,7 @@ void Game::LoadGame(GameReader& f)
 		// game state
 		f >> game_state2;
 
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_17)
 			aiMgr->Load(f);
 
 		// world map
@@ -828,7 +828,7 @@ void Game::LoadGame(GameReader& f)
 		ai = new AIController;
 		ai->Load(f);
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 	{
 		f >> game_level->boss;
 		if(game_level->boss)

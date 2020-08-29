@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.17 (???):
+Version 0.17 (2020-08-29):
 ! cannot load saves from version 0.7 or older
 + hunters camp, quest to kill dire wolf
 + better item models: vodka, gray potion

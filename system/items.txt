@@ -4110,5 +4110,5 @@ alias shield_wall shield_unique
 alias wand_novice wand_1
 alias wand_adept wand_2
 alias wand_expert wand_3
-// renamed in V_DEV
+// renamed in V_0_17
 alias r_persuasion r_haggle

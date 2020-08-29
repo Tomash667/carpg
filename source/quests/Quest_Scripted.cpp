@@ -197,7 +197,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	f >> timeout_days;
 
 	// fix for not initializing category for 'side_cleric' quest
-	if(LOAD_VERSION <= V_MAIN)
+	if(LOAD_VERSION <= V_0_17)
 		category = scheme->category;
 
 	if(prog == -1)

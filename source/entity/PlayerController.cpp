@@ -640,7 +640,7 @@ void PlayerController::Load(GameReader& f)
 		f.ReadCasted<byte>(ab.charges);
 	}
 
-	if(LOAD_VERSION < V_DEV && unit->action == A_DASH && unit->act.dash.ability->RequireList())
+	if(LOAD_VERSION < V_0_17 && unit->action == A_DASH && unit->act.dash.ability->RequireList())
 	{
 		unit->act.dash.hit = UnitList::Get();
 		unit->act.dash.hit->Load(f);

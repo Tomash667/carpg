@@ -1247,7 +1247,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	LoadNews(f);
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_17)
 		f.SkipVector<Int2>(); // old boss_levels
 	f >> tomir_spawned;
 }

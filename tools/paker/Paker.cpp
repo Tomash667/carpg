@@ -187,7 +187,8 @@ bool PakDir(cstring input, cstring output)
 				return false;
 			}
 		}
-	} while(FindNextFile(find, &data));
+	}
+	while(FindNextFile(find, &data));
 
 	FindClose(find);
 	return true;
@@ -268,7 +269,7 @@ bool CreatePak(char* pakname)
 	return true;
 }
 
-bool CreatePatch(char* pakname)
+bool CreatePatch(char* pakname, bool blob)
 {
 	check_entry = true;
 	pak_dir = Format("out/patch_%s", pakname);
@@ -352,13 +353,21 @@ bool CreatePatch(char* pakname)
 	// compress
 	if(!nozip)
 	{
-		printf("Compressing patch.\n");
-		ShellExecute(nullptr, nullptr, "pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr, SW_SHOWNORMAL);
+		if(blob)
+		{
+			printf("Compressing patch (blob).\n");
+			ShellExecute(nullptr, nullptr, "pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr, SW_SHOWNORMAL);
 
-		printf("Uploading to blob & api.\n");
-		cstring result = AddChange(pakname, prevVer.c_str(), Format("out/CaRpg_patch_%s.pak", pakname));
-		if(result)
-			printf(result);
+			printf("Uploading to blob & api.\n");
+			cstring result = AddChange(pakname, prevVer.c_str(), Format("out/CaRpg_patch_%s.pak", pakname));
+			if(result)
+				printf(result);
+		}
+		else
+		{
+			printf("Compressing patch (zip).\n");
+			ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+		}
 	}
 
 	return true;
@@ -422,6 +431,7 @@ int main(int argc, char** argv)
 		return 1;
 
 	int mode = 0;
+	bool blob = false;
 
 	for(int i = 1; i < argc; ++i)
 	{
@@ -433,10 +443,12 @@ int main(int argc, char** argv)
 				printf("Paker tool. Usage: paker [switches] version.\n"
 					"List of switches:\n"
 					"-help - display help\n"
-					"-nozip - don't zip pak\n"
-					"-patch - create only patch pak\n"
-					"-normal - create normal pak (default)\n"
-					"-both - create normal & patch pak\n");
+					"-nozip - don't create zip or pak\n"
+					"-patch - create patch pak\n"
+					"-normal - create full pak (default)\n"
+					"-both - create full & patch pak\n"
+					"-blob - for patch don't create zip but pak file that is uploaded to azure blob\n"
+				);
 			}
 			else if(strcmp(arg, "nozip") == 0)
 				nozip = true;
@@ -446,6 +458,8 @@ int main(int argc, char** argv)
 				mode = 0;
 			else if(strcmp(arg, "both") == 0)
 				mode = 2;
+			else if(strcmp(arg, "blob") == 0)
+				blob = true;
 			else
 				printf("Unknown switch '%s'.\n", arg);
 		}
@@ -458,12 +472,12 @@ int main(int argc, char** argv)
 			}
 			else if(mode == 1)
 			{
-				if(!LoadEntries() || !CreatePatch(argv[i]))
+				if(!LoadEntries() || !CreatePatch(argv[i], blob))
 					return 2;
 			}
 			else
 			{
-				if(!LoadEntries() || !CreatePatch(argv[i]) || !CreatePak(argv[i]))
+				if(!LoadEntries() || !CreatePatch(argv[i], blob) || !CreatePak(argv[i]))
 					return 2;
 			}
 		}

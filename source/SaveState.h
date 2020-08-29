@@ -29,10 +29,11 @@ enum SAVE_VERSION
 	V_0_14_1 = 20, // 0.14.1
 	V_0_15 = 21, // 0.15
 	V_0_16 = 22, // 0.16
-	V_NEXT = 23,
+	V_0_17 = 23, // 0.17
+	V_NEXT = 24,
 
 	// save version used by saves
-	V_CURRENT = V_NEXT,
+	V_CURRENT = V_0_17,
 
 	// use this versions in development on different branches
 	V_MAIN = V_NEXT, // main bugfix branch

@@ -2235,7 +2235,7 @@ void Unit::Load(GameReader& f)
 			else
 				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");
 			f >> act.dash.rot;
-			if(LOAD_VERSION >= V_DEV && act.dash.ability->RequireList())
+			if(LOAD_VERSION >= V_0_17 && act.dash.ability->RequireList())
 			{
 				act.dash.hit = UnitList::Get();
 				act.dash.hit->Load(f);

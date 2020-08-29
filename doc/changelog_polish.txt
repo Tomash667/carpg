@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.17 (???):
+Wersja 0.17 (2020-08-29):
 ! nie można wczytywać już zapisów z wersji 0.7 lub starszej
 + obóz łowców, zadanie z zabiciem złowieszczego wilka
 + lepsze modele przedmiotów: wódka, szara mikstura
