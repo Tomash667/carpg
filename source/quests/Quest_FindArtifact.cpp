@@ -7,12 +7,7 @@ Quest::LoadResult Quest_FindArtifact::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> item;
-	if(LOAD_VERSION >= V_0_8)
-		f >> st;
-	else if(targetLoc)
-		st = targetLoc->st;
-	else
-		st = 10;
+	f >> st;
 
 	return LoadResult::Convert;
 }

@@ -52,19 +52,6 @@ void GameStats::Load(GameReader& f)
 	f >> tick;
 }
 
-void GameStats::LoadOld(GameReader& f, int part)
-{
-	if(part == 0)
-		f >> total_kills;
-	else
-	{
-		f >> hour;
-		f >> minute;
-		f >> second;
-		f >> tick;
-	}
-}
-
 void GameStats::Write(BitStreamWriter& f)
 {
 	f << hour;

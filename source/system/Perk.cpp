@@ -13,142 +13,96 @@ vector<Perk*> Perk::perks;
 std::map<int, Perk*> Perk::hash_perks;
 
 //=================================================================================================
-old::v2::Perk old::Convert(v1::Perk perk, int value, bool& upgrade)
-{
-	upgrade = false;
-	switch(perk)
-	{
-	case v1::Perk::Weakness:
-		upgrade = true;
-		switch((AttributeId)value)
-		{
-		case AttributeId::STR:
-			return v2::Perk::BadBack;
-		case AttributeId::DEX:
-			return v2::Perk::Sluggish;
-		case AttributeId::END:
-			return v2::Perk::ChronicDisease;
-		case AttributeId::INT:
-			return v2::Perk::SlowLearner;
-		case AttributeId::WIS:
-			return v2::Perk::None;
-		case AttributeId::CHA:
-			return v2::Perk::Asocial;
-		}
-	case v1::Perk::Strength:
-		return v2::Perk::Talent;
-	case v1::Perk::Skilled:
-		return v2::Perk::Skilled;
-	case v1::Perk::SkillFocus:
-		return v2::Perk::None;
-	case v1::Perk::Talent:
-		return v2::Perk::SkillFocus;
-	case v1::Perk::AlchemistApprentice:
-		return v2::Perk::AlchemistApprentice;
-	case v1::Perk::Wealthy:
-		return v2::Perk::Wealthy;
-	case v1::Perk::VeryWealthy:
-		return v2::Perk::VeryWealthy;
-	case v1::Perk::FamilyHeirloom:
-		return v2::Perk::FamilyHeirloom;
-	case v1::Perk::Leader:
-		return v2::Perk::Leader;
-	default:
-		return v2::Perk::None;
-	}
-}
-
-//=================================================================================================
-::Perk* old::Convert(v2::Perk perk)
+::Perk* old::Convert(Perk perk)
 {
 	cstring id;
 	switch(perk)
 	{
-	case v2::Perk::BadBack:
+	case Perk::BadBack:
 		id = "bad_back";
 		break;
-	case v2::Perk::ChronicDisease:
+	case Perk::ChronicDisease:
 		id = "chronic_disease";
 		break;
-	case v2::Perk::Sluggish:
+	case Perk::Sluggish:
 		id = "sluggish";
 		break;
-	case v2::Perk::SlowLearner:
+	case Perk::SlowLearner:
 		id = "slow_learner";
 		break;
-	case v2::Perk::Asocial:
+	case Perk::Asocial:
 		id = "asocial";
 		break;
-	case v2::Perk::Poor:
+	case Perk::Poor:
 		id = "poor";
 		break;
-	case v2::Perk::Talent:
+	case Perk::Talent:
 		id = "talent";
 		break;
-	case v2::Perk::Skilled:
+	case Perk::Skilled:
 		id = "skilled";
 		break;
-	case v2::Perk::SkillFocus:
+	case Perk::SkillFocus:
 		id = "skill_focus";
 		break;
-	case v2::Perk::AlchemistApprentice:
+	case Perk::AlchemistApprentice:
 		id = "alchemist_apprentice";
 		break;
-	case v2::Perk::Wealthy:
+	case Perk::Wealthy:
 		id = "wealthy";
 		break;
-	case v2::Perk::VeryWealthy:
+	case Perk::VeryWealthy:
 		id = "very_wealthy";
 		break;
-	case v2::Perk::FamilyHeirloom:
+	case Perk::FamilyHeirloom:
 		id = "heirloom";
 		break;
-	case v2::Perk::Leader:
+	case Perk::Leader:
 		id = "leader";
 		break;
-	case v2::Perk::StrongBack:
+	case Perk::StrongBack:
 		id = "strong_back";
 		break;
-	case v2::Perk::Aggressive:
+	case Perk::Aggressive:
 		id = "aggressive";
 		break;
-	case v2::Perk::Mobility:
+	case Perk::Mobility:
 		id = "mobility";
 		break;
-	case v2::Perk::Finesse:
+	case Perk::Finesse:
 		id = "finesse";
 		break;
-	case v2::Perk::Tough:
+	case Perk::Tough:
 		id = "tough";
 		break;
-	case v2::Perk::HardSkin:
+	case Perk::HardSkin:
 		id = "hard_skin";
 		break;
-	case v2::Perk::Adaptation:
+	case Perk::Adaptation:
 		id = "adaptation";
 		break;
-	case v2::Perk::PerfectHealth:
+	case Perk::PerfectHealth:
 		id = "perfect_health";
 		break;
-	case v2::Perk::Energetic:
+	case Perk::Energetic:
 		id = "energetic";
 		break;
-	case v2::Perk::StrongAura:
+	case Perk::StrongAura:
 		id = "strong_aura";
 		break;
-	case v2::Perk::ManaHarmony:
+	case Perk::ManaHarmony:
 		id = "mana_harmony";
 		break;
-	case v2::Perk::MagicAdept:
+	case Perk::MagicAdept:
 		id = "magic_adept";
 		break;
-	case v2::Perk::TravelingMerchant:
+	case Perk::TravelingMerchant:
 		id = "traveling_merchant";
 		break;
 	default:
 		return nullptr;
 	}
-	return Perk::Get(id);
+	return ::Perk::Get(id);
 }
 
 //=================================================================================================
@@ -417,7 +371,6 @@ void TakenPerk::Apply(PerkContext& ctx)
 		switch(e.type)
 		{
 		case Perk::Effect::ATTRIBUTE:
-			if(!ctx.upgrade)
 			{
 				AttributeId a = (AttributeId)e.subtype;
 				if(a == AttributeId::NONE)

@@ -1987,13 +1987,10 @@ void Unit::Load(GameReader& f)
 			can_sort = false;
 		}
 	}
-	if(LOAD_VERSION >= V_0_8)
-	{
-		if(f.Read0())
-			stock = nullptr;
-		else
-			LoadStock(f);
-	}
+	if(f.Read0())
+		stock = nullptr;
+	else
+		LoadStock(f);
 
 	// stats
 	f >> live_state;
@@ -2030,46 +2027,26 @@ void Unit::Load(GameReader& f)
 		}
 		level = data->level.Clamp(level);
 	}
-	if(LOAD_VERSION >= V_0_8)
+	if(data->group == G_PLAYER)
 	{
-		if(data->group == G_PLAYER)
+		stats = new UnitStats;
+		stats->fixed = false;
+		stats->subprofile.value = 0;
+		stats->Load(f);
+		if(LOAD_VERSION < V_0_10)
 		{
-			stats = new UnitStats;
-			stats->fixed = false;
-			stats->subprofile.value = 0;
-			stats->Load(f);
-			if(LOAD_VERSION < V_0_10)
+			for(int i = 0; i < (int)SkillId::MAX; ++i)
 			{
-				for(int i = 0; i < (int)SkillId::MAX; ++i)
-				{
-					if(stats->skill[i] == -1)
-						stats->skill[i] = 0;
-				}
+				if(stats->skill[i] == -1)
+					stats->skill[i] = 0;
 			}
-		}
-		else
-		{
-			SubprofileInfo sub;
-			f >> sub;
-			stats = data->GetStats(sub);
 		}
 	}
 	else
 	{
-		UnitStats::Skip(f); // old temporary stats
-		if(data->group == G_PLAYER)
-		{
-			stats = new UnitStats;
-			stats->fixed = false;
-			stats->subprofile.value = 0;
-			stats->Load(f);
-			stats->skill[(int)SkillId::PERSUASION] = UnitStats::NEW_STAT;
-		}
-		else
-		{
-			stats = data->GetStats(level);
-			UnitStats::Skip(f);
-		}
+		SubprofileInfo sub;
+		f >> sub;
+		stats = data->GetStats(sub);
 	}
 	f >> gold;
 	bool old_invisible = false;
@@ -2125,21 +2102,7 @@ void Unit::Load(GameReader& f)
 	f >> summoner;
 
 	if(live_state >= DYING)
-	{
-		if(LOAD_VERSION >= V_0_8)
-			f >> mark;
-		else
-		{
-			for(ItemSlot& item : items)
-			{
-				if(item.item && IsSet(item.item->flags, ITEM_IMPORTANT))
-				{
-					mark = true;
-					break;
-				}
-			}
-		}
-	}
+		f >> mark;
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;
@@ -2308,11 +2271,11 @@ void Unit::Load(GameReader& f)
 			for(Effect& e : effects)
 			{
 				if(e.source == EffectSource::Perk)
-					e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
+					e.source_id = old::Convert((old::Perk)e.source_id)->hash;
 			}
 		}
 	}
-	else if(LOAD_VERSION >= V_0_8)
+	else
 	{
 		effects.resize(f.Read<uint>());
 		for(Effect& e : effects)
@@ -2324,19 +2287,7 @@ void Unit::Load(GameReader& f)
 			f >> e.power;
 			e.value = -1;
 			if(e.source == EffectSource::Perk)
-				e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
-		}
-	}
-	else
-	{
-		effects.resize(f.Read<uint>());
-		for(Effect& e : effects)
-		{
-			e.effect = (EffectId)(f.Read<int>() - 1); // changed None effect from 0 to -1
-			e.time = f.Read<float>();
-			e.power = f.Read<float>();
-			e.source = EffectSource::Temporary;
-			e.source_id = -1;
+				e.source_id = old::Convert((old::Perk)e.source_id)->hash;
 		}
 	}
 	if(content.require_update)
@@ -2568,34 +2519,8 @@ void Unit::Load(GameReader& f)
 	}
 
 	// calculate new skills/attributes
-	if(LOAD_VERSION >= V_0_8)
-	{
-		if(content.require_update)
-			CalculateStats();
-	}
-	else
-	{
-		if(IsPlayer())
-		{
-			player->RecalculateLevel();
-			// set new skills initial value & aptitude
-			UnitStats old_stats;
-			old_stats.subprofile.value = 0;
-			old_stats.subprofile.level = level;
-			old_stats.Set(data->GetStatProfile());
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-			{
-				if(stats->skill[i] == UnitStats::NEW_STAT)
-				{
-					stats->skill[i] = old_stats.skill[i];
-					player->skill[i].apt = stats->skill[i] / 5;
-				}
-			}
-			player->SetRequiredPoints();
-			player->RecalculateLevel();
-		}
+	if(content.require_update)
 		CalculateStats();
-	}
 
 	// compatibility
 	if(LOAD_VERSION < V_0_12)

@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.18 (???):
+! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.17 (2020-08-29):
 ! nie można wczytywać już zapisów z wersji 0.7 lub starszej
 + obóz łowców, zadanie z zabiciem złowieszczego wilka

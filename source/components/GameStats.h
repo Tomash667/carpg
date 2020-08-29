@@ -13,7 +13,6 @@ public:
 	void Update(float dt);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	void LoadOld(GameReader& f, int part);
 	void Write(BitStreamWriter& f);
 	void Read(BitStreamReader& f);
 };

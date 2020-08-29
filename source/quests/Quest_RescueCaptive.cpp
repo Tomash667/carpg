@@ -318,12 +318,7 @@ Quest::LoadResult Quest_RescueCaptive::Load(GameReader& f)
 
 	f >> group;
 	f >> captive;
-	if(LOAD_VERSION >= V_0_8)
-		f >> st;
-	else if(targetLoc)
-		st = targetLoc->st;
-	else
-		st = 10;
+	f >> st;
 
 	unit_event_handler = this;
 
