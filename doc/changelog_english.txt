@@ -1,7 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.17 (???):
+Version 0.18 (???):
+! cannot load saves from version 0.7.1 or older
+
+--------------------------------------------------------------------------------
+Version 0.17 (2020-08-29):
 ! cannot load saves from version 0.7 or older
 + hunters camp, quest to kill dire wolf
 + better item models: vodka, gray potion
@@ -11,7 +15,11 @@ Version 0.17 (???):
 + boss music and health bar
 + prevent from spawning units inside campfire
 + continue last game in menu
++ support for auto updates
 + scene manager optimisations
++ vignette effect
+- crash when hunter pick traveling merchant feat [Leinnan]
+- crash when asking mayor about quest in capital city [Woltvint]
 - missing boss music
 - invalid explosion size for client for some spells
 - double explosion sound for clients

@@ -404,19 +404,9 @@ void Team::Load(GameReader& f)
 	leader = Unit::GetById(f.Read<int>());
 	f >> crazies_attack;
 	f >> is_bandit;
-	if(LOAD_VERSION >= V_0_8)
-		f >> free_recruits;
-	else
-	{
-		bool free_recruit;
-		f >> free_recruit;
-		if(free_recruit)
-			free_recruits = 3 - team->GetActiveTeamSize();
-		else
-			free_recruits = 0;
-	}
+	f >> free_recruits;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 		f >> checkResults;
 	else
 		checkResults.clear();

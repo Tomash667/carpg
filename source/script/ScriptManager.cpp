@@ -1216,8 +1216,7 @@ void ScriptManager::Save(GameWriter& f)
 void ScriptManager::Load(GameReader& f)
 {
 	// global vars
-	if(LOAD_VERSION >= V_0_8)
-		globals.Load(f);
+	globals.Load(f);
 
 	// unit vars
 	uint count;

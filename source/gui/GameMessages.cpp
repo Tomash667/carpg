@@ -152,16 +152,8 @@ void GameMessages::Load(GameReader& f)
 		f >> msg.pos;
 		f >> msg.size;
 		f >> msg.type;
-		if(LOAD_VERSION >= V_0_8)
-		{
-			f >> msg.subtype;
-			f >> msg.value;
-		}
-		else
-		{
-			msg.subtype = -1;
-			msg.value = 0;
-		}
+		f >> msg.subtype;
+		f >> msg.value;
 	}
 	f >> msgs_h;
 }

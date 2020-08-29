@@ -35,6 +35,8 @@ Quest_Scripted::~Quest_Scripted()
 //=================================================================================================
 void Quest_Scripted::Start()
 {
+	category = scheme->category;
+
 	if(scheme->startup_use_vars)
 		return;
 
@@ -46,7 +48,6 @@ void Quest_Scripted::Start(Vars* vars)
 {
 	prog = 0;
 	startLoc = world->GetCurrentLocation();
-	category = scheme->category;
 
 	instance = CreateInstance(false);
 
@@ -194,6 +195,10 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	if(!scheme)
 		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
 	f >> timeout_days;
+
+	// fix for not initializing category for 'side_cleric' quest
+	if(LOAD_VERSION <= V_0_17)
+		category = scheme->category;
 
 	if(prog == -1)
 		return LoadResult::Ok;

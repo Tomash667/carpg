@@ -7,7 +7,7 @@
 #include <fstream>
 #include <Shellapi.h>
 
-EXTERN_C DECLSPEC_IMPORT int STDAPICALLTYPE SHCreateDirectoryExA(HWND hwnd, LPCSTR pszPath, const SECURITY_ATTRIBUTES *psa);
+#include "BlobProxy.h"
 
 bool nozip, check_entry, copy_pdb;
 
@@ -86,60 +86,34 @@ struct str_cmp
 	}
 };
 std::map<cstring, PakEntry*, str_cmp> pak_entries;
+string prevVer;
 
 string pak_dir; // "out/0.4"
-byte* buf;
-char buf2[256];
-
-uint CalculateCrc(HANDLE file)
-{
-	const DWORD chunk = 64 * 1024;
-	if(!buf)
-		buf = new byte[chunk];
-
-	DWORD size_left = GetFileSize(file, NULL);
-	DWORD tmp;
-	Crc crc;
-
-	while(size_left > 0)
-	{
-		uint count = min(chunk, size_left);
-		ReadFile(file, buf, count, &tmp, NULL);
-		crc.Update(buf, count);
-		size_left -= count;
-	}
-
-	return crc.Get();
-}
 
 // input: bin/dlls/dll.dll
 // output: pak/0.2.11/./dll.dll
 bool PakFile(cstring input, cstring output, cstring path)
 {
-	HANDLE file = CreateFile(input, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(file == INVALID_HANDLE_VALUE)
+	FileReader file(input);
+	if(!file)
 	{
 		printf("File '%s' can't be opened.\n", input);
 		return false;
 	}
-	DWORD size = GetFileSize(file, NULL);
+	uint size = file.GetSize();
 
 	cstring name = output + pak_dir.length();
 
 	if(!check_entry)
 	{
 		if(path)
-		{
-			GetFullPathName(path, 256, buf2, NULL);
-			SHCreateDirectoryExA(NULL, buf2, NULL);
-		}
+			io::CreateDirectories(path);
 		CopyFile(input, output, FALSE);
 
 		PakEntry* pe = new PakEntry;
 		pe->path = name;
 		pe->size = size;
-		pe->crc = CalculateCrc(file);
-		CloseHandle(file);
+		pe->crc = Crc::Calculate(file);
 
 		pak_entries[pe->path.c_str()] = pe;
 	}
@@ -148,36 +122,26 @@ bool PakFile(cstring input, cstring output, cstring path)
 		std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.find(name);
 		bool ok = true;
 		if(it == pak_entries.end())
-		{
-			CloseHandle(file);
 			printf("Added '%s'.\n", input);
-		}
 		else
 		{
 			PakEntry& e = *it->second;
 			e.found = true;
 			if(e.size == size)
 			{
-				uint crc = CalculateCrc(file);
-				CloseHandle(file);
+				uint crc = Crc::Calculate(file);
 				if(crc == e.crc)
 					ok = false;
 				else
 					printf("Modified '%s'.\n", input);
 			}
 			else
-			{
-				CloseHandle(file);
 				printf("Modified '%s'.\n", input);
-			}
 		}
 		if(ok)
 		{
 			if(path)
-			{
-				GetFullPathName(path, 256, buf2, NULL);
-				SHCreateDirectoryExA(NULL, buf2, NULL);
-			}
+				io::CreateDirectories(path);
 			CopyFile(input, output, FALSE);
 		}
 	}
@@ -223,7 +187,8 @@ bool PakDir(cstring input, cstring output)
 				return false;
 			}
 		}
-	} while(FindNextFile(find, &data));
+	}
+	while(FindNextFile(find, &data));
 
 	FindClose(find);
 	return true;
@@ -232,7 +197,7 @@ bool PakDir(cstring input, cstring output)
 void SaveEntries(cstring ver)
 {
 	std::ofstream o("db.txt");
-	o << Format("// version %s\n", ver);
+	o << Format("version \"%s\"\n", ver);
 	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
@@ -304,7 +269,7 @@ bool CreatePak(char* pakname)
 	return true;
 }
 
-bool CreatePatch(char* pakname)
+bool CreatePatch(char* pakname, bool blob)
 {
 	check_entry = true;
 	pak_dir = Format("out/patch_%s", pakname);
@@ -388,8 +353,21 @@ bool CreatePatch(char* pakname)
 	// compress
 	if(!nozip)
 	{
-		printf("Compressing patch.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+		if(blob)
+		{
+			printf("Compressing patch (blob).\n");
+			ShellExecute(nullptr, nullptr, "pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr, SW_SHOWNORMAL);
+
+			printf("Uploading to blob & api.\n");
+			cstring result = AddChange(pakname, prevVer.c_str(), Format("out/CaRpg_patch_%s.pak", pakname));
+			if(result)
+				printf(result);
+		}
+		else
+		{
+			printf("Compressing patch (zip).\n");
+			ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+		}
 	}
 
 	return true;
@@ -410,6 +388,9 @@ bool LoadEntries()
 	try
 	{
 		t.Next();
+		t.AssertItem("version");
+		t.Next();
+		prevVer = t.MustGetString();
 		while(true)
 		{
 			t.Next();
@@ -425,9 +406,9 @@ bool LoadEntries()
 			pak_entries[e->path.c_str()] = e;
 		}
 	}
-	catch(cstring err)
+	catch(Tokenizer::Exception& ex)
 	{
-		printf("Error while reading db: %s\n", err);
+		printf("Error while reading db: %s\n", ex.ToString());
 		return false;
 	}
 
@@ -450,6 +431,7 @@ int main(int argc, char** argv)
 		return 1;
 
 	int mode = 0;
+	bool blob = false;
 
 	for(int i = 1; i < argc; ++i)
 	{
@@ -461,10 +443,12 @@ int main(int argc, char** argv)
 				printf("Paker tool. Usage: paker [switches] version.\n"
 					"List of switches:\n"
 					"-help - display help\n"
-					"-nozip - don't zip pak\n"
-					"-patch - create only patch pak\n"
-					"-normal - create normal pak (default)\n"
-					"-both - create normal & patch pak\n");
+					"-nozip - don't create zip or pak\n"
+					"-patch - create patch pak\n"
+					"-normal - create full pak (default)\n"
+					"-both - create full & patch pak\n"
+					"-blob - for patch don't create zip but pak file that is uploaded to azure blob\n"
+				);
 			}
 			else if(strcmp(arg, "nozip") == 0)
 				nozip = true;
@@ -474,6 +458,8 @@ int main(int argc, char** argv)
 				mode = 0;
 			else if(strcmp(arg, "both") == 0)
 				mode = 2;
+			else if(strcmp(arg, "blob") == 0)
+				blob = true;
 			else
 				printf("Unknown switch '%s'.\n", arg);
 		}
@@ -486,12 +472,12 @@ int main(int argc, char** argv)
 			}
 			else if(mode == 1)
 			{
-				if(!LoadEntries() || !CreatePatch(argv[i]))
+				if(!LoadEntries() || !CreatePatch(argv[i], blob))
 					return 2;
 			}
 			else
 			{
-				if(!LoadEntries() || !CreatePatch(argv[i]) || !CreatePak(argv[i]))
+				if(!LoadEntries() || !CreatePatch(argv[i], blob) || !CreatePak(argv[i]))
 					return 2;
 			}
 		}

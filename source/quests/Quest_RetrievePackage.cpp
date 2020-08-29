@@ -186,12 +186,7 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 	if(prog != Progress::Finished)
 	{
 		f >> from_loc;
-		if(LOAD_VERSION >= V_0_8)
-			f >> st;
-		else if(targetLoc)
-			st = targetLoc->st;
-		else
-			st = 10;
+		f >> st;
 
 		if(prog >= Progress::Started)
 		{

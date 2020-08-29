@@ -182,12 +182,7 @@ Quest::LoadResult Quest_StolenArtifact::Load(GameReader& f)
 
 	f >> item;
 	f >> group;
-	if(LOAD_VERSION >= V_0_8)
-		f >> st;
-	else if(targetLoc)
-		st = targetLoc->st;
-	else
-		st = 10;
+	f >> st;
 
 	if(prog >= Progress::Started)
 	{

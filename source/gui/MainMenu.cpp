@@ -30,6 +30,7 @@ void MainMenu::LoadLanguage()
 	txNewVersionDialog = s.Get("newVersionDialog");
 	txChanges = s.Get("changes");
 	txDownload = s.Get("download");
+	txUpdate = s.Get("update");
 	txSkip = s.Get("skip");
 	txNewerVersion = s.Get("newerVersion");
 	txNoNewVersion = s.Get("noNewVersion");
@@ -168,7 +169,7 @@ void MainMenu::UpdateCheckVersion()
 			if(!version_changelog.empty())
 				info.text += Format("\n\n%s\n%s", txChanges, version_changelog.c_str());
 			info.type = DIALOG_YESNO;
-			cstring names[] = { txDownload, txSkip };
+			cstring names[] = { version_update ? txUpdate : txDownload, txSkip };
 			info.custom_names = names;
 
 			gui->ShowDialog(info);
@@ -199,16 +200,8 @@ void MainMenu::UpdateCheckVersion()
 void MainMenu::CheckVersion()
 {
 	auto cancel = [&]() { return check_status == CheckVersionStatus::Cancel; };
-	version_new = api->GetVersion(cancel);
-	if(version_new < 0)
-		check_status = CheckVersionStatus::Error;
-	else
-	{
-		version_changelog.clear();
-		if(version_new > VERSION)
-			api->GetChangelog(version_changelog, cancel);
-		check_status = CheckVersionStatus::Done;
-	}
+	version_new = api->GetVersion(cancel, version_changelog, version_update);
+	check_status = (version_new < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
 }
 
 //=================================================================================================
@@ -277,7 +270,21 @@ void MainMenu::PlaceButtons()
 void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
-		io::OpenUrl(Format("https://carpg.pl/redirect.php?action=download&language=%s", Language::prefix.c_str()));
+	{
+		if(version_update)
+		{
+			// start updater
+			GetModuleFileNameA(nullptr, BUF, 256);
+			cstring exe = io::FilenameFromPath(BUF);
+			STARTUPINFO si = { 0 };
+			si.cb = sizeof(STARTUPINFO);
+			PROCESS_INFORMATION pi = { 0 };
+			CreateProcess(nullptr, (char*)Format("updater.exe %s", exe), nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
+			game->Quit();
+		}
+		else
+			io::OpenUrl(Format("https://carpg.pl/redirect.php?action=download&language=%s", Language::prefix.c_str()));
+	}
 }
 
 //=================================================================================================

@@ -207,8 +207,8 @@ unit mayor
 unit soltys
 unit clerk
 unit guard
-unit guard2
-unit guard3
+unit guard_wagon
+unit guard_merchant
 unit guard_move
 // tutorial
 unit tut_goblin

@@ -575,8 +575,6 @@ void QuestManager::Load(GameReader& f)
 	quest_goblins->Init();
 	quest_mages = static_cast<Quest_Mages*>(FindQuest(Q_MAGES));
 	quest_mages2 = static_cast<Quest_Mages2*>(FindQuest(Q_MAGES2));
-	if(LOAD_VERSION < V_0_8 && !quest_mages2)
-		quest_mages2 = static_cast<Quest_Mages2*>(CreateQuest(Q_MAGES2));
 	quest_mages2->Init();
 	quest_orcs = static_cast<Quest_Orcs*>(FindQuest(Q_ORCS));
 	quest_orcs->Init();

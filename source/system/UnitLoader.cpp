@@ -1135,57 +1135,68 @@ void UnitLoader::ParseUnit(const string& id)
 					case AK_HAIR:
 						human->hair = t.MustGetInt();
 						if(InRange(human->hair, -1, MAX_HAIR))
+						{
 							human->defaultFlags |= HumanData::F_HAIR;
+							crc.Update(human->hair);
+						}
 						else
 							LoadError("Invalid hair index.");
 						break;
 					case AK_MUSTACHE:
 						human->mustache = t.MustGetInt();
 						if(InRange(human->mustache, -1, MAX_MUSTACHE))
+						{
 							human->defaultFlags |= HumanData::F_MUSTACHE;
+							crc.Update(human->mustache);
+						}
 						else
 							LoadError("Invalid mustache index.");
 						break;
 					case AK_BEARD:
 						human->beard = t.MustGetInt();
 						if(InRange(human->beard, -1, MAX_BEARD))
+						{
 							human->defaultFlags |= HumanData::F_BEARD;
+							crc.Update(human->beard);
+						}
 						else
 							LoadError("Invalid beard index.");
 						break;
 					case AK_HAIR_COLOR:
 						if(t.IsItem("grayscale"))
+						{
 							human->hair_type = HumanData::HairColorType::Grayscale;
+							crc.Update(human->hair_type);
+						}
 						else if(t.IsItem("random_color"))
+						{
 							human->hair_type = HumanData::HairColorType::Random;
+							crc.Update(human->hair_type);
+						}
 						else
 						{
 							uint val = t.MustGetUint();
 							human->hair_color = Color(val);
 							human->hair_color.w = 1.f;
 							human->hair_type = HumanData::HairColorType::Fixed;
+							crc.Update(human->hair_type);
+							crc.Update(human->hair_color);
 						}
 						human->defaultFlags |= HumanData::F_HAIR_COLOR;
 						break;
 					case AK_HEIGHT:
 						human->height = t.MustGetFloat();
 						if(InRange(human->height, MIN_HEIGHT, MAX_HEIGHT))
+						{
 							human->defaultFlags |= HumanData::F_HEIGHT;
+							crc.Update(human->height);
+						}
 						else
 							LoadError("Invalid height.");
 						break;
 					}
 					t.Next();
 				}
-
-				crc.Update(human->hair);
-				crc.Update(human->mustache);
-				crc.Update(human->beard);
-				crc.Update(human->hair_type);
-				if(human->hair_type == HumanData::HairColorType::Fixed)
-					crc.Update(human->hair_color);
-				crc.Update(human->height);
-
 				HumanData* hd = human.Pin();
 				unit->appearance = hd;
 				UnitData::appearances.push_back(hd);

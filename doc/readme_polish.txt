@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: https://carpg.pl
-Wersja: 0.16
-Data: 2020-07-01
+Wersja: 0.17
+Data: 2020-08-29
 
 ===============================================================================
 1) Spis treści
@@ -311,6 +311,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	SwagOfficerSuccubus
 	thebard88
 	Vinur_Gamall
+	Woltvint
 	XNautPhD
 	xweert123
 	Zettaton

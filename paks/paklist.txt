@@ -9,6 +9,7 @@ file "../doc/changelog_english.txt" "doc/changelog_english.txt"
 
 // copy exe
 file "../bin/carpg.exe" "carpg.exe"
+file "../bin/updater.exe" "updater.exe"
 
 // copy dlls
 file "../bin/fmod.dll" "fmod.dll"

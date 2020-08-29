@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: https://carpg.pl/en
-Version: 0.16
-Date: 2020-07-01
+Version: 0.17
+Date: 2020-08-29
 
 ===============================================================================
 1) Table of contents
@@ -374,6 +374,7 @@ BottledByte - Bug reports and coding.
 	SwagOfficerSuccubus
 	thebard88
 	Vinur_Gamall
+	Woltvint
 	XNautPhD
 	xweert123
 	Zettaton

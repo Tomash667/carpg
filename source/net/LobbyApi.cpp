@@ -18,10 +18,8 @@ cstring op_names[] = {
 	"GET_SERVERS",
 	"GET_CHANGES",
 	"GET_VERSION",
-	"GET_VERSION2",
 	"IGNORE",
-	"REPORT",
-	"GET_CHANGELOG"
+	"REPORT"
 };
 
 LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), cm(nullptr)
@@ -58,13 +56,6 @@ void LobbyApi::Update()
 	UpdateInternal();
 }
 
-static bool IsBinary(CURL* eh)
-{
-	char* ct;
-	curl_easy_getinfo(eh, CURLINFO_CONTENT_TYPE, &ct);
-	return !ct || strcmp(ct, "application/octet-stream") == 0;
-}
-
 void LobbyApi::UpdateInternal()
 {
 	int still_alive, msgs_left;
@@ -97,38 +88,15 @@ void LobbyApi::UpdateInternal()
 		{
 			// response not expected
 		}
-		else if(IsBinary(eh))
-		{
-			if(op->o != GET_VERSION2 || op->buf->Size() != 8)
-			{
-				Error("LobbyApi: Binary response for %s.", op_names[op->o]);
-				SetStatus(op, false);
-			}
-			else
-			{
-				int* data = (int*)op->buf->Data();
-				if(data[0] != 0x475052CA)
-				{
-					Error("LobbyApi: Invalid binary version sign 0x%p.", data[0]);
-					op->value = -1;
-					SetStatus(op, false);
-				}
-				else
-				{
-					op->value = (data[1] & 0xFFFFFF);
-					SetStatus(op, true);
-				}
-			}
-		}
 		else
 		{
 			try
 			{
 				ParseResponse(op);
 			}
-			catch(const nlohmann::json::parse_error& ex)
+			catch(const nlohmann::json::exception& ex)
 			{
-				Error("LobbyApi: Failed to parse response for %s: %s", op_names[op->o], ex.what());
+				Error("LobbyApi: Failed to parse response for %s: %s\n%s", op_names[op->o], ex.what(), op->buf->AsString());
 				SetStatus(op, false);
 			}
 		}
@@ -188,13 +156,9 @@ void LobbyApi::ParseResponse(Op* op)
 		break;
 	case GET_VERSION:
 		op->value = j["version"].get<int>();
-		break;
-	case GET_CHANGELOG:
-		{
-			std::map<string, string> changelogs = j["changes"].get<std::map<string, string>>();
-			if(!changelogs.empty())
-				changelog = changelogs.begin()->second;
-		}
+		if(!j["changelog"].is_null())
+			changelog = j["changelog"].get<string>();
+		update = j["update"].get<bool>();
 		break;
 	}
 
@@ -270,8 +234,6 @@ void LobbyApi::DoOperation(Op* op)
 		string text = UrlEncode(op->str);
 		url = Format("carpg.pl/reports.php?action=add&id=%d&text=%s&ver=%s", op->value, text.c_str(), VERSION_STR);
 	}
-	else if(op->o == GET_VERSION2)
-		url = "carpg.pl/carpgdata/wersja";
 	else
 	{
 		cstring path;
@@ -286,10 +248,7 @@ void LobbyApi::DoOperation(Op* op)
 			path = Format("/api/servers/%d", timestamp);
 			break;
 		case GET_VERSION:
-			path = "/api/version";
-			break;
-		case GET_CHANGELOG:
-			path = Format("/api/version/changelog?lang=%s", Language::prefix.c_str());
+			path = Format("/api/version?ver=%d&lang=%s", VERSION, Language::prefix.c_str());
 			break;
 		}
 		if(lobby_port != 80)
@@ -346,61 +305,15 @@ void LobbyApi::EndPunchthrough()
 	}
 }
 
-int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
+int LobbyApi::GetVersion(delegate<bool()> cancel_clbk, string& changelog, bool& update)
 {
 	Op* op = AddOperation(GET_VERSION);
 	op->status = Status::KEEP_ALIVE;
-	Op* op2 = AddOperation(GET_VERSION2);
-	op2->status = Status::KEEP_ALIVE;
 
 	while(true)
 	{
 		if(cancel_clbk())
 			return -2;
-
-		UpdateInternal();
-		if(op->status == Status::DONE || (op->status != Status::KEEP_ALIVE && op2->status != Status::KEEP_ALIVE))
-			break;
-
-		Sleep(30);
-	}
-
-	int version;
-	if(op->status == Status::DONE)
-	{
-		if(op2->status == Status::DONE && op->value != op2->value)
-			Warn("LobbyApi: Get version mismatch %s - %s.", VersionToString(op->value), VersionToString(op2->value));
-		version = op->value;
-	}
-	else if(op2->status == Status::DONE)
-	{
-		Warn("LobbyApi: Failed to get version from primary server. Secondary returned %s.", VersionToString(op2->value));
-		version = op2->value;
-	}
-	else
-	{
-		Error("LobbyApi: Failed to get version.");
-		version = -1;
-	}
-
-	op->Free();
-	if(op2->status == Status::KEEP_ALIVE)
-		op2->status = Status::DISCARD;
-	else
-		op2->Free();
-	return version;
-}
-
-bool LobbyApi::GetChangelog(string& changelog, delegate<bool()> cancel_clbk)
-{
-	this->changelog.clear();
-	Op* op = AddOperation(GET_CHANGELOG);
-	op->status = Status::KEEP_ALIVE;
-
-	while(true)
-	{
-		if(cancel_clbk())
-			return false;
 
 		UpdateInternal();
 		if(op->status != Status::KEEP_ALIVE)
@@ -409,17 +322,21 @@ bool LobbyApi::GetChangelog(string& changelog, delegate<bool()> cancel_clbk)
 		Sleep(30);
 	}
 
-	bool ok;
+	int version;
 	if(op->status == Status::DONE)
 	{
-		ok = true;
+		version = op->value;
 		changelog = this->changelog;
+		update = this->update;
 	}
 	else
-		ok = false;
+	{
+		Error("LobbyApi: Failed to get version.");
+		version = -1;
+	}
 
 	op->Free();
-	return ok;
+	return version;
 }
 
 void LobbyApi::Report(int id, cstring text)

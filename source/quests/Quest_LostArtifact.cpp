@@ -204,12 +204,7 @@ Quest::LoadResult Quest_LostArtifact::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> item;
-	if(LOAD_VERSION >= V_0_8)
-		f >> st;
-	else if(targetLoc)
-		st = targetLoc->st;
-	else
-		st = 10;
+	f >> st;
 
 	if(prog >= Progress::Started)
 	{

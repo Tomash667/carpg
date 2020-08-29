@@ -479,43 +479,23 @@ void PlayerController::Load(GameReader& f)
 	f >> dmgc;
 	f >> poison_dmgc;
 	f >> idle_timer;
-	if(LOAD_VERSION >= V_0_8)
+	for(StatData& stat : attrib)
 	{
-		for(StatData& stat : attrib)
-		{
-			f >> stat.points;
-			f >> stat.train;
-			f >> stat.apt;
-			f >> stat.train_part;
-			if(LOAD_VERSION < V_0_14)
-				f.Skip<bool>(); // old blocked
-		}
-		for(StatData& stat : skill)
-		{
-			f >> stat.points;
-			f >> stat.train;
-			f >> stat.apt;
-			f >> stat.train_part;
-		}
-		SetRequiredPoints();
+		f >> stat.points;
+		f >> stat.train;
+		f >> stat.apt;
+		f >> stat.train_part;
+		if(LOAD_VERSION < V_0_14)
+			f.Skip<bool>(); // old blocked
 	}
-	else
+	for(StatData& stat : skill)
 	{
-		for(StatData& stat : attrib)
-		{
-			f >> stat.points;
-			stat.train = 0;
-			stat.apt = 0;
-			stat.train_part = 0;
-		}
-		for(StatData& stat : skill)
-		{
-			f >> stat.points;
-			stat.train = 0;
-			stat.apt = 0;
-			stat.train_part = 0;
-		}
+		f >> stat.points;
+		f >> stat.train;
+		f >> stat.apt;
+		f >> stat.train_part;
 	}
+	SetRequiredPoints();
 	f >> action_key;
 	f >> next_action;
 	switch(next_action)
@@ -556,22 +536,9 @@ void PlayerController::Load(GameReader& f)
 	f >> dmg_done;
 	f >> dmg_taken;
 	f >> arena_fights;
-	if(LOAD_VERSION < V_0_8)
-	{
-		UnitStats old_stats;
-		old_stats.Load(f);
-		for(int i = 0; i < (int)AttributeId::MAX; ++i)
-			attrib[i].apt = (old_stats.attrib[i] - 50) / 5;
-		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			skill[i].apt = old_stats.skill[i] / 5;
-		f.Skip(sizeof(StatState) * ((int)AttributeId::MAX + (int)SkillId::MAX)); // old stat state
-	}
 
 	// perk points
-	if(LOAD_VERSION >= V_0_8)
-		f >> learning_points;
-	else
-		learning_points = 0;
+	f >> learning_points;
 
 	// perks
 	byte count;
@@ -585,38 +552,14 @@ void PlayerController::Load(GameReader& f)
 			f >> tp.value;
 		}
 	}
-	else if(LOAD_VERSION >= V_0_8)
-	{
-		for(TakenPerk& tp : perks)
-		{
-			old::v2::Perk perk = (old::v2::Perk)f.Read<byte>();
-			tp.perk = old::Convert(perk);
-			f >> tp.value;
-		}
-	}
 	else
 	{
 		for(TakenPerk& tp : perks)
 		{
-			tp.perk = (Perk*)f.Read<byte>();
+			old::Perk perk = (old::Perk)f.Read<byte>();
+			tp.perk = old::Convert(perk);
 			f >> tp.value;
 		}
-		LoopAndRemove(perks, [this](TakenPerk& tp)
-		{
-			bool upgrade;
-			old::v2::Perk perk = old::Convert((old::v1::Perk)(int)tp.perk, tp.value, upgrade);
-			if(perk == old::v2::Perk::None)
-				return true;
-			tp.perk = old::Convert(perk);
-			if(upgrade)
-			{
-				PerkContext ctx(this, false);
-				ctx.upgrade = true;
-				tp.Apply(ctx);
-				tp.value = 0;
-			}
-			return false;
-		});
 	}
 
 	// abilities
@@ -640,7 +583,7 @@ void PlayerController::Load(GameReader& f)
 		f.ReadCasted<byte>(ab.charges);
 	}
 
-	if(LOAD_VERSION < V_DEV && unit->action == A_DASH && unit->act.dash.ability->RequireList())
+	if(LOAD_VERSION < V_0_17 && unit->action == A_DASH && unit->act.dash.ability->RequireList())
 	{
 		unit->act.dash.hit = UnitList::Get();
 		unit->act.dash.hit->Load(f);
@@ -671,18 +614,9 @@ void PlayerController::Load(GameReader& f)
 	}
 
 	f >> split_gold;
-	if(LOAD_VERSION >= V_0_8)
-	{
-		f >> always_run;
-		f >> exp;
-		f >> exp_level;
-	}
-	else
-	{
-		always_run = true;
-		exp = 0;
-		exp_level = 0;
-	}
+	f >> always_run;
+	f >> exp;
+	f >> exp_level;
 	exp_need = GetExpNeed();
 	if(LOAD_VERSION >= V_0_10)
 		f >> last_ring;

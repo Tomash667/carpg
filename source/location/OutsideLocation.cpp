@@ -82,9 +82,6 @@ void OutsideLocation::Load(GameReader& f)
 		f.Read(tiles, sizeof(TerrainTile)*size*size);
 		f.Read(h, sizeof(float)*size2);
 	}
-
-	if(LOAD_VERSION < V_0_8 && st == 20 && type == L_OUTSIDE)
-		state = LS_HIDDEN;
 }
 
 //=================================================================================================

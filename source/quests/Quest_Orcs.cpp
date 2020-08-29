@@ -632,8 +632,6 @@ Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 	f >> guard;
 	f >> orc;
 	f >> orc_class;
-	if(LOAD_VERSION < V_0_8)
-		ItemHelper::SkipStock(f);
 
 	if(!done)
 	{

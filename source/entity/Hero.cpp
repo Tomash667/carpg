@@ -113,7 +113,7 @@ void Hero::Load(GameReader& f)
 	}
 	f >> lost_pvp;
 	f >> split_gold;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 	{
 		int teamId;
 		f >> teamId;

@@ -310,7 +310,7 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	f >> days_required;
 	f >> days_gold;
 	f >> messenger;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 		f >> persuaded;
 	else
 		persuaded = false;
