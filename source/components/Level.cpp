@@ -4059,6 +4059,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		{
 			if(!area.tmp->Read(f))
 				return false;
+			area.RecreateScene();
 		}
 	}
 
@@ -4841,4 +4842,11 @@ void Level::EndBossFight()
 	game->SetMusic();
 	if(Net::IsServer())
 		Net::PushChange(NetChange::BOSS_END);
+}
+
+//=================================================================================================
+void Level::RecreateScene()
+{
+	for(LevelArea& area : ForEachArea())
+		area.RecreateScene();
 }

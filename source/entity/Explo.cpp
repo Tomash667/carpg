@@ -49,6 +49,7 @@ bool Explo::Update(float dt, LevelArea& area)
 	if(delete_me)
 	{
 		area.tmp->scene->Remove(node);
+		node->Free();
 		delete this;
 		return true;
 	}

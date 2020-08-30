@@ -1121,6 +1121,7 @@ void InsideLocationGenerator::OnLoad()
 	game->SetDungeonParamsAndTextures(base);
 	game_level->RecreateObjects(Net::IsClient());
 	game_level->SpawnDungeonColliders();
+	game_level->RecreateScene();
 	CreateMinimap();
 }
 
