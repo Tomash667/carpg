@@ -3054,8 +3054,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	if(!clear)
 	{
 		// make blood splatter full size
-		for(vector<Blood>::iterator it = area.bloods.begin(), end = area.bloods.end(); it != end; ++it)
-			it->size = 1.f;
+		for(Blood* blood : area.bloods)
+			blood->size = 1.f;
 	}
 }
 

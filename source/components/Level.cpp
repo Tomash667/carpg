@@ -2797,24 +2797,26 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 	if(!game_res->tBloodSplat[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
 		return;
 
-	Blood& b = Add1(area.bloods);
+	Blood* blood = new Blood;
 	u.mesh_inst->SetupBones();
-	b.pos = u.GetLootCenter();
-	b.type = u.data->blood;
-	b.rot = Random(MAX_ANGLE);
-	b.size = (fully_created ? 1.f : 0.f);
-	b.scale = u.data->blood_size;
+	blood->pos = u.GetLootCenter();
+	blood->type = u.data->blood;
+	blood->rot = Random(MAX_ANGLE);
+	blood->size = (fully_created ? 1.f : 0.f);
+	blood->scale = u.data->blood_size;
 
 	if(area.have_terrain)
 	{
-		b.pos.y = terrain->GetH(b.pos) + 0.05f;
-		terrain->GetAngle(b.pos.x, b.pos.z, b.normal);
+		blood->pos.y = terrain->GetH(blood->pos) + 0.05f;
+		terrain->GetAngle(blood->pos.x, blood->pos.z, blood->normal);
 	}
 	else
 	{
-		b.pos.y = u.pos.y + 0.05f;
-		b.normal = Vec3(0, 1, 0);
+		blood->pos.y = u.pos.y + 0.05f;
+		blood->normal = Vec3(0, 1, 0);
 	}
+
+	area.bloods.push_back(blood);
 }
 
 //=================================================================================================
@@ -3091,7 +3093,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 		if(days > 30)
 			area.bloods.clear();
 		else if(days > 5)
-			RemoveElements(area.bloods, RemoveRandomPred<Blood>(days, 4, 30));
+			DeleteElements(area.bloods, RemoveRandomPred<Blood*>(days, 4, 30));
 
 		// remove all temporary traps (>30 days) or some (>5 days)
 		if(days > 30)

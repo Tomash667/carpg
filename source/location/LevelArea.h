@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 #include "Bullet.h"
-#include "Blood.h"
 #include "GameLight.h"
 #include <Mesh.h>
 
@@ -50,7 +49,7 @@ struct LevelArea
 	vector<Chest*> chests;
 	vector<GroundItem*> items;
 	vector<Trap*> traps;
-	vector<Blood> bloods;
+	vector<Blood*> bloods;
 	vector<GameLight> lights;
 	vector<LightMask> masks;
 	Int2 mine, maxe;

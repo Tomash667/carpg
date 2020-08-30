@@ -269,13 +269,13 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
 	{
-		for(Blood& blood : area.bloods)
+		for(Blood* blood : area.bloods)
 		{
-			if(blood.size > 0.f && frustum.SphereToFrustum(blood.pos, blood.size * blood.scale))
+			if(blood->size > 0.f && frustum.SphereToFrustum(blood->pos, blood->size * blood->scale))
 			{
 				if(!outside)
-					GatherDrawBatchLights(area, nullptr, blood.pos.x, blood.pos.y, blood.size * blood.scale, 0, blood.lights);
-				draw_batch.bloods.push_back(&blood);
+					GatherDrawBatchLights(area, nullptr, blood->pos.x, blood->pos.y, blood->size * blood->scale, 0, blood->lights);
+				draw_batch.bloods.push_back(blood);
 			}
 		}
 	}

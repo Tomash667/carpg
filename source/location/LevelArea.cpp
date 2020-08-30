@@ -75,11 +75,11 @@ void LevelArea::Update(float dt)
 	LoopAndRemove(tmp->drains, [dt](Drain& drain) { return drain.Update(dt); });
 
 	// update blood spatters
-	for(Blood& blood : bloods)
+	for(Blood* blood : bloods)
 	{
-		blood.size += dt;
-		if(blood.size >= 1.f)
-			blood.size = 1.f;
+		blood->size += dt;
+		if(blood->size >= 1.f)
+			blood->size = 1.f;
 	}
 
 	// update objects
@@ -122,8 +122,8 @@ void LevelArea::Save(GameWriter& f)
 		trap->Save(f);
 
 	f << bloods.size();
-	for(Blood& blood : bloods)
-		blood.Save(f);
+	for(Blood* blood : bloods)
+		blood->Save(f);
 
 	f << lights.size();
 	for(GameLight& light : lights)
@@ -198,8 +198,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			}
 
 			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
+			for(Blood*& blood : bloods)
+			{
+				blood = new Blood;
+				blood->Load(f);
+			}
 
 			lights.resize(f.Read<uint>());
 			for(GameLight& light : lights)
@@ -245,8 +248,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			}
 
 			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
+			for(Blood*& blood : bloods)
+			{
+				blood = new Blood;
+				blood->Load(f);
+			}
 
 			lights.resize(f.Read<uint>());
 			for(GameLight& light : lights)
@@ -299,8 +305,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			}
 
 			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
+			for(Blood*& blood : bloods)
+			{
+				blood = new Blood;
+				blood->Load(f);
+			}
 
 			lights.resize(f.Read<uint>());
 			for(GameLight& light : lights)
@@ -356,8 +365,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			}
 
 			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
+			for(Blood*& blood : bloods)
+			{
+				blood = new Blood;
+				blood->Load(f);
+			}
 		}
 		break;
 	}
@@ -399,8 +411,8 @@ void LevelArea::Write(BitStreamWriter& f)
 		trap->Write(f);
 	// bloods
 	f.Write(bloods.size());
-	for(Blood& blood : bloods)
-		blood.Write(f);
+	for(Blood* blood : bloods)
+		blood->Write(f);
 	// lights
 	f.Write(lights.size());
 	for(GameLight& light : lights)
@@ -553,8 +565,11 @@ bool LevelArea::Read(BitStreamReader& f)
 		return false;
 	}
 	bloods.resize(count);
-	for(Blood& blood : bloods)
-		blood.Read(f);
+	for(Blood*& blood : bloods)
+	{
+		blood = new Blood;
+		blood->Read(f);
+	}
 	if(!f)
 	{
 		Error("Read area: Broken blood.");

@@ -556,25 +556,27 @@ void Quest_Evil::GenerateBloodyAltar()
 	{
 		if(it != path.begin())
 		{
-			Blood& b = Add1(lvl.bloods);
-			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f))
+			Blood* blood = new Blood;
+			blood->pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f))
 				+ Vec3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
-			b.type = BLOOD_RED;
-			b.rot = Random(MAX_ANGLE);
-			b.size = 1.f;
-			b.scale = 1.f;
-			b.pos.y = 0.05f;
-			b.normal = Vec3(0, 1, 0);
+			blood->type = BLOOD_RED;
+			blood->rot = Random(MAX_ANGLE);
+			blood->size = 1.f;
+			blood->scale = 1.f;
+			blood->pos.y = 0.05f;
+			blood->normal = Vec3(0, 1, 0);
+			lvl.bloods.push_back(blood);
 		}
 		{
-			Blood& b = Add1(lvl.bloods);
-			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f)) + Vec3(2.f*it->x + 1, 0, 2.f*it->y + 1);
-			b.type = BLOOD_RED;
-			b.rot = Random(MAX_ANGLE);
-			b.size = 1.f;
-			b.scale = 1.f;
-			b.pos.y = 0.05f;
-			b.normal = Vec3(0, 1, 0);
+			Blood* blood = new Blood;
+			blood->pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f)) + Vec3(2.f*it->x + 1, 0, 2.f*it->y + 1);
+			blood->type = BLOOD_RED;
+			blood->rot = Random(MAX_ANGLE);
+			blood->size = 1.f;
+			blood->scale = 1.f;
+			blood->pos.y = 0.05f;
+			blood->normal = Vec3(0, 1, 0);
+			lvl.bloods.push_back(blood);
 		}
 	}
 
