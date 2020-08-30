@@ -1695,6 +1695,7 @@ void Game::UpdateServerTransfer(float dt)
 					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 					game_gui->info_box->Show(txWaitingForPlayers);
 				}
+				game_level->CreateScene();
 			}
 		}
 	}

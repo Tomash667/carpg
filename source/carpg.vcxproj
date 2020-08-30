@@ -184,6 +184,7 @@
     <ClInclude Include="helpers\LevelAreaContext.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
     <ClInclude Include="helpers\PhysicCallbacks.h" />
+    <ClInclude Include="helpers\SceneNodeHelper.h" />
     <ClInclude Include="location\OffscreenLocation.h" />
     <ClInclude Include="location\TmpLevelArea.h" />
     <ClInclude Include="net\BitStreamFunc.h" />
@@ -354,6 +355,7 @@
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
     <ClCompile Include="helpers\LevelAreaContext.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
+    <ClCompile Include="helpers\SceneNodeHelper.cpp" />
     <ClCompile Include="location\OffscreenLocation.cpp" />
     <ClCompile Include="location\TmpLevelArea.cpp" />
     <ClCompile Include="net\NetClient.cpp" />

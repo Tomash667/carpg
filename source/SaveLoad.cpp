@@ -828,7 +828,6 @@ void Game::LoadGame(GameReader& f)
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(game_level->location);
 		loc_gen->OnLoad();
-		game_level->CreateScene();
 
 		if(LOAD_VERSION < V_0_11)
 		{
@@ -957,6 +956,7 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
+		game_level->CreateScene();
 		SetMusic();
 		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
 			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))

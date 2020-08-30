@@ -4061,7 +4061,6 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		{
 			if(!area.tmp->Read(f))
 				return false;
-			area.CreateScene();
 		}
 	}
 
@@ -4764,9 +4763,6 @@ void Level::CreateObjectsMeshInstance()
 					obj->meshInst->groups[0].time = time;
 			}
 		}
-
-		for(Chest* chest : area.chests)
-			chest->Recreate();
 	}
 }
 

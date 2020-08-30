@@ -3037,11 +3037,11 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 
 	if(Net::IsLocal() && !net->was_client)
 	{
-		// remove chest meshes
+		// remove node/user
+		for(Usable* usable : area.usables)
+			usable->Cleanup();
 		for(Chest* chest : area.chests)
 			chest->Cleanup();
-
-		// remove door meshes
 		for(Door* door : area.doors)
 			door->Cleanup();
 	}

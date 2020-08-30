@@ -19,9 +19,9 @@ struct Usable : EntityType<Usable>
 	static const float SOUND_DIST;
 	static const int MIN_SIZE = 22;
 
-	Usable() : variant(-1), container(nullptr) {}
+	Usable() : node(nullptr), variant(-1), container(nullptr) {}
 	~Usable() { delete container; }
-
+	void Cleanup() { node = nullptr; }
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;

@@ -15,6 +15,7 @@
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
 #include "Room.h"
+#include "SceneNodeHelper.h"
 #include "Trap.h"
 #include "Unit.h"
 
@@ -58,10 +59,6 @@ void LevelArea::Update(float dt)
 		tmp->lights_dt = 0;
 	}
 
-	// update chests
-	for(Chest* chest : chests)
-		chest->meshInst->Update(dt);
-
 	// update doors
 	for(Door* door : doors)
 		door->Update(dt, *this);
@@ -88,6 +85,8 @@ void LevelArea::Update(float dt)
 		if(obj->meshInst)
 			obj->meshInst->Update(dt);
 	}
+
+	tmp->scene->Update(dt);
 }
 
 //=================================================================================================
@@ -1142,6 +1141,17 @@ void LevelArea::CreateScene()
 		node->center = usable->pos;
 		node->mat = Matrix::RotationY(usable->rot) * Matrix::Translation(usable->pos);
 		usable->node = node;
+		scene->Add(node);
+	}
+
+	for(Chest* chest : chests)
+	{
+		if(SceneNodeHelper::Create(chest->node, chest->base->mesh))
+			chest->AfterLoad();
+		SceneNode* node = chest->node;
+		node->tmp = false;
+		node->center = chest->pos;
+		node->mat = Matrix::RotationY(chest->rot) * Matrix::Translation(chest->pos);
 		scene->Add(node);
 	}
 

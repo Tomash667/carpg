@@ -20,10 +20,10 @@ struct ChestEventHandler
 //-----------------------------------------------------------------------------
 struct Chest : public EntityType<Chest>, public ItemContainer
 {
+	SceneNode* node;
 	Vec3 pos;
 	float rot;
 	BaseObject* base;
-	MeshInstance* meshInst;
 	ChestEventHandler* handler;
 
 private:
@@ -34,11 +34,12 @@ public:
 	static const int MIN_SIZE = 20;
 	static const float SOUND_DIST;
 
-	Chest() : meshInst(nullptr), user(nullptr), handler(nullptr) {}
-	~Chest() { delete meshInst; }
-
-	void Recreate();
-	void Cleanup();
+	Chest() : node(nullptr), user(nullptr), handler(nullptr) {}
+	void Cleanup()
+	{
+		node = nullptr;
+		user = nullptr;
+	}
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
@@ -53,4 +54,5 @@ public:
 	bool AddItem(const Item* item, uint count = 1) { return AddItem(item, count, count); }
 	void OpenClose(Unit* unit);
 	Unit* GetUser() const { return user; }
+	void AfterLoad();
 };

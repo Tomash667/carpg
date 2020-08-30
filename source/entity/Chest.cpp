@@ -7,32 +7,12 @@
 #include "GameResources.h"
 #include "Inventory.h"
 #include "PlayerInfo.h"
+#include "SceneNodeHelper.h"
 
 #include <SoundManager.h>
 
 const float Chest::SOUND_DIST = 1.f;
 EntityType<Chest>::Impl EntityType<Chest>::impl;
-
-//=================================================================================================
-void Chest::Recreate()
-{
-	if(meshInst)
-	{
-		meshInst->ApplyPreload(base->mesh, true);
-		if(meshInst->IsActive())
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_BACK | PLAY_ONCE);
-	}
-	else
-		meshInst = new MeshInstance(base->mesh);
-}
-
-//=================================================================================================
-void Chest::Cleanup()
-{
-	delete meshInst;
-	meshInst = nullptr;
-	user = nullptr;
-}
 
 //=================================================================================================
 void Chest::Save(GameWriter& f)
@@ -46,7 +26,7 @@ void Chest::Save(GameWriter& f)
 	f << rot;
 
 	if(f.isLocal)
-		meshInst->SaveSimple(f);
+		SceneNodeHelper::Save(node, f);
 
 	f << (handler ? handler->GetChestEventHandlerQuestId() : -1);
 }
@@ -76,11 +56,11 @@ void Chest::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		meshInst = new MeshInstance(nullptr);
-		meshInst->LoadSimple(f);
+		if(LOAD_VERSION >= V_DEV)
+			node = SceneNodeHelper::Load(f);
+		else
+			node = SceneNodeHelper::old::LoadSimple(f);
 	}
-	else
-		meshInst = nullptr;
 
 	int handler_id = f.Read<int>();
 	if(handler_id == -1)
@@ -99,7 +79,7 @@ void Chest::Write(BitStreamWriter& f)
 	f << base->hash;
 	f << pos;
 	f << rot;
-	meshInst->WriteSimple(f);
+	SceneNodeHelper::Save(node, f);
 }
 
 //=================================================================================================
@@ -109,8 +89,7 @@ bool Chest::Read(BitStreamReader& f)
 	base = BaseObject::Get(f.Read<int>());
 	f >> pos;
 	f >> rot;
-	meshInst = new MeshInstance(nullptr);
-	meshInst->ReadSimple(f);
+	node = SceneNodeHelper::Load(f);
 	if(!f)
 		return false;
 	Register();
@@ -143,6 +122,7 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 //=================================================================================================
 void Chest::OpenClose(Unit* unit)
 {
+	MeshInstance* meshInst = node->mesh_inst;
 	if(unit)
 	{
 		// open chest by unit
@@ -175,4 +155,13 @@ void Chest::OpenClose(Unit* unit)
 			c.count = -1;
 		}
 	}
+}
+
+//=================================================================================================
+void Chest::AfterLoad()
+{
+	// when saved at opening, start closing now
+	MeshInstance* meshInst = node->mesh_inst;
+	if(meshInst->IsActive())
+		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK);
 }

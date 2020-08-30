@@ -161,44 +161,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// chests
-	if(IsSet(draw_flags, DF_USABLES))
-	{
-		PROFILER_BLOCK("Chests");
-		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-		{
-			Chest& chest = **it;
-			chest.meshInst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(chest.pos, chest.meshInst->mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				if(chest.meshInst->IsActive())
-				{
-					chest.meshInst->SetupBones();
-					node->SetMesh(chest.meshInst);
-				}
-				else
-					node->SetMesh(chest.meshInst->mesh);
-				node->center = chest.pos;
-				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
-				{
-					if(use_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.Add(node);
-			}
-		}
-	}
-
 	// doors
 	if(IsSet(draw_flags, DF_USABLES))
 	{
@@ -1832,9 +1794,16 @@ void Game::UvModChanged()
 //=================================================================================================
 void Game::SetGlowNodes()
 {
+	SceneNode* node;
 	if(pc->data.before_player == BP_USABLE)
+		node = pc->data.before_player_ptr.usable->node;
+	else if(pc->data.before_player == BP_CHEST)
+		node = pc->data.before_player_ptr.chest->node;
+	else
+		node = nullptr;
+
+	if(node)
 	{
-		SceneNode* node = pc->data.before_player_ptr.usable->node;
 		if(use_glow)
 		{
 			GlowNode& glow = Add1(draw_batch.glow_nodes);
@@ -1849,9 +1818,17 @@ void Game::SetGlowNodes()
 //=================================================================================================
 void Game::ClearGlowNodes()
 {
-	if(!use_glow && pc->data.before_player == BP_USABLE)
-	{
-		SceneNode* node = pc->data.before_player_ptr.usable->node;
+	if(use_glow)
+		return;
+
+	SceneNode* node;
+	if(pc->data.before_player == BP_USABLE)
+		node = pc->data.before_player_ptr.usable->node;
+	else if(pc->data.before_player == BP_CHEST)
+		node = pc->data.before_player_ptr.chest->node;
+	else
+		node = nullptr;
+
+	if(node)
 		node->tint = Vec4::One;
-	}
 }
