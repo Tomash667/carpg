@@ -213,6 +213,8 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="stats\Buff.h" />
     <ClInclude Include="stats\Event.h" />
+    <ClInclude Include="systems\ParticleEmitterModel.h" />
+    <ClInclude Include="systems\ParticleLoader.h" />
     <ClInclude Include="system\BaseObject.h" />
     <ClInclude Include="system\BaseUsable.h" />
     <ClInclude Include="system\Building.h" />
@@ -361,6 +363,7 @@
     <ClCompile Include="quests\Quest2.cpp" />
     <ClCompile Include="quests\Quest_DireWolf.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="systems\ParticleLoader.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />
     <ClCompile Include="system\Content.cpp" />

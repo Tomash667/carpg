@@ -528,8 +528,8 @@ void Quest_Evil::GenerateBloodyAltar()
 	// add particles
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->alpha = 0.8f;
-	pe->emision_interval = 0.1f;
-	pe->emisions = -1;
+	pe->emission_interval = 0.1f;
+	pe->emissions = -1;
 	pe->life = -1;
 	pe->max_particles = 50;
 	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;

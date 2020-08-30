@@ -1,0 +1,166 @@
+particle xxx
+{
+	texture ""
+	life -1
+	emissions -1
+	emission_interval 0
+	spawn_min 0
+	spawn_max
+	max_particles
+	particle_life 1
+	size
+	alpha
+	speed_min
+	speed_max
+	pos_min
+	pos_max
+	op_size
+	op_alpha
+	mode
+}
+
+particle torch
+{
+	texture "flare.png"
+	emission_interval 0.1
+	spawn_min 1
+	spawn_max 3
+	max_particles 50
+	particle_life 0.5
+	size 0.5
+	alpha 0.8
+	speed_min {-1 3 -1}
+	speed_max {1 4 1}
+	op_size shrink
+	op_alpha shrink
+	mode add1
+}
+
+particle magic_torch
+{
+	texture "flare2.png"
+	emission_interval 0.1
+	spawn_min 1
+	spawn_max 3
+	max_particles 50
+	particle_life 0.5
+	size 0.5
+	alpha 0.8
+	speed_min {-1 3 -1}
+	speed_max {1 4 1}
+	op_size shrink
+	op_alpha shrink
+	mode add1
+}
+
+particle campfire
+{
+	texture "flare.png"
+	emission_interval 0.1
+	spawn_min 1
+	spawn_max 3
+	max_particles 50
+	particle_life 0.5
+	size 0.7
+	alpha 0.8
+	speed_min {-1 3 -1}
+	speed_max {1 4 1}
+	op_size shrink
+	op_alpha shrink
+	mode add1
+}
+
+particle blood_up
+{
+	texture "krew.png"
+	emission_interval 0.1
+	spawn_min 1
+	spawn_max 3
+	max_particles 50
+	particle_life 0.5
+	size 0.5
+	alpha 0.8
+	speed_min {-1 4 -1}
+	speed_max {1 6 1}
+	op_size shrink
+	op_alpha shrink
+	mode add
+}
+
+particle water
+{
+	texture "water.png"
+	emission_interval 0.1
+	spawn_min 4
+	spawn_max 8
+	max_particles 500
+	particle_life 3
+	size 0.05
+	alpha 0.8
+	speed_min {-0.6 4 -0.6}
+	speed_max {0.6 7 0.6}
+	op_size shrink
+	op_alpha shrink
+	mode add
+}
+
+particle magicfire
+{
+	texture "flare2.png"
+	emission_interval 0.1
+	spawn_min 2
+	spawn_max 4
+	max_particles 50
+	particle_life 0.5
+	speed_min {-1 3 -1}
+	speed_max {1 4 1}
+	op_size shrink
+	op_alpha shrink
+	mode add1
+}
+
+particle spawn
+{
+	texture "spawn_fog.png"
+	life 5
+	emissions 5
+	emission_interval 0.1
+	spawn_min 10
+	spawn_max 15
+	max_particles 75
+	particle_life 0.5
+	size 0.3
+	alpha 0.3
+	speed_min {-1 0 -1}
+	speed_max {1 1 1}
+	pos_min {-0.75 0 -0.75}
+	pos_max {0.75 1 0.75}
+	op_size shrink
+	op_alpha shrink
+	mode add
+}
+
+particle hit
+{
+	texture "iskra.png"
+	life 5
+	emissions 1
+	emission_interval 0
+	spawn_min 10
+	spawn_max 15
+	max_particles 15
+	particle_life 0.5
+	size 0.3
+	alpha 0.9
+	speed_min {-1 0 -1}
+	speed_max {1 1 1}
+	pos_min {-0.1 -0.1 -0.1}
+	pos_max {0.1 0.1 0.1}
+	op_size shrink
+	op_alpha shrink
+	mode add
+}
+
+// emissions -1
+// life - 1
+// emissions -> emissions
