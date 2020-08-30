@@ -1483,6 +1483,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	bool loaded_resources = game_level->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
+	game_level->CreateScene();
 
 	l.last_visit = world->GetWorldtime();
 	game_level->CheckIfLocationCleared();
@@ -2531,6 +2532,7 @@ void Game::ChangeLevel(int where)
 	game_level->CheckIfLocationCleared();
 	bool loaded_resources = game_level->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
+	game_level->CreateScene();
 
 	SetMusic();
 

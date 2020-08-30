@@ -48,6 +48,7 @@ private:
 	Scene* scene;
 	SceneNode* node;
 	Camera* camera;
+	Light light;
 	ItemTextureMap item_texture_map;
 	vector<Texture*> over_item_textures;
 	RenderTarget* rt_item;

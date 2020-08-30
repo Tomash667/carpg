@@ -828,6 +828,7 @@ void Game::LoadGame(GameReader& f)
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(game_level->location);
 		loc_gen->OnLoad();
+		game_level->CreateScene();
 
 		if(LOAD_VERSION < V_0_11)
 		{

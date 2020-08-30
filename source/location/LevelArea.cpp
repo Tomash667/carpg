@@ -1127,15 +1127,18 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 }
 
 //=================================================================================================
-void LevelArea::RecreateScene()
+void LevelArea::CreateScene()
 {
 	Scene* scene = tmp->scene;
+
+	for(GameLight& light : lights)
+		scene->Add(&light);
 
 	for(Usable* usable : usables)
 	{
 		SceneNode* node = SceneNode::Get();
 		node->tmp = false;
-		node->SetMesh(usable->base->mesh);
+		node->SetMesh(usable->GetMesh());
 		node->center = usable->pos;
 		node->mat = Matrix::RotationY(usable->rot) * Matrix::Translation(usable->pos);
 		usable->node = node;

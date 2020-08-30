@@ -1077,6 +1077,7 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					Info("NM_TRANSFER: Loaded player data.");
 					LoadResources("", false);
+					game_level->CreateScene();
 					net->mp_load = false;
 					BitStreamWriter f;
 					f << ID_READY;

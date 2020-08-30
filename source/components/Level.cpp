@@ -4061,7 +4061,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		{
 			if(!area.tmp->Read(f))
 				return false;
-			area.RecreateScene();
+			area.CreateScene();
 		}
 	}
 
@@ -4847,8 +4847,8 @@ void Level::EndBossFight()
 }
 
 //=================================================================================================
-void Level::RecreateScene()
+void Level::CreateScene()
 {
 	for(LevelArea& area : ForEachArea())
-		area.RecreateScene();
+		area.CreateScene();
 }

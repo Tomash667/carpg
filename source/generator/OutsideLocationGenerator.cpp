@@ -445,7 +445,6 @@ void OutsideLocationGenerator::OnLoad()
 
 	game_level->RecreateObjects(Net::IsClient());
 	game_level->SpawnTerrainCollider();
-	game_level->RecreateScene();
 	SpawnOutsideBariers();
 	game->InitQuadTree();
 	game->CalculateQuadtree();

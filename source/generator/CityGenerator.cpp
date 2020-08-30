@@ -2899,7 +2899,6 @@ void CityGenerator::OnLoad()
 
 	game_level->RecreateObjects(Net::IsClient());
 	game_level->SpawnTerrainCollider();
-	game_level->RecreateScene();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();
 	SpawnOutsideBariers();
