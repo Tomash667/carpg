@@ -1107,7 +1107,7 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 	node->radius *= explo->size;
 	node->mat = Matrix::Scale(explo->size) * Matrix::Translation(explo->pos);
 	node->tex_override = &ability->tex_explode;
-	node->tint = Vec4(1, 1, 1, 1.f - explo->size / explo->sizemax);
+	node->tint.w = 1.f - explo->size / explo->sizemax;
 	explo->node = node;
 	tmp->scene->Add(node);
 
@@ -1129,6 +1129,19 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 //=================================================================================================
 void LevelArea::RecreateScene()
 {
+	Scene* scene = tmp->scene;
+
+	for(Usable* usable : usables)
+	{
+		SceneNode* node = SceneNode::Get();
+		node->tmp = false;
+		node->SetMesh(usable->base->mesh);
+		node->center = usable->pos;
+		node->mat = Matrix::RotationY(usable->rot) * Matrix::Translation(usable->pos);
+		usable->node = node;
+		scene->Add(node);
+	}
+
 	for(Explo* explo : tmp->explos)
 	{
 		SceneNode* node = SceneNode::Get();
@@ -1139,8 +1152,8 @@ void LevelArea::RecreateScene()
 		node->radius *= explo->size;
 		node->mat = Matrix::Scale(explo->size) * Matrix::Translation(explo->pos);
 		node->tex_override = &explo->ability->tex_explode;
-		node->tint = Vec4(1, 1, 1, 1.f - explo->size / explo->sizemax);
+		node->tint.w = 1.f - explo->size / explo->sizemax;
 		explo->node = node;
-		tmp->scene->Add(node);
+		scene->Add(node);
 	}
 }

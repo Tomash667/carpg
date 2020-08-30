@@ -648,6 +648,7 @@ void Game::DrawGame()
 			outside = true;
 
 		ListDrawObjects(area, game_level->camera.frustum, outside);
+		SetGlowNodes();
 
 		vector<PostEffect> postEffects;
 		GetPostEffects(postEffects);
@@ -677,6 +678,8 @@ void Game::DrawGame()
 				postfx_shader->Prepare();
 			postfx_shader->Draw(postEffects);
 		}
+
+		ClearGlowNodes();
 	}
 	else
 		render->Clear(clear_color);

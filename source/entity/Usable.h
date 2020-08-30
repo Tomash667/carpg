@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------
 struct Usable : EntityType<Usable>
 {
+	SceneNode* node;
 	BaseUsable* base;
 	Vec3 pos;
 	float rot;

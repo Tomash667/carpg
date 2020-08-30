@@ -69,6 +69,9 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		dun_mesh_builder->ListVisibleParts(draw_batch, frustum);
 	}
 
+	// new scene nodes
+	area.tmp->scene->ListNodes(draw_batch);
+
 	// units
 	if(IsSet(draw_flags, DF_UNITS))
 	{
@@ -143,39 +146,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
-				{
-					if(use_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.Add(node);
-			}
-		}
-	}
-
-	// usable objects
-	if(IsSet(draw_flags, DF_USABLES))
-	{
-		PROFILER_BLOCK("Usables");
-		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
-		{
-			Usable& use = **it;
-			Mesh* mesh = use.GetMesh();
-			mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(mesh);
-				node->center = use.pos;
-				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
 				{
 					if(use_glow)
 					{
@@ -349,9 +319,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			}
 		}
 	}
-
-	// explosions
-	area.tmp->scene->ListNodes(draw_batch);
 
 	// particles
 	if(IsSet(draw_flags, DF_PARTICLES))
@@ -1860,4 +1827,31 @@ void Game::UvModChanged()
 {
 	game_level->terrain->uv_mod = uv_mod;
 	game_level->terrain->RebuildUv();
+}
+
+//=================================================================================================
+void Game::SetGlowNodes()
+{
+	if(pc->data.before_player == BP_USABLE)
+	{
+		SceneNode* node = pc->data.before_player_ptr.usable->node;
+		if(use_glow)
+		{
+			GlowNode& glow = Add1(draw_batch.glow_nodes);
+			glow.node = node;
+			glow.color = Color::White;
+		}
+		else
+			node->tint = Vec4(2, 2, 2, 1);
+	}
+}
+
+//=================================================================================================
+void Game::ClearGlowNodes()
+{
+	if(!use_glow && pc->data.before_player == BP_USABLE)
+	{
+		SceneNode* node = pc->data.before_player_ptr.usable->node;
+		node->tint = Vec4::One;
+	}
 }
