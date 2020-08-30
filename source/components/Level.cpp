@@ -3091,7 +3091,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 
 		// remove all blood (>30 days) or some (>5 days)
 		if(days > 30)
-			area.bloods.clear();
+			DeleteElements(area.bloods);
 		else if(days > 5)
 			DeleteElements(area.bloods, RemoveRandomPred<Blood*>(days, 4, 30));
 
@@ -4106,7 +4106,7 @@ void Level::CleanLevel(int building_id)
 		if((area.area_type != LevelArea::Type::Building && (building_id == -2 || building_id == -1))
 			|| (area.area_type == LevelArea::Type::Building && (building_id == -2 || building_id == area.area_id)))
 		{
-			area.bloods.clear();
+			DeleteElements(area.bloods);
 			for(Unit* unit : area.units)
 			{
 				if(!unit->IsAlive() && !unit->IsTeamMember() && !unit->to_remove)

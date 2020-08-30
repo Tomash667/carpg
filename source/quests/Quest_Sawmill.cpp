@@ -185,7 +185,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 {
 	OutsideLocation& outside = *(OutsideLocation*)game_level->location;
 	DeleteElements(outside.units);
-	outside.bloods.clear();
+	DeleteElements(outside.bloods);
 
 	// smooth terrain
 	float* h = outside.h;

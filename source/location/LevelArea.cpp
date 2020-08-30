@@ -598,7 +598,7 @@ bool LevelArea::Read(BitStreamReader& f)
 //=================================================================================================
 void LevelArea::Clear()
 {
-	bloods.clear();
+	DeleteElements(bloods);
 	DeleteElements(objects);
 	DeleteElements(chests);
 	DeleteElements(items);

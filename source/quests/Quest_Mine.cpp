@@ -377,10 +377,9 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 	// remove old units & blood
 	if(mine_state3 <= State3::GeneratedMine && mine_state2 >= State2::InBuild)
 	{
+		DeleteElements(cave.bloods);
 		DeleteElements(cave.units);
 		DeleteElements(game->ais);
-		cave.units.clear();
-		cave.bloods.clear();
 		update_flags |= LocationGenerator::PREVENT_RESPAWN_UNITS;
 	}
 
