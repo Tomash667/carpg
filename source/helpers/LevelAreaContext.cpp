@@ -9,6 +9,8 @@
 #include "SingleInsideLocation.h"
 #include "World.h"
 
+#include <Scene.h>
+
 static ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
 //=================================================================================================
@@ -274,11 +276,16 @@ bool LevelAreaContext::RemoveQuestGroundItem(int quest_id)
 	GroundItem* item = FindQuestGroundItem(quest_id, &entry, &index);
 	if(item)
 	{
-		if(entry->active && Net::IsOnline())
+		if(entry->active)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
-			c.id = item->id;
+			entry->area->tmp->scene->Remove(item->node);
+			item->node->Free();
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::REMOVE_ITEM;
+				c.id = item->id;
+			}
 		}
 		RemoveElementIndex(entry->area->items, index);
 		return true;

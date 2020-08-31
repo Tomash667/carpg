@@ -1170,6 +1170,24 @@ void LevelArea::CreateScene()
 			node->mesh_inst->SetToEnd(&node->mesh->anims[0]);
 	}
 
+	for(GroundItem* item : items)
+	{
+		SceneNode* node = SceneNode::Get();
+		node->tmp = false;
+		Vec3 pos = item->pos;
+		if(IsSet(item->item->flags, ITEM_GROUND_MESH))
+		{
+			node->SetMesh(item->item->mesh);
+			pos.y -= node->mesh->head.bbox.v1.y;
+		}
+		else
+			node->SetMesh(game_res->aBag);
+		node->center = item->pos;
+		node->mat = Matrix::Rotation(item->rot) * Matrix::Translation(pos);
+		item->node = node;
+		scene->Add(node);
+	}
+
 	for(Explo* explo : tmp->explos)
 	{
 		SceneNode* node = SceneNode::Get();

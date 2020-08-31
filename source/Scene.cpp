@@ -112,55 +112,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// items
-	if(IsSet(draw_flags, DF_ITEMS))
-	{
-		PROFILER_BLOCK("Ground items");
-		Vec3 pos;
-		for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
-		{
-			GroundItem& item = **it;
-			if(!item.item)
-			{
-				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
-					item.pos.x, item.pos.y, item.pos.z, item.count, item.team_count));
-				area.items.erase(it);
-				break;
-			}
-			Mesh* mesh;
-			pos = item.pos;
-			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
-			{
-				mesh = item.item->mesh;
-				mesh->EnsureIsLoaded();
-				pos.y -= mesh->head.bbox.v1.y;
-			}
-			else
-				mesh = game_res->aBag;
-			if(frustum.SphereToFrustum(item.pos, mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(mesh);
-				node->center = item.pos;
-				node->mat = Matrix::Rotation(item.rot) * Matrix::Translation(pos);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
-				{
-					if(use_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.Add(node);
-			}
-		}
-	}
-
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
 	{
@@ -1769,6 +1720,9 @@ void Game::SetGlowNodes()
 	case BP_DOOR:
 		node = pc->data.before_player_ptr.door->node;
 		break;
+	case BP_ITEM:
+		node = pc->data.before_player_ptr.item->node;
+		break;
 	default:
 		node = nullptr;
 		break;
@@ -1804,6 +1758,9 @@ void Game::ClearGlowNodes()
 		break;
 	case BP_DOOR:
 		node = pc->data.before_player_ptr.door->node;
+		break;
+	case BP_ITEM:
+		node = pc->data.before_player_ptr.item->node;
 		break;
 	default:
 		node = nullptr;

@@ -3044,6 +3044,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			chest->Cleanup();
 		for(Door* door : area.doors)
 			door->Cleanup();
+		for(GroundItem* item : area.items)
+			item->Cleanup();
 	}
 	else
 	{

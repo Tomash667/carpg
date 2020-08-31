@@ -1832,7 +1832,22 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 		terrain->SetY(item->pos);
 	area.items.push_back(item);
 
-	if(Net::IsOnline())
+	SceneNode* node = SceneNode::Get();
+	node->tmp = false;
+	Vec3 pos = item->pos;
+	if(IsSet(item->item->flags, ITEM_GROUND_MESH))
+	{
+		node->SetMesh(item->item->mesh);
+		pos.y -= node->mesh->head.bbox.v1.y;
+	}
+	else
+		node->SetMesh(game_res->aBag);
+	node->center = item->pos;
+	node->mat = Matrix::Rotation(item->rot) * Matrix::Translation(pos);
+	item->node = node;
+	area.tmp->scene->Add(node);
+
+	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_ITEM;
@@ -4117,6 +4132,8 @@ void Level::CleanLevel(int building_id)
 //=================================================================================================
 GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 {
+	assert(entering); // TODO
+
 	GroundItem* gi = new GroundItem;
 	gi->Register();
 	gi->count = 1;

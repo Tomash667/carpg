@@ -31,6 +31,7 @@
 #include "World.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
 #include <SoundManager.h>
 
 LocalPlayerData PlayerController::data;
@@ -2829,6 +2830,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 					if(item.item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(game_res->sCoins);
+
+					area.tmp->scene->Remove(item.node);
+					item.node->Free();
 
 					if(Net::IsOnline())
 					{

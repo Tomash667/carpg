@@ -705,7 +705,7 @@ void InventoryPanel::Update(float dt)
 					if(input->Down(Key::Shift))
 					{
 						// drop all
-						unit->DropItems(i_index, 0);
+						unit->DropItem(i_index, 0);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							base.tooltip.Clear();
@@ -1677,7 +1677,7 @@ void InventoryPanel::OnDropItem(int id)
 		gui->SimpleDialog(base.txDropNotNow, this);
 	else
 	{
-		if(unit->DropItems(index, counter))
+		if(unit->DropItem(index, counter))
 		{
 			base.BuildTmpInventory(0);
 			UpdateScrollbar();

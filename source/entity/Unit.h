@@ -770,12 +770,8 @@ public:
 		assert(HaveAmulet());
 		return *slots[SLOT_AMULET];
 	}
-	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
-	bool DropItem(int index);
-	// wyrzuca za³o¿ony przedmiot
+	bool DropItem(int index, uint count = 1u);
 	void DropItem(ITEM_SLOT slot);
-	// wyrzuca kilka przedmiotów o podanym indeksie, zwraca czy to by³ ostatni (count=0 oznacza wszystko)
-	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
 	bool AddItem(const Item* item, uint count, uint team_count);
 	// add item and show game message, send net notification, calls preload, refresh inventory if open

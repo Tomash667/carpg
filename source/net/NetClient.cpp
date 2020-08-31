@@ -44,6 +44,7 @@
 #include <DialogBox.h>
 #include <ParticleSystem.h>
 #include <ResourceManager.h>
+#include <Scene.h>
 #include <SoundManager.h>
 
 //=================================================================================================
@@ -999,7 +1000,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else
 				{
 					game_res->PreloadItem(item->item);
-					game_level->GetArea(item->pos).items.push_back(item);
+					game_level->AddGroundItem(game_level->GetArea(item->pos), item);
 				}
 			}
 			break;
@@ -1047,7 +1048,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						if(pc.data.picking_item_state == 1 && pc.data.picking_item == item)
 							pc.data.picking_item_state = 2;
 						else
+						{
+							area->tmp->scene->Remove(item->node);
+							item->node->Free();
 							delete item;
+						}
 					}
 				}
 			}
@@ -3169,7 +3174,11 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(pc.data.picking_item->item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(game_res->sCoins);
 					if(pc.data.picking_item_state == 2)
+					{
+						pc.unit->area->tmp->scene->Remove(pc.data.picking_item->node);
+						pc.data.picking_item->node->Free();
 						delete pc.data.picking_item;
+					}
 					pc.data.picking_item_state = 0;
 				}
 			}

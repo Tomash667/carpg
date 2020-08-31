@@ -39,6 +39,8 @@
 #include "GameResources.h"
 #include "CraftPanel.h"
 
+#include <Scene.h>
+
 const float CHANGE_LEVEL_TIMER = 5.f;
 
 //=================================================================================================
@@ -938,6 +940,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), id);
 					break;
 				}
+
+				area->tmp->scene->Remove(item->node);
+				item->node->Free();
 
 				// add item
 				unit.AddItem(item->item, item->count, item->team_count);
