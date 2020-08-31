@@ -108,8 +108,6 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game_level->OnRevisitLevel();
-
 		// odtwórz jednostki
 		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();

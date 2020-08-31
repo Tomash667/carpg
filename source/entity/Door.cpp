@@ -7,8 +7,10 @@
 #include "Level.h"
 #include "Location.h"
 #include "Net.h"
+#include "SceneNodeHelper.h"
 #include "Unit.h"
 
+#include <SceneNode.h>
 #include <SoundManager.h>
 
 EntityType<Door>::Impl EntityType<Door>::impl;
@@ -20,26 +22,15 @@ const float Door::UNLOCK_SOUND_DIST = 0.5f;
 const float Door::BLOCKED_SOUND_DIST = 1.f;
 
 //=================================================================================================
-Door::~Door()
-{
-	delete meshInst;
-}
-
-//=================================================================================================
 void Door::Init()
 {
 	Register();
-	Recreate();
+	CreatePhysics();
 }
 
 //=================================================================================================
-void Door::Recreate()
+void Door::CreatePhysics()
 {
-	// mesh
-	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-	meshInst->base_speed = 2.f;
-
-	// physics
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -49,13 +40,10 @@ void Door::Recreate()
 	tr.setOrigin(ToVector3(phyPos));
 	tr.setRotation(btQuaternion(rot, 0, 0));
 	phy_world->addCollisionObject(phy, CG_DOOR);
-
-	// is open
 	if(state == Opened)
 	{
 		btVector3& phyPos = phy->getWorldTransform().getOrigin();
 		phyPos.setY(phyPos.y() - 100.f);
-		meshInst->SetToEnd(&meshInst->mesh->anims[0]);
 	}
 }
 
@@ -66,13 +54,13 @@ void Door::Cleanup()
 		state = Closed;
 	else if(state == Opening || state == Opening2)
 		state = Opened;
-	delete meshInst;
-	meshInst = nullptr;
+	node = nullptr;
 }
 
 //=================================================================================================
 void Door::Update(float dt, LevelArea& area)
 {
+	MeshInstance* meshInst = node->mesh_inst;
 	meshInst->Update(dt);
 	if(state == Opening || state == Opening2)
 	{
@@ -123,7 +111,7 @@ void Door::Update(float dt, LevelArea& area)
 			{
 				// can't close doors, somone is blocking it
 				state = Opening2;
-				meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
+				meshInst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
 				sound_mgr->PlaySound3d(game_res->sDoorBudge, pos, BLOCKED_SOUND_DIST);
 			}
 		}
@@ -142,7 +130,7 @@ void Door::Save(GameWriter& f)
 	f << door2;
 
 	if(f.isLocal)
-		meshInst->Save(f);
+		SceneNodeHelper::Save(node, f);
 }
 
 //=================================================================================================
@@ -163,9 +151,10 @@ void Door::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
-		meshInst->base_speed = 2.f;
+		if(LOAD_VERSION >= V_DEV)
+			node = SceneNodeHelper::Load(f);
+		else
+			node = SceneNodeHelper::old::Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game_level->shape_door);
@@ -184,8 +173,6 @@ void Door::Load(GameReader& f)
 			phyPos.setY(phyPos.y() - 100.f);
 		}
 	}
-	else
-		meshInst = nullptr;
 }
 
 //=================================================================================================
@@ -199,7 +186,7 @@ void Door::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(state);
 	f << door2;
 	if(net->mp_load)
-		meshInst->Write(f);
+		SceneNodeHelper::Save(node, f);
 }
 
 //=================================================================================================
@@ -221,10 +208,9 @@ bool Door::Read(BitStreamReader& f)
 		return false;
 	}
 
-	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 	if(net->mp_load)
-		meshInst->Read(f);
-	meshInst->base_speed = 2.f;
+		node = SceneNodeHelper::Load(f);
+
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
@@ -236,8 +222,6 @@ bool Door::Read(BitStreamReader& f)
 	tr.setRotation(btQuaternion(rot, 0, 0));
 	phy_world->addCollisionObject(phy, CG_DOOR);
 
-	if(!net->mp_load && state == Opened)
-		meshInst->SetToEnd(&meshInst->mesh->anims[0]);
 	if(!IsBlocking())
 	{
 		btVector3& phyPos = phy->getWorldTransform().getOrigin();
@@ -255,7 +239,7 @@ void Door::Open()
 		game_level->minimap_opened_doors = true;
 	state = Opening;
 	locked = LOCK_NONE;
-	meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+	node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 
 	if(Rand() % 2 == 0)
 		sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], GetCenter(), SOUND_DIST);
@@ -275,14 +259,14 @@ void Door::OpenInstant()
 	state = Door::Opened;
 	btVector3& phyPos = phy->getWorldTransform().getOrigin();
 	phyPos.setY(phyPos.y() - 100.f);
-	meshInst->SetToEnd(&meshInst->mesh->anims[0]);
+	node->mesh_inst->SetToEnd(&node->mesh->anims[0]);
 }
 
 //=================================================================================================
 void Door::Close()
 {
 	state = Closing;
-	meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+	node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 
 	if(Rand() % 2 == 0)
 	{
@@ -313,17 +297,17 @@ void Door::SetState(bool closing)
 		if(state == Opened)
 		{
 			state = Closing;
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+			node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 		}
 		else if(state == Opening)
 		{
 			state = Closing2;
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+			node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		}
 		else if(state == Opening2)
 		{
 			state = Closing;
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+			node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		}
 		else
 			ok = false;
@@ -335,19 +319,19 @@ void Door::SetState(bool closing)
 		{
 			locked = LOCK_NONE;
 			state = Opening;
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+			node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 		}
 		else if(state == Closing)
 		{
 			locked = LOCK_NONE;
 			state = Opening2;
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+			node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 		}
 		else if(state == Closing2)
 		{
 			locked = LOCK_NONE;
 			state = Opening;
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+			node->mesh_inst->Play(&node->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 		}
 		else
 			ok = false;

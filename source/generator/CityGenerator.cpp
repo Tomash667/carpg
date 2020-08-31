@@ -2365,8 +2365,6 @@ void CityGenerator::OnEnter()
 					SpawnForestItems(-2);
 			}
 		}
-
-		game_level->OnRevisitLevel();
 	}
 
 	// create colliders

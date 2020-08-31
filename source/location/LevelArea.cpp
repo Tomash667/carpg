@@ -59,6 +59,10 @@ void LevelArea::Update(float dt)
 		tmp->lights_dt = 0;
 	}
 
+	// update chests
+	for(Chest* chest : chests)
+		chest->node->mesh_inst->Update(dt);
+
 	// update doors
 	for(Door* door : doors)
 		door->Update(dt, *this);
@@ -85,8 +89,6 @@ void LevelArea::Update(float dt)
 		if(obj->meshInst)
 			obj->meshInst->Update(dt);
 	}
-
-	tmp->scene->Update(dt);
 }
 
 //=================================================================================================
@@ -1153,6 +1155,19 @@ void LevelArea::CreateScene()
 		node->center = chest->pos;
 		node->mat = Matrix::RotationY(chest->rot) * Matrix::Translation(chest->pos);
 		scene->Add(node);
+	}
+
+	for(Door* door : doors)
+	{
+		SceneNodeHelper::Create(door->node, door->door2 ? game_res->aDoor2 : game_res->aDoor);
+		SceneNode* node = door->node;
+		node->tmp = false;
+		node->center = door->pos;
+		node->mat = Matrix::RotationY(door->rot) * Matrix::Translation(door->pos);
+		node->mesh_inst->base_speed = 2.f;
+		scene->Add(node);
+		if(door->state == Door::Opened)
+			node->mesh_inst->SetToEnd(&node->mesh->anims[0]);
 	}
 
 	for(Explo* explo : tmp->explos)

@@ -9,6 +9,7 @@ namespace SceneNodeHelper
 	// pre V_DEV
 	namespace old
 	{
+		SceneNode* Load(GameReader& f, int version, uint groups = 1u);
 		SceneNode* LoadSimple(GameReader& f);
 	}
 }

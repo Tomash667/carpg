@@ -185,8 +185,6 @@ void OutsideLocationGenerator::OnEnter()
 
 		if(days > 10)
 			GenerateItems();
-
-		game_level->OnRevisitLevel();
 	}
 
 	// create colliders

@@ -32,7 +32,7 @@ struct Door : public EntityType<Door>
 	static const float BLOCKED_SOUND_DIST;
 	static const int MIN_SIZE = 31;
 
-	MeshInstance* meshInst;
+	SceneNode* node;
 	btCollisionObject* phy;
 	Vec3 pos;
 	float rot;
@@ -41,12 +41,9 @@ struct Door : public EntityType<Door>
 	int locked;
 	bool door2;
 
-	Door() : door2(false), meshInst(nullptr)
-	{
-	}
-	~Door();
+	Door() : node(nullptr), door2(false) {}
 	void Init();
-	void Recreate();
+	void CreatePhysics();
 	void Cleanup();
 	void Update(float dt, LevelArea& area);
 	void Open();

@@ -1606,6 +1606,9 @@ void Level::RecreateObjects(bool spawn_pes)
 
 		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
 			SpawnObjectExtras(area, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
+
+		for(Door* door : area.doors)
+			door->CreatePhysics();
 	}
 }
 
@@ -3193,17 +3196,6 @@ int Level::GetChestDifficultyLevel() const
 	}
 	else
 		return st;
-}
-
-//=================================================================================================
-void Level::OnRevisitLevel()
-{
-	for(LevelArea& area : ForEachArea())
-	{
-		// recreate doors
-		for(Door* door : area.doors)
-			door->Recreate();
-	}
 }
 
 //=================================================================================================

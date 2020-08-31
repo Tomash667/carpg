@@ -110,6 +110,61 @@ SceneNode* SceneNodeHelper::Load(StreamReader& f)
 }
 
 //=================================================================================================
+SceneNode* SceneNodeHelper::old::Load(GameReader& f, int version, uint groups)
+{
+	bool frame_end_info, frame_end_info2;
+	if(version == 0)
+	{
+		f >> frame_end_info;
+		f >> frame_end_info2;
+	}
+
+	MeshInstance* meshInst = new MeshInstance(nullptr);
+	meshInst->groups.resize(groups);
+	int index = 0;
+	bool any = false;
+	for(MeshInstance::Group& group : meshInst->groups)
+	{
+		f >> group.time;
+		f >> group.speed;
+		group.blend_time = 0.f;
+		f >> group.state;
+		f >> group.prio;
+		f >> group.used_group;
+		const string& animName = f.ReadString1();
+		if(!animName.empty())
+			group.animName = StringPool.Get(animName);
+		if(version >= 1)
+			f >> group.frame_end;
+		else
+		{
+			if(index == 0)
+				group.frame_end = frame_end_info;
+			else if(index == 1)
+				group.frame_end = frame_end_info2;
+			else
+				group.frame_end = false;
+		}
+		++index;
+
+		if(IsSet(group.state, MeshInstance::FLAG_GROUP_ACTIVE))
+			any = true;
+	}
+
+	if(any)
+	{
+		SceneNode* node = SceneNode::Get();
+		node->mesh_inst = meshInst;
+		return node;
+	}
+	else
+	{
+		delete meshInst;
+		return nullptr;
+	}
+}
+
+//=================================================================================================
 SceneNode* SceneNodeHelper::old::LoadSimple(GameReader& f)
 {
 	int state = f.Read<int>();

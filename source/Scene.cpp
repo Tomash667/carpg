@@ -161,43 +161,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// doors
-	if(IsSet(draw_flags, DF_USABLES))
-	{
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
-		{
-			Door& door = **it;
-			door.meshInst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(door.pos, door.meshInst->mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				if(!door.meshInst->groups[0].anim || door.meshInst->groups[0].time == 0.f)
-					node->SetMesh(door.meshInst->mesh);
-				else
-				{
-					door.meshInst->SetupBones();
-					node->SetMesh(door.meshInst);
-				}
-				node->center = door.pos;
-				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
-				{
-					if(use_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.Add(node);
-			}
-		}
-	}
-
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
 	{
@@ -1795,12 +1758,21 @@ void Game::UvModChanged()
 void Game::SetGlowNodes()
 {
 	SceneNode* node;
-	if(pc->data.before_player == BP_USABLE)
+	switch(pc->data.before_player)
+	{
+	case BP_USABLE:
 		node = pc->data.before_player_ptr.usable->node;
-	else if(pc->data.before_player == BP_CHEST)
+		break;
+	case BP_CHEST:
 		node = pc->data.before_player_ptr.chest->node;
-	else
+		break;
+	case BP_DOOR:
+		node = pc->data.before_player_ptr.door->node;
+		break;
+	default:
 		node = nullptr;
+		break;
+	}
 
 	if(node)
 	{
@@ -1822,12 +1794,21 @@ void Game::ClearGlowNodes()
 		return;
 
 	SceneNode* node;
-	if(pc->data.before_player == BP_USABLE)
+	switch(pc->data.before_player)
+	{
+	case BP_USABLE:
 		node = pc->data.before_player_ptr.usable->node;
-	else if(pc->data.before_player == BP_CHEST)
+		break;
+	case BP_CHEST:
 		node = pc->data.before_player_ptr.chest->node;
-	else
+		break;
+	case BP_DOOR:
+		node = pc->data.before_player_ptr.door->node;
+		break;
+	default:
 		node = nullptr;
+		break;
+	}
 
 	if(node)
 		node->tint = Vec4::One;
