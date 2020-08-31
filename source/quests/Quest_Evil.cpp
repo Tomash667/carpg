@@ -19,6 +19,7 @@
 
 #include <ParticleSystem.h>
 #include <ResourceManager.h>
+#include <Scene.h>
 #include <SoundManager.h>
 
 //=================================================================================================
@@ -747,6 +748,8 @@ void Quest_Evil::Update(float dt)
 								u->OrderAutoTalk();
 								changed = true;
 								++closed;
+								game_level->local_area->tmp->scene->Remove(game_level->location->portal->node);
+								game_level->location->portal->node->Free();
 								delete game_level->location->portal;
 								game_level->location->portal = nullptr;
 								world->AddNews(Format(game->txPortalClosedNews, game_level->location->name.c_str()));

@@ -45,7 +45,7 @@ public:
 	~Level();
 	void LoadLanguage();
 	void Init();
-	void Reset();
+	void Reset(bool newGame);
 	Location* GetLocation() { return location; }
 	int GetDungeonLevel() { return dungeon_level; }
 	void WarpUnit(Unit* unit, int where, int building = -1)
@@ -211,6 +211,7 @@ public:
 	void EndBossFight();
 	// ---
 	void CreateScene();
+	void Update(float dt);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index
@@ -237,7 +238,8 @@ public:
 	LocationEventHandler* event_handler;
 	City* city_ctx; // pointer to city or nullptr when not inside city
 	int enter_from; // from where team entered level (used when spawning new player in MP)
-	float light_angle; // random angle used for lighting in outside locations
+	float light_angle, // random angle used for lighting in outside locations
+		portal_anim;
 	bool is_open, // is location loaded & team is inside
 		entering, // true when entering location/generating/spawning unit, false when finished
 		can_fast_travel; // used by MP clients

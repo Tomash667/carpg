@@ -285,7 +285,7 @@ public:
 	//-----------------------------------------------------------------
 	// WORLD MAP
 	//-----------------------------------------------------------------
-	void EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
+	void EnterLocation(int level = 0, int from_portal = -1);
 	void GenerateWorld();
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void Event_RandomEncounter(int id);
@@ -372,7 +372,6 @@ public:
 	//-----------------------------------------------------------------
 	int draw_flags;
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	float portal_anim;
 	// scene
 	Color clear_color, clear_color_next;
 	bool use_glow, use_postfx;

@@ -2108,6 +2108,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			{
 				if(game_level->location && game_level->location->portal)
 				{
+					game_level->local_area->tmp->scene->Remove(game_level->location->portal->node);
+					game_level->location->portal->node->Free();
 					delete game_level->location->portal;
 					game_level->location->portal = nullptr;
 				}

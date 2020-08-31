@@ -142,12 +142,21 @@ void Level::Init()
 }
 
 //=================================================================================================
-void Level::Reset()
+void Level::Reset(bool newGame)
 {
 	unit_warp_data.clear();
 	to_remove.clear();
 	minimap_reveal.clear();
 	minimap_reveal_mp.clear();
+	camera.Reset(newGame);
+
+	if(newGame)
+	{
+		portal_anim = 0;
+		dungeon_level = 0;
+		is_open = false;
+		light_angle = Random(PI * 2);
+	}
 }
 
 //=================================================================================================
@@ -2015,7 +2024,7 @@ Unit* Level::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, const 
 		if(area.area_type == LevelArea::Type::Outside)
 		{
 			Vec3 pt = *pos;
-			game_level->terrain->SetY(pt);
+			terrain->SetY(pt);
 			u->pos = pt;
 		}
 		else
@@ -4856,4 +4865,25 @@ void Level::CreateScene()
 {
 	for(LevelArea& area : ForEachArea())
 		area.CreateScene();
+}
+
+//=================================================================================================
+void Level::Update(float dt)
+{
+	minimap_opened_doors = false;
+
+	portal_anim += dt;
+	if(portal_anim >= 1.f)
+		portal_anim -= 1.f;
+
+	Portal* portal = location->portal;
+	while(portal)
+	{
+		if(portal->node)
+			portal->node->mat = Matrix::Rotation(0, portal->rot, -portal_anim * PI * 2) * Matrix::Translation(portal->node->center);
+		portal = portal->next_portal;
+	}
+
+	light_angle = Clip(light_angle + dt / 100);
+	scene->light_dir = Vec3(sin(light_angle), 2.f, cos(light_angle)).Normalize();
 }

@@ -11,7 +11,10 @@
 #include "GameCommon.h"
 #include "GameResources.h"
 #include "GroundItem.h"
+#include "Level.h"
+#include "Location.h"
 #include "Net.h"
+#include "Portal.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
 #include "Room.h"
@@ -35,6 +38,7 @@ LevelArea::~LevelArea()
 	DeleteElements(chests);
 	DeleteElements(items);
 	DeleteElements(traps);
+	DeleteElements(bloods);
 }
 
 //=================================================================================================
@@ -1201,5 +1205,26 @@ void LevelArea::CreateScene()
 		node->tint.w = 1.f - explo->size / explo->sizemax;
 		explo->node = node;
 		scene->Add(node);
+	}
+
+	if(area_type != Type::Building)
+	{
+		game_res->aPortal->EnsureIsLoaded();
+		Portal* portal = game_level->location->portal;
+		while(portal)
+		{
+			if(area_type == Type::Outside || area_id == portal->at_level)
+			{
+				SceneNode* node = SceneNode::Get();
+				node->tmp = false;
+				node->SetMesh(game_res->aPortal);
+				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
+				node->center = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
+				node->mat = Matrix::Rotation(0, portal->rot, -game_level->portal_anim * PI * 2) * Matrix::Translation(node->center);
+				portal->node = node;
+				scene->Add(node);
+			}
+			portal = portal->next_portal;
+		}
 	}
 }

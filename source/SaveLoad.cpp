@@ -506,7 +506,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << draw_flags;
 	f << pc->unit->id;
 	f << game_level->dungeon_level;
-	f << portal_anim;
+	f << game_level->portal_anim;
 	f << ais.size();
 	for(AIController* ai : ais)
 		ai->Save(f);
@@ -782,7 +782,7 @@ void Game::LoadGame(GameReader& f)
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	f >> game_level->dungeon_level;
-	f >> portal_anim;
+	f >> game_level->portal_anim;
 	if(LOAD_VERSION < V_0_14)
 		f >> game_level->camera.drunk_anim;
 	ais.resize(f.Read<uint>());

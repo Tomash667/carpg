@@ -12,7 +12,6 @@
 #include "Level.h"
 #include "Pathfinding.h"
 #include "PhysicCallbacks.h"
-#include "Portal.h"
 
 #include <Algorithm.h>
 #include <BasicShader.h>
@@ -224,26 +223,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 	else
 		draw_batch.tpes = nullptr;
-
-	// portals
-	if(IsSet(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
-	{
-		game_res->aPortal->EnsureIsLoaded();
-		Portal* portal = game_level->location->portal;
-		while(portal)
-		{
-			if(game_level->location->outside || game_level->dungeon_level == portal->at_level)
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(game_res->aPortal);
-				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
-				node->center = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
-				node->mat = Matrix::Rotation(0, portal->rot, -portal_anim * PI * 2) * Matrix::Translation(node->center);
-				draw_batch.Add(node);
-			}
-			portal = portal->next_portal;
-		}
-	}
 
 	// areas
 	if(IsSet(draw_flags, DF_AREA))

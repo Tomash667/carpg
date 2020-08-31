@@ -107,10 +107,10 @@ void HumanPredraw(void* ptr, Matrix* mat, int n);
 //=================================================================================================
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
-draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
-profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
+check_updates(true), skip_tutorial(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF),
+prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), profiler_mode(ProfilerMode::Disabled),
+screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
+clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
 	if(IsDebug())
 	{
@@ -1371,7 +1371,7 @@ void Game::GenerateWorld()
 	Info("Randomness integrity: %d", RandVal());
 }
 
-void Game::EnterLocation(int level, int from_portal, bool close_portal)
+void Game::EnterLocation(int level, int from_portal)
 {
 	Location& l = *game_level->location;
 	game_level->entering = true;
@@ -1491,12 +1491,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	pc->data.rot_buf = 0.f;
 	SetMusic();
 
-	if(close_portal)
-	{
-		delete game_level->location->portal;
-		game_level->location->portal = nullptr;
-	}
-
 	if(game_level->location->outside)
 	{
 		OnEnterLevelOrLocation();
@@ -1580,6 +1574,13 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(game_level->is_open)
 	{
+		Portal* portal = game_level->location->portal;
+		while(portal)
+		{
+			portal->Cleanup();
+			portal = portal->next_portal;
+		}
+
 		if(Net::IsLocal())
 			quest_mgr->RemoveQuestUnits(true);
 
@@ -1788,16 +1789,10 @@ void Game::UpdateGame(float dt)
 			assert(pc->is_local && pc == pc->player_info->pc);
 	}
 
-	game_level->minimap_opened_doors = false;
-
 	if(quest_mgr->quest_tutorial->in_tutorial && !Net::IsOnline())
 		quest_mgr->quest_tutorial->Update();
 
-	portal_anim += dt;
-	if(portal_anim >= 1.f)
-		portal_anim -= 1.f;
-	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
-	game_level->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+	game_level->Update(dt);
 
 	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
 	{
@@ -2635,10 +2630,9 @@ void Game::ClearGameVars(bool new_game)
 	arena->Reset();
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
-	game_level->camera.Reset(new_game);
 	pc->data.Reset();
 	script_mgr->Reset();
-	game_level->Reset();
+	game_level->Reset(new_game);
 	aiMgr->Reset();
 	pathfinding->SetTarget(nullptr);
 	game_gui->world_map->Clear();
@@ -2670,19 +2664,16 @@ void Game::ClearGameVars(bool new_game)
 		draw_phy = false;
 		draw_col = false;
 		game_speed = 1.f;
-		game_level->dungeon_level = 0;
 		quest_mgr->Reset();
 		world->OnNewGame();
 		game_stats->Reset();
 		team->Reset();
 		dont_wander = false;
 		pc->data.picking_item_state = 0;
-		game_level->is_open = false;
 		game_gui->level_gui->PositionPanels();
 		game_gui->Clear(true, false);
 		if(!net->mp_quickload)
 			game_gui->mp_box->visible = Net::IsOnline();
-		game_level->light_angle = Random(PI * 2);
 		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
 
@@ -3064,6 +3055,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		for(Blood* blood : area.bloods)
 			blood->size = 1.f;
 	}
+	else
+		DeleteElements(area.bloods);
 }
 
 void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, float range, bool dmg)
