@@ -9,9 +9,11 @@
 #include "GameResources.h"
 #include "LevelArea.h"
 #include "Net.h"
+#include "SceneNodeHelper.h"
 #include "Unit.h"
 
 #include <ParticleSystem.h>
+#include <SceneNode.h>
 #include <SoundManager.h>
 
 EntityType<Trap>::Impl EntityType<Trap>::impl;
@@ -85,6 +87,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(trigger)
 			{
 				state = 2;
+				node->mesh_inst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
 				time = 0.f;
 
 				sound_mgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
@@ -100,23 +103,14 @@ bool Trap::Update(float dt, LevelArea& area)
 		else if(state == 2)
 		{
 			// move spears
-			bool end = false;
-			time += dt;
-			if(time >= 0.27f)
-			{
-				time = 0.27f;
-				end = true;
-			}
-
-			obj2.pos.y = obj.pos.y - 2.f + 2.f * (time / 0.27f);
-
+			node->mesh_inst->Update(dt);
 			if(Net::IsLocal())
 			{
 				for(Unit* unit : area.units)
 				{
 					if(!unit->IsAlive())
 						continue;
-					if(CircleToCircle(obj2.pos.x, obj2.pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						bool found = false;
 						for(Unit* unit2 : *hitted)
@@ -162,7 +156,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				}
 			}
 
-			if(end)
+			if(node->mesh_inst->IsEnded())
 			{
 				state = 3;
 				if(Net::IsLocal())
@@ -177,21 +171,16 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(time <= 0.f)
 			{
 				state = 4;
-				time = 1.5f;
+				node->mesh_inst->Play("hide", PLAY_ONCE);
 				sound_mgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
 			}
 		}
 		else if(state == 4)
 		{
 			// hiding spears
-			time -= dt;
-			if(time <= 0.f)
-			{
-				time = 0.f;
+			node->mesh_inst->Update(dt);
+			if(node->mesh_inst->IsEnded())
 				state = 5;
-			}
-
-			obj2.pos.y = obj.pos.y - 2.f + time / 1.5f * 2.f;
 		}
 		else if(state == 5)
 		{
@@ -203,7 +192,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToCircle(obj2.pos.x, obj2.pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						reactivate = false;
 						break;
@@ -262,6 +251,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				// someone step on trap, shoot arrow
 				state = Net::IsLocal() ? 1 : 2;
 				time = Random(5.f, 7.5f);
+				node->visible = false;
 				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
 
 				if(Net::IsLocal())
@@ -355,6 +345,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(empty)
 			{
 				state = 0;
+				node->visible = true;
 				if(Net::IsServer())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -413,14 +404,13 @@ void Trap::Save(GameWriter& f)
 	f << id;
 	f << base->type;
 	f << pos;
+	f << rot;
 
 	if(base->type == TRAP_ARROW || base->type == TRAP_POISON)
 	{
 		f << tile;
 		f << dir;
 	}
-	else
-		f << obj.rot.y;
 
 	if(f.isLocal && base->type != TRAP_FIREBALL)
 	{
@@ -429,7 +419,7 @@ void Trap::Save(GameWriter& f)
 
 		if(base->type == TRAP_SPEAR)
 		{
-			f << obj2.pos.y;
+			SceneNodeHelper::Save(node, f);
 			f << hitted->size();
 			for(Unit* unit : *hitted)
 				f << unit->id;
@@ -449,30 +439,24 @@ void Trap::Load(GameReader& f)
 	f >> pos;
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
+	if(LOAD_VERSION >= V_DEV)
+		f >> rot;
 
 	base = &BaseTrap::traps[type];
 	hitted = nullptr;
-	obj.pos = pos;
-	obj.rot = Vec3(0, 0, 0);
-	obj.scale = 1.f;
-	obj.base = nullptr;
-	obj.mesh = base->mesh;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
 		f >> tile;
 		f >> dir;
 	}
-	else
-		f >> obj.rot.y;
 
-	if(type == TRAP_SPEAR)
+	if(LOAD_VERSION < V_DEV)
 	{
-		obj2.pos = pos;
-		obj2.rot = obj.rot;
-		obj2.scale = 1.f;
-		obj2.mesh = base->mesh2;
-		obj2.base = nullptr;
+		if(type == TRAP_ARROW || type == TRAP_POISON)
+			rot = 0;
+		else
+			f >> rot;
 	}
 
 	if(f.isLocal && base->type != TRAP_FIREBALL)
@@ -482,7 +466,13 @@ void Trap::Load(GameReader& f)
 
 		if(base->type == TRAP_SPEAR)
 		{
-			f >> obj2.pos.y;
+			if(LOAD_VERSION >= V_DEV)
+				node = SceneNodeHelper::Load(f);
+			else
+			{
+				f.Skip<float>(); // old obj2.pos.y
+				state = 0;
+			}
 			uint count = f.Read<uint>();
 			hitted = new vector<Unit*>;
 			if(count)
@@ -503,7 +493,7 @@ void Trap::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(dir);
 	f << tile;
 	f << pos;
-	f << obj.rot.y;
+	f << rot;
 
 	if(net->mp_load)
 	{
@@ -521,17 +511,12 @@ bool Trap::Read(BitStreamReader& f)
 	f.ReadCasted<byte>(dir);
 	f >> tile;
 	f >> pos;
-	f >> obj.rot.y;
+	f >> rot;
 	if(!f)
 		return false;
 	base = &BaseTrap::traps[type];
 
 	state = 0;
-	obj.base = nullptr;
-	obj.mesh = base->mesh;
-	obj.pos = pos;
-	obj.scale = 1.f;
-	obj.rot.x = obj.rot.z = 0;
 	mpTrigger = false;
 	hitted = nullptr;
 
@@ -541,19 +526,6 @@ bool Trap::Read(BitStreamReader& f)
 		f >> time;
 		if(!f)
 			return false;
-	}
-
-	if(type == TRAP_ARROW || type == TRAP_POISON)
-		obj.rot = Vec3(0, 0, 0);
-	else if(type == TRAP_SPEAR)
-	{
-		obj2.base = nullptr;
-		obj2.mesh = base->mesh2;
-		obj2.pos = obj.pos;
-		obj2.rot = obj.rot;
-		obj2.scale = 1.f;
-		obj2.pos.y -= 2.f;
-		hitted = nullptr;
 	}
 
 	Register();

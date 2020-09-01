@@ -3035,6 +3035,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			chest->Cleanup();
 		for(Door* door : area.doors)
 			door->Cleanup();
+		for(Trap* trap : area.traps)
+			trap->Cleanup();
 		for(GroundItem* item : area.items)
 			item->Cleanup();
 	}
@@ -3215,8 +3217,6 @@ void Game::PreloadResources(bool worldmap)
 
 				if(base.mesh)
 					res_mgr->Load(base.mesh);
-				if(base.mesh2)
-					res_mgr->Load(base.mesh2);
 				if(base.sound)
 					res_mgr->Load(base.sound);
 				if(base.sound2)
@@ -3376,8 +3376,6 @@ void Game::VerifyResources()
 			assert(trap->base->state == ResourceState::Loaded);
 			if(trap->base->mesh)
 				assert(trap->base->mesh->IsLoaded());
-			if(trap->base->mesh2)
-				assert(trap->base->mesh2->IsLoaded());
 			if(trap->base->sound)
 				assert(trap->base->sound->IsLoaded());
 			if(trap->base->sound2)

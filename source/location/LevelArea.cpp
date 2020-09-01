@@ -1192,6 +1192,18 @@ void LevelArea::CreateScene()
 		scene->Add(node);
 	}
 
+	for(Trap* trap : traps)
+	{
+		SceneNodeHelper::Create(trap->node, trap->base->mesh);
+		SceneNode* node = trap->node;
+		node->tmp = false;
+		node->center = trap->pos;
+		node->mat = Matrix::RotationY(trap->rot) * Matrix::Translation(trap->pos);
+		if(Any(trap->base->type, TRAP_ARROW, TRAP_POISON) && trap->state != 0)
+			node->visible = false;
+		scene->Add(node);
+	}
+
 	for(Explo* explo : tmp->explos)
 	{
 		SceneNode* node = SceneNode::Get();

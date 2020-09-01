@@ -2986,17 +2986,12 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 	BaseTrap& base = BaseTrap::traps[type];
 	trap.base = &base;
-	trap.hitted = nullptr;
 	trap.state = 0;
 	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
-	trap.obj.base = nullptr;
-	trap.obj.mesh = trap.base->mesh;
-	trap.obj.pos = trap.pos;
-	trap.obj.scale = 1.f;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
-		trap.obj.rot = Vec3(0, 0, 0);
+		trap.rot = 0;
 
 		static vector<TrapLocation> possible;
 
@@ -3056,17 +3051,11 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	}
 	else if(type == TRAP_SPEAR)
 	{
-		trap.obj.rot = Vec3(0, Random(MAX_ANGLE), 0);
-		trap.obj2.base = nullptr;
-		trap.obj2.mesh = trap.base->mesh2;
-		trap.obj2.pos = trap.obj.pos;
-		trap.obj2.rot = trap.obj.rot;
-		trap.obj2.scale = 1.f;
-		trap.obj2.pos.y -= 2.f;
+		trap.rot = Random(MAX_ANGLE);
 		trap.hitted = new vector<Unit*>;
 	}
 	else if(type == TRAP_FIREBALL)
-		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
+		trap.rot = PI / 2 * (Rand() % 4);
 
 	if(timed)
 	{

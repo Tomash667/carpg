@@ -284,8 +284,6 @@ void GameResources::PreloadTraps()
 			else
 				t.h = t.rw = pt->size.x;
 		}
-		if(t.mesh_id2)
-			t.mesh2 = res_mgr->Get<Mesh>(t.mesh_id2);
 		if(t.sound_id)
 			t.sound = res_mgr->Get<Sound>(t.sound_id);
 		if(t.sound_id2)

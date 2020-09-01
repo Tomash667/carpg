@@ -158,43 +158,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		}
 	}
 
-	// traps
-	if(IsSet(draw_flags, DF_TRAPS))
-	{
-		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
-		{
-			Trap& trap = **it;
-			if((trap.state == 0 || (trap.base->type != TRAP_ARROW && trap.base->type != TRAP_POISON))
-				&& (trap.obj.mesh->EnsureIsLoaded(), true)
-				&& frustum.SphereToFrustum(trap.obj.pos, trap.obj.mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(trap.obj.mesh);
-				if(trap.obj.RequireNoCulling())
-					node->flags |= SceneNode::F_NO_CULLING;
-				node->center = trap.obj.pos;
-				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				draw_batch.Add(node);
-			}
-			if(trap.base->type == TRAP_SPEAR && InRange(trap.state, 2, 4)
-				&& (trap.obj2.mesh->EnsureIsLoaded(), true)
-				&& frustum.SphereToFrustum(trap.obj2.pos, trap.obj2.mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(trap.obj2.mesh);
-				if(trap.obj2.RequireNoCulling())
-					node->flags |= SceneNode::F_NO_CULLING;
-				node->center = trap.obj2.pos;
-				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				draw_batch.Add(node);
-			}
-		}
-	}
-
 	// particles
 	if(IsSet(draw_flags, DF_PARTICLES))
 	{
