@@ -7224,7 +7224,6 @@ void Unit::Update(float dt)
 			if(Net::IsLocal() && mesh_inst->GetProgress(1) > 20.f / 40)
 			{
 				Bullet* bullet = new Bullet;
-				area->tmp->bullets.push_back(bullet);
 
 				mesh_inst->SetupBones();
 

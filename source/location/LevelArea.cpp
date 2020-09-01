@@ -1208,6 +1208,8 @@ void LevelArea::CreateSpellBall(Bullet* bullet)
 		bullet->node = node;
 		tmp->scene->Add(node);
 	}
+	else
+		bullet->node = nullptr;
 
 	if(ability.tex_particle)
 	{
@@ -1235,7 +1237,7 @@ void LevelArea::CreateSpellBall(Bullet* bullet)
 		bullet->pe = pe;
 	}
 
-	if(Net::IsOnline())
+	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CREATE_SPELL_BALL;
@@ -1324,7 +1326,10 @@ void LevelArea::CreateScene()
 	for(Bullet* bullet : tmp->bullets)
 	{
 		if(!bullet->mesh)
+		{
+			bullet->node = nullptr;
 			continue;
+		}
 		SceneNode* node = SceneNode::Get();
 		node->tmp = false;
 		node->SetMesh(bullet->mesh);

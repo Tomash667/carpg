@@ -34,8 +34,11 @@ bool Bullet::Update(float dt, LevelArea& area)
 		yspeed -= 10.f * dt;
 
 	// update node & particles
-	node->center = pos;
-	node->mat = Matrix::Rotation(rot) * Matrix::Translation(pos);
+	if(node)
+	{
+		node->center = pos;
+		node->mat = Matrix::Rotation(rot) * Matrix::Translation(pos);
+	}
 	if(pe)
 		pe->pos = pos;
 	if(trail)
@@ -44,8 +47,11 @@ bool Bullet::Update(float dt, LevelArea& area)
 	if((timer -= dt) <= 0.f)
 	{
 		// timeout, delete bullet
-		area.tmp->scene->Remove(node);
-		node->Free();
+		if(node)
+		{
+			area.tmp->scene->Remove(node);
+			node->Free();
+		}
 		if(trail)
 			trail->destroy = true;
 		if(pe)
@@ -79,8 +85,11 @@ bool Bullet::Update(float dt, LevelArea& area)
 		hitted = reinterpret_cast<Unit*>(callback.target->getUserPointer());
 
 	// something was hit, remove bullet
-	area.tmp->scene->Remove(node);
-	node->Free();
+	if(node)
+	{
+		area.tmp->scene->Remove(node);
+		node->Free();
+	}
 	if(trail)
 		trail->destroy = true;
 	if(pe)
