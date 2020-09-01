@@ -6512,7 +6512,6 @@ void Unit::CastSpell()
 			for(int i = 0; i < count; ++i)
 			{
 				Bullet* bullet = new Bullet;
-				area->tmp->bullets.push_back(bullet);
 
 				bullet->Register();
 				bullet->level = level + CalculateMagicPower();
@@ -6520,16 +6519,8 @@ void Unit::CastSpell()
 				bullet->pos = coord;
 				bullet->attack = dmg;
 				bullet->rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
-				bullet->mesh = ability.mesh;
-				bullet->tex = ability.tex;
-				bullet->tex_size = ability.size;
-				bullet->speed = ability.speed;
-				bullet->timer = ability.range / (ability.speed - 1);
 				bullet->owner = this;
-				bullet->trail = nullptr;
-				bullet->pe = nullptr;
 				bullet->ability = &ability;
-				bullet->start_pos = bullet->pos;
 
 				// ustal z jak¹ si³¹ rzuciæ kul¹
 				if(ability.type == Ability::Ball)
@@ -6547,43 +6538,7 @@ void Unit::CastSpell()
 					bullet->yspeed = h / t;
 				}
 
-				if(ability.tex_particle)
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
-					pe->emission_interval = 0.1f;
-					pe->life = -1;
-					pe->particle_life = 0.5f;
-					pe->emissions = -1;
-					pe->spawn_min = 3;
-					pe->spawn_max = 4;
-					pe->max_particles = 50;
-					pe->pos = bullet->pos;
-					pe->speed_min = Vec3(-1, -1, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-					area->tmp->pes.push_back(pe);
-					bullet->pe = pe;
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CREATE_SPELL_BALL;
-					c << ability.hash
-						<< bullet->id
-						<< id
-						<< bullet->start_pos
-						<< bullet->rot.y
-						<< bullet->yspeed;
-				}
+				area->CreateSpellBall(bullet);
 			}
 		}
 		break;
@@ -7284,15 +7239,9 @@ void Unit::Update(float dt)
 				bullet->backstab = GetBackstabMod(&GetBow());
 				bullet->rot = Vec3(PI / 2, rot + PI, 0);
 				bullet->pos = Vec3::TransformZero(m2);
-				bullet->mesh = game_res->aArrow;
 				bullet->speed = GetArrowSpeed();
-				bullet->timer = ARROW_TIMER;
 				bullet->owner = this;
-				bullet->pe = nullptr;
-				bullet->ability = nullptr;
-				bullet->tex = nullptr;
 				bullet->poison_attack = 0.f;
-				bullet->start_pos = bullet->pos;
 
 				float dist = Vec3::Distance2d(bullet->pos, target_pos);
 				float t = dist / bullet->speed;
@@ -7352,29 +7301,7 @@ void Unit::Update(float dt)
 				}
 
 				bullet->rot.y = Clip(bullet->rot.y);
-
-				TrailParticleEmitter* tpe = new TrailParticleEmitter;
-				tpe->fade = 0.3f;
-				tpe->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe->color2 = Vec4(1, 1, 1, 0);
-				tpe->Init(50);
-				area->tmp->tpes.push_back(tpe);
-				bullet->trail = tpe;
-
-				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::SHOOT_ARROW;
-					c << bullet->id
-						<< id
-						<< bullet->start_pos
-						<< bullet->rot.x
-						<< bullet->rot.y
-						<< bullet->speed
-						<< bullet->yspeed;
-				}
+				area->CreateArrow(bullet);
 			}
 			if(mesh_inst->GetProgress(1) > 20.f / 40)
 				animation_state = AS_SHOOT_SHOT;

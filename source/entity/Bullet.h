@@ -6,6 +6,7 @@ struct BulletCallback;
 //-----------------------------------------------------------------------------
 struct Bullet : public EntityType<Bullet>
 {
+	SceneNode* node;
 	Unit* owner;
 	Ability* ability;
 	Vec3 pos, rot, start_pos;

@@ -257,53 +257,25 @@ bool Trap::Update(float dt, LevelArea& area)
 				if(Net::IsLocal())
 				{
 					Bullet* bullet = new Bullet;
-					area.tmp->bullets.push_back(bullet);
-
 					bullet->Register();
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
 					bullet->attack = float(base->attack);
-					bullet->mesh = game_res->aArrow;
 					bullet->pos = Vec3(2.f * tile.x + pos.x - float(int(pos.x / 2) * 2) + Random(-base->rw, base->rw) - 1.2f * DirToPos(dir).x,
 						Random(0.5f, 1.5f),
 						2.f * tile.y + pos.z - float(int(pos.z / 2) * 2) + Random(-base->h, base->h) - 1.2f * DirToPos(dir).y);
-					bullet->start_pos = bullet->pos;
 					bullet->rot = Vec3(0, DirToRot(dir), 0);
 					bullet->owner = nullptr;
-					bullet->pe = nullptr;
 					bullet->speed = TRAP_ARROW_SPEED;
-					bullet->ability = nullptr;
-					bullet->tex = nullptr;
-					bullet->tex_size = 0.f;
-					bullet->timer = ARROW_TIMER;
 					bullet->yspeed = 0.f;
 					bullet->poison_attack = (base->type == TRAP_POISON ? float(base->attack) : 0.f);
-
-					TrailParticleEmitter* tpe = new TrailParticleEmitter;
-					tpe->fade = 0.3f;
-					tpe->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe->color2 = Vec4(1, 1, 1, 0);
-					tpe->Init(50);
-					area.tmp->tpes.push_back(tpe);
-					bullet->trail = tpe;
-
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
+					area.CreateArrow(bullet);
 
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SHOOT_ARROW;
-						c << bullet->id
-							<< -1 // owner
-							<< bullet->start_pos
-							<< bullet->rot.x
-							<< bullet->rot.y
-							<< bullet->speed
-							<< bullet->yspeed;
-
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::TRIGGER_TRAP;
-						c2.id = id;
+						c.type = NetChange::TRIGGER_TRAP;
+						c.id = id;
 					}
 				}
 			}

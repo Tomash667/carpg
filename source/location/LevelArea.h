@@ -83,6 +83,8 @@ struct LevelArea
 	bool CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	Explo* CreateExplo(Ability* ability, const Vec3& pos);
+	void CreateArrow(Bullet* bullet);
+	void CreateSpellBall(Bullet* bullet);
 	void CreateScene();
 };
 

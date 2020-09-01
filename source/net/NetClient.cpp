@@ -1162,33 +1162,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					LevelArea& area = game_level->GetArea(pos);
 
 					Bullet* bullet = new Bullet;
-					area.tmp->bullets.push_back(bullet);
-
 					bullet->id = id;
 					bullet->Register();
-					bullet->mesh = game_res->aArrow;
 					bullet->pos = pos;
-					bullet->start_pos = pos;
 					bullet->rot = Vec3(rotX, rotY, 0);
 					bullet->yspeed = speedY;
-					bullet->owner = nullptr;
-					bullet->pe = nullptr;
 					bullet->speed = speed;
-					bullet->ability = nullptr;
-					bullet->tex = nullptr;
-					bullet->tex_size = 0.f;
-					bullet->timer = ARROW_TIMER;
 					bullet->owner = owner;
-
-					TrailParticleEmitter* tpe = new TrailParticleEmitter;
-					tpe->fade = 0.3f;
-					tpe->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe->color2 = Vec4(1, 1, 1, 0);
-					tpe->Init(50);
-					area.tmp->tpes.push_back(tpe);
-					bullet->trail = tpe;
-
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, ARROW_HIT_SOUND_DIST);
+					area.CreateArrow(bullet);
 				}
 			}
 			break;
@@ -2333,49 +2314,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				LevelArea& area = game_level->GetArea(pos);
 
 				Bullet* bullet = new Bullet;
-				area.tmp->bullets.push_back(bullet);
-
 				bullet->id = id;
 				bullet->Register();
 				bullet->pos = pos;
 				bullet->rot = Vec3(0, rotY, 0);
-				bullet->mesh = ability.mesh;
-				bullet->tex = ability.tex;
-				bullet->tex_size = ability.size;
-				bullet->speed = ability.speed;
-				bullet->timer = ability.range / (ability.speed - 1);
-				bullet->trail = nullptr;
-				bullet->pe = nullptr;
 				bullet->ability = &ability;
-				bullet->start_pos = bullet->pos;
 				bullet->owner = unit;
 				bullet->yspeed = speedY;
-
-				if(ability.tex_particle)
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
-					pe->emission_interval = 0.1f;
-					pe->life = -1;
-					pe->particle_life = 0.5f;
-					pe->emissions = -1;
-					pe->spawn_min = 3;
-					pe->spawn_max = 4;
-					pe->max_particles = 50;
-					pe->pos = bullet->pos;
-					pe->speed_min = Vec3(-1, -1, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-					area.tmp->pes.push_back(pe);
-					bullet->pe = pe;
-				}
+				area.CreateSpellBall(bullet);
 			}
 			break;
 		// play spell sound

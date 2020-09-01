@@ -128,32 +128,14 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// bullets
 	if(IsSet(draw_flags, DF_BULLETS))
 	{
-		for(vector<Bullet*>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
+		for(Bullet* bullet : tmp_area.bullets)
 		{
-			Bullet& bullet = **it;
-			if(bullet.mesh)
+			if(!bullet->mesh && frustum.SphereToFrustum(bullet->pos, bullet->tex_size))
 			{
-				bullet.mesh->EnsureIsLoaded();
-				if(frustum.SphereToFrustum(bullet.pos, bullet.mesh->head.radius))
-				{
-					SceneNode* node = SceneNode::Get();
-					node->SetMesh(bullet.mesh);
-					node->center = bullet.pos;
-					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
-					if(!outside)
-						GatherDrawBatchLights(area, node);
-					draw_batch.Add(node);
-				}
-			}
-			else
-			{
-				if(frustum.SphereToFrustum(bullet.pos, bullet.tex_size))
-				{
-					Billboard& bb = Add1(draw_batch.billboards);
-					bb.pos = bullet.pos;
-					bb.size = bullet.tex_size;
-					bb.tex = bullet.tex;
-				}
+				Billboard& bb = Add1(draw_batch.billboards);
+				bb.pos = bullet->pos;
+				bb.size = bullet->tex_size;
+				bb.tex = bullet->tex;
 			}
 		}
 	}
