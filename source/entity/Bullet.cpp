@@ -19,6 +19,7 @@
 #include <Mesh.h>
 #include <ParticleSystem.h>
 #include <ResourceManager.h>
+#include <Scene.h>
 #include <SoundManager.h>
 
 EntityType<Bullet>::Impl EntityType<Bullet>::impl;
@@ -32,16 +33,19 @@ bool Bullet::Update(float dt, LevelArea& area)
 	if(ability && ability->type == Ability::Ball)
 		yspeed -= 10.f * dt;
 
-	// update particles
+	// update node & particles
+	node->center = pos;
+	node->mat = Matrix::Rotation(rot) * Matrix::Translation(pos);
 	if(pe)
 		pe->pos = pos;
 	if(trail)
 		trail->AddPoint(pos);
 
-	// remove bullet on timeout
 	if((timer -= dt) <= 0.f)
 	{
 		// timeout, delete bullet
+		area.tmp->scene->Remove(node);
+		node->Free();
 		if(trail)
 			trail->destroy = true;
 		if(pe)
@@ -75,6 +79,8 @@ bool Bullet::Update(float dt, LevelArea& area)
 		hitted = reinterpret_cast<Unit*>(callback.target->getUserPointer());
 
 	// something was hit, remove bullet
+	area.tmp->scene->Remove(node);
+	node->Free();
 	if(trail)
 		trail->destroy = true;
 	if(pe)

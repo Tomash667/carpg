@@ -1146,6 +1146,17 @@ void LevelArea::CreateArrow(Bullet* bullet)
 	bullet->tex_size = 0.f;
 	bullet->timer = ARROW_TIMER;
 
+	if(bullet->mesh)
+	{
+		SceneNode* node = SceneNode::Get();
+		node->tmp = false;
+		node->SetMesh(bullet->mesh);
+		node->center = bullet->pos;
+		node->mat = Matrix::Rotation(bullet->rot) * Matrix::Translation(bullet->pos);
+		bullet->node = node;
+		tmp->scene->Add(node);
+	}
+
 	TrailParticleEmitter* tpe = new TrailParticleEmitter;
 	tpe->fade = 0.3f;
 	tpe->color1 = Vec4(1, 1, 1, 0.5f);
@@ -1186,6 +1197,17 @@ void LevelArea::CreateSpellBall(Bullet* bullet)
 	bullet->trail = nullptr;
 	bullet->pe = nullptr;
 	bullet->start_pos = bullet->pos;
+
+	if(bullet->mesh)
+	{
+		SceneNode* node = SceneNode::Get();
+		node->tmp = false;
+		node->SetMesh(bullet->mesh);
+		node->center = bullet->pos;
+		node->mat = Matrix::Rotation(bullet->rot) * Matrix::Translation(bullet->pos);
+		bullet->node = node;
+		tmp->scene->Add(node);
+	}
 
 	if(ability.tex_particle)
 	{
