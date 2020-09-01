@@ -18,7 +18,10 @@ bool SceneNodeHelper::Create(SceneNode*& node, Mesh* mesh)
 	else
 	{
 		node = SceneNode::Get();
-		node->SetMesh(new MeshInstance(mesh));
+		if(mesh->IsAnimated())
+			node->SetMesh(new MeshInstance(mesh));
+		else
+			node->SetMesh(mesh);
 		return false;
 	}
 }

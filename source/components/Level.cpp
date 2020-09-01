@@ -533,6 +533,8 @@ bool Level::RemoveTrap(int id)
 		{
 			if((*it)->id == id)
 			{
+				area.tmp->scene->Remove((*it)->node);
+				(*it)->node->Free();
 				delete *it;
 				area.traps.erase(it);
 				return true;

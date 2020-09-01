@@ -13,6 +13,7 @@
 #include "Unit.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
 #include <SceneNode.h>
 #include <SoundManager.h>
 
@@ -87,7 +88,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(trigger)
 			{
 				state = 2;
-				node->mesh_inst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
+				node->mesh_inst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND);
 				time = 0.f;
 
 				sound_mgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
@@ -171,7 +172,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(time <= 0.f)
 			{
 				state = 4;
-				node->mesh_inst->Play("hide", PLAY_ONCE);
+				node->mesh_inst->Play("hide", PLAY_ONCE | PLAY_NO_BLEND);
 				sound_mgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
 			}
 		}
@@ -350,6 +351,9 @@ bool Trap::Update(float dt, LevelArea& area)
 				Explo* explo = area.CreateExplo(fireball, exploPos);
 				explo->dmg = float(base->attack);
 
+				area.tmp->scene->Remove(node);
+				node->Free();
+
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -471,6 +475,8 @@ void Trap::Write(BitStreamWriter& f)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
+		if(base->type == TRAP_SPEAR)
+			SceneNodeHelper::Save(node, f);
 	}
 }
 
@@ -496,6 +502,8 @@ bool Trap::Read(BitStreamReader& f)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;
+		if(base->type == TRAP_SPEAR)
+			node = SceneNodeHelper::Load(f);
 		if(!f)
 			return false;
 	}
