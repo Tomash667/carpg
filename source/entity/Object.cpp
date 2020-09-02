@@ -3,15 +3,9 @@
 
 #include "BitStreamFunc.h"
 #include "Game.h"
-#include "ResourceManager.h"
+#include "SceneNodeHelper.h"
 
-#include <MeshInstance.h>
-
-//=================================================================================================
-Object::~Object()
-{
-	delete meshInst;
-}
+#include <ResourceManager.h>
 
 //=================================================================================================
 void Object::Save(GameWriter& f)
@@ -27,8 +21,8 @@ void Object::Save(GameWriter& f)
 		f << 0;
 		f << mesh->filename;
 	}
-	if(meshInst)
-		f << meshInst->groups[0].time;
+	if(f.isLocal)
+		SceneNodeHelper::Save(node, f);
 }
 
 //=================================================================================================
@@ -67,8 +61,13 @@ void Object::Load(GameReader& f)
 		}
 	}
 
-	if(f.isLocal && mesh->IsAnimated())
-		f >> time;
+	if(f.isLocal)
+	{
+		if(LOAD_VERSION >= V_DEV)
+			node = SceneNodeHelper::Load(f);
+		else if(mesh->IsAnimated())
+			f.Skip<float>(); // old time
+	}
 }
 
 //=================================================================================================
@@ -84,8 +83,8 @@ void Object::Write(BitStreamWriter& f) const
 		f << 0;
 		f << mesh->filename;
 	}
-	if(meshInst && net->mp_load)
-		f << meshInst->groups[0].time;
+	if(net->mp_load)
+		SceneNodeHelper::Save(node, f);
 }
 
 //=================================================================================================
@@ -110,7 +109,7 @@ bool Object::Read(BitStreamReader& f)
 		base = nullptr;
 	}
 
-	if(mesh->IsAnimated() && net->mp_load)
-		f >> time;
+	if(net->mp_load)
+		node = SceneNodeHelper::Load(f);
 	return true;
 }

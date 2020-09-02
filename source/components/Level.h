@@ -203,7 +203,6 @@ public:
 	CScriptArray* FindPath(Room& from, Room& to);
 	CScriptArray* GetUnits(Room& room);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
-	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();
 	void RecreateTmpObjectPhysics();
 	// --- boss

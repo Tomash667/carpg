@@ -8,24 +8,17 @@
 // Object in game
 struct Object
 {
+	SceneNode* node;
 	BaseObject* base;
 	Vec3 pos, rot;
 	float scale;
 	Mesh* mesh;
-	union
-	{
-		MeshInstance* meshInst;
-		float time;
-	};
 	bool requireSplit;
 
 	static const int MIN_SIZE = 29;
 
-	Object() : meshInst(nullptr), requireSplit(false)
-	{
-	}
-	~Object();
-
+	Object() : node(nullptr), requireSplit(false) {}
+	void Cleanup() { node = nullptr; }
 	float GetRadius() const
 	{
 		return mesh->head.radius * scale;

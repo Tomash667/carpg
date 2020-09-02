@@ -6,13 +6,13 @@
 #include "Electro.h"
 #include "Explo.h"
 
+#include <BasicScene.h>
 #include <ParticleSystem.h>
-#include <Scene.h>
 
 //=================================================================================================
 TmpLevelArea::TmpLevelArea()
 {
-	scene = new Scene;
+	scene = new BasicScene;
 }
 
 //=================================================================================================

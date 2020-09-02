@@ -11,12 +11,12 @@
 #include "Level.h"
 #include "Tile.h"
 
+#include <BasicScene.h>
 #include <Mesh.h>
 #include <Render.h>
 #include <RenderTarget.h>
 #include <ResourceManager.h>
 #include <SoundManager.h>
-#include <Scene.h>
 #include <SceneManager.h>
 
 GameResources* game_res;
@@ -40,7 +40,7 @@ GameResources::~GameResources()
 //=================================================================================================
 void GameResources::Init()
 {
-	scene = new Scene;
+	scene = new BasicScene;
 	scene->clear_color = Color::None;
 
 	light.range = 10.f;

@@ -139,7 +139,6 @@ public:
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void SetGlowNodes();
 	void ClearGlowNodes();
-	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
 	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();

@@ -2108,6 +2108,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
 				res_mgr->Load(obj->mesh);
+				obj->node->SetMesh(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;

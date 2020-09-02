@@ -43,10 +43,10 @@
 #include "World.h"
 
 #include <angelscript.h>
+#include <BasicScene.h>
 #include <ParticleSystem.h>
 #include <Render.h>
 #include <ResourceManager.h>
-#include <Scene.h>
 #include <scriptarray/scriptarray.h>
 #include <SoundManager.h>
 #include <Texture.h>
@@ -60,7 +60,7 @@ shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(
 shape_floor(nullptr), dungeon_mesh(nullptr)
 {
 	camera.zfar = 80.f;
-	scene = new Scene;
+	scene = new BasicScene;
 }
 
 //=================================================================================================
@@ -4750,28 +4750,6 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(x == start_x && y == start_y)
 			return false;
-	}
-}
-
-//=================================================================================================
-void Level::CreateObjectsMeshInstance()
-{
-	const bool isLoading = (game->in_load || net->mp_load);
-	for(LevelArea& area : ForEachArea())
-	{
-		for(Object* obj : area.objects)
-		{
-			if(obj->mesh->IsAnimated())
-			{
-				float time = 0;
-				if(isLoading)
-					time = obj->time;
-				obj->meshInst = new MeshInstance(obj->mesh);
-				obj->meshInst->Play(&obj->mesh->anims[0], PLAY_NO_BLEND, 0);
-				if(time != 0)
-					obj->meshInst->groups[0].time = time;
-			}
-		}
 	}
 }
 

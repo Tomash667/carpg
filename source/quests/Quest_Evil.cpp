@@ -238,6 +238,7 @@ void Quest_Evil::SetProgress(int prog2)
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
 			res_mgr->Load(obj->mesh);
+			obj->node->SetMesh(obj->mesh);
 			// remove particles
 			float best_dist = 999.f;
 			ParticleEmitter* best_pe = nullptr;

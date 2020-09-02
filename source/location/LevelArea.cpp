@@ -90,8 +90,8 @@ void LevelArea::Update(float dt)
 	// update objects
 	for(Object* obj : objects)
 	{
-		if(obj->meshInst)
-			obj->meshInst->Update(dt);
+		if(obj->node->mesh_inst)
+			obj->node->mesh_inst->Update(dt);
 	}
 }
 
@@ -1291,6 +1291,51 @@ void LevelArea::CreateScene()
 		scene->Add(node);
 		if(door->state == Door::Opened)
 			node->mesh_inst->SetToEnd(&node->mesh->anims[0]);
+	}
+
+	for(Object* obj : objects)
+	{
+		if(!IsSet(obj->mesh->head.flags, Mesh::F_SPLIT))
+		{
+			SceneNodeHelper::Create(obj->node, obj->mesh);
+			SceneNode* node = obj->node;
+			node->tmp = false;
+			node->center = obj->pos;
+			node->radius *= obj->scale;
+			node->mat = Matrix::Transform(obj->pos, obj->rot, obj->scale);
+			if(obj->RequireNoCulling())
+				node->flags |= SceneNode::F_NO_CULLING;
+			scene->Add(node);
+			if(node->mesh_inst && !node->mesh_inst->IsPlaying())
+				node->mesh_inst->Play(&node->mesh->anims[0], PLAY_NO_BLEND, 0);
+		}
+		else
+		{
+			SceneNode* node = SceneNode::Get();
+			node->tmp = false;
+			node->mesh = nullptr;
+			node->center = obj->pos;
+			node->radius = obj->GetRadius();
+			node->mat = Matrix::Transform(obj->pos, obj->rot, obj->scale);
+
+			Mesh& mesh = *obj->mesh;
+			for(int i = 0; i < mesh.head.n_subs; ++i)
+			{
+				const Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
+				const float radius = mesh.splits[i].radius * obj->scale;
+
+				SceneNode* node2 = SceneNode::Get();
+				node2->SetMesh(&mesh);
+				node2->center = pos;
+				node2->radius = radius;
+				node2->mat = node->mat;
+				node2->subs = i;
+				node->Add(node2);
+			}
+
+			obj->node = node;
+			scene->Add(node);
+		}
 	}
 
 	for(GroundItem* item : items)
