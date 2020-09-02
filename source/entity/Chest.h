@@ -31,7 +31,7 @@ private:
 	Unit* user;
 
 public:
-	static const int MIN_SIZE = 20;
+	static const int MIN_SIZE = 32;
 	static const float SOUND_DIST;
 
 	Chest() : node(nullptr), user(nullptr), handler(nullptr) {}

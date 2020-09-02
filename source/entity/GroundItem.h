@@ -9,7 +9,7 @@ struct GroundItem : public EntityType<GroundItem>
 	Vec3 pos;
 	Quat rot;
 
-	static const int MIN_SIZE = 23;
+	static const int MIN_SIZE = 37;
 
 	GroundItem() : node(nullptr) {}
 	void Cleanup() { node = nullptr; }

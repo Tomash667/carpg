@@ -17,7 +17,7 @@ struct Trap : public EntityType<Trap>
 	Vec3 pos;
 	bool mpTrigger;
 
-	static const int MIN_SIZE = 31;
+	static const int MIN_SIZE = 32;
 
 	Trap() : node(nullptr), hitted(nullptr) {}
 	~Trap() { delete hitted; }

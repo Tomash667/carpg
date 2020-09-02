@@ -14,17 +14,14 @@
 
 ObjectPool<LevelQuad> level_quads_pool;
 
-QuadNode* GetLevelQuad()
-{
-	LevelQuad* quad = level_quads_pool.Get();
-	quad->generated = false;
-	return quad;
-}
-
 void Game::InitQuadTree()
 {
-	quadtree.get = GetLevelQuad;
-	quadtree.Init(nullptr, Box2d(0, 0, 256, 256), Rect(0, 0, 128, 128), 5);
+	quadtree.Init([]() -> QuadTree::Node*
+	{
+		LevelQuad* quad = level_quads_pool.Get();
+		quad->generated = false;
+		return quad;
+	}, Box2d(0, 0, 256, 256), 5);
 }
 
 void Game::DrawGrass()
@@ -64,10 +61,12 @@ void Game::ListGrass()
 
 		if(!quad.generated)
 		{
-			int minx = max(1, quad.grid_box.p1.x),
-				miny = max(1, quad.grid_box.p1.y),
-				maxx = min(OutsideLocation::size - 1, quad.grid_box.p2.x),
-				maxy = min(OutsideLocation::size - 1, quad.grid_box.p2.y);
+			const Int2 p1 = PosToPt(quad.box.v1);
+			const Int2 p2 = PosToPt(quad.box.v2);
+			int minx = max(1, p1.x),
+				miny = max(1, p1.y),
+				maxx = min(OutsideLocation::size - 1, p2.x),
+				maxy = min(OutsideLocation::size - 1, p2.y);
 			quad.generated = true;
 			for(int y = miny; y < maxy; ++y)
 			{
@@ -150,21 +149,16 @@ void Game::SetTerrainTextures()
 
 void Game::ClearQuadtree()
 {
-	if(!quadtree.top)
+	if(!quadtree.IsInitialized())
 		return;
 
-	quadtree.Clear((QuadTree::Nodes&)level_quads);
-
-	for(LevelQuads::iterator it = level_quads.begin(), end = level_quads.end(); it != end; ++it)
+	quadtree.Clear([](QuadTree::Node* node)
 	{
-		LevelQuad& quad = **it;
-		quad.grass.clear();
-		quad.grass2.clear();
-		quad.objects.clear();
-	}
-
-	level_quads_pool.Free(level_quads);
-	level_quads.clear();
+		LevelQuad* quad = static_cast<LevelQuad*>(node);
+		quad->grass.clear();
+		quad->grass2.clear();
+		level_quads_pool.Free(quad);
+	});
 }
 
 void Game::ClearGrass()
@@ -173,22 +167,4 @@ void Game::ClearGrass()
 	grass_patches[1].clear();
 	grass_count[0] = 0;
 	grass_count[1] = 0;
-}
-
-void Game::CalculateQuadtree()
-{
-	if(game_level->local_area->area_type != LevelArea::Type::Outside)
-		return;
-
-	for(Object* obj : game_level->local_area->objects)
-	{
-		auto node = (LevelQuad*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
-		node->objects.push_back(QuadObj(obj));
-	}
-}
-
-void Game::ListQuadtreeNodes()
-{
-	PROFILER_BLOCK("ListQuadtreeNodes");
-	quadtree.List(game_level->camera.frustum, (QuadTree::Nodes&)level_quads);
 }

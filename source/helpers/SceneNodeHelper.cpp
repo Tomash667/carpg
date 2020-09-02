@@ -29,8 +29,7 @@ bool SceneNodeHelper::Create(SceneNode*& node, Mesh* mesh)
 //=================================================================================================
 void SceneNodeHelper::Save(SceneNode* node, StreamWriter& f)
 {
-	assert(!node || node->mesh_inst);
-	if(!node || !node->mesh_inst->groups[0].IsActive())
+	if(!node || !node->mesh_inst || !node->mesh_inst->groups[0].IsActive())
 	{
 		f.Write0();
 		return;

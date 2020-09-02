@@ -268,7 +268,7 @@ struct Unit : public EntityType<Unit>
 		LOAD
 	};
 
-	static const int MIN_SIZE = 36;
+	static const int MIN_SIZE = 137;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
 	static const float STAMINA_BASH_ATTACK;

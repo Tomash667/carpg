@@ -445,7 +445,6 @@ void OutsideLocationGenerator::OnLoad()
 	game_level->SpawnTerrainCollider();
 	SpawnOutsideBariers();
 	game->InitQuadTree();
-	game->CalculateQuadtree();
 
 	CreateMinimap();
 }

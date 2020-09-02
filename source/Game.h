@@ -157,8 +157,6 @@ public:
 	void SetTerrainTextures();
 	void ClearQuadtree();
 	void ClearGrass();
-	void CalculateQuadtree();
-	void ListQuadtreeNodes();
 	void ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex);
 	void ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);

@@ -43,7 +43,7 @@ void Object::Load(GameReader& f)
 		else
 		{
 			base = nullptr;
-			mesh = res_mgr->Load<Mesh>(f.ReadString1());
+			mesh = res_mgr->Get<Mesh>(f.ReadString1());
 		}
 	}
 	else
@@ -57,7 +57,7 @@ void Object::Load(GameReader& f)
 		else
 		{
 			base = nullptr;
-			mesh = res_mgr->Load<Mesh>(f.ReadString1());
+			mesh = res_mgr->Get<Mesh>(f.ReadString1());
 		}
 	}
 
@@ -105,7 +105,7 @@ bool Object::Read(BitStreamReader& f)
 		const string& mesh_id = f.ReadString1();
 		if(!f)
 			return false;
-		mesh = res_mgr->Load<Mesh>(mesh_id);
+		mesh = res_mgr->Get<Mesh>(mesh_id);
 		base = nullptr;
 	}
 

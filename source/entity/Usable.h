@@ -17,7 +17,7 @@ struct Usable : EntityType<Usable>
 	int variant;
 
 	static const float SOUND_DIST;
-	static const int MIN_SIZE = 22;
+	static const int MIN_SIZE = 24;
 
 	Usable() : node(nullptr), variant(-1), container(nullptr) {}
 	~Usable() { delete container; }

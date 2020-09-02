@@ -44,10 +44,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	draw_batch.gather_lights = !outside && scene_mgr->use_lighting;
 	ClearGrass();
 	if(area.area_type == LevelArea::Type::Outside)
-	{
-		ListQuadtreeNodes();
 		ListGrass();
-	}
 
 	// terrain
 	if(area.area_type == LevelArea::Type::Outside && IsSet(draw_flags, DF_TERRAIN))

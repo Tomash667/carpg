@@ -17,7 +17,7 @@ struct Bullet : public EntityType<Bullet>
 	TrailParticleEmitter* trail;
 	ParticleEmitter* pe;
 
-	static const int MIN_SIZE = 41;
+	static const int MIN_SIZE = 178;
 
 	bool Update(float dt, LevelArea& area);
 	void Save(GameWriter& f) const;

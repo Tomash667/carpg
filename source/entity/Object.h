@@ -15,7 +15,7 @@ struct Object
 	Mesh* mesh;
 	bool requireSplit;
 
-	static const int MIN_SIZE = 29;
+	static const int MIN_SIZE = 32;
 
 	Object() : node(nullptr), requireSplit(false) {}
 	void Cleanup() { node = nullptr; }

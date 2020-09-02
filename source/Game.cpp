@@ -1476,7 +1476,6 @@ void Game::EnterLocation(int level, int from_portal)
 	{
 		loc_gen->OnEnter();
 		SetTerrainTextures();
-		CalculateQuadtree();
 	}
 	else
 		EnterLevel(loc_gen);

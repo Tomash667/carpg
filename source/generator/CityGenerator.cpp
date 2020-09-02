@@ -2901,7 +2901,6 @@ void CityGenerator::OnLoad()
 	SpawnCityPhysics();
 	SpawnOutsideBariers();
 	game->InitQuadTree();
-	game->CalculateQuadtree();
 
 	CreateMinimap();
 }

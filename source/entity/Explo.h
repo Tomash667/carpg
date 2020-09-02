@@ -10,7 +10,7 @@ struct Explo
 	Ability* ability;
 	vector<Entity<Unit>> hitted;
 
-	static const int MIN_SIZE = 21;
+	static const int MIN_SIZE = 36;
 
 	bool Update(float dt, LevelArea& area);
 	void Save(GameWriter& f);

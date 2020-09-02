@@ -210,7 +210,6 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 
 	// remove objects
 	DeleteElements(outside.objects, [](const Object* obj) { return Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f; });
-
 	if(!sawmill_objs_ptrs[0])
 	{
 		for(uint i = 0; i < n_sawmill_objs; ++i)

@@ -30,7 +30,7 @@ struct Door : public EntityType<Door>
 	static const float SOUND_DIST;
 	static const float UNLOCK_SOUND_DIST;
 	static const float BLOCKED_SOUND_DIST;
-	static const int MIN_SIZE = 31;
+	static const int MIN_SIZE = 37;
 
 	SceneNode* node;
 	btCollisionObject* phy;

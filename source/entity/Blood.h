@@ -11,7 +11,7 @@ struct Blood
 	float size, scale, rot;
 	array<Light*, 3> lights;
 
-	static const int MIN_SIZE = 33;
+	static const int MIN_SIZE = 37;
 
 	void Save(GameWriter& f) const;
 	void Load(GameReader& f);

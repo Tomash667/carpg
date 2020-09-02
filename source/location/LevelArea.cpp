@@ -1325,11 +1325,12 @@ void LevelArea::CreateScene()
 				const float radius = mesh.splits[i].radius * obj->scale;
 
 				SceneNode* node2 = SceneNode::Get();
+				node2->tmp = false;
 				node2->SetMesh(&mesh);
 				node2->center = pos;
 				node2->radius = radius;
 				node2->mat = node->mat;
-				node2->subs = i;
+				node2->subs = i | SceneNode::SPLIT_INDEX;
 				node->Add(node2);
 			}
 
