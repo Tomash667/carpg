@@ -51,13 +51,14 @@ void Game::ListGrass()
 	OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 	Vec3 pos, angle;
 	Vec2 from = game_level->camera.from.XZ();
-	float in_dist = settings.grass_range * settings.grass_range;
+	const float in_dist = settings.grass_range * settings.grass_range;
+	const FrustumPlanes frustum(draw_batch.camera->mat_view_proj);
 
-	for(LevelQuads::iterator it = level_quads.begin(), end = level_quads.end(); it != end; ++it)
+	quadtree.ListLeafs(frustum, [&](QuadTree::Node* quadNode)
 	{
-		LevelQuad& quad = **it;
-		if(!quad.leaf || Vec2::DistanceSquared(quad.box.Midpoint(), from) > in_dist)
-			continue;
+		LevelQuad& quad = *static_cast<LevelQuad*>(quadNode);
+		if(Vec2::DistanceSquared(quad.box.Midpoint(), from) > in_dist)
+			return;
 
 		if(!quad.generated)
 		{
@@ -132,7 +133,7 @@ void Game::ListGrass()
 			grass_patches[1].push_back(&quad.grass2);
 			grass_count[1] += quad.grass2.size();
 		}
-	}
+	});
 }
 
 void Game::SetTerrainTextures()

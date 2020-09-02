@@ -375,7 +375,6 @@ public:
 	DrawBatch draw_batch;
 	int uv_mod;
 	QuadTree quadtree;
-	LevelQuads level_quads;
 	vector<const vector<Matrix>*> grass_patches[2];
 	uint grass_count[2];
 	// screenshot
