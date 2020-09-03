@@ -106,6 +106,7 @@ void Net::UpdateClient(float dt)
 				game->pc->unit->visual_pos = Vec3::Lerp(game->pc->unit->visual_pos, game->pc->unit->pos, (0.1f - interpolate_timer) * 10);
 			else
 				game->pc->unit->visual_pos = game->pc->unit->pos;
+			game->pc->unit->UpdateVisualPos();
 		}
 
 		// interpolacja pozycji/obrotu postaci
@@ -1421,6 +1422,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				unit->rot = rot;
 
 				unit->visual_pos = unit->pos;
+				unit->UpdateVisualPos();
 				if(unit->interp)
 					unit->interp->Reset(unit->pos, unit->rot);
 

@@ -698,7 +698,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
-		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
+		int bone = u->node->mesh->GetBone("usta")->id;
 		static Matrix mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) * mat[bone];
@@ -975,7 +975,8 @@ void Game::DoExitToMenu()
 	game_gui->level_gui->visible = false;
 	game_gui->world_map->Hide();
 	game_gui->main_menu->Show();
-	units_mesh_load.clear();
+	//units_mesh_load.clear();
+	FIXME;
 
 	ChangeTitle();
 }
@@ -2902,6 +2903,9 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 
 				unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
 
+				// mesh
+				unit.Cleanup();
+
 				// physics
 				if(unit.cobj)
 				{
@@ -2939,7 +2943,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 							if(unit.live_state == Unit::DYING)
 							{
 								unit.live_state = Unit::DEAD;
-								unit.mesh_inst->SetToEnd();
+								unit.node->mesh_inst->SetToEnd();
 								game_level->CreateBlood(area, unit, true);
 							}
 							else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
@@ -2955,7 +2959,8 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 									{
 										InsideBuilding* inn = game_level->city_ctx->FindInn();
 										game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-										unit.visual_pos = unit.pos;
+										unit.visual_pos = unit.pos; 
+										unit.UpdateVisualPos();
 										unit.area = inn;
 										inn->units.push_back(&unit);
 										return true;
@@ -2967,8 +2972,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 									unit.rot = unit.ai->start_rot;
 							}
 
-							delete unit.mesh_inst;
-							unit.mesh_inst = nullptr;
 							delete unit.ai;
 							unit.ai = nullptr;
 							unit.EndEffects();
@@ -2979,7 +2982,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				else
 				{
 					unit.talking = false;
-					unit.mesh_inst->need_update = true;
 					unit.usable = nullptr;
 					return true;
 				}
@@ -3151,7 +3153,7 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 		}
 
 		// apply mesh instance for newly loaded meshes
-		for(auto& unit_mesh : units_mesh_load)
+		/*for(auto& unit_mesh : units_mesh_load)
 		{
 			Unit::CREATE_MESH mode;
 			if(unit_mesh.second)
@@ -3162,7 +3164,8 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 				mode = Unit::CREATE_MESH::NORMAL;
 			unit_mesh.first->CreateMesh(mode);
 		}
-		units_mesh_load.clear();
+		units_mesh_load.clear();*/
+		FIXME;
 	}
 	else
 	{

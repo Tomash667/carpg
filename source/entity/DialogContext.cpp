@@ -1769,7 +1769,7 @@ void DialogContext::DialogTalk(cstring msg)
 	if(!talker->usable && talker->data->type == UNIT_TYPE::HUMAN && talker->action == A_NONE && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
-		talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		talker->node->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
 		talker->animation = ANI_PLAY;
 		talker->action = A_ANIMATION;
 	}

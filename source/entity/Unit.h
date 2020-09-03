@@ -259,14 +259,15 @@ struct Unit : public EntityType<Unit>
 		AI_MODE_ATTACK_TEAM = 1 << 4
 	};
 
-	enum class CREATE_MESH
+	/*enum class CREATE_MESH
 	{
 		NORMAL,
 		ON_WORLDMAP,
 		PRELOAD,
 		AFTER_PRELOAD,
 		LOAD
-	};
+	};*/
+	FIXME;
 
 	static const int MIN_SIZE = 137;
 	static const float AUTO_TALK_WAIT;
@@ -977,6 +978,7 @@ public:
 	bool DoAttack();
 	bool DoShieldSmash();
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+	void UpdateVisualPos();
 };
 
 //-----------------------------------------------------------------------------

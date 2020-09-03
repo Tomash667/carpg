@@ -29,7 +29,8 @@ void LocationGenerator::RespawnUnits()
 			// model
 			u->action = A_NONE;
 			u->talking = false;
-			u->CreateMesh(Unit::CREATE_MESH::NORMAL);
+			//u->CreateMesh(Unit::CREATE_MESH::NORMAL);
+			FIXME;
 
 			// fizyka
 			u->CreatePhysics(true);

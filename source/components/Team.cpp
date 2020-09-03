@@ -1547,6 +1547,7 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 	game_level->WarpNearLocation(*game_level->local_area, *leader, pos, 2.f, true, 20);
 	leader->visual_pos = leader->pos;
 	leader->rot = Vec3::LookAtAngle(leader->pos, look_at);
+	leader->UpdateVisualPos();
 	if(leader->interp)
 		leader->interp->Reset(leader->pos, leader->rot);
 
@@ -1559,6 +1560,7 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 		game_level->WarpNearLocation(*game_level->local_area, unit, target_pos, 2.f, true, 20);
 		unit.visual_pos = unit.pos;
 		unit.rot = Vec3::LookAtAngle(unit.pos, look_at);
+		unit.UpdateVisualPos();
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
 	}

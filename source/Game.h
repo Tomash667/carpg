@@ -136,7 +136,8 @@ public:
 	void DrawGame();
 	void ForceRedraw();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
-	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
+	//void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
+	FIXME;
 	void SetGlowNodes();
 	void ClearGlowNodes();
 	void ListAreas(LevelArea& area);
@@ -339,7 +340,8 @@ public:
 	vector<Location*> load_location_quest;
 	vector<Unit*> load_unit_handler;
 	vector<Chest*> load_chest_handler;
-	vector<pair<Unit*, bool>> units_mesh_load;
+	//vector<pair<Unit*, bool>> units_mesh_load;
+	FIXME;
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER

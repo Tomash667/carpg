@@ -185,6 +185,7 @@ void Game::UpdateAi(float dt)
 						const float d = Sign(ShortestArc(u.rot, dir)) * rot_speed;
 						u.rot = Clip(u.rot + d);
 					}
+					u.UpdateVisualPos();
 					u.changed = true;
 				}
 			}

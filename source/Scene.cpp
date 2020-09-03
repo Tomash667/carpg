@@ -69,7 +69,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	area.tmp->scene->ListNodes(draw_batch);
 
 	// units
-	if(IsSet(draw_flags, DF_UNITS))
+	/*if(IsSet(draw_flags, DF_UNITS))
 	{
 		PROFILER_BLOCK("Units");
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
@@ -77,7 +77,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			Unit& u = **it;
 			ListDrawObjectsUnit(frustum, outside, u);
 		}
-	}
+	}*/
+	FIXME;
 
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
@@ -276,7 +277,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 }
 
 //=================================================================================================
-void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
+/*void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 {
 	u.mesh_inst->mesh->EnsureIsLoaded();
 	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
@@ -719,7 +720,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
-}
+}*/
+FIXME;
 
 //=================================================================================================
 void Game::ListAreas(LevelArea& area)

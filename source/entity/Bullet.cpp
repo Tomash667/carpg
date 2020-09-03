@@ -201,11 +201,12 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 						else
 							hitted->animation_state = AS_POSITION_HURT;
 
-						if(hitted->mesh_inst->mesh->head.n_groups == 2)
-							hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+						MeshInstance* meshInst = hitted->node->mesh_inst;
+						if(meshInst->mesh->head.n_groups == 2)
+							meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
-							hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 							hitted->animation = ANI_PLAY;
 						}
 					}

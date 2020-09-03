@@ -8,6 +8,7 @@
 #include "Level.h"
 #include "Unit.h"
 
+#include <BasicScene.h>
 #include <GetTextDialog.h>
 #include <PickItemDialog.h>
 #include <Render.h>
@@ -36,7 +37,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), scene(nullptr), unit(nullptr), rt_char(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -179,12 +180,32 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	flowPerks.button_size = Int2(16, 16);
 	flowPerks.button_tex = custom_bt;
 	flowPerks.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickPerk);
+
+	scene = new BasicScene;
+	scene->clear_color = Color::Red;// Color::None;
+	FIXME;
+	scene->fog_range = Vec2(40, 80);
+	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
+	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
+	scene->light_color = Color::White;
+	scene->light_dir = Vec3(sin(PI / 2), 2.f, cos(PI / 2)).Normalize();
+	scene->use_light_dir = true;
+
+	camera.from = Vec3(0.f, 2.f, dist);
+	camera.to = Vec3(0.f, 1.f, 0.f);
+	camera.znear = 1.f;
+	camera.zfar = 5.f;
+	Matrix mat_view = Matrix::CreateLookAt(camera.from, camera.to);
+	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, camera.znear, camera.zfar);
+	camera.mat_view_proj = mat_view * mat_proj;
+	camera.mat_view_inv = mat_view.Inverse();
 }
 
 //=================================================================================================
 CreateCharacterPanel::~CreateCharacterPanel()
 {
 	delete unit;
+	delete scene;
 }
 
 //=================================================================================================
@@ -616,8 +637,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdSize:
 			unit->human_data->height = Lerp(MIN_HEIGHT, MAX_HEIGHT, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-			unit->human_data->ApplyScale(unit->mesh_inst);
-			unit->mesh_inst->need_update = true;
+			unit->human_data->ApplyScale(unit->node->mesh_inst);
+			unit->node->mesh_inst->need_update = true;
 			break;
 		case IdRandomSet:
 			if(mode == Mode::PickAppearance)
@@ -637,35 +658,15 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	render->SetRenderTarget(rt_char);
-	render->Clear(Color::None);
-
-	game_level->light_angle = PI / 2;
-	game_level->SetOutsideParams();
-
-	Vec3 from = Vec3(0.f, 2.f, dist);
-	Matrix mat_view = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
-	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	game_level->camera.mat_view_proj = mat_view * mat_proj;
-	game_level->camera.from = from;
-	game_level->camera.mat_view_inv = mat_view.Inverse();
-	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
-
-	scene_mgr->SetScene(game_level->scene, &game_level->camera);
-
-	game->draw_batch.Clear();
-	game->draw_batch.camera = &game_level->camera;
-	game->draw_batch.gather_lights = false;
-	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
-	game->draw_batch.Process();
-	scene_mgr->DrawSceneNodes(game->draw_batch);
-
-	render->SetRenderTarget(nullptr);
+	scene_mgr->SetScene(scene, &camera);
+	scene_mgr->Draw(rt_char);
 }
 
 //=================================================================================================
 void CreateCharacterPanel::UpdateUnit(float dt)
 {
+	MeshInstance* meshInst = unit->node->mesh_inst;
+
 	// update character
 	t -= dt;
 	if(t <= 0.f)
@@ -687,7 +688,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			else
 			{
 				anim = DA_BATTLE_MODE;
-				unit->mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 			}
 			break;
 		case DA_BATTLE_MODE:
@@ -741,12 +742,12 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->animation_state = AS_ATTACK_PREPARE;
 			unit->act.attack.index = unit->GetRandomAttack();
 			unit->act.attack.run = false;
-			unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-			unit->mesh_inst->groups[1].speed = unit->GetAttackSpeed();
+			meshInst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+			meshInst->groups[1].speed = unit->GetAttackSpeed();
 			t = 100.f;
 			break;
 		case DA_BLOCK:
-			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 1);
+			meshInst->Play(NAMES::ani_block, PLAY_PRIO2, 1);
 			t = 1.f;
 			break;
 		case DA_BATTLE_MODE:
@@ -761,7 +762,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_LOOKS_AROUND:
-			unit->mesh_inst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
+			meshInst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->animation = ANI_IDLE;
 			t = 100.f;
 			break;
@@ -780,13 +781,13 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_SHOOT:
-			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-			unit->mesh_inst->groups[1].speed = unit->GetBowAttackSpeed();
+			meshInst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
+			meshInst->groups[1].speed = unit->GetBowAttackSpeed();
 			unit->action = A_SHOOT;
 			unit->animation_state = AS_SHOOT_PREPARE;
 			unit->bow_instance = game_level->GetBowInstance(unit->GetBow().mesh);
 			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[1].speed;
+			unit->bow_instance->groups[0].speed = meshInst->groups[1].speed;
 			t = 100.f;
 			break;
 		case DA_SHOW_WEAPON:
@@ -808,7 +809,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 	switch(anim)
 	{
 	case DA_ATTACK:
-		if(unit->mesh_inst->IsEnded())
+		if(meshInst->IsEnded())
 		{
 			if(Rand() % 2 == 0)
 			{
@@ -867,8 +868,6 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
-	unit->mesh_inst = new MeshInstance(game_res->aHuman);
-
 	for(Class* clas : Class::classes)
 	{
 		if(clas->IsPickable())
@@ -876,6 +875,10 @@ void CreateCharacterPanel::Init()
 	}
 	lbClasses.Sort();
 	lbClasses.Initialize();
+
+	unit->data = Class::GetRandomPlayer()->player;
+	unit->CreateNode();
+	scene->Add(unit->node);
 }
 
 //=================================================================================================
@@ -888,7 +891,7 @@ void CreateCharacterPanel::RandomAppearance()
 	hair_color_index = Rand() % n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(u.mesh_inst);
+	u.human_data->ApplyScale(u.node->mesh_inst);
 	SetControls();
 }
 
@@ -955,7 +958,7 @@ void CreateCharacterPanel::SetCharacter()
 	anim = anim2 = DA_STAND;
 	unit->animation = ANI_STAND;
 	unit->current_animation = ANI_STAND;
-	unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
+	unit->node->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
 }
 
 //=================================================================================================
@@ -1506,7 +1509,7 @@ void CreateCharacterPanel::UpdateInventory()
 void CreateCharacterPanel::ResetDoll(bool instant)
 {
 	anim = DA_STAND;
-	unit->mesh_inst->Deactivate(1);
+	unit->node->mesh_inst->Deactivate(1);
 	unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	if(instant)
 	{

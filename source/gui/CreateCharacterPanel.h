@@ -14,6 +14,7 @@
 #include "Skill.h"
 #include "Perk.h"
 #include "CreatedCharacter.h"
+#include <Camera.h>
 
 //-----------------------------------------------------------------------------
 // Show on new game to create player character
@@ -102,6 +103,8 @@ private:
 	Mode mode;
 	bool enter_name;
 	// unit
+	Scene* scene;
+	Camera camera;
 	DOLL_ANIM anim, anim2;
 	float t, dist;
 	// controls

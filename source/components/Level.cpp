@@ -1996,7 +1996,8 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 	}
 
 	// mesh
-	unit->CreateMesh(Unit::CREATE_MESH::NORMAL);
+	//unit->CreateMesh(Unit::CREATE_MESH::NORMAL);
+	FIXME;
 
 	// physics
 	if(create_physics)
@@ -2037,6 +2038,12 @@ Unit* Level::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, const 
 
 	if(rot)
 		u->rot = *rot;
+
+	if(!entering)
+	{
+		u->CreateNode();
+		area.tmp->scene->Add(u->node);
+	}
 
 	AIController* ai = new AIController;
 	ai->Init(u);
@@ -2827,7 +2834,7 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 		return;
 
 	Blood* blood = new Blood;
-	u.mesh_inst->SetupBones();
+	u.node->mesh_inst->SetupBones();
 	blood->pos = u.GetLootCenter();
 	blood->type = u.data->blood;
 	blood->rot = Random(MAX_ANGLE);
@@ -2898,6 +2905,8 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 		unit.UpdatePhysics();
 
 	unit.visual_pos = unit.pos;
+	if(unit.node)
+		unit.UpdateVisualPos();
 
 	if(Net::IsOnline())
 	{
@@ -2954,6 +2963,8 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 	unit.pos = tmp_pos;
 	unit.Moved(true);
 	unit.visual_pos = unit.pos;
+	if(unit.node)
+		unit.UpdateVisualPos();
 
 	if(Net::IsOnline())
 	{
@@ -3894,9 +3905,10 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
 		unit.rot = rot;
 		unit.animation = unit.current_animation = ANI_STAND;
-		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		//unit.node->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.BreakAction();
-		unit.SetAnimationAtEnd();
+		//unit.SetAnimationAtEnd();
+		FIXME;
 		unit.area = local_area;
 
 		if(unit.IsAI())

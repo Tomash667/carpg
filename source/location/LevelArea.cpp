@@ -962,21 +962,22 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.mesh_inst->mesh->head.n_groups > 1)
+	MeshInstance* meshInst = unit.node->mesh_inst;
+	if(meshInst->mesh->head.n_groups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
-		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+		point = meshInst->mesh->GetPoint(NAMES::point_weapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
+		hitbox = meshInst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
 		if(!hitbox)
-			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
+			hitbox = meshInst->mesh->FindPoint("hitbox");
 	}
 
 	assert(hitbox);
@@ -994,17 +995,18 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh
 {
 	assert(hitted && hitbox.IsBox());
 
-	unit.mesh_inst->SetupBones();
+	MeshInstance* meshInst = unit.node->mesh_inst;
+	meshInst->SetupBones();
 
 	// calculate hitbox matrix
 	Matrix m1 = Matrix::Scale(unit.data->scale) * Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitScale * UnitRot * UnitPos
-		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
+		m1 = hitbox.mat * (bone->mat * meshInst->mat_bones[bone->bone] * m1);
 	}
 	else
-		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
+		m1 = hitbox.mat * meshInst->mat_bones[hitbox.bone] * m1;
 
 	// a - weapon hitbox, b - unit hitbox
 	Oob a, b;
@@ -1257,6 +1259,12 @@ void LevelArea::CreateScene()
 
 	for(GameLight& light : lights)
 		scene->Add(&light);
+
+	for(Unit* unit : units)
+	{
+		unit->CreateNode();
+		scene->Add(unit->node);
+	}
 
 	for(Usable* usable : usables)
 	{

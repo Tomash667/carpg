@@ -4363,7 +4363,8 @@ ARMOR_TYPE Unit::GetBestArmorType() const
 void Unit::ApplyHumanData(HumanData& hd)
 {
 	hd.Set(*human_data);
-	human_data->ApplyScale(node->mesh_inst);
+	//human_data->ApplyScale(node->mesh_inst);
+	FIXME;
 }
 
 //=================================================================================================
@@ -4633,6 +4634,13 @@ void Unit::CreateNode()
 {
 	node = SceneNode::Get();
 	node->tmp = false;
+	node->SetMesh(new MeshInstance(data->mesh));
+	if(IsSet(data->flags2, F2_ALPHA_BLEND))
+		node->flags |= SceneNode::F_ALPHA_BLEND;
+	node->center = visual_pos;
+	node->mat = Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visual_pos);
+	node->tex_override = data->GetTextureOverride();
+	node->tint = data->tint;
 
 	//if(f.isLocal && human_data)
 	//	human_data->ApplyScale(mesh_inst);
@@ -4779,6 +4787,9 @@ byte Unit::GetAiMode() const
 //=================================================================================================
 void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation)
 {
+	FIXME;
+	if(!node)
+		return;
 	MeshInstance* meshInst = node->mesh_inst;
 
 	if(notify && Net::IsServer())
@@ -6169,6 +6180,7 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
 			rot = Clip(rot + d);
 		}
+		UpdateVisualPos();
 		changed = true;
 	}
 }
@@ -6180,7 +6192,10 @@ void Unit::RotateTo(const Vec3& pos)
 	if(game_level->entering && ai)
 		ai->start_rot = rot;
 	else
+	{
 		changed = true;
+		UpdateVisualPos();
+	}
 }
 
 void Unit::RotateTo(float rot)
@@ -6189,7 +6204,10 @@ void Unit::RotateTo(float rot)
 	if(game_level->entering && ai)
 		ai->start_rot = rot;
 	else
+	{
 		changed = true;
+		UpdateVisualPos();
+	}
 }
 
 UnitOrderEntry* UnitOrderEntry::NextOrder()
@@ -7047,6 +7065,7 @@ void Unit::Update(float dt)
 				dir.y = 0;
 				pos += dir * dt * 2;
 				visual_pos = pos;
+				UpdateVisualPos();
 				moved = true;
 				action = A_POSITION_CORPSE;
 				changed = true;
@@ -7588,6 +7607,7 @@ void Unit::Update(float dt)
 				{
 					action = A_NONE;
 					visual_pos = pos = target_pos;
+					UpdateVisualPos();
 					changed = true;
 					if(Net::IsOnline())
 					{
@@ -7621,7 +7641,7 @@ void Unit::Update(float dt)
 							rot = Clip(rot + Sign(arc) * rot_speed);
 					}
 
-					changed = true;
+					UpdateVisualPos();
 				}
 			}
 			else
@@ -7718,6 +7738,7 @@ void Unit::Update(float dt)
 						if(allow_move)
 						{
 							visual_pos = pos = Vec3::Lerp(target_pos, target_pos2, timer * 2);
+							UpdateVisualPos();
 							changed = true;
 							game_level->global_col.clear();
 							float my_radius = GetUnitRadius();
@@ -7790,6 +7811,7 @@ void Unit::Update(float dt)
 		}
 		else
 			visual_pos = pos = Vec3::Lerp(target_pos2, target_pos, timer * 2);
+		UpdateVisualPos();
 		changed = true;
 		break;
 	case A_PICKUP:
@@ -8213,6 +8235,7 @@ void Unit::Moved(bool warped, bool dash)
 	if(Net::IsLocal() || !IsLocalPlayer() || net->interpolate_timer <= 0.f)
 	{
 		visual_pos = pos;
+		UpdateVisualPos();
 		changed = true;
 	}
 	UpdatePhysics();
@@ -8800,6 +8823,12 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			hitted.AddEffect(e);
 		}
 	}
+}
+
+void Unit::UpdateVisualPos()
+{
+	node->center = visual_pos;
+	node->mat = Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visual_pos);
 }
 
 bool UnitList::IsInside(Unit* unit) const

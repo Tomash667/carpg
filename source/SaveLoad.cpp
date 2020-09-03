@@ -609,7 +609,8 @@ void Game::LoadGame(GameReader& f)
 	load_location_quest.clear();
 	load_unit_handler.clear();
 	load_chest_handler.clear();
-	units_mesh_load.clear();
+	//units_mesh_load.clear();
+	FIXME;
 	game_level->entering = true;
 
 	byte check_id = 0, read_id;
@@ -729,7 +730,8 @@ void Game::LoadGame(GameReader& f)
 			Unit* u = new Unit;
 			u->Load(f);
 			u->area = nullptr;
-			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
+			//u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
+			FIXME;
 
 			if(!u->IsPlayer())
 			{
