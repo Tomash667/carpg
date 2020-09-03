@@ -289,7 +289,7 @@ struct Unit : public EntityType<Unit>
 	AIController* ai;
 	Hero* hero;
 	Human* human_data;
-	MeshInstance* mesh_inst;
+	SceneNode* node;
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
@@ -351,13 +351,14 @@ struct Unit : public EntityType<Unit>
 	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
+	Unit() : node(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
 		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
 	void Release();
 	void Init(UnitData& base, int level = -2);
+	void Cleanup() { node = nullptr; }
 
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
@@ -849,11 +850,7 @@ public:
 	WEAPON_TYPE GetBestWeaponType() const;
 	ARMOR_TYPE GetBestArmorType() const;
 
-	void ApplyHumanData(HumanData& hd)
-	{
-		hd.Set(*human_data);
-		human_data->ApplyScale(mesh_inst);
-	}
+	void ApplyHumanData(HumanData& hd);
 
 	int ItemsToSellWeight() const;
 
@@ -886,7 +883,9 @@ public:
 	void RemoveStaminaBlock(float value);
 	float GetStaminaMod(const Item& item) const;
 
-	void CreateMesh(CREATE_MESH mode);
+	void CreateNode();
+	//void CreateMesh(CREATE_MESH mode);
+	FIXME;
 
 	void ApplyStun(float length);
 	void UseUsable(Usable* usable);
@@ -952,7 +951,7 @@ public:
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
-	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
+	float GetBlockMod() const;
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const;
 	void RotateTo(const Vec3& pos, float dt);
