@@ -161,4 +161,22 @@ struct SpawnPoint
 };
 
 //-----------------------------------------------------------------------------
+struct RotateMode
+{
+	enum Mode
+	{
+		None,
+		Angle,
+		Pos
+	};
+
+	RotateMode(nullptr_t) : mode(None) {}
+	RotateMode(float angle) : mode(Angle), pos(angle, 0, 0) {}
+	RotateMode(const Vec3& pos) : mode(Pos), pos(pos) {}
+
+	Mode mode;
+	Vec3 pos;
+};
+
+//-----------------------------------------------------------------------------
 extern vector<uint> _to_remove;

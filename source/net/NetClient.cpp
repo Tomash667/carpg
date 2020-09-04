@@ -101,10 +101,7 @@ void Net::UpdateClient(float dt)
 		if(interpolate_timer > 0.f)
 		{
 			interpolate_timer -= gameDt;
-			if(interpolate_timer >= 0.f)
-				game->pc->unit->visual_pos = Vec3::Lerp(game->pc->unit->visual_pos, game->pc->unit->pos, (0.1f - interpolate_timer) * 10);
-			else
-				game->pc->unit->visual_pos = game->pc->unit->pos;
+			game->pc->unit->InterpolateVisualPos(interpolate_timer);
 		}
 
 		// interpolacja pozycji/obrotu postaci

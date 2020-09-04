@@ -244,8 +244,6 @@ void LevelGui::DrawFront()
 		for(auto& it : sorted_units)
 		{
 			Unit& u = *it.unit;
-			Vec3 text_pos = u.visual_pos;
-			text_pos.y += u.GetUnitHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
 				str += Format(" x%u", u.refs);
@@ -291,7 +289,7 @@ void LevelGui::DrawFront()
 						u.busy, u.frozen, u.level, u.usable ? 1 : 0, u.animation, u.action, u.player->action);
 				}
 			}
-			DrawUnitInfo(str, u, text_pos);
+			DrawUnitInfo(str, u, u.GetUnitTextPos());
 		}
 	}
 	else
@@ -813,7 +811,7 @@ void LevelGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game->pc->unit->GetVisualPos(), pos) > ALERT_RANGE || !game_level->CanSee(area, game->pc->unit->pos, pos))
 		{
 			sb.visible = false;
 			continue;
@@ -1909,8 +1907,8 @@ void LevelGui::UpdatePlayerView(float dt)
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
-			if(dist < ALERT_RANGE && game_level->camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game_level->CanSee(u, u2))
+			float dist = Vec3::Distance(u.GetVisualPos(), u2.GetVisualPos());
+			if(dist < ALERT_RANGE && game_level->camera.frustum.SphereToFrustum(u2.GetVisualPos(), u2.GetSphereRadius()) && game_level->CanSee(u, u2))
 				AddUnitView(&u2);
 		}
 	}

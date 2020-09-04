@@ -195,6 +195,27 @@ void Unit::Init(UnitData& base, int lvl)
 }
 
 //=================================================================================================
+void Unit::InitDoll()
+{
+	human_data = new Human;
+	player = nullptr;
+	ai = nullptr;
+	hero = nullptr;
+	used_item = nullptr;
+	weapon_state = WeaponState::Hidden;
+	pos = visual_pos = Vec3(0, 0, 0);
+	rot = 0.f;
+	fake_unit = true;
+	action = A_NONE;
+	stats = new UnitStats;
+	stats->fixed = false;
+	stats->subprofile.value = 0;
+	stamina = stamina_max = 100.f;
+	usable = nullptr;
+	live_state = Unit::ALIVE;
+}
+
+//=================================================================================================
 float Unit::CalculateMaxHp() const
 {
 	float maxhp = (float)data->hp + GetEffectSum(EffectId::Health);
@@ -6279,9 +6300,18 @@ void Unit::InterpolatePos(float dt)
 }
 
 //=================================================================================================
+void Unit::InterpolateVisualPos(float t)
+{
+	if(t >= 0.f)
+		visual_pos = Vec3::Lerp(visual_pos, pos, (0.1f - t) * 10);
+	else
+		visual_pos = pos;
+}
+
+//=================================================================================================
 void Unit::Warp(LevelArea* area, const Vec3& pos, float rot)
 {
-	if(area != this->area)
+	if(area && area != this->area)
 	{
 		RemoveElement(this->area->units, this);
 		area->units.push_back(this);
@@ -6292,6 +6322,44 @@ void Unit::Warp(LevelArea* area, const Vec3& pos, float rot)
 	visual_pos = pos;
 	if(interp)
 		interp->Reset(pos, rot);
+}
+
+//=================================================================================================
+void Unit::Warp2(const Vec3& pos, RotateMode rot)
+{
+	BreakAction(BREAK_ACTION_MODE::INSTANT, false, true);
+
+	this->pos = pos;
+	Moved(true);
+	if(rot.mode == RotateMode::Pos)
+		this->rot = Vec3::LookAtAngle(this->pos, rot.pos);
+	else if(rot.mode == RotateMode::Angle)
+		this->rot = rot.pos.x;
+	visual_pos = this->pos;
+
+	if(Net::IsOnline())
+	{
+		if(interp)
+			interp->Reset(this->pos, this->rot);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::WARP;
+		c.unit = this;
+		if(IsPlayer())
+			player->player_info->warping = true;
+	}
+
+	if(cobj)
+		UpdatePhysics();
+}
+
+//=================================================================================================
+void Unit::ChangeArea(LevelArea* area)
+{
+	assert(area);
+	if(this->area)
+		RemoveElement(this->area->units, this);
+	area->units.push_back(this);
+	this->area = area;
 }
 
 UnitOrderEntry* UnitOrderEntry::NextOrder()

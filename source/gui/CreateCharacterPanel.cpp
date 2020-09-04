@@ -40,22 +40,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 {
 	size = Int2(600, 500);
 	unit = new Unit;
-	unit->human_data = new Human;
-	unit->player = nullptr;
-	unit->ai = nullptr;
-	unit->hero = nullptr;
-	unit->used_item = nullptr;
-	unit->weapon_state = WeaponState::Hidden;
-	unit->pos = unit->visual_pos = Vec3(0, 0, 0);
-	unit->SetRot(0.f);
-	unit->fake_unit = true;
-	unit->action = A_NONE;
-	unit->stats = new UnitStats;
-	unit->stats->fixed = false;
-	unit->stats->subprofile.value = 0;
-	unit->stamina = unit->stamina_max = 100.f;
-	unit->usable = nullptr;
-	unit->live_state = Unit::ALIVE;
+	unit->InitDoll();
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;

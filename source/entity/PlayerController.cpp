@@ -9,7 +9,6 @@
 #include "BookPanel.h"
 #include "Class.h"
 #include "Door.h"
-#include "FOV.h"
 #include "Game.h"
 #include "GameGui.h"
 #include "GameMessages.h"
@@ -2395,14 +2394,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					// train by moving
 					if(Net::IsLocal())
 						TrainMove(speed);
-
-					// revealing minimap
-					if(!game_level->location->outside)
-					{
-						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
-						if(new_tile != prev_tile)
-							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
-					}
 				}
 
 				if(run && abs(u.speed - u.prev_speed) < 0.25f && move >= 9)
@@ -2638,7 +2629,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				continue;
 
 			if(u2.IsStanding())
-				CheckObjectDistance(u2.visual_pos, &u2, best_dist, BP_UNIT);
+				CheckObjectDistance(u2.GetVisualPos(), &u2, best_dist, BP_UNIT);
 			else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
 				CheckObjectDistance(u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
 		}

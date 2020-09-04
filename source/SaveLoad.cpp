@@ -388,7 +388,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	// before saving update minimap, finish unit warps
 	if(Net::IsOnline())
 		net->ProcessLeftPlayers();
-	game_level->UpdateDungeonMinimap(false);
+	game_level->UpdateDungeonMinimap(-1);
 	game_level->ProcessUnitWarps();
 	game_level->ProcessRemoveUnits(false);
 	if(game_state == GS_WORLDMAP && game_level->is_open)

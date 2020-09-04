@@ -1544,23 +1544,15 @@ bool Team::IsAnyoneTalking() const
 void Team::Warp(const Vec3& pos, const Vec3& look_at)
 {
 	// first warp leader to be in front
-	game_level->WarpNearLocation(*game_level->local_area, *leader, pos, 2.f, true, 20);
-	leader->visual_pos = leader->pos;
-	leader->SetRot(Vec3::LookAtAngle(leader->pos, look_at));
-	if(leader->interp)
-		leader->interp->Reset(leader->pos, leader->GetRot());
+	leader->Warp2(game_level->GetFreePos(*game_level->local_area, *leader, pos, 2.f), look_at);
 
-	Vec3 dir = (pos - look_at).Normalized();
-	Vec3 target_pos = pos + dir * 2;
+	// then other team members
+	const Vec3 dir = (pos - look_at).Normalized();
+	const Vec3 target_pos = pos + dir * 2;
 	for(Unit& unit : members)
 	{
-		if(&unit == leader)
-			continue;
-		game_level->WarpNearLocation(*game_level->local_area, unit, target_pos, 2.f, true, 20);
-		unit.visual_pos = unit.pos;
-		unit.SetRot(Vec3::LookAtAngle(unit.pos, look_at));
-		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.GetRot());
+		if(&unit != leader)
+			unit.Warp2(game_level->GetFreePos(*game_level->local_area, unit, target_pos, 2.f), look_at);
 	}
 }
 

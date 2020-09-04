@@ -251,8 +251,6 @@ bool Door::Read(BitStreamReader& f)
 //=================================================================================================
 void Door::Open()
 {
-	if(!game_level->location->outside)
-		game_level->minimap_opened_doors = true;
 	state = Opening;
 	locked = LOCK_NONE;
 	meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);

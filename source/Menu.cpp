@@ -1626,11 +1626,8 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(!info.loaded)
 						{
-							game_level->local_area->units.push_back(info.u);
-							info.u->area = game_level->local_area;
-							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, 4.f, false, 20);
-							info.u->SetRot(Vec3::LookAtAngle(info.u->pos, pos));
-							info.u->interp->Reset(info.u->pos, info.u->GetRot());
+							info.u->ChangeArea(game_level->local_area);
+							info.u->Warp2(game_level->GetFreePos(*game_level->local_area, *info.u, pos, 4.f, false), pos);
 						}
 					}
 				}
@@ -1671,11 +1668,8 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(!info.loaded)
 						{
-							game_level->local_area->units.push_back(info.u);
-							info.u->area = game_level->local_area;
-							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, game_level->location->outside ? 4.f : 2.f, false, 20);
-							info.u->SetRot(rot);
-							info.u->interp->Reset(info.u->pos, info.u->GetRot());
+							info.u->ChangeArea(game_level->local_area);
+							info.u->Warp2(game_level->GetFreePos(*game_level->local_area, *info.u, pos, game_level->location->outside ? 4.f : 2.f, false), rot);
 						}
 					}
 				}

@@ -1005,6 +1005,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 
 			if(Net::IsLocal())
 			{
+				Unit* unit = game->pc->unit;
 				if(inside)
 				{
 					// warp to building
@@ -1012,22 +1013,21 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					game->fallback_t = -1.f;
 					game->fallback_1 = index;
 					game->fallback_2 = -1;
-					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					unit->frozen = (unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				}
-				else if(game->pc->unit->area->area_type != LevelArea::Type::Outside)
+				else if(unit->area->area_type != LevelArea::Type::Outside)
 				{
 					// warp from building to front of building
 					game->fallback_type = FALLBACK::ENTER;
 					game->fallback_t = -1.f;
 					game->fallback_1 = -1;
 					game->fallback_2 = index;
-					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					unit->frozen = (unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				}
 				else
 				{
 					// warp from outside to front of building
-					game_level->WarpUnit(*game->pc->unit, city_building->walk_pt);
-					game->pc->unit->SetRot(PtToPos(city_building->pt));
+					unit->Warp2(game_level->GetNearPos(*game_level->local_area, *unit, city_building->walk_pt), PtToPos(city_building->pt));
 				}
 			}
 			else

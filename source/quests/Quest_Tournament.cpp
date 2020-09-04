@@ -259,25 +259,21 @@ void Quest_Tournament::GenerateUnits()
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			game_level->WarpNearLocation(area, u, pos, 12.f, false);
+			u.Warp2(game_level->GetFreePos(area, u, pos, 12.f, false));
 		}
 	}
 	InsideBuilding* inn = game_level->city_ctx->FindInn();
-	for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end;)
+	LoopAndRemove(inn->units, [&](Unit* unit)
 	{
-		Unit& u = **it;
-		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
+		if(ShouldJoin(*unit) && !unit->IsFollowingTeamMember())
 		{
-			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			u.area = &area;
-			game_level->WarpNearLocation(area, u, pos, 12.f, false);
-			area.units.push_back(&u);
-			it = inn->units.erase(it);
-			end = inn->units.end();
+			unit->BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
+			unit->area = &area; // don't call ChangeArea - used in iterator
+			unit->Warp2(game_level->GetFreePos(area, *unit, pos, 12.f, false));
+			return true;
 		}
-		else
-			++it;
-	}
+		return false;
+	});
 
 	// generate heroes
 	int count = Random(6, 9);

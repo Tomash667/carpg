@@ -12,6 +12,7 @@
 #include "Effect.h"
 #include "Buff.h"
 #include "Event.h"
+#include "GameCommon.h"
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -292,7 +293,11 @@ struct Unit : public EntityType<Unit>
 	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
 	LiveState live_state;
-	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
+	Vec3 pos;
+private:
+	Vec3 visual_pos;
+public:
+	Vec3 prev_pos, target_pos, target_pos2;
 private:
 	float rot;
 public:
@@ -365,6 +370,7 @@ public:
 	void AddRef() { ++refs; }
 	void Release();
 	void Init(UnitData& base, int level = -2);
+	void InitDoll();
 
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
@@ -997,7 +1003,11 @@ public:
 	void SetChanged() { changed = true; }
 	float GetRot() const { return rot; }
 	void InterpolatePos(float dt);
+	void InterpolateVisualPos(float t);
 	void Warp(LevelArea* area, const Vec3& pos, float rot);
+	void Warp2(const Vec3& pos, RotateMode rot = nullptr);
+	const Vec3& GetVisualPos() const { return visual_pos; }
+	void ChangeArea(LevelArea* area);
 };
 
 //-----------------------------------------------------------------------------

@@ -563,7 +563,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 {
 	u.mesh_inst->mesh->EnsureIsLoaded();
-	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
+	if(!frustum.SphereToFrustum(u.GetVisualPos(), u.GetSphereRadius()))
 		return;
 
 	// add stun effect
@@ -594,8 +594,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	node->SetMesh(u.mesh_inst);
 	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
-	node->center = u.visual_pos;
-	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.GetRot()) * Matrix::Translation(u.visual_pos);
+	node->center = u.GetVisualPos();
+	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.GetRot()) * Matrix::Translation(u.GetVisualPos());
 	node->tex_override = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 

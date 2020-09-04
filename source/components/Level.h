@@ -135,9 +135,9 @@ public:
 	bool CollideWithStairsRect(const CollisionObject& cobj, const Box2d& box) const;
 	void CreateBlood(LevelArea& area, const Unit& unit, bool fully_created = false);
 	void SpawnBlood();
-	void WarpUnit(Unit& unit, const Vec3& pos);
 	bool WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec3& pos, int tries = 10);
-	void WarpNearLocation(LevelArea& area, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
+	Vec3 GetFreePos(LevelArea& area, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact = true);
+	Vec3 GetNearPos(LevelArea& area, Unit& unit, const Vec3& pos);
 	// return pointer to temporary or nullptr (can fail only for arrow and poison traps)
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void UpdateLocation(int days, int open_chance, bool reset);
@@ -159,7 +159,7 @@ public:
 	bool CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door = false, void* ignored = nullptr);
 	bool KillAll(int mode, Unit& unit, Unit* ignore);
 	void AddPlayerTeam(const Vec3& pos, float rot);
-	void UpdateDungeonMinimap(bool in_level);
+	void UpdateDungeonMinimap(float dt);
 	void RevealMinimap();
 	bool IsSettlement() { return city_ctx != nullptr; }
 	bool IsCity();
@@ -245,7 +245,7 @@ public:
 	vector<Unit*> blood_to_spawn;
 
 	// minimap
-	bool minimap_opened_doors;
+	float minimap_reveal_timer;
 	vector<Int2> minimap_reveal, minimap_reveal_mp;
 	uint minimap_size;
 

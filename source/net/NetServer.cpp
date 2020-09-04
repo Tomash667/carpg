@@ -28,7 +28,6 @@
 #include "DialogContext.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
-#include "FOV.h"
 #include "ScriptManager.h"
 #include "ItemHelper.h"
 #include "CommandParser.h"
@@ -525,13 +524,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(player.noclip || unit.usable || CheckMove(unit, new_pos))
 				{
 					// update position
-					if(!unit.pos.Equal(new_pos) && !game_level->location->outside)
-					{
-						// reveal minimap
-						Int2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
-						if(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
-							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
-					}
 					unit.pos = new_pos;
 					unit.UpdatePhysics();
 					unit.interp->Add(unit.pos, rot);

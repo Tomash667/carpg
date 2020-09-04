@@ -19,7 +19,6 @@
 #include "Electro.h"
 #include "Encounter.h"
 #include "EntityInterpolator.h"
-#include "FOV.h"
 #include "GameGui.h"
 #include "GameMenu.h"
 #include "GameMessages.h"
@@ -1784,8 +1783,6 @@ void Game::UpdateGame(float dt)
 			assert(pc->is_local && pc == pc->player_info->pc);
 	}
 
-	game_level->minimap_opened_doors = false;
-
 	if(quest_mgr->quest_tutorial->in_tutorial && !Net::IsOnline())
 		quest_mgr->quest_tutorial->Update();
 
@@ -1976,7 +1973,7 @@ void Game::UpdateGame(float dt)
 		area.Update(dt);
 
 	// update minimap
-	game_level->UpdateDungeonMinimap(true);
+	game_level->UpdateDungeonMinimap(dt);
 
 	// update dialogs
 	if(Net::IsSingleplayer())
@@ -2429,7 +2426,7 @@ void Game::ChangeLevel(int where)
 
 	game_level->entering = true;
 	game_level->event_handler = nullptr;
-	game_level->UpdateDungeonMinimap(false);
+	game_level->UpdateDungeonMinimap(-1);
 
 	if(!quest_mgr->quest_tutorial->in_tutorial && quest_mgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
 		&& quest_mgr->quest_crazies->crazies_state < Quest_Crazies::State::End)

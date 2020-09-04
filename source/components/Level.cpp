@@ -148,6 +148,7 @@ void Level::Reset()
 	to_remove.clear();
 	minimap_reveal.clear();
 	minimap_reveal_mp.clear();
+	minimap_reveal_timer = 0.1f;
 }
 
 //=================================================================================================
@@ -168,20 +169,14 @@ void Level::ProcessUnitWarps()
 		{
 			// exit from building
 			InsideBuilding& building = *static_cast<InsideBuilding*>(warp.unit->area);
-			RemoveElement(building.units, warp.unit);
-			warp.unit->area = local_area;
+			warp.unit->ChangeArea(*local_area);
 			if(warp.building == -1)
-			{
-				warp.unit->SetRot(building.outside_rot);
-				WarpUnit(*warp.unit, building.outside_spawn);
-			}
+				warp.unit->Warp2(GetNearPos(*local_area, *warp.unit, building.outsize_spawn), building.outside_rot);
 			else
 			{
 				CityBuilding& city_building = city_ctx->buildings[warp.building];
-				WarpUnit(*warp.unit, city_building.walk_pt);
-				warp.unit->SetRot(PtToPos(city_building.pt));
+				warp.unit->Warp2(GetNearPos(*local_area, *warp.unit, city_building.walk_pt), PtToPos(city_building.pt));
 			}
-			local_area->units.push_back(warp.unit);
 		}
 		else if(warp.where == WARP_ARENA)
 		{
@@ -2823,61 +2818,6 @@ void Level::SpawnBlood()
 }
 
 //=================================================================================================
-void Level::WarpUnit(Unit& unit, const Vec3& pos)
-{
-	const float unit_radius = unit.GetUnitRadius();
-
-	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
-
-	global_col.clear();
-	LevelArea& area = *unit.area;
-	Level::IgnoreObjects ignore = { 0 };
-	const Unit* ignore_units[2] = { &unit, nullptr };
-	ignore.ignored_units = ignore_units;
-	GatherCollisionObjects(area, global_col, pos, 2.f + unit_radius, &ignore);
-
-	Vec3 tmp_pos = pos;
-	bool ok = false;
-	float radius = unit_radius;
-
-	for(int i = 0; i < 20; ++i)
-	{
-		if(!Collide(global_col, tmp_pos, unit_radius))
-		{
-			unit.pos = tmp_pos;
-			ok = true;
-			break;
-		}
-
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
-
-		if(i < 10)
-			radius += 0.25f;
-	}
-
-	assert(ok);
-
-	if(area.have_terrain && terrain->IsInside(unit.pos))
-		terrain->SetY(unit.pos);
-
-	if(unit.cobj)
-		unit.UpdatePhysics();
-
-	unit.visual_pos = unit.pos;
-
-	if(Net::IsOnline())
-	{
-		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.GetRot());
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
-		c.unit = &unit;
-		if(unit.IsPlayer())
-			unit.player->player_info->warping = true;
-	}
-}
-
-//=================================================================================================
 bool Level::WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec3& pos, int tries)
 {
 	for(int i = 0; i < tries; ++i)
@@ -2895,7 +2835,7 @@ bool Level::WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec
 }
 
 //=================================================================================================
-void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
+Vec3 Level::GetFreePos(LevelArea& area, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact)
 {
 	const float radius = unit.GetUnitRadius();
 
@@ -2909,7 +2849,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 	if(!allow_exact)
 		tmp_pos += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
 
-	for(int i = 0; i < tries; ++i)
+	for(int i = 0; i < 20; ++i)
 	{
 		if(!Collide(global_col, tmp_pos, radius))
 			break;
@@ -2917,23 +2857,36 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
 	}
 
-	unit.pos = tmp_pos;
-	unit.Moved(true);
-	unit.visual_pos = unit.pos;
+	return tmp_pos;
+}
 
-	if(Net::IsOnline())
+//=================================================================================================
+Vec3 Level::GetNearPos(LevelArea& area, Unit& unit, const Vec3& pos)
+{
+	const float unit_radius = unit.GetUnitRadius();
+
+	global_col.clear();
+	LevelArea& area = *unit.area;
+	Level::IgnoreObjects ignore = { 0 };
+	const Unit* ignore_units[2] = { &unit, nullptr };
+	ignore.ignored_units = ignore_units;
+	GatherCollisionObjects(area, global_col, pos, 2.f + unit_radius, &ignore);
+
+	Vec3 tmp_pos = pos;
+	float radius = unit_radius;
+
+	for(int i = 0; i < 20; ++i)
 	{
-		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.GetRot());
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
-		c.unit = &unit;
-		if(unit.IsPlayer())
-			unit.player->player_info->warping = true;
+		if(!Collide(global_col, tmp_pos, unit_radius))
+			break;
+
+		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+
+		if(i < 10)
+			radius += 0.25f;
 	}
 
-	if(unit.cobj)
-		unit.UpdatePhysics();
+	return tmp_pos;
 }
 
 //=================================================================================================
@@ -3880,12 +3833,12 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 			game->ais.push_back(unit.ai);
 
 		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
-		unit.SetRot(rot);
+		unit.area = local_area;
+		unit.Warp2(GetFreePos(*local_area, unit, pos, city_ctx ? 4.f : 2.f), rot);
 		unit.animation = unit.current_animation = ANI_STAND;
 		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
-		unit.area = local_area;
 
 		if(unit.IsAI())
 		{
@@ -3895,28 +3848,24 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 			unit.ai->alert_target = nullptr;
 			unit.ai->timer = Random(2.f, 5.f);
 		}
-
-		WarpNearLocation(*local_area, unit, pos, city_ctx ? 4.f : 2.f, true, 20);
-		unit.visual_pos = unit.pos;
-
-		if(!location->outside)
-			FOV::DungeonReveal(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)), minimap_reveal);
-
-		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.GetRot());
 	}
 }
 
 //=================================================================================================
-void Level::UpdateDungeonMinimap(bool in_level)
+void Level::UpdateDungeonMinimap(float dt)
 {
-	if(minimap_opened_doors)
+	if(dt >= 0.f)
 	{
-		for(Unit& unit : team->active_members)
-		{
-			if(unit.IsPlayer())
-				FOV::DungeonReveal(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)), minimap_reveal);
-		}
+		minimap_reveal_timer -= dt;
+		if(minimap_reveal_timer > 0.f)
+			return;
+		minimap_reveal_timer = 0.1f;
+	}
+
+	for(Unit& unit : team->active_members)
+	{
+		if(unit.IsPlayer())
+			FOV::DungeonReveal(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)), minimap_reveal);
 	}
 
 	if(minimap_reveal.empty())
@@ -3940,7 +3889,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 
 	if(Net::IsLocal())
 	{
-		if(in_level)
+		if(dt >= 0.f)
 		{
 			if(Net::IsOnline())
 				minimap_reveal_mp.insert(minimap_reveal_mp.end(), minimap_reveal.begin(), minimap_reveal.end());
@@ -3964,7 +3913,7 @@ void Level::RevealMinimap()
 			minimap_reveal.push_back(Int2(x, y));
 	}
 
-	UpdateDungeonMinimap(false);
+	UpdateDungeonMinimap(-1);
 
 	if(Net::IsServer())
 		Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
