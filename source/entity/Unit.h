@@ -293,7 +293,10 @@ struct Unit : public EntityType<Unit>
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, last_bash, alcohol, raise_timer, stamina_timer;
+private:
+	float rot;
+public:
+	float prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, last_bash, alcohol, raise_timer, stamina_timer;
 	int refs, animation_state, level, gold, in_arena, quest_id, ai_mode;
 	FROZEN frozen;
 	ACTION action;
@@ -964,9 +967,9 @@ public:
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const;
 	bool RotateTo(const Vec3& pos, float dt);
-	void RotateTo(const Vec3& pos);
 	bool RotateTo(float angle, float dt);
-	void RotateTo(float angle);
+	void SetRot(const Vec3& pos);
+	void SetRot(float angle);
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
 	float GetAbilityPower(Ability& ability) const;
@@ -992,6 +995,9 @@ public:
 	bool IsChanged() const { return changed; }
 	void ClearChanged() { changed = false; }
 	void SetChanged() { changed = true; }
+	float GetRot() const { return rot; }
+	void InterpolatePos(float dt);
+	void Warp(LevelArea* area, const Vec3& pos, float rot);
 };
 
 //-----------------------------------------------------------------------------

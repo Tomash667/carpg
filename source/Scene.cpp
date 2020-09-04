@@ -595,7 +595,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->center = u.visual_pos;
-	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
+	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.GetRot()) * Matrix::Translation(u.visual_pos);
 	node->tex_override = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 
@@ -1311,7 +1311,7 @@ void Game::PrepareAreaPath()
 
 			const Vec3 from = pc->unit->GetPhysicsPos();
 			const float h = 0.06f;
-			const float rot = Clip(pc->unit->rot + PI + pc->data.ability_rot);
+			const float rot = Clip(pc->unit->GetRot() + PI + pc->data.ability_rot);
 			const int steps = 10;
 
 			// find max line

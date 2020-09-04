@@ -106,7 +106,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			if(owner && owner->IsFriend(*hitted, true) || attack < -50.f)
 			{
 				// friendly fire
-				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->rot) < PI * 2 / 5)
+				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->GetRot()) < PI * 2 / 5)
 				{
 					MATERIAL_TYPE mat = hitted->GetShield().material;
 					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -141,7 +141,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				m += 0.1f;
 
 			// backstab bonus damage
-			float angle_dif = AngleDiff(rot.y, hitted->rot);
+			float angle_dif = AngleDiff(rot.y, hitted->GetRot());
 			float backstab_mod = backstab;
 			if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
 				backstab_mod /= 2;
@@ -274,7 +274,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				area.SpellHitEffect(*this, hitpoint, hitted);
 
 				// hit sound
-				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->rot) < PI * 2 / 5)
+				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->GetRot()) < PI * 2 / 5)
 				{
 					MATERIAL_TYPE mat = hitted->GetShield().material;
 					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -298,7 +298,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			float dmg = attack;
 			if(owner)
 				dmg += owner->level * ability->dmg_bonus;
-			float angle_dif = AngleDiff(rot.y, hitted->rot);
+			float angle_dif = AngleDiff(rot.y, hitted->GetRot());
 			float base_dmg = dmg;
 
 			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)

@@ -251,7 +251,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 
 		// arthur
 		Unit* u = game_level->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
-		u->rot = rot;
+		u->SetRot(rot);
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
 

@@ -510,8 +510,8 @@ Methods:
 * UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
 * UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
 * void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
-* void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
-* void RotateTo(float rot) - instantly rotates units.
+* void SetRot(const Vec3& in pos) - instantly rotates units too look at pos.
+* void SetRot(float rot) - instantly rotates units.
 * void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
 * void MoveToArea(LevelArea@ area, const Vec3& in pos) - move unit to area, works between locations.
 * void Kill() - used to spawn dead units.

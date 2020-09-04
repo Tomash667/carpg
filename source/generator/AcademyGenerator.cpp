@@ -200,8 +200,7 @@ void AcademyGenerator::GenerateItems()
 void AcademyGenerator::GenerateUnits()
 {
 	UnitData* ud = UnitData::Get("q_main_academy");
-	Unit* u = game_level->SpawnUnitNearLocation(*outside, unit_pos, *ud);
-	u->ai->start_rot = u->rot = 0.f;
+	game_level->SpawnUnitNearLocation(*outside, unit_pos, *ud);
 }
 
 //=================================================================================================

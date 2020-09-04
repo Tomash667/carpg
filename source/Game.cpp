@@ -1849,7 +1849,7 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetPrevEntryFrontTile();
-						pc->unit->rot = DirToRot(lvl.prevEntryDir);
+						pc->unit->SetRot(DirToRot(lvl.prevEntryDir));
 						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
@@ -1885,7 +1885,7 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetNextEntryFrontTile();
-						pc->unit->rot = DirToRot(lvl.nextEntryDir);
+						pc->unit->SetRot(DirToRot(lvl.nextEntryDir));
 						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
@@ -2969,7 +2969,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 
 								// reset units rotation to don't stay back to shop counter
 								if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
-									unit.rot = unit.ai->start_rot;
+									unit.SetRot(unit.ai->start_rot);
 							}
 
 							delete unit.mesh_inst;

@@ -777,7 +777,7 @@ void Game::LoadGame(GameReader& f)
 	if(!net->mp_load)
 		pc->id = 0;
 	game_level->camera.target = pc->unit;
-	game_level->camera.real_rot.x = pc->unit->rot;
+	game_level->camera.real_rot.x = pc->unit->GetRot();
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;

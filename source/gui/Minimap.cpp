@@ -111,19 +111,18 @@ void Minimap::Draw(ControlDrawData*)
 	// team members
 	for(Unit& unit : team->members)
 	{
-		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.rot, &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
+		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.GetRot(), &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
 		gui->DrawSpriteTransform(tUnit[&unit == game->pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
 	}
 
 	// other units
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(Unit* unit : area.units)
 	{
-		Unit& u = **it;
-		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
+		if((unit->IsAlive() || unit->mark) && !unit->IsTeamMember() && (!lvl || lvl->IsTileVisible(unit->pos)))
 		{
-			const float scale = IsSet(u.data->flags2, F2_BOSS) ? 0.4f : 0.25f;
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(scale, scale), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
-			gui->DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game->pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
+			const float scale = IsSet(unit->data->flags2, F2_BOSS) ? 0.4f : 0.25f;
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(scale, scale), &Vec2(16, 16), unit->GetRot(), &(PosToPoint(GetMapPosition(*unit)) - Vec2(16, 16)));
+			gui->DrawSpriteTransform(tUnit[unit->IsAlive() ? (unit->IsEnemy(*game->pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
 		}
 	}
 

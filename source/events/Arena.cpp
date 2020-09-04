@@ -201,7 +201,7 @@ void Arena::Clean()
 		if(u.hp <= 0.f)
 			u.Standup(false, true);
 		game_level->WarpUnit(u, arena->outside_spawn);
-		u.rot = arena->outside_rot;
+		u.SetRot(arena->outside_rot);
 	}
 	RemoveArenaViewers();
 	free = true;
@@ -374,7 +374,6 @@ void Arena::StartArenaCombat(int level)
 		Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region2, *spawn.first, spawn.second);
 		if(u)
 		{
-			u->rot = 0.f;
 			u->in_arena = 1;
 			u->frozen = FROZEN::YES;
 			units.push_back(u);
@@ -887,17 +886,14 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 			{
 				Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region2, *unit.unit, unit.level);
 				if(u)
-				{
-					u->rot = 0.f;
 					u->in_arena = 1;
-				}
 			}
 			else
 			{
 				Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region1, *unit.unit, unit.level);
 				if(u)
 				{
-					u->rot = PI;
+					u->SetRot(PI);
 					u->in_arena = 0;
 				}
 			}

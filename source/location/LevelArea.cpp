@@ -975,7 +975,7 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh
 	unit.mesh_inst->SetupBones();
 
 	// calculate hitbox matrix
-	Matrix m1 = Matrix::Scale(unit.data->scale) * Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
+	Matrix m1 = Matrix::Scale(unit.data->scale) * Matrix::RotationY(unit.GetRot()) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitScale * UnitRot * UnitPos

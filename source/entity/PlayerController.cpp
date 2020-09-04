@@ -1751,7 +1751,7 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 	float dist = Vec3::Distance2d(unit->pos, pos);
 	if(dist < PICKUP_RANGE && dist < best_dist)
 	{
-		float angle = AngleDiff(Clip(unit->rot + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
+		float angle = AngleDiff(Clip(unit->GetRot() + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
 		assert(angle >= 0.f);
 		if(angle < PI / 4)
 		{
@@ -1932,7 +1932,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->action = A_DASH;
 		unit->act.dash.ability = ability;
 		if(Net::IsLocal() || !from_server)
-			unit->act.dash.rot = Clip(data.ability_rot + unit->rot + PI);
+			unit->act.dash.rot = Clip(data.ability_rot + unit->GetRot() + PI);
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
 		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -2293,19 +2293,18 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				const float val = rot_speed_dt * rotate + mouse_rot;
 
 				data.rot_buf -= mouse_rot;
-				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
+				u.SetRot(Clip(u.GetRot() + Clamp(val, -rot_speed_dt, rot_speed_dt)));
 
 				if(val > 0)
 					u.animation = ANI_RIGHT;
 				else if(val < 0)
 					u.animation = ANI_LEFT;
-				u.SetChanged();
 			}
 
 			if(move)
 			{
 				// set angle & speed of move
-				float angle = u.rot;
+				float angle = u.GetRot();
 				bool run = always_run;
 				if(u.action == A_ATTACK && u.act.attack.run)
 					run = true;

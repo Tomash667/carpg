@@ -6221,16 +6221,6 @@ bool Unit::RotateTo(const Vec3& pos, float dt)
 }
 
 //=================================================================================================
-void Unit::RotateTo(const Vec3& pos)
-{
-	rot = Vec3::LookAtAngle(this->pos, pos);
-	if(game_level->entering && ai)
-		ai->start_rot = rot;
-	else
-		changed = true;
-}
-
-//=================================================================================================
 // Rotate towards angle, return true when finished
 bool Unit::RotateTo(float angle, float dt)
 {
@@ -6263,13 +6253,45 @@ bool Unit::RotateTo(float angle, float dt)
 }
 
 //=================================================================================================
-void Unit::RotateTo(float angle)
+void Unit::SetRot(const Vec3& pos)
+{
+	rot = Vec3::LookAtAngle(this->pos, pos);
+	if(game_level->entering && ai)
+		ai->start_rot = rot;
+	else
+		changed = true;
+}
+
+//=================================================================================================
+void Unit::SetRot(float angle)
 {
 	rot = angle;
 	if(game_level->entering && ai)
 		ai->start_rot = angle;
 	else
 		changed = true;
+}
+
+//=================================================================================================
+void Unit::InterpolatePos(float dt)
+{
+	interp->Update(dt, visual_pos, rot);
+}
+
+//=================================================================================================
+void Unit::Warp(LevelArea* area, const Vec3& pos, float rot)
+{
+	if(area != this->area)
+	{
+		RemoveElement(this->area->units, this);
+		area->units.push_back(this);
+		this->area = area;
+	}
+	this->pos = pos;
+	this->rot;
+	visual_pos = pos;
+	if(interp)
+		interp->Reset(pos, rot);
 }
 
 UnitOrderEntry* UnitOrderEntry::NextOrder()

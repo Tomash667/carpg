@@ -47,7 +47,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	unit->used_item = nullptr;
 	unit->weapon_state = WeaponState::Hidden;
 	unit->pos = unit->visual_pos = Vec3(0, 0, 0);
-	unit->rot = 0.f;
+	unit->SetRot(0.f);
 	unit->fake_unit = true;
 	unit->action = A_NONE;
 	unit->stats = new UnitStats;
@@ -375,7 +375,7 @@ void CreateCharacterPanel::Update(float dt)
 		}
 
 		if(rotate)
-			unit->rot = Clip(unit->rot - float(gui->cursor_pos.x - pos.x - 228 - 64) / 16 * dt);
+			unit->SetRot(Clip(unit->GetRot() - float(gui->cursor_pos.x - pos.x - 228 - 64) / 16 * dt));
 	}
 	else
 		rotating = false;
@@ -490,7 +490,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		if(e == GuiEvent_Show)
 		{
 			visible = true;
-			unit->rot = 0;
+			unit->SetRot(0);
 			dist = -2.5f;
 		}
 		pos = global_pos = (gui->wnd_size - size) / 2;

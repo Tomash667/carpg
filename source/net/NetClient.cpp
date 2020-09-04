@@ -250,7 +250,7 @@ void Net::UpdateClient(float dt)
 		{
 			f << true;
 			f << game->pc->unit->pos;
-			f << game->pc->unit->rot;
+			f << game->pc->unit->GetRot();
 			f << game->pc->unit->mesh_inst->groups[0].speed;
 			f.WriteCasted<byte>(game->pc->unit->animation);
 		}
@@ -270,7 +270,7 @@ void Net::InterpolateUnits(float dt)
 		for(Unit* unit : area.units)
 		{
 			if(!unit->IsLocalPlayer())
-				unit->interp->Update(dt, unit->visual_pos, unit->rot);
+				unit->InterpolatePos(dt);
 			if(unit->mesh_inst->mesh->head.n_groups == 1)
 			{
 				if(!unit->mesh_inst->groups[0].anim)
@@ -1424,21 +1424,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 
 				unit->BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
+				unit->Warp(area, pos, rot);
 
-				LevelArea* old_area = unit->area;
-				unit->area = area;
-				unit->pos = pos;
-				unit->rot = rot;
-
-				unit->visual_pos = unit->pos;
-				if(unit->interp)
-					unit->interp->Reset(unit->pos, unit->rot);
-
-				if(old_area != unit->area)
-				{
-					RemoveElement(old_area->units, unit);
-					area->units.push_back(unit);
-				}
 				if(unit == pc.unit)
 				{
 					if(game->fallback_type == FALLBACK::WAIT_FOR_WARP)

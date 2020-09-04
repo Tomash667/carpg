@@ -1668,7 +1668,7 @@ quest main
 							{
 								CityBuilding@ building = Level::GetRandomBuilding(group);
 								Unit@ spawned = Level::SpawnUnitNearLocation(ill, building.unit_pos);
-								spawned.RotateTo(building.unit_rot);
+								spawned.SetRot(building.unit_rot);
 							}
 						}
 						break;
@@ -1720,7 +1720,7 @@ quest main
 			case P_MAIN_TALKED_TRAINER:
 				{
 					Unit@ u = Level::SpawnUnitNearLocation(UnitData::Get("q_main_messenger"), Team::leader.pos, 4);
-					u.RotateTo(Team::leader.pos);
+					u.SetRot(Team::leader.pos);
 					u.OrderAutoTalk(true);
 				}
 				break;

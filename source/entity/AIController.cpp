@@ -31,7 +31,7 @@ void AIController::Init(Unit* unit)
 	in_combat = false;
 	st.idle.action = Idle_None;
 	start_pos = unit->pos;
-	start_rot = unit->rot;
+	start_rot = unit->GetRot();
 	loc_timer = 0.f;
 	timer = 0.f;
 	change_ai_mode = false;

@@ -1027,7 +1027,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				{
 					// warp from outside to front of building
 					game_level->WarpUnit(*game->pc->unit, city_building->walk_pt);
-					game->pc->unit->RotateTo(PtToPos(city_building->pt));
+					game->pc->unit->SetRot(PtToPos(city_building->pt));
 				}
 			}
 			else

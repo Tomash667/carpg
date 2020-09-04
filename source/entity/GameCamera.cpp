@@ -73,7 +73,7 @@ void GameCamera::Update(float dt)
 		: 1.0f - exp(log(0.5f) * springiness * dt);
 
 	if(!free_rot)
-		real_rot.x = target->rot;
+		real_rot.x = target->GetRot();
 
 	// update rotation, distance & shift
 	if(reset)
@@ -136,7 +136,7 @@ void GameCamera::Update(float dt)
 	frustum.Set(mat_view_proj);
 
 	// 3d source listener
-	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
+	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->GetRot() + PI), 0, cos(target->GetRot() + PI)));
 }
 
 //=================================================================================================
@@ -184,7 +184,7 @@ void GameCamera::UpdateFreeRot(float dt)
 		free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
 		if(free_rot_key != Key::None)
 		{
-			real_rot.x = Clip(target->rot + PI);
+			real_rot.x = Clip(target->GetRot() + PI);
 			free_rot = true;
 		}
 	}

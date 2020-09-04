@@ -729,7 +729,6 @@ void Game::UpdateAi(float dt)
 							{
 								// no altar - stay in place
 								ai.st.idle.action = AIController::Idle_Animation;
-								ai.st.idle.rot = u.rot;
 								ai.timer = 120.f;
 							}
 						}
@@ -737,7 +736,7 @@ void Game::UpdateAi(float dt)
 						{
 							// stop looking at the person, go look somewhere else
 							ai.st.idle.action = AIController::Idle_Rot;
-							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+							if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.GetRot(), ai.start_rot) > PI / 4)
 								ai.st.idle.rot = ai.start_rot;
 							else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 								ai.st.idle.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1104,7 +1103,7 @@ void Game::UpdateAi(float dt)
 							case AI_ROTATE:
 								ai.timer = Random(2.f, 5.f);
 								ai.st.idle.action = AIController::Idle_Rot;
-								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.GetRot(), ai.start_rot) > PI / 4)
 									ai.st.idle.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.st.idle.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1185,7 +1184,7 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_Animation:
 							break;
 						case AIController::Idle_Rot:
-							if(Equal(u.rot, ai.st.idle.rot))
+							if(Equal(u.GetRot(), ai.st.idle.rot))
 								ai.st.idle.action = AIController::Idle_None;
 							else
 							{
@@ -1221,7 +1220,7 @@ void Game::UpdateAi(float dt)
 							{
 								// stop looking
 								ai.st.idle.action = AIController::Idle_Rot;
-								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.GetRot(), ai.start_rot) > PI / 4)
 									ai.st.idle.rot = ai.start_rot;
 								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.st.idle.rot = RandomRot(ai.start_rot, PI / 4);
@@ -1345,7 +1344,7 @@ void Game::UpdateAi(float dt)
 									ai.st.idle.action = AIController::Idle_None;
 								else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 								{
-									if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.st.idle.usable->pos))) < PI / 4)
+									if(AngleDiff(Clip(u.GetRot() + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.st.idle.usable->pos))) < PI / 4)
 									{
 										BaseUsable& base = *use.base;
 										const Item* needed_item = base.item;
@@ -1443,7 +1442,7 @@ void Game::UpdateAi(float dt)
 								{
 									u.TakeWeapon(W_BOW);
 									float dir = Vec3::LookAtAngle(u.pos, ai.st.idle.obj.pos);
-									if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
+									if(AngleDiff(u.GetRot(), dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
 										&& u.GetStaminap() >= 0.25f && u.frozen == FROZEN::NO
 										&& game_level->CanShootAtLocation2(u, ai.st.idle.obj.ptr, ai.st.idle.obj.pos))
 									{
@@ -1665,7 +1664,7 @@ void Game::UpdateAi(float dt)
 									// can't cast drain blood on bloodless units
 									&& !(ability.effect == Ability::Drain && IsSet(enemy->data->flags2, F2_BLOODLESS))
 									&& game_level->CanShootAtLocation(u, *enemy, enemy->pos)
-									&& (ability.type != Ability::Charge || AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, enemy->pos)) < 0.1f))
+									&& (ability.type != Ability::Charge || AngleDiff(u.GetRot(), Vec3::LookAtAngle(u.pos, enemy->pos)) < 0.1f))
 								{
 									ai.cooldown[i] = ability.cooldown.Random();
 									u.action = A_CAST;
@@ -2514,7 +2513,7 @@ void Game::UpdateAi(float dt)
 						}
 
 						ai.target_last_pos = enemy->pos;
-						if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, ai.target_last_pos)) < 0.1f && u.action == A_NONE && ai.next_attack < 0)
+						if(AngleDiff(u.GetRot(), Vec3::LookAtAngle(u.pos, ai.target_last_pos)) < 0.1f && u.action == A_NONE && ai.next_attack < 0)
 						{
 							// aggro
 							u.mesh_inst->Play("aggro", PLAY_ONCE | PLAY_PRIO1, 0);
@@ -2531,7 +2530,7 @@ void Game::UpdateAi(float dt)
 					}
 					else
 					{
-						if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, ai.target_last_pos)) > 0.1f)
+						if(AngleDiff(u.GetRot(), Vec3::LookAtAngle(u.pos, ai.target_last_pos)) > 0.1f)
 						{
 							// look at
 							look_at = LookAtTarget;
@@ -2625,7 +2624,7 @@ void Game::UpdateAi(float dt)
 				}
 				else if(run_type == WalkIfNear2 && look_at != LookAtWalk)
 				{
-					if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
+					if(AngleDiff(u.GetRot(), Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
 						move = 0;
 					else
 						move = 1;

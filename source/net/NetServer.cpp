@@ -290,7 +290,7 @@ void Net::InterpolatePlayers(float dt)
 	for(PlayerInfo& info : players)
 	{
 		if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
-			info.u->interp->Update(dt, info.u->visual_pos, info.u->rot);
+			info.u->InterpolatePos(dt);
 	}
 }
 
@@ -900,8 +900,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.action = A_ANIMATION;
 					unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 					item->pos = unit.pos;
-					item->pos.x -= sin(unit.rot) * 0.25f;
-					item->pos.z -= cos(unit.rot) * 0.25f;
+					item->pos.x -= sin(unit.GetRot()) * 0.25f;
+					item->pos.z -= cos(unit.GetRot()) * 0.25f;
 					item->rot = Quat::RotY(Random(MAX_ANGLE));
 					if(!quest_mgr->quest_secret->CheckMoonStone(item, unit))
 						game_level->AddGroundItem(*unit.area, item);
@@ -2154,7 +2154,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						CityBuilding& city_building = game_level->city_ctx->buildings[building_index];
 						game_level->WarpUnit(unit, city_building.walk_pt);
-						unit.RotateTo(PtToPos(city_building.pt));
+						unit.SetRot(PtToPos(city_building.pt));
 					}
 				}
 			}
@@ -2464,13 +2464,13 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!is_down)
 					{
 						Int2 tile = lvl.GetPrevEntryFrontTile();
-						unit.rot = DirToRot(lvl.prevEntryDir);
+						unit.SetRot(DirToRot(lvl.prevEntryDir));
 						game_level->WarpUnit(unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
 						Int2 tile = lvl.GetNextEntryFrontTile();
-						unit.rot = DirToRot(lvl.nextEntryDir);
+						unit.SetRot(DirToRot(lvl.nextEntryDir));
 						game_level->WarpUnit(unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 				}
@@ -2709,8 +2709,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->count = count;
 						item->team_count = 0;
 						item->pos = unit.pos;
-						item->pos.x -= sin(unit.rot) * 0.25f;
-						item->pos.z -= cos(unit.rot) * 0.25f;
+						item->pos.x -= sin(unit.GetRot()) * 0.25f;
+						item->pos.z -= cos(unit.GetRot()) * 0.25f;
 						item->rot = Quat::RotY(Random(MAX_ANGLE));
 						game_level->AddGroundItem(*info.u->area, item);
 
@@ -3375,7 +3375,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				Unit& unit = *c.unit;
 				f << unit.id;
 				f << unit.pos;
-				f << unit.rot;
+				f << unit.GetRot();
 				f << unit.mesh_inst->groups[0].speed;
 				f.WriteCasted<byte>(unit.animation);
 			}
@@ -3563,7 +3563,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->id;
 			f.WriteCasted<char>(c.unit->area->area_id);
 			f << c.unit->pos;
-			f << c.unit->rot;
+			f << c.unit->GetRot();
 			break;
 		case NetChange::REGISTER_ITEM:
 			{
