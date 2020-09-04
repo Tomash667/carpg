@@ -1811,7 +1811,7 @@ void Game::UpdateServerSend(float dt)
 		for(LevelArea& area : game_level->ForEachArea())
 		{
 			for(Unit* unit : area.units)
-				unit->changed = false;
+				unit->ClearChanged();
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");
 		clear_color = clear_color_next;

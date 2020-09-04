@@ -6188,25 +6188,35 @@ float Unit::GetBashSpeed() const
 }
 
 //=================================================================================================
-void Unit::RotateTo(const Vec3& pos, float dt)
+// Rotate towards position, return true when finished
+bool Unit::RotateTo(const Vec3& pos, float dt)
 {
 	float dir = Vec3::LookAtAngle(this->pos, pos);
-	if(!Equal(rot, dir))
+	if(Equal(rot, dir))
+		return true;
+
+	const float rot_speed = GetRotationSpeed() * dt;
+	const float rot_diff = AngleDiff(rot, dir);
+
+	if(animation == ANI_STAND || animation == ANI_BATTLE || animation == ANI_BATTLE_BOW)
 	{
-		const float rot_speed = GetRotationSpeed() * dt;
-		const float rot_diff = AngleDiff(rot, dir);
 		if(ShortestArc(rot, dir) > 0.f)
 			animation = ANI_RIGHT;
 		else
 			animation = ANI_LEFT;
-		if(rot_diff < rot_speed)
-			rot = dir;
-		else
-		{
-			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
-			rot = Clip(rot + d);
-		}
-		changed = true;
+	}
+
+	changed = true;
+	if(rot_diff < rot_speed)
+	{
+		rot = dir;
+		return true;
+	}
+	else
+	{
+		const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
+		rot = Clip(rot + d);
+		return false;
 	}
 }
 
@@ -6220,11 +6230,44 @@ void Unit::RotateTo(const Vec3& pos)
 		changed = true;
 }
 
-void Unit::RotateTo(float rot)
+//=================================================================================================
+// Rotate towards angle, return true when finished
+bool Unit::RotateTo(float angle, float dt)
 {
-	this->rot = rot;
+	float dif = AngleDiff(rot, angle);
+	if(IsZero(dif))
+		return true;
+
+	const float rot_speed = GetRotationSpeed() * dt;
+	const float arc = ShortestArc(rot, angle);
+
+	if(animation == ANI_STAND || animation == ANI_BATTLE || animation == ANI_BATTLE_BOW)
+	{
+		if(arc > 0.f)
+			animation = ANI_RIGHT;
+		else
+			animation = ANI_LEFT;
+	}
+
+	changed = true;
+	if(dif <= rot_speed)
+	{
+		rot = angle;
+		return true;
+	}
+	else
+	{
+		rot = Clip(rot + Sign(arc) * rot_speed);
+		return false;
+	}
+}
+
+//=================================================================================================
+void Unit::RotateTo(float angle)
+{
+	rot = angle;
 	if(game_level->entering && ai)
-		ai->start_rot = rot;
+		ai->start_rot = angle;
 	else
 		changed = true;
 }

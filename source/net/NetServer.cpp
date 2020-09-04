@@ -170,7 +170,6 @@ void Net::UpdateServer(float dt)
 
 		InterpolatePlayers(dt);
 		UpdateFastTravel(gameDt);
-		game->pc->unit->changed = true;
 	}
 
 	Packet* packet;
@@ -344,21 +343,21 @@ void Net::UpdateFastTravel(float dt)
 //=================================================================================================
 void Net::ServerProcessUnits(vector<Unit*>& units)
 {
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	for(Unit* unit : units)
 	{
-		if((*it)->changed)
+		if(unit->IsChanged())
 		{
 			NetChange& c = Add1(changes);
 			c.type = NetChange::UNIT_POS;
-			c.unit = *it;
-			(*it)->changed = false;
+			c.unit = unit;
+			unit->ClearChanged();
 		}
-		if((*it)->IsAI() && (*it)->ai->change_ai_mode)
+		if(unit->IsAI() && unit->ai->change_ai_mode)
 		{
 			NetChange& c = Add1(changes);
 			c.type = NetChange::CHANGE_AI_MODE;
-			c.unit = *it;
-			(*it)->ai->change_ai_mode = false;
+			c.unit = unit;
+			unit->ai->change_ai_mode = false;
 		}
 	}
 }
@@ -536,7 +535,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.pos = new_pos;
 					unit.UpdatePhysics();
 					unit.interp->Add(unit.pos, rot);
-					unit.changed = true;
+					unit.SetChanged();
 				}
 				else
 				{

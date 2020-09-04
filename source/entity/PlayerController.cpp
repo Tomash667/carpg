@@ -2189,7 +2189,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	u.prev_pos = u.pos;
-	u.changed = true;
 
 	bool idle = true;
 	int move = 0;
@@ -2300,6 +2299,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.animation = ANI_RIGHT;
 				else if(val < 0)
 					u.animation = ANI_LEFT;
+				u.SetChanged();
 			}
 
 			if(move)
@@ -2390,6 +2390,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 				if(moved)
 				{
+					u.SetChanged();
 					u.Moved();
 
 					// train by moving

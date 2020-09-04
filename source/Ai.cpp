@@ -172,22 +172,7 @@ void Game::UpdateAi(float dt)
 		if(u.action == A_ANIMATION)
 		{
 			if(Unit* look_target = u.look_target; look_target)
-			{
-				float dir = Vec3::LookAtAngle(u.pos, look_target->pos);
-				if(!Equal(u.rot, dir))
-				{
-					const float rot_speed = 3.f * dt;
-					const float rot_diff = AngleDiff(u.rot, dir);
-					if(rot_diff < rot_speed)
-						u.rot = dir;
-					else
-					{
-						const float d = Sign(ShortestArc(u.rot, dir)) * rot_speed;
-						u.rot = Clip(u.rot + d);
-					}
-					u.changed = true;
-				}
-			}
+				u.RotateTo(look_target->pos, dt);
 			continue;
 		}
 
@@ -2972,59 +2957,13 @@ void Game::UpdateAi(float dt)
 				look_pt = target_pos;
 			else
 				look_pt = look_pos;
-
-			// look at the target
-			float dir = Vec3::LookAtAngle(u.pos, look_pt),
-				dif = AngleDiff(u.rot, dir);
-
-			if(NotZero(dif))
+			if(u.RotateTo(look_pt, dt))
 			{
-				const float rot_speed = u.GetRotationSpeed() * dt;
-				const float arc = ShortestArc(u.rot, dir);
-
-				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
-				{
-					if(arc > 0.f)
-						u.animation = ANI_RIGHT;
-					else
-						u.animation = ANI_LEFT;
-				}
-
-				if(dif <= rot_speed)
-				{
-					u.rot = dir;
-					if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
-						u.OrderNext();
-				}
-				else
-					u.rot = Clip(u.rot + Sign(arc) * rot_speed);
-
-				u.changed = true;
+				if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
+					u.OrderNext();
 			}
 		}
 		else if(look_at == LookAtAngle)
-		{
-			float dif = AngleDiff(u.rot, look_pos.x);
-			if(NotZero(dif))
-			{
-				const float rot_speed = u.GetRotationSpeed() * dt;
-				const float arc = ShortestArc(u.rot, look_pos.x);
-
-				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
-				{
-					if(arc > 0.f)
-						u.animation = ANI_RIGHT;
-					else
-						u.animation = ANI_LEFT;
-				}
-
-				if(dif <= rot_speed)
-					u.rot = look_pos.x;
-				else
-					u.rot = Clip(u.rot + Sign(arc) * rot_speed);
-
-				u.changed = true;
-			}
-		}
+			u.RotateTo(look_pos.x, dt);
 	}
 }

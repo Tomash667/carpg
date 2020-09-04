@@ -327,7 +327,11 @@ struct Unit : public EntityType<Unit>
 	MeshInstance* bow_instance;
 	const Item* used_item;
 	vector<Effect> effects;
-	bool talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
+	bool talking, to_remove, temporary;
+private:
+	bool changed;
+public:
+	bool dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
@@ -959,9 +963,10 @@ public:
 	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const;
-	void RotateTo(const Vec3& pos, float dt);
+	bool RotateTo(const Vec3& pos, float dt);
 	void RotateTo(const Vec3& pos);
-	void RotateTo(float rot);
+	bool RotateTo(float angle, float dt);
+	void RotateTo(float angle);
 	void StopUsingUsable(bool send = true);
 	void CheckAutoTalk(float dt);
 	float GetAbilityPower(Ability& ability) const;
@@ -982,6 +987,11 @@ public:
 	bool DoAttack();
 	bool DoShieldSmash();
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+
+	//---------------------------
+	bool IsChanged() const { return changed; }
+	void ClearChanged() { changed = false; }
+	void SetChanged() { changed = true; }
 };
 
 //-----------------------------------------------------------------------------
