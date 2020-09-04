@@ -1816,7 +1816,6 @@ void Game::UpdateGame(float dt)
 			quest_mgr->unique_completed_show = false;
 
 		cstring text;
-
 		if(Net::IsOnline())
 		{
 			text = txWinMp;
@@ -2959,7 +2958,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 									{
 										InsideBuilding* inn = game_level->city_ctx->FindInn();
 										game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-										unit.visual_pos = unit.pos; 
+										unit.visual_pos = unit.pos;
 										unit.UpdateVisualPos();
 										unit.area = inn;
 										inn->units.push_back(&unit);

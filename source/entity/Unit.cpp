@@ -195,6 +195,33 @@ void Unit::Init(UnitData& base, int lvl)
 }
 
 //=================================================================================================
+void Unit::InitDoll()
+{
+	human_data = new Human;
+	human_data->hair = -1;
+	human_data->beard = -1;
+	human_data->mustache = -1;
+	human_data->height = 1.f;
+	player = nullptr;
+	ai = nullptr;
+	hero = nullptr;
+	used_item = nullptr;
+	weapon_state = WeaponState::Hidden;
+	pos = visual_pos = Vec3(0, 0, 0);
+	rot = 0.f;
+	fake_unit = true;
+	action = A_NONE;
+	stats = new UnitStats;
+	stats->fixed = false;
+	stats->subprofile.value = 0;
+	stamina = stamina_max = 100.f;
+	usable = nullptr;
+	live_state = Unit::ALIVE;
+	for(int i = 0; i < SLOT_MAX; ++i)
+		slots[i] = nullptr;
+}
+
+//=================================================================================================
 float Unit::CalculateMaxHp() const
 {
 	float maxhp = (float)data->hp + GetEffectSum(EffectId::Health);
@@ -4642,6 +4669,37 @@ void Unit::CreateNode()
 	node->tex_override = data->GetTextureOverride();
 	node->tint = data->tint;
 
+	if(data->type >= UNIT_TYPE::HUMANOID)
+	{
+		if(HaveArmor() && GetArmor().mesh)
+		{
+			const Armor& armor = GetArmor();
+			SceneNode* node2 = SceneNode::Get();
+			node2->tmp = false;
+			node2->SetMesh(armor.mesh, node->mesh_inst);
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node2->tex_override = armor.GetTextureOverride();
+			node2->lights = node->lights;
+			node->Add(node2);
+		}
+	}
+
+	if(data->type == UNIT_TYPE::HUMAN)
+	{
+		// hair
+		if(human_data->hair != -1)
+		{
+			SceneNode* node2 = SceneNode::Get();
+			node2->tmp = false;
+			node2->SetMesh(game_res->aHair[human_data->hair], node->mesh_inst);
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node2->tint = human_data->hair_color * data->tint;
+			node->Add(node2);
+		}
+	}
+
 	//if(f.isLocal && human_data)
 	//	human_data->ApplyScale(mesh_inst);
 }
@@ -8829,6 +8887,8 @@ void Unit::UpdateVisualPos()
 {
 	node->center = visual_pos;
 	node->mat = Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visual_pos);
+	for(SceneNode* child : node->childs)
+		child->mat = node->mat;
 }
 
 bool UnitList::IsInside(Unit* unit) const

@@ -359,6 +359,7 @@ struct Unit : public EntityType<Unit>
 	void AddRef() { ++refs; }
 	void Release();
 	void Init(UnitData& base, int level = -2);
+	void InitDoll();
 	void Cleanup() { node = nullptr; }
 
 	float CalculateAttack() const;

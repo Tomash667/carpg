@@ -65,8 +65,13 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		dun_mesh_builder->ListVisibleParts(draw_batch, frustum);
 	}
 
+	for(Unit* unit : area.units)
+		unit->UpdateVisualPos();
+	FIXME;
+
 	// new scene nodes
 	area.tmp->scene->ListNodes(draw_batch);
+
 
 	// units
 	/*if(IsSet(draw_flags, DF_UNITS))
