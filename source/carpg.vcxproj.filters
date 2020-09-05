@@ -664,6 +664,9 @@
     <ClCompile Include="helpers\LevelAreaContext.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="entity\UnitList.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
     <ClCompile Include="location\TmpLevelArea.cpp">
       <Filter>location</Filter>
     </ClCompile>
@@ -1310,6 +1313,9 @@
       <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="entity\LevelQuad.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\UnitList.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="location\TmpLevelArea.h">

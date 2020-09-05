@@ -197,7 +197,7 @@ bool CreatedCharacter::HavePerk(Perk* perk) const
 }
 
 //=================================================================================================
-void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
+void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 {
 	for(int i = 0; i < SLOT_MAX; ++i)
 		items[i] = nullptr;

@@ -330,7 +330,7 @@ bool Trap::Update(float dt, LevelArea& area)
 		break;
 	case TRAP_FIREBALL:
 		{
-			if(!Net::IsLocal())
+			if(Net::IsClient())
 				break;
 
 			bool trigger = false;

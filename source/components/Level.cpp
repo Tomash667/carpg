@@ -1981,10 +1981,11 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 	// preload items
 	if(base.group != G_PLAYER && base.item_script && !res_mgr->IsLoadScreen())
 	{
-		for(const Item* slot : unit->slots)
+		array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
+		for(const Item* item : equipped)
 		{
-			if(slot)
-				game_res->PreloadItem(slot);
+			if(item)
+				game_res->PreloadItem(item);
 		}
 		for(ItemSlot& slot : unit->items)
 			game_res->PreloadItem(slot.item);
@@ -3854,7 +3855,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 	if(!InRange(mode, 0, 1))
 		return false;
 
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHEAT_KILLALL;

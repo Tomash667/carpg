@@ -650,10 +650,14 @@ public:
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
 	int FindQuestItem(int quest_id) const;
 	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int quest_id = -1);
+	void EquipItem(int index);
+	void EquipItem(const Item* item);
 	void RemoveItem(int iindex, bool active_location = true);
 	uint RemoveItem(int i_index, uint count);
 	uint RemoveItem(const Item* item, uint count);
 	uint RemoveItemS(const string& item_id, uint count);
+	void RemoveEquippedItem(ITEM_SLOT slot);
+	void RemoveAllEquippedItems();
 	int CountItem(const Item* item);
 	const string& GetNameS() const
 	{
@@ -734,13 +738,18 @@ public:
 	//-----------------------------------------------------------------------------
 	// EQUIPMENT
 	//-----------------------------------------------------------------------------
-	const Item* slots[SLOT_MAX];
+private:
+	array<const Item*, SLOT_MAX> slots;
+public:
 	vector<ItemSlot> items;
 	int weight, weight_max;
 	//-----------------------------------------------------------------------------
 	int GetGold() const { return gold; }
 	void ModGold(int gold_change) { SetGold(gold + gold_change); }
 	void SetGold(int gold);
+	array<const Item*, SLOT_MAX>& GetEquippedItems() { return slots; }
+	const Item* GetEquippedItem(ITEM_SLOT slot) const { return slots[slot]; }
+	bool HaveEquippedItem(ITEM_SLOT slot) const { return slots[slot] != nullptr; }
 	bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
 	bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
 	bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
@@ -773,6 +782,8 @@ public:
 		assert(HaveAmulet());
 		return *slots[SLOT_AMULET];
 	}
+	void ReplaceItem(ITEM_SLOT slot, const Item* item);
+	void ReplaceItems(array<const Item*, SLOT_MAX>& items);
 	bool DropItem(int index, uint count = 1u);
 	void DropItem(ITEM_SLOT slot);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
@@ -810,14 +821,8 @@ public:
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	float GetWeight() const
-	{
-		return float(weight) / 10;
-	}
-	float GetWeightMax() const
-	{
-		return float(weight_max) / 10;
-	}
+	float GetWeight() const { return float(weight) / 10; }
+	float GetWeightMax() const { return float(weight_max) / 10; }
 	bool CanTake(const Item* item, uint count = 1) const
 	{
 		assert(item && count);
@@ -1017,19 +1022,6 @@ struct NAMES
 	static uint n_ani_base;
 	static uint n_ani_humanoid;
 	static int max_attacks;
-};
-
-//-----------------------------------------------------------------------------
-struct UnitList : public ObjectPoolProxy<UnitList>
-{
-	void Clear() { units.clear(); }
-	void Add(Unit* unit) { units.push_back(unit); }
-	bool IsInside(Unit* unit) const;
-	void Save(GameWriter& f);
-	void Load(GameReader& f);
-
-private:
-	vector<Entity<Unit>> units;
 };
 
 //-----------------------------------------------------------------------------

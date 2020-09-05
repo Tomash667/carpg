@@ -3,6 +3,9 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
+- all random dungeons had same appearance
+- when using take all items from corpse active magic effects was removed from player
+- invalid weight calculation on server side when client used pick all button
 
 --------------------------------------------------------------------------------
 Version 0.17 (2020-08-29):

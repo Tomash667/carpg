@@ -609,25 +609,21 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::CHANGE_EQUIPMENT:
 			{
 				int id;
-				ITEM_SLOT type;
+				ITEM_SLOT slot;
 				const Item* item;
 				f >> id;
-				f.ReadCasted<byte>(type);
+				f.ReadCasted<byte>(slot);
 				if(!f || f.ReadItemAndFind(item) < 0)
 					Error("Update client: Broken CHANGE_EQUIPMENT.");
-				else if(!IsValid(type))
-					Error("Update client: CHANGE_EQUIPMENT, invalid slot %d.", type);
+				else if(!IsValid(slot))
+					Error("Update client: CHANGE_EQUIPMENT, invalid slot %d.", slot);
 				else if(game->game_state == GS_LEVEL)
 				{
 					Unit* target = game_level->FindUnit(id);
 					if(!target)
 						Error("Update client: CHANGE_EQUIPMENT, missing unit %d.", id);
 					else
-					{
-						if(item)
-							game_res->PreloadItem(item);
-						target->slots[type] = item;
-					}
+						target->ReplaceItem(slot, item);
 				}
 			}
 			break;
@@ -3165,16 +3161,17 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				// read items
 				if(pc.action == PlayerAction::LootUnit)
 				{
+					array<const Item*, SLOT_MAX>& equipped = pc.action_unit->GetEquippedItems();
 					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 					{
 						const string& id = f.ReadString1();
 						if(id.empty())
-							pc.action_unit->slots[i] = nullptr;
+							equipped[i] = nullptr;
 						else
 						{
-							pc.action_unit->slots[i] = Item::TryGet(id);
-							if(pc.action_unit->slots[i])
-								game_res->PreloadItem(pc.action_unit->slots[i]);
+							equipped[i] = Item::TryGet(id);
+							if(equipped[i])
+								game_res->PreloadItem(equipped[i]);
 						}
 					}
 				}
@@ -3476,16 +3473,17 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f >> unit.gold;
 					f >> sub;
 					f >> unit.effects;
+					array<const Item*, SLOT_MAX>& equipped = unit.GetEquippedItems();
 					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 					{
 						const string& id = f.ReadString1();
 						if(id.empty())
-							unit.slots[i] = nullptr;
+							equipped[i] = nullptr;
 						else
 						{
-							unit.slots[i] = Item::TryGet(id);
-							if(unit.slots[i])
-								game_res->PreloadItem(unit.slots[i]);
+							equipped[i] = Item::TryGet(id);
+							if(equipped[i])
+								game_res->PreloadItem(equipped[i]);
 						}
 					}
 					unit.stats = unit.data->GetStats(sub);
@@ -3744,16 +3742,17 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					}
 					if(ok)
 					{
+						array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
 						for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 						{
 							const string& id = f.ReadString1();
 							if(id.empty())
-								unit->slots[i] = nullptr;
+								equipped[i] = nullptr;
 							else
 							{
-								unit->slots[i] = Item::TryGet(id);
-								if(unit->slots[i])
-									game_res->PreloadItem(unit->slots[i]);
+								equipped[i] = Item::TryGet(id);
+								if(equipped[i])
+									game_res->PreloadItem(equipped[i]);
 							}
 						}
 						if(!f.ReadItemListTeam(unit->items))
@@ -4391,6 +4390,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game_level->camera.target = unit;
 
 	// items
+	array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		const string& item_id = f.ReadString1();
@@ -4401,12 +4401,12 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 		}
 		if(!item_id.empty())
 		{
-			unit->slots[i] = Item::TryGet(item_id);
-			if(!unit->slots[i])
+			equipped[i] = Item::TryGet(item_id);
+			if(!equipped[i])
 				return false;
 		}
 		else
-			unit->slots[i] = nullptr;
+			equipped[i] = nullptr;
 	}
 	if(!f.ReadItemListTeam(unit->items))
 	{

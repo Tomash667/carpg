@@ -35,6 +35,7 @@
 #include "Team.h"
 #include "UnitEventHandler.h"
 #include "UnitHelper.h"
+#include "UnitList.h"
 #include "World.h"
 
 #include <ParticleSystem.h>
@@ -461,6 +462,26 @@ bool Unit::WantItem(const Item* item) const
 		return true;
 	case Consumable::AiType::Mana:
 		return IsUsingMp();
+	}
+}
+
+//=================================================================================================
+void Unit::ReplaceItem(ITEM_SLOT slot, const Item* item)
+{
+	assert(Net::IsClient()); // TODO
+	if(item)
+		game_res->PreloadItem(item);
+	slots[slot] = item;
+}
+
+//=================================================================================================
+void Unit::ReplaceItems(array<const Item*, SLOT_MAX>& items)
+{
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		if(items[i])
+			game_res->PreloadItem(items[i]);
+		slots[i] = items[i];
 	}
 }
 
@@ -3518,6 +3539,65 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 }
 
 //=================================================================================================
+void Unit::EquipItem(int index)
+{
+	const Item* newItem = items[index].item;
+	ITEM_SLOT slot = ItemTypeToSlot(newItem->type);
+
+	// for rings - use empty slot or last equipped slot
+	if(slot == SLOT_RING1 && IsPlayer())
+	{
+		if(slots[slot])
+		{
+			if(!slots[SLOT_RING2] || player->last_ring)
+				slot = SLOT_RING2;
+		}
+		player->last_ring = (slot == SLOT_RING2);
+	}
+
+	const Item* prevItem = slots[slot];
+	if(prevItem)
+	{
+		// replace equipped item
+		if(Net::IsLocal())
+		{
+			RemoveItemEffects(prevItem, slot);
+			ApplyItemEffects(newItem, slot);
+		}
+		slots[slot] = newItem;
+		items.erase(items.begin() + index);
+		AddItem(prevItem, 1, false);
+		weight -= prevItem->weight;
+	}
+	else
+	{
+		// equip item
+		slots[slot] = newItem;
+		if(Net::IsLocal())
+			ApplyItemEffects(newItem, slot);
+		items.erase(items.begin() + index);
+	}
+
+	if(Net::IsServer() && IsVisible(slot))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		c.unit = this;
+		c.id = slot;
+	}
+}
+
+//=================================================================================================
+// Equip item out of nowhere, used only in tutorial
+void Unit::EquipItem(const Item* item)
+{
+	assert(item && game_level->entering);
+	game_res->PreloadItem(item);
+	slots[ItemTypeToSlot(item->type)] = item;
+	weight += item->weight;
+}
+
+//=================================================================================================
 // currently using this on pc, looted units is not written
 void Unit::RemoveItem(int iindex, bool active_location)
 {
@@ -3641,6 +3721,55 @@ uint Unit::RemoveItemS(const string& item_id, uint count)
 	if(!item)
 		return 0;
 	return RemoveItem(item, count);
+}
+
+//=================================================================================================
+void Unit::RemoveEquippedItem(ITEM_SLOT slot)
+{
+	const Item* item = GetEquippedItem(slot);
+	if(slot == SLOT_WEAPON && slots[SLOT_WEAPON] == used_item)
+	{
+		used_item = nullptr;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_USED_ITEM;
+			c.unit = this;
+		}
+	}
+	if(Net::IsLocal())
+		RemoveItemEffects(item, slot);
+	if(Net::IsServer() && IsVisible(slot))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		c.unit = this;
+		c.id = slot;
+	}
+	weight -= item->weight;
+	slots[slot] = nullptr;
+}
+
+//=================================================================================================
+void Unit::RemoveAllEquippedItems()
+{
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		if(!slots[i])
+			continue;
+
+		if(Net::IsLocal())
+			RemoveItemEffects(slots[i], (ITEM_SLOT)i);
+		slots[i] = nullptr;
+
+		if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.unit = this;
+			c.id = i;
+		}
+	}
 }
 
 //=================================================================================================
@@ -8138,7 +8267,7 @@ void Unit::Moved(bool warped, bool dash)
 					{
 						if(!team->IsLeader())
 							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
-						else if(!Net::IsLocal())
+						else if(Net::IsClient())
 							net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
@@ -8891,23 +9020,3 @@ void Unit::UpdateVisualPos()
 		child->mat = node->mat;
 }
 
-bool UnitList::IsInside(Unit* unit) const
-{
-	return ::IsInside(units, unit);
-}
-
-void UnitList::Save(GameWriter& f)
-{
-	f << units.size();
-	for(Entity<Unit> unit : units)
-		f << unit;
-}
-
-void UnitList::Load(GameReader& f)
-{
-	uint count;
-	f >> count;
-	units.resize(count);
-	for(Entity<Unit>& unit : units)
-		f >> unit;
-}

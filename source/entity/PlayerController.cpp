@@ -27,7 +27,7 @@
 #include "ScriptException.h"
 #include "Stock.h"
 #include "Team.h"
-#include "Unit.h"
+#include "UnitList.h"
 #include "World.h"
 
 #include <ParticleSystem.h>
@@ -131,10 +131,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 
 		// inventory
 		unit->data->item_script->Parse(*unit);
-		const Item* items[SLOT_MAX];
-		cc->GetStartingItems(items);
-		for(int i = 0; i < SLOT_MAX; ++i)
-			unit->slots[i] = items[i];
+		cc->GetStartingItems(unit->GetEquippedItems());
 		if(HavePerk(Perk::Get("alchemist_apprentice")))
 			Stock::Get("alchemist_apprentice")->Parse(unit->items);
 		unit->MakeItemsTeam(false);
@@ -1807,7 +1804,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	bool ok = true;
 	if(bu.item)
 	{
-		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
+		if(!u.HaveItem(bu.item) && u.GetEquippedItem(SLOT_WEAPON) != bu.item)
 		{
 			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
@@ -2475,7 +2472,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 							if(ok)
 							{
-								game_gui->inventory->inv_mine->EquipSlotItem(slot_type, i_index);
+								game_gui->inventory->inv_mine->EquipSlotItem(i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
