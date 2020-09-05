@@ -472,6 +472,7 @@ void Unit::ReplaceItem(ITEM_SLOT slot, const Item* item)
 	if(item)
 		game_res->PreloadItem(item);
 	slots[slot] = item;
+	UpdateNode(slot);
 }
 
 //=================================================================================================
@@ -482,6 +483,7 @@ void Unit::ReplaceItems(array<const Item*, SLOT_MAX>& items)
 		if(items[i])
 			game_res->PreloadItem(items[i]);
 		slots[i] = items[i];
+		UpdateNode((ITEM_SLOT)i);
 	}
 }
 
@@ -598,6 +600,8 @@ void Unit::DropItem(ITEM_SLOT slot)
 		c.id = SlotToIIndex(slot);
 		c.count = 1;
 	}
+
+	UpdateNode(slot);
 }
 
 //=================================================================================================
@@ -1041,15 +1045,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			break;
 		case EffectId::GreenHair:
 			if(human_data)
-			{
-				human_data->hair_color = Vec4(0, 1, 0, 1);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HAIR_COLOR;
-					c.unit = this;
-				}
-			}
+				ChangeHairColor(Vec4(0, 1, 0, 1));
 			break;
 		case EffectId::RestoreMana:
 			if(mp != mpmax)
@@ -1461,6 +1457,7 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 		slots[item_slot] = item;
 		ApplyItemEffects(item, item_slot);
 		--count;
+		UpdateNode(item_slot);
 	}
 
 	if(count)
@@ -3141,6 +3138,8 @@ void Unit::ReequipItemsInternal()
 					ApplyItemEffects(item_slot.item, slot);
 					slots[slot] = item_slot.item;
 					item_slot.item = item;
+					changes = true;
+					UpdateNode(slot);
 				}
 			}
 			else
@@ -3149,6 +3148,7 @@ void Unit::ReequipItemsInternal()
 				slots[slot] = item_slot.item;
 				item_slot.item = nullptr;
 				changes = true;
+				UpdateNode(slot);
 			}
 		}
 	}
@@ -3578,6 +3578,8 @@ void Unit::EquipItem(int index)
 		items.erase(items.begin() + index);
 	}
 
+	UpdateNode(slot);
+
 	if(Net::IsServer() && IsVisible(slot))
 	{
 		NetChange& c = Add1(Net::changes);
@@ -3613,6 +3615,7 @@ void Unit::RemoveItem(int iindex, bool active_location)
 		ITEM_SLOT s = IIndexToSlot(iindex);
 		assert(slots[s]);
 		slots[s] = nullptr;
+		UpdateNode(s);
 		if(active_location && IsVisible(s))
 		{
 			NetChange& c = Add1(Net::changes);
@@ -3646,6 +3649,8 @@ uint Unit::RemoveItem(int i_index, uint count)
 		weight -= slots[type]->weight;
 		slots[type] = nullptr;
 		removed = 1;
+
+		UpdateNode(type);
 
 		if(Net::IsServer() && net->active_players > 1 && IsVisible(type))
 		{
@@ -3748,6 +3753,7 @@ void Unit::RemoveEquippedItem(ITEM_SLOT slot)
 	}
 	weight -= item->weight;
 	slots[slot] = nullptr;
+	UpdateNode(slot);
 }
 
 //=================================================================================================
@@ -3761,6 +3767,7 @@ void Unit::RemoveAllEquippedItems()
 		if(Net::IsLocal())
 			RemoveItemEffects(slots[i], (ITEM_SLOT)i);
 		slots[i] = nullptr;
+		UpdateNode((ITEM_SLOT)i);
 
 		if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
 		{
@@ -3782,6 +3789,7 @@ void Unit::SetName(const string& name)
 //=================================================================================================
 void Unit::ClearInventory()
 {
+	assert(!node);
 	items.clear();
 	for(int i = 0; i < SLOT_MAX; ++i)
 		slots[i] = nullptr;
@@ -4804,24 +4812,63 @@ void Unit::CreateNode()
 		{
 			const Armor& armor = GetArmor();
 			SceneNode* node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Armor;
 			node2->tmp = false;
 			node2->SetMesh(armor.mesh, node->mesh_inst);
 			node2->center = node->center;
 			node2->mat = node->mat;
 			node2->tex_override = armor.GetTextureOverride();
-			node2->lights = node->lights;
 			node->Add(node2);
+			if(armor.armor_unit_type == ArmorUnitType::HUMAN)
+				node->subs = Bit(1) | Bit(2);
 		}
 	}
 
 	if(data->type == UNIT_TYPE::HUMAN)
 	{
+		// eyebrows
+		SceneNode* node2 = SceneNode::Get();
+		node2->id = (int)SceneNodeId::Eyebrows;
+		node2->tmp = false;
+		node2->SetMesh(game_res->aEyebrows, node->mesh_inst);
+		node2->center = node->center;
+		node2->mat = node->mat;
+		node2->tint = human_data->hair_color * data->tint;
+		node->Add(node2);
+
 		// hair
 		if(human_data->hair != -1)
 		{
-			SceneNode* node2 = SceneNode::Get();
+			node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Hair;
 			node2->tmp = false;
 			node2->SetMesh(game_res->aHair[human_data->hair], node->mesh_inst);
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node2->tint = human_data->hair_color * data->tint;
+			node->Add(node2);
+		}
+
+		// beard
+		if(human_data->beard != -1)
+		{
+			node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Beard;
+			node2->tmp = false;
+			node2->SetMesh(game_res->aBeard[human_data->beard], node->mesh_inst);
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node2->tint = human_data->hair_color * data->tint;
+			node->Add(node2);
+		}
+
+		// mustache
+		if(human_data->mustache != -1 && (human_data->beard == -1 || !g_beard_and_mustache[human_data->beard]))
+		{
+			node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Mustache;
+			node2->tmp = false;
+			node2->SetMesh(game_res->aMustache[human_data->mustache], node->mesh_inst);
 			node2->center = node->center;
 			node2->mat = node->mat;
 			node2->tint = human_data->hair_color * data->tint;
@@ -4831,6 +4878,51 @@ void Unit::CreateNode()
 
 	//if(f.isLocal && human_data)
 	//	human_data->ApplyScale(mesh_inst);
+}
+
+//=================================================================================================
+void Unit::UpdateNode(ITEM_SLOT slot)
+{
+	if(!node || !IsVisible(slot))
+		return;
+
+	const Item* item = slots[slot];
+	if(slot == SLOT_ARMOR)
+	{
+		SceneNode* child = node->GetChild((int)SceneNodeId::Armor);
+		if(!child)
+		{
+			child = SceneNode::Get();
+			child->id = (int)SceneNodeId::Armor;
+			child->tmp = false;
+			child->center = node->center;
+			child->mat = node->mat;
+			node->Add(child);
+		}
+		if(item && item->ToArmor().mesh)
+		{
+			const Armor& armor = GetArmor();
+			child->SetMesh(armor.mesh, node->mesh_inst);
+			child->tex_override = armor.GetTextureOverride();
+			child->visible = true;
+			if(armor.armor_unit_type == ArmorUnitType::HUMAN && armor.mesh)
+				node->subs = Bit(1) | Bit(2);
+		}
+		else
+		{
+			child->visible = false;
+			node->subs = SceneNode::SPLIT_MASK;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::UpdateVisualPos()
+{
+	node->center = visual_pos;
+	node->mat = Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visual_pos);
+	for(SceneNode* child : node->childs)
+		child->mat = node->mat;
 }
 
 //=================================================================================================
@@ -9012,11 +9104,24 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 	}
 }
 
-void Unit::UpdateVisualPos()
+//=================================================================================================
+void Unit::ChangeHairColor(const Vec4& color)
 {
-	node->center = visual_pos;
-	node->mat = Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visual_pos);
-	for(SceneNode* child : node->childs)
-		child->mat = node->mat;
-}
+	assert(human_data && node);
+	human_data->hair_color = color;
 
+	// update nodes
+	for(SceneNode* child : node->childs)
+	{
+		if(Any((SceneNodeId)child->id, SceneNodeId::Eyebrows, SceneNodeId::Hair, SceneNodeId::Beard, SceneNodeId::Mustache))
+			child->tint = human_data->hair_color * data->tint;
+	}
+
+	// notify
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::HAIR_COLOR;
+		c.unit = this;
+	}
+}

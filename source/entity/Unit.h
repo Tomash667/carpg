@@ -259,6 +259,15 @@ struct Unit : public EntityType<Unit>
 		AI_MODE_ATTACK_TEAM = 1 << 4
 	};
 
+	enum class SceneNodeId
+	{
+		Armor,
+		Eyebrows,
+		Hair,
+		Beard,
+		Mustache
+	};
+
 	/*enum class CREATE_MESH
 	{
 		NORMAL,
@@ -891,6 +900,8 @@ public:
 	float GetStaminaMod(const Item& item) const;
 
 	void CreateNode();
+	void UpdateNode(ITEM_SLOT slot);
+	void UpdateVisualPos();
 	//void CreateMesh(CREATE_MESH mode);
 	FIXME;
 
@@ -984,7 +995,7 @@ public:
 	bool DoAttack();
 	bool DoShieldSmash();
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
-	void UpdateVisualPos();
+	void ChangeHairColor(const Vec4& color);
 };
 
 //-----------------------------------------------------------------------------

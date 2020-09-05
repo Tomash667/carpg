@@ -1371,7 +1371,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					else if(unit->data->type != UNIT_TYPE::HUMAN)
 						Error("Update client: HAIR_COLOR, unit %d (%s) is not human.", id, unit->data->id.c_str());
 					else
-						unit->human_data->hair_color = hair_color;
+						unit->ChangeHairColor(hair_color);
 				}
 			}
 			break;

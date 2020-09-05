@@ -1454,41 +1454,27 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		talker->ai->change_ai_mode = true;
 	}
 	else if(strcmp(msg, "ginger_hair") == 0)
-	{
-		pc->unit->human_data->hair_color = g_hair_colors[8];
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HAIR_COLOR;
-			c.unit = pc->unit;
-		}
-	}
+		pc->unit->ChangeHairColor(g_hair_colors[8]);
 	else if(strcmp(msg, "random_hair") == 0)
 	{
+		Vec4 color;
 		if(Rand() % 2 == 0)
 		{
-			Vec4 kolor = pc->unit->human_data->hair_color;
 			do
 			{
-				pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
+				color = g_hair_colors[Rand() % n_hair_colors];
 			}
-			while(kolor.Equal(pc->unit->human_data->hair_color));
+			while(color.Equal(pc->unit->human_data->hair_color));
 		}
 		else
 		{
-			Vec4 kolor = pc->unit->human_data->hair_color;
 			do
 			{
-				pc->unit->human_data->hair_color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
+				color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
 			}
-			while(kolor.Equal(pc->unit->human_data->hair_color));
+			while(color.Equal(pc->unit->human_data->hair_color));
 		}
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HAIR_COLOR;
-			c.unit = pc->unit;
-		}
+		pc->unit->ChangeHairColor(color);
 	}
 	else if(strcmp(msg, "captive_join") == 0)
 	{
