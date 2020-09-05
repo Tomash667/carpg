@@ -545,7 +545,7 @@ void Journal::OnAddNote(int id)
 		notes.push_back(Format(txAddTime, world->GetDate(), input_str.c_str()));
 		sound_mgr->PlaySound2d(game_gui->messages->snd_scribble);
 		Build();
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 			Net::PushChange(NetChange::ADD_NOTE);
 	}
 }

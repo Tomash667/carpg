@@ -2867,7 +2867,7 @@ void Game::LeaveLevel(bool clear)
 			area.tmp->Free();
 			area.tmp = nullptr;
 		}
-		if(game_level->city_ctx && (!Net::IsLocal() || net->was_client))
+		if(game_level->city_ctx && (Net::IsClient() || net->was_client))
 			DeleteElements(game_level->city_ctx->inside_buildings);
 		if(Net::IsClient() && !game_level->location->outside)
 		{
@@ -3308,10 +3308,11 @@ void Game::PreloadUnit(Unit* unit)
 
 	if(Net::IsLocal())
 	{
-		for(uint i = 0; i < SLOT_MAX; ++i)
+		array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
+		for(const Item* item : equipped)
 		{
-			if(unit->slots[i])
-				items_load.insert(unit->slots[i]);
+			if(item)
+				items_load.insert(item);
 		}
 		PreloadItems(unit->items);
 		if(unit->stock)
@@ -3410,10 +3411,11 @@ void Game::VerifyUnitResources(Unit* unit)
 		}
 	}
 
-	for(int i = 0; i < SLOT_MAX; ++i)
+	array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
+	for(const Item* item : equipped)
 	{
-		if(unit->slots[i])
-			VerifyItemResources(unit->slots[i]);
+		if(item)
+			VerifyItemResources(item);
 	}
 	for(ItemSlot& slot : unit->items)
 		VerifyItemResources(slot.item);

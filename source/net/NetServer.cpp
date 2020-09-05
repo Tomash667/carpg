@@ -613,63 +613,22 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							break;
 						}
 
-						ITEM_SLOT slot_type = ItemTypeToSlot(slot.item->type);
-						if(slot_type == SLOT_RING1)
-						{
-							if(unit.slots[slot_type])
-							{
-								if(!unit.slots[SLOT_RING2] || unit.player->last_ring)
-									slot_type = SLOT_RING2;
-							}
-							unit.player->last_ring = (slot_type == SLOT_RING2);
-						}
-						if(unit.slots[slot_type])
-						{
-							unit.RemoveItemEffects(unit.slots[slot_type], slot_type);
-							unit.ApplyItemEffects(slot.item, slot_type);
-							std::swap(unit.slots[slot_type], slot.item);
-							SortItems(unit.items);
-						}
-						else
-						{
-							unit.ApplyItemEffects(slot.item, slot_type);
-							unit.slots[slot_type] = slot.item;
-							unit.items.erase(unit.items.begin() + i_index);
-						}
-
-						// send to other players
-						if(active_players > 2 && IsVisible(slot_type))
-						{
-							NetChange& c = Add1(changes);
-							c.type = NetChange::CHANGE_EQUIPMENT;
-							c.unit = &unit;
-							c.id = slot_type;
-						}
+						unit.EquipItem(i_index);
 					}
 					else
 					{
 						// removing item
 						ITEM_SLOT slot = IIndexToSlot(i_index);
 
-						if(slot < SLOT_WEAPON || slot >= SLOT_MAX)
+						if(!IsValid(slot))
 							Error("Update server: CHANGE_EQUIPMENT from %s, invalid slot type %d.", info.name.c_str(), slot);
-						else if(!unit.slots[slot])
+						else if(!unit.HaveEquippedItem(slot))
 							Error("Update server: CHANGE_EQUIPMENT from %s, empty slot type %d.", info.name.c_str(), slot);
 						else
 						{
-							unit.RemoveItemEffects(unit.slots[slot], slot);
-							unit.AddItem(unit.slots[slot], 1u, false);
-							unit.weight -= unit.slots[slot]->weight;
-							unit.slots[slot] = nullptr;
-
-							// send to other players
-							if(active_players > 2 && IsVisible(slot))
-							{
-								NetChange& c = Add1(changes);
-								c.type = NetChange::CHANGE_EQUIPMENT;
-								c.unit = &unit;
-								c.id = slot;
-							}
+							const Item* item = unit.GetEquippedItem(slot);
+							unit.RemoveEquippedItem(slot);
+							unit.AddItem(item, 1u, false);
 						}
 					}
 				}
@@ -872,30 +831,18 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							break;
 						}
 
-						const Item*& slot = unit.slots[slot_type];
-						if(!slot)
+						if(!unit.HaveEquippedItem(slot_type))
 						{
 							Error("Update server: DROP_ITEM from %s, empty slot %d.", info.name.c_str(), slot_type);
 							break;
 						}
 
-						unit.RemoveItemEffects(slot, slot_type);
-						unit.weight -= slot->weight * count;
 						item = new GroundItem;
 						item->Register();
-						item->item = slot;
+						item->item = unit.GetEquippedItem(slot_type);
 						item->count = 1;
 						item->team_count = 0;
-						slot = nullptr;
-
-						// send info about changing equipment to other players
-						if(active_players > 2 && IsVisible(slot_type))
-						{
-							NetChange& c = Add1(changes);
-							c.type = NetChange::CHANGE_EQUIPMENT;
-							c.unit = &unit;
-							c.id = slot_type;
-						}
+						unit.RemoveEquippedItem(slot_type);
 					}
 
 					unit.action = A_ANIMATION;
@@ -1195,39 +1142,17 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// getting equipped item
 					ITEM_SLOT type = IIndexToSlot(i_index);
-					if(player.action == PlayerAction::LootChest || player.action == PlayerAction::LootContainer
-						|| type < SLOT_WEAPON || type >= SLOT_MAX || !player.action_unit->slots[type])
+					if(Any(player.action, PlayerAction::LootChest, PlayerAction::LootContainer)
+						|| !IsValid(type)
+						|| !player.action_unit->HaveEquippedItem(type))
 					{
 						Error("Update server: GET_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
 						break;
 					}
 
 					// get equipped item from unit
-					const Item*& slot = player.action_unit->slots[type];
-					unit.AddItem2(slot, 1u, 1u, false, false);
-					if(player.action == PlayerAction::LootUnit && type == SLOT_WEAPON && slot == player.action_unit->used_item)
-					{
-						player.action_unit->used_item = nullptr;
-						// removed item from hand, send info to other players
-						if(active_players > 2)
-						{
-							NetChange& c = Add1(changes);
-							c.type = NetChange::REMOVE_USED_ITEM;
-							c.unit = player.action_unit;
-						}
-					}
-					player.action_unit->RemoveItemEffects(slot, type);
-					player.action_unit->weight -= slot->weight;
-					slot = nullptr;
-
-					// send info about changing equipment of looted unit
-					if(active_players > 2 && IsVisible(type))
-					{
-						NetChange& c = Add1(changes);
-						c.type = NetChange::CHANGE_EQUIPMENT;
-						c.unit = player.action_unit;
-						c.id = type;
-					}
+					unit.AddItem2(player.action_unit->GetEquippedItem(type), 1u, 1u, false, false);
+					player.action_unit->RemoveEquippedItem(type);
 				}
 			}
 			break;
@@ -1343,31 +1268,31 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// put equipped item
 					ITEM_SLOT type = IIndexToSlot(i_index);
-					if(type < SLOT_WEAPON || type >= SLOT_MAX || !unit.slots[type])
+					if(!IsValid(type) || !unit.HaveEquippedItem(type))
 					{
 						Error("Update server: PUT_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
 						break;
 					}
 
-					const Item*& slot = unit.slots[type];
-					int price = ItemHelper::GetItemPrice(slot, unit, false);
+					const Item* item = unit.GetEquippedItem(type);
+					int price = ItemHelper::GetItemPrice(item, unit, false);
 					// add new item
 					if(player.action == PlayerAction::LootChest)
-						player.action_chest->AddItem(slot, 1u, 0u, false);
+						player.action_chest->AddItem(item, 1u, 0u, false);
 					else if(player.action == PlayerAction::LootContainer)
-						player.action_usable->container->AddItem(slot, 1u, 0u);
+						player.action_usable->container->AddItem(item, 1u, 0u);
 					else if(player.action == PlayerAction::Trade)
 					{
-						InsertItem(*player.chest_trade, slot, 1u, 0u);
+						InsertItem(*player.chest_trade, item, 1u, 0u);
 						unit.gold += price;
 						player.Train(TrainWhat::Trade, (float)price, 0);
 					}
 					else
 					{
-						player.action_unit->AddItem2(slot, 1u, 0u, false, false);
+						player.action_unit->AddItem2(item, 1u, 0u, false, false);
 						if(player.action == PlayerAction::GiveItems)
 						{
-							price = slot->value / 2;
+							price = item->value / 2;
 							if(player.action_unit->gold >= price)
 							{
 								// sold for gold
@@ -1381,17 +1306,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 					}
 					// remove equipped
-					unit.RemoveItemEffects(slot, type);
-					unit.weight -= slot->weight;
-					slot = nullptr;
-					// send info about changing equipment
-					if(active_players > 2 && IsVisible(type))
-					{
-						NetChange& c = Add1(changes);
-						c.type = NetChange::CHANGE_EQUIPMENT;
-						c.unit = &unit;
-						c.id = type;
-					}
+					unit.RemoveEquippedItem(type);
 				}
 			}
 			break;
@@ -1410,29 +1325,20 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				bool any = false;
 				if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 				{
-					const Item** slots = player.action_unit->slots;
+					array<const Item*, SLOT_MAX>& equipped = player.action_unit->GetEquippedItems();
 					for(int i = 0; i < SLOT_MAX; ++i)
 					{
-						if(slots[i])
+						if(equipped[i])
 						{
-							player.action_unit->RemoveItemEffects(slots[i], (ITEM_SLOT)i);
-							InsertItemBare(unit.items, slots[i]);
-							slots[i] = nullptr;
+							InsertItemBare(unit.items, equipped[i]);
+							unit.weight += equipped[i]->weight;
 							any = true;
-
-							// send info about changing equipment
-							if(active_players > 2 && IsVisible((ITEM_SLOT)i))
-							{
-								NetChange& c = Add1(changes);
-								c.type = NetChange::CHANGE_EQUIPMENT;
-								c.unit = player.action_unit;
-								c.id = i;
-							}
 						}
 					}
 
 					// reset weight
 					player.action_unit->weight = 0;
+					player.action_unit->RemoveAllEquippedItems();
 				}
 
 				// not equipped items
@@ -1446,6 +1352,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else
 					{
 						InsertItemBare(unit.items, slot.item, slot.count, slot.team_count);
+						unit.weight += slot.item->weight * slot.count;
 						any = true;
 					}
 				}
@@ -2988,7 +2895,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 					else if(game->game_state != GS_LEVEL)
 						player.next_action = NA_NONE;
-					else if(!IsValid(player.next_action_data.slot) || !unit.slots[player.next_action_data.slot])
+					else if(!IsValid(player.next_action_data.slot) || !unit.HaveEquippedItem(player.next_action_data.slot))
 					{
 						Error("Update server: SET_NEXT_ACTION, invalid slot %d from '%s'.", player.next_action_data.slot, info.name.c_str());
 						player.next_action = NA_NONE;
@@ -3384,7 +3291,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CHANGE_EQUIPMENT:
 			f << c.unit->id;
 			f.WriteCasted<byte>(c.id);
-			f << c.unit->slots[c.id];
+			f << c.unit->GetEquippedItem((ITEM_SLOT)c.id);
 			break;
 		case NetChange::TAKE_WEAPON:
 			{
@@ -3810,10 +3717,11 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			{
 				if(player.action == PlayerAction::LootUnit)
 				{
+					array<const Item*, SLOT_MAX>& equipped = player.action_unit->GetEquippedItems();
 					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 					{
-						if(player.action_unit->slots[i])
-							f << player.action_unit->slots[i]->id;
+						if(equipped[i])
+							f << equipped[i]->id;
 						else
 							f.Write0();
 					}
@@ -3830,10 +3738,11 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f << u.gold;
 				f << u.stats->subprofile;
 				f << u.effects;
+				array<const Item*, SLOT_MAX>& equipped = u.GetEquippedItems();
 				for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 				{
-					if(u.slots[i])
-						f << u.slots[i]->id;
+					if(equipped[i])
+						f << equipped[i]->id;
 					else
 						f.Write0();
 				}
@@ -3927,15 +3836,18 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			f << c.count;
 			break;
 		case NetChangePlayer::UPDATE_TRADER_INVENTORY:
-			f << c.unit->id;
-			for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 			{
-				if(c.unit->slots[i])
-					f << c.unit->slots[i]->id;
-				else
-					f.Write0();
+				f << c.unit->id;
+				array<const Item*, SLOT_MAX>& equipped = c.unit->GetEquippedItems();
+				for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+				{
+					if(equipped[i])
+						f << equipped[i]->id;
+					else
+						f.Write0();
+				}
+				f.WriteItemListTeam(c.unit->items);
 			}
-			f.WriteItemListTeam(c.unit->items);
 			break;
 		case NetChangePlayer::PLAYER_STATS:
 			f.WriteCasted<byte>(c.id);
@@ -4260,10 +4172,11 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 	f << unit.id;
 
 	// items
+	array<const Item*, SLOT_MAX>& equipped = unit.GetEquippedItems();
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		if(unit.slots[i])
-			f << unit.slots[i]->id;
+		if(equipped[i])
+			f << equipped[i]->id;
 		else
 			f.Write0();
 	}

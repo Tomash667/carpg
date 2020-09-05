@@ -821,7 +821,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(t.Next())
 		{
 			game->pc->invisible = t.MustGetBool();
-			if(!Net::IsLocal())
+			if(Net::IsClient())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_INVISIBLE;
@@ -834,7 +834,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(t.Next())
 		{
 			game->pc->godmode = t.MustGetBool();
-			if(!Net::IsLocal())
+			if(Net::IsClient())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_GODMODE;
@@ -847,7 +847,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(t.Next())
 		{
 			game->pc->noclip = t.MustGetBool();
-			if(!Net::IsLocal())
+			if(Net::IsClient())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_NOCLIP;
@@ -1545,7 +1545,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		break;
 	case CMD_REFRESH_COOLDOWN:
 		game->pc->RefreshCooldown();
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 			Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 		break;
 	case CMD_DRAW_PATH:
@@ -2624,14 +2624,14 @@ void CommandParser::ListStats(Unit* u)
 	Msg("Melee attack: %s (bonus: %+g, backstab: x%g), ranged: %s (bonus: %+g, backstab: x%g)",
 		(u->HaveWeapon() || u->data->type == UNIT_TYPE::ANIMAL) ? Format("%d", (int)u->CalculateAttack()) : "-",
 		u->GetEffectSum(EffectId::MeleeAttack),
-		1.f + u->GetBackstabMod(u->slots[SLOT_WEAPON]),
+		1.f + u->GetBackstabMod(u->GetEquippedItem(SLOT_WEAPON)),
 		u->HaveBow() ? Format("%d", (int)u->CalculateAttack(&u->GetBow())) : "-",
 		u->GetEffectSum(EffectId::RangedAttack),
-		1.f + u->GetBackstabMod(u->slots[SLOT_BOW]));
+		1.f + u->GetBackstabMod(u->GetEquippedItem(SLOT_BOW)));
 	Msg("Defense %d (bonus: %+g), block: %s", (int)u->CalculateDefense(), u->GetEffectSum(EffectId::Defense),
 		u->HaveShield() ? Format("%d", (int)u->CalculateBlock()) : "-");
 	Msg("Mobility: %d (bonus %+g)", (int)u->CalculateMobility(), u->GetEffectSum(EffectId::Mobility));
-	Msg("Carry: %g/%g (mod: x%g)", float(u->weight) / 10, float(u->weight_max) / 10, u->GetEffectMul(EffectId::Carry));
+	Msg("Carry: %g/%g (mod: x%g)", u->GetWeight(), u->GetWeightMax(), u->GetEffectMul(EffectId::Carry));
 	Msg("Magic resistance: %d%%, magic power: %+d", ConvertResistance(u->CalculateMagicResistance()), u->CalculateMagicPower());
 	Msg("Poison resistance: %d%%", ConvertResistance(u->GetPoisonResistance()));
 	LocalString s = "Attributes: ";

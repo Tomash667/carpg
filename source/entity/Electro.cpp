@@ -97,7 +97,7 @@ bool Electro::Update(float dt)
 			UpdateColor(line);
 	}
 
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		if(lines.back().t >= 0.5f)
 		{

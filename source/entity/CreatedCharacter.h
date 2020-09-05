@@ -62,7 +62,7 @@ struct CreatedCharacter
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStreamReader& f);
 	bool HavePerk(Perk* perk) const;
-	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
+	void GetStartingItems(array<const Item*, SLOT_MAX>& items);
 	int GetItemLevel(int level, bool poor);
 	int Get(AttributeId attrib) const { return a[(int)attrib].value; }
 	int Get(SkillId sk) const { return s[(int)sk].value; }

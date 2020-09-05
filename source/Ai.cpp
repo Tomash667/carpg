@@ -895,7 +895,7 @@ void Game::UpdateAi(float dt)
 						{
 							// check if unit have required item
 							const Item* req_item = iron_vein->item;
-							if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
+							if(req_item && !u.HaveItem(req_item) && u.GetEquippedItem(SLOT_WEAPON) != req_item)
 								goto normal_idle_action;
 							// find closest ore vein
 							Usable* usable = nullptr;
@@ -1056,7 +1056,7 @@ void Game::UpdateAi(float dt)
 											&& game_level->CanSee(area, use.pos, u.pos))
 										{
 											const Item* needed_item = use.base->item;
-											if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
+											if(!needed_item || u.HaveItem(needed_item) || u.GetEquippedItem(SLOT_WEAPON) == needed_item)
 												uses.push_back(*it2);
 										}
 									}
@@ -1364,7 +1364,7 @@ void Game::UpdateAi(float dt)
 									{
 										BaseUsable& base = *use.base;
 										const Item* needed_item = base.item;
-										if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
+										if(!needed_item || u.HaveItem(needed_item) || u.GetEquippedItem(SLOT_WEAPON) == needed_item)
 										{
 											u.action = A_USE_USABLE;
 											u.animation = ANI_PLAY;

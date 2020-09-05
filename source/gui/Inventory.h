@@ -126,7 +126,6 @@ public:
 	void RemoveSlotItem(ITEM_SLOT slot);
 	void DropSlotItem(ITEM_SLOT slot);
 	void ConsumeItem(int index);
-	void EquipSlotItem(ITEM_SLOT slot, int i_index);
 	void EquipSlotItem(int index);
 	void UpdateScrollbar();
 	void Show();
@@ -159,7 +158,7 @@ public:
 	vector<int>* i_items;
 	vector<ItemSlot>* items;
 	const Item* last_item;
-	const Item** slots;
+	const array<const Item*, SLOT_MAX>* equipped;
 	Unit* unit;
 	Scrollbar scrollbar;
 	Button bt;

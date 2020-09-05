@@ -80,7 +80,7 @@ const Item* UnitHelper::GetBaseItem(ITEM_TYPE type, const ItemList* lis)
 UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 {
 	static const ItemList& lis = ItemList::Get("amulets");
-	const Item* amulet = unit.slots[SLOT_AMULET];
+	const Item* amulet = unit.GetEquippedItem(SLOT_AMULET);
 	float prev_value = amulet ? unit.GetItemAiValue(amulet) : 0.f;
 	float best_value = prev_value;
 	items_to_pick.clear();
@@ -107,7 +107,7 @@ UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 
 array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
 {
-	const Item* rings[2] = { unit.slots[SLOT_RING1], unit.slots[SLOT_RING2] };
+	const Item* rings[2] = { unit.GetEquippedItem(SLOT_RING1), unit.GetEquippedItem(SLOT_RING2) };
 	float value[2] = {
 		rings[0] ? unit.GetItemAiValue(rings[0]) : 0,
 		rings[1] ? unit.GetItemAiValue(rings[1]) : 0
@@ -138,7 +138,7 @@ array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
 array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit& unit, float min_value)
 {
 	static const ItemList& lis = ItemList::Get("rings");
-	const Item* rings[2] = { unit.slots[SLOT_RING1], unit.slots[SLOT_RING2] };
+	const Item* rings[2] = { unit.GetEquippedItem(SLOT_RING1), unit.GetEquippedItem(SLOT_RING2) };
 
 	items_to_pick.clear();
 	const Item* second_best_item = nullptr;

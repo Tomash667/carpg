@@ -98,7 +98,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 {
 	if(hitted)
 	{
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 			return;
 
 		if(!ability)

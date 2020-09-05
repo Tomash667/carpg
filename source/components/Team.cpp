@@ -656,8 +656,8 @@ void Team::UpdateTeamItemShares()
 
 			// old item, can be sold if overweight
 			int prev_item_weight;
-			if(tsi.to->slots[target_slot])
-				prev_item_weight = tsi.to->slots[target_slot]->weight;
+			if(tsi.to->HaveEquippedItem(target_slot))
+				prev_item_weight = tsi.to->GetEquippedItem(target_slot)->weight;
 			else
 				prev_item_weight = 0;
 
@@ -957,7 +957,7 @@ void Team::BuyTeamItems()
 			else
 			{
 				const Item* item;
-				if(!unit.slots[slot_type])
+				if(!unit.HaveEquippedItem(slot_type))
 				{
 					switch(i)
 					{
@@ -973,7 +973,7 @@ void Team::BuyTeamItems()
 					}
 				}
 				else
-					item = ItemHelper::GetBetterItem(unit.slots[slot_type]);
+					item = ItemHelper::GetBetterItem(unit.GetEquippedItem(slot_type));
 
 				while(item && unit.gold >= item->value)
 				{

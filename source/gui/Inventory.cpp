@@ -131,7 +131,7 @@ void Inventory::Setup(PlayerController* pc)
 {
 	inv_trade_mine->i_items = inv_mine->i_items = &tmp_inventory[0];
 	inv_trade_mine->items = inv_mine->items = &pc->unit->items;
-	inv_trade_mine->slots = inv_mine->slots = pc->unit->slots;
+	inv_trade_mine->equipped = inv_mine->equipped = &pc->unit->GetEquippedItems();
 	inv_trade_mine->unit = inv_mine->unit = pc->unit;
 	inv_trade_other->i_items = &tmp_inventory[1];
 }
@@ -145,7 +145,7 @@ void Inventory::StartTrade(InventoryMode mode, Unit& unit)
 
 	inv_trade_other->unit = &unit;
 	inv_trade_other->items = &unit.items;
-	inv_trade_other->slots = unit.slots;
+	inv_trade_other->equipped = &unit.GetEquippedItems();
 
 	switch(mode)
 	{
@@ -188,7 +188,7 @@ void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* un
 	this->mode = mode;
 
 	inv_trade_other->items = &items;
-	inv_trade_other->slots = nullptr;
+	inv_trade_other->equipped = nullptr;
 
 	switch(mode)
 	{
@@ -242,7 +242,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
 			inv_trade_other->unit = nullptr;
 			inv_trade_other->items = &chest->items;
-			inv_trade_other->slots = nullptr;
+			inv_trade_other->equipped = nullptr;
 			inv_trade_other->title = txLootingChest;
 			inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
 		}
@@ -256,7 +256,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
 			inv_trade_other->unit = nullptr;
 			inv_trade_other->items = &pc->action_usable->container->items;
-			inv_trade_other->slots = nullptr;
+			inv_trade_other->equipped = nullptr;
 			inv_trade_other->title = Format("%s - %s", txLooting, usable->base->name.c_str());
 			inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
 		}
@@ -276,7 +276,7 @@ void Inventory::BuildTmpInventory(int index)
 
 	PlayerController* pc = game->pc;
 	vector<int>& ids = tmp_inventory[index];
-	const Item** slots;
+	const array<const Item*, SLOT_MAX>* equipped;
 	vector<ItemSlot>* items;
 	int& shift = tmp_inventory_shift[index];
 	shift = 0;
@@ -284,7 +284,7 @@ void Inventory::BuildTmpInventory(int index)
 	if(index == 0)
 	{
 		// player items
-		slots = pc->unit->slots;
+		equipped = &pc->unit->GetEquippedItems();
 		items = &pc->unit->items;
 	}
 	else
@@ -293,22 +293,22 @@ void Inventory::BuildTmpInventory(int index)
 		if(pc->action == PlayerAction::LootChest
 			|| pc->action == PlayerAction::Trade
 			|| pc->action == PlayerAction::LootContainer)
-			slots = nullptr;
+			equipped = nullptr;
 		else
-			slots = pc->action_unit->slots;
+			equipped = &pc->action_unit->GetEquippedItems();
 		items = pc->chest_trade;
 	}
 
 	ids.clear();
 
 	// add equipped items if unit
-	if(slots)
+	if(equipped)
 	{
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i])
+			if(equipped->at(i))
 			{
-				ids.push_back(-i - 1);
+				ids.push_back(SlotToIIndex((ITEM_SLOT)i));
 				++shift;
 			}
 		}
@@ -416,7 +416,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 		int count, is_team;
 		if(i_item < 0)
 		{
-			item = slots[-i_item - 1];
+			item = equipped->at(-i_item - 1);
 			count = 1;
 			is_team = (mode == LOOT_OTHER ? 2 : 0);
 		}
@@ -548,7 +548,7 @@ void InventoryPanel::Update(float dt)
 			int i_index = i_items->at(last_index);
 			const Item* item;
 			if(i_index < 0)
-				item = slots[IIndexToSlot(i_index)];
+				item = equipped->at(IIndexToSlot(i_index));
 			else
 				item = items->at(i_index).item;
 			if(item != last_item)
@@ -635,7 +635,7 @@ void InventoryPanel::Update(float dt)
 					const Item* item;
 					int i_index = i_items->at(new_index);
 					if(i_index < 0)
-						item = slots[IIndexToSlot(i_index)];
+						item = equipped->at(IIndexToSlot(i_index));
 					else
 						item = items->at(i_index).item;
 					game->pc->SetShortcut(i, Shortcut::TYPE_ITEM, (int)item);
@@ -664,7 +664,7 @@ void InventoryPanel::Update(float dt)
 		{
 			slot = nullptr;
 			slot_type = IIndexToSlot(i_index);
-			item = slots[slot_type];
+			item = equipped->at(slot_type);
 		}
 		else
 		{
@@ -809,7 +809,7 @@ void InventoryPanel::Update(float dt)
 							}
 
 							if(ok)
-								EquipSlotItem(type, i_index);
+								EquipSlotItem(i_index);
 						}
 					}
 				}
@@ -979,43 +979,17 @@ void InventoryPanel::Update(float dt)
 					game->pc->unit->AddItem(item, 1u, 1u);
 					base.BuildTmpInventory(0);
 					// remove from container
-					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
-					{
-						unit->used_item = nullptr;
-						if(Net::IsServer())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::REMOVE_USED_ITEM;
-							c.unit = unit;
-						}
-					}
-					if(Net::IsLocal())
-						unit->RemoveItemEffects(item, slot_type);
-					unit->weight -= item->weight;
-					slots[slot_type] = nullptr;
+					unit->RemoveEquippedItem(slot_type);
 					base.BuildTmpInventory(1);
 					// sound
 					sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 					// message
-					if(Net::IsOnline())
+					if(Net::IsClient())
 					{
-						if(Net::IsServer())
-						{
-							if(IsVisible(slot_type))
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::CHANGE_EQUIPMENT;
-								c.unit = unit;
-								c.id = slot_type;
-							}
-						}
-						else
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::GET_ITEM;
-							c.id = i_index;
-							c.count = 1;
-						}
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::GET_ITEM;
+						c.id = i_index;
+						c.count = 1;
 					}
 				}
 				break;
@@ -1290,48 +1264,32 @@ void InventoryPanel::Event(GuiEvent e)
 		// slots
 		if(game->pc->action != PlayerAction::LootChest && game->pc->action != PlayerAction::LootContainer)
 		{
-			const Item** unit_slots = game->pc->action_unit->slots;
+			array<const Item*, SLOT_MAX>& equipped = game->pc->action_unit->GetEquippedItems();
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
-				if(unit_slots[i])
+				if(!equipped[i])
+					continue;
+
+				Sound* s = game_res->GetItemSound(equipped[i]);
+				for(int i = 0; i < 3; ++i)
 				{
-					Sound* s = game_res->GetItemSound(unit_slots[i]);
-					if(s == game_res->sCoins)
-						gold = true;
-					else
+					if(sound[i] == s)
+						break;
+					else if(!sound[i])
 					{
-						for(int i = 0; i < 3; ++i)
-						{
-							if(sound[i] == s)
-								break;
-							else if(!sound[i])
-							{
-								sound[i] = s;
-								break;
-							}
-						}
+						sound[i] = s;
+						break;
 					}
-
-					InsertItemBare(itms, unit_slots[i]);
-					game->pc->unit->weight += unit_slots[i]->weight;
-					if(Net::IsLocal())
-						game->pc->unit->RemoveItemEffects(unit_slots[i], (ITEM_SLOT)i);
-					unit_slots[i] = nullptr;
-
-					if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_EQUIPMENT;
-						c.unit = game->pc->action_unit;
-						c.id = i;
-					}
-
-					changes = true;
 				}
+
+				InsertItemBare(itms, equipped[i]);
+				game->pc->unit->weight += equipped[i]->weight;
+				changes = true;
 			}
 
 			// zero looted unit inventory weight
 			game->pc->action_unit->weight = 0;
+			game->pc->action_unit->RemoveAllEquippedItems();
 		}
 
 		// items
@@ -1365,7 +1323,7 @@ void InventoryPanel::Event(GuiEvent e)
 		}
 		game->pc->chest_trade->clear();
 
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ALL_ITEMS;
@@ -1391,40 +1349,24 @@ void InventoryPanel::Event(GuiEvent e)
 //=================================================================================================
 void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
-	const Item* item = slots[slot];
+	const Item* item = equipped->at(slot);
 	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
-	if(Net::IsLocal())
-		unit->RemoveItemEffects(item, slot);
+	unit->RemoveEquippedItem(slot);
 	unit->AddItem(item, 1, false);
-	unit->weight -= item->weight;
-	slots[slot] = nullptr;
 	base.BuildTmpInventory(0);
 
-	if(Net::IsOnline())
+	if(Net::IsClient())
 	{
-		if(Net::IsServer())
-		{
-			if(IsVisible(slot))
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
-				c.unit = unit;
-				c.id = slot;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
-			c.id = SlotToIIndex(slot);
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		c.id = SlotToIIndex(slot);
 	}
 }
 
 //=================================================================================================
 void InventoryPanel::DropSlotItem(ITEM_SLOT slot)
 {
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slots[slot]));
+	sound_mgr->PlaySound2d(game_res->GetItemSound(unit->GetEquippedItem(slot)));
 	unit->DropItem(slot);
 	base.BuildTmpInventory(0);
 	UpdateScrollbar();
@@ -1447,77 +1389,26 @@ void InventoryPanel::ConsumeItem(int index)
 }
 
 //=================================================================================================
-void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
+void InventoryPanel::EquipSlotItem(int index)
 {
-	const Item* item = items->at(i_index).item;
-
-	// for rings - use empty slot or last equipped slot
-	if(slot == SLOT_RING1)
-	{
-		if(slots[slot])
-		{
-			if(!slots[SLOT_RING2] || game->pc->last_ring)
-				slot = SLOT_RING2;
-		}
-		game->pc->last_ring = (slot == SLOT_RING2);
-	}
-
 	// play sound
+	const Item* item = items->at(index).item;
 	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 
-	if(slots[slot])
-	{
-		// replace equipped item
-		const Item* prev_item = slots[slot];
-		if(Net::IsLocal())
-		{
-			unit->RemoveItemEffects(prev_item, slot);
-			unit->ApplyItemEffects(item, slot);
-		}
-		slots[slot] = item;
-		items->erase(items->begin() + i_index);
-		unit->AddItem(prev_item, 1, false);
-		unit->weight -= prev_item->weight;
-	}
-	else
-	{
-		// equip item
-		slots[slot] = item;
-		if(Net::IsLocal())
-			unit->ApplyItemEffects(item, slot);
-		items->erase(items->begin() + i_index);
-	}
-
+	// equip
+	unit->EquipItem(index);
 	base.BuildTmpInventory(0);
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
 		base.tooltip.Clear();
 
-	if(Net::IsOnline())
+	// send message
+	if(Net::IsClient())
 	{
-		if(Net::IsServer())
-		{
-			if(IsVisible(slot))
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
-				c.unit = unit;
-				c.id = slot;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
-			c.id = i_index;
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		c.id = index;
 	}
-}
-
-//=================================================================================================
-void InventoryPanel::EquipSlotItem(int index)
-{
-	EquipSlotItem(ItemTypeToSlot(items->at(index).item->type), index);
 }
 
 //=================================================================================================
@@ -1569,7 +1460,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, Text
 		int i_index = i_items->at(group);
 		if(i_index < 0)
 		{
-			item = slots[IIndexToSlot(i_index)];
+			item = equipped->at(IIndexToSlot(i_index));
 			count = 1;
 			team_count = (mode == LOOT_OTHER ? 1 : 0);
 		}
@@ -1781,7 +1672,7 @@ void InventoryPanel::BuyItem(int index, uint count)
 		else
 			base.tooltip.Refresh();
 		// message
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ITEM;
@@ -1831,7 +1722,7 @@ void InventoryPanel::SellItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// message
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -1843,7 +1734,7 @@ void InventoryPanel::SellItem(int index, uint count)
 //=================================================================================================
 void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 {
-	const Item* item = slots[slot];
+	const Item* item = equipped->at(slot);
 
 	// sound
 	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
@@ -1857,31 +1748,15 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
 	// remove player item
-	if(Net::IsLocal())
-		unit->RemoveItemEffects(item, slot);
-	slots[slot] = nullptr;
-	unit->weight -= item->weight;
+	unit->RemoveEquippedItem(slot);
 	UpdateGrid(true);
 	// message
-	if(Net::IsOnline())
+	if(Net::IsClient())
 	{
-		if(Net::IsServer())
-		{
-			if(IsVisible(slot))
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
-				c.unit = unit;
-				c.id = slot;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PUT_ITEM;
-			c.id = SlotToIIndex(slot);
-			c.count = 1;
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = SlotToIIndex(slot);
+		c.count = 1;
 	}
 }
 
@@ -1902,7 +1777,7 @@ void InventoryPanel::OnPutGold(int id)
 		unit->gold -= counter;
 		// sound
 		sound_mgr->PlaySound2d(game_res->sCoins);
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PUT_GOLD;
@@ -1970,7 +1845,7 @@ void InventoryPanel::LootItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// message
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
@@ -2031,7 +1906,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	}
 
 	// send change
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -2043,7 +1918,7 @@ void InventoryPanel::PutItem(int index, uint count)
 //=================================================================================================
 void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 {
-	const Item* item = slots[slot];
+	const Item* item = equipped->at(slot);
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
 		base.tooltip.Clear();
@@ -2061,32 +1936,16 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 	UpdateGrid(false);
 
 	// remove from player
-	if(Net::IsLocal())
-		unit->RemoveItemEffects(item, slot);
-	slots[slot] = nullptr;
+	unit->RemoveEquippedItem(slot);
 	UpdateGrid(true);
-	unit->weight -= item->weight;
 
 	// send change
-	if(Net::IsOnline())
+	if(Net::IsClient())
 	{
-		if(Net::IsServer())
-		{
-			if(IsVisible(slot))
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
-				c.unit = unit;
-				c.id = slot;
-			}
-		}
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PUT_ITEM;
-			c.id = SlotToIIndex(slot);
-			c.count = 1;
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = SlotToIIndex(slot);
+		c.count = 1;
 	}
 }
 
@@ -2184,7 +2043,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// message
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -2229,7 +2088,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// message
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
@@ -2262,7 +2121,7 @@ void InventoryPanel::OnGiveItem(int id)
 	{
 		slot = nullptr;
 		slot_type = IIndexToSlot(iindex);
-		item = slots[slot_type];
+		item = equipped->at(slot_type);
 	}
 
 	// add
@@ -2294,18 +2153,7 @@ void InventoryPanel::OnGiveItem(int id)
 	if(slot)
 		items->erase(items->begin() + iindex);
 	else
-	{
-		if(Net::IsLocal())
-			unit->RemoveItemEffects(slots[slot_type], slot_type);
-		slots[slot_type] = nullptr;
-		if(Net::IsServer() && IsVisible(slot_type))
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
-			c.unit = unit;
-			c.id = slot_type;
-		}
-	}
+		unit->RemoveEquippedItem(slot_type);
 	UpdateGrid(true);
 	// setup inventory
 	if(Net::IsLocal())
@@ -2314,7 +2162,7 @@ void InventoryPanel::OnGiveItem(int id)
 		base.BuildTmpInventory(1);
 	}
 	// message
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -2372,7 +2220,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// message
-	if(!Net::IsLocal())
+	if(Net::IsClient())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -2388,7 +2236,7 @@ void InventoryPanel::GiveSlotItem(ITEM_SLOT slot)
 	if(mode == INVENTORY)
 		base.tooltip.Clear();
 	DialogInfo info;
-	const Item* item = slots[slot];
+	const Item* item = equipped->at(slot);
 	if(unit->player->action_unit->gold >= item->value / 2)
 	{
 		// buy item
@@ -2471,7 +2319,7 @@ void InventoryPanel::IsBetterItemResponse(bool is_better)
 		{
 			// equipped item
 			ITEM_SLOT slot_type = IIndexToSlot(iindex);
-			const Item*& item = unit->slots[slot_type];
+			const Item* item = unit->GetEquippedItem(slot_type);
 			if(!t->CanTake(item))
 				gui->SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 			else if(unit->SlotRequireHideWeapon(slot_type))
@@ -2542,7 +2390,7 @@ int InventoryPanel::GetLockIndexOrSlotAndRelease()
 		if(iindex == -1)
 			iindex = Unit::INVALID_IINDEX;
 	}
-	else if(slots && slots[(int)base.lock.slot])
+	else if(equipped && equipped->at(base.lock.slot))
 		iindex = SlotToIIndex(base.lock.slot);
 	else
 		iindex = Unit::INVALID_IINDEX;

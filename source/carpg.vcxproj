@@ -145,6 +145,7 @@
     <ClInclude Include="entity\Electro.h" />
     <ClInclude Include="entity\Explo.h" />
     <ClInclude Include="entity\LevelQuad.h" />
+    <ClInclude Include="entity\UnitList.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -348,6 +349,7 @@
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="entity\Explo.cpp" />
+    <ClCompile Include="entity\UnitList.cpp" />
     <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
