@@ -136,10 +136,7 @@ public:
 	void DrawGame();
 	void ForceRedraw();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
-	//void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
-	FIXME;
 	void SetGlowNodes();
-	void ClearGlowNodes();
 	void ListAreas(LevelArea& area);
 	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();
@@ -373,7 +370,7 @@ public:
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	// scene
 	Color clear_color, clear_color_next;
-	bool use_glow, use_postfx;
+	bool use_postfx;
 	DrawBatch draw_batch;
 	int uv_mod;
 	QuadTree quadtree;

@@ -2226,7 +2226,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Unit* unit = game_level->FindUnit(id);
 					UnitData* ud = UnitData::TryGet(unit_id);
 					if(unit && ud)
-						unit->data = ud;
+						unit->ChangeBase(ud);
 					else if(!unit)
 						Error("Update client: CHANGE_UNIT_BASE, missing unit %d.", id);
 					else

@@ -15,7 +15,6 @@ public:
 	enum Id
 	{
 		IdFullscreen = GuiEvent_Custom,
-		IdGlow,
 		IdNormal,
 		IdSpecular,
 		IdVsync,
@@ -43,7 +42,7 @@ private:
 	void ChangeLanguage(int id);
 	void OnChangeSoundDevice(int id);
 
-	CheckBox check[5];
+	CheckBox check[4];
 	ListBox res, multisampling, language, soundDevice;
 	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
 		txGrassRange, txSoundDevice, txDefaultDevice;

@@ -41,7 +41,6 @@ quit = "Wyjœcie"
 
 [Options]
 fullscreenMode = "Tryb pe³noekranowy"
-glow = "Poœwiata"
 normalMap = "Normal map"
 specularMap = "Specular map"
 soundVolume = "G³oœnoœæ dŸwiêku"

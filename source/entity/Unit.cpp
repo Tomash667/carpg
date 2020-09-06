@@ -8624,12 +8624,14 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 	if(data == ud)
 		return;
 
+	assert(data->mesh == ud->mesh); // TODO - currently only textures change is allowed
 	data = ud;
 	game->PreloadUnit(this);
 	level = ud->level.Clamp(level);
 	stats = data->GetStats(level);
 	CalculateStats();
 
+	// items
 	if(update_items)
 	{
 		ud->item_script->Parse(*this);
@@ -8643,6 +8645,13 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 		if(IsTeamMember())
 			MakeItemsTeam(false);
 		UpdateInventory();
+	}
+
+	// apperance
+	if(node)
+	{
+		node->tex_override = data->GetTextureOverride();
+		node->tint = data->tint;
 	}
 
 	if(IsHero() && IsSet(ud->flags2, F2_MELEE))

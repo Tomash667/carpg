@@ -1415,6 +1415,7 @@ void Game::UvModChanged()
 void Game::SetGlowNodes()
 {
 	SceneNode* node;
+	Color color = Color::White;
 	switch(pc->data.before_player)
 	{
 	case BP_USABLE:
@@ -1429,6 +1430,10 @@ void Game::SetGlowNodes()
 	case BP_ITEM:
 		node = pc->data.before_player_ptr.item->node;
 		break;
+	case BP_UNIT:
+		node = pc->data.before_player_ptr.unit->node;
+		color = pc->unit->GetRelationColor(*pc->data.before_player_ptr.unit);
+		break;
 	default:
 		node = nullptr;
 		break;
@@ -1436,43 +1441,11 @@ void Game::SetGlowNodes()
 
 	if(node)
 	{
-		if(use_glow)
+		draw_batch.glow_nodes.push_back({ node, color });
+		for(SceneNode* child : node->childs)
 		{
-			GlowNode& glow = Add1(draw_batch.glow_nodes);
-			glow.node = node;
-			glow.color = Color::White;
+			if(child->visible)
+				draw_batch.glow_nodes.push_back({ child, color });
 		}
-		else
-			node->tint = Vec4(2, 2, 2, 1);
 	}
-}
-
-//=================================================================================================
-void Game::ClearGlowNodes()
-{
-	if(use_glow)
-		return;
-
-	SceneNode* node;
-	switch(pc->data.before_player)
-	{
-	case BP_USABLE:
-		node = pc->data.before_player_ptr.usable->node;
-		break;
-	case BP_CHEST:
-		node = pc->data.before_player_ptr.chest->node;
-		break;
-	case BP_DOOR:
-		node = pc->data.before_player_ptr.door->node;
-		break;
-	case BP_ITEM:
-		node = pc->data.before_player_ptr.item->node;
-		break;
-	default:
-		node = nullptr;
-		break;
-	}
-
-	if(node)
-		node->tint = Vec4::One;
 }

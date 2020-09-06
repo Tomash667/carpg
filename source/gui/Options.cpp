@@ -73,7 +73,7 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 
 	Int2 offset(290, 60);
 
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
@@ -160,10 +160,9 @@ void Options::LoadLanguage()
 	txMsNone = s.Get("msNone");
 
 	check[0].text = s.Get("fullscreenMode");
-	check[1].text = s.Get("glow");
-	check[2].text = s.Get("normalMap");
-	check[3].text = s.Get("specularMap");
-	check[4].text = s.Get("vsync");
+	check[1].text = s.Get("normalMap");
+	check[2].text = s.Get("specularMap");
+	check[3].text = s.Get("vsync");
 
 	bts[0].id = IdOk;
 	bts[0].parent = this;
@@ -237,7 +236,7 @@ void Options::Draw(ControlDrawData*)
 	gui->DrawText(GameGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 		check[i].Draw();
 	for(int i = 0; i < 4; ++i)
 		scroll[i].Draw();
@@ -304,7 +303,7 @@ void Options::Update(float dt)
 		language.menu->Update(dt);
 	if(soundDevice.menu->visible)
 		soundDevice.menu->Update(dt);
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		check[i].mouse_focus = focus;
 		check[i].Update(dt);
@@ -358,7 +357,7 @@ void Options::Event(GuiEvent e)
 			SetSoundDevices();
 		}
 		pos = global_pos = (gui->wnd_size - size) / 2;
-		for(int i = 0; i < 5; ++i)
+		for(int i = 0; i < 4; ++i)
 			check[i].global_pos = global_pos + check[i].pos;
 		for(int i = 0; i < 4; ++i)
 			scroll[i].global_pos = global_pos + scroll[i].pos;
@@ -405,9 +404,6 @@ void Options::Event(GuiEvent e)
 		case IdControls:
 			gui->ShowDialog((DialogBox*)game_gui->controls);
 			break;
-		case IdGlow:
-			game->use_glow = check[1].checked;
-			break;
 		case IdNormal:
 			scene_mgr->use_normalmap = check[2].checked;
 			break;
@@ -425,10 +421,9 @@ void Options::Event(GuiEvent e)
 void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
-	check[1].checked = game->use_glow;
-	check[2].checked = scene_mgr->use_normalmap;
-	check[3].checked = scene_mgr->use_specularmap;
-	check[4].checked = render->IsVsyncEnabled();
+	check[1].checked = scene_mgr->use_normalmap;
+	check[2].checked = scene_mgr->use_specularmap;
+	check[3].checked = render->IsVsyncEnabled();
 
 	ResolutionItem& currentItem = *res.GetItemCast<ResolutionItem>();
 	const Int2& wndSize = engine->GetWindowSize();

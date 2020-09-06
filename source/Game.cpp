@@ -678,8 +678,6 @@ void Game::DrawGame()
 				postfx_shader->Prepare();
 			postfx_shader->Draw(postEffects);
 		}
-
-		ClearGlowNodes();
 	}
 	else
 		render->Clear(clear_color);

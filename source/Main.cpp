@@ -612,7 +612,6 @@ void LoadConfiguration(char* lpCmdLine)
 	game->use_postfx = cfg.GetBool("use_postfx", "cl_postfx", true);
 	scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", "cl_normalmap", true);
 	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", "cl_specularmap", true);
-	game->use_glow = cfg.GetBool("cl_glow", true);
 	render->SetVsync(cfg.GetBool("vsync", true));
 	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game->settings.grass_range < 0.f)

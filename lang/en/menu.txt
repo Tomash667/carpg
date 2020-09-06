@@ -41,7 +41,6 @@ quit = "Quit"
 
 [Options]
 fullscreenMode = "Fullscreen mode"
-glow = "Glow"
 normalMap = "Normal map"
 specularMap = "Specular map"
 soundVolume = "Sound volume"
