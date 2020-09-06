@@ -4796,9 +4796,7 @@ float Unit::GetStaminaMod(const Item& item) const
 FIXME;
 void Unit::CreateNode()
 {
-	node = SceneNode::Get();
-	node->tmp = false;
-	node->SetMesh(new MeshInstance(data->mesh));
+	SceneNodeHelper::Create(node, data->mesh);
 	if(IsSet(data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->center = visual_pos;
@@ -4808,12 +4806,75 @@ void Unit::CreateNode()
 
 	if(data->type >= UNIT_TYPE::HUMANOID)
 	{
-		if(HaveArmor() && GetArmor().mesh)
+		bool inHand;
+		WeaponType inHandType;
+		switch(weapon_state)
+		{
+		case WeaponState::Hiding:
+			if(animation_state == AS_TAKE_WEAPON_START)
+			{
+				inHand = true;
+				inHandType = weapon_hiding;
+			}
+			else
+				inHand = false;
+			break;
+		case WeaponState::Hidden:
+			inHand = false;
+			break;
+		case WeaponState::Taking:
+			if(animation_state == AS_TAKE_WEAPON_MOVED)
+			{
+				inHand = true;
+				inHandType = weapon_taken;
+			}
+			else
+				inHand = false;
+			break;
+		case WeaponState::Taken:
+			inHand = true;
+			inHandType = weapon_taken;
+			break;
+		}
+
+		if(HaveWeapon())
+		{
+			Mesh::Point* point = node->mesh->GetPoint((inHand && inHandType == W_ONE_HANDED) ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+			SceneNode* node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Weapon;
+			node2->SetMesh(GetWeapon().mesh);
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node->Add(node2, point);
+		}
+
+		if(HaveBow())
+		{
+			Mesh::Point* point = node->mesh->GetPoint((inHand && inHandType == W_BOW) ? NAMES::point_bow : NAMES::point_shield_hidden);
+			SceneNode* node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Bow;
+			node2->SetMesh(new MeshInstance(GetBow().mesh));
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node->Add(node2, point);
+		}
+
+		if(HaveShield())
+		{
+			Mesh::Point* point = node->mesh->GetPoint((inHand && inHandType == W_ONE_HANDED) ? NAMES::point_shield : NAMES::point_shield_hidden);
+			SceneNode* node2 = SceneNode::Get();
+			node2->id = (int)SceneNodeId::Shield;
+			node2->SetMesh(GetShield().mesh);
+			node2->center = node->center;
+			node2->mat = node->mat;
+			node->Add(node2, point);
+		}
+
+		if(HaveArmor())
 		{
 			const Armor& armor = GetArmor();
 			SceneNode* node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Armor;
-			node2->tmp = false;
 			node2->SetMesh(armor.mesh, node->mesh_inst);
 			node2->center = node->center;
 			node2->mat = node->mat;
@@ -4829,7 +4890,6 @@ void Unit::CreateNode()
 		// eyebrows
 		SceneNode* node2 = SceneNode::Get();
 		node2->id = (int)SceneNodeId::Eyebrows;
-		node2->tmp = false;
 		node2->SetMesh(game_res->aEyebrows, node->mesh_inst);
 		node2->center = node->center;
 		node2->mat = node->mat;
@@ -4841,7 +4901,6 @@ void Unit::CreateNode()
 		{
 			node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Hair;
-			node2->tmp = false;
 			node2->SetMesh(game_res->aHair[human_data->hair], node->mesh_inst);
 			node2->center = node->center;
 			node2->mat = node->mat;
@@ -4854,7 +4913,6 @@ void Unit::CreateNode()
 		{
 			node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Beard;
-			node2->tmp = false;
 			node2->SetMesh(game_res->aBeard[human_data->beard], node->mesh_inst);
 			node2->center = node->center;
 			node2->mat = node->mat;
@@ -4867,7 +4925,6 @@ void Unit::CreateNode()
 		{
 			node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Mustache;
-			node2->tmp = false;
 			node2->SetMesh(game_res->aMustache[human_data->mustache], node->mesh_inst);
 			node2->center = node->center;
 			node2->mat = node->mat;
@@ -4887,42 +4944,111 @@ void Unit::UpdateNode(ITEM_SLOT slot)
 		return;
 
 	const Item* item = slots[slot];
-	if(slot == SLOT_ARMOR)
+	switch(slot)
 	{
-		SceneNode* child = node->GetChild((int)SceneNodeId::Armor);
-		if(!child)
+	case SLOT_WEAPON:
 		{
-			child = SceneNode::Get();
-			child->id = (int)SceneNodeId::Armor;
-			child->tmp = false;
-			child->center = node->center;
-			child->mat = node->mat;
-			node->Add(child);
+			SceneNode* child = node->GetChild((int)SceneNodeId::Weapon);
+			if(!child)
+			{
+				child = SceneNode::Get();
+				child->id = (int)SceneNodeId::Weapon;
+				child->center = node->center;
+				child->mat = node->mat;
+				node->Add(child, node->mesh->GetPoint(NAMES::point_hidden_weapon));
+			}
+			if(item)
+			{
+				child->SetMesh(item->mesh);
+				child->visible = true;
+			}
+			else
+				child->visible = false;
 		}
-		if(item && item->ToArmor().mesh)
+		break;
+	case SLOT_BOW:
 		{
-			const Armor& armor = GetArmor();
-			child->SetMesh(armor.mesh, node->mesh_inst);
-			child->tex_override = armor.GetTextureOverride();
-			child->visible = true;
-			if(armor.armor_unit_type == ArmorUnitType::HUMAN && armor.mesh)
-				node->subs = Bit(1) | Bit(2);
+			SceneNode* child = node->GetChild((int)SceneNodeId::Bow);
+			if(!child)
+			{
+				child = SceneNode::Get();
+				child->id = (int)SceneNodeId::Bow;
+				child->center = node->center;
+				child->mat = node->mat;
+				node->Add(child, node->mesh->GetPoint(NAMES::point_hidden_weapon));
+			}
+			if(item)
+			{
+				child->ReplaceMesh(item->mesh);
+				child->visible = true;
+			}
+			else
+				child->visible = false;
 		}
-		else
+		break;
+	case SLOT_SHIELD:
 		{
-			child->visible = false;
-			node->subs = SceneNode::SPLIT_MASK;
+			SceneNode* child = node->GetChild((int)SceneNodeId::Shield);
+			if(!child)
+			{
+				child = SceneNode::Get();
+				child->id = (int)SceneNodeId::Shield;
+				child->center = node->center;
+				child->mat = node->mat;
+				node->Add(child, node->mesh->GetPoint(NAMES::point_shield_hidden));
+			}
+			if(item)
+			{
+				child->SetMesh(item->mesh);
+				child->visible = true;
+			}
+			else
+				child->visible = false;
 		}
+		break;
+	case  SLOT_ARMOR:
+		{
+			SceneNode* child = node->GetChild((int)SceneNodeId::Armor);
+			if(!child)
+			{
+				child = SceneNode::Get();
+				child->id = (int)SceneNodeId::Armor;
+				child->center = node->center;
+				child->mat = node->mat;
+				node->Add(child);
+			}
+			if(item)
+			{
+				const Armor& armor = GetArmor();
+				child->SetMesh(armor.mesh, node->mesh_inst);
+				child->tex_override = armor.GetTextureOverride();
+				child->visible = true;
+				if(armor.armor_unit_type == ArmorUnitType::HUMAN && armor.mesh)
+					node->subs = Bit(1) | Bit(2);
+			}
+			else
+			{
+				child->visible = false;
+				node->subs = SceneNode::SPLIT_MASK;
+			}
+		}
+		break;
 	}
 }
 
 //=================================================================================================
 void Unit::UpdateVisualPos()
 {
+	node->mesh_inst->SetupBones();
 	node->center = visual_pos;
 	node->mat = Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visual_pos);
 	for(SceneNode* child : node->childs)
-		child->mat = node->mat;
+	{
+		if(child->point)
+			child->mat = child->point->mat * node->mesh_inst->mat_bones[child->point->bone] * node->mat;
+		else
+			child->mat = node->mat;
+	}
 }
 
 //=================================================================================================
@@ -5831,9 +5957,47 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 //=============================================================================
 void Unit::SetWeaponStateInstant(WeaponState weapon_state, WeaponType type)
 {
+	assert(Any(weapon_state, WeaponState::Taken, WeaponState::Hidden));
 	this->weapon_state = weapon_state;
 	this->weapon_taken = type;
 	weapon_hiding = W_NONE;
+	if(node)
+	{
+		if(weapon_state == WeaponState::Taken)
+		{
+			// weapon
+			SceneNode* child = node->GetChild((int)SceneNodeId::Weapon);
+			if(child)
+				child->point = node->mesh->GetPoint(type == W_ONE_HANDED ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+
+			// bow
+			child = node->GetChild((int)SceneNodeId::Bow);
+			if(child)
+				child->point = node->mesh->GetPoint(type == W_BOW ? NAMES::point_bow : NAMES::point_shield_hidden);
+
+			// shield
+			child = node->GetChild((int)SceneNodeId::Shield);
+			if(child)
+				child->point = node->mesh->GetPoint(type == W_ONE_HANDED ? NAMES::point_shield : NAMES::point_shield_hidden);
+		}
+		else
+		{
+			// weapon
+			SceneNode* child = node->GetChild((int)SceneNodeId::Weapon);
+			if(child)
+				child->point = node->mesh->GetPoint(NAMES::point_hidden_weapon);
+
+			// bow
+			child = node->GetChild((int)SceneNodeId::Bow);
+			if(child)
+				child->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+
+			// shield
+			child = node->GetChild((int)SceneNodeId::Shield);
+			if(child)
+				child->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+		}
+	}
 }
 
 //=============================================================================
@@ -7389,7 +7553,22 @@ void Unit::Update(float dt)
 		if(weapon_state == WeaponState::Taking)
 		{
 			if(animation_state == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
+			{
 				animation_state = AS_TAKE_WEAPON_MOVED;
+				if(weapon_taken == W_ONE_HANDED)
+				{
+					SceneNode* child = node->GetChild((int)SceneNodeId::Weapon);
+					child->point = node->mesh->GetPoint(NAMES::point_weapon);
+					child = node->GetChild((int)SceneNodeId::Shield);
+					if(child)
+						child->point = node->mesh->GetPoint(NAMES::point_shield);
+				}
+				else
+				{
+					SceneNode* child = node->GetChild((int)SceneNodeId::Bow);
+					child->point = node->mesh->GetPoint(NAMES::point_bow);
+				}
+			}
 			if(meshInst->IsEnded(1))
 			{
 				weapon_state = WeaponState::Taken;
@@ -7407,7 +7586,22 @@ void Unit::Update(float dt)
 		{
 			// chowanie broni
 			if(animation_state == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
+			{
 				animation_state = AS_TAKE_WEAPON_MOVED;
+				if(weapon_hiding == W_ONE_HANDED)
+				{
+					SceneNode* child = node->GetChild((int)SceneNodeId::Weapon);
+					child->point = node->mesh->GetPoint(NAMES::point_hidden_weapon);
+					child = node->GetChild((int)SceneNodeId::Shield);
+					if(child)
+						child->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+				}
+				else
+				{
+					SceneNode* child = node->GetChild((int)SceneNodeId::Bow);
+					child->point = node->mesh->GetPoint(NAMES::point_shield_hidden);
+				}
+			}
 			if(weapon_taken != W_NONE && (animation_state == AS_TAKE_WEAPON_MOVED || meshInst->IsEnded(1)))
 			{
 				meshInst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);

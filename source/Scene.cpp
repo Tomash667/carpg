@@ -307,10 +307,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// set bones
 	u.mesh_inst->SetupBones();
 
-	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
-		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.ability_target == u)
-			|| (pc->unit->action == A_CAST && pc->unit->act.cast.target == u)));
-
 	// add scene node
 	SceneNode* node = SceneNode::Get();
 	node->SetMesh(u.mesh_inst);
@@ -320,28 +316,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
 	node->tex_override = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
-
-	// light settings
-	if(!outside)
-	{
-		assert(u.area);
-		GatherDrawBatchLights(*u.area, node);
-	}
-	if(selected)
-	{
-		if(use_glow)
-		{
-			GlowNode& glow = Add1(draw_batch.glow_nodes);
-			glow.node = node;
-			glow.color = pc->unit->GetRelationColor(u);
-		}
-		else
-		{
-			node->tint.x *= 2;
-			node->tint.y *= 2;
-			node->tint.z *= 2;
-		}
-	}
 
 	// item in hand
 	Mesh* right_hand_item = nullptr;
@@ -410,19 +384,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		node2->SetMesh(mesh);
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->lights = node->lights;
-		if(selected)
-		{
-			if(use_glow)
-			{
-				GlowNode& glow = Add1(draw_batch.glow_nodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
-		}
-		draw_batch.Add(node2);
 
 		// weapon hitbox
 		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
@@ -460,19 +421,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		node2->SetMesh(shield);
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->lights = node->lights;
-		if(selected)
-		{
-			if(use_glow)
-			{
-				GlowNode& glow = Add1(draw_batch.glow_nodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
-		}
-		draw_batch.Add(node2);
 
 		// shield hitbox
 		if(draw_hitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
@@ -498,19 +446,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		node2->SetMesh(right_hand_item);
 		node2->center = node->center;
 		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
-		node2->lights = node->lights;
-		if(selected)
-		{
-			if(use_glow)
-			{
-				GlowNode& glow = Add1(draw_batch.glow_nodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
-		}
-		draw_batch.Add(node2);
 	}
 
 	// bow
@@ -551,19 +486,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		else
 			m1 = point->mat * u.mesh_inst->mat_bones[point->bone];
 		node2->mat = mat_scale * m1 * node->mat;
-		node2->lights = node->lights;
-		if(selected)
-		{
-			if(use_glow)
-			{
-				GlowNode& glow = Add1(draw_batch.glow_nodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
-		}
-		draw_batch.Add(node2);
 	}
 
 	// unit hitbox radius
@@ -1435,7 +1357,13 @@ void Game::SetGlowNodes()
 		color = pc->unit->GetRelationColor(*pc->data.before_player_ptr.unit);
 		break;
 	default:
-		node = nullptr;
+		if(Unit* target = pc->GetTargetUnit())
+		{
+			node = target->node;
+			color = pc->unit->GetRelationColor(*target);
+		}
+		else
+			node = nullptr;
 		break;
 	}
 

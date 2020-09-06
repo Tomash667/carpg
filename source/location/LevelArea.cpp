@@ -1107,7 +1107,6 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 
 	// create scene node
 	SceneNode* node = SceneNode::Get();
-	node->tmp = false;
 	node->SetMesh(game_res->aSpellball);
 	node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
 	node->center = explo->pos;
@@ -1151,7 +1150,6 @@ void LevelArea::CreateArrow(Bullet* bullet)
 	if(bullet->mesh)
 	{
 		SceneNode* node = SceneNode::Get();
-		node->tmp = false;
 		node->SetMesh(bullet->mesh);
 		node->center = bullet->pos;
 		node->mat = Matrix::Rotation(bullet->rot) * Matrix::Translation(bullet->pos);
@@ -1203,7 +1201,6 @@ void LevelArea::CreateSpellBall(Bullet* bullet)
 	if(bullet->mesh)
 	{
 		SceneNode* node = SceneNode::Get();
-		node->tmp = false;
 		node->SetMesh(bullet->mesh);
 		node->center = bullet->pos;
 		node->mat = Matrix::Rotation(bullet->rot) * Matrix::Translation(bullet->pos);
@@ -1269,7 +1266,6 @@ void LevelArea::CreateScene()
 	for(Usable* usable : usables)
 	{
 		SceneNode* node = SceneNode::Get();
-		node->tmp = false;
 		node->SetMesh(usable->GetMesh());
 		node->center = usable->pos;
 		node->mat = Matrix::RotationY(usable->rot) * Matrix::Translation(usable->pos);
@@ -1282,7 +1278,6 @@ void LevelArea::CreateScene()
 		if(SceneNodeHelper::Create(chest->node, chest->base->mesh))
 			chest->AfterLoad();
 		SceneNode* node = chest->node;
-		node->tmp = false;
 		node->center = chest->pos;
 		node->mat = Matrix::RotationY(chest->rot) * Matrix::Translation(chest->pos);
 		scene->Add(node);
@@ -1292,7 +1287,6 @@ void LevelArea::CreateScene()
 	{
 		SceneNodeHelper::Create(door->node, door->door2 ? game_res->aDoor2 : game_res->aDoor);
 		SceneNode* node = door->node;
-		node->tmp = false;
 		node->center = door->pos;
 		node->mat = Matrix::RotationY(door->rot) * Matrix::Translation(door->pos);
 		node->mesh_inst->base_speed = 2.f;
@@ -1307,7 +1301,6 @@ void LevelArea::CreateScene()
 		{
 			SceneNodeHelper::Create(obj->node, obj->mesh);
 			SceneNode* node = obj->node;
-			node->tmp = false;
 			node->center = obj->pos;
 			node->radius *= obj->scale;
 			node->mat = Matrix::Transform(obj->pos, obj->rot, obj->scale);
@@ -1320,7 +1313,6 @@ void LevelArea::CreateScene()
 		else
 		{
 			SceneNode* node = SceneNode::Get();
-			node->tmp = false;
 			node->mesh = nullptr;
 			node->center = obj->pos;
 			node->radius = obj->GetRadius();
@@ -1333,7 +1325,6 @@ void LevelArea::CreateScene()
 				const float radius = mesh.splits[i].radius * obj->scale;
 
 				SceneNode* node2 = SceneNode::Get();
-				node2->tmp = false;
 				node2->SetMesh(&mesh);
 				node2->center = pos;
 				node2->radius = radius;
@@ -1350,7 +1341,6 @@ void LevelArea::CreateScene()
 	for(GroundItem* item : items)
 	{
 		SceneNode* node = SceneNode::Get();
-		node->tmp = false;
 		Vec3 pos = item->pos;
 		if(IsSet(item->item->flags, ITEM_GROUND_MESH))
 		{
@@ -1369,7 +1359,6 @@ void LevelArea::CreateScene()
 	{
 		SceneNodeHelper::Create(trap->node, trap->base->mesh);
 		SceneNode* node = trap->node;
-		node->tmp = false;
 		node->center = trap->pos;
 		node->mat = Matrix::RotationY(trap->rot) * Matrix::Translation(trap->pos);
 		if(Any(trap->base->type, TRAP_ARROW, TRAP_POISON) && trap->state != 0)
@@ -1385,7 +1374,6 @@ void LevelArea::CreateScene()
 			continue;
 		}
 		SceneNode* node = SceneNode::Get();
-		node->tmp = false;
 		node->SetMesh(bullet->mesh);
 		node->center = bullet->pos;
 		node->mat = Matrix::Rotation(bullet->rot) * Matrix::Translation(bullet->pos);
@@ -1396,7 +1384,6 @@ void LevelArea::CreateScene()
 	for(Explo* explo : tmp->explos)
 	{
 		SceneNode* node = SceneNode::Get();
-		node->tmp = false;
 		node->SetMesh(game_res->aSpellball);
 		node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
 		node->center = explo->pos;
@@ -1417,7 +1404,6 @@ void LevelArea::CreateScene()
 			if(area_type == Type::Outside || area_id == portal->at_level)
 			{
 				SceneNode* node = SceneNode::Get();
-				node->tmp = false;
 				node->SetMesh(game_res->aPortal);
 				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
 				node->center = portal->pos + Vec3(0, 0.67f + 0.305f, 0);

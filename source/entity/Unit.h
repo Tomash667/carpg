@@ -261,6 +261,9 @@ struct Unit : public EntityType<Unit>
 
 	enum class SceneNodeId
 	{
+		Weapon,
+		Bow,
+		Shield,
 		Armor,
 		Eyebrows,
 		Hair,

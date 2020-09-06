@@ -1981,6 +1981,18 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		data.ability_ready = nullptr;
 }
 
+//=================================================================================================
+Unit* PlayerController::GetTargetUnit()
+{
+	if(data.ability_ready && data.ability_ok && data.ability_target)
+		return data.ability_target;
+	else if(unit->action == A_CAST && unit->act.cast.target)
+		return unit->act.cast.target;
+	else
+		return nullptr;
+}
+
+//=================================================================================================
 bool PlayerController::AddRecipe(Recipe* recipe)
 {
 	if(HaveRecipe(recipe))

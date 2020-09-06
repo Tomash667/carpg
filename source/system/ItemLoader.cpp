@@ -728,6 +728,8 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 
 	if(!item->mesh && !item->tex)
 		LoadError("No mesh/texture.");
+	if(!item->mesh && Any(item->type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR))
+		LoadError("Mesh required for this item type.");
 
 	Item* item_ptr = item.Pin();
 	Item::items.insert(ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));

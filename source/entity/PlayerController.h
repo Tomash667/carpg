@@ -334,6 +334,7 @@ public:
 	void UpdateCooldown(float dt);
 	void RefreshCooldown();
 	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	Unit* GetTargetUnit();
 
 	// recipes
 	bool AddRecipe(Recipe* recipe);

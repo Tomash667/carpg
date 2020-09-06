@@ -1844,7 +1844,6 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 	area.items.push_back(item);
 
 	SceneNode* node = SceneNode::Get();
-	node->tmp = false;
 	Vec3 pos = item->pos;
 	if(IsSet(item->item->flags, ITEM_GROUND_MESH))
 	{
