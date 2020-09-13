@@ -66,8 +66,6 @@ shape_floor(nullptr), dungeon_mesh(nullptr)
 //=================================================================================================
 Level::~Level()
 {
-	DeleteElements(bow_instances);
-
 	delete scene;
 	delete terrain;
 	delete terrain_shape;
@@ -4542,24 +4540,6 @@ void Level::SpawnUnitEffect(Unit& unit)
 	pe->mode = 0;
 	pe->Init();
 	unit.area->tmp->pes.push_back(pe);
-}
-
-//=================================================================================================
-MeshInstance* Level::GetBowInstance(Mesh* mesh)
-{
-	if(bow_instances.empty())
-	{
-		if(!mesh->IsLoaded())
-			res_mgr->LoadInstant(mesh);
-		return new MeshInstance(mesh);
-	}
-	else
-	{
-		MeshInstance* instance = bow_instances.back();
-		bow_instances.pop_back();
-		instance->mesh = mesh;
-		return instance;
-	}
 }
 
 //=================================================================================================

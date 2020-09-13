@@ -190,13 +190,6 @@ public:
 	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 	void SpawnUnitEffect(Unit& unit);
-	MeshInstance* GetBowInstance(Mesh* mesh);
-	void FreeBowInstance(MeshInstance*& mesh_inst)
-	{
-		assert(mesh_inst);
-		bow_instances.push_back(mesh_inst);
-		mesh_inst = nullptr;
-	}
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
 	Object* FindObjectInRoom(Room& room, BaseObject* base);
@@ -252,7 +245,6 @@ public:
 	uint minimap_size;
 
 private:
-	vector<MeshInstance*> bow_instances;
 	vector<UnitWarpData> unit_warp_data;
 
 	// pickable items

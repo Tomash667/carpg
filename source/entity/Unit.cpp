@@ -64,8 +64,6 @@ Unit::~Unit()
 {
 	if(order)
 		order->Free();
-	if(bow_instance)
-		game_level->FreeBowInstance(bow_instance);
 	delete human_data;
 	delete hero;
 	delete player;
@@ -2216,13 +2214,14 @@ void Unit::Load(GameReader& f)
 		else
 			Usable::AddRequest(&usable, usable_id);
 
-		if(action == A_SHOOT)
+		/*if(action == A_SHOOT)
 		{
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = node->mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = Min(node->mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
-		}
+		}*/
+		FIXME;
 
 		f >> last_bash;
 		f >> moved;
@@ -2864,7 +2863,6 @@ bool Unit::Read(BitStreamReader& f)
 	frozen = FROZEN::NO;
 	usable = nullptr;
 	used_item = nullptr;
-	bow_instance = nullptr;
 	ai = nullptr;
 	animation = ANI_STAND;
 	current_animation = ANI_STAND;
@@ -2918,10 +2916,11 @@ bool Unit::Read(BitStreamReader& f)
 			f >> act.attack.index;
 			break;
 		case A_SHOOT:
-			bow_instance = game_level->GetBowInstance(GetBow().mesh);
+			/*bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = node->mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = Min(node->mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
+			bow_instance->groups[0].time = Min(node->mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);*/
+			FIXME;
 			break;
 		case A_USE_USABLE:
 			f >> act.use_usable.rot;
@@ -4806,40 +4805,11 @@ void Unit::CreateNode()
 
 	if(data->type >= UNIT_TYPE::HUMANOID)
 	{
-		bool inHand;
-		WeaponType inHandType;
-		switch(weapon_state)
-		{
-		case WeaponState::Hiding:
-			if(animation_state == AS_TAKE_WEAPON_START)
-			{
-				inHand = true;
-				inHandType = weapon_hiding;
-			}
-			else
-				inHand = false;
-			break;
-		case WeaponState::Hidden:
-			inHand = false;
-			break;
-		case WeaponState::Taking:
-			if(animation_state == AS_TAKE_WEAPON_MOVED)
-			{
-				inHand = true;
-				inHandType = weapon_taken;
-			}
-			else
-				inHand = false;
-			break;
-		case WeaponState::Taken:
-			inHand = true;
-			inHandType = weapon_taken;
-			break;
-		}
+		const WeaponType inHand = GetWeaponInHand();
 
 		if(HaveWeapon())
 		{
-			Mesh::Point* point = node->mesh->GetPoint((inHand && inHandType == W_ONE_HANDED) ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+			Mesh::Point* point = node->mesh->GetPoint(inHand == W_ONE_HANDED ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 			SceneNode* node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Weapon;
 			node2->SetMesh(GetWeapon().mesh);
@@ -4850,7 +4820,7 @@ void Unit::CreateNode()
 
 		if(HaveBow())
 		{
-			Mesh::Point* point = node->mesh->GetPoint((inHand && inHandType == W_BOW) ? NAMES::point_bow : NAMES::point_shield_hidden);
+			Mesh::Point* point = node->mesh->GetPoint(inHand == W_BOW ? NAMES::point_bow : NAMES::point_shield_hidden);
 			SceneNode* node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Bow;
 			node2->SetMesh(new MeshInstance(GetBow().mesh));
@@ -4861,7 +4831,7 @@ void Unit::CreateNode()
 
 		if(HaveShield())
 		{
-			Mesh::Point* point = node->mesh->GetPoint((inHand && inHandType == W_ONE_HANDED) ? NAMES::point_shield : NAMES::point_shield_hidden);
+			Mesh::Point* point = node->mesh->GetPoint(inHand == W_ONE_HANDED ? NAMES::point_shield : NAMES::point_shield_hidden);
 			SceneNode* node2 = SceneNode::Get();
 			node2->id = (int)SceneNodeId::Shield;
 			node2->SetMesh(GetShield().mesh);
@@ -5045,9 +5015,46 @@ void Unit::UpdateVisualPos()
 	for(SceneNode* child : node->childs)
 	{
 		if(child->point)
-			child->mat = child->point->mat * node->mesh_inst->mat_bones[child->point->bone] * node->mat;
+		{
+			if(child->id == (int)SceneNodeId::Bow && GetWeaponInHand() == W_BOW)
+				child->mat = Matrix::RotationZ(-PI / 2) * child->point->mat * node->mesh_inst->mat_bones[child->point->bone] * node->mat;
+			else
+				child->mat = child->point->mat * node->mesh_inst->mat_bones[child->point->bone] * node->mat;
+		}
 		else
 			child->mat = node->mat;
+	}
+}
+
+//=================================================================================================
+MeshInstance* Unit::GetBowMeshInstance()
+{
+	SceneNode* node2 = node->GetChild((int)SceneNodeId::Bow);
+	if(node2)
+		return node2->mesh_inst;
+	return nullptr;
+}
+
+//=================================================================================================
+WeaponType Unit::GetWeaponInHand() const
+{
+	switch(weapon_state)
+	{
+	default:
+	case WeaponState::Hidden:
+		return W_NONE;
+	case WeaponState::Hiding:
+		if(animation_state == AS_TAKE_WEAPON_START)
+			return weapon_hiding;
+		else
+			return W_NONE;
+	case WeaponState::Taking:
+		if(animation_state == AS_TAKE_WEAPON_MOVED)
+			return weapon_taken;
+		else
+			return W_NONE;
+	case WeaponState::Taken:
+		return weapon_taken;
 	}
 }
 
@@ -5209,8 +5216,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	case A_POSITION:
 		return;
 	case A_SHOOT:
-		if(bow_instance)
-			game_level->FreeBowInstance(bow_instance);
+		GetBowMeshInstance()->Deactivate();
 		action = A_NONE;
 		break;
 	case A_DRINK:
@@ -5885,7 +5891,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				return false;
 			// hide previous weapon
 			if(action == A_SHOOT)
-				game_level->FreeBowInstance(bow_instance);
+				GetBowMeshInstance()->Deactivate();
 			node->mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
 			action = A_TAKE_WEAPON;
 			animation_state = AS_TAKE_WEAPON_START;
@@ -5932,7 +5938,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 		case WeaponState::Taken:
 			// zacznij chowaæ
 			if(action == A_SHOOT)
-				game_level->FreeBowInstance(bow_instance);
+				GetBowMeshInstance()->Deactivate();
 			node->mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 			weapon_hiding = weapon_taken;
 			weapon_taken = W_NONE;
@@ -7482,6 +7488,8 @@ void Unit::Update(float dt)
 
 	// aktualizuj animacjê
 	meshInst->Update(dt);
+	if(MeshInstance* bowMeshInst = GetBowMeshInstance())
+		bowMeshInst->Update(dt);
 
 	// koniec animacji idle
 	if(animation == ANI_IDLE && meshInst->IsEnded())
@@ -7714,134 +7722,135 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_SHOOT:
-		stamina_timer = STAMINA_RESTORE_TIMER;
-		if(!meshInst)
 		{
-			// fix na skutek, nie na przyczynê ;(
-			game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), live_state, action, animation,
-				current_animation, animation_state));
-			goto koniec_strzelania;
-		}
-		if(fake_unit)
-		{
-			if(meshInst->IsEnded(1))
+			MeshInstance* bowMeshInst = GetBowMeshInstance();
+			stamina_timer = STAMINA_RESTORE_TIMER;
+			if(!meshInst)
 			{
-				meshInst->Deactivate(1);
-				action = A_NONE;
-				game_level->FreeBowInstance(bow_instance);
-				break;
+				// fix na skutek, nie na przyczynê ;(
+				game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), live_state, action, animation,
+					current_animation, animation_state));
+				goto koniec_strzelania;
 			}
-		}
-		else if(animation_state == AS_SHOOT_PREPARE)
-		{
-			if(meshInst->GetProgress(1) > 20.f / 40)
-				meshInst->groups[1].time = 20.f / 40 * meshInst->groups[1].anim->length;
-		}
-		else if(animation_state == AS_SHOOT_CAN)
-		{
-			if(Net::IsLocal() && meshInst->GetProgress(1) > 20.f / 40)
+			if(fake_unit)
 			{
-				Bullet* bullet = new Bullet;
-
-				meshInst->SetupBones();
-
-				Mesh::Point* point = node->mesh->GetPoint(NAMES::point_weapon);
-				assert(point);
-
-				Matrix m2 = point->mat * meshInst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
-
-				bullet->Register();
-				bullet->attack = CalculateAttack(&GetBow());
-				bullet->level = level;
-				bullet->backstab = GetBackstabMod(&GetBow());
-				bullet->rot = Vec3(PI / 2, rot + PI, 0);
-				bullet->pos = Vec3::TransformZero(m2);
-				bullet->speed = GetArrowSpeed();
-				bullet->owner = this;
-				bullet->poison_attack = 0.f;
-
-				float dist = Vec3::Distance2d(bullet->pos, target_pos);
-				float t = dist / bullet->speed;
-				float h = target_pos.y - bullet->pos.y;
-				bullet->yspeed = h / t;
-
-				if(IsPlayer())
-					player->Train(TrainWhat::BowStart, 0.f, 0);
-				else if(ai->state == AIController::Idle && ai->st.idle.action == AIController::Idle_TrainBow)
-					bullet->attack = -100.f;
-
-				// random variation
-				int sk = Get(SkillId::BOW);
-				if(IsPlayer())
-					sk += 10;
-				else
-					sk -= 10;
-				if(sk < 50)
+				if(meshInst->IsEnded(1))
 				{
-					int chance;
-					float variation_x, variation_y;
-					if(sk < 10)
-					{
-						chance = 100;
-						variation_x = PI / 16;
-						variation_y = 5.f;
-					}
-					else if(sk < 20)
-					{
-						chance = 80;
-						variation_x = PI / 20;
-						variation_y = 4.f;
-					}
-					else if(sk < 30)
-					{
-						chance = 60;
-						variation_x = PI / 26;
-						variation_y = 3.f;
-					}
-					else if(sk < 40)
-					{
-						chance = 40;
-						variation_x = PI / 34;
-						variation_y = 2.f;
-					}
+					meshInst->Deactivate(1);
+					action = A_NONE;
+					break;
+				}
+			}
+			else if(animation_state == AS_SHOOT_PREPARE)
+			{
+				if(meshInst->GetProgress(1) > 20.f / 40)
+					meshInst->groups[1].time = 20.f / 40 * meshInst->groups[1].anim->length;
+			}
+			else if(animation_state == AS_SHOOT_CAN)
+			{
+				if(Net::IsLocal() && meshInst->GetProgress(1) > 20.f / 40)
+				{
+					Bullet* bullet = new Bullet;
+
+					meshInst->SetupBones();
+
+					Mesh::Point* point = node->mesh->GetPoint(NAMES::point_weapon);
+					assert(point);
+
+					Matrix m2 = point->mat * meshInst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+
+					bullet->Register();
+					bullet->attack = CalculateAttack(&GetBow());
+					bullet->level = level;
+					bullet->backstab = GetBackstabMod(&GetBow());
+					bullet->rot = Vec3(PI / 2, rot + PI, 0);
+					bullet->pos = Vec3::TransformZero(m2);
+					bullet->speed = GetArrowSpeed();
+					bullet->owner = this;
+					bullet->poison_attack = 0.f;
+
+					float dist = Vec3::Distance2d(bullet->pos, target_pos);
+					float t = dist / bullet->speed;
+					float h = target_pos.y - bullet->pos.y;
+					bullet->yspeed = h / t;
+
+					if(IsPlayer())
+						player->Train(TrainWhat::BowStart, 0.f, 0);
+					else if(ai->state == AIController::Idle && ai->st.idle.action == AIController::Idle_TrainBow)
+						bullet->attack = -100.f;
+
+					// random variation
+					int sk = Get(SkillId::BOW);
+					if(IsPlayer())
+						sk += 10;
 					else
+						sk -= 10;
+					if(sk < 50)
 					{
-						chance = 20;
-						variation_x = PI / 48;
-						variation_y = 1.f;
+						int chance;
+						float variation_x, variation_y;
+						if(sk < 10)
+						{
+							chance = 100;
+							variation_x = PI / 16;
+							variation_y = 5.f;
+						}
+						else if(sk < 20)
+						{
+							chance = 80;
+							variation_x = PI / 20;
+							variation_y = 4.f;
+						}
+						else if(sk < 30)
+						{
+							chance = 60;
+							variation_x = PI / 26;
+							variation_y = 3.f;
+						}
+						else if(sk < 40)
+						{
+							chance = 40;
+							variation_x = PI / 34;
+							variation_y = 2.f;
+						}
+						else
+						{
+							chance = 20;
+							variation_x = PI / 48;
+							variation_y = 1.f;
+						}
+
+						if(Rand() % 100 < chance)
+							bullet->rot.y += RandomNormalized(variation_x);
+						if(Rand() % 100 < chance)
+							bullet->yspeed += RandomNormalized(variation_y);
 					}
 
-					if(Rand() % 100 < chance)
-						bullet->rot.y += RandomNormalized(variation_x);
-					if(Rand() % 100 < chance)
-						bullet->yspeed += RandomNormalized(variation_y);
+					bullet->rot.y = Clip(bullet->rot.y);
+					area->CreateArrow(bullet);
 				}
-
-				bullet->rot.y = Clip(bullet->rot.y);
-				area->CreateArrow(bullet);
+				if(meshInst->GetProgress(1) > 20.f / 40)
+					animation_state = AS_SHOOT_SHOT;
 			}
-			if(meshInst->GetProgress(1) > 20.f / 40)
-				animation_state = AS_SHOOT_SHOT;
-		}
-		else if(meshInst->GetProgress(1) > 35.f / 40)
-		{
-			animation_state = AS_SHOOT_FINISHED;
-			if(meshInst->IsEnded(1))
+			else if(meshInst->GetProgress(1) > 35.f / 40)
 			{
-			koniec_strzelania:
-				meshInst->Deactivate(1);
-				action = A_NONE;
-				game_level->FreeBowInstance(bow_instance);
-				if(Net::IsLocal() && IsAI())
+				animation_state = AS_SHOOT_FINISHED;
+				if(meshInst->IsEnded(1))
 				{
-					float v = 1.f - float(Get(SkillId::BOW)) / 100;
-					ai->next_attack = Random(v / 2, v);
+				koniec_strzelania:
+					meshInst->Deactivate(1);
+					action = A_NONE;
+					if(Net::IsLocal() && IsAI())
+					{
+						float v = 1.f - float(Get(SkillId::BOW)) / 100;
+						ai->next_attack = Random(v / 2, v);
+					}
+					break;
 				}
-				break;
 			}
+			bowMeshInst->groups[0].time = min(meshInst->groups[1].time, bowMeshInst->groups[0].anim->length);
+			bowMeshInst->need_update = true;
 		}
-		bow_instance->groups[0].time = min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
-		bow_instance->need_update = true;
 		break;
 	case A_ATTACK:
 		stamina_timer = STAMINA_RESTORE_TIMER;

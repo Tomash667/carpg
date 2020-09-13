@@ -728,10 +728,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						meshInst->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
-						if(!unit.bow_instance)
-							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
-						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-						unit.bow_instance->groups[0].speed = meshInst->groups[group].speed;
+						MeshInstance* bowMeshInst = unit.GetBowMeshInstance();
+						bowMeshInst->Play(&bowMeshInst->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+						bowMeshInst->groups[0].speed = meshInst->groups[group].speed;
 					}
 					break;
 				case AID_Block:
@@ -760,7 +759,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				case AID_Cancel:
 					if(unit.action == A_SHOOT)
 					{
-						game_level->FreeBowInstance(unit.bow_instance);
+						unit.GetBowMeshInstance()->Deactivate();
 						is_bow = true;
 					}
 					unit.action = A_NONE;

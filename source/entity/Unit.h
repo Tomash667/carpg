@@ -337,7 +337,6 @@ struct Unit : public EntityType<Unit>
 	} act;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
-	MeshInstance* bow_instance;
 	const Item* used_item;
 	vector<Effect> effects;
 	bool talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
@@ -364,8 +363,8 @@ struct Unit : public EntityType<Unit>
 	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : node(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
+	Unit() : node(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), fake_unit(false), human_data(nullptr),
+		stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -905,6 +904,8 @@ public:
 	void CreateNode();
 	void UpdateNode(ITEM_SLOT slot);
 	void UpdateVisualPos();
+	MeshInstance* GetBowMeshInstance();
+	WeaponType GetWeaponInHand() const;
 	//void CreateMesh(CREATE_MESH mode);
 	FIXME;
 

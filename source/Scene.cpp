@@ -72,19 +72,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// new scene nodes
 	area.tmp->scene->ListNodes(draw_batch);
 
-
-	// units
-	/*if(IsSet(draw_flags, DF_UNITS))
-	{
-		PROFILER_BLOCK("Units");
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			ListDrawObjectsUnit(frustum, outside, u);
-		}
-	}*/
-	FIXME;
-
 	// bloods
 	if(IsSet(draw_flags, DF_BLOOD))
 	{
