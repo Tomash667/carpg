@@ -1,8 +1,8 @@
 #include "Pch.h"
 #include "Quest_DeliverParcel.h"
 
+#include "DialogContext.h"
 #include "Encounter.h"
-#include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
@@ -45,18 +45,18 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 	case Progress::Started:
 		// give parcel to player
 		{
-			OnStart(game->txQuest[9]);
+			OnStart(quest_mgr->txQuest[9]);
 			quest_mgr->quests_timeout2.push_back(this);
 
 			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
-			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.name = Format(quest_mgr->txQuest[8], LocationHelper::IsCity(loc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys, loc.name.c_str());
 			parcel.quest_id = id;
 			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
-			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(startLoc) ? game->txForMayor : game->txForSoltys, startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
+			msgs.push_back(Format(quest_mgr->txQuest[3], LocationHelper::IsCity(startLoc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys, startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[10], LocationHelper::IsCity(loc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys, loc.name.c_str(),
 				GetLocationDirName(startLoc->pos, loc.pos)));
 
 			if(Rand() % 4 != 0)
@@ -68,7 +68,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->dont_attack = true;
 				e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 				e->group = UnitGroup::Get("bandits");
-				e->text = game->txQuest[11];
+				e->text = quest_mgr->txQuest[11];
 				e->quest = this;
 				e->timed = true;
 				e->location_event_handler = nullptr;
@@ -85,7 +85,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(300, 2000);
 
-			OnUpdate(game->txQuest[12]);
+			OnUpdate(quest_mgr->txQuest[12]);
 			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
@@ -96,7 +96,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Failed;
 			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
-			OnUpdate(game->txQuest[13]);
+			OnUpdate(quest_mgr->txQuest[13]);
 			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
@@ -112,7 +112,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 
 			RemoveEncounter();
 
-			OnUpdate(game->txQuest[14]);
+			OnUpdate(quest_mgr->txQuest[14]);
 			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
@@ -122,7 +122,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 			apply = false;
 
-			OnUpdate(game->txQuest[15]);
+			OnUpdate(quest_mgr->txQuest[15]);
 		}
 		break;
 	case Progress::ParcelGivenToBandits:
@@ -133,7 +133,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			DialogContext::current->talker->AddItem(&parcel, 1, true);
 			team->RemoveQuestItem(&parcel, id);
 
-			OnUpdate(game->txQuest[16]);
+			OnUpdate(quest_mgr->txQuest[16]);
 		}
 		break;
 	case Progress::NoParcelAttackedBandits:
@@ -152,7 +152,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 {
 	Location& loc = *world->GetLocation(end_loc);
 	if(str == "target_burmistrza")
-		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
+		return (LocationHelper::IsCity(loc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys);
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
@@ -174,7 +174,7 @@ bool Quest_DeliverParcel::IsTimedout() const
 bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 {
 	if(ttype == TIMEOUT2)
-		OnUpdate(game->txQuest[267]);
+		OnUpdate(quest_mgr->txQuest[267]);
 	return true;
 }
 
@@ -223,7 +223,7 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
-			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.name = Format(quest_mgr->txQuest[8], LocationHelper::IsCity(loc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys, loc.name.c_str());
 			parcel.quest_id = id;
 		}
 	}
@@ -238,7 +238,7 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 		e->dont_attack = true;
 		e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 		e->group = UnitGroup::Get("bandits");
-		e->text = game->txQuest[11];
+		e->text = quest_mgr->txQuest[11];
 		e->quest = this;
 		e->timed = true;
 		e->location_event_handler = nullptr;

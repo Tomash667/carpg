@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "Quest_StolenArtifact.h"
 
-#include "Game.h"
+#include "DialogContext.h"
+#include "GameCommon.h"
 #include "ItemHelper.h"
 #include "LevelAreaContext.h"
 #include "Journal.h"
@@ -62,7 +63,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[86]);
+			OnStart(quest_mgr->txQuest[86]);
 			quest_mgr->quests_timeout.push_back(this);
 
 			targetLoc = world->GetRandomSpawnLocation(startLoc->pos, group);
@@ -81,8 +82,8 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 
 			DialogContext::current->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), group->name.c_str(), game->txQuest[group->gender ? 88 : 87],
+			msgs.push_back(Format(quest_mgr->txQuest[82], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[93], item->name.c_str(), group->name.c_str(), quest_mgr->txQuest[group->gender ? 88 : 87],
 				targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 		}
 		break;
@@ -92,7 +93,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			OnUpdate(game->txQuest[94]);
+			OnUpdate(quest_mgr->txQuest[94]);
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
@@ -106,7 +107,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			OnUpdate(game->txQuest[95]);
+			OnUpdate(quest_mgr->txQuest[95]);
 			DialogContext::current->talker->temporary = true;
 		}
 		break;
@@ -125,9 +126,9 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	else if(str == "random_loc")
 		return world->GetRandomSettlement(startLoc)->name.c_str();
 	else if(str == "Bandyci_ukradli")
-		return Format("%s %s", Upper(group->name.c_str()), game->txQuest[group->gender ? 97 : 96]);
+		return Format("%s %s", Upper(group->name.c_str()), quest_mgr->txQuest[group->gender ? 97 : 96]);
 	else if(str == "Ci_bandyci")
-		return Format("%s %s", game->txQuest[group->gender ? 99 : 98], group->name.c_str());
+		return Format("%s %s", quest_mgr->txQuest[group->gender ? 99 : 98], group->name.c_str());
 	else if(str == "reward")
 		return Format("%d", GetReward());
 	else
@@ -149,7 +150,7 @@ bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
 	if(done)
 		ForLocation(targetLoc, at_level)->RemoveQuestItemFromUnit(id);
 
-	OnUpdate(game->txQuest[267]);
+	OnUpdate(quest_mgr->txQuest[267]);
 	return true;
 }
 

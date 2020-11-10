@@ -112,7 +112,10 @@ void QuestManager::InitLists()
 //=================================================================================================
 void QuestManager::LoadLanguage()
 {
+	StrArray(txQuest, "quest");
 	StrArray(txRumorQ, "rumorQ");
+	txForMayor = Str("forMayor");
+	txForSoltys = Str("forSoltys");
 	quest_contest->LoadLanguage();
 	quest_secret->LoadLanguage();
 	quest_tournament->LoadLanguage();

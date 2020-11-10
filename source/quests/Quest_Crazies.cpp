@@ -2,8 +2,9 @@
 #include "Quest_Crazies.h"
 
 #include "AIController.h"
+#include "BaseLocation.h"
+#include "DialogContext.h"
 #include "Encounter.h"
-#include "Game.h"
 #include "GameMessages.h"
 #include "GameGui.h"
 #include "Journal.h"
@@ -46,9 +47,9 @@ void Quest_Crazies::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[253]);
-			msgs.push_back(Format(game->txQuest[170], world->GetDate()));
-			msgs.push_back(game->txQuest[254]);
+			OnStart(quest_mgr->txQuest[253]);
+			msgs.push_back(Format(quest_mgr->txQuest[170], world->GetDate()));
+			msgs.push_back(quest_mgr->txQuest[254]);
 		}
 		break;
 	case Progress::KnowLocation:
@@ -63,7 +64,7 @@ void Quest_Crazies::SetProgress(int prog2)
 
 			crazies_state = State::TalkedTrainer;
 
-			OnUpdate(Format(game->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
+			OnUpdate(Format(quest_mgr->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished:
@@ -75,7 +76,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			world->RemoveGlobalEncounter(this);
 			team->AddExp(12000);
 
-			OnUpdate(game->txQuest[256]);
+			OnUpdate(quest_mgr->txQuest[256]);
 			quest_mgr->EndUniqueQuest();
 		}
 	}
@@ -128,7 +129,7 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 		globalEnc->chance = 50;
 		globalEnc->quest = this;
-		globalEnc->text = game->txQuest[251];
+		globalEnc->text = quest_mgr->txQuest[251];
 		world->AddGlobalEncounter(globalEnc);
 	}
 	else if(crazies_state == State::PickedStone && crazies_state < State::End && days <= 0)
@@ -137,7 +138,7 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 		globalEnc->chance = 33;
 		globalEnc->quest = this;
-		globalEnc->text = game->txQuest[252];
+		globalEnc->text = quest_mgr->txQuest[252];
 		world->AddGlobalEncounter(globalEnc);
 	}
 
@@ -156,7 +157,7 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 		globalEnc->chance = 50;
 		globalEnc->quest = this;
-		globalEnc->text = game->txQuest[251];
+		globalEnc->text = quest_mgr->txQuest[251];
 		world->AddGlobalEncounter(globalEnc);
 	}
 	else if(strcmp(msg, "crazies_sell_stone") == 0)
@@ -232,7 +233,7 @@ void Quest_Crazies::OnProgress(int d)
 			globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 			globalEnc->chance = 33;
 			globalEnc->quest = this;
-			globalEnc->text = game->txQuest[252];
+			globalEnc->text = quest_mgr->txQuest[252];
 			world->AddGlobalEncounter(globalEnc);
 		}
 	}

@@ -89,7 +89,7 @@ void Quest_Mine::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[131]);
+			OnStart(quest_mgr->txQuest[131]);
 
 			location_event_handler = this;
 
@@ -102,19 +102,19 @@ void Quest_Mine::SetProgress(int prog2)
 
 			InitSub();
 
-			msgs.push_back(Format(game->txQuest[132], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[133], targetLoc->name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(quest_mgr->txQuest[132], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[133], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
 		{
-			OnUpdate(game->txQuest[134]);
+			OnUpdate(quest_mgr->txQuest[134]);
 			team->AddExp(3000);
 		}
 		break;
 	case Progress::SelectedShares:
 		{
-			OnUpdate(game->txQuest[135]);
+			OnUpdate(quest_mgr->txQuest[135]);
 			mine_state = State::Shares;
 			mine_state2 = State2::InBuild;
 			days = 0;
@@ -125,7 +125,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::GotFirstGold:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[136]);
+			OnUpdate(quest_mgr->txQuest[136]);
 			team->AddReward(PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
@@ -134,13 +134,13 @@ void Quest_Mine::SetProgress(int prog2)
 				days = days_required - 1;
 			days_gold = 0;
 			targetLoc->SetImage(LI_MINE);
-			targetLoc->SetNamePrefix(game->txQuest[131]);
+			targetLoc->SetNamePrefix(quest_mgr->txQuest[131]);
 		}
 		break;
 	case Progress::SelectedGold:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[137]);
+			OnUpdate(quest_mgr->txQuest[137]);
 			team->AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
@@ -151,27 +151,27 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::NeedTalk:
 		{
 			state = Quest::Started;
-			OnUpdate(game->txQuest[138]);
+			OnUpdate(quest_mgr->txQuest[138]);
 			mine_state2 = State2::CanExpand;
-			world->AddNews(Format(game->txQuest[139], GetTargetLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[139], GetTargetLocationName()));
 		}
 		break;
 	case Progress::Talked:
 		{
-			OnUpdate(Format(game->txQuest[140], mine_state == State::Shares ? 10000 : 12000));
+			OnUpdate(Format(quest_mgr->txQuest[140], mine_state == State::Shares ? 10000 : 12000));
 		}
 		break;
 	case Progress::NotInvested:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[141]);
+			OnUpdate(quest_mgr->txQuest[141]);
 			quest_mgr->EndUniqueQuest();
 		}
 		break;
 	case Progress::Invested:
 		{
 			DialogContext::current->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
-			OnUpdate(game->txQuest[142]);
+			OnUpdate(quest_mgr->txQuest[142]);
 			mine_state2 = State2::InExpand;
 			days = 0;
 			days_required = Random(30, 45);
@@ -180,7 +180,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::UpgradedMine:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[143]);
+			OnUpdate(quest_mgr->txQuest[143]);
 			team->AddReward(PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
@@ -189,20 +189,20 @@ void Quest_Mine::SetProgress(int prog2)
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
-			world->AddNews(Format(game->txQuest[144], GetTargetLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[144], GetTargetLocationName()));
 		}
 		break;
 	case Progress::InfoAboutPortal:
 		{
 			state = Quest::Started;
-			OnUpdate(game->txQuest[145]);
+			OnUpdate(quest_mgr->txQuest[145]);
 			mine_state2 = State2::FoundPortal;
-			world->AddNews(Format(game->txQuest[146], GetTargetLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[146], GetTargetLocationName()));
 		}
 		break;
 	case Progress::TalkedWithMiner:
 		{
-			OnUpdate(game->txQuest[147]);
+			OnUpdate(quest_mgr->txQuest[147]);
 			const Item* item = Item::Get("key_kopalnia");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
@@ -210,9 +210,9 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[148]);
+			OnUpdate(quest_mgr->txQuest[148]);
 			quest_mgr->EndUniqueQuest();
-			world->AddNews(game->txQuest[149]);
+			world->AddNews(quest_mgr->txQuest[149]);
 			team->AddExp(10000);
 		}
 		break;

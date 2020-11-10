@@ -1171,9 +1171,6 @@ void Game::SetGameText()
 	txMageHere = Str("mageHere");
 	txMageEnter = Str("mageEnter");
 	txMageFinal = Str("mageFinal");
-	StrArray(txQuest, "quest");
-	txForMayor = Str("forMayor");
-	txForSoltys = Str("forSoltys");
 
 	// menu net
 	txEnterIp = Str("enterIp");

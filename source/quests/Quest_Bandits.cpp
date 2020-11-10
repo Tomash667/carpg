@@ -100,15 +100,15 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->pos = (startLoc->pos + other.pos) / 2;
 			e->quest = this;
 			e->chance = 60;
-			e->text = game->txQuest[11];
+			e->text = quest_mgr->txQuest[11];
 			e->timed = false;
 			e->range = 72;
 			e->st = 8;
-			OnUpdate(game->txQuest[152]);
+			OnUpdate(quest_mgr->txQuest[152]);
 		}
 		else
 		{
-			OnStart(game->txQuest[153]);
+			OnStart(quest_mgr->txQuest[153]);
 			quest_mgr->RemoveQuestRumor(id);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
@@ -123,13 +123,13 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->pos = (startLoc->pos + other->pos) / 2;
 			e->quest = this;
 			e->chance = 60;
-			e->text = game->txQuest[11];
+			e->text = quest_mgr->txQuest[11];
 			e->timed = false;
 			e->range = 72;
 			e->st = 8;
-			msgs.push_back(Format(game->txQuest[154], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[155], startLoc->name.c_str(), other->name.c_str(), GetLocationDirName(startLoc->pos, other->pos)));
-			world->AddNews(Format(game->txQuest[156], GetStartLocationName()));
+			msgs.push_back(Format(quest_mgr->txQuest[154], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[155], startLoc->name.c_str(), other->name.c_str(), GetLocationDirName(startLoc->pos, other->pos)));
+			world->AddNews(Format(quest_mgr->txQuest[156], GetStartLocationName()));
 		}
 		break;
 	case Progress::FoundBandits:
@@ -142,7 +142,7 @@ void Quest_Bandits::SetProgress(int prog2)
 				DialogContext::current->talker->AddItem(item, 1, true);
 			}
 			get_letter = true;
-			OnUpdate(game->txQuest[157]);
+			OnUpdate(quest_mgr->txQuest[157]);
 			world->RemoveEncounter(enc);
 			enc = -1;
 		}
@@ -157,7 +157,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			targetLoc->st = 10;
 			targetLoc->state = LS_HIDDEN;
 			targetLoc->active_quest = this;
-			OnUpdate(game->txQuest[158]);
+			OnUpdate(quest_mgr->txQuest[158]);
 			camp_loc = targetLoc->index;
 			location_event_handler = this;
 			DialogContext::current->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
@@ -168,7 +168,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		// pozycja obozu
 		{
 			Location& camp = *world->GetLocation(camp_loc);
-			OnUpdate(Format(game->txQuest[159], GetLocationDirName(startLoc->pos, camp.pos)));
+			OnUpdate(Format(quest_mgr->txQuest[159], GetLocationDirName(startLoc->pos, camp.pos)));
 			camp.SetKnown();
 			bandits_state = State::GenerateGuards;
 		}
@@ -189,7 +189,7 @@ void Quest_Bandits::SetProgress(int prog2)
 				}
 			}
 
-			world->AddNews(Format(game->txQuest[160], GetStartLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[160], GetStartLocationName()));
 		}
 		break;
 	case Progress::TalkedWithAgent:
@@ -206,7 +206,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			target.st = 12;
 			targetLoc = &target;
 			world->GetLocation(camp_loc)->active_quest = nullptr;
-			OnUpdate(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(startLoc->pos, target.pos)));
+			OnUpdate(Format(quest_mgr->txQuest[161], target.name.c_str(), GetLocationDirName(startLoc->pos, target.pos)));
 			done = false;
 			at_level = 1;
 			unit_to_spawn = UnitData::Get("q_bandyci_szef");
@@ -223,8 +223,8 @@ void Quest_Bandits::SetProgress(int prog2)
 		// zabito szefa
 		{
 			camp_loc = -1;
-			OnUpdate(Format(game->txQuest[162], GetStartLocationName()));
-			world->AddNews(game->txQuest[163]);
+			OnUpdate(Format(quest_mgr->txQuest[162], GetStartLocationName()));
+			world->AddNews(quest_mgr->txQuest[163]);
 			team->AddLearningPoint();
 		}
 		break;
@@ -232,7 +232,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		// ukoñczono
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[164]);
+			OnUpdate(quest_mgr->txQuest[164]);
 			// ustaw arto na temporary ¿eby sobie poszed³
 			DialogContext::current->talker->temporary = true;
 			team->AddReward(10000, 25000);
@@ -368,7 +368,7 @@ Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 		e->pos = (startLoc->pos + world->GetLocation(other_loc)->pos) / 2;
 		e->quest = this;
 		e->chance = 60;
-		e->text = game->txQuest[11];
+		e->text = quest_mgr->txQuest[11];
 		e->timed = false;
 		e->range = 72;
 		e->st = 8;

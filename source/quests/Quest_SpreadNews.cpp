@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "Quest_SpreadNews.h"
 
-#include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
@@ -86,14 +85,14 @@ void Quest_SpreadNews::SetProgress(int prog2)
 	case Progress::Started:
 		// told info to spread by player
 		{
-			OnStart(game->txQuest[213]);
+			OnStart(quest_mgr->txQuest[213]);
 			quest_mgr->quests_timeout2.push_back(this);
 
 			prog = Progress::Started;
 
 			bool is_city = LocationHelper::IsCity(startLoc);
-			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), startLoc->name.c_str(), FormatString("targets")));
+			msgs.push_back(Format(quest_mgr->txQuest[3], is_city ? quest_mgr->txForMayor : quest_mgr->txForSoltys, startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[17], Upper(is_city ? quest_mgr->txForMayor : quest_mgr->txForSoltys), startLoc->name.c_str(), FormatString("targets")));
 		}
 		break;
 	case Progress::Deliver:
@@ -112,12 +111,12 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			}
 
 			Location& loc = *world->GetCurrentLocation();
-			cstring msg = Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			cstring msg = Format(quest_mgr->txQuest[18], LocationHelper::IsCity(loc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys, loc.name.c_str());
 
 			if(count == entries.size())
 			{
 				prog = Progress::Deliver;
-				OnUpdate({ msg, Format(game->txQuest[19], GetStartLocationName()) });
+				OnUpdate({ msg, Format(quest_mgr->txQuest[19], GetStartLocationName()) });
 			}
 			else
 				OnUpdate(msg);
@@ -132,7 +131,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			state = Quest::Failed;
 			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
-			OnUpdate(game->txQuest[20]);
+			OnUpdate(quest_mgr->txQuest[20]);
 		}
 		break;
 	case Progress::Finished:
@@ -143,7 +142,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
 			team->AddReward(500, 2000);
 
-			OnUpdate(game->txQuest[21]);
+			OnUpdate(quest_mgr->txQuest[21]);
 		}
 		break;
 	}
@@ -160,7 +159,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 		{
 			s += world->GetLocation(entries[i].location)->name;
 			if(i == count - 2)
-				s += game->txQuest[264];
+				s += quest_mgr->txQuest[264];
 			else if(i != count - 1)
 				s += ", ";
 		}
@@ -184,7 +183,7 @@ bool Quest_SpreadNews::IsTimedout() const
 //=================================================================================================
 bool Quest_SpreadNews::OnTimeout(TimeoutType ttype)
 {
-	OnUpdate(game->txQuest[267]);
+	OnUpdate(quest_mgr->txQuest[267]);
 	return true;
 }
 

@@ -85,12 +85,12 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		{
 			if(!quest_mgr->RemoveQuestRumor(id))
-				game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
+				game_gui->journal->AddRumor(Format(quest_mgr->txQuest[232], GetStartLocationName()));
 		}
 		break;
 	case Progress::Talked:
 		{
-			OnStart(game->txQuest[233]);
+			OnStart(quest_mgr->txQuest[233]);
 			quest_mgr->RemoveQuestRumor(id);
 			// add location
 			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 128.f);
@@ -104,45 +104,45 @@ void Quest_Evil::SetProgress(int prog2)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// add journal entries
-			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
+			msgs.push_back(Format(quest_mgr->txQuest[234], GetStartLocationName(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::AltarEvent:
 		{
-			OnUpdate(game->txQuest[236]);
-			world->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
+			OnUpdate(quest_mgr->txQuest[236]);
+			world->AddNews(Format(quest_mgr->txQuest[237], GetTargetLocationName()));
 		}
 		break;
 	case Progress::TalkedAboutBook:
 		{
 			Location* mage = world->GetRandomSettlement(startLoc);
 			mage_loc = mage->index;
-			OnUpdate(Format(game->txQuest[238], mage->name.c_str(), GetLocationDirName(startLoc->pos, mage->pos)));
+			OnUpdate(Format(quest_mgr->txQuest[238], mage->name.c_str(), GetLocationDirName(startLoc->pos, mage->pos)));
 			evil_state = State::GenerateMage;
 			team->AddExp(7500);
 		}
 		break;
 	case Progress::MageToldAboutStolenBook:
 		{
-			OnUpdate(game->txQuest[239]);
-			world->AddNews(Format(game->txQuest[240], world->GetLocation(mage_loc)->name.c_str()));
+			OnUpdate(quest_mgr->txQuest[239]);
+			world->AddNews(Format(quest_mgr->txQuest[240], world->GetLocation(mage_loc)->name.c_str()));
 			DialogContext::current->talker->temporary = true;
 		}
 		break;
 	case Progress::TalkedWithCaptain:
 		{
-			OnUpdate(Format(game->txQuest[241], LocationHelper::IsCity(world->GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
+			OnUpdate(Format(quest_mgr->txQuest[241], LocationHelper::IsCity(world->GetCurrentLocation()) ? quest_mgr->txForMayor : quest_mgr->txForSoltys));
 		}
 		break;
 	case Progress::TalkedWithMayor:
 		{
-			OnUpdate(Format(game->txQuest[242], LocationHelper::IsCity(world->GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
+			OnUpdate(Format(quest_mgr->txQuest[242], LocationHelper::IsCity(world->GetCurrentLocation()) ? quest_mgr->txForMayor : quest_mgr->txForSoltys));
 		}
 		break;
 	case Progress::GotBook:
 		{
-			OnUpdate(game->txQuest[243]);
+			OnUpdate(quest_mgr->txQuest[243]);
 			const Item* item = Item::Get("q_zlo_ksiega");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
@@ -163,7 +163,7 @@ void Quest_Evil::SetProgress(int prog2)
 			};
 
 			cstring new_msgs[4];
-			new_msgs[0] = game->txQuest[245];
+			new_msgs[0] = quest_mgr->txQuest[245];
 
 			for(int i = 0; i < 3; ++i)
 			{
@@ -178,10 +178,10 @@ void Quest_Evil::SetProgress(int prog2)
 				loc[i].near_loc = world->GetNearestSettlement(target.pos)->index;
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
-				new_msgs[i + 1] = Format(game->txQuest[247], target.name.c_str(),
+				new_msgs[i + 1] = Format(quest_mgr->txQuest[247], target.name.c_str(),
 					GetLocationDirName(world->GetLocation(loc[i].near_loc)->pos, target.pos),
 					world->GetLocation(loc[i].near_loc)->name.c_str());
-				world->AddNews(Format(game->txQuest[246], target.name.c_str()));
+				world->AddNews(Format(quest_mgr->txQuest[246], target.name.c_str()));
 			}
 
 			OnUpdate({ new_msgs[0], new_msgs[1], new_msgs[2], new_msgs[3] });
@@ -220,7 +220,7 @@ void Quest_Evil::SetProgress(int prog2)
 			targetLoc->group = UnitGroup::Get("evil");
 			targetLoc->reset = true;
 			evil_state = State::KillBoss;
-			OnUpdate(Format(game->txQuest[248], GetTargetLocationName()));
+			OnUpdate(Format(quest_mgr->txQuest[248], GetTargetLocationName()));
 			for(int i = 0; i < 3; ++i)
 				loc[i].targetLoc->active_quest = nullptr;
 		}
@@ -228,7 +228,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::KilledBoss:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[249]);
+			OnUpdate(quest_mgr->txQuest[249]);
 			// restore old altar
 			targetLoc->active_quest = nullptr;
 			targetLoc->dont_clean = false;
@@ -262,7 +262,7 @@ void Quest_Evil::SetProgress(int prog2)
 			quest_mgr->EndUniqueQuest();
 			team->AddExp(30000);
 			evil_state = State::ClericWantTalk;
-			world->AddNews(game->txQuest[250]);
+			world->AddNews(quest_mgr->txQuest[250]);
 			team->AddLearningPoint();
 
 			if(Net::IsOnline())

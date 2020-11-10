@@ -2,7 +2,7 @@
 #include "Quest_KillAnimals.h"
 
 #include "City.h"
-#include "Game.h"
+#include "DialogContext.h"
 #include "ItemHelper.h"
 #include "Journal.h"
 #include "LocationHelper.h"

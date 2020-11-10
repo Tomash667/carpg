@@ -1,7 +1,9 @@
 #include "Pch.h"
 #include "Quest_LostArtifact.h"
 
-#include "Game.h"
+#include "BaseLocation.h"
+#include "DialogContext.h"
+#include "GameCommon.h"
 #include "ItemHelper.h"
 #include "LevelAreaContext.h"
 #include "Journal.h"
@@ -43,7 +45,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[106]);
+			OnStart(quest_mgr->txQuest[106]);
 			quest_mgr->quests_timeout.push_back(this);
 
 			item->CreateCopy(quest_item);
@@ -66,32 +68,32 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			switch(at_level)
 			{
 			case 0:
-				level = game->txQuest[107];
+				level = quest_mgr->txQuest[107];
 				break;
 			case 1:
-				level = game->txQuest[108];
+				level = quest_mgr->txQuest[108];
 				break;
 			case 2:
-				level = game->txQuest[109];
+				level = quest_mgr->txQuest[109];
 				break;
 			case 3:
-				level = game->txQuest[110];
+				level = quest_mgr->txQuest[110];
 				break;
 			case 4:
-				level = game->txQuest[111];
+				level = quest_mgr->txQuest[111];
 				break;
 			case 5:
-				level = game->txQuest[112];
+				level = quest_mgr->txQuest[112];
 				break;
 			default:
-				level = game->txQuest[113];
+				level = quest_mgr->txQuest[113];
 				break;
 			}
 
 			DialogContext::current->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), level, targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
+			msgs.push_back(Format(quest_mgr->txQuest[82], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[114], item->name.c_str(), level, targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 		}
 		break;
 	case Progress::Finished:
@@ -100,7 +102,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			OnUpdate(game->txQuest[115]);
+			OnUpdate(quest_mgr->txQuest[115]);
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
@@ -114,7 +116,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			OnUpdate(game->txQuest[116]);
+			OnUpdate(quest_mgr->txQuest[116]);
 			DialogContext::current->talker->temporary = true;
 		}
 		break;
@@ -137,19 +139,19 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 		switch(at_level)
 		{
 		case 0:
-			return game->txQuest[117];
+			return quest_mgr->txQuest[117];
 		case 1:
-			return game->txQuest[118];
+			return quest_mgr->txQuest[118];
 		case 2:
-			return game->txQuest[119];
+			return quest_mgr->txQuest[119];
 		case 3:
-			return game->txQuest[120];
+			return quest_mgr->txQuest[120];
 		case 4:
-			return game->txQuest[121];
+			return quest_mgr->txQuest[121];
 		case 5:
-			return game->txQuest[122];
+			return quest_mgr->txQuest[122];
 		default:
-			return game->txQuest[123];
+			return quest_mgr->txQuest[123];
 		}
 	}
 	else if(str == "reward")
@@ -173,7 +175,7 @@ bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 	if(done)
 		ForLocation(targetLoc, at_level)->RemoveQuestGroundItem(id);
 
-	OnUpdate(game->txQuest[267]);
+	OnUpdate(quest_mgr->txQuest[267]);
 	return true;
 }
 
