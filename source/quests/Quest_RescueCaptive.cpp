@@ -79,15 +79,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[29], startLoc->name.c_str(), world->GetDate()));
 
 			if(targetLoc->type == L_CAMP)
-			{
-				game->target_loc_is_camp = true;
 				msgs.push_back(Format(game->txQuest[33], startLoc->name.c_str(), group->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
-			}
 			else
-			{
-				game->target_loc_is_camp = false;
 				msgs.push_back(Format(game->txQuest[34], startLoc->name.c_str(), group->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
-			}
 		}
 		break;
 	case Progress::FoundCaptive:
@@ -299,6 +293,15 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 		return true;
 	else
 		return false;
+}
+
+//=================================================================================================
+bool Quest_RescueCaptive::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "is_camp") == 0)
+		return targetLoc->type == L_CAMP;
+	assert(0);
+	return false;
 }
 
 //=================================================================================================

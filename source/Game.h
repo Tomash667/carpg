@@ -306,7 +306,7 @@ public:
 	//-----------------------------------------------------------------
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
-	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene, in_load;
+	bool testing, force_seed_all, end_of_game, death_solo, cutscene, in_load;
 	int death_screen;
 	float death_fade, game_speed;
 	vector<AIController*> ais;

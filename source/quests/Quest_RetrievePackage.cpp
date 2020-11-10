@@ -66,15 +66,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[3], who, startLoc->name.c_str(), world->GetDate()));
 			if(targetLoc->type == L_CAMP)
-			{
-				game->target_loc_is_camp = true;
 				msgs.push_back(Format(game->txQuest[22], who, startLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
-			}
 			else
-			{
-				game->target_loc_is_camp = false;
 				msgs.push_back(Format(game->txQuest[23], who, startLoc->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
-			}
 			st = targetLoc->st;
 		}
 		break;
@@ -164,6 +158,15 @@ bool Quest_RetrievePackage::IfHaveQuestItem() const
 const Item* Quest_RetrievePackage::GetQuestItem()
 {
 	return &parcel;
+}
+
+//=================================================================================================
+bool Quest_RetrievePackage::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "is_camp") == 0)
+		return targetLoc->type == L_CAMP;
+	assert(0);
+	return false;
 }
 
 //=================================================================================================

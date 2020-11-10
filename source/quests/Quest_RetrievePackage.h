@@ -24,6 +24,7 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	bool IfHaveQuestItem() const override;
 	const Item* GetQuestItem() override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 

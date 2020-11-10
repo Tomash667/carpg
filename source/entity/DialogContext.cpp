@@ -1620,8 +1620,6 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return pc->unit->human_data->hair_color.Equal(g_hair_colors[8]);
 	else if(strcmp(msg, "is_bald") == 0)
 		return pc->unit->human_data->hair == -1;
-	else if(strcmp(msg, "is_camp") == 0)
-		return game->target_loc_is_camp;
 	else if(strcmp(msg, "dont_have_quest") == 0)
 		return talker->quest_id == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)

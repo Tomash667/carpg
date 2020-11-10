@@ -3906,7 +3906,7 @@ dialog q_rescue_captive_start
 	choice 2
 	{
 		set_quest_progress 1
-		if special "is_camp"
+		if quest_special "is_camp"
 			talk 3
 		else
 			talk 4
@@ -3991,7 +3991,7 @@ dialog q_retrieve_package_start
 	choice 1
 	{
 		set_quest_progress 1
-		if special "is_camp"
+		if quest_special "is_camp"
 			talk 2
 		else
 			talk 3
