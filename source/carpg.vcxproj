@@ -134,6 +134,7 @@
     <ClInclude Include="components\FOV.h" />
     <ClInclude Include="components\GameResources.h" />
     <ClInclude Include="components\GameStats.h" />
+    <ClInclude Include="components\Guild.h" />
     <ClInclude Include="components\Level.h" />
     <ClInclude Include="components\Messenger.h" />
     <ClInclude Include="components\Pathfinding.h" />
@@ -338,6 +339,7 @@
     <ClCompile Include="components\FOV.cpp" />
     <ClCompile Include="components\GameResources.cpp" />
     <ClCompile Include="components\GameStats.cpp" />
+    <ClCompile Include="components\Guild.cpp" />
     <ClCompile Include="components\Level.cpp" />
     <ClCompile Include="components\Messenger.cpp" />
     <ClCompile Include="components\Pathfinding.cpp" />

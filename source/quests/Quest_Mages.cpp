@@ -210,8 +210,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(beer, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(beer->ToConsumable());
-			DialogContext::current->dialog_wait = 2.5f;
-			DialogContext::current->can_skip = false;
+			DialogContext::current->Wait(2.5f);
 			OnUpdate(quest_mgr->txQuest[175]);
 		}
 		break;
@@ -221,8 +220,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(vodka, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(vodka->ToConsumable());
-			DialogContext::current->dialog_wait = 2.5f;
-			DialogContext::current->can_skip = false;
+			DialogContext::current->Wait(2.5f);
 			OnUpdate(quest_mgr->txQuest[176]);
 		}
 		break;
@@ -269,8 +267,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(mikstura->ToConsumable());
-			DialogContext::current->dialog_wait = 3.f;
-			DialogContext::current->can_skip = false;
+			DialogContext::current->Wait(2.5f);
 			mages_state = State::MageCured;
 			OnUpdate(quest_mgr->txQuest[181]);
 			targetLoc->active_quest = nullptr;

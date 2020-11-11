@@ -1,6 +1,7 @@
 globals
 {
 	Item@ crazy_give_item;
+	int value;
 	bool guards_enc_reward;
 }
 
@@ -230,6 +231,24 @@ dialog mayor
 		else
 		{
 			special "mayor_quest"
+			restart
+		}
+	}
+	if script "!Guild::created"
+	{
+		script "value = (Level::location.IsVillage() ? 100000 : 75000);"
+		choice 17
+		{
+			if script "pc.unit.gold >= value"
+			{
+				special "get_guild_name"
+				if special "get_guild_name_ok"
+					talk 18
+				else
+					talk 19
+			}
+			else
+				talk 20
 			restart
 		}
 	}

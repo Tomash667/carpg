@@ -667,6 +667,9 @@
     <ClCompile Include="entity\UnitList.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="components\Guild.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1311,6 +1314,9 @@
     </ClInclude>
     <ClInclude Include="entity\UnitList.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Guild.h">
+      <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

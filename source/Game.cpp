@@ -25,6 +25,7 @@
 #include "GameMessages.h"
 #include "GameResources.h"
 #include "GameStats.h"
+#include "Guild.h"
 #include "InfoBox.h"
 #include "Inventory.h"
 #include "ItemContainer.h"
@@ -137,6 +138,7 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false),
 	game_level = new Level;
 	game_res = new GameResources;
 	game_stats = new GameStats;
+	guild = new Guild;
 	loc_gen_factory = new LocationGeneratorFactory;
 	messenger = new Messenger;
 	net = new Net;
@@ -605,6 +607,7 @@ void Game::OnCleanup()
 	delete game_level;
 	delete game_res;
 	delete game_stats;
+	delete guild;
 	delete loc_gen_factory;
 	delete messenger;
 	delete net;
@@ -1987,13 +1990,13 @@ void Game::UpdateGame(float dt)
 		{
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
-			DialogContext& area = *info.u->player->dialog_ctx;
-			if(area.dialog_mode)
+			DialogContext& ctx = *info.u->player->dialog_ctx;
+			if(ctx.IsRunning())
 			{
-				if(!area.talker->IsStanding() || !area.talker->IsIdle() || area.talker->to_remove || area.talker->frozen != FROZEN::NO)
-					area.EndDialog();
+				if(!ctx.talker->IsStanding() || !ctx.talker->IsIdle() || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
+					ctx.EndDialog();
 				else
-					area.Update(dt);
+					ctx.Update(dt);
 			}
 		}
 	}
@@ -2677,6 +2680,7 @@ void Game::ClearGameVars(bool new_game)
 		game_level->light_angle = Random(PI * 2);
 		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
+		guild->Clear();
 
 		if(IsDebug())
 		{

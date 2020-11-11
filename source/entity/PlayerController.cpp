@@ -1519,9 +1519,7 @@ void PlayerController::UseDays(int count)
 void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 {
 	assert(talker);
-
-	DialogContext& ctx = *dialog_ctx;
-	assert(!ctx.dialog_mode);
+	assert(!dialog_ctx->IsRunning());
 
 	if(!is_local)
 	{
@@ -1530,7 +1528,7 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* ques
 		c.id = talker->id;
 	}
 
-	ctx.StartDialog(talker, dialog, quest);
+	dialog_ctx->StartDialog(talker, dialog, quest);
 }
 
 //=================================================================================================

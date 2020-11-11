@@ -20,6 +20,7 @@
 #include "GameResources.h"
 #include "GameStats.h"
 #include "Gui.h"
+#include "Guild.h"
 #include "InfoBox.h"
 #include "Inventory.h"
 #include "ItemHelper.h"
@@ -519,6 +520,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 
 	// save team
 	team->Save(f);
+	guild->Save(f);
 
 	// save quests
 	quest_mgr->Save(f);
@@ -809,6 +811,7 @@ void Game::LoadGame(GameReader& f)
 
 	// load team
 	team->Load(f);
+	guild->Load(f);
 
 	// load quests
 	LoadingStep(txLoadingQuests);

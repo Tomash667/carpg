@@ -7,6 +7,7 @@
 #include "DungeonMapGenerator.h"
 #include "Encounter.h"
 #include "Game.h"
+#include "Guild.h"
 #include "InsideLocation.h"
 #include "ItemHelper.h"
 #include "LocationHelper.h"
@@ -817,6 +818,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void RemoveMember(Unit@)", asMETHOD(Team, RemoveMember))
 		.AddFunction("void Warp(const Vec3& in, const Vec3& in)", asMETHOD(Team, Warp))
 		.AddFunction("bool PersuasionCheck(int)", asMETHOD(Team, PersuasionCheck));
+
+	WithNamespace("Guild", guild)
+		.AddFunction("bool get_created() property", asMETHOD(Guild, IsCreated))
+		.AddFunction("const string& get_name() property", asMETHOD(Guild, GetName));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 

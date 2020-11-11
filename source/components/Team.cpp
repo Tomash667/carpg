@@ -1522,22 +1522,19 @@ Unit* Team::GetNearestTeamMember(const Vec3& pos, float* out_dist)
 // bêdzie u¿ywane w multiplayer
 bool Team::IsAnyoneTalking() const
 {
-	if(Net::IsLocal())
-	{
-		if(Net::IsOnline())
-		{
-			for(Unit& unit : team->active_members)
-			{
-				if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
-					return true;
-			}
-			return false;
-		}
-		else
-			return game->dialog_context.dialog_mode;
-	}
-	else
+	if(Net::IsSingleplayer())
+		return game->dialog_context.IsRunning();
+	else if(Net::IsClient())
 		return anyone_talking;
+	else
+	{
+		for(Unit& unit : team->active_members)
+		{
+			if(unit.IsPlayer() && unit.player->dialog_ctx->IsRunning())
+				return true;
+		}
+		return false;
+	}
 }
 
 //=================================================================================================
