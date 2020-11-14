@@ -1278,17 +1278,18 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							unit->action = A_ANIMATION;
 						}
 
-						if(game->dialog_context.dialog_mode && game->dialog_context.talker == unit)
+						DialogContext& ctx = game->dialog_context;
+						if(ctx.dialog_mode && ctx.talker == unit)
 						{
-							game->dialog_context.dialog_s_text = text;
-							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
-							game->dialog_context.dialog_wait = 1.f;
-							game->dialog_context.skip_id = skip_id;
+							ctx.dialog_s_text = text;
+							ctx.dialog_text = ctx.dialog_s_text.c_str();
+							ctx.skip_id = skip_id;
+							ctx.mode = DialogContext::WAIT_TALK;
 						}
 						else if(pc.action == PlayerAction::Talk && pc.action_unit == unit)
 						{
-							game->predialog = text;
-							game->dialog_context.skip_id = skip_id;
+							ctx.predialog = text;
+							ctx.skip_id = skip_id;
 						}
 					}
 				}
@@ -3248,22 +3249,8 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					{
 						pc.action = PlayerAction::Talk;
 						pc.action_unit = unit;
-						game->dialog_context.StartDialog(unit);
-						if(!game->predialog.empty())
-						{
-							game->dialog_context.dialog_s_text = game->predialog;
-							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
-							game->dialog_context.dialog_wait = 1.f;
-							game->predialog.clear();
-						}
-						else if(unit->bubble)
-						{
-							game->dialog_context.dialog_s_text = unit->bubble->text;
-							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
-							game->dialog_context.dialog_wait = 1.f;
-							game->dialog_context.skip_id = unit->bubble->skip_id;
-						}
 						pc.data.before_player = BP_NONE;
+						game->dialog_context.StartDialog(unit);
 					}
 				}
 			}
@@ -3288,20 +3275,23 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				}
 				else
 				{
-					game->dialog_context.choice_selected = 0;
-					game->dialog_context.show_choices = true;
-					game->dialog_context.dialog_esc = escape;
-					game->dialog_choices.resize(count);
+					DialogContext& ctx = game->dialog_context;
+					ctx.choice_selected = 0;
+					ctx.mode = DialogContext::WAIT_CHOICES;
+					ctx.dialog_esc = escape;
+					ctx.choices.resize(count);
 					for(byte i = 0; i < count; ++i)
 					{
-						f >> game->dialog_choices[i];
+						string* str = StringPool.Get();
+						f >> *str;
+						ctx.choices[i] = DialogChoice(str);
 						if(!f)
 						{
 							Error("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i);
 							break;
 						}
 					}
-					game_gui->level_gui->UpdateScrollbar(game->dialog_choices.size());
+					game_gui->level_gui->UpdateScrollbar(ctx.choices.size());
 				}
 			}
 			break;

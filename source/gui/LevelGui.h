@@ -75,7 +75,7 @@ public:
 	void AddSpeechBubble(Unit* unit, cstring text);
 	void AddSpeechBubble(const Vec3& pos, cstring text);
 	void Reset();
-	bool UpdateChoice(DialogContext& ctx, int choices);
+	bool UpdateChoice();
 	void UpdateScrollbar(int choices);
 	bool HavePanelOpen() const;
 	bool CanFocusMpBox() const { return !HavePanelOpen(); }

@@ -2003,7 +2003,7 @@ void Game::UpdateGame(float dt)
 	else
 	{
 		if(dialog_context.dialog_mode)
-			UpdateGameDialogClient();
+			dialog_context.UpdateClient();
 	}
 
 	UpdateAttachedSounds(dt);
@@ -3595,33 +3595,6 @@ bool Game::CanShowEndScreen()
 		return !quest_mgr->unique_completed_show && quest_mgr->unique_quests_completed == quest_mgr->unique_quests && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 	else
 		return quest_mgr->unique_completed_show && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
-}
-
-void Game::UpdateGameDialogClient()
-{
-	if(dialog_context.show_choices)
-	{
-		if(game_gui->level_gui->UpdateChoice(dialog_context, dialog_choices.size()))
-		{
-			dialog_context.show_choices = false;
-			dialog_context.dialog_text = "";
-
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHOICE;
-			c.id = dialog_context.choice_selected;
-		}
-	}
-	else if(dialog_context.dialog_wait > 0.f && dialog_context.skip_id != -1)
-	{
-		if(GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
-			|| (GKey.AllowKeyboard() && input->PressedRelease(Key::Escape)))
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SKIP_DIALOG;
-			c.id = dialog_context.skip_id;
-			dialog_context.skip_id = -1;
-		}
-	}
 }
 
 void Game::UpdateGameNet(float dt)
