@@ -231,7 +231,6 @@ public:
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();
-	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
 	void OnEnterLocation();
 	void OnEnterLevel();
@@ -325,8 +324,6 @@ public:
 	float fallback_t;
 	// dialogs
 	DialogContext dialog_context, idle_context;
-	vector<string> dialog_choices; // used in client multiplayer mode
-	string predialog;
 
 	//-----------------------------------------------------------------
 	// LOADING

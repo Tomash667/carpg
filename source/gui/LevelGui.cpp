@@ -413,12 +413,12 @@ void LevelGui::DrawFront()
 		gui->DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
 		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
-		if(game->dialog_context.show_choices)
+		if(game->dialog_context.mode == DialogContext::WAIT_CHOICES)
 		{
 			int off = int(scrollbar.offset);
 
 			// selection
-			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialog_context.choice_selected*GameGui::font->height - off + 6),
+			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialog_context.choice_selected * GameGui::font->height - off + 6),
 				Int2(dsize.x - 16, GameGui::font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
@@ -431,21 +431,10 @@ void LevelGui::DrawFront()
 
 			// text
 			LocalString s;
-			if(Net::IsLocal())
+			for(uint i = 0; i < game->dialog_context.choices.size(); ++i)
 			{
-				for(uint i = 0; i < game->dialog_context.choices.size(); ++i)
-				{
-					s += game->dialog_context.choices[i].msg;
-					s += '\n';
-				}
-			}
-			else
-			{
-				for(uint i = 0; i < game->dialog_choices.size(); ++i)
-				{
-					s += game->dialog_choices[i];
-					s += '\n';
-				}
+				s += game->dialog_context.choices[i].msg;
+				s += '\n';
 			}
 			Rect r2 = r;
 			r2 -= Int2(0, off);
@@ -505,7 +494,7 @@ void LevelGui::DrawFront()
 	int img_size = 76 * gui->wnd_size.x / 1920;
 	offset = img_size + 2;
 	scale = float(img_size) / 64;
-	Int2 spos(256.f*wnd_scale, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wnd_scale, gui->wnd_size.y - offset);
 
 	// shortcuts
 	for(int i = 0; i < Shortcut::MAX; ++i)
@@ -1241,7 +1230,7 @@ int LevelGui::GetShortcutIndex()
 	float wnd_scale = float(gui->wnd_size.x) / 800;
 	int img_size = 76 * gui->wnd_size.x / 1920;
 	int offset = img_size + 2;
-	Int2 spos(256.f*wnd_scale, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wnd_scale, gui->wnd_size.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		Rect r = Rect::Create(spos, Int2(img_size, img_size));
@@ -1342,7 +1331,7 @@ void LevelGui::AddSpeechBubble(Unit* unit, cstring text)
 	// setup
 	unit->bubble->text = text;
 	unit->bubble->unit = unit;
-	unit->bubble->size = Int2(Max(32, total / lines + 20), s.y*lines + 20);
+	unit->bubble->size = Int2(Max(32, total / lines + 20), s.y * lines + 20);
 	unit->bubble->time = 0.f;
 	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
@@ -1379,7 +1368,7 @@ void LevelGui::AddSpeechBubble(const Vec3& pos, cstring text)
 
 	sb->text = text;
 	sb->unit = nullptr;
-	sb->size = Int2(total / lines + 20, size.y*lines + 20);
+	sb->size = Int2(total / lines + 20, size.y * lines + 20);
 	sb->time = 0.f;
 	sb->length = 1.5f + float(strlen(text)) / 20;
 	sb->visible = true;
@@ -1400,10 +1389,12 @@ void LevelGui::Reset()
 }
 
 //=================================================================================================
-bool LevelGui::UpdateChoice(DialogContext& ctx, int choices)
+bool LevelGui::UpdateChoice()
 {
-	Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-	Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32 + 6);
+	DialogContext& ctx = game->dialog_context;
+	const Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
+	const Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32 + 6);
+	const int choices = ctx.choices.size();
 
 	// element pod kursorem
 	int cursor_choice = -1;
@@ -1436,7 +1427,7 @@ bool LevelGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 	if(moved && choices > 5)
 	{
-		scrollbar.offset = float(GameGui::font->height*(ctx.choice_selected - 2));
+		scrollbar.offset = float(GameGui::font->height * (ctx.choice_selected - 2));
 		if(scrollbar.offset < 0.f)
 			scrollbar.offset = 0.f;
 		else if(scrollbar.offset + scrollbar.part > scrollbar.total)

@@ -1499,7 +1499,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Broken CHOICE from %s.", info.name.c_str());
 				else if(game->game_state == GS_LEVEL)
 				{
-					if(player.dialog_ctx->show_choices && choice < player.dialog_ctx->choices.size())
+					if(player.dialog_ctx->mode == DialogContext::WAIT_CHOICES && choice < player.dialog_ctx->choices.size())
 						player.dialog_ctx->choice_selected = choice;
 					else
 						Error("Update server: CHOICE from %s, not in dialog or invalid choice %u.", info.name.c_str(), choice);
@@ -1516,7 +1516,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_LEVEL)
 				{
 					DialogContext& ctx = *player.dialog_ctx;
-					if(ctx.dialog_wait > 0.f && ctx.dialog_mode && !ctx.show_choices && ctx.skip_id == skip_id && ctx.can_skip)
+					if(ctx.dialog_mode && ctx.mode == DialogContext::WAIT_TALK && ctx.skip_id == skip_id)
 						ctx.choice_selected = 1;
 				}
 			}

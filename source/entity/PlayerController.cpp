@@ -2738,7 +2738,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					c.id = u2->id;
 					action = PlayerAction::Talk;
 					action_unit = u2;
-					game->predialog.clear();
+					game->dialog_context.predialog.clear();
 				}
 			}
 		}

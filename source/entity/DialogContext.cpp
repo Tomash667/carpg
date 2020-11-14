@@ -48,15 +48,12 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 		talker->OrderNext();
 	}
 
+	mode = NONE;
 	dialog_mode = true;
-	dialog_wait = -1;
 	dialog_pos = 0;
-	show_choices = false;
-	idleMode = false;
 	dialog_text = nullptr;
 	once = true;
 	dialog_quest = quest;
-	dialog_skip = -1;
 	dialog_esc = -1;
 	this->talker = talker;
 	this->dialog = dialog ? dialog : talker->data->dialog;
@@ -73,7 +70,6 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	pc->action = PlayerAction::Talk;
 	pc->action_unit = talker;
 	ClearChoices();
-	can_skip = true;
 	force_end = false;
 	if(!dialog)
 	{
@@ -113,6 +109,23 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 			}
 		}
 	}
+	else
+	{
+		if(!predialog.empty())
+		{
+			dialog_s_text = predialog;
+			dialog_text = dialog_s_text.c_str();
+			timer = 1.f;
+			predialog.clear();
+		}
+		else if(talker->bubble)
+		{
+			dialog_s_text = talker->bubble->text;
+			dialog_text = dialog_s_text.c_str();
+			timer = 1.f;
+			skip_id = talker->bubble->skip_id;
+		}
+	}
 
 	if(is_local)
 		game_gui->CloseAllPanels();
@@ -135,21 +148,17 @@ cstring DialogContext::GetIdleText(Unit& talker)
 {
 	assert(talker.data->idleDialog);
 
-	dialog_wait = -1;
+	mode = IDLE;
 	dialog_pos = 0;
-	show_choices = false;
-	idleMode = true;
 	dialog_text = nullptr;
 	once = true;
 	dialog_quest = nullptr;
-	dialog_skip = -1;
 	dialog_esc = -1;
 	this->talker = &talker;
 	dialog = talker.data->idleDialog;
 	update_news = true;
 	update_locations = 1;
 	ClearChoices();
-	can_skip = true;
 	force_end = false;
 	quest_dialogs.clear();
 	quest_dialog_index = QUEST_INDEX_NONE;
@@ -168,75 +177,77 @@ cstring DialogContext::GetIdleText(Unit& talker)
 //=================================================================================================
 void DialogContext::Update(float dt)
 {
-	// wyœwietlono opcje dialogowe, wybierz jedn¹ z nich (w mp czekaj na wybór)
-	if(show_choices)
+	switch(mode)
 	{
-		bool ok = false;
-		if(!is_local)
+	case WAIT_CHOICES:
+		// wyœwietlono opcje dialogowe, wybierz jedn¹ z nich (w mp czekaj na wybór)
 		{
-			if(choice_selected != -1)
-				ok = true;
-		}
-		else
-			ok = game_gui->level_gui->UpdateChoice(*this, choices.size());
-
-		if(ok)
-		{
-			DialogChoice& choice = choices[choice_selected];
-			cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
-			game_gui->level_gui->AddSpeechBubble(pc->unit, msg);
-
-			if(Net::IsOnline())
+			bool ok = false;
+			if(!is_local)
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::TALK;
-				c.unit = pc->unit;
-				c.str = StringPool.Get();
-				*c.str = msg;
-				c.id = 0;
-				c.count = 0;
-				net->net_strs.push_back(c.str);
+				if(choice_selected != -1)
+					ok = true;
 			}
+			else
+				ok = game_gui->level_gui->UpdateChoice();
 
-			show_choices = false;
-
-			bool use_return = false;
-			switch(choice.type)
+			if(ok)
 			{
-			case DialogChoice::Normal:
-				if(choice.quest_dialog_index != QUEST_INDEX_NONE)
+				mode = NONE;
+				DialogChoice& choice = choices[choice_selected];
+				cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
+				game_gui->level_gui->AddSpeechBubble(pc->unit, msg);
+
+				if(Net::IsOnline())
 				{
-					prev.push_back({ this->dialog, dialog_quest, -1 });
-					quest_dialog_index = choice.quest_dialog_index;
-					dialog_quest = quest_dialogs[quest_dialog_index].quest;
-					dialog = quest_dialogs[quest_dialog_index].dialog;
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::TALK;
+					c.unit = pc->unit;
+					c.str = StringPool.Get();
+					*c.str = msg;
+					c.id = 0;
+					c.count = 0;
+					net->net_strs.push_back(c.str);
 				}
-				dialog_pos = choice.pos;
-				break;
-			case DialogChoice::Perk:
-				use_return = LearnPerk((Perk*)choice.pos);
-				break;
-			case DialogChoice::Hero:
-				use_return = RecruitHero((Class*)choice.pos);
-				break;
-			}
 
-			ClearChoices();
-			choice_selected = -1;
-			dialog_esc = -1;
-			if(use_return)
+				bool use_return = false;
+				switch(choice.type)
+				{
+				case DialogChoice::Normal:
+					if(choice.quest_dialog_index != QUEST_INDEX_NONE)
+					{
+						prev.push_back({ this->dialog, dialog_quest, -1 });
+						quest_dialog_index = choice.quest_dialog_index;
+						dialog_quest = quest_dialogs[quest_dialog_index].quest;
+						dialog = quest_dialogs[quest_dialog_index].dialog;
+					}
+					dialog_pos = choice.pos;
+					break;
+				case DialogChoice::Perk:
+					use_return = LearnPerk((Perk*)choice.pos);
+					break;
+				case DialogChoice::Hero:
+					use_return = RecruitHero((Class*)choice.pos);
+					break;
+				}
+
+				ClearChoices();
+				choice_selected = -1;
+				dialog_esc = -1;
+				if(use_return)
+					return;
+			}
+			else
 				return;
 		}
-		else
-			return;
-	}
+		break;
 
-	if(dialog_wait > 0.f)
-	{
+	case WAIT_TALK:
+	case WAIT_TIMER:
 		if(is_local)
 		{
 			bool skip = false;
-			if(can_skip)
+			if(mode == WAIT_TALK)
 			{
 				if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG)
 					|| GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG)
@@ -251,30 +262,25 @@ void DialogContext::Update(float dt)
 			}
 
 			if(skip)
-				dialog_wait = -1.f;
+				timer = -1.f;
 			else
-				dialog_wait -= dt;
+				timer -= dt;
 		}
 		else
 		{
 			if(choice_selected == 1)
 			{
-				dialog_wait = -1.f;
+				timer = -1.f;
 				choice_selected = -1;
 			}
 			else
-				dialog_wait -= dt;
+				timer -= dt;
 		}
 
-		if(dialog_wait > 0.f)
+		if(timer > 0.f)
 			return;
-	}
-
-	can_skip = true;
-	if(dialog_skip != -1)
-	{
-		dialog_pos = dialog_skip;
-		dialog_skip = -1;
+		mode = NONE;
+		break;
 	}
 
 	if(force_end)
@@ -291,6 +297,38 @@ void DialogContext::Update(float dt)
 	current = nullptr;
 	ctx.pc = nullptr;
 	ctx.target = nullptr;
+}
+
+//=================================================================================================
+void DialogContext::UpdateClient()
+{
+	switch(mode)
+	{
+	case WAIT_CHOICES:
+		if(game_gui->level_gui->UpdateChoice())
+		{
+			mode = NONE;
+			dialog_text = "";
+			ClearChoices();
+
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHOICE;
+			c.id = choice_selected;
+		}
+		break;
+
+	case WAIT_TALK:
+		if(skip_id != -1 && (
+			GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
+			|| (GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))))
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SKIP_DIALOG;
+			c.id = skip_id;
+			skip_id = -1;
+		}
+		break;
+	}
 }
 
 //=================================================================================================
@@ -354,7 +392,7 @@ void DialogContext::UpdateLoop()
 			EndDialog();
 			return;
 		case DTF_SHOW_CHOICES:
-			show_choices = true;
+			mode = WAIT_CHOICES;
 			if(is_local)
 			{
 				choice_selected = 0;
@@ -447,7 +485,7 @@ void DialogContext::UpdateLoop()
 		case DTF_SET_QUEST_PROGRESS:
 			assert(dialog_quest);
 			dialog_quest->SetProgress(de.value);
-			if(dialog_wait > 0.f)
+			if((mode == WAIT_TALK || mode == WAIT_TIMER) && timer > 0.f)
 			{
 				++dialog_pos;
 				return;
@@ -1759,9 +1797,11 @@ void DialogContext::DialogTalk(cstring msg)
 	assert(msg);
 
 	dialog_text = msg;
-	dialog_wait = 1.f + float(strlen(dialog_text)) / 20;
-	if(idleMode)
+	if(mode == IDLE)
 		return;
+
+	mode = WAIT_TALK;
+	timer = 1.f + float(strlen(dialog_text)) / 20;
 
 	int ani;
 	if(!talker->usable && talker->data->type == UNIT_TYPE::HUMAN && talker->action == A_NONE && Rand() % 3 != 0)
