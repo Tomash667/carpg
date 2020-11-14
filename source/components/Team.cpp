@@ -1523,14 +1523,14 @@ Unit* Team::GetNearestTeamMember(const Vec3& pos, float* out_dist)
 bool Team::IsAnyoneTalking() const
 {
 	if(Net::IsSingleplayer())
-		return game->dialog_context.IsRunning();
+		return game->dialog_context.dialog_mode;
 	else if(Net::IsClient())
 		return anyone_talking;
 	else
 	{
 		for(Unit& unit : team->active_members)
 		{
-			if(unit.IsPlayer() && unit.player->dialog_ctx->IsRunning())
+			if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
 				return true;
 		}
 		return false;

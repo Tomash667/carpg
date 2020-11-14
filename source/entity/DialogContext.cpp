@@ -38,7 +38,7 @@ int DialogContext::var;
 //=================================================================================================
 void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 {
-	assert(state == NOT_ACTIVE);
+	assert(!dialog_mode);
 
 	// use up auto talk
 	if(talker && !dialog && talker->GetOrder() == ORDER_AUTO_TALK)
@@ -48,8 +48,11 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 		talker->OrderNext();
 	}
 
-	state = RUNNING;
+	dialog_mode = true;
+	dialog_wait = -1;
 	dialog_pos = 0;
+	show_choices = false;
+	idleMode = false;
 	dialog_text = nullptr;
 	once = true;
 	dialog_quest = quest;
@@ -70,7 +73,8 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	pc->action = PlayerAction::Talk;
 	pc->action_unit = talker;
 	ClearChoices();
-	forceEnd = false;
+	can_skip = true;
+	force_end = false;
 	if(!dialog)
 	{
 		quest_dialogs = talker->dialogs;
@@ -131,8 +135,10 @@ cstring DialogContext::GetIdleText(Unit& talker)
 {
 	assert(talker.data->idleDialog);
 
-	state = IDLE;
+	dialog_wait = -1;
 	dialog_pos = 0;
+	show_choices = false;
+	idleMode = true;
 	dialog_text = nullptr;
 	once = true;
 	dialog_quest = nullptr;
@@ -143,7 +149,8 @@ cstring DialogContext::GetIdleText(Unit& talker)
 	update_news = true;
 	update_locations = 1;
 	ClearChoices();
-	forceEnd = false;
+	can_skip = true;
+	force_end = false;
 	quest_dialogs.clear();
 	quest_dialog_index = QUEST_INDEX_NONE;
 
@@ -154,7 +161,6 @@ cstring DialogContext::GetIdleText(Unit& talker)
 	UpdateLoop();
 	current = nullptr;
 	ctx.target = nullptr;
-	state = NOT_ACTIVE;
 
 	return dialog_text;
 }
@@ -163,76 +169,74 @@ cstring DialogContext::GetIdleText(Unit& talker)
 void DialogContext::Update(float dt)
 {
 	// wyœwietlono opcje dialogowe, wybierz jedn¹ z nich (w mp czekaj na wybór)
-	switch(state)
+	if(show_choices)
 	{
-	case WAIT_CHOICES:
+		bool ok = false;
+		if(!is_local)
 		{
-			bool ok = false;
-			if(!is_local)
+			if(choice_selected != -1)
+				ok = true;
+		}
+		else
+			ok = game_gui->level_gui->UpdateChoice(*this, choices.size());
+
+		if(ok)
+		{
+			DialogChoice& choice = choices[choice_selected];
+			cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
+			game_gui->level_gui->AddSpeechBubble(pc->unit, msg);
+
+			if(Net::IsOnline())
 			{
-				if(choice_selected != -1)
-					ok = true;
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::TALK;
+				c.unit = pc->unit;
+				c.str = StringPool.Get();
+				*c.str = msg;
+				c.id = 0;
+				c.count = 0;
+				net->net_strs.push_back(c.str);
 			}
-			else
-				ok = game_gui->level_gui->UpdateChoice(*this, choices.size());
 
-			if(ok)
+			show_choices = false;
+
+			bool use_return = false;
+			switch(choice.type)
 			{
-				state = RUNNING;
-				DialogChoice& choice = choices[choice_selected];
-				cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
-				game_gui->level_gui->AddSpeechBubble(pc->unit, msg);
-
-				if(Net::IsOnline())
+			case DialogChoice::Normal:
+				if(choice.quest_dialog_index != QUEST_INDEX_NONE)
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TALK;
-					c.unit = pc->unit;
-					c.str = StringPool.Get();
-					*c.str = msg;
-					c.id = 0;
-					c.count = 0;
-					net->net_strs.push_back(c.str);
+					prev.push_back({ this->dialog, dialog_quest, -1 });
+					quest_dialog_index = choice.quest_dialog_index;
+					dialog_quest = quest_dialogs[quest_dialog_index].quest;
+					dialog = quest_dialogs[quest_dialog_index].dialog;
 				}
-
-				bool use_return = false;
-				switch(choice.type)
-				{
-				case DialogChoice::Normal:
-					if(choice.quest_dialog_index != QUEST_INDEX_NONE)
-					{
-						prev.push_back({ this->dialog, dialog_quest, -1 });
-						quest_dialog_index = choice.quest_dialog_index;
-						dialog_quest = quest_dialogs[quest_dialog_index].quest;
-						dialog = quest_dialogs[quest_dialog_index].dialog;
-					}
-					dialog_pos = choice.pos;
-					break;
-				case DialogChoice::Perk:
-					use_return = LearnPerk((Perk*)choice.pos);
-					break;
-				case DialogChoice::Hero:
-					use_return = RecruitHero((Class*)choice.pos);
-					break;
-				}
-
-				ClearChoices();
-				choice_selected = -1;
-				dialog_esc = -1;
-				if(use_return)
-					return;
+				dialog_pos = choice.pos;
+				break;
+			case DialogChoice::Perk:
+				use_return = LearnPerk((Perk*)choice.pos);
+				break;
+			case DialogChoice::Hero:
+				use_return = RecruitHero((Class*)choice.pos);
+				break;
 			}
-			else
+
+			ClearChoices();
+			choice_selected = -1;
+			dialog_esc = -1;
+			if(use_return)
 				return;
 		}
-		break;
+		else
+			return;
+	}
 
-	case WAIT:
-	case WAIT_TALK:
+	if(dialog_wait > 0.f)
+	{
 		if(is_local)
 		{
 			bool skip = false;
-			if(state == WAIT_TALK)
+			if(can_skip)
 			{
 				if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG)
 					|| GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG)
@@ -247,37 +251,33 @@ void DialogContext::Update(float dt)
 			}
 
 			if(skip)
-				timer = -1.f;
+				dialog_wait = -1.f;
 			else
-				timer -= dt;
+				dialog_wait -= dt;
 		}
 		else
 		{
 			if(choice_selected == 1)
 			{
-				timer = -1.f;
+				dialog_wait = -1.f;
 				choice_selected = -1;
 			}
 			else
-				timer -= dt;
+				dialog_wait -= dt;
 		}
 
-		if(timer > 0.f)
+		if(dialog_wait > 0.f)
 			return;
-		state = RUNNING;
-		break;
-
-	case WAIT_INPUT:
-		return;
 	}
 
+	can_skip = true;
 	if(dialog_skip != -1)
 	{
 		dialog_pos = dialog_skip;
 		dialog_skip = -1;
 	}
 
-	if(forceEnd)
+	if(force_end)
 	{
 		EndDialog();
 		return;
@@ -354,7 +354,7 @@ void DialogContext::UpdateLoop()
 			EndDialog();
 			return;
 		case DTF_SHOW_CHOICES:
-			state = WAIT_CHOICES;
+			show_choices = true;
 			if(is_local)
 			{
 				choice_selected = 0;
@@ -447,7 +447,7 @@ void DialogContext::UpdateLoop()
 		case DTF_SET_QUEST_PROGRESS:
 			assert(dialog_quest);
 			dialog_quest->SetProgress(de.value);
-			if(timer > 0.f)
+			if(dialog_wait > 0.f)
 			{
 				++dialog_pos;
 				return;
@@ -731,7 +731,7 @@ void DialogContext::EndDialog()
 {
 	ClearChoices();
 	prev.clear();
-	state = NOT_ACTIVE;
+	dialog_mode = false;
 
 	if(talker->busy == Unit::Busy_Trading)
 	{
@@ -859,7 +859,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			{
 				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Mayor);
 				if(quest)
-				DeleteElement(quest_mgr->unaccepted_quests, quest);
+					DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -914,7 +914,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			{
 				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Captain);
 				if(quest)
-				DeleteElement(quest_mgr->unaccepted_quests, quest);
+					DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -1220,7 +1220,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(pc->unit->stats->skill[(int)SkillId::MYSTIC_MAGIC] < ability->skill)
 			{
 				DialogTalk(game->txCantLearnAbility);
-				forceEnd = true;
+				force_end = true;
 				return true;
 			}
 
@@ -1240,7 +1240,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(skill->locked && pc->unit->GetBase(skill->skill_id) <= 0)
 			{
 				DialogTalk(game->txCantLearnSkill);
-				forceEnd = true;
+				force_end = true;
 				return true;
 			}
 
@@ -1260,7 +1260,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(pc->learning_points < cost)
 		{
 			DialogTalk(game->txNeedLearningPoints);
-			forceEnd = true;
+			force_end = true;
 			return true;
 		}
 
@@ -1269,7 +1269,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			dialog_s_text = Format(game->txNeedMoreGold, gold_cost - pc->unit->gold);
 			DialogTalk(dialog_s_text.c_str());
-			forceEnd = true;
+			force_end = true;
 			return true;
 		}
 
@@ -1759,11 +1759,9 @@ void DialogContext::DialogTalk(cstring msg)
 	assert(msg);
 
 	dialog_text = msg;
-	if(state == IDLE)
+	dialog_wait = 1.f + float(strlen(dialog_text)) / 20;
+	if(idleMode)
 		return;
-
-	state = WAIT_TALK;
-	timer = 1.f + float(strlen(dialog_text)) / 20;
 
 	int ani;
 	if(!talker->usable && talker->data->type == UNIT_TYPE::HUMAN && talker->action == A_NONE && Rand() % 3 != 0)
@@ -1828,7 +1826,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	if(pc->learning_points < perk->cost)
 	{
 		DialogTalk(game->txNeedLearningPoints);
-		forceEnd = true;
+		force_end = true;
 		return false;
 	}
 
@@ -1837,7 +1835,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	{
 		dialog_s_text = Format(game->txNeedMoreGold, cost - pc->unit->gold);
 		DialogTalk(dialog_s_text.c_str());
-		forceEnd = true;
+		force_end = true;
 		return false;
 	}
 
@@ -1862,7 +1860,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 		pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 	}
 
-	forceEnd = true;
+	force_end = true;
 	return true;
 }
 
@@ -1872,7 +1870,7 @@ bool DialogContext::RecruitHero(Class* clas)
 	if(team->GetActiveTeamSize() >= 4u)
 	{
 		DialogTalk(game->txTeamTooBig);
-		forceEnd = true;
+		force_end = true;
 		return false;
 	}
 
@@ -1883,7 +1881,7 @@ bool DialogContext::RecruitHero(Class* clas)
 	team->AddMember(u, HeroType::Normal);
 	dialog_s_text = Format(game->txHeroJoined, u->GetName());
 	DialogTalk(dialog_s_text.c_str());
-	forceEnd = true;
+	force_end = true;
 	return true;
 }
 

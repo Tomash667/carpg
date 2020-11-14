@@ -28,17 +28,6 @@ struct DialogContext
 	static constexpr int QUEST_INDEX_NONE = -1;
 	static constexpr int QUEST_INDEX_RESTART = -2;
 
-	enum State
-	{
-		NOT_ACTIVE,
-		RUNNING,
-		WAIT,
-		WAIT_TALK,
-		WAIT_CHOICES,
-		WAIT_INPUT,
-		IDLE
-	};
-
 	struct Entry
 	{
 		GameDialog* dialog;
@@ -46,6 +35,8 @@ struct DialogContext
 		int pos;
 	};
 
+	bool dialog_mode; // czy jest tryb dialogowy
+	bool show_choices; // czy wyœwietlono opcje dialogowe do wyboru
 	vector<DialogChoice> choices; // opcje dialogowe do wyboru
 	int dialog_pos; // pozycja w dialogu
 	int choice_selected; // zaznaczona opcja dialogowa
@@ -56,6 +47,7 @@ struct DialogContext
 	Quest* dialog_quest; // quest zwi¹zany z dialogiem
 	GameDialog* dialog; // aktualny dialog
 	Unit* talker; // postaæ z któr¹ siê rozmawia
+	float dialog_wait; // czas wyœwietlania opcji dialogowej
 	cstring last_rumor;
 	bool is_local;
 	PlayerController* pc;
@@ -66,6 +58,7 @@ struct DialogContext
 	vector<pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
+	bool can_skip, force_end;
 	vector<Entry> prev;
 	cstring talk_msg;
 	vector<QuestDialog> quest_dialogs;
@@ -87,21 +80,12 @@ struct DialogContext
 	void DialogTalk(cstring msg);
 	void RemoveQuestDialog(Quest2* quest);
 	cstring GetIdleText(Unit& talker);
-	void Wait(float _time)
-	{
-		state = WAIT;
-		time = _time;
-	}
-
-	bool IsRunning() const { return state != NOT_ACTIVE; }
-
 private:
 	void UpdateLoop();
 	bool DoIfOp(int value1, int value2, DialogOp op);
 	bool LearnPerk(Perk* perk);
 	bool RecruitHero(Class* clas);
 
-	State state;
-	float timer;
-	bool forceEnd, once;
+	bool once;
+	bool idleMode;
 };

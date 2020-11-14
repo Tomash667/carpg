@@ -1519,7 +1519,7 @@ void PlayerController::UseDays(int count)
 void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 {
 	assert(talker);
-	assert(!dialog_ctx->IsRunning());
+	assert(!dialog_ctx->dialog_mode);
 
 	if(!is_local)
 	{

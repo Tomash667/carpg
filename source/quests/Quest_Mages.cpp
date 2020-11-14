@@ -267,7 +267,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(mikstura->ToConsumable());
-			DialogContext::current->Wait(2.5f);
+			DialogContext::current->Wait(3.f);
 			mages_state = State::MageCured;
 			OnUpdate(quest_mgr->txQuest[181]);
 			targetLoc->active_quest = nullptr;

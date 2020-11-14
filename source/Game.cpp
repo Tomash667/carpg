@@ -1991,7 +1991,7 @@ void Game::UpdateGame(float dt)
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
 			DialogContext& ctx = *info.u->player->dialog_ctx;
-			if(ctx.IsRunning())
+			if(ctx.dialog_mode)
 			{
 				if(!ctx.talker->IsStanding() || !ctx.talker->IsIdle() || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
 					ctx.EndDialog();

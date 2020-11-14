@@ -53,7 +53,7 @@ const float T_WAIT_FOR_DATA = 5.f;
 bool Game::CanShowMenu()
 {
 	return !gui->HaveDialog() && !game_gui->level_gui->HavePanelOpen() && !game_gui->main_menu->visible
-		&& game_state != GS_MAIN_MENU && !dialog_context.IsRunning();
+		&& game_state != GS_MAIN_MENU && !dialog_context.dialog_mode;
 }
 
 //=================================================================================================
