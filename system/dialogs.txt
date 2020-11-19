@@ -435,11 +435,6 @@ dialog guard_captain
 		do_quest "captive"
 		do_once
 	}
-	if need_talk "wanted"
-	{
-		do_quest "wanted"
-		do_once
-	}
 	check_quest_timeout 1
 	if special "q_magowie_to_miasto"
 	{
@@ -4191,43 +4186,6 @@ dialog q_stolen_artifact_timeout
 	talk 1
 	talk 2
 	end2
-}
-
-//==============================================================================
-dialog q_wanted_start
-{
-	talk 0
-	talk 1
-	talk 2
-	choice 3
-	{
-		set_quest_progress 1
-		talk 4
-		talk 5
-		talk 6
-		end
-	}
-	escape choice 7
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_wanted_timeout
-{
-	set_quest_progress 2
-	talk 0
-	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_wanted_end
-{
-	talk 0
-	set_quest_progress 4
-	talk 1
-	end
 }
 
 //==============================================================================

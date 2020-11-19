@@ -183,6 +183,38 @@ quest kill_animals {
 }
 
 //=============================================================================
+quest wanted {
+	dialog start {
+		0 "Mam tutaj list goñczy na jednego z poszukiwaczy przygód. Pope³ni³ wiele przestêpstw."
+		1 "Nagroda za jego g³owê wynosi $(Str(level * 100)) sztuk z³ota."
+		2 "Jesteœ w stanie go zabiæ?"
+		3 "Tak"
+		4 "Ten poszukiwacz przygód to $(name), znajdziesz go w $(targetLoc.name) na $(World::GetDirName(startLoc, targetLoc)) st¹d."
+		5 "Poka¿ mu list goñczy a potem zabij. Tylko nie zrañ postronnych osób."
+		6 "Jeœli w ci¹gu miesi¹ca go nie zabijesz ucieknie z kraju."
+		7 "Nie"
+	}
+	
+	dialog end {
+		0 "Wiedzia³em ¿e mo¿na na tobie polegaæ $player$."
+		1 "Oto twoje $(Str(level * 100)) sztuk z³ota."
+		2 "Nie uda³o ci siê zabiæ $(name)? To Ÿle."
+		3 "Teraz ju¿ pewnie siê gdzieœ zaszy³ na dobre..."
+	}
+	
+	texts {
+		0 "Œcigany"
+		1 "Otrzymano od kapitana stra¿y $(startLoc.name) dnia $date$."
+		2 "Dosta³em w swoje rêce list goñczy. Wyznaczono nagrodê %d sztuk z³ota za g³owê $(name). Znajdê go w $(targetLoc.name) na $(World::GetDirName(startLoc, targetLoc)) st¹d. Mam miesi¹c zanim zapadnie siê po ziemiê."
+		3 "List goñczy"
+		4 "Nagroda $(Str(level * 100)) sztuk z³ota za zabicie przestêpcy zwanego $(name)."
+		5 "Zabi³em $(name)."
+		6 "Otrzyma³em nagrodê za zabicie $(name). Zadanie ukoñczone!"
+		7 "Nie zd¹¿y³em na czas zabiæ $(name) i gdzieœ siê zaszy³."
+	}
+}
+
+//=============================================================================
 quest find_artifact {
 	dialog start {
 		0 "Poszukujê pewnego artefaktu znanego jako $(item.name)."

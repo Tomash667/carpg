@@ -830,6 +830,197 @@ quest camp_near_city
 }
 
 //=============================================================================
+// WANTED - random captain quest
+// There is wanted hero in one of cities, killing him will get reward
+//=============================================================================
+quest wanted
+{
+	type captain
+	progress {
+		P_WANTED_NONE
+		P_WANTED_STARTED
+		P_WANTED_TIMEOUT
+		P_WANTED_KILLED
+		P_WANTED_FINISHED
+		P_WANTED_RECRUITED
+		P_WANTED_ON_TIMEOUT
+	}
+	
+	dialog start
+	{
+		talk 0
+		talk 1
+		talk 2
+		choice 3
+		{
+			set_quest_progress P_WANTED_STARTED
+			talk 4
+			talk 5
+			talk 6
+			end
+		}
+		escape choice 7
+			end
+		show_choices
+	}
+	
+	dialog end
+	{
+		if quest_progress == P_WANTED_KILLED
+		{
+			talk 0
+			set_quest_progress P_WANTED_FINISHED
+			talk 1
+		}
+		else if quest_progress == P_WANTED_ON_TIMEOUT
+		{
+			set_quest_progress P_WANTED_TIMEOUT
+			talk 0
+			talk 1
+		}
+		end
+	}
+	
+	code {
+		Location@ startLoc;
+		Location@ targetLoc;
+		Class@ clas;
+		int level;
+		bool crazy;
+		string name;
+		
+		void Startup()
+		{
+			@startLoc = Level::location;
+			level = Random(5, 15);
+			crazy = Rand() % 5 == 0;
+			clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_WANTED_STARTED:
+				{
+					name = clas.GenerateName(crazy);
+					targetLoc = World::GetRandomNearSettlement();
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+
+					Item@ item = Item::Get("wanted_letter");
+					@letter = item.QuestCopy(quest, TEXT(3), TEXT(4));
+					pc.unit.AddTeamItem(letter);
+					
+					target.AddDialog(quest, "end");
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(30);
+				}
+				break;
+				
+			case P_WANTED_KILLED:
+				{
+					state = Quest::Started; // if recruited that will change it to in progress
+					OnUpdate(TEXT(5));
+					RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+				}
+				break;
+				
+			case P_WANTED_FINISHED:
+				{
+					state = Quest::Completed;
+					static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
+
+					team->AddReward(level * 100, level * 250);
+
+					OnUpdate(TEXT(6));
+				}
+				break;
+				
+			case P_WANTED_TIMEOUT:
+				{
+					state = Quest::Failed;
+					static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
+
+					if(targetLoc->active_quest == this)
+						targetLoc->active_quest = nullptr;
+
+					OnUpdate(Format(quest_mgr->txQuest[261], unit_name.c_str()));
+
+					done = false;
+				}
+				break;
+				
+			case P_WANTED_RECRUITED:
+				{
+					state = Quest::Failed;
+					OnUpdate(Format(quest_mgr->txQuest[266], target_unit->GetName()));
+				}
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			switch(e.event)
+			{
+			case EVENT_ENTER:
+				// TODO spawn unit, add events
+				break;
+			case EVENT_DIE:
+				if(!e.unit.IsTeamMember())
+					progress = P_WANTED_KILLED;
+				break;
+			case EVENT_RECRUIT:
+				if(progress != P_WANTED_RECRUITED)
+					progress = P_WANTED_RECRUITED;
+				break;
+			case EVENT_KICK:
+				e.unit.temporary = false;
+				in_location = world->GetCurrentLocationIndex();
+				break;
+			case UnitEventHandler::LEAVE:
+				if(state == Quest::Failed)
+					static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
+				target_unit = nullptr;
+				break;
+			case EVENT_TIMEOUT:
+				if(progress == P_WANTED_STARTED)
+					progress = P_WANTED_ON_TIMEOUT;
+				break;
+			}
+		}
+		
+		void OnUpgrade(Vars@ vars)
+		{
+			@start_loc = vars["start_loc"];
+			@camp = vars["target_loc"];
+			int start_time = vars["start_time"];
+			@group = vars["group"];
+			
+			if(quest.state != Q_STARTED)
+				return;
+			
+			start_loc.GetCaptain().AddDialog(quest, "end");
+			
+			int days = 30 + start_time - World::worldtime;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_CAMP_STARTED)
+				progress = P_CAMP_ON_TIMEOUT;
+			
+			if(progress == P_CAMP_STARTED)
+			{
+				@camp.active_quest = quest;
+				camp.AddEventHandler(quest, EVENT_CLEARED);
+			}
+		}
+	}
+}
+
+//=============================================================================
 // KILL ANIMALS - random captain quest
 // Go to forest/cave and kill all animals.
 //=============================================================================
