@@ -16,6 +16,7 @@
 #include "GameResources.h"
 #include "GameStats.h"
 #include "GroundItem.h"
+#include "GuildPanel.h"
 #include "Inventory.h"
 #include "Journal.h"
 #include "Language.h"
@@ -71,7 +72,7 @@ enum Bar
 static ObjectPool<SpeechBubble> SpeechBubblePool;
 
 //=================================================================================================
-LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), boss(nullptr)
+LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), boss(nullptr), dialogBox(nullptr)
 {
 	scrollbar.parent = this;
 	visible = false;
@@ -127,6 +128,7 @@ void LevelGui::LoadData()
 	tShortcutDown = res_mgr->Load<Texture>("shortcut_down.png");
 	tSideButton[(int)SideButtonId::Menu] = res_mgr->Load<Texture>("bt_menu.png");
 	tSideButton[(int)SideButtonId::Team] = res_mgr->Load<Texture>("bt_team.png");
+	tSideButton[(int)SideButtonId::Guild] = res_mgr->Load<Texture>("bt_guild.png");
 	tSideButton[(int)SideButtonId::Minimap] = res_mgr->Load<Texture>("bt_minimap.png");
 	tSideButton[(int)SideButtonId::Journal] = res_mgr->Load<Texture>("bt_journal.png");
 	tSideButton[(int)SideButtonId::Inventory] = res_mgr->Load<Texture>("bt_inventory.png");
@@ -1004,6 +1006,7 @@ void LevelGui::Update(float dt)
 	sidebar_state[(int)SideButtonId::Journal] = (game_gui->journal->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Stats] = (game_gui->stats->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Team] = (game_gui->team->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Guild] = (game_gui->guild->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Minimap] = (game_gui->minimap->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Ability] = (game_gui->ability->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Talk] = 0;
@@ -1176,6 +1179,9 @@ void LevelGui::Update(float dt)
 						break;
 					case SideButtonId::Team:
 						ShowPanel(OpenPanel::Team);
+						break;
+					case SideButtonId::Guild:
+						ShowPanel(OpenPanel::Guild);
 						break;
 					case SideButtonId::Minimap:
 						ShowPanel(OpenPanel::Minimap);
@@ -1386,6 +1392,11 @@ void LevelGui::Reset()
 	sidebar = 0.f;
 	unit_views.clear();
 	boss = nullptr;
+	if(dialogBox)
+	{
+		dialogBox->CloseDialog();
+		dialogBox = nullptr;
+	}
 }
 
 //=================================================================================================
@@ -1526,6 +1537,9 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 				return;
 			case SideButtonId::Team:
 				gk = GK_TEAM_PANEL;
+				break;
+			case SideButtonId::Guild:
+				gk = GK_GUILD_PANEL;
 				break;
 			case SideButtonId::Minimap:
 				gk = GK_MINIMAP;
@@ -1703,6 +1717,8 @@ OpenPanel LevelGui::GetOpenPanel()
 		return OpenPanel::Inventory;
 	else if(game_gui->team->visible)
 		return OpenPanel::Team;
+	else if(game_gui->guild->visible)
+		return OpenPanel::Guild;
 	else if(game_gui->journal->visible)
 		return OpenPanel::Journal;
 	else if(game_gui->minimap->visible)
@@ -1739,6 +1755,9 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::Team:
 		game_gui->team->Hide();
 		break;
+	case OpenPanel::Guild:
+		game_gui->guild->Hide();
+		break;
 	case OpenPanel::Journal:
 		game_gui->journal->Hide();
 		break;
@@ -1773,6 +1792,9 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 			break;
 		case OpenPanel::Team:
 			game_gui->team->Show();
+			break;
+		case OpenPanel::Guild:
+			game_gui->guild->Show();
 			break;
 		case OpenPanel::Journal:
 			game_gui->journal->Show();

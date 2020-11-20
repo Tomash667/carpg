@@ -236,14 +236,17 @@ dialog mayor
 	}
 	if script "!Guild::created"
 	{
-		script "value = (Level::location.IsVillage() ? 100000 : 75000);"
+		script "value = (Level::location.IsVillage() ? 75000 : 100000);"
 		choice 17
 		{
 			if script "pc.unit.gold >= value"
 			{
-				special "get_guild_name"
-				if special "get_guild_name_ok"
+				special "create_guild"
+				if script "Guild::created"
+				{
+					script "pc.unit.gold -= value;"
 					talk 18
+				}
 				else
 					talk 19
 			}

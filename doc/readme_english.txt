@@ -66,6 +66,7 @@ people. Expect changes for the better!
 	C - character screen
 	I - inventory
 	T - team
+	G - guild
 	K - abilities
 	J - journal
 	Tab - minimap

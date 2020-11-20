@@ -36,7 +36,8 @@ struct DialogContext
 		IDLE,
 		WAIT_CHOICES,
 		WAIT_TALK,
-		WAIT_TIMER
+		WAIT_TIMER,
+		WAIT_INPUT
 	};
 
 	struct Entry

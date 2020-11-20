@@ -6,6 +6,8 @@ Wersja 0.18 (???):
 - wszystkie losowe podziemia są takiego samego typu
 - przy używaniu przycisku podnieś wszystko ze zwłok usuwało to aktywne efekty magicznych przedmiotów gracza
 - błędne przeliczanie wagi po stronie serwera gdy klient użyję przycisku podnieś wszystko
+- brak widocznego tekstu gracza w budynku
+- nieprawidłowy nick gracza w chat w trybie singleplayer
 
 --------------------------------------------------------------------------------
 Wersja 0.17 (2020-08-29):

@@ -11,6 +11,7 @@
 #include "Game.h"
 #include "GameMenu.h"
 #include "GameMessages.h"
+#include "GuildPanel.h"
 #include "InfoBox.h"
 #include "Inventory.h"
 #include "Journal.h"
@@ -45,10 +46,10 @@ FontPtr GameGui::font, GameGui::font_small, GameGui::font_big;
 extern string g_system_dir;
 
 //=================================================================================================
-GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
-ability(nullptr), book(nullptr), craft(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr), console(nullptr),
-game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr), pick_server(nullptr),
-server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
+GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), guild(nullptr), journal(nullptr),
+minimap(nullptr), ability(nullptr), book(nullptr), craft(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
+console(nullptr), game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr),
+pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
 {
 }
 
@@ -60,6 +61,7 @@ GameGui::~GameGui()
 	delete inventory;
 	delete stats;
 	delete team;
+	delete guild;
 	delete journal;
 	delete minimap;
 	delete ability;
@@ -123,6 +125,9 @@ void GameGui::Init()
 
 	team = new TeamPanel;
 	level_gui->Add(team);
+
+	guild = new GuildPanel;
+	level_gui->Add(guild);
 
 	journal = new Journal;
 	level_gui->Add(journal);
@@ -294,6 +299,8 @@ void GameGui::UpdateGui(float dt)
 			to_open = OpenPanel::Inventory;
 		else if(GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
+		else if(GKey.PressedRelease(GK_GUILD_PANEL))
+			to_open = OpenPanel::Guild;
 		else if(GKey.PressedRelease(GK_JOURNAL))
 			to_open = OpenPanel::Journal;
 		else if(GKey.PressedRelease(GK_MINIMAP))
@@ -317,6 +324,7 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
+		case OpenPanel::Guild:
 		case OpenPanel::Trade:
 		case OpenPanel::Ability:
 		case OpenPanel::Journal:
@@ -345,6 +353,7 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
+		case OpenPanel::Guild:
 		case OpenPanel::Trade:
 		case OpenPanel::Ability:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;

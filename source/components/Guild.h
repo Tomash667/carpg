@@ -4,7 +4,7 @@ class Guild
 {
 public:
 	void Clear();
-	void Create(const string& name);
+	void Create();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 
@@ -12,6 +12,6 @@ public:
 	const string& GetName() const { return name; }
 
 private:
-	string name;
+	string name, tmpName;
 	bool created;
 };

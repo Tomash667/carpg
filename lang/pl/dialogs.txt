@@ -125,7 +125,7 @@ dialog mayor {
 	15 "No dobra, przekona³eœ mnie..."
 	16 "Nie ma takiej opcji!"
 	17 "Za³ó¿ gildiê ($(Str(value)) z³ota)"
-	18 "Gratuluje, od teraz jesteœ przywódc¹ gildi $(Guild::name). Gdy bêdê mieæ jakieœ zlecenia z pewnoœci¹ siê do ciebie udam."
+	18 "Gratuluje, od teraz jesteœ mistrzem gildi $(Guild::name). Gdy bêdê mieæ jakieœ zlecenia z pewnoœci¹ siê do ciebie udam."
 	19 "Wróæ do mnie jeœli zmienisz zdanie."
 	20 "Nie masz doœæ z³ota."
 }

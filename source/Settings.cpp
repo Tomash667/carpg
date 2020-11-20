@@ -27,6 +27,7 @@ void Settings::InitGameKeys()
 	GKey[GK_STATS].id = "keyStats";
 	GKey[GK_INVENTORY].id = "keyInventory";
 	GKey[GK_TEAM_PANEL].id = "keyTeam";
+	GKey[GK_GUILD_PANEL].id = "keyGuild";
 	GKey[GK_ABILITY_PANEL].id = "keyAbility";
 	GKey[GK_JOURNAL].id = "keyGameJournal";
 	GKey[GK_MINIMAP].id = "keyMinimap";
@@ -78,6 +79,7 @@ void Settings::ResetGameKeys()
 	GKey[GK_STATS].Set(Key::C);
 	GKey[GK_INVENTORY].Set(Key::I);
 	GKey[GK_TEAM_PANEL].Set(Key::T);
+	GKey[GK_GUILD_PANEL].Set(Key::G);
 	GKey[GK_ABILITY_PANEL].Set(Key::K);
 	GKey[GK_JOURNAL].Set(Key::J);
 	GKey[GK_MINIMAP].Set(Key::Tab);

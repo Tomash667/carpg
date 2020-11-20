@@ -18,7 +18,8 @@ enum class OpenPanel
 	Trade,
 	Unknown,
 	Book,
-	Craft
+	Craft,
+	Guild
 };
 
 //-----------------------------------------------------------------------------
@@ -26,6 +27,7 @@ enum class SideButtonId
 {
 	Menu,
 	Team,
+	Guild,
 	Minimap,
 	Journal,
 	Inventory,
@@ -95,6 +97,7 @@ public:
 	void SetCutsceneImage(Texture* tex, float time);
 	void SetCutsceneText(const string& text, float time);
 	void SetBoss(Unit* boss, bool instant);
+	void SetDialogBox(DialogBox* dialogBox) { this->dialogBox = dialogBox; }
 
 	Int2 dialog_cursor_pos;
 	bool use_cursor;
@@ -172,4 +175,5 @@ private:
 	vector<UnitView> unit_views;
 	bool debug_info, debug_info2, bossState;
 	Unit* boss;
+	DialogBox* dialogBox;
 };

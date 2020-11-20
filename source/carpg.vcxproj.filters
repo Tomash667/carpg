@@ -670,6 +670,9 @@
     <ClCompile Include="components\Guild.cpp">
       <Filter>components</Filter>
     </ClCompile>
+    <ClCompile Include="gui\GuildPanel.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1317,6 +1320,9 @@
     </ClInclude>
     <ClInclude Include="components\Guild.h">
       <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\GuildPanel.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

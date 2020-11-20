@@ -60,6 +60,7 @@ class GameResources;
 class GameStats;
 class GameWriter;
 class Guild;
+class GuildPanel;
 class InfoBox;
 class Inventory;
 class InventoryPanel;

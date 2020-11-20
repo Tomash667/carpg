@@ -40,6 +40,7 @@ public:
 	Inventory* inventory;
 	StatsPanel* stats;
 	TeamPanel* team;
+	GuildPanel* guild;
 	Journal* journal;
 	Minimap* minimap;
 	AbilityPanel* ability;

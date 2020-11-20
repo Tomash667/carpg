@@ -180,6 +180,7 @@
     <ClInclude Include="generator\SecretLocationGenerator.h" />
     <ClInclude Include="generator\TutorialLocationGenerator.h" />
     <ClInclude Include="gui\CraftPanel.h" />
+    <ClInclude Include="gui\GuildPanel.h" />
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\DungeonMeshBuilder.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
@@ -354,6 +355,7 @@
     <ClCompile Include="entity\UnitList.cpp" />
     <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
+    <ClCompile Include="gui\GuildPanel.cpp" />
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
     <ClCompile Include="helpers\LevelAreaContext.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />

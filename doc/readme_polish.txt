@@ -66,6 +66,7 @@ osoby. Oczekuj zmian na lepsze!
 	C - ekran postaci
 	I - ekwipunek
 	T - drużyna
+	G - gildia
 	K - zdolności
 	J - dziennik
 	Tab - minimapa

@@ -6,6 +6,7 @@
 #include "Arena.h"
 #include "Game.h"
 #include "GameGui.h"
+#include "Guild.h"
 #include "Inventory.h"
 #include "Journal.h"
 #include "Level.h"
@@ -281,6 +282,9 @@ void DialogContext::Update(float dt)
 			return;
 		mode = NONE;
 		break;
+
+	case WAIT_INPUT:
+		return;
 	}
 
 	if(force_end)
@@ -1505,21 +1509,21 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		if(Rand() % 2 == 0)
 		{
-			Vec4 kolor = pc->unit->human_data->hair_color;
+			Vec4 color = pc->unit->human_data->hair_color;
 			do
 			{
 				pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
 			}
-			while(kolor.Equal(pc->unit->human_data->hair_color));
+			while(color.Equal(pc->unit->human_data->hair_color));
 		}
 		else
 		{
-			Vec4 kolor = pc->unit->human_data->hair_color;
+			Vec4 color = pc->unit->human_data->hair_color;
 			do
 			{
 				pc->unit->human_data->hair_color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
 			}
-			while(kolor.Equal(pc->unit->human_data->hair_color));
+			while(color.Equal(pc->unit->human_data->hair_color));
 		}
 		if(Net::IsServer())
 		{
@@ -1627,6 +1631,12 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			choice.talk_msg = clas->name.c_str();
 			choices.push_back(choice);
 		}
+	}
+	else if(strcmp(msg, "create_guild") == 0)
+	{
+		guild->Create();
+		++dialog_pos;
+		return true;
 	}
 	else
 	{

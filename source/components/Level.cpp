@@ -3725,6 +3725,9 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
 		tile2(int(v2.x / 2), int(v2.z / 2));
 
+	if(v1.XZ().Equal(v2.XZ()))
+		return true;
+
 	if(area.area_type == LevelArea::Type::Outside)
 	{
 		OutsideLocation* outside = static_cast<OutsideLocation*>(location);
