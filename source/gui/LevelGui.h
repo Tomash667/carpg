@@ -25,15 +25,15 @@ enum class OpenPanel
 //-----------------------------------------------------------------------------
 enum class SideButtonId
 {
-	Menu,
+	Stats,
+	Ability,
+	Inventory,
+	Journal,
+	Minimap,
 	Team,
 	Guild,
-	Minimap,
-	Journal,
-	Inventory,
-	Ability,
-	Stats,
 	Talk,
+	Menu,
 	Max
 };
 

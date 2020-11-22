@@ -84,10 +84,10 @@ void AbilityPanel::Draw(ControlDrawData*)
 
 	// title
 	Rect rect = {
-		pos.x + 8,
-		pos.y + 8,
-		pos.x + size.x - 16,
-		pos.y + size.y - 16
+		pos.x,
+		pos.y + 10,
+		pos.x + size.x,
+		pos.y + size.y
 	};
 	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 

@@ -2,6 +2,7 @@
 
 class Guild
 {
+	friend class GuildPanel;
 public:
 	void Clear();
 	void Create();
@@ -11,7 +12,12 @@ public:
 	bool IsCreated() const { return created; }
 	const string& GetName() const { return name; }
 
+	static const uint MAX_SIZE = 20;
+
 private:
 	string name, tmpName;
+	int reputation;
+	Entity<Unit> master;
+	vector<Entity<Unit>> members;
 	bool created;
 };

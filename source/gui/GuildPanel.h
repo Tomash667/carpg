@@ -1,10 +1,15 @@
 #pragma once
 
-#include <Container.h>
+#include "GamePanel.h"
 
-class GuildPanel : public Container
+class GuildPanel : public GamePanel
 {
+	friend class Guild;
 public:
 	GuildPanel();
+	void LoadLanguage();
 	void Draw(ControlDrawData*) override;
+
+private:
+	cstring txTitle, txName, txReputation, txMaster, txMembers, txNoGuild, txEnterName;
 };

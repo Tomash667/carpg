@@ -1006,3 +1006,12 @@ alchemy = "Alchemia"
 craft = "Stwórz"
 craftCount = "Ile stworzyæ?"
 ingredients = "Sk³adniki"
+
+[GuildPanel]
+title = "Gildia"
+name = "Nazwa: "
+reputation = "Reputacja: "
+master = "Mistrz: "
+members = "Cz³onkowie: "
+noGuild = "Nie nale¿ysz do gildii."
+enterName = "Nazwa gildii: "

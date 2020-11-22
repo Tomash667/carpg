@@ -3,8 +3,11 @@
 
 #include "DialogContext.h"
 #include "GameGui.h"
+#include "GuildPanel.h"
 #include "LevelGui.h"
+#include "PlayerController.h"
 #include "SaveState.h"
+#include "Unit.h"
 
 #include <GetTextDialog.h>
 
@@ -17,7 +20,7 @@ void Guild::Clear()
 
 void Guild::Create()
 {
-	GetTextDialogParams params("Guild name:", tmpName);
+	GetTextDialogParams params(game_gui->guild->txEnterName, tmpName);
 	DialogContext* ctx = DialogContext::current;
 	params.event = [=](int id)
 	{
@@ -25,6 +28,9 @@ void Guild::Create()
 		{
 			created = true;
 			name = tmpName;
+			reputation = 0;
+			master = ctx->pc->unit;
+			members.push_back(master);
 		}
 		game_gui->level_gui->SetDialogBox(nullptr);
 		ctx->mode = DialogContext::NONE;
@@ -41,6 +47,9 @@ void Guild::Save(GameWriter& f)
 		return;
 
 	f << name;
+	f << reputation;
+	f << master;
+	f << members;
 }
 
 void Guild::Load(GameReader& f)
@@ -56,4 +65,7 @@ void Guild::Load(GameReader& f)
 		return;
 
 	f >> name;
+	f >> reputation;
+	f >> master;
+	f >> members;
 }

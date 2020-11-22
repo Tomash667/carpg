@@ -91,10 +91,10 @@ void CraftPanel::Draw(ControlDrawData*)
 
 	// title
 	Rect rect = {
-		left.pos.x + 8,
-		left.pos.y + 8,
-		left.pos.x + left.size.x - 16,
-		left.pos.y + left.size.y - 16
+		left.pos.x,
+		left.pos.y + 10,
+		left.pos.x + left.size.x,
+		left.pos.y + left.size.y
 	};
 	gui->DrawText(GameGui::font_big, txAlchemy, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
@@ -106,10 +106,10 @@ void CraftPanel::Draw(ControlDrawData*)
 
 	// title
 	rect = {
-		right.pos.x + 8,
-		right.pos.y + 8,
-		right.pos.x + right.size.x - 16,
-		right.pos.y + right.size.y - 16
+		right.pos.x,
+		right.pos.y + 10,
+		right.pos.x + right.size.x,
+		right.pos.y + right.size.y
 	};
 	gui->DrawText(GameGui::font_big, txIngredients, DTF_TOP | DTF_CENTER, Color::Black, rect);
 

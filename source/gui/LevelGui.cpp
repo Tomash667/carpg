@@ -651,9 +651,9 @@ void LevelGui::DrawFront()
 	// sidebar
 	if(sidebar > 0.f)
 	{
-		int max = (int)SideButtonId::Max;
-		int total = offset * max;
-		spos.y = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
+		const int max = (int)SideButtonId::Max;
+		const int total = offset * max;
+		spos.y = (gui->wnd_size.y - total) / 2;
 		for(int i = 0; i < max; ++i)
 		{
 			Texture* t;
@@ -663,7 +663,7 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(gui->wnd_size.x) - sidebar * offset, float(spos.y - i * offset)));
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(gui->wnd_size.x) - sidebar * offset, float(spos.y + i * offset)));
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
 			gui->DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
 		}
@@ -1001,7 +1001,7 @@ void LevelGui::Update(float dt)
 	}
 
 	// sidebar
-	int max = (int)SideButtonId::Max;
+	const int max = (int)SideButtonId::Max;
 	sidebar_state[(int)SideButtonId::Inventory] = (game_gui->inventory->inv_mine->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Journal] = (game_gui->journal->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Stats] = (game_gui->stats->visible ? 2 : 0);
@@ -1156,13 +1156,13 @@ void LevelGui::Update(float dt)
 
 	if(sidebar > 0.f && !gui->HaveDialog() && show_tooltips)
 	{
-		int img_size = 76 * gui->wnd_size.x / 1920;
-		int offset = img_size + 2;
-		int total = offset * max;
-		int sposy = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
+		const int img_size = 76 * gui->wnd_size.x / 1920;
+		const int offset = img_size + 2;
+		const int total = offset * max;
+		const int sposy = (gui->wnd_size.y - total) / 2;
 		for(int i = 0; i < max; ++i)
 		{
-			if(PointInRect(gui->cursor_pos, Int2(int(float(gui->wnd_size.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
+			if(PointInRect(gui->cursor_pos, Int2(int(float(gui->wnd_size.x) - sidebar * offset), sposy + i * offset), Int2(img_size, img_size)))
 			{
 				group = TooltipGroup::Sidebar;
 				id = i;
@@ -1663,6 +1663,7 @@ bool LevelGui::HavePanelOpen() const
 		|| game_gui->inventory->inv_mine->visible
 		|| game_gui->inventory->gp_trade->visible
 		|| game_gui->team->visible
+		|| game_gui->guild->visible
 		|| game_gui->journal->visible
 		|| game_gui->minimap->visible
 		|| game_gui->ability->visible
@@ -1678,6 +1679,8 @@ void LevelGui::ClosePanels(bool close_mp_box)
 		game_gui->inventory->inv_mine->Hide();
 	if(game_gui->team->visible)
 		game_gui->team->Hide();
+	if(game_gui->guild->visible)
+		game_gui->guild->Hide();
 	if(game_gui->journal->visible)
 		game_gui->journal->Hide();
 	if(game_gui->minimap->visible)
@@ -1700,6 +1703,7 @@ void LevelGui::GetGamePanels(vector<GamePanel*>& panels)
 	panels.push_back(game_gui->inventory->inv_mine);
 	panels.push_back(game_gui->stats);
 	panels.push_back(game_gui->team);
+	panels.push_back(game_gui->guild);
 	panels.push_back(game_gui->journal);
 	panels.push_back(game_gui->minimap);
 	panels.push_back(game_gui->inventory->inv_trade_mine);
@@ -1822,6 +1826,8 @@ void LevelGui::PositionPanels()
 	game_gui->stats->size = size;
 	game_gui->team->global_pos = game_gui->team->pos = pos;
 	game_gui->team->size = size;
+	game_gui->guild->global_pos = game_gui->guild->pos = pos;
+	game_gui->guild->size = size;
 	game_gui->inventory->inv_mine->global_pos = game_gui->inventory->inv_mine->pos = pos;
 	game_gui->inventory->inv_mine->size = size;
 	game_gui->inventory->inv_trade_other->global_pos = game_gui->inventory->inv_trade_other->pos = pos;

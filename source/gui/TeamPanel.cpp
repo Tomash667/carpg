@@ -123,10 +123,10 @@ void TeamPanel::Draw(ControlDrawData*)
 	GamePanel::Draw();
 
 	Rect rect = {
-		pos.x + 8,
-		pos.y + 8,
-		pos.x + size.x - 16,
-		pos.y + size.y - 16
+		pos.x,
+		pos.y + 10,
+		pos.x + size.x,
+		pos.y + size.y
 	};
 	gui->DrawText(GameGui::font_big, txTeam, DTF_TOP | DTF_CENTER, Color::Black, rect);
 

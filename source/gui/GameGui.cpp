@@ -236,6 +236,7 @@ void GameGui::LoadLanguage()
 	server->LoadLanguage();
 	team->LoadLanguage();
 	world_map->LoadLanguage();
+	guild->LoadLanguage();
 }
 
 //=================================================================================================
