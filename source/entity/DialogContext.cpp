@@ -543,14 +543,6 @@ void DialogContext::UpdateLoop()
 			if(de.op == OP_NOT_EQUAL)
 				cmp_result = !cmp_result;
 			break;
-		case DTF_IF_HAVE_QUEST_ITEM_NOT_ACTIVE:
-			{
-				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, true);
-				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
-			}
-			break;
 		case DTF_DO_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();

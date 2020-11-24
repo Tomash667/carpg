@@ -20,9 +20,8 @@ public:
 	};
 
 	void Start() override;
-	GameDialog* GetDialog(int type2) override;
-	void SetProgress(int prog2) override;
-	cstring FormatString(const string& str) override;
+	GameDialog* GetDialog(int type2) override { return nullptr; }
+	void SetProgress(int prog2) override {}
 	bool OnTimeout(TimeoutType ttype) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	void Save(GameWriter& f) override;

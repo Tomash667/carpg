@@ -46,7 +46,6 @@ enum Keyword
 	K_HAVE_ITEM,
 	K_QUEST_EVENT,
 	K_DO_ONCE,
-	K_NOT_ACTIVE,
 	K_QUEST_SPECIAL,
 	K_NOT,
 	K_SCRIPT,
@@ -111,7 +110,6 @@ void DialogLoader::InitTokenizer()
 		{ "have_item", K_HAVE_ITEM },
 		{ "quest_event", K_QUEST_EVENT },
 		{ "do_once", K_DO_ONCE },
-		{ "not_active", K_NOT_ACTIVE },
 		{ "quest_special", K_QUEST_SPECIAL },
 		{ "not", K_NOT },
 		{ "script", K_SCRIPT },
@@ -484,13 +482,7 @@ DialogLoader::Node* DialogLoader::ParseIf()
 					node->type = DTF_IF_HAVE_QUEST_ITEM_CURRENT;
 				else
 				{
-					if(t.IsKeyword(K_NOT_ACTIVE, G_KEYWORD))
-					{
-						node->type = DTF_IF_HAVE_QUEST_ITEM_NOT_ACTIVE;
-						t.Next();
-					}
-					else
-						node->type = DTF_IF_HAVE_QUEST_ITEM;
+					node->type = DTF_IF_HAVE_QUEST_ITEM;
 					node->value = current_dialog->strs.size();
 					current_dialog->strs.push_back(t.MustGetString());
 					t.Next();

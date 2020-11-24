@@ -864,6 +864,21 @@ quest wanted
 		show_choices
 	}
 	
+	dialog wanted
+	{
+		if script "!target.IsTeamMember()"
+		if have_quest_item
+		{
+			choice 0
+			{
+				talk 1
+				special "force_attack"
+				end
+			}
+		}
+		end
+	}
+	
 	dialog end
 	{
 		if quest_progress == P_WANTED_KILLED
@@ -875,8 +890,8 @@ quest wanted
 		else if quest_progress == P_WANTED_ON_TIMEOUT
 		{
 			set_quest_progress P_WANTED_TIMEOUT
-			talk 0
-			talk 1
+			talk 2
+			talk 3
 		}
 		end
 	}
@@ -888,6 +903,7 @@ quest wanted
 		int level;
 		bool crazy;
 		string name;
+		Unit@ target;
 		
 		void Startup()
 		{
@@ -923,19 +939,15 @@ quest wanted
 			case P_WANTED_KILLED:
 				{
 					state = Quest::Started; // if recruited that will change it to in progress
-					OnUpdate(TEXT(5));
-					RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+					quest.OnUpdate(TEXT(5));
 				}
 				break;
 				
 			case P_WANTED_FINISHED:
 				{
-					state = Quest::Completed;
-					static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
-
-					team->AddReward(level * 100, level * 250);
-
-					OnUpdate(TEXT(6));
+					quest.OnUpdate(TEXT(6));
+					quest.SetCompleted();
+					Team::AddReward(level * 100, level * 250);
 				}
 				break;
 				
@@ -947,7 +959,7 @@ quest wanted
 					if(targetLoc->active_quest == this)
 						targetLoc->active_quest = nullptr;
 
-					OnUpdate(Format(quest_mgr->txQuest[261], unit_name.c_str()));
+					quest.OnUpdate(Format(quest_mgr->txQuest[261], unit_name.c_str()));
 
 					done = false;
 				}
@@ -956,7 +968,7 @@ quest wanted
 			case P_WANTED_RECRUITED:
 				{
 					state = Quest::Failed;
-					OnUpdate(Format(quest_mgr->txQuest[266], target_unit->GetName()));
+					quest.OnUpdate(Format(quest_mgr->txQuest[266], target_unit->GetName()));
 				}
 				break;
 			}
@@ -967,7 +979,12 @@ quest wanted
 			switch(e.event)
 			{
 			case EVENT_ENTER:
-				// TODO spawn unit, add events
+				@target = Level::SpawnUnitInsideInn(crazy ? clas.crazy : clas.hero, level);
+				target.dont_attack = true;
+				target.active_quest = quest;
+				target.hero.name = name;
+				target.AddEventHandler(quest, EVENT_ANY);
+				target.AddDialog(quest, "target");
 				break;
 			case EVENT_DIE:
 				if(!e.unit.IsTeamMember())

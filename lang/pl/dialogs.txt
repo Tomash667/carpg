@@ -454,14 +454,8 @@ dialog hero {
 		"Witaj."
 		"Witaj $player_name$."
 	}
-	30 "Poka¿ list goñczy"
-	31 {
-		"O kurwa!"
-		"W takim razie muszê ciê zabiæ!"
-		"Chyba mnie nie wydasz stra¿nikom? Wydasz?!"
-		"Zabijê ciê tak jak tamtych!"
-		"Zap³acisz za to ¿yciem!"
-	}
+	30 "" // 30,31 moved to quest
+	31 ""
 	32 "Rekrutuj"
 	33 {
 		"Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
@@ -621,14 +615,8 @@ dialog crazy {
 		"Witaj!"
 		"A ten znowu to samo."
 	}
-	31 "Poka¿ list goñczy"
-	32 {
-		"O kurwa!"
-		"W takim razie muszê ciê zabiæ!"
-		"Chyba mnie nie wydasz stra¿nikom? Wydasz?!"
-		"Zabijê ciê tak jak tamtych!"
-		"Zap³acisz za to ¿yciem!"
-	}
+	31 "" // 31,32 moved to quest
+	32 ""
 	33 "Rekrutuj"
 	34 "Hmm, twoja dru¿yna jest wystarczaj¹co liczna."
 	35 "Ale chyba mam pewien sposób ¿eby ci z tym pomóc."

@@ -195,6 +195,17 @@ quest wanted {
 		7 "Nie"
 	}
 	
+	dialog wanted {
+		0 "Poka¿ list goñczy"
+		1 {
+			"O kurwa!"
+			"W takim razie muszê ciê zabiæ!"
+			"Chyba mnie nie wydasz stra¿nikom? Wydasz?!"
+			"Zabijê ciê tak jak tamtych!"
+			"Zap³acisz za to ¿yciem!"
+		}
+	}
+	
 	dialog end {
 		0 "Wiedzia³em ¿e mo¿na na tobie polegaæ $player$."
 		1 "Oto twoje $(Str(level * 100)) sztuk z³ota."

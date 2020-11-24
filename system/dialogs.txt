@@ -1120,15 +1120,6 @@ dialog hero
 		}
 		if once
 			talk 29
-		if have_quest_item not_active "$wanted_letter"
-		{
-			choice 30
-			{
-				talk 31
-				special "force_attack"
-				end
-			}
-		}
 		choice 32
 		{
 			if script "Team::size >= Team::max_size"
@@ -1416,15 +1407,6 @@ dialog crazy
 		}
 		if once
 			talk 30
-		if have_quest_item not_active "$wanted_letter"
-		{
-			choice 31
-			{
-				talk 32
-				special "force_attack"
-				end
-			}
-		}
 		choice 33
 		{
 			if script "Team::size >= Team::max_size"
