@@ -490,12 +490,9 @@ void LevelGui::DrawFront()
 		gui->DrawSprite2(img.tex, mat, nullptr, nullptr, Color::White);
 	}
 
-	float scale;
-	int offset;
-
-	int img_size = 76 * gui->wnd_size.x / 1920;
-	offset = img_size + 2;
-	scale = float(img_size) / 64;
+	const int img_size = 76 * gui->wnd_size.x / 1920;
+	const int offset = img_size + 2;
+	const float scale = float(img_size) / 64;
 	Int2 spos(256.f * wnd_scale, gui->wnd_size.y - offset);
 
 	// shortcuts

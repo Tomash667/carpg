@@ -222,10 +222,11 @@ void GameGui::LoadLanguage()
 	craft->LoadLanguage();
 	create_character->LoadLanguage();
 	create_server->LoadLanguage();
-	level_gui->LoadLanguage();
 	game_menu->LoadLanguage();
+	guild->LoadLanguage();
 	inventory->LoadLanguage();
 	journal->LoadLanguage();
+	level_gui->LoadLanguage();
 	main_menu->LoadLanguage();
 	messages->LoadLanguage();
 	multiplayer->LoadLanguage();
@@ -236,7 +237,6 @@ void GameGui::LoadLanguage()
 	server->LoadLanguage();
 	team->LoadLanguage();
 	world_map->LoadLanguage();
-	guild->LoadLanguage();
 }
 
 //=================================================================================================
@@ -250,10 +250,11 @@ void GameGui::LoadData()
 	console->LoadData();
 	craft->LoadData();
 	create_character->LoadData();
-	level_gui->LoadData();
 	game_menu->LoadData();
+	guild->LoadData();
 	inventory->LoadData();
 	journal->LoadData();
+	level_gui->LoadData();
 	main_menu->LoadData();
 	messages->LoadData();
 	minimap->LoadData();
