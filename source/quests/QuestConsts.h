@@ -37,7 +37,7 @@ enum QUEST_TYPE
 	Q_STOLEN_ARTIFACT,
 	Q_FIND_ARTIFACT, // removed in V_0_15
 	Q_CRAZIES,
-	Q_WANTED,
+	Q_WANTED, // removed in V_DEV
 	Q_MAIN, // removed
 	Q_ARTIFACTS, // removed in V_0_14
 	Q_SCRIPTED,

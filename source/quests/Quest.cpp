@@ -174,6 +174,12 @@ void Quest::ConversionData::Add(cstring key, int value)
 }
 
 //=================================================================================================
+void Quest::ConversionData::Add(cstring key, const string& value)
+{
+	//vars->Get(key)->
+}
+
+//=================================================================================================
 void Quest::ConversionData::Add(cstring key, Location* location)
 {
 	vars->Get(key)->SetPtr(location, Var::Type::Location);
@@ -189,4 +195,10 @@ void Quest::ConversionData::Add(cstring key, UnitGroup* group)
 void Quest::ConversionData::Add(cstring key, const Item* item)
 {
 	vars->Get(key)->SetPtr(const_cast<Item*>(item), Var::Type::Item);
+}
+
+//=================================================================================================
+void Quest::ConversionData::Add(cstring key, Class* clas)
+{
+	vars->Get(key)->SetPtr(clas, Var::Type::Class);
 }

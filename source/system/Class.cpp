@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Class.h"
 
+#include "NameHelper.h"
 #include "UnitData.h"
 #include "UnitGroup.h"
 
@@ -17,6 +18,14 @@ const Class::PotionEntry& Class::GetPotionEntry(int level) const
 			return pe;
 	}
 	return potions.back();
+}
+
+//=================================================================================================
+string Class::GenerateName(bool crazy) const
+{
+	string name;
+	NameHelper::GenerateHeroName(this, crazy, name);
+	return name;
 }
 
 //=================================================================================================

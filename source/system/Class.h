@@ -49,6 +49,7 @@ struct Class
 	}
 	bool IsPickable() const { return player != nullptr; }
 	const PotionEntry& GetPotionEntry(int level) const;
+	string GenerateName(bool crazy) const;
 
 	static vector<Class*> classes;
 	static Class* TryGet(Cstring id);

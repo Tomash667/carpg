@@ -376,6 +376,18 @@ Item* Item::QuestCopy(Quest* quest, const string& name)
 }
 
 //=================================================================================================
+Item* Item::QuestCopy(Quest* quest, const string& name, const string& desc)
+{
+	Item* item = CreateCopy();
+	item->id = Format("$%s", id.c_str());
+	item->name = name;
+	item->desc = desc;
+	item->quest_id = quest->id;
+	quest_mgr->AddQuestItem(item);
+	return item;
+}
+
+//=================================================================================================
 void Item::Rename(cstring name)
 {
 	assert(name);

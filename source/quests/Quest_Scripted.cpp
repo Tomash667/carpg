@@ -181,6 +181,15 @@ void Quest_Scripted::Save(GameWriter& f)
 			break;
 		case Var::Type::Magic:
 			break;
+		case Var::Type::Class:
+			{
+				Class* clas = *(Class**)ptr;
+				if(clas)
+					f << clas->id;
+				else
+					f.Write0();
+			}
+			break;
 		}
 	}
 }
@@ -350,6 +359,15 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
 		break;
 	case Var::Type::Magic:
 		break;
+	case Var::Type::Class:
+		{
+			const string& id = f.ReadString1();
+			if(!id.empty())
+				*(Class**)ptr = Class::TryGet(id);
+			else
+				*(Class**)ptr = nullptr;
+		}
+		break;
 	}
 }
 
@@ -439,31 +457,46 @@ void Quest_Scripted::SetStarted(const string& name)
 }
 
 //=================================================================================================
-void Quest_Scripted::SetCompleted()
+void Quest_Scripted::SetCompleted(bool cleanup)
 {
 	assert(journal_state == JournalState::None);
 	journal_state = JournalState::Changed;
 	state = Quest::Completed;
-	if(category == QuestCategory::Mayor)
-		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
-	else if(category == QuestCategory::Captain)
-		static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
-	if(category == QuestCategory::Unique)
-		quest_mgr->EndUniqueQuest();
-	Cleanup();
+	if(cleanup)
+	{
+		if(category == QuestCategory::Mayor)
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
+		else if(category == QuestCategory::Captain)
+			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
+		if(category == QuestCategory::Unique)
+			quest_mgr->EndUniqueQuest();
+		Cleanup();
+	}
 }
 
 //=================================================================================================
-void Quest_Scripted::SetFailed()
+void Quest_Scripted::SetFailed(bool cleanup)
 {
 	assert(journal_state == JournalState::None);
 	journal_state = JournalState::Changed;
 	state = Quest::Failed;
-	if(category == QuestCategory::Mayor)
-		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
-	else if(category == QuestCategory::Captain)
-		static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-	Cleanup();
+	if(cleanup)
+	{
+		if(category == QuestCategory::Mayor)
+			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+		else if(category == QuestCategory::Captain)
+			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
+		Cleanup();
+	}
+}
+
+//=================================================================================================
+void Quest_Scripted::Restart()
+{
+	assert(Any(state, Quest::Completed, Quest::Failed));
+	assert(journal_state == JournalState::None);
+	journal_state = JournalState::Changed;
+	state = Quest::Started;
 }
 
 //=================================================================================================

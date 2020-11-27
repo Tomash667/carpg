@@ -937,39 +937,28 @@ quest wanted
 				break;
 				
 			case P_WANTED_KILLED:
-				{
-					state = Quest::Started; // if recruited that will change it to in progress
-					quest.OnUpdate(TEXT(5));
-				}
+				quest.Restart();
+				quest.OnUpdate(TEXT(5));
 				break;
 				
 			case P_WANTED_FINISHED:
-				{
-					quest.OnUpdate(TEXT(6));
-					quest.SetCompleted();
-					Team::AddReward(level * 100, level * 250);
-				}
+				quest.OnUpdate(TEXT(6));
+				quest.SetCompleted();
+				Team::AddReward(level * 100, level * 250);
+				break;
+				
+			case P_WANTED_ON_TIMEOUT:
+				quest.OnUpdate(TEXT(8));
 				break;
 				
 			case P_WANTED_TIMEOUT:
-				{
-					state = Quest::Failed;
-					static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-
-					if(targetLoc->active_quest == this)
-						targetLoc->active_quest = nullptr;
-
-					quest.OnUpdate(Format(quest_mgr->txQuest[261], unit_name.c_str()));
-
-					done = false;
-				}
+				quest.OnUpdate(TEXT(7));
+				quest.SetFailed();
 				break;
 				
 			case P_WANTED_RECRUITED:
-				{
-					state = Quest::Failed;
-					quest.OnUpdate(Format(quest_mgr->txQuest[266], target_unit->GetName()));
-				}
+				quest.SetFailed(false);
+				quest.OnUpdate(TEXT(8));
 				break;
 			}
 		}
@@ -996,23 +985,31 @@ quest wanted
 				break;
 			case EVENT_KICK:
 				e.unit.temporary = false;
-				in_location = world->GetCurrentLocationIndex();
 				break;
-			case UnitEventHandler::LEAVE:
-				if(state == Quest::Failed)
-					static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-				target_unit = nullptr;
+			case EVENT_LEAVE:
+				@target = null;
 				break;
 			case EVENT_TIMEOUT:
 				if(progress == P_WANTED_STARTED)
+				{
 					progress = P_WANTED_ON_TIMEOUT;
+					if(target is null)
+						targetLoc.RemoveEventHandler(quest, EVENT_ENTER);
+					else
+					{
+						target.Remove();
+						@target = null;
+					}
+				}
+				else if(progress == P_WANTED_RECRUITED)
+					quest.SetFailed();
 				break;
 			}
 		}
 		
 		void OnUpgrade(Vars@ vars)
 		{
-			@start_loc = vars["start_loc"];
+			/*@start_loc = vars["start_loc"];
 			@camp = vars["target_loc"];
 			int start_time = vars["start_time"];
 			@group = vars["group"];
@@ -1032,7 +1029,7 @@ quest wanted
 			{
 				@camp.active_quest = quest;
 				camp.AddEventHandler(quest, EVENT_CLEARED);
-			}
+			}*/
 		}
 	}
 }

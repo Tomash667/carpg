@@ -20,7 +20,8 @@ struct Var
 		String,
 		Unit,
 		UnitGroup,
-		Magic
+		Magic,
+		Class
 	};
 	Type type;
 	union
@@ -32,16 +33,13 @@ struct Var
 		Vec2 vec2;
 		Vec3 vec3;
 		Vec4 vec4;
-		const Item* item;
-		Location* location;
-		Encounter* encounter;
-		GroundItem* ground_item;
-		Unit* unit;
+		string* str;
 		void* ptr;
 	};
 	bool registered;
 
-	Var() {}
+	Var() : type(Type::None) {}
+	~Var() { ClearPtr(); }
 
 	bool IsNone() const
 	{
@@ -79,35 +77,42 @@ struct Var
 
 	void SetNone()
 	{
+		ClearPtr();
 		type = Type::None;
 	}
 	Var* SetBool(bool value)
 	{
+		ClearPtr();
 		type = Type::Bool;
 		_bool = value;
 		return this;
 	}
 	Var* SetInt(int value)
 	{
+		ClearPtr();
 		type = Type::Int;
 		_int = value;
 		return this;
 	}
 	Var* SetFloat(float value)
 	{
+		ClearPtr();
 		type = Type::Float;
 		_float = value;
 		return this;
 	}
+	Var* SetString(const string& str);
 	Var* SetGeneric(void* ptr, int type);
 	Var* SetVar(Var* var)
 	{
+		ClearPtr();
 		type = var->type;
 		_int = var->_int;
 		return this;
 	}
 	void SetPtr(void* ptr, Type type)
 	{
+		ClearPtr();
 		this->type = type;
 		this->ptr = ptr;
 	}
@@ -140,6 +145,9 @@ struct Var
 	}
 
 	void GetGeneric(void* ptr, int type);
+
+private:
+	void ClearPtr();
 };
 
 //-----------------------------------------------------------------------------

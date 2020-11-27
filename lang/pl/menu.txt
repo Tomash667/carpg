@@ -892,7 +892,7 @@ quest262 = ""
 quest263 = ""
 quest264 = " i "
 quest265 = "Odzyskaj paczkê"
-quest266 = "%s do³¹czy³ do mojej dru¿yny. Nie wiem czy chcê wykonaæ to zadanie."
+quest266 = ""
 quest267 = "Czas jaki mia³em na wykonanie tego zadania min¹³."
 
 [ItemStats]

@@ -19,9 +19,20 @@ bool Var::IsGeneric(void* ptr, int type)
 }
 
 //=================================================================================================
+Var* Var::SetString(const string& _str)
+{
+	if(type != Type::String)
+		str = StringPool.Get();
+	*str = _str;
+	type = Type::String;
+	return this;
+}
+
+//=================================================================================================
 Var* Var::SetGeneric(void* ptr, int type)
 {
 	// TODO: check if this is known type
+	ClearPtr();
 	this->type = script_mgr->GetVarType(type);
 	this->ptr = ptr;
 	return this;
@@ -33,6 +44,13 @@ void Var::GetGeneric(void* ptr, int type)
 	// TODO: throw on invalid type
 	assert(this->type == script_mgr->GetVarType(type) || this->type == Type::Magic);
 	*(void**)ptr = this->ptr;
+}
+
+//=================================================================================================
+void Var::ClearPtr()
+{
+	if(type == Type::String)
+		StringPool.Free(str);
 }
 
 //=================================================================================================
@@ -109,24 +127,37 @@ void Vars::Save(GameWriter& f)
 			f << e.second->vec4;
 			break;
 		case Var::Type::Item:
-			if(e.second->item)
-				f << e.second->item->id;
-			else
-				f.Write0();
+			{
+				const Item* item = static_cast<const Item*>(e.second->ptr);
+				if(item)
+					f << item->id;
+				else
+					f.Write0();
+			}
 			break;
 		case Var::Type::Location:
-			f << (e.second->location ? e.second->location->index : -1);
+			{
+				Location* location = static_cast<Location*>(e.second->ptr);
+				f << (location ? location->index : -1);
+			}
 			break;
 		case Var::Type::Encounter:
-			f << (e.second->encounter ? e.second->encounter->index : -1);
+			{
+				Encounter* encounter = static_cast<Encounter*>(e.second->ptr);
+				f << (encounter ? encounter->index : -1);
+			}
 			break;
 		case Var::Type::GroundItem:
-			f << (e.second->ground_item ? e.second->ground_item->id : -1);
+			{
+				GroundItem* groundItem = static_cast<GroundItem*>(e.second->ptr);
+				f << (groundItem ? groundItem->id : -1);
+			}
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
 		case Var::Type::Magic:
+		case Var::Type::Class:
 			assert(0); // TODO
 			break;
 		}
@@ -189,9 +220,9 @@ void Vars::Load(GameReader& f)
 			{
 				const string& id = f.ReadString1();
 				if(id.empty())
-					v->item = nullptr;
+					v->ptr = nullptr;
 				else
-					v->item = Item::Get(id);
+					v->ptr = Item::Get(id);
 			}
 			break;
 		case Var::Type::Location:
@@ -199,9 +230,9 @@ void Vars::Load(GameReader& f)
 				int index;
 				f >> index;
 				if(index == -1)
-					v->location = nullptr;
+					v->ptr = nullptr;
 				else
-					v->location = world->GetLocation(index);
+					v->ptr = world->GetLocation(index);
 			}
 			break;
 		case Var::Type::Encounter:
@@ -209,22 +240,23 @@ void Vars::Load(GameReader& f)
 				int index;
 				f >> index;
 				if(index == -1)
-					v->encounter = nullptr;
+					v->ptr = nullptr;
 				else
-					v->encounter = world->GetEncounter(index);
+					v->ptr = world->GetEncounter(index);
 			}
 			break;
 		case Var::Type::GroundItem:
 			{
 				int id;
 				f >> id;
-				v->ground_item = GroundItem::GetById(id);
+				v->ptr = GroundItem::GetById(id);
 			}
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
 		case Var::Type::Magic:
+		case Var::Type::Class:
 			assert(0); // TODO
 			break;
 		}

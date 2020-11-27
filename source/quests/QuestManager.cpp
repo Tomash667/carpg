@@ -80,7 +80,6 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_LOST_ARTIFACT, QuestCategory::Random, "lost_artifact"));
 	infos.push_back(QuestInfo(Q_STOLEN_ARTIFACT, QuestCategory::Random, "stolen_artifact"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
-	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
 	infos.push_back(QuestInfo(Q_DIRE_WOLF, QuestCategory::Unique, "dire_wolf"));
 
 	// create pseudo quests

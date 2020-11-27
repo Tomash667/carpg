@@ -222,6 +222,8 @@ quest wanted {
 		5 "Zabi³em $(name)."
 		6 "Otrzyma³em nagrodê za zabicie $(name). Zadanie ukoñczone!"
 		7 "Nie zd¹¿y³em na czas zabiæ $(name) i gdzieœ siê zaszy³."
+		8 "$(name) do³¹czy³ do mojej dru¿yny. Nie wiem czy chcê wykonaæ to zadanie."
+		9 "Czas jaki mia³em na wykonanie tego zadania min¹³."
 	}
 }
 

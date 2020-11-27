@@ -5,8 +5,8 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
-// There is wanted hero in one of cities, killing him will get reward
-class Quest_Wanted final : public Quest_Dungeon, public UnitEventHandler
+// Converted to script in V_DEV
+class Quest_Wanted final : public Quest_Dungeon
 {
 public:
 	enum Progress
@@ -19,14 +19,11 @@ public:
 		Recruited
 	};
 
-	void Start() override;
+	void Start() override {}
 	GameDialog* GetDialog(int type2) override { return nullptr; }
 	void SetProgress(int prog2) override {}
-	bool OnTimeout(TimeoutType ttype) override;
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
-	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GetUnitEventHandlerQuestId() override { return id; }
+	void GetConversionData(ConversionData& data) override;
 
 private:
 	int level, in_location;

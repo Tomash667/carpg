@@ -27,8 +27,9 @@ public:
 	int GetProgress() const { return prog; }
 	void AddEntry(const string& str);
 	void SetStarted(const string& name);
-	void SetCompleted();
-	void SetFailed();
+	void SetCompleted(bool cleanup);
+	void SetFailed(bool cleanup);
+	void Restart();
 	void FireEvent(ScriptEvent& event) override;
 	string GetString(int index);
 	asIScriptObject* GetInstance() override { return instance; }
