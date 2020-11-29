@@ -64,8 +64,8 @@ void PickServerPanel::LoadLanguage()
 	cb_lan.text = s.Get("lan");
 
 	grid.AddColumn(Grid::IMGSET, 50);
-	grid.AddColumn(Grid::TEXT_COLOR, 100, s.Get("players"));
-	grid.AddColumn(Grid::TEXT_COLOR, 150, s.Get("name"));
+	grid.AddColumn(Grid::TEXT, 100, s.Get("players"));
+	grid.AddColumn(Grid::TEXT, 150, s.Get("name"));
 	grid.Init();
 }
 
@@ -352,11 +352,11 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		cell.text_color->color = (server.IsValidVersion() ? Color::Black : Color::Red);
+		cell.color = (server.IsValidVersion() ? Color::Black : Color::Red);
 		if(column == 1)
-			cell.text_color->text = Format("%d/%d", server.active_players, server.max_players);
+			cell.text = Format("%d/%d", server.active_players, server.max_players);
 		else
-			cell.text_color->text = server.name.c_str();
+			cell.text = server.name.c_str();
 	}
 }
 

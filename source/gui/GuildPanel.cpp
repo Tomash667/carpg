@@ -8,11 +8,24 @@
 
 #include <ResourceManager.h>
 
+enum class TooltipGroup
+{
+	None = -1,
+	SideButton,
+	MemberClass
+};
+
 GuildPanel::GuildPanel() : mode(Mode::Info)
 {
 	visible = false;
 
 	tooltip.Init(TooltipController::Callback(this, &GuildPanel::GetTooltip));
+
+	grid.pos = Int2(10, 10);
+	grid.size = Int2(320, 300);
+	grid.event = GridEvent(this, &GuildPanel::GetCell);
+	grid.selection_type = Grid::BACKGROUND;
+	grid.selection_color = Color(0, 255, 0, 128);
 }
 
 void GuildPanel::LoadLanguage()
@@ -25,6 +38,12 @@ void GuildPanel::LoadLanguage()
 	txMembers = s.Get("members");
 	txNoGuild = s.Get("noGuild");
 	txEnterName = s.Get("enterName");
+	txInfo = s.Get("info");
+
+	grid.AddColumn(Grid::TEXT, 200, "Imiê");
+	grid.AddColumn(Grid::IMG_TEXT, 75, "Klasa").size = Int2(16, 16);
+	grid.Init();
+	grid.AddItem();
 }
 
 void GuildPanel::LoadData()
@@ -43,24 +62,27 @@ void GuildPanel::Draw(ControlDrawData*)
 	Matrix mat;
 
 	// left side buttons
-	const int img_size = 76 * gui->wnd_size.x / 1920;
-	const int offset = img_size + 2;
-	const float scale = float(img_size) / 64;
-	const int max = (int)Mode::Max;
-	const int total = offset * max;
-	const int sposy = (gui->wnd_size.y - total) / 2;
-	for(int i = 0; i < max; ++i)
+	if(guild->created)
 	{
-		Texture* t;
-		if(buttonState[i] == 0)
-			t = tShortcut;
-		else if(buttonState[i] == 1)
-			t = tShortcutHover;
-		else
-			t = tShortcutDown;
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(2.f, float(sposy + i * offset)));
-		gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
-		gui->DrawSprite2(tButtons[i], mat, nullptr, nullptr, Color::White);
+		const int img_size = 76 * gui->wnd_size.x / 1920;
+		const int offset = img_size + 2;
+		const float scale = float(img_size) / 64;
+		const int max = (int)Mode::Max;
+		const int total = offset * max;
+		const int sposy = (gui->wnd_size.y - total) / 2;
+		for(int i = 0; i < max; ++i)
+		{
+			Texture* t;
+			if(buttonState[i] == 0)
+				t = tShortcut;
+			else if(buttonState[i] == 1)
+				t = tShortcutHover;
+			else
+				t = tShortcutDown;
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(2.f, float(sposy + i * offset)));
+			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
+			gui->DrawSprite2(tButtons[i], mat, nullptr, nullptr, Color::White);
+		}
 	}
 
 	switch(mode)
@@ -82,7 +104,7 @@ void GuildPanel::Draw(ControlDrawData*)
 			if(guild->created)
 			{
 				Unit* leader = guild->master;
-				text = Format("%s%s\n%s%d\n%s%s\n%s%u/%u",
+				text = Format("%s: %s\n%s: %d\n%s: %s\n%s: %u/%u",
 					txName, guild->name.c_str(),
 					txReputation, guild->reputation,
 					txMaster, leader ? leader->GetName() : nullptr,
@@ -96,7 +118,17 @@ void GuildPanel::Draw(ControlDrawData*)
 
 	case Mode::Members:
 		{
+			// title
+			Rect rect = {
+				pos.x,
+				pos.y + 10,
+				pos.x + size.x,
+				pos.y + size.y
+			};
+			gui->DrawText(GameGui::font_big, Format("%s: %u/%u", txMembers, guild->members.size(), Guild::MAX_SIZE), DTF_TOP | DTF_CENTER, Color::Black, rect);
 
+			// members grid
+			grid.Draw();
 		}
 		break;
 	}
@@ -107,35 +139,51 @@ void GuildPanel::Draw(ControlDrawData*)
 
 void GuildPanel::Update(float dt)
 {
-	int group = -1, id = -1;
+	int group = (int)TooltipGroup::None, id = -1;
 
 	GamePanel::Update(dt);
 
-	// reset button hover
-	const int max = (int)Mode::Max;
-	for(int i = 0; i < (int)Mode::Max; ++i)
-		buttonState[i] = (i == (int)mode ? 2 : 0);
-
-	// update side buttons
-	if(!gui->HaveDialog())
+	if(guild->created)
 	{
-		const int img_size = 76 * gui->wnd_size.x / 1920;
-		const int offset = img_size + 2;
-		const int total = offset * max;
-		const int sposy = (gui->wnd_size.y - total) / 2;
-		for(int i = 0; i < max; ++i)
+		// reset button hover
+		const int max = (int)Mode::Max;
+		for(int i = 0; i < (int)Mode::Max; ++i)
+			buttonState[i] = (i == (int)mode ? 2 : 0);
+
+		// update side buttons
+		if(!gui->HaveDialog())
 		{
-			if(PointInRect(gui->cursor_pos, Int2(2, sposy + i * offset), Int2(img_size, img_size)))
+			const int img_size = 76 * gui->wnd_size.x / 1920;
+			const int offset = img_size + 2;
+			const int total = offset * max;
+			const int sposy = (gui->wnd_size.y - total) / 2;
+			for(int i = 0; i < max; ++i)
 			{
-				group = 0;
-				id = i;
+				if(PointInRect(gui->cursor_pos, Int2(2, sposy + i * offset), Int2(img_size, img_size)))
+				{
+					group = (int)TooltipGroup::SideButton;
+					id = i;
 
-				if(buttonState[i] == 0)
-					buttonState[i] = 1;
-				if(input->PressedRelease(Key::LeftButton))
-					mode = (Mode)i;
+					if(buttonState[i] == 0)
+						buttonState[i] = 1;
+					if(input->PressedRelease(Key::LeftButton))
+						mode = (Mode)i;
 
-				break;
+					break;
+				}
+			}
+		}
+
+		if(mode == Mode::Members)
+		{
+			grid.focus = focus;
+			grid.Update(dt);
+
+			Int2 cell = grid.GetCell(gui->cursor_pos);
+			if(cell.x != -1 && cell.y == 1)
+			{
+				group = (int)TooltipGroup::MemberClass;
+				id = cell.x;
 			}
 		}
 	}
@@ -148,11 +196,18 @@ void GuildPanel::Update(float dt)
 
 void GuildPanel::Event(GuiEvent e)
 {
-	if(e == GuiEvent_Show)
+	switch(e)
 	{
-		if(mode != Mode::Info && !guild->created)
-			mode = Mode::Info;
-		tooltip.Clear();
+	case GuiEvent_Show:
+	case GuiEvent_Resize:
+		if(e == GuiEvent_Show)
+		{
+			if(mode != Mode::Info && !guild->created)
+				mode = Mode::Info;
+			tooltip.Clear();
+		}
+		grid.Move(global_pos);
+		break;
 	}
 	GamePanel::Event(e);
 }
@@ -160,10 +215,40 @@ void GuildPanel::Event(GuiEvent e)
 void GuildPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 {
 	if(group == -1)
+	{
 		tooltip.anything = false;
+		return;
+	}
+
+	tooltip.anything = true;
+	if(group == (int)TooltipGroup::SideButton)
+	{
+		switch((Mode)id)
+		{
+		case Mode::Info:
+			tooltip.text = txInfo;
+			break;
+		case Mode::Members:
+			tooltip.text = txMembers;
+			break;
+		}
+	}
 	else
 	{
-		tooltip.anything = true;
-		tooltip.text = "bobo";
+		Unit* unit = guild->members[id];
+		Class* clas = unit->GetClass();
+		tooltip.text = clas->name;
+	}
+}
+
+void GuildPanel::GetCell(int item, int column, Cell& cell)
+{
+	Unit* unit = guild->members[item];
+	if(column == 0)
+		cell.text = unit->GetName();
+	else
+	{
+		cell.img = unit->GetClass()->icon;
+		cell.text = Format("%d", unit->level);
 	}
 }

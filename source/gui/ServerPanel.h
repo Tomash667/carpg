@@ -36,7 +36,6 @@ public:
 	void UpdateServerInfo();
 	void Event(GuiEvent e) override;
 	void Show();
-	void GetCell(int item, int column, Cell& cell);
 	void ExitLobby(VoidF callback = nullptr);
 	void AddMsg(cstring text) { itb.Add(text); }
 	void OnKick(int id);
@@ -67,6 +66,8 @@ public:
 		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed, txPlayerDisconnected;
 
 private:
+	void GetCell(int item, int column, Cell& cell);
+
 	TexturePtr tReady, tNotReady;
 	Class* random_class;
 };

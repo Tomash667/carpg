@@ -175,7 +175,7 @@ void ServerPanel::LoadLanguage()
 	bts[5].text = gui->txCancel;
 
 	grid.AddColumn(Grid::IMG, 20);
-	grid.AddColumn(Grid::TEXT_COLOR, 140, txNick);
+	grid.AddColumn(Grid::TEXT, 140, txNick);
 	grid.AddColumn(Grid::TEXT, 140, txChar);
 	grid.Init();
 }
@@ -1322,8 +1322,8 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.img = (info.ready ? tReady : tNotReady);
 	else if(column == 1)
 	{
-		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == team->leader_id ? Color(255, 215, 0) : Color::Black);
+		cell.text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
+		cell.color = (info.id == team->leader_id ? Color(255, 215, 0) : Color::Black);
 	}
 	else
 		cell.text = (info.clas ? info.clas->name.c_str() : txNone);
