@@ -1158,6 +1158,10 @@ dialog hero
 		}
 		choice 32
 		{
+			if script "Guild::created"
+			{
+				if script "
+			}
 			if script "Team::size >= Team::max_size"
 			{
 				talk 33

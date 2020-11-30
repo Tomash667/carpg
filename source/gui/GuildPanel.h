@@ -31,6 +31,6 @@ private:
 	int buttonState[(int)Mode::Max];
 	TooltipController tooltip;
 	Grid grid;
-	cstring txTitle, txName, txReputation, txMaster, txMembers, txNoGuild, txEnterName, txInfo;
-	TexturePtr tButtons[(int)Mode::Max], tShortcut, tShortcutHover, tShortcutDown;
+	cstring txTitle, txName, txReputation, txMaster, txMembers, txNoGuild, txEnterName, txInfo, txInTeam;
+	TexturePtr tButtons[(int)Mode::Max], tShortcut, tShortcutHover, tShortcutDown, tInTeam;
 };

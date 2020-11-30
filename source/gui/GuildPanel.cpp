@@ -12,7 +12,8 @@ enum class TooltipGroup
 {
 	None = -1,
 	SideButton,
-	MemberClass
+	MemberClass,
+	MemberStatus
 };
 
 GuildPanel::GuildPanel() : mode(Mode::Info)
@@ -21,8 +22,8 @@ GuildPanel::GuildPanel() : mode(Mode::Info)
 
 	tooltip.Init(TooltipController::Callback(this, &GuildPanel::GetTooltip));
 
-	grid.pos = Int2(10, 10);
-	grid.size = Int2(320, 300);
+	grid.pos = Int2(10, 50);
+	grid.size = Int2(500, 300);
 	grid.event = GridEvent(this, &GuildPanel::GetCell);
 	grid.selection_type = Grid::BACKGROUND;
 	grid.selection_color = Color(0, 255, 0, 128);
@@ -39,9 +40,11 @@ void GuildPanel::LoadLanguage()
 	txNoGuild = s.Get("noGuild");
 	txEnterName = s.Get("enterName");
 	txInfo = s.Get("info");
+	txInTeam = s.Get("inTeam");
 
-	grid.AddColumn(Grid::TEXT, 200, "Imiê");
-	grid.AddColumn(Grid::IMG_TEXT, 75, "Klasa").size = Int2(16, 16);
+	grid.AddColumn(Grid::TEXT, 200, s.Get("memberName"));
+	grid.AddColumn(Grid::IMG_TEXT, 75, s.Get("class")).size = Int2(16, 16);
+	grid.AddColumn(Grid::IMG, 75, s.Get("state")).size = Int2(16, 16);
 	grid.Init();
 	grid.AddItem();
 }
@@ -53,6 +56,7 @@ void GuildPanel::LoadData()
 	tShortcut = res_mgr->Load<Texture>("shortcut.png");
 	tShortcutHover = res_mgr->Load<Texture>("shortcut_hover.png");
 	tShortcutDown = res_mgr->Load<Texture>("shortcut_down.png");
+	tInTeam = res_mgr->Load<Texture>("bt_team.png");
 }
 
 void GuildPanel::Draw(ControlDrawData*)
@@ -180,10 +184,18 @@ void GuildPanel::Update(float dt)
 			grid.Update(dt);
 
 			Int2 cell = grid.GetCell(gui->cursor_pos);
-			if(cell.x != -1 && cell.y == 1)
+			if(cell.x != -1 && Any(cell.y, 1, 2) && grid.GetImgIndex(gui->cursor_pos, cell) == 0)
 			{
-				group = (int)TooltipGroup::MemberClass;
-				id = cell.x;
+				if(cell.y == 1)
+				{
+					group = (int)TooltipGroup::MemberClass;
+					id = cell.x;
+				}
+				else
+				{
+					group = (int)TooltipGroup::MemberStatus;
+					id = 0;
+				}
 			}
 		}
 	}
@@ -221,8 +233,9 @@ void GuildPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 	}
 
 	tooltip.anything = true;
-	if(group == (int)TooltipGroup::SideButton)
+	switch((TooltipGroup)group)
 	{
+	case TooltipGroup::SideButton:
 		switch((Mode)id)
 		{
 		case Mode::Info:
@@ -232,23 +245,34 @@ void GuildPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 			tooltip.text = txMembers;
 			break;
 		}
-	}
-	else
-	{
-		Unit* unit = guild->members[id];
-		Class* clas = unit->GetClass();
-		tooltip.text = clas->name;
+		break;
+	case TooltipGroup::MemberClass:
+		{
+			Unit* unit = guild->members[id];
+			Class* clas = unit->GetClass();
+			tooltip.text = clas->name;
+		}
+		break;
+	case TooltipGroup::MemberStatus:
+		tooltip.text = txInTeam;
+		break;
 	}
 }
 
 void GuildPanel::GetCell(int item, int column, Cell& cell)
 {
 	Unit* unit = guild->members[item];
-	if(column == 0)
-		cell.text = unit->GetName();
-	else
+	switch(column)
 	{
+	case 0: // name
+		cell.text = unit->GetName();
+		break;
+	case 1: // class
 		cell.img = unit->GetClass()->icon;
 		cell.text = Format("%d", unit->level);
+		break;
+	case 2: // status
+		cell.img = tInTeam;
+		break;
 	}
 }
