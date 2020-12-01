@@ -27,7 +27,7 @@ void NameHelper::GenerateHeroName(Hero& hero)
 }
 
 //=================================================================================================
-void NameHelper::GenerateHeroName(Class* clas, bool crazy, string& hero_name)
+void NameHelper::GenerateHeroName(const Class* clas, bool crazy, string& hero_name)
 {
 	if(crazy)
 	{

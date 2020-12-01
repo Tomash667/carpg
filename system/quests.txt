@@ -910,7 +910,7 @@ quest wanted
 			@startLoc = Level::location;
 			level = Random(5, 15);
 			crazy = Rand() % 5 == 0;
-			clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
+			@clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
 		}
 		
 		void SetProgress()
@@ -923,9 +923,8 @@ quest wanted
 					targetLoc = World::GetRandomNearSettlement();
 					targetLoc.AddEventHandler(quest, EVENT_ENTER);
 
-					Item@ item = Item::Get("wanted_letter");
-					@letter = item.QuestCopy(quest, TEXT(3), TEXT(4));
-					pc.unit.AddTeamItem(letter);
+					Item@ item = Item::Get("wanted_letter").QuestCopy(quest, TEXT(3), TEXT(4));
+					pc.unit.AddTeamItem(item);
 					
 					target.AddDialog(quest, "end");
 					
@@ -938,27 +937,27 @@ quest wanted
 				
 			case P_WANTED_KILLED:
 				quest.Restart();
-				quest.OnUpdate(TEXT(5));
+				quest.AddEntry(TEXT(5));
 				break;
 				
 			case P_WANTED_FINISHED:
-				quest.OnUpdate(TEXT(6));
+				quest.AddEntry(TEXT(6));
 				quest.SetCompleted();
 				Team::AddReward(level * 100, level * 250);
 				break;
 				
 			case P_WANTED_ON_TIMEOUT:
-				quest.OnUpdate(TEXT(8));
+				quest.AddEntry(TEXT(8));
 				break;
 				
 			case P_WANTED_TIMEOUT:
-				quest.OnUpdate(TEXT(7));
+				quest.AddEntry(TEXT(7));
 				quest.SetFailed();
 				break;
 				
 			case P_WANTED_RECRUITED:
 				quest.SetFailed(false);
-				quest.OnUpdate(TEXT(8));
+				quest.AddEntry(TEXT(8));
 				break;
 			}
 		}
@@ -972,7 +971,7 @@ quest wanted
 				target.dont_attack = true;
 				target.active_quest = quest;
 				target.hero.name = name;
-				target.AddEventHandler(quest, EVENT_ANY);
+				target.AddEventHandler(quest, EVENT_DIE | EVENT_RECRUIT | EVENT_KICK | EVENT_LEAVE);
 				target.AddDialog(quest, "target");
 				break;
 			case EVENT_DIE:

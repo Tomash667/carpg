@@ -5,5 +5,5 @@ namespace NameHelper
 {
 	void SetHeroNames();
 	void GenerateHeroName(Hero& hero);
-	void GenerateHeroName(Class* clas, bool crazy, string& name);
+	void GenerateHeroName(const Class* clas, bool crazy, string& name);
 }

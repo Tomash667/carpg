@@ -4,14 +4,17 @@
 enum EventType
 {
 	EVENT_ANY = -1,
-	EVENT_ENTER,
-	EVENT_PICKUP,
-	EVENT_UPDATE,
-	EVENT_TIMEOUT,
-	EVENT_ENCOUNTER,
-	EVENT_DIE,
-	EVENT_CLEARED,
-	EVENT_GENERATE
+	EVENT_ENTER = 1 << 0,
+	EVENT_PICKUP = 1 << 1,
+	EVENT_UPDATE = 1 << 2,
+	EVENT_TIMEOUT = 1 << 3,
+	EVENT_ENCOUNTER = 1 << 4,
+	EVENT_DIE = 1 << 5,
+	EVENT_CLEARED = 1 << 6,
+	EVENT_GENERATE = 1 << 7,
+	EVENT_RECRUIT = 1 << 8,
+	EVENT_KICK = 1 << 9,
+	EVENT_LEAVE = 1 << 10
 };
 
 //-----------------------------------------------------------------------------

@@ -131,7 +131,7 @@ void Game::UpdateAi(float dt)
 
 		for(Event& event : u.events)
 		{
-			if(event.type == EVENT_UPDATE)
+			if(IsSet(event.type, EVENT_UPDATE))
 			{
 				ScriptEvent e(EVENT_UPDATE);
 				e.on_update.unit = &u;
