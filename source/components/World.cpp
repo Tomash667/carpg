@@ -685,7 +685,7 @@ void World::GenerateWorld()
 				InsideLocation* inside;
 
 				int target;
-				switch(guaranteed_dungeon)
+				switch(guaranteed_dungeon++)
 				{
 				case 0:
 					target = HUMAN_FORT;

@@ -1,6 +1,14 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.17.1 (???):
+- all random dungeons had same appearance
+- when using take all items from corpse active magic effects was removed from player
+- invalid weight calculation on server side when client used pick all button
+- not visible player text in buildings
+- invalid player nick in chat in singleplayer
+
+--------------------------------------------------------------------------------
 Version 0.17 (2020-08-29):
 ! cannot load saves from version 0.7 or older
 + hunters camp, quest to kill dire wolf

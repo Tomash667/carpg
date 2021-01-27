@@ -1290,48 +1290,49 @@ void InventoryPanel::Event(GuiEvent e)
 		// slots
 		if(game->pc->action != PlayerAction::LootChest && game->pc->action != PlayerAction::LootContainer)
 		{
-			const Item** unit_slots = game->pc->action_unit->slots;
+			Unit* target = game->pc->action_unit;
+			const Item** unit_slots = target->slots;
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
-				if(unit_slots[i])
+				if(!unit_slots[i])
+					continue;
+
+				Sound* s = game_res->GetItemSound(unit_slots[i]);
+				if(s == game_res->sCoins)
+					gold = true;
+				else
 				{
-					Sound* s = game_res->GetItemSound(unit_slots[i]);
-					if(s == game_res->sCoins)
-						gold = true;
-					else
+					for(int i = 0; i < 3; ++i)
 					{
-						for(int i = 0; i < 3; ++i)
+						if(sound[i] == s)
+							break;
+						else if(!sound[i])
 						{
-							if(sound[i] == s)
-								break;
-							else if(!sound[i])
-							{
-								sound[i] = s;
-								break;
-							}
+							sound[i] = s;
+							break;
 						}
 					}
-
-					InsertItemBare(itms, unit_slots[i]);
-					game->pc->unit->weight += unit_slots[i]->weight;
-					if(Net::IsLocal())
-						game->pc->unit->RemoveItemEffects(unit_slots[i], (ITEM_SLOT)i);
-					unit_slots[i] = nullptr;
-
-					if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_EQUIPMENT;
-						c.unit = game->pc->action_unit;
-						c.id = i;
-					}
-
-					changes = true;
 				}
+
+				InsertItemBare(itms, unit_slots[i]);
+				game->pc->unit->weight += unit_slots[i]->weight;
+				if(Net::IsLocal())
+					target->RemoveItemEffects(unit_slots[i], (ITEM_SLOT)i);
+				unit_slots[i] = nullptr;
+
+				if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::CHANGE_EQUIPMENT;
+					c.unit = target;
+					c.id = i;
+				}
+
+				changes = true;
 			}
 
 			// zero looted unit inventory weight
-			game->pc->action_unit->weight = 0;
+			target->weight = 0;
 		}
 
 		// items

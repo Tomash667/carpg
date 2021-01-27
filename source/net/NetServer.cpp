@@ -1417,6 +1417,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						{
 							player.action_unit->RemoveItemEffects(slots[i], (ITEM_SLOT)i);
 							InsertItemBare(unit.items, slots[i]);
+							unit.weight += slots[i]->weight;
 							slots[i] = nullptr;
 							any = true;
 
