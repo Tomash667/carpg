@@ -5146,18 +5146,19 @@ void Unit::TryStandup(float dt)
 
 				if(alcohol > hpmax)
 				{
-					// móg³by wstaæ ale jest zbyt pijany
+					// could stand up but is too drunk
 					live_state = FALL;
 					UpdatePhysics();
 				}
 				else
 				{
-					// sprawdŸ czy nie ma wrogów
+					// check for near enemies
 					ok = true;
 					for(Unit* unit : area->units)
 					{
 						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
 						{
+							AlertAllies(unit);
 							ok = false;
 							break;
 						}
@@ -5167,7 +5168,7 @@ void Unit::TryStandup(float dt)
 				if(!ok)
 				{
 					if(hp > 0.f)
-						raise_timer = 0.1f;
+						raise_timer = 0.5f;
 					else
 						raise_timer = Random(1.f, 2.f);
 				}
@@ -8985,6 +8986,23 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			e.power = dmg / 10 * poison_res;
 			e.time = 5.f;
 			hitted.AddEffect(e);
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::AlertAllies(Unit* target)
+{
+	for(Unit* u : area->units)
+	{
+		if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
+			|| u->ai->alert_target || u->dont_attack)
+			continue;
+
+		if(Vec3::Distance(pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*this, *u))
+		{
+			u->ai->alert_target = target;
+			u->ai->alert_target_pos = target->pos;
 		}
 	}
 }

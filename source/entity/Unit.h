@@ -982,6 +982,7 @@ public:
 	bool DoAttack();
 	bool DoShieldSmash();
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+	void AlertAllies(Unit* target);
 };
 
 //-----------------------------------------------------------------------------
