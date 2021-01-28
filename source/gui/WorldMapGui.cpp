@@ -112,12 +112,18 @@ void WorldMapGui::LoadData()
 //=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
+	const Vec2 scale(zoom);
+
 	// background
 	gui->DrawSpriteFullWrap(tMapBg);
 
 	// map
-	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(world->world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
-	gui->DrawSpriteTransform(tWorldMap, mat);
+	{
+		const Vec2 scale(float(world->world_size) / MAP_IMG_SIZE * zoom);
+		const Vec2 pos(GetCameraCenter() - offset);
+		const Matrix mat = Matrix::Transform2D(&offset, 0.f, &scale, nullptr, 0.f, &pos);
+		gui->DrawSpriteTransform(tWorldMap, mat);
+	}
 
 	// debug tiles
 	if(!combo_search.focus && !gui->HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
@@ -149,7 +155,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
+		const Vec2 pos(WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? Color::Alpha(128) : Color::White);
 	}
 
@@ -158,28 +165,29 @@ void WorldMapGui::Draw(ControlDrawData*)
 	{
 		for(const Encounter* enc : world->GetEncounters())
 		{
-			if(enc)
-			{
-				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(enc->pos.x - 16.f, enc->pos.y + 16.f)));
-				gui->DrawSpriteTransform(tEnc, mat);
-			}
+			if(!enc)
+				continue;
+			const Vec2 pos(WorldPosToScreen(Vec2(enc->pos.x - 16.f, enc->pos.y + 16.f)));
+			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
+			gui->DrawSpriteTransform(tEnc, mat);
 		}
 	}
 
 	LocalString s = Format(txWorldDate, world->GetDate());
 	const Vec2& world_pos = world->GetWorldPos();
 
-	// current location description
+	// current location icon, set description
 	if(world->GetCurrentLocation())
 	{
 		Location& current = *world->GetCurrentLocation();
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(current.pos.x - 32.f, current.pos.y + 32.f)));
+		const Vec2 pos(WorldPosToScreen(Vec2(current.pos.x - 32.f, current.pos.y + 32.f)));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tSelected[1], mat, 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		AppendLocationText(current, s.get_ref());
 	}
 
-	// target location description
+	// target location icon, set description
 	if(picked_location != -1)
 	{
 		Location& picked = *world->locations[picked_location];
@@ -198,7 +206,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 				cost = Format("%d %s", days_cost, txDays);
 			s += Format("\n%s: %g km\n%s: %s", txDistance, ceil(distance * 10) / 10, txTravelTime, cost);
 		}
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(picked.pos.x - 32.f, picked.pos.y + 32.f)));
+		const Vec2 pos(WorldPosToScreen(Vec2(picked.pos.x - 32.f, picked.pos.y + 32.f)));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tSelected[0], mat, 0xAAFFFFFF);
 	}
 	else if(c_pos_valid)
@@ -218,7 +227,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// team position
 	if(world->GetCurrentLocationIndex() == -1)
 	{
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(world_pos.x - 8, world_pos.y + 8)));
+		const Vec2 pos(WorldPosToScreen(Vec2(world_pos.x - 8, world_pos.y + 8)));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tMover, mat, 0xBBFFFFFF);
 	}
 
@@ -250,8 +260,9 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// tracking arrow
 	if(tracking != -1)
 	{
-		Vec2 pos = world->GetLocation(tracking)->pos;
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom / 2, zoom / 2), nullptr, 0.f, &WorldPosToScreen(Vec2(pos.x - 40.f, pos.y + 40.f)));
+		const Vec2 scale(zoom / 2, zoom / 2);
+		const Vec2 pos(WorldPosToScreen(world->GetLocation(tracking)->pos + Vec2(-40.f, 40.f)));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tTrackingArrow, mat);
 	}
 

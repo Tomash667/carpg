@@ -82,8 +82,11 @@ void Minimap::Draw(ControlDrawData*)
 	{
 		if(!lvl || lvl->IsTileVisible(chest->pos))
 		{
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.5f, 0.5f), nullptr, 0.f, &(PosToPoint(Vec2(chest->pos.x, chest->pos.z)) - Vec2(16, 16)));
-			gui->DrawSpriteTransform(tChest, m1, Color::Alpha(140));
+			const Vec2 center(16, 16);
+			const Vec2 scale(0.5f, 0.5f);
+			const Vec2 pos(PosToPoint(Vec2(chest->pos.x, chest->pos.z)) - center);
+			const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, nullptr, 0.f, &pos);
+			gui->DrawSpriteTransform(tChest, mat, Color::Alpha(140));
 		}
 	}
 
@@ -95,24 +98,33 @@ void Minimap::Draw(ControlDrawData*)
 			important_items->push_back(*it);
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			gui->DrawSpriteTransform(tBag, m1, Color::Alpha(140));
+			const Vec2 center(16, 16);
+			const Vec2 scale(0.25f, 0.25f);
+			const Vec2 pos(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - center);
+			const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, nullptr, 0.f, &pos);
+			gui->DrawSpriteTransform(tBag, mat, Color::Alpha(140));
 		}
 	}
 	for(vector<GroundItem*>::iterator it = important_items->begin(), end = important_items->end(); it != end; ++it)
 	{
 		if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			gui->DrawSpriteTransform(tBagImportant, m1, Color::Alpha(140));
+			const Vec2 center(16, 16);
+			const Vec2 scale(0.25f, 0.25f);
+			const Vec2 pos(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - center);
+			const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, nullptr, 0.f, &pos);
+			gui->DrawSpriteTransform(tBagImportant, mat, Color::Alpha(140));
 		}
 	}
 
 	// team members
 	for(Unit& unit : team->members)
 	{
-		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.rot, &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
-		gui->DrawSpriteTransform(tUnit[&unit == game->pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
+		const Vec2 center(16, 16);
+		const Vec2 scale(0.25f, 0.25f);
+		const Vec2 pos(PosToPoint(GetMapPosition(unit)) - center);
+		const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, &center, unit.rot, &pos);
+		gui->DrawSpriteTransform(tUnit[&unit == game->pc->unit ? UNIT_ME : UNIT_TEAM], mat, Color::Alpha(140));
 	}
 
 	// other units
@@ -121,9 +133,11 @@ void Minimap::Draw(ControlDrawData*)
 		Unit& u = **it;
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
-			const float scale = IsSet(u.data->flags2, F2_BOSS) ? 0.4f : 0.25f;
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(scale, scale), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
-			gui->DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game->pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
+			const Vec2 center(16, 16);
+			const Vec2 scale(IsSet(u.data->flags2, F2_BOSS) ? 0.4f : 0.25f);
+			const Vec2 pos(PosToPoint(GetMapPosition(u)) - center);
+			const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, &center, (*it)->rot, &pos);
+			gui->DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game->pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], mat, Color::Alpha(140));
 		}
 	}
 

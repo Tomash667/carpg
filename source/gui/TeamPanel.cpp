@@ -144,7 +144,6 @@ void TeamPanel::Draw(ControlDrawData*)
 	int n = 0;
 	int hitbox_counter = 0;
 	hitboxes.clear();
-	Matrix mat;
 	for(Unit& unit : team->members)
 	{
 		Class* clas = unit.GetClass();
@@ -154,7 +153,8 @@ void TeamPanel::Draw(ControlDrawData*)
 			Int2 img_size, new_size(32, 32);
 			Vec2 scale;
 			t->ResizeImage(new_size, img_size, scale);
-			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
+			const Vec2 pos((float)offset.x, (float)offset.y);
+			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, &rect, Color::White);
 		}
 		if(&unit == team->leader)
