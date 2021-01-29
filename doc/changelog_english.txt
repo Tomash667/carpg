@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.17.1 (???):
+Version 0.17.1 (2021-01-29):
 - all random dungeons had same appearance
 - when using take all items from corpse active magic effects was removed from player
 - invalid weight calculation on server side when client used pick all button
