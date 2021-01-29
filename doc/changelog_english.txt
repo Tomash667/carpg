@@ -8,8 +8,9 @@ Version 0.17.1 (???):
 - not visible player text in buildings
 - invalid player nick in chat in singleplayer
 - when player lies on ground and ally don't see enemy he stands and do nothing [Groszek]
-- crash when hitting someone with bull's charge
-- poor targeting when summoning wolf in dungeon
+- crash when hitting someone with bull's charge [ecusredio]
+- poor targeting when summoning wolf in dungeon [julie]
+- client crash when summoned wolf disappear [julie]
 
 --------------------------------------------------------------------------------
 Version 0.17 (2020-08-29):

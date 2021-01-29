@@ -3504,7 +3504,7 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit->ai;
 	}
 
-	if(unit->IsHero() && unit->hero->otherTeam)
+	if(Net::IsLocal() && unit->IsHero() && unit->hero->otherTeam)
 		unit->hero->otherTeam->Remove(unit);
 
 	if(unit->cobj)

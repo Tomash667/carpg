@@ -8,8 +8,9 @@ Wersja 0.17.1 (???):
 - brak widocznego tekstu gracza w budynku
 - nieprawidłowy nick gracza w chat w trybie singleplayer
 - gdy gracz leży na ziemi a sojusznik nie widzi wroga nic nie robi [Groszek]
-- crash po trafieniu kogoś byczą szarżą
-- kiepskie celowanie przy przywoływaniu wilka w podziemiach
+- crash po trafieniu kogoś byczą szarżą [ecusredio]
+- kiepskie celowanie przy przywoływaniu wilka w podziemiach [julie]
+- crash klienta gdy znikał przywołany wilk [julie]
 
 --------------------------------------------------------------------------------
 Wersja 0.17 (2020-08-29):
