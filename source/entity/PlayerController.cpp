@@ -2002,6 +2002,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
 		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+
 		if(dash)
 		{
 			unit->timer = 0.33f;
@@ -2016,6 +2017,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->mesh_inst->groups[1].blend_max = 0.1f;
 			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
+
 		if(ability->RequireList())
 		{
 			unit->act.dash.hit = UnitList::Get();
@@ -2227,7 +2229,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		data.autowalk = false;
 		data.ability_ready = nullptr;
 		data.rot_buf = 0.f;
-		u.TryStandup(dt);
+		if(Net::IsLocal())
+			u.TryStandup(dt);
 		return;
 	}
 

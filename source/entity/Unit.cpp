@@ -5084,6 +5084,7 @@ void Unit::Fall()
 
 		// wstawanie
 		raise_timer = Random(5.f, 7.f);
+		timer = 1.f;
 
 		// event
 		if(event_handler)
@@ -5130,15 +5131,16 @@ void Unit::TryStandup(float dt)
 	if(in_arena != -1 || game->death_screen != 0)
 		return;
 
-	raise_timer -= dt;
 	bool ok = false;
+	raise_timer -= dt;
+	timer -= dt;
 
 	if(live_state == DEAD)
 	{
 		if(IsTeamMember())
 		{
-			if(hp > 0.f && raise_timer > 0.1f)
-				raise_timer = 0.1f;
+			if(hp > 0.f && raise_timer > 0.5f)
+				raise_timer = 0.5f;
 
 			if(raise_timer <= 0.f)
 			{
@@ -5171,7 +5173,20 @@ void Unit::TryStandup(float dt)
 						raise_timer = 0.5f;
 					else
 						raise_timer = Random(1.f, 2.f);
+					timer = 0.5f;
 				}
+			}
+			else if(timer <= 0.f)
+			{
+				for(Unit* unit : area->units)
+				{
+					if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
+					{
+						AlertAllies(unit);
+						break;
+					}
+				}
+				timer = 0.5f;
 			}
 		}
 	}
@@ -5242,7 +5257,7 @@ void Unit::Standup(bool warp, bool leave)
 			game_level->WarpUnit(*this, pos);
 	}
 
-	if(!game_level->entering && !leave && (Net::IsServer() || (Net::IsClient() && IsLocalPlayer())))
+	if(Net::IsServer() && !game_level->entering && !leave)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STAND_UP;
@@ -5303,7 +5318,10 @@ void Unit::Die(Unit* killer)
 
 		// rising team members / check is location cleared
 		if(IsTeamMember())
+		{
 			raise_timer = Random(5.f, 7.f);
+			timer = 1.f;
+		}
 		else
 		{
 			game_level->CheckIfLocationCleared();

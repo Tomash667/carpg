@@ -7,7 +7,9 @@ Wersja 0.17.1 (???):
 - błędne przeliczanie wagi po stronie serwera gdy klient użyję przycisku podnieś wszystko
 - brak widocznego tekstu gracza w budynku
 - nieprawidłowy nick gracza w chat w trybie singleplayer
-- gdy gracz leży na ziemi a sojusznik nie widzi wroga nic nie robi
+- gdy gracz leży na ziemi a sojusznik nie widzi wroga nic nie robi [Groszek]
+- crash po trafieniu kogoś byczą szarżą
+- kiepskie celowanie przy przywoływaniu wilka w podziemiach
 
 --------------------------------------------------------------------------------
 Wersja 0.17 (2020-08-29):

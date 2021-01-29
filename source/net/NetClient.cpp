@@ -378,7 +378,6 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::EXIT_BUILDING:
 		case NetChange::WARP:
 		case NetChange::CHEAT_SUICIDE:
-		case NetChange::STAND_UP:
 		case NetChange::CHEAT_SCARE:
 		case NetChange::CHEAT_CITIZEN:
 		case NetChange::CHEAT_HEAL:
@@ -1763,7 +1762,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Unit* unit = game_level->FindUnit(id);
 					if(!unit)
 						Error("Update client: STAND_UP, missing unit %d.", id);
-					else if(!unit->IsLocalPlayer())
+					else
 						unit->Standup(false);
 				}
 			}

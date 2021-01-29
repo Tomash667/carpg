@@ -1990,13 +1990,13 @@ void Game::UpdateGame(float dt)
 		{
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
-			DialogContext& area = *info.u->player->dialog_ctx;
-			if(area.dialog_mode)
+			DialogContext& dialogCtx = *info.u->player->dialog_ctx;
+			if(dialogCtx.dialog_mode)
 			{
-				if(!area.talker->IsStanding() || !area.talker->IsIdle() || area.talker->to_remove || area.talker->frozen != FROZEN::NO)
-					area.EndDialog();
+				if(!dialogCtx.talker->IsStanding() || !dialogCtx.talker->IsIdle() || dialogCtx.talker->to_remove || dialogCtx.talker->frozen != FROZEN::NO)
+					dialogCtx.EndDialog();
 				else
-					area.Update(dt);
+					dialogCtx.Update(dt);
 			}
 		}
 	}
