@@ -667,6 +667,9 @@
     <ClCompile Include="entity\UnitList.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="location\TmpLevelArea.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1311,6 +1314,9 @@
     </ClInclude>
     <ClInclude Include="entity\UnitList.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="location\TmpLevelArea.h">
+      <Filter>location</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

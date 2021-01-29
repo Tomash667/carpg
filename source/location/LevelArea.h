@@ -1,10 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Collision.h"
 #include "Bullet.h"
 #include "Blood.h"
-#include "Drain.h"
 #include "GameLight.h"
 #include <Mesh.h>
 
@@ -89,22 +87,4 @@ struct LevelArea
 };
 
 //-----------------------------------------------------------------------------
-// Temporary level area (used only for active level areas to hold temporary entities)
-struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
-{
-	LevelArea* area;
-	vector<Bullet*> bullets;
-	vector<ParticleEmitter*> pes;
-	vector<TrailParticleEmitter*> tpes;
-	vector<Explo*> explos;
-	vector<Electro*> electros;
-	vector<Drain> drains;
-	vector<CollisionObject> colliders;
-	float lights_dt;
-
-	void Clear();
-	void Save(GameWriter& f);
-	void Load(GameReader& f);
-	void Write(BitStreamWriter& f);
-	bool Read(BitStreamReader& f);
-};
+#include "TmpLevelArea.h"

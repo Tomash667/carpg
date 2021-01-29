@@ -6760,10 +6760,10 @@ void Unit::CastSpell()
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.1f;
+					pe->emission_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
-					pe->emisions = -1;
+					pe->emissions = -1;
 					pe->spawn_min = 3;
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
@@ -6937,10 +6937,10 @@ void Unit::CastSpell()
 				// particle effect
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = ability.tex_particle;
-				pe->emision_interval = 0.01f;
+				pe->emission_interval = 0.01f;
 				pe->life = 0.f;
 				pe->particle_life = 0.5f;
-				pe->emisions = 1;
+				pe->emissions = 1;
 				pe->spawn_min = 16;
 				pe->spawn_max = 25;
 				pe->max_particles = 25;
@@ -6984,10 +6984,10 @@ void Unit::CastSpell()
 					h = target->GetUnitHeight();
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = ability.tex_particle;
-				pe->emision_interval = 0.01f;
+				pe->emission_interval = 0.01f;
 				pe->life = 0.f;
 				pe->particle_life = 0.5f;
-				pe->emisions = 1;
+				pe->emissions = 1;
 				pe->spawn_min = 16;
 				pe->spawn_max = 25;
 				pe->max_particles = 25;
@@ -8690,10 +8690,10 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = game_res->tBlood[data->blood];
-		pe->emision_interval = 0.01f;
+		pe->emission_interval = 0.01f;
 		pe->life = 5.f;
 		pe->particle_life = 0.5f;
-		pe->emisions = 1;
+		pe->emissions = 1;
 		pe->spawn_min = 10;
 		pe->spawn_max = 15;
 		pe->max_particles = 15;

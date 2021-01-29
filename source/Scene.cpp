@@ -54,12 +54,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	if(area.area_type == LevelArea::Type::Outside && IsSet(draw_flags, DF_TERRAIN))
 	{
 		PROFILER_BLOCK("Terrain");
-		uint parts = game_level->terrain->GetPartsCount();
-		for(uint i = 0; i < parts; ++i)
-		{
-			if(frustum.BoxToFrustum(game_level->terrain->GetPart(i)->GetBox()))
-				draw_batch.terrain_parts.push_back(i);
-		}
+		game_level->terrain->ListVisibleParts(draw_batch.terrain_parts, frustum);
 	}
 
 	// dungeon
@@ -73,11 +68,8 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	if(IsSet(draw_flags, DF_UNITS))
 	{
 		PROFILER_BLOCK("Units");
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			ListDrawObjectsUnit(frustum, outside, u);
-		}
+		for(Unit* unit : area.units)
+			ListDrawObjectsUnit(frustum, outside, *unit);
 	}
 
 	// objects

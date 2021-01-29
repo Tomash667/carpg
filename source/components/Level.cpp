@@ -750,8 +750,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emision_interval = 0.1f;
-			pe->emisions = -1;
+			pe->emission_interval = 0.1f;
+			pe->emissions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -796,8 +796,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emision_interval = 0.1f;
-			pe->emisions = -1;
+			pe->emission_interval = 0.1f;
+			pe->emissions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -822,8 +822,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emision_interval = 0.1f;
-			pe->emisions = -1;
+			pe->emission_interval = 0.1f;
+			pe->emissions = -1;
 			pe->life = -1;
 			pe->max_particles = 500;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -1437,8 +1437,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					pe->tex = game_res->tFlare2;
 					pe->alpha = 1.0f;
 					pe->size = 1.0f;
-					pe->emision_interval = 0.1f;
-					pe->emisions = -1;
+					pe->emission_interval = 0.1f;
+					pe->emissions = -1;
 					pe->life = -1;
 					pe->max_particles = 50;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -4504,10 +4504,10 @@ void Level::SpawnUnitEffect(Unit& unit)
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = game_res->tSpawn;
-	pe->emision_interval = 0.1f;
+	pe->emission_interval = 0.1f;
 	pe->life = 5.f;
 	pe->particle_life = 0.5f;
-	pe->emisions = 5;
+	pe->emissions = 5;
 	pe->spawn_min = 10;
 	pe->spawn_max = 15;
 	pe->max_particles = 15 * 5;

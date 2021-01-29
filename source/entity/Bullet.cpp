@@ -354,10 +354,10 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = game_res->tSpark;
-			pe->emision_interval = 0.01f;
+			pe->emission_interval = 0.01f;
 			pe->life = 5.f;
 			pe->particle_life = 0.5f;
-			pe->emisions = 1;
+			pe->emissions = 1;
 			pe->spawn_min = 10;
 			pe->spawn_max = 15;
 			pe->max_particles = 15;
@@ -555,10 +555,10 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 		{
 			pe = new ParticleEmitter;
 			pe->tex = ability->tex_particle;
-			pe->emision_interval = 0.1f;
+			pe->emission_interval = 0.1f;
 			pe->life = -1;
 			pe->particle_life = 0.5f;
-			pe->emisions = -1;
+			pe->emissions = -1;
 			pe->spawn_min = 3;
 			pe->spawn_max = 4;
 			pe->max_particles = 50;
