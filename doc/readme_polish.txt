@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: https://carpg.pl
-Wersja: 0.17
-Data: 2020-08-29
+Wersja: 0.17.1
+Data: 2021-01-29
 
 ===============================================================================
 1) Spis treści
@@ -298,6 +298,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	darktorq
 	Docucat
 	fire
+	Groszek
 	Harorri
 	Lemiczek 
 	Medarc

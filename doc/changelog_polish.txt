@@ -3,9 +3,18 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.18 (???):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
+
+--------------------------------------------------------------------------------
+Wersja 0.17.1 (2021-01-29):
 - wszystkie losowe podziemia są takiego samego typu
 - przy używaniu przycisku podnieś wszystko ze zwłok usuwało to aktywne efekty magicznych przedmiotów gracza
 - błędne przeliczanie wagi po stronie serwera gdy klient użyję przycisku podnieś wszystko
+- brak widocznego tekstu gracza w budynku
+- nieprawidłowy nick gracza w chat w trybie singleplayer
+- gdy gracz leży na ziemi a sojusznik nie widzi wroga nic nie robi [Groszek]
+- crash po trafieniu kogoś byczą szarżą [ecusredio]
+- kiepskie celowanie przy przywoływaniu wilka w podziemiach [julie]
+- crash klienta gdy znikał przywołany wilk [julie]
 
 --------------------------------------------------------------------------------
 Wersja 0.17 (2020-08-29):

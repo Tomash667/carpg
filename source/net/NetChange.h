@@ -120,7 +120,7 @@ struct NetChange
 		CHEAT_REVEAL, // player used cheat 'reveal' []
 		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
 		USE_USABLE, // unit uses usable object SERVER[int(id)-unit, int(id)-usable, byte(count)-state(USE_USABLE_STATE)] / CLIENT[int(id)-usable, byte(count)-state(USE_USABLE_STATE)]
-		STAND_UP, // unit stands up SERVER[int(id)-unit] / CLIENT[]
+		STAND_UP, // unit stands up [int(id)-unit]
 		GAME_OVER, // game over []
 		RECRUIT_NPC, // recruit npc to team [int(id)-unit, id auto:bool-is free]
 		KICK_NPC, // kick npc out of team [int(id)-unit]

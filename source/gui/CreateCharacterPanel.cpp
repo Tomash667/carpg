@@ -300,7 +300,9 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
+						const Vec2 scale(float(flow_size.x - 4) / 256, 17.f / 32);
+						const Vec2 pos(r.LeftTop());
+						const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 						part.Right() = int(fi.part * 256);
 						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}

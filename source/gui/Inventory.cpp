@@ -1287,7 +1287,6 @@ void InventoryPanel::Event(GuiEvent e)
 				changes = true;
 			}
 
-			// zero looted unit inventory weight
 			game->pc->action_unit->weight = 0;
 			game->pc->action_unit->RemoveAllEquippedItems();
 		}

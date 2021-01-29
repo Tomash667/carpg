@@ -215,9 +215,10 @@ void LevelGui::DrawFront()
 	// crosshair
 	if(pc.ShouldUseRaytest())
 	{
-		float scale = (1.f - pc.data.range_ratio) + 0.5f;
-		Matrix mat = Matrix::Transform2D(&Vec2(16, 16), 0, &Vec2(scale, scale), nullptr, 0,
-			&Vec2(0.5f * gui->wnd_size.x - 16.f, 0.5f * gui->wnd_size.y - 16.f));
+		const Vec2 center(16, 16);
+		const Vec2 scale((1.f - pc.data.range_ratio) + 0.5f);
+		const Vec2 pos(0.5f * gui->wnd_size.x - 16.f, 0.5f * gui->wnd_size.y - 16.f);
+		const Matrix mat = Matrix::Transform2D(&center, 0, &scale, nullptr, 0, &pos);
 		gui->DrawSprite2(tCrosshair, mat);
 	}
 
@@ -448,34 +449,40 @@ void LevelGui::DrawFront()
 	}
 
 	// health bar
-	float wnd_scale = float(gui->wnd_size.x) / 800;
-	bool mp_bar = game->pc->unit->IsUsingMp();
+	const Vec2 wndScale(float(gui->wnd_size.x) / 800);
+	const bool mp_bar = game->pc->unit->IsUsingMp();
+	Rect part = { 0, 0, 0, 16 };
 	int bar_offset = (mp_bar ? 3 : 2);
-	float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
-	Rect part = { 0, 0, int(hpp * 256), 16 };
-	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
-		&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
-	if(part.Right() > 0)
-		gui->DrawSprite2(!IsSet(pc.unit->GetBuffs(), BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
-	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
-	--bar_offset;
+	{
+		const float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
+		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
+		part.Right() = int(hpp * 256);
+		if(part.Right() > 0)
+			gui->DrawSprite2(!IsSet(pc.unit->GetBuffs(), BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
+		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
+		--bar_offset;
+	}
 
 	// stamina bar
-	float stamina_p = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
-	part.Right() = int(stamina_p * 256);
-	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
-	if(part.Right() > 0)
-		gui->DrawSprite2(tStaminaBar, mat, &part, nullptr, Color::White);
-	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
-	--bar_offset;
+	{
+		const float stamina_p = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
+		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
+		part.Right() = int(stamina_p * 256);
+		if(part.Right() > 0)
+			gui->DrawSprite2(tStaminaBar, mat, &part, nullptr, Color::White);
+		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
+		--bar_offset;
+	}
 
 	// mana bar
 	if(mp_bar)
 	{
-		float mpp = pc.unit->GetMpp();
+		const float mpp = pc.unit->GetMpp();
+		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(mpp * 256);
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
-			&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
 		if(part.Right() > 0)
 			gui->DrawSprite2(tManaBar, mat, &part, nullptr, Color::White);
 		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
@@ -484,24 +491,22 @@ void LevelGui::DrawFront()
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
+		const Vec2 scale(buff_scale);
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &img.pos);
 		gui->DrawSprite2(img.tex, mat, nullptr, nullptr, Color::White);
 	}
 
-	float scale;
-	int offset;
-
-	int img_size = 76 * gui->wnd_size.x / 1920;
-	offset = img_size + 2;
-	scale = float(img_size) / 64;
-	Int2 spos(256.f * wnd_scale, gui->wnd_size.y - offset);
-
 	// shortcuts
+	const int img_size = 76 * gui->wnd_size.x / 1920;
+	const int offset = img_size + 2;
+	const Vec2 scale(float(img_size) / 64);
+	Int2 spos(256.f * wndScale.x, gui->wnd_size.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		const Shortcut& shortcut = pc.shortcuts[i];
 
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
+		Vec2 pos(spos);
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(tShortcut, mat);
 
 		Rect r(spos.x + 2, spos.y + 2);
@@ -559,8 +564,9 @@ void LevelGui::DrawFront()
 		else if(shortcut.type == Shortcut::TYPE_ABILITY)
 			ability = shortcut.ability;
 
-		float scale2 = float(img_size - 2) / icon_size;
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale2, scale2), nullptr, 0.f, &Vec2(float(spos.x + 1), float(spos.y + 1)));
+		const Vec2 scale2(float(img_size - 2) / icon_size);
+		pos = Vec2(float(spos.x + 1), float(spos.y + 1));
+		mat = Matrix::Transform2D(nullptr, 0.f, &scale2, nullptr, 0.f, &pos);
 		if(icon)
 		{
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
@@ -634,7 +640,8 @@ void LevelGui::DrawFront()
 			// readied ability
 			if(game->pc->data.ability_ready == ability)
 			{
-				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
+				pos = Vec2(spos);
+				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 				gui->DrawSprite2(tShortcutAction, mat);
 			}
 		}
@@ -661,7 +668,8 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(gui->wnd_size.x) - sidebar * offset, float(spos.y - i * offset)));
+			const Vec2 pos(float(gui->wnd_size.x) - sidebar * offset, float(spos.y - i * offset));
+			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
 			gui->DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
 		}
@@ -670,9 +678,10 @@ void LevelGui::DrawFront()
 	if(boss)
 	{
 		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wnd_size.x, 40));
-		float hpp = Clamp(boss->GetHpp(), 0.f, 1.f);
-		Rect part = { 0, 0, int(hpp * 256), 16 };
-		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2((float(gui->wnd_size.x) - wnd_scale * 256) / 2, 25));
+		const float hpp = Clamp(boss->GetHpp(), 0.f, 1.f);
+		const Rect part = { 0, 0, int(hpp * 256), 16 };
+		const Vec2 pos((float(gui->wnd_size.x) - wndScale.x * 256) / 2, 25);
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		if(part.Right() > 0)
 			gui->DrawSprite2(tHpBar, mat, &part, nullptr, Color::Alpha(bossAlpha));
 		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::Alpha(bossAlpha));
@@ -686,9 +695,10 @@ void LevelGui::DrawBack()
 {
 	if(drag_and_drop == 2 && drag_and_drop_icon)
 	{
-		int img_size = 76 * gui->wnd_size.x / 1920;
-		float scale = float(img_size) / drag_and_drop_icon->GetSize().x;
-		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(gui->cursor_pos + Int2(16, 16)));
+		const int img_size = 76 * gui->wnd_size.x / 1920;
+		const Vec2 scale(float(img_size) / drag_and_drop_icon->GetSize().x);
+		const Vec2 pos(gui->cursor_pos + Int2(16, 16));
+		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(drag_and_drop_icon, mat);
 	}
 
@@ -1030,6 +1040,8 @@ void LevelGui::Update(float dt)
 	// check cursor over item to show tooltip
 	if(show_tooltips)
 	{
+		const Vec2 wndScale(float(gui->wnd_size.x) / 800);
+
 		// for buffs
 		for(BuffImage& img : buff_images)
 		{
@@ -1042,34 +1054,37 @@ void LevelGui::Update(float dt)
 		}
 
 		// for health bar
-		float wnd_scale = float(gui->wnd_size.x) / 800;
-		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
-			&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
-		Rect r = gui->GetSpriteRect(tBar, mat);
-		if(r.IsInside(gui->cursor_pos))
 		{
-			group = TooltipGroup::Bar;
-			id = Bar::BAR_HP;
+			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
+			const Rect r = gui->GetSpriteRect(tBar, mat);
+			if(r.IsInside(gui->cursor_pos))
+			{
+				group = TooltipGroup::Bar;
+				id = Bar::BAR_HP;
+			}
+			--bar_offset;
 		}
-		--bar_offset;
 
 		// for stamina bar
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
-			&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
-		r = gui->GetSpriteRect(tBar, mat);
-		if(r.IsInside(gui->cursor_pos))
 		{
-			group = TooltipGroup::Bar;
-			id = Bar::BAR_STAMINA;
+			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
+			const Rect r = gui->GetSpriteRect(tBar, mat);
+			if(r.IsInside(gui->cursor_pos))
+			{
+				group = TooltipGroup::Bar;
+				id = Bar::BAR_STAMINA;
+			}
+			--bar_offset;
 		}
-		--bar_offset;
 
 		// for mana bar
 		if(mp_bar)
 		{
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
-				&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
-			r = gui->GetSpriteRect(tBar, mat);
+			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
+			const Rect r = gui->GetSpriteRect(tBar, mat);
 			if(r.IsInside(gui->cursor_pos))
 			{
 				group = TooltipGroup::Bar;
@@ -1227,10 +1242,10 @@ void LevelGui::Update(float dt)
 //=================================================================================================
 int LevelGui::GetShortcutIndex()
 {
-	float wnd_scale = float(gui->wnd_size.x) / 800;
+	float wndScale = float(gui->wnd_size.x) / 800;
 	int img_size = 76 * gui->wnd_size.x / 1920;
 	int offset = img_size + 2;
-	Int2 spos(256.f * wnd_scale, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wndScale, gui->wnd_size.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		Rect r = Rect::Create(spos, Int2(img_size, img_size));
@@ -2163,9 +2178,10 @@ void LevelGui::DrawCutscene(int fallback_alpha)
 		const int alpha = GetAlpha(cutscene_image_state, cutscene_image_timer, fallback_alpha);
 		Int2 img_size = cutscene_image->GetSize();
 		const int max_size = gui->wnd_size.y - 128;
-		const float scale = float(max_size) / img_size.y;
-		img_size *= scale;
-		const Matrix mat = Matrix::Transform2D(nullptr, 0, &Vec2(scale, scale), nullptr, 0.f, &Vec2((gui->wnd_size - img_size) / 2));
+		const Vec2 scale(float(max_size) / img_size.y);
+		img_size *= scale.x;
+		const Vec2 pos((gui->wnd_size - img_size) / 2);
+		const Matrix mat = Matrix::Transform2D(nullptr, 0, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(cutscene_image, mat, nullptr, nullptr, Color::Alpha(alpha));
 	}
 

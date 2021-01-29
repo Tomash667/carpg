@@ -6,4 +6,4 @@
 #	define PROXY __declspec(dllimport)
 #endif
 
-PROXY const char* AddChange(const char* ver, const char* prevVer, const char* path);
+PROXY const char* AddChange(const char* ver, const char* prevVer, const char* path, unsigned int crc);

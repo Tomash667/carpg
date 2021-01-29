@@ -165,7 +165,11 @@ void Net::UpdateServer(float dt)
 		for(PlayerInfo& info : players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && !info.pc->is_local)
+			{
 				info.pc->UpdateCooldown(gameDt);
+				if(!info.u->IsStanding())
+					info.u->TryStandup(gameDt);
+			}
 		}
 
 		InterpolatePlayers(dt);
@@ -1723,12 +1727,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 					Error("Update server: Player %s used CHEAT_GODMODE without devmode.", info.name.c_str());
 			}
-			break;
-		// player stands up
-		case NetChange::STAND_UP:
-			if(game->game_state != GS_LEVEL)
-				break;
-			unit.Standup();
 			break;
 		// player used cheat 'noclip'
 		case NetChange::CHEAT_NOCLIP:

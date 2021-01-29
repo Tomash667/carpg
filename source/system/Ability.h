@@ -68,7 +68,7 @@ struct Ability
 	}
 
 	bool IsTargeted() const { return !Any(type, Aggro, SummonAway); }
-	bool RequireList() const { return !IsSet(flags, IgnoreUnits); }
+	bool RequireList() const { return IsSet(flags, IgnoreUnits); }
 
 	static vector<Ability*> abilities;
 	static std::map<int, Ability*> hash_abilities;

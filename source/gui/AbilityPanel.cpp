@@ -133,7 +133,9 @@ void AbilityPanel::DrawGroup(cstring text)
 			if(index < images.size())
 			{
 				const float ratio = 62.f / 128.f;
-				Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(ratio, ratio), nullptr, 0.f, &Vec2(shift + Int2(1, 1)));
+				const Vec2 scale(ratio, ratio);
+				const Vec2 pos(shift + Int2(1, 1));
+				const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 				gui->DrawSprite2(images[index], mat);
 			}
 		}

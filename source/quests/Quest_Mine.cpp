@@ -992,14 +992,15 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 
 		// miner leader in front of entrance
 		Int2 pt = lvl.GetPrevEntryFrontTile();
-		int odl = 1;
-		while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
+		int dist = 1;
+		while(lvl.map[pt(lvl.w)].type == EMPTY && dist < 5)
 		{
 			pt += DirToPos(lvl.prevEntryDir);
-			++odl;
+			++dist;
 		}
 		pt -= DirToPos(lvl.prevEntryDir);
-		game_level->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f * lvl.prevEntryPt.x + 1, 0, 2.f * lvl.prevEntryPt.y + 1), -2);
+		const Vec3 lookAt(2.f * lvl.prevEntryPt.x + 1, 0, 2.f * lvl.prevEntryPt.y + 1);
+		game_level->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("gornik_szef"), &lookAt, -2);
 
 		// miners
 		UnitData& miner = *UnitData::Get("gornik");
@@ -1044,11 +1045,11 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				else if(u->data == miner_leader)
 				{
 					Int2 pt = lvl.GetPrevEntryFrontTile();
-					int odl = 1;
-					while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
+					int dist = 1;
+					while(lvl.map[pt(lvl.w)].type == EMPTY && dist < 5)
 					{
 						pt += DirToPos(lvl.prevEntryDir);
-						++odl;
+						++dist;
 					}
 					pt -= DirToPos(lvl.prevEntryDir);
 

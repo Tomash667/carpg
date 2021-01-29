@@ -61,7 +61,6 @@ private:
 	Texture* GetEntryImage(EntryType type);
 
 	vector<Text> texts;
-	Matrix m1;
 	TexturePtr tUnit[5], tStairsDown, tStairsUp, tBag, tBagImportant, tPortal, tChest, tDoor;
 	int minimap_size;
 };

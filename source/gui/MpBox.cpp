@@ -96,7 +96,7 @@ void MpBox::OnInput(const string& str)
 				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 		}
 		// add text
-		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
+		cstring s = Format("%s: %s", game->pc->name.c_str(), str.c_str());
 		Add(s);
 		if(game->game_state == GS_LEVEL)
 			game_gui->level_gui->AddSpeechBubble(game->pc->unit, str.c_str());

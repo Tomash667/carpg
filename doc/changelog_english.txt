@@ -3,9 +3,18 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
+
+--------------------------------------------------------------------------------
+Version 0.17.1 (2021-01-29):
 - all random dungeons had same appearance
 - when using take all items from corpse active magic effects was removed from player
 - invalid weight calculation on server side when client used pick all button
+- not visible player text in buildings
+- invalid player nick in chat in singleplayer
+- when player lies on ground and ally don't see enemy he stands and do nothing [Groszek]
+- crash when hitting someone with bull's charge [ecusredio]
+- poor targeting when summoning wolf in dungeon [julie]
+- client crash when summoned wolf disappear [julie]
 
 --------------------------------------------------------------------------------
 Version 0.17 (2020-08-29):

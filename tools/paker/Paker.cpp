@@ -212,6 +212,20 @@ void DeleteEntries()
 	pak_entries.clear();
 }
 
+void RunCommand(cstring file, cstring parameters, cstring directory)
+{
+	SHELLEXECUTEINFO info = {};
+	info.cbSize = sizeof(info);
+	info.fMask = SEE_MASK_NOCLOSEPROCESS;
+	info.lpFile = file;
+	info.lpParameters = parameters;
+	info.lpDirectory = directory;
+	info.nShow = SW_SHOWNORMAL;
+	ShellExecuteEx(&info);
+	WaitForSingleObject(info.hProcess, INFINITE);
+	CloseHandle(info.hProcess);
+}
+
 bool CreatePak(char* pakname)
 {
 	check_entry = false;
@@ -264,7 +278,7 @@ bool CreatePak(char* pakname)
 	if(!nozip)
 	{
 		printf("Compressing pak.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+		RunCommand("7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pak_dir.c_str());
 	}
 	return true;
 }
@@ -356,17 +370,20 @@ bool CreatePatch(char* pakname, bool blob)
 		if(blob)
 		{
 			printf("Compressing patch (blob).\n");
-			ShellExecute(nullptr, nullptr, "pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr, SW_SHOWNORMAL);
+			RunCommand("pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr);
+
+			cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
+			uint crc = Crc::Calculate(path);
 
 			printf("Uploading to blob & api.\n");
-			cstring result = AddChange(pakname, prevVer.c_str(), Format("out/CaRpg_patch_%s.pak", pakname));
+			cstring result = AddChange(pakname, prevVer.c_str(), path, crc);
 			if(result)
 				printf(result);
 		}
 		else
 		{
 			printf("Compressing patch (zip).\n");
-			ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
+			RunCommand("7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str());
 		}
 	}
 
