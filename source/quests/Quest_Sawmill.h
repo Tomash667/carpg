@@ -34,8 +34,6 @@ public:
 		Finished
 	};
 
-	static const int PAYMENT = 500;
-
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -47,7 +45,7 @@ public:
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	void GenerateSawmill(bool in_progress);
-	int OnProgress(int days);
+	void OnProgress(int days);
 
 	State sawmill_state;
 	BuildState build_state;

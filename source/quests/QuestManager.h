@@ -101,7 +101,6 @@ public:
 	bool RemoveQuestRumor(int id);
 	string GetRandomQuestRumor();
 	void GenerateQuestUnits(bool on_enter);
-	void UpdateQuests(int days);
 	void RemoveQuestUnits(bool on_leave);
 	void HandleQuestEvent(Quest_Event* event);
 	void UpdateQuestsLocal(float dt);

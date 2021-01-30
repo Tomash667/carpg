@@ -123,9 +123,11 @@ void World::Reset()
 //=================================================================================================
 void World::Update(int days, UpdateMode mode)
 {
-	assert(days > 0);
+	assert(Net::IsLocal());
 	if(mode == UM_TRAVEL)
 		assert(days == 1);
+	else
+		assert(days > 0);
 
 	UpdateDate(days);
 	SpawnCamps(days);
@@ -135,14 +137,7 @@ void World::Update(int days, UpdateMode mode)
 	UpdateLocations();
 	UpdateNews();
 	quest_mgr->Update(days);
-
-	if(Net::IsLocal())
-		quest_mgr->UpdateQuests(days);
-
-	if(mode == UM_TRAVEL)
-		team->Update(1, true);
-	else if(mode == UM_NORMAL)
-		team->Update(days, false);
+	team->Update(days, mode);
 
 	// end of game
 	if(date.year >= startDate.year + 60)

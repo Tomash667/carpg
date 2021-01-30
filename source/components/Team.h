@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "GameCommon.h"
+
+//-----------------------------------------------------------------------------
 struct TeamInfo
 {
 	int players;
@@ -23,6 +26,12 @@ public:
 		int index, priority;
 		float value;
 		bool is_team;
+	};
+
+	struct Investment
+	{
+		int questId, gold, days;
+		string name;
 	};
 
 	void AddMember(Unit* unit, HeroType type);
@@ -57,12 +66,11 @@ public:
 	bool IsLeader(const Unit* unit) const { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);
 	bool IsTeamNotBusy();
-	void Load(GameReader& f);
-	void Reset();
-	void ClearOnNewGameOrLoad();
+	void Clear(bool newGame);
 	void Save(GameWriter& f);
 	void SaveOnWorldmap(GameWriter& f);
-	void Update(int days, bool travel);
+	void Load(GameReader& f);
+	void Update(int days, UpdateMode mode);
 	void CheckTeamItemShares();
 	void UpdateTeamItemShares();
 	void TeamShareGiveItemCredit(DialogContext& ctx);
@@ -87,6 +95,12 @@ public:
 	void Warp(const Vec3& pos, const Vec3& look_at);
 	int GetStPoints() const;
 	bool PersuasionCheck(int level);
+	const vector<Investment>& GetInvestments() const { return investments; }
+	bool HaveInvestment(int questId) const;
+	void AddInvestment(cstring name, int questId, int gold, int days = 0);
+	void UpdateInvestment(int questId, int gold);
+	void WriteInvestments(BitStreamWriter& f);
+	void ReadInvestments(BitStreamReader& f);
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)
@@ -124,4 +138,5 @@ private:
 	vector<ItemToBuy> to_buy, to_buy2;
 	//
 	vector<CheckResult> checkResults;
+	vector<Investment> investments;
 };

@@ -912,7 +912,7 @@ void Game::LoadGame(GameReader& f)
 	quest_mgr->ProcessQuestRequests();
 
 	dialog_context.dialog_mode = false;
-	team->ClearOnNewGameOrLoad();
+	team->Clear(false);
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	game_gui->inventory->mode = I_NONE;

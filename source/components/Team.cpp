@@ -3,6 +3,7 @@
 
 #include "AIController.h"
 #include "AITeam.h"
+#include "BitStreamFunc.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
 #include "GameGui.h"
@@ -391,6 +392,59 @@ bool Team::IsTeamNotBusy()
 	return true;
 }
 
+void Team::Clear(bool newGame)
+{
+	team_shares.clear();
+	team_share_id = -1;
+	if(Net::IsSingleplayer())
+	{
+		my_id = 0;
+		leader_id = 0;
+	}
+
+	if(newGame)
+	{
+		crazies_attack = false;
+		is_bandit = false;
+		free_recruits = 2;
+		checkResults.clear();
+		investments.clear();
+	}
+}
+
+void Team::Save(GameWriter& f)
+{
+	f << GetTeamSize();
+	for(Unit& unit : members)
+		f << unit.id;
+
+	f << GetActiveTeamSize();
+	for(Unit& unit : active_members)
+		f << unit.id;
+
+	f << leader->id;
+	f << crazies_attack;
+	f << is_bandit;
+	f << free_recruits;
+	f << checkResults;
+
+	f << investments.size();
+	for(Investment& investment : investments)
+	{
+		f << investment.questId;
+		f << investment.gold;
+		f << investment.days;
+		f << investment.name;
+	}
+}
+
+void Team::SaveOnWorldmap(GameWriter& f)
+{
+	f << GetTeamSize();
+	for(Unit& unit : members)
+		unit.Save(f);
+}
+
 void Team::Load(GameReader& f)
 {
 	members.ptrs.resize(f.Read<uint>());
@@ -411,6 +465,20 @@ void Team::Load(GameReader& f)
 	else
 		checkResults.clear();
 
+	if(LOAD_VERSION >= V_DEV)
+	{
+		investments.resize(f.Read<uint>());
+		for(Investment& investment : investments)
+		{
+			f >> investment.questId;
+			f >> investment.gold;
+			f >> investment.days;
+			f >> investment.name;
+		}
+	}
+	else
+		investments.clear();
+
 	CheckCredit(false, true);
 	CalculatePlayersLevel();
 
@@ -420,52 +488,9 @@ void Team::Load(GameReader& f)
 	leader_requests.clear();
 }
 
-void Team::Reset()
+void Team::Update(int days, UpdateMode mode)
 {
-	crazies_attack = false;
-	is_bandit = false;
-	free_recruits = 2;
-	checkResults.clear();
-}
-
-void Team::ClearOnNewGameOrLoad()
-{
-	team_shares.clear();
-	team_share_id = -1;
-	if(Net::IsSingleplayer())
-	{
-		my_id = 0;
-		leader_id = 0;
-	}
-}
-
-void Team::Save(GameWriter& f)
-{
-	f << GetTeamSize();
-	for(Unit& unit : members)
-		f << unit.id;
-
-	f << GetActiveTeamSize();
-	for(Unit& unit : active_members)
-		f << unit.id;
-
-	f << leader->id;
-	f << crazies_attack;
-	f << is_bandit;
-	f << free_recruits;
-	f << checkResults;
-}
-
-void Team::SaveOnWorldmap(GameWriter& f)
-{
-	f << GetTeamSize();
-	for(Unit& unit : members)
-		unit.Save(f);
-}
-
-void Team::Update(int days, bool travel)
-{
-	if(!travel)
+	if(mode == UM_NORMAL)
 	{
 		for(Unit& unit : members)
 		{
@@ -473,7 +498,7 @@ void Team::Update(int days, bool travel)
 				unit.hero->PassTime(days);
 		}
 	}
-	else
+	else if(mode == UM_TRAVEL)
 	{
 		bool autoheal = false;
 		for(Unit& unit : members)
@@ -486,7 +511,7 @@ void Team::Update(int days, bool travel)
 			}
 		}
 
-		// regeneracja hp / trenowanie
+		// healing, training
 		for(Unit& unit : members)
 		{
 			if(autoheal)
@@ -497,7 +522,7 @@ void Team::Update(int days, bool travel)
 				unit.hero->PassTime(1, true);
 		}
 
-		// ubywanie wolnych dni
+		// remove free days
 		if(Net::IsOnline())
 		{
 			int max_days = 0;
@@ -516,6 +541,24 @@ void Team::Update(int days, bool travel)
 				}
 			}
 		}
+	}
+
+	// investments
+	if(!is_bandit)
+	{
+		int income = 0;
+		for(Investment& investment : investments)
+		{
+			investment.days += days;
+			int count = investment.days / 30;
+			if(count)
+			{
+				investment.days -= count * 30;
+				income += count * investment.gold;
+			}
+		}
+		if(income)
+			AddGold(income, nullptr, true);
 	}
 
 	checkResults.clear();
@@ -1643,4 +1686,72 @@ bool Team::PersuasionCheck(int level)
 	}
 
 	return success;
+}
+
+//=================================================================================================
+bool Team::HaveInvestment(int questId) const
+{
+	for(const Investment& investment : investments)
+	{
+		if(investment.questId == questId)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+void Team::AddInvestment(cstring name, int questId, int gold, int days)
+{
+	Investment& investment = Add1(investments);
+	investment.questId = questId;
+	investment.gold = gold;
+	investment.name = name;
+	investment.days = days;
+
+	if(Net::IsServer())
+		Net::PushChange(NetChange::ADD_INVESTMENT);
+}
+
+//=================================================================================================
+void Team::UpdateInvestment(int questId, int gold)
+{
+	for(Investment& investment : investments)
+	{
+		if(investment.questId == questId)
+		{
+			investment.gold = gold;
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UPDATE_INVESTMENT;
+				c.id = questId;
+				c.count = gold;
+			}
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void Team::WriteInvestments(BitStreamWriter& f)
+{
+	f << investments.size();
+	for(const Investment& investment : investments)
+	{
+		f << investment.questId;
+		f << investment.gold;
+		f << investment.name;
+	}
+}
+
+//=================================================================================================
+void Team::ReadInvestments(BitStreamReader& f)
+{
+	investments.resize(f.Read<uint>());
+	for(Investment& investment : investments)
+	{
+		f >> investment.questId;
+		f >> investment.gold;
+		f >> investment.name;
+	}
 }

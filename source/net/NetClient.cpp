@@ -3081,6 +3081,31 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::BOSS_END:
 			game_level->EndBossFight();
 			break;
+		// add investment
+		case NetChange::ADD_INVESTMENT:
+			{
+				int questId, gold;
+				f >> questId;
+				f >> gold;
+				const string& name = f.ReadString1();
+				if(!f)
+					Error("Update client: Broken ADD_INVESTMENT.");
+				else
+					team->AddInvestment(name.c_str(), questId, gold);
+			}
+			break;
+		// update investment
+		case NetChange::UPDATE_INVESTMENT:
+			{
+				int questId, gold;
+				f >> questId;
+				f >> gold;
+				if(!f)
+					Error("Update client: Broken UPDATE_INVESTMENT.");
+				else
+					team->UpdateInvestment(questId, gold);
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -4292,6 +4317,7 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 	f >> game->noai;
 	game->pc->ReadStart(f);
 	f.ReadStringArray<word, word>(game_gui->journal->GetNotes());
+	team->ReadInvestments(f);
 	if(!f)
 		return false;
 

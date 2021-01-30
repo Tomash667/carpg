@@ -9,12 +9,18 @@
 #include "Net.h"
 #include "Quest.h"
 #include "QuestManager.h"
+#include "Team.h"
 #include "World.h"
 
 #include <GetTextDialog.h>
 #include <Input.h>
 #include <ResourceManager.h>
 #include <SoundManager.h>
+
+const Int2 ButtonShift(-40, 32);
+const Int2 ButtonSize(56, 88);
+const Int2 IconSize(48, 48);
+const int ButtonDist = 90;
 
 //=================================================================================================
 Journal::Journal() : mode(Quests)
@@ -46,30 +52,42 @@ void Journal::LoadLanguage()
 	txNoNotes = s.Get("noNotes");
 	txAddNote = s.Get("addNote");
 	txAddTime = s.Get("addTime");
+	txGoldMonth = s.Get("goldMonth");
+	txTotal = s.Get("total");
+	txNoInvestments = s.Get("noInvestments");
 }
 
 //=================================================================================================
 void Journal::LoadData()
 {
 	tBook = res_mgr->Load<Texture>("book.png");
-	tPage[0] = res_mgr->Load<Texture>("journal_bts1.png");
-	tPage[1] = res_mgr->Load<Texture>("journal_bts2.png");
-	tPage[2] = res_mgr->Load<Texture>("journal_bts3.png");
-	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
-	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
+	tButtonOn = res_mgr->Load<Texture>("journal_bt_on.png");
+	tButtonOff = res_mgr->Load<Texture>("journal_bt_off.png");
+	tArrowL = res_mgr->Load<Texture>("page_prev.png");
+	tArrowR = res_mgr->Load<Texture>("page_next.png");
+	tIcons[0] = res_mgr->Load<Texture>("journal_quests.png");
+	tIcons[1] = res_mgr->Load<Texture>("journal_rumors.png");
+	tIcons[2] = res_mgr->Load<Texture>("journal_notes.png");
+	tIcons[3] = res_mgr->Load<Texture>("journal_investments.png");
 }
 
 //=================================================================================================
 void Journal::Draw(ControlDrawData*)
 {
+	// background
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	gui->DrawSpriteRect(tBook, r);
-	gui->DrawSprite(tPage[mode], global_pos - Int2(64, 0));
 
+	// buttons
+	for(int i = 0; i < Max; ++i)
+	{
+		gui->DrawSprite(mode == i ? tButtonOn : tButtonOff, global_pos + Int2(ButtonShift.x, ButtonShift.y + ButtonDist * i));
+		gui->DrawSprite(tIcons[i], global_pos
+			+ Int2(ButtonShift.x + (ButtonSize.x - IconSize.x) / 2, ButtonShift.y + ButtonDist * i + (ButtonSize.y - IconSize.y) / 2));
+	}
+
+	// page text
 	int x1 = page * 2, x2 = page * 2 + 1;
-
-	// wypisz teksty na odpowiednich stronach
-	// mo¿na by to zoptymalizowaæ ¿e najpierw szuka do, póŸnij a¿ do koñca
 	for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 	{
 		if(it->x == x1 || it->x == x2)
@@ -87,13 +105,13 @@ void Journal::Draw(ControlDrawData*)
 		}
 	}
 
-	// numery stron
+	// page numbers
 	int pages = texts.back().x + 1;
 	gui->DrawText(GameGui::font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
 	if(x2 != pages)
 		gui->DrawText(GameGui::font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
 
-	// strza³ki 32, 243
+	// prev/next page arrows
 	if(page != 0)
 		gui->DrawSprite(tArrowL, Int2(rect.Left() - 8, rect.Bottom() - 8));
 	if(texts.back().x > x2)
@@ -117,148 +135,120 @@ void Journal::Update(float dt)
 		}
 	}
 
-	if(!focus)
+	if(!focus || !input->Focus())
 		return;
 
 	Mode new_mode = Invalid;
 
-	if(input->Focus())
+	// ----- handle keyboard
+	// change mode
+	for(int i = 0; i < Max; ++i)
 	{
-		// zmiana trybu
-		if(input->PressedRelease(Key::N1))
-			new_mode = Quests;
-		else if(input->PressedRelease(Key::N2))
-			new_mode = Rumors;
-		else if(input->PressedRelease(Key::N3))
-			new_mode = Notes;
-		// zmiana strony
-		if(page != 0 && GKey.PressedRelease(GK_MOVE_LEFT))
-			--page;
-		if(texts.back().x > page * 2 + 1 && GKey.PressedRelease(GK_MOVE_RIGHT))
-			++page;
-		// do góry (jeœli jest w queœcie to wychodzi do listy)
-		if(mode == Quests && details && GKey.PressedRelease(GK_MOVE_FORWARD))
-		{
-			details = false;
-			page = prev_page;
-			Build();
-		}
-		// zmiana wybranego zadania
-		if(mode == Quests && !quest_mgr->quests.empty())
-		{
-			if(GKey.PressedR(GK_ROTATE_LEFT) != Key::None)
-			{
-				if(!details)
-				{
-					// otwórz ostatni quest na tej stronie
-					open_quest = max((page + 1) * rect_lines * 2 - 1, int(quest_mgr->quests.size()) - 1);
-					prev_page = page;
-					page = 0;
-					Build();
-				}
-				else
-				{
-					// poprzedni quest
-					--open_quest;
-					if(open_quest == -1)
-						open_quest = quest_mgr->quests.size() - 1;
-					page = 0;
-					Build();
-				}
-			}
-			if(GKey.PressedR(GK_ROTATE_RIGHT) != Key::None)
-			{
-				if(!details)
-				{
-					// pierwszy quest na stronie
-					open_quest = page * rect_lines * 2;
-					prev_page = page;
-					page = 0;
-					Build();
-				}
-				else
-				{
-					// nastêpny
-					++open_quest;
-					if(open_quest == (int)quest_mgr->quests.size())
-						open_quest = 0;
-					page = 0;
-					Build();
-				}
-			}
-		}
+		if(input->PressedRelease(Key::N1 + i))
+			new_mode = (Mode)i;
+	}
 
-		if(new_mode != Invalid)
+	// change page
+	if(page != 0 && GKey.PressedRelease(GK_MOVE_LEFT))
+		--page;
+	if(texts.back().x > page * 2 + 1 && GKey.PressedRelease(GK_MOVE_RIGHT))
+		++page;
+
+	// return to quests list
+	if(mode == Quests && details && GKey.PressedRelease(GK_MOVE_FORWARD))
+	{
+		details = false;
+		page = prev_page;
+		Build();
+	}
+
+	// change open quest
+	if(mode == Quests && !quest_mgr->quests.empty())
+	{
+		if(GKey.PressedR(GK_ROTATE_LEFT) != Key::None)
 		{
-			if(new_mode == mode)
+			if(!details)
 			{
-				if(mode == Quests && details)
-				{
-					// otwórz star¹ stronê
-					details = false;
-					page = prev_page;
-					Build();
-				}
-				else if(page != 0)
-				{
-					page = 0;
-					Build();
-				}
-			}
-			else
-			{
-				mode = new_mode;
-				details = false;
+				// last quest on this page
+				open_quest = max((page + 1) * rect_lines * 2 - 1, int(quest_mgr->quests.size()) - 1);
+				prev_page = page;
 				page = 0;
 				Build();
 			}
-			new_mode = Invalid;
+			else
+			{
+				// prev quest
+				--open_quest;
+				if(open_quest == -1)
+					open_quest = quest_mgr->quests.size() - 1;
+				page = 0;
+				Build();
+			}
+		}
+		if(GKey.PressedR(GK_ROTATE_RIGHT) != Key::None)
+		{
+			if(!details)
+			{
+				// first quest on this page
+				open_quest = page * rect_lines * 2;
+				prev_page = page;
+				page = 0;
+				Build();
+			}
+			else
+			{
+				// next quest
+				++open_quest;
+				if(open_quest == (int)quest_mgr->quests.size())
+					open_quest = 0;
+				page = 0;
+				Build();
+			}
 		}
 	}
 
-	// wybór zak³adki z lewej
-	if(PointInRect(gui->cursor_pos, global_pos.x - 64 + 28, global_pos.y + 32, global_pos.x - 64 + 82, global_pos.y + 119))
-		new_mode = Quests;
-	else if(PointInRect(gui->cursor_pos, global_pos.x - 64 + 28, global_pos.y + 122, global_pos.x - 64 + 82, global_pos.y + 209))
-		new_mode = Rumors;
-	else if(PointInRect(gui->cursor_pos, global_pos.x - 64 + 28, global_pos.y + 212, global_pos.x - 64 + 82, global_pos.y + 299))
-		new_mode = Notes;
+	// change mode with mouse
+	for(int i = 0; i < 4; ++i)
+	{
+		const Int2 pos(global_pos.x + ButtonShift.x, global_pos.y + ButtonShift.y + ButtonDist * i);
+		if(PointInRect(gui->cursor_pos, pos, ButtonSize))
+		{
+			gui->cursor_mode = CURSOR_HOVER;
+			if(input->PressedRelease(Key::LeftButton))
+				new_mode = (Mode)i;
+		}
+	}
 
 	if(new_mode != Invalid)
 	{
-		gui->cursor_mode = CURSOR_HOVER;
-		if(input->Focus() && input->PressedRelease(Key::LeftButton))
+		// change mode
+		if(new_mode == mode)
 		{
-			// zmieñ zak³adkê
-			if(new_mode == mode)
+			if(mode == Quests && details)
 			{
-				if(mode == Quests && details)
-				{
-					// otwórz star¹ stronê
-					details = false;
-					page = prev_page;
-					Build();
-				}
-				else if(page != 0)
-				{
-					page = 0;
-					Build();
-				}
-			}
-			else
-			{
-				mode = new_mode;
 				details = false;
+				page = prev_page;
+				Build();
+			}
+			else if(page != 0)
+			{
 				page = 0;
 				Build();
 			}
+		}
+		else
+		{
+			mode = new_mode;
+			details = false;
+			page = 0;
+			Build();
 		}
 	}
 	else if(mode == Quests)
 	{
 		if(!quest_mgr->quests.empty() && !details)
 		{
-			// wybór questa
+			// select quest
 			int what = -1;
 			if(rect.IsInside(gui->cursor_pos))
 				what = (gui->cursor_pos.y - rect.Top()) / font_height;
@@ -305,7 +295,7 @@ void Journal::Update(float dt)
 				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 				{
-					// dodaj notatkê
+					// add note
 					cstring names[] = { nullptr, txAdd };
 					input_str.clear();
 					GetTextDialogParams params(txNoteText, input_str);
@@ -406,9 +396,9 @@ void Journal::Build()
 	x = 0;
 	y = 0;
 
-	if(mode == Quests)
+	switch(mode)
 	{
-		// quests
+	case Quests:
 		if(!details)
 		{
 			// list of quests
@@ -438,10 +428,9 @@ void Journal::Build()
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
-	}
-	else if(mode == Rumors)
-	{
-		// rumors
+		break;
+
+	case Rumors:
 		if(rumors.empty())
 			AddEntry(txNoRumors, 0, false);
 		else
@@ -449,10 +438,9 @@ void Journal::Build()
 			for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
-	}
-	else
-	{
-		// notes
+		break;
+
+	case Notes:
 		if(notes.empty())
 			AddEntry(txNoNotes, 0, false);
 		else
@@ -462,6 +450,26 @@ void Journal::Build()
 		}
 
 		AddEntry(txAddNote, 0, false);
+		break;
+
+	case Investments:
+		{
+			const vector<Team::Investment>& investments = team->GetInvestments();
+			if(investments.empty())
+				AddEntry(txNoInvestments, 0, false);
+			else
+			{
+				int total = 0;
+				for(const Team::Investment& investment : investments)
+				{
+					AddEntry(Format("%s: %d %s", investment.name.c_str(), investment.gold, txGoldMonth), 0, false, true);
+					total += investment.gold;
+				}
+				AddEntry("--------------------", 0, false);
+				AddEntry(Format("%s: %d %s", txTotal, total, txGoldMonth), 0, false, true);
+			}
+		}
+		break;
 	}
 }
 
@@ -496,7 +504,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
 		return;
 	}
 
-	// ile linijek zajmuje tekst?
+	// how many lines this text takes?
 	Int2 osize = GameGui::font->CalculateSize(text, rect_w);
 	int h = osize.y / font_height + 1;
 
@@ -504,7 +512,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
 	{
 		if(y == 0)
 		{
-			// ten tekst zajmuje ponad jedn¹ stronê
+			// this text takes more then single page...
 			assert(0);
 			t.x = x;
 			t.y = y;

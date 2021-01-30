@@ -83,6 +83,9 @@ noRumors = "Brak plotek"
 noNotes = "Brak notatek"
 addNote = "Dodaj notatkê"
 addTime = "Dodano %s:\n%s"
+goldMonth = "z³oto/miesi¹c"
+total = "Suma"
+noInvestments = "Brak inwestycji"
 
 [LevelGui]
 death = "Twoja dru¿yna zosta³a wybita! Powodzenia w przysz³ych przygodach...\nZabi³eœ %d istot, pozostali zabili %d."

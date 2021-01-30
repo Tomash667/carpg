@@ -1454,7 +1454,7 @@ bool LevelGui::UpdateChoice()
 	{
 		for(int i = 0; i < min(10, choices); ++i)
 		{
-			if(input->PressedRelease((Key)('1' + i)))
+			if(input->PressedRelease(Key::N1 + i))
 			{
 				ctx.choice_selected = i;
 				return true;

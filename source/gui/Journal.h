@@ -17,10 +17,12 @@ public:
 
 	enum Mode
 	{
+		Invalid = -1,
 		Quests,
 		Rumors,
 		Notes,
-		Invalid
+		Investments,
+		Max
 	};
 
 	Journal();
@@ -46,8 +48,8 @@ private:
 	void OnAddNote(int id);
 
 	Mode mode;
-	TexturePtr tBook, tPage[3], tArrowL, tArrowR;
-	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;
+	TexturePtr tBook, tButtonOn, tButtonOff, tPage[3], tArrowL, tArrowR, tIcons[4];
+	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime, txGoldMonth, txTotal, txNoInvestments;
 	int font_height, page, prev_page, open_quest, x, y, size_x, size_y, rect_w, rect_lines;
 	Rect rect, rect2;
 	vector<Text> texts;

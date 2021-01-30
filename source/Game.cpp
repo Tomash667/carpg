@@ -2049,7 +2049,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						pc->UseDays(10);
 					else
-						world->Update(10, World::UM_NORMAL);
+						world->Update(10, UM_NORMAL);
 				}
 				else
 				{
@@ -2068,7 +2068,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						pc->UseDays(fallback_1);
 					else
-						world->Update(fallback_1, World::UM_NORMAL);
+						world->Update(fallback_1, UM_NORMAL);
 				}
 				else
 				{
@@ -2620,7 +2620,7 @@ void Game::ClearGameVars(bool new_game)
 	end_of_game = false;
 	cutscene = false;
 	game_gui->minimap->city = nullptr;
-	team->ClearOnNewGameOrLoad();
+	team->Clear(new_game);
 	draw_flags = 0xFFFFFFFF;
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
@@ -2666,7 +2666,6 @@ void Game::ClearGameVars(bool new_game)
 		quest_mgr->Reset();
 		world->OnNewGame();
 		game_stats->Reset();
-		team->Reset();
 		dont_wander = false;
 		pc->data.picking_item_state = 0;
 		game_level->is_open = false;

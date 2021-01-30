@@ -1509,7 +1509,7 @@ void PlayerController::UseDays(int count)
 				info.pc->free_days += count;
 		}
 
-		world->Update(count, World::UM_NORMAL);
+		world->Update(count, UM_NORMAL);
 	}
 
 	Net::PushChange(NetChange::UPDATE_FREE_DAYS);

@@ -955,7 +955,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(count > 0)
 			{
 				if(Net::IsLocal())
-					world->Update(count, World::UM_SKIP);
+					world->Update(count, UM_SKIP);
 				else
 				{
 					NetChange& c = Add1(Net::changes);

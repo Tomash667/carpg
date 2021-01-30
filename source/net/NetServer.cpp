@@ -1995,7 +1995,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(!info.devmode)
 					Error("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str());
 				else
-					world->Update(count, World::UM_SKIP);
+					world->Update(count, UM_SKIP);
 			}
 			break;
 		// player used cheat 'warp'
@@ -3642,6 +3642,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << world->GetLocation(c.id)->name;
 			break;
 		case NetChange::USE_CHEST:
+		case NetChange::UPDATE_INVESTMENT:
 			f << c.id;
 			f << c.count;
 			break;
@@ -3663,6 +3664,14 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			f << c.ability->hash;
+			break;
+		case NetChange::ADD_INVESTMENT:
+			{
+				const Team::Investment& investment = team->GetInvestments().back();
+				f << investment.questId;
+				f << investment.gold;
+				f << investment.name;
+			}
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -4125,15 +4134,11 @@ void Net::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 {
 	f << ID_PLAYER_START_DATA;
 
-	// flags
 	f << info.devmode;
 	f << game->noai;
-
-	// player
 	info.u->player->WriteStart(f);
-
-	// notes
 	f.WriteStringArray<word, word>(info.notes);
+	team->WriteInvestments(f);
 
 	f.WriteCasted<byte>(0xFF);
 }

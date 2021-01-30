@@ -398,6 +398,23 @@ void QuestManager::Update(int days)
 		quest_contest->year = date.year;
 		quest_contest->where = world->GetRandomSettlement(world->GetLocation(quest_contest->where))->index;
 	}
+
+	if(!team->is_bandit)
+	{
+		RemoveQuestUnits(false);
+
+		quest_sawmill->OnProgress(days);
+		quest_mine->OnProgress(days);
+		quest_contest->OnProgress();
+		quest_tournament->OnProgress();
+		quest_mages2->OnProgress(days);
+		quest_orcs2->OnProgress(days);
+		quest_goblins->OnProgress(days);
+		quest_crazies->OnProgress(days);
+
+		if(game_level->city_ctx)
+			GenerateQuestUnits(false);
+	}
 }
 
 //=================================================================================================
@@ -1169,15 +1186,6 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 					}
 				}
 			}
-			else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
-			{
-				int count = quest_sawmill->days / 30;
-				if(count)
-				{
-					quest_sawmill->days -= count * 30;
-					team->AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
-				}
-			}
 
 			if(quest_mine->days >= quest_mine->days_required
 				&& ((quest_mine->mine_state2 == Quest_Mine::State2::InBuild && quest_mine->mine_state == Quest_Mine::State::Shares) // inform player about building mine & give gold
@@ -1240,32 +1248,6 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 			}
 		}
 	}
-}
-
-//=================================================================================================
-void QuestManager::UpdateQuests(int days)
-{
-	if(team->is_bandit)
-		return;
-
-	RemoveQuestUnits(false);
-
-	int income = 0;
-	income += quest_sawmill->OnProgress(days);
-	income += quest_mine->OnProgress(days);
-	if(income != 0)
-		team->AddGold(income, nullptr, true);
-
-	quest_contest->OnProgress();
-	quest_tournament->OnProgress();
-
-	quest_mages2->OnProgress(days);
-	quest_orcs2->OnProgress(days);
-	quest_goblins->OnProgress(days);
-	quest_crazies->OnProgress(days);
-
-	if(game_level->city_ctx)
-		GenerateQuestUnits(false);
 }
 
 //=================================================================================================

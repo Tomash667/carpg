@@ -14,6 +14,9 @@
 #include "World.h"
 #include "Team.h"
 
+const int PAYMENT = 750;
+const int PAYMENT2 = 1500;
+
 //=================================================================================================
 void Quest_Mine::Start()
 {
@@ -26,7 +29,6 @@ void Quest_Mine::Start()
 	messenger = nullptr;
 	days = 0;
 	days_required = 0;
-	days_gold = 0;
 	persuaded = false;
 	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
 	targetLoc = world->GetClosestLocation(L_CAVE, startLoc->pos);
@@ -127,12 +129,12 @@ void Quest_Mine::SetProgress(int prog2)
 			state = Quest::Completed;
 			OnUpdate(quest_mgr->txQuest[136]);
 			team->AddReward(PAYMENT);
+			team->AddInvestment(quest_mgr->txQuest[131], id, PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
 			days_required = Random(60, 90);
 			if(days >= days_required)
 				days = days_required - 1;
-			days_gold = 0;
 			targetLoc->SetImage(LI_MINE);
 			targetLoc->SetNamePrefix(quest_mgr->txQuest[131]);
 		}
@@ -182,13 +184,16 @@ void Quest_Mine::SetProgress(int prog2)
 			state = Quest::Completed;
 			OnUpdate(quest_mgr->txQuest[143]);
 			team->AddReward(PAYMENT2);
+			if(mine_state == State::Shares)
+				team->UpdateInvestment(id, PAYMENT2);
+			else
+				team->AddInvestment(quest_mgr->txQuest[131], id, PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
 			days_required = Random(60, 90);
 			if(days >= days_required)
 				days = days_required - 1;
-			days_gold = 0;
 			world->AddNews(Format(quest_mgr->txQuest[144], GetTargetLocationName()));
 		}
 		break;
@@ -291,7 +296,6 @@ void Quest_Mine::Save(GameWriter& f)
 	f << mine_state3;
 	f << days;
 	f << days_required;
-	f << days_gold;
 	f << messenger;
 	f << persuaded;
 }
@@ -308,7 +312,13 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	f >> mine_state3;
 	f >> days;
 	f >> days_required;
-	f >> days_gold;
+	if(LOAD_VERSION < V_DEV)
+	{
+		int days_gold;
+		f >> days_gold;
+		if(mine_state == State::Shares || mine_state == State::BigShares)
+			team->AddInvestment(quest_mgr->txQuest[131], id, mine_state == State::Shares ? PAYMENT : PAYMENT2);
+	}
 	f >> messenger;
 	if(LOAD_VERSION >= V_0_17)
 		f >> persuaded;
@@ -1088,7 +1098,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 }
 
 //=================================================================================================
-int Quest_Mine::OnProgress(int d)
+void Quest_Mine::OnProgress(int d)
 {
 	if(mine_state2 == State2::InBuild)
 	{
@@ -1138,26 +1148,4 @@ int Quest_Mine::OnProgress(int d)
 			}
 		}
 	}
-
-	if(mine_state == State::Shares && mine_state2 >= State2::Built)
-	{
-		days_gold += d;
-		int count = days_gold / 30;
-		if(count)
-		{
-			days_gold -= count * 30;
-			return count * PAYMENT;
-		}
-	}
-	else if(mine_state == State::BigShares && mine_state2 >= State2::Expanded)
-	{
-		days_gold += d;
-		int count = days_gold / 30;
-		if(count)
-		{
-			days_gold -= count * 30;
-			return count * PAYMENT2;
-		}
-	}
-	return 0;
 }

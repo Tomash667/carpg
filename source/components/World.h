@@ -1,9 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Date.h"
+#include "GameCommon.h"
 #include "Location.h"
 #include "UnitGroup.h"
-#include "Date.h"
 
 //-----------------------------------------------------------------------------
 struct EncounterData
@@ -42,13 +43,6 @@ public:
 		INSIDE_ENCOUNTER, // inside encounter location (current_location set)
 		TRAVEL, // traveling on map (current_location is nullptr)
 		ENCOUNTER // shown encounter message, waiting to close & load level (current_location is nullptr)
-	};
-
-	enum UpdateMode
-	{
-		UM_NORMAL,
-		UM_TRAVEL,
-		UM_SKIP
 	};
 
 	static const float TRAVEL_SPEED;

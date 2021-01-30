@@ -12,6 +12,8 @@
 
 #include <Terrain.h>
 
+const int PAYMENT = 500;
+
 //=================================================================================================
 void Quest_Sawmill::Start()
 {
@@ -86,10 +88,10 @@ void Quest_Sawmill::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			sawmill_state = State::Working;
-			days = 0;
 
 			OnUpdate(quest_mgr->txQuest[129]);
 			team->AddReward(PAYMENT);
+			team->AddInvestment(quest_mgr->txQuest[124], id, PAYMENT);
 			quest_mgr->EndUniqueQuest();
 			world->AddNews(Format(quest_mgr->txQuest[130], targetLoc->name.c_str()));
 			targetLoc->SetImage(LI_SAWMILL);
@@ -164,6 +166,9 @@ Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 	f >> messenger;
 	if(sawmill_state != State::None && build_state != BuildState::Finished)
 		f >> hd_lumberjack;
+
+	if(LOAD_VERSION < V_DEV && sawmill_state == State::Working)
+		team->AddInvestment(quest_mgr->txQuest[124], id, PAYMENT, days);
 
 	return LoadResult::Ok;
 }
@@ -273,10 +278,8 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 }
 
 //=================================================================================================
-int Quest_Sawmill::OnProgress(int d)
+void Quest_Sawmill::OnProgress(int d)
 {
-	int income = 0;
-
 	if(sawmill_state == State::InBuild)
 	{
 		days += d;
@@ -291,16 +294,4 @@ int Quest_Sawmill::OnProgress(int d)
 			}
 		}
 	}
-	else if(sawmill_state == State::Working)
-	{
-		days += d;
-		int count = days / 30;
-		if(count)
-		{
-			days -= count * 30;
-			income += count * PAYMENT;
-		}
-	}
-
-	return income;
 }

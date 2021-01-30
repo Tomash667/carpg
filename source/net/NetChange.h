@@ -217,6 +217,8 @@ struct NetChange
 		REMOVE_BULLET, // remove bullet [int(id)-bullet id]
 		BOSS_START, // start boss fight [int(id)-unit]
 		BOSS_END, // end boss fight []
+		ADD_INVESTMENT, // add investment [auto:int-questId, int-gold, string1-name]
+		UPDATE_INVESTMENT, // update investment [int(id)-questId, int(count)-gold]
 
 		MAX
 	} type;
