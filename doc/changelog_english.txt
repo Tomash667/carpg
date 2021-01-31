@@ -1,6 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Fixes:
+- acadmy/empty/cleared locations wasn't safe, can't use fast travel
+- player couldn't use some iron/gold veins
+
+--------------------------------------------------------------------------------
 Version 0.17.1 (2021-01-29):
 - all random dungeons had same appearance
 - when using take all items from corpse active magic effects was removed from player

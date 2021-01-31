@@ -891,16 +891,16 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 						switch(dir)
 						{
 						case GDIR_DOWN:
-							pos.z -= 1.f;
+							pos.z -= 0.9f;
 							break;
 						case GDIR_LEFT:
-							pos.x -= 1.f;
+							pos.x -= 0.9f;
 							break;
 						case GDIR_UP:
-							pos.z += 1.f;
+							pos.z += 0.9f;
 							break;
 						case GDIR_RIGHT:
-							pos.x += 1.f;
+							pos.x += 0.9f;
 							break;
 						}
 
