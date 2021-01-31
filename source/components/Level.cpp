@@ -3275,6 +3275,9 @@ void Level::CheckIfLocationCleared()
 
 	if(is_clear)
 	{
+		if(location->state != LS_HIDDEN)
+			location->state = LS_CLEARED;
+
 		// events v1
 		bool prevent = false;
 		if(event_handler)

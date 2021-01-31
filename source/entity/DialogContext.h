@@ -36,7 +36,8 @@ struct DialogContext
 		IDLE,
 		WAIT_CHOICES,
 		WAIT_TALK,
-		WAIT_TIMER
+		WAIT_TIMER,
+		WAIT_MP_RESPONSE
 	};
 
 	struct Entry
@@ -62,6 +63,7 @@ struct DialogContext
 	cstring dialog_text; // tekst dialogu
 	string dialog_s_text; // tekst dialogu zmiennego
 	string predialog;
+	SpeechBubble* predialogBubble;
 
 	static DialogContext* current;
 	static int var;
@@ -73,6 +75,7 @@ struct DialogContext
 	void UpdateClient();
 	void EndDialog();
 	void DialogTalk(cstring msg);
+	void ClientTalk(Unit* unit, const string& text, int skipId, int animation);
 	void RemoveQuestDialog(Quest2* quest);
 	cstring GetIdleText(Unit& talker);
 	void Wait(float _timer)

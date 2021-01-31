@@ -118,7 +118,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 			timer = 1.f;
 			predialog.clear();
 		}
-		else if(talker->bubble)
+		else if(talker->bubble && talker->bubble != predialogBubble)
 		{
 			dialog_s_text = talker->bubble->text;
 			dialog_text = dialog_s_text.c_str();
@@ -305,15 +305,17 @@ void DialogContext::UpdateClient()
 	switch(mode)
 	{
 	case WAIT_CHOICES:
-		if(game_gui->level_gui->UpdateChoice())
 		{
-			mode = NONE;
-			dialog_text = "";
-			ClearChoices();
+			const int prevChoice = choice_selected;
+			if(game_gui->level_gui->UpdateChoice())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHOICE;
+				c.id = choice_selected;
 
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHOICE;
-			c.id = choice_selected;
+				mode = WAIT_MP_RESPONSE;
+				choice_selected = prevChoice;
+			}
 		}
 		break;
 
@@ -1829,6 +1831,35 @@ void DialogContext::DialogTalk(cstring msg)
 		c.count = game->skip_id_counter++;
 		skip_id = c.count;
 		net->net_strs.push_back(c.str);
+	}
+}
+
+//=================================================================================================
+void DialogContext::ClientTalk(Unit* unit, const string& text, int skipId, int animation)
+{
+	game_gui->level_gui->AddSpeechBubble(unit, text.c_str());
+	unit->bubble->skip_id = skip_id;
+
+	if(animation != 0)
+	{
+		unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		unit->animation = ANI_PLAY;
+		unit->action = A_ANIMATION;
+	}
+
+	if(dialog_mode && talker == unit)
+	{
+		if(mode == DialogContext::WAIT_MP_RESPONSE)
+			ClearChoices();
+		dialog_s_text = text;
+		dialog_text = dialog_s_text.c_str();
+		skip_id = skipId;
+		mode = DialogContext::WAIT_TALK;
+	}
+	else if(pc->action == PlayerAction::Talk && pc->action_unit == unit)
+	{
+		predialog = text;
+		skip_id = skipId;
 	}
 }
 

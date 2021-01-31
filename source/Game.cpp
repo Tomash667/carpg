@@ -298,50 +298,50 @@ void Game::LoadDatafiles()
 	// content
 	content.system_dir = g_system_dir;
 	content.LoadContent([this](Content::Id id)
+	{
+		switch(id)
 		{
-			switch(id)
-			{
-			case Content::Id::Abilities:
-				game_gui->load_screen->Tick(txLoadingAbilities);
-				break;
-			case Content::Id::Buildings:
-				game_gui->load_screen->Tick(txLoadingBuildings);
-				break;
-			case Content::Id::Classes:
-				game_gui->load_screen->Tick(txLoadingClasses);
-				break;
-			case Content::Id::Dialogs:
-				game_gui->load_screen->Tick(txLoadingDialogs);
-				break;
-			case Content::Id::Items:
-				game_gui->load_screen->Tick(txLoadingItems);
-				break;
-			case Content::Id::Locations:
-				game_gui->load_screen->Tick(txLoadingLocations);
-				break;
-			case Content::Id::Musics:
-				game_gui->load_screen->Tick(txLoadingMusics);
-				break;
-			case Content::Id::Objects:
-				game_gui->load_screen->Tick(txLoadingObjects);
-				break;
-			case Content::Id::Perks:
-				game_gui->load_screen->Tick(txLoadingPerks);
-				break;
-			case Content::Id::Quests:
-				game_gui->load_screen->Tick(txLoadingQuests);
-				break;
-			case Content::Id::Required:
-				game_gui->load_screen->Tick(txLoadingRequired);
-				break;
-			case Content::Id::Units:
-				game_gui->load_screen->Tick(txLoadingUnits);
-				break;
-			default:
-				assert(0);
-				break;
-			}
-		});
+		case Content::Id::Abilities:
+			game_gui->load_screen->Tick(txLoadingAbilities);
+			break;
+		case Content::Id::Buildings:
+			game_gui->load_screen->Tick(txLoadingBuildings);
+			break;
+		case Content::Id::Classes:
+			game_gui->load_screen->Tick(txLoadingClasses);
+			break;
+		case Content::Id::Dialogs:
+			game_gui->load_screen->Tick(txLoadingDialogs);
+			break;
+		case Content::Id::Items:
+			game_gui->load_screen->Tick(txLoadingItems);
+			break;
+		case Content::Id::Locations:
+			game_gui->load_screen->Tick(txLoadingLocations);
+			break;
+		case Content::Id::Musics:
+			game_gui->load_screen->Tick(txLoadingMusics);
+			break;
+		case Content::Id::Objects:
+			game_gui->load_screen->Tick(txLoadingObjects);
+			break;
+		case Content::Id::Perks:
+			game_gui->load_screen->Tick(txLoadingPerks);
+			break;
+		case Content::Id::Quests:
+			game_gui->load_screen->Tick(txLoadingQuests);
+			break;
+		case Content::Id::Required:
+			game_gui->load_screen->Tick(txLoadingRequired);
+			break;
+		case Content::Id::Units:
+			game_gui->load_screen->Tick(txLoadingUnits);
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	});
 }
 
 //=================================================================================================
@@ -2594,20 +2594,20 @@ void Game::StopAllSounds()
 void Game::UpdateAttachedSounds(float dt)
 {
 	LoopAndRemove(attached_sounds, [](AttachedSound& sound)
+	{
+		Unit* unit = sound.unit;
+		if(unit)
 		{
-			Unit* unit = sound.unit;
-			if(unit)
-			{
-				if(!sound_mgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
-					return false;
-			}
-			else
-			{
-				if(!sound_mgr->IsPlaying(sound.channel))
-					return true;
-			}
-			return false;
-		});
+			if(!sound_mgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
+				return false;
+		}
+		else
+		{
+			if(!sound_mgr->IsPlaying(sound.channel))
+				return true;
+		}
+		return false;
+	});
 }
 
 // clear game vars on new game or load
@@ -2898,93 +2898,93 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	if(Net::IsLocal() && !clear && !net->was_client)
 	{
 		LoopAndRemove(area.units, [&](Unit* p_unit)
+		{
+			Unit& unit = *p_unit;
+
+			unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+
+			// physics
+			if(unit.cobj)
 			{
-				Unit& unit = *p_unit;
+				delete unit.cobj->getCollisionShape();
+				unit.cobj = nullptr;
+			}
 
-				unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+			// speech bubble
+			unit.bubble = nullptr;
+			unit.talking = false;
 
-				// physics
-				if(unit.cobj)
+			// mesh
+			if(unit.IsAI())
+			{
+				if(unit.IsFollower())
 				{
-					delete unit.cobj->getCollisionShape();
-					unit.cobj = nullptr;
+					if(!unit.IsStanding())
+						unit.Standup(false, true);
+					if(unit.GetOrder() != ORDER_FOLLOW)
+						unit.OrderFollow(team->GetLeader());
+					unit.ai->Reset();
+					return true;
 				}
-
-				// speech bubble
-				unit.bubble = nullptr;
-				unit.talking = false;
-
-				// mesh
-				if(unit.IsAI())
+				else
 				{
-					if(unit.IsFollower())
+					UnitOrder order = unit.GetOrder();
+					if(order == ORDER_LEAVE && unit.IsAlive())
 					{
-						if(!unit.IsStanding())
-							unit.Standup(false, true);
-						if(unit.GetOrder() != ORDER_FOLLOW)
-							unit.OrderFollow(team->GetLeader());
-						unit.ai->Reset();
+						delete unit.ai;
+						delete &unit;
 						return true;
 					}
 					else
 					{
-						UnitOrder order = unit.GetOrder();
-						if(order == ORDER_LEAVE && unit.IsAlive())
+						if(unit.live_state == Unit::DYING)
 						{
-							delete unit.ai;
-							delete &unit;
-							return true;
+							unit.live_state = Unit::DEAD;
+							unit.mesh_inst->SetToEnd();
+							game_level->CreateBlood(area, unit, true);
 						}
-						else
-						{
-							if(unit.live_state == Unit::DYING)
-							{
-								unit.live_state = Unit::DEAD;
-								unit.mesh_inst->SetToEnd();
-								game_level->CreateBlood(area, unit, true);
-							}
-							else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
-								unit.Standup(false, true);
+						else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
+							unit.Standup(false, true);
 
-							if(unit.IsAlive())
+						if(unit.IsAlive())
+						{
+							// warp to inn if unit wanted to go there
+							if(order == ORDER_GOTO_INN)
 							{
-								// warp to inn if unit wanted to go there
-								if(order == ORDER_GOTO_INN)
+								unit.OrderNext();
+								if(game_level->city_ctx)
 								{
-									unit.OrderNext();
-									if(game_level->city_ctx)
-									{
-										InsideBuilding* inn = game_level->city_ctx->FindInn();
-										game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-										unit.visual_pos = unit.pos;
-										unit.area = inn;
-										inn->units.push_back(&unit);
-										return true;
-									}
+									InsideBuilding* inn = game_level->city_ctx->FindInn();
+									game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+									unit.visual_pos = unit.pos;
+									unit.area = inn;
+									inn->units.push_back(&unit);
+									return true;
 								}
-
-								// reset units rotation to don't stay back to shop counter
-								if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
-									unit.rot = unit.ai->start_rot;
 							}
 
-							delete unit.mesh_inst;
-							unit.mesh_inst = nullptr;
-							delete unit.ai;
-							unit.ai = nullptr;
-							unit.EndEffects();
-							return false;
+							// reset units rotation to don't stay back to shop counter
+							if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
+								unit.rot = unit.ai->start_rot;
 						}
+
+						delete unit.mesh_inst;
+						unit.mesh_inst = nullptr;
+						delete unit.ai;
+						unit.ai = nullptr;
+						unit.EndEffects();
+						return false;
 					}
 				}
-				else
-				{
-					unit.talking = false;
-					unit.mesh_inst->need_update = true;
-					unit.usable = nullptr;
-					return true;
-				}
-			});
+			}
+			else
+			{
+				unit.talking = false;
+				unit.mesh_inst->need_update = true;
+				unit.usable = nullptr;
+				return true;
+			}
+		});
 
 		for(Object* obj : area.objects)
 		{

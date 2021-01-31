@@ -2742,6 +2742,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					action = PlayerAction::Talk;
 					action_unit = u2;
 					game->dialog_context.predialog.clear();
+					game->dialog_context.predialogBubble = u2->bubble;
 				}
 			}
 		}

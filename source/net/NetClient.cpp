@@ -1252,11 +1252,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// unit talks
 		case NetChange::TALK:
 			{
-				int id, skip_id;
+				int id, skipId;
 				byte animation;
 				f >> id;
 				f >> animation;
-				f >> skip_id;
+				f >> skipId;
 				const string& text = f.ReadString1();
 				if(!f)
 					Error("Update client: Broken TALK.");
@@ -1266,31 +1266,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(!unit)
 						Error("Update client: TALK, missing unit %d.", id);
 					else
-					{
-						game_gui->level_gui->AddSpeechBubble(unit, text.c_str());
-						unit->bubble->skip_id = skip_id;
-
-						if(animation != 0)
-						{
-							unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-							unit->animation = ANI_PLAY;
-							unit->action = A_ANIMATION;
-						}
-
-						DialogContext& ctx = game->dialog_context;
-						if(ctx.dialog_mode && ctx.talker == unit)
-						{
-							ctx.dialog_s_text = text;
-							ctx.dialog_text = ctx.dialog_s_text.c_str();
-							ctx.skip_id = skip_id;
-							ctx.mode = DialogContext::WAIT_TALK;
-						}
-						else if(pc.action == PlayerAction::Talk && pc.action_unit == unit)
-						{
-							ctx.predialog = text;
-							ctx.skip_id = skip_id;
-						}
-					}
+						game->dialog_context.ClientTalk(unit, text, skipId, animation);
 				}
 			}
 			break;
