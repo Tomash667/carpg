@@ -74,7 +74,7 @@ struct DialogContext
 	void Update(float dt);
 	void UpdateClient();
 	void EndDialog();
-	void DialogTalk(cstring msg);
+	void Talk(cstring msg);
 	void ClientTalk(Unit* unit, const string& text, int skipId, int animation);
 	void RemoveQuestDialog(Quest2* quest);
 	cstring GetIdleText(Unit& talker);

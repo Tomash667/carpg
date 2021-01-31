@@ -96,7 +96,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 		if(Vec3::Distance2d(u->pos, game_level->city_ctx->arena_pos) > 5.f)
 		{
 			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
-			ctx.DialogTalk(ctx.dialog_s_text.c_str());
+			ctx.Talk(ctx.dialog_s_text.c_str());
 			++ctx.dialog_pos;
 			return true;
 		}

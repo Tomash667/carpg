@@ -113,6 +113,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	{
 		if(!predialog.empty())
 		{
+			mode = DialogContext::WAIT_TALK;
 			dialog_s_text = predialog;
 			dialog_text = dialog_s_text.c_str();
 			timer = 1.f;
@@ -120,6 +121,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 		}
 		else if(talker->bubble && talker->bubble != predialogBubble)
 		{
+			mode = DialogContext::WAIT_TALK;
 			dialog_s_text = talker->bubble->text;
 			dialog_text = dialog_s_text.c_str();
 			timer = 1.f;
@@ -473,7 +475,7 @@ void DialogContext::UpdateLoop()
 		case DTF_MULTI_TALK:
 			{
 				cstring msg = GetText(de.value, de.type == DTF_MULTI_TALK);
-				DialogTalk(msg);
+				Talk(msg);
 				++dialog_pos;
 			}
 			return;
@@ -926,7 +928,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				quest = quest_mgr->FindQuest(game_level->location, QuestCategory::Mayor);
 				if(quest)
 				{
-					DialogTalk(RandomString(game->txQuestAlreadyGiven));
+					Talk(RandomString(game->txQuestAlreadyGiven));
 					++dialog_pos;
 					return true;
 				}
@@ -938,7 +940,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			have_quest = false;
 		if(!have_quest)
 		{
-			DialogTalk(RandomString(game->txMayorNoQ));
+			Talk(RandomString(game->txMayorNoQ));
 			++dialog_pos;
 			return true;
 		}
@@ -981,7 +983,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				quest = quest_mgr->FindQuest(game_level->location, QuestCategory::Captain);
 				if(quest)
 				{
-					DialogTalk(RandomString(game->txQuestAlreadyGiven));
+					Talk(RandomString(game->txQuestAlreadyGiven));
 					++dialog_pos;
 					return true;
 				}
@@ -993,7 +995,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			have_quest = false;
 		if(!have_quest)
 		{
-			DialogTalk(RandomString(game->txCaptainNoQ));
+			Talk(RandomString(game->txCaptainNoQ));
 			++dialog_pos;
 			return true;
 		}
@@ -1042,7 +1044,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			// restart dialog
 			dialog_s_text = Format(game->txNeedMoreGold, cost - pc->unit->gold);
-			DialogTalk(dialog_s_text.c_str());
+			Talk(dialog_s_text.c_str());
 			dialog_pos = 0;
 			return true;
 		}
@@ -1121,14 +1123,14 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 							distance = game->txVeryFar;
 
 						dialog_s_text = Format(RandomString(game->txLocationDiscovered), distance, GetLocationDirName(cloc.pos, loc.pos), loc.name.c_str());
-						DialogTalk(dialog_s_text.c_str());
+						Talk(dialog_s_text.c_str());
 						++dialog_pos;
 
 						return true;
 					}
 					else
 					{
-						DialogTalk(RandomString(game->txAllDiscovered));
+						Talk(RandomString(game->txAllDiscovered));
 						++dialog_pos;
 						return true;
 					}
@@ -1172,13 +1174,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 						loc.SetKnown();
 
 						dialog_s_text = Format(RandomString(game->txCampDiscovered), distance, GetLocationDirName(cloc.pos, loc.pos), loc.group->name2.c_str());
-						DialogTalk(dialog_s_text.c_str());
+						Talk(dialog_s_text.c_str());
 						++dialog_pos;
 						return true;
 					}
 					else
 					{
-						DialogTalk(RandomString(game->txAllCampDiscovered));
+						Talk(RandomString(game->txAllCampDiscovered));
 						++dialog_pos;
 						return true;
 					}
@@ -1188,7 +1190,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				// info about quest
 				if(!quest_mgr->HaveQuestRumors())
 				{
-					DialogTalk(RandomString(game->txNoQRumors));
+					Talk(RandomString(game->txNoQRumors));
 					++dialog_pos;
 					return true;
 				}
@@ -1196,7 +1198,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				{
 					dialog_s_text = quest_mgr->GetRandomQuestRumor();
 					game_gui->journal->AddRumor(dialog_s_text.c_str());
-					DialogTalk(dialog_s_text.c_str());
+					Talk(dialog_s_text.c_str());
 					++dialog_pos;
 					return true;
 				}
@@ -1242,7 +1244,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					str.push_back(rumor[i]);
 			}
 
-			DialogTalk(str.c_str());
+			Talk(str.c_str());
 			++dialog_pos;
 			return true;
 		}
@@ -1259,7 +1261,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			// check required skill
 			if(pc->unit->stats->skill[(int)SkillId::MYSTIC_MAGIC] < ability->skill)
 			{
-				DialogTalk(game->txCantLearnAbility);
+				Talk(game->txCantLearnAbility);
 				force_end = true;
 				return true;
 			}
@@ -1279,7 +1281,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			if(skill->locked && pc->unit->GetBase(skill->skill_id) <= 0)
 			{
-				DialogTalk(game->txCantLearnSkill);
+				Talk(game->txCantLearnSkill);
 				force_end = true;
 				return true;
 			}
@@ -1299,7 +1301,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			cost = pc->GetTrainCost(*train);
 		if(pc->learning_points < cost)
 		{
-			DialogTalk(game->txNeedLearningPoints);
+			Talk(game->txNeedLearningPoints);
 			force_end = true;
 			return true;
 		}
@@ -1308,7 +1310,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(pc->unit->gold < gold_cost)
 		{
 			dialog_s_text = Format(game->txNeedMoreGold, gold_cost - pc->unit->gold);
-			DialogTalk(dialog_s_text.c_str());
+			Talk(dialog_s_text.c_str());
 			force_end = true;
 			return true;
 		}
@@ -1365,13 +1367,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 		if(update_locations == -1)
 		{
-			DialogTalk(game->txNoNearLoc);
+			Talk(game->txNoNearLoc);
 			++dialog_pos;
 			return true;
 		}
 		else if(active_locations.empty())
 		{
-			DialogTalk(game->txAllNearLoc);
+			Talk(game->txAllNearLoc);
 			++dialog_pos;
 			return true;
 		}
@@ -1402,7 +1404,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			dialog_s_text += Format(RandomString(game->txNearLocEnemy), desc, loc.group->name.c_str());
 		}
 
-		DialogTalk(dialog_s_text.c_str());
+		Talk(dialog_s_text.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1410,7 +1412,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		Class* clas = talker->GetClass();
 		if(clas)
-			DialogTalk(clas->about.c_str());
+			Talk(clas->about.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1550,7 +1552,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			active_news = world->GetNews();
 			if(active_news.empty())
 			{
-				DialogTalk(RandomString(game->txNoNews));
+				Talk(RandomString(game->txNoNews));
 				++dialog_pos;
 				return true;
 			}
@@ -1558,7 +1560,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 		if(active_news.empty())
 		{
-			DialogTalk(RandomString(game->txAllNews));
+			Talk(RandomString(game->txAllNews));
 			++dialog_pos;
 			return true;
 		}
@@ -1567,7 +1569,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		News* news = active_news[id];
 		active_news.erase(active_news.begin() + id);
 
-		DialogTalk(news->text.c_str());
+		Talk(news->text.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1794,7 +1796,7 @@ cstring DialogContext::FormatString(const string& str_part)
 }
 
 //=================================================================================================
-void DialogContext::DialogTalk(cstring msg)
+void DialogContext::Talk(cstring msg)
 {
 	assert(msg);
 
@@ -1896,7 +1898,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	// check learning points
 	if(pc->learning_points < perk->cost)
 	{
-		DialogTalk(game->txNeedLearningPoints);
+		Talk(game->txNeedLearningPoints);
 		force_end = true;
 		return false;
 	}
@@ -1905,7 +1907,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	if(pc->unit->gold < cost)
 	{
 		dialog_s_text = Format(game->txNeedMoreGold, cost - pc->unit->gold);
-		DialogTalk(dialog_s_text.c_str());
+		Talk(dialog_s_text.c_str());
 		force_end = true;
 		return false;
 	}
@@ -1940,7 +1942,7 @@ bool DialogContext::RecruitHero(Class* clas)
 {
 	if(team->GetActiveTeamSize() >= 4u)
 	{
-		DialogTalk(game->txTeamTooBig);
+		Talk(game->txTeamTooBig);
 		force_end = true;
 		return false;
 	}
@@ -1951,7 +1953,7 @@ bool DialogContext::RecruitHero(Class* clas)
 	u->hero->loner = false;
 	team->AddMember(u, HeroType::Normal);
 	dialog_s_text = Format(game->txHeroJoined, u->GetName());
-	DialogTalk(dialog_s_text.c_str());
+	Talk(dialog_s_text.c_str());
 	force_end = true;
 	return true;
 }

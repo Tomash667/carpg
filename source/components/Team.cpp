@@ -570,7 +570,7 @@ void Team::Update(int days, UpdateMode mode)
 		{
 			if(HaveActiveNpc())
 			{
-				const int investment = (GetShare().y * income);
+				const int investment = int(GetShare().y * income);
 				for(Unit& unit : active_members)
 				{
 					if(!unit.IsPlayer())
@@ -1731,7 +1731,7 @@ void Team::AddInvestment(cstring name, int questId, int gold, int days)
 
 	if(HaveActiveNpc())
 	{
-		const int investment = gold * 5 * GetShare().y;
+		const int investment = int(gold * 5 * GetShare().y);
 		for(Unit& unit : active_members)
 		{
 			if(!unit.IsPlayer())
@@ -1752,7 +1752,7 @@ void Team::UpdateInvestment(int questId, int gold)
 		{
 			if(HaveActiveNpc())
 			{
-				const int increase = (gold - investment.gold) * 5 * GetShare().y;
+				const int increase = int((gold - investment.gold) * 5 * GetShare().y);
 				for(Unit& unit : active_members)
 				{
 					if(!unit.IsPlayer())

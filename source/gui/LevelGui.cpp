@@ -414,7 +414,7 @@ void LevelGui::DrawFront()
 		gui->DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
 		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
-		if(game->dialog_context.mode == DialogContext::WAIT_CHOICES)
+		if(Any(game->dialog_context.mode, DialogContext::WAIT_CHOICES, DialogContext::WAIT_MP_RESPONSE))
 		{
 			int off = int(scrollbar.offset);
 
