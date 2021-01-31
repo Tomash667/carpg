@@ -1287,10 +1287,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
 							game->dialog_context.dialog_wait = 1.f;
 							game->dialog_context.skip_id = skip_id;
+							game->dialog_context.show_choices = false;
 						}
 						else if(pc.action == PlayerAction::Talk && pc.action_unit == unit)
 						{
-							game->predialog = text;
+							net->predialog = text;
 							game->dialog_context.skip_id = skip_id;
 						}
 					}
@@ -3251,14 +3252,14 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 						pc.action = PlayerAction::Talk;
 						pc.action_unit = unit;
 						game->dialog_context.StartDialog(unit);
-						if(!game->predialog.empty())
+						if(!net->predialog.empty())
 						{
-							game->dialog_context.dialog_s_text = game->predialog;
+							game->dialog_context.dialog_s_text = net->predialog;
 							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
 							game->dialog_context.dialog_wait = 1.f;
-							game->predialog.clear();
+							net->predialog.clear();
 						}
-						else if(unit->bubble)
+						else if(unit->bubble && unit->bubble != net->predialogBubble)
 						{
 							game->dialog_context.dialog_s_text = unit->bubble->text;
 							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
@@ -3292,6 +3293,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				{
 					game->dialog_context.choice_selected = 0;
 					game->dialog_context.show_choices = true;
+					game->dialog_context.showChoicesComplete = false;
 					game->dialog_context.dialog_esc = escape;
 					game->dialog_choices.resize(count);
 					for(byte i = 0; i < count; ++i)

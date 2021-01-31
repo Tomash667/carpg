@@ -326,7 +326,6 @@ public:
 	// dialogs
 	DialogContext dialog_context, idle_context;
 	vector<string> dialog_choices; // used in client multiplayer mode
-	string predialog;
 
 	//-----------------------------------------------------------------
 	// LOADING

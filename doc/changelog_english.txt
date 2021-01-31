@@ -4,6 +4,7 @@ Changelog
 Fixes:
 - acadmy/empty/cleared locations wasn't safe, can't use fast travel
 - player couldn't use some iron/gold veins
+- when the client starts the conversation, the previous text is visible for a moment, when he ends the conversation there is an empty panel
 
 --------------------------------------------------------------------------------
 Version 0.17.1 (2021-01-29):

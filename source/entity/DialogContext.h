@@ -36,7 +36,7 @@ struct DialogContext
 	};
 
 	bool dialog_mode; // czy jest tryb dialogowy
-	bool show_choices; // czy wyœwietlono opcje dialogowe do wyboru
+	bool show_choices, showChoicesComplete; // czy wyœwietlono opcje dialogowe do wyboru
 	vector<DialogChoice> choices; // opcje dialogowe do wyboru
 	int dialog_pos; // pozycja w dialogu
 	int choice_selected; // zaznaczona opcja dialogowa

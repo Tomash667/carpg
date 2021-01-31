@@ -4,6 +4,7 @@ Historia zmian
 Fixes:
 - akademia/puste/oczyszczone lokalizacje nie są bezpieczne, nie można było używać szybkiej podróży
 - gracz nie mógł korzystać z niektórych żył żelaza/złota
+- gdy klient rozpoczyna rozmowę przez chwilę widać poprzedni tekst, gdy kończy rozmowę jest pusty panel
 
 --------------------------------------------------------------------------------
 Wersja 0.17.1 (2021-01-29):

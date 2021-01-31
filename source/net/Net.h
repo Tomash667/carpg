@@ -221,6 +221,8 @@ public:
 	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
 
 	SystemAddress server, ping_adr;
+	string predialog;
+	SpeechBubble* predialogBubble;
 	float interpolate_timer;
 	bool was_client, join_lan;
 
