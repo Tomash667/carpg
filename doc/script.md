@@ -329,6 +329,7 @@ Properties:
 * bool otherTeam - hero is in other team.
 * bool wantJoin - true when join team without persuading.
 * int persuasionCheck - skill level required to persuade to join.
+* const int investment - value of investment (gold from quests over time).
 
 ### LevelArea type
 Part of level - dungeon level, outside, inside of building.

@@ -478,6 +478,13 @@ dialog hero {
 	50 "Somehow you didn't convince me..."
 	51 "I don't like crowds and your team is already quite large..."
 	52 "Okay... Sometimes you have to compromise."
+	53 "We recently completed a quest for which I am not yet paid. I will not leave until I get my $(Str(target.hero.investment)) gold pieces."
+	54 "Pay $(Str(target.hero.investment)) gold pieces"
+	55 "Don't pay"
+	56 {
+		"I'll take that gold to wipe my tears."
+		"Oh well, maybe we'll meet again."
+	}
 }
 
 //==============================================================================
@@ -652,6 +659,13 @@ dialog crazy {
 	53 "No no no! You will join me!"
 	54 "If you think you convinced me then you are crazy here!"
 	55 "Hmmm... In such a crowd you will not pay attention to me!"
+	56 "Hey, where's my gold for the last quests!? I will not leave until I get my $(Str(target.hero.investment)) gold pieces. And don't try to cheat me!"
+	57 "Pay $(Str(target.hero.investment)) gold pieces"
+	58 "Don't pay"
+	59 {
+		"Give the gold and get lost!"
+		"Oh well, maybe we'll meet again."
+	}
 }
 
 //==============================================================================

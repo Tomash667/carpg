@@ -4,6 +4,7 @@ Changelog
 Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
 + investments in journal
++ can't kick out hero before he receive gold from sawmill/mine
 
 --------------------------------------------------------------------------------
 Version 0.17.1 (2021-01-29):

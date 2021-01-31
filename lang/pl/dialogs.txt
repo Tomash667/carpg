@@ -490,6 +490,13 @@ dialog hero {
 	50 "Jakoœ mnie nie przekona³eœ..."
 	51 "Nie lubiê t³umów a twoja dru¿yna jest ju¿ doœæ liczna..."
 	52 "No dobra... Czasami trzeba pójœæ na kompromis."
+	53 "Niedawno ukoñczyliœmy zadanie za które jeszcze nie dosta³em zap³aty. Nie odejdê dopóki nie dostane moich $(Str(target.hero.investment)) sztuk z³ota."
+	54 "Zap³aæ $(Str(target.hero.investment)) sztuk z³ota"
+	55 "Nie p³aæ"
+	56 {
+		"Wezmê to z³oto na otarcie ³ez."
+		"Mo¿e jeszcze siê spotkamy..."
+	}
 }
 
 //==============================================================================
@@ -664,6 +671,13 @@ dialog crazy {
 	53 "Nie nie nie! To ty do mnie do³¹czysz!"
 	54 "Jeœli myœlisz ¿e mnie przekona³eœ to chyba ty tu jesteœ szalony!"
 	55 "Hmmm... W takim t³umie nie bêdziesz na mnie zwraca³ uwagi!"
+	56 "Ej a gdzie moje z³oto za ostatnie zadania!? Nie odejdê dopóki nie dostane moich $(Str(target.hero.investment)) sztuk z³ota. I nie próbuj mnie oszukaæ!"
+	57 "Zap³aæ $(Str(target.hero.investment)) sztuk z³ota"
+	58 "Nie p³aæ"
+	59 {
+		"Dawaj to z³oto i spadaj!"
+		"Mo¿e jeszcze siê spotkamy..."
+	}
 }
 
 //==============================================================================

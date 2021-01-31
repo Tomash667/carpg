@@ -113,7 +113,15 @@ void Team::RemoveMember(Unit* unit)
 
 	// remove from team list
 	if(unit->hero->type == HeroType::Normal)
+	{
 		RemoveElementOrder(active_members.ptrs, unit);
+		if(unit->hero->investment)
+		{
+			unit->gold += unit->hero->investment;
+			DialogContext::current->pc->unit->ModGold(-unit->hero->investment);
+			unit->hero->investment = 0;
+		}
+	}
 	RemoveElementOrder(members.ptrs, unit);
 
 	// set items as team
@@ -557,8 +565,21 @@ void Team::Update(int days, UpdateMode mode)
 				income += count * investment.gold;
 			}
 		}
+
 		if(income)
+		{
+			if(HaveActiveNpc())
+			{
+				const int investment = (GetShare().y * income);
+				for(Unit& unit : active_members)
+				{
+					if(!unit.IsPlayer())
+						unit.hero->investment = Max(unit.hero->investment - investment, 0);
+				}
+			}
+
 			AddGold(income, nullptr, true);
+		}
 	}
 
 	checkResults.clear();
@@ -1708,6 +1729,16 @@ void Team::AddInvestment(cstring name, int questId, int gold, int days)
 	investment.name = name;
 	investment.days = days;
 
+	if(HaveActiveNpc())
+	{
+		const int investment = gold * 5 * GetShare().y;
+		for(Unit& unit : active_members)
+		{
+			if(!unit.IsPlayer())
+				unit.hero->investment += investment;
+		}
+	}
+
 	if(Net::IsServer())
 		Net::PushChange(NetChange::ADD_INVESTMENT);
 }
@@ -1719,6 +1750,16 @@ void Team::UpdateInvestment(int questId, int gold)
 	{
 		if(investment.questId == questId)
 		{
+			if(HaveActiveNpc())
+			{
+				const int increase = (gold - investment.gold) * 5 * GetShare().y;
+				for(Unit& unit : active_members)
+				{
+					if(!unit.IsPlayer())
+						unit.hero->investment += increase;
+				}
+			}
+
 			investment.gold = gold;
 			if(Net::IsServer())
 			{

@@ -38,6 +38,7 @@ void Hero::Init(Unit& _unit)
 	split_gold = 0.f;
 	otherTeam = nullptr;
 	loner = IsSet(_unit.data->flags, F_LONER) || Rand() % 5 == 0;
+	investment = 0;
 
 	if(!unit->data->real_name.empty())
 		name = unit->data->real_name;
@@ -61,6 +62,7 @@ void Hero::Save(GameWriter& f)
 	f << split_gold;
 	f << (otherTeam ? otherTeam->id : -1);
 	f << loner;
+	f << investment;
 }
 
 //=================================================================================================
@@ -128,6 +130,10 @@ void Hero::Load(GameReader& f)
 		otherTeam = nullptr;
 		loner = false;
 	}
+	if(LOAD_VERSION >= V_DEV)
+		f >> investment;
+	else
+		investment = 0;
 }
 
 //=================================================================================================

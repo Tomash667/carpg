@@ -1091,6 +1091,27 @@ dialog hero
 		{
 			if script "Level::IsSafe()"
 			{
+				if script "target.hero.investment > 0"
+				{
+					talk 53
+					choice 54
+					{
+						if script "pc.unit.gold >= target.hero.investment"
+						{
+							special "kick_npc"
+							talk 56
+							end
+						}
+						else
+						{
+							talk 42
+							restart
+						}
+					}
+					escape choice 55
+						restart
+					show_choices
+				}
 				talk 21
 				choice 22
 				{
@@ -1381,6 +1402,27 @@ dialog crazy
 		{
 			if script "Level::IsSafe()"
 			{
+				if script "target.hero.investment > 0"
+				{
+					talk 56
+					choice 57
+					{
+						if script "pc.unit.gold >= target.hero.investment"
+						{
+							special "kick_npc"
+							talk 59
+							end
+						}
+						else
+						{
+							talk 42
+							restart
+						}
+					}
+					escape choice 58
+						restart
+					show_choices
+				}
 				talk 21
 				choice 22
 				{
