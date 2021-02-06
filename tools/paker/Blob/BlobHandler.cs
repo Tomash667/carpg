@@ -7,7 +7,7 @@ namespace Blob
 {
     class BlobHandler
     {
-        public static string Upload(string path, string connectionString)
+        public static string Upload(string path, string connectionString, bool recreate)
         {
             if (!File.Exists(path))
                 throw new Exception($"Missing file '{path}'.");
@@ -15,7 +15,8 @@ namespace Blob
             CloudBlobClient blobClient = account.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference("updates");
             CloudBlockBlob blockBlob = container.GetBlockBlobReference(Path.GetFileName(path));
-            blockBlob.UploadFromFile(path);
+            if(!blockBlob.Exists() || recreate)
+                blockBlob.UploadFromFile(path);
             string url = blockBlob.Uri.AbsoluteUri;
             url = url.Replace("https", "http");
             return url;

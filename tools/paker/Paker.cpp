@@ -9,7 +9,7 @@
 
 #include "BlobProxy.h"
 
-bool nozip, check_entry, copy_pdb;
+bool nozip, check_entry, copy_pdb, recreate;
 
 enum EntryType
 {
@@ -228,6 +228,12 @@ void RunCommand(cstring file, cstring parameters, cstring directory)
 
 bool CreatePak(char* pakname)
 {
+	if(!recreate && !nozip && io::FileExists(Format("out/CaRpg_%s.zip", pakname)))
+	{
+		printf("Full zip already exists, skipping...\n");
+		return true;
+	}
+
 	check_entry = false;
 	pak_dir = Format("out/%s", pakname);
 	printf("Creating pak %s.\n", pak_dir.c_str());
@@ -283,8 +289,50 @@ bool CreatePak(char* pakname)
 	return true;
 }
 
+bool NeedCreatePatch(char* pakname, bool blob)
+{
+	if(recreate || nozip)
+		return true;
+
+	if(blob)
+	{
+		cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
+		if(io::FileExists(path))
+		{
+			printf("Patch pak already exists, skipping...\n");
+			return false;
+		}
+	}
+	else
+	{
+		cstring path = Format("out/CaRpg_patch_%s.zip", pakname);
+		if(io::FileExists(path))
+		{
+			printf("Patch zip already exists, skipping...\n");
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool CreatePatch(char* pakname, bool blob)
 {
+	if(!NeedCreatePatch(pakname, blob))
+	{
+		if(blob)
+		{
+			cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
+			uint crc = Crc::Calculate(path);
+
+			printf("Uploading to blob & api.\n");
+			cstring result = AddChange(pakname, prevVer.c_str(), path, crc, false);
+			if(result)
+				printf(result);
+		}
+		return true;
+	}
+
 	check_entry = true;
 	pak_dir = Format("out/patch_%s", pakname);
 	printf("Creating patch %s.\n", pak_dir.c_str());
@@ -376,7 +424,7 @@ bool CreatePatch(char* pakname, bool blob)
 			uint crc = Crc::Calculate(path);
 
 			printf("Uploading to blob & api.\n");
-			cstring result = AddChange(pakname, prevVer.c_str(), path, crc);
+			cstring result = AddChange(pakname, prevVer.c_str(), path, crc, true);
 			if(result)
 				printf(result);
 		}
@@ -477,6 +525,8 @@ int main(int argc, char** argv)
 				mode = 2;
 			else if(strcmp(arg, "blob") == 0)
 				blob = true;
+			else if(strcmp(arg, "recreate") == 0)
+				recreate = true;
 			else
 				printf("Unknown switch '%s'.\n", arg);
 		}

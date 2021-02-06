@@ -9,6 +9,7 @@ Switches:
 -patch - create patch pak
 -both - create full & patch pak
 -blob - for patch don't create zip but pak file that is uploaded to azure blob
+-recreate - always create zip/pak even if file already exists
 
 Examples:
 paker 0.17 -- create full version zip
