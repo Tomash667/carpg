@@ -1,7 +1,8 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Fixes:
+Version 0.17.2 (2021-02-06):
+- some quests dialogs/text get corrupted after loading
 - acadmy/empty/cleared locations wasn't safe, can't use fast travel
 - player couldn't use some iron/gold veins
 - when the client starts the conversation, the previous text is visible for a moment, when he ends the conversation there is an empty panel

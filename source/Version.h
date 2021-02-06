@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 17
-#define VERSION_PATCH 1
+#define VERSION_PATCH 2
 
 //-----------------------------------------------------------------------------
 #define GET_MAJOR(x) (((x)&(0xFF<<16))>>16)
