@@ -33,11 +33,16 @@ namespace Blob
                 Crc = crc
             });
             IRestResponse response = client.Execute(request);
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
-                throw new Exception($"Invalid api response {response.StatusCode}: {response.Content}");
-            ResponseBody resp = JsonConvert.DeserializeObject<ResponseBody>(response.Content);
-            if (!resp.Ok)
-                throw new Exception($"Api error response: {resp.Error}");
+            if (response.ResponseStatus == ResponseStatus.Completed)
+            {
+                if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    throw new Exception($"Invalid api response {response.StatusCode}: {response.Content}");
+                ResponseBody resp = JsonConvert.DeserializeObject<ResponseBody>(response.Content);
+                if (!resp.Ok)
+                    throw new Exception($"Api error response: {resp.Error}");
+            }
+            else
+                throw new Exception($"Invalid api response status {response.ErrorException}.");
         }
     }
 }

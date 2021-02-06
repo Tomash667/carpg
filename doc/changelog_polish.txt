@@ -7,7 +7,8 @@ Wersja 0.18 (???):
 + nie można wyrzucić bohatera z drużyny dopóki nie dostanie złota z tartaku/kopalni
 
 --------------------------------------------------------------------------------
-Fixes:
+Wersja 0.17.2 (2021-02-06):
+- niektóre dialogi/teksty zadań psują się po wczytaniu
 - akademia/puste/oczyszczone lokalizacje nie są bezpieczne, nie można było używać szybkiej podróży
 - gracz nie mógł korzystać z niektórych żył żelaza/złota
 - gdy klient rozpoczyna rozmowę przez chwilę widać poprzedni tekst, gdy kończy rozmowę jest pusty panel

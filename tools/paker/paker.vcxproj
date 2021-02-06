@@ -56,7 +56,7 @@
       <AdditionalIncludeDirectories>..\..\carpglib\include;BlobProxy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalDependencies>core_debug.lib;Shlwapi.lib;BlobProxy_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\carpglib\lib;BlobProxy\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>

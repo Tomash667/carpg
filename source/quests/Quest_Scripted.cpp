@@ -195,6 +195,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	if(!scheme)
 		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
 	f >> timeout_days;
+	isNew = true;
 
 	// fix for not initializing category for 'side_cleric' quest
 	if(LOAD_VERSION <= V_0_17)
