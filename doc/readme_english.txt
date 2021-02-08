@@ -363,7 +363,7 @@ BottledByte - Bug reports and coding.
 	fire
 	Groszek
 	Harorri
-	Lemiczek 
+	Lemiczek
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit

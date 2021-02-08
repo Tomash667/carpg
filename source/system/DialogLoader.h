@@ -9,6 +9,12 @@ class DialogLoader : public ContentLoader
 {
 	friend class Content;
 
+public:
+	GameDialog* LoadSingleDialog(Tokenizer& t, QuestScheme* quest);
+	bool LoadText(Tokenizer& t, QuestScheme* scheme = nullptr);
+	void CheckDialogText(GameDialog* dialog, int index, DialogScripts* scripts);
+
+private:
 	enum IfState
 	{
 		IFS_IF,
@@ -18,28 +24,6 @@ class DialogLoader : public ContentLoader
 		IFS_CHOICE,
 		IFS_INLINE_CHOICE
 	};
-
-private:
-	void DoLoading() override;
-	static void Cleanup();
-	void InitTokenizer() override;
-	void LoadEntity(int top, const string& id) override;
-	void Finalize() override;
-	GameDialog* LoadDialog(const string& id);
-	DialogOp ParseOp();
-	int ParseProgressOrInt(int keyword);
-	int ParseProgress();
-	void LoadGlobals();
-	void LoadTexts() override;
-
-	vector<IfState> if_state;
-	QuestScheme* quest;
-	DialogScripts* scripts;
-
-public:
-	GameDialog* LoadSingleDialog(Tokenizer& t, QuestScheme* quest);
-	bool LoadText(Tokenizer& t, QuestScheme* scheme = nullptr);
-	void CheckDialogText(GameDialog* dialog, int index, DialogScripts* scripts);
 
 	enum class NodeOp
 	{
@@ -77,12 +61,21 @@ public:
 		int line;
 #endif
 
-		void OnFree()
-		{
-			Free(childs);
-		}
+		void OnFree() { Free(childs); }
 	};
 
+	void DoLoading() override;
+	static void Cleanup();
+	void InitTokenizer() override;
+	void LoadEntity(int top, const string& id) override;
+	void Finalize() override;
+	GameDialog* LoadDialog(const string& id);
+	DialogOp ParseOp();
+	int ParseProgressOrInt(int keyword);
+	int ParseProgress();
+	void LoadGlobals();
+	void LoadTexts() override;
+	cstring GetEntityName() override;
 	Node* GetNode()
 	{
 		Node* node = Node::Get();
@@ -105,4 +98,8 @@ public:
 	GameDialog* current_dialog;
 	vector<std::pair<string, uint>> labels;
 	vector<std::pair<string, uint>> jumps;
+	vector<IfState> if_state;
+	QuestScheme* quest;
+	DialogScripts* scripts;
+	bool loadingTexts;
 };

@@ -1903,14 +1903,6 @@ dialog traveler
 	}
 	if special "have_completed_quest"
 		end
-	if have_quest_item "$$stolen_artifact"
-	{
-		choice 2
-		{
-			do_quest_item "$$stolen_artifact"
-			end
-		}
-	}
 	if have_quest_item "$$lost_item"
 	{
 		choice 3
@@ -4198,41 +4190,6 @@ dialog q_spread_news_end
 	talk 1
 	set_quest_progress 4
 	end
-}
-
-//==============================================================================
-dialog q_stolen_artifact_start
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		set_quest_progress 1
-		talk 3
-		talk 4
-		end
-	}
-	escape choice 5
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_stolen_artifact_end
-{
-	set_quest_progress 2
-	talk 0
-	end
-}
-
-//==============================================================================
-dialog q_stolen_artifact_timeout
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
-	talk 2
-	end2
 }
 
 //==============================================================================

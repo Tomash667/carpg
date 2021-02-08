@@ -810,7 +810,7 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Witaj!"
 	1 "Witaj ponownie!"
-	2 "Oddaj ukradziony artefakt"
+	2 "" // removed
 	3 "Oddaj zgubiony przedmiot"
 	4 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
 	5 "Koniec rozmowy"
@@ -1843,28 +1843,6 @@ dialog q_spread_news_timeout {
 dialog q_spread_news_end {
 	0 "Dobrze, w³aœnie takich ludzi jak ty mi potrzeba, sumiennych i odpowiedzialnych."
 	1 "WeŸ to 500 sztuk z³ota."
-}
-
-//==============================================================================
-dialog q_stolen_artifact_start {
-	0 "$Bandyci_ukradli$ mi $przedmiot$."
-	1 "Czy mo¿esz go dla mnie odzyskaæ?"
-	2 "Tak"
-	3 "$Ci_bandyci$ prawdopodobnie znajduj¹ siê w $target_loc$ które jest na $target_dir$ st¹d."
-	4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_stolen_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
-}
-
-//==============================================================================
-dialog q_stolen_artifact_timeout {
-	0 "Nie uda³o ci siê odzyskaæ tego artefaktu? Trudno..."
-	1 "Ponoæ niedaleko $random_loc$ znaleziono jakieœ nowe artefakty, tam wyruszê."
-	2 "Powodzenia w przygodach!"
 }
 
 //==============================================================================

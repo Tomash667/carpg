@@ -108,7 +108,7 @@ public:
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, const Vec3* pos = nullptr, const float* rot = nullptr);
 	Vec3 FindSpawnPos(Room* room, Unit* unit);
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
-	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit) { return SpawnUnitInsideRoom(room, unit); }
+	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit, int level = -1) { return SpawnUnitInsideRoom(room, unit, level); }
 	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitData& unit, int level = -1);
@@ -165,6 +165,7 @@ public:
 	bool IsCity();
 	bool IsVillage();
 	bool IsTutorial();
+	bool IsOutside();
 	void Update();
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f, bool loaded_resources);
@@ -174,7 +175,7 @@ public:
 	GroundItem* SpawnItemAtObject(const Item* item, Object* obj);
 	void SpawnItemRandomly(const Item* item, uint count);
 	Unit* GetNearestEnemy(Unit* unit);
-	Unit* SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range);
+	Unit* SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range = 2.f, int level = -1);
 	GroundItem* FindNearestItem(const Item* item, const Vec3& pos);
 	GroundItem* FindItem(const Item* item);
 	Unit* GetMayor();
@@ -200,6 +201,7 @@ public:
 	}
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
+	Room* GetFarRoom();
 	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
 	CScriptArray* GetUnits(Room& room);
@@ -207,6 +209,7 @@ public:
 	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();
 	void RecreateTmpObjectPhysics();
+	Vec3 GetSpawnCenter();
 	// --- boss
 	void StartBossFight(Unit& unit);
 	void EndBossFight();

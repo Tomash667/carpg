@@ -320,9 +320,6 @@ dialog q_spread_news_start
 dialog q_spread_news_timeout
 dialog q_spread_news_tell
 dialog q_spread_news_end
-dialog q_stolen_artifact_start
-dialog q_stolen_artifact_end
-dialog q_stolen_artifact_timeout
 dialog q_wanted_start
 dialog q_wanted_timeout
 dialog q_wanted_end

@@ -798,7 +798,7 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Hello!"
 	1 "Welcome back!"
-	2 "Give back stolen artifact"
+	2 "" // removed
 	3 "Give back lost artifact"
 	4 "Did you find something? No? Too bad, I'm still waiting for that item."
 	5 "End dialog"
@@ -1831,28 +1831,6 @@ dialog q_spread_news_timeout {
 dialog q_spread_news_end {
 	0 "Good, just people like you I need, conscientious and responsible."
 	1 "Take this 500 gold pieces."
-}
-
-//==============================================================================
-dialog q_stolen_artifact_start {
-	0 "$Bandyci_ukradli$ has stolen my $przedmiot$."
-	1 "Can you retrieve it?"
-	2 "Yes"
-	3 "Those $Ci_bandyci$ are probably in $target_loc$ which is $target_dir$ from here."
-	4 "I'll wait until someone brings it to me but up to two months. Good luck!"
-	5 "No"
-}
-
-//==============================================================================
-dialog q_stolen_artifact_end {
-	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
-}
-
-//==============================================================================
-dialog q_stolen_artifact_timeout {
-	0 "You could not recover this artifact? Too bad..."
-	1 "Apparently close to $random_loc$ people found some new artifacts, there I leave."
-	2 "Good luck in your adventures!"
 }
 
 //==============================================================================

@@ -3999,6 +3999,12 @@ bool Level::IsTutorial()
 }
 
 //=================================================================================================
+bool Level::IsOutside()
+{
+	return location->outside;
+}
+
+//=================================================================================================
 void Level::Update()
 {
 	for(LevelArea& area : ForEachArea())
@@ -4196,9 +4202,9 @@ Unit* Level::GetNearestEnemy(Unit* unit)
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range)
+Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range, int level)
 {
-	return SpawnUnitNearLocation(GetArea(pos), pos, *ud, nullptr, -1, range);
+	return SpawnUnitNearLocation(GetArea(pos), pos, *ud, nullptr, level, range);
 }
 
 //=================================================================================================
@@ -4577,6 +4583,15 @@ Room* Level::GetRoom(RoomTarget target)
 }
 
 //=================================================================================================
+Room* Level::GetFarRoom()
+{
+	if(!lvl)
+		return nullptr;
+	InsideLocation* inside = static_cast<InsideLocation*>(location);
+	return &lvl->GetFarRoom(inside->HaveNextEntry(), true);
+}
+
+//=================================================================================================
 Object* Level::FindObjectInRoom(Room& room, BaseObject* base)
 {
 	for(Object* obj : local_area->objects)
@@ -4824,6 +4839,20 @@ void Level::RecreateTmpObjectPhysics()
 			}
 		}
 	}
+}
+
+//=================================================================================================
+Vec3 Level::GetSpawnCenter()
+{
+	Vec3 pos(Vec3::Zero);
+	int count = 0;
+	for(Unit* unit : local_area->units)
+	{
+		pos += unit->pos;
+		++count;
+	}
+	pos /= (float)count;
+	return pos;
 }
 
 //=================================================================================================

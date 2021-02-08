@@ -5,6 +5,7 @@ Wersja 0.18 (???):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
 + zakładka inwestycje w dzienniku
 + nie można wyrzucić bohatera z drużyny dopóki nie dostanie złota z tartaku/kopalni
++ konwersja zadania "skradziony artefakt" na skrypty
 
 --------------------------------------------------------------------------------
 Wersja 0.17.2 (2021-02-06):

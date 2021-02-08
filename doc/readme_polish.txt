@@ -300,7 +300,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	fire
 	Groszek
 	Harorri
-	Lemiczek 
+	Lemiczek
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit

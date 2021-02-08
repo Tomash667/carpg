@@ -1318,6 +1318,9 @@
     <ClInclude Include="location\TmpLevelArea.h">
       <Filter>location</Filter>
     </ClInclude>
+    <ClInclude Include="system\DialogOp.h">
+      <Filter>system\dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">
@@ -1328,23 +1331,25 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\doc\changelog.TXT">
-      <Filter>doc</Filter>
-    </Text>
-    <Text Include="..\doc\changelog_eng.TXT">
-      <Filter>doc</Filter>
-    </Text>
-    <Text Include="..\doc\readme.txt">
-      <Filter>doc</Filter>
-    </Text>
-    <Text Include="..\doc\readme_eng.txt">
-      <Filter>doc</Filter>
-    </Text>
     <Text Include="..\doc\system.txt">
       <Filter>doc</Filter>
     </Text>
-    <Text Include="..\doc\script.txt">
+    <Text Include="..\doc\changelog_english.txt">
       <Filter>doc</Filter>
     </Text>
+    <Text Include="..\doc\changelog_polish.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\readme_english.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\readme_polish.txt">
+      <Filter>doc</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\doc\script.md">
+      <Filter>doc</Filter>
+    </None>
   </ItemGroup>
 </Project>

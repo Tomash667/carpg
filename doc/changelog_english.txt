@@ -5,6 +5,7 @@ Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
 + investments in journal
 + can't kick out hero before he receive gold from sawmill/mine
++ converted quest "stolen artifact" to script
 
 --------------------------------------------------------------------------------
 Version 0.17.2 (2021-02-06):

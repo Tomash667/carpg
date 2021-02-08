@@ -282,7 +282,7 @@ public:
 	//-----------------------------------------------------------------
 	// WORLD MAP
 	//-----------------------------------------------------------------
-	void EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
+	void EnterLocation(int level = -2, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void Event_RandomEncounter(int id);

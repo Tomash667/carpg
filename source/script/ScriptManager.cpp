@@ -267,6 +267,13 @@ static void ToStrGeneric(asIScriptGeneric* gen)
 	new(gen->GetAddressOfReturnLocation()) string(s);
 }
 
+static string Upper1(const string& str)
+{
+	string s(str);
+	s[0] = toupper(s[0]);
+	return s;
+}
+
 static void ScriptInfo(const string& str)
 {
 	script_mgr->Log(Logger::L_INFO, str.c_str());
@@ -316,6 +323,7 @@ void ScriptManager::RegisterCommon()
 
 	AddFunction("int Random(int, int)", asFUNCTIONPR(Random, (int, int), int));
 	AddFunction("int Rand()", asFUNCTIONPR(Rand, (), int));
+	AddFunction("string Upper1(const string& in)", asFUNCTION(Upper1));
 
 	CHECKED(engine->RegisterGlobalFunction("string Str(?& in)", asFUNCTION(ToStrGeneric), asCALL_GENERIC));
 
@@ -700,6 +708,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Recipe@ Get(const string& in)", asFUNCTION(Recipe::GetS));
 
 	AddType("UnitData")
+		.Member("const string id", offsetof(UnitData, id))
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
 
@@ -720,6 +729,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk));
 
 	ForType("Unit")
+		.Member("const UnitData@ data", offsetof(Unit, data))
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Member("const Player@ player", offsetof(Unit, player))
 		.Member("const Hero@ hero", offsetof(Unit, hero))
@@ -796,6 +806,7 @@ void ScriptManager::RegisterGame()
 	AddType("UnitGroup")
 		.Member("const string name", offsetof(UnitGroup, name))
 		.Member("const bool female", offsetof(UnitGroup, gender))
+		.Method("UnitData@ GetLeader(int)", asMETHOD(UnitGroup, GetLeader))
 		.WithNamespace()
 		.AddProperty("UnitGroup@ empty", &UnitGroup::empty)
 		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
@@ -847,7 +858,8 @@ void ScriptManager::RegisterGame()
 		.Method("Vec3 get_center() const property", asMETHOD(Room, Center));
 
 	ForType("LevelArea")
-		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LevelArea, RemoveItemFromChest));
+		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LevelArea, RemoveItemFromChest))
+		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LevelArea, RemoveItemFromUnit));
 
 	ForType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
@@ -873,6 +885,7 @@ void ScriptManager::RegisterGame()
 		.Method("Unit@ GetMayor()", asFUNCTION(LocationHelper::GetMayor))
 		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain))
 		.Method("LevelArea@ GetArea(int)", asFUNCTIONPR(LocationHelper::GetArea, (Location*, int), LevelArea*))
+		.Method("int GetRandomLevel()", asMETHOD(Location, GetRandomLevel))
 		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit));
 
 	AddType("Encounter")
@@ -909,6 +922,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*) const, Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
+		.AddFunction("Location@ GetRandomSpawnLocation(const Vec2& in, UnitGroup@, float = 160)", asMETHOD(World, GetRandomSpawnLocation))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int flags = 0)", asMETHODPR(World, GetClosestLocation, (LOCATION, const Vec2&, int, int), Location*))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, array<LOCATION_TARGET>@)", asMETHOD(World, GetClosestLocationArrayS))
 		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int = -1)", asMETHODPR(World, CreateLocation, (LOCATION, const Vec2&, int, int), Location*))
@@ -929,6 +943,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("bool IsVillage()", asMETHOD(Level, IsVillage))
 		.AddFunction("bool IsTutorial()", asMETHOD(Level, IsTutorial))
 		.AddFunction("bool IsSafe()", asMETHOD(Level, IsSafe))
+		.AddFunction("bool IsOutside()", asMETHOD(Level, IsOutside))
 		.AddFunction("Unit@ FindUnit(UnitData@)", asMETHODPR(Level, FindUnit, (UnitData*), Unit*))
 		.AddFunction("Unit@ GetNearestEnemy(Unit@)", asMETHOD(Level, GetNearestEnemy))
 		.AddFunction("GroundItem@ FindItem(Item@)", asMETHOD(Level, FindItem))
@@ -937,12 +952,14 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ SpawnItem(Item@, Object@)", asMETHOD(Level, SpawnItemAtObject))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Vec3 FindSpawnPos(Room@, Unit@)", asMETHOD(Level, FindSpawnPos))
-		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2)", asMETHOD(Level, SpawnUnitNearLocationS))
+		.AddFunction("Vec3 GetSpawnCenter()", asMETHOD(Level, GetSpawnCenter))
+		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2, int = -1)", asMETHOD(Level, SpawnUnitNearLocationS))
 		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
-		.AddFunction("Unit@ SpawnUnit(Room@, UnitData@)", asMETHOD(Level, SpawnUnitInsideRoomS))
+		.AddFunction("Unit@ SpawnUnit(Room@, UnitData@, int = -1)", asMETHOD(Level, SpawnUnitInsideRoomS))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))
 		.AddFunction("Room@ GetRoom(ROOM_TARGET)", asMETHOD(Level, GetRoom))
+		.AddFunction("Room@ GetFarRoom()", asMETHOD(Level, GetFarRoom))
 		.AddFunction("Object@ FindObject(Room@, BaseObject@)", asMETHOD(Level, FindObjectInRoom))
 		.AddFunction("Chest@ GetRandomChest(Room@)", asMETHOD(Level, GetRandomChest))
 		.AddFunction("Chest@ GetTreasureChest()", asMETHOD(Level, GetTreasureChest))

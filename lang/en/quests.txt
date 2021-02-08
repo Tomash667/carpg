@@ -212,6 +212,35 @@ quest find_artifact {
 }
 
 //=============================================================================
+quest stolen_artifact {
+	dialog start {
+		0 "$(Upper1(group.name)) has stolen my $(item.name)."
+		1 "Can you retrieve it?"
+		2 "Yes"
+		3 "Those $(group.name) are probably in $(targetLoc.name) which is $(World::GetDirName(startLoc, targetLoc)) from here."
+		4 "I'll wait until someone brings it to me but up to two months. Good luck!"
+		5 "No"
+	}
+	
+	dialog end {
+		0 "Give back stolen artifact"
+		1 "Thank you for this artifact, take this $(Str(GetReward())) gold pieces in thanks."
+		2 "You could not recover this artifact? Too bad..."
+		2 "Apparently close to $(World::GetRandomSettlement(startLoc).name) people found some new artifacts, there I leave."
+		4 "Good luck in your adventures!"
+	}
+	
+	texts {
+		0 "Stolen artifact"
+		1 "Obtained from traveler in $(start_loc.name) at $date$."
+		2 "The traveler wants me to retrieve $(item.name) which was stolen by $(group.name) staying in $(targetLoc.name) to the $(World::GetDirName(startLoc, targetLoc)). I have two months to do so."
+		3 "I delivered the stolen artifact and received the reward. Quest done!"
+		4 "I failed to retrieve the stolen artifact in time."
+		5 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
 quest alchemist_apprentice {
 	dialog alchemist {
 		0 "Welcome. Are you here for the task?"

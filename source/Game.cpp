@@ -1371,6 +1371,9 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	game_level->entering = true;
 	game_level->lvl = nullptr;
 
+	if(level == -2)
+		level = (l.outside ? -1 : 0);
+
 	game_gui->world_map->Hide();
 	game_gui->level_gui->Reset();
 	game_gui->level_gui->visible = true;
@@ -2662,7 +2665,7 @@ void Game::ClearGameVars(bool new_game)
 		draw_phy = false;
 		draw_col = false;
 		game_speed = 1.f;
-		game_level->dungeon_level = 0;
+		game_level->dungeon_level = -1;
 		quest_mgr->Reset();
 		world->OnNewGame();
 		game_stats->Reset();

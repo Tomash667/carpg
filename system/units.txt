@@ -3456,7 +3456,7 @@ group orcs {
 
 group ogres {
 	ogre 1
-	
+
 	orc_food 1
 }
 

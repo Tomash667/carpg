@@ -869,6 +869,25 @@ bool LevelArea::RemoveItemFromChest(const Item* item)
 }
 
 //=================================================================================================
+// Check only alive units, ignore team
+bool LevelArea::RemoveItemFromUnit(const Item* item)
+{
+	for(Unit* unit : units)
+	{
+		if(!unit->IsAlive() || unit->IsTeamMember())
+			continue;
+
+		if(unit->HaveItem(item))
+		{
+			unit->RemoveItem(item, 1u);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
 Door* LevelArea::FindDoor(const Int2& pt)
 {
 	for(Door* door : doors)

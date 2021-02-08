@@ -326,6 +326,7 @@
     <ClInclude Include="stats\Skill.h" />
     <ClInclude Include="stats\UnitStats.h" />
     <ClInclude Include="system\DialogLoader.h" />
+    <ClInclude Include="system\DialogOp.h" />
     <ClInclude Include="system\LocationLoader.h" />
     <ClInclude Include="system\FrameInfo.h" />
     <ClInclude Include="system\GameDialog.h" />
@@ -565,12 +566,14 @@
     <ResourceCompile Include="resource\resource2.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\doc\changelog.TXT" />
-    <Text Include="..\doc\changelog_eng.TXT" />
-    <Text Include="..\doc\readme.txt" />
-    <Text Include="..\doc\readme_eng.txt" />
-    <Text Include="..\doc\script.txt" />
+    <Text Include="..\doc\changelog_english.txt" />
+    <Text Include="..\doc\changelog_polish.txt" />
+    <Text Include="..\doc\readme_english.txt" />
+    <Text Include="..\doc\readme_polish.txt" />
     <Text Include="..\doc\system.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\doc\script.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
