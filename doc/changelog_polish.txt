@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Fixes:
+- zadania z długą nazwą nie mieszczą się w dzienniku
+
+--------------------------------------------------------------------------------
 Wersja 0.17.2 (2021-02-06):
 - niektóre dialogi/teksty zadań psują się po wczytaniu
 - akademia/puste/oczyszczone lokalizacje nie są bezpieczne, nie można było używać szybkiej podróży

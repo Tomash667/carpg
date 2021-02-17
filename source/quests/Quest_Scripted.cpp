@@ -568,6 +568,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	data.vars = new Vars;
 	quest->GetConversionData(data);
 	scheme = QuestScheme::TryGet(data.id);
+	isNew = true;
 	if(!scheme || !scheme->f_upgrade)
 		throw Format("Missing upgrade quest '%s'.", data.id);
 

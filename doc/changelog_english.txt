@@ -1,6 +1,9 @@
 Changelog
 
 --------------------------------------------------------------------------------
+- quests with long names don't fit in journal
+
+--------------------------------------------------------------------------------
 Version 0.17.2 (2021-02-06):
 - some quests dialogs/text get corrupted after loading
 - acadmy/empty/cleared locations wasn't safe, can't use fast travel
