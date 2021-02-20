@@ -171,7 +171,6 @@ public:
 	void SetupTracks();
 	void UpdateMusic();
 	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
-	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	void UpdateAttachedSounds(float dt);
 	void StopAllSounds();
 

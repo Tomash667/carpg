@@ -146,7 +146,7 @@ bool Trap::Update(float dt, LevelArea& area)
 							float dmg = CombatHelper::CalculateDamage(attack, def);
 
 							// hit sound
-							sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), HIT_SOUND_DIST);
+							unit->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, unit->pos + Vec3(0, 1.f, 0), dmg > 0);
 
 							// train player armor skill
 							if(unit->IsPlayer())
@@ -387,7 +387,20 @@ bool Trap::Update(float dt, LevelArea& area)
 				Explo* explo = area.CreateExplo(fireball, exploPos);
 				explo->dmg = float(base->attack);
 
-				if(Net::IsOnline())
+				if(fireball->sound_hit)
+				{
+					sound_mgr->PlaySound3d(fireball->sound_hit, pos, fireball->sound_hit_dist);
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::SPELL_SOUND;
+						c.e_id = 1;
+						c.ability = fireball;
+						c.pos = pos;
+					}
+				}
+
+				if(Net::IsServer())
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REMOVE_TRAP;

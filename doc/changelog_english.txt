@@ -8,6 +8,13 @@ Version 0.18 (???):
 + converted quest "stolen artifact" to script
 
 --------------------------------------------------------------------------------
+Fixes:
+- quests with long names don't fit in journal
+- wrong sounds when hit skeleton/golem
+- missing client hit sound from spears trap, from spells hit
+- arrow hit wall sound for clients when shoot enemy was standing close to wall
+
+--------------------------------------------------------------------------------
 Version 0.17.2 (2021-02-06):
 - some quests dialogs/text get corrupted after loading
 - acadmy/empty/cleared locations wasn't safe, can't use fast travel

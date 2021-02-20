@@ -3058,32 +3058,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	}
 }
 
-void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, float range, bool dmg)
-{
-	// sounds
-	sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, range);
-	if(mat != MAT_BODY && dmg)
-		sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, range);
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::HIT_SOUND;
-		c.pos = hitpoint;
-		c.id = mat2;
-		c.count = mat;
-
-		if(mat != MAT_BODY && dmg)
-		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::HIT_SOUND;
-			c2.pos = hitpoint;
-			c2.id = mat2;
-			c2.count = MAT_BODY;
-		}
-	}
-}
-
 void Game::LoadingStart(int steps)
 {
 	game_gui->load_screen->Reset();

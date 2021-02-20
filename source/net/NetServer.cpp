@@ -3438,7 +3438,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TRIGGER_TRAP:
 		case NetChange::CLEAN_LEVEL:
 		case NetChange::REMOVE_ITEM:
-		case NetChange::REMOVE_BULLET:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3581,6 +3580,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->data->id;
 			break;
 		case NetChange::SPELL_SOUND:
+			f << c.e_id;
 			f << c.ability->hash;
 			f << c.pos;
 			break;
@@ -3664,6 +3664,10 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			f << c.ability->hash;
+			break;
+		case NetChange::REMOVE_BULLET:
+			f << c.id;
+			f << (c.e_id == 1);
 			break;
 		case NetChange::ADD_INVESTMENT:
 			{

@@ -12,7 +12,7 @@ public:
 	{
 		cstring text;
 		string* pooled;
-		int x, y, color;
+		int x, y, h, color;
 	};
 
 	enum Mode
@@ -44,7 +44,7 @@ public:
 
 private:
 	void Build();
-	void AddEntry(cstring text, int color, bool singleline, bool pooled = false);
+	void AddEntry(cstring str, int color = 0, bool spacing = true, bool pooled = false);
 	void OnAddNote(int id);
 
 	Mode mode;

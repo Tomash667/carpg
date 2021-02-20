@@ -26,9 +26,12 @@ struct Electro : public EntityType<Electro>
 	~Electro();
 	void AddLine(const Vec3& from, const Vec3& to, float t = 0);
 	bool Update(float dt);
-	void UpdateColor(Line& line);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
+
+private:
+	void UpdateColor(Line& line);
+	Unit* FindNextTarget();
 };

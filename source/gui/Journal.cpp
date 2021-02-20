@@ -113,9 +113,9 @@ void Journal::Draw(ControlDrawData*)
 
 	// prev/next page arrows
 	if(page != 0)
-		gui->DrawSprite(tArrowL, Int2(rect.Left() - 8, rect.Bottom() - 8));
+		gui->DrawSprite(tArrowL, Int2(rect.Left() + 5, rect.Bottom() - 16));
 	if(texts.back().x > x2)
-		gui->DrawSprite(tArrowR, Int2(rect2.Right() + 8, rect.Bottom() - 8));
+		gui->DrawSprite(tArrowR, Int2(rect2.Right() - 21, rect.Bottom() - 16));
 }
 
 //=================================================================================================
@@ -249,16 +249,29 @@ void Journal::Update(float dt)
 		if(!quest_mgr->quests.empty() && !details)
 		{
 			// select quest
-			int what = -1;
+			int x, y = (gui->cursor_pos.y - rect.Top()) / font_height;
 			if(rect.IsInside(gui->cursor_pos))
-				what = (gui->cursor_pos.y - rect.Top()) / font_height;
+				x = page * 2;
 			else if(rect2.IsInside(gui->cursor_pos))
-				what = (gui->cursor_pos.y - rect.Top()) / font_height + rect_lines;
+				x = page * 2 + 1;
+			else
+				x = -1;
 
-			if(what != -1)
+			if(x != -1)
 			{
-				what += page * rect_lines * 2;
-				if(what < int(quest_mgr->quests.size()))
+				int index = 0;
+				bool ok = false;
+				for(Text& text : texts)
+				{
+					if(x == text.x && y >= text.y && y < text.y + text.h)
+					{
+						ok = true;
+						break;
+					}
+					++index;
+				}
+
+				if(ok)
 				{
 					gui->cursor_mode = CURSOR_HOVER;
 					if(input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -266,7 +279,7 @@ void Journal::Update(float dt)
 						details = true;
 						prev_page = page;
 						page = 0;
-						open_quest = what;
+						open_quest = index;
 						Build();
 					}
 				}
@@ -316,7 +329,7 @@ void Journal::Update(float dt)
 	{
 		if(page != 0)
 		{
-			if(PointInRect(gui->cursor_pos, rect.LeftBottom() - Int2(8, 8), Int2(16, 16)))
+			if(PointInRect(gui->cursor_pos, rect.LeftBottom() + Int2(5, -16), Int2(16, 16)))
 			{
 				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -325,7 +338,7 @@ void Journal::Update(float dt)
 		}
 		if(texts.back().x > page * 2 + 1)
 		{
-			if(PointInRect(gui->cursor_pos, rect2.RightBottom() + Int2(8, -8), Int2(16, 16)))
+			if(PointInRect(gui->cursor_pos, rect2.RightBottom() + Int2(-21, -16), Int2(16, 16)))
 			{
 				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -344,7 +357,7 @@ void Journal::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize || e == GuiEvent_Resize || e == GuiEvent_Moved)
 	{
 		rect = Rect(32, 16, 238, 432);
-		rect2 = Rect(259, 16, 455, 432);
+		rect2 = Rect(270, 16, 476, 432);
 
 		Vec2 scale = Vec2(size) / 512;
 		rect = rect * scale + global_pos;
@@ -403,7 +416,7 @@ void Journal::Build()
 		{
 			// list of quests
 			if(quest_mgr->quests.empty())
-				AddEntry(txNoQuests, 0, true);
+				AddEntry(txNoQuests);
 			else
 			{
 				for(Quest* quest : quest_mgr->quests)
@@ -415,9 +428,9 @@ void Journal::Build()
 						color = 2;
 
 					if(devmode)
-						AddEntry(Format("%s (%p)", quest->name.c_str(), quest), color, true, true);
+						AddEntry(Format("%s (%p)", quest->name.c_str(), quest), color, false, true);
 					else
-						AddEntry(quest->name.c_str(), color, true);
+						AddEntry(quest->name.c_str(), color, false);
 				}
 			}
 		}
@@ -426,30 +439,30 @@ void Journal::Build()
 			// details of single quest
 			Quest* quest = quest_mgr->quests[open_quest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
-				AddEntry(it->c_str(), 0, false);
+				AddEntry(it->c_str());
 		}
 		break;
 
 	case Rumors:
 		if(rumors.empty())
-			AddEntry(txNoRumors, 0, false);
+			AddEntry(txNoRumors);
 		else
 		{
 			for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-				AddEntry(it->c_str(), 0, false);
+				AddEntry(it->c_str());
 		}
 		break;
 
 	case Notes:
 		if(notes.empty())
-			AddEntry(txNoNotes, 0, false);
+			AddEntry(txNoNotes);
 		else
 		{
 			for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-				AddEntry(it->c_str(), 0, false);
+				AddEntry(it->c_str());
 		}
 
-		AddEntry(txAddNote, 0, false);
+		AddEntry(txAddNote);
 		break;
 
 	case Investments:
@@ -474,7 +487,7 @@ void Journal::Build()
 }
 
 //=================================================================================================
-void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
+void Journal::AddEntry(cstring text, int color, bool spacing, bool pooled)
 {
 	Text& t = Add1(texts);
 	t.color = color;
@@ -491,24 +504,13 @@ void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
 		t.text = text;
 	}
 
-	if(singleline)
-	{
-		t.x = x;
-		t.y = y;
-		++y;
-		if(y == rect_lines)
-		{
-			y = 0;
-			++x;
-		}
-		return;
-	}
-
 	// how many lines this text takes?
-	Int2 osize = GameGui::font->CalculateSize(text, rect_w);
-	int h = osize.y / font_height + 1;
+	const Int2 size = GameGui::font->CalculateSize(text, rect_w);
+	t.h = size.y / font_height;
+	if(spacing)
+		++t.h;
 
-	if(y + h >= rect_lines)
+	if(y + t.h >= rect_lines)
 	{
 		if(y == 0)
 		{
@@ -524,7 +526,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
 			y = 0;
 			t.x = x;
 			t.y = y;
-			y += h;
+			y += t.h;
 			if(y == rect_lines)
 			{
 				y = 0;
@@ -536,7 +538,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline, bool pooled)
 	{
 		t.x = x;
 		t.y = y;
-		y += h;
+		y += t.h;
 		if(y == rect_lines)
 		{
 			y = 0;

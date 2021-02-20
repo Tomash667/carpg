@@ -533,13 +533,6 @@ struct Unit : public EntityType<Unit>
 		else
 			return data->mat;
 	}
-	MATERIAL_TYPE GetBodyMaterial() const
-	{
-		if(HaveArmor())
-			return GetArmor().material;
-		else
-			return data->mat;
-	}
 	float GetAttackFrame(int frame) const;
 	int GetRandomAttack() const;
 	void Save(GameWriter& f);
@@ -914,6 +907,7 @@ public:
 	void DropGold(int count);
 	bool IsDrunkman() const;
 	void PlaySound(Sound* sound, float range);
+	void PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, bool dmg);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
