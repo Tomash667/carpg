@@ -164,81 +164,31 @@ bool Electro::Update(float dt)
 				c.pos = target_pos;
 			}
 
-			if(dmg >= 10.f)
+			Unit* newTarget = FindNextTarget();
+			if(newTarget)
 			{
-				static vector<pair<Unit*, float>> targets;
+				// found another target
+				const float dist = Vec3::Distance(target->pos, newTarget->pos);
+				dmg = min(dmg / 2, Lerp(dmg, dmg / 5, dist / 5));
+				valid = true;
+				hitted.push_back(newTarget);
+				Vec3 from = lines.back().to;
+				Vec3 to = newTarget->GetCenter();
+				AddLine(from, to);
 
-				// hit another target
-				for(Unit* unit : area->units)
+				if(Net::IsOnline())
 				{
-					if(!unit->IsAlive() || IsInside(hitted, unit))
-						continue;
-
-					float dist = Vec3::Distance(unit->pos, target->pos);
-					if(dist <= 5.f)
-						targets.push_back(pair<Unit*, float>(unit, dist));
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_ELECTRO;
+					c.e_id = id;
+					c.pos = to;
 				}
-
-				if(!targets.empty())
-				{
-					if(targets.size() > 1)
-					{
-						std::sort(targets.begin(), targets.end(), [](const pair<Unit*, float>& target1, const pair<Unit*, float>& target2)
-						{
-							return target1.second < target2.second;
-						});
-					}
-
-					Unit* newTarget = nullptr;
-					float dist;
-					for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
-					{
-						Vec3 hitpoint;
-						Unit* new_hitted;
-						if(game_level->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
-						{
-							if(new_hitted == it2->first)
-							{
-								newTarget = it2->first;
-								dist = it2->second;
-								break;
-							}
-						}
-					}
-
-					if(newTarget)
-					{
-						// found another target
-						dmg = min(dmg / 2, Lerp(dmg, dmg / 5, dist / 5));
-						valid = true;
-						hitted.push_back(newTarget);
-						Vec3 from = lines.back().to;
-						Vec3 to = newTarget->GetCenter();
-						AddLine(from, to);
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::UPDATE_ELECTRO;
-							c.e_id = id;
-							c.pos = to;
-						}
-					}
-					else
-					{
-						// noone to hit
-						valid = false;
-					}
-
-					targets.clear();
-				}
-				else
-					valid = false;
 			}
 			else
 			{
-				// already hit enough targets
+				// hit enough/no target
 				valid = false;
+				hitsome = false;
 			}
 		}
 	}
@@ -313,6 +263,58 @@ void Electro::UpdateColor(Line& line)
 			a = 0.f;
 		line.trail->parts[i].t = a;
 	}
+}
+
+//=================================================================================================
+Unit* Electro::FindNextTarget()
+{
+	if(dmg < 10.f)
+	{
+		// already hit enough targets
+		return nullptr;
+	}
+
+	// hit another target
+	Unit* target = hitted.back();
+	static vector<pair<Unit*, float>> targets;
+	for(Unit* unit : area->units)
+	{
+		if(!unit->IsAlive() || IsInside(hitted, unit))
+			continue;
+
+		float dist = Vec3::Distance(unit->pos, target->pos);
+		if(dist <= 5.f)
+			targets.push_back(pair<Unit*, float>(unit, dist));
+	}
+	if(targets.empty())
+		return nullptr;
+
+	if(targets.size() > 1)
+	{
+		std::sort(targets.begin(), targets.end(), [](const pair<Unit*, float>& target1, const pair<Unit*, float>& target2)
+		{
+			return target1.second < target2.second;
+		});
+	}
+
+	const Vec3 target_pos = lines.back().to;
+	Unit* newTarget = nullptr;
+	for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
+	{
+		Vec3 hitpoint;
+		Unit* new_hitted;
+		if(game_level->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
+		{
+			if(new_hitted == it2->first)
+			{
+				newTarget = it2->first;
+				break;
+			}
+		}
+	}
+
+	targets.clear();
+	return newTarget;
 }
 
 //=================================================================================================

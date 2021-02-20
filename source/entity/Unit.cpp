@@ -5485,6 +5485,45 @@ void Unit::PlaySound(Sound* sound, float range)
 }
 
 //=================================================================================================
+void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, bool dmg)
+{
+	bool playBodyHit = false;
+	if(mat == MAT_SPECIAL_UNIT)
+	{
+		if(HaveArmor())
+		{
+			mat = GetArmor().material;
+			if(dmg && mat != MAT_BODY)
+				playBodyHit = true;
+		}
+		else
+			mat = data->mat;
+	}
+
+	sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, HIT_SOUND_DIST);
+	if(playBodyHit)
+		sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, HIT_SOUND_DIST);
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::HIT_SOUND;
+		c.pos = hitpoint;
+		c.id = mat2;
+		c.count = mat;
+
+		if(playBodyHit)
+		{
+			NetChange& c2 = Add1(Net::changes);
+			c2.type = NetChange::HIT_SOUND;
+			c2.pos = hitpoint;
+			c2.id = mat2;
+			c2.count = MAT_BODY;
+		}
+	}
+}
+
+//=================================================================================================
 void Unit::CreatePhysics(bool position)
 {
 	float r = GetUnitRadius();
@@ -7045,6 +7084,7 @@ void Unit::CastSpell()
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
+			c.e_id = 0;
 			c.ability = &ability;
 			c.pos = coord;
 		}
@@ -8080,7 +8120,7 @@ void Unit::Update(float dt)
 								float attack = GetAbilityPower(*act.dash.ability);
 								float def = unit->CalculateDefense();
 								float dmg = CombatHelper::CalculateDamage(attack, def);
-								game->PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), HIT_SOUND_DIST, true);
+								unit->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, unit->GetCenter(), true);
 								if(unit->IsPlayer())
 									unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, level);
 								unit->GiveDmg(dmg, this);
@@ -8957,7 +8997,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 	float dmg = CombatHelper::CalculateDamage(attack, def);
 
 	// hit sound
-	game->PlayHitSound(!bash ? GetWeaponMaterial() : GetShield().material, hitted.GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
+	hitted.PlayHitSound(!bash ? GetWeaponMaterial() : GetShield().material, MAT_SPECIAL_UNIT, hitpoint, dmg > 0.f);
 
 	// train player armor skill
 	if(hitted.IsPlayer())

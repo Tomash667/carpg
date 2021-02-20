@@ -87,6 +87,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 		NetChange& c = Add1(net->changes);
 		c.type = NetChange::REMOVE_BULLET;
 		c.id = id;
+		c.e_id = (hitted != nullptr ? 1 : 0);
 	}
 
 	delete this;
@@ -106,21 +107,12 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			if(owner && owner->IsFriend(*hitted, true) || attack < -50.f)
 			{
 				// friendly fire
+				MATERIAL_TYPE material;
 				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->rot) < PI * 2 / 5)
-				{
-					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HIT_SOUND;
-						c.id = MAT_IRON;
-						c.count = mat;
-						c.pos = hitpoint;
-					}
-				}
+					material = hitted->GetShield().material;
 				else
-					game->PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, ARROW_HIT_SOUND_DIST, false);
+					material = MAT_SPECIAL_UNIT;
+				hitted->PlayHitSound(MAT_IRON, material, hitpoint, false);
 				return;
 			}
 
@@ -153,16 +145,8 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
 			{
 				// play sound
-				MATERIAL_TYPE mat = hitted->GetShield().material;
-				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HIT_SOUND;
-					c.id = MAT_IRON;
-					c.count = mat;
-					c.pos = hitpoint;
-				}
+				const MATERIAL_TYPE material = hitted->GetShield().material;
+				hitted->PlayHitSound(MAT_IRON, material, hitpoint, false);
 
 				// train blocking
 				if(hitted->IsPlayer())
@@ -217,7 +201,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			float dmg = CombatHelper::CalculateDamage(attack, def);
 
 			// hit sound
-			game->PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
+			hitted->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, hitpoint, dmg > 0.f);
 
 			// train player armor skill
 			if(hitted->IsPlayer())
@@ -274,21 +258,12 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				area.SpellHitEffect(*this, hitpoint, hitted);
 
 				// hit sound
+				MATERIAL_TYPE material;
 				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->rot) < PI * 2 / 5)
-				{
-					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HIT_SOUND;
-						c.id = MAT_IRON;
-						c.count = mat;
-						c.pos = hitpoint;
-					}
-				}
+					material = hitted->GetShield().material;
 				else
-					game->PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, false);
+					material = MAT_SPECIAL_UNIT;
+				hitted->PlayHitSound(MAT_IRON, material, hitpoint, false);
 				return;
 			}
 
@@ -350,7 +325,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 		// hit object
 		if(!ability)
 		{
-			sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, ARROW_HIT_SOUND_DIST);
+			sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = game_res->tSpark;
@@ -385,7 +360,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				}
 			}
 		}
-		else
+		else if(Net::IsLocal())
 		{
 			// hit object with spell
 			area.SpellHitEffect(*this, hitpoint, nullptr);

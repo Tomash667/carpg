@@ -1,7 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Fixes:
 - quests with long names don't fit in journal
+- wrong sounds when hit skeleton/golem
+- missing client hit sound from spears trap, from spells hit
+- arrow hit wall sound for clients when shoot enemy was standing close to wall
 
 --------------------------------------------------------------------------------
 Version 0.17.2 (2021-02-06):

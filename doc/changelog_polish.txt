@@ -3,6 +3,9 @@ Historia zmian
 --------------------------------------------------------------------------------
 Fixes:
 - zadania z długą nazwą nie mieszczą się w dzienniku
+- nieprawidłowe dźwięki po trafieniu szkieleta/golema itp
+- brak dźwięku trafienia przez włócznie pułapkę u klienta/od trafienia czarem
+- dźwięk trafienia w ściane u klienta jeśli zastrzelony wróg stał obok ściany
 
 --------------------------------------------------------------------------------
 Wersja 0.17.2 (2021-02-06):

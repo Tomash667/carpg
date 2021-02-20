@@ -1182,7 +1182,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					area.tmp->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, ARROW_HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -2374,8 +2374,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				int ability_hash;
+				int type, ability_hash;
 				Vec3 pos;
+				f >> type;
 				f >> ability_hash;
 				f >> pos;
 				if(!f)
@@ -2390,8 +2391,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				Ability* ability = Ability::Get(ability_hash);
 				if(!ability)
 					Error("Update client: SPELL_SOUND, missing ability %u.", ability_hash);
-				else
+				else if(type == 0)
 					sound_mgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);
+				else
+					sound_mgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
 			}
 			break;
 		// drain blood effect
@@ -3053,14 +3056,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::REMOVE_BULLET:
 			{
 				int id;
+				bool hitUnit;
 				f >> id;
+				f >> hitUnit;
 				if(!f)
 					Error("Update client: Broken REMOVE_BULLET.");
 				else
 				{
 					Bullet* bullet = Bullet::GetById(id);
 					if(bullet)
-						bullet->timer = 0.1f;
+						bullet->timer = (hitUnit ? 0.f : 0.1f);
 				}
 			}
 			break;

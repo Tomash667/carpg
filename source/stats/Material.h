@@ -4,6 +4,7 @@
 // Material types
 enum MATERIAL_TYPE
 {
+	MAT_SPECIAL_UNIT = -1,
 	MAT_WOOD,
 	MAT_SKIN,
 	MAT_IRON,

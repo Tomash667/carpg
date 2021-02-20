@@ -885,6 +885,20 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 {
 	Ability& ability = *bullet.ability;
 
+	// sound
+	if(ability.sound_hit)
+	{
+		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPELL_SOUND;
+			c.e_id = 1;
+			c.ability = &ability;
+			c.pos = pos;
+		}
+	}
+
 	if(IsSet(ability.flags, Ability::Explode))
 	{
 		// explosion
@@ -901,10 +915,6 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	}
 	else
 	{
-		// sound
-		if(ability.sound_hit)
-			sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
-
 		// particles
 		if(ability.tex_particle && ability.type == Ability::Ball)
 		{
@@ -1079,8 +1089,6 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 	explo->size = 0;
 	explo->sizemax = ability->explode_range;
 	tmp->explos.push_back(explo);
-
-	sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
 
 	if(Net::IsServer())
 	{
