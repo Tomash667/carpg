@@ -15,6 +15,7 @@ struct Bullet : public EntityType<Bullet>
 	TexturePtr tex;
 	TrailParticleEmitter* trail;
 	ParticleEmitter* pe;
+	bool isArrow;
 
 	static const int MIN_SIZE = 41;
 

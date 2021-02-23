@@ -115,6 +115,7 @@ void LevelGui::LoadLanguage()
 void LevelGui::LoadData()
 {
 	tCrosshair = res_mgr->Load<Texture>("crosshair.png");
+	tCrosshair2 = res_mgr->Load<Texture>("crosshair2.png");
 	tBubble = res_mgr->Load<Texture>("bubble.png");
 	tDamageLayer = res_mgr->Load<Texture>("damage_layer.png");
 	tBar = res_mgr->Load<Texture>("bar.png");
@@ -219,7 +220,7 @@ void LevelGui::DrawFront()
 		const Vec2 scale((1.f - pc.data.range_ratio) + 0.5f);
 		const Vec2 pos(0.5f * gui->wnd_size.x - 16.f, 0.5f * gui->wnd_size.y - 16.f);
 		const Matrix mat = Matrix::Transform2D(&center, 0, &scale, nullptr, 0, &pos);
-		gui->DrawSprite2(tCrosshair, mat);
+		gui->DrawSprite2(pc.IsAbilityPrepared() ? tCrosshair2 : tCrosshair, mat);
 	}
 
 	// taking damage layer (red screen)

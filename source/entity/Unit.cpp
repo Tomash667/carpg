@@ -935,18 +935,50 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 //=================================================================================================
 void Unit::AddEffect(Effect& e, bool send)
 {
+	bool visible = false;
+	if(Net::IsLocal())
+	{
+		switch(e.effect)
+		{
+		case EffectId::Stun:
+			visible = true;
+			BreakAction();
+			if(IsSet(data->flags2, F2_STUN_RESISTANCE))
+				e.time /= 2;
+			break;
+		case EffectId::Rooted:
+			visible = true;
+			if(IsSet(data->flags2, F2_ROOTED_RESISTANCE))
+				e.time /= 2;
+			break;
+		}
+	}
+
 	effects.push_back(e);
 	OnAddRemoveEffect(e);
-	if(send && player && !player->IsLocal() && Net::IsServer())
+
+	if(send && Net::IsServer())
 	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ADD_EFFECT;
-		c.id = (int)e.effect;
-		c.count = (int)e.source;
-		c.a1 = e.source_id;
-		c.a2 = e.value;
-		c.pos.x = e.power;
-		c.pos.y = e.time;
+		if(player && !player->IsLocal())
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::ADD_EFFECT;
+			c.id = (int)e.effect;
+			c.count = (int)e.source;
+			c.a1 = e.source_id;
+			c.a2 = e.value;
+			c.pos.x = e.power;
+			c.pos.y = e.time;
+		}
+
+		if(visible)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::ADD_UNIT_EFFECT;
+			c.unit = this;
+			c.id = (int)e.effect;
+			c.extra_f = e.time;
+		}
 	}
 }
 
@@ -1607,6 +1639,22 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prev_value) const
 }
 
 //=================================================================================================
+bool Unit::CanRun() const
+{
+	if(IsSet(data->flags, F_SLOW)
+		|| Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST)
+		|| (action == A_ATTACK && !act.attack.run)
+		|| IsOverloaded())
+		return false;
+
+	const float slow = GetEffectMax(EffectId::SlowMove);
+	if(slow >= 0.5f)
+		return false;
+
+	return true;
+}
+
+//=================================================================================================
 void Unit::RecalculateHp()
 {
 	float hpp = hp / hpmax;
@@ -1835,6 +1883,9 @@ void Unit::Save(GameWriter& f)
 			f << act.dash.rot;
 			if(act.dash.hit)
 				act.dash.hit->Save(f);
+			break;
+		case A_SHOOT:
+			f << (act.shoot.ability ? act.shoot.ability->hash : 0);
 			break;
 		case A_USE_USABLE:
 			f << act.use_usable.rot;
@@ -2224,6 +2275,19 @@ void Unit::Load(GameReader& f)
 				act.dash.hit = UnitList::Get();
 				act.dash.hit->Load(f);
 			}
+			break;
+		case A_SHOOT:
+			if(LOAD_VERSION >= V_DEV)
+			{
+				int hash;
+				f >> hash;
+				if(hash != 0)
+					act.shoot.ability = Ability::Get(hash);
+				else
+					act.shoot.ability = nullptr;
+			}
+			else
+				act.shoot.ability = nullptr;
 			break;
 		case A_USE_USABLE:
 			if(LOAD_VERSION >= V_0_10)
@@ -2686,10 +2750,38 @@ void Unit::Write(BitStreamWriter& f) const
 		else
 			f.Write0();
 		f << (usable ? usable->id : -1);
-		if(action == A_ATTACK)
+		switch(action)
+		{
+		case A_ATTACK:
 			f << act.attack.index;
-		else if(action == A_USE_USABLE)
+			break;
+		case A_USE_USABLE:
 			f << act.use_usable.rot;
+			break;
+		case A_SHOOT:
+			f << (act.shoot.ability ? act.shoot.ability->hash : 0);
+			break;
+		}
+
+		// visible effects
+		uint count = 0;
+		for(const Effect& e : effects)
+		{
+			if(Any(e.effect, EffectId::Stun, EffectId::Rooted))
+				++count;
+		}
+		f.WriteCasted<byte>(count);
+		if(count)
+		{
+			for(const Effect& e : effects)
+			{
+				if(Any(e.effect, EffectId::Stun, EffectId::Rooted))
+				{
+					f.WriteCasted<byte>(e.effect);
+					f << e.time;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -2958,6 +3050,7 @@ bool Unit::Read(BitStreamReader& f)
 			f >> act.attack.index;
 			break;
 		case A_SHOOT:
+			act.shoot.ability = Ability::Get(f.Read<int>());
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
@@ -2966,6 +3059,18 @@ bool Unit::Read(BitStreamReader& f)
 		case A_USE_USABLE:
 			f >> act.use_usable.rot;
 			break;
+		}
+
+		// visible effects
+		effects.resize(f.Read<byte>());
+		for(Effect& e : effects)
+		{
+			f.ReadCasted<byte>(e.effect);
+			f >> e.time;
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
+			e.value = -1;
+			e.power = 0;
 		}
 
 		if(!f)
@@ -3428,12 +3533,12 @@ void Unit::RemoveEffect(EffectId effect)
 			_to_remove.push_back(index);
 	}
 
-	if(effect == EffectId::Stun && !_to_remove.empty() && Net::IsServer())
+	if(Any(effect, EffectId::Stun, EffectId::Rooted) && !_to_remove.empty() && Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::STUN;
+		c.type = NetChange::REMOVE_UNIT_EFFECT;
 		c.unit = this;
-		c.f[0] = 0;
+		c.id = (int)effect;
 	}
 
 	RemoveEffects();
@@ -4244,6 +4349,12 @@ int Unit::GetBuffs() const
 		case EffectId::PoisonResistance:
 			b |= BUFF_POISON_RES;
 			break;
+		case EffectId::Rooted:
+			b |= BUFF_ROOTED;
+			break;
+		case EffectId::SlowMove:
+			b |= BUFF_SLOW_MOVE;
+			break;
 		}
 	}
 
@@ -4816,38 +4927,6 @@ void Unit::CreateMesh(CREATE_MESH mode)
 }
 
 //=================================================================================================
-void Unit::ApplyStun(float length)
-{
-	if(Net::IsLocal() && IsSet(data->flags2, F2_STUN_RESISTANCE))
-		length /= 2;
-
-	Effect* effect = FindEffect(EffectId::Stun);
-	if(effect)
-		effect->time = max(effect->time, length);
-	else
-	{
-		Effect e;
-		e.effect = EffectId::Stun;
-		e.source = EffectSource::Temporary;
-		e.source_id = -1;
-		e.value = -1;
-		e.power = 0.f;
-		e.time = length;
-		AddEffect(e);
-
-		BreakAction();
-	}
-
-	if(Net::IsServer())
-	{
-		auto& c = Add1(Net::changes);
-		c.type = NetChange::STUN;
-		c.unit = this;
-		c.f[0] = length;
-	}
-}
-
-//=================================================================================================
 void Unit::UseUsable(Usable* new_usable)
 {
 	if(new_usable)
@@ -5198,7 +5277,7 @@ void Unit::TryStandup(float dt)
 
 			if(raise_timer <= 0.f)
 			{
-				RemovePoison();
+				RemoveEffect(EffectId::Poison);
 
 				if(alcohol > hpmax)
 				{
@@ -6763,6 +6842,7 @@ void Unit::CastSpell()
 				area->tmp->bullets.push_back(bullet);
 
 				bullet->Register();
+				bullet->isArrow = false;
 				bullet->level = level + CalculateMagicPower();
 				bullet->backstab = 0.25f;
 				bullet->pos = coord;
@@ -7528,6 +7608,7 @@ void Unit::Update(float dt)
 				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
 				bullet->Register();
+				bullet->isArrow = true;
 				bullet->attack = CalculateAttack(&GetBow());
 				bullet->level = level;
 				bullet->backstab = GetBackstabMod(&GetBow());
@@ -7538,10 +7619,13 @@ void Unit::Update(float dt)
 				bullet->timer = ARROW_TIMER;
 				bullet->owner = this;
 				bullet->pe = nullptr;
-				bullet->ability = nullptr;
+				bullet->ability = act.shoot.ability;
 				bullet->tex = nullptr;
 				bullet->poison_attack = 0.f;
 				bullet->start_pos = bullet->pos;
+
+				if(bullet->ability && bullet->ability->mesh)
+					bullet->mesh = bullet->ability->mesh;
 
 				float dist = Vec3::Distance2d(bullet->pos, target_pos);
 				float t = dist / bullet->speed;
@@ -7559,6 +7643,9 @@ void Unit::Update(float dt)
 					sk += 10;
 				else
 					sk -= 10;
+				if(bullet->ability)
+					sk += 10;
+
 				if(sk < 50)
 				{
 					int chance;
@@ -7604,11 +7691,22 @@ void Unit::Update(float dt)
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
-				tpe->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe->color2 = Vec4(1, 1, 1, 0);
+				if(bullet->ability)
+				{
+					tpe->color1 = bullet->ability->color;
+					tpe->color2 = tpe->color1;
+					tpe->color2.w = 0;
+				}
+				else
+				{
+					tpe->color1 = Vec4(1, 1, 1, 0.5f);
+					tpe->color2 = Vec4(1, 1, 1, 0);
+				}
 				tpe->Init(50);
 				area->tmp->tpes.push_back(tpe);
 				bullet->trail = tpe;
+
+				act.shoot.ability = nullptr;
 
 				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
@@ -7622,7 +7720,8 @@ void Unit::Update(float dt)
 						<< bullet->rot.x
 						<< bullet->rot.y
 						<< bullet->speed
-						<< bullet->yspeed;
+						<< bullet->yspeed
+						<< (bullet->ability ? bullet->ability->hash : 0);
 				}
 			}
 			if(mesh_inst->GetProgress(1) > 20.f / 40)
@@ -8185,8 +8284,18 @@ void Unit::Update(float dt)
 								else
 									act.dash.hit->Add(unit);
 							}
+
 							if(act.dash.ability->effect == Ability::Stun)
-								unit->ApplyStun(1.5f);
+							{
+								Effect e;
+								e.effect = EffectId::Stun;
+								e.source = EffectSource::Temporary;
+								e.source_id = -1;
+								e.value = -1;
+								e.power = 0;
+								e.time = act.dash.ability->time;
+								unit->AddEffect(e);
+							}
 						}
 						else
 							move_forward = false;
@@ -8288,7 +8397,14 @@ void Unit::Update(float dt)
 			{
 				// magic scroll effect
 				game_gui->messages->AddGameMsg3(player, GMS_TOO_COMPLICATED);
-				ApplyStun(2.5f);
+				Effect e;
+				e.effect = EffectId::Stun;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = -1;
+				e.power = 0;
+				e.time = 2.5f;
+				AddEffect(e);
 				RemoveItem(used_item, 1u);
 				used_item = nullptr;
 			}
@@ -9098,6 +9214,35 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			e.power = dmg / 10 * poison_res;
 			e.time = 5.f;
 			hitted.AddEffect(e);
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
+{
+	const float speed = _speed > 0.f ? _speed : GetBowAttackSpeed();
+	mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
+	mesh_inst->groups[1].speed = speed;
+	action = A_SHOOT;
+	act.shoot.ability = nullptr;
+	animation_state = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;
+	if(!bow_instance)
+		bow_instance = game_level->GetBowInstance(GetBow().mesh);
+	bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+	bow_instance->groups[0].speed = speed;
+
+	if(!fake_unit && Net::IsLocal())
+	{
+		RemoveStamina(Unit::STAMINA_BOW_ATTACK);
+
+		if(Net::IsServer() && notify)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::ATTACK;
+			c.unit = this;
+			c.id = prepare ? AID_StartShoot : AID_Shoot;
+			c.f[1] = speed;
 		}
 	}
 }

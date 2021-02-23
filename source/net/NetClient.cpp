@@ -717,16 +717,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit.action == A_SHOOT && unit.animation_state == AS_SHOOT_PREPARE)
 						unit.animation_state = AS_SHOOT_CAN;
 					else
-					{
-						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-						unit.action = A_SHOOT;
-						unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
-						if(!unit.bow_instance)
-							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
-						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-						unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[group].speed;
-					}
+						unit.DoRangedAttack(type == AID_StartShoot, false, attack_speed);
 					break;
 				case AID_Block:
 					unit.action = A_BLOCK;
@@ -1122,7 +1113,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// create shooted arrow
 		case NetChange::SHOOT_ARROW:
 			{
-				int id, ownerId;
+				int id, ownerId, abilityHash;
 				Vec3 pos;
 				float rotX, rotY, speed, speedY;
 				f >> id;
@@ -1132,6 +1123,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				f >> rotY;
 				f >> speed;
 				f >> speedY;
+				f >> abilityHash;
 				if(!f)
 					Error("Update client: Broken SHOOT_ARROW.");
 				else if(game->game_state == GS_LEVEL)
@@ -1149,6 +1141,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						}
 					}
 
+					Ability* ability = nullptr;
+					if(abilityHash != 0)
+					{
+						ability = Ability::Get(abilityHash);
+						if(!ability)
+						{
+							Error("Update client: SHOOT_ARROW, missing ability %d.", abilityHash);
+							break;
+						}
+					}
+
 					LevelArea& area = game_level->GetArea(pos);
 
 					Bullet* bullet = new Bullet;
@@ -1156,6 +1159,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 					bullet->id = id;
 					bullet->Register();
+					bullet->isArrow = true;
 					bullet->mesh = game_res->aArrow;
 					bullet->pos = pos;
 					bullet->start_pos = pos;
@@ -1164,16 +1168,28 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					bullet->owner = nullptr;
 					bullet->pe = nullptr;
 					bullet->speed = speed;
-					bullet->ability = nullptr;
+					bullet->ability = ability;
 					bullet->tex = nullptr;
 					bullet->tex_size = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->owner = owner;
 
+					if(bullet->ability && bullet->ability->mesh)
+						bullet->mesh = bullet->ability->mesh;
+
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
-					tpe->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe->color2 = Vec4(1, 1, 1, 0);
+					if(bullet->ability)
+					{
+						tpe->color1 = bullet->ability->color;
+						tpe->color2 = tpe->color1;
+						tpe->color2.w = 0;
+					}
+					else
+					{
+						tpe->color1 = Vec4(1, 1, 1, 0.5f);
+						tpe->color2 = Vec4(1, 1, 1, 0);
+					}
 					tpe->Init(50);
 					area.tmp->tpes.push_back(tpe);
 					bullet->trail = tpe;
@@ -2302,6 +2318,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				bullet->id = id;
 				bullet->Register();
+				bullet->isArrow = false;
 				bullet->pos = pos;
 				bullet->rot = Vec3(0, rotY, 0);
 				bullet->mesh = ability.mesh;
@@ -2785,8 +2802,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			{
 				int id;
 				int ability_hash;
+				float speed;
 				f >> id;
 				f >> ability_hash;
+				f >> speed;
 				if(!f)
 				{
 					Error("Update client: Broken PLAYER_ABILITY.");
@@ -2804,34 +2823,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit && unit->player)
 					{
 						if(unit->player != game->pc)
-							unit->player->UseAbility(ability, true);
+						{
+							Vec3 speedV(speed, 0, 0);
+							unit->player->UseAbility(ability, true, &speedV);
+						}
 					}
 					else
 						Error("Update client: PLAYER_ABILITY, invalid player unit %d.", id);
-				}
-			}
-			break;
-		// unit stun - not shield bash
-		case NetChange::STUN:
-			{
-				int id;
-				float length;
-				f >> id;
-				f >> length;
-				if(!f)
-					Error("Update client: Broken STUN.");
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* unit = game_level->FindUnit(id);
-					if(!unit)
-						Error("Update client: STUN, missing unit %d.", id);
-					else
-					{
-						if(length > 0)
-							unit->ApplyStun(length);
-						else
-							unit->RemoveEffect(EffectId::Stun);
-					}
 				}
 			}
 			break;
@@ -3085,6 +3083,55 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: Broken UPDATE_INVESTMENT.");
 				else
 					team->UpdateInvestment(questId, gold);
+			}
+			break;
+		// add visible effect to unit
+		case NetChange::ADD_UNIT_EFFECT:
+			{
+				int unitId;
+				EffectId effect;
+				float time;
+				f >> unitId;
+				f.ReadCasted<byte>(effect);
+				f >> time;
+				if(!f)
+					Error("Update client: Broken ADD_UNIT_EFFECT.");
+				else
+				{
+					Unit* unit = game_level->FindUnit(unitId);
+					if(!unit)
+						Error("Update client: ADD_UNIT_EFFECT, missing unit %d.", unitId);
+					else if(unit != pc.unit)
+					{
+						Effect e;
+						e.effect = effect;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.value = -1;
+						e.power = 0;
+						e.time = time;
+						unit->AddEffect(e);
+					}
+				}
+			}
+			break;
+		// remove visible effect from unit
+		case NetChange::REMOVE_UNIT_EFFECT:
+			{
+				int unitId;
+				EffectId effect;
+				f >> unitId;
+				f.ReadCasted<byte>(effect);
+				if(!f)
+					Error("Update client: Broken REMOVE_UNIT_EFFECT.");
+				else
+				{
+					Unit* unit = game_level->FindUnit(unitId);
+					if(!unit)
+						Error("Update client: REMOVE_UNIT_EFFECT, missing unit %d.", unitId);
+					else if(unit != pc.unit)
+						unit->RemoveEffect(effect);
+				}
 			}
 			break;
 		// invalid change

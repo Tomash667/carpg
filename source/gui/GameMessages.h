@@ -44,7 +44,8 @@ enum GMS
 	GMS_LEARNED_RECIPE,
 	GMS_ALREADY_LEARNED,
 	GMS_PERSUASION_SUCCESS,
-	GMS_PERSUASION_FAILED
+	GMS_PERSUASION_FAILED,
+	GMS_NEED_BOW
 };
 
 //-----------------------------------------------------------------------------
@@ -85,7 +86,7 @@ private:
 		txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem,
 		txGmsGettingOutOfRange, txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated,
 		txAddedCursedStone, txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility, txLearnedRecipe, txAlreadyLearned,
-		txPersuasionSuccess, txPersuasionFailed;
+		txPersuasionSuccess, txPersuasionFailed, txNeedBow;
 public:
 	Sound* snd_scribble;
 };

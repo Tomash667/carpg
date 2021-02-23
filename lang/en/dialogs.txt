@@ -2101,5 +2101,15 @@ dialog hunter {
 		"Welcome to our camp."
 		"Hello!"
 	}
+}
+
+//==============================================================================
+dialog hunter_leader {
+	0 {
+		"Happy hunting!"
+		"Welcome to our camp."
+		"Hello!"
+	}
 	1 "End dialog"
+	2 "$train_lab/entangling_arrow$"
 }

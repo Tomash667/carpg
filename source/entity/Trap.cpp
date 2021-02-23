@@ -270,6 +270,7 @@ bool Trap::Update(float dt, LevelArea& area)
 					area.tmp->bullets.push_back(bullet);
 
 					bullet->Register();
+					bullet->isArrow = true;
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
 					bullet->attack = float(base->attack);

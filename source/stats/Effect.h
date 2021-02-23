@@ -32,6 +32,8 @@ enum class EffectId
 	Mana, // mod max mp (add)
 	RestoreMana, // consumable
 	ManaRegeneration, // regenerate mp (sum from perks and top from potion)
+	Rooted, // can't move
+	SlowMove, // slower walk/run
 
 	Max // max 127 values
 };

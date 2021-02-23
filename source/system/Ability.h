@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Skill.h"
+
+//-----------------------------------------------------------------------------
 struct Ability
 {
 	enum Type
@@ -12,7 +15,8 @@ struct Ability
 		Charge,
 		Summon,
 		Aggro,
-		SummonAway
+		SummonAway,
+		RangedAttack
 	};
 
 	enum Effect
@@ -25,7 +29,9 @@ struct Ability
 		Drain,
 		Electro,
 		// for Charge type
-		Stun
+		Stun,
+		// for RangedAttack type
+		Rooted
 	};
 
 	enum Flags
@@ -41,6 +47,7 @@ struct Ability
 		Mage = 1 << 8, // uses int/mystic magic, train mystic magic skill, require wand to cast
 		Strength = 1 << 9, // use Strength to calculate damage
 		Boss50Hp = 1 << 10, // can be used when hp below 50%
+		DefaultAttack = 1 << 11, // don't use golden crosshair when casting
 	};
 
 	int hash;
@@ -52,16 +59,17 @@ struct Ability
 	Type type;
 	Effect effect;
 	int flags, dmg, dmg_bonus, charges, learning_points, skill, level, count;
-	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana, stamina, recharge, width;
+	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana, stamina, recharge, width, time;
 	btCollisionShape* shape;
 	Mesh* mesh;
 	string name, desc, unit_id;
 	UnitData* unit;
+	Color color; // RangedAttack trail color
 
 	Ability() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_icon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
 		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
 		sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), unit(nullptr), effect(None), learning_points(0),
-		skill(999), level(0), count(1) {}
+		skill(999), level(0), count(1), time(1), color(Color::White) {}
 	~Ability()
 	{
 		delete shape;
@@ -69,6 +77,7 @@ struct Ability
 
 	bool IsTargeted() const { return !Any(type, Aggro, SummonAway); }
 	bool RequireList() const { return IsSet(flags, IgnoreUnits); }
+	SkillId GetSkill() const { return type == RangedAttack ? SkillId::BOW : SkillId::MYSTIC_MAGIC; }
 
 	static vector<Ability*> abilities;
 	static std::map<int, Ability*> hash_abilities;

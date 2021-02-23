@@ -72,7 +72,7 @@ struct NetChange
 		CONSUME_ITEM, // unit consume item SERVER[int(id)-unit, string1(Item id)-consumed item, bool(count)-force] / CLIENT[int(id)-item index]
 		HIT_SOUND, // play hit sound [Vec3(pos), byte(id)-material, byte(count)-material2]
 		STUNNED, // unit get stunned [int(id)-unit]
-		SHOOT_ARROW, // create shooted arrow [int-bullet id, int-owner id, Vec3-pos, float-rotX, float-rotY, float-speed, float-yspeed]
+		SHOOT_ARROW, // create shooted arrow [int-bullet id, int-owner id, Vec3-pos, float-rotX, float-rotY, float-speed, float-yspeed, int-ability hash]
 		LOOT_UNIT, // player wants to loot unit [int(id)-unit]
 		GET_ITEM, // player gets item from unit or container [int(id)-i_index, int(count)-count]
 		GET_ALL_ITEMS, // player picks up all items from corpse/chest []
@@ -190,9 +190,8 @@ struct NetChange
 		USABLE_SOUND, // play usable object sound for unit [int(id)-unit]
 		YELL, // player yell to move ai []
 		BREAK_ACTION, // break unit action [int(id)-unit]
-		STUN, // unit stun - not shield bash [int(id)-unit, f[0]-length]
 		CHEAT_STUN, // player used cheat 'stun' [int(id)-unit, f[0]-length]
-		PLAYER_ABILITY, // player unit is using ability SERVER[int(id)-unit, int(ability->hash)] / CLIENT[int(id)-unit, Vec3-pos/data, int(ability->hash)]
+		PLAYER_ABILITY, // player unit is using ability SERVER[int(id)-unit, int(ability->hash), float(extra_f)-speed] / CLIENT[int(id)-unit, Vec3-pos/data, int(ability->hash)]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
 		RUN_SCRIPT, // run script [string(str)-code, int(id)-target unit]
@@ -219,6 +218,8 @@ struct NetChange
 		BOSS_END, // end boss fight []
 		ADD_INVESTMENT, // add investment [auto:int-questId, int-gold, string1-name]
 		UPDATE_INVESTMENT, // update investment [int(id)-questId, int(count)-gold]
+		ADD_UNIT_EFFECT, // add visible effect to unit [int(Unit->id), byte(id)-effect, float(extra_f)-time]
+		REMOVE_UNIT_EFFECT, // remove visible effect from unit [int(Unit->id), byte(id)-effect]
 
 		MAX
 	} type;

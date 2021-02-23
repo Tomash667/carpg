@@ -2113,5 +2113,15 @@ dialog hunter {
 		"Witaj w naszym obozie."
 		"Witaj!"
 	}
+}
+
+//==============================================================================
+dialog hunter_leader {
+	0 {
+		"Udanych ³owów!"
+		"Witaj w naszym obozie."
+		"Witaj!"
+	}
 	1 "Koniec rozmowy"
+	2 "$train_lab/entangling_arrow$"
 }

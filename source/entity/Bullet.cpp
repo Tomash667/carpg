@@ -52,7 +52,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 
 	// do contact test
 	btCollisionShape* shape;
-	if(!ability)
+	if(isArrow)
 		shape = game_level->shape_arrow;
 	else
 		shape = ability->shape;
@@ -102,7 +102,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 		if(Net::IsClient())
 			return;
 
-		if(!ability)
+		if(isArrow)
 		{
 			if(owner && owner->IsFriend(*hitted, true) || attack < -50.f)
 			{
@@ -119,6 +119,36 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			// hit enemy unit
 			if(owner && owner->IsAlive() && hitted->IsAI())
 				hitted->ai->HitReaction(start_pos);
+
+			// special effects
+			bool preventTooManySounds = false;
+			if(ability)
+			{
+				assert(ability->effect == Ability::Rooted); // TODO
+
+				Effect e;
+				e.effect = EffectId::Rooted;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = -1;
+				e.power = 0.f;
+				e.time = ability->time;
+				hitted->AddEffect(e);
+
+				if(ability->sound_hit)
+				{
+					preventTooManySounds = true;
+					sound_mgr->PlaySound3d(ability->sound_hit, hitpoint, ability->sound_hit_dist);
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::SPELL_SOUND;
+						c.e_id = 1;
+						c.ability = ability;
+						c.pos = hitpoint;
+					}
+				}
+			}
 
 			// calculate modifiers
 			int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
@@ -201,7 +231,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			float dmg = CombatHelper::CalculateDamage(attack, def);
 
 			// hit sound
-			hitted->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, hitpoint, dmg > 0.f);
+			hitted->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, hitpoint, dmg > 0.f && !preventTooManySounds);
 
 			// train player armor skill
 			if(hitted->IsPlayer())
@@ -395,6 +425,7 @@ void Bullet::Save(GameWriter& f) const
 	f << backstab;
 	f << level;
 	f << start_pos;
+	f << isArrow;
 }
 
 //=================================================================================================
@@ -419,12 +450,12 @@ void Bullet::Load(GameReader& f)
 	owner = Unit::GetById(f.Read<int>());
 	if(LOAD_VERSION >= V_0_13)
 	{
-		int ability_hash = f.Read<int>();
-		if(ability_hash != 0)
+		int abilityHash = f.Read<int>();
+		if(abilityHash != 0)
 		{
-			ability = Ability::Get(ability_hash);
+			ability = Ability::Get(abilityHash);
 			if(!ability)
-				throw Format("Missing ability %u for bullet.", ability_hash);
+				throw Format("Missing ability %u for bullet.", abilityHash);
 		}
 		else
 			ability = nullptr;
@@ -461,11 +492,15 @@ void Bullet::Load(GameReader& f)
 		f >> backstab;
 	else
 	{
-		int backstab_value;
-		f >> backstab_value;
-		backstab = 0.25f * (backstab_value + 1);
+		int backstabValue;
+		f >> backstabValue;
+		backstab = 0.25f * (backstabValue + 1);
 	}
 	f >> start_pos;
+	if(LOAD_VERSION >= V_DEV)
+		f >> isArrow;
+	else
+		isArrow = (ability == nullptr);
 }
 
 //=================================================================================================
@@ -479,6 +514,7 @@ void Bullet::Write(BitStreamWriter& f) const
 	f << timer;
 	f << (owner ? owner->id : -1);
 	f << (ability ? ability->hash : 0);
+	f << isArrow;
 }
 
 //=================================================================================================
@@ -490,33 +526,54 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 	f >> speed;
 	f >> yspeed;
 	f >> timer;
-	int unit_id = f.Read<int>();
-	int ability_hash = f.Read<int>();
+	int unitId = f.Read<int>();
+	int abilityHash = f.Read<int>();
+	f >> isArrow;
 	if(!f)
 		return false;
 
-	if(ability_hash == 0)
+	if(abilityHash != 0)
 	{
+		ability = Ability::Get(abilityHash);
+		if(!ability)
+		{
+			Error("Missing ability '%u'.", abilityHash);
+			return false;
+		}
+	}
+	else
 		ability = nullptr;
-		mesh = game_res->aArrow;
+
+	if(isArrow)
+	{
+		mesh = (ability && ability->mesh ? ability->mesh : game_res->aArrow);
 		pe = nullptr;
 		tex = nullptr;
 		tex_size = 0.f;
 
 		TrailParticleEmitter* tpe = new TrailParticleEmitter;
 		tpe->fade = 0.3f;
-		tpe->color1 = Vec4(1, 1, 1, 0.5f);
-		tpe->color2 = Vec4(1, 1, 1, 0);
+		if(ability)
+		{
+			tpe->color1 = ability->color;
+			tpe->color2 = tpe->color1;
+			tpe->color2.w = 0;
+		}
+		else
+		{
+			tpe->color1 = Vec4(1, 1, 1, 0.5f);
+			tpe->color2 = Vec4(1, 1, 1, 0);
+		}
 		tpe->Init(50);
 		tmp_area.tpes.push_back(tpe);
 		trail = tpe;
 	}
 	else
 	{
-		ability = Ability::Get(ability_hash);
+		ability = Ability::Get(abilityHash);
 		if(!ability)
 		{
-			Error("Missing ability '%u'.", ability_hash);
+			Error("Missing ability '%u'.", abilityHash);
 			return false;
 		}
 
@@ -552,12 +609,12 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 		}
 	}
 
-	if(unit_id != -1)
+	if(unitId != -1)
 	{
-		owner = game_level->FindUnit(unit_id);
+		owner = game_level->FindUnit(unitId);
 		if(!owner)
 		{
-			Error("Missing bullet owner %d.", unit_id);
+			Error("Missing bullet owner %d.", unitId);
 			return false;
 		}
 	}

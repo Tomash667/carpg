@@ -49,6 +49,7 @@ void GameMessages::LoadLanguage()
 	txAlreadyLearned = Str("alreadyLearned");
 	txPersuasionSuccess = Str("persuasionSuccess");
 	txPersuasionFailed = Str("persuasionFailed");
+	txNeedBow = Str("needBow");
 }
 
 //=================================================================================================
@@ -118,7 +119,7 @@ void GameMessages::Update(float dt)
 		}
 
 		float target_h = float(gui->wnd_size.y) / 2 - float(total_h) / 2 + h;
-		m.pos.y += (target_h - m.pos.y)*dt * 2;
+		m.pos.y += (target_h - m.pos.y) * dt * 2;
 	}
 }
 
@@ -331,6 +332,10 @@ void GameMessages::AddGameMsg3(GMS id)
 		text = txPersuasionFailed;
 		time = 2.5f;
 		repeat = true;
+		break;
+	case GMS_NEED_BOW:
+		text = txNeedBow;
+		time = 2.f;
 		break;
 	default:
 		assert(0);

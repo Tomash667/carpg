@@ -51,7 +51,9 @@ enum Keyword
 	K_SKILL,
 	K_LEVEL,
 	K_ANIMATION,
-	K_COUNT
+	K_COUNT,
+	K_TIME,
+	K_COLOR
 };
 
 //=================================================================================================
@@ -102,7 +104,9 @@ void AbilityLoader::InitTokenizer()
 		{ "skill", K_SKILL },
 		{ "level", K_LEVEL },
 		{ "animation", K_ANIMATION },
-		{ "count", K_COUNT }
+		{ "count", K_COUNT },
+		{ "time", K_TIME },
+		{ "color", K_COLOR }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -113,7 +117,8 @@ void AbilityLoader::InitTokenizer()
 		{ "charge", Ability::Charge },
 		{ "summon", Ability::Summon },
 		{ "aggro", Ability::Aggro },
-		{ "summon_away", Ability::SummonAway }
+		{ "summon_away", Ability::SummonAway },
+		{ "ranged_attack", Ability::RangedAttack }
 		});
 
 	t.AddKeywords(G_EFFECT, {
@@ -121,7 +126,8 @@ void AbilityLoader::InitTokenizer()
 		{ "raise", Ability::Raise },
 		{ "drain", Ability::Drain },
 		{ "electro", Ability::Electro },
-		{ "stun", Ability::Stun }
+		{ "stun", Ability::Stun },
+		{ "rooted", Ability::Rooted }
 		});
 
 	t.AddKeywords(G_FLAG, {
@@ -135,7 +141,8 @@ void AbilityLoader::InitTokenizer()
 		{ "use_cast", Ability::UseCast },
 		{ "mage", Ability::Mage },
 		{ "strength", Ability::Strength },
-		{ "boss50hp", Ability::Boss50Hp }
+		{ "boss50hp", Ability::Boss50Hp },
+		{ "default_attack", Ability::DefaultAttack }
 		});
 }
 
@@ -397,6 +404,17 @@ void AbilityLoader::ParseAbility(const string& id)
 			ability->count = t.MustGetInt();
 			crc.Update(ability->count);
 			t.Next();
+			break;
+		case K_TIME:
+			ability->time = t.MustGetFloat();
+			if(ability->time < 0.f)
+				t.Throw("Invalid time value.");
+			crc.Update(ability->time);
+			t.Next();
+			break;
+		case K_COLOR:
+			t.Parse(ability->color);
+			crc.Update(ability->color);
 			break;
 		}
 	}

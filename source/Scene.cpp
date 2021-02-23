@@ -564,12 +564,20 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		Effect* effect = u.FindEffect(EffectId::Stun);
 		if(effect)
 		{
-			game_res->aStun->EnsureIsLoaded();
 			SceneNode* node = SceneNode::Get();
 			node->SetMesh(game_res->aStun);
 			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->center = u.GetHeadPoint();
-			node->mat = Matrix::RotationY(effect->time * 3) * Matrix::Translation(node->center);
+			node->mat = Matrix::RotationY(portal_anim * PI * 2) * Matrix::Translation(node->center);
+			draw_batch.Add(node);
+		}
+
+		if(u.HaveEffect(EffectId::Rooted))
+		{
+			SceneNode* node = SceneNode::Get();
+			node->SetMesh(game_res->mVine);
+			node->center = u.pos;
+			node->mat = Matrix::Scale(u.GetUnitRadius() / 0.3f) * Matrix::Translation(node->center);
 			draw_batch.Add(node);
 		}
 	}
@@ -684,6 +692,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 	if(u.used_item && u.action != A_USE_ITEM)
 		right_hand_item = u.used_item->mesh;
+
+	if(right_hand_item == game_res->aArrow && u.action == A_SHOOT && u.act.shoot.ability && u.act.shoot.ability->mesh)
+		right_hand_item = u.act.shoot.ability->mesh;
 
 	Matrix mat_scale;
 	if(u.human_data)
@@ -1277,18 +1288,7 @@ void Game::ListEntry(EntryType type, const Int2& pt, GameDirection dir)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	PlayerController::CanUseAbilityResult result = pc->CanUseAbility(pc->data.ability_ready);
-	if(result != PlayerController::CanUseAbilityResult::Yes)
-	{
-		if(!(result == PlayerController::CanUseAbilityResult::TakeWand && pc->unit->action == A_TAKE_WEAPON && pc->unit->weapon_taken == W_ONE_HANDED))
-		{
-			pc->data.ability_ready = nullptr;
-			sound_mgr->PlaySound2d(game_res->sCancel);
-		}
-		return;
-	}
-
-	if(pc->unit->action == A_CAST && pc->unit->animation_state == AS_CAST_ANIMATION)
+	if(!pc->CanUseAbilityCheck())
 		return;
 
 	Ability& ability = *pc->data.ability_ready;
@@ -1482,6 +1482,10 @@ void Game::PrepareAreaPath()
 		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
 		pc->data.ability_ok = true;
 		pc->data.ability_target = nullptr;
+		break;
+
+	case Ability::RangedAttack:
+		pc->data.ability_ok = true;
 		break;
 	}
 }

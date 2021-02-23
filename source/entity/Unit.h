@@ -317,6 +317,10 @@ struct Unit : public EntityType<Unit>
 			float rot;
 			UnitList* hit;
 		} dash;
+		struct ShootAction
+		{
+			Ability* ability;
+		} shoot;
 		struct UseUsableAction
 		{
 			float rot;
@@ -476,19 +480,14 @@ struct Unit : public EntityType<Unit>
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * GetMobilityMod(false);
+		return data->walk_speed * GetMobilityMod(false) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * GetMobilityMod(true);
+		return data->run_speed * GetMobilityMod(true) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
-	bool CanRun() const
-	{
-		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !act.attack.run))
-			return false;
-		else
-			return !IsOverloaded();
-	}
+	bool CanMove() const { return !HaveEffect(EffectId::Rooted); }
+	bool CanRun() const;
 	void RecalculateHp();
 	void RecalculateMp();
 	void RecalculateStamina();
@@ -710,10 +709,6 @@ public:
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	void RemoveEffect(EffectId effect);
-	void RemovePoison()
-	{
-		RemoveEffect(EffectId::Poison);
-	}
 	void RemoveEffects(bool send = true);
 	uint RemoveEffects(EffectId effect, EffectSource source, int source_id, int value);
 	float GetEffectSum(EffectId effect) const;
@@ -890,7 +885,6 @@ public:
 
 	void CreateMesh(CREATE_MESH mode);
 
-	void ApplyStun(float length);
 	void UseUsable(Usable* usable);
 	enum class BREAK_ACTION_MODE
 	{
@@ -981,6 +975,7 @@ public:
 	bool DoAttack();
 	bool DoShieldSmash();
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+	void DoRangedAttack(bool prepare, bool notify = true, float speed = -1);
 	void AlertAllies(Unit* target);
 };
 

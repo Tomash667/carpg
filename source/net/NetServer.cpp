@@ -715,17 +715,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(unit.action == A_SHOOT && unit.animation_state == AS_SHOOT_PREPARE)
 							unit.animation_state = AS_SHOOT_CAN;
 						else
-						{
-							unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.mesh_inst->groups[1].speed = attack_speed;
-							unit.action = A_SHOOT;
-							unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
-							if(!unit.bow_instance)
-								unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
-							unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-							unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
-							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
-						}
+							unit.DoRangedAttack(type == AID_StartShoot, false);
 						if(type == AID_Shoot)
 							unit.target_pos = target_pos;
 						break;
@@ -2772,7 +2762,16 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					Unit* target = game_level->FindUnit(id);
 					if(target && length > 0)
-						target->ApplyStun(length);
+					{
+						Effect e;
+						e.effect = EffectId::Stun;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.value = -1;
+						e.power = 0;
+						e.time = length;
+						target->AddEffect(e);
+					}
 					else
 						Error("Update server: CHEAT_STUN from %s, missing unit %d.", info.name.c_str(), id);
 				}
@@ -3619,10 +3618,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::GAME_STATS:
 			f << game_stats->total_kills;
 			break;
-		case NetChange::STUN:
-			f << c.unit->id;
-			f << c.f[0];
-			break;
 		case NetChange::MARK_UNIT:
 			f << c.unit->id;
 			f << (c.id != 0);
@@ -3661,6 +3656,10 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			RemoveElement(net_strs, c.str);
 			break;
 		case NetChange::PLAYER_ABILITY:
+			f << c.unit->id;
+			f << c.ability->hash;
+			f << c.extra_f;
+			break;
 		case NetChange::CAST_SPELL:
 			f << c.unit->id;
 			f << c.ability->hash;
@@ -3676,6 +3675,15 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				f << investment.gold;
 				f << investment.name;
 			}
+			break;
+		case NetChange::ADD_UNIT_EFFECT:
+			f << c.unit->id;
+			f.WriteCasted<byte>(c.id);
+			f << c.extra_f;
+			break;
+		case NetChange::REMOVE_UNIT_EFFECT:
+			f << c.unit->id;
+			f.WriteCasted<byte>(c.id);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);

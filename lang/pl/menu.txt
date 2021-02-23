@@ -594,6 +594,7 @@ learnedRecipe = "Pozna³eœ now¹ recepturê"
 alreadyLearned = "Ju¿ to wiem..."
 persuasionSuccess = "Perswazja - Sukces!"
 persuasionFailed = "Perswazja - Pora¿ka!"
+needBow = "Potrzebujesz ³uku do u¿ycia tej zdolnoœci"
 
 // distance/group difficulty
 near = "niedaleko "

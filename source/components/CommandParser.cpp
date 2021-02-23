@@ -544,7 +544,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 			else
 			{
-				Skill* si = Skill::Find(s);
+				const Skill* si = Skill::Find(s);
 				if(si)
 				{
 					value = (int)si->skill_id;
@@ -1533,7 +1533,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				break;
 			}
 			if(Net::IsLocal())
-				u->ApplyStun(length);
+			{
+				Effect e;
+				e.effect = EffectId::Stun;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = -1;
+				e.power = 0;
+				e.time = length;
+				u->AddEffect(e);
+			}
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -1597,7 +1606,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 				else
 				{
-					Skill* skill = Skill::Find(value);
+					const Skill* skill = Skill::Find(value);
 					if(!skill)
 						t.Throw("Invalid skill '%s' for effect '%s'.", value.c_str(), info.id);
 					e.value = (int)skill->skill_id;
@@ -1746,7 +1755,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					}
 					else
 					{
-						Skill* skill = Skill::Find(value_str);
+						const Skill* skill = Skill::Find(value_str);
 						if(!skill)
 						{
 							Msg("Invalid effect skill '%s'.", value_str.c_str());
@@ -1823,7 +1832,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					break;
 				}
 				const string& skill_name = t.MustGetItem();
-				Skill* skill = Skill::Find(skill_name);
+				const Skill* skill = Skill::Find(skill_name);
 				if(!skill)
 				{
 					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
@@ -1885,7 +1894,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					break;
 				}
 				const string& skill_name = t.MustGetItem();
-				Skill* skill = Skill::Find(skill_name);
+				const Skill* skill = Skill::Find(skill_name);
 				if(!skill)
 				{
 					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
@@ -2498,8 +2507,12 @@ void CommandParser::HealUnit(Unit& unit)
 			c.unit = &unit;
 		}
 	}
-	unit.RemovePoison();
+
+	// remove negative effect
+	unit.RemoveEffect(EffectId::Poison);
 	unit.RemoveEffect(EffectId::Stun);
+	unit.RemoveEffect(EffectId::Rooted);
+	unit.RemoveEffect(EffectId::SlowMove);
 }
 
 //=================================================================================================

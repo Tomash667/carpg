@@ -782,13 +782,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_SHOOT:
-			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-			unit->mesh_inst->groups[1].speed = unit->GetBowAttackSpeed();
-			unit->action = A_SHOOT;
-			unit->animation_state = AS_SHOOT_PREPARE;
-			unit->bow_instance = game_level->GetBowInstance(unit->GetBow().mesh);
-			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[1].speed;
+			unit->DoRangedAttack(true);
 			t = 100.f;
 			break;
 		case DA_SHOW_WEAPON:

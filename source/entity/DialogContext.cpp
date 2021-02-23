@@ -901,7 +901,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			{
 				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Mayor);
 				if(quest)
-				DeleteElement(quest_mgr->unaccepted_quests, quest);
+					DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -956,7 +956,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			{
 				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Captain);
 				if(quest)
-				DeleteElement(quest_mgr->unaccepted_quests, quest);
+					DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
@@ -1259,7 +1259,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(Ability* ability = Ability::Get(s))
 		{
 			// check required skill
-			if(pc->unit->stats->skill[(int)SkillId::MYSTIC_MAGIC] < ability->skill)
+			if(pc->unit->stats->skill[(int)ability->GetSkill()] < ability->skill)
 			{
 				Talk(game->txCantLearnAbility);
 				force_end = true;
@@ -1277,7 +1277,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			what = (int)attrib->attrib_id;
 			train = &pc->attrib[what].train;
 		}
-		else if(Skill* skill = Skill::Find(s))
+		else if(const Skill* skill = Skill::Find(s))
 		{
 			if(skill->locked && pc->unit->GetBase(skill->skill_id) <= 0)
 			{
@@ -1759,7 +1759,8 @@ cstring DialogContext::FormatString(const string& str_part)
 		if(Ability* ability = Ability::Get(s))
 		{
 			talk_msg = ability->name.c_str();
-			return Format("%s: %s (%d %s, %d %s)", game->txSpell, ability->name.c_str(), ability->skill, Skill::Find("mystic_magic")->name.c_str(),
+			const SkillId skill = ability->GetSkill();
+			return Format("%s: %s (%d %s, %d %s)", game->txSpell, ability->name.c_str(), ability->skill, Skill::Get(skill).name.c_str(),
 				ability->learning_points, ability->learning_points == 1 ? game->txLearningPoint : game->txLearningPoints);
 		}
 		else
@@ -1771,7 +1772,7 @@ cstring DialogContext::FormatString(const string& str_part)
 				name = attrib->name.c_str();
 				cost = pc->GetTrainCost(pc->attrib[(int)attrib->attrib_id].train);
 			}
-			else if(Skill* skill = Skill::Find(s))
+			else if(const Skill* skill = Skill::Find(s))
 			{
 				name = skill->name.c_str();
 				cost = pc->GetTrainCost(pc->skill[(int)skill->skill_id].train);

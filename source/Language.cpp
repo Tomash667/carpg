@@ -311,7 +311,7 @@ void Language::ParseObject(Tokenizer& t)
 		// }
 		{
 			const string& id = t.MustGetText();
-			Skill* si = Skill::Find(id);
+			Skill* si = const_cast<Skill*>(Skill::Find(id));
 			if(!si)
 				t.Throw("Invalid skill '%s'.", id.c_str());
 			t.Next();

@@ -327,13 +327,17 @@ public:
 		Yes,
 		No,
 		NeedWand,
-		TakeWand
+		TakeWand,
+		NeedBow,
+		TakeBow
 	};
 	CanUseAbilityResult CanUseAbility(Ability* ability) const;
 	bool CanUseAbilityPreview(Ability* ability) const;
+	bool CanUseAbilityCheck() const;
 	void UpdateCooldown(float dt);
 	void RefreshCooldown();
 	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	bool IsAbilityPrepared() const;
 
 	// recipes
 	bool AddRecipe(Recipe* recipe);

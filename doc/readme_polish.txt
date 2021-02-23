@@ -213,6 +213,7 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* class (warrior hunter rogue) - wybrana klasa postaci w trybie szybkiej
 		gry
 	* con_pos Int2 - pozycja konsoli x, y
+	* con_size Int2 - rozmiar konsoli x, y
 	* console (true [false]) - konsola systemowa
 	* crash_mode (none [normal] dataseg full) - określa tryb zapisywania
 		informacji o crashu

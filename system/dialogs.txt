@@ -4531,8 +4531,21 @@ dialog drunk_mage_idle
 //==============================================================================
 dialog hunter
 {
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog hunter_leader
+{
 	if once
 		talk 0
+	if script "!pc.HaveAbility(Ability::Get(\"entangling_arrow\"))"
+		choice 2
+		{
+			special "train/entangling_arrow"
+			end
+		}
 	if choices != 0
 	{
 		escape choice 1

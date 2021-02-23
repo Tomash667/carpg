@@ -1463,26 +1463,9 @@ void Game::UpdateAi(float dt)
 										&& game_level->CanShootAtLocation2(u, ai.st.idle.obj.ptr, ai.st.idle.obj.pos))
 									{
 										// bow shooting
-										float speed = u.GetBowAttackSpeed();
-										u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-										u.mesh_inst->groups[1].speed = speed;
-										u.action = A_SHOOT;
 										u.target_pos = ai.st.idle.obj.pos;
 										u.target_pos.y += 1.27f;
-										u.animation_state = AS_SHOOT_CAN;
-										u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-										u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-										u.bow_instance->groups[0].speed = speed;
-										u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
-
-										if(Net::IsOnline())
-										{
-											NetChange& c = Add1(Net::changes);
-											c.type = NetChange::ATTACK;
-											c.unit = &u;
-											c.id = AID_Shoot;
-											c.f[1] = speed;
-										}
+										u.DoRangedAttack(false);
 									}
 									look_at = LookAtPoint;
 									look_pos = ai.st.idle.obj.pos;
@@ -1761,24 +1744,7 @@ void Game::UpdateAi(float dt)
 							if(game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 							{
 								// bowshot
-								float speed = u.GetBowAttackSpeed();
-								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-								u.mesh_inst->groups[1].speed = speed;
-								u.action = A_SHOOT;
-								u.animation_state = AS_SHOOT_CAN;
-								u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-								u.bow_instance->groups[0].speed = speed;
-								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
-
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::ATTACK;
-									c.unit = &u;
-									c.id = AID_Shoot;
-									c.f[1] = speed;
-								}
+								u.DoRangedAttack(false);
 							}
 							else
 							{
@@ -2648,6 +2614,9 @@ void Game::UpdateAi(float dt)
 				else
 					move = 1;
 			}
+
+			if(move != 0 && !u.CanMove())
+				move = 0;
 
 			if(move == -1)
 			{

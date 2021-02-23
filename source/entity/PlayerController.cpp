@@ -1425,6 +1425,13 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		if((unit->weapon_taken != W_ONE_HANDED || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeWand;
 	}
+	if(ability->type == Ability::RangedAttack)
+	{
+		if(!unit->HaveBow())
+			return CanUseAbilityResult::NeedBow;
+		if((unit->weapon_taken != W_BOW || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
+			return CanUseAbilityResult::TakeBow;
+	}
 	if(unit->action != A_NONE)
 	{
 		if(IsSet(ability->flags, Ability::UseCast))
@@ -1446,8 +1453,50 @@ bool PlayerController::CanUseAbilityPreview(Ability* ability) const
 {
 	if(ability->mana > unit->mp || ability->stamina > unit->stamina)
 		return false;
-	if(ability->type == Ability::Charge && unit->IsOverloaded())
+	if(ability->type == Ability::Charge)
+	{
+		if(!unit->CanMove() || unit->IsOverloaded() || unit->GetEffectMax(EffectId::SlowMove) >= 0.5f)
+			return false;
+	}
+	return true;
+}
+
+//=================================================================================================
+bool PlayerController::CanUseAbilityCheck() const
+{
+	CanUseAbilityResult result = CanUseAbility(data.ability_ready);
+	int check; // 1 ok, 0 wait, -1 cancel
+	switch(result)
+	{
+	case CanUseAbilityResult::Yes:
+		check = 1;
+		break;
+	case CanUseAbilityResult::TakeWand:
+		if(unit->action == A_TAKE_WEAPON && unit->weapon_taken == W_ONE_HANDED)
+			check = 0;
+		else
+			check = -1;
+		break;
+	case CanUseAbilityResult::TakeBow:
+		if(unit->action == A_TAKE_WEAPON && unit->weapon_taken == W_BOW)
+			check = 0;
+		else
+			check = -1;
+		break;
+	default:
+		check = -1;
+		break;
+	}
+
+	if(check == -1)
+	{
+		data.ability_ready = nullptr;
+		sound_mgr->PlaySound2d(game_res->sCancel);
+	}
+
+	if(check != 1 || (unit->action == A_CAST && unit->animation_state == AS_CAST_ANIMATION))
 		return false;
+
 	return true;
 }
 
@@ -1918,6 +1967,16 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->act.cast.target = target;
 		}
 	}
+	else if(ability->type == Ability::RangedAttack)
+	{
+		float speed = -1.f;
+		if(from_server)
+			speed = pos->x;
+		action_key = data.wasted_key;
+		data.wasted_key = Key::None;
+		unit->DoRangedAttack(true, false, speed);
+		unit->act.shoot.ability = ability;
+	}
 	else if(ability->sound_cast)
 		game->PlayAttachedSound(*unit, ability->sound_cast, ability->sound_cast_dist);
 
@@ -1966,6 +2025,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			c.type = NetChange::PLAYER_ABILITY;
 			c.unit = unit;
 			c.ability = ability;
+			c.extra_f = unit->mesh_inst->groups[1].speed;
 		}
 		else if(!from_server)
 		{
@@ -1979,6 +2039,17 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 
 	if(is_local)
 		data.ability_ready = nullptr;
+}
+
+bool PlayerController::IsAbilityPrepared() const
+{
+	if(data.ability_ready)
+		return true;
+	if(unit->action == A_SHOOT)
+		return unit->act.shoot.ability != nullptr;
+	else if(unit->action == A_CAST)
+		return IsClear(unit->act.cast.ability->flags, Ability::DefaultAttack);
+	return false;
 }
 
 bool PlayerController::AddRecipe(Recipe* recipe)
@@ -2279,6 +2350,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			data.rot_buf = 0.f;
 
 		const bool rotating = (rotate != 0 || data.rot_buf != 0.f);
+		if(move != 0 && !u.CanMove())
+			move = 0;
 
 		u.running = false;
 		if(rotating || move)
@@ -3145,27 +3218,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wasted_key);
 				if(k != Key::None)
 				{
-					float speed = u.GetBowAttackSpeed();
-					u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-					u.mesh_inst->groups[1].speed = speed;
-					u.action = A_SHOOT;
-					u.animation_state = AS_SHOOT_PREPARE;
 					action_key = k;
-					u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-					u.bow_instance->groups[0].speed = speed;
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
-						c.unit = unit;
-						c.id = AID_StartShoot;
-						c.f[1] = speed;
-					}
-
-					if(Net::IsLocal())
-						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
+					u.DoRangedAttack(true);
 				}
 			}
 		}
@@ -3175,7 +3229,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.ability_ready != shortcut.ability)
 	{
 		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability);
-		if(Any(result, PlayerController::CanUseAbilityResult::Yes, PlayerController::CanUseAbilityResult::TakeWand))
+		if(Any(result,
+			PlayerController::CanUseAbilityResult::Yes,
+			PlayerController::CanUseAbilityResult::TakeWand,
+			PlayerController::CanUseAbilityResult::TakeBow))
 		{
 			data.ability_ready = shortcut.ability;
 			data.ability_ok = false;
@@ -3183,11 +3240,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			data.ability_target = nullptr;
 			if(result == PlayerController::CanUseAbilityResult::TakeWand)
 				unit->TakeWeapon(W_ONE_HANDED);
+			else if(result == PlayerController::CanUseAbilityResult::TakeBow)
+				unit->TakeWeapon(W_BOW);
 		}
 		else
 		{
 			if(result == PlayerController::CanUseAbilityResult::NeedWand)
 				game_gui->messages->AddGameMsg3(GMS_NEED_WAND);
+			else if(result == PlayerController::CanUseAbilityResult::NeedBow)
+				game_gui->messages->AddGameMsg3(GMS_NEED_BOW);
 			sound_mgr->PlaySound2d(game_res->sCancel);
 		}
 	}

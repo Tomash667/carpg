@@ -280,6 +280,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* check_updates ([true] false) - check for game updates
 	* class (warrior hunter rogue) - selected class in quick singleplayer game
 	* con_pos Int2 - console position x, y
+	* con_size Int2 - console size x, y
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range

@@ -170,7 +170,7 @@ void GameResources::LoadData()
 	aBeard[2] = res_mgr->Load<Mesh>("beard3.qmsh");
 	aBeard[3] = res_mgr->Load<Mesh>("beard4.qmsh");
 	aBeard[4] = res_mgr->Load<Mesh>("beardm1.qmsh");
-	aArrow = res_mgr->Load<Mesh>("strzala.qmsh");
+	aArrow = res_mgr->Load<Mesh>("arrow.qmsh");
 	aSkybox = res_mgr->Load<Mesh>("skybox.qmsh");
 	aBag = res_mgr->Load<Mesh>("worek.qmsh");
 	aGrating = res_mgr->Load<Mesh>("kratka.qmsh");
@@ -185,6 +185,7 @@ void GameResources::LoadData()
 	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
 	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
 	aDungeonDoor = res_mgr->Load<Mesh>("dungeon_door.qmsh");
+	mVine = res_mgr->Load<Mesh>("vine.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();

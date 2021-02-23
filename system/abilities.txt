@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 ability magic_bolt {
 	type point
-	flags {use_cast mage}
+	flags {use_cast mage default_attack}
 	level 0
 	dmg 25 + 5
 	range 50
@@ -151,6 +151,7 @@ ability mystic_ball {
 ability bull_charge {
 	type charge
 	effect stun
+	time 1.5
 	flags {strength ignore_units}
 	dmg 100 + 5 // 5 * strength
 	cooldown 20
@@ -211,4 +212,18 @@ ability wolf_charge {
 	width 1
 	animation "charge"
 	sound_cast "wolf_attack.mp3" 1
+}
+
+ability entangling_arrow {
+	type ranged_attack
+	effect rooted
+	time 2
+	cooldown 20
+	stamina 100
+	mesh "entangling_arrow.qmsh" 1
+	color {68 106 59 160} // dark green
+	sound_hit "vine.mp3" 1
+	icon
+	learning_points 2
+	skill 25
 }

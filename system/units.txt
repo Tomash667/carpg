@@ -1807,6 +1807,7 @@ unit hunter : base_human {
 unit hunter_leader : hunter {
 	level 10
 	gold {100 200}
+	dialog hunter_leader
 }
 
 //------------------------------------------------------------------------------
@@ -1908,7 +1909,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders specific_name boss sit_on_throne}
+	flags | {archer hero ai_wanders specific_name boss sit_on_throne rooted_res}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -2199,7 +2200,7 @@ unit q_orkowie_orc_shaman : orc_shaman {
 
 unit q_orkowie_boss : base_orc {
 	level 16
-	flags | {melee boss sit_on_throne yell guarded}
+	flags | {melee boss sit_on_throne yell guarded rooted_res}
 	hp 1600
 	attack -40
 	def 110
@@ -2223,7 +2224,7 @@ unit q_orkowie_boss : base_orc {
 unit ogre {
 	mesh "ogre.qmsh"
 	mat body
-	flags {humanoid fixed_stats}
+	flags {humanoid fixed_stats rooted_res}
 	level 14
 	hp 1400
 	stamina 250
@@ -2544,7 +2545,7 @@ unit evil_cleric2 : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res dont_talk}
+	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res rooted_res dont_talk}
 	hp 2000
 	items {
 		blunt_skullsmasher
@@ -2699,7 +2700,7 @@ unit q_bandyci_szef : base_bandit {
 	level 15
 	hp 750
 	attack -30 // too good weapon
-	flags | {ai_wanders melee boss backstab guarded}
+	flags | {ai_wanders melee boss backstab guarded rooted_res}
 	items {
 		dagger_spinesheath
 		!light_armor
@@ -2810,7 +2811,7 @@ unit mage_guard : base_human {
 
 unit base_golem {
 	mesh "golem.qmsh"
-	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk construct}
+	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res rooted_res dont_talk construct}
 	stamina 150
 	group mages
 	dmg_type blunt
@@ -2881,7 +2882,7 @@ unit golem_adamantine : golem_iron {
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
-	flags | {mage boss guarded mp_bar}
+	flags | {mage boss guarded mp_bar rooted_res}
 	hp 1440
 	def 150
 	items {
@@ -2991,7 +2992,7 @@ unit dire_wolf : wolf {
 	hp 2000
 	attack 200
 	def 200
-	flags | {~aggro boss dont_escape stun_res}
+	flags | {~aggro boss dont_escape stun_res rooted_res}
 	scale 2
 	abilities {
 		{howl_aggro 0}
@@ -3322,7 +3323,7 @@ unit hero_cleric : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
+	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res rooted_res dont_talk}
 	profile ai_fighter
 	hp 2500
 	items {

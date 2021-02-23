@@ -8,6 +8,8 @@ buff_antimagic = "Antymagia"
 buff_stamina = "Przywracanie wytrzyma³oœci"
 buff_stun = "Og³uszony"
 buff_poison_res = "Odpornoœæ na trucizny"
+buff_rooted = "Zakorzeniony"
+buff_slow_move = "Spowolnienie ruchu"
 
 [Directions]
 dirN = "pó³noc"
@@ -56,11 +58,11 @@ axe = "Topór"
 
 //------------------------------------------------------------------------------
 // ABILITIES
-ability "bull_charge" {
+ability bull_charge {
 	name "Bycza szar¿a"
 	desc "Szar¿ujesz do przodu og³uszaj¹c wszystkich po drodze i zadaj¹c im $cr{power} obra¿eñ$c-."
 }
-ability "dash" {
+ability dash {
 	name "Zryw"
 	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada trzy ³adunki."
 }
@@ -68,17 +70,21 @@ ability fireball {
 	name "Kula ognia"
 	desc "Rzucasz kule ognia która zadaje $cr{power} obra¿eñ$c- na niewielkim obszarze."
 }
-ability "heal" {
+ability heal {
 	name "Uzdrowienie"
 	desc "Przywraca $cg{power} punktów ¿ycia$c- celowi."
 }
-ability "summon_wolf" {
+ability summon_wolf {
 	name "Zwierzêcy sojusznik"
 	desc "Przywo³uje wilka który pomaga ci w walce dopóki nie zginie."
 }
-ability "thunder_bolt" {
+ability thunder_bolt {
 	name "Piorun"
 	desc "Rzucasz piorun we wroga, ³adunek elektryczny zadaje $cr{power} obra¿eñ$c- przeskakuje na pobliskich przeciwników."
+}
+ability entangling_arrow {
+	name "Oplataj¹ca strza³a"
+	desc "Strzelasz specjaln¹ strza³¹ która po trafieniu przytrzymuje cel w miejscu przez 2 sekundy."
 }
 
 //------------------------------------------------------------------------------

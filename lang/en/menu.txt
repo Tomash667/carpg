@@ -594,6 +594,7 @@ learnedRecipe = "You learned a new recipe"
 alreadyLearned = "I already know that..."
 persuasionSuccess = "Persuasion - Success!"
 persuasionFailed = "Persuasion - Failed!"
+needBow = "You need bow to use that ability"
 
 // distance/group difficulty
 near = "near "
