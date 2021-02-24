@@ -198,6 +198,7 @@
     <ClInclude Include="gui\AbilityPanel.h" />
     <ClInclude Include="gui\BookPanel.h" />
     <ClInclude Include="gui\GameGui.h" />
+    <ClInclude Include="net\Server.h" />
     <ClInclude Include="quests\Quest2.h" />
     <ClInclude Include="quests\QuestHandler.h" />
     <ClInclude Include="quests\QuestConsts.h" />
@@ -363,6 +364,7 @@
     <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="generator\AcademyGenerator.cpp" />
     <ClCompile Include="net\PacketLogger.cpp" />
+    <ClCompile Include="net\Server.cpp" />
     <ClCompile Include="quests\Quest2.cpp" />
     <ClCompile Include="quests\Quest_DireWolf.cpp" />
     <ClCompile Include="Settings.cpp" />
