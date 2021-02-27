@@ -39,7 +39,7 @@ public:
 private:
 	void ParseScript();
 	void RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source);
-	bool ParseStreamInner(BitStreamReader& f);
+	bool ParseStreamInner(BitStreamReader& f, PlayerController* player);
 
 	Tokenizer t;
 	vector<ConsoleCommand> cmds;

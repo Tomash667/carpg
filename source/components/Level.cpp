@@ -535,6 +535,45 @@ bool Level::RemoveTrap(int id)
 }
 
 //=================================================================================================
+void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
+{
+	assert(owner);
+
+	uint count = 0;
+	vector<Trap*>::iterator bestTrapIt;
+	LevelArea* bestArea = nullptr;
+	for(LevelArea& area : ForEachArea())
+	{
+		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
+		{
+			Trap* trap = *it;
+			if(trap->base == baseTrap && trap->owner == owner && trap->state == 0)
+			{
+				if(!bestArea || trap->id < (*bestTrapIt)->id)
+				{
+					bestTrapIt = it;
+					bestArea = &area;
+				}
+				++count;
+			}
+		}
+	}
+
+	if(count >= maxAllowed)
+	{
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_TRAP;
+			c.id = (*bestTrapIt)->id;
+		}
+
+		delete *bestTrapIt;
+		bestArea->traps.erase(bestTrapIt);
+	}
+}
+
+//=================================================================================================
 void Level::RemoveUnit(Unit* unit, bool notify)
 {
 	assert(unit);
@@ -2941,7 +2980,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 }
 
 //=================================================================================================
-Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
+Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 {
 	assert(lvl);
 
@@ -2960,6 +2999,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	trap.base = &base;
 	trap.hitted = nullptr;
 	trap.state = 0;
+	trap.attack = 0;
 	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
 	trap.obj.base = nullptr;
 	trap.obj.mesh = trap.base->mesh;
@@ -3040,14 +3080,58 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	else if(type == TRAP_FIREBALL)
 		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
 
-	if(timed)
-	{
-		trap.state = -1;
-		trap.time = 2.f;
-	}
-
 	trap.Register();
 	return &trap;
+}
+
+//=================================================================================================
+Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
+{
+	Trap* t = new Trap;
+	Trap& trap = *t;
+	GetArea(pos).traps.push_back(t);
+
+	BaseTrap& base = BaseTrap::traps[type];
+	trap.id = id;
+	trap.Register();
+	trap.base = &base;
+	trap.hitted = nullptr;
+	trap.state = 0;
+	trap.attack = 0;
+	trap.pos = pos;
+	trap.obj.base = nullptr;
+	trap.obj.mesh = trap.base->mesh;
+	trap.obj.pos = trap.pos;
+	trap.obj.scale = 1.f;
+
+	if(type == TRAP_ARROW || type == TRAP_POISON)
+	{
+		assert(0); // TODO
+	}
+	else if(type == TRAP_SPEAR)
+	{
+		trap.obj.rot = Vec3(0, Random(MAX_ANGLE), 0);
+		trap.obj2.base = nullptr;
+		trap.obj2.mesh = trap.base->mesh2;
+		trap.obj2.pos = trap.obj.pos;
+		trap.obj2.rot = trap.obj.rot;
+		trap.obj2.scale = 1.f;
+		trap.obj2.pos.y -= 2.f;
+		trap.hitted = new vector<Unit*>;
+	}
+	else if(type == TRAP_FIREBALL)
+		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CREATE_TRAP;
+		c.e_id = trap.id;
+		c.id = type;
+		c.pos = pos;
+	}
+
+	return t;
 }
 
 //=================================================================================================

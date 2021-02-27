@@ -96,6 +96,7 @@ struct AITeam;
 struct Amulet;
 struct Armor;
 struct BaseObject;
+struct BaseTrap;
 struct BaseUsable;
 struct Blood;
 struct Book;

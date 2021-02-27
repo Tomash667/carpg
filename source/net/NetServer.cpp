@@ -3593,8 +3593,10 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.pos;
 			break;
 		case NetChange::ELECTRO_HIT:
-		case NetChange::RAISE_EFFECT:
-		case NetChange::HEAL_EFFECT:
+			f << c.pos;
+			break;
+		case NetChange::PARTICLE_EFFECT:
+			f << c.ability->hash;
 			f << c.pos;
 			break;
 		case NetChange::REVEAL_MINIMAP:
@@ -3684,6 +3686,11 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::REMOVE_UNIT_EFFECT:
 			f << c.unit->id;
 			f.WriteCasted<byte>(c.id);
+			break;
+		case NetChange::CREATE_TRAP:
+			f << c.e_id;
+			f.WriteCasted<byte>(c.id);
+			f << c.pos;
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);

@@ -72,6 +72,7 @@ public:
 	Chest* GetTreasureChest();
 	Electro* FindElectro(int id);
 	bool RemoveTrap(int id);
+	void RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed);
 	void RemoveUnit(Unit* unit, bool notify = true);
 	void RemoveUnit(UnitData* ud, bool on_leave);
 	// for object rot must be 0, PI/2, PI or PI*3/2
@@ -139,7 +140,8 @@ public:
 	bool WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec3& pos, int tries = 10);
 	void WarpNearLocation(LevelArea& area, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	// return pointer to temporary or nullptr (can fail only for arrow and poison traps)
-	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
+	Trap* CreateTrap(Int2 pt, TRAP_TYPE type);
+	Trap* CreateTrap(const Vec3& pos, TRAP_TYPE type, int id = -1);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	int GetDifficultyLevel() const;
 	int GetChestDifficultyLevel() const;

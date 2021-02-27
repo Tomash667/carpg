@@ -19,13 +19,7 @@ EntityType<Trap>::Impl EntityType<Trap>::impl;
 //=================================================================================================
 bool Trap::Update(float dt, LevelArea& area)
 {
-	if(state == -1)
-	{
-		time -= dt;
-		if(time <= 0.f)
-			state = 0;
-		return false;
-	}
+	Unit* owner = this->owner;
 
 	switch(base->type)
 	{
@@ -39,6 +33,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+						&& (!owner || owner->IsEnemy(*unit))
 						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						trigger = true;
@@ -141,7 +136,7 @@ bool Trap::Update(float dt, LevelArea& area)
 								m += 0.1f;
 
 							// calculate attack & defense
-							float attack = float(base->attack) * m;
+							float attack = GetAttack() * m;
 							float def = unit->CalculateDefense();
 							float dmg = CombatHelper::CalculateDamage(attack, def);
 
@@ -244,6 +239,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+						&& (!owner || owner->IsEnemy(*unit))
 						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
 					{
 						trigger = true;
@@ -273,7 +269,7 @@ bool Trap::Update(float dt, LevelArea& area)
 					bullet->isArrow = true;
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
-					bullet->attack = float(base->attack);
+					bullet->attack = GetAttack();
 					bullet->mesh = game_res->aArrow;
 					bullet->pos = Vec3(2.f * tile.x + pos.x - float(int(pos.x / 2) * 2) + Random(-base->rw, base->rw) - 1.2f * DirToPos(dir).x,
 						Random(0.5f, 1.5f),
@@ -288,7 +284,7 @@ bool Trap::Update(float dt, LevelArea& area)
 					bullet->tex_size = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->yspeed = 0.f;
-					bullet->poison_attack = (base->type == TRAP_POISON ? float(base->attack) : 0.f);
+					bullet->poison_attack = (base->type == TRAP_POISON ? bullet->attack : 0.f);
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
@@ -374,6 +370,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			for(Unit* unit : area.units)
 			{
 				if(unit->IsStanding()
+					&& (!owner || owner->IsEnemy(*unit))
 					&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
 				{
 					trigger = true;
@@ -386,7 +383,8 @@ bool Trap::Update(float dt, LevelArea& area)
 				Ability* fireball = Ability::Get("fireball");
 				Vec3 exploPos = pos + Vec3(0, 0.2f, 0);
 				Explo* explo = area.CreateExplo(fireball, exploPos);
-				explo->dmg = float(base->attack);
+				explo->dmg = GetAttack();
+				explo->owner = owner;
 
 				if(fireball->sound_hit)
 				{
@@ -436,18 +434,24 @@ void Trap::Save(GameWriter& f)
 	else
 		f << obj.rot.y;
 
-	if(f.isLocal && base->type != TRAP_FIREBALL)
+	if(f.isLocal)
 	{
-		f << state;
-		f << time;
-
-		if(base->type == TRAP_SPEAR)
+		if(base->type != TRAP_FIREBALL)
 		{
-			f << obj2.pos.y;
-			f << hitted->size();
-			for(Unit* unit : *hitted)
-				f << unit->id;
+			f << state;
+			f << time;
+
+			if(base->type == TRAP_SPEAR)
+			{
+				f << obj2.pos.y;
+				f << hitted->size();
+				for(Unit* unit : *hitted)
+					f << unit->id;
+			}
 		}
+
+		f << owner;
+		f << attack;
 	}
 }
 
@@ -489,22 +493,38 @@ void Trap::Load(GameReader& f)
 		obj2.base = nullptr;
 	}
 
-	if(f.isLocal && base->type != TRAP_FIREBALL)
+	if(f.isLocal)
 	{
-		f >> state;
-		f >> time;
-
-		if(base->type == TRAP_SPEAR)
+		if(base->type != TRAP_FIREBALL)
 		{
-			f >> obj2.pos.y;
-			uint count = f.Read<uint>();
-			hitted = new vector<Unit*>;
-			if(count)
+			f >> state;
+			f >> time;
+
+			if(base->type == TRAP_SPEAR)
 			{
-				hitted->resize(count);
-				for(Unit*& unit : *hitted)
-					unit = Unit::GetById(f.Read<int>());
+				f >> obj2.pos.y;
+				uint count = f.Read<uint>();
+				hitted = new vector<Unit*>;
+				if(count)
+				{
+					hitted->resize(count);
+					for(Unit*& unit : *hitted)
+						unit = Unit::GetById(f.Read<int>());
+				}
 			}
+		}
+		else
+			state = 0;
+
+		if(LOAD_VERSION >= V_DEV)
+		{
+			f >> owner;
+			f >> attack;
+		}
+		else
+		{
+			owner = nullptr;
+			attack = 0;
 		}
 	}
 }

@@ -2,6 +2,7 @@
 #include "AbilityLoader.h"
 
 #include "Ability.h"
+#include "BaseTrap.h"
 #include "GameResources.h"
 #include "UnitData.h"
 
@@ -53,7 +54,8 @@ enum Keyword
 	K_ANIMATION,
 	K_COUNT,
 	K_TIME,
-	K_COLOR
+	K_COLOR,
+	K_TRAP_ID
 };
 
 //=================================================================================================
@@ -106,7 +108,8 @@ void AbilityLoader::InitTokenizer()
 		{ "animation", K_ANIMATION },
 		{ "count", K_COUNT },
 		{ "time", K_TIME },
-		{ "color", K_COLOR }
+		{ "color", K_COLOR },
+		{ "trap_id", K_TRAP_ID }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -118,7 +121,8 @@ void AbilityLoader::InitTokenizer()
 		{ "summon", Ability::Summon },
 		{ "aggro", Ability::Aggro },
 		{ "summon_away", Ability::SummonAway },
-		{ "ranged_attack", Ability::RangedAttack }
+		{ "ranged_attack", Ability::RangedAttack },
+		{ "trap", Ability::Trap }
 		});
 
 	t.AddKeywords(G_EFFECT, {
@@ -415,6 +419,16 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_COLOR:
 			t.Parse(ability->color);
 			crc.Update(ability->color);
+			break;
+		case K_TRAP_ID:
+			{
+				const string& id = t.MustGetItem();
+				ability->trap = BaseTrap::Get(id);
+				if(!ability->trap)
+					t.Throw("Missing trap '%s'.", id.c_str());
+				crc.Update(id);
+				t.Next();
+			}
 			break;
 		}
 	}

@@ -226,6 +226,7 @@ Available commands:
 	multisampling - sets multisampling (multisampling type [quality]).
 	next_seed - random seed used in next map generation.
 	noai - disable ai (noai 0/1).
+	nocd - player abilities have no cooldown & use no mana/stamina (nocd 0/1).
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
 	play_music - sets if play music (play_music 0/1).

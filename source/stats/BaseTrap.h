@@ -10,7 +10,8 @@ enum TRAP_TYPE
 	TRAP_SPEAR,
 	TRAP_ARROW,
 	TRAP_POISON,
-	TRAP_FIREBALL
+	TRAP_FIREBALL,
+	TRAP_MAX
 };
 
 //-----------------------------------------------------------------------------
@@ -36,6 +37,8 @@ struct BaseTrap
 		sound_dist2(sound_dist2), sound_dist3(sound_dist3)
 	{
 	}
+
+	static BaseTrap* Get(const string& id);
 
 	static BaseTrap traps[];
 	static const uint n_traps;

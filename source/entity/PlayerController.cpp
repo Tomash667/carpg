@@ -90,6 +90,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 	if(cc)
 	{
 		godmode = false;
+		nocd = false;
 		noclip = false;
 		invisible = false;
 		always_run = true;
@@ -414,6 +415,7 @@ void PlayerController::Save(GameWriter& f)
 	f << last_weapon;
 	f << credit;
 	f << godmode;
+	f << nocd;
 	f << noclip;
 	f << invisible;
 	f << id;
@@ -523,9 +525,15 @@ void PlayerController::Load(GameReader& f)
 	f >> last_weapon;
 	f >> credit;
 	f >> godmode;
+	if(LOAD_VERSION >= V_DEV)
+		f >> nocd;
+	else
+		nocd = false;
 	f >> noclip;
 	if(LOAD_VERSION >= V_0_10)
 		f >> invisible;
+	else
+		invisible = false;
 	f >> id;
 	f >> free_days;
 	f >> kills;
@@ -1097,6 +1105,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 void PlayerController::WriteStart(BitStreamWriter& f) const
 {
 	f << invisible;
+	f << nocd;
 	f << noclip;
 	f << godmode;
 	f << always_run;
@@ -1182,6 +1191,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 void PlayerController::ReadStart(BitStreamReader& f)
 {
 	f >> invisible;
+	f >> nocd;
 	f >> noclip;
 	f >> godmode;
 	f >> always_run;
@@ -1408,16 +1418,19 @@ const PlayerAbility* PlayerController::GetAbility(Ability* ability) const
 }
 
 //=================================================================================================
-PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability) const
+PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability, bool prepare) const
 {
 	assert(ability);
 	if(quest_mgr->quest_tutorial->in_tutorial)
 		return CanUseAbilityResult::No;
+
 	const PlayerAbility* ab = GetAbility(ability);
 	if(ab && (ab->charges == 0 || ab->cooldown > 0))
 		return CanUseAbilityResult::No;
+
 	if(!CanUseAbilityPreview(ability))
 		return CanUseAbilityResult::No;
+
 	if(IsSet(ability->flags, Ability::Mage))
 	{
 		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().flags, ITEM_MAGE))
@@ -1425,6 +1438,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		if((unit->weapon_taken != W_ONE_HANDED || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeWand;
 	}
+
 	if(ability->type == Ability::RangedAttack)
 	{
 		if(!unit->HaveBow())
@@ -1432,19 +1446,31 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		if((unit->weapon_taken != W_BOW || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeBow;
 	}
+
 	if(unit->action != A_NONE)
 	{
-		if(IsSet(ability->flags, Ability::UseCast))
+		if(prepare)
 		{
-			if(unit->action != A_CAST)
-				return CanUseAbilityResult::No;
+			if(ability->type == Ability::RangedAttack)
+			{
+				if(unit->action != A_SHOOT)
+					return CanUseAbilityResult::No;
+			}
+			else if(IsSet(ability->flags, Ability::UseCast))
+			{
+				if(unit->action != A_CAST)
+					return CanUseAbilityResult::No;
+			}
+			else
+			{
+				if(!Any(unit->action, A_ATTACK, A_BLOCK, A_BASH))
+					return CanUseAbilityResult::No;
+			}
 		}
 		else
-		{
-			if(!Any(unit->action, A_ATTACK, A_BLOCK, A_BASH))
-				return CanUseAbilityResult::No;
-		}
+			return CanUseAbilityResult::No;
 	}
+
 	return CanUseAbilityResult::Yes;
 }
 
@@ -1464,7 +1490,7 @@ bool PlayerController::CanUseAbilityPreview(Ability* ability) const
 //=================================================================================================
 bool PlayerController::CanUseAbilityCheck() const
 {
-	CanUseAbilityResult result = CanUseAbility(data.ability_ready);
+	CanUseAbilityResult result = CanUseAbility(data.ability_ready, true);
 	int check; // 1 ok, 0 wait, -1 cancel
 	switch(result)
 	{
@@ -1494,10 +1520,7 @@ bool PlayerController::CanUseAbilityCheck() const
 		sound_mgr->PlaySound2d(game_res->sCancel);
 	}
 
-	if(check != 1 || (unit->action == A_CAST && unit->animation_state == AS_CAST_ANIMATION))
-		return false;
-
-	return true;
+	return check == 1;
 }
 
 //=================================================================================================
@@ -1932,7 +1955,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 	if(is_local && from_server)
 		return;
 
-	if(!from_server)
+	if(!from_server && !nocd)
 	{
 		PlayerAbility* ab = GetAbility(ability);
 		if(ab)
@@ -2041,6 +2064,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		data.ability_ready = nullptr;
 }
 
+//=================================================================================================
 bool PlayerController::IsAbilityPrepared() const
 {
 	if(data.ability_ready)
@@ -2052,6 +2076,7 @@ bool PlayerController::IsAbilityPrepared() const
 	return false;
 }
 
+//=================================================================================================
 bool PlayerController::AddRecipe(Recipe* recipe)
 {
 	if(HaveRecipe(recipe))
@@ -2178,7 +2203,7 @@ void PlayerController::Update(float dt)
 	else if(!IsBlocking(unit->action) && !unit->HaveEffect(EffectId::Stun))
 	{
 		bool allow_rot = true;
-		if(unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Target, Ability::Summon) && unit->act.cast.target != unit)
+		if(unit->action == A_CAST && unit->act.cast.ability->type == Ability::Target && unit->act.cast.target != unit)
 		{
 			Vec3 pos;
 			if(Unit* target = unit->act.cast.target)
@@ -2948,7 +2973,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// attack
-	if(u.weapon_state == WeaponState::Taken && !data.ability_ready)
+	if(u.weapon_state == WeaponState::Taken)
 	{
 		idle = false;
 		if(u.weapon_taken == W_ONE_HANDED)
@@ -2994,7 +3019,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 					}
 				}
-				else if(u.animation_state == AS_ATTACK_FINISHED)
+				else if(u.animation_state == AS_ATTACK_FINISHED && !data.ability_ready)
 				{
 					Key k = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
 					if(k == Key::None)
@@ -3047,7 +3072,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
+				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield() && !data.ability_ready)
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
@@ -3075,7 +3100,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK))
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK) && !data.ability_ready)
 			{
 				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
 				bool secondary = false;
@@ -3150,8 +3175,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
+
 			// no action or non-heavy attack
-			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE
+			if(u.frozen == FROZEN::NO && u.HaveShield() && !data.ability_ready && (u.action == A_NONE
 				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
 			{
 				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
@@ -3211,7 +3237,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.frozen == FROZEN::NO)
+			else if(u.frozen == FROZEN::NO && !data.ability_ready)
 			{
 				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
 				if(k == Key::None)
@@ -3228,7 +3254,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	// ability
 	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.ability_ready != shortcut.ability)
 	{
-		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability);
+		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability, true);
 		if(Any(result,
 			PlayerController::CanUseAbilityResult::Yes,
 			PlayerController::CanUseAbilityResult::TakeWand,
@@ -3288,10 +3314,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 		}
 
-		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
+		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
 		if(data.wasted_key != Key::None)
 		{
-			if(data.ability_ok)
+			if(data.ability_ok && CanUseAbility(data.ability_ready, false) == CanUseAbilityResult::Yes)
 				UseAbility(data.ability_ready, false);
 			else
 				data.wasted_key = Key::None;
@@ -3389,8 +3415,8 @@ Vec3 PlayerController::RaytestTarget(float range)
 bool PlayerController::ShouldUseRaytest() const
 {
 	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
-		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon))
-		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
+		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
+		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));

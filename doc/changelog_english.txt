@@ -4,10 +4,12 @@ Changelog
 Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
 + effects: rooted and slow moving
-+ ability entangling arrow - can be learned in hunters camp
++ ability "entangling" arrow - can be learned in hunters camp
++ spell "fire trap" - can be learned from mages
 + investments in journal
 + can't kick out hero before he receive gold from sawmill/mine
 + converted quest "stolen artifact" to script
++ "nocd" command (abilities have no cooldown, costs no mana/stamina)
 
 --------------------------------------------------------------------------------
 Fixes:

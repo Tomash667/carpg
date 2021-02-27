@@ -1162,9 +1162,10 @@ void Game::ListAreas(LevelArea& area)
 	}
 
 	// action area2
-	if(pc->data.ability_ready)
+	if(pc->data.ability_ready || (pc->unit->action == A_CAST
+		&& pc->unit->animation_state == AS_CAST_ANIMATION && Any(pc->unit->act.cast.ability->type, Ability::Summon, Ability::Trap)))
 		PrepareAreaPath();
-	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
+	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray))
 		pc->unit->target_pos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
 	else if(pc->unit->weapon_state == WeaponState::Taken
 		&& ((pc->unit->weapon_taken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
@@ -1288,11 +1289,17 @@ void Game::ListEntry(EntryType type, const Int2& pt, GameDirection dir)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	if(!pc->CanUseAbilityCheck())
-		return;
+	Ability* ability;
+	if(pc->unit->action == A_CAST)
+		ability = pc->unit->act.cast.ability;
+	else
+	{
+		if(!pc->CanUseAbilityCheck())
+			return;
+		ability = pc->data.ability_ready;
+	}
 
-	Ability& ability = *pc->data.ability_ready;
-	switch(ability.type)
+	switch(ability->type)
 	{
 	case Ability::Charge:
 		{
@@ -1308,8 +1315,8 @@ void Game::PrepareAreaPath()
 
 			// find max line
 			float t;
-			Vec3 dir(sin(rot) * ability.range, 0, cos(rot) * ability.range);
-			bool ignore_units = IsSet(ability.flags, Ability::IgnoreUnits);
+			Vec3 dir(sin(rot) * ability->range, 0, cos(rot) * ability->range);
+			bool ignore_units = IsSet(ability->flags, Ability::IgnoreUnits);
 			game_level->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 			{
 				int flags = obj->getCollisionFlags();
@@ -1324,7 +1331,7 @@ void Game::PrepareAreaPath()
 				return LT_COLLIDE;
 			}, t);
 
-			float len = ability.range * t;
+			float len = ability->range * t;
 
 			if(game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 			{
@@ -1341,8 +1348,8 @@ void Game::PrepareAreaPath()
 				for(int i = 0; i < steps; ++i)
 				{
 					float current_h = game_level->terrain->GetH(active_pos) + h;
-					area.points.push_back(Vec3::Transform(Vec3(-ability.width, current_h, active_step), mat) + unit_offset);
-					area.points.push_back(Vec3::Transform(Vec3(+ability.width, current_h, active_step), mat) + unit_offset);
+					area.points.push_back(Vec3::Transform(Vec3(-ability->width, current_h, active_step), mat) + unit_offset);
+					area.points.push_back(Vec3::Transform(Vec3(+ability->width, current_h, active_step), mat) + unit_offset);
 
 					active_pos += step;
 					active_step += len_step;
@@ -1362,10 +1369,10 @@ void Game::PrepareAreaPath()
 			{
 				// build line on flat terrain
 				area.points.resize(4);
-				area.points[0] = Vec3(-ability.width, h, 0);
-				area.points[1] = Vec3(-ability.width, h, len);
-				area.points[2] = Vec3(ability.width, h, 0);
-				area.points[3] = Vec3(ability.width, h, len);
+				area.points[0] = Vec3(-ability->width, h, 0);
+				area.points[1] = Vec3(-ability->width, h, len);
+				area.points[2] = Vec3(ability->width, h, 0);
+				area.points[3] = Vec3(ability->width, h, len);
 
 				Matrix mat = Matrix::RotationY(rot);
 				for(int i = 0; i < 4; ++i)
@@ -1385,13 +1392,14 @@ void Game::PrepareAreaPath()
 		break;
 
 	case Ability::Summon:
-		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
+	case Ability::Trap:
+		pc->data.ability_point = pc->RaytestTarget(ability->range);
 		if(pc->data.range_ratio < 1.f)
 		{
 			Area2* area = Area2::Get();
 			draw_batch.areas2.push_back(area);
 
-			const float radius = ability.width / 2;
+			const float radius = ability->width / 2;
 			Vec3 dir = pc->data.ability_point - pc->unit->pos;
 			dir.y = 0;
 			float dist = dir.Length();
@@ -1421,7 +1429,10 @@ void Game::PrepareAreaPath()
 				pc->data.ability_ok = true;
 				if(game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 					game_level->terrain->SetY(from);
-				pc->data.ability_point = from;
+				if(!pc->data.ability_ready)
+					pc->unit->target_pos = from;
+				else
+					pc->data.ability_point = from;
 				area->ok = 2;
 			}
 			else
@@ -1446,7 +1457,7 @@ void Game::PrepareAreaPath()
 			else
 			{
 				// raytest - can be cast on alive units or dead team members
-				const float range = ability.range + game_level->camera.dist;
+				const float range = ability->range + game_level->camera.dist;
 				RaytestClosestUnitCallback clbk([=](Unit* unit)
 				{
 					if(unit == pc->unit)
@@ -1479,7 +1490,7 @@ void Game::PrepareAreaPath()
 
 	case Ability::Ray:
 	case Ability::Point:
-		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
+		pc->data.ability_point = pc->RaytestTarget(ability->range);
 		pc->data.ability_ok = true;
 		pc->data.ability_target = nullptr;
 		break;

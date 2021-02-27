@@ -227,3 +227,21 @@ ability entangling_arrow {
 	learning_points 2
 	skill 25
 }
+
+ability fire_trap {
+	type trap
+	flags {use_cast mage}
+	trap_id fireball
+	dmg 130 + 12
+	level 5
+	range 10
+	width 1.5
+	mana 75
+	cooldown 10
+	tex_particle "fire_spark.png" 0.075
+	sound_cast "catching_fire.mp3" 0.5
+	count 3
+	icon
+	learning_points 2
+	skill 25
+}

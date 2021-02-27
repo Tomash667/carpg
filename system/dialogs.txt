@@ -4290,6 +4290,12 @@ dialog mage_seller
 				special "train/fireball"
 				end
 			}
+		if script "!pc.HaveAbility(Ability::Get(\"fire_trap\"))"
+			choice 15
+			{
+				special "train/fire_trap"
+				end
+			}
 		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
 			choice 14
 			{

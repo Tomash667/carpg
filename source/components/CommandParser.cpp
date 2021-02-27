@@ -137,6 +137,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_NOCD, "nocd", "player abilities have no cooldown & use no mana/stamina (nocd 0/1)", F_ANYWHERE | F_CHEAT | F_NO_ECHO));
 
 	// verify all commands are added
 	if(IsDebug())
@@ -2064,6 +2065,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		else
 			Msg("You need to enter exp amount!");
 		break;
+	case CMD_NOCD:
+		if(t.Next())
+		{
+			game->pc->nocd = t.MustGetBool();
+			if(Net::IsClient())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::GENERIC_CMD;
+				c << (byte)CMD_NOCD
+					<< game->pc->nocd;
+			}
+		}
+		Msg("nocd = %d", game->pc->nocd ? 1 : 0);
+		break;
 	default:
 		assert(0);
 		break;
@@ -2082,7 +2097,7 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 		str += s;
 	};
 
-	bool result = ParseStreamInner(f);
+	bool result = ParseStreamInner(f, info.pc);
 
 	print_msg = prev_func;
 
@@ -2126,7 +2141,7 @@ void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& inf
 }
 
 //=================================================================================================
-bool CommandParser::ParseStreamInner(BitStreamReader& f)
+bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* player)
 {
 	CMD cmd = (CMD)f.Read<byte>();
 	switch(cmd)
@@ -2466,6 +2481,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			}
 			team->AddExp(exp);
 		}
+		break;
+	case CMD_NOCD:
+		f >> player->nocd;
 		break;
 	default:
 		Error("Unknown generic command %u.", cmd);

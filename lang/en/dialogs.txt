@@ -1899,6 +1899,7 @@ dialog mage_seller {
 	12 "Cancel"
 	13 "$train_lab/fireball$"
 	14 "$train_lab/thunder_bolt$"
+	15 "$train_lab/fire_trap$"
 }
 
 //==============================================================================

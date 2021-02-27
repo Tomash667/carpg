@@ -86,6 +86,10 @@ ability entangling_arrow {
 	name "Entangling arrow"
 	desc "You shoot a special arrow that, when hit, holds the target in place for 2 seconds."
 }
+ability fire_trap {
+	name "Fire trap"
+	desc "You create a rune that explodes when someone steps on it, dealing $cr{power} damage$c-. You can have 3 runes at the same time."
+}
 
 //------------------------------------------------------------------------------
 // ATTRIBUTES

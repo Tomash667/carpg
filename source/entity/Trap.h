@@ -8,9 +8,10 @@
 struct Trap : public EntityType<Trap>
 {
 	BaseTrap* base;
-	int state;
+	int state, attack;
 	GameDirection dir;
 	float time;
+	Entity<Unit> owner;
 	vector<Unit*>* hitted;
 	Int2 tile;
 	Vec3 pos;
@@ -26,4 +27,5 @@ struct Trap : public EntityType<Trap>
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
+	float GetAttack() const { return float(attack != 0 ? attack : base->attack); }
 };

@@ -3038,6 +3038,9 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		// remove door meshes
 		for(Door* door : area.doors)
 			door->Cleanup();
+
+		// remove player traps
+		DeleteElements(area.traps, [](Trap* trap) { return trap->owner != nullptr; });
 	}
 	else
 	{

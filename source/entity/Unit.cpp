@@ -1175,43 +1175,61 @@ void Unit::UpdateEffects(float dt)
 	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f, food_heal = 0.f;
 
 	// update effects timer
-	uint index = 0;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	for(uint index = 0, count = effects.size(); index < count; ++index)
 	{
-		if(it->effect == EffectId::NaturalHealingMod)
+		Effect& effect = effects[index];
+		if(effect.effect == EffectId::NaturalHealingMod)
 			continue;
-		switch(it->effect)
+
+		switch(effect.effect)
 		{
 		case EffectId::Regeneration:
-			if(it->source == EffectSource::Temporary && it->power > 0.f)
+			if(effect.source == EffectSource::Temporary && effect.power > 0.f)
 			{
-				if(it->power > temp_regen)
-					temp_regen = it->power;
+				if(effect.power > temp_regen)
+					temp_regen = effect.power;
 			}
 			else
-				regen += it->power;
+				regen += effect.power;
 			break;
 		case EffectId::Poison:
-			poison_dmg += it->power;
+			poison_dmg += effect.power;
 			break;
 		case EffectId::Alcohol:
-			alco_sum += it->power;
+			alco_sum += effect.power;
 			break;
 		case EffectId::FoodRegeneration:
-			food_heal += it->power;
+			food_heal += effect.power;
 			break;
 		case EffectId::StaminaRegeneration:
-			if(it->power > best_stamina)
-				best_stamina = it->power;
+			if(effect.power > best_stamina)
+				best_stamina = effect.power;
 			break;
 		case EffectId::StaminaRegenerationMod:
-			stamina_mod *= it->power;
+			stamina_mod *= effect.power;
+			break;
+		case EffectId::SlowMove:
+			effect.power = effect.time;
 			break;
 		}
-		if(it->source == EffectSource::Temporary)
+
+		if(effect.source == EffectSource::Temporary)
 		{
-			if((it->time -= dt) <= 0.f)
+			if((effect.time -= dt) <= 0.f)
+			{
 				_to_remove.push_back(index);
+				if(Net::IsLocal() && effect.effect == EffectId::Rooted)
+				{
+					Effect e;
+					e.effect = EffectId::SlowMove;
+					e.source = EffectSource::Temporary;
+					e.source_id = -1;
+					e.power = 1.f;
+					e.time = 1.f;
+					e.value = -1;
+					AddEffect(e);
+				}
+			}
 		}
 	}
 
@@ -7076,11 +7094,11 @@ void Unit::CastSpell()
 				pe->mode = 1;
 				pe->Init();
 				area->tmp->pes.push_back(pe);
-
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::RAISE_EFFECT;
+					c.type = NetChange::PARTICLE_EFFECT;
+					c.ability = &ability;
 					c.pos = pe->pos;
 				}
 			}
@@ -7126,7 +7144,8 @@ void Unit::CastSpell()
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HEAL_EFFECT;
+					c.type = NetChange::PARTICLE_EFFECT;
+					c.ability = &ability;
 					c.pos = pe->pos;
 				}
 			}
@@ -7195,6 +7214,50 @@ void Unit::CastSpell()
 		act.dash.hit->Clear();
 		timer = 1.f;
 		speed = ability.range / timer;
+		break;
+	case Ability::Trap:
+		{
+			// despawn old
+			game_level->RemoveOldTrap(ability.trap, this, ability.count);
+
+			// spawn new
+			Trap* trap = game_level->CreateTrap(target_pos, ability.trap->type);
+			trap->owner = this;
+			trap->attack = ability.dmg + ability.dmg_bonus * (level + CalculateMagicPower());
+
+			// particle effect
+			if(ability.tex_particle)
+			{
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = ability.tex_particle;
+				pe->emission_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emissions = 1;
+				pe->spawn_min = 12;
+				pe->spawn_max = 12;
+				pe->max_particles = 12;
+				pe->pos = target_pos;
+				pe->speed_min = Vec3(-0.5f, 1.5f, -0.5f);
+				pe->speed_max = Vec3(0.5f, 3.0f, 0.5f);
+				pe->pos_min = Vec3(-0.5f, 0, -0.5f);
+				pe->pos_max = Vec3(0.5f, 0, 0.5f);
+				pe->size = ability.size_particle / 2;
+				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area->tmp->pes.push_back(pe);
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::PARTICLE_EFFECT;
+					c.ability = &ability;
+					c.pos = pe->pos;
+				}
+			}
+		}
 		break;
 	}
 

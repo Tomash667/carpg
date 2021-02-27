@@ -9,3 +9,14 @@ BaseTrap BaseTrap::traps[] = {
 	BaseTrap("fireball", 150, TRAP_FIREBALL, "runa.qmsh", nullptr, true, nullptr, 0.f, nullptr, 0.f, nullptr, 0.f)
 };
 const uint BaseTrap::n_traps = countof(BaseTrap::traps);
+
+//=================================================================================================
+BaseTrap* BaseTrap::Get(const string& id)
+{
+	for(int i = 0; i < TRAP_MAX; ++i)
+	{
+		if(id == traps[i].id)
+			return &traps[i];
+	}
+	return nullptr;
+}
