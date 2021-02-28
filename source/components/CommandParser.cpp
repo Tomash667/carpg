@@ -420,7 +420,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(Net::IsLocal())
 			world->Reveal();
 		else
-			Net::PushChange(NetChange::CHEAT_REVEAL);
+			PushGenericCmd(CMD_REVEAL);
 		break;
 	case CMD_MAP2CONSOLE:
 		if(game->game_state == GS_LEVEL && !game_level->location->outside)
@@ -484,10 +484,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_ADD_GOLD;
-				c.id = (is_team ? 1 : 0);
-				c.count = count;
+				PushGenericCmd(CMD_ADD_GOLD)
+					<< is_team
+					<< count;
 			}
 		}
 		else
@@ -745,7 +744,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(Net::IsLocal())
 			HealUnit(*game->pc->unit);
 		else
-			Net::PushChange(NetChange::CHEAT_HEAL);
+			PushGenericCmd(CMD_HEAL);
 		break;
 	case CMD_KILL:
 		if(Unit* target = game->pc->data.GetTargetUnit(); target && target->IsAlive())
@@ -753,11 +752,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(Net::IsLocal())
 				target->GiveDmg(target->hpmax);
 			else
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_KILL;
-				c.unit = target;
-			}
+				PushGenericCmd(CMD_KILL) << target->id;
 		}
 		else
 			Msg("No unit in front of player.");
@@ -771,11 +766,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(Net::IsLocal())
 				HealUnit(*target);
 			else
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_HEAL_UNIT;
-				c.unit = target;
-			}
+				PushGenericCmd(CMD_HEAL_UNIT) << target->id;
 		}
 		else
 			Msg("No unit in front of player.");
@@ -784,7 +775,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(Net::IsLocal())
 			game->pc->unit->GiveDmg(game->pc->unit->hpmax);
 		else
-			Net::PushChange(NetChange::CHEAT_SUICIDE);
+			PushGenericCmd(CMD_SUICIDE);
 		break;
 	case CMD_CITIZEN:
 		if(team->is_bandit || team->crazies_attack)
@@ -797,7 +788,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 			else
-				Net::PushChange(NetChange::CHEAT_CITIZEN);
+				PushGenericCmd(CMD_CITIZEN);
 		}
 		break;
 	case CMD_SCREENSHOT:
@@ -805,29 +796,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		break;
 	case CMD_SCARE:
 		if(Net::IsLocal())
-		{
-			for(AIController* ai : game->ais)
-			{
-				if(ai->unit->IsEnemy(*game->pc->unit) && Vec3::Distance(ai->unit->pos, game->pc->unit->pos) < ALERT_RANGE && game_level->CanSee(*ai->unit, *game->pc->unit))
-				{
-					ai->morale = -10;
-					ai->target_last_pos = game->pc->unit->pos;
-				}
-			}
-		}
+			Scare(game->pc);
 		else
-			Net::PushChange(NetChange::CHEAT_SCARE);
+			PushGenericCmd(CMD_SCARE);
 		break;
 	case CMD_INVISIBLE:
 		if(t.Next())
 		{
 			game->pc->invisible = t.MustGetBool();
 			if(Net::IsClient())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_INVISIBLE;
-				c.id = game->pc->invisible ? 1 : 0;
-			}
+				PushGenericCmd(CMD_INVISIBLE) << game->pc->invisible;
 		}
 		Msg("invisible = %d", game->pc->invisible ? 1 : 0);
 		break;
@@ -836,11 +814,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		{
 			game->pc->godmode = t.MustGetBool();
 			if(Net::IsClient())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_GODMODE;
-				c.id = game->pc->godmode ? 1 : 0;
-			}
+				PushGenericCmd(CMD_GODMODE) << game->pc->godmode;
 		}
 		Msg("godmode = %d", game->pc->godmode ? 1 : 0);
 		break;
@@ -849,24 +823,26 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		{
 			game->pc->noclip = t.MustGetBool();
 			if(Net::IsClient())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_NOCLIP;
-				c.id = game->pc->noclip ? 1 : 0;
-			}
+				PushGenericCmd(CMD_NOCLIP) << game->pc->noclip;
 		}
 		Msg("noclip = %d", game->pc->noclip ? 1 : 0);
 		break;
 	case CMD_KILLALL:
 		{
-			int mode = 0;
+			bool friendly = false;
 			if(t.Next())
-				mode = t.MustGetInt();
+				friendly = t.MustGetBool();
 			Unit* ignore = nullptr;
 			if(game->pc->data.before_player == BP_UNIT)
 				ignore = game->pc->data.before_player_ptr.unit;
-			if(!game_level->KillAll(mode, *game->pc->unit, ignore))
-				Msg("Unknown mode '%d'.", mode);
+			if(Net::IsLocal())
+				game_level->KillAll(friendly, *game->pc->unit, ignore);
+			else
+			{
+				PushGenericCmd(CMD_KILLALL)
+					<< friendly
+					<< (ignore ? ignore->id : -1);
+			}
 		}
 		break;
 	case CMD_SAVE:
@@ -958,11 +934,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				if(Net::IsLocal())
 					world->Update(count, UM_SKIP);
 				else
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_SKIP_DAYS;
-					c.id = count;
-				}
+					PushGenericCmd(CMD_SKIP_DAYS) << count;
 			}
 		}
 		break;
@@ -1033,10 +1005,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_WARP;
-				c.id = index;
-				c.count = inside ? 1 : 0;
+				PushGenericCmd(CMD_WARP)
+					<< index
+					<< inside;
 			}
 		}
 		else
@@ -1460,16 +1431,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					u->Fall();
 			}
 			else
-			{
-				NetChange& c = Add1(Net::changes);
-				if(cmd.cmd == CMD_HURT)
-					c.type = NetChange::CHEAT_HURT;
-				else if(cmd.cmd == CMD_BREAK_ACTION)
-					c.type = NetChange::CHEAT_BREAK_ACTION;
-				else
-					c.type = NetChange::CHEAT_FALL;
-				c.unit = u;
-			}
+				PushGenericCmd(cmd.cmd) << u->id;
 		}
 		break;
 	case CMD_RELOAD_SHADERS:
@@ -1523,6 +1485,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				if(length <= 0.f)
 					break;
 			}
+
 			Unit* u;
 			if(t.Next() && t.IsInt(1))
 				u = game->pc->unit;
@@ -1533,6 +1496,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				Msg("No unit in front of player.");
 				break;
 			}
+
 			if(Net::IsLocal())
 			{
 				Effect e;
@@ -1546,17 +1510,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_STUN;
-				c.f[0] = length;
-				c.unit = u;
+				PushGenericCmd(CMD_STUN)
+					<< u->id
+					<< length;
 			}
 		}
 		break;
 	case CMD_REFRESH_COOLDOWN:
 		game->pc->RefreshCooldown();
 		if(Net::IsClient())
-			Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
+			PushGenericCmd(CMD_REFRESH_COOLDOWN);
 		break;
 	case CMD_DRAW_PATH:
 		if(game->pc->data.before_player == BP_UNIT)
@@ -1667,9 +1630,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				game->pc->data.selected_unit->AddEffect(e);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_ADD_EFFECT
+				PushGenericCmd(CMD_ADD_EFFECT)
 					<< game->pc->data.selected_unit->id
 					<< (char)e.effect
 					<< (char)e.source
@@ -1771,9 +1732,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				RemoveEffect(game->pc->data.selected_unit, effect, source, source_id, value);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_REMOVE_EFFECT
+				PushGenericCmd(CMD_REMOVE_EFFECT)
 					<< game->pc->data.selected_unit->id
 					<< (char)effect
 					<< (char)source
@@ -1786,12 +1745,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
 			ListEffects(game->pc->data.selected_unit);
 		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GENERIC_CMD;
-			c << (byte)CMD_LIST_EFFECTS
-				<< game->pc->data.selected_unit->id;
-		}
+			PushGenericCmd(CMD_LIST_EFFECTS) << game->pc->data.selected_unit->id;
 		break;
 	case CMD_ADD_PERK:
 		if(!game->pc->data.selected_unit->player)
@@ -1846,9 +1800,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				AddPerk(game->pc->data.selected_unit->player, perk, value);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_ADD_PERK
+				PushGenericCmd(CMD_ADD_PERK)
 					<< game->pc->data.selected_unit->id
 					<< perk->hash
 					<< (char)value;
@@ -1908,9 +1860,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				RemovePerk(game->pc->data.selected_unit->player, perk, value);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_REMOVE_PERK
+				PushGenericCmd(CMD_REMOVE_PERK)
 					<< game->pc->data.selected_unit->id
 					<< perk->hash
 					<< (char)value;
@@ -1923,12 +1873,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		else if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
 			ListPerks(game->pc->data.selected_unit->player);
 		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GENERIC_CMD;
-			c << (byte)CMD_LIST_PERKS
-				<< game->pc->data.selected_unit->id;
-		}
+			PushGenericCmd(CMD_LIST_PERKS) << game->pc->data.selected_unit->id;
 		break;
 	case CMD_SELECT:
 		{
@@ -1979,12 +1924,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
 			ListStats(game->pc->data.selected_unit);
 		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GENERIC_CMD;
-			c << (byte)CMD_LIST_STATS
-				<< game->pc->data.selected_unit->id;
-		}
+			PushGenericCmd(CMD_LIST_STATS) << game->pc->data.selected_unit->id;
 		break;
 	case CMD_ADD_LEARNING_POINTS:
 		if(!game->pc->data.selected_unit->IsPlayer())
@@ -2000,9 +1940,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				game->pc->data.selected_unit->player->AddLearningPoint(count);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_ADD_LEARNING_POINTS
+				PushGenericCmd(CMD_ADD_LEARNING_POINTS)
 					<< game->pc->data.selected_unit->id
 					<< count;
 			}
@@ -2055,12 +1993,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(Net::IsLocal())
 				team->AddExp(exp);
 			else
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_ADD_EXP
-					<< exp;
-			}
+				PushGenericCmd(CMD_ADD_EXP) << exp;
 		}
 		else
 			Msg("You need to enter exp amount!");
@@ -2070,12 +2003,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		{
 			game->pc->nocd = t.MustGetBool();
 			if(Net::IsClient())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::GENERIC_CMD;
-				c << (byte)CMD_NOCD
-					<< game->pc->nocd;
-			}
+				PushGenericCmd(CMD_NOCD) << game->pc->nocd;
 		}
 		Msg("nocd = %d", game->pc->nocd ? 1 : 0);
 		break;
@@ -2484,6 +2412,258 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		break;
 	case CMD_NOCD:
 		f >> player->nocd;
+		break;
+	case CMD_NOCLIP:
+		f >> player->noclip;
+		break;
+	case CMD_GODMODE:
+		f >> player->godmode;
+		break;
+	case CMD_INVISIBLE:
+		f >> player->invisible;
+		break;
+	case CMD_REVEAL:
+		world->Reveal();
+		break;
+	case CMD_HEAL:
+		if(game->game_state == GS_LEVEL)
+			HealUnit(*player->unit);
+		break;
+	case CMD_KILL:
+		{
+			int id;
+			f >> id;
+			if(game->game_state == GS_LEVEL)
+			{
+				if(Unit* unit = game_level->FindUnit(id))
+				{
+					if(unit->IsAlive())
+						unit->GiveDmg(unit->hpmax);
+				}
+				else
+				{
+					Error("CommandParser CMD_KILL: Missing unit %d.", id);
+					return false;
+				}
+			}
+		}
+		break;
+	case CMD_HEAL_UNIT:
+		{
+			int id;
+			f >> id;
+			if(game->game_state == GS_LEVEL)
+			{
+				if(Unit* unit = game_level->FindUnit(id))
+					HealUnit(*unit);
+				else
+				{
+					Error("CommandParser CMD_HEAL_UNIT: Missing unit %d.", id);
+					return false;
+				}
+			}
+		}
+		break;
+	case CMD_SUICIDE:
+		if(game->game_state == GS_LEVEL)
+			player->unit->GiveDmg(player->unit->hpmax);
+		break;
+	case CMD_SCARE:
+		Scare(player);
+		break;
+	case CMD_CITIZEN:
+		if(team->is_bandit || team->crazies_attack)
+		{
+			team->is_bandit = false;
+			team->crazies_attack = false;
+			Net::PushChange(NetChange::CHANGE_FLAGS);
+		}
+		break;
+	case CMD_SKIP_DAYS:
+		{
+			int count;
+			f >> count;
+			world->Update(count, UM_SKIP);
+		}
+		break;
+	case CMD_WARP:
+		{
+			byte building_index;
+			bool inside;
+			f >> building_index;
+			f >> inside;
+			if(game->game_state != GS_LEVEL)
+				break;
+			Unit& unit = *player->unit;
+			if(unit.frozen != FROZEN::NO)
+			{
+				Error("CommandParser CMD_WARP: Unit is frozen.");
+				break;
+			}
+			if(inside)
+			{
+				if(!game_level->city_ctx || building_index >= game_level->city_ctx->inside_buildings.size())
+				{
+					Error("CommandParser CMD_WARP: Invalid inside building index %u.", building_index);
+					break;
+				}
+				Net::WarpData& warp = Add1(net->warps);
+				warp.u = &unit;
+				warp.where = building_index;
+				warp.building = -1;
+				warp.timer = 1.f;
+				unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+				NetChangePlayer& c = Add1(player->player_info->changes);
+				c.type = NetChangePlayer::PREPARE_WARP;
+			}
+			else
+			{
+				if(!game_level->city_ctx || building_index >= game_level->city_ctx->buildings.size())
+				{
+					Error("CommandParser CMD_WARP: Invalid building index %u.", building_index);
+					return false;
+				}
+				if(unit.area->area_type != LevelArea::Type::Outside)
+				{
+					Net::WarpData& warp = Add1(net->warps);
+					warp.u = &unit;
+					warp.where = -1;
+					warp.building = building_index;
+					warp.timer = 1.f;
+					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					NetChangePlayer& c = Add1(player->player_info->changes);
+					c.type = NetChangePlayer::PREPARE_WARP;
+				}
+				else
+				{
+					CityBuilding& city_building = game_level->city_ctx->buildings[building_index];
+					game_level->WarpUnit(unit, city_building.walk_pt);
+					unit.RotateTo(PtToPos(city_building.pt));
+				}
+			}
+		}
+		break;
+	case CMD_HURT:
+	case CMD_BREAK_ACTION:
+	case CMD_FALL:
+		{
+			int id;
+			f >> id;
+			if(game->game_state == GS_LEVEL)
+			{
+				if(Unit* unit = game_level->FindUnit(id))
+				{
+					switch(cmd)
+					{
+					case CMD_HURT:
+						unit->GiveDmg(100.f);
+						break;
+					case CMD_BREAK_ACTION:
+						unit->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
+						break;
+					case CMD_FALL:
+						unit->Fall();
+						break;
+					}
+				}
+				else
+				{
+					cstring name;
+					switch(cmd)
+					{
+					case CMD_HURT:
+						name = "CMD_HURT";
+						break;
+					case CMD_BREAK_ACTION:
+						name = "CMD_BREAK_ACTION";
+						break;
+					case CMD_FALL:
+						name = "CMD_FALL";
+						break;
+					}
+					Error("CommandParser %s: Missing unit %d.", name, id);
+					return false;
+				}
+			}
+		}
+		break;
+	case CMD_STUN:
+		{
+			int id;
+			float length;
+			f >> id;
+			f >> length;
+			if(game->game_state == GS_LEVEL)
+			{
+				if(Unit* unit = game_level->FindUnit(id))
+				{
+					Effect e;
+					e.effect = EffectId::Stun;
+					e.source = EffectSource::Temporary;
+					e.source_id = -1;
+					e.value = -1;
+					e.power = 0;
+					e.time = length;
+					unit->AddEffect(e);
+				}
+				else
+				{
+					Error("CommandParser CMD_HEAL_UNIT: Missing unit %d.", id);
+					return false;
+				}
+			}
+		}
+		break;
+	case CMD_REFRESH_COOLDOWN:
+		if(game->game_state == GS_LEVEL)
+			player->RefreshCooldown();
+		break;
+	case CMD_KILLALL:
+		{
+			bool friendly;
+			int id;
+			f >> friendly;
+			f >> id;
+			if(game->game_state == GS_LEVEL)
+			{
+				Unit* ignored;
+				if(id == -1)
+					ignored = nullptr;
+				else
+				{
+					ignored = game_level->FindUnit(id);
+					if(!ignored)
+					{
+						Error("CommandParsed CMD_KILLALL: Missing unit %d.", id);
+						return false;
+					}
+				}
+
+				game_level->KillAll(friendly, *player->unit, ignored);
+			}
+		}
+		break;
+	case CMD_ADD_GOLD:
+		{
+			bool is_team;
+			int count;
+			f >> is_team;
+			f >> count;
+			if(is_team)
+			{
+				if(count <= 0)
+				{
+					Error("CommandParsed CMD_ADD_GOLD: Invalid count %d.", count);
+				}
+				else
+					team->AddGold(count);
+			}
+			else
+			{
+				player->unit->gold = max(player->unit->gold + count, 0);
+				player->player_info->UpdateGold();
+			}
+		}
 		break;
 	default:
 		Error("Unknown generic command %u.", cmd);
@@ -3058,5 +3238,26 @@ void CommandParser::CmdList()
 			Info(s.c_str());
 		}
 		break;
+	}
+}
+
+//=================================================================================================
+NetChangeWriter CommandParser::PushGenericCmd(CMD cmd)
+{
+	NetChange& c = Add1(Net::changes);
+	c.type = NetChange::GENERIC_CMD;
+	return (c << (byte)cmd);
+}
+
+//=================================================================================================
+void CommandParser::Scare(PlayerController* player)
+{
+	for(AIController* ai : game->ais)
+	{
+		if(ai->unit->IsEnemy(*player->unit) && Vec3::Distance(ai->unit->pos, player->unit->pos) < ALERT_RANGE && game_level->CanSee(*ai->unit, *player->unit))
+		{
+			ai->morale = -10;
+			ai->target_last_pos = player->unit->pos;
+		}
 	}
 }

@@ -1695,112 +1695,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c.count = state;
 			}
 			break;
-		// player used cheat 'suicide'
-		case NetChange::CHEAT_SUICIDE:
-			if(info.devmode)
-			{
-				if(game->game_state == GS_LEVEL)
-					unit.GiveDmg(unit.hpmax);
-			}
-			else
-				Error("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str());
-			break;
-		// player used cheat 'godmode'
-		case NetChange::CHEAT_GODMODE:
-			{
-				bool state;
-				f >> state;
-				if(!f)
-					Error("Update server: Broken CHEAT_GODMODE from %s.", info.name.c_str());
-				else if(info.devmode)
-					player.godmode = state;
-				else
-					Error("Update server: Player %s used CHEAT_GODMODE without devmode.", info.name.c_str());
-			}
-			break;
-		// player used cheat 'noclip'
-		case NetChange::CHEAT_NOCLIP:
-			{
-				bool state;
-				f >> state;
-				if(!f)
-					Error("Update server: Broken CHEAT_NOCLIP from %s.", info.name.c_str());
-				else if(info.devmode)
-					player.noclip = state;
-				else
-					Error("Update server: Player %s used CHEAT_NOCLIP without devmode.", info.name.c_str());
-			}
-			break;
-		// player used cheat 'invisible'
-		case NetChange::CHEAT_INVISIBLE:
-			{
-				bool state;
-				f >> state;
-				if(!f)
-					Error("Update server: Broken CHEAT_INVISIBLE from %s.", info.name.c_str());
-				else if(info.devmode)
-					player.invisible = state;
-				else
-					Error("Update server: Player %s used CHEAT_INVISIBLE without devmode.", info.name.c_str());
-			}
-			break;
-		// player used cheat 'scare'
-		case NetChange::CHEAT_SCARE:
-			if(info.devmode)
-			{
-				if(game->game_state != GS_LEVEL)
-					break;
-				for(AIController* ai : game->ais)
-				{
-					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE && game_level->CanSee(*ai->unit, unit))
-					{
-						ai->morale = -10;
-						ai->target_last_pos = unit.pos;
-					}
-				}
-			}
-			else
-				Error("Update server: Player %s used CHEAT_SCARE without devmode.", info.name.c_str());
-			break;
-		// player used cheat 'killall'
-		case NetChange::CHEAT_KILLALL:
-			{
-				int ignored_id;
-				byte mode;
-				f >> ignored_id;
-				f >> mode;
-				if(!f)
-				{
-					Error("Update server: Broken CHEAT_KILLALL from %s.", info.name.c_str());
-					break;
-				}
-
-				if(game->game_state != GS_LEVEL)
-					break;
-
-				if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_KILLALL without devmode.", info.name.c_str());
-					break;
-				}
-
-				Unit* ignored;
-				if(ignored_id == -1)
-					ignored = nullptr;
-				else
-				{
-					ignored = game_level->FindUnit(ignored_id);
-					if(!ignored)
-					{
-						Error("Update server: CHEAT_KILLALL from %s, missing unit %d.", info.name.c_str(), ignored_id);
-						break;
-					}
-				}
-
-				if(!game_level->KillAll(mode, unit, ignored))
-					Error("Update server: CHEAT_KILLALL from %s, invalid mode %u.", info.name.c_str(), mode);
-			}
-			break;
 		// client checks if item is better for npc
 		case NetChange::IS_BETTER_ITEM:
 			{
@@ -1834,75 +1728,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: IS_BETTER_ITEM from %s, player is not giving items.", info.name.c_str());
 			}
 			break;
-		// player used cheat 'citizen'
-		case NetChange::CHEAT_CITIZEN:
-			if(info.devmode)
-			{
-				if(team->is_bandit || team->crazies_attack)
-				{
-					team->is_bandit = false;
-					team->crazies_attack = false;
-					PushChange(NetChange::CHANGE_FLAGS);
-				}
-			}
-			else
-				Error("Update server: Player %s used CHEAT_CITIZEN without devmode.", info.name.c_str());
-			break;
-		// player used cheat 'heal'
-		case NetChange::CHEAT_HEAL:
-			if(info.devmode)
-			{
-				if(game->game_state == GS_LEVEL)
-					cmdp->HealUnit(unit);
-			}
-			else
-				Error("Update server: Player %s used CHEAT_HEAL without devmode.", info.name.c_str());
-			break;
-		// player used cheat 'kill'
-		case NetChange::CHEAT_KILL:
-			{
-				int id;
-				f >> id;
-				if(!f)
-					Error("Update server: Broken CHEAT_KILL from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_KILL without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* target = game_level->FindUnit(id);
-					if(!target)
-						Error("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), id);
-					else if(target->IsAlive())
-						target->GiveDmg(target->hpmax);
-				}
-			}
-			break;
-		// player used cheat 'heal_unit'
-		case NetChange::CHEAT_HEAL_UNIT:
-			{
-				int id;
-				f >> id;
-				if(!f)
-					Error("Update server: Broken CHEAT_HEAL_UNIT from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_HEAL_UNIT without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* target = game_level->FindUnit(id);
-					if(!target)
-						Error("Update server: CHEAT_HEAL_UNIT from %s, missing unit %d.", info.name.c_str(), id);
-					else
-						cmdp->HealUnit(*target);
-				}
-			}
-			break;
-		// player used cheat 'reveal'
-		case NetChange::CHEAT_REVEAL:
-			if(info.devmode)
-				world->Reveal();
-			else
-				Error("Update server: Player %s used CHEAT_REVEAL without devmode.", info.name.c_str());
-			break;
 		// player used cheat 'goto_map'
 		case NetChange::CHEAT_GOTO_MAP:
 			if(info.devmode)
@@ -1925,34 +1750,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			else
 				Error("Update server: Player %s used CHEAT_REVEAL_MINIMAP without devmode.", info.name.c_str());
 			break;
-		// player used cheat 'add_gold' or 'add_team_gold'
-		case NetChange::CHEAT_ADD_GOLD:
-			{
-				bool is_team;
-				int count;
-				f >> is_team;
-				f >> count;
-				if(!f)
-					Error("Update server: Broken CHEAT_ADD_GOLD from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_ADD_GOLD without devmode.", info.name.c_str());
-				else
-				{
-					if(is_team)
-					{
-						if(count <= 0)
-							Error("Update server: CHEAT_ADD_GOLD from %s, invalid count %d.", info.name.c_str(), count);
-						else
-							team->AddGold(count);
-					}
-					else
-					{
-						unit.gold = max(unit.gold + count, 0);
-						info.UpdateGold();
-					}
-				}
-			}
-			break;
 		// player used cheat 'add_item' or 'add_team_item'
 		case NetChange::CHEAT_ADD_ITEM:
 			{
@@ -1972,86 +1769,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						info.u->AddItem2(item, count, is_team ? count : 0u, false);
 					else
 						Error("Update server: CHEAT_ADD_ITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), item_id.c_str(), count);
-				}
-			}
-			break;
-		// player used cheat 'skip_days'
-		case NetChange::CHEAT_SKIP_DAYS:
-			{
-				int count;
-				f >> count;
-				if(!f)
-					Error("Update server: Broken CHEAT_SKIP_DAYS from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str());
-				else
-					world->Update(count, UM_SKIP);
-			}
-			break;
-		// player used cheat 'warp'
-		case NetChange::CHEAT_WARP:
-			{
-				byte building_index;
-				bool inside;
-				f >> building_index;
-				f >> inside;
-				if(!f)
-				{
-					Error("Update server: Broken CHEAT_WARP from %s.", info.name.c_str());
-					break;
-				}
-				if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str());
-					break;
-				}
-				if(game->game_state != GS_LEVEL)
-					break;
-				if(unit.frozen != FROZEN::NO)
-				{
-					Error("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
-					break;
-				}
-				if(inside)
-				{
-					if(!game_level->city_ctx || building_index >= game_level->city_ctx->inside_buildings.size())
-					{
-						Error("Update server: CHEAT_WARP from %s, invalid inside building index %u.", info.name.c_str(), building_index);
-						break;
-					}
-					WarpData& warp = Add1(warps);
-					warp.u = &unit;
-					warp.where = building_index;
-					warp.building = -1;
-					warp.timer = 1.f;
-					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-					NetChangePlayer& c = Add1(info.u->player->player_info->changes);
-					c.type = NetChangePlayer::PREPARE_WARP;
-				}
-				else
-				{
-					if(!game_level->city_ctx || building_index >= game_level->city_ctx->buildings.size())
-					{
-						Error("Update server: CHEAT_WARP from %s, invalid building index %u.", info.name.c_str(), building_index);
-						break;
-					}
-					if(unit.area->area_type != LevelArea::Type::Outside)
-					{
-						WarpData& warp = Add1(warps);
-						warp.u = &unit;
-						warp.where = -1;
-						warp.building = building_index;
-						warp.timer = 1.f;
-						unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-						NetChangePlayer& c = Add1(info.u->player->player_info->changes);
-						c.type = NetChangePlayer::PREPARE_WARP;
-					}
-					else
-					{
-						CityBuilding& city_building = game_level->city_ctx->buildings[building_index];
-						game_level->WarpUnit(unit, city_building.walk_pt);
-						unit.RotateTo(PtToPos(city_building.pt));
-					}
 				}
 			}
 			break;
@@ -2685,97 +2402,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'hurt'
-		case NetChange::CHEAT_HURT:
-			{
-				int id;
-				f >> id;
-				if(!f)
-					Error("Update server: Broken CHEAT_HURT from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* target = game_level->FindUnit(id);
-					if(target)
-						target->GiveDmg(100.f);
-					else
-						Error("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), id);
-				}
-			}
-			break;
-		// player used cheat 'break_action'
-		case NetChange::CHEAT_BREAK_ACTION:
-			{
-				int id;
-				f >> id;
-				if(!f)
-					Error("Update server: Broken CHEAT_BREAK_ACTION from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* target = game_level->FindUnit(id);
-					if(target)
-						target->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
-					else
-						Error("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), id);
-				}
-			}
-			break;
-		// player used cheat 'fall'
-		case NetChange::CHEAT_FALL:
-			{
-				int id;
-				f >> id;
-				if(!f)
-					Error("Update server: Broken CHEAT_FALL from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* target = game_level->FindUnit(id);
-					if(target)
-						target->Fall();
-					else
-						Error("Update server: CHEAT_FALL from %s, missing unit %d.", info.name.c_str(), id);
-				}
-			}
-			break;
 		// player yell to move ai
 		case NetChange::YELL:
 			if(game->game_state == GS_LEVEL)
 				player.Yell();
-			break;
-		// player used cheat 'stun'
-		case NetChange::CHEAT_STUN:
-			{
-				int id;
-				float length;
-				f >> id;
-				f >> length;
-				if(!f)
-					Error("Update server: Broken CHEAT_STUN from %s.", info.name.c_str());
-				else if(!info.devmode)
-					Error("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* target = game_level->FindUnit(id);
-					if(target && length > 0)
-					{
-						Effect e;
-						e.effect = EffectId::Stun;
-						e.source = EffectSource::Temporary;
-						e.source_id = -1;
-						e.value = -1;
-						e.power = 0;
-						e.time = length;
-						target->AddEffect(e);
-					}
-					else
-						Error("Update server: CHEAT_STUN from %s, missing unit %d.", info.name.c_str(), id);
-				}
-			}
 			break;
 		// player used ability
 		case NetChange::PLAYER_ABILITY:
@@ -2806,13 +2436,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						info.pc->UseAbility(ability, false, &pos, target);
 				}
 			}
-			break;
-		// player used cheat 'refresh_cooldown'
-		case NetChange::CHEAT_REFRESH_COOLDOWN:
-			if(!info.devmode)
-				Error("Update server: Player %s used CHEAT_REFRESH_COOLDOWN without devmode.", info.name.c_str());
-			else if(game->game_state == GS_LEVEL)
-				player.RefreshCooldown();
 			break;
 		// client fallback ended
 		case NetChange::END_FALLBACK:

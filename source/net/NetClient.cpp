@@ -343,17 +343,10 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
 			break;
-		case NetChange::CHEAT_WARP:
-			f.WriteCasted<byte>(c.id);
-			f.Write(c.count != 0);
-			break;
 		case NetChange::CHEAT_WARP_TO_ENTRY:
 		case NetChange::CHEAT_CHANGE_LEVEL:
 		case NetChange::CHEAT_NOAI:
 		case NetChange::PVP:
-		case NetChange::CHEAT_GODMODE:
-		case NetChange::CHEAT_INVISIBLE:
-		case NetChange::CHEAT_NOCLIP:
 		case NetChange::CHANGE_ALWAYS_RUN:
 			f << (c.id != 0);
 			break;
@@ -362,32 +355,21 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::TALK:
 		case NetChange::USE_CHEST:
 		case NetChange::SKIP_DIALOG:
-		case NetChange::CHEAT_SKIP_DAYS:
 		case NetChange::PAY_CREDIT:
 		case NetChange::DROP_GOLD:
 		case NetChange::TAKE_ITEM_CREDIT:
 		case NetChange::CLEAN_LEVEL:
 			f << c.id;
 			break;
-		case NetChange::CHEAT_ADD_GOLD:
-			f << (c.id == 1);
-			f << c.count;
-			break;
 		case NetChange::STOP_TRADE:
 		case NetChange::GET_ALL_ITEMS:
 		case NetChange::EXIT_BUILDING:
 		case NetChange::WARP:
-		case NetChange::CHEAT_SUICIDE:
-		case NetChange::CHEAT_SCARE:
-		case NetChange::CHEAT_CITIZEN:
-		case NetChange::CHEAT_HEAL:
-		case NetChange::CHEAT_REVEAL:
 		case NetChange::CHEAT_GOTO_MAP:
 		case NetChange::CHEAT_REVEAL_MINIMAP:
 		case NetChange::ENTER_LOCATION:
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
-		case NetChange::CHEAT_REFRESH_COOLDOWN:
 		case NetChange::END_FALLBACK:
 		case NetChange::END_TRAVEL:
 		case NetChange::CUTSCENE_SKIP:
@@ -398,17 +380,6 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::USE_USABLE:
 			f << c.id;
 			f.WriteCasted<byte>(c.count);
-			break;
-		case NetChange::CHEAT_KILLALL:
-			f << (c.unit ? c.unit->id : -1);
-			f.WriteCasted<byte>(c.id);
-			break;
-		case NetChange::CHEAT_KILL:
-		case NetChange::CHEAT_HEAL_UNIT:
-		case NetChange::CHEAT_HURT:
-		case NetChange::CHEAT_BREAK_ACTION:
-		case NetChange::CHEAT_FALL:
-			f << c.unit->id;
 			break;
 		case NetChange::CHEAT_ADD_ITEM:
 			f << c.base_item->id;
@@ -451,10 +422,6 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f << (c.unit ? c.unit->id : -1);
 			f << c.pos;
 			f << c.ability->hash;
-			break;
-		case NetChange::CHEAT_STUN:
-			f << c.unit->id;
-			f << c.f[0];
 			break;
 		case NetChange::RUN_SCRIPT:
 			f.WriteString4(*c.str);
@@ -4224,17 +4191,10 @@ bool Net::FilterOut(NetChange& c)
 	case NetChange::REMOVE_PLAYER:
 	case NetChange::CHANGE_LEADER:
 	case NetChange::RANDOM_NUMBER:
-	case NetChange::CHEAT_SKIP_DAYS:
-	case NetChange::CHEAT_NOCLIP:
-	case NetChange::CHEAT_GODMODE:
-	case NetChange::CHEAT_INVISIBLE:
 	case NetChange::CHEAT_ADD_ITEM:
-	case NetChange::CHEAT_ADD_GOLD:
 	case NetChange::CHEAT_SET_STAT:
 	case NetChange::CHEAT_MOD_STAT:
-	case NetChange::CHEAT_REVEAL:
 	case NetChange::GAME_OVER:
-	case NetChange::CHEAT_CITIZEN:
 	case NetChange::WORLD_TIME:
 	case NetChange::ADD_LOCATION:
 	case NetChange::REMOVE_CAMP:

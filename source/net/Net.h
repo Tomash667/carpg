@@ -98,7 +98,7 @@ public:
 
 	static NetChange& PushChange(NetChange::TYPE type)
 	{
-		auto& c = Add1(changes);
+		NetChange& c = Add1(changes);
 		c.type = type;
 		return c;
 	}

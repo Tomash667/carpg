@@ -3920,33 +3920,11 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 }
 
 //=================================================================================================
-bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
+void Level::KillAll(bool friendly, Unit& unit, Unit* ignore)
 {
-	if(!InRange(mode, 0, 1))
-		return false;
-
-	if(Net::IsClient())
+	if(friendly)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHEAT_KILLALL;
-		c.id = mode;
-		c.unit = ignore;
-		return true;
-	}
-
-	switch(mode)
-	{
-	case 0: // kill enemies
-		for(LevelArea& area : ForEachArea())
-		{
-			for(Unit* u : area.units)
-			{
-				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
-					u->GiveDmg(u->hp);
-			}
-		}
-		break;
-	case 1: // kill all except player/ignore
+		// kill all except player/ignore
 		for(LevelArea& area : ForEachArea())
 		{
 			for(Unit* u : area.units)
@@ -3955,10 +3933,19 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 					u->GiveDmg(u->hp);
 			}
 		}
-		break;
 	}
-
-	return true;
+	else
+	{
+		// kill enemies
+		for(LevelArea& area : ForEachArea())
+		{
+			for(Unit* u : area.units)
+			{
+				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
+					u->GiveDmg(u->hp);
+			}
+		}
+	}
 }
 
 //=================================================================================================
