@@ -201,6 +201,7 @@ Available commands:
 	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
 	exit - exit to menu.
 	fall - unit fall on ground for some time ('fall 1' targets self).
+	find - find nearest entity (find type id).
 	force_quest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.

@@ -138,6 +138,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_NOCD, "nocd", "player abilities have no cooldown & use no mana/stamina (nocd 0/1)", F_ANYWHERE | F_CHEAT | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_FIND, "find", "find nearest entity (find type id)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 	if(IsDebug())
@@ -2006,6 +2007,38 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				PushGenericCmd(CMD_NOCD) << game->pc->nocd;
 		}
 		Msg("nocd = %d", game->pc->nocd ? 1 : 0);
+		break;
+	case CMD_FIND:
+		if(!t.Next())
+			Msg("Missing type!");
+		else
+		{
+			const string& type = t.MustGetItem();
+			if(type != "trap")
+			{
+				Msg("Invalid type!");
+				break;
+			}
+			if(!t.Next())
+			{
+				Msg("Missing id!");
+				break;
+			}
+
+			const string& id = t.MustGetItem();
+			BaseTrap* base = BaseTrap::Get(id);
+			if(!base)
+			{
+				Msg("Invalid trap id!");
+				break;
+			}
+
+			Trap* trap = game_level->FindTrap(base, game->pc->unit->pos);
+			if(trap)
+				Msg("Closest trap '%s': %g; %g; %g", base->id, trap->pos.x, trap->pos.y, trap->pos.z);
+			else
+				Msg("Closest trap '%s': Not found", base->id);
+		}
 		break;
 	default:
 		assert(0);

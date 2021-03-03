@@ -3039,8 +3039,23 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		for(Door* door : area.doors)
 			door->Cleanup();
 
-		// remove player traps
-		DeleteElements(area.traps, [](Trap* trap) { return trap->owner != nullptr; });
+		// remove player traps & remove mesh instance
+		LoopAndRemove(area.traps, [](Trap* trap)
+		{
+			if(trap->owner != nullptr)
+			{
+				delete trap;
+				return true;
+			}
+
+			if(trap->meshInst)
+			{
+				delete trap->meshInst;
+				trap->meshInst = nullptr;
+			}
+
+			return false;
+		});
 	}
 	else
 	{
@@ -3191,8 +3206,6 @@ void Game::PreloadResources(bool worldmap)
 
 				if(base.mesh)
 					res_mgr->Load(base.mesh);
-				if(base.mesh2)
-					res_mgr->Load(base.mesh2);
 				if(base.sound)
 					res_mgr->Load(base.sound);
 				if(base.sound2)
@@ -3353,8 +3366,6 @@ void Game::VerifyResources()
 			assert(trap->base->state == ResourceState::Loaded);
 			if(trap->base->mesh)
 				assert(trap->base->mesh->IsLoaded());
-			if(trap->base->mesh2)
-				assert(trap->base->mesh2->IsLoaded());
 			if(trap->base->sound)
 				assert(trap->base->sound->IsLoaded());
 			if(trap->base->sound2)

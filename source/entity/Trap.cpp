@@ -17,6 +17,13 @@
 EntityType<Trap>::Impl EntityType<Trap>::impl;
 
 //=================================================================================================
+Trap::~Trap()
+{
+	delete hitted;
+	delete meshInst;
+}
+
+//=================================================================================================
 bool Trap::Update(float dt, LevelArea& area)
 {
 	Unit* owner = this->owner;
@@ -80,6 +87,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(trigger)
 			{
 				state = 2;
+				meshInst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
 				time = 0.f;
 
 				sound_mgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
@@ -95,15 +103,7 @@ bool Trap::Update(float dt, LevelArea& area)
 		else if(state == 2)
 		{
 			// move spears
-			bool end = false;
-			time += dt;
-			if(time >= 0.27f)
-			{
-				time = 0.27f;
-				end = true;
-			}
-
-			obj2.pos.y = obj.pos.y - 2.f + 2.f * (time / 0.27f);
+			meshInst->Update(dt);
 
 			if(Net::IsLocal())
 			{
@@ -111,7 +111,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				{
 					if(!unit->IsAlive())
 						continue;
-					if(CircleToCircle(obj2.pos.x, obj2.pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						bool found = false;
 						for(Unit* unit2 : *hitted)
@@ -157,7 +157,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				}
 			}
 
-			if(end)
+			if(meshInst->IsEnded())
 			{
 				state = 3;
 				if(Net::IsLocal())
@@ -172,21 +172,16 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(time <= 0.f)
 			{
 				state = 4;
-				time = 1.5f;
+				meshInst->Play("hide", PLAY_ONCE);
 				sound_mgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
 			}
 		}
 		else if(state == 4)
 		{
 			// hiding spears
-			time -= dt;
-			if(time <= 0.f)
-			{
-				time = 0.f;
+			meshInst->Update(dt);
+			if(meshInst->IsEnded())
 				state = 5;
-			}
-
-			obj2.pos.y = obj.pos.y - 2.f + time / 1.5f * 2.f;
 		}
 		else if(state == 5)
 		{
@@ -198,7 +193,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToCircle(obj2.pos.x, obj2.pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						reactivate = false;
 						break;
@@ -432,7 +427,7 @@ void Trap::Save(GameWriter& f)
 		f << dir;
 	}
 	else
-		f << obj.rot.y;
+		f << rot;
 
 	if(f.isLocal)
 	{
@@ -443,7 +438,7 @@ void Trap::Save(GameWriter& f)
 
 			if(base->type == TRAP_SPEAR)
 			{
-				f << obj2.pos.y;
+				meshInst->SaveV2(f);
 				f << hitted->size();
 				for(Unit* unit : *hitted)
 					f << unit->id;
@@ -469,29 +464,17 @@ void Trap::Load(GameReader& f)
 		f.Skip<int>(); // old netid
 
 	base = &BaseTrap::traps[type];
+	meshInst = nullptr;
 	hitted = nullptr;
-	obj.pos = pos;
-	obj.rot = Vec3(0, 0, 0);
-	obj.scale = 1.f;
-	obj.base = nullptr;
-	obj.mesh = base->mesh;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
 		f >> tile;
 		f >> dir;
+		rot = 0;
 	}
 	else
-		f >> obj.rot.y;
-
-	if(type == TRAP_SPEAR)
-	{
-		obj2.pos = pos;
-		obj2.rot = obj.rot;
-		obj2.scale = 1.f;
-		obj2.mesh = base->mesh2;
-		obj2.base = nullptr;
-	}
+		f >> rot;
 
 	if(f.isLocal)
 	{
@@ -502,7 +485,16 @@ void Trap::Load(GameReader& f)
 
 			if(base->type == TRAP_SPEAR)
 			{
-				f >> obj2.pos.y;
+				if(LOAD_VERSION >= V_DEV)
+				{
+					meshInst = new MeshInstance(nullptr);
+					meshInst->LoadV2(f);
+				}
+				else
+				{
+					f.Skip<float>(); // old obj2.pos.y
+					state = 0; // don't restore trap animation, not worth doing
+				}
 				uint count = f.Read<uint>();
 				hitted = new vector<Unit*>;
 				if(count)
@@ -537,12 +529,14 @@ void Trap::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(dir);
 	f << tile;
 	f << pos;
-	f << obj.rot.y;
+	f << rot;
 
 	if(net->mp_load)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
+		if(base->type == TRAP_SPEAR)
+			MeshInstance::SaveOptional(f, meshInst); // optional pre V_DEV
 	}
 }
 
@@ -555,17 +549,13 @@ bool Trap::Read(BitStreamReader& f)
 	f.ReadCasted<byte>(dir);
 	f >> tile;
 	f >> pos;
-	f >> obj.rot.y;
+	f >> rot;
 	if(!f)
 		return false;
 	base = &BaseTrap::traps[type];
 
 	state = 0;
-	obj.base = nullptr;
-	obj.mesh = base->mesh;
-	obj.pos = pos;
-	obj.scale = 1.f;
-	obj.rot.x = obj.rot.z = 0;
+	meshInst = nullptr;
 	mpTrigger = false;
 	hitted = nullptr;
 
@@ -573,21 +563,10 @@ bool Trap::Read(BitStreamReader& f)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;
+		if(base->type == TRAP_SPEAR)
+			MeshInstance::LoadOptional(f, meshInst); // optional pre V_DEV
 		if(!f)
 			return false;
-	}
-
-	if(type == TRAP_ARROW || type == TRAP_POISON)
-		obj.rot = Vec3(0, 0, 0);
-	else if(type == TRAP_SPEAR)
-	{
-		obj2.base = nullptr;
-		obj2.mesh = base->mesh2;
-		obj2.pos = obj.pos;
-		obj2.rot = obj.rot;
-		obj2.scale = 1.f;
-		obj2.pos.y -= 2.f;
-		hitted = nullptr;
 	}
 
 	Register();

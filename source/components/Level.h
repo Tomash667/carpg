@@ -67,6 +67,7 @@ public:
 	Usable* FindUsable(int id);
 	Door* FindDoor(int id);
 	Trap* FindTrap(int id);
+	Trap* FindTrap(BaseTrap* base, const Vec3& pos);
 	Chest* FindChest(int id);
 	Chest* GetRandomChest(Room& room);
 	Chest* GetTreasureChest();

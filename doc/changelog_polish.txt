@@ -9,7 +9,8 @@ Wersja 0.18 (???):
 + zakładka inwestycje w dzienniku
 + nie można wyrzucić bohatera z drużyny dopóki nie dostanie złota z tartaku/kopalni
 + konwersja zadania "skradziony artefakt" na skrypty
-+ komenda "nocd" (zdolności nie mają czasu odnowienia, nie kosztują many/wytrzymałości)
++ nowe komendy "nocd" (zdolności nie mają czasu odnowienia, nie kosztują many/wytrzymałości), "find" (szuka najbliższego obiektu)
++ lepszy menadżer sceny - pułapki
 
 --------------------------------------------------------------------------------
 Fixes:

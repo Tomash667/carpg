@@ -442,6 +442,27 @@ Trap* Level::FindTrap(int id)
 }
 
 //=================================================================================================
+Trap* Level::FindTrap(BaseTrap* base, const Vec3& pos)
+{
+	assert(base);
+	LevelArea& area = GetArea(pos);
+	Trap* best = nullptr;
+	float bestDist = std::numeric_limits<float>::max();
+	for(Trap* trap : area.traps)
+	{
+		if(trap->base != base)
+			continue;
+		const float dist = Vec3::Distance(trap->pos, pos);
+		if(dist < bestDist)
+		{
+			best = trap;
+			bestDist = dist;
+		}
+	}
+	return best;
+}
+
+//=================================================================================================
 Chest* Level::FindChest(int id)
 {
 	for(LevelArea& area : ForEachArea())
@@ -2997,18 +3018,15 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 
 	BaseTrap& base = BaseTrap::traps[type];
 	trap.base = &base;
+	trap.meshInst = nullptr;
 	trap.hitted = nullptr;
 	trap.state = 0;
 	trap.attack = 0;
 	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
-	trap.obj.base = nullptr;
-	trap.obj.mesh = trap.base->mesh;
-	trap.obj.pos = trap.pos;
-	trap.obj.scale = 1.f;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
-		trap.obj.rot = Vec3(0, 0, 0);
+		trap.rot = 0;
 
 		static vector<TrapLocation> possible;
 
@@ -3068,17 +3086,11 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 	}
 	else if(type == TRAP_SPEAR)
 	{
-		trap.obj.rot = Vec3(0, Random(MAX_ANGLE), 0);
-		trap.obj2.base = nullptr;
-		trap.obj2.mesh = trap.base->mesh2;
-		trap.obj2.pos = trap.obj.pos;
-		trap.obj2.rot = trap.obj.rot;
-		trap.obj2.scale = 1.f;
-		trap.obj2.pos.y -= 2.f;
+		trap.rot = Random(MAX_ANGLE);
 		trap.hitted = new vector<Unit*>;
 	}
 	else if(type == TRAP_FIREBALL)
-		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
+		trap.rot = PI / 2 * (Rand() % 4);
 
 	trap.Register();
 	return &trap;
@@ -3095,14 +3107,11 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 	trap.id = id;
 	trap.Register();
 	trap.base = &base;
+	trap.meshInst = nullptr;
 	trap.hitted = nullptr;
 	trap.state = 0;
 	trap.attack = 0;
 	trap.pos = pos;
-	trap.obj.base = nullptr;
-	trap.obj.mesh = trap.base->mesh;
-	trap.obj.pos = trap.pos;
-	trap.obj.scale = 1.f;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
@@ -3110,17 +3119,11 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 	}
 	else if(type == TRAP_SPEAR)
 	{
-		trap.obj.rot = Vec3(0, Random(MAX_ANGLE), 0);
-		trap.obj2.base = nullptr;
-		trap.obj2.mesh = trap.base->mesh2;
-		trap.obj2.pos = trap.obj.pos;
-		trap.obj2.rot = trap.obj.rot;
-		trap.obj2.scale = 1.f;
-		trap.obj2.pos.y -= 2.f;
+		trap.rot = Random(MAX_ANGLE);
 		trap.hitted = new vector<Unit*>;
 	}
 	else if(type == TRAP_FIREBALL)
-		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
+		trap.rot = PI / 2 * (Rand() % 4);
 
 	if(Net::IsServer())
 	{
@@ -4857,6 +4860,17 @@ void Level::CreateObjectsMeshInstance()
 
 		for(Chest* chest : area.chests)
 			chest->Recreate();
+
+		for(Trap* trap : area.traps)
+		{
+			if(trap->base->mesh->IsAnimated())
+			{
+				if(trap->meshInst)
+					trap->meshInst->ApplyPreload(trap->base->mesh);
+				else
+					trap->meshInst = new MeshInstance(trap->base->mesh);
+			}
+		}
 	}
 }
 

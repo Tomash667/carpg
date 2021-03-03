@@ -9,7 +9,8 @@ Version 0.18 (???):
 + investments in journal
 + can't kick out hero before he receive gold from sawmill/mine
 + converted quest "stolen artifact" to script
-+ "nocd" command (abilities have no cooldown, costs no mana/stamina)
++ new console commands: "nocd" (abilities have no cooldown, costs no mana/stamina), "find" (search for nearest entity)
++ better scene manager - traps
 
 --------------------------------------------------------------------------------
 Fixes:
