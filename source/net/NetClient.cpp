@@ -2495,59 +2495,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			{
 				int abilityHash;
 				Vec3 pos;
+				Vec2 bounds;
 				f >> abilityHash;
 				f >> pos;
+				f >> bounds;
 				if(!f)
 					Error("Update client: Broken PARTICLE_EFFECT.");
 				else if(Ability* ability = Ability::Get(abilityHash))
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability->tex_particle;
-					pe->emission_interval = 0.01f;
-					pe->life = 0.f;
-					pe->particle_life = 0.5f;
-					pe->emissions = 1;
-					pe->pos = pos;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					if(ability->effect == Ability::Raise)
-					{
-						pe->spawn_min = 16;
-						pe->spawn_max = 25;
-						pe->max_particles = 25;
-						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
-						pe->pos_max = Vec3(ability->size, ability->size, ability->size);
-						pe->size = ability->size_particle;
-					}
-					else if(ability->effect == Ability::Heal)
-					{
-						pe->spawn_min = 16;
-						pe->spawn_max = 25;
-						pe->max_particles = 25;
-						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
-						pe->pos_max = Vec3(ability->size, ability->size, ability->size);
-						pe->size = ability->size_particle;
-					}
-					else
-					{
-						pe->spawn_min = 12;
-						pe->spawn_max = 12;
-						pe->max_particles = 12;
-						pe->speed_min = Vec3(-0.5f, 1.5f, -0.5f);
-						pe->speed_max = Vec3(0.5f, 3.0f, 0.5f);
-						pe->pos_min = Vec3(-0.5f, 0, -0.5f);
-						pe->pos_max = Vec3(0.5f, 0, 0.5f);
-						pe->size = ability->size_particle / 2;
-					}
-					pe->Init();
-					game_level->GetArea(pos).tmp->pes.push_back(pe);
-				}
+					game_level->CreateSpellParticleEffect(nullptr, ability, pos, bounds);
 				else
 					Error("Update client: PARTICLE_EFFECT, missing ability %d.", abilityHash);
 			}

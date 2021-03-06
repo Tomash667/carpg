@@ -4963,3 +4963,71 @@ void Level::EndBossFight()
 	if(Net::IsServer())
 		Net::PushChange(NetChange::BOSS_END);
 }
+
+//=================================================================================================
+void Level::CreateSpellParticleEffect(LevelArea* area, Ability* ability, const Vec3& pos, const Vec2& bounds)
+{
+	assert(ability);
+
+	if(!area)
+		area = &GetArea(pos);
+
+	ParticleEmitter* pe = new ParticleEmitter;
+	pe->tex = ability->tex_particle;
+	pe->emission_interval = 0.01f;
+	pe->life = 0.f;
+	pe->particle_life = 0.5f;
+	pe->emissions = 1;
+	pe->pos = pos;
+	switch(ability->effect)
+	{
+	case Ability::Raise:
+		pe->spawn_min = 16;
+		pe->spawn_max = 25;
+		pe->max_particles = 25;
+		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+		pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
+		pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+		pe->size = ability->size_particle;
+		pe->alpha = 1.f;
+		break;
+	case Ability::Heal:
+		pe->spawn_min = 16;
+		pe->spawn_max = 25;
+		pe->max_particles = 25;
+		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+		pe->pos_min = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+		pe->pos_max = Vec3(bounds.x, bounds.y / 2, bounds.x);
+		pe->size = ability->size_particle;
+		pe->alpha = 0.9f;
+		break;
+	default:
+		pe->spawn_min = 12;
+		pe->spawn_max = 12;
+		pe->max_particles = 12;
+		pe->speed_min = Vec3(-0.5f, 1.5f, -0.5f);
+		pe->speed_max = Vec3(0.5f, 3.0f, 0.5f);
+		pe->pos_min = Vec3(-0.5f, 0, -0.5f);
+		pe->pos_max = Vec3(0.5f, 0, 0.5f);
+		pe->size = ability->size_particle / 2;
+		pe->alpha = 1.f;
+		break;
+	}
+	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->mode = 1;
+	pe->Init();
+	area->tmp->pes.push_back(pe);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::PARTICLE_EFFECT;
+		c.ability = ability;
+		c.pos = pos;
+		c.extra_fs[0] = bounds.x;
+		c.extra_fs[1] = bounds.y;
+	}
+}

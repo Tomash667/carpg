@@ -216,6 +216,8 @@ public:
 	// --- boss
 	void StartBossFight(Unit& unit);
 	void EndBossFight();
+	// ---
+	void CreateSpellParticleEffect(LevelArea* area, Ability* ability, const Vec3& pos, const Vec2& bounds);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index

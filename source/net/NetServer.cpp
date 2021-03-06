@@ -3221,6 +3221,8 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::PARTICLE_EFFECT:
 			f << c.ability->hash;
 			f << c.pos;
+			f << c.extra_fs[0];
+			f << c.extra_fs[1];
 			break;
 		case NetChange::REVEAL_MINIMAP:
 			f.WriteCasted<word>(game_level->minimap_reveal_mp.size());

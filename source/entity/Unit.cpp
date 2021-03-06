@@ -7062,6 +7062,7 @@ void Unit::CastSpell()
 
 			if(ability.effect == Ability::Raise)
 			{
+				// raise unit
 				target->Standup();
 				target->hp = target->hpmax;
 				if(Net::IsServer())
@@ -7072,35 +7073,9 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability.tex_particle;
-				pe->emission_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emissions = 1;
-				pe->spawn_min = 16;
-				pe->spawn_max = 25;
-				pe->max_particles = 25;
-				pe->pos = target->pos;
-				pe->pos.y += target->GetUnitHeight() / 2;
-				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-				pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-				pe->size = ability.size_particle;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area->tmp->pes.push_back(pe);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::PARTICLE_EFFECT;
-					c.ability = &ability;
-					c.pos = pe->pos;
-				}
+				Vec3 pos = target->pos;
+				pos.y += target->GetUnitHeight() / 2;
+				game_level->CreateSpellParticleEffect(area, &ability, pos, Vec2::Zero);
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -7117,37 +7092,10 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				float r = target->GetUnitRadius(),
-					h = target->GetUnitHeight();
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability.tex_particle;
-				pe->emission_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emissions = 1;
-				pe->spawn_min = 16;
-				pe->spawn_max = 25;
-				pe->max_particles = 25;
-				pe->pos = target->pos;
-				pe->pos.y += h / 2;
-				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-r, -h / 2, -r);
-				pe->pos_max = Vec3(r, h / 2, r);
-				pe->size = ability.size_particle;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area->tmp->pes.push_back(pe);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::PARTICLE_EFFECT;
-					c.ability = &ability;
-					c.pos = pe->pos;
-				}
+				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
+				Vec3 pos = target->pos;
+				pos.y += bounds.y / 2;
+				game_level->CreateSpellParticleEffect(area, &ability, pos, bounds);
 			}
 		}
 		break;
@@ -7227,36 +7175,7 @@ void Unit::CastSpell()
 
 			// particle effect
 			if(ability.tex_particle)
-			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability.tex_particle;
-				pe->emission_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emissions = 1;
-				pe->spawn_min = 12;
-				pe->spawn_max = 12;
-				pe->max_particles = 12;
-				pe->pos = target_pos;
-				pe->speed_min = Vec3(-0.5f, 1.5f, -0.5f);
-				pe->speed_max = Vec3(0.5f, 3.0f, 0.5f);
-				pe->pos_min = Vec3(-0.5f, 0, -0.5f);
-				pe->pos_max = Vec3(0.5f, 0, 0.5f);
-				pe->size = ability.size_particle / 2;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area->tmp->pes.push_back(pe);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::PARTICLE_EFFECT;
-					c.ability = &ability;
-					c.pos = pe->pos;
-				}
-			}
+				game_level->CreateSpellParticleEffect(area, &ability, target_pos, Vec2::Zero);
 		}
 		break;
 	}

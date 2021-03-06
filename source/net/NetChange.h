@@ -149,7 +149,7 @@ struct NetChange
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro), Vec3(pos), Vec3(f)-pos2]
 		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro, Vec3(pos)]
 		ELECTRO_HIT, // electro hit effect [Vec3(pos)]
-		PARTICLE_EFFECT, // create particle effect [int(ability->hash), Vec3(pos)]
+		PARTICLE_EFFECT, // create particle effect [int(ability->hash), Vec3(pos), Vec2(extra_fs)-bounds]
 		REVEAL_MINIMAP, // revealing minimap [auto:vector<size:word, byte-x, byte-y>]
 		CHEAT_NOAI, // player used cheat 'noai' or notification to players [bool(id)-state]
 		END_OF_GAME, // end of game, time run out []
@@ -242,6 +242,7 @@ struct NetChange
 	union
 	{
 		float extra_f;
+		float extra_fs[4];
 		int extra_id;
 		int extra_data[4];
 	};

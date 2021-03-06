@@ -11,6 +11,7 @@ Wersja 0.18 (???):
 + konwersja zadania "skradziony artefakt" na skrypty
 + nowe komendy "nocd" (zdolności nie mają czasu odnowienia, nie kosztują many/wytrzymałości), "find" (szuka najbliższego obiektu)
 + lepszy menadżer sceny - pułapki
+- efekt leczenia inaczej wyglądał u klienta
 
 --------------------------------------------------------------------------------
 Fixes:

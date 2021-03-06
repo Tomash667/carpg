@@ -11,6 +11,7 @@ Version 0.18 (???):
 + converted quest "stolen artifact" to script
 + new console commands: "nocd" (abilities have no cooldown, costs no mana/stamina), "find" (search for nearest entity)
 + better scene manager - traps
+- heal spell effect looked different for clients
 
 --------------------------------------------------------------------------------
 Fixes:
