@@ -438,7 +438,7 @@ void Trap::Save(GameWriter& f)
 
 			if(base->type == TRAP_SPEAR)
 			{
-				meshInst->SaveV2(f);
+				MeshInstance::SaveOptional(f, meshInst);
 				f << hitted->size();
 				for(Unit* unit : *hitted)
 					f << unit->id;
@@ -486,10 +486,7 @@ void Trap::Load(GameReader& f)
 			if(base->type == TRAP_SPEAR)
 			{
 				if(LOAD_VERSION >= V_DEV)
-				{
-					meshInst = new MeshInstance(nullptr);
-					meshInst->LoadV2(f);
-				}
+					MeshInstance::LoadOptional(f, meshInst);
 				else
 				{
 					f.Skip<float>(); // old obj2.pos.y
@@ -536,7 +533,7 @@ void Trap::Write(BitStreamWriter& f)
 		f.WriteCasted<byte>(state);
 		f << time;
 		if(base->type == TRAP_SPEAR)
-			MeshInstance::SaveOptional(f, meshInst); // optional pre V_DEV
+			MeshInstance::SaveOptional(f, meshInst);
 	}
 }
 
@@ -564,7 +561,7 @@ bool Trap::Read(BitStreamReader& f)
 		f.ReadCasted<byte>(state);
 		f >> time;
 		if(base->type == TRAP_SPEAR)
-			MeshInstance::LoadOptional(f, meshInst); // optional pre V_DEV
+			MeshInstance::LoadOptional(f, meshInst);
 		if(!f)
 			return false;
 	}

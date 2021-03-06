@@ -561,7 +561,7 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 	assert(owner);
 
 	uint count = 0;
-	vector<Trap*>::iterator bestTrapIt;
+	Trap* bestTrap = nullptr;
 	LevelArea* bestArea = nullptr;
 	for(LevelArea& area : ForEachArea())
 	{
@@ -570,9 +570,9 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 			Trap* trap = *it;
 			if(trap->base == baseTrap && trap->owner == owner && trap->state == 0)
 			{
-				if(!bestArea || trap->id < (*bestTrapIt)->id)
+				if(!bestTrap || trap->id < bestTrap->id)
 				{
-					bestTrapIt = it;
+					bestTrap = trap;
 					bestArea = &area;
 				}
 				++count;
@@ -586,11 +586,11 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::REMOVE_TRAP;
-			c.id = (*bestTrapIt)->id;
+			c.id = bestTrap->id;
 		}
 
-		delete *bestTrapIt;
-		bestArea->traps.erase(bestTrapIt);
+		RemoveElement(bestArea->traps, bestTrap);
+		delete bestTrap;
 	}
 }
 
