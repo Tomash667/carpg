@@ -55,7 +55,8 @@ enum Keyword
 	K_COUNT,
 	K_TIME,
 	K_COLOR,
-	K_TRAP_ID
+	K_TRAP_ID,
+	K_CAST_TIME
 };
 
 //=================================================================================================
@@ -109,7 +110,8 @@ void AbilityLoader::InitTokenizer()
 		{ "count", K_COUNT },
 		{ "time", K_TIME },
 		{ "color", K_COLOR },
-		{ "trap_id", K_TRAP_ID }
+		{ "trap_id", K_TRAP_ID },
+		{ "cast_time", K_CAST_TIME }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -146,7 +148,8 @@ void AbilityLoader::InitTokenizer()
 		{ "mage", Ability::Mage },
 		{ "strength", Ability::Strength },
 		{ "boss50hp", Ability::Boss50Hp },
-		{ "default_attack", Ability::DefaultAttack }
+		{ "default_attack", Ability::DefaultAttack },
+		{ "use_kneel", Ability::UseKneel }
 		});
 }
 
@@ -429,6 +432,13 @@ void AbilityLoader::ParseAbility(const string& id)
 				crc.Update(id);
 				t.Next();
 			}
+			break;
+		case K_CAST_TIME:
+			ability->cast_time = t.MustGetFloat();
+			if(ability->cast_time < 0.f)
+				t.Throw("Invalid cast time value.");
+			crc.Update(ability->cast_time);
+			t.Next();
 			break;
 		}
 	}

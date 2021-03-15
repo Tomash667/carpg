@@ -49,6 +49,7 @@ struct Ability
 		Strength = 1 << 9, // use Strength to calculate damage
 		Boss50Hp = 1 << 10, // can be used when hp below 50%
 		DefaultAttack = 1 << 11, // don't use golden crosshair when casting
+		UseKneel = 1 << 12, // use kneel animation
 	};
 
 	int hash;
@@ -60,7 +61,7 @@ struct Ability
 	Type type;
 	Effect effect;
 	int flags, dmg, dmg_bonus, charges, learning_points, skill, level, count;
-	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana, stamina, recharge, width, time;
+	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana, stamina, recharge, width, time, cast_time;
 	btCollisionShape* shape;
 	Mesh* mesh;
 	string name, desc, unit_id;
@@ -74,7 +75,7 @@ struct Ability
 	Ability() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_icon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
 		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
 		sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), effect(None), learning_points(0), skill(999),
-		level(0), count(1), time(1), color(Color::White) {}
+		level(0), count(1), time(1), color(Color::White), cast_time(0) {}
 	~Ability()
 	{
 		delete shape;
@@ -82,7 +83,7 @@ struct Ability
 
 	bool IsTargeted() const { return !Any(type, Aggro, SummonAway); }
 	bool RequireList() const { return IsSet(flags, IgnoreUnits); }
-	SkillId GetSkill() const { return type == RangedAttack ? SkillId::BOW : SkillId::MYSTIC_MAGIC; }
+	SkillId GetSkill() const;
 
 	static vector<Ability*> abilities;
 	static std::map<int, Ability*> hash_abilities;

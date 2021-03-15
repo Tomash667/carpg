@@ -406,6 +406,121 @@ bool Trap::Update(float dt, LevelArea& area)
 			}
 		}
 		break;
+	case TRAP_BEAR:
+		if(state == 0)
+		{
+			// check if someone is step on it
+			bool trigger = false;
+			if(Net::IsLocal())
+			{
+				for(Unit* unit : area.units)
+				{
+					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+						&& (!owner || owner->IsEnemy(*unit))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					{
+						trigger = true;
+						break;
+					}
+				}
+			}
+			else if(mpTrigger)
+			{
+				trigger = true;
+				mpTrigger = false;
+			}
+
+			if(trigger)
+			{
+				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				state = 1;
+				meshInst->Play("trigger", PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND);
+
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::TRIGGER_TRAP;
+					c.id = id;
+				}
+			}
+		}
+		else if(state == 1)
+		{
+			meshInst->Update(dt);
+			if(meshInst->IsEnded())
+			{
+				if(Net::IsLocal())
+				{
+					Unit* target = nullptr;
+					float bestDist = 10.f;
+					for(Unit* unit : area.units)
+					{
+						if(unit->IsStanding()
+							&& (!owner || owner->IsEnemy(*unit))
+							&& CircleToCircle(pos.x, pos.z, base->rw * 1.5f, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						{
+							const float dist = Vec3::Distance(pos, unit->pos);
+							if(dist < bestDist)
+							{
+								target = unit;
+								bestDist = dist;
+							}
+						}
+					}
+
+					if(target)
+					{
+						// hit unit
+						int mod = CombatHelper::CalculateModifier(DMG_SLASH, target->data->flags);
+						float m = 1.f;
+						if(mod == -1)
+							m += 0.25f;
+						else if(mod == 1)
+							m -= 0.25f;
+						if(target->action == A_PAIN)
+							m += 0.1f;
+
+						// calculate attack & defense
+						float attack = GetAttack() * m;
+						float def = target->CalculateDefense();
+						float dmg = CombatHelper::CalculateDamage(attack, def);
+
+						// hit sound
+						target->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, target->pos + Vec3(0, 1.f, 0), dmg > 0);
+
+						// train player armor skill
+						if(target->IsPlayer())
+							target->player->Train(TrainWhat::TakeDamageArmor, attack / target->hpmax, 4);
+
+						// damage
+						if(dmg > 0)
+							target->GiveDmg(dmg);
+
+						// effect
+						Effect e;
+						e.effect = EffectId::Rooted;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.power = 0;
+						e.time = 5.f;
+						e.value = EffectValue_Generic;
+						target->AddEffect(e);
+					}
+				}
+				state = 2;
+				time = 5.f;
+			}
+		}
+		else if(state == 2)
+		{
+			time -= dt;
+			if(time <= 0.f)
+			{
+				delete this;
+				return true;
+			}
+		}
+		break;
 	default:
 		assert(0);
 		break;
@@ -436,15 +551,16 @@ void Trap::Save(GameWriter& f)
 			f << state;
 			f << time;
 
+			if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
+				MeshInstance::SaveOptional(f, meshInst);
+
 			if(base->type == TRAP_SPEAR)
 			{
-				MeshInstance::SaveOptional(f, meshInst);
 				f << hitted->size();
 				for(Unit* unit : *hitted)
 					f << unit->id;
 			}
 		}
-
 		f << owner;
 		f << attack;
 	}
@@ -483,7 +599,7 @@ void Trap::Load(GameReader& f)
 			f >> state;
 			f >> time;
 
-			if(base->type == TRAP_SPEAR)
+			if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
 			{
 				if(LOAD_VERSION >= V_DEV)
 					MeshInstance::LoadOptional(f, meshInst);
@@ -492,6 +608,10 @@ void Trap::Load(GameReader& f)
 					f.Skip<float>(); // old obj2.pos.y
 					state = 0; // don't restore trap animation, not worth doing
 				}
+			}
+
+			if(base->type == TRAP_SPEAR)
+			{
 				uint count = f.Read<uint>();
 				hitted = new vector<Unit*>;
 				if(count)
@@ -532,7 +652,7 @@ void Trap::Write(BitStreamWriter& f)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
-		if(base->type == TRAP_SPEAR)
+		if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
 			MeshInstance::SaveOptional(f, meshInst);
 	}
 }
@@ -560,7 +680,7 @@ bool Trap::Read(BitStreamReader& f)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;
-		if(base->type == TRAP_SPEAR)
+		if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
 			MeshInstance::LoadOptional(f, meshInst);
 		if(!f)
 			return false;

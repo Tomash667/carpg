@@ -25,6 +25,7 @@ public:
 	Mesh* GetEntryMesh(EntryType type);
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void LoadCommonMusic();
+	void LoadTrap(BaseTrap* trap);
 
 	TexturePtr tBlack, tWarning, tError;
 	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine, tFlare, tFlare2, tWater, tVignette;

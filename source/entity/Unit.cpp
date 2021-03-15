@@ -935,19 +935,16 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 //=================================================================================================
 void Unit::AddEffect(Effect& e, bool send)
 {
-	bool visible = false;
 	if(Net::IsLocal())
 	{
 		switch(e.effect)
 		{
 		case EffectId::Stun:
-			visible = true;
 			BreakAction();
 			if(IsSet(data->flags2, F2_STUN_RESISTANCE))
 				e.time /= 2;
 			break;
 		case EffectId::Rooted:
-			visible = true;
 			if(IsSet(data->flags2, F2_ROOTED_RESISTANCE))
 				e.time /= 2;
 			break;
@@ -971,7 +968,7 @@ void Unit::AddEffect(Effect& e, bool send)
 			c.pos.y = e.time;
 		}
 
-		if(visible)
+		if(e.IsVisible())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_UNIT_EFFECT;
@@ -1218,7 +1215,7 @@ void Unit::UpdateEffects(float dt)
 			if((effect.time -= dt) <= 0.f)
 			{
 				_to_remove.push_back(index);
-				if(Net::IsLocal() && effect.effect == EffectId::Rooted)
+				if(Net::IsLocal() && effect.effect == EffectId::Rooted && effect.value == EffectValue_Rooted_Vines)
 				{
 					Effect e;
 					e.effect = EffectId::SlowMove;
@@ -2785,7 +2782,7 @@ void Unit::Write(BitStreamWriter& f) const
 		uint count = 0;
 		for(const Effect& e : effects)
 		{
-			if(Any(e.effect, EffectId::Stun, EffectId::Rooted))
+			if(e.IsVisible())
 				++count;
 		}
 		f.WriteCasted<byte>(count);
@@ -2793,7 +2790,7 @@ void Unit::Write(BitStreamWriter& f) const
 		{
 			for(const Effect& e : effects)
 			{
-				if(Any(e.effect, EffectId::Stun, EffectId::Rooted))
+				if(e.IsVisible())
 				{
 					f.WriteCasted<byte>(e.effect);
 					f << e.time;
@@ -3544,14 +3541,19 @@ void Unit::HealPoison()
 //=================================================================================================
 void Unit::RemoveEffect(EffectId effect)
 {
+	bool visible = false;
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		if(it->effect == effect)
+		{
 			_to_remove.push_back(index);
+			if(it->IsVisible())
+				visible = true;
+		}
 	}
 
-	if(Any(effect, EffectId::Stun, EffectId::Rooted) && !_to_remove.empty() && Net::IsServer())
+	if(visible && Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REMOVE_UNIT_EFFECT;
@@ -4283,11 +4285,11 @@ float Unit::GetBackstabMod(const Item* item) const
 }
 
 //=================================================================================================
-bool Unit::HaveEffect(EffectId e) const
+bool Unit::HaveEffect(EffectId e, int value) const
 {
 	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
 	{
-		if(it->effect == e)
+		if(it->effect == e && (value == -1 || it->value == value))
 			return true;
 	}
 	return false;
@@ -7196,7 +7198,7 @@ void Unit::CastSpell()
 	if(ability.sound_cast)
 	{
 		sound_mgr->PlaySound3d(ability.sound_cast, coord, ability.sound_cast_dist);
-		if(Net::IsOnline())
+		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
@@ -7905,37 +7907,45 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_CAST:
-		if(Net::IsLocal())
+		if(animation_state != AS_CAST_KNEEL)
 		{
-			if(IsOtherPlayer()
-				? animation_state == AS_CAST_TRIGGER
-				: (animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+			if(Net::IsLocal())
+			{
+				if(IsOtherPlayer()
+					? animation_state == AS_CAST_TRIGGER
+					: (animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+				{
+					animation_state = AS_CAST_CASTED;
+					CastSpell();
+				}
+			}
+			else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST])
 			{
 				animation_state = AS_CAST_CASTED;
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CAST_SPELL;
+				c.pos = target_pos;
+			}
+			if(mesh_inst->IsEnded(group_index))
+			{
+				action = A_NONE;
+				if(group_index == 1)
+					mesh_inst->Deactivate(1);
+				else
+					animation = ANI_BATTLE;
+				if(Net::IsLocal() && IsAI())
+					ai->next_attack = Random(0.25f, 0.75f);
+			}
+		}
+		else
+		{
+			timer -= dt;
+			if(timer <= 0.f)
+			{
+				action = A_NONE;
+				animation = ANI_STAND;
 				CastSpell();
 			}
-		}
-		else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST])
-		{
-			animation_state = AS_CAST_CASTED;
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CAST_SPELL;
-			c.pos = target_pos;
-		}
-		if(mesh_inst->IsEnded(group_index))
-		{
-			if(group_index == 1)
-			{
-				action = A_NONE;
-				mesh_inst->Deactivate(1);
-			}
-			else
-			{
-				action = A_NONE;
-				animation = ANI_BATTLE;
-			}
-			if(Net::IsLocal() && IsAI())
-				ai->next_attack = Random(0.25f, 0.75f);
 		}
 		break;
 	case A_ANIMATION:

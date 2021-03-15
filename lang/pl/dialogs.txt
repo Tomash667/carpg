@@ -2125,4 +2125,5 @@ dialog hunter_leader {
 	}
 	1 "Koniec rozmowy"
 	2 "$train_lab/entangling_arrow$"
+	3 "$train_lab/bear_trap$"
 }

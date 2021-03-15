@@ -4552,6 +4552,12 @@ dialog hunter_leader
 			special "train/entangling_arrow"
 			end
 		}
+	if script "!pc.HaveAbility(Ability::Get(\"bear_trap\"))"
+		choice 3
+		{
+			special "train/bear_trap"
+			end
+		}
 	if choices != 0
 	{
 		escape choice 1

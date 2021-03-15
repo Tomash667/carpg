@@ -3034,7 +3034,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						e.effect = effect;
 						e.source = EffectSource::Temporary;
 						e.source_id = -1;
-						e.value = -1;
+						e.value = (effect == EffectId::Rooted ? EffectValue_Rooted_Vines : EffectValue_Generic);
 						e.power = 0;
 						e.time = time;
 						unit->AddEffect(e);

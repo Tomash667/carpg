@@ -73,6 +73,7 @@ enum AnimationState
 	AS_CAST_ANIMATION = 0,
 	AS_CAST_CASTED = 1,
 	AS_CAST_TRIGGER = 2,
+	AS_CAST_KNEEL = 3,
 
 	AS_DRINK_START = 0,
 	AS_DRINK_EFFECT = 1,
@@ -715,7 +716,7 @@ public:
 	float GetEffectMul(EffectId effect) const;
 	float GetEffectMulInv(EffectId effect) const;
 	float GetEffectMax(EffectId effect) const;
-	bool HaveEffect(EffectId effect) const;
+	bool HaveEffect(EffectId effect, int value = -1) const;
 	void OnAddRemoveEffect(Effect& e);
 	void ApplyItemEffects(const Item* item, ITEM_SLOT slot);
 	void RemoveItemEffects(const Item* item, ITEM_SLOT slot);

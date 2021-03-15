@@ -32,7 +32,7 @@ enum class EffectId
 	Mana, // mod max mp (add)
 	RestoreMana, // consumable
 	ManaRegeneration, // regenerate mp (sum from perks and top from potion)
-	Rooted, // can't move
+	Rooted, // can't move (when value=0 is visible and slow after ending)
 	SlowMove, // slower walk/run
 
 	Max // max 127 values
@@ -50,12 +50,24 @@ enum class EffectSource
 };
 
 //-----------------------------------------------------------------------------
+enum EffectValue
+{
+	EffectValue_Generic = -1,
+	EffectValue_Rooted_Vines = 0
+};
+
+//-----------------------------------------------------------------------------
 struct Effect
 {
 	EffectId effect;
 	EffectSource source;
 	int source_id, value;
 	float time, power;
+
+	bool IsVisible() const
+	{
+		return effect == EffectId::Stun || (effect == EffectId::Rooted && value == 0);
+	}
 };
 
 //-----------------------------------------------------------------------------

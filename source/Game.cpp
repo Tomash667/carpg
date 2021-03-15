@@ -1144,6 +1144,7 @@ void Game::SetGameText()
 	txHeroJoined = Str("heroJoined");
 	txCantLearnAbility = Str("cantLearnAbility");
 	txSpell = Str("spell");
+	txAbility = Str("ability");
 	txCantLearnSkill = Str("cantLearnSkill");
 
 	// location distance/strength
@@ -3199,22 +3200,7 @@ void Game::PreloadResources(bool worldmap)
 
 			// some traps respawn
 			for(Trap* trap : area.traps)
-			{
-				BaseTrap& base = *trap->base;
-				if(base.state != ResourceState::NotLoaded)
-					continue;
-
-				if(base.mesh)
-					res_mgr->Load(base.mesh);
-				if(base.sound)
-					res_mgr->Load(base.sound);
-				if(base.sound2)
-					res_mgr->Load(base.sound2);
-				if(base.sound3)
-					res_mgr->Load(base.sound3);
-
-				base.state = ResourceState::Loaded;
-			}
+				game_res->LoadTrap(trap->base);
 
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
