@@ -39,17 +39,17 @@ dialog merchant
 	choice 11
 	{
 		talk 12
-		choice 13
+		choice "$train_lab/persuasion$"
 		{
 			special "train/persuasion"
 			end
 		}
-		choice 14
+		choice "$train_lab/cha$"
 		{
 			special "train/cha"
 			end
 		}
-		escape choice 15
+		escape choice 13
 			restart
 		show_choices
 	}
@@ -131,12 +131,12 @@ dialog alchemist
 	choice 11
 	{
 		talk 12
-		choice 13
+		choice "$train_lab/alchemy$"
 		{
 			special "train/alchemy"
 			end
 		}
-		escape choice 14
+		escape choice 13
 			restart
 		show_choices
 	}
@@ -312,90 +312,90 @@ dialog trainer
 		talk 3
 		choice 4
 		{
-			choice 5
+			choice "$train_lab/str$"
 			{
 				special "train/str"
 				end
 			}
-			choice 6
+			choice "$train_lab/end$"
 			{
 				special "train/end"
 				end
 			}
-			choice 7
+			choice "$train_lab/dex$"
 			{
 				special "train/dex"
 				end
 			}
-			escape choice 8
+			escape choice 5
 				restart
 			show_choices
 		}
-		choice 9
+		choice 6
 		{
-			choice 10
+			choice "$train_lab/one_handed_weapon$"
 			{
 				special "train/one_handed_weapon"
 				end
 			}
-			choice 11
+			choice "$train_lab/short_blade$"
 			{
 				special "train/short_blade"
 				end
 			}
-			choice 12
+			choice "$train_lab/long_blade$"
 			{
 				special "train/long_blade"
 				end
 			}
-			choice 13
+			choice "$train_lab/blunt$"
 			{
 				special "train/blunt"
 				end
 			}
-			choice 14
+			choice "$train_lab/axe$"
 			{
 				special "train/axe"
 				end
 			}
-			choice 15
+			choice "$train_lab/bow$"
 			{
 				special "train/bow"
 				end
 			}
-			choice 16
+			choice "$train_lab/shield$"
 			{
 				special "train/shield"
 				end
 			}
-			choice 17
+			choice "$train_lab/light_armor$"
 			{
 				special "train/light_armor"
 				end
 			}
-			choice 18
+			choice "$train_lab/medium_armor$"
 			{
 				special "train/medium_armor"
 				end
 			}
-			choice 19
+			choice "$train_lab/heavy_armor$"
 			{
 				special "train/heavy_armor"
 				end
 			}
-			escape choice 8
+			escape choice 5
 				restart
 			show_choices
 		}
-		choice 20
+		choice 7
 		{
 			special "show_perks"
 			if choices 0
 			{
-				talk 21
+				talk 8
 				restart
 			}
-			escape choice 8
+			escape choice 5
 				restart
 			show_choices
 		}
@@ -403,14 +403,14 @@ dialog trainer
 			restart
 		show_choices
 	}
-	choice 22
+	choice 9
 	{
-		talk 23
+		talk 10
 		restart
 	}
 	if have_item q_szaleni_kamien
 	{
-		choice 24
+		choice 11
 		{
 			if special "crazies_need_talk"
 			{
@@ -418,11 +418,11 @@ dialog trainer
 				restart
 			}
 			else
-				talk 25
+				talk 12
 			restart
 		}
 	}
-	escape choice 26
+	escape choice 13
 		end
 	show_choices
 }
@@ -4285,39 +4285,39 @@ dialog mage_seller
 	{
 		talk 8
 		if script "!pc.HaveAbility(Ability::Get(\"fireball\"))"
-			choice 13
+			choice "$train_lab/fireball$"
 			{
 				special "train/fireball"
 				end
 			}
 		if script "!pc.HaveAbility(Ability::Get(\"fire_trap\"))"
-			choice 15
+			choice "$train_lab/fire_trap$"
 			{
 				special "train/fire_trap"
 				end
 			}
 		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
-			choice 14
+			choice "$train_lab/thunder_bolt$"
 			{
 				special "train/thunder_bolt"
 				end
 			}
-		choice 9
+		choice "$train_lab/int$"
 		{
 			special "train/int"
 			end
 		}
-		choice 10
+		choice "$train_lab/mystic_magic$"
 		{
 			special "train/mystic_magic"
 			end
 		}
-		choice 11
+		choice "$train_lab/concentration$"
 		{
 			special "train/concentration"
 			end
 		}
-		escape choice 12
+		escape choice 9
 			restart
 		show_choices
 	}
@@ -4347,39 +4347,39 @@ dialog cleric_seller
 	choice 1
 	{
 		talk 2
-		choice 3
+		choice "$train_lab/wis$"
 		{
 			special "train/wis"
 			end
 		}
-		choice 4
+		choice "$train_lab/gods_magic$"
 		{
 			special "train/gods_magic"
 			end
 		}
-		choice 5
+		choice "$train_lab/concentration$"
 		{
 			special "train/concentration"
 			end
 		}
-		escape choice 6
+		escape choice 3
 			restart
 		show_choices
 	}
-	choice 7
+	choice 4
 	{
-		talk 8
+		talk 5
 		restart
 	}
 	if have_item q_szaleni_kamien
 	{
-		choice 9
+		choice 6
 		{
-			talk 10
+			talk 7
 			restart
 		}
 	}
-	escape choice 11
+	escape choice 8
 		end
 	show_choices
 }
@@ -4547,7 +4547,7 @@ dialog hunter_leader
 	if once
 		talk 0
 	if script "!pc.HaveAbility(Ability::Get(\"entangling_arrow\"))"
-		choice 2
+		choice "$train_lab/entangling_arrow$"
 		{
 			special "train/entangling_arrow"
 			end

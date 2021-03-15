@@ -624,22 +624,34 @@ DialogLoader::Node* DialogLoader::ParseChoice()
 	t.AssertKeyword(K_CHOICE, G_KEYWORD);
 	t.Next();
 
-	int index = t.MustGetInt();
-	if(index < 0)
-		t.Throw("Invalid text index %d.", index);
 	Pooled<Node> node(GetNode());
 	node->node_op = NodeOp::Choice;
-	node->type = DTF_CHOICE;
 	node->op = (escape ? OP_ESCAPE : OP_NONE);
-	node->value = index;
-	t.Next();
 
-	++index;
-	if(index > current_dialog->max_index)
+	if(t.IsInt())
 	{
-		current_dialog->texts.resize(index, GameDialog::Text());
-		current_dialog->max_index = index;
+		node->type = DTF_CHOICE;
+		int index = t.GetInt();
+		node->value = index;
+		if(index < 0)
+			t.Throw("Invalid text index %d.", index);
+
+		++index;
+		if(index > current_dialog->max_index)
+		{
+			current_dialog->texts.resize(index, GameDialog::Text());
+			current_dialog->max_index = index;
+		}
 	}
+	else if(t.IsString())
+	{
+		node->type = DTF_CHOICE_C;
+		node->value = current_dialog->strs.size();
+		current_dialog->strs.push_back(t.GetString());
+	}
+	else
+		t.StartUnexpected().Add(tokenizer::T_INT).Add(tokenizer::T_STRING).Throw();
+	t.Next();
 
 	node->childs.push_back(ParseBlock());
 	return node.Pin();

@@ -4,6 +4,7 @@
 enum DialogType : short
 {
 	DTF_CHOICE,
+	DTF_CHOICE_C,
 	DTF_TRADE,
 	DTF_TALK,
 	DTF_MULTI_TALK,

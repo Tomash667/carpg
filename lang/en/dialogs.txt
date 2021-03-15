@@ -36,9 +36,7 @@ dialog merchant {
 	10 "End dialog"
 	11 "Training"
 	12 "I offer training in persuasion or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
-	13 "$train_lab/persuasion$"
-	14 "$train_lab/cha$"
-	15 "Cancel"
+	13 "Cancel"
 }
 
 //==============================================================================
@@ -77,8 +75,7 @@ dialog alchemist {
 	10 "I see that you know a thing or two about alchemy. I have special prices for you."
 	11 "Training"
 	12 "I can teach you how to brew potions better. The training lasts 10 days and costs 200 gold. Are you still interested?"
-	13 "$train_lab/alchemy$"
-	14 "Cancel"
+	13 "Cancel"
 }
 
 //==============================================================================
@@ -162,28 +159,15 @@ dialog trainer {
 	2 "Training lasts 10 days and costs 200 gold pieces."
 	3 "What do you want to train?"
 	4 "Attribute"
-	5 "$train_lab/str$"
-	6 "$train_lab/end$"
-	7 "$train_lab/dex$"
-	8 "Cancel"
-	9 "Skill"
-	10 "$train_lab/one_handed_weapon$"
-	11 "$train_lab/short_blade$"
-	12 "$train_lab/long_blade$"
-	13 "$train_lab/blunt$"
-	14 "$train_lab/axe$"
-	15 "$train_lab/bow$"
-	16 "$train_lab/shield$"
-	17 "$train_lab/light_armor$"
-	18 "$train_lab/medium_armor$"
-	19 "$train_lab/heavy_armor$"
-	20 "Feat"
-	21 "Hmm... Currently, I can't teach you any new feats."
-	22 "What do you do here?"
-	23 "I'm a trainer, I train warriors, hunters and rogues fighting and defense."
-	24 "Ask about strange stone"
-	25 "I told you everything I know, you have to get rid of this stone."
-	26 "End dialog"
+	5 "Cancel"
+	6 "Skill"
+	7 "Feat"
+	8 "Hmm... Currently, I can't teach you any new feats."
+	9 "What do you do here?"
+	10 "I'm a trainer, I train warriors, hunters and rogues fighting and defense."
+	11 "Ask about strange stone"
+	12 "I told you everything I know, you have to get rid of this stone."
+	13 "End dialog"
 }
 
 //==============================================================================
@@ -1893,13 +1877,7 @@ dialog mage_seller {
 	6 "End dialog"
 	7 "Training"
 	8 "I will help you broaden your horizons. What do you want to know?"
-	9 "$train_lab/int$"
-	10 "$train_lab/mystic_magic$"
-	11 "$train_lab/concentration$"
-	12 "Cancel"
-	13 "$train_lab/fireball$"
-	14 "$train_lab/thunder_bolt$"
-	15 "$train_lab/fire_trap$"
+	9 "Cancel"
 }
 
 //==============================================================================
@@ -1910,15 +1888,12 @@ dialog cleric_seller {
 	}
 	1 "Training"
 	2 "If you want I can teach you something about the magic of the gods."
-	3 "$train_lab/wis$"
-	4 "$train_lab/gods_magic$"
-	5 "$train_lab/concentration$"
-	6 "Cancel"
-	7 "What you do here?"
-	8 "I am a priest, a follower of Imnos. I look after this shrine and help those who deserve it."
-	9 "Ask about strange stone"
-	10 "I sense the magical aura emanating from this stone. It is cursed! Unfortunately, I can't remove the curse from it, better get rid of it."
-	11 "End dialog"
+	3 "Cancel"
+	4 "What you do here?"
+	5 "I am a priest, a follower of Imnos. I look after this shrine and help those who deserve it."
+	6 "Ask about strange stone"
+	7 "I sense the magical aura emanating from this stone. It is cursed! Unfortunately, I can't remove the curse from it, better get rid of it."
+	8 "End dialog"
 }
 
 //==============================================================================
@@ -2112,5 +2087,4 @@ dialog hunter_leader {
 		"Hello!"
 	}
 	1 "End dialog"
-	2 "$train_lab/entangling_arrow$"
 }

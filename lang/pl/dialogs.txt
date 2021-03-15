@@ -48,9 +48,7 @@ dialog merchant {
 	10 "Koniec rozmowy"
 	11 "Szkolenie"
 	12 "Mogê ciê nauczyæ perswazji albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
-	13 "$train_lab/persuasion$"
-	14 "$train_lab/cha$"
-	15 "Anuluj"
+	13 "Anuluj"
 }
 
 //==============================================================================
@@ -89,8 +87,7 @@ dialog alchemist {
 	10 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
 	11 "Szkolenie"
 	12 "Mogê ciê nauczyæ jak lepiej warzyæ mikstury. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Nadal jesteœ zainteresowany?"
-	13 "$train_lab/alchemy$"
-	14 "Anuluj"
+	13 "Anuluj"
 }
 
 //==============================================================================
@@ -174,28 +171,15 @@ dialog trainer {
 	2 "Trening trwa 10 dni i kosztuje 200 sztuk z³ota."
 	3 "Co chcesz trenowaæ?"
 	4 "Atrybut"
-	5 "$train_lab/str$"
-	6 "$train_lab/end$"
-	7 "$train_lab/dex$"
-	8 "Anuluj"
-	9 "Umiejêtnoœæ"
-	10 "$train_lab/one_handed_weapon$"
-	11 "$train_lab/short_blade$"
-	12 "$train_lab/long_blade$"
-	13 "$train_lab/blunt$"
-	14 "$train_lab/axe$"
-	15 "$train_lab/bow$"
-	16 "$train_lab/shield$"
-	17 "$train_lab/light_armor$"
-	18 "$train_lab/medium_armor$"
-	19 "$train_lab/heavy_armor$"
-	20 "Atut"
-	21 "Hmm... Aktualnie nie mogê ciê nauczyæ ¿adnych nowych atutów."
-	22 "Czym siê zajmujesz?"
-	23 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki i obrony."
-	24 "Zapytaj o dziwny kamieñ"
-	25 "Powiedzia³em ci wszystko co wiem, musisz siê pozbyæ tego kamienia."
-	26 "Koniec rozmowy"
+	5 "Anuluj"
+	6 "Umiejêtnoœæ"
+	7 "Atut"
+	8 "Hmm... Aktualnie nie mogê ciê nauczyæ ¿adnych nowych atutów."
+	9 "Czym siê zajmujesz?"
+	10 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki oraz obrony."
+	11 "Zapytaj o dziwny kamieñ"
+	12 "Powiedzia³em ci wszystko co wiem, musisz siê pozbyæ tego kamienia."
+	13 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -1905,13 +1889,7 @@ dialog mage_seller {
 	6 "Koniec rozmowy"
 	7 "Szkolenie"
 	8 "Pomogê ci poszerzyæ twoje horyzonty. Co chcesz wiedzieæ?"
-	9 "$train_lab/int$"
-	10 "$train_lab/mystic_magic$"
-	11 "$train_lab/concentration$"
-	12 "Anuluj"
-	13 "$train_lab/fireball$"
-	14 "$train_lab/thunder_bolt$"
-	15 "$train_lab/fire_trap$"
+	9 "Anuluj"
 }
 
 //==============================================================================
@@ -1922,15 +1900,12 @@ dialog cleric_seller {
 	}
 	1 "Szkolenie"
 	2 "Jeœli chcesz mogê ciê nauczyæ czegoœ o magii bogów."
-	3 "$train_lab/wis$"
-	4 "$train_lab/gods_magic$"
-	5 "$train_lab/concentration$"
-	6 "Anuluj"
-	7 "Czym siê zajmujesz?"
-	8 "Jestem kap³anem, wyznawc¹ Imnosa. Opiekujê siê t¹ kapliczk¹ i pomagam tym którzy na to zas³uguj¹."
-	9 "Zapytaj o dziwny kamieñ"
-	10 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
-	11 "Koniec rozmowy"
+	3 "Anuluj"
+	4 "Czym siê zajmujesz?"
+	5 "Jestem kap³anem, wyznawc¹ Imnosa. Opiekujê siê t¹ kapliczk¹ i pomagam tym którzy na to zas³uguj¹."
+	6 "Zapytaj o dziwny kamieñ"
+	7 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia. Jest przeklêty! Niestety nie jestem w stanie zdj¹æ z niego kl¹twy, lepiej siê go pozb¹dŸ."
+	8 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -2124,5 +2099,4 @@ dialog hunter_leader {
 		"Witaj!"
 	}
 	1 "Koniec rozmowy"
-	2 "$train_lab/entangling_arrow$"
 }
