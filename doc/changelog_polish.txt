@@ -4,7 +4,7 @@ Historia zmian
 Wersja 0.18 (???):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
 + efekty: zakorzeniony, spowolniony ruch
-+ zdolność "oplatająca strzała" - można nauczyć się w obozie łowców
++ zdolności "oplatająca strzała" / "pułapka na niedźwiedzie" - można nauczyć się w obozie łowców
 + czar "ognista pułapka" - można nauczyć się od magów
 + zakładka inwestycje w dzienniku
 + nie można wyrzucić bohatera z drużyny dopóki nie dostanie złota z tartaku/kopalni

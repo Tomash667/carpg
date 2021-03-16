@@ -4,7 +4,7 @@ Changelog
 Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
 + effects: rooted and slow moving
-+ ability "entangling" arrow - can be learned in hunters camp
++ abilities "entangling arrow" / "bear trap" - can be learned in hunters camp
 + spell "fire trap" - can be learned from mages
 + investments in journal
 + can't kick out hero before he receive gold from sawmill/mine

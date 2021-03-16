@@ -723,3 +723,22 @@ void GameResources::LoadCommonMusic()
 	LoadMusic(MusicType::Death, false);
 	LoadMusic(MusicType::Travel, false);
 }
+
+//=================================================================================================
+void GameResources::LoadTrap(BaseTrap* trap)
+{
+	assert(trap);
+	if(trap->state != ResourceState::NotLoaded)
+		return;
+
+	if(trap->mesh)
+		res_mgr->Load(trap->mesh);
+	if(trap->sound)
+		res_mgr->Load(trap->sound);
+	if(trap->sound2)
+		res_mgr->Load(trap->sound2);
+	if(trap->sound3)
+		res_mgr->Load(trap->sound3);
+
+	trap->state = ResourceState::Loaded;
+}

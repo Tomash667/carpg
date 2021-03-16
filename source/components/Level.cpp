@@ -3024,73 +3024,81 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 	trap.attack = 0;
 	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
 
-	if(type == TRAP_ARROW || type == TRAP_POISON)
+	switch(type)
 	{
-		trap.rot = 0;
-
-		static vector<TrapLocation> possible;
-
-		// ustal tile i dir
-		for(int i = 0; i < 4; ++i)
+	case TRAP_ARROW:
+	case TRAP_POISON:
 		{
-			GameDirection dir = (GameDirection)i;
-			bool ok = false;
-			int j;
+			trap.rot = 0;
 
-			for(j = 1; j <= 10; ++j)
+			static vector<TrapLocation> possible;
+
+			// ustal tile i dir
+			for(int i = 0; i < 4; ++i)
 			{
-				if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
+				GameDirection dir = (GameDirection)i;
+				bool ok = false;
+				int j;
+
+				for(j = 1; j <= 10; ++j)
 				{
-					if(j != 1)
-						ok = true;
-					break;
+					if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
+					{
+						if(j != 1)
+							ok = true;
+						break;
+					}
+				}
+
+				if(ok)
+				{
+					trap.tile = pt + DirToPos(dir) * j;
+
+					if(CanShootAtLocation(Vec3(trap.pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, trap.pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
+						Vec3(trap.pos.x, 1.f, trap.pos.z)))
+					{
+						TrapLocation& tr = Add1(possible);
+						tr.pt = trap.tile;
+						tr.dist = j;
+						tr.dir = dir;
+					}
 				}
 			}
 
-			if(ok)
+			if(!possible.empty())
 			{
-				trap.tile = pt + DirToPos(dir) * j;
-
-				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, trap.pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
-					Vec3(trap.pos.x, 1.f, trap.pos.z)))
+				if(possible.size() > 1)
 				{
-					TrapLocation& tr = Add1(possible);
-					tr.pt = trap.tile;
-					tr.dist = j;
-					tr.dir = dir;
+					std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
+					{
+						return abs(pt1.dist - 5) < abs(pt2.dist - 5);
+					});
 				}
-			}
-		}
 
-		if(!possible.empty())
-		{
-			if(possible.size() > 1)
+				trap.tile = possible[0].pt;
+				trap.dir = possible[0].dir;
+
+				possible.clear();
+			}
+			else
 			{
-				std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
-				{
-					return abs(pt1.dist - 5) < abs(pt2.dist - 5);
-				});
+				local_area->traps.pop_back();
+				delete t;
+				return nullptr;
 			}
-
-			trap.tile = possible[0].pt;
-			trap.dir = possible[0].dir;
-
-			possible.clear();
 		}
-		else
-		{
-			local_area->traps.pop_back();
-			delete t;
-			return nullptr;
-		}
-	}
-	else if(type == TRAP_SPEAR)
-	{
+		break;
+	case TRAP_SPEAR:
 		trap.rot = Random(MAX_ANGLE);
 		trap.hitted = new vector<Unit*>;
-	}
-	else if(type == TRAP_FIREBALL)
+		break;
+	case TRAP_FIREBALL:
 		trap.rot = PI / 2 * (Rand() % 4);
+		break;
+	case TRAP_BEAR:
+		trap.rot = Random(MAX_ANGLE);
+		break;
+	}
 
 	trap.Register();
 	return &trap;
@@ -3112,18 +3120,29 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 	trap.state = 0;
 	trap.attack = 0;
 	trap.pos = pos;
+	trap.mpTrigger = false;
 
-	if(type == TRAP_ARROW || type == TRAP_POISON)
+	switch(type)
 	{
+	case TRAP_ARROW:
+	case TRAP_POISON:
 		assert(0); // TODO
-	}
-	else if(type == TRAP_SPEAR)
-	{
+		break;
+	case TRAP_SPEAR:
 		trap.rot = Random(MAX_ANGLE);
 		trap.hitted = new vector<Unit*>;
-	}
-	else if(type == TRAP_FIREBALL)
+		break;
+	case TRAP_FIREBALL:
 		trap.rot = PI / 2 * (Rand() % 4);
+		break;
+	case TRAP_BEAR:
+		trap.rot = Random(MAX_ANGLE);
+		break;
+	}
+
+	game_res->LoadTrap(trap.base);
+	if(trap.base->mesh->IsAnimated())
+		trap.meshInst = new MeshInstance(trap.base->mesh);
 
 	if(Net::IsServer())
 	{

@@ -90,6 +90,10 @@ ability fire_trap {
 	name "Fire trap"
 	desc "You create a rune that explodes when someone steps on it, dealing $cr{power} damage$c-. You can have 3 runes at the same time."
 }
+ability bear_trap {
+	name "Bear trap"
+	desc "You put trap on ground that hold enemy in place and deal $cr{power} damage$c-. You can have 3 traps at the same time."
+}
 
 //------------------------------------------------------------------------------
 // ATTRIBUTES

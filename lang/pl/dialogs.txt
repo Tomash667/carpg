@@ -2099,4 +2099,5 @@ dialog hunter_leader {
 		"Witaj!"
 	}
 	1 "Koniec rozmowy"
+	3 "$train_lab/bear_trap$"
 }

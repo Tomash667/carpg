@@ -424,7 +424,8 @@ public:
 	cstring txRumor[29], txRumorD[7];
 	cstring txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2], txAllCampDiscovered[2],
 		txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
-		txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined, txCantLearnAbility, txSpell, txCantLearnSkill;
+		txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined, txCantLearnAbility, txSpell, txAbility,
+		txCantLearnSkill;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
 		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal;

@@ -1266,7 +1266,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(Ability* ability = Ability::Get(s))
 		{
 			// check required skill
-			if(pc->unit->stats->skill[(int)ability->GetSkill()] < ability->skill)
+			const SkillId skill = ability->GetSkill();
+			if(skill != SkillId::NONE && pc->unit->stats->skill[(int)skill] < ability->skill)
 			{
 				Talk(game->txCantLearnAbility);
 				force_end = true;
@@ -1767,8 +1768,15 @@ cstring DialogContext::FormatString(const string& str_part)
 		{
 			talk_msg = ability->name.c_str();
 			const SkillId skill = ability->GetSkill();
-			return Format("%s: %s (%d %s, %d %s)", game->txSpell, ability->name.c_str(), ability->skill, Skill::Get(skill).name.c_str(),
-				ability->learning_points, ability->learning_points == 1 ? game->txLearningPoint : game->txLearningPoints);
+			cstring type = IsSet(ability->flags, Ability::Mage) ? game->txSpell : game->txAbility;
+			cstring points = ability->learning_points == 1 ? game->txLearningPoint : game->txLearningPoints;
+			if(skill != SkillId::NONE)
+			{
+				return Format("%s: %s (%d %s, %d %s)", type, ability->name.c_str(), ability->skill,
+					Skill::Get(skill).name.c_str(), ability->learning_points, points);
+			}
+			else
+				return Format("%s: %s (%d %s)", type, ability->name.c_str(), ability->learning_points, points);
 		}
 		else
 		{

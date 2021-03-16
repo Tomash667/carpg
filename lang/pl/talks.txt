@@ -245,6 +245,7 @@ teamTooBig = "Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
 heroJoined = "WeŸ ze sob¹ %s, pomo¿e ci w czekaj¹cych ciê wyzwaniach."
 cantLearnAbility = "Nie jesteœ gotowy by siê tego nauczyæ. Wróæ gdy siê podszkolisz."
 spell = "Zaklêcie"
+ability = "Zdolnoœæ"
 cantLearnSkill = "Brakuje ci podstaw ¿eby siê szkoliæ w tej umiejêtnoœci."
 
 // yelling

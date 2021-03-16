@@ -1990,6 +1990,25 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->act.cast.target = target;
 		}
 	}
+	else if(IsSet(ability->flags, Ability::UseKneel))
+	{
+		// kneel animation
+		unit->action = A_CAST;
+		unit->animation = ANI_KNEELS;
+		unit->animation_state = AS_CAST_KNEEL;
+		unit->act.cast.ability = ability;
+		unit->timer = ability->cast_time;
+		if(is_local)
+		{
+			unit->target_pos = data.ability_point;
+			unit->act.cast.target = data.ability_target;
+		}
+		else if(Net::IsServer())
+		{
+			unit->target_pos = *pos;
+			unit->act.cast.target = target;
+		}
+	}
 	else if(ability->type == Ability::RangedAttack)
 	{
 		float speed = -1.f;
@@ -2271,6 +2290,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			u.animation = ANI_STAND;
 		return;
 	}
+
+	// casting - can't move
+	if(u.action == A_CAST && u.animation_state == AS_CAST_KNEEL)
+		return;
 
 	// using usable
 	if(u.usable)
@@ -3407,7 +3430,10 @@ Vec3 PlayerController::RaytestTarget(float range)
 	from += dir * game_level->camera.dist;
 	Vec3 to = from + dir * range;
 	phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
-	data.range_ratio = clbk.fraction;
+	if(range < 10)
+		data.range_ratio = clbk.fraction * range / 10;
+	else
+		data.range_ratio = clbk.fraction;
 	return from + dir * range * clbk.fraction;
 }
 

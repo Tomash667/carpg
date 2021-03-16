@@ -90,6 +90,10 @@ ability fire_trap {
 	name "Ognista pu³apka"
 	desc "Tworzysz runê która gdy ktoœ na ni¹ nadepnie eksploduje zadaj¹c $cr{power} obra¿eñ$c-. Mo¿esz mieæ jednoczeœnie 3 runy."
 }
+ability bear_trap {
+	name "Pu³apka na niedzwiedzie"
+	desc "K³adziesz na ziemi pu³apkê która przytrzymuje wroga w miejscu i zadaje $cr{power} obra¿eñ$c-. Mo¿esz mieæ jednoczeœnie 3 pu³apki."
+}
 
 //------------------------------------------------------------------------------
 // ATTRIBUTES

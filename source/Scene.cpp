@@ -562,7 +562,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			draw_batch.Add(node);
 		}
 
-		if(u.HaveEffect(EffectId::Rooted))
+		if(u.HaveEffect(EffectId::Rooted, EffectValue_Rooted_Vines))
 		{
 			SceneNode* node = SceneNode::Get();
 			node->SetMesh(game_res->mVine);

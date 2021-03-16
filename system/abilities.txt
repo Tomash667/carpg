@@ -245,3 +245,20 @@ ability fire_trap {
 	learning_points 2
 	skill 25
 }
+
+ability bear_trap {
+	type trap
+	flags use_kneel
+	trap_id bear
+	dmg 300
+	range 3
+	width 1.5
+	cooldown 12
+	cast_time 1
+	stamina 50
+	tex_particle "dust.png" 0.075
+	sound_cast "metal_spring_02.mp3" 0.5
+	count 3
+	icon
+	learning_points 3
+}

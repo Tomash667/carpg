@@ -130,7 +130,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				e.effect = EffectId::Rooted;
 				e.source = EffectSource::Temporary;
 				e.source_id = -1;
-				e.value = -1;
+				e.value = EffectValue_Rooted_Vines;
 				e.power = 0.f;
 				e.time = ability->time;
 				hitted->AddEffect(e);
