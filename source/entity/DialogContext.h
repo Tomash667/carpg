@@ -86,7 +86,7 @@ struct DialogContext
 
 private:
 	void UpdateLoop();
-	cstring GetText(int index, bool multi = false);
+	cstring GetText(DialogEntry& de);
 	bool ExecuteSpecial(cstring msg);
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);

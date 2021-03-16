@@ -346,11 +346,12 @@ void DialogContext::UpdateLoop()
 		switch(de.type)
 		{
 		case DTF_CHOICE:
+		case DTF_CHOICE_C:
 			{
 				if(de.op == OP_ESCAPE)
 					dialog_esc = (int)choices.size();
 				talk_msg = nullptr;
-				cstring text = GetText(de.value);
+				cstring text = GetText(de);
 				if(text == dialog_s_text.c_str())
 				{
 					string* str = StringPool.Get();
@@ -474,7 +475,7 @@ void DialogContext::UpdateLoop()
 		case DTF_TALK:
 		case DTF_MULTI_TALK:
 			{
-				cstring msg = GetText(de.value, de.type == DTF_MULTI_TALK);
+				cstring msg = GetText(de);
 				Talk(msg);
 				++dialog_pos;
 			}
@@ -808,14 +809,20 @@ void DialogContext::ClearChoices()
 }
 
 //=================================================================================================
-cstring DialogContext::GetText(int index, bool multi)
+cstring DialogContext::GetText(DialogEntry& de)
 {
-	GameDialog::Text& text = multi ? dialog->GetMultiText(index) : dialog->GetText(index);
-	const string& str = dialog->strs[text.index];
+	string* strPtr;
+	if(de.type == DTF_CHOICE_C)
+		strPtr = &dialog->strs[de.value];
+	else
+	{
+		GameDialog::Text& text = (de.type == DTF_MULTI_TALK ? dialog->GetMultiText(de.value) : dialog->GetText(de.value));
+		strPtr = &dialog->strs[text.index];
+		if(!text.formatted)
+			return strPtr->c_str();
+	}
 
-	if(!text.formatted)
-		return str.c_str();
-
+	const string& str = *strPtr;
 	static string str_part;
 	dialog_s_text.clear();
 
