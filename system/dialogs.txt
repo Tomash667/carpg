@@ -4553,7 +4553,7 @@ dialog hunter_leader
 			end
 		}
 	if script "!pc.HaveAbility(Ability::Get(\"bear_trap\"))"
-		choice 3
+		choice "$train_lab/bear_trap$"
 		{
 			special "train/bear_trap"
 			end

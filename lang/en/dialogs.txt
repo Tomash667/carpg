@@ -2087,5 +2087,4 @@ dialog hunter_leader {
 		"Hello!"
 	}
 	1 "End dialog"
-	3 "$train_lab/bear_trap$"
 }
