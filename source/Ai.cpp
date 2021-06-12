@@ -18,7 +18,6 @@
 #include "Quest_Tournament.h"
 #include "Team.h"
 
-#include <Profiler.h>
 #include <SoundManager.h>
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
@@ -112,7 +111,6 @@ inline float RandomRot(float base_rot, float random_angle)
 //=================================================================================================
 void Game::UpdateAi(float dt)
 {
-	PROFILER_BLOCK("UpdateAI");
 	static vector<Unit*> close_enemies;
 
 	auto stool = BaseUsable::Get("stool"),

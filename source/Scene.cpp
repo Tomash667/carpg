@@ -22,7 +22,6 @@
 #include <ParticleShader.h>
 #include <ParticleSystem.h>
 #include <PostfxShader.h>
-#include <Profiler.h>
 #include <Render.h>
 #include <ResourceManager.h>
 #include <Scene.h>
@@ -36,8 +35,6 @@
 //=================================================================================================
 void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside)
 {
-	PROFILER_BLOCK("ListDrawObjects");
-
 	TmpLevelArea& tmp_area = *area.tmp;
 
 	draw_batch.Clear();
@@ -52,22 +49,15 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 
 	// terrain
 	if(area.area_type == LevelArea::Type::Outside && IsSet(draw_flags, DF_TERRAIN))
-	{
-		PROFILER_BLOCK("Terrain");
 		game_level->terrain->ListVisibleParts(draw_batch.terrain_parts, frustum);
-	}
 
 	// dungeon
 	if(area.area_type == LevelArea::Type::Inside && IsSet(draw_flags, DF_TERRAIN))
-	{
-		PROFILER_BLOCK("Dungeon");
 		dun_mesh_builder->ListVisibleParts(draw_batch, frustum);
-	}
 
 	// units
 	if(IsSet(draw_flags, DF_UNITS))
 	{
-		PROFILER_BLOCK("Units");
 		for(Unit* unit : area.units)
 			ListDrawObjectsUnit(frustum, outside, *unit);
 	}
@@ -75,7 +65,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// objects
 	if(IsSet(draw_flags, DF_OBJECTS))
 	{
-		PROFILER_BLOCK("Objects");
 		if(area.area_type == LevelArea::Type::Outside)
 		{
 			for(LevelQuad* quad : level_quads)
@@ -104,7 +93,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// items
 	if(IsSet(draw_flags, DF_ITEMS))
 	{
-		PROFILER_BLOCK("Ground items");
 		Vec3 pos;
 		for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
 		{
@@ -153,7 +141,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// usable objects
 	if(IsSet(draw_flags, DF_USABLES))
 	{
-		PROFILER_BLOCK("Usables");
 		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
 		{
 			Usable& use = **it;
@@ -186,7 +173,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// chests
 	if(IsSet(draw_flags, DF_USABLES))
 	{
-		PROFILER_BLOCK("Chests");
 		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
 		{
 			Chest& chest = **it;
@@ -357,7 +343,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// particles
 	if(IsSet(draw_flags, DF_PARTICLES))
 	{
-		PROFILER_BLOCK("Particles");
 		for(vector<ParticleEmitter*>::iterator it = tmp_area.pes.begin(), end = tmp_area.pes.end(); it != end; ++it)
 		{
 			ParticleEmitter& pe = **it;
@@ -1716,8 +1701,6 @@ void Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, floa
 //=================================================================================================
 void Game::DrawScene(bool outside)
 {
-	PROFILER_BLOCK("DrawScene");
-
 	game_level->scene->use_light_dir = outside;
 	scene_mgr->SetScene(game_level->scene, &game_level->camera);
 
@@ -1727,24 +1710,15 @@ void Game::DrawScene(bool outside)
 
 	// terrain
 	if(!draw_batch.terrain_parts.empty())
-	{
-		PROFILER_BLOCK("DrawTerrain");
 		terrain_shader->Draw(game_level->scene, &game_level->camera, game_level->terrain, draw_batch.terrain_parts);
-	}
 
 	// dungeon
 	if(!draw_batch.dungeon_parts.empty())
-	{
-		PROFILER_BLOCK("DrawDugneon");
 		DrawDungeon(draw_batch.dungeon_parts, draw_batch.dungeon_part_groups);
-	}
 
 	// nodes
 	if(!draw_batch.nodes.empty())
-	{
-		PROFILER_BLOCK("DrawSceneNodes");
 		scene_mgr->DrawSceneNodes(draw_batch);
-	}
 
 	// grass
 	DrawGrass();

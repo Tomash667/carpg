@@ -8,7 +8,6 @@
 
 #include <DirectX.h>
 #include <GrassShader.h>
-#include <Profiler.h>
 #include <ResourceManager.h>
 #include <Terrain.h>
 
@@ -176,8 +175,6 @@ void Game::DrawGrass()
 	if(grass_patches[0].empty() && grass_patches[1].empty())
 		return;
 
-	PROFILER_BLOCK("DrawGrass");
-
 	grass_shader->Prepare(game_level->scene, &game_level->camera);
 	for(int i = 0; i < 2; ++i)
 	{
@@ -194,7 +191,6 @@ void Game::ListGrass()
 	if(settings.grass_range < 0.5f)
 		return;
 
-	PROFILER_BLOCK("ListGrass");
 	OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 	Vec3 pos, angle;
 	Vec2 from = game_level->camera.from.XZ();
@@ -333,6 +329,5 @@ void Game::CalculateQuadtree()
 
 void Game::ListQuadtreeNodes()
 {
-	PROFILER_BLOCK("ListQuadtreeNodes");
 	quadtree.List(game_level->camera.frustum, (QuadTree::Nodes&)level_quads);
 }

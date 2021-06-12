@@ -233,7 +233,6 @@ Available commands:
 	play_music - sets if play music (play_music 0/1).
 	play_sound - sets if play sound (play_sound 0/1).
 	player_devmode - allow/disallow developer mode for player in multiplayer (player_devmode nick/all 0/1).
-	profiler - profiler execution: 0-disabled, 1-update, 2-rendering.
 	qs - pick random character, get ready and start game.
 	quickload - load game from last slot.
 	quicksave - save game on last slot.

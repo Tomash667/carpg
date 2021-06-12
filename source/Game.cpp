@@ -83,7 +83,6 @@
 #include <ParticleShader.h>
 #include <ParticleSystem.h>
 #include <PostfxShader.h>
-#include <Profiler.h>
 #include <Render.h>
 #include <RenderTarget.h>
 #include <ResourceManager.h>
@@ -109,8 +108,8 @@ Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screens
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
-profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
+screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
+clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
 	if(IsDebug())
 	{
@@ -618,22 +617,13 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::OnDraw()
 {
-	if(profiler_mode == ProfilerMode::Rendering)
-		Profiler::g_profiler.Start();
-	else if(profiler_mode == ProfilerMode::Disabled)
-		Profiler::g_profiler.Clear();
-
 	DrawGame();
 	render->Present();
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
 void Game::DrawGame()
 {
-	PROFILER_BLOCK("Draw");
-
 	if(game_state == GS_LEVEL)
 	{
 		LevelArea& area = *pc->unit->area;
@@ -665,14 +655,10 @@ void Game::DrawGame()
 
 		// draw glow
 		if(useGlow)
-		{
-			PROFILER_BLOCK("DrawGlowingNodes");
 			glow_shader->Draw(game_level->camera, draw_batch.glow_nodes, usePostfx);
-		}
 
 		if(usePostfx)
 		{
-			PROFILER_BLOCK("DrawPostFx");
 			if(!useGlow)
 				postfx_shader->Prepare();
 			postfx_shader->Draw(postEffects);
@@ -711,11 +697,6 @@ void Game::OnUpdate(float dt)
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
 
-	if(profiler_mode == ProfilerMode::Update)
-		Profiler::g_profiler.Start();
-	else if(profiler_mode == ProfilerMode::Disabled)
-		Profiler::g_profiler.Clear();
-
 	api->Update();
 	script_mgr->UpdateScripts(dt);
 
@@ -734,10 +715,7 @@ void Game::OnUpdate(float dt)
 	{
 		input->SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
-		{
-			Profiler::g_profiler.End();
 			return;
-		}
 	}
 	else
 		input->SetFocus(true);
@@ -846,8 +824,6 @@ void Game::OnUpdate(float dt)
 	{
 		assert(Net::changes.empty());
 	}
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
@@ -1759,8 +1735,6 @@ void Game::UpdateGame(float dt)
 	dt *= game_speed;
 	if(dt == 0)
 		return;
-
-	PROFILER_BLOCK("UpdateGame");
 
 	// sanity checks
 	if(IsDebug())

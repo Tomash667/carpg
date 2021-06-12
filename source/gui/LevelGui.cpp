@@ -29,7 +29,6 @@
 #include "TeamPanel.h"
 
 #include <Engine.h>
-#include <Profiler.h>
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
@@ -71,7 +70,7 @@ enum Bar
 static ObjectPool<SpeechBubble> SpeechBubblePool;
 
 //=================================================================================================
-LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), boss(nullptr)
+LevelGui::LevelGui() : debug_info_size(0, 0), use_cursor(false), boss(nullptr)
 {
 	scrollbar.parent = this;
 	visible = false;
@@ -723,17 +722,6 @@ void LevelGui::DrawBack()
 		gui->DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), Color::Alpha(128));
 		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
 		gui->DrawText(GameGui::font, text, 0, Color::Black, r);
-	}
-
-	// profiler
-	const string& str = Profiler::g_profiler.GetString();
-	if(!str.empty())
-	{
-		Int2 block_size = GameGui::font->CalculateSize(str) + Int2(24, 24);
-		profiler_size = Int2::Max(block_size, profiler_size);
-		gui->DrawItem(tDialog, Int2(gui->wnd_size.x - profiler_size.x, 0), profiler_size, Color::Alpha(128));
-		Rect rect = { gui->wnd_size.x - profiler_size.x + 12, 12, gui->wnd_size.x, gui->wnd_size.y };
-		gui->DrawText(GameGui::font, str, DTF_LEFT, Color::Black, rect);
 	}
 
 	// tooltip

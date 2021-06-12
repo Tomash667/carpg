@@ -19,7 +19,6 @@
 #include "Unit.h"
 
 #include <ParticleSystem.h>
-#include <Profiler.h>
 #include <SoundManager.h>
 
 //=================================================================================================
@@ -37,8 +36,6 @@ LevelArea::~LevelArea()
 //=================================================================================================
 void LevelArea::Update(float dt)
 {
-	ProfilerBlock profiler_block([&] { return Format("UpdateArea %s", GetName()); });
-
 	// update units
 	// new units can be added inside this loop - so no iterators!
 	for(uint i = 0, count = units.size(); i < count; ++i)

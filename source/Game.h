@@ -90,13 +90,6 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
-enum class ProfilerMode
-{
-	Disabled,
-	Update,
-	Rendering
-};
-
 class Game final : public App
 {
 public:
@@ -309,7 +302,6 @@ public:
 	float death_fade, game_speed;
 	vector<AIController*> ais;
 	uint force_seed, next_seed;
-	ProfilerMode profiler_mode;
 	int start_version;
 	uint load_errors, load_warnings;
 	std::set<const Item*> items_load;
