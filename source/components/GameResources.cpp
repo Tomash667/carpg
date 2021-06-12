@@ -691,28 +691,19 @@ void GameResources::LoadMusic(MusicType type, bool new_load_screen, bool instant
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	bool first = true;
+	MusicList* list = musicLists[(int)type];
+	if(list->IsLoaded())
+		return;
 
-	for(MusicTrack* track : MusicTrack::tracks)
+	if(new_load_screen)
+		res_mgr->AddTaskCategory(txLoadMusic);
+
+	for(Music* music : list->musics)
 	{
-		if(track->type == type)
-		{
-			if(first)
-			{
-				if(track->music->IsLoaded())
-				{
-					// music for this type is loaded
-					return;
-				}
-				if(new_load_screen)
-					res_mgr->AddTaskCategory(txLoadMusic);
-				first = false;
-			}
-			if(instant)
-				res_mgr->LoadInstant(track->music);
-			else
-				res_mgr->Load(track->music);
-		}
+		if(instant)
+			res_mgr->LoadInstant(music);
+		else
+			res_mgr->Load(music);
 	}
 }
 

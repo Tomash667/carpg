@@ -12,7 +12,7 @@
 #include "GameCommon.h"
 #include "GameKeys.h"
 #include "LevelQuad.h"
-#include "MusicTrack.h"
+#include "MusicType.h"
 #include "Net.h"
 #include "Settings.h"
 
@@ -47,8 +47,6 @@ struct AttachedSound
 	FMOD::Channel* channel;
 	Entity<Unit> unit;
 };
-
-static_assert(sizeof(time_t) == sizeof(int64), "time_t needs to be 64 bit");
 
 enum class FALLBACK
 {
@@ -159,10 +157,7 @@ public:
 	//-----------------------------------------------------------------
 	// SOUND & MUSIC
 	//-----------------------------------------------------------------
-	void SetMusic();
-	void SetMusic(MusicType type);
-	void SetupTracks();
-	void UpdateMusic();
+	void SetMusic(MusicType type = MusicType::Default);
 	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
 	void UpdateAttachedSounds(float dt);
 	void StopAllSounds();
@@ -377,10 +372,7 @@ public:
 	// SOUND & MUSIC
 	//-----------------------------------------------------------------
 	vector<AttachedSound> attached_sounds;
-	MusicType music_type;
-	MusicTrack* last_music;
-	vector<MusicTrack*> tracks;
-	int track_id;
+	MusicType musicType;
 
 	//-----------------------------------------------------------------
 	// CONSOLE & COMMANDS

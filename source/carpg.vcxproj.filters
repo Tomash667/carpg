@@ -91,6 +91,9 @@
     <Filter Include="quests\random">
       <UniqueIdentifier>{4b414ced-1c29-46d2-85d9-8ecfc7dae79f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system\music">
+      <UniqueIdentifier>{00d584fe-653a-4b7f-8f35-d9695daf20a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -454,9 +457,6 @@
     <ClCompile Include="SaveLoad.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="stats\MusicTrack.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
     <ClCompile Include="gui\LevelGui.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -669,6 +669,9 @@
     </ClCompile>
     <ClCompile Include="location\TmpLevelArea.cpp">
       <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="system\MusicListLoader.cpp">
+      <Filter>system\music</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1095,9 +1098,6 @@
     <ClInclude Include="Language.h" />
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="stats\MusicTrack.h">
-      <Filter>stats</Filter>
-    </ClInclude>
     <ClInclude Include="system\DialogLoader.h" />
     <ClInclude Include="gui\LevelGui.h">
       <Filter>gui</Filter>
@@ -1320,6 +1320,12 @@
     </ClInclude>
     <ClInclude Include="system\DialogOp.h">
       <Filter>system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="system\MusicListLoader.h">
+      <Filter>system\music</Filter>
+    </ClInclude>
+    <ClInclude Include="system\MusicType.h">
+      <Filter>system\music</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

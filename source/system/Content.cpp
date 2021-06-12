@@ -8,7 +8,7 @@
 #include "DialogLoader.h"
 #include "ItemLoader.h"
 #include "LocationLoader.h"
-#include "MusicTrack.h"
+#include "MusicListLoader.h"
 #include "ObjectLoader.h"
 #include "PerkLoader.h"
 #include "QuestLoader.h"
@@ -35,8 +35,8 @@ static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.
 
 //=================================================================================================
 Content::Content() : ability_loader(new AbilityLoader), building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader),
-item_loader(new ItemLoader), location_loader(new LocationLoader), object_loader(new ObjectLoader), perk_loader(new PerkLoader), quest_loader(new QuestLoader),
-required_loader(new RequiredLoader), unit_loader(new UnitLoader)
+item_loader(new ItemLoader), location_loader(new LocationLoader), musicLoader(new MusicListLoader), object_loader(new ObjectLoader),
+perk_loader(new PerkLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader), unit_loader(new UnitLoader)
 {
 	quest_loader->dialog_loader = dialog_loader;
 }
@@ -57,6 +57,7 @@ void Content::Cleanup()
 	delete dialog_loader;
 	delete item_loader;
 	delete location_loader;
+	delete musicLoader;
 	delete object_loader;
 	delete perk_loader;
 	delete quest_loader;
@@ -68,8 +69,6 @@ void Content::Cleanup()
 //=================================================================================================
 void Content::LoadContent(delegate<void(Id)> callback)
 {
-	uint loaded;
-
 	LoadVersion();
 
 	Info("Game: Loading items.");
@@ -112,8 +111,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 
 	Info("Game: Loading music.");
 	callback(Id::Musics);
-	loaded = MusicTrack::Load(errors);
-	Info("Game: Loaded music: %u.", loaded);
+	musicLoader->DoLoading();
 
 	Info("Game: Loading quests.");
 	callback(Id::Quests);
@@ -160,7 +158,7 @@ void Content::CleanupContent()
 	DialogLoader::Cleanup();
 	ItemLoader::Cleanup();
 	LocationLoader::Cleanup();
-	MusicTrack::Cleanup();
+	MusicListLoader::Cleanup();
 	ObjectLoader::Cleanup();
 	PerkLoader::Cleanup();
 	QuestLoader::Cleanup();

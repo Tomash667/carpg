@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 enum class MusicType
 {
-	None,
+	Default = -1,
 	Intro,
 	Title,
 	Forest,
@@ -13,16 +13,9 @@ enum class MusicType
 	Boss,
 	Travel,
 	Moonwell,
-	Death
+	Death,
+	Max
 };
 
 //-----------------------------------------------------------------------------
-struct MusicTrack
-{
-	MusicPtr music;
-	MusicType type;
-
-	static vector<MusicTrack*> tracks;
-	static uint Load(uint& errors);
-	static void Cleanup();
-};
+extern MusicList* musicLists[(int)MusicType::Max];

@@ -106,7 +106,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n);
 //=================================================================================================
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
+check_updates(true), skip_tutorial(false), portal_anim(0), musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false),
 draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
 screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
 clear_color(Color::Black), in_load(false), tMinimap(nullptr)
@@ -244,10 +244,9 @@ void Game::PreloadData()
 	// intro music
 	if(!sound_mgr->IsMusicDisabled())
 	{
-		Ptr<MusicTrack> track;
-		track->music = res_mgr->Load<Music>("Intro.ogg");
-		track->type = MusicType::Intro;
-		MusicTrack::tracks.push_back(track.Pin());
+		MusicList* list = new MusicList;
+		list->musics.push_back(res_mgr->Load<Music>("Intro.ogg"));
+		musicLists[(int)MusicType::Intro] = list;
 		SetMusic(MusicType::Intro);
 	}
 }
@@ -484,8 +483,7 @@ void Game::PostconfigureGame()
 	game_state = GS_MAIN_MENU;
 	game_gui->load_screen->visible = false;
 	game_gui->main_menu->Show();
-	if(music_type != MusicType::Intro)
-		SetMusic(MusicType::Title);
+	SetMusic(MusicType::Title);
 
 	// start game mode if selected quickmode
 	if(start_game_mode)
@@ -699,8 +697,6 @@ void Game::OnUpdate(float dt)
 
 	api->Update();
 	script_mgr->UpdateScripts(dt);
-
-	UpdateMusic();
 
 	if(Net::IsSingleplayer() || !paused)
 	{
@@ -2547,6 +2543,19 @@ void Game::ExitToMap()
 
 	game_gui->world_map->Show();
 	game_gui->level_gui->visible = false;
+}
+
+void Game::SetMusic(MusicType type)
+{
+	if(type == MusicType::Default)
+		type = game_level->boss ? MusicType::Boss : game_level->GetLocationMusic();
+
+	if(sound_mgr->IsMusicDisabled() || type == musicType)
+		return;
+
+	const bool delayed = musicType == MusicType::Intro && type == MusicType::Title;
+	musicType = type;
+	sound_mgr->PlayMusic(musicLists[(int)type], delayed);
 }
 
 void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
