@@ -76,7 +76,7 @@ void Chest::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_18)
 			MeshInstance::LoadOptional(f, meshInst);
 		else
 		{

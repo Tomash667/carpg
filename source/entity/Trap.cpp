@@ -601,7 +601,7 @@ void Trap::Load(GameReader& f)
 
 			if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
 			{
-				if(LOAD_VERSION >= V_DEV)
+				if(LOAD_VERSION >= V_0_18)
 					MeshInstance::LoadOptional(f, meshInst);
 				else
 				{
@@ -625,7 +625,7 @@ void Trap::Load(GameReader& f)
 		else
 			state = 0;
 
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_18)
 		{
 			f >> owner;
 			f >> attack;

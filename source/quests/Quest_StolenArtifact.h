@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-// Converted to script in V_DEV
+// Converted to script in V_0_18
 class Quest_StolenArtifact final : public Quest_Dungeon
 {
 public:

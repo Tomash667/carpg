@@ -167,7 +167,7 @@ Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 	if(sawmill_state != State::None && build_state != BuildState::Finished)
 		f >> hd_lumberjack;
 
-	if(LOAD_VERSION < V_DEV && sawmill_state == State::Working)
+	if(LOAD_VERSION < V_0_18 && sawmill_state == State::Working)
 		team->AddInvestment(quest_mgr->txQuest[124], id, PAYMENT, days);
 
 	return LoadResult::Ok;

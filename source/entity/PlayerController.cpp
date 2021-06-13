@@ -525,7 +525,7 @@ void PlayerController::Load(GameReader& f)
 	f >> last_weapon;
 	f >> credit;
 	f >> godmode;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_18)
 		f >> nocd;
 	else
 		nocd = false;

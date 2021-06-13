@@ -3312,7 +3312,7 @@ void Game::VerifyResources()
 	{
 		for(GroundItem* item : area.items)
 			VerifyItemResources(item->item);
-		for(Object* obj : area.objects)
+		for([[maybe_unused]] Object* obj : area.objects)
 			assert(obj->mesh->state == ResourceState::Loaded);
 		for(Unit* unit : area.units)
 			VerifyUnitResources(unit);
@@ -3347,7 +3347,7 @@ void Game::VerifyUnitResources(Unit* unit)
 	{
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
-			for(SoundPtr sound : unit->data->sounds->sounds[i])
+			for([[maybe_unused]] SoundPtr sound : unit->data->sounds->sounds[i])
 				assert(sound->IsLoaded());
 		}
 	}

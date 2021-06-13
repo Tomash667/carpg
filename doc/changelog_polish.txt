@@ -12,14 +12,12 @@ Wersja 0.18 (???):
 + konwersja zadania "skradziony artefakt" na skrypty
 + nowe komendy "nocd" (zdolności nie mają czasu odnowienia, nie kosztują many/wytrzymałości), "find" (szuka najbliższego obiektu)
 + lepszy menadżer sceny - pułapki
-- efekt leczenia inaczej wyglądał u klienta
-
---------------------------------------------------------------------------------
-Fixes:
 - zadania z długą nazwą nie mieszczą się w dzienniku
 - nieprawidłowe dźwięki po trafieniu szkieleta/golema itp
 - brak dźwięku trafienia przez włócznie pułapkę u klienta/od trafienia czarem
 - dźwięk trafienia w ściane u klienta jeśli zastrzelony wróg stał obok ściany
+- efekt leczenia inaczej wyglądał u klienta
+- rzadki crash podczas wczytywania
 
 --------------------------------------------------------------------------------
 Wersja 0.17.2 (2021-02-06):

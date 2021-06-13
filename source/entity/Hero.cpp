@@ -130,7 +130,7 @@ void Hero::Load(GameReader& f)
 		otherTeam = nullptr;
 		loner = false;
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_18)
 		f >> investment;
 	else
 		investment = 0;

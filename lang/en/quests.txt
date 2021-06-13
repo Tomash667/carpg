@@ -226,13 +226,13 @@ quest stolen_artifact {
 		0 "Give back stolen artifact"
 		1 "Thank you for this artifact, take this $(Str(GetReward())) gold pieces in thanks."
 		2 "You could not recover this artifact? Too bad..."
-		2 "Apparently close to $(World::GetRandomSettlement(startLoc).name) people found some new artifacts, there I leave."
+		3 "Apparently close to $(World::GetRandomSettlement(startLoc).name) people found some new artifacts, there I leave."
 		4 "Good luck in your adventures!"
 	}
 	
 	texts {
 		0 "Stolen artifact"
-		1 "Obtained from traveler in $(start_loc.name) at $date$."
+		1 "Obtained from traveler in $(startLoc.name) at $date$."
 		2 "The traveler wants me to retrieve $(item.name) which was stolen by $(group.name) staying in $(targetLoc.name) to the $(World::GetDirName(startLoc, targetLoc)). I have two months to do so."
 		3 "I delivered the stolen artifact and received the reward. Quest done!"
 		4 "I failed to retrieve the stolen artifact in time."
@@ -370,10 +370,10 @@ quest main {
 		6 "If you bring it to me, I will reward you generously."
 		7 "Lead me to the shrine in $(shrine_loc.name), then I will help you."
 		8 "End dialog"
-		9 "Thank you! I need some time to gather information. We'll meet at $(village.name) in $ (Str(quest.timeout)) days."
+		9 "Thank you! I need some time to gather information. We'll meet at $(village.name) in $(Str(quest.timeout)) days."
 		10 "Use this time to get better equipment and train yourself."
 		11 "It's good that you are here. We need to talk about the plague..."
-		10 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
+		12 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
 	}
 	
 	texts {

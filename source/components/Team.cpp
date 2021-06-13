@@ -473,7 +473,7 @@ void Team::Load(GameReader& f)
 	else
 		checkResults.clear();
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_18)
 	{
 		investments.resize(f.Read<uint>());
 		for(Investment& investment : investments)

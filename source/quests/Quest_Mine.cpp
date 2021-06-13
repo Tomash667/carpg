@@ -312,7 +312,7 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	f >> mine_state3;
 	f >> days;
 	f >> days_required;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_18)
 	{
 		int days_gold;
 		f >> days_gold;

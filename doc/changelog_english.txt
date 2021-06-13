@@ -12,14 +12,12 @@ Version 0.18 (???):
 + converted quest "stolen artifact" to script
 + new console commands: "nocd" (abilities have no cooldown, costs no mana/stamina), "find" (search for nearest entity)
 + better scene manager - traps
-- heal spell effect looked different for clients
-
---------------------------------------------------------------------------------
-Fixes:
 - quests with long names don't fit in journal
 - wrong sounds when hit skeleton/golem
 - missing client hit sound from spears trap, from spells hit
 - arrow hit wall sound for clients when shoot enemy was standing close to wall
+- heal spell effect looked different for clients
+- rare crash when loading
 
 --------------------------------------------------------------------------------
 Version 0.17.2 (2021-02-06):

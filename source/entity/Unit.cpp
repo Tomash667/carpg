@@ -2294,7 +2294,7 @@ void Unit::Load(GameReader& f)
 			}
 			break;
 		case A_SHOOT:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_18)
 			{
 				int hash;
 				f >> hash;

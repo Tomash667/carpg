@@ -13,7 +13,7 @@
 #include <scriptdictionary/scriptdictionary.h>
 
 //=================================================================================================
-Quest::Quest() : state(Hidden), prog(0), timeout(false), isNew(false)
+Quest::Quest() : state(Hidden), prog(0), timeout(false), isNew(false), startLoc(nullptr)
 {
 }
 

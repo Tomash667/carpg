@@ -497,7 +497,7 @@ void Bullet::Load(GameReader& f)
 		backstab = 0.25f * (backstabValue + 1);
 	}
 	f >> start_pos;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_18)
 		f >> isArrow;
 	else
 		isArrow = (ability == nullptr);
