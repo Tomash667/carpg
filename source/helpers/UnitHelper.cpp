@@ -199,7 +199,7 @@ int UnitHelper::CalculateChance(int value, int min, int max)
 		return 0;
 	if(value >= max)
 		return 100;
-	const int diff = max - min;
-	const float ratio = float(value) / diff;
-	return int(ratio * 100 * diff) + min;
+	const int dif = max - min;
+	const float ratio = float(value) / dif;
+	return int(ratio * 100 * dif) + min;
 }

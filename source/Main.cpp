@@ -323,11 +323,11 @@ bool RunInstallScripts()
 					return false;
 				}
 
-				DeleteFile(buf2);
+				io::DeleteFile(buf2);
 				t.Next();
 			}
 
-			DeleteFile(path);
+			io::DeleteFile(path);
 		}
 		catch(cstring err)
 		{

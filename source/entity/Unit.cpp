@@ -6480,12 +6480,12 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 	if(!Equal(rot, dir))
 	{
 		const float rot_speed = GetRotationSpeed() * dt;
-		const float rot_diff = AngleDiff(rot, dir);
+		const float rot_dif = AngleDiff(rot, dir);
 		if(ShortestArc(rot, dir) > 0.f)
 			animation = ANI_RIGHT;
 		else
 			animation = ANI_LEFT;
-		if(rot_diff < rot_speed)
+		if(rot_dif < rot_speed)
 			rot = dir;
 		else
 		{

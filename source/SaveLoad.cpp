@@ -307,12 +307,12 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		if(slot != -1)
 		{
 			game_gui->saveload->RemoveHardcoreSave(slot);
-			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
+			io::DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
 			if(!Net::IsOnline())
 				SetLastSave(-1);
 		}
 		else
-			DeleteFile(filename);
+			io::DeleteFile(filename);
 	}
 	else if(slot != -1 && !Net::IsOnline())
 		SetLastSave(slot);

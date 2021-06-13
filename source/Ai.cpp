@@ -175,8 +175,8 @@ void Game::UpdateAi(float dt)
 				if(!Equal(u.rot, dir))
 				{
 					const float rot_speed = 3.f * dt;
-					const float rot_diff = AngleDiff(u.rot, dir);
-					if(rot_diff < rot_speed)
+					const float rot_dif = AngleDiff(u.rot, dir);
+					if(rot_dif < rot_speed)
 						u.rot = dir;
 					else
 					{

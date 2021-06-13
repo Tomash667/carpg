@@ -353,7 +353,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					DebugNode* debug_node = DebugNode::Get();
 					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
-					debug_node->mesh = DebugNode::Sphere;
+					debug_node->shape = MeshShape::Sphere;
 					debug_node->color = Color::Green;
 					draw_batch.debug_nodes.push_back(debug_node);
 				}
@@ -397,7 +397,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	{
 		for(vector<CollisionObject>::iterator it = tmp_area.colliders.begin(), end = tmp_area.colliders.end(); it != end; ++it)
 		{
-			DebugNode::Mesh mesh = DebugNode::None;
+			MeshShape shape = MeshShape::None;
 			Vec3 scale;
 			float rot = 0.f;
 
@@ -405,25 +405,25 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 			case CollisionObject::RECTANGLE:
 				scale = Vec3(it->w, 1, it->h);
-				mesh = DebugNode::Box;
+				shape = MeshShape::Box;
 				break;
 			case CollisionObject::RECTANGLE_ROT:
 				scale = Vec3(it->w, 1, it->h);
-				mesh = DebugNode::Box;
+				shape = MeshShape::Box;
 				rot = it->rot;
 				break;
 			case CollisionObject::SPHERE:
 				scale = Vec3(it->radius, 1, it->radius);
-				mesh = DebugNode::Cylinder;
+				shape = MeshShape::Cylinder;
 				break;
 			default:
 				break;
 			}
 
-			if(mesh != DebugNode::None)
+			if(shape != MeshShape::None)
 			{
 				DebugNode* node = DebugNode::Get();
-				node->mesh = mesh;
+				node->shape = shape;
 				node->color = Color(153, 217, 164);
 				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
@@ -450,7 +450,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					const btBoxShape* box = (const btBoxShape*)shape;
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::Box;
+					node->shape = MeshShape::Box;
 					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -462,7 +462,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					float r = capsule->getRadius();
 					float h = capsule->getHalfHeight();
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::Capsule;
+					node->shape = MeshShape::Capsule;
 					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -472,7 +472,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					const btCylinderShape* cylinder = (const btCylinderShape*)shape;
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::Cylinder;
+					node->shape = MeshShape::Cylinder;
 					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
 					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
@@ -493,7 +493,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						{
 							btBoxShape* box = (btBoxShape*)child;
 							DebugNode* node = DebugNode::Get();
-							node->mesh = DebugNode::Box;
+							node->shape = MeshShape::Box;
 							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
@@ -511,7 +511,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
 				{
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::TriMesh;
+					node->shape = MeshShape::TriMesh;
 					node->color = Color(163, 73, 164);
 					node->mat = m_world * game_level->camera.mat_view_proj;
 					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
@@ -715,7 +715,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 			DebugNode* debug_node = DebugNode::Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->mesh = DebugNode::Box;
+			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
@@ -727,7 +727,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			hitbox = u.mesh_inst->mesh->FindPoint("hitbox");
 		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * game_level->camera.mat_view_proj;
-		debug_node->mesh = DebugNode::Box;
+		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -765,7 +765,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 			DebugNode* debug_node = DebugNode::Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->mesh = DebugNode::Box;
+			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
@@ -966,7 +966,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		float h = u.GetUnitHeight() / 2;
 		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->mesh = DebugNode::Cylinder;
+		debug_node->shape = MeshShape::Cylinder;
 		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -977,7 +977,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		u.GetBox(box);
 		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->mesh = DebugNode::Box;
+		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -1157,7 +1157,7 @@ void Game::ListAreas(LevelArea& area)
 			pos = pc->unit->target_pos;
 		DebugNode* node = DebugNode::Get();
 		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * game_level->camera.mat_view_proj;
-		node->mesh = DebugNode::Sphere;
+		node->shape = MeshShape::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
 	}
