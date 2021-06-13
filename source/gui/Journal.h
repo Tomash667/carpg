@@ -12,15 +12,17 @@ public:
 	{
 		cstring text;
 		string* pooled;
-		int x, y, color;
+		int x, y, h, color;
 	};
 
 	enum Mode
 	{
+		Invalid = -1,
 		Quests,
 		Rumors,
 		Notes,
-		Invalid
+		Investments,
+		Max
 	};
 
 	Journal();
@@ -42,12 +44,12 @@ public:
 
 private:
 	void Build();
-	void AddEntry(cstring text, int color, bool singleline, bool pooled = false);
+	void AddEntry(cstring str, int color = 0, bool spacing = true, bool pooled = false);
 	void OnAddNote(int id);
 
 	Mode mode;
-	TexturePtr tBook, tPage[3], tArrowL, tArrowR;
-	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;
+	TexturePtr tBook, tButtonOn, tButtonOff, tPage[3], tArrowL, tArrowR, tIcons[4];
+	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime, txGoldMonth, txTotal, txNoInvestments;
 	int font_height, page, prev_page, open_quest, x, y, size_x, size_y, rect_w, rect_lines;
 	Rect rect, rect2;
 	vector<Text> texts;

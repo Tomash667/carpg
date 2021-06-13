@@ -237,7 +237,7 @@ struct PlayerController : public HeroPlayerCommon
 		};
 	} next_action_data;
 	WeaponType last_weapon;
-	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
+	bool godmode, nocd, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, learning_points, exp, exp_need, exp_level;
 	PlayerAction action;
 	union
@@ -327,13 +327,17 @@ public:
 		Yes,
 		No,
 		NeedWand,
-		TakeWand
+		TakeWand,
+		NeedBow,
+		TakeBow
 	};
-	CanUseAbilityResult CanUseAbility(Ability* ability) const;
+	CanUseAbilityResult CanUseAbility(Ability* ability, bool prepare) const;
 	bool CanUseAbilityPreview(Ability* ability) const;
+	bool CanUseAbilityCheck() const;
 	void UpdateCooldown(float dt);
 	void RefreshCooldown();
 	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	bool IsAbilityPrepared() const;
 
 	// recipes
 	bool AddRecipe(Recipe* recipe);

@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "ConsoleCommands.h"
+#include "NetChange.h"
 #include "Tokenizer.h"
 
 //-----------------------------------------------------------------------------
@@ -16,16 +17,6 @@ public:
 	void ParseStringCommand(int cmd, const string& s, PlayerInfo& info);
 	const vector<ConsoleCommand>& GetCommands() { return cmds; }
 
-	void HealUnit(Unit& unit);
-	void RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value);
-	void ListEffects(Unit* u);
-	void AddPerk(PlayerController* pc, Perk* perk, int value);
-	void RemovePerk(PlayerController* pc, Perk* perk, int value);
-	void ListPerks(PlayerController* pc);
-	void ListStats(Unit* u);
-	void ArenaCombat(cstring str);
-	void CmdList();
-
 	inline void Msg(cstring msg)
 	{
 		print_msg(msg);
@@ -39,7 +30,19 @@ public:
 private:
 	void ParseScript();
 	void RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source);
-	bool ParseStreamInner(BitStreamReader& f);
+	bool ParseStreamInner(BitStreamReader& f, PlayerController* player);
+	NetChangeWriter PushGenericCmd(CMD cmd);
+	// commands
+	void HealUnit(Unit& unit);
+	void RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value);
+	void ListEffects(Unit* u);
+	void AddPerk(PlayerController* pc, Perk* perk, int value);
+	void RemovePerk(PlayerController* pc, Perk* perk, int value);
+	void ListPerks(PlayerController* pc);
+	void ListStats(Unit* u);
+	void ArenaCombat(cstring str);
+	void CmdList();
+	void Scare(PlayerController* player);
 
 	Tokenizer t;
 	vector<ConsoleCommand> cmds;

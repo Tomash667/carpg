@@ -8,18 +8,18 @@ quest global_init
 {
 	type unique
 	flags dont_count
-	
+
 	code {
 		Location@ artifacts_loc;
 		Location@ vault;
-		
+
 		void Startup()
 		{
 			World::startDate = Date(631, Rand() % 6, Rand() % 20);
 			CreateArtifactLocation();
 			CreateVault();
 		}
-		
+
 		void CreateArtifactLocation()
 		{
 			Vec2 bounds = World::bounds;
@@ -51,20 +51,20 @@ quest global_init
 			@artifacts_loc.active_quest = quest;
 			artifacts_loc.st = 12;
 			artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
-			
+
 			DevInfo(Format("Gladiator armor - {0}.", artifacts_loc.name));
 		}
-		
+
 		void CreateVault()
 		{
 			@vault = World::CreateLocation(L_CAVE, World::GetRandomPlace());
 			@vault.active_quest = quest;
 			vault.st = 6;
 			vault.AddEventHandler(quest, EVENT_ENTER);
-			
+
 			DevInfo(Format("Vault - {0}.", vault.name));
 		}
-		
+
 		void OnEvent(Event@ e)
 		{
 			if(e.event != EVENT_ENTER)
@@ -103,11 +103,11 @@ quest global_init
 				}
 			}
 		}
-		
+
 		void SetProgress()
 		{
 		}
-		
+
 		void OnUpgrade(Vars@ vars)
 		{
 			@artifacts_loc = World::GetLocation(int(vars["artifacts_loc"]));
@@ -120,6 +120,7 @@ quest global_init
 
 //=============================================================================
 // DELIVER LETTER - random mayor quest
+// Go to nearby city with letter and return with response.
 //=============================================================================
 quest deliver_letter
 {
@@ -298,6 +299,8 @@ quest deliver_letter
 
 //=============================================================================
 // DELIVER RESOURCES - random mayor quest
+// Deliver reources from one city to another. Bandits attack in middle or in
+// destination.
 //=============================================================================
 quest deliver_resources
 {
@@ -486,6 +489,7 @@ quest deliver_resources
 
 //=============================================================================
 // BANDITS COLLECT TOLL - random captain quest
+// Encounter bandits on road and kill them.
 //=============================================================================
 quest bandits_collect_toll
 {
@@ -681,7 +685,7 @@ quest camp_near_city
 		P_CAMP_TIMEOUT
 		P_CAMP_ON_TIMEOUT
 	}
-	
+
 	dialog start {
 		talk 0
 		talk 1
@@ -697,7 +701,7 @@ quest camp_near_city
 			end
 		show_choices
 	}
-	
+
 	dialog end {
 		if quest_progress == P_CAMP_CLEARED
 		{
@@ -715,13 +719,13 @@ quest camp_near_city
 		}
 		end
 	}
-	
+
 	code {
 		Location@ start_loc;
 		Location@ camp;
 		UnitGroup@ group;
 		int st;
-		
+
 		void Startup()
 		{
 			@start_loc = Level::location;
@@ -738,7 +742,7 @@ quest camp_near_city
 				break;
 			}
 		}
-		
+
 		void SetProgress()
 		{
 			switch(progress)
@@ -751,9 +755,9 @@ quest camp_near_city
 					camp.st += Random(3, 5);
 					camp.AddEventHandler(quest, EVENT_CLEARED);
 					st = camp.st;
-					
+
 					target.AddDialog(quest, "end");
-					
+
 					quest.SetStarted(TEXT(0));
 					quest.AddEntry(TEXT(1));
 					quest.AddEntry(TEXT(2));
@@ -785,7 +789,7 @@ quest camp_near_city
 				break;
 			}
 		}
-		
+
 		void OnEvent(Event@ e)
 		{
 			if(e.event == EVENT_CLEARED)
@@ -796,30 +800,30 @@ quest camp_near_city
 					progress = P_CAMP_ON_TIMEOUT;
 			}
 		}
-		
+
 		int GetReward()
 		{
 			return Quest::CalculateReward(st, Int2(5, 15), Int2(2500, 5000));
 		}
-		
+
 		void OnUpgrade(Vars@ vars)
 		{
 			@start_loc = vars["start_loc"];
 			@camp = vars["target_loc"];
 			int start_time = vars["start_time"];
 			@group = vars["group"];
-			
+
 			if(quest.state != Q_STARTED)
 				return;
-			
+
 			start_loc.GetCaptain().AddDialog(quest, "end");
-			
+
 			int days = 30 + start_time - World::worldtime;
 			if(days > 0)
 				quest.SetTimeout(days);
 			else if(progress == P_CAMP_STARTED)
 				progress = P_CAMP_ON_TIMEOUT;
-			
+
 			if(progress == P_CAMP_STARTED)
 			{
 				@camp.active_quest = quest;
@@ -837,7 +841,7 @@ quest kill_animals
 {
 	type captain
 	flags not_scripted
-	
+
 	progress {
 		P_KILLANI_NONE
 		P_KILLANI_STARTED
@@ -846,11 +850,11 @@ quest kill_animals
 		P_KILLANI_TIMEOUT
 		P_KILLANI_ON_TIMEOUT
 	}
-	
+
 	properties {
 		Location@ targetLoc;
 	}
-	
+
 	dialog start
 	{
 		talk 0
@@ -866,7 +870,7 @@ quest kill_animals
 			end
 		show_choices
 	}
-	
+
 	dialog captain
 	{
 		if quest_progress == P_KILLANI_CLEARED
@@ -900,7 +904,7 @@ quest find_artifact
 		P_FINDART_TIMEOUT
 		P_FINDART_ON_TIMEOUT
 	}
-	
+
 	dialog start
 	{
 		talk 0
@@ -916,7 +920,7 @@ quest find_artifact
 			end
 		show_choices
 	}
-	
+
 	dialog end
 	{
 		if have_quest_item
@@ -938,7 +942,7 @@ quest find_artifact
 		}
 		end
 	}
-	
+
 	code
 	{
 		Location@ start_loc;
@@ -946,7 +950,7 @@ quest find_artifact
 		Item@ item;
 		int st;
 		bool spawned;
-		
+
 		void Startup()
 		{
 			@start_loc = Level::location;
@@ -961,7 +965,7 @@ quest find_artifact
 			case P_FINDART_STARTED:
 				{
 					@item = item.QuestCopy(quest);
-					
+
 					if(Rand() % 4 == 0)
 						@target_loc = World::GetClosestLocation(L_DUNGEON, World::pos, LABYRINTH);
 					else
@@ -970,10 +974,10 @@ quest find_artifact
 					@target_loc.active_quest = quest;
 					target_loc.AddEventHandler(quest, EVENT_ENTER);
 					st = target_loc.st;
-					
+
 					target.AddDialog(quest, "end");
 					target.temporary = false;
-					
+
 					quest.SetStarted(TEXT(0));
 					quest.AddEntry(TEXT(1));
 					quest.AddEntry(TEXT(2));
@@ -984,14 +988,14 @@ quest find_artifact
 				{
 					int reward = GetReward();
 					Team::AddReward(reward, reward * 3);
-					
+
 					target.AddItem(item);
 					pc.unit.RemoveItem(item);
 					target.temporary = true;
-					
+
 					if(target_loc.active_quest is quest)
 						@target_loc.active_quest = null;
-					
+
 					quest.AddEntry(TEXT(3));
 					quest.SetCompleted();
 				}
@@ -999,17 +1003,17 @@ quest find_artifact
 			case P_FINDART_TIMEOUT:
 				{
 					target.temporary = true;
-						
+
 					if(target_loc.active_quest is quest)
 						@target_loc.active_quest = null;
-					
+
 					quest.AddEntry(TEXT(4));
 					quest.SetFailed();
 				}
 				break;
 			}
 		}
-		
+
 		void OnEvent(Event@ e)
 		{
 			if(e.event == EVENT_ENTER)
@@ -1033,12 +1037,12 @@ quest find_artifact
 				progress = P_FINDART_ON_TIMEOUT;
 			}
 		}
-		
+
 		int GetReward()
 		{
 			return Quest::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
 		}
-		
+
 		void OnUpgrade(Vars@ vars)
 		{
 			@item = vars["item"];
@@ -1047,26 +1051,246 @@ quest find_artifact
 			int start_time = vars["start_time"];
 			st = vars["st"];
 			spawned = vars["done"];
-			
+
 			if(progress != P_FINDART_NONE)
 				@item = item.QuestCopy(quest);
 
 			if(quest.state != Q_STARTED)
 				return;
-			
+
 			start_loc.FindQuestUnit(quest).AddDialog(quest, "end");
-			
+
 			int days = 60 + start_time - World::worldtime;
 			if(days > 0)
 				quest.SetTimeout(days);
 			else if(progress == P_FINDART_STARTED)
 				progress = P_FINDART_ON_TIMEOUT;
-			
+
 			if(progress == P_FINDART_STARTED)
 			{
 				if(!spawned)
 					target_loc.AddEventHandler(quest, EVENT_ENTER);
 				@target_loc.active_quest = quest;
+			}
+		}
+	}
+}
+
+//=============================================================================
+// STOLEN ARTIFACT - random traveler quest
+// Random artifact was stolen, stronger enemy in dungeon/camp have it
+//=============================================================================
+quest stolen_artifact
+{
+	type random
+	progress {
+		P_STOLENART_NONE
+		P_STOLENART_STARTED
+		P_STOLENART_FINISHED
+		P_STOLENART_TIMEOUT
+		P_STOLENART_ON_TIMEOUT
+	}
+
+	dialog start
+	{
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_STOLENART_STARTED
+			talk 3
+			talk 4
+			end2
+		}
+		escape choice 5
+			end2
+		show_choices
+	}
+
+	dialog end
+	{
+		if have_quest_item
+		{
+			choice 0
+			{
+				set_quest_progress P_STOLENART_FINISHED
+				talk 1
+				end2
+			}
+		}
+		else if quest_progress == P_STOLENART_ON_TIMEOUT
+		{
+			set_quest_progress P_STOLENART_TIMEOUT
+			talk 2
+			talk 3
+			talk 4
+			end2
+		}
+		end
+	}
+
+	code
+	{
+		Location@ startLoc;
+		Location@ targetLoc;
+		Item@ item;
+		UnitGroup@ group;
+		int st, atLevel;
+		bool spawned;
+
+		void Startup()
+		{
+			@startLoc = Level::location;
+			@item = ItemList::GetRandomItem("artifacts");
+			switch(Rand() % 6)
+			{
+			case 0:
+				@group = UnitGroup::Get("bandits");
+				break;
+			case 1:
+				@group = UnitGroup::Get("orcs");
+				break;
+			case 2:
+				@group = UnitGroup::Get("goblins");
+				break;
+			case 3:
+			case 4:
+				@group = UnitGroup::Get("mages");
+				break;
+			case 5:
+				@group = UnitGroup::Get("evil");
+				break;
+			}
+			spawned = false;
+		}
+
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_STOLENART_STARTED:
+				{
+					@item = item.QuestCopy(quest);
+
+					@targetLoc = World::GetRandomSpawnLocation(World::pos, group);
+					targetLoc.SetKnown();
+					@targetLoc.active_quest = quest;
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+					atLevel = targetLoc.GetRandomLevel();
+					st = targetLoc.st;
+
+					target.AddDialog(quest, "end");
+					target.temporary = false;
+
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(60);
+				}
+				break;
+			case P_STOLENART_FINISHED:
+				{
+					int reward = GetReward();
+					Team::AddReward(reward, reward * 3);
+
+					target.AddItem(item);
+					pc.unit.RemoveItem(item);
+					target.temporary = true;
+
+					if(targetLoc !is null && targetLoc.active_quest is quest)
+						@targetLoc.active_quest = null;
+
+					quest.AddEntry(TEXT(3));
+					quest.SetCompleted();
+				}
+				break;
+			case P_STOLENART_TIMEOUT:
+				{
+					target.temporary = true;
+
+					quest.AddEntry(TEXT(4));
+					quest.SetFailed();
+				}
+				break;
+			}
+		}
+
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				if(Level::dungeon_level == atLevel)
+				{
+					e.location.RemoveEventHandler(quest);
+					UnitData@ leader = group.GetLeader(st);
+					Unit@ unit;
+					if(Level::IsOutside())
+						@unit = Level::SpawnUnitNearLocation(leader, Level::GetSpawnCenter(), 2.0f, -3);
+					else
+						@unit = Level::SpawnUnit(Level::GetFarRoom(), leader, -3);
+					unit.AddItem(item);
+					spawned = true;
+					DevInfo(Format("Spawned quest unit '{0}' at {1};{2}.", unit.data.id, unit.pos.x, unit.pos.z));
+				}
+			}
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				if(spawned)
+					targetLoc.GetArea(atLevel).RemoveItemFromUnit(item);
+				else
+					targetLoc.RemoveEventHandler(quest);
+				@targetLoc.active_quest = null;
+				@targetLoc = null;
+				quest.AddEntry(TEXT(5));
+				progress = P_STOLENART_ON_TIMEOUT;
+			}
+		}
+
+		int GetReward()
+		{
+			return Quest::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
+		}
+
+		void OnUpgrade(Vars@ vars)
+		{
+			@item = vars["item"];
+			@group = vars["group"];
+			@startLoc = vars["startLoc"];
+			@targetLoc = vars["targetLoc"];
+			int startTime = vars["startTime"];
+			st = vars["st"];
+			atLevel = vars["atLevel"];
+			spawned = vars["done"];
+
+			if(progress != P_STOLENART_NONE)
+				@item = item.QuestCopy(quest);
+
+			if(quest.state != Q_STARTED)
+			{
+				@targetLoc = null;
+				return;
+			}
+
+			startLoc.FindQuestUnit(quest).AddDialog(quest, "end");
+
+			int days = 60 + startTime - World::worldtime;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_STOLENART_STARTED)
+			{
+				progress = P_STOLENART_ON_TIMEOUT;
+				if(targetLoc !is null)
+				{
+					@targetLoc.active_quest = null;
+					@targetLoc = null;
+				}
+			}
+
+			if(progress == P_STOLENART_STARTED)
+			{
+				if(!spawned)
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+				@targetLoc.active_quest = quest;
 			}
 		}
 	}
@@ -1395,6 +1619,7 @@ quest main
 		P_MAIN_TALKED_CLERIC_HERO2
 		P_MAIN_CLERIC_RETURNED
 		P_MAIN_CLERIC_RETURNED_TALKED
+		P_MAIN_CLERIC_IN_VILLAGE
 	}
 
 	dialog trainer {
@@ -1464,7 +1689,10 @@ quest main
 				talk 8
 				talk 9
 			case default
-				talk 10
+				if quest_progress < P_MAIN_CLERIC_IN_VILLAGE
+					talk 10
+				else
+					talk 11
 			}
 			restart
 		}
@@ -1516,43 +1744,43 @@ quest main
 		}
 		end
 	}
-	
+
 	dialog cleric {
-		if quest_progress == P_MAIN_TALKED_CLERIC
+		switch quest_progress
 		{
+		case P_MAIN_TALKED_CLERIC
 			talk 0
 			talk 1
 			talk 2
 			set_quest_progress P_MAIN_TALKED_CLERIC_HERO
 			talk 3
 			restart
-		}
-		if quest_progress == P_MAIN_TALKED_CLERIC_HERO
-		{
+		case P_MAIN_TALKED_CLERIC_HERO
 			talk 4
 			talk 5
 			set_quest_progress P_MAIN_TALKED_CLERIC_HERO2
 			talk 6
-			end2
+		case P_MAIN_TALKED_CLERIC_HERO2
+			talk 7
+		case P_MAIN_CLERIC_RETURNED
+			set_quest_progress P_MAIN_CLERIC_RETURNED_TALKED
+			talk 9
+			talk 10
+		case P_MAIN_CLERIC_RETURNED_TALKED
+			talk 9
+			talk 10
+		case P_MAIN_CLERIC_IN_VILLAGE
+			talk 11
+			talk 12
 		}
-		if quest_progress >= P_MAIN_TALKED_CLERIC_HERO2
+		
+		if choices > 0
 		{
-			if quest_progress == P_MAIN_TALKED_CLERIC_HERO2
-				talk 7
-			if quest_progress == P_MAIN_CLERIC_RETURNED
-			{
-				talk 9
-				talk 10
-			}
-			if choices > 0
-			{
-				escape choice 8
-					end2
-				show_choices
-			}
-			end2
+			escape choice 8
+				end2
+			show_choices
 		}
-		end
+		end2
 	}
 
 	code {
@@ -1592,7 +1820,7 @@ quest main
 							}
 						}
 						Room@ target_room = path[target_depth];
-						
+
 						// kill units on path
 						Unit@ player = Team::leader;
 						for(uint i=0; i<target_depth; ++i)
@@ -1612,14 +1840,14 @@ quest main
 							if(u.IsEnemy(player))
 								units[j].Kill();
 						}
-						
+
 						// spawn dead guards
 						UnitData@ guard = UnitData::Get("guard");
 						Unit@ u = Level::SpawnUnit(target_room, guard);
 						u.Kill();
 						@u = Level::SpawnUnit(path[target_depth == 0 ? 0 : target_depth - 1], guard);
 						u.Kill();
-						
+
 						// spawn cleric
 						Vec3 pos = Level::FindSpawnPos(target_room, cleric);
 						cleric.MoveToArea(Level::location.area, pos);
@@ -1678,6 +1906,13 @@ quest main
 							u.AddDialog(quest, "cleric_seller");
 						}
 						break;
+					case P_MAIN_CLERIC_IN_VILLAGE:
+						{
+							LevelArea@ area = Level::location.GetBuildingArea("hall");
+							Vec3 pos = Level::FindSpawnPos(area, cleric);
+							cleric.MoveToArea(area, pos);
+						}
+						break;
 					}
 				}
 			}
@@ -1711,6 +1946,8 @@ quest main
 					Level::location.RemoveEventHandler(quest, EVENT_GENERATE);
 				}
 			}
+			else if(e.event == EVENT_TIMEOUT)
+				progress = P_MAIN_CLERIC_IN_VILLAGE;
 		}
 
 		void SetProgress()
@@ -1750,9 +1987,9 @@ quest main
 			case P_MAIN_TALKED_CLERIC:
 				{
 					target.RemoveDialog(quest);
-					
+
 					@cleric = World::CreateUnit(UnitData::Get("hero_cleric"), 8);
-					
+
 					Vec2 pos = World::FindPlace(Level::location.pos, 80, 100);
 					@dungeon = World::CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
 					@dungeon.active_quest = quest;
@@ -1761,7 +1998,7 @@ quest main
 					dungeon.SetKnown();
 					dungeon.AddEventHandler(quest, EVENT_GENERATE);
 					dungeon.AddEventHandler(quest, EVENT_ENTER);
-					
+
 					quest.AddEntry(TEXT(12));
 				}
 				break;
@@ -1782,6 +2019,29 @@ quest main
 					Quest::Find("side_cleric").Start(vars);
 				}
 				break;
+			case P_MAIN_CLERIC_RETURNED_TALKED:
+				{
+					int days = 10;
+					if(Quest::Find("side_cleric").state == Q_COMPLETED)
+						days = 5;
+					quest.SetTimeout(days);
+					quest.AddEntry(TEXT(14));
+				}
+				break;
+			case P_MAIN_CLERIC_IN_VILLAGE:
+				if(Level::location is village)
+				{
+					LevelArea@ area = Level::location.GetBuildingArea("hall");
+					Vec3 pos = Level::FindSpawnPos(area, cleric);
+					cleric.MoveToArea(area, pos);
+				}
+				else
+				{
+					cleric.MoveOffscreen();
+					village.AddEventHandler(quest, EVENT_ENTER);
+				}
+				quest.AddEntry(TEXT(15));
+				break;
 			}
 		}
 	}
@@ -1799,7 +2059,7 @@ quest side_cleric
 		P_CLERIC_PICKED
 		P_CLERIC_END
 	}
-	
+
 	dialog end {
 		if have_item book_q_cleric
 			choice 0
@@ -1811,20 +2071,20 @@ quest side_cleric
 			}
 		end
 	}
-	
+
 	code {
 		Unit@ cleric;
 		Location@ city;
 		Location@ dungeon;
 		Item@ book;
-		
+
 		void Startup(Vars@ vars)
 		{
 			@cleric = vars["cleric"];
 			@city = vars["city"];
 			progress = P_CLERIC_START;
 		}
-		
+
 		void SetProgress()
 		{
 			switch(progress)
@@ -1851,7 +2111,7 @@ quest side_cleric
 				break;
 			}
 		}
-		
+
 		void OnEvent(Event@ e)
 		{
 			if(e.event == EVENT_PICKUP && e.item.base is book)
@@ -1870,18 +2130,18 @@ quest dire_wolf
 {
 	type unique
 	flags not_scripted
-	
+
 	progress {
 		P_WOLF_NONE
 		P_WOLF_STARTED
 		P_WOLF_KILLED
 		P_WOLF_COMPLETE
 	}
-	
+
 	properties {
 		Location@ forest;
 	}
-	
+
 	dialog hunter {
 		if quest_progress == P_WOLF_NONE
 		{

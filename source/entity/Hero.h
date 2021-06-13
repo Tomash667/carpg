@@ -14,7 +14,7 @@ enum class HeroType
 //-----------------------------------------------------------------------------
 struct Hero : public HeroPlayerCommon
 {
-	int expe;
+	int expe, investment;
 	float phase_timer;
 	HeroType type;
 	AITeam* otherTeam;

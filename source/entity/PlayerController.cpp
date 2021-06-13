@@ -27,7 +27,7 @@
 #include "ScriptException.h"
 #include "Stock.h"
 #include "Team.h"
-#include "Unit.h"
+#include "UnitList.h"
 #include "World.h"
 
 #include <ParticleSystem.h>
@@ -90,6 +90,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 	if(cc)
 	{
 		godmode = false;
+		nocd = false;
 		noclip = false;
 		invisible = false;
 		always_run = true;
@@ -130,10 +131,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 
 		// inventory
 		unit->data->item_script->Parse(*unit);
-		const Item* items[SLOT_MAX];
-		cc->GetStartingItems(items);
-		for(int i = 0; i < SLOT_MAX; ++i)
-			unit->slots[i] = items[i];
+		cc->GetStartingItems(unit->GetEquippedItems());
 		if(HavePerk(Perk::Get("alchemist_apprentice")))
 			Stock::Get("alchemist_apprentice")->Parse(unit->items);
 		unit->MakeItemsTeam(false);
@@ -417,6 +415,7 @@ void PlayerController::Save(GameWriter& f)
 	f << last_weapon;
 	f << credit;
 	f << godmode;
+	f << nocd;
 	f << noclip;
 	f << invisible;
 	f << id;
@@ -479,43 +478,23 @@ void PlayerController::Load(GameReader& f)
 	f >> dmgc;
 	f >> poison_dmgc;
 	f >> idle_timer;
-	if(LOAD_VERSION >= V_0_8)
+	for(StatData& stat : attrib)
 	{
-		for(StatData& stat : attrib)
-		{
-			f >> stat.points;
-			f >> stat.train;
-			f >> stat.apt;
-			f >> stat.train_part;
-			if(LOAD_VERSION < V_0_14)
-				f.Skip<bool>(); // old blocked
-		}
-		for(StatData& stat : skill)
-		{
-			f >> stat.points;
-			f >> stat.train;
-			f >> stat.apt;
-			f >> stat.train_part;
-		}
-		SetRequiredPoints();
+		f >> stat.points;
+		f >> stat.train;
+		f >> stat.apt;
+		f >> stat.train_part;
+		if(LOAD_VERSION < V_0_14)
+			f.Skip<bool>(); // old blocked
 	}
-	else
+	for(StatData& stat : skill)
 	{
-		for(StatData& stat : attrib)
-		{
-			f >> stat.points;
-			stat.train = 0;
-			stat.apt = 0;
-			stat.train_part = 0;
-		}
-		for(StatData& stat : skill)
-		{
-			f >> stat.points;
-			stat.train = 0;
-			stat.apt = 0;
-			stat.train_part = 0;
-		}
+		f >> stat.points;
+		f >> stat.train;
+		f >> stat.apt;
+		f >> stat.train_part;
 	}
+	SetRequiredPoints();
 	f >> action_key;
 	f >> next_action;
 	switch(next_action)
@@ -546,9 +525,15 @@ void PlayerController::Load(GameReader& f)
 	f >> last_weapon;
 	f >> credit;
 	f >> godmode;
+	if(LOAD_VERSION >= V_0_18)
+		f >> nocd;
+	else
+		nocd = false;
 	f >> noclip;
 	if(LOAD_VERSION >= V_0_10)
 		f >> invisible;
+	else
+		invisible = false;
 	f >> id;
 	f >> free_days;
 	f >> kills;
@@ -556,22 +541,9 @@ void PlayerController::Load(GameReader& f)
 	f >> dmg_done;
 	f >> dmg_taken;
 	f >> arena_fights;
-	if(LOAD_VERSION < V_0_8)
-	{
-		UnitStats old_stats;
-		old_stats.Load(f);
-		for(int i = 0; i < (int)AttributeId::MAX; ++i)
-			attrib[i].apt = (old_stats.attrib[i] - 50) / 5;
-		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			skill[i].apt = old_stats.skill[i] / 5;
-		f.Skip(sizeof(StatState) * ((int)AttributeId::MAX + (int)SkillId::MAX)); // old stat state
-	}
 
 	// perk points
-	if(LOAD_VERSION >= V_0_8)
-		f >> learning_points;
-	else
-		learning_points = 0;
+	f >> learning_points;
 
 	// perks
 	byte count;
@@ -585,38 +557,14 @@ void PlayerController::Load(GameReader& f)
 			f >> tp.value;
 		}
 	}
-	else if(LOAD_VERSION >= V_0_8)
-	{
-		for(TakenPerk& tp : perks)
-		{
-			old::v2::Perk perk = (old::v2::Perk)f.Read<byte>();
-			tp.perk = old::Convert(perk);
-			f >> tp.value;
-		}
-	}
 	else
 	{
 		for(TakenPerk& tp : perks)
 		{
-			tp.perk = (Perk*)f.Read<byte>();
+			old::Perk perk = (old::Perk)f.Read<byte>();
+			tp.perk = old::Convert(perk);
 			f >> tp.value;
 		}
-		LoopAndRemove(perks, [this](TakenPerk& tp)
-		{
-			bool upgrade;
-			old::v2::Perk perk = old::Convert((old::v1::Perk)(int)tp.perk, tp.value, upgrade);
-			if(perk == old::v2::Perk::None)
-				return true;
-			tp.perk = old::Convert(perk);
-			if(upgrade)
-			{
-				PerkContext ctx(this, false);
-				ctx.upgrade = true;
-				tp.Apply(ctx);
-				tp.value = 0;
-			}
-			return false;
-		});
 	}
 
 	// abilities
@@ -640,7 +588,7 @@ void PlayerController::Load(GameReader& f)
 		f.ReadCasted<byte>(ab.charges);
 	}
 
-	if(LOAD_VERSION < V_DEV && unit->action == A_DASH && unit->act.dash.ability->RequireList())
+	if(LOAD_VERSION < V_0_17 && unit->action == A_DASH && unit->act.dash.ability->RequireList())
 	{
 		unit->act.dash.hit = UnitList::Get();
 		unit->act.dash.hit->Load(f);
@@ -671,18 +619,9 @@ void PlayerController::Load(GameReader& f)
 	}
 
 	f >> split_gold;
-	if(LOAD_VERSION >= V_0_8)
-	{
-		f >> always_run;
-		f >> exp;
-		f >> exp_level;
-	}
-	else
-	{
-		always_run = true;
-		exp = 0;
-		exp_level = 0;
-	}
+	f >> always_run;
+	f >> exp;
+	f >> exp_level;
 	exp_need = GetExpNeed();
 	if(LOAD_VERSION >= V_0_10)
 		f >> last_ring;
@@ -1166,6 +1105,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 void PlayerController::WriteStart(BitStreamWriter& f) const
 {
 	f << invisible;
+	f << nocd;
 	f << noclip;
 	f << godmode;
 	f << always_run;
@@ -1251,6 +1191,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 void PlayerController::ReadStart(BitStreamReader& f)
 {
 	f >> invisible;
+	f >> nocd;
 	f >> noclip;
 	f >> godmode;
 	f >> always_run;
@@ -1477,16 +1418,19 @@ const PlayerAbility* PlayerController::GetAbility(Ability* ability) const
 }
 
 //=================================================================================================
-PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability) const
+PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability, bool prepare) const
 {
 	assert(ability);
 	if(quest_mgr->quest_tutorial->in_tutorial)
 		return CanUseAbilityResult::No;
+
 	const PlayerAbility* ab = GetAbility(ability);
 	if(ab && (ab->charges == 0 || ab->cooldown > 0))
 		return CanUseAbilityResult::No;
+
 	if(!CanUseAbilityPreview(ability))
 		return CanUseAbilityResult::No;
+
 	if(IsSet(ability->flags, Ability::Mage))
 	{
 		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().flags, ITEM_MAGE))
@@ -1494,19 +1438,39 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 		if((unit->weapon_taken != W_ONE_HANDED || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeWand;
 	}
+
+	if(ability->type == Ability::RangedAttack)
+	{
+		if(!unit->HaveBow())
+			return CanUseAbilityResult::NeedBow;
+		if((unit->weapon_taken != W_BOW || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
+			return CanUseAbilityResult::TakeBow;
+	}
+
 	if(unit->action != A_NONE)
 	{
-		if(IsSet(ability->flags, Ability::UseCast))
+		if(prepare)
 		{
-			if(unit->action != A_CAST)
-				return CanUseAbilityResult::No;
+			if(ability->type == Ability::RangedAttack)
+			{
+				if(unit->action != A_SHOOT)
+					return CanUseAbilityResult::No;
+			}
+			else if(IsSet(ability->flags, Ability::UseCast))
+			{
+				if(unit->action != A_CAST)
+					return CanUseAbilityResult::No;
+			}
+			else
+			{
+				if(!Any(unit->action, A_ATTACK, A_BLOCK, A_BASH))
+					return CanUseAbilityResult::No;
+			}
 		}
 		else
-		{
-			if(!Any(unit->action, A_ATTACK, A_BLOCK, A_BASH))
-				return CanUseAbilityResult::No;
-		}
+			return CanUseAbilityResult::No;
 	}
+
 	return CanUseAbilityResult::Yes;
 }
 
@@ -1515,9 +1479,48 @@ bool PlayerController::CanUseAbilityPreview(Ability* ability) const
 {
 	if(ability->mana > unit->mp || ability->stamina > unit->stamina)
 		return false;
-	if(ability->type == Ability::Charge && unit->IsOverloaded())
-		return false;
+	if(ability->type == Ability::Charge)
+	{
+		if(!unit->CanMove() || unit->IsOverloaded() || unit->GetEffectMax(EffectId::SlowMove) >= 0.5f)
+			return false;
+	}
 	return true;
+}
+
+//=================================================================================================
+bool PlayerController::CanUseAbilityCheck() const
+{
+	CanUseAbilityResult result = CanUseAbility(data.ability_ready, true);
+	int check; // 1 ok, 0 wait, -1 cancel
+	switch(result)
+	{
+	case CanUseAbilityResult::Yes:
+		check = 1;
+		break;
+	case CanUseAbilityResult::TakeWand:
+		if(unit->action == A_TAKE_WEAPON && unit->weapon_taken == W_ONE_HANDED)
+			check = 0;
+		else
+			check = -1;
+		break;
+	case CanUseAbilityResult::TakeBow:
+		if(unit->action == A_TAKE_WEAPON && unit->weapon_taken == W_BOW)
+			check = 0;
+		else
+			check = -1;
+		break;
+	default:
+		check = -1;
+		break;
+	}
+
+	if(check == -1)
+	{
+		data.ability_ready = nullptr;
+		sound_mgr->PlaySound2d(game_res->sCancel);
+	}
+
+	return check == 1;
 }
 
 //=================================================================================================
@@ -1578,7 +1581,7 @@ void PlayerController::UseDays(int count)
 				info.pc->free_days += count;
 		}
 
-		world->Update(count, World::UM_NORMAL);
+		world->Update(count, UM_NORMAL);
 	}
 
 	Net::PushChange(NetChange::UPDATE_FREE_DAYS);
@@ -1872,7 +1875,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	bool ok = true;
 	if(bu.item)
 	{
-		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
+		if(!u.HaveItem(bu.item) && u.GetEquippedItem(SLOT_WEAPON) != bu.item)
 		{
 			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
@@ -1952,7 +1955,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 	if(is_local && from_server)
 		return;
 
-	if(!from_server)
+	if(!from_server && !nocd)
 	{
 		PlayerAbility* ab = GetAbility(ability);
 		if(ab)
@@ -1987,6 +1990,35 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->act.cast.target = target;
 		}
 	}
+	else if(IsSet(ability->flags, Ability::UseKneel))
+	{
+		// kneel animation
+		unit->action = A_CAST;
+		unit->animation = ANI_KNEELS;
+		unit->animation_state = AS_CAST_KNEEL;
+		unit->act.cast.ability = ability;
+		unit->timer = ability->cast_time;
+		if(is_local)
+		{
+			unit->target_pos = data.ability_point;
+			unit->act.cast.target = data.ability_target;
+		}
+		else if(Net::IsServer())
+		{
+			unit->target_pos = *pos;
+			unit->act.cast.target = target;
+		}
+	}
+	else if(ability->type == Ability::RangedAttack)
+	{
+		float speed = -1.f;
+		if(from_server)
+			speed = pos->x;
+		action_key = data.wasted_key;
+		data.wasted_key = Key::None;
+		unit->DoRangedAttack(true, false, speed);
+		unit->act.shoot.ability = ability;
+	}
 	else if(ability->sound_cast)
 		game->PlayAttachedSound(*unit, ability->sound_cast, ability->sound_cast_dist);
 
@@ -2002,6 +2034,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
 		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+
 		if(dash)
 		{
 			unit->timer = 0.33f;
@@ -2016,6 +2049,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->mesh_inst->groups[1].blend_max = 0.1f;
 			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
+
 		if(ability->RequireList())
 		{
 			unit->act.dash.hit = UnitList::Get();
@@ -2033,6 +2067,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			c.type = NetChange::PLAYER_ABILITY;
 			c.unit = unit;
 			c.ability = ability;
+			c.extra_f = unit->mesh_inst->groups[1].speed;
 		}
 		else if(!from_server)
 		{
@@ -2048,6 +2083,19 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		data.ability_ready = nullptr;
 }
 
+//=================================================================================================
+bool PlayerController::IsAbilityPrepared() const
+{
+	if(data.ability_ready)
+		return true;
+	if(unit->action == A_SHOOT)
+		return unit->act.shoot.ability != nullptr;
+	else if(unit->action == A_CAST)
+		return IsClear(unit->act.cast.ability->flags, Ability::DefaultAttack);
+	return false;
+}
+
+//=================================================================================================
 bool PlayerController::AddRecipe(Recipe* recipe)
 {
 	if(HaveRecipe(recipe))
@@ -2174,7 +2222,7 @@ void PlayerController::Update(float dt)
 	else if(!IsBlocking(unit->action) && !unit->HaveEffect(EffectId::Stun))
 	{
 		bool allow_rot = true;
-		if(unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Target, Ability::Summon) && unit->act.cast.target != unit)
+		if(unit->action == A_CAST && unit->act.cast.ability->type == Ability::Target && unit->act.cast.target != unit)
 		{
 			Vec3 pos;
 			if(Unit* target = unit->act.cast.target)
@@ -2227,7 +2275,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		data.autowalk = false;
 		data.ability_ready = nullptr;
 		data.rot_buf = 0.f;
-		u.TryStandup(dt);
+		if(Net::IsLocal())
+			u.TryStandup(dt);
 		return;
 	}
 
@@ -2241,6 +2290,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			u.animation = ANI_STAND;
 		return;
 	}
+
+	// casting - can't move
+	if(u.action == A_CAST && u.animation_state == AS_CAST_KNEEL)
+		return;
 
 	// using usable
 	if(u.usable)
@@ -2345,6 +2398,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			data.rot_buf = 0.f;
 
 		const bool rotating = (rotate != 0 || data.rot_buf != 0.f);
+		if(move != 0 && !u.CanMove())
+			move = 0;
 
 		u.running = false;
 		if(rotating || move)
@@ -2538,7 +2593,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 							if(ok)
 							{
-								game_gui->inventory->inv_mine->EquipSlotItem(slot_type, i_index);
+								game_gui->inventory->inv_mine->EquipSlotItem(i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
@@ -2807,7 +2862,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					c.id = u2->id;
 					action = PlayerAction::Talk;
 					action_unit = u2;
-					game->predialog.clear();
+					game->dialog_context.predialog.clear();
+					game->dialog_context.predialogBubble = u2->bubble;
 				}
 			}
 		}
@@ -2940,7 +2996,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// attack
-	if(u.weapon_state == WeaponState::Taken && !data.ability_ready)
+	if(u.weapon_state == WeaponState::Taken)
 	{
 		idle = false;
 		if(u.weapon_taken == W_ONE_HANDED)
@@ -2986,7 +3042,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 					}
 				}
-				else if(u.animation_state == AS_ATTACK_FINISHED)
+				else if(u.animation_state == AS_ATTACK_FINISHED && !data.ability_ready)
 				{
 					Key k = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
 					if(k == Key::None)
@@ -3039,7 +3095,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
+				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield() && !data.ability_ready)
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
@@ -3067,7 +3123,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK))
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK) && !data.ability_ready)
 			{
 				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
 				bool secondary = false;
@@ -3142,8 +3198,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
+
 			// no action or non-heavy attack
-			if(u.frozen == FROZEN::NO && u.HaveShield() && (u.action == A_NONE
+			if(u.frozen == FROZEN::NO && u.HaveShield() && !data.ability_ready && (u.action == A_NONE
 				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
 			{
 				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
@@ -3203,34 +3260,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.frozen == FROZEN::NO)
+			else if(u.frozen == FROZEN::NO && !data.ability_ready)
 			{
 				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
 				if(k == Key::None)
 					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wasted_key);
 				if(k != Key::None)
 				{
-					float speed = u.GetBowAttackSpeed();
-					u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-					u.mesh_inst->groups[1].speed = speed;
-					u.action = A_SHOOT;
-					u.animation_state = AS_SHOOT_PREPARE;
 					action_key = k;
-					u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-					u.bow_instance->groups[0].speed = speed;
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
-						c.unit = unit;
-						c.id = AID_StartShoot;
-						c.f[1] = speed;
-					}
-
-					if(Net::IsLocal())
-						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
+					u.DoRangedAttack(true);
 				}
 			}
 		}
@@ -3239,8 +3277,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	// ability
 	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.ability_ready != shortcut.ability)
 	{
-		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability);
-		if(Any(result, PlayerController::CanUseAbilityResult::Yes, PlayerController::CanUseAbilityResult::TakeWand))
+		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability, true);
+		if(Any(result,
+			PlayerController::CanUseAbilityResult::Yes,
+			PlayerController::CanUseAbilityResult::TakeWand,
+			PlayerController::CanUseAbilityResult::TakeBow))
 		{
 			data.ability_ready = shortcut.ability;
 			data.ability_ok = false;
@@ -3248,11 +3289,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			data.ability_target = nullptr;
 			if(result == PlayerController::CanUseAbilityResult::TakeWand)
 				unit->TakeWeapon(W_ONE_HANDED);
+			else if(result == PlayerController::CanUseAbilityResult::TakeBow)
+				unit->TakeWeapon(W_BOW);
 		}
 		else
 		{
 			if(result == PlayerController::CanUseAbilityResult::NeedWand)
 				game_gui->messages->AddGameMsg3(GMS_NEED_WAND);
+			else if(result == PlayerController::CanUseAbilityResult::NeedBow)
+				game_gui->messages->AddGameMsg3(GMS_NEED_BOW);
 			sound_mgr->PlaySound2d(game_res->sCancel);
 		}
 	}
@@ -3292,10 +3337,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 		}
 
-		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
+		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
 		if(data.wasted_key != Key::None)
 		{
-			if(data.ability_ok)
+			if(data.ability_ok && CanUseAbility(data.ability_ready, false) == CanUseAbilityResult::Yes)
 				UseAbility(data.ability_ready, false);
 			else
 				data.wasted_key = Key::None;
@@ -3385,7 +3430,10 @@ Vec3 PlayerController::RaytestTarget(float range)
 	from += dir * game_level->camera.dist;
 	Vec3 to = from + dir * range;
 	phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
-	data.range_ratio = clbk.fraction;
+	if(range < 10)
+		data.range_ratio = clbk.fraction * range / 10;
+	else
+		data.range_ratio = clbk.fraction;
 	return from + dir * range * clbk.fraction;
 }
 
@@ -3393,8 +3441,8 @@ Vec3 PlayerController::RaytestTarget(float range)
 bool PlayerController::ShouldUseRaytest() const
 {
 	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
-		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon))
-		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
+		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
+		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));

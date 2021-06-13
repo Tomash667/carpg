@@ -8,6 +8,8 @@ buff_antimagic = "Antimagic"
 buff_stamina = "Restoring stamina"
 buff_stun = "Stunned"
 buff_poison_res = "Poison resistance"
+buff_rooted = "Rooted"
+buff_slow_move = "Slow move"
 
 [Directions]
 dirN = "north"
@@ -56,11 +58,11 @@ axe = "Axe"
 
 //------------------------------------------------------------------------------
 // ABILITIES
-ability "bull_charge" {
+ability bull_charge {
 	name "Bull's charge"
 	desc "You charge forward stunning all enemies in your path and dealing $cr{power} damage$c- to them."
 }
-ability "dash" {
+ability dash {
 	name "Dash"
 	desc "You move fast in a selected direction. Has three charges."
 }
@@ -68,17 +70,29 @@ ability fireball {
 	name "Fireball"
 	desc "You throw exploding ball of fire that deal $cr{power} damage$c- on small area."
 }
-ability "heal" {
+ability heal {
 	name "Heal"
 	desc "Restore $cg{power} health points$c- to the target."
 }
-ability "summon_wolf" {
+ability summon_wolf {
 	name "Animal ally"
 	desc "You summon a wolf that will help you in combat until it is killed."
 }
-ability "thunder_bolt" {
+ability thunder_bolt {
 	name "Thunderbolt"
 	desc "You throw thunderbolt at enemy, electric charge deal $cr{power} damage$c- and will bounce to nearby enemies."
+}
+ability entangling_arrow {
+	name "Entangling arrow"
+	desc "You shoot a special arrow that, when hit, holds the target in place for 2 seconds."
+}
+ability fire_trap {
+	name "Fire trap"
+	desc "You create a rune that explodes when someone steps on it, dealing $cr{power} damage$c-. You can have 3 runes at the same time."
+}
+ability bear_trap {
+	name "Bear trap"
+	desc "You put trap on ground that hold enemy in place and deal $cr{power} damage$c-. You can have 3 traps at the same time."
 }
 
 //------------------------------------------------------------------------------

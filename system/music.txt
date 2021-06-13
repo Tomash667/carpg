@@ -21,7 +21,7 @@ music city = {
 music crypt = {
 	"Project_Divinity__Cemetery.ogg",
 	"death.ogg",
-	"Outside2.ogg"	
+	"Outside2.ogg"
 }
 
 music dungeon = {

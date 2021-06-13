@@ -170,7 +170,7 @@ void GameResources::LoadData()
 	aBeard[2] = res_mgr->Load<Mesh>("beard3.qmsh");
 	aBeard[3] = res_mgr->Load<Mesh>("beard4.qmsh");
 	aBeard[4] = res_mgr->Load<Mesh>("beardm1.qmsh");
-	aArrow = res_mgr->Load<Mesh>("strzala.qmsh");
+	aArrow = res_mgr->Load<Mesh>("arrow.qmsh");
 	aSkybox = res_mgr->Load<Mesh>("skybox.qmsh");
 	aBag = res_mgr->Load<Mesh>("worek.qmsh");
 	aGrating = res_mgr->Load<Mesh>("kratka.qmsh");
@@ -185,6 +185,7 @@ void GameResources::LoadData()
 	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
 	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
 	aDungeonDoor = res_mgr->Load<Mesh>("dungeon_door.qmsh");
+	mVine = res_mgr->Load<Mesh>("vine.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();
@@ -243,6 +244,7 @@ void GameResources::LoadData()
 	sSummon = res_mgr->Load<Sound>("whooshy-puff.wav");
 	sZap = res_mgr->Load<Sound>("zap.mp3");
 	sCancel = res_mgr->Load<Sound>("cancel.mp3");
+	sCoughs = res_mgr->Load<Sound>("coughs.mp3");
 
 	// music
 	LoadMusic(MusicType::Title);
@@ -285,8 +287,6 @@ void GameResources::PreloadTraps()
 			else
 				t.h = t.rw = pt->size.x;
 		}
-		if(t.mesh_id2)
-			t.mesh2 = res_mgr->Get<Mesh>(t.mesh_id2);
 		if(t.sound_id)
 			t.sound = res_mgr->Get<Sound>(t.sound_id);
 		if(t.sound_id2)
@@ -692,28 +692,19 @@ void GameResources::LoadMusic(MusicType type, bool new_load_screen, bool instant
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	bool first = true;
+	MusicList* list = musicLists[(int)type];
+	if(list->IsLoaded())
+		return;
 
-	for(MusicTrack* track : MusicTrack::tracks)
+	if(new_load_screen)
+		res_mgr->AddTaskCategory(txLoadMusic);
+
+	for(Music* music : list->musics)
 	{
-		if(track->type == type)
-		{
-			if(first)
-			{
-				if(track->music->IsLoaded())
-				{
-					// music for this type is loaded
-					return;
-				}
-				if(new_load_screen)
-					res_mgr->AddTaskCategory(txLoadMusic);
-				first = false;
-			}
-			if(instant)
-				res_mgr->LoadInstant(track->music);
-			else
-				res_mgr->Load(track->music);
-		}
+		if(instant)
+			res_mgr->LoadInstant(music);
+		else
+			res_mgr->Load(music);
 	}
 }
 
@@ -723,4 +714,23 @@ void GameResources::LoadCommonMusic()
 	LoadMusic(MusicType::Boss, false);
 	LoadMusic(MusicType::Death, false);
 	LoadMusic(MusicType::Travel, false);
+}
+
+//=================================================================================================
+void GameResources::LoadTrap(BaseTrap* trap)
+{
+	assert(trap);
+	if(trap->state != ResourceState::NotLoaded)
+		return;
+
+	if(trap->mesh)
+		res_mgr->Load(trap->mesh);
+	if(trap->sound)
+		res_mgr->Load(trap->sound);
+	if(trap->sound2)
+		res_mgr->Load(trap->sound2);
+	if(trap->sound3)
+		res_mgr->Load(trap->sound3);
+
+	trap->state = ResourceState::Loaded;
 }

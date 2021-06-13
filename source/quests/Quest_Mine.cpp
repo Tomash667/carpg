@@ -14,6 +14,9 @@
 #include "World.h"
 #include "Team.h"
 
+const int PAYMENT = 750;
+const int PAYMENT2 = 1500;
+
 //=================================================================================================
 void Quest_Mine::Start()
 {
@@ -26,7 +29,6 @@ void Quest_Mine::Start()
 	messenger = nullptr;
 	days = 0;
 	days_required = 0;
-	days_gold = 0;
 	persuaded = false;
 	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
 	targetLoc = world->GetClosestLocation(L_CAVE, startLoc->pos);
@@ -89,7 +91,7 @@ void Quest_Mine::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[131]);
+			OnStart(quest_mgr->txQuest[131]);
 
 			location_event_handler = this;
 
@@ -102,19 +104,19 @@ void Quest_Mine::SetProgress(int prog2)
 
 			InitSub();
 
-			msgs.push_back(Format(game->txQuest[132], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[133], targetLoc->name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(quest_mgr->txQuest[132], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[133], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
 		{
-			OnUpdate(game->txQuest[134]);
+			OnUpdate(quest_mgr->txQuest[134]);
 			team->AddExp(3000);
 		}
 		break;
 	case Progress::SelectedShares:
 		{
-			OnUpdate(game->txQuest[135]);
+			OnUpdate(quest_mgr->txQuest[135]);
 			mine_state = State::Shares;
 			mine_state2 = State2::InBuild;
 			days = 0;
@@ -125,22 +127,22 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::GotFirstGold:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[136]);
+			OnUpdate(quest_mgr->txQuest[136]);
 			team->AddReward(PAYMENT);
+			team->AddInvestment(quest_mgr->txQuest[131], id, PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
 			days_required = Random(60, 90);
 			if(days >= days_required)
 				days = days_required - 1;
-			days_gold = 0;
 			targetLoc->SetImage(LI_MINE);
-			targetLoc->SetNamePrefix(game->txQuest[131]);
+			targetLoc->SetNamePrefix(quest_mgr->txQuest[131]);
 		}
 		break;
 	case Progress::SelectedGold:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[137]);
+			OnUpdate(quest_mgr->txQuest[137]);
 			team->AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
@@ -151,27 +153,27 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::NeedTalk:
 		{
 			state = Quest::Started;
-			OnUpdate(game->txQuest[138]);
+			OnUpdate(quest_mgr->txQuest[138]);
 			mine_state2 = State2::CanExpand;
-			world->AddNews(Format(game->txQuest[139], GetTargetLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[139], GetTargetLocationName()));
 		}
 		break;
 	case Progress::Talked:
 		{
-			OnUpdate(Format(game->txQuest[140], mine_state == State::Shares ? 10000 : 12000));
+			OnUpdate(Format(quest_mgr->txQuest[140], mine_state == State::Shares ? 10000 : 12000));
 		}
 		break;
 	case Progress::NotInvested:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[141]);
+			OnUpdate(quest_mgr->txQuest[141]);
 			quest_mgr->EndUniqueQuest();
 		}
 		break;
 	case Progress::Invested:
 		{
 			DialogContext::current->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
-			OnUpdate(game->txQuest[142]);
+			OnUpdate(quest_mgr->txQuest[142]);
 			mine_state2 = State2::InExpand;
 			days = 0;
 			days_required = Random(30, 45);
@@ -180,29 +182,32 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::UpgradedMine:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[143]);
+			OnUpdate(quest_mgr->txQuest[143]);
 			team->AddReward(PAYMENT2);
+			if(mine_state == State::Shares)
+				team->UpdateInvestment(id, PAYMENT2);
+			else
+				team->AddInvestment(quest_mgr->txQuest[131], id, PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
 			days_required = Random(60, 90);
 			if(days >= days_required)
 				days = days_required - 1;
-			days_gold = 0;
-			world->AddNews(Format(game->txQuest[144], GetTargetLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[144], GetTargetLocationName()));
 		}
 		break;
 	case Progress::InfoAboutPortal:
 		{
 			state = Quest::Started;
-			OnUpdate(game->txQuest[145]);
+			OnUpdate(quest_mgr->txQuest[145]);
 			mine_state2 = State2::FoundPortal;
-			world->AddNews(Format(game->txQuest[146], GetTargetLocationName()));
+			world->AddNews(Format(quest_mgr->txQuest[146], GetTargetLocationName()));
 		}
 		break;
 	case Progress::TalkedWithMiner:
 		{
-			OnUpdate(game->txQuest[147]);
+			OnUpdate(quest_mgr->txQuest[147]);
 			const Item* item = Item::Get("key_kopalnia");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
@@ -210,9 +215,9 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[148]);
+			OnUpdate(quest_mgr->txQuest[148]);
 			quest_mgr->EndUniqueQuest();
-			world->AddNews(game->txQuest[149]);
+			world->AddNews(quest_mgr->txQuest[149]);
 			team->AddExp(10000);
 		}
 		break;
@@ -291,7 +296,6 @@ void Quest_Mine::Save(GameWriter& f)
 	f << mine_state3;
 	f << days;
 	f << days_required;
-	f << days_gold;
 	f << messenger;
 	f << persuaded;
 }
@@ -308,9 +312,15 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	f >> mine_state3;
 	f >> days;
 	f >> days_required;
-	f >> days_gold;
+	if(LOAD_VERSION < V_0_18)
+	{
+		int days_gold;
+		f >> days_gold;
+		if(mine_state == State::Shares || mine_state == State::BigShares)
+			team->AddInvestment(quest_mgr->txQuest[131], id, mine_state == State::Shares ? PAYMENT : PAYMENT2);
+	}
 	f >> messenger;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 		f >> persuaded;
 	else
 		persuaded = false;
@@ -891,16 +901,16 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 						switch(dir)
 						{
 						case GDIR_DOWN:
-							pos.z -= 1.f;
+							pos.z -= 0.9f;
 							break;
 						case GDIR_LEFT:
-							pos.x -= 1.f;
+							pos.x -= 0.9f;
 							break;
 						case GDIR_UP:
-							pos.z += 1.f;
+							pos.z += 0.9f;
 							break;
 						case GDIR_RIGHT:
-							pos.x += 1.f;
+							pos.x += 0.9f;
 							break;
 						}
 
@@ -992,14 +1002,15 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 
 		// miner leader in front of entrance
 		Int2 pt = lvl.GetPrevEntryFrontTile();
-		int odl = 1;
-		while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
+		int dist = 1;
+		while(lvl.map[pt(lvl.w)].type == EMPTY && dist < 5)
 		{
 			pt += DirToPos(lvl.prevEntryDir);
-			++odl;
+			++dist;
 		}
 		pt -= DirToPos(lvl.prevEntryDir);
-		game_level->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f * lvl.prevEntryPt.x + 1, 0, 2.f * lvl.prevEntryPt.y + 1), -2);
+		const Vec3 lookAt(2.f * lvl.prevEntryPt.x + 1, 0, 2.f * lvl.prevEntryPt.y + 1);
+		game_level->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("gornik_szef"), &lookAt, -2);
 
 		// miners
 		UnitData& miner = *UnitData::Get("gornik");
@@ -1044,11 +1055,11 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 				else if(u->data == miner_leader)
 				{
 					Int2 pt = lvl.GetPrevEntryFrontTile();
-					int odl = 1;
-					while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
+					int dist = 1;
+					while(lvl.map[pt(lvl.w)].type == EMPTY && dist < 5)
 					{
 						pt += DirToPos(lvl.prevEntryDir);
-						++odl;
+						++dist;
 					}
 					pt -= DirToPos(lvl.prevEntryDir);
 
@@ -1087,7 +1098,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 }
 
 //=================================================================================================
-int Quest_Mine::OnProgress(int d)
+void Quest_Mine::OnProgress(int d)
 {
 	if(mine_state2 == State2::InBuild)
 	{
@@ -1137,26 +1148,4 @@ int Quest_Mine::OnProgress(int d)
 			}
 		}
 	}
-
-	if(mine_state == State::Shares && mine_state2 >= State2::Built)
-	{
-		days_gold += d;
-		int count = days_gold / 30;
-		if(count)
-		{
-			days_gold -= count * 30;
-			return count * PAYMENT;
-		}
-	}
-	else if(mine_state == State::BigShares && mine_state2 >= State2::Expanded)
-	{
-		days_gold += d;
-		int count = days_gold / 30;
-		if(count)
-		{
-			days_gold -= count * 30;
-			return count * PAYMENT2;
-		}
-	}
-	return 0;
 }

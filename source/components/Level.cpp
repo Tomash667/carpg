@@ -442,6 +442,27 @@ Trap* Level::FindTrap(int id)
 }
 
 //=================================================================================================
+Trap* Level::FindTrap(BaseTrap* base, const Vec3& pos)
+{
+	assert(base);
+	LevelArea& area = GetArea(pos);
+	Trap* best = nullptr;
+	float bestDist = std::numeric_limits<float>::max();
+	for(Trap* trap : area.traps)
+	{
+		if(trap->base != base)
+			continue;
+		const float dist = Vec3::Distance(trap->pos, pos);
+		if(dist < bestDist)
+		{
+			best = trap;
+			bestDist = dist;
+		}
+	}
+	return best;
+}
+
+//=================================================================================================
 Chest* Level::FindChest(int id)
 {
 	for(LevelArea& area : ForEachArea())
@@ -532,6 +553,45 @@ bool Level::RemoveTrap(int id)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
+{
+	assert(owner);
+
+	uint count = 0;
+	Trap* bestTrap = nullptr;
+	LevelArea* bestArea = nullptr;
+	for(LevelArea& area : ForEachArea())
+	{
+		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
+		{
+			Trap* trap = *it;
+			if(trap->base == baseTrap && trap->owner == owner && trap->state == 0)
+			{
+				if(!bestTrap || trap->id < bestTrap->id)
+				{
+					bestTrap = trap;
+					bestArea = &area;
+				}
+				++count;
+			}
+		}
+	}
+
+	if(count >= maxAllowed)
+	{
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_TRAP;
+			c.id = bestTrap->id;
+		}
+
+		RemoveElement(bestArea->traps, bestTrap);
+		delete bestTrap;
+	}
 }
 
 //=================================================================================================
@@ -750,8 +810,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emision_interval = 0.1f;
-			pe->emisions = -1;
+			pe->emission_interval = 0.1f;
+			pe->emissions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -796,8 +856,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emision_interval = 0.1f;
-			pe->emisions = -1;
+			pe->emission_interval = 0.1f;
+			pe->emissions = -1;
 			pe->life = -1;
 			pe->max_particles = 50;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -822,8 +882,8 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emision_interval = 0.1f;
-			pe->emisions = -1;
+			pe->emission_interval = 0.1f;
+			pe->emissions = -1;
 			pe->life = -1;
 			pe->max_particles = 500;
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -1437,8 +1497,8 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					pe->tex = game_res->tFlare2;
 					pe->alpha = 1.0f;
 					pe->size = 1.0f;
-					pe->emision_interval = 0.1f;
-					pe->emisions = -1;
+					pe->emission_interval = 0.1f;
+					pe->emissions = -1;
 					pe->life = -1;
 					pe->max_particles = 50;
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -1952,10 +2012,11 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 	// preload items
 	if(base.group != G_PLAYER && base.item_script && !res_mgr->IsLoadScreen())
 	{
-		for(const Item* slot : unit->slots)
+		array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
+		for(const Item* item : equipped)
 		{
-			if(slot)
-				game_res->PreloadItem(slot);
+			if(item)
+				game_res->PreloadItem(item);
 		}
 		for(ItemSlot& slot : unit->items)
 			game_res->PreloadItem(slot.item);
@@ -2039,6 +2100,18 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 	}
 
 	return room->Center();
+}
+
+//=================================================================================================
+Vec3 Level::FindSpawnPos(LevelArea& area, Unit* unit)
+{
+	assert(area.area_type == LevelArea::Type::Building); // not implemented
+
+	InsideBuilding& inside = static_cast<InsideBuilding&>(area);
+
+	Vec3 pos;
+	WarpToRegion(area, inside.region1, unit->GetUnitRadius(), pos, 20);
+	return pos;
 }
 
 //=================================================================================================
@@ -2940,7 +3013,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 }
 
 //=================================================================================================
-Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
+Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 {
 	assert(lvl);
 
@@ -2957,96 +3030,142 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 	BaseTrap& base = BaseTrap::traps[type];
 	trap.base = &base;
+	trap.meshInst = nullptr;
 	trap.hitted = nullptr;
 	trap.state = 0;
+	trap.attack = 0;
 	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
-	trap.obj.base = nullptr;
-	trap.obj.mesh = trap.base->mesh;
-	trap.obj.pos = trap.pos;
-	trap.obj.scale = 1.f;
 
-	if(type == TRAP_ARROW || type == TRAP_POISON)
+	switch(type)
 	{
-		trap.obj.rot = Vec3(0, 0, 0);
-
-		static vector<TrapLocation> possible;
-
-		// ustal tile i dir
-		for(int i = 0; i < 4; ++i)
+	case TRAP_ARROW:
+	case TRAP_POISON:
 		{
-			GameDirection dir = (GameDirection)i;
-			bool ok = false;
-			int j;
+			trap.rot = 0;
 
-			for(j = 1; j <= 10; ++j)
+			static vector<TrapLocation> possible;
+
+			// ustal tile i dir
+			for(int i = 0; i < 4; ++i)
 			{
-				if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
+				GameDirection dir = (GameDirection)i;
+				bool ok = false;
+				int j;
+
+				for(j = 1; j <= 10; ++j)
 				{
-					if(j != 1)
-						ok = true;
-					break;
+					if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
+					{
+						if(j != 1)
+							ok = true;
+						break;
+					}
+				}
+
+				if(ok)
+				{
+					trap.tile = pt + DirToPos(dir) * j;
+
+					if(CanShootAtLocation(Vec3(trap.pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, trap.pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
+						Vec3(trap.pos.x, 1.f, trap.pos.z)))
+					{
+						TrapLocation& tr = Add1(possible);
+						tr.pt = trap.tile;
+						tr.dist = j;
+						tr.dir = dir;
+					}
 				}
 			}
 
-			if(ok)
+			if(!possible.empty())
 			{
-				trap.tile = pt + DirToPos(dir) * j;
-
-				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, trap.pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
-					Vec3(trap.pos.x, 1.f, trap.pos.z)))
+				if(possible.size() > 1)
 				{
-					TrapLocation& tr = Add1(possible);
-					tr.pt = trap.tile;
-					tr.dist = j;
-					tr.dir = dir;
+					std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
+					{
+						return abs(pt1.dist - 5) < abs(pt2.dist - 5);
+					});
 				}
-			}
-		}
 
-		if(!possible.empty())
-		{
-			if(possible.size() > 1)
+				trap.tile = possible[0].pt;
+				trap.dir = possible[0].dir;
+
+				possible.clear();
+			}
+			else
 			{
-				std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
-				{
-					return abs(pt1.dist - 5) < abs(pt2.dist - 5);
-				});
+				local_area->traps.pop_back();
+				delete t;
+				return nullptr;
 			}
-
-			trap.tile = possible[0].pt;
-			trap.dir = possible[0].dir;
-
-			possible.clear();
 		}
-		else
-		{
-			local_area->traps.pop_back();
-			delete t;
-			return nullptr;
-		}
-	}
-	else if(type == TRAP_SPEAR)
-	{
-		trap.obj.rot = Vec3(0, Random(MAX_ANGLE), 0);
-		trap.obj2.base = nullptr;
-		trap.obj2.mesh = trap.base->mesh2;
-		trap.obj2.pos = trap.obj.pos;
-		trap.obj2.rot = trap.obj.rot;
-		trap.obj2.scale = 1.f;
-		trap.obj2.pos.y -= 2.f;
+		break;
+	case TRAP_SPEAR:
+		trap.rot = Random(MAX_ANGLE);
 		trap.hitted = new vector<Unit*>;
-	}
-	else if(type == TRAP_FIREBALL)
-		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
-
-	if(timed)
-	{
-		trap.state = -1;
-		trap.time = 2.f;
+		break;
+	case TRAP_FIREBALL:
+		trap.rot = PI / 2 * (Rand() % 4);
+		break;
+	case TRAP_BEAR:
+		trap.rot = Random(MAX_ANGLE);
+		break;
 	}
 
 	trap.Register();
 	return &trap;
+}
+
+//=================================================================================================
+Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
+{
+	Trap* t = new Trap;
+	Trap& trap = *t;
+	GetArea(pos).traps.push_back(t);
+
+	BaseTrap& base = BaseTrap::traps[type];
+	trap.id = id;
+	trap.Register();
+	trap.base = &base;
+	trap.meshInst = nullptr;
+	trap.hitted = nullptr;
+	trap.state = 0;
+	trap.attack = 0;
+	trap.pos = pos;
+	trap.mpTrigger = false;
+
+	switch(type)
+	{
+	case TRAP_ARROW:
+	case TRAP_POISON:
+		assert(0); // TODO
+		break;
+	case TRAP_SPEAR:
+		trap.rot = Random(MAX_ANGLE);
+		trap.hitted = new vector<Unit*>;
+		break;
+	case TRAP_FIREBALL:
+		trap.rot = PI / 2 * (Rand() % 4);
+		break;
+	case TRAP_BEAR:
+		trap.rot = Random(MAX_ANGLE);
+		break;
+	}
+
+	game_res->LoadTrap(trap.base);
+	if(trap.base->mesh->IsAnimated())
+		trap.meshInst = new MeshInstance(trap.base->mesh);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CREATE_TRAP;
+		c.e_id = trap.id;
+		c.id = type;
+		c.pos = pos;
+	}
+
+	return t;
 }
 
 //=================================================================================================
@@ -3274,6 +3393,9 @@ void Level::CheckIfLocationCleared()
 
 	if(is_clear)
 	{
+		if(location->state != LS_HIDDEN)
+			location->state = LS_CLEARED;
+
 		// events v1
 		bool prevent = false;
 		if(event_handler)
@@ -3721,6 +3843,9 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 //=================================================================================================
 bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door, void* ignore)
 {
+	if(v1.XZ().Equal(v2.XZ()))
+		return true;
+
 	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
 		tile2(int(v2.x / 2), int(v2.z / 2));
 
@@ -3829,33 +3954,11 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 }
 
 //=================================================================================================
-bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
+void Level::KillAll(bool friendly, Unit& unit, Unit* ignore)
 {
-	if(!InRange(mode, 0, 1))
-		return false;
-
-	if(!Net::IsLocal())
+	if(friendly)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHEAT_KILLALL;
-		c.id = mode;
-		c.unit = ignore;
-		return true;
-	}
-
-	switch(mode)
-	{
-	case 0: // kill enemies
-		for(LevelArea& area : ForEachArea())
-		{
-			for(Unit* u : area.units)
-			{
-				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
-					u->GiveDmg(u->hp);
-			}
-		}
-		break;
-	case 1: // kill all except player/ignore
+		// kill all except player/ignore
 		for(LevelArea& area : ForEachArea())
 		{
 			for(Unit* u : area.units)
@@ -3864,10 +3967,19 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 					u->GiveDmg(u->hp);
 			}
 		}
-		break;
 	}
-
-	return true;
+	else
+	{
+		// kill enemies
+		for(LevelArea& area : ForEachArea())
+		{
+			for(Unit* u : area.units)
+			{
+				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
+					u->GiveDmg(u->hp);
+			}
+		}
+	}
 }
 
 //=================================================================================================
@@ -3989,6 +4101,12 @@ bool Level::IsVillage()
 bool Level::IsTutorial()
 {
 	return location->type == L_DUNGEON && location->target == TUTORIAL_FORT;
+}
+
+//=================================================================================================
+bool Level::IsOutside()
+{
+	return location->outside;
 }
 
 //=================================================================================================
@@ -4189,9 +4307,9 @@ Unit* Level::GetNearestEnemy(Unit* unit)
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range)
+Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range, int level)
 {
-	return SpawnUnitNearLocation(GetArea(pos), pos, *ud, nullptr, -1, range);
+	return SpawnUnitNearLocation(GetArea(pos), pos, *ud, nullptr, level, range);
 }
 
 //=================================================================================================
@@ -4500,10 +4618,10 @@ void Level::SpawnUnitEffect(Unit& unit)
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = game_res->tSpawn;
-	pe->emision_interval = 0.1f;
+	pe->emission_interval = 0.1f;
 	pe->life = 5.f;
 	pe->particle_life = 0.5f;
-	pe->emisions = 5;
+	pe->emissions = 5;
 	pe->spawn_min = 10;
 	pe->spawn_max = 15;
 	pe->max_particles = 15 * 5;
@@ -4567,6 +4685,15 @@ Room* Level::GetRoom(RoomTarget target)
 			return room;
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+Room* Level::GetFarRoom()
+{
+	if(!lvl)
+		return nullptr;
+	InsideLocation* inside = static_cast<InsideLocation*>(location);
+	return &lvl->GetFarRoom(inside->HaveNextEntry(), true);
 }
 
 //=================================================================================================
@@ -4764,6 +4891,17 @@ void Level::CreateObjectsMeshInstance()
 
 		for(Chest* chest : area.chests)
 			chest->Recreate();
+
+		for(Trap* trap : area.traps)
+		{
+			if(trap->base->mesh->IsAnimated())
+			{
+				if(trap->meshInst)
+					trap->meshInst->ApplyPreload(trap->base->mesh);
+				else
+					trap->meshInst = new MeshInstance(trap->base->mesh);
+			}
+		}
 	}
 }
 
@@ -4820,6 +4958,20 @@ void Level::RecreateTmpObjectPhysics()
 }
 
 //=================================================================================================
+Vec3 Level::GetSpawnCenter()
+{
+	Vec3 pos(Vec3::Zero);
+	int count = 0;
+	for(Unit* unit : local_area->units)
+	{
+		pos += unit->pos;
+		++count;
+	}
+	pos /= (float)count;
+	return pos;
+}
+
+//=================================================================================================
 void Level::StartBossFight(Unit& unit)
 {
 	boss = &unit;
@@ -4841,4 +4993,72 @@ void Level::EndBossFight()
 	game->SetMusic();
 	if(Net::IsServer())
 		Net::PushChange(NetChange::BOSS_END);
+}
+
+//=================================================================================================
+void Level::CreateSpellParticleEffect(LevelArea* area, Ability* ability, const Vec3& pos, const Vec2& bounds)
+{
+	assert(ability);
+
+	if(!area)
+		area = &GetArea(pos);
+
+	ParticleEmitter* pe = new ParticleEmitter;
+	pe->tex = ability->tex_particle;
+	pe->emission_interval = 0.01f;
+	pe->life = 0.f;
+	pe->particle_life = 0.5f;
+	pe->emissions = 1;
+	pe->pos = pos;
+	switch(ability->effect)
+	{
+	case Ability::Raise:
+		pe->spawn_min = 16;
+		pe->spawn_max = 25;
+		pe->max_particles = 25;
+		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+		pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
+		pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+		pe->size = ability->size_particle;
+		pe->alpha = 1.f;
+		break;
+	case Ability::Heal:
+		pe->spawn_min = 16;
+		pe->spawn_max = 25;
+		pe->max_particles = 25;
+		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+		pe->pos_min = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+		pe->pos_max = Vec3(bounds.x, bounds.y / 2, bounds.x);
+		pe->size = ability->size_particle;
+		pe->alpha = 0.9f;
+		break;
+	default:
+		pe->spawn_min = 12;
+		pe->spawn_max = 12;
+		pe->max_particles = 12;
+		pe->speed_min = Vec3(-0.5f, 1.5f, -0.5f);
+		pe->speed_max = Vec3(0.5f, 3.0f, 0.5f);
+		pe->pos_min = Vec3(-0.5f, 0, -0.5f);
+		pe->pos_max = Vec3(0.5f, 0, 0.5f);
+		pe->size = ability->size_particle / 2;
+		pe->alpha = 1.f;
+		break;
+	}
+	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->mode = 1;
+	pe->Init();
+	area->tmp->pes.push_back(pe);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::PARTICLE_EFFECT;
+		c.ability = ability;
+		c.pos = pos;
+		c.extra_fs[0] = bounds.x;
+		c.extra_fs[1] = bounds.y;
+	}
 }

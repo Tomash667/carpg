@@ -23,12 +23,6 @@ void InsideLocation::Load(GameReader& f)
 		f >> target;
 	f >> special_room;
 	f >> from_portal;
-
-	if(LOAD_VERSION < V_0_8)
-	{
-		if(target == ANCIENT_ARMORY)
-			state = LS_HIDDEN;
-	}
 }
 
 //=================================================================================================

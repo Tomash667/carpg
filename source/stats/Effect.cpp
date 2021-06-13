@@ -28,7 +28,9 @@ EffectInfo EffectInfo::effects[] = {
 	EffectInfo(EffectId::GreenHair, "green_hair", "turn hair green on consume"),
 	EffectInfo(EffectId::Mana, "mana", "modify max mp"),
 	EffectInfo(EffectId::RestoreMana, "restore_mana", "restore mana on consume"),
-	EffectInfo(EffectId::ManaRegeneration, "mana_regeneration", "regenerate mp")
+	EffectInfo(EffectId::ManaRegeneration, "mana_regeneration", "regenerate mp"),
+	EffectInfo(EffectId::Rooted, "rooted", "unit can't move"),
+	EffectInfo(EffectId::SlowMove, "slow_move", "unit move speed is slowed")
 };
 
 EffectId EffectInfo::TryGet(const string& id)

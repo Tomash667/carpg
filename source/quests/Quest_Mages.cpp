@@ -42,7 +42,7 @@ void Quest_Mages::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[165]);
+			OnStart(quest_mgr->txQuest[165]);
 
 			targetLoc = world->GetClosestLocation(L_DUNGEON, startLoc->pos, { HERO_CRYPT, MONSTER_CRYPT });
 			targetLoc->active_quest = this;
@@ -55,8 +55,8 @@ void Quest_Mages::SetProgress(int prog2)
 			item_to_give[0] = Item::Get("q_magowie_kula");
 			spawn_item = Quest_Event::Item_InTreasure;
 
-			msgs.push_back(Format(game->txQuest[166], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[167], targetLoc->name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(quest_mgr->txQuest[166], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[167], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished:
@@ -72,19 +72,19 @@ void Quest_Mages::SetProgress(int prog2)
 			targetLoc->active_quest = nullptr;
 
 			team->AddReward(4000, 12000);
-			OnUpdate(game->txQuest[168]);
+			OnUpdate(quest_mgr->txQuest[168]);
 			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	case Progress::EncounteredGolem:
 		{
-			quest_mgr->quest_mages2->OnStart(game->txQuest[169]);
+			quest_mgr->quest_mages2->OnStart(quest_mgr->txQuest[169]);
 			Quest_Mages2* q = quest_mgr->quest_mages2;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
 			quest_mgr->AddQuestRumor(q->id, quest_mgr->txRumorQ[5]);
-			q->msgs.push_back(Format(game->txQuest[170], world->GetDate()));
-			q->msgs.push_back(game->txQuest[171]);
-			world->AddNews(game->txQuest[172]);
+			q->msgs.push_back(Format(quest_mgr->txQuest[170], world->GetDate()));
+			q->msgs.push_back(quest_mgr->txQuest[171]);
+			world->AddNews(quest_mgr->txQuest[172]);
 		}
 		break;
 	}
@@ -193,7 +193,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			Location* ml = world->GetRandomSettlement(startLoc);
 			mage_loc = ml->index;
 
-			OnUpdate(Format(game->txQuest[173], startLoc->name.c_str(), ml->name.c_str(), GetLocationDirName(startLoc->pos, ml->pos)));
+			OnUpdate(Format(quest_mgr->txQuest[173], startLoc->name.c_str(), ml->name.c_str(), GetLocationDirName(startLoc->pos, ml->pos)));
 
 			mages_state = State::TalkedWithCaptain;
 			team->AddExp(2500);
@@ -201,7 +201,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		break;
 	case Progress::MageWantsBeer:
 		{
-			OnUpdate(Format(game->txQuest[174], DialogContext::current->talker->hero->name.c_str()));
+			OnUpdate(Format(quest_mgr->txQuest[174], DialogContext::current->talker->hero->name.c_str()));
 		}
 		break;
 	case Progress::MageWantsVodka:
@@ -210,9 +210,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(beer, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(beer->ToConsumable());
-			DialogContext::current->dialog_wait = 2.5f;
-			DialogContext::current->can_skip = false;
-			OnUpdate(game->txQuest[175]);
+			DialogContext::current->Wait(2.5f);
+			OnUpdate(quest_mgr->txQuest[175]);
 		}
 		break;
 	case Progress::GivenVodka:
@@ -221,9 +220,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(vodka, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(vodka->ToConsumable());
-			DialogContext::current->dialog_wait = 2.5f;
-			DialogContext::current->can_skip = false;
-			OnUpdate(game->txQuest[176]);
+			DialogContext::current->Wait(2.5f);
+			OnUpdate(quest_mgr->txQuest[176]);
 		}
 		break;
 	case Progress::GotoTower:
@@ -234,7 +232,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.SetKnown();
 			targetLoc = &loc;
 			team->AddMember(DialogContext::current->talker, HeroType::Free);
-			OnUpdate(Format(game->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
+			OnUpdate(Format(quest_mgr->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(world->GetCurrentLocation()->pos, targetLoc->pos), world->GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
 			timer = 0.f;
@@ -244,20 +242,20 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageTalkedAboutTower:
 		{
 			mages_state = State::OldMageRemembers;
-			OnUpdate(Format(game->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
+			OnUpdate(Format(quest_mgr->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
 			team->AddExp(1000);
 		}
 		break;
 	case Progress::TalkedWithCaptain:
 		{
 			mages_state = State::BuyPotion;
-			OnUpdate(game->txQuest[179]);
+			OnUpdate(quest_mgr->txQuest[179]);
 		}
 		break;
 	case Progress::BoughtPotion:
 		{
 			if(prog != Progress::BoughtPotion)
-				OnUpdate(game->txQuest[180]);
+				OnUpdate(quest_mgr->txQuest[180]);
 			const Item* item = Item::Get("q_magowie_potion");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 0u);
 			DialogContext::current->pc->unit->ModGold(-150);
@@ -269,10 +267,9 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(mikstura->ToConsumable());
-			DialogContext::current->dialog_wait = 3.f;
-			DialogContext::current->can_skip = false;
+			DialogContext::current->Wait(3.f);
 			mages_state = State::MageCured;
-			OnUpdate(game->txQuest[181]);
+			OnUpdate(quest_mgr->txQuest[181]);
 			targetLoc->active_quest = nullptr;
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), MAGE_TOWER);
 			loc.group = UnitGroup::Get("mages_and_golems");
@@ -313,7 +310,7 @@ void Quest_Mages2::SetProgress(int prog2)
 
 			targetLoc->SetKnown();
 
-			OnUpdate(Format(game->txQuest[182], u->hero->name.c_str(), evil_mage_name.c_str(), targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+			OnUpdate(Format(quest_mgr->txQuest[182], u->hero->name.c_str(), evil_mage_name.c_str(), targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 		}
 		break;
 	case Progress::RecruitMage:
@@ -323,11 +320,11 @@ void Quest_Mages2::SetProgress(int prog2)
 			if(prog == Progress::MageDrinkPotion)
 			{
 				targetLoc->SetKnown();
-				OnUpdate(Format(game->txQuest[183], u->hero->name.c_str(), evil_mage_name.c_str(), targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+				OnUpdate(Format(quest_mgr->txQuest[183], u->hero->name.c_str(), evil_mage_name.c_str(), targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			}
 			else
 			{
-				OnUpdate(Format(game->txQuest[184], u->hero->name.c_str()));
+				OnUpdate(Format(quest_mgr->txQuest[184], u->hero->name.c_str()));
 				good_mage_name = u->hero->name;
 				team->AddMember(u, HeroType::Free);
 			}
@@ -340,14 +337,14 @@ void Quest_Mages2::SetProgress(int prog2)
 			if(mages_state == State::MageRecruited)
 				scholar->OrderAutoTalk();
 			mages_state = State::Completed;
-			OnUpdate(game->txQuest[185]);
-			world->AddNews(game->txQuest[186]);
+			OnUpdate(quest_mgr->txQuest[185]);
+			world->AddNews(quest_mgr->txQuest[186]);
 			team->AddLearningPoint();
 		}
 		break;
 	case Progress::TalkedWithMage:
 		{
-			OnUpdate(Format(game->txQuest[187], DialogContext::current->talker->hero->name.c_str(), evil_mage_name.c_str()));
+			OnUpdate(Format(quest_mgr->txQuest[187], DialogContext::current->talker->hero->name.c_str(), evil_mage_name.c_str()));
 			Unit* u = DialogContext::current->talker;
 			team->RemoveMember(u);
 			u->OrderLeave();
@@ -365,7 +362,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			}
 			world->RemoveGlobalEncounter(this);
 			team->AddReward(10000, 25000);
-			OnUpdate(game->txQuest[188]);
+			OnUpdate(quest_mgr->txQuest[188]);
 			quest_mgr->EndUniqueQuest();
 			quest_mgr->RemoveQuestRumor(id);
 		}
@@ -508,7 +505,7 @@ Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Mages2::OnEncounter);
 		globalEnc->chance = 33;
 		globalEnc->quest = this;
-		globalEnc->text = game->txQuest[215];
+		globalEnc->text = quest_mgr->txQuest[215];
 		world->AddGlobalEncounter(globalEnc);
 	}
 
@@ -541,7 +538,7 @@ void Quest_Mages2::OnProgress(int d)
 			globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Mages2::OnEncounter);
 			globalEnc->chance = 33;
 			globalEnc->quest = this;
-			globalEnc->text = game->txQuest[215];
+			globalEnc->text = quest_mgr->txQuest[215];
 			world->AddGlobalEncounter(globalEnc);
 		}
 	}

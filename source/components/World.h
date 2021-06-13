@@ -1,9 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Date.h"
+#include "GameCommon.h"
 #include "Location.h"
 #include "UnitGroup.h"
-#include "Date.h"
 
 //-----------------------------------------------------------------------------
 struct EncounterData
@@ -44,13 +45,6 @@ public:
 		ENCOUNTER // shown encounter message, waiting to close & load level (current_location is nullptr)
 	};
 
-	enum UpdateMode
-	{
-		UM_NORMAL,
-		UM_TRAVEL,
-		UM_SKIP
-	};
-
 	static const float TRAVEL_SPEED;
 	static const float MAP_KM_RATIO;
 	static const int TILE_SIZE = 30;
@@ -72,7 +66,6 @@ public:
 	// save/load
 	void Save(GameWriter& f);
 	void Load(GameReader& f, LoadingHandler& loading);
-	void LoadOld(GameReader& f, LoadingHandler& loading, int part, bool inside);
 	void Write(BitStreamWriter& f);
 	void WriteTime(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
@@ -185,6 +178,7 @@ public:
 	int& GetTileSt(const Vec2& pos);
 
 	// offscreen
+	OffscreenLocation* GetOffscreenLocation() { return offscreen_loc; }
 	Unit* CreateUnit(UnitData* data, int level = -1);
 
 private:

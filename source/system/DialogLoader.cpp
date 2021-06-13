@@ -66,6 +66,7 @@ void DialogLoader::DoLoading()
 {
 	quest = nullptr;
 	scripts = &DialogScripts::global;
+	loadingTexts = false;
 	bool require_id[2] = { true, false };
 	Load("dialogs.txt", G_TOP, require_id);
 }
@@ -1134,6 +1135,8 @@ void DialogLoader::LoadTexts()
 
 	t.AddKeyword("dialog", 0);
 
+	loadingTexts = true;
+
 	try
 	{
 		t.Next();
@@ -1170,6 +1173,7 @@ void DialogLoader::LoadTexts()
 bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 {
 	GameDialog* dialog = nullptr;
+	loadingTexts = true;
 
 	try
 	{
@@ -1185,6 +1189,8 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 			dialog = GameDialog::TryGet(id.c_str());
 			scripts = &DialogScripts::global;
 		}
+		quest = scheme;
+		current_dialog = dialog;
 		if(!dialog)
 			t.Throw("Missing dialog '%s'.", id.c_str());
 
@@ -1244,7 +1250,7 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 		{
 			if(!t.exists)
 			{
-				LoadError("Dialog '%s' is missing text for index %d.", dialog->id.c_str(), index);
+				LoadError("Missing text for index %d.", index);
 				ok = false;
 			}
 			++index;
@@ -1254,10 +1260,7 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 	}
 	catch(Tokenizer::Exception& e)
 	{
-		if(dialog)
-			LoadError("Failed to load dialog '%s' texts: %s", dialog->id.c_str(), e.ToString());
-		else
-			LoadError("Failed to load dialog texts: %s", e.ToString());
+		LoadError(e.ToString());
 		return false;
 	}
 }
@@ -1316,4 +1319,23 @@ void DialogLoader::CheckDialogText(GameDialog* dialog, int index, DialogScripts*
 
 	if(replaced)
 		str = (string&)result;
+}
+
+//=================================================================================================
+cstring DialogLoader::GetEntityName()
+{
+	if(loadingTexts)
+	{
+		if(current_dialog)
+		{
+			if(quest)
+				return Format("quest '%s' dialog '%s' texts", quest->id.c_str(), current_dialog->id.c_str());
+			else
+				return Format("dialog '%s' texts", current_dialog->id.c_str());
+		}
+		else
+			return "dialog texts";
+	}
+	else
+		return ContentLoader::GetEntityName();
 }

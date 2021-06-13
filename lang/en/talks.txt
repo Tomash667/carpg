@@ -241,6 +241,7 @@ teamTooBig = "Your team is already numerous enough."
 heroJoined = "Take %s with you, he will help you with the challenges ahead."
 cantLearnAbility = "You are not ready to learn that. Come back when your skills improve."
 spell = "Spell"
+ability = "Ability"
 cantLearnSkill = "You lack the basics to train yourself in this skill."
 
 // yelling

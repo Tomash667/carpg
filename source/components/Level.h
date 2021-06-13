@@ -67,11 +67,13 @@ public:
 	Usable* FindUsable(int id);
 	Door* FindDoor(int id);
 	Trap* FindTrap(int id);
+	Trap* FindTrap(BaseTrap* base, const Vec3& pos);
 	Chest* FindChest(int id);
 	Chest* GetRandomChest(Room& room);
 	Chest* GetTreasureChest();
 	Electro* FindElectro(int id);
 	bool RemoveTrap(int id);
+	void RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed);
 	void RemoveUnit(Unit* unit, bool notify = true);
 	void RemoveUnit(UnitData* ud, bool on_leave);
 	// for object rot must be 0, PI/2, PI or PI*3/2
@@ -107,8 +109,9 @@ public:
 	Unit* CreateUnit(UnitData& base, int level = -1, bool create_physics = true);
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, const Vec3* pos = nullptr, const float* rot = nullptr);
 	Vec3 FindSpawnPos(Room* room, Unit* unit);
+	Vec3 FindSpawnPos(LevelArea& area, Unit* unit);
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
-	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit) { return SpawnUnitInsideRoom(room, unit); }
+	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit, int level = -1) { return SpawnUnitInsideRoom(room, unit, level); }
 	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitData& unit, int level = -1);
@@ -139,7 +142,8 @@ public:
 	bool WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec3& pos, int tries = 10);
 	void WarpNearLocation(LevelArea& area, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	// return pointer to temporary or nullptr (can fail only for arrow and poison traps)
-	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
+	Trap* CreateTrap(Int2 pt, TRAP_TYPE type);
+	Trap* CreateTrap(const Vec3& pos, TRAP_TYPE type, int id = -1);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	int GetDifficultyLevel() const;
 	int GetChestDifficultyLevel() const;
@@ -157,7 +161,7 @@ public:
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
 	bool CanSee(Unit& unit, Unit& unit2);
 	bool CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door = false, void* ignored = nullptr);
-	bool KillAll(int mode, Unit& unit, Unit* ignore);
+	void KillAll(bool friendly, Unit& unit, Unit* ignore);
 	void AddPlayerTeam(const Vec3& pos, float rot);
 	void UpdateDungeonMinimap(bool in_level);
 	void RevealMinimap();
@@ -165,6 +169,7 @@ public:
 	bool IsCity();
 	bool IsVillage();
 	bool IsTutorial();
+	bool IsOutside();
 	void Update();
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f, bool loaded_resources);
@@ -174,7 +179,7 @@ public:
 	GroundItem* SpawnItemAtObject(const Item* item, Object* obj);
 	void SpawnItemRandomly(const Item* item, uint count);
 	Unit* GetNearestEnemy(Unit* unit);
-	Unit* SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range);
+	Unit* SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range = 2.f, int level = -1);
 	GroundItem* FindNearestItem(const Item* item, const Vec3& pos);
 	GroundItem* FindItem(const Item* item);
 	Unit* GetMayor();
@@ -200,6 +205,7 @@ public:
 	}
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
+	Room* GetFarRoom();
 	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
 	CScriptArray* GetUnits(Room& room);
@@ -207,9 +213,12 @@ public:
 	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();
 	void RecreateTmpObjectPhysics();
+	Vec3 GetSpawnCenter();
 	// --- boss
 	void StartBossFight(Unit& unit);
 	void EndBossFight();
+	// ---
+	void CreateSpellParticleEffect(LevelArea* area, Ability* ability, const Vec3& pos, const Vec2& bounds);
 
 	Location* location; // same as world->current_location
 	int location_index; // same as world->current_location_index

@@ -48,6 +48,7 @@ namespace LocationHelper
 
 	LevelArea* GetArea(Location* loc);
 	LevelArea* GetArea(Location* loc, int index);
+	LevelArea* GetBuildingArea(Location* loc, const string& name);
 	Unit* GetMayor(Location* loc);
 	Unit* GetCaptain(Location* loc);
 	Unit* FindQuestUnit(Location* loc, Quest* quest);

@@ -2,7 +2,7 @@
 #include "Quest_KillAnimals.h"
 
 #include "City.h"
-#include "Game.h"
+#include "DialogContext.h"
 #include "ItemHelper.h"
 #include "Journal.h"
 #include "LocationHelper.h"
@@ -110,7 +110,7 @@ void Quest_KillAnimals::SaveDetails(GameWriter& f)
 //=================================================================================================
 Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 		Quest2::Load(f);
 	else
 	{

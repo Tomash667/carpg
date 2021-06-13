@@ -195,9 +195,10 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	if(!scheme)
 		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
 	f >> timeout_days;
+	isNew = true;
 
 	// fix for not initializing category for 'side_cleric' quest
-	if(LOAD_VERSION <= V_MAIN)
+	if(LOAD_VERSION <= V_0_17)
 		category = scheme->category;
 
 	if(prog == -1)
@@ -567,6 +568,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	data.vars = new Vars;
 	quest->GetConversionData(data);
 	scheme = QuestScheme::TryGet(data.id);
+	isNew = true;
 	if(!scheme || !scheme->f_upgrade)
 		throw Format("Missing upgrade quest '%s'.", data.id);
 

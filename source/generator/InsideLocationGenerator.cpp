@@ -1179,16 +1179,15 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					continue;
 
 				gold += u.gold;
+				array<const Item*, SLOT_MAX>& equipped = u.GetEquippedItems();
 				for(int i = 0; i < SLOT_MAX; ++i)
 				{
-					if(u.slots[i] && u.slots[i]->GetWeightValue() >= 5.f)
+					if(equipped[i] && equipped[i]->GetWeightValue() >= 5.f)
 					{
 						ItemSlot& slot = Add1(items);
-						slot.item = u.slots[i];
+						slot.item = equipped[i];
 						slot.count = slot.team_count = 1u;
-						u.weight -= u.slots[i]->weight;
-						u.RemoveItemEffects(u.slots[i], (ITEM_SLOT)i);
-						u.slots[i] = nullptr;
+						u.RemoveEquippedItem((ITEM_SLOT)i);
 					}
 				}
 				for(vector<ItemSlot>::iterator it3 = u.items.begin(), end3 = u.items.end(); it3 != end3;)

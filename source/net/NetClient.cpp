@@ -343,17 +343,10 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
 			break;
-		case NetChange::CHEAT_WARP:
-			f.WriteCasted<byte>(c.id);
-			f.Write(c.count != 0);
-			break;
 		case NetChange::CHEAT_WARP_TO_ENTRY:
 		case NetChange::CHEAT_CHANGE_LEVEL:
 		case NetChange::CHEAT_NOAI:
 		case NetChange::PVP:
-		case NetChange::CHEAT_GODMODE:
-		case NetChange::CHEAT_INVISIBLE:
-		case NetChange::CHEAT_NOCLIP:
 		case NetChange::CHANGE_ALWAYS_RUN:
 			f << (c.id != 0);
 			break;
@@ -362,33 +355,21 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::TALK:
 		case NetChange::USE_CHEST:
 		case NetChange::SKIP_DIALOG:
-		case NetChange::CHEAT_SKIP_DAYS:
 		case NetChange::PAY_CREDIT:
 		case NetChange::DROP_GOLD:
 		case NetChange::TAKE_ITEM_CREDIT:
 		case NetChange::CLEAN_LEVEL:
 			f << c.id;
 			break;
-		case NetChange::CHEAT_ADD_GOLD:
-			f << (c.id == 1);
-			f << c.count;
-			break;
 		case NetChange::STOP_TRADE:
 		case NetChange::GET_ALL_ITEMS:
 		case NetChange::EXIT_BUILDING:
 		case NetChange::WARP:
-		case NetChange::CHEAT_SUICIDE:
-		case NetChange::STAND_UP:
-		case NetChange::CHEAT_SCARE:
-		case NetChange::CHEAT_CITIZEN:
-		case NetChange::CHEAT_HEAL:
-		case NetChange::CHEAT_REVEAL:
 		case NetChange::CHEAT_GOTO_MAP:
 		case NetChange::CHEAT_REVEAL_MINIMAP:
 		case NetChange::ENTER_LOCATION:
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
-		case NetChange::CHEAT_REFRESH_COOLDOWN:
 		case NetChange::END_FALLBACK:
 		case NetChange::END_TRAVEL:
 		case NetChange::CUTSCENE_SKIP:
@@ -399,17 +380,6 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::USE_USABLE:
 			f << c.id;
 			f.WriteCasted<byte>(c.count);
-			break;
-		case NetChange::CHEAT_KILLALL:
-			f << (c.unit ? c.unit->id : -1);
-			f.WriteCasted<byte>(c.id);
-			break;
-		case NetChange::CHEAT_KILL:
-		case NetChange::CHEAT_HEAL_UNIT:
-		case NetChange::CHEAT_HURT:
-		case NetChange::CHEAT_BREAK_ACTION:
-		case NetChange::CHEAT_FALL:
-			f << c.unit->id;
 			break;
 		case NetChange::CHEAT_ADD_ITEM:
 			f << c.base_item->id;
@@ -452,10 +422,6 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f << (c.unit ? c.unit->id : -1);
 			f << c.pos;
 			f << c.ability->hash;
-			break;
-		case NetChange::CHEAT_STUN:
-			f << c.unit->id;
-			f << c.f[0];
 			break;
 		case NetChange::RUN_SCRIPT:
 			f.WriteString4(*c.str);
@@ -605,25 +571,21 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::CHANGE_EQUIPMENT:
 			{
 				int id;
-				ITEM_SLOT type;
+				ITEM_SLOT slot;
 				const Item* item;
 				f >> id;
-				f.ReadCasted<byte>(type);
+				f.ReadCasted<byte>(slot);
 				if(!f || f.ReadItemAndFind(item) < 0)
 					Error("Update client: Broken CHANGE_EQUIPMENT.");
-				else if(!IsValid(type))
-					Error("Update client: CHANGE_EQUIPMENT, invalid slot %d.", type);
+				else if(!IsValid(slot))
+					Error("Update client: CHANGE_EQUIPMENT, invalid slot %d.", slot);
 				else if(game->game_state == GS_LEVEL)
 				{
 					Unit* target = game_level->FindUnit(id);
 					if(!target)
 						Error("Update client: CHANGE_EQUIPMENT, missing unit %d.", id);
 					else
-					{
-						if(item)
-							game_res->PreloadItem(item);
-						target->slots[type] = item;
-					}
+						target->ReplaceItem(slot, item);
 				}
 			}
 			break;
@@ -722,16 +684,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit.action == A_SHOOT && unit.animation_state == AS_SHOOT_PREPARE)
 						unit.animation_state = AS_SHOOT_CAN;
 					else
-					{
-						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
-						unit.action = A_SHOOT;
-						unit.animation_state = (type == AID_Shoot ? AS_SHOOT_CAN : AS_SHOOT_PREPARE);
-						if(!unit.bow_instance)
-							unit.bow_instance = game_level->GetBowInstance(unit.GetBow().mesh);
-						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-						unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[group].speed;
-					}
+						unit.DoRangedAttack(type == AID_StartShoot, false, attack_speed);
 					break;
 				case AID_Block:
 					unit.action = A_BLOCK;
@@ -868,10 +821,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = game_res->tBlood[type];
-					pe->emision_interval = 0.01f;
+					pe->emission_interval = 0.01f;
 					pe->life = 5.f;
 					pe->particle_life = 0.5f;
-					pe->emisions = 1;
+					pe->emissions = 1;
 					pe->spawn_min = 10;
 					pe->spawn_max = 15;
 					pe->max_particles = 15;
@@ -928,6 +881,23 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						}
 						game->PlayAttachedSound(*unit, sound, dist);
 					}
+				}
+			}
+			break;
+		// play unit misc sound
+		case NetChange::UNIT_MISC_SOUND:
+			{
+				int id;
+				f >> id;
+				if(!f)
+					Error("Update client: Broken UNIT_MISC_SOUND.");
+				else if(game->game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(id);
+					if(!unit)
+						Error("Update client: UNIT_MISC_SOUND, missing unit %d.", id);
+					else
+						unit->PlaySound(game_res->sCoughs, Unit::COUGHS_SOUND_DIST);
 				}
 			}
 			break;
@@ -1127,7 +1097,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// create shooted arrow
 		case NetChange::SHOOT_ARROW:
 			{
-				int id, ownerId;
+				int id, ownerId, abilityHash;
 				Vec3 pos;
 				float rotX, rotY, speed, speedY;
 				f >> id;
@@ -1137,6 +1107,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				f >> rotY;
 				f >> speed;
 				f >> speedY;
+				f >> abilityHash;
 				if(!f)
 					Error("Update client: Broken SHOOT_ARROW.");
 				else if(game->game_state == GS_LEVEL)
@@ -1154,6 +1125,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						}
 					}
 
+					Ability* ability = nullptr;
+					if(abilityHash != 0)
+					{
+						ability = Ability::Get(abilityHash);
+						if(!ability)
+						{
+							Error("Update client: SHOOT_ARROW, missing ability %d.", abilityHash);
+							break;
+						}
+					}
+
 					LevelArea& area = game_level->GetArea(pos);
 
 					Bullet* bullet = new Bullet;
@@ -1161,6 +1143,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 					bullet->id = id;
 					bullet->Register();
+					bullet->isArrow = true;
 					bullet->mesh = game_res->aArrow;
 					bullet->pos = pos;
 					bullet->start_pos = pos;
@@ -1169,21 +1152,33 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					bullet->owner = nullptr;
 					bullet->pe = nullptr;
 					bullet->speed = speed;
-					bullet->ability = nullptr;
+					bullet->ability = ability;
 					bullet->tex = nullptr;
 					bullet->tex_size = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->owner = owner;
 
+					if(bullet->ability && bullet->ability->mesh)
+						bullet->mesh = bullet->ability->mesh;
+
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
-					tpe->color1 = Vec4(1, 1, 1, 0.5f);
-					tpe->color2 = Vec4(1, 1, 1, 0);
+					if(bullet->ability)
+					{
+						tpe->color1 = bullet->ability->color;
+						tpe->color2 = tpe->color1;
+						tpe->color2.w = 0;
+					}
+					else
+					{
+						tpe->color1 = Vec4(1, 1, 1, 0.5f);
+						tpe->color2 = Vec4(1, 1, 1, 0);
+					}
 					tpe->Init(50);
 					area.tmp->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, ARROW_HIT_SOUND_DIST);
+					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -1257,11 +1252,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// unit talks
 		case NetChange::TALK:
 			{
-				int id, skip_id;
+				int id, skipId;
 				byte animation;
 				f >> id;
 				f >> animation;
-				f >> skip_id;
+				f >> skipId;
 				const string& text = f.ReadString1();
 				if(!f)
 					Error("Update client: Broken TALK.");
@@ -1271,30 +1266,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(!unit)
 						Error("Update client: TALK, missing unit %d.", id);
 					else
-					{
-						game_gui->level_gui->AddSpeechBubble(unit, text.c_str());
-						unit->bubble->skip_id = skip_id;
-
-						if(animation != 0)
-						{
-							unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-							unit->animation = ANI_PLAY;
-							unit->action = A_ANIMATION;
-						}
-
-						if(game->dialog_context.dialog_mode && game->dialog_context.talker == unit)
-						{
-							game->dialog_context.dialog_s_text = text;
-							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
-							game->dialog_context.dialog_wait = 1.f;
-							game->dialog_context.skip_id = skip_id;
-						}
-						else if(pc.action == PlayerAction::Talk && pc.action_unit == unit)
-						{
-							game->predialog = text;
-							game->dialog_context.skip_id = skip_id;
-						}
-					}
+						game->dialog_context.ClientTalk(unit, text, skipId, animation);
 				}
 			}
 			break;
@@ -1763,7 +1735,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Unit* unit = game_level->FindUnit(id);
 					if(!unit)
 						Error("Update client: STAND_UP, missing unit %d.", id);
-					else if(!unit->IsLocalPlayer())
+					else
 						unit->Standup(false);
 				}
 			}
@@ -2023,6 +1995,21 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability->id.c_str());
 				else
 					game_level->GetArea(pos).CreateExplo(ability, pos);
+			}
+			break;
+		// create trap
+		case NetChange::CREATE_TRAP:
+			{
+				int id;
+				TRAP_TYPE type;
+				Vec3 pos;
+				f >> id;
+				f.ReadCasted<byte>(type);
+				f >> pos;
+				if(!f)
+					Error("Update client: Broken CREATE_TRAP.");
+				else
+					game_level->CreateTrap(pos, type, id);
 			}
 			break;
 		// remove trap
@@ -2330,6 +2317,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				bullet->id = id;
 				bullet->Register();
+				bullet->isArrow = false;
 				bullet->pos = pos;
 				bullet->rot = Vec3(0, rotY, 0);
 				bullet->mesh = ability.mesh;
@@ -2348,10 +2336,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.1f;
+					pe->emission_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
-					pe->emisions = -1;
+					pe->emissions = -1;
 					pe->spawn_min = 3;
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
@@ -2374,8 +2362,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				int ability_hash;
+				int type, ability_hash;
 				Vec3 pos;
+				f >> type;
 				f >> ability_hash;
 				f >> pos;
 				if(!f)
@@ -2390,8 +2379,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				Ability* ability = Ability::Get(ability_hash);
 				if(!ability)
 					Error("Update client: SPELL_SOUND, missing ability %u.", ability_hash);
-				else
+				else if(type == 0)
 					sound_mgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);
+				else
+					sound_mgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
 			}
 			break;
 		// drain blood effect
@@ -2492,10 +2483,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
 						pe->tex = ability->tex_particle;
-						pe->emision_interval = 0.01f;
+						pe->emission_interval = 0.01f;
 						pe->life = 0.f;
 						pe->particle_life = 0.5f;
-						pe->emisions = 1;
+						pe->emissions = 1;
 						pe->spawn_min = 8;
 						pe->spawn_max = 12;
 						pe->max_particles = 12;
@@ -2516,76 +2507,21 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 			}
 			break;
-		// raise spell effect
-		case NetChange::RAISE_EFFECT:
+		// create particle effect
+		case NetChange::PARTICLE_EFFECT:
 			{
+				int abilityHash;
 				Vec3 pos;
+				Vec2 bounds;
+				f >> abilityHash;
 				f >> pos;
+				f >> bounds;
 				if(!f)
-					Error("Update client: Broken RAISE_EFFECT.");
-				else if(game->game_state == GS_LEVEL)
-				{
-					Ability& ability = *Ability::Get("raise");
-
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.01f;
-					pe->life = 0.f;
-					pe->particle_life = 0.5f;
-					pe->emisions = 1;
-					pe->spawn_min = 16;
-					pe->spawn_max = 25;
-					pe->max_particles = 25;
-					pe->pos = pos;
-					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-
-					game_level->GetArea(pos).tmp->pes.push_back(pe);
-				}
-			}
-			break;
-		// heal spell effect
-		case NetChange::HEAL_EFFECT:
-			{
-				Vec3 pos;
-				f >> pos;
-				if(!f)
-					Error("Update client: Broken HEAL_EFFECT.");
-				else if(game->game_state == GS_LEVEL)
-				{
-					Ability& ability = *Ability::Get("heal");
-
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.01f;
-					pe->life = 0.f;
-					pe->particle_life = 0.5f;
-					pe->emisions = 1;
-					pe->spawn_min = 16;
-					pe->spawn_max = 25;
-					pe->max_particles = 25;
-					pe->pos = pos;
-					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-
-					game_level->GetArea(pos).tmp->pes.push_back(pe);
-				}
+					Error("Update client: Broken PARTICLE_EFFECT.");
+				else if(Ability* ability = Ability::Get(abilityHash))
+					game_level->CreateSpellParticleEffect(nullptr, ability, pos, bounds);
+				else
+					Error("Update client: PARTICLE_EFFECT, missing ability %d.", abilityHash);
 			}
 			break;
 		// someone used cheat 'reveal_minimap'
@@ -2810,8 +2746,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			{
 				int id;
 				int ability_hash;
+				float speed;
 				f >> id;
 				f >> ability_hash;
+				f >> speed;
 				if(!f)
 				{
 					Error("Update client: Broken PLAYER_ABILITY.");
@@ -2829,34 +2767,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit && unit->player)
 					{
 						if(unit->player != game->pc)
-							unit->player->UseAbility(ability, true);
+						{
+							Vec3 speedV(speed, 0, 0);
+							unit->player->UseAbility(ability, true, &speedV);
+						}
 					}
 					else
 						Error("Update client: PLAYER_ABILITY, invalid player unit %d.", id);
-				}
-			}
-			break;
-		// unit stun - not shield bash
-		case NetChange::STUN:
-			{
-				int id;
-				float length;
-				f >> id;
-				f >> length;
-				if(!f)
-					Error("Update client: Broken STUN.");
-				else if(game->game_state == GS_LEVEL)
-				{
-					Unit* unit = game_level->FindUnit(id);
-					if(!unit)
-						Error("Update client: STUN, missing unit %d.", id);
-					else
-					{
-						if(length > 0)
-							unit->ApplyStun(length);
-						else
-							unit->RemoveEffect(EffectId::Stun);
-					}
 				}
 			}
 			break;
@@ -3053,14 +2970,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::REMOVE_BULLET:
 			{
 				int id;
+				bool hitUnit;
 				f >> id;
+				f >> hitUnit;
 				if(!f)
 					Error("Update client: Broken REMOVE_BULLET.");
 				else
 				{
 					Bullet* bullet = Bullet::GetById(id);
 					if(bullet)
-						bullet->timer = 0.1f;
+						bullet->timer = (hitUnit ? 0.f : 0.1f);
 				}
 			}
 			break;
@@ -3084,6 +3003,80 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// end boss fight
 		case NetChange::BOSS_END:
 			game_level->EndBossFight();
+			break;
+		// add investment
+		case NetChange::ADD_INVESTMENT:
+			{
+				int questId, gold;
+				f >> questId;
+				f >> gold;
+				const string& name = f.ReadString1();
+				if(!f)
+					Error("Update client: Broken ADD_INVESTMENT.");
+				else
+					team->AddInvestment(name.c_str(), questId, gold);
+			}
+			break;
+		// update investment
+		case NetChange::UPDATE_INVESTMENT:
+			{
+				int questId, gold;
+				f >> questId;
+				f >> gold;
+				if(!f)
+					Error("Update client: Broken UPDATE_INVESTMENT.");
+				else
+					team->UpdateInvestment(questId, gold);
+			}
+			break;
+		// add visible effect to unit
+		case NetChange::ADD_UNIT_EFFECT:
+			{
+				int unitId;
+				EffectId effect;
+				float time;
+				f >> unitId;
+				f.ReadCasted<byte>(effect);
+				f >> time;
+				if(!f)
+					Error("Update client: Broken ADD_UNIT_EFFECT.");
+				else
+				{
+					Unit* unit = game_level->FindUnit(unitId);
+					if(!unit)
+						Error("Update client: ADD_UNIT_EFFECT, missing unit %d.", unitId);
+					else if(unit != pc.unit)
+					{
+						Effect e;
+						e.effect = effect;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.value = (effect == EffectId::Rooted ? EffectValue_Rooted_Vines : EffectValue_Generic);
+						e.power = 0;
+						e.time = time;
+						unit->AddEffect(e);
+					}
+				}
+			}
+			break;
+		// remove visible effect from unit
+		case NetChange::REMOVE_UNIT_EFFECT:
+			{
+				int unitId;
+				EffectId effect;
+				f >> unitId;
+				f.ReadCasted<byte>(effect);
+				if(!f)
+					Error("Update client: Broken REMOVE_UNIT_EFFECT.");
+				else
+				{
+					Unit* unit = game_level->FindUnit(unitId);
+					if(!unit)
+						Error("Update client: REMOVE_UNIT_EFFECT, missing unit %d.", unitId);
+					else if(unit != pc.unit)
+						unit->RemoveEffect(effect);
+				}
+			}
 			break;
 		// invalid change
 		default:
@@ -3200,16 +3193,17 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				// read items
 				if(pc.action == PlayerAction::LootUnit)
 				{
+					array<const Item*, SLOT_MAX>& equipped = pc.action_unit->GetEquippedItems();
 					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 					{
 						const string& id = f.ReadString1();
 						if(id.empty())
-							pc.action_unit->slots[i] = nullptr;
+							equipped[i] = nullptr;
 						else
 						{
-							pc.action_unit->slots[i] = Item::TryGet(id);
-							if(pc.action_unit->slots[i])
-								game_res->PreloadItem(pc.action_unit->slots[i]);
+							equipped[i] = Item::TryGet(id);
+							if(equipped[i])
+								game_res->PreloadItem(equipped[i]);
 						}
 					}
 				}
@@ -3251,22 +3245,8 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					{
 						pc.action = PlayerAction::Talk;
 						pc.action_unit = unit;
-						game->dialog_context.StartDialog(unit);
-						if(!game->predialog.empty())
-						{
-							game->dialog_context.dialog_s_text = game->predialog;
-							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
-							game->dialog_context.dialog_wait = 1.f;
-							game->predialog.clear();
-						}
-						else if(unit->bubble)
-						{
-							game->dialog_context.dialog_s_text = unit->bubble->text;
-							game->dialog_context.dialog_text = game->dialog_context.dialog_s_text.c_str();
-							game->dialog_context.dialog_wait = 1.f;
-							game->dialog_context.skip_id = unit->bubble->skip_id;
-						}
 						pc.data.before_player = BP_NONE;
+						game->dialog_context.StartDialog(unit);
 					}
 				}
 			}
@@ -3291,20 +3271,23 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				}
 				else
 				{
-					game->dialog_context.choice_selected = 0;
-					game->dialog_context.show_choices = true;
-					game->dialog_context.dialog_esc = escape;
-					game->dialog_choices.resize(count);
+					DialogContext& ctx = game->dialog_context;
+					ctx.choice_selected = 0;
+					ctx.mode = DialogContext::WAIT_CHOICES;
+					ctx.dialog_esc = escape;
+					ctx.choices.resize(count);
 					for(byte i = 0; i < count; ++i)
 					{
-						f >> game->dialog_choices[i];
+						string* str = StringPool.Get();
+						f >> *str;
+						ctx.choices[i] = DialogChoice(str);
 						if(!f)
 						{
 							Error("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i);
 							break;
 						}
 					}
-					game_gui->level_gui->UpdateScrollbar(game->dialog_choices.size());
+					game_gui->level_gui->UpdateScrollbar(ctx.choices.size());
 				}
 			}
 			break;
@@ -3511,16 +3494,17 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f >> unit.gold;
 					f >> sub;
 					f >> unit.effects;
+					array<const Item*, SLOT_MAX>& equipped = unit.GetEquippedItems();
 					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 					{
 						const string& id = f.ReadString1();
 						if(id.empty())
-							unit.slots[i] = nullptr;
+							equipped[i] = nullptr;
 						else
 						{
-							unit.slots[i] = Item::TryGet(id);
-							if(unit.slots[i])
-								game_res->PreloadItem(unit.slots[i]);
+							equipped[i] = Item::TryGet(id);
+							if(equipped[i])
+								game_res->PreloadItem(equipped[i]);
 						}
 					}
 					unit.stats = unit.data->GetStats(sub);
@@ -3779,16 +3763,17 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					}
 					if(ok)
 					{
+						array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
 						for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 						{
 							const string& id = f.ReadString1();
 							if(id.empty())
-								unit->slots[i] = nullptr;
+								equipped[i] = nullptr;
 							else
 							{
-								unit->slots[i] = Item::TryGet(id);
-								if(unit->slots[i])
-									game_res->PreloadItem(unit->slots[i]);
+								equipped[i] = Item::TryGet(id);
+								if(equipped[i])
+									game_res->PreloadItem(equipped[i]);
 							}
 						}
 						if(!f.ReadItemListTeam(unit->items))
@@ -4178,17 +4163,10 @@ bool Net::FilterOut(NetChange& c)
 	case NetChange::REMOVE_PLAYER:
 	case NetChange::CHANGE_LEADER:
 	case NetChange::RANDOM_NUMBER:
-	case NetChange::CHEAT_SKIP_DAYS:
-	case NetChange::CHEAT_NOCLIP:
-	case NetChange::CHEAT_GODMODE:
-	case NetChange::CHEAT_INVISIBLE:
 	case NetChange::CHEAT_ADD_ITEM:
-	case NetChange::CHEAT_ADD_GOLD:
 	case NetChange::CHEAT_SET_STAT:
 	case NetChange::CHEAT_MOD_STAT:
-	case NetChange::CHEAT_REVEAL:
 	case NetChange::GAME_OVER:
-	case NetChange::CHEAT_CITIZEN:
 	case NetChange::WORLD_TIME:
 	case NetChange::ADD_LOCATION:
 	case NetChange::REMOVE_CAMP:
@@ -4304,6 +4282,7 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 	f >> game->noai;
 	game->pc->ReadStart(f);
 	f.ReadStringArray<word, word>(game_gui->journal->GetNotes());
+	team->ReadInvestments(f);
 	if(!f)
 		return false;
 
@@ -4426,6 +4405,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game_level->camera.target = unit;
 
 	// items
+	array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		const string& item_id = f.ReadString1();
@@ -4436,12 +4416,12 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 		}
 		if(!item_id.empty())
 		{
-			unit->slots[i] = Item::TryGet(item_id);
-			if(!unit->slots[i])
+			equipped[i] = Item::TryGet(item_id);
+			if(!equipped[i])
 				return false;
 		}
 		else
-			unit->slots[i] = nullptr;
+			equipped[i] = nullptr;
 	}
 	if(!f.ReadItemListTeam(unit->items))
 	{

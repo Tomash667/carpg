@@ -13,8 +13,10 @@ enum BUFF_FLAGS
 	BUFF_STAMINA = 1 << 6,
 	BUFF_STUN = 1 << 7,
 	BUFF_POISON_RES = 1 << 8,
+	BUFF_ROOTED = 1 << 9,
+	BUFF_SLOW_MOVE = 1 << 10,
 
-	BUFF_COUNT = 9
+	BUFF_COUNT = 11 // max 32
 };
 
 //-----------------------------------------------------------------------------

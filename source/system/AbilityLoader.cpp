@@ -2,6 +2,7 @@
 #include "AbilityLoader.h"
 
 #include "Ability.h"
+#include "BaseTrap.h"
 #include "GameResources.h"
 #include "UnitData.h"
 
@@ -51,7 +52,11 @@ enum Keyword
 	K_SKILL,
 	K_LEVEL,
 	K_ANIMATION,
-	K_COUNT
+	K_COUNT,
+	K_TIME,
+	K_COLOR,
+	K_TRAP_ID,
+	K_CAST_TIME
 };
 
 //=================================================================================================
@@ -102,7 +107,11 @@ void AbilityLoader::InitTokenizer()
 		{ "skill", K_SKILL },
 		{ "level", K_LEVEL },
 		{ "animation", K_ANIMATION },
-		{ "count", K_COUNT }
+		{ "count", K_COUNT },
+		{ "time", K_TIME },
+		{ "color", K_COLOR },
+		{ "trap_id", K_TRAP_ID },
+		{ "cast_time", K_CAST_TIME }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -113,7 +122,9 @@ void AbilityLoader::InitTokenizer()
 		{ "charge", Ability::Charge },
 		{ "summon", Ability::Summon },
 		{ "aggro", Ability::Aggro },
-		{ "summon_away", Ability::SummonAway }
+		{ "summon_away", Ability::SummonAway },
+		{ "ranged_attack", Ability::RangedAttack },
+		{ "trap", Ability::Trap }
 		});
 
 	t.AddKeywords(G_EFFECT, {
@@ -121,7 +132,8 @@ void AbilityLoader::InitTokenizer()
 		{ "raise", Ability::Raise },
 		{ "drain", Ability::Drain },
 		{ "electro", Ability::Electro },
-		{ "stun", Ability::Stun }
+		{ "stun", Ability::Stun },
+		{ "rooted", Ability::Rooted }
 		});
 
 	t.AddKeywords(G_FLAG, {
@@ -135,7 +147,9 @@ void AbilityLoader::InitTokenizer()
 		{ "use_cast", Ability::UseCast },
 		{ "mage", Ability::Mage },
 		{ "strength", Ability::Strength },
-		{ "boss50hp", Ability::Boss50Hp }
+		{ "boss50hp", Ability::Boss50Hp },
+		{ "default_attack", Ability::DefaultAttack },
+		{ "use_kneel", Ability::UseKneel }
 		});
 }
 
@@ -396,6 +410,34 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_COUNT:
 			ability->count = t.MustGetInt();
 			crc.Update(ability->count);
+			t.Next();
+			break;
+		case K_TIME:
+			ability->time = t.MustGetFloat();
+			if(ability->time < 0.f)
+				t.Throw("Invalid time value.");
+			crc.Update(ability->time);
+			t.Next();
+			break;
+		case K_COLOR:
+			t.Parse(ability->color);
+			crc.Update(ability->color);
+			break;
+		case K_TRAP_ID:
+			{
+				const string& id = t.MustGetItem();
+				ability->trap = BaseTrap::Get(id);
+				if(!ability->trap)
+					t.Throw("Missing trap '%s'.", id.c_str());
+				crc.Update(id);
+				t.Next();
+			}
+			break;
+		case K_CAST_TIME:
+			ability->cast_time = t.MustGetFloat();
+			if(ability->cast_time < 0.f)
+				t.Throw("Invalid cast time value.");
+			crc.Update(ability->cast_time);
 			t.Next();
 			break;
 		}

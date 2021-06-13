@@ -16,9 +16,9 @@ enum SAVE_VERSION
 	V_0_6 = 9, // 0.6/0.6.1
 	V_0_6_2 = 10, // 0.6.2
 	V_0_7 = 11, // 0.7
-
-	MIN_SUPPORT_LOAD_VERSION = 12,
 	V_0_7_1 = 12, // 0.7.1
+
+	MIN_SUPPORT_LOAD_VERSION = 13,
 	V_0_8 = 13, // 0.8
 	V_0_9 = 14, // 0.9
 	V_0_10 = 15, // 0.10
@@ -29,10 +29,12 @@ enum SAVE_VERSION
 	V_0_14_1 = 20, // 0.14.1
 	V_0_15 = 21, // 0.15
 	V_0_16 = 22, // 0.16
-	V_NEXT = 23,
+	V_0_17 = 23, // 0.17/0.17.1/0.17.2
+	V_0_18 = 24, // 0.18
+	V_NEXT = 25,
 
 	// save version used by saves
-	V_CURRENT = V_NEXT,
+	V_CURRENT = V_0_18,
 
 	// use this versions in development on different branches
 	V_MAIN = V_NEXT, // main bugfix branch

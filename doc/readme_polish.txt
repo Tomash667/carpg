@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: https://carpg.pl
-Wersja: 0.16
-Data: 2020-07-01
+Wersja: 0.17.2
+Data: 2021-02-06
 
 ===============================================================================
 1) Spis treści
@@ -213,13 +213,12 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* class (warrior hunter rogue) - wybrana klasa postaci w trybie szybkiej
 		gry
 	* con_pos Int2 - pozycja konsoli x, y
+	* con_size Int2 - rozmiar konsoli x, y
 	* console (true [false]) - konsola systemowa
 	* crash_mode (none [normal] dataseg full) - określa tryb zapisywania
 		informacji o crashu
 	* grass_range (0-100) - zasięg rysowania trawy
 	* feature_level ("10.0" "10.1" "11.0") - poziom funkcji directx
-	* force_seed (true [false]) - wymuszenie określonej losowości na każdym
-		poziomie
 	* fullscreen ([true] false) - tryb pełnoekranowy
 	* inactive_update (true [false]) - gra jest aktualizowana nawet gdy okno
 		jest nieaktywne; gra jest zawsze aktualizowana w trybie multiplayer
@@ -242,7 +241,6 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 		którejś zmiennej to nie uruchamia automatycznie
 	* resolution (800x600 [1024x768]) - rozdzielczość ekranu
 	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tif, gif, png, dds)
-	* seed - ziarno losowości
 	* server_ip - zapamiętane ip serwera
 	* server_lan - jeśli jest 1 to serwer nie będzie rejestrowany w głównym serwerze
 	* server_name - zapamiętana nazwa serwera
@@ -298,8 +296,9 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	darktorq
 	Docucat
 	fire
+	Groszek
 	Harorri
-	Lemiczek 
+	Lemiczek
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit
@@ -353,6 +352,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 🔈 Dźwięki:
 	* https://opengameart.org
 		* artisticdude - ogre sounds
+		* OwlishMedia - coughs
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

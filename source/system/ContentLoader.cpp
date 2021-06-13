@@ -82,11 +82,7 @@ bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 void ContentLoader::LoadWarning(cstring msg)
 {
 	assert(msg);
-	cstring type_name = t.FindKeyword(current_entity, top_group)->name;
-	if(local_id.empty())
-		Warn("Warning loading %s: %s", type_name, msg);
-	else
-		Warn("Warning loading %s '%s': %s", type_name, local_id.c_str(), msg);
+	Warn("Warning loading %s: %s", GetEntityName(), msg);
 	++content.warnings;
 }
 
@@ -94,11 +90,7 @@ void ContentLoader::LoadWarning(cstring msg)
 void ContentLoader::LoadError(cstring msg)
 {
 	assert(msg);
-	cstring type_name = t.FindKeyword(current_entity, top_group)->name;
-	if(local_id.empty())
-		Error("Error loading %s: %s", type_name, msg);
-	else
-		Error("Error loading %s '%s': %s", type_name, local_id.c_str(), msg);
+	Error("Error loading %s: %s", GetEntityName(), msg);
 	++content.errors;
 }
 
@@ -118,4 +110,14 @@ bool ContentLoader::IsPrefix(cstring prefix)
 		return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+cstring ContentLoader::GetEntityName()
+{
+	cstring typeName = t.FindKeyword(current_entity, top_group)->name;
+	if(local_id.empty())
+		return typeName;
+	else
+		return Format("%s '%s'", typeName, local_id.c_str());
 }

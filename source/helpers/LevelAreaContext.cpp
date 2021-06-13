@@ -168,35 +168,6 @@ GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_id, LevelAreaContext
 }
 
 //=================================================================================================
-// search only alive enemies for now
-Unit* LevelAreaContext::FindUnitWithQuestItem(int quest_id, LevelAreaContext::Entry** entry, int* unit_index, int* item_iindex)
-{
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
-		{
-			Unit* unit = e.area->units[i];
-			if(unit->IsAlive() && unit->IsEnemy(*game->pc->unit))
-			{
-				int iindex = unit->FindQuestItem(quest_id);
-				if(iindex != Unit::INVALID_IINDEX)
-				{
-					if(entry)
-						*entry = &e;
-					if(unit_index)
-						*unit_index = i;
-					if(item_iindex)
-						*item_iindex = iindex;
-					return unit;
-				}
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 bool LevelAreaContext::FindUnit(Unit* unit, LevelAreaContext::Entry** entry, int* unit_index)
 {
 	assert(unit);
@@ -281,22 +252,6 @@ bool LevelAreaContext::RemoveQuestGroundItem(int quest_id)
 			c.id = item->id;
 		}
 		RemoveElementIndex(entry->area->items, index);
-		return true;
-	}
-	else
-		return false;
-}
-
-//=================================================================================================
-// search only alive enemies for now
-bool LevelAreaContext::RemoveQuestItemFromUnit(int quest_id)
-{
-	LevelAreaContext::Entry* entry;
-	int item_iindex;
-	Unit* unit = FindUnitWithQuestItem(quest_id, &entry, nullptr, &item_iindex);
-	if(unit)
-	{
-		unit->RemoveItem(item_iindex, entry->active);
 		return true;
 	}
 	else

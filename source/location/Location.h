@@ -103,9 +103,9 @@ struct Location
 	int target;
 	Vec2 pos;
 	string name;
-	Quest* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
+	Quest* active_quest;
 	int last_visit; // worldtime from last time when team entered location or -1
-	int st; // poziom trudnoœci
+	int st;
 	uint seed;
 	UnitGroup* group; // cannot be null (use UnitGroup::empty)
 	Portal* portal;

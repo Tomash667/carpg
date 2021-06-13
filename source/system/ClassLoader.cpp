@@ -200,7 +200,7 @@ void ClassLoader::ParseLevelEntry(Class::LevelEntry& entry)
 		return;
 	}
 
-	Skill* s = Skill::Find(item);
+	const Skill* s = Skill::Find(item);
 	if(s)
 	{
 		entry.type = Class::LevelEntry::T_SKILL;

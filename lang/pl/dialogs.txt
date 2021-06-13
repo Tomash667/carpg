@@ -490,6 +490,13 @@ dialog hero {
 	50 "Jakoœ mnie nie przekona³eœ..."
 	51 "Nie lubiê t³umów a twoja dru¿yna jest ju¿ doœæ liczna..."
 	52 "No dobra... Czasami trzeba pójœæ na kompromis."
+	53 "Niedawno ukoñczyliœmy zadanie za które jeszcze nie dosta³em zap³aty. Nie odejdê dopóki nie dostane moich $(Str(target.hero.investment)) sztuk z³ota."
+	54 "Zap³aæ $(Str(target.hero.investment)) sztuk z³ota"
+	55 "Nie p³aæ"
+	56 {
+		"Wezmê to z³oto na otarcie ³ez."
+		"Mo¿e jeszcze siê spotkamy..."
+	}
 }
 
 //==============================================================================
@@ -664,6 +671,13 @@ dialog crazy {
 	53 "Nie nie nie! To ty do mnie do³¹czysz!"
 	54 "Jeœli myœlisz ¿e mnie przekona³eœ to chyba ty tu jesteœ szalony!"
 	55 "Hmmm... W takim t³umie nie bêdziesz na mnie zwraca³ uwagi!"
+	56 "Ej a gdzie moje z³oto za ostatnie zadania!? Nie odejdê dopóki nie dostane moich $(Str(target.hero.investment)) sztuk z³ota. I nie próbuj mnie oszukaæ!"
+	57 "Zap³aæ $(Str(target.hero.investment)) sztuk z³ota"
+	58 "Nie p³aæ"
+	59 {
+		"Dawaj to z³oto i spadaj!"
+		"Mo¿e jeszcze siê spotkamy..."
+	}
 }
 
 //==============================================================================
@@ -796,7 +810,7 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Witaj!"
 	1 "Witaj ponownie!"
-	2 "Oddaj ukradziony artefakt"
+	2 "" // removed
 	3 "Oddaj zgubiony przedmiot"
 	4 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
 	5 "Koniec rozmowy"
@@ -1832,28 +1846,6 @@ dialog q_spread_news_end {
 }
 
 //==============================================================================
-dialog q_stolen_artifact_start {
-	0 "$Bandyci_ukradli$ mi $przedmiot$."
-	1 "Czy mo¿esz go dla mnie odzyskaæ?"
-	2 "Tak"
-	3 "$Ci_bandyci$ prawdopodobnie znajduj¹ siê w $target_loc$ które jest na $target_dir$ st¹d."
-	4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_stolen_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
-}
-
-//==============================================================================
-dialog q_stolen_artifact_timeout {
-	0 "Nie uda³o ci siê odzyskaæ tego artefaktu? Trudno..."
-	1 "Ponoæ niedaleko $random_loc$ znaleziono jakieœ nowe artefakty, tam wyruszê."
-	2 "Powodzenia w przygodach!"
-}
-
-//==============================================================================
 dialog q_wanted_start {
 	0 "Mam tutaj list goñczy na jednego z poszukiwaczy przygód. Pope³ni³ wiele przestêpstw."
 	1 "Nagroda za jego g³owê wynosi $reward$ sztuk z³ota."
@@ -1919,6 +1911,7 @@ dialog mage_seller {
 	12 "Anuluj"
 	13 "$train_lab/fireball$"
 	14 "$train_lab/thunder_bolt$"
+	15 "$train_lab/fire_trap$"
 }
 
 //==============================================================================
@@ -2121,5 +2114,21 @@ dialog hunter {
 		"Witaj w naszym obozie."
 		"Witaj!"
 	}
+}
+
+//==============================================================================
+dialog hunter_leader {
+	0 {
+		"Udanych ³owów!"
+		"Witaj w naszym obozie."
+		"Witaj!"
+	}
 	1 "Koniec rozmowy"
+	2 "$train_lab/entangling_arrow$"
+	3 "$train_lab/bear_trap$"
+}
+
+//==============================================================================
+dialog ill_idle {
+	0 "(kaszle)"
 }

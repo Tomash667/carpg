@@ -299,18 +299,18 @@ void TmpUnitGroupList::Fill(UnitGroup* group, int level)
 	if(groups.empty())
 	{
 		UnitGroup* best = nullptr;
-		int best_diff = -1;
+		int best_dif = -1;
 		for(UnitGroup::Entry& entry : group->entries)
 		{
 			Int2 level_range = entry.group->GetLevelRange();
-			int diff;
+			int dif;
 			if(level < level_range.x)
-				diff = level_range.x - level;
+				dif = level_range.x - level;
 			else
-				diff = level - level_range.y;
-			if(best_diff == -1 || diff < best_diff)
+				dif = level - level_range.y;
+			if(best_dif == -1 || dif < best_dif)
 			{
-				best_diff = diff;
+				best_dif = dif;
 				best = entry.group;
 			}
 		}

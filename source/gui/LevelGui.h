@@ -75,7 +75,7 @@ public:
 	void AddSpeechBubble(Unit* unit, cstring text);
 	void AddSpeechBubble(const Vec3& pos, cstring text);
 	void Reset();
-	bool UpdateChoice(DialogContext& ctx, int choices);
+	bool UpdateChoice();
 	void UpdateScrollbar(int choices);
 	bool HavePanelOpen() const;
 	bool CanFocusMpBox() const { return !HavePanelOpen(); }
@@ -157,8 +157,8 @@ private:
 	CutsceneState cutscene_image_state, cutscene_text_state;
 	Int2 drag_and_drop_pos;
 	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp,
-		tMinistamina, tMinimp, tCrosshair, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tHealthPotion, tManaPotion, tEmerytura, tEquipped, tDialog,
-		tShortcutAction, tRip, tBlack;
+		tMinistamina, tMinimp, tCrosshair, tCrosshair2, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tHealthPotion, tManaPotion, tEmerytura,
+		tEquipped, tDialog, tShortcutAction, tRip, tBlack;
 	TexturePtr drag_and_drop_icon, cutscene_image;
 	vector<pair<Texture*, float>> cutscene_next_images;
 	Scrollbar scrollbar;
@@ -168,7 +168,7 @@ private:
 	vector<pair<string, float>> cutscene_next_texts;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
 		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene;
-	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
+	Int2 debug_info_size, dialog_pos, dialog_size;
 	vector<UnitView> unit_views;
 	bool debug_info, debug_info2, bossState;
 	Unit* boss;

@@ -5,6 +5,7 @@
 #include "Chest.h"
 #include "ItemHelper.h"
 #include "Level.h"
+#include "Net.h"
 #include "Object.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
@@ -42,8 +43,11 @@ void CampGenerator::InitOnce()
 void CampGenerator::Init()
 {
 	OutsideLocationGenerator::Init();
-	isEmpty = game_level->location->group->IsEmpty()
-		&& outside->target != HUNTERS_CAMP;
+	if(Net::IsLocal())
+	{
+		isEmpty = game_level->location->group->IsEmpty()
+			&& outside->target != HUNTERS_CAMP;
+	}
 }
 
 //=================================================================================================

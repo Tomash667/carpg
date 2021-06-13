@@ -52,7 +52,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 
 	// do contact test
 	btCollisionShape* shape;
-	if(!ability)
+	if(isArrow)
 		shape = game_level->shape_arrow;
 	else
 		shape = ability->shape;
@@ -87,6 +87,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 		NetChange& c = Add1(net->changes);
 		c.type = NetChange::REMOVE_BULLET;
 		c.id = id;
+		c.e_id = (hitted != nullptr ? 1 : 0);
 	}
 
 	delete this;
@@ -98,35 +99,56 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 {
 	if(hitted)
 	{
-		if(!Net::IsLocal())
+		if(Net::IsClient())
 			return;
 
-		if(!ability)
+		if(isArrow)
 		{
 			if(owner && owner->IsFriend(*hitted, true) || attack < -50.f)
 			{
 				// friendly fire
+				MATERIAL_TYPE material;
 				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->rot) < PI * 2 / 5)
-				{
-					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HIT_SOUND;
-						c.id = MAT_IRON;
-						c.count = mat;
-						c.pos = hitpoint;
-					}
-				}
+					material = hitted->GetShield().material;
 				else
-					game->PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, ARROW_HIT_SOUND_DIST, false);
+					material = MAT_SPECIAL_UNIT;
+				hitted->PlayHitSound(MAT_IRON, material, hitpoint, false);
 				return;
 			}
 
 			// hit enemy unit
 			if(owner && owner->IsAlive() && hitted->IsAI())
 				hitted->ai->HitReaction(start_pos);
+
+			// special effects
+			bool preventTooManySounds = false;
+			if(ability)
+			{
+				assert(ability->effect == Ability::Rooted); // TODO
+
+				Effect e;
+				e.effect = EffectId::Rooted;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = EffectValue_Rooted_Vines;
+				e.power = 0.f;
+				e.time = ability->time;
+				hitted->AddEffect(e);
+
+				if(ability->sound_hit)
+				{
+					preventTooManySounds = true;
+					sound_mgr->PlaySound3d(ability->sound_hit, hitpoint, ability->sound_hit_dist);
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::SPELL_SOUND;
+						c.e_id = 1;
+						c.ability = ability;
+						c.pos = hitpoint;
+					}
+				}
+			}
 
 			// calculate modifiers
 			int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
@@ -153,16 +175,8 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
 			{
 				// play sound
-				MATERIAL_TYPE mat = hitted->GetShield().material;
-				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HIT_SOUND;
-					c.id = MAT_IRON;
-					c.count = mat;
-					c.pos = hitpoint;
-				}
+				const MATERIAL_TYPE material = hitted->GetShield().material;
+				hitted->PlayHitSound(MAT_IRON, material, hitpoint, false);
 
 				// train blocking
 				if(hitted->IsPlayer())
@@ -217,7 +231,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			float dmg = CombatHelper::CalculateDamage(attack, def);
 
 			// hit sound
-			game->PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
+			hitted->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, hitpoint, dmg > 0.f && !preventTooManySounds);
 
 			// train player armor skill
 			if(hitted->IsPlayer())
@@ -274,21 +288,12 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				area.SpellHitEffect(*this, hitpoint, hitted);
 
 				// hit sound
+				MATERIAL_TYPE material;
 				if(hitted->IsBlocking() && AngleDiff(Clip(rot.y + PI), hitted->rot) < PI * 2 / 5)
-				{
-					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HIT_SOUND;
-						c.id = MAT_IRON;
-						c.count = mat;
-						c.pos = hitpoint;
-					}
-				}
+					material = hitted->GetShield().material;
 				else
-					game->PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, false);
+					material = MAT_SPECIAL_UNIT;
+				hitted->PlayHitSound(MAT_IRON, material, hitpoint, false);
 				return;
 			}
 
@@ -350,14 +355,14 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 		// hit object
 		if(!ability)
 		{
-			sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, ARROW_HIT_SOUND_DIST);
+			sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = game_res->tSpark;
-			pe->emision_interval = 0.01f;
+			pe->emission_interval = 0.01f;
 			pe->life = 5.f;
 			pe->particle_life = 0.5f;
-			pe->emisions = 1;
+			pe->emissions = 1;
 			pe->spawn_min = 10;
 			pe->spawn_max = 15;
 			pe->max_particles = 15;
@@ -385,7 +390,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				}
 			}
 		}
-		else
+		else if(Net::IsLocal())
 		{
 			// hit object with spell
 			area.SpellHitEffect(*this, hitpoint, nullptr);
@@ -420,6 +425,7 @@ void Bullet::Save(GameWriter& f) const
 	f << backstab;
 	f << level;
 	f << start_pos;
+	f << isArrow;
 }
 
 //=================================================================================================
@@ -444,12 +450,12 @@ void Bullet::Load(GameReader& f)
 	owner = Unit::GetById(f.Read<int>());
 	if(LOAD_VERSION >= V_0_13)
 	{
-		int ability_hash = f.Read<int>();
-		if(ability_hash != 0)
+		int abilityHash = f.Read<int>();
+		if(abilityHash != 0)
 		{
-			ability = Ability::Get(ability_hash);
+			ability = Ability::Get(abilityHash);
 			if(!ability)
-				throw Format("Missing ability %u for bullet.", ability_hash);
+				throw Format("Missing ability %u for bullet.", abilityHash);
 		}
 		else
 			ability = nullptr;
@@ -486,11 +492,15 @@ void Bullet::Load(GameReader& f)
 		f >> backstab;
 	else
 	{
-		int backstab_value;
-		f >> backstab_value;
-		backstab = 0.25f * (backstab_value + 1);
+		int backstabValue;
+		f >> backstabValue;
+		backstab = 0.25f * (backstabValue + 1);
 	}
 	f >> start_pos;
+	if(LOAD_VERSION >= V_0_18)
+		f >> isArrow;
+	else
+		isArrow = (ability == nullptr);
 }
 
 //=================================================================================================
@@ -504,6 +514,7 @@ void Bullet::Write(BitStreamWriter& f) const
 	f << timer;
 	f << (owner ? owner->id : -1);
 	f << (ability ? ability->hash : 0);
+	f << isArrow;
 }
 
 //=================================================================================================
@@ -515,33 +526,54 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 	f >> speed;
 	f >> yspeed;
 	f >> timer;
-	int unit_id = f.Read<int>();
-	int ability_hash = f.Read<int>();
+	int unitId = f.Read<int>();
+	int abilityHash = f.Read<int>();
+	f >> isArrow;
 	if(!f)
 		return false;
 
-	if(ability_hash == 0)
+	if(abilityHash != 0)
 	{
+		ability = Ability::Get(abilityHash);
+		if(!ability)
+		{
+			Error("Missing ability '%u'.", abilityHash);
+			return false;
+		}
+	}
+	else
 		ability = nullptr;
-		mesh = game_res->aArrow;
+
+	if(isArrow)
+	{
+		mesh = (ability && ability->mesh ? ability->mesh : game_res->aArrow);
 		pe = nullptr;
 		tex = nullptr;
 		tex_size = 0.f;
 
 		TrailParticleEmitter* tpe = new TrailParticleEmitter;
 		tpe->fade = 0.3f;
-		tpe->color1 = Vec4(1, 1, 1, 0.5f);
-		tpe->color2 = Vec4(1, 1, 1, 0);
+		if(ability)
+		{
+			tpe->color1 = ability->color;
+			tpe->color2 = tpe->color1;
+			tpe->color2.w = 0;
+		}
+		else
+		{
+			tpe->color1 = Vec4(1, 1, 1, 0.5f);
+			tpe->color2 = Vec4(1, 1, 1, 0);
+		}
 		tpe->Init(50);
 		tmp_area.tpes.push_back(tpe);
 		trail = tpe;
 	}
 	else
 	{
-		ability = Ability::Get(ability_hash);
+		ability = Ability::Get(abilityHash);
 		if(!ability)
 		{
-			Error("Missing ability '%u'.", ability_hash);
+			Error("Missing ability '%u'.", abilityHash);
 			return false;
 		}
 
@@ -555,10 +587,10 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 		{
 			pe = new ParticleEmitter;
 			pe->tex = ability->tex_particle;
-			pe->emision_interval = 0.1f;
+			pe->emission_interval = 0.1f;
 			pe->life = -1;
 			pe->particle_life = 0.5f;
-			pe->emisions = -1;
+			pe->emissions = -1;
 			pe->spawn_min = 3;
 			pe->spawn_max = 4;
 			pe->max_particles = 50;
@@ -577,12 +609,12 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 		}
 	}
 
-	if(unit_id != -1)
+	if(unitId != -1)
 	{
-		owner = game_level->FindUnit(unit_id);
+		owner = game_level->FindUnit(unitId);
 		if(!owner)
 		{
-			Error("Missing bullet owner %d.", unit_id);
+			Error("Missing bullet owner %d.", unitId);
 			return false;
 		}
 	}

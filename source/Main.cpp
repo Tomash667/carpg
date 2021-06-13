@@ -323,11 +323,11 @@ bool RunInstallScripts()
 					return false;
 				}
 
-				DeleteFile(buf2);
+				io::DeleteFile(buf2);
 				t.Next();
 			}
 
-			DeleteFile(path);
+			io::DeleteFile(path);
 		}
 		catch(cstring err)
 		{
@@ -650,31 +650,27 @@ void LoadConfiguration(char* lpCmdLine)
 	Logger::SetInstance(logger);
 
 	// pseudorandomness
-	uint cfg_seed = cfg.GetUint("seed"), seed;
-	if(cfg_seed == 0)
-		seed = (uint)time(nullptr);
-	else
-	{
-		seed = cfg_seed;
-		game->force_seed = seed;
-	}
-	game->next_seed = cfg.GetUint("next_seed");
-	game->force_seed_all = cfg.GetBool("force_seed");
-	Info("random seed: %u/%u/%d", seed, game->next_seed, (game->force_seed_all ? 1 : 0));
-	Srand(seed);
+	Srand((uint)time(nullptr));
 
-	// console position
-	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
-	if(have_console && (con_pos.x != -1 || con_pos.y != -1))
+	// console position & size
+	const Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
+	const Int2 con_size = cfg.GetInt2("con_size", Int2(-1, -1));
+	if(have_console && (con_pos != Int2(-1, -1) || con_size != Int2(-1, -1)))
 	{
 		HWND con = GetConsoleWindow();
 		Rect rect;
 		GetWindowRect(con, (RECT*)&rect);
+		Int2 pos = rect.LeftTop();
+		Int2 size = rect.Size();
 		if(con_pos.x != -1)
-			rect.Left() = con_pos.x;
+			pos.x = con_pos.x;
 		if(con_pos.y != -1)
-			rect.Top() = con_pos.y;
-		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+			pos.y = con_pos.y;
+		if(con_size.x != -1)
+			size.x = con_size.x;
+		if(con_size.y != -1)
+			size.y = con_size.y;
+		SetWindowPos(con, 0, pos.x, pos.y, size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 	}
 
 	game->LoadCfg();

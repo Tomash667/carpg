@@ -16,8 +16,8 @@ BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 //=================================================================================================
 void BookPanel::LoadData()
 {
-	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
-	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
+	tArrowL = res_mgr->Load<Texture>("page_prev.png");
+	tArrowR = res_mgr->Load<Texture>("page_next.png");
 
 	sound = res_mgr->Load<Sound>("page-turn.wav");
 

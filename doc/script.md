@@ -7,6 +7,7 @@ Core library
 * void Error(const string& in msg) - show error msg in console.
 * string Str(?& in) - convert value to string.
 * string Format(const string& in format_str, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
+* string Upper1(const string& in) - return string with first letter upper case.
 * int Random(int a, int b) - returns random number in range <a,b>.
 * int Rand() - returns random int number.
 * void Sleep(float seconds) - resume script execution after some time, don't use in places that require return value instantly like callbacks or dialog_if. Console output don't work after sleep!
@@ -248,6 +249,10 @@ Static methods:
 ### UnitData type
 Unit template.
 
+Members:
+
+* const string id
+
 Static methods:
 
 * UnitData@ Get(const string& in id) - return unit data with id.
@@ -259,6 +264,10 @@ Members:
 
 * const string name
 * const bool female - used in polish language to determine correct spelling of some gender specific words.
+
+Methods:
+
+* UnitData@ GetLeader(int level) - get group leader that is closest to selected level.
 
 Static properties:
 
@@ -329,6 +338,7 @@ Properties:
 * bool otherTeam - hero is in other team.
 * bool wantJoin - true when join team without persuading.
 * int persuasionCheck - skill level required to persuade to join.
+* const int investment - value of investment (gold from quests over time).
 
 ### LevelArea type
 Part of level - dungeon level, outside, inside of building.
@@ -336,6 +346,7 @@ Part of level - dungeon level, outside, inside of building.
 Methods:
 
 * bool RemoveItemFromChest(Item@) - return true if removed item.
+* bool RemoveItemFromUnit(Item@) - remove single item from alive enemy, return true if removed.
 
 ### Location type
 Location on world map. Currently locations can be added dynamicaly but not removed. Only camps support disappearing after some time.
@@ -365,6 +376,8 @@ Method:
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
 * LevelArea@ GetArea(int index) - get level area by index.
+* LevelArea@ GetBuildingArea(const string& id) - get inside building area (by building group id).
+* int GetRandomLevel() - return random dungeon level (higher chance for lower levels) or -1 when outside location.
 * Unit@ FindQuestUnit(Quest@) - find unit with quest set.
 
 ### MapSettings type
@@ -413,6 +426,7 @@ Instance of quest.
 Properties:
 
 * QUEST_STATE state - readonly
+* int timeout - readonly, days until timeout
 
 Methods:
 
@@ -424,6 +438,7 @@ Methods:
 * Dialog@ GetDialog(const string& in id) - return quest dialog with this id.
 * void AddRumor(const string& in str) - add quest rumor to available dialogs.
 * void RemoveRumor() - remove quest rumor from available dialogs.
+* void Start(Vars@) - start quest.
 
 Static properties:
 
@@ -464,6 +479,7 @@ Unit inside level, based on UnitData template.
 
 Properties:
 
+* UnitData@ data - readonly
 * Vec3 pos - readonly
 * Player@ player
 * Hero@ hero
@@ -514,6 +530,7 @@ Methods:
 * void RotateTo(float rot) - instantly rotates units.
 * void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
 * void MoveToArea(LevelArea@ area, const Vec3& in pos) - move unit to area, works between locations.
+* void MoveOffscreen() - move unit to offscreen area.
 * void Kill() - used to spawn dead units.
 
 Static properties:
@@ -571,6 +588,7 @@ Static methods:
 * bool IsVillage() - true when inside village.
 * bool IsTutorial() - true when inside tutorial.
 * bool IsSafe() - true when current location is safe.
+* bool IsOutside() - true when current location is outside type.
 * Unit@ FindUnit(UnitData@) - finds unit with this unit data.
 * Unit@ GetNearestEnemy(Unit@) - finds nearest unit that is enemy of this unit.
 * GroundItem@ FindItem(Item@) - finds first item.
@@ -578,13 +596,15 @@ Static methods:
 * GroundItem@ SpawnItem(Item@, const Vec3& in pos) - spawn item at position.
 * GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
-* Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp.
-* Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2) - spawns unit near position.
+* Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp in room.
+* Vec3 FindSpawnPos(LevelArea@, Unit@) - return position for unit spawn/warp in building area.
+* Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2, int level = -1) - spawns unit near position.
 * Unit@ SpawnUnit(LevelArea@, Spawn) - spawns unit inside area.
-* Unit@ SpawnUnit(Room@, UnitData@) - spawn unit inside room.
+* Unit@ SpawnUnit(Room@, UnitData@, int level = -1) - spawn unit inside room.
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
+* Room@ GetFarRoom() - get random room far from entrance.
 * Object@ FindObject(Room@, BaseObject@) - return first object inside room or null.
 * Chest@ GetRandomChest(Room@) - get random chest in room.
 * Chest@ GetTreasureChest() - get silver chest in treasure room.
@@ -653,6 +673,7 @@ Static methods:
 * Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
+* Location@ GetRandomSpawnLocation(const Vec2& in pos, UnitGroup@ group, float range = 160) - get random location with selected unit group within range, if not found will create camp.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1) - get closest location of this type (doesn't return quest locations).
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).
 * Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.

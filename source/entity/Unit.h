@@ -73,6 +73,7 @@ enum AnimationState
 	AS_CAST_ANIMATION = 0,
 	AS_CAST_CASTED = 1,
 	AS_CAST_TRIGGER = 2,
+	AS_CAST_KNEEL = 3,
 
 	AS_DRINK_START = 0,
 	AS_DRINK_EFFECT = 1,
@@ -282,6 +283,7 @@ struct Unit : public EntityType<Unit>
 	static const float PAIN_SOUND_DIST;
 	static const float DIE_SOUND_DIST;
 	static const float YELL_SOUND_DIST;
+	static const float COUGHS_SOUND_DIST;
 
 	LevelArea* area;
 	UnitData* data;
@@ -317,6 +319,10 @@ struct Unit : public EntityType<Unit>
 			float rot;
 			UnitList* hit;
 		} dash;
+		struct ShootAction
+		{
+			Ability* ability;
+		} shoot;
 		struct UseUsableAction
 		{
 			float rot;
@@ -476,19 +482,14 @@ struct Unit : public EntityType<Unit>
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * GetMobilityMod(false);
+		return data->walk_speed * GetMobilityMod(false) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * GetMobilityMod(true);
+		return data->run_speed * GetMobilityMod(true) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
-	bool CanRun() const
-	{
-		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !act.attack.run))
-			return false;
-		else
-			return !IsOverloaded();
-	}
+	bool CanMove() const { return !HaveEffect(EffectId::Rooted); }
+	bool CanRun() const;
 	void RecalculateHp();
 	void RecalculateMp();
 	void RecalculateStamina();
@@ -530,13 +531,6 @@ struct Unit : public EntityType<Unit>
 	{
 		if(HaveWeapon())
 			return GetWeapon().material;
-		else
-			return data->mat;
-	}
-	MATERIAL_TYPE GetBodyMaterial() const
-	{
-		if(HaveArmor())
-			return GetArmor().material;
 		else
 			return data->mat;
 	}
@@ -647,10 +641,14 @@ public:
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
 	int FindQuestItem(int quest_id) const;
 	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int quest_id = -1);
+	void EquipItem(int index);
+	void EquipItem(const Item* item);
 	void RemoveItem(int iindex, bool active_location = true);
 	uint RemoveItem(int i_index, uint count);
 	uint RemoveItem(const Item* item, uint count);
 	uint RemoveItemS(const string& item_id, uint count);
+	void RemoveEquippedItem(ITEM_SLOT slot);
+	void RemoveAllEquippedItems();
 	int CountItem(const Item* item);
 	const string& GetNameS() const
 	{
@@ -713,17 +711,13 @@ public:
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	void RemoveEffect(EffectId effect);
-	void RemovePoison()
-	{
-		RemoveEffect(EffectId::Poison);
-	}
 	void RemoveEffects(bool send = true);
 	uint RemoveEffects(EffectId effect, EffectSource source, int source_id, int value);
 	float GetEffectSum(EffectId effect) const;
 	float GetEffectMul(EffectId effect) const;
 	float GetEffectMulInv(EffectId effect) const;
 	float GetEffectMax(EffectId effect) const;
-	bool HaveEffect(EffectId effect) const;
+	bool HaveEffect(EffectId effect, int value = -1) const;
 	void OnAddRemoveEffect(Effect& e);
 	void ApplyItemEffects(const Item* item, ITEM_SLOT slot);
 	void RemoveItemEffects(const Item* item, ITEM_SLOT slot);
@@ -731,13 +725,18 @@ public:
 	//-----------------------------------------------------------------------------
 	// EQUIPMENT
 	//-----------------------------------------------------------------------------
-	const Item* slots[SLOT_MAX];
+private:
+	array<const Item*, SLOT_MAX> slots;
+public:
 	vector<ItemSlot> items;
 	int weight, weight_max;
 	//-----------------------------------------------------------------------------
 	int GetGold() const { return gold; }
 	void ModGold(int gold_change) { SetGold(gold + gold_change); }
 	void SetGold(int gold);
+	array<const Item*, SLOT_MAX>& GetEquippedItems() { return slots; }
+	const Item* GetEquippedItem(ITEM_SLOT slot) const { return slots[slot]; }
+	bool HaveEquippedItem(ITEM_SLOT slot) const { return slots[slot] != nullptr; }
 	bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
 	bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
 	bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
@@ -770,6 +769,8 @@ public:
 		assert(HaveAmulet());
 		return *slots[SLOT_AMULET];
 	}
+	void ReplaceItem(ITEM_SLOT slot, const Item* item);
+	void ReplaceItems(array<const Item*, SLOT_MAX>& items);
 	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
 	bool DropItem(int index);
 	// wyrzuca za³o¿ony przedmiot
@@ -811,14 +812,8 @@ public:
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	float GetWeight() const
-	{
-		return float(weight) / 10;
-	}
-	float GetWeightMax() const
-	{
-		return float(weight_max) / 10;
-	}
+	float GetWeight() const { return float(weight) / 10; }
+	float GetWeightMax() const { return float(weight_max) / 10; }
 	bool CanTake(const Item* item, uint count = 1) const
 	{
 		assert(item && count);
@@ -892,7 +887,6 @@ public:
 
 	void CreateMesh(CREATE_MESH mode);
 
-	void ApplyStun(float length);
 	void UseUsable(Usable* usable);
 	enum class BREAK_ACTION_MODE
 	{
@@ -909,6 +903,7 @@ public:
 	void DropGold(int count);
 	bool IsDrunkman() const;
 	void PlaySound(Sound* sound, float range);
+	void PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, bool dmg);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
@@ -971,6 +966,7 @@ public:
 	void MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool canWarp, bool isPrev);
 	void ChangeBase(UnitData* ud, bool update_items = false);
 	void MoveToArea(LevelArea* area, const Vec3& pos);
+	void MoveOffscreen();
 	void Kill();
 	enum DamageFlags
 	{
@@ -982,6 +978,8 @@ public:
 	bool DoAttack();
 	bool DoShieldSmash();
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+	void DoRangedAttack(bool prepare, bool notify = true, float speed = -1);
+	void AlertAllies(Unit* target);
 };
 
 //-----------------------------------------------------------------------------
@@ -1019,19 +1017,6 @@ struct NAMES
 	static uint n_ani_base;
 	static uint n_ani_humanoid;
 	static int max_attacks;
-};
-
-//-----------------------------------------------------------------------------
-struct UnitList : public ObjectPoolProxy<UnitList>
-{
-	void Clear() { units.clear(); }
-	void Add(Unit* unit) { units.push_back(unit); }
-	bool IsInside(Unit* unit) const;
-	void Save(GameWriter& f);
-	void Load(GameReader& f);
-
-private:
-	vector<Entity<Unit>> units;
 };
 
 //-----------------------------------------------------------------------------

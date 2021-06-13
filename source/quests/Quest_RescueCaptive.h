@@ -32,6 +32,7 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	bool IfNeedTalk(cstring topic) const override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestId() override { return id; }

@@ -478,6 +478,13 @@ dialog hero {
 	50 "Somehow you didn't convince me..."
 	51 "I don't like crowds and your team is already quite large..."
 	52 "Okay... Sometimes you have to compromise."
+	53 "We recently completed a quest for which I am not yet paid. I will not leave until I get my $(Str(target.hero.investment)) gold pieces."
+	54 "Pay $(Str(target.hero.investment)) gold pieces"
+	55 "Don't pay"
+	56 {
+		"I'll take that gold to wipe my tears."
+		"Oh well, maybe we'll meet again."
+	}
 }
 
 //==============================================================================
@@ -652,6 +659,13 @@ dialog crazy {
 	53 "No no no! You will join me!"
 	54 "If you think you convinced me then you are crazy here!"
 	55 "Hmmm... In such a crowd you will not pay attention to me!"
+	56 "Hey, where's my gold for the last quests!? I will not leave until I get my $(Str(target.hero.investment)) gold pieces. And don't try to cheat me!"
+	57 "Pay $(Str(target.hero.investment)) gold pieces"
+	58 "Don't pay"
+	59 {
+		"Give the gold and get lost!"
+		"Oh well, maybe we'll meet again."
+	}
 }
 
 //==============================================================================
@@ -784,7 +798,7 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Hello!"
 	1 "Welcome back!"
-	2 "Give back stolen artifact"
+	2 "" // removed
 	3 "Give back lost artifact"
 	4 "Did you find something? No? Too bad, I'm still waiting for that item."
 	5 "End dialog"
@@ -1820,28 +1834,6 @@ dialog q_spread_news_end {
 }
 
 //==============================================================================
-dialog q_stolen_artifact_start {
-	0 "$Bandyci_ukradli$ has stolen my $przedmiot$."
-	1 "Can you retrieve it?"
-	2 "Yes"
-	3 "Those $Ci_bandyci$ are probably in $target_loc$ which is $target_dir$ from here."
-	4 "I'll wait until someone brings it to me but up to two months. Good luck!"
-	5 "No"
-}
-
-//==============================================================================
-dialog q_stolen_artifact_end {
-	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
-}
-
-//==============================================================================
-dialog q_stolen_artifact_timeout {
-	0 "You could not recover this artifact? Too bad..."
-	1 "Apparently close to $random_loc$ people found some new artifacts, there I leave."
-	2 "Good luck in your adventures!"
-}
-
-//==============================================================================
 dialog q_wanted_start {
 	0 "I've got a wanted poster on one of the adventurers. Committed many crimes."
 	1 "Award for his head is $reward$ gold pieces."
@@ -1907,6 +1899,7 @@ dialog mage_seller {
 	12 "Cancel"
 	13 "$train_lab/fireball$"
 	14 "$train_lab/thunder_bolt$"
+	15 "$train_lab/fire_trap$"
 }
 
 //==============================================================================
@@ -2109,5 +2102,21 @@ dialog hunter {
 		"Welcome to our camp."
 		"Hello!"
 	}
+}
+
+//==============================================================================
+dialog hunter_leader {
+	0 {
+		"Happy hunting!"
+		"Welcome to our camp."
+		"Hello!"
+	}
 	1 "End dialog"
+	2 "$train_lab/entangling_arrow$"
+	3 "$train_lab/bear_trap$"
+}
+
+//==============================================================================
+dialog ill_idle {
+	0 "(coughs)"
 }

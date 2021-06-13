@@ -1,0 +1,17 @@
+paker [switches] version
+
+7zip must be installed to create zip, and added to PATH variable.
+
+Switches:
+-help - display help
+-nozip - don't create zip or pak
+-normal - create full pak (default)
+-patch - create patch pak
+-both - create full & patch pak
+-blob - for patch don't create zip but pak file that is uploaded to azure blob
+-recreate - always create zip/pak even if file already exists
+
+Examples:
+paker 0.17 -- create full version zip
+paker -patch 0.17.1 -- create patch version zip (only files that changed before previous version)
+paker -both -blob 0.18 -- create full version zip and pak for upgrade from 0.17 -> 0.18 [recommended workflow for version > 0.17 to allow auto-updates]

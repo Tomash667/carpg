@@ -3,6 +3,7 @@
 
 #include "AIController.h"
 #include "AITeam.h"
+#include "BitStreamFunc.h"
 #include "EntityInterpolator.h"
 #include "Game.h"
 #include "GameGui.h"
@@ -112,7 +113,15 @@ void Team::RemoveMember(Unit* unit)
 
 	// remove from team list
 	if(unit->hero->type == HeroType::Normal)
+	{
 		RemoveElementOrder(active_members.ptrs, unit);
+		if(unit->hero->investment)
+		{
+			unit->gold += unit->hero->investment;
+			DialogContext::current->pc->unit->ModGold(-unit->hero->investment);
+			unit->hero->investment = 0;
+		}
+	}
 	RemoveElementOrder(members.ptrs, unit);
 
 	// set items as team
@@ -391,54 +400,7 @@ bool Team::IsTeamNotBusy()
 	return true;
 }
 
-void Team::Load(GameReader& f)
-{
-	members.ptrs.resize(f.Read<uint>());
-	for(Unit*& unit : members.ptrs)
-		unit = Unit::GetById(f.Read<int>());
-
-	active_members.ptrs.resize(f.Read<uint>());
-	for(Unit*& unit : active_members.ptrs)
-		unit = Unit::GetById(f.Read<int>());
-
-	leader = Unit::GetById(f.Read<int>());
-	f >> crazies_attack;
-	f >> is_bandit;
-	if(LOAD_VERSION >= V_0_8)
-		f >> free_recruits;
-	else
-	{
-		bool free_recruit;
-		f >> free_recruit;
-		if(free_recruit)
-			free_recruits = 3 - team->GetActiveTeamSize();
-		else
-			free_recruits = 0;
-	}
-
-	if(LOAD_VERSION >= V_DEV)
-		f >> checkResults;
-	else
-		checkResults.clear();
-
-	CheckCredit(false, true);
-	CalculatePlayersLevel();
-
-	// apply leader requests
-	for(Entity<Unit>* unit : leader_requests)
-		*unit = leader;
-	leader_requests.clear();
-}
-
-void Team::Reset()
-{
-	crazies_attack = false;
-	is_bandit = false;
-	free_recruits = 2;
-	checkResults.clear();
-}
-
-void Team::ClearOnNewGameOrLoad()
+void Team::Clear(bool newGame)
 {
 	team_shares.clear();
 	team_share_id = -1;
@@ -446,6 +408,15 @@ void Team::ClearOnNewGameOrLoad()
 	{
 		my_id = 0;
 		leader_id = 0;
+	}
+
+	if(newGame)
+	{
+		crazies_attack = false;
+		is_bandit = false;
+		free_recruits = 2;
+		checkResults.clear();
+		investments.clear();
 	}
 }
 
@@ -464,6 +435,15 @@ void Team::Save(GameWriter& f)
 	f << is_bandit;
 	f << free_recruits;
 	f << checkResults;
+
+	f << investments.size();
+	for(Investment& investment : investments)
+	{
+		f << investment.questId;
+		f << investment.gold;
+		f << investment.days;
+		f << investment.name;
+	}
 }
 
 void Team::SaveOnWorldmap(GameWriter& f)
@@ -473,9 +453,52 @@ void Team::SaveOnWorldmap(GameWriter& f)
 		unit.Save(f);
 }
 
-void Team::Update(int days, bool travel)
+void Team::Load(GameReader& f)
 {
-	if(!travel)
+	members.ptrs.resize(f.Read<uint>());
+	for(Unit*& unit : members.ptrs)
+		unit = Unit::GetById(f.Read<int>());
+
+	active_members.ptrs.resize(f.Read<uint>());
+	for(Unit*& unit : active_members.ptrs)
+		unit = Unit::GetById(f.Read<int>());
+
+	leader = Unit::GetById(f.Read<int>());
+	f >> crazies_attack;
+	f >> is_bandit;
+	f >> free_recruits;
+
+	if(LOAD_VERSION >= V_0_17)
+		f >> checkResults;
+	else
+		checkResults.clear();
+
+	if(LOAD_VERSION >= V_0_18)
+	{
+		investments.resize(f.Read<uint>());
+		for(Investment& investment : investments)
+		{
+			f >> investment.questId;
+			f >> investment.gold;
+			f >> investment.days;
+			f >> investment.name;
+		}
+	}
+	else
+		investments.clear();
+
+	CheckCredit(false, true);
+	CalculatePlayersLevel();
+
+	// apply leader requests
+	for(Entity<Unit>* unit : leader_requests)
+		*unit = leader;
+	leader_requests.clear();
+}
+
+void Team::Update(int days, UpdateMode mode)
+{
+	if(mode == UM_NORMAL)
 	{
 		for(Unit& unit : members)
 		{
@@ -483,7 +506,7 @@ void Team::Update(int days, bool travel)
 				unit.hero->PassTime(days);
 		}
 	}
-	else
+	else if(mode == UM_TRAVEL)
 	{
 		bool autoheal = false;
 		for(Unit& unit : members)
@@ -496,7 +519,7 @@ void Team::Update(int days, bool travel)
 			}
 		}
 
-		// regeneracja hp / trenowanie
+		// healing, training
 		for(Unit& unit : members)
 		{
 			if(autoheal)
@@ -507,7 +530,7 @@ void Team::Update(int days, bool travel)
 				unit.hero->PassTime(1, true);
 		}
 
-		// ubywanie wolnych dni
+		// remove free days
 		if(Net::IsOnline())
 		{
 			int max_days = 0;
@@ -525,6 +548,37 @@ void Team::Update(int days, bool travel)
 						--unit.player->free_days;
 				}
 			}
+		}
+	}
+
+	// investments
+	if(!is_bandit)
+	{
+		int income = 0;
+		for(Investment& investment : investments)
+		{
+			investment.days += days;
+			int count = investment.days / 30;
+			if(count)
+			{
+				investment.days -= count * 30;
+				income += count * investment.gold;
+			}
+		}
+
+		if(income)
+		{
+			if(HaveActiveNpc())
+			{
+				const int investment = int(GetShare().y * income);
+				for(Unit& unit : active_members)
+				{
+					if(!unit.IsPlayer())
+						unit.hero->investment = Max(unit.hero->investment - investment, 0);
+				}
+			}
+
+			AddGold(income, nullptr, true);
 		}
 	}
 
@@ -666,8 +720,8 @@ void Team::UpdateTeamItemShares()
 
 			// old item, can be sold if overweight
 			int prev_item_weight;
-			if(tsi.to->slots[target_slot])
-				prev_item_weight = tsi.to->slots[target_slot]->weight;
+			if(tsi.to->HaveEquippedItem(target_slot))
+				prev_item_weight = tsi.to->GetEquippedItem(target_slot)->weight;
 			else
 				prev_item_weight = 0;
 
@@ -967,7 +1021,7 @@ void Team::BuyTeamItems()
 			else
 			{
 				const Item* item;
-				if(!unit.slots[slot_type])
+				if(!unit.HaveEquippedItem(slot_type))
 				{
 					switch(i)
 					{
@@ -983,7 +1037,7 @@ void Team::BuyTeamItems()
 					}
 				}
 				else
-					item = ItemHelper::GetBetterItem(unit.slots[slot_type]);
+					item = ItemHelper::GetBetterItem(unit.GetEquippedItem(slot_type));
 
 				while(item && unit.gold >= item->value)
 				{
@@ -1653,4 +1707,92 @@ bool Team::PersuasionCheck(int level)
 	}
 
 	return success;
+}
+
+//=================================================================================================
+bool Team::HaveInvestment(int questId) const
+{
+	for(const Investment& investment : investments)
+	{
+		if(investment.questId == questId)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+void Team::AddInvestment(cstring name, int questId, int gold, int days)
+{
+	Investment& investment = Add1(investments);
+	investment.questId = questId;
+	investment.gold = gold;
+	investment.name = name;
+	investment.days = days;
+
+	if(HaveActiveNpc())
+	{
+		const int investment = int(gold * 5 * GetShare().y);
+		for(Unit& unit : active_members)
+		{
+			if(!unit.IsPlayer())
+				unit.hero->investment += investment;
+		}
+	}
+
+	if(Net::IsServer())
+		Net::PushChange(NetChange::ADD_INVESTMENT);
+}
+
+//=================================================================================================
+void Team::UpdateInvestment(int questId, int gold)
+{
+	for(Investment& investment : investments)
+	{
+		if(investment.questId == questId)
+		{
+			if(HaveActiveNpc())
+			{
+				const int increase = int((gold - investment.gold) * 5 * GetShare().y);
+				for(Unit& unit : active_members)
+				{
+					if(!unit.IsPlayer())
+						unit.hero->investment += increase;
+				}
+			}
+
+			investment.gold = gold;
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UPDATE_INVESTMENT;
+				c.id = questId;
+				c.count = gold;
+			}
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void Team::WriteInvestments(BitStreamWriter& f)
+{
+	f << investments.size();
+	for(const Investment& investment : investments)
+	{
+		f << investment.questId;
+		f << investment.gold;
+		f << investment.name;
+	}
+}
+
+//=================================================================================================
+void Team::ReadInvestments(BitStreamReader& f)
+{
+	investments.resize(f.Read<uint>());
+	for(Investment& investment : investments)
+	{
+		f >> investment.questId;
+		f >> investment.gold;
+		f >> investment.name;
+	}
 }

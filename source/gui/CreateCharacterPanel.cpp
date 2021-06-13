@@ -300,7 +300,9 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
+						const Vec2 scale(float(flow_size.x - 4) / 256, 17.f / 32);
+						const Vec2 pos(r.LeftTop());
+						const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 						part.Right() = int(fi.part * 256);
 						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}
@@ -780,13 +782,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_SHOOT:
-			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-			unit->mesh_inst->groups[1].speed = unit->GetBowAttackSpeed();
-			unit->action = A_SHOOT;
-			unit->animation_state = AS_SHOOT_PREPARE;
-			unit->bow_instance = game_level->GetBowInstance(unit->GetBow().mesh);
-			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[1].speed;
+			unit->DoRangedAttack(true);
 			t = 100.f;
 			break;
 		case DA_SHOW_WEAPON:
@@ -1462,30 +1458,14 @@ void CreateCharacterPanel::CheckSkillsUpdate()
 //=================================================================================================
 void CreateCharacterPanel::UpdateInventory()
 {
-	const Item* old_items[SLOT_MAX];
-	for(int i = 0; i < SLOT_MAX; ++i)
-		old_items[i] = items[i];
+	array<const Item*, SLOT_MAX> old_items = items;
 
 	cc.GetStartingItems(items);
 
-	bool same = true;
-	for(int i = 0; i < SLOT_MAX; ++i)
-	{
-		if(items[i] != old_items[i])
-		{
-			same = false;
-			break;
-		}
-	}
-	if(same)
+	if(items == old_items)
 		return;
 
-	for(int i = 0; i < SLOT_MAX; ++i)
-	{
-		if(items[i])
-			game_res->PreloadItem(items[i]);
-		unit->slots[i] = items[i];
-	}
+	unit->ReplaceItems(items);
 
 	bool reset = false;
 

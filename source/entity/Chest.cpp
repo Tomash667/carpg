@@ -18,7 +18,7 @@ void Chest::Recreate()
 {
 	if(meshInst)
 	{
-		meshInst->ApplyPreload(base->mesh, true);
+		meshInst->ApplyPreload(base->mesh);
 		if(meshInst->IsActive())
 			meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_BACK | PLAY_ONCE);
 	}
@@ -46,7 +46,7 @@ void Chest::Save(GameWriter& f)
 	f << rot;
 
 	if(f.isLocal)
-		meshInst->SaveSimple(f);
+		MeshInstance::SaveOptional(f, meshInst);
 
 	f << (handler ? handler->GetChestEventHandlerQuestId() : -1);
 }
@@ -76,8 +76,13 @@ void Chest::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		meshInst = new MeshInstance(nullptr);
-		meshInst->LoadSimple(f);
+		if(LOAD_VERSION >= V_0_18)
+			MeshInstance::LoadOptional(f, meshInst);
+		else
+		{
+			meshInst = new MeshInstance(nullptr);
+			meshInst->LoadSimple(f);
+		}
 	}
 	else
 		meshInst = nullptr;
@@ -99,7 +104,8 @@ void Chest::Write(BitStreamWriter& f)
 	f << base->hash;
 	f << pos;
 	f << rot;
-	meshInst->WriteSimple(f);
+	if(net->mp_load)
+		MeshInstance::SaveOptional(f, meshInst);
 }
 
 //=================================================================================================
@@ -109,8 +115,8 @@ bool Chest::Read(BitStreamReader& f)
 	base = BaseObject::Get(f.Read<int>());
 	f >> pos;
 	f >> rot;
-	meshInst = new MeshInstance(nullptr);
-	meshInst->ReadSimple(f);
+	if(net->mp_load)
+		MeshInstance::LoadOptional(f, meshInst);
 	if(!f)
 		return false;
 	Register();

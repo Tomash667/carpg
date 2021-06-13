@@ -19,7 +19,6 @@
 #include "Unit.h"
 
 #include <ParticleSystem.h>
-#include <Profiler.h>
 #include <SoundManager.h>
 
 //=================================================================================================
@@ -37,8 +36,6 @@ LevelArea::~LevelArea()
 //=================================================================================================
 void LevelArea::Update(float dt)
 {
-	ProfilerBlock profiler_block([&] { return Format("UpdateArea %s", GetName()); });
-
 	// update units
 	// new units can be added inside this loop - so no iterators!
 	for(uint i = 0, count = units.size(); i < count; ++i)
@@ -869,6 +866,25 @@ bool LevelArea::RemoveItemFromChest(const Item* item)
 }
 
 //=================================================================================================
+// Check only alive units, ignore team
+bool LevelArea::RemoveItemFromUnit(const Item* item)
+{
+	for(Unit* unit : units)
+	{
+		if(!unit->IsAlive() || unit->IsTeamMember())
+			continue;
+
+		if(unit->HaveItem(item))
+		{
+			unit->RemoveItem(item, 1u);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
 Door* LevelArea::FindDoor(const Int2& pt)
 {
 	for(Door* door : doors)
@@ -884,6 +900,20 @@ Door* LevelArea::FindDoor(const Int2& pt)
 void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 {
 	Ability& ability = *bullet.ability;
+
+	// sound
+	if(ability.sound_hit)
+	{
+		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPELL_SOUND;
+			c.e_id = 1;
+			c.ability = &ability;
+			c.pos = pos;
+		}
+	}
 
 	if(IsSet(ability.flags, Ability::Explode))
 	{
@@ -901,19 +931,15 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	}
 	else
 	{
-		// sound
-		if(ability.sound_hit)
-			sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
-
 		// particles
 		if(ability.tex_particle && ability.type == Ability::Ball)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = ability.tex_particle;
-			pe->emision_interval = 0.01f;
+			pe->emission_interval = 0.01f;
 			pe->life = 0.f;
 			pe->particle_life = 0.5f;
-			pe->emisions = 1;
+			pe->emissions = 1;
 			pe->spawn_min = 8;
 			pe->spawn_max = 12;
 			pe->max_particles = 12;
@@ -1031,10 +1057,10 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh
 
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = game_res->tSpark;
-				pe->emision_interval = 0.01f;
+				pe->emission_interval = 0.01f;
 				pe->life = 5.f;
 				pe->particle_life = 0.5f;
-				pe->emisions = 1;
+				pe->emissions = 1;
 				pe->spawn_min = 10;
 				pe->spawn_max = 15;
 				pe->max_particles = 15;
@@ -1080,8 +1106,6 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 	explo->sizemax = ability->explode_range;
 	tmp->explos.push_back(explo);
 
-	sound_mgr->PlaySound3d(ability->sound_hit, explo->pos, ability->sound_hit_dist);
-
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1091,171 +1115,4 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 	}
 
 	return explo;
-}
-
-//=================================================================================================
-void TmpLevelArea::Clear()
-{
-	DeleteElements(explos);
-	DeleteElements(electros);
-	DeleteElements(bullets);
-	drains.clear();
-	colliders.clear();
-	DeleteElements(pes);
-	DeleteElements(tpes);
-}
-
-//=================================================================================================
-void TmpLevelArea::Save(GameWriter& f)
-{
-	f << pes.size();
-	for(ParticleEmitter* pe : pes)
-		pe->Save(f);
-
-	f << tpes.size();
-	for(TrailParticleEmitter* tpe : tpes)
-		tpe->Save(f);
-
-	f << explos.size();
-	for(Explo* explo : explos)
-		explo->Save(f);
-
-	f << electros.size();
-	for(Electro* electro : electros)
-		electro->Save(f);
-
-	f << drains.size();
-	for(Drain& drain : drains)
-		drain.Save(f);
-
-	f << bullets.size();
-	for(Bullet* bullet : bullets)
-		bullet->Save(f);
-}
-
-//=================================================================================================
-void TmpLevelArea::Load(GameReader& f)
-{
-	const int particle_version = (LOAD_VERSION >= V_0_13 ? 2 : (LOAD_VERSION >= V_0_12 ? 1 : 0));
-
-	pes.resize(f.Read<uint>());
-	for(ParticleEmitter*& pe : pes)
-	{
-		pe = new ParticleEmitter;
-		pe->Load(f, particle_version);
-	}
-
-	tpes.resize(f.Read<uint>());
-	for(TrailParticleEmitter*& tpe : tpes)
-	{
-		tpe = new TrailParticleEmitter;
-		tpe->Load(f, particle_version);
-	}
-
-	explos.resize(f.Read<uint>());
-	for(Explo*& explo : explos)
-	{
-		explo = new Explo;
-		explo->Load(f);
-	}
-
-	electros.resize(f.Read<uint>());
-	for(Electro*& electro : electros)
-	{
-		electro = new Electro;
-		electro->area = area;
-		electro->Load(f);
-	}
-
-	drains.resize(f.Read<uint>());
-	for(Drain& drain : drains)
-		drain.Load(f);
-
-	bullets.resize(f.Read<uint>());
-	for(Bullet*& bullet : bullets)
-	{
-		bullet = new Bullet;
-		bullet->Load(f);
-	}
-}
-
-//=================================================================================================
-void TmpLevelArea::Write(BitStreamWriter& f)
-{
-	// bullets
-	f.Write(bullets.size());
-	for(Bullet* bullet : bullets)
-		bullet->Write(f);
-
-	// explosions
-	f.Write(explos.size());
-	for(Explo* explo : explos)
-		explo->Write(f);
-
-	// electros
-	f.Write(electros.size());
-	for(Electro* electro : electros)
-		electro->Write(f);
-}
-
-//=================================================================================================
-bool TmpLevelArea::Read(BitStreamReader& f)
-{
-	// bullets
-	uint count;
-	f >> count;
-	if(!f.Ensure(count * Bullet::MIN_SIZE))
-	{
-		Error("Read tmp area: Broken bullet count.");
-		return false;
-	}
-	bullets.resize(count);
-	for(Bullet*& bullet : bullets)
-	{
-		bullet = new Bullet;
-		if(!bullet->Read(f, *this))
-		{
-			Error("Read tmp area: Broken bullet.");
-			return false;
-		}
-	}
-
-	// explosions
-	f >> count;
-	if(!f.Ensure(count * Explo::MIN_SIZE))
-	{
-		Error("Read tmp area: Broken explosion count.");
-		return false;
-	}
-	explos.resize(count);
-	for(Explo*& explo : explos)
-	{
-		explo = new Explo;
-		if(!explo->Read(f))
-		{
-			Error("Read tmp area: Broken explosion.");
-			return false;
-		}
-	}
-
-	// electro effects
-	f >> count;
-	if(!f.Ensure(count * Electro::MIN_SIZE))
-	{
-		Error("Read tmp area: Broken electro count.");
-		return false;
-	}
-	electros.resize(count);
-	for(Electro*& electro : electros)
-	{
-		electro = new Electro;
-		electro->area = area;
-		if(!electro->Read(f))
-		{
-			Error("Read tmp area: Broken electro.");
-			return false;
-		}
-	}
-
-	return true;
 }

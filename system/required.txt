@@ -207,8 +207,8 @@ unit mayor
 unit soltys
 unit clerk
 unit guard
-unit guard2
-unit guard3
+unit guard_wagon
+unit guard_merchant
 unit guard_move
 // tutorial
 unit tut_goblin
@@ -320,9 +320,6 @@ dialog q_spread_news_start
 dialog q_spread_news_timeout
 dialog q_spread_news_tell
 dialog q_spread_news_end
-dialog q_stolen_artifact_start
-dialog q_stolen_artifact_end
-dialog q_stolen_artifact_timeout
 dialog q_wanted_start
 dialog q_wanted_timeout
 dialog q_wanted_end

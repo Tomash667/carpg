@@ -126,7 +126,7 @@ private:
 	PickItemDialog* pickItemDialog;
 	vector<Perk*> available_perks;
 	vector<pair<cstring, int>> taken_perks;
-	const Item* items[SLOT_MAX];
+	array<const Item*, SLOT_MAX> items;
 	TexturePtr tBox, tPowerBar;
 	RenderTarget* rt_char;
 };

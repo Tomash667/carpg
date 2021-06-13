@@ -34,13 +34,6 @@ const int DEF_WORLD_SIZE = 1200;
 World* world;
 vector<string> txLocationStart, txLocationEnd;
 
-// pre V_0_8 compatibility
-namespace old
-{
-	const int DEF_WORLD_SIZE = 600;
-	const int START_YEAR = 100;
-}
-
 //-----------------------------------------------------------------------------
 // used temporary before deciding how many levels location should have (and use Single or MultiInsideLocation)
 struct TmpLocation : public Location
@@ -130,9 +123,11 @@ void World::Reset()
 //=================================================================================================
 void World::Update(int days, UpdateMode mode)
 {
-	assert(days > 0);
+	assert(Net::IsLocal());
 	if(mode == UM_TRAVEL)
 		assert(days == 1);
+	else
+		assert(days > 0);
 
 	UpdateDate(days);
 	SpawnCamps(days);
@@ -142,14 +137,7 @@ void World::Update(int days, UpdateMode mode)
 	UpdateLocations();
 	UpdateNews();
 	quest_mgr->Update(days);
-
-	if(Net::IsLocal())
-		quest_mgr->UpdateQuests(days);
-
-	if(mode == UM_TRAVEL)
-		team->Update(1, true);
-	else if(mode == UM_NORMAL)
-		team->Update(days, false);
+	team->Update(days, mode);
 
 	// end of game
 	if(date.year >= startDate.year + 60)
@@ -685,7 +673,7 @@ void World::GenerateWorld()
 				InsideLocation* inside;
 
 				int target;
-				switch(guaranteed_dungeon)
+				switch(guaranteed_dungeon++)
 				{
 				case 0:
 					target = HUMAN_FORT;
@@ -1247,7 +1235,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	LoadNews(f);
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_17)
 		f.SkipVector<Int2>(); // old boss_levels
 	f >> tomir_spawned;
 }
@@ -1267,7 +1255,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	else
 		current_index = -1;
 	int step = 0;
-	Location* academy = nullptr;
 	for(Location*& loc : locations)
 	{
 		++index;
@@ -1364,10 +1351,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				f.isLocal = (current_index == index);
 				loc->index = index;
 				loc->Load(f);
-
-				// remove old academy
-				if(LOAD_VERSION < V_0_8 && loc->type == L_NULL)
-					academy = loc;
 			}
 			else
 				loc = nullptr;
@@ -1406,9 +1389,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f.isLocal = false;
 	f >> empty_locations;
 	f >> create_camp;
-	if(LOAD_VERSION < V_0_8)
-		create_camp = 10 - create_camp;
-	else if(LOAD_VERSION < V_0_11 && create_camp > 10)
+	if(LOAD_VERSION < V_0_11 && create_camp > 10)
 		create_camp = 10;
 	f >> world_pos;
 	f >> reveal_timer;
@@ -1436,10 +1417,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	{
 		f >> travel_location;
 		f >> travel_start_pos;
-		if(LOAD_VERSION >= V_0_8)
-			f >> travel_target_pos;
-		else
-			travel_target_pos = travel_location->pos;
+		f >> travel_target_pos;
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
@@ -1506,26 +1484,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		}
 	}
 
-	if(LOAD_VERSION >= V_0_8)
-		f >> tiles;
-	else
-		CalculateTiles();
+	f >> tiles;
 
 	if(current_location_index != -1)
-	{
 		current_location = locations[current_location_index];
-		if(current_location == academy)
-		{
-			current_location = GetNearestSettlement(academy->pos);
-			current_location_index = current_location->index;
-			locations[academy->index] = nullptr;
-			++empty_locations;
-			delete academy;
-			if(current_location->state == LS_KNOWN)
-				current_location->state = LS_VISITED;
-			world_pos = current_location->pos;
-		}
-	}
 	else
 		current_location = nullptr;
 	game_level->location_index = current_location_index;
@@ -1545,73 +1507,6 @@ void World::LoadNews(GameReader& f)
 		n = new News;
 		f >> n->add_time;
 		f.ReadString2(n->text);
-	}
-}
-
-//=================================================================================================
-// pre V_0_8
-void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool inside)
-{
-	if(part == 0)
-	{
-		f >> date;
-		startDate = Date(100, 0, 0);
-		f >> worldtime;
-		world_size = old::DEF_WORLD_SIZE;
-		world_bounds = Vec2(WORLD_BORDER, world_size - 16.f);
-		day_timer = 0.f;
-		tomir_spawned = false;
-	}
-	else if(part == 1)
-	{
-		enum WORLDMAP_STATE
-		{
-			WS_MAIN,
-			WS_TRAVEL,
-			WS_ENCOUNTER
-		} old_state;
-		f >> old_state;
-		switch(old_state)
-		{
-		case WS_MAIN:
-			if(inside)
-				state = State::INSIDE_LOCATION;
-			else
-				state = State::ON_MAP;
-			break;
-		case WS_TRAVEL:
-			state = State::INSIDE_ENCOUNTER;
-			break;
-		case WS_ENCOUNTER:
-			state = State::ENCOUNTER;
-			break;
-		}
-		f >> current_location_index;
-		LoadLocations(f, loading);
-		if(state == State::INSIDE_ENCOUNTER)
-		{
-			// random encounter - should guards give team reward?
-			bool guards_enc_reward;
-			f >> guards_enc_reward;
-			if(guards_enc_reward)
-				script_mgr->GetVar("guards_enc_reward") = true;
-		}
-		else if(state == State::ENCOUNTER)
-		{
-			// bugfix
-			state = State::TRAVEL;
-			travel_location = locations[0];
-			travel_start_pos = world_pos = travel_location->pos;
-			travel_timer = 1.f;
-		}
-	}
-	else if(part == 2)
-		LoadNews(f);
-	else if(part == 3)
-	{
-		f.Skip<bool>(); // old first_city
-		f.SkipVector<Int2>(); // old boss_levels
-		encounter_loc->state = LS_HIDDEN;
 	}
 }
 

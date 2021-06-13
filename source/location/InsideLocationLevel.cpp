@@ -287,24 +287,11 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 
 		// room groups
 		index = 0;
-		if(LOAD_VERSION >= V_0_8)
+		groups.resize(f.Read<uint>());
+		for(RoomGroup& group : groups)
 		{
-			groups.resize(f.Read<uint>());
-			for(RoomGroup& group : groups)
-			{
-				group.Load(f);
-				group.index = index++;
-			}
-		}
-		else
-		{
-			groups.resize(rooms.size());
-			for(int i = 0; i < (int)rooms.size(); ++i)
-			{
-				groups[i].rooms.push_back(i);
-				groups[i].target = rooms[i]->target;
-				groups[i].index++;
-			}
+			group.Load(f);
+			group.index = index++;
 		}
 		RoomGroup::SetRoomGroupConnections(groups, rooms);
 

@@ -101,7 +101,6 @@ public:
 	bool RemoveQuestRumor(int id);
 	string GetRandomQuestRumor();
 	void GenerateQuestUnits(bool on_enter);
-	void UpdateQuests(int days);
 	void RemoveQuestUnits(bool on_leave);
 	void HandleQuestEvent(Quest_Event* event);
 	void UpdateQuestsLocal(float dt);
@@ -130,7 +129,7 @@ public:
 	Quest_Tutorial* quest_tutorial;
 	int unique_quests, unique_quests_completed;
 	bool unique_completed_show;
-	cstring txRumorQ[9];
+	cstring txQuest[268], txForMayor, txForSoltys, txRumorQ[9];
 
 private:
 	void LoadQuests(GameReader& f, vector<Quest*>& quests);

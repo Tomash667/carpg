@@ -23,15 +23,15 @@ LevelArea* LocationHelper::GetArea(Location* loc)
 //=================================================================================================
 LevelArea* LocationHelper::GetArea(Location* loc, int index)
 {
-	assert(loc && index >= 0);
-	if(index == 0)
+	assert(loc && index >= -1);
+	if(index == -1)
 		return GetArea(loc);
 	if(loc->outside)
 	{
 		if(loc->type == L_CITY)
 		{
 			City* city = static_cast<City*>(loc);
-			if(index > 0 && index < (int)city->inside_buildings.size())
+			if(index >= 0 && index < (int)city->inside_buildings.size())
 				return city->inside_buildings[index];
 		}
 	}
@@ -41,11 +41,28 @@ LevelArea* LocationHelper::GetArea(Location* loc, int index)
 		if(inside->IsMultilevel())
 		{
 			MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
-			if(index > 0 && index < (int)multi->levels.size())
+			if(index >= 0 && index < (int)multi->levels.size())
 				return multi->levels[index];
 		}
 	}
 	throw ScriptException("Invalid area index %d.", index);
+}
+
+//=================================================================================================
+LevelArea* LocationHelper::GetBuildingArea(Location* loc, const string& name)
+{
+	assert(loc);
+
+	if(loc->type == L_CITY)
+	{
+		City* city = static_cast<City*>(loc);
+		for(InsideBuilding* building : city->inside_buildings)
+		{
+			if(building->building->group->id == name)
+				return building;
+		}
+	}
+	return nullptr;
 }
 
 //=================================================================================================

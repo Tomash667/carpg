@@ -10,12 +10,7 @@ Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> group;
-	if(LOAD_VERSION >= V_0_8)
-		f >> st;
-	else if(targetLoc)
-		st = targetLoc->st;
-	else
-		st = 10;
+	f >> st;
 
 	return LoadResult::Convert;
 }

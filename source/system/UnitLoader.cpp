@@ -323,6 +323,7 @@ void UnitLoader::InitTokenizer()
 		{ "stun_res", F2_STUN_RESISTANCE },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
 		{ "guard", F2_GUARD },
+		{ "rooted_res", F2_ROOTED_RESISTANCE },
 		{ "xar", F2_XAR },
 		{ "tournament", F2_TOURNAMENT },
 		{ "yell", F2_YELL },

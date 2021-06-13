@@ -22,6 +22,7 @@
 #include "Inventory.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "OffscreenLocation.h"
 #include "PlayerInfo.h"
 #include "Portal.h"
 #include "Quest2.h"
@@ -34,6 +35,7 @@
 #include "Team.h"
 #include "UnitEventHandler.h"
 #include "UnitHelper.h"
+#include "UnitList.h"
 #include "World.h"
 
 #include <ParticleSystem.h>
@@ -54,6 +56,7 @@ const float Unit::ALERT_SOUND_DIST = 2.f;
 const float Unit::PAIN_SOUND_DIST = 1.f;
 const float Unit::DIE_SOUND_DIST = 1.f;
 const float Unit::YELL_SOUND_DIST = 2.f;
+const float Unit::COUGHS_SOUND_DIST = 1.f;
 EntityType<Unit>::Impl EntityType<Unit>::impl;
 static AIController* AI_PLACEHOLDER = (AIController*)1;
 
@@ -434,6 +437,26 @@ bool Unit::WantItem(const Item* item) const
 		return true;
 	case Consumable::AiType::Mana:
 		return IsUsingMp();
+	}
+}
+
+//=================================================================================================
+void Unit::ReplaceItem(ITEM_SLOT slot, const Item* item)
+{
+	assert(Net::IsClient()); // TODO
+	if(item)
+		game_res->PreloadItem(item);
+	slots[slot] = item;
+}
+
+//=================================================================================================
+void Unit::ReplaceItems(array<const Item*, SLOT_MAX>& items)
+{
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		if(items[i])
+			game_res->PreloadItem(items[i]);
+		slots[i] = items[i];
 	}
 }
 
@@ -914,18 +937,47 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 //=================================================================================================
 void Unit::AddEffect(Effect& e, bool send)
 {
+	if(Net::IsLocal())
+	{
+		switch(e.effect)
+		{
+		case EffectId::Stun:
+			BreakAction();
+			if(IsSet(data->flags2, F2_STUN_RESISTANCE))
+				e.time /= 2;
+			break;
+		case EffectId::Rooted:
+			if(IsSet(data->flags2, F2_ROOTED_RESISTANCE))
+				e.time /= 2;
+			break;
+		}
+	}
+
 	effects.push_back(e);
 	OnAddRemoveEffect(e);
-	if(send && player && !player->IsLocal() && Net::IsServer())
+
+	if(send && Net::IsServer())
 	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ADD_EFFECT;
-		c.id = (int)e.effect;
-		c.count = (int)e.source;
-		c.a1 = e.source_id;
-		c.a2 = e.value;
-		c.pos.x = e.power;
-		c.pos.y = e.time;
+		if(player && !player->IsLocal())
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::ADD_EFFECT;
+			c.id = (int)e.effect;
+			c.count = (int)e.source;
+			c.a1 = e.source_id;
+			c.a2 = e.value;
+			c.pos.x = e.power;
+			c.pos.y = e.time;
+		}
+
+		if(e.IsVisible())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::ADD_UNIT_EFFECT;
+			c.unit = this;
+			c.id = (int)e.effect;
+			c.extra_f = e.time;
+		}
 	}
 }
 
@@ -1122,43 +1174,61 @@ void Unit::UpdateEffects(float dt)
 	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f, food_heal = 0.f;
 
 	// update effects timer
-	uint index = 0;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	for(uint index = 0, count = effects.size(); index < count; ++index)
 	{
-		if(it->effect == EffectId::NaturalHealingMod)
+		Effect& effect = effects[index];
+		if(effect.effect == EffectId::NaturalHealingMod)
 			continue;
-		switch(it->effect)
+
+		switch(effect.effect)
 		{
 		case EffectId::Regeneration:
-			if(it->source == EffectSource::Temporary && it->power > 0.f)
+			if(effect.source == EffectSource::Temporary && effect.power > 0.f)
 			{
-				if(it->power > temp_regen)
-					temp_regen = it->power;
+				if(effect.power > temp_regen)
+					temp_regen = effect.power;
 			}
 			else
-				regen += it->power;
+				regen += effect.power;
 			break;
 		case EffectId::Poison:
-			poison_dmg += it->power;
+			poison_dmg += effect.power;
 			break;
 		case EffectId::Alcohol:
-			alco_sum += it->power;
+			alco_sum += effect.power;
 			break;
 		case EffectId::FoodRegeneration:
-			food_heal += it->power;
+			food_heal += effect.power;
 			break;
 		case EffectId::StaminaRegeneration:
-			if(it->power > best_stamina)
-				best_stamina = it->power;
+			if(effect.power > best_stamina)
+				best_stamina = effect.power;
 			break;
 		case EffectId::StaminaRegenerationMod:
-			stamina_mod *= it->power;
+			stamina_mod *= effect.power;
+			break;
+		case EffectId::SlowMove:
+			effect.power = effect.time;
 			break;
 		}
-		if(it->source == EffectSource::Temporary)
+
+		if(effect.source == EffectSource::Temporary)
 		{
-			if((it->time -= dt) <= 0.f)
+			if((effect.time -= dt) <= 0.f)
+			{
 				_to_remove.push_back(index);
+				if(Net::IsLocal() && effect.effect == EffectId::Rooted && effect.value == EffectValue_Rooted_Vines)
+				{
+					Effect e;
+					e.effect = EffectId::SlowMove;
+					e.source = EffectSource::Temporary;
+					e.source_id = -1;
+					e.power = 1.f;
+					e.time = 1.f;
+					e.value = -1;
+					AddEffect(e);
+				}
+			}
 		}
 	}
 
@@ -1586,6 +1656,22 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prev_value) const
 }
 
 //=================================================================================================
+bool Unit::CanRun() const
+{
+	if(IsSet(data->flags, F_SLOW)
+		|| Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST)
+		|| (action == A_ATTACK && !act.attack.run)
+		|| IsOverloaded())
+		return false;
+
+	const float slow = GetEffectMax(EffectId::SlowMove);
+	if(slow >= 0.5f)
+		return false;
+
+	return true;
+}
+
+//=================================================================================================
 void Unit::RecalculateHp()
 {
 	float hpp = hp / hpmax;
@@ -1815,6 +1901,9 @@ void Unit::Save(GameWriter& f)
 			if(act.dash.hit)
 				act.dash.hit->Save(f);
 			break;
+		case A_SHOOT:
+			f << (act.shoot.ability ? act.shoot.ability->hash : 0);
+			break;
 		case A_USE_USABLE:
 			f << act.use_usable.rot;
 			break;
@@ -1987,13 +2076,10 @@ void Unit::Load(GameReader& f)
 			can_sort = false;
 		}
 	}
-	if(LOAD_VERSION >= V_0_8)
-	{
-		if(f.Read0())
-			stock = nullptr;
-		else
-			LoadStock(f);
-	}
+	if(f.Read0())
+		stock = nullptr;
+	else
+		LoadStock(f);
 
 	// stats
 	f >> live_state;
@@ -2030,46 +2116,26 @@ void Unit::Load(GameReader& f)
 		}
 		level = data->level.Clamp(level);
 	}
-	if(LOAD_VERSION >= V_0_8)
+	if(data->group == G_PLAYER)
 	{
-		if(data->group == G_PLAYER)
+		stats = new UnitStats;
+		stats->fixed = false;
+		stats->subprofile.value = 0;
+		stats->Load(f);
+		if(LOAD_VERSION < V_0_10)
 		{
-			stats = new UnitStats;
-			stats->fixed = false;
-			stats->subprofile.value = 0;
-			stats->Load(f);
-			if(LOAD_VERSION < V_0_10)
+			for(int i = 0; i < (int)SkillId::MAX; ++i)
 			{
-				for(int i = 0; i < (int)SkillId::MAX; ++i)
-				{
-					if(stats->skill[i] == -1)
-						stats->skill[i] = 0;
-				}
+				if(stats->skill[i] == -1)
+					stats->skill[i] = 0;
 			}
-		}
-		else
-		{
-			SubprofileInfo sub;
-			f >> sub;
-			stats = data->GetStats(sub);
 		}
 	}
 	else
 	{
-		UnitStats::Skip(f); // old temporary stats
-		if(data->group == G_PLAYER)
-		{
-			stats = new UnitStats;
-			stats->fixed = false;
-			stats->subprofile.value = 0;
-			stats->Load(f);
-			stats->skill[(int)SkillId::PERSUASION] = UnitStats::NEW_STAT;
-		}
-		else
-		{
-			stats = data->GetStats(level);
-			UnitStats::Skip(f);
-		}
+		SubprofileInfo sub;
+		f >> sub;
+		stats = data->GetStats(sub);
 	}
 	f >> gold;
 	bool old_invisible = false;
@@ -2125,21 +2191,7 @@ void Unit::Load(GameReader& f)
 	f >> summoner;
 
 	if(live_state >= DYING)
-	{
-		if(LOAD_VERSION >= V_0_8)
-			f >> mark;
-		else
-		{
-			for(ItemSlot& item : items)
-			{
-				if(item.item && IsSet(item.item->flags, ITEM_IMPORTANT))
-				{
-					mark = true;
-					break;
-				}
-			}
-		}
-	}
+		f >> mark;
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;
@@ -2235,11 +2287,24 @@ void Unit::Load(GameReader& f)
 			else
 				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");
 			f >> act.dash.rot;
-			if(LOAD_VERSION >= V_DEV && act.dash.ability->RequireList())
+			if(LOAD_VERSION >= V_0_17 && act.dash.ability->RequireList())
 			{
 				act.dash.hit = UnitList::Get();
 				act.dash.hit->Load(f);
 			}
+			break;
+		case A_SHOOT:
+			if(LOAD_VERSION >= V_0_18)
+			{
+				int hash;
+				f >> hash;
+				if(hash != 0)
+					act.shoot.ability = Ability::Get(hash);
+				else
+					act.shoot.ability = nullptr;
+			}
+			else
+				act.shoot.ability = nullptr;
 			break;
 		case A_USE_USABLE:
 			if(LOAD_VERSION >= V_0_10)
@@ -2308,11 +2373,11 @@ void Unit::Load(GameReader& f)
 			for(Effect& e : effects)
 			{
 				if(e.source == EffectSource::Perk)
-					e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
+					e.source_id = old::Convert((old::Perk)e.source_id)->hash;
 			}
 		}
 	}
-	else if(LOAD_VERSION >= V_0_8)
+	else
 	{
 		effects.resize(f.Read<uint>());
 		for(Effect& e : effects)
@@ -2324,19 +2389,7 @@ void Unit::Load(GameReader& f)
 			f >> e.power;
 			e.value = -1;
 			if(e.source == EffectSource::Perk)
-				e.source_id = old::Convert((old::v2::Perk)e.source_id)->hash;
-		}
-	}
-	else
-	{
-		effects.resize(f.Read<uint>());
-		for(Effect& e : effects)
-		{
-			e.effect = (EffectId)(f.Read<int>() - 1); // changed None effect from 0 to -1
-			e.time = f.Read<float>();
-			e.power = f.Read<float>();
-			e.source = EffectSource::Temporary;
-			e.source_id = -1;
+				e.source_id = old::Convert((old::Perk)e.source_id)->hash;
 		}
 	}
 	if(content.require_update)
@@ -2568,34 +2621,8 @@ void Unit::Load(GameReader& f)
 	}
 
 	// calculate new skills/attributes
-	if(LOAD_VERSION >= V_0_8)
-	{
-		if(content.require_update)
-			CalculateStats();
-	}
-	else
-	{
-		if(IsPlayer())
-		{
-			player->RecalculateLevel();
-			// set new skills initial value & aptitude
-			UnitStats old_stats;
-			old_stats.subprofile.value = 0;
-			old_stats.subprofile.level = level;
-			old_stats.Set(data->GetStatProfile());
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-			{
-				if(stats->skill[i] == UnitStats::NEW_STAT)
-				{
-					stats->skill[i] = old_stats.skill[i];
-					player->skill[i].apt = stats->skill[i] / 5;
-				}
-			}
-			player->SetRequiredPoints();
-			player->RecalculateLevel();
-		}
+	if(content.require_update)
 		CalculateStats();
-	}
 
 	// compatibility
 	if(LOAD_VERSION < V_0_12)
@@ -2740,10 +2767,38 @@ void Unit::Write(BitStreamWriter& f) const
 		else
 			f.Write0();
 		f << (usable ? usable->id : -1);
-		if(action == A_ATTACK)
+		switch(action)
+		{
+		case A_ATTACK:
 			f << act.attack.index;
-		else if(action == A_USE_USABLE)
+			break;
+		case A_USE_USABLE:
 			f << act.use_usable.rot;
+			break;
+		case A_SHOOT:
+			f << (act.shoot.ability ? act.shoot.ability->hash : 0);
+			break;
+		}
+
+		// visible effects
+		uint count = 0;
+		for(const Effect& e : effects)
+		{
+			if(e.IsVisible())
+				++count;
+		}
+		f.WriteCasted<byte>(count);
+		if(count)
+		{
+			for(const Effect& e : effects)
+			{
+				if(e.IsVisible())
+				{
+					f.WriteCasted<byte>(e.effect);
+					f << e.time;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -3012,6 +3067,7 @@ bool Unit::Read(BitStreamReader& f)
 			f >> act.attack.index;
 			break;
 		case A_SHOOT:
+			act.shoot.ability = Ability::Get(f.Read<int>());
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
@@ -3020,6 +3076,18 @@ bool Unit::Read(BitStreamReader& f)
 		case A_USE_USABLE:
 			f >> act.use_usable.rot;
 			break;
+		}
+
+		// visible effects
+		effects.resize(f.Read<byte>());
+		for(Effect& e : effects)
+		{
+			f.ReadCasted<byte>(e.effect);
+			f >> e.time;
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
+			e.value = -1;
+			e.power = 0;
 		}
 
 		if(!f)
@@ -3475,19 +3543,24 @@ void Unit::HealPoison()
 //=================================================================================================
 void Unit::RemoveEffect(EffectId effect)
 {
+	bool visible = false;
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		if(it->effect == effect)
+		{
 			_to_remove.push_back(index);
+			if(it->IsVisible())
+				visible = true;
+		}
 	}
 
-	if(effect == EffectId::Stun && !_to_remove.empty() && Net::IsServer())
+	if(visible && Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::STUN;
+		c.type = NetChange::REMOVE_UNIT_EFFECT;
 		c.unit = this;
-		c.f[0] = 0;
+		c.id = (int)effect;
 	}
 
 	RemoveEffects();
@@ -3630,6 +3703,65 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 }
 
 //=================================================================================================
+void Unit::EquipItem(int index)
+{
+	const Item* newItem = items[index].item;
+	ITEM_SLOT slot = ItemTypeToSlot(newItem->type);
+
+	// for rings - use empty slot or last equipped slot
+	if(slot == SLOT_RING1 && IsPlayer())
+	{
+		if(slots[slot])
+		{
+			if(!slots[SLOT_RING2] || player->last_ring)
+				slot = SLOT_RING2;
+		}
+		player->last_ring = (slot == SLOT_RING2);
+	}
+
+	const Item* prevItem = slots[slot];
+	if(prevItem)
+	{
+		// replace equipped item
+		if(Net::IsLocal())
+		{
+			RemoveItemEffects(prevItem, slot);
+			ApplyItemEffects(newItem, slot);
+		}
+		slots[slot] = newItem;
+		items.erase(items.begin() + index);
+		AddItem(prevItem, 1, false);
+		weight -= prevItem->weight;
+	}
+	else
+	{
+		// equip item
+		slots[slot] = newItem;
+		if(Net::IsLocal())
+			ApplyItemEffects(newItem, slot);
+		items.erase(items.begin() + index);
+	}
+
+	if(Net::IsServer() && IsVisible(slot))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		c.unit = this;
+		c.id = slot;
+	}
+}
+
+//=================================================================================================
+// Equip item out of nowhere, used only in tutorial
+void Unit::EquipItem(const Item* item)
+{
+	assert(item && game_level->entering);
+	game_res->PreloadItem(item);
+	slots[ItemTypeToSlot(item->type)] = item;
+	weight += item->weight;
+}
+
+//=================================================================================================
 // currently using this on pc, looted units is not written
 void Unit::RemoveItem(int iindex, bool active_location)
 {
@@ -3753,6 +3885,55 @@ uint Unit::RemoveItemS(const string& item_id, uint count)
 	if(!item)
 		return 0;
 	return RemoveItem(item, count);
+}
+
+//=================================================================================================
+void Unit::RemoveEquippedItem(ITEM_SLOT slot)
+{
+	const Item* item = GetEquippedItem(slot);
+	if(slot == SLOT_WEAPON && slots[SLOT_WEAPON] == used_item)
+	{
+		used_item = nullptr;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_USED_ITEM;
+			c.unit = this;
+		}
+	}
+	if(Net::IsLocal())
+		RemoveItemEffects(item, slot);
+	if(Net::IsServer() && IsVisible(slot))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		c.unit = this;
+		c.id = slot;
+	}
+	weight -= item->weight;
+	slots[slot] = nullptr;
+}
+
+//=================================================================================================
+void Unit::RemoveAllEquippedItems()
+{
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		if(!slots[i])
+			continue;
+
+		if(Net::IsLocal())
+			RemoveItemEffects(slots[i], (ITEM_SLOT)i);
+		slots[i] = nullptr;
+
+		if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.unit = this;
+			c.id = i;
+		}
+	}
 }
 
 //=================================================================================================
@@ -4106,11 +4287,11 @@ float Unit::GetBackstabMod(const Item* item) const
 }
 
 //=================================================================================================
-bool Unit::HaveEffect(EffectId e) const
+bool Unit::HaveEffect(EffectId e, int value) const
 {
 	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
 	{
-		if(it->effect == e)
+		if(it->effect == e && (value == -1 || it->value == value))
 			return true;
 	}
 	return false;
@@ -4189,6 +4370,12 @@ int Unit::GetBuffs() const
 			break;
 		case EffectId::PoisonResistance:
 			b |= BUFF_POISON_RES;
+			break;
+		case EffectId::Rooted:
+			b |= BUFF_ROOTED;
+			break;
+		case EffectId::SlowMove:
+			b |= BUFF_SLOW_MOVE;
 			break;
 		}
 	}
@@ -4762,38 +4949,6 @@ void Unit::CreateMesh(CREATE_MESH mode)
 }
 
 //=================================================================================================
-void Unit::ApplyStun(float length)
-{
-	if(Net::IsLocal() && IsSet(data->flags2, F2_STUN_RESISTANCE))
-		length /= 2;
-
-	Effect* effect = FindEffect(EffectId::Stun);
-	if(effect)
-		effect->time = max(effect->time, length);
-	else
-	{
-		Effect e;
-		e.effect = EffectId::Stun;
-		e.source = EffectSource::Temporary;
-		e.source_id = -1;
-		e.value = -1;
-		e.power = 0.f;
-		e.time = length;
-		AddEffect(e);
-
-		BreakAction();
-	}
-
-	if(Net::IsServer())
-	{
-		auto& c = Add1(Net::changes);
-		c.type = NetChange::STUN;
-		c.unit = this;
-		c.f[0] = length;
-	}
-}
-
-//=================================================================================================
 void Unit::UseUsable(Usable* new_usable)
 {
 	if(new_usable)
@@ -5084,6 +5239,7 @@ void Unit::Fall()
 
 		// wstawanie
 		raise_timer = Random(5.f, 7.f);
+		timer = 1.f;
 
 		// event
 		if(event_handler)
@@ -5130,34 +5286,36 @@ void Unit::TryStandup(float dt)
 	if(in_arena != -1 || game->death_screen != 0)
 		return;
 
-	raise_timer -= dt;
 	bool ok = false;
+	raise_timer -= dt;
+	timer -= dt;
 
 	if(live_state == DEAD)
 	{
 		if(IsTeamMember())
 		{
-			if(hp > 0.f && raise_timer > 0.1f)
-				raise_timer = 0.1f;
+			if(hp > 0.f && raise_timer > 0.5f)
+				raise_timer = 0.5f;
 
 			if(raise_timer <= 0.f)
 			{
-				RemovePoison();
+				RemoveEffect(EffectId::Poison);
 
 				if(alcohol > hpmax)
 				{
-					// móg³by wstaæ ale jest zbyt pijany
+					// could stand up but is too drunk
 					live_state = FALL;
 					UpdatePhysics();
 				}
 				else
 				{
-					// sprawdŸ czy nie ma wrogów
+					// check for near enemies
 					ok = true;
 					for(Unit* unit : area->units)
 					{
 						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
 						{
+							AlertAllies(unit);
 							ok = false;
 							break;
 						}
@@ -5167,10 +5325,23 @@ void Unit::TryStandup(float dt)
 				if(!ok)
 				{
 					if(hp > 0.f)
-						raise_timer = 0.1f;
+						raise_timer = 0.5f;
 					else
 						raise_timer = Random(1.f, 2.f);
+					timer = 0.5f;
 				}
+			}
+			else if(timer <= 0.f)
+			{
+				for(Unit* unit : area->units)
+				{
+					if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
+					{
+						AlertAllies(unit);
+						break;
+					}
+				}
+				timer = 0.5f;
 			}
 		}
 	}
@@ -5241,7 +5412,7 @@ void Unit::Standup(bool warp, bool leave)
 			game_level->WarpUnit(*this, pos);
 	}
 
-	if(!game_level->entering && !leave && (Net::IsServer() || (Net::IsClient() && IsLocalPlayer())))
+	if(Net::IsServer() && !game_level->entering && !leave)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STAND_UP;
@@ -5302,7 +5473,10 @@ void Unit::Die(Unit* killer)
 
 		// rising team members / check is location cleared
 		if(IsTeamMember())
+		{
 			raise_timer = Random(5.f, 7.f);
+			timer = 1.f;
+		}
 		else
 		{
 			game_level->CheckIfLocationCleared();
@@ -5463,6 +5637,45 @@ bool Unit::IsDrunkman() const
 void Unit::PlaySound(Sound* sound, float range)
 {
 	sound_mgr->PlaySound3d(sound, GetHeadSoundPos(), range);
+}
+
+//=================================================================================================
+void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, bool dmg)
+{
+	bool playBodyHit = false;
+	if(mat == MAT_SPECIAL_UNIT)
+	{
+		if(HaveArmor())
+		{
+			mat = GetArmor().material;
+			if(dmg && mat != MAT_BODY)
+				playBodyHit = true;
+		}
+		else
+			mat = data->mat;
+	}
+
+	sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, HIT_SOUND_DIST);
+	if(playBodyHit)
+		sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, HIT_SOUND_DIST);
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::HIT_SOUND;
+		c.pos = hitpoint;
+		c.id = mat2;
+		c.count = mat;
+
+		if(playBodyHit)
+		{
+			NetChange& c2 = Add1(Net::changes);
+			c2.type = NetChange::HIT_SOUND;
+			c2.pos = hitpoint;
+			c2.id = mat2;
+			c2.count = MAT_BODY;
+		}
+	}
 }
 
 //=================================================================================================
@@ -6269,12 +6482,12 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 	if(!Equal(rot, dir))
 	{
 		const float rot_speed = GetRotationSpeed() * dt;
-		const float rot_diff = AngleDiff(rot, dir);
+		const float rot_dif = AngleDiff(rot, dir);
 		if(ShortestArc(rot, dir) > 0.f)
 			animation = ANI_RIGHT;
 		else
 			animation = ANI_LEFT;
-		if(rot_diff < rot_speed)
+		if(rot_dif < rot_speed)
 			rot = dir;
 		else
 		{
@@ -6651,6 +6864,7 @@ void Unit::CastSpell()
 				area->tmp->bullets.push_back(bullet);
 
 				bullet->Register();
+				bullet->isArrow = false;
 				bullet->level = level + CalculateMagicPower();
 				bullet->backstab = 0.25f;
 				bullet->pos = coord;
@@ -6687,10 +6901,10 @@ void Unit::CastSpell()
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = ability.tex_particle;
-					pe->emision_interval = 0.1f;
+					pe->emission_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
-					pe->emisions = -1;
+					pe->emissions = -1;
 					pe->spawn_min = 3;
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
@@ -6852,6 +7066,7 @@ void Unit::CastSpell()
 
 			if(ability.effect == Ability::Raise)
 			{
+				// raise unit
 				target->Standup();
 				target->hp = target->hpmax;
 				if(Net::IsServer())
@@ -6862,35 +7077,9 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability.tex_particle;
-				pe->emision_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emisions = 1;
-				pe->spawn_min = 16;
-				pe->spawn_max = 25;
-				pe->max_particles = 25;
-				pe->pos = target->pos;
-				pe->pos.y += target->GetUnitHeight() / 2;
-				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-				pe->pos_max = Vec3(ability.size, ability.size, ability.size);
-				pe->size = ability.size_particle;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area->tmp->pes.push_back(pe);
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::RAISE_EFFECT;
-					c.pos = pe->pos;
-				}
+				Vec3 pos = target->pos;
+				pos.y += target->GetUnitHeight() / 2;
+				game_level->CreateSpellParticleEffect(area, &ability, pos, Vec2::Zero);
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -6907,36 +7096,10 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				float r = target->GetUnitRadius(),
-					h = target->GetUnitHeight();
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability.tex_particle;
-				pe->emision_interval = 0.01f;
-				pe->life = 0.f;
-				pe->particle_life = 0.5f;
-				pe->emisions = 1;
-				pe->spawn_min = 16;
-				pe->spawn_max = 25;
-				pe->max_particles = 25;
-				pe->pos = target->pos;
-				pe->pos.y += h / 2;
-				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-				pe->pos_min = Vec3(-r, -h / 2, -r);
-				pe->pos_max = Vec3(r, h / 2, r);
-				pe->size = ability.size_particle;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				area->tmp->pes.push_back(pe);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HEAL_EFFECT;
-					c.pos = pe->pos;
-				}
+				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
+				Vec3 pos = target->pos;
+				pos.y += bounds.y / 2;
+				game_level->CreateSpellParticleEffect(area, &ability, pos, bounds);
 			}
 		}
 		break;
@@ -7004,6 +7167,21 @@ void Unit::CastSpell()
 		timer = 1.f;
 		speed = ability.range / timer;
 		break;
+	case Ability::Trap:
+		{
+			// despawn old
+			game_level->RemoveOldTrap(ability.trap, this, ability.count);
+
+			// spawn new
+			Trap* trap = game_level->CreateTrap(target_pos, ability.trap->type);
+			trap->owner = this;
+			trap->attack = ability.dmg + ability.dmg_bonus * (level + CalculateMagicPower());
+
+			// particle effect
+			if(ability.tex_particle)
+				game_level->CreateSpellParticleEffect(area, &ability, target_pos, Vec2::Zero);
+		}
+		break;
 	}
 
 	// train
@@ -7022,10 +7200,11 @@ void Unit::CastSpell()
 	if(ability.sound_cast)
 	{
 		sound_mgr->PlaySound3d(ability.sound_cast, coord, ability.sound_cast_dist);
-		if(Net::IsOnline())
+		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
+			c.e_id = 0;
 			c.ability = &ability;
 			c.pos = coord;
 		}
@@ -7415,6 +7594,7 @@ void Unit::Update(float dt)
 				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
 				bullet->Register();
+				bullet->isArrow = true;
 				bullet->attack = CalculateAttack(&GetBow());
 				bullet->level = level;
 				bullet->backstab = GetBackstabMod(&GetBow());
@@ -7425,10 +7605,13 @@ void Unit::Update(float dt)
 				bullet->timer = ARROW_TIMER;
 				bullet->owner = this;
 				bullet->pe = nullptr;
-				bullet->ability = nullptr;
+				bullet->ability = act.shoot.ability;
 				bullet->tex = nullptr;
 				bullet->poison_attack = 0.f;
 				bullet->start_pos = bullet->pos;
+
+				if(bullet->ability && bullet->ability->mesh)
+					bullet->mesh = bullet->ability->mesh;
 
 				float dist = Vec3::Distance2d(bullet->pos, target_pos);
 				float t = dist / bullet->speed;
@@ -7446,6 +7629,9 @@ void Unit::Update(float dt)
 					sk += 10;
 				else
 					sk -= 10;
+				if(bullet->ability)
+					sk += 10;
+
 				if(sk < 50)
 				{
 					int chance;
@@ -7491,11 +7677,22 @@ void Unit::Update(float dt)
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
-				tpe->color1 = Vec4(1, 1, 1, 0.5f);
-				tpe->color2 = Vec4(1, 1, 1, 0);
+				if(bullet->ability)
+				{
+					tpe->color1 = bullet->ability->color;
+					tpe->color2 = tpe->color1;
+					tpe->color2.w = 0;
+				}
+				else
+				{
+					tpe->color1 = Vec4(1, 1, 1, 0.5f);
+					tpe->color2 = Vec4(1, 1, 1, 0);
+				}
 				tpe->Init(50);
 				area->tmp->tpes.push_back(tpe);
 				bullet->trail = tpe;
+
+				act.shoot.ability = nullptr;
 
 				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
@@ -7509,7 +7706,8 @@ void Unit::Update(float dt)
 						<< bullet->rot.x
 						<< bullet->rot.y
 						<< bullet->speed
-						<< bullet->yspeed;
+						<< bullet->yspeed
+						<< (bullet->ability ? bullet->ability->hash : 0);
 				}
 			}
 			if(mesh_inst->GetProgress(1) > 20.f / 40)
@@ -7711,37 +7909,45 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_CAST:
-		if(Net::IsLocal())
+		if(animation_state != AS_CAST_KNEEL)
 		{
-			if(IsOtherPlayer()
-				? animation_state == AS_CAST_TRIGGER
-				: (animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+			if(Net::IsLocal())
+			{
+				if(IsOtherPlayer()
+					? animation_state == AS_CAST_TRIGGER
+					: (animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+				{
+					animation_state = AS_CAST_CASTED;
+					CastSpell();
+				}
+			}
+			else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST])
 			{
 				animation_state = AS_CAST_CASTED;
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CAST_SPELL;
+				c.pos = target_pos;
+			}
+			if(mesh_inst->IsEnded(group_index))
+			{
+				action = A_NONE;
+				if(group_index == 1)
+					mesh_inst->Deactivate(1);
+				else
+					animation = ANI_BATTLE;
+				if(Net::IsLocal() && IsAI())
+					ai->next_attack = Random(0.25f, 0.75f);
+			}
+		}
+		else
+		{
+			timer -= dt;
+			if(timer <= 0.f)
+			{
+				action = A_NONE;
+				animation = ANI_STAND;
 				CastSpell();
 			}
-		}
-		else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST])
-		{
-			animation_state = AS_CAST_CASTED;
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CAST_SPELL;
-			c.pos = target_pos;
-		}
-		if(mesh_inst->IsEnded(group_index))
-		{
-			if(group_index == 1)
-			{
-				action = A_NONE;
-				mesh_inst->Deactivate(1);
-			}
-			else
-			{
-				action = A_NONE;
-				animation = ANI_BATTLE;
-			}
-			if(Net::IsLocal() && IsAI())
-				ai->next_attack = Random(0.25f, 0.75f);
 		}
 		break;
 	case A_ANIMATION:
@@ -8061,7 +8267,7 @@ void Unit::Update(float dt)
 								float attack = GetAbilityPower(*act.dash.ability);
 								float def = unit->CalculateDefense();
 								float dmg = CombatHelper::CalculateDamage(attack, def);
-								game->PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), HIT_SOUND_DIST, true);
+								unit->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, unit->GetCenter(), true);
 								if(unit->IsPlayer())
 									unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, level);
 								unit->GiveDmg(dmg, this);
@@ -8072,8 +8278,18 @@ void Unit::Update(float dt)
 								else
 									act.dash.hit->Add(unit);
 							}
+
 							if(act.dash.ability->effect == Ability::Stun)
-								unit->ApplyStun(1.5f);
+							{
+								Effect e;
+								e.effect = EffectId::Stun;
+								e.source = EffectSource::Temporary;
+								e.source_id = -1;
+								e.value = -1;
+								e.power = 0;
+								e.time = act.dash.ability->time;
+								unit->AddEffect(e);
+							}
 						}
 						else
 							move_forward = false;
@@ -8175,7 +8391,14 @@ void Unit::Update(float dt)
 			{
 				// magic scroll effect
 				game_gui->messages->AddGameMsg3(player, GMS_TOO_COMPLICATED);
-				ApplyStun(2.5f);
+				Effect e;
+				e.effect = EffectId::Stun;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = -1;
+				e.power = 0;
+				e.time = 2.5f;
+				AddEffect(e);
 				RemoveItem(used_item, 1u);
 				used_item = nullptr;
 			}
@@ -8242,7 +8465,7 @@ void Unit::Moved(bool warped, bool dash)
 					{
 						if(!team->IsLeader())
 							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
-						else if(!Net::IsLocal())
+						else if(Net::IsClient())
 							net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
@@ -8542,9 +8765,10 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
 {
 	assert(area && !IsTeamMember());
+
 	if(area == this->area)
 		return;
-	assert(game_level->entering); // TODO
+
 	const bool is_active = mesh_inst != nullptr;
 	const bool activate = area->IsActive();
 	RemoveElement(this->area->units, this);
@@ -8563,6 +8787,33 @@ void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
 			ai = new AIController;
 			ai->Init(this);
 			game->ais.push_back(ai);
+
+			if(!game_level->entering)
+			{
+				// preload items
+				if(data->item_script)
+				{
+					for(const Item* item : slots)
+					{
+						if(item)
+							game_res->PreloadItem(item);
+					}
+					for(ItemSlot& slot : items)
+						game_res->PreloadItem(slot.item);
+				}
+				if(data->trader)
+				{
+					for(ItemSlot& slot : stock->items)
+						game_res->PreloadItem(slot.item);
+				}
+
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::SPAWN_UNIT;
+					c.unit = this;
+				}
+			}
 		}
 		else
 		{
@@ -8587,6 +8838,21 @@ void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
 			EndEffects();
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::MoveOffscreen()
+{
+	assert(!IsTeamMember());
+
+	if(mesh_inst != nullptr)
+		game->RemoveUnit(this);
+	else
+		RemoveElement(area->units, this);
+
+	OffscreenLocation* offscreen = world->GetOffscreenLocation();
+	offscreen->units.push_back(this);
+	area = offscreen;
 }
 
 //=================================================================================================
@@ -8617,10 +8883,10 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = game_res->tBlood[data->blood];
-		pe->emision_interval = 0.01f;
+		pe->emission_interval = 0.01f;
 		pe->life = 5.f;
 		pe->particle_life = 0.5f;
-		pe->emisions = 1;
+		pe->emissions = 1;
 		pe->spawn_min = 10;
 		pe->spawn_max = 15;
 		pe->max_particles = 15;
@@ -8938,7 +9204,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 	float dmg = CombatHelper::CalculateDamage(attack, def);
 
 	// hit sound
-	game->PlayHitSound(!bash ? GetWeaponMaterial() : GetShield().material, hitted.GetBodyMaterial(), hitpoint, HIT_SOUND_DIST, dmg > 0.f);
+	hitted.PlayHitSound(!bash ? GetWeaponMaterial() : GetShield().material, MAT_SPECIAL_UNIT, hitpoint, dmg > 0.f);
 
 	// train player armor skill
 	if(hitted.IsPlayer())
@@ -8989,23 +9255,49 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 	}
 }
 
-bool UnitList::IsInside(Unit* unit) const
+//=================================================================================================
+void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 {
-	return ::IsInside(units, unit);
+	const float speed = _speed > 0.f ? _speed : GetBowAttackSpeed();
+	mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
+	mesh_inst->groups[1].speed = speed;
+	action = A_SHOOT;
+	act.shoot.ability = nullptr;
+	animation_state = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;
+	if(!bow_instance)
+		bow_instance = game_level->GetBowInstance(GetBow().mesh);
+	bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+	bow_instance->groups[0].speed = speed;
+
+	if(!fake_unit && Net::IsLocal())
+	{
+		RemoveStamina(Unit::STAMINA_BOW_ATTACK);
+
+		if(Net::IsServer() && notify)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::ATTACK;
+			c.unit = this;
+			c.id = prepare ? AID_StartShoot : AID_Shoot;
+			c.f[1] = speed;
+		}
+	}
 }
 
-void UnitList::Save(GameWriter& f)
+//=================================================================================================
+void Unit::AlertAllies(Unit* target)
 {
-	f << units.size();
-	for(Entity<Unit> unit : units)
-		f << unit;
+	for(Unit* u : area->units)
+	{
+		if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
+			|| u->ai->alert_target || u->dont_attack)
+			continue;
+
+		if(Vec3::Distance(pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*this, *u))
+		{
+			u->ai->alert_target = target;
+			u->ai->alert_target_pos = target->pos;
+		}
+	}
 }
 
-void UnitList::Load(GameReader& f)
-{
-	uint count;
-	f >> count;
-	units.resize(count);
-	for(Entity<Unit>& unit : units)
-		f >> unit;
-}

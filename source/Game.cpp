@@ -83,7 +83,6 @@
 #include <ParticleShader.h>
 #include <ParticleSystem.h>
 #include <PostfxShader.h>
-#include <Profiler.h>
 #include <Render.h>
 #include <RenderTarget.h>
 #include <ResourceManager.h>
@@ -106,11 +105,10 @@ void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 //=================================================================================================
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
-draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false),
-draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
-profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
+draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), next_seed(0), dont_wander(false), check_updates(true), skip_tutorial(false),
+portal_anim(0), musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD),
+rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false),
+default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
 	if(IsDebug())
 	{
@@ -245,10 +243,9 @@ void Game::PreloadData()
 	// intro music
 	if(!sound_mgr->IsMusicDisabled())
 	{
-		Ptr<MusicTrack> track;
-		track->music = res_mgr->Load<Music>("Intro.ogg");
-		track->type = MusicType::Intro;
-		MusicTrack::tracks.push_back(track.Pin());
+		MusicList* list = new MusicList;
+		list->musics.push_back(res_mgr->Load<Music>("Intro.ogg"));
+		musicLists[(int)MusicType::Intro] = list;
 		SetMusic(MusicType::Intro);
 	}
 }
@@ -298,50 +295,50 @@ void Game::LoadDatafiles()
 	// content
 	content.system_dir = g_system_dir;
 	content.LoadContent([this](Content::Id id)
+	{
+		switch(id)
 		{
-			switch(id)
-			{
-			case Content::Id::Abilities:
-				game_gui->load_screen->Tick(txLoadingAbilities);
-				break;
-			case Content::Id::Buildings:
-				game_gui->load_screen->Tick(txLoadingBuildings);
-				break;
-			case Content::Id::Classes:
-				game_gui->load_screen->Tick(txLoadingClasses);
-				break;
-			case Content::Id::Dialogs:
-				game_gui->load_screen->Tick(txLoadingDialogs);
-				break;
-			case Content::Id::Items:
-				game_gui->load_screen->Tick(txLoadingItems);
-				break;
-			case Content::Id::Locations:
-				game_gui->load_screen->Tick(txLoadingLocations);
-				break;
-			case Content::Id::Musics:
-				game_gui->load_screen->Tick(txLoadingMusics);
-				break;
-			case Content::Id::Objects:
-				game_gui->load_screen->Tick(txLoadingObjects);
-				break;
-			case Content::Id::Perks:
-				game_gui->load_screen->Tick(txLoadingPerks);
-				break;
-			case Content::Id::Quests:
-				game_gui->load_screen->Tick(txLoadingQuests);
-				break;
-			case Content::Id::Required:
-				game_gui->load_screen->Tick(txLoadingRequired);
-				break;
-			case Content::Id::Units:
-				game_gui->load_screen->Tick(txLoadingUnits);
-				break;
-			default:
-				assert(0);
-				break;
-			}
-		});
+		case Content::Id::Abilities:
+			game_gui->load_screen->Tick(txLoadingAbilities);
+			break;
+		case Content::Id::Buildings:
+			game_gui->load_screen->Tick(txLoadingBuildings);
+			break;
+		case Content::Id::Classes:
+			game_gui->load_screen->Tick(txLoadingClasses);
+			break;
+		case Content::Id::Dialogs:
+			game_gui->load_screen->Tick(txLoadingDialogs);
+			break;
+		case Content::Id::Items:
+			game_gui->load_screen->Tick(txLoadingItems);
+			break;
+		case Content::Id::Locations:
+			game_gui->load_screen->Tick(txLoadingLocations);
+			break;
+		case Content::Id::Musics:
+			game_gui->load_screen->Tick(txLoadingMusics);
+			break;
+		case Content::Id::Objects:
+			game_gui->load_screen->Tick(txLoadingObjects);
+			break;
+		case Content::Id::Perks:
+			game_gui->load_screen->Tick(txLoadingPerks);
+			break;
+		case Content::Id::Quests:
+			game_gui->load_screen->Tick(txLoadingQuests);
+			break;
+		case Content::Id::Required:
+			game_gui->load_screen->Tick(txLoadingRequired);
+			break;
+		case Content::Id::Units:
+			game_gui->load_screen->Tick(txLoadingUnits);
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	});
 }
 
 //=================================================================================================
@@ -485,8 +482,7 @@ void Game::PostconfigureGame()
 	game_state = GS_MAIN_MENU;
 	game_gui->load_screen->visible = false;
 	game_gui->main_menu->Show();
-	if(music_type != MusicType::Intro)
-		SetMusic(MusicType::Title);
+	SetMusic(MusicType::Title);
 
 	// start game mode if selected quickmode
 	if(start_game_mode)
@@ -618,22 +614,13 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::OnDraw()
 {
-	if(profiler_mode == ProfilerMode::Rendering)
-		Profiler::g_profiler.Start();
-	else if(profiler_mode == ProfilerMode::Disabled)
-		Profiler::g_profiler.Clear();
-
 	DrawGame();
 	render->Present();
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
 void Game::DrawGame()
 {
-	PROFILER_BLOCK("Draw");
-
 	if(game_state == GS_LEVEL)
 	{
 		LevelArea& area = *pc->unit->area;
@@ -665,14 +652,10 @@ void Game::DrawGame()
 
 		// draw glow
 		if(useGlow)
-		{
-			PROFILER_BLOCK("DrawGlowingNodes");
 			glow_shader->Draw(game_level->camera, draw_batch.glow_nodes, usePostfx);
-		}
 
 		if(usePostfx)
 		{
-			PROFILER_BLOCK("DrawPostFx");
 			if(!useGlow)
 				postfx_shader->Prepare();
 			postfx_shader->Draw(postEffects);
@@ -711,15 +694,8 @@ void Game::OnUpdate(float dt)
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
 
-	if(profiler_mode == ProfilerMode::Update)
-		Profiler::g_profiler.Start();
-	else if(profiler_mode == ProfilerMode::Disabled)
-		Profiler::g_profiler.Clear();
-
 	api->Update();
 	script_mgr->UpdateScripts(dt);
-
-	UpdateMusic();
 
 	if(Net::IsSingleplayer() || !paused)
 	{
@@ -734,10 +710,7 @@ void Game::OnUpdate(float dt)
 	{
 		input->SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
-		{
-			Profiler::g_profiler.End();
 			return;
-		}
 	}
 	else
 		input->SetFocus(true);
@@ -852,8 +825,6 @@ void Game::OnUpdate(float dt)
 	{
 		assert(Net::changes.empty());
 	}
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
@@ -1150,6 +1121,7 @@ void Game::SetGameText()
 	txHeroJoined = Str("heroJoined");
 	txCantLearnAbility = Str("cantLearnAbility");
 	txSpell = Str("spell");
+	txAbility = Str("ability");
 	txCantLearnSkill = Str("cantLearnSkill");
 
 	// location distance/strength
@@ -1177,9 +1149,6 @@ void Game::SetGameText()
 	txMageHere = Str("mageHere");
 	txMageEnter = Str("mageEnter");
 	txMageFinal = Str("mageFinal");
-	StrArray(txQuest, "quest");
-	txForMayor = Str("forMayor");
-	txForSoltys = Str("forSoltys");
 
 	// menu net
 	txEnterIp = Str("enterIp");
@@ -1364,8 +1333,6 @@ void Game::GenerateWorld()
 		Srand(next_seed);
 		next_seed = 0;
 	}
-	else if(force_seed != 0 && force_seed_all)
-		Srand(force_seed);
 
 	Info("Generating world, seed %u.", RandVal());
 
@@ -1379,6 +1346,9 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	Location& l = *game_level->location;
 	game_level->entering = true;
 	game_level->lvl = nullptr;
+
+	if(level == -2)
+		level = (l.outside ? -1 : 0);
 
 	game_gui->world_map->Hide();
 	game_gui->level_gui->Reset();
@@ -1442,8 +1412,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 			Srand(next_seed);
 			next_seed = 0;
 		}
-		else if(force_seed != 0 && force_seed_all)
-			Srand(force_seed);
 
 		// log what is required to generate location for testing
 		if(l.type == L_CITY)
@@ -1765,8 +1733,6 @@ void Game::UpdateGame(float dt)
 	if(dt == 0)
 		return;
 
-	PROFILER_BLOCK("UpdateGame");
-
 	// sanity checks
 	if(IsDebug())
 	{
@@ -1996,20 +1962,20 @@ void Game::UpdateGame(float dt)
 		{
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
-			DialogContext& area = *info.u->player->dialog_ctx;
-			if(area.dialog_mode)
+			DialogContext& dialogCtx = *info.u->player->dialog_ctx;
+			if(dialogCtx.dialog_mode)
 			{
-				if(!area.talker->IsStanding() || !area.talker->IsIdle() || area.talker->to_remove || area.talker->frozen != FROZEN::NO)
-					area.EndDialog();
+				if(!dialogCtx.talker->IsStanding() || !dialogCtx.talker->IsIdle() || dialogCtx.talker->to_remove || dialogCtx.talker->frozen != FROZEN::NO)
+					dialogCtx.EndDialog();
 				else
-					area.Update(dt);
+					dialogCtx.Update(dt);
 			}
 		}
 	}
 	else
 	{
 		if(dialog_context.dialog_mode)
-			UpdateGameDialogClient();
+			dialog_context.UpdateClient();
 	}
 
 	UpdateAttachedSounds(dt);
@@ -2058,7 +2024,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						pc->UseDays(10);
 					else
-						world->Update(10, World::UM_NORMAL);
+						world->Update(10, UM_NORMAL);
 				}
 				else
 				{
@@ -2077,7 +2043,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						pc->UseDays(fallback_1);
 					else
-						world->Update(fallback_1, World::UM_NORMAL);
+						world->Update(fallback_1, UM_NORMAL);
 				}
 				else
 				{
@@ -2511,8 +2477,6 @@ void Game::ChangeLevel(int where)
 				Srand(next_seed);
 				next_seed = 0;
 			}
-			else if(force_seed != 0 && force_seed_all)
-				Srand(force_seed);
 
 			inside->generated = game_level->dungeon_level + 1;
 			inside->infos[game_level->dungeon_level].seed = RandVal();
@@ -2580,6 +2544,19 @@ void Game::ExitToMap()
 	game_gui->level_gui->visible = false;
 }
 
+void Game::SetMusic(MusicType type)
+{
+	if(type == MusicType::Default)
+		type = game_level->boss ? MusicType::Boss : game_level->GetLocationMusic();
+
+	if(sound_mgr->IsMusicDisabled() || type == musicType)
+		return;
+
+	const bool delayed = musicType == MusicType::Intro && type == MusicType::Title;
+	musicType = type;
+	sound_mgr->PlayMusic(musicLists[(int)type], delayed);
+}
+
 void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 {
 	assert(sound);
@@ -2603,20 +2580,20 @@ void Game::StopAllSounds()
 void Game::UpdateAttachedSounds(float dt)
 {
 	LoopAndRemove(attached_sounds, [](AttachedSound& sound)
+	{
+		Unit* unit = sound.unit;
+		if(unit)
 		{
-			Unit* unit = sound.unit;
-			if(unit)
-			{
-				if(!sound_mgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
-					return false;
-			}
-			else
-			{
-				if(!sound_mgr->IsPlaying(sound.channel))
-					return true;
-			}
-			return false;
-		});
+			if(!sound_mgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
+				return false;
+		}
+		else
+		{
+			if(!sound_mgr->IsPlaying(sound.channel))
+				return true;
+		}
+		return false;
+	});
 }
 
 // clear game vars on new game or load
@@ -2629,7 +2606,7 @@ void Game::ClearGameVars(bool new_game)
 	end_of_game = false;
 	cutscene = false;
 	game_gui->minimap->city = nullptr;
-	team->ClearOnNewGameOrLoad();
+	team->Clear(new_game);
 	draw_flags = 0xFFFFFFFF;
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
@@ -2671,11 +2648,10 @@ void Game::ClearGameVars(bool new_game)
 		draw_phy = false;
 		draw_col = false;
 		game_speed = 1.f;
-		game_level->dungeon_level = 0;
+		game_level->dungeon_level = -1;
 		quest_mgr->Reset();
 		world->OnNewGame();
 		game_stats->Reset();
-		team->Reset();
 		dont_wander = false;
 		pc->data.picking_item_state = 0;
 		game_level->is_open = false;
@@ -2873,7 +2849,7 @@ void Game::LeaveLevel(bool clear)
 			area.tmp->Free();
 			area.tmp = nullptr;
 		}
-		if(game_level->city_ctx && (!Net::IsLocal() || net->was_client))
+		if(game_level->city_ctx && (Net::IsClient() || net->was_client))
 			DeleteElements(game_level->city_ctx->inside_buildings);
 		if(Net::IsClient() && !game_level->location->outside)
 		{
@@ -2908,93 +2884,93 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	if(Net::IsLocal() && !clear && !net->was_client)
 	{
 		LoopAndRemove(area.units, [&](Unit* p_unit)
+		{
+			Unit& unit = *p_unit;
+
+			unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+
+			// physics
+			if(unit.cobj)
 			{
-				Unit& unit = *p_unit;
+				delete unit.cobj->getCollisionShape();
+				unit.cobj = nullptr;
+			}
 
-				unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+			// speech bubble
+			unit.bubble = nullptr;
+			unit.talking = false;
 
-				// physics
-				if(unit.cobj)
+			// mesh
+			if(unit.IsAI())
+			{
+				if(unit.IsFollower())
 				{
-					delete unit.cobj->getCollisionShape();
-					unit.cobj = nullptr;
+					if(!unit.IsStanding())
+						unit.Standup(false, true);
+					if(unit.GetOrder() != ORDER_FOLLOW)
+						unit.OrderFollow(team->GetLeader());
+					unit.ai->Reset();
+					return true;
 				}
-
-				// speech bubble
-				unit.bubble = nullptr;
-				unit.talking = false;
-
-				// mesh
-				if(unit.IsAI())
+				else
 				{
-					if(unit.IsFollower())
+					UnitOrder order = unit.GetOrder();
+					if(order == ORDER_LEAVE && unit.IsAlive())
 					{
-						if(!unit.IsStanding())
-							unit.Standup(false, true);
-						if(unit.GetOrder() != ORDER_FOLLOW)
-							unit.OrderFollow(team->GetLeader());
-						unit.ai->Reset();
+						delete unit.ai;
+						delete &unit;
 						return true;
 					}
 					else
 					{
-						UnitOrder order = unit.GetOrder();
-						if(order == ORDER_LEAVE && unit.IsAlive())
+						if(unit.live_state == Unit::DYING)
 						{
-							delete unit.ai;
-							delete &unit;
-							return true;
+							unit.live_state = Unit::DEAD;
+							unit.mesh_inst->SetToEnd();
+							game_level->CreateBlood(area, unit, true);
 						}
-						else
-						{
-							if(unit.live_state == Unit::DYING)
-							{
-								unit.live_state = Unit::DEAD;
-								unit.mesh_inst->SetToEnd();
-								game_level->CreateBlood(area, unit, true);
-							}
-							else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
-								unit.Standup(false, true);
+						else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
+							unit.Standup(false, true);
 
-							if(unit.IsAlive())
+						if(unit.IsAlive())
+						{
+							// warp to inn if unit wanted to go there
+							if(order == ORDER_GOTO_INN)
 							{
-								// warp to inn if unit wanted to go there
-								if(order == ORDER_GOTO_INN)
+								unit.OrderNext();
+								if(game_level->city_ctx)
 								{
-									unit.OrderNext();
-									if(game_level->city_ctx)
-									{
-										InsideBuilding* inn = game_level->city_ctx->FindInn();
-										game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-										unit.visual_pos = unit.pos;
-										unit.area = inn;
-										inn->units.push_back(&unit);
-										return true;
-									}
+									InsideBuilding* inn = game_level->city_ctx->FindInn();
+									game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+									unit.visual_pos = unit.pos;
+									unit.area = inn;
+									inn->units.push_back(&unit);
+									return true;
 								}
-
-								// reset units rotation to don't stay back to shop counter
-								if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
-									unit.rot = unit.ai->start_rot;
 							}
 
-							delete unit.mesh_inst;
-							unit.mesh_inst = nullptr;
-							delete unit.ai;
-							unit.ai = nullptr;
-							unit.EndEffects();
-							return false;
+							// reset units rotation to don't stay back to shop counter
+							if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
+								unit.rot = unit.ai->start_rot;
 						}
+
+						delete unit.mesh_inst;
+						unit.mesh_inst = nullptr;
+						delete unit.ai;
+						unit.ai = nullptr;
+						unit.EndEffects();
+						return false;
 					}
 				}
-				else
-				{
-					unit.talking = false;
-					unit.mesh_inst->need_update = true;
-					unit.usable = nullptr;
-					return true;
-				}
-			});
+			}
+			else
+			{
+				unit.talking = false;
+				unit.mesh_inst->need_update = true;
+				unit.usable = nullptr;
+				return true;
+			}
+		});
 
 		for(Object* obj : area.objects)
 		{
@@ -3045,6 +3021,24 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		// remove door meshes
 		for(Door* door : area.doors)
 			door->Cleanup();
+
+		// remove player traps & remove mesh instance
+		LoopAndRemove(area.traps, [](Trap* trap)
+		{
+			if(trap->owner != nullptr)
+			{
+				delete trap;
+				return true;
+			}
+
+			if(trap->meshInst)
+			{
+				delete trap->meshInst;
+				trap->meshInst = nullptr;
+			}
+
+			return false;
+		});
 	}
 	else
 	{
@@ -3062,32 +3056,6 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 		// make blood splatter full size
 		for(vector<Blood>::iterator it = area.bloods.begin(), end = area.bloods.end(); it != end; ++it)
 			it->size = 1.f;
-	}
-}
-
-void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, float range, bool dmg)
-{
-	// sounds
-	sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, range);
-	if(mat != MAT_BODY && dmg)
-		sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, range);
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::HIT_SOUND;
-		c.pos = hitpoint;
-		c.id = mat2;
-		c.count = mat;
-
-		if(mat != MAT_BODY && dmg)
-		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::HIT_SOUND;
-			c2.pos = hitpoint;
-			c2.id = mat2;
-			c2.count = MAT_BODY;
-		}
 	}
 }
 
@@ -3214,24 +3182,7 @@ void Game::PreloadResources(bool worldmap)
 
 			// some traps respawn
 			for(Trap* trap : area.traps)
-			{
-				BaseTrap& base = *trap->base;
-				if(base.state != ResourceState::NotLoaded)
-					continue;
-
-				if(base.mesh)
-					res_mgr->Load(base.mesh);
-				if(base.mesh2)
-					res_mgr->Load(base.mesh2);
-				if(base.sound)
-					res_mgr->Load(base.sound);
-				if(base.sound2)
-					res_mgr->Load(base.sound2);
-				if(base.sound3)
-					res_mgr->Load(base.sound3);
-
-				base.state = ResourceState::Loaded;
-			}
+				game_res->LoadTrap(trap->base);
 
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
@@ -3314,10 +3265,11 @@ void Game::PreloadUnit(Unit* unit)
 
 	if(Net::IsLocal())
 	{
-		for(uint i = 0; i < SLOT_MAX; ++i)
+		array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
+		for(const Item* item : equipped)
 		{
-			if(unit->slots[i])
-				items_load.insert(unit->slots[i]);
+			if(item)
+				items_load.insert(item);
 		}
 		PreloadItems(unit->items);
 		if(unit->stock)
@@ -3366,7 +3318,7 @@ void Game::VerifyResources()
 	{
 		for(GroundItem* item : area.items)
 			VerifyItemResources(item->item);
-		for(Object* obj : area.objects)
+		for([[maybe_unused]] Object* obj : area.objects)
 			assert(obj->mesh->state == ResourceState::Loaded);
 		for(Unit* unit : area.units)
 			VerifyUnitResources(unit);
@@ -3382,8 +3334,6 @@ void Game::VerifyResources()
 			assert(trap->base->state == ResourceState::Loaded);
 			if(trap->base->mesh)
 				assert(trap->base->mesh->IsLoaded());
-			if(trap->base->mesh2)
-				assert(trap->base->mesh2->IsLoaded());
 			if(trap->base->sound)
 				assert(trap->base->sound->IsLoaded());
 			if(trap->base->sound2)
@@ -3403,7 +3353,7 @@ void Game::VerifyUnitResources(Unit* unit)
 	{
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
-			for(SoundPtr sound : unit->data->sounds->sounds[i])
+			for([[maybe_unused]] SoundPtr sound : unit->data->sounds->sounds[i])
 				assert(sound->IsLoaded());
 		}
 	}
@@ -3416,10 +3366,11 @@ void Game::VerifyUnitResources(Unit* unit)
 		}
 	}
 
-	for(int i = 0; i < SLOT_MAX; ++i)
+	array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
+	for(const Item* item : equipped)
 	{
-		if(unit->slots[i])
-			VerifyItemResources(unit->slots[i]);
+		if(item)
+			VerifyItemResources(item);
 	}
 	for(ItemSlot& slot : unit->items)
 		VerifyItemResources(slot.item);
@@ -3510,7 +3461,7 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit->ai;
 	}
 
-	if(unit->IsHero() && unit->hero->otherTeam)
+	if(Net::IsLocal() && unit->IsHero() && unit->hero->otherTeam)
 		unit->hero->otherTeam->Remove(unit);
 
 	if(unit->cobj)
@@ -3522,6 +3473,89 @@ void Game::DeleteUnit(Unit* unit)
 
 	if(--unit->refs == 0)
 		delete unit;
+}
+
+void Game::RemoveUnit(Unit* unit)
+{
+	assert(unit && !unit->player);
+
+	unit->BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+	RemoveElement(unit->area->units, unit);
+	game_gui->level_gui->RemoveUnitView(unit);
+	if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
+		pc->data.before_player = BP_NONE;
+	if(unit == pc->data.selected_unit)
+		pc->data.selected_unit = nullptr;
+	if(Net::IsClient())
+	{
+		if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
+			pc->unit->BreakAction();
+	}
+	else
+	{
+		for(PlayerInfo& player : net->players)
+		{
+			PlayerController* pc = player.pc;
+			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
+				pc->action_unit = nullptr;
+		}
+	}
+
+	if(quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
+		RemoveElementTry(quest_mgr->quest_contest->units, unit);
+	if(!arena->free)
+	{
+		RemoveElementTry(arena->units, unit);
+		if(arena->fighter == unit)
+			arena->fighter = nullptr;
+	}
+
+	if(unit->usable)
+	{
+		unit->usable->user = nullptr;
+		unit->usable = nullptr;
+	}
+
+	if(unit->bubble)
+	{
+		unit->bubble->unit = nullptr;
+		unit->bubble = nullptr;
+	}
+	unit->talking = false;
+
+	if(unit->interp)
+	{
+		EntityInterpolator::Pool.Free(unit->interp);
+		unit->interp = nullptr;
+	}
+
+	if(unit->ai)
+	{
+		RemoveElement(ais, unit->ai);
+		delete unit->ai;
+		unit->ai = nullptr;
+	}
+
+	if(Net::IsLocal() && unit->IsHero() && unit->hero->otherTeam)
+		unit->hero->otherTeam->Remove(unit);
+
+	if(unit->cobj)
+	{
+		delete unit->cobj->getCollisionShape();
+		phy_world->removeCollisionObject(unit->cobj);
+		delete unit->cobj;
+		unit->cobj = nullptr;
+	}
+
+	delete unit->mesh_inst;
+	unit->mesh_inst = nullptr;
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REMOVE_UNIT;
+		c.id = unit->id;
+	}
 }
 
 void Game::OnCloseInventory()
@@ -3598,33 +3632,6 @@ bool Game::CanShowEndScreen()
 		return !quest_mgr->unique_completed_show && quest_mgr->unique_quests_completed == quest_mgr->unique_quests && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 	else
 		return quest_mgr->unique_completed_show && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
-}
-
-void Game::UpdateGameDialogClient()
-{
-	if(dialog_context.show_choices)
-	{
-		if(game_gui->level_gui->UpdateChoice(dialog_context, dialog_choices.size()))
-		{
-			dialog_context.show_choices = false;
-			dialog_context.dialog_text = "";
-
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHOICE;
-			c.id = dialog_context.choice_selected;
-		}
-	}
-	else if(dialog_context.dialog_wait > 0.f && dialog_context.skip_id != -1)
-	{
-		if(GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
-			|| (GKey.AllowKeyboard() && input->PressedRelease(Key::Escape)))
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SKIP_DIALOG;
-			c.id = dialog_context.skip_id;
-			dialog_context.skip_id = -1;
-		}
-	}
 }
 
 void Game::UpdateGameNet(float dt)

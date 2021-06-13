@@ -17,15 +17,16 @@
 EntityType<Trap>::Impl EntityType<Trap>::impl;
 
 //=================================================================================================
+Trap::~Trap()
+{
+	delete hitted;
+	delete meshInst;
+}
+
+//=================================================================================================
 bool Trap::Update(float dt, LevelArea& area)
 {
-	if(state == -1)
-	{
-		time -= dt;
-		if(time <= 0.f)
-			state = 0;
-		return false;
-	}
+	Unit* owner = this->owner;
 
 	switch(base->type)
 	{
@@ -39,6 +40,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+						&& (!owner || owner->IsEnemy(*unit))
 						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						trigger = true;
@@ -85,6 +87,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(trigger)
 			{
 				state = 2;
+				meshInst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
 				time = 0.f;
 
 				sound_mgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
@@ -100,15 +103,7 @@ bool Trap::Update(float dt, LevelArea& area)
 		else if(state == 2)
 		{
 			// move spears
-			bool end = false;
-			time += dt;
-			if(time >= 0.27f)
-			{
-				time = 0.27f;
-				end = true;
-			}
-
-			obj2.pos.y = obj.pos.y - 2.f + 2.f * (time / 0.27f);
+			meshInst->Update(dt);
 
 			if(Net::IsLocal())
 			{
@@ -116,7 +111,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				{
 					if(!unit->IsAlive())
 						continue;
-					if(CircleToCircle(obj2.pos.x, obj2.pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						bool found = false;
 						for(Unit* unit2 : *hitted)
@@ -141,12 +136,12 @@ bool Trap::Update(float dt, LevelArea& area)
 								m += 0.1f;
 
 							// calculate attack & defense
-							float attack = float(base->attack) * m;
+							float attack = GetAttack() * m;
 							float def = unit->CalculateDefense();
 							float dmg = CombatHelper::CalculateDamage(attack, def);
 
 							// hit sound
-							sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), HIT_SOUND_DIST);
+							unit->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, unit->pos + Vec3(0, 1.f, 0), dmg > 0);
 
 							// train player armor skill
 							if(unit->IsPlayer())
@@ -162,7 +157,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				}
 			}
 
-			if(end)
+			if(meshInst->IsEnded())
 			{
 				state = 3;
 				if(Net::IsLocal())
@@ -177,21 +172,16 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(time <= 0.f)
 			{
 				state = 4;
-				time = 1.5f;
+				meshInst->Play("hide", PLAY_ONCE);
 				sound_mgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
 			}
 		}
 		else if(state == 4)
 		{
 			// hiding spears
-			time -= dt;
-			if(time <= 0.f)
-			{
-				time = 0.f;
+			meshInst->Update(dt);
+			if(meshInst->IsEnded())
 				state = 5;
-			}
-
-			obj2.pos.y = obj.pos.y - 2.f + time / 1.5f * 2.f;
 		}
 		else if(state == 5)
 		{
@@ -203,7 +193,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToCircle(obj2.pos.x, obj2.pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 					{
 						reactivate = false;
 						break;
@@ -244,6 +234,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				for(Unit* unit : area.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+						&& (!owner || owner->IsEnemy(*unit))
 						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
 					{
 						trigger = true;
@@ -270,9 +261,10 @@ bool Trap::Update(float dt, LevelArea& area)
 					area.tmp->bullets.push_back(bullet);
 
 					bullet->Register();
+					bullet->isArrow = true;
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
-					bullet->attack = float(base->attack);
+					bullet->attack = GetAttack();
 					bullet->mesh = game_res->aArrow;
 					bullet->pos = Vec3(2.f * tile.x + pos.x - float(int(pos.x / 2) * 2) + Random(-base->rw, base->rw) - 1.2f * DirToPos(dir).x,
 						Random(0.5f, 1.5f),
@@ -287,7 +279,7 @@ bool Trap::Update(float dt, LevelArea& area)
 					bullet->tex_size = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->yspeed = 0.f;
-					bullet->poison_attack = (base->type == TRAP_POISON ? float(base->attack) : 0.f);
+					bullet->poison_attack = (base->type == TRAP_POISON ? bullet->attack : 0.f);
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
@@ -366,13 +358,14 @@ bool Trap::Update(float dt, LevelArea& area)
 		break;
 	case TRAP_FIREBALL:
 		{
-			if(!Net::IsLocal())
+			if(Net::IsClient())
 				break;
 
 			bool trigger = false;
 			for(Unit* unit : area.units)
 			{
 				if(unit->IsStanding()
+					&& (!owner || owner->IsEnemy(*unit))
 					&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
 				{
 					trigger = true;
@@ -385,15 +378,144 @@ bool Trap::Update(float dt, LevelArea& area)
 				Ability* fireball = Ability::Get("fireball");
 				Vec3 exploPos = pos + Vec3(0, 0.2f, 0);
 				Explo* explo = area.CreateExplo(fireball, exploPos);
-				explo->dmg = float(base->attack);
+				explo->dmg = GetAttack();
+				explo->owner = owner;
 
-				if(Net::IsOnline())
+				if(fireball->sound_hit)
+				{
+					sound_mgr->PlaySound3d(fireball->sound_hit, pos, fireball->sound_hit_dist);
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::SPELL_SOUND;
+						c.e_id = 1;
+						c.ability = fireball;
+						c.pos = pos;
+					}
+				}
+
+				if(Net::IsServer())
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REMOVE_TRAP;
 					c.id = id;
 				}
 
+				delete this;
+				return true;
+			}
+		}
+		break;
+	case TRAP_BEAR:
+		if(state == 0)
+		{
+			// check if someone is step on it
+			bool trigger = false;
+			if(Net::IsLocal())
+			{
+				for(Unit* unit : area.units)
+				{
+					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+						&& (!owner || owner->IsEnemy(*unit))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					{
+						trigger = true;
+						break;
+					}
+				}
+			}
+			else if(mpTrigger)
+			{
+				trigger = true;
+				mpTrigger = false;
+			}
+
+			if(trigger)
+			{
+				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				state = 1;
+				meshInst->Play("trigger", PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND);
+
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::TRIGGER_TRAP;
+					c.id = id;
+				}
+			}
+		}
+		else if(state == 1)
+		{
+			meshInst->Update(dt);
+			if(meshInst->IsEnded())
+			{
+				if(Net::IsLocal())
+				{
+					Unit* target = nullptr;
+					float bestDist = 10.f;
+					for(Unit* unit : area.units)
+					{
+						if(unit->IsStanding()
+							&& (!owner || owner->IsEnemy(*unit))
+							&& CircleToCircle(pos.x, pos.z, base->rw * 1.5f, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						{
+							const float dist = Vec3::Distance(pos, unit->pos);
+							if(dist < bestDist)
+							{
+								target = unit;
+								bestDist = dist;
+							}
+						}
+					}
+
+					if(target)
+					{
+						// hit unit
+						int mod = CombatHelper::CalculateModifier(DMG_SLASH, target->data->flags);
+						float m = 1.f;
+						if(mod == -1)
+							m += 0.25f;
+						else if(mod == 1)
+							m -= 0.25f;
+						if(target->action == A_PAIN)
+							m += 0.1f;
+
+						// calculate attack & defense
+						float attack = GetAttack() * m;
+						float def = target->CalculateDefense();
+						float dmg = CombatHelper::CalculateDamage(attack, def);
+
+						// hit sound
+						target->PlayHitSound(MAT_IRON, MAT_SPECIAL_UNIT, target->pos + Vec3(0, 1.f, 0), dmg > 0);
+
+						// train player armor skill
+						if(target->IsPlayer())
+							target->player->Train(TrainWhat::TakeDamageArmor, attack / target->hpmax, 4);
+
+						// damage
+						if(dmg > 0)
+							target->GiveDmg(dmg);
+
+						// effect
+						Effect e;
+						e.effect = EffectId::Rooted;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.power = 0;
+						e.time = 5.f;
+						e.value = EffectValue_Generic;
+						target->AddEffect(e);
+					}
+				}
+				state = 2;
+				time = 5.f;
+			}
+		}
+		else if(state == 2)
+		{
+			time -= dt;
+			if(time <= 0.f)
+			{
 				delete this;
 				return true;
 			}
@@ -420,20 +542,27 @@ void Trap::Save(GameWriter& f)
 		f << dir;
 	}
 	else
-		f << obj.rot.y;
+		f << rot;
 
-	if(f.isLocal && base->type != TRAP_FIREBALL)
+	if(f.isLocal)
 	{
-		f << state;
-		f << time;
-
-		if(base->type == TRAP_SPEAR)
+		if(base->type != TRAP_FIREBALL)
 		{
-			f << obj2.pos.y;
-			f << hitted->size();
-			for(Unit* unit : *hitted)
-				f << unit->id;
+			f << state;
+			f << time;
+
+			if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
+				MeshInstance::SaveOptional(f, meshInst);
+
+			if(base->type == TRAP_SPEAR)
+			{
+				f << hitted->size();
+				for(Unit* unit : *hitted)
+					f << unit->id;
+			}
 		}
+		f << owner;
+		f << attack;
 	}
 }
 
@@ -451,46 +580,60 @@ void Trap::Load(GameReader& f)
 		f.Skip<int>(); // old netid
 
 	base = &BaseTrap::traps[type];
+	meshInst = nullptr;
 	hitted = nullptr;
-	obj.pos = pos;
-	obj.rot = Vec3(0, 0, 0);
-	obj.scale = 1.f;
-	obj.base = nullptr;
-	obj.mesh = base->mesh;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
 		f >> tile;
 		f >> dir;
+		rot = 0;
 	}
 	else
-		f >> obj.rot.y;
+		f >> rot;
 
-	if(type == TRAP_SPEAR)
+	if(f.isLocal)
 	{
-		obj2.pos = pos;
-		obj2.rot = obj.rot;
-		obj2.scale = 1.f;
-		obj2.mesh = base->mesh2;
-		obj2.base = nullptr;
-	}
-
-	if(f.isLocal && base->type != TRAP_FIREBALL)
-	{
-		f >> state;
-		f >> time;
-
-		if(base->type == TRAP_SPEAR)
+		if(base->type != TRAP_FIREBALL)
 		{
-			f >> obj2.pos.y;
-			uint count = f.Read<uint>();
-			hitted = new vector<Unit*>;
-			if(count)
+			f >> state;
+			f >> time;
+
+			if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
 			{
-				hitted->resize(count);
-				for(Unit*& unit : *hitted)
-					unit = Unit::GetById(f.Read<int>());
+				if(LOAD_VERSION >= V_0_18)
+					MeshInstance::LoadOptional(f, meshInst);
+				else
+				{
+					f.Skip<float>(); // old obj2.pos.y
+					state = 0; // don't restore trap animation, not worth doing
+				}
 			}
+
+			if(base->type == TRAP_SPEAR)
+			{
+				uint count = f.Read<uint>();
+				hitted = new vector<Unit*>;
+				if(count)
+				{
+					hitted->resize(count);
+					for(Unit*& unit : *hitted)
+						unit = Unit::GetById(f.Read<int>());
+				}
+			}
+		}
+		else
+			state = 0;
+
+		if(LOAD_VERSION >= V_0_18)
+		{
+			f >> owner;
+			f >> attack;
+		}
+		else
+		{
+			owner = nullptr;
+			attack = 0;
 		}
 	}
 }
@@ -503,12 +646,14 @@ void Trap::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(dir);
 	f << tile;
 	f << pos;
-	f << obj.rot.y;
+	f << rot;
 
 	if(net->mp_load)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
+		if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
+			MeshInstance::SaveOptional(f, meshInst);
 	}
 }
 
@@ -521,17 +666,13 @@ bool Trap::Read(BitStreamReader& f)
 	f.ReadCasted<byte>(dir);
 	f >> tile;
 	f >> pos;
-	f >> obj.rot.y;
+	f >> rot;
 	if(!f)
 		return false;
 	base = &BaseTrap::traps[type];
 
 	state = 0;
-	obj.base = nullptr;
-	obj.mesh = base->mesh;
-	obj.pos = pos;
-	obj.scale = 1.f;
-	obj.rot.x = obj.rot.z = 0;
+	meshInst = nullptr;
 	mpTrigger = false;
 	hitted = nullptr;
 
@@ -539,21 +680,10 @@ bool Trap::Read(BitStreamReader& f)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;
+		if(Any(base->type, TRAP_SPEAR, TRAP_BEAR))
+			MeshInstance::LoadOptional(f, meshInst);
 		if(!f)
 			return false;
-	}
-
-	if(type == TRAP_ARROW || type == TRAP_POISON)
-		obj.rot = Vec3(0, 0, 0);
-	else if(type == TRAP_SPEAR)
-	{
-		obj2.base = nullptr;
-		obj2.mesh = base->mesh2;
-		obj2.pos = obj.pos;
-		obj2.rot = obj.rot;
-		obj2.scale = 1.f;
-		obj2.pos.y -= 2.f;
-		hitted = nullptr;
 	}
 
 	Register();

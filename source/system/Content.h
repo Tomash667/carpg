@@ -7,6 +7,7 @@ class ClassLoader;
 class DialogLoader;
 class ItemLoader;
 class LocationLoader;
+class MusicListLoader;
 class ObjectLoader;
 class PerkLoader;
 class QuestLoader;
@@ -61,6 +62,7 @@ private:
 	DialogLoader* dialog_loader;
 	ItemLoader* item_loader;
 	LocationLoader* location_loader;
+	MusicListLoader* musicLoader;
 	ObjectLoader* object_loader;
 	PerkLoader* perk_loader;
 	QuestLoader* quest_loader;

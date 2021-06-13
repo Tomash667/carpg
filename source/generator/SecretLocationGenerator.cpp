@@ -98,7 +98,7 @@ void SecretLocationGenerator::GenerateObjects()
 	game_level->SpawnObjectEntity(area, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
-	portal->at_level = 0;
+	portal->at_level = -1;
 	portal->next_portal = nullptr;
 	portal->pos = pos;
 	portal->rot = 0.f;

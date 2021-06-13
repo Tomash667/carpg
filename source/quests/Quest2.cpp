@@ -282,7 +282,17 @@ void Quest2::SetTimeout(int days)
 	assert(timeout_days == -1);
 	assert(days > 0);
 	timeout_days = days;
+	start_time = world->GetWorldtime();
 	quest_mgr->quests_timeout2.push_back(this);
+}
+
+//=================================================================================================
+int Quest2::GetTimeout() const
+{
+	int days = world->GetWorldtime() - start_time;
+	if(days >= timeout_days)
+		return 0;
+	return timeout_days - days;
 }
 
 //=================================================================================================
@@ -290,7 +300,7 @@ bool Quest2::IsTimedout() const
 {
 	if(timeout_days == -1)
 		return false;
-	return world->GetWorldtime() - start_time > timeout_days;
+	return world->GetWorldtime() - start_time >= timeout_days;
 }
 
 //=================================================================================================

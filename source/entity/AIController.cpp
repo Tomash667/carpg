@@ -459,7 +459,6 @@ void AIController::Shout()
 		return;
 
 	game->PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
-
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);

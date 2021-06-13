@@ -112,7 +112,7 @@ enum UNIT_FLAGS2
 	F2_STUN_RESISTANCE = 1 << 16, // 50% resistance to stuns
 	F2_SIT_ON_THRONE = 1 << 17, // ai can sit on throne
 	F2_GUARD = 1 << 18, // unit is guard (don't use some idle texts)
-	// unused (1 << 19)
+	F2_ROOTED_RESISTANCE = 1 << 19, // 50% resistance to root
 	F2_XAR = 1 << 20, // pray in front of altar
 	// unused (1 << 21)
 	F2_TOURNAMENT = 1 << 22, // can join tournament

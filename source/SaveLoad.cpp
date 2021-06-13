@@ -307,12 +307,12 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		if(slot != -1)
 		{
 			game_gui->saveload->RemoveHardcoreSave(slot);
-			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
+			io::DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
 			if(!Net::IsOnline())
 				SetLastSave(-1);
 		}
 		else
-			DeleteFile(filename);
+			io::DeleteFile(filename);
 	}
 	else if(slot != -1 && !Net::IsOnline())
 		SetLastSave(slot);
@@ -556,21 +556,18 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	}
 
 	// version
-	int version;
-	f >> version;
+	f.Skip<int>();
 
 	// save version
 	f >> slot.load_version;
-	if(slot.load_version < V_0_4)
-		f.Skip<uint>(); // build version
+	if(slot.load_version < MIN_SUPPORT_LOAD_VERSION)
+		return false;
 
 	// start version
-	if(slot.load_version >= V_0_4)
-		f.Skip<int>();
+	f.Skip<int>();
 
 	// content version
-	if(slot.load_version >= V_0_7)
-		f.Skip<uint>();
+	f.Skip<uint>();
 
 	// save flags
 	byte flags;
@@ -704,41 +701,19 @@ void Game::LoadGame(GameReader& f)
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;
-	if(LOAD_VERSION >= V_0_8)
-	{
-		hardcore_mode = IsSet(flags, SF_HARDCORE);
+	hardcore_mode = IsSet(flags, SF_HARDCORE);
 
-		game_stats->Load(f);
+	game_stats->Load(f);
 
-		// game state
-		f >> game_state2;
+	// game state
+	f >> game_state2;
 
-		if(LOAD_VERSION >= V_DEV)
-			aiMgr->Load(f);
+	if(LOAD_VERSION >= V_0_17)
+		aiMgr->Load(f);
 
-		// world map
-		LoadingStep(txLoadingLocations);
-		world->Load(f, loading);
-	}
-	else
-	{
-		// game stats (is hardcore, total_kills)
-		f >> hardcore_mode;
-		game_stats->LoadOld(f, 0);
-
-		// world day/month/year/worldtime
-		world->LoadOld(f, loading, 0, false);
-
-		// game state
-		f >> game_state2;
-
-		// game stats (play time)
-		game_stats->LoadOld(f, 1);
-
-		// world map
-		LoadingStep(txLoadingLocations);
-		world->LoadOld(f, loading, 1, game_state2 == GS_LEVEL);
-	}
+	// world map
+	LoadingStep(txLoadingLocations);
+	world->Load(f, loading);
 
 	uint count;
 	int location_event_handler_quest_id;
@@ -764,8 +739,6 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	if(LOAD_VERSION < V_0_8)
-		world->LoadOld(f, loading, 3, false);
 	f >> game_level->enter_from;
 	f >> game_level->light_angle;
 
@@ -781,16 +754,6 @@ void Game::LoadGame(GameReader& f)
 		f >> game_level->camera.drunk_anim;
 	game_level->camera.Reset();
 	pc->data.rot_buf = 0.f;
-
-	// traders stock
-	if(LOAD_VERSION < V_0_8)
-	{
-		ItemHelper::SkipStock(f); // merchant
-		ItemHelper::SkipStock(f); // blacksmith
-		ItemHelper::SkipStock(f); // alchemist
-		ItemHelper::SkipStock(f); // innkeeper
-		ItemHelper::SkipStock(f); // food_seller
-	}
 
 	// vars
 	f >> devmode;
@@ -828,7 +791,7 @@ void Game::LoadGame(GameReader& f)
 		ai = new AIController;
 		ai->Load(f);
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_17)
 	{
 		f >> game_level->boss;
 		if(game_level->boss)
@@ -852,9 +815,6 @@ void Game::LoadGame(GameReader& f)
 	quest_mgr->Load(f);
 
 	script_mgr->Load(f);
-
-	if(LOAD_VERSION < V_0_8)
-		world->LoadOld(f, loading, 2, false);
 
 	f >> read_id;
 	if(read_id != check_id++)
@@ -952,7 +912,7 @@ void Game::LoadGame(GameReader& f)
 	quest_mgr->ProcessQuestRequests();
 
 	dialog_context.dialog_mode = false;
-	team->ClearOnNewGameOrLoad();
+	team->Clear(false);
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	game_gui->inventory->mode = I_NONE;

@@ -7,6 +7,7 @@
 //=================================================================================================
 void DoCrash()
 {
+	Info("Crash test...");
 	int* z = nullptr;
 #pragma warning(push)
 #pragma warning(suppress: 6011)

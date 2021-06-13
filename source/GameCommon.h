@@ -32,6 +32,14 @@ enum GameDirectionFlag
 };
 
 //-----------------------------------------------------------------------------
+enum UpdateMode
+{
+	UM_NORMAL,
+	UM_TRAVEL,
+	UM_SKIP
+};
+
+//-----------------------------------------------------------------------------
 inline constexpr GameDirection Reversed(GameDirection dir)
 {
 	switch(dir)

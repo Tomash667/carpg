@@ -22,7 +22,6 @@
 #include <ParticleShader.h>
 #include <ParticleSystem.h>
 #include <PostfxShader.h>
-#include <Profiler.h>
 #include <Render.h>
 #include <ResourceManager.h>
 #include <Scene.h>
@@ -36,8 +35,6 @@
 //=================================================================================================
 void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside)
 {
-	PROFILER_BLOCK("ListDrawObjects");
-
 	TmpLevelArea& tmp_area = *area.tmp;
 
 	draw_batch.Clear();
@@ -52,38 +49,22 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 
 	// terrain
 	if(area.area_type == LevelArea::Type::Outside && IsSet(draw_flags, DF_TERRAIN))
-	{
-		PROFILER_BLOCK("Terrain");
-		uint parts = game_level->terrain->GetPartsCount();
-		for(uint i = 0; i < parts; ++i)
-		{
-			if(frustum.BoxToFrustum(game_level->terrain->GetPart(i)->GetBox()))
-				draw_batch.terrain_parts.push_back(i);
-		}
-	}
+		game_level->terrain->ListVisibleParts(draw_batch.terrain_parts, frustum);
 
 	// dungeon
 	if(area.area_type == LevelArea::Type::Inside && IsSet(draw_flags, DF_TERRAIN))
-	{
-		PROFILER_BLOCK("Dungeon");
 		dun_mesh_builder->ListVisibleParts(draw_batch, frustum);
-	}
 
 	// units
 	if(IsSet(draw_flags, DF_UNITS))
 	{
-		PROFILER_BLOCK("Units");
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			ListDrawObjectsUnit(frustum, outside, u);
-		}
+		for(Unit* unit : area.units)
+			ListDrawObjectsUnit(frustum, outside, *unit);
 	}
 
 	// objects
 	if(IsSet(draw_flags, DF_OBJECTS))
 	{
-		PROFILER_BLOCK("Objects");
 		if(area.area_type == LevelArea::Type::Outside)
 		{
 			for(LevelQuad* quad : level_quads)
@@ -112,7 +93,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// items
 	if(IsSet(draw_flags, DF_ITEMS))
 	{
-		PROFILER_BLOCK("Ground items");
 		Vec3 pos;
 		for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
 		{
@@ -161,7 +141,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// usable objects
 	if(IsSet(draw_flags, DF_USABLES))
 	{
-		PROFILER_BLOCK("Usables");
 		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
 		{
 			Usable& use = **it;
@@ -194,7 +173,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// chests
 	if(IsSet(draw_flags, DF_USABLES))
 	{
-		PROFILER_BLOCK("Chests");
 		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
 		{
 			Chest& chest = **it;
@@ -319,30 +297,20 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
 		{
 			Trap& trap = **it;
+			trap.base->mesh->EnsureIsLoaded();
 			if((trap.state == 0 || (trap.base->type != TRAP_ARROW && trap.base->type != TRAP_POISON))
-				&& (trap.obj.mesh->EnsureIsLoaded(), true)
-				&& frustum.SphereToFrustum(trap.obj.pos, trap.obj.mesh->head.radius))
+				&& frustum.SphereToFrustum(trap.pos, trap.base->mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
-				node->SetMesh(trap.obj.mesh);
-				if(trap.obj.RequireNoCulling())
-					node->flags |= SceneNode::F_NO_CULLING;
-				node->center = trap.obj.pos;
-				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
-				if(!outside)
-					GatherDrawBatchLights(area, node);
-				draw_batch.Add(node);
-			}
-			if(trap.base->type == TRAP_SPEAR && InRange(trap.state, 2, 4)
-				&& (trap.obj2.mesh->EnsureIsLoaded(), true)
-				&& frustum.SphereToFrustum(trap.obj2.pos, trap.obj2.mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(trap.obj2.mesh);
-				if(trap.obj2.RequireNoCulling())
-					node->flags |= SceneNode::F_NO_CULLING;
-				node->center = trap.obj2.pos;
-				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
+				if(trap.meshInst && trap.meshInst->IsActive())
+				{
+					trap.meshInst->SetupBones();
+					node->SetMesh(trap.meshInst);
+				}
+				else
+					node->SetMesh(trap.base->mesh);
+				node->center = trap.pos;
+				node->mat = Matrix::RotationY(trap.rot) * Matrix::Translation(trap.pos);
 				if(!outside)
 					GatherDrawBatchLights(area, node);
 				draw_batch.Add(node);
@@ -375,7 +343,6 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// particles
 	if(IsSet(draw_flags, DF_PARTICLES))
 	{
-		PROFILER_BLOCK("Particles");
 		for(vector<ParticleEmitter*>::iterator it = tmp_area.pes.begin(), end = tmp_area.pes.end(); it != end; ++it)
 		{
 			ParticleEmitter& pe = **it;
@@ -386,7 +353,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					DebugNode* debug_node = DebugNode::Get();
 					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
-					debug_node->mesh = DebugNode::Sphere;
+					debug_node->shape = MeshShape::Sphere;
 					debug_node->color = Color::Green;
 					draw_batch.debug_nodes.push_back(debug_node);
 				}
@@ -430,7 +397,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	{
 		for(vector<CollisionObject>::iterator it = tmp_area.colliders.begin(), end = tmp_area.colliders.end(); it != end; ++it)
 		{
-			DebugNode::Mesh mesh = DebugNode::None;
+			MeshShape shape = MeshShape::None;
 			Vec3 scale;
 			float rot = 0.f;
 
@@ -438,25 +405,25 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 			case CollisionObject::RECTANGLE:
 				scale = Vec3(it->w, 1, it->h);
-				mesh = DebugNode::Box;
+				shape = MeshShape::Box;
 				break;
 			case CollisionObject::RECTANGLE_ROT:
 				scale = Vec3(it->w, 1, it->h);
-				mesh = DebugNode::Box;
+				shape = MeshShape::Box;
 				rot = it->rot;
 				break;
 			case CollisionObject::SPHERE:
 				scale = Vec3(it->radius, 1, it->radius);
-				mesh = DebugNode::Cylinder;
+				shape = MeshShape::Cylinder;
 				break;
 			default:
 				break;
 			}
 
-			if(mesh != DebugNode::None)
+			if(shape != MeshShape::None)
 			{
 				DebugNode* node = DebugNode::Get();
-				node->mesh = mesh;
+				node->shape = shape;
 				node->color = Color(153, 217, 164);
 				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * game_level->camera.mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
@@ -483,7 +450,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					const btBoxShape* box = (const btBoxShape*)shape;
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::Box;
+					node->shape = MeshShape::Box;
 					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -495,7 +462,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					float r = capsule->getRadius();
 					float h = capsule->getHalfHeight();
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::Capsule;
+					node->shape = MeshShape::Capsule;
 					node->color = Color(163, 73, 164);
 					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
@@ -505,7 +472,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				{
 					const btCylinderShape* cylinder = (const btCylinderShape*)shape;
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::Cylinder;
+					node->shape = MeshShape::Cylinder;
 					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
 					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
@@ -526,7 +493,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						{
 							btBoxShape* box = (btBoxShape*)child;
 							DebugNode* node = DebugNode::Get();
-							node->mesh = DebugNode::Box;
+							node->shape = MeshShape::Box;
 							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
@@ -544,7 +511,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
 				{
 					DebugNode* node = DebugNode::Get();
-					node->mesh = DebugNode::TriMesh;
+					node->shape = MeshShape::TriMesh;
 					node->color = Color(163, 73, 164);
 					node->mat = m_world * game_level->camera.mat_view_proj;
 					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
@@ -572,12 +539,20 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		Effect* effect = u.FindEffect(EffectId::Stun);
 		if(effect)
 		{
-			game_res->aStun->EnsureIsLoaded();
 			SceneNode* node = SceneNode::Get();
 			node->SetMesh(game_res->aStun);
 			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->center = u.GetHeadPoint();
-			node->mat = Matrix::RotationY(effect->time * 3) * Matrix::Translation(node->center);
+			node->mat = Matrix::RotationY(portal_anim * PI * 2) * Matrix::Translation(node->center);
+			draw_batch.Add(node);
+		}
+
+		if(u.HaveEffect(EffectId::Rooted, EffectValue_Rooted_Vines))
+		{
+			SceneNode* node = SceneNode::Get();
+			node->SetMesh(game_res->mVine);
+			node->center = u.pos;
+			node->mat = Matrix::Scale(u.GetUnitRadius() / 0.3f) * Matrix::Translation(node->center);
 			draw_batch.Add(node);
 		}
 	}
@@ -693,6 +668,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	if(u.used_item && u.action != A_USE_ITEM)
 		right_hand_item = u.used_item->mesh;
 
+	if(right_hand_item == game_res->aArrow && u.action == A_SHOOT && u.act.shoot.ability && u.act.shoot.ability->mesh)
+		right_hand_item = u.act.shoot.ability->mesh;
+
 	Matrix mat_scale;
 	if(u.human_data)
 	{
@@ -737,7 +715,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 			DebugNode* debug_node = DebugNode::Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->mesh = DebugNode::Box;
+			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
@@ -749,7 +727,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			hitbox = u.mesh_inst->mesh->FindPoint("hitbox");
 		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * game_level->camera.mat_view_proj;
-		debug_node->mesh = DebugNode::Box;
+		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -787,7 +765,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 
 			DebugNode* debug_node = DebugNode::Get();
 			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
-			debug_node->mesh = DebugNode::Box;
+			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
 		}
@@ -988,7 +966,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		float h = u.GetUnitHeight() / 2;
 		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->mesh = DebugNode::Cylinder;
+		debug_node->shape = MeshShape::Cylinder;
 		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -999,7 +977,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		u.GetBox(box);
 		DebugNode* debug_node = DebugNode::Get();
 		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
-		debug_node->mesh = DebugNode::Box;
+		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
 	}
@@ -1159,9 +1137,10 @@ void Game::ListAreas(LevelArea& area)
 	}
 
 	// action area2
-	if(pc->data.ability_ready)
+	if(pc->data.ability_ready || (pc->unit->action == A_CAST
+		&& pc->unit->animation_state == AS_CAST_ANIMATION && Any(pc->unit->act.cast.ability->type, Ability::Summon, Ability::Trap)))
 		PrepareAreaPath();
-	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon))
+	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray))
 		pc->unit->target_pos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
 	else if(pc->unit->weapon_state == WeaponState::Taken
 		&& ((pc->unit->weapon_taken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
@@ -1178,7 +1157,7 @@ void Game::ListAreas(LevelArea& area)
 			pos = pc->unit->target_pos;
 		DebugNode* node = DebugNode::Get();
 		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * game_level->camera.mat_view_proj;
-		node->mesh = DebugNode::Sphere;
+		node->shape = MeshShape::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
 	}
@@ -1285,22 +1264,17 @@ void Game::ListEntry(EntryType type, const Int2& pt, GameDirection dir)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	PlayerController::CanUseAbilityResult result = pc->CanUseAbility(pc->data.ability_ready);
-	if(result != PlayerController::CanUseAbilityResult::Yes)
+	Ability* ability;
+	if(pc->unit->action == A_CAST)
+		ability = pc->unit->act.cast.ability;
+	else
 	{
-		if(!(result == PlayerController::CanUseAbilityResult::TakeWand && pc->unit->action == A_TAKE_WEAPON && pc->unit->weapon_taken == W_ONE_HANDED))
-		{
-			pc->data.ability_ready = nullptr;
-			sound_mgr->PlaySound2d(game_res->sCancel);
-		}
-		return;
+		if(!pc->CanUseAbilityCheck())
+			return;
+		ability = pc->data.ability_ready;
 	}
 
-	if(pc->unit->action == A_CAST && pc->unit->animation_state == AS_CAST_ANIMATION)
-		return;
-
-	Ability& ability = *pc->data.ability_ready;
-	switch(ability.type)
+	switch(ability->type)
 	{
 	case Ability::Charge:
 		{
@@ -1316,8 +1290,8 @@ void Game::PrepareAreaPath()
 
 			// find max line
 			float t;
-			Vec3 dir(sin(rot) * ability.range, 0, cos(rot) * ability.range);
-			bool ignore_units = IsSet(ability.flags, Ability::IgnoreUnits);
+			Vec3 dir(sin(rot) * ability->range, 0, cos(rot) * ability->range);
+			bool ignore_units = IsSet(ability->flags, Ability::IgnoreUnits);
 			game_level->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 			{
 				int flags = obj->getCollisionFlags();
@@ -1332,7 +1306,7 @@ void Game::PrepareAreaPath()
 				return LT_COLLIDE;
 			}, t);
 
-			float len = ability.range * t;
+			float len = ability->range * t;
 
 			if(game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 			{
@@ -1349,8 +1323,8 @@ void Game::PrepareAreaPath()
 				for(int i = 0; i < steps; ++i)
 				{
 					float current_h = game_level->terrain->GetH(active_pos) + h;
-					area.points.push_back(Vec3::Transform(Vec3(-ability.width, current_h, active_step), mat) + unit_offset);
-					area.points.push_back(Vec3::Transform(Vec3(+ability.width, current_h, active_step), mat) + unit_offset);
+					area.points.push_back(Vec3::Transform(Vec3(-ability->width, current_h, active_step), mat) + unit_offset);
+					area.points.push_back(Vec3::Transform(Vec3(+ability->width, current_h, active_step), mat) + unit_offset);
 
 					active_pos += step;
 					active_step += len_step;
@@ -1370,10 +1344,10 @@ void Game::PrepareAreaPath()
 			{
 				// build line on flat terrain
 				area.points.resize(4);
-				area.points[0] = Vec3(-ability.width, h, 0);
-				area.points[1] = Vec3(-ability.width, h, len);
-				area.points[2] = Vec3(ability.width, h, 0);
-				area.points[3] = Vec3(ability.width, h, len);
+				area.points[0] = Vec3(-ability->width, h, 0);
+				area.points[1] = Vec3(-ability->width, h, len);
+				area.points[2] = Vec3(ability->width, h, 0);
+				area.points[3] = Vec3(ability->width, h, len);
 
 				Matrix mat = Matrix::RotationY(rot);
 				for(int i = 0; i < 4; ++i)
@@ -1393,13 +1367,14 @@ void Game::PrepareAreaPath()
 		break;
 
 	case Ability::Summon:
-		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
+	case Ability::Trap:
+		pc->data.ability_point = pc->RaytestTarget(ability->range);
 		if(pc->data.range_ratio < 1.f)
 		{
 			Area2* area = Area2::Get();
 			draw_batch.areas2.push_back(area);
 
-			const float radius = ability.width / 2;
+			const float radius = ability->width / 2;
 			Vec3 dir = pc->data.ability_point - pc->unit->pos;
 			dir.y = 0;
 			float dist = dir.Length();
@@ -1427,9 +1402,12 @@ void Game::PrepareAreaPath()
 			if(ok)
 			{
 				pc->data.ability_ok = true;
-				if(game_level->terrain)
+				if(game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 					game_level->terrain->SetY(from);
-				pc->data.ability_point = from;
+				if(!pc->data.ability_ready)
+					pc->unit->target_pos = from;
+				else
+					pc->data.ability_point = from;
 				area->ok = 2;
 			}
 			else
@@ -1454,7 +1432,7 @@ void Game::PrepareAreaPath()
 			else
 			{
 				// raytest - can be cast on alive units or dead team members
-				const float range = ability.range + game_level->camera.dist;
+				const float range = ability->range + game_level->camera.dist;
 				RaytestClosestUnitCallback clbk([=](Unit* unit)
 				{
 					if(unit == pc->unit)
@@ -1487,9 +1465,13 @@ void Game::PrepareAreaPath()
 
 	case Ability::Ray:
 	case Ability::Point:
-		pc->data.ability_point = pc->RaytestTarget(pc->data.ability_ready->range);
+		pc->data.ability_point = pc->RaytestTarget(ability->range);
 		pc->data.ability_ok = true;
 		pc->data.ability_target = nullptr;
+		break;
+
+	case Ability::RangedAttack:
+		pc->data.ability_ok = true;
 		break;
 	}
 }
@@ -1719,8 +1701,6 @@ void Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, floa
 //=================================================================================================
 void Game::DrawScene(bool outside)
 {
-	PROFILER_BLOCK("DrawScene");
-
 	game_level->scene->use_light_dir = outside;
 	scene_mgr->SetScene(game_level->scene, &game_level->camera);
 
@@ -1730,24 +1710,15 @@ void Game::DrawScene(bool outside)
 
 	// terrain
 	if(!draw_batch.terrain_parts.empty())
-	{
-		PROFILER_BLOCK("DrawTerrain");
 		terrain_shader->Draw(game_level->scene, &game_level->camera, game_level->terrain, draw_batch.terrain_parts);
-	}
 
 	// dungeon
 	if(!draw_batch.dungeon_parts.empty())
-	{
-		PROFILER_BLOCK("DrawDugneon");
 		DrawDungeon(draw_batch.dungeon_parts, draw_batch.dungeon_part_groups);
-	}
 
 	// nodes
 	if(!draw_batch.nodes.empty())
-	{
-		PROFILER_BLOCK("DrawSceneNodes");
 		scene_mgr->DrawSceneNodes(draw_batch);
-	}
 
 	// grass
 	DrawGrass();

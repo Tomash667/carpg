@@ -18,7 +18,6 @@
 #include "Quest_Tournament.h"
 #include "Team.h"
 
-#include <Profiler.h>
 #include <SoundManager.h>
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
@@ -112,7 +111,6 @@ inline float RandomRot(float base_rot, float random_angle)
 //=================================================================================================
 void Game::UpdateAi(float dt)
 {
-	PROFILER_BLOCK("UpdateAI");
 	static vector<Unit*> close_enemies;
 
 	auto stool = BaseUsable::Get("stool"),
@@ -177,8 +175,8 @@ void Game::UpdateAi(float dt)
 				if(!Equal(u.rot, dir))
 				{
 					const float rot_speed = 3.f * dt;
-					const float rot_diff = AngleDiff(u.rot, dir);
-					if(rot_diff < rot_speed)
+					const float rot_dif = AngleDiff(u.rot, dir);
+					if(rot_dif < rot_speed)
 						u.rot = dir;
 					else
 					{
@@ -895,7 +893,7 @@ void Game::UpdateAi(float dt)
 						{
 							// check if unit have required item
 							const Item* req_item = iron_vein->item;
-							if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
+							if(req_item && !u.HaveItem(req_item) && u.GetEquippedItem(SLOT_WEAPON) != req_item)
 								goto normal_idle_action;
 							// find closest ore vein
 							Usable* usable = nullptr;
@@ -1056,7 +1054,7 @@ void Game::UpdateAi(float dt)
 											&& game_level->CanSee(area, use.pos, u.pos))
 										{
 											const Item* needed_item = use.base->item;
-											if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
+											if(!needed_item || u.HaveItem(needed_item) || u.GetEquippedItem(SLOT_WEAPON) == needed_item)
 												uses.push_back(*it2);
 										}
 									}
@@ -1364,7 +1362,7 @@ void Game::UpdateAi(float dt)
 									{
 										BaseUsable& base = *use.base;
 										const Item* needed_item = base.item;
-										if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
+										if(!needed_item || u.HaveItem(needed_item) || u.GetEquippedItem(SLOT_WEAPON) == needed_item)
 										{
 											u.action = A_USE_USABLE;
 											u.animation = ANI_PLAY;
@@ -1463,26 +1461,9 @@ void Game::UpdateAi(float dt)
 										&& game_level->CanShootAtLocation2(u, ai.st.idle.obj.ptr, ai.st.idle.obj.pos))
 									{
 										// bow shooting
-										float speed = u.GetBowAttackSpeed();
-										u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-										u.mesh_inst->groups[1].speed = speed;
-										u.action = A_SHOOT;
 										u.target_pos = ai.st.idle.obj.pos;
 										u.target_pos.y += 1.27f;
-										u.animation_state = AS_SHOOT_CAN;
-										u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-										u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-										u.bow_instance->groups[0].speed = speed;
-										u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
-
-										if(Net::IsOnline())
-										{
-											NetChange& c = Add1(Net::changes);
-											c.type = NetChange::ATTACK;
-											c.unit = &u;
-											c.id = AID_Shoot;
-											c.f[1] = speed;
-										}
+										u.DoRangedAttack(false);
 									}
 									look_at = LookAtPoint;
 									look_pos = ai.st.idle.obj.pos;
@@ -1761,24 +1742,7 @@ void Game::UpdateAi(float dt)
 							if(game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 							{
 								// bowshot
-								float speed = u.GetBowAttackSpeed();
-								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-								u.mesh_inst->groups[1].speed = speed;
-								u.action = A_SHOOT;
-								u.animation_state = AS_SHOOT_CAN;
-								u.bow_instance = game_level->GetBowInstance(u.GetBow().mesh);
-								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-								u.bow_instance->groups[0].speed = speed;
-								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
-
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::ATTACK;
-									c.unit = &u;
-									c.id = AID_Shoot;
-									c.f[1] = speed;
-								}
+								u.DoRangedAttack(false);
 							}
 							else
 							{
@@ -2648,6 +2612,9 @@ void Game::UpdateAi(float dt)
 				else
 					move = 1;
 			}
+
+			if(move != 0 && !u.CanMove())
+				move = 0;
 
 			if(move == -1)
 			{

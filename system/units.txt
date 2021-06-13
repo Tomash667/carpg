@@ -1807,6 +1807,7 @@ unit hunter : base_human {
 unit hunter_leader : hunter {
 	level 10
 	gold {100 200}
+	dialog hunter_leader
 }
 
 //------------------------------------------------------------------------------
@@ -1908,7 +1909,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders specific_name boss sit_on_throne}
+	flags | {archer hero ai_wanders specific_name boss sit_on_throne rooted_res}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -2199,7 +2200,7 @@ unit q_orkowie_orc_shaman : orc_shaman {
 
 unit q_orkowie_boss : base_orc {
 	level 16
-	flags | {melee boss sit_on_throne yell guarded}
+	flags | {melee boss sit_on_throne yell guarded rooted_res}
 	hp 1600
 	attack -40
 	def 110
@@ -2223,7 +2224,7 @@ unit q_orkowie_boss : base_orc {
 unit ogre {
 	mesh "ogre.qmsh"
 	mat body
-	flags {humanoid fixed_stats}
+	flags {humanoid fixed_stats rooted_res}
 	level 14
 	hp 1400
 	stamina 250
@@ -2454,13 +2455,11 @@ unit necromancer : base_human {
 unit necromancer2 : necromancer {
 	level {9 12}
 	gold {{90 180}{120 240}}
-	upgrade necromancer // V_0_8
 }
 
 unit necromancer3 : necromancer {
 	level {13 15}
 	gold {{130 260}{150 300}}
-	upgrade necromancer // V_0_8
 }
 
 unit base_undead : base_human {
@@ -2542,12 +2541,11 @@ unit evil_cleric2 : evil_cleric {
 		random 1 3 raw_meat
 	}
 	gold {{130 260}{160 320}}
-	upgrade evil_cleric // V_0_8
 }
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res dont_talk}
+	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res rooted_res dont_talk}
 	hp 2000
 	items {
 		blunt_skullsmasher
@@ -2702,7 +2700,7 @@ unit q_bandyci_szef : base_bandit {
 	level 15
 	hp 750
 	attack -30 // too good weapon
-	flags | {ai_wanders melee boss backstab guarded}
+	flags | {ai_wanders melee boss backstab guarded rooted_res}
 	items {
 		dagger_spinesheath
 		!light_armor
@@ -2776,13 +2774,11 @@ unit mage : base_human {
 unit mage2 : mage {
 	level {9 12}
 	gold {{90 180}{120 240}}
-	upgrade mage // V_0_8
 }
 
 unit mage3 : mage {
 	level {13 15}
 	gold {{130 260}{150 300}}
-	upgrade mage // V_0_8
 }
 
 unit mage_guard : base_human {
@@ -2815,7 +2811,7 @@ unit mage_guard : base_human {
 
 unit base_golem {
 	mesh "golem.qmsh"
-	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk construct}
+	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res rooted_res dont_talk construct}
 	stamina 150
 	group mages
 	dmg_type blunt
@@ -2886,7 +2882,7 @@ unit golem_adamantine : golem_iron {
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
-	flags | {mage boss guarded mp_bar}
+	flags | {mage boss guarded mp_bar rooted_res}
 	hp 1440
 	def 150
 	items {
@@ -2996,7 +2992,7 @@ unit dire_wolf : wolf {
 	hp 2000
 	attack 200
 	def 200
-	flags | {~aggro boss dont_escape stun_res}
+	flags | {~aggro boss dont_escape stun_res rooted_res}
 	scale 2
 	abilities {
 		{howl_aggro 0}
@@ -3327,7 +3323,7 @@ unit hero_cleric : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
+	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res rooted_res dont_talk}
 	profile ai_fighter
 	hp 2500
 	items {
@@ -3416,8 +3412,13 @@ unit q_main_messenger : messenger {
 
 unit q_main_ill_villager : villager {
 	dialog "main/ill_villager"
-	flags {human ai_stay}
-	tint {0.9 1.1 0.9}
+	flags {human ai_stay dont_eat}
+	tex {
+		null
+		"head_ill.jpg"
+		null
+	}
+	idle_dialog ill_idle
 }
 
 unit q_main_ill_villager_attack : q_main_ill_villager {
@@ -3461,7 +3462,7 @@ group orcs {
 
 group ogres {
 	ogre 1
-	
+
 	orc_food 1
 }
 
@@ -3695,15 +3696,5 @@ group random {
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-// renamed in V_0_8
-alias bandit_chief bandit_hegemon
-alias guard_wagon guard2
-alias guard_merchant guard3
-// removed quest units in V_0_8 (map to normal units)
-alias mage mage_q
-alias evil_cleric evil_cleric_q
-alias bandit_chief bandit_hegemon_q
-alias orc_chief orc_chief_q
-alias goblin_chief goblin_chief_q
 // removed in V_0_16
 alias golem_stone q_magowie_golem

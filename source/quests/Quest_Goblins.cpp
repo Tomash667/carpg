@@ -116,12 +116,12 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		{
 			if(quest_mgr->RemoveQuestRumor(id))
-				game_gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
+				game_gui->journal->AddRumor(Format(quest_mgr->txQuest[211], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:
 		{
-			OnStart(game->txQuest[212]);
+			OnStart(quest_mgr->txQuest[212]);
 			quest_mgr->RemoveQuestRumor(id);
 			// add location
 			targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
@@ -132,8 +132,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
 			// add journal entry
-			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), world->GetDate()));
-			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
+			msgs.push_back(Format(quest_mgr->txQuest[217], GetStartLocationName(), world->GetDate()));
+			msgs.push_back(Format(quest_mgr->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
 			// encounter
 			Encounter* e = world->AddEncounter(enc);
 			e->check_func = TeamHaveOldBow;
@@ -145,7 +145,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->quest = this;
 			e->chance = 10000;
 			e->range = 32.f;
-			e->text = game->txQuest[219];
+			e->text = quest_mgr->txQuest[219];
 			e->timed = false;
 			e->st = 6;
 		}
@@ -153,18 +153,18 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::BowStolen:
 		{
 			team->RemoveQuestItem(Item::Get("q_gobliny_luk"));
-			OnUpdate(game->txQuest[220]);
+			OnUpdate(quest_mgr->txQuest[220]);
 			world->RemoveEncounter(enc);
 			enc = -1;
 			targetLoc->active_quest = nullptr;
-			world->AddNews(game->txQuest[221]);
+			world->AddNews(quest_mgr->txQuest[221]);
 			team->AddExp(1000);
 		}
 		break;
 	case Progress::TalkedAboutStolenBow:
 		{
 			state = Quest::Failed;
-			OnUpdate(game->txQuest[222]);
+			OnUpdate(quest_mgr->txQuest[222]);
 			goblins_state = State::Counting;
 			days = Random(15, 30);
 		}
@@ -183,7 +183,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			unit_spawn_level = -3;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
 			at_level = targetLoc->GetLastLevel();
-			OnUpdate(Format(game->txQuest[223], targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+			OnUpdate(Format(quest_mgr->txQuest[223], targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			goblins_state = State::MessengerTalked;
 		}
 		break;
@@ -194,23 +194,23 @@ void Quest_Goblins::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			DialogContext::current->talker->AddItem(item, 1, true);
 			team->AddReward(500, 2500);
-			OnUpdate(game->txQuest[224]);
+			OnUpdate(quest_mgr->txQuest[224]);
 			goblins_state = State::GivenBow;
 			targetLoc->active_quest = nullptr;
 			targetLoc = nullptr;
-			world->AddNews(game->txQuest[225]);
+			world->AddNews(quest_mgr->txQuest[225]);
 		}
 		break;
 	case Progress::DidntTalkedAboutBow:
 		{
-			OnUpdate(game->txQuest[226]);
+			OnUpdate(quest_mgr->txQuest[226]);
 			goblins_state = State::MageTalkedStart;
 		}
 		break;
 	case Progress::TalkedAboutBow:
 		{
 			state = Quest::Started;
-			OnUpdate(game->txQuest[227]);
+			OnUpdate(quest_mgr->txQuest[227]);
 			goblins_state = State::MageTalked;
 		}
 		break;
@@ -219,7 +219,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			DialogContext::current->pc->unit->ModGold(-100);
 
 			state = Quest::Started;
-			OnUpdate(game->txQuest[228]);
+			OnUpdate(quest_mgr->txQuest[228]);
 			goblins_state = State::MageTalked;
 		}
 		break;
@@ -243,16 +243,16 @@ void Quest_Goblins::SetProgress(int prog2)
 			item_to_give[0] = nullptr;
 			spawn_item = Quest_Event::Item_DontSpawn;
 			at_level = target.GetLastLevel();
-			OnUpdate(Format(game->txQuest[229], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
+			OnUpdate(Format(quest_mgr->txQuest[229], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 		}
 		break;
 	case Progress::KilledBoss:
 		{
 			state = Quest::Completed;
-			OnUpdate(game->txQuest[230]);
+			OnUpdate(quest_mgr->txQuest[230]);
 			targetLoc->active_quest = nullptr;
 			quest_mgr->EndUniqueQuest();
-			world->AddNews(game->txQuest[231]);
+			world->AddNews(quest_mgr->txQuest[231]);
 			team->AddLearningPoint();
 			team->AddExp(15000);
 		}
@@ -357,7 +357,7 @@ Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 		e->quest = this;
 		e->chance = 10000;
 		e->range = 32.f;
-		e->text = game->txQuest[219];
+		e->text = quest_mgr->txQuest[219];
 		e->timed = false;
 		e->st = 6;
 	}

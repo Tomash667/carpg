@@ -3002,7 +3002,7 @@ book_scheme page {
 		{50 50 387 496}
 	}
 	prev {30 536}
-	next {407 536} 
+	next {407 536}
 }
 
 book book_history {
@@ -3534,14 +3534,14 @@ stock blacksmith {
 		{
 			count -= Random(1, 3);
 			priceLimit = Random(1250, 2500);
-		}		
+		}
 		for(int i=0; i<count; ++i)
 		{
 			ITEM_TYPE type = ITEM_TYPE(Rand() % 4);
 			StockScript::AddRandomItem(type, priceLimit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 		}
 	}
-	
+
 	// short blade
 	set {
 		dagger_short
@@ -3654,7 +3654,7 @@ stock alchemist {
 		int priceLimit;
 		int potionCount = Random(12, 18);
 		int recipeCount = Random(1, 3);
-		
+
 		if(!Level::IsCity())
 		{
 			priceLimit = Random(150, 250);
@@ -3663,12 +3663,12 @@ stock alchemist {
 		}
 		else
 			priceLimit = Random(250, 350);
-		
+
 		// potions
 		ItemList@ lis = ItemList::Get("potions");
 		for(int i=0; i<potionCount; ++i)
 			StockScript::AddItem(lis.GetItem(), Random(3, 6));
-		
+
 		// ingredients
 		@lis = ItemList::Get("ingredients");
 		for(int i=0; i<10; ++i)
@@ -3678,7 +3678,7 @@ stock alchemist {
 			if(count > 0)
 				StockScript::AddItem(item, count);
 		}
-		
+
 		// recipes
 		@lis = ItemList::Get("recipes");
 		for(int i=0; i<recipeCount; ++i)
@@ -3917,18 +3917,18 @@ better_items {
 	wand_novice wand_adept
 	wand_adept wand_expert
 	wand_expert wand_master
-	
+
 	bow_short bow_long
 	bow_long bow_composite
 	bow_composite bow_elven
 	bow_elven bow_dragonbone
-	
+
 	shield_plank shield_wood
 	shield_wood shield_iron
 	shield_iron shield_steel
 	shield_steel shield_mithril
 	shield_mithril shield_adamantine
-	
+
 	al_padded al_leather
 	al_padded_hq al_leather
 	al_padded_m al_chain_shirt
@@ -3942,7 +3942,7 @@ better_items {
 	al_chain_shirt_hq al_chain_shirt_m
 	al_chain_shirt_m al_dragonskin
 	al_chain_shirt_mith al_dragonskin
-	
+
 	am_hide am_chainmail
 	am_hide_hq am_chainmail
 	am_hide_m am_breastplate
@@ -3959,7 +3959,7 @@ better_items {
 	am_breastplate_m am_breastplate_adam
 	am_breastplate_mith am_breastplate_adam
 	am_breastplate_adam am_dragonscale
-	
+
 	ah_splint_rusted ah_splint
 	ah_splint ah_splint_hq
 	ah_splint_hq ah_splint_m
@@ -3971,7 +3971,7 @@ better_items {
 	ah_plate_mith ah_crystal
 	ah_crystal ah_plate_adam
 	ah_crystal_m ah_plate_adam
-	
+
 	al_blacksmith al_studded
 	al_innkeeper al_leather
 	al_mage al_mage2
@@ -4102,13 +4102,9 @@ recipe p_antimagic {
 //------------------------------------------------------------------------------
 // ALIASES (new id, old id)
 //------------------------------------------------------------------------------
-// renamed in V_0_8
-alias sword_semur sword_unique
-alias bow_angel bow_unique
-alias shield_wall shield_unique
 // renamed in V_0_13
 alias wand_novice wand_1
 alias wand_adept wand_2
 alias wand_expert wand_3
-// renamed in V_DEV
+// renamed in V_0_17
 alias r_persuasion r_haggle

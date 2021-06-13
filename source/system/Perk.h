@@ -3,75 +3,50 @@
 //-----------------------------------------------------------------------------
 namespace old
 {
-	// pre V_0_8 compatibility
-	namespace v1
-	{
-		enum class Perk
-		{
-			Weakness, // -5 attribute
-			Strength, // +5 attribute
-			Skilled, // +2 sp
-			SkillFocus, // -5 to two skills, +10 to one skill
-			Talent, // +5 skill
-			AlchemistApprentice, // more potions
-			Wealthy, // +1k gold
-			VeryWealthy, // +2.5k gold
-			FamilyHeirloom, // good starting item
-			Leader, // start with npc
-
-			Max,
-			None
-		};
-	}
-
 	// pre V_0_14 compatibility
-	namespace v2
+	enum class Perk
 	{
-		enum class Perk
-		{
-			None = -1,
+		None = -1,
 
-			// negative starting perks
-			BadBack, // -5 str, -25% carry
-			ChronicDisease, // -5 end, 50% natural healing
-			Sluggish, // -5 dex, -25 mobility
-			SlowLearner, // -5 int, -1 apt to all skills
-			Asocial, // -5 cha, worse prices
-			Poor, // no gold, worse items
+		// negative starting perks
+		BadBack, // -5 str, -25% carry
+		ChronicDisease, // -5 end, 50% natural healing
+		Sluggish, // -5 dex, -25 mobility
+		SlowLearner, // -5 int, -1 apt to all skills
+		Asocial, // -5 cha, worse prices
+		Poor, // no gold, worse items
 
-			// positive starting perks
-			Talent, // +5 attrib, +1 apt
-			Skilled, // +3 skill points
-			SkillFocus, // +5 skill, +1 apt (only for skills with value >= 0)
-			AlchemistApprentice, // +10 alchemy, potions & ladle
-			Wealthy, // +2.5k gold
-			VeryWealthy, // [C] +50k gold
-			FamilyHeirloom, // good starting item
-			Leader, // start with npc
+		// positive starting perks
+		Talent, // +5 attrib, +1 apt
+		Skilled, // +3 skill points
+		SkillFocus, // +5 skill, +1 apt (only for skills with value >= 0)
+		AlchemistApprentice, // +10 alchemy, potions & ladle
+		Wealthy, // +2.5k gold
+		VeryWealthy, // [C] +50k gold
+		FamilyHeirloom, // good starting item
+		Leader, // start with npc
 
-			// normal perks
-			StrongBack, // (60 str) +25% carry
-			Aggressive, // (60 str) +10 melee attack
-			Mobility, // (60 dex) +20 mobility
-			Finesse, // (60 dex) +10 ranged attack
-			Tough, // (60 end) +hp
-			HardSkin, // (60 end) +10 def
-			Adaptation, // (75 end) poison resistance
-			PerfectHealth, // (90 end) +5 hp reg
-			Energetic, // (60 dex/end) +100 stamina
-			StrongAura, // (60 wis) +X mp
-			ManaHarmony, // (90 wis) +X mp reg
-			MagicAdept, // (60 int) +magic power
+		// normal perks
+		StrongBack, // (60 str) +25% carry
+		Aggressive, // (60 str) +10 melee attack
+		Mobility, // (60 dex) +20 mobility
+		Finesse, // (60 dex) +10 ranged attack
+		Tough, // (60 end) +hp
+		HardSkin, // (60 end) +10 def
+		Adaptation, // (75 end) poison resistance
+		PerfectHealth, // (90 end) +5 hp reg
+		Energetic, // (60 dex/end) +100 stamina
+		StrongAura, // (60 wis) +X mp
+		ManaHarmony, // (90 wis) +X mp reg
+		MagicAdept, // (60 int) +magic power
 
-			// mixed - perks are saved by id so can't reorder currently
-			TravelingMerchant, // +10 persuasion, more gold
+		// mixed - perks are saved by id so can't reorder currently
+		TravelingMerchant, // +10 persuasion, more gold
 
-			Max // max 256, saved as byte
-		};
-	}
+		Max // max 256, saved as byte
+	};
 
-	v2::Perk Convert(v1::Perk perk, int value, bool& upgrade);
-	::Perk* Convert(v2::Perk perk);
+	::Perk* Convert(Perk perk);
 }
 
 //-----------------------------------------------------------------------------
@@ -148,11 +123,10 @@ struct PerkContext
 {
 	CreatedCharacter* cc;
 	PlayerController* pc;
-	bool startup, validate, check_remove, upgrade;
-	// 'upgrade' required for pre V_0_8 compatiblity
+	bool startup, validate, check_remove;
 
 	PerkContext(CreatedCharacter* cc, PlayerController* pc, bool startup)
-		: cc(cc), pc(pc), startup(startup), validate(false), check_remove(false), upgrade(false) {}
+		: cc(cc), pc(pc), startup(startup), validate(false), check_remove(false) {}
 	PerkContext(CreatedCharacter* cc) : PerkContext(cc, nullptr, true) {}
 	PerkContext(PlayerController* pc, bool startup) : PerkContext(nullptr, pc, startup) {}
 	bool CanMod(AttributeId a);

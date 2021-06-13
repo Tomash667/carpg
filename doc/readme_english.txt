@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: https://carpg.pl/en
-Version: 0.16
-Date: 2020-07-01
+Version: 0.17.2
+Date: 2021-02-06
 
 ===============================================================================
 1) Table of contents
@@ -201,6 +201,7 @@ Available commands:
 	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
 	exit - exit to menu.
 	fall - unit fall on ground for some time ('fall 1' targets self).
+	find - find nearest entity (find type id).
 	force_quest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
@@ -226,12 +227,12 @@ Available commands:
 	multisampling - sets multisampling (multisampling type [quality]).
 	next_seed - random seed used in next map generation.
 	noai - disable ai (noai 0/1).
+	nocd - player abilities have no cooldown & use no mana/stamina (nocd 0/1).
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
 	play_music - sets if play music (play_music 0/1).
 	play_sound - sets if play sound (play_sound 0/1).
 	player_devmode - allow/disallow developer mode for player in multiplayer (player_devmode nick/all 0/1).
-	profiler - profiler execution: 0-disabled, 1-update, 2-rendering.
 	qs - pick random character, get ready and start game.
 	quickload - load game from last slot.
 	quicksave - save game on last slot.
@@ -254,7 +255,6 @@ Available commands:
 	select - select and display currently selected target (select [me/show/target] - use target or show by default).
 	server - send message from server to all players (server msg).
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
-	set_seed - set randomness seed (set_seed uint).
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
@@ -280,18 +280,17 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* check_updates ([true] false) - check for game updates
 	* class (warrior hunter rogue) - selected class in quick singleplayer game
 	* con_pos Int2 - console position x, y
+	* con_size Int2 - console size x, y
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
 	* feature_level ("10.0" "10.1" "11.0") - directx feature level
-	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
 		not active
 	* log ([true] false) - logging to file
 	* log_filename ["log.txt"] - logging to file name
 	* name - player name in quick game
-	* next_seed - next randomness seed
 	* nick - nick in multiplayer game
 	* nomusic (true [false]) - don't load music, can't turn it on
 	* nosound (true [false]) - don't load sound, can't turn it on
@@ -305,7 +304,6 @@ In configuration file (by default carpg.cfg) you can use such options:
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
 	* screenshot_format – set screenshot (jpg, bmp, tif, gif, png, dds)
-	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server
 	* server_name - last server name
@@ -361,8 +359,9 @@ BottledByte - Bug reports and coding.
 	darktorq
 	Docucat
 	fire
+	Groszek
 	Harorri
-	Lemiczek 
+	Lemiczek
 	Medarc
 	MikelkCZ
 	MildlyPhilosophicalHobbit
@@ -416,6 +415,7 @@ BottledByte - Bug reports and coding.
 🔈 Sounds:
 	* https://opengameart.org
 		* artisticdude - ogre sounds
+		* OwlishMedia - coughs
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

@@ -1091,6 +1091,27 @@ dialog hero
 		{
 			if script "Level::IsSafe()"
 			{
+				if script "target.hero.investment > 0"
+				{
+					talk 53
+					choice 54
+					{
+						if script "pc.unit.gold >= target.hero.investment"
+						{
+							special "kick_npc"
+							talk 56
+							end
+						}
+						else
+						{
+							talk 42
+							restart
+						}
+					}
+					escape choice 55
+						restart
+					show_choices
+				}
 				talk 21
 				choice 22
 				{
@@ -1381,6 +1402,27 @@ dialog crazy
 		{
 			if script "Level::IsSafe()"
 			{
+				if script "target.hero.investment > 0"
+				{
+					talk 56
+					choice 57
+					{
+						if script "pc.unit.gold >= target.hero.investment"
+						{
+							special "kick_npc"
+							talk 59
+							end
+						}
+						else
+						{
+							talk 42
+							restart
+						}
+					}
+					escape choice 58
+						restart
+					show_choices
+				}
 				talk 21
 				choice 22
 				{
@@ -1861,14 +1903,6 @@ dialog traveler
 	}
 	if special "have_completed_quest"
 		end
-	if have_quest_item "$$stolen_artifact"
-	{
-		choice 2
-		{
-			do_quest_item "$$stolen_artifact"
-			end
-		}
-	}
 	if have_quest_item "$$lost_item"
 	{
 		choice 3
@@ -3906,7 +3940,7 @@ dialog q_rescue_captive_start
 	choice 2
 	{
 		set_quest_progress 1
-		if special "is_camp"
+		if quest_special "is_camp"
 			talk 3
 		else
 			talk 4
@@ -3991,7 +4025,7 @@ dialog q_retrieve_package_start
 	choice 1
 	{
 		set_quest_progress 1
-		if special "is_camp"
+		if quest_special "is_camp"
 			talk 2
 		else
 			talk 3
@@ -4159,41 +4193,6 @@ dialog q_spread_news_end
 }
 
 //==============================================================================
-dialog q_stolen_artifact_start
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		set_quest_progress 1
-		talk 3
-		talk 4
-		end
-	}
-	escape choice 5
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_stolen_artifact_end
-{
-	set_quest_progress 2
-	talk 0
-	end
-}
-
-//==============================================================================
-dialog q_stolen_artifact_timeout
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
-	talk 2
-	end2
-}
-
-//==============================================================================
 dialog q_wanted_start
 {
 	talk 0
@@ -4289,6 +4288,12 @@ dialog mage_seller
 			choice 13
 			{
 				special "train/fireball"
+				end
+			}
+		if script "!pc.HaveAbility(Ability::Get(\"fire_trap\"))"
+			choice 15
+			{
+				special "train/fire_trap"
 				end
 			}
 		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
@@ -4532,13 +4537,40 @@ dialog drunk_mage_idle
 //==============================================================================
 dialog hunter
 {
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog hunter_leader
+{
 	if once
 		talk 0
+	if script "!pc.HaveAbility(Ability::Get(\"entangling_arrow\"))"
+		choice 2
+		{
+			special "train/entangling_arrow"
+			end
+		}
+	if script "!pc.HaveAbility(Ability::Get(\"bear_trap\"))"
+		choice 3
+		{
+			special "train/bear_trap"
+			end
+		}
 	if choices != 0
 	{
 		escape choice 1
 			end
 		show_choices
 	}
+	end
+}
+
+//==============================================================================
+dialog ill_idle
+{
+	special "coughs"
+	talk 0
 	end
 }

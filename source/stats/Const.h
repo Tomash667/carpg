@@ -36,7 +36,6 @@ const float MIN_H = 1.5f;
 const float TRAIN_KILL_RATIO = 0.1f;
 
 const float HIT_SOUND_DIST = 1.5f;
-const float ARROW_HIT_SOUND_DIST = 1.5f;
 const float SHOOT_SOUND_DIST = 1.f;
 const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
