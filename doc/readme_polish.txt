@@ -219,8 +219,6 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 		informacji o crashu
 	* grass_range (0-100) - zasięg rysowania trawy
 	* feature_level ("10.0" "10.1" "11.0") - poziom funkcji directx
-	* force_seed (true [false]) - wymuszenie określonej losowości na każdym
-		poziomie
 	* fullscreen ([true] false) - tryb pełnoekranowy
 	* inactive_update (true [false]) - gra jest aktualizowana nawet gdy okno
 		jest nieaktywne; gra jest zawsze aktualizowana w trybie multiplayer
@@ -243,7 +241,6 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 		którejś zmiennej to nie uruchamia automatycznie
 	* resolution (800x600 [1024x768]) - rozdzielczość ekranu
 	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tif, gif, png, dds)
-	* seed - ziarno losowości
 	* server_ip - zapamiętane ip serwera
 	* server_lan - jeśli jest 1 to serwer nie będzie rejestrowany w głównym serwerze
 	* server_name - zapamiętana nazwa serwera

@@ -650,18 +650,7 @@ void LoadConfiguration(char* lpCmdLine)
 	Logger::SetInstance(logger);
 
 	// pseudorandomness
-	uint cfg_seed = cfg.GetUint("seed"), seed;
-	if(cfg_seed == 0)
-		seed = (uint)time(nullptr);
-	else
-	{
-		seed = cfg_seed;
-		game->force_seed = seed;
-	}
-	game->next_seed = cfg.GetUint("next_seed");
-	game->force_seed_all = cfg.GetBool("force_seed");
-	Info("random seed: %u/%u/%d", seed, game->next_seed, (game->force_seed_all ? 1 : 0));
-	Srand(seed);
+	Srand((uint)time(nullptr));
 
 	// console position & size
 	const Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));

@@ -255,7 +255,6 @@ Available commands:
 	select - select and display currently selected target (select [me/show/target] - use target or show by default).
 	server - send message from server to all players (server msg).
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
-	set_seed - set randomness seed (set_seed uint).
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
@@ -286,14 +285,12 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
 	* feature_level ("10.0" "10.1" "11.0") - directx feature level
-	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
 		not active
 	* log ([true] false) - logging to file
 	* log_filename ["log.txt"] - logging to file name
 	* name - player name in quick game
-	* next_seed - next randomness seed
 	* nick - nick in multiplayer game
 	* nomusic (true [false]) - don't load music, can't turn it on
 	* nosound (true [false]) - don't load sound, can't turn it on
@@ -307,7 +304,6 @@ In configuration file (by default carpg.cfg) you can use such options:
 		if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
 	* screenshot_format – set screenshot (jpg, bmp, tif, gif, png, dds)
-	* seed - randomness seed
 	* server_ip - last server ip address
 	* server_lan - if true server won't be registered on master server
 	* server_name - last server name

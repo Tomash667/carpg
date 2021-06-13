@@ -293,11 +293,11 @@ public:
 	//-----------------------------------------------------------------
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
-	bool testing, force_seed_all, end_of_game, death_solo, cutscene, in_load;
+	bool testing, end_of_game, death_solo, cutscene, in_load;
 	int death_screen;
 	float death_fade, game_speed;
 	vector<AIController*> ais;
-	uint force_seed, next_seed;
+	uint next_seed;
 	int start_version;
 	uint load_errors, load_warnings;
 	std::set<const Item*> items_load;

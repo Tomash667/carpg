@@ -105,11 +105,10 @@ void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 //=================================================================================================
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
-draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false),
-draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f),
-screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
-clear_color(Color::Black), in_load(false), tMinimap(nullptr)
+draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), next_seed(0), dont_wander(false), check_updates(true), skip_tutorial(false),
+portal_anim(0), musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD),
+rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false),
+default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
 	if(IsDebug())
 	{
@@ -1328,8 +1327,6 @@ void Game::GenerateWorld()
 		Srand(next_seed);
 		next_seed = 0;
 	}
-	else if(force_seed != 0 && force_seed_all)
-		Srand(force_seed);
 
 	Info("Generating world, seed %u.", RandVal());
 
@@ -1409,8 +1406,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 			Srand(next_seed);
 			next_seed = 0;
 		}
-		else if(force_seed != 0 && force_seed_all)
-			Srand(force_seed);
 
 		// log what is required to generate location for testing
 		if(l.type == L_CITY)
@@ -2476,8 +2471,6 @@ void Game::ChangeLevel(int where)
 				Srand(next_seed);
 				next_seed = 0;
 			}
-			else if(force_seed != 0 && force_seed_all)
-				Srand(force_seed);
 
 			inside->generated = game_level->dungeon_level + 1;
 			inside->infos[game_level->dungeon_level].seed = RandVal();
