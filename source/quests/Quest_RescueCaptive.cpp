@@ -235,7 +235,7 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RescueCaptive::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time >= 30;
 }
 
 //=================================================================================================

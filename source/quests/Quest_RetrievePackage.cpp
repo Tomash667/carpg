@@ -127,7 +127,7 @@ cstring Quest_RetrievePackage::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RetrievePackage::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time >= 30;
 }
 
 //=================================================================================================

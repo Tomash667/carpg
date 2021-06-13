@@ -36,7 +36,7 @@ public:
 		aPortal, aDungeonDoor, mVine;
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
-		sBody[5], sBone, sSkin, sSlime, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
+		sBody[5], sBone, sSkin, sSlime, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel, sCoughs;
 
 private:
 	void PreloadBuildings();

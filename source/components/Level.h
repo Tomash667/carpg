@@ -109,6 +109,7 @@ public:
 	Unit* CreateUnit(UnitData& base, int level = -1, bool create_physics = true);
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, const Vec3* pos = nullptr, const float* rot = nullptr);
 	Vec3 FindSpawnPos(Room* room, Unit* unit);
+	Vec3 FindSpawnPos(LevelArea& area, Unit* unit);
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));
 	Unit* SpawnUnitInsideRoomS(Room& room, UnitData& unit, int level = -1) { return SpawnUnitInsideRoom(room, unit, level); }
 	Unit* SpawnUnitInsideRoomOrNear(Room& room, UnitData& unit, int level = -1, const Int2& awayPt = Int2(-1000, -1000), const Int2& excludedPt = Int2(-1000, -1000));

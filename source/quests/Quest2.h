@@ -28,6 +28,7 @@ struct Quest2 : public Quest
 	virtual void LoadDetails(GameReader& f) {};
 	void SetState(State state);
 	void SetTimeout(int days);
+	int GetTimeout() const;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
 

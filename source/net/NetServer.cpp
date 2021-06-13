@@ -2973,6 +2973,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::BREAK_ACTION:
 		case NetChange::USE_ITEM:
 		case NetChange::BOSS_START:
+		case NetChange::UNIT_MISC_SOUND:
 			f << c.unit->id;
 			break;
 		case NetChange::TELL_NAME:

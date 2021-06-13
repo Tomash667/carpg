@@ -244,6 +244,7 @@ void GameResources::LoadData()
 	sSummon = res_mgr->Load<Sound>("whooshy-puff.wav");
 	sZap = res_mgr->Load<Sound>("zap.mp3");
 	sCancel = res_mgr->Load<Sound>("cancel.mp3");
+	sCoughs = res_mgr->Load<Sound>("coughs.mp3");
 
 	// music
 	LoadMusic(MusicType::Title);

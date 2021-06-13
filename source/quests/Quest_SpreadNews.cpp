@@ -177,7 +177,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 //=================================================================================================
 bool Quest_SpreadNews::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time > 60 && prog < Progress::Deliver;
+	return world->GetWorldtime() - start_time >= 60 && prog < Progress::Deliver;
 }
 
 //=================================================================================================

@@ -166,7 +166,7 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 //=================================================================================================
 bool Quest_LostArtifact::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time > 60;
+	return world->GetWorldtime() - start_time >= 60;
 }
 
 //=================================================================================================

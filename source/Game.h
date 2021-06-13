@@ -215,6 +215,7 @@ public:
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
 	void DeleteUnit(Unit* unit);
+	void RemoveUnit(Unit* unit);
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();

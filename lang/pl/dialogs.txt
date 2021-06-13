@@ -2127,3 +2127,8 @@ dialog hunter_leader {
 	2 "$train_lab/entangling_arrow$"
 	3 "$train_lab/bear_trap$"
 }
+
+//==============================================================================
+dialog ill_idle {
+	0 "(kaszle)"
+}

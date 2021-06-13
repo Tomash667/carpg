@@ -49,6 +49,23 @@ LevelArea* LocationHelper::GetArea(Location* loc, int index)
 }
 
 //=================================================================================================
+LevelArea* LocationHelper::GetBuildingArea(Location* loc, const string& name)
+{
+	assert(loc);
+
+	if(loc->type == L_CITY)
+	{
+		City* city = static_cast<City*>(loc);
+		for(InsideBuilding* building : city->inside_buildings)
+		{
+			if(building->building->group->id == name)
+				return building;
+		}
+	}
+	return nullptr;
+}
+
+//=================================================================================================
 Unit* LocationHelper::GetMayor(Location* loc)
 {
 	assert(loc);

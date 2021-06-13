@@ -376,6 +376,7 @@ Method:
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
 * LevelArea@ GetArea(int index) - get level area by index.
+* LevelArea@ GetBuildingArea(const string& id) - get inside building area (by building group id).
 * int GetRandomLevel() - return random dungeon level (higher chance for lower levels) or -1 when outside location.
 * Unit@ FindQuestUnit(Quest@) - find unit with quest set.
 
@@ -425,6 +426,7 @@ Instance of quest.
 Properties:
 
 * QUEST_STATE state - readonly
+* int timeout - readonly, days until timeout
 
 Methods:
 
@@ -436,6 +438,7 @@ Methods:
 * Dialog@ GetDialog(const string& in id) - return quest dialog with this id.
 * void AddRumor(const string& in str) - add quest rumor to available dialogs.
 * void RemoveRumor() - remove quest rumor from available dialogs.
+* void Start(Vars@) - start quest.
 
 Static properties:
 
@@ -527,6 +530,7 @@ Methods:
 * void RotateTo(float rot) - instantly rotates units.
 * void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
 * void MoveToArea(LevelArea@ area, const Vec3& in pos) - move unit to area, works between locations.
+* void MoveOffscreen() - move unit to offscreen area.
 * void Kill() - used to spawn dead units.
 
 Static properties:
@@ -592,7 +596,8 @@ Static methods:
 * GroundItem@ SpawnItem(Item@, const Vec3& in pos) - spawn item at position.
 * GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
-* Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp.
+* Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp in room.
+* Vec3 FindSpawnPos(LevelArea@, Unit@) - return position for unit spawn/warp in building area.
 * Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2, int level = -1) - spawns unit near position.
 * Unit@ SpawnUnit(LevelArea@, Spawn) - spawns unit inside area.
 * Unit@ SpawnUnit(Room@, UnitData@, int level = -1) - spawn unit inside room.

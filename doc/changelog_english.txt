@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.18 (???):
 ! cannot load saves from version 0.7.1 or older
++ small continued storyline
 + effects: rooted and slow moving
 + abilities "entangling arrow" / "bear trap" - can be learned in hunters camp
 + spell "fire trap" - can be learned from mages

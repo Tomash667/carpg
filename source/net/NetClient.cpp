@@ -884,6 +884,23 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 			}
 			break;
+		// play unit misc sound
+		case NetChange::UNIT_MISC_SOUND:
+			{
+				int id;
+				f >> id;
+				if(!f)
+					Error("Update client: Broken UNIT_MISC_SOUND.");
+				else if(game->game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(id);
+					if(!unit)
+						Error("Update client: UNIT_MISC_SOUND, missing unit %d.", id);
+					else
+						unit->PlaySound(game_res->sCoughs, Unit::COUGHS_SOUND_DIST);
+				}
+			}
+			break;
 		// unit dies
 		case NetChange::DIE:
 			{

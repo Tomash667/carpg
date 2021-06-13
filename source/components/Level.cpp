@@ -2103,6 +2103,18 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 }
 
 //=================================================================================================
+Vec3 Level::FindSpawnPos(LevelArea& area, Unit* unit)
+{
+	assert(area.area_type == LevelArea::Type::Building); // not implemented
+
+	InsideBuilding& inside = static_cast<InsideBuilding&>(area);
+
+	Vec3 pos;
+	WarpToRegion(area, inside.region1, unit->GetUnitRadius(), pos, 20);
+	return pos;
+}
+
+//=================================================================================================
 Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const Int2& awayPt, const Int2& excludedPt)
 {
 	const float radius = unit.GetRadius();

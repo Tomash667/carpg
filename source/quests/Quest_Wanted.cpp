@@ -141,7 +141,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 //=================================================================================================
 bool Quest_Wanted::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time >= 30;
 }
 
 //=================================================================================================

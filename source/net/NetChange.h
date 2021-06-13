@@ -65,6 +65,7 @@ struct NetChange
 		UPDATE_MP, // update unit mp, only send for team members [int(id)-unit, auto: float-mpp]
 		UPDATE_STAMINA, // update unit stamina, only send for team members [int(id)-unit, auto: float-staminap]
 		UNIT_SOUND, // play unit sound [int(id)-unit, int(id)-SOUND_ID]
+		UNIT_MISC_SOUND, // play unit misc sound [int(id)-unit]
 		DROP_ITEM, // unit drops item SERVER[int(id)-unit] / CLIENT[int(id)-i_index, int(count)-count]
 		SPAWN_ITEM, // spawn item on ground [GroundItem(item)]
 		PICKUP_ITEM, // unit picks up item SERVER[int(id)-unit, bool(count)-up animation] / CLIENT[int(id)-item]

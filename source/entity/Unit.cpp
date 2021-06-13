@@ -22,6 +22,7 @@
 #include "Inventory.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "OffscreenLocation.h"
 #include "PlayerInfo.h"
 #include "Portal.h"
 #include "Quest2.h"
@@ -55,6 +56,7 @@ const float Unit::ALERT_SOUND_DIST = 2.f;
 const float Unit::PAIN_SOUND_DIST = 1.f;
 const float Unit::DIE_SOUND_DIST = 1.f;
 const float Unit::YELL_SOUND_DIST = 2.f;
+const float Unit::COUGHS_SOUND_DIST = 1.f;
 EntityType<Unit>::Impl EntityType<Unit>::impl;
 static AIController* AI_PLACEHOLDER = (AIController*)1;
 
@@ -8763,9 +8765,10 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
 {
 	assert(area && !IsTeamMember());
+
 	if(area == this->area)
 		return;
-	assert(game_level->entering); // TODO
+
 	const bool is_active = mesh_inst != nullptr;
 	const bool activate = area->IsActive();
 	RemoveElement(this->area->units, this);
@@ -8784,6 +8787,33 @@ void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
 			ai = new AIController;
 			ai->Init(this);
 			game->ais.push_back(ai);
+
+			if(!game_level->entering)
+			{
+				// preload items
+				if(data->item_script)
+				{
+					for(const Item* item : slots)
+					{
+						if(item)
+							game_res->PreloadItem(item);
+					}
+					for(ItemSlot& slot : items)
+						game_res->PreloadItem(slot.item);
+				}
+				if(data->trader)
+				{
+					for(ItemSlot& slot : stock->items)
+						game_res->PreloadItem(slot.item);
+				}
+
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::SPAWN_UNIT;
+					c.unit = this;
+				}
+			}
 		}
 		else
 		{
@@ -8808,6 +8838,21 @@ void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
 			EndEffects();
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::MoveOffscreen()
+{
+	assert(!IsTeamMember());
+
+	if(mesh_inst != nullptr)
+		game->RemoveUnit(this);
+	else
+		RemoveElement(area->units, this);
+
+	OffscreenLocation* offscreen = world->GetOffscreenLocation();
+	offscreen->units.push_back(this);
+	area = offscreen;
 }
 
 //=================================================================================================

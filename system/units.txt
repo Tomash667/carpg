@@ -3412,8 +3412,13 @@ unit q_main_messenger : messenger {
 
 unit q_main_ill_villager : villager {
 	dialog "main/ill_villager"
-	flags {human ai_stay}
-	tint {0.9 1.1 0.9}
+	flags {human ai_stay dont_eat}
+	tex {
+		null
+		"head_ill.jpg"
+		null
+	}
+	idle_dialog ill_idle
 }
 
 unit q_main_ill_villager_attack : q_main_ill_villager {

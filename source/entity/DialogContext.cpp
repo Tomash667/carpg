@@ -6,6 +6,7 @@
 #include "Arena.h"
 #include "Game.h"
 #include "GameGui.h"
+#include "GameResources.h"
 #include "Inventory.h"
 #include "Journal.h"
 #include "Level.h"
@@ -1631,6 +1632,16 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			choice.type = DialogChoice::Hero;
 			choice.talk_msg = clas->name.c_str();
 			choices.push_back(choice);
+		}
+	}
+	else if(strcmp(msg, "coughs") == 0)
+	{
+		talker->PlaySound(game_res->sCoughs, Unit::COUGHS_SOUND_DIST);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UNIT_MISC_SOUND;
+			c.unit = talker;
 		}
 	}
 	else

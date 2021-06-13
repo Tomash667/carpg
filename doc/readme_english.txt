@@ -419,6 +419,7 @@ BottledByte - Bug reports and coding.
 🔈 Sounds:
 	* https://opengameart.org
 		* artisticdude - ogre sounds
+		* OwlishMedia - coughs
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

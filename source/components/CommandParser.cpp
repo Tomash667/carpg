@@ -1006,7 +1006,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			else
 			{
 				PushGenericCmd(CMD_WARP)
-					<< index
+					<< (byte)index
 					<< inside;
 			}
 		}

@@ -167,7 +167,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 //=================================================================================================
 bool Quest_DeliverParcel::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time > 15;
+	return world->GetWorldtime() - start_time >= 15;
 }
 
 //=================================================================================================

@@ -178,6 +178,7 @@ public:
 	int& GetTileSt(const Vec2& pos);
 
 	// offscreen
+	OffscreenLocation* GetOffscreenLocation() { return offscreen_loc; }
 	Unit* CreateUnit(UnitData* data, int level = -1);
 
 private:

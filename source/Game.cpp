@@ -3476,6 +3476,89 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit;
 }
 
+void Game::RemoveUnit(Unit* unit)
+{
+	assert(unit && !unit->player);
+
+	unit->BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
+	RemoveElement(unit->area->units, unit);
+	game_gui->level_gui->RemoveUnitView(unit);
+	if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
+		pc->data.before_player = BP_NONE;
+	if(unit == pc->data.selected_unit)
+		pc->data.selected_unit = nullptr;
+	if(Net::IsClient())
+	{
+		if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
+			pc->unit->BreakAction();
+	}
+	else
+	{
+		for(PlayerInfo& player : net->players)
+		{
+			PlayerController* pc = player.pc;
+			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
+				pc->action_unit = nullptr;
+		}
+	}
+
+	if(quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
+		RemoveElementTry(quest_mgr->quest_contest->units, unit);
+	if(!arena->free)
+	{
+		RemoveElementTry(arena->units, unit);
+		if(arena->fighter == unit)
+			arena->fighter = nullptr;
+	}
+
+	if(unit->usable)
+	{
+		unit->usable->user = nullptr;
+		unit->usable = nullptr;
+	}
+
+	if(unit->bubble)
+	{
+		unit->bubble->unit = nullptr;
+		unit->bubble = nullptr;
+	}
+	unit->talking = false;
+
+	if(unit->interp)
+	{
+		EntityInterpolator::Pool.Free(unit->interp);
+		unit->interp = nullptr;
+	}
+
+	if(unit->ai)
+	{
+		RemoveElement(ais, unit->ai);
+		delete unit->ai;
+		unit->ai = nullptr;
+	}
+
+	if(Net::IsLocal() && unit->IsHero() && unit->hero->otherTeam)
+		unit->hero->otherTeam->Remove(unit);
+
+	if(unit->cobj)
+	{
+		delete unit->cobj->getCollisionShape();
+		phy_world->removeCollisionObject(unit->cobj);
+		delete unit->cobj;
+		unit->cobj = nullptr;
+	}
+
+	delete unit->mesh_inst;
+	unit->mesh_inst = nullptr;
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REMOVE_UNIT;
+		c.id = unit->id;
+	}
+}
+
 void Game::OnCloseInventory()
 {
 	if(game_gui->inventory->mode == I_TRADE)

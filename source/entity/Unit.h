@@ -283,6 +283,7 @@ struct Unit : public EntityType<Unit>
 	static const float PAIN_SOUND_DIST;
 	static const float DIE_SOUND_DIST;
 	static const float YELL_SOUND_DIST;
+	static const float COUGHS_SOUND_DIST;
 
 	LevelArea* area;
 	UnitData* data;
@@ -965,6 +966,7 @@ public:
 	void MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool canWarp, bool isPrev);
 	void ChangeBase(UnitData* ud, bool update_items = false);
 	void MoveToArea(LevelArea* area, const Vec3& pos);
+	void MoveOffscreen();
 	void Kill();
 	enum DamageFlags
 	{

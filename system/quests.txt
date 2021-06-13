@@ -120,6 +120,7 @@ quest global_init
 
 //=============================================================================
 // DELIVER LETTER - random mayor quest
+// Go to nearby city with letter and return with response.
 //=============================================================================
 quest deliver_letter
 {
@@ -298,6 +299,8 @@ quest deliver_letter
 
 //=============================================================================
 // DELIVER RESOURCES - random mayor quest
+// Deliver reources from one city to another. Bandits attack in middle or in
+// destination.
 //=============================================================================
 quest deliver_resources
 {
@@ -486,6 +489,7 @@ quest deliver_resources
 
 //=============================================================================
 // BANDITS COLLECT TOLL - random captain quest
+// Encounter bandits on road and kill them.
 //=============================================================================
 quest bandits_collect_toll
 {
@@ -1615,6 +1619,7 @@ quest main
 		P_MAIN_TALKED_CLERIC_HERO2
 		P_MAIN_CLERIC_RETURNED
 		P_MAIN_CLERIC_RETURNED_TALKED
+		P_MAIN_CLERIC_IN_VILLAGE
 	}
 
 	dialog trainer {
@@ -1684,7 +1689,10 @@ quest main
 				talk 8
 				talk 9
 			case default
-				talk 10
+				if quest_progress < P_MAIN_CLERIC_IN_VILLAGE
+					talk 10
+				else
+					talk 11
 			}
 			restart
 		}
@@ -1738,41 +1746,41 @@ quest main
 	}
 
 	dialog cleric {
-		if quest_progress == P_MAIN_TALKED_CLERIC
+		switch quest_progress
 		{
+		case P_MAIN_TALKED_CLERIC
 			talk 0
 			talk 1
 			talk 2
 			set_quest_progress P_MAIN_TALKED_CLERIC_HERO
 			talk 3
 			restart
-		}
-		if quest_progress == P_MAIN_TALKED_CLERIC_HERO
-		{
+		case P_MAIN_TALKED_CLERIC_HERO
 			talk 4
 			talk 5
 			set_quest_progress P_MAIN_TALKED_CLERIC_HERO2
 			talk 6
-			end2
+		case P_MAIN_TALKED_CLERIC_HERO2
+			talk 7
+		case P_MAIN_CLERIC_RETURNED
+			set_quest_progress P_MAIN_CLERIC_RETURNED_TALKED
+			talk 9
+			talk 10
+		case P_MAIN_CLERIC_RETURNED_TALKED
+			talk 9
+			talk 10
+		case P_MAIN_CLERIC_IN_VILLAGE
+			talk 11
+			talk 12
 		}
-		if quest_progress >= P_MAIN_TALKED_CLERIC_HERO2
+		
+		if choices > 0
 		{
-			if quest_progress == P_MAIN_TALKED_CLERIC_HERO2
-				talk 7
-			if quest_progress == P_MAIN_CLERIC_RETURNED
-			{
-				talk 9
-				talk 10
-			}
-			if choices > 0
-			{
-				escape choice 8
-					end2
-				show_choices
-			}
-			end2
+			escape choice 8
+				end2
+			show_choices
 		}
-		end
+		end2
 	}
 
 	code {
@@ -1898,6 +1906,13 @@ quest main
 							u.AddDialog(quest, "cleric_seller");
 						}
 						break;
+					case P_MAIN_CLERIC_IN_VILLAGE:
+						{
+							LevelArea@ area = Level::location.GetBuildingArea("hall");
+							Vec3 pos = Level::FindSpawnPos(area, cleric);
+							cleric.MoveToArea(area, pos);
+						}
+						break;
 					}
 				}
 			}
@@ -1931,6 +1946,8 @@ quest main
 					Level::location.RemoveEventHandler(quest, EVENT_GENERATE);
 				}
 			}
+			else if(e.event == EVENT_TIMEOUT)
+				progress = P_MAIN_CLERIC_IN_VILLAGE;
 		}
 
 		void SetProgress()
@@ -2001,6 +2018,29 @@ quest main
 					vars["city"] = shrine_loc;
 					Quest::Find("side_cleric").Start(vars);
 				}
+				break;
+			case P_MAIN_CLERIC_RETURNED_TALKED:
+				{
+					int days = 10;
+					if(Quest::Find("side_cleric").state == Q_COMPLETED)
+						days = 5;
+					quest.SetTimeout(days);
+					quest.AddEntry(TEXT(14));
+				}
+				break;
+			case P_MAIN_CLERIC_IN_VILLAGE:
+				if(Level::location is village)
+				{
+					LevelArea@ area = Level::location.GetBuildingArea("hall");
+					Vec3 pos = Level::FindSpawnPos(area, cleric);
+					cleric.MoveToArea(area, pos);
+				}
+				else
+				{
+					cleric.MoveOffscreen();
+					village.AddEventHandler(quest, EVENT_ENTER);
+				}
+				quest.AddEntry(TEXT(15));
 				break;
 			}
 		}

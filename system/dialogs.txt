@@ -4566,3 +4566,11 @@ dialog hunter_leader
 	}
 	end
 }
+
+//==============================================================================
+dialog ill_idle
+{
+	special "coughs"
+	talk 0
+	end
+}

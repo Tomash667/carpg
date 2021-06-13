@@ -335,6 +335,7 @@ quest main {
 		8 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka jeden z kleryków. S³ysza³em ¿e zajmuje siê badaniami nad ró¿nymi chorobami."
 		9 "ZnajdŸ go i pomó¿ mu odkryæ na co choruj¹ nasi mieszkañcy."
 		10 "ZnajdŸ kleryka mieszkaj¹cego w $(shrine_loc.name), bez niego ta wioska opustoszeje!"
+		11 "Mam nadzieje ¿e da siê zakoñczyæ t¹ zarazê..."
 	}
 	
 	dialog ill_villager {
@@ -368,8 +369,10 @@ quest main {
 		6 "Jeœli j¹ zdobêdziesz sowicie ci to wynagrodzê."
 		7 "ZaprowadŸ mnie do kapliczki w $(shrine_loc.name), potem ci pomogê."
 		8 "Koniec rozmowy"
-		9 "Dziêkuje! Natychmiast zabieram siê do roboty nad lekarstwem."
-		10 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
+		9 "Dziêkujê! Potrzebuje trochê czasu na zebranie informacji. Spotkamy siê w $(village.name) za $(Str(quest.timeout)) dni."
+		10 "Wykorzystaj ten czas na zdobycie lepszego ekwipunku i podszkolenie siê."
+		11 "Dobrze ¿e jesteœ. Musimy porozmawiaæ o zarazie..."
+		12 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
 	}
 	
 	texts {
@@ -387,6 +390,8 @@ quest main {
 		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka kleryk specjalizuj¹cy siê w chorobach. Muszê z nim porozmawiaæ."
 		12 "Kleryk którego poszukiwa³em, $(cleric.real_name) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d prowadziæ jakieœ badania."
 		13 "Odnalaz³em $(cleric.real_name) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrine_loc.name), wtedy mi pomo¿e."
+		14 "Przyprowadzi³em $(cleric.real_name) do kapliczki. Potrzebuje czasu, $(Str(quest.timeout)) dni. Po tym czasie powinienem go znaleŸæ w $(village.name)."
+		15 "Kleryk powinien byæ ju¿ w $(village.name)."
 	}
 }
 
