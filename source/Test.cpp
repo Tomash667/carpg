@@ -48,7 +48,7 @@ void UpdateTest()
 		if(tdt <= 0.f)
 		{
 			Location* cl = world->GetCurrentLocation();
-			if(cl->GetLastLevel() == game_level->dungeon_level)
+			if(cl->outside || cl->GetLastLevel() == game_level->dungeon_level)
 			{
 				loc = world->GetRandomLocation([](Location* l)
 				{
