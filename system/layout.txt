@@ -17,6 +17,7 @@ font "small" {
 	name "Arial"
 	size 10
 	weight 5
+	outline 1
 }
 
 control "Button" {
@@ -139,6 +140,11 @@ control "Grid" {
 		corner 8
 		size 32
 	}
+	selection {
+		mode IMAGE
+		image "selection.png"
+		color {255 255 255 170}
+	}
 	font "normal"
 }
 
@@ -151,7 +157,7 @@ control "Gui" {
 control "InputTextBox" {
 	box {
 		mode ITEM
-		image "scrollbar.png"
+		image "box.png"
 		corner 4
 		size 32
 	}
@@ -171,8 +177,9 @@ control "ListBox" {
 		size 32
 	}
 	selection {
-		mode COLOR
-		color {0 255 0 128}
+		mode IMAGE
+		image "selection.png"
+		color {255 255 255 170}
 	}
 	down_arrow "dialog_down.png"
 	font "normal"
@@ -210,13 +217,14 @@ control "MenuBar" {
 control "MenuList" {
 	box {
 		mode ITEM
-		image "box2.png"
+		image "box_background.png"
 		corner 8
 		size 32
 	}
 	selection {
-		mode COLOR
-		color {0 148 255 128}
+		mode IMAGE
+		image "selection.png"
+		color {255 255 255 170}
 	}
 	font "normal"
 }
@@ -275,7 +283,7 @@ control "Panel" {
 control "PickFileDialog" {
 	box {
 		mode ITEM
-		image "scrollbar.png"
+		image "box.png"
 		corner 4
 		size 32
 	}
@@ -414,7 +422,7 @@ control "TabControl" {
 control "TextBox" {
 	background {
 		mode ITEM
-		image "scrollbar.png"
+		image "box.png"
 		corner 4
 		size 32
 	}

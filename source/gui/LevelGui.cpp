@@ -578,7 +578,7 @@ void LevelGui::DrawFront()
 					gui->DrawSprite2(tEquipped, mat);
 				gui->DrawSprite2(icon, mat);
 				if(count > 0)
-					gui->DrawText(GameGui::font_small, Format("%d", count), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+					gui->DrawText(GameGui::font_small, Format("%d", count), DTF_RIGHT | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 			}
 			else
 			{
@@ -635,7 +635,7 @@ void LevelGui::DrawFront()
 
 			// charges
 			if(ab && ability->charges > 1)
-				gui->DrawText(GameGui::font_small, Format("%d/%d", ab->charges, ability->charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+				gui->DrawText(GameGui::font_small, Format("%d/%d", ab->charges, ability->charges), DTF_RIGHT | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 			// readied ability
 			if(game->pc->data.ability_ready == ability)
@@ -648,7 +648,7 @@ void LevelGui::DrawFront()
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
 		if(gk[0] != Key::None)
-			gui->DrawText(GameGui::font_small, game_gui->controls->GetKeyText(gk[0]), DTF_SINGLELINE, Color::White, r);
+			gui->DrawText(GameGui::font_small, game_gui->controls->GetKeyText(gk[0]), DTF_SINGLELINE | DTF_OUTLINE, Color::White, r);
 
 		spos.x += offset;
 	}

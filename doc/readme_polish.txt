@@ -286,6 +286,7 @@ już go nie zgłosił w odpowiednim temacie.
 Tomashu - Programowanie, modele, tekstury, pomysły, fabuła.
 Leinnan - Modele, tekstury, pomysły, testowanie.
 MarkK - Modele i tekstury jedzenia oraz innych obiektów.
+Groszek - Tekstury gui.
 Shdorsh - Poprawki w angielskim tłumaczeniu.
 Zielu - Testowanie i modele.
 BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.

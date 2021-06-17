@@ -467,17 +467,17 @@ void InventoryPanel::Draw(ControlDrawData*)
 		else
 			icon = nullptr;
 		if(icon)
-			gui->DrawSprite(icon, Int2(shift_x + (x + 1) * 63 - 24, shift_y + (y + 1) * 63 - 24));
+			gui->DrawSprite(icon, Int2(shift_x + (x + 1) * 63 - 25, shift_y + (y + 1) * 63 - 25));
 
 		// team item icon
 		if(have_team && is_team != 0)
-			gui->DrawSprite(base.tTeamItem, Int2(shift_x + x * 63, shift_y + y * 63), is_team == 2 ? Color::Black : Color(0, 0, 0, 128));
+			gui->DrawSprite(base.tTeamItem, Int2(shift_x + x * 63 + 2, shift_y + y * 63 + 2), Color::Alpha(is_team == 2 ? 255 : 128));
 
 		// count
 		if(count > 1)
 		{
-			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 2, shift_y + y * 63), Int2(64, 63));
-			gui->DrawText(GameGui::font, Format("%d", count), DTF_BOTTOM, Color::Black, rect3);
+			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 5, shift_y + y * 63 - 3), Int2(64, 63));
+			gui->DrawText(GameGui::font, Format("%d", count), DTF_BOTTOM | DTF_OUTLINE, Color::White, rect3);
 		}
 	}
 

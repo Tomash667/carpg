@@ -46,8 +46,6 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : DialogBox(info), pick
 	grid.pos = Int2(8, 8);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &PickServerPanel::GetCell);
-	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = Color(0, 255, 0, 128);
 }
 
 //=================================================================================================

@@ -301,7 +301,8 @@ bool Trap::Update(float dt, LevelArea& area)
 							<< bullet->rot.x
 							<< bullet->rot.y
 							<< bullet->speed
-							<< bullet->yspeed;
+							<< bullet->yspeed
+							<< 0; // ability
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::TRIGGER_TRAP;

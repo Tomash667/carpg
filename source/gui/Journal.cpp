@@ -17,9 +17,10 @@
 #include <ResourceManager.h>
 #include <SoundManager.h>
 
-const Int2 ButtonShift(-40, 32);
-const Int2 ButtonSize(56, 88);
+const Int2 ButtonShift(-90, 32);
+const Int2 ButtonSize(115, 88);
 const Int2 IconSize(48, 48);
+const Int2 IconShift(-90 + 16, 32);
 const int ButtonDist = 90;
 
 //=================================================================================================
@@ -82,8 +83,10 @@ void Journal::Draw(ControlDrawData*)
 	for(int i = 0; i < Max; ++i)
 	{
 		gui->DrawSprite(mode == i ? tButtonOn : tButtonOff, global_pos + Int2(ButtonShift.x, ButtonShift.y + ButtonDist * i));
-		gui->DrawSprite(tIcons[i], global_pos
-			+ Int2(ButtonShift.x + (ButtonSize.x - IconSize.x) / 2, ButtonShift.y + ButtonDist * i + (ButtonSize.y - IconSize.y) / 2));
+		Int2 pos = global_pos + Int2(IconShift.x + (ButtonSize.x - IconSize.x) / 2, IconShift.y + ButtonDist * i + (ButtonSize.y - IconSize.y) / 2);
+		if(mode == i)
+			pos.x += 5;
+		gui->DrawSprite(tIcons[i], pos);
 	}
 
 	// page text

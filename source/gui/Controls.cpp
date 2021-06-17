@@ -295,8 +295,8 @@ Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
 	grid.items = GK_MAX;
 	grid.event = GridEvent(this, &Controls::GetCell);
 	grid.select_event = SelectGridEvent(this, &Controls::SelectCell);
+	grid.allow_select = false;
 	grid.single_line = true;
-	grid.selection_type = Grid::NONE;
 }
 
 //=================================================================================================

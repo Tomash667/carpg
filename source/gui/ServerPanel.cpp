@@ -75,8 +75,6 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 	grid.pos = Int2(10, 10);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
-	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = Color(0, 255, 0, 128);
 
 	itb.parent = this;
 	itb.max_cache = 10;
