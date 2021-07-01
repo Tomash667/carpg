@@ -3,7 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.18 (???):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
-+ nowe tekstury gui utworzone przez Groszek
++ nowe tekstury gui, wieża magów, pająk, manekin i tarcze - utworzone przez Groszek
 + mała kontynuacja fabuły
 + efekty: zakorzeniony, spowolniony ruch
 + zdolności "oplatająca strzała" / "pułapka na niedźwiedzie" - można nauczyć się w obozie łowców

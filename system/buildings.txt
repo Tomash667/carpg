@@ -387,13 +387,14 @@ building mages_tower {
 	mesh "mages_tower.qmsh"
 	flags {favor_center favor_road have_name list}
 	scheme {
-		" |||| "
-		"||||||"
-		"||||||"
-		"||||||"
-		"||||||"
-		" |||| "
-		"  +@  "
+		" ||||| "
+		"|||||||"
+		"|||||||"
+		"|||||||"
+		"|||||||"
+		"|||||||"
+		" ||||| "
+		"  +@   "
 	}
 	unit mage_seller
 	shift {

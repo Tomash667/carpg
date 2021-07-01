@@ -349,7 +349,7 @@ reported it in the appropriate topic.
 Tomashu - Programming, models, textures, ideas, story.
 Leinnan - Models, textures, ideas, testing.
 MarkK - Models and textures of food and other objects.
-Groszek - Gui textures.
+Groszek - Models, textures and gui.
 Shdorsh - English translation fixes.
 Zielu - Testing and models.
 BottledByte - Bug reports and coding.
