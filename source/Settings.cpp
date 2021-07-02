@@ -118,6 +118,7 @@ void Settings::SaveGameKeys(Config& cfg)
 //=================================================================================================
 void Settings::LoadGameKeys(Config& cfg)
 {
+	// pre V_0_13 compatibility
 	cfg.Rename("keyActions0", "keyAbility0");
 	cfg.Rename("keyActions1", "keyAbility1");
 

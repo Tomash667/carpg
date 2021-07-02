@@ -105,18 +105,11 @@ void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 //=================================================================================================
 Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
-draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), next_seed(0), dont_wander(false), check_updates(true), skip_tutorial(false),
-portal_anim(0), musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD),
-rt_save(nullptr), rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false),
-default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), in_load(false), tMinimap(nullptr)
+draw_hitbox(false), noai(false), testing(false), game_speed(1.f), next_seed(0), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
+musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr),
+rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), quickstart_slot(SaveSlot::MAX_SLOTS),
+clear_color(Color::Black), in_load(false), tMinimap(nullptr)
 {
-	if(IsDebug())
-	{
-		default_devmode = true;
-		default_player_devmode = true;
-	}
-	devmode = default_devmode;
-
 	dialog_context.is_local = true;
 
 	LocalString s;
@@ -124,8 +117,6 @@ default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color
 	engine->SetTitle(s.c_str());
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
-
-	SetupConfigVars();
 
 	aiMgr = new AIManager;
 	arena = new Arena;
@@ -958,14 +949,17 @@ void Game::LoadCfg()
 
 	// miscellaneous
 	check_updates = cfg.GetBool("check_updates", true);
-	skip_tutorial = cfg.GetBool("skip_tutorial", false);
+	skip_tutorial = cfg.GetBool("skip_tutorial");
+	default_devmode = cfg.GetBool("devmode", IsDebug());
+	default_player_devmode = cfg.GetBool("players_devmode", IsDebug());
+	devmode = default_devmode;
 }
 
 //=================================================================================================
 void Game::SaveCfg()
 {
-	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
-		Error("Failed to save configuration file '%s'!", cfg_file.c_str());
+	if(!cfg.Save())
+		Error("Failed to save configuration file '%s'!", cfg.GetFileName().c_str());
 }
 
 //=================================================================================================
@@ -994,7 +988,10 @@ void Game::RestartGame()
 	PROCESS_INFORMATION pi = { 0 };
 
 	// append -restart to cmdline, hopefuly noone will use it 100 times in a row to overflow Format
-	CreateProcess(nullptr, (char*)Format("%s -restart", GetCommandLine()), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+	string cmdLine = GetCommandLine();
+	if(!EndsWith(cmdLine, "-restart"))
+		cmdLine += " -restart";
+	CreateProcess(nullptr, (char*)cmdLine.c_str(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
 
 	Quit();
 }
@@ -1279,12 +1276,6 @@ uint Game::ValidateGameData(bool major)
 
 	content.warnings += err;
 	return err;
-}
-
-void Game::SetupConfigVars()
-{
-	cfg.AddVar(ConfigVar("devmode", default_devmode));
-	cfg.AddVar(ConfigVar("players_devmode", default_player_devmode));
 }
 
 cstring Game::GetShortcutText(GAME_KEYS key, cstring action)

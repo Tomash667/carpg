@@ -162,7 +162,6 @@ public:
 	void UpdateAttachedSounds(float dt);
 	void StopAllSounds();
 
-	void SetupConfigVars();
 	DialogContext* FindDialogContext(Unit* talker);
 	void LoadCfg();
 	void SaveCfg();
@@ -382,7 +381,6 @@ public:
 	Settings settings;
 	int lastSave;
 	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, dont_wander;
-	string cfg_file;
 
 	//-----------------------------------------------------------------
 	// RESOURCES
