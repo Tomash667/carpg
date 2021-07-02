@@ -612,19 +612,16 @@ void QuestManager::Load(GameReader& f)
 	for(Quest*& q : quests_timeout2)
 		q = FindQuest(f.Read<uint>(), false);
 
-	// quest rumors
-	if(LOAD_VERSION >= V_0_9)
+	// quest items
+	quest_items.resize(f.Read<uint>());
+	for(Item*& item : quest_items)
 	{
-		quest_items.resize(f.Read<uint>());
-		for(Item*& item : quest_items)
-		{
-			const string& id = f.ReadString1();
-			Item* base = Item::Get(id.c_str() + 1);
-			item = base->CreateCopy();
-			item->id = id;
-			f >> item->quest_id;
-			f >> item->name;
-		}
+		const string& id = f.ReadString1();
+		Item* base = Item::Get(id.c_str() + 1);
+		item = base->CreateCopy();
+		item->id = id;
+		f >> item->quest_id;
+		f >> item->name;
 	}
 
 	f >> quest_counter;
@@ -632,6 +629,7 @@ void QuestManager::Load(GameReader& f)
 	f >> unique_completed_show;
 	if(LOAD_VERSION >= V_0_10)
 	{
+		// quest rumors
 		uint count;
 		f >> count;
 		quest_rumors.resize(count);
@@ -705,16 +703,11 @@ void QuestManager::Load(GameReader& f)
 	}
 
 	// force quest
-	if(LOAD_VERSION >= V_0_9)
-	{
-		const string& force_id = f.ReadString1();
-		if(force_id.empty())
-			force = Q_FORCE_DISABLED;
-		else
-			SetForcedQuest(force_id);
-	}
+	const string& force_id = f.ReadString1();
+	if(force_id.empty())
+		force = Q_FORCE_DISABLED;
 	else
-		f >> force;
+		SetForcedQuest(force_id);
 
 	// load pseudo-quests
 	quest_secret->Load(f);

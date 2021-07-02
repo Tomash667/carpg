@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.19 (???):
+! nie można wczytywać już zapisów z wersji 0.8 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
 + nowe tekstury gui, wieża magów, pająk, manekin i tarcze - utworzone przez Groszek

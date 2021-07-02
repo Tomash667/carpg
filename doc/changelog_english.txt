@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.19 (???):
+! cannot load saves from version 0.8 or older
+
+--------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):
 ! cannot load saves from version 0.7.1 or older
 + new gui textures, mages tower, spider, mannequin and shield - created by Groszek

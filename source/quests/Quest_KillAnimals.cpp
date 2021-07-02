@@ -120,12 +120,7 @@ Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 		f.Skip<int>(); // at_level
 		SetScheme(quest_mgr->FindQuestInfo(type)->scheme);
 
-		if(LOAD_VERSION >= V_0_9)
-			f >> st;
-		else if(targetLoc)
-			st = targetLoc->st;
-		else
-			st = 5;
+		f >> st;
 
 		if(IsActive())
 		{

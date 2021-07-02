@@ -172,23 +172,20 @@ void Location::Load(GameReader& f)
 		portal = nullptr;
 
 	// events
-	if(LOAD_VERSION >= V_0_9)
+	events.resize(f.Read<uint>());
+	for(Event& e : events)
 	{
-		events.resize(f.Read<uint>());
-		for(Event& e : events)
+		int quest_id;
+		f >> e.type;
+		f >> quest_id;
+		quest_mgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
 		{
-			int quest_id;
-			f >> e.type;
-			f >> quest_id;
-			quest_mgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
-			{
-				EventPtr event;
-				event.source = EventPtr::LOCATION;
-				event.type = e.type;
-				event.location = this;
-				e.quest->AddEventPtr(event);
-			});
-		}
+			EventPtr event;
+			event.source = EventPtr::LOCATION;
+			event.type = e.type;
+			event.location = this;
+			e.quest->AddEventPtr(event);
+		});
 	}
 }
 

@@ -1420,57 +1420,57 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		f >> travel_target_pos;
 		f >> travel_timer;
 	}
+
+	// encounters
 	encounters.resize(f.Read<uint>(), nullptr);
-	if(LOAD_VERSION >= V_0_9)
+	index = 0;
+	for(Encounter*& enc : encounters)
 	{
-		int index = 0;
-		for(Encounter*& enc : encounters)
+		bool scripted;
+		f >> scripted;
+		if(scripted)
 		{
-			bool scripted;
-			f >> scripted;
-			if(scripted)
+			enc = new Encounter(nullptr);
+			enc->index = index;
+			f >> enc->pos;
+			f >> enc->chance;
+			f >> enc->range;
+			int quest_id;
+			f >> quest_id;
+			const string& dialog_id = f.ReadString1();
+			if(!dialog_id.empty())
 			{
-				enc = new Encounter(nullptr);
-				enc->index = index;
-				f >> enc->pos;
-				f >> enc->chance;
-				f >> enc->range;
-				int quest_id;
-				f >> quest_id;
-				const string& dialog_id = f.ReadString1();
-				if(!dialog_id.empty())
+				string* str = StringPool.Get();
+				*str = dialog_id;
+				quest_mgr->AddQuestRequest(quest_id, &enc->quest, [enc, str]
 				{
-					string* str = StringPool.Get();
-					*str = dialog_id;
-					quest_mgr->AddQuestRequest(quest_id, &enc->quest, [enc, str]
-					{
-						enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
-						StringPool.Free(str);
-					});
-				}
-				else
-					quest_mgr->AddQuestRequest(quest_id, &enc->quest);
-				f >> enc->group;
-				const string& text = f.ReadString1();
-				if(text.empty())
-				{
-					enc->text = nullptr;
-					enc->pooled_string = nullptr;
-				}
-				else
-				{
-					enc->pooled_string = StringPool.Get();
-					*enc->pooled_string = text;
-					enc->text = enc->pooled_string->c_str();
-				}
-				f >> enc->st;
-				f >> enc->dont_attack;
-				f >> enc->timed;
+					enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
+					StringPool.Free(str);
+				});
 			}
-			++index;
+			else
+				quest_mgr->AddQuestRequest(quest_id, &enc->quest);
+			f >> enc->group;
+			const string& text = f.ReadString1();
+			if(text.empty())
+			{
+				enc->text = nullptr;
+				enc->pooled_string = nullptr;
+			}
+			else
+			{
+				enc->pooled_string = StringPool.Get();
+				*enc->pooled_string = text;
+				enc->text = enc->pooled_string->c_str();
+			}
+			f >> enc->st;
+			f >> enc->dont_attack;
+			f >> enc->timed;
 		}
+		++index;
 	}
 
+	// fix camp spawned over city
 	if(LOAD_VERSION < V_0_14_1)
 	{
 		for(Location* loc : locations)

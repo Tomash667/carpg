@@ -2047,19 +2047,14 @@ void Unit::Load(GameReader& f)
 	int max_slots;
 	if(LOAD_VERSION >= V_0_10)
 		max_slots = SLOT_MAX;
-	else if(LOAD_VERSION >= V_0_9)
-		max_slots = 5;
 	else
-		max_slots = 4;
-	for(int i = 0; i < max_slots; ++i)
-		f >> slots[i];
-	if(LOAD_VERSION < V_0_9)
-		slots[SLOT_AMULET] = nullptr;
-	if(LOAD_VERSION < V_0_10)
 	{
+		max_slots = 5;
 		slots[SLOT_RING1] = nullptr;
 		slots[SLOT_RING2] = nullptr;
 	}
+	for(int i = 0; i < max_slots; ++i)
+		f >> slots[i];
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
 	{
@@ -2339,10 +2334,7 @@ void Unit::Load(GameReader& f)
 
 		f >> last_bash;
 		f >> moved;
-		if(LOAD_VERSION >= V_0_9)
-			f >> running;
-		else
-			running = false;
+		f >> running;
 	}
 	else
 	{
@@ -2402,27 +2394,25 @@ void Unit::Load(GameReader& f)
 		}
 	}
 
-	if(LOAD_VERSION >= V_0_9)
+	// dialogs
+	dialogs.resize(f.Read<uint>());
+	for(QuestDialog& dialog : dialogs)
 	{
-		// dialogs
-		dialogs.resize(f.Read<uint>());
-		for(QuestDialog& dialog : dialogs)
+		int quest_id = f.Read<int>();
+		string* str = StringPool.Get();
+		f >> *str;
+		quest_mgr->AddQuestRequest(quest_id, (Quest**)&dialog.quest, [this, &dialog, str]()
 		{
-			int quest_id = f.Read<int>();
-			string* str = StringPool.Get();
-			f >> *str;
-			quest_mgr->AddQuestRequest(quest_id, (Quest**)&dialog.quest, [this, &dialog, str]()
-			{
-				dialog.dialog = dialog.quest->GetDialog(*str);
-				StringPool.Free(str);
-				dialog.quest->AddDialogPtr(this);
-			});
-			if(LOAD_VERSION >= V_0_14)
-				f >> dialog.priority;
-			else
-				dialog.priority = 0;
-		}
+			dialog.dialog = dialog.quest->GetDialog(*str);
+			StringPool.Free(str);
+			dialog.quest->AddDialogPtr(this);
+		});
+		if(LOAD_VERSION >= V_0_14)
+			f >> dialog.priority;
+		else
+			dialog.priority = 0;
 	}
+
 	if(LOAD_VERSION >= V_0_10)
 	{
 		// events

@@ -359,8 +359,6 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 	if(!LoadGameHeader(f, ss))
 		throw SaveException(txLoadSignature, "Invalid file signature.");
 	f.SetPos(0);
-	if(ss.load_version < V_0_9)
-		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
 	for(PlayerInfo& info : net->players)
 	{
 		bool ok = false;
@@ -569,28 +567,23 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	// content version
 	f.Skip<uint>();
 
-	// save flags
+	// info
 	byte flags;
 	f >> flags;
-
-	// info
-	if(slot.load_version >= V_0_9)
-	{
-		slot.hardcore = IsSet(flags, SF_HARDCORE);
-		slot.on_worldmap = IsSet(flags, SF_ON_WORLDMAP);
-		f >> slot.text;
-		f >> slot.player_name;
-		slot.player_class = Class::TryGet(f.ReadString1());
-		if(IsSet(flags, SF_ONLINE))
-			f.ReadStringArray<byte, byte>(slot.mp_players);
-		else
-			slot.mp_players.clear();
-		f >> slot.save_date;
-		f >> slot.game_date;
-		f >> slot.location;
-		f >> slot.img_size;
-		slot.img_offset = f.GetPos();
-	}
+	slot.hardcore = IsSet(flags, SF_HARDCORE);
+	slot.on_worldmap = IsSet(flags, SF_ON_WORLDMAP);
+	f >> slot.text;
+	f >> slot.player_name;
+	slot.player_class = Class::TryGet(f.ReadString1());
+	if(IsSet(flags, SF_ONLINE))
+		f.ReadStringArray<byte, byte>(slot.mp_players);
+	else
+		slot.mp_players.clear();
+	f >> slot.save_date;
+	f >> slot.game_date;
+	f >> slot.location;
+	f >> slot.img_size;
+	slot.img_offset = f.GetPos();
 
 	return true;
 }
@@ -668,20 +661,17 @@ void Game::LoadGame(GameReader& f)
 		online_save ? 1 : 0, IsSet(flags, SF_DEBUG) ? 1 : 0);
 
 	// info
-	if(LOAD_VERSION >= V_0_9)
-	{
-		f.SkipString1(); // text
-		f.SkipString1(); // player name
-		f.SkipString1(); // player class
-		if(net->mp_load) // mp players
-			f.SkipStringArray<byte, byte>();
-		f.Skip<time_t>(); // save_date
-		f.Skip<int>(); // game_year
-		f.Skip<int>(); // game_month
-		f.Skip<int>(); // game_day
-		f.SkipString1(); // location
-		f.SkipData<uint>(); // image
-	}
+	f.SkipString1(); // text
+	f.SkipString1(); // player name
+	f.SkipString1(); // player class
+	if(net->mp_load) // mp players
+		f.SkipStringArray<byte, byte>();
+	f.Skip<time_t>(); // save_date
+	f.Skip<int>(); // game_year
+	f.Skip<int>(); // game_month
+	f.Skip<int>(); // game_day
+	f.SkipString1(); // location
+	f.SkipData<uint>(); // image
 
 	// ids
 	if(LOAD_VERSION >= V_0_12)

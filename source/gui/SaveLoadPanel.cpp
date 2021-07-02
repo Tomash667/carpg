@@ -357,46 +357,6 @@ void SaveLoad::LoadSaveSlots()
 			}
 
 			slot.valid = true;
-			if(slot.load_version < V_0_9)
-			{
-				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
-				if(io::FileExists(filename))
-				{
-					Config cfg;
-					cfg.Load(filename);
-					slot.player_name = cfg.GetString("player_name", "");
-					slot.location = cfg.GetString("location", "");
-					slot.text = cfg.GetString("text", "");
-					slot.game_date = Date(cfg.GetInt("game_year", -1),
-						cfg.GetInt("game_month", -1),
-						cfg.GetInt("game_day", -1));
-					slot.hardcore = cfg.GetBool("hardcore");
-					slot.mp_players.clear();
-					slot.save_date = cfg.GetInt("save_date");
-					const string& str = cfg.GetString("player_class");
-					if(str == "0")
-						slot.player_class = Class::TryGet("warrior");
-					else if(str == "1")
-						slot.player_class = Class::TryGet("hunter");
-					else if(str == "2")
-						slot.player_class = Class::TryGet("rogue");
-					else
-						slot.player_class = Class::TryGet(str);
-				}
-				else
-				{
-					slot.player_name.clear();
-					slot.text.clear();
-					slot.location.clear();
-					slot.game_date = Date(-1, -1, -1);
-					slot.player_class = nullptr;
-					slot.mp_players.clear();
-					slot.save_date = 0;
-					slot.hardcore = false;
-				}
-				slot.img_size = 0;
-			}
-
 			if(i == SaveSlot::MAX_SLOTS)
 				slot.text = txQuickSave;
 		}
