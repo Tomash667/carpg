@@ -227,10 +227,8 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* name - imię gracza w trybie szybkiej gry
 	* next_seed - następne ziarno losowości
 	* nick - zapamiętany wybór nicku w trybie multiplayer
-	* nomusic (true [false]) - po ustawieniu muzyka nie jest wczytywana i
-		odtwarzana, nie można zmienić w czasie gry
-	* nosound (true [false]) - po ustawieniu dźwięk nie jest wczytywany i
-		odtwarzany, nie można zmienić w czasie gry
+	* nosound (true [false]) - po ustawieniu muzyka i dźwięki nie jest wczytywane i
+		odtwarzane, nie można zmienić w czasie gry
 	* play_music ([true] false) - czy odtwarzać muzykę
 	* play_sound ([true] false) - czy odtwarzać dźwięk
 	* port ([37557]) - port w trybie multiplayer
@@ -256,21 +254,9 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 
 ===============================================================================
 9) Linia komend
-To są przełączniki dla aplikacji, dodawane do skrótu do pliku exe.
+To są przełączniki dla aplikacji, dodawane do skrótu do pliku exe. Oprócz wszystkich
+opcji z pliku konfiguracyjnego można też zmienić z którego pliku korzystać:
 -config plik.cfg - ustawia którego pliku cfg użyć
--console - uruchamia grę z konsolą
--delay-1 - powoduje czekanie innej gry
--delay-2 - czeka aż inna gra się wczyta
--fullscreen - uruchamia w trybie pełnoekranowym
--host - automatycznie zakłada serwer LAN
--hostip - automatycznie zakłada serwer internet
--join - automatycznie dołącza do serwera LAN
--joinip - automatycznie dołącza do serwera w internecie
--nomusic - brak muzyki
--nosound - brak dźwięku
--single - rozpoczyna szybką grę w trybie jednego gracza
--windowed - uruchamia w trybie okienkowym
--test - testuje dane gry
 
 ===============================================================================
 10) Zgłoś błąd 🐜

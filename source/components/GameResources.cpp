@@ -689,7 +689,7 @@ Mesh* GameResources::GetEntryMesh(EntryType type)
 //=================================================================================================
 void GameResources::LoadMusic(MusicType type, bool new_load_screen, bool instant)
 {
-	if(sound_mgr->IsMusicDisabled())
+	if(sound_mgr->IsDisabled())
 		return;
 
 	MusicList* list = musicLists[(int)type];

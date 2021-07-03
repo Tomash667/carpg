@@ -233,7 +233,7 @@ void Game::PreloadData()
 	game_gui->load_screen->LoadData();
 
 	// intro music
-	if(!sound_mgr->IsMusicDisabled())
+	if(!sound_mgr->IsDisabled())
 	{
 		MusicList* list = new MusicList;
 		list->musics.push_back(res_mgr->Load<Music>("Intro.ogg"));
@@ -2535,7 +2535,7 @@ void Game::SetMusic(MusicType type)
 	if(type == MusicType::Default)
 		type = game_level->boss ? MusicType::Boss : game_level->GetLocationMusic();
 
-	if(sound_mgr->IsMusicDisabled() || type == musicType)
+	if(sound_mgr->IsDisabled() || type == musicType)
 		return;
 
 	const bool delayed = musicType == MusicType::Intro && type == MusicType::Title;

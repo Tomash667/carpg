@@ -364,14 +364,8 @@ void LoadConfiguration(char* cmdLine)
 	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", true);
 
 	// sound/music settings
-	bool nosound = cfg.GetBool("nosound");
-	if(nosound)
-		Info("Settings: no sound.");
-	bool nomusic = cfg.GetBool("nomusic");
-	if(nomusic)
-		Info("Settings: no music.");
-	if(nosound || nomusic)
-		sound_mgr->Disable(nosound, nomusic);
+	if(cfg.GetBool("nosound"))
+		sound_mgr->Disable();
 	sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
 	sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 	Guid soundDevice;

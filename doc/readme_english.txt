@@ -292,8 +292,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* log_filename ["log.txt"] - logging to file name
 	* name - player name in quick game
 	* nick - nick in multiplayer game
-	* nomusic (true [false]) - don't load music, can't turn it on
-	* nosound (true [false]) - don't load sound, can't turn it on
+	* nosound (true [false]) - don't load sounds & music, can't turn it on
 	* packet_logger (true [false]) - logging MP packets
 	* play_music ([true] false) - play music
 	* play_sound ([true] false) - play sound
@@ -320,21 +319,9 @@ In configuration file (by default carpg.cfg) you can use such options:
 
 ===============================================================================
 9) Command line
-Command line switches are used for exe shortcut or from window shell.
+Command line switches are used for exe shortcut or from window shell. All config
+settings can be used. Aditionaly you can change which config file to use:
 -config file.cfg - use this config file
--console - open windows console
--delay-1 - start delay for other game instance
--delay-2 - wait for other game instance to finish loading
--fullscreen - run in fullscreen
--host - start hosting LAN server
--hostip - start hosting Internet server
--join - join LAN server
--joinip - join Internet server
--nomusic - no music
--nosound - no sound
--single - start quick singleplayer game
--windowed - windowed mode
--test - test game data
 
 ===============================================================================
 10) Report bug 🐜
