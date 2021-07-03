@@ -248,7 +248,6 @@
     <ClCompile Include="quests\QuestManager.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
@@ -845,7 +844,6 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />
-    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="helpers\UnitHelper.h">
       <Filter>helpers</Filter>
     </ClInclude>

@@ -26,6 +26,7 @@
 #include "World.h"
 #include "WorldMapGui.h"
 
+#include <CrashHandler.h>
 #include <Engine.h>
 #include <Render.h>
 #include <SceneManager.h>
@@ -1449,8 +1450,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			Msg("You must stand on terrain tile.");
 		break;
 	case CMD_CRASH:
-		void DoCrash();
-		DoCrash();
+		CrashHandler::DoCrash();
 		break;
 	case CMD_FORCE_QUEST:
 		{

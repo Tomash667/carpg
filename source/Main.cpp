@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "Game.h"
 
-#include "ErrorHandler.h"
 #include "Language.h"
 #include "SaveSlot.h"
 #include "Utility.h"
@@ -9,11 +8,10 @@
 
 #include <AppEntry.h>
 #include <clocale>
+#include <CrashHandler.h>
 #include <Engine.h>
 #include <intrin.h>
 #include <Render.h>
-#include <SceneManager.h>
-#include <SoundManager.h>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -313,64 +311,17 @@ void LoadConfiguration(char* cmdLine)
 			utility::WaitForDelayLock(delay);
 	}
 
-	// log
-	bool logToConsole = cfg.GetBool("console");
-	bool logToFile = cfg.GetBool("log", true);
-	string logFilename = cfg.GetString("log_filename", "log.txt");
-	PreLogger* plog = static_cast<PreLogger*>(Logger::GetInstance());
-	int count = 0;
-	if(logToConsole)
-		++count;
-	if(logToFile)
-		++count;
+	engine->LoadConfiguration(cfg);
 
-	Logger* logger;
-	if(count == 2)
-		logger = new MultiLogger({ new ConsoleLogger, new TextLogger(logFilename.c_str()) });
-	else if(count == 1)
-	{
-		if(logToConsole)
-			logger = new ConsoleLogger;
-		else
-			logger = new TextLogger(logFilename.c_str());
-	}
-	else
-		logger = new Logger;
-	plog->Apply(logger);
-	Logger::SetInstance(logger);
-
-	// window settings
-	bool fullscreen = cfg.GetBool("fullscreen", true);
-	Int2 wndSize = cfg.GetInt2("resolution");
-	Info("Settings: Resolution %dx%d (%s).", wndSize.x, wndSize.y, fullscreen ? "fullscreen" : "windowed");
-	engine->SetFullscreen(fullscreen);
-	engine->SetWindowSize(wndSize);
-	engine->SetWindowInitialPos(cfg.GetInt2("wnd_pos", Int2(-1, -1)), cfg.GetInt2("wnd_size", Int2(-1, -1)));
-	engine->HideWindow(cfg.GetBool("hidden_window"));
-
-	// render settings
-	int adapter = cfg.GetInt("adapter");
-	Info("Settings: Adapter %d.", adapter);
-	render->SetAdapter(adapter);
-	const string& featureLevel = cfg.GetString("feature_level");
-	if(!featureLevel.empty())
-	{
-		if(!app::render->SetFeatureLevel(featureLevel))
-			Warn("Settings: Invalid feature level '%s'.", featureLevel.c_str());
-	}
-	render->SetVsync(cfg.GetBool("vsync", true));
-	render->SetMultisampling(cfg.GetInt("multisampling"), cfg.GetInt("multisampling_quality"));
-	scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", true);
-	scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", true);
-
-	// sound/music settings
-	if(cfg.GetBool("nosound"))
-		sound_mgr->Disable();
-	sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
-	sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
-	Guid soundDevice;
-	if(soundDevice.TryParse(cfg.GetString("sound_device", Guid::EmptyString)))
-		sound_mgr->SetDevice(soundDevice);
+	// crash reporter
+	int crashMode = cfg.GetEnumValue("crash_mode", {
+		{ "none", 0 },
+		{ "normal", 1 },
+		{ "dataseg", 2 },
+		{ "full", 3 }
+		}, 1);
+	Info("Settings: crash_mode = %d", crashMode);
+	CrashHandler::Register("CaRpg", VERSION_STR, "http://carpg.pl/crashrpt.php", crashMode);
 
 	// multiplayer mode
 	game->player_name = Truncate(cfg.GetString("nick"), 16);
@@ -420,31 +371,8 @@ void LoadConfiguration(char* cmdLine)
 		game->screenshot_format = ImageFormat::JPG;
 	}
 
-	// console position & size
-	const Int2 consolePos = cfg.GetInt2("con_pos", Int2(-1, -1));
-	const Int2 consoleSize = cfg.GetInt2("con_size", Int2(-1, -1));
-	if(logToConsole && (consolePos != Int2(-1, -1) || consoleSize != Int2(-1, -1)))
-	{
-		HWND con = GetConsoleWindow();
-		Rect rect;
-		GetWindowRect(con, (RECT*)&rect);
-		Int2 pos = rect.LeftTop();
-		Int2 size = rect.Size();
-		if(consolePos.x != -1)
-			pos.x = consolePos.x;
-		if(consolePos.y != -1)
-			pos.y = consolePos.y;
-		if(consoleSize.x != -1)
-			size.x = consoleSize.x;
-		if(consoleSize.y != -1)
-			size.y = consoleSize.y;
-		SetWindowPos(con, 0, pos.x, pos.y, size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-	}
-
+	// game
 	game->LoadCfg();
-
-	// crash reporter
-	RegisterErrorHandler(cfg, logFilename);
 }
 
 //=================================================================================================

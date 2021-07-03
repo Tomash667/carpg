@@ -147,7 +147,6 @@
     <ClInclude Include="entity\LevelPart.h" />
     <ClInclude Include="entity\LevelQuad.h" />
     <ClInclude Include="entity\UnitList.h" />
-    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
     <ClInclude Include="entity\Encounter.h" />
@@ -395,7 +394,6 @@
     <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Ai.cpp" />
     <ClCompile Include="entity\GameCamera.cpp" />
     <ClCompile Include="entity\ItemContainer.cpp" />
