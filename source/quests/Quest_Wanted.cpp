@@ -4,7 +4,7 @@
 #include "City.h"
 #include "DialogContext.h"
 #include "Journal.h"
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 #include "NameHelper.h"
 #include "QuestManager.h"
 #include "Team.h"

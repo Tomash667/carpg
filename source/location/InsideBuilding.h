@@ -1,11 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "LevelArea.h"
+#include "LocationPart.h"
 #include "Building.h"
 
 //-----------------------------------------------------------------------------
-struct InsideBuilding final : public LevelArea
+struct InsideBuilding final : public LocationPart
 {
 	Vec2 offset;
 	Vec3 inside_spawn, outside_spawn, xsphere_pos;
@@ -14,7 +14,7 @@ struct InsideBuilding final : public LevelArea
 	Building* building;
 	Int2 level_shift;
 
-	InsideBuilding(int area_id) : LevelArea(LevelArea::Type::Building, area_id, false) {}
+	InsideBuilding(int partId) : LocationPart(LocationPart::Type::Building, partId, false) {}
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

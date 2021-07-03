@@ -709,10 +709,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 
 				if(Net::IsLocal())
 				{
-					LevelArea& area = *game->pc->unit->area;
+					LocationPart& locPart = *game->pc->unit->locPart;
 					for(int i = 0; i < count; ++i)
 					{
-						Unit* u = game_level->SpawnUnitNearLocation(area, game->pc->unit->GetFrontPos(), *data, &game->pc->unit->pos, level);
+						Unit* u = game_level->SpawnUnitNearLocation(locPart, game->pc->unit->GetFrontPos(), *data, &game->pc->unit->pos, level);
 						if(!u)
 						{
 							Msg("No free space for unit '%s'!", data->id.c_str());
@@ -986,7 +986,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					game->fallback_2 = -1;
 					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				}
-				else if(game->pc->unit->area->area_type != LevelArea::Type::Outside)
+				else if(game->pc->unit->locPart->partType != LocationPart::Type::Outside)
 				{
 					// warp from building to front of building
 					game->fallback_type = FALLBACK::ENTER;
@@ -1439,7 +1439,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			return;
 		break;
 	case CMD_TILE_INFO:
-		if(game_level->location->outside && game->pc->unit->area->area_type == LevelArea::Type::Outside && game_level->terrain->IsInside(game->pc->unit->pos))
+		if(game_level->location->outside && game->pc->unit->locPart->partType == LocationPart::Type::Outside && game_level->terrain->IsInside(game->pc->unit->pos))
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 			const TerrainTile& t = outside->tiles[PosToPt(game->pc->unit->pos)(outside->size)];
@@ -2550,7 +2550,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					Error("CommandParser CMD_WARP: Invalid building index %u.", building_index);
 					return false;
 				}
-				if(unit.area->area_type != LevelArea::Type::Outside)
+				if(unit.locPart->partType != LocationPart::Type::Outside)
 				{
 					Net::WarpData& warp = Add1(net->warps);
 					warp.u = &unit;

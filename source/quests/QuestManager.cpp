@@ -1150,7 +1150,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 		if(game_level->location == quest_evil->startLoc && quest_evil->evil_state == Quest_Evil::State::None)
 		{
 			CityBuilding* b = game_level->city_ctx->FindBuilding(BuildingGroup::BG_INN);
-			Unit* u = game_level->SpawnUnitNearLocation(*game_level->local_area, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
+			Unit* u = game_level->SpawnUnitNearLocation(*game_level->localPart, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
 			assert(u);
 			if(u)
 			{
@@ -1170,7 +1170,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 				if(quest_sawmill->days >= 30 && game_level->city_ctx)
 				{
 					quest_sawmill->days = 29;
-					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
 						quest_sawmill->messenger = u;
@@ -1185,7 +1185,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 				|| quest_mine->mine_state2 == Quest_Mine::State2::InExpand // inform player about finished mine expanding
 				|| quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 			{
-				Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+				Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 				if(u)
 				{
 					quest_mine->messenger = u;
@@ -1217,7 +1217,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 	{
 		if(quest_goblins->goblins_state == Quest_Goblins::State::Counting && quest_goblins->days <= 0)
 		{
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &team->leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_goblins->messenger = u;
@@ -1229,7 +1229,7 @@ void QuestManager::GenerateQuestUnits(bool on_enter)
 
 		if(quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && quest_goblins->days <= 0)
 		{
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("q_gobliny_mag"), &team->leader->pos, 5, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("q_gobliny_mag"), &team->leader->pos, 5, 2.f);
 			if(u)
 			{
 				quest_goblins->messenger = u;
@@ -1335,7 +1335,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 	Unit* spawned = nullptr, *spawned2 = nullptr;
 	InsideLocationLevel* lvl = nullptr;
 	InsideLocation* inside = nullptr;
-	if(game_level->local_area->area_type == LevelArea::Type::Inside)
+	if(game_level->localPart->partType == LocationPart::Type::Inside)
 	{
 		inside = static_cast<InsideLocation*>(game_level->location);
 		lvl = &inside->GetLevelData();
@@ -1344,7 +1344,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 	// spawn unit
 	if(event->unit_to_spawn)
 	{
-		if(game_level->local_area->area_type == LevelArea::Type::Outside)
+		if(game_level->localPart->partType == LocationPart::Type::Outside)
 		{
 			if(game_level->location->type == L_CITY)
 				spawned = game_level->SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
@@ -1352,13 +1352,13 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 			{
 				Vec3 pos(0, 0, 0);
 				int count = 0;
-				for(Unit* unit : game_level->local_area->units)
+				for(Unit* unit : game_level->localPart->units)
 				{
 					pos += unit->pos;
 					++count;
 				}
 				pos /= (float)count;
-				spawned = game_level->SpawnUnitNearLocation(*game_level->local_area, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
+				spawned = game_level->SpawnUnitNearLocation(*game_level->localPart, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
 			}
 		}
 		else
@@ -1381,7 +1381,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		if(IsSet(spawned->data->flags2, F2_GUARDED) && lvl)
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveNextEntry());
-			for(Unit* unit : game_level->local_area->units)
+			for(Unit* unit : game_level->localPart->units)
 			{
 				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
@@ -1420,7 +1420,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 	case Quest_Dungeon::Item_GiveStrongest:
 		{
 			Unit* best = nullptr;
-			for(Unit* unit : game_level->local_area->units)
+			for(Unit* unit : game_level->localPart->units)
 			{
 				if(unit->IsAlive() && unit->IsEnemy(*game->pc->unit) && (!best || unit->level > best->level))
 					best = unit;
@@ -1478,7 +1478,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		break;
 	case Quest_Dungeon::Item_InChest:
 		{
-			Chest* chest = game_level->local_area->GetRandomFarChest(game_level->GetSpawnPoint());
+			Chest* chest = game_level->localPart->GetRandomFarChest(game_level->GetSpawnPoint());
 			assert(event->item_to_give[0]);
 			if(game->devmode)
 			{

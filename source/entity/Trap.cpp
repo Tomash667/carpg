@@ -7,7 +7,8 @@
 #include "Explo.h"
 #include "GameCommon.h"
 #include "GameResources.h"
-#include "LevelArea.h"
+#include "LevelPart.h"
+#include "LocationPart.h"
 #include "Net.h"
 #include "Unit.h"
 
@@ -24,7 +25,7 @@ Trap::~Trap()
 }
 
 //=================================================================================================
-bool Trap::Update(float dt, LevelArea& area)
+bool Trap::Update(float dt, LocationPart& locPart)
 {
 	Unit* owner = this->owner;
 
@@ -37,7 +38,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			bool trigger = false;
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
@@ -107,7 +108,7 @@ bool Trap::Update(float dt, LevelArea& area)
 
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(!unit->IsAlive())
 						continue;
@@ -190,7 +191,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(Net::IsLocal())
 			{
 				reactivate = true;
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
 						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
@@ -231,7 +232,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			bool trigger = false;
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
@@ -258,7 +259,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				if(Net::IsLocal())
 				{
 					Bullet* bullet = new Bullet;
-					area.tmp->bullets.push_back(bullet);
+					locPart.lvlPart->bullets.push_back(bullet);
 
 					bullet->Register();
 					bullet->isArrow = true;
@@ -286,7 +287,7 @@ bool Trap::Update(float dt, LevelArea& area)
 					tpe->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe->color2 = Vec4(1, 1, 1, 0);
 					tpe->Init(50);
-					area.tmp->tpes.push_back(tpe);
+					locPart.lvlPart->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
 					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
@@ -324,7 +325,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(Net::IsLocal())
 			{
 				empty = true;
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
 						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
@@ -363,7 +364,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				break;
 
 			bool trigger = false;
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 			{
 				if(unit->IsStanding()
 					&& (!owner || owner->IsEnemy(*unit))
@@ -378,7 +379,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			{
 				Ability* fireball = Ability::Get("fireball");
 				Vec3 exploPos = pos + Vec3(0, 0.2f, 0);
-				Explo* explo = area.CreateExplo(fireball, exploPos);
+				Explo* explo = locPart.CreateExplo(fireball, exploPos);
 				explo->dmg = GetAttack();
 				explo->owner = owner;
 
@@ -414,7 +415,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			bool trigger = false;
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
@@ -454,7 +455,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				{
 					Unit* target = nullptr;
 					float bestDist = 10.f;
-					for(Unit* unit : area.units)
+					for(Unit* unit : locPart.units)
 					{
 						if(unit->IsStanding()
 							&& (!owner || owner->IsEnemy(*unit))

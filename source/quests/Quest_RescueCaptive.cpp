@@ -7,7 +7,7 @@
 #include "ItemHelper.h"
 #include "Journal.h"
 #include "Level.h"
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 #include "QuestManager.h"
 #include "Team.h"
 #include "World.h"

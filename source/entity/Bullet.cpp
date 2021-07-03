@@ -8,7 +8,8 @@
 #include "Game.h"
 #include "GameResources.h"
 #include "Level.h"
-#include "LevelArea.h"
+#include "LevelPart.h"
+#include "LocationPart.h"
 #include "Net.h"
 #include "Object.h"
 #include "PhysicCallbacks.h"
@@ -24,7 +25,7 @@
 EntityType<Bullet>::Impl EntityType<Bullet>::impl;
 
 //=================================================================================================
-bool Bullet::Update(float dt, LevelArea& area)
+bool Bullet::Update(float dt, LocationPart& locPart)
 {
 	// update position
 	Vec3 prev_pos = pos;
@@ -80,7 +81,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 	if(pe)
 		pe->destroy = true;
 
-	OnHit(area, hitted, hitpoint, callback);
+	OnHit(locPart, hitted, hitpoint, callback);
 
 	if(Net::IsServer())
 	{
@@ -95,7 +96,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 }
 
 //=================================================================================================
-void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback)
+void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback)
 {
 	if(hitted)
 	{
@@ -285,7 +286,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			if(owner && owner->IsFriend(*hitted, true))
 			{
 				// frendly fire
-				area.SpellHitEffect(*this, hitpoint, hitted);
+				locPart.SpellHitEffect(*this, hitpoint, hitted);
 
 				// hit sound
 				MATERIAL_TYPE material;
@@ -322,7 +323,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				if(dmg < 0)
 				{
 					// blocked by shield
-					area.SpellHitEffect(*this, hitpoint, hitted);
+					locPart.SpellHitEffect(*this, hitpoint, hitted);
 					return;
 				}
 			}
@@ -347,7 +348,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			}
 
 			// apply spell effect
-			area.SpellHitEffect(*this, hitpoint, hitted);
+			locPart.SpellHitEffect(*this, hitpoint, hitted);
 		}
 	}
 	else
@@ -377,7 +378,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 0;
 			pe->Init();
-			area.tmp->pes.push_back(pe);
+			locPart.lvlPart->pes.push_back(pe);
 
 			if(owner && owner->IsPlayer() && Net::IsLocal() && callback.target && IsSet(callback.target->getCollisionFlags(), CG_OBJECT))
 			{
@@ -393,7 +394,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 		else if(Net::IsLocal())
 		{
 			// hit object with spell
-			area.SpellHitEffect(*this, hitpoint, nullptr);
+			locPart.SpellHitEffect(*this, hitpoint, nullptr);
 		}
 	}
 }
@@ -518,7 +519,7 @@ void Bullet::Write(BitStreamWriter& f) const
 }
 
 //=================================================================================================
-bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
+bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 {
 	f >> id;
 	f >> pos;
@@ -565,7 +566,7 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 			tpe->color2 = Vec4(1, 1, 1, 0);
 		}
 		tpe->Init(50);
-		tmp_area.tpes.push_back(tpe);
+		lvlPart.tpes.push_back(tpe);
 		trail = tpe;
 	}
 	else
@@ -605,7 +606,7 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
-			tmp_area.pes.push_back(pe);
+			lvlPart.pes.push_back(pe);
 		}
 	}
 

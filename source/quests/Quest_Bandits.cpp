@@ -66,11 +66,11 @@ void WarpToThroneBanditBoss()
 {
 	// search for boss
 	UnitData* ud = UnitData::Get("q_bandyci_szef");
-	Unit* u = game_level->local_area->FindUnit(ud);
+	Unit* u = game_level->localPart->FindUnit(ud);
 	assert(u);
 
 	// search for throne
-	Usable* use = game_level->local_area->FindUsable(BaseUsable::Get("throne"));
+	Usable* use = game_level->localPart->FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// warp boss to throne
@@ -180,7 +180,7 @@ void Quest_Bandits::SetProgress(int prog2)
 
 			// change ai of following guards
 			UnitData* ud = UnitData::Get("guard_q_bandyci");
-			for(Unit* unit : game_level->local_area->units)
+			for(Unit* unit : game_level->localPart->units)
 			{
 				if(unit->data == ud)
 				{
@@ -403,7 +403,7 @@ void Quest_Bandits::Update(float dt)
 		if(timer <= 0.f)
 		{
 			// spawn agent
-			agent = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("agent"), &team->leader->pos, -2, 2.f);
+			agent = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("agent"), &team->leader->pos, -2, 2.f);
 			if(agent)
 			{
 				bandits_state = State::AgentCome;

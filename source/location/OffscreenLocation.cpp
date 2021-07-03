@@ -4,7 +4,7 @@
 #include "Unit.h"
 
 //=================================================================================================
-OffscreenLocation::OffscreenLocation() : Location(false), LevelArea(LevelArea::Type::Outside, LevelArea::OUTSIDE_ID, false)
+OffscreenLocation::OffscreenLocation() : Location(false), LocationPart(LocationPart::Type::Outside, LocationPart::OUTSIDE_ID, false)
 {
 }
 
@@ -12,14 +12,14 @@ OffscreenLocation::OffscreenLocation() : Location(false), LevelArea(LevelArea::T
 void OffscreenLocation::Save(GameWriter& f)
 {
 	Location::Save(f);
-	LevelArea::Save(f);
+	LocationPart::Save(f);
 }
 
 //=================================================================================================
 void OffscreenLocation::Load(GameReader& f)
 {
 	Location::Load(f);
-	LevelArea::Load(f);
+	LocationPart::Load(f);
 }
 
 //=================================================================================================
@@ -27,7 +27,7 @@ Unit* OffscreenLocation::CreateUnit(UnitData& data, int level)
 {
 	Unit* unit = new Unit;
 	unit->Init(data, level);
-	unit->area = this;
+	unit->locPart = this;
 	units.push_back(unit);
 	return unit;
 }

@@ -26,6 +26,7 @@
 #include "Journal.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "LevelPart.h"
 #include "LoadingHandler.h"
 #include "LoadScreen.h"
 #include "LocationGeneratorFactory.h"
@@ -718,7 +719,7 @@ void Game::LoadGame(GameReader& f)
 		{
 			Unit* u = new Unit;
 			u->Load(f);
-			u->area = nullptr;
+			u->locPart = nullptr;
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
 			if(!u->IsPlayer())
@@ -821,7 +822,7 @@ void Game::LoadGame(GameReader& f)
 
 		if(LOAD_VERSION < V_0_11)
 		{
-			game_level->local_area->tmp->Load(f);
+			game_level->localPart->lvlPart->Load(f);
 
 			f >> read_id;
 			if(read_id != check_id++)
@@ -845,7 +846,7 @@ void Game::LoadGame(GameReader& f)
 			AIController& ai = **it;
 			Object* ptr = nullptr;
 			float dist, best_dist;
-			for(Object* obj : ai.unit->area->objects)
+			for(Object* obj : ai.unit->locPart->objects)
 			{
 				if(obj->base == bow_target)
 				{
@@ -1038,9 +1039,9 @@ void Game::RemoveUnusedAiAndCheck()
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;
-		for(LevelArea& area : game_level->ForEachArea())
+		for(LocationPart& locPart : game_level->ForEachPart())
 		{
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 			{
 				if(unit->ai == *it)
 				{
@@ -1068,17 +1069,17 @@ void Game::RemoveUnusedAiAndCheck()
 	if(IsDebug())
 	{
 		int err_count = 0;
-		for(LevelArea& area : game_level->ForEachArea())
-			CheckUnitsAi(area, err_count);
+		for(LocationPart& locPart : game_level->ForEachPart())
+			CheckUnitsAi(locPart, err_count);
 		if(err_count)
 			game_gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
 	}
 }
 
 //=================================================================================================
-void Game::CheckUnitsAi(LevelArea& area, int& err_count)
+void Game::CheckUnitsAi(LocationPart& locPart, int& err_count)
 {
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(u.player && u.ai)

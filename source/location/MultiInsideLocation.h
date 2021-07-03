@@ -21,7 +21,7 @@ struct MultiInsideLocation : public InsideLocation
 	~MultiInsideLocation();
 
 	// from Location
-	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
+	void Apply(vector<std::reference_wrapper<LocationPart>>& parts) override;
 	void Save(GameWriter& f) override;
 	void Load(GameReader& f) override;
 	Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) override;

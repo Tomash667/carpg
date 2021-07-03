@@ -6,7 +6,8 @@
 #include "BitStreamFunc.h"
 #include "GameResources.h"
 #include "Level.h"
-#include "LevelArea.h"
+#include "LevelPart.h"
+#include "LocationPart.h"
 #include "Net.h"
 #include "Unit.h"
 
@@ -74,7 +75,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		trail->parts[steps].pt = line.to;
 		trail->parts[steps].t = 0;
 
-		area->tmp->tpes.push_back(trail);
+		locPart->lvlPart->tpes.push_back(trail);
 		line.trail = trail;
 		UpdateColor(line);
 	}
@@ -154,7 +155,7 @@ bool Electro::Update(float dt)
 				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 1;
 				pe->Init();
-				area->tmp->pes.push_back(pe);
+				locPart->lvlPart->pes.push_back(pe);
 			}
 
 			if(Net::IsOnline())
@@ -225,7 +226,7 @@ bool Electro::Update(float dt)
 				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 1;
 				pe->Init();
-				area->tmp->pes.push_back(pe);
+				locPart->lvlPart->pes.push_back(pe);
 			}
 
 			if(Net::IsOnline())
@@ -277,7 +278,7 @@ Unit* Electro::FindNextTarget()
 	// hit another target
 	Unit* target = hitted.back();
 	static vector<pair<Unit*, float>> targets;
-	for(Unit* unit : area->units)
+	for(Unit* unit : locPart->units)
 	{
 		if(!unit->IsAlive() || IsInside(hitted, unit))
 			continue;

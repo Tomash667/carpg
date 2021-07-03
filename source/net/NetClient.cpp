@@ -24,6 +24,7 @@
 #include "Journal.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "LevelPart.h"
 #include "LoadScreen.h"
 #include "MpBox.h"
 #include "MultiInsideLocation.h"
@@ -265,9 +266,9 @@ void Net::UpdateClient(float dt)
 //=================================================================================================
 void Net::InterpolateUnits(float dt)
 {
-	for(LevelArea& area : game_level->ForEachArea())
+	for(LocationPart& locPart : game_level->ForEachPart())
 	{
-		for(Unit* unit : area.units)
+		for(Unit* unit : locPart.units)
 		{
 			if(!unit->IsLocalPlayer())
 				unit->interp->Update(dt, unit->visual_pos, unit->rot);
@@ -839,7 +840,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
-					game_level->GetArea(pos).tmp->pes.push_back(pe);
+					game_level->GetLocationPart(pos).lvlPart->pes.push_back(pe);
 				}
 			}
 			break;
@@ -969,7 +970,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else
 				{
 					game_res->PreloadItem(item->item);
-					game_level->GetArea(item->pos).items.push_back(item);
+					game_level->GetLocationPart(item->pos).items.push_back(item);
 				}
 			}
 			break;
@@ -1005,13 +1006,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: Broken REMOVE_ITEM.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					LevelArea* area;
-					GroundItem* item = game_level->FindGroundItem(id, &area);
+					LocationPart* locPart;
+					GroundItem* item = game_level->FindGroundItem(id, &locPart);
 					if(!item)
 						Error("Update client: REMOVE_ITEM, missing ground item %d.", id);
 					else
 					{
-						RemoveElement(area->items, item);
+						RemoveElement(locPart->items, item);
 						if(pc.data.before_player == BP_ITEM && pc.data.before_player_ptr.item == item)
 							pc.data.before_player = BP_NONE;
 						if(pc.data.picking_item_state == 1 && pc.data.picking_item == item)
@@ -1136,10 +1137,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						}
 					}
 
-					LevelArea& area = game_level->GetArea(pos);
+					LocationPart& locPart = game_level->GetLocationPart(pos);
 
 					Bullet* bullet = new Bullet;
-					area.tmp->bullets.push_back(bullet);
+					locPart.lvlPart->bullets.push_back(bullet);
 
 					bullet->id = id;
 					bullet->Register();
@@ -1175,7 +1176,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						tpe->color2 = Vec4(1, 1, 1, 0);
 					}
 					tpe->Init(50);
-					area.tmp->tpes.push_back(tpe);
+					locPart.lvlPart->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
 					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, HIT_SOUND_DIST);
@@ -1364,11 +1365,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::WARP:
 			{
 				int id;
-				char area_id;
+				char partId;
 				Vec3 pos;
 				float rot;
 				f >> id;
-				f >> area_id;
+				f >> partId;
 				f >> pos;
 				f >> rot;
 
@@ -1388,17 +1389,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					break;
 				}
 
-				LevelArea* area = game_level->GetAreaById(area_id);
-				if(!area)
+				LocationPart* locPart = game_level->GetLocationPartById(partId);
+				if(!locPart)
 				{
-					Error("Update client: WARP, invalid area %d.", area_id);
+					Error("Update client: WARP, invalid location part %d.", partId);
 					break;
 				}
 
 				unit->BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
-				LevelArea* old_area = unit->area;
-				unit->area = area;
+				LocationPart* oldLocPart = unit->locPart;
+				unit->locPart = locPart;
 				unit->pos = pos;
 				unit->rot = rot;
 
@@ -1406,10 +1407,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(unit->interp)
 					unit->interp->Reset(unit->pos, unit->rot);
 
-				if(old_area != unit->area)
+				if(oldLocPart != unit->locPart)
 				{
-					RemoveElement(old_area->units, unit);
-					area->units.push_back(unit);
+					RemoveElement(oldLocPart->units, unit);
+					locPart->units.push_back(unit);
 				}
 				if(unit == pc.unit)
 				{
@@ -1833,9 +1834,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 				else if(game->game_state == GS_LEVEL)
 				{
-					LevelArea& area = game_level->GetArea(unit->pos);
-					area.units.push_back(unit);
-					unit->area = &area;
+					LocationPart& locPart = game_level->GetLocationPart(unit->pos);
+					locPart.units.push_back(unit);
+					unit->locPart = &locPart;
 					if(unit->summoner)
 						game_level->SpawnUnitEffect(*unit);
 				}
@@ -1876,7 +1877,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(!f)
 					Error("Update client: Broken ARENA_SOUND.");
 				else if(game->game_state == GS_LEVEL && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
-					&& game_level->GetArena() == pc.unit->area)
+					&& game_level->GetArena() == pc.unit->locPart)
 				{
 					Sound* sound;
 					if(type == 0)
@@ -1994,7 +1995,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(!IsSet(ability->flags, Ability::Explode))
 					Error("Update client: CREATE_EXPLOSION, ability '%s' is not explosion.", ability->id.c_str());
 				else
-					game_level->GetArea(pos).CreateExplo(ability, pos);
+					game_level->GetLocationPart(pos).CreateExplo(ability, pos);
 			}
 			break;
 		// create trap
@@ -2103,7 +2104,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			{
 				// change object
 				BaseObject* base_obj = BaseObject::Get("bloody_altar");
-				Object* obj = game_level->local_area->FindObject(base_obj);
+				Object* obj = game_level->localPart->FindObject(base_obj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
 				res_mgr->Load(obj->mesh);
@@ -2111,7 +2112,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				// remove particles
 				float best_dist = 999.f;
 				ParticleEmitter* best_pe = nullptr;
-				for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
+				for(ParticleEmitter* pe : game_level->localPart->lvlPart->pes)
 				{
 					if(pe->tex == game_res->tBlood[BLOOD_RED])
 					{
@@ -2310,10 +2311,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 
 				Ability& ability = *ability_ptr;
-				LevelArea& area = game_level->GetArea(pos);
+				LocationPart& locPart = game_level->GetLocationPart(pos);
 
 				Bullet* bullet = new Bullet;
-				area.tmp->bullets.push_back(bullet);
+				locPart.lvlPart->bullets.push_back(bullet);
 
 				bullet->id = id;
 				bullet->Register();
@@ -2354,7 +2355,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
-					area.tmp->pes.push_back(pe);
+					locPart.lvlPart->pes.push_back(pe);
 					bullet->pe = pe;
 				}
 			}
@@ -2399,14 +2400,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						Error("Update client: CREATE_DRAIN, missing unit %d.", id);
 					else
 					{
-						TmpLevelArea& tmp_area = *unit->area->tmp;
-						if(tmp_area.pes.empty())
+						LevelPart& lvlPart = *unit->locPart->lvlPart;
+						if(lvlPart.pes.empty())
 							Error("Update client: CREATE_DRAIN, missing blood.");
 						else
 						{
-							Drain& drain = Add1(tmp_area.drains);
+							Drain& drain = Add1(lvlPart.drains);
 							drain.target = unit;
-							drain.pe = tmp_area.pes.back();
+							drain.pe = lvlPart.pes.back();
 							drain.t = 0.f;
 							drain.pe->manual_delete = 1;
 							drain.pe->speed_min = Vec3(-3, 0, -3);
@@ -2428,16 +2429,16 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: Broken CREATE_ELECTRO.");
 				else if(game->game_state == GS_LEVEL)
 				{
-					LevelArea& area = game_level->GetArea(p1);
+					LocationPart& locPart = game_level->GetLocationPart(p1);
 					Electro* e = new Electro;
 					e->id = id;
-					e->area = &area;
+					e->locPart = &locPart;
 					e->Register();
 					e->ability = Ability::Get("thunder_bolt");
 					e->startPos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					area.tmp->electros.push_back(e);
+					locPart.lvlPart->electros.push_back(e);
 				}
 			}
 			break;
@@ -2502,7 +2503,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						pe->mode = 1;
 						pe->Init();
 
-						game_level->GetArea(pos).tmp->pes.push_back(pe);
+						game_level->GetLocationPart(pos).lvlPart->pes.push_back(pe);
 					}
 				}
 			}

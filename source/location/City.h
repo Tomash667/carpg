@@ -71,7 +71,7 @@ struct City : public OutsideLocation
 	~City();
 
 	// from Location
-	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
+	void Apply(vector<std::reference_wrapper<LocationPart>>& parts) override;
 	void Save(GameWriter& f) override;
 	void Load(GameReader& f) override;
 	void Write(BitStreamWriter& f) override;

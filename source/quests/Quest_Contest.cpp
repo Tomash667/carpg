@@ -244,7 +244,7 @@ void Quest_Contest::Update(float dt)
 			if(!unit->IsPlayer())
 				continue;
 			float dist = Vec3::Distance2d(unit->pos, innkeeper.pos);
-			bool leaving_event = (dist > 10.f || unit->area != inn);
+			bool leaving_event = (dist > 10.f || unit->locPart != inn);
 			if(leaving_event != unit->player->leaving_event)
 			{
 				unit->player->leaving_event = leaving_event;
@@ -307,9 +307,9 @@ void Quest_Contest::Update(float dt)
 				if(u.IsPlayer())
 				{
 					float dist = Vec3::Distance2d(u.pos, innkeeper.pos);
-					kick = (dist > 10.f || u.area != inn);
+					kick = (dist > 10.f || u.locPart != inn);
 				}
-				if(kick || u.area != inn || u.frozen != FROZEN::NO || !u.IsStanding())
+				if(kick || u.locPart != inn || u.frozen != FROZEN::NO || !u.IsStanding())
 				{
 					if(u.IsPlayer())
 						game_gui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);

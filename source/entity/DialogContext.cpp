@@ -1661,9 +1661,9 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return result;
 
 	if(strcmp(msg, "is_drunk") == 0)
-		return IsSet(talker->data->flags, F_AI_DRUNKMAN) && talker->area->area_type == LevelArea::Type::Building;
+		return IsSet(talker->data->flags, F_AI_DRUNKMAN) && talker->locPart->partType == LocationPart::Type::Building;
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
-		return game_level->local_area->area_type == LevelArea::Type::Inside;
+		return game_level->localPart->partType == LocationPart::Type::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
 		return team->GetActiveTeamSize() >= team->GetMaxSize();
 	else if(strcmp(msg, "can_join") == 0)
@@ -1701,7 +1701,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
 	else if(strcmp(msg, "is_inside_inn") == 0)
-		return talker->area->area_type == LevelArea::Type::Building && game_level->city_ctx->FindInn() == talker->area;
+		return talker->locPart->partType == LocationPart::Type::Building && game_level->city_ctx->FindInn() == talker->locPart;
 	else if(strcmp(msg, "is_before_contest") == 0)
 		return quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_TODAY;
 	else if(strcmp(msg, "is_drunkmage") == 0)
@@ -1967,7 +1967,7 @@ bool DialogContext::RecruitHero(Class* clas)
 		return false;
 	}
 
-	Unit* u = game_level->SpawnUnitNearLocation(*talker->area, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
+	Unit* u = game_level->SpawnUnitNearLocation(*talker->locPart, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
 	u->rot = 0.f;
 	u->SetKnownName(true);
 	u->hero->loner = false;

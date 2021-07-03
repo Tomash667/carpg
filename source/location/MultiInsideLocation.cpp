@@ -18,11 +18,11 @@ MultiInsideLocation::~MultiInsideLocation()
 }
 
 //=================================================================================================
-void MultiInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void MultiInsideLocation::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
 	active->mine = Int2::Zero;
 	active->maxe = Int2(active->w, active->h);
-	areas.push_back(*active);
+	parts.push_back(*active);
 }
 
 //=================================================================================================

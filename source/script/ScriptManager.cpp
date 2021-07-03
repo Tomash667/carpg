@@ -487,8 +487,8 @@ void ScriptManager::RegisterGame()
 	AddType("Unit");
 	AddType("Player");
 	AddType("Hero");
-	AddType("LevelArea");
 	AddType("Location");
+	AddType("LocationPart");
 
 	AddEnum("ITEM_TYPE", {
 		{ "IT_WEAPON", IT_WEAPON },
@@ -734,7 +734,7 @@ void ScriptManager::RegisterGame()
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Member("const Player@ player", offsetof(Unit, player))
 		.Member("const Hero@ hero", offsetof(Unit, hero))
-		.Member("LevelArea@ area", offsetof(Unit, area))
+		.Member("LocationPart@ locPart", offsetof(Unit, locPart))
 		.Member("bool temporary", offsetof(Unit, temporary))
 		.Method("int get_gold() const property", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int) property", asMETHOD(Unit, SetGold))
@@ -780,7 +780,7 @@ void ScriptManager::RegisterGame()
 		.Method("void RotateTo(const Vec3& in)", asMETHODPR(Unit, RotateTo, (const Vec3&), void))
 		.Method("void RotateTo(float)", asMETHODPR(Unit, RotateTo, (float), void))
 		.Method("void ChangeBase(UnitData@, bool=false)", asMETHOD(Unit, ChangeBase))
-		.Method("void MoveToArea(LevelArea@, const Vec3& in)", asMETHOD(Unit, MoveToArea))
+		.Method("void MoveToLocation(LocationPart@, const Vec3& in)", asMETHOD(Unit, MoveToLocation))
 		.Method("void MoveOffscreen()", asMETHOD(Unit, MoveOffscreen))
 		.Method("void Kill()", asMETHOD(Unit, Kill))
 		.WithInstance("Unit@ target", &ctx.target)
@@ -859,10 +859,6 @@ void ScriptManager::RegisterGame()
 		.Member("RoomType@ type", offsetof(Room, type))
 		.Method("Vec3 get_center() const property", asMETHOD(Room, Center));
 
-	ForType("LevelArea")
-		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LevelArea, RemoveItemFromChest))
-		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LevelArea, RemoveItemFromUnit));
-
 	ForType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
 		.Member("const string name", offsetof(Location, name))
@@ -877,7 +873,7 @@ void ScriptManager::RegisterGame()
 		.Method("LOCATION_IMAGE get_image() const property", asMETHOD(Location, GetImage))
 		.Method("void set_image(LOCATION_IMAGE) property", asMETHOD(Location, SetImage))
 		.Method("bool get_visited() const property", asMETHOD(Location, IsVisited))
-		.Method("LevelArea@ get_area() const property", asFUNCTIONPR(LocationHelper::GetArea, (Location*), LevelArea*))
+		.Method("LocationPart@ get_locPart() const property", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*), LocationPart*))
 		.Method("int get_levels() const property", asFUNCTION(LocationHelper::GetLevels))
 		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Location, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY)", asMETHOD(Location, RemoveEventHandlerS))
@@ -886,10 +882,14 @@ void ScriptManager::RegisterGame()
 		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool))
 		.Method("Unit@ GetMayor()", asFUNCTION(LocationHelper::GetMayor))
 		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain))
-		.Method("LevelArea@ GetArea(int)", asFUNCTIONPR(LocationHelper::GetArea, (Location*, int), LevelArea*))
-		.Method("LevelArea@ GetBuildingArea(const string& in)", asFUNCTION(LocationHelper::GetBuildingArea))
+		.Method("LocationPart@ GetLocationPart(int)", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*, int), LocationPart*))
+		.Method("LocationPart@ GetBuildingLocationPart(const string& in)", asFUNCTION(LocationHelper::GetBuildingLocationPart))
 		.Method("int GetRandomLevel()", asMETHOD(Location, GetRandomLevel))
 		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit));
+
+	ForType("LocationPart")
+		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LocationPart, RemoveItemFromChest))
+		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LocationPart, RemoveItemFromUnit));
 
 	AddType("Encounter")
 		.Member("Vec2 pos", offsetof(Encounter, pos))
@@ -955,10 +955,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ SpawnItem(Item@, Object@)", asMETHOD(Level, SpawnItemAtObject))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Vec3 FindSpawnPos(Room@, Unit@)", asMETHODPR(Level, FindSpawnPos, (Room* room, Unit* unit), Vec3))
-		.AddFunction("Vec3 FindSpawnPos(LevelArea@, Unit@)", asMETHODPR(Level, FindSpawnPos, (LevelArea&, Unit* unit), Vec3))
+		.AddFunction("Vec3 FindSpawnPos(LocationPart@, Unit@)", asMETHODPR(Level, FindSpawnPos, (LocationPart&, Unit* unit), Vec3))
 		.AddFunction("Vec3 GetSpawnCenter()", asMETHOD(Level, GetSpawnCenter))
 		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2, int = -1)", asMETHOD(Level, SpawnUnitNearLocationS))
-		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
+		.AddFunction("Unit@ SpawnUnit(LocationPart@, Spawn)", asMETHOD(Level, SpawnUnit))
 		.AddFunction("Unit@ SpawnUnit(Room@, UnitData@, int = -1)", asMETHOD(Level, SpawnUnitInsideRoomS))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))

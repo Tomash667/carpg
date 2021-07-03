@@ -2416,11 +2416,11 @@ void CityGenerator::OnEnter()
 //=================================================================================================
 void CityGenerator::SpawnBuildings()
 {
-	LevelArea& area = *city;
+	LocationPart& locPart = *city;
 	const int mur1 = int(0.15f*OutsideLocation::size);
 	const int mur2 = int(0.85f*OutsideLocation::size);
 
-	// budynki
+	// building objects
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Object* o = new Object;
@@ -2430,7 +2430,7 @@ void CityGenerator::SpawnBuildings()
 		o->scale = 1.f;
 		o->base = nullptr;
 		o->mesh = it->building->mesh;
-		area.objects.push_back(o);
+		locPart.objects.push_back(o);
 	}
 
 	// create walls, towers & gates
@@ -2447,62 +2447,62 @@ void CityGenerator::SpawnBuildings()
 		{
 			// north
 			if(!IsSet(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
-				game_level->SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
+				game_level->SpawnObjectEntity(locPart, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 
 			// south
 			if(!IsSet(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
-				game_level->SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
+				game_level->SpawnObjectEntity(locPart, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 
 			// west
 			if(!IsSet(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
-				game_level->SpawnObjectEntity(area, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
+				game_level->SpawnObjectEntity(locPart, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
 
 			// east
 			if(!IsSet(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
-				game_level->SpawnObjectEntity(area, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
+				game_level->SpawnObjectEntity(locPart, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
 		}
 
 		// towers
 		// north east
-		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
+		game_level->SpawnObjectEntity(locPart, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 		// south east
-		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI / 2);
+		game_level->SpawnObjectEntity(locPart, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI / 2);
 		// south west
-		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
+		game_level->SpawnObjectEntity(locPart, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 		// north west
-		game_level->SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
+		game_level->SpawnObjectEntity(locPart, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
 
 		// gates
 		if(IsSet(city->gates, GATE_NORTH))
 		{
-			game_level->SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
-			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
+			game_level->SpawnObjectEntity(locPart, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
+			game_level->SpawnObjectEntity(locPart, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
 		}
 
 		if(IsSet(city->gates, GATE_SOUTH))
 		{
-			game_level->SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
-			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
+			game_level->SpawnObjectEntity(locPart, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
+			game_level->SpawnObjectEntity(locPart, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
 		}
 
 		if(IsSet(city->gates, GATE_WEST))
 		{
-			game_level->SpawnObjectEntity(area, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
-			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
+			game_level->SpawnObjectEntity(locPart, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
+			game_level->SpawnObjectEntity(locPart, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
 		}
 
 		if(IsSet(city->gates, GATE_EAST))
 		{
-			game_level->SpawnObjectEntity(area, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
-			game_level->SpawnObjectEntity(area, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
+			game_level->SpawnObjectEntity(locPart, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
+			game_level->SpawnObjectEntity(locPart, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
 		}
 	}
 
-	// obiekty i fizyka budynków
+	// building physics & subobjects
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		game_level->ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->dir), it->dir,
+		game_level->ProcessBuildingObjects(locPart, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->dir), it->dir,
 			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 0.f, float(it->pt.y + b->shift[it->dir].y) * 2), b, &*it);
 	}
 }
@@ -2523,7 +2523,7 @@ const uint n_outside_objects = countof(outside_objects);
 
 void CityGenerator::SpawnObjects()
 {
-	LevelArea& area = *city;
+	LocationPart& locPart = *city;
 
 	if(!outside_objects[0].obj)
 	{
@@ -2536,7 +2536,7 @@ void CityGenerator::SpawnObjects()
 	{
 		Vec3 pos = PtToPos(well_pt);
 		terrain->SetY(pos);
-		game_level->SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
+		game_level->SpawnObjectEntity(locPart, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
 	// fields scarecrow
@@ -2552,7 +2552,7 @@ void CityGenerator::SpawnObjects()
 				2.f * (rect.p2.x - size.x / 4), 2.f * (rect.p2.y - size.y / 4));
 			Vec3 pos = spawnBox.GetRandomPos3();
 			terrain->SetY(pos);
-			game_level->SpawnObjectEntity(area, scarecrow, pos, Random(MAX_ANGLE));
+			game_level->SpawnObjectEntity(locPart, scarecrow, pos, Random(MAX_ANGLE));
 		}
 	}
 
@@ -2574,7 +2574,7 @@ void CityGenerator::SpawnObjects()
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = outside_objects[Rand() % n_outside_objects];
-			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -2582,7 +2582,7 @@ void CityGenerator::SpawnObjects()
 //=================================================================================================
 void CityGenerator::SpawnUnits()
 {
-	LevelArea& area = *city;
+	LocationPart& locPart = *city;
 
 	for(CityBuilding& b : city->buildings)
 	{
@@ -2618,7 +2618,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				game_level->SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
+				game_level->SpawnUnitNearLocation(locPart, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2647,7 +2647,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				game_level->SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
+				game_level->SpawnUnitNearLocation(locPart, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2706,9 +2706,9 @@ void CityGenerator::SpawnTemporaryUnits()
 //=================================================================================================
 void CityGenerator::RemoveTemporaryUnits()
 {
-	for(LevelArea& area : game_level->ForEachArea())
+	for(LocationPart& locPart : game_level->ForEachPart())
 	{
-		DeleteElements(area.units, [](Unit* u)
+		DeleteElements(locPart.units, [](Unit* u)
 		{
 			if(!u->temporary)
 				return false;

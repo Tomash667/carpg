@@ -248,7 +248,7 @@ void Quest_Tutorial::HandleEvent(int activate, int unlock)
 
 	if(unlock != -1)
 	{
-		for(Door* door : game_level->local_area->doors)
+		for(Door* door : game_level->localPart->doors)
 		{
 			if(door->locked == LOCK_TUTORIAL + unlock)
 			{
@@ -308,7 +308,7 @@ void Quest_Tutorial::HandleBulletCollision()
 			break;
 		}
 	}
-	for(vector<Door*>::iterator it = game_level->local_area->doors.begin(), end = game_level->local_area->doors.end(); it != end; ++it)
+	for(vector<Door*>::iterator it = game_level->localPart->doors.begin(), end = game_level->localPart->doors.end(); it != end; ++it)
 	{
 		if((*it)->locked == LOCK_TUTORIAL + unlock)
 		{

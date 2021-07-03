@@ -457,7 +457,7 @@ quest deliver_resources
 					bool first = true;
 					for(uint i=0; i<group.count; ++i)
 					{
-						Unit@ unit = Level::SpawnUnit(mayor.area, group.Get(i));
+						Unit@ unit = Level::SpawnUnit(mayor.locPart, group.Get(i));
 						if(unit !is null)
 						{
 							unit.dont_attack = true;
@@ -1029,7 +1029,7 @@ quest find_artifact
 			else if(e.event == EVENT_TIMEOUT)
 			{
 				if(spawned)
-					target_loc.GetArea(target_loc.levels - 1).RemoveItemFromChest(item);
+					target_loc.GetLocationPart(target_loc.levels - 1).RemoveItemFromChest(item);
 				else
 					target_loc.RemoveEventHandler(quest);
 				@target_loc.active_quest = null;
@@ -1236,7 +1236,7 @@ quest stolen_artifact
 			else if(e.event == EVENT_TIMEOUT)
 			{
 				if(spawned)
-					targetLoc.GetArea(atLevel).RemoveItemFromUnit(item);
+					targetLoc.GetLocationPart(atLevel).RemoveItemFromUnit(item);
 				else
 					targetLoc.RemoveEventHandler(quest);
 				@targetLoc.active_quest = null;
@@ -1850,7 +1850,7 @@ quest main
 
 						// spawn cleric
 						Vec3 pos = Level::FindSpawnPos(target_room, cleric);
-						cleric.MoveToArea(Level::location.area, pos);
+						cleric.MoveToLocation(Level::location.locPart, pos);
 						cleric.AddDialog(quest, "cleric");
 						cleric.dont_attack = true;
 						cleric.OrderAutoTalk();
@@ -1908,9 +1908,9 @@ quest main
 						break;
 					case P_MAIN_CLERIC_IN_VILLAGE:
 						{
-							LevelArea@ area = Level::location.GetBuildingArea("hall");
-							Vec3 pos = Level::FindSpawnPos(area, cleric);
-							cleric.MoveToArea(area, pos);
+							LocationPart@ locPart = Level::location.GetBuildingLocationPart("hall");
+							Vec3 pos = Level::FindSpawnPos(locPart, cleric);
+							cleric.MoveToLocation(locPart, pos);
 						}
 						break;
 					}
@@ -2031,9 +2031,9 @@ quest main
 			case P_MAIN_CLERIC_IN_VILLAGE:
 				if(Level::location is village)
 				{
-					LevelArea@ area = Level::location.GetBuildingArea("hall");
-					Vec3 pos = Level::FindSpawnPos(area, cleric);
-					cleric.MoveToArea(area, pos);
+					LocationPart@ locPart = Level::location.GetBuildingLocationPart("hall");
+					Vec3 pos = Level::FindSpawnPos(locPart, cleric);
+					cleric.MoveToLocation(locPart, pos);
 				}
 				else
 				{

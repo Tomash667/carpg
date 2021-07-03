@@ -1,14 +1,14 @@
 #include "Pch.h"
 #include "LocationHelper.h"
 
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 #include "MultiInsideLocation.h"
 #include "Quest.h"
 #include "ScriptException.h"
 #include "SingleInsideLocation.h"
 
 //=================================================================================================
-LevelArea* LocationHelper::GetArea(Location* loc)
+LocationPart* LocationHelper::GetLocationPart(Location* loc)
 {
 	assert(loc);
 	if(loc->outside)
@@ -21,11 +21,11 @@ LevelArea* LocationHelper::GetArea(Location* loc)
 }
 
 //=================================================================================================
-LevelArea* LocationHelper::GetArea(Location* loc, int index)
+LocationPart* LocationHelper::GetLocationPart(Location* loc, int index)
 {
 	assert(loc && index >= -1);
 	if(index == -1)
-		return GetArea(loc);
+		return GetLocationPart(loc);
 	if(loc->outside)
 	{
 		if(loc->type == L_CITY)
@@ -49,7 +49,7 @@ LevelArea* LocationHelper::GetArea(Location* loc, int index)
 }
 
 //=================================================================================================
-LevelArea* LocationHelper::GetBuildingArea(Location* loc, const string& name)
+LocationPart* LocationHelper::GetBuildingLocationPart(Location* loc, const string& name)
 {
 	assert(loc);
 

@@ -317,10 +317,10 @@ void Game::ClearGrass()
 
 void Game::CalculateQuadtree()
 {
-	if(game_level->local_area->area_type != LevelArea::Type::Outside)
+	if(game_level->localPart->partType != LocationPart::Type::Outside)
 		return;
 
-	for(Object* obj : game_level->local_area->objects)
+	for(Object* obj : game_level->localPart->objects)
 	{
 		auto node = (LevelQuad*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
 		node->objects.push_back(QuadObj(obj));

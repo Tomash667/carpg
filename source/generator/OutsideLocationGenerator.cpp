@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Item.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "OutsideLocation.h"
 #include "OutsideObject.h"
 #include "QuestManager.h"
@@ -233,7 +234,7 @@ void OutsideLocationGenerator::OnEnter()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 {
-	LevelArea& area = *outside;
+	LocationPart& locPart = *outside;
 	TerrainTile* tiles = outside->tiles;
 
 	if(Rand() % (road_dir == -1 ? 10 : 15) == 0)
@@ -248,19 +249,19 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetY(pos);
 		pos.y -= 1.f;
-		game_level->SpawnObjectEntity(area, BaseObject::Get("obelisk"), pos, 0.f);
+		game_level->SpawnObjectEntity(locPart, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
 		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
-		game_level->SpawnObjectEntity(area, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
+		game_level->SpawnObjectEntity(locPart, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
 			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
-			game_level->SpawnObjectEntity(area, misc[4].obj, pos2, Random(MAX_ANGLE));
+			game_level->SpawnObjectEntity(locPart, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
 	}
 
@@ -274,7 +275,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(tile == TT_GRASS3)
 		{
@@ -286,7 +287,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			else
 				type = Rand() % 3;
 			OutsideObject& o = trees2[type];
-			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -299,7 +300,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -486,7 +487,7 @@ void OutsideLocationGenerator::ApplyTiles()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnOutsideBariers()
 {
-	TmpLevelArea& tmp_area = *outside->tmp;
+	LevelPart& lvlPart = *outside->lvlPart;
 	const float size = 256.f;
 	const float size2 = size / 2;
 	const float border = 32.f;
@@ -494,7 +495,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// top
 	{
-		CollisionObject& cobj = Add1(tmp_area.colliders);
+		CollisionObject& cobj = Add1(lvlPart.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pos = Vec3(size2, 0, border2);
 		cobj.w = size2;
@@ -512,7 +513,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// bottom
 	{
-		CollisionObject& cobj = Add1(tmp_area.colliders);
+		CollisionObject& cobj = Add1(lvlPart.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pos = Vec3(size2, 0, size - border2);
 		cobj.w = size2;
@@ -530,7 +531,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// left
 	{
-		CollisionObject& cobj = Add1(tmp_area.colliders);
+		CollisionObject& cobj = Add1(lvlPart.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pos = Vec3(border2, 0, size2);
 		cobj.w = border2;
@@ -548,7 +549,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// right
 	{
-		CollisionObject& cobj = Add1(tmp_area.colliders);
+		CollisionObject& cobj = Add1(lvlPart.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pos = Vec3(size - border2, 0, size2);
 		cobj.w = border2;

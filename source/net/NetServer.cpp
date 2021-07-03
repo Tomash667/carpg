@@ -243,8 +243,8 @@ void Net::UpdateServer(float dt)
 		// add changed units positions and ai modes
 		if(game->game_state == GS_LEVEL)
 		{
-			for(LevelArea& area : game_level->ForEachArea())
-				ServerProcessUnits(area.units);
+			for(LocationPart& locPart : game_level->ForEachPart())
+				ServerProcessUnits(locPart.units);
 		}
 
 		// send revealed minimap tiles
@@ -846,7 +846,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.z -= cos(unit.rot) * 0.25f;
 					item->rot = Quat::RotY(Random(MAX_ANGLE));
 					if(!quest_mgr->quest_secret->CheckMoonStone(item, unit))
-						game_level->AddGroundItem(*unit.area, item);
+						game_level->AddGroundItem(*unit.locPart, item);
 
 					// send to other players
 					if(active_players > 2)
@@ -872,8 +872,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game->game_state != GS_LEVEL)
 					break;
 
-				LevelArea* area;
-				GroundItem* item = game_level->FindGroundItem(id, &area);
+				LocationPart* locPart;
+				GroundItem* item = game_level->FindGroundItem(id, &locPart);
 				if(!item)
 				{
 					Error("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), id);
@@ -912,7 +912,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				// remove item
 				if(game->pc->data.before_player == BP_ITEM && game->pc->data.before_player_ptr.item == item)
 					game->pc->data.before_player = BP_NONE;
-				RemoveElement(area->items, item);
+				RemoveElement(locPart->items, item);
 
 				// event
 				for(Event& event : game_level->location->events)
@@ -1471,7 +1471,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// can't talk to unit
 					c.id = -1;
 				}
-				else if(talk_to->area != unit.area)
+				else if(talk_to->locPart != unit.locPart)
 				{
 					// unit left/entered building
 					c.id = -2;
@@ -1542,11 +1542,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::EXIT_BUILDING:
 			if(game->game_state == GS_LEVEL)
 			{
-				if(unit.area->area_type == LevelArea::Type::Building)
+				if(unit.locPart->partType == LocationPart::Type::Building)
 				{
 					WarpData& warp = Add1(warps);
 					warp.u = &unit;
-					warp.where = LevelArea::OUTSIDE_ID;
+					warp.where = LocationPart::OUTSIDE_ID;
 					warp.building = -1;
 					warp.timer = 1.f;
 					unit.frozen = FROZEN::YES;
@@ -1795,12 +1795,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(in_arena < -1 || in_arena > 1)
 							in_arena = -1;
 
-						LevelArea& area = *info.u->area;
+						LocationPart& locPart = *info.u->locPart;
 						Vec3 pos = info.u->GetFrontPos();
 
 						for(byte i = 0; i < count; ++i)
 						{
-							Unit* spawned = game_level->SpawnUnitNearLocation(area, pos, *data, &unit.pos, level);
+							Unit* spawned = game_level->SpawnUnitNearLocation(locPart, pos, *data, &unit.pos, level);
 							if(!spawned)
 							{
 								Warn("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str());
@@ -2325,7 +2325,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->pos.x -= sin(unit.rot) * 0.25f;
 						item->pos.z -= cos(unit.rot) * 0.25f;
 						item->rot = Quat::RotY(Random(MAX_ANGLE));
-						game_level->AddGroundItem(*info.u->area, item);
+						game_level->AddGroundItem(*info.u->locPart, item);
 
 						// send info to other players
 						if(active_players > 2)
@@ -2875,7 +2875,7 @@ bool Net::CheckMove(Unit& unit, const Vec3& pos)
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
-	game_level->GatherCollisionObjects(*unit.area, game_level->global_col, pos, radius, &ignore);
+	game_level->GatherCollisionObjects(*unit.locPart, game_level->global_col, pos, radius, &ignore);
 
 	if(game_level->global_col.empty())
 		return true;
@@ -3089,7 +3089,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::WARP:
 			f << c.unit->id;
-			f.WriteCasted<char>(c.unit->area->area_id);
+			f.WriteCasted<char>(c.unit->locPart->partId);
 			f << c.unit->pos;
 			f << c.unit->rot;
 			break;
@@ -3983,7 +3983,7 @@ void Net::DeleteOldPlayers()
 		if(!info.loaded && info.u)
 		{
 			if(in_level)
-				RemoveElement(info.u->area->units, info.u);
+				RemoveElement(info.u->locPart->units, info.u);
 			if(info.u->cobj)
 			{
 				delete info.u->cobj->getCollisionShape();

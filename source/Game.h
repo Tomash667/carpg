@@ -126,16 +126,16 @@ public:
 	//-----------------------------------------------------------------
 	void DrawGame();
 	void ForceRedraw();
-	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
+	void ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
-	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
-	void ListAreas(LevelArea& area);
+	void AddObjectToDrawBatch(LocationPart& locPart, const Object& o, FrustumPlanes& frustum);
+	void ListAreas(LocationPart& locPart);
 	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
-	void GatherDrawBatchLights(LevelArea& area, SceneNode* node);
-	void GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
+	void GatherDrawBatchLights(LocationPart& locPart, SceneNode* node);
+	void GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene(bool outside);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
 	void DrawBloods(const vector<Blood*>& bloods, bool outside);
@@ -186,7 +186,7 @@ public:
 	void LoadGame(GameReader& f);
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
-	void CheckUnitsAi(LevelArea& area, int& err_count);
+	void CheckUnitsAi(LocationPart& locPart, int& err_count);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -202,7 +202,7 @@ public:
 	void ClearGame();
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
-	void LeaveLevel(LevelArea& area, bool clear);
+	void LeaveLevel(LocationPart& locPart, bool clear);
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);

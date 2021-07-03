@@ -145,7 +145,7 @@ void Game::UpdateAi(float dt)
 		else if(u.HaveEffect(EffectId::Stun) || u.action == A_STAND_UP)
 			continue;
 
-		LevelArea& area = *u.area;
+		LocationPart& locPart = *u.locPart;
 
 		// update time
 		u.prev_pos = u.pos;
@@ -199,7 +199,7 @@ void Game::UpdateAi(float dt)
 		// search for enemies
 		Unit* enemy = nullptr;
 		float best_dist = ALERT_RANGE + 0.1f, dist;
-		for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+		for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 		{
 			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->IsInvisible() || !u.IsEnemy(**it2))
 				continue;
@@ -270,7 +270,7 @@ void Game::UpdateAi(float dt)
 					if(ability->effect == Ability::Raise)
 					{
 						// raise undead spell
-						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+						for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 						{
 							Unit& target = **it2;
 							if(!target.to_remove && target.live_state == Unit::DEAD && !u.IsEnemy(target) && IsSet(target.data->flags, F_UNDEAD)
@@ -288,7 +288,7 @@ void Game::UpdateAi(float dt)
 					else if(ability->effect == Ability::Heal)
 					{
 						// healing spell
-						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+						for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 						{
 							Unit& target = **it2;
 							if(!target.to_remove && !u.IsEnemy(target) && !IsSet(target.data->flags, F_UNDEAD)
@@ -502,24 +502,24 @@ void Game::UpdateAi(float dt)
 										ai.city_wander = false;
 									}
 								}
-								else if(order_unit->area != u.area)
+								else if(order_unit->locPart != u.locPart)
 								{
-									// target is in another area
+									// target is in another location part
 									ai.st.idle.action = AIController::Idle_RunRegion;
 									ai.st.idle.region.exit = false;
 									ai.timer = Random(15.f, 30.f);
 
-									if(u.area->area_type == LevelArea::Type::Outside)
+									if(u.locPart->partType == LocationPart::Type::Outside)
 									{
 										// target is in the building but hero is not - go to the entrance
-										ai.st.idle.region.area = order_unit->area;
-										ai.st.idle.region.pos = static_cast<InsideBuilding*>(order_unit->area)->enter_region.Midpoint().XZ();
+										ai.st.idle.region.locPart = order_unit->locPart;
+										ai.st.idle.region.pos = static_cast<InsideBuilding*>(order_unit->locPart)->enter_region.Midpoint().XZ();
 									}
 									else
 									{
 										// target is not in the building but the hero is - leave the building
-										ai.st.idle.region.area = game_level->local_area;
-										ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+										ai.st.idle.region.locPart = game_level->localPart;
+										ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
 									}
 
 									if(u.IsHero())
@@ -598,10 +598,10 @@ void Game::UpdateAi(float dt)
 						{
 							ai.st.idle.action = AIController::Idle_MoveRegion;
 							ai.timer = Random(30.f, 40.f);
-							ai.st.idle.region.area = game_level->local_area;
+							ai.st.idle.region.locPart = game_level->localPart;
 							ai.st.idle.region.exit = false;
-							ai.st.idle.region.pos = u.area->area_type == LevelArea::Type::Building ?
-								static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ() :
+							ai.st.idle.region.pos = u.locPart->partType == LocationPart::Type::Building ?
+								static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ() :
 								game_level->GetExitPos(u);
 						}
 						break;
@@ -660,13 +660,13 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								InsideBuilding* inn = game_level->city_ctx->FindInn();
-								if(u.area->area_type == LevelArea::Type::Outside)
+								if(u.locPart->partType == LocationPart::Type::Outside)
 								{
 									// go to inn
 									if(ai.timer <= 0.f)
 									{
 										ai.st.idle.action = AIController::Idle_MoveRegion;
-										ai.st.idle.region.area = inn;
+										ai.st.idle.region.locPart = inn;
 										ai.st.idle.region.exit = false;
 										ai.st.idle.region.pos = inn->enter_region.Midpoint().XZ();
 										ai.timer = Random(30.f, 40.f);
@@ -675,7 +675,7 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									if(u.area == inn)
+									if(u.locPart == inn)
 									{
 										// is inside inn - move to random point
 										u.OrderNext();
@@ -688,9 +688,9 @@ void Game::UpdateAi(float dt)
 										// is not inside inn - go outside
 										ai.timer = Random(15.f, 30.f);
 										ai.st.idle.action = AIController::Idle_MoveRegion;
-										ai.st.idle.region.area = game_level->local_area;
+										ai.st.idle.region.locPart = game_level->localPart;
 										ai.st.idle.region.exit = false;
-										ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+										ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
 									}
 								}
 							}
@@ -728,7 +728,7 @@ void Game::UpdateAi(float dt)
 						{
 							// search for altar
 							BaseObject* base_obj = BaseObject::Get("bloody_altar");
-							Object* obj = area.FindObject(base_obj);
+							Object* obj = locPart.FindObject(base_obj);
 
 							if(obj)
 							{
@@ -766,7 +766,7 @@ void Game::UpdateAi(float dt)
 						}
 						else if(ai.st.idle.action == AIController::Idle_Use)
 						{
-							if(u.usable->base == stool && u.area->area_type == LevelArea::Type::Building)
+							if(u.usable->base == stool && u.locPart->partType == LocationPart::Type::Building)
 							{
 								int what;
 								if(u.IsDrunkman())
@@ -829,7 +829,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(u.IsHero())
 							{
-								if(u.area->area_type == LevelArea::Type::Outside)
+								if(u.locPart->partType == LocationPart::Type::Outside)
 								{
 									// unit is outside
 									int where = Rand() % (IsSet(game_level->city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
@@ -847,7 +847,7 @@ void Game::UpdateAi(float dt)
 										InsideBuilding* inn = game_level->city_ctx->FindInn();
 										ai.loc_timer = ai.timer = Random(75.f, 150.f);
 										ai.st.idle.action = AIController::Idle_MoveRegion;
-										ai.st.idle.region.area = inn;
+										ai.st.idle.region.locPart = inn;
 										ai.st.idle.region.exit = false;
 										ai.st.idle.region.pos = inn->enter_region.Midpoint().XZ();
 									}
@@ -865,9 +865,9 @@ void Game::UpdateAi(float dt)
 									// leave building
 									ai.loc_timer = ai.timer = Random(15.f, 30.f);
 									ai.st.idle.action = AIController::Idle_MoveRegion;
-									ai.st.idle.region.area = game_level->local_area;
+									ai.st.idle.region.locPart = game_level->localPart;
 									ai.st.idle.region.exit = false;
-									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
 								}
 								ai.city_wander = true;
 							}
@@ -898,7 +898,7 @@ void Game::UpdateAi(float dt)
 							// find closest ore vein
 							Usable* usable = nullptr;
 							float range = 20.1f;
-							for(vector<Usable*>::iterator it2 = area.usables.begin(), end2 = area.usables.end(); it2 != end2; ++it2)
+							for(vector<Usable*>::iterator it2 = locPart.usables.begin(), end2 = locPart.usables.end(); it2 != end2; ++it2)
 							{
 								Usable& use = **it2;
 								if(!use.user && (use.base == iron_vein || use.base == gold_vein))
@@ -967,7 +967,7 @@ void Game::UpdateAi(float dt)
 										static vector<Object*> do_cw;
 										BaseObject* melee_target = BaseObject::Get("melee_target"),
 											*bow_target = BaseObject::Get("bow_target");
-										for(vector<Object*>::iterator it2 = area.objects.begin(), end2 = area.objects.end(); it2 != end2; ++it2)
+										for(vector<Object*>::iterator it2 = locPart.objects.begin(), end2 = locPart.objects.end(); it2 != end2; ++it2)
 										{
 											Object& obj = **it2;
 											if((obj.base == melee_target || (obj.base == bow_target && u.HaveBow())) && Vec3::Distance(obj.pos, u.pos) < 10.f)
@@ -1046,12 +1046,12 @@ void Game::UpdateAi(float dt)
 							case AI_USE:
 								{
 									LocalVector<Usable*> uses;
-									for(vector<Usable*>::iterator it2 = area.usables.begin(), end2 = area.usables.end(); it2 != end2; ++it2)
+									for(vector<Usable*>::iterator it2 = locPart.usables.begin(), end2 = locPart.usables.end(); it2 != end2; ++it2)
 									{
 										Usable& use = **it2;
 										if(!use.user && (use.base != throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
 											&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
-											&& game_level->CanSee(area, use.pos, u.pos))
+											&& game_level->CanSee(locPart, use.pos, u.pos))
 										{
 											const Item* needed_item = use.base->item;
 											if(!needed_item || u.HaveItem(needed_item) || u.GetEquippedItem(SLOT_WEAPON) == needed_item)
@@ -1097,7 +1097,7 @@ void Game::UpdateAi(float dt)
 								else
 								{
 									close_enemies.clear();
-									for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+									for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 									{
 										if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || *it2 == &u)
 											continue;
@@ -1128,7 +1128,7 @@ void Game::UpdateAi(float dt)
 								{
 									const float d = ((IsSet(u.data->flags, F_AI_GUARD) || IsSet(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
 									close_enemies.clear();
-									for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+									for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 									{
 										if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || *it2 == &u)
 											continue;
@@ -1388,7 +1388,7 @@ void Game::UpdateAi(float dt)
 											else
 											{
 												ai.st.idle.action = AIController::Idle_Use;
-												if(u.usable->base == stool && u.area->area_type == LevelArea::Type::Building && u.IsDrunkman())
+												if(u.usable->base == stool && u.locPart->partType == LocationPart::Type::Building && u.IsDrunkman())
 													ai.timer = Random(10.f, 20.f);
 												else if(u.usable->base == throne)
 													ai.timer = 120.f;
@@ -1482,18 +1482,18 @@ void Game::UpdateAi(float dt)
 						case AIController::Idle_RunRegion:
 							if(Vec3::Distance2d(u.pos, ai.st.idle.region.pos) < u.GetUnitRadius() * 2)
 							{
-								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit) && u.area == ai.st.idle.region.area
-									&& ai.st.idle.region.area->area_type == LevelArea::Type::Outside && !ai.st.idle.region.exit)
+								if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit) && u.locPart == ai.st.idle.region.locPart
+									&& ai.st.idle.region.locPart->partType == LocationPart::Type::Outside && !ai.st.idle.region.exit)
 								{
-									// in exit area, go to border
+									// in exitable location part, go to border
 									ai.st.idle.region.exit = true;
 									ai.st.idle.region.pos = game_level->GetExitPos(u, true);
 								}
 								else
 								{
 									ai.st.idle.action = AIController::Idle_None;
-									game_level->WarpUnit(&u, ai.st.idle.region.area->area_id);
-									if(ai.st.idle.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && order == ORDER_FOLLOW))
+									game_level->WarpUnit(&u, ai.st.idle.region.locPart->partId);
+									if(ai.st.idle.region.locPart->partType != LocationPart::Type::Building || (u.IsFollower() && order == ORDER_FOLLOW))
 									{
 										ai.loc_timer = -1.f;
 										ai.timer = -1.f;
@@ -1504,7 +1504,7 @@ void Game::UpdateAi(float dt)
 										ai.st.idle.action = AIController::Idle_Move;
 										ai.timer = Random(5.f, 15.f);
 										ai.loc_timer = Random(60.f, 120.f);
-										InsideBuilding* inside = static_cast<InsideBuilding*>(ai.st.idle.region.area);
+										InsideBuilding* inside = static_cast<InsideBuilding*>(ai.st.idle.region.locPart);
 										ai.st.idle.pos = (Rand() % 5 == 0 ? inside->region2 : inside->region1).GetRandomPos3();
 									}
 								}
@@ -1795,7 +1795,7 @@ void Game::UpdateAi(float dt)
 							Unit* top = nullptr;
 							float best_dist = JUMP_BACK_MIN_RANGE;
 
-							for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+							for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 							{
 								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
 									&& !(*it2)->act.attack.hitted && (*it2)->animation_state < AS_ATTACK_FINISHED)
@@ -2097,7 +2097,7 @@ void Game::UpdateAi(float dt)
 
 								// gather nearby enemies
 								close_enemies.clear();
-								for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+								for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 								{
 									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || !u.IsEnemy(**it2))
 										continue;
@@ -2200,7 +2200,7 @@ void Game::UpdateAi(float dt)
 					Unit* top = nullptr;
 					float best_dist = 5.f;
 
-					for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+					for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
 							&& !(*it2)->act.attack.hitted && (*it2)->animation_state < AS_ATTACK_FINISHED)
@@ -2275,7 +2275,7 @@ void Game::UpdateAi(float dt)
 					Unit* top = nullptr;
 					float best_dist = JUMP_BACK_MIN_RANGE;
 
-					for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+					for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2))
 						{
@@ -2421,7 +2421,7 @@ void Game::UpdateAi(float dt)
 					Unit* top = nullptr;
 					float best_dist = 10.f;
 
-					for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+					for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2))
 						{
@@ -2660,7 +2660,7 @@ void Game::UpdateAi(float dt)
 						&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
-						if(pathfinding->FindPath(area, my_tile, target_tile, ai.pf_path, !IsSet(u.data->flags, F_DONT_OPEN), ai.city_wander && game_level->city_ctx != nullptr))
+						if(pathfinding->FindPath(locPart, my_tile, target_tile, ai.pf_path, !IsSet(u.data->flags, F_DONT_OPEN), ai.city_wander && game_level->city_ctx != nullptr))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2682,7 +2682,7 @@ void Game::UpdateAi(float dt)
 				// open doors when ai moves next to them
 				if(!IsSet(u.data->flags, F_DONT_OPEN))
 				{
-					for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
+					for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 					{
 						Door& door = **it;
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
@@ -2726,7 +2726,7 @@ void Game::UpdateAi(float dt)
 						is_end_point = (ai.pf_local_try + 1 == ai.pf_path.size());
 					}
 
-					int ret = pathfinding->FindLocalPath(area, ai.pf_local_path, my_local_tile, local_tile, &u, path_unit_ignore, path_obj_ignore, is_end_point);
+					int ret = pathfinding->FindLocalPath(locPart, ai.pf_local_path, my_local_tile, local_tile, &u, path_unit_ignore, path_obj_ignore, is_end_point);
 					ai.pf_local_target_tile = local_tile;
 					if(ret == 0)
 					{

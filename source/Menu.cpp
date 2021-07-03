@@ -132,7 +132,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	UnitData& ud = *clas->player;
 
 	Unit* u = game_level->CreateUnit(ud, -1, false);
-	u->area = nullptr;
+	u->locPart = nullptr;
 	u->ApplyHumanData(hd);
 	team->members.clear();
 	team->active_members.clear();
@@ -165,7 +165,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	if(!tutorial && cc.HavePerk(Perk::Get("leader")))
 	{
 		Unit* npc = game_level->CreateUnit(*Class::GetRandomHeroData(), -1, false);
-		npc->area = nullptr;
+		npc->locPart = nullptr;
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
@@ -1357,7 +1357,7 @@ void Game::UpdateServerTransfer(float dt)
 			if(!info.loaded)
 			{
 				u = game_level->CreateUnit(*info.clas->player, -1, in_level);
-				u->area = nullptr;
+				u->locPart = nullptr;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
 				info.u = u;
@@ -1453,7 +1453,7 @@ void Game::UpdateServerTransfer(float dt)
 			UnitData& ud = *Class::GetRandomHeroData();
 			int level = ud.level.x + 2 * (leader_perk - 1);
 			Unit* npc = game_level->CreateUnit(ud, level, false);
-			npc->area = nullptr;
+			npc->locPart = nullptr;
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
@@ -1612,9 +1612,9 @@ void Game::UpdateServerTransfer(float dt)
 				{
 					// get positon of unit or building entrance
 					Vec3 pos;
-					if(center_unit->area->area_type == LevelArea::Type::Building)
+					if(center_unit->locPart->partType == LocationPart::Type::Building)
 					{
-						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->area);
+						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->locPart);
 						Vec2 p = inside->enter_region.Midpoint();
 						pos = Vec3(p.x, inside->enter_y, p.y);
 					}
@@ -1626,9 +1626,9 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(!info.loaded)
 						{
-							game_level->local_area->units.push_back(info.u);
-							info.u->area = game_level->local_area;
-							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, 4.f, false, 20);
+							game_level->localPart->units.push_back(info.u);
+							info.u->locPart = game_level->localPart;
+							game_level->WarpNearLocation(*game_level->localPart, *info.u, pos, 4.f, false, 20);
 							info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1671,9 +1671,9 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(!info.loaded)
 						{
-							game_level->local_area->units.push_back(info.u);
-							info.u->area = game_level->local_area;
-							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, game_level->location->outside ? 4.f : 2.f, false, 20);
+							game_level->localPart->units.push_back(info.u);
+							info.u->locPart = game_level->localPart;
+							game_level->WarpNearLocation(*game_level->localPart, *info.u, pos, game_level->location->outside ? 4.f : 2.f, false, 20);
 							info.u->rot = rot;
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1808,9 +1808,9 @@ void Game::UpdateServerSend(float dt)
 			byte b = ID_START;
 			net->peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		}
-		for(LevelArea& area : game_level->ForEachArea())
+		for(LocationPart& locPart : game_level->ForEachPart())
 		{
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 				unit->changed = false;
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");

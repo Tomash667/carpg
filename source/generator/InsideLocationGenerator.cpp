@@ -1052,7 +1052,7 @@ void InsideLocationGenerator::RegenerateTraps()
 //=================================================================================================
 void InsideLocationGenerator::RespawnTraps()
 {
-	for(Trap* trap : game_level->local_area->traps)
+	for(Trap* trap : game_level->localPart->traps)
 	{
 		trap->state = 0;
 		if(trap->base->type == TRAP_SPEAR)

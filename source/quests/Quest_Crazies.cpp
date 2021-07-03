@@ -195,7 +195,7 @@ void Quest_Crazies::CheckStone()
 			{
 				// is in good location, check if inside chest
 				int index;
-				Chest* chest = game_level->local_area->FindChestWithItem(stone, &index);
+				Chest* chest = game_level->localPart->FindChestWithItem(stone, &index);
 				if(chest)
 				{
 					// put inside chest, end of quest

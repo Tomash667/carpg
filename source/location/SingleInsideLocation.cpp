@@ -2,11 +2,11 @@
 #include "SingleInsideLocation.h"
 
 //=================================================================================================
-void SingleInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void SingleInsideLocation::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
 	mine = Int2::Zero;
 	maxe = Int2(w, h);
-	areas.push_back(*this);
+	parts.push_back(*this);
 }
 
 //=================================================================================================

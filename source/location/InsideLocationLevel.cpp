@@ -210,7 +210,7 @@ void InsideLocationLevel::SaveLevel(GameWriter& f)
 	f << h;
 	f.Write(map, sizeof(Tile)*w*h);
 
-	LevelArea::Save(f);
+	LocationPart::Save(f);
 
 	// rooms
 	f << rooms.size();
@@ -240,7 +240,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 
 	if(LOAD_VERSION >= V_0_11)
 	{
-		LevelArea::Load(f);
+		LocationPart::Load(f);
 
 		// rooms
 		rooms.resize(f.Read<uint>());
@@ -268,7 +268,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 	}
 	else
 	{
-		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevel);
+		LocationPart::Load(f, old::LoadCompatibility::InsideLocationLevel);
 
 		// rooms
 		rooms.resize(f.Read<uint>());
@@ -295,7 +295,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 		}
 		RoomGroup::SetRoomGroupConnections(groups, rooms);
 
-		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
+		LocationPart::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
 
 	if(LOAD_VERSION >= V_0_16)

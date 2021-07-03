@@ -52,9 +52,9 @@ const Int2 c_dir2[4] = {
 //=================================================================================================
 // Search for path using A-Star algorithm
 // Return true if there is path, retured path don't contain first tile
-bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
+bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
 {
-	if(start_tile == target_tile || area.area_type == LevelArea::Type::Building)
+	if(start_tile == target_tile || locPart.partType == LocationPart::Type::Building)
 	{
 		// already at same tile
 		path.clear();
@@ -65,7 +65,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 	static vector<Point> to_check;
 	to_check.clear();
 
-	if(area.area_type == LevelArea::Type::Outside)
+	if(locPart.partType == LocationPart::Type::Outside)
 	{
 		// outside location
 		OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
@@ -318,7 +318,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 
 						if(m[pt1(w)].type == DOORS)
 						{
-							Door* door = area.FindDoor(pt1);
+							Door* door = locPart.FindDoor(pt1);
 							if(door && door->IsBlocking())
 							{
 								// decide if door can be entered from this tile
@@ -417,21 +417,21 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 
 						if(m[pt2(w)].type == DOORS)
 						{
-							Door* door = area.FindDoor(pt2);
+							Door* door = locPart.FindDoor(pt2);
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[c_dir2[i].x + pt.pt.x + pt.pt.y*w].type == DOORS)
 						{
-							Door* door = area.FindDoor(Int2(c_dir2[i].x + pt.pt.x, pt.pt.y));
+							Door* door = locPart.FindDoor(Int2(c_dir2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[pt.pt.x + (c_dir2[i].y + pt.pt.y)*w].type == DOORS)
 						{
-							Door* door = area.FindDoor(Int2(pt.pt.x, c_dir2[i].y + pt.pt.y));
+							Door* door = locPart.FindDoor(Int2(pt.pt.x, c_dir2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
@@ -486,7 +486,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other,
+int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other,
 	const void* usable, bool is_end_point)
 {
 	assert(me);
@@ -505,10 +505,10 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	// center
 	const Int2 center_tile((my_tile + target_tile) / 2);
 
-	int minx = max(area.mine.x * 8, center_tile.x - 15),
-		miny = max(area.mine.y * 8, center_tile.y - 15),
-		maxx = min(area.maxe.x * 8 - 1, center_tile.x + 16),
-		maxy = min(area.maxe.y * 8 - 1, center_tile.y + 16);
+	int minx = max(locPart.mine.x * 8, center_tile.x - 15),
+		miny = max(locPart.mine.y * 8, center_tile.y - 15),
+		maxx = min(locPart.maxe.x * 8 - 1, center_tile.x + 16),
+		maxy = min(locPart.maxe.y * 8 - 1, center_tile.y + 16);
 
 	int w = maxx - minx,
 		h = maxy - miny;
@@ -534,7 +534,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	}
 
 	game_level->global_col.clear();
-	game_level->GatherCollisionObjects(area, game_level->global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
+	game_level->GatherCollisionObjects(locPart, game_level->global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
 	const float r = me->GetUnitRadius() - 0.25f / 2;
 
@@ -688,7 +688,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	if(marked)
 	{
 		if(marked == me)
-			test_pf_outside = (game_level->location->outside && me->area->area_type == LevelArea::Type::Outside);
+			test_pf_outside = (game_level->location->outside && me->locPart->partType == LocationPart::Type::Outside);
 
 		if(a_map[my_rel(w)].state == 0)
 		{

@@ -11,10 +11,10 @@
 #include "Usable.h"
 #include "Object.h"
 #include "GameCommon.h"
-#include "LevelArea.h"
+#include "LocationPart.h"
 
 //-----------------------------------------------------------------------------
-struct InsideLocationLevel : public LevelArea
+struct InsideLocationLevel : public LocationPart
 {
 	Tile* map;
 	int w, h;
@@ -24,7 +24,7 @@ struct InsideLocationLevel : public LevelArea
 	Int2 prevEntryPt, nextEntryPt;
 	GameDirection prevEntryDir, nextEntryDir;
 
-	InsideLocationLevel(int area_id) : LevelArea(LevelArea::Type::Inside, area_id, false), map(nullptr) {}
+	InsideLocationLevel(int partId) : LocationPart(LocationPart::Type::Inside, partId, false), map(nullptr) {}
 	~InsideLocationLevel();
 
 	bool IsInside(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }

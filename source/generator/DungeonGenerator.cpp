@@ -447,13 +447,13 @@ void DungeonGenerator::GenerateDungeonItems()
 	bool spawn_golden_cup = Rand() % 100 == 0;
 
 	// spawn food
-	LevelArea& area = *game_level->local_area;
-	for(vector<Object*>::iterator it = area.objects.begin(), end = area.objects.end(); it != end; ++it)
+	LocationPart& locPart = *game_level->localPart;
+	for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == table)
 		{
-			game_level->PickableItemBegin(area, obj);
+			game_level->PickableItemBegin(locPart, obj);
 			if(spawn_golden_cup)
 			{
 				spawn_golden_cup = false;
@@ -478,7 +478,7 @@ void DungeonGenerator::GenerateDungeonItems()
 			int count = Random(mod, mod * 3 / 2);
 			if(count)
 			{
-				game_level->PickableItemBegin(area, obj);
+				game_level->PickableItemBegin(locPart, obj);
 				for(int i = 0; i < count; ++i)
 					game_level->PickableItemAdd(lis.Get());
 			}

@@ -34,6 +34,7 @@
 #include "Language.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "LevelPart.h"
 #include "LoadScreen.h"
 #include "LobbyApi.h"
 #include "LocationGeneratorFactory.h"
@@ -614,18 +615,18 @@ void Game::DrawGame()
 {
 	if(game_state == GS_LEVEL)
 	{
-		LevelArea& area = *pc->unit->area;
+		LocationPart& locPart = *pc->unit->locPart;
 		bool outside;
-		if(area.area_type == LevelArea::Type::Outside)
+		if(locPart.partType == LocationPart::Type::Outside)
 			outside = true;
-		else if(area.area_type == LevelArea::Type::Inside)
+		else if(locPart.partType == LocationPart::Type::Inside)
 			outside = false;
-		else if(game_level->city_ctx->inside_buildings[area.area_id]->top > 0.f)
+		else if(game_level->city_ctx->inside_buildings[locPart.partId]->top > 0.f)
 			outside = false;
 		else
 			outside = true;
 
-		ListDrawObjects(area, game_level->camera.frustum, outside);
+		ListDrawObjects(locPart, game_level->camera.frustum, outside);
 
 		vector<PostEffect> postEffects;
 		GetPostEffects(postEffects);
@@ -1929,8 +1930,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	// update level context
-	for(LevelArea& area : game_level->ForEachArea())
-		area.Update(dt);
+	for(LocationPart& locPart : game_level->ForEachPart())
+		locPart.Update(dt);
 
 	// update minimap
 	game_level->UpdateDungeonMinimap(true);
@@ -2828,11 +2829,11 @@ void Game::LeaveLevel(bool clear)
 	if(game_level->is_open)
 	{
 		game_level->boss = nullptr;
-		for(LevelArea& area : game_level->ForEachArea())
+		for(LocationPart& locPart : game_level->ForEachPart())
 		{
-			LeaveLevel(area, clear);
-			area.tmp->Free();
-			area.tmp = nullptr;
+			LeaveLevel(locPart, clear);
+			locPart.lvlPart->Free();
+			locPart.lvlPart = nullptr;
 		}
 		if(game_level->city_ctx && (Net::IsClient() || net->was_client))
 			DeleteElements(game_level->city_ctx->inside_buildings);
@@ -2863,12 +2864,12 @@ void Game::LeaveLevel(bool clear)
 		game_level->is_open = false;
 }
 
-void Game::LeaveLevel(LevelArea& area, bool clear)
+void Game::LeaveLevel(LocationPart& locPart, bool clear)
 {
 	// cleanup units
 	if(Net::IsLocal() && !clear && !net->was_client)
 	{
-		LoopAndRemove(area.units, [&](Unit* p_unit)
+		LoopAndRemove(locPart.units, [&](Unit* p_unit)
 		{
 			Unit& unit = *p_unit;
 
@@ -2912,7 +2913,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 						{
 							unit.live_state = Unit::DEAD;
 							unit.mesh_inst->SetToEnd();
-							game_level->CreateBlood(area, unit, true);
+							game_level->CreateBlood(locPart, unit, true);
 						}
 						else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
 							unit.Standup(false, true);
@@ -2928,7 +2929,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 									InsideBuilding* inn = game_level->city_ctx->FindInn();
 									game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
 									unit.visual_pos = unit.pos;
-									unit.area = inn;
+									unit.locPart = inn;
 									inn->units.push_back(&unit);
 									return true;
 								}
@@ -2957,7 +2958,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			}
 		});
 
-		for(Object* obj : area.objects)
+		for(Object* obj : locPart.objects)
 		{
 			if(obj->meshInst)
 			{
@@ -2968,7 +2969,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	}
 	else
 	{
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 		{
 			if(!*it)
 				continue;
@@ -2991,24 +2992,24 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			delete *it;
 		}
 
-		area.units.clear();
+		locPart.units.clear();
 	}
 
 	// temporary entities
-	area.tmp->Clear();
+	locPart.lvlPart->Clear();
 
 	if(Net::IsLocal() && !net->was_client)
 	{
 		// remove chest meshes
-		for(Chest* chest : area.chests)
+		for(Chest* chest : locPart.chests)
 			chest->Cleanup();
 
 		// remove door meshes
-		for(Door* door : area.doors)
+		for(Door* door : locPart.doors)
 			door->Cleanup();
 
 		// remove player traps & remove mesh instance
-		LoopAndRemove(area.traps, [](Trap* trap)
+		LoopAndRemove(locPart.traps, [](Trap* trap)
 		{
 			if(trap->owner != nullptr)
 			{
@@ -3028,18 +3029,18 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	else
 	{
 		// delete entities
-		DeleteElements(area.objects);
-		DeleteElements(area.chests);
-		DeleteElements(area.doors);
-		DeleteElements(area.traps);
-		DeleteElements(area.usables);
-		DeleteElements(area.items);
+		DeleteElements(locPart.objects);
+		DeleteElements(locPart.chests);
+		DeleteElements(locPart.doors);
+		DeleteElements(locPart.traps);
+		DeleteElements(locPart.usables);
+		DeleteElements(locPart.items);
 	}
 
 	if(!clear)
 	{
 		// make blood splatter full size
-		for(vector<Blood>::iterator it = area.bloods.begin(), end = area.bloods.end(); it != end; ++it)
+		for(vector<Blood>::iterator it = locPart.bloods.begin(), end = locPart.bloods.end(); it != end; ++it)
 			it->size = 1.f;
 	}
 }
@@ -3159,27 +3160,27 @@ void Game::PreloadResources(bool worldmap)
 
 	if(!worldmap)
 	{
-		for(LevelArea& area : game_level->ForEachArea())
+		for(LocationPart& locPart : game_level->ForEachPart())
 		{
 			// load units - units respawn so need to check everytime...
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 				PreloadUnit(unit);
 
 			// some traps respawn
-			for(Trap* trap : area.traps)
+			for(Trap* trap : locPart.traps)
 				game_res->LoadTrap(trap->base);
 
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
 			{
-				for(GroundItem* ground_item : area.items)
+				for(GroundItem* ground_item : locPart.items)
 				{
 					assert(ground_item->item);
 					items_load.insert(ground_item->item);
 				}
-				for(Chest* chest : area.chests)
+				for(Chest* chest : locPart.chests)
 					PreloadItems(chest->items);
-				for(Usable* usable : area.usables)
+				for(Usable* usable : locPart.usables)
 				{
 					if(usable->container)
 						PreloadItems(usable->container->items);
@@ -3193,16 +3194,16 @@ void Game::PreloadResources(bool worldmap)
 			// load music
 			game_res->LoadMusic(game_level->GetLocationMusic(), false);
 
-			for(LevelArea& area : game_level->ForEachArea())
+			for(LocationPart& locPart : game_level->ForEachPart())
 			{
 				// load objects
-				for(Object* obj : area.objects)
+				for(Object* obj : locPart.objects)
 					res_mgr->Load(obj->mesh);
-				for(Chest* chest : area.chests)
+				for(Chest* chest : locPart.chests)
 					res_mgr->Load(chest->base->mesh);
 
 				// load usables
-				for(Usable* use : area.usables)
+				for(Usable* use : locPart.usables)
 				{
 					BaseUsable* base = use->base;
 					if(base->state == ResourceState::NotLoaded)
@@ -3299,22 +3300,22 @@ void Game::PreloadItems(vector<ItemSlot>& items)
 
 void Game::VerifyResources()
 {
-	for(LevelArea& area : game_level->ForEachArea())
+	for(LocationPart& locPart : game_level->ForEachPart())
 	{
-		for(GroundItem* item : area.items)
+		for(GroundItem* item : locPart.items)
 			VerifyItemResources(item->item);
-		for([[maybe_unused]] Object* obj : area.objects)
+		for([[maybe_unused]] Object* obj : locPart.objects)
 			assert(obj->mesh->state == ResourceState::Loaded);
-		for(Unit* unit : area.units)
+		for(Unit* unit : locPart.units)
 			VerifyUnitResources(unit);
-		for(Usable* u : area.usables)
+		for(Usable* u : locPart.usables)
 		{
 			BaseUsable* base = u->base;
 			assert(base->state == ResourceState::Loaded);
 			if(base->sound)
 				assert(base->sound->IsLoaded());
 		}
-		for(Trap* trap : area.traps)
+		for(Trap* trap : locPart.traps)
 		{
 			assert(trap->base->state == ResourceState::Loaded);
 			if(trap->base->mesh)
@@ -3377,7 +3378,7 @@ void Game::DeleteUnit(Unit* unit)
 
 	if(game_level->is_open)
 	{
-		RemoveElement(unit->area->units, unit);
+		RemoveElement(unit->locPart->units, unit);
 		game_gui->level_gui->RemoveUnitView(unit);
 		if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
 			pc->data.before_player = BP_NONE;
@@ -3465,7 +3466,7 @@ void Game::RemoveUnit(Unit* unit)
 	assert(unit && !unit->player);
 
 	unit->BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
-	RemoveElement(unit->area->units, unit);
+	RemoveElement(unit->locPart->units, unit);
 	game_gui->level_gui->RemoveUnitView(unit);
 	if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
 		pc->data.before_player = BP_NONE;

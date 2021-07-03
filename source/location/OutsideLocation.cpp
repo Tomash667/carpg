@@ -26,7 +26,7 @@ namespace OLD
 }
 
 //=================================================================================================
-OutsideLocation::OutsideLocation() : Location(true), LevelArea(LevelArea::Type::Outside, LevelArea::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
+OutsideLocation::OutsideLocation() : Location(true), LocationPart(LocationPart::Type::Outside, LocationPart::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
 {
 	mine = Int2(0, 0);
 	maxe = Int2(size, size);
@@ -40,9 +40,9 @@ OutsideLocation::~OutsideLocation()
 }
 
 //=================================================================================================
-void OutsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void OutsideLocation::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
-	areas.push_back(*this);
+	parts.push_back(*this);
 }
 
 //=================================================================================================
@@ -52,7 +52,7 @@ void OutsideLocation::Save(GameWriter& f)
 
 	if(last_visit != -1)
 	{
-		LevelArea::Save(f);
+		LocationPart::Save(f);
 
 		// terrain
 		f.Write(tiles, sizeof(TerrainTile)*size*size);
@@ -70,9 +70,9 @@ void OutsideLocation::Load(GameReader& f)
 	if(last_visit != -1)
 	{
 		if(LOAD_VERSION >= V_0_11)
-			LevelArea::Load(f);
+			LocationPart::Load(f);
 		else
-			LevelArea::Load(f, old::LoadCompatibility::OutsideLocation);
+			LocationPart::Load(f, old::LoadCompatibility::OutsideLocation);
 
 		// terrain
 		int size2 = size + 1;
@@ -91,7 +91,7 @@ void OutsideLocation::Write(BitStreamWriter& f)
 	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
 	f << game_level->light_angle;
 
-	LevelArea::Write(f);
+	LocationPart::Write(f);
 
 	WritePortals(f);
 }
@@ -115,7 +115,7 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		return false;
 	}
 
-	if(!LevelArea::Read(f))
+	if(!LocationPart::Read(f))
 		return false;
 
 	// portals

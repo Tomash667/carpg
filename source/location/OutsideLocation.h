@@ -2,7 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Location.h"
-#include "LevelArea.h"
+#include "LocationPart.h"
 #include "TerrainTile.h"
 
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ enum OutsideLocationTarget
 };
 
 //-----------------------------------------------------------------------------
-struct OutsideLocation : public Location, public LevelArea
+struct OutsideLocation : public Location, public LocationPart
 {
 	TerrainTile* tiles;
 	float* h;
@@ -26,7 +26,7 @@ struct OutsideLocation : public Location, public LevelArea
 	~OutsideLocation();
 
 	// from Location
-	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
+	void Apply(vector<std::reference_wrapper<LocationPart>>& parts) override;
 	void Save(GameWriter& f) override;
 	void Load(GameReader& f) override;
 	void Write(BitStreamWriter& f) override;

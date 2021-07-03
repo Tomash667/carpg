@@ -40,7 +40,7 @@ struct TmpLocation : public Location
 {
 	TmpLocation() : Location(false) {}
 
-	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override {}
+	void Apply(vector<std::reference_wrapper<LocationPart>>& parts) override {}
 	void Write(BitStreamWriter& f) override {}
 	bool Read(BitStreamReader& f) override { return false; }
 };
@@ -2841,11 +2841,11 @@ void World::AbadonLocation(Location* loc)
 	// only works for OutsideLocation or Cave for now!
 	assert((loc->outside && loc->type != L_CITY) || loc->type == L_CAVE);
 
-	LevelArea* area;
+	LocationPart* locPart;
 	if(loc->type == L_CAVE)
-		area = static_cast<Cave*>(loc);
+		locPart = static_cast<Cave*>(loc);
 	else
-		area = static_cast<OutsideLocation*>(loc);
+		locPart = static_cast<OutsideLocation*>(loc);
 
 	// remove camp in 4-8 days
 	if(loc->type == L_CAMP)
@@ -2874,7 +2874,7 @@ void World::AbadonLocation(Location* loc)
 	if(loc == current_location)
 	{
 		// remove units
-		for(Unit*& u : area->units)
+		for(Unit*& u : locPart->units)
 		{
 			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
@@ -2884,7 +2884,7 @@ void World::AbadonLocation(Location* loc)
 		}
 
 		// remove items from chests
-		for(Chest* chest : area->chests)
+		for(Chest* chest : locPart->chests)
 		{
 			if(!chest->GetUser())
 				chest->items.clear();
@@ -2893,10 +2893,10 @@ void World::AbadonLocation(Location* loc)
 	else
 	{
 		// delete units
-		DeleteElements(area->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
+		DeleteElements(locPart->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
 
 		// remove items from chests
-		for(Chest* chest : area->chests)
+		for(Chest* chest : locPart->chests)
 			chest->items.clear();
 	}
 

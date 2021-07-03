@@ -68,11 +68,11 @@ void DodajStraznikow()
 {
 	// find nobleman
 	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
-	Unit* u = game_level->local_area->FindUnit(ud);
+	Unit* u = game_level->localPart->FindUnit(ud);
 	assert(u);
 
 	// find throne
-	Usable* use = game_level->local_area->FindUsable(BaseUsable::Get("throne"));
+	Usable* use = game_level->localPart->FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// warp nobleman to throne
@@ -85,7 +85,7 @@ void DodajStraznikow()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Room* room = lvl.GetNearestRoom(u->pos);
 	assert(room);
-	for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = game_level->localPart->units.begin(), end = game_level->localPart->units.end(); it != end; ++it)
 	{
 		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{

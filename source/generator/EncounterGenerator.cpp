@@ -177,7 +177,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		break;
 	}
 
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *game_level->localPart;
 	EncounterData encounter = world->GetCurrentEncounter();
 	EncounterSpawn spawn(encounter.st);
 	quest = nullptr;
@@ -238,8 +238,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				spawn.group_name2 = "wagon_guards";
 				spawn.count2 = Random(2, 3);
 				spawn.level2 = Clamp(encounter.st, 5, 6);
-				game_level->SpawnObjectNearLocation(area, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
-				Chest* chest = game_level->SpawnObjectNearLocation(area, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
+				game_level->SpawnObjectNearLocation(locPart, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
+				Chest* chest = game_level->SpawnObjectNearLocation(locPart, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
 				{
 					int gold;
@@ -417,7 +417,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			unit_level = -spawn.level;
 		else
 			unit_level = Clamp(spawn.essential->level.Random(), spawn.level / 2, spawn.level);
-		talker = game_level->SpawnUnitNearLocation(area, spawn_pos, *spawn.essential, &look_pt, unit_level, 4.f);
+		talker = game_level->SpawnUnitNearLocation(locPart, spawn_pos, *spawn.essential, &look_pt, unit_level, 4.f);
 		talker->dont_attack = spawn.dont_attack;
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--spawn.count;
@@ -427,7 +427,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	if(spawn.group_name)
 	{
 		UnitGroup* group = UnitGroup::TryGet(spawn.group_name);
-		game_level->SpawnUnitsGroup(area, spawn_pos, &look_pt, spawn.count, group, spawn.level, [&](Unit* u)
+		game_level->SpawnUnitsGroup(locPart, spawn_pos, &look_pt, spawn.count, group, spawn.level, [&](Unit* u)
 		{
 			u->dont_attack = spawn.dont_attack;
 			float dist = Vec3::Distance(u->pos, look_pt);
@@ -448,7 +448,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	{
 		team = (spawn.isTeam2 ? aiMgr->CreateTeam() : nullptr);
 		UnitGroup* group = UnitGroup::TryGet(spawn.group_name2);
-		game_level->SpawnUnitsGroup(area, spawn_pos, &look_pt, spawn.count2, group, spawn.level2, [&](Unit* u)
+		game_level->SpawnUnitsGroup(locPart, spawn_pos, &look_pt, spawn.count2, group, spawn.level2, [&](Unit* u)
 		{
 			u->dont_attack = spawn.dont_attack;
 			if(team)

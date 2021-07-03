@@ -146,7 +146,7 @@ int CampGenerator::HandleUpdate(int days)
 //=================================================================================================
 void CampGenerator::GenerateObjects()
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *game_level->localPart;
 	tents.clear();
 
 	// bonfire with tents/beddings
@@ -158,13 +158,13 @@ void CampGenerator::GenerateObjects()
 		Vec2 pos = used[i];
 
 		// campfire
-		game_level->SpawnObjectNearLocation(area, objs[isEmpty ? CAMPFIRE_OFF : CAMPFIRE], pos, Random(MAX_ANGLE));
+		game_level->SpawnObjectNearLocation(locPart, objs[isEmpty ? CAMPFIRE_OFF : CAMPFIRE], pos, Random(MAX_ANGLE));
 
 		// bench
 		if(Rand() % 3 == 0)
 		{
 			const float angle = Random(MAX_ANGLE);
-			game_level->SpawnObjectNearLocation(area, objs[BENCH], pos + Vec2(sin(angle), cos(angle)) * 2.5f, pos);
+			game_level->SpawnObjectNearLocation(locPart, objs[BENCH], pos + Vec2(sin(angle), cos(angle)) * 2.5f, pos);
 		}
 
 		// tents/beddings/benches around
@@ -183,7 +183,7 @@ void CampGenerator::GenerateObjects()
 				id = BEDDING;
 				dist = 5.f;
 			}
-			ObjectEntity entity = game_level->SpawnObjectNearLocation(area, objs[id], pos + Vec2(sin(angle), cos(angle)) * dist, pos);
+			ObjectEntity entity = game_level->SpawnObjectNearLocation(locPart, objs[id], pos + Vec2(sin(angle), cos(angle)) * dist, pos);
 			if(id == TENT && entity)
 				tents.push_back(entity);
 		}
@@ -216,12 +216,12 @@ void CampGenerator::GenerateObjects()
 		}
 
 		// torch
-		game_level->SpawnObjectNearLocation(area, objs[isEmpty ? TORCH_OFF : TORCH], pos, Random(MAX_ANGLE), 0.f);
+		game_level->SpawnObjectNearLocation(locPart, objs[isEmpty ? TORCH_OFF : TORCH], pos, Random(MAX_ANGLE), 0.f);
 
 		switch(type)
 		{
 		case 0: // chest & boxes/barrels/hay
-			game_level->SpawnObjectNearLocation(area, objs[CHEST], pos, Random(MAX_ANGLE), 10.f);
+			game_level->SpawnObjectNearLocation(locPart, objs[CHEST], pos, Random(MAX_ANGLE), 10.f);
 			for(int j = 0, count = Random(5, 10); j < count; ++j)
 			{
 				const ObjId ids[] = { BOX, BOXES, BARREL, BARRELS, HAY };
@@ -229,25 +229,25 @@ void CampGenerator::GenerateObjects()
 				const Vec2 pos2 = pos + Vec2::RandomCirclePt(7);
 				ObjId id = ids[Rand() % countof(ids)];
 				for(int k = 0; k < count2; ++k)
-					game_level->SpawnObjectNearLocation(area, objs[id], pos2, Random(MAX_ANGLE), 2, 0);
+					game_level->SpawnObjectNearLocation(locPart, objs[id], pos2, Random(MAX_ANGLE), 2, 0);
 			}
 			break;
 		case 1: // melee targets
 			for(int j = 0, count = Random(2, 4); j < count; ++j)
-				game_level->SpawnObjectNearLocation(area, objs[MELEE_TARGET], pos + Vec2::RandomCirclePt(7), Random(MAX_ANGLE));
+				game_level->SpawnObjectNearLocation(locPart, objs[MELEE_TARGET], pos + Vec2::RandomCirclePt(7), Random(MAX_ANGLE));
 			break;
 		case 2: // bow targets
 			{
 				const float angle = Random(MAX_ANGLE);
 				for(int j = 0, count = Random(2, 4); j < count; ++j)
-					game_level->SpawnObjectNearLocation(area, objs[BOW_TARGET], pos + Vec2::RandomCirclePt(7), angle);
+					game_level->SpawnObjectNearLocation(locPart, objs[BOW_TARGET], pos + Vec2::RandomCirclePt(7), angle);
 			}
 			break;
 		case 3: // crafting
 			{
 				const ObjId ids[] = { CHEST, ANVIL, CAULDRON, TANNING_RACK, TANNING_RACK };
 				for(uint i=0; i<countof(ids); ++i)
-					game_level->SpawnObjectNearLocation(area, objs[ids[i]], pos + Vec2::RandomCirclePt(7), Random(MAX_ANGLE));
+					game_level->SpawnObjectNearLocation(locPart, objs[ids[i]], pos + Vec2::RandomCirclePt(7), Random(MAX_ANGLE));
 			}
 			break;
 		}
@@ -262,17 +262,17 @@ void CampGenerator::GenerateObjects()
 		tents.erase(tents.begin() + index);
 		float angle = tent->rot.y + (Rand() % 2 == 0 ? -1 : +1) * PI / 2;
 		Vec2 pos = tent->pos.XZ() + Vec2(sin(angle) * dist, cos(angle) * dist);
-		if(!game_level->SpawnObjectNearLocation(area, objs[CHEST], pos, Clip(angle + PI)))
+		if(!game_level->SpawnObjectNearLocation(locPart, objs[CHEST], pos, Clip(angle + PI)))
 		{
 			angle += PI;
 			pos = tent->pos.XZ() + Vec2(sin(angle) * dist, cos(angle) * dist);
-			if(!game_level->SpawnObjectNearLocation(area, objs[CHEST], pos, Clip(angle + PI)))
+			if(!game_level->SpawnObjectNearLocation(locPart, objs[CHEST], pos, Clip(angle + PI)))
 				--i;
 		}
 	}
 
 	// fill chests
-	ItemHelper::GenerateTreasure(area.chests, outside->st, 3);
+	ItemHelper::GenerateTreasure(locPart.chests, outside->st, 3);
 
 	// trees
 	for(int i = 0; i < 1024; ++i)
@@ -309,7 +309,7 @@ void CampGenerator::GenerateObjects()
 				type = Rand() % 3;
 			o = &trees2[type];
 		}
-		game_level->SpawnObjectEntity(area, o->obj, pos, Random(MAX_ANGLE), o->scale.Random());
+		game_level->SpawnObjectEntity(locPart, o->obj, pos, Random(MAX_ANGLE), o->scale.Random());
 	}
 
 	// other objects
@@ -335,14 +335,14 @@ void CampGenerator::GenerateObjects()
 		Vec3 pos = pos2d.XZ();
 		pos.y = terrain->GetH(pos);
 		OutsideObject& o = misc[Rand() % n_misc];
-		game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+		game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 	}
 }
 
 //=================================================================================================
 void CampGenerator::GenerateUnits()
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *game_level->localPart;
 	static vector<Vec2> poss;
 	poss.clear();
 	int level = outside->st;
@@ -365,13 +365,13 @@ void CampGenerator::GenerateUnits()
 				bestDist = dist;
 			}
 		}
-		game_level->SpawnUnitNearLocation(area, bestPos.XZ(), *hunterLeader, nullptr, -1, 8.f);
+		game_level->SpawnUnitNearLocation(locPart, bestPos.XZ(), *hunterLeader, nullptr, -1, 8.f);
 
 		// hunters
 		for(int i = 0; i < 7; ++i)
 		{
 			const Vec3 pos = used[Rand() % used.size()].XZ();
-			game_level->SpawnUnitNearLocation(area, pos, *hunter, nullptr, -1, 8.f);
+			game_level->SpawnUnitNearLocation(locPart, pos, *hunter, nullptr, -1, 8.f);
 		}
 		return;
 	}
@@ -389,7 +389,7 @@ void CampGenerator::GenerateUnits()
 		used.erase(used.begin() + index);
 		for(TmpUnitGroup::Spawn& spawn : group->Roll(level, 2))
 		{
-			if(!game_level->SpawnUnitNearLocation(area, pos, *spawn.first, nullptr, spawn.second, 8.f))
+			if(!game_level->SpawnUnitNearLocation(locPart, pos, *spawn.first, nullptr, spawn.second, 8.f))
 				break;
 		}
 	}

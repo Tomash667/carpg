@@ -340,14 +340,6 @@ Properties:
 * int persuasionCheck - skill level required to persuade to join.
 * const int investment - value of investment (gold from quests over time).
 
-### LevelArea type
-Part of level - dungeon level, outside, inside of building.
-
-Methods:
-
-* bool RemoveItemFromChest(Item@) - return true if removed item.
-* bool RemoveItemFromUnit(Item@) - remove single item from alive enemy, return true if removed.
-
 ### Location type
 Location on world map. Currently locations can be added dynamicaly but not removed. Only camps support disappearing after some time.
 
@@ -359,12 +351,12 @@ Properties:
 * bool outside - readonly
 * LOCATION_IMAGE image
 * int st
-* int levels - readonly, return count of level areas (for dungeon this is dungeon levels, for city enterable buildings + 1 for outside area)
+* int levels - readonly, return count of location parts (for dungeon this is dungeon levels, for city enterable buildings + 1 for outside part)
 * bool reset - when true reset locations (respawn units/loot) when team enters
 * bool visited - readonly
 * Quest@ active_quest - quest assigned to location, prevent other quests from using this location.
 * UnitGroup@ group - unit group that spawns in this location.
-* LevelArea@ area - readonly, main area of location (for dungeons this is first level).
+* LocationPart@ locPart - readonly, main part of location (for dungeons this is first level).
 
 Method:
 
@@ -375,10 +367,18 @@ Method:
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from location.
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
-* LevelArea@ GetArea(int index) - get level area by index.
-* LevelArea@ GetBuildingArea(const string& id) - get inside building area (by building group id).
+* LocationPart@ GetLocationPart(int index) - get location part by index.
+* LocationPart@ GetBuildingLocationPart(const string& id) - get inside building location part (by building group id).
 * int GetRandomLevel() - return random dungeon level (higher chance for lower levels) or -1 when outside location.
 * Unit@ FindQuestUnit(Quest@) - find unit with quest set.
+
+### LocationPart type
+Part of location - dungeon level, outside, inside of building.
+
+Methods:
+
+* bool RemoveItemFromChest(Item@) - return true if removed item.
+* bool RemoveItemFromUnit(Item@) - remove single item from alive enemy, return true if removed.
 
 ### MapSettings type
 Used when generating dungeon.
@@ -461,7 +461,7 @@ Example:
 	group.Fill(UnitGroup::Get("bandits"), 2, 8);
 	for(uint i=0; i<group.count; ++i)
 	{
-		Unit@ unit = Level::SpawnUnit(mayor.area, group.Get(i));
+		Unit@ unit = Level::SpawnUnit(mayor.locPart, group.Get(i));
 		unit.dont_attack = true;
 	}
 
@@ -491,7 +491,7 @@ Properties:
 * bool known_name - player known name, can't be changed from true to false.
 * bool temporary - unit is removed when location is repopulated.
 * UNIT_ORDER order - readonly, current unit order.
-* LevelArea@ area - level area unit is in.
+* LocationPart@ locPart - location part unit is in.
 * const string& clas - readonly, class identifier.
 
 Methods:
@@ -529,8 +529,8 @@ Methods:
 * void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 * void RotateTo(float rot) - instantly rotates units.
 * void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
-* void MoveToArea(LevelArea@ area, const Vec3& in pos) - move unit to area, works between locations.
-* void MoveOffscreen() - move unit to offscreen area.
+* void MoveToLocation(LocationPart@ locPart, const Vec3& in pos) - move unit to location part, works between locations.
+* void MoveOffscreen() - move unit to offscreen location.
 * void Kill() - used to spawn dead units.
 
 Static properties:
@@ -597,9 +597,9 @@ Static methods:
 * GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
 * Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp in room.
-* Vec3 FindSpawnPos(LevelArea@, Unit@) - return position for unit spawn/warp in building area.
+* Vec3 FindSpawnPos(LocationPart@, Unit@) - return position for unit spawn/warp in building location part.
 * Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2, int level = -1) - spawns unit near position.
-* Unit@ SpawnUnit(LevelArea@, Spawn) - spawns unit inside area.
+* Unit@ SpawnUnit(LocationPart@, Spawn) - spawns unit inside location part.
 * Unit@ SpawnUnit(Room@, UnitData@, int level = -1) - spawn unit inside room.
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.

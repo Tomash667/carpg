@@ -9,6 +9,7 @@
 #include "InsideLocation.h"
 #include "Journal.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
 #include "Pathfinding.h"
@@ -233,14 +234,14 @@ void Quest_Evil::SetProgress(int prog2)
 			targetLoc->active_quest = nullptr;
 			targetLoc->dont_clean = false;
 			BaseObject* base_obj = BaseObject::Get("bloody_altar");
-			Object* obj = game_level->local_area->FindObject(base_obj);
+			Object* obj = game_level->localPart->FindObject(base_obj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
 			res_mgr->Load(obj->mesh);
 			// remove particles
 			float best_dist = 999.f;
 			ParticleEmitter* best_pe = nullptr;
-			for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
+			for(ParticleEmitter* pe : game_level->localPart->lvlPart->pes)
 			{
 				if(pe->tex == game_res->tBlood[BLOOD_RED])
 				{
@@ -547,7 +548,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->tex = game_res->tBlood[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
-	lvl.tmp->pes.push_back(pe);
+	lvl.lvlPart->pes.push_back(pe);
 
 	// add blood
 	vector<Int2> path;
@@ -645,14 +646,14 @@ void Quest_Evil::GeneratePortal()
 //=================================================================================================
 void Quest_Evil::WarpEvilBossToAltar()
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *game_level->localPart;
 
 	// find bossa
-	Unit* u = area.FindUnit(UnitData::Get("q_zlo_boss"));
+	Unit* u = locPart.FindUnit(UnitData::Get("q_zlo_boss"));
 	assert(u);
 
 	// find blood altar
-	Object* o = area.FindObject(BaseObject::Get("bloody_altar"));
+	Object* o = locPart.FindObject(BaseObject::Get("bloody_altar"));
 	assert(o);
 
 	if(u && o)
@@ -664,7 +665,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 
 		for(int i = 0; i < 2; ++i)
 		{
-			Unit* u2 = game_level->SpawnUnitNearLocation(area, u->pos, *UnitData::Get("zombie_ancient"));
+			Unit* u2 = game_level->SpawnUnitNearLocation(locPart, u->pos, *UnitData::Get("zombie_ancient"));
 			if(u2)
 			{
 				u2->dont_attack = true;
@@ -693,7 +694,7 @@ void Quest_Evil::Update(float dt)
 		for(Unit& unit : team->members)
 		{
 			if(unit.IsStanding() && unit.IsPlayer() && Vec3::Distance(unit.pos, pos) < 5.f
-				&& game_level->CanSee(*game_level->local_area, unit.pos, pos))
+				&& game_level->CanSee(*game_level->localPart, unit.pos, pos))
 			{
 				evil_state = State::Summoning;
 				sound_mgr->PlaySound2d(game_res->sEvil);

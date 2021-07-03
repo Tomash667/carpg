@@ -1773,8 +1773,8 @@ void PlayerController::Yell()
 	}
 	unit->Talk(RandomString(game->txYell), 0);
 
-	LevelArea& area = *unit->area;
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	LocationPart& locPart = *unit->locPart;
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !unit->IsEnemy(u2) && !unit->IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
@@ -1855,7 +1855,7 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 				}
 			}
 			dist += angle;
-			if(dist < best_dist && game_level->CanSee(*unit->area, unit->pos, pos, type == BP_DOOR, ptr))
+			if(dist < best_dist && game_level->CanSee(*unit->locPart, unit->pos, pos, type == BP_DOOR, ptr))
 			{
 				best_dist = dist;
 				data.before_player_ptr.any = ptr;
@@ -2267,7 +2267,7 @@ void PlayerController::Update(float dt)
 void PlayerController::UpdateMove(float dt, bool allow_rot)
 {
 	Unit& u = *unit;
-	LevelArea& area = *u.area;
+	LocationPart& locPart = *u.locPart;
 
 	// unit lying on ground
 	if(!u.IsStanding())
@@ -2743,7 +2743,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	float best_dist = 3.0f;
 
 	// doors in front of player
-	for(Door* door : area.doors)
+	for(Door* door : locPart.doors)
 	{
 		if(OR2_EQ(door->state, Door::Opened, Door::Closed))
 			CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
@@ -2752,7 +2752,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(!data.ability_ready && u.action != A_CAST)
 	{
 		// units in front of player
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 		{
 			Unit& u2 = **it;
 			if(&u == &u2 || u2.to_remove)
@@ -2765,18 +2765,18 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 
 		// chests in front of player
-		for(Chest* chest : area.chests)
+		for(Chest* chest : locPart.chests)
 		{
 			if(!chest->GetUser())
 				CheckObjectDistance(chest->pos, chest, best_dist, BP_CHEST);
 		}
 
 		// ground items in front of player
-		for(GroundItem* ground_item : area.items)
+		for(GroundItem* ground_item : locPart.items)
 			CheckObjectDistance(ground_item->pos, ground_item, best_dist, BP_ITEM);
 
 		// usable objects in front of player
-		for(Usable* usable : area.usables)
+		for(Usable* usable : locPart.usables)
 		{
 			if(!usable->user)
 				CheckObjectDistance(usable->pos, usable, best_dist, BP_USABLE);
@@ -2964,7 +2964,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c2.id = item.id;
 					}
 
-					RemoveElement(area.items, &item);
+					RemoveElement(locPart.items, &item);
 					data.before_player = BP_NONE;
 
 					for(Event& event : game_level->location->events)

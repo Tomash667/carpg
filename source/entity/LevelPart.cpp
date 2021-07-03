@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "TmpLevelArea.h"
+#include "LevelPart.h"
 
 #include "BitStreamFunc.h"
 #include "Bullet.h"
@@ -9,7 +9,7 @@
 #include <ParticleSystem.h>
 
 //=================================================================================================
-void TmpLevelArea::Clear()
+void LevelPart::Clear()
 {
 	DeleteElements(explos);
 	DeleteElements(electros);
@@ -21,7 +21,7 @@ void TmpLevelArea::Clear()
 }
 
 //=================================================================================================
-void TmpLevelArea::Save(GameWriter& f)
+void LevelPart::Save(GameWriter& f)
 {
 	f << pes.size();
 	for(ParticleEmitter* pe : pes)
@@ -49,7 +49,7 @@ void TmpLevelArea::Save(GameWriter& f)
 }
 
 //=================================================================================================
-void TmpLevelArea::Load(GameReader& f)
+void LevelPart::Load(GameReader& f)
 {
 	const int particle_version = (LOAD_VERSION >= V_0_13 ? 2 : (LOAD_VERSION >= V_0_12 ? 1 : 0));
 
@@ -78,7 +78,7 @@ void TmpLevelArea::Load(GameReader& f)
 	for(Electro*& electro : electros)
 	{
 		electro = new Electro;
-		electro->area = area;
+		electro->locPart = locPart;
 		electro->Load(f);
 	}
 
@@ -95,7 +95,7 @@ void TmpLevelArea::Load(GameReader& f)
 }
 
 //=================================================================================================
-void TmpLevelArea::Write(BitStreamWriter& f)
+void LevelPart::Write(BitStreamWriter& f)
 {
 	// bullets
 	f.Write(bullets.size());
@@ -114,14 +114,14 @@ void TmpLevelArea::Write(BitStreamWriter& f)
 }
 
 //=================================================================================================
-bool TmpLevelArea::Read(BitStreamReader& f)
+bool LevelPart::Read(BitStreamReader& f)
 {
 	// bullets
 	uint count;
 	f >> count;
 	if(!f.Ensure(count * Bullet::MIN_SIZE))
 	{
-		Error("Read tmp area: Broken bullet count.");
+		Error("Read level part: Broken bullet count.");
 		return false;
 	}
 	bullets.resize(count);
@@ -130,7 +130,7 @@ bool TmpLevelArea::Read(BitStreamReader& f)
 		bullet = new Bullet;
 		if(!bullet->Read(f, *this))
 		{
-			Error("Read tmp area: Broken bullet.");
+			Error("Read level part: Broken bullet.");
 			return false;
 		}
 	}
@@ -139,7 +139,7 @@ bool TmpLevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Explo::MIN_SIZE))
 	{
-		Error("Read tmp area: Broken explosion count.");
+		Error("Read level part: Broken explosion count.");
 		return false;
 	}
 	explos.resize(count);
@@ -148,7 +148,7 @@ bool TmpLevelArea::Read(BitStreamReader& f)
 		explo = new Explo;
 		if(!explo->Read(f))
 		{
-			Error("Read tmp area: Broken explosion.");
+			Error("Read level part: Broken explosion.");
 			return false;
 		}
 	}
@@ -157,17 +157,17 @@ bool TmpLevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Electro::MIN_SIZE))
 	{
-		Error("Read tmp area: Broken electro count.");
+		Error("Read level part: Broken electro count.");
 		return false;
 	}
 	electros.resize(count);
 	for(Electro*& electro : electros)
 	{
 		electro = new Electro;
-		electro->area = area;
+		electro->locPart = locPart;
 		if(!electro->Read(f))
 		{
-			Error("Read tmp area: Broken electro.");
+			Error("Read level part: Broken electro.");
 			return false;
 		}
 	}

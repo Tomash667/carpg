@@ -8,6 +8,7 @@
 #include "GameResources.h"
 #include "Journal.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "LocationHelper.h"
 #include "Portal.h"
 #include "QuestManager.h"
@@ -933,7 +934,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 							u->base = (Rand() % 10 < gold_chance ? gold_vein : iron_vein);
 							cave.usables.push_back(u);
 
-							CollisionObject& c = Add1(cave.tmp->colliders);
+							CollisionObject& c = Add1(cave.lvlPart->colliders);
 							btCollisionObject* cobj = new btCollisionObject;
 							cobj->setCollisionShape(iron_vein->shape);
 							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
@@ -1110,7 +1111,7 @@ void Quest_Mine::OnProgress(int d)
 				// player invested in mine, inform him about finishing
 				if(game_level->city_ctx && game->game_state == GS_LEVEL)
 				{
-					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
 						world->AddNews(Format(game->txMineBuilt, targetLoc->name.c_str()));
@@ -1140,7 +1141,7 @@ void Quest_Mine::OnProgress(int d)
 		days += d;
 		if(days >= days_required && game_level->city_ctx && game->game_state == GS_LEVEL)
 		{
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				messenger = u;

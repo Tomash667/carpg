@@ -5,7 +5,7 @@
 #include "DialogContext.h"
 #include "GameCommon.h"
 #include "ItemHelper.h"
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 #include "Journal.h"
 #include "QuestManager.h"
 #include "Team.h"

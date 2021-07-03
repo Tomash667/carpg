@@ -48,7 +48,7 @@ struct Door : public EntityType<Door>
 	void Init();
 	void Recreate();
 	void Cleanup();
-	void Update(float dt, LevelArea& area);
+	void Update(float dt, LocationPart& locPart);
 	void Open();
 	void OpenInstant();
 	void Close();

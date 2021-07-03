@@ -22,6 +22,7 @@
 #include "Inventory.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "LevelPart.h"
 #include "OffscreenLocation.h"
 #include "PlayerInfo.h"
 #include "Portal.h"
@@ -495,7 +496,7 @@ bool Unit::DropItem(int index)
 			items.erase(items.begin() + index);
 		}
 		if(!quest_mgr->quest_secret->CheckMoonStone(item, *this))
-			game_level->AddGroundItem(*area, item);
+			game_level->AddGroundItem(*locPart, item);
 
 		if(Net::IsServer())
 		{
@@ -548,7 +549,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos.z -= cos(rot) * 0.25f;
 		item->rot = Quat::RotY(Random(MAX_ANGLE));
 		item2 = nullptr;
-		game_level->AddGroundItem(*area, item);
+		game_level->AddGroundItem(*locPart, item);
 
 		if(Net::IsOnline())
 		{
@@ -609,7 +610,7 @@ bool Unit::DropItems(int index, uint count)
 			no_more = true;
 			items.erase(items.begin() + index);
 		}
-		game_level->AddGroundItem(*area, item);
+		game_level->AddGroundItem(*locPart, item);
 
 		if(Net::IsServer())
 		{
@@ -5301,7 +5302,7 @@ void Unit::TryStandup(float dt)
 				{
 					// check for near enemies
 					ok = true;
-					for(Unit* unit : area->units)
+					for(Unit* unit : locPart->units)
 					{
 						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
 						{
@@ -5323,7 +5324,7 @@ void Unit::TryStandup(float dt)
 			}
 			else if(timer <= 0.f)
 			{
-				for(Unit* unit : area->units)
+				for(Unit* unit : locPart->units)
 				{
 					if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
 					{
@@ -5418,7 +5419,7 @@ void Unit::Die(Unit* killer)
 	if(live_state == FALL)
 	{
 		// unit already on ground, add blood
-		game_level->CreateBlood(*area, *this);
+		game_level->CreateBlood(*locPart, *this);
 		live_state = DEAD;
 	}
 	else
@@ -5452,7 +5453,7 @@ void Unit::Die(Unit* killer)
 		}
 
 		// notify about death
-		for(vector<Unit*>::iterator it = area->units.begin(), end = area->units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = locPart->units.begin(), end = locPart->units.end(); it != end; ++it)
 		{
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
 				continue;
@@ -5591,7 +5592,7 @@ void Unit::DropGold(int count)
 		item->pos.x -= sin(rot) * 0.25f;
 		item->pos.z -= cos(rot) * 0.25f;
 		item->rot = Quat::RotY(Random(MAX_ANGLE));
-		game_level->AddGroundItem(*area, item);
+		game_level->AddGroundItem(*locPart, item);
 
 		// wyœlij info o animacji
 		if(Net::IsServer())
@@ -6260,7 +6261,7 @@ void Unit::OrderAttack()
 	}
 	else
 	{
-		for(Unit* unit : area->units)
+		for(Unit* unit : locPart->units)
 		{
 			if(unit->dont_attack && unit->IsEnemy(*team->leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
 			{
@@ -6650,7 +6651,7 @@ void Unit::StopUsingUsable(bool send)
 	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { this, nullptr };
 	ignore.ignored_units = ignore_units;
-	game_level->GatherCollisionObjects(*area, game_level->global_col, pos, 2.f + unit_radius, &ignore);
+	game_level->GatherCollisionObjects(*locPart, game_level->global_col, pos, 2.f + unit_radius, &ignore);
 
 	Vec3 tmp_pos = target_pos;
 	bool ok = false;
@@ -6660,7 +6661,7 @@ void Unit::StopUsingUsable(bool send)
 	{
 		if(!game_level->Collide(game_level->global_col, tmp_pos, unit_radius))
 		{
-			if(i != 0 && area->have_terrain)
+			if(i != 0 && locPart->haveTerrain)
 				tmp_pos.y = game_level->terrain->GetH(tmp_pos);
 			target_pos = tmp_pos;
 			ok = true;
@@ -6751,7 +6752,7 @@ void Unit::CheckAutoTalk(float dt)
 		if(game_level->CanSee(*this, talk_target))
 		{
 			bool ok = true;
-			for(vector<Unit*>::iterator it2 = area->units.begin(), end2 = area->units.end(); it2 != end2; ++it2)
+			for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
 			{
 				Unit& check_unit = **it2;
 				if(&talk_target == &check_unit || this == &check_unit)
@@ -6851,7 +6852,7 @@ void Unit::CastSpell()
 			for(int i = 0; i < count; ++i)
 			{
 				Bullet* bullet = new Bullet;
-				area->tmp->bullets.push_back(bullet);
+				locPart->lvlPart->bullets.push_back(bullet);
 
 				bullet->Register();
 				bullet->isArrow = false;
@@ -6909,7 +6910,7 @@ void Unit::CastSpell()
 					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
-					area->tmp->pes.push_back(pe);
+					locPart->lvlPart->pes.push_back(pe);
 					bullet->pe = pe;
 				}
 
@@ -6932,7 +6933,7 @@ void Unit::CastSpell()
 		{
 			Electro* e = new Electro;
 			e->Register();
-			e->area = area;
+			e->locPart = locPart;
 			e->hitted.push_back(this);
 			e->dmg = dmg;
 			e->owner = this;
@@ -6973,7 +6974,7 @@ void Unit::CastSpell()
 				e->AddLine(coord, target);
 			}
 
-			area->tmp->electros.push_back(e);
+			locPart->lvlPart->electros.push_back(e);
 
 			if(Net::IsOnline())
 			{
@@ -6996,12 +6997,12 @@ void Unit::CastSpell()
 				// trafiono w cel
 				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
 				{
-					Drain& drain = Add1(area->tmp->drains);
+					Drain& drain = Add1(locPart->lvlPart->drains);
 					drain.target = this;
 
 					hitted->GiveDmg(dmg, this, nullptr, DMG_MAGICAL);
 
-					drain.pe = area->tmp->pes.back();
+					drain.pe = locPart->lvlPart->pes.back();
 					drain.t = 0.f;
 					drain.pe->manual_delete = 1;
 					drain.pe->speed_min = Vec3(-3, 0, -3);
@@ -7031,7 +7032,7 @@ void Unit::CastSpell()
 			Unit* target = act.cast.target;
 			if(!target) // pre V_0_12
 			{
-				for(Unit* u : area->units)
+				for(Unit* u : locPart->units)
 				{
 					if(u->live_state == DEAD
 						&& !IsEnemy(*u)
@@ -7051,7 +7052,7 @@ void Unit::CastSpell()
 			}
 
 			// check if target is not too far
-			if(!target || target->area != area || Vec3::Distance(pos, target->pos) > ability.range * 1.5f)
+			if(!target || target->locPart != locPart || Vec3::Distance(pos, target->pos) > ability.range * 1.5f)
 				break;
 
 			if(ability.effect == Ability::Raise)
@@ -7069,7 +7070,7 @@ void Unit::CastSpell()
 				// particle effect
 				Vec3 pos = target->pos;
 				pos.y += target->GetUnitHeight() / 2;
-				game_level->CreateSpellParticleEffect(area, &ability, pos, Vec2::Zero);
+				game_level->CreateSpellParticleEffect(locPart, &ability, pos, Vec2::Zero);
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -7089,7 +7090,7 @@ void Unit::CastSpell()
 				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
 				Vec3 pos = target->pos;
 				pos.y += bounds.y / 2;
-				game_level->CreateSpellParticleEffect(area, &ability, pos, bounds);
+				game_level->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 		}
 		break;
@@ -7104,7 +7105,7 @@ void Unit::CastSpell()
 			}
 
 			// spawn new
-			Unit* new_unit = game_level->SpawnUnitNearLocation(*area, target_pos, *ability.unit, nullptr, level);
+			Unit* new_unit = game_level->SpawnUnitNearLocation(*locPart, target_pos, *ability.unit, nullptr, level);
 			if(new_unit)
 			{
 				new_unit->summoner = this;
@@ -7118,7 +7119,7 @@ void Unit::CastSpell()
 		}
 		break;
 	case Ability::Aggro:
-		for(Unit* u : area->units)
+		for(Unit* u : locPart->units)
 		{
 			if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
 				|| u->ai->alert_target || u->dont_attack)
@@ -7136,7 +7137,7 @@ void Unit::CastSpell()
 		{
 			float angle = Random(MAX_ANGLE);
 			Vec3 targetPos = pos + Vec3(sin(angle) * ability.range, 0, cos(angle) * ability.range);
-			Unit* new_unit = game_level->SpawnUnitNearLocation(*area, targetPos, *ability.unit, nullptr, level);
+			Unit* new_unit = game_level->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
 			if(new_unit)
 			{
 				new_unit->in_arena = in_arena;
@@ -7169,7 +7170,7 @@ void Unit::CastSpell()
 
 			// particle effect
 			if(ability.tex_particle)
-				game_level->CreateSpellParticleEffect(area, &ability, target_pos, Vec2::Zero);
+				game_level->CreateSpellParticleEffect(locPart, &ability, target_pos, Vec2::Zero);
 		}
 		break;
 	}
@@ -7364,7 +7365,7 @@ void Unit::Update(float dt)
 			Level::IgnoreObjects ignore = { 0 };
 			ignore.ignore_units = true;
 			ignore.ignore_doors = true;
-			game_level->GatherCollisionObjects(*area, game_level->global_col, center, 0.25f, &ignore);
+			game_level->GatherCollisionObjects(*locPart, game_level->global_col, center, 0.25f, &ignore);
 			if(game_level->Collide(game_level->global_col, center, 0.25f))
 			{
 				Vec3 dir = pos - center;
@@ -7384,7 +7385,7 @@ void Unit::Update(float dt)
 			if(live_state == DYING)
 			{
 				live_state = DEAD;
-				game_level->CreateBlood(*area, *this);
+				game_level->CreateBlood(*locPart, *this);
 				if(summoner && Net::IsLocal())
 				{
 					team->RemoveMember(this);
@@ -7574,7 +7575,7 @@ void Unit::Update(float dt)
 			if(Net::IsLocal() && mesh_inst->GetProgress(1) > 20.f / 40)
 			{
 				Bullet* bullet = new Bullet;
-				area->tmp->bullets.push_back(bullet);
+				locPart->lvlPart->bullets.push_back(bullet);
 
 				mesh_inst->SetupBones();
 
@@ -7679,7 +7680,7 @@ void Unit::Update(float dt)
 					tpe->color2 = Vec4(1, 1, 1, 0);
 				}
 				tpe->Init(50);
-				area->tmp->tpes.push_back(tpe);
+				locPart->lvlPart->tpes.push_back(tpe);
 				bullet->trail = tpe;
 
 				act.shoot.ability = nullptr;
@@ -8102,7 +8103,7 @@ void Unit::Update(float dt)
 							game_level->global_col.clear();
 							float my_radius = GetUnitRadius();
 							bool ok = true;
-							for(vector<Unit*>::iterator it2 = area->units.begin(), end2 = area->units.end(); it2 != end2; ++it2)
+							for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
 							{
 								if(this == *it2 || !(*it2)->IsStanding())
 									continue;
@@ -8411,7 +8412,7 @@ void Unit::Moved(bool warped, bool dash)
 {
 	if(game_level->location->outside)
 	{
-		if(area->area_type == LevelArea::Type::Outside)
+		if(locPart->partType == LocationPart::Type::Outside)
 		{
 			if(game_level->terrain->IsInside(pos))
 			{
@@ -8525,7 +8526,7 @@ void Unit::Moved(bool warped, bool dash)
 
 			// jest w budynku
 			// sprawdŸ czy nie wszed³ na wyjœcie (tylko gracz mo¿e opuszczaæ budynek, na razie)
-			InsideBuilding& building = *static_cast<InsideBuilding*>(area);
+			InsideBuilding& building = *static_cast<InsideBuilding*>(locPart);
 
 			if(IsPlayer() && building.exit_region.IsInside(pos) && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
@@ -8752,20 +8753,20 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 }
 
 //=================================================================================================
-void Unit::MoveToArea(LevelArea* area, const Vec3& pos)
+void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 {
-	assert(area && !IsTeamMember());
+	assert(newLocPart && !IsTeamMember());
 
-	if(area == this->area)
+	if(newLocPart == locPart)
 		return;
 
 	const bool is_active = mesh_inst != nullptr;
-	const bool activate = area->IsActive();
-	RemoveElement(this->area->units, this);
-	area->units.push_back(this);
-	this->area = area;
-	this->pos = pos;
-	visual_pos = pos;
+	const bool activate = newLocPart->IsActive();
+	RemoveElement(locPart->units, this);
+	newLocPart->units.push_back(this);
+	locPart = newLocPart;
+	pos = newPos;
+	visual_pos = newPos;
 
 	if(is_active != activate)
 	{
@@ -8838,11 +8839,11 @@ void Unit::MoveOffscreen()
 	if(mesh_inst != nullptr)
 		game->RemoveUnit(this);
 	else
-		RemoveElement(area->units, this);
+		RemoveElement(locPart->units, this);
 
 	OffscreenLocation* offscreen = world->GetOffscreenLocation();
 	offscreen->units.push_back(this);
-	area = offscreen;
+	locPart = offscreen;
 }
 
 //=================================================================================================
@@ -8897,7 +8898,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->mode = 0;
 		pe->Init();
-		area->tmp->pes.push_back(pe);
+		locPart->lvlPart->pes.push_back(pe);
 
 		if(Net::IsOnline())
 		{
@@ -9010,7 +9011,7 @@ void Unit::AttackReaction(Unit& attacker)
 		}
 		if(dont_attack && !IsSet(data->flags, F_PEACEFUL))
 		{
-			for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = game_level->localPart->units.begin(), end = game_level->localPart->units.end(); it != end; ++it)
 			{
 				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
 				{
@@ -9028,7 +9029,7 @@ bool Unit::DoAttack()
 	Vec3 hitpoint;
 	Unit* hitted;
 
-	if(!area->CheckForHit(*this, hitted, hitpoint))
+	if(!locPart->CheckForHit(*this, hitted, hitpoint))
 		return false;
 
 	if(!hitted)
@@ -9056,7 +9057,7 @@ bool Unit::DoShieldSmash()
 	if(!mesh)
 		return false;
 
-	if(!area->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
+	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
 	if(!hitted)
@@ -9277,7 +9278,7 @@ void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 //=================================================================================================
 void Unit::AlertAllies(Unit* target)
 {
-	for(Unit* u : area->units)
+	for(Unit* u : locPart->units)
 	{
 		if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
 			|| u->ai->alert_target || u->dont_attack)

@@ -21,11 +21,11 @@ City::~City()
 }
 
 //=================================================================================================
-void City::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void City::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
-	areas.push_back(*this);
+	parts.push_back(*this);
 	for(InsideBuilding* ib : inside_buildings)
-		areas.push_back(*ib);
+		parts.push_back(*ib);
 }
 
 //=================================================================================================

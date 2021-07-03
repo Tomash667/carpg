@@ -196,7 +196,7 @@ void Arena::Clean()
 		Unit& u = **it;
 		u.frozen = FROZEN::NO;
 		u.in_arena = -1;
-		u.area = game_level->local_area;
+		u.locPart = game_level->localPart;
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
 			u.Standup(false, true);
@@ -212,9 +212,9 @@ void Arena::Clean()
 void Arena::RemoveArenaViewers()
 {
 	UnitData* ud = UnitData::Get("viewer");
-	LevelArea& area = *game_level->GetArena();
+	LocationPart& locPart = *game_level->GetArena();
 
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 			game_level->RemoveUnit(*it);
@@ -546,7 +546,7 @@ void Arena::Update(float dt)
 		timer += dt;
 		if(timer >= 2.f)
 		{
-			if(game_level->GetArena() == game->pc->unit->area)
+			if(game_level->GetArena() == game->pc->unit->locPart)
 				sound_mgr->PlaySound2d(game_res->sArenaFight);
 			if(Net::IsOnline())
 			{
@@ -619,7 +619,7 @@ void Arena::Update(float dt)
 					victory_sound = true;
 			}
 
-			if(game_level->GetArena() == game->pc->unit->area)
+			if(game_level->GetArena() == game->pc->unit->locPart)
 				sound_mgr->PlaySound2d(victory_sound ? game_res->sArenaWin : game_res->sArenaLost);
 			if(Net::IsOnline())
 			{
@@ -877,7 +877,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 {
 	InsideBuilding* arena = game_level->GetArena();
 
-	game_level->CleanLevel(arena->area_id);
+	game_level->CleanLevel(arena->partId);
 
 	for(const Enemy& unit : units)
 	{

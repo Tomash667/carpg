@@ -5,10 +5,10 @@
 #include "Drain.h"
 
 //-----------------------------------------------------------------------------
-// Temporary level area (used only for active level areas to hold temporary entities)
-struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
+// Part of active level
+struct LevelPart : ObjectPoolProxy<LevelPart>
 {
-	LevelArea* area;
+	LocationPart* locPart;
 	vector<Bullet*> bullets;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*> tpes;

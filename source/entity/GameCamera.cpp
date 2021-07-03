@@ -12,7 +12,8 @@
 #include "InsideLocation.h"
 #include "InsideLocationLevel.h"
 #include "Level.h"
-#include "LevelArea.h"
+#include "LevelPart.h"
+#include "LocationPart.h"
 #include "OutsideLocation.h"
 #include "PhysicCallbacks.h"
 #include "Unit.h"
@@ -240,13 +241,13 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 //=================================================================================================
 float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 {
-	LevelArea& area = *target->area;
+	LocationPart& locPart = *target->locPart;
 	float t, min_t = 2.f;
 
 	const int tx = int(target->pos.x / 2),
 		      tz = int(target->pos.z / 2);
 
-	if(area.area_type == LevelArea::Type::Outside)
+	if(locPart.partType == LocationPart::Type::Outside)
 	{
 		OutsideLocation* outside = (OutsideLocation*)game_level->location;
 
@@ -275,7 +276,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 			}
 		}
 	}
-	else if(area.area_type == LevelArea::Type::Inside)
+	else if(locPart.partType == LocationPart::Type::Inside)
 	{
 		InsideLocation* inside = (InsideLocation*)game_level->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
@@ -378,7 +379,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 					if(game_res->vdDoorHole->RayToMesh(pos, dir, door_pos, rot, t) && t < min_t)
 						min_t = t;
 
-					Door* door = area.FindDoor(Int2(x, z));
+					Door* door = locPart.FindDoor(Int2(x, z));
 					if(door && door->IsBlocking())
 					{
 						Box box(door_pos.x, 0.f, door_pos.z);
@@ -408,7 +409,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	else
 	{
 		// building
-		InsideBuilding& building = static_cast<InsideBuilding&>(area);
+		InsideBuilding& building = static_cast<InsideBuilding&>(locPart);
 
 		// ceil
 		if(building.top > 0.f)
@@ -436,7 +437,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		}
 
 		// doors
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
+		for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
 			if(door.IsBlocking())
@@ -468,7 +469,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	}
 
 	// objects
-	for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+	for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 	{
 		if(!it->cam_collider)
 			continue;

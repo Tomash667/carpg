@@ -1608,7 +1608,7 @@ bool Team::IsAnyoneTalking() const
 void Team::Warp(const Vec3& pos, const Vec3& look_at)
 {
 	// first warp leader to be in front
-	game_level->WarpNearLocation(*game_level->local_area, *leader, pos, 2.f, true, 20);
+	game_level->WarpNearLocation(*game_level->localPart, *leader, pos, 2.f, true, 20);
 	leader->visual_pos = leader->pos;
 	leader->rot = Vec3::LookAtAngle(leader->pos, look_at);
 	if(leader->interp)
@@ -1620,7 +1620,7 @@ void Team::Warp(const Vec3& pos, const Vec3& look_at)
 	{
 		if(&unit == leader)
 			continue;
-		game_level->WarpNearLocation(*game_level->local_area, unit, target_pos, 2.f, true, 20);
+		game_level->WarpNearLocation(*game_level->localPart, unit, target_pos, 2.f, true, 20);
 		unit.visual_pos = unit.pos;
 		unit.rot = Vec3::LookAtAngle(unit.pos, look_at);
 		if(unit.interp)
@@ -1669,7 +1669,7 @@ bool Team::PersuasionCheck(int level)
 	for(Unit& r_unit : members)
 	{
 		Unit* unit = &r_unit;
-		if(unit == me->unit || unit->area != me->unit->area || Vec3::Distance(unit->pos, me->unit->pos) > 10.f)
+		if(unit == me->unit || unit->locPart != me->unit->locPart || Vec3::Distance(unit->pos, me->unit->pos) > 10.f)
 			continue;
 		int value = unit->Get(SkillId::PERSUASION) + unit->Get(AttributeId::CHA) - 50;
 		if(value > bestValue)

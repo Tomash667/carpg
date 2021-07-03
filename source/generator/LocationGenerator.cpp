@@ -19,9 +19,9 @@ int LocationGenerator::GetNumberOfSteps()
 //=================================================================================================
 void LocationGenerator::RespawnUnits()
 {
-	for(LevelArea& area : game_level->ForEachArea())
+	for(LocationPart& locPart : game_level->ForEachPart())
 	{
-		for(Unit* u : area.units)
+		for(Unit* u : locPart.units)
 		{
 			if(u->player)
 				continue;

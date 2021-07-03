@@ -252,12 +252,12 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 //=================================================================================================
 void WarpToThroneOrcBoss()
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *game_level->localPart;
 
 	// search for boss
 	UnitData* ud = UnitData::Get("q_orkowie_boss");
 	Unit* u = nullptr;
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 		{
@@ -268,7 +268,7 @@ void WarpToThroneOrcBoss()
 	assert(u);
 
 	// search for throne
-	Usable* use = area.FindUsable(BaseUsable::Get("throne"));
+	Usable* use = locPart.FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// warp
@@ -441,7 +441,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		break;
 	case Progress::Finished:
 		{
-			LevelArea& area = *game_level->local_area;
+			LocationPart& locPart = *game_level->localPart;
 			state = Quest::Completed;
 			team->AddReward(Random(9000, 11000), 25000);
 			OnUpdate(quest_mgr->txQuest[206]);
@@ -449,7 +449,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 
 			// gorush - move to throne
 			team->RemoveMember(orc);
-			Usable* throne = area.FindUsable(BaseUsable::Get("throne"));
+			Usable* throne = locPart.FindUsable(BaseUsable::Get("throne"));
 			assert(throne);
 			if(throne)
 			{
@@ -470,7 +470,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			};
 			UnitData* ud_weak_orc = UnitData::Get("q_orkowie_slaby");
 
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.IsAlive())

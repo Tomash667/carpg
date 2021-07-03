@@ -21,6 +21,7 @@
 #include "InsideLocationLevel.h"
 #include "Language.h"
 #include "LevelGui.h"
+#include "LevelPart.h"
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
 #include "MultiInsideLocation.h"
@@ -55,7 +56,7 @@
 Level* game_level;
 
 //=================================================================================================
-Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
+Level::Level() : localPart(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
 shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
 shape_floor(nullptr), dungeon_mesh(nullptr)
 {
@@ -157,7 +158,7 @@ void Level::ProcessUnitWarps()
 
 	for(UnitWarpData& warp : unit_warp_data)
 	{
-		if(warp.where == warp.unit->area->area_id)
+		if(warp.where == warp.unit->locPart->partId)
 		{
 			// unit left location
 			if(warp.unit->event_handler)
@@ -167,9 +168,9 @@ void Level::ProcessUnitWarps()
 		else if(warp.where == WARP_OUTSIDE)
 		{
 			// exit from building
-			InsideBuilding& building = *static_cast<InsideBuilding*>(warp.unit->area);
+			InsideBuilding& building = *static_cast<InsideBuilding*>(warp.unit->locPart);
 			RemoveElement(building.units, warp.unit);
-			warp.unit->area = local_area;
+			warp.unit->locPart = localPart;
 			if(warp.building == -1)
 			{
 				warp.unit->rot = building.outside_rot;
@@ -181,22 +182,22 @@ void Level::ProcessUnitWarps()
 				WarpUnit(*warp.unit, city_building.walk_pt);
 				warp.unit->RotateTo(PtToPos(city_building.pt));
 			}
-			local_area->units.push_back(warp.unit);
+			localPart->units.push_back(warp.unit);
 		}
 		else if(warp.where == WARP_ARENA)
 		{
 			// warp to arena
 			InsideBuilding& building = *GetArena();
-			RemoveElement(warp.unit->area->units, warp.unit);
-			warp.unit->area = &building;
+			RemoveElement(warp.unit->locPart->units, warp.unit);
+			warp.unit->locPart = &building;
 			Vec3 pos;
 			if(!WarpToRegion(building, (warp.unit->in_arena == 0 ? building.region1 : building.region2), warp.unit->GetUnitRadius(), pos, 20))
 			{
 				// failed to warp to arena, spawn outside of arena
-				warp.unit->area = local_area;
+				warp.unit->locPart = localPart;
 				warp.unit->rot = building.outside_rot;
 				WarpUnit(*warp.unit, building.outside_spawn);
-				local_area->units.push_back(warp.unit);
+				localPart->units.push_back(warp.unit);
 				RemoveElement(game->arena->units, warp.unit);
 			}
 			else
@@ -211,8 +212,8 @@ void Level::ProcessUnitWarps()
 		{
 			// enter building
 			InsideBuilding& building = *city_ctx->inside_buildings[warp.where];
-			RemoveElement(warp.unit->area->units, warp.unit);
-			warp.unit->area = &building;
+			RemoveElement(warp.unit->locPart->units, warp.unit);
+			warp.unit->locPart = &building;
 			warp.unit->rot = PI;
 			WarpUnit(*warp.unit, building.inside_spawn);
 			building.units.push_back(warp.unit);
@@ -284,7 +285,7 @@ void Level::ProcessRemoveUnits(bool leave)
 	{
 		for(Unit* unit : to_remove)
 		{
-			RemoveElement(unit->area->units, unit);
+			RemoveElement(unit->locPart->units, unit);
 			delete unit;
 		}
 	}
@@ -300,25 +301,25 @@ void Level::ProcessRemoveUnits(bool leave)
 void Level::Apply()
 {
 	city_ctx = (location->type == L_CITY ? static_cast<City*>(location) : nullptr);
-	areas.clear();
-	location->Apply(areas);
-	local_area = &areas[0].get();
-	for(LevelArea& area : areas)
+	locParts.clear();
+	location->Apply(locParts);
+	localPart = &locParts[0].get();
+	for(LocationPart& locPart : locParts)
 	{
-		if(!area.tmp)
+		if(!locPart.lvlPart)
 		{
-			area.tmp = TmpLevelArea::Get();
-			area.tmp->area = &area;
-			area.tmp->lights_dt = 1.f;
+			locPart.lvlPart = LevelPart::Get();
+			locPart.lvlPart->locPart = &locPart;
+			locPart.lvlPart->lights_dt = 1.f;
 		}
 	}
 }
 
 //=================================================================================================
-LevelArea& Level::GetArea(const Vec3& pos)
+LocationPart& Level::GetLocationPart(const Vec3& pos)
 {
 	if(!city_ctx)
-		return *local_area;
+		return *localPart;
 	else
 	{
 		Int2 offset(int((pos.x - 256.f) / 256.f), int((pos.z - 256.f) / 256.f));
@@ -332,25 +333,25 @@ LevelArea& Level::GetArea(const Vec3& pos)
 			if(inside->level_shift == offset)
 				return *inside;
 		}
-		return *local_area;
+		return *localPart;
 	}
 }
 
 //=================================================================================================
-LevelArea* Level::GetAreaById(int area_id)
+LocationPart* Level::GetLocationPartById(int partId)
 {
-	if(local_area->area_id == area_id)
-		return local_area;
+	if(localPart->partId == partId)
+		return localPart;
 	if(city_ctx)
 	{
-		if(area_id >= 0 && area_id < (int)city_ctx->inside_buildings.size())
-			return city_ctx->inside_buildings[area_id];
+		if(partId >= 0 && partId < (int)city_ctx->inside_buildings.size())
+			return city_ctx->inside_buildings[partId];
 	}
 	else if(LocationHelper::IsMultiLevel(location))
 	{
 		MultiInsideLocation* loc = static_cast<MultiInsideLocation*>(location);
-		if(area_id >= 0 && area_id < (int)loc->levels.size())
-			return loc->levels[area_id];
+		if(partId >= 0 && partId < (int)loc->levels.size())
+			return loc->levels[partId];
 	}
 	return nullptr;
 }
@@ -361,9 +362,9 @@ Unit* Level::FindUnit(int id)
 	if(id == -1)
 		return nullptr;
 
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Unit* unit : area.units)
+		for(Unit* unit : locPart.units)
 		{
 			if(unit->id == id)
 				return unit;
@@ -376,9 +377,9 @@ Unit* Level::FindUnit(int id)
 //=================================================================================================
 Unit* Level::FindUnit(delegate<bool(Unit*)> pred)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Unit* unit : area.units)
+		for(Unit* unit : locPart.units)
 		{
 			if(pred(unit))
 				return unit;
@@ -400,9 +401,9 @@ Unit* Level::FindUnit(UnitData* ud)
 //=================================================================================================
 Usable* Level::FindUsable(int id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Usable* usable : area.usables)
+		for(Usable* usable : locPart.usables)
 		{
 			if(usable->id == id)
 				return usable;
@@ -414,9 +415,9 @@ Usable* Level::FindUsable(int id)
 //=================================================================================================
 Door* Level::FindDoor(int id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Door* door : area.doors)
+		for(Door* door : locPart.doors)
 		{
 			if(door->id == id)
 				return door;
@@ -429,9 +430,9 @@ Door* Level::FindDoor(int id)
 //=================================================================================================
 Trap* Level::FindTrap(int id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Trap* trap : area.traps)
+		for(Trap* trap : locPart.traps)
 		{
 			if(trap->id == id)
 				return trap;
@@ -445,10 +446,10 @@ Trap* Level::FindTrap(int id)
 Trap* Level::FindTrap(BaseTrap* base, const Vec3& pos)
 {
 	assert(base);
-	LevelArea& area = GetArea(pos);
+	LocationPart& locPart = GetLocationPart(pos);
 	Trap* best = nullptr;
 	float bestDist = std::numeric_limits<float>::max();
-	for(Trap* trap : area.traps)
+	for(Trap* trap : locPart.traps)
 	{
 		if(trap->base != base)
 			continue;
@@ -465,9 +466,9 @@ Trap* Level::FindTrap(BaseTrap* base, const Vec3& pos)
 //=================================================================================================
 Chest* Level::FindChest(int id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Chest* chest : area.chests)
+		for(Chest* chest : locPart.chests)
 		{
 			if(chest->id == id)
 				return chest;
@@ -481,7 +482,7 @@ Chest* Level::FindChest(int id)
 Chest* Level::GetRandomChest(Room& room)
 {
 	LocalVector<Chest*> chests;
-	for(Chest* chest : local_area->chests)
+	for(Chest* chest : localPart->chests)
 	{
 		if(room.IsInside(chest->pos))
 			chests.push_back(chest);
@@ -524,9 +525,9 @@ Chest* Level::GetTreasureChest()
 //=================================================================================================
 Electro* Level::FindElectro(int id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Electro* electro : area.tmp->electros)
+		for(Electro* electro : locPart.lvlPart->electros)
 		{
 			if(electro->id == id)
 				return electro;
@@ -539,14 +540,14 @@ Electro* Level::FindElectro(int id)
 //=================================================================================================
 bool Level::RemoveTrap(int id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
+		for(vector<Trap*>::iterator it = locPart.traps.begin(), end = locPart.traps.end(); it != end; ++it)
 		{
 			if((*it)->id == id)
 			{
 				delete *it;
-				area.traps.erase(it);
+				locPart.traps.erase(it);
 				return true;
 			}
 		}
@@ -562,10 +563,10 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 
 	uint count = 0;
 	Trap* bestTrap = nullptr;
-	LevelArea* bestArea = nullptr;
-	for(LevelArea& area : ForEachArea())
+	LocationPart* bestPart = nullptr;
+	for(LocationPart& locPart : locParts)
 	{
-		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
+		for(vector<Trap*>::iterator it = locPart.traps.begin(), end = locPart.traps.end(); it != end; ++it)
 		{
 			Trap* trap = *it;
 			if(trap->base == baseTrap && trap->owner == owner && trap->state == 0)
@@ -573,7 +574,7 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 				if(!bestTrap || trap->id < bestTrap->id)
 				{
 					bestTrap = trap;
-					bestArea = &area;
+					bestPart = &locPart;
 				}
 				++count;
 			}
@@ -589,7 +590,7 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 			c.id = bestTrap->id;
 		}
 
-		RemoveElement(bestArea->traps, bestTrap);
+		RemoveElement(bestPart->traps, bestTrap);
 		delete bestTrap;
 	}
 }
@@ -626,7 +627,7 @@ void Level::RemoveUnit(UnitData* ud, bool on_leave)
 }
 
 //=================================================================================================
-ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point, int variant)
+ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point, int variant)
 {
 	if(IsSet(base->flags, OBJ_TABLE_SPAWNER))
 	{
@@ -641,8 +642,8 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		o->pos = pos;
 		o->scale = 1;
 		o->base = table;
-		area.objects.push_back(o);
-		SpawnObjectExtras(area, table, pos, rot, o);
+		locPart.objects.push_back(o);
+		SpawnObjectExtras(locPart, table, pos, rot, o);
 
 		// stools
 		int count = Random(2, 4);
@@ -683,9 +684,9 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			u->base = stool;
 			u->pos = pos + Vec3(sin(sdir) * slen, 0, cos(sdir) * slen);
 			u->rot = sdir;
-			area.usables.push_back(u);
+			locPart.usables.push_back(u);
 
-			SpawnObjectExtras(area, stool, u->pos, u->rot, u);
+			SpawnObjectExtras(locPart, stool, u->pos, u->rot, u);
 		}
 
 		return o;
@@ -699,10 +700,10 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		o->pos = pos;
 		o->scale = scale;
 		o->base = base;
-		area.objects.push_back(o);
+		locPart.objects.push_back(o);
 
 		const GameDirection dir = RotToDir(rot);
-		ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, rot, dir, pos, nullptr, nullptr, false, out_point);
+		ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, rot, dir, pos, nullptr, nullptr, false, out_point);
 
 		return o;
 	}
@@ -761,9 +762,9 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		}
 		u->variant = variant;
 
-		area.usables.push_back(u);
+		locPart.usables.push_back(u);
 
-		SpawnObjectExtras(area, base, pos, rot, u, scale, flags);
+		SpawnObjectExtras(locPart, base, pos, rot, u, scale, flags);
 
 		return u;
 	}
@@ -775,9 +776,9 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		chest->base = base;
 		chest->rot = rot;
 		chest->pos = pos;
-		area.chests.push_back(chest);
+		locPart.chests.push_back(chest);
 
-		SpawnObjectExtras(area, base, pos, rot, nullptr, scale, flags);
+		SpawnObjectExtras(locPart, base, pos, rot, nullptr, scale, flags);
 
 		return chest;
 	}
@@ -790,16 +791,16 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		o->pos = pos;
 		o->scale = scale;
 		o->base = base;
-		area.objects.push_back(o);
+		locPart.objects.push_back(o);
 
-		SpawnObjectExtras(area, base, pos, rot, o, scale, flags);
+		SpawnObjectExtras(locPart, base, pos, rot, o, scale, flags);
 
 		return o;
 	}
 }
 
 //=================================================================================================
-void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale, int flags)
+void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale, int flags)
 {
 	assert(obj);
 
@@ -827,7 +828,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->speed_max = Vec3(1, 4, 1);
 			pe->mode = 1;
 			pe->Init();
-			area.tmp->pes.push_back(pe);
+			locPart.lvlPart->pes.push_back(pe);
 
 			pe->tex = game_res->tFlare;
 			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
@@ -842,7 +843,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			// œwiat³o
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
-				GameLight& light = Add1(area.lights);
+				GameLight& light = Add1(locPart.lights);
 				light.start_pos = pe->pos;
 				light.range = 5;
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
@@ -875,7 +876,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->tex = game_res->tBlood[BLOOD_RED];
 			pe->size = 0.5f;
 			pe->Init();
-			area.tmp->pes.push_back(pe);
+			locPart.lvlPart->pes.push_back(pe);
 		}
 		else if(IsSet(obj->flags, OBJ_WATER_EFFECT))
 		{
@@ -901,14 +902,14 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->tex = game_res->tWater;
 			pe->size = 0.05f;
 			pe->Init();
-			area.tmp->pes.push_back(pe);
+			locPart.lvlPart->pes.push_back(pe);
 		}
 	}
 
 	// fizyka
 	if(obj->shape)
 	{
-		CollisionObject& c = Add1(area.tmp->colliders);
+		CollisionObject& c = Add1(locPart.lvlPart->colliders);
 		c.owner = user_ptr;
 		c.cam_collider = IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM);
 
@@ -982,13 +983,13 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 		}
 
 		if(IsSet(obj->flags, OBJ_DOUBLE_PHYSICS))
-			SpawnObjectExtras(area, obj->next_obj, pos, rot, user_ptr, scale, flags);
+			SpawnObjectExtras(locPart, obj->next_obj, pos, rot, user_ptr, scale, flags);
 		else if(IsSet(obj->flags, OBJ_MULTI_PHYSICS))
 		{
 			for(int i = 0;; ++i)
 			{
 				if(obj->next_obj[i].shape)
-					SpawnObjectExtras(area, &obj->next_obj[i], pos, rot, user_ptr, scale, flags);
+					SpawnObjectExtras(locPart, &obj->next_obj[i], pos, rot, user_ptr, scale, flags);
 				else
 					break;
 			}
@@ -996,7 +997,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 	}
 	else if(IsSet(obj->flags, OBJ_SCALEABLE))
 	{
-		CollisionObject& c = Add1(area.tmp->colliders);
+		CollisionObject& c = Add1(locPart.lvlPart->colliders);
 		c.type = CollisionObject::SPHERE;
 		c.pos = pos;
 		c.radius = obj->r * scale;
@@ -1011,7 +1012,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 	}
 	else if(IsSet(obj->flags, OBJ_TMP_PHYSICS))
 	{
-		CollisionObject& c = Add1(area.tmp->colliders);
+		CollisionObject& c = Add1(locPart.lvlPart->colliders);
 		c.owner = CollisionObject::TMP;
 		c.cam_collider = false;
 		if(obj->type == OBJ_CYLINDER)
@@ -1078,7 +1079,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 }
 
 //=================================================================================================
-void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, GameDirection dir,
+void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, GameDirection dir,
 	const Vec3& shift, Building* building, CityBuilding* city_building, bool recreate, Vec3* out_point)
 {
 	if(mesh->attach_points.empty())
@@ -1170,7 +1171,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 				if(base)
 				{
-					if(area.area_type == LevelArea::Type::Outside)
+					if(locPart.partType == LocationPart::Type::Outside)
 						pos.y = terrain->GetH(pos) + height;
 
 					float r;
@@ -1187,7 +1188,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 						r = PI / 2 * (Rand() % 4);
 						break;
 					}
-					SpawnObjectEntity(area, base, pos, r, 1.f, 0, nullptr, variant);
+					SpawnObjectEntity(locPart, base, pos, r, 1.f, 0, nullptr, variant);
 				}
 			}
 			break;
@@ -1196,14 +1197,14 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			{
 				bool is_wall = (token == "circle");
 
-				CollisionObject& cobj = Add1(area.tmp->colliders);
+				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
 				cobj.type = CollisionObject::SPHERE;
 				cobj.radius = pt.size.x;
 				cobj.pos = pos;
 				cobj.owner = nullptr;
 				cobj.cam_collider = is_wall;
 
-				if(area.area_type == LevelArea::Type::Outside)
+				if(locPart.partType == LocationPart::Type::Outside)
 				{
 					terrain->SetY(pos);
 					pos.y += 2.f;
@@ -1223,7 +1224,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				bool is_wall = (token == "square" || token == "squarevn");
 				bool block_camera = (token == "square");
 
-				CollisionObject& cobj = Add1(area.tmp->colliders);
+				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
 				cobj.type = CollisionObject::RECTANGLE;
 				cobj.pos = pos;
 				cobj.w = pt.size.x;
@@ -1235,7 +1236,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				if(token != "squarevp")
 				{
 					shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
-					if(area.area_type == LevelArea::Type::Outside)
+					if(locPart.partType == LocationPart::Type::Outside)
 					{
 						terrain->SetY(pos);
 						pos.y += 8.f;
@@ -1246,7 +1247,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				else
 				{
 					shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
-					if(area.area_type == LevelArea::Type::Outside)
+					if(locPart.partType == LocationPart::Type::Outside)
 						pos.y += terrain->GetH(pos);
 				}
 				shapes.push_back(shape);
@@ -1268,7 +1269,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			else if(token == "squarevpa")
 			{
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
-				if(area.area_type == LevelArea::Type::Outside)
+				if(locPart.partType == LocationPart::Type::Outside)
 					pos.y += terrain->GetH(pos);
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
@@ -1283,7 +1284,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			}
 			else if(token == "squarecam")
 			{
-				if(area.area_type == LevelArea::Type::Outside)
+				if(locPart.partType == LocationPart::Type::Outside)
 					pos.y += terrain->GetH(pos);
 
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
@@ -1324,9 +1325,9 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					assert(!inside);
 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
-					inside->tmp = TmpLevelArea::Get();
-					inside->tmp->area = inside;
-					inside->tmp->lights_dt = 1.f;
+					inside->lvlPart = LevelPart::Get();
+					inside->lvlPart->locPart = inside;
+					inside->lvlPart->lights_dt = 1.f;
 					inside->level_shift = city->inside_offset;
 					inside->offset = Vec2(512.f * city->inside_offset.x + 256.f, 512.f * city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
@@ -1361,7 +1362,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					inside->top = -1.f;
 					inside->xsphere_radius = -1.f;
 					city->inside_buildings.push_back(inside);
-					areas.push_back(*inside);
+					locParts.push_back(*inside);
 
 					assert(inside_mesh);
 
@@ -1427,7 +1428,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 						door->state = Door::Opened;
 					door->door2 = (token == "door2");
 					door->Init();
-					area.doors.push_back(door);
+					locPart.doors.push_back(door);
 				}
 				else if(token == "arena")
 				{
@@ -1472,7 +1473,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				assert(ud);
 				if(ud)
 				{
-					Unit* u = SpawnUnitNearLocation(area, pos, *ud, nullptr, -2);
+					Unit* u = SpawnUnitNearLocation(locPart, pos, *ud, nullptr, -2);
 					if(u)
 					{
 						u->rot = Clip(pt.rot.y + rot);
@@ -1505,7 +1506,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->particle_life = 0.5f;
 					pe->pos = pos;
-					if(area.area_type == LevelArea::Type::Outside)
+					if(locPart.partType == LocationPart::Type::Outside)
 						pe->pos.y += terrain->GetH(pos);
 					pe->pos_min = Vec3(0, 0, 0);
 					pe->pos_max = Vec3(0, 0, 0);
@@ -1515,7 +1516,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					pe->speed_max = Vec3(1, 4, 1);
 					pe->mode = 1;
 					pe->Init();
-					area.tmp->pes.push_back(pe);
+					locPart.lvlPart->pes.push_back(pe);
 				}
 			}
 			else
@@ -1604,9 +1605,9 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 
 				if(obj)
 				{
-					if(area.area_type == LevelArea::Type::Outside)
+					if(locPart.partType == LocationPart::Type::Outside)
 						terrain->SetY(pos);
-					SpawnObjectEntity(area, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
+					SpawnObjectEntity(locPart, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
 				}
 			}
 		}
@@ -1628,14 +1629,14 @@ void Level::RecreateObjects(bool spawn_pes)
 {
 	static BaseObject* chest = BaseObject::Get("chest");
 
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
 		int flags = Level::SOE_DONT_CREATE_LIGHT;
 		if(!spawn_pes)
 			flags |= Level::SOE_DONT_SPAWN_PARTICLES;
 
 		// dotyczy tylko pochodni
-		if(area.area_type == LevelArea::Type::Inside)
+		if(locPart.partType == LocationPart::Type::Inside)
 		{
 			InsideLocation* inside = (InsideLocation*)location;
 			BaseLocation& base = g_base_locations[inside->target];
@@ -1643,7 +1644,7 @@ void Level::RecreateObjects(bool spawn_pes)
 				flags |= Level::SOE_MAGIC_LIGHT;
 		}
 
-		for(vector<Object*>::iterator it = area.objects.begin(), end = area.objects.end(); it != end; ++it)
+		for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
 		{
 			Object& obj = **it;
 			BaseObject* base_obj = obj.base;
@@ -1655,29 +1656,29 @@ void Level::RecreateObjects(bool spawn_pes)
 			{
 				const float rot = obj.rot.y;
 				const GameDirection dir = RotToDir(rot);
-				ProcessBuildingObjects(area, nullptr, nullptr, base_obj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
+				ProcessBuildingObjects(locPart, nullptr, nullptr, base_obj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
 			}
 			else
-				SpawnObjectExtras(area, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
+				SpawnObjectExtras(locPart, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
 		}
 
-		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
-			SpawnObjectExtras(area, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
+		for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
+			SpawnObjectExtras(locPart, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
 
-		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
-			SpawnObjectExtras(area, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
+		for(vector<Usable*>::iterator it = locPart.usables.begin(), end = locPart.usables.end(); it != end; ++it)
+			SpawnObjectExtras(locPart, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
 	}
 }
 
 //=================================================================================================
-ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
+ObjectEntity Level::SpawnObjectNearLocation(LocationPart& locPart, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
 {
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
 	{
 		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
-		GatherCollisionObjects(area, global_col, pt, obj->r + margin + range);
+		GatherCollisionObjects(locPart, global_col, pt, obj->r + margin + range);
 		float extra_radius = range / 20;
 		for(int i = 0; i < 20; ++i)
 		{
@@ -1694,16 +1695,16 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 		if(!ok)
 			return nullptr;
 
-		if(area.area_type == LevelArea::Type::Outside)
+		if(locPart.partType == LocationPart::Type::Outside)
 			terrain->SetY(pt);
 
-		return SpawnObjectEntity(area, obj, pt, rot, scale);
+		return SpawnObjectEntity(locPart, obj, pt, rot, scale);
 	}
 	else
 	{
 		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
-		GatherCollisionObjects(area, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
+		GatherCollisionObjects(locPart, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
 		float extra_radius = range / 20;
 		Box2d box(pos);
 		box.v1.x -= obj->size.x;
@@ -1729,24 +1730,24 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 		if(!ok)
 			return nullptr;
 
-		if(area.area_type == LevelArea::Type::Outside)
+		if(locPart.partType == LocationPart::Type::Outside)
 			terrain->SetY(pt);
 
-		return SpawnObjectEntity(area, obj, pt, rot, scale);
+		return SpawnObjectEntity(locPart, obj, pt, rot, scale);
 	}
 }
 
 //=================================================================================================
-ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin,
+ObjectEntity Level::SpawnObjectNearLocation(LocationPart& locPart, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin,
 	float scale)
 {
 	if(obj->type == OBJ_CYLINDER)
-		return SpawnObjectNearLocation(area, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
+		return SpawnObjectNearLocation(locPart, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
 	else
 	{
 		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
-		GatherCollisionObjects(area, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
+		GatherCollisionObjects(locPart, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
 		float extra_radius = range / 20, rot;
 		Box2d box(pos);
 		box.v1.x -= obj->size.x;
@@ -1774,22 +1775,22 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelArea& area, BaseObject* obj, co
 		if(!ok)
 			return nullptr;
 
-		if(area.area_type == LevelArea::Type::Outside)
+		if(locPart.partType == LocationPart::Type::Outside)
 			terrain->SetY(pt);
 
-		return SpawnObjectEntity(area, obj, pt, rot, scale);
+		return SpawnObjectEntity(locPart, obj, pt, rot, scale);
 	}
 }
 
 //=================================================================================================
-void Level::PickableItemBegin(LevelArea& area, Object& o)
+void Level::PickableItemBegin(LocationPart& locPart, Object& o)
 {
 	assert(o.base);
 
-	pickable_area = &area;
-	pickable_obj = &o;
-	pickable_spawns.clear();
-	pickable_items.clear();
+	pickableLocPart = &locPart;
+	pickableObj = &o;
+	pickableSpawns.clear();
+	pickableItems.clear();
 
 	for(vector<Mesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
 	{
@@ -1802,11 +1803,11 @@ void Level::PickableItemBegin(LevelArea& area, Object& o)
 			box.v2.x += it->size.x - 0.05f;
 			box.v2.z += it->size.z - 0.05f;
 			box.v1.y = box.v2.y = box.v1.y - it->size.y;
-			pickable_spawns.push_back(box);
+			pickableSpawns.push_back(box);
 		}
 	}
 
-	assert(!pickable_spawns.empty());
+	assert(!pickableSpawns.empty());
 }
 
 //=================================================================================================
@@ -1817,13 +1818,13 @@ bool Level::PickableItemAdd(const Item* item)
 	for(int i = 0; i < 20; ++i)
 	{
 		// pobierz punkt
-		uint spawn = Rand() % pickable_spawns.size();
-		Box& box = pickable_spawns[spawn];
+		uint spawn = Rand() % pickableSpawns.size();
+		Box& box = pickableSpawns[spawn];
 		// ustal pozycjê
 		Vec3 pos(Random(box.v1.x, box.v2.x), box.v1.y, Random(box.v1.z, box.v2.z));
 		// sprawdŸ kolizjê
 		bool ok = true;
-		for(vector<PickableItem>::iterator it = pickable_items.begin(), end = pickable_items.end(); it != end; ++it)
+		for(vector<PickableItem>::iterator it = pickableItems.begin(), end = pickableItems.end(); it != end; ++it)
 		{
 			if(it->spawn == spawn)
 			{
@@ -1837,7 +1838,7 @@ bool Level::PickableItemAdd(const Item* item)
 		// dodaj
 		if(ok)
 		{
-			PickableItem& i = Add1(pickable_items);
+			PickableItem& i = Add1(pickableItems);
 			i.spawn = spawn;
 			i.pos = pos;
 
@@ -1847,11 +1848,11 @@ bool Level::PickableItemAdd(const Item* item)
 			gi->team_count = 1;
 			gi->item = item;
 			gi->rot = Quat::RotY(Random(MAX_ANGLE));
-			float rot = pickable_obj->rot.y,
+			float rot = pickableObj->rot.y,
 				s = sin(rot),
 				c = cos(rot);
-			gi->pos = Vec3(pos.x * c + pos.z * s, pos.y, -pos.x * s + pos.z * c) + pickable_obj->pos;
-			pickable_area->items.push_back(gi);
+			gi->pos = Vec3(pos.x * c + pos.z * s, pos.y, -pos.x * s + pos.z * c) + pickableObj->pos;
+			pickableLocPart->items.push_back(gi);
 
 			return true;
 		}
@@ -1861,15 +1862,15 @@ bool Level::PickableItemAdd(const Item* item)
 }
 
 //=================================================================================================
-void Level::PickableItemsFromStock(LevelArea& area, Object& o, Stock& stock)
+void Level::PickableItemsFromStock(LocationPart& locPart, Object& o, Stock& stock)
 {
-	pickable_tmp_stock.clear();
-	stock.Parse(pickable_tmp_stock);
+	pickableTmpStock.clear();
+	stock.Parse(pickableTmpStock);
 
-	if(!pickable_tmp_stock.empty())
+	if(!pickableTmpStock.empty())
 	{
-		PickableItemBegin(area, o);
-		for(ItemSlot& slot : pickable_tmp_stock)
+		PickableItemBegin(locPart, o);
+		for(ItemSlot& slot : pickableTmpStock)
 		{
 			for(uint i = 0; i < slot.count; ++i)
 			{
@@ -1881,13 +1882,13 @@ void Level::PickableItemsFromStock(LevelArea& area, Object& o, Stock& stock)
 }
 
 //=================================================================================================
-void Level::AddGroundItem(LevelArea& area, GroundItem* item)
+void Level::AddGroundItem(LocationPart& locPart, GroundItem* item)
 {
 	assert(item);
 
-	if(area.area_type == LevelArea::Type::Outside)
+	if(locPart.partType == LocationPart::Type::Outside)
 		terrain->SetY(item->pos);
-	area.items.push_back(item);
+	locPart.items.push_back(item);
 
 	if(Net::IsOnline())
 	{
@@ -1898,16 +1899,16 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 }
 
 //=================================================================================================
-GroundItem* Level::FindGroundItem(int id, LevelArea** out_area)
+GroundItem* Level::FindGroundItem(int id, LocationPart** locPartResult)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(GroundItem* ground_item : area.items)
+		for(GroundItem* ground_item : locPart.items)
 		{
 			if(ground_item->id == id)
 			{
-				if(out_area)
-					*out_area = &area;
+				if(locPartResult)
+					*locPartResult = &locPart;
 				return ground_item;
 			}
 		}
@@ -1941,7 +1942,7 @@ GroundItem* Level::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 	{
 		Vec3 pos = room.GetRandomPos(0.5f);
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pos, 0.25f);
+		GatherCollisionObjects(*localPart, global_col, pos, 0.25f);
 		if(!Collide(global_col, pos, 0.25f))
 			return SpawnItem(item, pos);
 	}
@@ -1970,7 +1971,7 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 			pt = Vec3(pos.x, 0, pos.y);
 		}
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pt, 0.25f);
+		GatherCollisionObjects(*localPart, global_col, pt, 0.25f);
 		if(!Collide(global_col, pt, 0.25f))
 			return SpawnItem(item, pt);
 	}
@@ -1995,7 +1996,7 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 			pt = Vec3(pos.x, 0, pos.y);
 		}
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pt, 0.25f);
+		GatherCollisionObjects(*localPart, global_col, pt, 0.25f);
 		if(!Collide(global_col, pt, 0.25f))
 			return SpawnItem(item, pt);
 	}
@@ -2047,15 +2048,15 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 }
 
 //=================================================================================================
-Unit* Level::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, const Vec3* pos, const float* rot)
+Unit* Level::CreateUnitWithAI(LocationPart& locPart, UnitData& unit, int level, const Vec3* pos, const float* rot)
 {
 	Unit* u = CreateUnit(unit, level);
-	u->area = &area;
-	area.units.push_back(u);
+	u->locPart = &locPart;
+	locPart.units.push_back(u);
 
 	if(pos)
 	{
-		if(area.area_type == LevelArea::Type::Outside)
+		if(locPart.partType == LocationPart::Type::Outside)
 		{
 			Vec3 pt = *pos;
 			game_level->terrain->SetY(pt);
@@ -2094,7 +2095,7 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 			continue;
 
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pos, radius, nullptr);
+		GatherCollisionObjects(*localPart, global_col, pos, radius, nullptr);
 		if(!Collide(global_col, pos, radius))
 			return pos;
 	}
@@ -2103,14 +2104,14 @@ Vec3 Level::FindSpawnPos(Room* room, Unit* unit)
 }
 
 //=================================================================================================
-Vec3 Level::FindSpawnPos(LevelArea& area, Unit* unit)
+Vec3 Level::FindSpawnPos(LocationPart& locPart, Unit* unit)
 {
-	assert(area.area_type == LevelArea::Type::Building); // not implemented
+	assert(locPart.partType == LocationPart::Type::Building); // not implemented
 
-	InsideBuilding& inside = static_cast<InsideBuilding&>(area);
+	InsideBuilding& inside = static_cast<InsideBuilding&>(locPart);
 
 	Vec3 pos;
-	WarpToRegion(area, inside.region1, unit->GetUnitRadius(), pos, 20);
+	WarpToRegion(locPart, inside.region1, unit->GetUnitRadius(), pos, 20);
 	return pos;
 }
 
@@ -2131,12 +2132,12 @@ Unit* Level::SpawnUnitInsideRoom(Room& room, UnitData& unit, int level, const In
 			continue;
 
 		global_col.clear();
-		GatherCollisionObjects(*local_area, global_col, pos, radius, nullptr);
+		GatherCollisionObjects(*localPart, global_col, pos, radius, nullptr);
 
 		if(!Collide(global_col, pos, radius))
 		{
 			float rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(*local_area, unit, level, &pos, &rot);
+			return CreateUnitWithAI(*localPart, unit, level, &pos, &rot);
 		}
 	}
 
@@ -2164,12 +2165,12 @@ Unit* Level::SpawnUnitInsideRoomOrNear(Room& room, UnitData& ud, int level, cons
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& unit, const Vec3* look_at, int level, float extra_radius)
+Unit* Level::SpawnUnitNearLocation(LocationPart& locPart, const Vec3& pos, UnitData& unit, const Vec3* look_at, int level, float extra_radius)
 {
 	const float radius = unit.GetRadius();
 
 	global_col.clear();
-	GatherCollisionObjects(area, global_col, pos, extra_radius + radius, nullptr);
+	GatherCollisionObjects(locPart, global_col, pos, extra_radius + radius, nullptr);
 
 	Vec3 tmp_pos = pos;
 
@@ -2182,7 +2183,7 @@ Unit* Level::SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& u
 				rot = Vec3::LookAtAngle(tmp_pos, *look_at);
 			else
 				rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(area, unit, level, &tmp_pos, &rot);
+			return CreateUnitWithAI(locPart, unit, level, &tmp_pos, &rot);
 		}
 
 		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
@@ -2192,13 +2193,13 @@ Unit* Level::SpawnUnitNearLocation(LevelArea& area, const Vec3& pos, UnitData& u
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitData& unit, int level)
+Unit* Level::SpawnUnitInsideRegion(LocationPart& locPart, const Box2d& region, UnitData& unit, int level)
 {
 	Vec3 pos;
-	if(!WarpToRegion(area, region, unit.GetRadius(), pos))
+	if(!WarpToRegion(locPart, region, unit.GetRadius(), pos))
 		return nullptr;
 
-	return CreateUnitWithAI(area, unit, level, &pos);
+	return CreateUnitWithAI(locPart, unit, level, &pos);
 }
 
 //=================================================================================================
@@ -2235,35 +2236,35 @@ Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, in
 }
 
 //=================================================================================================
-void Level::SpawnUnitsGroup(LevelArea& area, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback)
+void Level::SpawnUnitsGroup(LocationPart& locPart, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback)
 {
 	Pooled<TmpUnitGroup> tgroup;
 	tgroup->Fill(group, level);
 
 	for(TmpUnitGroup::Spawn& spawn : tgroup->Roll(level, count))
 	{
-		Unit* u = SpawnUnitNearLocation(area, pos, *spawn.first, look_at, spawn.second, 4.f);
+		Unit* u = SpawnUnitNearLocation(locPart, pos, *spawn.first, look_at, spawn.second, 4.f);
 		if(u && callback)
 			callback(u);
 	}
 }
 
 //=================================================================================================
-Unit* Level::SpawnUnit(LevelArea& area, TmpSpawn spawn)
+Unit* Level::SpawnUnit(LocationPart& locPart, TmpSpawn spawn)
 {
-	assert(area.area_type == LevelArea::Type::Building); // not implemented
+	assert(locPart.partType == LocationPart::Type::Building); // not implemented
 
-	InsideBuilding& building = static_cast<InsideBuilding&>(area);
+	InsideBuilding& building = static_cast<InsideBuilding&>(locPart);
 	Vec3 pos;
-	if(!WarpToRegion(area, building.region1, spawn.first->GetRadius(), pos))
+	if(!WarpToRegion(locPart, building.region1, spawn.first->GetRadius(), pos))
 		return nullptr;
 
 	float rot = Random(MAX_ANGLE);
-	return CreateUnitWithAI(area, *spawn.first, spawn.second, &pos, &rot);
+	return CreateUnitWithAI(locPart, *spawn.first, spawn.second, &pos, &rot);
 }
 
 //=================================================================================================
-void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& objects, const Vec3& _pos, float _radius, const IgnoreObjects* ignore)
+void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject>& objects, const Vec3& _pos, float _radius, const IgnoreObjects* ignore)
 {
 	assert(_radius > 0.f);
 
@@ -2273,7 +2274,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		minz = max(0, int((_pos.z - _radius) / 2)),
 		maxz = int((_pos.z + _radius) / 2);
 
-	if((!ignore || !ignore->ignore_blocks) && area.area_type != LevelArea::Type::Building)
+	if((!ignore || !ignore->ignore_blocks) && locPart.partType != LocationPart::Type::Building)
 	{
 		if(location->outside)
 		{
@@ -2340,7 +2341,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		Vec3 pos;
 		if(ignore && ignore->ignored_units)
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
 				if(!*it || !(*it)->IsStanding())
 					continue;
@@ -2372,7 +2373,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		}
 		else
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
 				if(!*it || !(*it)->IsStanding())
 					continue;
@@ -2395,7 +2396,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 	{
 		if(!ignore || !ignore->ignored_objects)
 		{
-			for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+			for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 			{
 				if(it->type == CollisionObject::RECTANGLE)
 				{
@@ -2411,7 +2412,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		}
 		else
 		{
-			for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+			for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 			{
 				if(it->owner)
 				{
@@ -2448,7 +2449,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 	// doors
 	if(!(ignore && ignore->ignore_doors))
 	{
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
+		for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 		{
 			if((*it)->IsBlocking() && CircleToRotatedRectangle(_pos.x, _pos.z, _radius, (*it)->pos.x, (*it)->pos.z, Door::WIDTH, Door::THICKNESS, (*it)->rot))
 			{
@@ -2464,7 +2465,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 }
 
 //=================================================================================================
-void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& objects, const Box2d& _box, const IgnoreObjects* ignore)
+void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject>& objects, const Box2d& _box, const IgnoreObjects* ignore)
 {
 	// tiles
 	int minx = max(0, int(_box.v1.x / 2)),
@@ -2472,7 +2473,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		minz = max(0, int(_box.v1.y / 2)),
 		maxz = int(_box.v2.y / 2);
 
-	if((!ignore || !ignore->ignore_blocks) && area.area_type != LevelArea::Type::Building)
+	if((!ignore || !ignore->ignore_blocks) && locPart.partType != LocationPart::Type::Building)
 	{
 		if(location->outside)
 		{
@@ -2541,7 +2542,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		float radius;
 		if(ignore && ignore->ignored_units)
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
 				if(!(*it)->IsStanding())
 					continue;
@@ -2572,7 +2573,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		}
 		else
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
 				if(!(*it)->IsStanding())
 					continue;
@@ -2594,7 +2595,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 	{
 		if(!ignore || !ignore->ignored_objects)
 		{
-			for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+			for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 			{
 				if(it->type == CollisionObject::RECTANGLE)
 				{
@@ -2610,7 +2611,7 @@ void Level::GatherCollisionObjects(LevelArea& area, vector<CollisionObject>& obj
 		}
 		else
 		{
-			for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+			for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 			{
 				if(it->owner)
 				{
@@ -2865,12 +2866,12 @@ bool Level::CollideWithStairsRect(const CollisionObject& cobj, const Box2d& box)
 }
 
 //=================================================================================================
-void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
+void Level::CreateBlood(LocationPart& locPart, const Unit& u, bool fully_created)
 {
 	if(!game_res->tBloodSplat[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
 		return;
 
-	Blood& b = Add1(area.bloods);
+	Blood& b = Add1(locPart.bloods);
 	u.mesh_inst->SetupBones();
 	b.pos = u.GetLootCenter();
 	b.type = u.data->blood;
@@ -2878,7 +2879,7 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 	b.size = (fully_created ? 1.f : 0.f);
 	b.scale = u.data->blood_size;
 
-	if(area.have_terrain)
+	if(locPart.haveTerrain)
 	{
 		b.pos.y = terrain->GetH(b.pos) + 0.05f;
 		terrain->GetAngle(b.pos.x, b.pos.z, b.normal);
@@ -2894,7 +2895,7 @@ void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 void Level::SpawnBlood()
 {
 	for(Unit* unit : blood_to_spawn)
-		CreateBlood(*unit->area, *unit, true);
+		CreateBlood(*unit->locPart, *unit, true);
 	blood_to_spawn.clear();
 }
 
@@ -2906,11 +2907,11 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
 	global_col.clear();
-	LevelArea& area = *unit.area;
+	LocationPart& locPart = *unit.locPart;
 	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &unit, nullptr };
 	ignore.ignored_units = ignore_units;
-	GatherCollisionObjects(area, global_col, pos, 2.f + unit_radius, &ignore);
+	GatherCollisionObjects(locPart, global_col, pos, 2.f + unit_radius, &ignore);
 
 	Vec3 tmp_pos = pos;
 	bool ok = false;
@@ -2933,7 +2934,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 
 	assert(ok);
 
-	if(area.have_terrain && terrain->IsInside(unit.pos))
+	if(locPart.haveTerrain && terrain->IsInside(unit.pos))
 		terrain->SetY(unit.pos);
 
 	if(unit.cobj)
@@ -2954,14 +2955,14 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 }
 
 //=================================================================================================
-bool Level::WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec3& pos, int tries)
+bool Level::WarpToRegion(LocationPart& locPart, const Box2d& region, float radius, Vec3& pos, int tries)
 {
 	for(int i = 0; i < tries; ++i)
 	{
 		pos = region.GetRandomPos3();
 
 		global_col.clear();
-		GatherCollisionObjects(area, global_col, pos, radius, nullptr);
+		GatherCollisionObjects(locPart, global_col, pos, radius, nullptr);
 
 		if(!Collide(global_col, pos, radius))
 			return true;
@@ -2971,7 +2972,7 @@ bool Level::WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec
 }
 
 //=================================================================================================
-void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
+void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
 {
 	const float radius = unit.GetUnitRadius();
 
@@ -2979,7 +2980,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 	IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &unit, nullptr };
 	ignore.ignored_units = ignore_units;
-	GatherCollisionObjects(area, global_col, pos, extra_radius + radius, &ignore);
+	GatherCollisionObjects(locPart, global_col, pos, extra_radius + radius, &ignore);
 
 	Vec3 tmp_pos = pos;
 	if(!allow_exact)
@@ -3026,7 +3027,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 
 	Trap* t = new Trap;
 	Trap& trap = *t;
-	local_area->traps.push_back(t);
+	localPart->traps.push_back(t);
 
 	BaseTrap& base = BaseTrap::traps[type];
 	trap.base = &base;
@@ -3094,7 +3095,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
 			}
 			else
 			{
-				local_area->traps.pop_back();
+				localPart->traps.pop_back();
 				delete t;
 				return nullptr;
 			}
@@ -3121,7 +3122,7 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 {
 	Trap* t = new Trap;
 	Trap& trap = *t;
-	GetArea(pos).traps.push_back(t);
+	GetLocationPart(pos).traps.push_back(t);
 
 	BaseTrap& base = BaseTrap::traps[type];
 	trap.id = id;
@@ -3171,35 +3172,35 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 //=================================================================================================
 void Level::UpdateLocation(int days, int open_chance, bool reset)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
 		// if reset remove all units
 		// otherwise all (>10 days) or some
 		if(reset)
 		{
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 			{
 				if(unit->IsAlive() && unit->IsHero() && unit->hero->otherTeam)
 					unit->hero->otherTeam->Remove();
 				delete unit;
 			}
-			area.units.clear();
+			locPart.units.clear();
 		}
 		else if(days > 10)
-			DeleteElements(area.units, [](Unit* unit) { return !unit->IsAlive(); });
+			DeleteElements(locPart.units, [](Unit* unit) { return !unit->IsAlive(); });
 		else
-			DeleteElements(area.units, [=](Unit* unit) { return !unit->IsAlive() && Random(4, 10) < days; });
+			DeleteElements(locPart.units, [=](Unit* unit) { return !unit->IsAlive() && Random(4, 10) < days; });
 
 		// remove all ground items (>10 days) or some
 		if(days > 10)
-			DeleteElements(area.items);
+			DeleteElements(locPart.items);
 		else
-			DeleteElements(area.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
+			DeleteElements(locPart.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
 
 		// heal units
 		if(!reset)
 		{
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 			{
 				if(unit->IsAlive())
 					unit->NaturalHealing(days);
@@ -3208,28 +3209,28 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 
 		// remove all blood (>30 days) or some (>5 days)
 		if(days > 30)
-			area.bloods.clear();
+			locPart.bloods.clear();
 		else if(days > 5)
-			RemoveElements(area.bloods, RemoveRandomPred<Blood>(days, 4, 30));
+			RemoveElements(locPart.bloods, RemoveRandomPred<Blood>(days, 4, 30));
 
 		// remove all temporary traps (>30 days) or some (>5 days)
 		if(days > 30)
 		{
-			for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end;)
+			for(vector<Trap*>::iterator it = locPart.traps.begin(), end = locPart.traps.end(); it != end;)
 			{
 				if((*it)->base->type == TRAP_FIREBALL)
 				{
 					delete *it;
 					if(it + 1 == end)
 					{
-						area.traps.pop_back();
+						locPart.traps.pop_back();
 						break;
 					}
 					else
 					{
 						std::iter_swap(it, end - 1);
-						area.traps.pop_back();
-						end = area.traps.end();
+						locPart.traps.pop_back();
+						end = locPart.traps.end();
 					}
 				}
 				else
@@ -3238,21 +3239,21 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 		}
 		else if(days >= 5)
 		{
-			for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end;)
+			for(vector<Trap*>::iterator it = locPart.traps.begin(), end = locPart.traps.end(); it != end;)
 			{
 				if((*it)->base->type == TRAP_FIREBALL && Rand() % 30 < days)
 				{
 					delete *it;
 					if(it + 1 == end)
 					{
-						area.traps.pop_back();
+						locPart.traps.pop_back();
 						break;
 					}
 					else
 					{
 						std::iter_swap(it, end - 1);
-						area.traps.pop_back();
-						end = area.traps.end();
+						locPart.traps.pop_back();
+						end = locPart.traps.end();
 					}
 				}
 				else
@@ -3261,7 +3262,7 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 		}
 
 		// randomly open/close doors
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
+		for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
 			if(door.locked == 0)
@@ -3315,10 +3316,10 @@ int Level::GetChestDifficultyLevel() const
 //=================================================================================================
 void Level::OnRevisitLevel()
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
 		// recreate doors
-		for(Door* door : area.doors)
+		for(Door* door : locPart.doors)
 			door->Recreate();
 	}
 }
@@ -3374,7 +3375,7 @@ void Level::CheckIfLocationCleared()
 
 	// is current level cleared?
 	bool is_clear = true;
-	for(vector<Unit*>::iterator it = local_area->units.begin(), end = local_area->units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = localPart->units.begin(), end = localPart->units.end(); it != end; ++it)
 	{
 		if((*it)->IsAlive() && game->pc->unit->IsEnemy(**it, true))
 		{
@@ -3433,9 +3434,9 @@ void Level::CheckIfLocationCleared()
 bool Level::RemoveItemFromWorld(const Item* item)
 {
 	assert(item);
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		if(area.RemoveItem(item))
+		if(locPart.RemoveItem(item))
 			return true;
 	}
 	return false;
@@ -3647,8 +3648,8 @@ Vec3 Level::GetExitPos(Unit& u, bool force_border)
 
 	if(location->outside)
 	{
-		if(u.area->area_type == LevelArea::Type::Building)
-			return static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
+		if(u.locPart->partType == LocationPart::Type::Building)
+			return static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
 		else if(city_ctx && !force_border)
 		{
 			float best_dist, dist;
@@ -3658,7 +3659,7 @@ Vec3 Level::GetExitPos(Unit& u, bool force_border)
 			{
 				if(it->exit_region.IsInside(u.pos))
 				{
-					// unit is already inside exit area, goto outside exit
+					// unit is already inside exitable location part, go to outside exit
 					best_index = -1;
 					break;
 				}
@@ -3731,14 +3732,14 @@ Vec3 Level::GetExitPos(Unit& u, bool force_border)
 //=================================================================================================
 bool Level::CanSee(Unit& u1, Unit& u2)
 {
-	if(u1.area != u2.area)
+	if(u1.locPart != u2.locPart)
 		return false;
 
-	LevelArea& area = *u1.area;
+	LocationPart& locPart = *u1.locPart;
 	Int2 tile1(int(u1.pos.x / 2), int(u1.pos.z / 2)),
 		tile2(int(u2.pos.x / 2), int(u2.pos.z / 2));
 
-	if(area.area_type == LevelArea::Type::Outside)
+	if(locPart.partType == LocationPart::Type::Outside)
 	{
 		OutsideLocation* outside = (OutsideLocation*)location;
 
@@ -3757,7 +3758,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 			}
 		}
 	}
-	else if(area.area_type == LevelArea::Type::Inside)
+	else if(locPart.partType == LocationPart::Type::Inside)
 	{
 		int xmin = max(0, min(tile1.x, tile2.x)),
 			xmax = min(lvl->w, max(tile1.x, tile2.x)),
@@ -3772,7 +3773,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 					return false;
 				if(lvl->map[x + y * lvl->w].type == DOORS)
 				{
-					Door* door = area.FindDoor(Int2(x, y));
+					Door* door = locPart.FindDoor(Int2(x, y));
 					if(door && door->IsBlocking())
 					{
 						Box2d box(door->pos.x, door->pos.z);
@@ -3800,7 +3801,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 	}
 	else
 	{
-		for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+		for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 		{
 			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE)
 				continue;
@@ -3810,7 +3811,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 				return false;
 		}
 
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
+		for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
 			if(door.IsBlocking())
@@ -3841,7 +3842,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 }
 
 //=================================================================================================
-bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door, void* ignore)
+bool Level::CanSee(LocationPart& locPart, const Vec3& v1, const Vec3& v2, bool is_door, void* ignore)
 {
 	if(v1.XZ().Equal(v2.XZ()))
 		return true;
@@ -3849,7 +3850,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
 		tile2(int(v2.x / 2), int(v2.z / 2));
 
-	if(area.area_type == LevelArea::Type::Outside)
+	if(locPart.partType == LocationPart::Type::Outside)
 	{
 		OutsideLocation* outside = static_cast<OutsideLocation*>(location);
 
@@ -3867,7 +3868,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 			}
 		}
 	}
-	else if(area.area_type == LevelArea::Type::Inside)
+	else if(locPart.partType == LocationPart::Type::Inside)
 	{
 		int xmin = max(0, min(tile1.x, tile2.x)),
 			xmax = min(lvl->w, max(tile1.x, tile2.x)),
@@ -3883,7 +3884,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 				if(lvl->map[x + y * lvl->w].type == DOORS)
 				{
 					Int2 pt(x, y);
-					Door* door = area.FindDoor(pt);
+					Door* door = locPart.FindDoor(pt);
 					if(door && door->IsBlocking()
 						&& (!is_door || tile2 != pt)) // ignore target door
 					{
@@ -3912,7 +3913,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 	}
 	else
 	{
-		for(vector<CollisionObject>::iterator it = area.tmp->colliders.begin(), end = area.tmp->colliders.end(); it != end; ++it)
+		for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 		{
 			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE || (ignore && ignore == it->owner))
 				continue;
@@ -3922,7 +3923,7 @@ bool Level::CanSee(LevelArea& area, const Vec3& v1, const Vec3& v2, bool is_door
 				return false;
 		}
 
-		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
+		for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
 			if(door.IsBlocking()
@@ -3959,9 +3960,9 @@ void Level::KillAll(bool friendly, Unit& unit, Unit* ignore)
 	if(friendly)
 	{
 		// kill all except player/ignore
-		for(LevelArea& area : ForEachArea())
+		for(LocationPart& locPart : locParts)
 		{
-			for(Unit* u : area.units)
+			for(Unit* u : locPart.units)
 			{
 				if(u->IsAlive() && !u->IsPlayer() && u != ignore)
 					u->GiveDmg(u->hp);
@@ -3971,9 +3972,9 @@ void Level::KillAll(bool friendly, Unit& unit, Unit* ignore)
 	else
 	{
 		// kill enemies
-		for(LevelArea& area : ForEachArea())
+		for(LocationPart& locPart : locParts)
 		{
-			for(Unit* u : area.units)
+			for(Unit* u : locPart.units)
 			{
 				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
 					u->GiveDmg(u->hp);
@@ -3989,7 +3990,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 
 	for(Unit& unit : team->members)
 	{
-		local_area->units.push_back(&unit);
+		localPart->units.push_back(&unit);
 		unit.CreatePhysics();
 		if(unit.IsHero())
 			game->ais.push_back(unit.ai);
@@ -4000,7 +4001,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
-		unit.area = local_area;
+		unit.locPart = localPart;
 
 		if(unit.IsAI())
 		{
@@ -4011,7 +4012,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 			unit.ai->timer = Random(2.f, 5.f);
 		}
 
-		WarpNearLocation(*local_area, unit, pos, city_ctx ? 4.f : 2.f, true, 20);
+		WarpNearLocation(*localPart, unit, pos, city_ctx ? 4.f : 2.f, true, 20);
 		unit.visual_pos = unit.pos;
 
 		if(!location->outside)
@@ -4112,9 +4113,9 @@ bool Level::IsOutside()
 //=================================================================================================
 void Level::Update()
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Unit* unit : area.units)
+		for(Unit* unit : locPart.units)
 		{
 			if(unit->data->trader)
 				unit->RefreshStock();
@@ -4131,8 +4132,8 @@ void Level::Write(BitStreamWriter& f)
 
 	if(net->mp_load)
 	{
-		for(LevelArea& area : ForEachArea())
-			area.tmp->Write(f);
+		for(LocationPart& locPart : locParts)
+			locPart.lvlPart->Write(f);
 	}
 }
 
@@ -4173,9 +4174,9 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 
 	if(net->mp_load)
 	{
-		for(LevelArea& area : ForEachArea())
+		for(LocationPart& locPart : locParts)
 		{
-			if(!area.tmp->Read(f))
+			if(!locPart.lvlPart->Read(f))
 				return false;
 		}
 	}
@@ -4216,13 +4217,13 @@ MusicType Level::GetLocationMusic()
 // -2 - all
 void Level::CleanLevel(int building_id)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		if((area.area_type != LevelArea::Type::Building && (building_id == -2 || building_id == -1))
-			|| (area.area_type == LevelArea::Type::Building && (building_id == -2 || building_id == area.area_id)))
+		if((locPart.partType != LocationPart::Type::Building && (building_id == -2 || building_id == -1))
+			|| (locPart.partType == LocationPart::Type::Building && (building_id == -2 || building_id == locPart.partId)))
 		{
-			area.bloods.clear();
-			for(Unit* unit : area.units)
+			locPart.bloods.clear();
+			for(Unit* unit : locPart.units)
 			{
 				if(!unit->IsAlive() && !unit->IsTeamMember() && !unit->to_remove)
 					RemoveUnit(unit, false);
@@ -4247,10 +4248,10 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	gi->team_count = 1;
 	gi->rot = Quat::RotY(Random(MAX_ANGLE));
 	gi->pos = pos;
-	if(local_area->area_type == LevelArea::Type::Outside)
+	if(localPart->partType == LocationPart::Type::Outside)
 		terrain->SetY(gi->pos);
 	gi->item = item;
-	local_area->items.push_back(gi);
+	localPart->items.push_back(gi);
 	return gi;
 }
 
@@ -4291,7 +4292,7 @@ Unit* Level::GetNearestEnemy(Unit* unit)
 {
 	Unit* best = nullptr;
 	float best_dist;
-	for(Unit* u : unit->area->units)
+	for(Unit* u : unit->locPart->units)
 	{
 		if(u->IsAlive() && unit->IsEnemy(*u))
 		{
@@ -4309,16 +4310,16 @@ Unit* Level::GetNearestEnemy(Unit* unit)
 //=================================================================================================
 Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range, int level)
 {
-	return SpawnUnitNearLocation(GetArea(pos), pos, *ud, nullptr, level, range);
+	return SpawnUnitNearLocation(GetLocationPart(pos), pos, *ud, nullptr, level, range);
 }
 
 //=================================================================================================
 GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
 {
-	LevelArea& area = GetArea(pos);
+	LocationPart& locPart = GetLocationPart(pos);
 	float best_dist = 999.f;
 	GroundItem* best_item = nullptr;
-	for(GroundItem* ground_item : area.items)
+	for(GroundItem* ground_item : locPart.items)
 	{
 		if(ground_item->item == item)
 		{
@@ -4336,9 +4337,9 @@ GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
 //=================================================================================================
 GroundItem* Level::FindItem(const Item* item)
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(GroundItem* ground_item : area.items)
+		for(GroundItem* ground_item : locPart.items)
 		{
 			if(ground_item->item == item)
 				return ground_item;
@@ -4428,11 +4429,11 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 
 			if(u.IsPlayer() && check_dist)
 			{
-				if(u.area->area_type == LevelArea::Type::Building || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
+				if(u.locPart->partType == LocationPart::Type::Building || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
 					return CanLeaveLocationResult::TeamTooFar;
 			}
 
-			for(vector<Unit*>::iterator it2 = local_area->units.begin(), end2 = local_area->units.end(); it2 != end2; ++it2)
+			for(vector<Unit*>::iterator it2 = localPart->units.begin(), end2 = localPart->units.end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
 				if(&u != &u2 && u2.IsStanding() && unit.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
@@ -4451,7 +4452,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 			if(u.busy != Unit::Busy_No || (check_dist && Vec3::Distance2d(unit.pos, u.pos) > 8.f))
 				return CanLeaveLocationResult::TeamTooFar;
 
-			for(vector<Unit*>::iterator it2 = local_area->units.begin(), end2 = local_area->units.end(); it2 != end2; ++it2)
+			for(vector<Unit*>::iterator it2 = localPart->units.begin(), end2 = localPart->units.end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
 				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
@@ -4564,7 +4565,7 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 	Level::IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
-	GatherCollisionObjects(*me->area, global_col, gather_pos, gather_radius, &ignore);
+	GatherCollisionObjects(*me->locPart, global_col, gather_pos, gather_radius, &ignore);
 
 	if(global_col.empty())
 	{
@@ -4636,7 +4637,7 @@ void Level::SpawnUnitEffect(Unit& unit)
 	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->mode = 0;
 	pe->Init();
-	unit.area->tmp->pes.push_back(pe);
+	unit.locPart->lvlPart->pes.push_back(pe);
 }
 
 //=================================================================================================
@@ -4699,7 +4700,7 @@ Room* Level::GetFarRoom()
 //=================================================================================================
 Object* Level::FindObjectInRoom(Room& room, BaseObject* base)
 {
-	for(Object* obj : local_area->objects)
+	for(Object* obj : localPart->objects)
 	{
 		if(obj->base == base && room.IsInside(obj->pos))
 			return obj;
@@ -4719,7 +4720,7 @@ CScriptArray* Level::FindPath(Room& from, Room& to)
 	Int2 to_pt = to.CenterTile();
 
 	vector<Int2> path;
-	pathfinding->FindPath(*local_area, from_pt, to_pt, path);
+	pathfinding->FindPath(*localPart, from_pt, to_pt, path);
 	std::reverse(path.begin(), path.end());
 
 	word prev_room_index = 0xFFFF;
@@ -4745,7 +4746,7 @@ CScriptArray* Level::GetUnits(Room& room)
 	asITypeInfo* type = script_mgr->GetEngine()->GetTypeInfoByDecl("array<Unit@>");
 	CScriptArray* array = CScriptArray::Create(type);
 
-	for(Unit* unit : local_area->units)
+	for(Unit* unit : localPart->units)
 	{
 		if(room.IsInside(unit->pos))
 			array->InsertLast(&unit);
@@ -4873,9 +4874,9 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 void Level::CreateObjectsMeshInstance()
 {
 	const bool isLoading = (game->in_load || net->mp_load);
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Object* obj : area.objects)
+		for(Object* obj : locPart.objects)
 		{
 			if(obj->mesh->IsAnimated())
 			{
@@ -4889,10 +4890,10 @@ void Level::CreateObjectsMeshInstance()
 			}
 		}
 
-		for(Chest* chest : area.chests)
+		for(Chest* chest : locPart.chests)
 			chest->Recreate();
 
-		for(Trap* trap : area.traps)
+		for(Trap* trap : locPart.traps)
 		{
 			if(trap->base->mesh->IsAnimated())
 			{
@@ -4908,9 +4909,9 @@ void Level::CreateObjectsMeshInstance()
 //=================================================================================================
 void Level::RemoveTmpObjectPhysics()
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		LoopAndRemove(area.tmp->colliders, [](const CollisionObject& cobj)
+		LoopAndRemove(locPart.lvlPart->colliders, [](const CollisionObject& cobj)
 		{
 			return cobj.owner == CollisionObject::TMP;
 		});
@@ -4920,13 +4921,13 @@ void Level::RemoveTmpObjectPhysics()
 //=================================================================================================
 void Level::RecreateTmpObjectPhysics()
 {
-	for(LevelArea& area : ForEachArea())
+	for(LocationPart& locPart : locParts)
 	{
-		for(Object* obj : area.objects)
+		for(Object* obj : locPart.objects)
 		{
 			if(!obj->base || !IsSet(obj->base->flags, OBJ_TMP_PHYSICS))
 				continue;
-			CollisionObject& c = Add1(area.tmp->colliders);
+			CollisionObject& c = Add1(locPart.lvlPart->colliders);
 			c.owner = CollisionObject::TMP;
 			c.cam_collider = false;
 			if(obj->base->type == OBJ_CYLINDER)
@@ -4962,7 +4963,7 @@ Vec3 Level::GetSpawnCenter()
 {
 	Vec3 pos(Vec3::Zero);
 	int count = 0;
-	for(Unit* unit : local_area->units)
+	for(Unit* unit : localPart->units)
 	{
 		pos += unit->pos;
 		++count;
@@ -4996,12 +4997,12 @@ void Level::EndBossFight()
 }
 
 //=================================================================================================
-void Level::CreateSpellParticleEffect(LevelArea* area, Ability* ability, const Vec3& pos, const Vec2& bounds)
+void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds)
 {
 	assert(ability);
 
-	if(!area)
-		area = &GetArea(pos);
+	if(!locPart)
+		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = ability->tex_particle;
@@ -5050,7 +5051,7 @@ void Level::CreateSpellParticleEffect(LevelArea* area, Ability* ability, const V
 	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->mode = 1;
 	pe->Init();
-	area->tmp->pes.push_back(pe);
+	locPart->lvlPart->pes.push_back(pe);
 
 	if(Net::IsServer())
 	{

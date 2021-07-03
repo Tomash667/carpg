@@ -14,7 +14,7 @@ struct ObjP
 //-----------------------------------------------------------------------------
 struct RegionTarget
 {
-	LevelArea* area;
+	LocationPart* locPart;
 	Vec3 pos;
 	bool exit;
 };

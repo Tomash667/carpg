@@ -232,7 +232,7 @@ void LevelGui::DrawFront()
 	if(debug_info)
 	{
 		sorted_units.clear();
-		for(Unit* unit : pc.unit->area->units)
+		for(Unit* unit : pc.unit->locPart->units)
 		{
 			if(!unit->IsAlive())
 				continue;
@@ -789,7 +789,7 @@ void LevelGui::DrawEndOfGameScreen()
 void LevelGui::DrawSpeechBubbles()
 {
 	// get list to sort
-	LevelArea& area = *game->pc->unit->area;
+	LocationPart& locPart = *game->pc->unit->locPart;
 	sorted_speech_bbs.clear();
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
 	{
@@ -801,7 +801,7 @@ void LevelGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !game_level->CanSee(locPart, game->pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
@@ -1878,7 +1878,7 @@ void LevelGui::SortUnits()
 //=================================================================================================
 void LevelGui::UpdatePlayerView(float dt)
 {
-	LevelArea& area = *game->pc->unit->area;
+	LocationPart& locPart = *game->pc->unit->locPart;
 	Unit& u = *game->pc->unit;
 
 	// mark previous views as invalid
@@ -1886,7 +1886,7 @@ void LevelGui::UpdatePlayerView(float dt)
 		it->valid = false;
 
 	// check units inside player view
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
 		if(&u == &u2 || u2.to_remove)

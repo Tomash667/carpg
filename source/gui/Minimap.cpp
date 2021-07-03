@@ -45,7 +45,7 @@ void Minimap::LoadData()
 //=================================================================================================
 void Minimap::Draw(ControlDrawData*)
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *game_level->localPart;
 	LOCATION type = game_level->location->type;
 
 	// map texture
@@ -78,7 +78,7 @@ void Minimap::Draw(ControlDrawData*)
 	}
 
 	// chests
-	for(Chest* chest : area.chests)
+	for(Chest* chest : locPart.chests)
 	{
 		if(!lvl || lvl->IsTileVisible(chest->pos))
 		{
@@ -92,7 +92,7 @@ void Minimap::Draw(ControlDrawData*)
 
 	// items
 	LocalVector<GroundItem*> important_items;
-	for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
+	for(vector<GroundItem*>::iterator it = locPart.items.begin(), end = locPart.items.end(); it != end; ++it)
 	{
 		if(IsSet((*it)->item->flags, ITEM_IMPORTANT))
 			important_items->push_back(*it);
@@ -128,7 +128,7 @@ void Minimap::Draw(ControlDrawData*)
 	}
 
 	// other units
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
@@ -243,11 +243,11 @@ void Minimap::Build()
 //=================================================================================================
 Vec2 Minimap::GetMapPosition(Unit& unit)
 {
-	if(!game_level->city_ctx || unit.area->area_type == LevelArea::Type::Outside)
+	if(!game_level->city_ctx || unit.locPart->partType == LocationPart::Type::Outside)
 		return Vec2(unit.pos.x, unit.pos.z);
 	else
 	{
-		Building* building = static_cast<InsideBuilding*>(unit.area)->building;
+		Building* building = static_cast<InsideBuilding*>(unit.locPart)->building;
 		for(CityBuilding& b : game_level->city_ctx->buildings)
 		{
 			if(b.building == building)

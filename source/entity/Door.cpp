@@ -71,7 +71,7 @@ void Door::Cleanup()
 }
 
 //=================================================================================================
-void Door::Update(float dt, LevelArea& area)
+void Door::Update(float dt, LocationPart& locPart)
 {
 	meshInst->Update(dt);
 	if(state == Opening || state == Opening2)
@@ -98,7 +98,7 @@ void Door::Update(float dt, LevelArea& area)
 			{
 				bool blocking = false;
 
-				for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 				{
 					if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetUnitRadius(), pos.x, pos.z, WIDTH, THICKNESS, rot))
 					{

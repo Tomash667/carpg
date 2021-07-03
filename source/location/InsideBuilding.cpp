@@ -30,7 +30,7 @@ void InsideBuilding::Save(GameWriter& f)
 	f << region2;
 	f << enter_y;
 
-	LevelArea::Save(f);
+	LocationPart::Save(f);
 }
 
 //=================================================================================================
@@ -52,15 +52,15 @@ void InsideBuilding::Load(GameReader& f)
 	f >> enter_y;
 
 	if(LOAD_VERSION >= V_0_11)
-		LevelArea::Load(f);
+		LocationPart::Load(f);
 	else
-		LevelArea::Load(f, old::LoadCompatibility::InsideBuilding);
+		LocationPart::Load(f, old::LoadCompatibility::InsideBuilding);
 }
 
 //=================================================================================================
 void InsideBuilding::Write(BitStreamWriter& f)
 {
-	LevelArea::Write(f);
+	LocationPart::Write(f);
 
 	f << level_shift;
 	f << building->id;
@@ -75,7 +75,7 @@ void InsideBuilding::Write(BitStreamWriter& f)
 //=================================================================================================
 bool InsideBuilding::Read(BitStreamReader& f)
 {
-	if(!LevelArea::Read(f))
+	if(!LocationPart::Read(f))
 		return false;
 
 	f >> level_shift;

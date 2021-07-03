@@ -62,7 +62,7 @@ void Quest_DireWolf::FireEvent(ScriptEvent& event)
 		{
 			// spawn dire wolf
 			UnitData* ud = UnitData::Get("dire_wolf");
-			Unit* unit = game_level->SpawnUnitNearLocation(*game_level->local_area, Vec3(128, 0, 128), *ud);
+			Unit* unit = game_level->SpawnUnitNearLocation(*game_level->localPart, Vec3(128, 0, 128), *ud);
 			unit->AddEventHandler(this, EVENT_DIE);
 		}
 	}

@@ -114,7 +114,7 @@ void AIController::Save(GameWriter& f)
 			break;
 		case Idle_MoveRegion:
 		case Idle_RunRegion:
-			f << st.idle.region.area->area_id;
+			f << st.idle.region.locPart->partId;
 			f << st.idle.region.pos;
 			f << st.idle.region.exit;
 			break;
@@ -272,27 +272,27 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 	case Idle_MoveRegion:
 	case Idle_RunRegion:
 		{
-			int area_id;
-			f >> area_id;
+			int partId;
+			f >> partId;
 			f >> idle.region.pos;
 			if(LOAD_VERSION >= V_0_11)
 			{
 				f >> idle.region.exit;
-				idle.region.area = game_level->GetAreaById(area_id);
+				idle.region.locPart = game_level->GetLocationPartById(partId);
 			}
 			else
 			{
-				if(area_id == LevelArea::OLD_EXIT_ID)
+				if(partId == LocationPart::OLD_EXIT_ID)
 				{
 					idle.region.exit = true;
-					idle.region.area = game_level->GetAreaById(LevelArea::OUTSIDE_ID);
+					idle.region.locPart = game_level->GetLocationPartById(LocationPart::OUTSIDE_ID);
 				}
 				else
 				{
 					idle.region.exit = false;
-					idle.region.area = game_level->GetAreaById(area_id);
-					if(!idle.region.area)
-						idle.region.area = game_level->local_area;
+					idle.region.locPart = game_level->GetLocationPartById(partId);
+					if(!idle.region.locPart)
+						idle.region.locPart = game_level->localPart;
 				}
 			}
 		}
@@ -420,7 +420,7 @@ bool AIController::CanWander() const
 			else
 				return true;
 		}
-		else if(unit->area->area_type == LevelArea::Type::Outside)
+		else if(unit->locPart->partType == LocationPart::Type::Outside)
 			return true;
 		else
 			return false;
@@ -469,7 +469,7 @@ void AIController::Shout()
 
 	// alarm near allies
 	Unit* target_unit = target;
-	for(Unit* u : unit->area->units)
+	for(Unit* u : unit->locPart->units)
 	{
 		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
 			|| u->ai->alert_target || u->dont_attack)
@@ -510,7 +510,7 @@ void AIController::HitReaction(const Vec3& pos)
 	}
 
 	// alarm near allies
-	for(Unit* u : unit->area->units)
+	for(Unit* u : unit->locPart->units)
 	{
 		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->dont_attack)
 			continue;
