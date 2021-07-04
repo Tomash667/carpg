@@ -678,7 +678,7 @@ void InventoryPanel::Update(float dt)
 		if(!focus || !(game->pc->unit->action == A_NONE || game->pc->unit->CanDoWhileUsing()) || base.lock || !input->Focus() || !game->pc->unit->IsStanding())
 			return;
 
-		// handling on clickin in inventory
+		// handling on clicking in inventory
 		if(mode == INVENTORY && input->PressedRelease(Key::RightButton) && game->pc->unit->action == A_NONE)
 		{
 			// drop item
@@ -705,7 +705,7 @@ void InventoryPanel::Update(float dt)
 					if(input->Down(Key::Shift))
 					{
 						// drop all
-						unit->DropItems(i_index, 0);
+						unit->DropItem(i_index, 0);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							base.tooltip.Clear();
@@ -976,11 +976,11 @@ void InventoryPanel::Update(float dt)
 				{
 					last_index = INDEX_INVALID;
 					// add to player
-					game->pc->unit->AddItem(item, 1u, 1u);
-					base.BuildTmpInventory(0);
+					if(!game->pc->unit->AddItem(item, 1u, 1u))
+						UpdateGrid(true);
 					// remove from container
 					unit->RemoveEquippedItem(slot_type);
-					base.BuildTmpInventory(1);
+					UpdateGrid(false);
 					// sound
 					sound_mgr->PlaySound2d(game_res->GetItemSound(item));
 					// message
@@ -1567,7 +1567,7 @@ void InventoryPanel::OnDropItem(int id)
 		gui->SimpleDialog(base.txDropNotNow, this);
 	else
 	{
-		if(unit->DropItems(index, counter))
+		if(unit->DropItem(index, counter))
 		{
 			base.BuildTmpInventory(0);
 			UpdateScrollbar();

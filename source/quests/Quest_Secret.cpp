@@ -144,11 +144,19 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 		Item* note = &GetNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
 		unit.AddItem2(note, 1u, 1u, false);
-		delete item;
 		team->AddExp(5000);
 		if(Net::IsOnline())
 			Net::PushChange(NetChange::SECRET_TEXT);
-		return true;
+		if(item->count > 1)
+		{
+			--item->count;
+			return false;
+		}
+		else
+		{
+			delete item;
+			return true;
+		}
 	}
 
 	return false;

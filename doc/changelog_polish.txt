@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.19 (???):
 ! nie można wczytywać już zapisów z wersji 0.8 lub starszej
+- zabieranie założonego przedmiotu ze zwłok niepoprawnie aktualizowało widok ekwipunku
 
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):

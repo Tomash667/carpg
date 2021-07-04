@@ -771,12 +771,10 @@ public:
 	}
 	void ReplaceItem(ITEM_SLOT slot, const Item* item);
 	void ReplaceItems(array<const Item*, SLOT_MAX>& items);
-	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
-	bool DropItem(int index);
+	// drop item by index, return if that was last item from stack (count=0 drops all)
+	bool DropItem(int index, uint count = 1);
 	// wyrzuca za³o¿ony przedmiot
 	void DropItem(ITEM_SLOT slot);
-	// wyrzuca kilka przedmiotów o podanym indeksie, zwraca czy to by³ ostatni (count=0 oznacza wszystko)
-	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
 	bool AddItem(const Item* item, uint count, uint team_count);
 	// add item and show game message, send net notification, calls preload, refresh inventory if open

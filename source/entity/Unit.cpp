@@ -462,13 +462,17 @@ void Unit::ReplaceItems(array<const Item*, SLOT_MAX>& items)
 }
 
 //=================================================================================================
-bool Unit::DropItem(int index)
+bool Unit::DropItem(int index, uint count)
 {
-	bool no_more = false;
-
+	bool noMore = false;
 	ItemSlot& s = items[index];
-	--s.count;
-	weight -= s.item->weight;
+	if(count == 0)
+		count = s.count;
+	else
+		count = min(count, s.count);
+	s.count -= count;
+
+	weight -= s.item->weight * count;
 
 	action = A_ANIMATION;
 	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
@@ -478,21 +482,16 @@ bool Unit::DropItem(int index)
 		GroundItem* item = new GroundItem;
 		item->Register();
 		item->item = s.item;
-		item->count = 1;
-		if(s.team_count > 0)
-		{
-			--s.team_count;
-			item->team_count = 1;
-		}
-		else
-			item->team_count = 0;
+		item->count = count;
+		item->team_count = min(count, s.team_count);
+		s.team_count -= item->team_count;
 		item->pos = pos;
 		item->pos.x -= sin(rot) * 0.25f;
 		item->pos.z -= cos(rot) * 0.25f;
 		item->rot = Quat::RotY(Random(MAX_ANGLE));
 		if(s.count == 0)
 		{
-			no_more = true;
+			noMore = true;
 			items.erase(items.begin() + index);
 		}
 		if(!quest_mgr->quest_secret->CheckMoonStone(item, *this))
@@ -507,21 +506,20 @@ bool Unit::DropItem(int index)
 	}
 	else
 	{
-		if(s.team_count > 0)
-			--s.team_count;
+		s.team_count -= min(count, s.team_count);
 		if(s.count == 0)
 		{
-			no_more = true;
+			noMore = true;
 			items.erase(items.begin() + index);
 		}
 
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = index;
-		c.count = 1;
+		c.count = count;
 	}
 
-	return no_more;
+	return noMore;
 }
 
 //=================================================================================================
@@ -575,66 +573,6 @@ void Unit::DropItem(ITEM_SLOT slot)
 		c.id = SlotToIIndex(slot);
 		c.count = 1;
 	}
-}
-
-//=================================================================================================
-bool Unit::DropItems(int index, uint count)
-{
-	bool no_more = false;
-
-	ItemSlot& s = items[index];
-	assert(count <= s.count);
-	if(count == 0)
-		count = s.count;
-	s.count -= count;
-
-	weight -= s.item->weight * count;
-
-	action = A_ANIMATION;
-	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-
-	if(Net::IsLocal())
-	{
-		GroundItem* item = new GroundItem;
-		item->Register();
-		item->item = s.item;
-		item->count = count;
-		item->team_count = min(count, s.team_count);
-		s.team_count -= item->team_count;
-		item->pos = pos;
-		item->pos.x -= sin(rot) * 0.25f;
-		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Quat::RotY(Random(MAX_ANGLE));
-		if(s.count == 0)
-		{
-			no_more = true;
-			items.erase(items.begin() + index);
-		}
-		game_level->AddGroundItem(*locPart, item);
-
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
-			c.unit = this;
-		}
-	}
-	else
-	{
-		s.team_count -= min(count, s.team_count);
-		if(s.count == 0)
-		{
-			no_more = true;
-			items.erase(items.begin() + index);
-		}
-
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_ITEM;
-		c.id = index;
-		c.count = count;
-	}
-
-	return no_more;
 }
 
 //=================================================================================================
@@ -7463,12 +7401,12 @@ void Unit::Update(float dt)
 				{
 					switch(player->next_action)
 					{
-						// unequip item
+					// unequip item
 					case NA_REMOVE:
 						if(slots[player->next_action_data.slot])
 							game_gui->inventory->inv_mine->RemoveSlotItem(player->next_action_data.slot);
 						break;
-						// equip item after unequiping old one
+					// equip item after unequiping old one
 					case NA_EQUIP:
 					case NA_EQUIP_DRAW:
 						{
@@ -7495,12 +7433,12 @@ void Unit::Update(float dt)
 							}
 						}
 						break;
-						// drop item after hiding it
+					// drop item after hiding it
 					case NA_DROP:
 						if(slots[player->next_action_data.slot])
 							game_gui->inventory->inv_mine->DropSlotItem(player->next_action_data.slot);
 						break;
-						// use consumable
+					// use consumable
 					case NA_CONSUME:
 						{
 							int index = player->GetNextActionItemIndex();
@@ -7508,22 +7446,22 @@ void Unit::Update(float dt)
 								game_gui->inventory->inv_mine->ConsumeItem(index);
 						}
 						break;
-						//  use usable
+					// use usable
 					case NA_USE:
 						if(!player->next_action_data.usable->user)
 							player->UseUsable(player->next_action_data.usable, true);
 						break;
-						// sell equipped item
+					// sell equipped item
 					case NA_SELL:
 						if(slots[player->next_action_data.slot])
 							game_gui->inventory->inv_trade_mine->SellSlotItem(player->next_action_data.slot);
 						break;
-						// put equipped item in container
+					// put equipped item in container
 					case NA_PUT:
 						if(slots[player->next_action_data.slot])
 							game_gui->inventory->inv_trade_mine->PutSlotItem(player->next_action_data.slot);
 						break;
-						// give equipped item
+					// give equipped item
 					case NA_GIVE:
 						if(slots[player->next_action_data.slot])
 							game_gui->inventory->inv_trade_mine->GiveSlotItem(player->next_action_data.slot);
