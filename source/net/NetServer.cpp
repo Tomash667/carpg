@@ -881,7 +881,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				// add item
-				unit.AddItem(item->item, item->count, item->team_count);
+				unit.AddItem2(item->item, item->count, item->team_count, false);
 
 				// start animation
 				bool up_animation = (item->pos.y > unit.pos.y + 0.5f);
@@ -889,11 +889,13 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				unit.animation = ANI_PLAY;
 				unit.mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 
-				// send pickup acceptation
-				NetChangePlayer& c = Add1(info.changes);
-				c.type = NetChangePlayer::PICKUP;
-				c.id = item->count;
-				c.count = item->team_count;
+				// pick gold sound
+				if(item->item->type == IT_GOLD)
+				{
+					NetChangePlayer& c = Add1(info.changes);
+					c.type = NetChangePlayer::SOUND;
+					c.id = 0;
+				}
 
 				// send remove item to all players
 				NetChange& c2 = Add1(changes);
@@ -3359,10 +3361,6 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 
 		switch(c.type)
 		{
-		case NetChangePlayer::PICKUP:
-			f << c.id;
-			f << c.count;
-			break;
 		case NetChangePlayer::LOOT:
 			f << (c.id != 0);
 			if(c.id != 0)

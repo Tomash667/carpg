@@ -2639,14 +2639,12 @@ void Game::ClearGameVars(bool new_game)
 		world->OnNewGame();
 		game_stats->Reset();
 		dont_wander = false;
-		pc->data.picking_item_state = 0;
 		game_level->is_open = false;
 		game_gui->level_gui->PositionPanels();
 		game_gui->Clear(true, false);
 		if(!net->mp_quickload)
 			game_gui->mp_box->visible = Net::IsOnline();
 		game_level->light_angle = Random(PI * 2);
-		pc->data.rot_buf = 0.f;
 		start_version = VERSION;
 
 		if(IsDebug())

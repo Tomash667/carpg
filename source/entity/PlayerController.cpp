@@ -2985,9 +2985,6 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::PICKUP_ITEM;
 					c.id = item.id;
-
-					data.picking_item = &item;
-					data.picking_item_state = 1;
 				}
 			}
 		}

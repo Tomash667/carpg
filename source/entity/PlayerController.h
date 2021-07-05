@@ -179,9 +179,7 @@ struct LocalPlayerData
 	BeforePlayerPtr before_player_ptr;
 	Unit* selected_unit; // unit marked with 'select' command
 	Entity<Unit> ability_target;
-	GroundItem* picking_item;
 	Vec3 ability_point;
-	int picking_item_state;
 	float rot_buf, ability_rot, grayout, range_ratio;
 	Key wasted_key;
 	Ability* ability_ready;
@@ -193,8 +191,6 @@ struct LocalPlayerData
 		before_player_ptr.any = nullptr;
 		selected_unit = nullptr;
 		ability_target = nullptr;
-		picking_item = nullptr;
-		picking_item_state = 0;
 		rot_buf = 0.f;
 		grayout = 0.f;
 		wasted_key = Key::None;

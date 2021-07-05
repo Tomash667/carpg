@@ -1015,10 +1015,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						RemoveElement(locPart->items, item);
 						if(pc.data.before_player == BP_ITEM && pc.data.before_player_ptr.item == item)
 							pc.data.before_player = BP_NONE;
-						if(pc.data.picking_item_state == 1 && pc.data.picking_item == item)
-							pc.data.picking_item_state = 2;
-						else
-							delete item;
+						delete item;
 					}
 				}
 			}
@@ -3149,25 +3146,6 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 
 		switch(type)
 		{
-		// item picked up
-		case NetChangePlayer::PICKUP:
-			{
-				int count, team_count;
-				f >> count;
-				f >> team_count;
-				if(!f)
-					Error("Update single client: Broken PICKUP.");
-				else if(game->game_state == GS_LEVEL)
-				{
-					pc.unit->AddItem2(pc.data.picking_item->item, (uint)count, (uint)team_count, false);
-					if(pc.data.picking_item->item->type == IT_GOLD)
-						sound_mgr->PlaySound2d(game_res->sCoins);
-					if(pc.data.picking_item_state == 2)
-						delete pc.data.picking_item;
-					pc.data.picking_item_state = 0;
-				}
-			}
-			break;
 		// response to looting
 		case NetChangePlayer::LOOT:
 			{
