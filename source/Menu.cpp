@@ -123,7 +123,7 @@ void Game::StartQuickGame()
 void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
 	ClearGameVars(true);
-	game_level->entering = true;
+	game_level->ready = false;
 	quest_mgr->quest_tutorial->in_tutorial = tutorial;
 	game_gui->main_menu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);
@@ -1345,7 +1345,7 @@ void Game::UpdateServerTransfer(float dt)
 			prev_team = team->members.ptrs;
 		team->members.clear();
 		team->active_members.clear();
-		game_level->entering = true;
+		game_level->ready = false;
 		const bool in_level = game_level->is_open;
 		int leader_perk = 0;
 		for(PlayerInfo& info : net->players)
@@ -1460,7 +1460,7 @@ void Game::UpdateServerTransfer(float dt)
 			team->AddMember(npc, HeroType::Normal);
 			npc->hero->SetupMelee();
 		}
-		game_level->entering = false;
+		game_level->ready = true;
 
 		// recalculate credit if someone left
 		if(anyone_left)

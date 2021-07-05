@@ -94,36 +94,35 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 	// items
 	if(IsSet(draw_flags, DF_ITEMS))
 	{
-		Vec3 pos;
-		for(vector<GroundItem*>::iterator it = locPart.items.begin(), end = locPart.items.end(); it != end; ++it)
+		for(GroundItem* groundItem : locPart.GetGroundItems())
 		{
-			GroundItem& item = **it;
-			if(!item.item)
+			if(!groundItem->item)
 			{
 				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
-					item.pos.x, item.pos.y, item.pos.z, item.count, item.team_count));
-				locPart.items.erase(it);
+					groundItem->pos.x, groundItem->pos.y, groundItem->pos.z, groundItem->count, groundItem->team_count));
+				locPart.RemoveGroundItem(groundItem);
 				break;
 			}
+
 			Mesh* mesh;
-			pos = item.pos;
-			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
+			Vec3 pos = groundItem->pos;
+			if(IsSet(groundItem->item->flags, ITEM_GROUND_MESH))
 			{
-				mesh = item.item->mesh;
+				mesh = groundItem->item->mesh;
 				mesh->EnsureIsLoaded();
 				pos.y -= mesh->head.bbox.v1.y;
 			}
 			else
 				mesh = game_res->aBag;
-			if(frustum.SphereToFrustum(item.pos, mesh->head.radius))
+			if(frustum.SphereToFrustum(groundItem->pos, mesh->head.radius))
 			{
 				SceneNode* node = SceneNode::Get();
 				node->SetMesh(mesh);
-				node->center = item.pos;
-				node->mat = Matrix::Rotation(item.rot) * Matrix::Translation(pos);
+				node->center = groundItem->pos;
+				node->mat = Matrix::Rotation(groundItem->rot) * Matrix::Translation(pos);
 				if(!outside)
 					GatherDrawBatchLights(locPart, node);
-				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == &item)
+				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == groundItem)
 				{
 					if(use_glow)
 					{

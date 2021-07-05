@@ -2824,9 +2824,6 @@ void World::DeleteCamp(Camp* camp, bool remove)
 		c.id = index;
 	}
 
-	DeleteElements(camp->chests);
-	DeleteElements(camp->items);
-	DeleteElements(camp->units);
 	delete camp;
 
 	if(remove)

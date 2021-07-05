@@ -5,7 +5,7 @@
 #include "DialogContext.h"
 #include "GameCommon.h"
 #include "ItemHelper.h"
-#include "LocationContext.h"
+#include "LocationHelper.h"
 #include "Journal.h"
 #include "QuestManager.h"
 #include "Team.h"
@@ -173,7 +173,7 @@ bool Quest_LostArtifact::IsTimedout() const
 bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		ForLocation(targetLoc, at_level)->RemoveQuestGroundItem(id);
+		LocationHelper::GetLocationPart(targetLoc, at_level)->RemoveGroundItem(id);
 
 	OnUpdate(quest_mgr->txQuest[267]);
 	return true;

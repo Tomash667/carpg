@@ -959,18 +959,18 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// spawn item on ground
 		case NetChange::SPAWN_ITEM:
 			{
-				GroundItem* item = new GroundItem;
-				if(!item->Read(f))
+				GroundItem* groundItem = new GroundItem;
+				if(!groundItem->Read(f))
 				{
 					Error("Update client: Broken SPAWN_ITEM.");
-					delete item;
+					delete groundItem;
 				}
 				else if(game->game_state != GS_LEVEL)
-					delete item;
+					delete groundItem;
 				else
 				{
-					game_res->PreloadItem(item->item);
-					game_level->GetLocationPart(item->pos).items.push_back(item);
+					game_level->GetLocationPart(groundItem->pos)
+						.AddGroundItem(groundItem);
 				}
 			}
 			break;
@@ -1007,16 +1007,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(game->game_state == GS_LEVEL)
 				{
 					LocationPart* locPart;
-					GroundItem* item = game_level->FindGroundItem(id, &locPart);
-					if(!item)
+					GroundItem* groundItem = game_level->FindGroundItem(id, &locPart);
+					if(!groundItem)
 						Error("Update client: REMOVE_ITEM, missing ground item %d.", id);
 					else
-					{
-						RemoveElement(locPart->items, item);
-						if(pc.data.before_player == BP_ITEM && pc.data.before_player_ptr.item == item)
-							pc.data.before_player = BP_NONE;
-						delete item;
-					}
+						locPart->RemoveGroundItem(groundItem);
 				}
 			}
 			break;

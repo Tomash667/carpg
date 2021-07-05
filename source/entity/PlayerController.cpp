@@ -752,7 +752,7 @@ void PlayerController::RecalculateLevel()
 	if(level != unit->level)
 	{
 		unit->level = level;
-		if(Net::IsLocal() && !game_level->entering)
+		if(Net::IsLocal() && game_level->ready)
 		{
 			team->CalculatePlayersLevel();
 			if(player_info && !IsLocal())
@@ -2772,8 +2772,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 
 		// ground items in front of player
-		for(GroundItem* ground_item : locPart.items)
-			CheckObjectDistance(ground_item->pos, ground_item, best_dist, BP_ITEM);
+		for(GroundItem* groundItem : locPart.GetGroundItems())
+			CheckObjectDistance(groundItem->pos, groundItem, best_dist, BP_ITEM);
 
 		// usable objects in front of player
 		for(Usable* usable : locPart.usables)
@@ -2936,10 +2936,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		else if(data.before_player == BP_ITEM)
 		{
 			// pickup item
-			GroundItem& item = *data.before_player_ptr.item;
+			GroundItem* groundItem = data.before_player_ptr.item;
 			if(u.action == A_NONE)
 			{
-				bool up_anim = (item.pos.y > u.pos.y + 0.5f);
+				bool up_anim = (groundItem->pos.y > u.pos.y + 0.5f);
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
@@ -2947,9 +2947,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 				if(Net::IsLocal())
 				{
-					u.AddItem2(item.item, item.count, item.team_count, false);
+					u.AddItem2(groundItem->item, groundItem->count, groundItem->team_count, false);
 
-					if(item.item->type == IT_GOLD)
+					if(groundItem->item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(game_res->sCoins);
 
 					if(Net::IsOnline())
@@ -2958,14 +2958,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.type = NetChange::PICKUP_ITEM;
 						c.unit = unit;
 						c.count = (up_anim ? 1 : 0);
-
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::REMOVE_ITEM;
-						c2.id = item.id;
 					}
-
-					RemoveElement(locPart.items, &item);
-					data.before_player = BP_NONE;
 
 					for(Event& event : game_level->location->events)
 					{
@@ -2973,18 +2966,18 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						{
 							ScriptEvent e(EVENT_PICKUP);
 							e.on_pickup.unit = unit;
-							e.on_pickup.item = &item;
+							e.on_pickup.item = groundItem;
 							event.quest->FireEvent(e);
 						}
 					}
 
-					delete& item;
+					locPart.RemoveGroundItem(groundItem);
 				}
 				else
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::PICKUP_ITEM;
-					c.id = item.id;
+					c.id = groundItem->id;
 				}
 			}
 		}

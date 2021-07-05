@@ -604,7 +604,7 @@ void Game::LoadGame(GameReader& f)
 	load_unit_handler.clear();
 	load_chest_handler.clear();
 	units_mesh_load.clear();
-	game_level->entering = true;
+	game_level->ready = false;
 
 	byte check_id = 0, read_id;
 
@@ -937,7 +937,6 @@ void Game::LoadGame(GameReader& f)
 		game_gui->load_screen->visible = false;
 
 	Info("Game loaded.");
-	game_level->entering = false;
 
 	if(net->mp_load)
 	{
@@ -947,6 +946,7 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
+		game_level->ready = true;
 		SetMusic();
 		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
 			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))

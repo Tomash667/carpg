@@ -101,7 +101,6 @@ public:
 	void PickableItemBegin(LocationPart& locPart, Object& o);
 	bool PickableItemAdd(const Item* item);
 	void PickableItemsFromStock(LocationPart& locPart, Object& o, Stock& stock);
-	void AddGroundItem(LocationPart& locPart, GroundItem* item);
 	GroundItem* FindGroundItem(int id, LocationPart** locPartResult = nullptr);
 	GroundItem* SpawnGroundItemInsideAnyRoom(const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
@@ -247,7 +246,7 @@ public:
 	int enter_from; // from where team entered level (used when spawning new player in MP)
 	float light_angle; // random angle used for lighting in outside locations
 	bool is_open, // is location loaded & team is inside
-		entering, // true when entering location/generating/spawning unit, false when finished
+		ready, // true when everything is read, false when entering/loading/leaving location
 		can_fast_travel; // used by MP clients
 	vector<Unit*> to_remove;
 	vector<CollisionObject> global_col;

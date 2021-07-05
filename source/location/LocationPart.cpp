@@ -11,6 +11,7 @@
 #include "GameCommon.h"
 #include "GameResources.h"
 #include "GroundItem.h"
+#include "Level.h"
 #include "LevelPart.h"
 #include "Net.h"
 #include "QuestManager.h"
@@ -21,6 +22,7 @@
 
 #include <ParticleSystem.h>
 #include <SoundManager.h>
+#include <Terrain.h>
 
 //=================================================================================================
 LocationPart::~LocationPart()
@@ -30,7 +32,7 @@ LocationPart::~LocationPart()
 	DeleteElements(usables);
 	DeleteElements(doors);
 	DeleteElements(chests);
-	DeleteElements(items);
+	DeleteElements(groundItems);
 	DeleteElements(traps);
 }
 
@@ -109,9 +111,9 @@ void LocationPart::Save(GameWriter& f)
 	for(Chest* chest : chests)
 		chest->Save(f);
 
-	f << items.size();
-	for(GroundItem* item : items)
-		item->Save(f);
+	f << groundItems.size();
+	for(GroundItem* groundItem : groundItems)
+		groundItem->Save(f);
 
 	f << traps.size();
 	for(Trap* trap : traps)
@@ -179,11 +181,11 @@ void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
 				chest->Load(f);
 			}
 
-			items.resize(f.Read<uint>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<uint>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			traps.resize(f.Read<uint>());
@@ -226,11 +228,11 @@ void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
 				object->Load(f);
 			}
 
-			items.resize(f.Read<uint>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<uint>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			usables.resize(f.Read<uint>());
@@ -280,11 +282,11 @@ void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
 				door->Load(f);
 			}
 
-			items.resize(f.Read<int>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<int>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			usables.resize(f.Read<uint>());
@@ -337,11 +339,11 @@ void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
 				chest->Load(f);
 			}
 
-			items.resize(f.Read<uint>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<uint>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			usables.resize(f.Read<uint>());
@@ -386,9 +388,9 @@ void LocationPart::Write(BitStreamWriter& f)
 	for(Chest* chest : chests)
 		chest->Write(f);
 	// ground items
-	f.Write(items.size());
-	for(GroundItem* item : items)
-		item->Write(f);
+	f.Write(groundItems.size());
+	for(GroundItem* groundItem : groundItems)
+		groundItem->Write(f);
 	// traps
 	f.Write(traps.size());
 	for(Trap* trap : traps)
@@ -512,11 +514,11 @@ bool LocationPart::Read(BitStreamReader& f)
 		Error("Read location part: Invalid ground item count.");
 		return false;
 	}
-	items.resize(count);
-	for(GroundItem*& item : items)
+	groundItems.resize(count);
+	for(GroundItem*& groundItem : groundItems)
 	{
-		item = new GroundItem;
-		if(!item->Read(f))
+		groundItem = new GroundItem;
+		if(!groundItem->Read(f))
 		{
 			Error("Read location part: Broken ground item.");
 			return false;
@@ -582,7 +584,7 @@ void LocationPart::Clear()
 	bloods.clear();
 	DeleteElements(objects);
 	DeleteElements(chests);
-	DeleteElements(items);
+	DeleteElements(groundItems);
 	for(Unit* unit : units)
 	{
 		if(unit->IsAlive() && unit->IsHero() && unit->hero->otherTeam)
@@ -672,23 +674,79 @@ bool LocationPart::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 }
 
 //=================================================================================================
+void LocationPart::AddGroundItem(GroundItem* groundItem)
+{
+	assert(groundItem);
+
+	if(game_level->ready)
+	{
+		game_res->PreloadItem(groundItem->item);
+
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPAWN_ITEM;
+			c.item = groundItem;
+		}
+	}
+
+	if(partType == LocationPart::Type::Outside)
+		game_level->terrain->SetY(groundItem->pos);
+	groundItems.push_back(groundItem);
+}
+
+//=================================================================================================
 bool LocationPart::RemoveGroundItem(const Item* item)
 {
 	assert(item);
 
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	for(GroundItem* groundItem : groundItems)
 	{
-		if((*it)->item == item)
+		if(groundItem->item == item)
 		{
-			delete *it;
-			if(it + 1 != end)
-				std::iter_swap(it, end - 1);
-			items.pop_back();
+			RemoveGroundItem(groundItem);
 			return true;
 		}
 	}
 
 	return false;
+}
+
+//=================================================================================================
+void LocationPart::RemoveGroundItem(int questId)
+{
+	assert(questId != -1);
+
+	for(GroundItem* groundItem : groundItems)
+	{
+		if(groundItem->item->quest_id == questId)
+		{
+			RemoveGroundItem(groundItem);
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void LocationPart::RemoveGroundItem(GroundItem* groundItem)
+{
+	assert(groundItem);
+
+	if(game_level->ready)
+	{
+		if(PlayerController::data.before_player == BP_ITEM && PlayerController::data.before_player_ptr.item == groundItem)
+			PlayerController::data.before_player = BP_NONE;
+
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_ITEM;
+			c.id = groundItem->id;
+		}
+	}
+
+	RemoveElement(groundItems, groundItem);
+	delete groundItem;
 }
 
 //=================================================================================================

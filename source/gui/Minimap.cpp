@@ -91,30 +91,30 @@ void Minimap::Draw(ControlDrawData*)
 	}
 
 	// items
-	LocalVector<GroundItem*> important_items;
-	for(vector<GroundItem*>::iterator it = locPart.items.begin(), end = locPart.items.end(); it != end; ++it)
+	LocalVector<const GroundItem*> importantItems;
+	for(const GroundItem* groundItem : locPart.GetGroundItems())
 	{
-		if(IsSet((*it)->item->flags, ITEM_IMPORTANT))
-			important_items->push_back(*it);
-		else if(!lvl || lvl->IsTileVisible((*it)->pos))
+		if(lvl && !lvl->IsTileVisible(groundItem->pos))
+			continue;
+
+		if(IsSet(groundItem->item->flags, ITEM_IMPORTANT))
+			importantItems->push_back(groundItem);
+		else
 		{
 			const Vec2 center(16, 16);
 			const Vec2 scale(0.25f, 0.25f);
-			const Vec2 pos(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - center);
+			const Vec2 pos(PosToPoint(Vec2(groundItem->pos.x, groundItem->pos.z)) - center);
 			const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSpriteTransform(tBag, mat, Color::Alpha(140));
 		}
 	}
-	for(vector<GroundItem*>::iterator it = important_items->begin(), end = important_items->end(); it != end; ++it)
+	for(const GroundItem* groundItem : importantItems)
 	{
-		if(!lvl || lvl->IsTileVisible((*it)->pos))
-		{
-			const Vec2 center(16, 16);
-			const Vec2 scale(0.25f, 0.25f);
-			const Vec2 pos(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - center);
-			const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, nullptr, 0.f, &pos);
-			gui->DrawSpriteTransform(tBagImportant, mat, Color::Alpha(140));
-		}
+		const Vec2 center(16, 16);
+		const Vec2 scale(0.25f, 0.25f);
+		const Vec2 pos(PosToPoint(Vec2(groundItem->pos.x, groundItem->pos.z)) - center);
+		const Matrix mat = Matrix::Transform2D(&center, 0.f, &scale, nullptr, 0.f, &pos);
+		gui->DrawSpriteTransform(tBagImportant, mat, Color::Alpha(140));
 	}
 
 	// team members

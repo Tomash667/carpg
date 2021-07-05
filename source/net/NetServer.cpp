@@ -846,7 +846,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.z -= cos(unit.rot) * 0.25f;
 					item->rot = Quat::RotY(Random(MAX_ANGLE));
 					if(!quest_mgr->quest_secret->CheckMoonStone(item, unit))
-						game_level->AddGroundItem(*unit.locPart, item);
+						unit.locPart->AddGroundItem(item);
 
 					// send to other players
 					if(active_players > 2)
@@ -873,34 +873,29 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 
 				LocationPart* locPart;
-				GroundItem* item = game_level->FindGroundItem(id, &locPart);
-				if(!item)
+				GroundItem* groundItem = game_level->FindGroundItem(id, &locPart);
+				if(!groundItem)
 				{
 					Error("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), id);
 					break;
 				}
 
 				// add item
-				unit.AddItem2(item->item, item->count, item->team_count, false);
+				unit.AddItem2(groundItem->item, groundItem->count, groundItem->team_count, false);
 
 				// start animation
-				bool up_animation = (item->pos.y > unit.pos.y + 0.5f);
+				bool up_animation = (groundItem->pos.y > unit.pos.y + 0.5f);
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
 				unit.mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 
 				// pick gold sound
-				if(item->item->type == IT_GOLD)
+				if(groundItem->item->type == IT_GOLD)
 				{
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::SOUND;
 					c.id = 0;
 				}
-
-				// send remove item to all players
-				NetChange& c2 = Add1(changes);
-				c2.type = NetChange::REMOVE_ITEM;
-				c2.id = item->id;
 
 				// send info to other players about picking item
 				if(active_players > 2)
@@ -911,11 +906,6 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					c3.count = (up_animation ? 1 : 0);
 				}
 
-				// remove item
-				if(game->pc->data.before_player == BP_ITEM && game->pc->data.before_player_ptr.item == item)
-					game->pc->data.before_player = BP_NONE;
-				RemoveElement(locPart->items, item);
-
 				// event
 				for(Event& event : game_level->location->events)
 				{
@@ -923,12 +913,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						ScriptEvent e(EVENT_PICKUP);
 						e.on_pickup.unit = &unit;
-						e.on_pickup.item = item;
+						e.on_pickup.item = groundItem;
 						event.quest->FireEvent(e);
 					}
 				}
 
-				delete item;
+				locPart->RemoveGroundItem(groundItem);
 			}
 			break;
 		// player consume item
@@ -2318,16 +2308,16 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 
 						// create item
-						GroundItem* item = new GroundItem;
-						item->Register();
-						item->item = Item::gold;
-						item->count = count;
-						item->team_count = 0;
-						item->pos = unit.pos;
-						item->pos.x -= sin(unit.rot) * 0.25f;
-						item->pos.z -= cos(unit.rot) * 0.25f;
-						item->rot = Quat::RotY(Random(MAX_ANGLE));
-						game_level->AddGroundItem(*info.u->locPart, item);
+						GroundItem* groundItem = new GroundItem;
+						groundItem->Register();
+						groundItem->item = Item::gold;
+						groundItem->count = count;
+						groundItem->team_count = 0;
+						groundItem->pos = unit.pos;
+						groundItem->pos.x -= sin(unit.rot) * 0.25f;
+						groundItem->pos.z -= cos(unit.rot) * 0.25f;
+						groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
+						info.u->locPart->AddGroundItem(groundItem);
 
 						// send info to other players
 						if(active_players > 2)

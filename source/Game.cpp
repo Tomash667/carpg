@@ -1330,7 +1330,7 @@ void Game::GenerateWorld()
 void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *game_level->location;
-	game_level->entering = true;
+	game_level->ready = false;
 	game_level->lvl = nullptr;
 
 	if(level == -2)
@@ -1486,13 +1486,15 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	Info("Randomness integrity: %d", RandVal());
 	Info("Entered location.");
-	game_level->entering = false;
+	game_level->ready = true;
 }
 
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
 	if(!game_level->is_open)
 		return;
+
+	game_level->ready = false;
 
 	if(Net::IsLocal() && !net->was_client && !clear)
 	{
@@ -2385,7 +2387,7 @@ void Game::ChangeLevel(int where)
 
 	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
-	game_level->entering = true;
+	game_level->ready = false;
 	game_level->event_handler = nullptr;
 	game_level->UpdateDungeonMinimap(false);
 
@@ -2507,7 +2509,7 @@ void Game::ChangeLevel(int where)
 	}
 
 	Info("Randomness integrity: %d", RandVal());
-	game_level->entering = false;
+	game_level->ready = true;
 }
 
 void Game::ExitToMap()
@@ -3032,7 +3034,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 		DeleteElements(locPart.doors);
 		DeleteElements(locPart.traps);
 		DeleteElements(locPart.usables);
-		DeleteElements(locPart.items);
+		DeleteElements(locPart.GetGroundItems());
 	}
 
 	if(!clear)
@@ -3171,11 +3173,8 @@ void Game::PreloadResources(bool worldmap)
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
 			{
-				for(GroundItem* ground_item : locPart.items)
-				{
-					assert(ground_item->item);
-					items_load.insert(ground_item->item);
-				}
+				for(GroundItem* groundItem : locPart.GetGroundItems())
+					items_load.insert(groundItem->item);
 				for(Chest* chest : locPart.chests)
 					PreloadItems(chest->items);
 				for(Usable* usable : locPart.usables)
@@ -3300,8 +3299,8 @@ void Game::VerifyResources()
 {
 	for(LocationPart& locPart : game_level->ForEachPart())
 	{
-		for(GroundItem* item : locPart.items)
-			VerifyItemResources(item->item);
+		for(GroundItem* groundItem : locPart.GetGroundItems())
+			VerifyItemResources(groundItem->item);
 		for([[maybe_unused]] Object* obj : locPart.objects)
 			assert(obj->mesh->state == ResourceState::Loaded);
 		for(Unit* unit : locPart.units)

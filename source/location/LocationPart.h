@@ -48,7 +48,9 @@ struct LocationPart
 	vector<Usable*> usables;
 	vector<Door*> doors;
 	vector<Chest*> chests;
-	vector<GroundItem*> items;
+private:
+	vector<GroundItem*> groundItems;
+public:
 	vector<Trap*> traps;
 	vector<Blood> bloods;
 	vector<GameLight> lights;
@@ -68,7 +70,6 @@ struct LocationPart
 	Usable* FindUsable(BaseUsable* base);
 	bool RemoveItem(const Item* item);
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
-	bool RemoveGroundItem(const Item* item);
 	Object* FindObject(BaseObject* base_obj);
 	Object* FindNearestObject(BaseObject* base_obj, const Vec3& pos);
 	Chest* FindChestInRoom(const Room& p);
@@ -84,4 +85,11 @@ struct LocationPart
 	bool CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	Explo* CreateExplo(Ability* ability, const Vec3& pos);
+
+	// ground items
+	vector<GroundItem*>& GetGroundItems() { return groundItems; }
+	void AddGroundItem(GroundItem* groundItem);
+	bool RemoveGroundItem(const Item* item);
+	void RemoveGroundItem(int questId);
+	void RemoveGroundItem(GroundItem* item);
 };

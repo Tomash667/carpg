@@ -212,30 +212,19 @@ void InsideLocationGenerator::OnEnter()
 		else
 		{
 			// dodaj kartkê (overkill sprawdzania!)
-			const Item* kartka = Item::Get("sekret_kartka2");
-			assert(kartka);
-			Room& r = *GetLevelData().rooms[0];
-			Chest* c = lvl.FindChestInRoom(r);
-			assert(c);
-			if(c)
-				c->AddItem(kartka, 1, 1);
+			const Item* item = Item::Get("sekret_kartka2");
+			assert(item);
+			Room& room = *GetLevelData().rooms[0];
+			Chest* chest = lvl.FindChestInRoom(room);
+			if(chest)
+				chest->AddItem(item, 1, 1);
 			else
 			{
-				Object* o = lvl.FindObject(BaseObject::Get("portal"));
-				assert(0);
-				if(o)
-				{
-					GroundItem* item = new GroundItem;
-					item->Register();
-					item->count = 1;
-					item->team_count = 1;
-					item->item = kartka;
-					item->pos = o->pos;
-					item->rot = Quat::RotY(Random(MAX_ANGLE));
-					lvl.items.push_back(item);
-				}
+				Object* obj = lvl.FindObject(BaseObject::Get("portal"));
+				if(obj)
+					game_level->SpawnItem(item, obj->pos);
 				else
-					game_level->SpawnGroundItemInsideRoom(r, kartka);
+					game_level->SpawnGroundItemInsideRoom(room, item);
 			}
 
 			secret->state = Quest_Secret::SECRET_CLOSED;
@@ -569,12 +558,12 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		{
 			on_wall.clear();
 			blocks.clear();
-			Room& r = *lvl.rooms[Rand() % lvl.rooms.size()];
-			if(r.target == RoomTarget::None)
+			Room& room = *lvl.rooms[Rand() % lvl.rooms.size()];
+			if(room.target == RoomTarget::None)
 			{
-				AddRoomColliders(lvl, r, blocks);
+				AddRoomColliders(lvl, room, blocks);
 
-				ObjectEntity e = GenerateDungeonObject(lvl, r, base, nullptr, on_wall, blocks, flags);
+				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, on_wall, blocks, flags);
 				if(e)
 				{
 					GenerateDungeonTreasure(lvl.chests, chest_lvl);

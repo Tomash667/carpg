@@ -479,23 +479,23 @@ bool Unit::DropItem(int index, uint count)
 
 	if(Net::IsLocal())
 	{
-		GroundItem* item = new GroundItem;
-		item->Register();
-		item->item = s.item;
-		item->count = count;
-		item->team_count = min(count, s.team_count);
-		s.team_count -= item->team_count;
-		item->pos = pos;
-		item->pos.x -= sin(rot) * 0.25f;
-		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Quat::RotY(Random(MAX_ANGLE));
+		GroundItem* groundItem = new GroundItem;
+		groundItem->Register();
+		groundItem->item = s.item;
+		groundItem->count = count;
+		groundItem->team_count = min(count, s.team_count);
+		s.team_count -= groundItem->team_count;
+		groundItem->pos = pos;
+		groundItem->pos.x -= sin(rot) * 0.25f;
+		groundItem->pos.z -= cos(rot) * 0.25f;
+		groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
 		if(s.count == 0)
 		{
 			noMore = true;
 			items.erase(items.begin() + index);
 		}
-		if(!quest_mgr->quest_secret->CheckMoonStone(item, *this))
-			game_level->AddGroundItem(*locPart, item);
+		if(!quest_mgr->quest_secret->CheckMoonStone(groundItem, *this))
+			locPart->AddGroundItem(groundItem);
 
 		if(Net::IsServer())
 		{
@@ -526,28 +526,28 @@ bool Unit::DropItem(int index, uint count)
 void Unit::DropItem(ITEM_SLOT slot)
 {
 	assert(slots[slot]);
-	const Item*& item2 = slots[slot];
+	const Item*& item = slots[slot];
 
-	weight -= item2->weight;
+	weight -= item->weight;
 
 	action = A_ANIMATION;
 	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 
 	if(Net::IsLocal())
 	{
-		RemoveItemEffects(item2, slot);
+		RemoveItemEffects(item, slot);
 
-		GroundItem* item = new GroundItem;
-		item->Register();
-		item->item = item2;
-		item->count = 1;
-		item->team_count = 0;
-		item->pos = pos;
-		item->pos.x -= sin(rot) * 0.25f;
-		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Quat::RotY(Random(MAX_ANGLE));
-		item2 = nullptr;
-		game_level->AddGroundItem(*locPart, item);
+		GroundItem* groundItem = new GroundItem;
+		groundItem->Register();
+		groundItem->item = item;
+		groundItem->count = 1;
+		groundItem->team_count = 0;
+		groundItem->pos = pos;
+		groundItem->pos.x -= sin(rot) * 0.25f;
+		groundItem->pos.z -= cos(rot) * 0.25f;
+		groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
+		item = nullptr;
+		locPart->AddGroundItem(groundItem);
 
 		if(Net::IsOnline())
 		{
@@ -566,7 +566,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	}
 	else
 	{
-		item2 = nullptr;
+		item = nullptr;
 
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
@@ -3684,7 +3684,8 @@ void Unit::EquipItem(int index)
 // Equip item out of nowhere, used only in tutorial
 void Unit::EquipItem(const Item* item)
 {
-	assert(item && game_level->entering);
+	assert(item);
+	assert(!game_level->ready); // todo
 	game_res->PreloadItem(item);
 	slots[ItemTypeToSlot(item->type)] = item;
 	weight += item->weight;
@@ -5341,7 +5342,7 @@ void Unit::Standup(bool warp, bool leave)
 			game_level->WarpUnit(*this, pos);
 	}
 
-	if(Net::IsServer() && !game_level->entering && !leave)
+	if(Net::IsServer() && game_level->ready && !leave)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STAND_UP;
@@ -5521,16 +5522,16 @@ void Unit::DropGold(int count)
 	if(Net::IsLocal())
 	{
 		// stwórz przedmiot
-		GroundItem* item = new GroundItem;
-		item->Register();
-		item->item = Item::gold;
-		item->count = count;
-		item->team_count = 0;
-		item->pos = pos;
-		item->pos.x -= sin(rot) * 0.25f;
-		item->pos.z -= cos(rot) * 0.25f;
-		item->rot = Quat::RotY(Random(MAX_ANGLE));
-		game_level->AddGroundItem(*locPart, item);
+		GroundItem* groundItem = new GroundItem;
+		groundItem->Register();
+		groundItem->item = Item::gold;
+		groundItem->count = count;
+		groundItem->team_count = 0;
+		groundItem->pos = pos;
+		groundItem->pos.x -= sin(rot) * 0.25f;
+		groundItem->pos.z -= cos(rot) * 0.25f;
+		groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
+		locPart->AddGroundItem(groundItem);
 
 		// wyœlij info o animacji
 		if(Net::IsServer())
@@ -6017,7 +6018,7 @@ void Unit::RefreshStock()
 		stock->date = worldtime;
 		stock->items.clear();
 		data->trader->stock->Parse(stock->items);
-		if(!game_level->entering)
+		if(game_level->ready)
 		{
 			for(ItemSlot& slot : stock->items)
 				game_res->PreloadItem(slot.item);
@@ -6431,7 +6432,7 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 void Unit::RotateTo(const Vec3& pos)
 {
 	rot = Vec3::LookAtAngle(this->pos, pos);
-	if(game_level->entering && ai)
+	if(!game_level->ready && ai)
 		ai->start_rot = rot;
 	else
 		changed = true;
@@ -6440,7 +6441,7 @@ void Unit::RotateTo(const Vec3& pos)
 void Unit::RotateTo(float rot)
 {
 	this->rot = rot;
-	if(game_level->entering && ai)
+	if(!game_level->ready && ai)
 		ai->start_rot = rot;
 	else
 		changed = true;
@@ -8717,7 +8718,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 			ai->Init(this);
 			game->ais.push_back(ai);
 
-			if(!game_level->entering)
+			if(game_level->ready)
 			{
 				// preload items
 				if(data->item_script)
@@ -8787,7 +8788,7 @@ void Unit::MoveOffscreen()
 //=================================================================================================
 void Unit::Kill()
 {
-	assert(game_level->entering); // TODO
+	assert(!game_level->ready); // TODO
 	live_state = DEAD;
 	if(data->mesh->IsLoaded())
 	{

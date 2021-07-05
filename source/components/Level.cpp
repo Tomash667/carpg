@@ -1842,17 +1842,17 @@ bool Level::PickableItemAdd(const Item* item)
 			i.spawn = spawn;
 			i.pos = pos;
 
-			GroundItem* gi = new GroundItem;
-			gi->Register();
-			gi->count = 1;
-			gi->team_count = 1;
-			gi->item = item;
-			gi->rot = Quat::RotY(Random(MAX_ANGLE));
+			GroundItem* groundItem = new GroundItem;
+			groundItem->Register();
+			groundItem->count = 1;
+			groundItem->team_count = 1;
+			groundItem->item = item;
+			groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
 			float rot = pickableObj->rot.y,
 				s = sin(rot),
 				c = cos(rot);
-			gi->pos = Vec3(pos.x * c + pos.z * s, pos.y, -pos.x * s + pos.z * c) + pickableObj->pos;
-			pickableLocPart->items.push_back(gi);
+			groundItem->pos = Vec3(pos.x * c + pos.z * s, pos.y, -pos.x * s + pos.z * c) + pickableObj->pos;
+			pickableLocPart->AddGroundItem(groundItem);
 
 			return true;
 		}
@@ -1882,34 +1882,17 @@ void Level::PickableItemsFromStock(LocationPart& locPart, Object& o, Stock& stoc
 }
 
 //=================================================================================================
-void Level::AddGroundItem(LocationPart& locPart, GroundItem* item)
-{
-	assert(item);
-
-	if(locPart.partType == LocationPart::Type::Outside)
-		terrain->SetY(item->pos);
-	locPart.items.push_back(item);
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_ITEM;
-		c.item = item;
-	}
-}
-
-//=================================================================================================
 GroundItem* Level::FindGroundItem(int id, LocationPart** locPartResult)
 {
 	for(LocationPart& locPart : locParts)
 	{
-		for(GroundItem* ground_item : locPart.items)
+		for(GroundItem* groundItem : locPart.GetGroundItems())
 		{
-			if(ground_item->id == id)
+			if(groundItem->id == id)
 			{
 				if(locPartResult)
 					*locPartResult = &locPart;
-				return ground_item;
+				return groundItem;
 			}
 		}
 	}
@@ -1926,9 +1909,9 @@ GroundItem* Level::SpawnGroundItemInsideAnyRoom(const Item* item)
 		int id = Rand() % lvl->rooms.size();
 		if(!lvl->rooms[id]->IsCorridor())
 		{
-			GroundItem* item2 = SpawnGroundItemInsideRoom(*lvl->rooms[id], item);
-			if(item2)
-				return item2;
+			GroundItem* groundItem = SpawnGroundItemInsideRoom(*lvl->rooms[id], item);
+			if(groundItem)
+				return groundItem;
 		}
 	}
 }
@@ -2022,7 +2005,7 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 		for(ItemSlot& slot : unit->items)
 			game_res->PreloadItem(slot.item);
 	}
-	if(base.trader && !entering)
+	if(base.trader && ready)
 	{
 		for(ItemSlot& slot : unit->stock->items)
 			game_res->PreloadItem(slot.item);
@@ -2037,7 +2020,7 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 	else
 		unit->cobj = nullptr;
 
-	if(Net::IsServer() && !entering)
+	if(Net::IsServer() && ready)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_UNIT;
@@ -3193,9 +3176,9 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 
 		// remove all ground items (>10 days) or some
 		if(days > 10)
-			DeleteElements(locPart.items);
+			DeleteElements(locPart.GetGroundItems());
 		else
-			DeleteElements(locPart.items, RemoveRandomPred<GroundItem*>(days, 0, 10));
+			DeleteElements(locPart.GetGroundItems(), RemoveRandomPred<GroundItem*>(days, 0, 10));
 
 		// heal units
 		if(!reset)
@@ -4242,17 +4225,17 @@ void Level::CleanLevel(int building_id)
 //=================================================================================================
 GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 {
-	GroundItem* gi = new GroundItem;
-	gi->Register();
-	gi->count = 1;
-	gi->team_count = 1;
-	gi->rot = Quat::RotY(Random(MAX_ANGLE));
-	gi->pos = pos;
+	GroundItem* groundItem = new GroundItem;
+	groundItem->Register();
+	groundItem->count = 1;
+	groundItem->team_count = 1;
+	groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
+	groundItem->pos = pos;
 	if(localPart->partType == LocationPart::Type::Outside)
-		terrain->SetY(gi->pos);
-	gi->item = item;
-	localPart->items.push_back(gi);
-	return gi;
+		terrain->SetY(groundItem->pos);
+	groundItem->item = item;
+	localPart->AddGroundItem(groundItem);
+	return groundItem;
 }
 
 //=================================================================================================
@@ -4260,19 +4243,19 @@ GroundItem* Level::SpawnItemAtObject(const Item* item, Object* obj)
 {
 	assert(item && obj);
 	Mesh* mesh = obj->base->mesh;
-	GroundItem* ground_item = SpawnItem(item, obj->pos);
+	GroundItem* groundItem = SpawnItem(item, obj->pos);
 	for(vector<Mesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
 			Matrix rot = Matrix::RotationY(obj->rot.y + PI);
 			Vec3 offset = Vec3::TransformZero(rot * it->mat);
-			ground_item->pos += offset;
-			ground_item->rot = Quat::CreateFromRotationMatrix(it->mat) * Quat::RotY(obj->rot.y);
+			groundItem->pos += offset;
+			groundItem->rot = Quat::CreateFromRotationMatrix(it->mat) * Quat::RotY(obj->rot.y);
 			break;
 		}
 	}
-	return ground_item;
+	return groundItem;
 }
 
 //=================================================================================================
@@ -4316,18 +4299,20 @@ Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range, 
 //=================================================================================================
 GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
 {
+	assert(item);
+
 	LocationPart& locPart = GetLocationPart(pos);
 	float best_dist = 999.f;
 	GroundItem* best_item = nullptr;
-	for(GroundItem* ground_item : locPart.items)
+	for(GroundItem* groundItem : locPart.GetGroundItems())
 	{
-		if(ground_item->item == item)
+		if(groundItem->item == item)
 		{
-			float dist = Vec3::Distance(pos, ground_item->pos);
+			float dist = Vec3::Distance(pos, groundItem->pos);
 			if(dist < best_dist || !best_item)
 			{
 				best_dist = dist;
-				best_item = ground_item;
+				best_item = groundItem;
 			}
 		}
 	}
@@ -4337,14 +4322,17 @@ GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
 //=================================================================================================
 GroundItem* Level::FindItem(const Item* item)
 {
+	assert(item);
+
 	for(LocationPart& locPart : locParts)
 	{
-		for(GroundItem* ground_item : locPart.items)
+		for(GroundItem* groundItem : locPart.GetGroundItems())
 		{
-			if(ground_item->item == item)
-				return ground_item;
+			if(groundItem->item == item)
+				return groundItem;
 		}
 	}
+
 	return nullptr;
 }
 

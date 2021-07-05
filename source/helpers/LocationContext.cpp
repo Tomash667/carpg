@@ -146,28 +146,6 @@ ForLocation::~ForLocation()
 }
 
 //=================================================================================================
-GroundItem* LocationContext::FindQuestGroundItem(int quest_id, LocationContext::Entry** entry, int* item_index)
-{
-	for(LocationContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.locPart->items.size(); i < len; ++i)
-		{
-			GroundItem* it = e.locPart->items[i];
-			if(it->item->IsQuest(quest_id))
-			{
-				if(entry)
-					*entry = &e;
-				if(item_index)
-					*item_index = i;
-				return it;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 bool LocationContext::FindUnit(Unit* unit, LocationContext::Entry** entry, int* unit_index)
 {
 	assert(unit);
@@ -235,27 +213,6 @@ Unit* LocationContext::FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Ent
 	}
 
 	return nullptr;
-}
-
-//=================================================================================================
-bool LocationContext::RemoveQuestGroundItem(int quest_id)
-{
-	LocationContext::Entry* entry;
-	int index;
-	GroundItem* item = FindQuestGroundItem(quest_id, &entry, &index);
-	if(item)
-	{
-		if(entry->active && Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
-			c.id = item->id;
-		}
-		RemoveElementIndex(entry->locPart->items, index);
-		return true;
-	}
-	else
-		return false;
 }
 
 //=================================================================================================
