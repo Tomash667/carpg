@@ -1,5 +1,9 @@
 Historia zmian
 
+Fixes:
+- crash po opuszczeniu lokalizacji, zapisaniu na mapie świata i wczytaniu
+- popsute opisy umiejętności
+
 --------------------------------------------------------------------------------
 Wersja 0.19 (???):
 ! nie można wczytywać już zapisów z wersji 0.8 lub starszej

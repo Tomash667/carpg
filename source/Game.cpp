@@ -3070,7 +3070,7 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 		res_mgr->CancelLoadScreen();
 	}
 
-	if(postLoad && game_level->location)
+	if(postLoad && game_level->location && game_level->is_open)
 	{
 		// spawn blood for units that are dead and their mesh just loaded
 		game_level->SpawnBlood();
