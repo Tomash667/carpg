@@ -1,5 +1,9 @@
 Changelog
 
+Fixes:
+- crash when leave location, save on worldmap & load
+- broken skill tooltips
+
 --------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):
 ! cannot load saves from version 0.7.1 or older

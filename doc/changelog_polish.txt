@@ -1,5 +1,9 @@
 Historia zmian
 
+Fixes:
+- crash po opuszczeniu lokalizacji, zapisaniu na mapie świata i wczytaniu
+- popsute opisy umiejętności
+
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
