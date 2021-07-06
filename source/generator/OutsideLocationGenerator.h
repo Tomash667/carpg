@@ -19,6 +19,7 @@ public:
 	void OnLoad() override;
 
 protected:
+	void SetOutsideParams();
 	void CreateMap();
 	virtual void RandomizeTerrainTexture();
 	void RandomizeHeight(int octaves, float frequency, float hmin, float hmax);

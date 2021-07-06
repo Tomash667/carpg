@@ -2,11 +2,34 @@
 #include "GroundItem.h"
 
 #include "BitStreamFunc.h"
+#include "GameResources.h"
 #include "Item.h"
 #include "QuestConsts.h"
 #include "QuestManager.h"
 
+#include <SceneNode.h>
+
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;
+
+//=================================================================================================
+void GroundItem::CreateSceneNode()
+{
+	Mesh* mesh;
+	Vec3 nodePos = pos;
+	if(IsSet(item->flags, ITEM_GROUND_MESH))
+	{
+		mesh = item->mesh;
+		mesh->EnsureIsLoaded();
+		nodePos.y -= mesh->head.bbox.v1.y;
+	}
+	else
+		mesh = game_res->aBag;
+	node = SceneNode::Get();
+	node->SetMesh(mesh);
+	node->center = pos;
+	node->mat = Matrix::Rotation(rot) * Matrix::Translation(nodePos);
+	node->persistent = true;
+}
 
 //=================================================================================================
 void GroundItem::Save(GameWriter& f)

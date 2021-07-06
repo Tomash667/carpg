@@ -7,6 +7,7 @@
 #include "City.h"
 #include "Game.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "Location.h"
 #include "Object.h"
 #include "OutsideObject.h"
@@ -17,6 +18,7 @@
 #include "Team.h"
 #include "World.h"
 
+#include <Scene.h>
 #include <Terrain.h>
 #include <Texture.h>
 
@@ -2303,8 +2305,6 @@ void CityGenerator::OnEnter()
 	game_level->Apply();
 	ApplyTiles();
 
-	game_level->SetOutsideParams();
-
 	if(first)
 	{
 		// generate buildings
@@ -2369,6 +2369,9 @@ void CityGenerator::OnEnter()
 		game_level->OnRevisitLevel();
 	}
 
+	SetOutsideParams();
+	SetBuildingsParams();
+
 	// create colliders
 	game->LoadingStep(game->txRecreatingObjects);
 	game_level->SpawnTerrainCollider();
@@ -2392,7 +2395,7 @@ void CityGenerator::OnEnter()
 	game->LoadingStep(game->txGeneratingMinimap);
 	CreateMinimap();
 
-	// dodaj gracza i jego dru¿ynê
+	// add player team
 	Vec3 spawn_pos;
 	float spawn_dir;
 	city->GetEntry(spawn_pos, spawn_dir);
@@ -2893,9 +2896,10 @@ void CityGenerator::CreateMinimap()
 //=================================================================================================
 void CityGenerator::OnLoad()
 {
-	game_level->SetOutsideParams();
+	SetOutsideParams();
 	game->SetTerrainTextures();
 	ApplyTiles();
+	SetBuildingsParams();
 
 	game_level->RecreateObjects(Net::IsClient());
 	game_level->SpawnTerrainCollider();
@@ -2922,5 +2926,27 @@ void CityGenerator::RespawnBuildingPhysics()
 	{
 		game_level->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, GDIR_DOWN,
 			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, true);
+	}
+}
+
+//=================================================================================================
+void CityGenerator::SetBuildingsParams()
+{
+	for(InsideBuilding* insideBuilding : city->inside_buildings)
+	{
+		Scene* scene = insideBuilding->lvlPart->scene;
+		scene->clear_color = Color::White;
+		scene->fog_range = Vec2(40, 80);
+		scene->fog_color = Color(0.9f, 0.85f, 0.8f);
+		scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
+		if(insideBuilding->top > 0.f)
+			scene->use_light_dir = false;
+		else
+		{
+			scene->light_color = Color::White;
+			scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+			scene->use_light_dir = true;
+		}
+		insideBuilding->lvlPart->draw_range = 80.f;
 	}
 }

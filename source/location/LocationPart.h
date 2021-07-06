@@ -60,6 +60,7 @@ public:
 
 	LocationPart(Type partType, int partId, bool haveTerrain) : partType(partType), partId(partId), haveTerrain(haveTerrain), lvlPart(nullptr) {}
 	~LocationPart();
+	void BuildScene();
 	void Update(float dt);
 	void Save(GameWriter& f);
 	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);

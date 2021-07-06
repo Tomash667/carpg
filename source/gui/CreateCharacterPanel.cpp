@@ -8,11 +8,13 @@
 #include "Level.h"
 #include "Unit.h"
 
+#include <Camera.h>
 #include <GetTextDialog.h>
 #include <PickItemDialog.h>
 #include <Render.h>
 #include <RenderTarget.h>
 #include <ResourceManager.h>
+#include <Scene.h>
 #include <SceneManager.h>
 
 //-----------------------------------------------------------------------------
@@ -36,7 +38,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr), scene(nullptr), camera(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -185,6 +187,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 CreateCharacterPanel::~CreateCharacterPanel()
 {
 	delete unit;
+	delete scene;
+	delete camera;
 }
 
 //=================================================================================================
@@ -248,6 +252,16 @@ void CreateCharacterPanel::LoadData()
 	custom_bt[1].tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("minus_disabled.png"));
 
 	rt_char = render->CreateRenderTarget(Int2(128, 256));
+
+	scene = new Scene;
+	scene->fog_range = Vec2(40, 80);
+	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
+	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
+	scene->light_color = Color::White;
+	scene->light_dir = Vec3(sin(PI / 2), 2.f, cos(PI / 2)).Normalize();
+	scene->use_light_dir = true;
+
+	camera = new Camera;
 }
 
 //=================================================================================================
@@ -642,23 +656,22 @@ void CreateCharacterPanel::RenderUnit()
 	render->SetRenderTarget(rt_char);
 	render->Clear(Color::None);
 
-	game_level->light_angle = PI / 2;
-	game_level->SetOutsideParams();
-
 	Vec3 from = Vec3(0.f, 2.f, dist);
 	Matrix mat_view = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
 	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	game_level->camera.mat_view_proj = mat_view * mat_proj;
-	game_level->camera.from = from;
-	game_level->camera.mat_view_inv = mat_view.Inverse();
-	game_level->camera.frustum.Set(game_level->camera.mat_view_proj);
+	camera->mat_view_proj = mat_view * mat_proj;
+	camera->from = from;
+	camera->mat_view_inv = mat_view.Inverse();
+	FrustumPlanes frustum(camera->mat_view_proj);
 
-	scene_mgr->SetScene(game_level->scene, &game_level->camera);
+	scene_mgr->SetScene(scene, camera);
 
 	game->draw_batch.Clear();
-	game->draw_batch.camera = &game_level->camera;
+	game->draw_batch.locPart = nullptr;
+	game->draw_batch.scene = scene;
+	game->draw_batch.camera = camera;
 	game->draw_batch.gather_lights = false;
-	game->ListDrawObjectsUnit(game_level->camera.frustum, true, *unit);
+	game->ListDrawObjectsUnit(frustum, *unit);
 	game->draw_batch.Process();
 	scene_mgr->DrawSceneNodes(game->draw_batch);
 

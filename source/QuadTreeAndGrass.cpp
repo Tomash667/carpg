@@ -3,6 +3,7 @@
 
 #include "GameResources.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "LocationHelper.h"
 #include "Object.h"
 
@@ -175,7 +176,7 @@ void Game::DrawGrass()
 	if(grass_patches[0].empty() && grass_patches[1].empty())
 		return;
 
-	grass_shader->Prepare(game_level->scene, &game_level->camera);
+	grass_shader->Prepare(game_level->localPart->lvlPart->scene, &game_level->camera);
 	for(int i = 0; i < 2; ++i)
 	{
 		if(grass_count[i] > 0)

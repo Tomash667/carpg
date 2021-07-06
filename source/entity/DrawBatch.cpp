@@ -9,6 +9,8 @@ ObjectPool<Light> DrawBatch::light_pool;
 //=================================================================================================
 void DrawBatch::Clear()
 {
+	RemoveElements(nodes, [](SceneNode* node) { return node->persistent; });
+	RemoveElements(alpha_nodes, [](SceneNode* node) { return node->persistent; });
 	SceneNode::Free(nodes);
 	SceneNode::Free(alpha_nodes);
 	node_groups.clear();

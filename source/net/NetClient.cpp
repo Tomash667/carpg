@@ -188,7 +188,6 @@ void Net::UpdateClient(float dt)
 					game->LeaveLevel();
 					game->net_mode = Game::NM_TRANSFER;
 					game->net_state = NetState::Client_ChangingLevel;
-					game->clear_color = Color::Black;
 					game_gui->load_screen->visible = true;
 					game_gui->level_gui->visible = false;
 					game_gui->world_map->Hide();
@@ -231,6 +230,7 @@ void Net::UpdateClient(float dt)
 				game->net_mode = Game::NM_TRANSFER;
 				game->net_state = NetState::Client_BeforeTransfer;
 				game->game_state = GS_LOAD;
+				game_level->ready = false;
 				game->items_load.clear();
 			}
 			break;

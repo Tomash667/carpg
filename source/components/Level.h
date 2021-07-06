@@ -186,7 +186,6 @@ public:
 	bool IsSafe();
 	bool CanFastTravel();
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit, bool check_dist = true);
-	void SetOutsideParams();
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
@@ -239,7 +238,6 @@ public:
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
 
-	Scene* scene;
 	Terrain* terrain;
 	LocationEventHandler* event_handler;
 	City* city_ctx; // pointer to city or nullptr when not inside city

@@ -123,7 +123,7 @@ void EncounterGenerator::OnEnter()
 	game_level->Apply();
 
 	ApplyTiles();
-	game_level->SetOutsideParams();
+	SetOutsideParams();
 
 	// generate objects
 	game->LoadingStep(game->txGeneratingObjects);

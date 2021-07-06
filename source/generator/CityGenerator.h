@@ -147,6 +147,7 @@ private:
 	void CreateMinimap() override;
 	void OnLoad() override;
 	void RespawnBuildingPhysics();
+	void SetBuildingsParams();
 
 	City* city;
 	TerrainTile* tiles;

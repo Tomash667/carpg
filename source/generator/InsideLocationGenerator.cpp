@@ -8,6 +8,7 @@
 #include "GameStats.h"
 #include "ItemHelper.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "MultiInsideLocation.h"
 #include "OutsideLocation.h"
 #include "Pathfinding.h"
@@ -20,6 +21,8 @@
 #include "Team.h"
 #include "World.h"
 
+#include <ResourceManager.h>
+#include <Scene.h>
 #include <Texture.h>
 
 // don't spawn objects near other objects to not block path
@@ -54,7 +57,7 @@ void InsideLocationGenerator::OnEnter()
 
 	game_level->Apply();
 
-	game->SetDungeonParamsAndTextures(base);
+	SetDungeonParamsAndTextures(base);
 
 	if(first)
 	{
@@ -1107,7 +1110,7 @@ void InsideLocationGenerator::OnLoad()
 	game_level->lvl = &inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 
-	game->SetDungeonParamsAndTextures(base);
+	SetDungeonParamsAndTextures(base);
 	game_level->RecreateObjects(Net::IsClient());
 	game_level->SpawnDungeonColliders();
 	CreateMinimap();
@@ -1395,4 +1398,62 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 		else
 			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit.data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y);
 	}
+}
+
+//=================================================================================================
+void InsideLocationGenerator::SetDungeonParamsAndTextures(BaseLocation& base)
+{
+	// scene parameters
+	LevelPart& lvlPart = *GetLevelData().lvlPart;
+	lvlPart.draw_range = base.draw_range;
+
+	Scene* scene = lvlPart.scene;
+	scene->clear_color = base.fog_color;
+	scene->fog_range = base.fog_range;
+	scene->fog_color = base.fog_color;
+	scene->ambient_color = base.ambient_color;
+	scene->use_light_dir = false;
+
+	// first dungeon textures
+	ApplyLocationTextureOverride(game_res->tFloor[0], game_res->tWall[0], game_res->tCeil[0], base.tex);
+
+	// second dungeon textures
+	if(base.tex2 != -1)
+	{
+		BaseLocation& base2 = g_base_locations[base.tex2];
+		ApplyLocationTextureOverride(game_res->tFloor[1], game_res->tWall[1], game_res->tCeil[1], base2.tex);
+	}
+	else
+	{
+		game_res->tFloor[1] = game_res->tFloor[0];
+		game_res->tCeil[1] = game_res->tCeil[0];
+		game_res->tWall[1] = game_res->tWall[0];
+	}
+}
+
+//=================================================================================================
+void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex)
+{
+	ApplyLocationTextureOverride(floor, tex.floor, game_res->tFloorBase);
+	ApplyLocationTextureOverride(wall, tex.wall, game_res->tWallBase);
+	ApplyLocationTextureOverride(ceil, tex.ceil, game_res->tCeilBase);
+}
+
+//=================================================================================================
+void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def)
+{
+	if(e.tex)
+	{
+		tex_o.diffuse = e.tex;
+		tex_o.normal = e.tex_normal;
+		tex_o.specular = e.tex_specular;
+	}
+	else
+		tex_o = tex_o_def;
+
+	res_mgr->Load(tex_o.diffuse);
+	if(tex_o.normal)
+		res_mgr->Load(tex_o.normal);
+	if(tex_o.specular)
+		res_mgr->Load(tex_o.specular);
 }

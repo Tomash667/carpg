@@ -34,18 +34,31 @@
 #include <TerrainShader.h>
 
 //=================================================================================================
-void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool outside)
+void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 {
 	LevelPart& lvlPart = *locPart.lvlPart;
 
 	draw_batch.Clear();
+	draw_batch.locPart = &locPart;
+	draw_batch.scene = lvlPart.scene;
 	draw_batch.camera = &game_level->camera;
-	draw_batch.gather_lights = !outside && scene_mgr->use_lighting;
+	draw_batch.gather_lights = !draw_batch.scene->use_light_dir && scene_mgr->use_lighting;
 	ClearGrass();
 	if(locPart.partType == LocationPart::Type::Outside)
 	{
 		ListQuadtreeNodes();
 		ListGrass();
+	}
+
+	// existing nodes
+	for(SceneNode* node : draw_batch.scene->nodes)
+	{
+		if(frustum.SphereToFrustum(node->center, node->radius))
+		{
+			if(draw_batch.gather_lights)
+				GatherDrawBatchLights(node);
+			draw_batch.Add(node);
+		}
 	}
 
 	// terrain
@@ -60,7 +73,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 	if(IsSet(draw_flags, DF_UNITS))
 	{
 		for(Unit* unit : locPart.units)
-			ListDrawObjectsUnit(frustum, outside, *unit);
+			ListDrawObjectsUnit(frustum, *unit);
 	}
 
 	// objects
@@ -75,7 +88,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					const Object& o = *obj.obj;
 					o.mesh->EnsureIsLoaded();
 					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-						AddObjectToDrawBatch(locPart, o, frustum);
+						AddObjectToDrawBatch(frustum, o);
 				}
 			}
 		}
@@ -86,54 +99,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 				const Object& o = **it;
 				o.mesh->EnsureIsLoaded();
 				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-					AddObjectToDrawBatch(locPart, o, frustum);
-			}
-		}
-	}
-
-	// items
-	if(IsSet(draw_flags, DF_ITEMS))
-	{
-		for(GroundItem* groundItem : locPart.GetGroundItems())
-		{
-			if(!groundItem->item)
-			{
-				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
-					groundItem->pos.x, groundItem->pos.y, groundItem->pos.z, groundItem->count, groundItem->team_count));
-				locPart.RemoveGroundItem(groundItem);
-				break;
-			}
-
-			Mesh* mesh;
-			Vec3 pos = groundItem->pos;
-			if(IsSet(groundItem->item->flags, ITEM_GROUND_MESH))
-			{
-				mesh = groundItem->item->mesh;
-				mesh->EnsureIsLoaded();
-				pos.y -= mesh->head.bbox.v1.y;
-			}
-			else
-				mesh = game_res->aBag;
-			if(frustum.SphereToFrustum(groundItem->pos, mesh->head.radius))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(mesh);
-				node->center = groundItem->pos;
-				node->mat = Matrix::Rotation(groundItem->rot) * Matrix::Translation(pos);
-				if(!outside)
-					GatherDrawBatchLights(locPart, node);
-				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == groundItem)
-				{
-					if(use_glow)
-					{
-						GlowNode& glow = Add1(draw_batch.glow_nodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
-				}
-				draw_batch.Add(node);
+					AddObjectToDrawBatch(frustum, o);
 			}
 		}
 	}
@@ -152,8 +118,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 				node->SetMesh(mesh);
 				node->center = use.pos;
 				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-				if(!outside)
-					GatherDrawBatchLights(locPart, node);
+				if(draw_batch.gather_lights)
+					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
 				{
 					if(use_glow)
@@ -189,8 +155,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					node->SetMesh(chest.meshInst->mesh);
 				node->center = chest.pos;
 				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
-				if(!outside)
-					GatherDrawBatchLights(locPart, node);
+				if(draw_batch.gather_lights)
+					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
 				{
 					if(use_glow)
@@ -226,8 +192,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 				}
 				node->center = door.pos;
 				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
-				if(!outside)
-					GatherDrawBatchLights(locPart, node);
+				if(draw_batch.gather_lights)
+					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
 				{
 					if(use_glow)
@@ -251,8 +217,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 		{
 			if(blood.size > 0.f && frustum.SphereToFrustum(blood.pos, blood.size * blood.scale))
 			{
-				if(!outside)
-					GatherDrawBatchLights(locPart, nullptr, blood.pos.x, blood.pos.y, blood.size * blood.scale, 0, blood.lights);
+				if(draw_batch.gather_lights)
+					GatherDrawBatchLights(nullptr, blood.pos.x, blood.pos.y, blood.size * blood.scale, 0, blood.lights);
 				draw_batch.bloods.push_back(&blood);
 			}
 		}
@@ -273,8 +239,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					node->SetMesh(bullet.mesh);
 					node->center = bullet.pos;
 					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
-					if(!outside)
-						GatherDrawBatchLights(locPart, node);
+					if(draw_batch.gather_lights)
+						GatherDrawBatchLights(node);
 					draw_batch.Add(node);
 				}
 			}
@@ -311,8 +277,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					node->SetMesh(trap.base->mesh);
 				node->center = trap.pos;
 				node->mat = Matrix::RotationY(trap.rot) * Matrix::Translation(trap.pos);
-				if(!outside)
-					GatherDrawBatchLights(locPart, node);
+				if(draw_batch.gather_lights)
+					GatherDrawBatchLights(node);
 				draw_batch.Add(node);
 			}
 		}
@@ -352,7 +318,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 				if(draw_particle_sphere)
 				{
 					DebugNode* debug_node = DebugNode::Get();
-					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.mat_view_proj;
+					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * draw_batch.camera->mat_view_proj;
 					debug_node->shape = MeshShape::Sphere;
 					debug_node->color = Color::Green;
 					draw_batch.debug_nodes.push_back(debug_node);
@@ -425,7 +391,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 				DebugNode* node = DebugNode::Get();
 				node->shape = shape;
 				node->color = Color(153, 217, 164);
-				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * game_level->camera.mat_view_proj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * draw_batch.camera->mat_view_proj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}
@@ -452,7 +418,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::Box;
 					node->color = Color(163, 73, 164);
-					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * game_level->camera.mat_view_proj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * draw_batch.camera->mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -464,7 +430,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::Capsule;
 					node->color = Color(163, 73, 164);
-					node->mat = Matrix::Scale(r, h + r, r) * m_world * game_level->camera.mat_view_proj;
+					node->mat = Matrix::Scale(r, h + r, r) * m_world * draw_batch.camera->mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -475,7 +441,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					node->shape = MeshShape::Cylinder;
 					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * game_level->camera.mat_view_proj;
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * draw_batch.camera->mat_view_proj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -497,7 +463,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
-							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * game_level->camera.mat_view_proj;
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * draw_batch.camera->mat_view_proj;
 							draw_batch.debug_nodes.push_back(node);
 						}
 						else
@@ -513,7 +479,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::TriMesh;
 					node->color = Color(163, 73, 164);
-					node->mat = m_world * game_level->camera.mat_view_proj;
+					node->mat = m_world * draw_batch.camera->mat_view_proj;
 					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -523,11 +489,29 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool o
 		}
 	}
 
+	// glow
+	draw_batch.tmpGlow = nullptr;
+	if(PlayerController::data.before_player == BP_ITEM)
+	{
+		GroundItem* groundItem = PlayerController::data.before_player_ptr.item;
+		if(use_glow)
+		{
+			GlowNode& glow = Add1(draw_batch.glow_nodes);
+			glow.node = groundItem->node;
+			glow.color = Color::White;
+		}
+		else
+		{
+			groundItem->node->tint = Vec4(2, 2, 2, 1);
+			draw_batch.tmpGlow = groundItem->node;
+		}
+	}
+
 	draw_batch.Process();
 }
 
 //=================================================================================================
-void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
+void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 {
 	u.mesh_inst->mesh->EnsureIsLoaded();
 	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
@@ -575,11 +559,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	node->tint = u.data->tint;
 
 	// light settings
-	if(!outside)
-	{
-		assert(u.locPart);
-		GatherDrawBatchLights(*u.locPart, node);
-	}
+	if(draw_batch.gather_lights)
+		GatherDrawBatchLights(node);
 	if(selected)
 	{
 		if(use_glow)
@@ -714,7 +695,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
+			debug_node->mat = box->mat * node2->mat * draw_batch.camera->mat_view_proj;
 			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -726,7 +707,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		if(!hitbox)
 			hitbox = u.mesh_inst->mesh->FindPoint("hitbox");
 		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * game_level->camera.mat_view_proj;
+		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * draw_batch.camera->mat_view_proj;
 		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -764,7 +745,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * game_level->camera.mat_view_proj;
+			debug_node->mat = box->mat * node2->mat * draw_batch.camera->mat_view_proj;
 			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -965,7 +946,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 	{
 		float h = u.GetUnitHeight() / 2;
 		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
+		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * draw_batch.camera->mat_view_proj;
 		debug_node->shape = MeshShape::Cylinder;
 		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -976,7 +957,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 		Box box;
 		u.GetBox(box);
 		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.mat_view_proj;
+		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * draw_batch.camera->mat_view_proj;
 		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -984,7 +965,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u)
 }
 
 //=================================================================================================
-void Game::AddObjectToDrawBatch(LocationPart& locPart, const Object& o, FrustumPlanes& frustum)
+void Game::AddObjectToDrawBatch(FrustumPlanes& frustum, const Object& o)
 {
 	SceneNode* node = SceneNode::Get();
 	node->mat = Matrix::Transform(o.pos, o.rot, o.scale);
@@ -1002,8 +983,8 @@ void Game::AddObjectToDrawBatch(LocationPart& locPart, const Object& o, FrustumP
 	{
 		node->center = o.pos;
 		node->radius = o.GetRadius();
-		if(locPart.partType != LocationPart::Type::Outside)
-			GatherDrawBatchLights(locPart, node);
+		if(draw_batch.gather_lights)
+			GatherDrawBatchLights(node);
 		draw_batch.Add(node);
 	}
 	else
@@ -1029,8 +1010,8 @@ void Game::AddObjectToDrawBatch(LocationPart& locPart, const Object& o, FrustumP
 				node2->tint = node->tint;
 				node2->tex_override = node->tex_override;
 				draw_batch.Add(node2, i);
-				if(locPart.partType != LocationPart::Type::Outside)
-					GatherDrawBatchLights(locPart, node2);
+				if(draw_batch.gather_lights)
+					GatherDrawBatchLights(node2);
 			}
 		}
 
@@ -1156,7 +1137,7 @@ void Game::ListAreas(LocationPart& locPart)
 		else
 			pos = pc->unit->target_pos;
 		DebugNode* node = DebugNode::Get();
-		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * game_level->camera.mat_view_proj;
+		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * draw_batch.camera->mat_view_proj;
 		node->shape = MeshShape::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
@@ -1264,6 +1245,8 @@ void Game::ListEntry(EntryType type, const Int2& pt, GameDirection dir)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
+	GameCamera& camera = game_level->camera;
+
 	Ability* ability;
 	if(pc->unit->action == A_CAST)
 		ability = pc->unit->act.cast.ability;
@@ -1432,7 +1415,7 @@ void Game::PrepareAreaPath()
 			else
 			{
 				// raytest - can be cast on alive units or dead team members
-				const float range = ability->range + game_level->camera.dist;
+				const float range = ability->range + camera.dist;
 				RaytestClosestUnitCallback clbk([=](Unit* unit)
 				{
 					if(unit == pc->unit)
@@ -1441,9 +1424,9 @@ void Game::PrepareAreaPath()
 						return false;
 					return true;
 				});
-				Vec3 from = game_level->camera.from;
-				Vec3 dir = (game_level->camera.to - from).Normalized();
-				from += dir * game_level->camera.dist;
+				Vec3 from = camera.from;
+				Vec3 dir = (camera.to - from).Normalized();
+				from += dir * camera.dist;
 				Vec3 to = from + dir * range;
 				phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
 				target = clbk.hit;
@@ -1541,22 +1524,22 @@ void Game::PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius)
 }
 
 //=================================================================================================
-void Game::GatherDrawBatchLights(LocationPart& locPart, SceneNode* node)
+void Game::GatherDrawBatchLights(SceneNode* node)
 {
 	assert(node);
-	GatherDrawBatchLights(locPart, node, node->center.x, node->center.z, node->radius, node->subs & SceneNode::SPLIT_MASK, node->lights);
+	GatherDrawBatchLights(node, node->center.x, node->center.z, node->radius, node->subs & SceneNode::SPLIT_MASK, node->lights);
 }
 
 //=================================================================================================
-void Game::GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights)
+void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights)
 {
 	assert(radius > 0);
 
-	TopN<Light*, 3, float, std::less<>> best(nullptr, game_level->camera.zfar);
+	TopN<Light*, 3, float, std::less<>> best(nullptr, draw_batch.camera->zfar);
 
-	if(locPart.masks.empty())
+	if(draw_batch.locPart->masks.empty())
 	{
-		for(Light& light : locPart.lights)
+		for(Light& light : draw_batch.locPart->lights)
 		{
 			float dist = Distance(x, z, light.pos.x, light.pos.z);
 			if(dist < light.range + radius)
@@ -1568,7 +1551,7 @@ void Game::GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x
 		const Vec2 obj_pos(x, z);
 		const bool is_split = (node && IsSet(node->mesh->head.flags, Mesh::F_SPLIT));
 
-		for(GameLight& light : locPart.lights)
+		for(GameLight& light : draw_batch.locPart->lights)
 		{
 			Vec2 light_pos;
 			float dist;
@@ -1584,7 +1567,7 @@ void Game::GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x
 					float range_sum = 0.f;
 
 					// are there any masks between object and light?
-					for(LightMask& mask : locPart.masks)
+					for(LightMask& mask : draw_batch.locPart->masks)
 					{
 						if(LineToRectangleSize(obj_pos, light_pos, mask.pos, mask.size))
 						{
@@ -1634,7 +1617,7 @@ void Game::GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x
 					float range_sum = 0.f;
 
 					// are there any masks between object and light?
-					for(LightMask& mask : locPart.masks)
+					for(LightMask& mask : draw_batch.locPart->masks)
 					{
 						if(LineToRectangleSize(obj_pos, light_pos, mask.pos, mask.size))
 						{
@@ -1699,18 +1682,17 @@ void Game::GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x
 }
 
 //=================================================================================================
-void Game::DrawScene(bool outside)
+void Game::DrawScene()
 {
-	game_level->scene->use_light_dir = outside;
-	scene_mgr->SetScene(game_level->scene, &game_level->camera);
+	scene_mgr->SetScene(draw_batch.scene, draw_batch.camera);
 
 	// sky
-	if(outside && IsSet(draw_flags, DF_SKYBOX))
-		skybox_shader->Draw(*game_res->aSkybox, game_level->camera);
+	if(draw_batch.scene->use_light_dir && IsSet(draw_flags, DF_SKYBOX))
+		skybox_shader->Draw(*game_res->aSkybox, *draw_batch.camera);
 
 	// terrain
 	if(!draw_batch.terrain_parts.empty())
-		terrain_shader->Draw(game_level->scene, &game_level->camera, game_level->terrain, draw_batch.terrain_parts);
+		terrain_shader->Draw(draw_batch.scene, draw_batch.camera, game_level->terrain, draw_batch.terrain_parts);
 
 	// dungeon
 	if(!draw_batch.dungeon_parts.empty())
@@ -1735,7 +1717,7 @@ void Game::DrawScene(bool outside)
 
 	// blood
 	if(!draw_batch.bloods.empty())
-		DrawBloods(draw_batch.bloods, outside);
+		DrawBloods(draw_batch.bloods);
 
 	// particles
 	if(!draw_batch.billboards.empty() || !draw_batch.pes.empty() || draw_batch.tpes)
@@ -1792,7 +1774,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 }
 
 //=================================================================================================
-void Game::DrawBloods(const vector<Blood*>& bloods, bool outside)
+void Game::DrawBloods(const vector<Blood*>& bloods)
 {
 	SuperShader* shader = scene_mgr->super_shader;
 	shader->PrepareDecals();

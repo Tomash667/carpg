@@ -38,6 +38,7 @@ struct DrawBatch : public SceneBatch
 {
 	static ObjectPool<Light> light_pool;
 
+	LocationPart* locPart;
 	vector<DebugNode*> debug_nodes;
 	vector<GlowNode> glow_nodes;
 	vector<uint> terrain_parts;
@@ -51,6 +52,7 @@ struct DrawBatch : public SceneBatch
 	vector<DungeonPart> dungeon_parts;
 	vector<DungeonPartGroup> dungeon_part_groups;
 	vector<Light*> tmp_lights;
+	SceneNode* tmpGlow;
 
 	void Clear();
 };

@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.19 (???):
 ! cannot load saves from version 0.8 or older
++ scene manager improvements - ground items
 - taking equiped item from corpse wrongly updated inventory view
 
 --------------------------------------------------------------------------------

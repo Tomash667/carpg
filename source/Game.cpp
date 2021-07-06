@@ -109,7 +109,7 @@ Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screens
 draw_hitbox(false), noai(false), testing(false), game_speed(1.f), next_seed(0), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
 musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr),
 rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), quickstart_slot(SaveSlot::MAX_SLOTS),
-clear_color(Color::Black), in_load(false), tMinimap(nullptr)
+in_load(false), tMinimap(nullptr)
 {
 	dialog_context.is_local = true;
 
@@ -470,7 +470,6 @@ void Game::PostconfigureGame()
 	SaveCfg();
 
 	// end load screen, show menu
-	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
 	game_gui->load_screen->visible = false;
 	game_gui->main_menu->Show();
@@ -616,17 +615,8 @@ void Game::DrawGame()
 	if(game_state == GS_LEVEL)
 	{
 		LocationPart& locPart = *pc->unit->locPart;
-		bool outside;
-		if(locPart.partType == LocationPart::Type::Outside)
-			outside = true;
-		else if(locPart.partType == LocationPart::Type::Inside)
-			outside = false;
-		else if(game_level->city_ctx->inside_buildings[locPart.partId]->top > 0.f)
-			outside = false;
-		else
-			outside = true;
-
-		ListDrawObjects(locPart, game_level->camera.frustum, outside);
+		game_level->camera.zfar = locPart.lvlPart->draw_range;
+		ListDrawObjects(locPart, game_level->camera.frustum);
 
 		vector<PostEffect> postEffects;
 		GetPostEffects(postEffects);
@@ -637,10 +627,11 @@ void Game::DrawGame()
 		if(usePostfx || useGlow)
 			postfx_shader->SetTarget();
 
-		render->Clear(clear_color);
+		Scene* scene = game_level->localPart->lvlPart->scene;
+		render->Clear(scene->clear_color);
 
 		// draw level
-		DrawScene(outside);
+		DrawScene();
 
 		// draw glow
 		if(useGlow)
@@ -652,9 +643,12 @@ void Game::DrawGame()
 				postfx_shader->Prepare();
 			postfx_shader->Draw(postEffects);
 		}
+
+		if(draw_batch.tmpGlow)
+			draw_batch.tmpGlow->tint = Vec4::One;
 	}
 	else
-		render->Clear(clear_color);
+		render->Clear(Color::Black);
 
 	// draw gui
 	game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
@@ -905,6 +899,7 @@ void Game::DoExitToMenu()
 {
 	prev_game_state = game_state;
 	game_state = GS_EXIT_TO_MENU;
+	game_level->ready = false;
 
 	StopAllSounds();
 	ClearGame();
@@ -1330,7 +1325,6 @@ void Game::GenerateWorld()
 void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *game_level->location;
-	game_level->ready = false;
 	game_level->lvl = nullptr;
 
 	if(level == -2)
@@ -1477,24 +1471,21 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 	else
 	{
-		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
 		game_gui->load_screen->visible = false;
 		game_gui->main_menu->visible = false;
 		game_gui->level_gui->visible = true;
+		game_level->ready = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
 	Info("Entered location.");
-	game_level->ready = true;
 }
 
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
 	if(!game_level->is_open)
 		return;
-
-	game_level->ready = false;
 
 	if(Net::IsLocal() && !net->was_client && !clear)
 	{
@@ -1753,7 +1744,7 @@ void Game::UpdateGame(float dt)
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
 	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
-	game_level->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+	game_level->localPart->lvlPart->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
 
 	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
 	{
@@ -2387,7 +2378,6 @@ void Game::ChangeLevel(int where)
 
 	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
-	game_level->ready = false;
 	game_level->event_handler = nullptr;
 	game_level->UpdateDungeonMinimap(false);
 
@@ -2501,23 +2491,22 @@ void Game::ChangeLevel(int where)
 	}
 	else
 	{
-		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
 		game_gui->load_screen->visible = false;
 		game_gui->main_menu->visible = false;
 		game_gui->level_gui->visible = true;
+		game_level->ready = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
-	game_level->ready = true;
 }
 
 void Game::ExitToMap()
 {
 	game_gui->CloseAllPanels();
 
-	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
+	game_level->ready = false;
 	if(game_level->is_open)
 		LeaveLocation();
 
@@ -2719,58 +2708,6 @@ void ApplyDungeonLightToMesh(Mesh& mesh)
 	}
 }
 
-void Game::ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex)
-{
-	ApplyLocationTextureOverride(floor, tex.floor, game_res->tFloorBase);
-	ApplyLocationTextureOverride(wall, tex.wall, game_res->tWallBase);
-	ApplyLocationTextureOverride(ceil, tex.ceil, game_res->tCeilBase);
-}
-
-void Game::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def)
-{
-	if(e.tex)
-	{
-		tex_o.diffuse = e.tex;
-		tex_o.normal = e.tex_normal;
-		tex_o.specular = e.tex_specular;
-	}
-	else
-		tex_o = tex_o_def;
-
-	res_mgr->Load(tex_o.diffuse);
-	if(tex_o.normal)
-		res_mgr->Load(tex_o.normal);
-	if(tex_o.specular)
-		res_mgr->Load(tex_o.specular);
-}
-
-void Game::SetDungeonParamsAndTextures(BaseLocation& base)
-{
-	// scene parameters
-	game_level->camera.zfar = base.draw_range;
-	game_level->scene->fog_range = base.fog_range;
-	game_level->scene->fog_color = base.fog_color;
-	game_level->scene->ambient_color = base.ambient_color;
-	game_level->scene->use_light_dir = false;
-	clear_color_next = game_level->scene->fog_color;
-
-	// first dungeon textures
-	ApplyLocationTextureOverride(game_res->tFloor[0], game_res->tWall[0], game_res->tCeil[0], base.tex);
-
-	// second dungeon textures
-	if(base.tex2 != -1)
-	{
-		BaseLocation& base2 = g_base_locations[base.tex2];
-		ApplyLocationTextureOverride(game_res->tFloor[1], game_res->tWall[1], game_res->tCeil[1], base2.tex);
-	}
-	else
-	{
-		game_res->tFloor[1] = game_res->tFloor[0];
-		game_res->tCeil[1] = game_res->tCeil[0];
-		game_res->tWall[1] = game_res->tWall[0];
-	}
-}
-
 void Game::SetDungeonParamsToMeshes()
 {
 	// doors/stairs/traps textures
@@ -2832,7 +2769,7 @@ void Game::LeaveLevel(bool clear)
 		for(LocationPart& locPart : game_level->ForEachPart())
 		{
 			LeaveLevel(locPart, clear);
-			locPart.lvlPart->Free();
+			delete locPart.lvlPart;
 			locPart.lvlPart = nullptr;
 		}
 		if(game_level->city_ctx && (Net::IsClient() || net->was_client))
@@ -2995,9 +2932,6 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 		locPart.units.clear();
 	}
 
-	// temporary entities
-	locPart.lvlPart->Clear();
-
 	if(Net::IsLocal() && !net->was_client)
 	{
 		// remove chest meshes
@@ -3054,8 +2988,8 @@ void Game::LoadingStart(int steps)
 	loading_steps = steps;
 	loading_index = 0;
 	loading_first_step = true;
-	clear_color = Color::Black;
 	game_state = GS_LOAD;
+	game_level->ready = false;
 	game_gui->load_screen->visible = true;
 	game_gui->main_menu->visible = false;
 	game_gui->level_gui->visible = false;
@@ -3910,6 +3844,9 @@ void Game::OnEnterLevelOrLocation()
 			e.quest->FireEvent(event);
 		}
 	}
+
+	for(LocationPart& locPart : game_level->ForEachPart())
+		locPart.BuildScene();
 
 	if(Net::IsClient() && game_level->boss)
 		game_gui->level_gui->SetBoss(game_level->boss, true);

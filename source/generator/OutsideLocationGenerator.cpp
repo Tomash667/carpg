@@ -13,6 +13,7 @@
 #include "World.h"
 
 #include <Perlin.h>
+#include <Scene.h>
 #include <Terrain.h>
 #include <Texture.h>
 
@@ -71,6 +72,20 @@ int OutsideLocationGenerator::GetNumberOfSteps()
 		steps += 2; // txGeneratingUnits, txGeneratingPhysics
 	++steps; // txRecreatingObjects
 	return steps;
+}
+
+//=================================================================================================
+void OutsideLocationGenerator::SetOutsideParams()
+{
+	Scene* scene = outside->lvlPart->scene;
+	scene->clear_color = Color::White;
+	scene->fog_range = Vec2(40, 80);
+	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
+	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
+	scene->light_color = Color::White;
+	scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+	scene->use_light_dir = true;
+	outside->lvlPart->draw_range = 80.f;
 }
 
 //=================================================================================================
@@ -147,7 +162,7 @@ void OutsideLocationGenerator::OnEnter()
 	if(IsSet(update_flags, PREVENT_RESET))
 		need_reset = false;
 
-	game_level->SetOutsideParams();
+	SetOutsideParams();
 
 	world->GetOutsideSpawnPoint(team_pos, team_dir);
 
@@ -440,7 +455,7 @@ void OutsideLocationGenerator::CreateMinimap()
 //=================================================================================================
 void OutsideLocationGenerator::OnLoad()
 {
-	game_level->SetOutsideParams();
+	SetOutsideParams();
 	game->SetTerrainTextures();
 	ApplyTiles();
 

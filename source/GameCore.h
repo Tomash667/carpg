@@ -94,6 +94,7 @@ struct AIController;
 struct AITeam;
 struct Amulet;
 struct Armor;
+struct BaseLocation;
 struct BaseObject;
 struct BaseTrap;
 struct BaseUsable;

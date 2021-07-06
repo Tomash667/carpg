@@ -58,10 +58,9 @@ Level* game_level;
 //=================================================================================================
 Level::Level() : localPart(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
 shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
-shape_floor(nullptr), dungeon_mesh(nullptr)
+shape_floor(nullptr), dungeon_mesh(nullptr), ready(false)
 {
 	camera.zfar = 80.f;
-	scene = new Scene;
 }
 
 //=================================================================================================
@@ -69,7 +68,6 @@ Level::~Level()
 {
 	DeleteElements(bow_instances);
 
-	delete scene;
 	delete terrain;
 	delete terrain_shape;
 	delete dungeon_mesh;
@@ -307,11 +305,7 @@ void Level::Apply()
 	for(LocationPart& locPart : locParts)
 	{
 		if(!locPart.lvlPart)
-		{
-			locPart.lvlPart = LevelPart::Get();
-			locPart.lvlPart->locPart = &locPart;
-			locPart.lvlPart->lights_dt = 1.f;
-		}
+			locPart.lvlPart = new LevelPart(&locPart);
 	}
 }
 
@@ -1325,9 +1319,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 					assert(!inside);
 
 					inside = new InsideBuilding((int)city->inside_buildings.size());
-					inside->lvlPart = LevelPart::Get();
-					inside->lvlPart->locPart = inside;
-					inside->lvlPart->lights_dt = 1.f;
+					inside->lvlPart = new LevelPart(inside);
 					inside->level_shift = city->inside_offset;
 					inside->offset = Vec2(512.f * city->inside_offset.x + 256.f, 512.f * city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
@@ -4451,19 +4443,6 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 	}
 
 	return CanLeaveLocationResult::Yes;
-}
-
-//=================================================================================================
-void Level::SetOutsideParams()
-{
-	camera.zfar = 80.f;
-	game->clear_color_next = Color::White;
-	scene->fog_range = Vec2(40, 80);
-	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
-	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
-	scene->light_color = Color::White;
-	scene->light_dir = Vec3(sin(light_angle), 2.f, cos(light_angle)).Normalize();
-	scene->use_light_dir = true;
 }
 
 //=================================================================================================

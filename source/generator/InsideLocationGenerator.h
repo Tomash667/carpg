@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "LocationGenerator.h"
+#include "BaseLocation.h"
 #include "ObjectEntity.h"
 #include "RoomType.h"
 
@@ -31,6 +32,9 @@ protected:
 	void SpawnHeroesInsideDungeon();
 	void FindPathFromStairsToStairs(vector<RoomGroup*>& groups);
 	void OpenDoorsByTeam(const Int2& pt);
+	void SetDungeonParamsAndTextures(BaseLocation& base);
+	void ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex);
+	void ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def);
 
 	InsideLocation* inside;
 };

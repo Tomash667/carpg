@@ -1096,8 +1096,8 @@ void Game::UpdateClientTransfer(float dt)
 					net->mp_load_worldmap = false;
 					net_state = NetState::Client_StartOnWorldmap;
 					Info("NM_TRANSFER: Starting at world map.");
-					clear_color = Color::White;
 					game_state = GS_WORLDMAP;
+					game_level->ready = false;
 					game_gui->load_screen->visible = false;
 					game_gui->main_menu->visible = false;
 					game_gui->level_gui->visible = false;
@@ -1130,8 +1130,8 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					net_state = NetState::Client_Start;
 					Info("NM_TRANSFER: Level started.");
-					clear_color = clear_color_next;
 					game_state = GS_LEVEL;
+					game_level->ready = true;
 					game_gui->load_screen->visible = false;
 					game_gui->main_menu->visible = false;
 					game_gui->level_gui->visible = true;
@@ -1297,7 +1297,6 @@ void Game::UpdateServerTransfer(float dt)
 			fallback_t = -0.5f;
 			game_gui->main_menu->visible = false;
 			game_gui->load_screen->visible = true;
-			clear_color = Color::Black;
 			net->prepare_world = true;
 			GenerateWorld();
 			quest_mgr->InitQuests();
@@ -1460,7 +1459,6 @@ void Game::UpdateServerTransfer(float dt)
 			team->AddMember(npc, HeroType::Normal);
 			npc->hero->SetupMelee();
 		}
-		game_level->ready = true;
 
 		// recalculate credit if someone left
 		if(anyone_left)
@@ -1547,14 +1545,13 @@ void Game::UpdateServerTransfer(float dt)
 
 				net->DeleteOldPlayers();
 
-				clear_color = clear_color_next;
 				game_state = GS_WORLDMAP;
+				game_level->ready = false;
 				game_gui->load_screen->visible = false;
 				game_gui->world_map->Show();
 				game_gui->level_gui->visible = false;
 				game_gui->main_menu->visible = false;
 				net->mp_load = false;
-				clear_color = Color::White;
 				world->SetState(World::State::ON_MAP);
 				net->update_timer = 0.f;
 				SetMusic(MusicType::Travel);
@@ -1814,8 +1811,8 @@ void Game::UpdateServerSend(float dt)
 				unit->changed = false;
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");
-		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
+		game_level->ready = true;
 		game_gui->info_box->CloseDialog();
 		game_gui->load_screen->visible = false;
 		game_gui->main_menu->visible = false;
@@ -1981,6 +1978,7 @@ void Game::DoQuit()
 {
 	prev_game_state = game_state;
 	game_state = GS_QUIT;
+	game_level->ready = false;
 }
 
 void Game::CloseConnection(VoidF f)

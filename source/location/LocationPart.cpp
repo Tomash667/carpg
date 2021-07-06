@@ -21,6 +21,8 @@
 #include "Unit.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
+#include <SceneNode.h>
 #include <SoundManager.h>
 #include <Terrain.h>
 
@@ -34,6 +36,21 @@ LocationPart::~LocationPart()
 	DeleteElements(chests);
 	DeleteElements(groundItems);
 	DeleteElements(traps);
+}
+
+//=================================================================================================
+void LocationPart::BuildScene()
+{
+	assert(lvlPart);
+
+	Scene* scene = lvlPart->scene;
+
+	// ground items
+	for(GroundItem* groundItem : groundItems)
+	{
+		groundItem->CreateSceneNode();
+		scene->Add(groundItem->node);
+	}
 }
 
 //=================================================================================================
@@ -135,11 +152,7 @@ void LocationPart::Save(GameWriter& f)
 void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
 {
 	if(f.isLocal && !lvlPart)
-	{
-		lvlPart = LevelPart::Get();
-		lvlPart->locPart = this;
-		lvlPart->lights_dt = 1.f;
-	}
+		lvlPart = new LevelPart(this);
 
 	switch(compatibility)
 	{
@@ -409,11 +422,7 @@ void LocationPart::Write(BitStreamWriter& f)
 bool LocationPart::Read(BitStreamReader& f)
 {
 	if(!lvlPart)
-	{
-		lvlPart = LevelPart::Get();
-		lvlPart->locPart = this;
-		lvlPart->lights_dt = 1.f;
-	}
+		lvlPart = new LevelPart(this);
 
 	// units
 	uint count;
@@ -681,6 +690,8 @@ void LocationPart::AddGroundItem(GroundItem* groundItem)
 	if(game_level->ready)
 	{
 		game_res->PreloadItem(groundItem->item);
+		groundItem->CreateSceneNode();
+		lvlPart->scene->Add(groundItem->node);
 
 		if(Net::IsServer())
 		{
@@ -734,6 +745,9 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 
 	if(game_level->ready)
 	{
+		lvlPart->scene->Remove(groundItem->node);
+		groundItem->node->Free();
+
 		if(PlayerController::data.before_player == BP_ITEM && PlayerController::data.before_player_ptr.item == groundItem)
 			PlayerController::data.before_player = BP_NONE;
 

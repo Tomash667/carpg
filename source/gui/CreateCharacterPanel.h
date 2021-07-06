@@ -99,6 +99,8 @@ private:
 	void ResetDoll(bool instant);
 	void RandomAppearance();
 
+	Scene* scene;
+	Camera* camera;
 	Mode mode;
 	bool enter_name;
 	// unit

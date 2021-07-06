@@ -6,9 +6,10 @@
 
 //-----------------------------------------------------------------------------
 // Part of active level
-struct LevelPart : ObjectPoolProxy<LevelPart>
+struct LevelPart
 {
-	LocationPart* locPart;
+	LocationPart* const locPart;
+	Scene* scene;
 	vector<Bullet*> bullets;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*> tpes;
@@ -16,9 +17,10 @@ struct LevelPart : ObjectPoolProxy<LevelPart>
 	vector<Electro*> electros;
 	vector<Drain> drains;
 	vector<CollisionObject> colliders;
-	float lights_dt;
+	float lights_dt, draw_range;
 
-	void Clear();
+	LevelPart(LocationPart* locPart);
+	~LevelPart();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

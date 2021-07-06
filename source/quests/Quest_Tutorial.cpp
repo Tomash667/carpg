@@ -68,9 +68,9 @@ void Quest_Tutorial::Start()
 	game_gui->main_menu->visible = false;
 	game_gui->level_gui->visible = true;
 	game_gui->world_map->Hide();
-	game->clear_color = game->clear_color_next;
 	game_level->camera.Reset();
 	game->game_state = GS_LEVEL;
+	game_level->ready = true;
 }
 
 /*

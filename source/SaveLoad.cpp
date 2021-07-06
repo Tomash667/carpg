@@ -326,6 +326,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 				info.loaded = true;
 		}
 		game_state = GS_LOAD;
+		game_level->ready = false;
 		net_mode = NM_TRANSFER_SERVER;
 		net_timer = mp_timeout;
 		net_state = NetState::Server_Starting;
@@ -933,6 +934,11 @@ void Game::LoadGame(GameReader& f)
 	game_res->LoadCommonMusic();
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
+	if(game_state2 == GS_LEVEL)
+	{
+		for(LocationPart& locPart : game_level->ForEachPart())
+			locPart.BuildScene();
+	}
 	if(!net->mp_quickload)
 		game_gui->load_screen->visible = false;
 
@@ -941,10 +947,12 @@ void Game::LoadGame(GameReader& f)
 	if(net->mp_load)
 	{
 		game_state = GS_MAIN_MENU;
+		game_level->ready = false;
 		return;
 	}
 
-	if(game_state2 == GS_LEVEL)
+	game_state = game_state2;
+	if(game_state == GS_LEVEL)
 	{
 		game_level->ready = true;
 		SetMusic();
@@ -953,9 +961,10 @@ void Game::LoadGame(GameReader& f)
 			game_gui->craft->Show();
 	}
 	else
+	{
 		SetMusic(MusicType::Travel);
-	game_state = game_state2;
-	clear_color = clear_color_next;
+		game_level->ready = false;
+	}
 }
 
 //=================================================================================================

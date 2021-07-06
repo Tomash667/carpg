@@ -136,7 +136,7 @@ void TutorialLocationGenerator::OnEnter()
 	inside->SetActiveLevel(dungeon_level);
 	game_level->lvl = &inside->GetLevelData();
 	game_level->Apply();
-	game->SetDungeonParamsAndTextures(g_base_locations[TUTORIAL_FORT]);
+	SetDungeonParamsAndTextures(g_base_locations[TUTORIAL_FORT]);
 
 	// rooms
 	lvl.rooms.resize(countof(t_rooms));

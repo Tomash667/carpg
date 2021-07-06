@@ -5,17 +5,27 @@
 #include "Bullet.h"
 #include "Electro.h"
 #include "Explo.h"
+#include "GameResources.h"
+#include "GroundItem.h"
+#include "Item.h"
+#include "LocationPart.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
 
 //=================================================================================================
-void LevelPart::Clear()
+LevelPart::LevelPart(LocationPart* locPart) : locPart(locPart), scene(new Scene), lights_dt(1.0f)
 {
+}
+
+//=================================================================================================
+LevelPart::~LevelPart()
+{
+	delete scene;
+
 	DeleteElements(explos);
 	DeleteElements(electros);
 	DeleteElements(bullets);
-	drains.clear();
-	colliders.clear();
 	DeleteElements(pes);
 	DeleteElements(tpes);
 }

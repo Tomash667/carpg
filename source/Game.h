@@ -126,19 +126,19 @@ public:
 	//-----------------------------------------------------------------
 	void DrawGame();
 	void ForceRedraw();
-	void ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum, bool outside);
-	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
-	void AddObjectToDrawBatch(LocationPart& locPart, const Object& o, FrustumPlanes& frustum);
+	void ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum);
+	void ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u);
+	void AddObjectToDrawBatch(FrustumPlanes& frustum, const Object& o);
 	void ListAreas(LocationPart& locPart);
 	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
-	void GatherDrawBatchLights(LocationPart& locPart, SceneNode* node);
-	void GatherDrawBatchLights(LocationPart& locPart, SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
-	void DrawScene(bool outside);
+	void GatherDrawBatchLights(SceneNode* node);
+	void GatherDrawBatchLights(SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
+	void DrawScene();
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups);
-	void DrawBloods(const vector<Blood*>& bloods, bool outside);
+	void DrawBloods(const vector<Blood*>& bloods);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void UvModChanged();
 	void InitQuadTree();
@@ -149,9 +149,6 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-	void ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex);
-	void ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def);
-	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void SetDungeonParamsToMeshes();
 
 	//-----------------------------------------------------------------
@@ -355,7 +352,6 @@ public:
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	float portal_anim;
 	// scene
-	Color clear_color, clear_color_next;
 	bool use_glow, use_postfx;
 	DrawBatch draw_batch;
 	int uv_mod;
