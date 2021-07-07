@@ -687,7 +687,7 @@ void LocationPart::AddGroundItem(GroundItem* groundItem)
 {
 	assert(groundItem);
 
-	if(game_level->ready)
+	if(game_level->ready && lvlPart)
 	{
 		game_res->PreloadItem(groundItem->item);
 		groundItem->CreateSceneNode();
@@ -743,7 +743,7 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 {
 	assert(groundItem);
 
-	if(game_level->ready)
+	if(game_level->ready && lvlPart)
 	{
 		lvlPart->scene->Remove(groundItem->node);
 		groundItem->node->Free();

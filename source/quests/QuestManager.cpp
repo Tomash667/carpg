@@ -77,7 +77,6 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
 	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrieve_package"));
 	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestCategory::Captain, "kill_animals"));
-	infos.push_back(QuestInfo(Q_LOST_ARTIFACT, QuestCategory::Random, "lost_artifact"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
 	infos.push_back(QuestInfo(Q_DIRE_WOLF, QuestCategory::Unique, "dire_wolf"));

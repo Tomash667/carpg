@@ -286,9 +286,6 @@ dialog q_goblins_mage
 dialog q_goblins_innkeeper
 dialog q_goblins_boss
 dialog q_goblins_messenger
-dialog q_lost_artifact_start
-dialog q_lost_artifact_end
-dialog q_lost_artifact_timeout
 dialog q_mages_scholar
 dialog q_mages_golem
 dialog q_mages2_mage

@@ -1,4 +1,21 @@
 //=============================================================================
+code {
+	string LevelToString(int level)
+	{
+		switch(level)
+		{
+		case 0: return "first";
+		case 1: return "second";
+		case 2: return "third";
+		case 3: return "fourth";
+		case 4: return "fifth";
+		case 5: return "sixth";
+		}
+		return "last";
+	}
+}
+
+//=============================================================================
 quest deliver_letter {
 	dialog start {
 		0 "I'm looking for someone who will deliver this letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). Are you interested in it?"
@@ -207,6 +224,35 @@ quest find_artifact {
 		2 "The traveler wants me to find $(item.name) which is located in the $(target_loc.name) to the $(World::GetDirName(start_loc, target_loc)) from here. I have two months for that."
 		3 "I delivered the artifact and received the reward. Quest done!"
 		4 "I didn't bring the artifact in time."
+		5 "The time that I had to complete this quest passed."
+	}
+}
+
+//=============================================================================
+quest lost_artifact {
+	dialog start {
+		0 "I found $(item.name) but unfortunately, I lost it on the way back."
+		1 "Can you find it?"
+		2 "Yes"
+		3 "I found this item at $(LevelToString(atLevel)) level of $(targetLoc.name) which is $(World::GetDirName(startLoc, targetLoc)) from here. Had to lose it at that or a upper level."
+		4 "I'll wait until someone brings it to me but up to two months. Good luck!"
+		5 "No"
+	}
+	
+	dialog end {
+		0 "Give back lost artifact"
+		1 "Thank you for this artifact, take this $(Str(GetReward())) gold pieces in thanks."
+		2 "You could not find this artifact? Too bad..."
+		3 "Apparently close to $(World::GetRandomSettlement(startLoc).name) people found some new artifacts, there I leave."
+		4 "Good luck in your adventures!"
+	}
+	
+	texts {
+		0 "Lost artifact"
+		1 "Obtained from traveler in $(startLoc.name) at $date$."
+		2 "The traveler wants me to find $(item.name) which he lost near $(LevelToString(atLevel)) level of $(targetLoc.name) to the $(World::GetDirName(startLoc, targetLoc)) from here. He gives me two months for that."
+		3 "I delivered the lost artifact and received the reward. Quest done!"
+		4 "I failed to find the lost artifact in time."
 		5 "The time that I had to complete this quest passed."
 	}
 }

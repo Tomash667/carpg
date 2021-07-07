@@ -182,6 +182,15 @@ public:
 	Unit* CreateUnit(UnitData* data, int level = -1);
 
 private:
+	void UpdateDate(int days);
+	void SpawnCamps(int days);
+	void UpdateEncounters();
+	void UpdateLocations();
+	void UpdateNews();
+	void StartEncounter(int enc, UnitGroup* group);
+	void LoadLocations(GameReader& f, LoadingHandler& loading);
+	void LoadNews(GameReader& f);
+
 	WorldMapGui* gui;
 	State state;
 	Location* current_location; // current location or nullptr
@@ -220,13 +229,4 @@ private:
 	bool tomir_spawned,
 		travel_first_frame,
 		startup;
-
-	void UpdateDate(int days);
-	void SpawnCamps(int days);
-	void UpdateEncounters();
-	void UpdateLocations();
-	void UpdateNews();
-	void StartEncounter(int enc, UnitGroup* group);
-	void LoadLocations(GameReader& f, LoadingHandler& loading);
-	void LoadNews(GameReader& f);
 };

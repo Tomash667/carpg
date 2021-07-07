@@ -619,6 +619,11 @@ void ScriptManager::RegisterGame()
 		{ "ENTRY_FAR_FROM_PREV", MapSettings::ENTRY_FAR_FROM_PREV }
 		});
 
+	AddEnum("GetLocationFlag", {
+		{ "F_ALLOW_ACTIVE", F_ALLOW_ACTIVE },
+		{ "F_EXCLUDED", F_EXCLUDED }
+		});
+
 	AddType("Var")
 		.Method("bool opEquals(bool) const", asMETHODPR(Var, IsBool, (bool) const, bool))
 		.Method("bool opEquals(int) const", asMETHODPR(Var, IsInt, (int) const, bool))
@@ -889,7 +894,8 @@ void ScriptManager::RegisterGame()
 
 	ForType("LocationPart")
 		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LocationPart, RemoveItemFromChest))
-		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LocationPart, RemoveItemFromUnit));
+		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LocationPart, RemoveItemFromUnit))
+		.Method("bool RemoveGroundItem(Item@)", asMETHODPR(LocationPart, RemoveGroundItem, (const Item*), bool));
 
 	AddType("Encounter")
 		.Member("Vec2 pos", offsetof(Encounter, pos))
@@ -953,6 +959,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ FindNearestItem(Item@, const Vec3& in)", asMETHOD(Level, FindNearestItem))
 		.AddFunction("GroundItem@ SpawnItem(Item@, const Vec3& in)", asMETHOD(Level, SpawnItem))
 		.AddFunction("GroundItem@ SpawnItem(Item@, Object@)", asMETHOD(Level, SpawnItemAtObject))
+		.AddFunction("GroundItem@ SpawnItemInsideAnyRoom(Item@)", asMETHOD(Level, SpawnGroundItemInsideAnyRoom))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Vec3 FindSpawnPos(Room@, Unit@)", asMETHODPR(Level, FindSpawnPos, (Room* room, Unit* unit), Vec3))
 		.AddFunction("Vec3 FindSpawnPos(LocationPart@, Unit@)", asMETHODPR(Level, FindSpawnPos, (LocationPart&, Unit* unit), Vec3))

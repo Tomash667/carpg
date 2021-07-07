@@ -8,7 +8,10 @@ Fixes:
 Wersja 0.19 (???):
 ! nie można wczytywać już zapisów z wersji 0.8 lub starszej
 + lepszy menadżer sceny - przedmioty na ziemi
++ konwersja zadania "zagubiony artefakt" na skrypty
 - zabieranie założonego przedmiotu ze zwłok niepoprawnie aktualizowało widok ekwipunku
+- po ukończeniu zadania dla wędrowca następne zadanie w tym samym mieście nigdy się nie przedawniało
+- błąd skryptu gdy minie czas zadania "znajdź artefakt"/"ukradziony artefakt" gdy minie czas zadania w podziemiach z jednym poziomem
 
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):

@@ -39,7 +39,8 @@ enum QuestKeyword
 {
 	QK_QUEST,
 	QK_DIALOG,
-	QK_TEXTS
+	QK_TEXTS,
+	QK_CODE
 };
 
 //=================================================================================================
@@ -278,6 +279,7 @@ void QuestLoader::LoadTexts()
 
 	t.AddKeywords(0, {
 		{ "quest", QK_QUEST },
+		{ "code", QK_CODE },
 		{ "dialog", QK_DIALOG },
 		{ "texts", QK_TEXTS }
 		});
@@ -290,118 +292,19 @@ void QuestLoader::LoadTexts()
 
 		while(!t.IsEof())
 		{
-			bool skip = false;
-
-			t.AssertKeyword(QK_QUEST, 0);
-			t.Next();
-
-			const string& quest_id = t.MustGetItemKeyword();
-			QuestScheme* scheme = QuestScheme::TryGet(quest_id);
-			if(!scheme)
-				t.Throw("Missing quest '%s'.", quest_id.c_str());
-			t.Next();
-
-			t.AssertSymbol('{');
-			t.Next();
-
-			while(!t.IsSymbol('}'))
+			if(t.IsKeyword(QK_QUEST))
 			{
-				if(t.IsKeyword(QK_DIALOG, 0))
-				{
-					t.Next();
-					dialog_loader->LoadText(t, scheme);
-				}
-				else if(t.IsKeyword(QK_TEXTS, 0))
-				{
-					GameDialog* dialog = scheme->dialogs[0];
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					while(!t.IsSymbol('}'))
-					{
-						int index = t.MustGetInt();
-						if(index < 0)
-							t.Throw("Invalid text index %d.", index);
-						t.Next();
-
-						if(dialog->texts.size() <= (uint)index)
-							dialog->texts.resize(index + 1, GameDialog::Text());
-
-						if(dialog->texts[index].exists)
-							t.Throw("Text %d already set.", index);
-
-						if(t.IsSymbol('{'))
-						{
-							t.Next();
-							int prev = -1;
-							while(!t.IsSymbol('}'))
-							{
-								int str_idx = dialog->strs.size();
-								dialog->strs.push_back(t.MustGetString());
-								t.Next();
-								if(prev == -1)
-								{
-									dialog->texts[index].index = str_idx;
-									dialog->texts[index].exists = true;
-									prev = index;
-								}
-								else
-								{
-									index = dialog->texts.size();
-									dialog->texts[prev].next = index;
-									dialog->texts.push_back(GameDialog::Text(str_idx));
-									prev = index;
-								}
-								dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
-							}
-						}
-						else
-						{
-							int str_idx = dialog->strs.size();
-							dialog->strs.push_back(t.MustGetString());
-							dialog->texts[index].index = str_idx;
-							dialog->texts[index].exists = true;
-							dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
-						}
-						t.Next();
-					}
-					t.Next();
-				}
-				else
-				{
-					int k1 = QK_DIALOG,
-						k2 = QK_TEXTS,
-						gr = 0;
-					Error(t.StartUnexpected()
-						.Add(tokenizer::T_KEYWORD, &k1, &gr)
-						.Add(tokenizer::T_KEYWORD, &k2, &gr)
-						.Get());
-					skip = true;
-					++errors;
-					break;
-				}
+				t.Next();
+				errors += LoadQuestTexts(t);
 			}
-
-			if(skip)
-				t.SkipToKeyword(QK_QUEST);
-			else
+			else if(t.IsKeyword(QK_CODE))
 			{
-				GameDialog* dialog = scheme->GetDialog("");
-				if(dialog)
-				{
-					int index = 0;
-					for(GameDialog::Text& t : dialog->texts)
-					{
-						if(!t.exists)
-						{
-							Error("Quest '%s' is missing text for index %d.", scheme->id.c_str(), index);
-							++errors;
-						}
-						++index;
-					}
-				}
+				t.Next();
+				globalCode += t.GetBlock('{', '}', false);
 				t.Next();
 			}
+			else
+				t.StartUnexpected().AddList(tokenizer::T_KEYWORD, { QK_QUEST, QK_CODE }).Throw();
 		}
 	}
 	catch(const Tokenizer::Exception& e)
@@ -415,8 +318,127 @@ void QuestLoader::LoadTexts()
 }
 
 //=================================================================================================
+int QuestLoader::LoadQuestTexts(Tokenizer& t)
+{
+	int errors = 0;
+	bool skip = false;
+
+	const string& quest_id = t.MustGetItemKeyword();
+	QuestScheme* scheme = QuestScheme::TryGet(quest_id);
+	if(!scheme)
+		t.Throw("Missing quest '%s'.", quest_id.c_str());
+	t.Next();
+
+	t.AssertSymbol('{');
+	t.Next();
+
+	while(!t.IsSymbol('}'))
+	{
+		if(t.IsKeyword(QK_DIALOG, 0))
+		{
+			t.Next();
+			dialog_loader->LoadText(t, scheme);
+		}
+		else if(t.IsKeyword(QK_TEXTS, 0))
+		{
+			GameDialog* dialog = scheme->dialogs[0];
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				int index = t.MustGetInt();
+				if(index < 0)
+					t.Throw("Invalid text index %d.", index);
+				t.Next();
+
+				if(dialog->texts.size() <= (uint)index)
+					dialog->texts.resize(index + 1, GameDialog::Text());
+
+				if(dialog->texts[index].exists)
+					t.Throw("Text %d already set.", index);
+
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					int prev = -1;
+					while(!t.IsSymbol('}'))
+					{
+						int str_idx = dialog->strs.size();
+						dialog->strs.push_back(t.MustGetString());
+						t.Next();
+						if(prev == -1)
+						{
+							dialog->texts[index].index = str_idx;
+							dialog->texts[index].exists = true;
+							prev = index;
+						}
+						else
+						{
+							index = dialog->texts.size();
+							dialog->texts[prev].next = index;
+							dialog->texts.push_back(GameDialog::Text(str_idx));
+							prev = index;
+						}
+						dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+					}
+				}
+				else
+				{
+					int str_idx = dialog->strs.size();
+					dialog->strs.push_back(t.MustGetString());
+					dialog->texts[index].index = str_idx;
+					dialog->texts[index].exists = true;
+					dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+				}
+				t.Next();
+			}
+			t.Next();
+		}
+		else
+		{
+			int k1 = QK_DIALOG,
+				k2 = QK_TEXTS,
+				gr = 0;
+			Error(t.StartUnexpected()
+				.Add(tokenizer::T_KEYWORD, &k1, &gr)
+				.Add(tokenizer::T_KEYWORD, &k2, &gr)
+				.Get());
+			skip = true;
+			++errors;
+			break;
+		}
+	}
+
+	if(skip)
+		t.SkipToKeyword(QK_QUEST);
+	else
+	{
+		GameDialog* dialog = scheme->GetDialog("");
+		if(dialog)
+		{
+			int index = 0;
+			for(GameDialog::Text& t : dialog->texts)
+			{
+				if(!t.exists)
+				{
+					Error("Quest '%s' is missing text for index %d.", scheme->id.c_str(), index);
+					++errors;
+				}
+				++index;
+			}
+		}
+		t.Next();
+	}
+
+	return errors;
+}
+
+//=================================================================================================
 void QuestLoader::Finalize()
 {
+	CHECKED(module->AddScriptSection("global", globalCode.c_str()));
+
 	for(QuestScheme* scheme : QuestScheme::schemes)
 		BuildQuest(scheme);
 

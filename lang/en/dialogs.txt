@@ -798,10 +798,8 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Hello!"
 	1 "Welcome back!"
-	2 "" // removed
-	3 "Give back lost artifact"
-	4 "Did you find something? No? Too bad, I'm still waiting for that item."
-	5 "End dialog"
+	2 "Did you find something? No? Too bad, I'm still waiting for that item."
+	3 "End dialog"
 }
 
 //==============================================================================
@@ -1302,28 +1300,6 @@ dialog q_goblins_boss {
 	0 "Please, please. Whom have we here?"
 	1 "Pesky adventurer. Came to look at real power of the Angelic bow?"
 	2 "I'll try it on you!"
-}
-
-//==============================================================================
-dialog q_lost_artifact_start {
-	0 "I found $przedmiot$ but unfortunately, I lost it on the way back."
-	1 "Can you find it?"
-	2 "Yes"
-	3 "I found this item at $poziomie$ level of $target_loc$ which is $target_dir$ from here. Had to lose it at that or a upper level."
-	4 "I'll wait until someone brings it to me but up to two months. Good luck!"
-	5 "No"
-}
-
-//==============================================================================
-dialog q_lost_artifact_end {
-	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
-}
-
-//==============================================================================
-dialog q_lost_artifact_timeout {
-	0 "You could not find this artifact? Too bad..."
-	1 "Apparently close to $random_loc$ people found some new artifacts, there I leave."
-	2 "Good luck in your adventures!"
 }
 
 //==============================================================================

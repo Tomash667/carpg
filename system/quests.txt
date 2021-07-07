@@ -1077,6 +1077,193 @@ quest find_artifact
 }
 
 //=============================================================================
+// LOST ARTIFACT - random traveler quest
+// Traveler found artifact but lost it inside dungeon. Need to recover it from ground.
+//=============================================================================
+quest lost_artifact
+{
+	type random
+	progress {
+		P_LOSTART_NONE
+		P_LOSTART_STARTED
+		P_LOSTART_FINISHED
+		P_LOSTART_TIMEOUT
+		P_LOSTART_ON_TIMEOUT
+	}
+
+	dialog start
+	{
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_LOSTART_STARTED
+			talk 3
+			talk 4
+			end
+		}
+		escape choice 5
+			end
+		show_choices
+	}
+
+	dialog end
+	{
+		if have_quest_item
+		{
+			choice 0
+			{
+				set_quest_progress P_LOSTART_FINISHED
+				talk 1
+				end2
+			}
+		}
+		else if quest_progress == P_LOSTART_ON_TIMEOUT
+		{
+			set_quest_progress P_LOSTART_TIMEOUT
+			talk 2
+			talk 3
+			talk 4
+			end2
+		}
+		end
+	}
+
+	code
+	{
+		Location@ startLoc;
+		Location@ targetLoc;
+		Item@ item;
+		int st, atLevel;
+		bool spawned;
+
+		void Startup()
+		{
+			@startLoc = Level::location;
+			@item = ItemList::GetRandomItem("artifacts");
+			spawned = false;
+		}
+
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_LOSTART_STARTED:
+				{
+					@item = item.QuestCopy(quest);
+
+					if(Rand() % 2 == 0)
+						@targetLoc = World::GetClosestLocation(L_DUNGEON, World::pos, LABYRINTH, F_EXCLUDED);
+					else
+						@targetLoc = World::GetClosestLocation(L_DUNGEON, World::pos, { HERO_CRYPT, MONSTER_CRYPT });
+					targetLoc.SetKnown();
+					@targetLoc.active_quest = quest;
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+					st = targetLoc.st;
+					atLevel = targetLoc.GetRandomLevel();
+
+					target.AddDialog(quest, "end");
+					target.temporary = false;
+
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(60);
+				}
+				break;
+			case P_LOSTART_FINISHED:
+				{
+					int reward = GetReward();
+					Team::AddReward(reward, reward * 3);
+
+					target.AddItem(item);
+					pc.unit.RemoveItem(item);
+					target.temporary = true;
+
+					if(targetLoc.active_quest is quest)
+						@targetLoc.active_quest = null;
+
+					quest.AddEntry(TEXT(3));
+					quest.SetCompleted();
+				}
+				break;
+			case P_LOSTART_TIMEOUT:
+				{
+					target.temporary = true;
+
+					if(targetLoc.active_quest is quest)
+						@targetLoc.active_quest = null;
+
+					quest.AddEntry(TEXT(4));
+					quest.SetFailed();
+				}
+				break;
+			}
+		}
+
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				if(Level::dungeon_level == atLevel)
+				{
+					e.location.RemoveEventHandler(quest);
+					Level::SpawnItemInsideAnyRoom(item);
+					spawned = true;
+				}
+			}
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				if(spawned)
+					targetLoc.GetLocationPart(atLevel).RemoveGroundItem(item);
+				else
+					targetLoc.RemoveEventHandler(quest);
+				@targetLoc.active_quest = null;
+				quest.AddEntry(TEXT(5));
+				progress = P_LOSTART_ON_TIMEOUT;
+			}
+		}
+
+		int GetReward()
+		{
+			return Quest::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
+		}
+
+		void OnUpgrade(Vars@ vars)
+		{
+			@item = vars["item"];
+			@startLoc = vars["startLoc"];
+			@targetLoc = vars["targetLoc"];
+			int startTime = vars["startTime"];
+			st = vars["st"];
+			spawned = vars["done"];
+			atLevel = vars["atLevel"];
+
+			if(progress != P_LOSTART_NONE)
+				@item = item.QuestCopy(quest);
+
+			if(quest.state != Q_STARTED)
+				return;
+
+			startLoc.FindQuestUnit(quest).AddDialog(quest, "end");
+
+			int days = 60 + startTime - World::worldtime;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_LOSTART_STARTED)
+				progress = P_LOSTART_ON_TIMEOUT;
+
+			if(progress == P_LOSTART_STARTED)
+			{
+				if(!spawned)
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+				@targetLoc.active_quest = quest;
+			}
+		}
+	}
+}
+
+//=============================================================================
 // STOLEN ARTIFACT - random traveler quest
 // Random artifact was stolen, stronger enemy in dungeon/camp have it
 //=============================================================================

@@ -44,6 +44,8 @@ LocationPart* LocationHelper::GetLocationPart(Location* loc, int index)
 			if(index >= 0 && index < (int)multi->levels.size())
 				return multi->levels[index];
 		}
+		else if(index == 0)
+			return static_cast<SingleInsideLocation*>(loc);
 	}
 	throw ScriptException("Invalid area index %d.", index);
 }

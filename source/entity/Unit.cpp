@@ -101,7 +101,7 @@ void Unit::Init(UnitData& base, int lvl)
 	pos = Vec3(0, 0, 0);
 	rot = 0.f;
 	used_item = nullptr;
-	live_state = Unit::ALIVE;
+	live_state = ALIVE;
 	for(int i = 0; i < SLOT_MAX; ++i)
 		slots[i] = nullptr;
 	action = A_NONE;
@@ -127,7 +127,7 @@ void Unit::Init(UnitData& base, int lvl)
 	temporary = false;
 	quest_id = -1;
 	bubble = nullptr;
-	busy = Unit::Busy_No;
+	busy = Busy_No;
 	interp = nullptr;
 	dont_attack = false;
 	assist = false;
@@ -8886,7 +8886,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 		// unit hurt sound
 		if(hurt_timer <= 0.f && data->sounds->Have(SOUND_PAIN))
 		{
-			game->PlayAttachedSound(*this, data->sounds->Random(SOUND_PAIN), Unit::PAIN_SOUND_DIST);
+			game->PlayAttachedSound(*this, data->sounds->Random(SOUND_PAIN), PAIN_SOUND_DIST);
 			hurt_timer = Random(1.f, 1.5f);
 			if(IsSet(dmg_flags, DMG_NO_BLOOD))
 				hurt_timer += 1.f;

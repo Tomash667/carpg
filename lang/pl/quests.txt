@@ -1,4 +1,35 @@
 //=============================================================================
+code {
+	string LevelToString(int level)
+	{
+		switch(level)
+		{
+		case 0: return "pierwszego";
+		case 1: return "drugiego";
+		case 2: return "trzeciego";
+		case 3: return "czwartego";
+		case 4: return "pi\\xB9tego";
+		case 5: return "sz\\xF3stego";
+		}
+		return "ostatniego";
+	}
+	
+	string LevelToString2(int level)
+	{
+		switch(level)
+		{
+		case 0: return "pierwszym";
+		case 1: return "drugim";
+		case 2: return "trzecim";
+		case 3: return "czwartym";
+		case 4: return "pi\\xB9tym";
+		case 5: return "sz\\xF3stym";
+		}
+		return "ostatnim";
+	}
+}
+
+//=============================================================================
 quest deliver_letter {
 	dialog start {
 		0 "Szukam kogoœ kto dostarczy ten list do $(end_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(end_loc.name). Jesteœ zainteresowany?"
@@ -207,6 +238,35 @@ quest find_artifact {
 		2 "Podró¿ny chce abym odnalaz³ $(item.name) który znajduje siê w $(target_loc.name) na $(World::GetDirName(start_loc, target_loc)) st¹d. Mam na to góra dwa miesi¹ce."
 		3 "Dostarczy³em artefakt i otrzyma³em nagrodê. Zadanie wykonane!"
 		4 "Nie zd¹¿y³em na czas dostarczyæ artefaktu."
+		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
+	}
+}
+
+//=============================================================================
+quest lost_artifact {
+	dialog start {
+		0 "Znalaz³em $(item.name) ale niestety go zgubi³em w drodze powrotnej."
+		1 "Czy mo¿esz go dla mnie odnaleŸæ?"
+		2 "Tak"
+		3 "Znalaz³em ten przedmiot na $(LevelToString2(atLevel)) poziomie $(targetLoc.name) na $(World::GetDirName(startLoc, targetLoc)) st¹d. Musia³em go zgubiæ na tym albo wy¿szym poziomie."
+		4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
+		5 "Nie"
+	}
+	
+	dialog end {
+		0 "Oddaj zgubiony przedmiot"
+		1 "Dziêkuje za ten artefakt, weŸ to $(Str(GetReward())) sztuk z³ota w podziêce."
+		2 "Nie uda³o ci siê znaleŸæ tego artefaktu? Trudno..."
+		3 "Ponoæ niedaleko $(World::GetRandomSettlement(startLoc).name) znaleziono jakieœ nowe artefakty, tam wyruszê."
+		4 "Powodzenia w przygodach!"
+	}
+	
+	texts {
+		0 "Zgubiony artefakt"
+		1 "Otrzymano od podró¿nego w $(startLoc.name) dnia $date$."
+		2 "Podró¿ny chce abym odnalaz³ $(item.name) który zgubi³ w okolicach $(LevelToString(atLevel)) poziomu $(targetLoc.name) na $(World::GetDirName(startLoc, targetLoc)) st¹d. Mam na to góra dwa miesi¹ce."
+		3 "Dostarczy³em zagubiony artefakt i otrzyma³em nagrodê. Zadanie wykonane!"
+		4 "Nie zd¹¿y³em na czas odnaleŸæ zagubionego artefaktu."
 		5 "Czas jaki mia³em na wykonanie tego zadania min¹³."
 	}
 }

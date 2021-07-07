@@ -379,6 +379,7 @@ Methods:
 
 * bool RemoveItemFromChest(Item@) - return true if removed item.
 * bool RemoveItemFromUnit(Item@) - remove single item from alive enemy, return true if removed.
+* bool RemoveGroundItem(Item@) - remove single item from ground, return true if removed.
 
 ### MapSettings type
 Used when generating dungeon.
@@ -595,6 +596,7 @@ Static methods:
 * GroundItem@ FindNearestItem(Item@, const Vec3& in pos) - finds nearest item.
 * GroundItem@ SpawnItem(Item@, const Vec3& in pos) - spawn item at position.
 * GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
+* GroundItem@ SpawnItemInsideAnyRoom(Item@) - spawn item in random room on floor.
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
 * Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp in room.
 * Vec3 FindSpawnPos(LocationPart@, Unit@) - return position for unit spawn/warp in building location part.
@@ -674,7 +676,7 @@ Static methods:
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
 * Location@ GetRandomSpawnLocation(const Vec2& in pos, UnitGroup@ group, float range = 160) - get random location with selected unit group within range, if not found will create camp.
-* Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1) - get closest location of this type (doesn't return quest locations).
+* Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int flags = 0) - get closest location of this type (doesn't return quest locations). Available flags: ```F_ALLOW_ACTIVE``` - allow active quest locations, ```F_EXCLUDED``` - exclude target instead of include in search.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).
 * Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
 * Location@ CreateCamp(const Vec2& in pos, UnitGroup@) - create new camp at position.

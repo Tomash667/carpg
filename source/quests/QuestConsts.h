@@ -33,7 +33,7 @@ enum QUEST_TYPE
 	Q_CAMP_NEAR_CITY, // removed in V_0_16
 	Q_RETRIEVE_PACKAGE,
 	Q_KILL_ANIMALS,
-	Q_LOST_ARTIFACT,
+	Q_LOST_ARTIFACT, // removed in V_DEV
 	Q_STOLEN_ARTIFACT, // removed in V_0_18
 	Q_FIND_ARTIFACT, // removed in V_0_15
 	Q_CRAZIES,
