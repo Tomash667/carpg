@@ -277,7 +277,7 @@ enum ButtonId
 //=================================================================================================
 Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
 {
-	size = Int2(600 + 8 * 2, 400);
+	size = Int2(640 + 8 * 2, 400);
 	bts.resize(2);
 
 	bts[0].size = Int2(180, 44);
@@ -290,7 +290,7 @@ Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
 	bts[1].id = Button_Ok;
 	bts[1].parent = this;
 
-	grid.size = Int2(600, 300);
+	grid.size = Int2(640, 300);
 	grid.pos = Int2(8, 8);
 	grid.items = GK_MAX;
 	grid.event = GridEvent(this, &Controls::GetCell);
@@ -307,9 +307,9 @@ void Controls::LoadLanguage()
 	bts[0].text = s.Get("resetKeys");
 	bts[1].text = gui->txOk;
 
-	grid.AddColumn(Grid::TEXT, 200, s.Get("action"));
-	grid.AddColumn(Grid::TEXT, 190, s.Get("key_1"));
-	grid.AddColumn(Grid::TEXT, 190, s.Get("key_2"));
+	grid.AddColumn(Grid::TEXT, 220, s.Get("action"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("key_1"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("key_2"));
 	grid.Init();
 
 	txResetConfirm = s.Get("resetConfirm");
@@ -387,6 +387,7 @@ void Controls::Event(GuiEvent e)
 	{
 		if(changed)
 		{
+			game_gui->ChangeControls();
 			game->settings.SaveGameKeys(game->cfg);
 			game->SaveCfg();
 		}

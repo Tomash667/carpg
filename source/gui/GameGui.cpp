@@ -262,6 +262,7 @@ void GameGui::PostInit()
 {
 	create_character->Init();
 	saveload->LoadSaveSlots();
+	ChangeControls();
 }
 
 //=================================================================================================
@@ -487,4 +488,12 @@ void GameGui::AddMsg(cstring msg)
 		server->AddMsg(msg);
 	else
 		mp_box->itb.Add(msg);
+}
+
+//=================================================================================================
+void GameGui::ChangeControls()
+{
+	GameKey& accept = GKey[GK_ACCEPT_NOTIFICATION];
+	GameKey& decline = GKey[GK_DECLINE_NOTIFICATION];
+	notifications->SetShortcuts(accept.key, decline.key, controls->GetKeyText(accept.GetFirstKey()), controls->GetKeyText(decline.GetFirstKey()));
 }

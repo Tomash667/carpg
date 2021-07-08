@@ -8,10 +8,13 @@ Fixes:
 Version 0.19 (???):
 ! cannot load saves from version 0.8 or older
 + scene manager improvements - ground items
++ shortcuts for fast travel notification (F1/F3)
 + converted quest "lost artifact" to script
 - taking equiped item from corpse wrongly updated inventory view
 - when finished traveler quest another traveler quest in same location will never timeout
 - script error on quest timeout with "find artifact"/"stolen artifact" in dungeon with single level
+- wrong fast travel accept icon
+- missing application icon when starting in fullscreen
 
 --------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):

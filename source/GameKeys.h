@@ -28,6 +28,8 @@ enum GAME_KEYS
 	GK_JOURNAL, // J
 	GK_MINIMAP, // Tab
 	GK_TALK_BOX, // '"
+	GK_ACCEPT_NOTIFICATION, // F1
+	GK_DECLINE_NOTIFICATION, // F3
 	GK_QUICKSAVE, // F5
 	GK_QUICKLOAD, // F9
 	GK_TAKE_ALL, // F
@@ -55,12 +57,17 @@ enum GAME_KEYS
 struct GameKey
 {
 	cstring id, text;
-	Key key[2];
+	KeyPair key;
 
 	void Set(Key k1 = Key::None, Key k2 = Key::None)
 	{
 		key[0] = k1;
 		key[1] = k2;
+	}
+
+	Key GetFirstKey() const
+	{
+		return key[0] != Key::None ? key[0] : key[1];
 	}
 
 	Key& operator [] (int n)

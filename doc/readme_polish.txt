@@ -72,7 +72,10 @@ osoby. Oczekuj zmian na lepsze!
 	'" - okno rozmowy
 	Enter - wprowadzanie tekstu w multiplayer
 	Kółko myszy - zmiana odległości kamery
-	F2 - pokaż/ukryj fps
+	F1 - zatwierdź powiadomienie
+	F3 - odrzuć powiadomienie
+	Ctrl + F1 - pokaż/ukryj fps
+	Ctrl + F2 - pokaż/ukryj informacje diagnostyczne
 3.3. Ekwipunek
 	lewy przycisk myszki - użyj, załóż, kup
 	prawy przycisk myszki - wyrzuć

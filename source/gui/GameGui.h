@@ -31,6 +31,7 @@ public:
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void CloseAllPanels(bool close_mp_box = false);
 	void AddMsg(cstring msg);
+	void ChangeControls();
 
 	static FontPtr font, font_small, font_big;
 	Notifications* notifications;

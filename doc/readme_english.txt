@@ -72,7 +72,10 @@ people. Expect changes for the better!
 	'" - talk box
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
-	F2 - show/hide fps
+	F1 - accept notification
+	F3 - decline notification
+	Ctrl + F1 - toggle fps
+	Ctrl + F2 - toggle debug info
 3.3. Equipment
 	left mouse button - use, wear, sell, buy
 	right mouse button - drop

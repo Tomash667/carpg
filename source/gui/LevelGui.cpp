@@ -948,13 +948,16 @@ void LevelGui::Update(float dt)
 	TooltipGroup group = TooltipGroup::Invalid;
 	int id = -1;
 
-	if(game->devmode)
+	if(input->Down(Key::Control))
 	{
-		if(input->PressedRelease(Key::F3))
-			debug_info = !debug_info;
+		if(game->devmode)
+		{
+			if(input->PressedRelease(Key::F2))
+				debug_info = !debug_info;
+		}
+		if(input->PressedRelease(Key::F1))
+			debug_info2 = !debug_info2;
 	}
-	if(input->PressedRelease(Key::F2))
-		debug_info2 = !debug_info2;
 
 	Container::Update(dt);
 
