@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Editor.h"
 
+#include "EditorCamera.h"
 #include "EditorUi.h"
 #include "Level.h"
 #include "NativeDialogs.h"
@@ -10,8 +11,12 @@
 #include <Gui.h>
 #include <Input.h>
 #include <Render.h>
+#include <ResourceManager.h>
+#include <Scene.h>
+#include <SceneManager.h>
+#include <SceneNode.h>
 
-Editor::Editor() : ui(nullptr), level(nullptr)
+Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr)
 {
 	engine->SetTitle("Editor");
 	render->SetShadersDir("../../../carpglib/shaders");
@@ -21,19 +26,37 @@ Editor::~Editor()
 {
 	delete ui;
 	delete level;
+	delete scene;
+	delete camera;
 }
 
 bool Editor::OnInit()
 {
+	res_mgr->AddDir("../../../bin/data");
 	ui = new EditorUi(this);
 	gui->Add(ui);
 	NewLevel();
+	scene = new Scene;
+	scene->clear_color = Color(0, 128, 255);
+	camera = new EditorCamera;
+	camera->from = Vec3(-1, 4, -4);
+	camera->to = Vec3(0, 0, 0);
+	Matrix matView = Matrix::CreateLookAt(camera->from, camera->to);
+	Matrix matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, app::engine->GetWindowAspect(), 0.1f, 50.f);
+	camera->mat_view_proj = matView * matProj;
+	camera->mat_view_inv = matView.Inverse();
+	SceneNode* node = SceneNode::Get();
+	node->center = Vec3::Zero;
+	node->SetMesh(res_mgr->Load<Mesh>("beczka.qmsh"));
+	node->mat = Matrix::IdentityMatrix;
+	scene->Add(node);
+	scene_mgr->SetScene(scene, camera);
 	return true;
 }
 
 void Editor::OnDraw()
 {
-	render->Clear(Color(0, 128, 255));
+	scene_mgr->Draw(nullptr);
 	gui->Draw(true, true);
 	render->Present();
 }

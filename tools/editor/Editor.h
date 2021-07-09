@@ -22,4 +22,6 @@ private:
 
 	EditorUi* ui;
 	Level* level;
+	Scene* scene;
+	EditorCamera* camera;
 };

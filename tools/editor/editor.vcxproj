@@ -100,6 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorUi.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -111,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Editor.h" />
+    <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorUi.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="NativeDialogs.h" />
