@@ -1,2 +1,5 @@
+editor - edit carpg levels.
+extractor - load network log (outdated).
 paker - used for creating game package or patch.
 text_comparer - used to compare text files for translation errors.
+updater - download carpg updates.
