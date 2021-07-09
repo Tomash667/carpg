@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include <AppEntry.h>
-#include "Game.h"
+#include "Editor.h"
 
 int AppEntry(char*)
 {
-	Game game;
-	return game.Start() ? 0 : 1;
+	Editor editor;
+	return editor.Start() ? 0 : 1;
 }
