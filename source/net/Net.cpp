@@ -291,17 +291,3 @@ void Net::OnFastTravel(bool accept)
 		c.count = team->my_id;
 	}
 }
-
-//=================================================================================================
-void Net::AddServerMsg(cstring msg)
-{
-	assert(msg);
-	cstring s = Format(game->txServer, msg);
-	if(game_gui->server->visible)
-		game_gui->server->AddMsg(s);
-	else
-	{
-		game_gui->messages->AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
-		game_gui->mp_box->Add(s);
-	}
-}

@@ -147,9 +147,6 @@ void Net::UpdateClient(float dt)
 		case ID_WHISPER:
 			Client_Whisper(reader);
 			break;
-		case ID_SERVER_SAY:
-			Client_ServerSay(reader);
-			break;
 		case ID_SERVER_CLOSE:
 			{
 				byte reason = (packet->length == 2 ? packet->data[1] : 0);
@@ -4081,16 +4078,6 @@ void Net::Client_Whisper(BitStreamReader& f)
 			game_gui->AddMsg(s);
 		}
 	}
-}
-
-//=================================================================================================
-void Net::Client_ServerSay(BitStreamReader& f)
-{
-	const string& text = f.ReadString1();
-	if(!f)
-		Error("Client_ServerSay: Broken packet.");
-	else
-		net->AddServerMsg(text.c_str());
 }
 
 //=================================================================================================

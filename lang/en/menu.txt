@@ -969,7 +969,6 @@ serverFailedToLoadSave = "Server failed to load saved game."
 // net
 createServerFailed = "Failed to create server (%d)!"
 initConnectionFailed = "Failed to init connection (%d)!"
-server = "Server: %s"
 youAreLeader = "You are the leader now."
 rolledNumber = "%s rolled number %d."
 pcIsLeader = "%s is now the leader."

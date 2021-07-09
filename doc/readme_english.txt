@@ -183,9 +183,10 @@ Available commands:
 	add_effect - add effect to selected unit (add_effect effect <value_type> power [source [perk/time]]).
 	add_exp - add experience to team (add_exp value).
 	add_gold - give gold to player (add_gold count).
-	add_team_gold - give gold to team (add_team_gold count).
 	add_item - add item to player inventory (add_item id [count]).
 	add_learning_points - add learning point to selected unit [count - default 1].
+	add_perk - add perk to selected unit (add_perk perk).
+	add_team_gold - give gold to team (add_team_gold count).
 	add_team_item - add team item to player inventory (add_team_item id [count]).
 	arena - spawns enemies on arena (example arena 3 rat vs 2 wolf).
 	break_action - break unit current action ('break 1' targets self).
@@ -200,6 +201,7 @@ Available commands:
 	draw_flags - set which elements of game draw (draw_flags int).
 	draw_hitbox - draw weapons hitbox (draw_hitbox 0/1).
 	draw_particle_sphere - draw particle extents sphere (draw_particle_sphere 0/1).
+	draw_path - draw debug pathfinding, look at target.
 	draw_phy - draw physical colliders (draw_phy 0/1).
 	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
 	exit - exit to menu.
@@ -208,23 +210,21 @@ Available commands:
 	force_quest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
-	grass_range - grass draw range (grass_range 0-100).
+	grass_range - grass draw range.
 	heal - heal player.
 	heal_unit - heal unit in front of player.
 	help - display information about command (help [command]).
 	hurt - deal 100 damage to unit ('hurt 1' targets self).
 	invisible - ai can't see player (invisible 0/1).
-	kick - kick player from server (kick nick).
 	kill - kill unit in front of player.
-	killall - kills all enemy units in current level, with 1 it kills allies too, with 2 kill inside buildings (killall [1/2]).
-	leader - change team leader (leader nick).
+	killall - kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1]).
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
 	list_effects - display selected unit effects.
 	list_perks - display selected unit perks.
 	list_stats - display selected unit stats.
-	load - load game (load 1-11 or name).
+	load - load game (load 1-11 or filename).
 	map2console - draw dungeon map in console.
-	mod_stat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
+	mod_stat - modify player statistics, use ? to get list (mod_stat stat value).
 	mp_interp - interpolation interval (mp_interp 0.f-1.f).
 	mp_use_interp - set use of interpolation (mp_use_interp 0/1).
 	multisampling - sets multisampling (multisampling type [quality]).
@@ -233,16 +233,11 @@ Available commands:
 	nocd - player abilities have no cooldown & use no mana/stamina (nocd 0/1).
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
-	play_music - sets if play music (play_music 0/1).
-	play_sound - sets if play sound (play_sound 0/1).
-	player_devmode - allow/disallow developer mode for player in multiplayer (player_devmode nick/all 0/1).
+	player_devmode - get/set player developer mode in multiplayer (player_devmode nick/all [0/1]).
 	qs - pick random character, get ready and start game.
-	quickload - load game from last slot.
-	quicksave - save game on last slot.
 	quit - quit from game.
-	random - roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue]).
-	ready - set player as ready/unready.
-	refresh_cooldown - refresh ability cooldown/charges.
+	random - roll random number 1-100 or pick random character (random, random [name], use ? to get list).
+	refresh_cooldown - refresh action cooldown/charges.
 	reload_shaders - reload shaders.
 	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
@@ -250,27 +245,28 @@ Available commands:
 	resolution - show or change display resolution (resolution [w h]).
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.
-	s - send message to all players, short from say (say msg).
-	save - save game (save 1-11 [text] or name).
-	say - send message to all players (say msg).
+	save - save game (save 1-11 [text] or filename).
 	scare - enemies escape.
 	screenshot - save screenshot.
 	select - select and display currently selected target (select [me/show/target] - use target or show by default).
-	server - send message from server to all players (server msg).
-	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
+	set_stat - set player statistics, use ? to get list (set_stat stat value).
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
-	start - start server.
 	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
-	tile_info - write current terrain tile info to console.
+	tile_info - display info about map tile.
 	use_fog - draw fog (use_fog 0/1).
+	use_glow - use glow (use_glow 0/1).
 	use_lighting - use lighting (use_lighting 0/1).
+	use_normalmap - use normal mapping (use_normalmap 0/1).
+	use_postfx - use post effects (use_postfx 0/1).
+	use_specularmap - use specular mapping (use_specularmap 0/1).
+	uv_mod - terrain uv mod (uv_mod 1-256).
+	verify - verify game state integrity.
 	version - displays game version.
-	w - send private message to player, short from whisper (w nick msg).
 	warp - move player into building (warp building/group [front]).
-	whisper - send private message to player (whisper nick msg).
+	whisper/w - send private message to player (whisper nick msg).
 
 ===============================================================================
 8) Config file

@@ -63,17 +63,10 @@ void CommandParser::AddCommands()
 
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "w", "send private message to player, short from whisper (w nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_SAY, "say", "send message to all players (say msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_SAY, "s", "send message to all players, short from say (say msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_SERVER_SAY, "server", "send message from server to all players (server msg)", F_LOBBY | F_MULTIPLAYER | F_SERVER | F_WORLD_MAP | F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_KICK, "kick", "kick player from server (kick nick)", F_LOBBY | F_MULTIPLAYER | F_SERVER | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_READY, "ready", "set player as ready/unready", F_LOBBY));
-	cmds.push_back(ConsoleCommand(CMD_LEADER, "leader", "change team leader (leader nick)", F_LOBBY | F_MULTIPLAYER));
 	cmds.push_back(ConsoleCommand(CMD_EXIT, "exit", "exit to menu", F_NOT_MENU | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUIT, "quit", "quit from game", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_RANDOM, "random", "roll random number 1-100 or pick random character (random, random [name], use ? to get list)", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp building/group [front])", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-11 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
@@ -107,8 +100,6 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_NOAI, "noai", "disable ai (noai 0/1)", F_CHEAT | F_GAME | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
@@ -1046,90 +1037,6 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		else
 			Msg("You need to enter player nick.");
 		break;
-	case CMD_SERVER_SAY:
-		if(t.NextLine())
-		{
-			const string& text = t.MustGetItem();
-			if(net->active_players > 1)
-			{
-				BitStreamWriter f;
-				f << ID_SERVER_SAY;
-				f << text;
-				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
-			}
-			net->AddServerMsg(text.c_str());
-			Info("SERVER: %s", text.c_str());
-			if(game->game_state == GS_LEVEL)
-				game_gui->level_gui->AddSpeechBubble(game->pc->unit, text.c_str());
-		}
-		else
-			Msg("You need to enter message.");
-		break;
-	case CMD_KICK:
-		if(t.Next())
-		{
-			const string& nick = t.MustGetItem();
-			PlayerInfo* info = net->FindPlayer(nick);
-			if(!info)
-				Msg("No player with nick '%s'.", nick.c_str());
-			else
-				net->KickPlayer(*info);
-		}
-		else
-			Msg("You need to enter player nick.");
-		break;
-	case CMD_READY:
-		{
-			PlayerInfo& info = net->GetMe();
-			info.ready = !info.ready;
-			game_gui->server->ChangeReady();
-		}
-		break;
-	case CMD_LEADER:
-		if(!t.Next())
-			Msg("You need to enter leader nick.");
-		else
-		{
-			const string& nick = t.MustGetText();
-			PlayerInfo* info = net->FindPlayer(nick);
-			if(!info)
-				Msg("No player with nick '%s'.", nick.c_str());
-			else if(team->leader_id == info->id)
-				Msg("Player '%s' is already a leader.", nick.c_str());
-			else if(!Net::IsServer() && team->leader_id != team->my_id)
-				Msg("You can't change a leader."); // must be current leader or server
-			else
-			{
-				if(game_gui->server->visible)
-				{
-					if(Net::IsServer())
-					{
-						team->leader_id = info->id;
-						game_gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-					}
-					else
-						Msg("You can't change a leader.");
-				}
-				else
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHANGE_LEADER;
-					c.id = info->id;
-
-					if(Net::IsServer())
-					{
-						team->leader_id = info->id;
-						team->leader = info->u;
-
-						if(game_gui->world_map->dialog_enc)
-							game_gui->world_map->dialog_enc->bts[0].state = (team->IsLeader() ? Button::NONE : Button::DISABLED);
-					}
-				}
-
-				game_gui->AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
-			}
-		}
-		break;
 	case CMD_EXIT:
 		game->ExitToMenu();
 		break;
@@ -1195,32 +1102,6 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		else
 			Msg("You rolled %d.", Random(1, 100));
-		break;
-	case CMD_START:
-		{
-			cstring msg = game_gui->server->TryStart();
-			if(msg)
-				Msg(msg);
-		}
-		break;
-	case CMD_SAY:
-		if(t.NextLine())
-		{
-			const string& text = t.MustGetItem();
-			BitStreamWriter f;
-			f << ID_SAY;
-			f.WriteCasted<byte>(team->my_id);
-			f << text;
-			if(Net::IsServer())
-				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
-			else
-				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
-			cstring s = Format("%s: %s", net->GetMe().name.c_str(), text.c_str());
-			game_gui->AddMsg(s);
-			Info(s);
-		}
-		else
-			Msg("You need to enter message.");
 		break;
 	case CMD_PLAYER_DEVMODE:
 		if(t.Next())
@@ -1331,12 +1212,6 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			render->GetMultisampling(ms, msq);
 			Msg("multisampling = %d, %d", ms, msq);
 		}
-		break;
-	case CMD_QUICKSAVE:
-		game->Quicksave(true);
-		break;
-	case CMD_QUICKLOAD:
-		game->Quickload(true);
 		break;
 	case CMD_RESOLUTION:
 		if(t.Next())

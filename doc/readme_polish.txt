@@ -192,13 +192,10 @@ Dostępne komendy bez trybu developera:
 	devmode - ustawia tryb developera (devmode 0/1).
 	exit - wychodzi do menu.
 	help - wyświetla informacje o komendzie (help [komenda]).
-	kick - wyrzuca gracza z serwera (kick nick).
-	leader - zmienia przywódcę drużyny (leader nick).
 	list - wyświetla jednostki/przedmioty/zadania po id/nazwie, unit item unitn itemn quest (list typ [filtr]).
 	player_devmode - włącza/wyłącza tryb developera dla innego gracza w multiplayer (player_devmode nick/all 0/1).
 	quit - wychodzi z gry.
 	random - losuje liczbę 1-100 lub wybiera losową postać (random, random [warrior/hunter/rogue]).
-	server - wyświetla wiadomość od serwera wszystkim graczom (say wiadomość).
 	version - wyświetla wersję gry.
 	w/whisper - wysyła prywatną wiadomość do gracza (whisper nick wiadomość).
 Pełna lista komend w readme_english.txt.

@@ -740,9 +740,9 @@ void Game::OnUpdate(float dt)
 			bool console_open = gui->HaveTopDialog("console");
 			bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
 			if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
-				Quicksave(console_open);
+				Quicksave();
 			if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
-				Quickload(console_open);
+				Quickload();
 		}
 	}
 
@@ -1180,7 +1180,6 @@ void Game::SetGameText()
 	txServerFailedToLoadSave = Str("serverFailedToLoadSave");
 
 	// net
-	txServer = Str("server");
 	txYouAreLeader = Str("youAreLeader");
 	txRolledNumber = Str("rolledNumber");
 	txPcIsLeader = Str("pcIsLeader");

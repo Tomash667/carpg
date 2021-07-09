@@ -965,7 +965,6 @@ serverFailedToLoadSave = "Wyst¹pi³ b³¹d podczas wczytywania gry przez serwer."
 // net
 createServerFailed = "B³¹d tworzenia serwera (%d)!"
 initConnectionFailed = "B³¹d tworzenie po³¹czenia (%d)!"
-server = "Serwer: %s"
 youAreLeader = "Zosta³eœ przywódc¹."
 rolledNumber = "%s wylosowa³ liczbê %d."
 pcIsLeader = "%s zosta³ przywódc¹."

@@ -75,11 +75,6 @@ enum GamePacket : byte
 	*/
 	ID_WHISPER,
 
-	/* Message from server to everyone
-	string1 - text
-	*/
-	ID_SERVER_SAY,
-
 	/* Player leaving server
 	*/
 	ID_LEAVE,

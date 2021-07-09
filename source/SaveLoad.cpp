@@ -1007,36 +1007,28 @@ bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
 }
 
 //=================================================================================================
-void Game::Quicksave(bool from_console)
+void Game::Quicksave()
 {
 	if(!CanSaveGame())
 	{
-		if(from_console)
-			game_gui->console->AddMsg(Net::IsClient() ? "Only server can save game." : "Can't save game now.");
-		else
-			gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
 		return;
 	}
 
 	if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
-	{
-		if(!from_console)
-			game_gui->messages->AddGameMsg3(GMS_GAME_SAVED);
-	}
+		game_gui->messages->AddGameMsg3(GMS_GAME_SAVED);
 }
 
 //=================================================================================================
-void Game::Quickload(bool from_console)
+void Game::Quickload()
 {
 	if(!CanLoadGame())
 	{
-		if(from_console)
-			game_gui->console->AddMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
-		else
-			gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
 		return;
 	}
-	TryLoadGame(SaveSlot::MAX_SLOTS, true, from_console);
+
+	TryLoadGame(SaveSlot::MAX_SLOTS, true, false);
 }
 
 //=================================================================================================

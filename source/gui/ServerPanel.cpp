@@ -276,9 +276,6 @@ void ServerPanel::UpdateLobbyClient(float dt)
 		case ID_WHISPER:
 			net->Client_Whisper(reader);
 			break;
-		case ID_SERVER_SAY:
-			net->Client_ServerSay(reader);
-			break;
 		case ID_LOBBY_UPDATE:
 			DoLobbyUpdate(reader);
 			break;

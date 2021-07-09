@@ -127,7 +127,6 @@ public:
 	void CancelFastTravel(int mode, int id);
 	void ClearFastTravel();
 	void OnFastTravel(bool accept);
-	void AddServerMsg(cstring msg);
 
 	RakPeerInterface* peer;
 	rvector<PlayerInfo> players; // contains players that left too
@@ -210,7 +209,6 @@ public:
 	bool ProcessControlMessageClientForMe(BitStreamReader& f);
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);
-	void Client_ServerSay(BitStreamReader& f);
 	void FilterClientChanges();
 	bool FilterOut(NetChange& c);
 	void ReadNetVars(BitStreamReader& f);

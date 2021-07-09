@@ -193,8 +193,8 @@ public:
 	void LoadLastSave() { LoadGameSlot(lastSave); }
 	void SetLastSave(int slot);
 	bool ValidateNetSaveForLoading(GameReader& f, int slot);
-	void Quicksave(bool from_console);
-	void Quickload(bool from_console);
+	void Quicksave();
+	void Quickload();
 	void ClearGameVars(bool new_game);
 	void ClearGame();
 	void EnterLevel(LocationGenerator* loc_gen);
@@ -413,7 +413,7 @@ public:
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
 		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
 		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave;
-	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txGamePaused, txGameResumed, txDevmodeOn,
+	cstring txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txGamePaused, txGameResumed, txDevmodeOn,
 		txDevmodeOff, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
 	cstring txHaveErrors;
