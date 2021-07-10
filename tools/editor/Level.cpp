@@ -1,7 +1,14 @@
 #include "Pch.h"
 #include "Level.h"
 
+#include "Room.h"
+
 #include <File.h>
+
+Level::~Level()
+{
+	DeleteElements(rooms);
+}
 
 void Level::Save(FileWriter& f)
 {

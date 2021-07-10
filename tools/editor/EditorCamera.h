@@ -5,6 +5,7 @@
 struct EditorCamera : public Camera
 {
 	EditorCamera();
+	Vec3 GetDir() const { return (to - from).Normalized(); }
 	void LookAt(const Vec3& pos);
 	void Update(float dt);
 	void Save(FileWriter& f);

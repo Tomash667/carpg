@@ -8,3 +8,4 @@ class Editor;
 class EditorUi;
 struct EditorCamera;
 struct Level;
+struct Room;

@@ -4,6 +4,7 @@
 #include "EditorCamera.h"
 #include "EditorUi.h"
 #include "Level.h"
+#include "Room.h"
 #include "NativeDialogs.h"
 
 #include <BasicShader.h>
@@ -11,6 +12,7 @@
 #include <File.h>
 #include <Gui.h>
 #include <Input.h>
+#include <Physics.h>
 #include <Render.h>
 #include <ResourceManager.h>
 #include <Scene.h>
@@ -19,7 +21,7 @@
 
 const Color GRID_COLOR(0, 255, 128);
 
-Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr)
+Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr), shapeGrid(nullptr), world(nullptr)
 {
 	engine->SetTitle("Editor");
 	engine->SetWindowSize(Int2(1280, 720));
@@ -32,11 +34,14 @@ Editor::~Editor()
 	delete level;
 	delete scene;
 	delete camera;
+
+	delete shapeGrid;
 }
 
 bool Editor::OnInit()
 {
 	res_mgr->AddDir("../../../bin/data");
+	res_mgr->AddDir("data");
 
 	ui = new EditorUi(this);
 	gui->Add(ui);
@@ -56,9 +61,18 @@ bool Editor::OnInit()
 
 	shader = render->GetShader<BasicShader>();
 
+	world = engine->GetPhysicsWorld();
+	shapeGrid = new btStaticPlaneShape(btVector3(0, 1, 0), 0.f);
+
 	NewLevel();
 
 	return true;
+}
+
+void Editor::OnCleanup()
+{
+	if(world)
+		world->Reset();
 }
 
 void Editor::OnDraw()
@@ -75,11 +89,33 @@ void Editor::OnDraw()
 		shader->DrawLine(Vec3(start.x - range, y, start.z + i), Vec3(start.x + range, y, start.z + i), 0.02f, GRID_COLOR);
 		shader->DrawLine(Vec3(start.x + i, y, start.z - range), Vec3(start.x + i, y, start.z + range), 0.02f, GRID_COLOR);
 	}
+
+	// rooms
+	for(Room* room : level->rooms)
+		DrawRect(room->box, Color::White);
+
+	if(action == A_ADD_ROOM)
+		DrawRect(roomBox, Color::Red);
+
 	shader->Draw();
+
+	if(markerValid)
+	{
+		shader->PrepareForShapes(*camera);
+		shader->DrawShape(MeshShape::Sphere, Matrix::Scale(0.1f) * Matrix::Translation(marker), Color::White);
+	}
 
 	gui->Draw(true, true);
 
 	render->Present();
+}
+
+void Editor::DrawRect(const Box& box, Color color)
+{
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v1.z), Vec3(box.v2.x, box.v1.y, box.v1.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v2.z), Vec3(box.v2.x, box.v1.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v1.z), Vec3(box.v1.x, box.v1.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v2.x, box.v1.y, box.v1.z), Vec3(box.v2.x, box.v1.y, box.v2.z), 0.04f, color);
 }
 
 void Editor::OnUpdate(float dt)
@@ -104,14 +140,65 @@ void Editor::OnUpdate(float dt)
 		SaveLevelAs();
 
 	camera->Update(dt);
+
+	const Vec3 from = camera->from;
+	const Vec3 to = camera->from + camera->GetDir() * 40.f;
+	btCollisionWorld::ClosestRayResultCallback callback(ToVector3(from), ToVector3(to));
+	//callback.m_flags = 1; // backface culling
+	world->rayTest(ToVector3(from), ToVector3(to), callback);
+	if(callback.hasHit())
+	{
+		markerValid = true;
+		marker = ToVec3(callback.m_hitPointWorld);
+		marker = Vec3(round(marker.x * 10) / 10, round(marker.y * 10) / 10, round(marker.z * 10) / 10);
+	}
+	else
+		markerValid = false;
+
+	if(action == A_NONE)
+	{
+		if(input->PressedRelease(Key::LeftButton))
+		{
+			action = A_ADD_ROOM;
+			actionPos = marker;
+			roomBox = Box(actionPos);
+		}
+	}
+	else
+	{
+		if(markerValid)
+			roomBox = Box::CreateBoundingBox(actionPos, marker);
+		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
+		{
+			if(roomBox.SizeX() > 0 && roomBox.SizeZ() > 0)
+			{
+				Room* room = new Room;
+				room->box = roomBox;
+				level->rooms.push_back(room);
+			}
+			action = A_NONE;
+		}
+		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
+			action = A_NONE;
+	}
 }
 
 void Editor::NewLevel()
 {
+	// cleanup
 	delete level;
+	world->Reset();
+
 	level = new Level;
 	camera->from = Vec3(0, 10, -5);
 	camera->LookAt(Vec3::Zero);
+
+	cobjGrid = new btCollisionObject;
+	cobjGrid->setCollisionShape(shapeGrid);
+	world->addCollisionObject(cobjGrid);
+
+	markerValid = false;
+	action = A_NONE;
 }
 
 void Editor::OpenLevel()
@@ -119,8 +206,7 @@ void Editor::OpenLevel()
 	cstring path = PickFile("Level (.lvl)\0*.lvl\0\0", false, "lvl");
 	if(!path)
 		return;
-	delete level;
-	level = new Level;
+	NewLevel();
 	level->path = path;
 	level->filename = io::FilenameFromPath(path);
 	if(!DoLoadLevel())

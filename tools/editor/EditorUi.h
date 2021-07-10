@@ -11,4 +11,5 @@ public:
 private:
 	Editor* editor;
 	Font* font;
+	Texture* tCrosshair;
 };
