@@ -92,7 +92,16 @@ void Editor::OnDraw()
 
 	// rooms
 	for(Room* room : level->rooms)
-		DrawRect(room->box, Color::White);
+	{
+		if(room != roomHover)
+			DrawRect(room->box, Color::White);
+	}
+
+	if(roomHover && roomHover != roomSelect)
+		DrawRect(roomHover->box, Color(255, 64, 140));
+
+	if(roomSelect)
+		DrawRect(roomSelect->box, Color::Red);
 
 	if(action == A_ADD_ROOM)
 		DrawRect(roomBox, Color::Red);
@@ -155,13 +164,41 @@ void Editor::OnUpdate(float dt)
 	else
 		markerValid = false;
 
+	roomHover = nullptr;
 	if(action == A_NONE)
 	{
+		if(markerValid)
+		{
+			for(Room* room : level->rooms)
+			{
+				if(marker.x >= room->box.v1.x && marker.x <= room->box.v2.x && marker.z >= room->box.v1.z && marker.z <= room->box.v2.z)
+				{
+					roomHover = room;
+					break;
+				}
+			}
+		}
+
 		if(input->PressedRelease(Key::LeftButton))
 		{
 			action = A_ADD_ROOM;
 			actionPos = marker;
 			roomBox = Box(actionPos);
+			roomHover = nullptr;
+			roomSelect = nullptr;
+		}
+		else if(input->PressedRelease(Key::RightButton))
+			roomSelect = roomHover;
+		else if(input->PressedRelease(Key::Delete))
+		{
+			if(roomSelect)
+			{
+				if(roomHover == roomSelect)
+					roomHover = nullptr;
+				RemoveElement(level->rooms, roomSelect);
+				delete roomSelect;
+				roomSelect = nullptr;
+			}
 		}
 	}
 	else
@@ -175,6 +212,7 @@ void Editor::OnUpdate(float dt)
 				Room* room = new Room;
 				room->box = roomBox;
 				level->rooms.push_back(room);
+				roomSelect = room;
 			}
 			action = A_NONE;
 		}
@@ -199,6 +237,8 @@ void Editor::NewLevel()
 
 	markerValid = false;
 	action = A_NONE;
+	roomHover = nullptr;
+	roomSelect = nullptr;
 }
 
 void Editor::OpenLevel()

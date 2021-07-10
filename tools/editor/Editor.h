@@ -41,4 +41,5 @@ private:
 	Action action;
 	Vec3 actionPos;
 	Box roomBox;
+	Room* roomHover, *roomSelect;
 };

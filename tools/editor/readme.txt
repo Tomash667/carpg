@@ -1,4 +1,8 @@
 Controls:
+WSAD - move camera
+Left mouse button - place room, apply action
+Right mouse button - select room, cancel action
+Esc - cancel action
 Ctrl+N - new level
 Ctrl+O - open level
 Ctrl+S - save level
