@@ -379,13 +379,13 @@ void Game::ConfigureGame()
 	load_errors += BaseLocation::SetRoomPointers();
 
 	// shaders
-	render->RegisterShader(basic_shader = new BasicShader);
-	render->RegisterShader(grass_shader = new GrassShader);
-	render->RegisterShader(particle_shader = new ParticleShader);
-	render->RegisterShader(postfx_shader = new PostfxShader);
-	render->RegisterShader(skybox_shader = new SkyboxShader);
-	render->RegisterShader(terrain_shader = new TerrainShader);
-	render->RegisterShader(glow_shader = new GlowShader(postfx_shader));
+	basic_shader = render->GetShader<BasicShader>();
+	grass_shader = render->GetShader<GrassShader>();
+	particle_shader = render->GetShader<ParticleShader>();
+	postfx_shader = render->GetShader<PostfxShader>();
+	skybox_shader = render->GetShader<SkyboxShader>();
+	terrain_shader = render->GetShader<TerrainShader>();
+	glow_shader = render->GetShader<GlowShader>();
 
 	tMinimap = render->CreateDynamicTexture(Int2(128));
 	CreateRenderTargets();
