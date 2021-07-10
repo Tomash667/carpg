@@ -6,6 +6,7 @@
 #include "Level.h"
 #include "NativeDialogs.h"
 
+#include <BasicShader.h>
 #include <Engine.h>
 #include <File.h>
 #include <Gui.h>
@@ -19,6 +20,7 @@
 Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr)
 {
 	engine->SetTitle("Editor");
+	engine->SetWindowSize(Int2(1280, 720));
 	render->SetShadersDir("../../../carpglib/shaders");
 }
 
@@ -33,24 +35,25 @@ Editor::~Editor()
 bool Editor::OnInit()
 {
 	res_mgr->AddDir("../../../bin/data");
+
 	ui = new EditorUi(this);
 	gui->Add(ui);
-	NewLevel();
+
 	scene = new Scene;
 	scene->clear_color = Color(0, 128, 255);
+
 	camera = new EditorCamera;
-	camera->from = Vec3(-1, 4, -4);
-	camera->to = Vec3(0, 0, 0);
-	Matrix matView = Matrix::CreateLookAt(camera->from, camera->to);
-	Matrix matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, app::engine->GetWindowAspect(), 0.1f, 50.f);
-	camera->mat_view_proj = matView * matProj;
-	camera->mat_view_inv = matView.Inverse();
+
 	SceneNode* node = SceneNode::Get();
 	node->center = Vec3::Zero;
 	node->SetMesh(res_mgr->Load<Mesh>("beczka.qmsh"));
 	node->mat = Matrix::IdentityMatrix;
 	scene->Add(node);
+
 	scene_mgr->SetScene(scene, camera);
+
+	NewLevel();
+
 	return true;
 }
 
@@ -81,12 +84,16 @@ void Editor::OnUpdate(float dt)
 		SaveLevel();
 	if(input->Shortcut(KEY_CONTROL | KEY_SHIFT, Key::S))
 		SaveLevelAs();
+
+	camera->Update(dt);
 }
 
 void Editor::NewLevel()
 {
 	delete level;
 	level = new Level;
+	camera->from = Vec3(0, 10, -5);
+	camera->LookAt(Vec3::Zero);
 }
 
 void Editor::OpenLevel()
@@ -101,6 +108,7 @@ void Editor::OpenLevel()
 	if(!DoLoadLevel())
 	{
 		engine->ShowError("Failed to load level!");
+		NewLevel();
 		return;
 	}
 }
@@ -114,7 +122,7 @@ bool Editor::DoLoadLevel()
 	f >> marker;
 	if(marker == 0xFE)
 	{
-		// TODO
+		camera->Load(f);
 		f >> marker;
 	}
 	return marker == 0xFF;
@@ -148,5 +156,6 @@ void Editor::DoSaveLevel()
 	FileWriter f(level->path);
 	level->Save(f);
 	f.Write<byte>(0xFE);
+	camera->Save(f);
 	f.Write<byte>(0xFF);
 }
