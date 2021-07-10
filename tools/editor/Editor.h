@@ -24,4 +24,5 @@ private:
 	Level* level;
 	Scene* scene;
 	EditorCamera* camera;
+	BasicShader* shader;
 };

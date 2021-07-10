@@ -17,6 +17,8 @@
 #include <SceneManager.h>
 #include <SceneNode.h>
 
+const Color GRID_COLOR(0, 255, 128);
+
 Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr)
 {
 	engine->SetTitle("Editor");
@@ -52,6 +54,8 @@ bool Editor::OnInit()
 
 	scene_mgr->SetScene(scene, camera);
 
+	shader = render->GetShader<BasicShader>();
+
 	NewLevel();
 
 	return true;
@@ -60,7 +64,21 @@ bool Editor::OnInit()
 void Editor::OnDraw()
 {
 	scene_mgr->Draw(nullptr);
+
+	// grid
+	const int range = 40;
+	shader->Prepare(*camera);
+	const Vec3 start(round(camera->from.x), 0, round(camera->from.z));
+	const float y = 0.f;// editor->yLevel;
+	for(int i = -range; i <= range; ++i)
+	{
+		shader->DrawLine(Vec3(start.x - range, y, start.z + i), Vec3(start.x + range, y, start.z + i), 0.02f, GRID_COLOR);
+		shader->DrawLine(Vec3(start.x + i, y, start.z - range), Vec3(start.x + i, y, start.z + range), 0.02f, GRID_COLOR);
+	}
+	shader->Draw();
+
 	gui->Draw(true, true);
+
 	render->Present();
 }
 
