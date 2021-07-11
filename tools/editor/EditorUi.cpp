@@ -20,7 +20,23 @@ void EditorUi::Draw(ControlDrawData*)
 	// text
 	LocalString text = Format("Level: %s", editor->level->filename.c_str());
 	if(editor->action != A_NONE)
-		text += Format("\nAction: add room");
+	{
+		cstring name;
+		switch(editor->action)
+		{
+		default:
+		case A_ADD_ROOM:
+			name = "add room";
+			break;
+		case A_MOVE:
+			name = "move";
+			break;
+		case A_RESIZE:
+			name = "resize";
+			break;
+		}
+		text += Format("\nAction: %s", name);
+	}
 	if(editor->markerValid)
 		text += Format("\nPos: %g; %g; %g", FLT10(editor->marker.x), FLT10(editor->marker.y), FLT10(editor->marker.z));
 	gui->DrawText(font, text.c_str(), 0, Color::Black, Rect(0, 0, 500, 100));

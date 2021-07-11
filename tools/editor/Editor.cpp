@@ -108,10 +108,20 @@ void Editor::OnDraw()
 
 	shader->Draw();
 
+	shader->PrepareForShapes(*camera);
 	if(markerValid)
 	{
-		shader->PrepareForShapes(*camera);
 		shader->DrawShape(MeshShape::Sphere, Matrix::Scale(0.1f) * Matrix::Translation(marker), Color::White);
+	}
+
+	if(roomSelect && action == A_NONE)
+	{
+		for(int i = 0; i < 8; ++i)
+		{
+			bool selected = (roomSelect == roomHover && hoverDir == (Dir)i);
+			shader->DrawShape(MeshShape::Sphere, Matrix::Scale(selected ? 0.3f : 0.1f) * Matrix::Translation(roomSelect->GetPoint((Dir)i)),
+				selected ? Color::Red : Color(255, 64, 140));
+		}
 	}
 
 	gui->Draw(true, true);
@@ -165,8 +175,9 @@ void Editor::OnUpdate(float dt)
 		markerValid = false;
 
 	roomHover = nullptr;
-	if(action == A_NONE)
+	switch(action)
 	{
+	case A_NONE:
 		if(markerValid)
 		{
 			for(Room* room : level->rooms)
@@ -174,6 +185,15 @@ void Editor::OnUpdate(float dt)
 				if(marker.x >= room->box.v1.x && marker.x <= room->box.v2.x && marker.z >= room->box.v1.z && marker.z <= room->box.v2.z)
 				{
 					roomHover = room;
+					hoverDir = DIR_NONE;
+					for(int i = 0; i < 8; ++i)
+					{
+						if(Vec3::Distance(marker, room->GetPoint((Dir)i)) <= 0.1f)
+						{
+							hoverDir = (Dir)i;
+							break;
+						}
+					}
 					break;
 				}
 			}
@@ -200,9 +220,61 @@ void Editor::OnUpdate(float dt)
 				roomSelect = nullptr;
 			}
 		}
-	}
-	else
-	{
+		else if(input->PressedRelease(Key::M))
+		{
+			if(roomSelect)
+			{
+				action = A_MOVE;
+				actionPos = marker;
+				roomHover = nullptr;
+				roomBox = roomSelect->box;
+			}
+		}
+		else if(input->PressedRelease(Key::R))
+		{
+			if(roomSelect && roomSelect == roomHover && hoverDir != DIR_NONE)
+			{
+				action = A_RESIZE;
+				actionPos = marker;
+				roomHover = nullptr;
+				roomBox = roomSelect->box;
+				resizeLock.clear();
+				switch(hoverDir)
+				{
+				case DIR_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_LEFT));
+					break;
+				case DIR_TOP_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_LEFT));
+					break;
+				case DIR_TOP:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_RIGHT));
+					break;
+				case DIR_TOP_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_RIGHT));
+					break;
+				case DIR_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_RIGHT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_RIGHT));
+					break;
+				case DIR_BOTTOM_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_RIGHT));
+					break;
+				case DIR_BOTTOM:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_RIGHT));
+					break;
+				case DIR_BOTTOM_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_LEFT));
+					break;
+				}
+			}
+		}
+		break;
+
+	case A_ADD_ROOM:
 		if(markerValid)
 			roomBox = Box::CreateBoundingBox(actionPos, marker);
 		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
@@ -218,6 +290,39 @@ void Editor::OnUpdate(float dt)
 		}
 		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
 			action = A_NONE;
+		break;
+
+	case A_MOVE:
+		if(markerValid)
+		{
+			Vec3 dif = marker - actionPos;
+			actionPos = marker;
+			roomSelect->box += dif;
+		}
+		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
+			action = A_NONE;
+		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
+		{
+			action = A_NONE;
+			roomSelect->box = roomBox;
+		}
+		break;
+
+	case A_RESIZE:
+		if(markerValid && marker != actionPos)
+		{
+			roomSelect->box = Box(marker);
+			for(const Vec3& pt : resizeLock)
+				roomSelect->box.AddPoint(pt);
+		}
+		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
+			action = A_NONE;
+		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
+		{
+			action = A_NONE;
+			roomSelect->box = roomBox;
+		}
+		break;
 	}
 }
 

@@ -5,7 +5,9 @@
 enum Action
 {
 	A_NONE,
-	A_ADD_ROOM
+	A_ADD_ROOM,
+	A_MOVE,
+	A_RESIZE
 };
 
 class Editor : public App
@@ -42,4 +44,6 @@ private:
 	Vec3 actionPos;
 	Box roomBox;
 	Room* roomHover, *roomSelect;
+	Dir hoverDir;
+	vector<Vec3> resizeLock;
 };
