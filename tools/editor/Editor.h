@@ -31,6 +31,7 @@ private:
 	void DrawRect(const Box& box, Color color);
 
 	EditorUi* ui;
+	MeshBuilder* builder;
 	Level* level;
 	Scene* scene;
 	EditorCamera* camera;

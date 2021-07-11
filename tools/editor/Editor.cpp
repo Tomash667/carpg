@@ -4,8 +4,9 @@
 #include "EditorCamera.h"
 #include "EditorUi.h"
 #include "Level.h"
-#include "Room.h"
+#include "MeshBuilder.h"
 #include "NativeDialogs.h"
+#include "Room.h"
 
 #include <BasicShader.h>
 #include <Engine.h>
@@ -21,7 +22,7 @@
 
 const Color GRID_COLOR(0, 255, 128);
 
-Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr), shapeGrid(nullptr), world(nullptr)
+Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr), shapeGrid(nullptr), world(nullptr), builder(nullptr)
 {
 	engine->SetTitle("Editor");
 	engine->SetWindowSize(Int2(1280, 720));
@@ -31,6 +32,7 @@ Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr),
 Editor::~Editor()
 {
 	delete ui;
+	delete builder;
 	delete level;
 	delete scene;
 	delete camera;
@@ -45,6 +47,8 @@ bool Editor::OnInit()
 
 	ui = new EditorUi(this);
 	gui->Add(ui);
+
+	builder = new MeshBuilder;
 
 	scene = new Scene;
 	scene->clear_color = Color(0, 128, 255);
@@ -77,7 +81,9 @@ void Editor::OnCleanup()
 
 void Editor::OnDraw()
 {
-	scene_mgr->Draw(nullptr);
+	scene_mgr->Prepare();
+	builder->Draw(*camera);
+	scene_mgr->DrawSceneNodes();
 
 	// grid
 	const int range = 40;
@@ -285,6 +291,7 @@ void Editor::OnUpdate(float dt)
 				room->box = roomBox;
 				level->rooms.push_back(room);
 				roomSelect = room;
+				builder->Build(level);
 			}
 			action = A_NONE;
 		}
@@ -296,8 +303,12 @@ void Editor::OnUpdate(float dt)
 		if(markerValid)
 		{
 			Vec3 dif = marker - actionPos;
-			actionPos = marker;
-			roomSelect->box += dif;
+			if(dif != Vec3::Zero)
+			{
+				actionPos = marker;
+				roomSelect->box += dif;
+				builder->Build(level);
+			}
 		}
 		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
 			action = A_NONE;
@@ -305,6 +316,7 @@ void Editor::OnUpdate(float dt)
 		{
 			action = A_NONE;
 			roomSelect->box = roomBox;
+			builder->Build(level);
 		}
 		break;
 
@@ -314,6 +326,7 @@ void Editor::OnUpdate(float dt)
 			roomSelect->box = Box(marker);
 			for(const Vec3& pt : resizeLock)
 				roomSelect->box.AddPoint(pt);
+			builder->Build(level);
 		}
 		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
 			action = A_NONE;
@@ -321,6 +334,7 @@ void Editor::OnUpdate(float dt)
 		{
 			action = A_NONE;
 			roomSelect->box = roomBox;
+			builder->Build(level);
 		}
 		break;
 	}
@@ -344,6 +358,7 @@ void Editor::NewLevel()
 	action = A_NONE;
 	roomHover = nullptr;
 	roomSelect = nullptr;
+	builder->Clear();
 }
 
 void Editor::OpenLevel()
@@ -360,6 +375,8 @@ void Editor::OpenLevel()
 		NewLevel();
 		return;
 	}
+
+	builder->Build(level);
 }
 
 bool Editor::DoLoadLevel()

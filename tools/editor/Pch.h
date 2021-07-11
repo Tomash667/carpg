@@ -6,6 +6,7 @@ using namespace app;
 
 class Editor;
 class EditorUi;
+class MeshBuilder;
 struct EditorCamera;
 struct Level;
 struct Room;

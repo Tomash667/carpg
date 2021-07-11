@@ -104,6 +104,7 @@
     <ClCompile Include="EditorUi.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MeshBuilder.cpp" />
     <ClCompile Include="NativeDialogs.cpp" />
     <ClCompile Include="Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -116,6 +117,7 @@
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorUi.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="MeshBuilder.h" />
     <ClInclude Include="NativeDialogs.h" />
     <ClInclude Include="Pch.h" />
     <ClInclude Include="Room.h" />
