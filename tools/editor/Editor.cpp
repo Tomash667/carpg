@@ -224,6 +224,7 @@ void Editor::OnUpdate(float dt)
 				RemoveElement(level->rooms, roomSelect);
 				delete roomSelect;
 				roomSelect = nullptr;
+				builder->Build(level);
 			}
 		}
 		else if(input->PressedRelease(Key::M))

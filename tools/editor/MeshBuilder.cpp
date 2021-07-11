@@ -14,6 +14,7 @@ MeshBuilder::MeshBuilder() : vb(nullptr), ib(nullptr)
 	shader = render->GetShader<SuperShader>();
 	texFloor = res_mgr->Load<Texture>("floor_tile.jpg");
 	texCeiling = res_mgr->Load<Texture>("sufit.jpg");
+	texWall = res_mgr->Load<Texture>("256-01a.jpg");
 }
 
 MeshBuilder::~MeshBuilder()
@@ -30,11 +31,14 @@ void MeshBuilder::Clear()
 void MeshBuilder::Build(Level* level)
 {
 	Clear();
+	if(level->rooms.empty())
+		return;
 
 	vertices.clear();
 	indices.clear();
 	floorParts.clear();
 	ceilingParts.clear();
+	wallParts.clear();
 
 	for(Room* room : level->rooms)
 	{
@@ -79,6 +83,93 @@ void MeshBuilder::Build(Level* level)
 		vertices.push_back({ pos, Vec3::Down, Vec2(pos.x / 2, pos.z / 2) });
 		pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
 		vertices.push_back({ pos, Vec3::Down, Vec2(pos.x / 2, pos.z / 2) });
+
+		// --- walls
+		uint offset = indices.size();
+		uint count = 0;
+
+		// left wall
+		index = (word)vertices.size();
+		indices.push_back(index + 0);
+		indices.push_back(index + 2);
+		indices.push_back(index + 3);
+		indices.push_back(index + 0);
+		indices.push_back(index + 3);
+		indices.push_back(index + 1);
+
+		pos = Vec3(box.v1.x, box.v1.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+		pos = Vec3(box.v1.x, box.v1.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+		pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+		pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+
+		count += 6;
+
+		// right wall
+		index = (word)vertices.size();
+		indices.push_back(index + 0);
+		indices.push_back(index + 1);
+		indices.push_back(index + 2);
+		indices.push_back(index + 1);
+		indices.push_back(index + 3);
+		indices.push_back(index + 2);
+
+		pos = Vec3(box.v2.x, box.v1.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+
+		count += 6;
+
+		// front wall
+		index = (word)vertices.size();
+		indices.push_back(index + 0);
+		indices.push_back(index + 2);
+		indices.push_back(index + 3);
+		indices.push_back(index + 0);
+		indices.push_back(index + 3);
+		indices.push_back(index + 1);
+
+		pos = Vec3(box.v1.x, box.v1.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+		pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+
+		count += 6;
+
+		// back wall
+		index = (word)vertices.size();
+		indices.push_back(index + 0);
+		indices.push_back(index + 1);
+		indices.push_back(index + 2);
+		indices.push_back(index + 1);
+		indices.push_back(index + 3);
+		indices.push_back(index + 2);
+
+		pos = Vec3(box.v1.x, box.v1.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v1.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+		pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+		pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+
+		count += 6;
+
+		if(count != 0)
+			wallParts.push_back(Int2(offset, count));
 	}
 
 	// create vertex buffer
@@ -127,9 +218,9 @@ void MeshBuilder::Draw(Camera& camera)
 		shader->DrawCustom(Matrix::IdentityMatrix, camera.mat_view_proj, lights, part.x, part.y);
 
 	// wall
-	//shader->SetTexture(texWall);
-	//for(Int2& part : wallParts)
-	//	shader->DrawCustom(Matrix::IdentityMatrix, camera.mat_view_proj, lights, part.x, part.y);
+	shader->SetTexture(texWall);
+	for(Int2& part : wallParts)
+		shader->DrawCustom(Matrix::IdentityMatrix, camera.mat_view_proj, lights, part.x, part.y);
 
 	// ceiling
 	shader->SetTexture(texCeiling);
