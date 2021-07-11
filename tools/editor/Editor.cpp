@@ -289,6 +289,7 @@ void Editor::OnUpdate(float dt)
 			{
 				Room* room = new Room;
 				room->box = roomBox;
+				room->box.v2.y = room->box.v1.y + 4;
 				level->rooms.push_back(room);
 				roomSelect = room;
 				builder->Build(level);
@@ -307,6 +308,7 @@ void Editor::OnUpdate(float dt)
 			{
 				actionPos = marker;
 				roomSelect->box += dif;
+				roomSelect->box.v2.y = roomSelect->box.v1.y + 4;
 				builder->Build(level);
 			}
 		}
@@ -326,6 +328,7 @@ void Editor::OnUpdate(float dt)
 			roomSelect->box = Box(marker);
 			for(const Vec3& pt : resizeLock)
 				roomSelect->box.AddPoint(pt);
+			roomSelect->box.v2.y = roomSelect->box.v1.y + 4;
 			builder->Build(level);
 		}
 		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))

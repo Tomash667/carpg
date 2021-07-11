@@ -17,6 +17,6 @@ private:
 	ID3D11Buffer* ib;
 	vector<VDefault> vertices;
 	vector<word> indices;
-	vector<Int2> floorParts;
-	TexturePtr texFloor;
+	vector<Int2> floorParts, ceilingParts;
+	TexturePtr texFloor, texCeiling;
 };

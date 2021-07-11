@@ -13,6 +13,7 @@ MeshBuilder::MeshBuilder() : vb(nullptr), ib(nullptr)
 {
 	shader = render->GetShader<SuperShader>();
 	texFloor = res_mgr->Load<Texture>("floor_tile.jpg");
+	texCeiling = res_mgr->Load<Texture>("sufit.jpg");
 }
 
 MeshBuilder::~MeshBuilder()
@@ -33,6 +34,7 @@ void MeshBuilder::Build(Level* level)
 	vertices.clear();
 	indices.clear();
 	floorParts.clear();
+	ceilingParts.clear();
 
 	for(Room* room : level->rooms)
 	{
@@ -57,6 +59,26 @@ void MeshBuilder::Build(Level* level)
 		vertices.push_back({ pos, Vec3::Up, Vec2(pos.x / 2, pos.z / 2) });
 		pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
 		vertices.push_back({ pos, Vec3::Up, Vec2(pos.x / 2, pos.z / 2) });
+
+		// --- ceiling
+		ceilingParts.push_back(Int2(indices.size(), 6));
+
+		index = (word)vertices.size();
+		indices.push_back(index + 0);
+		indices.push_back(index + 1);
+		indices.push_back(index + 2);
+		indices.push_back(index + 2);
+		indices.push_back(index + 1);
+		indices.push_back(index + 3);
+
+		pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Down, Vec2(pos.x / 2, pos.z / 2) });
+		pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
+		vertices.push_back({ pos, Vec3::Down, Vec2(pos.x / 2, pos.z / 2) });
+		pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Down, Vec2(pos.x / 2, pos.z / 2) });
+		pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
+		vertices.push_back({ pos, Vec3::Down, Vec2(pos.x / 2, pos.z / 2) });
 	}
 
 	// create vertex buffer
@@ -110,7 +132,7 @@ void MeshBuilder::Draw(Camera& camera)
 	//	shader->DrawCustom(Matrix::IdentityMatrix, camera.mat_view_proj, lights, part.x, part.y);
 
 	// ceiling
-	//shader->SetTexture(texCeiling);
-	//for(Int2& part : ceilingParts)
-	//	shader->DrawCustom(Matrix::IdentityMatrix, camera.mat_view_proj, lights, part.x, part.y);
+	shader->SetTexture(texCeiling);
+	for(Int2& part : ceilingParts)
+		shader->DrawCustom(Matrix::IdentityMatrix, camera.mat_view_proj, lights, part.x, part.y);
 }
