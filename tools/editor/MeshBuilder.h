@@ -12,6 +12,8 @@ public:
 	void Draw(Camera& camera);
 
 private:
+	void BuildLinks(Level* level);
+
 	SuperShader* shader;
 	ID3D11Buffer* vb;
 	ID3D11Buffer* ib;

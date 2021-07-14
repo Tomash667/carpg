@@ -39,6 +39,7 @@ void MeshBuilder::Build(Level* level)
 	floorParts.clear();
 	ceilingParts.clear();
 	wallParts.clear();
+	BuildLinks(level);
 
 	for(Room* room : level->rooms)
 	{
@@ -196,6 +197,29 @@ void MeshBuilder::Build(Level* level)
 	render->GetDevice()->CreateBuffer(&desc, &data, &ib);
 }
 
+void MeshBuilder::BuildLinks(Level* level)
+{
+	for(Room* room : level->rooms)
+		room->links.clear();
+
+	uint count = level->rooms.size();
+	for(uint i = 0; i < count; ++i)
+	{
+		Room* a = level->rooms[i];
+		Box aBox = a->box.AddMargin(0.01f);
+		for(uint j = i + 1; j < count; ++j)
+		{
+			Room* b = level->rooms[j];
+			Box bBox = b->box.AddMargin(0.01f);
+			if(BoxToBox(aBox, bBox))
+			{
+				Box ab(max(aBox.v1.x, bBox.v1.x), max(aBox.v1.y, bBox.v1.y), max(aBox.v1.z, bBox.v1.z),
+					min(aBox.v2.x, bBox.v2.x), min(aBox.v2.y, bBox.v2.y), min(aBox.v2.z, bBox.v2.z));
+				// który kierunek?
+			}
+		}
+	}
+}
 
 void MeshBuilder::Draw(Camera& camera)
 {
