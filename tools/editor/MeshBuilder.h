@@ -13,6 +13,7 @@ public:
 
 private:
 	void BuildLinks(Level* level);
+	Dir GetDirection(Room* a, Room* b);
 
 	SuperShader* shader;
 	ID3D11Buffer* vb;

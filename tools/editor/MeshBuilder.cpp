@@ -215,9 +215,57 @@ void MeshBuilder::BuildLinks(Level* level)
 			{
 				Box ab(max(aBox.v1.x, bBox.v1.x), max(aBox.v1.y, bBox.v1.y), max(aBox.v1.z, bBox.v1.z),
 					min(aBox.v2.x, bBox.v2.x), min(aBox.v2.y, bBox.v2.y), min(aBox.v2.z, bBox.v2.z));
-				// który kierunek?
+				const Dir dir = GetDirection(a, b);
+
+				RoomLink& la = Add1(a->links);
+				la.dir = dir;
+				la.box = ab;
+				la.room = b;
+				la.first = true;
+
+				RoomLink& lb = Add1(b->links);
+				lb.dir = Reversed(dir);
+				lb.box = ab;
+				lb.room = a;
+				lb.first = false;
 			}
 		}
+	}
+}
+
+int GetMaxDimension(const Vec3& dif)
+{
+	const Vec3 max(abs(dif.x), abs(dif.y), abs(dif.z));
+	if(max.x > max.y)
+	{
+		if(max.x > max.z)
+			return 0; // x
+		else
+			return 2; // z
+	}
+	else
+	{
+		if(max.y > max.z)
+			return 1; // y
+		else
+			return 2; // z
+	}
+}
+
+Dir MeshBuilder::GetDirection(Room* a, Room* b)
+{
+	const Vec3 aPos = a->box.Midpoint();
+	const Vec3 bPos = b->box.Midpoint();
+	const Vec3 dif = aPos - bPos;
+	switch(GetMaxDimension(dif))
+	{
+	default:
+	case 0: // x
+		return dif.x > 0 ? DIR_RIGHT : DIR_LEFT;
+	case 1: // y
+		return dif.y > 0 ? DIR_UP : DIR_DOWN;
+	case 2: // z
+		return dif.z > 0 ? DIR_FORWARD : DIR_BACKWARD;
 	}
 }
 

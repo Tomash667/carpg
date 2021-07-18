@@ -5,6 +5,7 @@ Right mouse button - select room, cancel action
 Esc - cancel action
 M - move room
 R - resize room
+F1 - toggle draw room links
 Delete - delete room
 Ctrl+N - new level
 Ctrl+O - open level

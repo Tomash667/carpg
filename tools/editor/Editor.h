@@ -29,6 +29,7 @@ private:
 	void SaveLevelAs();
 	void DoSaveLevel();
 	void DrawRect(const Box& box, Color color);
+	void DrawBox(const Box& box, Color color);
 
 	EditorUi* ui;
 	MeshBuilder* builder;
@@ -40,7 +41,7 @@ private:
 	btCollisionObject* cobjGrid;
 	btCollisionShape* shapeGrid;
 	Vec3 marker;
-	bool markerValid;
+	bool markerValid, drawLinks;
 	Action action;
 	Vec3 actionPos;
 	Box roomBox;

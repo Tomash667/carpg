@@ -99,6 +99,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Common.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorUi.cpp" />
@@ -113,6 +114,7 @@
     <ClCompile Include="Room.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorCamera.h" />
     <ClInclude Include="EditorUi.h" />

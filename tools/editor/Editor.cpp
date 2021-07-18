@@ -22,7 +22,7 @@
 
 const Color GRID_COLOR(0, 255, 128);
 
-Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr), shapeGrid(nullptr), world(nullptr), builder(nullptr)
+Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr), shapeGrid(nullptr), world(nullptr), builder(nullptr), drawLinks(false)
 {
 	engine->SetTitle("Editor");
 	engine->SetWindowSize(Int2(1280, 720));
@@ -95,22 +95,37 @@ void Editor::OnDraw()
 		shader->DrawLine(Vec3(start.x - range, y, start.z + i), Vec3(start.x + range, y, start.z + i), 0.02f, GRID_COLOR);
 		shader->DrawLine(Vec3(start.x + i, y, start.z - range), Vec3(start.x + i, y, start.z + range), 0.02f, GRID_COLOR);
 	}
+	shader->Draw();
 
 	// rooms
+	render->SetDepthState(Render::DEPTH_NO);
 	for(Room* room : level->rooms)
 	{
 		if(room != roomHover)
-			DrawRect(room->box, Color::White);
+			DrawBox(room->box, Color::White);
 	}
 
 	if(roomHover && roomHover != roomSelect)
-		DrawRect(roomHover->box, Color(255, 64, 140));
+		DrawBox(roomHover->box, Color(255, 64, 140));
 
 	if(roomSelect)
-		DrawRect(roomSelect->box, Color::Red);
+		DrawBox(roomSelect->box, Color::Red);
 
 	if(action == A_ADD_ROOM)
-		DrawRect(roomBox, Color::Red);
+		DrawBox(roomBox, Color::Red);
+
+	// links
+	if(drawLinks)
+	{
+		for(Room* room : level->rooms)
+		{
+			for(RoomLink& link : room->links)
+			{
+				if(link.first)
+					DrawBox(link.box, Color::Green);
+			}
+		}
+	}
 
 	shader->Draw();
 
@@ -143,6 +158,24 @@ void Editor::DrawRect(const Box& box, Color color)
 	shader->DrawLine(Vec3(box.v2.x, box.v1.y, box.v1.z), Vec3(box.v2.x, box.v1.y, box.v2.z), 0.04f, color);
 }
 
+void Editor::DrawBox(const Box& box, Color color)
+{
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v1.z), Vec3(box.v2.x, box.v1.y, box.v1.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v2.z), Vec3(box.v2.x, box.v1.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v1.z), Vec3(box.v1.x, box.v1.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v2.x, box.v1.y, box.v1.z), Vec3(box.v2.x, box.v1.y, box.v2.z), 0.04f, color);
+
+	shader->DrawLine(Vec3(box.v1.x, box.v2.y, box.v1.z), Vec3(box.v2.x, box.v2.y, box.v1.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v2.y, box.v2.z), Vec3(box.v2.x, box.v2.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v2.y, box.v1.z), Vec3(box.v1.x, box.v2.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v2.x, box.v2.y, box.v1.z), Vec3(box.v2.x, box.v2.y, box.v2.z), 0.04f, color);
+
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v1.z), Vec3(box.v1.x, box.v2.y, box.v1.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v1.x, box.v1.y, box.v2.z), Vec3(box.v1.x, box.v2.y, box.v2.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v2.x, box.v1.y, box.v1.z), Vec3(box.v2.x, box.v2.y, box.v1.z), 0.04f, color);
+	shader->DrawLine(Vec3(box.v2.x, box.v1.y, box.v2.z), Vec3(box.v2.x, box.v2.y, box.v2.z), 0.04f, color);
+}
+
 void Editor::OnUpdate(float dt)
 {
 	if(input->Shortcut(KEY_ALT, Key::F4))
@@ -163,6 +196,9 @@ void Editor::OnUpdate(float dt)
 		SaveLevel();
 	if(input->Shortcut(KEY_CONTROL | KEY_SHIFT, Key::S))
 		SaveLevelAs();
+
+	if(input->Pressed(Key::F1))
+		drawLinks = !drawLinks;
 
 	camera->Update(dt);
 
@@ -210,6 +246,7 @@ void Editor::OnUpdate(float dt)
 			action = A_ADD_ROOM;
 			actionPos = marker;
 			roomBox = Box(actionPos);
+			roomBox.v2.y += 4.f;
 			roomHover = nullptr;
 			roomSelect = nullptr;
 		}
@@ -249,32 +286,32 @@ void Editor::OnUpdate(float dt)
 				switch(hoverDir)
 				{
 				case DIR_RIGHT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_LEFT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_LEFT));
 					break;
-				case DIR_TOP_RIGHT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_LEFT));
+				case DIR_FORWARD_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_LEFT));
 					break;
-				case DIR_TOP:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_LEFT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_RIGHT));
+				case DIR_FORWARD:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_RIGHT));
 					break;
-				case DIR_TOP_LEFT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_RIGHT));
+				case DIR_FORWARD_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_RIGHT));
 					break;
 				case DIR_LEFT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BOTTOM_RIGHT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_RIGHT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_RIGHT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_RIGHT));
 					break;
-				case DIR_BOTTOM_LEFT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_RIGHT));
+				case DIR_BACKWARD_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_RIGHT));
 					break;
-				case DIR_BOTTOM:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_LEFT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_RIGHT));
+				case DIR_BACKWARD:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_RIGHT));
 					break;
-				case DIR_BOTTOM_RIGHT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_TOP_LEFT));
+				case DIR_BACKWARD_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_LEFT));
 					break;
 				}
 			}
@@ -283,7 +320,10 @@ void Editor::OnUpdate(float dt)
 
 	case A_ADD_ROOM:
 		if(markerValid)
+		{
 			roomBox = Box::CreateBoundingBox(actionPos, marker);
+			roomBox.v2.y += 4;
+		}
 		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
 		{
 			if(roomBox.SizeX() > 0 && roomBox.SizeZ() > 0)
