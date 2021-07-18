@@ -14,6 +14,7 @@ public:
 private:
 	void BuildLinks(Level* level);
 	Dir GetDirection(Room* a, Room* b);
+	bool PrepareOverlappingRooms(Room* room, Dir dir);
 
 	SuperShader* shader;
 	ID3D11Buffer* vb;
@@ -22,4 +23,5 @@ private:
 	vector<word> indices;
 	vector<Int2> floorParts, ceilingParts, wallParts;
 	TexturePtr texFloor, texCeiling, texWall;
+	vector<RoomLink*> activeLinks;
 };

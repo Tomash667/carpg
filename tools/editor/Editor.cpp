@@ -20,8 +20,6 @@
 #include <SceneManager.h>
 #include <SceneNode.h>
 
-const Color GRID_COLOR(0, 255, 128);
-
 Editor::Editor() : ui(nullptr), level(nullptr), scene(nullptr), camera(nullptr), shapeGrid(nullptr), world(nullptr), builder(nullptr), drawLinks(false)
 {
 	engine->SetTitle("Editor");
@@ -87,13 +85,14 @@ void Editor::OnDraw()
 
 	// grid
 	const int range = 40;
+	const Color gridColor(0, 255, 128);
 	shader->Prepare(*camera);
 	const Vec3 start(round(camera->from.x), 0, round(camera->from.z));
 	const float y = 0.f;// editor->yLevel;
 	for(int i = -range; i <= range; ++i)
 	{
-		shader->DrawLine(Vec3(start.x - range, y, start.z + i), Vec3(start.x + range, y, start.z + i), 0.02f, GRID_COLOR);
-		shader->DrawLine(Vec3(start.x + i, y, start.z - range), Vec3(start.x + i, y, start.z + range), 0.02f, GRID_COLOR);
+		shader->DrawLine(Vec3(start.x - range, y, start.z + i), Vec3(start.x + range, y, start.z + i), 0.02f, gridColor);
+		shader->DrawLine(Vec3(start.x + i, y, start.z - range), Vec3(start.x + i, y, start.z + range), 0.02f, gridColor);
 	}
 	shader->Draw();
 
@@ -106,13 +105,13 @@ void Editor::OnDraw()
 	}
 
 	if(roomHover && roomHover != roomSelect)
-		DrawBox(roomHover->box, Color(255, 64, 140));
+		DrawBox(roomHover->box, Color(255, 176, 128));
 
 	if(roomSelect)
-		DrawBox(roomSelect->box, Color::Red);
+		DrawBox(roomSelect->box, Color(255, 97, 0));
 
 	if(action == A_ADD_ROOM)
-		DrawBox(roomBox, Color::Red);
+		DrawBox(roomBox, Color(255, 97, 0));
 
 	// links
 	if(drawLinks)
@@ -126,6 +125,9 @@ void Editor::OnDraw()
 			}
 		}
 	}
+
+	for(Box& box : badLinks)
+		DrawBox(box, Color::Red);
 
 	shader->Draw();
 
@@ -211,7 +213,10 @@ void Editor::OnUpdate(float dt)
 	{
 		markerValid = true;
 		marker = ToVec3(callback.m_hitPointWorld);
-		marker = Vec3(round(marker.x * 10) / 10, round(marker.y * 10) / 10, round(marker.z * 10) / 10);
+		if(input->Down(Key::Shift))
+			marker = Vec3(round(marker.x), round(marker.y), round(marker.z));
+		else
+			marker = Vec3(round(marker.x * 10) / 10, round(marker.y * 10) / 10, round(marker.z * 10) / 10);
 	}
 	else
 		markerValid = false;
@@ -249,6 +254,7 @@ void Editor::OnUpdate(float dt)
 			roomBox.v2.y += 4.f;
 			roomHover = nullptr;
 			roomSelect = nullptr;
+			CheckBadLinks();
 		}
 		else if(input->PressedRelease(Key::RightButton))
 			roomSelect = roomHover;
@@ -286,32 +292,32 @@ void Editor::OnUpdate(float dt)
 				switch(hoverDir)
 				{
 				case DIR_RIGHT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_LEFT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACK_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FRONT_LEFT));
 					break;
-				case DIR_FORWARD_RIGHT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_LEFT));
+				case DIR_FRONT_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACK_LEFT));
 					break;
-				case DIR_FORWARD:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_LEFT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_RIGHT));
+				case DIR_FRONT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACK_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACK_RIGHT));
 					break;
-				case DIR_FORWARD_LEFT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_RIGHT));
+				case DIR_FRONT_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACK_RIGHT));
 					break;
 				case DIR_LEFT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_BACKWARD_RIGHT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_RIGHT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_BACK_RIGHT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FRONT_RIGHT));
 					break;
-				case DIR_BACKWARD_LEFT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_RIGHT));
+				case DIR_BACK_LEFT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FRONT_RIGHT));
 					break;
-				case DIR_BACKWARD:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_LEFT));
-					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_RIGHT));
+				case DIR_BACK:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FRONT_LEFT));
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FRONT_RIGHT));
 					break;
-				case DIR_BACKWARD_RIGHT:
-					resizeLock.push_back(roomSelect->GetPoint(DIR_FORWARD_LEFT));
+				case DIR_BACK_RIGHT:
+					resizeLock.push_back(roomSelect->GetPoint(DIR_FRONT_LEFT));
 					break;
 				}
 			}
@@ -323,10 +329,12 @@ void Editor::OnUpdate(float dt)
 		{
 			roomBox = Box::CreateBoundingBox(actionPos, marker);
 			roomBox.v2.y += 4;
+			CheckBadLinks();
 		}
-		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
+		if(badLinks.empty() && (input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar)))
 		{
-			if(roomBox.SizeX() > 0 && roomBox.SizeZ() > 0)
+			const Vec3 size = roomBox.Size();
+			if(size.x != 0 && size.y != 0 && size.z != 0)
 			{
 				Room* room = new Room;
 				room->box = roomBox;
@@ -334,11 +342,14 @@ void Editor::OnUpdate(float dt)
 				level->rooms.push_back(room);
 				roomSelect = room;
 				builder->Build(level);
+				action = A_NONE;
 			}
-			action = A_NONE;
 		}
 		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
+		{
 			action = A_NONE;
+			badLinks.clear();
+		}
 		break;
 
 	case A_MOVE:
@@ -351,15 +362,17 @@ void Editor::OnUpdate(float dt)
 				roomSelect->box += dif;
 				roomSelect->box.v2.y = roomSelect->box.v1.y + 4;
 				builder->Build(level);
+				CheckBadLinks();
 			}
 		}
-		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
+		if(badLinks.empty() && (input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar)))
 			action = A_NONE;
 		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
 		{
 			action = A_NONE;
 			roomSelect->box = roomBox;
 			builder->Build(level);
+			badLinks.clear();
 		}
 		break;
 
@@ -371,16 +384,45 @@ void Editor::OnUpdate(float dt)
 				roomSelect->box.AddPoint(pt);
 			roomSelect->box.v2.y = roomSelect->box.v1.y + 4;
 			builder->Build(level);
+			CheckBadLinks();
 		}
-		if(input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar))
+		if(badLinks.empty() && (input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar)))
 			action = A_NONE;
 		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
 		{
 			action = A_NONE;
 			roomSelect->box = roomBox;
 			builder->Build(level);
+			badLinks.clear();
 		}
 		break;
+	}
+}
+
+void Editor::CheckBadLinks()
+{
+	badLinks.clear();
+
+	Box aBox;
+	if(action == A_ADD_ROOM)
+		aBox = roomBox;
+	else
+		aBox = roomSelect->box;
+
+	for(Room* room : level->rooms)
+	{
+		if(room == roomSelect)
+			continue;
+
+		const Box& bBox = room->box;
+		if(BoxToBox(aBox, bBox))
+		{
+			const Box ab(max(aBox.v1.x, bBox.v1.x), max(aBox.v1.y, bBox.v1.y), max(aBox.v1.z, bBox.v1.z),
+				min(aBox.v2.x, bBox.v2.x), min(aBox.v2.y, bBox.v2.y), min(aBox.v2.z, bBox.v2.z));
+			const Vec3 size = ab.Size();
+			if(size.x > 0 && size.y > 0 && size.z > 0)
+				badLinks.push_back(ab);
+		}
 	}
 }
 
@@ -403,6 +445,7 @@ void Editor::NewLevel()
 	roomHover = nullptr;
 	roomSelect = nullptr;
 	builder->Clear();
+	badLinks.clear();
 }
 
 void Editor::OpenLevel()

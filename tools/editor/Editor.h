@@ -30,6 +30,7 @@ private:
 	void DoSaveLevel();
 	void DrawRect(const Box& box, Color color);
 	void DrawBox(const Box& box, Color color);
+	void CheckBadLinks();
 
 	EditorUi* ui;
 	MeshBuilder* builder;
@@ -48,4 +49,5 @@ private:
 	Room* roomHover, *roomSelect;
 	Dir hoverDir;
 	vector<Vec3> resizeLock;
+	vector<Box> badLinks;
 };

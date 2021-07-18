@@ -90,84 +90,264 @@ void MeshBuilder::Build(Level* level)
 		uint count = 0;
 
 		// left wall
-		index = (word)vertices.size();
-		indices.push_back(index + 0);
-		indices.push_back(index + 2);
-		indices.push_back(index + 3);
-		indices.push_back(index + 0);
-		indices.push_back(index + 3);
-		indices.push_back(index + 1);
+		if(PrepareOverlappingRooms(room, DIR_LEFT))
+		{
+			std::sort(activeLinks.begin(), activeLinks.end(), [](const RoomLink* ra, const RoomLink* rb)
+			{
+				return ra->box.v1.z < rb->box.v1.z;
+			});
 
-		pos = Vec3(box.v1.x, box.v1.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
-		pos = Vec3(box.v1.x, box.v1.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
-		pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
-		pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+			vector<Vec2> parts;
+			float start = room->box.v1.z, end;
+			for(RoomLink* link : activeLinks)
+			{
+				end = link->box.v1.z;
+				if(end - start > 0)
+					parts.push_back(Vec2(start, end));
+				start = link->box.v2.z;
+			}
+			end = room->box.v2.z;
+			if(end - start > 0)
+				parts.push_back(Vec2(start, end));
 
-		count += 6;
+			for(const Vec2& part : parts)
+			{
+				index = (word)vertices.size();
+				indices.push_back(index + 0);
+				indices.push_back(index + 2);
+				indices.push_back(index + 3);
+				indices.push_back(index + 0);
+				indices.push_back(index + 3);
+				indices.push_back(index + 1);
+
+				pos = Vec3(box.v1.x, box.v1.y, part.x);
+				vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+				pos = Vec3(box.v1.x, box.v1.y, part.y);
+				vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+				pos = Vec3(box.v1.x, box.v2.y, part.x);
+				vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+				pos = Vec3(box.v1.x, box.v2.y, part.y);
+				vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+
+				count += 6;
+			}
+		}
+		else
+		{
+			index = (word)vertices.size();
+			indices.push_back(index + 0);
+			indices.push_back(index + 2);
+			indices.push_back(index + 3);
+			indices.push_back(index + 0);
+			indices.push_back(index + 3);
+			indices.push_back(index + 1);
+
+			pos = Vec3(box.v1.x, box.v1.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+			pos = Vec3(box.v1.x, box.v1.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+			pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+			pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Right, Vec2(pos.z / 2, pos.y / 2) });
+
+			count += 6;
+		}
 
 		// right wall
-		index = (word)vertices.size();
-		indices.push_back(index + 0);
-		indices.push_back(index + 1);
-		indices.push_back(index + 2);
-		indices.push_back(index + 1);
-		indices.push_back(index + 3);
-		indices.push_back(index + 2);
+		if(PrepareOverlappingRooms(room, DIR_RIGHT))
+		{
+			std::sort(activeLinks.begin(), activeLinks.end(), [](const RoomLink* ra, const RoomLink* rb)
+			{
+				return ra->box.v1.z < rb->box.v1.z;
+			});
 
-		pos = Vec3(box.v2.x, box.v1.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+			vector<Vec2> parts;
+			float start = room->box.v1.z, end;
+			for(RoomLink* link : activeLinks)
+			{
+				end = link->box.v1.z;
+				if(end - start > 0)
+					parts.push_back(Vec2(start, end));
+				start = link->box.v2.z;
+			}
+			end = room->box.v2.z;
+			if(end - start > 0)
+				parts.push_back(Vec2(start, end));
 
-		count += 6;
+			for(const Vec2& part : parts)
+			{
+				index = (word)vertices.size();
+				indices.push_back(index + 0);
+				indices.push_back(index + 1);
+				indices.push_back(index + 2);
+				indices.push_back(index + 1);
+				indices.push_back(index + 3);
+				indices.push_back(index + 2);
+
+				pos = Vec3(box.v2.x, box.v1.y, part.x);
+				vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+				pos = Vec3(box.v2.x, box.v1.y, part.y);
+				vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+				pos = Vec3(box.v2.x, box.v2.y, part.x);
+				vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+				pos = Vec3(box.v2.x, box.v2.y, part.y);
+				vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+
+				count += 6;
+			}
+		}
+		else
+		{
+			index = (word)vertices.size();
+			indices.push_back(index + 0);
+			indices.push_back(index + 1);
+			indices.push_back(index + 2);
+			indices.push_back(index + 1);
+			indices.push_back(index + 3);
+			indices.push_back(index + 2);
+
+			pos = Vec3(box.v2.x, box.v1.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Left, Vec2(pos.z / 2, pos.y / 2) });
+
+			count += 6;
+		}
 
 		// front wall
-		index = (word)vertices.size();
-		indices.push_back(index + 0);
-		indices.push_back(index + 2);
-		indices.push_back(index + 3);
-		indices.push_back(index + 0);
-		indices.push_back(index + 3);
-		indices.push_back(index + 1);
+		if(PrepareOverlappingRooms(room, DIR_FRONT))
+		{
+			std::sort(activeLinks.begin(), activeLinks.end(), [](const RoomLink* ra, const RoomLink* rb)
+			{
+				return ra->box.v1.x < rb->box.v1.x;
+			});
 
-		pos = Vec3(box.v1.x, box.v1.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
-		pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
-		vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+			vector<Vec2> parts;
+			float start = room->box.v1.x, end;
+			for(RoomLink* link : activeLinks)
+			{
+				end = link->box.v1.x;
+				if(end - start > 0)
+					parts.push_back(Vec2(start, end));
+				start = link->box.v2.x;
+			}
+			end = room->box.v2.x;
+			if(end - start > 0)
+				parts.push_back(Vec2(start, end));
 
-		count += 6;
+			for(const Vec2& part : parts)
+			{
+				index = (word)vertices.size();
+				indices.push_back(index + 0);
+				indices.push_back(index + 2);
+				indices.push_back(index + 3);
+				indices.push_back(index + 0);
+				indices.push_back(index + 3);
+				indices.push_back(index + 1);
+
+				pos = Vec3(part.x, box.v1.y, box.v2.z);
+				vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+				pos = Vec3(part.y, box.v1.y, box.v2.z);
+				vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+				pos = Vec3(part.x, box.v2.y, box.v2.z);
+				vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+				pos = Vec3(part.y, box.v2.y, box.v2.z);
+				vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+
+				count += 6;
+			}
+		}
+		else
+		{
+			index = (word)vertices.size();
+			indices.push_back(index + 0);
+			indices.push_back(index + 2);
+			indices.push_back(index + 3);
+			indices.push_back(index + 0);
+			indices.push_back(index + 3);
+			indices.push_back(index + 1);
+
+			pos = Vec3(box.v1.x, box.v1.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v1.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+			pos = Vec3(box.v1.x, box.v2.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v2.y, box.v2.z);
+			vertices.push_back({ pos, Vec3::Backward, Vec2(pos.x / 2, pos.y / 2) });
+
+			count += 6;
+		}
 
 		// back wall
-		index = (word)vertices.size();
-		indices.push_back(index + 0);
-		indices.push_back(index + 1);
-		indices.push_back(index + 2);
-		indices.push_back(index + 1);
-		indices.push_back(index + 3);
-		indices.push_back(index + 2);
+		if(PrepareOverlappingRooms(room, DIR_BACK))
+		{
+			std::sort(activeLinks.begin(), activeLinks.end(), [](const RoomLink* ra, const RoomLink* rb)
+			{
+				return ra->box.v1.x < rb->box.v1.x;
+			});
 
-		pos = Vec3(box.v1.x, box.v1.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v1.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
-		pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
-		pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
-		vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+			vector<Vec2> parts;
+			float start = room->box.v1.x, end;
+			for(RoomLink* link : activeLinks)
+			{
+				end = link->box.v1.x;
+				if(end - start > 0)
+					parts.push_back(Vec2(start, end));
+				start = link->box.v2.x;
+			}
+			end = room->box.v2.x;
+			if(end - start > 0)
+				parts.push_back(Vec2(start, end));
 
-		count += 6;
+			for(const Vec2& part : parts)
+			{
+				index = (word)vertices.size();
+				indices.push_back(index + 0);
+				indices.push_back(index + 1);
+				indices.push_back(index + 2);
+				indices.push_back(index + 1);
+				indices.push_back(index + 3);
+				indices.push_back(index + 2);
+
+				pos = Vec3(part.x, box.v1.y, box.v1.z);
+				vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+				pos = Vec3(part.y, box.v1.y, box.v1.z);
+				vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+				pos = Vec3(part.x, box.v2.y, box.v1.z);
+				vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+				pos = Vec3(part.y, box.v2.y, box.v1.z);
+				vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+
+				count += 6;
+			}
+		}
+		else
+		{
+			index = (word)vertices.size();
+			indices.push_back(index + 0);
+			indices.push_back(index + 1);
+			indices.push_back(index + 2);
+			indices.push_back(index + 1);
+			indices.push_back(index + 3);
+			indices.push_back(index + 2);
+
+			pos = Vec3(box.v1.x, box.v1.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v1.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+			pos = Vec3(box.v1.x, box.v2.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+			pos = Vec3(box.v2.x, box.v2.y, box.v1.z);
+			vertices.push_back({ pos, Vec3::Forward, Vec2(pos.x / 2, pos.y / 2) });
+
+			count += 6;
+		}
 
 		if(count != 0)
 			wallParts.push_back(Int2(offset, count));
@@ -206,11 +386,11 @@ void MeshBuilder::BuildLinks(Level* level)
 	for(uint i = 0; i < count; ++i)
 	{
 		Room* a = level->rooms[i];
-		Box aBox = a->box.AddMargin(0.01f);
+		Box aBox = a->box;
 		for(uint j = i + 1; j < count; ++j)
 		{
 			Room* b = level->rooms[j];
-			Box bBox = b->box.AddMargin(0.01f);
+			Box bBox = b->box;
 			if(BoxToBox(aBox, bBox))
 			{
 				Box ab(max(aBox.v1.x, bBox.v1.x), max(aBox.v1.y, bBox.v1.y), max(aBox.v1.z, bBox.v1.z),
@@ -256,7 +436,7 @@ Dir MeshBuilder::GetDirection(Room* a, Room* b)
 {
 	const Vec3 aPos = a->box.Midpoint();
 	const Vec3 bPos = b->box.Midpoint();
-	const Vec3 dif = aPos - bPos;
+	const Vec3 dif = bPos - aPos;
 	switch(GetMaxDimension(dif))
 	{
 	default:
@@ -265,8 +445,19 @@ Dir MeshBuilder::GetDirection(Room* a, Room* b)
 	case 1: // y
 		return dif.y > 0 ? DIR_UP : DIR_DOWN;
 	case 2: // z
-		return dif.z > 0 ? DIR_FORWARD : DIR_BACKWARD;
+		return dif.z > 0 ? DIR_FRONT : DIR_BACK;
 	}
+}
+
+bool MeshBuilder::PrepareOverlappingRooms(Room* room, Dir dir)
+{
+	activeLinks.clear();
+	for(RoomLink& link : room->links)
+	{
+		if(link.dir == dir)
+			activeLinks.push_back(&link);
+	}
+	return !activeLinks.empty();
 }
 
 void MeshBuilder::Draw(Camera& camera)
