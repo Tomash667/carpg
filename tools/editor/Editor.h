@@ -50,4 +50,5 @@ private:
 	Dir hoverDir;
 	vector<Vec3> resizeLock;
 	vector<Box> badLinks;
+	float gridY;
 };

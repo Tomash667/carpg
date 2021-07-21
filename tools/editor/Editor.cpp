@@ -88,11 +88,10 @@ void Editor::OnDraw()
 	const Color gridColor(0, 255, 128);
 	shader->Prepare(*camera);
 	const Vec3 start(round(camera->from.x), 0, round(camera->from.z));
-	const float y = 0.f;// editor->yLevel;
 	for(int i = -range; i <= range; ++i)
 	{
-		shader->DrawLine(Vec3(start.x - range, y, start.z + i), Vec3(start.x + range, y, start.z + i), 0.02f, gridColor);
-		shader->DrawLine(Vec3(start.x + i, y, start.z - range), Vec3(start.x + i, y, start.z + range), 0.02f, gridColor);
+		shader->DrawLine(Vec3(start.x - range, gridY, start.z + i), Vec3(start.x + range, gridY, start.z + i), 0.02f, gridColor);
+		shader->DrawLine(Vec3(start.x + i, gridY, start.z - range), Vec3(start.x + i, gridY, start.z + range), 0.02f, gridColor);
 	}
 	shader->Draw();
 
@@ -201,6 +200,22 @@ void Editor::OnUpdate(float dt)
 
 	if(input->Pressed(Key::F1))
 		drawLinks = !drawLinks;
+	if(input->DownRepeat(Key::NumAdd))
+	{
+		if(input->Down(Key::Shift))
+			gridY = round(gridY) + 1;
+		else
+			gridY += 0.1f;
+		cobjGrid->getWorldTransform().getOrigin().setY(gridY);
+	}
+	if(input->DownRepeat(Key::NumSubtract))
+	{
+		if(input->Down(Key::Shift))
+			gridY = round(gridY) - 1;
+		else
+			gridY -= 0.1f;
+		cobjGrid->getWorldTransform().getOrigin().setY(gridY);
+	}
 
 	camera->Update(dt);
 
@@ -282,7 +297,7 @@ void Editor::OnUpdate(float dt)
 		}
 		else if(input->PressedRelease(Key::R))
 		{
-			if(roomSelect && roomSelect == roomHover && hoverDir != DIR_NONE)
+			if(roomSelect && roomSelect == roomHover)
 			{
 				action = A_RESIZE;
 				actionPos = marker;
@@ -377,7 +392,28 @@ void Editor::OnUpdate(float dt)
 		break;
 
 	case A_RESIZE:
-		if(markerValid && marker != actionPos)
+		if(hoverDir == DIR_NONE)
+		{
+			if(input->DownRepeat(Key::U))
+			{
+				if(input->Down(Key::Shift))
+					roomSelect->box.v2.y = round(roomSelect->box.v2.y) + 1;
+				else
+					roomSelect->box.v2.y += 0.1f;
+				builder->Build(level);
+				CheckBadLinks();
+			}
+			if(input->DownRepeat(Key::J))
+			{
+				if(input->Down(Key::Shift))
+					roomSelect->box.v2.y = round(roomSelect->box.v2.y) - 1;
+				else
+					roomSelect->box.v2.y -= 0.1f;
+				builder->Build(level);
+				CheckBadLinks();
+			}
+		}
+		else if(markerValid && marker != actionPos)
 		{
 			roomSelect->box = Box(marker);
 			for(const Vec3& pt : resizeLock)
@@ -446,6 +482,7 @@ void Editor::NewLevel()
 	roomSelect = nullptr;
 	builder->Clear();
 	badLinks.clear();
+	gridY = 0;
 }
 
 void Editor::OpenLevel()
@@ -477,6 +514,7 @@ bool Editor::DoLoadLevel()
 	{
 		camera->Load(f);
 		f >> marker;
+		f >> gridY;
 	}
 	return marker == 0xFF;
 }
@@ -510,5 +548,6 @@ void Editor::DoSaveLevel()
 	level->Save(f);
 	f.Write<byte>(0xFE);
 	camera->Save(f);
+	f << gridY;
 	f.Write<byte>(0xFF);
 }

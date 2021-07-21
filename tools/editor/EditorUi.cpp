@@ -49,5 +49,6 @@ void EditorUi::Draw(ControlDrawData*)
 	}
 	if(editor->markerValid)
 		text += Format("\nPos: %g; %g; %g", FLT10(editor->marker.x), FLT10(editor->marker.y), FLT10(editor->marker.z));
+	text += Format("\nGridY: %g", FLT10(editor->gridY));
 	gui->DrawText(font, text.c_str(), 0, Color::Black, Rect(0, 0, 500, 100));
 }
