@@ -423,7 +423,11 @@ void Editor::OnUpdate(float dt)
 			CheckBadLinks();
 		}
 		if(badLinks.empty() && (input->Pressed(Key::LeftButton) || input->Pressed(Key::Spacebar)))
-			action = A_NONE;
+		{
+			const Vec3 size = roomSelect->box.Size();
+			if(size.x != 0 && size.y != 0 && size.z != 0)
+				action = A_NONE;
+		}
 		if(input->Pressed(Key::RightButton) || input->Pressed(Key::Escape))
 		{
 			action = A_NONE;
@@ -441,22 +445,22 @@ void Editor::CheckBadLinks()
 
 	Box aBox;
 	if(action == A_ADD_ROOM)
-		aBox = roomBox;
+		aBox = roomBox.AddMargin(0.01f);
 	else
-		aBox = roomSelect->box;
+		aBox = roomSelect->box.AddMargin(0.01f);
 
 	for(Room* room : level->rooms)
 	{
 		if(room == roomSelect)
 			continue;
 
-		const Box& bBox = room->box;
+		const Box& bBox = room->box.AddMargin(0.01f);
 		if(BoxToBox(aBox, bBox))
 		{
 			const Box ab(max(aBox.v1.x, bBox.v1.x), max(aBox.v1.y, bBox.v1.y), max(aBox.v1.z, bBox.v1.z),
 				min(aBox.v2.x, bBox.v2.x), min(aBox.v2.y, bBox.v2.y), min(aBox.v2.z, bBox.v2.z));
 			const Vec3 size = ab.Size();
-			if(size.x > 0 && size.y > 0 && size.z > 0)
+			if(size.x >= 0.1f && size.y >= 0.1f && size.z >= 0.1f)
 				badLinks.push_back(ab);
 		}
 	}
