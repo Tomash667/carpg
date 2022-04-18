@@ -9,6 +9,7 @@
 
 #include "BlobProxy.h"
 
+string prefix = "CaRpg", ext = "zip";
 bool nozip, check_entry, copy_pdb, recreate;
 
 enum EntryType
@@ -16,7 +17,9 @@ enum EntryType
 	ET_File,
 	ET_Dir,
 	ET_Pdb,
-	ET_CDir
+	ET_CDir,
+	ET_Title,
+	ET_Ext
 };
 
 struct Entry
@@ -34,10 +37,15 @@ bool FillEntry()
 		printf("Missing paklist.txt!\n");
 		return false;
 	}
-	t.AddKeyword("file", 0);
-	t.AddKeyword("dir", 1);
-	t.AddKeyword("pdb", 2);
-	t.AddKeyword("cdir", 3);
+
+	t.AddKeywords(0, {
+		{ "file", ET_File },
+		{ "dir", ET_Dir },
+		{ "pdb", ET_Pdb },
+		{ "cdir", ET_CDir },
+		{ "title", ET_Title },
+		{ "ext", ET_Ext }
+		});
 
 	try
 	{
@@ -47,7 +55,7 @@ bool FillEntry()
 			t.Next();
 			if(t.IsEof())
 				break;
-			Entry& e = Add1(entries);
+			Entry e{};
 			e.type = (EntryType)t.MustGetKeywordId();
 
 			// string
@@ -55,11 +63,18 @@ bool FillEntry()
 			e.input = t.MustGetString();
 
 			// string2
-			if(e.type != ET_Pdb && e.type != ET_CDir)
+			if(Any(e.type, ET_File, ET_Dir))
 			{
 				t.Next();
 				e.output = t.MustGetString();
 			}
+
+			if(e.type == ET_Title)
+				prefix = e.input;
+			else if(e.type == ET_Ext)
+				ext = e.input;
+			else
+				entries.push_back(e);
 		}
 	}
 	catch(cstring err)
@@ -194,10 +209,10 @@ bool PakDir(cstring input, cstring output)
 	return true;
 }
 
-void SaveEntries(cstring ver)
+void SaveEntries(cstring version)
 {
 	std::ofstream o("db.txt");
-	o << Format("version \"%s\"\n", ver);
+	o << Format("version \"%s\"\n", version);
 	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
@@ -226,16 +241,16 @@ void RunCommand(cstring file, cstring parameters, cstring directory)
 	CloseHandle(info.hProcess);
 }
 
-bool CreatePak(char* pakname)
+bool CreatePak(cstring version)
 {
-	if(!recreate && !nozip && io::FileExists(Format("out/CaRpg_%s.zip", pakname)))
+	if(!recreate && !nozip && io::FileExists(Format("out/%s_%s.%s", prefix.c_str(), version, ext.c_str())))
 	{
 		printf("Full zip already exists, skipping...\n");
 		return true;
 	}
 
 	check_entry = false;
-	pak_dir = Format("out/%s", pakname);
+	pak_dir = Format("out/%s_%s", prefix.c_str(), version);
 	printf("Creating pak %s.\n", pak_dir.c_str());
 
 	if(io::DirectoryExists(pak_dir.c_str()))
@@ -266,7 +281,7 @@ bool CreatePak(char* pakname)
 		{
 			if(!copy_pdb)
 			{
-				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
+				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", version), FALSE) == FALSE)
 				{
 					printf("Failed to copy file '%s'.\n", e.input.c_str());
 					return false;
@@ -279,24 +294,25 @@ bool CreatePak(char* pakname)
 
 	copy_pdb = true;
 	printf("Saving database.\n");
-	SaveEntries(pakname);
+	SaveEntries(version);
 
 	if(!nozip)
 	{
 		printf("Compressing pak.\n");
-		RunCommand("7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pak_dir.c_str());
+		RunCommand("7z", Format("a -r ../%s_%s.%s *", prefix.c_str(), version, ext.c_str()), pak_dir.c_str());
 	}
+
 	return true;
 }
 
-bool NeedCreatePatch(char* pakname, bool blob)
+bool NeedCreatePatch(cstring version, bool blob)
 {
 	if(recreate || nozip)
 		return true;
 
 	if(blob)
 	{
-		cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
+		cstring path = Format("out/%s_patch_%s.pak", prefix.c_str(), version);
 		if(io::FileExists(path))
 		{
 			printf("Patch pak already exists, skipping...\n");
@@ -305,7 +321,7 @@ bool NeedCreatePatch(char* pakname, bool blob)
 	}
 	else
 	{
-		cstring path = Format("out/CaRpg_patch_%s.zip", pakname);
+		cstring path = Format("out/%s_patch_%s.%s", prefix.c_str(), version, ext.c_str());
 		if(io::FileExists(path))
 		{
 			printf("Patch zip already exists, skipping...\n");
@@ -316,17 +332,17 @@ bool NeedCreatePatch(char* pakname, bool blob)
 	return true;
 }
 
-bool CreatePatch(char* pakname, bool blob)
+bool CreatePatch(cstring version, bool blob)
 {
-	if(!NeedCreatePatch(pakname, blob))
+	if(!NeedCreatePatch(version, blob))
 	{
 		if(blob)
 		{
-			cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
+			cstring path = Format("out/%s_patch_%s.pak", prefix.c_str(), version);
 			uint crc = Crc::Calculate(path);
 
 			printf("Uploading to blob & api.\n");
-			cstring result = AddChange(pakname, prevVer.c_str(), path, crc, false);
+			cstring result = AddChange(version, prevVer.c_str(), path, crc, false);
 			if(result)
 				printf(result);
 		}
@@ -334,7 +350,7 @@ bool CreatePatch(char* pakname, bool blob)
 	}
 
 	check_entry = true;
-	pak_dir = Format("out/patch_%s", pakname);
+	pak_dir = Format("out/%s_patch_%s", prefix.c_str(), version);
 	printf("Creating patch %s.\n", pak_dir.c_str());
 
 	if(io::DirectoryExists(pak_dir.c_str()))
@@ -365,7 +381,7 @@ bool CreatePatch(char* pakname, bool blob)
 		{
 			if(!copy_pdb)
 			{
-				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
+				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", version), FALSE) == FALSE)
 				{
 					printf("Failed to copy file '%s'.\n", e.input.c_str());
 					return false;
@@ -392,7 +408,7 @@ bool CreatePatch(char* pakname, bool blob)
 	if(!missing.empty())
 	{
 		CreateDirectory(Format("%s/install", pak_dir.c_str()), NULL);
-		std::ofstream o(Format("%s/install/%s.txt", pak_dir.c_str(), pakname));
+		std::ofstream o(Format("%s/install/%s.txt", pak_dir.c_str(), version));
 		for(vector<PakEntry*>::iterator it = missing.begin(), end = missing.end(); it != end; ++it)
 		{
 			cstring entry = (*it)->path.c_str();
@@ -418,20 +434,20 @@ bool CreatePatch(char* pakname, bool blob)
 		if(blob)
 		{
 			printf("Compressing patch (blob).\n");
-			RunCommand("pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr);
+			RunCommand("pak.exe", Format("-path -o out/%s_patch_%s.pak %s", prefix.c_str(), version, pak_dir.c_str()), nullptr);
 
-			cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
+			cstring path = Format("out/%s_patch_%s.pak", prefix.c_str(), version);
 			uint crc = Crc::Calculate(path);
 
 			printf("Uploading to blob & api.\n");
-			cstring result = AddChange(pakname, prevVer.c_str(), path, crc, true);
+			cstring result = AddChange(version, prevVer.c_str(), path, crc, true);
 			if(result)
 				printf(result);
 		}
 		else
 		{
 			printf("Compressing patch (zip).\n");
-			RunCommand("7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str());
+			RunCommand("7z", Format("a -r ../%s_patch_%s.%s *", prefix.c_str(), version, ext.c_str()), pak_dir.c_str());
 		}
 	}
 
@@ -532,19 +548,20 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			cstring version = argv[i];
 			if(mode == 0)
 			{
-				if(!CreatePak(argv[i]))
+				if(!CreatePak(version))
 					return 2;
 			}
 			else if(mode == 1)
 			{
-				if(!LoadEntries() || !CreatePatch(argv[i], blob))
+				if(!LoadEntries() || !CreatePatch(version, blob))
 					return 2;
 			}
 			else
 			{
-				if(!LoadEntries() || !CreatePatch(argv[i], blob) || !CreatePak(argv[i]))
+				if(!LoadEntries() || !CreatePatch(version, blob) || !CreatePak(version))
 					return 2;
 			}
 		}
