@@ -11,6 +11,7 @@ Version 0.19 (???):
 + shortcuts for fast travel notification (F1/F3)
 + converted quest "lost artifact" to script
 + removed useless console commands
++ UI improvements
 - taking equiped item from corpse wrongly updated inventory view
 - when finished traveler quest another traveler quest in same location will never timeout
 - script error on quest timeout with "find artifact"/"stolen artifact" in dungeon with single level

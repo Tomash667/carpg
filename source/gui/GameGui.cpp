@@ -81,10 +81,6 @@ GameGui::~GameGui()
 	delete info_box;
 	delete controls;
 	delete notifications;
-	delete GetTextDialog::self;
-	delete GetNumberDialog::self;
-	delete PickItemDialog::self;
-	PickFileDialog::Destroy();
 }
 
 //=================================================================================================

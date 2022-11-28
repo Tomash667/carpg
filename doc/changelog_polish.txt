@@ -11,6 +11,7 @@ Wersja 0.19 (???):
 + skróty klawiszowe do powiadomienia o szybkiej podróży (F1/F3)
 + konwersja zadania "zagubiony artefakt" na skrypty
 + usunięte niepotrzebne komendy konsoli
++ usprawnienia UI
 - zabieranie założonego przedmiotu ze zwłok niepoprawnie aktualizowało widok ekwipunku
 - po ukończeniu zadania dla wędrowca następne zadanie w tym samym mieście nigdy się nie przedawniało
 - błąd skryptu gdy minie czas zadania "znajdź artefakt"/"ukradziony artefakt" gdy minie czas zadania w podziemiach z jednym poziomem

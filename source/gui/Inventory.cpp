@@ -1208,7 +1208,7 @@ void InventoryPanel::Update(float dt)
 			last_index = INDEX_INVALID;
 			if(mode == INVENTORY)
 				base.tooltip.Clear();
-			counter = 0;
+			counter = 1;
 			if(mode == INVENTORY)
 				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropGold), base.txDropGoldCount, 1, unit->gold, &counter);
 			else if(mode == LOOT_MY)
