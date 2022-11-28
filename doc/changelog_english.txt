@@ -16,6 +16,7 @@ Version 0.19 (???):
 - script error on quest timeout with "find artifact"/"stolen artifact" in dungeon with single level
 - wrong fast travel accept icon
 - missing application icon when starting in fullscreen
+- hide crosshair when talking
 
 --------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):

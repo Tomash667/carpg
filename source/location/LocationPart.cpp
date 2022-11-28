@@ -683,7 +683,7 @@ bool LocationPart::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 }
 
 //=================================================================================================
-void LocationPart::AddGroundItem(GroundItem* groundItem)
+void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 {
 	assert(groundItem);
 
@@ -701,7 +701,7 @@ void LocationPart::AddGroundItem(GroundItem* groundItem)
 		}
 	}
 
-	if(partType == LocationPart::Type::Outside)
+	if(adjustY && partType == LocationPart::Type::Outside)
 		game_level->terrain->SetY(groundItem->pos);
 	groundItems.push_back(groundItem);
 }

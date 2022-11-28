@@ -89,7 +89,7 @@ public:
 
 	// ground items
 	vector<GroundItem*>& GetGroundItems() { return groundItems; }
-	void AddGroundItem(GroundItem* groundItem);
+	void AddGroundItem(GroundItem* groundItem, bool adjustY = true);
 	bool RemoveGroundItem(const Item* item);
 	void RemoveGroundItem(int questId);
 	void RemoveGroundItem(GroundItem* item);

@@ -1844,7 +1844,7 @@ bool Level::PickableItemAdd(const Item* item)
 				s = sin(rot),
 				c = cos(rot);
 			groundItem->pos = Vec3(pos.x * c + pos.z * s, pos.y, -pos.x * s + pos.z * c) + pickableObj->pos;
-			pickableLocPart->AddGroundItem(groundItem);
+			pickableLocPart->AddGroundItem(groundItem, false);
 
 			return true;
 		}
@@ -4223,8 +4223,6 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	groundItem->team_count = 1;
 	groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
 	groundItem->pos = pos;
-	if(localPart->partType == LocationPart::Type::Outside)
-		terrain->SetY(groundItem->pos);
 	groundItem->item = item;
 	localPart->AddGroundItem(groundItem);
 	return groundItem;

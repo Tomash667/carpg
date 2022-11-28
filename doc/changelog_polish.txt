@@ -16,6 +16,7 @@ Wersja 0.19 (???):
 - błąd skryptu gdy minie czas zadania "znajdź artefakt"/"ukradziony artefakt" gdy minie czas zadania w podziemiach z jednym poziomem
 - nieprawidłowy obrazek akceptacji powiadomienia
 - brak ikony aplikacji przy starcie w trybie pełnoekranowym
+- brak celownika podczas rozmowy
 
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):

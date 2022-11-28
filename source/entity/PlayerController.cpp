@@ -3430,6 +3430,8 @@ Vec3 PlayerController::RaytestTarget(float range)
 //=================================================================================================
 bool PlayerController::ShouldUseRaytest() const
 {
+	if(action != PlayerAction::None)
+		return false;
 	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
 		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
 		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))

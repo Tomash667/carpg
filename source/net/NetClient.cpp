@@ -967,7 +967,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else
 				{
 					game_level->GetLocationPart(groundItem->pos)
-						.AddGroundItem(groundItem);
+						.AddGroundItem(groundItem, false);
 				}
 			}
 			break;
