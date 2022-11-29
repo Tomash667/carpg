@@ -546,7 +546,7 @@ void CaveGenerator::GenerateCaveItems(int days_since)
 	for(int i = 0; i < days_since * 20; ++i)
 	{
 		Int2 pt = Int2::Random(Int2(1, 1), Int2(lvl.w - 2, lvl.h - 2));
-		if(!OR2_EQ(lvl.map[pt.x + pt.y * lvl.w].type, EMPTY, BARS_CEILING))
+		if(!Any(lvl.map[pt.x + pt.y * lvl.w].type, EMPTY, BARS_CEILING))
 			continue;
 
 		int dir;

@@ -111,14 +111,14 @@ void TeamPanel::LoadLanguage()
 //=================================================================================================
 void TeamPanel::LoadData()
 {
-	tCrown = res_mgr->Load<Texture>("korona.png");
-	tSkull = res_mgr->Load<Texture>("czaszka.png");
-	tFastTravelWait = res_mgr->Load<Texture>("fast_travel_wait.png");
-	tFastTravelOk = res_mgr->Load<Texture>("fast_travel_ok.png");
+	tCrown = resMgr->Load<Texture>("korona.png");
+	tSkull = resMgr->Load<Texture>("czaszka.png");
+	tFastTravelWait = resMgr->Load<Texture>("fast_travel_wait.png");
+	tFastTravelOk = resMgr->Load<Texture>("fast_travel_ok.png");
 }
 
 //=================================================================================================
-void TeamPanel::Draw(ControlDrawData*)
+void TeamPanel::Draw()
 {
 	GamePanel::Draw();
 
@@ -130,8 +130,8 @@ void TeamPanel::Draw(ControlDrawData*)
 	};
 	gui->DrawText(GameGui::font_big, txTeam, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
-	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
-	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
+	Int2 offset = globalPos + Int2(8, 40 - scrollbar.offset);
+	rect = Rect::Create(Int2(globalPos.x + 8, globalPos.y + 40), Int2(size.x - 52, size.y - 96));
 
 	Vec2 share = team->GetShare();
 	int pc_share = (int)round(share.x * 100);
@@ -215,16 +215,16 @@ void TeamPanel::Update(float dt)
 
 	if(focus)
 	{
-		if(input->Focus() && IsInside(gui->cursor_pos))
+		if(input->Focus() && IsInside(gui->cursorPos))
 			scrollbar.ApplyMouseWheel();
 
-		scrollbar.mouse_focus = mouse_focus;
+		scrollbar.mouseFocus = mouseFocus;
 		scrollbar.Update(dt);
 
 		if(picking && input->Focus())
 		{
 			picked = -1;
-			gui->Intersect(hitboxes, gui->cursor_pos, &picked);
+			gui->Intersect(hitboxes, gui->cursorPos, &picked);
 
 			if(input->Pressed(Key::LeftButton))
 			{
@@ -251,15 +251,15 @@ void TeamPanel::Update(float dt)
 		}
 
 		// handle icon tooltips
-		Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
+		Int2 offset = globalPos + Int2(8, 40 - scrollbar.offset);
 		for(Unit& unit : team->members)
 		{
-			if(Class* clas = unit.GetClass(); clas && PointInRect(gui->cursor_pos, offset.x, offset.y, offset.x + 32, offset.y + 32))
+			if(Class* clas = unit.GetClass(); clas && Rect::IsInside(gui->cursorPos, offset.x, offset.y, offset.x + 32, offset.y + 32))
 			{
 				group = G_CLASS;
 				break;
 			}
-			if(PointInRect(gui->cursor_pos, offset.x + 32, offset.y, offset.x + 64, offset.y + 32))
+			if(Rect::IsInside(gui->cursorPos, offset.x + 32, offset.y, offset.x + 64, offset.y + 32))
 			{
 				if(&unit == team->leader)
 				{
@@ -272,7 +272,7 @@ void TeamPanel::Update(float dt)
 					break;
 				}
 			}
-			if(!unit.IsAlive() && PointInRect(gui->cursor_pos, offset.x + 64, offset.y, offset.x + 96, offset.y + 32))
+			if(!unit.IsAlive() && Rect::IsInside(gui->cursorPos, offset.x + 64, offset.y, offset.x + 96, offset.y + 32))
 			{
 				group = G_UNCONSCIOUS;
 				break;
@@ -311,9 +311,9 @@ void TeamPanel::Update(float dt)
 	const int count = Net::IsOnline() ? 5 : 3;
 	for(int i = 0; i < count; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
-		if(bt[i].state == Button::DISABLED && bt[i].IsInside(gui->cursor_pos))
+		if(bt[i].state == Button::DISABLED && bt[i].IsInside(gui->cursorPos))
 		{
 			group = G_BUTTON;
 			index = i;
@@ -334,7 +334,7 @@ void TeamPanel::Event(GuiEvent e)
 	switch(e)
 	{
 	case GuiEvent_Moved:
-		scrollbar.global_pos = global_pos + scrollbar.pos;
+		scrollbar.globalPos = globalPos + scrollbar.pos;
 		UpdateButtons();
 		break;
 	case GuiEvent_Resize:
@@ -343,7 +343,7 @@ void TeamPanel::Event(GuiEvent e)
 			scrollbar.total = s;
 			scrollbar.part = min(s, scrollbar.size.y);
 			scrollbar.pos = Int2(size.x - 28, 48);
-			scrollbar.global_pos = global_pos + scrollbar.pos;
+			scrollbar.globalPos = globalPos + scrollbar.pos;
 			scrollbar.size = Int2(16, size.y - 60 - 48);
 			if(scrollbar.offset + scrollbar.part > scrollbar.total)
 				scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -414,7 +414,7 @@ void TeamPanel::UpdateButtons()
 		bt[i].size.x = s;
 		bt[i].size.y = 48;
 		bt[i].pos = Int2(8 + (s + 4) * i, size.y - 58);
-		bt[i].global_pos = bt[i].pos + global_pos;
+		bt[i].globalPos = bt[i].pos + globalPos;
 	}
 }
 
@@ -436,7 +436,7 @@ void TeamPanel::OnPayCredit(int id)
 		else
 			SimpleDialog(Format(txPaidCreditPart, count, game->pc->credit - count));
 		game->pc->unit->gold -= count;
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(game_res->sCoins);
 		if(Net::IsLocal())
 			game->pc->PayCredit(count);
 		else
@@ -542,7 +542,7 @@ void TeamPanel::OnGiveGold(int id)
 	else
 	{
 		game->pc->unit->gold -= counter;
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(game_res->sCoins);
 		if(Net::IsLocal())
 		{
 			target->gold += counter;

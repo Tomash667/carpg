@@ -45,7 +45,7 @@ public:
 	~CreateCharacterPanel();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void Init();

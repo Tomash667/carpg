@@ -204,7 +204,7 @@ void BuildingLoader::ParseBuilding(const string& id)
 		case BK_MESH:
 			{
 				const string& mesh_id = t.MustGetString();
-				building->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				building->mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(!building->mesh)
 					LoadError("Missing mesh '%s'.", mesh_id.c_str());
 				t.Next();
@@ -213,7 +213,7 @@ void BuildingLoader::ParseBuilding(const string& id)
 		case BK_INSIDE_MESH:
 			{
 				const string& mesh_id = t.MustGetString();
-				building->inside_mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				building->inside_mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(!building->inside_mesh)
 					LoadError("Missing mesh '%s'.", mesh_id.c_str());
 				t.Next();

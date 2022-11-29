@@ -9,20 +9,20 @@
 //=================================================================================================
 void LoadScreen::LoadData()
 {
-	tLoadbarBg = res_mgr->Load<Texture>("loadbar_bg.png");
-	tLoadbar = res_mgr->Load<Texture>("loadbar.png");
-	tBackground = res_mgr->Load<Texture>("load_bg.jpg");
+	tLoadbarBg = resMgr->Load<Texture>("loadbar_bg.png");
+	tLoadbar = resMgr->Load<Texture>("loadbar.png");
+	tBackground = resMgr->Load<Texture>("load_bg.jpg");
 }
 
 //=================================================================================================
-void LoadScreen::Draw(ControlDrawData*)
+void LoadScreen::Draw()
 {
 	// background
 	gui->DrawSpriteFull(tBackground);
 
 	// loadbar background
 	Int2 img_size = tLoadbarBg->GetSize();
-	Int2 pt((gui->wnd_size.x - img_size.x) / 2, gui->wnd_size.y - img_size.y - 16);
+	Int2 pt((gui->wndSize.x - img_size.x) / 2, gui->wndSize.y - img_size.y - 16);
 	gui->DrawSprite(tLoadbarBg, pt);
 
 	// loadbar
@@ -31,7 +31,7 @@ void LoadScreen::Draw(ControlDrawData*)
 	gui->DrawSpriteRectPart(tLoadbar, r, rp);
 
 	// text
-	Rect r2 = { 32, 0, gui->wnd_size.x - 32, LONG(gui->wnd_size.y - img_size.y - 32) };
+	Rect r2 = { 32, 0, gui->wndSize.x - 32, LONG(gui->wndSize.y - img_size.y - 32) };
 	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
 }
 

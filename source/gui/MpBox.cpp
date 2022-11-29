@@ -18,7 +18,7 @@ MpBox::MpBox() : have_focus(false)
 	itb.esc_clear = true;
 	itb.lose_focus = true;
 	itb.pos = Int2(0, 0);
-	itb.global_pos = Int2(100, 50);
+	itb.globalPos = Int2(100, 50);
 	itb.size = Int2(320, 182);
 	itb.event = InputTextBox::InputEvent(this, &MpBox::OnInput);
 	itb.background_color = Color(0, 142, 254, 43);
@@ -28,7 +28,7 @@ MpBox::MpBox() : have_focus(false)
 }
 
 //=================================================================================================
-void MpBox::Draw(ControlDrawData*)
+void MpBox::Draw()
 {
 	itb.Draw();
 }
@@ -42,7 +42,7 @@ void MpBox::Update(float dt)
 	bool prev_focus = focus;
 	focus = focusable;
 	GamePanel::Update(dt);
-	itb.mouse_focus = focus;
+	itb.mouseFocus = focus;
 	focus = prev_focus;
 	itb.Update(dt);
 	have_focus = itb.focus;

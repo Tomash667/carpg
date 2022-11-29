@@ -14,18 +14,18 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
 	size = Int2(344, 360);
 	bts.resize(2);
 
-	const Int2 bt_size(180, 44);
-	const int x = (size.x - bt_size.x) / 2;
+	const Int2 btSize(180, 44);
+	const int x = (size.x - btSize.x) / 2;
 
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 	bts[0].pos = Int2(x, 260);
-	bts[0].size = bt_size;
+	bts[0].size = btSize;
 
 	bts[1].id = IdCancel;
 	bts[1].parent = this;
 	bts[1].pos = Int2(x, 310);
-	bts[1].size = bt_size;
+	bts[1].size = btSize;
 
 	textbox[0].limit = 16;
 	textbox[0].parent = this;
@@ -45,7 +45,7 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
 	textbox[2].pos = Int2(60, 170);
 	textbox[2].size = Int2(200, 32);
 
-	checkbox.bt_size = Int2(32, 32);
+	checkbox.btSize = Int2(32, 32);
 	checkbox.checked = false;
 	checkbox.id = IdHidden;
 	checkbox.parent = this;
@@ -80,12 +80,12 @@ void CreateServerPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void CreateServerPanel::Draw(ControlDrawData*)
+void CreateServerPanel::Draw()
 {
 	DrawPanel();
 
 	// tekst
-	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
 	gui->DrawText(GameGui::font_big, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
@@ -113,8 +113,8 @@ void CreateServerPanel::Event(GuiEvent e)
 			cont.GainFocus();
 			visible = true;
 		}
-		global_pos = pos = (gui->wnd_size - size) / 2;
-		cont.Move(global_pos);
+		globalPos = pos = (gui->wndSize - size) / 2;
+		cont.Move(globalPos);
 		break;
 	case GuiEvent_GainFocus:
 		cont.GainFocus();

@@ -61,11 +61,11 @@ void AbilityPanel::LoadLanguage()
 //=================================================================================================
 void AbilityPanel::LoadData()
 {
-	tItemBar = res_mgr->Load<Texture>("item_bar.png");
-	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
-	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
-	tHealthPotion = res_mgr->Load<Texture>("health-potion.png");
-	tManaPotion = res_mgr->Load<Texture>("mana-potion.png");
+	tItemBar = resMgr->Load<Texture>("item_bar.png");
+	tMelee = resMgr->Load<Texture>("sword-brandish.png");
+	tRanged = resMgr->Load<Texture>("bow-arrow.png");
+	tHealthPotion = resMgr->Load<Texture>("health-potion.png");
+	tManaPotion = resMgr->Load<Texture>("mana-potion.png");
 }
 
 //=================================================================================================
@@ -77,7 +77,7 @@ void AbilityPanel::Refresh()
 }
 
 //=================================================================================================
-void AbilityPanel::Draw(ControlDrawData*)
+void AbilityPanel::Draw()
 {
 	GamePanel::Draw();
 	grid_offset = 0;
@@ -175,7 +175,7 @@ void AbilityPanel::Update(float dt)
 
 	if(drag_and_drop)
 	{
-		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
+		if(Int2::Distance(gui->cursorPos, drag_and_drop_pos) > 3)
 		{
 			pair<int, int> shortcut = ConvertToShortcut(drag_and_drop_group, drag_and_drop_index);
 			Texture* icon = nullptr;
@@ -218,7 +218,7 @@ void AbilityPanel::Update(float dt)
 
 	if(input->Focus())
 	{
-		if(IsInside(gui->cursor_pos))
+		if(IsInside(gui->cursorPos))
 		{
 			for(int i = 0; i < Shortcut::MAX; ++i)
 			{
@@ -250,14 +250,14 @@ void AbilityPanel::UpdateGroup(uint count, int group, int& group_result, int& id
 			uint index = x + y * count_w;
 			if(index >= count)
 				break;
-			if(PointInRect(gui->cursor_pos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
+			if(Rect::IsInside(gui->cursorPos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
 			{
 				group_result = group;
 				id_result = index;
 				if(input->Focus() && input->Pressed(Key::LeftButton))
 				{
 					drag_and_drop = true;
-					drag_and_drop_pos = gui->cursor_pos;
+					drag_and_drop_pos = gui->cursorPos;
 					drag_and_drop_group = group;
 					drag_and_drop_index = index;
 				}

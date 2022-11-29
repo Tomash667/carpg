@@ -124,7 +124,7 @@ void Door::Update(float dt, LocationPart& locPart)
 				// can't close doors, somone is blocking it
 				state = Opening2;
 				meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
-				sound_mgr->PlaySound3d(game_res->sDoorBudge, pos, BLOCKED_SOUND_DIST);
+				soundMgr->PlaySound3d(game_res->sDoorBudge, pos, BLOCKED_SOUND_DIST);
 			}
 		}
 	}
@@ -258,7 +258,7 @@ void Door::Open()
 	meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 
 	if(Rand() % 2 == 0)
-		sound_mgr->PlaySound3d(game_res->sDoor[Rand() % 3], GetCenter(), SOUND_DIST);
+		soundMgr->PlaySound3d(game_res->sDoor[Rand() % 3], GetCenter(), SOUND_DIST);
 
 	if(Net::IsOnline())
 	{
@@ -291,7 +291,7 @@ void Door::Close()
 			sound = game_res->sDoorClose;
 		else
 			sound = game_res->sDoor[Rand() % 3];
-		sound_mgr->PlaySound3d(sound, GetCenter(), SOUND_DIST);
+		soundMgr->PlaySound3d(sound, GetCenter(), SOUND_DIST);
 	}
 
 	if(Net::IsOnline())
@@ -360,7 +360,7 @@ void Door::SetState(bool closing)
 			sound = game_res->sDoorClose;
 		else
 			sound = game_res->sDoor[Rand() % 3];
-		sound_mgr->PlaySound3d(sound, GetCenter(), SOUND_DIST);
+		soundMgr->PlaySound3d(sound, GetCenter(), SOUND_DIST);
 	}
 
 	if(Net::IsServer())

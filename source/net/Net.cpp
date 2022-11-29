@@ -57,8 +57,8 @@ void Net::LoadLanguage()
 //=================================================================================================
 void Net::LoadData()
 {
-	tFastTravel = res_mgr->LoadInstant<Texture>("fast_travel.png");
-	tFastTravelDeny = res_mgr->LoadInstant<Texture>("fast_travel_deny.png");
+	tFastTravel = resMgr->LoadInstant<Texture>("fast_travel.png");
+	tFastTravelDeny = resMgr->LoadInstant<Texture>("fast_travel_deny.png");
 }
 
 //=================================================================================================

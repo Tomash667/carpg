@@ -1258,7 +1258,7 @@ void CityGenerator::FlattenRoad()
 	{
 		for(int x = 2; x < w - 2; ++x)
 		{
-			if(OR2_EQ(tiles[x + y * w].mode, TM_ROAD, TM_PATH))
+			if(Any(tiles[x + y * w].mode, TM_ROAD, TM_PATH))
 			{
 				for(int i = 1; i < 21; ++i)
 					block[i] = !tiles[x + blocked[i].x + (y + blocked[i].y)*w].IsBuilding();

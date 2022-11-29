@@ -10,7 +10,7 @@ class Minimap : public GamePanel
 public:
 	Minimap();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return false; }
@@ -33,7 +33,7 @@ public:
 	// konwersji z (0-1) do punktu na ekranie
 	Vec2 Convert(const Vec2& pt)
 	{
-		return Vec2(pt.x*size.x + global_pos.x, pt.y*size.y + global_pos.y);
+		return Vec2(pt.x*size.x + globalPos.x, pt.y*size.y + globalPos.y);
 	}
 
 	// przekszta³ca punkt z pozycji œwiata do pixela na ekranie

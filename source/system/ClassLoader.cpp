@@ -95,7 +95,7 @@ void ClassLoader::LoadEntity(int top, const string& id)
 		case K_ICON:
 			{
 				const string& icon_file = t.MustGetString();
-				clas->icon = res_mgr->TryLoad<Texture>(icon_file);
+				clas->icon = resMgr->TryLoad<Texture>(icon_file);
 				if(!clas->icon)
 					LoadError("Missing icon '%s'.", icon_file.c_str());
 				t.Next();

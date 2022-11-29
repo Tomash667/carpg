@@ -61,15 +61,15 @@ void GameMenu::LoadLanguage()
 //=================================================================================================
 void GameMenu::LoadData()
 {
-	tLogo = res_mgr->Load<Texture>("logo_small.png");
+	tLogo = resMgr->Load<Texture>("logo_small.png");
 }
 
 //=================================================================================================
-void GameMenu::Draw(ControlDrawData*)
+void GameMenu::Draw()
 {
 	DrawPanel();
 
-	gui->DrawSprite(tLogo, global_pos + Int2(8, 8));
+	gui->DrawSprite(tLogo, globalPos + Int2(8, 8));
 
 	for(int i = 0; i < 6; ++i)
 		bt[i].Draw();
@@ -82,7 +82,7 @@ void GameMenu::Update(float dt)
 
 	for(int i = 0; i < 6; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
 	}
 
@@ -126,9 +126,9 @@ void GameMenu::Event(GuiEvent e)
 			CheckButtons();
 			visible = true;
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 6; ++i)
-			bt[i].global_pos = bt[i].pos + global_pos;
+			bt[i].globalPos = bt[i].pos + globalPos;
 	}
 	else if(e == GuiEvent_Close)
 		visible = false;

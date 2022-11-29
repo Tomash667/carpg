@@ -1986,7 +1986,7 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool create_physics)
 	unit->Init(base, level);
 
 	// preload items
-	if(base.group != G_PLAYER && base.item_script && !res_mgr->IsLoadScreen())
+	if(base.group != G_PLAYER && base.item_script && !resMgr->IsLoadScreen())
 	{
 		array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
 		for(const Item* item : equipped)
@@ -4020,7 +4020,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 		Tile& p = lvl->map[it->x + (lvl->w - it->y - 1) * lvl->w];
 		SetBit(p.flags, Tile::F_REVEALED);
 		uint* pix = tex[it->y] + it->x;
-		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
+		if(Any(p.type, WALL, BLOCKADE_WALL))
 			*pix = Color(100, 100, 100);
 		else if(p.type == DOORS)
 			*pix = Color(127, 51, 0);
@@ -4580,7 +4580,7 @@ void Level::SpawnUnitEffect(Unit& unit)
 {
 	Vec3 real_pos = unit.pos;
 	real_pos.y += 1.f;
-	sound_mgr->PlaySound3d(game_res->sSummon, real_pos, SPAWN_SOUND_DIST);
+	soundMgr->PlaySound3d(game_res->sSummon, real_pos, SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = game_res->tSpawn;
@@ -4611,7 +4611,7 @@ MeshInstance* Level::GetBowInstance(Mesh* mesh)
 	if(bow_instances.empty())
 	{
 		if(!mesh->IsLoaded())
-			res_mgr->LoadInstant(mesh);
+			resMgr->LoadInstant(mesh);
 		return new MeshInstance(mesh);
 	}
 	else

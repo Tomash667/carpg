@@ -67,12 +67,12 @@ void MultiplayerPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void MultiplayerPanel::Draw(ControlDrawData*)
+void MultiplayerPanel::Draw()
 {
 	DrawPanel();
 
 	// tekst
-	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
 	gui->DrawText(GameGui::font_big, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst nick
@@ -92,11 +92,11 @@ void MultiplayerPanel::Update(float dt)
 {
 	for(int i = 0; i < 5; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
 
-	textbox.mouse_focus = focus;
+	textbox.mouseFocus = focus;
 	textbox.Update(dt);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
@@ -116,10 +116,10 @@ void MultiplayerPanel::Event(GuiEvent e)
 			textbox.focus = true;
 			textbox.Event(GuiEvent_GainFocus);
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 5; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
-		textbox.global_pos = global_pos + textbox.pos;
+			bts[i].globalPos = globalPos + bts[i].pos;
+		textbox.globalPos = globalPos + textbox.pos;
 		break;
 	case GuiEvent_GainFocus:
 		textbox.focus = true;

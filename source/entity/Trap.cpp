@@ -57,7 +57,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 			if(trigger)
 			{
-				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->sound_dist);
 				state = 1;
 				time = Random(0.5f, 0.75f);
 
@@ -91,7 +91,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				meshInst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
 				time = 0.f;
 
-				sound_mgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
+				soundMgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
 
 				if(Net::IsServer())
 				{
@@ -174,7 +174,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 			{
 				state = 4;
 				meshInst->Play("hide", PLAY_ONCE);
-				sound_mgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
+				soundMgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
 			}
 		}
 		else if(state == 4)
@@ -254,7 +254,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				// someone step on trap, shoot arrow
 				state = Net::IsLocal() ? 1 : 2;
 				time = Random(5.f, 7.5f);
-				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->sound_dist);
 
 				if(Net::IsLocal())
 				{
@@ -290,7 +290,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					locPart.lvlPart->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
+					soundMgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
 					if(Net::IsServer())
 					{
@@ -385,7 +385,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(fireball->sound_hit)
 				{
-					sound_mgr->PlaySound3d(fireball->sound_hit, pos, fireball->sound_hit_dist);
+					soundMgr->PlaySound3d(fireball->sound_hit, pos, fireball->sound_hit_dist);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -434,7 +434,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 			if(trigger)
 			{
-				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->sound_dist);
 				state = 1;
 				meshInst->Play("trigger", PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND);
 

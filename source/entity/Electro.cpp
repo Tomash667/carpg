@@ -130,7 +130,7 @@ bool Electro::Update(float dt)
 
 			// play sound
 			if(ability->sound_hit)
-				sound_mgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
+				soundMgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
 
 			// add particles
 			if(ability->tex_particle)
@@ -201,7 +201,7 @@ bool Electro::Update(float dt)
 			hitsome = false;
 
 			if(ability->sound_hit)
-				sound_mgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
+				soundMgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
 
 			// particles
 			if(ability->tex_particle)

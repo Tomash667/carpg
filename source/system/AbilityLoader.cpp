@@ -252,7 +252,7 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_MESH:
 			{
 				const string& mesh_id = t.MustGetString();
-				ability->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				ability->mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(!ability->mesh)
 					t.Throw("Missing mesh '%s'.", mesh_id.c_str());
 				crc.Update(mesh_id);
@@ -267,7 +267,7 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_TEX:
 			{
 				const string& tex_id = t.MustGetString();
-				ability->tex = res_mgr->TryGet<Texture>(tex_id);
+				ability->tex = resMgr->TryGet<Texture>(tex_id);
 				if(!ability->tex)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
@@ -282,7 +282,7 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_TEX_PARTICLE:
 			{
 				const string& tex_id = t.MustGetString();
-				ability->tex_particle = res_mgr->TryGet<Texture>(tex_id);
+				ability->tex_particle = resMgr->TryGet<Texture>(tex_id);
 				if(!ability->tex_particle)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
@@ -297,7 +297,7 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_TEX_EXPLODE:
 			{
 				const string& tex_id = t.MustGetString();
-				ability->tex_explode.diffuse = res_mgr->TryGet<Texture>(tex_id);
+				ability->tex_explode.diffuse = resMgr->TryGet<Texture>(tex_id);
 				if(!ability->tex_explode.diffuse)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
@@ -307,7 +307,7 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_SOUND_CAST:
 			{
 				const string& sound_id = t.MustGetString();
-				ability->sound_cast = res_mgr->TryGet<Sound>(sound_id);
+				ability->sound_cast = resMgr->TryGet<Sound>(sound_id);
 				if(!ability->sound_cast)
 					t.Throw("Missing sound '%s'.", sound_id.c_str());
 				crc.Update(sound_id);
@@ -322,7 +322,7 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_SOUND_HIT:
 			{
 				const string& sound_id = t.MustGetString();
-				ability->sound_hit = res_mgr->TryGet<Sound>(sound_id);
+				ability->sound_hit = resMgr->TryGet<Sound>(sound_id);
 				if(!ability->sound_hit)
 					t.Throw("Missing sound '%s'.", sound_id.c_str());
 				crc.Update(sound_id);
@@ -349,7 +349,7 @@ void AbilityLoader::ParseAbility(const string& id)
 			t.Next();
 			break;
 		case K_ICON:
-			ability->tex_icon = res_mgr->TryGet<Texture>(Format("%s.png", ability->id.c_str()));
+			ability->tex_icon = resMgr->TryGet<Texture>(Format("%s.png", ability->id.c_str()));
 			break;
 		case K_CHARGES:
 			ability->charges = t.MustGetInt();

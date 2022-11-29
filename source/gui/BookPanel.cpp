@@ -16,10 +16,10 @@ BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 //=================================================================================================
 void BookPanel::LoadData()
 {
-	tArrowL = res_mgr->Load<Texture>("page_prev.png");
-	tArrowR = res_mgr->Load<Texture>("page_next.png");
+	tArrowL = resMgr->Load<Texture>("page_prev.png");
+	tArrowR = resMgr->Load<Texture>("page_next.png");
 
-	sound = res_mgr->Load<Sound>("page-turn.wav");
+	sound = resMgr->Load<Sound>("page-turn.wav");
 
 	gui->AddFont("Dwarf Runes.ttf");
 	normal_font = gui->GetFont("Arial", 16, 8);
@@ -27,14 +27,14 @@ void BookPanel::LoadData()
 }
 
 //=================================================================================================
-void BookPanel::Draw(ControlDrawData*)
+void BookPanel::Draw()
 {
 	if(!book)
 		return;
 
 	// book background
 	Int2 book_size = book->scheme->size * scale;
-	Int2 book_pos = (gui->wnd_size - book_size) / 2;
+	Int2 book_pos = (gui->wndSize - book_size) / 2;
 	Rect r = Rect::Create(book_pos, book_size);
 	gui->DrawSpriteRect(book->scheme->tex, r);
 
@@ -63,8 +63,8 @@ void BookPanel::Draw(ControlDrawData*)
 		if(split.page > current_page)
 			break;
 		options.rect = book->scheme->regions[split.region] * scale + book_pos;
-		options.lines_start = split.lines_start;
-		options.lines_end = split.lines_end;
+		options.linesStart = split.lines_start;
+		options.linesEnd = split.lines_end;
 		gui->DrawText2(options);
 	}
 
@@ -81,20 +81,20 @@ void BookPanel::Draw(ControlDrawData*)
 void BookPanel::Event(GuiEvent event)
 {
 	if(event == GuiEvent_WindowResize || event == GuiEvent_Show)
-		scale = Vec2((float)gui->wnd_size.x / 1024, (float)gui->wnd_size.y / 768);
+		scale = Vec2((float)gui->wndSize.x / 1024, (float)gui->wndSize.y / 768);
 }
 
 //=================================================================================================
 void BookPanel::Update(float dt)
 {
 	Int2 book_size = book->scheme->size * scale;
-	Int2 book_pos = (gui->wnd_size - book_size) / 2;
+	Int2 book_pos = (gui->wndSize - book_size) / 2;
 
 	// prev page
 	if(current_page != 0)
 	{
 		Int2 arrow_size = tArrowL->GetSize();
-		if(Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale).IsInside(gui->cursor_pos)
+		if(Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale).IsInside(gui->cursorPos)
 			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(-1);
 	}
@@ -103,7 +103,7 @@ void BookPanel::Update(float dt)
 	if(current_page != max_page)
 	{
 		Int2 arrow_size = tArrowR->GetSize();
-		if(Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale).IsInside(gui->cursor_pos)
+		if(Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale).IsInside(gui->cursorPos)
 			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(+1);
 	}
@@ -126,7 +126,7 @@ void BookPanel::Show(const Book* book)
 	Event(GuiEvent_Show);
 	GainFocus();
 
-	sound_mgr->PlaySound2d(sound);
+	soundMgr->PlaySound2d(sound);
 }
 
 //=================================================================================================
@@ -189,5 +189,5 @@ Font* BookPanel::GetFont()
 void BookPanel::ChangePage(int change)
 {
 	current_page += change;
-	sound_mgr->PlaySound2d(sound);
+	soundMgr->PlaySound2d(sound);
 }

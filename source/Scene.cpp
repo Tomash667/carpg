@@ -42,7 +42,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	draw_batch.locPart = &locPart;
 	draw_batch.scene = lvlPart.scene;
 	draw_batch.camera = &game_level->camera;
-	draw_batch.gather_lights = !draw_batch.scene->use_light_dir && scene_mgr->use_lighting;
+	draw_batch.gather_lights = !draw_batch.scene->use_light_dir && sceneMgr->use_lighting;
 	ClearGrass();
 	if(locPart.partType == LocationPart::Type::Outside)
 	{
@@ -1684,7 +1684,7 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 //=================================================================================================
 void Game::DrawScene()
 {
-	scene_mgr->SetScene(draw_batch.scene, draw_batch.camera);
+	sceneMgr->SetScene(draw_batch.scene, draw_batch.camera);
 
 	// sky
 	if(draw_batch.scene->use_light_dir && IsSet(draw_flags, DF_SKYBOX))
@@ -1700,7 +1700,7 @@ void Game::DrawScene()
 
 	// nodes
 	if(!draw_batch.nodes.empty())
-		scene_mgr->DrawSceneNodes(draw_batch);
+		sceneMgr->DrawSceneNodes(draw_batch);
 
 	// grass
 	DrawGrass();
@@ -1733,7 +1733,7 @@ void Game::DrawScene()
 
 	// alpha nodes
 	if(!draw_batch.alpha_nodes.empty())
-		scene_mgr->DrawAlphaSceneNodes(draw_batch);
+		sceneMgr->DrawAlphaSceneNodes(draw_batch);
 
 	// areas
 	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())
@@ -1743,7 +1743,7 @@ void Game::DrawScene()
 //=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups)
 {
-	SuperShader* shader = scene_mgr->super_shader;
+	SuperShader* shader = sceneMgr->super_shader;
 
 	render->SetBlendState(Render::BLEND_NO);
 	render->SetDepthState(Render::DEPTH_YES);
@@ -1752,7 +1752,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 	shader->Prepare();
 	shader->SetCustomMesh(dun_mesh_builder->vb, dun_mesh_builder->ib, sizeof(VTangent));
 
-	const bool use_fog = scene_mgr->use_fog && scene_mgr->use_lighting;
+	const bool use_fog = sceneMgr->use_fog && sceneMgr->use_lighting;
 	TexOverride* last_override = nullptr;
 
 	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
@@ -1762,8 +1762,8 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 		// set textures
 		if(last_override != dp.tex_o)
 		{
-			shader->SetShader(shader->GetShaderId(false, true, false, use_fog, scene_mgr->use_specularmap && dp.tex_o->specular != nullptr,
-				scene_mgr->use_normalmap && dp.tex_o->normal != nullptr, scene_mgr->use_lighting, false));
+			shader->SetShader(shader->GetShaderId(false, true, false, use_fog, sceneMgr->use_specularmap && dp.tex_o->specular != nullptr,
+				sceneMgr->use_normalmap && dp.tex_o->normal != nullptr, sceneMgr->use_lighting, false));
 			shader->SetTexture(dp.tex_o, nullptr, 0);
 			last_override = dp.tex_o;
 		}
@@ -1776,7 +1776,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 //=================================================================================================
 void Game::DrawBloods(const vector<Blood*>& bloods)
 {
-	SuperShader* shader = scene_mgr->super_shader;
+	SuperShader* shader = sceneMgr->super_shader;
 	shader->PrepareDecals();
 	Decal decal;
 	for(const Blood* blood : bloods)

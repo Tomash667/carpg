@@ -117,13 +117,13 @@ void Inventory::LoadLanguage()
 //=================================================================================================
 void Inventory::LoadData()
 {
-	tItemBar = res_mgr->Load<Texture>("item_bar.png");
-	tEquipped = res_mgr->Load<Texture>("equipped.png");
-	tGold = res_mgr->Load<Texture>("coins.png");
-	tStarHq = res_mgr->Load<Texture>("star_hq.png");
-	tStarM = res_mgr->Load<Texture>("star_m.png");
-	tStarU = res_mgr->Load<Texture>("star_u.png");
-	tTeamItem = res_mgr->Load<Texture>("team_item.png");
+	tItemBar = resMgr->Load<Texture>("item_bar.png");
+	tEquipped = resMgr->Load<Texture>("equipped.png");
+	tGold = resMgr->Load<Texture>("coins.png");
+	tStarHq = resMgr->Load<Texture>("star_hq.png");
+	tStarM = resMgr->Load<Texture>("star_m.png");
+	tStarU = resMgr->Load<Texture>("star_u.png");
+	tTeamItem = resMgr->Load<Texture>("team_item.png");
 }
 
 //=================================================================================================
@@ -346,7 +346,7 @@ void InventoryPanel::InitTooltip()
 }
 
 //=================================================================================================
-void InventoryPanel::Draw(ControlDrawData*)
+void InventoryPanel::Draw()
 {
 	GamePanel::Draw();
 
@@ -522,15 +522,15 @@ void InventoryPanel::Update(float dt)
 
 	int new_index = INDEX_INVALID;
 
-	Int2 cursor_pos = gui->cursor_pos;
+	Int2 cursorPos = gui->cursorPos;
 
-	bool have_focus = (mode == INVENTORY ? focus : mouse_focus);
+	bool have_focus = (mode == INVENTORY ? focus : mouseFocus);
 
-	if(have_focus && input->Focus() && IsInside(gui->cursor_pos))
+	if(have_focus && input->Focus() && IsInside(gui->cursorPos))
 		scrollbar.ApplyMouseWheel();
 	if(focus)
 	{
-		scrollbar.mouse_focus = have_focus;
+		scrollbar.mouseFocus = have_focus;
 		scrollbar.Update(dt);
 	}
 
@@ -562,10 +562,10 @@ void InventoryPanel::Update(float dt)
 	if(have_focus && !game_gui->level_gui->IsDragAndDrop())
 	{
 		// item
-		if(cursor_pos.x >= shift_x && cursor_pos.y >= shift_y)
+		if(cursorPos.x >= shift_x && cursorPos.y >= shift_y)
 		{
-			int x = (cursor_pos.x - shift_x) / 63,
-				y = (cursor_pos.y - shift_y) / 63;
+			int x = (cursorPos.x - shift_x) / 63,
+				y = (cursorPos.y - shift_y) / 63;
 			if(x >= 0 && x < cells_w && y >= 0 && y < cells_h)
 			{
 				int i = x + y * cells_w;
@@ -580,11 +580,11 @@ void InventoryPanel::Update(float dt)
 		// bar with gold or carry capacity
 		if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 		{
-			if(cursor_pos.y >= bar_y && cursor_pos.y < bar_y + 32)
+			if(cursorPos.y >= bar_y && cursorPos.y < bar_y + 32)
 			{
-				if(cursor_pos.x >= shift_x && cursor_pos.x < shift_x + bar_size)
+				if(cursorPos.x >= shift_x && cursorPos.x < shift_x + bar_size)
 					new_index = INDEX_GOLD;
-				else if(cursor_pos.x >= shift_x + bar_size + 10 && cursor_pos.x < shift_x + bar_size + 10 + bar_size)
+				else if(cursorPos.x >= shift_x + bar_size + 10 && cursorPos.x < shift_x + bar_size + 10 + bar_size)
 					new_index = INDEX_CARRY;
 			}
 		}
@@ -592,7 +592,7 @@ void InventoryPanel::Update(float dt)
 		// take all button
 		if(mode == LOOT_OTHER)
 		{
-			bt.mouse_focus = focus;
+			bt.mouseFocus = focus;
 			bt.Update(dt);
 		}
 	}
@@ -624,7 +624,7 @@ void InventoryPanel::Update(float dt)
 		rot += PI * dt / 2;
 	}
 
-	if(focus && input->Focus() && IsInside(gui->cursor_pos))
+	if(focus && input->Focus() && IsInside(gui->cursorPos))
 	{
 		for(int i = 0; i < Shortcut::MAX; ++i)
 		{
@@ -646,7 +646,7 @@ void InventoryPanel::Update(float dt)
 
 	if(drag_and_drop)
 	{
-		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
+		if(Int2::Distance(gui->cursorPos, drag_and_drop_pos) > 3)
 		{
 			game_gui->level_gui->StartDragAndDrop(Shortcut::TYPE_ITEM, (int)drag_and_drop_item, drag_and_drop_item->icon);
 			drag_and_drop = false;
@@ -982,7 +982,7 @@ void InventoryPanel::Update(float dt)
 					unit->RemoveEquippedItem(slot_type);
 					UpdateGrid(false);
 					// sound
-					sound_mgr->PlaySound2d(game_res->GetItemSound(item));
+					soundMgr->PlaySound2d(game_res->GetItemSound(item));
 					// message
 					if(Net::IsClient())
 					{
@@ -1226,8 +1226,8 @@ void InventoryPanel::Event(GuiEvent e)
 
 	if(e == GuiEvent_Moved)
 	{
-		scrollbar.global_pos = global_pos + scrollbar.pos;
-		bt.global_pos = global_pos + bt.pos;
+		scrollbar.globalPos = globalPos + scrollbar.pos;
+		bt.globalPos = globalPos + bt.pos;
 	}
 	else if(e == GuiEvent_Resize || e == GuiEvent_GainFocus || e == GuiEvent_Show)
 	{
@@ -1240,7 +1240,7 @@ void InventoryPanel::Event(GuiEvent e)
 		int bar_y = shift_y + cells_h * 63 + 8;
 		bt.pos = Int2(shift_x + bar_size + 10, bar_y);
 		bt.size = Int2(bar_size, 36);
-		bt.global_pos = global_pos + bt.pos;
+		bt.globalPos = globalPos + bt.pos;
 		if(e == GuiEvent_Show)
 		{
 			base.tooltip.Clear();
@@ -1332,10 +1332,10 @@ void InventoryPanel::Event(GuiEvent e)
 		for(int i = 0; i < 3; ++i)
 		{
 			if(sound[i])
-				sound_mgr->PlaySound2d(sound[i]);
+				soundMgr->PlaySound2d(sound[i]);
 		}
 		if(gold)
-			sound_mgr->PlaySound2d(game_res->sCoins);
+			soundMgr->PlaySound2d(game_res->sCoins);
 
 		// close inventory
 		if(changes)
@@ -1349,7 +1349,7 @@ void InventoryPanel::Event(GuiEvent e)
 void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = equipped->at(slot);
-	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(item));
 	unit->RemoveEquippedItem(slot);
 	unit->AddItem(item, 1, false);
 	base.BuildTmpInventory(0);
@@ -1365,7 +1365,7 @@ void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 //=================================================================================================
 void InventoryPanel::DropSlotItem(ITEM_SLOT slot)
 {
-	sound_mgr->PlaySound2d(game_res->GetItemSound(unit->GetEquippedItem(slot)));
+	soundMgr->PlaySound2d(game_res->GetItemSound(unit->GetEquippedItem(slot)));
 	unit->DropItem(slot);
 	base.BuildTmpInventory(0);
 	UpdateScrollbar();
@@ -1392,7 +1392,7 @@ void InventoryPanel::EquipSlotItem(int index)
 {
 	// play sound
 	const Item* item = items->at(index).item;
-	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(item));
 
 	// equip
 	unit->EquipItem(index);
@@ -1612,7 +1612,7 @@ void InventoryPanel::UpdateScrollbar()
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
 	scrollbar.pos = Int2(shift_x + cells_w * 63 + 8 - pos.x, shift_y - pos.y);
-	scrollbar.global_pos = global_pos + scrollbar.pos;
+	scrollbar.globalPos = globalPos + scrollbar.pos;
 	if(scrollbar.offset + scrollbar.part > scrollbar.total)
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);
 	if(scrollbar.offset < 0)
@@ -1649,8 +1649,8 @@ void InventoryPanel::BuyItem(int index, uint count)
 	else
 	{
 		// sound
-		sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
+		soundMgr->PlaySound2d(game_res->sCoins);
 		// remove old
 		game->pc->unit->gold -= price;
 		if(Net::IsLocal())
@@ -1689,8 +1689,8 @@ void InventoryPanel::SellItem(int index, uint count)
 	uint normal_count = count - team_count;
 
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
-	sound_mgr->PlaySound2d(game_res->sCoins);
+	soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	soundMgr->PlaySound2d(game_res->sCoins);
 	// add gold
 	if(Net::IsLocal())
 	{
@@ -1736,8 +1736,8 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	const Item* item = equipped->at(slot);
 
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
-	sound_mgr->PlaySound2d(game_res->sCoins);
+	soundMgr->PlaySound2d(game_res->GetItemSound(item));
+	soundMgr->PlaySound2d(game_res->sCoins);
 	// add gold
 	int price = ItemHelper::GetItemPrice(item, *game->pc->unit, false);
 	unit->gold += price;
@@ -1775,7 +1775,7 @@ void InventoryPanel::OnPutGold(int id)
 		// remove
 		unit->gold -= counter;
 		// sound
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(game_res->sCoins);
 		if(Net::IsClient())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1799,7 +1799,7 @@ void InventoryPanel::LootItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// add
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
@@ -1868,7 +1868,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	uint team_count = min(count, slot.team_count);
 
 	// play sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
 
 	// add to container
 	if(base.mode == I_LOOT_BODY)
@@ -1923,7 +1923,7 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 		base.tooltip.Clear();
 
 	// play sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(item));
 
 	// add to container
 	if(base.mode == I_LOOT_BODY)
@@ -1960,7 +1960,7 @@ void InventoryPanel::OnGiveGold(int id)
 		}
 
 		game->pc->unit->gold -= counter;
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(game_res->sCoins);
 		Unit* u = game->pc->action_unit;
 		if(Net::IsLocal())
 		{
@@ -2013,7 +2013,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// add
 	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
@@ -2058,7 +2058,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// add
 	if(!game->pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
@@ -2138,7 +2138,7 @@ void InventoryPanel::OnGiveItem(int id)
 			return;
 		t->gold -= price;
 		unit->gold += price;
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(game_res->sCoins);
 		break;
 	case 2: // give item for free
 		break;
@@ -2146,7 +2146,7 @@ void InventoryPanel::OnGiveItem(int id)
 	t->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(item));
 	// remove
 	unit->weight -= item->weight;
 	if(slot)
@@ -2190,7 +2190,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// sound
-	sound_mgr->PlaySound2d(game_res->GetItemSound(slot.item));
+	soundMgr->PlaySound2d(game_res->GetItemSound(slot.item));
 	// add
 	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(false);
@@ -2413,7 +2413,7 @@ bool InventoryPanel::HandleLeftClick(const Item* item)
 		else if(input->Pressed(Key::LeftButton))
 		{
 			drag_and_drop = true;
-			drag_and_drop_pos = gui->cursor_pos;
+			drag_and_drop_pos = gui->cursorPos;
 			drag_and_drop_item = item;
 		}
 		return false;

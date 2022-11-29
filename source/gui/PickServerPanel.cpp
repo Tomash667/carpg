@@ -31,14 +31,14 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : DialogBox(info), pick
 
 	cb_internet.id = IdInternet;
 	cb_internet.radiobox = true;
-	cb_internet.bt_size = Int2(32, 32);
+	cb_internet.btSize = Int2(32, 32);
 	cb_internet.parent = this;
 	cb_internet.pos = Int2(336, 130);
 	cb_internet.size = Int2(200, 32);
 
 	cb_lan.id = IdLan;
 	cb_lan.radiobox = true;
-	cb_lan.bt_size = Int2(32, 32);
+	cb_lan.btSize = Int2(32, 32);
 	cb_lan.parent = this;
 	cb_lan.pos = Int2(336, 170);
 	cb_lan.size = Int2(200, 32);
@@ -70,12 +70,12 @@ void PickServerPanel::LoadLanguage()
 //=================================================================================================
 void PickServerPanel::LoadData()
 {
-	tIcoSave = res_mgr->Load<Texture>("save-16.png");
-	tIcoPassword = res_mgr->Load<Texture>("padlock-16.png");
+	tIcoSave = resMgr->Load<Texture>("save-16.png");
+	tIcoPassword = resMgr->Load<Texture>("padlock-16.png");
 }
 
 //=================================================================================================
-void PickServerPanel::Draw(ControlDrawData*)
+void PickServerPanel::Draw()
 {
 	DrawPanel();
 
@@ -93,12 +93,12 @@ void PickServerPanel::Update(float dt)
 	// update gui
 	for(int i = 0; i < 2; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
-	cb_internet.mouse_focus = focus;
+	cb_internet.mouseFocus = focus;
 	cb_internet.Update(dt);
-	cb_lan.mouse_focus = focus;
+	cb_lan.mouseFocus = focus;
 	cb_lan.Update(dt);
 	grid.focus = focus;
 	grid.Update(dt);
@@ -258,12 +258,12 @@ void PickServerPanel::Event(GuiEvent e)
 	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 			visible = true;
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 2; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
-		cb_internet.global_pos = global_pos + cb_internet.pos;
-		cb_lan.global_pos = global_pos + cb_lan.pos;
-		grid.Move(global_pos);
+			bts[i].globalPos = globalPos + bts[i].pos;
+		cb_internet.globalPos = globalPos + cb_internet.pos;
+		cb_lan.globalPos = globalPos + cb_lan.pos;
+		grid.Move(globalPos);
 		break;
 	case GuiEvent_Close:
 		visible = false;

@@ -19,7 +19,7 @@ public:
 
 	explicit SaveLoad(const DialogInfo& info);
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void SetSaveMode(bool save_mode, bool online, SaveSlot* slots);

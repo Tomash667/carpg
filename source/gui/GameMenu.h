@@ -22,7 +22,7 @@ public:
 	explicit GameMenu(const DialogInfo& info);
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 

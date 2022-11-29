@@ -61,11 +61,11 @@ void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
 	cfg.Add("use_glow", use_glow);
-	cfg.Add("use_normalmap", scene_mgr->use_normalmap);
-	cfg.Add("use_specularmap", scene_mgr->use_specularmap);
-	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
-	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
-	cfg.Add("sound_device", sound_mgr->GetDevice().ToString());
+	cfg.Add("use_normalmap", sceneMgr->use_normalmap);
+	cfg.Add("use_specularmap", sceneMgr->use_specularmap);
+	cfg.Add("sound_volume", soundMgr->GetSoundVolume());
+	cfg.Add("music_volume", soundMgr->GetMusicVolume());
+	cfg.Add("sound_device", soundMgr->GetDevice().ToString());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", engine->GetWindowSize());
@@ -2108,13 +2108,13 @@ void Game::OnCreateCharacter(int id)
 		{
 			DialogInfo info;
 			info.event = DialogEvent(this, &Game::OnPlayTutorial);
-			info.have_tick = true;
+			info.haveTick = true;
 			info.name = "tutorial_dialog";
 			info.order = ORDER_TOP;
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = txTutPlay;
-			info.tick_text = txTutTick;
+			info.tickText = txTutTick;
 			info.type = DIALOG_YESNO;
 
 			gui->ShowDialog(info);

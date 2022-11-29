@@ -494,8 +494,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << scene_mgr->use_fog;
-	f << scene_mgr->use_lighting;
+	f << sceneMgr->use_fog;
+	f << sceneMgr->use_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -753,8 +753,8 @@ void Game::LoadGame(GameReader& f)
 	if(IsDebug())
 		noai = true;
 	f >> dont_wander;
-	f >> scene_mgr->use_fog;
-	f >> scene_mgr->use_lighting;
+	f >> sceneMgr->use_fog;
+	f >> sceneMgr->use_lighting;
 	f >> draw_particle_sphere;
 	f >> draw_unit_radius;
 	f >> draw_hitbox;

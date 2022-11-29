@@ -456,7 +456,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				if(IsSet(item->flags, ITEM_TEX_ONLY))
 					t.Throw("Can't have mesh, it is texture only item.");
 				const string& mesh_id = t.MustGetString();
-				item->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				item->mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(!item->mesh)
 					LoadError("Missing mesh '%s'.", mesh_id.c_str());
 			}
@@ -466,7 +466,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				if(item->mesh)
 					t.Throw("Can't be texture only item, it have mesh.");
 				const string& tex_id = t.MustGetString();
-				item->tex = res_mgr->TryGet<Texture>(tex_id);
+				item->tex = resMgr->TryGet<Texture>(tex_id);
 				if(!item->tex)
 					LoadError("Missing texture '%s'.", tex_id.c_str());
 				else
@@ -589,7 +589,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 					do
 					{
 						const string& tex_id = t.MustGetString();
-						Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+						Texture* tex = resMgr->TryGet<Texture>(tex_id);
 						if(tex)
 							tex_o.push_back(TexOverride(tex));
 						else
@@ -601,7 +601,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				else
 				{
 					const string& tex_id = t.MustGetString();
-					Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+					Texture* tex = resMgr->TryGet<Texture>(tex_id);
 					if(tex)
 						tex_o.push_back(TexOverride(tex));
 					else
@@ -1112,7 +1112,7 @@ void ItemLoader::ParseBookScheme(const string& id)
 		case BSP_TEXTURE:
 			{
 				const string& str = t.MustGetString();
-				scheme->tex = res_mgr->TryGet<Texture>(str);
+				scheme->tex = resMgr->TryGet<Texture>(str);
 				if(!scheme->tex)
 					t.Throw("Missing texture '%s'.", str.c_str());
 				t.Next();

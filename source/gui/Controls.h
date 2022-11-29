@@ -11,7 +11,7 @@ class Controls : public DialogBox
 public:
 	explicit Controls(const DialogInfo& info);
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	cstring GetKeyText(Key key) { return key_text[(int)key]; }

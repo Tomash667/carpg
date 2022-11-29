@@ -61,29 +61,29 @@ void Journal::LoadLanguage()
 //=================================================================================================
 void Journal::LoadData()
 {
-	tBook = res_mgr->Load<Texture>("book.png");
-	tButtonOn = res_mgr->Load<Texture>("journal_bt_on.png");
-	tButtonOff = res_mgr->Load<Texture>("journal_bt_off.png");
-	tArrowL = res_mgr->Load<Texture>("page_prev.png");
-	tArrowR = res_mgr->Load<Texture>("page_next.png");
-	tIcons[0] = res_mgr->Load<Texture>("journal_quests.png");
-	tIcons[1] = res_mgr->Load<Texture>("journal_rumors.png");
-	tIcons[2] = res_mgr->Load<Texture>("journal_notes.png");
-	tIcons[3] = res_mgr->Load<Texture>("journal_investments.png");
+	tBook = resMgr->Load<Texture>("book.png");
+	tButtonOn = resMgr->Load<Texture>("journal_bt_on.png");
+	tButtonOff = resMgr->Load<Texture>("journal_bt_off.png");
+	tArrowL = resMgr->Load<Texture>("page_prev.png");
+	tArrowR = resMgr->Load<Texture>("page_next.png");
+	tIcons[0] = resMgr->Load<Texture>("journal_quests.png");
+	tIcons[1] = resMgr->Load<Texture>("journal_rumors.png");
+	tIcons[2] = resMgr->Load<Texture>("journal_notes.png");
+	tIcons[3] = resMgr->Load<Texture>("journal_investments.png");
 }
 
 //=================================================================================================
-void Journal::Draw(ControlDrawData*)
+void Journal::Draw()
 {
 	// background
-	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawSpriteRect(tBook, r);
 
 	// buttons
 	for(int i = 0; i < Max; ++i)
 	{
-		gui->DrawSprite(mode == i ? tButtonOn : tButtonOff, global_pos + Int2(ButtonShift.x, ButtonShift.y + ButtonDist * i));
-		Int2 pos = global_pos + Int2(IconShift.x + (ButtonSize.x - IconSize.x) / 2, IconShift.y + ButtonDist * i + (ButtonSize.y - IconSize.y) / 2);
+		gui->DrawSprite(mode == i ? tButtonOn : tButtonOff, globalPos + Int2(ButtonShift.x, ButtonShift.y + ButtonDist * i));
+		Int2 pos = globalPos + Int2(IconShift.x + (ButtonSize.x - IconSize.x) / 2, IconShift.y + ButtonDist * i + (ButtonSize.y - IconSize.y) / 2);
 		if(mode == i)
 			pos.x += 5;
 		gui->DrawSprite(tIcons[i], pos);
@@ -213,10 +213,10 @@ void Journal::Update(float dt)
 	// change mode with mouse
 	for(int i = 0; i < 4; ++i)
 	{
-		const Int2 pos(global_pos.x + ButtonShift.x, global_pos.y + ButtonShift.y + ButtonDist * i);
-		if(PointInRect(gui->cursor_pos, pos, ButtonSize))
+		const Int2 pos(globalPos.x + ButtonShift.x, globalPos.y + ButtonShift.y + ButtonDist * i);
+		if(Rect::IsInside(gui->cursorPos, pos, ButtonSize))
 		{
-			gui->cursor_mode = CURSOR_HOVER;
+			gui->SetCursorMode(CURSOR_HOVER);
 			if(input->PressedRelease(Key::LeftButton))
 				new_mode = (Mode)i;
 		}
@@ -252,10 +252,10 @@ void Journal::Update(float dt)
 		if(!quest_mgr->quests.empty() && !details)
 		{
 			// select quest
-			int x, y = (gui->cursor_pos.y - rect.Top()) / font_height;
-			if(rect.IsInside(gui->cursor_pos))
+			int x, y = (gui->cursorPos.y - rect.Top()) / font_height;
+			if(rect.IsInside(gui->cursorPos))
 				x = page * 2;
-			else if(rect2.IsInside(gui->cursor_pos))
+			else if(rect2.IsInside(gui->cursorPos))
 				x = page * 2 + 1;
 			else
 				x = -1;
@@ -276,7 +276,7 @@ void Journal::Update(float dt)
 
 				if(ok)
 				{
-					gui->cursor_mode = CURSOR_HOVER;
+					gui->SetCursorMode(CURSOR_HOVER);
 					if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					{
 						details = true;
@@ -297,25 +297,25 @@ void Journal::Update(float dt)
 			bool ok = false;
 			if(last_text.x % 2 == 0)
 			{
-				if(gui->cursor_pos.x >= rect.Left() && gui->cursor_pos.x <= rect.Right())
+				if(gui->cursorPos.x >= rect.Left() && gui->cursorPos.x <= rect.Right())
 					ok = true;
 			}
 			else
 			{
-				if(gui->cursor_pos.x >= rect2.Left() && gui->cursor_pos.x <= rect2.Right())
+				if(gui->cursorPos.x >= rect2.Left() && gui->cursorPos.x <= rect2.Right())
 					ok = true;
 			}
 
-			if(ok && gui->cursor_pos.y >= rect.Top() + last_text.y * font_height && gui->cursor_pos.y <= rect.Top() + (last_text.y + 1) * font_height)
+			if(ok && gui->cursorPos.y >= rect.Top() + last_text.y * font_height && gui->cursorPos.y <= rect.Top() + (last_text.y + 1) * font_height)
 			{
-				gui->cursor_mode = CURSOR_HOVER;
+				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 				{
 					// add note
 					cstring names[] = { nullptr, txAdd };
 					input_str.clear();
 					GetTextDialogParams params(txNoteText, input_str);
-					params.custom_names = names;
+					params.customNames = names;
 					params.event = delegate<void(int)>(this, &Journal::OnAddNote);
 					params.limit = 255;
 					params.lines = 8;
@@ -332,18 +332,18 @@ void Journal::Update(float dt)
 	{
 		if(page != 0)
 		{
-			if(PointInRect(gui->cursor_pos, rect.LeftBottom() + Int2(5, -16), Int2(16, 16)))
+			if(Rect::IsInside(gui->cursorPos, rect.LeftBottom() + Int2(5, -16), Int2(16, 16)))
 			{
-				gui->cursor_mode = CURSOR_HOVER;
+				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					--page;
 			}
 		}
 		if(texts.back().x > page * 2 + 1)
 		{
-			if(PointInRect(gui->cursor_pos, rect2.RightBottom() + Int2(-21, -16), Int2(16, 16)))
+			if(Rect::IsInside(gui->cursorPos, rect2.RightBottom() + Int2(-21, -16), Int2(16, 16)))
 			{
-				gui->cursor_mode = CURSOR_HOVER;
+				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					++page;
 			}
@@ -363,8 +363,8 @@ void Journal::Event(GuiEvent e)
 		rect2 = Rect(270, 16, 476, 432);
 
 		Vec2 scale = Vec2(size) / 512;
-		rect = rect * scale + global_pos;
-		rect2 = rect2 * scale + global_pos;
+		rect = rect * scale + globalPos;
+		rect2 = rect2 * scale + globalPos;
 
 		rect_w = rect.SizeX();
 		rect_lines = rect.SizeY() / font_height;
@@ -556,7 +556,7 @@ void Journal::OnAddNote(int id)
 	if(id == BUTTON_OK)
 	{
 		notes.push_back(Format(txAddTime, world->GetDate(), input_str.c_str()));
-		sound_mgr->PlaySound2d(game_gui->messages->snd_scribble);
+		soundMgr->PlaySound2d(game_gui->messages->snd_scribble);
 		Build();
 		if(Net::IsClient())
 			Net::PushChange(NetChange::ADD_NOTE);

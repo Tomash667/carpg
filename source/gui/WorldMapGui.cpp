@@ -79,38 +79,38 @@ void WorldMapGui::LoadLanguage()
 //=================================================================================================
 void WorldMapGui::LoadData()
 {
-	tMapIcon[LI_CAMP] = res_mgr->Load<Texture>("camp.png");
-	tMapIcon[LI_VILLAGE] = res_mgr->Load<Texture>("village.png");
-	tMapIcon[LI_CITY] = res_mgr->Load<Texture>("city.png");
-	tMapIcon[LI_DUNGEON] = res_mgr->Load<Texture>("dungeon.png");
-	tMapIcon[LI_CRYPT] = res_mgr->Load<Texture>("crypt.png");
-	tMapIcon[LI_CAVE] = res_mgr->Load<Texture>("cave.png");
-	tMapIcon[LI_FOREST] = res_mgr->Load<Texture>("forest.png");
-	tMapIcon[LI_MOONWELL] = res_mgr->Load<Texture>("moonwell.png");
-	tMapIcon[LI_TOWER] = res_mgr->Load<Texture>("tower.png");
-	tMapIcon[LI_LABYRINTH] = res_mgr->Load<Texture>("labyrinth.png");
-	tMapIcon[LI_MINE] = res_mgr->Load<Texture>("mine.png");
-	tMapIcon[LI_SAWMILL] = res_mgr->Load<Texture>("sawmill.png");
-	tMapIcon[LI_DUNGEON2] = res_mgr->Load<Texture>("dungeon2.png");
-	tMapIcon[LI_ACADEMY] = res_mgr->Load<Texture>("academy.png");
-	tMapIcon[LI_CAPITAL] = res_mgr->Load<Texture>("capital.png");
-	tMapIcon[LI_HUNTERS_CAMP] = res_mgr->Load<Texture>("hunters_camp.png");
-	tMapIcon[LI_HILLS] = res_mgr->Load<Texture>("hills.png");
-	tWorldMap = res_mgr->Load<Texture>("worldmap.jpg");
-	tSelected[0] = res_mgr->Load<Texture>("selected.png");
-	tSelected[1] = res_mgr->Load<Texture>("selected2.png");
-	tMover = res_mgr->Load<Texture>("mover.png");
-	tMapBg = res_mgr->Load<Texture>("old_map.png");
-	tEnc = res_mgr->Load<Texture>("enc.png");
-	tSide = res_mgr->Load<Texture>("worldmap_side.png");
-	tMagnifyingGlass = res_mgr->Load<Texture>("magnifying-glass-icon.png");
-	tTrackingArrow = res_mgr->Load<Texture>("tracking_arrow.png");
-	buttons[0].img = res_mgr->Load<Texture>("bt_journal.png");
-	buttons[1].img = res_mgr->Load<Texture>("bt_talk.png");
+	tMapIcon[LI_CAMP] = resMgr->Load<Texture>("camp.png");
+	tMapIcon[LI_VILLAGE] = resMgr->Load<Texture>("village.png");
+	tMapIcon[LI_CITY] = resMgr->Load<Texture>("city.png");
+	tMapIcon[LI_DUNGEON] = resMgr->Load<Texture>("dungeon.png");
+	tMapIcon[LI_CRYPT] = resMgr->Load<Texture>("crypt.png");
+	tMapIcon[LI_CAVE] = resMgr->Load<Texture>("cave.png");
+	tMapIcon[LI_FOREST] = resMgr->Load<Texture>("forest.png");
+	tMapIcon[LI_MOONWELL] = resMgr->Load<Texture>("moonwell.png");
+	tMapIcon[LI_TOWER] = resMgr->Load<Texture>("tower.png");
+	tMapIcon[LI_LABYRINTH] = resMgr->Load<Texture>("labyrinth.png");
+	tMapIcon[LI_MINE] = resMgr->Load<Texture>("mine.png");
+	tMapIcon[LI_SAWMILL] = resMgr->Load<Texture>("sawmill.png");
+	tMapIcon[LI_DUNGEON2] = resMgr->Load<Texture>("dungeon2.png");
+	tMapIcon[LI_ACADEMY] = resMgr->Load<Texture>("academy.png");
+	tMapIcon[LI_CAPITAL] = resMgr->Load<Texture>("capital.png");
+	tMapIcon[LI_HUNTERS_CAMP] = resMgr->Load<Texture>("hunters_camp.png");
+	tMapIcon[LI_HILLS] = resMgr->Load<Texture>("hills.png");
+	tWorldMap = resMgr->Load<Texture>("worldmap.jpg");
+	tSelected[0] = resMgr->Load<Texture>("selected.png");
+	tSelected[1] = resMgr->Load<Texture>("selected2.png");
+	tMover = resMgr->Load<Texture>("mover.png");
+	tMapBg = resMgr->Load<Texture>("old_map.png");
+	tEnc = resMgr->Load<Texture>("enc.png");
+	tSide = resMgr->Load<Texture>("worldmap_side.png");
+	tMagnifyingGlass = resMgr->Load<Texture>("magnifying-glass-icon.png");
+	tTrackingArrow = resMgr->Load<Texture>("tracking_arrow.png");
+	buttons[0].img = resMgr->Load<Texture>("bt_journal.png");
+	buttons[1].img = resMgr->Load<Texture>("bt_talk.png");
 }
 
 //=================================================================================================
-void WorldMapGui::Draw(ControlDrawData*)
+void WorldMapGui::Draw()
 {
 	const Vec2 scale(zoom);
 
@@ -267,25 +267,25 @@ void WorldMapGui::Draw(ControlDrawData*)
 	}
 
 	// side images
-	gui->DrawSpriteRect(tSide, Rect(gui->wnd_size.x * 2 / 3, 0, gui->wnd_size.x, gui->wnd_size.y));
+	gui->DrawSpriteRect(tSide, Rect(gui->wndSize.x * 2 / 3, 0, gui->wndSize.x, gui->wndSize.y));
 
 	// buttons
 	for(int i = 0; i < 2; ++i)
 		buttons[i].Draw();
 
 	// magnifying glass & combo box
-	Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f*gui->wnd_size.x / 1024),
-		int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
-	rect.p2.x += int(32.f * gui->wnd_size.x / 1024);
-	rect.p2.y += int(32.f * gui->wnd_size.y / 768);
+	Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 16.f*gui->wndSize.x / 1024),
+		int(float(gui->wndSize.y) - 138.f * gui->wndSize.y / 768));
+	rect.p2.x += int(32.f * gui->wndSize.x / 1024);
+	rect.p2.y += int(32.f * gui->wndSize.y / 768);
 	gui->DrawSpriteRect(tMagnifyingGlass, rect);
 	combo_search.Draw();
 
 	// text
-	rect = Rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f * gui->wnd_size.x / 1024),
-		int(94.f * gui->wnd_size.y / 768),
-		int(float(gui->wnd_size.x) - 16.f * gui->wnd_size.x / 1024),
-		int(float(gui->wnd_size.y) - 90.f * gui->wnd_size.y / 768));
+	rect = Rect(int(float(gui->wndSize.x) * 2 / 3 + 16.f * gui->wndSize.x / 1024),
+		int(94.f * gui->wndSize.y / 768),
+		int(float(gui->wndSize.x) - 16.f * gui->wndSize.x / 1024),
+		int(float(gui->wndSize.y) - 90.f * gui->wndSize.y / 768));
 	gui->DrawText(GameGui::font, s, 0, Color::Black, rect);
 
 	if(game->end_of_game)
@@ -354,8 +354,8 @@ void WorldMapGui::Update(float dt)
 		if(game_gui->mp_box->have_focus && combo_search.focus)
 			combo_search.LostFocus();
 
-		combo_search.mouse_focus = focus;
-		if(combo_search.IsInside(gui->cursor_pos) && input->PressedRelease(Key::LeftButton))
+		combo_search.mouseFocus = focus;
+		if(combo_search.IsInside(gui->cursorPos) && input->PressedRelease(Key::LeftButton))
 			combo_search.GainFocus();
 		combo_search.Update(dt);
 
@@ -392,9 +392,9 @@ void WorldMapGui::Update(float dt)
 		// buttons
 		for(int i = 0; i < 2; ++i)
 		{
-			buttons[i].mouse_focus = focus;
+			buttons[i].mouseFocus = focus;
 			buttons[i].Update(dt);
-			if(!combo_search.focus && buttons[i].IsInside(gui->cursor_pos))
+			if(!combo_search.focus && buttons[i].IsInside(gui->cursorPos))
 			{
 				group = 0;
 				id = (i == 0 ? GK_JOURNAL : GK_TALK_BOX);
@@ -402,11 +402,11 @@ void WorldMapGui::Update(float dt)
 		}
 
 		// search location tooltip
-		Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f * gui->wnd_size.x / 1024),
-			int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
-		rect.p2.x += int(32.f * gui->wnd_size.x / 1024);
-		rect.p2.y += int(32.f * gui->wnd_size.y / 768);
-		if(rect.IsInside(gui->cursor_pos))
+		Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 16.f * gui->wndSize.x / 1024),
+			int(float(gui->wndSize.y) - 138.f * gui->wndSize.y / 768));
+		rect.p2.x += int(32.f * gui->wndSize.x / 1024);
+		rect.p2.y += int(32.f * gui->wndSize.y / 768);
+		if(rect.IsInside(gui->cursorPos))
 		{
 			group = 0;
 			id = GK_MAP_SEARCH;
@@ -430,7 +430,7 @@ void WorldMapGui::Update(float dt)
 			return;
 
 		bool stop = false;
-		if(focus && input->Focus() && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3 && input->PressedRelease(Key::LeftButton))
+		if(focus && input->Focus() && gui->cursorPos.x < gui->wndSize.x * 2 / 3 && input->PressedRelease(Key::LeftButton))
 		{
 			if(team->IsLeader())
 			{
@@ -445,13 +445,13 @@ void WorldMapGui::Update(float dt)
 	}
 	else if(world->GetState() != World::State::ENCOUNTER && !game_gui->journal->visible)
 	{
-		Vec2 cursor_pos(float(gui->cursor_pos.x), float(gui->cursor_pos.y));
+		Vec2 cursorPos(float(gui->cursorPos.x), float(gui->cursorPos.y));
 		Location* loc = nullptr;
 		int index;
 
-		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom + offset * float(world->world_size) / MAP_IMG_SIZE;
+		c_pos = (Vec2(gui->cursorPos) - GetCameraCenter()) / zoom + offset * float(world->world_size) / MAP_IMG_SIZE;
 		c_pos.y = float(world->world_size) - c_pos.y;
-		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < world->world_size && c_pos.y < world->world_size && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3)
+		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < world->world_size && c_pos.y < world->world_size && gui->cursorPos.x < gui->wndSize.x * 2 / 3)
 		{
 			c_pos_valid = true;
 			if(!input->Down(Key::Shift))
@@ -463,7 +463,7 @@ void WorldMapGui::Update(float dt)
 					if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
 						continue;
 					Vec2 pt = WorldPosToScreen((*it)->pos);
-					float dist2 = Vec2::Distance(pt, cursor_pos) / zoom;
+					float dist2 = Vec2::Distance(pt, cursorPos) / zoom;
 					if(dist2 < dist)
 					{
 						loc = *it;
@@ -561,23 +561,23 @@ void WorldMapGui::Event(GuiEvent e)
 	case GuiEvent_Show:
 	case GuiEvent_WindowResize:
 		{
-			Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 52.f*gui->wnd_size.x / 1024),
-				int(float(gui->wnd_size.y) - 140.f * gui->wnd_size.y / 768));
-			rect.p2.x = int(float(gui->wnd_size.x) - 20.f * gui->wnd_size.y / 1024);
-			rect.p2.y += int(32.f * gui->wnd_size.y / 768);
+			Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 52.f*gui->wndSize.x / 1024),
+				int(float(gui->wndSize.y) - 140.f * gui->wndSize.y / 768));
+			rect.p2.x = int(float(gui->wndSize.x) - 20.f * gui->wndSize.y / 1024);
+			rect.p2.y += int(32.f * gui->wndSize.y / 768);
 			combo_search.pos = rect.p1;
-			combo_search.global_pos = combo_search.pos;
+			combo_search.globalPos = combo_search.pos;
 			combo_search.size = rect.Size();
 
-			const int img_size = int(32.f * gui->wnd_size.y / 768);
+			const int img_size = int(32.f * gui->wndSize.y / 768);
 			buttons[0].pos = Int2(rect.p1.x, rect.p1.y - img_size - 5);
-			buttons[0].global_pos = buttons[0].pos;
+			buttons[0].globalPos = buttons[0].pos;
 			buttons[0].size = Int2(rect.SizeX() / 2 - 2, img_size);
-			buttons[0].force_img_size = Int2(img_size);
+			buttons[0].forceImgSize = Int2(img_size);
 			buttons[1].pos = Int2(rect.p1.x + rect.SizeX() / 2 + 2, rect.p1.y - img_size - 5);
-			buttons[1].global_pos = buttons[1].pos;
+			buttons[1].globalPos = buttons[1].pos;
 			buttons[1].size = Int2(rect.SizeX() / 2 - 2, img_size);
-			buttons[1].force_img_size = Int2(img_size);
+			buttons[1].forceImgSize = Int2(img_size);
 
 			if(e == GuiEvent_Show)
 			{
@@ -791,7 +791,7 @@ void WorldMapGui::CenterView(float dt, const Vec2* target)
 //=================================================================================================
 Vec2 WorldMapGui::GetCameraCenter() const
 {
-	return Vec2(float(gui->wnd_size.x) / 3, float(gui->wnd_size.y) / 2);
+	return Vec2(float(gui->wndSize.x) / 3, float(gui->wndSize.y) / 2);
 }
 
 //=================================================================================================

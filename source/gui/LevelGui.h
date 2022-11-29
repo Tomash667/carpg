@@ -68,7 +68,7 @@ public:
 	~LevelGui();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	bool NeedCursor() const override;
 	void Event(GuiEvent e) override;
@@ -86,7 +86,7 @@ public:
 	void PositionPanels();
 	void Save(GameWriter& f) const;
 	void Load(GameReader& f);
-	bool IsMouseInsideDialog() const { return PointInRect(gui->cursor_pos, dialog_pos, dialog_size); }
+	bool IsMouseInsideDialog() const { return Rect::IsInside(gui->cursorPos, dialog_pos, dialog_size); }
 	void RemoveUnitView(Unit* unit);
 	void DrawEndOfGameScreen();
 	void StartDragAndDrop(int type, int value, Texture* tex);

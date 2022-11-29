@@ -1270,7 +1270,7 @@ void Game::UpdateAi(float dt)
 										{
 											AIController& ai2 = *target->ai;
 											if(ai2.state == AIController::Idle
-												&& OR3_EQ(ai2.st.idle.action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
+												&& Any(ai2.st.idle.action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
 											{
 												// look at the person in response to his looking
 												ai2.st.idle.action = AIController::Idle_Chat;

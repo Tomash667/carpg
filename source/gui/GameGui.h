@@ -15,7 +15,7 @@ public:
 	void LoadLanguage();
 	void LoadData();
 	void PostInit();
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs);
 	void UpdateGui(float dt);
 	void Save(GameWriter& f);

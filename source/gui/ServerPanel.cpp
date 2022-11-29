@@ -181,12 +181,12 @@ void ServerPanel::LoadLanguage()
 //=================================================================================================
 void ServerPanel::LoadData()
 {
-	tReady = res_mgr->Load<Texture>("gotowy.png");
-	tNotReady = res_mgr->Load<Texture>("niegotowy.png");
+	tReady = resMgr->Load<Texture>("gotowy.png");
+	tNotReady = resMgr->Load<Texture>("niegotowy.png");
 }
 
 //=================================================================================================
-void ServerPanel::Draw(ControlDrawData*)
+void ServerPanel::Draw()
 {
 	DrawPanel();
 
@@ -198,7 +198,7 @@ void ServerPanel::Draw(ControlDrawData*)
 	grid.Draw();
 
 	// text
-	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
+	Rect r = { 340 + globalPos.x, 355 + globalPos.y, 340 + 185 + globalPos.x, 355 + 160 + globalPos.y };
 	const string& password = (Net::IsServer() ? net->password : game->enter_pswd);
 	LocalString pswd;
 	if(password.empty())
@@ -218,10 +218,10 @@ void ServerPanel::Update(float dt)
 	int count = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < count; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
-	itb.mouse_focus = focus;
+	itb.mouseFocus = focus;
 	itb.Update(dt);
 	grid.focus = focus;
 	grid.Update(dt);
@@ -1158,11 +1158,11 @@ void ServerPanel::Event(GuiEvent e)
 			itb.focus = true;
 			itb.Event(GuiEvent_GainFocus);
 		}
-		global_pos = pos = (gui->wnd_size - size) / 2;
+		globalPos = pos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 6; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
+			bts[i].globalPos = globalPos + bts[i].pos;
 		itb.Event(GuiEvent_Moved);
-		grid.Move(global_pos);
+		grid.Move(globalPos);
 		break;
 	case GuiEvent_GainFocus:
 		itb.focus = true;

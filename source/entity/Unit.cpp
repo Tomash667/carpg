@@ -399,7 +399,7 @@ void Unit::SetGold(int new_gold)
 	{
 		game_gui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
 		if(player->is_local)
-			sound_mgr->PlaySound2d(game_res->sCoins);
+			soundMgr->PlaySound2d(game_res->sCoins);
 		else
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
@@ -4782,21 +4782,21 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	if(data->state != ResourceState::Loaded)
 	{
 		assert(mode != CREATE_MESH::AFTER_PRELOAD);
-		if(res_mgr->IsLoadScreen())
+		if(resMgr->IsLoadScreen())
 		{
 			if(mode == CREATE_MESH::LOAD)
-				res_mgr->LoadInstant(mesh);
+				resMgr->LoadInstant(mesh);
 			else if(!mesh->IsLoaded())
 				game->units_mesh_load.push_back(pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
 			if(data->state == ResourceState::NotLoaded)
 			{
-				res_mgr->Load(mesh);
+				resMgr->Load(mesh);
 				if(data->sounds)
 				{
 					for(int i = 0; i < SOUND_MAX; ++i)
 					{
 						for(SoundPtr sound : data->sounds->sounds[i])
-							res_mgr->Load(sound);
+							resMgr->Load(sound);
 					}
 				}
 				if(data->tex)
@@ -4804,11 +4804,11 @@ void Unit::CreateMesh(CREATE_MESH mode)
 					for(TexOverride& tex_o : data->tex->textures)
 					{
 						if(tex_o.diffuse)
-							res_mgr->Load(tex_o.diffuse);
+							resMgr->Load(tex_o.diffuse);
 					}
 				}
 				data->state = ResourceState::Loading;
-				res_mgr->AddTask(this, TaskCallback([](TaskData& td)
+				resMgr->AddTask(this, TaskCallback([](TaskData& td)
 				{
 					Unit* unit = static_cast<Unit*>(td.ptr);
 					unit->data->state = ResourceState::Loaded;
@@ -4817,13 +4817,13 @@ void Unit::CreateMesh(CREATE_MESH mode)
 		}
 		else
 		{
-			res_mgr->Load(mesh);
+			resMgr->Load(mesh);
 			if(data->sounds)
 			{
 				for(int i = 0; i < SOUND_MAX; ++i)
 				{
 					for(SoundPtr sound : data->sounds->sounds[i])
-						res_mgr->Load(sound);
+						resMgr->Load(sound);
 				}
 			}
 			if(data->tex)
@@ -4831,7 +4831,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				for(TexOverride& tex_o : data->tex->textures)
 				{
 					if(tex_o.diffuse)
-						res_mgr->Load(tex_o.diffuse);
+						resMgr->Load(tex_o.diffuse);
 				}
 			}
 			data->state = ResourceState::Loaded;
@@ -5513,7 +5513,7 @@ void Unit::Die(Unit* killer)
 void Unit::DropGold(int count)
 {
 	gold -= count;
-	sound_mgr->PlaySound2d(game_res->sCoins);
+	soundMgr->PlaySound2d(game_res->sCoins);
 
 	// animacja wyrzucania
 	action = A_ANIMATION;
@@ -5566,7 +5566,7 @@ bool Unit::IsDrunkman() const
 //=================================================================================================
 void Unit::PlaySound(Sound* sound, float range)
 {
-	sound_mgr->PlaySound3d(sound, GetHeadSoundPos(), range);
+	soundMgr->PlaySound3d(sound, GetHeadSoundPos(), range);
 }
 
 //=================================================================================================
@@ -5585,9 +5585,9 @@ void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 			mat = data->mat;
 	}
 
-	sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, HIT_SOUND_DIST);
+	soundMgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, HIT_SOUND_DIST);
 	if(playBodyHit)
-		sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, HIT_SOUND_DIST);
+		soundMgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, HIT_SOUND_DIST);
 
 	if(Net::IsOnline())
 	{
@@ -7129,7 +7129,7 @@ void Unit::CastSpell()
 	// sound effect
 	if(ability.sound_cast)
 	{
-		sound_mgr->PlaySound3d(ability.sound_cast, coord, ability.sound_cast_dist);
+		soundMgr->PlaySound3d(ability.sound_cast, coord, ability.sound_cast_dist);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -7624,7 +7624,7 @@ void Unit::Update(float dt)
 
 				act.shoot.ability = nullptr;
 
-				sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
+				soundMgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
 				if(Net::IsOnline())
 				{
@@ -7958,7 +7958,7 @@ void Unit::Update(float dt)
 							if(animation_state == AS_USE_USABLE_USING)
 							{
 								animation_state = AS_USE_USABLE_USING_SOUND;
-								sound_mgr->PlaySound3d(bu.sound, GetCenter(), Usable::SOUND_DIST);
+								soundMgr->PlaySound3d(bu.sound, GetCenter(), Usable::SOUND_DIST);
 								if(Net::IsServer())
 								{
 									NetChange& c = Add1(Net::changes);
@@ -8332,7 +8332,7 @@ void Unit::Update(float dt)
 				RemoveItem(used_item, 1u);
 				used_item = nullptr;
 			}
-			sound_mgr->PlaySound3d(game_res->sZap, GetCenter(), MAGIC_SCROLL_SOUND_DIST);
+			soundMgr->PlaySound3d(game_res->sZap, GetCenter(), MAGIC_SCROLL_SOUND_DIST);
 			action = A_NONE;
 			animation = ANI_STAND;
 			current_animation = (Animation)-1;
@@ -9075,7 +9075,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			c.id = weapon_mat;
 			c.count = hitted_mat;
 		}
-		sound_mgr->PlaySound3d(game_res->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
+		soundMgr->PlaySound3d(game_res->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
 
 		// train blocking
 		if(hitted.IsPlayer())

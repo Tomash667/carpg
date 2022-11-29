@@ -237,7 +237,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Object* obj = game_level->localPart->FindObject(base_obj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
-			res_mgr->Load(obj->mesh);
+			resMgr->Load(obj->mesh);
 			// remove particles
 			float best_dist = 999.f;
 			ParticleEmitter* best_pe = nullptr;
@@ -697,7 +697,7 @@ void Quest_Evil::Update(float dt)
 				&& game_level->CanSee(*game_level->localPart, unit.pos, pos))
 			{
 				evil_state = State::Summoning;
-				sound_mgr->PlaySound2d(game_res->sEvil);
+				soundMgr->PlaySound2d(game_res->sEvil);
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::EVIL_SOUND);
 				SetProgress(Progress::AltarEvent);

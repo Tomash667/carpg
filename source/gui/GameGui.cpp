@@ -232,8 +232,8 @@ void GameGui::LoadLanguage()
 //=================================================================================================
 void GameGui::LoadData()
 {
-	GamePanel::tBackground = res_mgr->Load<Texture>("game_panel.png");
-	GamePanel::tDialog = res_mgr->Load<Texture>("dialog.png");
+	GamePanel::tBackground = resMgr->Load<Texture>("game_panel.png");
+	GamePanel::tDialog = resMgr->Load<Texture>("dialog.png");
 
 	ability->LoadData();
 	book->LoadData();
@@ -262,7 +262,7 @@ void GameGui::PostInit()
 }
 
 //=================================================================================================
-void GameGui::Draw(ControlDrawData*)
+void GameGui::Draw()
 {
 	Container::Draw();
 }
@@ -425,7 +425,7 @@ void GameGui::OnFocus(bool focus, const Int2& activationPoint)
 	if(!focus && level_gui)
 		level_gui->use_cursor = false;
 	if(focus && activationPoint.x != -1)
-		gui->cursor_pos = activationPoint;
+		gui->cursorPos = activationPoint;
 }
 
 //=================================================================================================

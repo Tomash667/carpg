@@ -319,7 +319,7 @@ void Controls::LoadLanguage()
 }
 
 //=================================================================================================
-void Controls::Draw(ControlDrawData*)
+void Controls::Draw()
 {
 	DrawPanel();
 
@@ -328,7 +328,7 @@ void Controls::Draw(ControlDrawData*)
 
 	grid.Draw();
 
-	Rect r = { global_pos.x, global_pos.y + size.y - 85, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { globalPos.x, globalPos.y + size.y - 85, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawText(GameGui::font, txInfo, DTF_CENTER, Color::Black, r);
 }
 
@@ -343,12 +343,12 @@ void Controls::Update(float dt)
 	{
 		for(Button& button : bts)
 		{
-			button.mouse_focus = focus;
+			button.mouseFocus = focus;
 			button.Update(dt);
 		}
 
 		grid.focus = focus;
-		grid.mouse_focus = focus;
+		grid.mouseFocus = focus;
 		grid.Update(dt);
 
 		if(focus && input->Focus() && input->PressedRelease(Key::Escape))
@@ -371,10 +371,10 @@ void Controls::Event(GuiEvent e)
 			visible = true;
 			changed = false;
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 2; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
-		grid.Move(global_pos);
+			bts[i].globalPos = globalPos + bts[i].pos;
+		grid.Move(globalPos);
 	}
 	else if(e == GuiEvent_LostFocus)
 		grid.LostFocus();

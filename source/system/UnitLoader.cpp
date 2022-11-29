@@ -661,7 +661,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_MESH:
 			{
 				const string& mesh_id = t.MustGetString();
-				unit->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				unit->mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(unit->mesh)
 					crc.Update(mesh_id);
 				else
@@ -2054,7 +2054,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 			while(!t.IsSymbol('}'))
 			{
 				const string& filename = t.MustGetString();
-				SoundPtr sound = res_mgr->TryGet<Sound>(filename);
+				SoundPtr sound = resMgr->TryGet<Sound>(filename);
 				if(!sound)
 					LoadError("Missing sound '%s'.", filename.c_str());
 				else
@@ -2068,7 +2068,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 		else
 		{
 			const string& filename = t.MustGetString();
-			SoundPtr sound = res_mgr->TryGet<Sound>(filename);
+			SoundPtr sound = resMgr->TryGet<Sound>(filename);
 			if(!sound)
 				LoadError("Missing sound '%s'.", filename.c_str());
 			else
@@ -2233,7 +2233,7 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 		else
 		{
 			const string& tex_id = t.MustGetString();
-			Texture* tex = res_mgr->TryGet<Texture>(tex_id);
+			Texture* tex = resMgr->TryGet<Texture>(tex_id);
 			if(tex)
 			{
 				pack->textures.push_back(TexOverride(tex));

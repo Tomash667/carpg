@@ -228,12 +228,12 @@ void Options::LoadLanguage()
 }
 
 //=================================================================================================
-void Options::Draw(ControlDrawData*)
+void Options::Draw()
 {
 	DrawPanel();
 
 	// title
-	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawText(GameGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
@@ -246,37 +246,37 @@ void Options::Draw(ControlDrawData*)
 
 	//------ Left part
 	// Resolution:
-	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
+	Rect r2 = { globalPos.x + 10, globalPos.y + 50, globalPos.x + size.x, globalPos.y + 75 };
 	gui->DrawText(GameGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
-	r2.Top() = global_pos.y + 300 - 8;
+	r2.Top() = globalPos.y + 300 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
 	// Language:
-	r2.Top() = global_pos.y + 360 - 8;
+	r2.Top() = globalPos.y + 360 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
 	// Sound device:
-	r2.Top() = global_pos.y + 420 - 8;
+	r2.Top() = globalPos.y + 420 - 8;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txSoundDevice, DTF_SINGLELINE, Color::Black, r2);
 
 	//------ Right part
 	// Sound volume (0)
-	r2.Left() = global_pos.x + 290;
-	r2.Top() = global_pos.y + 270;
+	r2.Left() = globalPos.x + 290;
+	r2.Top() = globalPos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
 	// Music volume (0)
-	r2.Top() = global_pos.y + 310;
+	r2.Top() = globalPos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
 	// Mouse sensitivity (0)
-	r2.Top() = global_pos.y + 350;
+	r2.Top() = globalPos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
 	// Grass range (0)
-	r2.Top() = global_pos.y + 390;
+	r2.Top() = globalPos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
 
@@ -306,12 +306,12 @@ void Options::Update(float dt)
 		soundDevice.menu->Update(dt);
 	for(int i = 0; i < 5; ++i)
 	{
-		check[i].mouse_focus = focus;
+		check[i].mouseFocus = focus;
 		check[i].Update(dt);
 	}
 	for(int i = 0; i < 4; ++i)
 	{
-		scroll[i].mouse_focus = focus;
+		scroll[i].mouseFocus = focus;
 		float prev_offset = scroll[i].offset;
 		scroll[i].Update(dt);
 		if(prev_offset != scroll[i].offset)
@@ -330,16 +330,16 @@ void Options::Update(float dt)
 	}
 	for(int i = 0; i < 2; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
-	res.mouse_focus = focus;
+	res.mouseFocus = focus;
 	res.Update(dt);
-	multisampling.mouse_focus = focus;
+	multisampling.mouseFocus = focus;
 	multisampling.Update(dt);
-	language.mouse_focus = focus;
+	language.mouseFocus = focus;
 	language.Update(dt);
-	soundDevice.mouse_focus = focus;
+	soundDevice.mouseFocus = focus;
 	soundDevice.Update(dt);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
@@ -357,13 +357,13 @@ void Options::Event(GuiEvent e)
 			SetOptions();
 			SetSoundDevices();
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 5; ++i)
-			check[i].global_pos = global_pos + check[i].pos;
+			check[i].globalPos = globalPos + check[i].pos;
 		for(int i = 0; i < 4; ++i)
-			scroll[i].global_pos = global_pos + scroll[i].pos;
+			scroll[i].globalPos = globalPos + scroll[i].pos;
 		for(int i = 0; i < 2; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
+			bts[i].globalPos = globalPos + bts[i].pos;
 		res.Event(GuiEvent_Moved);
 		multisampling.Event(GuiEvent_Moved);
 		language.Event(GuiEvent_Moved);
@@ -390,10 +390,10 @@ void Options::Event(GuiEvent e)
 		case IdChangeRes:
 			break;
 		case IdSoundVolume:
-			sound_mgr->SetSoundVolume(sound_volume);
+			soundMgr->SetSoundVolume(sound_volume);
 			break;
 		case IdMusicVolume:
-			sound_mgr->SetMusicVolume(music_volume);
+			soundMgr->SetMusicVolume(music_volume);
 			break;
 		case IdMouseSensitivity:
 			game->settings.mouse_sensitivity = mouse_sensitivity;
@@ -409,10 +409,10 @@ void Options::Event(GuiEvent e)
 			game->use_glow = check[1].checked;
 			break;
 		case IdNormal:
-			scene_mgr->use_normalmap = check[2].checked;
+			sceneMgr->use_normalmap = check[2].checked;
 			break;
 		case IdSpecular:
-			scene_mgr->use_specularmap = check[3].checked;
+			sceneMgr->use_specularmap = check[3].checked;
 			break;
 		case IdVsync:
 			render->SetVsync(!render->IsVsyncEnabled());
@@ -426,8 +426,8 @@ void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
 	check[1].checked = game->use_glow;
-	check[2].checked = scene_mgr->use_normalmap;
-	check[3].checked = scene_mgr->use_specularmap;
+	check[2].checked = sceneMgr->use_normalmap;
+	check[3].checked = sceneMgr->use_specularmap;
 	check[4].checked = render->IsVsyncEnabled();
 
 	ResolutionItem& currentItem = *res.GetItemCast<ResolutionItem>();
@@ -463,14 +463,14 @@ void Options::SetOptions()
 		}
 	}
 
-	if(sound_volume != sound_mgr->GetSoundVolume())
+	if(sound_volume != soundMgr->GetSoundVolume())
 	{
-		sound_volume = sound_mgr->GetSoundVolume();
+		sound_volume = soundMgr->GetSoundVolume();
 		scroll[0].SetValue(float(sound_volume) / 100.f);
 	}
-	if(music_volume != sound_mgr->GetMusicVolume())
+	if(music_volume != soundMgr->GetMusicVolume())
 	{
-		music_volume = sound_mgr->GetMusicVolume();
+		music_volume = soundMgr->GetMusicVolume();
 		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
 	if(mouse_sensitivity != game->settings.mouse_sensitivity)
@@ -490,8 +490,8 @@ void Options::SetSoundDevices()
 {
 	Guid currentDevice;
 	vector<pair<Guid, string>> devices;
-	currentDevice = sound_mgr->GetDevice();
-	sound_mgr->GetDevices(devices);
+	currentDevice = soundMgr->GetDevice();
+	soundMgr->GetDevices(devices);
 	soundDevice.Reset();
 	soundDevice.Add(new SoundDeviceItem(txDefaultDevice, Guid::Empty));
 	if(currentDevice == Guid::Empty)
@@ -566,5 +566,5 @@ void Options::ChangeLanguage(int id)
 void Options::OnChangeSoundDevice(int id)
 {
 	SoundDeviceItem* item = soundDevice.GetItemCast<SoundDeviceItem>();
-	sound_mgr->SetDevice(item->device);
+	soundMgr->SetDevice(item->device);
 }

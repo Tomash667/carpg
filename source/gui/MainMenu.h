@@ -25,7 +25,7 @@ public:
 	MainMenu();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }

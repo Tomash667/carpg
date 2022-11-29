@@ -963,7 +963,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	// sound
 	if(ability.sound_hit)
 	{
-		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+		soundMgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1136,7 +1136,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				pe->Init();
 				lvlPart->pes.push_back(pe);
 
-				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+				soundMgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{

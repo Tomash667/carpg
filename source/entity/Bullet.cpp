@@ -139,7 +139,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				if(ability->sound_hit)
 				{
 					preventTooManySounds = true;
-					sound_mgr->PlaySound3d(ability->sound_hit, hitpoint, ability->sound_hit_dist);
+					soundMgr->PlaySound3d(ability->sound_hit, hitpoint, ability->sound_hit_dist);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -356,7 +356,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 		// hit object
 		if(!ability)
 		{
-			sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+			soundMgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = game_res->tSpark;
@@ -439,7 +439,7 @@ void Bullet::Load(GameReader& f)
 	f >> rot;
 	const string& mesh_id = f.ReadString1();
 	if(!mesh_id.empty())
-		mesh = res_mgr->Load<Mesh>(mesh_id);
+		mesh = resMgr->Load<Mesh>(mesh_id);
 	else
 		mesh = nullptr;
 	f >> speed;
@@ -475,7 +475,7 @@ void Bullet::Load(GameReader& f)
 	}
 	const string& tex_name = f.ReadString1();
 	if(!tex_name.empty())
-		tex = res_mgr->Load<Texture>(tex_name);
+		tex = resMgr->Load<Texture>(tex_name);
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());

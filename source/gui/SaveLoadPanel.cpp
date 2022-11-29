@@ -61,17 +61,17 @@ void SaveLoad::LoadLanguage()
 }
 
 //=================================================================================================
-void SaveLoad::Draw(ControlDrawData*)
+void SaveLoad::Draw()
 {
 	DrawPanel();
-	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawText(GameGui::font_big, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
 
 	// slot names
-	r = Rect::Create(global_pos + Int2(12, 76), Int2(256, 20));
+	r = Rect::Create(globalPos + Int2(12, 76), Int2(256, 20));
 	for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 	{
 		cstring text;
@@ -99,7 +99,7 @@ void SaveLoad::Draw(ControlDrawData*)
 	// image
 	if(tMiniSave.tex)
 	{
-		Rect r2 = Rect::Create(Int2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), Int2(256, 192));
+		Rect r2 = Rect::Create(Int2(globalPos.x + 400 - 81, globalPos.y + 42 + 103), Int2(256, 192));
 		gui->DrawSpriteRect(&tMiniSave, r2);
 	}
 }
@@ -107,18 +107,18 @@ void SaveLoad::Draw(ControlDrawData*)
 //=================================================================================================
 void SaveLoad::Update(float dt)
 {
-	textbox.mouse_focus = focus;
+	textbox.mouseFocus = focus;
 	textbox.Update(dt);
 
 	if(focus && input->Focus())
 	{
-		Rect rect = Rect::Create(Int2(global_pos.x + 12, global_pos.y + 76), Int2(256, 20));
+		Rect rect = Rect::Create(Int2(globalPos.x + 12, globalPos.y + 76), Int2(256, 20));
 
 		for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 		{
-			if(rect.IsInside(gui->cursor_pos))
+			if(rect.IsInside(gui->cursorPos))
 			{
-				gui->cursor_mode = CURSOR_HOVER;
+				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;
@@ -142,7 +142,7 @@ void SaveLoad::Update(float dt)
 
 	for(int i = 0; i < 2; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
 	}
 }
@@ -152,11 +152,11 @@ void SaveLoad::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		global_pos = pos = (gui->wnd_size - size) / 2;
+		globalPos = pos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 2; ++i)
-			bt[i].global_pos = bt[i].pos + global_pos;
-		textbox.global_pos = textbox.pos + global_pos;
-		textbox.scrollbar->global_pos = textbox.scrollbar->pos + textbox.global_pos;
+			bt[i].globalPos = bt[i].pos + globalPos;
+		textbox.globalPos = textbox.pos + globalPos;
+		textbox.scrollbar->globalPos = textbox.scrollbar->pos + textbox.globalPos;
 		if(e == GuiEvent_Show)
 			SetText();
 	}
@@ -190,7 +190,7 @@ void SaveLoad::Event(GuiEvent e)
 				else
 					save_input_text.clear();
 				GetTextDialogParams params(txSaveName, save_input_text);
-				params.custom_names = names;
+				params.customNames = names;
 				params.event = [this](int id)
 				{
 					if(id == BUTTON_OK && game->SaveGameSlot(choice + 1, save_input_text.c_str()))
@@ -248,7 +248,7 @@ Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 		cstring filename = Format("saves/%s/%d.jpg", isOnline ? "multi" : "single", slotIndex);
 		if(io::FileExists(filename))
 		{
-			tMiniSave.tex = res_mgr->LoadRawTexture(filename);
+			tMiniSave.tex = resMgr->LoadRawTexture(filename);
 			tMiniSave.state = ResourceState::Loaded;
 		}
 		else
@@ -258,7 +258,7 @@ Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 	{
 		cstring filename = Format("saves/%s/%d.sav", isOnline ? "multi" : "single", slotIndex);
 		Buffer* buf = GameReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-		tMiniSave.tex = res_mgr->LoadRawTexture(buf);
+		tMiniSave.tex = resMgr->LoadRawTexture(buf);
 		tMiniSave.state = ResourceState::Loaded;
 		buf->Free();
 	}

@@ -26,7 +26,7 @@ GamePanel::GamePanel() : box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_
 }
 
 //=================================================================================================
-void GamePanel::Draw(ControlDrawData*)
+void GamePanel::Draw()
 {
 	gui->DrawItem(tBackground, pos, size, Color::Alpha(222), 16);
 }
@@ -119,7 +119,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		Int2 text_size = GameGui::font->CalculateSize(box_text);
 		box_big = Rect::Create(Int2(0, 0), text_size);
 		Int2 size = text_size + Int2(24, 24);
-		Int2 pos2 = Int2(gui->cursor_pos) + Int2(24, 24);
+		Int2 pos2 = Int2(gui->cursorPos) + Int2(24, 24);
 		Int2 text_pos(12, 12);
 
 		// uwzglêdnij rozmiar obrazka
@@ -146,10 +146,10 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 			size.y += size_y + 12;
 		}
 
-		if(pos2.x + size.x >= gui->wnd_size.x)
-			pos2.x = gui->wnd_size.x - size.x - 1;
-		if(pos2.y + size.y >= gui->wnd_size.y)
-			pos2.y = gui->wnd_size.y - size.y - 1;
+		if(pos2.x + size.x >= gui->wndSize.x)
+			pos2.x = gui->wndSize.x - size.x - 1;
+		if(pos2.y + size.y >= gui->wndSize.y)
+			pos2.y = gui->wndSize.y - size.y - 1;
 
 		box_img_pos = Int2(pos2.x + 12, pos2.y + 12);
 		box_big = Rect::Create(text_pos + pos2, text_size);
@@ -169,14 +169,14 @@ GamePanelContainer::GamePanelContainer() : order(0), lost_focus(false)
 }
 
 //=================================================================================================
-void GamePanelContainer::Draw(ControlDrawData* /*cdd*/)
+void GamePanelContainer::Draw()
 {
 	draw_box = nullptr;
 
 	for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 	{
 		if((*it)->visible)
-			(*it)->Draw(nullptr);
+			(*it)->Draw();
 	}
 
 	if(draw_box)
@@ -195,20 +195,20 @@ void GamePanelContainer::Update(float dt)
 			ctrls.back()->focus = true;
 		}
 
-		Int2 cp = gui->cursor_pos;
+		Int2 cp = gui->cursorPos;
 		GamePanel* top = nullptr;
 
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
 			GamePanel* gp = (GamePanel*)*it;
-			gp->mouse_focus = false;
+			gp->mouseFocus = false;
 			if(gp->IsInside(cp))
 				top = gp;
 		}
 
 		if(top)
 		{
-			top->mouse_focus = true;
+			top->mouseFocus = true;
 			if((input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)) && top->order != order - 1)
 			{
 				ctrls.back()->Event(GuiEvent_LostFocus);
@@ -238,7 +238,7 @@ void GamePanelContainer::Update(float dt)
 
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
-			(*it)->mouse_focus = false;
+			(*it)->mouseFocus = false;
 			(*it)->Update(dt);
 		}
 	}

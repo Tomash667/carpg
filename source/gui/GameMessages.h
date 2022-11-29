@@ -65,7 +65,7 @@ class GameMessages : public Control
 public:
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Reset();
 	void Save(GameWriter& f) const;

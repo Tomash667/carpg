@@ -137,7 +137,7 @@ void GameCamera::Update(float dt)
 	frustum.Set(mat_view_proj);
 
 	// 3d source listener
-	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
+	soundMgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
 }
 
 //=================================================================================================

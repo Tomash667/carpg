@@ -14,7 +14,7 @@ public:
 	WorldMapGui();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	bool NeedCursor() const override { return true; }
 	void Event(GuiEvent e) override;

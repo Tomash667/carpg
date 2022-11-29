@@ -66,7 +66,7 @@ void MusicListLoader::LoadEntity(int top, const string& id)
 			while(true)
 			{
 				const string& filename = t.MustGetString();
-				Music* music = res_mgr->TryGet<Music>(filename);
+				Music* music = resMgr->TryGet<Music>(filename);
 				if(music)
 				{
 					musicLists[type]->musics.push_back(music);
@@ -85,7 +85,7 @@ void MusicListLoader::LoadEntity(int top, const string& id)
 	else
 	{
 		const string& filename = t.MustGetString();
-		Music* music = res_mgr->TryGet<Music>(filename);
+		Music* music = resMgr->TryGet<Music>(filename);
 		if(music)
 		{
 			musicLists[type]->musics.push_back(music);

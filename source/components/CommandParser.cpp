@@ -39,10 +39,10 @@ CommandParser* cmdp;
 //=================================================================================================
 void CommandParser::AddCommands()
 {
-	cmds.push_back(ConsoleCommand(&scene_mgr->use_fog, "use_fog", "draw fog (use_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&scene_mgr->use_lighting, "use_lighting", "use lighting (use_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&scene_mgr->use_normalmap, "use_normalmap", "use normal mapping (use_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&scene_mgr->use_specularmap, "use_specularmap", "use specular mapping (use_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&sceneMgr->use_fog, "use_fog", "draw fog (use_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&sceneMgr->use_lighting, "use_lighting", "use lighting (use_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&sceneMgr->use_normalmap, "use_normalmap", "use normal mapping (use_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&sceneMgr->use_specularmap, "use_specularmap", "use specular mapping (use_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 
 	cmds.push_back(ConsoleCommand(&game->draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));

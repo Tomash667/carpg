@@ -10,7 +10,7 @@ class BookPanel : public GamePanel
 public:
 	BookPanel();
 	void LoadData();
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void Event(GuiEvent event) override;
 	void Update(float dt) override;
 	void Show(const Book* book);

@@ -191,7 +191,7 @@ void Game::PreconfigureGame()
 
 	PreloadLanguage();
 	PreloadData();
-	res_mgr->SetProgressCallback(ProgressCallback(this, &Game::OnLoadProgress));
+	resMgr->SetProgressCallback(ProgressCallback(this, &Game::OnLoadProgress));
 }
 
 //=================================================================================================
@@ -225,7 +225,7 @@ void Game::PreloadLanguage()
 //=================================================================================================
 void Game::PreloadData()
 {
-	res_mgr->AddDir("data/preload");
+	resMgr->AddDir("data/preload");
 
 	GameGui::font = game_gui->gui->GetFont("Arial", 12, 8, 2);
 
@@ -233,10 +233,10 @@ void Game::PreloadData()
 	game_gui->load_screen->LoadData();
 
 	// intro music
-	if(!sound_mgr->IsDisabled())
+	if(!soundMgr->IsDisabled())
 	{
 		MusicList* list = new MusicList;
-		list->musics.push_back(res_mgr->Load<Music>("Intro.ogg"));
+		list->musics.push_back(resMgr->Load<Music>("Intro.ogg"));
 		musicLists[(int)MusicType::Intro] = list;
 		SetMusic(MusicType::Intro);
 	}
@@ -271,8 +271,8 @@ void Game::LoadSystem()
 void Game::AddFilesystem()
 {
 	Info("Game: Creating list of files.");
-	res_mgr->AddDir("data");
-	res_mgr->AddPak("data/data.pak", "KrystaliceFire");
+	resMgr->AddDir("data");
+	resMgr->AddPak("data/data.pak", "KrystaliceFire");
 }
 
 //=================================================================================================
@@ -398,10 +398,10 @@ void Game::LoadData()
 {
 	Info("Game: Loading data.");
 
-	res_mgr->PrepareLoadScreen(0.33f);
+	resMgr->PrepareLoadScreen(0.33f);
 	game_gui->load_screen->Tick(txPreloadAssets);
 	game_res->LoadData();
-	res_mgr->StartLoadScreen();
+	resMgr->StartLoadScreen();
 }
 
 //=================================================================================================
@@ -458,7 +458,7 @@ void Game::PostconfigureGame()
 			info.parent = game_gui->main_menu;
 			info.order = ORDER_TOPMOST;
 			info.pause = false;
-			info.auto_wrap = true;
+			info.autoWrap = true;
 			gui->ShowDialog(info);
 			start_game_mode = false;
 		}
@@ -904,8 +904,8 @@ void Game::DoExitToMenu()
 	StopAllSounds();
 	ClearGame();
 
-	if(res_mgr->IsLoadScreen())
-		res_mgr->CancelLoadScreen(true);
+	if(resMgr->IsLoadScreen())
+		resMgr->CancelLoadScreen(true);
 
 	game_state = GS_MAIN_MENU;
 	paused = false;
@@ -1262,7 +1262,7 @@ uint Game::ValidateGameData(bool major)
 	Perk::Validate(err);
 
 	if(major)
-		err += res_mgr->VerifyResources();
+		err += resMgr->VerifyResources();
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -1634,7 +1634,7 @@ void Game::CutsceneImage(const string& image, float time)
 		tex = nullptr;
 	else
 	{
-		tex = res_mgr->TryLoadInstant<Texture>(image);
+		tex = resMgr->TryLoadInstant<Texture>(image);
 		if(!tex)
 			Warn("CutsceneImage: missing texture '%s'.", image.c_str());
 	}
@@ -2165,7 +2165,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			res_mgr->LoadMeshMetadata(w.mesh);
+			resMgr->LoadMeshMetadata(w.mesh);
 			Mesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -2191,7 +2191,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			res_mgr->LoadMeshMetadata(s.mesh);
+			resMgr->LoadMeshMetadata(s.mesh);
 			Mesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -2275,7 +2275,7 @@ uint Game::TestGameData(bool major)
 		if(major)
 		{
 			Mesh& mesh = *ud.mesh;
-			res_mgr->Load(&mesh);
+			resMgr->Load(&mesh);
 
 			for(uint i = 0; i < NAMES::n_ani_base; ++i)
 			{
@@ -2525,23 +2525,23 @@ void Game::SetMusic(MusicType type)
 	if(type == MusicType::Default)
 		type = game_level->boss ? MusicType::Boss : game_level->GetLocationMusic();
 
-	if(sound_mgr->IsDisabled() || type == musicType)
+	if(soundMgr->IsDisabled() || type == musicType)
 		return;
 
 	const bool delayed = musicType == MusicType::Intro && type == MusicType::Title;
 	musicType = type;
-	sound_mgr->PlayMusic(musicLists[(int)type], delayed);
+	soundMgr->PlayMusic(musicLists[(int)type], delayed);
 }
 
 void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 {
 	assert(sound);
 
-	if(!sound_mgr->CanPlaySound())
+	if(!soundMgr->CanPlaySound())
 		return;
 
 	Vec3 pos = unit.GetHeadSoundPos();
-	FMOD::Channel* channel = sound_mgr->CreateChannel(sound, pos, distance);
+	FMOD::Channel* channel = soundMgr->CreateChannel(sound, pos, distance);
 	AttachedSound& s = Add1(attached_sounds);
 	s.channel = channel;
 	s.unit = &unit;
@@ -2549,7 +2549,7 @@ void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 
 void Game::StopAllSounds()
 {
-	sound_mgr->StopSounds();
+	soundMgr->StopSounds();
 	attached_sounds.clear();
 }
 
@@ -2560,12 +2560,12 @@ void Game::UpdateAttachedSounds(float dt)
 		Unit* unit = sound.unit;
 		if(unit)
 		{
-			if(!sound_mgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
+			if(!soundMgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
 				return false;
 		}
 		else
 		{
-			if(!sound_mgr->IsPlaying(sound.channel))
+			if(!soundMgr->IsPlaying(sound.channel))
 				return true;
 		}
 		return false;
@@ -2615,8 +2615,8 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		scene_mgr->use_lighting = true;
-		scene_mgr->use_fog = true;
+		sceneMgr->use_lighting = true;
+		sceneMgr->use_fog = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
@@ -2992,7 +2992,7 @@ void Game::LoadingStart(int steps)
 	game_gui->load_screen->visible = true;
 	game_gui->main_menu->visible = false;
 	game_gui->level_gui->visible = false;
-	res_mgr->PrepareLoadScreen(loading_cap);
+	resMgr->PrepareLoadScreen(loading_cap);
 }
 
 void Game::LoadingStep(cstring text, int end)
@@ -3033,15 +3033,15 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 	PreloadResources(worldmap);
 
 	// check if there is anything to load
-	if(res_mgr->HaveTasks())
+	if(resMgr->HaveTasks())
 	{
-		Info("Loading new resources (%d).", res_mgr->GetLoadTasksCount());
+		Info("Loading new resources (%d).", resMgr->GetLoadTasksCount());
 		loading_resources = true;
 		loading_dt = 0;
 		loading_t.Reset();
 		try
 		{
-			res_mgr->StartLoadScreen(txLoadingResources);
+			resMgr->StartLoadScreen(txLoadingResources);
 		}
 		catch(...)
 		{
@@ -3066,7 +3066,7 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 	else
 	{
 		Info("Nothing new to load.");
-		res_mgr->CancelLoadScreen();
+		resMgr->CancelLoadScreen();
 	}
 
 	if(postLoad && game_level->location && game_level->is_open)
@@ -3128,9 +3128,9 @@ void Game::PreloadResources(bool worldmap)
 			{
 				// load objects
 				for(Object* obj : locPart.objects)
-					res_mgr->Load(obj->mesh);
+					resMgr->Load(obj->mesh);
 				for(Chest* chest : locPart.chests)
-					res_mgr->Load(chest->base->mesh);
+					resMgr->Load(chest->base->mesh);
 
 				// load usables
 				for(Usable* use : locPart.usables)
@@ -3141,12 +3141,12 @@ void Game::PreloadResources(bool worldmap)
 						if(base->variants)
 						{
 							for(Mesh* mesh : base->variants->meshes)
-								res_mgr->Load(mesh);
+								resMgr->Load(mesh);
 						}
 						else
-							res_mgr->Load(base->mesh);
+							resMgr->Load(base->mesh);
 						if(base->sound)
-							res_mgr->Load(base->sound);
+							resMgr->Load(base->sound);
 						base->state = ResourceState::Loaded;
 					}
 				}
@@ -3161,9 +3161,9 @@ void Game::PreloadResources(bool worldmap)
 					if(building.state == ResourceState::NotLoaded)
 					{
 						if(building.mesh)
-							res_mgr->Load(building.mesh);
+							resMgr->Load(building.mesh);
 						if(building.inside_mesh)
-							res_mgr->Load(building.inside_mesh);
+							resMgr->Load(building.inside_mesh);
 						building.state = ResourceState::Loaded;
 					}
 				}
@@ -3196,14 +3196,14 @@ void Game::PreloadUnit(Unit* unit)
 		return;
 
 	if(data.mesh)
-		res_mgr->Load(data.mesh);
+		resMgr->Load(data.mesh);
 
-	if(!sound_mgr->IsDisabled())
+	if(!soundMgr->IsDisabled())
 	{
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
 			for(SoundPtr sound : data.sounds->sounds[i])
-				res_mgr->Load(sound);
+				resMgr->Load(sound);
 		}
 	}
 
@@ -3212,7 +3212,7 @@ void Game::PreloadUnit(Unit* unit)
 		for(TexOverride& tex_o : data.tex->textures)
 		{
 			if(tex_o.diffuse)
-				res_mgr->Load(tex_o.diffuse);
+				resMgr->Load(tex_o.diffuse);
 		}
 	}
 

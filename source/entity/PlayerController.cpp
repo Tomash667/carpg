@@ -1517,7 +1517,7 @@ bool PlayerController::CanUseAbilityCheck() const
 	if(check == -1)
 	{
 		data.ability_ready = nullptr;
-		sound_mgr->PlaySound2d(game_res->sCancel);
+		soundMgr->PlaySound2d(game_res->sCancel);
 	}
 
 	return check == 1;
@@ -2298,7 +2298,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	// using usable
 	if(u.usable)
 	{
-		if(u.action == A_USE_USABLE && OR2_EQ(u.animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND))
+		if(u.action == A_USE_USABLE && Any(u.animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND))
 		{
 			if(GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE) || GKey.KeyPressedReleaseAllowed(GK_USE))
 				u.StopUsingUsable();
@@ -2745,7 +2745,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	// doors in front of player
 	for(Door* door : locPart.doors)
 	{
-		if(OR2_EQ(door->state, Door::Opened, Door::Closed))
+		if(Any(door->state, Door::Opened, Door::Closed))
 			CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
 	}
 
@@ -2919,14 +2919,14 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					Vec3 center = door->GetCenter();
 					if(key && u.HaveItem(Item::Get(key)))
 					{
-						sound_mgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
+						soundMgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
 						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
 						door->Open();
 					}
 					else
 					{
 						game_gui->messages->AddGameMsg3(GMS_NEED_KEY);
-						sound_mgr->PlaySound3d(game_res->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
+						soundMgr->PlaySound3d(game_res->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
 					}
 				}
 			}
@@ -2950,7 +2950,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.AddItem2(groundItem->item, groundItem->count, groundItem->team_count, false);
 
 					if(groundItem->item->type == IT_GOLD)
-						sound_mgr->PlaySound2d(game_res->sCoins);
+						soundMgr->PlaySound2d(game_res->sCoins);
 
 					if(Net::IsOnline())
 					{
@@ -3288,7 +3288,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				game_gui->messages->AddGameMsg3(GMS_NEED_WAND);
 			else if(result == PlayerController::CanUseAbilityResult::NeedBow)
 				game_gui->messages->AddGameMsg3(GMS_NEED_BOW);
-			sound_mgr->PlaySound2d(game_res->sCancel);
+			soundMgr->PlaySound2d(game_res->sCancel);
 		}
 	}
 	else if(data.ability_ready)

@@ -26,7 +26,7 @@ public:
 	void Init();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void UpdateLobby(float dt);
 	void UpdateLobbyClient(float dt);

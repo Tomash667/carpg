@@ -547,7 +547,7 @@ void Arena::Update(float dt)
 		if(timer >= 2.f)
 		{
 			if(game_level->GetArena() == game->pc->unit->locPart)
-				sound_mgr->PlaySound2d(game_res->sArenaFight);
+				soundMgr->PlaySound2d(game_res->sArenaFight);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -620,7 +620,7 @@ void Arena::Update(float dt)
 			}
 
 			if(game_level->GetArena() == game->pc->unit->locPart)
-				sound_mgr->PlaySound2d(victory_sound ? game_res->sArenaWin : game_res->sArenaLost);
+				soundMgr->PlaySound2d(victory_sound ? game_res->sArenaWin : game_res->sArenaLost);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);

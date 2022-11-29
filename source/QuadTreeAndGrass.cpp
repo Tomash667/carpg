@@ -284,7 +284,7 @@ void Game::SetTerrainTextures()
 		tex[2] = game_res->tField;
 
 	for(int i = 0; i < 5; ++i)
-		res_mgr->Load(tex[i]);
+		resMgr->Load(tex[i]);
 
 	game_level->terrain->SetTextures(tex);
 }

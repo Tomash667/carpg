@@ -14,7 +14,7 @@ class StatsPanel : public GamePanel
 public:
 	StatsPanel();
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 	static char StatStateToColor(StatState s);

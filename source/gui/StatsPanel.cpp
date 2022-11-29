@@ -59,7 +59,7 @@ void StatsPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void StatsPanel::Draw(ControlDrawData*)
+void StatsPanel::Draw()
 {
 	GamePanel::Draw();
 
@@ -89,10 +89,10 @@ void StatsPanel::Event(GuiEvent e)
 		int sizex = (size.x - 48) / 3;
 		int sizey = size.y - 64;
 
-		flowAttribs.UpdateSize(global_pos + Int2(16, 48), Int2(sizex, 200), visible);
-		flowStats.UpdateSize(global_pos + Int2(16, 200 + 48 + 8), Int2(sizex, sizey - 200 - 8), visible);
-		flowSkills.UpdateSize(global_pos + Int2(16 + sizex + 8, 48), Int2(sizex, sizey), visible);
-		flowFeats.UpdateSize(global_pos + Int2(16 + (sizex + 8) * 2, 48), Int2(sizex, sizey), visible);
+		flowAttribs.UpdateSize(globalPos + Int2(16, 48), Int2(sizex, 200), visible);
+		flowStats.UpdateSize(globalPos + Int2(16, 200 + 48 + 8), Int2(sizex, sizey - 200 - 8), visible);
+		flowSkills.UpdateSize(globalPos + Int2(16 + sizex + 8, 48), Int2(sizex, sizey), visible);
+		flowFeats.UpdateSize(globalPos + Int2(16 + (sizex + 8) * 2, 48), Int2(sizex, sizey), visible);
 	}
 	else if(e == GuiEvent_Show)
 	{
@@ -112,19 +112,19 @@ void StatsPanel::Update(float dt)
 
 	int group = -1, id = -1;
 
-	flowAttribs.mouse_focus = focus;
+	flowAttribs.mouseFocus = focus;
 	flowAttribs.Update(dt);
 	flowAttribs.GetSelected(group, id);
 
-	flowStats.mouse_focus = focus;
+	flowStats.mouseFocus = focus;
 	flowStats.Update(dt);
 	flowStats.GetSelected(group, id);
 
-	flowSkills.mouse_focus = focus;
+	flowSkills.mouseFocus = focus;
 	flowSkills.Update(dt);
 	flowSkills.GetSelected(group, id);
 
-	flowFeats.mouse_focus = focus;
+	flowFeats.mouseFocus = focus;
 	flowFeats.Update(dt);
 	flowFeats.GetSelected(group, id);
 

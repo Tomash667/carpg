@@ -368,7 +368,7 @@ void LabyrinthGenerator::CreateGratings(Tile* tiles, const Int2& size, const Int
 		for(int x = 1; x < size.x - 1; ++x)
 		{
 			Tile& p = tiles[x + y * size.x];
-			if(p.type == EMPTY && !Rect::IsInside(room_pos, room_size, Int2(x, y)) && Rand() % 100 < grating_chance)
+			if(p.type == EMPTY && !Rect::IsInside(Int2(x, y), room_pos, room_size) && Rand() % 100 < grating_chance)
 			{
 				int j = Rand() % 3;
 				if(j == 0)

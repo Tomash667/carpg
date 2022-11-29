@@ -71,8 +71,8 @@ CraftPanel::CraftPanel()
 
 void CraftPanel::LoadData()
 {
-	tItemBar = res_mgr->Load<Texture>("item_bar.png");
-	sAlchemy = res_mgr->Load<Sound>("alchemy.mp3");
+	tItemBar = resMgr->Load<Texture>("item_bar.png");
+	sAlchemy = resMgr->Load<Sound>("alchemy.mp3");
 }
 
 void CraftPanel::LoadLanguage()
@@ -84,7 +84,7 @@ void CraftPanel::LoadLanguage()
 	txIngredients = s.Get("ingredients");
 }
 
-void CraftPanel::Draw(ControlDrawData*)
+void CraftPanel::Draw()
 {
 	//============ LEFT PANEL ===============
 	left.Draw();
@@ -152,11 +152,11 @@ void CraftPanel::Update(float dt)
 
 	Container::Update(dt);
 
-	list.mouse_focus = focus;
+	list.mouseFocus = focus;
 	list.focus = focus;
 	list.Update(dt);
 
-	button.mouse_focus = focus;
+	button.mouseFocus = focus;
 	button.Update(dt);
 
 	// ingredients
@@ -175,7 +175,7 @@ void CraftPanel::Update(float dt)
 				uint index = x + y * count_w;
 				if(index >= ingredients.size())
 					break;
-				if(PointInRect(gui->cursor_pos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
+				if(Rect::IsInside(gui->cursorPos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
 				{
 					group = 0;
 					id = index;
@@ -191,15 +191,15 @@ void CraftPanel::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		Vec2 scale = Vec2(gui->wnd_size) / Vec2(1024, 768);
+		Vec2 scale = Vec2(gui->wndSize) / Vec2(1024, 768);
 		left.pos = Int2(64, 64) * scale;
 		left.size = Int2(300, 600) * scale;
 		list.size = Int2(left.size.x - 12 * 2, left.size.y - 100 - 12 * 2);
 		list.pos = Int2(12, 50);
-		list.global_pos = left.pos + list.pos;
+		list.globalPos = left.pos + list.pos;
 		list.Event(GuiEvent_Resize);
 		button.pos = Int2(20, left.size.y - 48 - 20);
-		button.global_pos = left.pos + button.pos;
+		button.globalPos = left.pos + button.pos;
 		button.size = Int2(left.size.x - 40, 48);
 
 		right.pos = Int2(1024 - 300 - 60, 64) * scale;
@@ -394,7 +394,7 @@ bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint co
 void CraftPanel::AfterCraft()
 {
 	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
-	sound_mgr->PlaySound2d(sAlchemy);
+	soundMgr->PlaySound2d(sAlchemy);
 	SetIngredients();
 	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 }

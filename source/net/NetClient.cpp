@@ -1049,7 +1049,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(!f)
 					Error("Update client: Broken HIT_SOUND.");
 				else if(game->game_state == GS_LEVEL)
-					sound_mgr->PlaySound3d(game_res->GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
+					soundMgr->PlaySound3d(game_res->GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
 			}
 			break;
 		// unit get stunned
@@ -1168,7 +1168,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					locPart.lvlPart->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, HIT_SOUND_DIST);
+					soundMgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -1875,7 +1875,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						sound = game_res->sArenaWin;
 					else
 						sound = game_res->sArenaLost;
-					sound_mgr->PlaySound2d(sound);
+					soundMgr->PlaySound2d(sound);
 				}
 			}
 			break;
@@ -2035,7 +2035,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			break;
 		// play evil sound
 		case NetChange::EVIL_SOUND:
-			sound_mgr->PlaySound2d(game_res->sEvil);
+			soundMgr->PlaySound2d(game_res->sEvil);
 			break;
 		// start encounter on world map
 		case NetChange::ENCOUNTER:
@@ -2096,7 +2096,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				Object* obj = game_level->localPart->FindObject(base_obj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
-				res_mgr->Load(obj->mesh);
+				resMgr->Load(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;
@@ -2370,9 +2370,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(!ability)
 					Error("Update client: SPELL_SOUND, missing ability %u.", ability_hash);
 				else if(type == 0)
-					sound_mgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);
+					soundMgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);
 				else
-					sound_mgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
+					soundMgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
 			}
 			break;
 		// drain blood effect
@@ -2466,7 +2466,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 					// sound
 					if(ability->sound_hit)
-						sound_mgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
+						soundMgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
 
 					// particles
 					if(ability->tex_particle)
@@ -2710,7 +2710,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					else if(!unit->usable)
 						Error("Update client: USABLE_SOUND, unit %d (%s) don't use usable.", id, unit->data->id.c_str());
 					else if(unit != pc.unit)
-						sound_mgr->PlaySound3d(unit->usable->base->sound, unit->GetCenter(), Usable::SOUND_DIST);
+						soundMgr->PlaySound3d(unit->usable->base->sound, unit->GetCenter(), Usable::SOUND_DIST);
 				}
 			}
 			break;
@@ -3683,7 +3683,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else
 					{
 						game_gui->mp_box->Add(Format(game->txReceivedGold, count, info->name.c_str()));
-						sound_mgr->PlaySound2d(game_res->sCoins);
+						soundMgr->PlaySound2d(game_res->sCoins);
 					}
 				}
 			}
@@ -3954,7 +3954,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(!f)
 					Error("Update single client: Broken SOUND.");
 				else if(id == 0)
-					sound_mgr->PlaySound2d(game_res->sCoins);
+					soundMgr->PlaySound2d(game_res->sCoins);
 			}
 			break;
 		// add ability to player

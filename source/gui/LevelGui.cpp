@@ -113,46 +113,46 @@ void LevelGui::LoadLanguage()
 //=================================================================================================
 void LevelGui::LoadData()
 {
-	tCrosshair = res_mgr->Load<Texture>("crosshair.png");
-	tCrosshair2 = res_mgr->Load<Texture>("crosshair2.png");
-	tBubble = res_mgr->Load<Texture>("bubble.png");
-	tDamageLayer = res_mgr->Load<Texture>("damage_layer.png");
-	tBar = res_mgr->Load<Texture>("bar.png");
-	tHpBar = res_mgr->Load<Texture>("hp_bar.png");
-	tPoisonedHpBar = res_mgr->Load<Texture>("poisoned_hp_bar.png");
-	tStaminaBar = res_mgr->Load<Texture>("stamina_bar.png");
-	tManaBar = res_mgr->Load<Texture>("mana_bar.png");
-	tShortcut = res_mgr->Load<Texture>("shortcut.png");
-	tShortcutHover = res_mgr->Load<Texture>("shortcut_hover.png");
-	tShortcutDown = res_mgr->Load<Texture>("shortcut_down.png");
-	tSideButton[(int)SideButtonId::Menu] = res_mgr->Load<Texture>("bt_menu.png");
-	tSideButton[(int)SideButtonId::Team] = res_mgr->Load<Texture>("bt_team.png");
-	tSideButton[(int)SideButtonId::Minimap] = res_mgr->Load<Texture>("bt_minimap.png");
-	tSideButton[(int)SideButtonId::Journal] = res_mgr->Load<Texture>("bt_journal.png");
-	tSideButton[(int)SideButtonId::Inventory] = res_mgr->Load<Texture>("bt_inventory.png");
-	tSideButton[(int)SideButtonId::Ability] = res_mgr->Load<Texture>("bt_action.png");
-	tSideButton[(int)SideButtonId::Stats] = res_mgr->Load<Texture>("bt_stats.png");
-	tSideButton[(int)SideButtonId::Talk] = res_mgr->Load<Texture>("bt_talk.png");
-	tMinihp = res_mgr->Load<Texture>("minihp.png");
-	tMinistamina = res_mgr->Load<Texture>("ministamina.png");
-	tMinimp = res_mgr->Load<Texture>("minimp.png");
-	tActionCooldown = res_mgr->Load<Texture>("action_cooldown.png");
-	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
-	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
-	tHealthPotion = res_mgr->Load<Texture>("health-potion.png");
-	tManaPotion = res_mgr->Load<Texture>("mana-potion.png");
-	tEmerytura = res_mgr->Load<Texture>("emerytura.jpg");
-	tEquipped = res_mgr->Load<Texture>("equipped.png");
-	tDialog = res_mgr->Load<Texture>("dialog.png");
-	tShortcutAction = res_mgr->Load<Texture>("shortcut_action.png");
-	tRip = res_mgr->Load<Texture>("rip.jpg");
-	tBlack = res_mgr->Load<Texture>("czern.bmp");
+	tCrosshair = resMgr->Load<Texture>("crosshair.png");
+	tCrosshair2 = resMgr->Load<Texture>("crosshair2.png");
+	tBubble = resMgr->Load<Texture>("bubble.png");
+	tDamageLayer = resMgr->Load<Texture>("damage_layer.png");
+	tBar = resMgr->Load<Texture>("bar.png");
+	tHpBar = resMgr->Load<Texture>("hp_bar.png");
+	tPoisonedHpBar = resMgr->Load<Texture>("poisoned_hp_bar.png");
+	tStaminaBar = resMgr->Load<Texture>("stamina_bar.png");
+	tManaBar = resMgr->Load<Texture>("mana_bar.png");
+	tShortcut = resMgr->Load<Texture>("shortcut.png");
+	tShortcutHover = resMgr->Load<Texture>("shortcut_hover.png");
+	tShortcutDown = resMgr->Load<Texture>("shortcut_down.png");
+	tSideButton[(int)SideButtonId::Menu] = resMgr->Load<Texture>("bt_menu.png");
+	tSideButton[(int)SideButtonId::Team] = resMgr->Load<Texture>("bt_team.png");
+	tSideButton[(int)SideButtonId::Minimap] = resMgr->Load<Texture>("bt_minimap.png");
+	tSideButton[(int)SideButtonId::Journal] = resMgr->Load<Texture>("bt_journal.png");
+	tSideButton[(int)SideButtonId::Inventory] = resMgr->Load<Texture>("bt_inventory.png");
+	tSideButton[(int)SideButtonId::Ability] = resMgr->Load<Texture>("bt_action.png");
+	tSideButton[(int)SideButtonId::Stats] = resMgr->Load<Texture>("bt_stats.png");
+	tSideButton[(int)SideButtonId::Talk] = resMgr->Load<Texture>("bt_talk.png");
+	tMinihp = resMgr->Load<Texture>("minihp.png");
+	tMinistamina = resMgr->Load<Texture>("ministamina.png");
+	tMinimp = resMgr->Load<Texture>("minimp.png");
+	tActionCooldown = resMgr->Load<Texture>("action_cooldown.png");
+	tMelee = resMgr->Load<Texture>("sword-brandish.png");
+	tRanged = resMgr->Load<Texture>("bow-arrow.png");
+	tHealthPotion = resMgr->Load<Texture>("health-potion.png");
+	tManaPotion = resMgr->Load<Texture>("mana-potion.png");
+	tEmerytura = resMgr->Load<Texture>("emerytura.jpg");
+	tEquipped = resMgr->Load<Texture>("equipped.png");
+	tDialog = resMgr->Load<Texture>("dialog.png");
+	tShortcutAction = resMgr->Load<Texture>("shortcut_action.png");
+	tRip = resMgr->Load<Texture>("rip.jpg");
+	tBlack = resMgr->Load<Texture>("czern.bmp");
 
 	BuffInfo::LoadImages();
 }
 
 //=================================================================================================
-void LevelGui::Draw(ControlDrawData*)
+void LevelGui::Draw()
 {
 	if(game->cutscene)
 	{
@@ -217,7 +217,7 @@ void LevelGui::DrawFront()
 	{
 		const Vec2 center(16, 16);
 		const Vec2 scale((1.f - pc.data.range_ratio) + 0.5f);
-		const Vec2 pos(0.5f * gui->wnd_size.x - 16.f, 0.5f * gui->wnd_size.y - 16.f);
+		const Vec2 pos(0.5f * gui->wndSize.x - 16.f, 0.5f * gui->wndSize.y - 16.f);
 		const Matrix mat = Matrix::Transform2D(&center, 0, &scale, nullptr, 0, &pos);
 		gui->DrawSprite2(pc.IsAbilityPrepared() ? tCrosshair2 : tCrosshair, mat);
 	}
@@ -409,8 +409,8 @@ void LevelGui::DrawFront()
 	// dialog box
 	if(game->dialog_context.dialog_mode)
 	{
-		Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-		Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32);
+		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
+		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
 		gui->DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
 		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
@@ -449,13 +449,13 @@ void LevelGui::DrawFront()
 	}
 
 	// health bar
-	const Vec2 wndScale(float(gui->wnd_size.x) / 800);
+	const Vec2 wndScale(float(gui->wndSize.x) / 800);
 	const bool mp_bar = game->pc->unit->IsUsingMp();
 	Rect part = { 0, 0, 0, 16 };
 	int bar_offset = (mp_bar ? 3 : 2);
 	{
 		const float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
-		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(hpp * 256);
 		if(part.Right() > 0)
@@ -467,7 +467,7 @@ void LevelGui::DrawFront()
 	// stamina bar
 	{
 		const float stamina_p = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
-		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(stamina_p * 256);
 		if(part.Right() > 0)
@@ -480,7 +480,7 @@ void LevelGui::DrawFront()
 	if(mp_bar)
 	{
 		const float mpp = pc.unit->GetMpp();
-		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(mpp * 256);
 		if(part.Right() > 0)
@@ -497,10 +497,10 @@ void LevelGui::DrawFront()
 	}
 
 	// shortcuts
-	const int img_size = 76 * gui->wnd_size.x / 1920;
+	const int img_size = 76 * gui->wndSize.x / 1920;
 	const int offset = img_size + 2;
 	const Vec2 scale(float(img_size) / 64);
-	Int2 spos(256.f * wndScale.x, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wndScale.x, gui->wndSize.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		const Shortcut& shortcut = pc.shortcuts[i];
@@ -658,7 +658,7 @@ void LevelGui::DrawFront()
 	{
 		int max = (int)SideButtonId::Max;
 		int total = offset * max;
-		spos.y = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
+		spos.y = gui->wndSize.y - (gui->wndSize.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
 			Texture* t;
@@ -668,7 +668,7 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			const Vec2 pos(float(gui->wnd_size.x) - sidebar * offset, float(spos.y - i * offset));
+			const Vec2 pos(float(gui->wndSize.x) - sidebar * offset, float(spos.y - i * offset));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
 			gui->DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
@@ -677,10 +677,10 @@ void LevelGui::DrawFront()
 
 	if(boss)
 	{
-		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wnd_size.x, 40));
+		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wndSize.x, 40));
 		const float hpp = Clamp(boss->GetHpp(), 0.f, 1.f);
 		const Rect part = { 0, 0, int(hpp * 256), 16 };
-		const Vec2 pos((float(gui->wnd_size.x) - wndScale.x * 256) / 2, 25);
+		const Vec2 pos((float(gui->wndSize.x) - wndScale.x * 256) / 2, 25);
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		if(part.Right() > 0)
 			gui->DrawSprite2(tHpBar, mat, &part, nullptr, Color::Alpha(bossAlpha));
@@ -695,9 +695,9 @@ void LevelGui::DrawBack()
 {
 	if(drag_and_drop == 2 && drag_and_drop_icon)
 	{
-		const int img_size = 76 * gui->wnd_size.x / 1920;
+		const int img_size = 76 * gui->wndSize.x / 1920;
 		const Vec2 scale(float(img_size) / drag_and_drop_icon->GetSize().x);
-		const Vec2 pos(gui->cursor_pos + Int2(16, 16));
+		const Vec2 pos(gui->cursorPos + Int2(16, 16));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(drag_and_drop_icon, mat);
 	}
@@ -758,7 +758,7 @@ void LevelGui::DrawDeathScreen()
 			gui->DrawSprite(tRip, Center(img_size), color);
 
 			cstring text = Format(game->death_solo ? txDeathAlone : txDeath, game->pc->kills, game_stats->total_kills - game->pc->kills);
-			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+			Rect rect = { 0, 0, gui->wndSize.x, gui->wndSize.y - 32 };
 			gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 		}
 	}
@@ -781,7 +781,7 @@ void LevelGui::DrawEndOfGameScreen()
 
 	// text
 	cstring text = Format(txGameTimeout, game->pc->kills, game_stats->total_kills - game->pc->kills);
-	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+	Rect rect = { 0, 0, gui->wndSize.x, gui->wndSize.y - 32 };
 	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 }
 
@@ -845,12 +845,12 @@ void LevelGui::DrawSpeechBubbles()
 		}
 		if(it.pt.x < sb.size.x / 2)
 			it.pt.x = sb.size.x / 2;
-		else if(it.pt.x > gui->wnd_size.x - sb.size.x / 2)
-			it.pt.x = gui->wnd_size.x - sb.size.x / 2;
+		else if(it.pt.x > gui->wndSize.x - sb.size.x / 2)
+			it.pt.x = gui->wndSize.x - sb.size.x / 2;
 		if(it.pt.y < sb.size.y / 2)
 			it.pt.y = sb.size.y / 2;
-		else if(it.pt.y > gui->wnd_size.y - sb.size.y / 2)
-			it.pt.y = gui->wnd_size.y - sb.size.y / 2;
+		else if(it.pt.y > gui->wndSize.y - sb.size.y / 2)
+			it.pt.y = gui->wndSize.y - sb.size.y / 2;
 
 		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
 		gui->DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
@@ -975,16 +975,16 @@ void LevelGui::Update(float dt)
 		use_cursor = false;
 
 	const bool have_manabar = false;
-	float hp_scale = float(gui->wnd_size.x) / 800;
+	float hp_scale = float(gui->wndSize.x) / 800;
 	bool mp_bar = game->pc->unit->IsUsingMp();
 	int bar_offset = (mp_bar ? 3 : 2);
 
 	// buffs
 	int buffs = game->pc->unit->GetBuffs();
 
-	buff_scale = gui->wnd_size.x / 1024.f;
+	buff_scale = gui->wndSize.x / 1024.f;
 	float off = buff_scale * 33;
-	float buf_posy = float(gui->wnd_size.y - 5) - off - hp_scale * (bar_offset * 18 - 1);
+	float buf_posy = float(gui->wndSize.y - 5) - off - hp_scale * (bar_offset * 18 - 1);
 	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
@@ -1032,12 +1032,12 @@ void LevelGui::Update(float dt)
 	// check cursor over item to show tooltip
 	if(show_tooltips)
 	{
-		const Vec2 wndScale(float(gui->wnd_size.x) / 800);
+		const Vec2 wndScale(float(gui->wndSize.x) / 800);
 
 		// for buffs
 		for(BuffImage& img : buff_images)
 		{
-			if(PointInRect(gui->cursor_pos, Int2(img.pos), buff_size))
+			if(Rect::IsInside(gui->cursorPos, Int2(img.pos), buff_size))
 			{
 				group = TooltipGroup::Buff;
 				id = img.id;
@@ -1047,10 +1047,10 @@ void LevelGui::Update(float dt)
 
 		// for health bar
 		{
-			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
-			if(r.IsInside(gui->cursor_pos))
+			if(r.IsInside(gui->cursorPos))
 			{
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_HP;
@@ -1060,10 +1060,10 @@ void LevelGui::Update(float dt)
 
 		// for stamina bar
 		{
-			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
-			if(r.IsInside(gui->cursor_pos))
+			if(r.IsInside(gui->cursorPos))
 			{
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_STAMINA;
@@ -1074,10 +1074,10 @@ void LevelGui::Update(float dt)
 		// for mana bar
 		if(mp_bar)
 		{
-			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
-			if(r.IsInside(gui->cursor_pos))
+			if(r.IsInside(gui->cursorPos))
 			{
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_MANA;
@@ -1088,7 +1088,7 @@ void LevelGui::Update(float dt)
 		int shortcut_index = GetShortcutIndex();
 		if(drag_and_drop == 1)
 		{
-			if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
+			if(Int2::Distance(gui->cursorPos, drag_and_drop_pos) > 3)
 				drag_and_drop = 2;
 			if(input->Released(Key::LeftButton))
 			{
@@ -1129,7 +1129,7 @@ void LevelGui::Update(float dt)
 				if(input->Pressed(Key::LeftButton))
 				{
 					drag_and_drop = 1;
-					drag_and_drop_pos = gui->cursor_pos;
+					drag_and_drop_pos = gui->cursorPos;
 					drag_and_drop_type = -1;
 					drag_and_drop_index = shortcut_index;
 					drag_and_drop_icon = nullptr;
@@ -1160,13 +1160,13 @@ void LevelGui::Update(float dt)
 
 	if(sidebar > 0.f && !gui->HaveDialog() && show_tooltips)
 	{
-		int img_size = 76 * gui->wnd_size.x / 1920;
+		int img_size = 76 * gui->wndSize.x / 1920;
 		int offset = img_size + 2;
 		int total = offset * max;
-		int sposy = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
+		int sposy = gui->wndSize.y - (gui->wndSize.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
-			if(PointInRect(gui->cursor_pos, Int2(int(float(gui->wnd_size.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
+			if(Rect::IsInside(gui->cursorPos, Int2(int(float(gui->wndSize.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
 			{
 				group = TooltipGroup::Sidebar;
 				id = i;
@@ -1234,14 +1234,14 @@ void LevelGui::Update(float dt)
 //=================================================================================================
 int LevelGui::GetShortcutIndex()
 {
-	float wndScale = float(gui->wnd_size.x) / 800;
-	int img_size = 76 * gui->wnd_size.x / 1920;
+	float wndScale = float(gui->wndSize.x) / 800;
+	int img_size = 76 * gui->wndSize.x / 1920;
 	int offset = img_size + 2;
-	Int2 spos(256.f * wndScale, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wndScale, gui->wndSize.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		Rect r = Rect::Create(spos, Int2(img_size, img_size));
-		if(r.IsInside(gui->cursor_pos))
+		if(r.IsInside(gui->cursorPos))
 			return i;
 		spos.x += offset;
 	}
@@ -1308,10 +1308,10 @@ void LevelGui::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-		Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32);
+		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
+		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
 		scrollbar.size = Int2(12, 104);
-		scrollbar.global_pos = scrollbar.pos = Int2(dsize.x + offset.x - 16, offset.y);
+		scrollbar.globalPos = scrollbar.pos = Int2(dsize.x + offset.x - 16, offset.y);
 		dialog_pos = offset;
 		dialog_size = dsize;
 		tooltip.Clear();
@@ -1399,23 +1399,23 @@ void LevelGui::Reset()
 bool LevelGui::UpdateChoice()
 {
 	DialogContext& ctx = game->dialog_context;
-	const Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-	const Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32 + 6);
+	const Int2 dsize(gui->wndSize.x - 256 - 8, 104);
+	const Int2 offset((gui->wndSize.x - dsize.x) / 2, 32 + 6);
 	const int choices = ctx.choices.size();
 
 	// element pod kursorem
 	int cursor_choice = -1;
-	if(gui->cursor_pos.x >= offset.x && gui->cursor_pos.x < offset.x + dsize.x - 16 && gui->cursor_pos.y >= offset.y && gui->cursor_pos.y < offset.y + dsize.y - 12)
+	if(gui->cursorPos.x >= offset.x && gui->cursorPos.x < offset.x + dsize.x - 16 && gui->cursorPos.y >= offset.y && gui->cursorPos.y < offset.y + dsize.y - 12)
 	{
-		int w = (gui->cursor_pos.y - offset.y + int(scrollbar.offset)) / GameGui::font->height;
+		int w = (gui->cursorPos.y - offset.y + int(scrollbar.offset)) / GameGui::font->height;
 		if(w < choices)
 			cursor_choice = w;
 	}
 
 	// zmiana zaznaczonego elementu myszk¹
-	if(gui->cursor_pos != dialog_cursor_pos)
+	if(gui->cursorPos != dialog_cursor_pos)
 	{
-		dialog_cursor_pos = gui->cursor_pos;
+		dialog_cursor_pos = gui->cursorPos;
 		if(cursor_choice != -1)
 			ctx.choice_selected = cursor_choice;
 	}
@@ -1481,8 +1481,8 @@ bool LevelGui::UpdateChoice()
 	}
 
 	// aktualizacja paska przewijania
-	scrollbar.mouse_focus = focus;
-	if(input->Focus() && PointInRect(gui->cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
+	scrollbar.mouseFocus = focus;
+	if(input->Focus() && Rect::IsInside(gui->cursorPos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
 		dialog_cursor_pos = Int2(-1, -1);
 	scrollbar.Update(0.f);
 
@@ -1799,28 +1799,28 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 //=================================================================================================
 void LevelGui::PositionPanels()
 {
-	float scale = float(gui->wnd_size.x) / 1024;
+	float scale = float(gui->wndSize.x) / 1024;
 	Int2 pos = Int2(int(scale * 48), int(scale * 32));
-	Int2 size = Int2(gui->wnd_size.x - pos.x * 2, gui->wnd_size.y - pos.x * 2);
+	Int2 size = Int2(gui->wndSize.x - pos.x * 2, gui->wndSize.y - pos.x * 2);
 
-	game_gui->stats->global_pos = game_gui->stats->pos = pos;
+	game_gui->stats->globalPos = game_gui->stats->pos = pos;
 	game_gui->stats->size = size;
-	game_gui->team->global_pos = game_gui->team->pos = pos;
+	game_gui->team->globalPos = game_gui->team->pos = pos;
 	game_gui->team->size = size;
-	game_gui->inventory->inv_mine->global_pos = game_gui->inventory->inv_mine->pos = pos;
+	game_gui->inventory->inv_mine->globalPos = game_gui->inventory->inv_mine->pos = pos;
 	game_gui->inventory->inv_mine->size = size;
-	game_gui->inventory->inv_trade_other->global_pos = game_gui->inventory->inv_trade_other->pos = pos;
+	game_gui->inventory->inv_trade_other->globalPos = game_gui->inventory->inv_trade_other->pos = pos;
 	game_gui->inventory->inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
-	game_gui->inventory->inv_trade_mine->global_pos = game_gui->inventory->inv_trade_mine->pos
+	game_gui->inventory->inv_trade_mine->globalPos = game_gui->inventory->inv_trade_mine->pos
 		= Int2(pos.x, game_gui->inventory->inv_trade_other->pos.y + game_gui->inventory->inv_trade_other->size.y + 16);
 	game_gui->inventory->inv_trade_mine->size = game_gui->inventory->inv_trade_other->size;
 	game_gui->minimap->size = Int2(size.y, size.y);
-	game_gui->minimap->global_pos = game_gui->minimap->pos = Int2((gui->wnd_size.x - game_gui->minimap->size.x) / 2, (gui->wnd_size.y - game_gui->minimap->size.y) / 2);
+	game_gui->minimap->globalPos = game_gui->minimap->pos = Int2((gui->wndSize.x - game_gui->minimap->size.x) / 2, (gui->wndSize.y - game_gui->minimap->size.y) / 2);
 	game_gui->journal->size = game_gui->minimap->size;
-	game_gui->journal->global_pos = game_gui->journal->pos = game_gui->minimap->pos;
-	game_gui->mp_box->size = Int2((gui->wnd_size.x - 32) / 2, (gui->wnd_size.y - 64) / 4);
-	game_gui->mp_box->global_pos = game_gui->mp_box->pos = Int2(gui->wnd_size.x - pos.x - game_gui->mp_box->size.x, gui->wnd_size.y - pos.x - game_gui->mp_box->size.y);
-	game_gui->ability->global_pos = game_gui->ability->pos = pos;
+	game_gui->journal->globalPos = game_gui->journal->pos = game_gui->minimap->pos;
+	game_gui->mp_box->size = Int2((gui->wndSize.x - 32) / 2, (gui->wndSize.y - 64) / 4);
+	game_gui->mp_box->globalPos = game_gui->mp_box->pos = Int2(gui->wndSize.x - pos.x - game_gui->mp_box->size.x, gui->wndSize.y - pos.x - game_gui->mp_box->size.y);
+	game_gui->ability->globalPos = game_gui->ability->pos = pos;
 	game_gui->ability->size = size;
 
 	LocalVector<GamePanel*> panels;
@@ -2169,10 +2169,10 @@ void LevelGui::DrawCutscene(int fallback_alpha)
 	{
 		const int alpha = GetAlpha(cutscene_image_state, cutscene_image_timer, fallback_alpha);
 		Int2 img_size = cutscene_image->GetSize();
-		const int max_size = gui->wnd_size.y - 128;
+		const int max_size = gui->wndSize.y - 128;
 		const Vec2 scale(float(max_size) / img_size.y);
 		img_size *= scale.x;
-		const Vec2 pos((gui->wnd_size - img_size) / 2);
+		const Vec2 pos((gui->wndSize - img_size) / 2);
 		const Matrix mat = Matrix::Transform2D(nullptr, 0, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(cutscene_image, mat, nullptr, nullptr, Color::Alpha(alpha));
 	}
@@ -2180,7 +2180,7 @@ void LevelGui::DrawCutscene(int fallback_alpha)
 	if(!cutscene_text.empty())
 	{
 		const int alpha = GetAlpha(cutscene_text_state, cutscene_text_timer, fallback_alpha);
-		const Rect r = { 0, gui->wnd_size.y - 64,gui->wnd_size.x, gui->wnd_size.y };
+		const Rect r = { 0, gui->wndSize.y - 64,gui->wndSize.x, gui->wndSize.y };
 		gui->DrawText(game_gui->font, cutscene_text, DTF_OUTLINE | DTF_CENTER | DTF_VCENTER, Color::Alpha(alpha), r);
 	}
 }

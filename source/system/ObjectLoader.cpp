@@ -198,7 +198,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 	case OP_MESH:
 		{
 			const string& mesh_id = t.MustGetString();
-			obj->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+			obj->mesh = resMgr->TryGet<Mesh>(mesh_id);
 			if(!obj->mesh)
 				LoadError("Missing mesh '%s'.", mesh_id.c_str());
 			t.Next();
@@ -234,7 +234,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 			while(!t.IsSymbol('}'))
 			{
 				const string& mesh_id = t.MustGetString();
-				Mesh* mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				Mesh* mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(mesh)
 					obj->variants->meshes.push_back(mesh);
 				else
@@ -327,7 +327,7 @@ void ObjectLoader::ParseUsable(const string& id)
 					t.AssertSymbol('{');
 					t.Next();
 					const string& sound_id = t.MustGetString();
-					use->sound = res_mgr->TryGet<Sound>(sound_id);
+					use->sound = resMgr->TryGet<Sound>(sound_id);
 					if(!use->sound)
 						LoadError("Missing sound '%s'.", sound_id.c_str());
 					t.Next();

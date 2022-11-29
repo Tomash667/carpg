@@ -22,7 +22,7 @@ public:
 
 	GamePanel();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }
 
@@ -52,7 +52,7 @@ class GamePanelContainer : public Container
 {
 public:
 	GamePanelContainer();
-	void Draw(ControlDrawData*);
+	void Draw();
 	void Update(float dt) override;
 	bool NeedCursor() const { return true; }
 

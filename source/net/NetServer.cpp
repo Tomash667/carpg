@@ -2275,7 +2275,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else
 						{
 							game_gui->mp_box->Add(Format(game->txReceivedGold, count, info.name.c_str()));
-							sound_mgr->PlaySound2d(game_res->sCoins);
+							soundMgr->PlaySound2d(game_res->sCoins);
 						}
 					}
 					else if(player.IsTradingWith(target))

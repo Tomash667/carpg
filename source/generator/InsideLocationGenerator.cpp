@@ -898,10 +898,10 @@ void InsideLocationGenerator::GenerateTraps()
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
 			if(lvl.map[x + y * lvl.w].type == EMPTY
-				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
+				&& !Any(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
 				if(Rand() % 500 < chance + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
 					game_level->CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
@@ -993,10 +993,10 @@ void InsideLocationGenerator::RegenerateTraps()
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
 			if(lvl.map[x + y * lvl.w].type == EMPTY
-				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
+				&& !Any(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
 				int s = chance + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
 				if(IsSet(base.traps, TRAPS_NORMAL))
@@ -1072,7 +1072,7 @@ void InsideLocationGenerator::CreateMinimap()
 			Tile& p = lvl.map[x + (lvl.w - 1 - y) * lvl.w];
 			if(IsSet(p.flags, Tile::F_REVEALED))
 			{
-				if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
+				if(Any(p.type, WALL, BLOCKADE_WALL))
 					*pix = Color(100, 100, 100);
 				else if(p.type == DOORS)
 					*pix = Color(127, 51, 0);
@@ -1451,9 +1451,9 @@ void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& tex_o, L
 	else
 		tex_o = tex_o_def;
 
-	res_mgr->Load(tex_o.diffuse);
+	resMgr->Load(tex_o.diffuse);
 	if(tex_o.normal)
-		res_mgr->Load(tex_o.normal);
+		resMgr->Load(tex_o.normal);
 	if(tex_o.specular)
-		res_mgr->Load(tex_o.specular);
+		resMgr->Load(tex_o.specular);
 }

@@ -75,35 +75,35 @@ void MainMenu::LoadLanguage()
 //=================================================================================================
 void MainMenu::LoadData()
 {
-	tBackground = res_mgr->Load<Texture>("menu_bg.jpg");
-	tLogo = res_mgr->Load<Texture>("logo.png");
-	tFModLogo = res_mgr->Load<Texture>("fmod_logo.png");
+	tBackground = resMgr->Load<Texture>("menu_bg.jpg");
+	tLogo = resMgr->Load<Texture>("logo.png");
+	tFModLogo = resMgr->Load<Texture>("fmod_logo.png");
 }
 
 //=================================================================================================
-void MainMenu::Draw(ControlDrawData*)
+void MainMenu::Draw()
 {
 	gui->DrawSpriteFull(tBackground);
-	gui->DrawSprite(tLogo, Int2(gui->wnd_size.x - 512 - 16, 16));
+	gui->DrawSprite(tLogo, Int2(gui->wndSize.x - 512 - 16, 16));
 	gui->DrawSpriteRect(tFModLogo, Rect(
-		int(gui->wnd_size.x - (512.f * 0.6f + 50.f) * gui->wnd_size.x / 1920),
-		int(gui->wnd_size.y - (135.f * 0.6f + 50.f) * gui->wnd_size.y / 1080),
-		int(gui->wnd_size.x - 50.f * gui->wnd_size.x / 1920),
-		int(gui->wnd_size.y - 50.f * gui->wnd_size.y / 1080)), Color::Alpha(250));
+		int(gui->wndSize.x - (512.f * 0.6f + 50.f) * gui->wndSize.x / 1920),
+		int(gui->wndSize.y - (135.f * 0.6f + 50.f) * gui->wndSize.y / 1080),
+		int(gui->wndSize.x - 50.f * gui->wndSize.x / 1920),
+		int(gui->wndSize.y - 50.f * gui->wndSize.y / 1080)), Color::Alpha(250));
 
-	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
+	Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
 	r.Top() = r.Bottom() - 64;
 	gui->DrawText(GameGui::font, "Devmode(2013,2021) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
-	r.Left() = gui->wnd_size.x - 512 - 16;
-	r.Right() = gui->wnd_size.x - 16;
+	r.Left() = gui->wndSize.x - 512 - 16;
+	r.Right() = gui->wndSize.x - 16;
 	r.Top() = 256;
 	r.Bottom() = r.Top() + 64;
 	gui->DrawText(GameGui::font, version, DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
-	r.Right() = gui->wnd_size.x;
-	r.Bottom() = gui->wnd_size.y - 16;
+	r.Right() = gui->wndSize.x;
+	r.Bottom() = gui->wndSize.y - 16;
 	r.Top() = r.Bottom() - 64;
 	gui->DrawText(GameGui::font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
@@ -121,7 +121,7 @@ void MainMenu::Update(float dt)
 {
 	for(int i = 0; i < BUTTONS; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
 	}
 
@@ -170,7 +170,7 @@ void MainMenu::UpdateCheckVersion()
 				info.text += Format("\n\n%s\n%s", txChanges, version_changelog.c_str());
 			info.type = DIALOG_YESNO;
 			cstring names[] = { version_update ? txUpdate : txDownload, txSkip };
-			info.custom_names = names;
+			info.customNames = names;
 
 			gui->ShowDialog(info);
 		}
@@ -261,7 +261,7 @@ void MainMenu::PlaceButtons()
 	{
 		if(!bt[i].visible)
 			continue;
-		bt[i].pos = bt[i].global_pos = Int2(16 + gui->wnd_size.x - 200 + int(sin(kat)*(gui->wnd_size.x - 200)), 100 + int(cos(kat)*gui->wnd_size.y));
+		bt[i].pos = bt[i].globalPos = Int2(16 + gui->wndSize.x - 200 + int(sin(kat)*(gui->wndSize.x - 200)), 100 + int(cos(kat)*gui->wndSize.y));
 		kat += PI / 4 / BUTTONS;
 	}
 }

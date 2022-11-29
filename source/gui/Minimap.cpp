@@ -28,28 +28,28 @@ Minimap::Minimap()
 //=================================================================================================
 void Minimap::LoadData()
 {
-	tUnit[UNIT_ME] = res_mgr->Load<Texture>("mini_unit.png");
-	tUnit[UNIT_TEAM] = res_mgr->Load<Texture>("mini_unit2.png");
-	tUnit[UNIT_ENEMY] = res_mgr->Load<Texture>("mini_unit3.png");
-	tUnit[UNIT_NPC] = res_mgr->Load<Texture>("mini_unit4.png");
-	tUnit[UNIT_CORPSE] = res_mgr->Load<Texture>("mini_unit5.png");
-	tStairsDown = res_mgr->Load<Texture>("schody_dol.png");
-	tStairsUp = res_mgr->Load<Texture>("schody_gora.png");
-	tBag = res_mgr->Load<Texture>("mini_bag.png");
-	tBagImportant = res_mgr->Load<Texture>("mini_bag2.png");
-	tPortal = res_mgr->Load<Texture>("mini_portal.png");
-	tChest = res_mgr->Load<Texture>("mini_chest.png");
-	tDoor = res_mgr->Load<Texture>("mini_door.png");
+	tUnit[UNIT_ME] = resMgr->Load<Texture>("mini_unit.png");
+	tUnit[UNIT_TEAM] = resMgr->Load<Texture>("mini_unit2.png");
+	tUnit[UNIT_ENEMY] = resMgr->Load<Texture>("mini_unit3.png");
+	tUnit[UNIT_NPC] = resMgr->Load<Texture>("mini_unit4.png");
+	tUnit[UNIT_CORPSE] = resMgr->Load<Texture>("mini_unit5.png");
+	tStairsDown = resMgr->Load<Texture>("schody_dol.png");
+	tStairsUp = resMgr->Load<Texture>("schody_gora.png");
+	tBag = resMgr->Load<Texture>("mini_bag.png");
+	tBagImportant = resMgr->Load<Texture>("mini_bag2.png");
+	tPortal = resMgr->Load<Texture>("mini_portal.png");
+	tChest = resMgr->Load<Texture>("mini_chest.png");
+	tDoor = resMgr->Load<Texture>("mini_door.png");
 }
 
 //=================================================================================================
-void Minimap::Draw(ControlDrawData*)
+void Minimap::Draw()
 {
 	LocationPart& locPart = *game_level->localPart;
 	LOCATION type = game_level->location->type;
 
 	// map texture
-	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
 	Rect r_part = { 0, 0, minimap_size, minimap_size };
 	gui->DrawSpriteRectPart(game->tMinimap, r, r_part, Color::Alpha(140));
 
@@ -157,7 +157,7 @@ void Minimap::Draw(ControlDrawData*)
 	}
 
 	// location name
-	Rect rect = { 0,0,gui->wnd_size.x - 8,gui->wnd_size.y - 8 };
+	Rect rect = { 0,0,gui->wndSize.x - 8,gui->wndSize.y - 8 };
 	gui->DrawText(GameGui::font, game_level->GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
 
