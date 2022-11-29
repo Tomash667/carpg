@@ -135,7 +135,7 @@ void CreateServerPanel::Event(GuiEvent e)
 				DialogInfo dialog = {};
 				dialog.event = [this](int id) { if(id == BUTTON_YES) event(BUTTON_OK); };
 				dialog.name = "confirm_max_players";
-				dialog.order = ORDER_TOP;
+				dialog.order = DialogOrder::Top;
 				dialog.parent = this;
 				dialog.text = txConfirmMaxPlayers;
 				dialog.type = DIALOG_YESNO;

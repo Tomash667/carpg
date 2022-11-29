@@ -268,7 +268,7 @@ public:
 	//-----------------------------------------------------------------
 	void EnterLocation(int level = -2, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
-	void LeaveLocation(bool clear = false, bool end_buffs = true);
+	void LeaveLocation(bool clear = false, bool takesTime = true);
 	void Event_RandomEncounter(int id);
 
 	//-----------------------------------------------------------------

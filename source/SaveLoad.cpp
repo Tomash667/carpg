@@ -391,8 +391,6 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	game_level->UpdateDungeonMinimap(false);
 	game_level->ProcessUnitWarps();
 	game_level->ProcessRemoveUnits(false);
-	if(game_state == GS_WORLDMAP && game_level->is_open)
-		LeaveLocation(false, false);
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };

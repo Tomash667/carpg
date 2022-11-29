@@ -1223,7 +1223,7 @@ void ServerPanel::Event(GuiEvent e)
 					DialogInfo di;
 					di.event = DialogEvent(this, &ServerPanel::OnKick);
 					di.name = "kick";
-					di.order = ORDER_TOP;
+					di.order = DialogOrder::Top;
 					di.parent = this;
 					di.pause = false;
 					di.text = Format(txReallyKick, info.name.c_str());

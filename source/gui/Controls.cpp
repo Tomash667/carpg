@@ -405,7 +405,7 @@ void Controls::Event(GuiEvent e)
 			}
 		};
 		info.name = "reset_ctrls";
-		info.order = ORDER_TOP;
+		info.order = DialogOrder::Top;
 		info.parent = this;
 		info.pause = false;
 		info.text = txResetConfirm;

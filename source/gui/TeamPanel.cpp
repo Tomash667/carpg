@@ -519,7 +519,7 @@ void TeamPanel::Kick(Unit* target)
 		DialogInfo info;
 		info.event = DialogEvent(this, &TeamPanel::OnKick);
 		info.name = "kick";
-		info.order = ORDER_TOP;
+		info.order = DialogOrder::Top;
 		info.parent = this;
 		info.pause = false;
 		info.text = Format(txReallyKick, target->GetName());

@@ -160,7 +160,7 @@ void GameMenu::Event(GuiEvent e)
 				info.parent = nullptr;
 				info.pause = true;
 				info.text = game->hardcore_mode ? txExitToMenuDialogHardcore : txExitToMenuDialog;
-				info.order = ORDER_TOP;
+				info.order = DialogOrder::Top;
 				info.type = DIALOG_YESNO;
 
 				gui->ShowDialog(info);

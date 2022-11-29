@@ -2909,7 +2909,7 @@ void World::VerifyObjects()
 
 	for(Location* l : locations)
 	{
-		if(!l)
+		if(!l || l->type == L_OFFSCREEN)
 			continue;
 		if(l->outside)
 		{

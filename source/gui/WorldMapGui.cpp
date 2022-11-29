@@ -741,7 +741,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 	DialogInfo info;
 	info.event = DialogEvent(game, &Game::Event_RandomEncounter);
 	info.name = "encounter";
-	info.order = ORDER_TOPMOST;
+	info.order = DialogOrder::Top;
 	info.parent = this;
 	info.pause = true;
 	info.text = text;

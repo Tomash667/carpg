@@ -18,6 +18,7 @@ Version 0.19 (???):
 - wrong fast travel accept icon
 - missing application icon when starting in fullscreen
 - hide crosshair when talking
+- not refreshing ability cooldowns on short travels
 
 --------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):

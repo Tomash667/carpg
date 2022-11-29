@@ -1796,3 +1796,14 @@ void Team::ReadInvestments(BitStreamReader& f)
 		f >> investment.name;
 	}
 }
+
+//=================================================================================================
+void Team::ShortRest()
+{
+	for(Unit& unit : members)
+	{
+		unit.EndEffects();
+		if(unit.IsPlayer())
+			unit.player->RefreshCooldown();
+	}
+}

@@ -770,7 +770,7 @@ void InventoryPanel::Update(float dt)
 						di.parent = this;
 						di.pause = false;
 						di.text = base.txBuyTeamDialog;
-						di.order = ORDER_NORMAL;
+						di.order = DialogOrder::Normal;
 						di.type = DIALOG_YESNO;
 						base.lock_dialog = gui->ShowDialog(di);
 						base.lock.Lock(i_index, *slot);
@@ -1105,7 +1105,7 @@ void InventoryPanel::Update(float dt)
 								}
 								base.lock.Lock(i_index, *slot);
 								info.event = delegate<void(int)>(this, &InventoryPanel::OnGiveItem);
-								info.order = ORDER_NORMAL;
+								info.order = DialogOrder::Normal;
 								info.parent = this;
 								info.type = DIALOG_YESNO;
 								info.pause = false;
@@ -2251,7 +2251,7 @@ void InventoryPanel::GiveSlotItem(ITEM_SLOT slot)
 
 	base.lock.Lock(slot);
 	info.event = delegate<void(int)>(this, &InventoryPanel::OnGiveItem);
-	info.order = ORDER_NORMAL;
+	info.order = DialogOrder::Normal;
 	info.parent = this;
 	info.type = DIALOG_YESNO;
 	info.pause = false;
@@ -2307,7 +2307,7 @@ void InventoryPanel::IsBetterItemResponse(bool is_better)
 
 				base.lock.Lock(iindex, slot);
 				info.event = delegate<void(int)>(this, &InventoryPanel::OnGiveItem);
-				info.order = ORDER_NORMAL;
+				info.order = DialogOrder::Normal;
 				info.parent = this;
 				info.type = DIALOG_YESNO;
 				info.pause = false;

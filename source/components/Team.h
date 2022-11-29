@@ -101,6 +101,7 @@ public:
 	void UpdateInvestment(int questId, int gold);
 	void WriteInvestments(BitStreamWriter& f);
 	void ReadInvestments(BitStreamReader& f);
+	void ShortRest();
 
 	rvector<Unit> members; // all team members
 	rvector<Unit> active_members; // team members that get gold (without quest units)

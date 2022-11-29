@@ -567,7 +567,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 							mode = Mode::PickAppearance;
 					};
 					di.name = "create_char_warn";
-					di.order = ORDER_TOP;
+					di.order = DialogOrder::Top;
 					di.parent = this;
 					di.pause = false;
 					di.text = txCreateCharWarn;
@@ -596,6 +596,10 @@ void CreateCharacterPanel::Event(GuiEvent e)
 						CloseDialog();
 						event(BUTTON_OK);
 					}
+				};
+				params.validate = [](const string& str)
+				{
+					return !Trimmed(str).empty();
 				};
 				params.limit = 16;
 				params.parent = this;

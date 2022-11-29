@@ -106,7 +106,7 @@ void Quest_Tutorial::Update()
 		DialogInfo info;
 		info.event = nullptr;
 		info.name = "tut";
-		info.order = ORDER_TOP;
+		info.order = DialogOrder::Top;
 		info.parent = nullptr;
 		info.pause = true;
 		info.text = text.text;
@@ -215,7 +215,7 @@ void Quest_Tutorial::OnEvent(Event event)
 			DialogInfo info;
 			info.event = DialogEvent(this, &Quest_Tutorial::Finish);
 			info.name = "tut_end";
-			info.order = ORDER_TOP;
+			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = true;
 			info.text = txTut[9];

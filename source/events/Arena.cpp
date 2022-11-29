@@ -107,7 +107,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 				DialogInfo info;
 				info.event = DialogEvent(this, &Arena::PvpEvent);
 				info.name = "pvp";
-				info.order = ORDER_TOP;
+				info.order = DialogOrder::Top;
 				info.parent = nullptr;
 				info.pause = false;
 				info.text = Format(txPvp, ctx.pc->name.c_str());
@@ -834,7 +834,7 @@ void Arena::ShowPvpRequest(Unit* unit)
 	DialogInfo info;
 	info.event = DialogEvent(this, &Arena::PvpEvent);
 	info.name = "pvp";
-	info.order = ORDER_TOP;
+	info.order = DialogOrder::Top;
 	info.parent = nullptr;
 	info.pause = false;
 	info.text = Format(txPvp, unit->player->name.c_str());

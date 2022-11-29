@@ -2110,7 +2110,7 @@ void Game::OnCreateCharacter(int id)
 			info.event = DialogEvent(this, &Game::OnPlayTutorial);
 			info.haveTick = true;
 			info.name = "tutorial_dialog";
-			info.order = ORDER_TOP;
+			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = txTutPlay;

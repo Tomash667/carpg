@@ -456,7 +456,7 @@ void Game::PostconfigureGame()
 			info.img = img;
 			info.event = [this](int result) { StartGameMode(); };
 			info.parent = game_gui->main_menu;
-			info.order = ORDER_TOPMOST;
+			info.order = DialogOrder::TopMost;
 			info.pause = false;
 			info.autoWrap = true;
 			gui->ShowDialog(info);
@@ -1481,7 +1481,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	Info("Entered location.");
 }
 
-void Game::LeaveLocation(bool clear, bool end_buffs)
+void Game::LeaveLocation(bool clear, bool takesTime)
 {
 	if(!game_level->is_open)
 		return;
@@ -1548,12 +1548,9 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 	}
 
-	// end temporay effects
-	if(Net::IsLocal() && end_buffs)
-	{
-		for(Unit& unit : team->members)
-			unit.EndEffects();
-	}
+	// end temporay effects & rest cooldown
+	if(Net::IsLocal() && takesTime)
+		team->ShortRest();
 
 	game_level->is_open = false;
 	game_level->city_ctx = nullptr;

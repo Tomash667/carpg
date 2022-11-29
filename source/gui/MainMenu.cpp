@@ -93,7 +93,7 @@ void MainMenu::Draw()
 
 	Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, "Devmode(2013,2021) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, "Devmode(2013,2022) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = gui->wndSize.x - 512 - 16;
 	r.Right() = gui->wndSize.x - 16;
@@ -162,7 +162,7 @@ void MainMenu::UpdateCheckVersion()
 			DialogInfo info;
 			info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
 			info.name = "new_version";
-			info.order = ORDER_TOP;
+			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = Format(txNewVersionDialog, VERSION_STR, VersionToString(version_new));

@@ -2052,7 +2052,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						PushChange(NetChange::CLOSE_ENCOUNTER);
 					};
 					info.name = "encounter";
-					info.order = ORDER_TOP;
+					info.order = DialogOrder::Top;
 					info.parent = nullptr;
 					info.pause = true;
 					info.type = DIALOG_OK;

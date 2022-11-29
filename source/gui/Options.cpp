@@ -529,7 +529,7 @@ void Options::OnChangeLanguage(int id)
 
 	DialogInfo info;
 	info.event = DialogEvent(this, &Options::ChangeLanguage);
-	info.order = ORDER_TOP;
+	info.order = DialogOrder::Top;
 	info.parent = this;
 	info.pause = false;
 	info.text = txNeedRestart;

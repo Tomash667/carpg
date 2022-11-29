@@ -156,12 +156,12 @@ void GameGui::Init()
 	info.parent = nullptr;
 	info.pause = true;
 	info.text = "";
-	info.order = ORDER_TOPMOST;
+	info.order = DialogOrder::TopMost;
 	info.type = DIALOG_CUSTOM;
 	console = new Console(info);
 
 	info.name = "game_menu";
-	info.order = ORDER_TOP;
+	info.order = DialogOrder::Top;
 	game_menu = new GameMenu(info);
 
 	info.name = "options";
@@ -451,7 +451,7 @@ void GameGui::ShowQuitDialog()
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";
 	di.parent = nullptr;
-	di.order = ORDER_TOPMOST;
+	di.order = DialogOrder::TopMost;
 	di.pause = true;
 
 	gui->ShowDialog(di);
