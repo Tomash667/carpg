@@ -34,12 +34,12 @@ const uint n_hair_colors = countof(g_hair_colors);
 
 Vec2 Human::GetScale()
 {
-	float h = (height - 1)*0.2f + 1.f;
+	float h = (height - 1) * 0.2f + 1.f;
 	float w;
 	if(height > 1.f)
-		w = 1.f + (height - 1)*0.4f;
+		w = 1.f + (height - 1) * 0.4f;
 	else if(height < 1.f)
-		w = 1.f - (1.f - height)*0.3f;
+		w = 1.f - (1.f - height) * 0.3f;
 	else
 		w = 1.f;
 

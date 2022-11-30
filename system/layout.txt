@@ -46,32 +46,37 @@ control "Button" {
 		size 64
 	}
 	font "normal"
+	fontColor {255 205 124}
+	fontColorHover {255 225 144}
+	fontColorDown {255 195 114}
+	fontColorDisabled {210 210 210}
 	padding 4
+	outline 1
 }
 
 control "CheckBox" {
 	tex {
 		mode ITEM
 		image "button.png"
-		corner 16
+		corner 8
 		size 64
 	}
 	texHover {
 		mode ITEM
 		image "button_hover.png"
-		corner 16
+		corner 8
 		size 64
 	}
 	texDown {
 		mode ITEM
 		image "button_down.png"
-		corner 16
+		corner 8
 		size 64
 	}
 	texDisabled {
 		mode ITEM
 		image "button_disabled.png"
-		corner 16
+		corner 8
 		size 64
 	}
 	font "normal"
@@ -183,7 +188,9 @@ control "ListBox" {
 	}
 	downArrow "dialog_down.png"
 	font "normal"
+	padding 2
 	autoPadding 8
+	border 3
 }
 
 control "MenuBar" {
@@ -196,12 +203,12 @@ control "MenuBar" {
 		mode COLOR
 		color {245 246 247}
 	}
-	button_hover {
+	buttonHover {
 		mode BORDER_COLOR
 		color {213 231 248}
 		borderColor {122 177 232}
 	}
-	button_down {
+	buttonDown {
 		mode BORDER_COLOR
 		color {184 216 249}
 		borderColor {98 163 229}
@@ -292,19 +299,19 @@ control "PickFileDialog" {
 }
 
 control "PickItemDialog" {
-	close_button {
+	closeButton {
 		mode IMAGE
 		image "close.png"
 	}
-	close_button_hover {
+	closeButtonHover {
 		mode IMAGE
 		image "close_hover.png"
 	}
-	close_button_down {
+	closeButtonDown {
 		mode IMAGE
 		image "close_down.png"
 	}
-	close_button_disabled {
+	closeButtonDisabled {
 		mode IMAGE
 		image "close_disabled.png"
 	}
@@ -375,12 +382,12 @@ control "TabControl" {
 		color {238 238 238}
 		borderColor {172 172 172}
 	}
-	button_hover {
+	buttonHover {
 		mode BORDER_COLOR
 		color {238 238 238}
 		borderColor {142 176 200}
 	}
-	button_down {
+	buttonDown {
 		mode BORDER_COLOR
 		color {233 243 252}
 		borderColor {126 180 234}
@@ -477,7 +484,7 @@ control "TreeView" {
 		mode COLOR
 		color {51 153 255}
 	}
-	level_offset 16
+	levelOffset 16
 	textBoxBackground "box2.png"
 	dragAndDrop "drag_n_drop.png"
 }
