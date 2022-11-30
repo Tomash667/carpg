@@ -77,10 +77,10 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
 
 	itb.parent = this;
-	itb.max_cache = 10;
-	itb.max_lines = 100;
-	itb.esc_clear = false;
-	itb.lose_focus = false;
+	itb.maxCache = 10;
+	itb.maxLines = 100;
+	itb.escClear = false;
+	itb.loseFocus = false;
 	itb.pos = Int2(10, 320);
 	itb.size = Int2(320, 182);
 	itb.event = InputTextBox::InputEvent(this, &ServerPanel::OnInput);

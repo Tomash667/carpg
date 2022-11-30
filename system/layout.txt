@@ -27,19 +27,19 @@ control "Button" {
 		corner 16
 		size 64
 	}
-	tex_hover {
+	texHover {
 		mode ITEM
 		image "button_hover.png"
 		corner 16
 		size 64
 	}
-	tex_down {
+	texDown {
 		mode ITEM
 		image "button_down.png"
 		corner 16
 		size 64
 	}
-	tex_disabled {
+	texDisabled {
 		mode ITEM
 		image "button_disabled.png"
 		corner 16
@@ -56,19 +56,19 @@ control "CheckBox" {
 		corner 16
 		size 64
 	}
-	tex_hover {
+	texHover {
 		mode ITEM
 		image "button_hover.png"
 		corner 16
 		size 64
 	}
-	tex_down {
+	texDown {
 		mode ITEM
 		image "button_down.png"
 		corner 16
 		size 64
 	}
-	tex_disabled {
+	texDisabled {
 		mode ITEM
 		image "button_disabled.png"
 		corner 16
@@ -99,7 +99,7 @@ control "CheckBoxGroup" {
 		rect {16 0 32 16}
 	}
 	font "normal"
-	font_color BLACK
+	fontColor BLACK
 }
 
 control "DialogBox" {
@@ -130,7 +130,7 @@ control "FlowContainer" {
 		color {0 255 0 128}
 	}
 	font "normal"
-	font_section "big"
+	fontSection "big"
 }
 
 control "Grid" {
@@ -150,8 +150,8 @@ control "Grid" {
 
 control "Gui" {
 	cursor "cursor.png"
-	cursor_hover "hand.png"
-	cursor_text "text.png"
+	cursorHover "hand.png"
+	cursorText "text.png"
 }
 
 control "InputTextBox" {
@@ -181,16 +181,16 @@ control "ListBox" {
 		image "selection.png"
 		color {255 255 255 170}
 	}
-	down_arrow "dialog_down.png"
+	downArrow "dialog_down.png"
 	font "normal"
-	auto_padding 8
+	autoPadding 8
 }
 
 control "MenuBar" {
 	background {
 		mode BORDER_COLOR
 		color {245 246 247}
-		border_color {0xA0 0xA0 0xA0}
+		borderColor {0xA0 0xA0 0xA0}
 	}
 	button {
 		mode COLOR
@@ -199,19 +199,19 @@ control "MenuBar" {
 	button_hover {
 		mode BORDER_COLOR
 		color {213 231 248}
-		border_color {122 177 232}
+		borderColor {122 177 232}
 	}
 	button_down {
 		mode BORDER_COLOR
 		color {184 216 249}
-		border_color {98 163 229}
+		borderColor {98 163 229}
 	}
 	font "normal"
 	padding 4
-	item_padding {10 2}
-	font_color BLACK
-	font_color_hover BLACK
-	font_color_down BLACK
+	itemPadding {10 2}
+	fontColor BLACK
+	fontColorHover BLACK
+	fontColorDown BLACK
 }
 
 control "MenuList" {
@@ -233,16 +233,18 @@ control "MenuStrip" {
 	background {
 		mode BORDER_COLOR
 		color {245 246 247}
-		border_color {0xA0 0xA0 0xA0}
+		borderColor {0xA0 0xA0 0xA0}
 	}
-	button_hover {
+	buttonHover {
 		mode COLOR
 		color {51 153 255}
 	}
 	font "normal"
 	padding 2
-	item_padding 2
-	font_color_disabled {128 128 128}
+	itemPadding 2
+	fontColor BLACK
+	fontColorHover BLACK
+	fontColorDisabled {128 128 128}
 }
 
 control "Notifications" {
@@ -276,7 +278,7 @@ control "Panel" {
 	background {
 		mode BORDER_COLOR
 		color {245 246 247}
-		border_color {0xA0 0xA0 0xA0}
+		borderColor {0xA0 0xA0 0xA0}
 	}
 }
 
@@ -344,7 +346,7 @@ control "SplitPanel" {
 	background {
 		mode BORDER_COLOR
 		color {0xAB 0xAB 0xAB}
-		border_color {0xA0 0xA0 0xA0}
+		borderColor {0xA0 0xA0 0xA0}
 	}
 	horizontal {
 		mode IMAGE
@@ -366,56 +368,56 @@ control "TabControl" {
 	line {
 		mode BORDER_COLOR
 		color {256 256 257}
-		border_color {0xA0 0xA0 0xA0}
+		borderColor {0xA0 0xA0 0xA0}
 	}
 	button {
 		mode BORDER_COLOR
 		color {238 238 238}
-		border_color {172 172 172}
+		borderColor {172 172 172}
 	}
 	button_hover {
 		mode BORDER_COLOR
 		color {238 238 238}
-		border_color {142 176 200}
+		borderColor {142 176 200}
 	}
 	button_down {
 		mode BORDER_COLOR
 		color {233 243 252}
-		border_color {126 180 234}
+		borderColor {126 180 234}
 	}
 	font "normal"
 	padding {8 4}
-	padding_active {8 8}
+	paddingActive {8 8}
 	close {
 		mode IMAGE
 		image "close_small.png"
 	}
-	close_hover {
+	closeHover {
 		mode IMAGE
 		image "close_small.png"
-		background_color {51 153 255}
+		backgroundColor {51 153 255}
 	}
-	button_prev {
+	buttonPrev {
 		mode IMAGE
 		image "tabctrl_arrow.png"
 		rect {0 0 12 16}
 	}
-	button_prev_hover {
+	buttonPrevHover {
 		mode IMAGE
 		image "tabctrl_arrow.png"
 		rect {0 0 12 16}
-		background_color {51 153 255}
+		backgroundColor {51 153 255}
 	}
-	button_next {
+	buttonNext {
 		mode IMAGE
 		image "tabctrl_arrow.png"
 		rect {16 0 28 16}
 	}
-	button_next_hover {
+	buttonNextHover {
 		mode IMAGE
 		image "tabctrl_arrow.png"
 		rect {16 0 28 16}
-		background_color {51 153 255}
+		backgroundColor {51 153 255}
 	}
 }
 
@@ -438,8 +440,8 @@ control "TooltipController" {
 		color {255 255 255 222}
 	}
 	font "normal"
-	font_big "big"
-	font_small "small"
+	fontBig "big"
+	fontSmall "small"
 }
 
 control "TreeView" {
@@ -454,43 +456,45 @@ control "TreeView" {
 		image "treeview.png"
 		rect {0 0 16 16}
 	}
-	button_hover {
+	buttonHover {
 		mode IMAGE
 		image "treeview.png"
 		rect {16 0 32 16}
 	}
-	button_down {
+	buttonDown {
 		mode IMAGE
 		image "treeview.png"
 		rect {32 0 48 16}
 	}
-	button_down_hover {
+	buttonDownHover {
 		mode IMAGE
 		image "treeview.png"
 		rect {48 0 64 16}
 	}
 	font "normal"
+	fontColor BLACK
 	selected {
 		mode COLOR
 		color {51 153 255}
 	}
 	level_offset 16
-	text_box_background "box2.png"
-	drag_n_drop "drag_n_drop.png"
+	textBoxBackground "box2.png"
+	dragAndDrop "drag_n_drop.png"
 }
 
 control "Window" {
 	background {
 		mode BORDER_COLOR
 		color {0xAB 0xAB 0xAB}
-		border_color BLACK
+		borderColor BLACK
 	}
 	header {
 		mode BORDER_COLOR
 		color {128 128 128}
-		border_color BLACK
+		borderColor BLACK
 	}
 	font "big"
-	header_height 32
+	fontColor BLACK
+	headerHeight 32
 	padding 2
 }

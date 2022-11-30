@@ -141,14 +141,14 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		s.pos = Int2(20, 300);
 		s.parent = this;
 		s.SetHold(true);
-		s.hold_val = 25.f;
+		s.holdVal = 25.f;
 	}
 
 	lbClasses.pos = Int2(16, 73 - 18);
 	lbClasses.size = Int2(198, 235 + 18);
 	lbClasses.SetForceImageSize(Int2(20, 20));
 	lbClasses.SetItemHeight(24);
-	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
+	lbClasses.eventHandler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
 	lbClasses.parent = this;
 
 	tbClassDesc.pos = Int2(130, 335);
@@ -1019,9 +1019,9 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 	case Group::Attribute:
 		{
 			Attribute& ai = Attribute::attributes[id];
-			tool.big_text = ai.name;
+			tool.bigText = ai.name;
 			tool.text = ai.desc;
-			tool.small_text.clear();
+			tool.smallText.clear();
 			tool.anything = true;
 			tool.img = nullptr;
 		}
@@ -1029,15 +1029,15 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 	case Group::Skill:
 		{
 			Skill& si = Skill::skills[id];
-			tool.big_text = si.name;
+			tool.bigText = si.name;
 			tool.text = si.desc;
 			if(si.attrib2 != AttributeId::NONE)
 			{
-				tool.small_text = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(),
+				tool.smallText = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(),
 					Attribute::attributes[(int)si.attrib2].name.c_str());
 			}
 			else
-				tool.small_text = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
+				tool.smallText = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
 			tool.anything = true;
 			tool.img = nullptr;
 		}
@@ -1047,8 +1047,8 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 			Perk* perk = (Perk*)id;
 			tool.anything = true;
 			tool.img = nullptr;
-			tool.small_text.clear();
-			tool.big_text = perk->name;
+			tool.smallText.clear();
+			tool.bigText = perk->name;
 			tool.text = perk->desc;
 			if(IsSet(perk->flags, Perk::Flaw))
 			{
@@ -1062,9 +1062,9 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 			TakenPerk& tp = cc.taken_perks[id];
 			tool.anything = true;
 			tool.img = nullptr;
-			tool.big_text = tp.perk->name;
+			tool.bigText = tp.perk->name;
 			tool.text = tp.perk->desc;
-			tp.GetDetails(tool.small_text);
+			tp.GetDetails(tool.smallText);
 			if(IsSet(tp.perk->flags, Perk::Flaw))
 			{
 				tool.text += "\n\n";
@@ -1075,9 +1075,9 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 	case Group::Hardcore:
 		tool.anything = true;
 		tool.img = nullptr;
-		tool.big_text.clear();
+		tool.bigText.clear();
 		tool.text = txHardcoreDesc;
-		tool.small_text.clear();
+		tool.smallText.clear();
 		break;
 	}
 }

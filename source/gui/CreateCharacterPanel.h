@@ -16,6 +16,23 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
+struct OldFlowItem
+{
+	bool section;
+	int group, id, y;
+	float part;
+
+	OldFlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
+	{
+	}
+
+	OldFlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
+	{
+		part = float(value - min) / (max - min);
+	}
+};
+
+//-----------------------------------------------------------------------------
 // Show on new game to create player character
 class CreateCharacterPanel : public DialogBox
 {

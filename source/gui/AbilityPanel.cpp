@@ -286,27 +286,27 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 	else
 	{
 		tooltip.anything = true;
-		tooltip.small_text.clear();
+		tooltip.smallText.clear();
 		switch(id)
 		{
 		case O_MELEE_WEAPON:
 			tooltip.img = tMelee;
-			tooltip.big_text = txMeleeWeapon;
+			tooltip.bigText = txMeleeWeapon;
 			tooltip.text = txMeleeWeaponDesc;
 			break;
 		case O_RANGED_WEAPON:
 			tooltip.img = tRanged;
-			tooltip.big_text = txRangedWeapon;
+			tooltip.bigText = txRangedWeapon;
 			tooltip.text = txRangedWeaponDesc;
 			break;
 		case O_HEALTH_POTION:
 			tooltip.img = tHealthPotion;
-			tooltip.big_text = txHealthPotion;
+			tooltip.bigText = txHealthPotion;
 			tooltip.text = txHealthPotionDesc;
 			break;
 		case O_MANA_POTION:
 			tooltip.img = tManaPotion;
-			tooltip.big_text = txManaPotion;
+			tooltip.bigText = txManaPotion;
 			tooltip.text = txManaPotionDesc;
 			break;
 		}
@@ -318,7 +318,7 @@ void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& abilit
 {
 	tooltip.anything = true;
 	tooltip.img = ability.tex_icon;
-	tooltip.big_text = ability.name;
+	tooltip.bigText = ability.name;
 
 	tooltip.text = ability.desc;
 	uint pos = tooltip.text.find("{power}", 0);
@@ -326,20 +326,20 @@ void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& abilit
 		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->unit->GetAbilityPower(ability)));
 
 	if(ability.charges == 1)
-		tooltip.small_text = Format(txCooldown, ability.cooldown.x);
+		tooltip.smallText = Format(txCooldown, ability.cooldown.x);
 	else
-		tooltip.small_text = Format(txCooldownCharges, ability.cooldown.x, ability.charges, ability.recharge);
+		tooltip.smallText = Format(txCooldownCharges, ability.cooldown.x, ability.charges, ability.recharge);
 	if(ability.mana > 0.f || ability.stamina > 0.f)
 	{
-		tooltip.small_text += '\n';
-		tooltip.small_text += txCost;
+		tooltip.smallText += '\n';
+		tooltip.smallText += txCost;
 		if(ability.mana > 0.f)
-			tooltip.small_text += Format("$cb%g %s$c-", ability.mana, txMana);
+			tooltip.smallText += Format("$cb%g %s$c-", ability.mana, txMana);
 		if(ability.stamina > 0.f)
 		{
 			if(ability.mana > 0.f)
-				tooltip.small_text += ", ";
-			tooltip.small_text += Format("$cy%g %s$c-", ability.stamina, txStamina);
+				tooltip.smallText += ", ";
+			tooltip.smallText += Format("$cy%g %s$c-", ability.stamina, txStamina);
 		}
 	}
 }

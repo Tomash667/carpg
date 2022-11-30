@@ -12,10 +12,10 @@ Console::Console(const DialogInfo& info) : DialogBox(info), added(false)
 {
 	size = Int2(gui->wndSize.x, gui->wndSize.y / 3);
 	itb.parent = this;
-	itb.max_cache = 10;
-	itb.max_lines = 100;
-	itb.esc_clear = true;
-	itb.lose_focus = false;
+	itb.maxCache = 10;
+	itb.maxLines = 100;
+	itb.escClear = true;
+	itb.loseFocus = false;
 	itb.pos = Int2(0, 0);
 	itb.globalPos = Int2(0, 0);
 	itb.size = Int2(gui->wndSize.x, gui->wndSize.y / 3);
@@ -58,12 +58,12 @@ void Console::Update(float dt)
 			{
 				cstring text = gui->GetClipboard();
 				if(text)
-					itb.input_str += text;
+					itb.inputStr += text;
 			}
 			else if(input->PressedRelease(Key::Tab))
 			{
 				// autocomplete on tab key
-				string s = Trimmed(itb.input_str);
+				string s = Trimmed(itb.inputStr);
 				if(!s.empty() && s.find_first_of(' ') == string::npos)
 				{
 					cstring best_cmd_name = nullptr;
@@ -84,8 +84,8 @@ void Console::Update(float dt)
 
 					if(best_index != -1)
 					{
-						itb.input_str = best_cmd_name;
-						itb.input_str += ' ';
+						itb.inputStr = best_cmd_name;
+						itb.inputStr += ' ';
 					}
 				}
 			}

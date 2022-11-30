@@ -237,7 +237,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		{
 			Attribute& ai = Attribute::attributes[id];
 			AttributeId a = (AttributeId)id;
-			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
+			tooltip.bigText = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
 			if(game->devmode && Net::IsLocal())
 			{
 				PlayerController::StatData& stat = pc->attrib[id];
@@ -246,7 +246,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 			}
 			else
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
-			tooltip.small_text.clear();
+			tooltip.smallText.clear();
 		}
 		break;
 	case G_STATS:
@@ -255,26 +255,26 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		case STATS_CLASS:
 			{
 				Class* clas = pc->unit->GetClass();
-				tooltip.big_text = clas->name;
+				tooltip.bigText = clas->name;
 				tooltip.text = clas->desc;
 				if(game->devmode)
 				{
 					if(Net::IsLocal())
-						tooltip.small_text = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->exp_level, pc->exp, pc->exp_need);
+						tooltip.smallText = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->exp_level, pc->exp, pc->exp_need);
 					else
-						tooltip.small_text = Format("Level: %d", pc->unit->level);
+						tooltip.smallText = Format("Level: %d", pc->unit->level);
 				}
 				else
-					tooltip.small_text.clear();
+					tooltip.smallText.clear();
 			}
 			break;
 		case STATS_ATTACK:
 			{
 				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
 				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
-				tooltip.big_text.clear();
+				tooltip.bigText.clear();
 				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
-				tooltip.small_text.clear();
+				tooltip.smallText.clear();
 			}
 			break;
 		default:
@@ -287,7 +287,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		{
 			Skill& si = Skill::skills[id];
 			SkillId s = (SkillId)id;
-			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
+			tooltip.bigText = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
 			if(game->devmode && Net::IsLocal())
 			{
 				PlayerController::StatData& stat = pc->skill[id];
@@ -297,18 +297,18 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 			else
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
 			if(si.attrib2 != AttributeId::NONE)
-				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(), Attribute::attributes[(int)si.attrib2].name.c_str());
+				tooltip.smallText = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(), Attribute::attributes[(int)si.attrib2].name.c_str());
 			else
-				tooltip.small_text = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
+				tooltip.smallText = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
 		}
 		break;
 	case G_PERK:
 		{
 			TakenPerk& tp = pc->perks[id];
 			tooltip.img = nullptr;
-			tooltip.big_text = tp.perk->name;
+			tooltip.bigText = tp.perk->name;
 			tooltip.text = tp.perk->desc;
-			tp.GetDetails(tooltip.small_text);
+			tp.GetDetails(tooltip.smallText);
 		}
 		break;
 	case G_INVALID:

@@ -1537,9 +1537,9 @@ void InventoryPanel::GetTooltip(TooltipController*, int group, int, bool refresh
 	}
 
 	base.tooltip.anything = true;
-	base.tooltip.big_text.clear();
+	base.tooltip.bigText.clear();
 
-	FormatBox(group, base.tooltip.text, base.tooltip.small_text, base.tooltip.img, refresh);
+	FormatBox(group, base.tooltip.text, base.tooltip.smallText, base.tooltip.img, refresh);
 }
 
 //=================================================================================================

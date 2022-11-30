@@ -13,15 +13,15 @@
 MpBox::MpBox() : have_focus(false)
 {
 	itb.parent = this;
-	itb.max_cache = 10;
-	itb.max_lines = 100;
-	itb.esc_clear = true;
-	itb.lose_focus = true;
+	itb.maxCache = 10;
+	itb.maxLines = 100;
+	itb.escClear = true;
+	itb.loseFocus = true;
 	itb.pos = Int2(0, 0);
 	itb.globalPos = Int2(100, 50);
 	itb.size = Int2(320, 182);
 	itb.event = InputTextBox::InputEvent(this, &MpBox::OnInput);
-	itb.background_color = Color(0, 142, 254, 43);
+	itb.backgroundColor = Color(0, 142, 254, 43);
 	itb.Init();
 
 	visible = false;

@@ -59,7 +59,7 @@ CraftPanel::CraftPanel()
 	list.SetForceImageSize(Int2(40));
 	list.textFlags = DTF_VCENTER;
 	list.parent = this;
-	list.event_handler = DialogEvent(this, &CraftPanel::OnSelectionChange);
+	list.eventHandler = DialogEvent(this, &CraftPanel::OnSelectionChange);
 	list.Initialize();
 
 	button.parent = this;
@@ -305,7 +305,7 @@ void CraftPanel::GetTooltip(TooltipController* tooltip, int group, int id, bool 
 	pair<const Item*, uint>& p = ingredients[id];
 	tooltip->anything = true;
 	GetItemString(tooltip->text, p.first, nullptr, p.second);
-	tooltip->small_text = p.first->desc;
+	tooltip->smallText = p.first->desc;
 	tooltip->img = p.first->icon;
 }
 

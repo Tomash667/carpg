@@ -1511,8 +1511,8 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 
 	tooltip.anything = true;
 	tooltip.img = nullptr;
-	tooltip.big_text.clear();
-	tooltip.small_text.clear();
+	tooltip.bigText.clear();
+	tooltip.smallText.clear();
 
 	switch(group)
 	{
@@ -1622,9 +1622,9 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			else if(shortcut.type == Shortcut::TYPE_ABILITY)
 			{
 				game_gui->ability->GetAbilityTooltip(tooltip, *shortcut.ability);
-				tooltip.small_text = Format("%s\n%s", tooltip.text.c_str(), tooltip.small_text.c_str());
-				tooltip.text = tooltip.big_text;
-				tooltip.big_text.clear();
+				tooltip.smallText = Format("%s\n%s", tooltip.text.c_str(), tooltip.smallText.c_str());
+				tooltip.text = tooltip.bigText;
+				tooltip.bigText.clear();
 				tooltip.img = nullptr;
 			}
 
@@ -1640,9 +1640,9 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 					title = Format("%s (%s)", title, game_gui->controls->GetKeyText(gk[0]));
 				tooltip.text = title;
 				if(desc)
-					tooltip.small_text = desc;
+					tooltip.smallText = desc;
 				else
-					tooltip.small_text.clear();
+					tooltip.smallText.clear();
 			}
 		}
 		break;

@@ -603,8 +603,8 @@ void TeamPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 	}
 
 	tooltip.anything = true;
-	tooltip.big_text.clear();
-	tooltip.small_text.clear();
+	tooltip.bigText.clear();
+	tooltip.smallText.clear();
 	tooltip.img = nullptr;
 
 	switch(group)

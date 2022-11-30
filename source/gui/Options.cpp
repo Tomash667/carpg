@@ -114,7 +114,7 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 	language.parent = this;
 	language.pos = Int2(20, 383 - 8);
 	language.size = Int2(250, 25);
-	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
+	language.eventHandler = DialogEvent(this, &Options::OnChangeLanguage);
 	int index = 0;
 	for(Language::Map* p_lmap : Language::GetLanguages())
 	{
@@ -132,7 +132,7 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 	soundDevice.parent = this;
 	soundDevice.pos = Int2(20, 431);
 	soundDevice.size = Int2(250, 25);
-	soundDevice.event_handler = DialogEvent(this, &Options::OnChangeSoundDevice);
+	soundDevice.eventHandler = DialogEvent(this, &Options::OnChangeSoundDevice);
 	soundDevice.Initialize();
 
 	visible = false;
@@ -181,7 +181,7 @@ void Options::LoadLanguage()
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
-	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
+	res.eventHandler = DialogEvent(this, &Options::OnChangeRes);
 	const vector<Resolution>& resolutions = render->GetResolutions();
 	LocalVector<ResolutionItem*> items;
 	for(const Resolution& r : resolutions)
@@ -206,7 +206,7 @@ void Options::LoadLanguage()
 	multisampling.parent = this;
 	multisampling.pos = Int2(20, 327 - 8);
 	multisampling.size = Int2(250, 25);
-	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
+	multisampling.eventHandler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
 	int ms, msq;
 	render->GetMultisampling(ms, msq);

@@ -273,7 +273,7 @@ void Game::CreateServerEvent(int id)
 		if(error_text)
 		{
 			gui->SimpleDialog(error_text, game_gui->create_server);
-			game_gui->create_server->cont.give_focus = give_focus;
+			game_gui->create_server->cont.giveFocus = give_focus;
 			return;
 		}
 
