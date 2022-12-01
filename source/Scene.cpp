@@ -42,7 +42,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	draw_batch.locPart = &locPart;
 	draw_batch.scene = lvlPart.scene;
 	draw_batch.camera = &game_level->camera;
-	draw_batch.gather_lights = !draw_batch.scene->use_light_dir && sceneMgr->use_lighting;
+	draw_batch.gatherLights = !draw_batch.scene->useLightDir && sceneMgr->useLighting;
 	ClearGrass();
 	if(locPart.partType == LocationPart::Type::Outside)
 	{
@@ -55,7 +55,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	{
 		if(frustum.SphereToFrustum(node->center, node->radius))
 		{
-			if(draw_batch.gather_lights)
+			if(draw_batch.gatherLights)
 				GatherDrawBatchLights(node);
 			draw_batch.Add(node);
 		}
@@ -118,7 +118,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->SetMesh(mesh);
 				node->center = use.pos;
 				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-				if(draw_batch.gather_lights)
+				if(draw_batch.gatherLights)
 					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
 				{
@@ -155,7 +155,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					node->SetMesh(chest.meshInst->mesh);
 				node->center = chest.pos;
 				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
-				if(draw_batch.gather_lights)
+				if(draw_batch.gatherLights)
 					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
 				{
@@ -192,7 +192,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				}
 				node->center = door.pos;
 				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
-				if(draw_batch.gather_lights)
+				if(draw_batch.gatherLights)
 					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
 				{
@@ -217,7 +217,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 		{
 			if(blood.size > 0.f && frustum.SphereToFrustum(blood.pos, blood.size * blood.scale))
 			{
-				if(draw_batch.gather_lights)
+				if(draw_batch.gatherLights)
 					GatherDrawBatchLights(nullptr, blood.pos.x, blood.pos.y, blood.size * blood.scale, 0, blood.lights);
 				draw_batch.bloods.push_back(&blood);
 			}
@@ -239,7 +239,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					node->SetMesh(bullet.mesh);
 					node->center = bullet.pos;
 					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
-					if(draw_batch.gather_lights)
+					if(draw_batch.gatherLights)
 						GatherDrawBatchLights(node);
 					draw_batch.Add(node);
 				}
@@ -277,7 +277,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					node->SetMesh(trap.base->mesh);
 				node->center = trap.pos;
 				node->mat = Matrix::RotationY(trap.rot) * Matrix::Translation(trap.pos);
-				if(draw_batch.gather_lights)
+				if(draw_batch.gatherLights)
 					GatherDrawBatchLights(node);
 				draw_batch.Add(node);
 			}
@@ -299,7 +299,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->center = explo.pos;
 				node->radius *= explo.size;
 				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
-				node->tex_override = &explo.ability->tex_explode;
+				node->texOverride = &explo.ability->tex_explode;
 				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
 				draw_batch.Add(node);
 			}
@@ -318,7 +318,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				if(draw_particle_sphere)
 				{
 					DebugNode* debug_node = DebugNode::Get();
-					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * draw_batch.camera->mat_view_proj;
+					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * draw_batch.camera->matViewProj;
 					debug_node->shape = MeshShape::Sphere;
 					debug_node->color = Color::Green;
 					draw_batch.debug_nodes.push_back(debug_node);
@@ -391,7 +391,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				DebugNode* node = DebugNode::Get();
 				node->shape = shape;
 				node->color = Color(153, 217, 164);
-				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * draw_batch.camera->mat_view_proj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pos) * draw_batch.camera->matViewProj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}
@@ -418,7 +418,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::Box;
 					node->color = Color(163, 73, 164);
-					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * draw_batch.camera->mat_view_proj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * draw_batch.camera->matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -430,7 +430,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::Capsule;
 					node->color = Color(163, 73, 164);
-					node->mat = Matrix::Scale(r, h + r, r) * m_world * draw_batch.camera->mat_view_proj;
+					node->mat = Matrix::Scale(r, h + r, r) * m_world * draw_batch.camera->matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -441,7 +441,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					node->shape = MeshShape::Cylinder;
 					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * draw_batch.camera->mat_view_proj;
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * draw_batch.camera->matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -463,7 +463,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 							node->color = Color(163, 73, 164);
 							Matrix m_child;
 							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
-							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * draw_batch.camera->mat_view_proj;
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * draw_batch.camera->matViewProj;
 							draw_batch.debug_nodes.push_back(node);
 						}
 						else
@@ -479,7 +479,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::TriMesh;
 					node->color = Color(163, 73, 164);
-					node->mat = m_world * draw_batch.camera->mat_view_proj;
+					node->mat = m_world * draw_batch.camera->matViewProj;
 					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -513,7 +513,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 //=================================================================================================
 void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 {
-	u.mesh_inst->mesh->EnsureIsLoaded();
+	u.meshInst->mesh->EnsureIsLoaded();
 	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
 		return;
 
@@ -542,7 +542,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	}
 
 	// set bones
-	u.mesh_inst->SetupBones();
+	u.meshInst->SetupBones();
 
 	bool selected = (pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == &u)
 		|| (game_state == GS_LEVEL && ((pc->data.ability_ready && pc->data.ability_ok && pc->data.ability_target == u)
@@ -550,16 +550,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 
 	// add scene node
 	SceneNode* node = SceneNode::Get();
-	node->SetMesh(u.mesh_inst);
+	node->SetMesh(u.meshInst);
 	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
 	node->center = u.visual_pos;
 	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
-	node->tex_override = u.data->GetTextureOverride();
+	node->texOverride = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 
 	// light settings
-	if(draw_batch.gather_lights)
+	if(draw_batch.gatherLights)
 		GatherDrawBatchLights(node);
 	if(selected)
 	{
@@ -585,10 +585,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	{
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = SceneNode::Get();
-		node2->SetMesh(armor.mesh, u.mesh_inst);
+		node2->SetMesh(armor.mesh, u.meshInst);
 		node2->center = node->center;
 		node2->mat = node->mat;
-		node2->tex_override = armor.GetTextureOverride();
+		node2->texOverride = armor.GetTextureOverride();
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -667,13 +667,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	Mesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(mesh);
 		node2->center = node->center;
-		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
+		node2->mat = mat_scale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -695,7 +695,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * draw_batch.camera->mat_view_proj;
+			debug_node->mat = box->mat * node2->mat * draw_batch.camera->matViewProj;
 			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -703,11 +703,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	}
 	else if(u.action == A_ATTACK && draw_hitbox)
 	{
-		Mesh::Point* hitbox = u.mesh_inst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
+		Mesh::Point* hitbox = u.meshInst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
 		if(!hitbox)
-			hitbox = u.mesh_inst->mesh->FindPoint("hitbox");
+			hitbox = u.meshInst->mesh->FindPoint("hitbox");
 		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = hitbox->mat * u.mesh_inst->mat_bones[hitbox->bone] * node->mat * draw_batch.camera->mat_view_proj;
+		debug_node->mat = hitbox->mat * u.meshInst->matBones[hitbox->bone] * node->mat * draw_batch.camera->matViewProj;
 		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -717,13 +717,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(shield);
 		node2->center = node->center;
-		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
+		node2->mat = mat_scale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -745,7 +745,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			assert(box && box->IsBox());
 
 			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * draw_batch.camera->mat_view_proj;
+			debug_node->mat = box->mat * node2->mat * draw_batch.camera->matViewProj;
 			debug_node->shape = MeshShape::Box;
 			debug_node->color = Color::Black;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -755,13 +755,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	// other item (arrow/potion)
 	if(right_hand_item)
 	{
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(NAMES::point_weapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(right_hand_item);
 		node2->center = node->center;
-		node2->mat = mat_scale * point->mat * u.mesh_inst->mat_bones[point->bone] * node->mat;
+		node2->mat = mat_scale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -807,13 +807,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		else
 			node2->SetMesh(u.GetBow().mesh);
 		node2->center = node->center;
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
 		assert(point);
 		Matrix m1;
 		if(in_hand)
-			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.mesh_inst->mat_bones[point->bone];
+			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.meshInst->matBones[point->bone];
 		else
-			m1 = point->mat * u.mesh_inst->mat_bones[point->bone];
+			m1 = point->mat * u.meshInst->matBones[point->bone];
 		node2->mat = mat_scale * m1 * node->mat;
 		node2->lights = node->lights;
 		if(selected)
@@ -837,7 +837,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 
 		// eyebrows
 		SceneNode* node2 = SceneNode::Get();
-		node2->SetMesh(game_res->aEyebrows, node->mesh_inst);
+		node2->SetMesh(game_res->aEyebrows, node->meshInst);
 		node2->center = node->center;
 		node2->mat = node->mat;
 		node2->tint = h.hair_color * u.data->tint;
@@ -863,7 +863,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		if(h.hair != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->SetMesh(game_res->aHair[h.hair], node->mesh_inst);
+			node3->SetMesh(game_res->aHair[h.hair], node->meshInst);
 			node3->center = node->center;
 			node3->mat = node->mat;
 			node3->tint = h.hair_color * u.data->tint;
@@ -890,7 +890,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		if(h.beard != -1)
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->SetMesh(game_res->aBeard[h.beard], node->mesh_inst);
+			node3->SetMesh(game_res->aBeard[h.beard], node->meshInst);
 			node3->center = node->center;
 			node3->mat = node->mat;
 			node3->tint = h.hair_color * u.data->tint;
@@ -917,7 +917,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		if(h.mustache != -1 && (h.beard == -1 || !g_beard_and_mustache[h.beard]))
 		{
 			SceneNode* node3 = SceneNode::Get();
-			node3->SetMesh(game_res->aMustache[h.mustache], node->mesh_inst);
+			node3->SetMesh(game_res->aMustache[h.mustache], node->meshInst);
 			node3->center = node->center;
 			node3->mat = node->mat;
 			node3->tint = h.hair_color * u.data->tint;
@@ -946,7 +946,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	{
 		float h = u.GetUnitHeight() / 2;
 		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * draw_batch.camera->mat_view_proj;
+		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * draw_batch.camera->matViewProj;
 		debug_node->shape = MeshShape::Cylinder;
 		debug_node->color = Color::White;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -957,7 +957,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		Box box;
 		u.GetBox(box);
 		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * draw_batch.camera->mat_view_proj;
+		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * draw_batch.camera->matViewProj;
 		debug_node->shape = MeshShape::Box;
 		debug_node->color = Color::Black;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -983,7 +983,7 @@ void Game::AddObjectToDrawBatch(FrustumPlanes& frustum, const Object& o)
 	{
 		node->center = o.pos;
 		node->radius = o.GetRadius();
-		if(draw_batch.gather_lights)
+		if(draw_batch.gatherLights)
 			GatherDrawBatchLights(node);
 		draw_batch.Add(node);
 	}
@@ -1002,15 +1002,15 @@ void Game::AddObjectToDrawBatch(FrustumPlanes& frustum, const Object& o)
 			{
 				SceneNode* node2 = SceneNode::Get();
 				node2->mesh = node->mesh;
-				node2->mesh_inst = node->mesh_inst;
+				node2->meshInst = node->meshInst;
 				node2->flags = node->flags;
 				node2->center = pos;
 				node2->radius = radius;
 				node2->mat = node->mat;
 				node2->tint = node->tint;
-				node2->tex_override = node->tex_override;
+				node2->texOverride = node->texOverride;
 				draw_batch.Add(node2, i);
-				if(draw_batch.gather_lights)
+				if(draw_batch.gatherLights)
 					GatherDrawBatchLights(node2);
 			}
 		}
@@ -1137,7 +1137,7 @@ void Game::ListAreas(LocationPart& locPart)
 		else
 			pos = pc->unit->target_pos;
 		DebugNode* node = DebugNode::Get();
-		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * draw_batch.camera->mat_view_proj;
+		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * draw_batch.camera->matViewProj;
 		node->shape = MeshShape::Sphere;
 		node->color = Color::Green;
 		draw_batch.debug_nodes.push_back(node);
@@ -1687,7 +1687,7 @@ void Game::DrawScene()
 	sceneMgr->SetScene(draw_batch.scene, draw_batch.camera);
 
 	// sky
-	if(draw_batch.scene->use_light_dir && IsSet(draw_flags, DF_SKYBOX))
+	if(draw_batch.scene->useLightDir && IsSet(draw_flags, DF_SKYBOX))
 		skybox_shader->Draw(*game_res->aSkybox, *draw_batch.camera);
 
 	// terrain
@@ -1732,7 +1732,7 @@ void Game::DrawScene()
 	}
 
 	// alpha nodes
-	if(!draw_batch.alpha_nodes.empty())
+	if(!draw_batch.alphaNodes.empty())
 		sceneMgr->DrawAlphaSceneNodes(draw_batch);
 
 	// areas
@@ -1743,7 +1743,7 @@ void Game::DrawScene()
 //=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPartGroup>& groups)
 {
-	SuperShader* shader = sceneMgr->super_shader;
+	SuperShader* shader = sceneMgr->superShader;
 
 	render->SetBlendState(Render::BLEND_NO);
 	render->SetDepthState(Render::DEPTH_YES);
@@ -1752,7 +1752,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 	shader->Prepare();
 	shader->SetCustomMesh(dun_mesh_builder->vb, dun_mesh_builder->ib, sizeof(VTangent));
 
-	const bool use_fog = sceneMgr->use_fog && sceneMgr->use_lighting;
+	const bool useFog = sceneMgr->useFog && sceneMgr->useLighting;
 	TexOverride* last_override = nullptr;
 
 	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
@@ -1762,8 +1762,8 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 		// set textures
 		if(last_override != dp.tex_o)
 		{
-			shader->SetShader(shader->GetShaderId(false, true, false, use_fog, sceneMgr->use_specularmap && dp.tex_o->specular != nullptr,
-				sceneMgr->use_normalmap && dp.tex_o->normal != nullptr, sceneMgr->use_lighting, false));
+			shader->SetShader(shader->GetShaderId(false, true, false, useFog, sceneMgr->useSpecularmap && dp.tex_o->specular != nullptr,
+				sceneMgr->useNormalmap && dp.tex_o->normal != nullptr, sceneMgr->useLighting, false));
 			shader->SetTexture(dp.tex_o, nullptr, 0);
 			last_override = dp.tex_o;
 		}
@@ -1776,7 +1776,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 //=================================================================================================
 void Game::DrawBloods(const vector<Blood*>& bloods)
 {
-	SuperShader* shader = sceneMgr->super_shader;
+	SuperShader* shader = sceneMgr->superShader;
 	shader->PrepareDecals();
 	Decal decal;
 	for(const Blood* blood : bloods)

@@ -254,12 +254,12 @@ void CreateCharacterPanel::LoadData()
 	rt_char = render->CreateRenderTarget(Int2(128, 256));
 
 	scene = new Scene;
-	scene->fog_range = Vec2(40, 80);
-	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
-	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
-	scene->light_color = Color::White;
-	scene->light_dir = Vec3(sin(PI / 2), 2.f, cos(PI / 2)).Normalize();
-	scene->use_light_dir = true;
+	scene->fogRange = Vec2(40, 80);
+	scene->fogColor = Color(0.9f, 0.85f, 0.8f);
+	scene->ambientColor = Color(0.5f, 0.5f, 0.5f);
+	scene->lightColor = Color::White;
+	scene->lightDir = Vec3(sin(PI / 2), 2.f, cos(PI / 2)).Normalize();
+	scene->useLightDir = true;
 
 	camera = new Camera;
 }
@@ -636,8 +636,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdSize:
 			unit->human_data->height = Lerp(MIN_HEIGHT, MAX_HEIGHT, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-			unit->human_data->ApplyScale(unit->mesh_inst);
-			unit->mesh_inst->need_update = true;
+			unit->human_data->ApplyScale(unit->meshInst);
+			unit->meshInst->needUpdate = true;
 			break;
 		case IdRandomSet:
 			if(mode == Mode::PickAppearance)
@@ -663,10 +663,10 @@ void CreateCharacterPanel::RenderUnit()
 	Vec3 from = Vec3(0.f, 2.f, dist);
 	Matrix mat_view = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
 	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	camera->mat_view_proj = mat_view * mat_proj;
+	camera->matViewProj = mat_view * mat_proj;
 	camera->from = from;
-	camera->mat_view_inv = mat_view.Inverse();
-	FrustumPlanes frustum(camera->mat_view_proj);
+	camera->matViewInv = mat_view.Inverse();
+	FrustumPlanes frustum(camera->matViewProj);
 
 	sceneMgr->SetScene(scene, camera);
 
@@ -674,7 +674,7 @@ void CreateCharacterPanel::RenderUnit()
 	game->draw_batch.locPart = nullptr;
 	game->draw_batch.scene = scene;
 	game->draw_batch.camera = camera;
-	game->draw_batch.gather_lights = false;
+	game->draw_batch.gatherLights = false;
 	game->ListDrawObjectsUnit(frustum, *unit);
 	game->draw_batch.Process();
 	sceneMgr->DrawSceneNodes(game->draw_batch);
@@ -706,7 +706,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			else
 			{
 				anim = DA_BATTLE_MODE;
-				unit->mesh_inst->Deactivate(1);
+				unit->meshInst->Deactivate(1);
 			}
 			break;
 		case DA_BATTLE_MODE:
@@ -760,12 +760,12 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->animation_state = AS_ATTACK_PREPARE;
 			unit->act.attack.index = unit->GetRandomAttack();
 			unit->act.attack.run = false;
-			unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-			unit->mesh_inst->groups[1].speed = unit->GetAttackSpeed();
+			unit->meshInst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+			unit->meshInst->groups[1].speed = unit->GetAttackSpeed();
 			t = 100.f;
 			break;
 		case DA_BLOCK:
-			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 1);
+			unit->meshInst->Play(NAMES::ani_block, PLAY_PRIO2, 1);
 			t = 1.f;
 			break;
 		case DA_BATTLE_MODE:
@@ -780,7 +780,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_LOOKS_AROUND:
-			unit->mesh_inst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->meshInst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->animation = ANI_IDLE;
 			t = 100.f;
 			break;
@@ -821,7 +821,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 	switch(anim)
 	{
 	case DA_ATTACK:
-		if(unit->mesh_inst->IsEnded())
+		if(unit->meshInst->IsEnded())
 		{
 			if(Rand() % 2 == 0)
 			{
@@ -880,7 +880,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
-	unit->mesh_inst = new MeshInstance(game_res->aHuman);
+	unit->meshInst = new MeshInstance(game_res->aHuman);
 
 	for(Class* clas : Class::classes)
 	{
@@ -901,7 +901,7 @@ void CreateCharacterPanel::RandomAppearance()
 	hair_color_index = Rand() % n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(u.mesh_inst);
+	u.human_data->ApplyScale(u.meshInst);
 	SetControls();
 }
 
@@ -968,7 +968,7 @@ void CreateCharacterPanel::SetCharacter()
 	anim = anim2 = DA_STAND;
 	unit->animation = ANI_STAND;
 	unit->current_animation = ANI_STAND;
-	unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
+	unit->meshInst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
 }
 
 //=================================================================================================
@@ -1503,7 +1503,7 @@ void CreateCharacterPanel::UpdateInventory()
 void CreateCharacterPanel::ResetDoll(bool instant)
 {
 	anim = DA_STAND;
-	unit->mesh_inst->Deactivate(1);
+	unit->meshInst->Deactivate(1);
 	unit->SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	if(instant)
 	{

@@ -628,7 +628,7 @@ void Game::DrawGame()
 			postfx_shader->SetTarget();
 
 		Scene* scene = game_level->localPart->lvlPart->scene;
-		render->Clear(scene->clear_color);
+		render->Clear(scene->clearColor);
 
 		// draw level
 		DrawScene();
@@ -651,7 +651,7 @@ void Game::DrawGame()
 		render->Clear(Color::Black);
 
 	// draw gui
-	game_gui->Draw(game_level->camera.mat_view_proj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+	game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 }
 
 //=================================================================================================
@@ -664,7 +664,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
-		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
+		int bone = u->meshInst->mesh->GetBone("usta")->id;
 		static Matrix mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) * mat[bone];
@@ -1740,7 +1740,7 @@ void Game::UpdateGame(float dt)
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
 	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
-	game_level->localPart->lvlPart->scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+	game_level->localPart->lvlPart->scene->lightDir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
 
 	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
 	{
@@ -2612,8 +2612,8 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		sceneMgr->use_lighting = true;
-		sceneMgr->use_fog = true;
+		sceneMgr->useLighting = true;
+		sceneMgr->useFog = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
@@ -2845,7 +2845,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 						if(unit.live_state == Unit::DYING)
 						{
 							unit.live_state = Unit::DEAD;
-							unit.mesh_inst->SetToEnd();
+							unit.meshInst->SetToEnd();
 							game_level->CreateBlood(locPart, unit, true);
 						}
 						else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
@@ -2873,8 +2873,8 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 								unit.rot = unit.ai->start_rot;
 						}
 
-						delete unit.mesh_inst;
-						unit.mesh_inst = nullptr;
+						delete unit.meshInst;
+						unit.meshInst = nullptr;
 						delete unit.ai;
 						unit.ai = nullptr;
 						unit.EndEffects();
@@ -2885,7 +2885,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 			else
 			{
 				unit.talking = false;
-				unit.mesh_inst->need_update = true;
+				unit.meshInst->needUpdate = true;
 				unit.usable = nullptr;
 				return true;
 			}
@@ -3460,8 +3460,8 @@ void Game::RemoveUnit(Unit* unit)
 		unit->cobj = nullptr;
 	}
 
-	delete unit->mesh_inst;
-	unit->mesh_inst = nullptr;
+	delete unit->meshInst;
+	unit->meshInst = nullptr;
 
 	if(Net::IsServer())
 	{

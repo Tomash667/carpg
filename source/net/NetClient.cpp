@@ -249,7 +249,7 @@ void Net::UpdateClient(float dt)
 			f << true;
 			f << game->pc->unit->pos;
 			f << game->pc->unit->rot;
-			f << game->pc->unit->mesh_inst->groups[0].speed;
+			f << game->pc->unit->meshInst->groups[0].speed;
 			f.WriteCasted<byte>(game->pc->unit->animation);
 		}
 		else
@@ -269,9 +269,9 @@ void Net::InterpolateUnits(float dt)
 		{
 			if(!unit->IsLocalPlayer())
 				unit->interp->Update(dt, unit->visual_pos, unit->rot);
-			if(unit->mesh_inst->mesh->head.n_groups == 1)
+			if(unit->meshInst->mesh->head.n_groups == 1)
 			{
-				if(!unit->mesh_inst->groups[0].anim)
+				if(!unit->meshInst->groups[0].anim)
 				{
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
@@ -279,7 +279,7 @@ void Net::InterpolateUnits(float dt)
 			}
 			else
 			{
-				if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
+				if(!unit->meshInst->groups[0].anim && !unit->meshInst->groups[1].anim)
 				{
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
@@ -556,7 +556,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(unit != pc.unit)
 				{
 					unit->pos = pos;
-					unit->mesh_inst->groups[0].speed = ani_speed;
+					unit->meshInst->groups[0].speed = ani_speed;
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
@@ -639,7 +639,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				Unit& unit = *unit_ptr;
 				byte type = (typeflags & 0xF);
-				int group = unit.mesh_inst->mesh->head.n_groups - 1;
+				int group = unit.meshInst->mesh->head.n_groups - 1;
 
 				bool is_bow = false;
 				switch(type)
@@ -648,7 +648,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit.action == A_ATTACK && unit.animation_state == AS_ATTACK_PREPARE)
 					{
 						unit.animation_state = AS_ATTACK_CAN_HIT;
-						unit.mesh_inst->groups[group].speed = attack_speed;
+						unit.meshInst->groups[group].speed = attack_speed;
 					}
 					else
 					{
@@ -660,8 +660,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						unit.act.attack.power = 1.f;
 						unit.act.attack.run = false;
 						unit.act.attack.hitted = false;
-						unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.mesh_inst->groups[group].speed = attack_speed;
+						unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+						unit.meshInst->groups[group].speed = attack_speed;
 					}
 					break;
 				case AID_PrepareAttack:
@@ -673,8 +673,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.power = 1.f;
 					unit.act.attack.run = false;
 					unit.act.attack.hitted = false;
-					unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-					unit.mesh_inst->groups[group].speed = attack_speed;
+					unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+					unit.meshInst->groups[group].speed = attack_speed;
 					break;
 				case AID_Shoot:
 				case AID_StartShoot:
@@ -686,14 +686,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					break;
 				case AID_Block:
 					unit.action = A_BLOCK;
-					unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
-					unit.mesh_inst->groups[group].blend_max = attack_speed;
+					unit.meshInst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
+					unit.meshInst->groups[group].blendMax = attack_speed;
 					break;
 				case AID_Bash:
 					unit.action = A_BASH;
 					unit.animation_state = AS_BASH_ANIMATION;
-					unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
-					unit.mesh_inst->groups[group].speed = attack_speed;
+					unit.meshInst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, group);
+					unit.meshInst->groups[group].speed = attack_speed;
 					break;
 				case AID_RunningAttack:
 					if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -704,8 +704,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.power = 1.5f;
 					unit.act.attack.run = true;
 					unit.act.attack.hitted = false;
-					unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-					unit.mesh_inst->groups[group].speed = attack_speed;
+					unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
+					unit.meshInst->groups[group].speed = attack_speed;
 					break;
 				case AID_Cancel:
 					if(unit.action == A_SHOOT)
@@ -714,7 +714,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						is_bow = true;
 					}
 					unit.action = A_NONE;
-					unit.mesh_inst->Deactivate(1);
+					unit.meshInst->Deactivate(1);
 					break;
 				}
 
@@ -819,22 +819,22 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = game_res->tBlood[type];
-					pe->emission_interval = 0.01f;
+					pe->emissionInterval = 0.01f;
 					pe->life = 5.f;
-					pe->particle_life = 0.5f;
+					pe->particleLife = 0.5f;
 					pe->emissions = 1;
-					pe->spawn_min = 10;
-					pe->spawn_max = 15;
-					pe->max_particles = 15;
+					pe->spawnMin = 10;
+					pe->spawnMax = 15;
+					pe->maxParticles = 15;
 					pe->pos = pos;
-					pe->speed_min = Vec3(-1, 0, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-					pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+					pe->speedMin = Vec3(-1, 0, -1);
+					pe->speedMax = Vec3(1, 1, 1);
+					pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+					pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
 					pe->size = 0.3f;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 0.9f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
 					game_level->GetLocationPart(pos).lvlPart->pes.push_back(pe);
@@ -948,7 +948,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					else if(unit != pc.unit)
 					{
 						unit->action = A_ANIMATION;
-						unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->meshInst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 					}
 				}
 			}
@@ -989,7 +989,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					{
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
-						unit->mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->meshInst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 					}
 				}
 			}
@@ -1073,11 +1073,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						else
 							unit->animation_state = AS_POSITION_HURT;
 
-						if(unit->mesh_inst->mesh->head.n_groups == 2)
-							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+						if(unit->meshInst->mesh->head.n_groups == 2)
+							unit->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
-							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							unit->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -1229,7 +1229,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						Error("Update client: IDLE, invalid animation index %u (count %u).", animation_index, unit->data->idles->anims.size());
 					else
 					{
-						unit->mesh_inst->Play(unit->data->idles->anims[animation_index].c_str(), PLAY_ONCE, 0);
+						unit->meshInst->Play(unit->data->idles->anims[animation_index].c_str(), PLAY_ONCE, 0);
 						unit->animation = ANI_IDLE;
 					}
 				}
@@ -1671,7 +1671,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					{
 						unit->action = A_USE_USABLE;
 						unit->animation = ANI_PLAY;
-						unit->mesh_inst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
+						unit->meshInst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
 						unit->target_pos = unit->pos;
 						unit->target_pos2 = usable->pos;
 						if(base.limit_rot == 4)
@@ -2242,17 +2242,17 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							unit->animation_state = AS_CAST_ANIMATION;
 							if(ability->animation.empty())
 							{
-								if(unit->mesh_inst->mesh->head.n_groups == 2)
-									unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+								if(unit->meshInst->mesh->head.n_groups == 2)
+									unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 								else
 								{
 									unit->animation = ANI_PLAY;
-									unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+									unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
 								}
 							}
 							else
 							{
-								unit->mesh_inst->Play(ability->animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
+								unit->meshInst->Play(ability->animation.c_str(), PLAY_ONCE | PLAY_PRIO1, 0);
 								unit->animation = ANI_PLAY;
 							}
 						}
@@ -2326,22 +2326,22 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = ability.tex_particle;
-					pe->emission_interval = 0.1f;
+					pe->emissionInterval = 0.1f;
 					pe->life = -1;
-					pe->particle_life = 0.5f;
+					pe->particleLife = 0.5f;
 					pe->emissions = -1;
-					pe->spawn_min = 3;
-					pe->spawn_max = 4;
-					pe->max_particles = 50;
+					pe->spawnMin = 3;
+					pe->spawnMax = 4;
+					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
-					pe->speed_min = Vec3(-1, -1, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->speedMin = Vec3(-1, -1, -1);
+					pe->speedMax = Vec3(1, 1, 1);
+					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->posMax = Vec3(ability.size, ability.size, ability.size);
 					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					locPart.lvlPart->pes.push_back(pe);
@@ -2398,9 +2398,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							drain.target = unit;
 							drain.pe = lvlPart.pes.back();
 							drain.t = 0.f;
-							drain.pe->manual_delete = 1;
-							drain.pe->speed_min = Vec3(-3, 0, -3);
-							drain.pe->speed_max = Vec3(3, 3, 3);
+							drain.pe->manualDelete = 1;
+							drain.pe->speedMin = Vec3(-3, 0, -3);
+							drain.pe->speedMax = Vec3(3, 3, 3);
 						}
 					}
 				}
@@ -2473,22 +2473,22 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
 						pe->tex = ability->tex_particle;
-						pe->emission_interval = 0.01f;
+						pe->emissionInterval = 0.01f;
 						pe->life = 0.f;
-						pe->particle_life = 0.5f;
+						pe->particleLife = 0.5f;
 						pe->emissions = 1;
-						pe->spawn_min = 8;
-						pe->spawn_max = 12;
-						pe->max_particles = 12;
+						pe->spawnMin = 8;
+						pe->spawnMax = 12;
+						pe->maxParticles = 12;
 						pe->pos = pos;
-						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
-						pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+						pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+						pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+						pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+						pe->posMax = Vec3(ability->size, ability->size, ability->size);
 						pe->size = ability->size_particle;
-						pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+						pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
-						pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+						pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->mode = 1;
 						pe->Init();
 
@@ -2782,7 +2782,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					else
 					{
 						unit->action = A_USE_ITEM;
-						unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+						unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 				}
 			}

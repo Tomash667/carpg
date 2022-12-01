@@ -201,11 +201,11 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 						else
 							hitted->animation_state = AS_POSITION_HURT;
 
-						if(hitted->mesh_inst->mesh->head.n_groups == 2)
-							hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+						if(hitted->meshInst->mesh->head.n_groups == 2)
+							hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
-							hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 							hitted->animation = ANI_PLAY;
 						}
 					}
@@ -360,22 +360,22 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = game_res->tSpark;
-			pe->emission_interval = 0.01f;
+			pe->emissionInterval = 0.01f;
 			pe->life = 5.f;
-			pe->particle_life = 0.5f;
+			pe->particleLife = 0.5f;
 			pe->emissions = 1;
-			pe->spawn_min = 10;
-			pe->spawn_max = 15;
-			pe->max_particles = 15;
+			pe->spawnMin = 10;
+			pe->spawnMax = 15;
+			pe->maxParticles = 15;
 			pe->pos = hitpoint;
-			pe->speed_min = Vec3(-1, 0, -1);
-			pe->speed_max = Vec3(1, 1, 1);
-			pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-			pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+			pe->speedMin = Vec3(-1, 0, -1);
+			pe->speedMax = Vec3(1, 1, 1);
+			pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+			pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
 			pe->size = 0.3f;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 0;
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
@@ -588,22 +588,22 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		{
 			pe = new ParticleEmitter;
 			pe->tex = ability->tex_particle;
-			pe->emission_interval = 0.1f;
+			pe->emissionInterval = 0.1f;
 			pe->life = -1;
-			pe->particle_life = 0.5f;
+			pe->particleLife = 0.5f;
 			pe->emissions = -1;
-			pe->spawn_min = 3;
-			pe->spawn_max = 4;
-			pe->max_particles = 50;
+			pe->spawnMin = 3;
+			pe->spawnMax = 4;
+			pe->maxParticles = 50;
 			pe->pos = pos;
-			pe->speed_min = Vec3(-1, -1, -1);
-			pe->speed_max = Vec3(1, 1, 1);
-			pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
-			pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+			pe->speedMin = Vec3(-1, -1, -1);
+			pe->speedMax = Vec3(1, 1, 1);
+			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+			pe->posMax = Vec3(ability->size, ability->size, ability->size);
 			pe->size = ability->size_particle;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 1.f;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
 			lvlPart.pes.push_back(pe);

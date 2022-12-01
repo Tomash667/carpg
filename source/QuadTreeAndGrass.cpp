@@ -20,24 +20,24 @@ enum QuadPartType
 	Q_RIGHT_TOP
 };
 
-void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits)
+void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& gridBox, int splits)
 {
 	if(node)
 	{
 		node->box = box;
-		node->grid_box = grid_box;
+		node->gridBox = gridBox;
 		if(splits > 0)
 		{
 			node->leaf = false;
 			--splits;
 			node->childs[Q_LEFT_BOTTOM] = get();
-			Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), grid_box.LeftBottomPart(), splits);
+			Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), gridBox.LeftBottomPart(), splits);
 			node->childs[Q_RIGHT_BOTTOM] = get();
-			Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), grid_box.RightBottomPart(), splits);
+			Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), gridBox.RightBottomPart(), splits);
 			node->childs[Q_LEFT_TOP] = get();
-			Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), grid_box.LeftTopPart(), splits);
+			Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), gridBox.LeftTopPart(), splits);
 			node->childs[Q_RIGHT_TOP] = get();
-			Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), grid_box.RightTopPart(), splits);
+			Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), gridBox.RightTopPart(), splits);
 		}
 		else
 		{
@@ -49,27 +49,27 @@ void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int 
 	else
 	{
 		top = get();
-		Init(top, box, grid_box, splits);
+		Init(top, box, gridBox, splits);
 	}
 }
 
 void QuadTree::List(FrustumPlanes& frustum, Nodes& nodes)
 {
 	nodes.clear();
-	tmp_nodes.clear();
-	tmp_nodes.push_back(top);
+	tmpNodes.clear();
+	tmpNodes.push_back(top);
 
-	while(!tmp_nodes.empty())
+	while(!tmpNodes.empty())
 	{
-		QuadNode* node = tmp_nodes.back();
-		tmp_nodes.pop_back();
+		QuadNode* node = tmpNodes.back();
+		tmpNodes.pop_back();
 		if(frustum.BoxToFrustum(node->box))
 		{
 			nodes.push_back(node);
 			if(!node->leaf)
 			{
 				for(int i = 0; i < 4; ++i)
-					tmp_nodes.push_back(node->childs[i]);
+					tmpNodes.push_back(node->childs[i]);
 			}
 		}
 	}
@@ -78,19 +78,19 @@ void QuadTree::List(FrustumPlanes& frustum, Nodes& nodes)
 void QuadTree::ListLeafs(FrustumPlanes& frustum, Nodes& nodes)
 {
 	nodes.clear();
-	tmp_nodes.clear();
-	tmp_nodes.push_back(top);
+	tmpNodes.clear();
+	tmpNodes.push_back(top);
 
-	while(!tmp_nodes.empty())
+	while(!tmpNodes.empty())
 	{
-		QuadNode* node = tmp_nodes.back();
-		tmp_nodes.pop_back();
+		QuadNode* node = tmpNodes.back();
+		tmpNodes.pop_back();
 		if(frustum.BoxToFrustum(node->box))
 		{
 			if(!node->leaf)
 			{
 				for(int i = 0; i < 4; ++i)
-					tmp_nodes.push_back(node->childs[i]);
+					tmpNodes.push_back(node->childs[i]);
 			}
 			else
 				nodes.push_back(node);
@@ -104,18 +104,18 @@ void QuadTree::Clear(Nodes& nodes)
 		return;
 
 	nodes.clear();
-	tmp_nodes.clear();
-	tmp_nodes.push_back(top);
+	tmpNodes.clear();
+	tmpNodes.push_back(top);
 
-	while(!tmp_nodes.empty())
+	while(!tmpNodes.empty())
 	{
-		QuadNode* node = tmp_nodes.back();
-		tmp_nodes.pop_back();
+		QuadNode* node = tmpNodes.back();
+		tmpNodes.pop_back();
 		nodes.push_back(node);
 		for(int i = 0; i < 4; ++i)
 		{
 			if(node->childs[i])
-				tmp_nodes.push_back(node->childs[i]);
+				tmpNodes.push_back(node->childs[i]);
 		}
 	}
 
@@ -205,10 +205,10 @@ void Game::ListGrass()
 
 		if(!quad.generated)
 		{
-			int minx = max(1, quad.grid_box.p1.x),
-				miny = max(1, quad.grid_box.p1.y),
-				maxx = min(OutsideLocation::size - 1, quad.grid_box.p2.x),
-				maxy = min(OutsideLocation::size - 1, quad.grid_box.p2.y);
+			int minx = max(1, quad.gridBox.p1.x),
+				miny = max(1, quad.gridBox.p1.y),
+				maxx = min(OutsideLocation::size - 1, quad.gridBox.p2.x),
+				maxy = min(OutsideLocation::size - 1, quad.gridBox.p2.y);
 			quad.generated = true;
 			for(int y = miny; y < maxy; ++y)
 			{

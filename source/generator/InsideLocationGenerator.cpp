@@ -1408,11 +1408,11 @@ void InsideLocationGenerator::SetDungeonParamsAndTextures(BaseLocation& base)
 	lvlPart.draw_range = base.draw_range;
 
 	Scene* scene = lvlPart.scene;
-	scene->clear_color = base.fog_color;
-	scene->fog_range = base.fog_range;
-	scene->fog_color = base.fog_color;
-	scene->ambient_color = base.ambient_color;
-	scene->use_light_dir = false;
+	scene->clearColor = base.fog_color;
+	scene->fogRange = base.fog_range;
+	scene->fogColor = base.fog_color;
+	scene->ambientColor = base.ambient_color;
+	scene->useLightDir = false;
 
 	// first dungeon textures
 	ApplyLocationTextureOverride(game_res->tFloor[0], game_res->tWall[0], game_res->tCeil[0], base.tex);

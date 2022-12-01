@@ -161,7 +161,7 @@ void Arena::SpawnArenaViewers(int count)
 	InsideBuilding* arena = game_level->GetArena();
 	Mesh* mesh = arena->building->inside_mesh;
 
-	for(vector<Mesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
+	for(vector<Mesh::Point>::iterator it = mesh->attachPoints.begin(), end = mesh->attachPoints.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "o_s_viewer_", 11) == 0)
 			points.push_back(&*it);

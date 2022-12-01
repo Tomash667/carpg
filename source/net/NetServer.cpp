@@ -507,7 +507,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 			f >> new_pos;
 			f >> rot;
-			f >> unit.mesh_inst->groups[0].speed;
+			f >> unit.meshInst->groups[0].speed;
 			f.ReadCasted<byte>(ani);
 			if(!f)
 			{
@@ -672,9 +672,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_Attack:
 						if(unit.action == A_ATTACK && unit.animation_state == AS_ATTACK_PREPARE)
 						{
-							const float ratio = unit.mesh_inst->groups[1].time / unit.GetAttackFrame(0);
+							const float ratio = unit.meshInst->groups[1].time / unit.GetAttackFrame(0);
 							unit.animation_state = AS_ATTACK_CAN_HIT;
-							unit.mesh_inst->groups[1].speed = (ratio + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
+							unit.meshInst->groups[1].speed = (ratio + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
 							unit.act.attack.power = ratio + 1.f;
 						}
 						else
@@ -687,8 +687,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.power = 1.f;
 							unit.act.attack.run = false;
 							unit.act.attack.hitted = false;
-							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.mesh_inst->groups[1].speed = attack_speed;
+							unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.meshInst->groups[1].speed = attack_speed;
 						}
 						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
 						break;
@@ -702,8 +702,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.power = 1.f;
 							unit.act.attack.run = false;
 							unit.act.attack.hitted = false;
-							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.mesh_inst->groups[1].speed = attack_speed;
+							unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.meshInst->groups[1].speed = attack_speed;
 							const Weapon& weapon = unit.GetWeapon();
 							unit.RemoveStamina(weapon.GetInfo().stamina * unit.GetStaminaMod(weapon));
 							unit.timer = 0.f;
@@ -721,15 +721,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						break;
 					case AID_Block:
 						unit.action = A_BLOCK;
-						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-						unit.mesh_inst->groups[1].speed = 1.f;
-						unit.mesh_inst->groups[1].blend_max = attack_speed;
+						unit.meshInst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+						unit.meshInst->groups[1].speed = 1.f;
+						unit.meshInst->groups[1].blendMax = attack_speed;
 						break;
 					case AID_Bash:
 						unit.action = A_BASH;
 						unit.animation_state = AS_BASH_ANIMATION;
-						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
-						unit.mesh_inst->groups[1].speed = attack_speed;
+						unit.meshInst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
+						unit.meshInst->groups[1].speed = attack_speed;
 						unit.player->Train(TrainWhat::BashStart, 0.f, 0);
 						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK * unit.GetStaminaMod(unit.GetShield()));
 						break;
@@ -743,8 +743,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.power = 1.5f;
 							unit.act.attack.run = true;
 							unit.act.attack.hitted = false;
-							unit.mesh_inst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.mesh_inst->groups[1].speed = attack_speed;
+							unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.meshInst->groups[1].speed = attack_speed;
 							const Weapon& weapon = unit.GetWeapon();
 							unit.RemoveStamina(weapon.GetInfo().stamina * 1.5f * unit.GetStaminaMod(weapon));
 						}
@@ -756,7 +756,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							is_bow = true;
 						}
 						unit.action = A_NONE;
-						unit.mesh_inst->Deactivate(1);
+						unit.meshInst->Deactivate(1);
 						break;
 					}
 
@@ -840,7 +840,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 
 					unit.action = A_ANIMATION;
-					unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.meshInst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot) * 0.25f;
 					item->pos.z -= cos(unit.rot) * 0.25f;
@@ -887,7 +887,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				bool up_animation = (groundItem->pos.y > unit.pos.y + 0.5f);
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
-				unit.mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				unit.meshInst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 
 				// pick gold sound
 				if(groundItem->item->type == IT_GOLD)
@@ -1422,7 +1422,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: IDLE from %s, invalid animation index %u.", info.name.c_str(), index);
 				else if(game->game_state == GS_LEVEL)
 				{
-					unit.mesh_inst->Play(unit.data->idles->anims[index].c_str(), PLAY_ONCE, 0);
+					unit.meshInst->Play(unit.data->idles->anims[index].c_str(), PLAY_ONCE, 0);
 					unit.animation = ANI_IDLE;
 					// send info to other players
 					if(active_players > 2)
@@ -1625,7 +1625,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						{
 							unit.action = A_USE_USABLE;
 							unit.animation = ANI_PLAY;
-							unit.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
+							unit.meshInst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 							unit.target_pos = unit.pos;
 							unit.target_pos2 = usable->pos;
 							if(usable->base->limit_rot == 4)
@@ -2305,7 +2305,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 						// animation
 						unit.action = A_ANIMATION;
-						unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit.meshInst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 
 						// create item
 						GroundItem* groundItem = new GroundItem;
@@ -2628,7 +2628,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					unit.action = A_USE_ITEM;
 					unit.used_item = slot.item;
-					unit.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+					unit.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 
 					NetChange& c = Add1(changes);
 					c.type = NetChange::USE_ITEM;
@@ -2896,7 +2896,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				f << unit.id;
 				f << unit.pos;
 				f << unit.rot;
-				f << unit.mesh_inst->groups[0].speed;
+				f << unit.meshInst->groups[0].speed;
 				f.WriteCasted<byte>(unit.animation);
 			}
 			break;

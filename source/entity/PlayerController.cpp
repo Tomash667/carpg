@@ -1913,7 +1913,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 			u.action = A_USE_USABLE;
 			u.animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
 			u.animation = ANI_PLAY;
-			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
+			u.meshInst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
 			u.target_pos = u.pos;
 			u.target_pos2 = use.pos;
 			if(use.base->limit_rot == 4)
@@ -1978,7 +1978,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->action = A_CAST;
 		unit->animation_state = AS_CAST_ANIMATION;
 		unit->act.cast.ability = ability;
-		unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+		unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 		if(is_local)
 		{
 			unit->target_pos = data.ability_point;
@@ -2033,21 +2033,21 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			unit->act.dash.rot = Clip(data.ability_rot + unit->rot + PI);
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
-		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		unit->meshInst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 
 		if(dash)
 		{
 			unit->timer = 0.33f;
 			unit->speed = ability->range / 0.33f;
-			unit->mesh_inst->groups[0].speed = 3.f;
+			unit->meshInst->groups[0].speed = 3.f;
 		}
 		else
 		{
 			unit->timer = 0.5f;
 			unit->speed = ability->range / 0.5f;
-			unit->mesh_inst->groups[0].speed = 2.5f;
-			unit->mesh_inst->groups[1].blend_max = 0.1f;
-			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
+			unit->meshInst->groups[0].speed = 2.5f;
+			unit->meshInst->groups[1].blendMax = 0.1f;
+			unit->meshInst->Play("charge", PLAY_PRIO1, 1);
 		}
 
 		if(ability->RequireList())
@@ -2067,7 +2067,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			c.type = NetChange::PLAYER_ABILITY;
 			c.unit = unit;
 			c.ability = ability;
-			c.extra_f = unit->mesh_inst->groups[1].speed;
+			c.extra_f = unit->meshInst->groups[1].speed;
 		}
 		else if(!from_server)
 		{
@@ -2943,7 +2943,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.meshInst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 
 				if(Net::IsLocal())
 				{
@@ -2998,9 +2998,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(GKey.KeyUpAllowed(action_key))
 					{
 						// release attack
-						const float ratio = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
+						const float ratio = u.meshInst->groups[1].time / u.GetAttackFrame(0);
 						const float speed = (ratio + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
-						u.mesh_inst->groups[1].speed = speed;
+						u.meshInst->groups[1].speed = speed;
 						u.animation_state = AS_ATTACK_CAN_HIT;
 						u.act.attack.power = ratio + 1.f;
 
@@ -3018,7 +3018,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
 					{
-						u.mesh_inst->Deactivate(1);
+						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
 						data.wasted_key = action_key;
 
@@ -3046,8 +3046,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.act.attack.index = u.GetRandomAttack();
 						u.act.attack.run = false;
 						u.act.attack.hitted = false;
-						u.mesh_inst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						u.mesh_inst->groups[1].speed = speed;
+						u.meshInst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+						u.meshInst->groups[1].speed = speed;
 						action_key = k;
 						u.timer = 0.f;
 
@@ -3074,7 +3074,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					// stop blocking
 					u.action = A_NONE;
-					u.mesh_inst->Deactivate(1);
+					u.meshInst->Deactivate(1);
 
 					if(Net::IsOnline())
 					{
@@ -3085,7 +3085,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield() && !data.ability_ready)
+				else if(!u.meshInst->groups[1].IsBlending() && u.HaveShield() && !data.ability_ready)
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
@@ -3093,8 +3093,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						const float speed = u.GetBashSpeed();
 						u.action = A_BASH;
 						u.animation_state = AS_BASH_ANIMATION;
-						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
-						u.mesh_inst->groups[1].speed = speed;
+						u.meshInst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
+						u.meshInst->groups[1].speed = speed;
 
 						if(Net::IsOnline())
 						{
@@ -3134,12 +3134,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.action = A_ATTACK;
 						u.act.attack.index = u.GetRandomAttack();
 						u.act.attack.hitted = false;
-						u.mesh_inst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+						u.meshInst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						if(u.running)
 						{
 							// running attack
 							float speed = u.GetAttackSpeed() * u.GetStaminaAttackSpeedMod();
-							u.mesh_inst->groups[1].speed = speed;
+							u.meshInst->groups[1].speed = speed;
 							u.animation_state = AS_ATTACK_CAN_HIT;
 							u.act.attack.run = true;
 							u.act.attack.power = 1.5f;
@@ -3164,7 +3164,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						{
 							// prepare attack
 							float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
-							u.mesh_inst->groups[1].speed = speed;
+							u.meshInst->groups[1].speed = speed;
 							action_key = k;
 							u.animation_state = AS_ATTACK_PREPARE;
 							u.act.attack.run = false;
@@ -3197,10 +3197,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				if(k != Key::None)
 				{
 					// start blocking
-					const float blend_max = u.GetBlockSpeed();
+					const float blendMax = u.GetBlockSpeed();
 					u.action = A_BLOCK;
-					u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-					u.mesh_inst->groups[1].blend_max = blend_max;
+					u.meshInst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+					u.meshInst->groups[1].blendMax = blendMax;
 					action_key = k;
 
 					if(Net::IsOnline())
@@ -3209,7 +3209,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.type = NetChange::ATTACK;
 						c.unit = unit;
 						c.id = AID_Block;
-						c.f[1] = blend_max;
+						c.f[1] = blendMax;
 					}
 				}
 			}
@@ -3235,7 +3235,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
 					{
-						u.mesh_inst->Deactivate(1);
+						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
 						data.wasted_key = action_key;
 						game_level->FreeBowInstance(u.bow_instance);
@@ -3355,7 +3355,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			{
 				int id = Rand() % u.data->idles->anims.size();
 				idle_timer = Random(0.f, 0.5f);
-				u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
+				u.meshInst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
 				u.animation = ANI_IDLE;
 
 				if(Net::IsOnline())
@@ -3455,7 +3455,7 @@ void PlayerController::ReadBook(int index)
 		{
 			unit->action = A_USE_ITEM;
 			unit->used_item = slot.item;
-			unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 			if(Net::IsServer())
 			{
 				NetChange& c = Add1(Net::changes);

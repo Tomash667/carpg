@@ -995,22 +995,22 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = ability.tex_particle;
-			pe->emission_interval = 0.01f;
+			pe->emissionInterval = 0.01f;
 			pe->life = 0.f;
-			pe->particle_life = 0.5f;
+			pe->particleLife = 0.5f;
 			pe->emissions = 1;
-			pe->spawn_min = 8;
-			pe->spawn_max = 12;
-			pe->max_particles = 12;
+			pe->spawnMin = 8;
+			pe->spawnMax = 12;
+			pe->maxParticles = 12;
 			pe->pos = pos;
-			pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-			pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-			pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+			pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+			pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
+			pe->posMax = Vec3(ability.size, ability.size, ability.size);
 			pe->size = ability.size / 2;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 1.f;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
 			lvlPart->pes.push_back(pe);
@@ -1025,21 +1025,21 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.mesh_inst->mesh->head.n_groups > 1)
+	if(unit.meshInst->mesh->head.n_groups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
-		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+		point = unit.meshInst->mesh->GetPoint(NAMES::point_weapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
+		hitbox = unit.meshInst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
 		if(!hitbox)
-			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
+			hitbox = unit.meshInst->mesh->FindPoint("hitbox");
 	}
 
 	assert(hitbox);
@@ -1057,17 +1057,17 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 {
 	assert(hitted && hitbox.IsBox());
 
-	unit.mesh_inst->SetupBones();
+	unit.meshInst->SetupBones();
 
 	// calculate hitbox matrix
 	Matrix m1 = Matrix::Scale(unit.data->scale) * Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitScale * UnitRot * UnitPos
-		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
+		m1 = hitbox.mat * (bone->mat * unit.meshInst->matBones[bone->bone] * m1);
 	}
 	else
-		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
+		m1 = hitbox.mat * unit.meshInst->matBones[hitbox.bone] * m1;
 
 	// a - weapon hitbox, b - unit hitbox
 	Oob a, b;
@@ -1116,22 +1116,22 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = game_res->tSpark;
-				pe->emission_interval = 0.01f;
+				pe->emissionInterval = 0.01f;
 				pe->life = 5.f;
-				pe->particle_life = 0.5f;
+				pe->particleLife = 0.5f;
 				pe->emissions = 1;
-				pe->spawn_min = 10;
-				pe->spawn_max = 15;
-				pe->max_particles = 15;
+				pe->spawnMin = 10;
+				pe->spawnMax = 15;
+				pe->maxParticles = 15;
 				pe->pos = hitpoint;
-				pe->speed_min = Vec3(-1, 0, -1);
-				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+				pe->speedMin = Vec3(-1, 0, -1);
+				pe->speedMax = Vec3(1, 1, 1);
+				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
 				pe->size = 0.3f;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
 				lvlPart->pes.push_back(pe);

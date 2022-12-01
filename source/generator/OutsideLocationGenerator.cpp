@@ -78,13 +78,13 @@ int OutsideLocationGenerator::GetNumberOfSteps()
 void OutsideLocationGenerator::SetOutsideParams()
 {
 	Scene* scene = outside->lvlPart->scene;
-	scene->clear_color = Color::White;
-	scene->fog_range = Vec2(40, 80);
-	scene->fog_color = Color(0.9f, 0.85f, 0.8f);
-	scene->ambient_color = Color(0.5f, 0.5f, 0.5f);
-	scene->light_color = Color::White;
-	scene->light_dir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
-	scene->use_light_dir = true;
+	scene->clearColor = Color::White;
+	scene->fogRange = Vec2(40, 80);
+	scene->fogColor = Color(0.9f, 0.85f, 0.8f);
+	scene->ambientColor = Color(0.5f, 0.5f, 0.5f);
+	scene->lightColor = Color::White;
+	scene->lightDir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+	scene->useLightDir = true;
 	outside->lvlPart->draw_range = 80.f;
 }
 

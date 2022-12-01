@@ -37,7 +37,7 @@ void Door::Recreate()
 {
 	// mesh
 	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
-	meshInst->base_speed = 2.f;
+	meshInst->baseSpeed = 2.f;
 
 	// physics
 	phy = new btCollisionObject;
@@ -165,7 +165,7 @@ void Door::Load(GameReader& f)
 	{
 		meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
-		meshInst->base_speed = 2.f;
+		meshInst->baseSpeed = 2.f;
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game_level->shape_door);
@@ -224,7 +224,7 @@ bool Door::Read(BitStreamReader& f)
 	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
 	if(net->mp_load)
 		meshInst->Read(f);
-	meshInst->base_speed = 2.f;
+	meshInst->baseSpeed = 2.f;
 	phy = new btCollisionObject;
 	phy->setCollisionShape(game_level->shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);

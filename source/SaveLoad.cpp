@@ -457,16 +457,16 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		slot->img_size = img_size;
 
 	// ids
-	f << ParticleEmitter::impl.id_counter;
-	f << TrailParticleEmitter::impl.id_counter;
-	f << Unit::impl.id_counter;
-	f << GroundItem::impl.id_counter;
-	f << Chest::impl.id_counter;
-	f << Usable::impl.id_counter;
-	f << Trap::impl.id_counter;
-	f << Door::impl.id_counter;
-	f << Electro::impl.id_counter;
-	f << Bullet::impl.id_counter;
+	f << ParticleEmitter::impl.idCounter;
+	f << TrailParticleEmitter::impl.idCounter;
+	f << Unit::impl.idCounter;
+	f << GroundItem::impl.idCounter;
+	f << Chest::impl.idCounter;
+	f << Usable::impl.idCounter;
+	f << Trap::impl.idCounter;
+	f << Door::impl.idCounter;
+	f << Electro::impl.idCounter;
+	f << Bullet::impl.idCounter;
 
 	game_stats->Save(f);
 
@@ -492,8 +492,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << sceneMgr->use_fog;
-	f << sceneMgr->use_lighting;
+	f << sceneMgr->useFog;
+	f << sceneMgr->useLighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -676,18 +676,18 @@ void Game::LoadGame(GameReader& f)
 	// ids
 	if(LOAD_VERSION >= V_0_12)
 	{
-		f >> ParticleEmitter::impl.id_counter;
-		f >> TrailParticleEmitter::impl.id_counter;
-		f >> Unit::impl.id_counter;
-		f >> GroundItem::impl.id_counter;
-		f >> Chest::impl.id_counter;
-		f >> Usable::impl.id_counter;
-		f >> Trap::impl.id_counter;
-		f >> Door::impl.id_counter;
-		f >> Electro::impl.id_counter;
+		f >> ParticleEmitter::impl.idCounter;
+		f >> TrailParticleEmitter::impl.idCounter;
+		f >> Unit::impl.idCounter;
+		f >> GroundItem::impl.idCounter;
+		f >> Chest::impl.idCounter;
+		f >> Usable::impl.idCounter;
+		f >> Trap::impl.idCounter;
+		f >> Door::impl.idCounter;
+		f >> Electro::impl.idCounter;
 	}
 	if(LOAD_VERSION >= V_0_16)
-		f >> Bullet::impl.id_counter;
+		f >> Bullet::impl.idCounter;
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;
@@ -751,8 +751,8 @@ void Game::LoadGame(GameReader& f)
 	if(IsDebug())
 		noai = true;
 	f >> dont_wander;
-	f >> sceneMgr->use_fog;
-	f >> sceneMgr->use_lighting;
+	f >> sceneMgr->useFog;
+	f >> sceneMgr->useLighting;
 	f >> draw_particle_sphere;
 	f >> draw_unit_radius;
 	f >> draw_hitbox;

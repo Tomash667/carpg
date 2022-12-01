@@ -268,9 +268,9 @@ void GameGui::Draw()
 }
 
 //=================================================================================================
-void GameGui::Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs)
+void GameGui::Draw(const Matrix& matViewProj, bool draw_gui, bool draw_dialogs)
 {
-	gui->mViewProj = mat_view_proj;
+	gui->mViewProj = matViewProj;
 	gui->Draw(draw_gui, draw_dialogs);
 }
 

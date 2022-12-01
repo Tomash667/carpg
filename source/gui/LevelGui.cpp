@@ -1276,13 +1276,13 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 					sb.unit->talking = false;
 					sb.unit->bubble = nullptr;
 					// fix na crash, powody dla których ani jest NULLem nie s¹ znane :S
-					if(!sb.unit->mesh_inst)
+					if(!sb.unit->meshInst)
 					{
-						game->ReportError(9, Format("Speech bubble for unit without mesh_inst (unit %s, text \"%.100s\").",
+						game->ReportError(9, Format("Speech bubble for unit without meshInst (unit %s, text \"%.100s\").",
 							sb.unit->GetRealName(), sb.text.c_str()));
 					}
 					else
-						sb.unit->mesh_inst->need_update = true;
+						sb.unit->meshInst->needUpdate = true;
 				}
 				SpeechBubblePool.Free(*it);
 				*it = nullptr;

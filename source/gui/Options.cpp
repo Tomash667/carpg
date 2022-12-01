@@ -266,11 +266,11 @@ void Options::Draw()
 	r2.Left() = globalPos.x + 290;
 	r2.Top() = globalPos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GameGui::font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txSoundVolume, soundVolume), DTF_SINGLELINE, Color::Black, r2);
 	// Music volume (0)
 	r2.Top() = globalPos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GameGui::font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txMusicVolume, musicVolume), DTF_SINGLELINE, Color::Black, r2);
 	// Mouse sensitivity (0)
 	r2.Top() = globalPos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
@@ -318,9 +318,9 @@ void Options::Update(float dt)
 		{
 			int value = int(scroll[i].GetValue() * 100);
 			if(i == 0)
-				sound_volume = value;
+				soundVolume = value;
 			else if(i == 1)
-				music_volume = value;
+				musicVolume = value;
 			else if(i == 2)
 				mouse_sensitivity = value;
 			else
@@ -390,10 +390,10 @@ void Options::Event(GuiEvent e)
 		case IdChangeRes:
 			break;
 		case IdSoundVolume:
-			soundMgr->SetSoundVolume(sound_volume);
+			soundMgr->SetSoundVolume(soundVolume);
 			break;
 		case IdMusicVolume:
-			soundMgr->SetMusicVolume(music_volume);
+			soundMgr->SetMusicVolume(musicVolume);
 			break;
 		case IdMouseSensitivity:
 			game->settings.mouse_sensitivity = mouse_sensitivity;
@@ -409,10 +409,10 @@ void Options::Event(GuiEvent e)
 			game->use_glow = check[1].checked;
 			break;
 		case IdNormal:
-			sceneMgr->use_normalmap = check[2].checked;
+			sceneMgr->useNormalmap = check[2].checked;
 			break;
 		case IdSpecular:
-			sceneMgr->use_specularmap = check[3].checked;
+			sceneMgr->useSpecularmap = check[3].checked;
 			break;
 		case IdVsync:
 			render->SetVsync(!render->IsVsyncEnabled());
@@ -426,8 +426,8 @@ void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
 	check[1].checked = game->use_glow;
-	check[2].checked = sceneMgr->use_normalmap;
-	check[3].checked = sceneMgr->use_specularmap;
+	check[2].checked = sceneMgr->useNormalmap;
+	check[3].checked = sceneMgr->useSpecularmap;
 	check[4].checked = render->IsVsyncEnabled();
 
 	ResolutionItem& currentItem = *res.GetItemCast<ResolutionItem>();
@@ -463,15 +463,15 @@ void Options::SetOptions()
 		}
 	}
 
-	if(sound_volume != soundMgr->GetSoundVolume())
+	if(soundVolume != soundMgr->GetSoundVolume())
 	{
-		sound_volume = soundMgr->GetSoundVolume();
-		scroll[0].SetValue(float(sound_volume) / 100.f);
+		soundVolume = soundMgr->GetSoundVolume();
+		scroll[0].SetValue(float(soundVolume) / 100.f);
 	}
-	if(music_volume != soundMgr->GetMusicVolume())
+	if(musicVolume != soundMgr->GetMusicVolume())
 	{
-		music_volume = soundMgr->GetMusicVolume();
-		scroll[1].SetValue(float(music_volume) / 100.f);
+		musicVolume = soundMgr->GetMusicVolume();
+		scroll[1].SetValue(float(musicVolume) / 100.f);
 	}
 	if(mouse_sensitivity != game->settings.mouse_sensitivity)
 	{

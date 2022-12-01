@@ -1831,7 +1831,7 @@ void DialogContext::Talk(cstring msg)
 	if(!talker->usable && talker->data->type == UNIT_TYPE::HUMAN && talker->action == A_NONE && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
-		talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		talker->meshInst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
 		talker->animation = ANI_PLAY;
 		talker->action = A_ANIMATION;
 	}
@@ -1864,7 +1864,7 @@ void DialogContext::ClientTalk(Unit* unit, const string& text, int skipId, int a
 
 	if(animation != 0)
 	{
-		unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		unit->meshInst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
 		unit->animation = ANI_PLAY;
 		unit->action = A_ANIMATION;
 	}

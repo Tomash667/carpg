@@ -291,7 +291,7 @@ struct Unit : public EntityType<Unit>
 	AIController* ai;
 	Hero* hero;
 	Human* human_data;
-	MeshInstance* mesh_inst;
+	MeshInstance* meshInst;
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
@@ -357,7 +357,7 @@ struct Unit : public EntityType<Unit>
 	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
+	Unit() : meshInst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
 		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
@@ -849,7 +849,7 @@ public:
 	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
-		human_data->ApplyScale(mesh_inst);
+		human_data->ApplyScale(meshInst);
 	}
 
 	int ItemsToSellWeight() const;
@@ -949,7 +949,7 @@ public:
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
-	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
+	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, meshInst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const;
 	void RotateTo(const Vec3& pos, float dt);

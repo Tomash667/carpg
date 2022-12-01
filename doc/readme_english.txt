@@ -256,12 +256,12 @@ Available commands:
 	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
 	tile_info - display info about map tile.
-	use_fog - draw fog (use_fog 0/1).
+	useFog - draw fog (useFog 0/1).
 	use_glow - use glow (use_glow 0/1).
-	use_lighting - use lighting (use_lighting 0/1).
-	use_normalmap - use normal mapping (use_normalmap 0/1).
+	useLighting - use lighting (useLighting 0/1).
+	useNormalmap - use normal mapping (useNormalmap 0/1).
 	use_postfx - use post effects (use_postfx 0/1).
-	use_specularmap - use specular mapping (use_specularmap 0/1).
+	useSpecularmap - use specular mapping (useSpecularmap 0/1).
 	uv_mod - terrain uv mod (uv_mod 1-256).
 	verify - verify game state integrity.
 	version - displays game version.
@@ -278,17 +278,17 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* change_title (true [false]) - change window title depending on game mode.
 	* check_updates ([true] false) - check for game updates
 	* class (warrior hunter rogue) - selected class in quick singleplayer game
-	* con_pos Int2 - console position x, y
-	* con_size Int2 - console size x, y
+	* conPos Int2 - console position x, y
+	* conSize Int2 - console size x, y
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
-	* feature_level ("10.0" "10.1" "11.0") - directx feature level
+	* featureLevel ("10.0" "10.1" "11.0") - directx feature level
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
 		not active
 	* log ([true] false) - logging to file
-	* log_filename ["log.txt"] - logging to file name
+	* logFilename ["log.txt"] - logging to file name
 	* name - player name in quick game
 	* nick - nick in multiplayer game
 	* nosound (true [false]) - don't load sounds & music, can't turn it on
@@ -313,8 +313,8 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* timeout (1-3600) - time before kicking player from server when loading if
 		no response (default 10)
 	* vsync ([true] false) - force vertical synchronization
-	* wnd_pos Int2 - window position x, y
-	* wnd_size - window size x, y
+	* wndPos Int2 - window position x, y
+	* wndSize - window size x, y
 
 ===============================================================================
 9) Command line

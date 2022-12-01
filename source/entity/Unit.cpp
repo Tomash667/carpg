@@ -68,7 +68,7 @@ Unit::~Unit()
 		order->Free();
 	if(bow_instance)
 		game_level->FreeBowInstance(bow_instance);
-	delete mesh_inst;
+	delete meshInst;
 	delete human_data;
 	delete hero;
 	delete player;
@@ -475,7 +475,7 @@ bool Unit::DropItem(int index, uint count)
 	weight -= s.item->weight * count;
 
 	action = A_ANIMATION;
-	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	meshInst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 
 	if(Net::IsLocal())
 	{
@@ -531,7 +531,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	weight -= item->weight;
 
 	action = A_ANIMATION;
-	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	meshInst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 
 	if(Net::IsLocal())
 	{
@@ -756,7 +756,7 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 		current_animation = ANI_NONE;
 	}
 
-	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	meshInst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	game_res->PreloadItem(&cons);
 	used_item = &cons;
 }
@@ -1525,13 +1525,13 @@ int Unit::GetDmgType() const
 //=================================================================================================
 Vec3 Unit::GetLootCenter() const
 {
-	Mesh::Point* point2 = mesh_inst->mesh->GetPoint("centrum");
+	Mesh::Point* point2 = meshInst->mesh->GetPoint("centrum");
 
 	if(!point2)
 		return visual_pos;
 
 	const Mesh::Point& point = *point2;
-	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
+	Matrix matBone = point.mat * meshInst->matBones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(visual_pos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
@@ -1801,7 +1801,7 @@ void Unit::Save(GameWriter& f)
 
 	if(f.isLocal)
 	{
-		mesh_inst->Save(f);
+		meshInst->Save(f);
 		f << animation;
 		f << current_animation;
 
@@ -2149,7 +2149,7 @@ void Unit::Load(GameReader& f)
 		bool old_run_attack = false, old_hitted = false;
 
 		CreateMesh(CREATE_MESH::LOAD);
-		mesh_inst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
+		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 		f >> animation;
 		f >> current_animation;
 
@@ -2267,8 +2267,8 @@ void Unit::Load(GameReader& f)
 		{
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
+			bow_instance->groups[0].speed = meshInst->groups[1].speed;
+			bow_instance->groups[0].time = Min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
 		}
 
 		f >> last_bash;
@@ -2277,7 +2277,7 @@ void Unit::Load(GameReader& f)
 	}
 	else
 	{
-		mesh_inst = nullptr;
+		meshInst = nullptr;
 		ai = nullptr;
 		usable = nullptr;
 		used_item = nullptr;
@@ -2511,7 +2511,7 @@ void Unit::Load(GameReader& f)
 		player = nullptr;
 
 	if(f.isLocal && human_data)
-		human_data->ApplyScale(mesh_inst);
+		human_data->ApplyScale(meshInst);
 
 	if(IsSet(data->flags, F_HERO))
 	{
@@ -2680,7 +2680,7 @@ void Unit::Write(BitStreamWriter& f) const
 	// loaded data
 	if(net->mp_load)
 	{
-		mesh_inst->Write(f);
+		meshInst->Write(f);
 		f.WriteCasted<byte>(animation);
 		f.WriteCasted<byte>(current_animation);
 		f.WriteCasted<byte>(animation_state);
@@ -2955,7 +2955,7 @@ bool Unit::Read(BitStreamReader& f)
 	if(net->mp_load)
 	{
 		// get current state in multiplayer
-		if(!mesh_inst->Read(f))
+		if(!meshInst->Read(f))
 			return false;
 		f.ReadCasted<byte>(animation);
 		f.ReadCasted<byte>(current_animation);
@@ -2999,8 +2999,8 @@ bool Unit::Read(BitStreamReader& f)
 			act.shoot.ability = Ability::Get(f.Read<int>());
 			bow_instance = game_level->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
-			bow_instance->groups[0].time = Min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
+			bow_instance->groups[0].speed = meshInst->groups[1].speed;
+			bow_instance->groups[0].time = Min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
 			break;
 		case A_USE_USABLE:
 			f >> act.use_usable.rot;
@@ -3948,8 +3948,8 @@ int NAMES::max_attacks = countof(ani_attacks);
 //=================================================================================================
 Vec3 Unit::GetEyePos() const
 {
-	const Mesh::Point& point = *mesh_inst->mesh->GetPoint("oczy");
-	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
+	const Mesh::Point& point = *meshInst->mesh->GetPoint("oczy");
+	Matrix matBone = point.mat * meshInst->matBones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
@@ -4149,21 +4149,21 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 	if(melee)
 	{
 		if(HaveShield())
-			return mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon);
+			return meshInst->mesh->GetAnimation(NAMES::ani_take_weapon);
 		else
 		{
-			Mesh::Animation* anim = mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon_no_shield);
+			Mesh::Animation* anim = meshInst->mesh->GetAnimation(NAMES::ani_take_weapon_no_shield);
 			if(!anim)
 			{
 				// brak animacja wyci¹gania broni bez tarczy, u¿yj zwyk³ej
-				return mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon);
+				return meshInst->mesh->GetAnimation(NAMES::ani_take_weapon);
 			}
 			else
 				return anim;
 		}
 	}
 	else
-		return mesh_inst->mesh->GetAnimation(NAMES::ani_take_bow);
+		return meshInst->mesh->GetAnimation(NAMES::ani_take_bow);
 }
 
 //=================================================================================================
@@ -4631,9 +4631,9 @@ int Unit::ItemsToSellWeight() const
 void Unit::SetAnimationAtEnd(cstring anim_name)
 {
 	if(anim_name)
-		mesh_inst->SetToEnd(anim_name);
+		meshInst->SetToEnd(anim_name);
 	else
-		mesh_inst->SetToEnd();
+		meshInst->SetToEnd();
 }
 
 //=================================================================================================
@@ -4842,15 +4842,15 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	{
 		if(mode != CREATE_MESH::AFTER_PRELOAD)
 		{
-			assert(!mesh_inst);
-			mesh_inst = new MeshInstance(mesh);
-			mesh_inst->ptr = this;
+			assert(!meshInst);
+			meshInst = new MeshInstance(mesh);
+			meshInst->ptr = this;
 
 			if(mode != CREATE_MESH::ON_WORLDMAP)
 			{
 				if(IsAlive())
 				{
-					mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					meshInst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 					animation = current_animation = ANI_STAND;
 				}
 				else
@@ -4860,21 +4860,21 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 			}
 
-			if(mesh_inst->mesh->head.n_groups > 1)
-				mesh_inst->groups[1].state = 0;
+			if(meshInst->mesh->head.n_groups > 1)
+				meshInst->groups[1].state = 0;
 			if(human_data)
-				human_data->ApplyScale(mesh_inst);
+				human_data->ApplyScale(meshInst);
 		}
 		else
 		{
-			assert(mesh_inst);
-			mesh_inst->ApplyPreload(mesh);
+			assert(meshInst);
+			meshInst->ApplyPreload(mesh);
 		}
 	}
 	else if(mode == CREATE_MESH::PRELOAD)
 	{
-		assert(!mesh_inst);
-		mesh_inst = new MeshInstance(nullptr);
+		assert(!meshInst);
+		meshInst = new MeshInstance(nullptr);
 	}
 }
 
@@ -5014,7 +5014,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		else
 			used_item = nullptr;
 		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
-			mesh_inst->Deactivate(1);
+			meshInst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_EAT:
@@ -5028,7 +5028,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		else
 			used_item = nullptr;
 		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
-			mesh_inst->Deactivate(1);
+			meshInst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
@@ -5037,12 +5037,12 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		break;
 	case A_BLOCK:
 		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
-			mesh_inst->Deactivate(1);
+			meshInst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_DASH:
 		if(act.dash.ability->effect == Ability::Stun && mode != BREAK_ACTION_MODE::ON_LEAVE)
-			mesh_inst->Deactivate(1);
+			meshInst->Deactivate(1);
 		if(act.dash.hit)
 			act.dash.hit->Free();
 		break;
@@ -5092,12 +5092,12 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			action = A_NONE;
 	}
 
-	mesh_inst->ClearEndResult();
+	meshInst->ClearEndResult();
 
 	if(mode != BREAK_ACTION_MODE::INSTANT)
 	{
-		if(mesh_inst->groups.size() == 2u)
-			mesh_inst->Deactivate(1);
+		if(meshInst->groups.size() == 2u)
+			meshInst->Deactivate(1);
 		animation = ANI_STAND;
 	}
 
@@ -5207,7 +5207,7 @@ void Unit::Fall()
 	}
 	animation = ANI_DIE;
 	talking = false;
-	mesh_inst->need_update = true;
+	meshInst->needUpdate = true;
 }
 
 //=================================================================================================
@@ -5302,10 +5302,10 @@ void Unit::Standup(bool warp, bool leave)
 	}
 	else
 	{
-		Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
+		Mesh::Animation* anim = meshInst->mesh->GetAnimation("wstaje2");
 		if(anim)
 		{
-			mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
+			meshInst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
 			action = A_STAND_UP;
 			animation = ANI_PLAY;
 		}
@@ -5494,7 +5494,7 @@ void Unit::Die(Unit* killer)
 	}
 	animation = ANI_DIE;
 	talking = false;
-	mesh_inst->need_update = true;
+	meshInst->needUpdate = true;
 
 	// sound
 	Sound* sound = nullptr;
@@ -5517,7 +5517,7 @@ void Unit::DropGold(int count)
 
 	// animacja wyrzucania
 	action = A_ANIMATION;
-	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	meshInst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 
 	if(Net::IsLocal())
 	{
@@ -5654,7 +5654,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 		{
 		case WeaponState::Hidden:
 			// wyjmij bron
-			mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+			meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 			action = A_TAKE_WEAPON;
 			animation_state = AS_TAKE_WEAPON_START;
 			weapon_taken = type;
@@ -5668,7 +5668,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				if(animation_state == AS_TAKE_WEAPON_START)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
-					mesh_inst->Deactivate(1);
+					meshInst->Deactivate(1);
 					action = usable ? A_USE_USABLE : A_NONE;
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
@@ -5677,7 +5677,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				else
 				{
 					// schowa³ broñ, zacznij wyci¹gaæ
-					mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+					meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WeaponState::Taking;
@@ -5691,7 +5691,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				if(animation_state == AS_TAKE_WEAPON_MOVED)
 				{
 					// unit is hiding weapon & animation almost ended, start taking out weapon
-					mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+					meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 					animation_state = AS_TAKE_WEAPON_START;
 					weapon_taken = type;
 					weapon_hiding = W_NONE;
@@ -5712,7 +5712,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			if(animation_state == AS_TAKE_WEAPON_START)
 			{
 				// jeszcze nie wyj¹³ broni, zacznij wyjmowaæ inn¹
-				mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
 				if(IsPlayer())
@@ -5721,7 +5721,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
-				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+				SetBit(meshInst->groups[1].state, MeshInstance::FLAG_BACK);
 				weapon_state = WeaponState::Hiding;
 				weapon_hiding = weapon_taken;
 			}
@@ -5734,7 +5734,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			// hide previous weapon
 			if(action == A_SHOOT)
 				game_level->FreeBowInstance(bow_instance);
-			mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
+			meshInst->Play(GetTakeWeaponAnimation(weapon_taken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
 			action = A_TAKE_WEAPON;
 			animation_state = AS_TAKE_WEAPON_START;
 			weapon_state = WeaponState::Hiding;
@@ -5762,7 +5762,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			if(animation_state == AS_TAKE_WEAPON_START)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 				action = usable ? A_USE_USABLE : A_NONE;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hidden;
@@ -5770,7 +5770,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
-				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+				SetBit(meshInst->groups[1].state, MeshInstance::FLAG_BACK);
 				weapon_hiding = weapon_taken;
 				weapon_taken = W_NONE;
 				weapon_state = WeaponState::Hiding;
@@ -5781,7 +5781,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 			// zacznij chowaæ
 			if(action == A_SHOOT)
 				game_level->FreeBowInstance(bow_instance);
-			mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+			meshInst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 			weapon_hiding = weapon_taken;
 			weapon_taken = W_NONE;
 			weapon_state = WeaponState::Hiding;
@@ -6359,7 +6359,7 @@ void Unit::Talk(cstring text, int play_anim)
 	}
 	if(ani != 0)
 	{
-		mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		meshInst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
 		animation = ANI_PLAY;
 		action = A_ANIMATION;
 	}
@@ -6761,13 +6761,13 @@ void Unit::CastSpell()
 {
 	Ability& ability = *act.cast.ability;
 
-	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
+	Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::point_cast);
 	Vec3 coord;
 
 	if(point)
 	{
-		mesh_inst->SetupBones();
-		Matrix m = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+		meshInst->SetupBones();
+		Matrix m = point->mat * meshInst->matBones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 		coord = Vec3::TransformZero(m);
 	}
 	else
@@ -6831,22 +6831,22 @@ void Unit::CastSpell()
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = ability.tex_particle;
-					pe->emission_interval = 0.1f;
+					pe->emissionInterval = 0.1f;
 					pe->life = -1;
-					pe->particle_life = 0.5f;
+					pe->particleLife = 0.5f;
 					pe->emissions = -1;
-					pe->spawn_min = 3;
-					pe->spawn_max = 4;
-					pe->max_particles = 50;
+					pe->spawnMin = 3;
+					pe->spawnMax = 4;
+					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
-					pe->speed_min = Vec3(-1, -1, -1);
-					pe->speed_max = Vec3(1, 1, 1);
-					pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+					pe->speedMin = Vec3(-1, -1, -1);
+					pe->speedMax = Vec3(1, 1, 1);
+					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
+					pe->posMax = Vec3(ability.size, ability.size, ability.size);
 					pe->size = ability.size_particle;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
 					locPart->lvlPart->pes.push_back(pe);
@@ -6943,9 +6943,9 @@ void Unit::CastSpell()
 
 					drain.pe = locPart->lvlPart->pes.back();
 					drain.t = 0.f;
-					drain.pe->manual_delete = 1;
-					drain.pe->speed_min = Vec3(-3, 0, -3);
-					drain.pe->speed_max = Vec3(3, 3, 3);
+					drain.pe->manualDelete = 1;
+					drain.pe->speedMin = Vec3(-3, 0, -3);
+					drain.pe->speedMax = Vec3(3, 3, 3);
 
 					dmg *= hitted->CalculateMagicResistance();
 					hp += dmg;
@@ -7152,7 +7152,7 @@ void Unit::Update(float dt)
 		if(IsStanding() && talking)
 		{
 			talk_timer += dt;
-			mesh_inst->need_update = true;
+			meshInst->needUpdate = true;
 		}
 
 		if(Net::IsLocal())
@@ -7233,48 +7233,48 @@ void Unit::Update(float dt)
 		switch(animation)
 		{
 		case ANI_WALK:
-			mesh_inst->Play(NAMES::ani_move, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_move, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				mesh_inst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
+				meshInst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
 			break;
 		case ANI_WALK_BACK:
-			mesh_inst->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				mesh_inst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
+				meshInst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
 			break;
 		case ANI_RUN:
-			mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_run, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				mesh_inst->groups[0].speed = GetRunSpeed() / data->run_speed;
+				meshInst->groups[0].speed = GetRunSpeed() / data->run_speed;
 			break;
 		case ANI_LEFT:
-			mesh_inst->Play(NAMES::ani_left, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_left, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				mesh_inst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
+				meshInst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
 			break;
 		case ANI_RIGHT:
-			mesh_inst->Play(NAMES::ani_right, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_right, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				mesh_inst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
+				meshInst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
 			break;
 		case ANI_STAND:
-			mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 			break;
 		case ANI_BATTLE:
-			mesh_inst->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
 			break;
 		case ANI_BATTLE_BOW:
-			mesh_inst->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
 			break;
 		case ANI_DIE:
-			mesh_inst->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+			meshInst->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
 			break;
 		case ANI_PLAY:
 			break;
 		case ANI_IDLE:
 			break;
 		case ANI_KNEELS:
-			mesh_inst->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+			meshInst->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
 			break;
 		default:
 			assert(0);
@@ -7284,12 +7284,12 @@ void Unit::Update(float dt)
 	}
 
 	// aktualizuj animacjê
-	mesh_inst->Update(dt);
+	meshInst->Update(dt);
 
 	// koniec animacji idle
-	if(animation == ANI_IDLE && mesh_inst->IsEnded())
+	if(animation == ANI_IDLE && meshInst->IsEnded())
 	{
-		mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		meshInst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		animation = ANI_STAND;
 	}
 
@@ -7319,7 +7319,7 @@ void Unit::Update(float dt)
 				action = A_NONE;
 		}
 
-		if(Any(live_state, DYING, FALLING) && mesh_inst->IsEnded())
+		if(Any(live_state, DYING, FALLING) && meshInst->IsEnded())
 		{
 			if(live_state == DYING)
 			{
@@ -7344,7 +7344,7 @@ void Unit::Update(float dt)
 		}
 	}
 
-	const int group_index = mesh_inst->mesh->head.n_groups - 1;
+	const int group_index = meshInst->mesh->head.n_groups - 1;
 
 	// aktualizuj akcjê
 	switch(action)
@@ -7354,9 +7354,9 @@ void Unit::Update(float dt)
 	case A_TAKE_WEAPON:
 		if(weapon_state == WeaponState::Taking)
 		{
-			if(animation_state == AS_TAKE_WEAPON_START && (mesh_inst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			if(animation_state == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
 				animation_state = AS_TAKE_WEAPON_MOVED;
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
 				weapon_state = WeaponState::Taken;
 				if(usable)
@@ -7366,17 +7366,17 @@ void Unit::Update(float dt)
 				}
 				else
 					action = A_NONE;
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 			}
 		}
 		else
 		{
 			// chowanie broni
-			if(animation_state == AS_TAKE_WEAPON_START && (mesh_inst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || mesh_inst->IsEnded(1)))
+			if(animation_state == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
 				animation_state = AS_TAKE_WEAPON_MOVED;
-			if(weapon_taken != W_NONE && (animation_state == AS_TAKE_WEAPON_MOVED || mesh_inst->IsEnded(1)))
+			if(weapon_taken != W_NONE && (animation_state == AS_TAKE_WEAPON_MOVED || meshInst->IsEnded(1)))
 			{
-				mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				meshInst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				weapon_state = WeaponState::Taking;
 				weapon_hiding = W_NONE;
 				animation_state = AS_TAKE_WEAPON_START;
@@ -7391,12 +7391,12 @@ void Unit::Update(float dt)
 					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
-			else if(mesh_inst->IsEnded(1))
+			else if(meshInst->IsEnded(1))
 			{
 				weapon_state = WeaponState::Hidden;
 				weapon_hiding = W_NONE;
 				action = A_NONE;
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 
 				if(IsLocalPlayer())
 				{
@@ -7487,7 +7487,7 @@ void Unit::Update(float dt)
 		break;
 	case A_SHOOT:
 		stamina_timer = STAMINA_RESTORE_TIMER;
-		if(!mesh_inst)
+		if(!meshInst)
 		{
 			// fix na skutek, nie na przyczynê ;(
 			game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), live_state, action, animation,
@@ -7496,9 +7496,9 @@ void Unit::Update(float dt)
 		}
 		if(fake_unit)
 		{
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 				action = A_NONE;
 				game_level->FreeBowInstance(bow_instance);
 				break;
@@ -7506,22 +7506,22 @@ void Unit::Update(float dt)
 		}
 		else if(animation_state == AS_SHOOT_PREPARE)
 		{
-			if(mesh_inst->GetProgress(1) > 20.f / 40)
-				mesh_inst->groups[1].time = 20.f / 40 * mesh_inst->groups[1].anim->length;
+			if(meshInst->GetProgress(1) > 20.f / 40)
+				meshInst->groups[1].time = 20.f / 40 * meshInst->groups[1].anim->length;
 		}
 		else if(animation_state == AS_SHOOT_CAN)
 		{
-			if(Net::IsLocal() && mesh_inst->GetProgress(1) > 20.f / 40)
+			if(Net::IsLocal() && meshInst->GetProgress(1) > 20.f / 40)
 			{
 				Bullet* bullet = new Bullet;
 				locPart->lvlPart->bullets.push_back(bullet);
 
-				mesh_inst->SetupBones();
+				meshInst->SetupBones();
 
-				Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+				Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::point_weapon);
 				assert(point);
 
-				Matrix m2 = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+				Matrix m2 = point->mat * meshInst->matBones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 
 				bullet->Register();
 				bullet->isArrow = true;
@@ -7640,16 +7640,16 @@ void Unit::Update(float dt)
 						<< (bullet->ability ? bullet->ability->hash : 0);
 				}
 			}
-			if(mesh_inst->GetProgress(1) > 20.f / 40)
+			if(meshInst->GetProgress(1) > 20.f / 40)
 				animation_state = AS_SHOOT_SHOT;
 		}
-		else if(mesh_inst->GetProgress(1) > 35.f / 40)
+		else if(meshInst->GetProgress(1) > 35.f / 40)
 		{
 			animation_state = AS_SHOOT_FINISHED;
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
 			koniec_strzelania:
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 				action = A_NONE;
 				game_level->FreeBowInstance(bow_instance);
 				if(Net::IsLocal() && IsAI())
@@ -7660,14 +7660,14 @@ void Unit::Update(float dt)
 				break;
 			}
 		}
-		bow_instance->groups[0].time = min(mesh_inst->groups[1].time, bow_instance->groups[0].anim->length);
-		bow_instance->need_update = true;
+		bow_instance->groups[0].time = min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
+		bow_instance->needUpdate = true;
 		break;
 	case A_ATTACK:
 		stamina_timer = STAMINA_RESTORE_TIMER;
 		if(fake_unit)
 		{
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
 				animation = ANI_BATTLE;
 				current_animation = ANI_STAND;
@@ -7677,13 +7677,13 @@ void Unit::Update(float dt)
 		else if(animation_state == AS_ATTACK_PREPARE)
 		{
 			float t = GetAttackFrame(0);
-			float p = mesh_inst->GetProgress(group_index);
+			float p = meshInst->GetProgress(group_index);
 			if(p > t)
 			{
 				if(Net::IsLocal() && IsAI())
 				{
 					float speed = (1.f + GetAttackSpeed()) * GetStaminaAttackSpeedMod();
-					mesh_inst->groups[group_index].speed = speed;
+					meshInst->groups[group_index].speed = speed;
 					act.attack.power = 2.f;
 					animation_state = AS_ATTACK_CAN_HIT;
 					if(Net::IsOnline())
@@ -7696,7 +7696,7 @@ void Unit::Update(float dt)
 					}
 				}
 				else
-					mesh_inst->groups[group_index].time = t * mesh_inst->groups[group_index].anim->length;
+					meshInst->groups[group_index].time = t * meshInst->groups[group_index].anim->length;
 			}
 			else if(IsPlayer() && Net::IsLocal())
 			{
@@ -7710,22 +7710,22 @@ void Unit::Update(float dt)
 		}
 		else
 		{
-			if(animation_state == AS_ATTACK_CAN_HIT && mesh_inst->GetProgress(group_index) > GetAttackFrame(0))
+			if(animation_state == AS_ATTACK_CAN_HIT && meshInst->GetProgress(group_index) > GetAttackFrame(0))
 			{
-				if(Net::IsLocal() && !act.attack.hitted && mesh_inst->GetProgress(group_index) >= GetAttackFrame(1))
+				if(Net::IsLocal() && !act.attack.hitted && meshInst->GetProgress(group_index) >= GetAttackFrame(1))
 				{
 					if(DoAttack())
 						act.attack.hitted = true;
 				}
-				if(mesh_inst->GetProgress(group_index) >= GetAttackFrame(2) || mesh_inst->IsEnded(group_index))
+				if(meshInst->GetProgress(group_index) >= GetAttackFrame(2) || meshInst->IsEnded(group_index))
 				{
 					// koniec mo¿liwego ataku
 					animation_state = AS_ATTACK_FINISHED;
-					mesh_inst->groups[group_index].speed = 1.f;
+					meshInst->groups[group_index].speed = 1.f;
 					act.attack.run = false;
 				}
 			}
-			if(animation_state == AS_ATTACK_FINISHED && mesh_inst->IsEnded(group_index))
+			if(animation_state == AS_ATTACK_FINISHED && meshInst->IsEnded(group_index))
 			{
 				if(group_index == 0)
 				{
@@ -7733,7 +7733,7 @@ void Unit::Update(float dt)
 					current_animation = ANI_STAND;
 				}
 				else
-					mesh_inst->Deactivate(1);
+					meshInst->Deactivate(1);
 				action = A_NONE;
 				if(Net::IsLocal() && IsAI())
 				{
@@ -7749,7 +7749,7 @@ void Unit::Update(float dt)
 		stamina_timer = STAMINA_RESTORE_TIMER;
 		if(animation_state == AS_BASH_ANIMATION)
 		{
-			if(mesh_inst->GetProgress(1) >= data->frames->t[F_BASH])
+			if(meshInst->GetProgress(1) >= data->frames->t[F_BASH])
 				animation_state = AS_BASH_CAN_HIT;
 		}
 		if(Net::IsLocal() && animation_state == AS_BASH_CAN_HIT)
@@ -7757,15 +7757,15 @@ void Unit::Update(float dt)
 			if(DoShieldSmash())
 				animation_state = AS_BASH_HITTED;
 		}
-		if(mesh_inst->IsEnded(1))
+		if(meshInst->IsEnded(1))
 		{
 			action = A_NONE;
-			mesh_inst->Deactivate(1);
+			meshInst->Deactivate(1);
 		}
 		break;
 	case A_DRINK:
 		{
-			float p = mesh_inst->GetProgress(1);
+			float p = meshInst->GetProgress(1);
 			if(p >= 28.f / 52.f && animation_state == AS_DRINK_START)
 			{
 				PlaySound(game_res->sGulp, DRINK_SOUND_DIST);
@@ -7778,7 +7778,7 @@ void Unit::Update(float dt)
 				animation_state = AS_DRINK_EFFECT;
 				used_item = nullptr;
 			}
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
 				if(usable)
 				{
@@ -7787,13 +7787,13 @@ void Unit::Update(float dt)
 				}
 				else
 					action = A_NONE;
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 			}
 		}
 		break;
 	case A_EAT:
 		{
-			float p = mesh_inst->GetProgress(1);
+			float p = meshInst->GetProgress(1);
 			if(p >= 32.f / 70 && animation_state == AS_EAT_START)
 			{
 				animation_state = AS_EAT_SOUND;
@@ -7810,7 +7810,7 @@ void Unit::Update(float dt)
 				animation_state = AS_EAT_END;
 				used_item = nullptr;
 			}
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
 				if(usable)
 				{
@@ -7819,20 +7819,20 @@ void Unit::Update(float dt)
 				}
 				else
 					action = A_NONE;
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 			}
 		}
 		break;
 	case A_PAIN:
-		if(mesh_inst->mesh->head.n_groups == 2)
+		if(meshInst->mesh->head.n_groups == 2)
 		{
-			if(mesh_inst->IsEnded(1))
+			if(meshInst->IsEnded(1))
 			{
 				action = A_NONE;
-				mesh_inst->Deactivate(1);
+				meshInst->Deactivate(1);
 			}
 		}
-		else if(mesh_inst->IsEnded())
+		else if(meshInst->IsEnded())
 		{
 			action = A_NONE;
 			animation = ANI_BATTLE;
@@ -7845,24 +7845,24 @@ void Unit::Update(float dt)
 			{
 				if(IsOtherPlayer()
 					? animation_state == AS_CAST_TRIGGER
-					: (animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+					: (animation_state == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST]))
 				{
 					animation_state = AS_CAST_CASTED;
 					CastSpell();
 				}
 			}
-			else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && mesh_inst->GetProgress(group_index) >= data->frames->t[F_CAST])
+			else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST])
 			{
 				animation_state = AS_CAST_CASTED;
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CAST_SPELL;
 				c.pos = target_pos;
 			}
-			if(mesh_inst->IsEnded(group_index))
+			if(meshInst->IsEnded(group_index))
 			{
 				action = A_NONE;
 				if(group_index == 1)
-					mesh_inst->Deactivate(1);
+					meshInst->Deactivate(1);
 				else
 					animation = ANI_BATTLE;
 				if(Net::IsLocal() && IsAI())
@@ -7881,7 +7881,7 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_ANIMATION:
-		if(mesh_inst->IsEnded())
+		if(meshInst->IsEnded())
 		{
 			action = A_NONE;
 			animation = ANI_STAND;
@@ -7953,7 +7953,7 @@ void Unit::Update(float dt)
 					// odtwarzanie dŸwiêku
 					if(bu.sound)
 					{
-						if(mesh_inst->GetProgress() >= bu.sound_timer)
+						if(meshInst->GetProgress() >= bu.sound_timer)
 						{
 							if(animation_state == AS_USE_USABLE_USING)
 							{
@@ -8077,15 +8077,15 @@ void Unit::Update(float dt)
 		if(animation_state == AS_POSITION_HURT)
 		{
 			// obs³uga animacji cierpienia
-			if(mesh_inst->mesh->head.n_groups == 2)
+			if(meshInst->mesh->head.n_groups == 2)
 			{
-				if(mesh_inst->IsEnded(1) || timer >= 0.5f)
+				if(meshInst->IsEnded(1) || timer >= 0.5f)
 				{
-					mesh_inst->Deactivate(1);
+					meshInst->Deactivate(1);
 					animation_state = AS_POSITION_HURT_END;
 				}
 			}
-			else if(mesh_inst->IsEnded() || timer >= 0.5f)
+			else if(meshInst->IsEnded() || timer >= 0.5f)
 			{
 				animation = ANI_BATTLE;
 				animation_state = AS_POSITION_HURT_END;
@@ -8113,7 +8113,7 @@ void Unit::Update(float dt)
 		changed = true;
 		break;
 	case A_PICKUP:
-		if(mesh_inst->IsEnded())
+		if(meshInst->IsEnded())
 		{
 			action = A_NONE;
 			animation = ANI_STAND;
@@ -8289,12 +8289,12 @@ void Unit::Update(float dt)
 			if(timer <= 0 || t < 1.f || !ok)
 			{
 				if(act.dash.ability->effect == Ability::Stun)
-					mesh_inst->Deactivate(1);
+					meshInst->Deactivate(1);
 				if(act.dash.hit)
 					act.dash.hit->Free();
 				action = A_NONE;
 				if(Net::IsLocal() || IsLocalPlayer())
-					mesh_inst->groups[0].speed = GetRunSpeed() / data->run_speed;
+					meshInst->groups[0].speed = GetRunSpeed() / data->run_speed;
 			}
 		}
 		break;
@@ -8307,7 +8307,7 @@ void Unit::Update(float dt)
 		assert(Net::IsClient());
 		break;
 	case A_STAND_UP:
-		if(mesh_inst->IsEnded())
+		if(meshInst->IsEnded())
 		{
 			action = A_NONE;
 			animation = ANI_STAND;
@@ -8315,7 +8315,7 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_USE_ITEM:
-		if(mesh_inst->IsEnded(1))
+		if(meshInst->IsEnded(1))
 		{
 			if(Net::IsLocal() && IsPlayer())
 			{
@@ -8699,7 +8699,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 	if(newLocPart == locPart)
 		return;
 
-	const bool is_active = mesh_inst != nullptr;
+	const bool is_active = meshInst != nullptr;
 	const bool activate = newLocPart->IsActive();
 	RemoveElement(locPart->units, this);
 	newLocPart->units.push_back(this);
@@ -8761,8 +8761,8 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 			talking = false;
 
 			// mesh
-			delete mesh_inst;
-			mesh_inst = nullptr;
+			delete meshInst;
+			meshInst = nullptr;
 			delete ai;
 			ai = nullptr;
 			EndEffects();
@@ -8775,7 +8775,7 @@ void Unit::MoveOffscreen()
 {
 	assert(!IsTeamMember());
 
-	if(mesh_inst != nullptr)
+	if(meshInst != nullptr)
 		game->RemoveUnit(this);
 	else
 		RemoveElement(locPart->units, this);
@@ -8813,13 +8813,13 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = game_res->tBlood[data->blood];
-		pe->emission_interval = 0.01f;
+		pe->emissionInterval = 0.01f;
 		pe->life = 5.f;
-		pe->particle_life = 0.5f;
+		pe->particleLife = 0.5f;
 		pe->emissions = 1;
-		pe->spawn_min = 10;
-		pe->spawn_max = 15;
-		pe->max_particles = 15;
+		pe->spawnMin = 10;
+		pe->spawnMax = 15;
+		pe->maxParticles = 15;
 		if(hitpoint)
 			pe->pos = *hitpoint;
 		else
@@ -8827,14 +8827,14 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 			pe->pos = pos;
 			pe->pos.y += GetUnitHeight() * 2.f / 3;
 		}
-		pe->speed_min = Vec3(-1, 0, -1);
-		pe->speed_max = Vec3(1, 1, 1);
-		pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-		pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+		pe->speedMin = Vec3(-1, 0, -1);
+		pe->speedMax = Vec3(1, 1, 1);
+		pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+		pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
 		pe->size = 0.3f;
-		pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->alpha = 0.9f;
-		pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 		pe->mode = 0;
 		pe->Init();
 		locPart->lvlPart->pes.push_back(pe);
@@ -8996,7 +8996,7 @@ bool Unit::DoShieldSmash()
 	if(!mesh)
 		return false;
 
-	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
+	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), meshInst->mesh->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
 	if(!hitted)
@@ -9013,11 +9013,11 @@ bool Unit::DoShieldSmash()
 		else
 			hitted->animation_state = AS_POSITION_HURT;
 
-		if(hitted->mesh_inst->mesh->head.n_groups == 2)
-			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+		if(hitted->meshInst->mesh->head.n_groups == 2)
+			hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 		else
 		{
-			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+			hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 			hitted->animation = ANI_PLAY;
 		}
 
@@ -9103,11 +9103,11 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 				else
 					hitted.animation_state = AS_POSITION_HURT;
 
-				if(hitted.mesh_inst->mesh->head.n_groups == 2)
-					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+				if(hitted.meshInst->mesh->head.n_groups == 2)
+					hitted.meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				else
 				{
-					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 					hitted.animation = ANI_PLAY;
 				}
 			}
@@ -9189,8 +9189,8 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 {
 	const float speed = _speed > 0.f ? _speed : GetBowAttackSpeed();
-	mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-	mesh_inst->groups[1].speed = speed;
+	meshInst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
+	meshInst->groups[1].speed = speed;
 	action = A_SHOOT;
 	act.shoot.ability = nullptr;
 	animation_state = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;

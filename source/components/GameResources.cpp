@@ -41,7 +41,7 @@ GameResources::~GameResources()
 void GameResources::Init()
 {
 	scene = new Scene;
-	scene->clear_color = Color::None;
+	scene->clearColor = Color::None;
 
 	Light light;
 	light.range = 10.f;
@@ -571,12 +571,12 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		node->mat = Matrix::RotationY(rot);
 	node->SetMesh(&mesh);
 	node->center = Vec3::Zero;
-	node->tex_override = nullptr;
+	node->texOverride = nullptr;
 	if(item.type == IT_ARMOR)
 	{
 		if(const Armor& armor = item.ToArmor(); !armor.tex_override.empty())
 		{
-			node->tex_override = armor.GetTextureOverride();
+			node->texOverride = armor.GetTextureOverride();
 			assert(armor.tex_override.size() == mesh.head.n_subs);
 		}
 	}
@@ -592,7 +592,7 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	// setup camera
 	Matrix mat_view = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
-	camera->mat_view_proj = mat_view * mat_proj;
+	camera->matViewProj = mat_view * mat_proj;
 	camera->from = mesh.head.cam_pos;
 	camera->to = mesh.head.cam_target;
 

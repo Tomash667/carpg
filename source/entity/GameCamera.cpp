@@ -132,9 +132,9 @@ void GameCamera::Update(float dt)
 	Matrix mat_view = Matrix::CreateLookAt(from, to);
 	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim) * (PI / 16) * drunk_mod,
 		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), znear, zfar);
-	mat_view_proj = mat_view * mat_proj;
-	mat_view_inv = mat_view.Inverse();
-	frustum.Set(mat_view_proj);
+	matViewProj = mat_view * mat_proj;
+	matViewInv = mat_view.Inverse();
+	frustum.Set(matViewProj);
 
 	// 3d source listener
 	soundMgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));

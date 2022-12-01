@@ -218,12 +218,12 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* crash_mode (none [normal] dataseg full) - określa tryb zapisywania
 		informacji o crashu
 	* grass_range (0-100) - zasięg rysowania trawy
-	* feature_level ("10.0" "10.1" "11.0") - poziom funkcji directx
+	* featureLevel ("10.0" "10.1" "11.0") - poziom funkcji directx
 	* fullscreen ([true] false) - tryb pełnoekranowy
 	* inactive_update (true [false]) - gra jest aktualizowana nawet gdy okno
 		jest nieaktywne; gra jest zawsze aktualizowana w trybie multiplayer
 	* log ([true] false) - logowanie do pliku
-	* log_filename ["log.txt"] - plik do logowania
+	* logFilename ["log.txt"] - plik do logowania
 	* name - imię gracza w trybie szybkiej gry
 	* next_seed - następne ziarno losowości
 	* nick - zapamiętany wybór nicku w trybie multiplayer
@@ -249,8 +249,8 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
 	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyślnie 10)
 	* vsync ([true] false) - ustawia synchronizację pionową
-	* wnd_pos Int2 - pozycja okna x, y
-	* wnd_size Int2 - wymiary okna x, y
+	* wndPos Int2 - pozycja okna x, y
+	* wndSize Int2 - wymiary okna x, y
 
 ===============================================================================
 9) Linia komend

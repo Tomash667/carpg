@@ -61,11 +61,11 @@ void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
 	cfg.Add("use_glow", use_glow);
-	cfg.Add("use_normalmap", sceneMgr->use_normalmap);
-	cfg.Add("use_specularmap", sceneMgr->use_specularmap);
-	cfg.Add("sound_volume", soundMgr->GetSoundVolume());
-	cfg.Add("music_volume", soundMgr->GetMusicVolume());
-	cfg.Add("sound_device", soundMgr->GetDevice().ToString());
+	cfg.Add("useNormalmap", sceneMgr->useNormalmap);
+	cfg.Add("useSpecularmap", sceneMgr->useSpecularmap);
+	cfg.Add("soundVolume", soundMgr->GetSoundVolume());
+	cfg.Add("musicVolume", soundMgr->GetMusicVolume());
+	cfg.Add("soundDevice", soundMgr->GetDevice().ToString());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", engine->GetWindowSize());
@@ -74,7 +74,7 @@ void Game::SaveOptions()
 	int ms, msq;
 	render->GetMultisampling(ms, msq);
 	cfg.Add("multisampling", ms);
-	cfg.Add("multisampling_quality", msq);
+	cfg.Add("multisamplingQuality", msq);
 	cfg.Add("vsync", render->IsVsyncEnabled());
 	SaveCfg();
 }
@@ -1358,7 +1358,7 @@ void Game::UpdateServerTransfer(float dt)
 				u = game_level->CreateUnit(*info.clas->player, -1, in_level);
 				u->locPart = nullptr;
 				u->ApplyHumanData(info.hd);
-				u->mesh_inst->need_update = true;
+				u->meshInst->needUpdate = true;
 				info.u = u;
 
 				u->player = new PlayerController;

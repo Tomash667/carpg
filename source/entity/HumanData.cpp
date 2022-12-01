@@ -49,16 +49,16 @@ Vec2 Human::GetScale()
 //=================================================================================================
 // Ustawienie macierzy na podstawie wysokoœci i wagi
 //=================================================================================================
-void Human::ApplyScale(MeshInstance* mesh_inst)
+void Human::ApplyScale(MeshInstance* meshInst)
 {
-	assert(mesh_inst);
+	assert(meshInst);
 
-	mat_scale.resize(mesh_inst->mesh->head.n_bones);
-	mesh_inst->mat_scale = mat_scale.data();
+	mat_scale.resize(meshInst->mesh->head.n_bones);
+	meshInst->matScale = mat_scale.data();
 
 	Vec2 scale = GetScale();
 	Matrix m = Matrix::Scale(scale.x, scale.y, scale.x);
-	for(int i = 0; i < mesh_inst->mesh->head.n_bones; ++i)
+	for(int i = 0; i < meshInst->mesh->head.n_bones; ++i)
 		mat_scale[i] = m;
 
 	scale.x = (scale.x + 1) / 2;

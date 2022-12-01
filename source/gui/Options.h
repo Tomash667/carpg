@@ -49,5 +49,5 @@ private:
 		txGrassRange, txSoundDevice, txDefaultDevice;
 	string language_id;
 	Scrollbar scroll[4];
-	int sound_volume, music_volume, mouse_sensitivity, grass_range;
+	int soundVolume, musicVolume, mouse_sensitivity, grass_range;
 };

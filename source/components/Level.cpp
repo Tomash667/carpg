@@ -100,10 +100,10 @@ void Level::Init()
 {
 	terrain = new Terrain;
 	Terrain::Options terrain_options;
-	terrain_options.n_parts = 8;
-	terrain_options.tex_size = 256;
-	terrain_options.tile_size = 2.f;
-	terrain_options.tiles_per_part = 16;
+	terrain_options.nParts = 8;
+	terrain_options.texSize = 256;
+	terrain_options.tileSize = 2.f;
+	terrain_options.tilesPerPart = 16;
 	terrain->Init(terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
@@ -805,21 +805,21 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emission_interval = 0.1f;
+			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
-			pe->max_particles = 50;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particle_life = 0.5f;
+			pe->maxParticles = 50;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->particleLife = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->pos_min = Vec3(0, 0, 0);
-			pe->pos_max = Vec3(0, 0, 0);
-			pe->spawn_min = 1;
-			pe->spawn_max = 3;
-			pe->speed_min = Vec3(-1, 3, -1);
-			pe->speed_max = Vec3(1, 4, 1);
+			pe->posMin = Vec3(0, 0, 0);
+			pe->posMax = Vec3(0, 0, 0);
+			pe->spawnMin = 1;
+			pe->spawnMax = 3;
+			pe->speedMin = Vec3(-1, 3, -1);
+			pe->speedMax = Vec3(1, 4, 1);
 			pe->mode = 1;
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
@@ -851,21 +851,21 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emission_interval = 0.1f;
+			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
-			pe->max_particles = 50;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particle_life = 0.5f;
+			pe->maxParticles = 50;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->particleLife = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->pos_min = Vec3(0, 0, 0);
-			pe->pos_max = Vec3(0, 0, 0);
-			pe->spawn_min = 1;
-			pe->spawn_max = 3;
-			pe->speed_min = Vec3(-1, 4, -1);
-			pe->speed_max = Vec3(1, 6, 1);
+			pe->posMin = Vec3(0, 0, 0);
+			pe->posMax = Vec3(0, 0, 0);
+			pe->spawnMin = 1;
+			pe->spawnMax = 3;
+			pe->speedMin = Vec3(-1, 4, -1);
+			pe->speedMax = Vec3(1, 6, 1);
 			pe->mode = 0;
 			pe->tex = game_res->tBlood[BLOOD_RED];
 			pe->size = 0.5f;
@@ -877,21 +877,21 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
-			pe->emission_interval = 0.1f;
+			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
-			pe->max_particles = 500;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particle_life = 3.f;
+			pe->maxParticles = 500;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->particleLife = 3.f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->pos_min = Vec3(0, 0, 0);
-			pe->pos_max = Vec3(0, 0, 0);
-			pe->spawn_min = 4;
-			pe->spawn_max = 8;
-			pe->speed_min = Vec3(-0.6f, 4, -0.6f);
-			pe->speed_max = Vec3(0.6f, 7, 0.6f);
+			pe->posMin = Vec3(0, 0, 0);
+			pe->posMax = Vec3(0, 0, 0);
+			pe->spawnMin = 4;
+			pe->spawnMax = 8;
+			pe->speedMin = Vec3(-0.6f, 4, -0.6f);
+			pe->speedMax = Vec3(0.6f, 7, 0.6f);
 			pe->mode = 0;
 			pe->tex = game_res->tWater;
 			pe->size = 0.05f;
@@ -1038,7 +1038,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 	if(IsSet(obj->flags, OBJ_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI / 2)));
-		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
+		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attachPoints.begin(), end = obj->mesh->attachPoints.end(); it != end; ++it)
 		{
 			const Mesh::Point& pt = *it;
 			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
@@ -1076,7 +1076,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, GameDirection dir,
 	const Vec3& shift, Building* building, CityBuilding* city_building, bool recreate, Vec3* out_point)
 {
-	if(mesh->attach_points.empty())
+	if(mesh->attachPoints.empty())
 	{
 		city_building->walk_pt = shift;
 		assert(!inside);
@@ -1093,7 +1093,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 	Vec3 spawn_point;
 	static vector<const Mesh::Point*> details;
 
-	for(vector<Mesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
+	for(vector<Mesh::Point>::const_iterator it2 = mesh->attachPoints.begin(), end2 = mesh->attachPoints.end(); it2 != end2; ++it2)
 	{
 		const Mesh::Point& pt = *it2;
 		if(pt.name.length() < 5 || pt.name[0] != 'o')
@@ -1490,22 +1490,22 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 					pe->tex = game_res->tFlare2;
 					pe->alpha = 1.0f;
 					pe->size = 1.0f;
-					pe->emission_interval = 0.1f;
+					pe->emissionInterval = 0.1f;
 					pe->emissions = -1;
 					pe->life = -1;
-					pe->max_particles = 50;
-					pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->particle_life = 0.5f;
+					pe->maxParticles = 50;
+					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->particleLife = 0.5f;
 					pe->pos = pos;
 					if(locPart.partType == LocationPart::Type::Outside)
 						pe->pos.y += terrain->GetH(pos);
-					pe->pos_min = Vec3(0, 0, 0);
-					pe->pos_max = Vec3(0, 0, 0);
-					pe->spawn_min = 2;
-					pe->spawn_max = 4;
-					pe->speed_min = Vec3(-1, 3, -1);
-					pe->speed_max = Vec3(1, 4, 1);
+					pe->posMin = Vec3(0, 0, 0);
+					pe->posMax = Vec3(0, 0, 0);
+					pe->spawnMin = 2;
+					pe->spawnMax = 4;
+					pe->speedMin = Vec3(-1, 3, -1);
+					pe->speedMax = Vec3(1, 4, 1);
 					pe->mode = 1;
 					pe->Init();
 					locPart.lvlPart->pes.push_back(pe);
@@ -1784,7 +1784,7 @@ void Level::PickableItemBegin(LocationPart& locPart, Object& o)
 	pickableSpawns.clear();
 	pickableItems.clear();
 
-	for(vector<Mesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
+	for(vector<Mesh::Point>::iterator it = o.base->mesh->attachPoints.begin(), end = o.base->mesh->attachPoints.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
@@ -2847,7 +2847,7 @@ void Level::CreateBlood(LocationPart& locPart, const Unit& u, bool fully_created
 		return;
 
 	Blood& b = Add1(locPart.bloods);
-	u.mesh_inst->SetupBones();
+	u.meshInst->SetupBones();
 	b.pos = u.GetLootCenter();
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);
@@ -3973,7 +3973,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
 		unit.rot = rot;
 		unit.animation = unit.current_animation = ANI_STAND;
-		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		unit.meshInst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
 		unit.locPart = localPart;
@@ -4234,7 +4234,7 @@ GroundItem* Level::SpawnItemAtObject(const Item* item, Object* obj)
 	assert(item && obj);
 	Mesh* mesh = obj->base->mesh;
 	GroundItem* groundItem = SpawnItem(item, obj->pos);
-	for(vector<Mesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
+	for(vector<Mesh::Point>::iterator it = mesh->attachPoints.begin(), end = mesh->attachPoints.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
@@ -4584,22 +4584,22 @@ void Level::SpawnUnitEffect(Unit& unit)
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = game_res->tSpawn;
-	pe->emission_interval = 0.1f;
+	pe->emissionInterval = 0.1f;
 	pe->life = 5.f;
-	pe->particle_life = 0.5f;
+	pe->particleLife = 0.5f;
 	pe->emissions = 5;
-	pe->spawn_min = 10;
-	pe->spawn_max = 15;
-	pe->max_particles = 15 * 5;
+	pe->spawnMin = 10;
+	pe->spawnMax = 15;
+	pe->maxParticles = 15 * 5;
 	pe->pos = unit.pos;
-	pe->speed_min = Vec3(-1, 0, -1);
-	pe->speed_max = Vec3(1, 1, 1);
-	pe->pos_min = Vec3(-0.75f, 0, -0.75f);
-	pe->pos_max = Vec3(0.75f, 1.f, 0.75f);
+	pe->speedMin = Vec3(-1, 0, -1);
+	pe->speedMax = Vec3(1, 1, 1);
+	pe->posMin = Vec3(-0.75f, 0, -0.75f);
+	pe->posMax = Vec3(0.75f, 1.f, 0.75f);
 	pe->size = 0.3f;
-	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->alpha = 0.5f;
-	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->mode = 0;
 	pe->Init();
 	unit.locPart->lvlPart->pes.push_back(pe);
@@ -4971,49 +4971,49 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = ability->tex_particle;
-	pe->emission_interval = 0.01f;
+	pe->emissionInterval = 0.01f;
 	pe->life = 0.f;
-	pe->particle_life = 0.5f;
+	pe->particleLife = 0.5f;
 	pe->emissions = 1;
 	pe->pos = pos;
 	switch(ability->effect)
 	{
 	case Ability::Raise:
-		pe->spawn_min = 16;
-		pe->spawn_max = 25;
-		pe->max_particles = 25;
-		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-		pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
-		pe->pos_max = Vec3(ability->size, ability->size, ability->size);
+		pe->spawnMin = 16;
+		pe->spawnMax = 25;
+		pe->maxParticles = 25;
+		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+		pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+		pe->posMax = Vec3(ability->size, ability->size, ability->size);
 		pe->size = ability->size_particle;
 		pe->alpha = 1.f;
 		break;
 	case Ability::Heal:
-		pe->spawn_min = 16;
-		pe->spawn_max = 25;
-		pe->max_particles = 25;
-		pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-		pe->pos_min = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-		pe->pos_max = Vec3(bounds.x, bounds.y / 2, bounds.x);
+		pe->spawnMin = 16;
+		pe->spawnMax = 25;
+		pe->maxParticles = 25;
+		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 		pe->size = ability->size_particle;
 		pe->alpha = 0.9f;
 		break;
 	default:
-		pe->spawn_min = 12;
-		pe->spawn_max = 12;
-		pe->max_particles = 12;
-		pe->speed_min = Vec3(-0.5f, 1.5f, -0.5f);
-		pe->speed_max = Vec3(0.5f, 3.0f, 0.5f);
-		pe->pos_min = Vec3(-0.5f, 0, -0.5f);
-		pe->pos_max = Vec3(0.5f, 0, 0.5f);
+		pe->spawnMin = 12;
+		pe->spawnMax = 12;
+		pe->maxParticles = 12;
+		pe->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
+		pe->speedMax = Vec3(0.5f, 3.0f, 0.5f);
+		pe->posMin = Vec3(-0.5f, 0, -0.5f);
+		pe->posMax = Vec3(0.5f, 0, 0.5f);
 		pe->size = ability->size_particle / 2;
 		pe->alpha = 1.f;
 		break;
 	}
-	pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->mode = 1;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);

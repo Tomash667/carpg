@@ -417,7 +417,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 
 					// set matrices
 					dungeon_group.mat_world = Matrix::Translation(2.f * (room->pos.x + x), 0, 2.f * (room->pos.y + y));
-					dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.mat_view_proj;
+					dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.matViewProj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -543,7 +543,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 
 			// set matrices
 			dungeon_group.mat_world = Matrix::Translation(2.f * it->x, 0, 2.f * it->y);
-			dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.mat_view_proj;
+			dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.matViewProj;
 
 			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
