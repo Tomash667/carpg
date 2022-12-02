@@ -47,7 +47,7 @@ private:
 	ListBox res, multisampling, language, soundDevice;
 	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
 		txGrassRange, txSoundDevice, txDefaultDevice;
-	string language_id;
+	string languageId;
 	Scrollbar scroll[4];
-	int soundVolume, musicVolume, mouse_sensitivity, grass_range;
+	int soundVolume, musicVolume, mouseSensitivity, grassRange;
 };

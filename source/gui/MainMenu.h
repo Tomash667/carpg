@@ -59,5 +59,5 @@ private:
 	cstring txInfoText, txCheckingVersion, txNewVersion, txNewVersionDialog, txChanges, txDownload, txUpdate, txSkip, txNewerVersion, txNoNewVersion,
 		txCheckVersionError;
 	thread check_version_thread;
-	bool check_updates, version_update;
+	bool checkUpdates, version_update;
 };

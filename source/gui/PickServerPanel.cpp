@@ -162,7 +162,7 @@ void PickServerPanel::Update(float dt)
 				reader >> active_players;
 				reader >> players_max;
 				reader >> flags;
-				const string& server_name = reader.ReadString1();
+				const string& serverName = reader.ReadString1();
 				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
@@ -179,7 +179,7 @@ void PickServerPanel::Update(float dt)
 						// update
 						found = true;
 						Info("PickServer: Updated server %s (%s).", it->name.c_str(), it->adr.ToString());
-						it->name = server_name;
+						it->name = serverName;
 						it->active_players = active_players;
 						it->max_players = players_max;
 						it->flags = flags;
@@ -194,10 +194,10 @@ void PickServerPanel::Update(float dt)
 				if(!found)
 				{
 					// add to servers list
-					Info("PickServer: Added server %s (%s).", server_name.c_str(), packet->systemAddress.ToString());
+					Info("PickServer: Added server %s (%s).", serverName.c_str(), packet->systemAddress.ToString());
 					ServerData& sd = Add1(servers);
 					sd.id = -1;
-					sd.name = server_name;
+					sd.name = serverName;
 					sd.active_players = active_players;
 					sd.max_players = players_max;
 					sd.adr = packet->systemAddress;
@@ -309,7 +309,7 @@ void PickServerPanel::Show(bool pick_autojoin)
 		return;
 	}
 
-	if(net->join_lan)
+	if(net->joinLan)
 	{
 		Info("Pinging LAN servers...");
 		lan_mode = true;
@@ -372,8 +372,8 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 		api->GetServers();
 		bad_request = false;
 	}
-	net->join_lan = lan_mode;
-	game->cfg.Add("join_lan", lan_mode);
+	net->joinLan = lan_mode;
+	game->cfg.Add("joinLan", lan_mode);
 	game->SaveCfg();
 	servers.clear();
 	grid.Reset();

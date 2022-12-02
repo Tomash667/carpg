@@ -14,7 +14,7 @@
 #include <thread>
 
 //=================================================================================================
-MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(game->check_updates)
+MainMenu::MainMenu() : check_status(CheckVersionStatus::None), checkUpdates(game->checkUpdates)
 {
 	focusable = true;
 	visible = false;
@@ -141,7 +141,7 @@ void MainMenu::UpdateCheckVersion()
 {
 	if(check_status == CheckVersionStatus::None)
 	{
-		if(check_updates)
+		if(checkUpdates)
 		{
 			Info("Checking CaRpg version.");
 			check_status = CheckVersionStatus::Checking;

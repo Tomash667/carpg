@@ -55,7 +55,7 @@ public:
 	Grid grid;
 	InputTextBox itb;
 	vector<Int2> lobby_updates;
-	string server_name;
+	string serverName;
 	float update_timer, startup_timer;
 	uint max_players, autostart_count;
 	int last_startup_sec, kick_id;

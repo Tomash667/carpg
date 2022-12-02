@@ -11,7 +11,7 @@ Website: https://carpg.pl/en
 Version: 0.18
 Date: 2021-07-02
 
-===============================================================================
+===================================================================================================
 1) Table of contents
 	1... Table of contents
 	2... About
@@ -25,20 +25,18 @@ Date: 2021-07-02
 	10.. Report bug
 	11.. Credits
 
-===============================================================================
+===================================================================================================
 2) About
-CaRpg is a combination of the type of game action rpg / hack-n-slash like Gothic
-or TES: Morrowind and roguelike games like Slash'EM or Dungeon Crawl Stone Soup.
-In randomly generated world, we begin in randomly generated city, recruit random
-characters and go to the randomly generated dungeons to kill randomly generated
-enemies :3 This is not about everything to be random but also matched to each
-other. There are several unique tasks (more precisely eight) whose performance
-is the goal in the current version. It is available multiplayer mode for up to 8
-people but let so many people walking in the underworld is a little awkward
-because you have to scramble to kill someone so it is proposed to play for 4
-people. Expect changes for the better!
+CaRpg is a combination of the type of game action rpg / hack-n-slash like Gothic or TES: Morrowind
+and roguelike games like Slash'EM or Dungeon Crawl Stone Soup. In randomly generated world, we
+begin in randomly generated city, recruit random characters and go to the randomly generated
+dungeons to kill randomly generated enemies :3 This is not about everything to be random but also
+matched to each other. There are several unique tasks (more precisely eight) whose performance
+is the goal in the current version. It is available multiplayer mode for up to 8 people but let so
+many people walking in the underworld is a little awkward because you have to scramble to kill
+someone so it is proposed to play for 4 people. Expect changes for the better!
 
-===============================================================================
+===================================================================================================
 3) Controls - Can be changed in options.
 3.1. Common
 	Esc - menu / close window
@@ -98,88 +96,76 @@ people. Expect changes for the better!
 	2 - rumors
 	3 - notes
 
-===============================================================================
+===================================================================================================
 4) How to play
-* First play the tutorial, everything is there to find out. If out accidentally
-	turned it off in carpg.cfg change "skip_tutorial = 1" to 0
-* Combat - The easiest way to attack the enemy is using melee weapon. Try to
-	surround and attack them from behind while they are busy fighting with the
-	others, then you deal more damage. Blocking is not currently as useful, you do
-	not get such damage but the enemy does not receive any injuries. It is useful
-	for blocking spells that ignore armor. Archery is useful as long as you have
-	someone in the team who will stop the enemy from coming to you. In combat you
-	can perform a powerful attack, you have to hold the attack for a while, so
-	that it will be stronger. This is useful against resistant enemies which
-	attack normal asking little or nothing. Attack on the run is like 0.25 of
-	powerful attack but you cannot stop.
-* Abilities - Use ability by pressing key 3 (by default), it will draw area of effect
-	used by this ability. Press left mouse button to use, right to cancel. Red
-	area means that ability can be used in this place. Some spells can be cast on
-	yourself by holding walk back, player will be highlighted.
-* Stamina - Attacking uses stamina, if you run out of stamina you can't run or
-	attack. Blocking uses stamina too, and if you loss all stamina block is
-	broken. Stop attacking to restore stamina, not walking restore it faster.
-* Often, save the game, especially at the beginning when you are weak. Later,
-	before the fight with the boss. Remember, you can always happen some
-	unrepaired bug and the game may hang or crash :( Before saving the previous
-	file is copied to other file (X.sav -> X.sav.bak) so in case of problems
-	during saving you can copy it.
-* Defeat - If the character with your team loses all hp he will fall to the
-	ground. When there will be no enemies in the area he will recover with 1 hp.
-	When all die there will be the end of the game. The game also ends in year
-	160, your character is retiring.
-* The division of loot - Each team member receives a portion of the loot for
-	themselves. Each NPC receives 10% of loot, the rest is divided equally between
-	the players. Heroes who for some reason were in town get nothing. Items found
-	in the dungeon are owned by team, when they sold the profit will be split. You
-	can take for yourself a team item but then in the future you have to pay the
-	remainder of the market value for the other heroes - it is marked as a credit.
-	NPCs can afford to take an item if it is better than what we have currently,
-	or you ask for it in the city. You can give heroes an item, if it is better
-	than what they have to try to buy it from you. NPCs can take from you every
-	potion, for free.
-* Hardcore mode - In this mode, when you save you exit to menu and load deletes
-	a save. Standard mode for roguelike games. It is not recommended so
-	far because if the game freeze or crashes you will need to start new game.
-* If the NPC will block your path you can yell at him (default key Y) so he
-	will move out of the road.
+* First play the tutorial, everything is there to find out. If out accidentally turned it off in
+	carpg.cfg change "skipTutorial = 1" to 0
+* Combat - The easiest way to attack the enemy is using melee weapon. Try to surround and attack
+	them from behind while they are busy fighting with the others, then you deal more damage.
+	Blocking is not currently as useful, you do not get such damage but the enemy does not receive
+	any injuries. It is useful for blocking spells that ignore armor. Archery is useful as long as
+	you have someone in the team who will stop the enemy from coming to you. In combat you can
+	perform a powerful attack, you have to hold the attack for a while, so that it will be
+	stronger. This is useful against resistant enemies which attack normal asking little or
+	nothing. Attack on the run is like 0.25 of powerful attack but you cannot stop.
+* Abilities - Use ability by pressing key 3 (by default), it will draw area of effect used by this
+	ability. Press left mouse button to use, right to cancel. Red area means that ability can be
+	used in this place. Some spells can be cast on yourself by holding walk back, player will be
+	highlighted.
+* Stamina - Attacking uses stamina, if you run out of stamina you can't run or attack. Blocking
+	uses stamina too, and if you loss all stamina block is broken. Stop attacking to restore
+	stamina, not walking restore it faster.
+* Often, save the game, especially at the beginning when you are weak. Later, before the fight with
+	the boss. Remember, you can always happen some unrepaired bug and the game may hang or crash :(
+	Before saving the previous file is copied to other file (X.sav -> X.sav.bak) so in case of
+	problems during saving you can copy it.
+* Defeat - If the character with your team loses all hp he will fall to the ground. When there will
+	be no enemies in the area he will recover with 1 hp. When all die there will be the end of the
+	game. The game also ends when your character is retiring.
+* The division of loot - Each team member receives a portion of the loot for themselves. Each NPC
+	receives 10% of loot, the rest is divided equally between the players. Heroes who for some
+	reason were in town get nothing. Items found in the dungeon are owned by team, when they sold
+	the profit will be split. You can take for yourself a team item but then in the future you have
+	to pay the remainder of the market value for the other heroes - it is marked as a credit. NPCs
+	can afford to take an item if it is better than what we have currently, or you ask for it in
+	the city. You can give heroes an item, if it is better than what they have to try to buy it
+	from you. NPCs can take from you every potion, for free.
+* Hardcore mode - In this mode, when you save you exit to menu and load deletes a save. Standard
+	mode for roguelike games. It is not recommended so far because if the game freeze or crashes
+	you will need to start new game.
+* If the NPC will block your path you can yell at him (default key Y) so he will move out of the
+	road.
 
-===============================================================================
+===================================================================================================
 5) Multiplayer mode
-* General information - The multiplayer mode has been tested only on a LAN. Thanks
-	to master server it is now possible to connect two computers behind router.
-	But if it fails you need to manually change router settings (NAT). If the
-	character's movement lags let the server change option in console
-	'mp_interp'. Default is 0.05, raising it until you find the character movement
-	is adequate. Not forget to boast on the forum how it went! :)
-* The leader - Man that determines where to go on a world map. Only he can kick
-	out heroes and give them orders. NPC cannot be an leader. You can pass
-	command to another from team panel (default T key). The server also can change
-	the commander.
-* The time - in singleplayer mode time passes normally when the player is
-	resting or training. In multiplayer mode where one person is resting /
-	training other players receive the same amount of days to use. How many days
-	you can see in the team panel (default T key). When someone exceeds this number
-	it will automatically increase it for all. The day changes only when the number
-	is exceeded. Free days are decreasing during travel that players do not keep
-	them indefinitely.
-* Saving - Don't save game while in combat or during important dialogue
-	because something might went wrong. You can only load game from menu.
-* If the load on the client takes too long you can change / add file
-	configuration value of "timeout = X" where X = 1-3600 in seconds after which
-	the player is kicked for timeout.
-* Ports - game uses port udp 37557, can be changed in configuration file. Master
-	servers uses ports tcp 8080 and udp 60481 for communication.
+* General information - The multiplayer mode has been tested only on a LAN. Thanks to master server
+	it is now possible to connect two computers behind router. But if it fails you need to manually
+	change router settings (NAT). If the character's movement lags let the server change option in
+	console 'mp_interp'. Default is 0.05, raising it until you find the character movement is
+	adequate. Not forget to boast on the forum how it went! :)
+* The leader - Man that determines where to go on a world map. Only he can kick out heroes and give
+	them orders. NPC cannot be an leader. You can pass command to another from team panel (default
+	T key). The server also can change the commander.
+* The time - in singleplayer mode time passes normally when the player is resting or training. In
+	multiplayer mode where one person is resting/training other players receive the same amount of
+	days to use. How many days you can see in the team panel (default T key). When someone exceeds
+	this number it will automatically increase it for all. The day changes only when the number is
+	exceeded. Free days are decreasing during travel that players do not keep them indefinitely.
+* Saving - Don't save game while in combat or during important dialogue because something might
+	went wrong.
+* If the load on the client takes too long you can change/add file configuration value of
+	"timeout = X" where X = 1-3600 in seconds after which the player is kicked for timeout.
+* Ports - game uses port udp 37557, can be changed in configuration file. Master servers uses ports
+	tcp 8080 and udp 60481 for communication.
 
-===============================================================================
+===================================================================================================
 6) Changes
 See changelog_eng.txt file.
 
-===============================================================================
+===================================================================================================
 7) Console command
-To open console press ~ [to the left from 1]. Some commands are only available
-in multiplayer on lobby. Devmode must be activated (devmode 1).
-Available commands:
+To open console press ~ [to the left from 1]. Some commands are only available in multiplayer on
+	lobby. Devmode must be activated (devmode 1). Available commands:
 	add_effect - add effect to selected unit (add_effect effect <value_type> power [source [perk/time]]).
 	add_exp - add experience to team (add_exp value).
 	add_gold - give gold to player (add_gold count).
@@ -210,7 +196,7 @@ Available commands:
 	force_quest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
-	grass_range - grass draw range.
+	grassRange - grass draw range.
 	heal - heal player.
 	heal_unit - heal unit in front of player.
 	help - display information about command (help [command]).
@@ -257,10 +243,10 @@ Available commands:
 	suicide - kill player.
 	tile_info - display info about map tile.
 	useFog - draw fog (useFog 0/1).
-	use_glow - use glow (use_glow 0/1).
+	useGlow - use glow (useGlow 0/1).
 	useLighting - use lighting (useLighting 0/1).
 	useNormalmap - use normal mapping (useNormalmap 0/1).
-	use_postfx - use post effects (use_postfx 0/1).
+	usePostfx - use post effects (usePostfx 0/1).
 	useSpecularmap - use specular mapping (useSpecularmap 0/1).
 	uv_mod - terrain uv mod (uv_mod 1-256).
 	verify - verify game state integrity.
@@ -268,69 +254,61 @@ Available commands:
 	warp - move player into building (warp building/group [front]).
 	whisper/w - send private message to player (whisper nick msg).
 
-===============================================================================
+===================================================================================================
 8) Config file
 In configuration file (by default carpg.cfg) you can use such options:
-	* autopick (random warrior hunter rogue) - automatically picks character in
-		multiplayer and set as ready. Works only once
-	* autostart (count>=1) - automatically starts up when specified number of players
-		join and are ready
-	* change_title (true [false]) - change window title depending on game mode.
-	* check_updates ([true] false) - check for game updates
+	* autopick (random warrior hunter rogue) - automatically picks character in multiplayer and set
+		as ready. Works only once
+	* autostart (count>=1) - automatically starts up when specified number of players join and are
+		ready
+	* changeTitle (true [false]) - change window title depending on game mode.
+	* checkUpdates ([true] false) - check for game updates
 	* class (warrior hunter rogue) - selected class in quick singleplayer game
 	* conPos Int2 - console position x, y
 	* conSize Int2 - console size x, y
 	* console (true [false]) - windows console
-	* crash_mode (none [normal] dataseg full) - mode to save crash information
-	* grass_range (0-100) - grass draw range
+	* crashMode (none [normal] dataseg full) - mode to save crash information
+	* grassRange (0-100) - grass draw range
 	* featureLevel ("10.0" "10.1" "11.0") - directx feature level
 	* fullscreen ([true] false) - fullscreen mode
-	* inactive_update (true [false]) - update singleplayer game even if window is
-		not active
+	* inactiveUpdate (true [false]) - update singleplayer game even if window is not active
 	* log ([true] false) - logging to file
 	* logFilename ["log.txt"] - logging to file name
 	* name - player name in quick game
 	* nick - nick in multiplayer game
 	* nosound (true [false]) - don't load sounds & music, can't turn it on
-	* packet_logger (true [false]) - logging MP packets
-	* play_music ([true] false) - play music
-	* play_sound ([true] false) - play sound
+	* packetLogger (true [false]) - logging MP packets
 	* port ([37557]) - port in multiplayer
-	* quickstart (single host join joinip) - automatically start game in
-		selected mode (single - singleplayer mode, use nick and class), in
-		multiplayer uses (nick, server_name, server_player, server_pswd, server_ip),
-		if options not set it won't work
+	* quickstart (single host join joinip) - automatically start game in selected mode (single -
+		singleplayer mode, use nick and class), in multiplayer uses (nick, serverName,
+		serverPlayers, serverPswd, serverIp), if options not set it won't work
 	* resolution (800x600 [1024x768]) - screen resolution
-	* screenshot_format – set screenshot (jpg, bmp, tif, gif, png, dds)
-	* server_ip - last server ip address
-	* server_lan - if true server won't be registered on master server
-	* server_name - last server name
-	* server_players - last server max players
-	* server_pswd - last server password
-	* skip_tutorial (true [false]) - skip tutorial
-	* stream_log_file ["log.stream"] - file to log mp information
-	* stream_log_mode (none [errors] full) - mode to log mp information
-	* timeout (1-3600) - time before kicking player from server when loading if
-		no response (default 10)
+	* screenshotFormat – set screenshot format (jpg, bmp, tif, gif, png, dds)
+	* serverIp - last server ip address
+	* serverLan - if true server won't be registered on master server
+	* serverName - last server name
+	* serverPlayers - last server max players
+	* serverPswd - last server password
+	* skipTutorial (true [false]) - skip tutorial
+	* timeout (1-3600) - time before kicking player from server when loading if no response
+		(default 10)
 	* vsync ([true] false) - force vertical synchronization
 	* wndPos Int2 - window position x, y
 	* wndSize - window size x, y
 
-===============================================================================
+===================================================================================================
 9) Command line
-Command line switches are used for exe shortcut or from window shell. All config
-settings can be used. Aditionaly you can change which config file to use:
--config file.cfg - use this config file
+Command line switches are used for exe shortcut or from window shell. All config settings can be
+used. Aditionaly you can change which config file to use: -config file.cfg - use this config file
 
-===============================================================================
+===================================================================================================
 10) Report bug 🐜
-Errors and bugs can and should be reported to the appropriate forum section in
-https://carpg.pl/en forum. Do not forget to give all possible details that may
-help in its repair. If game crash with created minidump file you can attach it.
-Log file can be helpful too. Before reporting a bug check if someone has not
-reported it in the appropriate topic.
+Errors and bugs can and should be reported to the appropriate forum section in https://carpg.pl/en
+forum. Do not forget to give all possible details that may help in its repair. If game crash with
+created minidump file you can attach it. Log file can be helpful too. Before reporting a bug check
+if someone has not reported it in the appropriate topic.
 
-===============================================================================
+===================================================================================================
 11) Credits
 Tomashu - Programming, models, textures, ideas, story.
 Leinnan - Models, textures, ideas, testing.

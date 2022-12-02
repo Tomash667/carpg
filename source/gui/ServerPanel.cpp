@@ -208,7 +208,7 @@ void ServerPanel::Draw()
 		for(uint i = 0; i < password.length(); ++i)
 			pswd += '*';
 	}
-	gui->DrawText(GameGui::font, Format(txServerText, server_name.c_str(), net->active_players, max_players, pswd->c_str()), 0, Color::Black, r, &r);
+	gui->DrawText(GameGui::font, Format(txServerText, serverName.c_str(), net->active_players, max_players, pswd->c_str()), 0, Color::Black, r, &r);
 }
 
 //=================================================================================================
@@ -582,7 +582,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				net->master_server_adr = packet->systemAddress;
 				BitStreamWriter f;
 				f << ID_MASTER_HOST;
-				f << server_name;
+				f << serverName;
 				f << max_players;
 				f << net->GetServerFlags();
 				f << VERSION;
@@ -1140,7 +1140,7 @@ void ServerPanel::UpdateServerInfo()
 	f.WriteCasted<byte>(net->active_players);
 	f.WriteCasted<byte>(max_players);
 	f.WriteCasted<byte>(net->GetServerFlags());
-	f << server_name;
+	f << serverName;
 
 	net->peer->SetOfflinePingResponse(f.GetData(), f.GetSize());
 }
@@ -1359,6 +1359,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 			// nie ma graczy, mo¿na zamkn¹æ
 			net->ClosePeer(net->master_server_state >= MasterServerState::Connecting);
 			CloseDialog();
+			game->SetTitle(nullptr);
 			if(callback)
 				callback();
 		}
@@ -1373,6 +1374,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		game->net_timer = T_WAIT_FOR_DISCONNECT;
 		game->net_callback = callback;
 		CloseDialog();
+		game->SetTitle(nullptr);
 	}
 }
 

@@ -2,7 +2,6 @@
 #include "Game.h"
 
 #include "Language.h"
-#include "SaveSlot.h"
 #include "Utility.h"
 #include "Version.h"
 
@@ -285,9 +284,48 @@ void LoadConfiguration(char* cmdLine)
 		Error("Settings: Config file parse error '%s' : %s", cfg.GetFileName().c_str(), cfg.GetError().c_str());
 
 	// pre V_0_13 compatibility
-	cfg.Rename("cl_normalmap", "use_normalmap");
-	cfg.Rename("cl_specularmap", "use_specularmap");
-	cfg.Rename("cl_postfx", "use_postfx");
+	cfg.Rename("cl_normalmap", "useNormalmap");
+	cfg.Rename("cl_specularmap", "useSpecularmap");
+	cfg.Rename("cl_postfx", "usePostfx");
+	// pre V_DEV compatibility
+	cfg.Rename("change_title", "changeTitle");
+	cfg.Rename("check_updates", "checkUpdates");
+	cfg.Rename("cl_glow", "useGlow");
+	cfg.Rename("con_pos", "conPos");
+	cfg.Rename("con_size", "conSize");
+	cfg.Rename("crash_mode", "crashMode");
+	cfg.Rename("feature_level", "featureLevel");
+	cfg.Rename("grass_range", "grassRange");
+	cfg.Rename("hardcore_mode", "hardcoreOption");
+	cfg.Rename("hidden_window", "hiddenWindow");
+	cfg.Rename("inactive_update", "inactiveUpdate");
+	cfg.Rename("join_lan", "joinLan");
+	cfg.Rename("lobby_port", "lobbyPort");
+	cfg.Rename("lobby_url", "lobbyUrl");
+	cfg.Rename("log_filename", "logFilename");
+	cfg.Rename("mouse_sensitivity", "mouseSensitivity");
+	cfg.Rename("multisampling_quality", "multisamplingQuality");
+	cfg.Rename("music_volume", "musicVolume");
+	cfg.Rename("packet_logger", "packetLogger");
+	cfg.Rename("players_devmode", "playersDevmode");
+	cfg.Rename("proxy_port", "proxyPort");
+	cfg.Rename("quickstart_class", "quickstartClass");
+	cfg.Rename("quickstart_name", "quickstartName");
+	cfg.Rename("screenshot_format", "screenshotFormat");
+	cfg.Rename("server_ip", "serverIp");
+	cfg.Rename("server_lan", "serverLan");
+	cfg.Rename("server_name", "serverName");
+	cfg.Rename("server_pswd", "serverPswd");
+	cfg.Rename("server_players", "serverPlayers");
+	cfg.Rename("skip_cutscene", "skipCutscene");
+	cfg.Rename("skip_tutorial", "skipTutorial");
+	cfg.Rename("sound_device", "soundDevice");
+	cfg.Rename("sound_volume", "soundVolume");
+	cfg.Rename("use_normalmap", "useNormalmap");
+	cfg.Rename("use_postfx", "usePostfx");
+	cfg.Rename("use_specularmap", "useSpecularmap");
+	cfg.Rename("wnd_pos", "wndPos");
+	cfg.Rename("wnd_size", "wndSize");
 
 	// if restarted game, wait for previous application to close
 	if(cfg.GetBool("restart"))
@@ -311,67 +349,18 @@ void LoadConfiguration(char* cmdLine)
 			utility::WaitForDelayLock(delay);
 	}
 
-	engine->LoadConfiguration(cfg);
-
 	// crash reporter
-	int crashMode = cfg.GetEnumValue("crash_mode", {
+	int crashMode = cfg.GetEnumValue("crashMode", {
 		{ "none", 0 },
 		{ "normal", 1 },
 		{ "dataseg", 2 },
 		{ "full", 3 }
 		}, 1);
-	Info("Settings: crash_mode = %d", crashMode);
+	Info("Settings: crashMode = %d", crashMode);
 	CrashHandler::Register("CaRpg", VERSION_STR, "http://carpg.pl/crashrpt.php", crashMode);
 
-	// multiplayer mode
-	game->player_name = Truncate(cfg.GetString("nick"), 16);
-	net->server_name = Truncate(cfg.GetString("server_name"), 16);
-	net->password = Truncate(cfg.GetString("server_pswd"), 16);
-	net->max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
-	game->server_ip = cfg.GetString("server_ip");
-	game->mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
-	net->server_lan = cfg.GetBool("server_lan");
-	net->join_lan = cfg.GetBool("join_lan");
-	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
-
-	// quickstart
-	if(game->quickstart == QUICKSTART_NONE)
-	{
-		const string& mode = cfg.GetString("quickstart");
-		if(mode == "single")
-			game->quickstart = QUICKSTART_SINGLE;
-		else if(mode == "host")
-			game->quickstart = QUICKSTART_HOST;
-		else if(mode == "join")
-			game->quickstart = QUICKSTART_JOIN_LAN;
-		else if(mode == "joinip")
-			game->quickstart = QUICKSTART_JOIN_IP;
-		else if(mode == "load")
-			game->quickstart = QUICKSTART_LOAD;
-		else if(mode == "loadmp")
-			game->quickstart = QUICKSTART_LOAD_MP;
-	}
-	int slot = cfg.GetInt("loadslot", -1);
-	if(slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
-		game->quickstart_slot = slot;
-
-	// miscellaneous
-	game->testing = cfg.GetBool("test");
-	game->use_postfx = cfg.GetBool("use_postfx", true);
-	game->use_glow = cfg.GetBool("cl_glow", true);
-	game->hardcore_option = cfg.GetBool("hardcore_mode");
-	game->inactive_update = cfg.GetBool("inactive_update");
-	game->settings.grass_range = max(cfg.GetFloat("grass_range", 40.f), 0.f);
-	game->settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
-	game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
-	game->screenshot_format = ImageFormatMethods::FromString(cfg.GetString("screenshot_format", "jpg"));
-	if(game->screenshot_format == ImageFormat::Invalid)
-	{
-		Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", cfg.GetString("screenshot_format").c_str());
-		game->screenshot_format = ImageFormat::JPG;
-	}
-
-	// game
+	// more configuration
+	engine->LoadConfiguration(cfg);
 	game->LoadCfg();
 }
 

@@ -101,8 +101,7 @@ public:
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activationPoint) override;
 
-	void GetTitle(LocalString& s);
-	void ChangeTitle();
+	void SetTitle(cstring mode, bool initial = false);
 	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
 
@@ -297,7 +296,7 @@ public:
 	int start_version;
 	uint load_errors, load_warnings;
 	std::set<const Item*> items_load;
-	bool hardcore_mode, hardcore_option, check_updates, skip_tutorial;
+	bool hardcore_mode, hardcoreOption, checkUpdates, skipTutorial, changeTitle;
 	// quickstart
 	QUICKSTART quickstart;
 	int quickstart_slot;
@@ -325,7 +324,7 @@ public:
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
 	//-----------------------------------------------------------------
-	string player_name, server_ip, enter_pswd;
+	string player_name, serverIp, enter_pswd;
 	enum NET_MODE
 	{
 		NM_CONNECTING,
@@ -352,7 +351,7 @@ public:
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	float portal_anim;
 	// scene
-	bool use_glow, use_postfx;
+	bool useGlow, usePostfx;
 	DrawBatch draw_batch;
 	int uv_mod;
 	QuadTree quadtree;
@@ -362,7 +361,7 @@ public:
 	// screenshot
 	time_t last_screenshot;
 	uint screenshot_count;
-	ImageFormat screenshot_format;
+	ImageFormat screenshotFormat;
 
 	//-----------------------------------------------------------------
 	// SOUND & MUSIC
@@ -376,7 +375,7 @@ public:
 	Config cfg;
 	Settings settings;
 	int lastSave;
-	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, dont_wander;
+	bool inactiveUpdate, noai, devmode, default_devmode, default_player_devmode, dont_wander;
 
 	//-----------------------------------------------------------------
 	// RESOURCES

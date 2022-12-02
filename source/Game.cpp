@@ -105,18 +105,13 @@ extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 //=================================================================================================
-Game::Game() : quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
-draw_hitbox(false), noai(false), testing(false), game_speed(1.f), next_seed(0), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
+Game::Game() : quickstart(QUICKSTART_NONE), inactiveUpdate(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
+draw_hitbox(false), noai(false), testing(false), game_speed(1.f), next_seed(0), dont_wander(false), checkUpdates(true), skipTutorial(false), portal_anim(0),
 musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr),
-rt_item_rot(nullptr), use_postfx(true), mp_timeout(10.f), screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), quickstart_slot(SaveSlot::MAX_SLOTS),
+rt_item_rot(nullptr), usePostfx(true), mp_timeout(10.f), screenshotFormat(ImageFormat::JPG), game_state(GS_LOAD), quickstart_slot(SaveSlot::MAX_SLOTS),
 in_load(false), tMinimap(nullptr)
 {
 	dialog_context.is_local = true;
-
-	LocalString s;
-	GetTitle(s);
-	engine->SetTitle(s.c_str());
-
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 
 	aiMgr = new AIManager;
@@ -499,7 +494,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't create server, no player nick.");
 			break;
 		}
-		if(net->server_name.empty())
+		if(net->serverName.empty())
 		{
 			Warn("Quickstart: Can't create server, no server name.");
 			break;
@@ -545,7 +540,7 @@ void Game::StartGameMode()
 	case QUICKSTART_JOIN_IP:
 		if(!player_name.empty())
 		{
-			if(!server_ip.empty())
+			if(!serverIp.empty())
 			{
 				game_gui->server->autoready = true;
 				QuickJoinIp();
@@ -695,7 +690,7 @@ void Game::OnUpdate(float dt)
 	if(!engine->IsActive() || !engine->IsCursorLocked())
 	{
 		input->SetFocus(false);
-		if(Net::IsSingleplayer() && !inactive_update)
+		if(Net::IsSingleplayer() && !inactiveUpdate)
 			return;
 	}
 	else
@@ -808,42 +803,35 @@ void Game::OnUpdate(float dt)
 }
 
 //=================================================================================================
-void Game::GetTitle(LocalString& s)
+void Game::SetTitle(cstring mode, bool initial)
 {
-	s = "CaRpg " VERSION_STR;
-	bool none = true;
+	if(!initial && !changeTitle)
+		return;
 
-	if(IsDebug())
-	{
-		none = false;
-		s += " - DEBUG";
-	}
+	LocalString s = "CaRpg " VERSION_STR;
 
-	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui && game_gui->server && game_gui->server->visible))
+	if(changeTitle)
 	{
-		if(none)
-			s += " - ";
-		else
-			s += ", ";
-		if(Net::IsOnline())
+		bool none = true;
+
+		if(IsDebug())
 		{
-			if(Net::IsServer())
-				s += "SERVER";
-			else
-				s += "CLIENT";
+			none = false;
+			s += " - DEBUG";
 		}
-		else
-			s += "SINGLE";
+
+		if(mode)
+		{
+			if(none)
+				s += " - ";
+			else
+				s += ", ";
+			s += mode;
+		}
+
+		s += Format(" [%d]", GetCurrentProcessId());
 	}
 
-	s += Format(" [%d]", GetCurrentProcessId());
-}
-
-//=================================================================================================
-void Game::ChangeTitle()
-{
-	LocalString s;
-	GetTitle(s);
 	SetConsoleTitle(s->c_str());
 	engine->SetTitle(s->c_str());
 }
@@ -876,9 +864,9 @@ void Game::TakeScreenshot(bool no_gui)
 	}
 
 	cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
-		lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ImageFormatMethods::GetExtension(screenshot_format));
+		lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ImageFormatMethods::GetExtension(screenshotFormat));
 
-	render->SaveScreenshot(path, screenshot_format);
+	render->SaveScreenshot(path, screenshotFormat);
 
 	cstring msg = Format("Screenshot saved to '%s'.", path);
 	game_gui->console->AddMsg(msg);
@@ -932,7 +920,7 @@ void Game::DoExitToMenu()
 	game_gui->main_menu->Show();
 	units_mesh_load.clear();
 
-	ChangeTitle();
+	SetTitle(nullptr);
 }
 
 //=================================================================================================
@@ -943,12 +931,60 @@ void Game::LoadCfg()
 	if(lastSave < 1 || lastSave > SaveSlot::MAX_SLOTS)
 		lastSave = -1;
 
+	// quickstart
+	if(quickstart == QUICKSTART_NONE)
+	{
+		const string& mode = cfg.GetString("quickstart");
+		if(mode == "single")
+			quickstart = QUICKSTART_SINGLE;
+		else if(mode == "host")
+			quickstart = QUICKSTART_HOST;
+		else if(mode == "join")
+			quickstart = QUICKSTART_JOIN_LAN;
+		else if(mode == "joinip")
+			quickstart = QUICKSTART_JOIN_IP;
+		else if(mode == "load")
+			quickstart = QUICKSTART_LOAD;
+		else if(mode == "loadmp")
+			quickstart = QUICKSTART_LOAD_MP;
+	}
+	int slot = cfg.GetInt("loadslot", -1);
+	if(slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
+		quickstart_slot = slot;
+
+	// multiplayer mode
+	player_name = Truncate(cfg.GetString("nick"), 16);
+	net->serverName = Truncate(cfg.GetString("serverName"), 16);
+	net->password = Truncate(cfg.GetString("serverPswd"), 16);
+	net->max_players = Clamp(cfg.GetUint("serverPlayers", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
+	serverIp = cfg.GetString("serverIp");
+	mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
+	net->serverLan = cfg.GetBool("serverLan");
+	net->joinLan = cfg.GetBool("joinLan");
+	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
+
 	// miscellaneous
-	check_updates = cfg.GetBool("check_updates", true);
-	skip_tutorial = cfg.GetBool("skip_tutorial");
+	changeTitle = cfg.GetBool("changeTitle");
+	checkUpdates = cfg.GetBool("checkUpdates", true);
 	default_devmode = cfg.GetBool("devmode", IsDebug());
-	default_player_devmode = cfg.GetBool("players_devmode", IsDebug());
 	devmode = default_devmode;
+	default_player_devmode = cfg.GetBool("playersDevmode", IsDebug());
+	hardcoreOption = cfg.GetBool("hardcoreOption");
+	inactiveUpdate = cfg.GetBool("inactiveUpdate");
+	skipTutorial = cfg.GetBool("skipTutorial");
+	testing = cfg.GetBool("test");
+	useGlow = cfg.GetBool("useGlow", true);
+	usePostfx = cfg.GetBool("usePostfx", true);
+	settings.grassRange = max(cfg.GetFloat("grassRange", 40.f), 0.f);
+	settings.mouseSensitivity = Clamp(cfg.GetInt("mouseSensitivity", 50), 0, 100);
+	screenshotFormat = ImageFormatMethods::FromString(cfg.GetString("screenshotFormat", "jpg"));
+	if(screenshotFormat == ImageFormat::Invalid)
+	{
+		Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", cfg.GetString("screenshotFormat").c_str());
+		screenshotFormat = ImageFormat::JPG;
+	}
+
+	SetTitle(nullptr, true);
 }
 
 //=================================================================================================
@@ -1203,7 +1239,7 @@ void Game::SetGameText()
 void Game::GetPostEffects(vector<PostEffect>& postEffects)
 {
 	postEffects.clear();
-	if(!use_postfx)
+	if(!usePostfx)
 		return;
 
 	// vignette
@@ -1698,7 +1734,7 @@ void Game::CutsceneEnded(bool cancel)
 //=================================================================================================
 bool Game::CutsceneShouldSkip()
 {
-	return cfg.GetBool("skip_cutscene");
+	return cfg.GetBool("skipcutscene");
 }
 
 //=================================================================================================

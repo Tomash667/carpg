@@ -131,7 +131,7 @@ public:
 	RakPeerInterface* peer;
 	rvector<PlayerInfo> players; // contains players that left too
 	vector<string*> net_strs;
-	PacketLogger* packet_logger;
+	PacketLogger* packetLogger;
 	float update_timer, mp_interp;
 	int port;
 	bool mp_load, mp_load_worldmap, mp_use_interp, prepare_world, mp_quickload;
@@ -182,7 +182,7 @@ public:
 
 	rvector<PlayerInfo> old_players;
 	uint active_players, max_players;
-	string server_name, password;
+	string serverName, password;
 	int last_id;
 	MasterServerState master_server_state;
 	SystemAddress master_server_adr;
@@ -194,7 +194,7 @@ public:
 		float timer;
 	};
 	vector<WarpData> warps;
-	bool players_left, server_lan;
+	bool players_left, serverLan;
 
 	//****************************************************************************
 	// Client
@@ -220,7 +220,7 @@ public:
 
 	SystemAddress server, ping_adr;
 	float interpolate_timer;
-	bool was_client, join_lan;
+	bool was_client, joinLan;
 
 private:
 	static Mode mode;

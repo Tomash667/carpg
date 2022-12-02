@@ -166,9 +166,10 @@ void GameCamera::UpdateFreeRot(float dt)
 
 	const float c_cam_angle_min = PI + 0.1f;
 	const float c_cam_angle_max = PI * 1.8f - 0.1f;
+	const float sensitivity = game->settings.GetMouseSensitivity();
 
 	int div = (target->action == A_SHOOT ? 800 : 400);
-	real_rot.y += -float(input->GetMouseDif().y) * game->settings.mouse_sensitivity_f / div;
+	real_rot.y += -float(input->GetMouseDif().y) * sensitivity / div;
 	if(real_rot.y > c_cam_angle_max)
 		real_rot.y = c_cam_angle_max;
 	if(real_rot.y < c_cam_angle_min)
@@ -176,7 +177,7 @@ void GameCamera::UpdateFreeRot(float dt)
 
 	if(!target->IsStanding())
 	{
-		real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
+		real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * sensitivity / 400);
 		free_rot = true;
 		free_rot_key = Key::None;
 	}
@@ -194,7 +195,7 @@ void GameCamera::UpdateFreeRot(float dt)
 		if(free_rot_key == Key::None || input->Up(free_rot_key))
 			free_rot = false;
 		else
-			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / 400);
+			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * sensitivity / 400);
 	}
 }
 

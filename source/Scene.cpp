@@ -122,7 +122,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == &use)
 				{
-					if(use_glow)
+					if(useGlow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -159,7 +159,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_CHEST && pc->data.before_player_ptr.chest == &chest)
 				{
-					if(use_glow)
+					if(useGlow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -196,7 +196,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					GatherDrawBatchLights(node);
 				if(pc->data.before_player == BP_DOOR && pc->data.before_player_ptr.door == &door)
 				{
-					if(use_glow)
+					if(useGlow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
@@ -494,7 +494,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	if(PlayerController::data.before_player == BP_ITEM)
 	{
 		GroundItem* groundItem = PlayerController::data.before_player_ptr.item;
-		if(use_glow)
+		if(useGlow)
 		{
 			GlowNode& glow = Add1(draw_batch.glow_nodes);
 			glow.node = groundItem->node;
@@ -563,7 +563,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		GatherDrawBatchLights(node);
 	if(selected)
 	{
-		if(use_glow)
+		if(useGlow)
 		{
 			GlowNode& glow = Add1(draw_batch.glow_nodes);
 			glow.node = node;
@@ -592,7 +592,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(use_glow)
+			if(useGlow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -677,7 +677,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(use_glow)
+			if(useGlow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -727,7 +727,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(use_glow)
+			if(useGlow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -765,7 +765,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(use_glow)
+			if(useGlow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -818,7 +818,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(use_glow)
+			if(useGlow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -844,7 +844,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(use_glow)
+			if(useGlow)
 			{
 				GlowNode& glow = Add1(draw_batch.glow_nodes);
 				glow.node = node2;
@@ -870,7 +870,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node3->lights = node->lights;
 			if(selected)
 			{
-				if(use_glow)
+				if(useGlow)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
@@ -897,7 +897,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node3->lights = node->lights;
 			if(selected)
 			{
-				if(use_glow)
+				if(useGlow)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;
@@ -924,7 +924,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node3->lights = node->lights;
 			if(selected)
 			{
-				if(use_glow)
+				if(useGlow)
 				{
 					GlowNode& glow = Add1(draw_batch.glow_nodes);
 					glow.node = node3;

@@ -2388,7 +2388,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		{
 			int div = (u.action == A_SHOOT ? 800 : 400);
 			data.rot_buf *= (1.f - dt * 2);
-			data.rot_buf += float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / div;
+			data.rot_buf += float(input->GetMouseDif().x) * game->settings.GetMouseSensitivity() / div;
 			if(data.rot_buf > 0.1f)
 				data.rot_buf = 0.1f;
 			else if(data.rot_buf < -0.1f)

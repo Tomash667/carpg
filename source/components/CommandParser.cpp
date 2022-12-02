@@ -55,10 +55,10 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
-	cmds.push_back(ConsoleCommand(&game->use_postfx, "use_postfx", "use post effects (use_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->use_glow, "use_glow", "use glow (use_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->usePostfx, "usePostfx", "use post effects (usePostfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->useGlow, "useGlow", "use glow (useGlow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
-	cmds.push_back(ConsoleCommand(&game->settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
+	cmds.push_back(ConsoleCommand(&game->settings.grassRange, "grassRange", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&game->devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));

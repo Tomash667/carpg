@@ -324,7 +324,8 @@ void GameGui::UpdateGui(float dt)
 		}
 	}
 
-	gui->Update(dt, cursor_allow_move ? game->settings.mouse_sensitivity_f : -1.f);
+	const float mouseSpeed = cursor_allow_move ? Lerp(0.5f, 1.5f, float(game->settings.mouseSensitivity) / 100) : -1.f;
+	gui->Update(dt, mouseSpeed);
 
 	// handle blocking input by gui
 	if(gui->HaveDialog() || (mp_box->visible && mp_box->itb.focus))

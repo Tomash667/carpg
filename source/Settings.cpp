@@ -144,3 +144,9 @@ void Settings::LoadGameKeys(Config& cfg)
 		}
 	}
 }
+
+//=================================================================================================
+float Settings::GetMouseSensitivity() const
+{
+	return Lerp(0.5f, 1.5f, float(mouseSensitivity) / 100);
+}

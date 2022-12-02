@@ -49,7 +49,7 @@ void Net::InitServer()
 	OpenPeer();
 
 	uint max_connections = max_players - 1;
-	if(!server_lan)
+	if(!serverLan)
 		++max_connections;
 
 	SocketDescriptor sd(port, nullptr);
@@ -73,7 +73,7 @@ void Net::InitServer()
 	if(IsDebug())
 		peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS);
 
-	if(!server_lan)
+	if(!serverLan)
 	{
 		ConnectionAttemptResult result = peer->Connect(api->GetApiUrl(), api->GetProxyPort(), nullptr, 0, nullptr, 0, 6);
 		if(result == CONNECTION_ATTEMPT_STARTED)
@@ -122,7 +122,7 @@ void Net::OnNewGameServer()
 	if(!net_strs.empty())
 		StringPool.Free(net_strs);
 	game_gui->server->max_players = max_players;
-	game_gui->server->server_name = server_name;
+	game_gui->server->serverName = serverName;
 	game_gui->server->UpdateServerInfo();
 	game_gui->server->Show();
 	if(!mp_quickload)
@@ -152,7 +152,7 @@ void Net::OnNewGameServer()
 		}
 	}
 
-	game->ChangeTitle();
+	game->SetTitle("SERVER");
 }
 
 //=================================================================================================
@@ -3873,7 +3873,7 @@ uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability
 //=================================================================================================
 void Net::Save(GameWriter& f)
 {
-	f << server_name;
+	f << serverName;
 	f << password;
 	f << active_players;
 	f << max_players;
@@ -3897,7 +3897,7 @@ void Net::Save(GameWriter& f)
 //=================================================================================================
 void Net::Load(GameReader& f)
 {
-	f >> server_name;
+	f >> serverName;
 	f >> password;
 	f >> active_players;
 	f >> max_players;

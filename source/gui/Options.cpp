@@ -274,11 +274,11 @@ void Options::Draw()
 	// Mouse sensitivity (0)
 	r2.Top() = globalPos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GameGui::font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txMouseSensitivity, mouseSensitivity), DTF_SINGLELINE, Color::Black, r2);
 	// Grass range (0)
 	r2.Top() = globalPos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GameGui::font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txGrassRange, grassRange), DTF_SINGLELINE, Color::Black, r2);
 
 	// listboxes
 	res.Draw();
@@ -322,9 +322,9 @@ void Options::Update(float dt)
 			else if(i == 1)
 				musicVolume = value;
 			else if(i == 2)
-				mouse_sensitivity = value;
+				mouseSensitivity = value;
 			else
-				grass_range = value;
+				grassRange = value;
 			Event((GuiEvent)(IdSoundVolume + i));
 		}
 	}
@@ -396,17 +396,16 @@ void Options::Event(GuiEvent e)
 			soundMgr->SetMusicVolume(musicVolume);
 			break;
 		case IdMouseSensitivity:
-			game->settings.mouse_sensitivity = mouse_sensitivity;
-			game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
+			game->settings.mouseSensitivity = mouseSensitivity;
 			break;
 		case IdGrassRange:
-			game->settings.grass_range = (float)grass_range;
+			game->settings.grassRange = (float)grassRange;
 			break;
 		case IdControls:
 			gui->ShowDialog((DialogBox*)game_gui->controls);
 			break;
 		case IdGlow:
-			game->use_glow = check[1].checked;
+			game->useGlow = check[1].checked;
 			break;
 		case IdNormal:
 			sceneMgr->useNormalmap = check[2].checked;
@@ -425,7 +424,7 @@ void Options::Event(GuiEvent e)
 void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
-	check[1].checked = game->use_glow;
+	check[1].checked = game->useGlow;
 	check[2].checked = sceneMgr->useNormalmap;
 	check[3].checked = sceneMgr->useSpecularmap;
 	check[4].checked = render->IsVsyncEnabled();
@@ -473,15 +472,15 @@ void Options::SetOptions()
 		musicVolume = soundMgr->GetMusicVolume();
 		scroll[1].SetValue(float(musicVolume) / 100.f);
 	}
-	if(mouse_sensitivity != game->settings.mouse_sensitivity)
+	if(mouseSensitivity != game->settings.mouseSensitivity)
 	{
-		mouse_sensitivity = game->settings.mouse_sensitivity;
-		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
+		mouseSensitivity = game->settings.mouseSensitivity;
+		scroll[2].SetValue(float(mouseSensitivity) / 100.f);
 	}
-	if(grass_range != game->settings.grass_range)
+	if(grassRange != game->settings.grassRange)
 	{
-		grass_range = (int)game->settings.grass_range;
-		scroll[3].SetValue(float(grass_range) / 100.f);
+		grassRange = (int)game->settings.grassRange;
+		scroll[3].SetValue(float(grassRange) / 100.f);
 	}
 }
 
@@ -525,7 +524,7 @@ void Options::OnChangeMultisampling(int id)
 //=================================================================================================
 void Options::OnChangeLanguage(int id)
 {
-	language_id = language.GetItemCast<LanguageItem>()->id;
+	languageId = language.GetItemCast<LanguageItem>()->id;
 
 	DialogInfo info;
 	info.event = DialogEvent(this, &Options::ChangeLanguage);
@@ -542,7 +541,7 @@ void Options::ChangeLanguage(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		Language::prefix = language_id;
+		Language::prefix = languageId;
 		game->SaveOptions();
 		game->RestartGame();
 	}

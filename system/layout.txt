@@ -234,6 +234,9 @@ control "MenuList" {
 		color {255 255 255 170}
 	}
 	font "normal"
+	border 3
+	padding 2
+	itemHeight 20
 }
 
 control "MenuStrip" {

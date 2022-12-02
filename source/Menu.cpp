@@ -60,16 +60,16 @@ bool Game::CanShowMenu()
 void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
-	cfg.Add("use_glow", use_glow);
+	cfg.Add("useGlow", useGlow);
 	cfg.Add("useNormalmap", sceneMgr->useNormalmap);
 	cfg.Add("useSpecularmap", sceneMgr->useSpecularmap);
 	cfg.Add("soundVolume", soundMgr->GetSoundVolume());
 	cfg.Add("musicVolume", soundMgr->GetMusicVolume());
 	cfg.Add("soundDevice", soundMgr->GetDevice().ToString());
-	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
-	cfg.Add("grass_range", settings.grass_range);
+	cfg.Add("mouseSensitivity", settings.mouseSensitivity);
+	cfg.Add("grassRange", settings.grassRange);
 	cfg.Add("resolution", engine->GetWindowSize());
-	cfg.Add("skip_tutorial", skip_tutorial);
+	cfg.Add("skipTutorial", skipTutorial);
 	cfg.Add("language", Language::prefix);
 	int ms, msq;
 	render->GetMultisampling(ms, msq);
@@ -93,7 +93,7 @@ void Game::StartQuickGame()
 	Net::SetMode(Net::Mode::Singleplayer);
 
 	Class* clas = nullptr;
-	const string& class_id = cfg.GetString("quickstart_class");
+	const string& class_id = cfg.GetString("quickstartClass");
 	if(!class_id.empty())
 	{
 		clas = Class::TryGet(class_id);
@@ -101,22 +101,23 @@ void Game::StartQuickGame()
 		{
 			if(!clas->IsPickable())
 			{
-				Warn("Settings [quickstart_class]: Class '%s' is not pickable by players.", class_id.c_str());
+				Warn("Settings [quickstartClass]: Class '%s' is not pickable by players.", class_id.c_str());
 				clas = nullptr;
 			}
 		}
 		else
-			Warn("Settings [quickstart_class]: Invalid class '%s'.", class_id.c_str());
+			Warn("Settings [quickstartClass]: Invalid class '%s'.", class_id.c_str());
 	}
-	string quickstart_name = cfg.GetString("quickstart_name", "Test");
-	if(quickstart_name.empty())
-		quickstart_name = "Test";
+
+	string quickstartName = cfg.GetString("quickstartName", "Test");
+	if(quickstartName.empty())
+		quickstartName = "Test";
 	HumanData hd;
 	CreatedCharacter cc;
 	int hair_index;
 
 	RandomCharacter(clas, hair_index, hd, cc);
-	NewGameCommon(clas, quickstart_name.c_str(), hd, cc, false);
+	NewGameCommon(clas, quickstartName.c_str(), hd, cc, false);
 }
 
 //=================================================================================================
@@ -127,7 +128,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	quest_mgr->quest_tutorial->in_tutorial = tutorial;
 	game_gui->main_menu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);
-	hardcore_mode = hardcore_option;
+	hardcore_mode = hardcoreOption;
 
 	UnitData& ud = *clas->player;
 
@@ -176,7 +177,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
-	ChangeTitle();
+	SetTitle("SINGLE");
 
 	if(!tutorial)
 	{
@@ -216,7 +217,7 @@ void Game::MultiplayerPanelEvent(int id)
 		break;
 	case MultiplayerPanel::IdJoinIp:
 		{
-			GetTextDialogParams params(txEnterIp, server_ip);
+			GetTextDialogParams params(txEnterIp, serverIp);
 			params.event = DialogEvent(this, &Game::OnEnterIp);
 			params.limit = 100;
 			params.parent = game_gui->multiplayer;
@@ -252,15 +253,15 @@ void Game::CreateServerEvent(int id)
 	else
 	{
 		// copy settings
-		net->server_name = Trimmed(game_gui->create_server->textbox[0].GetText());
+		net->serverName = Trimmed(game_gui->create_server->textbox[0].GetText());
 		net->max_players = atoi(game_gui->create_server->textbox[1].GetText().c_str());
 		net->password = game_gui->create_server->textbox[2].GetText();
-		net->server_lan = game_gui->create_server->checkbox.checked;
+		net->serverLan = game_gui->create_server->checkbox.checked;
 
 		// check settings
 		cstring error_text = nullptr;
 		Control* give_focus = nullptr;
-		if(net->server_name.empty())
+		if(net->serverName.empty())
 		{
 			error_text = game_gui->create_server->txEnterServerName;
 			give_focus = &game_gui->create_server->textbox[0];
@@ -278,10 +279,10 @@ void Game::CreateServerEvent(int id)
 		}
 
 		// save settings
-		cfg.Add("server_name", net->server_name);
-		cfg.Add("server_pswd", net->password);
-		cfg.Add("server_players", net->max_players);
-		cfg.Add("server_lan", net->server_lan);
+		cfg.Add("serverName", net->serverName);
+		cfg.Add("serverPswd", net->password);
+		cfg.Add("serverPlayers", net->max_players);
+		cfg.Add("serverLan", net->serverLan);
 		SaveCfg();
 
 		// close dialog windows
@@ -324,11 +325,11 @@ void Game::OnEnterIp(int id)
 	if(id == BUTTON_OK)
 	{
 		SystemAddress adr = UNASSIGNED_SYSTEM_ADDRESS;
-		Trim(server_ip);
-		if(adr.FromString(server_ip.c_str(), ':') && adr != UNASSIGNED_SYSTEM_ADDRESS)
+		Trim(serverIp);
+		if(adr.FromString(serverIp.c_str(), ':') && adr != UNASSIGNED_SYSTEM_ADDRESS)
 		{
 			// save ip
-			cfg.Add("server_ip", server_ip.c_str());
+			cfg.Add("serverIp", serverIp.c_str());
 			SaveCfg();
 
 			try
@@ -501,7 +502,7 @@ void Game::UpdateClientConnectingIp(float dt)
 
 			// set server status
 			game_gui->server->max_players = max_players;
-			game_gui->server->server_name = server_name_r;
+			game_gui->server->serverName = server_name_r;
 			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
 			if(IsSet(flags, 0xFC))
 				Warn("NM_CONNECTING(0): Unknown server flags.");
@@ -693,7 +694,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					if(load_char != 2)
 						game_gui->server->CheckAutopick();
 					game_gui->info_box->CloseDialog();
-					ChangeTitle();
+					SetTitle("CLIENT");
 					return;
 				}
 				break;
@@ -850,7 +851,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 					PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
 					net->server = packet->systemAddress;
-					game_gui->server->server_name = info.name;
+					game_gui->server->serverName = info.name;
 					game_gui->server->max_players = info.max_players;
 					net->active_players = info.active_players;
 					ConnectionAttemptResult result = net->peer->Connect(net->server.ToString(false), net->server.GetPort(), enter_pswd.c_str(), enter_pswd.length());
@@ -1108,7 +1109,7 @@ void Game::UpdateClientTransfer(float dt)
 					team->leader_id = 0;
 					team->leader = nullptr;
 					SetMusic(MusicType::Travel);
-					ChangeTitle();
+					SetTitle("CLIENT");
 					if(net->mp_quickload)
 					{
 						net->mp_quickload = false;
@@ -1142,7 +1143,7 @@ void Game::UpdateClientTransfer(float dt)
 					fallback_t = -0.5f;
 					game_level->camera.Reset();
 					pc->data.rot_buf = 0.f;
-					ChangeTitle();
+					SetTitle("CLIENT");
 					if(net->mp_quickload)
 					{
 						net->mp_quickload = false;
@@ -1857,6 +1858,7 @@ void Game::UpdateServerQuiting(float dt)
 					net->peer->DeallocatePacket(packet);
 					Info("NM_QUITTING_SERVER: All players disconnected from server. Closing...");
 					net->ClosePeer();
+					game->SetTitle(nullptr);
 					game_gui->info_box->CloseDialog();
 					if(game_gui->server->visible)
 						game_gui->server->CloseDialog();
@@ -1878,6 +1880,7 @@ void Game::UpdateServerQuiting(float dt)
 	{
 		Warn("NM_QUITTING_SERVER: Not all players disconnected on time. Closing server...");
 		net->ClosePeer(net->master_server_state >= MasterServerState::Connecting);
+		game->SetTitle(nullptr);
 		game_gui->info_box->CloseDialog();
 		if(game_gui->server->visible)
 			game_gui->server->CloseDialog();
@@ -1918,8 +1921,8 @@ void Game::OnEnterPassword(int id)
 		{
 			net_state = NetState::Client_Connecting;
 			net_timer = T_CONNECT;
-			game_gui->info_box->Show(Format(txConnectingTo, game_gui->server->server_name.c_str()));
-			Info("NM_CONNECTING(1): Connecting to server %s...", game_gui->server->server_name.c_str());
+			game_gui->info_box->Show(Format(txConnectingTo, game_gui->server->serverName.c_str()));
+			Info("NM_CONNECTING(1): Connecting to server %s...", game_gui->server->serverName.c_str());
 		}
 		else
 		{
@@ -1937,7 +1940,7 @@ void Game::ForceRedraw()
 void Game::QuickJoinIp()
 {
 	SystemAddress adr = UNASSIGNED_SYSTEM_ADDRESS;
-	if(adr.FromString(server_ip.c_str()) && adr != UNASSIGNED_SYSTEM_ADDRESS)
+	if(adr.FromString(serverIp.c_str()) && adr != UNASSIGNED_SYSTEM_ADDRESS)
 	{
 		try
 		{
@@ -1949,7 +1952,7 @@ void Game::QuickJoinIp()
 			return;
 		}
 
-		Info("Pinging %s...", server_ip.c_str());
+		Info("Pinging %s...", serverIp.c_str());
 		Net::SetMode(Net::Mode::Client);
 		game_gui->info_box->Show(txConnecting);
 		net_mode = NM_CONNECTING;
@@ -2104,7 +2107,7 @@ void Game::OnCreateCharacter(int id)
 	}
 	else
 	{
-		if(!skip_tutorial)
+		if(!skipTutorial)
 		{
 			DialogInfo info;
 			info.event = DialogEvent(this, &Game::OnPlayTutorial);
@@ -2127,9 +2130,9 @@ void Game::OnCreateCharacter(int id)
 void Game::OnPlayTutorial(int id)
 {
 	if(id == BUTTON_CHECKED)
-		skip_tutorial = true;
+		skipTutorial = true;
 	else if(id == BUTTON_UNCHECKED)
-		skip_tutorial = false;
+		skipTutorial = false;
 	else
 	{
 		gui->GetDialog("tutorial_dialog")->visible = false;
@@ -2155,7 +2158,7 @@ void Game::OnPickServer(int id)
 			net_state = NetState::Client_WaitingForPasswordProxy;
 			net_tries = 1;
 			game_gui->info_box->Show(txWaitingForPswd);
-			GetTextDialogParams params(Format(txEnterPswd, game_gui->server->server_name.c_str()), enter_pswd);
+			GetTextDialogParams params(Format(txEnterPswd, game_gui->server->serverName.c_str()), enter_pswd);
 			params.event = DialogEvent(this, &Game::OnEnterPassword);
 			params.limit = 16;
 			params.parent = game_gui->info_box;
@@ -2184,7 +2187,7 @@ void Game::OnPickServer(int id)
 	{
 		PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
 		net->server = info.adr;
-		game_gui->server->server_name = info.name;
+		game_gui->server->serverName = info.name;
 		game_gui->server->max_players = info.max_players;
 		net->active_players = info.active_players;
 		if(IsSet(info.flags, SERVER_PASSWORD))
@@ -2195,7 +2198,7 @@ void Game::OnPickServer(int id)
 			net_tries = 1;
 			net->ping_adr = info.adr;
 			game_gui->info_box->Show(txWaitingForPswd);
-			GetTextDialogParams params(Format(txEnterPswd, game_gui->server->server_name.c_str()), enter_pswd);
+			GetTextDialogParams params(Format(txEnterPswd, game_gui->server->serverName.c_str()), enter_pswd);
 			params.event = DialogEvent(this, &Game::OnEnterPassword);
 			params.limit = 16;
 			params.parent = game_gui->info_box;

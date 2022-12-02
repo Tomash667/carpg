@@ -21,7 +21,7 @@ Net::Mode Net::mode;
 const int CLOSE_PEER_TIMER = 1000; // ms
 
 //=================================================================================================
-Net::Net() : peer(nullptr), packet_logger(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
+Net::Net() : peer(nullptr), packetLogger(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
 }
 
@@ -33,7 +33,7 @@ Net::~Net()
 	if(peer)
 		RakPeerInterface::DestroyInstance(peer);
 	delete api;
-	delete packet_logger;
+	delete packetLogger;
 }
 
 //=================================================================================================
@@ -131,10 +131,10 @@ void Net::OpenPeer()
 #ifdef TEST_LAG
 	peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
 #endif
-	if(game->cfg.GetBool("packet_logger"))
+	if(game->cfg.GetBool("packetLogger"))
 	{
-		packet_logger = new PacketLogger;
-		peer->AttachPlugin(packet_logger);
+		packetLogger = new PacketLogger;
+		peer->AttachPlugin(packetLogger);
 	}
 }
 

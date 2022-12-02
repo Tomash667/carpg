@@ -189,13 +189,13 @@ void Game::DrawGrass()
 
 void Game::ListGrass()
 {
-	if(settings.grass_range < 0.5f)
+	if(settings.grassRange < 0.5f)
 		return;
 
 	OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 	Vec3 pos, angle;
 	Vec2 from = game_level->camera.from.XZ();
-	float in_dist = settings.grass_range * settings.grass_range;
+	float in_dist = settings.grassRange * settings.grassRange;
 
 	for(LevelQuads::iterator it = level_quads.begin(), end = level_quads.end(); it != end; ++it)
 	{

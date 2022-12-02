@@ -40,9 +40,9 @@ LobbyApi::~LobbyApi()
 
 void LobbyApi::Init(Config& cfg)
 {
-	lobby_url = cfg.GetString("lobby_url", "carpglobby.westeurope.cloudapp.azure.com");
-	lobby_port = cfg.GetInt("lobby_port", 8080);
-	proxy_port = cfg.GetInt("proxy_port", 60481);
+	lobby_url = cfg.GetString("lobbyUrl", "carpglobby.westeurope.cloudapp.azure.com");
+	lobby_port = cfg.GetInt("lobbyPort", 8080);
+	proxy_port = cfg.GetInt("proxyPort", 60481);
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	cm = curl_multi_init();

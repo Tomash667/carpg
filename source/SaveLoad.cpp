@@ -345,6 +345,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 			game_gui->world_map->Show();
 		}
 		game_gui->Setup(pc);
+		SetTitle("SINGLE");
 	}
 	else
 	{
