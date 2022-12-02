@@ -40,6 +40,7 @@ exitToMenuDialogHardcore = "Na pewno chcesz wróciæ do g³ównego menu?\n\nTwoje po
 quit = "Wyjœcie"
 
 [Options]
+title = "OPCJE"
 fullscreenMode = "Tryb pe³noekranowy"
 glow = "Poœwiata"
 normalMap = "Normal map"
@@ -47,7 +48,6 @@ specularMap = "Specular map"
 soundVolume = "G³oœnoœæ dŸwiêku"
 musicVolume = "G³oœnoœæ muzyki"
 mouseSensitivity = "Czu³oœæ myszki"
-OPTIONS = "OPCJE"
 resolution = "Rozdzielczoœæ:"
 controls = "Sterowanie"
 quality = "jakoœæ"
@@ -284,6 +284,7 @@ invalidPlayersCount = "Liczba graczy musi byæ w przedziale 1-%d."
 confirmMaxPlayers = "Uwaga! Gra z tak¹ iloœci¹ graczy jest niezalecana.\nNa pewno utworzyæ serwer?"
 
 [PickServerPanel]
+title = "WYBIERZ SERWER"
 players = "Gracze"
 name = "Nazwa"
 internet = "Internet"
@@ -457,6 +458,7 @@ keyShortcut10 = "Skrót 10"
 keyConsole = "Konsola"
 
 [Controls]
+title = "STEROWANIE"
 resetKeys = "Resetuj"
 action = "Akcja"
 key_1 = "Klawisz 1"
@@ -465,6 +467,7 @@ resetConfirm = "Na pewno chcesz przywróciæ domyœlne ustawienia klawiszy?"
 info = "Lewy przycisk myszki - ustaw, prawy - wyczyœæ"
 
 [ServerPanel]
+title = "SERWER"
 ready = "Gotowy"
 notReady = "Niegotowy"
 start = "Uruchom"

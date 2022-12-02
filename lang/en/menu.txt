@@ -40,6 +40,7 @@ exitToMenuDialogHardcore = "Do you really want to exit to main menu?\n\nYour pro
 quit = "Quit"
 
 [Options]
+title = "OPTIONS"
 fullscreenMode = "Fullscreen mode"
 glow = "Glow"
 normalMap = "Normal map"
@@ -47,7 +48,6 @@ specularMap = "Specular map"
 soundVolume = "Sound volume"
 musicVolume = "Music volume"
 mouseSensitivity = "Mouse sensitivity"
-OPTIONS = "OPTIONS"
 resolution = "Resolution:"
 controls = "Controls"
 quality = "quality"
@@ -284,6 +284,7 @@ invalidPlayersCount = "The number of players needs to be in range 1-%d."
 confirmMaxPlayers = "Warning! Playing with so many players is not recommended. Are you sure you want to create a server?"
 
 [PickServerPanel]
+title = "PICK SERVER"
 players = "Players"
 name = "Name"
 internet = "Internet"
@@ -457,6 +458,7 @@ keyShortcut9 = "Shortcut 9"
 keyShortcut10 = "Shortcut 10"
 
 [Controls]
+title = "CONTROLS"
 resetKeys = "Reset"
 action = "Action"
 key_1 = "Key 1"
@@ -465,6 +467,7 @@ resetConfirm = "Are you sure you want to restore the default controls?"
 info = "Left mouse button - set, right - clear"
 
 [ServerPanel]
+title = "SERVER"
 ready = "Ready"
 notReady = "Not ready"
 start = "Start"

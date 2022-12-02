@@ -36,17 +36,17 @@ void LoadScreen::Draw()
 }
 
 //=================================================================================================
-void LoadScreen::Setup(float min_progress, float max_progress, int steps, cstring str)
+void LoadScreen::Setup(float minProgress, float maxProgress, int steps, cstring str)
 {
-	assert(max_progress >= min_progress && InRange(min_progress, 0.f, 1.f) && InRange(max_progress, 0.f, 1.f) && steps > 0);
-	this->min_progress = min_progress;
-	this->max_progress = max_progress;
+	assert(maxProgress >= minProgress && InRange(minProgress, 0.f, 1.f) && InRange(maxProgress, 0.f, 1.f) && steps > 0);
+	this->minProgress = minProgress;
+	this->maxProgress = maxProgress;
 	this->steps = steps;
 	if(str)
 		text = str;
 	else
 		text.clear();
-	progress = min_progress;
+	progress = minProgress;
 	step = 0;
 	engine->DoPseudotick();
 }
@@ -56,7 +56,7 @@ void LoadScreen::Tick(cstring str)
 {
 	assert(step != steps);
 	++step;
-	progress = min_progress + (max_progress - min_progress) * step / steps;
+	progress = minProgress + (maxProgress - minProgress) * step / steps;
 	if(str)
 		text = str;
 	engine->DoPseudotick();

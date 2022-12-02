@@ -68,7 +68,7 @@ public:
 //=================================================================================================
 Options::Options(const DialogInfo& info) : DialogBox(info)
 {
-	size = Int2(570, 490);
+	size = Int2(560, 495);
 	bts.resize(2);
 
 	Int2 offset(290, 60);
@@ -112,7 +112,7 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 
 	language.SetCollapsed(true);
 	language.parent = this;
-	language.pos = Int2(20, 383 - 8);
+	language.pos = Int2(20, 369);
 	language.size = Int2(250, 25);
 	language.eventHandler = DialogEvent(this, &Options::OnChangeLanguage);
 	int index = 0;
@@ -130,7 +130,7 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 	// sound drivers
 	soundDevice.SetCollapsed(true);
 	soundDevice.parent = this;
-	soundDevice.pos = Int2(20, 431);
+	soundDevice.pos = Int2(20, 426);
 	soundDevice.size = Int2(250, 25);
 	soundDevice.eventHandler = DialogEvent(this, &Options::OnChangeSoundDevice);
 	soundDevice.Initialize();
@@ -143,7 +143,7 @@ void Options::LoadLanguage()
 {
 	Language::Section s = Language::GetSection("Options");
 
-	txOPTIONS = s.Get("OPTIONS");
+	txTitle = s.Get("title");
 	txResolution = s.Get("resolution");
 	txMultisampling = s.Get("multisampling");
 	txLanguage = s.Get("language");
@@ -175,7 +175,7 @@ void Options::LoadLanguage()
 	bts[1].size = GameGui::font->CalculateSize(bts[1].text) + Int2(24, 24);
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
 	bts[0].pos = Int2(290, 432);
-	bts[1].pos = Int2(bts[0].size.x + 310, 432);
+	bts[1].pos = Int2(bts[0].size.x + 320, 432);
 
 	// resolutions list
 	res.parent = this;
@@ -204,7 +204,7 @@ void Options::LoadLanguage()
 	// multisampling
 	multisampling.SetCollapsed(true);
 	multisampling.parent = this;
-	multisampling.pos = Int2(20, 327 - 8);
+	multisampling.pos = Int2(20, 312);
 	multisampling.size = Int2(250, 25);
 	multisampling.eventHandler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
@@ -234,7 +234,7 @@ void Options::Draw()
 
 	// title
 	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
 	for(int i = 0; i < 5; ++i)
@@ -246,18 +246,18 @@ void Options::Draw()
 
 	//------ Left part
 	// Resolution:
-	Rect r2 = { globalPos.x + 10, globalPos.y + 50, globalPos.x + size.x, globalPos.y + 75 };
+	Rect r2 = { globalPos.x + 20, globalPos.y + 60, globalPos.x + size.x, globalPos.y + 80 };
 	gui->DrawText(GameGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
-	r2.Top() = globalPos.y + 300 - 8;
+	r2.Top() = globalPos.y + 292;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
 	// Language:
-	r2.Top() = globalPos.y + 360 - 8;
+	r2.Top() = globalPos.y + 349;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
 	// Sound device:
-	r2.Top() = globalPos.y + 420 - 8;
+	r2.Top() = globalPos.y + 406;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, txSoundDevice, DTF_SINGLELINE, Color::Black, r2);
 

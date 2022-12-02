@@ -121,7 +121,7 @@ void Net::OnNewGameServer()
 		changes.clear(); // was clear before loading and now contains registered quest_items
 	if(!net_strs.empty())
 		StringPool.Free(net_strs);
-	game_gui->server->max_players = max_players;
+	game_gui->server->maxPlayers = max_players;
 	game_gui->server->serverName = serverName;
 	game_gui->server->UpdateServerInfo();
 	game_gui->server->Show();

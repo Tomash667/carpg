@@ -16,26 +16,25 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
-struct OldFlowItem
-{
-	bool section;
-	int group, id, y;
-	float part;
-
-	OldFlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
-	{
-	}
-
-	OldFlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
-	{
-		part = float(value - min) / (max - min);
-	}
-};
-
-//-----------------------------------------------------------------------------
 // Show on new game to create player character
 class CreateCharacterPanel : public DialogBox
 {
+	struct OldFlowItem
+	{
+		bool section;
+		int group, id, y;
+		float part;
+
+		OldFlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
+		{
+		}
+
+		OldFlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
+		{
+			part = float(value - min) / (max - min);
+		}
+	};
+
 public:
 	enum class Group
 	{
@@ -66,15 +65,15 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void Init();
-	void Show(bool enter_name);
+	void Show(bool enterName);
 	void ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc);
 
 	// results
 	CreatedCharacter cc;
 	Class* clas;
-	string player_name;
+	string playerName;
 	Unit* unit;
-	int hair_color_index, last_hair_color_index;
+	int hairColorIndex, lastHairColorIndex;
 
 private:
 	enum DOLL_ANIM
@@ -119,12 +118,12 @@ private:
 	Scene* scene;
 	Camera* camera;
 	Mode mode;
-	bool enter_name;
+	bool enterName;
 	// unit
 	DOLL_ANIM anim, anim2;
 	float t, dist;
 	// controls
-	CustomButton custom_x, custom_bt[2];
+	CustomButton customClose, customBt[2];
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;
 	CheckBox checkbox;
 	Slider slider[5];
@@ -132,9 +131,9 @@ private:
 	TextBox tbClassDesc, tbInfo;
 	FlowContainer flowSkills, flowPerks;
 	// attribute/skill flow panel
-	Int2 flow_pos, flow_size;
-	Scrollbar flow_scroll;
-	vector<OldFlowItem> flow_items;
+	Int2 flowPos, flowSize;
+	Scrollbar flowScroll;
+	vector<OldFlowItem> flowItems;
 	TooltipController tooltip;
 	// data
 	bool reset_skills_perks, rotating;
@@ -143,9 +142,9 @@ private:
 		txFlawExtraPerk, txPerksRemoved;
 	Perk* picked_perk;
 	PickItemDialog* pickItemDialog;
-	vector<Perk*> available_perks;
-	vector<pair<cstring, int>> taken_perks;
+	vector<Perk*> availablePerks;
+	vector<pair<cstring, int>> takenPerks;
 	array<const Item*, SLOT_MAX> items;
 	TexturePtr tBox, tPowerBar;
-	RenderTarget* rt_char;
+	RenderTarget* rtChar;
 };

@@ -84,7 +84,7 @@ void Game::StartNewGame()
 {
 	HumanData hd;
 	hd.Get(*game_gui->create_character->unit->human_data);
-	NewGameCommon(game_gui->create_character->clas, game_gui->create_character->player_name.c_str(), hd, game_gui->create_character->cc, false);
+	NewGameCommon(game_gui->create_character->clas, game_gui->create_character->playerName.c_str(), hd, game_gui->create_character->cc, false);
 }
 
 //=================================================================================================
@@ -501,7 +501,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			}
 
 			// set server status
-			game_gui->server->max_players = max_players;
+			game_gui->server->maxPlayers = max_players;
 			game_gui->server->serverName = server_name_r;
 			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
 			if(IsSet(flags, 0xFC))
@@ -852,8 +852,8 @@ void Game::UpdateClientConnectingIp(float dt)
 					PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
 					net->server = packet->systemAddress;
 					game_gui->server->serverName = info.name;
-					game_gui->server->max_players = info.max_players;
-					net->active_players = info.active_players;
+					game_gui->server->maxPlayers = info.maxPlayers;
+					net->active_players = info.activePlayers;
 					ConnectionAttemptResult result = net->peer->Connect(net->server.ToString(false), net->server.GetPort(), enter_pswd.c_str(), enter_pswd.length());
 					if(result == CONNECTION_ATTEMPT_STARTED)
 					{
@@ -2188,8 +2188,8 @@ void Game::OnPickServer(int id)
 		PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
 		net->server = info.adr;
 		game_gui->server->serverName = info.name;
-		game_gui->server->max_players = info.max_players;
-		net->active_players = info.active_players;
+		game_gui->server->maxPlayers = info.maxPlayers;
+		net->active_players = info.activePlayers;
 		if(IsSet(info.flags, SERVER_PASSWORD))
 		{
 			// enter password

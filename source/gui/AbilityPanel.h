@@ -20,7 +20,7 @@ public:
 
 private:
 	void DrawGroup(cstring text);
-	void UpdateGroup(uint count, int group, int& group_result, int& id_result);
+	void UpdateGroup(uint count, int group, int& groupResult, int& idResult);
 	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	pair<int, int> ConvertToShortcut(int group, int id);
 
@@ -30,7 +30,7 @@ private:
 	cstring txTitle, txCooldown, txCooldownCharges, txCost, txAbilities, txOther, txMana, txStamina;
 	cstring txMeleeWeapon, txRangedWeapon, txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc;
 	TexturePtr tItemBar, tMelee, tRanged, tHealthPotion, tManaPotion;
-	Int2 drag_and_drop_pos;
-	int grid_offset, drag_and_drop_group, drag_and_drop_index;
-	bool drag_and_drop;
+	Int2 dragAndDropPos;
+	int grid_offset, dragAndDropGroup, dragAndDropIndex;
+	bool dragAndDrop;
 };

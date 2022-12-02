@@ -45,7 +45,7 @@ private:
 
 	CheckBox check[5];
 	ListBox res, multisampling, language, soundDevice;
-	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
+	cstring txTitle, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
 		txGrassRange, txSoundDevice, txDefaultDevice;
 	string languageId;
 	Scrollbar scroll[4];

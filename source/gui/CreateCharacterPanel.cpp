@@ -38,7 +38,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr), scene(nullptr), camera(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rtChar(nullptr), scene(nullptr), camera(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -60,7 +60,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	unit->live_state = Unit::ALIVE;
 
 	btCancel.id = IdCancel;
-	btCancel.custom = &custom_x;
+	btCancel.custom = &customClose;
 	btCancel.size = Int2(32, 32);
 	btCancel.parent = this;
 	btCancel.pos = Int2(size.x - 32 - 16, 16);
@@ -161,25 +161,25 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	tbInfo.SetReadonly(true);
 	tbInfo.AddScrollbar();
 
-	flow_pos = Int2(368, 73 - 18);
-	flow_size = Int2(198, 235 + 18);
-	flow_scroll.pos = Int2(flow_pos.x + flow_size.x + 2, flow_pos.y);
-	flow_scroll.size = Int2(16, flow_size.y);
-	flow_scroll.total = 100;
-	flow_scroll.part = 10;
+	flowPos = Int2(368, 73 - 18);
+	flowSize = Int2(198, 235 + 18);
+	flowScroll.pos = Int2(flowPos.x + flowSize.x + 2, flowPos.y);
+	flowScroll.size = Int2(16, flowSize.y);
+	flowScroll.total = 100;
+	flowScroll.part = 10;
 
 	tooltip.Init(TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip));
 
 	flowSkills.size = Int2(198, 235 + 18);
 	flowSkills.pos = Int2(16, 73 - 18);
 	flowSkills.buttonSize = Int2(16, 16);
-	flowSkills.buttonTex = custom_bt;
+	flowSkills.buttonTex = customBt;
 	flowSkills.onButton = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 
 	flowPerks.size = Int2(198, 235 + 18);
 	flowPerks.pos = Int2(size.x - flowPerks.size.x - 16, 73 - 18);
 	flowPerks.buttonSize = Int2(16, 16);
-	flowPerks.buttonTex = custom_bt;
+	flowPerks.buttonTex = customBt;
 	flowPerks.onButton = ButtonEvent(this, &CreateCharacterPanel::OnPickPerk);
 }
 
@@ -238,20 +238,20 @@ void CreateCharacterPanel::LoadData()
 {
 	tBox = resMgr->Load<Texture>("box.png");
 	tPowerBar = resMgr->Load<Texture>("klasa_cecha.png");
-	custom_x.tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("close.png"));
-	custom_x.tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("close_hover.png"));
-	custom_x.tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("close_down.png"));
-	custom_x.tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("close_disabled.png"));
-	custom_bt[0].tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("plus.png"));
-	custom_bt[0].tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("plus_hover.png"));
-	custom_bt[0].tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("plus_down.png"));
-	custom_bt[0].tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("plus_disabled.png"));
-	custom_bt[1].tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("minus.png"));
-	custom_bt[1].tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("minus_hover.png"));
-	custom_bt[1].tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("minus_down.png"));
-	custom_bt[1].tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("minus_disabled.png"));
+	customClose.tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("close.png"));
+	customClose.tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("close_hover.png"));
+	customClose.tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("close_down.png"));
+	customClose.tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("close_disabled.png"));
+	customBt[0].tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("plus.png"));
+	customBt[0].tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("plus_hover.png"));
+	customBt[0].tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("plus_down.png"));
+	customBt[0].tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("plus_disabled.png"));
+	customBt[1].tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("minus.png"));
+	customBt[1].tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("minus_hover.png"));
+	customBt[1].tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("minus_down.png"));
+	customBt[1].tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("minus_disabled.png"));
 
-	rt_char = render->CreateRenderTarget(Int2(128, 256));
+	rtChar = render->CreateRenderTarget(Int2(128, 256));
 
 	scene = new Scene;
 	scene->fogRange = Vec2(40, 80);
@@ -274,7 +274,7 @@ void CreateCharacterPanel::Draw()
 	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	gui->DrawSprite(rt_char, Int2(pos.x + 228, pos.y + 64));
+	gui->DrawSprite(rtChar, Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -292,17 +292,17 @@ void CreateCharacterPanel::Draw()
 			tbClassDesc.Draw();
 
 			// attribute/skill flow panel
-			Int2 fpos = flow_pos + globalPos;
-			gui->DrawItem(tBox, fpos, flow_size, Color::White, 8, 32);
-			flow_scroll.Draw();
+			Int2 fpos = flowPos + globalPos;
+			gui->DrawItem(tBox, fpos, flowSize, Color::White, 8, 32);
+			flowScroll.Draw();
 
-			Rect rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
+			Rect rect = Rect::Create(fpos + Int2(2, 2), flowSize - Int2(4, 4));
 			Rect r = rect, part = { 0, 0, 256, 32 };
 			r.Top() += 20;
 
-			for(OldFlowItem& fi : flow_items)
+			for(OldFlowItem& fi : flowItems)
 			{
-				r.Top() = fpos.y + fi.y - (int)flow_scroll.offset;
+				r.Top() = fpos.y + fi.y - (int)flowScroll.offset;
 				cstring item_text = GetText(fi.group, fi.id);
 				if(fi.section)
 				{
@@ -314,7 +314,7 @@ void CreateCharacterPanel::Draw()
 				{
 					if(fi.part > 0)
 					{
-						const Vec2 scale(float(flow_size.x - 4) / 256, 17.f / 32);
+						const Vec2 scale(float(flowSize.x - 4) / 256, 17.f / 32);
 						const Vec2 pos(r.LeftTop());
 						const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 						part.Right() = int(fi.part * 256);
@@ -413,16 +413,16 @@ void CreateCharacterPanel::Update(float dt)
 			tbClassDesc.mouseFocus = focus;
 			tbClassDesc.Update(dt);
 
-			flow_scroll.mouseFocus = focus;
-			flow_scroll.Update(dt);
+			flowScroll.mouseFocus = focus;
+			flowScroll.Update(dt);
 
-			if(!flow_scroll.clicked && Rect::IsInside(gui->cursorPos, flow_pos + globalPos, flow_size))
+			if(!flowScroll.clicked && Rect::IsInside(gui->cursorPos, flowPos + globalPos, flowSize))
 			{
 				if(focus && input->Focus())
-					flow_scroll.ApplyMouseWheel();
+					flowScroll.ApplyMouseWheel();
 
-				int y = gui->cursorPos.y - globalPos.y - flow_pos.y + (int)flow_scroll.offset;
-				for(OldFlowItem& fi : flow_items)
+				int y = gui->cursorPos.y - globalPos.y - flowPos.y + (int)flowScroll.offset;
+				for(OldFlowItem& fi : flowItems)
 				{
 					if(y >= fi.y && y <= fi.y + 20)
 					{
@@ -434,8 +434,8 @@ void CreateCharacterPanel::Update(float dt)
 						break;
 				}
 			}
-			else if(!flow_scroll.clicked && Rect::IsInside(gui->cursorPos, flow_scroll.pos + globalPos, flow_scroll.size) && focus && input->Focus())
-				flow_scroll.ApplyMouseWheel();
+			else if(!flowScroll.clicked && Rect::IsInside(gui->cursorPos, flowScroll.pos + globalPos, flowScroll.size) && focus && input->Focus())
+				flowScroll.ApplyMouseWheel();
 		}
 		break;
 	case Mode::PickSkillPerk:
@@ -521,7 +521,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		lbClasses.Event(GuiEvent_Moved);
 		tbClassDesc.Move(pos);
 		tbInfo.Move(pos);
-		flow_scroll.globalPos = globalPos + flow_scroll.pos;
+		flowScroll.globalPos = globalPos + flowScroll.pos;
 		flowSkills.UpdatePos(globalPos);
 		flowPerks.UpdatePos(globalPos);
 		tooltip.Clear();
@@ -531,13 +531,13 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		visible = false;
 		lbClasses.Event(GuiEvent_LostFocus);
 		tbClassDesc.LostFocus();
-		flow_scroll.LostFocus();
+		flowScroll.LostFocus();
 	}
 	else if(e == GuiEvent_LostFocus)
 	{
 		lbClasses.Event(GuiEvent_LostFocus);
 		tbClassDesc.LostFocus();
-		flow_scroll.LostFocus();
+		flowScroll.LostFocus();
 	}
 	else if(e >= GuiEvent_Custom)
 	{
@@ -585,14 +585,14 @@ void CreateCharacterPanel::Event(GuiEvent e)
 				mode = Mode::PickSkillPerk;
 			break;
 		case IdCreate:
-			if(enter_name)
+			if(enterName)
 			{
-				GetTextDialogParams params(Format("%s:", txName), player_name);
+				GetTextDialogParams params(Format("%s:", txName), playerName);
 				params.event = [this](int id)
 				{
 					if(id == BUTTON_OK)
 					{
-						last_hair_color_index = hair_color_index;
+						lastHairColorIndex = hairColorIndex;
 						CloseDialog();
 						event(BUTTON_OK);
 					}
@@ -607,7 +607,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			}
 			else
 			{
-				last_hair_color_index = hair_color_index;
+				lastHairColorIndex = hairColorIndex;
 				CloseDialog();
 				event(BUTTON_OK);
 			}
@@ -657,7 +657,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	render->SetRenderTarget(rt_char);
+	render->SetRenderTarget(rtChar);
 	render->Clear(Color::None);
 
 	Vec3 from = Vec3(0.f, 2.f, dist);
@@ -898,15 +898,15 @@ void CreateCharacterPanel::RandomAppearance()
 	u.human_data->beard = Rand() % MAX_BEARD - 1;
 	u.human_data->hair = Rand() % MAX_HAIR - 1;
 	u.human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-	hair_color_index = Rand() % n_hair_colors;
-	u.human_data->hair_color = g_hair_colors[hair_color_index];
+	hairColorIndex = Rand() % n_hair_colors;
+	u.human_data->hair_color = g_hair_colors[hairColorIndex];
 	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(u.meshInst);
 	SetControls();
 }
 
 //=================================================================================================
-void CreateCharacterPanel::Show(bool enter_name)
+void CreateCharacterPanel::Show(bool enterName)
 {
 	clas = Class::GetRandomPlayer();
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -914,7 +914,7 @@ void CreateCharacterPanel::Show(bool enter_name)
 	RandomAppearance();
 
 	reset_skills_perks = true;
-	this->enter_name = enter_name;
+	this->enterName = enterName;
 	mode = Mode::PickClass;
 
 	SetControls();
@@ -930,7 +930,7 @@ void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter
 	this->clas = clas;
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
-	hair_color_index = last_hair_color_index;
+	hairColorIndex = lastHairColorIndex;
 	unit->ApplyHumanData(hd);
 	this->cc = cc;
 	RebuildSkillsFlow();
@@ -938,7 +938,7 @@ void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter
 	UpdateInventory();
 
 	reset_skills_perks = false;
-	enter_name = false;
+	enterName = false;
 	mode = Mode::PickAppearance;
 
 	SetControls();
@@ -956,7 +956,7 @@ void CreateCharacterPanel::SetControls()
 	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
 	slider[2].val = unit->human_data->beard + 1;
 	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
-	slider[3].val = hair_color_index;
+	slider[3].val = hairColorIndex;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 	slider[4].val = int((unit->human_data->height - MIN_HEIGHT) * 500);
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
@@ -1094,7 +1094,7 @@ void CreateCharacterPanel::ClassChanged()
 	tbClassDesc.SetText(clas->desc.c_str());
 	tbClassDesc.UpdateScrollbar();
 
-	flow_items.clear();
+	flowItems.clear();
 
 	int y = 0;
 
@@ -1103,11 +1103,11 @@ void CreateCharacterPanel::ClassChanged()
 	unit->CalculateStats();
 
 	// attributes
-	flow_items.push_back(OldFlowItem((int)Group::Section, -1, y));
+	flowItems.push_back(OldFlowItem((int)Group::Section, -1, y));
 	y += SECTION_H;
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
-		flow_items.push_back(OldFlowItem((int)Group::Attribute, i, 35, 70, profile.attrib[i], y));
+		flowItems.push_back(OldFlowItem((int)Group::Attribute, i, 35, 70, profile.attrib[i], y));
 		y += VALUE_H;
 	}
 
@@ -1121,17 +1121,17 @@ void CreateCharacterPanel::ClassChanged()
 			if(si.group != group)
 			{
 				// start new section
-				flow_items.push_back(OldFlowItem((int)Group::Section, (int)si.group, y));
+				flowItems.push_back(OldFlowItem((int)Group::Section, (int)si.group, y));
 				y += SECTION_H;
 				group = si.group;
 			}
-			flow_items.push_back(OldFlowItem((int)Group::Skill, i, 0, 20, profile.skill[i], y));
+			flowItems.push_back(OldFlowItem((int)Group::Skill, i, 0, 20, profile.skill[i], y));
 			y += VALUE_H;
 		}
 	}
-	flow_scroll.total = y;
-	flow_scroll.part = flow_scroll.size.y;
-	flow_scroll.offset = 0.f;
+	flowScroll.total = y;
+	flowScroll.part = flowScroll.size.y;
+	flowScroll.offset = 0.f;
 
 	cc.Clear(clas);
 	UpdateInventory();
@@ -1274,7 +1274,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	PerkContext ctx(&cc);
 
 	// group perks by availability
-	available_perks.clear();
+	availablePerks.clear();
 	for(Perk* perk : Perk::perks)
 	{
 		if(ctx.HavePerk(perk))
@@ -1282,9 +1282,9 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		TakenPerk tp;
 		tp.perk = perk;
 		if(tp.CanTake(ctx))
-			available_perks.push_back(perk);
+			availablePerks.push_back(perk);
 	}
-	taken_perks.clear();
+	takenPerks.clear();
 	LocalVector<string*> strs;
 	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
 	{
@@ -1294,22 +1294,22 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			string* s = StringPool.Get();
 			*s = cc.taken_perks[i].FormatName();
 			strs.push_back(s);
-			taken_perks.push_back(pair<cstring, int>(s->c_str(), i));
+			takenPerks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
 		else
-			taken_perks.push_back(pair<cstring, int>(perk->name.c_str(), i));
+			takenPerks.push_back(pair<cstring, int>(perk->name.c_str(), i));
 	}
 
 	// sort perks
-	std::sort(available_perks.begin(), available_perks.end(), SortPerks);
-	std::sort(taken_perks.begin(), taken_perks.end(), SortTakenPerks);
+	std::sort(availablePerks.begin(), availablePerks.end(), SortPerks);
+	std::sort(takenPerks.begin(), takenPerks.end(), SortTakenPerks);
 
 	// fill flow
 	flowPerks.Clear();
-	if(!available_perks.empty())
+	if(!availablePerks.empty())
 	{
 		flowPerks.Add()->Set(txAvailablePerks);
-		for(Perk* perk : available_perks)
+		for(Perk* perk : availablePerks)
 		{
 			bool can_pick = (cc.perks == 0 && !IsSet(perk->flags, Perk::Flaw));
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
@@ -1319,7 +1319,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	if(!cc.taken_perks.empty())
 	{
 		flowPerks.Add()->Set(txTakenPerks);
-		for(auto& tp : taken_perks)
+		for(auto& tp : takenPerks)
 		{
 			flowPerks.Add()->Set((int)Group::PickPerk_RemoveButton, tp.second, 1, false);
 			flowPerks.Add()->Set(tp.first, (int)Group::TakenPerk, tp.second);

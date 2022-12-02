@@ -35,44 +35,44 @@ enum ButtonId
 };
 
 //=================================================================================================
-ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(false), autopick_class(nullptr)
+ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(false), autopickClass(nullptr)
 {
-	size = Int2(540, 510);
+	size = Int2(550, 572);
 	bts.resize(6);
 
 	const Int2 bt_size(180, 44);
 
 	bts[0].id = IdPickCharacter;
 	bts[0].parent = this;
-	bts[0].pos = Int2(340, 30);
+	bts[0].pos = Int2(350, 60);
 	bts[0].size = bt_size;
 
 	bts[1].id = IdReady;
 	bts[1].parent = this;
-	bts[1].pos = Int2(340, 80);
+	bts[1].pos = Int2(350, 110);
 	bts[1].size = bt_size;
 
 	bts[2].id = IdKick;
 	bts[2].parent = this;
-	bts[2].pos = Int2(340, 130);
+	bts[2].pos = Int2(350, 160);
 	bts[2].size = bt_size;
 
 	bts[3].id = IdLeader;
 	bts[3].parent = this;
-	bts[3].pos = Int2(340, 180);
+	bts[3].pos = Int2(350, 210);
 	bts[3].size = bt_size;
 
 	bts[4].id = IdStart;
 	bts[4].parent = this;
-	bts[4].pos = Int2(340, 230);
+	bts[4].pos = Int2(350, 260);
 	bts[4].size = bt_size;
 
 	bts[5].id = IdCancel;
 	bts[5].parent = this;
-	bts[5].pos = Int2(340, 280);
+	bts[5].pos = Int2(350, 310);
 	bts[5].size = bt_size;
 
-	grid.pos = Int2(10, 10);
+	grid.pos = Int2(20, 60);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
 
@@ -81,7 +81,7 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 	itb.maxLines = 100;
 	itb.escClear = false;
 	itb.loseFocus = false;
-	itb.pos = Int2(10, 320);
+	itb.pos = Int2(20, 370);
 	itb.size = Int2(320, 182);
 	itb.event = InputTextBox::InputEvent(this, &ServerPanel::OnInput);
 	itb.Init();
@@ -92,26 +92,26 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 //=================================================================================================
 void ServerPanel::Init()
 {
-	random_class = reinterpret_cast<Class*>(&random_class);
+	randomClass = reinterpret_cast<Class*>(&randomClass);
 
-	autostart_count = game->cfg.GetUint("autostart");
-	if(autostart_count > MAX_PLAYERS)
-		autostart_count = 0;
+	autostartCount = game->cfg.GetUint("autostart");
+	if(autostartCount > MAX_PLAYERS)
+		autostartCount = 0;
 
 	const string& class_id = game->cfg.GetString("autopick", "");
 	if(!class_id.empty())
 	{
 		if(class_id == "random")
-			autopick_class = random_class;
+			autopickClass = randomClass;
 		else
 		{
-			autopick_class = Class::TryGet(class_id);
-			if(autopick_class)
+			autopickClass = Class::TryGet(class_id);
+			if(autopickClass)
 			{
-				if(!autopick_class->IsPickable())
+				if(!autopickClass->IsPickable())
 				{
 					Warn("Settings [autopick]: Class '%s' is not pickable by players.", class_id.c_str());
-					autopick_class = nullptr;
+					autopickClass = nullptr;
 				}
 			}
 			else
@@ -124,6 +124,7 @@ void ServerPanel::Init()
 void ServerPanel::LoadLanguage()
 {
 	Language::Section s = Language::GetSection("ServerPanel");
+	txTitle = s.Get("title");
 	txReady = s.Get("ready");
 	txNotReady = s.Get("notReady");
 	txStart = s.Get("start");
@@ -190,6 +191,10 @@ void ServerPanel::Draw()
 {
 	DrawPanel();
 
+	// header
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
+	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
+
 	// controls
 	int count = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < count; ++i)
@@ -198,7 +203,7 @@ void ServerPanel::Draw()
 	grid.Draw();
 
 	// text
-	Rect r = { 340 + globalPos.x, 355 + globalPos.y, 340 + 185 + globalPos.x, 355 + 160 + globalPos.y };
+	r = { globalPos.x + 350, globalPos.y + 370, globalPos.x + size.x, globalPos.y + size.y };
 	const string& password = (Net::IsServer() ? net->password : game->enter_pswd);
 	LocalString pswd;
 	if(password.empty())
@@ -208,7 +213,7 @@ void ServerPanel::Draw()
 		for(uint i = 0; i < password.length(); ++i)
 			pswd += '*';
 	}
-	gui->DrawText(GameGui::font, Format(txServerText, serverName.c_str(), net->active_players, max_players, pswd->c_str()), 0, Color::Black, r, &r);
+	gui->DrawText(GameGui::font, Format(txServerText, serverName.c_str(), net->active_players, maxPlayers, pswd->c_str()), 0, Color::Black, r, &r);
 }
 
 //=================================================================================================
@@ -514,7 +519,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 void ServerPanel::UpdateLobbyServer(float dt)
 {
 	// handle autostart
-	if(!starting && autostart_count != 0u && autostart_count <= net->active_players)
+	if(!starting && autostartCount != 0u && autostartCount <= net->active_players)
 	{
 		bool ok = true;
 		for(PlayerInfo& info : net->players)
@@ -529,7 +534,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 		if(ok)
 		{
 			Info("ServerPanel: Automatic server startup.");
-			autostart_count = 0u;
+			autostartCount = 0u;
 			Start();
 		}
 	}
@@ -583,7 +588,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				BitStreamWriter f;
 				f << ID_MASTER_HOST;
 				f << serverName;
-				f << max_players;
+				f << maxPlayers;
 				f << net->GetServerFlags();
 				f << VERSION;
 				net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
@@ -974,13 +979,13 @@ void ServerPanel::UpdateLobbyServer(float dt)
 	});
 
 	// wysy³anie aktualizacji lobby
-	update_timer += dt;
-	if(update_timer >= T_LOBBY_UPDATE)
+	updateTimer += dt;
+	if(updateTimer >= T_LOBBY_UPDATE)
 	{
-		update_timer = 0.f;
-		if(!lobby_updates.empty())
+		updateTimer = 0.f;
+		if(!lobbyUpdates.empty())
 		{
-			assert(lobby_updates.size() < 255);
+			assert(lobbyUpdates.size() < 255);
 			if(net->active_players > 1)
 			{
 				// aktualizacje w lobby
@@ -988,9 +993,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				f << ID_LOBBY_UPDATE;
 				f.Write0();
 				int count = 0;
-				for(uint i = 0; i < min(lobby_updates.size(), 255u); ++i)
+				for(uint i = 0; i < min(lobbyUpdates.size(), 255u); ++i)
 				{
-					Int2& u = lobby_updates[i];
+					Int2& u = lobbyUpdates[i];
 					switch(u.x)
 					{
 					case Lobby_UpdatePlayer:
@@ -1042,17 +1047,17 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				f.Patch<byte>(1, count);
 				net->SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 			}
-			lobby_updates.clear();
+			lobbyUpdates.clear();
 		}
 	}
 
 	// starting game
 	if(starting)
 	{
-		startup_timer -= dt;
-		int sec = int(startup_timer) + 1;
+		startupTimer -= dt;
+		int sec = int(startupTimer) + 1;
 		int d = -1;
-		if(startup_timer <= 0.f)
+		if(startupTimer <= 0.f)
 		{
 			// disconnect from master server
 			if(net->master_server_state == MasterServerState::Connected)
@@ -1090,9 +1095,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			return;
 		}
-		else if(sec != last_startup_sec)
+		else if(sec != lastStartupSec)
 		{
-			last_startup_sec = sec;
+			lastStartupSec = sec;
 			d = sec;
 		}
 
@@ -1138,7 +1143,7 @@ void ServerPanel::UpdateServerInfo()
 	f.WriteCasted<byte>('A');
 	f << VERSION;
 	f.WriteCasted<byte>(net->active_players);
-	f.WriteCasted<byte>(max_players);
+	f.WriteCasted<byte>(maxPlayers);
 	f.WriteCasted<byte>(net->GetServerFlags());
 	f << serverName;
 
@@ -1219,7 +1224,7 @@ void ServerPanel::Event(GuiEvent e)
 				else
 				{
 					// na pewno?
-					kick_id = info.id;
+					kickId = info.id;
 					DialogInfo di;
 					di.event = DialogEvent(this, &ServerPanel::OnKick);
 					di.name = "kick";
@@ -1285,7 +1290,7 @@ void ServerPanel::Event(GuiEvent e)
 void ServerPanel::Show()
 {
 	starting = false;
-	update_timer = 0.f;
+	updateTimer = 0.f;
 
 	bts[0].text = txPickChar;
 	bts[0].state = Button::NONE;
@@ -1317,8 +1322,8 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.img = (info.ready ? tReady : tNotReady);
 	else if(column == 1)
 	{
-		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == team->leader_id ? Color(255, 215, 0) : Color::Black);
+		cell.textColor->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
+		cell.textColor->color = (info.id == team->leader_id ? Color(255, 215, 0) : Color::Black);
 	}
 	else
 		cell.text = (info.clas ? info.clas->name.c_str() : txNone);
@@ -1383,7 +1388,7 @@ void ServerPanel::OnKick(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		PlayerInfo* info = net->TryGetPlayer(kick_id);
+		PlayerInfo* info = net->TryGetPlayer(kickId);
 		if(info)
 			net->KickPlayer(*info);
 	}
@@ -1435,7 +1440,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	if(have)
 	{
 		Info("ServerPanel: Joined loaded game with existing character.");
-		autopick_class = nullptr;
+		autopickClass = nullptr;
 		bts[0].state = Button::DISABLED;
 		bts[0].text = txChangeChar;
 		bts[1].state = Button::NONE;
@@ -1451,13 +1456,13 @@ void ServerPanel::UseLoadedCharacter(bool have)
 //=================================================================================================
 void ServerPanel::CheckAutopick()
 {
-	if(autopick_class)
+	if(autopickClass)
 	{
 		Info("ServerPanel: Autopicking character.");
-		if(autopick_class == random_class)
-			autopick_class = nullptr;
-		PickClass(autopick_class, true);
-		autopick_class = nullptr;
+		if(autopickClass == randomClass)
+			autopickClass = nullptr;
+		PickClass(autopickClass, true);
+		autopickClass = nullptr;
 		autoready = false;
 	}
 }
@@ -1468,7 +1473,7 @@ void ServerPanel::PickClass(Class* clas, bool ready)
 {
 	PlayerInfo& info = net->GetMe();
 	info.clas = clas;
-	game->RandomCharacter(info.clas, game_gui->create_character->last_hair_color_index, info.hd, info.cc);
+	game->RandomCharacter(info.clas, game_gui->create_character->lastHairColorIndex, info.hd, info.cc);
 	bts[0].text = txChangeChar;
 	bts[1].state = Button::NONE;
 	bts[1].text = (ready ? txNotReady : txReady);
@@ -1493,12 +1498,12 @@ void ServerPanel::PickClass(Class* clas, bool ready)
 //=================================================================================================
 void ServerPanel::AddLobbyUpdate(const Int2& u)
 {
-	for(Int2& update : lobby_updates)
+	for(Int2& update : lobbyUpdates)
 	{
 		if(update == u)
 			return;
 	}
-	lobby_updates.push_back(u);
+	lobbyUpdates.push_back(u);
 }
 
 //=================================================================================================
@@ -1611,8 +1616,8 @@ cstring ServerPanel::TryStart()
 void ServerPanel::Start()
 {
 	starting = true;
-	last_startup_sec = STARTUP_TIMER;
-	startup_timer = float(STARTUP_TIMER);
+	lastStartupSec = STARTUP_TIMER;
+	startupTimer = float(STARTUP_TIMER);
 	BitStreamWriter f;
 	f << ID_TIMER;
 	f << (byte)STARTUP_TIMER;

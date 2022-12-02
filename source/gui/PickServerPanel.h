@@ -24,7 +24,7 @@ public:
 		int id;
 		string name, guid;
 		SystemAddress adr;
-		uint active_players, max_players;
+		uint activePlayers, maxPlayers;
 		int flags, version;
 		float timer;
 
@@ -37,24 +37,24 @@ public:
 	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-	void Show(bool pick_autojoin = false);
+	void Show(bool pickAutojoin = false);
 	void GetCell(int item, int column, Cell& cell);
 	bool HandleGetServers(nlohmann::json&);
 	bool HandleGetChanges(nlohmann::json&);
 	void HandleBadRequest();
-	bool IsLAN() const { return lan_mode; }
+	bool IsLAN() const { return lanMode; }
 
 	Grid grid;
 	vector<ServerData> servers;
 
 private:
-	void OnChangeMode(bool lan_mode);
+	void OnChangeMode(bool lanMode);
 	void AddServer(nlohmann::json&);
 	void CheckAutojoin();
 
 	TexturePtr tIcoPassword, tIcoSave;
-	CheckBox cb_internet, cb_lan;
+	CheckBox cbInternet, cbLan;
 	float timer;
-	cstring txFailedToGetServers, txInvalidServerVersion;
-	bool pick_autojoin, lan_mode, bad_request;
+	cstring txTitle, txFailedToGetServers, txInvalidServerVersion;
+	bool pickAutojoin, lanMode, badRequest;
 };

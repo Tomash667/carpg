@@ -130,6 +130,10 @@ control "FlowContainer" {
 		corner 8
 		size 32
 	}
+	hover {
+		mode COLOR
+		color {0 255 0 128}
+	}
 	selection {
 		mode COLOR
 		color {0 255 0 128}
@@ -151,6 +155,7 @@ control "Grid" {
 		color {255 255 255 170}
 	}
 	font "normal"
+	border 3
 }
 
 control "Gui" {

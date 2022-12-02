@@ -14,7 +14,7 @@
 #include <thread>
 
 //=================================================================================================
-MainMenu::MainMenu() : check_status(CheckVersionStatus::None), checkUpdates(game->checkUpdates)
+MainMenu::MainMenu() : checkStatus(CheckVersionStatus::None), checkUpdates(game->checkUpdates)
 {
 	focusable = true;
 	visible = false;
@@ -105,7 +105,7 @@ void MainMenu::Draw()
 	r.Right() = gui->wndSize.x;
 	r.Bottom() = gui->wndSize.y - 16;
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, versionText, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{
@@ -139,23 +139,23 @@ void MainMenu::Update(float dt)
 //=================================================================================================
 void MainMenu::UpdateCheckVersion()
 {
-	if(check_status == CheckVersionStatus::None)
+	if(checkStatus == CheckVersionStatus::None)
 	{
 		if(checkUpdates)
 		{
 			Info("Checking CaRpg version.");
-			check_status = CheckVersionStatus::Checking;
-			check_version_thread = thread(&MainMenu::CheckVersion, this);
+			checkStatus = CheckVersionStatus::Checking;
+			checkVersionThread = thread(&MainMenu::CheckVersion, this);
 		}
 		else
-			check_status = CheckVersionStatus::Finished;
+			checkStatus = CheckVersionStatus::Finished;
 	}
-	else if(check_status == CheckVersionStatus::Done)
+	else if(checkStatus == CheckVersionStatus::Done)
 	{
 		if(version_new > VERSION)
 		{
 			cstring str = VersionToString(version_new);
-			version_text = Format(txNewVersion, str);
+			versionText = Format(txNewVersion, str);
 			Info("New version %s is available.", str);
 
 			// show dialog box with question about updating
@@ -166,42 +166,42 @@ void MainMenu::UpdateCheckVersion()
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = Format(txNewVersionDialog, VERSION_STR, VersionToString(version_new));
-			if(!version_changelog.empty())
-				info.text += Format("\n\n%s\n%s", txChanges, version_changelog.c_str());
+			if(!versionChangelog.empty())
+				info.text += Format("\n\n%s\n%s", txChanges, versionChangelog.c_str());
 			info.type = DIALOG_YESNO;
-			cstring names[] = { version_update ? txUpdate : txDownload, txSkip };
+			cstring names[] = { versionUpdate ? txUpdate : txDownload, txSkip };
 			info.customNames = names;
 
 			gui->ShowDialog(info);
 		}
 		else if(version_new < VERSION)
 		{
-			version_text = txNewerVersion;
+			versionText = txNewerVersion;
 			Info("You have newer version then available.");
 		}
 		else
 		{
-			version_text = txNoNewVersion;
+			versionText = txNoNewVersion;
 			Info("No new version available.");
 		}
-		check_status = CheckVersionStatus::Finished;
-		check_version_thread.join();
+		checkStatus = CheckVersionStatus::Finished;
+		checkVersionThread.join();
 	}
-	else if(check_status == CheckVersionStatus::Error)
+	else if(checkStatus == CheckVersionStatus::Error)
 	{
-		version_text = txCheckVersionError;
+		versionText = txCheckVersionError;
 		Error("Failed to check version.");
-		check_status = CheckVersionStatus::Finished;
-		check_version_thread.join();
+		checkStatus = CheckVersionStatus::Finished;
+		checkVersionThread.join();
 	}
 }
 
 //=================================================================================================
 void MainMenu::CheckVersion()
 {
-	auto cancel = [&]() { return check_status == CheckVersionStatus::Cancel; };
-	version_new = api->GetVersion(cancel, version_changelog, version_update);
-	check_status = (version_new < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
+	auto cancel = [&]() { return checkStatus == CheckVersionStatus::Cancel; };
+	version_new = api->GetVersion(cancel, versionChangelog, versionUpdate);
+	checkStatus = (version_new < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
 }
 
 //=================================================================================================
@@ -209,8 +209,8 @@ void MainMenu::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show)
 	{
-		if(check_status == CheckVersionStatus::Checking)
-			version_text = txCheckingVersion;
+		if(checkStatus == CheckVersionStatus::Checking)
+			versionText = txCheckingVersion;
 		if(game->lastSave != -1 && !game_gui->saveload->GetSaveSlot(game->lastSave, false).valid)
 			game->SetLastSave(-1);
 		bt[0].state = (game->lastSave == -1 ? Button::DISABLED : Button::NONE);
@@ -271,7 +271,7 @@ void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		if(version_update)
+		if(versionUpdate)
 		{
 			// start updater
 			GetModuleFileNameA(nullptr, BUF, 256);
@@ -290,14 +290,14 @@ void MainMenu::OnNewVersion(int id)
 //=================================================================================================
 void MainMenu::ShutdownThread()
 {
-	if(check_status != CheckVersionStatus::Finished && check_status != CheckVersionStatus::None)
+	if(checkStatus != CheckVersionStatus::Finished && checkStatus != CheckVersionStatus::None)
 	{
-		check_status = CheckVersionStatus::Cancel;
-		check_version_thread.join();
-		check_status = CheckVersionStatus::Cancel;
+		checkStatus = CheckVersionStatus::Cancel;
+		checkVersionThread.join();
+		checkStatus = CheckVersionStatus::Cancel;
 	}
-	else if(check_status == CheckVersionStatus::Done)
-		check_version_thread.join();
+	else if(checkStatus == CheckVersionStatus::Done)
+		checkVersionThread.join();
 }
 
 //=================================================================================================

@@ -151,7 +151,7 @@ void AbilityPanel::Event(GuiEvent e)
 
 	if(e == GuiEvent_Show)
 	{
-		drag_and_drop = false;
+		dragAndDrop = false;
 		tooltip.Clear();
 	}
 }
@@ -163,7 +163,7 @@ void AbilityPanel::Update(float dt)
 
 	if(!focus)
 	{
-		drag_and_drop = false;
+		dragAndDrop = false;
 		return;
 	}
 
@@ -173,11 +173,11 @@ void AbilityPanel::Update(float dt)
 		return;
 	}
 
-	if(drag_and_drop)
+	if(dragAndDrop)
 	{
-		if(Int2::Distance(gui->cursorPos, drag_and_drop_pos) > 3)
+		if(Int2::Distance(gui->cursorPos, dragAndDropPos) > 3)
 		{
-			pair<int, int> shortcut = ConvertToShortcut(drag_and_drop_group, drag_and_drop_index);
+			pair<int, int> shortcut = ConvertToShortcut(dragAndDropGroup, dragAndDropIndex);
 			Texture* icon = nullptr;
 			if(shortcut.first == Shortcut::TYPE_ABILITY)
 			{
@@ -203,10 +203,10 @@ void AbilityPanel::Update(float dt)
 				}
 			}
 			game_gui->level_gui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
-			drag_and_drop = false;
+			dragAndDrop = false;
 		}
 		if(input->Released(Key::LeftButton))
-			drag_and_drop = false;
+			dragAndDrop = false;
 	}
 
 	int group = G_NONE, id = -1;
@@ -236,7 +236,7 @@ void AbilityPanel::Update(float dt)
 }
 
 //=================================================================================================
-void AbilityPanel::UpdateGroup(uint count, int group, int& group_result, int& id_result)
+void AbilityPanel::UpdateGroup(uint count, int group, int& groupResult, int& idResult)
 {
 	int count_w = (size.x - 48) / 63;
 	int count_h = count / count_w + 1;
@@ -252,14 +252,14 @@ void AbilityPanel::UpdateGroup(uint count, int group, int& group_result, int& id
 				break;
 			if(Rect::IsInside(gui->cursorPos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
 			{
-				group_result = group;
-				id_result = index;
+				groupResult = group;
+				idResult = index;
 				if(input->Focus() && input->Pressed(Key::LeftButton))
 				{
-					drag_and_drop = true;
-					drag_and_drop_pos = gui->cursorPos;
-					drag_and_drop_group = group;
-					drag_and_drop_index = index;
+					dragAndDrop = true;
+					dragAndDropPos = gui->cursorPos;
+					dragAndDropGroup = group;
+					dragAndDropIndex = index;
 				}
 				break;
 			}

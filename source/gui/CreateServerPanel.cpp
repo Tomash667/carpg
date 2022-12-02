@@ -11,7 +11,7 @@
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
 {
-	size = Int2(344, 360);
+	size = Int2(240, 376);
 	bts.resize(2);
 
 	const Int2 btSize(180, 44);
@@ -27,29 +27,32 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
 	bts[1].pos = Int2(x, 310);
 	bts[1].size = btSize;
 
+	const Int2 textboxSize = Int2(200, 32);
+	const int textboxX = (size.x - textboxSize.x) / 2;
+
 	textbox[0].limit = 16;
 	textbox[0].parent = this;
-	textbox[0].pos = Int2(60, 70);
-	textbox[0].size = Int2(200, 32);
+	textbox[0].pos = Int2(textboxX, 70);
+	textbox[0].size = textboxSize;
 
 	textbox[1].limit = 16;
 	textbox[1].parent = this;
-	textbox[1].pos = Int2(60, 120);
-	textbox[1].size = Int2(200, 32);
+	textbox[1].pos = Int2(textboxX, 124);
+	textbox[1].size = textboxSize;
 	textbox[1].SetNumeric(true);
 	textbox[1].numMin = MIN_PLAYERS;
 	textbox[1].numMax = MAX_PLAYERS;
 
 	textbox[2].limit = 16;
 	textbox[2].parent = this;
-	textbox[2].pos = Int2(60, 170);
-	textbox[2].size = Int2(200, 32);
+	textbox[2].pos = Int2(textboxX, 178);
+	textbox[2].size = textboxSize;
 
 	checkbox.btSize = Int2(32, 32);
 	checkbox.checked = false;
 	checkbox.id = IdHidden;
 	checkbox.parent = this;
-	checkbox.pos = Int2(60, 215);
+	checkbox.pos = Int2(textboxX, 215);
 	checkbox.size = Int2(200, 32);
 
 	for(int i = 0; i < 2; ++i)

@@ -18,7 +18,7 @@ public:
 private:
 	struct Split
 	{
-		uint page, region, lines_start, lines_end;
+		uint page, region, linesStart, linesEnd;
 	};
 
 	void SplitBook();
@@ -26,11 +26,11 @@ private:
 	void ChangePage(int change);
 
 	const Book* book;
-	vector<TextLine> text_lines;
+	vector<TextLine> textLines;
 	vector<Split> splits;
-	uint max_page, current_page;
+	uint maxPage, currentPage;
 	Vec2 scale;
 	TexturePtr tArrowL, tArrowR;
 	Sound* sound;
-	Font* normal_font, *runic_font;
+	Font* fontNormal, *fontRunic;
 };

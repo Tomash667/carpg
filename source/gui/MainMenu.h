@@ -53,11 +53,11 @@ private:
 	TooltipController tooltip;
 	Button bt[BUTTONS];
 	TexturePtr tBackground, tLogo, tFModLogo;
-	CheckVersionStatus check_status;
+	CheckVersionStatus checkStatus;
 	int version_new;
-	string version, version_text, version_changelog;
+	string version, versionText, versionChangelog;
 	cstring txInfoText, txCheckingVersion, txNewVersion, txNewVersionDialog, txChanges, txDownload, txUpdate, txSkip, txNewerVersion, txNoNewVersion,
 		txCheckVersionError;
-	thread check_version_thread;
-	bool checkUpdates, version_update;
+	thread checkVersionThread;
+	bool checkUpdates, versionUpdate;
 };
