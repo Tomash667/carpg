@@ -10,7 +10,7 @@
 #include <ResourceManager.h>
 
 //=================================================================================================
-GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
+GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prevCanSave(true), prevCanLoad(true), prevHardcoreMode(false)
 {
 	visible = false;
 }
@@ -45,9 +45,9 @@ void GameMenu::LoadLanguage()
 		maxsize = Int2::Max(maxsize, bt[i].size);
 	}
 
-	size = Int2(256 + 16, 128 + 16 + (maxsize.y + 8) * 6);
+	size = Int2(272, 104 + (maxsize.y + 8) * 6);
 
-	Int2 offset((size.x - maxsize.x) / 2, 128 + 8);
+	Int2 offset((size.x - maxsize.x) / 2, 92);
 
 	// ustaw przyciski
 	for(int i = 0; i < 6; ++i)
@@ -69,7 +69,7 @@ void GameMenu::Draw()
 {
 	DrawPanel();
 
-	gui->DrawSprite(tLogo, globalPos + Int2(8, 8));
+	gui->DrawSprite(tLogo, globalPos + Int2(8, -24));
 
 	for(int i = 0; i < 6; ++i)
 		bt[i].Draw();
@@ -93,26 +93,26 @@ void GameMenu::Update(float dt)
 //=================================================================================================
 void GameMenu::CheckButtons()
 {
-	bool can_save = game->CanSaveGame(),
-		can_load = game->CanLoadGame(),
-		hardcore_mode = game->hardcore_mode;
+	bool canSave = game->CanSaveGame(),
+		canLoad = game->CanLoadGame(),
+		hardcoreMode = game->hardcore_mode;
 
-	if(can_save != prev_can_save)
+	if(canSave != prevCanSave)
 	{
-		bt[1].state = (can_save ? Button::NONE : Button::DISABLED);
-		prev_can_save = can_save;
+		bt[1].state = (canSave ? Button::NONE : Button::DISABLED);
+		prevCanSave = canSave;
 	}
 
-	if(can_load != prev_can_load)
+	if(canLoad != prevCanLoad)
 	{
-		bt[2].state = (can_load ? Button::NONE : Button::DISABLED);
-		prev_can_load = can_load;
+		bt[2].state = (canLoad ? Button::NONE : Button::DISABLED);
+		prevCanLoad = canLoad;
 	}
 
-	if(hardcore_mode != prev_hardcore_mode)
+	if(hardcoreMode != prevHardcoreMode)
 	{
-		bt[1].text = (hardcore_mode ? txSaveAndExit : txSave);
-		prev_hardcore_mode = hardcore_mode;
+		bt[1].text = (hardcoreMode ? txSaveAndExit : txSave);
+		prevHardcoreMode = hardcoreMode;
 	}
 }
 

@@ -65,7 +65,7 @@ void SaveLoad::Draw()
 {
 	DrawPanel();
 	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, saveMode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, saveMode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();

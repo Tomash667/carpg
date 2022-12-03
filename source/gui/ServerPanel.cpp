@@ -193,7 +193,7 @@ void ServerPanel::Draw()
 
 	// header
 	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
 	int count = (Net::IsServer() ? 6 : 3);
@@ -374,9 +374,9 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				net->mp_load_worldmap = (packet->data[1] == 1);
 				Info("ServerPanel: Waiting for server.");
 				game->LoadingStart(net->mp_load_worldmap ? 4 : 9);
-				game_gui->main_menu->visible = false;
+				game_gui->mainMenu->visible = false;
 				CloseDialog();
-				game_gui->info_box->Show(txWaitingForServer);
+				game_gui->infoBox->Show(txWaitingForServer);
 				game->net_mode = Game::NM_TRANSFER;
 				game->net_state = NetState::Client_BeforeTransfer;
 				net->peer->DeallocatePacket(packet);
@@ -1088,7 +1088,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				return false;
 			});
 			CloseDialog();
-			game_gui->info_box->Show(txStartingGame);
+			game_gui->infoBox->Show(txStartingGame);
 			BitStreamWriter f;
 			f << ID_STARTUP;
 			f << (byte)(net->mp_load && !game_level->is_open ? 1 : 0);
@@ -1356,7 +1356,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--net->active_players;
 			game->net_timer = T_WAIT_FOR_DISCONNECT;
-			game_gui->info_box->Show(txDisconnecting);
+			game_gui->infoBox->Show(txDisconnecting);
 			game->net_callback = callback;
 		}
 		else
@@ -1374,7 +1374,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		BitStreamWriter f;
 		f << ID_LEAVE;
 		net->SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
-		game_gui->info_box->Show(txDisconnecting);
+		game_gui->infoBox->Show(txDisconnecting);
 		game->net_mode = Game::NM_QUITTING;
 		game->net_timer = T_WAIT_FOR_DISCONNECT;
 		game->net_callback = callback;
@@ -1473,7 +1473,7 @@ void ServerPanel::PickClass(Class* clas, bool ready)
 {
 	PlayerInfo& info = net->GetMe();
 	info.clas = clas;
-	game->RandomCharacter(info.clas, game_gui->create_character->lastHairColorIndex, info.hd, info.cc);
+	game->RandomCharacter(info.clas, game_gui->createCharacter->lastHairColorIndex, info.hd, info.cc);
 	bts[0].text = txChangeChar;
 	bts[1].state = Button::NONE;
 	bts[1].text = (ready ? txNotReady : txReady);

@@ -87,8 +87,8 @@ void Net::OnNewGameClient()
 	game->hardcore_mode = false;
 	if(!mp_quickload)
 	{
-		game_gui->mp_box->Reset();
-		game_gui->mp_box->visible = true;
+		game_gui->mpBox->Reset();
+		game_gui->mpBox->visible = true;
 	}
 }
 //=================================================================================================
@@ -181,18 +181,18 @@ void Net::UpdateClient(float dt)
 					world->ChangeLevel(loc, encounter);
 					game_level->dungeon_level = level;
 					Info("Update client: Level change to %s (%d, level %d).", game_level->location->name.c_str(), game_level->location_index, game_level->dungeon_level);
-					game_gui->info_box->Show(game->txGeneratingLocation);
+					game_gui->infoBox->Show(game->txGeneratingLocation);
 					game->LeaveLevel();
 					game->net_mode = Game::NM_TRANSFER;
 					game->net_state = NetState::Client_ChangingLevel;
-					game_gui->load_screen->visible = true;
-					game_gui->level_gui->visible = false;
-					game_gui->world_map->Hide();
+					game_gui->loadScreen->visible = true;
+					game_gui->levelGui->visible = false;
+					game_gui->worldMap->Hide();
 					game->arena->ClosePvpDialog();
-					if(game_gui->world_map->dialog_enc)
+					if(game_gui->worldMap->dialog_enc)
 					{
-						gui->CloseDialog(game_gui->world_map->dialog_enc);
-						game_gui->world_map->dialog_enc = nullptr;
+						gui->CloseDialog(game_gui->worldMap->dialog_enc);
+						game_gui->worldMap->dialog_enc = nullptr;
 					}
 					peer->DeallocatePacket(packet);
 					FilterClientChanges();
@@ -222,8 +222,8 @@ void Net::UpdateClient(float dt)
 				game->ClearGame();
 				reader >> mp_load_worldmap;
 				game->LoadingStart(mp_load_worldmap ? 4 : 9);
-				game_gui->info_box->Show(game->txLoadingSaveByServer);
-				game_gui->world_map->Hide();
+				game_gui->infoBox->Show(game->txLoadingSaveByServer);
+				game_gui->worldMap->Hide();
 				game->net_mode = Game::NM_TRANSFER;
 				game->net_state = NetState::Client_BeforeTransfer;
 				game->game_state = GS_LOAD;
@@ -1269,7 +1269,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(!f)
 					Error("Update client: Broken TALK_POS.");
 				else if(game->game_state == GS_LEVEL)
-					game_gui->level_gui->AddSpeechBubble(pos, text.c_str());
+					game_gui->levelGui->AddSpeechBubble(pos, text.c_str());
 			}
 			break;
 		// change location state
@@ -1583,8 +1583,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							game_gui->AddMsg(Format(game->txPcIsLeader, info->name.c_str()));
 						team->leader = info->u;
 
-						if(game_gui->world_map->dialog_enc)
-							game_gui->world_map->dialog_enc->bts[0].state = (team->IsLeader() ? Button::NONE : Button::DISABLED);
+						if(game_gui->worldMap->dialog_enc)
+							game_gui->worldMap->dialog_enc->bts[0].state = (team->IsLeader() ? Button::NONE : Button::DISABLED);
 					}
 					else
 						Error("Update client: CHANGE_LEADER, missing player %u.", id);
@@ -1903,7 +1903,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->Travel(loc, false);
-					game_gui->world_map->StartTravel();
+					game_gui->worldMap->StartTravel();
 				}
 			}
 			break;
@@ -1917,7 +1917,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->TravelPos(pos, false);
-					game_gui->world_map->StartTravel();
+					game_gui->worldMap->StartTravel();
 				}
 			}
 			break;
@@ -2048,7 +2048,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					DialogInfo info;
 					info.event = [this](int)
 					{
-						game_gui->world_map->dialog_enc = nullptr;
+						game_gui->worldMap->dialog_enc = nullptr;
 						PushChange(NetChange::CLOSE_ENCOUNTER);
 					};
 					info.name = "encounter";
@@ -2058,9 +2058,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					info.type = DIALOG_OK;
 					info.text = text;
 
-					game_gui->world_map->dialog_enc = gui->ShowDialog(info);
+					game_gui->worldMap->dialog_enc = gui->ShowDialog(info);
 					if(!team->IsLeader())
-						game_gui->world_map->dialog_enc->bts[0].state = Button::DISABLED;
+						game_gui->worldMap->dialog_enc->bts[0].state = Button::DISABLED;
 					assert(world->GetState() == World::State::TRAVEL);
 					world->SetState(World::State::ENCOUNTER);
 				}
@@ -2068,10 +2068,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			break;
 		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
-			if(game->game_state == GS_WORLDMAP && game_gui->world_map->dialog_enc)
+			if(game->game_state == GS_WORLDMAP && game_gui->worldMap->dialog_enc)
 			{
-				gui->CloseDialog(game_gui->world_map->dialog_enc);
-				game_gui->world_map->dialog_enc = nullptr;
+				gui->CloseDialog(game_gui->worldMap->dialog_enc);
+				game_gui->worldMap->dialog_enc = nullptr;
 			}
 			break;
 		// close portal in location
@@ -2591,7 +2591,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			break;
 		// game saved notification
 		case NetChange::GAME_SAVED:
-			game_gui->mp_box->Add(game->txGameSaved);
+			game_gui->mpBox->Add(game->txGameSaved);
 			game_gui->messages->AddGameMsg3(GMS_GAME_SAVED);
 			break;
 		// ai left team due too many team members
@@ -2607,7 +2607,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(!unit)
 						Error("Update client: HERO_LEAVE, missing unit %d.", id);
 					else
-						game_gui->mp_box->Add(Format(game->txMpNPCLeft, unit->GetName()));
+						game_gui->mpBox->Add(Format(game->txMpNPCLeft, unit->GetName()));
 				}
 			}
 			break;
@@ -2621,7 +2621,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else
 				{
 					game->paused = is_paused;
-					game_gui->mp_box->Add(is_paused ? game->txGamePaused : game->txGameResumed);
+					game_gui->mpBox->Add(is_paused ? game->txGamePaused : game->txGameResumed);
 				}
 			}
 			break;
@@ -2654,7 +2654,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->Warp(location_index, false);
-					game_gui->world_map->StartTravel(true);
+					game_gui->worldMap->StartTravel(true);
 				}
 			}
 			break;
@@ -2668,7 +2668,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->WarpPos(pos, false);
-					game_gui->world_map->StartTravel(true);
+					game_gui->worldMap->StartTravel(true);
 				}
 			}
 			break;
@@ -3258,7 +3258,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 							break;
 						}
 					}
-					game_gui->level_gui->UpdateScrollbar(ctx.choices.size());
+					game_gui->levelGui->UpdateScrollbar(ctx.choices.size());
 				}
 			}
 			break;
@@ -3506,7 +3506,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(!f)
 					Error("Update single client: Broken IS_BETTER_ITEM.");
 				else if(game->game_state == GS_LEVEL)
-					game_gui->inventory->inv_trade_mine->IsBetterItemResponse(is_better);
+					game_gui->inventory->invTradeMine->IsBetterItemResponse(is_better);
 			}
 			break;
 		// question about pvp
@@ -3682,7 +3682,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: GOLD_RECEIVED, invalid player id %u.", player_id);
 					else
 					{
-						game_gui->mp_box->Add(Format(game->txReceivedGold, count, info->name.c_str()));
+						game_gui->mpBox->Add(Format(game->txReceivedGold, count, info->name.c_str()));
 						soundMgr->PlaySound2d(game_res->sCoins);
 					}
 				}
@@ -4053,7 +4053,7 @@ void Net::Client_Say(BitStreamReader& f)
 			cstring s = Format("%s: %s", info->name.c_str(), text.c_str());
 			game_gui->AddMsg(s);
 			if(game->game_state == GS_LEVEL)
-				game_gui->level_gui->AddSpeechBubble(info->u, text.c_str());
+				game_gui->levelGui->AddSpeechBubble(info->u, text.c_str());
 		}
 	}
 }

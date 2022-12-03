@@ -32,5 +32,5 @@ private:
 	Texture* tLogo;
 	Button bt[6];
 	cstring txSave, txSaveAndExit, txExitToMenuDialog, txExitToMenuDialogHardcore;
-	bool prev_can_save, prev_can_load, prev_hardcore_mode;
+	bool prevCanSave, prevCanLoad, prevHardcoreMode;
 };

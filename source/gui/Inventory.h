@@ -32,7 +32,7 @@ public:
 		int index;
 		const Item* item;
 		float timer;
-		bool is_team, is_give;
+		bool isTeam, isGive;
 
 		ItemLock() : index(-1) {}
 
@@ -47,22 +47,22 @@ public:
 			slot = SLOT_INVALID;
 		}
 
-		void Lock(int index, ItemSlot& slot, bool is_give = false)
+		void Lock(int index, ItemSlot& slot, bool isGive = false)
 		{
 			assert(index >= 0 && slot.item);
 			this->index = index;
-			this->is_give = is_give;
+			this->isGive = isGive;
 			this->slot = SLOT_INVALID;
 			item = slot.item;
-			is_team = slot.team_count > 0;
+			isTeam = slot.team_count > 0;
 			timer = 1.f;
 		}
 
-		void Lock(ITEM_SLOT slot, bool is_give = false)
+		void Lock(ITEM_SLOT slot, bool isGive = false)
 		{
 			index = 0;
 			this->slot = slot;
-			this->is_give = is_give;
+			this->isGive = isGive;
 			timer = 1.f;
 		}
 	};
@@ -79,14 +79,10 @@ public:
 	void EndLock();
 
 	InventoryMode mode;
-	GamePanelContainer* gp_trade;
-	InventoryPanel* inv_mine, *inv_trade_mine, *inv_trade_other;
-	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
-	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
-	vector<int> tmp_inventory[2];
-	int tmp_inventory_shift[2];
+	GamePanelContainer* gpTrade;
+	InventoryPanel* invMine, *invTradeMine, *invTradeOther;
 	ItemLock lock;
-	DialogBox* lock_dialog;
+	DialogBox* lockDialog;
 	TooltipController tooltip;
 	TexturePtr tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU, tTeamItem;
 	cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount,
@@ -94,6 +90,12 @@ public:
 		txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount,
 		txShareGiveItemCount, txCanCarryTeamOnly, txWontGiveItem, txShareTakeItemCount, txWontTakeItem, txSellTeamItem, txSellItem, txSellFreeItem,
 		txGivePotionCount, txNpcCantCarry, txShowStatsFor, txStatsFor;
+
+private:
+	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
+	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
+	vector<int> tmpInventory[2];
+	int tmpInventoryShift[2];
 };
 
 //-----------------------------------------------------------------------------
@@ -153,22 +155,23 @@ public:
 	void OnGivePotion(int id);
 	void GivePotion(int index, uint count);
 	void GiveSlotItem(ITEM_SLOT slot);
-	void IsBetterItemResponse(bool is_better);
+	void IsBetterItemResponse(bool isBetter);
+
 	string title;
-	vector<int>* i_items;
+	vector<int>* indices;
 	vector<ItemSlot>* items;
-	const Item* last_item;
+	const Item* lastItem;
 	const array<const Item*, SLOT_MAX>* equipped;
 	Unit* unit;
 	Scrollbar scrollbar;
 	Button bt;
-	int counter, give_item_mode;
+	int counter, giveItemMod;
 	Mode mode;
 
 private:
 	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void UpdateGrid(bool mine);
-	void FormatBox(int group, string& text, string& small_text, Texture*& img, bool refresh);
+	void FormatBox(int group, string& text, string& smallText, Texture*& img, bool refresh);
 	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
 	int GetLockIndexAndRelease();
 	int GetLockIndexOrSlotAndRelease();
@@ -176,8 +179,8 @@ private:
 
 	Inventory& base;
 	float rot;
-	const Item* item_visible;
-	const Item* drag_and_drop_item;
-	Int2 drag_and_drop_pos;
-	bool for_unit, tex_replaced, drag_and_drop;
+	const Item* itemVisible;
+	const Item* dragAndDropItem;
+	Int2 dragAndDropPos;
+	bool forUnit, texReplaced, dragAndDrop;
 };

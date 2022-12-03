@@ -128,7 +128,7 @@ void LobbyApi::SetStatus(Op* op, bool ok)
 	if(op->status == Status::KEEP_ALIVE)
 		op->status = (ok ? Status::DONE : Status::FAILED);
 	if(!ok && (op->o == GET_SERVERS || op->o == GET_CHANGES))
-		game_gui->pick_server->HandleBadRequest();
+		game_gui->pickServer->HandleBadRequest();
 }
 
 void LobbyApi::ParseResponse(Op* op)
@@ -147,11 +147,11 @@ void LobbyApi::ParseResponse(Op* op)
 	switch(op->o)
 	{
 	case GET_SERVERS:
-		if(game_gui->pick_server->HandleGetServers(j))
+		if(game_gui->pickServer->HandleGetServers(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_CHANGES:
-		if(game_gui->pick_server->HandleGetChanges(j))
+		if(game_gui->pickServer->HandleGetChanges(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_VERSION:

@@ -20,7 +20,7 @@ enum MenuId
 };
 
 //=================================================================================================
-GamePanel::GamePanel() : box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
+GamePanel::GamePanel() : boxState(BOX_NOT_VISIBLE), order(0), lastIndex(INDEX_INVALID), lastIndex2(INDEX_INVALID)
 {
 	focusable = true;
 }
@@ -36,37 +36,37 @@ void GamePanel::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show)
 	{
-		box_state = BOX_NOT_VISIBLE;
-		last_index = INDEX_INVALID;
+		boxState = BOX_NOT_VISIBLE;
+		lastIndex = INDEX_INVALID;
 	}
 }
 
 //=================================================================================================
 void GamePanel::DrawBox()
 {
-	if(box_state == BOX_VISIBLE)
-		static_cast<GamePanelContainer*>(parent)->draw_box = this;
+	if(boxState == BOX_VISIBLE)
+		static_cast<GamePanelContainer*>(parent)->drawBox = this;
 }
 
 //=================================================================================================
 void GamePanel::DrawBoxInternal()
 {
-	int alpha = int(box_alpha * 222),
-		alpha2 = int(box_alpha * 255);
+	int alpha = int(boxAlpha * 222),
+		alpha2 = int(boxAlpha * 255);
 
 	// box
-	gui->DrawItem(tDialog, box_pos, box_size, Color::Alpha(alpha), 12);
+	gui->DrawItem(tDialog, boxPos, boxSize, Color::Alpha(alpha), 12);
 
 	// obrazek
-	if(box_img)
-		gui->DrawSprite(box_img, box_img_pos, Color::Alpha(alpha2));
+	if(boxImg)
+		gui->DrawSprite(boxImg, boxImgPos, Color::Alpha(alpha2));
 
 	// du¿y tekst
-	gui->DrawText(GameGui::font, box_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_big);
+	gui->DrawText(GameGui::font, boxText, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), boxBig);
 
 	// ma³y tekst
-	if(!box_text_small.empty())
-		gui->DrawText(GameGui::font_small, box_text_small, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_small);
+	if(!boxTextSmall.empty())
+		gui->DrawText(GameGui::fontSmall, boxTextSmall, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), boxSmall);
 }
 
 //=================================================================================================
@@ -74,61 +74,61 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 {
 	if(index != INDEX_INVALID)
 	{
-		if(index != last_index || index2 != last_index2)
+		if(index != lastIndex || index2 != lastIndex2)
 		{
-			box_state = BOX_COUNTING;
-			last_index = index;
-			last_index2 = index2;
-			show_timer = 0.3f;
+			boxState = BOX_COUNTING;
+			lastIndex = index;
+			lastIndex2 = index2;
+			showTimer = 0.3f;
 		}
 		else
-			show_timer -= dt;
+			showTimer -= dt;
 
-		if(box_state == BOX_COUNTING)
+		if(boxState == BOX_COUNTING)
 		{
-			if(show_timer <= 0.f)
+			if(showTimer <= 0.f)
 			{
-				box_state = BOX_VISIBLE;
-				box_alpha = 0.f;
+				boxState = BOX_VISIBLE;
+				boxAlpha = 0.f;
 				refresh = true;
 			}
 		}
 		else
 		{
-			box_alpha += dt * 5;
-			if(box_alpha >= 1.f)
-				box_alpha = 1.f;
+			boxAlpha += dt * 5;
+			if(boxAlpha >= 1.f)
+				boxAlpha = 1.f;
 		}
 
 		if(refresh)
 		{
 			FormatBox(refresh);
-			if(box_img)
-				box_img_size = box_img->GetSize();
+			if(boxImg)
+				boxImgSize = boxImg->GetSize();
 		}
 	}
 	else
 	{
-		box_state = BOX_NOT_VISIBLE;
-		last_index = INDEX_INVALID;
-		last_index2 = INDEX_INVALID;
+		boxState = BOX_NOT_VISIBLE;
+		lastIndex = INDEX_INVALID;
+		lastIndex2 = INDEX_INVALID;
 	}
 
-	if(box_state == BOX_VISIBLE)
+	if(boxState == BOX_VISIBLE)
 	{
-		Int2 text_size = GameGui::font->CalculateSize(box_text);
-		box_big = Rect::Create(Int2(0, 0), text_size);
+		Int2 text_size = GameGui::font->CalculateSize(boxText);
+		boxBig = Rect::Create(Int2(0, 0), text_size);
 		Int2 size = text_size + Int2(24, 24);
 		Int2 pos2 = Int2(gui->cursorPos) + Int2(24, 24);
 		Int2 text_pos(12, 12);
 
 		// uwzglêdnij rozmiar obrazka
-		if(box_img)
+		if(boxImg)
 		{
-			text_pos.x += box_img_size.x + 8;
-			size.x += box_img_size.x + 8;
-			if(size.y < box_img_size.y + 24)
-				size.y = box_img_size.y + 24;
+			text_pos.x += boxImgSize.x + 8;
+			size.x += boxImgSize.x + 8;
+			if(size.y < boxImgSize.y + 24)
+				size.y = boxImgSize.y + 24;
 		}
 
 		// minimalna szerokoœæ
@@ -138,10 +138,10 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		Int2 text_pos2(12, text_pos.y);
 		text_pos2.y += size.y - 12;
 
-		if(!box_text_small.empty())
+		if(!boxTextSmall.empty())
 		{
-			Int2 size_small = GameGui::font_small->CalculateSize(box_text_small, size.x - 24);
-			box_small = Rect::Create(Int2(0, 0), size_small);
+			Int2 size_small = GameGui::fontSmall->CalculateSize(boxTextSmall, size.x - 24);
+			boxSmall = Rect::Create(Int2(0, 0), size_small);
 			int size_y = size_small.y;
 			size.y += size_y + 12;
 		}
@@ -151,27 +151,27 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		if(pos2.y + size.y >= gui->wndSize.y)
 			pos2.y = gui->wndSize.y - size.y - 1;
 
-		box_img_pos = Int2(pos2.x + 12, pos2.y + 12);
-		box_big = Rect::Create(text_pos + pos2, text_size);
-		box_small += pos2 + text_pos2;
-		box_small.Right() = box_small.Left() + box_size.x - 24;
+		boxImgPos = Int2(pos2.x + 12, pos2.y + 12);
+		boxBig = Rect::Create(text_pos + pos2, text_size);
+		boxSmall += pos2 + text_pos2;
+		boxSmall.Right() = boxSmall.Left() + boxSize.x - 24;
 
-		box_size = size;
-		box_pos = pos2;
+		boxSize = size;
+		boxPos = pos2;
 	}
 }
 
 //=================================================================================================
 // GAME PANEL CONTAINER
 //=================================================================================================
-GamePanelContainer::GamePanelContainer() : order(0), lost_focus(false)
+GamePanelContainer::GamePanelContainer() : order(0), lostFocus(false)
 {
 }
 
 //=================================================================================================
 void GamePanelContainer::Draw()
 {
-	draw_box = nullptr;
+	drawBox = nullptr;
 
 	for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 	{
@@ -179,8 +179,8 @@ void GamePanelContainer::Draw()
 			(*it)->Draw();
 	}
 
-	if(draw_box)
-		draw_box->DrawBoxInternal();
+	if(drawBox)
+		drawBox->DrawBoxInternal();
 }
 
 //=================================================================================================
@@ -188,9 +188,9 @@ void GamePanelContainer::Update(float dt)
 {
 	if(focus)
 	{
-		if(lost_focus)
+		if(lostFocus)
 		{
-			lost_focus = false;
+			lostFocus = false;
 			ctrls.back()->Event(GuiEvent_GainFocus);
 			ctrls.back()->focus = true;
 		}
@@ -229,9 +229,9 @@ void GamePanelContainer::Update(float dt)
 	}
 	else
 	{
-		if(!lost_focus)
+		if(!lostFocus)
 		{
-			lost_focus = true;
+			lostFocus = true;
 			ctrls.back()->Event(GuiEvent_LostFocus);
 			ctrls.back()->focus = false;
 		}

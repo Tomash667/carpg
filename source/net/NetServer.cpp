@@ -127,8 +127,8 @@ void Net::OnNewGameServer()
 	game_gui->server->Show();
 	if(!mp_quickload)
 	{
-		game_gui->mp_box->Reset();
-		game_gui->mp_box->visible = true;
+		game_gui->mpBox->Reset();
+		game_gui->mpBox->visible = true;
 	}
 
 	if(!mp_load)
@@ -413,8 +413,8 @@ void Net::ProcessLeftPlayers()
 			c2.type = NetChange::CHANGE_LEADER;
 			c2.id = team->my_id;
 
-			if(game_gui->world_map->dialog_enc)
-				game_gui->world_map->dialog_enc->bts[0].state = Button::NONE;
+			if(game_gui->worldMap->dialog_enc)
+				game_gui->worldMap->dialog_enc->bts[0].state = Button::NONE;
 
 			game_gui->AddMsg(game->txYouAreLeader);
 		}
@@ -1972,7 +1972,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->Travel(loc, false);
-					game_gui->world_map->StartTravel();
+					game_gui->worldMap->StartTravel();
 				}
 			}
 			break;
@@ -1988,7 +1988,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->TravelPos(pos, false);
-					game_gui->world_map->StartTravel();
+					game_gui->worldMap->StartTravel();
 				}
 			}
 			break;
@@ -2024,10 +2024,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::CLOSE_ENCOUNTER:
 			if(game->game_state == GS_WORLDMAP)
 			{
-				if(game_gui->world_map->dialog_enc)
+				if(game_gui->worldMap->dialog_enc)
 				{
-					gui->CloseDialog(game_gui->world_map->dialog_enc);
-					game_gui->world_map->dialog_enc = nullptr;
+					gui->CloseDialog(game_gui->worldMap->dialog_enc);
+					game_gui->worldMap->dialog_enc = nullptr;
 				}
 				PushChange(NetChange::CLOSE_ENCOUNTER);
 				game->Event_RandomEncounter(0);
@@ -2274,7 +2274,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else
 						{
-							game_gui->mp_box->Add(Format(game->txReceivedGold, count, info.name.c_str()));
+							game_gui->mpBox->Add(Format(game->txReceivedGold, count, info.name.c_str()));
 							soundMgr->PlaySound2d(game_res->sCoins);
 						}
 					}
@@ -2372,7 +2372,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->Warp(location_index, false);
-					game_gui->world_map->StartTravel(true);
+					game_gui->worldMap->StartTravel(true);
 				}
 			}
 			break;
@@ -2390,7 +2390,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->game_state == GS_WORLDMAP)
 				{
 					world->WarpPos(pos, false);
-					game_gui->world_map->StartTravel(true);
+					game_gui->worldMap->StartTravel(true);
 				}
 			}
 			break;
@@ -3591,7 +3591,7 @@ void Net::Server_Say(BitStreamReader& f, PlayerInfo& info)
 			peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, info.adr, true);
 
 		if(game->game_state == GS_LEVEL)
-			game_gui->level_gui->AddSpeechBubble(info.u, text.c_str());
+			game_gui->levelGui->AddSpeechBubble(info.u, text.c_str());
 	}
 }
 

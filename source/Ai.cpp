@@ -1257,7 +1257,7 @@ void Game::UpdateAi(float dt)
 										cstring msg = game->idle_context.GetIdleText(u);
 
 										int ani = 0;
-										game_gui->level_gui->AddSpeechBubble(&u, msg);
+										game_gui->levelGui->AddSpeechBubble(&u, msg);
 										if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 										{
 											ani = Rand() % 2 + 1;

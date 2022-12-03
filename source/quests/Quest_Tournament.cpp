@@ -777,7 +777,7 @@ void Quest_Tournament::Talk(cstring text)
 {
 	master->Talk(text);
 	Vec3 pos = game_level->GetArena()->exit_region.Midpoint().XZ(1.5f);
-	game_gui->level_gui->AddSpeechBubble(pos, text);
+	game_gui->levelGui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);

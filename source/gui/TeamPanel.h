@@ -41,6 +41,6 @@ private:
 	int counter, mode, picked;
 	TexturePtr tCrown, tSkull, tFastTravelWait, tFastTravelOk;
 	vector<Hitbox> hitboxes;
-	Entity<Unit> target_unit;
+	Entity<Unit> targetUnit;
 	bool picking;
 };

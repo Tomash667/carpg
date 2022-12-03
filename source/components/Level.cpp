@@ -4941,7 +4941,7 @@ Vec3 Level::GetSpawnCenter()
 void Level::StartBossFight(Unit& unit)
 {
 	boss = &unit;
-	game_gui->level_gui->SetBoss(&unit, false);
+	game_gui->levelGui->SetBoss(&unit, false);
 	game->SetMusic(MusicType::Boss);
 	if(Net::IsServer())
 	{
@@ -4955,7 +4955,7 @@ void Level::StartBossFight(Unit& unit)
 void Level::EndBossFight()
 {
 	boss = nullptr;
-	game_gui->level_gui->SetBoss(nullptr, false);
+	game_gui->levelGui->SetBoss(nullptr, false);
 	game->SetMusic();
 	if(Net::IsServer())
 		Net::PushChange(NetChange::BOSS_END);

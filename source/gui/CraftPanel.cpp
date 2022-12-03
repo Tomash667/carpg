@@ -96,7 +96,7 @@ void CraftPanel::Draw()
 		left.pos.x + left.size.x - 16,
 		left.pos.y + left.size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txAlchemy, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txAlchemy, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	list.Draw();
 	button.Draw();
@@ -111,7 +111,7 @@ void CraftPanel::Draw()
 		right.pos.x + right.size.x - 16,
 		right.pos.y + right.size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txIngredients, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txIngredients, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// ingredients
 	int count_w = (right.size.x - 48) / 63;
@@ -366,7 +366,7 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 
 void CraftPanel::Show()
 {
-	game_gui->level_gui->ClosePanels();
+	game_gui->levelGui->ClosePanels();
 	Control::Show();
 }
 

@@ -55,14 +55,14 @@ void GameMessages::LoadLanguage()
 //=================================================================================================
 void GameMessages::LoadData()
 {
-	snd_scribble = resMgr->Load<Sound>("scribble.mp3");
+	sndScribble = resMgr->Load<Sound>("scribble.mp3");
 }
 
 //=================================================================================================
 void GameMessages::Reset()
 {
 	msgs.clear();
-	msgs_h = 0;
+	msgsHeight = 0;
 }
 
 //=================================================================================================
@@ -82,14 +82,14 @@ void GameMessages::Draw()
 	if(game->paused)
 	{
 		Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
-		gui->DrawText(GameGui::font_big, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		gui->DrawText(GameGui::fontBig, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 }
 
 //=================================================================================================
 void GameMessages::Update(float dt)
 {
-	int h = 0, total_h = msgs_h;
+	int h = 0, total_h = msgsHeight;
 
 	for(list<GameMsg>::iterator it = msgs.begin(), end = msgs.end(); it != end; ++it)
 	{
@@ -108,7 +108,7 @@ void GameMessages::Update(float dt)
 			m.fade -= dt;
 			if(m.fade < -0.1f)
 			{
-				msgs_h -= m.size.y;
+				msgsHeight -= m.size.y;
 				it = msgs.erase(it);
 				end = msgs.end();
 				if(it == end)
@@ -138,7 +138,7 @@ void GameMessages::Save(GameWriter& f) const
 		f << msg.subtype;
 		f << msg.value;
 	}
-	f << msgs_h;
+	f << msgsHeight;
 }
 
 //=================================================================================================
@@ -156,7 +156,7 @@ void GameMessages::Load(GameReader& f)
 		f >> msg.subtype;
 		f >> msg.value;
 	}
-	f >> msgs_h;
+	f >> msgsHeight;
 }
 
 //=================================================================================================
@@ -184,7 +184,7 @@ void GameMessages::AddMessage(cstring text, float time, int type, int subtype, i
 		m.pos = Vec2(float(gui->wndSize.x) / 2, prev.pos.y + prev.size.y);
 	}
 
-	msgs_h += m.size.y;
+	msgsHeight += m.size.y;
 }
 
 //=================================================================================================
@@ -231,12 +231,12 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ADDED_RUMOR:
 		repeat = true;
 		text = txGmsRumor;
-		soundMgr->PlaySound2d(snd_scribble);
+		soundMgr->PlaySound2d(sndScribble);
 		break;
 	case GMS_JOURNAL_UPDATED:
 		repeat = true;
 		text = txGmsJournalUpdated;
-		soundMgr->PlaySound2d(snd_scribble);
+		soundMgr->PlaySound2d(sndScribble);
 		break;
 	case GMS_USED:
 		text = txGmsUsed;

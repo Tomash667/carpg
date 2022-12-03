@@ -74,7 +74,7 @@ void MultiplayerPanel::Draw()
 
 	// tekst
 	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// textbox
 	textbox.Draw();

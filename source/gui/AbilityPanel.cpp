@@ -89,7 +89,7 @@ void AbilityPanel::Draw()
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
 	if(!abilities.empty())
@@ -120,7 +120,7 @@ void AbilityPanel::DrawGroup(cstring text)
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
 
-	gui->DrawText(GameGui::font_big, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
+	gui->DrawText(GameGui::fontBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
 	shift_y += 40;
 
 	for(int y = 0; y < count_h; ++y)
@@ -167,7 +167,7 @@ void AbilityPanel::Update(float dt)
 		return;
 	}
 
-	if(game_gui->level_gui->IsDragAndDrop())
+	if(game_gui->levelGui->IsDragAndDrop())
 	{
 		tooltip.anything = false;
 		return;
@@ -202,7 +202,7 @@ void AbilityPanel::Update(float dt)
 					break;
 				}
 			}
-			game_gui->level_gui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
+			game_gui->levelGui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
 			dragAndDrop = false;
 		}
 		if(input->Released(Key::LeftButton))

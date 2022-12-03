@@ -50,7 +50,7 @@ void Minimap::Draw()
 
 	// map texture
 	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
-	Rect r_part = { 0, 0, minimap_size, minimap_size };
+	Rect r_part = { 0, 0, minimapSize, minimapSize };
 	gui->DrawSpriteRectPart(game->tMinimap, r, r_part, Color::Alpha(140));
 
 	// stairs
@@ -221,7 +221,7 @@ void Minimap::Hide()
 //=================================================================================================
 void Minimap::Build()
 {
-	minimap_size = game_level->minimap_size;
+	minimapSize = game_level->minimap_size;
 	if(game_level->city_ctx && game_level->city_ctx != city)
 	{
 		city = game_level->city_ctx;

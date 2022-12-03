@@ -2593,7 +2593,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 							if(ok)
 							{
-								game_gui->inventory->inv_mine->EquipSlotItem(i_index);
+								game_gui->inventory->invMine->EquipSlotItem(i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
@@ -2612,7 +2612,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					int i_index = u.FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
-						game_gui->inventory->inv_mine->ConsumeItem(i_index);
+						game_gui->inventory->invMine->ConsumeItem(i_index);
 				}
 				else if(item->type == IT_BOOK)
 				{
@@ -2626,9 +2626,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 						else
 						{
-							OpenPanel open = game_gui->level_gui->GetOpenPanel();
+							OpenPanel open = game_gui->levelGui->GetOpenPanel();
 							if(open != OpenPanel::Inventory)
-								game_gui->level_gui->ClosePanels();
+								game_gui->levelGui->ClosePanels();
 							game_gui->book->Show((const Book*)item);
 						}
 					}

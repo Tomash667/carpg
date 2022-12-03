@@ -271,10 +271,10 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		game_gui->multiplayer->visible = false;
 	else
 	{
-		game_gui->main_menu->visible = false;
-		game_gui->level_gui->visible = false;
-		game_gui->game_menu->CloseDialog();
-		game_gui->world_map->Hide();
+		game_gui->mainMenu->visible = false;
+		game_gui->levelGui->visible = false;
+		game_gui->gameMenu->CloseDialog();
+		game_gui->worldMap->Hide();
 	}
 
 	try
@@ -330,19 +330,19 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		net_mode = NM_TRANSFER_SERVER;
 		net_timer = mp_timeout;
 		net_state = NetState::Server_Starting;
-		game_gui->info_box->Show("");
+		game_gui->infoBox->Show("");
 	}
 	else if(!net->mp_load)
 	{
 		if(game_state == GS_LEVEL)
 		{
-			game_gui->level_gui->visible = true;
-			game_gui->world_map->Hide();
+			game_gui->levelGui->visible = true;
+			game_gui->worldMap->Hide();
 		}
 		else
 		{
-			game_gui->level_gui->visible = false;
-			game_gui->world_map->Show();
+			game_gui->levelGui->visible = false;
+			game_gui->worldMap->Show();
 		}
 		game_gui->Setup(pc);
 		SetTitle("SINGLE");
@@ -350,8 +350,8 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	else
 	{
 		game_gui->multiplayer->visible = true;
-		game_gui->main_menu->Show();
-		game_gui->create_server->Show();
+		game_gui->mainMenu->Show();
+		game_gui->createServer->Show();
 	}
 }
 
@@ -532,7 +532,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		f << check_id++;
 
 		Net::PushChange(NetChange::GAME_SAVED);
-		game_gui->mp_box->Add(txGameSaved);
+		game_gui->mpBox->Add(txGameSaved);
 	}
 
 	f.Write("EOS", 3);
@@ -786,7 +786,7 @@ void Game::LoadGame(GameReader& f)
 	{
 		f >> game_level->boss;
 		if(game_level->boss)
-			game_gui->level_gui->SetBoss(game_level->boss, true);
+			game_gui->levelGui->SetBoss(game_level->boss, true);
 	}
 
 	game_gui->Load(f);
@@ -835,7 +835,7 @@ void Game::LoadGame(GameReader& f)
 		game_level->is_open = false;
 
 	// gui
-	game_gui->level_gui->PositionPanels();
+	game_gui->levelGui->PositionPanels();
 
 	// set ai bow targets
 	if(!ai_bow_targets.empty())
@@ -939,7 +939,7 @@ void Game::LoadGame(GameReader& f)
 			locPart.BuildScene();
 	}
 	if(!net->mp_quickload)
-		game_gui->load_screen->visible = false;
+		game_gui->loadScreen->visible = false;
 
 	Info("Game loaded.");
 
@@ -996,8 +996,8 @@ bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
 			else
 				dialog_text = txLoadErrorGeneric;
 			Control* parent = nullptr;
-			if(game_gui->game_menu->visible)
-				parent = game_gui->game_menu;
+			if(game_gui->gameMenu->visible)
+				parent = game_gui->gameMenu;
 			gui->SimpleDialog(dialog_text, parent, "fatal");
 		}
 		net->mp_load = false;

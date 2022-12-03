@@ -1271,7 +1271,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			game_gui->console->Reset();
 			break;
 		case PS_CHAT:
-			game_gui->mp_box->itb.Reset();
+			game_gui->mpBox->itb.Reset();
 			break;
 		case PS_LOBBY:
 			game_gui->server->itb.Reset();

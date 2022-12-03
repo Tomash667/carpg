@@ -10,7 +10,7 @@
 #include "Team.h"
 
 //=================================================================================================
-MpBox::MpBox() : have_focus(false)
+MpBox::MpBox() : haveFocus(false)
 {
 	itb.parent = this;
 	itb.maxCache = 10;
@@ -37,7 +37,7 @@ void MpBox::Draw()
 void MpBox::Update(float dt)
 {
 	// hack for mp_box focus
-	focusable = game_gui->level_gui->CanFocusMpBox();
+	focusable = game_gui->levelGui->CanFocusMpBox();
 
 	bool prev_focus = focus;
 	focus = focusable;
@@ -45,7 +45,7 @@ void MpBox::Update(float dt)
 	itb.mouseFocus = focus;
 	focus = prev_focus;
 	itb.Update(dt);
-	have_focus = itb.focus;
+	haveFocus = itb.focus;
 }
 
 //=================================================================================================
@@ -53,7 +53,7 @@ void MpBox::Event(GuiEvent e)
 {
 	if(e == GuiEvent_GainFocus)
 	{
-		if(have_focus)
+		if(haveFocus)
 		{
 			itb.focus = true;
 			itb.Event(GuiEvent_GainFocus);
@@ -99,6 +99,6 @@ void MpBox::OnInput(const string& str)
 		cstring s = Format("%s: %s", game->pc->name.c_str(), str.c_str());
 		Add(s);
 		if(game->game_state == GS_LEVEL)
-			game_gui->level_gui->AddSpeechBubble(game->pc->unit, str.c_str());
+			game_gui->levelGui->AddSpeechBubble(game->pc->unit, str.c_str());
 	}
 }

@@ -22,12 +22,12 @@ public:
 	// przekszata³ca z pozycji œwiata do punktu na mapie (gdzie punkt (0,0) to lewy dolny róg mapy, a (1,1) to prawy górny)
 	Vec2 TransformCoord(const Vec2& pt)
 	{
-		return Vec2(pt.x / (2 * minimap_size), 1.f - (pt.y / (2 * minimap_size)));
+		return Vec2(pt.x / (2 * minimapSize), 1.f - (pt.y / (2 * minimapSize)));
 	}
 
 	Vec2 TransformTile(const Int2& tile)
 	{
-		return Vec2((float(tile.x) + 0.5f) / minimap_size, 1.f - (float(tile.y) + 0.5f) / minimap_size);
+		return Vec2((float(tile.x) + 0.5f) / minimapSize, 1.f - (float(tile.y) + 0.5f) / minimapSize);
 	}
 
 	// konwersji z (0-1) do punktu na ekranie
@@ -62,5 +62,5 @@ private:
 
 	vector<Text> texts;
 	TexturePtr tUnit[5], tStairsDown, tStairsUp, tBag, tBagImportant, tPortal, tChest, tDoor;
-	int minimap_size;
+	int minimapSize;
 };

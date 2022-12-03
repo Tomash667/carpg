@@ -81,12 +81,12 @@ public:
 
 private:
 	list<GameMsg> msgs;
-	int msgs_h;
+	int msgsHeight;
 	cstring txGamePausedBig, txINeedWeapon, txNoHealthPotion, txNoManaPotion, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey,
 		txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem,
 		txGmsGettingOutOfRange, txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated,
 		txAddedCursedStone, txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems, txNeedWand, txLearnedAbility, txLearnedRecipe, txAlreadyLearned,
 		txPersuasionSuccess, txPersuasionFailed, txNeedBow;
 public:
-	Sound* snd_scribble;
+	Sound* sndScribble;
 };

@@ -225,7 +225,7 @@ void Game::PreloadData()
 	GameGui::font = game_gui->gui->GetFont("Arial", 12, 8, 2);
 
 	// loadscreen textures
-	game_gui->load_screen->LoadData();
+	game_gui->loadScreen->LoadData();
 
 	// intro music
 	if(!soundMgr->IsDisabled())
@@ -243,7 +243,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	game_gui->load_screen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
+	game_gui->loadScreen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
 
 	AddFilesystem();
 	arena->Init();
@@ -252,11 +252,11 @@ void Game::LoadSystem()
 	net->Init();
 	quest_mgr->Init();
 	script_mgr->Init();
-	game_gui->main_menu->UpdateCheckVersion();
+	game_gui->mainMenu->UpdateCheckVersion();
 	LoadDatafiles();
 	LoadLanguageFiles();
 	game_gui->server->Init();
-	game_gui->load_screen->Tick(txLoadingShaders);
+	game_gui->loadScreen->Tick(txLoadingShaders);
 	ConfigureGame();
 }
 
@@ -286,40 +286,40 @@ void Game::LoadDatafiles()
 		switch(id)
 		{
 		case Content::Id::Abilities:
-			game_gui->load_screen->Tick(txLoadingAbilities);
+			game_gui->loadScreen->Tick(txLoadingAbilities);
 			break;
 		case Content::Id::Buildings:
-			game_gui->load_screen->Tick(txLoadingBuildings);
+			game_gui->loadScreen->Tick(txLoadingBuildings);
 			break;
 		case Content::Id::Classes:
-			game_gui->load_screen->Tick(txLoadingClasses);
+			game_gui->loadScreen->Tick(txLoadingClasses);
 			break;
 		case Content::Id::Dialogs:
-			game_gui->load_screen->Tick(txLoadingDialogs);
+			game_gui->loadScreen->Tick(txLoadingDialogs);
 			break;
 		case Content::Id::Items:
-			game_gui->load_screen->Tick(txLoadingItems);
+			game_gui->loadScreen->Tick(txLoadingItems);
 			break;
 		case Content::Id::Locations:
-			game_gui->load_screen->Tick(txLoadingLocations);
+			game_gui->loadScreen->Tick(txLoadingLocations);
 			break;
 		case Content::Id::Musics:
-			game_gui->load_screen->Tick(txLoadingMusics);
+			game_gui->loadScreen->Tick(txLoadingMusics);
 			break;
 		case Content::Id::Objects:
-			game_gui->load_screen->Tick(txLoadingObjects);
+			game_gui->loadScreen->Tick(txLoadingObjects);
 			break;
 		case Content::Id::Perks:
-			game_gui->load_screen->Tick(txLoadingPerks);
+			game_gui->loadScreen->Tick(txLoadingPerks);
 			break;
 		case Content::Id::Quests:
-			game_gui->load_screen->Tick(txLoadingQuests);
+			game_gui->loadScreen->Tick(txLoadingQuests);
 			break;
 		case Content::Id::Required:
-			game_gui->load_screen->Tick(txLoadingRequired);
+			game_gui->loadScreen->Tick(txLoadingRequired);
 			break;
 		case Content::Id::Units:
-			game_gui->load_screen->Tick(txLoadingUnits);
+			game_gui->loadScreen->Tick(txLoadingUnits);
 			break;
 		default:
 			assert(0);
@@ -334,7 +334,7 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	game_gui->load_screen->Tick(txLoadingLanguageFiles);
+	game_gui->loadScreen->Tick(txLoadingLanguageFiles);
 
 	Language::LoadLanguageFiles();
 
@@ -366,7 +366,7 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	game_gui->load_screen->Tick(txConfiguringGame);
+	game_gui->loadScreen->Tick(txConfiguringGame);
 
 	cmdp->AddCommands();
 	settings.ResetGameKeys();
@@ -394,7 +394,7 @@ void Game::LoadData()
 	Info("Game: Loading data.");
 
 	resMgr->PrepareLoadScreen(0.33f);
-	game_gui->load_screen->Tick(txPreloadAssets);
+	game_gui->loadScreen->Tick(txPreloadAssets);
 	game_res->LoadData();
 	resMgr->StartLoadScreen();
 }
@@ -450,7 +450,7 @@ void Game::PostconfigureGame()
 			info.type = DIALOG_OK;
 			info.img = img;
 			info.event = [this](int result) { StartGameMode(); };
-			info.parent = game_gui->main_menu;
+			info.parent = game_gui->mainMenu;
 			info.order = DialogOrder::TopMost;
 			info.pause = false;
 			info.autoWrap = true;
@@ -466,8 +466,8 @@ void Game::PostconfigureGame()
 
 	// end load screen, show menu
 	game_state = GS_MAIN_MENU;
-	game_gui->load_screen->visible = false;
-	game_gui->main_menu->Show();
+	game_gui->loadScreen->visible = false;
+	game_gui->mainMenu->Show();
 	SetMusic(MusicType::Title);
 
 	// start game mode if selected quickmode
@@ -506,7 +506,7 @@ void Game::StartGameMode()
 			net->mp_quickload = false;
 			if(TryLoadGame(quickstart_slot, false, false))
 			{
-				game_gui->create_server->CloseDialog();
+				game_gui->createServer->CloseDialog();
 				game_gui->server->autoready = true;
 			}
 			else
@@ -532,7 +532,7 @@ void Game::StartGameMode()
 		if(!player_name.empty())
 		{
 			game_gui->server->autoready = true;
-			game_gui->pick_server->Show(true);
+			game_gui->pickServer->Show(true);
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
@@ -567,8 +567,8 @@ void Game::OnCleanup()
 	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
 		ClearGame();
 
-	if(game_gui && game_gui->main_menu)
-		game_gui->main_menu->ShutdownThread();
+	if(game_gui && game_gui->mainMenu)
+		game_gui->mainMenu->ShutdownThread();
 
 	content.CleanupContent();
 
@@ -914,10 +914,10 @@ void Game::DoExitToMenu()
 		gui->SimpleDialog(msg.c_str(), nullptr, "fatal");
 	if(console)
 		gui->ShowDialog(game_gui->console);
-	game_gui->game_menu->visible = false;
-	game_gui->level_gui->visible = false;
-	game_gui->world_map->Hide();
-	game_gui->main_menu->Show();
+	game_gui->gameMenu->visible = false;
+	game_gui->levelGui->visible = false;
+	game_gui->worldMap->Hide();
+	game_gui->mainMenu->Show();
 	units_mesh_load.clear();
 
 	SetTitle(nullptr);
@@ -1333,7 +1333,7 @@ void Game::PauseGame()
 	paused = !paused;
 	if(Net::IsOnline())
 	{
-		game_gui->mp_box->Add(paused ? txGamePaused : txGameResumed);
+		game_gui->mpBox->Add(paused ? txGamePaused : txGameResumed);
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PAUSED;
 		c.id = (paused ? 1 : 0);
@@ -1365,9 +1365,9 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(level == -2)
 		level = (l.outside ? -1 : 0);
 
-	game_gui->world_map->Hide();
-	game_gui->level_gui->Reset();
-	game_gui->level_gui->visible = true;
+	game_gui->worldMap->Hide();
+	game_gui->levelGui->Reset();
+	game_gui->levelGui->visible = true;
 
 	game_level->is_open = true;
 	if(world->GetState() != World::State::INSIDE_ENCOUNTER)
@@ -1502,14 +1502,14 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		else
 			net->GetMe().state = PlayerInfo::IN_GAME;
 
-		game_gui->info_box->Show(txWaitingForPlayers);
+		game_gui->infoBox->Show(txWaitingForPlayers);
 	}
 	else
 	{
 		game_state = GS_LEVEL;
-		game_gui->load_screen->visible = false;
-		game_gui->main_menu->visible = false;
-		game_gui->level_gui->visible = true;
+		game_gui->loadScreen->visible = false;
+		game_gui->mainMenu->visible = false;
+		game_gui->levelGui->visible = true;
 		game_level->ready = true;
 	}
 
@@ -1595,7 +1595,7 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 void Game::Event_RandomEncounter(int)
 {
-	game_gui->world_map->dialog_enc = nullptr;
+	game_gui->worldMap->dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 	world->StartEncounter();
@@ -1646,7 +1646,7 @@ void Game::CutsceneStart(bool instant)
 {
 	cutscene = true;
 	game_gui->CloseAllPanels();
-	game_gui->level_gui->ResetCutscene();
+	game_gui->levelGui->ResetCutscene();
 	fallback_type = FALLBACK::CUTSCENE;
 	fallback_t = instant ? 0.f : -1.f;
 
@@ -1671,7 +1671,7 @@ void Game::CutsceneImage(const string& image, float time)
 		if(!tex)
 			Warn("CutsceneImage: missing texture '%s'.", image.c_str());
 	}
-	game_gui->level_gui->SetCutsceneImage(tex, time);
+	game_gui->levelGui->SetCutsceneImage(tex, time);
 
 	if(Net::IsServer())
 	{
@@ -1688,7 +1688,7 @@ void Game::CutsceneImage(const string& image, float time)
 void Game::CutsceneText(const string& text, float time)
 {
 	assert(cutscene && time > 0);
-	game_gui->level_gui->SetCutsceneText(text, time);
+	game_gui->levelGui->SetCutsceneText(text, time);
 
 	if(Net::IsServer())
 	{
@@ -2519,14 +2519,14 @@ void Game::ChangeLevel(int where)
 		BitStreamWriter f(prepared_stream);
 		net->WriteLevelData(f, loaded_resources);
 		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
-		game_gui->info_box->Show(txWaitingForPlayers);
+		game_gui->infoBox->Show(txWaitingForPlayers);
 	}
 	else
 	{
 		game_state = GS_LEVEL;
-		game_gui->load_screen->visible = false;
-		game_gui->main_menu->visible = false;
-		game_gui->level_gui->visible = true;
+		game_gui->loadScreen->visible = false;
+		game_gui->mainMenu->visible = false;
+		game_gui->levelGui->visible = true;
 		game_level->ready = true;
 	}
 
@@ -2549,8 +2549,8 @@ void Game::ExitToMap()
 	if(Net::IsServer())
 		Net::PushChange(NetChange::EXIT_TO_MAP);
 
-	game_gui->world_map->Show();
-	game_gui->level_gui->visible = false;
+	game_gui->worldMap->Show();
+	game_gui->levelGui->visible = false;
 }
 
 void Game::SetMusic(MusicType type)
@@ -2617,10 +2617,10 @@ void Game::ClearGameVars(bool new_game)
 	game_gui->minimap->city = nullptr;
 	team->Clear(new_game);
 	draw_flags = 0xFFFFFFFF;
-	game_gui->level_gui->Reset();
+	game_gui->levelGui->Reset();
 	game_gui->journal->Reset();
 	arena->Reset();
-	game_gui->level_gui->visible = false;
+	game_gui->levelGui->visible = false;
 	game_gui->inventory->lock = nullptr;
 	game_level->camera.Reset(new_game);
 	pc->data.Reset();
@@ -2628,7 +2628,7 @@ void Game::ClearGameVars(bool new_game)
 	game_level->Reset();
 	aiMgr->Reset();
 	pathfinding->SetTarget(nullptr);
-	game_gui->world_map->Clear();
+	game_gui->worldMap->Clear();
 	net->ClearFastTravel();
 	ParticleEmitter::ResetEntities();
 	TrailParticleEmitter::ResetEntities();
@@ -2663,10 +2663,10 @@ void Game::ClearGameVars(bool new_game)
 		game_stats->Reset();
 		dont_wander = false;
 		game_level->is_open = false;
-		game_gui->level_gui->PositionPanels();
+		game_gui->levelGui->PositionPanels();
 		game_gui->Clear(true, false);
 		if(!net->mp_quickload)
-			game_gui->mp_box->visible = Net::IsOnline();
+			game_gui->mpBox->visible = Net::IsOnline();
 		game_level->light_angle = Random(PI * 2);
 		start_version = VERSION;
 
@@ -2792,8 +2792,8 @@ void Game::LeaveLevel(bool clear)
 {
 	Info("Leaving level.");
 
-	if(game_gui->level_gui)
-		game_gui->level_gui->Reset();
+	if(game_gui->levelGui)
+		game_gui->levelGui->Reset();
 
 	if(game_level->is_open)
 	{
@@ -3013,7 +3013,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 
 void Game::LoadingStart(int steps)
 {
-	game_gui->load_screen->Reset();
+	game_gui->loadScreen->Reset();
 	loading_t.Reset();
 	loading_dt = 0.f;
 	loading_cap = 0.66f;
@@ -3022,9 +3022,9 @@ void Game::LoadingStart(int steps)
 	loading_first_step = true;
 	game_state = GS_LOAD;
 	game_level->ready = false;
-	game_gui->load_screen->visible = true;
-	game_gui->main_menu->visible = false;
-	game_gui->level_gui->visible = false;
+	game_gui->loadScreen->visible = true;
+	game_gui->mainMenu->visible = false;
+	game_gui->levelGui->visible = false;
 	resMgr->PrepareLoadScreen(loading_cap);
 }
 
@@ -3037,7 +3037,7 @@ void Game::LoadingStep(cstring text, int end)
 		progress = loading_cap;
 	else
 		progress = 1.f;
-	game_gui->load_screen->SetProgressOptional(progress, text);
+	game_gui->loadScreen->SetProgressOptional(progress, text);
 
 	if(end != 2)
 	{
@@ -3342,7 +3342,7 @@ void Game::DeleteUnit(Unit* unit)
 	if(game_level->is_open)
 	{
 		RemoveElement(unit->locPart->units, unit);
-		game_gui->level_gui->RemoveUnitView(unit);
+		game_gui->levelGui->RemoveUnitView(unit);
 		if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
 			pc->data.before_player = BP_NONE;
 		if(unit == pc->data.selected_unit)
@@ -3430,7 +3430,7 @@ void Game::RemoveUnit(Unit* unit)
 
 	unit->BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
 	RemoveElement(unit->locPart->units, unit);
-	game_gui->level_gui->RemoveUnitView(unit);
+	game_gui->levelGui->RemoveUnitView(unit);
 	if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
 		pc->data.before_player = BP_NONE;
 	if(unit == pc->data.selected_unit)
@@ -3568,10 +3568,10 @@ void Game::CloseInventory()
 {
 	OnCloseInventory();
 	game_gui->inventory->mode = I_NONE;
-	if(game_gui->level_gui)
+	if(game_gui->levelGui)
 	{
-		game_gui->inventory->inv_mine->Hide();
-		game_gui->inventory->gp_trade->Hide();
+		game_gui->inventory->invMine->Hide();
+		game_gui->inventory->gpTrade->Hide();
 	}
 }
 
@@ -3585,7 +3585,7 @@ bool Game::CanShowEndScreen()
 
 void Game::UpdateGameNet(float dt)
 {
-	if(game_gui->info_box->visible)
+	if(game_gui->infoBox->visible)
 		return;
 
 	if(Net::IsServer())
@@ -3881,5 +3881,5 @@ void Game::OnEnterLevelOrLocation()
 		locPart.BuildScene();
 
 	if(Net::IsClient() && game_level->boss)
-		game_gui->level_gui->SetBoss(game_level->boss, true);
+		game_gui->levelGui->SetBoss(game_level->boss, true);
 }

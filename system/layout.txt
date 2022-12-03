@@ -140,6 +140,8 @@ control "FlowContainer" {
 	}
 	font "normal"
 	fontSection "big"
+	border 3
+	padding 2
 }
 
 control "Grid" {

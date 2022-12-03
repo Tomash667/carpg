@@ -16,28 +16,28 @@ public:
 	void LoadData();
 	void PostInit();
 	void Draw() override;
-	void Draw(const Matrix& matViewProj, bool draw_gui, bool draw_dialogs);
+	void Draw(const Matrix& matViewProj, bool drawGui, bool drawDialogs);
 	void UpdateGui(float dt);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	void Clear(bool reset_mpbox, bool on_enter);
+	void Clear(bool resetMpBox, bool onEnter);
 	void Setup(PlayerController* pc);
 	void OnResize();
 	void OnFocus(bool focus, const Int2& activationPoint);
-	void ShowMenu() { gui->ShowDialog((DialogBox*)game_menu); }
+	void ShowMenu() { gui->ShowDialog((DialogBox*)gameMenu); }
 	void ShowOptions() { gui->ShowDialog((DialogBox*)options); }
 	void ShowMultiplayer();
 	void ShowQuitDialog();
-	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
-	void CloseAllPanels(bool close_mp_box = false);
+	void ShowCreateCharacterPanel(bool enterName, bool redo = false);
+	void CloseAllPanels(bool closeMpBox = false);
 	void AddMsg(cstring msg);
 	void ChangeControls();
 
-	static FontPtr font, font_small, font_big;
+	static FontPtr font, fontSmall, fontBig;
 	Notifications* notifications;
 	// panels
-	LoadScreen* load_screen;
-	LevelGui* level_gui;
+	LoadScreen* loadScreen;
+	LevelGui* levelGui;
 	Inventory* inventory;
 	StatsPanel* stats;
 	TeamPanel* team;
@@ -47,23 +47,23 @@ public:
 	BookPanel* book;
 	CraftPanel* craft;
 	GameMessages* messages;
-	MpBox* mp_box;
-	WorldMapGui* world_map;
-	MainMenu* main_menu;
+	MpBox* mpBox;
+	WorldMapGui* worldMap;
+	MainMenu* mainMenu;
 	// dialogs
 	Console* console;
-	GameMenu* game_menu;
+	GameMenu* gameMenu;
 	Options* options;
 	SaveLoad* saveload;
-	CreateCharacterPanel* create_character;
+	CreateCharacterPanel* createCharacter;
 	MultiplayerPanel* multiplayer;
-	CreateServerPanel* create_server;
-	PickServerPanel* pick_server;
+	CreateServerPanel* createServer;
+	PickServerPanel* pickServer;
 	ServerPanel* server;
-	InfoBox* info_box;
+	InfoBox* infoBox;
 	Controls* controls;
 	// settings
-	bool cursor_allow_move;
+	bool cursorAllowMove;
 
 private:
 	cstring txReallyQuit, txReallyQuitHardcore;

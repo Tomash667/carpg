@@ -864,10 +864,10 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 	int rebuild_id = -1;
 	if(IsLocalPlayer())
 	{
-		if(game_gui->inventory->inv_mine->visible || game_gui->inventory->gp_trade->visible)
+		if(game_gui->inventory->invMine->visible || game_gui->inventory->gpTrade->visible)
 			rebuild_id = 0;
 	}
-	else if(game_gui->inventory->gp_trade->visible && game_gui->inventory->inv_trade_other->unit == this)
+	else if(game_gui->inventory->gpTrade->visible && game_gui->inventory->invTradeOther->unit == this)
 		rebuild_id = 1;
 	if(rebuild_id != -1)
 		game_gui->inventory->BuildTmpInventory(rebuild_id);
@@ -3790,10 +3790,10 @@ uint Unit::RemoveItem(int i_index, uint count)
 	// update temporary inventory
 	if(game->pc->unit == this)
 	{
-		if(game_gui->inventory->inv_mine->visible || game_gui->inventory->gp_trade->visible)
+		if(game_gui->inventory->invMine->visible || game_gui->inventory->gpTrade->visible)
 			game_gui->inventory->BuildTmpInventory(0);
 	}
-	else if(game_gui->inventory->gp_trade->visible && game_gui->inventory->inv_trade_other->unit == this)
+	else if(game_gui->inventory->gpTrade->visible && game_gui->inventory->invTradeOther->unit == this)
 		game_gui->inventory->BuildTmpInventory(1);
 
 	return removed;
@@ -6343,7 +6343,7 @@ void Unit::Talk(cstring text, int play_anim)
 {
 	assert(text && Net::IsLocal());
 
-	game_gui->level_gui->AddSpeechBubble(this, text);
+	game_gui->levelGui->AddSpeechBubble(this, text);
 
 	// animation
 	int ani = 0;
@@ -7405,7 +7405,7 @@ void Unit::Update(float dt)
 					// unequip item
 					case NA_REMOVE:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->inv_mine->RemoveSlotItem(player->next_action_data.slot);
+							game_gui->inventory->invMine->RemoveSlotItem(player->next_action_data.slot);
 						break;
 					// equip item after unequiping old one
 					case NA_EQUIP:
@@ -7414,7 +7414,7 @@ void Unit::Update(float dt)
 							int index = player->GetNextActionItemIndex();
 							if(index != -1)
 							{
-								game_gui->inventory->inv_mine->EquipSlotItem(index);
+								game_gui->inventory->invMine->EquipSlotItem(index);
 								if(player->next_action == NA_EQUIP_DRAW)
 								{
 									switch(player->next_action_data.item->type)
@@ -7437,14 +7437,14 @@ void Unit::Update(float dt)
 					// drop item after hiding it
 					case NA_DROP:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->inv_mine->DropSlotItem(player->next_action_data.slot);
+							game_gui->inventory->invMine->DropSlotItem(player->next_action_data.slot);
 						break;
 					// use consumable
 					case NA_CONSUME:
 						{
 							int index = player->GetNextActionItemIndex();
 							if(index != -1)
-								game_gui->inventory->inv_mine->ConsumeItem(index);
+								game_gui->inventory->invMine->ConsumeItem(index);
 						}
 						break;
 					// use usable
@@ -7455,17 +7455,17 @@ void Unit::Update(float dt)
 					// sell equipped item
 					case NA_SELL:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->inv_trade_mine->SellSlotItem(player->next_action_data.slot);
+							game_gui->inventory->invTradeMine	->SellSlotItem(player->next_action_data.slot);
 						break;
 					// put equipped item in container
 					case NA_PUT:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->inv_trade_mine->PutSlotItem(player->next_action_data.slot);
+							game_gui->inventory->invTradeMine->PutSlotItem(player->next_action_data.slot);
 						break;
 					// give equipped item
 					case NA_GIVE:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->inv_trade_mine->GiveSlotItem(player->next_action_data.slot);
+							game_gui->inventory->invTradeMine->GiveSlotItem(player->next_action_data.slot);
 						break;
 					}
 

@@ -20,6 +20,8 @@
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
 const int VALUE_H = 20;
+const int FLOW_BORDER = 3;
+const int FLOW_PADDING = 2;
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -271,7 +273,7 @@ void CreateCharacterPanel::Draw()
 
 	// top text
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
-	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
+	gui->DrawText(GameGui::fontBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
 	gui->DrawSprite(rtChar, Int2(pos.x + 228, pos.y + 64));
@@ -296,18 +298,18 @@ void CreateCharacterPanel::Draw()
 			gui->DrawItem(tBox, fpos, flowSize, Color::White, 8, 32);
 			flowScroll.Draw();
 
-			Rect rect = Rect::Create(fpos + Int2(2, 2), flowSize - Int2(4, 4));
-			Rect r = rect, part = { 0, 0, 256, 32 };
-			r.Top() += 20;
+			const Rect clipRect = Rect::Create(fpos, flowSize, FLOW_BORDER);
+			Rect part = { 0, 0, 256, 32 };
+			int y = clipRect.Top() - (int)flowScroll.offset;
 
 			for(OldFlowItem& fi : flowItems)
 			{
-				r.Top() = fpos.y + fi.y - (int)flowScroll.offset;
-				cstring item_text = GetText(fi.group, fi.id);
+				cstring itemText = GetText(fi.group, fi.id);
 				if(fi.section)
 				{
-					r.Bottom() = r.Top() + SECTION_H;
-					if(!gui->DrawText(GameGui::font_big, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					Rect rect = { clipRect.Left() + FLOW_PADDING, y, clipRect.Right() - FLOW_PADDING, y + SECTION_H };
+					y += SECTION_H;
+					if(!gui->DrawText(GameGui::fontBig, itemText, DTF_SINGLELINE, Color::Black, rect, &clipRect))
 						break;
 				}
 				else
@@ -315,13 +317,15 @@ void CreateCharacterPanel::Draw()
 					if(fi.part > 0)
 					{
 						const Vec2 scale(float(flowSize.x - 4) / 256, 17.f / 32);
-						const Vec2 pos(r.LeftTop());
+						const Vec2 pos((float)clipRect.Left(), (float)y);
 						const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 						part.Right() = int(fi.part * 256);
-						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
+						gui->DrawSprite2(tPowerBar, mat, &part, &clipRect, Color::White);
 					}
-					r.Bottom() = r.Top() + VALUE_H;
-					if(!gui->DrawText(GameGui::font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+
+					Rect rect = { clipRect.Left() + FLOW_PADDING, y, clipRect.Right() - FLOW_PADDING, y + VALUE_H };
+					y += VALUE_H;
+					if(!gui->DrawText(GameGui::font, itemText, DTF_SINGLELINE, Color::Black, rect, &clipRect))
 						break;
 				}
 			}
@@ -421,7 +425,7 @@ void CreateCharacterPanel::Update(float dt)
 				if(focus && input->Focus())
 					flowScroll.ApplyMouseWheel();
 
-				int y = gui->cursorPos.y - globalPos.y - flowPos.y + (int)flowScroll.offset;
+				int y = gui->cursorPos.y - globalPos.y - flowPos.y - FLOW_BORDER + (int)flowScroll.offset;
 				for(OldFlowItem& fi : flowItems)
 				{
 					if(y >= fi.y && y <= fi.y + 20)
@@ -1129,7 +1133,7 @@ void CreateCharacterPanel::ClassChanged()
 			y += VALUE_H;
 		}
 	}
-	flowScroll.total = y;
+	flowScroll.total = y + FLOW_BORDER * 2;
 	flowScroll.part = flowScroll.size.y;
 	flowScroll.offset = 0.f;
 

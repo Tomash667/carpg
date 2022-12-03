@@ -126,7 +126,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 			dialog_s_text = talker->bubble->text;
 			dialog_text = dialog_s_text.c_str();
 			timer = 1.f;
-			skip_id = talker->bubble->skip_id;
+			skip_id = talker->bubble->skipId;
 		}
 	}
 
@@ -192,14 +192,14 @@ void DialogContext::Update(float dt)
 					ok = true;
 			}
 			else
-				ok = game_gui->level_gui->UpdateChoice();
+				ok = game_gui->levelGui->UpdateChoice();
 
 			if(ok)
 			{
 				mode = NONE;
 				DialogChoice& choice = choices[choice_selected];
 				cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
-				game_gui->level_gui->AddSpeechBubble(pc->unit, msg);
+				game_gui->levelGui->AddSpeechBubble(pc->unit, msg);
 
 				if(Net::IsOnline())
 				{
@@ -310,7 +310,7 @@ void DialogContext::UpdateClient()
 	case WAIT_CHOICES:
 		{
 			const int prevChoice = choice_selected;
-			if(game_gui->level_gui->UpdateChoice())
+			if(game_gui->levelGui->UpdateChoice())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHOICE;
@@ -401,8 +401,8 @@ void DialogContext::UpdateLoop()
 			if(is_local)
 			{
 				choice_selected = 0;
-				LevelGui* gui = game_gui->level_gui;
-				gui->dialog_cursor_pos = Int2(-1, -1);
+				LevelGui* gui = game_gui->levelGui;
+				gui->dialogCursorPos = Int2(-1, -1);
 				gui->UpdateScrollbar(choices.size());
 			}
 			else
@@ -1838,7 +1838,7 @@ void DialogContext::Talk(cstring msg)
 	else
 		ani = 0;
 
-	game_gui->level_gui->AddSpeechBubble(talker, dialog_text);
+	game_gui->levelGui->AddSpeechBubble(talker, dialog_text);
 
 	pc->Train(TrainWhat::Talk, 0.f, 0);
 
@@ -1859,8 +1859,8 @@ void DialogContext::Talk(cstring msg)
 //=================================================================================================
 void DialogContext::ClientTalk(Unit* unit, const string& text, int skipId, int animation)
 {
-	game_gui->level_gui->AddSpeechBubble(unit, text.c_str());
-	unit->bubble->skip_id = skip_id;
+	game_gui->levelGui->AddSpeechBubble(unit, text.c_str());
+	unit->bubble->skipId = skip_id;
 
 	if(animation != 0)
 	{

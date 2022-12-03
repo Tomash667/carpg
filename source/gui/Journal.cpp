@@ -29,7 +29,7 @@ Journal::Journal() : mode(Quests)
 	visible = false;
 	Reset();
 
-	font_height = GameGui::font->height;
+	fontHeight = GameGui::font->height;
 }
 
 //=================================================================================================
@@ -100,7 +100,7 @@ void Journal::Draw()
 				r = rect;
 			else
 				r = rect2;
-			r.Top() += it->y * font_height;
+			r.Top() += it->y * fontHeight;
 
 			const Color color[3] = { Color::Black, Color::Red, Color::Green };
 
@@ -130,7 +130,7 @@ void Journal::Update(float dt)
 		{
 			if(mode == Quests && details)
 			{
-				if(change.second == open_quest)
+				if(change.second == openQuest)
 					Build();
 			}
 			else
@@ -161,7 +161,7 @@ void Journal::Update(float dt)
 	if(mode == Quests && details && GKey.PressedRelease(GK_MOVE_FORWARD))
 	{
 		details = false;
-		page = prev_page;
+		page = prevPage;
 		Build();
 	}
 
@@ -173,17 +173,17 @@ void Journal::Update(float dt)
 			if(!details)
 			{
 				// last quest on this page
-				open_quest = max((page + 1) * rect_lines * 2 - 1, int(quest_mgr->quests.size()) - 1);
-				prev_page = page;
+				openQuest = max((page + 1) * rectLines * 2 - 1, int(quest_mgr->quests.size()) - 1);
+				prevPage = page;
 				page = 0;
 				Build();
 			}
 			else
 			{
 				// prev quest
-				--open_quest;
-				if(open_quest == -1)
-					open_quest = quest_mgr->quests.size() - 1;
+				--openQuest;
+				if(openQuest == -1)
+					openQuest = quest_mgr->quests.size() - 1;
 				page = 0;
 				Build();
 			}
@@ -193,17 +193,17 @@ void Journal::Update(float dt)
 			if(!details)
 			{
 				// first quest on this page
-				open_quest = page * rect_lines * 2;
-				prev_page = page;
+				openQuest = page * rectLines * 2;
+				prevPage = page;
 				page = 0;
 				Build();
 			}
 			else
 			{
 				// next quest
-				++open_quest;
-				if(open_quest == (int)quest_mgr->quests.size())
-					open_quest = 0;
+				++openQuest;
+				if(openQuest == (int)quest_mgr->quests.size())
+					openQuest = 0;
 				page = 0;
 				Build();
 			}
@@ -230,7 +230,7 @@ void Journal::Update(float dt)
 			if(mode == Quests && details)
 			{
 				details = false;
-				page = prev_page;
+				page = prevPage;
 				Build();
 			}
 			else if(page != 0)
@@ -252,7 +252,7 @@ void Journal::Update(float dt)
 		if(!quest_mgr->quests.empty() && !details)
 		{
 			// select quest
-			int x, y = (gui->cursorPos.y - rect.Top()) / font_height;
+			int x, y = (gui->cursorPos.y - rect.Top()) / fontHeight;
 			if(rect.IsInside(gui->cursorPos))
 				x = page * 2;
 			else if(rect2.IsInside(gui->cursorPos))
@@ -280,9 +280,9 @@ void Journal::Update(float dt)
 					if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					{
 						details = true;
-						prev_page = page;
+						prevPage = page;
 						page = 0;
-						open_quest = index;
+						openQuest = index;
 						Build();
 					}
 				}
@@ -306,15 +306,15 @@ void Journal::Update(float dt)
 					ok = true;
 			}
 
-			if(ok && gui->cursorPos.y >= rect.Top() + last_text.y * font_height && gui->cursorPos.y <= rect.Top() + (last_text.y + 1) * font_height)
+			if(ok && gui->cursorPos.y >= rect.Top() + last_text.y * fontHeight && gui->cursorPos.y <= rect.Top() + (last_text.y + 1) * fontHeight)
 			{
 				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 				{
 					// add note
 					cstring names[] = { nullptr, txAdd };
-					input_str.clear();
-					GetTextDialogParams params(txNoteText, input_str);
+					inputStr.clear();
+					GetTextDialogParams params(txNoteText, inputStr);
 					params.customNames = names;
 					params.event = delegate<void(int)>(this, &Journal::OnAddNote);
 					params.limit = 255;
@@ -366,8 +366,8 @@ void Journal::Event(GuiEvent e)
 		rect = rect * scale + globalPos;
 		rect2 = rect2 * scale + globalPos;
 
-		rect_w = rect.SizeX();
-		rect_lines = rect.SizeY() / font_height;
+		rectW = rect.SizeX();
+		rectLines = rect.SizeY() / fontHeight;
 
 		if(e == GuiEvent_Resize)
 			Build();
@@ -440,7 +440,7 @@ void Journal::Build()
 		else
 		{
 			// details of single quest
-			Quest* quest = quest_mgr->quests[open_quest];
+			Quest* quest = quest_mgr->quests[openQuest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str());
 		}
@@ -508,12 +508,12 @@ void Journal::AddEntry(cstring text, int color, bool spacing, bool pooled)
 	}
 
 	// how many lines this text takes?
-	const Int2 size = GameGui::font->CalculateSize(text, rect_w);
-	t.h = size.y / font_height;
+	const Int2 size = GameGui::font->CalculateSize(text, rectW);
+	t.h = size.y / fontHeight;
 	if(spacing)
 		++t.h;
 
-	if(y + t.h >= rect_lines)
+	if(y + t.h >= rectLines)
 	{
 		if(y == 0)
 		{
@@ -530,7 +530,7 @@ void Journal::AddEntry(cstring text, int color, bool spacing, bool pooled)
 			t.x = x;
 			t.y = y;
 			y += t.h;
-			if(y == rect_lines)
+			if(y == rectLines)
 			{
 				y = 0;
 				++x;
@@ -542,7 +542,7 @@ void Journal::AddEntry(cstring text, int color, bool spacing, bool pooled)
 		t.x = x;
 		t.y = y;
 		y += t.h;
-		if(y == rect_lines)
+		if(y == rectLines)
 		{
 			y = 0;
 			++x;
@@ -555,8 +555,8 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		notes.push_back(Format(txAddTime, world->GetDate(), input_str.c_str()));
-		soundMgr->PlaySound2d(game_gui->messages->snd_scribble);
+		notes.push_back(Format(txAddTime, world->GetDate(), inputStr.c_str()));
+		soundMgr->PlaySound2d(game_gui->messages->sndScribble);
 		Build();
 		if(Net::IsClient())
 			Net::PushChange(NetChange::ADD_NOTE);
@@ -564,9 +564,9 @@ void Journal::OnAddNote(int id)
 }
 
 //=================================================================================================
-void Journal::NeedUpdate(Mode at_mode, int quest_id)
+void Journal::NeedUpdate(Mode mode, int questIndex)
 {
-	changes.push_back(std::make_pair(at_mode, quest_id));
+	changes.push_back(std::make_pair(mode, questIndex));
 }
 
 //=================================================================================================

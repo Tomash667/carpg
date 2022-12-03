@@ -89,7 +89,7 @@ void CreateServerPanel::Draw()
 
 	// tekst
 	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
 	cont.Draw();

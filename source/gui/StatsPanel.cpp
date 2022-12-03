@@ -29,7 +29,7 @@ enum Stats
 };
 
 //=================================================================================================
-StatsPanel::StatsPanel() : last_update(0.f)
+StatsPanel::StatsPanel() : lastUpdate(0.f)
 {
 	visible = false;
 	tooltip.Init(TooltipController::Callback(this, &StatsPanel::GetTooltip));
@@ -69,7 +69,7 @@ void StatsPanel::Draw()
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	flowAttribs.Draw();
 	flowStats.Draw();
@@ -106,8 +106,8 @@ void StatsPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	last_update -= dt;
-	if(last_update <= 0.f)
+	lastUpdate -= dt;
+	if(lastUpdate <= 0.f)
 		SetText();
 
 	int group = -1, id = -1;
@@ -222,7 +222,7 @@ void StatsPanel::SetText()
 	flowFeats.Reposition();
 	StringPool.Free(strs.Get());
 
-	last_update = 0.5f;
+	lastUpdate = 0.5f;
 }
 
 //=================================================================================================

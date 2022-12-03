@@ -82,7 +82,7 @@ void PickServerPanel::Draw()
 
 	// header
 	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
 	for(int i = 0; i < 2; ++i)
@@ -310,7 +310,7 @@ void PickServerPanel::Show(bool pickAutojoin)
 	}
 	catch(cstring err)
 	{
-		gui->SimpleDialog(err, (Control*)game_gui->main_menu);
+		gui->SimpleDialog(err, (Control*)game_gui->mainMenu);
 		return;
 	}
 

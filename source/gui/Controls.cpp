@@ -322,7 +322,7 @@ void Controls::Draw()
 
 	// title
 	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	for(Button& button : bts)
 		button.Draw();
@@ -475,7 +475,7 @@ void Controls::SelectCell(int item, int column, int button)
 		pickedIndex = column - 1;
 		cursorTick = 0.f;
 		input->SetCallback(Input::Callback(this, &Controls::OnKey));
-		game_gui->cursor_allow_move = false;
+		game_gui->cursorAllowMove = false;
 	}
 	else
 	{
@@ -495,14 +495,14 @@ void Controls::OnKey(Key key)
 	{
 		pickedKey = -1;
 		input->SetCallback(nullptr);
-		game_gui->cursor_allow_move = true;
+		game_gui->cursorAllowMove = true;
 	}
 	else if((int)key < keyFlagsCount && IsSet(keyFlags[(int)key], 0x01))
 	{
 		GKey[pickedKey][pickedIndex] = key;
 		pickedKey = -1;
 		input->SetCallback(nullptr);
-		game_gui->cursor_allow_move = true;
+		game_gui->cursorAllowMove = true;
 		changed = true;
 	}
 }

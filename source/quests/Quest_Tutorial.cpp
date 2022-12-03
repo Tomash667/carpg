@@ -33,8 +33,8 @@ void Quest_Tutorial::Start()
 	game->LoadingStart(1);
 
 	HumanData hd;
-	hd.Get(*game_gui->create_character->unit->human_data);
-	game->NewGameCommon(game_gui->create_character->clas, game_gui->create_character->playerName.c_str(), hd, game_gui->create_character->cc, true);
+	hd.Get(*game_gui->createCharacter->unit->human_data);
+	game->NewGameCommon(game_gui->createCharacter->clas, game_gui->createCharacter->playerName.c_str(), hd, game_gui->createCharacter->cc, true);
 	in_tutorial = true;
 	state = 0;
 	texts.clear();
@@ -64,10 +64,10 @@ void Quest_Tutorial::Start()
 	game->LoadResources("", false);
 	game_level->event_handler = nullptr;
 	game->SetMusic();
-	game_gui->load_screen->visible = false;
-	game_gui->main_menu->visible = false;
-	game_gui->level_gui->visible = true;
-	game_gui->world_map->Hide();
+	game_gui->loadScreen->visible = false;
+	game_gui->mainMenu->visible = false;
+	game_gui->levelGui->visible = true;
+	game_gui->worldMap->Hide();
 	game_level->camera.Reset();
 	game->game_state = GS_LEVEL;
 	game_level->ready = true;

@@ -19,5 +19,5 @@ public:
 	void Add(cstring text) { itb.Add(text); }
 
 	InputTextBox itb;
-	bool have_focus;
+	bool haveFocus;
 };

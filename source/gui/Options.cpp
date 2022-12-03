@@ -234,7 +234,7 @@ void Options::Draw()
 
 	// title
 	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
 	for(int i = 0; i < 5; ++i)
