@@ -64,8 +64,7 @@ enum MOVE_TYPE
 	DontMove,				// not moving
 	MoveAway,				// moving from the point
 	MovePoint,				// moving to the point
-	KeepDistance,			// keep 8-10 meter distance
-	KeepDistanceCheck,		// keep 8-10 distance AND check if enemy is possible to hit
+	KeepDistanceCheck,		// keep 8-10 distance and check if enemy is possible to hit
 	RunAway					// running away from the point
 };
 
@@ -2572,15 +2571,6 @@ void Game::UpdateAi(float dt)
 				else
 					move = 1;
 			}
-			else if(move_type == KeepDistance)
-			{
-				if(best_dist < 8.f)
-					move = -1;
-				else if(best_dist > 10.f)
-					move = 1;
-				else
-					move = 0;
-			}
 			else if(move_type == MoveAway)
 				move = -1;
 			else if(move_type == RunAway)
@@ -2620,6 +2610,8 @@ void Game::UpdateAi(float dt)
 			{
 				// back movement
 				u.speed = u.GetWalkSpeed();
+				if(u.action == A_SHOOT || u.action == A_CAST)
+					u.speed /= 2;
 				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 				const float angle = Vec3::LookAtAngle(u.pos, target_pos);
@@ -2822,6 +2814,8 @@ void Game::UpdateAi(float dt)
 					}
 
 					u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
+					if(u.action == A_SHOOT || u.action == A_CAST)
+						u.speed /= 2;
 					u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
 					float speed = u.prev_speed * dt;
 					const float angle = Vec3::LookAtAngle(u.pos, move_target) + PI;

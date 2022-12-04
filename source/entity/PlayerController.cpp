@@ -2438,47 +2438,44 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						run = false;
 				}
 
-				float speed_mod;
+				float speedMod;
 				switch(move)
 				{
 				case 10: // forward
 					angle += PI;
-					speed_mod = 1.f;
+					speedMod = 1.f;
 					break;
 				case -10: // backward
 					run = false;
-					speed_mod = 0.8f;
+					speedMod = 0.8f;
 					break;
 				case -1: // left
 					angle += PI / 2;
-					speed_mod = 0.75f;
+					speedMod = 0.75f;
 					break;
 				case 1: // right
 					angle += PI * 3 / 2;
-					speed_mod = 0.75f;
+					speedMod = 0.75f;
 					break;
 				case 9: // forward left
 					angle += PI * 3 / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				case 11: // forward right
 					angle += PI * 5 / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				case -11: // backward left
 					run = false;
 					angle += PI / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				case -9: // backward right
 					run = false;
 					angle += PI * 7 / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				}
-
-				if(u.action == A_SHOOT)
-					run = false;
 
 				if(run)
 					u.animation = ANI_RUN;
@@ -2491,7 +2488,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				else
 					u.animation = ANI_WALK;
 
-				u.speed = (run ? u.GetRunSpeed() : u.GetWalkSpeed()) * speed_mod;
+				if(u.action == A_SHOOT || u.action == A_CAST)
+					speedMod /= 2;
+				u.speed = (run ? u.GetRunSpeed() : u.GetWalkSpeed()) * speedMod;
 				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 
