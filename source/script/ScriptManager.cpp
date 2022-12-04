@@ -26,7 +26,7 @@
 #include <scriptdictionary/scriptdictionary.h>
 #include <scriptstdstring/scriptstdstring.h>
 
-ScriptManager* script_mgr;
+ScriptManager* scriptMgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
 Vars globals;
@@ -34,7 +34,7 @@ Vars* p_globals = &globals;
 
 ScriptException::ScriptException(cstring msg)
 {
-	script_mgr->SetException(msg);
+	scriptMgr->SetException(msg);
 }
 
 void MessageCallback(const asSMessageInfo* msg, void* param)
@@ -53,7 +53,7 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 		level = Logger::L_INFO;
 		break;
 	}
-	script_mgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
+	scriptMgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
 
 ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
@@ -276,7 +276,7 @@ static string Upper1(const string& str)
 
 static void ScriptInfo(const string& str)
 {
-	script_mgr->Log(Logger::L_INFO, str.c_str());
+	scriptMgr->Log(Logger::L_INFO, str.c_str());
 }
 static void ScriptDevInfo(const string& str)
 {
@@ -285,11 +285,11 @@ static void ScriptDevInfo(const string& str)
 }
 static void ScriptWarn(const string& str)
 {
-	script_mgr->Log(Logger::L_WARN, str.c_str());
+	scriptMgr->Log(Logger::L_WARN, str.c_str());
 }
 static void ScriptError(const string& str)
 {
-	script_mgr->Log(Logger::L_ERROR, str.c_str());
+	scriptMgr->Log(Logger::L_ERROR, str.c_str());
 }
 
 string Vec2_ToString(const Vec2& v)
@@ -424,7 +424,7 @@ void ScriptManager::RegisterCommon()
 
 Vars* Unit_GetVars(Unit* unit)
 {
-	return script_mgr->GetVars(unit);
+	return scriptMgr->GetVars(unit);
 }
 
 string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
@@ -466,7 +466,7 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 
 void StockScript_AddItem(const Item* item, uint count)
 {
-	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
+	vector<ItemSlot>* stock = scriptMgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	InsertItemBare(*stock, item, count);
@@ -474,7 +474,7 @@ void StockScript_AddItem(const Item* item, uint count)
 
 void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint count)
 {
-	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
+	vector<ItemSlot>* stock = scriptMgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	ItemHelper::AddRandomItem(*stock, type, price_limit, flags, count);
@@ -679,7 +679,7 @@ void ScriptManager::RegisterGame()
 		.Method("void RemoveRumor()", asMETHOD(Quest_Scripted, RemoveRumor))
 		.Method("void Start(Vars@)", asMETHODPR(Quest_Scripted, Start, (Vars*), void))
 		.WithInstance("Quest@ quest", &ctx.quest)
-		.WithNamespace(quest_mgr)
+		.WithNamespace(questMgr)
 		.AddFunction("Quest@ Find(const string& in)", asMETHOD(QuestManager, FindQuestS))
 		.AddFunction("int CalculateReward(int, const Int2& in, const Int2& in)", asFUNCTION(ItemHelper::CalculateReward));
 
@@ -944,7 +944,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void AddNews(const string& in)", asMETHOD(World, AddNews))
 		.AddFunction("Unit@ CreateUnit(UnitData@, int = -1)", asMETHOD(World, CreateUnit));
 
-	WithNamespace("Level", game_level)
+	WithNamespace("Level", gameLevel)
 		.AddFunction("Location@ get_location() property", asMETHOD(Level, GetLocation))
 		.AddFunction("int get_dungeon_level() property", asMETHOD(Level, GetDungeonLevel))
 		.AddFunction("bool IsSettlement()", asMETHOD(Level, IsSettlement))

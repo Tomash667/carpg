@@ -36,19 +36,19 @@ void Door::Init()
 void Door::Recreate()
 {
 	// mesh
-	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
+	meshInst = new MeshInstance(door2 ? gameRes->aDoor2 : gameRes->aDoor);
 	meshInst->baseSpeed = 2.f;
 
 	// physics
 	phy = new btCollisionObject;
-	phy->setCollisionShape(game_level->shape_door);
+	phy->setCollisionShape(gameLevel->shapeDoor);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 	btTransform& tr = phy->getWorldTransform();
 	Vec3 phyPos = pos;
 	phyPos.y += HEIGHT;
 	tr.setOrigin(ToVector3(phyPos));
 	tr.setRotation(btQuaternion(rot, 0, 0));
-	phy_world->addCollisionObject(phy, CG_DOOR);
+	phyWorld->addCollisionObject(phy, CG_DOOR);
 
 	// is open
 	if(state == Opened)
@@ -124,7 +124,7 @@ void Door::Update(float dt, LocationPart& locPart)
 				// can't close doors, somone is blocking it
 				state = Opening2;
 				meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
-				soundMgr->PlaySound3d(game_res->sDoorBudge, pos, BLOCKED_SOUND_DIST);
+				soundMgr->PlaySound3d(gameRes->sDoorBudge, pos, BLOCKED_SOUND_DIST);
 			}
 		}
 	}
@@ -163,12 +163,12 @@ void Door::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
+		meshInst = new MeshInstance(door2 ? gameRes->aDoor2 : gameRes->aDoor);
 		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 		meshInst->baseSpeed = 2.f;
 
 		phy = new btCollisionObject;
-		phy->setCollisionShape(game_level->shape_door);
+		phy->setCollisionShape(gameLevel->shapeDoor);
 		phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 		btTransform& tr = phy->getWorldTransform();
@@ -176,7 +176,7 @@ void Door::Load(GameReader& f)
 		phyPos.y += HEIGHT;
 		tr.setOrigin(ToVector3(phyPos));
 		tr.setRotation(btQuaternion(rot, 0, 0));
-		phy_world->addCollisionObject(phy, CG_DOOR);
+		phyWorld->addCollisionObject(phy, CG_DOOR);
 
 		if(!IsBlocking())
 		{
@@ -221,12 +221,12 @@ bool Door::Read(BitStreamReader& f)
 		return false;
 	}
 
-	meshInst = new MeshInstance(door2 ? game_res->aDoor2 : game_res->aDoor);
+	meshInst = new MeshInstance(door2 ? gameRes->aDoor2 : gameRes->aDoor);
 	if(net->mp_load)
 		meshInst->Read(f);
 	meshInst->baseSpeed = 2.f;
 	phy = new btCollisionObject;
-	phy->setCollisionShape(game_level->shape_door);
+	phy->setCollisionShape(gameLevel->shapeDoor);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 	btTransform& tr = phy->getWorldTransform();
@@ -234,7 +234,7 @@ bool Door::Read(BitStreamReader& f)
 	phyPos.y += HEIGHT;
 	tr.setOrigin(ToVector3(phyPos));
 	tr.setRotation(btQuaternion(rot, 0, 0));
-	phy_world->addCollisionObject(phy, CG_DOOR);
+	phyWorld->addCollisionObject(phy, CG_DOOR);
 
 	if(!net->mp_load && state == Opened)
 		meshInst->SetToEnd(&meshInst->mesh->anims[0]);
@@ -251,14 +251,14 @@ bool Door::Read(BitStreamReader& f)
 //=================================================================================================
 void Door::Open()
 {
-	if(!game_level->location->outside)
-		game_level->minimap_opened_doors = true;
+	if(!gameLevel->location->outside)
+		gameLevel->minimapOpenedDoors = true;
 	state = Opening;
 	locked = LOCK_NONE;
 	meshInst->Play(&meshInst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 
 	if(Rand() % 2 == 0)
-		soundMgr->PlaySound3d(game_res->sDoor[Rand() % 3], GetCenter(), SOUND_DIST);
+		soundMgr->PlaySound3d(gameRes->sDoor[Rand() % 3], GetCenter(), SOUND_DIST);
 
 	if(Net::IsOnline())
 	{
@@ -288,9 +288,9 @@ void Door::Close()
 	{
 		Sound* sound;
 		if(Rand() % 2 == 0)
-			sound = game_res->sDoorClose;
+			sound = gameRes->sDoorClose;
 		else
-			sound = game_res->sDoor[Rand() % 3];
+			sound = gameRes->sDoor[Rand() % 3];
 		soundMgr->PlaySound3d(sound, GetCenter(), SOUND_DIST);
 	}
 
@@ -357,9 +357,9 @@ void Door::SetState(bool closing)
 	{
 		Sound* sound;
 		if(closing && Rand() % 2 == 0)
-			sound = game_res->sDoorClose;
+			sound = gameRes->sDoorClose;
 		else
-			sound = game_res->sDoor[Rand() % 3];
+			sound = gameRes->sDoor[Rand() % 3];
 		soundMgr->PlaySound3d(sound, GetCenter(), SOUND_DIST);
 	}
 

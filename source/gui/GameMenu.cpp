@@ -95,7 +95,7 @@ void GameMenu::CheckButtons()
 {
 	bool canSave = game->CanSaveGame(),
 		canLoad = game->CanLoadGame(),
-		hardcoreMode = game->hardcore_mode;
+		hardcoreMode = game->hardcoreMode;
 
 	if(canSave != prevCanSave)
 	{
@@ -140,13 +140,13 @@ void GameMenu::Event(GuiEvent e)
 			CloseDialog();
 			break;
 		case IdSaveGame:
-			game_gui->saveload->ShowSavePanel();
+			gameGui->saveload->ShowSavePanel();
 			break;
 		case IdLoadGame:
-			game_gui->saveload->ShowLoadPanel();
+			gameGui->saveload->ShowLoadPanel();
 			break;
 		case IdOptions:
-			game_gui->ShowOptions();
+			gameGui->ShowOptions();
 			break;
 		case IdExit:
 			{
@@ -159,7 +159,7 @@ void GameMenu::Event(GuiEvent e)
 				info.name = "exit_to_menu";
 				info.parent = nullptr;
 				info.pause = true;
-				info.text = game->hardcore_mode ? txExitToMenuDialogHardcore : txExitToMenuDialog;
+				info.text = game->hardcoreMode ? txExitToMenuDialogHardcore : txExitToMenuDialog;
 				info.order = DialogOrder::Top;
 				info.type = DIALOG_YESNO;
 
@@ -167,7 +167,7 @@ void GameMenu::Event(GuiEvent e)
 			}
 			break;
 		case IdQuit:
-			game_gui->ShowQuitDialog();
+			gameGui->ShowQuitDialog();
 			break;
 		}
 	}

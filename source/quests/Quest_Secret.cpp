@@ -19,12 +19,12 @@
 //=================================================================================================
 void Quest_Secret::InitOnce()
 {
-	quest_mgr->RegisterSpecialHandler(this, "secret_attack");
-	quest_mgr->RegisterSpecialHandler(this, "secret_reward");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_first_dialog");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_can_fight");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_win");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_can_get_reward");
+	questMgr->RegisterSpecialHandler(this, "secret_attack");
+	questMgr->RegisterSpecialHandler(this, "secret_reward");
+	questMgr->RegisterSpecialIfHandler(this, "secret_first_dialog");
+	questMgr->RegisterSpecialIfHandler(this, "secret_can_fight");
+	questMgr->RegisterSpecialIfHandler(this, "secret_win");
+	questMgr->RegisterSpecialIfHandler(this, "secret_can_get_reward");
 }
 
 //=================================================================================================
@@ -132,7 +132,7 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 	if(state == SECRET_NONE && world->GetCurrentLocation()->type == L_OUTSIDE && world->GetCurrentLocation()->target == MOONWELL && item->item->id == "krystal"
 		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
-		game_gui->messages->AddGameMsg(txSecretAppear, 3.f);
+		gameGui->messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
 		Location& l = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), DWARF_FORT, 3);
 		l.group = UnitGroup::Get("challange");

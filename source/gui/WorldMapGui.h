@@ -40,8 +40,8 @@ private:
 	ComboBox comboSearch;
 	Button buttons[2];
 	TooltipController tooltip;
-	Vec2 offset, cursorPos;
+	Vec2 offset, mapPos;
 	float zoom;
 	int pickedLocation, tracking;
-	bool clicked, follow, fastFollow, cursorPosValid;
+	bool clicked, follow, fastFollow, mapPosValid;
 };

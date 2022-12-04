@@ -674,14 +674,14 @@ void CreateCharacterPanel::RenderUnit()
 
 	sceneMgr->SetScene(scene, camera);
 
-	game->draw_batch.Clear();
-	game->draw_batch.locPart = nullptr;
-	game->draw_batch.scene = scene;
-	game->draw_batch.camera = camera;
-	game->draw_batch.gatherLights = false;
+	game->drawBatch.Clear();
+	game->drawBatch.locPart = nullptr;
+	game->drawBatch.scene = scene;
+	game->drawBatch.camera = camera;
+	game->drawBatch.gatherLights = false;
 	game->ListDrawObjectsUnit(frustum, *unit);
-	game->draw_batch.Process();
-	sceneMgr->DrawSceneNodes(game->draw_batch);
+	game->drawBatch.Process();
+	sceneMgr->DrawSceneNodes(game->drawBatch);
 
 	render->SetRenderTarget(nullptr);
 }
@@ -884,7 +884,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
-	unit->meshInst = new MeshInstance(game_res->aHuman);
+	unit->meshInst = new MeshInstance(gameRes->aHuman);
 
 	for(Class* clas : Class::classes)
 	{
@@ -1515,6 +1515,6 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		unit->SetAnimationAtEnd();
 	}
 	if(unit->bow_instance)
-		game_level->FreeBowInstance(unit->bow_instance);
+		gameLevel->FreeBowInstance(unit->bow_instance);
 	unit->action = A_NONE;
 }

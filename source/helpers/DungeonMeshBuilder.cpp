@@ -356,7 +356,7 @@ void DungeonMeshBuilder::FillPart(Int2* _part, word* faces, int& index, word off
 //=================================================================================================
 void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frustum)
 {
-	InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
+	InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 	Box box;
@@ -400,7 +400,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 					DungeonPartGroup& dungeon_group = Add1(batch.dungeon_part_groups);
 
 					// find best lights
-					TopN<GameLight*, 3, float, std::less<>> best(nullptr, game_level->camera.zfar);
+					TopN<GameLight*, 3, float, std::less<>> best(nullptr, gameLevel->camera.zfar);
 
 					float dx = 2.f * (room->pos.x + x) + 1.f;
 					float dz = 2.f * (room->pos.y + y) + 1.f;
@@ -417,7 +417,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 
 					// set matrices
 					dungeon_group.mat_world = Matrix::Translation(2.f * (room->pos.x + x), 0, 2.f * (room->pos.y + y));
-					dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.matViewProj;
+					dungeon_group.mat_combined = dungeon_group.mat_world * gameLevel->camera.matViewProj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -425,7 +425,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 					if(IsSet(tile.flags, Tile::F_FLOOR))
 					{
 						DungeonPart& dp = Add1(batch.dungeon_parts);
-						dp.tex_o = &game_res->tFloor[tex_id];
+						dp.tex_o = &gameRes->tFloor[tex_id];
 						dp.start_index = 0;
 						dp.primitive_count = 2;
 						dp.group = group;
@@ -435,7 +435,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 					if(IsSet(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 					{
 						DungeonPart& dp = Add1(batch.dungeon_parts);
-						dp.tex_o = &game_res->tCeil[tex_id];
+						dp.tex_o = &gameRes->tCeil[tex_id];
 						dp.start_index = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 						dp.primitive_count = 2;
 						dp.group = group;
@@ -450,7 +450,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						if(d2 != 0)
 						{
 							DungeonPart& dp = Add1(batch.dungeon_parts);
-							dp.tex_o = &game_res->tWall[tex_id];
+							dp.tex_o = &gameRes->tWall[tex_id];
 							dp.start_index = dungeon_part[d2].x;
 							dp.primitive_count = dungeon_part[d2].y;
 							dp.group = group;
@@ -461,7 +461,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						if(d2 != 0)
 						{
 							DungeonPart& dp = Add1(batch.dungeon_parts);
-							dp.tex_o = &game_res->tWall[tex_id];
+							dp.tex_o = &gameRes->tWall[tex_id];
 							dp.start_index = dungeon_part3[d2].x;
 							dp.primitive_count = dungeon_part3[d2].y;
 							dp.group = group;
@@ -472,7 +472,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						if(d2 != 0)
 						{
 							DungeonPart& dp = Add1(batch.dungeon_parts);
-							dp.tex_o = &game_res->tWall[tex_id];
+							dp.tex_o = &gameRes->tWall[tex_id];
 							dp.start_index = dungeon_part4[d2].x;
 							dp.primitive_count = dungeon_part4[d2].y;
 							dp.group = group;
@@ -526,7 +526,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 			DungeonPartGroup& dungeon_group = Add1(batch.dungeon_part_groups);
 
 			// find best lights
-			TopN<GameLight*, 3, float, std::less<>> best(nullptr, game_level->camera.zfar);
+			TopN<GameLight*, 3, float, std::less<>> best(nullptr, gameLevel->camera.zfar);
 
 			float dx = 2.f * it->x + 1.f;
 			float dz = 2.f * it->y + 1.f;
@@ -543,7 +543,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 
 			// set matrices
 			dungeon_group.mat_world = Matrix::Translation(2.f * it->x, 0, 2.f * it->y);
-			dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.matViewProj;
+			dungeon_group.mat_combined = dungeon_group.mat_world * gameLevel->camera.matViewProj;
 
 			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -551,7 +551,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 			if(IsSet(tile.flags, Tile::F_FLOOR))
 			{
 				DungeonPart& dp = Add1(batch.dungeon_parts);
-				dp.tex_o = &game_res->tFloor[tex_id];
+				dp.tex_o = &gameRes->tFloor[tex_id];
 				dp.start_index = 0;
 				dp.primitive_count = 2;
 				dp.group = group;
@@ -561,7 +561,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 			if(IsSet(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 			{
 				DungeonPart& dp = Add1(batch.dungeon_parts);
-				dp.tex_o = &game_res->tCeil[tex_id];
+				dp.tex_o = &gameRes->tCeil[tex_id];
 				dp.start_index = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 				dp.primitive_count = 2;
 				dp.group = group;
@@ -576,7 +576,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				if(d2 != 0)
 				{
 					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
+					dp.tex_o = &gameRes->tWall[tex_id];
 					dp.start_index = dungeon_part[d2].x;
 					dp.primitive_count = dungeon_part[d2].y;
 					dp.group = group;
@@ -587,7 +587,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				if(d2 != 0)
 				{
 					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
+					dp.tex_o = &gameRes->tWall[tex_id];
 					dp.start_index = dungeon_part2[d2].x;
 					dp.primitive_count = dungeon_part2[d2].y;
 					dp.group = group;
@@ -598,7 +598,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				if(d2 != 0)
 				{
 					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
+					dp.tex_o = &gameRes->tWall[tex_id];
 					dp.start_index = dungeon_part3[d2].x;
 					dp.primitive_count = dungeon_part3[d2].y;
 					dp.group = group;
@@ -609,7 +609,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				if(d2 != 0)
 				{
 					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
+					dp.tex_o = &gameRes->tWall[tex_id];
 					dp.start_index = dungeon_part4[d2].x;
 					dp.primitive_count = dungeon_part4[d2].y;
 					dp.group = group;

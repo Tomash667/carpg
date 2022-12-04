@@ -89,7 +89,7 @@ void OutsideLocation::Write(BitStreamWriter& f)
 {
 	f.Write((cstring)tiles, sizeof(TerrainTile)*size*size);
 	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
-	f << game_level->light_angle;
+	f << gameLevel->lightAngle;
 
 	LocationPart::Write(f);
 
@@ -108,7 +108,7 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		h = new float[size22];
 	f.Read((char*)tiles, sizeof(TerrainTile)*size11);
 	f.Read((char*)h, sizeof(float)*size22);
-	f >> game_level->light_angle;
+	f >> gameLevel->lightAngle;
 	if(!f)
 	{
 		Error("Read level: Broken packet for terrain.");
@@ -119,7 +119,7 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		return false;
 
 	// portals
-	if(!ReadPortals(f, game_level->dungeon_level))
+	if(!ReadPortals(f, gameLevel->dungeonLevel))
 	{
 		Error("Read level: Broken portals.");
 		return false;

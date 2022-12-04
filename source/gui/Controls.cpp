@@ -388,7 +388,7 @@ void Controls::Event(GuiEvent e)
 	{
 		if(changed)
 		{
-			game_gui->ChangeControls();
+			gameGui->ChangeControls();
 			game->settings.SaveGameKeys(game->cfg);
 			game->SaveCfg();
 		}
@@ -475,7 +475,7 @@ void Controls::SelectCell(int item, int column, int button)
 		pickedIndex = column - 1;
 		cursorTick = 0.f;
 		input->SetCallback(Input::Callback(this, &Controls::OnKey));
-		game_gui->cursorAllowMove = false;
+		gameGui->cursorAllowMove = false;
 	}
 	else
 	{
@@ -495,14 +495,14 @@ void Controls::OnKey(Key key)
 	{
 		pickedKey = -1;
 		input->SetCallback(nullptr);
-		game_gui->cursorAllowMove = true;
+		gameGui->cursorAllowMove = true;
 	}
 	else if((int)key < keyFlagsCount && IsSet(keyFlags[(int)key], 0x01))
 	{
 		GKey[pickedKey][pickedIndex] = key;
 		pickedKey = -1;
 		input->SetCallback(nullptr);
-		game_gui->cursorAllowMove = true;
+		gameGui->cursorAllowMove = true;
 		changed = true;
 	}
 }

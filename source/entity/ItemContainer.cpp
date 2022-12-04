@@ -42,7 +42,7 @@ void ItemContainer::Load(GameReader& f)
 		{
 			int quest_id;
 			f >> quest_id;
-			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &items);
+			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &items);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}

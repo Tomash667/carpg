@@ -3,5 +3,5 @@
 //-----------------------------------------------------------------------------
 namespace FOV
 {
-	void DungeonReveal(const Int2& tile, vector<Int2>& revealed_tiles);
+	void DungeonReveal(const Int2& tile, vector<Int2>& revealedTiles);
 }

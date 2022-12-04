@@ -181,13 +181,13 @@ void Net::StartFastTravel(int who)
 	{
 		if(fast_travel_notif)
 			fast_travel_notif->Close();
-		fast_travel_notif = game_gui->notifications->Add(txFastTravelWaiting, tFastTravel, -1.f);
+		fast_travel_notif = gameGui->notifications->Add(txFastTravelWaiting, tFastTravel, -1.f);
 	}
 	else if(who == 1 || (who == 2 && !team->IsLeader()))
 	{
 		if(fast_travel_notif)
 			fast_travel_notif->Close();
-		fast_travel_notif = game_gui->notifications->Add(txFastTravelText, tFastTravel, -1.f);
+		fast_travel_notif = gameGui->notifications->Add(txFastTravelText, tFastTravel, -1.f);
 		fast_travel_notif->buttons = true;
 		fast_travel_notif->callback = delegate<void(bool)>(this, &Net::OnFastTravel);
 	}
@@ -204,7 +204,7 @@ void Net::CancelFastTravel(int mode, int id)
 	switch(mode)
 	{
 	case FAST_TRAVEL_CANCEL:
-		if(id != team->my_id)
+		if(id != team->myId)
 		{
 			PlayerInfo* info = TryGetPlayer(id);
 			cstring name = info ? info->name.c_str() : nullptr;
@@ -288,6 +288,6 @@ void Net::OnFastTravel(bool accept)
 		NetChange& c = Add1(changes);
 		c.type = NetChange::FAST_TRAVEL;
 		c.id = FAST_TRAVEL_DENY;
-		c.count = team->my_id;
+		c.count = team->myId;
 	}
 }

@@ -21,8 +21,8 @@ void Quest_BanditsCollectToll::GetConversionData(ConversionData& data)
 	data.Add("other_loc", other_loc);
 	data.Add("enc", enc);
 	data.Add("start_time", start_time);
-	const bool in_enc = game_level->event_handler == this;
+	const bool in_enc = gameLevel->eventHandler == this;
 	data.Add("in_enc", in_enc);
 	if(in_enc)
-		game_level->event_handler = nullptr;
+		gameLevel->eventHandler = nullptr;
 }

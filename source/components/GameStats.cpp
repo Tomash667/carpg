@@ -3,11 +3,11 @@
 
 #include "BitStreamFunc.h"
 
-GameStats* game_stats;
+GameStats* gameStats;
 
 void GameStats::Reset()
 {
-	total_kills = 0;
+	totalKills = 0;
 	hour = 0;
 	minute = 0;
 	second = 0;
@@ -36,7 +36,7 @@ void GameStats::Update(float dt)
 
 void GameStats::Save(GameWriter& f)
 {
-	f << total_kills;
+	f << totalKills;
 	f << hour;
 	f << minute;
 	f << second;
@@ -45,7 +45,7 @@ void GameStats::Save(GameWriter& f)
 
 void GameStats::Load(GameReader& f)
 {
-	f >> total_kills;
+	f >> totalKills;
 	f >> hour;
 	f >> minute;
 	f >> second;

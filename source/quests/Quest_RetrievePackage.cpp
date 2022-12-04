@@ -45,18 +45,18 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest from mayor
 		{
-			OnStart(quest_mgr->txQuest[265]);
-			quest_mgr->quests_timeout.push_back(this);
+			OnStart(questMgr->txQuest[265]);
+			questMgr->quests_timeout.push_back(this);
 
 			targetLoc = world->GetRandomSpawnLocation((startLoc->pos + world->GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
 			targetLoc->SetKnown();
 			targetLoc->active_quest = this;
 
-			cstring who = (LocationHelper::IsCity(startLoc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys);
+			cstring who = (LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys);
 
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
-			parcel.name = Format(quest_mgr->txQuest[8], who, startLoc->name.c_str());
+			parcel.name = Format(questMgr->txQuest[8], who, startLoc->name.c_str());
 			parcel.quest_id = id;
 			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
@@ -64,11 +64,11 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			item_to_give[0] = &parcel;
 			at_level = targetLoc->GetRandomLevel();
 
-			msgs.push_back(Format(quest_mgr->txQuest[3], who, startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(questMgr->txQuest[3], who, startLoc->name.c_str(), world->GetDate()));
 			if(targetLoc->type == L_CAMP)
-				msgs.push_back(Format(quest_mgr->txQuest[22], who, startLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
+				msgs.push_back(Format(questMgr->txQuest[22], who, startLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 			else
-				msgs.push_back(Format(quest_mgr->txQuest[23], who, startLoc->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
+				msgs.push_back(Format(questMgr->txQuest[23], who, startLoc->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 			st = targetLoc->st;
 		}
 		break;
@@ -81,8 +81,8 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 
-			OnUpdate(quest_mgr->txQuest[24]);
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			OnUpdate(questMgr->txQuest[24]);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
 		}
 		break;
 	case Progress::Finished:
@@ -97,8 +97,8 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 
-			OnUpdate(quest_mgr->txQuest[25]);
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			OnUpdate(questMgr->txQuest[25]);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
 		}
 		break;
 	}
@@ -108,7 +108,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 cstring Quest_RetrievePackage::FormatString(const string& str)
 {
 	if(str == "burmistrz_od")
-		return LocationHelper::IsCity(world->GetLocation(from_loc)) ? quest_mgr->txQuest[26] : quest_mgr->txQuest[27];
+		return LocationHelper::IsCity(world->GetLocation(from_loc)) ? questMgr->txQuest[26] : questMgr->txQuest[27];
 	else if(str == "locname_od")
 		return world->GetLocation(from_loc)->name.c_str();
 	else if(str == "locname")
@@ -144,7 +144,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 		}
 	}
 
-	OnUpdate(quest_mgr->txQuest[267]);
+	OnUpdate(questMgr->txQuest[267]);
 	return true;
 }
 
@@ -195,7 +195,7 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 		{
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
-			parcel.name = Format(quest_mgr->txQuest[8], LocationHelper::IsCity(startLoc) ? quest_mgr->txForMayor : quest_mgr->txForSoltys, startLoc->name.c_str());
+			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys, startLoc->name.c_str());
 			parcel.quest_id = id;
 
 			item_to_give[0] = &parcel;

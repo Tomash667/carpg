@@ -38,11 +38,11 @@ class World
 public:
 	enum class State
 	{
-		ON_MAP, // on map (current_location set)
-		INSIDE_LOCATION, // inside location (current_location set)
-		INSIDE_ENCOUNTER, // inside encounter location (current_location set)
-		TRAVEL, // traveling on map (current_location is nullptr)
-		ENCOUNTER // shown encounter message, waiting to close & load level (current_location is nullptr)
+		ON_MAP, // on map (currentLocation set)
+		INSIDE_LOCATION, // inside location (currentLocation set)
+		INSIDE_ENCOUNTER, // inside encounter location (currentLocation set)
+		TRAVEL, // traveling on map (currentLocation is nullptr)
+		ENCOUNTER // shown encounter message, waiting to close & load level (currentLocation is nullptr)
 	};
 
 	static const float TRAVEL_SPEED;
@@ -73,7 +73,7 @@ public:
 
 	// world generation
 	void GenerateWorld();
-	void SetStartLocation(Location* loc) { start_location = loc; }
+	void SetStartLocation(Location* loc) { startLocation = loc; }
 	void StartInLocation();
 	void CalculateTiles();
 	void SmoothTiles();
@@ -82,10 +82,10 @@ public:
 	Location* CreateCamp(const Vec2& pos, UnitGroup* group);
 private:
 	typedef LOCATION(*AddLocationsCallback)(uint index);
-	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
-	Location* CreateLocation(LOCATION type, int levels = -1, int city_target = -1);
+	void AddLocations(uint count, AddLocationsCallback clbk, float validDist);
+	Location* CreateLocation(LOCATION type, int levels = -1, int cityTarget = -1);
 public:
-	Location* CreateLocation(LOCATION type, const Vec2& pos, int target = -1, int dungeon_levels = -1);
+	Location* CreateLocation(LOCATION type, const Vec2& pos, int target = -1, int dungeonLevels = -1);
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(int index);
@@ -105,38 +105,38 @@ public:
 	// world state
 	State GetState() const { return state; }
 	void SetState(State state) { this->state = state; }
-	Location* GetCurrentLocation() const { return current_location; }
-	int GetCurrentLocationIndex() const { return current_location_index; }
+	Location* GetCurrentLocation() const { return currentLocation; }
+	int GetCurrentLocationIndex() const { return currentLocationIndex; }
 	const vector<Location*>& GetLocations() const { return locations; }
 	Location* GetLocation(int index) const { assert(index >= 0 && index < (int)locations.size()); return locations[index]; }
 	Location* GetLocationByType(LOCATION type, int target = ANY_TARGET) const;
-	const Vec2& GetWorldPos() const { return world_pos; }
-	const Vec2& GetTargetPos() const { return travel_target_pos; }
-	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
+	const Vec2& GetWorldPos() const { return worldPos; }
+	const Vec2& GetTargetPos() const { return travelTargetPos; }
+	void SetWorldPos(const Vec2& worldPos) { this->worldPos = worldPos; }
 	uint GetSettlements() { return settlements; }
 	Location* GetRandomSettlement(Location* excluded = nullptr) const;
 	Location* GetRandomSettlement(vector<Location*>& used, int target = ANY_TARGET) const;
 	Location* GetRandomFreeSettlement(Location* excluded = nullptr) const;
 	Location* GetRandomCity(Location* excluded = nullptr) const;
 	Location* GetClosestLocation(LOCATION type, const Vec2& pos, int target = ANY_TARGET, int flags = 0);
-	Location* GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags = 0);
+	Location* GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int targetsCount, int flags = 0);
 	Location* GetClosestLocation(LOCATION type, const Vec2& pos, std::initializer_list<int> const& targets, int flags = 0)
 	{
 		return GetClosestLocation(type, pos, targets.begin(), targets.size(), flags);
 	}
 	Location* GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScriptArray* array);
-	bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false);
-	Vec2 FindPlace(const Vec2& pos, float range, bool allow_exact = false);
-	Vec2 FindPlace(const Vec2& pos, float min_range, float max_range);
+	bool TryFindPlace(Vec2& pos, float range, bool allowExact = false);
+	Vec2 FindPlace(const Vec2& pos, float range, bool allowExact = false);
+	Vec2 FindPlace(const Vec2& pos, float minRange, float maxRange);
 	Vec2 GetRandomPlace();
 	Location* GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
 	Location* GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
 	Location* GetRandomLocation(delegate<bool(Location*)> pred);
-	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
-	Vec2 GetPos() const { return world_pos; }
-	Vec2 GetWorldBounds() const { return world_bounds; }
+	Vec2 GetSize() const { return Vec2((float)worldSize, (float)worldSize); }
+	Vec2 GetPos() const { return worldPos; }
+	Vec2 GetWorldBounds() const { return worldBounds; }
 
 	// travel
 	void Travel(int index, bool order);
@@ -144,8 +144,8 @@ public:
 	void UpdateTravel(float dt);
 	void StopTravel(const Vec2& pos, bool send);
 	void EndTravel();
-	Location* GetTravelLocation() const { return travel_location; }
-	float GetTravelDir() const { return travel_dir; }
+	Location* GetTravelLocation() const { return travelLocation; }
+	float GetTravelDir() const { return travelDir; }
 	void SetTravelDir(const Vec3& pos);
 	void GetOutsideSpawnPoint(Vec3& pos, float& dir) const;
 	float GetTravelDays(float dist);
@@ -162,8 +162,8 @@ public:
 	Encounter* RecreateEncounter(int index);
 	Encounter* RecreateEncounterS(Quest* quest, int index);
 	const vector<Encounter*>& GetEncounters() const { return encounters; }
-	OutsideLocation* GetEncounterLocation() const { return encounter_loc; }
-	float GetEncounterChance() const { return encounter_chance; }
+	OutsideLocation* GetEncounterLocation() const { return encounterLoc; }
+	float GetEncounterChance() const { return encounterChance; }
 	EncounterData GetCurrentEncounter() const { return encounter; }
 
 	// news
@@ -178,7 +178,7 @@ public:
 	int& GetTileSt(const Vec2& pos);
 
 	// offscreen
-	OffscreenLocation* GetOffscreenLocation() { return offscreen_loc; }
+	OffscreenLocation* GetOffscreenLocation() { return offscreenLoc; }
 	Unit* CreateUnit(UnitData* data, int level = -1);
 
 private:
@@ -193,32 +193,31 @@ private:
 
 	WorldMapGui* gui;
 	State state;
-	Location* current_location; // current location or nullptr
-	Location* travel_location; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (nullptr otherwise)
-	Location* start_location;
-	int current_location_index; // current location index or -1
+	Location* currentLocation; // current location or nullptr
+	Location* travelLocation; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (nullptr otherwise)
+	Location* startLocation;
+	int currentLocationIndex; // current location index or -1
 	vector<Location*> locations; // can be nullptr
-	OutsideLocation* encounter_loc;
-	OffscreenLocation* offscreen_loc;
+	OutsideLocation* encounterLoc;
+	OffscreenLocation* offscreenLoc;
 	vector<Encounter*> encounters;
 	vector<GlobalEncounter*> globalEncounters;
 	EncounterData encounter;
 	vector<int> tiles;
 	uint settlements, // count and index below this value is city/village
-		empty_locations; // counter
-	Vec2 world_bounds,
-		world_pos,
-		travel_start_pos,
-		travel_target_pos;
-	int world_size,
-		create_camp, // counter to create new random camps
+		emptyLocations; // counter
+	Vec2 worldBounds,
+		worldPos,
+		travelStartPos,
+		travelTargetPos;
+	int worldSize,
+		createCamp, // counter to create new random camps
 		worldtime; // number of passed game days since startDate, starts at 0
-	float travel_timer,
-		day_timer,
-		reveal_timer, // increase chance for encounter every 0.25 sec
-		encounter_chance,
-		travel_dir; // direction from start to target point (uses NEW rotation)
-	EncounterMode encounter_mode;
+	float travelTimer,
+		dayTimer,
+		revealTimer, // increase chance for encounter every 0.25 sec
+		encounterChance,
+		travelDir; // direction from start to target point (uses NEW rotation)
 	Date date, startDate;
 	vector<News*> news;
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
@@ -226,7 +225,7 @@ private:
 	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth, txAcademy,
 		txHuntersCamp, txHills;
 	cstring txMonth[12];
-	bool tomir_spawned,
-		travel_first_frame,
+	bool tomirSpawned,
+		travelFirstFrame,
 		startup;
 };

@@ -266,7 +266,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
 					bullet->attack = GetAttack();
-					bullet->mesh = game_res->aArrow;
+					bullet->mesh = gameRes->aArrow;
 					bullet->pos = Vec3(2.f * tile.x + pos.x - float(int(pos.x / 2) * 2) + Random(-base->rw, base->rw) - 1.2f * DirToPos(dir).x,
 						Random(0.5f, 1.5f),
 						2.f * tile.y + pos.z - float(int(pos.z / 2) * 2) + Random(-base->h, base->h) - 1.2f * DirToPos(dir).y);
@@ -290,7 +290,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					locPart.lvlPart->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
-					soundMgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
+					soundMgr->PlaySound3d(gameRes->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
 					if(Net::IsServer())
 					{

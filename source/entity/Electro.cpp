@@ -45,7 +45,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		trail->first = 0;
 		trail->last = steps + 1;
 		trail->alive = steps + 1;
-		trail->tex = game_res->tLightingLine;
+		trail->tex = gameRes->tLightingLine;
 		trail->fade = 0.25f;
 		trail->color1 = Vec4(0.2f, 0.2f, 1.f, 0.5f);
 		trail->color2 = Vec4(0.2f, 0.2f, 1.f, 0);
@@ -304,7 +304,7 @@ Unit* Electro::FindNextTarget()
 	{
 		Vec3 hitpoint;
 		Unit* new_hitted;
-		if(game_level->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
+		if(gameLevel->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
 		{
 			if(new_hitted == it2->first)
 			{

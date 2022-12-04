@@ -87,7 +87,7 @@ void World::LoadLanguage()
 //=================================================================================================
 void World::Init()
 {
-	gui = game_gui->worldMap;
+	gui = gameGui->worldMap;
 }
 
 //=================================================================================================
@@ -99,16 +99,16 @@ void World::Cleanup()
 //=================================================================================================
 void World::OnNewGame()
 {
-	travel_location = nullptr;
-	empty_locations = 0;
-	create_camp = Random(5, 10);
-	encounter_chance = 0.f;
-	travel_dir = Random(MAX_ANGLE);
+	travelLocation = nullptr;
+	emptyLocations = 0;
+	createCamp = Random(5, 10);
+	encounterChance = 0.f;
+	travelDir = Random(MAX_ANGLE);
 	date = Date(100, 0, 0);
 	startDate = date;
 	worldtime = 0;
-	day_timer = 0.f;
-	reveal_timer = 0.f;
+	dayTimer = 0.f;
+	revealTimer = 0.f;
 }
 
 //=================================================================================================
@@ -133,19 +133,19 @@ void World::Update(int days, UpdateMode mode)
 	SpawnCamps(days);
 	UpdateEncounters();
 	if(Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
-		game_level->Update();
+		gameLevel->Update();
 	UpdateLocations();
 	UpdateNews();
-	quest_mgr->Update(days);
+	questMgr->Update(days);
 	team->Update(days, mode);
 
 	// end of game
 	if(date.year >= startDate.year + 60)
 	{
 		Info("Game over: you are too old.");
-		game_gui->CloseAllPanels();
-		game->end_of_game = true;
-		game->death_fade = 0.f;
+		gameGui->CloseAllPanels();
+		game->endOfGame = true;
+		game->deathFade = 0.f;
 		if(Net::IsOnline())
 		{
 			Net::PushChange(NetChange::GAME_STATS);
@@ -166,10 +166,10 @@ void World::UpdateDate(int days)
 //=================================================================================================
 void World::SpawnCamps(int days)
 {
-	create_camp -= days;
-	if(create_camp <= 0)
+	createCamp -= days;
+	if(createCamp <= 0)
 	{
-		create_camp = Random(5, 10);
+		createCamp = Random(5, 10);
 		int index = Rand() % locations.size(),
 			start = index;
 		while(true)
@@ -226,8 +226,8 @@ void World::UpdateLocations()
 		{
 			Camp* camp = static_cast<Camp*>(loc);
 			if(worldtime - camp->create_time >= 30
-				&& current_location != loc // don't remove when team is inside
-				&& travel_location != loc) // don't remove when traveling to
+				&& currentLocation != loc // don't remove when team is inside
+				&& travelLocation != loc) // don't remove when traveling to
 			{
 				// remove camp
 				DeleteCamp(camp, false);
@@ -238,7 +238,7 @@ void World::UpdateLocations()
 				}
 				else
 				{
-					++empty_locations;
+					++emptyLocations;
 					*it = nullptr;
 				}
 			}
@@ -291,14 +291,14 @@ Location* World::CreateCamp(const Vec2& pos, UnitGroup* group)
 }
 
 //=================================================================================================
-Location* World::CreateLocation(LOCATION type, int levels, int city_target)
+Location* World::CreateLocation(LOCATION type, int levels, int cityTarget)
 {
 	switch(type)
 	{
 	case L_CITY:
 		{
 			City* city = new City;
-			city->target = city_target;
+			city->target = cityTarget;
 			return city;
 		}
 	case L_CAVE:
@@ -337,7 +337,7 @@ Location* World::CreateLocation(LOCATION type, int levels, int city_target)
 //	0 - minimum randomly generated
 //	9 - maximum randomly generated
 //	other - used number
-Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int dungeon_levels)
+Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int dungeonLevels)
 {
 	assert(type != L_CITY); // not implemented - many methods currently assume that cities are at start of locations vector
 
@@ -346,14 +346,14 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int 
 	{
 		assert(target != -1);
 		BaseLocation& base = g_base_locations[target];
-		if(dungeon_levels == -1)
+		if(dungeonLevels == -1)
 			levels = base.levels.Random();
-		else if(dungeon_levels == 0)
+		else if(dungeonLevels == 0)
 			levels = base.levels.x;
-		else if(dungeon_levels == 9)
+		else if(dungeonLevels == 9)
 			levels = base.levels.y;
 		else
-			levels = dungeon_levels;
+			levels = dungeonLevels;
 	}
 	else if(target == -1)
 	{
@@ -416,20 +416,20 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int 
 }
 
 //=================================================================================================
-void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist)
+void World::AddLocations(uint count, AddLocationsCallback clbk, float validDist)
 {
 	for(uint i = 0; i < count; ++i)
 	{
 		for(uint j = 0; j < 100; ++j)
 		{
-			Vec2 pt = Vec2::Random(WORLD_BORDER, float(world_size) - WORLD_BORDER);
+			Vec2 pt = Vec2::Random(WORLD_BORDER, float(worldSize) - WORLD_BORDER);
 			bool ok = true;
 
 			// disallow when near other location
 			for(Location* l : locations)
 			{
 				float dist = Vec2::Distance(pt, l->pos);
-				if(dist < valid_dist)
+				if(dist < validDist)
 				{
 					ok = false;
 					break;
@@ -455,9 +455,9 @@ int World::AddLocation(Location* loc)
 {
 	assert(loc);
 
-	if(empty_locations)
+	if(emptyLocations)
 	{
-		--empty_locations;
+		--emptyLocations;
 		int index = locations.size() - 1;
 		for(vector<Location*>::reverse_iterator rit = locations.rbegin(), rend = locations.rend(); rit != rend; ++rit, --index)
 		{
@@ -514,7 +514,7 @@ void World::RemoveLocation(int index)
 	else
 	{
 		locations[index] = nullptr;
-		++empty_locations;
+		++emptyLocations;
 	}
 }
 
@@ -531,11 +531,11 @@ void World::GenerateWorld()
 		return true;
 	};
 	startup = true;
-	world_size = DEF_WORLD_SIZE;
-	world_bounds = Vec2(WORLD_BORDER, world_size - WORLD_BORDER);
+	worldSize = DEF_WORLD_SIZE;
+	worldBounds = Vec2(WORLD_BORDER, worldSize - WORLD_BORDER);
 
 	// create capital
-	const Vec2 pos = Vec2::Random(float(world_size) * 0.4f, float(world_size) * 0.6f);
+	const Vec2 pos = Vec2::Random(float(worldSize) * 0.4f, float(worldSize) * 0.6f);
 	CreateCity(pos, CAPITAL);
 
 	// create more cities
@@ -548,7 +548,7 @@ void World::GenerateWorld()
 			const float dist = Random(300.f, 400.f);
 			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
 
-			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
+			if(pos.x < worldBounds.x || pos.y < worldBounds.x || pos.x > worldBounds.y || pos.y > worldBounds.y)
 				continue;
 			if(isDistanceOk(pos, 250.f))
 			{
@@ -560,7 +560,7 @@ void World::GenerateWorld()
 
 	// player starts in one of cities
 	const uint cities = locations.size();
-	const uint start_location = Rand() % cities;
+	const uint startLocation = Rand() % cities;
 
 	// create villages
 	for(uint i = 0, count = Random(10u, 15u); i < count; ++i)
@@ -572,7 +572,7 @@ void World::GenerateWorld()
 			const float dist = Random(100.f, 250.f);
 			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
 
-			if(pos.x < world_bounds.x || pos.y < world_bounds.x || pos.x > world_bounds.y || pos.y > world_bounds.y)
+			if(pos.x < worldBounds.x || pos.y < worldBounds.x || pos.x > worldBounds.y || pos.y > worldBounds.y)
 				continue;
 
 			if(isDistanceOk(pos, 100.0f))
@@ -588,7 +588,7 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 50; ++tries)
 		{
-			const Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
+			const Vec2 pos = Vec2::Random(worldBounds.x, worldBounds.y);
 
 			if(isDistanceOk(pos, 400.0f))
 			{
@@ -619,22 +619,22 @@ void World::GenerateWorld()
 	AddLocations(120 - locations.size(), [](uint index) { return locs[Rand() % countof(locs)]; }, 40.f);
 
 	// create location for random encounter
-	encounter_loc = new OutsideLocation;
-	encounter_loc->index = locations.size();
-	encounter_loc->pos = Vec2(-1000, -1000);
-	encounter_loc->state = LS_HIDDEN;
-	encounter_loc->type = L_ENCOUNTER;
-	SetLocationImageAndName(encounter_loc);
-	locations.push_back(encounter_loc);
+	encounterLoc = new OutsideLocation;
+	encounterLoc->index = locations.size();
+	encounterLoc->pos = Vec2(-1000, -1000);
+	encounterLoc->state = LS_HIDDEN;
+	encounterLoc->type = L_ENCOUNTER;
+	SetLocationImageAndName(encounterLoc);
+	locations.push_back(encounterLoc);
 
 	// create offscreen location
-	offscreen_loc = new OffscreenLocation;
-	offscreen_loc->index = locations.size();
-	offscreen_loc->pos = Vec2(-1000, -1000);
-	offscreen_loc->state = LS_HIDDEN;
-	offscreen_loc->type = L_OFFSCREEN;
-	offscreen_loc->group = UnitGroup::empty;
-	locations.push_back(offscreen_loc);
+	offscreenLoc = new OffscreenLocation;
+	offscreenLoc->index = locations.size();
+	offscreenLoc->pos = Vec2(-1000, -1000);
+	offscreenLoc->state = LS_HIDDEN;
+	offscreenLoc->type = L_OFFSCREEN;
+	offscreenLoc->group = UnitGroup::empty;
+	locations.push_back(offscreenLoc);
 
 	CalculateTiles();
 
@@ -853,24 +853,24 @@ void World::GenerateWorld()
 
 	SmoothTiles();
 
-	this->start_location = locations[start_location];
-	tomir_spawned = false;
+	this->startLocation = locations[startLocation];
+	tomirSpawned = false;
 }
 
 //=================================================================================================
 void World::StartInLocation()
 {
 	state = State::ON_MAP;
-	current_location_index = start_location->index;
-	current_location = start_location;
-	current_location->state = LS_ENTERED;
-	world_pos = current_location->pos;
-	game_level->location_index = current_location_index;
-	game_level->location = current_location;
+	currentLocationIndex = startLocation->index;
+	currentLocation = startLocation;
+	currentLocation->state = LS_ENTERED;
+	worldPos = currentLocation->pos;
+	gameLevel->locationIndex = currentLocationIndex;
+	gameLevel->location = currentLocation;
 	startup = false;
 
 	// reveal near locations
-	const Vec2& start_pos = start_location->pos;
+	const Vec2& start_pos = startLocation->pos;
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 	{
 		if(!*it)
@@ -885,7 +885,7 @@ void World::StartInLocation()
 //=================================================================================================
 void World::CalculateTiles()
 {
-	const int ts = world_size / TILE_SIZE;
+	const int ts = worldSize / TILE_SIZE;
 	tiles.resize(ts * ts);
 
 	// set from near locations
@@ -933,7 +933,7 @@ void World::CalculateTiles()
 //=================================================================================================
 void World::SmoothTiles()
 {
-	int ts = world_size / TILE_SIZE;
+	int ts = worldSize / TILE_SIZE;
 
 	// smooth
 	for(int y = 0; y < ts; ++y)
@@ -1137,14 +1137,14 @@ void World::Save(GameWriter& f)
 	f << date;
 	f << startDate;
 	f << worldtime;
-	f << day_timer;
-	f << world_size;
-	f << current_location_index;
+	f << dayTimer;
+	f << worldSize;
+	f << currentLocationIndex;
 
 	f << locations.size();
 	Location* current;
 	if(state == State::INSIDE_LOCATION || state == State::INSIDE_ENCOUNTER)
-		current = current_location;
+		current = currentLocation;
 	else
 		current = nullptr;
 	byte check_id = 0;
@@ -1165,19 +1165,19 @@ void World::Save(GameWriter& f)
 	}
 	f.isLocal = false;
 
-	f << empty_locations;
-	f << create_camp;
-	f << world_pos;
-	f << reveal_timer;
-	f << encounter_chance;
+	f << emptyLocations;
+	f << createCamp;
+	f << worldPos;
+	f << revealTimer;
+	f << encounterChance;
 	f << settlements;
-	f << travel_dir;
+	f << travelDir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
-		f << travel_location;
-		f << travel_start_pos;
-		f << travel_target_pos;
-		f << travel_timer;
+		f << travelLocation;
+		f << travelStartPos;
+		f << travelTargetPos;
+		f << travelTimer;
 	}
 	f << encounters.size();
 	for(Encounter* enc : encounters)
@@ -1214,7 +1214,7 @@ void World::Save(GameWriter& f)
 		f.WriteString2(n->text);
 	}
 
-	f << tomir_spawned;
+	f << tomirSpawned;
 }
 
 //=================================================================================================
@@ -1227,17 +1227,17 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	else
 		startDate = Date(100, 0, 0);
 	f >> worldtime;
-	f >> day_timer;
-	f >> world_size;
-	world_bounds = Vec2(WORLD_BORDER, world_size - 16.f);
-	f >> current_location_index;
+	f >> dayTimer;
+	f >> worldSize;
+	worldBounds = Vec2(WORLD_BORDER, worldSize - 16.f);
+	f >> currentLocationIndex;
 	LoadLocations(f, loading);
 	LoadNews(f);
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<bool>(); // old first_city
 	if(LOAD_VERSION < V_0_17)
 		f.SkipVector<Int2>(); // old boss_levels
-	f >> tomir_spawned;
+	f >> tomirSpawned;
 }
 
 //=================================================================================================
@@ -1251,7 +1251,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	int index = -1;
 	int current_index;
 	if(state == State::INSIDE_LOCATION || state == State::INSIDE_ENCOUNTER)
-		current_index = current_location_index;
+		current_index = currentLocationIndex;
 	else
 		current_index = -1;
 	int step = 0;
@@ -1272,8 +1272,8 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					loc = new OutsideLocation;
 					break;
 				case L_ENCOUNTER:
-					encounter_loc = new OutsideLocation;
-					loc = encounter_loc;
+					encounterLoc = new OutsideLocation;
+					loc = encounterLoc;
 					break;
 				case L_CITY:
 					loc = new City;
@@ -1294,8 +1294,8 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					loc = new Camp;
 					break;
 				case L_OFFSCREEN:
-					offscreen_loc = new OffscreenLocation;
-					loc = offscreen_loc;
+					offscreenLoc = new OffscreenLocation;
+					loc = offscreenLoc;
 					break;
 				default:
 					assert(0);
@@ -1387,38 +1387,38 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		++check_id;
 	}
 	f.isLocal = false;
-	f >> empty_locations;
-	f >> create_camp;
-	if(LOAD_VERSION < V_0_11 && create_camp > 10)
-		create_camp = 10;
-	f >> world_pos;
-	f >> reveal_timer;
-	if(LOAD_VERSION < V_0_14_1 && reveal_timer < 0)
-		reveal_timer = 0;
-	f >> encounter_chance;
+	f >> emptyLocations;
+	f >> createCamp;
+	if(LOAD_VERSION < V_0_11 && createCamp > 10)
+		createCamp = 10;
+	f >> worldPos;
+	f >> revealTimer;
+	if(LOAD_VERSION < V_0_14_1 && revealTimer < 0)
+		revealTimer = 0;
+	f >> encounterChance;
 	f >> settlements;
 	if(LOAD_VERSION < V_0_14)
 	{
-		// old encounter_loc
+		// old encounterLoc
 		const int encounter_loc_index = f.Read<int>();
-		encounter_loc = static_cast<OutsideLocation*>(locations[encounter_loc_index]);
+		encounterLoc = static_cast<OutsideLocation*>(locations[encounter_loc_index]);
 
 		// create offscreen location
-		offscreen_loc = new OffscreenLocation;
-		offscreen_loc->index = locations.size();
-		offscreen_loc->pos = Vec2(-1000, -1000);
-		offscreen_loc->state = LS_HIDDEN;
-		offscreen_loc->type = L_OFFSCREEN;
-		offscreen_loc->group = UnitGroup::empty;
-		locations.push_back(offscreen_loc);
+		offscreenLoc = new OffscreenLocation;
+		offscreenLoc->index = locations.size();
+		offscreenLoc->pos = Vec2(-1000, -1000);
+		offscreenLoc->state = LS_HIDDEN;
+		offscreenLoc->type = L_OFFSCREEN;
+		offscreenLoc->group = UnitGroup::empty;
+		locations.push_back(offscreenLoc);
 	}
-	f >> travel_dir;
+	f >> travelDir;
 	if(state == State::INSIDE_ENCOUNTER)
 	{
-		f >> travel_location;
-		f >> travel_start_pos;
-		f >> travel_target_pos;
-		f >> travel_timer;
+		f >> travelLocation;
+		f >> travelStartPos;
+		f >> travelTargetPos;
+		f >> travelTimer;
 	}
 
 	// encounters
@@ -1442,14 +1442,14 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			{
 				string* str = StringPool.Get();
 				*str = dialog_id;
-				quest_mgr->AddQuestRequest(quest_id, &enc->quest, [enc, str]
+				questMgr->AddQuestRequest(quest_id, &enc->quest, [enc, str]
 				{
 					enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
 					StringPool.Free(str);
 				});
 			}
 			else
-				quest_mgr->AddQuestRequest(quest_id, &enc->quest);
+				questMgr->AddQuestRequest(quest_id, &enc->quest);
 			f >> enc->group;
 			const string& text = f.ReadString1();
 			if(text.empty())
@@ -1486,14 +1486,14 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 
 	f >> tiles;
 
-	if(current_location_index != -1)
-		current_location = locations[current_location_index];
+	if(currentLocationIndex != -1)
+		currentLocation = locations[currentLocationIndex];
 	else
-		current_location = nullptr;
-	game_level->location_index = current_location_index;
-	game_level->location = current_location;
-	if(game_level->location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
-		game_level->Apply();
+		currentLocation = nullptr;
+	gameLevel->locationIndex = currentLocationIndex;
+	gameLevel->location = currentLocation;
+	if(gameLevel->location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
+		gameLevel->Apply();
 }
 
 //=================================================================================================
@@ -1513,7 +1513,7 @@ void World::LoadNews(GameReader& f)
 //=================================================================================================
 void World::Write(BitStreamWriter& f)
 {
-	f << world_size;
+	f << worldSize;
 	WriteTime(f);
 
 	// locations
@@ -1542,17 +1542,17 @@ void World::Write(BitStreamWriter& f)
 		f << loc.name;
 		f.WriteCasted<byte>(loc.image);
 	}
-	f.WriteCasted<byte>(current_location_index);
-	f << world_pos;
+	f.WriteCasted<byte>(currentLocationIndex);
+	f << worldPos;
 
 	// position on world map when inside encounter location
 	if(state == State::INSIDE_ENCOUNTER)
 	{
 		f << true;
-		f << travel_location;
-		f << travel_start_pos;
-		f << travel_target_pos;
-		f << travel_timer;
+		f << travelLocation;
+		f << travelStartPos;
+		f << travelTargetPos;
+		f << travelTimer;
 	}
 	else
 		f << false;
@@ -1568,7 +1568,7 @@ void World::WriteTime(BitStreamWriter& f)
 //=================================================================================================
 bool World::Read(BitStreamReader& f)
 {
-	f >> world_size;
+	f >> worldSize;
 	ReadTime(f);
 	if(!f)
 	{
@@ -1680,30 +1680,30 @@ bool World::Read(BitStreamReader& f)
 	}
 
 	// current location
-	f.ReadCasted<byte>(current_location_index);
-	f >> world_pos;
+	f.ReadCasted<byte>(currentLocationIndex);
+	f >> worldPos;
 	if(!f)
 	{
 		Error("Read world: Broken packet for current location.");
 		return false;
 	}
-	if(current_location_index == 255)
+	if(currentLocationIndex == 255)
 	{
-		current_location_index = -1;
-		current_location = nullptr;
-		game_level->location_index = -1;
-		game_level->location = nullptr;
+		currentLocationIndex = -1;
+		currentLocation = nullptr;
+		gameLevel->locationIndex = -1;
+		gameLevel->location = nullptr;
 	}
 	else
 	{
-		if(current_location_index >= (int)locations.size() || !locations[current_location_index])
+		if(currentLocationIndex >= (int)locations.size() || !locations[currentLocationIndex])
 		{
-			Error("Read world: Invalid location %d.", current_location_index);
+			Error("Read world: Invalid location %d.", currentLocationIndex);
 			return false;
 		}
-		current_location = locations[current_location_index];
-		game_level->location_index = current_location_index;
-		game_level->location = current_location;
+		currentLocation = locations[currentLocationIndex];
+		gameLevel->locationIndex = currentLocationIndex;
+		gameLevel->location = currentLocation;
 	}
 
 	// position on world map when inside encounter locations
@@ -1717,10 +1717,10 @@ bool World::Read(BitStreamReader& f)
 	if(inside_encounter)
 	{
 		state = State::INSIDE_ENCOUNTER;
-		f >> travel_location;
-		f >> travel_start_pos;
-		f >> travel_target_pos;
-		f >> travel_timer;
+		f >> travelLocation;
+		f >> travelStartPos;
+		f >> travelTargetPos;
+		f >> travelTimer;
 		if(!f)
 		{
 			Error("Read world: Broken packet for in travel data (2).");
@@ -1893,7 +1893,7 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, 
 }
 
 //=================================================================================================
-Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags)
+Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int targetsCount, int flags)
 {
 	Location* best = nullptr;
 	int index = 0;
@@ -1909,7 +1909,7 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* t
 		if(!allow_active && loc->active_quest)
 			continue;
 		bool ok = false;
-		for(int i = 0; i < n_targets; ++i)
+		for(int i = 0; i < targetsCount; ++i)
 		{
 			if(loc->target == targets[i])
 			{
@@ -1939,14 +1939,14 @@ Location* World::GetClosestLocationArrayS(LOCATION type, const Vec2& pos, CScrip
 }
 
 //=================================================================================================
-bool World::TryFindPlace(Vec2& pos, float range, bool allow_exact)
+bool World::TryFindPlace(Vec2& pos, float range, bool allowExact)
 {
 	Vec2 pt;
 
-	if(allow_exact)
+	if(allowExact)
 		pt = pos;
 	else
-		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(worldBounds.x, worldBounds.x), Vec2(worldBounds.y, worldBounds.y));
 
 	for(int i = 0; i < 20; ++i)
 	{
@@ -1966,21 +1966,21 @@ bool World::TryFindPlace(Vec2& pos, float range, bool allow_exact)
 			return true;
 		}
 		else
-			pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
+			pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(worldBounds.x, worldBounds.x), Vec2(worldBounds.y, worldBounds.y));
 	}
 
 	return false;
 }
 
 //=================================================================================================
-Vec2 World::FindPlace(const Vec2& pos, float range, bool allow_exact)
+Vec2 World::FindPlace(const Vec2& pos, float range, bool allowExact)
 {
 	Vec2 pt;
 
-	if(allow_exact)
+	if(allowExact)
 		pt = pos;
 	else
-		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(worldBounds.x, worldBounds.x), Vec2(worldBounds.y, worldBounds.y));
 
 	for(int i = 0; i < 20; ++i)
 	{
@@ -1997,18 +1997,18 @@ Vec2 World::FindPlace(const Vec2& pos, float range, bool allow_exact)
 		if(valid)
 			break;
 
-		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(worldBounds.x, worldBounds.x), Vec2(worldBounds.y, worldBounds.y));
 	}
 
 	return pt;
 }
 
 //=================================================================================================
-Vec2 World::FindPlace(const Vec2& pos, float min_range, float max_range)
+Vec2 World::FindPlace(const Vec2& pos, float minRange, float maxRange)
 {
 	for(int i = 0; i < 20; ++i)
 	{
-		float range = Random(min_range, max_range);
+		float range = Random(minRange, maxRange);
 		float angle = Random(PI * 2);
 		Vec2 pt = pos + Vec2(sin(angle) * range, cos(angle) * range);
 
@@ -2032,7 +2032,7 @@ Vec2 World::FindPlace(const Vec2& pos, float min_range, float max_range)
 //=================================================================================================
 Vec2 World::GetRandomPlace()
 {
-	const Vec2 pos = Vec2::Random(world_bounds.x, world_bounds.y);
+	const Vec2 pos = Vec2::Random(worldBounds.x, worldBounds.y);
 	return FindPlace(pos, 64.f);
 }
 
@@ -2156,10 +2156,10 @@ void World::ExitToMap()
 	if(state == State::INSIDE_ENCOUNTER)
 	{
 		state = State::TRAVEL;
-		current_location_index = -1;
-		current_location = nullptr;
-		game_level->location_index = -1;
-		game_level->location = nullptr;
+		currentLocationIndex = -1;
+		currentLocation = nullptr;
+		gameLevel->locationIndex = -1;
+		gameLevel->location = nullptr;
 	}
 	else
 		state = State::ON_MAP;
@@ -2169,23 +2169,23 @@ void World::ExitToMap()
 void World::ChangeLevel(int index, bool encounter)
 {
 	state = encounter ? State::INSIDE_ENCOUNTER : State::INSIDE_LOCATION;
-	current_location_index = index;
-	current_location = locations[index];
-	game_level->location_index = current_location_index;
-	game_level->location = current_location;
+	currentLocationIndex = index;
+	currentLocation = locations[index];
+	gameLevel->locationIndex = currentLocationIndex;
+	gameLevel->location = currentLocation;
 }
 
 //=================================================================================================
 void World::StartInLocation(Location* loc)
 {
 	locations.push_back(loc);
-	current_location_index = locations.size() - 1;
-	current_location = loc;
+	currentLocationIndex = locations.size() - 1;
+	currentLocation = loc;
 	state = State::INSIDE_LOCATION;
-	loc->index = current_location_index;
-	game_level->location_index = current_location_index;
-	game_level->location = loc;
-	game_level->is_open = true;
+	loc->index = currentLocationIndex;
+	gameLevel->locationIndex = currentLocationIndex;
+	gameLevel->location = loc;
+	gameLevel->isOpen = true;
 	startup = false;
 }
 
@@ -2193,10 +2193,10 @@ void World::StartInLocation(Location* loc)
 void World::StartEncounter()
 {
 	state = State::INSIDE_ENCOUNTER;
-	current_location = encounter_loc;
-	current_location_index = encounter_loc->index;
-	game_level->location_index = current_location_index;
-	game_level->location = current_location;
+	currentLocation = encounterLoc;
+	currentLocationIndex = encounterLoc->index;
+	gameLevel->locationIndex = currentLocationIndex;
+	gameLevel->location = currentLocation;
 }
 
 //=================================================================================================
@@ -2206,24 +2206,24 @@ void World::Travel(int index, bool order)
 		return;
 
 	// leave current location
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
 		game->LeaveLocation();
-		game_level->is_open = false;
+		gameLevel->isOpen = false;
 	}
 
 	state = State::TRAVEL;
-	current_location = nullptr;
-	current_location_index = -1;
-	game_level->location = nullptr;
-	game_level->location_index = -1;
-	travel_timer = 0.f;
-	travel_start_pos = world_pos;
-	travel_location = locations[index];
-	travel_target_pos = travel_location->pos;
-	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
+	currentLocation = nullptr;
+	currentLocationIndex = -1;
+	gameLevel->location = nullptr;
+	gameLevel->locationIndex = -1;
+	travelTimer = 0.f;
+	travelStartPos = worldPos;
+	travelLocation = locations[index];
+	travelTargetPos = travelLocation->pos;
+	travelDir = AngleLH(worldPos.x, worldPos.y, travelTargetPos.x, travelTargetPos.y);
 	if(Net::IsLocal())
-		travel_first_frame = true;
+		travelFirstFrame = true;
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
@@ -2240,24 +2240,24 @@ void World::TravelPos(const Vec2& pos, bool order)
 		return;
 
 	// leave current location
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
 		game->LeaveLocation();
-		game_level->is_open = false;
+		gameLevel->isOpen = false;
 	}
 
 	state = State::TRAVEL;
-	current_location = nullptr;
-	current_location_index = -1;
-	game_level->location = nullptr;
-	game_level->location_index = -1;
-	travel_timer = 0.f;
-	travel_start_pos = world_pos;
-	travel_location = nullptr;
-	travel_target_pos = pos;
-	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
+	currentLocation = nullptr;
+	currentLocationIndex = -1;
+	gameLevel->location = nullptr;
+	gameLevel->locationIndex = -1;
+	travelTimer = 0.f;
+	travelStartPos = worldPos;
+	travelLocation = nullptr;
+	travelTargetPos = pos;
+	travelDir = AngleLH(worldPos.x, worldPos.y, travelTargetPos.x, travelTargetPos.y);
 	if(Net::IsLocal())
-		travel_first_frame = true;
+		travelFirstFrame = true;
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
@@ -2271,47 +2271,47 @@ void World::TravelPos(const Vec2& pos, bool order)
 //=================================================================================================
 void World::UpdateTravel(float dt)
 {
-	if(travel_first_frame)
+	if(travelFirstFrame)
 	{
-		travel_first_frame = false;
+		travelFirstFrame = false;
 		return;
 	}
 
-	day_timer += dt;
-	if(day_timer >= 1.f)
+	dayTimer += dt;
+	if(dayTimer >= 1.f)
 	{
 		// another day passed
-		--day_timer;
+		--dayTimer;
 		if(Net::IsLocal())
 			Update(1, UM_TRAVEL);
 	}
 
-	float dist = Vec2::Distance(travel_start_pos, travel_target_pos);
-	travel_timer += dt;
-	if(travel_timer * 3 >= dist / TRAVEL_SPEED)
+	float dist = Vec2::Distance(travelStartPos, travelTargetPos);
+	travelTimer += dt;
+	if(travelTimer * 3 >= dist / TRAVEL_SPEED)
 	{
 		// end of travel
 		if(Net::IsLocal())
 		{
-			team->OnTravel(Vec2::Distance(world_pos, travel_target_pos));
+			team->OnTravel(Vec2::Distance(worldPos, travelTargetPos));
 			EndTravel();
 		}
 		else
-			world_pos = travel_target_pos;
+			worldPos = travelTargetPos;
 	}
 	else
 	{
-		Vec2 dir = travel_target_pos - travel_start_pos;
-		float travel_dist = travel_timer / dist * TRAVEL_SPEED * 3;
-		world_pos = travel_start_pos + dir * travel_dist;
+		Vec2 dir = travelTargetPos - travelStartPos;
+		float travel_dist = travelTimer / dist * TRAVEL_SPEED * 3;
+		worldPos = travelStartPos + dir * travel_dist;
 		if(Net::IsLocal())
 			team->OnTravel(travel_dist);
 
 		// reveal nearby locations, check encounters
-		reveal_timer += dt;
-		if(Net::IsLocal() && reveal_timer >= 0.25f)
+		revealTimer += dt;
+		if(Net::IsLocal() && revealTimer >= 0.25f)
 		{
-			reveal_timer = 0;
+			revealTimer = 0;
 
 			UnitGroup* group = nullptr;
 			for(Location* ploc : locations)
@@ -2319,7 +2319,7 @@ void World::UpdateTravel(float dt)
 				if(!ploc)
 					continue;
 				Location& loc = *ploc;
-				float dist = Vec2::Distance(world_pos, loc.pos);
+				float dist = Vec2::Distance(worldPos, loc.pos);
 				if(dist <= 50.f)
 				{
 					if(loc.state != LS_CLEARED && dist <= 32.f && loc.group && loc.group->encounter_chance != 0)
@@ -2328,7 +2328,7 @@ void World::UpdateTravel(float dt)
 						int chance = loc.group->encounter_chance;
 						if(loc.type == L_CAMP)
 							chance *= 2;
-						encounter_chance += chance;
+						encounterChance += chance;
 					}
 
 					if(loc.state != LS_HIDDEN)
@@ -2342,21 +2342,21 @@ void World::UpdateTravel(float dt)
 				++index;
 				if(!encounter)
 					continue;
-				if(Vec2::Distance(encounter->pos, world_pos) < encounter->range)
+				if(Vec2::Distance(encounter->pos, worldPos) < encounter->range)
 				{
 					if(!encounter->check_func || encounter->check_func())
 					{
-						encounter_chance += encounter->chance;
+						encounterChance += encounter->chance;
 						enc = index;
 					}
 				}
 			}
 
-			encounter_chance += 1 + globalEncounters.size();
+			encounterChance += 1 + globalEncounters.size();
 
-			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && GKey.DebugKey(Key::E)))
+			if(Rand() % 500 < ((int)encounterChance) - 25 || (gui->HaveFocus() && GKey.DebugKey(Key::E)))
 			{
-				encounter_chance = 0.f;
+				encounterChance = 0.f;
 				StartEncounter(enc, group);
 			}
 		}
@@ -2370,7 +2370,7 @@ void World::StartEncounter(int enc, UnitGroup* group)
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_MAP_POS);
 
-	encounter.st = GetTileSt(world_pos);
+	encounter.st = GetTileSt(worldPos);
 	if(encounter.st < 3)
 		encounter.st = 3;
 
@@ -2446,10 +2446,10 @@ void World::StartEncounter(int enc, UnitGroup* group)
 					text = txEncMerchant;
 					break;
 				case SE_HEROES:
-					if(!tomir_spawned && Rand() % 5 == 0)
+					if(!tomirSpawned && Rand() % 5 == 0)
 					{
 						encounter.special = SE_TOMIR;
-						tomir_spawned = true;
+						tomirSpawned = true;
 						text = txEncSingleHero;
 					}
 					else
@@ -2514,19 +2514,19 @@ void World::EndTravel()
 	if(state != State::TRAVEL)
 		return;
 	state = State::ON_MAP;
-	if(travel_location)
+	if(travelLocation)
 	{
-		current_location = travel_location;
-		current_location_index = travel_location->index;
-		travel_location = nullptr;
-		game_level->location_index = current_location_index;
-		game_level->location = current_location;
-		Location& loc = *game_level->location;
+		currentLocation = travelLocation;
+		currentLocationIndex = travelLocation->index;
+		travelLocation = nullptr;
+		gameLevel->locationIndex = currentLocationIndex;
+		gameLevel->location = currentLocation;
+		Location& loc = *gameLevel->location;
 		loc.SetVisited();
-		world_pos = loc.pos;
+		worldPos = loc.pos;
 	}
 	else
-		world_pos = travel_target_pos;
+		worldPos = travelTargetPos;
 	if(Net::IsServer())
 		Net::PushChange(NetChange::END_TRAVEL);
 }
@@ -2534,19 +2534,19 @@ void World::EndTravel()
 //=================================================================================================
 void World::Warp(int index, bool order)
 {
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
 		game->LeaveLocation(false, false);
-		game_level->is_open = false;
+		gameLevel->isOpen = false;
 	}
 
-	current_location_index = index;
-	current_location = locations[current_location_index];
-	game_level->location_index = current_location_index;
-	game_level->location = current_location;
-	Location& loc = *current_location;
+	currentLocationIndex = index;
+	currentLocation = locations[currentLocationIndex];
+	gameLevel->locationIndex = currentLocationIndex;
+	gameLevel->location = currentLocation;
+	Location& loc = *currentLocation;
 	loc.SetVisited();
-	world_pos = loc.pos;
+	worldPos = loc.pos;
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
@@ -2559,17 +2559,17 @@ void World::Warp(int index, bool order)
 //=================================================================================================
 void World::WarpPos(const Vec2& pos, bool order)
 {
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
 		game->LeaveLocation(false, false);
-		game_level->is_open = false;
+		gameLevel->isOpen = false;
 	}
 
-	world_pos = pos;
-	current_location_index = -1;
-	current_location = nullptr;
-	game_level->location_index = -1;
-	game_level->location = nullptr;
+	worldPos = pos;
+	currentLocationIndex = -1;
+	currentLocation = nullptr;
+	gameLevel->locationIndex = -1;
+	gameLevel->location = nullptr;
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
@@ -2679,14 +2679,14 @@ Encounter* World::RecreateEncounterS(Quest* quest, int index)
 }
 
 //=================================================================================================
-// Set unit pos, dir according to travel_dir
+// Set unit pos, dir according to travelDir
 void World::GetOutsideSpawnPoint(Vec3& pos, float& dir) const
 {
 	const float map_size = 256.f;
 	const float dist = 40.f;
 
 	// reverse dir, if you exit from north then you enter from south
-	float entry_dir = Clip(travel_dir + PI);
+	float entry_dir = Clip(travelDir + PI);
 
 	if(entry_dir < PI / 4 || entry_dir > 7.f / 4 * PI)
 	{
@@ -2724,7 +2724,7 @@ float World::GetTravelDays(float dist)
 }
 
 //=================================================================================================
-// Set travel_dir using unit pos
+// Set travelDir using unit pos
 // When crossed travel bariers simply calculate angle
 // When using city gates find closest line segment point and then use above calculation on this point
 void World::SetTravelDir(const Vec3& pos)
@@ -2770,21 +2770,21 @@ void World::SetTravelDir(const Vec3& pos)
 
 	// point is outside of location borders
 	if(unit_pos.x < border)
-		travel_dir = Lerp(3.f / 4.f * PI, 5.f / 4.f * PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
+		travelDir = Lerp(3.f / 4.f * PI, 5.f / 4.f * PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
 	else if(unit_pos.x > map_size - border)
 	{
 		if(unit_pos.y > map_size / 2)
-			travel_dir = Lerp(0.f, 1.f / 4 * PI, (unit_pos.y - map_size / 2) / (map_size - map_size / 2 - border));
+			travelDir = Lerp(0.f, 1.f / 4 * PI, (unit_pos.y - map_size / 2) / (map_size - map_size / 2 - border));
 		else
-			travel_dir = Lerp(7.f / 4 * PI, PI * 2, (unit_pos.y - border) / (map_size - map_size / 2 - border));
+			travelDir = Lerp(7.f / 4 * PI, PI * 2, (unit_pos.y - border) / (map_size - map_size / 2 - border));
 	}
 	else if(unit_pos.y < border)
-		travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit_pos.x - border) / (map_size - border * 2));
+		travelDir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit_pos.x - border) / (map_size - border * 2));
 	else
-		travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit_pos.x - border) / (map_size - border * 2));
+		travelDir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit_pos.x - border) / (map_size - border * 2));
 
 	// convert RH angle to LH and then entry to exit dir
-	travel_dir = Clip(ConvertAngle(travel_dir) + PI);
+	travelDir = Clip(ConvertAngle(travelDir) + PI);
 }
 
 //=================================================================================================
@@ -2851,7 +2851,7 @@ void World::AbadonLocation(Location* loc)
 		camp->create_time = world->GetWorldtime() - 30 + Random(4, 8);
 
 		// turn off lights
-		if(loc != current_location)
+		if(loc != currentLocation)
 		{
 			BaseObject* campfire = BaseObject::Get("campfire"),
 				*campfireOff = BaseObject::Get("campfire_off"),
@@ -2868,7 +2868,7 @@ void World::AbadonLocation(Location* loc)
 	}
 
 	// if location is open
-	if(loc == current_location)
+	if(loc == currentLocation)
 	{
 		// remove units
 		for(Unit*& u : locPart->units)
@@ -2876,7 +2876,7 @@ void World::AbadonLocation(Location* loc)
 			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
 				u->to_remove = true;
-				game_level->to_remove.push_back(u);
+				gameLevel->to_remove.push_back(u);
 			}
 		}
 
@@ -2989,9 +2989,9 @@ void World::VerifyObjects(vector<Object*>& objects, int& errors)
 //=================================================================================================
 int& World::GetTileSt(const Vec2& pos)
 {
-	assert(pos.x >= 0 || pos.y >= 0 || pos.x < (float)world_size || pos.y < (float)world_size);
+	assert(pos.x >= 0 || pos.y >= 0 || pos.x < (float)worldSize || pos.y < (float)worldSize);
 	Int2 tile(int(pos.x / TILE_SIZE), int(pos.y / TILE_SIZE));
-	int ts = world_size / TILE_SIZE;
+	int ts = worldSize / TILE_SIZE;
 	return tiles[tile.x + tile.y * ts];
 }
 
@@ -2999,5 +2999,5 @@ int& World::GetTileSt(const Vec2& pos)
 Unit* World::CreateUnit(UnitData* data, int level)
 {
 	assert(data);
-	return offscreen_loc->CreateUnit(*data, level);
+	return offscreenLoc->CreateUnit(*data, level);
 }

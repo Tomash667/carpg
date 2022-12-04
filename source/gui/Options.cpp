@@ -402,7 +402,7 @@ void Options::Event(GuiEvent e)
 			game->settings.grassRange = (float)grassRange;
 			break;
 		case IdControls:
-			gui->ShowDialog((DialogBox*)game_gui->controls);
+			gui->ShowDialog((DialogBox*)gameGui->controls);
 			break;
 		case IdGlow:
 			game->useGlow = check[1].checked;

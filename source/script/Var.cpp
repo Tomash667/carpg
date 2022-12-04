@@ -14,7 +14,7 @@ string Vars::tmp_str;
 //=================================================================================================
 bool Var::IsGeneric(void* ptr, int type)
 {
-	Type is_type = script_mgr->GetVarType(type);
+	Type is_type = scriptMgr->GetVarType(type);
 	return this->type == is_type && this->ptr == ptr;
 }
 
@@ -22,7 +22,7 @@ bool Var::IsGeneric(void* ptr, int type)
 Var* Var::SetGeneric(void* ptr, int type)
 {
 	// TODO: check if this is known type
-	this->type = script_mgr->GetVarType(type);
+	this->type = scriptMgr->GetVarType(type);
 	this->ptr = ptr;
 	return this;
 }
@@ -31,7 +31,7 @@ Var* Var::SetGeneric(void* ptr, int type)
 void Var::GetGeneric(void* ptr, int type)
 {
 	// TODO: throw on invalid type
-	assert(this->type == script_mgr->GetVarType(type) || this->type == Type::Magic);
+	assert(this->type == scriptMgr->GetVarType(type) || this->type == Type::Magic);
 	*(void**)ptr = this->ptr;
 }
 

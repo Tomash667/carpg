@@ -183,7 +183,7 @@ int BitStreamReader::ReadItemAndFind(const Item*& item)
 		if(!IsOk())
 			return -2;
 
-		item = quest_mgr->FindQuestItemClient(item_id.c_str(), quest_id);
+		item = questMgr->FindQuestItemClient(item_id.c_str(), quest_id);
 		if(!item)
 		{
 			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_id);
@@ -221,7 +221,7 @@ bool BitStreamReader::ReadItemList(vector<ItemSlot>& items)
 		operator >> (slot.count);
 		if(!IsOk())
 			return false;
-		game_res->PreloadItem(slot.item);
+		gameRes->PreloadItem(slot.item);
 		slot.team_count = 0;
 	}
 
@@ -247,7 +247,7 @@ bool BitStreamReader::ReadItemListTeam(vector<ItemSlot>& items, bool skip)
 		if(!IsOk())
 			return false;
 		if(!skip)
-			game_res->PreloadItem(slot.item);
+			gameRes->PreloadItem(slot.item);
 	}
 
 	return true;

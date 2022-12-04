@@ -20,8 +20,8 @@ void DungeonGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
 	BaseLocation& base = g_base_locations[inside->target];
-	inside->SetActiveLevel(game_level->dungeon_level);
-	game_level->lvl = &inside->GetLevelData();
+	inside->SetActiveLevel(gameLevel->dungeonLevel);
+	gameLevel->lvl = &inside->GetLevelData();
 	if(inside->IsMultilevel())
 	{
 		MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -53,7 +53,7 @@ void DungeonGenerator::Generate()
 	settings.corridor_join_chance = base.join_corridor;
 	settings.room_join_chance = base.join_room;
 	settings.shape = IsSet(base.options, BLO_ROUND) ? MapSettings::SHAPE_CIRCLE : MapSettings::SHAPE_SQUARE;
-	if(game_level->dungeon_level == 0)
+	if(gameLevel->dungeonLevel == 0)
 	{
 		if(IsSet(base.options, BLO_GOES_UP))
 		{
@@ -130,8 +130,8 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(game_level->location_index == quest_mgr->quest_secret->where
-		&& quest_mgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveNextEntry())
+	else if(gameLevel->locationIndex == questMgr->quest_secret->where
+		&& questMgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveNextEntry())
 	{
 		// secret
 		Room* room = Room::Get();
@@ -145,14 +145,14 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(game_level->location == quest_mgr->quest_evil->targetLoc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+	else if(gameLevel->location == questMgr->quest_evil->targetLoc && questMgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
 
-	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location == quest_mgr->quest_orcs->targetLoc
-		&& dungeon_level == game_level->location->GetLastLevel())
+	if(questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && gameLevel->location == questMgr->quest_orcs->targetLoc
+		&& dungeon_level == gameLevel->location->GetLastLevel())
 	{
 		// search for room for cell
 		settings.stop = true;
@@ -315,15 +315,15 @@ void DungeonGenerator::GenerateObjects()
 //=================================================================================================
 void DungeonGenerator::GenerateUnits()
 {
-	if(game_level->location->group->IsEmpty())
+	if(gameLevel->location->group->IsEmpty())
 		return;
 
 	UnitGroup* group = GetGroup();
 	int base_level;
-	if(game_level->location->group->IsChallange())
-		base_level = game_level->location->st; // all levels have max st
+	if(gameLevel->location->group->IsChallange())
+		base_level = gameLevel->location->st; // all levels have max st
 	else
-		base_level = game_level->GetDifficultyLevel();
+		base_level = gameLevel->GetDifficultyLevel();
 
 	Pooled<TmpUnitGroup> tmp;
 	tmp->Fill(group, base_level);
@@ -343,7 +343,7 @@ void DungeonGenerator::GenerateUnits()
 	const int chance[3] = { chance_for_none, chance_for_none + chance_for_1, chance_for_none + chance_for_1 + chance_for_2 };
 
 	// spawn units
-	InsideLocation* inside = (InsideLocation*)game_level->location;
+	InsideLocation* inside = (InsideLocation*)gameLevel->location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Int2 excludedPt = lvl.nextEntryPt;
 	if(!inside->HaveNextEntry())
@@ -393,7 +393,7 @@ void DungeonGenerator::GenerateUnits()
 			for(int i = 0; i < count; ++i)
 			{
 				Room& room = *lvl.rooms[RandomItem(group.rooms)];
-				game_level->SpawnUnitInsideRoom(room, *slime, -1, awayPt, excludedPt);
+				gameLevel->SpawnUnitInsideRoom(room, *slime, -1, awayPt, excludedPt);
 			}
 		}
 		else
@@ -401,7 +401,7 @@ void DungeonGenerator::GenerateUnits()
 			for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
 			{
 				Room& room = *lvl.rooms[RandomItem(group.rooms)];
-				game_level->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, awayPt, excludedPt);
+				gameLevel->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, awayPt, excludedPt);
 			}
 		}
 	}
@@ -447,17 +447,17 @@ void DungeonGenerator::GenerateDungeonItems()
 	bool spawn_golden_cup = Rand() % 100 == 0;
 
 	// spawn food
-	LocationPart& locPart = *game_level->localPart;
+	LocationPart& locPart = *gameLevel->localPart;
 	for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == table)
 		{
-			game_level->PickableItemBegin(locPart, obj);
+			gameLevel->PickableItemBegin(locPart, obj);
 			if(spawn_golden_cup)
 			{
 				spawn_golden_cup = false;
-				game_level->PickableItemAdd(Item::Get("golden_cup"));
+				gameLevel->PickableItemAdd(Item::Get("golden_cup"));
 			}
 			else
 			{
@@ -465,22 +465,22 @@ void DungeonGenerator::GenerateDungeonItems()
 				if(count)
 				{
 					for(int i = 0; i < count; ++i)
-						game_level->PickableItemAdd(lis.Get());
+						gameLevel->PickableItemAdd(lis.Get());
 				}
 			}
 			if(Rand() % 3 == 0)
-				game_level->PickableItemAdd(plate);
+				gameLevel->PickableItemAdd(plate);
 			if(Rand() % 3 == 0)
-				game_level->PickableItemAdd(cup);
+				gameLevel->PickableItemAdd(cup);
 		}
 		else if(obj.base == shelves)
 		{
 			int count = Random(mod, mod * 3 / 2);
 			if(count)
 			{
-				game_level->PickableItemBegin(locPart, obj);
+				gameLevel->PickableItemBegin(locPart, obj);
 				for(int i = 0; i < count; ++i)
-					game_level->PickableItemAdd(lis.Get());
+					gameLevel->PickableItemAdd(lis.Get());
 			}
 		}
 	}

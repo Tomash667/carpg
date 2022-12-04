@@ -188,7 +188,7 @@ void AIController::Load(GameReader& f)
 		{
 			int room_id = f.Read<int>();
 			if(room_id != -1)
-				st.escape.room = reinterpret_cast<InsideLocation*>(game_level->location)->GetLevelData().rooms[room_id];
+				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
 			else
 				st.escape.room = nullptr;
 		}
@@ -200,7 +200,7 @@ void AIController::Load(GameReader& f)
 	case SearchEnemy:
 		{
 			int room_id = f.Read<int>();
-			st.search.room = reinterpret_cast<InsideLocation*>(game_level->location)->GetLevelData().rooms[room_id];
+			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
 		}
 		break;
 	}
@@ -267,7 +267,7 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 		f >> idle.obj.pos;
 		f >> idle.obj.rot;
 		if(apply)
-			game->ai_bow_targets.push_back(this);
+			game->aiBowTargets.push_back(this);
 		break;
 	case Idle_MoveRegion:
 	case Idle_RunRegion:
@@ -278,21 +278,21 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 			if(LOAD_VERSION >= V_0_11)
 			{
 				f >> idle.region.exit;
-				idle.region.locPart = game_level->GetLocationPartById(partId);
+				idle.region.locPart = gameLevel->GetLocationPartById(partId);
 			}
 			else
 			{
 				if(partId == LocationPart::OLD_EXIT_ID)
 				{
 					idle.region.exit = true;
-					idle.region.locPart = game_level->GetLocationPartById(LocationPart::OUTSIDE_ID);
+					idle.region.locPart = gameLevel->GetLocationPartById(LocationPart::OUTSIDE_ID);
 				}
 				else
 				{
 					idle.region.exit = false;
-					idle.region.locPart = game_level->GetLocationPartById(partId);
+					idle.region.locPart = gameLevel->GetLocationPartById(partId);
 					if(!idle.region.locPart)
-						idle.region.locPart = game_level->localPart;
+						idle.region.locPart = gameLevel->localPart;
 				}
 			}
 		}
@@ -407,7 +407,7 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(game_level->city_ctx && loc_timer <= 0.f && !game->dont_wander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(gameLevel->cityCtx && loc_timer <= 0.f && !game->dontWander && IsSet(unit->data->flags, F_AI_WANDERS))
 	{
 		if(unit->busy != Unit::Busy_No)
 			return false;
@@ -415,7 +415,7 @@ bool AIController::CanWander() const
 		{
 			if(unit->hero->team_member && unit->GetOrder() != ORDER_WANDER)
 				return false;
-			else if(quest_mgr->quest_tournament->IsGenerated())
+			else if(questMgr->quest_tournament->IsGenerated())
 				return false;
 			else
 				return true;
@@ -475,7 +475,7 @@ void AIController::Shout()
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
+		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
 		{
 			u->ai->alert_target = target_unit;
 			u->ai->alert_target_pos = target_last_pos;
@@ -516,7 +516,7 @@ void AIController::HitReaction(const Vec3& pos)
 			continue;
 
 		if((u->ai->state == Idle || u->ai->state == SearchEnemy)
-			&& Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
+			&& Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
 		{
 			AIController* ai2 = u->ai;
 			ai2->target_last_pos = pos;

@@ -156,7 +156,7 @@ void Hero::PassTime(int days, bool travel)
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(game_level->city_ctx && !travel)
+		if(gameLevel->cityCtx && !travel)
 			heal *= 2;
 		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
@@ -200,7 +200,7 @@ void Hero::AddExp(int exp)
 //=================================================================================================
 float Hero::GetExpMod() const
 {
-	int dif = unit->level - team->players_level;
+	int dif = unit->level - team->playersLevel;
 	if(IsSet(unit->data->flags2, F2_FAST_LEARNER))
 		--dif;
 	switch(dif)

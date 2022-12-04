@@ -22,8 +22,8 @@ void Quest_Sawmill::Start()
 	sawmill_state = State::None;
 	build_state = BuildState::None;
 	days = 0;
-	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
-	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[0], GetStartLocationName()));
+	startLoc = world->GetRandomSettlement(questMgr->GetUsedCities());
+	questMgr->AddQuestRumor(id, Format(questMgr->txRumorQ[0], GetStartLocationName()));
 
 	if(game->devmode)
 		Info("Quest 'Sawmill' - %s.", GetStartLocationName());
@@ -54,7 +54,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(quest_mgr->txQuest[124]);
+			OnStart(questMgr->txQuest[124]);
 
 			location_event_handler = this;
 
@@ -66,13 +66,13 @@ void Quest_Sawmill::SetProgress(int prog2)
 				targetLoc->reset = true;
 			targetLoc->st = 8;
 
-			msgs.push_back(Format(quest_mgr->txQuest[125], startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(quest_mgr->txQuest[126], targetLoc->name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(questMgr->txQuest[125], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(questMgr->txQuest[126], targetLoc->name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
 		{
-			OnUpdate(Format(quest_mgr->txQuest[127], GetTargetLocationName()));
+			OnUpdate(Format(questMgr->txQuest[127], GetTargetLocationName()));
 			team->AddExp(3000);
 		}
 		break;
@@ -80,8 +80,8 @@ void Quest_Sawmill::SetProgress(int prog2)
 		{
 			days = 0;
 			sawmill_state = State::InBuild;
-			quest_mgr->RemoveQuestRumor(id);
-			OnUpdate(quest_mgr->txQuest[128]);
+			questMgr->RemoveQuestRumor(id);
+			OnUpdate(questMgr->txQuest[128]);
 		}
 		break;
 	case Progress::Finished:
@@ -89,13 +89,13 @@ void Quest_Sawmill::SetProgress(int prog2)
 			state = Quest::Completed;
 			sawmill_state = State::Working;
 
-			OnUpdate(quest_mgr->txQuest[129]);
+			OnUpdate(questMgr->txQuest[129]);
 			team->AddReward(PAYMENT);
-			team->AddInvestment(quest_mgr->txQuest[124], id, PAYMENT);
-			quest_mgr->EndUniqueQuest();
-			world->AddNews(Format(quest_mgr->txQuest[130], targetLoc->name.c_str()));
+			team->AddInvestment(questMgr->txQuest[124], id, PAYMENT);
+			questMgr->EndUniqueQuest();
+			world->AddNews(Format(questMgr->txQuest[130], targetLoc->name.c_str()));
 			targetLoc->SetImage(LI_SAWMILL);
-			targetLoc->SetNamePrefix(quest_mgr->txQuest[124]);
+			targetLoc->SetNamePrefix(questMgr->txQuest[124]);
 		}
 		break;
 	}
@@ -168,7 +168,7 @@ Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 		f >> hd_lumberjack;
 
 	if(LOAD_VERSION < V_0_18 && sawmill_state == State::Working)
-		team->AddInvestment(quest_mgr->txQuest[124], id, PAYMENT, days);
+		team->AddInvestment(questMgr->txQuest[124], id, PAYMENT, days);
 
 	return LoadResult::Ok;
 }
@@ -188,7 +188,7 @@ BaseObject* sawmill_objs_ptrs[n_sawmill_objs];
 
 void Quest_Sawmill::GenerateSawmill(bool in_progress)
 {
-	OutsideLocation& outside = *(OutsideLocation*)game_level->location;
+	OutsideLocation& outside = *(OutsideLocation*)gameLevel->location;
 	DeleteElements(outside.units);
 	outside.bloods.clear();
 
@@ -211,7 +211,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	height /= tiles.size();
 	for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		h[it->x + it->y*_s] = height;
-	game_level->terrain->Rebuild(true);
+	gameLevel->terrain->Rebuild(true);
 
 	// remove objects
 	DeleteElements(outside.objects, [](const Object* obj) { return Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f; });
@@ -228,7 +228,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	if(in_progress)
 	{
 		// arthur
-		Unit* u = game_level->SpawnUnitNearLocation(outside, Vec3(128, 0, 128), ud, nullptr, -2);
+		Unit* u = gameLevel->SpawnUnitNearLocation(outside, Vec3(128, 0, 128), ud, nullptr, -2);
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
 
@@ -237,13 +237,13 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
 			BaseObject* obj = sawmill_objs_ptrs[Rand() % n_sawmill_objs];
-			game_level->SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
+			gameLevel->SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
 		// spawn other woodcutters
 		int count = Random(5, 10);
 		for(int i = 0; i < count; ++i)
-			game_level->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			gameLevel->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 
 		build_state = BuildState::InProgress;
 	}
@@ -252,10 +252,10 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		// building
 		Vec3 spawn_pt;
 		float rot = PI / 2 * (Rand() % 4);
-		game_level->SpawnObjectEntity(outside, BaseObject::Get("tartak"), Vec3(128, height, 128), rot, 1.f, 0, &spawn_pt);
+		gameLevel->SpawnObjectEntity(outside, BaseObject::Get("tartak"), Vec3(128, height, 128), rot, 1.f, 0, &spawn_pt);
 
 		// arthur
-		Unit* u = game_level->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
+		Unit* u = gameLevel->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
 		u->rot = rot;
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
@@ -265,13 +265,13 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
 			BaseObject* obj = sawmill_objs_ptrs[Rand() % n_sawmill_objs];
-			game_level->SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
+			gameLevel->SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
 		// spawn other woodcutters
 		int count = Random(5, 10);
 		for(int i = 0; i < count; ++i)
-			game_level->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			gameLevel->SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 
 		build_state = BuildState::Finished;
 	}
@@ -283,10 +283,10 @@ void Quest_Sawmill::OnProgress(int d)
 	if(sawmill_state == State::InBuild)
 	{
 		days += d;
-		if(days >= 30 && game_level->city_ctx && game->game_state == GS_LEVEL)
+		if(days >= 30 && gameLevel->cityCtx && game->gameState == GS_LEVEL)
 		{
 			days = 29;
-			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				messenger = u;

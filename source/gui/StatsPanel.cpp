@@ -170,10 +170,10 @@ void StatsPanel::SetText()
 	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), pc->learning_points,
 		float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
-	if(game->hardcore_mode)
+	if(game->hardcoreMode)
 		flowStats.Add()->Set(Format("$cr%s$c-", txHardcoreMode), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txDate, world->GetDate()), G_INVALID, -1);
-	flowStats.Add()->Set(Format(txStatsText, game_stats->hour, game_stats->minute, game_stats->second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
+	flowStats.Add()->Set(Format(txStatsText, gameStats->hour, gameStats->minute, gameStats->second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
 		pc->arena_fights), G_INVALID, -1);
 	flowStats.Reposition();
 

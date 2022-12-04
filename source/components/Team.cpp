@@ -76,8 +76,8 @@ void Team::AddMember(Unit* unit, HeroType type)
 	if(type == HeroType::Normal)
 	{
 		if(GetActiveTeamSize() == 1u)
-			active_members[0].MakeItemsTeam(false);
-		active_members.push_back(unit);
+			activeMembers[0].MakeItemsTeam(false);
+		activeMembers.push_back(unit);
 	}
 	members.push_back(unit);
 
@@ -85,8 +85,8 @@ void Team::AddMember(Unit* unit, HeroType type)
 	unit->MakeItemsTeam(false);
 
 	// update TeamPanel if open
-	if(game_gui->team->visible)
-		game_gui->team->Changed();
+	if(gameGui->team->visible)
+		gameGui->team->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -114,7 +114,7 @@ void Team::RemoveMember(Unit* unit)
 	// remove from team list
 	if(unit->hero->type == HeroType::Normal)
 	{
-		RemoveElementOrder(active_members.ptrs, unit);
+		RemoveElementOrder(activeMembers.ptrs, unit);
 		if(unit->hero->investment)
 		{
 			unit->gold += unit->hero->investment;
@@ -128,8 +128,8 @@ void Team::RemoveMember(Unit* unit)
 	unit->MakeItemsTeam(true);
 
 	// update TeamPanel if open
-	if(game_gui->team->visible)
-		game_gui->team->Changed();
+	if(gameGui->team->visible)
+		gameGui->team->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -145,7 +145,7 @@ void Team::RemoveMember(Unit* unit)
 
 Unit* Team::FindActiveTeamMember(int id)
 {
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.id == id)
 			return &unit;
@@ -154,21 +154,21 @@ Unit* Team::FindActiveTeamMember(int id)
 	return nullptr;
 }
 
-bool Team::FindItemInTeam(const Item* item, int quest_id, Unit** unit_result, int* i_index, bool check_npc)
+bool Team::FindItemInTeam(const Item* item, int questId, Unit** unitResult, int* outIndex, bool checkNpc)
 {
 	assert(item);
 
 	for(Unit& unit : members)
 	{
-		if(unit.IsPlayer() || check_npc)
+		if(unit.IsPlayer() || checkNpc)
 		{
-			int index = unit.FindItem(item, quest_id);
+			int index = unit.FindItem(item, questId);
 			if(index != Unit::INVALID_IINDEX)
 			{
-				if(unit_result)
-					*unit_result = &unit;
-				if(i_index)
-					*i_index = index;
+				if(unitResult)
+					*unitResult = &unit;
+				if(outIndex)
+					*outIndex = index;
 				return true;
 			}
 		}
@@ -195,7 +195,7 @@ Unit* Team::FindTeamMember(cstring id)
 uint Team::GetActiveNpcCount()
 {
 	uint count = 0;
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(!unit.player)
 			++count;
@@ -217,7 +217,7 @@ uint Team::GetNpcCount()
 Vec2 Team::GetShare()
 {
 	uint pc = 0, npc = 0;
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer())
 			++pc;
@@ -248,7 +248,7 @@ Unit* Team::GetRandomSaneHero()
 {
 	LocalVector<Unit*> v;
 
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsHero() && !IsSet(unit.data->flags, F_CRAZY))
 			v->push_back(&unit);
@@ -262,9 +262,9 @@ void Team::GetTeamInfo(TeamInfo& info)
 	info.players = 0;
 	info.npcs = 0;
 	info.heroes = 0;
-	info.sane_heroes = 0;
-	info.insane_heroes = 0;
-	info.free_members = 0;
+	info.saneHeroes = 0;
+	info.insaneHeroes = 0;
+	info.freeMembers = 0;
 
 	for(Unit& unit : members)
 	{
@@ -277,25 +277,25 @@ void Team::GetTeamInfo(TeamInfo& info)
 			{
 				if(unit.summoner)
 				{
-					++info.free_members;
+					++info.freeMembers;
 					++info.summons;
 				}
 				else
 				{
 					if(unit.hero->type != HeroType::Normal)
-						++info.free_members;
+						++info.freeMembers;
 					else
 					{
 						++info.heroes;
 						if(IsSet(unit.data->flags, F_CRAZY))
-							++info.insane_heroes;
+							++info.insaneHeroes;
 						else
-							++info.sane_heroes;
+							++info.saneHeroes;
 					}
 				}
 			}
 			else
-				++info.free_members;
+				++info.freeMembers;
 		}
 	}
 }
@@ -303,7 +303,7 @@ void Team::GetTeamInfo(TeamInfo& info)
 uint Team::GetPlayersCount()
 {
 	uint count = 0;
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.player)
 			++count;
@@ -313,7 +313,7 @@ uint Team::GetPlayersCount()
 
 bool Team::HaveActiveNpc()
 {
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(!unit.player)
 			return true;
@@ -334,7 +334,7 @@ bool Team::HaveNpc()
 bool Team::HaveOtherPlayer()
 {
 	bool first = true;
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.player)
 		{
@@ -402,19 +402,19 @@ bool Team::IsTeamNotBusy()
 
 void Team::Clear(bool newGame)
 {
-	team_shares.clear();
-	team_share_id = -1;
+	teamShares.clear();
+	teamShareId = -1;
 	if(Net::IsSingleplayer())
 	{
-		my_id = 0;
-		leader_id = 0;
+		myId = 0;
+		leaderId = 0;
 	}
 
 	if(newGame)
 	{
-		crazies_attack = false;
-		is_bandit = false;
-		free_recruits = 2;
+		craziesAttack = false;
+		isBandit = false;
+		freeRecruits = 2;
 		checkResults.clear();
 		investments.clear();
 	}
@@ -427,13 +427,13 @@ void Team::Save(GameWriter& f)
 		f << unit.id;
 
 	f << GetActiveTeamSize();
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 		f << unit.id;
 
 	f << leader->id;
-	f << crazies_attack;
-	f << is_bandit;
-	f << free_recruits;
+	f << craziesAttack;
+	f << isBandit;
+	f << freeRecruits;
 	f << checkResults;
 
 	f << investments.size();
@@ -459,14 +459,14 @@ void Team::Load(GameReader& f)
 	for(Unit*& unit : members.ptrs)
 		unit = Unit::GetById(f.Read<int>());
 
-	active_members.ptrs.resize(f.Read<uint>());
-	for(Unit*& unit : active_members.ptrs)
+	activeMembers.ptrs.resize(f.Read<uint>());
+	for(Unit*& unit : activeMembers.ptrs)
 		unit = Unit::GetById(f.Read<int>());
 
 	leader = Unit::GetById(f.Read<int>());
-	f >> crazies_attack;
-	f >> is_bandit;
-	f >> free_recruits;
+	f >> craziesAttack;
+	f >> isBandit;
+	f >> freeRecruits;
 
 	if(LOAD_VERSION >= V_0_17)
 		f >> checkResults;
@@ -491,9 +491,9 @@ void Team::Load(GameReader& f)
 	CalculatePlayersLevel();
 
 	// apply leader requests
-	for(Entity<Unit>* unit : leader_requests)
+	for(Entity<Unit>* unit : leaderRequests)
 		*unit = leader;
-	leader_requests.clear();
+	leaderRequests.clear();
 }
 
 void Team::Update(int days, UpdateMode mode)
@@ -534,7 +534,7 @@ void Team::Update(int days, UpdateMode mode)
 		if(Net::IsOnline())
 		{
 			int max_days = 0;
-			for(Unit& unit : active_members)
+			for(Unit& unit : activeMembers)
 			{
 				if(unit.IsPlayer() && unit.player->free_days > max_days)
 					max_days = unit.player->free_days;
@@ -542,7 +542,7 @@ void Team::Update(int days, UpdateMode mode)
 
 			if(max_days > 0)
 			{
-				for(Unit& unit : active_members)
+				for(Unit& unit : activeMembers)
 				{
 					if(unit.IsPlayer() && unit.player->free_days == max_days)
 						--unit.player->free_days;
@@ -552,7 +552,7 @@ void Team::Update(int days, UpdateMode mode)
 	}
 
 	// investments
-	if(!is_bandit)
+	if(!isBandit)
 	{
 		int income = 0;
 		for(Investment& investment : investments)
@@ -571,7 +571,7 @@ void Team::Update(int days, UpdateMode mode)
 			if(HaveActiveNpc())
 			{
 				const int investment = int(GetShare().y * income);
-				for(Unit& unit : active_members)
+				for(Unit& unit : activeMembers)
 				{
 					if(!unit.IsPlayer())
 						unit.hero->investment = Max(unit.hero->investment - investment, 0);
@@ -590,21 +590,21 @@ void Team::CheckTeamItemShares()
 {
 	if(!HaveActiveNpc())
 	{
-		team_share_id = -1;
+		teamShareId = -1;
 		return;
 	}
 
-	team_shares.clear();
+	teamShares.clear();
 	uint pos_a, pos_b;
 
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer())
 			continue;
 
-		pos_a = team_shares.size();
+		pos_a = teamShares.size();
 
-		for(Unit& other_unit : active_members)
+		for(Unit& other_unit : activeMembers)
 		{
 			int index = 0;
 			for(ItemSlot& slot : other_unit.items)
@@ -624,13 +624,13 @@ void Team::CheckTeamItemShares()
 						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type];
 						if(real_value > 0)
 						{
-							TeamShareItem& tsi = Add1(team_shares);
+							TeamShareItem& tsi = Add1(teamShares);
 							tsi.from = &other_unit;
 							tsi.to = &unit;
 							tsi.item = slot.item;
 							tsi.index = index;
 							tsi.value = real_value;
-							tsi.is_team = (slot.team_count != 0);
+							tsi.isTeam = (slot.team_count != 0);
 							if(&unit == &other_unit)
 							{
 								if(slot.team_count == 0)
@@ -660,27 +660,27 @@ void Team::CheckTeamItemShares()
 		}
 
 		// remove duplictes
-		pos_b = team_shares.size();
+		pos_b = teamShares.size();
 		if(pos_b - pos_a > 1)
 		{
-			std::vector<TeamShareItem>::iterator it2 = std::unique(team_shares.begin() + pos_a, team_shares.end(), UniqueTeamShares);
-			team_shares.resize(std::distance(team_shares.begin(), it2));
+			std::vector<TeamShareItem>::iterator it2 = std::unique(teamShares.begin() + pos_a, teamShares.end(), UniqueTeamShares);
+			teamShares.resize(std::distance(teamShares.begin(), it2));
 		}
 	}
 
-	if(team_shares.empty())
-		team_share_id = -1;
+	if(teamShares.empty())
+		teamShareId = -1;
 	else
 	{
-		team_share_id = 0;
-		std::sort(team_shares.begin(), team_shares.end(), SortTeamShares());
+		teamShareId = 0;
+		std::sort(teamShares.begin(), teamShares.end(), SortTeamShares());
 	}
 }
 
 //=================================================================================================
 bool Team::CheckTeamShareItem(TeamShareItem& tsi)
 {
-	int index = FindItemIndex(tsi.from->items, tsi.index, tsi.item, tsi.is_team);
+	int index = FindItemIndex(tsi.from->items, tsi.index, tsi.item, tsi.isTeam);
 	if(index == -1)
 		return false;
 	tsi.index = index;
@@ -690,16 +690,16 @@ bool Team::CheckTeamShareItem(TeamShareItem& tsi)
 //=================================================================================================
 void Team::UpdateTeamItemShares()
 {
-	if(game->fallback_type != FALLBACK::NO || team_share_id == -1)
+	if(game->fallbackType != FALLBACK::NO || teamShareId == -1)
 		return;
 
-	if(team_share_id >= (int)team_shares.size())
+	if(teamShareId >= (int)teamShares.size())
 	{
-		team_share_id = -1;
+		teamShareId = -1;
 		return;
 	}
 
-	TeamShareItem& tsi = team_shares[team_share_id];
+	TeamShareItem& tsi = teamShares[teamShareId];
 	int state = 1; // 0-no need to talk, 1-ask about share, 2-wait for time to talk
 	GameDialog* dialog = nullptr;
 	if(tsi.to->busy != Unit::Busy_No)
@@ -811,21 +811,21 @@ void Team::UpdateTeamItemShares()
 			// start dialog
 			PlayerController* player_to_ask = (tsi.from->IsPlayer() ? tsi.from : leader)->player;
 			DialogContext& ctx = *player_to_ask->dialog_ctx;
-			ctx.team_share_id = team_share_id;
+			ctx.team_share_id = teamShareId;
 			ctx.team_share_item = tsi.from->items[tsi.index].item;
 			player_to_ask->StartDialog(tsi.to, dialog);
 		}
 
-		++team_share_id;
-		if(team_share_id == (int)team_shares.size())
-			team_share_id = -1;
+		++teamShareId;
+		if(teamShareId == (int)teamShares.size())
+			teamShareId = -1;
 	}
 }
 
 //=================================================================================================
 void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 {
-	TeamShareItem& tsi = team_shares[ctx.team_share_id];
+	TeamShareItem& tsi = teamShares[ctx.team_share_id];
 	if(CheckTeamShareItem(tsi))
 	{
 		if(tsi.from != tsi.to)
@@ -859,7 +859,7 @@ void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 //=================================================================================================
 void Team::TeamShareSellItem(DialogContext& ctx)
 {
-	TeamShareItem& tsi = team_shares[ctx.team_share_id];
+	TeamShareItem& tsi = teamShares[ctx.team_share_id];
 	if(CheckTeamShareItem(tsi))
 	{
 		tsi.to->AddItem(tsi.item, 1, false);
@@ -884,20 +884,20 @@ void Team::TeamShareSellItem(DialogContext& ctx)
 //=================================================================================================
 void Team::TeamShareDecline(DialogContext& ctx)
 {
-	int share_id = ctx.team_share_id;
-	TeamShareItem tsi = team_shares[share_id];
+	int shareId = ctx.team_share_id;
+	TeamShareItem tsi = teamShares[shareId];
 	if(CheckTeamShareItem(tsi))
 	{
 		ItemSlot& slot = tsi.from->items[tsi.index];
 		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != leader))
 		{
 			// player don't want to sell/share this, remove other questions about this item from him
-			for(vector<TeamShareItem>::iterator it = team_shares.begin() + share_id + 1, end = team_shares.end(); it != end;)
+			for(vector<TeamShareItem>::iterator it = teamShares.begin() + shareId + 1, end = teamShares.end(); it != end;)
 			{
 				if(tsi.from == it->from && tsi.item == it->item && CheckTeamShareItem(*it))
 				{
-					it = team_shares.erase(it);
-					end = team_shares.end();
+					it = teamShares.erase(it);
+					end = teamShares.end();
 				}
 				else
 					++it;
@@ -906,12 +906,12 @@ void Team::TeamShareDecline(DialogContext& ctx)
 		else
 		{
 			// leader don't want to share this item, remove other questions about this item from all npc (can only ask other pc's)
-			for(vector<TeamShareItem>::iterator it = team_shares.begin() + share_id + 1, end = team_shares.end(); it != end;)
+			for(vector<TeamShareItem>::iterator it = teamShares.begin() + shareId + 1, end = teamShares.end(); it != end;)
 			{
 				if((tsi.from == leader || !tsi.from->IsPlayer()) && tsi.item == it->item && CheckTeamShareItem(*it))
 				{
-					it = team_shares.erase(it);
-					end = team_shares.end();
+					it = teamShares.erase(it);
+					end = teamShares.end();
 				}
 				else
 					++it;
@@ -923,14 +923,14 @@ void Team::TeamShareDecline(DialogContext& ctx)
 //=================================================================================================
 void Team::BuyTeamItems()
 {
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer())
 			continue;
 
-		const vector<pair<const Item*, int>>& pot_to_buy = unit.GetClass()->GetPotionEntry(unit.level).items;
-		pot_have.resize(pot_to_buy.size());
-		memset(pot_have.data(), 0, sizeof(int) * pot_to_buy.size());
+		const vector<pair<const Item*, int>>& potToBuy = unit.GetClass()->GetPotionEntry(unit.level).items;
+		potHave.resize(potToBuy.size());
+		memset(potHave.data(), 0, sizeof(int) * potToBuy.size());
 
 		// sell old items, count potions
 		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2;)
@@ -938,11 +938,11 @@ void Team::BuyTeamItems()
 			assert(it2->item);
 			if(it2->item->type == IT_CONSUMABLE)
 			{
-				for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+				for(uint i = 0, count = potToBuy.size(); i < count; ++i)
 				{
-					if(pot_to_buy[i].first == it2->item)
+					if(potToBuy[i].first == it2->item)
 					{
-						pot_have[i] += it2->count;
+						potHave[i] += it2->count;
 						break;
 					}
 				}
@@ -968,11 +968,11 @@ void Team::BuyTeamItems()
 		}
 
 		// buy potions (half of potions if given for free to help poor heroes)
-		for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+		for(uint i = 0, count = potToBuy.size(); i < count; ++i)
 		{
-			int& have = pot_have[i];
-			int required = pot_to_buy[i].second;
-			const Item* item = pot_to_buy[i].first;
+			int& have = potHave[i];
+			int required = potToBuy[i].second;
+			const Item* item = potToBuy[i].first;
 			if(have < required / 2)
 			{
 				int count = required / 2 - have;
@@ -990,7 +990,7 @@ void Team::BuyTeamItems()
 		// buy items
 		const ItemList& lis = ItemList::Get("base_items");
 		const float* priorities = unit.stats->priorities;
-		to_buy.clear();
+		toBuy.clear();
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
 		{
 			if(priorities[i] == 0)
@@ -1003,7 +1003,7 @@ void Team::BuyTeamItems()
 				if(result.item)
 				{
 					float real_value = 1000.f * (result.value - result.prev_value) * priorities[IT_AMULET] / result.item->value;
-					to_buy.push_back({ result.item, result.value, real_value });
+					toBuy.push_back({ result.item, result.value, real_value });
 				}
 			}
 			else if(slot_type == SLOT_RING1)
@@ -1014,7 +1014,7 @@ void Team::BuyTeamItems()
 					if(result[i].item)
 					{
 						float real_value = 1000.f * (result[i].value - result[i].prev_value) * priorities[IT_AMULET] / result[i].item->value;
-						to_buy.push_back({ result[i].item, result[i].value, real_value });
+						toBuy.push_back({ result[i].item, result[i].value, real_value });
 					}
 				}
 			}
@@ -1045,40 +1045,40 @@ void Team::BuyTeamItems()
 					if(unit.IsBetterItem(item, &value, &prev_value))
 					{
 						float real_value = 1000.f * (value - prev_value) * priorities[IT_BOW] / item->value;
-						to_buy.push_back({ item, (float)value, real_value });
+						toBuy.push_back({ item, (float)value, real_value });
 					}
 					item = ItemHelper::GetBetterItem(item);
 				}
 			}
 		}
 
-		if(to_buy.empty())
+		if(toBuy.empty())
 			continue;
 
-		std::sort(to_buy.begin(), to_buy.end(), [](const ItemToBuy& a, const ItemToBuy& b)
+		std::sort(toBuy.begin(), toBuy.end(), [](const ItemToBuy& a, const ItemToBuy& b)
 		{
 			return a.priority > b.priority;
 		});
 
 		// get best items to buy by priority & gold left
-		to_buy2.clear();
+		toBuy2.clear();
 		int gold_spent = 0;
-		for(const ItemToBuy& buy : to_buy)
+		for(const ItemToBuy& buy : toBuy)
 		{
 			if(unit.gold - gold_spent >= buy.item->value)
 			{
 				bool add = true;
 				if(!Any(buy.item->type, IT_AMULET, IT_RING))
 				{
-					for(auto it = to_buy2.begin(), end = to_buy2.end(); it != end; ++it)
+					for(auto it = toBuy2.begin(), end = toBuy2.end(); it != end; ++it)
 					{
 						const ItemToBuy& buy2 = *it;
 						if(buy2.item->type == buy.item->type)
 						{
-							if(buy.ai_value > buy2.ai_value)
+							if(buy.aiValue > buy2.aiValue)
 							{
 								gold_spent -= buy2.item->value;
-								to_buy2.erase(it);
+								toBuy2.erase(it);
 							}
 							else
 								add = false;
@@ -1089,12 +1089,12 @@ void Team::BuyTeamItems()
 				if(add)
 				{
 					gold_spent += buy.item->value;
-					to_buy2.push_back(buy);
+					toBuy2.push_back(buy);
 				}
 			}
 		}
 
-		for(const ItemToBuy& buy : to_buy2)
+		for(const ItemToBuy& buy : toBuy2)
 		{
 			const Item* item = buy.item;
 			if(unit.gold >= item->value)
@@ -1140,9 +1140,9 @@ void Team::BuyTeamItems()
 		if(unit.IsPlayer() || unit.summoner || unit.hero->type != HeroType::Free)
 			continue;
 
-		const vector<pair<const Item*, int>>& pot_to_buy = unit.GetClass()->GetPotionEntry(unit.level).items;
-		pot_have.resize(pot_to_buy.size());
-		memset(pot_have.data(), 0, sizeof(int) * pot_to_buy.size());
+		const vector<pair<const Item*, int>>& potToBuy = unit.GetClass()->GetPotionEntry(unit.level).items;
+		potHave.resize(potToBuy.size());
+		memset(potHave.data(), 0, sizeof(int) * potToBuy.size());
 
 		// count potions
 		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2; ++it2)
@@ -1150,11 +1150,11 @@ void Team::BuyTeamItems()
 			assert(it2->item);
 			if(it2->item->type == IT_CONSUMABLE)
 			{
-				for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+				for(uint i = 0, count = potToBuy.size(); i < count; ++i)
 				{
-					if(pot_to_buy[i].first == it2->item)
+					if(potToBuy[i].first == it2->item)
 					{
-						pot_have[i] += it2->count;
+						potHave[i] += it2->count;
 						break;
 					}
 				}
@@ -1162,14 +1162,14 @@ void Team::BuyTeamItems()
 		}
 
 		// give potions
-		for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+		for(uint i = 0, count = potToBuy.size(); i < count; ++i)
 		{
-			int have = pot_have[i];
-			int required = pot_to_buy[i].second;
+			int have = potHave[i];
+			int required = potToBuy[i].second;
 			if(have < required)
 			{
 				int count = required - have;
-				unit.AddItem(pot_to_buy[i].first, count, false);
+				unit.AddItem(potToBuy[i].first, count, false);
 			}
 		}
 
@@ -1185,12 +1185,12 @@ struct ItemToSell
 {
 	int index;
 	float value;
-	bool is_team;
+	bool isTeam;
 
 	bool operator < (const ItemToSell& s)
 	{
-		if(is_team != s.is_team)
-			return is_team > s.is_team;
+		if(isTeam != s.isTeam)
+			return isTeam > s.isTeam;
 		else
 			return value > s.value;
 	}
@@ -1213,7 +1213,7 @@ void Team::CheckUnitOverload(Unit& unit)
 		{
 			ItemToSell& to_sell = Add1(items_to_sell);
 			to_sell.index = i;
-			to_sell.is_team = (slot.team_count != 0);
+			to_sell.isTeam = (slot.team_count != 0);
 			to_sell.value = slot.item->GetWeightValue();
 		}
 	}
@@ -1245,12 +1245,12 @@ void Team::CheckUnitOverload(Unit& unit)
 }
 
 //=================================================================================================
-void Team::CheckCredit(bool require_update, bool ignore)
+void Team::CheckCredit(bool requireUpdate, bool ignore)
 {
 	if(GetActiveTeamSize() > 1)
 	{
 		int max_credit = 0;
-		for(Unit& unit : active_members)
+		for(Unit& unit : activeMembers)
 		{
 			int credit = unit.GetCredit();
 			if(credit < max_credit)
@@ -1259,25 +1259,25 @@ void Team::CheckCredit(bool require_update, bool ignore)
 
 		if(max_credit > 0)
 		{
-			require_update = true;
-			for(Unit& unit : active_members)
+			requireUpdate = true;
+			for(Unit& unit : activeMembers)
 				unit.GetCredit() -= max_credit;
 		}
 	}
 	else
-		active_members[0].player->credit = 0;
+		activeMembers[0].player->credit = 0;
 
-	if(!ignore && require_update && Net::IsOnline())
+	if(!ignore && requireUpdate && Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_CREDIT);
 }
 
 //=================================================================================================
-bool Team::RemoveQuestItem(const Item* item, int quest_id)
+bool Team::RemoveQuestItem(const Item* item, int questId)
 {
 	Unit* unit;
 	int slot_id;
 
-	if(FindItemInTeam(item, quest_id, &unit, &slot_id))
+	if(FindItemInTeam(item, questId, &unit, &slot_id))
 	{
 		unit->RemoveItem(slot_id, 1u);
 		return true;
@@ -1289,7 +1289,7 @@ bool Team::RemoveQuestItem(const Item* item, int quest_id)
 //=================================================================================================
 Unit* Team::FindPlayerTradingWithUnit(Unit& u)
 {
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer() && unit.player->IsTradingWith(&u))
 			return &unit;
@@ -1302,7 +1302,7 @@ Unit* Team::FindPlayerTradingWithUnit(Unit& u)
 void Team::AddLearningPoint(int count)
 {
 	assert(count >= 1);
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer())
 			unit.player->AddLearningPoint(count);
@@ -1368,12 +1368,12 @@ void Team::AddExp(int exp, rvector<Unit>* units)
 }
 
 //=================================================================================================
-void Team::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
+void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 {
-	GMS msg = (is_quest ? GMS_QUEST_COMPLETED_GOLD : GMS_GOLD_ADDED);
+	GMS msg = (isQuest ? GMS_QUEST_COMPLETED_GOLD : GMS_GOLD_ADDED);
 
 	if(!units)
-		units = &active_members;
+		units = &activeMembers;
 
 	if(units->size() == 1)
 	{
@@ -1384,7 +1384,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 			if(!u.player->is_local)
 				u.player->player_info->UpdateGold();
 			if(show)
-				game_gui->messages->AddFormattedMessage(u.player, msg, -1, count);
+				gameGui->messages->AddFormattedMessage(u.player, msg, -1, count);
 		}
 		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
 		{
@@ -1476,8 +1476,8 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 		{
 			if(unit.player->gold_get && !unit.player->is_local)
 				unit.player->player_info->UpdateGold();
-			if(show && (unit.player->gold_get || is_quest))
-				game_gui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
+			if(show && (unit.player->gold_get || isQuest))
+				gameGui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
 		}
 		else if(unit.hero->gained_gold && unit.busy == Unit::Busy_Trading)
 		{
@@ -1507,7 +1507,7 @@ void Team::AddReward(int gold, int exp)
 //=================================================================================================
 void Team::OnTravel(float dist)
 {
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer())
 			unit.player->TrainMove(dist);
@@ -1519,19 +1519,19 @@ void Team::CalculatePlayersLevel()
 {
 	Perk* leader_perk = Perk::Get("leader");
 	bool have_leader_perk = false;
-	players_level = -1;
-	for(Unit& unit : active_members)
+	playersLevel = -1;
+	for(Unit& unit : activeMembers)
 	{
 		if(unit.IsPlayer())
 		{
-			if(unit.level > players_level)
-				players_level = unit.level;
+			if(unit.level > playersLevel)
+				playersLevel = unit.level;
 			if(unit.player->HavePerk(leader_perk))
 				have_leader_perk = true;
 		}
 	}
 	if(have_leader_perk)
-		--players_level;
+		--playersLevel;
 }
 
 //=================================================================================================
@@ -1553,11 +1553,11 @@ uint Team::RemoveItem(const Item* item, uint count)
 }
 
 //=================================================================================================
-void Team::SetBandit(bool is_bandit)
+void Team::SetBandit(bool isBandit)
 {
-	if(this->is_bandit == is_bandit)
+	if(this->isBandit == isBandit)
 		return;
-	this->is_bandit = is_bandit;
+	this->isBandit = isBandit;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CHANGE_FLAGS);
 }
@@ -1567,7 +1567,7 @@ Unit* Team::GetNearestTeamMember(const Vec3& pos, float* out_dist)
 {
 	Unit* best = nullptr;
 	float best_dist;
-	for(Unit& unit : active_members)
+	for(Unit& unit : activeMembers)
 	{
 		float dist = Vec3::DistanceSquared(unit.pos, pos);
 		if(!best || dist < best_dist)
@@ -1590,7 +1590,7 @@ bool Team::IsAnyoneTalking() const
 	{
 		if(Net::IsOnline())
 		{
-			for(Unit& unit : team->active_members)
+			for(Unit& unit : team->activeMembers)
 			{
 				if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
 					return true;
@@ -1598,31 +1598,31 @@ bool Team::IsAnyoneTalking() const
 			return false;
 		}
 		else
-			return game->dialog_context.dialog_mode;
+			return game->dialogContext.dialog_mode;
 	}
 	else
-		return anyone_talking;
+		return anyoneTalking;
 }
 
 //=================================================================================================
-void Team::Warp(const Vec3& pos, const Vec3& look_at)
+void Team::Warp(const Vec3& pos, const Vec3& lookAt)
 {
 	// first warp leader to be in front
-	game_level->WarpNearLocation(*game_level->localPart, *leader, pos, 2.f, true, 20);
+	gameLevel->WarpNearLocation(*gameLevel->localPart, *leader, pos, 2.f, true, 20);
 	leader->visual_pos = leader->pos;
-	leader->rot = Vec3::LookAtAngle(leader->pos, look_at);
+	leader->rot = Vec3::LookAtAngle(leader->pos, lookAt);
 	if(leader->interp)
 		leader->interp->Reset(leader->pos, leader->rot);
 
-	Vec3 dir = (pos - look_at).Normalized();
+	Vec3 dir = (pos - lookAt).Normalized();
 	Vec3 target_pos = pos + dir * 2;
 	for(Unit& unit : members)
 	{
 		if(&unit == leader)
 			continue;
-		game_level->WarpNearLocation(*game_level->localPart, unit, target_pos, 2.f, true, 20);
+		gameLevel->WarpNearLocation(*gameLevel->localPart, unit, target_pos, 2.f, true, 20);
 		unit.visual_pos = unit.pos;
-		unit.rot = Vec3::LookAtAngle(unit.pos, look_at);
+		unit.rot = Vec3::LookAtAngle(unit.pos, lookAt);
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
 	}
@@ -1651,7 +1651,7 @@ bool Team::PersuasionCheck(int level)
 		{
 			if(check.success)
 			{
-				game_gui->messages->AddGameMsg3(me, GMS_PERSUASION_SUCCESS);
+				gameGui->messages->AddGameMsg3(me, GMS_PERSUASION_SUCCESS);
 				return true;
 			}
 			else
@@ -1689,7 +1689,7 @@ bool Team::PersuasionCheck(int level)
 		bestUnit->player->Train(TrainWhat::Persuade, 0.f, chance);
 
 	// add game msg
-	game_gui->messages->AddGameMsg3(me, success ? GMS_PERSUASION_SUCCESS : GMS_PERSUASION_FAILED);
+	gameGui->messages->AddGameMsg3(me, success ? GMS_PERSUASION_SUCCESS : GMS_PERSUASION_FAILED);
 
 	// remember result
 	if(existingResult)
@@ -1732,7 +1732,7 @@ void Team::AddInvestment(cstring name, int questId, int gold, int days)
 	if(HaveActiveNpc())
 	{
 		const int investment = int(gold * 5 * GetShare().y);
-		for(Unit& unit : active_members)
+		for(Unit& unit : activeMembers)
 		{
 			if(!unit.IsPlayer())
 				unit.hero->investment += investment;
@@ -1753,7 +1753,7 @@ void Team::UpdateInvestment(int questId, int gold)
 			if(HaveActiveNpc())
 			{
 				const int increase = int((gold - investment.gold) * 5 * GetShare().y);
-				for(Unit& unit : active_members)
+				for(Unit& unit : activeMembers)
 				{
 					if(!unit.IsPlayer())
 						unit.hero->investment += increase;

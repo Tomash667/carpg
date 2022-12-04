@@ -44,20 +44,20 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&sceneMgr->useNormalmap, "useNormalmap", "use normal mapping (useNormalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&sceneMgr->useSpecularmap, "useSpecularmap", "use specular mapping (useSpecularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 
-	cmds.push_back(ConsoleCommand(&game->draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_GAME | F_WORLD_MAP | F_MP_VAR, 0.01f, 10.f));
-	cmds.push_back(ConsoleCommand(&game->next_seed, "next_seed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawParticleSphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawUnitRadius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawHitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawPhy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawCol, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->gameSpeed, "speed", "game speed (speed 0-10)", F_CHEAT | F_GAME | F_WORLD_MAP | F_MP_VAR, 0.01f, 10.f));
+	cmds.push_back(ConsoleCommand(&game->nextSeed, "next_seed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->dontWander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawFlags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&game->usePostfx, "usePostfx", "use post effects (usePostfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->useGlow, "useGlow", "use glow (useGlow 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
+	cmds.push_back(ConsoleCommand(&game->uvMod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(&game->settings.grassRange, "grassRange", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&game->devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
@@ -151,11 +151,11 @@ void CommandParser::AddCommands()
 }
 
 //=================================================================================================
-void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_func, PARSE_SOURCE source)
+void CommandParser::ParseCommand(const string& commandStr, PrintMsgFunc printMsgFunc, PARSE_SOURCE source)
 {
-	print_msg = print_func;
+	this->printMsgFunc = printMsgFunc;
 
-	t.FromString(command_str);
+	t.FromString(commandStr);
 
 	try
 	{
@@ -183,7 +183,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 			if(!IsAllSet(it->flags, F_ANYWHERE))
 			{
-				if(game_gui->server->visible)
+				if(gameGui->server->visible)
 				{
 					if(!IsSet(it->flags, F_LOBBY))
 					{
@@ -196,7 +196,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 						return;
 					}
 				}
-				else if(game->game_state == GS_MAIN_MENU)
+				else if(game->gameState == GS_MAIN_MENU)
 				{
 					if(!IsSet(it->flags, F_MENU))
 					{
@@ -217,7 +217,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 						return;
 					}
 				}
-				else if(game->game_state == GS_WORLDMAP)
+				else if(game->gameState == GS_WORLDMAP)
 				{
 					if(!IsSet(it->flags, F_WORLD_MAP))
 					{
@@ -354,7 +354,7 @@ void CommandParser::ParseScript()
 		Msg("You can't use script command without devmode.");
 		return;
 	}
-	if(game->game_state != GS_LEVEL)
+	if(game->gameState != GS_LEVEL)
 	{
 		Msg("Script commands can only be used inside level.");
 		return;
@@ -364,16 +364,16 @@ void CommandParser::ParseScript()
 	Unit* target_unit = game->pc->data.GetTargetUnit();
 	if(Net::IsLocal())
 	{
-		string& output = script_mgr->OpenOutput();
-		ScriptContext& ctx = script_mgr->GetContext();
+		string& output = scriptMgr->OpenOutput();
+		ScriptContext& ctx = scriptMgr->GetContext();
 		ctx.pc = game->pc;
 		ctx.target = target_unit;
-		script_mgr->RunScript(code);
+		scriptMgr->RunScript(code);
 		if(!output.empty())
 			Msg(output.c_str());
 		ctx.pc = nullptr;
 		ctx.target = nullptr;
-		script_mgr->CloseOutput();
+		scriptMgr->CloseOutput();
 	}
 	else
 	{
@@ -414,9 +414,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			PushGenericCmd(CMD_REVEAL);
 		break;
 	case CMD_MAP2CONSOLE:
-		if(game->game_state == GS_LEVEL && !game_level->location->outside)
+		if(game->gameState == GS_LEVEL && !gameLevel->location->outside)
 		{
-			InsideLocationLevel& lvl = static_cast<InsideLocation*>(game_level->location)->GetLevelData();
+			InsideLocationLevel& lvl = static_cast<InsideLocation*>(gameLevel->location)->GetLevelData();
 			Tile::DebugDraw(lvl.map, Int2(lvl.w, lvl.h));
 		}
 		else
@@ -602,14 +602,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 
 					if(!IsAllSet(cmd.flags, F_ANYWHERE))
 					{
-						if(game_gui->server->visible)
+						if(gameGui->server->visible)
 						{
 							if(!IsSet(cmd.flags, F_LOBBY))
 								ok = false;
 							else if(IsSet(cmd.flags, F_SERVER) && !Net::IsServer())
 								ok = false;
 						}
-						else if(game->game_state == GS_MAIN_MENU)
+						else if(game->gameState == GS_MAIN_MENU)
 						{
 							if(!IsSet(cmd.flags, F_MENU))
 								ok = false;
@@ -621,7 +621,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 							else if(IsSet(cmd.flags, F_SERVER) && !Net::IsServer())
 								ok = false;
 						}
-						else if(game->game_state == GS_WORLDMAP)
+						else if(game->gameState == GS_WORLDMAP)
 						{
 							if(!IsSet(cmd.flags, F_WORLD_MAP))
 								ok = false;
@@ -704,7 +704,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					LocationPart& locPart = *game->pc->unit->locPart;
 					for(int i = 0; i < count; ++i)
 					{
-						Unit* u = game_level->SpawnUnitNearLocation(locPart, game->pc->unit->GetFrontPos(), *data, &game->pc->unit->pos, level);
+						Unit* u = gameLevel->SpawnUnitNearLocation(locPart, game->pc->unit->GetFrontPos(), *data, &game->pc->unit->pos, level);
 						if(!u)
 						{
 							Msg("No free space for unit '%s'!", data->id.c_str());
@@ -769,12 +769,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			PushGenericCmd(CMD_SUICIDE);
 		break;
 	case CMD_CITIZEN:
-		if(team->is_bandit || team->crazies_attack)
+		if(team->isBandit || team->craziesAttack)
 		{
 			if(Net::IsLocal())
 			{
-				team->is_bandit = false;
-				team->crazies_attack = false;
+				team->isBandit = false;
+				team->craziesAttack = false;
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
@@ -827,7 +827,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(game->pc->data.before_player == BP_UNIT)
 				ignore = game->pc->data.before_player_ptr.unit;
 			if(Net::IsLocal())
-				game_level->KillAll(friendly, *game->pc->unit, ignore);
+				gameLevel->KillAll(friendly, *game->pc->unit, ignore);
 			else
 			{
 				PushGenericCmd(CMD_KILLALL)
@@ -895,15 +895,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					game->LoadGameSlot(slot);
 				else
 					game->LoadGameFilename(name.get_ref());
-				gui->CloseDialog(game_gui->console);
+				gui->CloseDialog(gameGui->console);
 			}
 			catch(const SaveException& ex)
 			{
 				cstring error = Format("Failed to load game: %s", ex.msg);
 				Error(error);
 				Msg(error);
-				if(!gui->HaveDialog(game_gui->console))
-					gui->ShowDialog(game_gui->console);
+				if(!gui->HaveDialog(gameGui->console))
+					gui->ShowDialog(gameGui->console);
 			}
 		}
 		else
@@ -911,7 +911,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		break;
 	case CMD_REVEAL_MINIMAP:
 		if(Net::IsLocal())
-			game_level->RevealMinimap();
+			gameLevel->RevealMinimap();
 		else
 			Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
 		break;
@@ -937,8 +937,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			int index;
 			if(BuildingGroup* group = BuildingGroup::TryGet(type))
 			{
-				if(game_level->city_ctx)
-					city_building = game_level->city_ctx->FindBuilding(group, &index);
+				if(gameLevel->cityCtx)
+					city_building = gameLevel->cityCtx->FindBuilding(group, &index);
 				if(!city_building)
 				{
 					Msg("Missing building group '%s'.", type.c_str());
@@ -947,8 +947,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 			else if(Building* building = Building::TryGet(type))
 			{
-				if(game_level->city_ctx)
-					city_building = game_level->city_ctx->FindBuilding(building, &index);
+				if(gameLevel->cityCtx)
+					city_building = gameLevel->cityCtx->FindBuilding(building, &index);
 				if(!city_building)
 				{
 					Msg("Missing building '%s'.", type.c_str());
@@ -965,32 +965,32 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if((t.Next() && t.IsItem("front")) || !city_building->building->inside_mesh)
 				inside = false;
 			else
-				game_level->city_ctx->FindInsideBuilding(city_building->building, &index);
+				gameLevel->cityCtx->FindInsideBuilding(city_building->building, &index);
 
 			if(Net::IsLocal())
 			{
 				if(inside)
 				{
 					// warp to building
-					game->fallback_type = FALLBACK::ENTER;
-					game->fallback_t = -1.f;
-					game->fallback_1 = index;
-					game->fallback_2 = -1;
+					game->fallbackType = FALLBACK::ENTER;
+					game->fallbackTimer = -1.f;
+					game->fallbackValue = index;
+					game->fallbackValue2 = -1;
 					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				}
 				else if(game->pc->unit->locPart->partType != LocationPart::Type::Outside)
 				{
 					// warp from building to front of building
-					game->fallback_type = FALLBACK::ENTER;
-					game->fallback_t = -1.f;
-					game->fallback_1 = -1;
-					game->fallback_2 = index;
+					game->fallbackType = FALLBACK::ENTER;
+					game->fallbackTimer = -1.f;
+					game->fallbackValue = -1;
+					game->fallbackValue2 = index;
 					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				}
 				else
 				{
 					// warp from outside to front of building
-					game_level->WarpUnit(*game->pc->unit, city_building->walk_pt);
+					gameLevel->WarpUnit(*game->pc->unit, city_building->walk_pt);
 					game->pc->unit->RotateTo(PtToPos(city_building->pt));
 				}
 			}
@@ -1014,20 +1014,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			else if(t.NextLine())
 			{
 				const string& text = t.MustGetItem();
-				if(info->id == team->my_id)
+				if(info->id == team->myId)
 					Msg("Whispers in your head: %s", text.c_str());
 				else
 				{
 					BitStreamWriter f;
 					f << ID_WHISPER;
-					f.WriteCasted<byte>(Net::IsServer() ? team->my_id : info->id);
+					f.WriteCasted<byte>(Net::IsServer() ? team->myId : info->id);
 					f << text;
 					if(Net::IsServer())
 						net->SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr);
 					else
 						net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 					cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
-					game_gui->AddMsg(s);
+					gameGui->AddMsg(s);
 					Info(s);
 				}
 			}
@@ -1041,7 +1041,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		game->ExitToMenu();
 		break;
 	case CMD_RANDOM:
-		if(game_gui->server->visible)
+		if(gameGui->server->visible)
 		{
 			if(t.Next())
 			{
@@ -1075,7 +1075,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					{
 						if(clas->IsPickable())
 						{
-							game_gui->server->PickClass(clas, false);
+							gameGui->server->PickClass(clas, false);
 							Msg("You picked random character.");
 						}
 						else
@@ -1087,7 +1087,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 			else
 			{
-				game_gui->server->PickClass(nullptr, false);
+				gameGui->server->PickClass(nullptr, false);
 				Msg("You picked random character.");
 			}
 		}
@@ -1098,7 +1098,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			c.type = NetChange::RANDOM_NUMBER;
 			c.id = n;
 			c.unit = game->pc->unit;
-			game_gui->AddMsg(Format("You rolled %d.", n));
+			gameGui->AddMsg(Format("You rolled %d.", n));
 		}
 		else
 			Msg("You rolled %d.", Random(1, 100));
@@ -1261,20 +1261,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_QS:
-		if(!game_gui->server->Quickstart())
+		if(!gameGui->server->Quickstart())
 			Msg("Not everyone is ready.");
 		break;
 	case CMD_CLEAR:
 		switch(source)
 		{
 		case PS_CONSOLE:
-			game_gui->console->Reset();
+			gameGui->console->Reset();
 			break;
 		case PS_CHAT:
-			game_gui->mpBox->itb.Reset();
+			gameGui->mpBox->itb.Reset();
 			break;
 		case PS_LOBBY:
-			game_gui->server->itb.Reset();
+			gameGui->server->itb.Reset();
 			break;
 		case PS_UNKNOWN:
 		default:
@@ -1315,9 +1315,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			return;
 		break;
 	case CMD_TILE_INFO:
-		if(game_level->location->outside && game->pc->unit->locPart->partType == LocationPart::Type::Outside && game_level->terrain->IsInside(game->pc->unit->pos))
+		if(gameLevel->location->outside && game->pc->unit->locPart->partType == LocationPart::Type::Outside && gameLevel->terrain->IsInside(game->pc->unit->pos))
 		{
-			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
+			OutsideLocation* outside = static_cast<OutsideLocation*>(gameLevel->location);
 			const TerrainTile& t = outside->tiles[PosToPt(game->pc->unit->pos)(outside->size)];
 			Msg(t.GetInfo());
 		}
@@ -1332,17 +1332,17 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(t.Next())
 			{
 				const string& id = t.MustGetItem();
-				if(!quest_mgr->SetForcedQuest(id))
+				if(!questMgr->SetForcedQuest(id))
 					Msg("Invalid quest id '%s'.", id.c_str());
 			}
-			int force = quest_mgr->GetForcedQuest();
+			int force = questMgr->GetForcedQuest();
 			cstring name;
 			if(force == Q_FORCE_DISABLED)
 				name = "disabled";
 			else if(force == Q_FORCE_NONE)
 				name = "none";
 			else
-				name = quest_mgr->GetQuestInfos()[force].name;
+				name = questMgr->GetQuestInfos()[force].name;
 			Msg("Forced quest: %s", name);
 		}
 		break;
@@ -1822,7 +1822,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(t.Next())
 				building_id = t.MustGetInt();
 			if(Net::IsLocal())
-				game_level->CleanLevel(building_id);
+				gameLevel->CleanLevel(building_id);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -1832,7 +1832,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_ARENA:
-		if(!game_level->HaveArena())
+		if(!gameLevel->HaveArena())
 			Msg("Arena required inside location.");
 		else
 		{
@@ -1852,7 +1852,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(game->pc->data.selected_unit->IsPlayer())
 			Msg("Can't remove player unit.");
 		else
-			game_level->RemoveUnit(game->pc->data.selected_unit);
+			gameLevel->RemoveUnit(game->pc->data.selected_unit);
 		break;
 	case CMD_ADD_EXP:
 		if(t.Next())
@@ -1902,7 +1902,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				break;
 			}
 
-			Trap* trap = game_level->FindTrap(base, game->pc->unit->pos);
+			Trap* trap = gameLevel->FindTrap(base, game->pc->unit->pos);
 			if(trap)
 				Msg("Closest trap '%s': %g; %g; %g", base->id, trap->pos.x, trap->pos.y, trap->pos.z);
 			else
@@ -1919,8 +1919,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 {
 	LocalString str;
-	PrintMsgFunc prev_func = print_msg;
-	print_msg = [&str](cstring s)
+	PrintMsgFunc prevFunc = printMsgFunc;
+	printMsgFunc = [&str](cstring s)
 	{
 		if(!str.empty())
 			str += "\n";
@@ -1929,7 +1929,7 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 
 	bool result = ParseStreamInner(f, info.pc);
 
-	print_msg = prev_func;
+	printMsgFunc = prevFunc;
 
 	if(result && !str.empty())
 	{
@@ -1945,8 +1945,8 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& info)
 {
 	LocalString str;
-	PrintMsgFunc prev_func = print_msg;
-	print_msg = [&str](cstring s)
+	PrintMsgFunc prevFunc = printMsgFunc;
+	printMsgFunc = [&str](cstring s)
 	{
 		if(!str.empty())
 			str += "\n";
@@ -1960,7 +1960,7 @@ void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& inf
 		break;
 	}
 
-	print_msg = prev_func;
+	printMsgFunc = prevFunc;
 
 	if(!str.empty())
 	{
@@ -1989,7 +1989,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			f >> e.power;
 			f >> e.time;
 
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_ADD_EFFECT: Missing unit %d.", id);
@@ -2063,7 +2063,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			f >> source_id;
 			f.ReadCasted<char>(value);
 
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_REMOVE_EFFECT: Missing unit %d.", id);
@@ -2125,7 +2125,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		{
 			int id;
 			f >> id;
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_LIST_EFFECTS: Missing unit %d.", id);
@@ -2143,7 +2143,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			f >> perk_hash;
 			f.ReadCasted<char>(value);
 
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_ADD_PERK: Missing unit %d.", id);
@@ -2197,7 +2197,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			f >> perk_hash;
 			f.ReadCasted<char>(value);
 
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_REMOVE_PERK: Missing unit %d.", id);
@@ -2246,7 +2246,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		{
 			int id;
 			f >> id;
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_LIST_PERKS: Missing unit %d.", id);
@@ -2264,7 +2264,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		{
 			int id;
 			f >> id;
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_LIST_STAT: Missing unit %d.", id);
@@ -2280,7 +2280,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			f >> id;
 			f >> count;
 
-			Unit* unit = game_level->FindUnit(id);
+			Unit* unit = gameLevel->FindUnit(id);
 			if(!unit)
 			{
 				Error("CommandParser CMD_ADD_LEARNING_POINTS: Missing unit %d.", id);
@@ -2328,16 +2328,16 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		world->Reveal();
 		break;
 	case CMD_HEAL:
-		if(game->game_state == GS_LEVEL)
+		if(game->gameState == GS_LEVEL)
 			HealUnit(*player->unit);
 		break;
 	case CMD_KILL:
 		{
 			int id;
 			f >> id;
-			if(game->game_state == GS_LEVEL)
+			if(game->gameState == GS_LEVEL)
 			{
-				if(Unit* unit = game_level->FindUnit(id))
+				if(Unit* unit = gameLevel->FindUnit(id))
 				{
 					if(unit->IsAlive())
 						unit->GiveDmg(unit->hpmax);
@@ -2354,9 +2354,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		{
 			int id;
 			f >> id;
-			if(game->game_state == GS_LEVEL)
+			if(game->gameState == GS_LEVEL)
 			{
-				if(Unit* unit = game_level->FindUnit(id))
+				if(Unit* unit = gameLevel->FindUnit(id))
 					HealUnit(*unit);
 				else
 				{
@@ -2367,17 +2367,17 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		}
 		break;
 	case CMD_SUICIDE:
-		if(game->game_state == GS_LEVEL)
+		if(game->gameState == GS_LEVEL)
 			player->unit->GiveDmg(player->unit->hpmax);
 		break;
 	case CMD_SCARE:
 		Scare(player);
 		break;
 	case CMD_CITIZEN:
-		if(team->is_bandit || team->crazies_attack)
+		if(team->isBandit || team->craziesAttack)
 		{
-			team->is_bandit = false;
-			team->crazies_attack = false;
+			team->isBandit = false;
+			team->craziesAttack = false;
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 		}
 		break;
@@ -2394,7 +2394,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			bool inside;
 			f >> building_index;
 			f >> inside;
-			if(game->game_state != GS_LEVEL)
+			if(game->gameState != GS_LEVEL)
 				break;
 			Unit& unit = *player->unit;
 			if(unit.frozen != FROZEN::NO)
@@ -2404,7 +2404,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			if(inside)
 			{
-				if(!game_level->city_ctx || building_index >= game_level->city_ctx->inside_buildings.size())
+				if(!gameLevel->cityCtx || building_index >= gameLevel->cityCtx->inside_buildings.size())
 				{
 					Error("CommandParser CMD_WARP: Invalid inside building index %u.", building_index);
 					break;
@@ -2420,7 +2420,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			else
 			{
-				if(!game_level->city_ctx || building_index >= game_level->city_ctx->buildings.size())
+				if(!gameLevel->cityCtx || building_index >= gameLevel->cityCtx->buildings.size())
 				{
 					Error("CommandParser CMD_WARP: Invalid building index %u.", building_index);
 					return false;
@@ -2438,8 +2438,8 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				}
 				else
 				{
-					CityBuilding& city_building = game_level->city_ctx->buildings[building_index];
-					game_level->WarpUnit(unit, city_building.walk_pt);
+					CityBuilding& city_building = gameLevel->cityCtx->buildings[building_index];
+					gameLevel->WarpUnit(unit, city_building.walk_pt);
 					unit.RotateTo(PtToPos(city_building.pt));
 				}
 			}
@@ -2451,9 +2451,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		{
 			int id;
 			f >> id;
-			if(game->game_state == GS_LEVEL)
+			if(game->gameState == GS_LEVEL)
 			{
-				if(Unit* unit = game_level->FindUnit(id))
+				if(Unit* unit = gameLevel->FindUnit(id))
 				{
 					switch(cmd)
 					{
@@ -2495,9 +2495,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			float length;
 			f >> id;
 			f >> length;
-			if(game->game_state == GS_LEVEL)
+			if(game->gameState == GS_LEVEL)
 			{
-				if(Unit* unit = game_level->FindUnit(id))
+				if(Unit* unit = gameLevel->FindUnit(id))
 				{
 					Effect e;
 					e.effect = EffectId::Stun;
@@ -2517,7 +2517,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		}
 		break;
 	case CMD_REFRESH_COOLDOWN:
-		if(game->game_state == GS_LEVEL)
+		if(game->gameState == GS_LEVEL)
 			player->RefreshCooldown();
 		break;
 	case CMD_KILLALL:
@@ -2526,14 +2526,14 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			int id;
 			f >> friendly;
 			f >> id;
-			if(game->game_state == GS_LEVEL)
+			if(game->gameState == GS_LEVEL)
 			{
 				Unit* ignored;
 				if(id == -1)
 					ignored = nullptr;
 				else
 				{
-					ignored = game_level->FindUnit(id);
+					ignored = gameLevel->FindUnit(id);
 					if(!ignored)
 					{
 						Error("CommandParsed CMD_KILLALL: Missing unit %d.", id);
@@ -2541,7 +2541,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					}
 				}
 
-				game_level->KillAll(friendly, *player->unit, ignored);
+				gameLevel->KillAll(friendly, *player->unit, ignored);
 			}
 		}
 		break;
@@ -2616,9 +2616,9 @@ void CommandParser::HealUnit(Unit& unit)
 }
 
 //=================================================================================================
-void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value)
+void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int sourceId, int value)
 {
-	uint removed = u->RemoveEffects(effect, source, source_id, value);
+	uint removed = u->RemoveEffects(effect, source, sourceId, value);
 	Msg("%u effects removed.", removed);
 }
 
@@ -3034,7 +3034,7 @@ void CommandParser::CmdList()
 	case LIST_QUEST:
 		{
 			LocalVector<const QuestInfo*> quests;
-			for(auto& info : quest_mgr->GetQuestInfos())
+			for(auto& info : questMgr->GetQuestInfos())
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
 					quests.push_back(&info);
@@ -3156,7 +3156,7 @@ void CommandParser::Scare(PlayerController* player)
 {
 	for(AIController* ai : game->ais)
 	{
-		if(ai->unit->IsEnemy(*player->unit) && Vec3::Distance(ai->unit->pos, player->unit->pos) < ALERT_RANGE && game_level->CanSee(*ai->unit, *player->unit))
+		if(ai->unit->IsEnemy(*player->unit) && Vec3::Distance(ai->unit->pos, player->unit->pos) < ALERT_RANGE && gameLevel->CanSee(*ai->unit, *player->unit))
 		{
 			ai->morale = -10;
 			ai->target_last_pos = player->unit->pos;

@@ -161,7 +161,7 @@ void GameCamera::RotateTo(float dt, float dest_rot)
 //=================================================================================================
 void GameCamera::UpdateFreeRot(float dt)
 {
-	if(!Any(GKey.allow_input, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
+	if(!Any(GKey.allowInput, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
 		return;
 
 	const float c_cam_angle_min = PI + 0.1f;
@@ -250,11 +250,11 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 	if(locPart.partType == LocationPart::Type::Outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)game_level->location;
+		OutsideLocation* outside = (OutsideLocation*)gameLevel->location;
 
 		// terrain
 		RaytestTerrainCallback callback;
-		phy_world->rayTest(ToVector3(pos), ToVector3(pos + dir), callback);
+		phyWorld->rayTest(ToVector3(pos), ToVector3(pos + dir), callback);
 		float t = callback.getFraction();
 		if(t < min_t && t > 0.f)
 			min_t = t;
@@ -279,7 +279,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	}
 	else if(locPart.partType == LocationPart::Type::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)game_level->location;
+		InsideLocation* inside = (InsideLocation*)gameLevel->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		int minx = max(0, tx - 3),
@@ -336,12 +336,12 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 					if(type == ENTRY_STAIRS_UP)
 					{
-						if(game_res->vdStairsUp->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
+						if(gameRes->vdStairsUp->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
 							min_t = t;
 					}
 					else if(type == ENTRY_STAIRS_DOWN)
 					{
-						if(game_res->vdStairsDown->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
+						if(gameRes->vdStairsDown->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
 							min_t = t;
 					}
 				}
@@ -377,7 +377,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 							door_pos.x -= 0.8229f;
 					}
 
-					if(game_res->vdDoorHole->RayToMesh(pos, dir, door_pos, rot, t) && t < min_t)
+					if(gameRes->vdDoorHole->RayToMesh(pos, dir, door_pos, rot, t) && t < min_t)
 						min_t = t;
 
 					Door* door = locPart.FindDoor(Int2(x, z));
@@ -464,7 +464,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 					min_t = t;
 			}
 
-			if(game_res->vdDoorHole->RayToMesh(pos, dir, door.pos, door.rot, t) && t < min_t)
+			if(gameRes->vdDoorHole->RayToMesh(pos, dir, door.pos, door.rot, t) && t < min_t)
 				min_t = t;
 		}
 	}
@@ -507,7 +507,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	}
 
 	// camera colliders
-	for(vector<CameraCollider>::iterator it = game_level->cam_colliders.begin(), end = game_level->cam_colliders.end(); it != end; ++it)
+	for(vector<CameraCollider>::iterator it = gameLevel->camColliders.begin(), end = gameLevel->camColliders.end(); it != end; ++it)
 	{
 		if(RayToBox(pos, dir, it->box, &t) && t < min_t && t > 0.f)
 			min_t = t;

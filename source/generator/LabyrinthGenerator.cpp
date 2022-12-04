@@ -429,10 +429,10 @@ void LabyrinthGenerator::GenerateObjects()
 		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + torch->size.y + 0.1f);
 	else if(IsBlocking(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
 		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + torch->size.y - 0.1f);
-	game_level->SpawnObjectEntity(lvl, torch, pos, Random(MAX_ANGLE));
+	gameLevel->SpawnObjectEntity(lvl, torch, pos, Random(MAX_ANGLE));
 
 	// torch inside treasure
-	game_level->SpawnObjectEntity(lvl, torch, lvl.rooms[0]->Center(), Random(MAX_ANGLE));
+	gameLevel->SpawnObjectEntity(lvl, torch, lvl.rooms[0]->Center(), Random(MAX_ANGLE));
 }
 
 //=================================================================================================
@@ -440,7 +440,7 @@ void LabyrinthGenerator::GenerateUnits()
 {
 	// decide what to spawn
 	int count, tries;
-	if(game_level->location->group->id == "unk")
+	if(gameLevel->location->group->id == "unk")
 	{
 		count = 30;
 		tries = 150;
@@ -450,12 +450,12 @@ void LabyrinthGenerator::GenerateUnits()
 		count = 20;
 		tries = 100;
 	}
-	int level = game_level->GetDifficultyLevel();
+	int level = gameLevel->GetDifficultyLevel();
 	Pooled<TmpUnitGroup> t;
-	t->Fill(game_level->location->group, level);
+	t->Fill(gameLevel->location->group, level);
 
 	// spawn units
-	InsideLocationLevel& lvl = ((InsideLocation*)game_level->location)->GetLevelData();
+	InsideLocationLevel& lvl = ((InsideLocation*)gameLevel->location)->GetLevelData();
 	for(int added = 0; added < count && tries; --tries)
 	{
 		Int2 pt(Random(1, lvl.w - 2), Random(1, lvl.h - 2));
@@ -465,17 +465,17 @@ void LabyrinthGenerator::GenerateUnits()
 			continue;
 
 		TmpUnitGroup::Spawn spawn = t->Get();
-		if(game_level->SpawnUnitNearLocation(lvl, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second))
+		if(gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second))
 			++added;
 	}
 
 	// enemies inside treasure room
-	if(game_level->location->group->id == "unk")
+	if(gameLevel->location->group->id == "unk")
 	{
 		for(int i = 0; i < 3; ++i)
 		{
 			TmpUnitGroup::Spawn spawn = t->Get();
-			game_level->SpawnUnitInsideRoom(*lvl.rooms[0], *spawn.first, spawn.second);
+			gameLevel->SpawnUnitInsideRoom(*lvl.rooms[0], *spawn.first, spawn.second);
 		}
 	}
 }

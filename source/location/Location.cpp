@@ -135,7 +135,7 @@ void Location::Load(GameReader& f)
 		active_quest = ACTIVE_QUEST_HOLDER;
 	else
 	{
-		game->load_location_quest.push_back(this);
+		game->loadLocationQuest.push_back(this);
 		active_quest = (Quest_Dungeon*)quest_id;
 	}
 	f >> last_visit;
@@ -178,7 +178,7 @@ void Location::Load(GameReader& f)
 		int quest_id;
 		f >> e.type;
 		f >> quest_id;
-		quest_mgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
+		questMgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
 		{
 			EventPtr event;
 			event.source = EventPtr::LOCATION;

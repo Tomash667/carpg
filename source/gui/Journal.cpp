@@ -166,14 +166,14 @@ void Journal::Update(float dt)
 	}
 
 	// change open quest
-	if(mode == Quests && !quest_mgr->quests.empty())
+	if(mode == Quests && !questMgr->quests.empty())
 	{
 		if(GKey.PressedR(GK_ROTATE_LEFT) != Key::None)
 		{
 			if(!details)
 			{
 				// last quest on this page
-				openQuest = max((page + 1) * rectLines * 2 - 1, int(quest_mgr->quests.size()) - 1);
+				openQuest = max((page + 1) * rectLines * 2 - 1, int(questMgr->quests.size()) - 1);
 				prevPage = page;
 				page = 0;
 				Build();
@@ -183,7 +183,7 @@ void Journal::Update(float dt)
 				// prev quest
 				--openQuest;
 				if(openQuest == -1)
-					openQuest = quest_mgr->quests.size() - 1;
+					openQuest = questMgr->quests.size() - 1;
 				page = 0;
 				Build();
 			}
@@ -202,7 +202,7 @@ void Journal::Update(float dt)
 			{
 				// next quest
 				++openQuest;
-				if(openQuest == (int)quest_mgr->quests.size())
+				if(openQuest == (int)questMgr->quests.size())
 					openQuest = 0;
 				page = 0;
 				Build();
@@ -249,7 +249,7 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Quests)
 	{
-		if(!quest_mgr->quests.empty() && !details)
+		if(!questMgr->quests.empty() && !details)
 		{
 			// select quest
 			int x, y = (gui->cursorPos.y - rect.Top()) / fontHeight;
@@ -418,11 +418,11 @@ void Journal::Build()
 		if(!details)
 		{
 			// list of quests
-			if(quest_mgr->quests.empty())
+			if(questMgr->quests.empty())
 				AddEntry(txNoQuests);
 			else
 			{
-				for(Quest* quest : quest_mgr->quests)
+				for(Quest* quest : questMgr->quests)
 				{
 					int color = 0;
 					if(quest->state == Quest::Failed)
@@ -440,7 +440,7 @@ void Journal::Build()
 		else
 		{
 			// details of single quest
-			Quest* quest = quest_mgr->quests[openQuest];
+			Quest* quest = questMgr->quests[openQuest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str());
 		}
@@ -556,7 +556,7 @@ void Journal::OnAddNote(int id)
 	if(id == BUTTON_OK)
 	{
 		notes.push_back(Format(txAddTime, world->GetDate(), inputStr.c_str()));
-		soundMgr->PlaySound2d(game_gui->messages->sndScribble);
+		soundMgr->PlaySound2d(gameGui->messages->sndScribble);
 		Build();
 		if(Net::IsClient())
 			Net::PushChange(NetChange::ADD_NOTE);
@@ -583,7 +583,7 @@ void Journal::AddRumor(cstring text)
 
 	rumors.push_back(Format(txAddTime, world->GetDate(), text));
 	NeedUpdate(Journal::Rumors);
-	game_gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
+	gameGui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
 }
 
 //=================================================================================================

@@ -54,7 +54,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 	// do contact test
 	btCollisionShape* shape;
 	if(isArrow)
-		shape = game_level->shape_arrow;
+		shape = gameLevel->shapeArrow;
 	else
 		shape = ability->shape;
 	assert(shape->isConvex());
@@ -66,7 +66,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 	tr_to.setRotation(tr_from.getRotation());
 
 	BulletCallback callback(owner ? owner->cobj : nullptr);
-	phy_world->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
+	phyWorld->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
 	if(!callback.hasHit())
 		return false;
 
@@ -356,10 +356,10 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 		// hit object
 		if(!ability)
 		{
-			soundMgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+			soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = game_res->tSpark;
+			pe->tex = gameRes->tSpark;
 			pe->emissionInterval = 0.01f;
 			pe->life = 5.f;
 			pe->particleLife = 0.5f;
@@ -385,8 +385,8 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				Object* obj = static_cast<Object*>(callback.target->getUserPointer());
 				if(obj && obj->base && obj->base->id == "bow_target")
 				{
-					if(quest_mgr->quest_tutorial->in_tutorial)
-						quest_mgr->quest_tutorial->HandleBulletCollision();
+					if(questMgr->quest_tutorial->in_tutorial)
+						questMgr->quest_tutorial->HandleBulletCollision();
 					owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
 				}
 			}
@@ -547,7 +547,7 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 
 	if(isArrow)
 	{
-		mesh = (ability && ability->mesh ? ability->mesh : game_res->aArrow);
+		mesh = (ability && ability->mesh ? ability->mesh : gameRes->aArrow);
 		pe = nullptr;
 		tex = nullptr;
 		tex_size = 0.f;
@@ -612,7 +612,7 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 
 	if(unitId != -1)
 	{
-		owner = game_level->FindUnit(unitId);
+		owner = gameLevel->FindUnit(unitId);
 		if(!owner)
 		{
 			Error("Missing bullet owner %d.", unitId);

@@ -33,7 +33,7 @@ struct LocationElement : public GuiElement, public ObjectPoolProxy<LocationEleme
 	cstring ToString() override { return loc->name.c_str(); }
 };
 
-layout::Button custom_layout;
+layout::Button customLayout;
 
 //=================================================================================================
 WorldMapGui::WorldMapGui() : zoom(1.2f), offset(0.f, 0.f), follow(false)
@@ -44,19 +44,19 @@ WorldMapGui::WorldMapGui() : zoom(1.2f), offset(0.f, 0.f), follow(false)
 	comboSearch.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->SafeFree(); };
 	tooltip.Init(TooltipController::Callback(this, &WorldMapGui::GetTooltip));
 
-	custom_layout.tex[0] = AreaLayout(Color::None, Color::Black);
-	custom_layout.tex[1] = AreaLayout(Color::Alpha(80), Color::Black);
-	custom_layout.tex[2] = AreaLayout(Color::Alpha(120), Color::Black);
-	custom_layout.font = game_gui->font;
-	custom_layout.padding = 0;
+	customLayout.tex[0] = AreaLayout(Color::None, Color::Black);
+	customLayout.tex[1] = AreaLayout(Color::Alpha(80), Color::Black);
+	customLayout.tex[2] = AreaLayout(Color::Alpha(120), Color::Black);
+	customLayout.font = gameGui->font;
+	customLayout.padding = 0;
 
 	buttons[0].id = ButtonJournal;
 	buttons[0].parent = this;
-	buttons[0].SetLayout(&custom_layout);
+	buttons[0].SetLayout(&customLayout);
 
 	buttons[1].id = ButtonTalkBox;
 	buttons[1].parent = this;
-	buttons[1].SetLayout(&custom_layout);
+	buttons[1].SetLayout(&customLayout);
 }
 
 //=================================================================================================
@@ -119,7 +119,7 @@ void WorldMapGui::Draw()
 
 	// map
 	{
-		const Vec2 scale(float(world->world_size) / MAP_IMG_SIZE * zoom);
+		const Vec2 scale(float(world->worldSize) / MAP_IMG_SIZE * zoom);
 		const Vec2 pos(GetCameraCenter() - offset);
 		const Matrix mat = Matrix::Transform2D(&offset, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tWorldMap, mat);
@@ -129,7 +129,7 @@ void WorldMapGui::Draw()
 	if(!comboSearch.focus && !gui->HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
 	{
 		const vector<int>& tiles = world->GetTiles();
-		int ts = world->world_size / World::TILE_SIZE;
+		int ts = world->worldSize / World::TILE_SIZE;
 		for(int y = 0; y < ts; ++y)
 		{
 			for(int x = 0; x < ts; ++x)
@@ -194,33 +194,33 @@ void WorldMapGui::Draw()
 		if(pickedLocation != world->GetCurrentLocationIndex())
 		{
 			float distance = Vec2::Distance(world_pos, picked.pos) * World::MAP_KM_RATIO;
-			int days_cost = int(floor(distance / World::TRAVEL_SPEED));
+			int daysCost = int(floor(distance / World::TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			AppendLocationText(picked, s.get_ref());
 			cstring cost;
-			if(days_cost == 0)
+			if(daysCost == 0)
 				cost = Format("<1 %s", txDay);
-			else if(days_cost == 1)
+			else if(daysCost == 1)
 				cost = Format("1 %s", txDay);
 			else
-				cost = Format("%d %s", days_cost, txDays);
+				cost = Format("%d %s", daysCost, txDays);
 			s += Format("\n%s: %g km\n%s: %s", txDistance, ceil(distance * 10) / 10, txTravelTime, cost);
 		}
 		const Vec2 pos(WorldPosToScreen(Vec2(picked.pos.x - 32.f, picked.pos.y + 32.f)));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tSelected[0], mat, 0xAAFFFFFF);
 	}
-	else if(cursorPosValid)
+	else if(mapPosValid)
 	{
-		float distance = Vec2::Distance(world_pos, cursorPos) * World::MAP_KM_RATIO;
-		int days_cost = int(floor(distance / World::TRAVEL_SPEED));
+		float distance = Vec2::Distance(world_pos, mapPos) * World::MAP_KM_RATIO;
+		int daysCost = int(floor(distance / World::TRAVEL_SPEED));
 		cstring cost;
-		if(days_cost == 0)
+		if(daysCost == 0)
 			cost = Format("<1 %s", txDay);
-		else if(days_cost == 1)
+		else if(daysCost == 1)
 			cost = Format("1 %s", txDay);
 		else
-			cost = Format("%d %s", days_cost, txDays);
+			cost = Format("%d %s", daysCost, txDays);
 		s += Format("\n\n%s:\n%s: %g km\n%s: %s", txTarget, txDistance, ceil(distance * 10) / 10, txTravelTime, cost);
 	}
 
@@ -233,25 +233,25 @@ void WorldMapGui::Draw()
 	}
 
 	// line from team to target position
-	Vec2 target_pos;
+	Vec2 targetPos;
 	bool ok = false;
 	if(pickedLocation != -1 && pickedLocation != world->GetCurrentLocationIndex())
 	{
-		target_pos = world->locations[pickedLocation]->pos;
+		targetPos = world->locations[pickedLocation]->pos;
 		ok = true;
 	}
 	else if(world->GetState() != World::State::ON_MAP)
 	{
-		target_pos = world->GetTargetPos();
+		targetPos = world->GetTargetPos();
 		ok = true;
 	}
-	else if(cursorPosValid)
+	else if(mapPosValid)
 	{
-		target_pos = cursorPos;
+		targetPos = mapPos;
 		ok = true;
 	}
 	if(ok)
-		gui->DrawLine(WorldPosToScreen(world_pos), WorldPosToScreen(target_pos), 0xAA000000);
+		gui->DrawLine(WorldPosToScreen(world_pos), WorldPosToScreen(targetPos), 0xAA000000);
 
 	// encounter chance
 	if(game->devmode && Net::IsLocal())
@@ -288,16 +288,16 @@ void WorldMapGui::Draw()
 		int(float(gui->wndSize.y) - 90.f * gui->wndSize.y / 768));
 	gui->DrawText(GameGui::font, s, 0, Color::Black, rect);
 
-	if(game->end_of_game)
-		game_gui->levelGui->DrawEndOfGameScreen();
+	if(game->endOfGame)
+		gameGui->levelGui->DrawEndOfGameScreen();
 
-	if(game_gui->mpBox->visible)
-		game_gui->mpBox->Draw();
+	if(gameGui->mpBox->visible)
+		gameGui->mpBox->Draw();
 
-	if(game_gui->journal->visible)
-		game_gui->journal->Draw();
+	if(gameGui->journal->visible)
+		gameGui->journal->Draw();
 
-	game_gui->messages->Draw();
+	gameGui->messages->Draw();
 
 	tooltip.Draw();
 }
@@ -305,9 +305,9 @@ void WorldMapGui::Draw()
 //=================================================================================================
 void WorldMapGui::Update(float dt)
 {
-	cursorPosValid = false;
+	mapPosValid = false;
 
-	MpBox* mpBox = game_gui->mpBox;
+	MpBox* mpBox = gameGui->mpBox;
 	if(mpBox->visible)
 	{
 		mpBox->focus = true;
@@ -318,26 +318,29 @@ void WorldMapGui::Update(float dt)
 
 		if(input->Focus() && !mpBox->haveFocus && !gui->HaveDialog() && input->PressedRelease(Key::Enter))
 			mpBox->haveFocus = true;
+
+		if(mpBox->IsInside(gui->cursorPos))
+			focus = false;
 	}
 
-	if(game->end_of_game)
+	if(game->endOfGame)
 		return;
 
 	int group = -1, id = -1;
 
-	if(game_gui->journal->visible)
+	if(gameGui->journal->visible)
 	{
-		game_gui->journal->focus = focus;
-		game_gui->journal->Update(dt);
+		gameGui->journal->focus = focus;
+		gameGui->journal->Update(dt);
 	}
-	if(!gui->HaveDialog() && !(mpBox->visible && mpBox->itb.focus) && input->Focus() && !comboSearch.focus && game->death_screen == 0)
+	if(!gui->HaveDialog() && !(mpBox->visible && mpBox->itb.focus) && input->Focus() && !comboSearch.focus && game->deathScreen == 0)
 	{
 		if(GKey.PressedRelease(GK_JOURNAL))
 		{
-			if(game_gui->journal->visible)
-				game_gui->journal->Hide();
+			if(gameGui->journal->visible)
+				gameGui->journal->Hide();
 			else
-				game_gui->journal->Show();
+				gameGui->journal->Show();
 		}
 		if(GKey.PressedRelease(GK_MAP_SEARCH))
 		{
@@ -346,12 +349,12 @@ void WorldMapGui::Update(float dt)
 		}
 	}
 
-	if(focus && !game_gui->journal->visible)
+	if(focus && !gameGui->journal->visible)
 	{
 		if(!comboSearch.focus && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-			game_gui->mpBox->visible = !game_gui->mpBox->visible;
+			gameGui->mpBox->visible = !gameGui->mpBox->visible;
 
-		if(game_gui->mpBox->haveFocus && comboSearch.focus)
+		if(gameGui->mpBox->haveFocus && comboSearch.focus)
 			comboSearch.LostFocus();
 
 		comboSearch.mouseFocus = focus;
@@ -362,7 +365,7 @@ void WorldMapGui::Update(float dt)
 		zoom = Clamp(zoom + 0.1f * input->GetMouseWheel(), 0.5f, 2.f);
 		if(clicked)
 		{
-			offset -= Vec2(input->GetMouseDif()) / (float(world->world_size) / MAP_IMG_SIZE * zoom);
+			offset -= Vec2(input->GetMouseDif()) / (float(world->worldSize) / MAP_IMG_SIZE * zoom);
 			if(offset.x < 0)
 				offset.x = 0;
 			if(offset.y < 0)
@@ -423,8 +426,8 @@ void WorldMapGui::Update(float dt)
 
 	if(world->GetState() == World::State::TRAVEL)
 	{
-		if(world->travel_location)
-			pickedLocation = world->travel_location->index;
+		if(world->travelLocation)
+			pickedLocation = world->travelLocation->index;
 
 		if(game->paused || (!Net::IsOnline() && gui->HavePauseDialog()))
 			return;
@@ -438,22 +441,22 @@ void WorldMapGui::Update(float dt)
 				stop = true;
 			}
 			else
-				game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+				gameGui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 		}
 		if(!stop)
 			world->UpdateTravel(dt);
 	}
-	else if(world->GetState() != World::State::ENCOUNTER && !game_gui->journal->visible)
+	else if(world->GetState() != World::State::ENCOUNTER && !gameGui->journal->visible)
 	{
-		Vec2 cursorPos(float(gui->cursorPos.x), float(gui->cursorPos.y));
+		const Vec2 cursorPos = Vec2(gui->cursorPos);
 		Location* loc = nullptr;
 		int index;
 
-		cursorPos = (Vec2(gui->cursorPos) - GetCameraCenter()) / zoom + offset * float(world->world_size) / MAP_IMG_SIZE;
-		cursorPos.y = float(world->world_size) - cursorPos.y;
-		if(focus && cursorPos.x > 0 && cursorPos.y > 0 && cursorPos.x < world->world_size && cursorPos.y < world->world_size && gui->cursorPos.x < gui->wndSize.x * 2 / 3)
+		mapPos = (cursorPos - GetCameraCenter()) / zoom + offset * float(world->worldSize) / MAP_IMG_SIZE;
+		mapPos.y = float(world->worldSize) - mapPos.y;
+		if(focus && mapPos.x > 0 && mapPos.y > 0 && mapPos.x < world->worldSize && mapPos.y < world->worldSize && gui->cursorPos.x < gui->wndSize.x * 2 / 3)
 		{
-			cursorPosValid = true;
+			mapPosValid = true;
 			if(!input->Down(Key::Shift))
 			{
 				float dist = 17.f;
@@ -498,7 +501,7 @@ void WorldMapGui::Update(float dt)
 						}
 					}
 					else
-						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						gameGui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 				else if(game->devmode && pickedLocation != world->GetCurrentLocationIndex() && !comboSearch.focus && input->PressedRelease(Key::T))
 				{
@@ -508,35 +511,35 @@ void WorldMapGui::Update(float dt)
 						StartTravel(true);
 					}
 					else
-						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						gameGui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 			}
 		}
 		else
 		{
 			pickedLocation = -1;
-			if(cursorPosValid && world->GetState() == World::State::ON_MAP && input->Focus())
+			if(mapPosValid && world->GetState() == World::State::ON_MAP && input->Focus())
 			{
 				if(input->PressedRelease(Key::LeftButton))
 				{
 					comboSearch.LostFocus();
 					if(team->IsLeader())
 					{
-						world->TravelPos(cursorPos, true);
+						world->TravelPos(mapPos, true);
 						StartTravel();
 					}
 					else
-						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						gameGui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 				else if(game->devmode && !comboSearch.focus && input->PressedRelease(Key::T))
 				{
 					if(team->IsLeader())
 					{
-						world->WarpPos(cursorPos, true);
+						world->WarpPos(mapPos, true);
 						StartTravel(true);
 					}
 					else
-						game_gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						gameGui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 			}
 		}
@@ -545,7 +548,7 @@ void WorldMapGui::Update(float dt)
 	if(focus && input->PressedRelease(Key::LeftButton))
 		comboSearch.LostFocus();
 
-	game_gui->messages->Update(dt);
+	gameGui->messages->Update(dt);
 	tooltip.UpdateTooltip(dt, group, id);
 }
 
@@ -555,7 +558,7 @@ void WorldMapGui::Event(GuiEvent e)
 	switch(e)
 	{
 	case GuiEvent_LostFocus:
-		game_gui->mpBox->LostFocus();
+		gameGui->mpBox->LostFocus();
 		comboSearch.LostFocus();
 		break;
 	case GuiEvent_Show:
@@ -587,7 +590,7 @@ void WorldMapGui::Event(GuiEvent e)
 				follow = (world->GetState() == World::State::TRAVEL);
 				fastFollow = false;
 				comboSearch.Reset();
-				cursorPosValid = false;
+				mapPosValid = false;
 				tooltip.Clear();
 			}
 		}
@@ -624,10 +627,10 @@ void WorldMapGui::Event(GuiEvent e)
 		}
 		break;
 	case ButtonJournal:
-		game_gui->journal->Show();
+		gameGui->journal->Show();
 		break;
 	case ButtonTalkBox:
-		game_gui->mpBox->visible = !game_gui->mpBox->visible;
+		gameGui->mpBox->visible = !gameGui->mpBox->visible;
 		break;
 	}
 }
@@ -772,16 +775,16 @@ void WorldMapGui::StartTravel(bool fast)
 //=================================================================================================
 Vec2 WorldMapGui::WorldPosToScreen(const Vec2& pt) const
 {
-	return Vec2(pt.x, float(world->world_size) - pt.y) * zoom
+	return Vec2(pt.x, float(world->worldSize) - pt.y) * zoom
 		+ GetCameraCenter()
-		- offset * zoom * float(world->world_size) / MAP_IMG_SIZE;
+		- offset * zoom * float(world->worldSize) / MAP_IMG_SIZE;
 }
 
 //=================================================================================================
 void WorldMapGui::CenterView(float dt, const Vec2* target)
 {
-	Vec2 p = (target ? *target : world->world_pos);
-	Vec2 pos = Vec2(p.x, float(world->world_size) - p.y) / (float(world->world_size) / MAP_IMG_SIZE);
+	Vec2 p = (target ? *target : world->worldPos);
+	Vec2 pos = Vec2(p.x, float(world->worldSize) - p.y) / (float(world->worldSize) / MAP_IMG_SIZE);
 	if(dt >= 0.f)
 		offset += (pos - offset) * dt * (fastFollow ? 10.f : 2.f);
 	else

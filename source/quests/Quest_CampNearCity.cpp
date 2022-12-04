@@ -25,6 +25,6 @@ void Quest_CampNearCity::GetConversionData(ConversionData& data)
 	data.Add("group", group);
 	data.Add("st", st);
 
-	if(game_level->event_handler == this)
-		game_level->event_handler = nullptr;
+	if(gameLevel->eventHandler == this)
+		gameLevel->eventHandler = nullptr;
 }

@@ -303,7 +303,7 @@ void TeamPanel::Update(float dt)
 	else
 	{
 		bt[Bt_FastTravel].text = txFastTravel;
-		bool allowFastTravel = team->IsLeader() && game_level->CanFastTravel();
+		bool allowFastTravel = team->IsLeader() && gameLevel->CanFastTravel();
 		if(allowFastTravel != allowFastTravelPrev)
 			bt[Bt_FastTravel].state = (allowFastTravel ? Button::NONE : Button::DISABLED);
 	}
@@ -365,7 +365,7 @@ void TeamPanel::Event(GuiEvent e)
 		break;
 	case BtEvent_FastTravel:
 		if(net->IsFastTravel())
-			net->CancelFastTravel(FAST_TRAVEL_CANCEL, team->my_id);
+			net->CancelFastTravel(FAST_TRAVEL_CANCEL, team->myId);
 		else if(Net::IsSingleplayer() || (Net::IsServer() && !team->HaveOtherPlayer()))
 			game->ExitToMap();
 		else
@@ -374,7 +374,7 @@ void TeamPanel::Event(GuiEvent e)
 	case BtEvent_GiveGold:
 	case BtEvent_Leader:
 	case BtEvent_Kick:
-		game_gui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
+		gameGui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
 		picking = true;
 		picked = -1;
 		mode = e;
@@ -436,7 +436,7 @@ void TeamPanel::OnPayCredit(int id)
 		else
 			SimpleDialog(Format(txPaidCreditPart, count, game->pc->credit - count));
 		game->pc->unit->gold -= count;
-		soundMgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(gameRes->sCoins);
 		if(Net::IsLocal())
 			game->pc->PayCredit(count);
 		else
@@ -476,12 +476,12 @@ void TeamPanel::ChangeLeader(Unit* target)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_LEADER;
-			c.id = team->my_id;
+			c.id = team->myId;
 
-			team->leader_id = team->my_id;
+			team->leaderId = team->myId;
 			team->leader = game->pc->unit;
 
-			game_gui->mpBox->Add(txYouAreLeader);
+			gameGui->mpBox->Add(txYouAreLeader);
 		}
 		else
 			SimpleDialog(txCantChangeLeader);
@@ -496,10 +496,10 @@ void TeamPanel::ChangeLeader(Unit* target)
 
 		if(Net::IsServer())
 		{
-			team->leader_id = c.id;
+			team->leaderId = c.id;
 			team->leader = target;
 
-			game_gui->mpBox->Add(Format(txPcIsLeader, target->GetName()));
+			gameGui->mpBox->Add(Format(txPcIsLeader, target->GetName()));
 		}
 	}
 	else
@@ -542,7 +542,7 @@ void TeamPanel::OnGiveGold(int id)
 	else
 	{
 		game->pc->unit->gold -= counter;
-		soundMgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(gameRes->sCoins);
 		if(Net::IsLocal())
 		{
 			target->gold += counter;

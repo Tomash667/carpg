@@ -17,7 +17,7 @@
 //=================================================================================================
 void SecretLocationGenerator::Generate()
 {
-	quest_mgr->quest_secret->state = Quest_Secret::SECRET_GENERATED2;
+	questMgr->quest_secret->state = Quest_Secret::SECRET_GENERATED2;
 
 	CreateMap();
 	RandomizeTerrainTexture();
@@ -84,18 +84,18 @@ void SecretLocationGenerator::Generate()
 //=================================================================================================
 void SecretLocationGenerator::GenerateObjects()
 {
-	LocationPart& locPart = *game_level->localPart;
+	LocationPart& locPart = *gameLevel->localPart;
 
 	Vec3 pos(128.f, 0, 96.f * 2);
 	terrain->SetY(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
-	game_level->SpawnObjectEntity(locPart, o, pos, 0);
-	game_level->ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
+	gameLevel->SpawnObjectEntity(locPart, o, pos, 0);
+	gameLevel->ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetY(pos);
-	game_level->SpawnObjectEntity(locPart, BaseObject::Get("portal"), pos, 0);
+	gameLevel->SpawnObjectEntity(locPart, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
 	portal->at_level = -1;
@@ -103,10 +103,10 @@ void SecretLocationGenerator::GenerateObjects()
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->index = 0;
-	portal->target_loc = quest_mgr->quest_secret->where;
-	game_level->location->portal = portal;
+	portal->target_loc = questMgr->quest_secret->where;
+	gameLevel->location->portal = portal;
 
-	TerrainTile* tiles = ((OutsideLocation*)game_level->location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)gameLevel->location)->tiles;
 
 	// trees
 	for(int i = 0; i < 1024; ++i)
@@ -121,7 +121,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
@@ -133,7 +133,7 @@ void SecretLocationGenerator::GenerateObjects()
 				else
 					type = Rand() % 3;
 				OutsideObject& o = trees2[type];
-				game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -150,7 +150,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				game_level->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -159,7 +159,7 @@ void SecretLocationGenerator::GenerateObjects()
 //=================================================================================================
 void SecretLocationGenerator::GenerateUnits()
 {
-	LocationPart& locPart = *game_level->localPart;
+	LocationPart& locPart = *gameLevel->localPart;
 	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
@@ -182,7 +182,7 @@ void SecretLocationGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			game_level->SpawnUnitNearLocation(locPart, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			gameLevel->SpawnUnitNearLocation(locPart, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}
@@ -200,7 +200,7 @@ void SecretLocationGenerator::GenerateItems()
 //=================================================================================================
 void SecretLocationGenerator::SpawnTeam()
 {
-	game_level->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI);
+	gameLevel->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI);
 }
 
 //=================================================================================================

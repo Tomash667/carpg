@@ -291,7 +291,7 @@ float Item::GetEffectPower(EffectId effect) const
 //=================================================================================================
 void Item::CreateCopy(Item& item) const
 {
-	game_res->PreloadItem(this);
+	gameRes->PreloadItem(this);
 
 	switch(type)
 	{
@@ -360,7 +360,7 @@ Item* Item::QuestCopy(Quest* quest)
 	Item* item = CreateCopy();
 	item->id = Format("$%s", id.c_str());
 	item->quest_id = quest->id;
-	quest_mgr->AddQuestItem(item);
+	questMgr->AddQuestItem(item);
 	return item;
 }
 
@@ -371,7 +371,7 @@ Item* Item::QuestCopy(Quest* quest, const string& name)
 	item->id = Format("$%s", id.c_str());
 	item->name = name;
 	item->quest_id = quest->id;
-	quest_mgr->AddQuestItem(item);
+	questMgr->AddQuestItem(item);
 	return item;
 }
 

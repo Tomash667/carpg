@@ -65,7 +65,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 		talker->look_target = pc->unit;
 	}
 	if(this->dialog && this->dialog->quest)
-		dialog_quest = quest_mgr->FindAnyQuest(this->dialog->quest);
+		dialog_quest = questMgr->FindAnyQuest(this->dialog->quest);
 	update_news = true;
 	update_locations = 1;
 	pc->action = PlayerAction::Talk;
@@ -131,7 +131,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	}
 
 	if(is_local)
-		game_gui->CloseAllPanels();
+		gameGui->CloseAllPanels();
 }
 
 //=================================================================================================
@@ -166,7 +166,7 @@ cstring DialogContext::GetIdleText(Unit& talker)
 	quest_dialogs.clear();
 	quest_dialog_index = QUEST_INDEX_NONE;
 
-	ScriptContext& ctx = script_mgr->GetContext();
+	ScriptContext& ctx = scriptMgr->GetContext();
 	ctx.pc = nullptr;
 	ctx.target = this->talker;
 	current = this;
@@ -192,14 +192,14 @@ void DialogContext::Update(float dt)
 					ok = true;
 			}
 			else
-				ok = game_gui->levelGui->UpdateChoice();
+				ok = gameGui->levelGui->UpdateChoice();
 
 			if(ok)
 			{
 				mode = NONE;
 				DialogChoice& choice = choices[choice_selected];
 				cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
-				game_gui->levelGui->AddSpeechBubble(pc->unit, msg);
+				gameGui->levelGui->AddSpeechBubble(pc->unit, msg);
 
 				if(Net::IsOnline())
 				{
@@ -292,7 +292,7 @@ void DialogContext::Update(float dt)
 		return;
 	}
 
-	ScriptContext& ctx = script_mgr->GetContext();
+	ScriptContext& ctx = scriptMgr->GetContext();
 	ctx.pc = pc;
 	ctx.target = talker;
 	current = this;
@@ -310,7 +310,7 @@ void DialogContext::UpdateClient()
 	case WAIT_CHOICES:
 		{
 			const int prevChoice = choice_selected;
-			if(game_gui->levelGui->UpdateChoice())
+			if(gameGui->levelGui->UpdateChoice())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHOICE;
@@ -401,7 +401,7 @@ void DialogContext::UpdateLoop()
 			if(is_local)
 			{
 				choice_selected = 0;
-				LevelGui* gui = game_gui->levelGui;
+				LevelGui* gui = gameGui->levelGui;
 				gui->dialogCursorPos = Int2(-1, -1);
 				gui->UpdateScrollbar(choices.size());
 			}
@@ -464,7 +464,7 @@ void DialogContext::UpdateLoop()
 			pc->chest_trade = &talker->stock->items;
 
 			if(is_local)
-				game_gui->inventory->StartTrade(I_TRADE, *pc->chest_trade, talker);
+				gameGui->inventory->StartTrade(I_TRADE, *pc->chest_trade, talker);
 			else
 			{
 				NetChangePlayer& c = Add1(pc->player_info->changes);
@@ -524,7 +524,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_CHECK_QUEST_TIMEOUT:
 			{
-				Quest* quest = quest_mgr->FindQuest(game_level->location, (QuestCategory)de.value);
+				Quest* quest = questMgr->FindQuest(gameLevel->location, (QuestCategory)de.value);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					once = false;
@@ -575,7 +575,7 @@ void DialogContext::UpdateLoop()
 			{
 				cstring msg = dialog->strs[de.value].c_str();
 				bool negate = (de.op == OP_NOT_EQUAL);
-				for(Quest* quest : quest_mgr->quests)
+				for(Quest* quest : questMgr->quests)
 				{
 					cmp_result = (quest->IsActive() && quest->IfNeedTalk(msg));
 					if(negate)
@@ -588,7 +588,7 @@ void DialogContext::UpdateLoop()
 		case DTF_DO_QUEST:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				for(Quest* quest : quest_mgr->quests)
+				for(Quest* quest : questMgr->quests)
 				{
 					if(quest->IsActive() && quest->IfNeedTalk(msg))
 					{
@@ -613,7 +613,7 @@ void DialogContext::UpdateLoop()
 			{
 				cstring msg = dialog->strs[de.value].c_str();
 				bool found = false;
-				for(Quest* quest : quest_mgr->quests)
+				for(Quest* quest : questMgr->quests)
 				{
 					if(quest->IfNeedTalk(msg))
 					{
@@ -624,7 +624,7 @@ void DialogContext::UpdateLoop()
 				}
 				if(!found)
 				{
-					for(Quest* quest : quest_mgr->unaccepted_quests)
+					for(Quest* quest : questMgr->unaccepted_quests)
 					{
 						if(quest->IfNeedTalk(msg))
 						{
@@ -672,7 +672,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_SCRIPT:
 			{
-				ScriptContext& ctx = script_mgr->GetContext();
+				ScriptContext& ctx = scriptMgr->GetContext();
 				ctx.pc = pc;
 				ctx.target = talker;
 				DialogScripts* scripts;
@@ -690,7 +690,7 @@ void DialogContext::UpdateLoop()
 					instance = nullptr;
 				}
 				int index = de.value;
-				script_mgr->RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, [index](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, [index](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -704,7 +704,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_IF_SCRIPT:
 			{
-				ScriptContext& ctx = script_mgr->GetContext();
+				ScriptContext& ctx = scriptMgr->GetContext();
 				DialogScripts* scripts;
 				void* instance;
 				ctx.pc = pc;
@@ -722,7 +722,7 @@ void DialogContext::UpdateLoop()
 					instance = nullptr;
 				}
 				int index = de.value;
-				script_mgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &cmp_result](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &cmp_result](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -830,7 +830,7 @@ cstring DialogContext::GetText(int index, bool multi)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				ScriptContext& ctx = script_mgr->GetContext();
+				ScriptContext& ctx = scriptMgr->GetContext();
 				DialogScripts* scripts;
 				void* instance;
 				ctx.pc = pc;
@@ -847,7 +847,7 @@ cstring DialogContext::GetText(int index, bool multi)
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
-				script_mgr->RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -888,37 +888,37 @@ cstring DialogContext::GetText(int index, bool multi)
 bool DialogContext::ExecuteSpecial(cstring msg)
 {
 	bool result;
-	if(quest_mgr->HandleSpecial(*this, msg, result))
+	if(questMgr->HandleSpecial(*this, msg, result))
 		return result;
 
 	if(strcmp(msg, "mayor_quest") == 0)
 	{
 		bool have_quest = true;
-		if(world->GetWorldtime() - game_level->city_ctx->quest_mayor_time > 30
-			|| game_level->city_ctx->quest_mayor_time == -1
-			|| game_level->city_ctx->quest_mayor == CityQuestState::Failed)
+		if(world->GetWorldtime() - gameLevel->cityCtx->quest_mayor_time > 30
+			|| gameLevel->cityCtx->quest_mayor_time == -1
+			|| gameLevel->cityCtx->quest_mayor == CityQuestState::Failed)
 		{
-			if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
+			if(gameLevel->cityCtx->quest_mayor == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Mayor);
+				Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Mayor);
 				if(quest)
-					DeleteElement(quest_mgr->unaccepted_quests, quest);
+					DeleteElement(questMgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
-			game_level->city_ctx->quest_mayor_time = world->GetWorldtime();
-			game_level->city_ctx->quest_mayor = CityQuestState::InProgress;
+			gameLevel->cityCtx->quest_mayor_time = world->GetWorldtime();
+			gameLevel->cityCtx->quest_mayor = CityQuestState::InProgress;
 
-			Quest* quest = quest_mgr->GetMayorQuest();
+			Quest* quest = questMgr->GetMayorQuest();
 			if(quest)
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 			else
 				have_quest = false;
 		}
-		else if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
+		else if(gameLevel->cityCtx->quest_mayor == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie ?
-			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Mayor);
+			Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Mayor);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -926,7 +926,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 			else
 			{
-				quest = quest_mgr->FindQuest(game_level->location, QuestCategory::Mayor);
+				quest = questMgr->FindQuest(gameLevel->location, QuestCategory::Mayor);
 				if(quest)
 				{
 					Talk(RandomString(game->txQuestAlreadyGiven));
@@ -949,31 +949,31 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "captain_quest") == 0)
 	{
 		bool have_quest = true;
-		if(world->GetWorldtime() - game_level->city_ctx->quest_captain_time > 30
-			|| game_level->city_ctx->quest_captain_time == -1
-			|| game_level->city_ctx->quest_captain == CityQuestState::Failed)
+		if(world->GetWorldtime() - gameLevel->cityCtx->quest_captain_time > 30
+			|| gameLevel->cityCtx->quest_captain_time == -1
+			|| gameLevel->cityCtx->quest_captain == CityQuestState::Failed)
 		{
-			if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
+			if(gameLevel->cityCtx->quest_captain == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Captain);
+				Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Captain);
 				if(quest)
-					DeleteElement(quest_mgr->unaccepted_quests, quest);
+					DeleteElement(questMgr->unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
-			game_level->city_ctx->quest_captain_time = world->GetWorldtime();
-			game_level->city_ctx->quest_captain = CityQuestState::InProgress;
+			gameLevel->cityCtx->quest_captain_time = world->GetWorldtime();
+			gameLevel->cityCtx->quest_captain = CityQuestState::InProgress;
 
-			Quest* quest = quest_mgr->GetCaptainQuest();
+			Quest* quest = questMgr->GetCaptainQuest();
 			if(quest)
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 			else
 				have_quest = false;
 		}
-		else if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
+		else if(gameLevel->cityCtx->quest_captain == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie
-			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location, QuestCategory::Captain);
+			Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Captain);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -981,7 +981,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 			else
 			{
-				quest = quest_mgr->FindQuest(game_level->location, QuestCategory::Captain);
+				quest = questMgr->FindQuest(gameLevel->location, QuestCategory::Captain);
 				if(quest)
 				{
 					Talk(RandomString(game->txQuestAlreadyGiven));
@@ -1005,13 +1005,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		if(talker->quest_id == -1)
 		{
-			Quest* quest = quest_mgr->GetAdventurerQuest();
+			Quest* quest = questMgr->GetAdventurerQuest();
 			talker->quest_id = quest->id;
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 		else
 		{
-			Quest* quest = quest_mgr->FindUnacceptedQuest(talker->quest_id);
+			Quest* quest = questMgr->FindUnacceptedQuest(talker->quest_id);
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 	}
@@ -1055,9 +1055,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		pc->unit->frozen = FROZEN::YES;
 		if(is_local)
 		{
-			game->fallback_type = FALLBACK::REST;
-			game->fallback_t = -1.f;
-			game->fallback_1 = days;
+			game->fallbackType = FALLBACK::REST;
+			game->fallbackTimer = -1.f;
+			game->fallbackValue = days;
 		}
 		else
 		{
@@ -1072,7 +1072,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(!drunkman && (Rand() % 3 == 0 || (input->Down(Key::Shift) && game->devmode)))
 		{
 			int what = Rand() % 3;
-			if(quest_mgr->HaveQuestRumors() && Rand() % 2 == 0)
+			if(questMgr->HaveQuestRumors() && Rand() % 2 == 0)
 				what = 2;
 			if(game->devmode && input->Down(Key::Shift))
 			{
@@ -1111,7 +1111,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					{
 						Location& loc = *locations[id2];
 						loc.SetKnown();
-						Location& cloc = *game_level->location;
+						Location& cloc = *gameLevel->location;
 						cstring distance;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
 						if(dist <= 300)
@@ -1160,7 +1160,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					if(new_camp)
 					{
 						Location& loc = *new_camp;
-						Location& cloc = *game_level->location;
+						Location& cloc = *gameLevel->location;
 						cstring distance;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
 						if(dist <= 300)
@@ -1189,7 +1189,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				break;
 			case 2:
 				// info about quest
-				if(!quest_mgr->HaveQuestRumors())
+				if(!questMgr->HaveQuestRumors())
 				{
 					Talk(RandomString(game->txNoQRumors));
 					++dialog_pos;
@@ -1197,8 +1197,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				}
 				else
 				{
-					dialog_s_text = quest_mgr->GetRandomQuestRumor();
-					game_gui->journal->AddRumor(dialog_s_text.c_str());
+					dialog_s_text = questMgr->GetRandomQuestRumor();
+					gameGui->journal->AddRumor(dialog_s_text.c_str());
 					Talk(dialog_s_text.c_str());
 					++dialog_pos;
 					return true;
@@ -1325,10 +1325,10 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		pc->unit->frozen = FROZEN::YES;
 		if(is_local)
 		{
-			game->fallback_type = FALLBACK::TRAIN;
-			game->fallback_t = -1.f;
-			game->fallback_1 = type;
-			game->fallback_2 = what;
+			game->fallbackType = FALLBACK::TRAIN;
+			game->fallbackTimer = -1.f;
+			game->fallbackValue = type;
+			game->fallbackValue2 = what;
 		}
 		else
 		{
@@ -1425,8 +1425,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		talker->gold += cost;
 		team->AddMember(talker, HeroType::Normal);
 		talker->temporary = false;
-		if(team->free_recruits > 0)
-			--team->free_recruits;
+		if(team->freeRecruits > 0)
+			--team->freeRecruits;
 		talker->hero->SetupMelee();
 		if(Net::IsOnline() && !is_local)
 			pc->player_info->UpdateGold();
@@ -1434,7 +1434,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "recruit_free") == 0)
 	{
 		team->AddMember(talker, HeroType::Normal);
-		--team->free_recruits;
+		--team->freeRecruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
 	}
@@ -1447,7 +1447,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		pc->action_unit = t;
 		pc->chest_trade = &t->items;
 		if(is_local)
-			game_gui->inventory->StartTrade(I_GIVE, *t);
+			gameGui->inventory->StartTrade(I_GIVE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(pc->player_info->changes);
@@ -1464,7 +1464,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		pc->action_unit = t;
 		pc->chest_trade = &t->items;
 		if(is_local)
-			game_gui->inventory->StartTrade(I_SHARE, *t);
+			gameGui->inventory->StartTrade(I_SHARE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(pc->player_info->changes);
@@ -1475,7 +1475,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
 		team->RemoveMember(talker);
-		if(game_level->city_ctx)
+		if(gameLevel->cityCtx)
 			talker->OrderWander();
 		else
 			talker->OrderLeave();
@@ -1636,7 +1636,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "coughs") == 0)
 	{
-		talker->PlaySound(game_res->sCoughs, Unit::COUGHS_SOUND_DIST);
+		talker->PlaySound(gameRes->sCoughs, Unit::COUGHS_SOUND_DIST);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1657,19 +1657,19 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 bool DialogContext::ExecuteSpecialIf(cstring msg)
 {
 	bool result;
-	if(quest_mgr->HandleSpecialIf(*this, msg, result))
+	if(questMgr->HandleSpecialIf(*this, msg, result))
 		return result;
 
 	if(strcmp(msg, "is_drunk") == 0)
 		return IsSet(talker->data->flags, F_AI_DRUNKMAN) && talker->locPart->partType == LocationPart::Type::Building;
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
-		return game_level->localPart->partType == LocationPart::Type::Inside;
+		return gameLevel->localPart->partType == LocationPart::Type::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
 		return team->GetActiveTeamSize() >= team->GetMaxSize();
 	else if(strcmp(msg, "can_join") == 0)
 		return pc->unit->gold >= talker->hero->JoinCost();
 	else if(strcmp(msg, "is_near_arena") == 0)
-		return game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, game_level->city_ctx->arena_pos) < 5.f;
+		return gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, gameLevel->cityCtx->arena_pos) < 5.f;
 	else if(strcmp(msg, "is_ginger") == 0)
 		return pc->unit->human_data->hair_color.Equal(g_hair_colors[8]);
 	else if(strcmp(msg, "is_bald") == 0)
@@ -1677,21 +1677,21 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "dont_have_quest") == 0)
 		return talker->quest_id == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)
-		return quest_mgr->FindUnacceptedQuest(talker->quest_id);
+		return questMgr->FindUnacceptedQuest(talker->quest_id);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* quest = quest_mgr->FindQuest(talker->quest_id, false);
+		Quest* quest = questMgr->FindQuest(talker->quest_id, false);
 		return quest && !quest->IsActive();
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
-		return talker->level <= 8 && team->free_recruits > 0 && !talker->hero->otherTeam;
+		return talker->level <= 8 && team->freeRecruits > 0 && !talker->hero->otherTeam;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
-		return (((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
-			&& quest_mgr->quest_orcs->startLoc == game_level->location)
-			|| (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
-			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed
-			&& quest_mgr->quest_mages2->startLoc == game_level->location));
+		return (((questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+			&& questMgr->quest_orcs->startLoc == gameLevel->location)
+			|| (questMgr->quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
+			&& questMgr->quest_mages2->mages_state < Quest_Mages2::State::Completed
+			&& questMgr->quest_mages2->startLoc == gameLevel->location));
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
 	{
@@ -1701,17 +1701,17 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
 	else if(strcmp(msg, "is_inside_inn") == 0)
-		return talker->locPart->partType == LocationPart::Type::Building && game_level->city_ctx->FindInn() == talker->locPart;
+		return talker->locPart->partType == LocationPart::Type::Building && gameLevel->cityCtx->FindInn() == talker->locPart;
 	else if(strcmp(msg, "is_before_contest") == 0)
-		return quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_TODAY;
+		return questMgr->quest_contest->state >= Quest_Contest::CONTEST_TODAY;
 	else if(strcmp(msg, "is_drunkmage") == 0)
-		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
+		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && questMgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(strcmp(msg, "is_guard") == 0)
 		return IsSet(talker->data->flags2, F2_GUARD);
 	else if(strcmp(msg, "mayor_quest_failed") == 0)
-		return game_level->city_ctx->quest_mayor == CityQuestState::Failed;
+		return gameLevel->cityCtx->quest_mayor == CityQuestState::Failed;
 	else if(strcmp(msg, "captain_quest_failed") == 0)
-		return game_level->city_ctx->quest_captain == CityQuestState::Failed;
+		return gameLevel->cityCtx->quest_captain == CityQuestState::Failed;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -1725,11 +1725,11 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 cstring DialogContext::FormatString(const string& str_part)
 {
 	cstring result;
-	if(quest_mgr->HandleFormatString(str_part, result))
+	if(questMgr->HandleFormatString(str_part, result))
 		return result;
 
 	if(str_part == "rcitynhere")
-		return world->GetRandomSettlement(game_level->location)->name.c_str();
+		return world->GetRandomSettlement(gameLevel->location)->name.c_str();
 	else if(str_part == "name")
 	{
 		assert(talker->IsHero());
@@ -1838,7 +1838,7 @@ void DialogContext::Talk(cstring msg)
 	else
 		ani = 0;
 
-	game_gui->levelGui->AddSpeechBubble(talker, dialog_text);
+	gameGui->levelGui->AddSpeechBubble(talker, dialog_text);
 
 	pc->Train(TrainWhat::Talk, 0.f, 0);
 
@@ -1850,7 +1850,7 @@ void DialogContext::Talk(cstring msg)
 		c.str = StringPool.Get();
 		*c.str = msg;
 		c.id = ani;
-		c.count = game->skip_id_counter++;
+		c.count = game->skipIdCounter++;
 		skip_id = c.count;
 		net->net_strs.push_back(c.str);
 	}
@@ -1859,7 +1859,7 @@ void DialogContext::Talk(cstring msg)
 //=================================================================================================
 void DialogContext::ClientTalk(Unit* unit, const string& text, int skipId, int animation)
 {
-	game_gui->levelGui->AddSpeechBubble(unit, text.c_str());
+	gameGui->levelGui->AddSpeechBubble(unit, text.c_str());
 	unit->bubble->skipId = skip_id;
 
 	if(animation != 0)
@@ -1938,10 +1938,10 @@ bool DialogContext::LearnPerk(Perk* perk)
 	pc->unit->frozen = FROZEN::YES;
 	if(is_local)
 	{
-		game->fallback_type = FALLBACK::TRAIN;
-		game->fallback_t = -1.f;
-		game->fallback_1 = 3;
-		game->fallback_2 = perk->hash;
+		game->fallbackType = FALLBACK::TRAIN;
+		game->fallbackTimer = -1.f;
+		game->fallbackValue = 3;
+		game->fallbackValue2 = perk->hash;
 	}
 	else
 	{
@@ -1967,7 +1967,7 @@ bool DialogContext::RecruitHero(Class* clas)
 		return false;
 	}
 
-	Unit* u = game_level->SpawnUnitNearLocation(*talker->locPart, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
+	Unit* u = gameLevel->SpawnUnitNearLocation(*talker->locPart, Vec3(131.f, 0, 121.f), *clas->hero, nullptr);
 	u->rot = 0.f;
 	u->SetKnownName(true);
 	u->hero->loner = false;

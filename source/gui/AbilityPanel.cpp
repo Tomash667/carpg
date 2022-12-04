@@ -167,7 +167,7 @@ void AbilityPanel::Update(float dt)
 		return;
 	}
 
-	if(game_gui->levelGui->IsDragAndDrop())
+	if(gameGui->levelGui->IsDragAndDrop())
 	{
 		tooltip.anything = false;
 		return;
@@ -202,7 +202,7 @@ void AbilityPanel::Update(float dt)
 					break;
 				}
 			}
-			game_gui->levelGui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
+			gameGui->levelGui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
 			dragAndDrop = false;
 		}
 		if(input->Released(Key::LeftButton))

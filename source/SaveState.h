@@ -44,12 +44,12 @@ enum SAVE_VERSION
 //-----------------------------------------------------------------------------
 struct SaveException
 {
-	SaveException(cstring localized_msg, cstring msg, bool missing_file = false) : localized_msg(localized_msg), msg(msg), missing_file(missing_file)
+	SaveException(cstring localizedMsg, cstring msg, bool missingFile = false) : localizedMsg(localizedMsg), msg(msg), missingFile(missingFile)
 	{
 	}
 
-	cstring localized_msg, msg;
-	bool missing_file;
+	cstring localizedMsg, msg;
+	bool missingFile;
 };
 
 //-----------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 //=================================================================================================
 void Quest_Orcs::Init()
 {
-	quest_mgr->RegisterSpecialIfHandler(this, "q_orkowie_to_miasto");
+	questMgr->RegisterSpecialIfHandler(this, "q_orkowie_to_miasto");
 }
 
 //=================================================================================================
@@ -25,8 +25,8 @@ void Quest_Orcs::Start()
 {
 	type = Q_ORCS;
 	category = QuestCategory::Unique;
-	startLoc = world->GetRandomSettlement(quest_mgr->GetUsedCities());
-	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[6], GetStartLocationName()));
+	startLoc = world->GetRandomSettlement(questMgr->GetUsedCities());
+	questMgr->AddQuestRumor(id, Format(questMgr->txRumorQ[6], GetStartLocationName()));
 
 	if(game->devmode)
 		Info("Quest 'Orcs' - %s.", GetStartLocationName());
@@ -52,32 +52,32 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			if(prog != Progress::None)
 				return;
-			if(quest_mgr->RemoveQuestRumor(id))
-				game_gui->journal->AddRumor(Format(quest_mgr->txQuest[189], GetStartLocationName()));
-			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
+			if(questMgr->RemoveQuestRumor(id))
+				gameGui->journal->AddRumor(Format(questMgr->txQuest[189], GetStartLocationName()));
+			questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
-			if(quest_mgr->RemoveQuestRumor(id))
-				game_gui->journal->AddRumor(Format(quest_mgr->txQuest[190], GetStartLocationName()));
+			if(questMgr->RemoveQuestRumor(id))
+				gameGui->journal->AddRumor(Format(questMgr->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
-			Unit*& u = quest_mgr->quest_orcs2->guard;
+			Unit*& u = questMgr->quest_orcs2->guard;
 			if(u)
 			{
 				u->temporary = true;
 				u = nullptr;
 			}
-			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
+			questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::Started:
 		{
-			OnStart(quest_mgr->txQuest[191]);
+			OnStart(questMgr->txQuest[191]);
 			// remove rumor from pool
-			quest_mgr->RemoveQuestRumor(id);
+			questMgr->RemoveQuestRumor(id);
 			// mark guard to remove
-			Unit*& u = quest_mgr->quest_orcs2->guard;
+			Unit*& u = questMgr->quest_orcs2->guard;
 			if(u)
 			{
 				u->temporary = true;
@@ -102,15 +102,15 @@ void Quest_Orcs::SetProgress(int prog2)
 			unit_dont_attack = true;
 			unit_to_spawn2 = UnitGroup::Get("orcs")->GetLeader(10);
 			unit_spawn_level2 = -3;
-			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
+			questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// add journal entry
-			msgs.push_back(Format(quest_mgr->txQuest[192], GetStartLocationName(), world->GetDate()));
-			msgs.push_back(Format(quest_mgr->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
+			msgs.push_back(Format(questMgr->txQuest[192], GetStartLocationName(), world->GetDate()));
+			msgs.push_back(Format(questMgr->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::ClearedLocation:
 		{
-			OnUpdate(Format(quest_mgr->txQuest[194], GetTargetLocationName(), GetStartLocationName()));
+			OnUpdate(Format(questMgr->txQuest[194], GetTargetLocationName(), GetStartLocationName()));
 		}
 		break;
 	case Progress::Finished:
@@ -118,18 +118,18 @@ void Quest_Orcs::SetProgress(int prog2)
 			state = Quest::Completed;
 
 			team->AddReward(4000, 12000);
-			OnUpdate(quest_mgr->txQuest[195]);
-			world->AddNews(Format(quest_mgr->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
+			OnUpdate(questMgr->txQuest[195]);
+			world->AddNews(Format(questMgr->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
-			if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+			if(questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
-				quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
-				quest_mgr->quest_orcs2->days = Random(30, 60);
+				questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
+				questMgr->quest_orcs2->days = Random(30, 60);
 				targetLoc->active_quest = nullptr;
 				targetLoc = nullptr;
 			}
 			else
-				quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
+				questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
 		}
 		break;
 	}
@@ -145,7 +145,7 @@ cstring Quest_Orcs::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "naszego_miasta")
-		return LocationHelper::IsCity(startLoc) ? quest_mgr->txQuest[72] : quest_mgr->txQuest[73];
+		return LocationHelper::IsCity(startLoc) ? questMgr->txQuest[72] : questMgr->txQuest[73];
 	else
 	{
 		assert(0);
@@ -163,7 +163,7 @@ bool Quest_Orcs::IfNeedTalk(cstring topic) const
 bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
-		return quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
+		return questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
 	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
 		return world->GetCurrentLocation() == startLoc;
 	assert(0);
@@ -214,8 +214,8 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 //=================================================================================================
 void Quest_Orcs2::Init()
 {
-	quest_mgr->RegisterSpecialIfHandler(this, "q_orkowie_zaakceptowano");
-	quest_mgr->RegisterSpecialIfHandler(this, "q_orkowie_nie_ukonczono");
+	questMgr->RegisterSpecialIfHandler(this, "q_orkowie_zaakceptowano");
+	questMgr->RegisterSpecialIfHandler(this, "q_orkowie_nie_ukonczono");
 }
 
 //=================================================================================================
@@ -252,7 +252,7 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 //=================================================================================================
 void WarpToThroneOrcBoss()
 {
-	LocationPart& locPart = *game_level->localPart;
+	LocationPart& locPart = *gameLevel->localPart;
 
 	// search for boss
 	UnitData* ud = UnitData::Get("q_orkowie_boss");
@@ -272,7 +272,7 @@ void WarpToThroneOrcBoss()
 	assert(use);
 
 	// warp
-	game_level->WarpUnit(*u, use->pos);
+	gameLevel->WarpUnit(*u, use->pos);
 }
 
 //=================================================================================================
@@ -293,23 +293,23 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::Joined:
 		// add quest
 		{
-			OnStart(quest_mgr->txQuest[214]);
-			msgs.push_back(Format(quest_mgr->txQuest[170], world->GetDate()));
-			msgs.push_back(quest_mgr->txQuest[197]);
+			OnStart(questMgr->txQuest[214]);
+			msgs.push_back(Format(questMgr->txQuest[170], world->GetDate()));
+			msgs.push_back(questMgr->txQuest[197]);
 			if(orcs_state == Quest_Orcs2::State::Accepted)
 				orcs_state = Quest_Orcs2::State::OrcJoined;
 			else
 			{
 				orcs_state = Quest_Orcs2::State::CompletedJoined;
 				days = Random(30, 60);
-				quest_mgr->quest_orcs->targetLoc->active_quest = nullptr;
-				quest_mgr->quest_orcs->targetLoc = nullptr;
+				questMgr->quest_orcs->targetLoc->active_quest = nullptr;
+				questMgr->quest_orcs->targetLoc = nullptr;
 			}
 			// join team
 			DialogContext::current->talker->dont_attack = false;
 			team->AddMember(DialogContext::current->talker, HeroType::Free);
-			if(team->free_recruits > 0)
-				--team->free_recruits;
+			if(team->freeRecruits > 0)
+				--team->freeRecruits;
 		}
 		break;
 	case Progress::TalkedAboutCamp:
@@ -320,7 +320,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			targetLoc->st = 11;
 			targetLoc->active_quest = this;
 			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
-			OnUpdate(quest_mgr->txQuest[198]);
+			OnUpdate(questMgr->txQuest[198]);
 			orcs_state = Quest_Orcs2::State::ToldAboutCamp;
 		}
 		break;
@@ -332,13 +332,13 @@ void Quest_Orcs2::SetProgress(int prog2)
 			targetLoc->SetKnown();
 			done = false;
 			location_event_handler = this;
-			OnUpdate(Format(quest_mgr->txQuest[199], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[199], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str()));
 		}
 		break;
 	case Progress::ClearedCamp:
 		{
 			orc->OrderAutoTalk();
-			world->AddNews(quest_mgr->txQuest[200]);
+			world->AddNews(questMgr->txQuest[200]);
 			team->AddExp(14000);
 		}
 		break;
@@ -348,7 +348,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			days = Random(25, 50);
 			targetLoc->active_quest = nullptr;
 			targetLoc = nullptr;
-			OnUpdate(quest_mgr->txQuest[201]);
+			OnUpdate(questMgr->txQuest[201]);
 		}
 		break;
 	case Progress::SelectWarrior:
@@ -411,7 +411,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			target.active_quest = this;
 			target.state = LS_HIDDEN;
 			targetLoc = &target;
-			OnUpdate(quest_mgr->txQuest[202]);
+			OnUpdate(questMgr->txQuest[202]);
 			orcs_state = State::ToldAboutBase;
 		}
 		break;
@@ -426,7 +426,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			unit_event_handler = this;
 			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
 			Location& nearl = *world->GetLocation(near_loc);
-			OnUpdate(Format(quest_mgr->txQuest[203], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str(), targetLoc->name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[203], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str(), targetLoc->name.c_str()));
 			done = false;
 			orcs_state = State::GenerateOrcs;
 		}
@@ -434,18 +434,18 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::KilledBoss:
 		{
 			orc->OrderAutoTalk();
-			OnUpdate(quest_mgr->txQuest[204]);
-			world->AddNews(quest_mgr->txQuest[205]);
+			OnUpdate(questMgr->txQuest[204]);
+			world->AddNews(questMgr->txQuest[205]);
 			team->AddLearningPoint();
 		}
 		break;
 	case Progress::Finished:
 		{
-			LocationPart& locPart = *game_level->localPart;
+			LocationPart& locPart = *gameLevel->localPart;
 			state = Quest::Completed;
 			team->AddReward(Random(9000, 11000), 25000);
-			OnUpdate(quest_mgr->txQuest[206]);
-			quest_mgr->EndUniqueQuest();
+			OnUpdate(questMgr->txQuest[206]);
+			questMgr->EndUniqueQuest();
 
 			// gorush - move to throne
 			team->RemoveMember(orc);
@@ -661,15 +661,15 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	{
 	case OrcClass::Warrior:
 	default:
-		class_name = quest_mgr->txQuest[207];
+		class_name = questMgr->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
 		break;
 	case OrcClass::Hunter:
-		class_name = quest_mgr->txQuest[208];
+		class_name = questMgr->txQuest[208];
 		udi = "q_orkowie_gorush_lowca";
 		break;
 	case OrcClass::Shaman:
-		class_name = quest_mgr->txQuest[209];
+		class_name = questMgr->txQuest[209];
 		udi = "q_orkowie_gorush_szaman";
 		break;
 	}
@@ -677,7 +677,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	UnitData* ud = UnitData::Get(udi);
 	orc->ChangeBase(ud, true);
 
-	OnUpdate(Format(quest_mgr->txQuest[210], class_name));
+	OnUpdate(Format(questMgr->txQuest[210], class_name));
 
 	prog = Progress::ChangedClass;
 	orcs_state = State::PickedClass;

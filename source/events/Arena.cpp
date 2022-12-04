@@ -23,15 +23,15 @@
 //=================================================================================================
 void Arena::Init()
 {
-	quest_mgr->RegisterSpecialHandler(this, "use_arena");
-	quest_mgr->RegisterSpecialHandler(this, "arena_combat");
-	quest_mgr->RegisterSpecialHandler(this, "pvp_gather");
-	quest_mgr->RegisterSpecialHandler(this, "start_pvp");
-	quest_mgr->RegisterSpecialHandler(this, "pvp");
-	quest_mgr->RegisterSpecialIfHandler(this, "arena_can_combat");
-	quest_mgr->RegisterSpecialIfHandler(this, "is_arena_free");
-	quest_mgr->RegisterSpecialIfHandler(this, "have_player");
-	quest_mgr->RegisterSpecialIfHandler(this, "waiting_for_pvp");
+	questMgr->RegisterSpecialHandler(this, "use_arena");
+	questMgr->RegisterSpecialHandler(this, "arena_combat");
+	questMgr->RegisterSpecialHandler(this, "pvp_gather");
+	questMgr->RegisterSpecialHandler(this, "start_pvp");
+	questMgr->RegisterSpecialHandler(this, "pvp");
+	questMgr->RegisterSpecialIfHandler(this, "arena_can_combat");
+	questMgr->RegisterSpecialIfHandler(this, "is_arena_free");
+	questMgr->RegisterSpecialIfHandler(this, "have_player");
+	questMgr->RegisterSpecialIfHandler(this, "waiting_for_pvp");
 }
 
 //=================================================================================================
@@ -75,9 +75,9 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "pvp_gather") == 0)
 	{
 		near_players.clear();
-		for(Unit& unit : team->active_members)
+		for(Unit& unit : team->activeMembers)
 		{
-			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, game_level->city_ctx->arena_pos) < 5.f)
+			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arena_pos) < 5.f)
 				near_players.push_back(&unit);
 		}
 		near_players_str.resize(near_players.size());
@@ -93,7 +93,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 	{
 		int id = int(msg[4] - '1');
 		Unit* u = near_players[id];
-		if(Vec3::Distance2d(u->pos, game_level->city_ctx->arena_pos) > 5.f)
+		if(Vec3::Distance2d(u->pos, gameLevel->cityCtx->arena_pos) > 5.f)
 		{
 			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
 			ctx.Talk(ctx.dialog_s_text.c_str());
@@ -137,7 +137,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 bool Arena::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "arena_can_combat") == 0)
-		return !world->IsSameWeek(game_level->city_ctx->arena_time);
+		return !world->IsSameWeek(gameLevel->cityCtx->arena_time);
 	if(strcmp(msg, "is_arena_free") == 0)
 		return free;
 	else if(strncmp(msg, "have_player/", 12) == 0)
@@ -158,7 +158,7 @@ void Arena::SpawnArenaViewers(int count)
 
 	vector<Mesh::Point*> points;
 	UnitData& ud = *UnitData::Get("viewer");
-	InsideBuilding* arena = game_level->GetArena();
+	InsideBuilding* arena = gameLevel->GetArena();
 	Mesh* mesh = arena->building->inside_mesh;
 
 	for(vector<Mesh::Point>::iterator it = mesh->attachPoints.begin(), end = mesh->attachPoints.end(); it != end; ++it)
@@ -174,7 +174,7 @@ void Arena::SpawnArenaViewers(int count)
 		points.erase(points.begin() + id);
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
-		Unit* u = game_level->SpawnUnitNearLocation(*arena, pos, ud, &look_at, -1, 2.f);
+		Unit* u = gameLevel->SpawnUnitNearLocation(*arena, pos, ud, &look_at, -1, 2.f);
 		if(u)
 		{
 			u->ai->loc_timer = Random(6.f, 12.f);
@@ -188,7 +188,7 @@ void Arena::SpawnArenaViewers(int count)
 //=================================================================================================
 void Arena::Clean()
 {
-	InsideBuilding* arena = game_level->city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA);
+	InsideBuilding* arena = gameLevel->cityCtx->FindInsideBuilding(BuildingGroup::BG_ARENA);
 
 	// wyrzuæ ludzi z areny
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
@@ -196,11 +196,11 @@ void Arena::Clean()
 		Unit& u = **it;
 		u.frozen = FROZEN::NO;
 		u.in_arena = -1;
-		u.locPart = game_level->localPart;
+		u.locPart = gameLevel->localPart;
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
 			u.Standup(false, true);
-		game_level->WarpUnit(u, arena->outside_spawn);
+		gameLevel->WarpUnit(u, arena->outside_spawn);
 		u.rot = arena->outside_rot;
 	}
 	RemoveArenaViewers();
@@ -212,12 +212,12 @@ void Arena::Clean()
 void Arena::RemoveArenaViewers()
 {
 	UnitData* ud = UnitData::Get("viewer");
-	LocationPart& locPart = *game_level->GetArena();
+	LocationPart& locPart = *gameLevel->GetArena();
 
 	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
-			game_level->RemoveUnit(*it);
+			gameLevel->RemoveUnit(*it);
 	}
 
 	viewers.clear();
@@ -228,7 +228,7 @@ void Arena::UpdatePvpRequest(float dt)
 {
 	if(game->paused)
 		return;
-	if(game->game_state == GS_LEVEL && Net::IsOnline() && pvp_response.ok)
+	if(game->gameState == GS_LEVEL && Net::IsOnline() && pvp_response.ok)
 	{
 		pvp_response.timer += dt;
 		if(pvp_response.timer >= 5.f)
@@ -242,7 +242,7 @@ void Arena::UpdatePvpRequest(float dt)
 			if(Net::IsServer())
 			{
 				if(pvp_response.from == game->pc->unit)
-					game_gui->AddMsg(Format(game->txPvpRefuse, pvp_response.to->player->name.c_str()));
+					gameGui->AddMsg(Format(game->txPvpRefuse, pvp_response.to->player->name.c_str()));
 				else
 				{
 					NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
@@ -268,14 +268,14 @@ void Arena::StartArenaCombat(int level)
 	state = WAITING_TO_WARP;
 	timer = 0.f;
 	difficulty = level;
-	game_level->city_ctx->arena_time = world->GetWorldtime();
+	gameLevel->cityCtx->arena_time = world->GetWorldtime();
 	units.clear();
 
 	// dodaj gracza na arenê
 	if(ctx.is_local)
 	{
-		game->fallback_type = FALLBACK::ARENA;
-		game->fallback_t = -1.f;
+		game->fallbackType = FALLBACK::ARENA;
+		game->fallbackTimer = -1.f;
 	}
 	else
 	{
@@ -297,7 +297,7 @@ void Arena::StartArenaCombat(int level)
 
 	for(Unit& unit : team->members)
 	{
-		if(unit.frozen != FROZEN::NO || Vec3::Distance2d(unit.pos, game_level->city_ctx->arena_pos) > 5.f)
+		if(unit.frozen != FROZEN::NO || Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arena_pos) > 5.f)
 			continue;
 		if(unit.IsPlayer())
 		{
@@ -312,8 +312,8 @@ void Arena::StartArenaCombat(int level)
 
 			if(unit.player == game->pc)
 			{
-				game->fallback_type = FALLBACK::ARENA;
-				game->fallback_t = -1.f;
+				game->fallbackType = FALLBACK::ARENA;
+				game->fallbackTimer = -1.f;
 			}
 			else
 			{
@@ -368,10 +368,10 @@ void Arena::StartArenaCombat(int level)
 	part->Fill(group, min_level, max_level);
 
 	// spawn enemies
-	InsideBuilding* arena = game_level->GetArena();
+	InsideBuilding* arena = gameLevel->GetArena();
 	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl, units.size()))
 	{
-		Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region2, *spawn.first, spawn.second);
+		Unit* u = gameLevel->SpawnUnitInsideRegion(*arena, arena->region2, *spawn.first, spawn.second);
 		if(u)
 		{
 			u->rot = 0.f;
@@ -392,7 +392,7 @@ void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 		else
 		{
 			if(pvp_response.from->player == game->pc)
-				game_gui->AddMsg(Format(game->txPvpRefuse, info.name.c_str()));
+				gameGui->AddMsg(Format(game->txPvpRefuse, info.name.c_str()));
 			else
 			{
 				NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
@@ -423,8 +423,8 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	// fallback gracza
 	if(player == game->pc)
 	{
-		game->fallback_type = FALLBACK::ARENA;
-		game->fallback_t = -1.f;
+		game->fallbackType = FALLBACK::ARENA;
+		game->fallbackTimer = -1.f;
 	}
 	else
 	{
@@ -437,8 +437,8 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	{
 		if(unit->player == game->pc)
 		{
-			game->fallback_type = FALLBACK::ARENA;
-			game->fallback_t = -1.f;
+			game->fallbackType = FALLBACK::ARENA;
+			game->fallbackTimer = -1.f;
 		}
 		else
 		{
@@ -500,13 +500,13 @@ void Arena::Update(float dt)
 				for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 				{
 					if((*it)->in_arena == 0)
-						game_level->WarpUnit(*it, WARP_ARENA);
+						gameLevel->WarpUnit(*it, WARP_ARENA);
 				}
 			}
 			else
 			{
 				for(Unit* unit : units)
-					game_level->WarpUnit(unit, WARP_ARENA);
+					gameLevel->WarpUnit(unit, WARP_ARENA);
 
 				if(!units.empty())
 				{
@@ -546,8 +546,8 @@ void Arena::Update(float dt)
 		timer += dt;
 		if(timer >= 2.f)
 		{
-			if(game_level->GetArena() == game->pc->unit->locPart)
-				soundMgr->PlaySound2d(game_res->sArenaFight);
+			if(gameLevel->GetArena() == game->pc->unit->locPart)
+				soundMgr->PlaySound2d(gameRes->sArenaFight);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -619,8 +619,8 @@ void Arena::Update(float dt)
 					victory_sound = true;
 			}
 
-			if(game_level->GetArena() == game->pc->unit->locPart)
-				soundMgr->PlaySound2d(victory_sound ? game_res->sArenaWin : game_res->sArenaLost);
+			if(gameLevel->GetArena() == game->pc->unit->locPart)
+				soundMgr->PlaySound2d(victory_sound ? gameRes->sArenaWin : gameRes->sArenaLost);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -641,8 +641,8 @@ void Arena::Update(float dt)
 				{
 					if((*it)->player == game->pc)
 					{
-						game->fallback_type = FALLBACK::ARENA_EXIT;
-						game->fallback_t = -1.f;
+						game->fallbackType = FALLBACK::ARENA_EXIT;
+						game->fallbackTimer = -1.f;
 					}
 					else
 					{
@@ -690,7 +690,7 @@ void Arena::Update(float dt)
 				{
 					if(unit->in_arena != 0)
 					{
-						game_level->RemoveUnit(unit);
+						gameLevel->RemoveUnit(unit);
 						continue;
 					}
 
@@ -699,7 +699,7 @@ void Arena::Update(float dt)
 					if(unit->hp <= 0.f)
 						unit->Standup(false);
 
-					game_level->WarpUnit(unit, WARP_OUTSIDE);
+					gameLevel->WarpUnit(unit, WARP_OUTSIDE);
 
 					if(Net::IsOnline())
 					{
@@ -718,7 +718,7 @@ void Arena::Update(float dt)
 					if(unit->hp <= 0.f)
 						unit->Standup(false);
 
-					game_level->WarpUnit(unit, WARP_OUTSIDE);
+					gameLevel->WarpUnit(unit, WARP_OUTSIDE);
 
 					if(Net::IsOnline())
 					{
@@ -742,7 +742,7 @@ void Arena::Update(float dt)
 				units.clear();
 			}
 			else
-				quest_mgr->quest_tournament->FinishCombat();
+				questMgr->quest_tournament->FinishCombat();
 			if(state != WAITING_TO_EXIT_TALK)
 			{
 				mode = NONE;
@@ -875,9 +875,9 @@ void Arena::RewardExp(Unit* dead_unit)
 //=================================================================================================
 void Arena::SpawnUnit(const vector<Enemy>& units)
 {
-	InsideBuilding* arena = game_level->GetArena();
+	InsideBuilding* arena = gameLevel->GetArena();
 
-	game_level->CleanLevel(arena->partId);
+	gameLevel->CleanLevel(arena->partId);
 
 	for(const Enemy& unit : units)
 	{
@@ -885,7 +885,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 		{
 			if(unit.side)
 			{
-				Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region2, *unit.unit, unit.level);
+				Unit* u = gameLevel->SpawnUnitInsideRegion(*arena, arena->region2, *unit.unit, unit.level);
 				if(u)
 				{
 					u->rot = 0.f;
@@ -894,7 +894,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 			}
 			else
 			{
-				Unit* u = game_level->SpawnUnitInsideRegion(*arena, arena->region1, *unit.unit, unit.level);
+				Unit* u = gameLevel->SpawnUnitInsideRegion(*arena, arena->region1, *unit.unit, unit.level);
 				if(u)
 				{
 					u->rot = PI;

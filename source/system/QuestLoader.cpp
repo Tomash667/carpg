@@ -46,7 +46,7 @@ enum QuestKeyword
 //=================================================================================================
 void QuestLoader::DoLoading()
 {
-	engine = script_mgr->GetEngine();
+	engine = scriptMgr->GetEngine();
 	module = engine->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 
 	Load("quests.txt", G_TOP);
@@ -210,7 +210,7 @@ void QuestLoader::ParseQuest(const string& id)
 	if(quest->category == QuestCategory::NotSet)
 		t.Throw("Quest type not set.");
 
-	quest_mgr->AddScriptedQuest(quest.Get());
+	questMgr->AddScriptedQuest(quest.Get());
 	QuestScheme::schemes.push_back(quest.Pin());
 }
 
@@ -236,7 +236,7 @@ void QuestLoader::ParseQuestList(const string& id)
 			info = nullptr;
 		else
 		{
-			info = quest_mgr->FindQuestInfo(quest_id);
+			info = questMgr->FindQuestInfo(quest_id);
 			if(!info)
 				t.Throw("Missing quest '%s'.", quest_id.c_str());
 		}
@@ -495,7 +495,7 @@ void QuestLoader::Finalize()
 			int type_id;
 			bool is_ref;
 			type->GetProperty(i, nullptr, &type_id, nullptr, nullptr, nullptr, &is_ref);
-			if(!script_mgr->CheckVarType(type_id, is_ref))
+			if(!scriptMgr->CheckVarType(type_id, is_ref))
 			{
 				Error("Quest '%s' invalid property declaration '%s'.", scheme->id.c_str(), type->GetPropertyDeclaration(i));
 				++content.errors;

@@ -128,9 +128,9 @@ void City::Load(GameReader& f)
 					pos = Vec3::TransformZero(point->mat);
 				pos += Vec3(float(b.pt.x + b.building->shift[b.dir].x) * 2, 0.f, float(b.pt.y + b.building->shift[b.dir].y) * 2);
 				b.walk_pt = pos;
-				game_level->terrain->SetHeightMap(h);
-				game_level->terrain->SetY(b.walk_pt);
-				game_level->terrain->RemoveHeightMap();
+				gameLevel->terrain->SetHeightMap(h);
+				gameLevel->terrain->SetY(b.walk_pt);
+				gameLevel->terrain->RemoveHeightMap();
 			}
 		}
 

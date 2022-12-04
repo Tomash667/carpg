@@ -138,11 +138,11 @@ public:
 		return keys[n];
 	}
 
-	bool AllowKeyboard() const { return IsSet(allow_input, ALLOW_KEYBOARD); }
-	bool AllowMouse() const { return IsSet(allow_input, ALLOW_MOUSE); }
+	bool AllowKeyboard() const { return IsSet(allowInput, ALLOW_KEYBOARD); }
+	bool AllowMouse() const { return IsSet(allowInput, ALLOW_MOUSE); }
 	bool KeyAllowed(Key k)
 	{
-		return IsSet(allow_input, KeyAllowState((byte)k));
+		return IsSet(allowInput, KeyAllowState((byte)k));
 	}
 	Key KeyDoReturn(GAME_KEYS gk, Input::Func f)
 	{
@@ -250,7 +250,7 @@ public:
 		return IsDebug() && input->Focus() && input->Down(k);
 	}
 
-	AllowInput allow_input;
+	AllowInput allowInput;
 
 private:
 	GameKey keys[GK_MAX];

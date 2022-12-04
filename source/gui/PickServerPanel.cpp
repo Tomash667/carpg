@@ -310,7 +310,7 @@ void PickServerPanel::Show(bool pickAutojoin)
 	}
 	catch(cstring err)
 	{
-		gui->SimpleDialog(err, (Control*)game_gui->mainMenu);
+		gui->SimpleDialog(err, (Control*)gameGui->mainMenu);
 		return;
 	}
 

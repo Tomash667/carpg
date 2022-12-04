@@ -9,9 +9,9 @@ struct TeamInfo
 	int players;
 	int npcs;
 	int heroes;
-	int sane_heroes;
-	int insane_heroes;
-	int free_members;
+	int saneHeroes;
+	int insaneHeroes;
+	int freeMembers;
 	int summons;
 };
 
@@ -25,7 +25,7 @@ public:
 		const Item* item;
 		int index, priority;
 		float value;
-		bool is_team;
+		bool isTeam;
 	};
 
 	struct Investment
@@ -37,12 +37,12 @@ public:
 	void AddMember(Unit* unit, HeroType type);
 	void RemoveMember(Unit* unit);
 	Unit* FindActiveTeamMember(int id);
-	bool FindItemInTeam(const Item* item, int quest_id, Unit** unit_result, int* i_index, bool check_npc = true);
+	bool FindItemInTeam(const Item* item, int questId, Unit** unitResult, int* outIndex, bool checkNpc = true);
 	Unit* FindTeamMember(cstring id);
 	uint GetActiveNpcCount();
-	uint GetActiveTeamSize() { return active_members.size(); }
+	uint GetActiveTeamSize() { return activeMembers.size(); }
 	Unit* GetLeader() const { return leader; }
-	void GetLeaderRequest(Entity<Unit>* unit) { leader_requests.push_back(unit); }
+	void GetLeaderRequest(Entity<Unit>* unit) { leaderRequests.push_back(unit); }
 	uint GetMaxSize() { return 8u; }
 	uint GetNpcCount();
 	Vec2 GetShare();
@@ -52,7 +52,7 @@ public:
 	uint GetPlayersCount();
 	uint GetTeamSize() { return members.size(); }
 	bool HaveActiveNpc();
-	bool HaveQuestItem(const Item* item, int quest_id = -1) { return FindItemInTeam(item, quest_id, nullptr, nullptr, true); }
+	bool HaveQuestItem(const Item* item, int questId = -1) { return FindItemInTeam(item, questId, nullptr, nullptr, true); }
 	bool HaveItem(const Item* item) { return FindItemInTeam(item, -1, nullptr, nullptr, true); }
 	bool HaveNpc();
 	bool HaveOtherActiveTeamMember() { return GetActiveTeamSize() > 1u; }
@@ -60,8 +60,8 @@ public:
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool HaveClass(Class* clas) const;
 	bool IsAnyoneAlive();
-	bool IsBandit() const { return is_bandit; }
-	bool IsLeader() const { return my_id == leader_id; }
+	bool IsBandit() const { return isBandit; }
+	bool IsLeader() const { return myId == leaderId; }
 	bool IsLeader(const Unit& unit) const { return &unit == GetLeader(); }
 	bool IsLeader(const Unit* unit) const { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);
@@ -77,22 +77,22 @@ public:
 	void TeamShareSellItem(DialogContext& ctx);
 	void TeamShareDecline(DialogContext& ctx);
 	void BuyTeamItems();
-	void CheckCredit(bool require_update = false, bool ignore = false);
-	bool RemoveQuestItem(const Item* item, int quest_id = -1);
+	void CheckCredit(bool requireUpdate = false, bool ignore = false);
+	bool RemoveQuestItem(const Item* item, int questId = -1);
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp, rvector<Unit>* units = nullptr);
 	void AddExpS(int exp) { AddExp(exp); }
-	void AddGold(int count, rvector<Unit>* to = nullptr, bool show = false, bool is_quest = false);
+	void AddGold(int count, rvector<Unit>* to = nullptr, bool show = false, bool isQuest = false);
 	void AddGoldS(int count) { AddGold(count, nullptr, true); }
 	void AddReward(int gold, int exp = 0);
 	void OnTravel(float dist);
 	void CalculatePlayersLevel();
 	uint RemoveItem(const Item* item, uint count);
-	void SetBandit(bool is_bandit);
+	void SetBandit(bool isBandit);
 	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
 	bool IsAnyoneTalking() const;
-	void Warp(const Vec3& pos, const Vec3& look_at);
+	void Warp(const Vec3& pos, const Vec3& lookAt);
 	int GetStPoints() const;
 	bool PersuasionCheck(int level);
 	const vector<Investment>& GetInvestments() const { return investments; }
@@ -104,12 +104,12 @@ public:
 	void ShortRest();
 
 	rvector<Unit> members; // all team members
-	rvector<Unit> active_members; // team members that get gold (without quest units)
+	rvector<Unit> activeMembers; // team members that get gold (without quest units)
 	Unit* leader;
-	int my_id, leader_id, players_level, free_recruits;
-	bool crazies_attack, // team attacked by crazies on current level
-		is_bandit, // attacked npc, now npc's are aggresive
-		anyone_talking;
+	int myId, leaderId, playersLevel, freeRecruits;
+	bool craziesAttack, // team attacked by crazies on current level
+		isBandit, // attacked npc, now npc's are aggresive
+		anyoneTalking;
 
 private:
 	struct CheckResult
@@ -124,19 +124,19 @@ private:
 
 	//------------------
 	// temporary - not saved
-	vector<Entity<Unit>*> leader_requests;
-	vector<int> pot_have;
+	vector<Entity<Unit>*> leaderRequests;
+	vector<int> potHave;
 	// team shares
-	vector<TeamShareItem> team_shares;
-	int team_share_id;
+	vector<TeamShareItem> teamShares;
+	int teamShareId;
 	// items to buy
 	struct ItemToBuy
 	{
 		const Item* item;
-		float ai_value;
+		float aiValue;
 		float priority;
 	};
-	vector<ItemToBuy> to_buy, to_buy2;
+	vector<ItemToBuy> toBuy, toBuy2;
 	//
 	vector<CheckResult> checkResults;
 	vector<Investment> investments;

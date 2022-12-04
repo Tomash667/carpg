@@ -14,7 +14,7 @@ InfoBox::InfoBox(const DialogInfo& info) : DialogBox(info)
 //=================================================================================================
 void InfoBox::Draw()
 {
-	DrawPanel(!game_gui->loadScreen->visible);
+	DrawPanel(!gameGui->loadScreen->visible);
 
 	// text
 	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };

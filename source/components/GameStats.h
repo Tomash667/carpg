@@ -4,7 +4,7 @@
 class GameStats
 {
 public:
-	int total_kills;
+	int totalKills;
 	// time spent playing on current save
 	int hour, minute, second;
 	float tick;

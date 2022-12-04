@@ -40,7 +40,7 @@
 #include <Render.h>
 #include <ResourceManager.h>
 
-GameGui* game_gui;
+GameGui* gameGui;
 FontPtr GameGui::font, GameGui::fontSmall, GameGui::fontBig;
 extern string g_system_dir;
 
@@ -279,8 +279,8 @@ void GameGui::UpdateGui(float dt)
 {
 	// handle panels
 	if(gui->HaveDialog() || (mpBox->visible && mpBox->itb.focus))
-		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game->game_state == GS_LEVEL && game->death_screen == 0 && !game->dialog_context.dialog_mode && !game->cutscene)
+		GKey.allowInput = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialog_mode && !game->cutscene)
 	{
 		OpenPanel open = levelGui->GetOpenPanel(),
 			to_open = OpenPanel::None;
@@ -309,7 +309,7 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Minimap:
 		default:
 			if(levelGui->useCursor)
-				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+				GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
@@ -319,7 +319,7 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Journal:
 		case OpenPanel::Book:
 		case OpenPanel::Craft:
-			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
@@ -329,8 +329,8 @@ void GameGui::UpdateGui(float dt)
 
 	// handle blocking input by gui
 	if(gui->HaveDialog() || (mpBox->visible && mpBox->itb.focus))
-		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game->game_state == GS_LEVEL && game->death_screen == 0 && !game->dialog_context.dialog_mode)
+		GKey.allowInput = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialog_mode)
 	{
 		switch(levelGui->GetOpenPanel())
 		{
@@ -338,26 +338,26 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Minimap:
 		default:
 			if(levelGui->useCursor)
-				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+				GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Ability:
-			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Journal:
 		case OpenPanel::Craft:
-			GKey.allow_input = GameKeys::ALLOW_NONE;
+			GKey.allowInput = GameKeys::ALLOW_NONE;
 			break;
 		}
 	}
 	else
-		GKey.allow_input = GameKeys::ALLOW_INPUT;
+		GKey.allowInput = GameKeys::ALLOW_INPUT;
 
 	// mp box
-	if(game->game_state == GS_LEVEL)
+	if(game->gameState == GS_LEVEL)
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
 			mpBox->visible = !mpBox->visible;
@@ -440,7 +440,7 @@ void GameGui::ShowMultiplayer()
 void GameGui::ShowQuitDialog()
 {
 	DialogInfo di;
-	di.text = game->hardcore_mode ? txReallyQuitHardcore : txReallyQuit;
+	di.text = game->hardcoreMode ? txReallyQuitHardcore : txReallyQuit;
 	di.event = [](int id)
 	{
 		if(id == BUTTON_YES)

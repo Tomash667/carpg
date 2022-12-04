@@ -55,14 +55,14 @@ void Quest_DireWolf::FireEvent(ScriptEvent& event)
 		{
 			// add dialog to hunters leader
 			UnitData* ud = UnitData::Get("hunter_leader");
-			Unit* unit = game_level->FindUnit(ud);
+			Unit* unit = gameLevel->FindUnit(ud);
 			unit->AddDialog(this, GetDialog("hunter"));
 		}
 		else
 		{
 			// spawn dire wolf
 			UnitData* ud = UnitData::Get("dire_wolf");
-			Unit* unit = game_level->SpawnUnitNearLocation(*game_level->localPart, Vec3(128, 0, 128), *ud);
+			Unit* unit = gameLevel->SpawnUnitNearLocation(*gameLevel->localPart, Vec3(128, 0, 128), *ud);
 			unit->AddEventHandler(this, EVENT_DIE);
 		}
 	}

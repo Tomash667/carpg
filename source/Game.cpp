@@ -98,36 +98,36 @@
 
 const float LIMIT_DT = 0.3f;
 Game* game;
-CustomCollisionWorld* phy_world;
+CustomCollisionWorld* phyWorld;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 //=================================================================================================
-Game::Game() : quickstart(QUICKSTART_NONE), inactiveUpdate(false), last_screenshot(0), draw_particle_sphere(false), draw_unit_radius(false),
-draw_hitbox(false), noai(false), testing(false), game_speed(1.f), next_seed(0), dont_wander(false), checkUpdates(true), skipTutorial(false), portal_anim(0),
-musicType(MusicType::Max), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr),
-rt_item_rot(nullptr), usePostfx(true), mp_timeout(10.f), screenshotFormat(ImageFormat::JPG), game_state(GS_LOAD), quickstart_slot(SaveSlot::MAX_SLOTS),
-in_load(false), tMinimap(nullptr)
+Game::Game() : quickstart(QUICKSTART_NONE), inactiveUpdate(false), lastScreenshot(0), drawParticleSphere(false), drawUnitRadius(false),
+drawHitbox(false), noai(false), testing(false), gameSpeed(1.f), nextSeed(0), dontWander(false), checkUpdates(true), skipTutorial(false), portalAnim(0),
+musicType(MusicType::Max), endOfGame(false), preparedStream(64 * 1024), paused(false), drawFlags(0xFFFFFFFF), prevGameState(GS_LOAD), rtSave(nullptr),
+rtItemRot(nullptr), usePostfx(true), mpTimeout(10.f), screenshotFormat(ImageFormat::JPG), gameState(GS_LOAD), quickstartSlot(SaveSlot::MAX_SLOTS),
+inLoad(false), tMinimap(nullptr)
 {
-	dialog_context.is_local = true;
-	uv_mod = Terrain::DEFAULT_UV_MOD;
+	dialogContext.is_local = true;
+	uvMod = Terrain::DEFAULT_UV_MOD;
 
 	aiMgr = new AIManager;
 	arena = new Arena;
 	cmdp = new CommandParser;
-	dun_mesh_builder = new DungeonMeshBuilder;
-	game_gui = new GameGui;
-	game_level = new Level;
-	game_res = new GameResources;
-	game_stats = new GameStats;
-	loc_gen_factory = new LocationGeneratorFactory;
+	dungeonMeshBuilder = new DungeonMeshBuilder;
+	gameGui = new GameGui;
+	gameLevel = new Level;
+	gameRes = new GameResources;
+	gameStats = new GameStats;
+	locGenFactory = new LocationGeneratorFactory;
 	messenger = new Messenger;
 	net = new Net;
 	pathfinding = new Pathfinding;
-	quest_mgr = new QuestManager;
-	script_mgr = new ScriptManager;
+	questMgr = new QuestManager;
+	scriptMgr = new ScriptManager;
 	team = new Team;
 	world = new World;
 }
@@ -143,7 +143,7 @@ Game::~Game()
 bool Game::OnInit()
 {
 	Info("Game: Initializing game.");
-	game_state = GS_LOAD_MENU;
+	gameState = GS_LOAD_MENU;
 
 	try
 	{
@@ -176,13 +176,13 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
-	phy_world = engine->GetPhysicsWorld();
+	phyWorld = engine->GetPhysicsWorld();
 	engine->UnlockCursor(false);
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
 
-	game_gui->PreInit();
+	gameGui->PreInit();
 
 	PreloadLanguage();
 	PreloadData();
@@ -222,10 +222,10 @@ void Game::PreloadData()
 {
 	resMgr->AddDir("data/preload");
 
-	GameGui::font = game_gui->gui->GetFont("Arial", 12, 8, 2);
+	GameGui::font = gameGui->gui->GetFont("Arial", 12, 8, 2);
 
 	// loadscreen textures
-	game_gui->loadScreen->LoadData();
+	gameGui->loadScreen->LoadData();
 
 	// intro music
 	if(!soundMgr->IsDisabled())
@@ -243,20 +243,20 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	game_gui->loadScreen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
+	gameGui->loadScreen->Setup(0.f, 0.33f, 16, txCreatingListOfFiles);
 
 	AddFilesystem();
 	arena->Init();
-	game_gui->Init();
-	game_res->Init();
+	gameGui->Init();
+	gameRes->Init();
 	net->Init();
-	quest_mgr->Init();
-	script_mgr->Init();
-	game_gui->mainMenu->UpdateCheckVersion();
+	questMgr->Init();
+	scriptMgr->Init();
+	gameGui->mainMenu->UpdateCheckVersion();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	game_gui->server->Init();
-	game_gui->loadScreen->Tick(txLoadingShaders);
+	gameGui->server->Init();
+	gameGui->loadScreen->Tick(txLoadingShaders);
 	ConfigureGame();
 }
 
@@ -276,8 +276,8 @@ void Game::AddFilesystem()
 void Game::LoadDatafiles()
 {
 	Info("Game: Loading system.");
-	load_errors = 0;
-	load_warnings = 0;
+	loadErrors = 0;
+	loadWarnings = 0;
 
 	// content
 	content.system_dir = g_system_dir;
@@ -286,40 +286,40 @@ void Game::LoadDatafiles()
 		switch(id)
 		{
 		case Content::Id::Abilities:
-			game_gui->loadScreen->Tick(txLoadingAbilities);
+			gameGui->loadScreen->Tick(txLoadingAbilities);
 			break;
 		case Content::Id::Buildings:
-			game_gui->loadScreen->Tick(txLoadingBuildings);
+			gameGui->loadScreen->Tick(txLoadingBuildings);
 			break;
 		case Content::Id::Classes:
-			game_gui->loadScreen->Tick(txLoadingClasses);
+			gameGui->loadScreen->Tick(txLoadingClasses);
 			break;
 		case Content::Id::Dialogs:
-			game_gui->loadScreen->Tick(txLoadingDialogs);
+			gameGui->loadScreen->Tick(txLoadingDialogs);
 			break;
 		case Content::Id::Items:
-			game_gui->loadScreen->Tick(txLoadingItems);
+			gameGui->loadScreen->Tick(txLoadingItems);
 			break;
 		case Content::Id::Locations:
-			game_gui->loadScreen->Tick(txLoadingLocations);
+			gameGui->loadScreen->Tick(txLoadingLocations);
 			break;
 		case Content::Id::Musics:
-			game_gui->loadScreen->Tick(txLoadingMusics);
+			gameGui->loadScreen->Tick(txLoadingMusics);
 			break;
 		case Content::Id::Objects:
-			game_gui->loadScreen->Tick(txLoadingObjects);
+			gameGui->loadScreen->Tick(txLoadingObjects);
 			break;
 		case Content::Id::Perks:
-			game_gui->loadScreen->Tick(txLoadingPerks);
+			gameGui->loadScreen->Tick(txLoadingPerks);
 			break;
 		case Content::Id::Quests:
-			game_gui->loadScreen->Tick(txLoadingQuests);
+			gameGui->loadScreen->Tick(txLoadingQuests);
 			break;
 		case Content::Id::Required:
-			game_gui->loadScreen->Tick(txLoadingRequired);
+			gameGui->loadScreen->Tick(txLoadingRequired);
 			break;
 		case Content::Id::Units:
-			game_gui->loadScreen->Tick(txLoadingUnits);
+			gameGui->loadScreen->Tick(txLoadingUnits);
 			break;
 		default:
 			assert(0);
@@ -334,7 +334,7 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	game_gui->loadScreen->Tick(txLoadingLanguageFiles);
+	gameGui->loadScreen->Tick(txLoadingLanguageFiles);
 
 	Language::LoadLanguageFiles();
 
@@ -345,18 +345,18 @@ void Game::LoadLanguageFiles()
 	SetGameText();
 	SetStatsText();
 	arena->LoadLanguage();
-	game_gui->LoadLanguage();
-	game_level->LoadLanguage();
-	game_res->LoadLanguage();
+	gameGui->LoadLanguage();
+	gameLevel->LoadLanguage();
+	gameRes->LoadLanguage();
 	net->LoadLanguage();
-	quest_mgr->LoadLanguage();
+	questMgr->LoadLanguage();
 	world->LoadLanguage();
 
 	uint language_errors = Language::GetErrors();
 	if(language_errors != 0)
 	{
 		Error("Game: %u language errors.", language_errors);
-		load_warnings += language_errors;
+		loadWarnings += language_errors;
 	}
 }
 
@@ -366,21 +366,21 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	game_gui->loadScreen->Tick(txConfiguringGame);
+	gameGui->loadScreen->Tick(txConfiguringGame);
 
 	cmdp->AddCommands();
 	settings.ResetGameKeys();
 	settings.LoadGameKeys(cfg);
-	load_errors += BaseLocation::SetRoomPointers();
+	loadErrors += BaseLocation::SetRoomPointers();
 
 	// shaders
-	render->RegisterShader(basic_shader = new BasicShader);
-	render->RegisterShader(grass_shader = new GrassShader);
-	render->RegisterShader(particle_shader = new ParticleShader);
-	render->RegisterShader(postfx_shader = new PostfxShader);
-	render->RegisterShader(skybox_shader = new SkyboxShader);
-	render->RegisterShader(terrain_shader = new TerrainShader);
-	render->RegisterShader(glow_shader = new GlowShader(postfx_shader));
+	render->RegisterShader(basicShader = new BasicShader);
+	render->RegisterShader(grassShader = new GrassShader);
+	render->RegisterShader(particleShader = new ParticleShader);
+	render->RegisterShader(postfxShader = new PostfxShader);
+	render->RegisterShader(skyboxShader = new SkyboxShader);
+	render->RegisterShader(terrainShader = new TerrainShader);
+	render->RegisterShader(glowShader = new GlowShader(postfxShader));
 
 	tMinimap = render->CreateDynamicTexture(Int2(128));
 	CreateRenderTargets();
@@ -394,8 +394,8 @@ void Game::LoadData()
 	Info("Game: Loading data.");
 
 	resMgr->PrepareLoadScreen(0.33f);
-	game_gui->loadScreen->Tick(txPreloadAssets);
-	game_res->LoadData();
+	gameGui->loadScreen->Tick(txPreloadAssets);
+	gameRes->LoadData();
 	resMgr->StartLoadScreen();
 }
 
@@ -407,12 +407,12 @@ void Game::PostconfigureGame()
 	Info("Game: Postconfiguring game.");
 
 	engine->LockCursor();
-	game_gui->PostInit();
-	game_level->Init();
-	loc_gen_factory->Init();
+	gameGui->PostInit();
+	gameLevel->Init();
+	locGenFactory->Init();
 	world->Init();
-	quest_mgr->InitLists();
-	dun_mesh_builder->Build();
+	questMgr->InitLists();
+	dungeonMeshBuilder->Build();
 
 	// create save folders
 	io::CreateDirectory("saves");
@@ -429,19 +429,19 @@ void Game::PostconfigureGame()
 
 	// show errors notification
 	bool start_game_mode = true;
-	load_errors += content.errors;
-	load_warnings += content.warnings;
-	if(load_errors > 0 || load_warnings > 0)
+	loadErrors += content.errors;
+	loadWarnings += content.warnings;
+	if(loadErrors > 0 || loadWarnings > 0)
 	{
 		// show message in release, notification in debug
-		if(load_errors > 0)
-			Error("Game: %u loading errors, %u warnings.", load_errors, load_warnings);
+		if(loadErrors > 0)
+			Error("Game: %u loading errors, %u warnings.", loadErrors, loadWarnings);
 		else
-			Warn("Game: %u loading warnings.", load_warnings);
-		Texture* img = (load_errors > 0 ? game_res->tError : game_res->tWarning);
-		cstring text = Format(txHaveErrors, load_errors, load_warnings);
+			Warn("Game: %u loading warnings.", loadWarnings);
+		Texture* img = (loadErrors > 0 ? gameRes->tError : gameRes->tWarning);
+		cstring text = Format(txHaveErrors, loadErrors, loadWarnings);
 		if(IsDebug())
-			game_gui->notifications->Add(text, img, 5.f);
+			gameGui->notifications->Add(text, img, 5.f);
 		else
 		{
 			DialogInfo info;
@@ -450,7 +450,7 @@ void Game::PostconfigureGame()
 			info.type = DIALOG_OK;
 			info.img = img;
 			info.event = [this](int result) { StartGameMode(); };
-			info.parent = game_gui->mainMenu;
+			info.parent = gameGui->mainMenu;
 			info.order = DialogOrder::TopMost;
 			info.pause = false;
 			info.autoWrap = true;
@@ -465,9 +465,9 @@ void Game::PostconfigureGame()
 	SaveCfg();
 
 	// end load screen, show menu
-	game_state = GS_MAIN_MENU;
-	game_gui->loadScreen->visible = false;
-	game_gui->mainMenu->Show();
+	gameState = GS_MAIN_MENU;
+	gameGui->loadScreen->visible = false;
+	gameGui->mainMenu->Show();
 	SetMusic(MusicType::Title);
 
 	// start game mode if selected quickmode
@@ -489,7 +489,7 @@ void Game::StartGameMode()
 		break;
 	case QUICKSTART_HOST:
 	case QUICKSTART_LOAD_MP:
-		if(player_name.empty())
+		if(playerName.empty())
 		{
 			Warn("Quickstart: Can't create server, no player nick.");
 			break;
@@ -504,10 +504,10 @@ void Game::StartGameMode()
 		{
 			net->mp_load = true;
 			net->mp_quickload = false;
-			if(TryLoadGame(quickstart_slot, false, false))
+			if(TryLoadGame(quickstartSlot, false, false))
 			{
-				game_gui->createServer->CloseDialog();
-				game_gui->server->autoready = true;
+				gameGui->createServer->CloseDialog();
+				gameGui->server->autoready = true;
 			}
 			else
 			{
@@ -529,20 +529,20 @@ void Game::StartGameMode()
 		net->OnNewGameServer();
 		break;
 	case QUICKSTART_JOIN_LAN:
-		if(!player_name.empty())
+		if(!playerName.empty())
 		{
-			game_gui->server->autoready = true;
-			game_gui->pickServer->Show(true);
+			gameGui->server->autoready = true;
+			gameGui->pickServer->Show(true);
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_JOIN_IP:
-		if(!player_name.empty())
+		if(!playerName.empty())
 		{
 			if(!serverIp.empty())
 			{
-				game_gui->server->autoready = true;
+				gameGui->server->autoready = true;
 				QuickJoinIp();
 			}
 			else
@@ -552,7 +552,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_LOAD:
-		if(!TryLoadGame(quickstart_slot, false, false))
+		if(!TryLoadGame(quickstartSlot, false, false))
 			Error("Quickload failed.");
 		break;
 	default:
@@ -564,17 +564,17 @@ void Game::StartGameMode()
 //=================================================================================================
 void Game::OnCleanup()
 {
-	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
+	if(gameState != GS_QUIT && gameState != GS_LOAD_MENU)
 		ClearGame();
 
-	if(game_gui && game_gui->mainMenu)
-		game_gui->mainMenu->ShutdownThread();
+	if(gameGui && gameGui->mainMenu)
+		gameGui->mainMenu->ShutdownThread();
 
 	content.CleanupContent();
 
 	ClearQuadtree();
 
-	draw_batch.Clear();
+	drawBatch.Clear();
 	delete tMinimap;
 
 	Language::Cleanup();
@@ -582,17 +582,17 @@ void Game::OnCleanup()
 	delete aiMgr;
 	delete arena;
 	delete cmdp;
-	delete dun_mesh_builder;
-	delete game_gui;
-	delete game_level;
-	delete game_res;
-	delete game_stats;
-	delete loc_gen_factory;
+	delete dungeonMeshBuilder;
+	delete gameGui;
+	delete gameLevel;
+	delete gameRes;
+	delete gameStats;
+	delete locGenFactory;
 	delete messenger;
 	delete net;
 	delete pathfinding;
-	delete quest_mgr;
-	delete script_mgr;
+	delete questMgr;
+	delete scriptMgr;
 	delete team;
 	delete world;
 }
@@ -607,22 +607,22 @@ void Game::OnDraw()
 //=================================================================================================
 void Game::DrawGame()
 {
-	if(game_state == GS_LEVEL)
+	if(gameState == GS_LEVEL)
 	{
 		LocationPart& locPart = *pc->unit->locPart;
-		game_level->camera.zfar = locPart.lvlPart->draw_range;
-		ListDrawObjects(locPart, game_level->camera.frustum);
+		gameLevel->camera.zfar = locPart.lvlPart->draw_range;
+		ListDrawObjects(locPart, gameLevel->camera.frustum);
 
 		vector<PostEffect> postEffects;
 		GetPostEffects(postEffects);
 
 		const bool usePostfx = !postEffects.empty();
-		const bool useGlow = !draw_batch.glow_nodes.empty();
+		const bool useGlow = !drawBatch.glow_nodes.empty();
 
 		if(usePostfx || useGlow)
-			postfx_shader->SetTarget();
+			postfxShader->SetTarget();
 
-		Scene* scene = game_level->localPart->lvlPart->scene;
+		Scene* scene = gameLevel->localPart->lvlPart->scene;
 		render->Clear(scene->clearColor);
 
 		// draw level
@@ -630,23 +630,23 @@ void Game::DrawGame()
 
 		// draw glow
 		if(useGlow)
-			glow_shader->Draw(game_level->camera, draw_batch.glow_nodes, usePostfx);
+			glowShader->Draw(gameLevel->camera, drawBatch.glow_nodes, usePostfx);
 
 		if(usePostfx)
 		{
 			if(!useGlow)
-				postfx_shader->Prepare();
-			postfx_shader->Draw(postEffects);
+				postfxShader->Prepare();
+			postfxShader->Draw(postEffects);
 		}
 
-		if(draw_batch.tmpGlow)
-			draw_batch.tmpGlow->tint = Vec4::One;
+		if(drawBatch.tmpGlow)
+			drawBatch.tmpGlow->tint = Vec4::One;
 	}
 	else
 		render->Clear(Color::Black);
 
 	// draw gui
-	game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+	gameGui->Draw(gameLevel->camera.matViewProj, IsSet(drawFlags, DF_GUI), IsSet(drawFlags, DF_MENU));
 }
 
 //=================================================================================================
@@ -676,16 +676,16 @@ void Game::OnUpdate(float dt)
 		dt = LIMIT_DT;
 
 	api->Update();
-	script_mgr->UpdateScripts(dt);
+	scriptMgr->UpdateScripts(dt);
 
 	if(Net::IsSingleplayer() || !paused)
 	{
 		// update time spent in game
-		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
-			game_stats->Update(dt);
+		if(gameState != GS_MAIN_MENU && gameState != GS_LOAD)
+			gameStats->Update(dt);
 	}
 
-	GKey.allow_input = GameKeys::ALLOW_INPUT;
+	GKey.allowInput = GameKeys::ALLOW_INPUT;
 
 	if(!engine->IsActive() || !engine->IsCursorLocked())
 	{
@@ -698,20 +698,20 @@ void Game::OnUpdate(float dt)
 
 	// fast quit (alt+f4)
 	if(input->Focus() && input->Shortcut(KEY_ALT, Key::F4) && !gui->HaveTopDialog("dialog_alt_f4"))
-		game_gui->ShowQuitDialog();
+		gameGui->ShowQuitDialog();
 
-	if(end_of_game)
+	if(endOfGame)
 	{
-		death_fade += dt;
-		GKey.allow_input = GameKeys::ALLOW_NONE;
+		deathFade += dt;
+		GKey.allowInput = GameKeys::ALLOW_NONE;
 	}
 
 	// global keys handling
-	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
+	if(GKey.allowInput == GameKeys::ALLOW_INPUT)
 	{
 		// handle open/close of console
 		if(!gui->HaveTopDialog("dialog_alt_f4") && !gui->HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
-			gui->ShowDialog(game_gui->console);
+			gui->ShowDialog(gameGui->console);
 
 		// unlock cursor
 		if(!engine->IsFullscreen() && engine->IsActive() && engine->IsCursorLocked() && input->Shortcut(KEY_CONTROL, Key::U))
@@ -733,7 +733,7 @@ void Game::OnUpdate(float dt)
 		{
 			// quicksave, quickload
 			bool console_open = gui->HaveTopDialog("console");
-			bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
+			bool special_key_allowed = (GKey.allowInput == GameKeys::ALLOW_KEYBOARD || GKey.allowInput == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
 			if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 				Quicksave();
 			if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
@@ -742,13 +742,13 @@ void Game::OnUpdate(float dt)
 	}
 
 	// update game gui
-	game_gui->UpdateGui(dt);
-	if(game_state == GS_EXIT_TO_MENU)
+	gameGui->UpdateGui(dt);
+	if(gameState == GS_EXIT_TO_MENU)
 	{
 		ExitToMenu();
 		return;
 	}
-	else if(game_state == GS_QUIT)
+	else if(gameState == GS_QUIT)
 	{
 		ClearGame();
 		engine->Shutdown();
@@ -757,46 +757,46 @@ void Game::OnUpdate(float dt)
 
 	// open game menu
 	if(GKey.AllowKeyboard() && CanShowMenu() && !cutscene && input->PressedRelease(Key::Escape))
-		game_gui->ShowMenu();
+		gameGui->ShowMenu();
 
 	// update game
-	if(!end_of_game && !cutscene)
+	if(!endOfGame && !cutscene)
 	{
 		arena->UpdatePvpRequest(dt);
 
 		// update fallback, can leave level so we need to check if we are still in GS_LEVEL
-		if(game_state == GS_LEVEL)
+		if(gameState == GS_LEVEL)
 			UpdateFallback(dt);
 
 		bool isPaused = false;
 
-		if(game_state == GS_LEVEL)
+		if(gameState == GS_LEVEL)
 		{
 			isPaused = (paused || (gui->HavePauseDialog() && Net::IsSingleplayer()));
 			if(!isPaused)
 				UpdateGame(dt);
 		}
 
-		if(game_state == GS_LEVEL)
+		if(gameState == GS_LEVEL)
 		{
 			if(Net::IsLocal())
 			{
 				if(Net::IsOnline())
 					net->UpdateWarpData(dt);
-				game_level->ProcessUnitWarps();
+				gameLevel->ProcessUnitWarps();
 			}
-			game_level->camera.Update(isPaused ? 0.f : dt);
+			gameLevel->camera.Update(isPaused ? 0.f : dt);
 		}
 	}
 	else if(cutscene)
 		UpdateFallback(dt);
 
-	if(Net::IsOnline() && Any(game_state, GS_LEVEL, GS_WORLDMAP))
+	if(Net::IsOnline() && Any(gameState, GS_LEVEL, GS_WORLDMAP))
 		UpdateGameNet(dt);
 
 	messenger->Process();
 
-	if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
+	if(Net::IsSingleplayer() && gameState != GS_MAIN_MENU)
 	{
 		assert(Net::changes.empty());
 	}
@@ -837,14 +837,14 @@ void Game::SetTitle(cstring mode, bool initial)
 }
 
 //=================================================================================================
-void Game::TakeScreenshot(bool no_gui)
+void Game::TakeScreenshot(bool noGui)
 {
-	if(no_gui)
+	if(noGui)
 	{
-		int old_flags = draw_flags;
-		draw_flags = (0xFFFF & ~DF_GUI);
+		int old_flags = drawFlags;
+		drawFlags = (0xFFFF & ~DF_GUI);
 		DrawGame();
-		draw_flags = old_flags;
+		drawFlags = old_flags;
 	}
 	else
 		DrawGame();
@@ -855,21 +855,21 @@ void Game::TakeScreenshot(bool no_gui)
 	tm lt;
 	localtime_s(&lt, &t);
 
-	if(t == last_screenshot)
-		++screenshot_count;
+	if(t == lastScreenshot)
+		++screenshotCount;
 	else
 	{
-		last_screenshot = t;
-		screenshot_count = 1;
+		lastScreenshot = t;
+		screenshotCount = 1;
 	}
 
 	cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
-		lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ImageFormatMethods::GetExtension(screenshotFormat));
+		lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshotCount, ImageFormatMethods::GetExtension(screenshotFormat));
 
 	render->SaveScreenshot(path, screenshotFormat);
 
 	cstring msg = Format("Screenshot saved to '%s'.", path);
-	game_gui->console->AddMsg(msg);
+	gameGui->console->AddMsg(msg);
 	Info(msg);
 }
 
@@ -885,9 +885,9 @@ void Game::ExitToMenu()
 //=================================================================================================
 void Game::DoExitToMenu()
 {
-	prev_game_state = game_state;
-	game_state = GS_EXIT_TO_MENU;
-	game_level->ready = false;
+	prevGameState = gameState;
+	gameState = GS_EXIT_TO_MENU;
+	gameLevel->ready = false;
 
 	StopAllSounds();
 	ClearGame();
@@ -895,30 +895,30 @@ void Game::DoExitToMenu()
 	if(resMgr->IsLoadScreen())
 		resMgr->CancelLoadScreen(true);
 
-	game_state = GS_MAIN_MENU;
+	gameState = GS_MAIN_MENU;
 	paused = false;
 	net->mp_load = false;
 	net->was_client = false;
 
 	SetMusic(MusicType::Title);
-	end_of_game = false;
+	endOfGame = false;
 
-	game_gui->CloseAllPanels();
+	gameGui->CloseAllPanels();
 	string msg;
 	DialogBox* box = gui->GetDialog("fatal");
-	bool console = game_gui->console->visible;
+	bool console = gameGui->console->visible;
 	if(box)
 		msg = box->text;
 	gui->CloseDialogs();
 	if(!msg.empty())
 		gui->SimpleDialog(msg.c_str(), nullptr, "fatal");
 	if(console)
-		gui->ShowDialog(game_gui->console);
-	game_gui->gameMenu->visible = false;
-	game_gui->levelGui->visible = false;
-	game_gui->worldMap->Hide();
-	game_gui->mainMenu->Show();
-	units_mesh_load.clear();
+		gui->ShowDialog(gameGui->console);
+	gameGui->gameMenu->visible = false;
+	gameGui->levelGui->visible = false;
+	gameGui->worldMap->Hide();
+	gameGui->mainMenu->Show();
+	unitsMeshLoad.clear();
 
 	SetTitle(nullptr);
 }
@@ -950,15 +950,15 @@ void Game::LoadCfg()
 	}
 	int slot = cfg.GetInt("loadslot", -1);
 	if(slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
-		quickstart_slot = slot;
+		quickstartSlot = slot;
 
 	// multiplayer mode
-	player_name = Truncate(cfg.GetString("nick"), 16);
+	playerName = Truncate(cfg.GetString("nick"), 16);
 	net->serverName = Truncate(cfg.GetString("serverName"), 16);
 	net->password = Truncate(cfg.GetString("serverPswd"), 16);
 	net->max_players = Clamp(cfg.GetUint("serverPlayers", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	serverIp = cfg.GetString("serverIp");
-	mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
+	mpTimeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 	net->serverLan = cfg.GetBool("serverLan");
 	net->joinLan = cfg.GetBool("joinLan");
 	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
@@ -966,9 +966,9 @@ void Game::LoadCfg()
 	// miscellaneous
 	changeTitle = cfg.GetBool("changeTitle");
 	checkUpdates = cfg.GetBool("checkUpdates", true);
-	default_devmode = cfg.GetBool("devmode", IsDebug());
-	devmode = default_devmode;
-	default_player_devmode = cfg.GetBool("playersDevmode", IsDebug());
+	defaultDevmode = cfg.GetBool("devmode", IsDebug());
+	devmode = defaultDevmode;
+	defaultPlayerDevmode = cfg.GetBool("playersDevmode", IsDebug());
 	hardcoreOption = cfg.GetBool("hardcoreOption");
 	inactiveUpdate = cfg.GetBool("inactiveUpdate");
 	skipTutorial = cfg.GetBool("skipTutorial");
@@ -997,8 +997,8 @@ void Game::SaveCfg()
 //=================================================================================================
 void Game::CreateRenderTargets()
 {
-	rt_save = render->CreateRenderTarget(Int2(256, 256));
-	rt_item_rot = render->CreateRenderTarget(Int2(128, 128));
+	rtSave = render->CreateRenderTarget(Int2(256, 256));
+	rtItemRot = render->CreateRenderTarget(Int2(128, 128));
 }
 
 //=================================================================================================
@@ -1247,7 +1247,7 @@ void Game::GetPostEffects(vector<PostEffect>& postEffects)
 	effect.id = POSTFX_VIGNETTE;
 	effect.power = 1.f;
 	effect.skill = Vec4(0.9f, 0.9f, 0.9f, 1.f);
-	effect.tex = game_res->tVignette->tex;
+	effect.tex = gameRes->tVignette->tex;
 	postEffects.push_back(effect);
 
 	// gray effect
@@ -1318,11 +1318,11 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, game_gui->controls->GetKeyText(k[0]), game_gui->controls->GetKeyText(k[1]));
+		return Format("%s (%s, %s)", action, gameGui->controls->GetKeyText(k[0]), gameGui->controls->GetKeyText(k[1]));
 	else if(first_key || second_key)
 	{
 		Key used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, game_gui->controls->GetKeyText(used));
+		return Format("%s (%s)", action, gameGui->controls->GetKeyText(used));
 	}
 	else
 		return action;
@@ -1333,21 +1333,21 @@ void Game::PauseGame()
 	paused = !paused;
 	if(Net::IsOnline())
 	{
-		game_gui->mpBox->Add(paused ? txGamePaused : txGameResumed);
+		gameGui->mpBox->Add(paused ? txGamePaused : txGameResumed);
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PAUSED;
 		c.id = (paused ? 1 : 0);
-		if(paused && game_state == GS_WORLDMAP && world->GetState() == World::State::TRAVEL)
+		if(paused && gameState == GS_WORLDMAP && world->GetState() == World::State::TRAVEL)
 			Net::PushChange(NetChange::UPDATE_MAP_POS);
 	}
 }
 
 void Game::GenerateWorld()
 {
-	if(next_seed != 0)
+	if(nextSeed != 0)
 	{
-		Srand(next_seed);
-		next_seed = 0;
+		Srand(nextSeed);
+		nextSeed = 0;
 	}
 
 	Info("Generating world, seed %u.", RandVal());
@@ -1357,32 +1357,32 @@ void Game::GenerateWorld()
 	Info("Randomness integrity: %d", RandVal());
 }
 
-void Game::EnterLocation(int level, int from_portal, bool close_portal)
+void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 {
-	Location& l = *game_level->location;
-	game_level->lvl = nullptr;
+	Location& l = *gameLevel->location;
+	gameLevel->lvl = nullptr;
 
 	if(level == -2)
 		level = (l.outside ? -1 : 0);
 
-	game_gui->worldMap->Hide();
-	game_gui->levelGui->Reset();
-	game_gui->levelGui->visible = true;
+	gameGui->worldMap->Hide();
+	gameGui->levelGui->Reset();
+	gameGui->levelGui->visible = true;
 
-	game_level->is_open = true;
+	gameLevel->isOpen = true;
 	if(world->GetState() != World::State::INSIDE_ENCOUNTER)
 		world->SetState(World::State::INSIDE_LOCATION);
-	if(from_portal != -1)
-		game_level->enter_from = ENTER_FROM_PORTAL + from_portal;
+	if(fromPortal != -1)
+		gameLevel->enterFrom = ENTER_FROM_PORTAL + fromPortal;
 	else
-		game_level->enter_from = ENTER_FROM_OUTSIDE;
-	game_level->light_angle = Random(PI * 2);
+		gameLevel->enterFrom = ENTER_FROM_OUTSIDE;
+	gameLevel->lightAngle = Random(PI * 2);
 
-	game_level->dungeon_level = level;
-	game_level->event_handler = nullptr;
+	gameLevel->dungeonLevel = level;
+	gameLevel->eventHandler = nullptr;
 	pc->data.before_player = BP_NONE;
 	arena->Reset();
-	game_gui->inventory->lock = nullptr;
+	gameGui->inventory->lock = nullptr;
 
 	bool first = false;
 
@@ -1395,13 +1395,13 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	{
 		BitStreamWriter f;
 		f << ID_CHANGE_LEVEL;
-		f << (byte)game_level->location_index;
+		f << (byte)gameLevel->locationIndex;
 		f << (byte)0;
 		f << (world->GetState() == World::State::INSIDE_ENCOUNTER);
 		int ack = net->SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 		for(PlayerInfo& info : net->players)
 		{
-			if(info.id == team->my_id)
+			if(info.id == team->myId)
 				info.state = PlayerInfo::IN_GAME;
 			else
 			{
@@ -1414,18 +1414,18 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	// calculate number of loading steps for drawing progress bar
-	LocationGenerator* loc_gen = loc_gen_factory->Get(&l, first);
-	int steps = loc_gen->GetNumberOfSteps();
+	LocationGenerator* locGen = locGenFactory->Get(&l, first);
+	int steps = locGen->GetNumberOfSteps();
 	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
 
 	// generate map on first visit
 	if(first)
 	{
-		if(next_seed != 0)
+		if(nextSeed != 0)
 		{
-			Srand(next_seed);
-			next_seed = 0;
+			Srand(nextSeed);
+			nextSeed = 0;
 		}
 
 		// log what is required to generate location for testing
@@ -1439,11 +1439,11 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		l.seed = RandVal();
 		if(!l.outside)
 		{
-			InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
+			InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 			if(inside->IsMultilevel())
 			{
 				MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
-				multi->infos[game_level->dungeon_level].seed = l.seed;
+				multi->infos[gameLevel->dungeonLevel].seed = l.seed;
 			}
 		}
 
@@ -1453,36 +1453,36 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 		LoadingStep(txGeneratingMap);
 
-		loc_gen->Generate();
+		locGen->Generate();
 	}
 	else if(!Any(l.type, L_DUNGEON, L_CAVE))
 		Info("Entering location '%s'.", l.name.c_str());
 
-	if(game_level->location->outside)
+	if(gameLevel->location->outside)
 	{
-		loc_gen->OnEnter();
+		locGen->OnEnter();
 		SetTerrainTextures();
 		CalculateQuadtree();
 	}
 	else
-		EnterLevel(loc_gen);
+		EnterLevel(locGen);
 
-	bool loaded_resources = game_level->location->RequireLoadingResources(nullptr);
+	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	l.last_visit = world->GetWorldtime();
-	game_level->CheckIfLocationCleared();
-	game_level->camera.Reset();
+	gameLevel->CheckIfLocationCleared();
+	gameLevel->camera.Reset();
 	pc->data.rot_buf = 0.f;
 	SetMusic();
 
-	if(close_portal)
+	if(closePortal)
 	{
-		delete game_level->location->portal;
-		game_level->location->portal = nullptr;
+		delete gameLevel->location->portal;
+		gameLevel->location->portal = nullptr;
 	}
 
-	if(game_level->location->outside)
+	if(gameLevel->location->outside)
 	{
 		OnEnterLevelOrLocation();
 		OnEnterLocation();
@@ -1490,27 +1490,27 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	if(Net::IsOnline())
 	{
-		net_mode = NM_SERVER_SEND;
-		net_state = NetState::Server_Send;
+		netMode = NM_SERVER_SEND;
+		netState = NetState::Server_Send;
 		if(net->active_players > 1)
 		{
-			prepared_stream.Reset();
-			BitStreamWriter f(prepared_stream);
+			preparedStream.Reset();
+			BitStreamWriter f(preparedStream);
 			net->WriteLevelData(f, loaded_resources);
-			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
+			Info("Generated location packet: %d.", preparedStream.GetNumberOfBytesUsed());
 		}
 		else
 			net->GetMe().state = PlayerInfo::IN_GAME;
 
-		game_gui->infoBox->Show(txWaitingForPlayers);
+		gameGui->infoBox->Show(txWaitingForPlayers);
 	}
 	else
 	{
-		game_state = GS_LEVEL;
-		game_gui->loadScreen->visible = false;
-		game_gui->mainMenu->visible = false;
-		game_gui->levelGui->visible = true;
-		game_level->ready = true;
+		gameState = GS_LEVEL;
+		gameGui->loadScreen->visible = false;
+		gameGui->mainMenu->visible = false;
+		gameGui->levelGui->visible = true;
+		gameLevel->ready = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
@@ -1519,13 +1519,13 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 void Game::LeaveLocation(bool clear, bool takesTime)
 {
-	if(!game_level->is_open)
+	if(!gameLevel->isOpen)
 		return;
 
 	if(Net::IsLocal() && !net->was_client && !clear)
 	{
-		if(quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-			quest_mgr->quest_tournament->Clean();
+		if(questMgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			questMgr->quest_tournament->Clean();
 		if(!arena->free)
 			arena->Clean();
 	}
@@ -1538,23 +1538,23 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 	Info("Leaving location.");
 
-	if(Net::IsLocal() && (quest_mgr->quest_crazies->check_stone
-		|| (quest_mgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_mgr->quest_crazies->crazies_state < Quest_Crazies::State::End)))
-		quest_mgr->quest_crazies->CheckStone();
+	if(Net::IsLocal() && (questMgr->quest_crazies->check_stone
+		|| (questMgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && questMgr->quest_crazies->crazies_state < Quest_Crazies::State::End)))
+		questMgr->quest_crazies->CheckStone();
 
 	// drinking contest
-	Quest_Contest* contest = quest_mgr->quest_contest;
+	Quest_Contest* contest = questMgr->quest_contest;
 	if(contest->state >= Quest_Contest::CONTEST_STARTING)
 		contest->Cleanup();
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && game_level->location == quest_mgr->quest_orcs2->targetLoc)
+	if(Net::IsLocal() && questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && gameLevel->location == questMgr->quest_orcs2->targetLoc)
 	{
-		quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::End;
-		game_level->UpdateLocation(31, 100, false);
+		questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::End;
+		gameLevel->UpdateLocation(31, 100, false);
 	}
 
-	if(game_level->city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
+	if(gameLevel->cityCtx && gameState != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// ai buy iteams when leaving city
 		team->BuyTeamItems();
@@ -1562,24 +1562,24 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 	LeaveLevel();
 
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
 		if(Net::IsLocal())
-			quest_mgr->RemoveQuestUnits(true);
+			questMgr->RemoveQuestUnits(true);
 
-		game_level->ProcessRemoveUnits(true);
+		gameLevel->ProcessRemoveUnits(true);
 
-		if(game_level->location->type == L_ENCOUNTER)
+		if(gameLevel->location->type == L_ENCOUNTER)
 		{
-			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
+			OutsideLocation* outside = static_cast<OutsideLocation*>(gameLevel->location);
 			outside->Clear();
 			outside->last_visit = -1;
 		}
 	}
 
-	if(team->crazies_attack)
+	if(team->craziesAttack)
 	{
-		team->crazies_attack = false;
+		team->craziesAttack = false;
 		if(Net::IsOnline())
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 	}
@@ -1588,14 +1588,14 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 	if(Net::IsLocal() && takesTime)
 		team->ShortRest();
 
-	game_level->is_open = false;
-	game_level->city_ctx = nullptr;
-	game_level->lvl = nullptr;
+	gameLevel->isOpen = false;
+	gameLevel->cityCtx = nullptr;
+	gameLevel->lvl = nullptr;
 }
 
 void Game::Event_RandomEncounter(int)
 {
-	game_gui->worldMap->dialog_enc = nullptr;
+	gameGui->worldMap->dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 	world->StartEncounter();
@@ -1605,13 +1605,13 @@ void Game::Event_RandomEncounter(int)
 //=================================================================================================
 void Game::OnResize()
 {
-	game_gui->OnResize();
+	gameGui->OnResize();
 }
 
 //=================================================================================================
 void Game::OnFocus(bool focus, const Int2& activationPoint)
 {
-	game_gui->OnFocus(focus, activationPoint);
+	gameGui->OnFocus(focus, activationPoint);
 }
 
 //=================================================================================================
@@ -1619,12 +1619,12 @@ void Game::ReportError(int id, cstring text, bool once)
 {
 	if(once)
 	{
-		for(int error : reported_errors)
+		for(int error : reportedErrors)
 		{
 			if(id == error)
 				return;
 		}
-		reported_errors.push_back(id);
+		reportedErrors.push_back(id);
 	}
 
 	cstring mode;
@@ -1637,7 +1637,7 @@ void Game::ReportError(int id, cstring text, bool once)
 	cstring str = Format("[Report %d]: %s", id, text);
 	Warn(str);
 	if(IsDebug())
-		game_gui->messages->AddGameMsg(str, 5.f);
+		gameGui->messages->AddGameMsg(str, 5.f);
 	api->Report(id, Format("[%s] %s", mode, text));
 }
 
@@ -1645,10 +1645,10 @@ void Game::ReportError(int id, cstring text, bool once)
 void Game::CutsceneStart(bool instant)
 {
 	cutscene = true;
-	game_gui->CloseAllPanels();
-	game_gui->levelGui->ResetCutscene();
-	fallback_type = FALLBACK::CUTSCENE;
-	fallback_t = instant ? 0.f : -1.f;
+	gameGui->CloseAllPanels();
+	gameGui->levelGui->ResetCutscene();
+	fallbackType = FALLBACK::CUTSCENE;
+	fallbackTimer = instant ? 0.f : -1.f;
 
 	if(Net::IsServer())
 	{
@@ -1671,7 +1671,7 @@ void Game::CutsceneImage(const string& image, float time)
 		if(!tex)
 			Warn("CutsceneImage: missing texture '%s'.", image.c_str());
 	}
-	game_gui->levelGui->SetCutsceneImage(tex, time);
+	gameGui->levelGui->SetCutsceneImage(tex, time);
 
 	if(Net::IsServer())
 	{
@@ -1688,7 +1688,7 @@ void Game::CutsceneImage(const string& image, float time)
 void Game::CutsceneText(const string& text, float time)
 {
 	assert(cutscene && time > 0);
-	game_gui->levelGui->SetCutsceneText(text, time);
+	gameGui->levelGui->SetCutsceneText(text, time);
 
 	if(Net::IsServer())
 	{
@@ -1705,7 +1705,7 @@ void Game::CutsceneText(const string& text, float time)
 void Game::CutsceneEnd()
 {
 	assert(cutscene);
-	cutscene_script = script_mgr->SuspendScript();
+	cutsceneScript = scriptMgr->SuspendScript();
 }
 
 //=================================================================================================
@@ -1724,11 +1724,11 @@ void Game::CutsceneEnded(bool cancel)
 	}
 
 	cutscene = false;
-	fallback_type = FALLBACK::CUTSCENE_END;
-	fallback_t = -fallback_t;
+	fallbackType = FALLBACK::CUTSCENE_END;
+	fallbackTimer = -fallbackTimer;
 
 	if(Net::IsLocal())
-		script_mgr->ResumeScript(cutscene_script);
+		scriptMgr->ResumeScript(cutsceneScript);
 }
 
 //=================================================================================================
@@ -1740,7 +1740,7 @@ bool Game::CutsceneShouldSkip()
 //=================================================================================================
 void Game::UpdateGame(float dt)
 {
-	dt *= game_speed;
+	dt *= gameSpeed;
 	if(dt == 0)
 		return;
 
@@ -1767,18 +1767,18 @@ void Game::UpdateGame(float dt)
 			assert(pc->is_local && pc == pc->player_info->pc);
 	}
 
-	game_level->minimap_opened_doors = false;
+	gameLevel->minimapOpenedDoors = false;
 
-	if(quest_mgr->quest_tutorial->in_tutorial && !Net::IsOnline())
-		quest_mgr->quest_tutorial->Update();
+	if(questMgr->quest_tutorial->in_tutorial && !Net::IsOnline())
+		questMgr->quest_tutorial->Update();
 
-	portal_anim += dt;
-	if(portal_anim >= 1.f)
-		portal_anim -= 1.f;
-	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
-	game_level->localPart->lvlPart->scene->lightDir = Vec3(sin(game_level->light_angle), 2.f, cos(game_level->light_angle)).Normalize();
+	portalAnim += dt;
+	if(portalAnim >= 1.f)
+		portalAnim -= 1.f;
+	gameLevel->lightAngle = Clip(gameLevel->lightAngle + dt / 100);
+	gameLevel->localPart->lvlPart->scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
 
-	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
+	if(Net::IsLocal() && !questMgr->quest_tutorial->in_tutorial)
 	{
 		// arena
 		if(arena->mode != Arena::NONE)
@@ -1788,16 +1788,16 @@ void Game::UpdateGame(float dt)
 		team->UpdateTeamItemShares();
 
 		// quests
-		quest_mgr->UpdateQuestsLocal(dt);
+		questMgr->UpdateQuestsLocal(dt);
 	}
 
 	// show info about completing all unique quests
 	if(CanShowEndScreen())
 	{
 		if(Net::IsLocal())
-			quest_mgr->unique_completed_show = true;
+			questMgr->unique_completed_show = true;
 		else
-			quest_mgr->unique_completed_show = false;
+			questMgr->unique_completed_show = false;
 
 		cstring text;
 
@@ -1811,16 +1811,16 @@ void Game::UpdateGame(float dt)
 			}
 		}
 		else
-			text = hardcore_mode ? txWinHardcore : txWin;
+			text = hardcoreMode ? txWinHardcore : txWin;
 
-		gui->SimpleDialog(Format(text, pc->kills, game_stats->total_kills - pc->kills), nullptr);
+		gui->SimpleDialog(Format(text, pc->kills, gameStats->totalKills - pc->kills), nullptr);
 	}
 
 	if(devmode && GKey.AllowKeyboard())
 	{
-		if(!game_level->location->outside)
+		if(!gameLevel->location->outside)
 		{
-			InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
+			InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
 			// key [<,] - warp to stairs up or upper level
@@ -1833,7 +1833,7 @@ void Game::UpdateGame(float dt)
 					{
 						Int2 tile = lvl.GetPrevEntryFrontTile();
 						pc->unit->rot = DirToRot(lvl.prevEntryDir);
-						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
+						gameLevel->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
@@ -1869,7 +1869,7 @@ void Game::UpdateGame(float dt)
 					{
 						Int2 tile = lvl.GetNextEntryFrontTile();
 						pc->unit->rot = DirToRot(lvl.nextEntryDir);
-						game_level->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
+						gameLevel->WarpUnit(*pc->unit, Vec3(2.f * tile.x + 1.f, 0.f, 2.f * tile.y + 1.f));
 					}
 					else
 					{
@@ -1910,29 +1910,29 @@ void Game::UpdateGame(float dt)
 	UpdateCamera(dt);
 
 	// handle dying
-	if((Net::IsLocal() && !team->IsAnyoneAlive()) || death_screen != 0)
+	if((Net::IsLocal() && !team->IsAnyoneAlive()) || deathScreen != 0)
 	{
-		if(death_screen == 0)
+		if(deathScreen == 0)
 		{
 			Info("Game over: all players died.");
 			SetMusic(MusicType::Death);
-			game_gui->CloseAllPanels();
-			++death_screen;
-			death_fade = 0;
-			death_solo = (team->GetTeamSize() == 1u);
+			gameGui->CloseAllPanels();
+			++deathScreen;
+			deathFade = 0;
+			deathSolo = (team->GetTeamSize() == 1u);
 			if(Net::IsOnline())
 			{
 				Net::PushChange(NetChange::GAME_STATS);
 				Net::PushChange(NetChange::GAME_OVER);
 			}
 		}
-		else if(death_screen == 1 || death_screen == 2)
+		else if(deathScreen == 1 || deathScreen == 2)
 		{
-			death_fade += dt / 2;
-			if(death_fade >= 1.f)
+			deathFade += dt / 2;
+			if(deathFade >= 1.f)
 			{
-				death_fade = 0;
-				++death_screen;
+				deathFade = 0;
+				++deathScreen;
 			}
 		}
 	}
@@ -1955,17 +1955,17 @@ void Game::UpdateGame(float dt)
 	}
 
 	// update level context
-	for(LocationPart& locPart : game_level->ForEachPart())
+	for(LocationPart& locPart : gameLevel->ForEachPart())
 		locPart.Update(dt);
 
 	// update minimap
-	game_level->UpdateDungeonMinimap(true);
+	gameLevel->UpdateDungeonMinimap(true);
 
 	// update dialogs
 	if(Net::IsSingleplayer())
 	{
-		if(dialog_context.dialog_mode)
-			dialog_context.Update(dt);
+		if(dialogContext.dialog_mode)
+			dialogContext.Update(dt);
 	}
 	else if(Net::IsServer())
 	{
@@ -1985,50 +1985,50 @@ void Game::UpdateGame(float dt)
 	}
 	else
 	{
-		if(dialog_context.dialog_mode)
-			dialog_context.UpdateClient();
+		if(dialogContext.dialog_mode)
+			dialogContext.UpdateClient();
 	}
 
 	UpdateAttachedSounds(dt);
 
-	game_level->ProcessRemoveUnits(false);
+	gameLevel->ProcessRemoveUnits(false);
 }
 
 //=================================================================================================
 void Game::UpdateFallback(float dt)
 {
-	if(fallback_type == FALLBACK::NO)
+	if(fallbackType == FALLBACK::NO)
 		return;
 
-	if(fallback_t <= 0.f)
+	if(fallbackTimer <= 0.f)
 	{
-		fallback_t += dt * 2;
+		fallbackTimer += dt * 2;
 
-		if(fallback_t > 0.f)
+		if(fallbackTimer > 0.f)
 		{
-			switch(fallback_type)
+			switch(fallbackType)
 			{
 			case FALLBACK::TRAIN:
 				if(Net::IsLocal())
 				{
-					switch(fallback_1)
+					switch(fallbackValue)
 					{
 					case 0:
-						pc->Train(false, fallback_2);
+						pc->Train(false, fallbackValue2);
 						break;
 					case 1:
-						pc->Train(true, fallback_2);
+						pc->Train(true, fallbackValue2);
 						break;
 					case 2:
-						quest_mgr->quest_tournament->Train(*pc);
+						questMgr->quest_tournament->Train(*pc);
 						break;
 					case 3:
-						pc->AddPerk(Perk::Get(fallback_2), -1);
-						game_gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
+						pc->AddPerk(Perk::Get(fallbackValue2), -1);
+						gameGui->messages->AddGameMsg3(GMS_LEARNED_PERK);
 						break;
 					case 4:
-						pc->AddAbility(Ability::Get(fallback_2));
-						game_gui->messages->AddGameMsg3(GMS_LEARNED_ABILITY);
+						pc->AddAbility(Ability::Get(fallbackValue2));
+						gameGui->messages->AddGameMsg3(GMS_LEARNED_ABILITY);
 						break;
 					}
 					pc->Rest(10, false);
@@ -2039,50 +2039,50 @@ void Game::UpdateFallback(float dt)
 				}
 				else
 				{
-					fallback_type = FALLBACK::CLIENT;
-					fallback_t = 0.f;
+					fallbackType = FALLBACK::CLIENT;
+					fallbackTimer = 0.f;
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TRAIN;
-					c.id = fallback_1;
-					c.count = fallback_2;
+					c.id = fallbackValue;
+					c.count = fallbackValue2;
 				}
 				break;
 			case FALLBACK::REST:
 				if(Net::IsLocal())
 				{
-					pc->Rest(fallback_1, true);
+					pc->Rest(fallbackValue, true);
 					if(Net::IsOnline())
-						pc->UseDays(fallback_1);
+						pc->UseDays(fallbackValue);
 					else
-						world->Update(fallback_1, UM_NORMAL);
+						world->Update(fallbackValue, UM_NORMAL);
 				}
 				else
 				{
-					fallback_type = FALLBACK::CLIENT;
-					fallback_t = 0.f;
+					fallbackType = FALLBACK::CLIENT;
+					fallbackTimer = 0.f;
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REST;
-					c.id = fallback_1;
+					c.id = fallbackValue;
 				}
 				break;
 			case FALLBACK::ENTER: // enter/exit building
-				game_level->WarpUnit(pc->unit, fallback_1, fallback_2);
+				gameLevel->WarpUnit(pc->unit, fallbackValue, fallbackValue2);
 				break;
 			case FALLBACK::EXIT:
 				ExitToMap();
 				break;
 			case FALLBACK::CHANGE_LEVEL:
-				ChangeLevel(fallback_1);
+				ChangeLevel(fallbackValue);
 				break;
 			case FALLBACK::USE_PORTAL:
 				{
 					LeaveLocation(false, false);
-					Portal* portal = game_level->location->GetPortal(fallback_1);
+					Portal* portal = gameLevel->location->GetPortal(fallbackValue);
 					world->ChangeLevel(portal->target_loc, false);
 					// currently it is only allowed to teleport from X level to first, can teleport back because X level is already visited
 					int at_level = 0;
-					if(game_level->location->portal)
-						at_level = game_level->location->portal->at_level;
+					if(gameLevel->location->portal)
+						at_level = gameLevel->location->portal->at_level;
 					EnterLocation(at_level, portal->index);
 				}
 				return;
@@ -2096,7 +2096,7 @@ void Game::UpdateFallback(float dt)
 			case FALLBACK::WAIT_FOR_WARP:
 			case FALLBACK::CLIENT:
 			case FALLBACK::CUTSCENE:
-				fallback_t = 0.f;
+				fallbackTimer = 0.f;
 				break;
 			default:
 				assert(0);
@@ -2106,15 +2106,15 @@ void Game::UpdateFallback(float dt)
 	}
 	else
 	{
-		fallback_t += dt * 2;
+		fallbackTimer += dt * 2;
 
-		if(fallback_t >= 1.f)
+		if(fallbackTimer >= 1.f)
 		{
 			if(Net::IsLocal())
 			{
-				if(fallback_type != FALLBACK::ARENA2)
+				if(fallbackType != FALLBACK::ARENA2)
 				{
-					if(fallback_type == FALLBACK::CHANGE_LEVEL || fallback_type == FALLBACK::USE_PORTAL || fallback_type == FALLBACK::EXIT)
+					if(fallbackType == FALLBACK::CHANGE_LEVEL || fallbackType == FALLBACK::USE_PORTAL || fallbackType == FALLBACK::EXIT)
 					{
 						for(Unit& unit : team->members)
 							unit.frozen = FROZEN::NO;
@@ -2122,12 +2122,12 @@ void Game::UpdateFallback(float dt)
 					pc->unit->frozen = FROZEN::NO;
 				}
 			}
-			else if(fallback_type == FALLBACK::CLIENT2)
+			else if(fallbackType == FALLBACK::CLIENT2)
 			{
 				pc->unit->frozen = FROZEN::NO;
 				Net::PushChange(NetChange::END_FALLBACK);
 			}
-			fallback_type = FALLBACK::NO;
+			fallbackType = FALLBACK::NO;
 		}
 	}
 }
@@ -2135,21 +2135,21 @@ void Game::UpdateFallback(float dt)
 //=================================================================================================
 void Game::UpdateCamera(float dt)
 {
-	GameCamera& camera = game_level->camera;
+	GameCamera& camera = gameLevel->camera;
 
 	// rotate camera up/down
 	if(team->IsAnyoneAlive())
 	{
-		if(dialog_context.dialog_mode || game_gui->inventory->mode > I_INVENTORY || game_gui->craft->visible)
+		if(dialogContext.dialog_mode || gameGui->inventory->mode > I_INVENTORY || gameGui->craft->visible)
 		{
 			// in dialog/trade look at target
 			camera.RotateTo(dt, 4.2875104f);
 			Vec3 zoom_pos;
-			if(game_gui->inventory->mode == I_LOOT_CHEST)
+			if(gameGui->inventory->mode == I_LOOT_CHEST)
 				zoom_pos = pc->action_chest->GetCenter();
-			else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
+			else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
 				zoom_pos = pc->action_usable->GetCenter();
-			else if(game_gui->craft->visible)
+			else if(gameGui->craft->visible)
 				zoom_pos = pc->unit->usable->GetCenter();
 			else
 			{
@@ -2410,16 +2410,16 @@ void Game::ChangeLevel(int where)
 
 	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
-	game_level->event_handler = nullptr;
-	game_level->UpdateDungeonMinimap(false);
+	gameLevel->eventHandler = nullptr;
+	gameLevel->UpdateDungeonMinimap(false);
 
-	if(!quest_mgr->quest_tutorial->in_tutorial && quest_mgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
-		&& quest_mgr->quest_crazies->crazies_state < Quest_Crazies::State::End)
-		quest_mgr->quest_crazies->CheckStone();
+	if(!questMgr->quest_tutorial->in_tutorial && questMgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
+		&& questMgr->quest_crazies->crazies_state < Quest_Crazies::State::End)
+		questMgr->quest_crazies->CheckStone();
 
 	if(Net::IsOnline() && net->active_players > 1)
 	{
-		int level = game_level->dungeon_level;
+		int level = gameLevel->dungeonLevel;
 		if(where == -1)
 			--level;
 		else
@@ -2433,13 +2433,13 @@ void Game::ChangeLevel(int where)
 	if(where == -1)
 	{
 		// upper leve
-		if(game_level->dungeon_level == 0)
+		if(gameLevel->dungeonLevel == 0)
 		{
-			if(quest_mgr->quest_tutorial->in_tutorial)
+			if(questMgr->quest_tutorial->in_tutorial)
 			{
-				quest_mgr->quest_tutorial->OnEvent(Quest_Tutorial::Exit);
-				fallback_type = FALLBACK::CLIENT;
-				fallback_t = 0.f;
+				questMgr->quest_tutorial->OnEvent(Quest_Tutorial::Exit);
+				fallbackType = FALLBACK::CLIENT;
+				fallbackTimer = 0.f;
 				return;
 			}
 
@@ -2452,20 +2452,20 @@ void Game::ChangeLevel(int where)
 			LoadingStart(4);
 			LoadingStep(txLevelUp);
 
-			MultiInsideLocation* inside = static_cast<MultiInsideLocation*>(game_level->location);
+			MultiInsideLocation* inside = static_cast<MultiInsideLocation*>(gameLevel->location);
 			LeaveLevel();
-			--game_level->dungeon_level;
-			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			game_level->enter_from = ENTER_FROM_NEXT_LEVEL;
-			EnterLevel(loc_gen);
+			--gameLevel->dungeonLevel;
+			LocationGenerator* locGen = locGenFactory->Get(inside);
+			gameLevel->enterFrom = ENTER_FROM_NEXT_LEVEL;
+			EnterLevel(locGen);
 		}
 	}
 	else
 	{
-		MultiInsideLocation* inside = (MultiInsideLocation*)game_level->location;
+		MultiInsideLocation* inside = (MultiInsideLocation*)gameLevel->location;
 
 		int steps = 3; // txLevelDown, txGeneratingMinimap, txLoadingComplete
-		if(game_level->dungeon_level + 1 >= inside->generated)
+		if(gameLevel->dungeonLevel + 1 >= inside->generated)
 			steps += 3; // txGeneratingMap, txGeneratingObjects, txGeneratingUnits
 		else
 			++steps; // txRegeneratingLevel
@@ -2475,59 +2475,59 @@ void Game::ChangeLevel(int where)
 
 		// lower level
 		LeaveLevel();
-		++game_level->dungeon_level;
+		++gameLevel->dungeonLevel;
 
-		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
+		LocationGenerator* locGen = locGenFactory->Get(inside);
 
 		// is this first visit?
-		if(game_level->dungeon_level >= inside->generated)
+		if(gameLevel->dungeonLevel >= inside->generated)
 		{
-			if(next_seed != 0)
+			if(nextSeed != 0)
 			{
-				Srand(next_seed);
-				next_seed = 0;
+				Srand(nextSeed);
+				nextSeed = 0;
 			}
 
-			inside->generated = game_level->dungeon_level + 1;
-			inside->infos[game_level->dungeon_level].seed = RandVal();
+			inside->generated = gameLevel->dungeonLevel + 1;
+			inside->infos[gameLevel->dungeonLevel].seed = RandVal();
 
-			Info("Generating location '%s', seed %u.", game_level->location->name.c_str(), RandVal());
-			Info("Generating dungeon, level %d, target %d.", game_level->dungeon_level + 1, inside->target);
+			Info("Generating location '%s', seed %u.", gameLevel->location->name.c_str(), RandVal());
+			Info("Generating dungeon, level %d, target %d.", gameLevel->dungeonLevel + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
 
-			loc_gen->first = true;
-			loc_gen->Generate();
+			locGen->first = true;
+			locGen->Generate();
 		}
 
-		game_level->enter_from = ENTER_FROM_PREV_LEVEL;
-		EnterLevel(loc_gen);
+		gameLevel->enterFrom = ENTER_FROM_PREV_LEVEL;
+		EnterLevel(locGen);
 	}
 
-	game_level->location->last_visit = world->GetWorldtime();
-	game_level->CheckIfLocationCleared();
-	bool loaded_resources = game_level->location->RequireLoadingResources(nullptr);
+	gameLevel->location->last_visit = world->GetWorldtime();
+	gameLevel->CheckIfLocationCleared();
+	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
 
 	if(Net::IsOnline() && net->active_players > 1)
 	{
-		net_mode = NM_SERVER_SEND;
-		net_state = NetState::Server_Send;
-		prepared_stream.Reset();
-		BitStreamWriter f(prepared_stream);
+		netMode = NM_SERVER_SEND;
+		netState = NetState::Server_Send;
+		preparedStream.Reset();
+		BitStreamWriter f(preparedStream);
 		net->WriteLevelData(f, loaded_resources);
-		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
-		game_gui->infoBox->Show(txWaitingForPlayers);
+		Info("Generated location packet: %d.", preparedStream.GetNumberOfBytesUsed());
+		gameGui->infoBox->Show(txWaitingForPlayers);
 	}
 	else
 	{
-		game_state = GS_LEVEL;
-		game_gui->loadScreen->visible = false;
-		game_gui->mainMenu->visible = false;
-		game_gui->levelGui->visible = true;
-		game_level->ready = true;
+		gameState = GS_LEVEL;
+		gameGui->loadScreen->visible = false;
+		gameGui->mainMenu->visible = false;
+		gameGui->levelGui->visible = true;
+		gameLevel->ready = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
@@ -2535,11 +2535,11 @@ void Game::ChangeLevel(int where)
 
 void Game::ExitToMap()
 {
-	game_gui->CloseAllPanels();
+	gameGui->CloseAllPanels();
 
-	game_state = GS_WORLDMAP;
-	game_level->ready = false;
-	if(game_level->is_open)
+	gameState = GS_WORLDMAP;
+	gameLevel->ready = false;
+	if(gameLevel->isOpen)
 		LeaveLocation();
 
 	net->ClearFastTravel();
@@ -2549,14 +2549,14 @@ void Game::ExitToMap()
 	if(Net::IsServer())
 		Net::PushChange(NetChange::EXIT_TO_MAP);
 
-	game_gui->worldMap->Show();
-	game_gui->levelGui->visible = false;
+	gameGui->worldMap->Show();
+	gameGui->levelGui->visible = false;
 }
 
 void Game::SetMusic(MusicType type)
 {
 	if(type == MusicType::Default)
-		type = game_level->boss ? MusicType::Boss : game_level->GetLocationMusic();
+		type = gameLevel->boss ? MusicType::Boss : gameLevel->GetLocationMusic();
 
 	if(soundMgr->IsDisabled() || type == musicType)
 		return;
@@ -2575,7 +2575,7 @@ void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 
 	Vec3 pos = unit.GetHeadSoundPos();
 	FMOD::Channel* channel = soundMgr->CreateChannel(sound, pos, distance);
-	AttachedSound& s = Add1(attached_sounds);
+	AttachedSound& s = Add1(attachedSounds);
 	s.channel = channel;
 	s.unit = &unit;
 }
@@ -2583,12 +2583,12 @@ void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 void Game::StopAllSounds()
 {
 	soundMgr->StopSounds();
-	attached_sounds.clear();
+	attachedSounds.clear();
 }
 
 void Game::UpdateAttachedSounds(float dt)
 {
-	LoopAndRemove(attached_sounds, [](AttachedSound& sound)
+	LoopAndRemove(attachedSounds, [](AttachedSound& sound)
 	{
 		Unit* unit = sound.unit;
 		if(unit)
@@ -2606,29 +2606,29 @@ void Game::UpdateAttachedSounds(float dt)
 }
 
 // clear game vars on new game or load
-void Game::ClearGameVars(bool new_game)
+void Game::ClearGameVars(bool newGame)
 {
-	game_gui->inventory->mode = I_NONE;
-	dialog_context.dialog_mode = false;
-	dialog_context.is_local = true;
-	death_screen = 0;
-	end_of_game = false;
+	gameGui->inventory->mode = I_NONE;
+	dialogContext.dialog_mode = false;
+	dialogContext.is_local = true;
+	deathScreen = 0;
+	endOfGame = false;
 	cutscene = false;
-	game_gui->minimap->city = nullptr;
-	team->Clear(new_game);
-	draw_flags = 0xFFFFFFFF;
-	game_gui->levelGui->Reset();
-	game_gui->journal->Reset();
+	gameGui->minimap->city = nullptr;
+	team->Clear(newGame);
+	drawFlags = 0xFFFFFFFF;
+	gameGui->levelGui->Reset();
+	gameGui->journal->Reset();
 	arena->Reset();
-	game_gui->levelGui->visible = false;
-	game_gui->inventory->lock = nullptr;
-	game_level->camera.Reset(new_game);
+	gameGui->levelGui->visible = false;
+	gameGui->inventory->lock = nullptr;
+	gameLevel->camera.Reset(newGame);
 	pc->data.Reset();
-	script_mgr->Reset();
-	game_level->Reset();
+	scriptMgr->Reset();
+	gameLevel->Reset();
 	aiMgr->Reset();
 	pathfinding->SetTarget(nullptr);
-	game_gui->worldMap->Clear();
+	gameGui->worldMap->Clear();
 	net->ClearFastTravel();
 	ParticleEmitter::ResetEntities();
 	TrailParticleEmitter::ResetEntities();
@@ -2642,38 +2642,38 @@ void Game::ClearGameVars(bool new_game)
 	Bullet::ResetEntities();
 
 	// remove black background at begining
-	fallback_type = FALLBACK::NONE;
-	fallback_t = -0.5f;
+	fallbackType = FALLBACK::NONE;
+	fallbackTimer = -0.5f;
 
-	if(new_game)
+	if(newGame)
 	{
-		devmode = default_devmode;
+		devmode = defaultDevmode;
 		sceneMgr->useLighting = true;
 		sceneMgr->useFog = true;
-		draw_particle_sphere = false;
-		draw_unit_radius = false;
-		draw_hitbox = false;
+		drawParticleSphere = false;
+		drawUnitRadius = false;
+		drawHitbox = false;
 		noai = false;
-		draw_phy = false;
-		draw_col = false;
-		game_speed = 1.f;
-		game_level->dungeon_level = -1;
-		quest_mgr->Reset();
+		drawPhy = false;
+		drawCol = false;
+		gameSpeed = 1.f;
+		gameLevel->dungeonLevel = -1;
+		questMgr->Reset();
 		world->OnNewGame();
-		game_stats->Reset();
-		dont_wander = false;
-		game_level->is_open = false;
-		game_gui->levelGui->PositionPanels();
-		game_gui->Clear(true, false);
+		gameStats->Reset();
+		dontWander = false;
+		gameLevel->isOpen = false;
+		gameGui->levelGui->PositionPanels();
+		gameGui->Clear(true, false);
 		if(!net->mp_quickload)
-			game_gui->mpBox->visible = Net::IsOnline();
-		game_level->light_angle = Random(PI * 2);
-		start_version = VERSION;
+			gameGui->mpBox->visible = Net::IsOnline();
+		gameLevel->lightAngle = Random(PI * 2);
+		startVersion = VERSION;
 
 		if(IsDebug())
 		{
 			noai = true;
-			dont_wander = true;
+			dontWander = true;
 		}
 	}
 }
@@ -2684,13 +2684,13 @@ void Game::ClearGame()
 	Info("Clearing game.");
 
 	EntitySystem::clear = true;
-	draw_batch.Clear();
-	script_mgr->StopAllScripts();
+	drawBatch.Clear();
+	scriptMgr->StopAllScripts();
 
 	LeaveLocation(true, false);
 
 	// delete units on world map
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (net->mp_load && prev_game_state == GS_LOAD)) && !game_level->is_open
+	if((gameState == GS_WORLDMAP || prevGameState == GS_WORLDMAP || (net->mp_load && prevGameState == GS_LOAD)) && !gameLevel->isOpen
 		&& Net::IsLocal() && !net->was_client)
 	{
 		for(Unit& unit : team->members)
@@ -2702,9 +2702,9 @@ void Game::ClearGame()
 			delete &unit;
 		}
 		team->members.clear();
-		prev_game_state = GS_LOAD;
+		prevGameState = GS_LOAD;
 	}
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || prev_game_state == GS_LOAD) && !game_level->is_open && (Net::IsClient() || net->was_client))
+	if((gameState == GS_WORLDMAP || prevGameState == GS_WORLDMAP || prevGameState == GS_LOAD) && !gameLevel->isOpen && (Net::IsClient() || net->was_client))
 	{
 		delete pc;
 		pc = nullptr;
@@ -2713,11 +2713,11 @@ void Game::ClearGame()
 	if(!net->net_strs.empty())
 		StringPool.Free(net->net_strs);
 
-	game_level->is_open = false;
-	game_level->city_ctx = nullptr;
-	quest_mgr->Clear();
+	gameLevel->isOpen = false;
+	gameLevel->cityCtx = nullptr;
+	questMgr->Clear();
 	world->Reset();
-	game_gui->Clear(true, false);
+	gameGui->Clear(true, false);
 	pc = nullptr;
 	cutscene = false;
 	EntitySystem::clear = false;
@@ -2743,48 +2743,48 @@ void ApplyDungeonLightToMesh(Mesh& mesh)
 void Game::SetDungeonParamsToMeshes()
 {
 	// doors/stairs/traps textures
-	ApplyTextureOverrideToSubmesh(game_res->aStairsDown->subs[0], game_res->tFloor[0]);
-	ApplyTextureOverrideToSubmesh(game_res->aStairsDown->subs[2], game_res->tWall[0]);
-	ApplyTextureOverrideToSubmesh(game_res->aStairsDown2->subs[0], game_res->tFloor[0]);
-	ApplyTextureOverrideToSubmesh(game_res->aStairsDown2->subs[2], game_res->tWall[0]);
-	ApplyTextureOverrideToSubmesh(game_res->aStairsUp->subs[0], game_res->tFloor[0]);
-	ApplyTextureOverrideToSubmesh(game_res->aStairsUp->subs[2], game_res->tWall[0]);
-	ApplyTextureOverrideToSubmesh(game_res->aDoorWall->subs[0], game_res->tWall[0]);
-	ApplyDungeonLightToMesh(*game_res->aStairsDown);
-	ApplyDungeonLightToMesh(*game_res->aStairsDown2);
-	ApplyDungeonLightToMesh(*game_res->aStairsUp);
-	ApplyDungeonLightToMesh(*game_res->aDoorWall);
-	ApplyDungeonLightToMesh(*game_res->aDoorWall2);
+	ApplyTextureOverrideToSubmesh(gameRes->aStairsDown->subs[0], gameRes->tFloor[0]);
+	ApplyTextureOverrideToSubmesh(gameRes->aStairsDown->subs[2], gameRes->tWall[0]);
+	ApplyTextureOverrideToSubmesh(gameRes->aStairsDown2->subs[0], gameRes->tFloor[0]);
+	ApplyTextureOverrideToSubmesh(gameRes->aStairsDown2->subs[2], gameRes->tWall[0]);
+	ApplyTextureOverrideToSubmesh(gameRes->aStairsUp->subs[0], gameRes->tFloor[0]);
+	ApplyTextureOverrideToSubmesh(gameRes->aStairsUp->subs[2], gameRes->tWall[0]);
+	ApplyTextureOverrideToSubmesh(gameRes->aDoorWall->subs[0], gameRes->tWall[0]);
+	ApplyDungeonLightToMesh(*gameRes->aStairsDown);
+	ApplyDungeonLightToMesh(*gameRes->aStairsDown2);
+	ApplyDungeonLightToMesh(*gameRes->aStairsUp);
+	ApplyDungeonLightToMesh(*gameRes->aDoorWall);
+	ApplyDungeonLightToMesh(*gameRes->aDoorWall2);
 
 	// apply texture/lighting to trap to make it same texture as dungeon
 	if(BaseTrap::traps[TRAP_ARROW].mesh->state == ResourceState::Loaded)
 	{
-		ApplyTextureOverrideToSubmesh(BaseTrap::traps[TRAP_ARROW].mesh->subs[0], game_res->tFloor[0]);
+		ApplyTextureOverrideToSubmesh(BaseTrap::traps[TRAP_ARROW].mesh->subs[0], gameRes->tFloor[0]);
 		ApplyDungeonLightToMesh(*BaseTrap::traps[TRAP_ARROW].mesh);
 	}
 	if(BaseTrap::traps[TRAP_POISON].mesh->state == ResourceState::Loaded)
 	{
-		ApplyTextureOverrideToSubmesh(BaseTrap::traps[TRAP_POISON].mesh->subs[0], game_res->tFloor[0]);
+		ApplyTextureOverrideToSubmesh(BaseTrap::traps[TRAP_POISON].mesh->subs[0], gameRes->tFloor[0]);
 		ApplyDungeonLightToMesh(*BaseTrap::traps[TRAP_POISON].mesh);
 	}
 
 	// second texture
-	ApplyTextureOverrideToSubmesh(game_res->aDoorWall2->subs[0], game_res->tWall[1]);
+	ApplyTextureOverrideToSubmesh(gameRes->aDoorWall2->subs[0], gameRes->tWall[1]);
 }
 
-void Game::EnterLevel(LocationGenerator* loc_gen)
+void Game::EnterLevel(LocationGenerator* locGen)
 {
-	if(!loc_gen->first)
-		Info("Entering location '%s' level %d.", game_level->location->name.c_str(), game_level->dungeon_level + 1);
+	if(!locGen->first)
+		Info("Entering location '%s' level %d.", gameLevel->location->name.c_str(), gameLevel->dungeonLevel + 1);
 
-	game_gui->inventory->lock = nullptr;
+	gameGui->inventory->lock = nullptr;
 
-	loc_gen->OnEnter();
+	locGen->OnEnter();
 
 	OnEnterLevelOrLocation();
 	OnEnterLevel();
 
-	if(!loc_gen->first)
+	if(!locGen->first)
 		Info("Entered level.");
 }
 
@@ -2792,23 +2792,23 @@ void Game::LeaveLevel(bool clear)
 {
 	Info("Leaving level.");
 
-	if(game_gui->levelGui)
-		game_gui->levelGui->Reset();
+	if(gameGui->levelGui)
+		gameGui->levelGui->Reset();
 
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
-		game_level->boss = nullptr;
-		for(LocationPart& locPart : game_level->ForEachPart())
+		gameLevel->boss = nullptr;
+		for(LocationPart& locPart : gameLevel->ForEachPart())
 		{
 			LeaveLevel(locPart, clear);
 			delete locPart.lvlPart;
 			locPart.lvlPart = nullptr;
 		}
-		if(game_level->city_ctx && (Net::IsClient() || net->was_client))
-			DeleteElements(game_level->city_ctx->inside_buildings);
-		if(Net::IsClient() && !game_level->location->outside)
+		if(gameLevel->cityCtx && (Net::IsClient() || net->was_client))
+			DeleteElements(gameLevel->cityCtx->inside_buildings);
+		if(Net::IsClient() && !gameLevel->location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)game_level->location;
+			InsideLocation* inside = (InsideLocation*)gameLevel->location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 			Room::Free(lvl.rooms);
 		}
@@ -2817,20 +2817,20 @@ void Game::LeaveLevel(bool clear)
 	}
 
 	ais.clear();
-	game_level->RemoveColliders();
+	gameLevel->RemoveColliders();
 	StopAllSounds();
 
 	ClearQuadtree();
 
-	game_gui->CloseAllPanels();
+	gameGui->CloseAllPanels();
 
-	game_level->camera.Reset();
+	gameLevel->camera.Reset();
 	PlayerController::data.rot_buf = 0.f;
-	dialog_context.dialog_mode = false;
-	game_gui->inventory->mode = I_NONE;
+	dialogContext.dialog_mode = false;
+	gameGui->inventory->mode = I_NONE;
 	PlayerController::data.before_player = BP_NONE;
 	if(Net::IsClient())
-		game_level->is_open = false;
+		gameLevel->isOpen = false;
 }
 
 void Game::LeaveLevel(LocationPart& locPart, bool clear)
@@ -2882,7 +2882,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 						{
 							unit.live_state = Unit::DEAD;
 							unit.meshInst->SetToEnd();
-							game_level->CreateBlood(locPart, unit, true);
+							gameLevel->CreateBlood(locPart, unit, true);
 						}
 						else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
 							unit.Standup(false, true);
@@ -2893,10 +2893,10 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 							if(order == ORDER_GOTO_INN)
 							{
 								unit.OrderNext();
-								if(game_level->city_ctx)
+								if(gameLevel->cityCtx)
 								{
-									InsideBuilding* inn = game_level->city_ctx->FindInn();
-									game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+									InsideBuilding* inn = gameLevel->cityCtx->FindInn();
+									gameLevel->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
 									unit.visual_pos = unit.pos;
 									unit.locPart = inn;
 									inn->units.push_back(&unit);
@@ -3013,47 +3013,47 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 
 void Game::LoadingStart(int steps)
 {
-	game_gui->loadScreen->Reset();
-	loading_t.Reset();
-	loading_dt = 0.f;
-	loading_cap = 0.66f;
-	loading_steps = steps;
-	loading_index = 0;
-	loading_first_step = true;
-	game_state = GS_LOAD;
-	game_level->ready = false;
-	game_gui->loadScreen->visible = true;
-	game_gui->mainMenu->visible = false;
-	game_gui->levelGui->visible = false;
-	resMgr->PrepareLoadScreen(loading_cap);
+	gameGui->loadScreen->Reset();
+	loadingTimer.Reset();
+	loadingDt = 0.f;
+	loadingCap = 0.66f;
+	loadingSteps = steps;
+	loadingIndex = 0;
+	loadingFirstStep = true;
+	gameState = GS_LOAD;
+	gameLevel->ready = false;
+	gameGui->loadScreen->visible = true;
+	gameGui->mainMenu->visible = false;
+	gameGui->levelGui->visible = false;
+	resMgr->PrepareLoadScreen(loadingCap);
 }
 
 void Game::LoadingStep(cstring text, int end)
 {
 	float progress;
 	if(end == 0)
-		progress = float(loading_index) / loading_steps * loading_cap;
+		progress = float(loadingIndex) / loadingSteps * loadingCap;
 	else if(end == 1)
-		progress = loading_cap;
+		progress = loadingCap;
 	else
 		progress = 1.f;
-	game_gui->loadScreen->SetProgressOptional(progress, text);
+	gameGui->loadScreen->SetProgressOptional(progress, text);
 
 	if(end != 2)
 	{
-		++loading_index;
+		++loadingIndex;
 		if(end == 1)
-			assert(loading_index == loading_steps);
+			assert(loadingIndex == loadingSteps);
 	}
 	if(end != 1)
 	{
-		loading_dt += loading_t.Tick();
-		if(loading_dt >= 1.f / 30 || end == 2 || loading_first_step)
+		loadingDt += loadingTimer.Tick();
+		if(loadingDt >= 1.f / 30 || end == 2 || loadingFirstStep)
 		{
-			loading_dt = 0.f;
+			loadingDt = 0.f;
 			engine->DoPseudotick();
-			loading_t.Tick();
-			loading_first_step = false;
+			loadingTimer.Tick();
+			loadingFirstStep = false;
 		}
 	}
 }
@@ -3069,21 +3069,21 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 	if(resMgr->HaveTasks())
 	{
 		Info("Loading new resources (%d).", resMgr->GetLoadTasksCount());
-		loading_resources = true;
-		loading_dt = 0;
-		loading_t.Reset();
+		loadingResources = true;
+		loadingDt = 0;
+		loadingTimer.Reset();
 		try
 		{
 			resMgr->StartLoadScreen(txLoadingResources);
 		}
 		catch(...)
 		{
-			loading_resources = false;
+			loadingResources = false;
 			throw;
 		}
 
 		// apply mesh instance for newly loaded meshes
-		for(auto& unit_mesh : units_mesh_load)
+		for(auto& unit_mesh : unitsMeshLoad)
 		{
 			Unit::CREATE_MESH mode;
 			if(unit_mesh.second)
@@ -3094,7 +3094,7 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 				mode = Unit::CREATE_MESH::NORMAL;
 			unit_mesh.first->CreateMesh(mode);
 		}
-		units_mesh_load.clear();
+		unitsMeshLoad.clear();
 	}
 	else
 	{
@@ -3102,16 +3102,16 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 		resMgr->CancelLoadScreen();
 	}
 
-	if(postLoad && game_level->location && game_level->is_open)
+	if(postLoad && gameLevel->location && gameLevel->isOpen)
 	{
 		// spawn blood for units that are dead and their mesh just loaded
-		game_level->SpawnBlood();
+		gameLevel->SpawnBlood();
 
 		// create mesh instance for objects
-		game_level->CreateObjectsMeshInstance();
+		gameLevel->CreateObjectsMeshInstance();
 
 		// finished
-		if((Net::IsLocal() || !net->mp_load_worldmap) && !game_level->location->outside)
+		if((Net::IsLocal() || !net->mp_load_worldmap) && !gameLevel->location->outside)
 			SetDungeonParamsToMeshes();
 	}
 
@@ -3122,11 +3122,11 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 void Game::PreloadResources(bool worldmap)
 {
 	if(Net::IsLocal())
-		items_load.clear();
+		itemsLoad.clear();
 
 	if(!worldmap)
 	{
-		for(LocationPart& locPart : game_level->ForEachPart())
+		for(LocationPart& locPart : gameLevel->ForEachPart())
 		{
 			// load units - units respawn so need to check everytime...
 			for(Unit* unit : locPart.units)
@@ -3134,13 +3134,13 @@ void Game::PreloadResources(bool worldmap)
 
 			// some traps respawn
 			for(Trap* trap : locPart.traps)
-				game_res->LoadTrap(trap->base);
+				gameRes->LoadTrap(trap->base);
 
 			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 			if(Net::IsLocal())
 			{
 				for(GroundItem* groundItem : locPart.GetGroundItems())
-					items_load.insert(groundItem->item);
+					itemsLoad.insert(groundItem->item);
 				for(Chest* chest : locPart.chests)
 					PreloadItems(chest->items);
 				for(Usable* usable : locPart.usables)
@@ -3152,12 +3152,12 @@ void Game::PreloadResources(bool worldmap)
 		}
 
 		bool new_value = true;
-		if(game_level->location->RequireLoadingResources(&new_value) == false)
+		if(gameLevel->location->RequireLoadingResources(&new_value) == false)
 		{
 			// load music
-			game_res->LoadMusic(game_level->GetLocationMusic(), false);
+			gameRes->LoadMusic(gameLevel->GetLocationMusic(), false);
 
-			for(LocationPart& locPart : game_level->ForEachPart())
+			for(LocationPart& locPart : gameLevel->ForEachPart())
 			{
 				// load objects
 				for(Object* obj : locPart.objects)
@@ -3186,9 +3186,9 @@ void Game::PreloadResources(bool worldmap)
 			}
 
 			// load buildings
-			if(game_level->city_ctx)
+			if(gameLevel->cityCtx)
 			{
-				for(CityBuilding& city_building : game_level->city_ctx->buildings)
+				for(CityBuilding& city_building : gameLevel->cityCtx->buildings)
 				{
 					Building& building = *city_building.building;
 					if(building.state == ResourceState::NotLoaded)
@@ -3204,8 +3204,8 @@ void Game::PreloadResources(bool worldmap)
 		}
 	}
 
-	for(const Item* item : items_load)
-		game_res->PreloadItem(item);
+	for(const Item* item : itemsLoad)
+		gameRes->PreloadItem(item);
 }
 
 void Game::PreloadUnit(Unit* unit)
@@ -3218,7 +3218,7 @@ void Game::PreloadUnit(Unit* unit)
 		for(const Item* item : equipped)
 		{
 			if(item)
-				items_load.insert(item);
+				itemsLoad.insert(item);
 		}
 		PreloadItems(unit->items);
 		if(unit->stock)
@@ -3257,13 +3257,13 @@ void Game::PreloadItems(vector<ItemSlot>& items)
 	for(auto& slot : items)
 	{
 		assert(slot.item);
-		items_load.insert(slot.item);
+		itemsLoad.insert(slot.item);
 	}
 }
 
 void Game::VerifyResources()
 {
-	for(LocationPart& locPart : game_level->ForEachPart())
+	for(LocationPart& locPart : gameLevel->ForEachPart())
 	{
 		for(GroundItem* groundItem : locPart.GetGroundItems())
 			VerifyItemResources(groundItem->item);
@@ -3339,10 +3339,10 @@ void Game::DeleteUnit(Unit* unit)
 {
 	assert(unit);
 
-	if(game_level->is_open)
+	if(gameLevel->isOpen)
 	{
 		RemoveElement(unit->locPart->units, unit);
-		game_gui->levelGui->RemoveUnitView(unit);
+		gameGui->levelGui->RemoveUnitView(unit);
 		if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
 			pc->data.before_player = BP_NONE;
 		if(unit == pc->data.selected_unit)
@@ -3385,8 +3385,8 @@ void Game::DeleteUnit(Unit* unit)
 			}
 		}
 
-		if(quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
-			RemoveElementTry(quest_mgr->quest_contest->units, unit);
+		if(questMgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
+			RemoveElementTry(questMgr->quest_contest->units, unit);
 		if(!arena->free)
 		{
 			RemoveElementTry(arena->units, unit);
@@ -3416,7 +3416,7 @@ void Game::DeleteUnit(Unit* unit)
 	if(unit->cobj)
 	{
 		delete unit->cobj->getCollisionShape();
-		phy_world->removeCollisionObject(unit->cobj);
+		phyWorld->removeCollisionObject(unit->cobj);
 		delete unit->cobj;
 	}
 
@@ -3430,7 +3430,7 @@ void Game::RemoveUnit(Unit* unit)
 
 	unit->BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
 	RemoveElement(unit->locPart->units, unit);
-	game_gui->levelGui->RemoveUnitView(unit);
+	gameGui->levelGui->RemoveUnitView(unit);
 	if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
 		pc->data.before_player = BP_NONE;
 	if(unit == pc->data.selected_unit)
@@ -3450,8 +3450,8 @@ void Game::RemoveUnit(Unit* unit)
 		}
 	}
 
-	if(quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
-		RemoveElementTry(quest_mgr->quest_contest->units, unit);
+	if(questMgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
+		RemoveElementTry(questMgr->quest_contest->units, unit);
 	if(!arena->free)
 	{
 		RemoveElementTry(arena->units, unit);
@@ -3491,7 +3491,7 @@ void Game::RemoveUnit(Unit* unit)
 	if(unit->cobj)
 	{
 		delete unit->cobj->getCollisionShape();
-		phy_world->removeCollisionObject(unit->cobj);
+		phyWorld->removeCollisionObject(unit->cobj);
 		delete unit->cobj;
 		unit->cobj = nullptr;
 	}
@@ -3509,7 +3509,7 @@ void Game::RemoveUnit(Unit* unit)
 
 void Game::OnCloseInventory()
 {
-	if(game_gui->inventory->mode == I_TRADE)
+	if(gameGui->inventory->mode == I_TRADE)
 	{
 		if(Net::IsLocal())
 		{
@@ -3519,7 +3519,7 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(game_gui->inventory->mode == I_SHARE || game_gui->inventory->mode == I_GIVE)
+	else if(gameGui->inventory->mode == I_SHARE || gameGui->inventory->mode == I_GIVE)
 	{
 		if(Net::IsLocal())
 		{
@@ -3529,9 +3529,9 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(game_gui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
+	else if(gameGui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
 		pc->action_chest->OpenClose(nullptr);
-	else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
+	else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
 		{
@@ -3549,11 +3549,11 @@ void Game::OnCloseInventory()
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
 
-	if(Net::IsOnline() && (game_gui->inventory->mode == I_LOOT_BODY || game_gui->inventory->mode == I_LOOT_CHEST))
+	if(Net::IsOnline() && (gameGui->inventory->mode == I_LOOT_BODY || gameGui->inventory->mode == I_LOOT_CHEST))
 	{
 		if(Net::IsClient())
 			Net::PushChange(NetChange::STOP_TRADE);
-		else if(game_gui->inventory->mode == I_LOOT_BODY)
+		else if(gameGui->inventory->mode == I_LOOT_BODY)
 			pc->action_unit->busy = Unit::Busy_No;
 	}
 
@@ -3561,31 +3561,31 @@ void Game::OnCloseInventory()
 		pc->next_action = NA_NONE;
 
 	pc->action = PlayerAction::None;
-	game_gui->inventory->mode = I_NONE;
+	gameGui->inventory->mode = I_NONE;
 }
 
 void Game::CloseInventory()
 {
 	OnCloseInventory();
-	game_gui->inventory->mode = I_NONE;
-	if(game_gui->levelGui)
+	gameGui->inventory->mode = I_NONE;
+	if(gameGui->levelGui)
 	{
-		game_gui->inventory->invMine->Hide();
-		game_gui->inventory->gpTrade->Hide();
+		gameGui->inventory->invMine->Hide();
+		gameGui->inventory->gpTrade->Hide();
 	}
 }
 
 bool Game::CanShowEndScreen()
 {
 	if(Net::IsLocal())
-		return !quest_mgr->unique_completed_show && quest_mgr->unique_quests_completed == quest_mgr->unique_quests && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return !questMgr->unique_completed_show && questMgr->unique_quests_completed == questMgr->unique_quests && gameLevel->cityCtx && !dialogContext.dialog_mode && pc->unit->IsStanding();
 	else
-		return quest_mgr->unique_completed_show && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return questMgr->unique_completed_show && gameLevel->cityCtx && !dialogContext.dialog_mode && pc->unit->IsStanding();
 }
 
 void Game::UpdateGameNet(float dt)
 {
-	if(game_gui->infoBox->visible)
+	if(gameGui->infoBox->visible)
 		return;
 
 	if(Net::IsServer())
@@ -3597,8 +3597,8 @@ void Game::UpdateGameNet(float dt)
 DialogContext* Game::FindDialogContext(Unit* talker)
 {
 	assert(talker);
-	if(dialog_context.dialog_mode && dialog_context.talker == talker)
-		return &dialog_context;
+	if(dialogContext.dialog_mode && dialogContext.talker == talker)
+		return &dialogContext;
 	if(Net::IsOnline())
 	{
 		for(PlayerInfo& info : net->players)
@@ -3617,11 +3617,11 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_mgr->quest_orcs2->targetLoc == game_level->location
-		&& quest_mgr->quest_orcs2->talked == Quest_Orcs2::Talked::No)
+	if(questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && questMgr->quest_orcs2->targetLoc == gameLevel->location
+		&& questMgr->quest_orcs2->talked == Quest_Orcs2::Talked::No)
 	{
-		quest_mgr->quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
-		talker = quest_mgr->quest_orcs2->orc;
+		questMgr->quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
+		talker = questMgr->quest_orcs2->orc;
 		text = txOrcCamp;
 	}
 
@@ -3630,19 +3630,19 @@ void Game::OnEnterLocation()
 		TeamInfo info;
 		team->GetTeamInfo(info);
 
-		if(info.sane_heroes > 0)
+		if(info.saneHeroes > 0)
 		{
 			bool always_use = false;
-			switch(game_level->location->type)
+			switch(gameLevel->location->type)
 			{
 			case L_CITY:
-				if(LocationHelper::IsCity(game_level->location))
+				if(LocationHelper::IsCity(gameLevel->location))
 					text = RandomString(txAiCity);
 				else
 					text = RandomString(txAiVillage);
 				break;
 			case L_OUTSIDE:
-				switch(game_level->location->target)
+				switch(gameLevel->location->target)
 				{
 				case FOREST:
 				default:
@@ -3657,12 +3657,12 @@ void Game::OnEnterLocation()
 				}
 				break;
 			case L_CAMP:
-				if(game_level->location->state != LS_CLEARED && !game_level->location->group->IsEmpty())
+				if(gameLevel->location->state != LS_CLEARED && !gameLevel->location->group->IsEmpty())
 				{
-					if(!game_level->location->group->name2.empty())
+					if(!gameLevel->location->group->name2.empty())
 					{
 						always_use = true;
-						text = Format(txAiCampFull, game_level->location->group->name2.c_str());
+						text = Format(txAiCampFull, gameLevel->location->group->name2.c_str());
 					}
 				}
 				else
@@ -3685,17 +3685,17 @@ void Game::OnEnterLevel()
 	cstring text = nullptr;
 
 	// cleric talking after entering location
-	Quest_Evil* quest_evil = quest_mgr->quest_evil;
+	Quest_Evil* quest_evil = questMgr->quest_evil;
 	if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
 		if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals)
 		{
-			int d = quest_evil->GetLocId(game_level->location);
+			int d = quest_evil->GetLocId(gameLevel->location);
 			if(d != -1)
 			{
 				Quest_Evil::Loc& loc = quest_evil->loc[d];
 
-				if(game_level->dungeon_level == game_level->location->GetLastLevel())
+				if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel())
 				{
 					if(loc.state < Quest_Evil::Loc::TalkedAfterEnterLevel)
 					{
@@ -3704,7 +3704,7 @@ void Game::OnEnterLevel()
 						loc.state = Quest_Evil::Loc::TalkedAfterEnterLevel;
 					}
 				}
-				else if(game_level->dungeon_level == 0 && loc.state == Quest_Evil::Loc::None)
+				else if(gameLevel->dungeonLevel == 0 && loc.state == Quest_Evil::Loc::None)
 				{
 					talker = quest_evil->cleric;
 					text = txPortalClose;
@@ -3712,7 +3712,7 @@ void Game::OnEnterLevel()
 				}
 			}
 		}
-		else if(game_level->location == quest_evil->targetLoc && !quest_evil->told_about_boss)
+		else if(gameLevel->location == quest_evil->targetLoc && !quest_evil->told_about_boss)
 		{
 			quest_evil->told_about_boss = true;
 			talker = quest_evil->cleric;
@@ -3721,10 +3721,10 @@ void Game::OnEnterLevel()
 	}
 
 	// orc talking after entering level
-	Quest_Orcs2* quest_orcs2 = quest_mgr->quest_orcs2;
-	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && game_level->location == quest_orcs2->targetLoc)
+	Quest_Orcs2* quest_orcs2 = questMgr->quest_orcs2;
+	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && gameLevel->location == quest_orcs2->targetLoc)
 	{
-		if(game_level->dungeon_level == 0)
+		if(gameLevel->dungeonLevel == 0)
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBase)
 			{
@@ -3733,7 +3733,7 @@ void Game::OnEnterLevel()
 				text = txGorushDanger;
 			}
 		}
-		else if(game_level->dungeon_level == game_level->location->GetLastLevel())
+		else if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel())
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBoss)
 			{
@@ -3745,14 +3745,14 @@ void Game::OnEnterLevel()
 	}
 
 	// old mage talking after entering location
-	Quest_Mages2* quest_mages2 = quest_mgr->quest_mages2;
+	Quest_Mages2* quest_mages2 = questMgr->quest_mages2;
 	if(!talker && (quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined || quest_mages2->mages_state == Quest_Mages2::State::MageRecruited))
 	{
-		if(quest_mages2->targetLoc == game_level->location)
+		if(quest_mages2->targetLoc == gameLevel->location)
 		{
 			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{
-				if(game_level->dungeon_level == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
+				if(gameLevel->dungeonLevel == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::AboutHisTower;
 					text = txMageHere;
@@ -3760,7 +3760,7 @@ void Game::OnEnterLevel()
 			}
 			else
 			{
-				if(game_level->dungeon_level == 0)
+				if(gameLevel->dungeonLevel == 0)
 				{
 					if(quest_mages2->talked < Quest_Mages2::Talked::AfterEnter)
 					{
@@ -3768,7 +3768,7 @@ void Game::OnEnterLevel()
 						text = Format(txMageEnter, quest_mages2->evil_mage_name.c_str());
 					}
 				}
-				else if(game_level->dungeon_level == game_level->location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
+				else if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::BeforeBoss;
 					text = txMageFinal;
@@ -3781,20 +3781,20 @@ void Game::OnEnterLevel()
 	}
 
 	// default talking about location
-	if(!talker && game_level->dungeon_level == 0 && (game_level->enter_from == ENTER_FROM_OUTSIDE || game_level->enter_from >= ENTER_FROM_PORTAL))
+	if(!talker && gameLevel->dungeonLevel == 0 && (gameLevel->enterFrom == ENTER_FROM_OUTSIDE || gameLevel->enterFrom >= ENTER_FROM_PORTAL))
 	{
 		TeamInfo info;
 		team->GetTeamInfo(info);
 
-		if(info.sane_heroes > 0)
+		if(info.saneHeroes > 0)
 		{
 			LocalString s;
 
-			switch(game_level->location->type)
+			switch(gameLevel->location->type)
 			{
 			case L_DUNGEON:
 				{
-					InsideLocation* inside = (InsideLocation*)game_level->location;
+					InsideLocation* inside = (InsideLocation*)gameLevel->location;
 					switch(inside->target)
 					{
 					case HUMAN_FORT:
@@ -3855,11 +3855,11 @@ void Game::OnEnterLevel()
 
 void Game::OnEnterLevelOrLocation()
 {
-	game_gui->Clear(false, true);
+	gameGui->Clear(false, true);
 	pc->data.autowalk = false;
 	pc->data.selected_unit = pc->unit;
-	fallback_t = -0.5f;
-	fallback_type = FALLBACK::NONE;
+	fallbackTimer = -0.5f;
+	fallbackType = FALLBACK::NONE;
 	if(Net::IsLocal())
 	{
 		for(Unit& unit : team->members)
@@ -3867,19 +3867,19 @@ void Game::OnEnterLevelOrLocation()
 	}
 
 	// events v2
-	for(Event& e : game_level->location->events)
+	for(Event& e : gameLevel->location->events)
 	{
 		if(e.type == EVENT_ENTER)
 		{
 			ScriptEvent event(EVENT_ENTER);
-			event.on_enter.location = game_level->location;
+			event.on_enter.location = gameLevel->location;
 			e.quest->FireEvent(event);
 		}
 	}
 
-	for(LocationPart& locPart : game_level->ForEachPart())
+	for(LocationPart& locPart : gameLevel->ForEachPart())
 		locPart.BuildScene();
 
-	if(Net::IsClient() && game_level->boss)
-		game_gui->levelGui->SetBoss(game_level->boss, true);
+	if(Net::IsClient() && gameLevel->boss)
+		gameGui->levelGui->SetBoss(gameLevel->boss, true);
 }

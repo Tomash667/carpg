@@ -51,15 +51,15 @@ struct AttachedSound
 enum class FALLBACK
 {
 	NO = -1,
-	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), fallback_2 (skill/attrib id)
-	REST, // fallback_1 (days)
+	TRAIN, // fallbackValue (train what: 0-attribute, 1-skill, 2-tournament, 3-perk, 4-ability), fallbackValue2 (skill/attrib id)
+	REST, // fallbackValue (days)
 	ARENA,
-	ENTER, // enter/exit building - fallback_1 (inside building index), fallback_2 (warp to building index or -1)
+	ENTER, // enter/exit building - fallbackValue (inside building index), fallbackValue2 (warp to building index or -1)
 	EXIT,
-	CHANGE_LEVEL, // fallback_1 (direction +1/-1)
+	CHANGE_LEVEL, // fallbackValue (direction +1/-1)
 	NONE,
 	ARENA_EXIT,
-	USE_PORTAL, // fallback_1 (portal index)
+	USE_PORTAL, // fallbackValue (portal index)
 	WAIT_FOR_WARP,
 	ARENA2,
 	CLIENT,
@@ -165,7 +165,7 @@ public:
 	void PauseGame();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void TakeScreenshot(bool no_gui = false);
+	void TakeScreenshot(bool noGui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdateAi(float dt);
@@ -180,9 +180,9 @@ public:
 	void CreateSaveImage();
 	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
 	void LoadGame(GameReader& f);
-	bool TryLoadGame(int slot, bool quickload, bool from_console);
+	bool TryLoadGame(int slot, bool quickload, bool fromConsole);
 	void RemoveUnusedAiAndCheck();
-	void CheckUnitsAi(LocationPart& locPart, int& err_count);
+	void CheckUnitsAi(LocationPart& locPart, int& errors);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -194,9 +194,9 @@ public:
 	bool ValidateNetSaveForLoading(GameReader& f, int slot);
 	void Quicksave();
 	void Quickload();
-	void ClearGameVars(bool new_game);
+	void ClearGameVars(bool newGame);
 	void ClearGame();
-	void EnterLevel(LocationGenerator* loc_gen);
+	void EnterLevel(LocationGenerator* locGen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LocationPart& locPart, bool clear);
 	// loading
@@ -240,7 +240,7 @@ public:
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
 	// set for Random player character (clas is in/out)
-	void RandomCharacter(Class*& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
+	void RandomCharacter(Class*& clas, int& hairIndex, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
 	void UpdateClientConnectingIp(float dt);
@@ -265,7 +265,7 @@ public:
 	//-----------------------------------------------------------------
 	// WORLD MAP
 	//-----------------------------------------------------------------
-	void EnterLocation(int level = -2, int from_portal = -1, bool close_portal = false);
+	void EnterLocation(int level = -2, int fromPortal = -1, bool closePortal = false);
 	void GenerateWorld();
 	void LeaveLocation(bool clear = false, bool takesTime = true);
 	void Event_RandomEncounter(int id);
@@ -273,58 +273,58 @@ public:
 	//-----------------------------------------------------------------
 	// COMPONENTS
 	//-----------------------------------------------------------------
-	LocationGeneratorFactory* loc_gen_factory;
+	LocationGeneratorFactory* locGenFactory;
 	Arena* arena;
-	BasicShader* basic_shader;
-	GlowShader* glow_shader;
-	GrassShader* grass_shader;
-	ParticleShader* particle_shader;
-	PostfxShader* postfx_shader;
-	SkyboxShader* skybox_shader;
-	TerrainShader* terrain_shader;
+	BasicShader* basicShader;
+	GlowShader* glowShader;
+	GrassShader* grassShader;
+	ParticleShader* particleShader;
+	PostfxShader* postfxShader;
+	SkyboxShader* skyboxShader;
+	TerrainShader* terrainShader;
 
 	//-----------------------------------------------------------------
 	// GAME
 	//-----------------------------------------------------------------
-	GAME_STATE game_state, prev_game_state;
+	GAME_STATE gameState, prevGameState;
 	PlayerController* pc;
-	bool testing, end_of_game, death_solo, cutscene, in_load;
-	int death_screen;
-	float death_fade, game_speed;
+	bool testing, endOfGame, deathSolo, cutscene, inLoad;
+	int deathScreen;
+	float deathFade, gameSpeed;
 	vector<AIController*> ais;
-	uint next_seed;
-	int start_version;
-	uint load_errors, load_warnings;
-	std::set<const Item*> items_load;
-	bool hardcore_mode, hardcoreOption, checkUpdates, skipTutorial, changeTitle;
+	uint nextSeed;
+	int startVersion;
+	uint loadErrors, loadWarnings;
+	std::set<const Item*> itemsLoad;
+	bool hardcoreMode, hardcoreOption, checkUpdates, skipTutorial, changeTitle;
 	// quickstart
 	QUICKSTART quickstart;
-	int quickstart_slot;
+	int quickstartSlot;
 	// fallback
-	FALLBACK fallback_type;
-	int fallback_1, fallback_2;
-	float fallback_t;
+	FALLBACK fallbackType;
+	int fallbackValue, fallbackValue2;
+	float fallbackTimer;
 	// dialogs
-	DialogContext dialog_context, idle_context;
+	DialogContext dialogContext, idleContext;
 
 	//-----------------------------------------------------------------
 	// LOADING
 	//-----------------------------------------------------------------
-	float loading_dt, loading_cap;
-	Timer loading_t;
-	int loading_steps, loading_index;
-	bool loading_first_step, loading_resources;
+	float loadingDt, loadingCap;
+	Timer loadingTimer;
+	int loadingSteps, loadingIndex;
+	bool loadingFirstStep, loadingResources;
 	// used temporary at loading
-	vector<AIController*> ai_bow_targets;
-	vector<Location*> load_location_quest;
-	vector<Unit*> load_unit_handler;
-	vector<Chest*> load_chest_handler;
-	vector<pair<Unit*, bool>> units_mesh_load;
+	vector<AIController*> aiBowTargets;
+	vector<Location*> loadLocationQuest;
+	vector<Unit*> loadUnitHandler;
+	vector<Chest*> loadChestHandler;
+	vector<pair<Unit*, bool>> unitsMeshLoad;
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
 	//-----------------------------------------------------------------
-	string player_name, serverIp, enter_pswd;
+	string playerName, serverIp, enterPswd;
 	enum NET_MODE
 	{
 		NM_CONNECTING,
@@ -333,40 +333,40 @@ public:
 		NM_TRANSFER,
 		NM_TRANSFER_SERVER,
 		NM_SERVER_SEND
-	} net_mode;
-	NetState net_state;
-	int net_tries;
-	VoidF net_callback;
-	float net_timer, mp_timeout;
-	BitStream prepared_stream;
-	int skip_id_counter;
-	float train_move; // used by client to training by walking
+	} netMode;
+	NetState netState;
+	int netTries;
+	VoidF netCallback;
+	float netTimer, mpTimeout;
+	BitStream preparedStream;
+	int skipIdCounter;
+	float trainMove; // used by client to training by walking
 	bool paused;
-	vector<ItemSlot> chest_trade; // used by clients when trading
+	vector<ItemSlot> chestTrade; // used by clients when trading
 
 	//-----------------------------------------------------------------
 	// DRAWING
 	//-----------------------------------------------------------------
-	int draw_flags;
-	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	float portal_anim;
+	int drawFlags;
+	bool drawParticleSphere, drawUnitRadius, drawHitbox, drawPhy, drawCol;
+	float portalAnim;
 	// scene
 	bool useGlow, usePostfx;
-	DrawBatch draw_batch;
-	int uv_mod;
+	DrawBatch drawBatch;
+	int uvMod;
 	QuadTree quadtree;
-	LevelQuads level_quads;
-	vector<const vector<Matrix>*> grass_patches[2];
-	uint grass_count[2];
+	LevelQuads levelQuads;
+	vector<const vector<Matrix>*> grassPatches[2];
+	uint grassCount[2];
 	// screenshot
-	time_t last_screenshot;
-	uint screenshot_count;
+	time_t lastScreenshot;
+	uint screenshotCount;
 	ImageFormat screenshotFormat;
 
 	//-----------------------------------------------------------------
 	// SOUND & MUSIC
 	//-----------------------------------------------------------------
-	vector<AttachedSound> attached_sounds;
+	vector<AttachedSound> attachedSounds;
 	MusicType musicType;
 
 	//-----------------------------------------------------------------
@@ -375,12 +375,12 @@ public:
 	Config cfg;
 	Settings settings;
 	int lastSave;
-	bool inactiveUpdate, noai, devmode, default_devmode, default_player_devmode, dont_wander;
+	bool inactiveUpdate, noai, devmode, defaultDevmode, defaultPlayerDevmode, dontWander;
 
 	//-----------------------------------------------------------------
 	// RESOURCES
 	//-----------------------------------------------------------------
-	RenderTarget* rt_save, *rt_item_rot;
+	RenderTarget* rtSave, *rtItemRot;
 	DynamicTexture* tMinimap;
 
 	//-----------------------------------------------------------------
@@ -418,7 +418,7 @@ public:
 	cstring txHaveErrors;
 
 private:
-	vector<int> reported_errors;
-	asIScriptContext* cutscene_script;
-	DungeonMeshBuilder* dun_mesh_builder;
+	vector<int> reportedErrors;
+	asIScriptContext* cutsceneScript;
+	DungeonMeshBuilder* dungeonMeshBuilder;
 };

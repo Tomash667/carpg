@@ -146,7 +146,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		RecalculateLevel();
 		unit->hp = unit->hpmax = unit->CalculateMaxHp();
 		SetRequiredPoints();
-		if(!quest_mgr->quest_tutorial->in_tutorial)
+		if(!questMgr->quest_tutorial->in_tutorial)
 			AddAbility(unit->GetClass()->ability);
 		InitShortcuts();
 
@@ -221,7 +221,7 @@ void PlayerController::Train(SkillId skill, float points)
 	{
 		recalculate_level = true;
 		unit->Set(skill, value);
-		game_gui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
+		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
 		if(!is_local)
 		{
 			NetChangePlayer& c2 = Add1(player_info->changes);
@@ -267,7 +267,7 @@ void PlayerController::Train(AttributeId attrib, float points)
 	{
 		recalculate_level = true;
 		unit->Set(attrib, value);
-		game_gui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
+		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
 		if(!is_local)
 		{
 			NetChangePlayer& c2 = Add1(player_info->changes);
@@ -752,7 +752,7 @@ void PlayerController::RecalculateLevel()
 	if(level != unit->level)
 	{
 		unit->level = level;
-		if(Net::IsLocal() && game_level->ready)
+		if(Net::IsLocal() && gameLevel->ready)
 		{
 			team->CalculatePlayersLevel();
 			if(player_info && !IsLocal())
@@ -1073,7 +1073,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 			unit->Set((AttributeId)id, value);
 		}
 
-		game_gui->messages->AddFormattedMessage(this, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
+		gameGui->messages->AddFormattedMessage(this, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
 
 		if(!IsLocal())
 		{
@@ -1249,7 +1249,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
 	}
-	game_gui->ability->Refresh();
+	gameGui->ability->Refresh();
 
 	// recipes
 	uint i_count;
@@ -1292,7 +1292,7 @@ bool PlayerController::Read(BitStreamReader& f)
 			int index = f.Read<int>();
 			if(!f)
 				return false;
-			next_action_data.usable = game_level->FindUsable(index);
+			next_action_data.usable = gameLevel->FindUsable(index);
 		}
 		break;
 	default:
@@ -1343,7 +1343,7 @@ bool PlayerController::AddAbility(Ability* ability)
 			c.ability = ability;
 		}
 		else
-			game_gui->ability->Refresh();
+			gameGui->ability->Refresh();
 	}
 
 	return true;
@@ -1361,7 +1361,7 @@ bool PlayerController::RemoveAbility(Ability* ability)
 			{
 				if(IsLocal())
 				{
-					game_gui->ability->Refresh();
+					gameGui->ability->Refresh();
 					if(data.ability_ready == ability)
 						data.ability_ready = nullptr;
 					int index = 0;
@@ -1421,7 +1421,7 @@ const PlayerAbility* PlayerController::GetAbility(Ability* ability) const
 PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability, bool prepare) const
 {
 	assert(ability);
-	if(quest_mgr->quest_tutorial->in_tutorial)
+	if(questMgr->quest_tutorial->in_tutorial)
 		return CanUseAbilityResult::No;
 
 	const PlayerAbility* ab = GetAbility(ability);
@@ -1517,7 +1517,7 @@ bool PlayerController::CanUseAbilityCheck() const
 	if(check == -1)
 	{
 		data.ability_ready = nullptr;
-		soundMgr->PlaySound2d(game_res->sCancel);
+		soundMgr->PlaySound2d(gameRes->sCancel);
 	}
 
 	return check == 1;
@@ -1544,7 +1544,7 @@ int PlayerController::GetNextActionItemIndex() const
 void PlayerController::PayCredit(int count)
 {
 	rvector<Unit> units;
-	for(Unit& u : team->active_members)
+	for(Unit& u : team->activeMembers)
 	{
 		if(&u != unit)
 			units.push_back(&u);
@@ -1676,7 +1676,7 @@ bool PlayerController::RemovePerk(Perk* perk, int value)
 void PlayerController::AddLearningPoint(int count)
 {
 	learning_points += count;
-	game_gui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
+	gameGui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
 	if(!is_local)
 		player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 }
@@ -1855,7 +1855,7 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 				}
 			}
 			dist += angle;
-			if(dist < best_dist && game_level->CanSee(*unit->locPart, unit->pos, pos, type == BP_DOOR, ptr))
+			if(dist < best_dist && gameLevel->CanSee(*unit->locPart, unit->pos, pos, type == BP_DOOR, ptr))
 			{
 				best_dist = dist;
 				data.before_player_ptr.any = ptr;
@@ -1877,7 +1877,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	{
 		if(!u.HaveItem(bu.item) && u.GetEquippedItem(SLOT_WEAPON) != bu.item)
 		{
-			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
+			gameGui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
 		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
@@ -1906,7 +1906,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			// loot container
-			game_gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
+			gameGui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
 		}
 		else
 		{
@@ -2146,7 +2146,7 @@ void PlayerController::Update(float dt)
 		data.wasted_key = Key::None;
 
 	Unit* look_target = unit->look_target;
-	if(game->dialog_context.dialog_mode || look_target || game_gui->inventory->mode > I_INVENTORY)
+	if(game->dialogContext.dialog_mode || look_target || gameGui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
 		if(look_target)
@@ -2154,40 +2154,40 @@ void PlayerController::Update(float dt)
 			pos = look_target->pos;
 			unit->animation = ANI_STAND;
 		}
-		else if(game_gui->inventory->mode == I_LOOT_CHEST)
+		else if(gameGui->inventory->mode == I_LOOT_CHEST)
 		{
 			assert(action == PlayerAction::LootChest);
 			pos = action_chest->pos;
 			unit->animation = ANI_KNEELS;
 		}
-		else if(game_gui->inventory->mode == I_LOOT_BODY)
+		else if(gameGui->inventory->mode == I_LOOT_BODY)
 		{
 			assert(action == PlayerAction::LootUnit);
 			pos = action_unit->GetLootCenter();
 			unit->animation = ANI_KNEELS;
 		}
-		else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
+		else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
 		{
 			assert(action == PlayerAction::LootContainer);
 			pos = action_usable->pos;
 			unit->animation = ANI_STAND;
 		}
-		else if(game->dialog_context.dialog_mode)
+		else if(game->dialogContext.dialog_mode)
 		{
-			pos = game->dialog_context.talker->pos;
+			pos = game->dialogContext.talker->pos;
 			unit->animation = ANI_STAND;
 		}
 		else
 		{
-			assert(action == InventoryModeToActionRequired(game_gui->inventory->mode));
+			assert(action == InventoryModeToActionRequired(gameGui->inventory->mode));
 			pos = action_unit->pos;
 			unit->animation = ANI_STAND;
 		}
 
 		unit->RotateTo(pos, dt);
-		if(game_gui->inventory->mode > I_INVENTORY)
+		if(gameGui->inventory->mode > I_INVENTORY)
 		{
-			if(game_gui->inventory->mode == I_LOOT_BODY)
+			if(gameGui->inventory->mode == I_LOOT_BODY)
 			{
 				if(action_unit->IsAlive())
 				{
@@ -2195,7 +2195,7 @@ void PlayerController::Update(float dt)
 					game->CloseInventory();
 				}
 			}
-			else if(game_gui->inventory->mode == I_TRADE || game_gui->inventory->mode == I_SHARE || game_gui->inventory->mode == I_GIVE)
+			else if(gameGui->inventory->mode == I_TRADE || gameGui->inventory->mode == I_SHARE || gameGui->inventory->mode == I_GIVE)
 			{
 				if(!action_unit->IsStanding() || !action_unit->IsIdle())
 				{
@@ -2204,13 +2204,13 @@ void PlayerController::Update(float dt)
 				}
 			}
 		}
-		else if(game->dialog_context.dialog_mode && Net::IsLocal())
+		else if(game->dialogContext.dialog_mode && Net::IsLocal())
 		{
-			if(!game->dialog_context.talker->IsStanding() || !game->dialog_context.talker->IsIdle() || game->dialog_context.talker->to_remove
-				|| game->dialog_context.talker->frozen != FROZEN::NO)
+			if(!game->dialogContext.talker->IsStanding() || !game->dialogContext.talker->IsIdle() || game->dialogContext.talker->to_remove
+				|| game->dialogContext.talker->frozen != FROZEN::NO)
 			{
 				// talker waas removed/died/was attacked
-				game->dialog_context.EndDialog();
+				game->dialogContext.EndDialog();
 			}
 		}
 
@@ -2384,7 +2384,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot && allow_rot)
+		if((GKey.allowInput == GameKeys::ALLOW_INPUT || GKey.allowInput == GameKeys::ALLOW_MOUSE) && !gameLevel->camera.free_rot && allow_rot)
 		{
 			int div = (u.action == A_SHOOT ? 800 : 400);
 			data.rot_buf *= (1.f - dt * 2);
@@ -2506,7 +2506,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.pos += dir;
 					moved = true;
 				}
-				else if(game_level->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
+				else if(gameLevel->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
 					moved = true;
 
 				if(moved)
@@ -2518,11 +2518,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						TrainMove(speed);
 
 					// revealing minimap
-					if(!game_level->location->outside)
+					if(!gameLevel->location->outside)
 					{
 						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
 						if(new_tile != prev_tile)
-							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
+							FOV::DungeonReveal(new_tile, gameLevel->minimapReveal);
 					}
 				}
 
@@ -2593,7 +2593,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 							if(ok)
 							{
-								game_gui->inventory->invMine->EquipSlotItem(i_index);
+								gameGui->inventory->invMine->EquipSlotItem(i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
@@ -2612,7 +2612,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					int i_index = u.FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
-						game_gui->inventory->invMine->ConsumeItem(i_index);
+						gameGui->inventory->invMine->ConsumeItem(i_index);
 				}
 				else if(item->type == IT_BOOK)
 				{
@@ -2626,10 +2626,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 						else
 						{
-							OpenPanel open = game_gui->levelGui->GetOpenPanel();
+							OpenPanel open = gameGui->levelGui->GetOpenPanel();
 							if(open != OpenPanel::Inventory)
-								game_gui->levelGui->ClosePanels();
-							game_gui->book->Show((const Book*)item);
+								gameGui->levelGui->ClosePanels();
+							gameGui->book->Show((const Book*)item);
 						}
 					}
 				}
@@ -2681,7 +2681,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 
 				if(weapon == W_NONE)
-					game_gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
+					gameGui->messages->AddGameMsg3(GMS_NEED_WEAPON);
 				else
 				{
 					if(u.SetWeaponState(true, weapon, true))
@@ -2719,7 +2719,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.ConsumeItem(potion_index);
 			}
 			else
-				game_gui->messages->AddGameMsg3(GMS_NO_HEALTH_POTION);
+				gameGui->messages->AddGameMsg3(GMS_NO_HEALTH_POTION);
 		}
 		else if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_MANA_POTION && u.mp < u.mpmax)
 		{
@@ -2731,9 +2731,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.ConsumeItem(potion_index);
 			}
 			else
-				game_gui->messages->AddGameMsg3(GMS_NO_MANA_POTION);
+				gameGui->messages->AddGameMsg3(GMS_NO_MANA_POTION);
 		}
-	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
+	} // allowInput == ALLOW_INPUT || allowInput == ALLOW_KEYBOARD
 
 	if(u.usable)
 		return;
@@ -2801,21 +2801,21 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				else if(u2->live_state == Unit::FALL)
 				{
 					// can't loot alive units that are just lying on ground
-					game_gui->messages->AddGameMsg3(GMS_CANT_DO);
+					gameGui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
 					// can't loot allies
-					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
+					gameGui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
-					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
+					gameGui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
 				else if(Net::IsLocal())
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
 						// someone else is looting
-						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
+						gameGui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
@@ -2824,7 +2824,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
 						chest_trade = &u2->items;
-						game_gui->inventory->StartTrade(I_LOOT_BODY, *u2);
+						gameGui->inventory->StartTrade(I_LOOT_BODY, *u2);
 					}
 				}
 				else
@@ -2845,12 +2845,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk(u))
 					{
 						// using is busy
-						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
+						gameGui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
 						// start dialog
-						game->dialog_context.StartDialog(u2);
+						game->dialogContext.StartDialog(u2);
 						data.before_player = BP_NONE;
 					}
 				}
@@ -2862,8 +2862,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					c.id = u2->id;
 					action = PlayerAction::Talk;
 					action_unit = u2;
-					game->dialog_context.predialog.clear();
-					game->dialog_context.predialogBubble = u2->bubble;
+					game->dialogContext.predialog.clear();
+					game->dialogContext.predialogBubble = u2->bubble;
 				}
 			}
 		}
@@ -2875,7 +2875,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			else if(Net::IsLocal())
 			{
 				// start looting chest
-				game_gui->inventory->StartTrade2(I_LOOT_CHEST, data.before_player_ptr.chest);
+				gameGui->inventory->StartTrade2(I_LOOT_CHEST, data.before_player_ptr.chest);
 				data.before_player_ptr.chest->OpenClose(unit);
 			}
 			else
@@ -2919,14 +2919,14 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					Vec3 center = door->GetCenter();
 					if(key && u.HaveItem(Item::Get(key)))
 					{
-						soundMgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
-						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
+						soundMgr->PlaySound3d(gameRes->sUnlock, center, Door::UNLOCK_SOUND_DIST);
+						gameGui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
 						door->Open();
 					}
 					else
 					{
-						game_gui->messages->AddGameMsg3(GMS_NEED_KEY);
-						soundMgr->PlaySound3d(game_res->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
+						gameGui->messages->AddGameMsg3(GMS_NEED_KEY);
+						soundMgr->PlaySound3d(gameRes->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
 					}
 				}
 			}
@@ -2950,7 +2950,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.AddItem2(groundItem->item, groundItem->count, groundItem->team_count, false);
 
 					if(groundItem->item->type == IT_GOLD)
-						soundMgr->PlaySound2d(game_res->sCoins);
+						soundMgr->PlaySound2d(gameRes->sCoins);
 
 					if(Net::IsOnline())
 					{
@@ -2960,7 +2960,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.count = (up_anim ? 1 : 0);
 					}
 
-					for(Event& event : game_level->location->events)
+					for(Event& event : gameLevel->location->events)
 					{
 						if(event.type == EVENT_PICKUP)
 						{
@@ -3238,7 +3238,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
 						data.wasted_key = action_key;
-						game_level->FreeBowInstance(u.bow_instance);
+						gameLevel->FreeBowInstance(u.bow_instance);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -3285,10 +3285,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		else
 		{
 			if(result == PlayerController::CanUseAbilityResult::NeedWand)
-				game_gui->messages->AddGameMsg3(GMS_NEED_WAND);
+				gameGui->messages->AddGameMsg3(GMS_NEED_WAND);
 			else if(result == PlayerController::CanUseAbilityResult::NeedBow)
-				game_gui->messages->AddGameMsg3(GMS_NEED_BOW);
-			soundMgr->PlaySound2d(game_res->sCancel);
+				gameGui->messages->AddGameMsg3(GMS_NEED_BOW);
+			soundMgr->PlaySound2d(gameRes->sCancel);
 		}
 	}
 	else if(data.ability_ready)
@@ -3415,11 +3415,11 @@ void PlayerController::ClearNextAction()
 Vec3 PlayerController::RaytestTarget(float range)
 {
 	RaytestWithIgnoredCallback clbk(unit, nullptr);
-	Vec3 from = game_level->camera.from;
-	Vec3 dir = (game_level->camera.to - from).Normalized();
-	from += dir * game_level->camera.dist;
+	Vec3 from = gameLevel->camera.from;
+	Vec3 dir = (gameLevel->camera.to - from).Normalized();
+	from += dir * gameLevel->camera.dist;
 	Vec3 to = from + dir * range;
-	phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
+	phyWorld->rayTest(ToVector3(from), ToVector3(to), clbk);
 	if(range < 10)
 		data.range_ratio = clbk.fraction * range / 10;
 	else
@@ -3490,9 +3490,9 @@ void PlayerController::ReadBook(int index)
 			}
 
 			if(!anythingNew)
-				game_gui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
+				gameGui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
 			else if(!anythingAllowed)
-				game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+				gameGui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
 			else
 			{
 				if(Net::IsLocal())
@@ -3505,7 +3505,7 @@ void PlayerController::ReadBook(int index)
 					if(IsSet(book.flags, ITEM_SINGLE_USE))
 						unit->RemoveItem(index, 1u);
 					if(anythingTooHard)
-						game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+						gameGui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
 				}
 				else
 				{
@@ -3518,6 +3518,6 @@ void PlayerController::ReadBook(int index)
 		}
 
 		if(!IsSet(book.flags, ITEM_SINGLE_USE))
-			game_gui->book->Show(&book);
+			gameGui->book->Show(&book);
 	}
 }

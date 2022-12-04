@@ -119,7 +119,7 @@ cstring Quest2::GetText(int index)
 	static string dialog_s_text;
 	dialog_s_text.clear();
 
-	ScriptContext& ctx = script_mgr->GetContext();
+	ScriptContext& ctx = scriptMgr->GetContext();
 	ctx.quest = this;
 
 	for(uint i = 0, len = str.length(); i < len; ++i)
@@ -132,7 +132,7 @@ cstring Quest2::GetText(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				script_mgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -189,7 +189,7 @@ void Quest2::Save(GameWriter& f)
 Quest::LoadResult Quest2::Load(GameReader& f)
 {
 	Quest::Load(f);
-	SetScheme(quest_mgr->FindQuestInfo(type)->scheme);
+	SetScheme(questMgr->FindQuestInfo(type)->scheme);
 	if(IsActive())
 	{
 		f >> timeout_days;
@@ -203,14 +203,14 @@ asIScriptObject* Quest2::CreateInstance(bool shared)
 {
 	if(shared)
 	{
-		asIScriptObject* instance = script_mgr->GetSharedInstance(scheme);
+		asIScriptObject* instance = scriptMgr->GetSharedInstance(scheme);
 		if(instance)
 			return instance;
 	}
 
 	asIScriptFunction* factory = scheme->script_type->GetFactoryByIndex(0);
 	asIScriptObject* instance;
-	script_mgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 1)
 		{
@@ -221,7 +221,7 @@ asIScriptObject* Quest2::CreateInstance(bool shared)
 	});
 
 	if(shared)
-		script_mgr->RegisterSharedInstance(scheme, instance);
+		scriptMgr->RegisterSharedInstance(scheme, instance);
 	return instance;
 }
 
@@ -230,7 +230,7 @@ void Quest2::Cleanup()
 {
 	if(timeout_days != -1)
 	{
-		RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
+		RemoveElementTry(questMgr->quests_timeout2, static_cast<Quest*>(this));
 		timeout_days = -1;
 	}
 
@@ -269,7 +269,7 @@ void Quest2::SetState(State newState)
 		static_cast<City*>(startLoc)->quest_captain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Unique:
-		quest_mgr->EndUniqueQuest();
+		questMgr->EndUniqueQuest();
 		break;
 	}
 	Cleanup();
@@ -283,7 +283,7 @@ void Quest2::SetTimeout(int days)
 	assert(days > 0);
 	timeout_days = days;
 	start_time = world->GetWorldtime();
-	quest_mgr->quests_timeout2.push_back(this);
+	questMgr->quests_timeout2.push_back(this);
 }
 
 //=================================================================================================

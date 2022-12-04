@@ -211,7 +211,7 @@ void MainMenu::Event(GuiEvent e)
 	{
 		if(checkStatus == CheckVersionStatus::Checking)
 			versionText = txCheckingVersion;
-		if(game->lastSave != -1 && !game_gui->saveload->GetSaveSlot(game->lastSave, false).valid)
+		if(game->lastSave != -1 && !gameGui->saveload->GetSaveSlot(game->lastSave, false).valid)
 			game->SetLastSave(-1);
 		bt[0].state = (game->lastSave == -1 ? Button::DISABLED : Button::NONE);
 		tooltip.Clear();
@@ -228,17 +228,17 @@ void MainMenu::Event(GuiEvent e)
 			break;
 		case IdNewGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game_gui->ShowCreateCharacterPanel(true);
+			gameGui->ShowCreateCharacterPanel(true);
 			break;
 		case IdLoadGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game_gui->saveload->ShowLoadPanel();
+			gameGui->saveload->ShowLoadPanel();
 			break;
 		case IdMultiplayer:
-			game_gui->ShowMultiplayer();
+			gameGui->ShowMultiplayer();
 			break;
 		case IdOptions:
-			game_gui->ShowOptions();
+			gameGui->ShowOptions();
 			break;
 		case IdInfo:
 			gui->SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);
@@ -304,9 +304,9 @@ void MainMenu::ShutdownThread()
 void MainMenu::GetTooltip(TooltipController* tooltip, int group, int id, bool refresh)
 {
 	tooltip->anything = true;
-	SaveSlot& slot = game_gui->saveload->GetSaveSlot(game->lastSave, false);
-	tooltip->img = game_gui->saveload->GetSaveImage(game->lastSave, false);
+	SaveSlot& slot = gameGui->saveload->GetSaveSlot(game->lastSave, false);
+	tooltip->img = gameGui->saveload->GetSaveImage(game->lastSave, false);
 	tooltip->imgSize = Int2(256, 192);
 	tooltip->bigText = slot.text;
-	tooltip->text = game_gui->saveload->GetSaveText(slot);
+	tooltip->text = gameGui->saveload->GetSaveText(slot);
 }

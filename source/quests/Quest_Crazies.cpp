@@ -16,10 +16,10 @@
 //=================================================================================================
 void Quest_Crazies::Init()
 {
-	quest_mgr->RegisterSpecialHandler(this, "crazies_talked");
-	quest_mgr->RegisterSpecialHandler(this, "crazies_sell_stone");
-	quest_mgr->RegisterSpecialIfHandler(this, "crazies_not_asked");
-	quest_mgr->RegisterSpecialIfHandler(this, "crazies_need_talk");
+	questMgr->RegisterSpecialHandler(this, "crazies_talked");
+	questMgr->RegisterSpecialHandler(this, "crazies_sell_stone");
+	questMgr->RegisterSpecialIfHandler(this, "crazies_not_asked");
+	questMgr->RegisterSpecialIfHandler(this, "crazies_need_talk");
 }
 
 //=================================================================================================
@@ -47,9 +47,9 @@ void Quest_Crazies::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(quest_mgr->txQuest[253]);
-			msgs.push_back(Format(quest_mgr->txQuest[170], world->GetDate()));
-			msgs.push_back(quest_mgr->txQuest[254]);
+			OnStart(questMgr->txQuest[253]);
+			msgs.push_back(Format(questMgr->txQuest[170], world->GetDate()));
+			msgs.push_back(questMgr->txQuest[254]);
 		}
 		break;
 	case Progress::KnowLocation:
@@ -64,7 +64,7 @@ void Quest_Crazies::SetProgress(int prog2)
 
 			crazies_state = State::TalkedTrainer;
 
-			OnUpdate(Format(quest_mgr->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
+			OnUpdate(Format(questMgr->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished:
@@ -76,8 +76,8 @@ void Quest_Crazies::SetProgress(int prog2)
 			world->RemoveGlobalEncounter(this);
 			team->AddExp(12000);
 
-			OnUpdate(quest_mgr->txQuest[256]);
-			quest_mgr->EndUniqueQuest();
+			OnUpdate(questMgr->txQuest[256]);
+			questMgr->EndUniqueQuest();
 		}
 	}
 }
@@ -129,7 +129,7 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 		globalEnc->chance = 50;
 		globalEnc->quest = this;
-		globalEnc->text = quest_mgr->txQuest[251];
+		globalEnc->text = questMgr->txQuest[251];
 		world->AddGlobalEncounter(globalEnc);
 	}
 	else if(crazies_state == State::PickedStone && crazies_state < State::End && days <= 0)
@@ -138,7 +138,7 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 		globalEnc->chance = 33;
 		globalEnc->quest = this;
-		globalEnc->text = quest_mgr->txQuest[252];
+		globalEnc->text = questMgr->txQuest[252];
 		world->AddGlobalEncounter(globalEnc);
 	}
 
@@ -157,7 +157,7 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 		globalEnc->chance = 50;
 		globalEnc->quest = this;
-		globalEnc->text = quest_mgr->txQuest[251];
+		globalEnc->text = questMgr->txQuest[251];
 		world->AddGlobalEncounter(globalEnc);
 	}
 	else if(strcmp(msg, "crazies_sell_stone") == 0)
@@ -189,13 +189,13 @@ void Quest_Crazies::CheckStone()
 	if(!team->FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
 		// remove item from game, unless it is encounter (because level is reset anyway)
-		if(game_level->location->type != L_ENCOUNTER)
+		if(gameLevel->location->type != L_ENCOUNTER)
 		{
-			if(targetLoc == game_level->location)
+			if(targetLoc == gameLevel->location)
 			{
 				// is in good location, check if inside chest
 				int index;
-				Chest* chest = game_level->localPart->FindChestWithItem(stone, &index);
+				Chest* chest = gameLevel->localPart->FindChestWithItem(stone, &index);
 				if(chest)
 				{
 					// put inside chest, end of quest
@@ -205,12 +205,12 @@ void Quest_Crazies::CheckStone()
 				}
 			}
 
-			game_level->RemoveItemFromWorld(stone);
+			gameLevel->RemoveItemFromWorld(stone);
 		}
 
 		// add stone to leader
 		team->leader->AddItem(stone, 1, false);
-		game_gui->messages->AddGameMsg3(team->leader->player, GMS_ADDED_CURSED_STONE);
+		gameGui->messages->AddGameMsg3(team->leader->player, GMS_ADDED_CURSED_STONE);
 	}
 
 	if(crazies_state == State::TalkedWithCrazy)
@@ -233,7 +233,7 @@ void Quest_Crazies::OnProgress(int d)
 			globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
 			globalEnc->chance = 33;
 			globalEnc->quest = this;
-			globalEnc->text = quest_mgr->txQuest[252];
+			globalEnc->text = questMgr->txQuest[252];
 			world->AddGlobalEncounter(globalEnc);
 		}
 	}

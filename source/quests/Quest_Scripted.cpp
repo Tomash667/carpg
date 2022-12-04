@@ -58,7 +58,7 @@ void Quest_Scripted::Start(Vars* vars)
 	if(scheme->startup_use_vars)
 	{
 		assert(vars);
-		script_mgr->RunScript(scheme->f_startup, instance, [vars](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->f_startup, instance, [vars](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgAddress(0, vars));
@@ -67,7 +67,7 @@ void Quest_Scripted::Start(Vars* vars)
 	else
 	{
 		assert(!vars);
-		script_mgr->RunScript(scheme->f_startup, instance);
+		scriptMgr->RunScript(scheme->f_startup, instance);
 	}
 	AfterCall();
 }
@@ -90,7 +90,7 @@ void Quest_Scripted::Save(GameWriter& f)
 		int type_id;
 		cstring name;
 		scheme->script_type->GetProperty(i, &name, &type_id);
-		Var::Type var_type = script_mgr->GetVarType(type_id);
+		Var::Type var_type = scriptMgr->GetVarType(type_id);
 		f << Hash(name);
 		void* ptr = instance->GetAddressOfProperty(i);
 		switch(var_type)
@@ -223,7 +223,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 				scheme->script_type->GetProperty(j, &name, &type_id);
 				if(name_hash == Hash(name))
 				{
-					Var::Type var_type = script_mgr->GetVarType(type_id);
+					Var::Type var_type = scriptMgr->GetVarType(type_id);
 					void* ptr = instance->GetAddressOfProperty(j);
 					LoadVar(f, var_type, ptr);
 					break;
@@ -243,7 +243,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 				scheme->script_type->GetProperty(i, &name, &type_id);
 				if(strcmp(name, "village") == 0 || strcmp(name, "counter") == 0)
 				{
-					Var::Type var_type = script_mgr->GetVarType(type_id);
+					Var::Type var_type = scriptMgr->GetVarType(type_id);
 					void* ptr = instance->GetAddressOfProperty(i);
 					LoadVar(f, var_type, ptr);
 				}
@@ -255,7 +255,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 			{
 				int type_id;
 				scheme->script_type->GetProperty(i, nullptr, &type_id);
-				Var::Type var_type = script_mgr->GetVarType(type_id);
+				Var::Type var_type = scriptMgr->GetVarType(type_id);
 				void* ptr = instance->GetAddressOfProperty(i);
 				LoadVar(f, var_type, ptr);
 			}
@@ -303,7 +303,7 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
 			else
 			{
 				int quest_id = f.Read<int>();
-				quest_mgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), quest_id, nullptr);
+				questMgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), quest_id, nullptr);
 			}
 		}
 		break;
@@ -370,7 +370,7 @@ void Quest_Scripted::BeforeCall()
 	{
 		journal_state = JournalState::None;
 		journal_changes = 0;
-		script_mgr->GetContext().quest = this;
+		scriptMgr->GetContext().quest = this;
 	}
 	++call_depth;
 }
@@ -383,8 +383,8 @@ void Quest_Scripted::AfterCall()
 		return;
 	if(journal_changes || journal_state == JournalState::Changed)
 	{
-		game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-		game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+		gameGui->journal->NeedUpdate(Journal::Quests, quest_index);
+		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -393,7 +393,7 @@ void Quest_Scripted::AfterCall()
 			c.count = journal_changes;
 		}
 	}
-	script_mgr->GetContext().quest = nullptr;
+	scriptMgr->GetContext().quest = nullptr;
 }
 
 //=================================================================================================
@@ -411,14 +411,14 @@ void Quest_Scripted::SetProgress(int prog2)
 	BeforeCall();
 	if(scheme->set_progress_use_prev)
 	{
-		script_mgr->RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgDWord(0, prev));
 		});
 	}
 	else
-		script_mgr->RunScript(scheme->f_progress, instance);
+		scriptMgr->RunScript(scheme->f_progress, instance);
 	AfterCall();
 }
 
@@ -450,7 +450,7 @@ void Quest_Scripted::SetCompleted()
 	else if(category == QuestCategory::Captain)
 		static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
 	if(category == QuestCategory::Unique)
-		quest_mgr->EndUniqueQuest();
+		questMgr->EndUniqueQuest();
 	Cleanup();
 }
 
@@ -473,7 +473,7 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 	if(!scheme->f_event)
 		return;
 	BeforeCall();
-	script_mgr->RunScript(scheme->f_event, instance, [&event](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->f_event, instance, [&event](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgObject(0, &event));
@@ -484,7 +484,7 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 //=================================================================================================
 string Quest_Scripted::GetString(int index)
 {
-	assert(script_mgr->GetContext().quest == this);
+	assert(scriptMgr->GetContext().quest == this);
 	GameDialog* dialog = scheme->dialogs[0];
 	if(index < 0 || index >= (int)dialog->texts.size())
 		throw ScriptException("Invalid text index.");
@@ -508,7 +508,7 @@ string Quest_Scripted::GetString(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				script_mgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -542,13 +542,13 @@ string Quest_Scripted::GetString(int index)
 //=================================================================================================
 void Quest_Scripted::AddRumor(const string& str)
 {
-	quest_mgr->AddQuestRumor(id, str.c_str());
+	questMgr->AddQuestRumor(id, str.c_str());
 }
 
 //=================================================================================================
 void Quest_Scripted::RemoveRumor()
 {
-	quest_mgr->RemoveQuestRumor(id);
+	questMgr->RemoveQuestRumor(id);
 }
 
 //=================================================================================================
@@ -579,7 +579,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	// call method
 	in_upgrade = true;
 	BeforeCall();
-	script_mgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgAddress(0, data.vars));

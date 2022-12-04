@@ -42,9 +42,9 @@ void Stock::Parse(vector<ItemSlot>& items)
 {
 	if(script)
 	{
-		ScriptContext& ctx = script_mgr->GetContext();
+		ScriptContext& ctx = scriptMgr->GetContext();
 		ctx.stock = &items;
-		script_mgr->RunScript(script);
+		scriptMgr->RunScript(script);
 		ctx.stock = nullptr;
 	}
 
@@ -58,7 +58,7 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 	CityBlock in_city = CityBlock::ANY;
 	LocalVector<int> sets;
 	bool in_set = false;
-	bool city = (game_level->location && game_level->IsCity());
+	bool city = (gameLevel->location && gameLevel->IsCity());
 	uint i = 0;
 
 	do

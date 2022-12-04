@@ -92,7 +92,7 @@ void ForLocation::Setup(Location* l, int level)
 					for(int i = 0; i < multi->generated; ++i)
 					{
 						LocationContext::Entry& e = ctx->entries[i];
-						e.active = (active && game_level->dungeon_level == i);
+						e.active = (active && gameLevel->dungeonLevel == i);
 						e.locPart = multi->levels[i];
 						e.level = i;
 						e.loc = loc;
@@ -102,7 +102,7 @@ void ForLocation::Setup(Location* l, int level)
 				{
 					assert(level >= 0 && level < multi->generated);
 					LocationContext::Entry& e = Add1(ctx->entries);
-					e.active = (active && game_level->dungeon_level == level);
+					e.active = (active && gameLevel->dungeonLevel == level);
 					e.locPart = multi->levels[level];
 					e.level = level;
 					e.loc = loc;
@@ -228,7 +228,7 @@ bool LocationContext::RemoveUnit(Unit* unit)
 		if(entry->active)
 		{
 			unit->to_remove = true;
-			game_level->to_remove.push_back(unit);
+			gameLevel->to_remove.push_back(unit);
 		}
 		else
 			RemoveElementIndex(entry->locPart->units, unit_index);

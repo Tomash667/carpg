@@ -21,16 +21,16 @@ struct Point
 //-----------------------------------------------------------------------------
 struct AStarSort
 {
-	AStarSort(vector<Pathfinding::APoint>& a_map, int size) : a_map(a_map), size(size)
+	AStarSort(vector<Pathfinding::APoint>& aMap, int size) : aMap(aMap), size(size)
 	{
 	}
 
 	bool operator() (const Point& pt1, const Point& pt2) const
 	{
-		return a_map[pt1.pt.x + pt1.pt.y*size].sum > a_map[pt2.pt.x + pt2.pt.y*size].sum;
+		return aMap[pt1.pt.x + pt1.pt.y*size].sum > aMap[pt2.pt.x + pt2.pt.y*size].sum;
 	}
 
-	vector<Pathfinding::APoint>& a_map;
+	vector<Pathfinding::APoint>& aMap;
 	int size;
 };
 
@@ -52,13 +52,13 @@ const Int2 c_dir2[4] = {
 //=================================================================================================
 // Search for path using A-Star algorithm
 // Return true if there is path, retured path don't contain first tile
-bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
+bool Pathfinding::FindPath(LocationPart& locPart, const Int2& startTile, const Int2& targetTile, vector<Int2>& path, bool canOpenDoors, bool wandering, vector<Int2>* blocked)
 {
-	if(start_tile == target_tile || locPart.partType == LocationPart::Type::Building)
+	if(startTile == targetTile || locPart.partType == LocationPart::Type::Building)
 	{
 		// already at same tile
 		path.clear();
-		path.push_back(target_tile);
+		path.push_back(targetTile);
 		return true;
 	}
 
@@ -68,48 +68,48 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 	if(locPart.partType == LocationPart::Type::Outside)
 	{
 		// outside location
-		OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
+		OutsideLocation* outside = static_cast<OutsideLocation*>(gameLevel->location);
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
 		// is inside map?
-		if(!outside->IsInside(start_tile) || !outside->IsInside(target_tile))
+		if(!outside->IsInside(startTile) || !outside->IsInside(targetTile))
 			return false;
 
 		// is in blocking tile?
-		if(m[start_tile(w)].IsBlocking() || m[target_tile(w)].IsBlocking())
+		if(m[startTile(w)].IsBlocking() || m[targetTile(w)].IsBlocking())
 			return false;
 
 		// resize map
 		const uint size = uint(w*w);
-		if(size > a_map.size())
-			a_map.resize(size);
+		if(size > aMap.size())
+			aMap.resize(size);
 
 		// zero out
-		memset(&a_map[0], 0, sizeof(APoint)*size);
+		memset(&aMap[0], 0, sizeof(APoint)*size);
 		path.clear();
 
 		// apply blocked tiles
 		if(blocked)
 		{
 			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
-				a_map[(*it)(w)].state = 1;
-			if(a_map[start_tile(w)].state == 1 || a_map[target_tile(w)].state == 1)
+				aMap[(*it)(w)].state = 1;
+			if(aMap[startTile(w)].state == 1 || aMap[targetTile(w)].state == 1)
 				return false;
 		}
 
 		// add first tile to check
 		APoint apt, prev_apt;
-		apt.sum = apt.dist = 10 * (abs(target_tile.x - start_tile.x) + abs(target_tile.y - start_tile.y));
+		apt.sum = apt.dist = 10 * (abs(targetTile.x - startTile.x) + abs(targetTile.y - startTile.y));
 		apt.state = 1;
 		apt.cost = 0;
-		a_map[start_tile(w)] = apt;
+		aMap[startTile(w)] = apt;
 
 		Point pt, new_pt;
-		pt.pt = pt.prev = start_tile;
+		pt.pt = pt.prev = startTile;
 		to_check.push_back(pt);
 
-		AStarSort sorter(a_map, w);
+		AStarSort sorter(aMap, w);
 
 		// search for path
 		while(!to_check.empty())
@@ -117,12 +117,12 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 			pt = to_check.back();
 			to_check.pop_back();
 
-			apt = a_map[pt.pt(w)];
-			prev_apt = a_map[pt.prev(w)];
+			apt = aMap[pt.pt(w)];
+			prev_apt = aMap[pt.prev(w)];
 
-			if(pt.pt == target_tile)
+			if(pt.pt == targetTile)
 			{
-				APoint& ept = a_map[pt.pt(w)];
+				APoint& ept = aMap[pt.pt(w)];
 				ept.state = 1;
 				ept.prev = pt.prev;
 				break;
@@ -133,7 +133,7 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 				const Int2& pt1 = c_dir[i] + pt.pt;
 				const Int2& pt2 = c_dir2[i] + pt.pt;
 
-				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].state == 0 && !m[pt1(w)].IsBlocking())
+				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && aMap[pt1(w)].state == 0 && !m[pt1(w)].IsBlocking())
 				{
 					apt.prev = pt.pt;
 					apt.cost = prev_apt.cost + 10;
@@ -145,17 +145,17 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 						else if(type != TT_ROAD)
 							apt.cost += 30;
 					}
-					apt.dist = (abs(pt1.x - target_tile.x) + abs(pt1.y - target_tile.y)) * 10;
+					apt.dist = (abs(pt1.x - targetTile.x) + abs(pt1.y - targetTile.y)) * 10;
 					apt.sum = apt.dist + apt.cost;
 					apt.state = 1;
-					a_map[pt1(w)] = apt;
+					aMap[pt1(w)] = apt;
 
 					new_pt.pt = pt1;
 					new_pt.prev = pt.pt;
 					to_check.push_back(new_pt);
 				}
 
-				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].state == 0
+				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && aMap[pt2(w)].state == 0
 					&& !m[pt2(w)].IsBlocking()
 					&& !m[c_dir2[i].x + pt.pt.x + pt.pt.y*w].IsBlocking()
 					&& !m[pt.pt.x + (c_dir2[i].y + pt.pt.y)*w].IsBlocking())
@@ -170,10 +170,10 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 						else if(type != TT_ROAD)
 							apt.cost += 30;
 					}
-					apt.dist = (abs(pt2.x - target_tile.x) + abs(pt2.y - target_tile.y)) * 10;
+					apt.dist = (abs(pt2.x - targetTile.x) + abs(pt2.y - targetTile.y)) * 10;
 					apt.sum = apt.dist + apt.cost;
 					apt.state = 1;
-					a_map[pt2(w)] = apt;
+					aMap[pt2(w)] = apt;
 
 					new_pt.pt = pt2;
 					new_pt.prev = pt.pt;
@@ -185,80 +185,80 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 		}
 
 		// if target is not visited then path was not found
-		if(a_map[target_tile(w)].state == 0)
+		if(aMap[targetTile(w)].state == 0)
 			return false;
 
 		// fill path elements
-		path.push_back(target_tile);
+		path.push_back(targetTile);
 
 		Int2 p;
 
-		while((p = path.back()) != start_tile)
-			path.push_back(a_map[p(w)].prev);
+		while((p = path.back()) != startTile)
+			path.push_back(aMap[p(w)].prev);
 	}
 	else
 	{
 		// inside location
-		InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
+		InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		const Tile* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;
 
 		// is inside level?
-		if(!lvl.IsInside(start_tile) || !lvl.IsInside(target_tile))
+		if(!lvl.IsInside(startTile) || !lvl.IsInside(targetTile))
 			return false;
 
 		// is in blocking tile?
-		if(IsBlocking(m[start_tile(w)]) || IsBlocking(m[target_tile(w)]))
+		if(IsBlocking(m[startTile(w)]) || IsBlocking(m[targetTile(w)]))
 			return false;
 
 		// resize map
 		const uint size = uint(w*h);
-		if(size > a_map.size())
-			a_map.resize(size);
+		if(size > aMap.size())
+			aMap.resize(size);
 
 		// zero out
-		memset(&a_map[0], 0, sizeof(APoint)*size);
+		memset(&aMap[0], 0, sizeof(APoint)*size);
 		path.clear();
 
 		// apply blocked tiles
 		if(blocked)
 		{
 			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
-				a_map[(*it)(w)].state = 1;
-			if(a_map[start_tile(w)].state == 1 || a_map[target_tile(w)].state == 1)
+				aMap[(*it)(w)].state = 1;
+			if(aMap[startTile(w)].state == 1 || aMap[targetTile(w)].state == 1)
 				return false;
 		}
 
 		// add first tile to check
 		APoint apt, prev_apt;
-		apt.sum = apt.dist = 10 * (abs(target_tile.x - start_tile.x) + abs(target_tile.y - start_tile.y));
+		apt.sum = apt.dist = 10 * (abs(targetTile.x - startTile.x) + abs(targetTile.y - startTile.y));
 		apt.state = 1;
 		apt.cost = 0;
-		a_map[start_tile(w)] = apt;
+		aMap[startTile(w)] = apt;
 
 		Point pt, new_pt;
-		pt.pt = pt.prev = start_tile;
+		pt.pt = pt.prev = startTile;
 		to_check.push_back(pt);
 
-		AStarSort sorter(a_map, w);
+		AStarSort sorter(aMap, w);
 
 		// search for path
 		while(!to_check.empty())
 		{
 			pt = to_check.back();
 			to_check.pop_back();
-			prev_apt = a_map[pt.pt(w)];
+			prev_apt = aMap[pt.pt(w)];
 
-			if(pt.pt == target_tile)
+			if(pt.pt == targetTile)
 			{
-				APoint& ept = a_map[pt.pt(w)];
+				APoint& ept = aMap[pt.pt(w)];
 				ept.state = 1;
 				ept.prev = pt.prev;
 				break;
 			}
 
-			if(can_open_doors)
+			if(canOpenDoors)
 			{
 				for(int i = 0; i < 4; ++i)
 				{
@@ -269,13 +269,13 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 					{
 						apt.prev = pt.pt;
 						apt.cost = prev_apt.cost + 10;
-						apt.dist = (abs(pt1.x - target_tile.x) + abs(pt1.y - target_tile.y)) * 10;
+						apt.dist = (abs(pt1.x - targetTile.x) + abs(pt1.y - targetTile.y)) * 10;
 						apt.sum = apt.dist + apt.cost;
 
-						if(a_map[pt1(w)].IsLower(apt.sum))
+						if(aMap[pt1(w)].IsLower(apt.sum))
 						{
 							apt.state = 1;
-							a_map[pt1(w)] = apt;
+							aMap[pt1(w)] = apt;
 
 							new_pt.pt = pt1;
 							new_pt.prev = pt.pt;
@@ -290,13 +290,13 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 					{
 						apt.prev = pt.pt;
 						apt.cost = prev_apt.cost + 15;
-						apt.dist = (abs(pt2.x - target_tile.x) + abs(pt2.y - target_tile.y)) * 10;
+						apt.dist = (abs(pt2.x - targetTile.x) + abs(pt2.y - targetTile.y)) * 10;
 						apt.sum = apt.dist + apt.cost;
 
-						if(a_map[pt2(w)].IsLower(apt.sum))
+						if(aMap[pt2(w)].IsLower(apt.sum))
 						{
 							apt.state = 1;
-							a_map[pt2(w)] = apt;
+							aMap[pt2(w)] = apt;
 
 							new_pt.pt = pt2;
 							new_pt.prev = pt.pt;
@@ -390,13 +390,13 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 						{
 							apt.prev = pt.pt;
 							apt.cost = prev_apt.cost + 10;
-							apt.dist = (abs(pt1.x - target_tile.x) + abs(pt1.y - target_tile.y)) * 10;
+							apt.dist = (abs(pt1.x - targetTile.x) + abs(pt1.y - targetTile.y)) * 10;
 							apt.sum = apt.dist + apt.cost;
 
-							if(a_map[pt1(w)].IsLower(apt.sum))
+							if(aMap[pt1(w)].IsLower(apt.sum))
 							{
 								apt.state = 1;
-								a_map[pt1(w)] = apt;
+								aMap[pt1(w)] = apt;
 
 								if(ok == 2)
 								{
@@ -440,13 +440,13 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 						{
 							apt.prev = pt.pt;
 							apt.cost = prev_apt.cost + 15;
-							apt.dist = (abs(pt2.x - target_tile.x) + abs(pt2.y - target_tile.y)) * 10;
+							apt.dist = (abs(pt2.x - targetTile.x) + abs(pt2.y - targetTile.y)) * 10;
 							apt.sum = apt.dist + apt.cost;
 
-							if(a_map[pt2(w)].IsLower(apt.sum))
+							if(aMap[pt2(w)].IsLower(apt.sum))
 							{
 								apt.state = 1;
-								a_map[pt2(w)] = apt;
+								aMap[pt2(w)] = apt;
 
 								new_pt.pt = pt2;
 								new_pt.prev = pt.pt;
@@ -461,16 +461,16 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 		}
 
 		// if target is not visited then path was not found
-		if(a_map[target_tile(w)].state == 0)
+		if(aMap[targetTile(w)].state == 0)
 			return false;
 
 		// wype³nij elementami œcie¿kê
-		path.push_back(target_tile);
+		path.push_back(targetTile);
 
 		Int2 p;
 
-		while((p = path.back()) != start_tile)
-			path.push_back(a_map[p(w)].prev);
+		while((p = path.back()) != startTile)
+			path.push_back(aMap[p(w)].prev);
 	}
 
 	// fill path elements
@@ -486,24 +486,24 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& start_tile, const 
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other,
-	const void* usable, bool is_end_point)
+int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& my_tile, const Int2& targetTile, const Unit* me, const Unit* other,
+	const void* usable, bool isEndPoint)
 {
 	assert(me);
 
 	path.clear();
 	if(marked == me)
-		test_pf.clear();
+		testPf.clear();
 
-	if(my_tile == target_tile)
+	if(my_tile == targetTile)
 		return 3;
 
-	int dist = Int2::Distance(my_tile, target_tile);
+	int dist = Int2::Distance(my_tile, targetTile);
 	if(dist >= 32)
 		return 1;
 
 	// center
-	const Int2 center_tile((my_tile + target_tile) / 2);
+	const Int2 center_tile((my_tile + targetTile) / 2);
 
 	int minx = max(locPart.mine.x * 8, center_tile.x - 15),
 		miny = max(locPart.mine.y * 8, center_tile.y - 15),
@@ -515,26 +515,26 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 
 	uint size = (w + 1)*(h + 1);
 
-	if(a_map.size() < size)
-		a_map.resize(size);
-	memset(&a_map[0], 0, sizeof(APoint)*size);
-	if(local_pfmap.size() < size)
-		local_pfmap.resize(size);
+	if(aMap.size() < size)
+		aMap.resize(size);
+	memset(&aMap[0], 0, sizeof(APoint)*size);
+	if(localPfMap.size() < size)
+		localPfMap.resize(size);
 
-	const Unit* ignored_units[3] = { me, 0 };
+	Level::IgnoreObjects ignore{};
+	const Unit* ignoredUnits[3] { me };
 	if(other)
-		ignored_units[1] = other;
-	Level::IgnoreObjects ignore = { 0 };
-	ignore.ignored_units = (const Unit**)ignored_units;
-	const void* ignored_objects[2] = { 0 };
+		ignoredUnits[1] = other;
+	ignore.ignoredUnits = ignoredUnits;
+	const void* ignoredObjects[2]{};
 	if(usable)
 	{
-		ignored_objects[0] = usable;
-		ignore.ignored_objects = ignored_objects;
+		ignoredObjects[0] = usable;
+		ignore.ignoredObjects = ignoredObjects;
 	}
 
-	game_level->global_col.clear();
-	game_level->GatherCollisionObjects(locPart, game_level->global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
+	gameLevel->globalCol.clear();
+	gameLevel->GatherCollisionObjects(locPart, gameLevel->globalCol, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
 	const float r = me->GetUnitRadius() - 0.25f / 2;
 
@@ -544,13 +544,13 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 		{
 			for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
 			{
-				if(!game_level->Collide(game_level->global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
+				if(!gameLevel->Collide(gameLevel->globalCol, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
 				{
-					test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
-					local_pfmap[x2 + y2 * w] = false;
+					testPf.push_back(pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
+					localPfMap[x2 + y2 * w] = false;
 				}
 				else
-					local_pfmap[x2 + y2 * w] = true;
+					localPfMap[x2 + y2 * w] = true;
 			}
 		}
 	}
@@ -559,19 +559,19 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 		for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
 		{
 			for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
-				local_pfmap[x2 + y2 * w] = game_level->Collide(game_level->global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r);
+				localPfMap[x2 + y2 * w] = gameLevel->Collide(gameLevel->globalCol, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r);
 		}
 	}
 
-	const Int2 target_rel(target_tile.x - minx, target_tile.y - miny),
+	const Int2 target_rel(targetTile.x - minx, targetTile.y - miny),
 		my_rel(my_tile.x - minx, my_tile.y - miny);
 
 	// target tile is blocked
-	if(!is_end_point && local_pfmap[target_rel(w)])
+	if(!isEndPoint && localPfMap[target_rel(w)])
 		return 4;
 
 	// mark my tile as free
-	local_pfmap[my_rel(w)] = false;
+	localPfMap[my_rel(w)] = false;
 	const Int2 neis[8] = {
 		Int2(-1,-1),
 		Int2(0,-1),
@@ -589,7 +589,7 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 		Int2 pt = my_rel + neis[i];
 		if(pt.x < 0 || pt.y < 0 || pt.x > 32 || pt.y > 32)
 			continue;
-		if(!local_pfmap[pt(w)])
+		if(!localPfMap[pt(w)])
 		{
 			have_empty_tile = true;
 			break;
@@ -613,9 +613,9 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 	apt.cost = 0;
 	apt.state = 1;
 	apt.prev = Int2(0, 0);
-	a_map[target_rel(w)] = apt;
+	aMap[target_rel(w)] = apt;
 
-	AStarSort sorter(a_map, w);
+	AStarSort sorter(aMap, w);
 	Point new_pt;
 
 	const int MAX_STEPS = 100;
@@ -626,11 +626,11 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 	{
 		Point pt = to_check.back();
 		to_check.pop_back();
-		prev_apt = a_map[pt.pt(w)];
+		prev_apt = aMap[pt.pt(w)];
 
 		if(pt.pt == my_rel)
 		{
-			APoint& ept = a_map[pt.pt(w)];
+			APoint& ept = aMap[pt.pt(w)];
 			ept.state = 1;
 			ept.prev = pt.prev;
 			break;
@@ -641,17 +641,17 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 			const Int2& pt1 = c_dir[i] + pt.pt;
 			const Int2& pt2 = c_dir2[i] + pt.pt;
 
-			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !local_pfmap[pt1(w)])
+			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !localPfMap[pt1(w)])
 			{
 				apt.prev = pt.pt;
 				apt.cost = prev_apt.cost + 10;
 				apt.dist = Int2::Distance(pt1, my_rel) * 10;
 				apt.sum = apt.dist + apt.cost;
 
-				if(a_map[pt1(w)].IsLower(apt.sum))
+				if(aMap[pt1(w)].IsLower(apt.sum))
 				{
 					apt.state = 1;
-					a_map[pt1(w)] = apt;
+					aMap[pt1(w)] = apt;
 
 					new_pt.pt = pt1;
 					new_pt.prev = pt.pt;
@@ -659,17 +659,17 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 				}
 			}
 
-			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !local_pfmap[pt2(w)])
+			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !localPfMap[pt2(w)])
 			{
 				apt.prev = pt.pt;
 				apt.cost = prev_apt.cost + 15;
 				apt.dist = Int2::Distance(pt2, my_rel) * 10;
 				apt.sum = apt.dist + apt.cost;
 
-				if(a_map[pt2(w)].IsLower(apt.sum))
+				if(aMap[pt2(w)].IsLower(apt.sum))
 				{
 					apt.state = 1;
-					a_map[pt2(w)] = apt;
+					aMap[pt2(w)] = apt;
 
 					new_pt.pt = pt2;
 					new_pt.prev = pt.pt;
@@ -688,22 +688,22 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 	if(marked)
 	{
 		if(marked == me)
-			test_pf_outside = (game_level->location->outside && me->locPart->partType == LocationPart::Type::Outside);
+			testPfOutside = (gameLevel->location->outside && me->locPart->partType == LocationPart::Type::Outside);
 
-		if(a_map[my_rel(w)].state == 0)
+		if(aMap[my_rel(w)].state == 0)
 		{
 			if(marked == me)
 			{
-				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+				testPf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+				testPf.push_back(pair<Vec2, int>(Vec2(0.25f*targetTile.x, 0.25f*targetTile.y), 1));
 			}
 			return 5;
 		}
 
 		if(marked == me)
 		{
-			test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-			test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+			testPf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+			testPf.push_back(pair<Vec2, int>(Vec2(0.25f*targetTile.x, 0.25f*targetTile.y), 1));
 		}
 
 		// populate path vector (and debug drawing)
@@ -712,15 +712,15 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 		do
 		{
 			if(marked == me)
-				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
+				testPf.push_back(pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
 			path.push_back(Int2(p.x + minx, p.y + miny));
-			p = a_map[p(w)].prev;
+			p = aMap[p(w)].prev;
 		}
 		while(p != target_rel);
 	}
 	else
 	{
-		if(a_map[my_rel(w)].state == 0)
+		if(aMap[my_rel(w)].state == 0)
 			return 5;
 
 		// populate path vector (and debug drawing)
@@ -729,12 +729,12 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 		do
 		{
 			path.push_back(Int2(p.x + minx, p.y + miny));
-			p = a_map[p(w)].prev;
+			p = aMap[p(w)].prev;
 		}
 		while(p != target_rel);
 	}
 
-	path.push_back(target_tile);
+	path.push_back(targetTile);
 	std::reverse(path.begin(), path.end());
 	path.pop_back();
 
@@ -744,10 +744,10 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 //=================================================================================================
 void Pathfinding::Draw(BasicShader* shader)
 {
-	if(test_pf.empty() || !marked)
+	if(testPf.empty() || !marked)
 		return;
 
-	for(vector<pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
+	for(vector<pair<Vec2, int>>::iterator it = testPf.begin(), end = testPf.end(); it != end; ++it)
 	{
 		Vec3 v[4] = {
 			Vec3(it->first.x, 0.1f, it->first.y + SS),
@@ -756,9 +756,9 @@ void Pathfinding::Draw(BasicShader* shader)
 			Vec3(it->first.x + SS, 0.1f, it->first.y)
 		};
 
-		if(test_pf_outside)
+		if(testPfOutside)
 		{
-			float h = game_level->terrain->GetH(v[0].x, v[0].z) + 0.1f;
+			float h = gameLevel->terrain->GetH(v[0].x, v[0].z) + 0.1f;
 			for(int i = 0; i < 4; ++i)
 				v[i].y = h;
 		}

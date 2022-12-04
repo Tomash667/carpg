@@ -45,8 +45,8 @@ void Minimap::LoadData()
 //=================================================================================================
 void Minimap::Draw()
 {
-	LocationPart& locPart = *game_level->localPart;
-	LOCATION type = game_level->location->type;
+	LocationPart& locPart = *gameLevel->localPart;
+	LOCATION type = gameLevel->location->type;
 
 	// map texture
 	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
@@ -56,7 +56,7 @@ void Minimap::Draw()
 	// stairs
 	if(type == L_DUNGEON || type == L_CAVE)
 	{
-		InsideLocation* inside = (InsideLocation*)game_level->location;
+		InsideLocation* inside = (InsideLocation*)gameLevel->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveNextEntry() && IsSet(lvl.map[lvl.nextEntryPt(lvl.w)].flags, Tile::F_REVEALED))
@@ -66,13 +66,13 @@ void Minimap::Draw()
 	}
 
 	// portals
-	Portal* p = game_level->location->portal;
+	Portal* p = gameLevel->location->portal;
 	InsideLocationLevel* lvl = nullptr;
-	if(game_level->location->type == L_DUNGEON || game_level->location->type == L_CAVE)
-		lvl = &((InsideLocation*)game_level->location)->GetLevelData();
+	if(gameLevel->location->type == L_DUNGEON || gameLevel->location->type == L_CAVE)
+		lvl = &((InsideLocation*)gameLevel->location)->GetLevelData();
 	while(p)
 	{
-		if(!lvl || (game_level->dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))
+		if(!lvl || (gameLevel->dungeonLevel == p->at_level && lvl->IsTileVisible(p->pos)))
 			gui->DrawSprite(tPortal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
 		p = p->next_portal;
 	}
@@ -141,7 +141,7 @@ void Minimap::Draw()
 		}
 	}
 
-	if(game_level->city_ctx)
+	if(gameLevel->cityCtx)
 	{
 		// building names
 		for(Text& text : texts)
@@ -158,13 +158,13 @@ void Minimap::Draw()
 
 	// location name
 	Rect rect = { 0,0,gui->wndSize.x - 8,gui->wndSize.y - 8 };
-	gui->DrawText(GameGui::font, game_level->GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
+	gui->DrawText(GameGui::font, gameLevel->GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
 
 //=================================================================================================
 void Minimap::Update(float dt)
 {
-	if(game_level->city_ctx)
+	if(gameLevel->cityCtx)
 	{
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 		{
@@ -221,10 +221,10 @@ void Minimap::Hide()
 //=================================================================================================
 void Minimap::Build()
 {
-	minimapSize = game_level->minimap_size;
-	if(game_level->city_ctx && game_level->city_ctx != city)
+	minimapSize = gameLevel->minimapSize;
+	if(gameLevel->cityCtx && gameLevel->cityCtx != city)
 	{
-		city = game_level->city_ctx;
+		city = gameLevel->cityCtx;
 		texts.clear();
 
 		for(CityBuilding& b : city->buildings)
@@ -243,12 +243,12 @@ void Minimap::Build()
 //=================================================================================================
 Vec2 Minimap::GetMapPosition(Unit& unit)
 {
-	if(!game_level->city_ctx || unit.locPart->partType == LocationPart::Type::Outside)
+	if(!gameLevel->cityCtx || unit.locPart->partType == LocationPart::Type::Outside)
 		return Vec2(unit.pos.x, unit.pos.z);
 	else
 	{
 		Building* building = static_cast<InsideBuilding*>(unit.locPart)->building;
-		for(CityBuilding& b : game_level->city_ctx->buildings)
+		for(CityBuilding& b : gameLevel->cityCtx->buildings)
 		{
 			if(b.building == building)
 				return Vec2(float(b.pt.x * 2), float(b.pt.y * 2));

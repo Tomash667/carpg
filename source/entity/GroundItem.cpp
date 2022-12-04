@@ -23,7 +23,7 @@ void GroundItem::CreateSceneNode()
 		nodePos.y -= mesh->head.bbox.v1.y;
 	}
 	else
-		mesh = game_res->aBag;
+		mesh = gameRes->aBag;
 	node = SceneNode::Get();
 	node->SetMesh(mesh);
 	node->center = pos;
@@ -67,7 +67,7 @@ void GroundItem::Load(GameReader& f)
 	else
 	{
 		int quest_id = f.Read<int>();
-		quest_mgr->AddQuestItemRequest(&item, item_id.c_str(), quest_id, nullptr);
+		questMgr->AddQuestItemRequest(&item, item_id.c_str(), quest_id, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
 	if(LOAD_VERSION < V_0_12)

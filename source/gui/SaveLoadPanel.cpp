@@ -196,7 +196,7 @@ void SaveLoad::Event(GuiEvent e)
 				cstring names[] = { nullptr, txSave };
 				if(slot.valid)
 					saveInputText = slot.text;
-				else if(game->hardcore_mode)
+				else if(game->hardcoreMode)
 					saveInputText = hardcoreSavename;
 				else
 					saveInputText.clear();

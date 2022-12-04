@@ -18,17 +18,17 @@
 //=================================================================================================
 void Quest_Contest::InitOnce()
 {
-	quest_mgr->RegisterSpecialHandler(this, "contest_start");
-	quest_mgr->RegisterSpecialHandler(this, "contest_join");
-	quest_mgr->RegisterSpecialHandler(this, "contest_reward");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_done");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_here");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_today");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_in_progress");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_started");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_joined");
-	quest_mgr->RegisterSpecialIfHandler(this, "contest_winner");
-	quest_mgr->RegisterFormatString(this, "contest_loc");
+	questMgr->RegisterSpecialHandler(this, "contest_start");
+	questMgr->RegisterSpecialHandler(this, "contest_join");
+	questMgr->RegisterSpecialHandler(this, "contest_reward");
+	questMgr->RegisterSpecialIfHandler(this, "contest_done");
+	questMgr->RegisterSpecialIfHandler(this, "contest_here");
+	questMgr->RegisterSpecialIfHandler(this, "contest_today");
+	questMgr->RegisterSpecialIfHandler(this, "contest_in_progress");
+	questMgr->RegisterSpecialIfHandler(this, "contest_started");
+	questMgr->RegisterSpecialIfHandler(this, "contest_joined");
+	questMgr->RegisterSpecialIfHandler(this, "contest_winner");
+	questMgr->RegisterFormatString(this, "contest_loc");
 }
 
 //=================================================================================================
@@ -53,7 +53,7 @@ void Quest_Contest::Init()
 	winner = nullptr;
 	generated = false;
 	year = world->GetDateValue().year;
-	rumor = quest_mgr->AddQuestRumor(quest_mgr->txRumorQ[2]);
+	rumor = questMgr->AddQuestRumor(questMgr->txRumorQ[2]);
 
 	if(game->devmode)
 		Info("Contest - %s.", world->GetLocation(where)->name.c_str());
@@ -192,7 +192,7 @@ void Quest_Contest::OnProgress()
 		break;
 	case 1:
 		state = CONTEST_TODAY;
-		if(!generated && game->game_state == GS_LEVEL && game_level->location_index == where)
+		if(!generated && game->gameState == GS_LEVEL && gameLevel->locationIndex == where)
 			SpawnDrunkmans();
 		break;
 	case 2:
@@ -209,7 +209,7 @@ void Quest_Contest::Update(float dt)
 	if(Any(state, CONTEST_NOT_DONE, CONTEST_DONE, CONTEST_TODAY))
 		return;
 
-	InsideBuilding* inn = game_level->city_ctx->FindInn();
+	InsideBuilding* inn = gameLevel->cityCtx->FindInn();
 	Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 
 	if(!innkeeper.IsAlive())
@@ -249,7 +249,7 @@ void Quest_Contest::Update(float dt)
 			{
 				unit->player->leaving_event = leaving_event;
 				if(leaving_event)
-					game_gui->messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
+					gameGui->messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
 			}
 		}
 
@@ -288,7 +288,7 @@ void Quest_Contest::Update(float dt)
 					}
 					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE))
 					{
-						if(quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured)
+						if(questMgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 							ok = true;
 					}
 
@@ -312,7 +312,7 @@ void Quest_Contest::Update(float dt)
 				if(kick || u.locPart != inn || u.frozen != FROZEN::NO || !u.IsStanding())
 				{
 					if(u.IsPlayer())
-						game_gui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);
+						gameGui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);
 					*it = nullptr;
 					removed = true;
 				}
@@ -573,7 +573,7 @@ void Quest_Contest::Cleanup()
 		u.event_handler = nullptr;
 	}
 
-	InsideBuilding* inn = game_level->city_ctx->FindInn();
+	InsideBuilding* inn = gameLevel->cityCtx->FindInn();
 	Unit* innkeeper = inn->FindUnit(UnitData::Get("innkeeper"));
 
 	innkeeper->talking = false;
@@ -587,10 +587,10 @@ void Quest_Contest::Cleanup()
 //=================================================================================================
 void Quest_Contest::SpawnDrunkmans()
 {
-	InsideBuilding* inn = game_level->city_ctx->FindInn();
+	InsideBuilding* inn = gameLevel->cityCtx->FindInn();
 	generated = true;
 	UnitData& pijak = *UnitData::Get("pijak");
 	int count = Random(4, 6);
 	for(int i = 0; i < count; ++i)
-		game_level->SpawnUnitInsideInn(pijak, -2, inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
+		gameLevel->SpawnUnitInsideInn(pijak, -2, inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
 }

@@ -21,7 +21,7 @@ struct RecipeItem : public GuiElement
 	explicit RecipeItem(Recipe* recipe) : recipe(recipe)
 	{
 		const Item* item = recipe->result;
-		game_res->PreloadItem(item);
+		gameRes->PreloadItem(item);
 		text = item->name;
 		text += "\n(";
 		bool first = true;
@@ -294,7 +294,7 @@ void CraftPanel::SetIngredients()
 	{
 		if(IsSet(slot.item->flags, ITEM_INGREDIENT))
 		{
-			game_res->PreloadItem(slot.item);
+			gameRes->PreloadItem(slot.item);
 			ingredients.push_back(std::make_pair(slot.item, slot.count));
 		}
 	}
@@ -366,7 +366,7 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 
 void CraftPanel::Show()
 {
-	game_gui->levelGui->ClosePanels();
+	gameGui->levelGui->ClosePanels();
 	Control::Show();
 }
 
@@ -401,7 +401,7 @@ void CraftPanel::AfterCraft()
 
 void CraftPanel::OnLearnRecipe()
 {
-	game_gui->messages->AddGameMsg3(GMS_LEARNED_RECIPE);
+	gameGui->messages->AddGameMsg3(GMS_LEARNED_RECIPE);
 	if(visible)
 		SetRecipes(true);
 }

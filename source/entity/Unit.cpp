@@ -67,7 +67,7 @@ Unit::~Unit()
 	if(order)
 		order->Free();
 	if(bow_instance)
-		game_level->FreeBowInstance(bow_instance);
+		gameLevel->FreeBowInstance(bow_instance);
 	delete meshInst;
 	delete human_data;
 	delete hero;
@@ -111,7 +111,7 @@ void Unit::Init(UnitData& base, int lvl)
 	if(lvl == -2)
 		level = base.level.Random();
 	else if(lvl == -3)
-		level = base.level.Clamp(game_level->location->st);
+		level = base.level.Clamp(gameLevel->location->st);
 	else
 		level = base.level.Clamp(lvl);
 	player = nullptr;
@@ -397,9 +397,9 @@ void Unit::SetGold(int new_gold)
 	gold = new_gold;
 	if(IsPlayer())
 	{
-		game_gui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
+		gameGui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
 		if(player->is_local)
-			soundMgr->PlaySound2d(game_res->sCoins);
+			soundMgr->PlaySound2d(gameRes->sCoins);
 		else
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
@@ -446,7 +446,7 @@ void Unit::ReplaceItem(ITEM_SLOT slot, const Item* item)
 {
 	assert(Net::IsClient()); // TODO
 	if(item)
-		game_res->PreloadItem(item);
+		gameRes->PreloadItem(item);
 	slots[slot] = item;
 }
 
@@ -456,7 +456,7 @@ void Unit::ReplaceItems(array<const Item*, SLOT_MAX>& items)
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(items[i])
-			game_res->PreloadItem(items[i]);
+			gameRes->PreloadItem(items[i]);
 		slots[i] = items[i];
 	}
 }
@@ -494,7 +494,7 @@ bool Unit::DropItem(int index, uint count)
 			noMore = true;
 			items.erase(items.begin() + index);
 		}
-		if(!quest_mgr->quest_secret->CheckMoonStone(groundItem, *this))
+		if(!questMgr->quest_secret->CheckMoonStone(groundItem, *this))
 			locPart->AddGroundItem(groundItem);
 
 		if(Net::IsServer())
@@ -757,7 +757,7 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 	}
 
 	meshInst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
-	game_res->PreloadItem(&cons);
+	gameRes->PreloadItem(&cons);
 	used_item = &cons;
 }
 
@@ -814,7 +814,7 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 {
 	assert(item && count && team_count <= count);
 
-	game_res->PreloadItem(item);
+	gameRes->PreloadItem(item);
 
 	AddItem(item, count, team_count);
 
@@ -836,7 +836,7 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 		{
 			// check if unit is trading with someone that gets this item
 			Unit* u = nullptr;
-			for(Unit& member : team->active_members)
+			for(Unit& member : team->activeMembers)
 			{
 				if(member.IsPlayer() && member.player->IsTradingWith(this))
 				{
@@ -858,19 +858,19 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 	}
 
 	if(show_msg && IsPlayer())
-		game_gui->messages->AddItemMessage(player, count);
+		gameGui->messages->AddItemMessage(player, count);
 
 	// rebuild inventory
 	int rebuild_id = -1;
 	if(IsLocalPlayer())
 	{
-		if(game_gui->inventory->invMine->visible || game_gui->inventory->gpTrade->visible)
+		if(gameGui->inventory->invMine->visible || gameGui->inventory->gpTrade->visible)
 			rebuild_id = 0;
 	}
-	else if(game_gui->inventory->gpTrade->visible && game_gui->inventory->invTradeOther->unit == this)
+	else if(gameGui->inventory->gpTrade->visible && gameGui->inventory->invTradeOther->unit == this)
 		rebuild_id = 1;
 	if(rebuild_id != -1)
-		game_gui->inventory->BuildTmpInventory(rebuild_id);
+		gameGui->inventory->BuildTmpInventory(rebuild_id);
 }
 
 //=================================================================================================
@@ -2005,7 +2005,7 @@ void Unit::Load(GameReader& f)
 		else
 		{
 			int quest_item_id = f.Read<int>();
-			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_id, &items, this);
+			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_id, &items, this);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -2105,13 +2105,13 @@ void Unit::Load(GameReader& f)
 		f.Skip<int>(); // old netid
 	int unit_event_handler_quest_id = f.Read<int>();
 	if(unit_event_handler_quest_id == -2)
-		event_handler = quest_mgr->quest_contest;
+		event_handler = questMgr->quest_contest;
 	else if(unit_event_handler_quest_id == -1)
 		event_handler = nullptr;
 	else
 	{
 		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
-		game->load_unit_handler.push_back(this);
+		game->loadUnitHandler.push_back(this);
 	}
 	if(can_sort && content.require_update)
 		SortItems(items);
@@ -2265,7 +2265,7 @@ void Unit::Load(GameReader& f)
 
 		if(action == A_SHOOT)
 		{
-			bow_instance = game_level->GetBowInstance(GetBow().mesh);
+			bow_instance = gameLevel->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = meshInst->groups[1].speed;
 			bow_instance->groups[0].time = Min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
@@ -2340,7 +2340,7 @@ void Unit::Load(GameReader& f)
 		int quest_id = f.Read<int>();
 		string* str = StringPool.Get();
 		f >> *str;
-		quest_mgr->AddQuestRequest(quest_id, (Quest**)&dialog.quest, [this, &dialog, str]()
+		questMgr->AddQuestRequest(quest_id, (Quest**)&dialog.quest, [this, &dialog, str]()
 		{
 			dialog.dialog = dialog.quest->GetDialog(*str);
 			StringPool.Free(str);
@@ -2361,7 +2361,7 @@ void Unit::Load(GameReader& f)
 			int quest_id;
 			f >> e.type;
 			f >> quest_id;
-			quest_mgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
+			questMgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
 			{
 				EventPtr event;
 				event.source = EventPtr::UNIT;
@@ -2424,7 +2424,7 @@ void Unit::Load(GameReader& f)
 						int quest_id;
 						f >> quest_id;
 						if(quest_id != -1)
-							quest_mgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
+							questMgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
 						else
 							current_order->auto_talk_quest = nullptr;
 					}
@@ -2591,7 +2591,7 @@ void Unit::LoadStock(GameReader& f)
 		{
 			int quest_id;
 			f >> quest_id;
-			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &cnt);
+			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -2801,7 +2801,7 @@ bool Unit::Read(BitStreamReader& f)
 				const Item* item = Item::TryGet(item_id);
 				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
 				{
-					game_res->PreloadItem(item);
+					gameRes->PreloadItem(item);
 					slots[i] = item;
 				}
 				else
@@ -2878,7 +2878,7 @@ bool Unit::Read(BitStreamReader& f)
 		// player
 		int id;
 		f.ReadCasted<byte>(id);
-		if(id == team->my_id)
+		if(id == team->myId)
 		{
 			assert(game->pc);
 			player = game->pc;
@@ -2997,7 +2997,7 @@ bool Unit::Read(BitStreamReader& f)
 			break;
 		case A_SHOOT:
 			act.shoot.ability = Ability::Get(f.Read<int>());
-			bow_instance = game_level->GetBowInstance(GetBow().mesh);
+			bow_instance = gameLevel->GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = meshInst->groups[1].speed;
 			bow_instance->groups[0].time = Min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
@@ -3250,7 +3250,7 @@ void Unit::ReequipItemsInternal()
 	if(data->type != UNIT_TYPE::ANIMAL && !HaveWeapon())
 	{
 		const Item* item = UnitHelper::GetBaseWeapon(*this);
-		game_res->PreloadItem(item);
+		gameRes->PreloadItem(item);
 		AddItemAndEquipIfNone(item);
 	}
 }
@@ -3560,7 +3560,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(slots[i] && slots[i]->IsQuest() && (quest_id == -1 || quest_id == slots[i]->quest_id))
 			{
-				Quest* quest = quest_mgr->FindQuest(slots[i]->quest_id, !not_active);
+				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(i_index)
@@ -3578,7 +3578,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(it2->item && it2->item->IsQuest() && (quest_id == -1 || quest_id == it2->item->quest_id))
 			{
-				Quest* quest = quest_mgr->FindQuest(it2->item->quest_id, !not_active);
+				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(i_index)
@@ -3597,7 +3597,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(slots[i] && slots[i]->IsQuest() && slots[i]->id == id)
 			{
-				Quest* quest = quest_mgr->FindQuest(slots[i]->quest_id, !not_active);
+				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(i_index)
@@ -3615,7 +3615,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
 			{
-				Quest* quest = quest_mgr->FindQuest(it2->item->quest_id, !not_active);
+				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(i_index)
@@ -3685,8 +3685,8 @@ void Unit::EquipItem(int index)
 void Unit::EquipItem(const Item* item)
 {
 	assert(item);
-	assert(!game_level->ready); // todo
-	game_res->PreloadItem(item);
+	assert(!gameLevel->ready); // todo
+	gameRes->PreloadItem(item);
 	slots[ItemTypeToSlot(item->type)] = item;
 	weight += item->weight;
 }
@@ -3767,7 +3767,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 		{
 			// search for player trading with this unit
 			Unit* t = nullptr;
-			for(Unit& member : team->active_members)
+			for(Unit& member : team->activeMembers)
 			{
 				if(member.IsPlayer() && member.player->IsTradingWith(this))
 				{
@@ -3790,11 +3790,11 @@ uint Unit::RemoveItem(int i_index, uint count)
 	// update temporary inventory
 	if(game->pc->unit == this)
 	{
-		if(game_gui->inventory->invMine->visible || game_gui->inventory->gpTrade->visible)
-			game_gui->inventory->BuildTmpInventory(0);
+		if(gameGui->inventory->invMine->visible || gameGui->inventory->gpTrade->visible)
+			gameGui->inventory->BuildTmpInventory(0);
 	}
-	else if(game_gui->inventory->gpTrade->visible && game_gui->inventory->invTradeOther->unit == this)
-		game_gui->inventory->BuildTmpInventory(1);
+	else if(gameGui->inventory->gpTrade->visible && gameGui->inventory->invTradeOther->unit == this)
+		gameGui->inventory->BuildTmpInventory(1);
 
 	return removed;
 }
@@ -4787,7 +4787,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(mode == CREATE_MESH::LOAD)
 				resMgr->LoadInstant(mesh);
 			else if(!mesh->IsLoaded())
-				game->units_mesh_load.push_back(pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
+				game->unitsMeshLoad.push_back(pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
 			if(data->state == ResourceState::NotLoaded)
 			{
 				resMgr->Load(mesh);
@@ -5000,7 +5000,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		return;
 	case A_SHOOT:
 		if(bow_instance)
-			game_level->FreeBowInstance(bow_instance);
+			gameLevel->FreeBowInstance(bow_instance);
 		action = A_NONE;
 		break;
 	case A_DRINK:
@@ -5110,12 +5110,12 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(player->is_local)
 		{
 			player->data.ability_ready = nullptr;
-			game_gui->inventory->EndLock();
-			if(game_gui->inventory->mode > I_INVENTORY)
+			gameGui->inventory->EndLock();
+			if(gameGui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
 
-			if(game_gui->craft->visible)
-				game_gui->craft->Hide();
+			if(gameGui->craft->visible)
+				gameGui->craft->Hide();
 
 			if(player->action == PlayerAction::Talk)
 			{
@@ -5126,7 +5126,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 					player->dialog_ctx->dialog_mode = false;
 				}
 				else
-					game->dialog_context.dialog_mode = false;
+					game->dialogContext.dialog_mode = false;
 				look_target = nullptr;
 				player->action = PlayerAction::None;
 			}
@@ -5213,7 +5213,7 @@ void Unit::Fall()
 //=================================================================================================
 void Unit::TryStandup(float dt)
 {
-	if(in_arena != -1 || game->death_screen != 0)
+	if(in_arena != -1 || game->deathScreen != 0)
 		return;
 
 	bool ok = false;
@@ -5243,7 +5243,7 @@ void Unit::TryStandup(float dt)
 					ok = true;
 					for(Unit* unit : locPart->units)
 					{
-						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
+						if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && gameLevel->CanSee(*this, *unit))
 						{
 							AlertAllies(unit);
 							ok = false;
@@ -5265,7 +5265,7 @@ void Unit::TryStandup(float dt)
 			{
 				for(Unit* unit : locPart->units)
 				{
-					if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && game_level->CanSee(*this, *unit))
+					if(unit->IsStanding() && IsEnemy(*unit) && Vec3::Distance(pos, unit->pos) <= ALERT_RANGE && gameLevel->CanSee(*this, *unit))
 					{
 						AlertAllies(unit);
 						break;
@@ -5339,10 +5339,10 @@ void Unit::Standup(bool warp, bool leave)
 				ai->Reset();
 		}
 		if(warp)
-			game_level->WarpUnit(*this, pos);
+			gameLevel->WarpUnit(*this, pos);
 	}
 
-	if(Net::IsServer() && game_level->ready && !leave)
+	if(Net::IsServer() && gameLevel->ready && !leave)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STAND_UP;
@@ -5358,7 +5358,7 @@ void Unit::Die(Unit* killer)
 	if(live_state == FALL)
 	{
 		// unit already on ground, add blood
-		game_level->CreateBlood(*locPart, *this);
+		gameLevel->CreateBlood(*locPart, *this);
 		live_state = DEAD;
 	}
 	else
@@ -5397,7 +5397,7 @@ void Unit::Die(Unit* killer)
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
 				continue;
 
-			if(Vec3::Distance(pos, (*it)->pos) <= ALERT_RANGE && game_level->CanSee(*this, **it))
+			if(Vec3::Distance(pos, (*it)->pos) <= ALERT_RANGE && gameLevel->CanSee(*this, **it))
 				(*it)->ai->morale -= 2.f;
 		}
 
@@ -5409,7 +5409,7 @@ void Unit::Die(Unit* killer)
 		}
 		else
 		{
-			game_level->CheckIfLocationCleared();
+			gameLevel->CheckIfLocationCleared();
 			if(IsHero() && hero->otherTeam)
 				hero->otherTeam->Remove(this);
 		}
@@ -5436,7 +5436,7 @@ void Unit::Die(Unit* killer)
 		}
 
 		// stats
-		++game_stats->total_kills;
+		++gameStats->totalKills;
 		if(killer && killer->IsPlayer())
 		{
 			++killer->player->kills;
@@ -5485,7 +5485,7 @@ void Unit::Die(Unit* killer)
 
 	// end boss music
 	if(IsSet(data->flags2, F2_BOSS))
-		game_level->EndBossFight();
+		gameLevel->EndBossFight();
 
 	if(prev_action == A_ANIMATION)
 	{
@@ -5513,7 +5513,7 @@ void Unit::Die(Unit* killer)
 void Unit::DropGold(int count)
 {
 	gold -= count;
-	soundMgr->PlaySound2d(game_res->sCoins);
+	soundMgr->PlaySound2d(gameRes->sCoins);
 
 	// animacja wyrzucania
 	action = A_ANIMATION;
@@ -5556,9 +5556,9 @@ bool Unit::IsDrunkman() const
 	if(IsSet(data->flags, F_AI_DRUNKMAN))
 		return true;
 	else if(IsSet(data->flags3, F3_DRUNK_MAGE))
-		return quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
+		return questMgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(IsSet(data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
-		return quest_mgr->quest_contest->state == Quest_Contest::CONTEST_DONE;
+		return questMgr->quest_contest->state == Quest_Contest::CONTEST_DONE;
 	else
 		return false;
 }
@@ -5585,9 +5585,9 @@ void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 			mat = data->mat;
 	}
 
-	soundMgr->PlaySound3d(game_res->GetMaterialSound(mat2, mat), hitpoint, HIT_SOUND_DIST);
+	soundMgr->PlaySound3d(gameRes->GetMaterialSound(mat2, mat), hitpoint, HIT_SOUND_DIST);
 	if(playBodyHit)
-		soundMgr->PlaySound3d(game_res->GetMaterialSound(mat2, MAT_BODY), hitpoint, HIT_SOUND_DIST);
+		soundMgr->PlaySound3d(gameRes->GetMaterialSound(mat2, MAT_BODY), hitpoint, HIT_SOUND_DIST);
 
 	if(Net::IsOnline())
 	{
@@ -5619,7 +5619,7 @@ void Unit::CreatePhysics(bool position)
 	cobj->setCollisionShape(caps);
 	cobj->setUserPointer(this);
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
-	phy_world->addCollisionObject(cobj, CG_UNIT);
+	phyWorld->addCollisionObject(cobj, CG_UNIT);
 
 	if(position)
 		UpdatePhysics();
@@ -5634,7 +5634,7 @@ void Unit::UpdatePhysics(const Vec3* target_pos)
 
 	btVector3 a_min, a_max;
 	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
-	phy_world->UpdateAabb(cobj);
+	phyWorld->UpdateAabb(cobj);
 }
 
 //=================================================================================================
@@ -5733,7 +5733,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 				return false;
 			// hide previous weapon
 			if(action == A_SHOOT)
-				game_level->FreeBowInstance(bow_instance);
+				gameLevel->FreeBowInstance(bow_instance);
 			meshInst->Play(GetTakeWeaponAnimation(weapon_taken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
 			action = A_TAKE_WEAPON;
 			animation_state = AS_TAKE_WEAPON_START;
@@ -5780,7 +5780,7 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 		case WeaponState::Taken:
 			// zacznij chowaæ
 			if(action == A_SHOOT)
-				game_level->FreeBowInstance(bow_instance);
+				gameLevel->FreeBowInstance(bow_instance);
 			meshInst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 			weapon_hiding = weapon_taken;
 			weapon_taken = W_NONE;
@@ -5922,7 +5922,7 @@ bool Unit::IsEnemy(Unit& u, bool ignore_dont_attack) const
 			if(g2 == G_CITIZENS)
 				return true;
 			else if(g2 == G_TEAM)
-				return team->crazies_attack || WantAttackTeam();
+				return team->craziesAttack || WantAttackTeam();
 			else
 				return true;
 		}
@@ -5933,7 +5933,7 @@ bool Unit::IsEnemy(Unit& u, bool ignore_dont_attack) const
 			else if(g2 == G_CITIZENS)
 				return team->IsBandit();
 			else if(g2 == G_CRAZIES)
-				return team->crazies_attack;
+				return team->craziesAttack;
 			else
 				return true;
 		}
@@ -6018,10 +6018,10 @@ void Unit::RefreshStock()
 		stock->date = worldtime;
 		stock->items.clear();
 		data->trader->stock->Parse(stock->items);
-		if(game_level->ready)
+		if(gameLevel->ready)
 		{
 			for(ItemSlot& slot : stock->items)
-				game_res->PreloadItem(slot.item);
+				gameRes->PreloadItem(slot.item);
 		}
 	}
 }
@@ -6188,9 +6188,9 @@ void Unit::OrderAttack()
 {
 	if(data->group == G_CRAZIES)
 	{
-		if(!team->crazies_attack)
+		if(!team->craziesAttack)
 		{
-			team->crazies_attack = true;
+			team->craziesAttack = true;
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -6343,7 +6343,7 @@ void Unit::Talk(cstring text, int play_anim)
 {
 	assert(text && Net::IsLocal());
 
-	game_gui->levelGui->AddSpeechBubble(this, text);
+	gameGui->levelGui->AddSpeechBubble(this, text);
 
 	// animation
 	int ani = 0;
@@ -6432,7 +6432,7 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 void Unit::RotateTo(const Vec3& pos)
 {
 	rot = Vec3::LookAtAngle(this->pos, pos);
-	if(!game_level->ready && ai)
+	if(!gameLevel->ready && ai)
 		ai->start_rot = rot;
 	else
 		changed = true;
@@ -6441,7 +6441,7 @@ void Unit::RotateTo(const Vec3& pos)
 void Unit::RotateTo(float rot)
 {
 	this->rot = rot;
-	if(!game_level->ready && ai)
+	if(!gameLevel->ready && ai)
 		ai->start_rot = rot;
 	else
 		changed = true;
@@ -6586,11 +6586,11 @@ void Unit::StopUsingUsable(bool send)
 
 	const float unit_radius = GetUnitRadius();
 
-	game_level->global_col.clear();
-	Level::IgnoreObjects ignore = { 0 };
-	const Unit* ignore_units[2] = { this, nullptr };
-	ignore.ignored_units = ignore_units;
-	game_level->GatherCollisionObjects(*locPart, game_level->global_col, pos, 2.f + unit_radius, &ignore);
+	gameLevel->globalCol.clear();
+	Level::IgnoreObjects ignore{};
+	const Unit* ignoredUnits[2]{ this };
+	ignore.ignoredUnits = ignoredUnits;
+	gameLevel->GatherCollisionObjects(*locPart, gameLevel->globalCol, pos, 2.f + unit_radius, &ignore);
 
 	Vec3 tmp_pos = target_pos;
 	bool ok = false;
@@ -6598,10 +6598,10 @@ void Unit::StopUsingUsable(bool send)
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!game_level->Collide(game_level->global_col, tmp_pos, unit_radius))
+		if(!gameLevel->Collide(gameLevel->globalCol, tmp_pos, unit_radius))
 		{
 			if(i != 0 && locPart->haveTerrain)
-				tmp_pos.y = game_level->terrain->GetH(tmp_pos);
+				tmp_pos.y = gameLevel->terrain->GetH(tmp_pos);
 			target_pos = tmp_pos;
 			ok = true;
 			break;
@@ -6688,7 +6688,7 @@ void Unit::CheckAutoTalk(float dt)
 	for(auto& near_unit : near_units)
 	{
 		Unit& talk_target = *near_unit.unit;
-		if(game_level->CanSee(*this, talk_target))
+		if(gameLevel->CanSee(*this, talk_target))
 		{
 			bool ok = true;
 			for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
@@ -6698,7 +6698,7 @@ void Unit::CheckAutoTalk(float dt)
 					continue;
 
 				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
-					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && game_level->CanSee(check_unit, talk_target))
+					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && gameLevel->CanSee(check_unit, talk_target))
 				{
 					ok = false;
 					break;
@@ -6887,7 +6887,7 @@ void Unit::CastSpell()
 			dir.Normalize();
 			Vec3 target = coord + dir * ability.range;
 
-			if(game_level->RayTest(coord, target, this, hitpoint, hitted))
+			if(gameLevel->RayTest(coord, target, this, hitpoint, hitted))
 			{
 				if(hitted)
 				{
@@ -6931,7 +6931,7 @@ void Unit::CastSpell()
 
 			target_pos.y += Random(-0.5f, 0.5f);
 
-			if(game_level->RayTest(coord, target_pos, this, hitpoint, hitted) && hitted)
+			if(gameLevel->RayTest(coord, target_pos, this, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
 				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
@@ -7009,7 +7009,7 @@ void Unit::CastSpell()
 				// particle effect
 				Vec3 pos = target->pos;
 				pos.y += target->GetUnitHeight() / 2;
-				game_level->CreateSpellParticleEffect(locPart, &ability, pos, Vec2::Zero);
+				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, Vec2::Zero);
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -7029,22 +7029,22 @@ void Unit::CastSpell()
 				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
 				Vec3 pos = target->pos;
 				pos.y += bounds.y / 2;
-				game_level->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
+				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 		}
 		break;
 	case Ability::Summon:
 		{
 			// despawn old
-			Unit* existing_unit = game_level->FindUnit([&](Unit* u) { return u->summoner == this; });
+			Unit* existing_unit = gameLevel->FindUnit([&](Unit* u) { return u->summoner == this; });
 			if(existing_unit)
 			{
 				team->RemoveMember(existing_unit);
-				game_level->RemoveUnit(existing_unit);
+				gameLevel->RemoveUnit(existing_unit);
 			}
 
 			// spawn new
-			Unit* new_unit = game_level->SpawnUnitNearLocation(*locPart, target_pos, *ability.unit, nullptr, level);
+			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, target_pos, *ability.unit, nullptr, level);
 			if(new_unit)
 			{
 				new_unit->summoner = this;
@@ -7053,7 +7053,7 @@ void Unit::CastSpell()
 					game->arena->units.push_back(new_unit);
 				team->AddMember(new_unit, HeroType::Visitor);
 				new_unit->order->unit = this; // follow summoner
-				game_level->SpawnUnitEffect(*new_unit);
+				gameLevel->SpawnUnitEffect(*new_unit);
 			}
 		}
 		break;
@@ -7064,7 +7064,7 @@ void Unit::CastSpell()
 				|| u->ai->alert_target || u->dont_attack)
 				continue;
 
-			if(Vec3::Distance(pos, u->pos) <= ability.range && game_level->CanSee(*this, *u))
+			if(Vec3::Distance(pos, u->pos) <= ability.range && gameLevel->CanSee(*this, *u))
 			{
 				u->ai->alert_target = ai->target;
 				u->ai->alert_target_pos = ai->target_last_pos;
@@ -7076,13 +7076,13 @@ void Unit::CastSpell()
 		{
 			float angle = Random(MAX_ANGLE);
 			Vec3 targetPos = pos + Vec3(sin(angle) * ability.range, 0, cos(angle) * ability.range);
-			Unit* new_unit = game_level->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
+			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
 			if(new_unit)
 			{
 				new_unit->in_arena = in_arena;
 				if(new_unit->in_arena != -1)
 					game->arena->units.push_back(new_unit);
-				game_level->SpawnUnitEffect(*new_unit);
+				gameLevel->SpawnUnitEffect(*new_unit);
 				new_unit->ai->alert_target = ai->target;
 				new_unit->ai->alert_target_pos = ai->target_last_pos;
 			}
@@ -7100,16 +7100,16 @@ void Unit::CastSpell()
 	case Ability::Trap:
 		{
 			// despawn old
-			game_level->RemoveOldTrap(ability.trap, this, ability.count);
+			gameLevel->RemoveOldTrap(ability.trap, this, ability.count);
 
 			// spawn new
-			Trap* trap = game_level->CreateTrap(target_pos, ability.trap->type);
+			Trap* trap = gameLevel->CreateTrap(target_pos, ability.trap->type);
 			trap->owner = this;
 			trap->attack = ability.dmg + ability.dmg_bonus * (level + CalculateMagicPower());
 
 			// particle effect
 			if(ability.tex_particle)
-				game_level->CreateSpellParticleEffect(locPart, &ability, target_pos, Vec2::Zero);
+				gameLevel->CreateSpellParticleEffect(locPart, &ability, target_pos, Vec2::Zero);
 		}
 		break;
 	}
@@ -7168,7 +7168,7 @@ void Unit::Update(float dt)
 				targets.clear();
 				float t;
 				bool in_dash = false;
-				game_level->ContactTest(cobj, [&](btCollisionObject* obj, bool first)
+				gameLevel->ContactTest(cobj, [&](btCollisionObject* obj, bool first)
 				{
 					if(first)
 					{
@@ -7208,7 +7208,7 @@ void Unit::Update(float dt)
 						center.y = 0;
 						center.Normalize();
 						center *= dt;
-						game_level->LineTest(cobj->getCollisionShape(), GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
+						gameLevel->LineTest(cobj->getCollisionShape(), GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
 						{
 							int flags = obj->getCollisionFlags();
 							if(IsSet(flags, CG_TERRAIN | CG_UNIT))
@@ -7300,12 +7300,12 @@ void Unit::Update(float dt)
 		if(Net::IsLocal() && (Any(live_state, DYING, FALLING) || action == A_POSITION_CORPSE))
 		{
 			Vec3 center = GetLootCenter();
-			game_level->global_col.clear();
-			Level::IgnoreObjects ignore = { 0 };
-			ignore.ignore_units = true;
-			ignore.ignore_doors = true;
-			game_level->GatherCollisionObjects(*locPart, game_level->global_col, center, 0.25f, &ignore);
-			if(game_level->Collide(game_level->global_col, center, 0.25f))
+			gameLevel->globalCol.clear();
+			Level::IgnoreObjects ignore{};
+			ignore.ignoreUnits = true;
+			ignore.ignoreDoors = true;
+			gameLevel->GatherCollisionObjects(*locPart, gameLevel->globalCol, center, 0.25f, &ignore);
+			if(gameLevel->Collide(gameLevel->globalCol, center, 0.25f))
 			{
 				Vec3 dir = pos - center;
 				dir.y = 0;
@@ -7324,7 +7324,7 @@ void Unit::Update(float dt)
 			if(live_state == DYING)
 			{
 				live_state = DEAD;
-				game_level->CreateBlood(*locPart, *this);
+				gameLevel->CreateBlood(*locPart, *this);
 				if(summoner && Net::IsLocal())
 				{
 					team->RemoveMember(this);
@@ -7405,7 +7405,7 @@ void Unit::Update(float dt)
 					// unequip item
 					case NA_REMOVE:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->invMine->RemoveSlotItem(player->next_action_data.slot);
+							gameGui->inventory->invMine->RemoveSlotItem(player->next_action_data.slot);
 						break;
 					// equip item after unequiping old one
 					case NA_EQUIP:
@@ -7414,7 +7414,7 @@ void Unit::Update(float dt)
 							int index = player->GetNextActionItemIndex();
 							if(index != -1)
 							{
-								game_gui->inventory->invMine->EquipSlotItem(index);
+								gameGui->inventory->invMine->EquipSlotItem(index);
 								if(player->next_action == NA_EQUIP_DRAW)
 								{
 									switch(player->next_action_data.item->type)
@@ -7437,14 +7437,14 @@ void Unit::Update(float dt)
 					// drop item after hiding it
 					case NA_DROP:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->invMine->DropSlotItem(player->next_action_data.slot);
+							gameGui->inventory->invMine->DropSlotItem(player->next_action_data.slot);
 						break;
 					// use consumable
 					case NA_CONSUME:
 						{
 							int index = player->GetNextActionItemIndex();
 							if(index != -1)
-								game_gui->inventory->invMine->ConsumeItem(index);
+								gameGui->inventory->invMine->ConsumeItem(index);
 						}
 						break;
 					// use usable
@@ -7455,17 +7455,17 @@ void Unit::Update(float dt)
 					// sell equipped item
 					case NA_SELL:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->invTradeMine	->SellSlotItem(player->next_action_data.slot);
+							gameGui->inventory->invTradeMine	->SellSlotItem(player->next_action_data.slot);
 						break;
 					// put equipped item in container
 					case NA_PUT:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->invTradeMine->PutSlotItem(player->next_action_data.slot);
+							gameGui->inventory->invTradeMine->PutSlotItem(player->next_action_data.slot);
 						break;
 					// give equipped item
 					case NA_GIVE:
 						if(slots[player->next_action_data.slot])
-							game_gui->inventory->invTradeMine->GiveSlotItem(player->next_action_data.slot);
+							gameGui->inventory->invTradeMine->GiveSlotItem(player->next_action_data.slot);
 						break;
 					}
 
@@ -7500,7 +7500,7 @@ void Unit::Update(float dt)
 			{
 				meshInst->Deactivate(1);
 				action = A_NONE;
-				game_level->FreeBowInstance(bow_instance);
+				gameLevel->FreeBowInstance(bow_instance);
 				break;
 			}
 		}
@@ -7530,7 +7530,7 @@ void Unit::Update(float dt)
 				bullet->backstab = GetBackstabMod(&GetBow());
 				bullet->rot = Vec3(PI / 2, rot + PI, 0);
 				bullet->pos = Vec3::TransformZero(m2);
-				bullet->mesh = game_res->aArrow;
+				bullet->mesh = gameRes->aArrow;
 				bullet->speed = GetArrowSpeed();
 				bullet->timer = ARROW_TIMER;
 				bullet->owner = this;
@@ -7624,7 +7624,7 @@ void Unit::Update(float dt)
 
 				act.shoot.ability = nullptr;
 
-				soundMgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
+				soundMgr->PlaySound3d(gameRes->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
 				if(Net::IsOnline())
 				{
@@ -7651,7 +7651,7 @@ void Unit::Update(float dt)
 			koniec_strzelania:
 				meshInst->Deactivate(1);
 				action = A_NONE;
-				game_level->FreeBowInstance(bow_instance);
+				gameLevel->FreeBowInstance(bow_instance);
 				if(Net::IsLocal() && IsAI())
 				{
 					float v = 1.f - float(Get(SkillId::BOW)) / 100;
@@ -7768,7 +7768,7 @@ void Unit::Update(float dt)
 			float p = meshInst->GetProgress(1);
 			if(p >= 28.f / 52.f && animation_state == AS_DRINK_START)
 			{
-				PlaySound(game_res->sGulp, DRINK_SOUND_DIST);
+				PlaySound(gameRes->sGulp, DRINK_SOUND_DIST);
 				animation_state = AS_DRINK_EFFECT;
 				if(Net::IsLocal())
 					ApplyConsumableEffect(used_item->ToConsumable());
@@ -7797,7 +7797,7 @@ void Unit::Update(float dt)
 			if(p >= 32.f / 70 && animation_state == AS_EAT_START)
 			{
 				animation_state = AS_EAT_SOUND;
-				PlaySound(game_res->sEat, EAT_SOUND_DIST);
+				PlaySound(gameRes->sEat, EAT_SOUND_DIST);
 			}
 			if(p >= 48.f / 70 && animation_state == AS_EAT_SOUND)
 			{
@@ -8031,7 +8031,7 @@ void Unit::Update(float dt)
 							timer = 0.5f;
 							animation_state = AS_USE_USABLE_USING;
 							if(IsLocalPlayer() && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
-								game_gui->craft->Show();
+								gameGui->craft->Show();
 						}
 
 						// przesuñ postaæ i fizykê
@@ -8039,7 +8039,7 @@ void Unit::Update(float dt)
 						{
 							visual_pos = pos = Vec3::Lerp(target_pos, target_pos2, timer * 2);
 							changed = true;
-							game_level->global_col.clear();
+							gameLevel->globalCol.clear();
 							float my_radius = GetUnitRadius();
 							bool ok = true;
 							for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
@@ -8135,7 +8135,7 @@ void Unit::Update(float dt)
 			if(!IsSet(act.dash.ability->flags, Ability::IgnoreUnits))
 			{
 				// dash
-				game_level->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool)
+				gameLevel->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool)
 				{
 					int flags = obj->getCollisionFlags();
 					if(IsSet(flags, CG_TERRAIN))
@@ -8154,7 +8154,7 @@ void Unit::Update(float dt)
 				// bull charge, do line test and find targets
 				static vector<Unit*> targets;
 				targets.clear();
-				game_level->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
+				gameLevel->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
 				{
 					int flags = obj->getCollisionFlags();
 					if(first)
@@ -8242,7 +8242,7 @@ void Unit::Update(float dt)
 							move_dir.Normalize();
 							move_dir *= len;
 							float t;
-							game_level->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
+							gameLevel->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
 							if(t == 1.f)
 							{
 								unit->moved = true;
@@ -8260,7 +8260,7 @@ void Unit::Update(float dt)
 						{
 							float t;
 							Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
-							game_level->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
+							gameLevel->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
 							if(t == 1.f)
 							{
 								inner_ok = true;
@@ -8301,7 +8301,7 @@ void Unit::Update(float dt)
 	case A_DESPAWN:
 		timer -= dt;
 		if(timer <= 0.f)
-			game_level->RemoveUnit(this);
+			gameLevel->RemoveUnit(this);
 		break;
 	case A_PREPARE:
 		assert(Net::IsClient());
@@ -8320,7 +8320,7 @@ void Unit::Update(float dt)
 			if(Net::IsLocal() && IsPlayer())
 			{
 				// magic scroll effect
-				game_gui->messages->AddGameMsg3(player, GMS_TOO_COMPLICATED);
+				gameGui->messages->AddGameMsg3(player, GMS_TOO_COMPLICATED);
 				Effect e;
 				e.effect = EffectId::Stun;
 				e.source = EffectSource::Temporary;
@@ -8332,7 +8332,7 @@ void Unit::Update(float dt)
 				RemoveItem(used_item, 1u);
 				used_item = nullptr;
 			}
-			soundMgr->PlaySound3d(game_res->sZap, GetCenter(), MAGIC_SCROLL_SOUND_DIST);
+			soundMgr->PlaySound3d(gameRes->sZap, GetCenter(), MAGIC_SCROLL_SOUND_DIST);
 			action = A_NONE;
 			animation = ANI_STAND;
 			current_animation = (Animation)-1;
@@ -8349,39 +8349,39 @@ void Unit::Update(float dt)
 //=============================================================================
 void Unit::Moved(bool warped, bool dash)
 {
-	if(game_level->location->outside)
+	if(gameLevel->location->outside)
 	{
 		if(locPart->partType == LocationPart::Type::Outside)
 		{
-			if(game_level->terrain->IsInside(pos))
+			if(gameLevel->terrain->IsInside(pos))
 			{
-				game_level->terrain->SetY(pos);
+				gameLevel->terrain->SetY(pos);
 				if(warped)
 					return;
 				if(IsPlayer() && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 				{
 					bool allow_exit = false;
 
-					if(game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveExit))
+					if(gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveExit))
 					{
-						for(vector<EntryPoint>::const_iterator it = game_level->city_ctx->entry_points.begin(), end = game_level->city_ctx->entry_points.end(); it != end; ++it)
+						for(vector<EntryPoint>::const_iterator it = gameLevel->cityCtx->entry_points.begin(), end = gameLevel->cityCtx->entry_points.end(); it != end; ++it)
 						{
 							if(it->exit_region.IsInside(pos))
 							{
 								if(!team->IsLeader())
-									game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+									gameGui->messages->AddGameMsg3(GMS_NOT_LEADER);
 								else
 								{
 									if(Net::IsLocal())
 									{
-										CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+										CanLeaveLocationResult result = gameLevel->CanLeaveLocation(*this);
 										if(result == CanLeaveLocationResult::Yes)
 										{
 											allow_exit = true;
 											world->SetTravelDir(pos);
 										}
 										else
-											game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+											gameGui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
 										net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
@@ -8390,30 +8390,30 @@ void Unit::Moved(bool warped, bool dash)
 							}
 						}
 					}
-					else if(game_level->location_index != quest_mgr->quest_secret->where2
+					else if(gameLevel->locationIndex != questMgr->quest_secret->where2
 						&& (pos.x < 33.f || pos.x > 256.f - 33.f || pos.z < 33.f || pos.z > 256.f - 33.f))
 					{
 						if(!team->IsLeader())
-							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+							gameGui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(Net::IsClient())
 							net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
-							CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+							CanLeaveLocationResult result = gameLevel->CanLeaveLocation(*this);
 							if(result == CanLeaveLocationResult::Yes)
 							{
 								allow_exit = true;
 								world->SetTravelDir(pos);
 							}
 							else
-								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								gameGui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 					}
 
 					if(allow_exit)
 					{
-						game->fallback_type = FALLBACK::EXIT;
-						game->fallback_t = -1.f;
+						game->fallbackType = FALLBACK::EXIT;
+						game->fallbackTimer = -1.f;
 						for(Unit& unit : team->members)
 							unit.frozen = FROZEN::YES;
 						if(Net::IsOnline())
@@ -8427,27 +8427,27 @@ void Unit::Moved(bool warped, bool dash)
 			if(warped)
 				return;
 
-			if(IsPlayer() && game_level->location->type == L_CITY && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
+			if(IsPlayer() && gameLevel->location->type == L_CITY && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
 				int id = 0;
-				for(vector<InsideBuilding*>::iterator it = game_level->city_ctx->inside_buildings.begin(), end = game_level->city_ctx->inside_buildings.end(); it != end; ++it, ++id)
+				for(vector<InsideBuilding*>::iterator it = gameLevel->cityCtx->inside_buildings.begin(), end = gameLevel->cityCtx->inside_buildings.end(); it != end; ++it, ++id)
 				{
 					if((*it)->enter_region.IsInside(pos))
 					{
 						if(Net::IsLocal())
 						{
 							// wejdŸ do budynku
-							game->fallback_type = FALLBACK::ENTER;
-							game->fallback_t = -1.f;
-							game->fallback_1 = id;
-							game->fallback_2 = -1;
+							game->fallbackType = FALLBACK::ENTER;
+							game->fallbackTimer = -1.f;
+							game->fallbackValue = id;
+							game->fallbackValue2 = -1;
 							frozen = FROZEN::YES;
 						}
 						else
 						{
 							// info do serwera
-							game->fallback_type = FALLBACK::WAIT_FOR_WARP;
-							game->fallback_t = -1.f;
+							game->fallbackType = FALLBACK::WAIT_FOR_WARP;
+							game->fallbackTimer = -1.f;
 							frozen = FROZEN::YES;
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ENTER_BUILDING;
@@ -8472,17 +8472,17 @@ void Unit::Moved(bool warped, bool dash)
 				if(Net::IsLocal())
 				{
 					// opuœæ budynek
-					game->fallback_type = FALLBACK::ENTER;
-					game->fallback_t = -1.f;
-					game->fallback_1 = -1;
-					game->fallback_2 = -1;
+					game->fallbackType = FALLBACK::ENTER;
+					game->fallbackTimer = -1.f;
+					game->fallbackValue = -1;
+					game->fallbackValue2 = -1;
 					frozen = FROZEN::YES;
 				}
 				else
 				{
 					// info do serwera
-					game->fallback_type = FALLBACK::WAIT_FOR_WARP;
-					game->fallback_t = -1.f;
+					game->fallbackType = FALLBACK::WAIT_FOR_WARP;
+					game->fallbackTimer = -1.f;
 					frozen = FROZEN::YES;
 					Net::PushChange(NetChange::EXIT_BUILDING);
 				}
@@ -8491,7 +8491,7 @@ void Unit::Moved(bool warped, bool dash)
 	}
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)game_level->location;
+		InsideLocation* inside = (InsideLocation*)gameLevel->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		Int2 pt = PosToPt(pos);
 
@@ -8507,7 +8507,7 @@ void Unit::Moved(bool warped, bool dash)
 	// obs³uga portali
 	if(frozen == FROZEN::NO && IsPlayer() && player->WantExitLevel() && !dash)
 	{
-		Portal* portal = game_level->location->portal;
+		Portal* portal = gameLevel->location->portal;
 		int index = 0;
 		while(portal)
 		{
@@ -8519,25 +8519,25 @@ void Unit::Moved(bool warped, bool dash)
 					{
 						if(Net::IsLocal())
 						{
-							CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+							CanLeaveLocationResult result = gameLevel->CanLeaveLocation(*this);
 							if(result == CanLeaveLocationResult::Yes)
 							{
-								game->fallback_type = FALLBACK::USE_PORTAL;
-								game->fallback_t = -1.f;
-								game->fallback_1 = index;
+								game->fallbackType = FALLBACK::USE_PORTAL;
+								game->fallbackTimer = -1.f;
+								game->fallbackValue = index;
 								for(Unit& unit : team->members)
 									unit.frozen = FROZEN::YES;
 								if(Net::IsOnline())
 									Net::PushChange(NetChange::LEAVE_LOCATION);
 							}
 							else
-								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								gameGui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
 							net->OnLeaveLocation(ENTER_FROM_PORTAL + index);
 					}
 					else
-						game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+						gameGui->messages->AddGameMsg3(GMS_NOT_LEADER);
 
 					break;
 				}
@@ -8629,25 +8629,25 @@ void Unit::MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool 
 		{
 			if(Net::IsLocal())
 			{
-				CanLeaveLocationResult result = game_level->CanLeaveLocation(*this);
+				CanLeaveLocationResult result = gameLevel->CanLeaveLocation(*this);
 				if(result == CanLeaveLocationResult::Yes)
 				{
-					game->fallback_type = FALLBACK::CHANGE_LEVEL;
-					game->fallback_t = -1.f;
-					game->fallback_1 = isPrev ? -1 : +1;
+					game->fallbackType = FALLBACK::CHANGE_LEVEL;
+					game->fallbackTimer = -1.f;
+					game->fallbackValue = isPrev ? -1 : +1;
 					for(Unit& unit : team->members)
 						unit.frozen = FROZEN::YES;
 					if(Net::IsOnline())
 						Net::PushChange(NetChange::LEAVE_LOCATION);
 				}
 				else
-					game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+					gameGui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 			}
 			else
 				net->OnLeaveLocation(isPrev ? ENTER_FROM_PREV_LEVEL : ENTER_FROM_NEXT_LEVEL);
 		}
 		else
-			game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+			gameGui->messages->AddGameMsg3(GMS_NOT_LEADER);
 	}
 }
 
@@ -8671,10 +8671,10 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 		for(const Item* item : slots)
 		{
 			if(item)
-				game_res->PreloadItem(item);
+				gameRes->PreloadItem(item);
 		}
 		for(ItemSlot& slot : items)
-			game_res->PreloadItem(slot.item);
+			gameRes->PreloadItem(slot.item);
 		if(IsTeamMember())
 			MakeItemsTeam(false);
 		UpdateInventory();
@@ -8718,7 +8718,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 			ai->Init(this);
 			game->ais.push_back(ai);
 
-			if(game_level->ready)
+			if(gameLevel->ready)
 			{
 				// preload items
 				if(data->item_script)
@@ -8726,15 +8726,15 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 					for(const Item* item : slots)
 					{
 						if(item)
-							game_res->PreloadItem(item);
+							gameRes->PreloadItem(item);
 					}
 					for(ItemSlot& slot : items)
-						game_res->PreloadItem(slot.item);
+						gameRes->PreloadItem(slot.item);
 				}
 				if(data->trader)
 				{
 					for(ItemSlot& slot : stock->items)
-						game_res->PreloadItem(slot.item);
+						gameRes->PreloadItem(slot.item);
 				}
 
 				if(Net::IsServer())
@@ -8788,18 +8788,18 @@ void Unit::MoveOffscreen()
 //=================================================================================================
 void Unit::Kill()
 {
-	assert(!game_level->ready); // TODO
+	assert(!gameLevel->ready); // TODO
 	live_state = DEAD;
 	if(data->mesh->IsLoaded())
 	{
 		animation = current_animation = ANI_DIE;
 		SetAnimationAtEnd(NAMES::ani_die);
-		game_level->CreateBlood(*game_level->lvl, *this, true);
+		gameLevel->CreateBlood(*gameLevel->lvl, *this, true);
 	}
 	else
-		game_level->blood_to_spawn.push_back(this);
+		gameLevel->bloodToSpawn.push_back(this);
 	hp = 0.f;
-	++game_stats->total_kills;
+	++gameStats->totalKills;
 	UpdatePhysics();
 	if(event_handler)
 		event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
@@ -8812,7 +8812,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 	if(!IsSet(dmg_flags, DMG_NO_BLOOD))
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = game_res->tBlood[data->blood];
+		pe->tex = gameRes->tBlood[data->blood];
 		pe->emissionInterval = 0.01f;
 		pe->life = 5.f;
 		pe->particleLife = 0.5f;
@@ -8920,7 +8920,7 @@ void Unit::AttackReaction(Unit& attacker)
 	{
 		if(data->group == G_CITIZENS)
 		{
-			if(!team->is_bandit)
+			if(!team->isBandit)
 			{
 				if(dont_attack && IsSet(data->flags, F_PEACEFUL))
 				{
@@ -8941,16 +8941,16 @@ void Unit::AttackReaction(Unit& attacker)
 		}
 		else if(data->group == G_CRAZIES)
 		{
-			if(!team->crazies_attack)
+			if(!team->craziesAttack)
 			{
-				team->crazies_attack = true;
+				team->craziesAttack = true;
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 		}
 		if(dont_attack && !IsSet(data->flags, F_PEACEFUL))
 		{
-			for(vector<Unit*>::iterator it = game_level->localPart->units.begin(), end = game_level->localPart->units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = gameLevel->localPart->units.begin(), end = gameLevel->localPart->units.end(); it != end; ++it)
 			{
 				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
 				{
@@ -9075,7 +9075,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			c.id = weapon_mat;
 			c.count = hitted_mat;
 		}
-		soundMgr->PlaySound3d(game_res->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
+		soundMgr->PlaySound3d(gameRes->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
 
 		// train blocking
 		if(hitted.IsPlayer())
@@ -9195,7 +9195,7 @@ void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 	act.shoot.ability = nullptr;
 	animation_state = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;
 	if(!bow_instance)
-		bow_instance = game_level->GetBowInstance(GetBow().mesh);
+		bow_instance = gameLevel->GetBowInstance(GetBow().mesh);
 	bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 	bow_instance->groups[0].speed = speed;
 
@@ -9223,7 +9223,7 @@ void Unit::AlertAllies(Unit* target)
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(Vec3::Distance(pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*this, *u))
+		if(Vec3::Distance(pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*this, *u))
 		{
 			u->ai->alert_target = target;
 			u->ai->alert_target_pos = target->pos;

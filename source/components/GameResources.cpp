@@ -19,7 +19,7 @@
 #include <Scene.h>
 #include <SceneManager.h>
 
-GameResources* game_res;
+GameResources* gameRes;
 
 //=================================================================================================
 GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)
@@ -31,9 +31,9 @@ GameResources::~GameResources()
 {
 	delete scene;
 	delete camera;
-	for(auto& item : item_texture_map)
+	for(auto& item : itemTextureMap)
 		delete item.second;
-	for(Texture* tex : over_item_textures)
+	for(Texture* tex : overrideItemTextures)
 		delete tex;
 }
 
@@ -54,8 +54,8 @@ void GameResources::Init()
 	camera = new Camera;
 
 	aHuman = resMgr->Load<Mesh>("human.qmsh");
-	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
-	missing_item_texture = CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	rtItem = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
+	missingItemTexture = CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 }
 
 //=================================================================================================
@@ -105,7 +105,7 @@ void GameResources::LoadData()
 	tBlack = resMgr->Load<Texture>("czern.bmp");
 	tWarning = resMgr->Load<Texture>("warning.png");
 	tError = resMgr->Load<Texture>("error.png");
-	game_gui->LoadData();
+	gameGui->LoadData();
 	net->LoadData();
 
 	// particles
@@ -505,9 +505,9 @@ void GameResources::PreloadItem(const Item* p_item)
 }
 
 //=================================================================================================
-void GameResources::GenerateItemIconTask(TaskData& task_data)
+void GameResources::GenerateItemIconTask(TaskData& taskData)
 {
-	Item& item = *(Item*)task_data.ptr;
+	Item& item = *(Item*)taskData.ptr;
 	GenerateItemIcon(item);
 }
 
@@ -519,7 +519,7 @@ void GameResources::GenerateItemIcon(Item& item)
 	// use missing texture if no mesh/texture
 	if(!item.mesh && !item.tex)
 	{
-		item.icon = missing_item_texture;
+		item.icon = missingItemTexture;
 		item.flags &= ~ITEM_GROUND_MESH;
 		return;
 	}
@@ -538,24 +538,24 @@ void GameResources::GenerateItemIcon(Item& item)
 	ItemTextureMap::iterator it;
 	if(!use_tex_override)
 	{
-		it = item_texture_map.lower_bound(item.mesh);
-		if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item.mesh, it->first)))
+		it = itemTextureMap.lower_bound(item.mesh);
+		if(it != itemTextureMap.end() && !(itemTextureMap.key_comp()(item.mesh, it->first)))
 		{
 			item.icon = it->second;
 			return;
 		}
 	}
 	else
-		it = item_texture_map.end();
+		it = itemTextureMap.end();
 
-	DrawItemIcon(item, rt_item, 0.f);
-	Texture* tex = render->CopyToTexture(rt_item);
+	DrawItemIcon(item, rtItem, 0.f);
+	Texture* tex = render->CopyToTexture(rtItem);
 
 	item.icon = tex;
-	if(it != item_texture_map.end())
-		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, tex));
+	if(it != itemTextureMap.end())
+		itemTextureMap.insert(it, ItemTextureMap::value_type(item.mesh, tex));
 	else
-		over_item_textures.push_back(tex);
+		overrideItemTextures.push_back(tex);
 }
 
 //=================================================================================================
@@ -602,9 +602,9 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 }
 
 //=================================================================================================
-Sound* GameResources::GetMaterialSound(MATERIAL_TYPE attack_mat, MATERIAL_TYPE hit_mat)
+Sound* GameResources::GetMaterialSound(MATERIAL_TYPE attackMat, MATERIAL_TYPE hitMat)
 {
-	switch(hit_mat)
+	switch(hitMat)
 	{
 	case MAT_BODY:
 		return sBody[Rand() % 5];
@@ -687,7 +687,7 @@ Mesh* GameResources::GetEntryMesh(EntryType type)
 }
 
 //=================================================================================================
-void GameResources::LoadMusic(MusicType type, bool new_load_screen, bool instant)
+void GameResources::LoadMusic(MusicType type, bool newLoadScreen, bool instant)
 {
 	if(soundMgr->IsDisabled())
 		return;
@@ -696,7 +696,7 @@ void GameResources::LoadMusic(MusicType type, bool new_load_screen, bool instant
 	if(list->IsLoaded())
 		return;
 
-	if(new_load_screen)
+	if(newLoadScreen)
 		resMgr->AddTaskCategory(txLoadMusic);
 
 	for(Music* music : list->musics)

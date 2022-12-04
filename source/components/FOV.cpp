@@ -321,16 +321,16 @@ namespace FOV
 		}
 	}
 
-	void DungeonReveal(const Int2& tile, vector<Int2>& revealed_tiles)
+	void DungeonReveal(const Int2& tile, vector<Int2>& revealedTiles)
 	{
-		InsideLocationLevel& lvl = static_cast<InsideLocation*>(game_level->location)->GetLevelData();
+		InsideLocationLevel& lvl = static_cast<InsideLocation*>(gameLevel->location)->GetLevelData();
 
 		source = tile;
 		extent = Int2(5, 5);
 		w = lvl.w;
 		doors = &lvl.doors;
 		mapa = lvl.map;
-		reveal = &revealed_tiles;
+		reveal = &revealedTiles;
 
 		// jeœli gracz stoi w zamkniêtych drzwiach to nic nie odkrywaj
 		if(lvl.map[tile(lvl.w)].type == DOORS && findDoorBlocking(tile))

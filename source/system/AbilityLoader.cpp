@@ -62,7 +62,7 @@ enum Keyword
 //=================================================================================================
 void AbilityLoader::DoLoading()
 {
-	tPlaceholder = game_res->CreatePlaceholderTexture(Int2(128, 128));
+	tPlaceholder = gameRes->CreatePlaceholderTexture(Int2(128, 128));
 	Load("abilities.txt", G_TOP);
 }
 

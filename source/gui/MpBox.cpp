@@ -37,7 +37,7 @@ void MpBox::Draw()
 void MpBox::Update(float dt)
 {
 	// hack for mp_box focus
-	focusable = game_gui->levelGui->CanFocusMpBox();
+	focusable = gameGui->levelGui->CanFocusMpBox();
 
 	bool prev_focus = focus;
 	focus = focusable;
@@ -88,7 +88,7 @@ void MpBox::OnInput(const string& str)
 			// send text to server / other players
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(team->my_id);
+			f.WriteCasted<byte>(team->myId);
 			f << str;
 			if(Net::IsServer())
 				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
@@ -98,7 +98,7 @@ void MpBox::OnInput(const string& str)
 		// add text
 		cstring s = Format("%s: %s", game->pc->name.c_str(), str.c_str());
 		Add(s);
-		if(game->game_state == GS_LEVEL)
-			game_gui->levelGui->AddSpeechBubble(game->pc->unit, str.c_str());
+		if(game->gameState == GS_LEVEL)
+			gameGui->levelGui->AddSpeechBubble(game->pc->unit, str.c_str());
 	}
 }

@@ -118,7 +118,7 @@ Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 		f >> targetLoc;
 		f.Skip<bool>(); // done
 		f.Skip<int>(); // at_level
-		SetScheme(quest_mgr->FindQuestInfo(type)->scheme);
+		SetScheme(questMgr->FindQuestInfo(type)->scheme);
 
 		f >> st;
 

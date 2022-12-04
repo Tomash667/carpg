@@ -69,7 +69,7 @@ void DialogScripts::GetFormattedCode(FUNC f, string& code)
 //=================================================================================================
 int DialogScripts::Build()
 {
-	asIScriptModule* module = script_mgr->GetEngine()->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
+	asIScriptModule* module = scriptMgr->GetEngine()->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 #ifdef _DEBUG
 	string output;
 #endif

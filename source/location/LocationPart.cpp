@@ -687,9 +687,9 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 {
 	assert(groundItem);
 
-	if(game_level->ready && lvlPart)
+	if(gameLevel->ready && lvlPart)
 	{
-		game_res->PreloadItem(groundItem->item);
+		gameRes->PreloadItem(groundItem->item);
 		groundItem->CreateSceneNode();
 		lvlPart->scene->Add(groundItem->node);
 
@@ -702,7 +702,7 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 	}
 
 	if(adjustY && partType == LocationPart::Type::Outside)
-		game_level->terrain->SetY(groundItem->pos);
+		gameLevel->terrain->SetY(groundItem->pos);
 	groundItems.push_back(groundItem);
 }
 
@@ -743,7 +743,7 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 {
 	assert(groundItem);
 
-	if(game_level->ready && lvlPart)
+	if(gameLevel->ready && lvlPart)
 	{
 		lvlPart->scene->Remove(groundItem->node);
 		groundItem->node->Free();
@@ -1115,7 +1115,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				hitted = nullptr;
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = game_res->tSpark;
+				pe->tex = gameRes->tSpark;
 				pe->emissionInterval = 0.01f;
 				pe->life = 5.f;
 				pe->particleLife = 0.5f;
@@ -1136,12 +1136,12 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				pe->Init();
 				lvlPart->pes.push_back(pe);
 
-				soundMgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{
-					if(quest_mgr->quest_tutorial->in_tutorial)
-						quest_mgr->quest_tutorial->HandleMeleeAttackCollision();
+					if(questMgr->quest_tutorial->in_tutorial)
+						questMgr->quest_tutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
 

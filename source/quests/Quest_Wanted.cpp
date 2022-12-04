@@ -48,8 +48,8 @@ void Quest_Wanted::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			OnStart(quest_mgr->txQuest[257]);
-			quest_mgr->quests_timeout.push_back(this);
+			OnStart(questMgr->txQuest[257]);
+			questMgr->quests_timeout.push_back(this);
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			targetLoc = world->GetRandomFreeSettlement(startLoc);
@@ -69,14 +69,14 @@ void Quest_Wanted::SetProgress(int prog2)
 			// add letter
 			Item::Get("wanted_letter")->CreateCopy(letter);
 			letter.id = "$wanted_letter";
-			letter.name = quest_mgr->txQuest[258];
+			letter.name = questMgr->txQuest[258];
 			letter.quest_id = id;
-			letter.desc = Format(quest_mgr->txQuest[259], level * 100, unit_name.c_str());
+			letter.desc = Format(questMgr->txQuest[259], level * 100, unit_name.c_str());
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			// add journal entry
-			msgs.push_back(Format(quest_mgr->txQuest[29], GetStartLocationName(), world->GetDate()));
-			msgs.push_back(Format(quest_mgr->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
+			msgs.push_back(Format(questMgr->txQuest[29], GetStartLocationName(), world->GetDate()));
+			msgs.push_back(Format(questMgr->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Timeout:
@@ -87,7 +87,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
 
-			OnUpdate(Format(quest_mgr->txQuest[261], unit_name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[261], unit_name.c_str()));
 
 			done = false;
 		}
@@ -95,8 +95,8 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Killed:
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
-			OnUpdate(Format(quest_mgr->txQuest[262], unit_name.c_str()));
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			OnUpdate(Format(questMgr->txQuest[262], unit_name.c_str()));
+			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
 		}
 		break;
 	case Progress::Finished:
@@ -106,13 +106,13 @@ void Quest_Wanted::SetProgress(int prog2)
 
 			team->AddReward(level * 100, level * 250);
 
-			OnUpdate(Format(quest_mgr->txQuest[263], unit_name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[263], unit_name.c_str()));
 		}
 		break;
 	case Progress::Recruited:
 		{
 			state = Quest::Failed;
-			OnUpdate(Format(quest_mgr->txQuest[266], target_unit->GetName()));
+			OnUpdate(Format(questMgr->txQuest[266], target_unit->GetName()));
 		}
 		break;
 	}
@@ -161,7 +161,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 		target_unit = nullptr;
 	}
 
-	OnUpdate(quest_mgr->txQuest[267]);
+	OnUpdate(questMgr->txQuest[267]);
 
 	return true;
 }
@@ -259,9 +259,9 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 	{
 		Item::Get("wanted_letter")->CreateCopy(letter);
 		letter.id = "$wanted_letter";
-		letter.name = quest_mgr->txQuest[258];
+		letter.name = questMgr->txQuest[258];
 		letter.quest_id = id;
-		letter.desc = Format(quest_mgr->txQuest[259], level * 100, unit_name.c_str());
+		letter.desc = Format(questMgr->txQuest[259], level * 100, unit_name.c_str());
 	}
 
 	return LoadResult::Ok;

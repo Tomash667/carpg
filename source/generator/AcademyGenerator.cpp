@@ -186,7 +186,7 @@ void AcademyGenerator::SpawnBuilding(bool first)
 		outside->objects.push_back(o);
 	}
 
-	game_level->ProcessBuildingObjects(*outside, nullptr, nullptr, building->mesh, nullptr, 0.f, GDIR_DOWN,
+	gameLevel->ProcessBuildingObjects(*outside, nullptr, nullptr, building->mesh, nullptr, 0.f, GDIR_DOWN,
 		pos, building, nullptr, !first);
 }
 
@@ -200,7 +200,7 @@ void AcademyGenerator::GenerateItems()
 void AcademyGenerator::GenerateUnits()
 {
 	UnitData* ud = UnitData::Get("q_main_academy");
-	Unit* u = game_level->SpawnUnitNearLocation(*outside, unit_pos, *ud);
+	Unit* u = gameLevel->SpawnUnitNearLocation(*outside, unit_pos, *ud);
 	u->ai->start_rot = u->rot = 0.f;
 }
 
@@ -218,7 +218,7 @@ void AcademyGenerator::OnEnter()
 //=================================================================================================
 void AcademyGenerator::SpawnTeam()
 {
-	game_level->AddPlayerTeam(Vec3(128.f, 0, 80.f), PI);
+	gameLevel->AddPlayerTeam(Vec3(128.f, 0, 80.f), PI);
 }
 
 //=================================================================================================

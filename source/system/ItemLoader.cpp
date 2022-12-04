@@ -1019,7 +1019,7 @@ void ItemLoader::ParseStock(const string& id)
 					if(stock->script)
 						t.Throw("Stock script already used.");
 					const string& block = t.GetBlock('{', '}', false);
-					stock->script = script_mgr->PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
+					stock->script = scriptMgr->PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
 					if(!stock->script)
 						t.Throw("Failed to parse script.");
 					t.Next();
