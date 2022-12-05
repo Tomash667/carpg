@@ -19,6 +19,7 @@ Wersja 0.19 (???):
 - brak ikony aplikacji przy starcie w trybie pełnoekranowym
 - brak celownika podczas rozmowy
 - brak odświeżania czasu zdolności podczas krótkiej podróży
+- czasami generowało schody obok drzwi
 
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):

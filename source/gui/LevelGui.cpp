@@ -409,18 +409,19 @@ void LevelGui::DrawFront()
 	// dialog box
 	if(game->dialogContext.dialogMode)
 	{
+		const int border = 4;
 		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
 		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
 		gui->DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
-		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
+		Rect r = Rect::Create(offset, dsize, border);
 		if(Any(game->dialogContext.mode, DialogContext::WAIT_CHOICES, DialogContext::WAIT_MP_RESPONSE))
 		{
 			int off = int(scrollbar.offset);
 
 			// selection
-			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialogContext.choiceSelected * GameGui::font->height - off + 6),
-				Int2(dsize.x - 16, GameGui::font->height));
+			Rect r_img = Rect::Create(Int2(offset.x + border, offset.y + border + game->dialogContext.choiceSelected * GameGui::font->height - off),
+				Int2(dsize.x - border * 2, GameGui::font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
 				if(r_img.Top() < r.Top())
@@ -437,8 +438,7 @@ void LevelGui::DrawFront()
 				s += game->dialogContext.choices[i].msg;
 				s += '\n';
 			}
-			Rect r2 = r;
-			r2 -= Int2(0, off);
+			Rect r2 = { r.Left() + 2, r.Top() - off, r.Right() - 2, r.Bottom() - off };
 			gui->DrawText(GameGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
@@ -1311,7 +1311,7 @@ void LevelGui::Event(GuiEvent e)
 		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
 		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
 		scrollbar.size = Int2(12, 104);
-		scrollbar.globalPos = scrollbar.pos = Int2(dsize.x + offset.x - 16, offset.y);
+		scrollbar.globalPos = scrollbar.pos = Int2(dsize.x + offset.x - 12, offset.y);
 		dialogPos = offset;
 		dialogSize = dsize;
 		tooltip.Clear();
@@ -1492,7 +1492,7 @@ bool LevelGui::UpdateChoice()
 //=================================================================================================
 void LevelGui::UpdateScrollbar(int choices)
 {
-	scrollbar.part = 104 - 12;
+	scrollbar.part = 104 - 8; // border * 2
 	scrollbar.offset = 0.f;
 	scrollbar.total = choices * GameGui::font->height;
 	scrollbar.LostFocus();
