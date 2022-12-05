@@ -11,6 +11,7 @@ Version 0.19 (???):
 + UI improvements
 - crash when leave location, save on worldmap & load
 - broken skill tooltips
+- ai don't change target while attacking
 - taking equiped item from corpse wrongly updated inventory view
 - when finished traveler quest another traveler quest in same location will never timeout
 - script error on quest timeout with "find artifact"/"stolen artifact" in dungeon with single level

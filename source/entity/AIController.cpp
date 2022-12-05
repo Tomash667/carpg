@@ -34,6 +34,7 @@ void AIController::Init(Unit* unit)
 	startRot = unit->rot;
 	locTimer = 0.f;
 	timer = 0.f;
+	scanTimer = Random(0.f, 0.2f);
 	changeAiMode = false;
 	pfState = PFS_NOT_USING;
 }
@@ -132,6 +133,7 @@ void AIController::Save(GameWriter& f)
 	f << potion;
 	f << cityWander;
 	f << locTimer;
+	f << scanTimer;
 }
 
 //=================================================================================================
@@ -231,6 +233,10 @@ void AIController::Load(GameReader& f)
 		if(goto_inn)
 			unit->OrderGoToInn();
 	}
+	if(LOAD_VERSION >= V_DEV)
+		f >> scanTimer;
+	else
+		scanTimer = Random(0.f, 0.2f);
 	changeAiMode = false;
 }
 

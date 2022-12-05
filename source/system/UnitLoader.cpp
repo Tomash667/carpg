@@ -511,7 +511,7 @@ void UnitLoader::InitTokenizer()
 		{ "hair", AK_HAIR },
 		{ "beard", AK_BEARD },
 		{ "mustache", AK_MUSTACHE },
-		{ "hairColor", AK_HAIR_COLOR },
+		{ "hair_color", AK_HAIR_COLOR },
 		{ "height", AK_HEIGHT }
 		});
 }

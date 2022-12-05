@@ -11,6 +11,7 @@ Wersja 0.19 (???):
 + usprawnienia UI
 - crash po opuszczeniu lokalizacji, zapisaniu na mapie świata i wczytaniu
 - popsute opisy umiejętności
+- ai nie zmienia celu w trakcie ataku
 - zabieranie założonego przedmiotu ze zwłok niepoprawnie aktualizowało widok ekwipunku
 - po ukończeniu zadania dla wędrowca następne zadanie w tym samym mieście nigdy się nie przedawniało
 - błąd skryptu gdy minie czas zadania "znajdź artefakt"/"ukradziony artefakt" gdy minie czas zadania w podziemiach z jednym poziomem

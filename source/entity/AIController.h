@@ -132,7 +132,7 @@ struct AIController
 	Entity<Unit> target, alertTarget;
 	Vec3 targetLastPos, alertTargetPos, startPos;
 	bool inCombat, cityWander;
-	float nextAttack, timer, ignore, morale, cooldown[MAX_ABILITIES], startRot, locTimer;
+	float nextAttack, timer, ignore, morale, cooldown[MAX_ABILITIES], startRot, locTimer, scanTimer;
 	HavePotion havePotion, haveMpPotion;
 	int potion; // miksturka do u¿ycia po schowaniu broni
 	bool changeAiMode; // tymczasowe u serwera
