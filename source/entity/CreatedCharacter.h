@@ -47,15 +47,15 @@ struct CreatedCharacter
 	};
 
 	Class* clas;
-	vector<TakenPerk> taken_perks;
+	vector<TakenPerk> takenPerks;
 	AttributeData a[(int)AttributeId::MAX];
 	SkillData s[(int)SkillId::MAX];
-	int sp, sp_max, perks, perks_max;
-	bool update_skills;
-	vector<SkillId> to_update;
-	SubprofileInfo last_sub;
+	int sp, spMax, perks, perksMax;
+	bool updateSkills;
+	vector<SkillId> toUpdate;
+	SubprofileInfo lastSub;
 
-	CreatedCharacter() { last_sub.value = 0; }
+	CreatedCharacter() { lastSub.value = 0; }
 	void Clear(Class* clas);
 	void Random(Class* clas);
 	void Write(BitStreamWriter& f) const;

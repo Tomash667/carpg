@@ -225,7 +225,7 @@ void Quest_Contest::Update(float dt)
 				u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				if(u.player != game->pc)
 				{
-					NetChangePlayer& c = Add1(u.player->player_info->changes);
+					NetChangePlayer& c = Add1(u.player->playerInfo->changes);
 					c.type = NetChangePlayer::LOOK_AT;
 					c.id = -1;
 				}
@@ -288,7 +288,7 @@ void Quest_Contest::Update(float dt)
 					}
 					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE))
 					{
-						if(questMgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured)
+						if(questMgr->questMages2->mages_state < Quest_Mages2::State::MageCured)
 							ok = true;
 					}
 
@@ -321,7 +321,7 @@ void Quest_Contest::Update(float dt)
 					u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 					if(u.IsPlayer() && u.player != game->pc)
 					{
-						NetChangePlayer& c = Add1(u.player->player_info->changes);
+						NetChangePlayer& c = Add1(u.player->playerInfo->changes);
 						c.type = NetChangePlayer::LOOK_AT;
 						c.id = innkeeper.id;
 					}
@@ -339,7 +339,7 @@ void Quest_Contest::Update(float dt)
 				state = CONTEST_FINISH;
 				state2 = 3;
 				innkeeper.ai->st.idle.action = AIController::Idle_Rot;
-				innkeeper.ai->st.idle.rot = innkeeper.ai->start_rot;
+				innkeeper.ai->st.idle.rot = innkeeper.ai->startRot;
 				innkeeper.ai->timer = 3.f;
 				innkeeper.busy = Unit::Busy_Yes;
 				innkeeper.Talk(txContestNoPeople);
@@ -347,7 +347,7 @@ void Quest_Contest::Update(float dt)
 			else
 			{
 				innkeeper.ai->st.idle.action = AIController::Idle_Rot;
-				innkeeper.ai->st.idle.rot = innkeeper.ai->start_rot;
+				innkeeper.ai->st.idle.rot = innkeeper.ai->startRot;
 				innkeeper.ai->timer = 3.f;
 				innkeeper.busy = Unit::Busy_Yes;
 				innkeeper.Talk(txContestTalk[0]);
@@ -528,7 +528,7 @@ void Quest_Contest::Update(float dt)
 						u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 						if(u.player != game->pc)
 						{
-							NetChangePlayer& c = Add1(u.player->player_info->changes);
+							NetChangePlayer& c = Add1(u.player->playerInfo->changes);
 							c.type = NetChangePlayer::LOOK_AT;
 							c.id = -1;
 						}
@@ -555,7 +555,7 @@ void Quest_Contest::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 
 		if(Net::IsOnline() && unit->IsPlayer() && unit->player != game->pc)
 		{
-			NetChangePlayer& c = Add1(unit->player->player_info->changes);
+			NetChangePlayer& c = Add1(unit->player->playerInfo->changes);
 			c.type = NetChangePlayer::LOOK_AT;
 			c.id = -1;
 		}

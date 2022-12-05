@@ -175,7 +175,7 @@ void SaveLoad::Event(GuiEvent e)
 	{
 		if(e == IdCancel)
 		{
-			net->mp_load = false;
+			net->mpLoad = false;
 			gui->CloseDialog(this);
 			return;
 		}
@@ -384,7 +384,7 @@ void SaveLoad::ShowSavePanel()
 //=================================================================================================
 void SaveLoad::ShowLoadPanel()
 {
-	bool online = (net->mp_load || Net::IsServer());
+	bool online = (net->mpLoad || Net::IsServer());
 	SetSaveMode(false, online, online ? multiSaves : singleSaves);
 	gui->ShowDialog(this);
 }

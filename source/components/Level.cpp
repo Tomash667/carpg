@@ -220,7 +220,7 @@ void Level::ProcessUnitWarps()
 		if(warp.unit == game->pc->unit)
 		{
 			camera.Reset();
-			game->pc->data.rot_buf = 0.f;
+			game->pc->data.rotBuf = 0.f;
 
 			if(game->fallbackType == FALLBACK::ARENA)
 			{
@@ -838,12 +838,12 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
 				GameLight& light = Add1(locPart.lights);
-				light.start_pos = pe->pos;
+				light.startPos = pe->pos;
 				light.range = 5;
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
-					light.start_color = Vec3(0.8f, 0.8f, 1.f);
+					light.startColor = Vec3(0.8f, 0.8f, 1.f);
 				else
-					light.start_color = Vec3(1.f, 0.9f, 0.9f);
+					light.startColor = Vec3(1.f, 0.9f, 0.9f);
 			}
 		}
 		else if(IsSet(obj->flags, OBJ_BLOOD_EFFECT))
@@ -905,7 +905,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 	{
 		CollisionObject& c = Add1(locPart.lvlPart->colliders);
 		c.owner = userPtr;
-		c.cam_collider = IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM);
+		c.camCollider = IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM);
 
 		int group = CG_OBJECT;
 		if(IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM))
@@ -1008,7 +1008,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 	{
 		CollisionObject& c = Add1(locPart.lvlPart->colliders);
 		c.owner = CollisionObject::TMP;
-		c.cam_collider = false;
+		c.camCollider = false;
 		if(obj->type == OBJ_CYLINDER)
 		{
 			c.type = CollisionObject::SPHERE;
@@ -1196,7 +1196,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				cobj.radius = pt.size.x;
 				cobj.pos = pos;
 				cobj.owner = nullptr;
-				cobj.cam_collider = is_wall;
+				cobj.camCollider = is_wall;
 
 				if(locPart.partType == LocationPart::Type::Outside)
 				{
@@ -1224,7 +1224,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
 				cobj.owner = nullptr;
-				cobj.cam_collider = block_camera;
+				cobj.camCollider = block_camera;
 
 				btBoxShape* shape;
 				if(token != "squarevp")
@@ -1469,7 +1469,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 					if(u)
 					{
 						u->rot = Clip(pt.rot.y + rot);
-						u->ai->start_rot = u->rot;
+						u->ai->startRot = u->rot;
 					}
 				}
 			}
@@ -1837,7 +1837,7 @@ bool Level::PickableItemAdd(const Item* item)
 			GroundItem* groundItem = new GroundItem;
 			groundItem->Register();
 			groundItem->count = 1;
-			groundItem->team_count = 1;
+			groundItem->teamCount = 1;
 			groundItem->item = item;
 			groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
 			float rot = pickableObj->rot.y,
@@ -2299,7 +2299,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 							CollisionObject& co = Add1(objects);
 							co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 							co.check = &Level::CollideWithStairs;
-							co.check_rect = &Level::CollideWithStairsRect;
+							co.checkRect = &Level::CollideWithStairsRect;
 							co.extra = (type == ENTRY_PREV);
 							co.type = CollisionObject::CUSTOM;
 						}
@@ -2498,7 +2498,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 							CollisionObject& co = Add1(objects);
 							co.pos = Vec3(2.f * x + 1.f, 0, 2.f * z + 1.f);
 							co.check = &Level::CollideWithStairs;
-							co.check_rect = &Level::CollideWithStairsRect;
+							co.checkRect = &Level::CollideWithStairsRect;
 							co.extra = (type == ENTRY_PREV);
 							co.type = CollisionObject::CUSTOM;
 						}
@@ -2692,7 +2692,7 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 			}
 			break;
 		case CollisionObject::CUSTOM:
-			if((this->*(it->check_rect))(*it, box))
+			if((this->*(it->checkRect))(*it, box))
 				return true;
 			break;
 		}
@@ -2755,7 +2755,7 @@ bool Level::Collide(const vector<CollisionObject>& objects, const Box2d& _box, f
 			}
 			break;
 		case CollisionObject::CUSTOM:
-			if((this->*(it->check_rect))(*it, box))
+			if((this->*(it->checkRect))(*it, box))
 				return true;
 			break;
 		}
@@ -2805,7 +2805,7 @@ bool Level::CollideWithStairs(const CollisionObject& cobj, const Vec3& pos, floa
 //=================================================================================================
 bool Level::CollideWithStairsRect(const CollisionObject& cobj, const Box2d& box) const
 {
-	assert(cobj.type == CollisionObject::CUSTOM && cobj.check_rect == &Level::CollideWithStairsRect && !location->outside);
+	assert(cobj.type == CollisionObject::CUSTOM && cobj.checkRect == &Level::CollideWithStairsRect && !location->outside);
 
 	GameDirection dir;
 	if(cobj.extra == 0)
@@ -2925,7 +2925,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 		c.type = NetChange::WARP;
 		c.unit = &unit;
 		if(unit.IsPlayer())
-			unit.player->player_info->warping = true;
+			unit.player->playerInfo->warping = true;
 	}
 }
 
@@ -2981,7 +2981,7 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 		c.type = NetChange::WARP;
 		c.unit = &unit;
 		if(unit.IsPlayer())
-			unit.player->player_info->warping = true;
+			unit.player->playerInfo->warping = true;
 	}
 
 	if(unit.cobj)
@@ -3136,7 +3136,7 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CREATE_TRAP;
-		c.e_id = trap.id;
+		c.extraId = trap.id;
 		c.id = type;
 		c.pos = pos;
 	}
@@ -3778,7 +3778,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 	{
 		for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 		{
-			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE)
+			if(!it->camCollider || it->type != CollisionObject::RECTANGLE)
 				continue;
 
 			Box2d box(it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h);
@@ -3890,7 +3890,7 @@ bool Level::CanSee(LocationPart& locPart, const Vec3& v1, const Vec3& v2, bool i
 	{
 		for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 		{
-			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE || (ignore && ignore == it->owner))
+			if(!it->camCollider || it->type != CollisionObject::RECTANGLE || (ignore && ignore == it->owner))
 				continue;
 
 			Box2d box(it->pos.x - it->w, it->pos.z - it->h, it->pos.x + it->w, it->pos.z + it->h);
@@ -3983,7 +3983,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 			unit.ai->state = AIController::Idle;
 			unit.ai->st.idle.action = AIController::Idle_None;
 			unit.ai->target = nullptr;
-			unit.ai->alert_target = nullptr;
+			unit.ai->alertTarget = nullptr;
 			unit.ai->timer = Random(2.f, 5.f);
 		}
 
@@ -4105,7 +4105,7 @@ void Level::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(GetLocationMusic());
 	f << boss;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		for(LocationPart& locPart : locParts)
 			locPart.lvlPart->Write(f);
@@ -4147,7 +4147,7 @@ bool Level::Read(BitStreamReader& f, bool loadedResources)
 	else
 		game->SetMusic(music);
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		for(LocationPart& locPart : locParts)
 		{
@@ -4173,7 +4173,7 @@ MusicType Level::GetLocationMusic()
 		else
 			return MusicType::Dungeon;
 	case L_OUTSIDE:
-		if(locationIndex == questMgr->quest_secret->where2 || Any(location->target, MOONWELL, ACADEMY))
+		if(locationIndex == questMgr->questSecret->where2 || Any(location->target, MOONWELL, ACADEMY))
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;
@@ -4220,7 +4220,7 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	GroundItem* groundItem = new GroundItem;
 	groundItem->Register();
 	groundItem->count = 1;
-	groundItem->team_count = 1;
+	groundItem->teamCount = 1;
 	groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
 	groundItem->pos = pos;
 	groundItem->item = item;
@@ -4377,9 +4377,9 @@ bool Level::CanFastTravel()
 		if(!location->outside
 			|| !IsSafe()
 			|| game->arena->mode != Arena::NONE
-			|| questMgr->quest_tutorial->in_tutorial
-			|| questMgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
-			|| questMgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			|| questMgr->questTutorial->in_tutorial
+			|| questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
+			|| questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 
 		CanLeaveLocationResult result = CanLeaveLocation(*team->leader, false);
@@ -4392,7 +4392,7 @@ bool Level::CanFastTravel()
 //=================================================================================================
 CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool checkDist)
 {
-	if(questMgr->quest_secret->state == Quest_Secret::SECRET_FIGHT)
+	if(questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
 		return CanLeaveLocationResult::InCombat;
 
 	if(cityCtx)
@@ -4414,7 +4414,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool checkDist)
 			for(vector<Unit*>::iterator it2 = localPart->units.begin(), end2 = localPart->units.end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && unit.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
+				if(&u != &u2 && u2.IsStanding() && unit.IsEnemy(u2) && u2.IsAI() && u2.ai->inCombat
 					&& Vec3::Distance2d(unit.pos, u2.pos) < ALERT_RANGE && CanSee(u, u2))
 					return CanLeaveLocationResult::InCombat;
 			}
@@ -4433,7 +4433,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool checkDist)
 			for(vector<Unit*>::iterator it2 = localPart->units.begin(), end2 = localPart->units.end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->inCombat
 					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && CanSee(u, u2))
 					return CanLeaveLocationResult::InCombat;
 			}
@@ -4838,7 +4838,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 //=================================================================================================
 void Level::CreateObjectsMeshInstance()
 {
-	const bool isLoading = (game->inLoad || net->mp_load);
+	const bool isLoading = (game->inLoad || net->mpLoad);
 	for(LocationPart& locPart : locParts)
 	{
 		for(Object* obj : locPart.objects)
@@ -4894,7 +4894,7 @@ void Level::RecreateTmpObjectPhysics()
 				continue;
 			CollisionObject& c = Add1(locPart.lvlPart->colliders);
 			c.owner = CollisionObject::TMP;
-			c.cam_collider = false;
+			c.camCollider = false;
 			if(obj->base->type == OBJ_CYLINDER)
 			{
 				c.type = CollisionObject::SPHERE;
@@ -5024,7 +5024,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		c.type = NetChange::PARTICLE_EFFECT;
 		c.ability = ability;
 		c.pos = pos;
-		c.extra_fs[0] = bounds.x;
-		c.extra_fs[1] = bounds.y;
+		c.extraFloats[0] = bounds.x;
+		c.extraFloats[1] = bounds.y;
 	}
 }

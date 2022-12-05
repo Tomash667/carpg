@@ -104,7 +104,7 @@ void Chest::Write(BitStreamWriter& f)
 	f << base->hash;
 	f << pos;
 	f << rot;
-	if(net->mp_load)
+	if(net->mpLoad)
 		MeshInstance::SaveOptional(f, meshInst);
 }
 
@@ -115,7 +115,7 @@ bool Chest::Read(BitStreamReader& f)
 	base = BaseObject::Get(f.Read<int>());
 	f >> pos;
 	f >> rot;
-	if(net->mp_load)
+	if(net->mpLoad)
 		MeshInstance::LoadOptional(f, meshInst);
 	if(!f)
 		return false;
@@ -124,9 +124,9 @@ bool Chest::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
+bool Chest::AddItem(const Item* item, uint count, uint teamCount, bool notify)
 {
-	bool stacked = ItemContainer::AddItem(item, count, team_count);
+	bool stacked = ItemContainer::AddItem(item, count, teamCount);
 
 	if(user && user->IsPlayer())
 	{
@@ -134,12 +134,12 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 			gameGui->inventory->BuildTmpInventory(1);
 		else if(notify)
 		{
-			NetChangePlayer& c = Add1(user->player->player_info->changes);
+			NetChangePlayer& c = Add1(user->player->playerInfo->changes);
 			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
 			c.item = item;
 			c.id = id;
 			c.count = count;
-			c.a = team_count;
+			c.a = teamCount;
 		}
 	}
 

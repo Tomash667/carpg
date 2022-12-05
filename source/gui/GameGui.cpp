@@ -280,7 +280,7 @@ void GameGui::UpdateGui(float dt)
 	// handle panels
 	if(gui->HaveDialog() || (mpBox->visible && mpBox->itb.focus))
 		GKey.allowInput = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialog_mode && !game->cutscene)
+	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialogMode && !game->cutscene)
 	{
 		OpenPanel open = levelGui->GetOpenPanel(),
 			to_open = OpenPanel::None;
@@ -330,7 +330,7 @@ void GameGui::UpdateGui(float dt)
 	// handle blocking input by gui
 	if(gui->HaveDialog() || (mpBox->visible && mpBox->itb.focus))
 		GKey.allowInput = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialog_mode)
+	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialogMode)
 	{
 		switch(levelGui->GetOpenPanel())
 		{
@@ -398,7 +398,7 @@ void GameGui::Clear(bool resetMpBox, bool onEnter)
 		levelGui->Reset();
 		if(!onEnter)
 			messages->Reset();
-		if(mpBox && resetMpBox && !net->mp_quickload)
+		if(mpBox && resetMpBox && !net->mpQuickload)
 			mpBox->visible = false;
 	}
 }
@@ -432,7 +432,7 @@ void GameGui::OnFocus(bool focus, const Int2& activationPoint)
 //=================================================================================================
 void GameGui::ShowMultiplayer()
 {
-	net->mp_load = false;
+	net->mpLoad = false;
 	multiplayer->Show();
 }
 

@@ -63,17 +63,17 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// received quest
 		{
 			OnStart(questMgr->txQuest[28]);
-			questMgr->quests_timeout.push_back(this);
+			questMgr->questTimeouts.push_back(this);
 
 			targetLoc = world->GetRandomSpawnLocation(startLoc->pos, group);
 			targetLoc->SetKnown();
 			targetLoc->active_quest = this;
 			st = targetLoc->st;
-			unit_to_spawn = UnitData::Get("captive");
-			unit_dont_attack = true;
-			at_level = targetLoc->GetRandomLevel();
-			unit_event_handler = this;
-			send_spawn_event = true;
+			unitToSpawn = UnitData::Get("captive");
+			unitDontAttack = true;
+			atLevel = targetLoc->GetRandomLevel();
+			unitEventHandler = this;
+			sendSpawnEvent = true;
 			captive = nullptr;
 
 			msgs.push_back(Format(questMgr->txQuest[29], startLoc->name.c_str(), world->GetDate()));
@@ -111,7 +111,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
-			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 
 			OnUpdate(questMgr->txQuest[37]);
 			if(captive)
@@ -131,7 +131,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
-			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 			team->RemoveMember(captive);
 
 			gameLevel->RemoveUnit(captive);
@@ -166,7 +166,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
 			if(targetLoc && targetLoc->active_quest == this)
 				targetLoc->active_quest = nullptr;
-			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 
 			OnUpdate(questMgr->txQuest[40]);
 		}
@@ -188,13 +188,13 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				targetLoc->active_quest = nullptr;
 
 			OnUpdate(Format(questMgr->txQuest[41], GetStartLocationName()));
-			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 		}
 		break;
 	case Progress::CaptiveLeftInCity:
 		// captive was left in city
 		{
-			if(captive->hero->team_member)
+			if(captive->hero->teamMember)
 				team->RemoveMember(captive);
 			captive->dont_attack = false;
 			captive->OrderGoToInn();
@@ -235,7 +235,7 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RescueCaptive::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time >= 30;
+	return world->GetWorldtime() - startTime >= 30;
 }
 
 //=================================================================================================
@@ -246,7 +246,7 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 		if(captive)
 		{
 			captive->event_handler = nullptr;
-			ForLocation(targetLoc, at_level)->RemoveUnit(captive);
+			ForLocation(targetLoc, atLevel)->RemoveUnit(captive);
 			captive = nullptr;
 		}
 
@@ -323,12 +323,12 @@ Quest::LoadResult Quest_RescueCaptive::Load(GameReader& f)
 	f >> captive;
 	f >> st;
 
-	unit_event_handler = this;
+	unitEventHandler = this;
 
 	if(!done)
 	{
-		unit_to_spawn = UnitData::Get("captive");
-		unit_dont_attack = true;
+		unitToSpawn = UnitData::Get("captive");
+		unitDontAttack = true;
 	}
 
 	return LoadResult::Ok;

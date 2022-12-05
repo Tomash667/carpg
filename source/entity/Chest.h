@@ -49,7 +49,7 @@ public:
 		p.y += 0.5f;
 		return p;
 	}
-	bool AddItem(const Item* item, uint count, uint team_count, bool notify = true);
+	bool AddItem(const Item* item, uint count, uint teamCount, bool notify = true);
 	bool AddItem(const Item* item, uint count = 1) { return AddItem(item, count, count); }
 	void OpenClose(Unit* unit);
 	Unit* GetUser() const { return user; }

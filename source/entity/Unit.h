@@ -602,7 +602,7 @@ public:
 			return 0.75f * float(b.reqStr - str) / (b.reqStr / 2);
 	}
 	bool IsHero() const { return hero != nullptr; }
-	bool IsFollower() const { return hero && hero->team_member; }
+	bool IsFollower() const { return hero && hero->teamMember; }
 	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
 	bool IsFollowingTeamMember() const { return IsFollower() && GetOrder() == ORDER_FOLLOW; }
 	Class* GetClass() const { return data->clas; }
@@ -619,7 +619,7 @@ public:
 		if(IsPlayer())
 			return true;
 		else if(IsHero())
-			return hero->team_member;
+			return hero->teamMember;
 		else
 			return false;
 	}
@@ -654,7 +654,7 @@ public:
 	{
 		if(IsPlayer())
 			return player->name;
-		else if(IsHero() && hero->know_name)
+		else if(IsHero() && hero->knowName)
 			return hero->name;
 		else
 			return data->name;

@@ -111,7 +111,7 @@ musicType(MusicType::Max), endOfGame(false), preparedStream(64 * 1024), paused(f
 rtItemRot(nullptr), usePostfx(true), mpTimeout(10.f), screenshotFormat(ImageFormat::JPG), gameState(GS_LOAD), quickstartSlot(SaveSlot::MAX_SLOTS),
 inLoad(false), tMinimap(nullptr)
 {
-	dialogContext.is_local = true;
+	dialogContext.isLocal = true;
 	uvMod = Terrain::DEFAULT_UV_MOD;
 
 	aiMgr = new AIManager;
@@ -502,8 +502,8 @@ void Game::StartGameMode()
 
 		if(quickstart == QUICKSTART_LOAD_MP)
 		{
-			net->mp_load = true;
-			net->mp_quickload = false;
+			net->mpLoad = true;
+			net->mpQuickload = false;
 			if(TryLoadGame(quickstartSlot, false, false))
 			{
 				gameGui->createServer->CloseDialog();
@@ -610,14 +610,14 @@ void Game::DrawGame()
 	if(gameState == GS_LEVEL)
 	{
 		LocationPart& locPart = *pc->unit->locPart;
-		gameLevel->camera.zfar = locPart.lvlPart->draw_range;
+		gameLevel->camera.zfar = locPart.lvlPart->drawRange;
 		ListDrawObjects(locPart, gameLevel->camera.frustum);
 
 		vector<PostEffect> postEffects;
 		GetPostEffects(postEffects);
 
 		const bool usePostfx = !postEffects.empty();
-		const bool useGlow = !drawBatch.glow_nodes.empty();
+		const bool useGlow = !drawBatch.glowNodes.empty();
 
 		if(usePostfx || useGlow)
 			postfxShader->SetTarget();
@@ -630,7 +630,7 @@ void Game::DrawGame()
 
 		// draw glow
 		if(useGlow)
-			glowShader->Draw(gameLevel->camera, drawBatch.glow_nodes, usePostfx);
+			glowShader->Draw(gameLevel->camera, drawBatch.glowNodes, usePostfx);
 
 		if(usePostfx)
 		{
@@ -897,8 +897,8 @@ void Game::DoExitToMenu()
 
 	gameState = GS_MAIN_MENU;
 	paused = false;
-	net->mp_load = false;
-	net->was_client = false;
+	net->mpLoad = false;
+	net->wasClient = false;
 
 	SetMusic(MusicType::Title);
 	endOfGame = false;
@@ -956,7 +956,7 @@ void Game::LoadCfg()
 	playerName = Truncate(cfg.GetString("nick"), 16);
 	net->serverName = Truncate(cfg.GetString("serverName"), 16);
 	net->password = Truncate(cfg.GetString("serverPswd"), 16);
-	net->max_players = Clamp(cfg.GetUint("serverPlayers", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
+	net->maxPlayers = Clamp(cfg.GetUint("serverPlayers", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	serverIp = cfg.GetString("serverIp");
 	mpTimeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 	net->serverLan = cfg.GetBool("serverLan");
@@ -1380,7 +1380,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 
 	gameLevel->dungeonLevel = level;
 	gameLevel->eventHandler = nullptr;
-	pc->data.before_player = BP_NONE;
+	pc->data.beforePlayer = BP_NONE;
 	arena->Reset();
 	gameGui->inventory->lock = nullptr;
 
@@ -1391,7 +1391,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 
 	InitQuadTree();
 
-	if(Net::IsOnline() && net->active_players > 1)
+	if(Net::IsOnline() && net->activePlayers > 1)
 	{
 		BitStreamWriter f;
 		f << ID_CHANGE_LEVEL;
@@ -1473,7 +1473,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	l.last_visit = world->GetWorldtime();
 	gameLevel->CheckIfLocationCleared();
 	gameLevel->camera.Reset();
-	pc->data.rot_buf = 0.f;
+	pc->data.rotBuf = 0.f;
 	SetMusic();
 
 	if(closePortal)
@@ -1492,7 +1492,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	{
 		netMode = NM_SERVER_SEND;
 		netState = NetState::Server_Send;
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 		{
 			preparedStream.Reset();
 			BitStreamWriter f(preparedStream);
@@ -1522,10 +1522,10 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 	if(!gameLevel->isOpen)
 		return;
 
-	if(Net::IsLocal() && !net->was_client && !clear)
+	if(Net::IsLocal() && !net->wasClient && !clear)
 	{
-		if(questMgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-			questMgr->quest_tournament->Clean();
+		if(questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			questMgr->questTournament->Clean();
 		if(!arena->free)
 			arena->Clean();
 	}
@@ -1538,19 +1538,19 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 	Info("Leaving location.");
 
-	if(Net::IsLocal() && (questMgr->quest_crazies->check_stone
-		|| (questMgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && questMgr->quest_crazies->crazies_state < Quest_Crazies::State::End)))
-		questMgr->quest_crazies->CheckStone();
+	if(Net::IsLocal() && (questMgr->questCrazies->check_stone
+		|| (questMgr->questCrazies->crazies_state >= Quest_Crazies::State::PickedStone && questMgr->questCrazies->crazies_state < Quest_Crazies::State::End)))
+		questMgr->questCrazies->CheckStone();
 
 	// drinking contest
-	Quest_Contest* contest = questMgr->quest_contest;
+	Quest_Contest* contest = questMgr->questContest;
 	if(contest->state >= Quest_Contest::CONTEST_STARTING)
 		contest->Cleanup();
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && gameLevel->location == questMgr->quest_orcs2->targetLoc)
+	if(Net::IsLocal() && questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && gameLevel->location == questMgr->questOrcs2->targetLoc)
 	{
-		questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::End;
+		questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::End;
 		gameLevel->UpdateLocation(31, 100, false);
 	}
 
@@ -1680,7 +1680,7 @@ void Game::CutsceneImage(const string& image, float time)
 		c.str = StringPool.Get();
 		*c.str = image;
 		c.f[0] = time;
-		net->net_strs.push_back(c.str);
+		net->netStrs.push_back(c.str);
 	}
 }
 
@@ -1697,7 +1697,7 @@ void Game::CutsceneText(const string& text, float time)
 		c.str = StringPool.Get();
 		*c.str = text;
 		c.f[0] = time;
-		net->net_strs.push_back(c.str);
+		net->netStrs.push_back(c.str);
 	}
 }
 
@@ -1756,7 +1756,7 @@ void Game::UpdateGame(float dt)
 				{
 					if(info.left == PlayerInfo::LEFT_NO)
 					{
-						assert(info.pc == info.pc->player_info->pc);
+						assert(info.pc == info.pc->playerInfo->pc);
 						if(info.id != 0)
 							assert(!info.pc->is_local);
 					}
@@ -1764,13 +1764,13 @@ void Game::UpdateGame(float dt)
 			}
 		}
 		else
-			assert(pc->is_local && pc == pc->player_info->pc);
+			assert(pc->is_local && pc == pc->playerInfo->pc);
 	}
 
 	gameLevel->minimapOpenedDoors = false;
 
-	if(questMgr->quest_tutorial->in_tutorial && !Net::IsOnline())
-		questMgr->quest_tutorial->Update();
+	if(questMgr->questTutorial->in_tutorial && !Net::IsOnline())
+		questMgr->questTutorial->Update();
 
 	portalAnim += dt;
 	if(portalAnim >= 1.f)
@@ -1778,7 +1778,7 @@ void Game::UpdateGame(float dt)
 	gameLevel->lightAngle = Clip(gameLevel->lightAngle + dt / 100);
 	gameLevel->localPart->lvlPart->scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
 
-	if(Net::IsLocal() && !questMgr->quest_tutorial->in_tutorial)
+	if(Net::IsLocal() && !questMgr->questTutorial->in_tutorial)
 	{
 		// arena
 		if(arena->mode != Arena::NONE)
@@ -1795,9 +1795,9 @@ void Game::UpdateGame(float dt)
 	if(CanShowEndScreen())
 	{
 		if(Net::IsLocal())
-			questMgr->unique_completed_show = true;
+			questMgr->uniqueCompletedShow = true;
 		else
-			questMgr->unique_completed_show = false;
+			questMgr->uniqueCompletedShow = false;
 
 		cstring text;
 
@@ -1964,7 +1964,7 @@ void Game::UpdateGame(float dt)
 	// update dialogs
 	if(Net::IsSingleplayer())
 	{
-		if(dialogContext.dialog_mode)
+		if(dialogContext.dialogMode)
 			dialogContext.Update(dt);
 	}
 	else if(Net::IsServer())
@@ -1973,8 +1973,8 @@ void Game::UpdateGame(float dt)
 		{
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
-			DialogContext& dialogCtx = *info.u->player->dialog_ctx;
-			if(dialogCtx.dialog_mode)
+			DialogContext& dialogCtx = *info.u->player->dialogCtx;
+			if(dialogCtx.dialogMode)
 			{
 				if(!dialogCtx.talker->IsStanding() || !dialogCtx.talker->IsIdle() || dialogCtx.talker->to_remove || dialogCtx.talker->frozen != FROZEN::NO)
 					dialogCtx.EndDialog();
@@ -1985,7 +1985,7 @@ void Game::UpdateGame(float dt)
 	}
 	else
 	{
-		if(dialogContext.dialog_mode)
+		if(dialogContext.dialogMode)
 			dialogContext.UpdateClient();
 	}
 
@@ -2020,7 +2020,7 @@ void Game::UpdateFallback(float dt)
 						pc->Train(true, fallbackValue2);
 						break;
 					case 2:
-						questMgr->quest_tournament->Train(*pc);
+						questMgr->questTournament->Train(*pc);
 						break;
 					case 3:
 						pc->AddPerk(Perk::Get(fallbackValue2), -1);
@@ -2140,7 +2140,7 @@ void Game::UpdateCamera(float dt)
 	// rotate camera up/down
 	if(team->IsAnyoneAlive())
 	{
-		if(dialogContext.dialog_mode || gameGui->inventory->mode > I_INVENTORY || gameGui->craft->visible)
+		if(dialogContext.dialogMode || gameGui->inventory->mode > I_INVENTORY || gameGui->craft->visible)
 		{
 			// in dialog/trade look at target
 			camera.RotateTo(dt, 4.2875104f);
@@ -2413,11 +2413,11 @@ void Game::ChangeLevel(int where)
 	gameLevel->eventHandler = nullptr;
 	gameLevel->UpdateDungeonMinimap(false);
 
-	if(!questMgr->quest_tutorial->in_tutorial && questMgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
-		&& questMgr->quest_crazies->crazies_state < Quest_Crazies::State::End)
-		questMgr->quest_crazies->CheckStone();
+	if(!questMgr->questTutorial->in_tutorial && questMgr->questCrazies->crazies_state >= Quest_Crazies::State::PickedStone
+		&& questMgr->questCrazies->crazies_state < Quest_Crazies::State::End)
+		questMgr->questCrazies->CheckStone();
 
-	if(Net::IsOnline() && net->active_players > 1)
+	if(Net::IsOnline() && net->activePlayers > 1)
 	{
 		int level = gameLevel->dungeonLevel;
 		if(where == -1)
@@ -2435,9 +2435,9 @@ void Game::ChangeLevel(int where)
 		// upper leve
 		if(gameLevel->dungeonLevel == 0)
 		{
-			if(questMgr->quest_tutorial->in_tutorial)
+			if(questMgr->questTutorial->in_tutorial)
 			{
-				questMgr->quest_tutorial->OnEvent(Quest_Tutorial::Exit);
+				questMgr->questTutorial->OnEvent(Quest_Tutorial::Exit);
 				fallbackType = FALLBACK::CLIENT;
 				fallbackTimer = 0.f;
 				return;
@@ -2511,7 +2511,7 @@ void Game::ChangeLevel(int where)
 
 	SetMusic();
 
-	if(Net::IsOnline() && net->active_players > 1)
+	if(Net::IsOnline() && net->activePlayers > 1)
 	{
 		netMode = NM_SERVER_SEND;
 		netState = NetState::Server_Send;
@@ -2609,8 +2609,8 @@ void Game::UpdateAttachedSounds(float dt)
 void Game::ClearGameVars(bool newGame)
 {
 	gameGui->inventory->mode = I_NONE;
-	dialogContext.dialog_mode = false;
-	dialogContext.is_local = true;
+	dialogContext.dialogMode = false;
+	dialogContext.isLocal = true;
 	deathScreen = 0;
 	endOfGame = false;
 	cutscene = false;
@@ -2665,7 +2665,7 @@ void Game::ClearGameVars(bool newGame)
 		gameLevel->isOpen = false;
 		gameGui->levelGui->PositionPanels();
 		gameGui->Clear(true, false);
-		if(!net->mp_quickload)
+		if(!net->mpQuickload)
 			gameGui->mpBox->visible = Net::IsOnline();
 		gameLevel->lightAngle = Random(PI * 2);
 		startVersion = VERSION;
@@ -2690,8 +2690,8 @@ void Game::ClearGame()
 	LeaveLocation(true, false);
 
 	// delete units on world map
-	if((gameState == GS_WORLDMAP || prevGameState == GS_WORLDMAP || (net->mp_load && prevGameState == GS_LOAD)) && !gameLevel->isOpen
-		&& Net::IsLocal() && !net->was_client)
+	if((gameState == GS_WORLDMAP || prevGameState == GS_WORLDMAP || (net->mpLoad && prevGameState == GS_LOAD)) && !gameLevel->isOpen
+		&& Net::IsLocal() && !net->wasClient)
 	{
 		for(Unit& unit : team->members)
 		{
@@ -2704,14 +2704,14 @@ void Game::ClearGame()
 		team->members.clear();
 		prevGameState = GS_LOAD;
 	}
-	if((gameState == GS_WORLDMAP || prevGameState == GS_WORLDMAP || prevGameState == GS_LOAD) && !gameLevel->isOpen && (Net::IsClient() || net->was_client))
+	if((gameState == GS_WORLDMAP || prevGameState == GS_WORLDMAP || prevGameState == GS_LOAD) && !gameLevel->isOpen && (Net::IsClient() || net->wasClient))
 	{
 		delete pc;
 		pc = nullptr;
 	}
 
-	if(!net->net_strs.empty())
-		StringPool.Free(net->net_strs);
+	if(!net->netStrs.empty())
+		StringPool.Free(net->netStrs);
 
 	gameLevel->isOpen = false;
 	gameLevel->cityCtx = nullptr;
@@ -2804,7 +2804,7 @@ void Game::LeaveLevel(bool clear)
 			delete locPart.lvlPart;
 			locPart.lvlPart = nullptr;
 		}
-		if(gameLevel->cityCtx && (Net::IsClient() || net->was_client))
+		if(gameLevel->cityCtx && (Net::IsClient() || net->wasClient))
 			DeleteElements(gameLevel->cityCtx->inside_buildings);
 		if(Net::IsClient() && !gameLevel->location->outside)
 		{
@@ -2825,10 +2825,10 @@ void Game::LeaveLevel(bool clear)
 	gameGui->CloseAllPanels();
 
 	gameLevel->camera.Reset();
-	PlayerController::data.rot_buf = 0.f;
-	dialogContext.dialog_mode = false;
+	PlayerController::data.rotBuf = 0.f;
+	dialogContext.dialogMode = false;
 	gameGui->inventory->mode = I_NONE;
-	PlayerController::data.before_player = BP_NONE;
+	PlayerController::data.beforePlayer = BP_NONE;
 	if(Net::IsClient())
 		gameLevel->isOpen = false;
 }
@@ -2836,7 +2836,7 @@ void Game::LeaveLevel(bool clear)
 void Game::LeaveLevel(LocationPart& locPart, bool clear)
 {
 	// cleanup units
-	if(Net::IsLocal() && !clear && !net->was_client)
+	if(Net::IsLocal() && !clear && !net->wasClient)
 	{
 		LoopAndRemove(locPart.units, [&](Unit* p_unit)
 		{
@@ -2906,7 +2906,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 
 							// reset units rotation to don't stay back to shop counter
 							if(IsSet(unit.data->flags, F_AI_GUARD) || IsSet(unit.data->flags2, F2_LIMITED_ROT))
-								unit.rot = unit.ai->start_rot;
+								unit.rot = unit.ai->startRot;
 						}
 
 						delete unit.meshInst;
@@ -2964,7 +2964,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 		locPart.units.clear();
 	}
 
-	if(Net::IsLocal() && !net->was_client)
+	if(Net::IsLocal() && !net->wasClient)
 	{
 		// remove chest meshes
 		for(Chest* chest : locPart.chests)
@@ -3088,7 +3088,7 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 			Unit::CREATE_MESH mode;
 			if(unit_mesh.second)
 				mode = Unit::CREATE_MESH::ON_WORLDMAP;
-			else if(net->mp_load && Net::IsClient())
+			else if(net->mpLoad && Net::IsClient())
 				mode = Unit::CREATE_MESH::AFTER_PRELOAD;
 			else
 				mode = Unit::CREATE_MESH::NORMAL;
@@ -3111,7 +3111,7 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 		gameLevel->CreateObjectsMeshInstance();
 
 		// finished
-		if((Net::IsLocal() || !net->mp_load_worldmap) && !gameLevel->location->outside)
+		if((Net::IsLocal() || !net->mpLoadWorldmap) && !gameLevel->location->outside)
 			SetDungeonParamsToMeshes();
 	}
 
@@ -3343,10 +3343,10 @@ void Game::DeleteUnit(Unit* unit)
 	{
 		RemoveElement(unit->locPart->units, unit);
 		gameGui->levelGui->RemoveUnitView(unit);
-		if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
-			pc->data.before_player = BP_NONE;
-		if(unit == pc->data.selected_unit)
-			pc->data.selected_unit = nullptr;
+		if(pc->data.beforePlayer == BP_UNIT && pc->data.beforePlayerPtr.unit == unit)
+			pc->data.beforePlayer = BP_NONE;
+		if(unit == pc->data.selectedUnit)
+			pc->data.selectedUnit = nullptr;
 		if(Net::IsClient())
 		{
 			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
@@ -3385,8 +3385,8 @@ void Game::DeleteUnit(Unit* unit)
 			}
 		}
 
-		if(questMgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
-			RemoveElementTry(questMgr->quest_contest->units, unit);
+		if(questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING)
+			RemoveElementTry(questMgr->questContest->units, unit);
 		if(!arena->free)
 		{
 			RemoveElementTry(arena->units, unit);
@@ -3431,10 +3431,10 @@ void Game::RemoveUnit(Unit* unit)
 	unit->BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
 	RemoveElement(unit->locPart->units, unit);
 	gameGui->levelGui->RemoveUnitView(unit);
-	if(pc->data.before_player == BP_UNIT && pc->data.before_player_ptr.unit == unit)
-		pc->data.before_player = BP_NONE;
-	if(unit == pc->data.selected_unit)
-		pc->data.selected_unit = nullptr;
+	if(pc->data.beforePlayer == BP_UNIT && pc->data.beforePlayerPtr.unit == unit)
+		pc->data.beforePlayer = BP_NONE;
+	if(unit == pc->data.selectedUnit)
+		pc->data.selectedUnit = nullptr;
 	if(Net::IsClient())
 	{
 		if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
@@ -3450,8 +3450,8 @@ void Game::RemoveUnit(Unit* unit)
 		}
 	}
 
-	if(questMgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
-		RemoveElementTry(questMgr->quest_contest->units, unit);
+	if(questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING)
+		RemoveElementTry(questMgr->questContest->units, unit);
 	if(!arena->free)
 	{
 		RemoveElementTry(arena->units, unit);
@@ -3578,9 +3578,9 @@ void Game::CloseInventory()
 bool Game::CanShowEndScreen()
 {
 	if(Net::IsLocal())
-		return !questMgr->unique_completed_show && questMgr->unique_quests_completed == questMgr->unique_quests && gameLevel->cityCtx && !dialogContext.dialog_mode && pc->unit->IsStanding();
+		return !questMgr->uniqueCompletedShow && questMgr->uniqueQuestsCompleted == questMgr->uniqueQuests && gameLevel->cityCtx && !dialogContext.dialogMode && pc->unit->IsStanding();
 	else
-		return questMgr->unique_completed_show && gameLevel->cityCtx && !dialogContext.dialog_mode && pc->unit->IsStanding();
+		return questMgr->uniqueCompletedShow && gameLevel->cityCtx && !dialogContext.dialogMode && pc->unit->IsStanding();
 }
 
 void Game::UpdateGameNet(float dt)
@@ -3597,14 +3597,14 @@ void Game::UpdateGameNet(float dt)
 DialogContext* Game::FindDialogContext(Unit* talker)
 {
 	assert(talker);
-	if(dialogContext.dialog_mode && dialogContext.talker == talker)
+	if(dialogContext.dialogMode && dialogContext.talker == talker)
 		return &dialogContext;
 	if(Net::IsOnline())
 	{
 		for(PlayerInfo& info : net->players)
 		{
-			DialogContext* ctx = info.pc->dialog_ctx;
-			if(ctx->dialog_mode && ctx->talker == talker)
+			DialogContext* ctx = info.pc->dialogCtx;
+			if(ctx->dialogMode && ctx->talker == talker)
 				return ctx;
 		}
 	}
@@ -3617,11 +3617,11 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && questMgr->quest_orcs2->targetLoc == gameLevel->location
-		&& questMgr->quest_orcs2->talked == Quest_Orcs2::Talked::No)
+	if(questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && questMgr->questOrcs2->targetLoc == gameLevel->location
+		&& questMgr->questOrcs2->talked == Quest_Orcs2::Talked::No)
 	{
-		questMgr->quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
-		talker = questMgr->quest_orcs2->orc;
+		questMgr->questOrcs2->talked = Quest_Orcs2::Talked::AboutCamp;
+		talker = questMgr->questOrcs2->orc;
 		text = txOrcCamp;
 	}
 
@@ -3685,76 +3685,76 @@ void Game::OnEnterLevel()
 	cstring text = nullptr;
 
 	// cleric talking after entering location
-	Quest_Evil* quest_evil = questMgr->quest_evil;
-	if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss)
+	Quest_Evil* questEvil = questMgr->questEvil;
+	if(questEvil->evil_state == Quest_Evil::State::ClosingPortals || questEvil->evil_state == Quest_Evil::State::KillBoss)
 	{
-		if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals)
+		if(questEvil->evil_state == Quest_Evil::State::ClosingPortals)
 		{
-			int d = quest_evil->GetLocId(gameLevel->location);
+			int d = questEvil->GetLocId(gameLevel->location);
 			if(d != -1)
 			{
-				Quest_Evil::Loc& loc = quest_evil->loc[d];
+				Quest_Evil::Loc& loc = questEvil->loc[d];
 
 				if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel())
 				{
 					if(loc.state < Quest_Evil::Loc::TalkedAfterEnterLevel)
 					{
-						talker = quest_evil->cleric;
+						talker = questEvil->cleric;
 						text = txPortalCloseLevel;
 						loc.state = Quest_Evil::Loc::TalkedAfterEnterLevel;
 					}
 				}
 				else if(gameLevel->dungeonLevel == 0 && loc.state == Quest_Evil::Loc::None)
 				{
-					talker = quest_evil->cleric;
+					talker = questEvil->cleric;
 					text = txPortalClose;
 					loc.state = Quest_Evil::Loc::TalkedAfterEnterLocation;
 				}
 			}
 		}
-		else if(gameLevel->location == quest_evil->targetLoc && !quest_evil->told_about_boss)
+		else if(gameLevel->location == questEvil->targetLoc && !questEvil->told_about_boss)
 		{
-			quest_evil->told_about_boss = true;
-			talker = quest_evil->cleric;
+			questEvil->told_about_boss = true;
+			talker = questEvil->cleric;
 			text = txXarDanger;
 		}
 	}
 
 	// orc talking after entering level
-	Quest_Orcs2* quest_orcs2 = questMgr->quest_orcs2;
-	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && gameLevel->location == quest_orcs2->targetLoc)
+	Quest_Orcs2* questOrcs2 = questMgr->questOrcs2;
+	if(!talker && (questOrcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || questOrcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && gameLevel->location == questOrcs2->targetLoc)
 	{
 		if(gameLevel->dungeonLevel == 0)
 		{
-			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBase)
+			if(questOrcs2->talked < Quest_Orcs2::Talked::AboutBase)
 			{
-				quest_orcs2->talked = Quest_Orcs2::Talked::AboutBase;
-				talker = quest_orcs2->orc;
+				questOrcs2->talked = Quest_Orcs2::Talked::AboutBase;
+				talker = questOrcs2->orc;
 				text = txGorushDanger;
 			}
 		}
 		else if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel())
 		{
-			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBoss)
+			if(questOrcs2->talked < Quest_Orcs2::Talked::AboutBoss)
 			{
-				quest_orcs2->talked = Quest_Orcs2::Talked::AboutBoss;
-				talker = quest_orcs2->orc;
+				questOrcs2->talked = Quest_Orcs2::Talked::AboutBoss;
+				talker = questOrcs2->orc;
 				text = txGorushCombat;
 			}
 		}
 	}
 
 	// old mage talking after entering location
-	Quest_Mages2* quest_mages2 = questMgr->quest_mages2;
-	if(!talker && (quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined || quest_mages2->mages_state == Quest_Mages2::State::MageRecruited))
+	Quest_Mages2* questMages2 = questMgr->questMages2;
+	if(!talker && (questMages2->mages_state == Quest_Mages2::State::OldMageJoined || questMages2->mages_state == Quest_Mages2::State::MageRecruited))
 	{
-		if(quest_mages2->targetLoc == gameLevel->location)
+		if(questMages2->targetLoc == gameLevel->location)
 		{
-			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
+			if(questMages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{
-				if(gameLevel->dungeonLevel == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
+				if(gameLevel->dungeonLevel == 0 && questMages2->talked == Quest_Mages2::Talked::No)
 				{
-					quest_mages2->talked = Quest_Mages2::Talked::AboutHisTower;
+					questMages2->talked = Quest_Mages2::Talked::AboutHisTower;
 					text = txMageHere;
 				}
 			}
@@ -3762,15 +3762,15 @@ void Game::OnEnterLevel()
 			{
 				if(gameLevel->dungeonLevel == 0)
 				{
-					if(quest_mages2->talked < Quest_Mages2::Talked::AfterEnter)
+					if(questMages2->talked < Quest_Mages2::Talked::AfterEnter)
 					{
-						quest_mages2->talked = Quest_Mages2::Talked::AfterEnter;
-						text = Format(txMageEnter, quest_mages2->evil_mage_name.c_str());
+						questMages2->talked = Quest_Mages2::Talked::AfterEnter;
+						text = Format(txMageEnter, questMages2->evil_mage_name.c_str());
 					}
 				}
-				else if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
+				else if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel() && questMages2->talked < Quest_Mages2::Talked::BeforeBoss)
 				{
-					quest_mages2->talked = Quest_Mages2::Talked::BeforeBoss;
+					questMages2->talked = Quest_Mages2::Talked::BeforeBoss;
 					text = txMageFinal;
 				}
 			}
@@ -3857,7 +3857,7 @@ void Game::OnEnterLevelOrLocation()
 {
 	gameGui->Clear(false, true);
 	pc->data.autowalk = false;
-	pc->data.selected_unit = pc->unit;
+	pc->data.selectedUnit = pc->unit;
 	fallbackTimer = -0.5f;
 	fallbackType = FALLBACK::NONE;
 	if(Net::IsLocal())

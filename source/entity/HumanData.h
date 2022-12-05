@@ -10,21 +10,21 @@ static const float MAX_HEIGHT = 1.1f;
 
 //-----------------------------------------------------------------------------
 // Settings for beard & mustache combination
-extern bool g_beard_and_mustache[MAX_BEARD - 1];
+extern bool gBeardAndMustache[MAX_BEARD - 1];
 
 //-----------------------------------------------------------------------------
 // Allowed normal hair colors
-extern const Vec4 g_hair_colors[];
-extern const uint n_hair_colors;
+extern const Vec4 gHairColors[];
+extern const uint nHairColors;
 
 //-----------------------------------------------------------------------------
 // Human data
 struct Human
 {
 	int hair, beard, mustache;
-	Vec4 hair_color;
+	Vec4 hairColor;
 	float height; // 0.9...1.1
-	vector<Matrix> mat_scale;
+	vector<Matrix> matScale;
 
 	Vec2 GetScale();
 	void ApplyScale(MeshInstance* meshInst);
@@ -54,9 +54,9 @@ struct HumanData
 		F_HEIGHT = 1 << 4
 	};
 
-	HairColorType hair_type;
+	HairColorType hairType;
 	int hair, beard, mustache, defaultFlags;
-	Vec4 hair_color;
+	Vec4 hairColor;
 	float height;
 
 	void Get(const Human& h);

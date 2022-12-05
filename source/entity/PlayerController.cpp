@@ -63,8 +63,8 @@ PlayerAction InventoryModeToActionRequired(InventoryMode imode)
 //=================================================================================================
 PlayerController::~PlayerController()
 {
-	if(dialog_ctx && !dialog_ctx->is_local)
-		delete dialog_ctx;
+	if(dialogCtx && !dialogCtx->isLocal)
+		delete dialogCtx;
 }
 
 //=================================================================================================
@@ -81,11 +81,11 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 	last_dmg_poison = last_dmg = dmgc = poison_dmgc = 0.f;
 	idle_timer = Random(1.f, 2.f);
 	credit = 0;
-	on_credit = false;
+	onCredit = false;
 	action = PlayerAction::None;
 	free_days = 0;
 	recalculate_level = false;
-	split_gold = 0.f;
+	splitGold = 0.f;
 
 	if(cc)
 	{
@@ -112,20 +112,20 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 				unit->stats->skill[i] += Skill::TAG_BONUS;
 			skill[i].points = 0;
 			skill[i].train = 0;
-			skill[i].train_part = 0;
+			skill[i].trainPart = 0;
 			skill[i].apt = unit->stats->skill[i] / 5;
 		}
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			attrib[i].points = 0;
 			attrib[i].train = 0;
-			attrib[i].train_part = 0;
+			attrib[i].trainPart = 0;
 			attrib[i].apt = (unit->stats->attrib[i] - 50) / 5;
 		}
 
 		// apply perks
 		PerkContext ctx(this, true);
-		perks = cc->taken_perks;
+		perks = cc->takenPerks;
 		for(TakenPerk& tp : perks)
 			tp.Apply(ctx);
 
@@ -146,7 +146,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		RecalculateLevel();
 		unit->hp = unit->hpmax = unit->CalculateMaxHp();
 		SetRequiredPoints();
-		if(!questMgr->quest_tutorial->in_tutorial)
+		if(!questMgr->questTutorial->in_tutorial)
 			AddAbility(unit->GetClass()->ability);
 		InitShortcuts();
 
@@ -193,9 +193,9 @@ void PlayerController::Train(SkillId skill, float points)
 	assert(Net::IsLocal());
 	int s = (int)skill;
 	StatData& stat = this->skill[s];
-	points += stat.train_part;
+	points += stat.trainPart;
 	int int_points = (int)points;
-	stat.train_part = points - int_points;
+	stat.trainPart = points - int_points;
 	stat.points += int_points;
 
 	int gained = 0,
@@ -224,7 +224,7 @@ void PlayerController::Train(SkillId skill, float points)
 		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
 		if(!is_local)
 		{
-			NetChangePlayer& c2 = Add1(player_info->changes);
+			NetChangePlayer& c2 = Add1(playerInfo->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::SKILL;
 			c2.a = s;
@@ -239,9 +239,9 @@ void PlayerController::Train(AttributeId attrib, float points)
 	assert(Net::IsLocal());
 	int a = (int)attrib;
 	StatData& stat = this->attrib[a];
-	points += stat.train_part;
+	points += stat.trainPart;
 	int int_points = (int)points;
-	stat.train_part = points - int_points;
+	stat.trainPart = points - int_points;
 	stat.points += int_points;
 
 	int gained = 0,
@@ -270,7 +270,7 @@ void PlayerController::Train(AttributeId attrib, float points)
 		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
 		if(!is_local)
 		{
-			NetChangePlayer& c2 = Add1(player_info->changes);
+			NetChangePlayer& c2 = Add1(playerInfo->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::ATTRIBUTE;
 			c2.a = a;
@@ -340,7 +340,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 
 		if(!is_local)
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
+			NetChangePlayer& c = Add1(playerInfo->changes);
 			c.type = NetChangePlayer::ON_REST;
 			c.count = days;
 		}
@@ -377,14 +377,14 @@ void PlayerController::Save(GameWriter& f)
 		f << stat.points;
 		f << stat.train;
 		f << stat.apt;
-		f << stat.train_part;
+		f << stat.trainPart;
 	}
 	for(StatData& stat : skill)
 	{
 		f << stat.points;
 		f << stat.train;
 		f << stat.apt;
-		f << stat.train_part;
+		f << stat.trainPart;
 	}
 	f << action_key;
 	NextAction saved_next_action = next_action;
@@ -445,7 +445,7 @@ void PlayerController::Save(GameWriter& f)
 	{
 		f << mr.recipe->hash;
 	}
-	f << split_gold;
+	f << splitGold;
 	f << always_run;
 	f << exp;
 	f << exp_level;
@@ -483,7 +483,7 @@ void PlayerController::Load(GameReader& f)
 		f >> stat.points;
 		f >> stat.train;
 		f >> stat.apt;
-		f >> stat.train_part;
+		f >> stat.trainPart;
 		if(LOAD_VERSION < V_0_14)
 			f.Skip<bool>(); // old blocked
 	}
@@ -492,7 +492,7 @@ void PlayerController::Load(GameReader& f)
 		f >> stat.points;
 		f >> stat.train;
 		f >> stat.apt;
-		f >> stat.train_part;
+		f >> stat.trainPart;
 	}
 	SetRequiredPoints();
 	f >> action_key;
@@ -618,7 +618,7 @@ void PlayerController::Load(GameReader& f)
 		}
 	}
 
-	f >> split_gold;
+	f >> splitGold;
 	f >> always_run;
 	f >> exp;
 	f >> exp_level;
@@ -755,8 +755,8 @@ void PlayerController::RecalculateLevel()
 		if(Net::IsLocal() && gameLevel->ready)
 		{
 			team->CalculatePlayersLevel();
-			if(player_info && !IsLocal())
-				player_info->update_flags |= PlayerInfo::UF_LEVEL;
+			if(playerInfo && !IsLocal())
+				playerInfo->updateFlags |= PlayerInfo::UF_LEVEL;
 		}
 	}
 }
@@ -1077,7 +1077,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 
 		if(!IsLocal())
 		{
-			NetChangePlayer& c2 = Add1(player_info->changes);
+			NetChangePlayer& c2 = Add1(playerInfo->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
 			c2.a = id;
@@ -1338,7 +1338,7 @@ bool PlayerController::AddAbility(Ability* ability)
 	{
 		if(!IsLocal())
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
+			NetChangePlayer& c = Add1(playerInfo->changes);
 			c.type = NetChangePlayer::ADD_ABILITY;
 			c.ability = ability;
 		}
@@ -1362,8 +1362,8 @@ bool PlayerController::RemoveAbility(Ability* ability)
 				if(IsLocal())
 				{
 					gameGui->ability->Refresh();
-					if(data.ability_ready == ability)
-						data.ability_ready = nullptr;
+					if(data.abilityReady == ability)
+						data.abilityReady = nullptr;
 					int index = 0;
 					for(Shortcut& shortcut : shortcuts)
 					{
@@ -1382,7 +1382,7 @@ bool PlayerController::RemoveAbility(Ability* ability)
 				}
 				else
 				{
-					NetChangePlayer& c = Add1(player_info->changes);
+					NetChangePlayer& c = Add1(playerInfo->changes);
 					c.type = NetChangePlayer::REMOVE_ABILITY;
 					c.ability = ability;
 				}
@@ -1421,7 +1421,7 @@ const PlayerAbility* PlayerController::GetAbility(Ability* ability) const
 PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability, bool prepare) const
 {
 	assert(ability);
-	if(questMgr->quest_tutorial->in_tutorial)
+	if(questMgr->questTutorial->in_tutorial)
 		return CanUseAbilityResult::No;
 
 	const PlayerAbility* ab = GetAbility(ability);
@@ -1490,7 +1490,7 @@ bool PlayerController::CanUseAbilityPreview(Ability* ability) const
 //=================================================================================================
 bool PlayerController::CanUseAbilityCheck() const
 {
-	CanUseAbilityResult result = CanUseAbility(data.ability_ready, true);
+	CanUseAbilityResult result = CanUseAbility(data.abilityReady, true);
 	int check; // 1 ok, 0 wait, -1 cancel
 	switch(result)
 	{
@@ -1516,7 +1516,7 @@ bool PlayerController::CanUseAbilityCheck() const
 
 	if(check == -1)
 	{
-		data.ability_ready = nullptr;
+		data.abilityReady = nullptr;
 		soundMgr->PlaySound2d(gameRes->sCancel);
 	}
 
@@ -1592,12 +1592,12 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* ques
 {
 	assert(talker);
 
-	DialogContext& ctx = *dialog_ctx;
-	assert(!ctx.dialog_mode);
+	DialogContext& ctx = *dialogCtx;
+	assert(!ctx.dialogMode);
 
 	if(!is_local)
 	{
-		NetChangePlayer& c = Add1(player_info->changes);
+		NetChangePlayer& c = Add1(playerInfo->changes);
 		c.type = NetChangePlayer::START_DIALOG;
 		c.id = talker->id;
 	}
@@ -1638,7 +1638,7 @@ bool PlayerController::AddPerk(Perk* perk, int value)
 	tp.Apply(ctx);
 	if(Net::IsServer() && !IsLocal())
 	{
-		NetChangePlayer& c = Add1(player_info->changes);
+		NetChangePlayer& c = Add1(playerInfo->changes);
 		c.type = NetChangePlayer::ADD_PERK;
 		c.id = perk->hash;
 		c.count = value;
@@ -1661,7 +1661,7 @@ bool PlayerController::RemovePerk(Perk* perk, int value)
 			tp_copy.Remove(ctx);
 			if(Net::IsServer() && !IsLocal())
 			{
-				NetChangePlayer& c = Add1(player_info->changes);
+				NetChangePlayer& c = Add1(playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_PERK;
 				c.id = perk->hash;
 				c.count = value;
@@ -1678,7 +1678,7 @@ void PlayerController::AddLearningPoint(int count)
 	learning_points += count;
 	gameGui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
 	if(!is_local)
-		player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
+		playerInfo->updateFlags |= PlayerInfo::UF_LEARNING_POINTS;
 }
 
 //=================================================================================================
@@ -1858,8 +1858,8 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 			if(dist < best_dist && gameLevel->CanSee(*unit->locPart, unit->pos, pos, type == BP_DOOR, ptr))
 			{
 				best_dist = dist;
-				data.before_player_ptr.any = ptr;
-				data.before_player = type;
+				data.beforePlayerPtr.any = ptr;
+				data.beforePlayer = type;
 			}
 		}
 	}
@@ -1901,7 +1901,7 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	if(Net::IsLocal())
 	{
 		u.UseUsable(&use);
-		data.before_player = BP_NONE;
+		data.beforePlayer = BP_NONE;
 
 		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
@@ -1935,13 +1935,13 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::USE_USABLE;
-		c.id = data.before_player_ptr.usable->id;
+		c.id = data.beforePlayerPtr.usable->id;
 		c.count = USE_USABLE_START;
 
 		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			action = PlayerAction::LootContainer;
-			action_usable = data.before_player_ptr.usable;
+			action_usable = data.beforePlayerPtr.usable;
 			chest_trade = &action_usable->container->items;
 		}
 
@@ -1981,8 +1981,8 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 		if(is_local)
 		{
-			unit->target_pos = data.ability_point;
-			unit->act.cast.target = data.ability_target;
+			unit->target_pos = data.abilityPoint;
+			unit->act.cast.target = data.abilityTarget;
 		}
 		else if(Net::IsServer())
 		{
@@ -2000,8 +2000,8 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->timer = ability->cast_time;
 		if(is_local)
 		{
-			unit->target_pos = data.ability_point;
-			unit->act.cast.target = data.ability_target;
+			unit->target_pos = data.abilityPoint;
+			unit->act.cast.target = data.abilityTarget;
 		}
 		else if(Net::IsServer())
 		{
@@ -2014,8 +2014,8 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		float speed = -1.f;
 		if(from_server)
 			speed = pos->x;
-		action_key = data.wasted_key;
-		data.wasted_key = Key::None;
+		action_key = data.wastedKey;
+		data.wastedKey = Key::None;
 		unit->DoRangedAttack(true, false, speed);
 		unit->act.shoot.ability = ability;
 	}
@@ -2030,7 +2030,7 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		unit->action = A_DASH;
 		unit->act.dash.ability = ability;
 		if(Net::IsLocal() || !from_server)
-			unit->act.dash.rot = Clip(data.ability_rot + unit->rot + PI);
+			unit->act.dash.rot = Clip(data.abilityRot + unit->rot + PI);
 		unit->animation = ANI_RUN;
 		unit->current_animation = ANI_RUN;
 		unit->meshInst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -2067,26 +2067,26 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			c.type = NetChange::PLAYER_ABILITY;
 			c.unit = unit;
 			c.ability = ability;
-			c.extra_f = unit->meshInst->groups[1].speed;
+			c.extraFloat = unit->meshInst->groups[1].speed;
 		}
 		else if(!from_server)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PLAYER_ABILITY;
-			c.unit = data.ability_target;
-			c.pos = data.ability_point;
+			c.unit = data.abilityTarget;
+			c.pos = data.abilityPoint;
 			c.ability = ability;
 		}
 	}
 
 	if(is_local)
-		data.ability_ready = nullptr;
+		data.abilityReady = nullptr;
 }
 
 //=================================================================================================
 bool PlayerController::IsAbilityPrepared() const
 {
-	if(data.ability_ready)
+	if(data.abilityReady)
 		return true;
 	if(unit->action == A_SHOOT)
 		return unit->act.shoot.ability != nullptr;
@@ -2110,7 +2110,7 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 			messenger->Post(Msg::LearnRecipe);
 		else
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
+			NetChangePlayer& c = Add1(playerInfo->changes);
 			c.type = NetChangePlayer::ADD_RECIPE;
 			c.recipe = recipe;
 		}
@@ -2142,11 +2142,11 @@ void PlayerController::Update(float dt)
 	else
 		data.grayout = min(data.grayout + dt, 1.f);
 
-	if(data.wasted_key != Key::None && input->Up(data.wasted_key))
-		data.wasted_key = Key::None;
+	if(data.wastedKey != Key::None && input->Up(data.wastedKey))
+		data.wastedKey = Key::None;
 
 	Unit* look_target = unit->look_target;
-	if(game->dialogContext.dialog_mode || look_target || gameGui->inventory->mode > I_INVENTORY)
+	if(game->dialogContext.dialogMode || look_target || gameGui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
 		if(look_target)
@@ -2172,7 +2172,7 @@ void PlayerController::Update(float dt)
 			pos = action_usable->pos;
 			unit->animation = ANI_STAND;
 		}
-		else if(game->dialogContext.dialog_mode)
+		else if(game->dialogContext.dialogMode)
 		{
 			pos = game->dialogContext.talker->pos;
 			unit->animation = ANI_STAND;
@@ -2204,7 +2204,7 @@ void PlayerController::Update(float dt)
 				}
 			}
 		}
-		else if(game->dialogContext.dialog_mode && Net::IsLocal())
+		else if(game->dialogContext.dialogMode && Net::IsLocal())
 		{
 			if(!game->dialogContext.talker->IsStanding() || !game->dialogContext.talker->IsIdle() || game->dialogContext.talker->to_remove
 				|| game->dialogContext.talker->frozen != FROZEN::NO)
@@ -2214,10 +2214,10 @@ void PlayerController::Update(float dt)
 			}
 		}
 
-		data.before_player = BP_NONE;
-		data.rot_buf = 0.f;
+		data.beforePlayer = BP_NONE;
+		data.rotBuf = 0.f;
 		data.autowalk = false;
-		data.ability_ready = nullptr;
+		data.abilityReady = nullptr;
 	}
 	else if(!IsBlocking(unit->action) && !unit->HaveEffect(EffectId::Stun))
 	{
@@ -2236,10 +2236,10 @@ void PlayerController::Update(float dt)
 	}
 	else
 	{
-		data.before_player = BP_NONE;
-		data.rot_buf = 0.f;
+		data.beforePlayer = BP_NONE;
+		data.rotBuf = 0.f;
 		data.autowalk = false;
-		data.ability_ready = nullptr;
+		data.abilityReady = nullptr;
 	}
 
 	UpdateCooldown(dt);
@@ -2273,8 +2273,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(!u.IsStanding())
 	{
 		data.autowalk = false;
-		data.ability_ready = nullptr;
-		data.rot_buf = 0.f;
+		data.abilityReady = nullptr;
+		data.rotBuf = 0.f;
 		if(Net::IsLocal())
 			u.TryStandup(dt);
 		return;
@@ -2284,8 +2284,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(u.frozen >= FROZEN::YES)
 	{
 		data.autowalk = false;
-		data.ability_ready = nullptr;
-		data.rot_buf = 0.f;
+		data.abilityReady = nullptr;
+		data.rotBuf = 0.f;
 		if(u.frozen == FROZEN::YES)
 			u.animation = ANI_STAND;
 		return;
@@ -2303,8 +2303,8 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE) || GKey.KeyPressedReleaseAllowed(GK_USE))
 				u.StopUsingUsable();
 		}
-		data.rot_buf = 0.f;
-		data.ability_ready = nullptr;
+		data.rotBuf = 0.f;
+		data.abilityReady = nullptr;
 	}
 
 	u.prev_pos = u.pos;
@@ -2384,20 +2384,20 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((GKey.allowInput == GameKeys::ALLOW_INPUT || GKey.allowInput == GameKeys::ALLOW_MOUSE) && !gameLevel->camera.free_rot && allow_rot)
+		if((GKey.allowInput == GameKeys::ALLOW_INPUT || GKey.allowInput == GameKeys::ALLOW_MOUSE) && !gameLevel->camera.freeRot && allow_rot)
 		{
 			int div = (u.action == A_SHOOT ? 800 : 400);
-			data.rot_buf *= (1.f - dt * 2);
-			data.rot_buf += float(input->GetMouseDif().x) * game->settings.GetMouseSensitivity() / div;
-			if(data.rot_buf > 0.1f)
-				data.rot_buf = 0.1f;
-			else if(data.rot_buf < -0.1f)
-				data.rot_buf = -0.1f;
+			data.rotBuf *= (1.f - dt * 2);
+			data.rotBuf += float(input->GetMouseDif().x) * game->settings.GetMouseSensitivity() / div;
+			if(data.rotBuf > 0.1f)
+				data.rotBuf = 0.1f;
+			else if(data.rotBuf < -0.1f)
+				data.rotBuf = -0.1f;
 		}
 		else
-			data.rot_buf = 0.f;
+			data.rotBuf = 0.f;
 
-		const bool rotating = (rotate != 0 || data.rot_buf != 0.f);
+		const bool rotating = (rotate != 0 || data.rotBuf != 0.f);
 		if(move != 0 && !u.CanMove())
 			move = 0;
 
@@ -2411,10 +2411,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(rotating)
 			{
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = Clamp(data.rot_buf, -rot_speed_dt, rot_speed_dt);
+				const float mouse_rot = Clamp(data.rotBuf, -rot_speed_dt, rot_speed_dt);
 				const float val = rot_speed_dt * rotate + mouse_rot;
 
-				data.rot_buf -= mouse_rot;
+				data.rotBuf -= mouse_rot;
 				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
@@ -2570,7 +2570,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						bool ignore_team = !team->HaveOtherActiveTeamMember();
 						int i_index = u.FindItem([=](const ItemSlot& slot)
 						{
-							return slot.item == item && (slot.team_count == 0u || ignore_team);
+							return slot.item == item && (slot.teamCount == 0u || ignore_team);
 						});
 						if(i_index != Unit::INVALID_IINDEX)
 						{
@@ -2738,7 +2738,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		return;
 
 	// check what is in front of player
-	data.before_player = BP_NONE;
+	data.beforePlayer = BP_NONE;
 	float best_dist = 3.0f;
 
 	// doors in front of player
@@ -2748,7 +2748,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
 	}
 
-	if(!data.ability_ready && u.action != A_CAST)
+	if(!data.abilityReady && u.action != A_CAST)
 	{
 		// units in front of player
 		for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
@@ -2783,13 +2783,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// use something in front of player
-	if(u.frozen == FROZEN::NO && data.before_player != BP_NONE
+	if(u.frozen == FROZEN::NO && data.beforePlayer != BP_NONE
 		&& (GKey.KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
 		idle = false;
-		if(data.before_player == BP_UNIT)
+		if(data.beforePlayer == BP_UNIT)
 		{
-			Unit* u2 = data.before_player_ptr.unit;
+			Unit* u2 = data.beforePlayerPtr.unit;
 
 			// there is unit in front of player
 			if(u2->live_state == Unit::DEAD || u2->live_state == Unit::FALL)
@@ -2850,7 +2850,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 						// start dialog
 						game->dialogContext.StartDialog(u2);
-						data.before_player = BP_NONE;
+						data.beforePlayer = BP_NONE;
 					}
 				}
 				else
@@ -2866,7 +2866,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 			}
 		}
-		else if(data.before_player == BP_CHEST)
+		else if(data.beforePlayer == BP_CHEST)
 		{
 			if(u.action != A_NONE)
 			{
@@ -2874,25 +2874,25 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			else if(Net::IsLocal())
 			{
 				// start looting chest
-				gameGui->inventory->StartTrade2(I_LOOT_CHEST, data.before_player_ptr.chest);
-				data.before_player_ptr.chest->OpenClose(unit);
+				gameGui->inventory->StartTrade2(I_LOOT_CHEST, data.beforePlayerPtr.chest);
+				data.beforePlayerPtr.chest->OpenClose(unit);
 			}
 			else
 			{
 				// send message to server about looting chest
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
-				c.id = data.before_player_ptr.chest->id;
+				c.id = data.beforePlayerPtr.chest->id;
 				action = PlayerAction::LootChest;
-				action_chest = data.before_player_ptr.chest;
+				action_chest = data.beforePlayerPtr.chest;
 				chest_trade = &action_chest->items;
 				u.action = A_PREPARE;
 			}
 		}
-		else if(data.before_player == BP_DOOR)
+		else if(data.beforePlayer == BP_DOOR)
 		{
 			// opening/closing door
-			Door* door = data.before_player_ptr.door;
+			Door* door = data.beforePlayerPtr.door;
 			if(door->state == Door::Closed)
 			{
 				// open door
@@ -2932,10 +2932,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			else
 				door->Close();
 		}
-		else if(data.before_player == BP_ITEM)
+		else if(data.beforePlayer == BP_ITEM)
 		{
 			// pickup item
-			GroundItem* groundItem = data.before_player_ptr.item;
+			GroundItem* groundItem = data.beforePlayerPtr.item;
 			if(u.action == A_NONE)
 			{
 				bool up_anim = (groundItem->pos.y > u.pos.y + 0.5f);
@@ -2946,7 +2946,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 				if(Net::IsLocal())
 				{
-					u.AddItem2(groundItem->item, groundItem->count, groundItem->team_count, false);
+					u.AddItem2(groundItem->item, groundItem->count, groundItem->teamCount, false);
 
 					if(groundItem->item->type == IT_GOLD)
 						soundMgr->PlaySound2d(gameRes->sCoins);
@@ -2981,7 +2981,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 		}
 		else if(u.action == A_NONE)
-			UseUsable(data.before_player_ptr.usable, false);
+			UseUsable(data.beforePlayerPtr.usable, false);
 	}
 
 	// attack
@@ -3019,7 +3019,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
-						data.wasted_key = action_key;
+						data.wastedKey = action_key;
 
 						if(Net::IsOnline())
 						{
@@ -3031,7 +3031,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 					}
 				}
-				else if(u.animation_state == AS_ATTACK_FINISHED && !data.ability_ready)
+				else if(u.animation_state == AS_ATTACK_FINISHED && !data.abilityReady)
 				{
 					Key k = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
 					if(k == Key::None)
@@ -3084,7 +3084,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.meshInst->groups[1].IsBlending() && u.HaveShield() && !data.ability_ready)
+				else if(!u.meshInst->groups[1].IsBlending() && u.HaveShield() && !data.abilityReady)
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
@@ -3112,13 +3112,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK) && !data.ability_ready)
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK) && !data.abilityReady)
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wastedKey);
 				bool secondary = false;
 				if(k == Key::None)
 				{
-					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wasted_key);
+					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wastedKey);
 					secondary = true;
 				}
 				if(k != Key::None)
@@ -3189,10 +3189,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 
 			// no action or non-heavy attack
-			if(u.frozen == FROZEN::NO && u.HaveShield() && !data.ability_ready && (u.action == A_NONE
+			if(u.frozen == FROZEN::NO && u.HaveShield() && !data.abilityReady && (u.action == A_NONE
 				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wastedKey);
 				if(k != Key::None)
 				{
 					// start blocking
@@ -3236,7 +3236,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					{
 						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
-						data.wasted_key = action_key;
+						data.wastedKey = action_key;
 						gameLevel->FreeBowInstance(u.bow_instance);
 						if(Net::IsOnline())
 						{
@@ -3249,11 +3249,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.frozen == FROZEN::NO && !data.ability_ready)
+			else if(u.frozen == FROZEN::NO && !data.abilityReady)
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wastedKey);
 				if(k == Key::None)
-					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wasted_key);
+					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wastedKey);
 				if(k != Key::None)
 				{
 					action_key = k;
@@ -3264,7 +3264,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// ability
-	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.ability_ready != shortcut.ability)
+	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.abilityReady != shortcut.ability)
 	{
 		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability, true);
 		if(Any(result,
@@ -3272,10 +3272,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			PlayerController::CanUseAbilityResult::TakeWand,
 			PlayerController::CanUseAbilityResult::TakeBow))
 		{
-			data.ability_ready = shortcut.ability;
-			data.ability_ok = false;
-			data.ability_rot = 0.f;
-			data.ability_target = nullptr;
+			data.abilityReady = shortcut.ability;
+			data.abilityOk = false;
+			data.abilityRot = 0.f;
+			data.abilityTarget = nullptr;
 			if(result == PlayerController::CanUseAbilityResult::TakeWand)
 				unit->TakeWeapon(W_ONE_HANDED);
 			else if(result == PlayerController::CanUseAbilityResult::TakeBow)
@@ -3290,9 +3290,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			soundMgr->PlaySound2d(gameRes->sCancel);
 		}
 	}
-	else if(data.ability_ready)
+	else if(data.abilityReady)
 	{
-		Ability& ability = *data.ability_ready;
+		Ability& ability = *data.abilityReady;
 		if(ability.type == Ability::Charge && IsSet(ability.flags, Ability::PickDir))
 		{
 			// adjust action dir
@@ -3300,45 +3300,45 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			{
 			case 0: // none
 			case 10: // forward
-				data.ability_rot = 0.f;
+				data.abilityRot = 0.f;
 				break;
 			case -10: // backward
-				data.ability_rot = PI;
+				data.abilityRot = PI;
 				break;
 			case -1: // left
-				data.ability_rot = -PI / 2;
+				data.abilityRot = -PI / 2;
 				break;
 			case 1: // right
-				data.ability_rot = PI / 2;
+				data.abilityRot = PI / 2;
 				break;
 			case 9: // forward left
-				data.ability_rot = -PI / 4;
+				data.abilityRot = -PI / 4;
 				break;
 			case 11: // forward right
-				data.ability_rot = PI / 4;
+				data.abilityRot = PI / 4;
 				break;
 			case -11: // backward left
-				data.ability_rot = -PI * 3 / 4;
+				data.abilityRot = -PI * 3 / 4;
 				break;
 			case -9: // backward right
-				data.ability_rot = PI * 3 / 4;
+				data.abilityRot = PI * 3 / 4;
 				break;
 			}
 		}
 
-		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
-		if(data.wasted_key != Key::None)
+		data.wastedKey = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
+		if(data.wastedKey != Key::None)
 		{
-			if(data.ability_ok && CanUseAbility(data.ability_ready, false) == CanUseAbilityResult::Yes)
-				UseAbility(data.ability_ready, false);
+			if(data.abilityOk && CanUseAbility(data.abilityReady, false) == CanUseAbilityResult::Yes)
+				UseAbility(data.abilityReady, false);
 			else
-				data.wasted_key = Key::None;
+				data.wastedKey = Key::None;
 		}
 		else
 		{
-			data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
-			if(data.wasted_key != Key::None || GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
-				data.ability_ready = nullptr;
+			data.wastedKey = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
+			if(data.wastedKey != Key::None || GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
+				data.abilityReady = nullptr;
 		}
 	}
 
@@ -3420,9 +3420,9 @@ Vec3 PlayerController::RaytestTarget(float range)
 	Vec3 to = from + dir * range;
 	phyWorld->rayTest(ToVector3(from), ToVector3(to), clbk);
 	if(range < 10)
-		data.range_ratio = clbk.fraction * range / 10;
+		data.rangeRatio = clbk.fraction * range / 10;
 	else
-		data.range_ratio = clbk.fraction;
+		data.rangeRatio = clbk.fraction;
 	return from + dir * range * clbk.fraction;
 }
 
@@ -3432,7 +3432,7 @@ bool PlayerController::ShouldUseRaytest() const
 	if(action != PlayerAction::None)
 		return false;
 	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
-		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
+		|| (data.abilityReady && Any(data.abilityReady->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
 		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
 		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0

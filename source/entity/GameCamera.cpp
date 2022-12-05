@@ -25,7 +25,7 @@ const float DIST_DEF = 3.5f;
 const float DIST_MAX = 6.f;
 
 //=================================================================================================
-GameCamera::GameCamera() : springiness(SPRINGINESS_NORMAL), reset(true), free_rot(false)
+GameCamera::GameCamera() : springiness(SPRINGINESS_NORMAL), reset(true), freeRot(false)
 {
 }
 
@@ -34,38 +34,38 @@ void GameCamera::Reset(bool full)
 {
 	if(full)
 	{
-		real_rot = Vec2(0, 4.2875104f);
+		realRot = Vec2(0, 4.2875104f);
 		dist = DIST_DEF;
-		drunk_anim = 0.f;
+		drunkAnim = 0.f;
 	}
 	shift = 0.f;
 	h = 0.2f;
 	zoom = false;
 	reset = true;
-	free_rot = false;
-	from = real_from;
-	to = real_to;
-	tmp_dist = dist;
-	tmp_shift = shift;
+	freeRot = false;
+	from = realFrom;
+	to = realTo;
+	tmpDist = dist;
+	tmpShift = shift;
 	springiness = SPRINGINESS_NORMAL;
-	springiness_timer = 0.f;
+	springinessTimer = 0.f;
 }
 
 //=================================================================================================
 void GameCamera::Update(float dt)
 {
-	drunk_anim = Clip(drunk_anim + dt);
+	drunkAnim = Clip(drunkAnim + dt);
 
-	if(!zoom && springiness_timer > 0.f)
+	if(!zoom && springinessTimer > 0.f)
 	{
-		springiness_timer -= dt;
-		if(springiness_timer <= 0.f)
+		springinessTimer -= dt;
+		if(springinessTimer <= 0.f)
 		{
 			springiness += 5;
 			if(springiness >= SPRINGINESS_NORMAL)
 				springiness = SPRINGINESS_NORMAL;
 			else
-				springiness_timer = 0.5f;
+				springinessTimer = 0.5f;
 		}
 	}
 
@@ -73,23 +73,23 @@ void GameCamera::Update(float dt)
 		? 1.0f
 		: 1.0f - exp(log(0.5f) * springiness * dt);
 
-	if(!free_rot)
-		real_rot.x = target->rot;
+	if(!freeRot)
+		realRot.x = target->rot;
 
 	// update rotation, distance & shift
 	if(reset)
 	{
-		rot = real_rot;
-		tmp_dist = dist;
-		tmp_shift = shift;
-		tmp_h = h;
+		rot = realRot;
+		tmpDist = dist;
+		tmpShift = shift;
+		tmpH = h;
 	}
 	else
 	{
-		rot = Vec2::Slerp(rot, real_rot, d).Clip();
-		tmp_dist += (dist - tmp_dist) * d;
-		tmp_shift += (shift - tmp_shift) * d;
-		tmp_h += (h - tmp_h) * d;
+		rot = Vec2::Slerp(rot, realRot, d).Clip();
+		tmpDist += (dist - tmpDist) * d;
+		tmpShift += (shift - tmpShift) * d;
+		tmpH += (h - tmpH) * d;
 	}
 
 	// calculate new from & to, handle collisions
@@ -97,32 +97,32 @@ void GameCamera::Update(float dt)
 	const Vec3 backward_dir = Vec3::Transform(Vec3::UnitY, Matrix::Rotation(rot.y, rot.x + shift, 0));
 
 	Vec3 pos = target->pos;
-	pos.y += target->GetUnitHeight() + tmp_h;
+	pos.y += target->GetUnitHeight() + tmpH;
 
 	if(zoom)
-		real_to = zoom_pos;
+		realTo = zoomPos;
 	else
-		real_to = pos + forward_dir * 20;
+		realTo = pos + forward_dir * 20;
 
 	// camera goes from character head backwards (to => from)
-	float t = HandleCollisions(pos, -tmp_dist * backward_dir);
+	float t = HandleCollisions(pos, -tmpDist * backward_dir);
 
-	float real_dist = tmp_dist * t - 0.1f;
+	float real_dist = tmpDist * t - 0.1f;
 	if(real_dist < 0.01f)
 		real_dist = 0.01f;
-	real_from = pos + backward_dir * -real_dist;
+	realFrom = pos + backward_dir * -real_dist;
 
 	// update from & to
 	if(reset)
 	{
-		from = real_from;
-		to = real_to;
+		from = realFrom;
+		to = realTo;
 		reset = false;
 	}
 	else
 	{
-		from += (real_from - from) * d;
-		to += (real_to - to) * d;
+		from += (realFrom - from) * d;
+		to += (realTo - to) * d;
 	}
 
 	// calculate matrices, frustum
@@ -130,8 +130,8 @@ void GameCamera::Update(float dt)
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
 	Matrix mat_view = Matrix::CreateLookAt(from, to);
-	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim) * (PI / 16) * drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), znear, zfar);
+	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunkAnim) * (PI / 16) * drunk_mod,
+		engine->GetWindowAspect() * (1.f + sin(drunkAnim) / 10 * drunk_mod), znear, zfar);
 	matViewProj = mat_view * mat_proj;
 	matViewInv = mat_view.Inverse();
 	frustum.Set(matViewProj);
@@ -141,20 +141,20 @@ void GameCamera::Update(float dt)
 }
 
 //=================================================================================================
-void GameCamera::RotateTo(float dt, float dest_rot)
+void GameCamera::RotateTo(float dt, float destRot)
 {
-	free_rot = false;
-	if(real_rot.y > dest_rot)
+	freeRot = false;
+	if(realRot.y > destRot)
 	{
-		real_rot.y -= dt;
-		if(real_rot.y < dest_rot)
-			real_rot.y = dest_rot;
+		realRot.y -= dt;
+		if(realRot.y < destRot)
+			realRot.y = destRot;
 	}
-	else if(real_rot.y < dest_rot)
+	else if(realRot.y < destRot)
 	{
-		real_rot.y += dt;
-		if(real_rot.y > dest_rot)
-			real_rot.y = dest_rot;
+		realRot.y += dt;
+		if(realRot.y > destRot)
+			realRot.y = destRot;
 	}
 }
 
@@ -169,33 +169,33 @@ void GameCamera::UpdateFreeRot(float dt)
 	const float sensitivity = game->settings.GetMouseSensitivity();
 
 	int div = (target->action == A_SHOOT ? 800 : 400);
-	real_rot.y += -float(input->GetMouseDif().y) * sensitivity / div;
-	if(real_rot.y > c_cam_angle_max)
-		real_rot.y = c_cam_angle_max;
-	if(real_rot.y < c_cam_angle_min)
-		real_rot.y = c_cam_angle_min;
+	realRot.y += -float(input->GetMouseDif().y) * sensitivity / div;
+	if(realRot.y > c_cam_angle_max)
+		realRot.y = c_cam_angle_max;
+	if(realRot.y < c_cam_angle_min)
+		realRot.y = c_cam_angle_min;
 
 	if(!target->IsStanding())
 	{
-		real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * sensitivity / 400);
-		free_rot = true;
-		free_rot_key = Key::None;
+		realRot.x = Clip(realRot.x + float(input->GetMouseDif().x) * sensitivity / 400);
+		freeRot = true;
+		freeRotKey = Key::None;
 	}
-	else if(!free_rot)
+	else if(!freeRot)
 	{
-		free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
-		if(free_rot_key != Key::None)
+		freeRotKey = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
+		if(freeRotKey != Key::None)
 		{
-			real_rot.x = Clip(target->rot + PI);
-			free_rot = true;
+			realRot.x = Clip(target->rot + PI);
+			freeRot = true;
 		}
 	}
 	else
 	{
-		if(free_rot_key == Key::None || input->Up(free_rot_key))
-			free_rot = false;
+		if(freeRotKey == Key::None || input->Up(freeRotKey))
+			freeRot = false;
 		else
-			real_rot.x = Clip(real_rot.x + float(input->GetMouseDif().x) * sensitivity / 400);
+			realRot.x = Clip(realRot.x + float(input->GetMouseDif().x) * sensitivity / 400);
 	}
 }
 
@@ -211,13 +211,13 @@ void GameCamera::UpdateDistance()
 }
 
 //=================================================================================================
-void GameCamera::SetZoom(const Vec3* zoom_pos)
+void GameCamera::SetZoom(const Vec3* zoomPos)
 {
-	bool new_zoom = (zoom_pos != nullptr);
+	bool new_zoom = (zoomPos != nullptr);
 	if(zoom == new_zoom)
 	{
-		if(zoom_pos)
-			this->zoom_pos = *zoom_pos;
+		if(zoomPos)
+			this->zoomPos = *zoomPos;
 		return;
 	}
 	zoom = new_zoom;
@@ -225,17 +225,17 @@ void GameCamera::SetZoom(const Vec3* zoom_pos)
 	{
 		h = -0.15f;
 		shift = 0.483023137f;
-		prev_dist = dist;
+		prevDist = dist;
 		dist = 2.f;
 		springiness = SPRINGINESS_SLOW;
-		this->zoom_pos = *zoom_pos;
+		this->zoomPos = *zoomPos;
 	}
 	else
 	{
 		h = 0.2f;
 		shift = 0.f;
-		dist = prev_dist;
-		springiness_timer = 0.5f;
+		dist = prevDist;
+		springinessTimer = 0.5f;
 	}
 }
 
@@ -472,7 +472,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	// objects
 	for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 	{
-		if(!it->cam_collider)
+		if(!it->camCollider)
 			continue;
 
 		if(it->type == CollisionObject::SPHERE)

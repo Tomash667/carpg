@@ -46,7 +46,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// give parcel to player
 		{
 			OnStart(questMgr->txQuest[9]);
-			questMgr->quests_timeout2.push_back(this);
+			questMgr->questTimeouts2.push_back(this);
 
 			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("parcel")->CreateCopy(parcel);
@@ -65,13 +65,13 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->pos = (loc.pos + startLoc->pos) / 2;
 				e->range = 64;
 				e->chance = 45;
-				e->dont_attack = true;
+				e->dontAttack = true;
 				e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 				e->group = UnitGroup::Get("bandits");
 				e->text = questMgr->txQuest[11];
 				e->quest = this;
 				e->timed = true;
-				e->location_event_handler = nullptr;
+				e->locationEventHandler = nullptr;
 				e->st = 6;
 			}
 		}
@@ -86,7 +86,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			team->AddReward(300, 2000);
 
 			OnUpdate(questMgr->txQuest[12]);
-			RemoveElementTry(questMgr->quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(questMgr->questTimeouts2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
 		break;
@@ -97,7 +97,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
 
 			OnUpdate(questMgr->txQuest[13]);
-			RemoveElementTry(questMgr->quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(questMgr->questTimeouts2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
 		break;
@@ -113,7 +113,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 
 			OnUpdate(questMgr->txQuest[14]);
-			RemoveElementTry(questMgr->quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(questMgr->questTimeouts2, static_cast<Quest*>(this));
 		}
 		break;
 	case Progress::AttackedBandits:
@@ -167,7 +167,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 //=================================================================================================
 bool Quest_DeliverParcel::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time >= 15;
+	return world->GetWorldtime() - startTime >= 15;
 }
 
 //=================================================================================================
@@ -182,7 +182,7 @@ bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverParcel::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
-		return world->GetWorldtime() - start_time < 30 && Rand() % 2 == 0;
+		return world->GetWorldtime() - startTime < 30 && Rand() % 2 == 0;
 	assert(0);
 	return false;
 }
@@ -235,13 +235,13 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 		e->pos = (loc.pos + startLoc->pos) / 2;
 		e->range = 64;
 		e->chance = 45;
-		e->dont_attack = true;
+		e->dontAttack = true;
 		e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 		e->group = UnitGroup::Get("bandits");
 		e->text = questMgr->txQuest[11];
 		e->quest = this;
 		e->timed = true;
-		e->location_event_handler = nullptr;
+		e->locationEventHandler = nullptr;
 		e->st = 6;
 	}
 

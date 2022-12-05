@@ -511,7 +511,7 @@ void UnitLoader::InitTokenizer()
 		{ "hair", AK_HAIR },
 		{ "beard", AK_BEARD },
 		{ "mustache", AK_MUSTACHE },
-		{ "hair_color", AK_HAIR_COLOR },
+		{ "hairColor", AK_HAIR_COLOR },
 		{ "height", AK_HEIGHT }
 		});
 }
@@ -1124,7 +1124,7 @@ void UnitLoader::ParseUnit(const string& id)
 			{
 				Ptr<HumanData> human;
 				human->defaultFlags = 0;
-				human->hair_type = HumanData::HairColorType::Default;
+				human->hairType = HumanData::HairColorType::Default;
 				t.AssertSymbol('{');
 				t.Next();
 				while(!t.IsSymbol('}'))
@@ -1166,22 +1166,22 @@ void UnitLoader::ParseUnit(const string& id)
 					case AK_HAIR_COLOR:
 						if(t.IsItem("grayscale"))
 						{
-							human->hair_type = HumanData::HairColorType::Grayscale;
-							crc.Update(human->hair_type);
+							human->hairType = HumanData::HairColorType::Grayscale;
+							crc.Update(human->hairType);
 						}
 						else if(t.IsItem("random_color"))
 						{
-							human->hair_type = HumanData::HairColorType::Random;
-							crc.Update(human->hair_type);
+							human->hairType = HumanData::HairColorType::Random;
+							crc.Update(human->hairType);
 						}
 						else
 						{
 							uint val = t.MustGetUint();
-							human->hair_color = Color(val);
-							human->hair_color.w = 1.f;
-							human->hair_type = HumanData::HairColorType::Fixed;
-							crc.Update(human->hair_type);
-							crc.Update(human->hair_color);
+							human->hairColor = Color(val);
+							human->hairColor.w = 1.f;
+							human->hairType = HumanData::HairColorType::Fixed;
+							crc.Update(human->hairType);
+							crc.Update(human->hairColor);
 						}
 						human->defaultFlags |= HumanData::F_HAIR_COLOR;
 						break;

@@ -181,7 +181,7 @@ bool Electro::Update(float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::UPDATE_ELECTRO;
-					c.e_id = id;
+					c.extraId = id;
 					c.pos = to;
 				}
 			}

@@ -5,7 +5,7 @@ struct GroundItem : public EntityType<GroundItem>
 {
 	SceneNode* node;
 	const Item* item;
-	uint count, team_count;
+	uint count, teamCount;
 	Vec3 pos;
 	Quat rot;
 

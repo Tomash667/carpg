@@ -385,7 +385,7 @@ bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint co
 	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
 	player.Train(TrainWhat::Craft, value, 0);
 
-	NetChangePlayer& c = Add1(player.player_info->changes);
+	NetChangePlayer& c = Add1(player.playerInfo->changes);
 	c.type = NetChangePlayer::AFTER_CRAFT;
 
 	return true;

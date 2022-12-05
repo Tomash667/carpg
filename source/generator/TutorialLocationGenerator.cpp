@@ -129,7 +129,7 @@ char mapa_t3[] = {
 void TutorialLocationGenerator::OnEnter()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	Quest_Tutorial& quest = *questMgr->quest_tutorial;
+	Quest_Tutorial& quest = *questMgr->questTutorial;
 	Int2 start_tile;
 
 	lvl.w = lvl.h = 22;
@@ -236,7 +236,7 @@ void TutorialLocationGenerator::OnEnter()
 						{
 							Unit* u = gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
 							u->rot = PI;
-							u->ai->start_rot = PI;
+							u->ai->startRot = PI;
 							u->event_handler = &quest;
 						}
 						break;
@@ -258,7 +258,7 @@ void TutorialLocationGenerator::OnEnter()
 						{
 							Unit* u = gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
-							u->ai->start_rot = PI;
+							u->ai->startRot = PI;
 						}
 						break;
 					default:

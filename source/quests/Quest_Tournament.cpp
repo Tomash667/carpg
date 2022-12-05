@@ -108,7 +108,7 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 	{
 		winner = nullptr;
 		ctx.pc->unit->frozen = FROZEN::YES;
-		if(ctx.is_local)
+		if(ctx.isLocal)
 		{
 			// local fallback
 			game->fallbackType = FALLBACK::TRAIN;
@@ -119,7 +119,7 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 		else
 		{
 			// send info about training
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			NetChangePlayer& c = Add1(ctx.pc->playerInfo->changes);
 			c.type = NetChangePlayer::TRAIN;
 			c.id = 2;
 			c.count = 0;
@@ -234,7 +234,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 	{
 		if(IsSet(u.data->flags2, F2_TOURNAMENT))
 			return true;
-		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && questMgr->quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
+		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->mages_state >= Quest_Mages2::State::MageCured)
 		{
 			// go back to inn
 			if(!u.IsTeamMember())
@@ -525,7 +525,7 @@ void Quest_Tournament::Update(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(p.first->player->player_info->changes);
+								NetChangePlayer& c = Add1(p.first->player->playerInfo->changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 							}
 						}
@@ -543,7 +543,7 @@ void Quest_Tournament::Update(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(p.second->player->player_info->changes);
+								NetChangePlayer& c = Add1(p.second->player->playerInfo->changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 							}
 						}
@@ -648,7 +648,7 @@ void Quest_Tournament::Update(float dt)
 						float mhp = u.hpmax - u.hp;
 						uint given_items = 0;
 						if(mhp > 0.f && u.IsAI())
-							u.ai->have_potion = HavePotion::Yes;
+							u.ai->havePotion = HavePotion::Yes;
 						if(mhp >= p3_power)
 						{
 							int count = (int)floor(mhp / p3_power);
@@ -785,7 +785,7 @@ void Quest_Tournament::Talk(cstring text)
 		c.pos = pos;
 		c.str = StringPool.Get();
 		*c.str = text;
-		net->net_strs.push_back(c.str);
+		net->netStrs.push_back(c.str);
 	}
 }
 

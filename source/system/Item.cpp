@@ -319,12 +319,12 @@ void Item::CreateCopy(Item& item) const
 		break;
 	}
 
-	if(Net::IsServer() || net->mp_load)
+	if(Net::IsServer() || net->mpLoad)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REGISTER_ITEM;
 		c.item2 = &item;
-		c.base_item = this;
+		c.baseItem = this;
 	}
 }
 
@@ -384,7 +384,7 @@ void Item::Rename(cstring name)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::RENAME_ITEM;
-		c.base_item = this;
+		c.baseItem = this;
 	}
 }
 

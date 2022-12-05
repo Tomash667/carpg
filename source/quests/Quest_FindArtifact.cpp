@@ -19,7 +19,7 @@ void Quest_FindArtifact::GetConversionData(ConversionData& data)
 	data.Add("item", item);
 	data.Add("start_loc", startLoc);
 	data.Add("target_loc", targetLoc);
-	data.Add("start_time", start_time);
+	data.Add("start_time", startTime);
 	data.Add("st", st);
 	data.Add("done", done);
 }

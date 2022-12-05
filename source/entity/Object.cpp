@@ -84,7 +84,7 @@ void Object::Write(BitStreamWriter& f) const
 		f << 0;
 		f << mesh->filename;
 	}
-	if(meshInst && net->mp_load)
+	if(meshInst && net->mpLoad)
 		f << meshInst->groups[0].time;
 }
 
@@ -110,7 +110,7 @@ bool Object::Read(BitStreamReader& f)
 		base = nullptr;
 	}
 
-	if(mesh->IsAnimated() && net->mp_load)
+	if(mesh->IsAnimated() && net->mpLoad)
 		f >> time;
 	return true;
 }

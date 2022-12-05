@@ -130,8 +130,8 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(gameLevel->locationIndex == questMgr->quest_secret->where
-		&& questMgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveNextEntry())
+	else if(gameLevel->locationIndex == questMgr->questSecret->where
+		&& questMgr->questSecret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveNextEntry())
 	{
 		// secret
 		Room* room = Room::Get();
@@ -145,13 +145,13 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(gameLevel->location == questMgr->quest_evil->targetLoc && questMgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+	else if(gameLevel->location == questMgr->questEvil->targetLoc && questMgr->questEvil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
 
-	if(questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && gameLevel->location == questMgr->quest_orcs->targetLoc
+	if(questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::Accepted && gameLevel->location == questMgr->questOrcs->targetLoc
 		&& dungeon_level == gameLevel->location->GetLastLevel())
 	{
 		// search for room for cell

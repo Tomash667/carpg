@@ -94,9 +94,9 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location& other = *world->GetLocation(other_loc);
 			Encounter* e = world->AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits");
-			e->dont_attack = true;
+			e->dontAttack = true;
 			e->group = UnitGroup::Get("bandits");
-			e->location_event_handler = nullptr;
+			e->locationEventHandler = nullptr;
 			e->pos = (startLoc->pos + other.pos) / 2;
 			e->quest = this;
 			e->chance = 60;
@@ -117,9 +117,9 @@ void Quest_Bandits::SetProgress(int prog2)
 			other_loc = other->index;
 			Encounter* e = world->AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits");
-			e->dont_attack = true;
+			e->dontAttack = true;
 			e->group = UnitGroup::Get("bandits");
-			e->location_event_handler = nullptr;
+			e->locationEventHandler = nullptr;
 			e->pos = (startLoc->pos + other->pos) / 2;
 			e->quest = this;
 			e->chance = 60;
@@ -159,7 +159,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			targetLoc->active_quest = this;
 			OnUpdate(questMgr->txQuest[158]);
 			camp_loc = targetLoc->index;
-			location_event_handler = this;
+			locationEventHandler = this;
 			DialogContext::current->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
 			team->AddExp(5000);
 		}
@@ -185,7 +185,7 @@ void Quest_Bandits::SetProgress(int prog2)
 				if(unit->data == ud)
 				{
 					unit->assist = false;
-					unit->ai->change_ai_mode = true;
+					unit->ai->changeAiMode = true;
 				}
 			}
 
@@ -208,13 +208,13 @@ void Quest_Bandits::SetProgress(int prog2)
 			world->GetLocation(camp_loc)->active_quest = nullptr;
 			OnUpdate(Format(questMgr->txQuest[161], target.name.c_str(), GetLocationDirName(startLoc->pos, target.pos)));
 			done = false;
-			at_level = 1;
-			unit_to_spawn = UnitData::Get("q_bandyci_szef");
-			spawn_unit_room = RoomTarget::Throne;
-			unit_dont_attack = true;
-			location_event_handler = nullptr;
-			unit_event_handler = this;
-			unit_auto_talk = true;
+			atLevel = 1;
+			unitToSpawn = UnitData::Get("q_bandyci_szef");
+			unitSpawnRoom = RoomTarget::Throne;
+			unitDontAttack = true;
+			locationEventHandler = nullptr;
+			unitEventHandler = this;
+			unitAutoTalk = true;
 			callback = WarpToThroneBanditBoss;
 			team->AddExp(7500);
 		}
@@ -362,9 +362,9 @@ Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 	{
 		Encounter* e = world->RecreateEncounter(enc);
 		e->dialog = GameDialog::TryGet("q_bandits");
-		e->dont_attack = true;
+		e->dontAttack = true;
 		e->group = UnitGroup::Get("bandits");
-		e->location_event_handler = nullptr;
+		e->locationEventHandler = nullptr;
 		e->pos = (startLoc->pos + world->GetLocation(other_loc)->pos) / 2;
 		e->quest = this;
 		e->chance = 60;
@@ -375,19 +375,19 @@ Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 	}
 
 	if(prog == Progress::NeedTalkWithCaptain || prog == Progress::NeedClearCamp)
-		location_event_handler = this;
+		locationEventHandler = this;
 	else
-		location_event_handler = nullptr;
+		locationEventHandler = nullptr;
 
 	if(prog == Progress::TalkedWithAgent && !done)
 	{
-		unit_to_spawn = UnitData::Get("q_bandyci_szef");
-		spawn_unit_room = RoomTarget::Throne;
-		at_level = 1;
-		unit_dont_attack = true;
-		location_event_handler = nullptr;
-		unit_event_handler = this;
-		unit_auto_talk = true;
+		unitToSpawn = UnitData::Get("q_bandyci_szef");
+		unitSpawnRoom = RoomTarget::Throne;
+		atLevel = 1;
+		unitDontAttack = true;
+		locationEventHandler = nullptr;
+		unitEventHandler = this;
+		unitAutoTalk = true;
 		callback = WarpToThroneBanditBoss;
 	}
 

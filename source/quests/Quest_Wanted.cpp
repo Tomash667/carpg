@@ -49,7 +49,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			OnStart(questMgr->txQuest[257]);
-			questMgr->quests_timeout.push_back(this);
+			questMgr->questTimeouts.push_back(this);
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			targetLoc = world->GetRandomFreeSettlement(startLoc);
@@ -59,11 +59,11 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(!targetLoc->active_quest)
 			{
 				targetLoc->active_quest = this;
-				unit_to_spawn = crazy ? clas->crazy : clas->hero;
-				unit_dont_attack = true;
-				unit_event_handler = this;
-				send_spawn_event = true;
-				unit_spawn_level = level;
+				unitToSpawn = crazy ? clas->crazy : clas->hero;
+				unitDontAttack = true;
+				unitEventHandler = this;
+				sendSpawnEvent = true;
+				unitSpawnLevel = level;
 			}
 
 			// add letter
@@ -96,7 +96,7 @@ void Quest_Wanted::SetProgress(int prog2)
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
 			OnUpdate(Format(questMgr->txQuest[262], unit_name.c_str()));
-			RemoveElementTry<Quest_Dungeon*>(questMgr->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 		}
 		break;
 	case Progress::Finished:
@@ -141,7 +141,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 //=================================================================================================
 bool Quest_Wanted::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time >= 30;
+	return world->GetWorldtime() - startTime >= 30;
 }
 
 //=================================================================================================
@@ -151,7 +151,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 	{
 		if(state == Quest::Failed)
 			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-		if(!target_unit->hero->team_member)
+		if(!target_unit->hero->teamMember)
 		{
 			// not a team member, remove
 			ForLocation(in_location)->RemoveUnit(target_unit);
@@ -190,7 +190,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 		in_location = world->GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::DIE:
-		if(!unit->hero->team_member)
+		if(!unit->hero->teamMember)
 		{
 			SetProgress(Progress::Killed);
 			target_unit = nullptr;
@@ -248,11 +248,11 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 
 	if(!done)
 	{
-		unit_to_spawn = crazy ? clas->crazy : clas->hero;
-		unit_dont_attack = true;
-		unit_event_handler = this;
-		send_spawn_event = true;
-		unit_spawn_level = level;
+		unitToSpawn = crazy ? clas->crazy : clas->hero;
+		unitDontAttack = true;
+		unitEventHandler = this;
+		sendSpawnEvent = true;
+		unitSpawnLevel = level;
 	}
 
 	if(prog >= Progress::Started)

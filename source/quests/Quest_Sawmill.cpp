@@ -56,10 +56,10 @@ void Quest_Sawmill::SetProgress(int prog2)
 		{
 			OnStart(questMgr->txQuest[124]);
 
-			location_event_handler = this;
+			locationEventHandler = this;
 
 			targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
-			at_level = 0;
+			atLevel = 0;
 			targetLoc->active_quest = this;
 			targetLoc->SetKnown();
 			if(targetLoc->state >= LS_ENTERED)
@@ -158,7 +158,7 @@ Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	location_event_handler = this;
+	locationEventHandler = this;
 
 	f >> sawmill_state;
 	f >> build_state;
@@ -229,7 +229,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	{
 		// arthur
 		Unit* u = gameLevel->SpawnUnitNearLocation(outside, Vec3(128, 0, 128), ud, nullptr, -2);
-		u->hero->know_name = true;
+		u->hero->knowName = true;
 		u->ApplyHumanData(hd_lumberjack);
 
 		// spawn objects
@@ -257,7 +257,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		// arthur
 		Unit* u = gameLevel->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
 		u->rot = rot;
-		u->hero->know_name = true;
+		u->hero->knowName = true;
 		u->ApplyHumanData(hd_lumberjack);
 
 		// spawn objects

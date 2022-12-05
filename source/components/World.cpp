@@ -262,7 +262,7 @@ void World::UpdateLocations()
 //=================================================================================================
 void World::UpdateNews()
 {
-	DeleteElements(news, [this](News* news) { return worldtime - news->add_time > 30; });
+	DeleteElements(news, [this](News* news) { return worldtime - news->addTime > 30; });
 }
 
 //=================================================================================================
@@ -465,7 +465,7 @@ int World::AddLocation(Location* loc)
 			{
 				*rit = loc;
 				loc->index = index;
-				if(Net::IsOnline() && !net->prepare_world)
+				if(Net::IsOnline() && !net->prepareWorld)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_LOCATION;
@@ -479,7 +479,7 @@ int World::AddLocation(Location* loc)
 	}
 	else
 	{
-		if(Net::IsOnline() && !net->prepare_world)
+		if(Net::IsOnline() && !net->prepareWorld)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_LOCATION;
@@ -1201,7 +1201,7 @@ void World::Save(GameWriter& f)
 			else
 				f.Write0();
 			f << enc->st;
-			f << enc->dont_attack;
+			f << enc->dontAttack;
 			f << enc->timed;
 		}
 	}
@@ -1210,7 +1210,7 @@ void World::Save(GameWriter& f)
 	f << news.size();
 	for(News* n : news)
 	{
-		f << n->add_time;
+		f << n->addTime;
 		f.WriteString2(n->text);
 	}
 
@@ -1464,7 +1464,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				enc->text = enc->pooled_string->c_str();
 			}
 			f >> enc->st;
-			f >> enc->dont_attack;
+			f >> enc->dontAttack;
 			f >> enc->timed;
 		}
 		++index;
@@ -1505,7 +1505,7 @@ void World::LoadNews(GameReader& f)
 	for(News*& n : news)
 	{
 		n = new News;
-		f >> n->add_time;
+		f >> n->addTime;
 		f.ReadString2(n->text);
 	}
 }
@@ -2344,7 +2344,7 @@ void World::UpdateTravel(float dt)
 					continue;
 				if(Vec2::Distance(encounter->pos, worldPos) < encounter->range)
 				{
-					if(!encounter->check_func || encounter->check_func())
+					if(!encounter->checkFunc || encounter->checkFunc())
 					{
 						encounterChance += encounter->chance;
 						enc = index;
@@ -2805,7 +2805,7 @@ void World::AddNews(cstring text)
 
 	News* n = new News;
 	n->text = text;
-	n->add_time = worldtime;
+	n->addTime = worldtime;
 
 	news.push_back(n);
 }

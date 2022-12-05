@@ -66,7 +66,7 @@ int LOAD_VERSION;
 //=================================================================================================
 bool Game::CanSaveGame() const
 {
-	if(gameState == GS_MAIN_MENU || questMgr->quest_secret->state == Quest_Secret::SECRET_FIGHT)
+	if(gameState == GS_MAIN_MENU || questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
 		return false;
 
 	if(gameState == GS_WORLDMAP)
@@ -76,8 +76,8 @@ bool Game::CanSaveGame() const
 	}
 	else
 	{
-		if(questMgr->quest_tutorial->in_tutorial || arena->mode != Arena::NONE || questMgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
-			|| questMgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+		if(questMgr->questTutorial->in_tutorial || arena->mode != Arena::NONE || questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
+			|| questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 	}
 
@@ -201,7 +201,7 @@ void Game::CreateSaveImage()
 void Game::LoadGameSlot(int slot)
 {
 	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
-	bool online = (net->mp_load || Net::IsServer());
+	bool online = (net->mpLoad || Net::IsServer());
 	cstring filename = Format(online ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	LoadGameCommon(filename, slot);
 }
@@ -244,8 +244,8 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	Info("Loading save '%s'.", filename);
 
-	net->mp_quickload = (Net::IsOnline() && Any(gameState, GS_LEVEL, GS_WORLDMAP));
-	if(net->mp_quickload)
+	net->mpQuickload = (Net::IsOnline() && Any(gameState, GS_LEVEL, GS_WORLDMAP));
+	if(net->mpQuickload)
 	{
 		bool on_worldmap;
 		try
@@ -262,12 +262,12 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		f << on_worldmap;
 		net->SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 
-		net->mp_load = true;
+		net->mpLoad = true;
 		net->ClearChanges();
 	}
 
 	prevGameState = gameState;
-	if(net->mp_load && !net->mp_quickload)
+	if(net->mpLoad && !net->mpQuickload)
 		gameGui->multiplayer->visible = false;
 	else
 	{
@@ -318,7 +318,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	else if(slot != -1 && !Net::IsOnline())
 		SetLastSave(slot);
 
-	if(net->mp_quickload)
+	if(net->mpQuickload)
 	{
 		for(PlayerInfo& info : net->players)
 		{
@@ -332,7 +332,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		netState = NetState::Server_Starting;
 		gameGui->infoBox->Show("");
 	}
-	else if(!net->mp_load)
+	else if(!net->mpLoad)
 	{
 		if(gameState == GS_LEVEL)
 		{
@@ -421,7 +421,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << pc->unit->GetClass()->id;
 	if(Net::IsOnline())
 	{
-		f.WriteCasted<byte>(net->active_players - 1);
+		f.WriteCasted<byte>(net->activePlayers - 1);
 		for(PlayerInfo& info : net->players)
 		{
 			if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
@@ -485,9 +485,9 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << gameLevel->lightAngle;
 
 	// camera
-	f << gameLevel->camera.real_rot.y;
+	f << gameLevel->camera.realRot.y;
 	f << gameLevel->camera.dist;
-	f << gameLevel->camera.drunk_anim;
+	f << gameLevel->camera.drunkAnim;
 
 	// vars
 	f << devmode;
@@ -596,7 +596,7 @@ void Game::LoadGame(GameReader& f)
 	ClearGame();
 	ClearGameVars(false);
 	StopAllSounds();
-	questMgr->quest_tutorial->in_tutorial = false;
+	questMgr->questTutorial->in_tutorial = false;
 	arena->Reset();
 	pc->data.autowalk = false;
 	aiBowTargets.clear();
@@ -647,7 +647,7 @@ void Game::LoadGame(GameReader& f)
 	byte flags;
 	f >> flags;
 	bool online_save = IsSet(flags, SF_ONLINE);
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		if(!online_save)
 			throw SaveException(txLoadSP, "Save is from singleplayer mode.");
@@ -665,7 +665,7 @@ void Game::LoadGame(GameReader& f)
 	f.SkipString1(); // text
 	f.SkipString1(); // player name
 	f.SkipString1(); // player class
-	if(net->mp_load) // mp players
+	if(net->mpLoad) // mp players
 		f.SkipStringArray<byte, byte>();
 	f.Skip<time_t>(); // save_date
 	f.Skip<int>(); // game_year
@@ -739,12 +739,12 @@ void Game::LoadGame(GameReader& f)
 	Usable::ApplyRequests();
 
 	// camera
-	f >> gameLevel->camera.real_rot.y;
+	f >> gameLevel->camera.realRot.y;
 	f >> gameLevel->camera.dist;
 	if(LOAD_VERSION >= V_0_14)
-		f >> gameLevel->camera.drunk_anim;
+		f >> gameLevel->camera.drunkAnim;
 	gameLevel->camera.Reset();
-	pc->data.rot_buf = 0.f;
+	pc->data.rotBuf = 0.f;
 
 	// vars
 	f >> devmode;
@@ -765,17 +765,17 @@ void Game::LoadGame(GameReader& f)
 	Unit* player;
 	f >> player;
 	pc = player->player;
-	if(!net->mp_load)
+	if(!net->mpLoad)
 		pc->id = 0;
 	gameLevel->camera.target = pc->unit;
-	gameLevel->camera.real_rot.x = pc->unit->rot;
-	pc->dialog_ctx = &dialogContext;
-	dialogContext.dialog_mode = false;
-	dialogContext.is_local = true;
+	gameLevel->camera.realRot.x = pc->unit->rot;
+	pc->dialogCtx = &dialogContext;
+	dialogContext.dialogMode = false;
+	dialogContext.isLocal = true;
 	f >> gameLevel->dungeonLevel;
 	f >> portalAnim;
 	if(LOAD_VERSION < V_0_14)
-		f >> gameLevel->camera.drunk_anim;
+		f >> gameLevel->camera.drunkAnim;
 	ais.resize(f.Read<uint>());
 	for(AIController*& ai : ais)
 	{
@@ -902,18 +902,18 @@ void Game::LoadGame(GameReader& f)
 	questMgr->UpgradeQuests();
 	questMgr->ProcessQuestRequests();
 
-	dialogContext.dialog_mode = false;
+	dialogContext.dialogMode = false;
 	team->Clear(false);
 	fallbackType = FALLBACK::NONE;
 	fallbackTimer = -0.5f;
 	gameGui->inventory->mode = I_NONE;
 	gameGui->ability->Refresh();
-	pc->data.before_player = BP_NONE;
-	pc->data.selected_unit = pc->unit;
+	pc->data.beforePlayer = BP_NONE;
+	pc->data.selectedUnit = pc->unit;
 	dialogContext.pc = pc;
-	dialogContext.dialog_mode = false;
+	dialogContext.dialogMode = false;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		net->Load(f);
 
@@ -938,12 +938,12 @@ void Game::LoadGame(GameReader& f)
 		for(LocationPart& locPart : gameLevel->ForEachPart())
 			locPart.BuildScene();
 	}
-	if(!net->mp_quickload)
+	if(!net->mpQuickload)
 		gameGui->loadScreen->visible = false;
 
 	Info("Game loaded.");
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		gameState = GS_MAIN_MENU;
 		gameLevel->ready = false;
@@ -1000,7 +1000,7 @@ bool Game::TryLoadGame(int slot, bool quickload, bool fromConsole)
 				parent = gameGui->gameMenu;
 			gui->SimpleDialog(dialog_text, parent, "fatal");
 		}
-		net->mp_load = false;
+		net->mpLoad = false;
 		return false;
 	}
 }

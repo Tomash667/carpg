@@ -67,12 +67,12 @@ public:
 	int difficulty; // 1-3
 	int result; // winner index 0-player, 1-enemy (in pvp/tournament unit index)
 	float timer;
-	vector<Unit*> units, near_players, viewers;
-	vector<string> near_players_str;
-	Unit* fighter, *pvp_unit;
-	PlayerController* pvp_player;
-	PvpResponse pvp_response;
-	DialogBox* dialog_pvp;
+	vector<Unit*> units, nearPlayers, viewers;
+	vector<string> nearPlayersStr;
+	Unit* fighter, *pvpUnit;
+	PlayerController* pvpPlayer;
+	PvpResponse pvpResponse;
+	DialogBox* dialogPvp;
 	bool free;
 
 private:

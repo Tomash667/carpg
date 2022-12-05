@@ -14,7 +14,7 @@
 #include <Scene.h>
 
 //=================================================================================================
-LevelPart::LevelPart(LocationPart* locPart) : locPart(locPart), scene(new Scene), lights_dt(1.0f)
+LevelPart::LevelPart(LocationPart* locPart) : locPart(locPart), scene(new Scene), lightsDt(1.0f)
 {
 }
 

@@ -161,7 +161,7 @@ void TeamPanel::Draw()
 			gui->DrawSprite(tCrown, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		else if(unit.IsPlayer() && net->IsFastTravel())
 		{
-			TexturePtr image = unit.player->player_info->fast_travel ? tFastTravelOk : tFastTravelWait;
+			TexturePtr image = unit.player->playerInfo->fastTravel ? tFastTravelOk : tFastTravelWait;
 			gui->DrawSprite(image, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		}
 		if(!unit.IsAlive())
@@ -180,7 +180,7 @@ void TeamPanel::Draw()
 			if(Net::IsServer())
 			{
 				if(&unit != game->pc->unit)
-					s += Format(txPing, net->peer->GetAveragePing(unit.player->player_info->adr));
+					s += Format(txPing, net->peer->GetAveragePing(unit.player->playerInfo->adr));
 			}
 			else if(&unit == game->pc->unit)
 				s += Format(txPing, net->peer->GetAveragePing(net->server));
@@ -268,7 +268,7 @@ void TeamPanel::Update(float dt)
 				}
 				else if(unit.IsPlayer() && net->IsFastTravel())
 				{
-					group = unit.player->player_info->fast_travel ? G_READY : G_WAITING;
+					group = unit.player->playerInfo->fastTravel ? G_READY : G_WAITING;
 					break;
 				}
 			}
@@ -548,11 +548,11 @@ void TeamPanel::OnGiveGold(int id)
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(target->player->player_info->changes);
+				NetChangePlayer& c = Add1(target->player->playerInfo->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.id = game->pc->id;
 				c.count = counter;
-				target->player->player_info->UpdateGold();
+				target->player->playerInfo->UpdateGold();
 			}
 		}
 		else
@@ -575,7 +575,7 @@ void TeamPanel::OnKick(int id)
 	if(!target || !team->IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
-		net->KickPlayer(*target->player->player_info);
+		net->KickPlayer(*target->player->playerInfo);
 }
 
 //=================================================================================================

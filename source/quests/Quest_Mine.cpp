@@ -94,9 +94,9 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			OnStart(questMgr->txQuest[131]);
 
-			location_event_handler = this;
+			locationEventHandler = this;
 
-			at_level = 0;
+			atLevel = 0;
 			targetLoc->active_quest = this;
 			targetLoc->SetKnown();
 			if(targetLoc->state >= LS_ENTERED)
@@ -326,7 +326,7 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	else
 		persuaded = false;
 
-	location_event_handler = this;
+	locationEventHandler = this;
 	InitSub();
 
 	return LoadResult::Ok;
@@ -339,13 +339,13 @@ void Quest_Mine::InitSub()
 		return;
 
 	ItemList& lis = ItemList::Get("ancient_armory_armors");
-	lis.Get(3, sub.item_to_give);
-	sub.item_to_give[3] = Item::Get("al_angelskin");
-	sub.spawn_item = Quest_Event::Item_InChest;
+	lis.Get(3, sub.itemToGive);
+	sub.itemToGive[3] = Item::Get("al_angelskin");
+	sub.spawnItem = Quest_Event::Item_InChest;
 	sub.targetLoc = dungeon_loc == -2 ? nullptr : world->GetLocation(dungeon_loc);
-	sub.at_level = 0;
-	sub.chest_event_handler = this;
-	next_event = &sub;
+	sub.atLevel = 0;
+	sub.chestEventHandler = this;
+	nextEvent = &sub;
 }
 
 //=================================================================================================

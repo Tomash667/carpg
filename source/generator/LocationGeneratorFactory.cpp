@@ -76,7 +76,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 		loc_gen = encounter;
 		break;
 	case L_OUTSIDE:
-		if(gameLevel->locationIndex == questMgr->quest_secret->where2)
+		if(gameLevel->locationIndex == questMgr->questSecret->where2)
 		{
 			loc_gen = secret;
 			break;

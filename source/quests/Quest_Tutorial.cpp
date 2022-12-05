@@ -38,7 +38,7 @@ void Quest_Tutorial::Start()
 	in_tutorial = true;
 	state = 0;
 	texts.clear();
-	questMgr->quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
+	questMgr->questContest->state = Quest_Contest::CONTEST_NOT_DONE;
 	game->pc->data.autowalk = false;
 	game->pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 

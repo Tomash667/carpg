@@ -62,15 +62,15 @@ void LocationPart::Update(float dt)
 		units[i]->Update(dt);
 
 	// update flickering lights
-	lvlPart->lights_dt += dt;
-	if(lvlPart->lights_dt >= 1.f / 20)
+	lvlPart->lightsDt += dt;
+	if(lvlPart->lightsDt >= 1.f / 20)
 	{
 		for(GameLight& light : lights)
 		{
-			light.pos = light.start_pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
-			light.color = Vec4((light.start_color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
+			light.pos = light.startPos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
+			light.color = Vec4((light.startColor + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
 		}
-		lvlPart->lights_dt = 0;
+		lvlPart->lightsDt = 0;
 	}
 
 	// update chests
@@ -748,8 +748,8 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 		lvlPart->scene->Remove(groundItem->node);
 		groundItem->node->Free();
 
-		if(PlayerController::data.before_player == BP_ITEM && PlayerController::data.before_player_ptr.item == groundItem)
-			PlayerController::data.before_player = BP_NONE;
+		if(PlayerController::data.beforePlayer == BP_ITEM && PlayerController::data.beforePlayerPtr.item == groundItem)
+			PlayerController::data.beforePlayer = BP_NONE;
 
 		if(Net::IsServer())
 		{
@@ -968,7 +968,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
-			c.e_id = 1;
+			c.extraId = 1;
 			c.ability = &ability;
 			c.pos = pos;
 		}
@@ -1140,8 +1140,8 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{
-					if(questMgr->quest_tutorial->in_tutorial)
-						questMgr->quest_tutorial->HandleMeleeAttackCollision();
+					if(questMgr->questTutorial->in_tutorial)
+						questMgr->questTutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
 

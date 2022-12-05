@@ -25,7 +25,7 @@ void Quest::Save(GameWriter& f)
 	f << name;
 	f << prog;
 	f << id;
-	f << start_time;
+	f << startTime;
 	f << startLoc;
 	f << category;
 	f.WriteStringArray<byte, word>(msgs);
@@ -40,7 +40,7 @@ Quest::LoadResult Quest::Load(GameReader& f)
 	f >> name;
 	f >> prog;
 	f >> id;
-	f >> start_time;
+	f >> startTime;
 	f >> startLoc;
 	f >> category;
 	f.ReadStringArray<byte, word>(msgs);
@@ -52,13 +52,13 @@ Quest::LoadResult Quest::Load(GameReader& f)
 //=================================================================================================
 void Quest::OnStart(cstring name)
 {
-	start_time = world->GetWorldtime();
+	startTime = world->GetWorldtime();
 	state = Quest::Started;
 	this->name = name;
-	quest_index = questMgr->quests.size();
+	questIndex = questMgr->quests.size();
 	questMgr->quests.push_back(this);
-	RemoveElement<Quest*>(questMgr->unaccepted_quests, this);
-	gameGui->journal->NeedUpdate(Journal::Quests, quest_index);
+	RemoveElement<Quest*>(questMgr->unacceptedQuests, this);
+	gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
 	gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
@@ -74,7 +74,7 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 	assert(new_msgs.size() > 0u);
 	for(cstring msg : new_msgs)
 		msgs.push_back(msg);
-	gameGui->journal->NeedUpdate(Journal::Quests, quest_index);
+	gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
 	gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
@@ -92,7 +92,7 @@ void Quest_Dungeon::Save(GameWriter& f)
 
 	f << targetLoc;
 	f << done;
-	f << at_level;
+	f << atLevel;
 }
 
 //=================================================================================================
@@ -102,7 +102,7 @@ Quest::LoadResult Quest_Dungeon::Load(GameReader& f)
 
 	f >> targetLoc;
 	f >> done;
-	f >> at_level;
+	f >> atLevel;
 
 	return LoadResult::Ok;
 }
@@ -120,15 +120,15 @@ cstring Quest_Dungeon::GetTargetLocationDir() const
 }
 
 //=================================================================================================
-Quest_Event* Quest_Dungeon::GetEvent(Location* current_loc)
+Quest_Event* Quest_Dungeon::GetEvent(Location* currentLoc)
 {
 	Quest_Event* event = this;
 
 	while(event)
 	{
-		if(event->targetLoc == current_loc || !event->targetLoc)
+		if(event->targetLoc == currentLoc || !event->targetLoc)
 			return event;
-		event = event->next_event;
+		event = event->nextEvent;
 	}
 
 	return nullptr;

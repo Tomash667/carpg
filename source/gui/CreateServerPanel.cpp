@@ -158,7 +158,7 @@ void CreateServerPanel::Event(GuiEvent e)
 void CreateServerPanel::Show()
 {
 	textbox[0].SetText(net->serverName.c_str());
-	textbox[1].SetText(Format("%d", net->max_players));
+	textbox[1].SetText(Format("%d", net->maxPlayers));
 	textbox[2].SetText(net->password.c_str());
 	checkbox.checked = net->serverLan;
 	gui->ShowDialog(this);

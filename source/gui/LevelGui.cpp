@@ -216,7 +216,7 @@ void LevelGui::DrawFront()
 	if(pc.ShouldUseRaytest())
 	{
 		const Vec2 center(16, 16);
-		const Vec2 scale((1.f - pc.data.range_ratio) + 0.5f);
+		const Vec2 scale((1.f - pc.data.rangeRatio) + 0.5f);
 		const Vec2 pos(0.5f * gui->wndSize.x - 16.f, 0.5f * gui->wndSize.y - 16.f);
 		const Matrix mat = Matrix::Transform2D(&center, 0, &scale, nullptr, 0, &pos);
 		gui->DrawSprite2(pc.IsAbilityPrepared() ? tCrosshair2 : tCrosshair, mat);
@@ -258,8 +258,8 @@ void LevelGui::DrawFront()
 					AIController& ai = *u.ai;
 					UnitOrder order = u.GetOrder();
 					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level, u.usable ? 1 : 0,
-						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.st.idle.action]) : "",
-						ai.timer, ai.loc_timer, order_str[order]);
+						u.animation, u.action, strAiState[ai.state], ai.state == AIController::Idle ? Format("(%s)", strAiIdle[ai.st.idle.action]) : "",
+						ai.timer, ai.locTimer, order_str[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
 						str += Format(" %.2f", u.order->timer);
 					switch(order)
@@ -341,12 +341,12 @@ void LevelGui::DrawFront()
 	}
 
 	// text above selected object/units
-	switch(game->pc->data.before_player)
+	switch(game->pc->data.beforePlayer)
 	{
 	case BP_UNIT:
 		if(!debugInfo)
 		{
-			Unit* u = game->pc->data.before_player_ptr.unit;
+			Unit* u = game->pc->data.beforePlayerPtr.unit;
 			bool dont_draw = false;
 			for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 			{
@@ -363,21 +363,21 @@ void LevelGui::DrawFront()
 		break;
 	case BP_CHEST:
 		{
-			Vec3 text_pos = game->pc->data.before_player_ptr.chest->pos;
+			Vec3 text_pos = game->pc->data.beforePlayerPtr.chest->pos;
 			text_pos.y += 0.75f;
 			DrawObjectInfo(txChest, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			Vec3 text_pos = game->pc->data.before_player_ptr.door->pos;
+			Vec3 text_pos = game->pc->data.beforePlayerPtr.door->pos;
 			text_pos.y += 1.75f;
-			DrawObjectInfo(game->pc->data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
+			DrawObjectInfo(game->pc->data.beforePlayerPtr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
 		}
 		break;
 	case BP_ITEM:
 		{
-			GroundItem& item = *game->pc->data.before_player_ptr.item;
+			GroundItem& item = *game->pc->data.beforePlayerPtr.item;
 			Mesh* mesh;
 			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
@@ -395,7 +395,7 @@ void LevelGui::DrawFront()
 		break;
 	case BP_USABLE:
 		{
-			Usable& u = *game->pc->data.before_player_ptr.usable;
+			Usable& u = *game->pc->data.beforePlayerPtr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
 			DrawObjectInfo(u.base->name.c_str(), text_pos);
@@ -407,7 +407,7 @@ void LevelGui::DrawFront()
 	DrawSpeechBubbles();
 
 	// dialog box
-	if(game->dialogContext.dialog_mode)
+	if(game->dialogContext.dialogMode)
 	{
 		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
 		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
@@ -419,7 +419,7 @@ void LevelGui::DrawFront()
 			int off = int(scrollbar.offset);
 
 			// selection
-			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialogContext.choice_selected * GameGui::font->height - off + 6),
+			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialogContext.choiceSelected * GameGui::font->height - off + 6),
 				Int2(dsize.x - 16, GameGui::font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
@@ -444,8 +444,8 @@ void LevelGui::DrawFront()
 			// pasek przewijania
 			scrollbar.Draw();
 		}
-		else if(game->dialogContext.dialog_text)
-			gui->DrawText(GameGui::font, game->dialogContext.dialog_text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		else if(game->dialogContext.dialogText)
+			gui->DrawText(GameGui::font, game->dialogContext.dialogText, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 
 	// health bar
@@ -638,7 +638,7 @@ void LevelGui::DrawFront()
 				gui->DrawText(GameGui::fontSmall, Format("%d/%d", ab->charges, ability->charges), DTF_RIGHT | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 			// readied ability
-			if(game->pc->data.ability_ready == ability)
+			if(game->pc->data.abilityReady == ability)
 			{
 				pos = Vec2(spos);
 				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
@@ -969,7 +969,7 @@ void LevelGui::Update(float dt)
 
 	gameGui->messages->Update(dt);
 
-	if(!gui->HaveDialog() && !game->dialogContext.dialog_mode && input->Down(Key::Alt))
+	if(!gui->HaveDialog() && !game->dialogContext.dialogMode && input->Down(Key::Alt))
 		useCursor = true;
 	else
 		useCursor = false;
@@ -1137,8 +1137,8 @@ void LevelGui::Update(float dt)
 				else if(input->PressedRelease(Key::RightButton))
 				{
 					Shortcut& shortcut = game->pc->shortcuts[shortcut_index];
-					if(shortcut.type == Shortcut::TYPE_ABILITY && shortcut.ability == PlayerController::data.ability_ready)
-						PlayerController::data.ability_ready = nullptr;
+					if(shortcut.type == Shortcut::TYPE_ABILITY && shortcut.ability == PlayerController::data.abilityReady)
+						PlayerController::data.abilityReady = nullptr;
 					else
 					{
 						game->pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
@@ -1298,7 +1298,7 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 //=================================================================================================
 bool LevelGui::NeedCursor() const
 {
-	if(game->dialogContext.dialog_mode || useCursor)
+	if(game->dialogContext.dialogMode || useCursor)
 		return true;
 	return Container::NeedCursor();
 }
@@ -1417,24 +1417,24 @@ bool LevelGui::UpdateChoice()
 	{
 		dialogCursorPos = gui->cursorPos;
 		if(cursor_choice != -1)
-			ctx.choice_selected = cursor_choice;
+			ctx.choiceSelected = cursor_choice;
 	}
 
 	// strza³ka w górê/dó³
 	bool moved = false;
-	if(ctx.choice_selected != 0 && GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
+	if(ctx.choiceSelected != 0 && GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
 	{
-		--ctx.choice_selected;
+		--ctx.choiceSelected;
 		moved = true;
 	}
-	if(ctx.choice_selected != choices - 1 && GKey.KeyPressedReleaseAllowed(GK_MOVE_BACK))
+	if(ctx.choiceSelected != choices - 1 && GKey.KeyPressedReleaseAllowed(GK_MOVE_BACK))
 	{
-		++ctx.choice_selected;
+		++ctx.choiceSelected;
 		moved = true;
 	}
 	if(moved && choices > 5)
 	{
-		scrollbar.offset = float(GameGui::font->height * (ctx.choice_selected - 2));
+		scrollbar.offset = float(GameGui::font->height * (ctx.choiceSelected - 2));
 		if(scrollbar.offset < 0.f)
 			scrollbar.offset = 0.f;
 		else if(scrollbar.offset + scrollbar.part > scrollbar.total)
@@ -1448,7 +1448,7 @@ bool LevelGui::UpdateChoice()
 		{
 			if(input->PressedRelease(Key::N1 + i))
 			{
-				ctx.choice_selected = i;
+				ctx.choiceSelected = i;
 				return true;
 			}
 		}
@@ -1456,7 +1456,7 @@ bool LevelGui::UpdateChoice()
 		{
 			if(input->PressedRelease(Key::N0))
 			{
-				ctx.choice_selected = 9;
+				ctx.choiceSelected = 9;
 				return true;
 			}
 		}
@@ -1465,18 +1465,18 @@ bool LevelGui::UpdateChoice()
 	// wybieranie enterem/esc/spacj¹
 	if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
 		return true;
-	else if(ctx.dialog_esc != -1 && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
+	else if(ctx.dialogEsc != -1 && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
 	{
-		ctx.choice_selected = ctx.dialog_esc;
+		ctx.choiceSelected = ctx.dialogEsc;
 		return true;
 	}
 
 	// wybieranie klikniêciem
 	if(GKey.AllowMouse() && cursor_choice != -1 && input->PressedRelease(Key::LeftButton))
 	{
-		if(ctx.is_local)
-			game->pc->data.wasted_key = Key::LeftButton;
-		ctx.choice_selected = cursor_choice;
+		if(ctx.isLocal)
+			game->pc->data.wastedKey = Key::LeftButton;
+		ctx.choiceSelected = cursor_choice;
 		return true;
 	}
 
@@ -1914,9 +1914,9 @@ void LevelGui::UpdatePlayerView(float dt)
 	}
 
 	// extra units
-	if(game->pc->data.ability_ready && game->pc->data.ability_ok)
+	if(game->pc->data.abilityReady && game->pc->data.abilityOk)
 	{
-		if(Unit* target = game->pc->data.ability_target; target && target != &u)
+		if(Unit* target = game->pc->data.abilityTarget; target && target != &u)
 			AddUnitView(target);
 	}
 	if(u.action == A_CAST)

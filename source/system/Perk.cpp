@@ -214,7 +214,7 @@ void PerkContext::Mod(SkillId s, int value, bool mod)
 	if(cc)
 	{
 		cc->s[(int)s].Mod(value, mod);
-		cc->to_update.push_back(s);
+		cc->toUpdate.push_back(s);
 	}
 	else
 	{
@@ -230,7 +230,7 @@ void PerkContext::Mod(SkillId s, int value, bool mod)
 void PerkContext::AddPerk(Perk* perk)
 {
 	if(cc)
-		cc->taken_perks.push_back(TakenPerk(perk));
+		cc->takenPerks.push_back(TakenPerk(perk));
 	else
 		pc->AddPerk(perk, -1);
 }
@@ -240,11 +240,11 @@ void PerkContext::RemovePerk(Perk* perk)
 {
 	if(cc)
 	{
-		for(auto it = cc->taken_perks.begin(), end = cc->taken_perks.end(); it != end; ++it)
+		for(auto it = cc->takenPerks.begin(), end = cc->takenPerks.end(); it != end; ++it)
 		{
 			if(it->perk == perk)
 			{
-				cc->taken_perks.erase(it);
+				cc->takenPerks.erase(it);
 				return;
 			}
 		}
@@ -289,7 +289,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		// can take only one history perk
 		if(IsSet(perk->flags, Perk::History))
 		{
-			for(TakenPerk& tp : ctx.cc->taken_perks)
+			for(TakenPerk& tp : ctx.cc->takenPerks)
 			{
 				if(IsSet(tp.perk->flags, Perk::History))
 					return false;
@@ -297,7 +297,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		}
 
 		// can't take more then 2 flaws
-		if(IsSet(perk->flags, Perk::Flaw) && ctx.cc->perks_max >= 4)
+		if(IsSet(perk->flags, Perk::Flaw) && ctx.cc->perksMax >= 4)
 			return false;
 	}
 
@@ -400,8 +400,8 @@ void TakenPerk::Apply(PerkContext& ctx)
 			if(ctx.cc)
 			{
 				ctx.cc->sp += e.value;
-				ctx.cc->sp_max += e.value;
-				ctx.cc->update_skills = true;
+				ctx.cc->spMax += e.value;
+				ctx.cc->updateSkills = true;
 			}
 			break;
 		case Perk::Effect::GOLD:
@@ -415,7 +415,7 @@ void TakenPerk::Apply(PerkContext& ctx)
 	{
 		if(IsSet(perk->flags, Perk::Flaw))
 		{
-			ctx.cc->perks_max++;
+			ctx.cc->perksMax++;
 			ctx.cc->perks++;
 		}
 		else
@@ -453,8 +453,8 @@ void TakenPerk::Remove(PerkContext& ctx)
 			if(ctx.cc)
 			{
 				ctx.cc->sp -= e.value;
-				ctx.cc->sp_max -= e.value;
-				ctx.cc->update_skills = true;
+				ctx.cc->spMax -= e.value;
+				ctx.cc->updateSkills = true;
 			}
 			break;
 		}
@@ -466,7 +466,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 	{
 		if(IsSet(perk->flags, Perk::Flaw))
 		{
-			ctx.cc->perks_max--;
+			ctx.cc->perksMax--;
 			ctx.cc->perks--;
 		}
 		else

@@ -13,14 +13,14 @@ struct DialogChoice
 		Hero
 	};
 
-	int pos, quest_dialog_index;
-	cstring msg, talk_msg;
+	int pos, questDialogIndex;
+	cstring msg, talkMsg;
 	string* pooled; // used for dialog choices when message is formatted
 	Type type;
 
 	DialogChoice() {}
-	DialogChoice(int pos, cstring msg, int quest_dialog_index, string* pooled = nullptr) : pos(pos), msg(msg),
-		quest_dialog_index(quest_dialog_index), pooled(pooled), type(Normal), talk_msg(nullptr) {}
+	DialogChoice(int pos, cstring msg, int questDialogIndex, string* pooled = nullptr) : pos(pos), msg(msg),
+		questDialogIndex(questDialogIndex), pooled(pooled), type(Normal), talkMsg(nullptr) {}
 	explicit DialogChoice(string* pooled) : msg(pooled->c_str()), pooled(pooled), type(Normal) {}
 };
 
@@ -50,18 +50,18 @@ struct DialogContext
 	Mode mode;
 	PlayerController* pc;
 	Unit* talker; // postaæ z któr¹ siê rozmawia
-	bool dialog_mode; // czy jest tryb dialogowy
-	bool is_local;
-	int dialog_pos; // pozycja w dialogu
-	int choice_selected; // zaznaczona opcja dialogowa
-	int dialog_esc; // opcja dialogowa wybierana po wciœniêciu ESC
-	int skip_id; // u¿ywane w mp do pomijania dialogów
-	int team_share_id;
+	bool dialogMode; // czy jest tryb dialogowy
+	bool isLocal;
+	int dialogPos; // pozycja w dialogu
+	int choiceSelected; // zaznaczona opcja dialogowa
+	int dialogEsc; // opcja dialogowa wybierana po wciœniêciu ESC
+	int skipId; // u¿ywane w mp do pomijania dialogów
+	int teamShareId;
 	float timer;
-	const Item* team_share_item;
+	const Item* teamShareItem;
 	vector<DialogChoice> choices; // opcje dialogowe do wyboru
-	cstring dialog_text; // tekst dialogu
-	string dialog_s_text; // tekst dialogu zmiennego
+	cstring dialogText; // tekst dialogu
+	string dialogString; // tekst dialogu zmiennego
 	string predialog;
 	SpeechBubble* predialogBubble;
 
@@ -89,21 +89,21 @@ private:
 	cstring GetText(int index, bool multi = false);
 	bool ExecuteSpecial(cstring msg);
 	bool ExecuteSpecialIf(cstring msg);
-	cstring FormatString(const string& str_part);
+	cstring FormatString(const string& strPart);
 	void ClearChoices();
 	bool DoIfOp(int value1, int value2, DialogOp op);
 	bool LearnPerk(Perk* perk);
 	bool RecruitHero(Class* clas);
 
 	GameDialog* dialog; // aktualny dialog
-	Quest* dialog_quest; // quest zwi¹zany z dialogiem
-	cstring last_rumor;
-	cstring talk_msg;
+	Quest* dialogQuest; // quest zwi¹zany z dialogiem
+	cstring lastRumor;
+	cstring talkMsg;
 	vector<Entry> prev;
-	vector<QuestDialog> quest_dialogs;
-	vector<News*> active_news;
-	vector<pair<int, bool>> active_locations;
-	int update_locations, // 1-update, 0-updated, -1-no locations
-		quest_dialog_index;
-	bool once, update_news, force_end;
+	vector<QuestDialog> questDialogs;
+	vector<News*> activeNews;
+	vector<pair<int, bool>> activeLocations;
+	int updateLocations, // 1-update, 0-updated, -1-no locations
+		questDialogIndex;
+	bool once, updateNews, forceEnd;
 };

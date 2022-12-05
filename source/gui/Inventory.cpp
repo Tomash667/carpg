@@ -425,9 +425,9 @@ void InventoryPanel::Draw()
 			ItemSlot& slot = items->at(i_item);
 			item = slot.item;
 			count = slot.count;
-			if(slot.count == slot.team_count)
+			if(slot.count == slot.teamCount)
 				isTeam = 2;
-			else if(slot.team_count == 0)
+			else if(slot.teamCount == 0)
 				isTeam = 0;
 			else
 				isTeam = 1;
@@ -762,7 +762,7 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					if(unit->CanWear(item) && slot->team_count > 0 && team->GetActiveTeamSize() > 1)
+					if(unit->CanWear(item) && slot->teamCount > 0 && team->GetActiveTeamSize() > 1)
 					{
 						DialogInfo di;
 						di.event = delegate<void(int)>(this, &InventoryPanel::OnTakeItem);
@@ -995,13 +995,13 @@ void InventoryPanel::Update(float dt)
 				break;
 			case SHARE_MY:
 				// give item to companion to store
-				if(slot && slot->team_count > 0)
+				if(slot && slot->teamCount > 0)
 				{
 					uint count;
-					if(item->IsStackable() && slot->team_count != 1)
+					if(item->IsStackable() && slot->teamCount != 1)
 					{
 						if(input->Down(Key::Shift))
-							count = slot->team_count;
+							count = slot->teamCount;
 						else if(input->Down(Key::Control))
 							count = 1;
 						else
@@ -1009,7 +1009,7 @@ void InventoryPanel::Update(float dt)
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
 							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
-								base.txShareGiveItemCount, 1, slot->team_count, &counter);
+								base.txShareGiveItemCount, 1, slot->teamCount, &counter);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1034,13 +1034,13 @@ void InventoryPanel::Update(float dt)
 			case SHARE_OTHER:
 			case GIVE_OTHER:
 				// take item from companion
-				if(slot && slot->team_count > 0)
+				if(slot && slot->teamCount > 0)
 				{
 					uint count;
-					if(item->IsStackable() && slot->team_count != 1)
+					if(item->IsStackable() && slot->teamCount != 1)
 					{
 						if(input->Down(Key::Shift))
-							count = slot->team_count;
+							count = slot->teamCount;
 						else if(input->Down(Key::Control))
 							count = 1;
 						else
@@ -1048,7 +1048,7 @@ void InventoryPanel::Update(float dt)
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
 							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount,
-								1, slot->team_count, &counter);
+								1, slot->teamCount, &counter);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1085,7 +1085,7 @@ void InventoryPanel::Update(float dt)
 							{
 								DialogInfo info;
 								int price = item->value / 2;
-								if(slot->team_count > 0)
+								if(slot->teamCount > 0)
 								{
 									// give team item for credit
 									info.text = Format(base.txSellTeamItem, price);
@@ -1300,11 +1300,11 @@ void InventoryPanel::Event(GuiEvent e)
 			if(it->item->type == IT_GOLD)
 			{
 				gold = true;
-				game->pc->unit->AddItem(Item::gold, it->count, it->team_count);
+				game->pc->unit->AddItem(Item::gold, it->count, it->teamCount);
 			}
 			else
 			{
-				InsertItemBare(itms, it->item, it->count, it->team_count);
+				InsertItemBare(itms, it->item, it->count, it->teamCount);
 				game->pc->unit->weight += it->item->weight * it->count;
 				Sound* s = gameRes->GetItemSound(it->item);
 				for(int i = 0; i < 3; ++i)
@@ -1455,20 +1455,20 @@ void InventoryPanel::FormatBox(int group, string& text, string& smallText, Textu
 	else if(group != INDEX_INVALID)
 	{
 		const Item* item;
-		int count, team_count;
+		int count, teamCount;
 		int i_index = indices->at(group);
 		if(i_index < 0)
 		{
 			item = equipped->at(IIndexToSlot(i_index));
 			count = 1;
-			team_count = (mode == LOOT_OTHER ? 1 : 0);
+			teamCount = (mode == LOOT_OTHER ? 1 : 0);
 		}
 		else
 		{
 			ItemSlot& slot = items->at(i_index);
 			item = slot.item;
 			count = slot.count;
-			team_count = slot.team_count;
+			teamCount = slot.teamCount;
 		}
 
 		Unit* target;
@@ -1478,12 +1478,12 @@ void InventoryPanel::FormatBox(int group, string& text, string& smallText, Textu
 			target = game->pc->unit;
 
 		GetItemString(text, item, target, (uint)count);
-		if(mode != TRADE_OTHER && team_count && team->GetActiveTeamSize() > 1)
+		if(mode != TRADE_OTHER && teamCount && team->GetActiveTeamSize() > 1)
 		{
 			text += '\n';
 			text += base.txTeamItem;
 			if(count != 1)
-				text += Format(" (%d)", team_count);
+				text += Format(" (%d)", teamCount);
 		}
 		if(mode == TRADE_MY)
 		{
@@ -1584,7 +1584,7 @@ void InventoryPanel::OnTakeItem(int id)
 
 	ItemSlot& slot = items->at(index);
 	unit->player->credit += slot.item->value / 2;
-	slot.team_count = 0;
+	slot.teamCount = 0;
 
 	if(Net::IsLocal())
 		team->CheckCredit(true);
@@ -1685,8 +1685,8 @@ void InventoryPanel::BuyItem(int index, uint count)
 void InventoryPanel::SellItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	uint team_count = min(count, slot.team_count);
-	uint normal_count = count - team_count;
+	uint teamCount = min(count, slot.teamCount);
+	uint normal_count = count - teamCount;
 
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
@@ -1696,13 +1696,13 @@ void InventoryPanel::SellItem(int index, uint count)
 	{
 		int price = ItemHelper::GetItemPrice(slot.item, *game->pc->unit, false);
 		game->pc->Train(TrainWhat::Trade, (float)price, 0);
-		if(team_count)
-			team->AddGold(price * team_count);
+		if(teamCount)
+			team->AddGold(price * teamCount);
 		if(normal_count)
 			unit->gold += price * normal_count;
 	}
 	// add item to trader
-	if(!InsertItem(*unit->player->chest_trade, slot.item, count, team_count))
+	if(!InsertItem(*unit->player->chest_trade, slot.item, count, teamCount))
 		UpdateGrid(false);
 	// remove item from player
 	unit->weight -= slot.item->weight * count;
@@ -1718,7 +1718,7 @@ void InventoryPanel::SellItem(int index, uint count)
 	else
 	{
 		base.tooltip.Refresh();
-		slot.team_count -= team_count;
+		slot.teamCount -= teamCount;
 	}
 	// message
 	if(Net::IsClient())
@@ -1797,11 +1797,11 @@ void InventoryPanel::OnLootItem(int id)
 void InventoryPanel::LootItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	uint team_count = min(count, slot.team_count);
+	uint teamCount = min(count, slot.teamCount);
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
 	// add
-	if(!game->pc->unit->AddItem(slot.item, count, team_count))
+	if(!game->pc->unit->AddItem(slot.item, count, teamCount))
 		UpdateGrid(true);
 	// remove
 	if(base.mode == I_LOOT_BODY)
@@ -1841,7 +1841,7 @@ void InventoryPanel::LootItem(int index, uint count)
 	else
 	{
 		base.tooltip.Refresh();
-		slot.team_count -= team_count;
+		slot.teamCount -= teamCount;
 	}
 	// message
 	if(Net::IsClient())
@@ -1865,7 +1865,7 @@ void InventoryPanel::OnPutItem(int id)
 void InventoryPanel::PutItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	uint team_count = min(count, slot.team_count);
+	uint teamCount = min(count, slot.teamCount);
 
 	// play sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
@@ -1873,17 +1873,17 @@ void InventoryPanel::PutItem(int index, uint count)
 	// add to container
 	if(base.mode == I_LOOT_BODY)
 	{
-		if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+		if(!unit->player->action_unit->AddItem(slot.item, count, teamCount))
 			UpdateGrid(false);
 	}
 	else if(base.mode == I_LOOT_CONTAINER)
 	{
-		if(!unit->player->action_usable->container->AddItem(slot.item, count, team_count))
+		if(!unit->player->action_usable->container->AddItem(slot.item, count, teamCount))
 			UpdateGrid(false);
 	}
 	else
 	{
-		if(!unit->player->action_chest->AddItem(slot.item, count, team_count))
+		if(!unit->player->action_chest->AddItem(slot.item, count, teamCount))
 			UpdateGrid(false);
 	}
 
@@ -1901,7 +1901,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	else
 	{
 		base.tooltip.Refresh();
-		slot.team_count -= team_count;
+		slot.teamCount -= teamCount;
 	}
 
 	// send change
@@ -1967,11 +1967,11 @@ void InventoryPanel::OnGiveGold(int id)
 			u->gold += counter;
 			if(u->IsPlayer() && u->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(u->player->player_info->changes);
+				NetChangePlayer& c = Add1(u->player->playerInfo->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.id = game->pc->id;
 				c.count = counter;
-				u->player->player_info->UpdateGold();
+				u->player->playerInfo->UpdateGold();
 			}
 		}
 		else
@@ -2011,19 +2011,19 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	const Item* item = slot.item;
-	uint team_count = min(count, slot.team_count);
+	uint teamCount = min(count, slot.teamCount);
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
 	// add
-	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+	if(!unit->player->action_unit->AddItem(slot.item, count, teamCount))
 		UpdateGrid(false);
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
 		if(pot.aiType == Consumable::AiType::Healing)
-			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
+			unit->player->action_unit->ai->havePotion = HavePotion::Yes;
 		else if(pot.aiType == Consumable::AiType::Mana)
-			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
+			unit->player->action_unit->ai->haveMpPotion = HavePotion::Yes;
 	}
 	// remove
 	unit->weight -= slot.item->weight * count;
@@ -2039,7 +2039,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	else
 	{
 		base.tooltip.Refresh();
-		slot.team_count -= team_count;
+		slot.teamCount -= teamCount;
 	}
 	// message
 	if(Net::IsClient())
@@ -2056,19 +2056,19 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	const Item* item = slot.item;
-	uint team_count = min(count, slot.team_count);
+	uint teamCount = min(count, slot.teamCount);
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
 	// add
-	if(!game->pc->unit->AddItem(slot.item, count, team_count))
+	if(!game->pc->unit->AddItem(slot.item, count, teamCount))
 		UpdateGrid(true);
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
 		if(pot.aiType == Consumable::AiType::Healing)
-			unit->ai->have_potion = HavePotion::Check;
+			unit->ai->havePotion = HavePotion::Check;
 		else if(pot.aiType == Consumable::AiType::Mana)
-			unit->ai->have_mp_potion = HavePotion::Check;
+			unit->ai->haveMpPotion = HavePotion::Check;
 	}
 	// remove
 	unit->weight -= slot.item->weight * count;
@@ -2084,7 +2084,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	else
 	{
 		base.tooltip.Refresh();
-		slot.team_count -= team_count;
+		slot.teamCount -= teamCount;
 	}
 	// message
 	if(Net::IsClient())
@@ -2188,19 +2188,19 @@ void InventoryPanel::OnGivePotion(int id)
 void InventoryPanel::GivePotion(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	uint team_count = min(count, slot.team_count);
+	uint teamCount = min(count, slot.teamCount);
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
 	// add
-	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+	if(!unit->player->action_unit->AddItem(slot.item, count, teamCount))
 		UpdateGrid(false);
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = slot.item->ToConsumable();
 		if(pot.aiType == Consumable::AiType::Healing)
-			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
+			unit->player->action_unit->ai->havePotion = HavePotion::Yes;
 		else if(pot.aiType == Consumable::AiType::Mana)
-			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
+			unit->player->action_unit->ai->haveMpPotion = HavePotion::Yes;
 	}
 	// remove
 	unit->weight -= slot.item->weight * count;
@@ -2216,7 +2216,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	else
 	{
 		base.tooltip.Refresh();
-		slot.team_count -= team_count;
+		slot.teamCount -= teamCount;
 	}
 	// message
 	if(Net::IsClient())
@@ -2286,7 +2286,7 @@ void InventoryPanel::IsBetterItemResponse(bool isBetter)
 			else
 			{
 				DialogInfo info;
-				if(slot.team_count > 0)
+				if(slot.teamCount > 0)
 				{
 					// give team item
 					info.text = Format(base.txSellTeamItem, slot.item->value / 2);

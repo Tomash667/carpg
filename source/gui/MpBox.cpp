@@ -83,7 +83,7 @@ void MpBox::OnInput(const string& str)
 		cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(this, &MpBox::Add), PS_CHAT);
 	else
 	{
-		if(Net::IsOnline() && net->active_players != 1)
+		if(Net::IsOnline() && net->activePlayers != 1)
 		{
 			// send text to server / other players
 			BitStreamWriter f;

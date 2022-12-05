@@ -20,7 +20,7 @@ void Quest_BanditsCollectToll::GetConversionData(ConversionData& data)
 	data.Add("start_loc", startLoc->index);
 	data.Add("other_loc", other_loc);
 	data.Add("enc", enc);
-	data.Add("start_time", start_time);
+	data.Add("start_time", startTime);
 	const bool in_enc = gameLevel->eventHandler == this;
 	data.Add("in_enc", in_enc);
 	if(in_enc)

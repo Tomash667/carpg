@@ -20,7 +20,7 @@ struct EntityInterpolator
 			timer = e.timer;
 		}
 	} entries[MAX_ENTRIES];
-	int valid_entries;
+	int validEntries;
 
 	void Reset(const Vec3& pos, float rot);
 	void Add(const Vec3& pos, float rot);

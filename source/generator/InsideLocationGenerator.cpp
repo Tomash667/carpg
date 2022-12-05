@@ -133,16 +133,16 @@ void InsideLocationGenerator::OnEnter()
 		Quest_Event* event = quest ? quest->GetEvent(gameLevel->location) : nullptr;
 		if(event)
 		{
-			if(event->at_level == dungeon_level)
+			if(event->atLevel == dungeon_level)
 			{
 				if(!event->done)
 				{
 					questMgr->HandleQuestEvent(event);
 
 					// generowanie orków
-					if(gameLevel->location == questMgr->quest_orcs2->targetLoc && questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
+					if(gameLevel->location == questMgr->questOrcs2->targetLoc && questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
 					{
-						questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
+						questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");
 						for(Room* room : lvl.rooms)
 						{
@@ -161,10 +161,10 @@ void InsideLocationGenerator::OnEnter()
 					}
 				}
 
-				gameLevel->eventHandler = event->location_event_handler;
+				gameLevel->eventHandler = event->locationEventHandler;
 			}
-			else if(quest->whole_location_event_handler)
-				gameLevel->eventHandler = event->location_event_handler;
+			else if(quest->wholeLocationEventHandler)
+				gameLevel->eventHandler = event->locationEventHandler;
 		}
 	}
 
@@ -180,7 +180,7 @@ void InsideLocationGenerator::OnEnter()
 	CreateMinimap();
 
 	// sekret
-	Quest_Secret* secret = questMgr->quest_secret;
+	Quest_Secret* secret = questMgr->questSecret;
 	if(gameLevel->locationIndex == secret->where && !inside->HaveNextEntry() && secret->state == Quest_Secret::SECRET_DROPPED_STONE)
 	{
 		secret->state = Quest_Secret::SECRET_GENERATED;
@@ -1178,7 +1178,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					{
 						ItemSlot& slot = Add1(items);
 						slot.item = equipped[i];
-						slot.count = slot.team_count = 1u;
+						slot.count = slot.teamCount = 1u;
 						u.RemoveEquippedItem((ITEM_SLOT)i);
 					}
 				}
@@ -1405,7 +1405,7 @@ void InsideLocationGenerator::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// scene parameters
 	LevelPart& lvlPart = *GetLevelData().lvlPart;
-	lvlPart.draw_range = base.draw_range;
+	lvlPart.drawRange = base.draw_range;
 
 	Scene* scene = lvlPart.scene;
 	scene->clearColor = base.fog_color;

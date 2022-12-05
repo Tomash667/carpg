@@ -53,8 +53,8 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->nextSeed, "next_seed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->dontWander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->drawFlags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
-	cmds.push_back(ConsoleCommand(&net->mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
+	cmds.push_back(ConsoleCommand(&net->mpInterp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
+	cmds.push_back(ConsoleCommand(&net->mpUseInterp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&game->usePostfx, "usePostfx", "use post effects (usePostfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->useGlow, "useGlow", "use glow (useGlow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->uvMod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
@@ -449,7 +449,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHEAT_ADD_ITEM;
-					c.base_item = item;
+					c.baseItem = item;
 					c.count = count;
 					c.id = is_team ? 1 : 0;
 				}
@@ -721,7 +721,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHEAT_SPAWN_UNIT;
-					c.base_unit = data;
+					c.baseUnit = data;
 					c.count = count;
 					c.id = level;
 					c.i = in_arena;
@@ -824,8 +824,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(t.Next())
 				friendly = t.MustGetBool();
 			Unit* ignore = nullptr;
-			if(game->pc->data.before_player == BP_UNIT)
-				ignore = game->pc->data.before_player_ptr.unit;
+			if(game->pc->data.beforePlayer == BP_UNIT)
+				ignore = game->pc->data.beforePlayerPtr.unit;
 			if(Net::IsLocal())
 				gameLevel->KillAll(friendly, *game->pc->unit, ignore);
 			else
@@ -1117,7 +1117,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 						if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 						{
 							info.devmode = b;
-							NetChangePlayer& c = Add1(info.pc->player_info->changes);
+							NetChangePlayer& c = Add1(info.pc->playerInfo->changes);
 							c.type = NetChangePlayer::DEVMODE;
 							c.id = (b ? 1 : 0);
 						}
@@ -1131,7 +1131,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					else if(info->devmode != b)
 					{
 						info->devmode = b;
-						NetChangePlayer& c = Add1(info->pc->player_info->changes);
+						NetChangePlayer& c = Add1(info->pc->playerInfo->changes);
 						c.type = NetChangePlayer::DEVMODE;
 						c.id = (b ? 1 : 0);
 					}
@@ -1392,9 +1392,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			PushGenericCmd(CMD_REFRESH_COOLDOWN);
 		break;
 	case CMD_DRAW_PATH:
-		if(game->pc->data.before_player == BP_UNIT)
+		if(game->pc->data.beforePlayer == BP_UNIT)
 		{
-			pathfinding->SetTarget(game->pc->data.before_player_ptr.unit);
+			pathfinding->SetTarget(game->pc->data.beforePlayerPtr.unit);
 			Msg("Set draw path target.");
 		}
 		else
@@ -1497,11 +1497,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			if(Net::IsLocal())
-				game->pc->data.selected_unit->AddEffect(e);
+				game->pc->data.selectedUnit->AddEffect(e);
 			else
 			{
 				PushGenericCmd(CMD_ADD_EFFECT)
-					<< game->pc->data.selected_unit->id
+					<< game->pc->data.selectedUnit->id
 					<< (char)e.effect
 					<< (char)e.source
 					<< e.source_id
@@ -1599,11 +1599,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			if(Net::IsLocal())
-				RemoveEffect(game->pc->data.selected_unit, effect, source, source_id, value);
+				RemoveEffect(game->pc->data.selectedUnit, effect, source, source_id, value);
 			else
 			{
 				PushGenericCmd(CMD_REMOVE_EFFECT)
-					<< game->pc->data.selected_unit->id
+					<< game->pc->data.selectedUnit->id
 					<< (char)effect
 					<< (char)source
 					<< (char)source_id
@@ -1612,13 +1612,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_LIST_EFFECTS:
-		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
-			ListEffects(game->pc->data.selected_unit);
+		if(Net::IsLocal() || game->pc->data.selectedUnit->IsLocalPlayer())
+			ListEffects(game->pc->data.selectedUnit);
 		else
-			PushGenericCmd(CMD_LIST_EFFECTS) << game->pc->data.selected_unit->id;
+			PushGenericCmd(CMD_LIST_EFFECTS) << game->pc->data.selectedUnit->id;
 		break;
 	case CMD_ADD_PERK:
-		if(!game->pc->data.selected_unit->player)
+		if(!game->pc->data.selectedUnit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
 			Msg("Perk name required. Use 'list perks' to display list.");
@@ -1667,18 +1667,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			if(Net::IsLocal())
-				AddPerk(game->pc->data.selected_unit->player, perk, value);
+				AddPerk(game->pc->data.selectedUnit->player, perk, value);
 			else
 			{
 				PushGenericCmd(CMD_ADD_PERK)
-					<< game->pc->data.selected_unit->id
+					<< game->pc->data.selectedUnit->id
 					<< perk->hash
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_REMOVE_PERK:
-		if(!game->pc->data.selected_unit->player)
+		if(!game->pc->data.selectedUnit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
 			Msg("Perk name required. Use 'list perks' to display list.");
@@ -1727,23 +1727,23 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			if(Net::IsLocal())
-				RemovePerk(game->pc->data.selected_unit->player, perk, value);
+				RemovePerk(game->pc->data.selectedUnit->player, perk, value);
 			else
 			{
 				PushGenericCmd(CMD_REMOVE_PERK)
-					<< game->pc->data.selected_unit->id
+					<< game->pc->data.selectedUnit->id
 					<< perk->hash
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_LIST_PERKS:
-		if(!game->pc->data.selected_unit->player)
+		if(!game->pc->data.selectedUnit->player)
 			Msg("Only players have perks.");
-		else if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
-			ListPerks(game->pc->data.selected_unit->player);
+		else if(Net::IsLocal() || game->pc->data.selectedUnit->IsLocalPlayer())
+			ListPerks(game->pc->data.selectedUnit->player);
 		else
-			PushGenericCmd(CMD_LIST_PERKS) << game->pc->data.selected_unit->id;
+			PushGenericCmd(CMD_LIST_PERKS) << game->pc->data.selectedUnit->id;
 		break;
 	case CMD_SELECT:
 		{
@@ -1769,35 +1769,35 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					break;
 				}
 			}
-			else if(game->pc->data.before_player == BP_UNIT)
+			else if(game->pc->data.beforePlayer == BP_UNIT)
 				select = SELECT_TARGET;
 			else
 				select = SELECT_SHOW;
 
 			if(select == SELECT_ME)
-				game->pc->data.selected_unit = game->pc->unit;
+				game->pc->data.selectedUnit = game->pc->unit;
 			else if(select == SELECT_TARGET)
 			{
 				if(Unit* target = game->pc->data.GetTargetUnit())
-					game->pc->data.selected_unit = target;
+					game->pc->data.selectedUnit = target;
 				else
 				{
 					Msg("No unit in front of player.");
 					break;
 				}
 			}
-			Msg("Currently selected: %s %p [%d]", game->pc->data.selected_unit->data->id.c_str(), game->pc->data.selected_unit,
-				Net::IsOnline() ? game->pc->data.selected_unit->id : -1);
+			Msg("Currently selected: %s %p [%d]", game->pc->data.selectedUnit->data->id.c_str(), game->pc->data.selectedUnit,
+				Net::IsOnline() ? game->pc->data.selectedUnit->id : -1);
 		}
 		break;
 	case CMD_LIST_STATS:
-		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocalPlayer())
-			ListStats(game->pc->data.selected_unit);
+		if(Net::IsLocal() || game->pc->data.selectedUnit->IsLocalPlayer())
+			ListStats(game->pc->data.selectedUnit);
 		else
-			PushGenericCmd(CMD_LIST_STATS) << game->pc->data.selected_unit->id;
+			PushGenericCmd(CMD_LIST_STATS) << game->pc->data.selectedUnit->id;
 		break;
 	case CMD_ADD_LEARNING_POINTS:
-		if(!game->pc->data.selected_unit->IsPlayer())
+		if(!game->pc->data.selectedUnit->IsPlayer())
 			Msg("Only players have learning points.");
 		else
 		{
@@ -1807,11 +1807,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			if(count < 1)
 				break;
 			if(Net::IsLocal())
-				game->pc->data.selected_unit->player->AddLearningPoint(count);
+				game->pc->data.selectedUnit->player->AddLearningPoint(count);
 			else
 			{
 				PushGenericCmd(CMD_ADD_LEARNING_POINTS)
-					<< game->pc->data.selected_unit->id
+					<< game->pc->data.selectedUnit->id
 					<< count;
 			}
 		}
@@ -1849,10 +1849,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_REMOVE_UNIT:
-		if(game->pc->data.selected_unit->IsPlayer())
+		if(game->pc->data.selectedUnit->IsPlayer())
 			Msg("Can't remove player unit.");
 		else
-			gameLevel->RemoveUnit(game->pc->data.selected_unit);
+			gameLevel->RemoveUnit(game->pc->data.selectedUnit);
 		break;
 	case CMD_ADD_EXP:
 		if(t.Next())
@@ -2415,7 +2415,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				warp.building = -1;
 				warp.timer = 1.f;
 				unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-				NetChangePlayer& c = Add1(player->player_info->changes);
+				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::PREPARE_WARP;
 			}
 			else
@@ -2433,7 +2433,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					warp.building = building_index;
 					warp.timer = 1.f;
 					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-					NetChangePlayer& c = Add1(player->player_info->changes);
+					NetChangePlayer& c = Add1(player->playerInfo->changes);
 					c.type = NetChangePlayer::PREPARE_WARP;
 				}
 				else
@@ -2563,7 +2563,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			else
 			{
 				player->unit->gold = max(player->unit->gold + count, 0);
-				player->player_info->UpdateGold();
+				player->playerInfo->UpdateGold();
 			}
 		}
 		break;
@@ -3159,7 +3159,7 @@ void CommandParser::Scare(PlayerController* player)
 		if(ai->unit->IsEnemy(*player->unit) && Vec3::Distance(ai->unit->pos, player->unit->pos) < ALERT_RANGE && gameLevel->CanSee(*ai->unit, *player->unit))
 		{
 			ai->morale = -10;
-			ai->target_last_pos = player->unit->pos;
+			ai->targetLastPos = player->unit->pos;
 		}
 	}
 }

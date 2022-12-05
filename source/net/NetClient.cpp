@@ -74,18 +74,18 @@ void Net::InitClient()
 //=================================================================================================
 void Net::OnNewGameClient()
 {
-	DeleteElements(questMgr->quest_items);
+	DeleteElements(questMgr->questItems);
 	game->devmode = game->defaultDevmode;
 	game->trainMove = 0.f;
 	team->anyoneTalking = false;
 	gameLevel->canFastTravel = false;
-	interpolate_timer = 0.f;
+	interpolateTimer = 0.f;
 	changes.clear();
-	if(!net_strs.empty())
-		StringPool.Free(net_strs);
+	if(!netStrs.empty())
+		StringPool.Free(netStrs);
 	game->paused = false;
 	game->hardcoreMode = false;
-	if(!mp_quickload)
+	if(!mpQuickload)
 	{
 		gameGui->mpBox->Reset();
 		gameGui->mpBox->visible = true;
@@ -99,11 +99,11 @@ void Net::UpdateClient(float dt)
 		float gameDt = dt * game->gameSpeed;
 
 		// interpolacja pozycji gracza
-		if(interpolate_timer > 0.f)
+		if(interpolateTimer > 0.f)
 		{
-			interpolate_timer -= gameDt;
-			if(interpolate_timer >= 0.f)
-				game->pc->unit->visual_pos = Vec3::Lerp(game->pc->unit->visual_pos, game->pc->unit->pos, (0.1f - interpolate_timer) * 10);
+			interpolateTimer -= gameDt;
+			if(interpolateTimer >= 0.f)
+				game->pc->unit->visual_pos = Vec3::Lerp(game->pc->unit->visual_pos, game->pc->unit->pos, (0.1f - interpolateTimer) * 10);
 			else
 				game->pc->unit->visual_pos = game->pc->unit->pos;
 		}
@@ -218,10 +218,10 @@ void Net::UpdateClient(float dt)
 		case ID_LOADING:
 			{
 				Info("Quickloading server game.");
-				mp_quickload = true;
+				mpQuickload = true;
 				game->ClearGame();
-				reader >> mp_load_worldmap;
-				game->LoadingStart(mp_load_worldmap ? 4 : 9);
+				reader >> mpLoadWorldmap;
+				game->LoadingStart(mpLoadWorldmap ? 4 : 9);
 				gameGui->infoBox->Show(game->txLoadingSaveByServer);
 				gameGui->worldMap->Hide();
 				game->netMode = Game::NM_TRANSFER;
@@ -238,10 +238,10 @@ void Net::UpdateClient(float dt)
 	}
 
 	// send my position/action
-	update_timer += dt;
-	if(update_timer >= TICK)
+	updateTimer += dt;
+	if(updateTimer >= TICK)
 	{
-		update_timer = 0;
+		updateTimer = 0;
 		BitStreamWriter f;
 		f << ID_CONTROL;
 		if(game->gameState == GS_LEVEL)
@@ -380,12 +380,12 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::CHEAT_ADD_ITEM:
-			f << c.base_item->id;
+			f << c.baseItem->id;
 			f << c.count;
 			f << (c.id != 0);
 			break;
 		case NetChange::CHEAT_SPAWN_UNIT:
-			f << c.base_unit->id;
+			f << c.baseUnit->id;
 			f.WriteCasted<byte>(c.count);
 			f.WriteCasted<char>(c.id);
 			f.WriteCasted<char>(c.i);
@@ -1136,7 +1136,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					bullet->isArrow = true;
 					bullet->mesh = gameRes->aArrow;
 					bullet->pos = pos;
-					bullet->start_pos = pos;
+					bullet->startPos = pos;
 					bullet->rot = Vec3(rotX, rotY, 0);
 					bullet->yspeed = speedY;
 					bullet->owner = nullptr;
@@ -1144,7 +1144,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					bullet->speed = speed;
 					bullet->ability = ability;
 					bullet->tex = nullptr;
-					bullet->tex_size = 0.f;
+					bullet->texSize = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->owner = owner;
 
@@ -1237,7 +1237,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			break;
 		// info about completing all unique quests
 		case NetChange::ALL_QUESTS_COMPLETED:
-			questMgr->unique_completed_show = true;
+			questMgr->uniqueCompletedShow = true;
 			break;
 		// unit talks
 		case NetChange::TALK:
@@ -1322,7 +1322,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						Error("Update client: TELL_NAME, unit %d (%s) is not a hero.", id, unit->data->id.c_str());
 					else
 					{
-						unit->hero->know_name = true;
+						unit->hero->knowName = true;
 						if(set_name)
 							unit->hero->name = f.GetStringBuffer();
 					}
@@ -1333,9 +1333,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		case NetChange::HAIR_COLOR:
 			{
 				int id;
-				Vec4 hair_color;
+				Vec4 hairColor;
 				f >> id;
-				f >> hair_color;
+				f >> hairColor;
 				if(!f)
 					Error("Update client: Broken HAIR_COLOR.");
 				else if(game->gameState == GS_LEVEL)
@@ -1346,7 +1346,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					else if(unit->data->type != UNIT_TYPE::HUMAN)
 						Error("Update client: HAIR_COLOR, unit %d (%s) is not human.", id, unit->data->id.c_str());
 					else
-						unit->human_data->hair_color = hair_color;
+						unit->human_data->hairColor = hairColor;
 				}
 			}
 			break;
@@ -1419,10 +1419,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							pc.unit->Standup(false);
 					}
 					PushChange(NetChange::WARP);
-					interpolate_timer = 0.f;
-					pc.data.rot_buf = 0.f;
+					interpolateTimer = 0.f;
+					pc.data.rotBuf = 0.f;
 					gameLevel->camera.Reset();
-					pc.data.rot_buf = 0.f;
+					pc.data.rotBuf = 0.f;
 				}
 			}
 			break;
@@ -1456,7 +1456,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						if(!f)
 							Error("Update client: Broken REGISTER_ITEM(3).");
 						else
-							questMgr->quest_items.push_back(item);
+							questMgr->questItems.push_back(item);
 					}
 				}
 			}
@@ -1474,7 +1474,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 
 				PlaceholderQuest* quest = new PlaceholderQuest;
-				quest->quest_index = questMgr->quests.size();
+				quest->questIndex = questMgr->quests.size();
 				quest->name = quest_name;
 				quest->id = id;
 				quest->msgs.resize(2);
@@ -1489,7 +1489,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 
 				quest->state = Quest::Started;
-				gameGui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+				gameGui->journal->NeedUpdate(Journal::Quests, quest->questIndex);
 				gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				questMgr->quests.push_back(quest);
 			}
@@ -1529,7 +1529,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							break;
 						}
 					}
-					gameGui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+					gameGui->journal->NeedUpdate(Journal::Quests, quest->questIndex);
 					gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
@@ -1545,7 +1545,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else
 				{
 					bool found = false;
-					for(Item* item : questMgr->quest_items)
+					for(Item* item : questMgr->questItems)
 					{
 						if(item->quest_id == quest_id && item->id == item_id)
 						{
@@ -1690,8 +1690,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						unit->action = A_NONE;
 
 					unit->UseUsable(usable);
-					if(pc.data.before_player == BP_USABLE && pc.data.before_player_ptr.usable == usable)
-						pc.data.before_player = BP_NONE;
+					if(pc.data.beforePlayer == BP_USABLE && pc.data.beforePlayerPtr.usable == usable)
+						pc.data.beforePlayer = BP_NONE;
 				}
 				else
 				{
@@ -1757,7 +1757,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						Error("Update client: RECRUIT_NPC, unit %d (%s) is not a hero.", id, unit->data->id.c_str());
 					else
 					{
-						unit->hero->team_member = true;
+						unit->hero->teamMember = true;
 						unit->hero->type = free ? HeroType::Visitor : HeroType::Normal;
 						unit->hero->credit = 0;
 						team->members.push_back(unit);
@@ -1781,11 +1781,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Unit* unit = gameLevel->FindUnit(id);
 					if(!unit)
 						Error("Update client: KICK_NPC, missing unit %d.", id);
-					else if(!unit->IsHero() || !unit->hero->team_member)
+					else if(!unit->IsHero() || !unit->hero->teamMember)
 						Error("Update client: KICK_NPC, unit %d (%s) is not a team member.", id, unit->data->id.c_str());
 					else
 					{
-						unit->hero->team_member = false;
+						unit->hero->teamMember = false;
 						RemoveElementOrder(team->members.ptrs, unit);
 						if(unit->hero->type == HeroType::Normal)
 							RemoveElementOrder(team->activeMembers.ptrs, unit);
@@ -2312,13 +2312,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				bullet->rot = Vec3(0, rotY, 0);
 				bullet->mesh = ability.mesh;
 				bullet->tex = ability.tex;
-				bullet->tex_size = ability.size;
+				bullet->texSize = ability.size;
 				bullet->speed = ability.speed;
 				bullet->timer = ability.range / (ability.speed - 1);
 				bullet->trail = nullptr;
 				bullet->pe = nullptr;
 				bullet->ability = &ability;
-				bullet->start_pos = bullet->pos;
+				bullet->startPos = bullet->pos;
 				bullet->owner = unit;
 				bullet->yspeed = speedY;
 
@@ -2914,7 +2914,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: FAST_TRAVEL_VOTE invaid player %u.", id);
 					break;
 				}
-				info->fast_travel = true;
+				info->fastTravel = true;
 			}
 			break;
 		// start of cutscene
@@ -3216,7 +3216,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					{
 						pc.action = PlayerAction::Talk;
 						pc.action_unit = unit;
-						pc.data.before_player = BP_NONE;
+						pc.data.beforePlayer = BP_NONE;
 						game->dialogContext.StartDialog(unit);
 					}
 				}
@@ -3243,9 +3243,9 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				else
 				{
 					DialogContext& ctx = game->dialogContext;
-					ctx.choice_selected = 0;
+					ctx.choiceSelected = 0;
 					ctx.mode = DialogContext::WAIT_CHOICES;
-					ctx.dialog_esc = escape;
+					ctx.dialogEsc = escape;
 					ctx.choices.resize(count);
 					for(byte i = 0; i < count; ++i)
 					{
@@ -3266,7 +3266,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		case NetChangePlayer::END_DIALOG:
 			if(game->gameState == GS_LEVEL)
 			{
-				game->dialogContext.dialog_mode = false;
+				game->dialogContext.dialogMode = false;
 				if(pc.action == PlayerAction::Talk)
 					pc.action = PlayerAction::None;
 				pc.unit->look_target = nullptr;
@@ -3660,7 +3660,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				else if(game->gameState == GS_LEVEL)
 				{
 					pc.unit->pos = new_pos;
-					interpolate_timer = 0.1f;
+					interpolateTimer = 0.1f;
 				}
 			}
 			break;
@@ -4152,7 +4152,7 @@ bool Net::FilterOut(NetChange& c)
 		if(IsServer() && c.str)
 		{
 			StringPool.Free(c.str);
-			RemoveElement(net_strs, c.str);
+			RemoveElement(netStrs, c.str);
 			c.str = nullptr;
 		}
 		return true;
@@ -4168,8 +4168,8 @@ bool Net::FilterOut(NetChange& c)
 //=================================================================================================
 void Net::ReadNetVars(BitStreamReader& f)
 {
-	f >> mp_use_interp;
-	f >> mp_interp;
+	f >> mpUseInterp;
+	f >> mpInterp;
 	f >> game->gameSpeed;
 }
 
@@ -4263,10 +4263,10 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 bool Net::ReadLevelData(BitStreamReader& f)
 {
 	gameLevel->camera.Reset();
-	game->pc->data.rot_buf = 0.f;
+	game->pc->data.rotBuf = 0.f;
 
 	bool loaded_resources;
-	f >> mp_load;
+	f >> mpLoad;
 	f >> loaded_resources;
 	if(!f)
 	{
@@ -4361,7 +4361,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	}
 	info.u = unit;
 	game->pc = unit->player;
-	game->pc->player_info = &info;
+	game->pc->playerInfo = &info;
 	info.pc = game->pc;
 	gameLevel->camera.target = unit;
 
@@ -4437,15 +4437,15 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	for(byte i = 0; i < count; ++i)
 	{
 		f >> id;
-		Unit* team_member = gameLevel->FindUnit(id);
-		if(!team_member)
+		Unit* teamMember = gameLevel->FindUnit(id);
+		if(!teamMember)
 		{
 			Error("Read player data: Missing team member %d.", id);
 			return false;
 		}
-		team->members.push_back(team_member);
-		if(team_member->IsPlayer() || team_member->hero->type == HeroType::Normal)
-			team->activeMembers.push_back(team_member);
+		team->members.push_back(teamMember);
+		if(teamMember->IsPlayer() || teamMember->hero->type == HeroType::Normal)
+			team->activeMembers.push_back(teamMember);
 	}
 	f.ReadCasted<byte>(team->leaderId);
 	if(!f)
@@ -4464,7 +4464,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 	game->dialogContext.pc = unit->player;
 
 	// multiplayer load data
-	if(mp_load)
+	if(mpLoad)
 	{
 		f >> unit->used_item_is_team;
 		f >> unit->raise_timer;

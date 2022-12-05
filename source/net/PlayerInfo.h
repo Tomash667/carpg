@@ -43,10 +43,10 @@ struct PlayerInfo
 	PlayerController* pc;
 	Unit* u;
 	Class* clas;
-	int id, ack, update_flags;
+	int id, ack, updateFlags;
 	SystemAddress adr;
 	float timer;
-	bool ready, devmode, warping, loaded, fast_travel;
+	bool ready, devmode, warping, loaded, fastTravel;
 	HumanData hd;
 	CreatedCharacter cc;
 	vector<string> notes;
@@ -54,7 +54,7 @@ struct PlayerInfo
 	vector<NetChangePlayer> changes;
 
 	PlayerInfo();
-	void UpdateGold() { update_flags |= PlayerInfo::UF_GOLD; }
+	void UpdateGold() { updateFlags |= PlayerInfo::UF_GOLD; }
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	int GetIndex() const;

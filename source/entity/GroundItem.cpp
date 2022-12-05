@@ -38,7 +38,7 @@ void GroundItem::Save(GameWriter& f)
 	f << pos;
 	f << rot;
 	f << count;
-	f << team_count;
+	f << teamCount;
 	f << item->id;
 	if(item->id[0] == '$')
 		f << item->quest_id;
@@ -60,7 +60,7 @@ void GroundItem::Load(GameReader& f)
 		rot = Quat::RotY(rot_y);
 	}
 	f >> count;
-	f >> team_count;
+	f >> teamCount;
 	const string& item_id = f.ReadString1();
 	if(item_id[0] != '$')
 		item = Item::Get(item_id);
@@ -81,7 +81,7 @@ void GroundItem::Write(BitStreamWriter& f)
 	f << pos;
 	f << rot;
 	f << count;
-	f << team_count;
+	f << teamCount;
 	f << item->id;
 	if(item->IsQuest())
 		f << item->quest_id;
@@ -94,7 +94,7 @@ bool GroundItem::Read(BitStreamReader& f)
 	f >> pos;
 	f >> rot;
 	f >> count;
-	f >> team_count;
+	f >> teamCount;
 	Register();
 	return f.IsOk() && f.ReadItemAndFind(item) > 0;
 }

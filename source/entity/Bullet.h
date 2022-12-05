@@ -8,9 +8,9 @@ struct Bullet : public EntityType<Bullet>
 {
 	Unit* owner;
 	Ability* ability;
-	Vec3 pos, rot, start_pos;
+	Vec3 pos, rot, startPos;
 	Mesh* mesh;
-	float speed, timer, attack, tex_size, yspeed, poison_attack, backstab;
+	float speed, timer, attack, texSize, yspeed, poisonAttack, backstab;
 	int level;
 	TexturePtr tex;
 	TrailParticleEmitter* trail;

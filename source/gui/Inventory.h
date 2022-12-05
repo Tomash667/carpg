@@ -54,7 +54,7 @@ public:
 			this->isGive = isGive;
 			this->slot = SLOT_INVALID;
 			item = slot.item;
-			isTeam = slot.team_count > 0;
+			isTeam = slot.teamCount > 0;
 			timer = 1.f;
 		}
 

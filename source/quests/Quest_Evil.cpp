@@ -103,7 +103,7 @@ void Quest_Evil::SetProgress(int prog2)
 			target.dont_clean = true;
 			targetLoc = &target;
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
-			at_level = 0;
+			atLevel = 0;
 			// add journal entries
 			msgs.push_back(Format(questMgr->txQuest[234], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(questMgr->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
@@ -177,7 +177,7 @@ void Quest_Evil::SetProgress(int prog2)
 				target.active_quest = this;
 				loc[i].targetLoc = &target;
 				loc[i].near_loc = world->GetNearestSettlement(target.pos)->index;
-				loc[i].at_level = target.GetLastLevel();
+				loc[i].atLevel = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 				new_msgs[i + 1] = Format(questMgr->txQuest[247], target.name.c_str(),
 					GetLocationDirName(world->GetLocation(loc[i].near_loc)->pos, target.pos),
@@ -187,9 +187,9 @@ void Quest_Evil::SetProgress(int prog2)
 
 			OnUpdate({ new_msgs[0], new_msgs[1], new_msgs[2], new_msgs[3] });
 
-			next_event = &loc[0];
-			loc[0].next_event = &loc[1];
-			loc[1].next_event = &loc[2];
+			nextEvent = &loc[0];
+			loc[0].nextEvent = &loc[1];
+			loc[1].nextEvent = &loc[2];
 
 			// add cleric to team
 			Unit& u = *DialogContext::current->talker;
@@ -210,13 +210,13 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			changed = false;
 			done = false;
-			unit_to_spawn = UnitData::Get("q_zlo_boss");
-			spawn_unit_room = RoomTarget::Treasury;
-			unit_event_handler = this;
-			unit_dont_attack = true;
-			unit_auto_talk = true;
+			unitToSpawn = UnitData::Get("q_zlo_boss");
+			unitSpawnRoom = RoomTarget::Treasury;
+			unitEventHandler = this;
+			unitDontAttack = true;
+			unitAutoTalk = true;
 			callback = VoidDelegate(this, &Quest_Evil::WarpEvilBossToAltar);
-			at_level = 0;
+			atLevel = 0;
 			targetLoc->st = 15;
 			targetLoc->group = UnitGroup::Get("evil");
 			targetLoc->reset = true;
@@ -436,7 +436,7 @@ void Quest_Evil::Save(GameWriter& f)
 	{
 		f << loc[i].targetLoc;
 		f << loc[i].done;
-		f << loc[i].at_level;
+		f << loc[i].atLevel;
 		f << loc[i].near_loc;
 		f << loc[i].state;
 		f << loc[i].pos;
@@ -460,7 +460,7 @@ Quest::LoadResult Quest_Evil::Load(GameReader& f)
 	{
 		f >> loc[i].targetLoc;
 		f >> loc[i].done;
-		f >> loc[i].at_level;
+		f >> loc[i].atLevel;
 		f >> loc[i].near_loc;
 		f >> loc[i].state;
 		f >> loc[i].pos;
@@ -474,9 +474,9 @@ Quest::LoadResult Quest_Evil::Load(GameReader& f)
 	f >> timer;
 	f >> cleric;
 
-	next_event = &loc[0];
-	loc[0].next_event = &loc[1];
-	loc[1].next_event = &loc[2];
+	nextEvent = &loc[0];
+	loc[0].nextEvent = &loc[1];
+	loc[1].nextEvent = &loc[2];
 
 	if(!done)
 	{
@@ -484,15 +484,15 @@ Quest::LoadResult Quest_Evil::Load(GameReader& f)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 		else if(prog == Progress::AllPortalsClosed)
 		{
-			unit_to_spawn = UnitData::Get("q_zlo_boss");
-			spawn_unit_room = RoomTarget::Treasury;
-			unit_dont_attack = true;
-			unit_auto_talk = true;
+			unitToSpawn = UnitData::Get("q_zlo_boss");
+			unitSpawnRoom = RoomTarget::Treasury;
+			unitDontAttack = true;
+			unitAutoTalk = true;
 			callback = VoidDelegate(this, &Quest_Evil::WarpEvilBossToAltar);
 		}
 	}
 
-	unit_event_handler = this;
+	unitEventHandler = this;
 
 	return LoadResult::Ok;
 }
@@ -661,7 +661,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 		Vec3 warp_pos = o->pos;
 		warp_pos -= Vec3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
 		gameLevel->WarpUnit(*u, warp_pos);
-		u->ai->start_pos = u->pos;
+		u->ai->startPos = u->pos;
 
 		for(int i = 0; i < 2; ++i)
 		{

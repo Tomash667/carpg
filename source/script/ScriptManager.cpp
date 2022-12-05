@@ -804,7 +804,7 @@ void ScriptManager::RegisterGame()
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	ForType("Hero")
-		.Member("bool lost_pvp", offsetof(Hero, lost_pvp))
+		.Member("bool lost_pvp", offsetof(Hero, lostPvp))
 		.Member("const int investment", offsetof(Hero, investment))
 		.Method("bool get_otherTeam() const property", asMETHOD(Hero, HaveOtherTeam))
 		.Method("int get_persuasionCheck() const property", asMETHOD(Hero, GetPersuasionCheckValue))
@@ -899,7 +899,7 @@ void ScriptManager::RegisterGame()
 
 	AddType("Encounter")
 		.Member("Vec2 pos", offsetof(Encounter, pos))
-		.Member("bool dont_attack", offsetof(Encounter, dont_attack))
+		.Member("bool dont_attack", offsetof(Encounter, dontAttack))
 		.Member("Quest@ quest", offsetof(Encounter, quest))
 		.Member("Dialog@ dialog", offsetof(Encounter, dialog))
 		.Member("int st", offsetof(Encounter, st))

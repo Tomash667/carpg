@@ -88,7 +88,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 		NetChange& c = Add1(net->changes);
 		c.type = NetChange::REMOVE_BULLET;
 		c.id = id;
-		c.e_id = (hitted != nullptr ? 1 : 0);
+		c.extraId = (hitted != nullptr ? 1 : 0);
 	}
 
 	delete this;
@@ -119,7 +119,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 
 			// hit enemy unit
 			if(owner && owner->IsAlive() && hitted->IsAI())
-				hitted->ai->HitReaction(start_pos);
+				hitted->ai->HitReaction(startPos);
 
 			// special effects
 			bool preventTooManySounds = false;
@@ -144,7 +144,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::SPELL_SOUND;
-						c.e_id = 1;
+						c.extraId = 1;
 						c.ability = ability;
 						c.pos = hitpoint;
 					}
@@ -264,7 +264,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			hitted->GiveDmg(dmg, owner, &hitpoint);
 
 			// apply poison
-			if(poison_attack > 0.f)
+			if(poisonAttack > 0.f)
 			{
 				float poison_res = hitted->GetPoisonResistance();
 				if(poison_res > 0.f)
@@ -274,7 +274,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					e.source = EffectSource::Temporary;
 					e.source_id = -1;
 					e.value = -1;
-					e.power = poison_attack / 5 * poison_res;
+					e.power = poisonAttack / 5 * poison_res;
 					e.time = 5.f;
 					hitted->AddEffect(e);
 				}
@@ -299,7 +299,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			}
 
 			if(hitted->IsAI() && owner && owner->IsAlive())
-				hitted->ai->HitReaction(start_pos);
+				hitted->ai->HitReaction(startPos);
 
 			float dmg = attack;
 			if(owner)
@@ -385,8 +385,8 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				Object* obj = static_cast<Object*>(callback.target->getUserPointer());
 				if(obj && obj->base && obj->base->id == "bow_target")
 				{
-					if(questMgr->quest_tutorial->in_tutorial)
-						questMgr->quest_tutorial->HandleBulletCollision();
+					if(questMgr->questTutorial->in_tutorial)
+						questMgr->questTutorial->HandleBulletCollision();
 					owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
 				}
 			}
@@ -412,9 +412,9 @@ void Bullet::Save(GameWriter& f) const
 	f << speed;
 	f << timer;
 	f << attack;
-	f << tex_size;
+	f << texSize;
 	f << yspeed;
-	f << poison_attack;
+	f << poisonAttack;
 	f << (owner ? owner->id : -1);
 	f << (ability ? ability->hash : 0);
 	if(tex)
@@ -425,7 +425,7 @@ void Bullet::Save(GameWriter& f) const
 	f << (pe ? pe->id : -1);
 	f << backstab;
 	f << level;
-	f << start_pos;
+	f << startPos;
 	f << isArrow;
 }
 
@@ -445,9 +445,9 @@ void Bullet::Load(GameReader& f)
 	f >> speed;
 	f >> timer;
 	f >> attack;
-	f >> tex_size;
+	f >> texSize;
 	f >> yspeed;
-	f >> poison_attack;
+	f >> poisonAttack;
 	owner = Unit::GetById(f.Read<int>());
 	if(LOAD_VERSION >= V_0_13)
 	{
@@ -497,7 +497,7 @@ void Bullet::Load(GameReader& f)
 		f >> backstabValue;
 		backstab = 0.25f * (backstabValue + 1);
 	}
-	f >> start_pos;
+	f >> startPos;
 	if(LOAD_VERSION >= V_0_18)
 		f >> isArrow;
 	else
@@ -550,7 +550,7 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		mesh = (ability && ability->mesh ? ability->mesh : gameRes->aArrow);
 		pe = nullptr;
 		tex = nullptr;
-		tex_size = 0.f;
+		texSize = 0.f;
 
 		TrailParticleEmitter* tpe = new TrailParticleEmitter;
 		tpe->fade = 0.3f;
@@ -580,7 +580,7 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 
 		mesh = ability->mesh;
 		tex = ability->tex;
-		tex_size = ability->size;
+		texSize = ability->size;
 		trail = nullptr;
 		pe = nullptr;
 

@@ -128,7 +128,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		Slider& s = slider[3];
 		s.id = IdColor;
 		s.minv = 0;
-		s.maxv = n_hair_colors - 1;
+		s.maxv = nHairColors - 1;
 		s.val = 0;
 		s.pos = Int2(20, 250);
 		s.parent = this;
@@ -344,11 +344,11 @@ void CreateCharacterPanel::Draw()
 
 			// left text "Skill points: X/Y"
 			Rect r = { globalPos.x + 16, globalPos.y + 310, globalPos.x + 216, globalPos.y + 360 };
-			gui->DrawText(GameGui::font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
+			gui->DrawText(GameGui::font, Format(txSkillPoints, cc.sp, cc.spMax), 0, Color::Black, r);
 
 			// right text "Feats: X/Y"
 			Rect r2 = { globalPos.x + size.x - 216, globalPos.y + 310, globalPos.x + size.x - 16, globalPos.y + 360 };
-			gui->DrawText(GameGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
+			gui->DrawText(GameGui::font, Format(txPerkPoints, cc.perks, cc.perksMax), DTF_RIGHT, Color::Black, r2);
 		}
 		break;
 	case Mode::PickAppearance:
@@ -634,7 +634,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
 			break;
 		case IdColor:
-			unit->human_data->hair_color = g_hair_colors[slider[3].val];
+			unit->human_data->hairColor = gHairColors[slider[3].val];
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
@@ -902,8 +902,8 @@ void CreateCharacterPanel::RandomAppearance()
 	u.human_data->beard = Rand() % MAX_BEARD - 1;
 	u.human_data->hair = Rand() % MAX_HAIR - 1;
 	u.human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-	hairColorIndex = Rand() % n_hair_colors;
-	u.human_data->hair_color = g_hair_colors[hairColorIndex];
+	hairColorIndex = Rand() % nHairColors;
+	u.human_data->hairColor = gHairColors[hairColorIndex];
 	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(u.meshInst);
 	SetControls();
@@ -1063,7 +1063,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 		break;
 	case Group::TakenPerk:
 		{
-			TakenPerk& tp = cc.taken_perks[id];
+			TakenPerk& tp = cc.takenPerks[id];
 			tool.anything = true;
 			tool.img = nullptr;
 			tool.bigText = tp.perk->name;
@@ -1211,12 +1211,12 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	{
 		// remove perk
 		PerkContext ctx(&cc);
-		TakenPerk& taken = cc.taken_perks[id];
+		TakenPerk& taken = cc.takenPerks[id];
 		taken.Remove(ctx);
-		cc.taken_perks.erase(cc.taken_perks.begin() + id);
+		cc.takenPerks.erase(cc.takenPerks.begin() + id);
 		vector<Perk*> removed;
 		ctx.check_remove = true;
-		LoopAndRemove(cc.taken_perks, [&](TakenPerk& perk)
+		LoopAndRemove(cc.takenPerks, [&](TakenPerk& perk)
 		{
 			if(perk.CanTake(ctx))
 				return false;
@@ -1290,13 +1290,13 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	}
 	takenPerks.clear();
 	LocalVector<string*> strs;
-	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
+	for(int i = 0; i < (int)cc.takenPerks.size(); ++i)
 	{
-		Perk* perk = cc.taken_perks[i].perk;
+		Perk* perk = cc.takenPerks[i].perk;
 		if(perk->value_type != Perk::None)
 		{
 			string* s = StringPool.Get();
-			*s = cc.taken_perks[i].FormatName();
+			*s = cc.takenPerks[i].FormatName();
 			strs.push_back(s);
 			takenPerks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
@@ -1320,7 +1320,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			flowPerks.Add()->Set(perk->name.c_str(), (int)Group::Perk, (int)perk);
 		}
 	}
-	if(!cc.taken_perks.empty())
+	if(!cc.takenPerks.empty())
 	{
 		flowPerks.Add()->Set(txTakenPerks);
 		for(auto& tp : takenPerks)
@@ -1439,7 +1439,7 @@ void CreateCharacterPanel::UpdateSkillButtons()
 void CreateCharacterPanel::AddPerk(Perk* perk, int value)
 {
 	TakenPerk taken(perk, value);
-	cc.taken_perks.push_back(taken);
+	cc.takenPerks.push_back(taken);
 	PerkContext ctx(&cc);
 	taken.Apply(ctx);
 	CheckSkillsUpdate();
@@ -1449,28 +1449,29 @@ void CreateCharacterPanel::AddPerk(Perk* perk, int value)
 //=================================================================================================
 void CreateCharacterPanel::CheckSkillsUpdate()
 {
-	if(cc.update_skills)
+	if(cc.updateSkills)
 	{
 		UpdateSkillButtons();
-		cc.update_skills = false;
+		cc.updateSkills = false;
 	}
-	if(!cc.to_update.empty())
+
+	if(!cc.toUpdate.empty())
 	{
-		if(cc.to_update.size() == 1)
+		if(cc.toUpdate.size() == 1)
 		{
-			int id = (int)cc.to_update[0];
+			int id = (int)cc.toUpdate[0];
 			flowSkills.UpdateText((int)Group::Skill, id, Format("%s: %d", Skill::skills[id].name.c_str(), cc.s[id].value));
 		}
 		else
 		{
-			for(SkillId s : cc.to_update)
+			for(SkillId s : cc.toUpdate)
 			{
 				int id = (int)s;
 				flowSkills.UpdateText((int)Group::Skill, id, Format("%s: %d", Skill::skills[id].name.c_str(), cc.s[id].value), true);
 			}
 			flowSkills.UpdateText();
 		}
-		cc.to_update.clear();
+		cc.toUpdate.clear();
 	}
 
 	UpdateInventory();

@@ -2406,12 +2406,12 @@ void CityGenerator::OnEnter()
 	for(Unit& unit : team->members)
 	{
 		if(unit.IsHero())
-			unit.hero->lost_pvp = false;
+			unit.hero->lostPvp = false;
 	}
 
 	team->CheckTeamItemShares();
 
-	Quest_Contest* contest = questMgr->quest_contest;
+	Quest_Contest* contest = questMgr->questContest;
 	if(!contest->generated && gameLevel->locationIndex == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
 		contest->SpawnDrunkmans();
 }
@@ -2947,6 +2947,6 @@ void CityGenerator::SetBuildingsParams()
 			scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
 			scene->useLightDir = true;
 		}
-		insideBuilding->lvlPart->draw_range = 80.f;
+		insideBuilding->lvlPart->drawRange = 80.f;
 	}
 }

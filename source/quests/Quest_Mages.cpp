@@ -51,9 +51,9 @@ void Quest_Mages::SetProgress(int prog2)
 			targetLoc->st = 8;
 			targetLoc->SetKnown();
 
-			at_level = targetLoc->GetLastLevel();
-			item_to_give[0] = Item::Get("q_magowie_kula");
-			spawn_item = Quest_Event::Item_InTreasure;
+			atLevel = targetLoc->GetLastLevel();
+			itemToGive[0] = Item::Get("q_magowie_kula");
+			spawnItem = Quest_Event::Item_InTreasure;
 
 			msgs.push_back(Format(questMgr->txQuest[166], startLoc->name.c_str(), world->GetDate()));
 			msgs.push_back(Format(questMgr->txQuest[167], targetLoc->name.c_str(), GetTargetLocationDir()));
@@ -66,8 +66,8 @@ void Quest_Mages::SetProgress(int prog2)
 			const Item* item = Item::Get("q_magowie_kula");
 			DialogContext::current->talker->AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
-			questMgr->quest_mages2->scholar = DialogContext::current->talker;
-			questMgr->quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
+			questMgr->questMages2->scholar = DialogContext::current->talker;
+			questMgr->questMages2->mages_state = Quest_Mages2::State::ScholarWaits;
 
 			targetLoc->active_quest = nullptr;
 
@@ -78,8 +78,8 @@ void Quest_Mages::SetProgress(int prog2)
 		break;
 	case Progress::EncounteredGolem:
 		{
-			questMgr->quest_mages2->OnStart(questMgr->txQuest[169]);
-			Quest_Mages2* q = questMgr->quest_mages2;
+			questMgr->questMages2->OnStart(questMgr->txQuest[169]);
+			Quest_Mages2* q = questMgr->questMages2;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
 			questMgr->AddQuestRumor(q->id, questMgr->txRumorQ[5]);
 			q->msgs.push_back(Format(questMgr->txQuest[170], world->GetDate()));
@@ -117,7 +117,7 @@ bool Quest_Mages::Special(DialogContext& ctx, cstring msg)
 	{
 		ctx.talker->gold += ctx.pc->unit->gold;
 		ctx.pc->unit->SetGold(0);
-		questMgr->quest_mages2->paid = true;
+		questMgr->questMages2->paid = true;
 	}
 	else
 		assert(0);
@@ -128,7 +128,7 @@ bool Quest_Mages::Special(DialogContext& ctx, cstring msg)
 bool Quest_Mages::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_zaplacono") == 0)
-		return questMgr->quest_mages2->paid;
+		return questMgr->questMages2->paid;
 	assert(0);
 	return false;
 }
@@ -140,8 +140,8 @@ Quest::LoadResult Quest_Mages::Load(GameReader& f)
 
 	if(!done)
 	{
-		item_to_give[0] = Item::Get("q_magowie_kula");
-		spawn_item = Quest_Event::Item_InTreasure;
+		itemToGive[0] = Item::Get("q_magowie_kula");
+		spawnItem = Quest_Event::Item_InTreasure;
 	}
 
 	return LoadResult::Ok;
@@ -283,13 +283,13 @@ void Quest_Mages2::SetProgress(int prog2)
 			}
 			while(good_mage_name == evil_mage_name);
 			done = false;
-			unit_event_handler = this;
-			unit_auto_talk = true;
-			at_level = loc.GetLastLevel();
-			unit_to_spawn = UnitData::Get("q_magowie_boss");
-			unit_dont_attack = true;
-			unit_to_spawn2 = UnitData::Get("golem_iron");
-			spawn_2_guard_1 = true;
+			unitEventHandler = this;
+			unitAutoTalk = true;
+			atLevel = loc.GetLastLevel();
+			unitToSpawn = UnitData::Get("q_magowie_boss");
+			unitDontAttack = true;
+			unitToSpawn2 = UnitData::Get("golem_iron");
+			spawnGuards = true;
 		}
 		break;
 	case Progress::NotRecruitMage:
@@ -490,13 +490,13 @@ Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 
 	if(!done && prog >= Progress::MageDrinkPotion)
 	{
-		unit_event_handler = this;
-		unit_auto_talk = true;
-		at_level = targetLoc->GetLastLevel();
-		unit_to_spawn = UnitData::Get("q_magowie_boss");
-		unit_dont_attack = true;
-		unit_to_spawn2 = UnitData::Get("golem_iron");
-		spawn_2_guard_1 = true;
+		unitEventHandler = this;
+		unitAutoTalk = true;
+		atLevel = targetLoc->GetLastLevel();
+		unitToSpawn = UnitData::Get("q_magowie_boss");
+		unitDontAttack = true;
+		unitToSpawn2 = UnitData::Get("golem_iron");
+		spawnGuards = true;
 	}
 
 	if(mages_state >= State::Encounter && mages_state < State::Completed)
@@ -555,7 +555,7 @@ void Quest_Mages2::OnEncounter(EncounterSpawn& spawn)
 	pts = int(Random(0.5f, 0.75f) * pts);
 	spawn.count = max(1, pts / 8);
 	spawn.level = 8;
-	spawn.group_name = "q_magowie_golems";
-	spawn.dont_attack = true;
+	spawn.groupName = "q_magowie_golems";
+	spawn.dontAttack = true;
 	spawn.dialog = GameDialog::TryGet("q_mages");
 }

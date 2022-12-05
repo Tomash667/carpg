@@ -23,9 +23,9 @@ inline constexpr int SlotToIIndex(ITEM_SLOT s)
 {
 	return -s - 1;
 }
-inline constexpr ITEM_SLOT IIndexToSlot(int i_index)
+inline constexpr ITEM_SLOT IIndexToSlot(int iIndex)
 {
-	ITEM_SLOT s = ITEM_SLOT(-i_index - 1);
+	ITEM_SLOT s = ITEM_SLOT(-iIndex - 1);
 	assert(s >= SLOT_WEAPON && s < SLOT_MAX);
 	return s;
 }
@@ -75,20 +75,20 @@ struct ItemSlotInfo
 struct ItemSlot
 {
 	const Item* item;
-	uint count, team_count;
+	uint count, teamCount;
 
 	void operator = (const ItemSlot& slot)
 	{
 		item = slot.item;
 		count = slot.count;
-		team_count = slot.team_count;
+		teamCount = slot.teamCount;
 	}
 
-	void Set(const Item* item, uint count, uint team_count = 0)
+	void Set(const Item* item, uint count, uint teamCount = 0)
 	{
 		this->item = item;
 		this->count = count;
-		this->team_count = team_count;
+		this->teamCount = teamCount;
 	}
 };
 
@@ -103,18 +103,18 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot);
 
 // dodaje przedmiot do ekwipunku, sprawdza czy siê stackuje, zwraca true jeœli siê zestackowa³
 bool InsertItem(vector<ItemSlot>& items, ItemSlot& slot);
-inline bool InsertItem(vector<ItemSlot>& items, const Item* item, uint count, uint team_count)
+inline bool InsertItem(vector<ItemSlot>& items, const Item* item, uint count, uint teamCount)
 {
 	ItemSlot slot;
-	slot.Set(item, count, team_count);
+	slot.Set(item, count, teamCount);
 	return InsertItem(items, slot);
 }
 
 // add item without sorting (assume that vector is unsorted)
-void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint team_count);
-inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count = 1, bool is_team = true)
+void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint teamCount);
+inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count = 1, bool isTeam = true)
 {
-	InsertItemBare(items, item, count, is_team ? count : 0);
+	InsertItemBare(items, item, count, isTeam ? count : 0);
 }
 
 void SetItemStatsText();
@@ -124,4 +124,4 @@ inline void RemoveNullItems(vector<ItemSlot>& items)
 	RemoveElements(items, [](ItemSlot& slot) { return slot.item == nullptr; });
 }
 
-int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool is_team);
+int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool isTeam);

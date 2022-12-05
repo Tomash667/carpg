@@ -63,8 +63,8 @@ public:
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
 	void Report(int id, cstring text);
-	cstring GetApiUrl() const { return lobby_url.c_str(); }
-	int GetProxyPort() const { return proxy_port; }
+	cstring GetApiUrl() const { return lobbyUrl.c_str(); }
+	int GetProxyPort() const { return proxyPort; }
 
 private:
 	void UpdateInternal();
@@ -75,11 +75,11 @@ private:
 	void ParseResponse(Op* op);
 
 	static const int MAX_REQUESTS = 4;
-	NatPunchthroughClient* np_client;
+	NatPunchthroughClient* npClient;
 	std::queue<Op*> requests;
-	vector<Op*> active_requests;
-	string changelog, lobby_url;
-	int timestamp, lobby_port, proxy_port;
-	bool np_attached, update;
+	vector<Op*> activeRequests;
+	string changelog, lobbyUrl;
+	int timestamp, lobbyPort, proxyPort;
+	bool npAttached, update;
 	CURLM* cm;
 };

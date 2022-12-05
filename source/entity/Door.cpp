@@ -198,7 +198,7 @@ void Door::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(locked);
 	f.WriteCasted<byte>(state);
 	f << door2;
-	if(net->mp_load)
+	if(net->mpLoad)
 		meshInst->Write(f);
 }
 
@@ -222,7 +222,7 @@ bool Door::Read(BitStreamReader& f)
 	}
 
 	meshInst = new MeshInstance(door2 ? gameRes->aDoor2 : gameRes->aDoor);
-	if(net->mp_load)
+	if(net->mpLoad)
 		meshInst->Read(f);
 	meshInst->baseSpeed = 2.f;
 	phy = new btCollisionObject;
@@ -236,7 +236,7 @@ bool Door::Read(BitStreamReader& f)
 	tr.setRotation(btQuaternion(rot, 0, 0));
 	phyWorld->addCollisionObject(phy, CG_DOOR);
 
-	if(!net->mp_load && state == Opened)
+	if(!net->mpLoad && state == Opened)
 		meshInst->SetToEnd(&meshInst->mesh->anims[0]);
 	if(!IsBlocking())
 	{

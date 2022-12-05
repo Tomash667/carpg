@@ -175,32 +175,32 @@ union BeforePlayerPtr
 //-----------------------------------------------------------------------------
 struct LocalPlayerData
 {
-	BeforePlayer before_player;
-	BeforePlayerPtr before_player_ptr;
-	Unit* selected_unit; // unit marked with 'select' command
-	Entity<Unit> ability_target;
-	Vec3 ability_point;
-	float rot_buf, ability_rot, grayout, range_ratio;
-	Key wasted_key;
-	Ability* ability_ready;
-	bool autowalk, ability_ok;
+	BeforePlayer beforePlayer;
+	BeforePlayerPtr beforePlayerPtr;
+	Unit* selectedUnit; // unit marked with 'select' command
+	Entity<Unit> abilityTarget;
+	Vec3 abilityPoint;
+	float rotBuf, abilityRot, grayout, rangeRatio;
+	Key wastedKey;
+	Ability* abilityReady;
+	bool autowalk, abilityOk;
 
 	void Reset()
 	{
-		before_player = BP_NONE;
-		before_player_ptr.any = nullptr;
-		selected_unit = nullptr;
-		ability_target = nullptr;
-		rot_buf = 0.f;
+		beforePlayer = BP_NONE;
+		beforePlayerPtr.any = nullptr;
+		selectedUnit = nullptr;
+		abilityTarget = nullptr;
+		rotBuf = 0.f;
 		grayout = 0.f;
-		wasted_key = Key::None;
+		wastedKey = Key::None;
 		autowalk = false;
-		ability_ready = nullptr;
+		abilityReady = nullptr;
 	}
 	Unit* GetTargetUnit()
 	{
-		if(before_player == BP_UNIT)
-			return before_player_ptr.unit;
+		if(beforePlayer == BP_UNIT)
+			return beforePlayerPtr.unit;
 		return nullptr;
 	}
 };
@@ -214,10 +214,10 @@ struct PlayerController : public HeroPlayerCommon
 		int next;
 		int train;
 		int apt;
-		float train_part;
+		float trainPart;
 	};
 
-	PlayerInfo* player_info;
+	PlayerInfo* playerInfo;
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	Key action_key;
@@ -242,7 +242,7 @@ struct PlayerController : public HeroPlayerCommon
 		Chest* action_chest;
 		Usable* action_usable;
 	};
-	DialogContext* dialog_ctx;
+	DialogContext* dialogCtx;
 	vector<ItemSlot>* chest_trade; // depends on action (can be unit inventory or chest or trader stock)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
@@ -254,9 +254,9 @@ struct PlayerController : public HeroPlayerCommon
 	//----------------------
 	// Temporary
 	//----------------------
-	int gold_get; // used in AddGold
+	int goldGet; // used in AddGold
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
+	PlayerController() : dialogCtx(nullptr), stat_flags(0), playerInfo(nullptr), is_local(false), last_ring(false) {}
 	~PlayerController();
 
 	void Rest(int days, bool resting, bool travel = false);

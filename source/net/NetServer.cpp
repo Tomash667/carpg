@@ -48,7 +48,7 @@ void Net::InitServer()
 
 	OpenPeer();
 
-	uint max_connections = max_players - 1;
+	uint max_connections = maxPlayers - 1;
 	if(!serverLan)
 		++max_connections;
 
@@ -69,7 +69,7 @@ void Net::InitServer()
 	else
 		peer->SetIncomingPassword(nullptr, 0);
 
-	peer->SetMaximumIncomingConnections((word)max_players - 1);
+	peer->SetMaximumIncomingConnections((word)maxPlayers - 1);
 	if(IsDebug())
 		peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS);
 
@@ -77,14 +77,14 @@ void Net::InitServer()
 	{
 		ConnectionAttemptResult result = peer->Connect(api->GetApiUrl(), api->GetProxyPort(), nullptr, 0, nullptr, 0, 6);
 		if(result == CONNECTION_ATTEMPT_STARTED)
-			master_server_state = MasterServerState::Connecting;
+			masterServerState = MasterServerState::Connecting;
 		else
 		{
-			master_server_state = MasterServerState::NotConnected;
+			masterServerState = MasterServerState::NotConnected;
 			Error("Failed to connect to master server: SLikeNet error %d.", result);
 		}
 	}
-	master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
+	masterServerAdr = UNASSIGNED_SYSTEM_ADDRESS;
 
 	Info("Server created. Waiting for connection.");
 
@@ -94,11 +94,11 @@ void Net::InitServer()
 //=================================================================================================
 void Net::OnNewGameServer()
 {
-	active_players = 1;
+	activePlayers = 1;
 	DeleteElements(players);
 	team->myId = 0;
 	team->leaderId = 0;
-	last_id = 0;
+	lastId = 0;
 	game->paused = false;
 	game->hardcoreMode = false;
 
@@ -112,26 +112,26 @@ void Net::OnNewGameServer()
 	sp.left = PlayerInfo::LEFT_NO;
 
 	game->skipIdCounter = 0;
-	update_timer = 0.f;
+	updateTimer = 0.f;
 	game->arena->Reset();
 	team->anyoneTalking = false;
 	gameLevel->canFastTravel = false;
 	warps.clear();
-	if(!mp_load)
+	if(!mpLoad)
 		changes.clear(); // was clear before loading and now contains registered quest_items
-	if(!net_strs.empty())
-		StringPool.Free(net_strs);
-	gameGui->server->maxPlayers = max_players;
+	if(!netStrs.empty())
+		StringPool.Free(netStrs);
+	gameGui->server->maxPlayers = maxPlayers;
 	gameGui->server->serverName = serverName;
 	gameGui->server->UpdateServerInfo();
 	gameGui->server->Show();
-	if(!mp_quickload)
+	if(!mpQuickload)
 	{
 		gameGui->mpBox->Reset();
 		gameGui->mpBox->visible = true;
 	}
 
-	if(!mp_load)
+	if(!mpLoad)
 		gameGui->server->CheckAutopick();
 	else
 	{
@@ -198,8 +198,8 @@ void Net::UpdateServer(float dt)
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
-			--active_players;
-			players_left = true;
+			--activePlayers;
+			playersLeft = true;
 			info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			break;
 		case ID_SAY:
@@ -223,8 +223,8 @@ void Net::UpdateServer(float dt)
 
 	ProcessLeftPlayers();
 
-	update_timer += dt;
-	if(update_timer >= TICK && active_players > 1)
+	updateTimer += dt;
+	if(updateTimer >= TICK && activePlayers > 1)
 	{
 		if(game->gameState == GS_LEVEL)
 		{
@@ -236,7 +236,7 @@ void Net::UpdateServer(float dt)
 				PushChange(NetChange::CHANGE_FLAGS);
 		}
 
-		update_timer = 0;
+		updateTimer = 0;
 		BitStreamWriter f;
 		f << ID_CHANGES;
 
@@ -259,7 +259,7 @@ void Net::UpdateServer(float dt)
 		// changes
 		WriteServerChanges(f);
 		changes.clear();
-		assert(net_strs.empty());
+		assert(netStrs.empty());
 		SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 
 		for(PlayerInfo& info : players)
@@ -277,12 +277,12 @@ void Net::UpdateServer(float dt)
 			}
 
 			// write & send updates
-			if(!info.changes.empty() || info.update_flags)
+			if(!info.changes.empty() || info.updateFlags)
 			{
 				BitStreamWriter f;
 				WriteServerChangesForPlayer(f, info);
 				SendServer(f, HIGH_PRIORITY, RELIABLE_ORDERED, info.adr);
-				info.update_flags = 0;
+				info.updateFlags = 0;
 				info.changes.clear();
 			}
 		}
@@ -302,7 +302,7 @@ void Net::InterpolatePlayers(float dt)
 //=================================================================================================
 void Net::UpdateFastTravel(float dt)
 {
-	if(!fast_travel)
+	if(!fastTravel)
 		return;
 
 	if(!gameLevel->CanFastTravel())
@@ -315,7 +315,7 @@ void Net::UpdateFastTravel(float dt)
 	bool ok = true;
 	for(PlayerInfo& info : players)
 	{
-		if(info.left == PlayerInfo::LEFT_NO && !info.fast_travel)
+		if(info.left == PlayerInfo::LEFT_NO && !info.fastTravel)
 		{
 			player_id = info.id;
 			ok = false;
@@ -329,18 +329,18 @@ void Net::UpdateFastTravel(float dt)
 		c.type = NetChange::FAST_TRAVEL;
 		c.id = FAST_TRAVEL_IN_PROGRESS;
 
-		if(fast_travel_notif)
+		if(fastTravelNotification)
 		{
-			fast_travel_notif->Close();
-			fast_travel_notif = nullptr;
+			fastTravelNotification->Close();
+			fastTravelNotification = nullptr;
 		}
 
 		game->ExitToMap();
 	}
 	else
 	{
-		fast_travel_timer += dt;
-		if(fast_travel_timer >= 5.f)
+		fastTravelTimer += dt;
+		if(fastTravelTimer >= 5.f)
 			CancelFastTravel(FAST_TRAVEL_DENY, player_id);
 	}
 }
@@ -357,12 +357,12 @@ void Net::ServerProcessUnits(vector<Unit*>& units)
 			c.unit = *it;
 			(*it)->changed = false;
 		}
-		if((*it)->IsAI() && (*it)->ai->change_ai_mode)
+		if((*it)->IsAI() && (*it)->ai->changeAiMode)
 		{
 			NetChange& c = Add1(changes);
 			c.type = NetChange::CHANGE_AI_MODE;
 			c.unit = *it;
-			(*it)->ai->change_ai_mode = false;
+			(*it)->ai->changeAiMode = false;
 		}
 	}
 }
@@ -378,7 +378,7 @@ void Net::UpdateWarpData(float dt)
 		gameLevel->WarpUnit(warp.u, warp.where, warp.building);
 		warp.u->frozen = FROZEN::NO;
 
-		NetChangePlayer& c = Add1(warp.u->player->player_info->changes);
+		NetChangePlayer& c = Add1(warp.u->player->playerInfo->changes);
 		c.type = NetChangePlayer::SET_FROZEN;
 		c.id = 0;
 
@@ -389,7 +389,7 @@ void Net::UpdateWarpData(float dt)
 //=================================================================================================
 void Net::ProcessLeftPlayers()
 {
-	if(!players_left)
+	if(!playersLeft)
 		return;
 
 	LoopAndRemove(players, [this](PlayerInfo& info)
@@ -426,7 +426,7 @@ void Net::ProcessLeftPlayers()
 		return true;
 	});
 
-	players_left = false;
+	playersLeft = false;
 }
 
 //=================================================================================================
@@ -763,7 +763,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.SetWeaponStateInstant(WeaponState::Taken, is_bow ? W_BOW : W_ONE_HANDED);
 
 					// send to other players
-					if(active_players > 2)
+					if(activePlayers > 2)
 					{
 						NetChange& c = Add1(changes);
 						c.unit = &unit;
@@ -810,8 +810,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->Register();
 						item->item = sl.item;
 						item->count = count;
-						item->team_count = min(count, (int)sl.team_count);
-						sl.team_count -= item->team_count;
+						item->teamCount = min(count, (int)sl.teamCount);
+						sl.teamCount -= item->teamCount;
 						if(sl.count == 0)
 							unit.items.erase(unit.items.begin() + i_index);
 					}
@@ -835,7 +835,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->Register();
 						item->item = unit.GetEquippedItem(slot_type);
 						item->count = 1;
-						item->team_count = 0;
+						item->teamCount = 0;
 						unit.RemoveEquippedItem(slot_type);
 					}
 
@@ -845,11 +845,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.x -= sin(unit.rot) * 0.25f;
 					item->pos.z -= cos(unit.rot) * 0.25f;
 					item->rot = Quat::RotY(Random(MAX_ANGLE));
-					if(!questMgr->quest_secret->CheckMoonStone(item, unit))
+					if(!questMgr->questSecret->CheckMoonStone(item, unit))
 						unit.locPart->AddGroundItem(item);
 
 					// send to other players
-					if(active_players > 2)
+					if(activePlayers > 2)
 					{
 						NetChange& c = Add1(changes);
 						c.type = NetChange::DROP_ITEM;
@@ -881,7 +881,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				// add item
-				unit.AddItem2(groundItem->item, groundItem->count, groundItem->team_count, false);
+				unit.AddItem2(groundItem->item, groundItem->count, groundItem->teamCount, false);
 
 				// start animation
 				bool up_animation = (groundItem->pos.y > unit.pos.y + 0.5f);
@@ -898,7 +898,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				// send info to other players about picking item
-				if(active_players > 2)
+				if(activePlayers > 2)
 				{
 					NetChange& c3 = Add1(changes);
 					c3.type = NetChange::PICKUP_ITEM;
@@ -1050,16 +1050,16 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(slot.item->type == IT_GOLD)
 					{
 						// special handling of gold
-						uint team_count = min(slot.team_count, (uint)count);
-						if(team_count == 0)
+						uint teamCount = min(slot.teamCount, (uint)count);
+						if(teamCount == 0)
 						{
 							unit.gold += slot.count;
 							info.UpdateGold();
 						}
 						else
 						{
-							team->AddGold(team_count);
-							uint count = slot.count - team_count;
+							team->AddGold(teamCount);
+							uint count = slot.count - teamCount;
 							if(count)
 							{
 								unit.gold += count;
@@ -1070,13 +1070,13 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(slot.count == 0)
 							player.chest_trade->erase(player.chest_trade->begin() + i_index);
 						else
-							slot.team_count -= team_count;
+							slot.teamCount -= teamCount;
 					}
 					else
 					{
 						// player get item from corpse/chest/npc or bought from trader
-						uint team_count = (player.action == PlayerAction::Trade ? 0 : min((uint)count, slot.team_count));
-						unit.AddItem2(slot.item, (uint)count, team_count, false, false);
+						uint teamCount = (player.action == PlayerAction::Trade ? 0 : min((uint)count, slot.teamCount));
+						unit.AddItem2(slot.item, (uint)count, teamCount, false, false);
 						if(player.action == PlayerAction::Trade)
 						{
 							int price = ItemHelper::GetItemPrice(slot.item, unit, true) * count;
@@ -1087,9 +1087,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						{
 							const Consumable& pot = slot.item->ToConsumable();
 							if(pot.aiType == Consumable::AiType::Healing)
-								player.action_unit->ai->have_potion = HavePotion::Check;
+								player.action_unit->ai->havePotion = HavePotion::Check;
 							else if(pot.aiType == Consumable::AiType::Mana)
-								player.action_unit->ai->have_mp_potion = HavePotion::Check;
+								player.action_unit->ai->haveMpPotion = HavePotion::Check;
 						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 						{
@@ -1100,7 +1100,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								{
 									player.action_unit->used_item = nullptr;
 									// removed item from hand, send info to other players
-									if(active_players > 2)
+									if(activePlayers > 2)
 									{
 										NetChange& c = Add1(changes);
 										c.type = NetChange::REMOVE_USED_ITEM;
@@ -1121,7 +1121,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(slot.count == 0)
 							player.chest_trade->erase(player.chest_trade->begin() + i_index);
 						else
-							slot.team_count -= team_count;
+							slot.teamCount -= teamCount;
 					}
 				}
 				else
@@ -1180,21 +1180,21 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						break;
 					}
 
-					uint team_count = min(count, slot.team_count);
+					uint teamCount = min(count, slot.teamCount);
 
 					// add item
 					if(player.action == PlayerAction::LootChest)
-						player.action_chest->AddItem(slot.item, count, team_count, false);
+						player.action_chest->AddItem(slot.item, count, teamCount, false);
 					else if(player.action == PlayerAction::LootContainer)
-						player.action_usable->container->AddItem(slot.item, count, team_count);
+						player.action_usable->container->AddItem(slot.item, count, teamCount);
 					else if(player.action == PlayerAction::Trade)
 					{
-						InsertItem(*player.chest_trade, slot.item, count, team_count);
+						InsertItem(*player.chest_trade, slot.item, count, teamCount);
 						int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 						player.Train(TrainWhat::Trade, (float)price * count, 0);
-						if(team_count)
-							team->AddGold(price * team_count);
-						uint normal_count = count - team_count;
+						if(teamCount)
+							team->AddGold(price * teamCount);
+						uint normal_count = count - teamCount;
 						if(normal_count)
 						{
 							unit.gold += price * normal_count;
@@ -1204,12 +1204,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else
 					{
 						Unit* t = player.action_unit;
-						uint add_as_team = team_count;
+						uint add_as_team = teamCount;
 						if(player.action == PlayerAction::GiveItems && slot.item->type != IT_CONSUMABLE)
 						{
 							add_as_team = 0;
 							int price = slot.item->value / 2;
-							if(slot.team_count > 0)
+							if(slot.teamCount > 0)
 							{
 								t->hero->credit += price;
 								if(IsLocal())
@@ -1228,9 +1228,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							{
 								const Consumable& pot = slot.item->ToConsumable();
 								if(pot.aiType == Consumable::AiType::Healing)
-									t->ai->have_potion = HavePotion::Yes;
+									t->ai->havePotion = HavePotion::Yes;
 								else if(pot.aiType == Consumable::AiType::Mana)
-									t->ai->have_mp_potion = HavePotion::Yes;
+									t->ai->haveMpPotion = HavePotion::Yes;
 							}
 							if(player.action == PlayerAction::GiveItems)
 							{
@@ -1248,7 +1248,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(slot.count == 0)
 						unit.items.erase(unit.items.begin() + i_index);
 					else
-						slot.team_count -= team_count;
+						slot.teamCount -= teamCount;
 				}
 				else
 				{
@@ -1334,10 +1334,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						continue;
 
 					if(slot.item->type == IT_GOLD)
-						unit.AddItem(Item::gold, slot.count, slot.team_count);
+						unit.AddItem(Item::gold, slot.count, slot.teamCount);
 					else
 					{
-						InsertItemBare(unit.items, slot.item, slot.count, slot.team_count);
+						InsertItemBare(unit.items, slot.item, slot.count, slot.teamCount);
 						unit.weight += slot.item->weight * slot.count;
 						any = true;
 					}
@@ -1398,16 +1398,16 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				ItemSlot& slot = unit.items[index];
-				if(unit.CanWear(slot.item) && slot.team_count != 0)
+				if(unit.CanWear(slot.item) && slot.teamCount != 0)
 				{
-					slot.team_count = 0;
+					slot.teamCount = 0;
 					player.credit += slot.item->value / 2;
 					team->CheckCredit(true);
 				}
 				else
 				{
 					Error("Update server: TAKE_ITEM_CREDIT from %s, item %s (count %u, team count %u).", info.name.c_str(), slot.item->id.c_str(),
-						slot.count, slot.team_count);
+						slot.count, slot.teamCount);
 				}
 			}
 			break;
@@ -1425,7 +1425,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.meshInst->Play(unit.data->idles->anims[index].c_str(), PLAY_ONCE, 0);
 					unit.animation = ANI_IDLE;
 					// send info to other players
-					if(active_players > 2)
+					if(activePlayers > 2)
 					{
 						NetChange& c = Add1(changes);
 						c.type = NetChange::IDLE;
@@ -1472,7 +1472,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// start dialog
 					c.id = talk_to->id;
-					player.dialog_ctx->StartDialog(talk_to);
+					player.dialogCtx->StartDialog(talk_to);
 				}
 			}
 			break;
@@ -1485,8 +1485,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Broken CHOICE from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
 				{
-					if(player.dialog_ctx->mode == DialogContext::WAIT_CHOICES && choice < player.dialog_ctx->choices.size())
-						player.dialog_ctx->choice_selected = choice;
+					if(player.dialogCtx->mode == DialogContext::WAIT_CHOICES && choice < player.dialogCtx->choices.size())
+						player.dialogCtx->choiceSelected = choice;
 					else
 						Error("Update server: CHOICE from %s, not in dialog or invalid choice %u.", info.name.c_str(), choice);
 				}
@@ -1495,15 +1495,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// pomijanie dialogu przez gracza
 		case NetChange::SKIP_DIALOG:
 			{
-				int skip_id;
-				f >> skip_id;
+				int skipId;
+				f >> skipId;
 				if(!f)
 					Error("Update server: Broken SKIP_DIALOG from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
 				{
-					DialogContext& ctx = *player.dialog_ctx;
-					if(ctx.dialog_mode && ctx.mode == DialogContext::WAIT_TALK && ctx.skip_id == skip_id)
-						ctx.choice_selected = 1;
+					DialogContext& ctx = *player.dialogCtx;
+					if(ctx.dialogMode && ctx.mode == DialogContext::WAIT_TALK && ctx.skipId == skipId)
+						ctx.choiceSelected = 1;
 				}
 			}
 			break;
@@ -1575,7 +1575,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					gameGui->AddMsg(Format(game->txRolledNumber, info.name.c_str(), number));
 					// send to other players
-					if(active_players > 2)
+					if(activePlayers > 2)
 					{
 						NetChange& c = Add1(changes);
 						c.type = NetChange::RANDOM_NUMBER;
@@ -1837,7 +1837,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(v != info.u->stats->skill[what])
 							{
 								info.u->Set((SkillId)what, v);
-								NetChangePlayer& c = Add1(player.player_info->changes);
+								NetChangePlayer& c = Add1(player.playerInfo->changes);
 								c.type = NetChangePlayer::STAT_CHANGED;
 								c.id = (int)ChangedStatType::SKILL;
 								c.a = what;
@@ -1858,7 +1858,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(v != info.u->stats->attrib[what])
 							{
 								info.u->Set((AttributeId)what, v);
-								NetChangePlayer& c = Add1(player.player_info->changes);
+								NetChangePlayer& c = Add1(player.playerInfo->changes);
 								c.type = NetChangePlayer::STAT_CHANGED;
 								c.id = (int)ChangedStatType::ATTRIBUTE;
 								c.a = what;
@@ -2130,7 +2130,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game->gameState == GS_LEVEL)
 				{
 					if(type == 2)
-						questMgr->quest_tournament->Train(player);
+						questMgr->questTournament->Train(player);
 					else
 					{
 						cstring error = nullptr;
@@ -2266,11 +2266,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						// message about getting gold
 						if(target->player != game->pc)
 						{
-							NetChangePlayer& c = Add1(target->player->player_info->changes);
+							NetChangePlayer& c = Add1(target->player->playerInfo->changes);
 							c.type = NetChangePlayer::GOLD_RECEIVED;
 							c.id = info.id;
 							c.count = count;
-							target->player->player_info->UpdateGold();
+							target->player->playerInfo->UpdateGold();
 						}
 						else
 						{
@@ -2312,7 +2312,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						groundItem->Register();
 						groundItem->item = Item::gold;
 						groundItem->count = count;
-						groundItem->team_count = 0;
+						groundItem->teamCount = 0;
 						groundItem->pos = unit.pos;
 						groundItem->pos.x -= sin(unit.rot) * 0.25f;
 						groundItem->pos.z -= cos(unit.rot) * 0.25f;
@@ -2320,7 +2320,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						info.u->locPart->AddGroundItem(groundItem);
 
 						// send info to other players
-						if(active_players > 2)
+						if(activePlayers > 2)
 						{
 							NetChange& c = Add1(changes);
 							c.type = NetChange::DROP_ITEM;
@@ -2776,11 +2776,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						CancelFastTravel(FAST_TRAVEL_CANCEL, info.id);
 					break;
 				case FAST_TRAVEL_ACCEPT:
-					if(info.fast_travel)
+					if(info.fastTravel)
 						Error("Update server: FAST_TRAVEL already accepted from %s.", info.name.c_str());
 					else
 					{
-						info.fast_travel = true;
+						info.fastTravel = true;
 
 						NetChange& c = Add1(changes);
 						c.type = NetChange::FAST_TRAVEL_VOTE;
@@ -2788,7 +2788,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 					break;
 				case FAST_TRAVEL_DENY:
-					if(info.fast_travel)
+					if(info.fastTravel)
 						Error("Update server: FAST_TRAVEL cancel already accepted from %s.", info.name.c_str());
 					else
 						CancelFastTravel(FAST_TRAVEL_DENY, info.id);
@@ -3061,13 +3061,13 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.count;
 			f << *c.str;
 			StringPool.Free(c.str);
-			RemoveElement(net_strs, c.str);
+			RemoveElement(netStrs, c.str);
 			break;
 		case NetChange::TALK_POS:
 			f << c.pos;
 			f << *c.str;
 			StringPool.Free(c.str);
-			RemoveElement(net_strs, c.str);
+			RemoveElement(netStrs, c.str);
 			break;
 		case NetChange::CHANGE_LOCATION_STATE:
 			f.WriteCasted<byte>(c.id);
@@ -3077,7 +3077,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::HAIR_COLOR:
 			f << c.unit->id;
-			f << c.unit->human_data->hair_color;
+			f << c.unit->human_data->hairColor;
 			break;
 		case NetChange::WARP:
 			f << c.unit->id;
@@ -3087,7 +3087,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::REGISTER_ITEM:
 			{
-				f << c.base_item->id;
+				f << c.baseItem->id;
 				f << c.item2->id;
 				f << c.item2->name;
 				f << c.item2->desc;
@@ -3115,7 +3115,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::RENAME_ITEM:
 			{
-				const Item* item = c.base_item;
+				const Item* item = c.baseItem;
 				f << item->quest_id;
 				f << item->id;
 				f << item->name;
@@ -3195,17 +3195,17 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->data->id;
 			break;
 		case NetChange::SPELL_SOUND:
-			f << c.e_id;
+			f << c.extraId;
 			f << c.ability->hash;
 			f << c.pos;
 			break;
 		case NetChange::CREATE_ELECTRO:
-			f << c.e_id;
+			f << c.extraId;
 			f << c.pos;
 			f << c.vec3;
 			break;
 		case NetChange::UPDATE_ELECTRO:
-			f << c.e_id;
+			f << c.extraId;
 			f << c.pos;
 			break;
 		case NetChange::ELECTRO_HIT:
@@ -3214,8 +3214,8 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::PARTICLE_EFFECT:
 			f << c.ability->hash;
 			f << c.pos;
-			f << c.extra_fs[0];
-			f << c.extra_fs[1];
+			f << c.extraFloats[0];
+			f << c.extraFloats[1];
 			break;
 		case NetChange::REVEAL_MINIMAP:
 			f.WriteCasted<word>(gameLevel->minimapRevealMp.size());
@@ -3273,12 +3273,12 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << *c.str;
 			f << c.f[0];
 			StringPool.Free(c.str);
-			RemoveElement(net_strs, c.str);
+			RemoveElement(netStrs, c.str);
 			break;
 		case NetChange::PLAYER_ABILITY:
 			f << c.unit->id;
 			f << c.ability->hash;
-			f << c.extra_f;
+			f << c.extraFloat;
 			break;
 		case NetChange::CAST_SPELL:
 			f << c.unit->id;
@@ -3286,7 +3286,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::REMOVE_BULLET:
 			f << c.id;
-			f << (c.e_id == 1);
+			f << (c.extraId == 1);
 			break;
 		case NetChange::ADD_INVESTMENT:
 			{
@@ -3299,14 +3299,14 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::ADD_UNIT_EFFECT:
 			f << c.unit->id;
 			f.WriteCasted<byte>(c.id);
-			f << c.extra_f;
+			f << c.extraFloat;
 			break;
 		case NetChange::REMOVE_UNIT_EFFECT:
 			f << c.unit->id;
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::CREATE_TRAP:
-			f << c.e_id;
+			f << c.extraId;
 			f.WriteCasted<byte>(c.id);
 			f << c.pos;
 			break;
@@ -3326,18 +3326,18 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 	PlayerController& player = *info.pc;
 
 	f.WriteCasted<byte>(ID_PLAYER_CHANGES);
-	f.WriteCasted<byte>(info.update_flags);
+	f.WriteCasted<byte>(info.updateFlags);
 
 	// variables
-	if(IsSet(info.update_flags, PlayerInfo::UF_POISON_DAMAGE))
+	if(IsSet(info.updateFlags, PlayerInfo::UF_POISON_DAMAGE))
 		f << player.last_dmg_poison;
-	if(IsSet(info.update_flags, PlayerInfo::UF_GOLD))
+	if(IsSet(info.updateFlags, PlayerInfo::UF_GOLD))
 		f << info.u->gold;
-	if(IsSet(info.update_flags, PlayerInfo::UF_ALCOHOL))
+	if(IsSet(info.updateFlags, PlayerInfo::UF_ALCOHOL))
 		f << info.u->alcohol;
-	if(IsSet(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
+	if(IsSet(info.updateFlags, PlayerInfo::UF_LEARNING_POINTS))
 		f << info.pc->learning_points;
-	if(IsSet(info.update_flags, PlayerInfo::UF_LEVEL))
+	if(IsSet(info.updateFlags, PlayerInfo::UF_LEVEL))
 		f << info.u->level;
 
 	// changes
@@ -3394,9 +3394,9 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			break;
 		case NetChangePlayer::SHOW_DIALOG_CHOICES:
 			{
-				DialogContext& ctx = *player.dialog_ctx;
+				DialogContext& ctx = *player.dialogCtx;
 				f.WriteCasted<byte>(ctx.choices.size());
-				f.WriteCasted<char>(ctx.dialog_esc);
+				f.WriteCasted<char>(ctx.dialogEsc);
 				for(DialogChoice& choice : ctx.choices)
 					f << choice.msg;
 			}
@@ -3587,7 +3587,7 @@ void Net::Server_Say(BitStreamReader& f, PlayerInfo& info)
 		gameGui->AddMsg(str);
 
 		// send to other players
-		if(active_players > 2)
+		if(activePlayers > 2)
 			peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, info.adr, true);
 
 		if(game->gameState == GS_LEVEL)
@@ -3641,7 +3641,7 @@ void Net::ClearChanges()
 			if(IsServer() && c.str)
 			{
 				StringPool.Free(c.str);
-				RemoveElement(net_strs, c.str);
+				RemoveElement(netStrs, c.str);
 				c.str = nullptr;
 			}
 			break;
@@ -3727,8 +3727,8 @@ bool Net::FilterOut(NetChangePlayer& c)
 //=================================================================================================
 void Net::WriteNetVars(BitStreamWriter& f)
 {
-	f << mp_use_interp;
-	f << mp_interp;
+	f << mpUseInterp;
+	f << mpInterp;
 	f << game->gameSpeed;
 }
 
@@ -3753,8 +3753,8 @@ void Net::WriteWorldData(BitStreamWriter& f)
 
 	// mp vars
 	WriteNetVars(f);
-	if(!net_strs.empty())
-		StringPool.Free(net_strs);
+	if(!netStrs.empty())
+		StringPool.Free(netStrs);
 
 	// secret note text
 	f << Quest_Secret::GetNote().desc;
@@ -3780,7 +3780,7 @@ void Net::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 void Net::WriteLevelData(BitStreamWriter& f, bool loaded_resources)
 {
 	f << ID_LEVEL_DATA;
-	f << mp_load;
+	f << mpLoad;
 	f << loaded_resources;
 
 	// level
@@ -3834,7 +3834,7 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 	f.WriteCasted<byte>(team->leaderId);
 
 	// multiplayer load data
-	if(mp_load)
+	if(mpLoad)
 	{
 		f << unit.used_item_is_team;
 		f << unit.raise_timer;
@@ -3864,9 +3864,9 @@ void Net::SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliabil
 uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability)
 {
 	assert(IsServer());
-	if(active_players <= 1)
+	if(activePlayers <= 1)
 		return 0;
-	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, master_server_adr, true);
+	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, masterServerAdr, true);
 	return ack;
 }
 
@@ -3875,9 +3875,9 @@ void Net::Save(GameWriter& f)
 {
 	f << serverName;
 	f << password;
-	f << active_players;
-	f << max_players;
-	f << last_id;
+	f << activePlayers;
+	f << maxPlayers;
+	f << lastId;
 	uint count = 0;
 	for(PlayerInfo& info : players)
 	{
@@ -3890,8 +3890,8 @@ void Net::Save(GameWriter& f)
 		if(info.left == PlayerInfo::LEFT_NO)
 			info.Save(f);
 	}
-	f << mp_use_interp;
-	f << mp_interp;
+	f << mpUseInterp;
+	f << mpInterp;
 }
 
 //=================================================================================================
@@ -3899,22 +3899,22 @@ void Net::Load(GameReader& f)
 {
 	f >> serverName;
 	f >> password;
-	f >> active_players;
-	f >> max_players;
-	f >> last_id;
+	f >> activePlayers;
+	f >> maxPlayers;
+	f >> lastId;
 	uint count;
 	f >> count;
-	DeleteElements(old_players);
-	old_players.ptrs.resize(count);
+	DeleteElements(oldPlayers);
+	oldPlayers.ptrs.resize(count);
 	for(uint i = 0; i < count; ++i)
 	{
-		old_players.ptrs[i] = new PlayerInfo;
-		old_players.ptrs[i]->Load(f);
+		oldPlayers.ptrs[i] = new PlayerInfo;
+		oldPlayers.ptrs[i]->Load(f);
 	}
 	if(LOAD_VERSION < V_0_12)
 		f.Skip(sizeof(int) * 7); // old netid_counters
-	f >> mp_use_interp;
-	f >> mp_interp;
+	f >> mpUseInterp;
+	f >> mpInterp;
 }
 
 //=================================================================================================
@@ -3923,7 +3923,7 @@ int Net::GetServerFlags()
 	int flags = 0;
 	if(!password.empty())
 		flags |= SERVER_PASSWORD;
-	if(mp_load)
+	if(mpLoad)
 		flags |= SERVER_SAVED;
 	return flags;
 }
@@ -3933,18 +3933,18 @@ int Net::GetNewPlayerId()
 {
 	while(true)
 	{
-		last_id = (last_id + 1) % 256;
+		lastId = (lastId + 1) % 256;
 		bool ok = true;
 		for(PlayerInfo& info : players)
 		{
-			if(info.id == last_id)
+			if(info.id == lastId)
 			{
 				ok = false;
 				break;
 			}
 		}
 		if(ok)
-			return last_id;
+			return lastId;
 	}
 }
 
@@ -3953,7 +3953,7 @@ PlayerInfo* Net::FindOldPlayer(cstring nick)
 {
 	assert(nick);
 
-	for(PlayerInfo& info : old_players)
+	for(PlayerInfo& info : oldPlayers)
 	{
 		if(info.name == nick)
 			return &info;
@@ -3966,7 +3966,7 @@ PlayerInfo* Net::FindOldPlayer(cstring nick)
 void Net::DeleteOldPlayers()
 {
 	const bool in_level = gameLevel->isOpen;
-	for(PlayerInfo& info : old_players)
+	for(PlayerInfo& info : oldPlayers)
 	{
 		if(!info.loaded && info.u)
 		{
@@ -3981,7 +3981,7 @@ void Net::DeleteOldPlayers()
 			delete info.u;
 		}
 	}
-	DeleteElements(old_players);
+	DeleteElements(oldPlayers);
 }
 
 //=================================================================================================
@@ -4001,7 +4001,7 @@ void Net::KickPlayer(PlayerInfo& info)
 		server_panel->AddMsg(Format(game->txPlayerKicked, info.name.c_str()));
 		Info("Player %s was kicked.", info.name.c_str());
 
-		if(active_players > 2)
+		if(activePlayers > 2)
 			server_panel->AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
 
 		server_panel->CheckReady();
@@ -4010,7 +4010,7 @@ void Net::KickPlayer(PlayerInfo& info)
 	else
 	{
 		info.left = PlayerInfo::LEFT_KICK;
-		players_left = true;
+		playersLeft = true;
 	}
 }
 

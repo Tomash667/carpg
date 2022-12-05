@@ -8,11 +8,11 @@
 void CreatedCharacter::Clear(Class* clas)
 {
 	this->clas = clas;
-	sp_max = StatProfile::MAX_TAGS;
-	perks_max = StatProfile::MAX_PERKS;
+	spMax = StatProfile::MAX_TAGS;
+	perksMax = StatProfile::MAX_PERKS;
 
-	sp = sp_max;
-	perks = perks_max;
+	sp = spMax;
+	perks = perksMax;
 
 	StatProfile& profile = clas->player->GetStatProfile();
 
@@ -30,9 +30,9 @@ void CreatedCharacter::Clear(Class* clas)
 		s[i].mod = false;
 	}
 
-	taken_perks.clear();
-	update_skills = false;
-	to_update.clear();
+	takenPerks.clear();
+	updateSkills = false;
+	toUpdate.clear();
 }
 
 //=================================================================================================
@@ -41,9 +41,9 @@ void CreatedCharacter::Random(Class* clas)
 	Clear(clas);
 
 	StatProfile& profile = clas->player->GetStatProfile();
-	SubprofileInfo sub = profile.GetRandomSubprofile(&last_sub);
+	SubprofileInfo sub = profile.GetRandomSubprofile(&lastSub);
 	StatProfile::Subprofile& subprofile = *profile.subprofiles[sub.index];
-	last_sub = sub;
+	lastSub = sub;
 
 	// apply tag skills
 	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
@@ -67,7 +67,7 @@ void CreatedCharacter::Random(Class* clas)
 			value = (int)sub.GetSkill((SkillId)value);
 		TakenPerk perk(tp.perk, value);
 		perk.Apply(ctx);
-		taken_perks.push_back(perk);
+		takenPerks.push_back(perk);
 	}
 
 	sp = 0;
@@ -87,8 +87,8 @@ void CreatedCharacter::Write(BitStreamWriter& f) const
 	f << sk;
 
 	// perks
-	f.WriteCasted<byte>(taken_perks.size());
-	for(const TakenPerk& tp : taken_perks)
+	f.WriteCasted<byte>(takenPerks.size());
+	for(const TakenPerk& tp : takenPerks)
 	{
 		f << tp.perk->hash;
 		f << tp.value;
@@ -124,8 +124,8 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	// perks
 	PerkContext ctx(this);
 	ctx.validate = true;
-	taken_perks.resize(count, TakenPerk(nullptr));
-	for(TakenPerk& tp : taken_perks)
+	takenPerks.resize(count, TakenPerk(nullptr));
+	for(TakenPerk& tp : takenPerks)
 	{
 		int perk_hash = f.Read<int>();
 		f >> tp.value;
@@ -148,7 +148,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	// search for duplicates, too many types
 	int history_perks = 0,
 		flaw_perks = 0;
-	for(vector<TakenPerk>::iterator it = taken_perks.begin(), end = taken_perks.end(); it != end; ++it)
+	for(vector<TakenPerk>::iterator it = takenPerks.begin(), end = takenPerks.end(); it != end; ++it)
 	{
 		for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
 		{
@@ -187,7 +187,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 //=================================================================================================
 bool CreatedCharacter::HavePerk(Perk* perk) const
 {
-	for(const TakenPerk& tp : taken_perks)
+	for(const TakenPerk& tp : takenPerks)
 	{
 		if(tp.perk == perk)
 			return true;

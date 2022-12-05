@@ -270,17 +270,17 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					bullet->pos = Vec3(2.f * tile.x + pos.x - float(int(pos.x / 2) * 2) + Random(-base->rw, base->rw) - 1.2f * DirToPos(dir).x,
 						Random(0.5f, 1.5f),
 						2.f * tile.y + pos.z - float(int(pos.z / 2) * 2) + Random(-base->h, base->h) - 1.2f * DirToPos(dir).y);
-					bullet->start_pos = bullet->pos;
+					bullet->startPos = bullet->pos;
 					bullet->rot = Vec3(0, DirToRot(dir), 0);
 					bullet->owner = nullptr;
 					bullet->pe = nullptr;
 					bullet->speed = TRAP_ARROW_SPEED;
 					bullet->ability = nullptr;
 					bullet->tex = nullptr;
-					bullet->tex_size = 0.f;
+					bullet->texSize = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->yspeed = 0.f;
-					bullet->poison_attack = (base->type == TRAP_POISON ? bullet->attack : 0.f);
+					bullet->poisonAttack = (base->type == TRAP_POISON ? bullet->attack : 0.f);
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
@@ -298,7 +298,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 						c.type = NetChange::SHOOT_ARROW;
 						c << bullet->id
 							<< -1 // owner
-							<< bullet->start_pos
+							<< bullet->startPos
 							<< bullet->rot.x
 							<< bullet->rot.y
 							<< bullet->speed
@@ -390,7 +390,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::SPELL_SOUND;
-						c.e_id = 1;
+						c.extraId = 1;
 						c.ability = fireball;
 						c.pos = pos;
 					}
@@ -650,7 +650,7 @@ void Trap::Write(BitStreamWriter& f)
 	f << pos;
 	f << rot;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
@@ -678,7 +678,7 @@ bool Trap::Read(BitStreamReader& f)
 	mpTrigger = false;
 	hitted = nullptr;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;

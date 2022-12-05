@@ -86,7 +86,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		// told info to spread by player
 		{
 			OnStart(questMgr->txQuest[213]);
-			questMgr->quests_timeout2.push_back(this);
+			questMgr->questTimeouts2.push_back(this);
 
 			prog = Progress::Started;
 
@@ -121,7 +121,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			else
 				OnUpdate(msg);
 
-			RemoveElementTry(questMgr->quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(questMgr->questTimeouts2, static_cast<Quest*>(this));
 		}
 		break;
 	case Progress::Timeout:
@@ -177,7 +177,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 //=================================================================================================
 bool Quest_SpreadNews::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time >= 60 && prog < Progress::Deliver;
+	return world->GetWorldtime() - startTime >= 60 && prog < Progress::Deliver;
 }
 
 //=================================================================================================

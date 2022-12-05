@@ -54,7 +54,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				return;
 			if(questMgr->RemoveQuestRumor(id))
 				gameGui->journal->AddRumor(Format(questMgr->txQuest[189], GetStartLocationName()));
-			questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
+			questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
@@ -62,13 +62,13 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(questMgr->RemoveQuestRumor(id))
 				gameGui->journal->AddRumor(Format(questMgr->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
-			Unit*& u = questMgr->quest_orcs2->guard;
+			Unit*& u = questMgr->questOrcs2->guard;
 			if(u)
 			{
 				u->temporary = true;
 				u = nullptr;
 			}
-			questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
+			questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::Started:
@@ -77,7 +77,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			// remove rumor from pool
 			questMgr->RemoveQuestRumor(id);
 			// mark guard to remove
-			Unit*& u = questMgr->quest_orcs2->guard;
+			Unit*& u = questMgr->questOrcs2->guard;
 			if(u)
 			{
 				u->temporary = true;
@@ -91,18 +91,18 @@ void Quest_Orcs::SetProgress(int prog2)
 			tl.st = 8;
 			tl.active_quest = this;
 			targetLoc = &tl;
-			location_event_handler = this;
-			at_level = tl.GetLastLevel();
-			dungeon_levels = at_level + 1;
-			whole_location_event_handler = true;
-			item_to_give[0] = Item::Get("q_orkowie_klucz");
-			spawn_item = Quest_Event::Item_GiveSpawned2;
-			unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-			spawn_unit_room = RoomTarget::Prison;
-			unit_dont_attack = true;
-			unit_to_spawn2 = UnitGroup::Get("orcs")->GetLeader(10);
-			unit_spawn_level2 = -3;
-			questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
+			locationEventHandler = this;
+			atLevel = tl.GetLastLevel();
+			dungeon_levels = atLevel + 1;
+			wholeLocationEventHandler = true;
+			itemToGive[0] = Item::Get("q_orkowie_klucz");
+			spawnItem = Quest_Event::Item_GiveSpawned2;
+			unitToSpawn = UnitData::Get("q_orkowie_gorush");
+			unitSpawnRoom = RoomTarget::Prison;
+			unitDontAttack = true;
+			unitToSpawn2 = UnitGroup::Get("orcs")->GetLeader(10);
+			unitSpawnLevel2 = -3;
+			questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// add journal entry
 			msgs.push_back(Format(questMgr->txQuest[192], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(questMgr->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
@@ -121,15 +121,15 @@ void Quest_Orcs::SetProgress(int prog2)
 			OnUpdate(questMgr->txQuest[195]);
 			world->AddNews(Format(questMgr->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
-			if(questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+			if(questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
-				questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
-				questMgr->quest_orcs2->days = Random(30, 60);
+				questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
+				questMgr->questOrcs2->days = Random(30, 60);
 				targetLoc->active_quest = nullptr;
 				targetLoc = nullptr;
 			}
 			else
-				questMgr->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
+				questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::Completed;
 		}
 		break;
 	}
@@ -163,7 +163,7 @@ bool Quest_Orcs::IfNeedTalk(cstring topic) const
 bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
-		return questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || questMgr->quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
+		return questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::OrcJoined || questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
 	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
 		return world->GetCurrentLocation() == startLoc;
 	assert(0);
@@ -195,17 +195,17 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 	if(LOAD_VERSION < V_0_16)
 		f.Skip<int>(); // old levels_cleared
 
-	location_event_handler = this;
-	whole_location_event_handler = true;
+	locationEventHandler = this;
+	wholeLocationEventHandler = true;
 
 	if(!done)
 	{
-		item_to_give[0] = Item::Get("q_orkowie_klucz");
-		spawn_item = Quest_Event::Item_GiveSpawned2;
-		unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-		unit_to_spawn2 = UnitGroup::Get("orcs")->GetLeader(10);
-		unit_spawn_level2 = -3;
-		spawn_unit_room = RoomTarget::Prison;
+		itemToGive[0] = Item::Get("q_orkowie_klucz");
+		spawnItem = Quest_Event::Item_GiveSpawned2;
+		unitToSpawn = UnitData::Get("q_orkowie_gorush");
+		unitToSpawn2 = UnitGroup::Get("orcs")->GetLeader(10);
+		unitSpawnLevel2 = -3;
+		unitSpawnRoom = RoomTarget::Prison;
 	}
 
 	return LoadResult::Ok;
@@ -302,8 +302,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			{
 				orcs_state = Quest_Orcs2::State::CompletedJoined;
 				days = Random(30, 60);
-				questMgr->quest_orcs->targetLoc->active_quest = nullptr;
-				questMgr->quest_orcs->targetLoc = nullptr;
+				questMgr->questOrcs->targetLoc->active_quest = nullptr;
+				questMgr->questOrcs->targetLoc = nullptr;
 			}
 			// join team
 			DialogContext::current->talker->dont_attack = false;
@@ -331,7 +331,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			Location& nearl = *world->GetLocation(near_loc);
 			targetLoc->SetKnown();
 			done = false;
-			location_event_handler = this;
+			locationEventHandler = this;
 			OnUpdate(Format(questMgr->txQuest[199], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str()));
 		}
 		break;
@@ -418,12 +418,12 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedWhereIsBase:
 		{
 			targetLoc->SetKnown();
-			unit_to_spawn = UnitData::Get("q_orkowie_boss");
-			spawn_unit_room = RoomTarget::Throne;
+			unitToSpawn = UnitData::Get("q_orkowie_boss");
+			unitSpawnRoom = RoomTarget::Throne;
 			callback = WarpToThroneOrcBoss;
-			at_level = targetLoc->GetLastLevel();
-			location_event_handler = nullptr;
-			unit_event_handler = this;
+			atLevel = targetLoc->GetLastLevel();
+			locationEventHandler = nullptr;
+			unitEventHandler = this;
 			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
 			Location& nearl = *world->GetLocation(near_loc);
 			OnUpdate(Format(questMgr->txQuest[203], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str(), targetLoc->name.c_str()));
@@ -478,7 +478,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 					if(u.data == ud_weak_orc)
 					{
 						u.dont_attack = false;
-						u.ai->change_ai_mode = true;
+						u.ai->changeAiMode = true;
 					}
 					else
 					{
@@ -488,9 +488,9 @@ void Quest_Orcs2::SetProgress(int prog2)
 							{
 								u.data = ud[i * 2 + 1];
 								u.ai->target = nullptr;
-								u.ai->alert_target = nullptr;
+								u.ai->alertTarget = nullptr;
 								u.ai->state = AIController::Idle;
-								u.ai->change_ai_mode = true;
+								u.ai->changeAiMode = true;
 								if(Net::IsOnline())
 								{
 									NetChange& c = Add1(Net::changes);
@@ -636,13 +636,13 @@ Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 	if(!done)
 	{
 		if(prog == Progress::TalkedWhereIsCamp)
-			location_event_handler = this;
+			locationEventHandler = this;
 		else if(prog == Progress::TalkedWhereIsBase)
 		{
-			unit_to_spawn = UnitData::Get("q_orkowie_boss");
-			spawn_unit_room = RoomTarget::Throne;
-			location_event_handler = nullptr;
-			unit_event_handler = this;
+			unitToSpawn = UnitData::Get("q_orkowie_boss");
+			unitSpawnRoom = RoomTarget::Throne;
+			locationEventHandler = nullptr;
+			unitEventHandler = this;
 			callback = WarpToThroneOrcBoss;
 		}
 	}

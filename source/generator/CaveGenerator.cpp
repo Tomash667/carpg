@@ -385,9 +385,9 @@ void CaveGenerator::GenerateObjects()
 	for(vector<Int2>::iterator it = cave->holes.begin(), end = cave->holes.end(); it != end; ++it)
 	{
 		GameLight& light = Add1(lvl.lights);
-		light.start_pos = Vec3(2.f * it->x + 1.f, 3.f, 2.f * it->y + 1.f);
+		light.startPos = Vec3(2.f * it->x + 1.f, 3.f, 2.f * it->y + 1.f);
 		light.range = 5;
-		light.start_color = Vec3(1.f, 1.0f, 1.0f);
+		light.startColor = Vec3(1.f, 1.0f, 1.0f);
 	}
 
 	// stalactites
@@ -470,8 +470,8 @@ void CaveGenerator::GenerateObjects()
 			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
 	}
 
-	if(gameLevel->location == questMgr->quest_mine->targetLoc)
-		questMgr->quest_mine->GenerateMine(this, true);
+	if(gameLevel->location == questMgr->questMine->targetLoc)
+		questMgr->questMine->GenerateMine(this, true);
 }
 
 //=================================================================================================
@@ -526,8 +526,8 @@ void CaveGenerator::GenerateItems()
 int CaveGenerator::HandleUpdate(int days)
 {
 	int update_flags = 0;
-	if(gameLevel->location == questMgr->quest_mine->targetLoc)
-		update_flags = questMgr->quest_mine->GenerateMine(this, false);
+	if(gameLevel->location == questMgr->questMine->targetLoc)
+		update_flags = questMgr->questMine->GenerateMine(this, false);
 	if(days > 0)
 		GenerateCaveItems(min(days, 10));
 	return update_flags;

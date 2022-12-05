@@ -244,10 +244,10 @@ void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 {
 	if(crazies_state == State::TalkedWithCrazy)
 	{
-		spawn.group_name = nullptr;
+		spawn.groupName = nullptr;
 		spawn.essential = UnitData::Get("q_szaleni_szaleniec");
 		spawn.level = 13;
-		spawn.dont_attack = true;
+		spawn.dontAttack = true;
 		spawn.dialog = GameDialog::TryGet("q_crazies");
 		spawn.count = 1;
 
@@ -255,9 +255,9 @@ void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 	}
 	else
 	{
-		spawn.group_name = "unk";
+		spawn.groupName = "unk";
 		spawn.level = 13;
-		spawn.back_attack = true;
+		spawn.backAttack = true;
 		if(crazies_state == State::PickedStone)
 		{
 			crazies_state = State::FirstAttack;

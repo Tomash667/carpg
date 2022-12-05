@@ -85,7 +85,7 @@ void OutsideLocationGenerator::SetOutsideParams()
 	scene->lightColor = Color::White;
 	scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
 	scene->useLightDir = true;
-	outside->lvlPart->draw_range = 80.f;
+	outside->lvlPart->drawRange = 80.f;
 }
 
 //=================================================================================================
@@ -219,7 +219,7 @@ void OutsideLocationGenerator::OnEnter()
 		{
 			if(!event->done)
 				questMgr->HandleQuestEvent(event);
-			gameLevel->eventHandler = event->location_event_handler;
+			gameLevel->eventHandler = event->locationEventHandler;
 		}
 	}
 
@@ -230,9 +230,9 @@ void OutsideLocationGenerator::OnEnter()
 	SpawnTeam();
 
 	// generate guards for bandits quest
-	if(questMgr->quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && gameLevel->location == questMgr->quest_bandits->targetLoc)
+	if(questMgr->questBandits->bandits_state == Quest_Bandits::State::GenerateGuards && gameLevel->location == questMgr->questBandits->targetLoc)
 	{
-		questMgr->quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
+		questMgr->questBandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 		UnitData* ud = UnitData::Get("guard_q_bandyci");
 		int count = Random(4, 5);
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);

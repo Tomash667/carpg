@@ -58,11 +58,11 @@ void Arena::Start(Mode mode)
 void Arena::Reset()
 {
 	viewers.clear();
-	dialog_pvp = nullptr;
+	dialogPvp = nullptr;
 	fighter = nullptr;
 	mode = NONE;
 	free = true;
-	pvp_response.ok = false;
+	pvpResponse.ok = false;
 }
 
 //=================================================================================================
@@ -74,15 +74,15 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 		StartArenaCombat(msg[13] - '0');
 	else if(strcmp(msg, "pvp_gather") == 0)
 	{
-		near_players.clear();
+		nearPlayers.clear();
 		for(Unit& unit : team->activeMembers)
 		{
 			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arena_pos) < 5.f)
-				near_players.push_back(&unit);
+				nearPlayers.push_back(&unit);
 		}
-		near_players_str.resize(near_players.size());
-		for(uint i = 0, size = near_players.size(); i != size; ++i)
-			near_players_str[i] = Format(txPvpWith, near_players[i]->player->name.c_str());
+		nearPlayersStr.resize(nearPlayers.size());
+		for(uint i = 0, size = nearPlayers.size(); i != size; ++i)
+			nearPlayersStr[i] = Format(txPvpWith, nearPlayers[i]->player->name.c_str());
 	}
 	else if(strcmp(msg, "start_pvp") == 0)
 	{
@@ -92,12 +92,12 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 	else if(strncmp(msg, "pvp/", 4) == 0)
 	{
 		int id = int(msg[4] - '1');
-		Unit* u = near_players[id];
+		Unit* u = nearPlayers[id];
 		if(Vec3::Distance2d(u->pos, gameLevel->cityCtx->arena_pos) > 5.f)
 		{
-			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
-			ctx.Talk(ctx.dialog_s_text.c_str());
-			++ctx.dialog_pos;
+			ctx.dialogString = Format(txPvpTooFar, u->player->name.c_str());
+			ctx.Talk(ctx.dialogString.c_str());
+			++ctx.dialogPos;
 			return true;
 		}
 		else
@@ -112,20 +112,20 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 				info.pause = false;
 				info.text = Format(txPvp, ctx.pc->name.c_str());
 				info.type = DIALOG_YESNO;
-				dialog_pvp = gui->ShowDialog(info);
-				pvp_unit = near_players[id];
+				dialogPvp = gui->ShowDialog(info);
+				pvpUnit = nearPlayers[id];
 			}
 			else
 			{
-				NetChangePlayer& c = Add1(near_players[id]->player->player_info->changes);
+				NetChangePlayer& c = Add1(nearPlayers[id]->player->playerInfo->changes);
 				c.type = NetChangePlayer::PVP;
 				c.id = ctx.pc->id;
 			}
 
-			pvp_response.ok = true;
-			pvp_response.from = ctx.pc->unit;
-			pvp_response.to = u;
-			pvp_response.timer = 0.f;
+			pvpResponse.ok = true;
+			pvpResponse.from = ctx.pc->unit;
+			pvpResponse.to = u;
+			pvpResponse.timer = 0.f;
 		}
 	}
 	else
@@ -143,10 +143,10 @@ bool Arena::SpecialIf(DialogContext& ctx, cstring msg)
 	else if(strncmp(msg, "have_player/", 12) == 0)
 	{
 		int id = int(msg[12] - '1');
-		return id < (int)near_players.size();
+		return id < (int)nearPlayers.size();
 	}
 	else if(strcmp(msg, "waiting_for_pvp") == 0)
-		return pvp_response.ok;
+		return pvpResponse.ok;
 	assert(0);
 	return false;
 }
@@ -177,7 +177,7 @@ void Arena::SpawnArenaViewers(int count)
 		Unit* u = gameLevel->SpawnUnitNearLocation(*arena, pos, ud, &look_at, -1, 2.f);
 		if(u)
 		{
-			u->ai->loc_timer = Random(6.f, 12.f);
+			u->ai->locTimer = Random(6.f, 12.f);
 			u->temporary = true;
 			viewers.push_back(u);
 		}
@@ -228,32 +228,32 @@ void Arena::UpdatePvpRequest(float dt)
 {
 	if(game->paused)
 		return;
-	if(game->gameState == GS_LEVEL && Net::IsOnline() && pvp_response.ok)
+	if(game->gameState == GS_LEVEL && Net::IsOnline() && pvpResponse.ok)
 	{
-		pvp_response.timer += dt;
-		if(pvp_response.timer >= 5.f)
+		pvpResponse.timer += dt;
+		if(pvpResponse.timer >= 5.f)
 		{
-			pvp_response.ok = false;
-			if(pvp_response.to == game->pc->unit)
+			pvpResponse.ok = false;
+			if(pvpResponse.to == game->pc->unit)
 			{
-				dialog_pvp->CloseDialog();
-				dialog_pvp = nullptr;
+				dialogPvp->CloseDialog();
+				dialogPvp = nullptr;
 			}
 			if(Net::IsServer())
 			{
-				if(pvp_response.from == game->pc->unit)
-					gameGui->AddMsg(Format(game->txPvpRefuse, pvp_response.to->player->name.c_str()));
+				if(pvpResponse.from == game->pc->unit)
+					gameGui->AddMsg(Format(game->txPvpRefuse, pvpResponse.to->player->name.c_str()));
 				else
 				{
-					NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
+					NetChangePlayer& c = Add1(pvpResponse.from->player->playerInfo->changes);
 					c.type = NetChangePlayer::NO_PVP;
-					c.id = pvp_response.to->player->id;
+					c.id = pvpResponse.to->player->id;
 				}
 			}
 		}
 	}
 	else
-		pvp_response.ok = false;
+		pvpResponse.ok = false;
 }
 
 //=================================================================================================
@@ -272,14 +272,14 @@ void Arena::StartArenaCombat(int level)
 	units.clear();
 
 	// dodaj gracza na arenê
-	if(ctx.is_local)
+	if(ctx.isLocal)
 	{
 		game->fallbackType = FALLBACK::ARENA;
 		game->fallbackTimer = -1.f;
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+		NetChangePlayer& c = Add1(ctx.pc->playerInfo->changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
 		ctx.pc->arena_fights++;
 	}
@@ -317,7 +317,7 @@ void Arena::StartArenaCombat(int level)
 			}
 			else
 			{
-				NetChangePlayer& c = Add1(unit.player->player_info->changes);
+				NetChangePlayer& c = Add1(unit.player->playerInfo->changes);
 				c.type = NetChangePlayer::ENTER_ARENA;
 			}
 
@@ -385,29 +385,29 @@ void Arena::StartArenaCombat(int level)
 //=================================================================================================
 void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 {
-	if(pvp_response.ok && pvp_response.to == info.u)
+	if(pvpResponse.ok && pvpResponse.to == info.u)
 	{
 		if(accepted)
-			StartPvp(pvp_response.from->player, pvp_response.to);
+			StartPvp(pvpResponse.from->player, pvpResponse.to);
 		else
 		{
-			if(pvp_response.from->player == game->pc)
+			if(pvpResponse.from->player == game->pc)
 				gameGui->AddMsg(Format(game->txPvpRefuse, info.name.c_str()));
 			else
 			{
-				NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
+				NetChangePlayer& c = Add1(pvpResponse.from->player->playerInfo->changes);
 				c.type = NetChangePlayer::NO_PVP;
-				c.id = pvp_response.to->player->id;
+				c.id = pvpResponse.to->player->id;
 			}
 		}
 
-		if(pvp_response.ok && pvp_response.to == game->pc->unit && dialog_pvp)
+		if(pvpResponse.ok && pvpResponse.to == game->pc->unit && dialogPvp)
 		{
-			gui->CloseDialog(dialog_pvp);
-			dialog_pvp = nullptr;
+			gui->CloseDialog(dialogPvp);
+			dialogPvp = nullptr;
 		}
 
-		pvp_response.ok = false;
+		pvpResponse.ok = false;
 	}
 }
 
@@ -428,7 +428,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
+		NetChangePlayer& c = Add1(player->playerInfo->changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
 	}
 
@@ -442,7 +442,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 		}
 		else
 		{
-			NetChangePlayer& c = Add1(unit->player->player_info->changes);
+			NetChangePlayer& c = Add1(unit->player->playerInfo->changes);
 			c.type = NetChangePlayer::ENTER_ARENA;
 		}
 	}
@@ -459,7 +459,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 		unit->player->arena_fights++;
 		unit->player->stat_flags |= STAT_ARENA_FIGHTS;
 	}
-	pvp_player = player;
+	pvpPlayer = player;
 	fighter = unit;
 
 	// stwórz obserwatorów na arenie na podstawie poziomu postaci
@@ -560,7 +560,7 @@ void Arena::Update(float dt)
 				(*it)->frozen = FROZEN::NO;
 				if((*it)->IsPlayer() && (*it)->player != game->pc)
 				{
-					NetChangePlayer& c = Add1((*it)->player->player_info->changes);
+					NetChangePlayer& c = Add1((*it)->player->playerInfo->changes);
 					c.type = NetChangePlayer::START_ARENA_COMBAT;
 				}
 			}
@@ -572,10 +572,10 @@ void Arena::Update(float dt)
 		for(vector<Unit*>::iterator it = viewers.begin(), end = viewers.end(); it != end; ++it)
 		{
 			Unit& u = **it;
-			u.ai->loc_timer -= dt;
-			if(u.ai->loc_timer <= 0.f)
+			u.ai->locTimer -= dt;
+			if(u.ai->locTimer <= 0.f)
 			{
-				u.ai->loc_timer = Random(6.f, 12.f);
+				u.ai->locTimer = Random(6.f, 12.f);
 
 				cstring text;
 				if(Rand() % 2 == 0)
@@ -646,7 +646,7 @@ void Arena::Update(float dt)
 					}
 					else
 					{
-						NetChangePlayer& c = Add1((*it)->player->player_info->changes);
+						NetChangePlayer& c = Add1((*it)->player->playerInfo->changes);
 						c.type = NetChangePlayer::EXIT_ARENA;
 					}
 				}
@@ -730,7 +730,7 @@ void Arena::Update(float dt)
 
 				if(mode == PVP && fighter && fighter->IsHero())
 				{
-					fighter->hero->lost_pvp = (result == 0);
+					fighter->hero->lostPvp = (result == 0);
 					state = WAITING_TO_EXIT_TALK;
 					timer = 0.f;
 				}
@@ -742,7 +742,7 @@ void Arena::Update(float dt)
 				units.clear();
 			}
 			else
-				questMgr->quest_tournament->FinishCombat();
+				questMgr->questTournament->FinishCombat();
 			if(state != WAITING_TO_EXIT_TALK)
 			{
 				mode = NONE;
@@ -755,7 +755,7 @@ void Arena::Update(float dt)
 		timer += dt;
 		if(timer >= 0.5f)
 		{
-			pvp_player->StartDialog(fighter, GameDialog::TryGet(IsSet(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
+			pvpPlayer->StartDialog(fighter, GameDialog::TryGet(IsSet(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
 			mode = NONE;
 			free = true;
 		}
@@ -779,8 +779,8 @@ Unit* Arena::GetRandomArenaHero()
 //=================================================================================================
 void Arena::PvpEvent(int id)
 {
-	dialog_pvp = nullptr;
-	if(!pvp_response.ok)
+	dialogPvp = nullptr;
+	if(!pvpResponse.ok)
 		return;
 
 	if(Net::IsServer())
@@ -788,48 +788,48 @@ void Arena::PvpEvent(int id)
 		if(id == BUTTON_YES)
 		{
 			// zaakceptuj pvp
-			StartPvp(pvp_response.from->player, pvp_response.to);
+			StartPvp(pvpResponse.from->player, pvpResponse.to);
 		}
 		else
 		{
 			// nie akceptuj pvp
-			NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
+			NetChangePlayer& c = Add1(pvpResponse.from->player->playerInfo->changes);
 			c.type = NetChangePlayer::NO_PVP;
-			c.id = pvp_response.to->player->id;
+			c.id = pvpResponse.to->player->id;
 		}
 	}
 	else
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PVP;
-		c.unit = pvp_unit;
+		c.unit = pvpUnit;
 		if(id == BUTTON_YES)
 			c.id = 1;
 		else
 			c.id = 0;
 	}
 
-	pvp_response.ok = false;
+	pvpResponse.ok = false;
 }
 
 //=================================================================================================
 void Arena::ClosePvpDialog()
 {
-	if(pvp_response.ok && pvp_response.to == game->pc->unit)
+	if(pvpResponse.ok && pvpResponse.to == game->pc->unit)
 	{
-		if(dialog_pvp)
+		if(dialogPvp)
 		{
-			gui->CloseDialog(dialog_pvp);
-			dialog_pvp = nullptr;
+			gui->CloseDialog(dialogPvp);
+			dialogPvp = nullptr;
 		}
-		pvp_response.ok = false;
+		pvpResponse.ok = false;
 	}
 }
 
 //=================================================================================================
 void Arena::ShowPvpRequest(Unit* unit)
 {
-	pvp_unit = unit;
+	pvpUnit = unit;
 
 	DialogInfo info;
 	info.event = DialogEvent(this, &Arena::PvpEvent);
@@ -839,11 +839,11 @@ void Arena::ShowPvpRequest(Unit* unit)
 	info.pause = false;
 	info.text = Format(txPvp, unit->player->name.c_str());
 	info.type = DIALOG_YESNO;
-	dialog_pvp = gui->ShowDialog(info);
+	dialogPvp = gui->ShowDialog(info);
 
-	pvp_response.ok = true;
-	pvp_response.timer = 0.f;
-	pvp_response.to = game->pc->unit;
+	pvpResponse.ok = true;
+	pvpResponse.timer = 0.f;
+	pvpResponse.to = game->pc->unit;
 }
 
 //=================================================================================================

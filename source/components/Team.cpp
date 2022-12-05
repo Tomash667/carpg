@@ -66,7 +66,7 @@ void Team::AddMember(Unit* unit, HeroType type)
 		return;
 
 	// set as team member
-	unit->hero->team_member = true;
+	unit->hero->teamMember = true;
 	unit->hero->type = type;
 	unit->OrderFollow(DialogContext::current ? DialogContext::current->pc->unit : leader);
 	if(unit->hero->otherTeam)
@@ -108,7 +108,7 @@ void Team::RemoveMember(Unit* unit)
 		return;
 
 	// set as not team member
-	unit->hero->team_member = false;
+	unit->hero->teamMember = false;
 	unit->OrderClear();
 
 	// remove from team list
@@ -384,7 +384,7 @@ bool Team::IsTeamMember(Unit& unit)
 	if(unit.IsPlayer())
 		return true;
 	else if(unit.IsHero())
-		return unit.hero->team_member;
+		return unit.hero->teamMember;
 	else
 		return false;
 }
@@ -612,7 +612,7 @@ void Team::CheckTeamItemShares()
 				if(slot.item && unit.CanWear(slot.item))
 				{
 					// don't check if can't buy
-					if(slot.team_count == 0 && slot.item->value / 2 > unit.gold && &unit != &other_unit)
+					if(slot.teamCount == 0 && slot.item->value / 2 > unit.gold && &unit != &other_unit)
 					{
 						++index;
 						continue;
@@ -630,15 +630,15 @@ void Team::CheckTeamItemShares()
 							tsi.item = slot.item;
 							tsi.index = index;
 							tsi.value = real_value;
-							tsi.isTeam = (slot.team_count != 0);
+							tsi.isTeam = (slot.teamCount != 0);
 							if(&unit == &other_unit)
 							{
-								if(slot.team_count == 0)
+								if(slot.teamCount == 0)
 									tsi.priority = PRIO_MY_ITEM;
 								else
 									tsi.priority = PRIO_MY_TEAM_ITEM;
 							}
-							else if(slot.team_count != 0)
+							else if(slot.teamCount != 0)
 							{
 								if(other_unit.IsPlayer())
 									tsi.priority = PRIO_PC_TEAM_ITEM;
@@ -738,7 +738,7 @@ void Team::UpdateTeamItemShares()
 
 			if(state == 1)
 			{
-				if(slot.team_count == 0)
+				if(slot.teamCount == 0)
 				{
 					if(tsi.from == tsi.to)
 					{
@@ -810,9 +810,9 @@ void Team::UpdateTeamItemShares()
 		{
 			// start dialog
 			PlayerController* player_to_ask = (tsi.from->IsPlayer() ? tsi.from : leader)->player;
-			DialogContext& ctx = *player_to_ask->dialog_ctx;
-			ctx.team_share_id = teamShareId;
-			ctx.team_share_item = tsi.from->items[tsi.index].item;
+			DialogContext& ctx = *player_to_ask->dialogCtx;
+			ctx.teamShareId = teamShareId;
+			ctx.teamShareItem = tsi.from->items[tsi.index].item;
 			player_to_ask->StartDialog(tsi.to, dialog);
 		}
 
@@ -825,7 +825,7 @@ void Team::UpdateTeamItemShares()
 //=================================================================================================
 void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 {
-	TeamShareItem& tsi = teamShares[ctx.team_share_id];
+	TeamShareItem& tsi = teamShares[ctx.teamShareId];
 	if(CheckTeamShareItem(tsi))
 	{
 		if(tsi.from != tsi.to)
@@ -836,9 +836,9 @@ void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 			tsi.to->hero->credit += tsi.item->value / 2;
 			CheckCredit(true);
 			tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
-			if(!ctx.is_local && tsi.from == ctx.pc->unit)
+			if(!ctx.isLocal && tsi.from == ctx.pc->unit)
 			{
-				NetChangePlayer& c = Add1(tsi.from->player->player_info->changes);
+				NetChangePlayer& c = Add1(tsi.from->player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = tsi.index;
 				c.count = 1;
@@ -849,7 +849,7 @@ void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 		else
 		{
 			tsi.to->hero->credit += tsi.item->value / 2;
-			tsi.to->items[tsi.index].team_count = 0;
+			tsi.to->items[tsi.index].teamCount = 0;
 			CheckCredit(true);
 			tsi.to->UpdateInventory();
 		}
@@ -859,7 +859,7 @@ void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 //=================================================================================================
 void Team::TeamShareSellItem(DialogContext& ctx)
 {
-	TeamShareItem& tsi = teamShares[ctx.team_share_id];
+	TeamShareItem& tsi = teamShares[ctx.teamShareId];
 	if(CheckTeamShareItem(tsi))
 	{
 		tsi.to->AddItem(tsi.item, 1, false);
@@ -868,13 +868,13 @@ void Team::TeamShareSellItem(DialogContext& ctx)
 		tsi.to->gold += value;
 		tsi.from->gold += value;
 		tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
-		if(!ctx.is_local)
+		if(!ctx.isLocal)
 		{
-			NetChangePlayer& c = Add1(tsi.from->player->player_info->changes);
+			NetChangePlayer& c = Add1(tsi.from->player->playerInfo->changes);
 			c.type = NetChangePlayer::REMOVE_ITEMS;
 			c.id = tsi.index;
 			c.count = 1;
-			tsi.from->player->player_info->UpdateGold();
+			tsi.from->player->playerInfo->UpdateGold();
 		}
 		tsi.to->UpdateInventory();
 		CheckUnitOverload(*tsi.to);
@@ -884,12 +884,12 @@ void Team::TeamShareSellItem(DialogContext& ctx)
 //=================================================================================================
 void Team::TeamShareDecline(DialogContext& ctx)
 {
-	int shareId = ctx.team_share_id;
+	int shareId = ctx.teamShareId;
 	TeamShareItem tsi = teamShares[shareId];
 	if(CheckTeamShareItem(tsi))
 	{
 		ItemSlot& slot = tsi.from->items[tsi.index];
-		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != leader))
+		if(slot.teamCount == 0 || (tsi.from->IsPlayer() && tsi.from != leader))
 		{
 			// player don't want to sell/share this, remove other questions about this item from him
 			for(vector<TeamShareItem>::iterator it = teamShares.begin() + shareId + 1, end = teamShares.end(); it != end;)
@@ -948,7 +948,7 @@ void Team::BuyTeamItems()
 				}
 				++it2;
 			}
-			else if(it2->item->IsWearable() && it2->team_count == 0)
+			else if(it2->item->IsWearable() && it2->teamCount == 0)
 			{
 				unit.weight -= it2->item->weight;
 				unit.gold += it2->item->value / 2;
@@ -1106,15 +1106,15 @@ void Team::BuyTeamItems()
 
 		// equip new items
 		unit.UpdateInventory(false);
-		if(unit.ai->have_potion != HavePotion::No)
-			unit.ai->have_potion = HavePotion::Check;
-		if(unit.ai->have_mp_potion != HavePotion::No)
-			unit.ai->have_mp_potion = HavePotion::Check;
+		if(unit.ai->havePotion != HavePotion::No)
+			unit.ai->havePotion = HavePotion::Check;
+		if(unit.ai->haveMpPotion != HavePotion::No)
+			unit.ai->haveMpPotion = HavePotion::Check;
 
 		// sell old items
 		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2;)
 		{
-			if(it2->item && it2->item->type != IT_CONSUMABLE && it2->item->IsWearable() && it2->team_count == 0)
+			if(it2->item && it2->item->type != IT_CONSUMABLE && it2->item->IsWearable() && it2->teamCount == 0)
 			{
 				unit.weight -= it2->item->weight;
 				unit.gold += it2->item->value / 2;
@@ -1173,10 +1173,10 @@ void Team::BuyTeamItems()
 			}
 		}
 
-		if(unit.ai->have_potion != HavePotion::No)
-			unit.ai->have_potion = HavePotion::Check;
-		if(unit.ai->have_mp_potion != HavePotion::No)
-			unit.ai->have_mp_potion = HavePotion::Check;
+		if(unit.ai->havePotion != HavePotion::No)
+			unit.ai->havePotion = HavePotion::Check;
+		if(unit.ai->haveMpPotion != HavePotion::No)
+			unit.ai->haveMpPotion = HavePotion::Check;
 	}
 }
 
@@ -1213,7 +1213,7 @@ void Team::CheckUnitOverload(Unit& unit)
 		{
 			ItemToSell& to_sell = Add1(items_to_sell);
 			to_sell.index = i;
-			to_sell.isTeam = (slot.team_count != 0);
+			to_sell.isTeam = (slot.teamCount != 0);
 			to_sell.value = slot.item->GetWeightValue();
 		}
 	}
@@ -1227,7 +1227,7 @@ void Team::CheckUnitOverload(Unit& unit)
 		ItemToSell& to_sell = items_to_sell.back();
 		ItemSlot& slot = unit.items[to_sell.index];
 		int price = ItemHelper::GetItemPrice(slot.item, unit, false);
-		if(slot.team_count == 0)
+		if(slot.teamCount == 0)
 			unit.gold += price;
 		else
 			team_gold += price;
@@ -1382,7 +1382,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 		if(u.IsPlayer())
 		{
 			if(!u.player->is_local)
-				u.player->player_info->UpdateGold();
+				u.player->playerInfo->UpdateGold();
 			if(show)
 				gameGui->messages->AddFormattedMessage(u.player, msg, -1, count);
 		}
@@ -1391,7 +1391,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 			Unit* trader = FindPlayerTradingWithUnit(u);
 			if(trader != game->pc->unit)
 			{
-				NetChangePlayer& c = Add1(trader->player->player_info->changes);
+				NetChangePlayer& c = Add1(trader->player->playerInfo->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
 				c.id = u.id;
 				c.count = u.gold;
@@ -1408,14 +1408,14 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 		if(unit.IsPlayer())
 		{
 			++pc_count;
-			unit.player->on_credit = false;
-			unit.player->gold_get = 0;
+			unit.player->onCredit = false;
+			unit.player->goldGet = 0;
 		}
 		else
 		{
 			++npc_count;
-			unit.hero->on_credit = false;
-			unit.hero->gained_gold = false;
+			unit.hero->onCredit = false;
+			unit.hero->gainedGold = false;
 		}
 	}
 
@@ -1427,19 +1427,19 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 		for(Unit& unit : *units)
 		{
 			HeroPlayerCommon& hpc = *(unit.IsPlayer() ? (HeroPlayerCommon*)unit.player : unit.hero);
-			if(hpc.on_credit)
+			if(hpc.onCredit)
 				continue;
 
-			float gain = (unit.IsPlayer() ? share.x : share.y) * count + hpc.split_gold;
+			float gain = (unit.IsPlayer() ? share.x : share.y) * count + hpc.splitGold;
 			float gained_f;
-			hpc.split_gold = modf(gain, &gained_f);
+			hpc.splitGold = modf(gain, &gained_f);
 			int gained = (int)gained_f;
 			if(hpc.credit > gained)
 			{
 				credit_info = true;
 				hpc.credit -= gained;
 				gold_left += gained;
-				hpc.on_credit = true;
+				hpc.onCredit = true;
 				if(unit.IsPlayer())
 					--pc_count;
 				else
@@ -1453,17 +1453,17 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 				hpc.credit = 0;
 				unit.gold += gained;
 				if(unit.IsPlayer())
-					unit.player->gold_get += gained;
+					unit.player->goldGet += gained;
 				else
-					unit.hero->gained_gold = true;
+					unit.hero->gainedGold = true;
 			}
 			else
 			{
 				unit.gold += gained;
 				if(unit.IsPlayer())
-					unit.player->gold_get += gained;
+					unit.player->goldGet += gained;
 				else
-					unit.hero->gained_gold = true;
+					unit.hero->gainedGold = true;
 			}
 		}
 
@@ -1474,17 +1474,17 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 	{
 		if(unit.IsPlayer())
 		{
-			if(unit.player->gold_get && !unit.player->is_local)
-				unit.player->player_info->UpdateGold();
-			if(show && (unit.player->gold_get || isQuest))
-				gameGui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
+			if(unit.player->goldGet && !unit.player->is_local)
+				unit.player->playerInfo->UpdateGold();
+			if(show && (unit.player->goldGet || isQuest))
+				gameGui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->goldGet);
 		}
-		else if(unit.hero->gained_gold && unit.busy == Unit::Busy_Trading)
+		else if(unit.hero->gainedGold && unit.busy == Unit::Busy_Trading)
 		{
 			Unit* trader = FindPlayerTradingWithUnit(unit);
 			if(trader != game->pc->unit)
 			{
-				NetChangePlayer& c = Add1(trader->player->player_info->changes);
+				NetChangePlayer& c = Add1(trader->player->playerInfo->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
 				c.id = unit.id;
 				c.count = unit.gold;
@@ -1592,13 +1592,13 @@ bool Team::IsAnyoneTalking() const
 		{
 			for(Unit& unit : team->activeMembers)
 			{
-				if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
+				if(unit.IsPlayer() && unit.player->dialogCtx->dialogMode)
 					return true;
 			}
 			return false;
 		}
 		else
-			return game->dialogContext.dialog_mode;
+			return game->dialogContext.dialogMode;
 	}
 	else
 		return anyoneTalking;

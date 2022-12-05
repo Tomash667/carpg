@@ -17,7 +17,7 @@
 //=================================================================================================
 void SecretLocationGenerator::Generate()
 {
-	questMgr->quest_secret->state = Quest_Secret::SECRET_GENERATED2;
+	questMgr->questSecret->state = Quest_Secret::SECRET_GENERATED2;
 
 	CreateMap();
 	RandomizeTerrainTexture();
@@ -103,7 +103,7 @@ void SecretLocationGenerator::GenerateObjects()
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->index = 0;
-	portal->target_loc = questMgr->quest_secret->where;
+	portal->target_loc = questMgr->questSecret->where;
 	gameLevel->location->portal = portal;
 
 	TerrainTile* tiles = ((OutsideLocation*)gameLevel->location)->tiles;

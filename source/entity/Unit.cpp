@@ -402,10 +402,10 @@ void Unit::SetGold(int new_gold)
 			soundMgr->PlaySound2d(gameRes->sCoins);
 		else
 		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
+			NetChangePlayer& c = Add1(player->playerInfo->changes);
 			c.type = NetChangePlayer::SOUND;
 			c.id = 0;
-			player->player_info->UpdateGold();
+			player->playerInfo->UpdateGold();
 		}
 	}
 }
@@ -483,8 +483,8 @@ bool Unit::DropItem(int index, uint count)
 		groundItem->Register();
 		groundItem->item = s.item;
 		groundItem->count = count;
-		groundItem->team_count = min(count, s.team_count);
-		s.team_count -= groundItem->team_count;
+		groundItem->teamCount = min(count, s.teamCount);
+		s.teamCount -= groundItem->teamCount;
 		groundItem->pos = pos;
 		groundItem->pos.x -= sin(rot) * 0.25f;
 		groundItem->pos.z -= cos(rot) * 0.25f;
@@ -494,7 +494,7 @@ bool Unit::DropItem(int index, uint count)
 			noMore = true;
 			items.erase(items.begin() + index);
 		}
-		if(!questMgr->quest_secret->CheckMoonStone(groundItem, *this))
+		if(!questMgr->questSecret->CheckMoonStone(groundItem, *this))
 			locPart->AddGroundItem(groundItem);
 
 		if(Net::IsServer())
@@ -506,7 +506,7 @@ bool Unit::DropItem(int index, uint count)
 	}
 	else
 	{
-		s.team_count -= min(count, s.team_count);
+		s.teamCount -= min(count, s.teamCount);
 		if(s.count == 0)
 		{
 			noMore = true;
@@ -541,7 +541,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		groundItem->Register();
 		groundItem->item = item;
 		groundItem->count = 1;
-		groundItem->team_count = 0;
+		groundItem->teamCount = 0;
 		groundItem->pos = pos;
 		groundItem->pos.x -= sin(rot) * 0.25f;
 		groundItem->pos.z -= cos(rot) * 0.25f;
@@ -660,9 +660,9 @@ int Unit::ConsumeItem(int index)
 	--slot.count;
 	weight -= cons.weight;
 	bool removed = false;
-	if(slot.team_count)
+	if(slot.teamCount)
 	{
-		--slot.team_count;
+		--slot.teamCount;
 		used_item_is_team = true;
 	}
 	else
@@ -775,30 +775,30 @@ void Unit::TakeWeapon(WeaponType type)
 //=================================================================================================
 // Dodaje przedmiot(y) do ekwipunku, zwraca true jeœli przedmiot siê zestackowa³
 //=================================================================================================
-bool Unit::AddItem(const Item* item, uint count, uint team_count)
+bool Unit::AddItem(const Item* item, uint count, uint teamCount)
 {
-	assert(item && count != 0 && team_count <= count);
+	assert(item && count != 0 && teamCount <= count);
 
 	if(item->type == IT_GOLD && team->IsTeamMember(*this))
 	{
 		if(Net::IsLocal())
 		{
-			if(team_count && IsTeamMember())
+			if(teamCount && IsTeamMember())
 			{
-				team->AddGold(team_count);
-				uint normal_gold = count - team_count;
+				team->AddGold(teamCount);
+				uint normal_gold = count - teamCount;
 				if(normal_gold)
 				{
 					gold += normal_gold;
 					if(IsPlayer() && !player->is_local)
-						player->player_info->UpdateGold();
+						player->playerInfo->UpdateGold();
 				}
 			}
 			else
 			{
 				gold += count;
 				if(IsPlayer() && !player->is_local)
-					player->player_info->UpdateGold();
+					player->playerInfo->UpdateGold();
 			}
 		}
 		return true;
@@ -806,17 +806,17 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 
 	weight += item->weight * count;
 
-	return InsertItem(items, item, count, team_count);
+	return InsertItem(items, item, count, teamCount);
 }
 
 //=================================================================================================
-void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg, bool notify)
+void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool show_msg, bool notify)
 {
-	assert(item && count && team_count <= count);
+	assert(item && count && teamCount <= count);
 
 	gameRes->PreloadItem(item);
 
-	AddItem(item, count, team_count);
+	AddItem(item, count, teamCount);
 
 	// multiplayer notify
 	if(notify && Net::IsServer())
@@ -825,11 +825,11 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 		{
 			if(!player->is_local)
 			{
-				NetChangePlayer& c = Add1(player->player_info->changes);
+				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::ADD_ITEMS;
 				c.item = item;
 				c.count = count;
-				c.id = team_count;
+				c.id = teamCount;
 			}
 		}
 		else
@@ -847,12 +847,12 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 
 			if(u && !u->player->is_local)
 			{
-				NetChangePlayer& c = Add1(u->player->player_info->changes);
+				NetChangePlayer& c = Add1(u->player->playerInfo->changes);
 				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
 				c.item = item;
 				c.id = id;
 				c.count = count;
-				c.a = team_count;
+				c.a = teamCount;
 			}
 		}
 	}
@@ -899,7 +899,7 @@ void Unit::AddEffect(Effect& e, bool send)
 	{
 		if(player && !player->IsLocal())
 		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
+			NetChangePlayer& c = Add1(player->playerInfo->changes);
 			c.type = NetChangePlayer::ADD_EFFECT;
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
@@ -915,7 +915,7 @@ void Unit::AddEffect(Effect& e, bool send)
 			c.type = NetChange::ADD_UNIT_EFFECT;
 			c.unit = this;
 			c.id = (int)e.effect;
-			c.extra_f = e.time;
+			c.extraFloat = e.time;
 		}
 	}
 }
@@ -1027,7 +1027,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				{
 					alcohol = 0.f;
 					if(IsPlayer() && !player->is_local)
-						player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
+						player->playerInfo->updateFlags |= PlayerInfo::UF_ALCOHOL;
 				}
 			}
 			break;
@@ -1046,7 +1046,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		case EffectId::GreenHair:
 			if(human_data)
 			{
-				human_data->hair_color = Vec4(0, 1, 0, 1);
+				human_data->hairColor = Vec4(0, 1, 0, 1);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -1199,7 +1199,7 @@ void Unit::UpdateEffects(float dt)
 		if(alcohol >= hpmax && live_state == ALIVE)
 			Fall();
 		if(IsPlayer() && !player->is_local)
-			player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
+			player->playerInfo->updateFlags |= PlayerInfo::UF_ALCOHOL;
 	}
 	else if(alcohol != 0.f)
 	{
@@ -1207,7 +1207,7 @@ void Unit::UpdateEffects(float dt)
 		if(alcohol < 0.f)
 			alcohol = 0.f;
 		if(IsPlayer() && !player->is_local)
-			player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
+			player->playerInfo->updateFlags |= PlayerInfo::UF_ALCOHOL;
 	}
 
 	// update poison damage
@@ -1216,7 +1216,7 @@ void Unit::UpdateEffects(float dt)
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)
-			player->player_info->update_flags |= PlayerInfo::UF_POISON_DAMAGE;
+			player->playerInfo->updateFlags |= PlayerInfo::UF_POISON_DAMAGE;
 		player->last_dmg_poison = poison_dmg;
 	}
 
@@ -1737,7 +1737,7 @@ void Unit::Save(GameWriter& f)
 		{
 			f << slot.item->id;
 			f << slot.count;
-			f << slot.team_count;
+			f << slot.teamCount;
 			if(slot.item->id[0] == '$')
 				f << slot.item->quest_id;
 		}
@@ -1999,7 +1999,7 @@ void Unit::Load(GameReader& f)
 	{
 		const string& item_id = f.ReadString1();
 		f >> slot.count;
-		f >> slot.team_count;
+		f >> slot.teamCount;
 		if(item_id[0] != '$')
 			slot.item = Item::Get(item_id);
 		else
@@ -2105,7 +2105,7 @@ void Unit::Load(GameReader& f)
 		f.Skip<int>(); // old netid
 	int unit_event_handler_quest_id = f.Read<int>();
 	if(unit_event_handler_quest_id == -2)
-		event_handler = questMgr->quest_contest;
+		event_handler = questMgr->questContest;
 	else if(unit_event_handler_quest_id == -1)
 		event_handler = nullptr;
 	else
@@ -2520,7 +2520,7 @@ void Unit::Load(GameReader& f)
 		hero->Load(f);
 		if(LOAD_VERSION < V_0_12)
 		{
-			if(hero->team_member && hero->type == HeroType::Visitor &&
+			if(hero->teamMember && hero->type == HeroType::Visitor &&
 				(data->id == "q_zlo_kaplan" || data->id == "q_magowie_stary" || strncmp(data->id.c_str(), "q_orkowie_gorush", 16) == 0))
 			{
 				hero->type = HeroType::Free;
@@ -2614,7 +2614,7 @@ void Unit::Write(BitStreamWriter& f) const
 		f.WriteCasted<byte>(human_data->hair);
 		f.WriteCasted<byte>(human_data->beard);
 		f.WriteCasted<byte>(human_data->mustache);
-		f << human_data->hair_color;
+		f << human_data->hairColor;
 		f << human_data->height;
 	}
 
@@ -2658,9 +2658,9 @@ void Unit::Write(BitStreamWriter& f) const
 	{
 		f << hero->name;
 		b = 0;
-		if(hero->know_name)
+		if(hero->knowName)
 			b |= 0x01;
-		if(hero->team_member)
+		if(hero->teamMember)
 			b |= 0x02;
 		if(hero->type != HeroType::Normal)
 			b |= 0x04;
@@ -2678,7 +2678,7 @@ void Unit::Write(BitStreamWriter& f) const
 		f << GetAiMode();
 
 	// loaded data
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		meshInst->Write(f);
 		f.WriteCasted<byte>(animation);
@@ -2760,7 +2760,7 @@ bool Unit::Read(BitStreamReader& f)
 		f.ReadCasted<byte>(human_data->hair);
 		f.ReadCasted<byte>(human_data->beard);
 		f.ReadCasted<byte>(human_data->mustache);
-		f >> human_data->hair_color;
+		f >> human_data->hairColor;
 		f >> human_data->height;
 		if(!f)
 			return false;
@@ -2869,8 +2869,8 @@ bool Unit::Read(BitStreamReader& f)
 		f >> hero->credit;
 		if(!f)
 			return false;
-		hero->know_name = IsSet(flags, 0x01);
-		hero->team_member = IsSet(flags, 0x02);
+		hero->knowName = IsSet(flags, 0x01);
+		hero->teamMember = IsSet(flags, 0x02);
 		hero->type = IsSet(flags, 0x04) ? HeroType::Visitor : HeroType::Normal;
 	}
 	else if(type == 2)
@@ -2905,13 +2905,13 @@ bool Unit::Read(BitStreamReader& f)
 			Error("Invalid player %d free days %d.", player->id, player->free_days);
 			return false;
 		}
-		player->player_info = net->TryGetPlayer(player->id);
-		if(!player->player_info)
+		player->playerInfo = net->TryGetPlayer(player->id);
+		if(!player->playerInfo)
 		{
 			Error("Invalid player id %d.", player->id);
 			return false;
 		}
-		player->player_info->u = this;
+		player->playerInfo->u = this;
 	}
 	else
 	{
@@ -2930,7 +2930,7 @@ bool Unit::Read(BitStreamReader& f)
 	}
 
 	// mesh
-	CreateMesh(net->mp_load ? CREATE_MESH::PRELOAD : CREATE_MESH::NORMAL);
+	CreateMesh(net->mpLoad ? CREATE_MESH::PRELOAD : CREATE_MESH::NORMAL);
 
 	action = A_NONE;
 	weapon_taken = W_NONE;
@@ -2952,7 +2952,7 @@ bool Unit::Read(BitStreamReader& f)
 	interp->Reset(pos, rot);
 	visual_pos = pos;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		// get current state in multiplayer
 		if(!meshInst->Read(f))
@@ -3177,7 +3177,7 @@ int Unit::FindManaPotion() const
 void Unit::ReequipItems()
 {
 	assert(Net::IsLocal());
-	if(net->active_players > 1)
+	if(net->activePlayers > 1)
 	{
 		const Item* prev_slots[SLOT_MAX];
 		for(int i = 0; i < SLOT_MAX; ++i)
@@ -3277,7 +3277,7 @@ void Unit::RemoveQuestItem(int quest_id)
 			items.erase(it);
 			if(IsOtherPlayer())
 			{
-				NetChangePlayer& c = Add1(player->player_info->changes);
+				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
 				c.id = quest_id;
 			}
@@ -3304,7 +3304,7 @@ bool Unit::HaveItem(const Item* item, bool owned) const
 	}
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item == item && (!owned || it->team_count != it->count))
+		if(it->item == item && (!owned || it->teamCount != it->count))
 			return true;
 	}
 	return false;
@@ -3434,12 +3434,12 @@ void Unit::MakeItemsTeam(bool is_team)
 	if(is_team)
 	{
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-			it->team_count = it->count;
+			it->teamCount = it->count;
 	}
 	else
 	{
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-			it->team_count = 0;
+			it->teamCount = 0;
 	}
 }
 
@@ -3731,8 +3731,8 @@ uint Unit::RemoveItem(int i_index, uint count)
 		weight -= s.item->weight * removed;
 		if(s.count == 0)
 			items.erase(items.begin() + i_index);
-		else if(s.team_count > 0)
-			s.team_count -= min(s.team_count, removed);
+		else if(s.teamCount > 0)
+			s.teamCount -= min(s.teamCount, removed);
 	}
 	else
 	{
@@ -3741,7 +3741,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 		slots[type] = nullptr;
 		removed = 1;
 
-		if(Net::IsServer() && net->active_players > 1 && IsVisible(type))
+		if(Net::IsServer() && net->activePlayers > 1 && IsVisible(type))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
@@ -3757,7 +3757,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 		{
 			if(!player->is_local)
 			{
-				NetChangePlayer& c = Add1(player->player_info->changes);
+				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = i_index;
 				c.count = count;
@@ -3778,7 +3778,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 
 			if(t && t->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(t->player->player_info->changes);
+				NetChangePlayer& c = Add1(t->player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.id = id;
 				c.count = count;
@@ -4241,7 +4241,7 @@ void Unit::RemoveEffects(bool send)
 		Effect e = effects[index];
 		if(send)
 		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
+			NetChangePlayer& c = Add1(player->playerInfo->changes);
 			c.type = NetChangePlayer::REMOVE_EFFECT;
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
@@ -4643,7 +4643,7 @@ void Unit::SetDontAttack(bool new_dont_attack)
 		return;
 	dont_attack = new_dont_attack;
 	if(ai)
-		ai->change_ai_mode = true;
+		ai->changeAiMode = true;
 }
 
 //=================================================================================================
@@ -4898,9 +4898,9 @@ void Unit::UseUsable(Usable* new_usable)
 //=================================================================================================
 void Unit::RevealName(bool set_name)
 {
-	if(!hero || hero->know_name)
+	if(!hero || hero->knowName)
 		return;
-	hero->know_name = true;
+	hero->knowName = true;
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -4914,16 +4914,16 @@ void Unit::RevealName(bool set_name)
 bool Unit::GetKnownName() const
 {
 	if(IsHero())
-		return hero->know_name;
+		return hero->knowName;
 	return true;
 }
 
 //=================================================================================================
 void Unit::SetKnownName(bool known)
 {
-	if(!hero || hero->know_name)
+	if(!hero || hero->knowName)
 		return;
-	hero->know_name = true;
+	hero->knowName = true;
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -5109,7 +5109,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		player->next_action = NA_NONE;
 		if(player->is_local)
 		{
-			player->data.ability_ready = nullptr;
+			player->data.abilityReady = nullptr;
 			gameGui->inventory->EndLock();
 			if(gameGui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
@@ -5123,10 +5123,10 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 				{
 					player->action_unit->busy = Busy_No;
 					player->action_unit->look_target = nullptr;
-					player->dialog_ctx->dialog_mode = false;
+					player->dialogCtx->dialogMode = false;
 				}
 				else
-					game->dialogContext.dialog_mode = false;
+					game->dialogContext.dialogMode = false;
 				look_target = nullptr;
 				player->action = PlayerAction::None;
 			}
@@ -5137,7 +5137,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			{
 				player->action_unit->busy = Busy_No;
 				player->action_unit->look_target = nullptr;
-				player->dialog_ctx->dialog_mode = false;
+				player->dialogCtx->dialogMode = false;
 				look_target = nullptr;
 				player->action = PlayerAction::None;
 			}
@@ -5186,7 +5186,7 @@ void Unit::Fall()
 		UpdatePhysics();
 
 		if(player && player->is_local)
-			player->data.before_player = BP_NONE;
+			player->data.beforePlayer = BP_NONE;
 	}
 	else
 	{
@@ -5196,7 +5196,7 @@ void Unit::Fall()
 		if(player && player->is_local)
 		{
 			raise_timer = Random(5.f, 7.f);
-			player->data.before_player = BP_NONE;
+			player->data.beforePlayer = BP_NONE;
 		}
 	}
 
@@ -5447,7 +5447,7 @@ void Unit::Die(Unit* killer)
 			++player->knocks;
 			player->stat_flags |= STAT_KNOCKS;
 			if(player->is_local)
-				game->pc->data.before_player = BP_NONE;
+				game->pc->data.beforePlayer = BP_NONE;
 		}
 
 		// give experience
@@ -5479,7 +5479,7 @@ void Unit::Die(Unit* killer)
 		if(player && player->is_local)
 		{
 			raise_timer = Random(5.f, 7.f);
-			player->data.before_player = BP_NONE;
+			player->data.beforePlayer = BP_NONE;
 		}
 	}
 
@@ -5526,7 +5526,7 @@ void Unit::DropGold(int count)
 		groundItem->Register();
 		groundItem->item = Item::gold;
 		groundItem->count = count;
-		groundItem->team_count = 0;
+		groundItem->teamCount = 0;
 		groundItem->pos = pos;
 		groundItem->pos.x -= sin(rot) * 0.25f;
 		groundItem->pos.z -= cos(rot) * 0.25f;
@@ -5556,9 +5556,9 @@ bool Unit::IsDrunkman() const
 	if(IsSet(data->flags, F_AI_DRUNKMAN))
 		return true;
 	else if(IsSet(data->flags3, F3_DRUNK_MAGE))
-		return questMgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured;
+		return questMgr->questMages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(IsSet(data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
-		return questMgr->quest_contest->state == Quest_Contest::CONTEST_DONE;
+		return questMgr->questContest->state == Quest_Contest::CONTEST_DONE;
 	else
 		return false;
 }
@@ -5842,7 +5842,7 @@ void Unit::UpdateInventory(bool notify)
 
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(!it->item || it->team_count != 0 || !CanWear(it->item))
+		if(!it->item || it->teamCount != 0 || !CanWear(it->item))
 			continue;
 
 		ITEM_SLOT target_slot;
@@ -5869,7 +5869,7 @@ void Unit::UpdateInventory(bool notify)
 		RemoveNullItems(items);
 		SortItems(items);
 
-		if(Net::IsOnline() && net->active_players > 1 && notify)
+		if(Net::IsOnline() && net->activePlayers > 1 && notify)
 		{
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
@@ -6119,7 +6119,7 @@ void Unit::OrderClear()
 {
 	if(order)
 		order->Free();
-	if(hero && hero->team_member)
+	if(hero && hero->teamMember)
 	{
 		order = UnitOrderEntry::Get();
 		order->order = ORDER_FOLLOW;
@@ -6153,7 +6153,7 @@ void Unit::OrderNext()
 		{
 		case ORDER_WANDER:
 			if(ai)
-				ai->loc_timer = Random(5.f, 10.f);
+				ai->locTimer = Random(5.f, 10.f);
 			break;
 		case ORDER_ESCAPE_TO:
 		case ORDER_ESCAPE_TO_UNIT:
@@ -6205,7 +6205,7 @@ void Unit::OrderAttack()
 			if(unit->dont_attack && unit->IsEnemy(*team->leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
 			{
 				unit->dont_attack = false;
-				unit->ai->change_ai_mode = true;
+				unit->ai->changeAiMode = true;
 			}
 		}
 	}
@@ -6217,7 +6217,7 @@ UnitOrderEntry* Unit::OrderWander()
 	OrderReset();
 	order->order = ORDER_WANDER;
 	if(ai)
-		ai->loc_timer = Random(5.f, 10.f);
+		ai->locTimer = Random(5.f, 10.f);
 	return order;
 }
 
@@ -6374,7 +6374,7 @@ void Unit::Talk(cstring text, int play_anim)
 		*c.str = text;
 		c.id = ani;
 		c.count = 0;
-		net->net_strs.push_back(c.str);
+		net->netStrs.push_back(c.str);
 	}
 }
 
@@ -6433,7 +6433,7 @@ void Unit::RotateTo(const Vec3& pos)
 {
 	rot = Vec3::LookAtAngle(this->pos, pos);
 	if(!gameLevel->ready && ai)
-		ai->start_rot = rot;
+		ai->startRot = rot;
 	else
 		changed = true;
 }
@@ -6442,7 +6442,7 @@ void Unit::RotateTo(float rot)
 {
 	this->rot = rot;
 	if(!gameLevel->ready && ai)
-		ai->start_rot = rot;
+		ai->startRot = rot;
 	else
 		changed = true;
 }
@@ -6663,7 +6663,7 @@ void Unit::CheckAutoTalk(float dt)
 		{
 			// if not leader (in leader mode) or busy - don't check this unit
 			if((leader_mode && &u != team->leader)
-				|| (u.player->dialog_ctx->dialog_mode || u.busy != Busy_No
+				|| (u.player->dialogCtx->dialogMode || u.busy != Busy_No
 				|| !u.IsStanding() || u.player->action != PlayerAction::None))
 				continue;
 			float dist = Vec3::Distance(pos, u.pos);
@@ -6802,14 +6802,14 @@ void Unit::CastSpell()
 				bullet->rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
 				bullet->mesh = ability.mesh;
 				bullet->tex = ability.tex;
-				bullet->tex_size = ability.size;
+				bullet->texSize = ability.size;
 				bullet->speed = ability.speed;
 				bullet->timer = ability.range / (ability.speed - 1);
 				bullet->owner = this;
 				bullet->trail = nullptr;
 				bullet->pe = nullptr;
 				bullet->ability = &ability;
-				bullet->start_pos = bullet->pos;
+				bullet->startPos = bullet->pos;
 
 				// ustal z jak¹ si³¹ rzuciæ kul¹
 				if(ability.type == Ability::Ball)
@@ -6860,7 +6860,7 @@ void Unit::CastSpell()
 					c << ability.hash
 						<< bullet->id
 						<< id
-						<< bullet->start_pos
+						<< bullet->startPos
 						<< bullet->rot.y
 						<< bullet->yspeed;
 				}
@@ -6919,7 +6919,7 @@ void Unit::CastSpell()
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_ELECTRO;
-				c.e_id = e->id;
+				c.extraId = e->id;
 				c.pos = e->lines[0].from;
 				memcpy(c.f, &e->lines[0].to, sizeof(Vec3));
 			}
@@ -7061,13 +7061,13 @@ void Unit::CastSpell()
 		for(Unit* u : locPart->units)
 		{
 			if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
-				|| u->ai->alert_target || u->dont_attack)
+				|| u->ai->alertTarget || u->dont_attack)
 				continue;
 
 			if(Vec3::Distance(pos, u->pos) <= ability.range && gameLevel->CanSee(*this, *u))
 			{
-				u->ai->alert_target = ai->target;
-				u->ai->alert_target_pos = ai->target_last_pos;
+				u->ai->alertTarget = ai->target;
+				u->ai->alertTargetPos = ai->targetLastPos;
 			}
 		}
 		break;
@@ -7083,8 +7083,8 @@ void Unit::CastSpell()
 				if(new_unit->in_arena != -1)
 					game->arena->units.push_back(new_unit);
 				gameLevel->SpawnUnitEffect(*new_unit);
-				new_unit->ai->alert_target = ai->target;
-				new_unit->ai->alert_target_pos = ai->target_last_pos;
+				new_unit->ai->alertTarget = ai->target;
+				new_unit->ai->alertTargetPos = ai->targetLastPos;
 			}
 		}
 		break;
@@ -7134,7 +7134,7 @@ void Unit::CastSpell()
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
-			c.e_id = 0;
+			c.extraId = 0;
 			c.ability = &ability;
 			c.pos = coord;
 		}
@@ -7537,8 +7537,8 @@ void Unit::Update(float dt)
 				bullet->pe = nullptr;
 				bullet->ability = act.shoot.ability;
 				bullet->tex = nullptr;
-				bullet->poison_attack = 0.f;
-				bullet->start_pos = bullet->pos;
+				bullet->poisonAttack = 0.f;
+				bullet->startPos = bullet->pos;
 
 				if(bullet->ability && bullet->ability->mesh)
 					bullet->mesh = bullet->ability->mesh;
@@ -7632,7 +7632,7 @@ void Unit::Update(float dt)
 					c.type = NetChange::SHOOT_ARROW;
 					c << bullet->id
 						<< id
-						<< bullet->start_pos
+						<< bullet->startPos
 						<< bullet->rot.x
 						<< bullet->rot.y
 						<< bullet->speed
@@ -7655,7 +7655,7 @@ void Unit::Update(float dt)
 				if(Net::IsLocal() && IsAI())
 				{
 					float v = 1.f - float(Get(SkillId::BOW)) / 100;
-					ai->next_attack = Random(v / 2, v);
+					ai->nextAttack = Random(v / 2, v);
 				}
 				break;
 			}
@@ -7738,7 +7738,7 @@ void Unit::Update(float dt)
 				if(Net::IsLocal() && IsAI())
 				{
 					float v = 1.f - float(Get(SkillId::ONE_HANDED_WEAPON)) / 100;
-					ai->next_attack = Random(v / 2, v);
+					ai->nextAttack = Random(v / 2, v);
 				}
 			}
 		}
@@ -7866,7 +7866,7 @@ void Unit::Update(float dt)
 				else
 					animation = ANI_BATTLE;
 				if(Net::IsLocal() && IsAI())
-					ai->next_attack = Random(0.25f, 0.75f);
+					ai->nextAttack = Random(0.25f, 0.75f);
 			}
 		}
 		else
@@ -8390,7 +8390,7 @@ void Unit::Moved(bool warped, bool dash)
 							}
 						}
 					}
-					else if(gameLevel->locationIndex != questMgr->quest_secret->where2
+					else if(gameLevel->locationIndex != questMgr->questSecret->where2
 						&& (pos.x < 33.f || pos.x > 256.f - 33.f || pos.z < 33.f || pos.z > 256.f - 33.f))
 					{
 						if(!team->IsLeader())
@@ -8547,7 +8547,7 @@ void Unit::Moved(bool warped, bool dash)
 		}
 	}
 
-	if(Net::IsLocal() || !IsLocalPlayer() || net->interpolate_timer <= 0.f)
+	if(Net::IsLocal() || !IsLocalPlayer() || net->interpolateTimer <= 0.f)
 	{
 		visual_pos = pos;
 		changed = true;
@@ -8929,10 +8929,10 @@ void Unit::AttackReaction(Unit& attacker)
 						ai->state = AIController::Escape;
 						ai->timer = Random(2.f, 4.f);
 						ai->target = attacker;
-						ai->target_last_pos = attacker.pos;
+						ai->targetLastPos = attacker.pos;
 						ai->st.escape.room = nullptr;
 						ai->ignore = 0.f;
-						ai->in_combat = false;
+						ai->inCombat = false;
 					}
 				}
 				else
@@ -8955,7 +8955,7 @@ void Unit::AttackReaction(Unit& attacker)
 				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
 				{
 					(*it)->dont_attack = false;
-					(*it)->ai->change_ai_mode = true;
+					(*it)->ai->changeAiMode = true;
 				}
 			}
 		}
@@ -9220,13 +9220,13 @@ void Unit::AlertAllies(Unit* target)
 	for(Unit* u : locPart->units)
 	{
 		if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
-			|| u->ai->alert_target || u->dont_attack)
+			|| u->ai->alertTarget || u->dont_attack)
 			continue;
 
 		if(Vec3::Distance(pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*this, *u))
 		{
-			u->ai->alert_target = target;
-			u->ai->alert_target_pos = target->pos;
+			u->ai->alertTarget = target;
+			u->ai->alertTargetPos = target->pos;
 		}
 	}
 }

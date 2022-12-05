@@ -15,10 +15,10 @@ enum class HeroType
 struct Hero : public HeroPlayerCommon
 {
 	int expe, investment;
-	float phase_timer;
+	float phaseTimer;
 	HeroType type;
 	AITeam* otherTeam;
-	bool know_name, team_member, lost_pvp, melee, phase, gained_gold, loner;
+	bool knowName, teamMember, lostPvp, melee, phase, gainedGold, loner;
 
 	void Init(Unit& unit);
 	int JoinCost() const;

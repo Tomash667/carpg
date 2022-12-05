@@ -131,7 +131,7 @@ Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 				else
 				{
 					targetLoc->AddEventHandler(this, EVENT_CLEARED);
-					SetTimeout(30 + start_time - world->GetWorldtime());
+					SetTimeout(30 + startTime - world->GetWorldtime());
 				}
 			}
 			LocationHelper::GetCaptain(startLoc)->AddDialog(this, GetDialog("captain"));
